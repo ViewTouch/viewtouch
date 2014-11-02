@@ -1,0 +1,61 @@
+#!/usr/bin/perl -w
+
+# --------------------------------------------------------------------
+# Module:  arcfix
+# Description:  Originally a solution for corrupted archives.  Now
+#   I'm going to use it to try to list various details about an archive
+#   file, like the archive's date.
+# Author:  Bruce Alon King
+# Created:  Tue Jul 23 13:20:09 2002
+# --------------------------------------------------------------------
+
+# ####################################################################
+# INITIALIZATION AND GLOBAL VARIABLES
+# ####################################################################
+BEGIN {
+    push( @INC, "/usr/local/apache/cgi-bin");
+}
+use strict;
+use Getopt::Std;
+use ViewTouch::VTData;
+
+my $options = "dh";
+my %opts;
+getopts($options, \%opts);
+ShowHelp() if ( $opts{'h'} );
+
+my $debug_mode = $opts{'d'} ? 1 : 0;
+
+my @files = @ARGV;
+my $vtdata = new ViewTouch::VTData( debug => $debug_mode );
+
+
+# ####################################################################
+# MAIN LOOP
+# ####################################################################
+foreach ( @files ) {
+    my ( $file ) = @_;
+    my $fileref = $vtdata->ReadFile( $file );
+    print "Start Date:  $$fileref{'start_date'}\n";
+}
+
+
+# ####################################################################
+# SUBROUTINES
+# ####################################################################
+
+# --------------------------------------------------------------------
+# ShowHelp:
+# --------------------------------------------------------------------
+sub ShowHelp {
+    my ( $progname ) = $0 =~ m|/([^/]+)$|;
+    print STDERR "Usage:  $progname [OPTIONS] <input file>\n";
+    print STDERR "OPTIONS\n";
+    print STDERR "  -d              Debug mode on.\n";
+    print STDERR "  -h              Show this help screen.\n";
+    print STDERR "\n";
+    print STDERR "\n";
+    ShowConversions();
+    print STDERR "\n";
+    exit( 1 );
+}

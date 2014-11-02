@@ -1,0 +1,337 @@
+#!/usr/bin/perl -w
+
+# --------------------------------------------------------------------
+# Module:  configure
+# Description:  simple script to sort of mimic autoconf.
+# Author:  Bruce Alon King
+# Created:  Thu Apr  4 11:12:13 2002
+# --------------------------------------------------------------------
+
+# ####################################################################
+# INITIALIZATION AND GLOBAL VARIABLES
+# ####################################################################
+use strict;
+use vars qw/$hostname $license_server/;
+BEGIN {
+#    $hostname = `hostname`;
+#    $hostname =~ /^\s+|\s+$/gs;
+#    if ( $hostname =~ /mainbox|debian/ ) {
+#        $license_server = "localhost";
+#    } elsif ( $hostname =~ /arachne|asgard/ ) {
+#        $license_server = "localhost";
+#    } elsif ( $hostname =~ /wincor|linux/ ) {
+#        $license_server = "mainbox.viewtouch.com";
+#    } else {
+#        $license_server = "";
+#    }
+#    $license_server = "vtweb";
+    $license_server = "viewtouch.com";
+};
+use Getopt::Std;
+
+# configuration options (file and/or command line)
+my $gcc      = "";
+
+my @configfiles = qw|/etc/vtmake_config HOME/.vtmake_config|;
+readConfigFiles( \@configfiles );
+
+my $cmdoptions = "g:hl:";
+my %opts;
+getopts( $cmdoptions, \%opts );
+showHelp() if ( $opts{'h'} );
+
+$gcc            = $opts{'g'} if ( $opts{'g'} );
+$license_server = $opts{'l'} if ( $opts{'l'} );
+
+my $gpp            = "g++";
+my $platform       = ( `uname` ); chomp( $platform );
+my $configurein    = "configure.in";
+my $makefilein     = "Makefile.in";
+my $makefileout    = "Makefile";
+my $makelinestart  = "# System Settings Start";
+my $makelineend    = "# System Settings End";
+my $mode           = "";
+
+my $gccversion = "";
+if ( $gcc ) {
+    $gccversion = "gcc$gcc";
+    $gpp        = "g++$gcc";
+} else {
+    $gccversion = `gcc -v 2>&1`;
+    if ( $gccversion =~ /gcc version ([\d\.]+)/s ) {
+        $gccversion = $1;
+    }
+    $gccversion = "gcc$gccversion";
+}
+$gccversion =~ s/\.//g;
+
+
+# ####################################################################
+# MAIN LOOP
+# ####################################################################
+my $config   = readConfig( $configurein, $platform );
+
+my $incdirs  = getIncDirs( $$config{'incdirs'} );
+my $options  = getOptions( \@ARGV, $$config{'defaults'}, $$config{'options'} );
+my $settings = buildSettings( $$config{'mode'}, $incdirs, $options );
+
+my $makefile = readFile( $makefilein );
+insertConfig( \$makefile, $settings );
+changeTarget( \$makefile, $mode );
+printFile( $makefileout, $makefile );
+system( "make dep >dep.log 2>&1" );
+system( "make clean >/dev/null 2>&1" );
+
+
+# ####################################################################
+# SUBROUTINES
+# ####################################################################
+
+# --------------------------------------------------------------------
+# showHelp:
+# --------------------------------------------------------------------
+sub showHelp {
+    print STDERR "Usage:  ./configure\n";
+    print STDERR "OPTIONS:\n";
+    print STDERR "  -g <version> Which GCC version to use.\n";
+    print STDERR "<debug|release>\n";
+    print STDERR "  debug        Build a release version of the binary\n";
+    print STDERR "  release      Build a release version of the binary\n";
+    print STDERR "<nocredit|mcve|cheq>\n";
+    print STDERR "  nocredit     Do not add credit card support\n";
+    print STDERR "  mcve         Add credit card support with MCVE\n";
+    print STDERR "  cheq         Add credit card support with CreditCheq\n";
+    print STDERR "\n";
+    exit( 1 );
+}
+
+#-----------------------------------------------------------------------
+# readConfigFiles:
+#-----------------------------------------------------------------------
+sub readConfigFiles {
+    my ( $files ) = @_;
+
+    foreach ( @$files ) {
+        my $file = $_;
+        $file =~ s/HOME/$ENV{'HOME'}/;
+
+        if ( -f $file ) {
+            readConfigFile( $file );
+        }
+    }
+}
+
+#-----------------------------------------------------------------------
+# readConfigFile:
+#-----------------------------------------------------------------------
+sub readConfigFile {
+    my ( $file ) = @_;
+
+    if ( open( FILE, $file ) ) {
+        while ( <FILE> ) {
+            my $line = $_;
+            if ( $line =~ /^([^:]+):\s+(.*)$/ ) {
+                my ( $key, $value ) = ( $1, $2 );
+                setConfig( $key, $value );
+            }
+        }
+        close( FILE );
+    } else {
+        print "Could not read config file $file:  $!\n";
+    }
+}
+
+#-----------------------------------------------------------------------
+# setConfig:
+#-----------------------------------------------------------------------
+sub setConfig {
+    my ( $key, $value ) = @_;
+
+    if ( $key eq "gccversion" ) {
+        $gcc = $value;
+    } elsif ( $key eq "licenseserver" ) {
+        $license_server = $value;
+    } else {
+        print "Unknown Key '$key', value '$value'\n";
+    }
+}
+
+# --------------------------------------------------------------------
+# readConfig:
+# --------------------------------------------------------------------
+sub readConfig {
+    my ( $file, $platform ) = @_;
+    my %config;
+    my %options;
+    my $contents = readFileArray( $file );
+    while ( @$contents ) {
+        my $line = shift( @$contents );
+        chomp( $line );
+        if ( $line =~ /^\#\#\#\s+$platform\s+Mode\s+\#\#\#/ ) {
+            $config{'mode'} = readBlock( $contents, "Mode" );
+        } elsif ( $line =~ /^\#\#\#\s+($platform\s+)?Defaults\s+\#\#\#/ ) {
+            $config{'defaults'} = readBlock( $contents, "Defaults" );
+        } elsif ( $line =~ /^\#\#\#\s+($platform\s+)?IncDirs\s+\#\#\#/ ) {
+            $config{'incdirs'} = readBlock( $contents, "IncDirs" );
+        } elsif ( $line =~ /^\#\#\#\s+($platform\s+)?Option\s+(\S+)\s+\#\#\#/ ) {
+            my $option = $2;
+            $options{lc($option)} = readBlock( $contents, $option );
+        }
+    }
+    $config{'options'} = \%options;
+    return( \%config );
+}
+
+# --------------------------------------------------------------------
+# readBlock:
+# --------------------------------------------------------------------
+sub readBlock {
+    my ( $lines, $blockname ) = @_;
+    my @lines;
+    my $done = 0;
+    while ( @$lines && !$done ) {
+        my $line = shift( @$lines );
+        chomp( $line );
+        if ( $line =~ /^\#\#\#\s+$blockname\s+End\s+\#\#\#/ ) {
+            $done = 1;
+        } else {
+            push( @lines, $line );
+        }
+    }
+    return( \@lines );
+}
+
+# --------------------------------------------------------------------
+# getIncDirs:
+# --------------------------------------------------------------------
+sub getIncDirs {
+    my ( $incdirs ) = @_;
+    my $incs = "INCDIRS         = ";
+    foreach ( @$incdirs ) {
+        my $dir = $_;
+        if ( $dir =~ s/^(gcc[\d\.]+)\s+// ) {
+            my $gcc = $1;
+            if ( $gcc eq $gccversion && -d $dir ) {
+                $incs .= "-I$dir ";
+            } else {
+                print STDERR "Skipping Include Dir:  '$dir'\n";
+            }
+        } elsif ( -d $dir ) {
+            $incs .= "-I$dir ";
+        } else {
+            print STDERR "Skipping Include Dir:  '$dir'\n";
+        }
+    }
+    return( $incs );
+}
+
+# --------------------------------------------------------------------
+# getOptions:
+# --------------------------------------------------------------------
+sub getOptions {
+    my ( $args, $defaults, $options ) = @_;
+    my $settings = "";
+    foreach ( @$defaults ) {
+        my $line = lc($_);
+        my @opts = split( /\s+/, $line );
+        my $option = "";
+        foreach ( @opts ) {
+            my $opt = lc($_);
+            if ( grep( $opt eq lc($_), @$args ) ) {
+                $option = $opt;
+            }
+        }
+        if ( $option eq "" ) {
+            $option = shift( @opts );
+        }
+        my @nonopts = grep( $option ne $_, @opts );
+        foreach ( @nonopts ) {
+            delete( $$options{$_} );
+        }
+    }
+    foreach ( sort keys %$options ) {
+        my $opts = $$options{$_};
+        foreach ( @$opts ) {
+            $settings .= "$_\n";
+        }
+    }
+
+    return( $settings );
+}
+
+# --------------------------------------------------------------------
+# buildSettings:
+# --------------------------------------------------------------------
+sub buildSettings {
+    my ( $mode, $incdirs, $options ) = @_;
+    my $settings = "";
+
+    foreach ( @$mode ) {
+        $settings .= "$_\n";
+    }
+    $settings .= $incdirs . "\n";
+    $settings .= $options;
+    $settings =~ s/LICENSESERVERDEBUG/$license_server/gs;
+
+    return( $settings );
+}
+
+
+# --------------------------------------------------------------------
+# insertConfig:  
+# --------------------------------------------------------------------
+sub insertConfig {
+    my ( $makefile, $config ) = @_;
+    $$makefile =~ s/($makelinestart\s+).*?($makelineend)/$1$config$2/s;
+    $$makefile =~ s/GPP/$gpp/sg;
+}
+
+# --------------------------------------------------------------------
+# changeTarget:  replaces the "make all" dependency to make either
+#   debug or release, depending on what has been selected for
+#   configure.
+# --------------------------------------------------------------------
+sub changeTarget {
+    my ( $makefile, $target ) = @_;
+    $target = lc( $target );
+    $$makefile =~ s/all:\s+(debug|release)/all: $target/gs;
+}
+
+# --------------------------------------------------------------------
+# readFile:  just reads the file in and returns the contents as a
+#  reference to an array.
+# --------------------------------------------------------------------
+sub readFile {
+    my ( $name ) = @_;
+    my $contents = readFileArray( $name );
+    return( join( "", @$contents ) );
+}
+
+# --------------------------------------------------------------------
+# readFileArray:  just reads the file in and returns the contents as a
+#  reference to an array.
+# --------------------------------------------------------------------
+sub readFileArray {
+    my ( $name ) = @_;
+    my @contents;
+    if ( open( FILE, $name ) ) {
+        @contents = <FILE>;
+        close( FILE );
+    } else {
+        die "Could not read $name:  $!\n";
+    }
+    return( \@contents );
+}
+
+# --------------------------------------------------------------------
+# printFile:
+# --------------------------------------------------------------------
+sub printFile {
+    my ( $file, $contents ) = @_;
+    if ( open( FILE, ">$file" ) ) {
+        print FILE $contents;
+        close( FILE );
+    } else {
+        die "Could not write $file:  $!\n";
+    }
+}

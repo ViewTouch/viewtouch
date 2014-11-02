@@ -1,0 +1,5 @@
+#!/bin/sh
+
+REVISION=`cat last-release-rev`
+BUILD=`date +"%Y%m%d%H%M"`
+echo \"$REVISION $BUILD\"

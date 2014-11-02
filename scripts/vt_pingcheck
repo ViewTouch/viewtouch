@@ -1,0 +1,48 @@
+#!/bin/sh
+
+VTDIR=VIEWTOUCH_PATH
+VTPOS=$VTDIR/bin/vtpos
+PINGFILE=$VTDIR/bin/.ping_check
+CMDFILE=$VTDIR/bin/.viewtouch_command_file
+SHUTDOWN=$VTDIR/bin/vt_shutdown
+
+if [ -n "$1" -a "$1" = "-a" ]; then
+    RESTART=yes
+fi
+
+rm -f $PINGFILE
+
+VTMAIN=`ps x | grep vt_main | grep -v grep`
+if [ -n "$VTMAIN" ]; then
+    echo ping >$CMDFILE
+    killall -USR2 vt_main
+
+    sleep 1
+
+    if [ -f $PINGFILE ]; then
+        echo ViewTouch is running and responding
+        rm $PINGFILE
+    else
+        echo ViewTouch is not responding
+        if [ "$RESTART" = "yes" ]; then
+            $SHUTDOWN
+            sleep 2
+            killall vt_main vt_term
+            sleep 1
+            while [ -n "`ps x | grep vt_main | grep -v grep`" ]; do
+                killall vt_main vt_term
+                sleep 1
+            done
+            $VTPOS
+        fi
+        exit 1
+    fi
+else
+    echo ViewTouch is not running
+    if [ "$RESTART" = "yes" ]; then
+        $VTPOS
+    fi
+    exit 2
+fi
+
+   

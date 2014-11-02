@@ -1,0 +1,33 @@
+#!/bin/sh
+
+####
+# Module:  reportdebugs
+# Description:  Checks all .cc and .hh files for lines containing //DEBUG
+#   If any such lines are found, verifies that the user wants to build
+#   the ViewTouch code.
+#   Returns 0 (go ahead) if no //DEBUG lines are found or if the user
+#     wants to do the build anyway
+#   Returns 1 (stop build) otherwise
+#
+#   This utility is intended to help prevent lots of debug code from getting
+#   to customers.  It really is only useful in the context of a Makefile.
+# Author:  Bruce Alon King
+# Created:  Thu Apr  4 16:26:11 2002
+####
+
+DEBUGS=`find . -name '*.cc' -o -name '*.hh' | xargs grep '//DEBUG'`
+EXITVAL=0
+
+if [ -n "$DEBUGS" ]; then
+   echo
+   echo FOUND //DEBUG LINES IN THE SOURCE CODE!!!
+   echo Is it really ready for release\?
+   read answer
+   if [ "$answer" = "y" ]; then
+      EXITVAL=0
+   else
+      EXITVAL=1
+   fi
+fi
+
+exit $EXITVAL

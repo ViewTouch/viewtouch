@@ -1,0 +1,736 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="84">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df name="working_vt" root=".">
+      <df name="authorize">
+        <in>authorize_main.cc</in>
+      </df>
+      <df name="cdu">
+        <in>cdu_main.cc</in>
+      </df>
+      <df name="external">
+        <in>blowfish.c</in>
+        <in>blowfish.h</in>
+        <in>sha1.cc</in>
+        <in>sha1.hh</in>
+      </df>
+      <df name="loader">
+        <in>loader_main.cc</in>
+      </df>
+      <df name="main">
+        <in>account.cc</in>
+        <in>account.hh</in>
+        <in>archive.cc</in>
+        <in>archive.hh</in>
+        <in>cdu.cc</in>
+        <in>cdu.hh</in>
+        <in>cdu_att.cc</in>
+        <in>cdu_att.hh</in>
+        <in>chart.cc</in>
+        <in>chart.hh</in>
+        <in>check.cc</in>
+        <in>check.hh</in>
+        <in>credit.cc</in>
+        <in>credit.hh</in>
+        <in>customer.cc</in>
+        <in>customer.hh</in>
+        <in>drawer.cc</in>
+        <in>drawer.hh</in>
+        <in>employee.cc</in>
+        <in>employee.hh</in>
+        <in>exception.cc</in>
+        <in>exception.hh</in>
+        <in>expense.cc</in>
+        <in>expense.hh</in>
+        <in>inventory.cc</in>
+        <in>inventory.hh</in>
+        <in>labels.cc</in>
+        <in>labels.hh</in>
+        <in>labor.cc</in>
+        <in>labor.hh</in>
+        <in>license.cc</in>
+        <in>license.hh</in>
+        <in>license_hash.cc</in>
+        <in>license_hash.hh</in>
+        <in>locale.cc</in>
+        <in>locale.hh</in>
+        <in>manager.cc</in>
+        <in>manager.hh</in>
+        <in>printer.cc</in>
+        <in>printer.hh</in>
+        <in>remote_printer.cc</in>
+        <in>remote_printer.hh</in>
+        <in>report.cc</in>
+        <in>report.hh</in>
+        <in>sales.cc</in>
+        <in>sales.hh</in>
+        <in>settings.cc</in>
+        <in>settings.hh</in>
+        <in>system.cc</in>
+        <in>system.hh</in>
+        <in>system_report.cc</in>
+        <in>system_salesmix.cc</in>
+        <in>temphash.cc</in>
+        <in>terminal.cc</in>
+        <in>terminal.hh</in>
+        <in>tips.cc</in>
+        <in>tips.hh</in>
+      </df>
+      <df name="po_file">
+      </df>
+      <df name="print">
+        <in>print_main.cc</in>
+      </df>
+      <df name="scripts">
+        <df name="installs">
+        </df>
+        <in>getmid.cc</in>
+      </df>
+      <df name="term">
+        <in>layer.cc</in>
+        <in>layer.hh</in>
+        <in>term_credit.cc</in>
+        <in>term_credit.hh</in>
+        <in>term_credit_cheq.cc</in>
+        <in>term_credit_cheq.hh</in>
+        <in>term_credit_mcve.cc</in>
+        <in>term_credit_mcve.hh</in>
+        <in>term_dialog.cc</in>
+        <in>term_dialog.hh</in>
+        <in>term_main.cc</in>
+        <in>term_view.cc</in>
+        <in>term_view.hh</in>
+        <in>touch_screen.cc</in>
+        <in>touch_screen.hh</in>
+      </df>
+      <df name="xpm">
+        <df name="xpm">
+          <in>black.xpm</in>
+          <in>blueparchment.xpm</in>
+          <in>canvas-8.xpm</in>
+          <in>darksand-6.xpm</in>
+          <in>darkwood-10.xpm</in>
+          <in>embossed-8.xpm</in>
+          <in>grass-6.xpm</in>
+          <in>gray-6.xpm</in>
+          <in>grayblue-3.xpm</in>
+          <in>graymarble-12.xpm</in>
+          <in>grayparchment-8.xpm</in>
+          <in>greenmarble-12.xpm</in>
+          <in>leather-8.xpm</in>
+          <in>lighttanparchment-8.xpm</in>
+          <in>litewood-8.xpm</in>
+          <in>litsand-6.xpm</in>
+          <in>parchment-6.xpm</in>
+          <in>pearl-8.xpm</in>
+          <in>redgravel-6.xpm</in>
+          <in>sand-8.xpm</in>
+          <in>smoke-4.xpm</in>
+          <in>smoke-8.xpm</in>
+          <in>tanparchment-8.xpm</in>
+          <in>water-10.xpm</in>
+          <in>whiteMesh.xpm</in>
+          <in>wood-10.xpm</in>
+          <in>woodfloor-12.xpm</in>
+          <in>yellowstucco-8.xpm</in>
+        </df>
+        <in>black.xpm</in>
+        <in>blueparchment.xpm</in>
+        <in>canvas-8.xpm</in>
+        <in>darksand-6.xpm</in>
+        <in>darkwood-10.xpm</in>
+        <in>embossed-8.xpm</in>
+        <in>gradient-8.xpm</in>
+        <in>gradient-brown.xpm</in>
+        <in>grass-6.xpm</in>
+        <in>gray-6.xpm</in>
+        <in>grayblue-3.xpm</in>
+        <in>graymarble-12.xpm</in>
+        <in>grayparchment-8.xpm</in>
+        <in>greenmarble-12.xpm</in>
+        <in>greySand.xpm</in>
+        <in>leather-8.xpm</in>
+        <in>lighttanparchment-8.xpm</in>
+        <in>litewood-8.xpm</in>
+        <in>litsand-6.xpm</in>
+        <in>parchment-6.xpm</in>
+        <in>pearl-8.xpm</in>
+        <in>redgravel-6.xpm</in>
+        <in>sand-8.xpm</in>
+        <in>smoke-4.xpm</in>
+        <in>smoke-8.xpm</in>
+        <in>tanparchment-8.xpm</in>
+        <in>water-10.xpm</in>
+        <in>whiteMesh.xpm</in>
+        <in>wood-10.xpm</in>
+        <in>woodfloor-12.xpm</in>
+        <in>yellowstucco-8.xpm</in>
+      </df>
+      <df name="zone">
+        <in>account_zone.cc</in>
+        <in>account_zone.hh</in>
+        <in>button_zone.cc</in>
+        <in>button_zone.hh</in>
+        <in>cdu_zone.cc</in>
+        <in>cdu_zone.hh</in>
+        <in>chart_zone.cc</in>
+        <in>chart_zone.hh</in>
+        <in>check_list_zone.cc</in>
+        <in>check_list_zone.hh</in>
+        <in>creditcard_list_zone.cc</in>
+        <in>creditcard_list_zone.hh</in>
+        <in>dialog_zone.cc</in>
+        <in>dialog_zone.hh</in>
+        <in>drawer_zone.cc</in>
+        <in>drawer_zone.hh</in>
+        <in>expense_zone.cc</in>
+        <in>expense_zone.hh</in>
+        <in>form_zone.cc</in>
+        <in>form_zone.hh</in>
+        <in>hardware_zone.cc</in>
+        <in>hardware_zone.hh</in>
+        <in>inventory_zone.cc</in>
+        <in>inventory_zone.hh</in>
+        <in>labor_zone.cc</in>
+        <in>labor_zone.hh</in>
+        <in>layout_zone.cc</in>
+        <in>layout_zone.hh</in>
+        <in>login_zone.cc</in>
+        <in>login_zone.hh</in>
+        <in>merchant_zone.cc</in>
+        <in>merchant_zone.hh</in>
+        <in>order_zone.cc</in>
+        <in>order_zone.hh</in>
+        <in>payment_zone.cc</in>
+        <in>payment_zone.hh</in>
+        <in>payout_zone.cc</in>
+        <in>payout_zone.hh</in>
+        <in>phrase_zone.cc</in>
+        <in>phrase_zone.hh</in>
+        <in>pos_zone.cc</in>
+        <in>pos_zone.hh</in>
+        <in>printer_zone.cc</in>
+        <in>printer_zone.hh</in>
+        <in>report_zone.cc</in>
+        <in>report_zone.hh</in>
+        <in>search_zone.cc</in>
+        <in>search_zone.hh</in>
+        <in>settings_zone.cc</in>
+        <in>settings_zone.hh</in>
+        <in>split_check_zone.cc</in>
+        <in>split_check_zone.hh</in>
+        <in>table_zone.cc</in>
+        <in>table_zone.hh</in>
+        <in>user_edit_zone.cc</in>
+        <in>user_edit_zone.hh</in>
+        <in>video_zone.cc</in>
+        <in>video_zone.hh</in>
+        <in>zone.cc</in>
+        <in>zone.hh</in>
+        <in>zone_object.cc</in>
+        <in>zone_object.hh</in>
+      </df>
+      <in>basic.hh</in>
+      <in>conf_file.cc</in>
+      <in>conf_file.hh</in>
+      <in>data_file.cc</in>
+      <in>data_file.hh</in>
+      <in>debug.cc</in>
+      <in>debug.hh</in>
+      <in>generic_char.cc</in>
+      <in>generic_char.hh</in>
+      <in>image_data.cc</in>
+      <in>image_data.hh</in>
+      <in>inttypes.h</in>
+      <in>list_utility.hh</in>
+      <in>logger.cc</in>
+      <in>logger.hh</in>
+      <in>remote_link.cc</in>
+      <in>remote_link.hh</in>
+      <in>socket.cc</in>
+      <in>socket.hh</in>
+      <in>utility.cc</in>
+      <in>utility.hh</in>
+      <in>vt_ccq_pipe.cc</in>
+      <in>vt_ccq_pipe.hh</in>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>configure</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+      </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath></executablePath>
+          <cTool>
+            <incDir>
+              <pElem>/usr/include/freetype2</pElem>
+              <pElem>term</pElem>
+              <pElem>external</pElem>
+              <pElem>/usr/include</pElem>
+              <pElem>.</pElem>
+              <pElem>zone</pElem>
+              <pElem>/usr/local/include</pElem>
+              <pElem>main</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>BUILD_NUMBER="4.2.79 201212171248"</Elem>
+              <Elem>DEBUG=1</Elem>
+              <Elem>KILLALL_CMD="/usr/bin/killall"</Elem>
+              <Elem>LICENSE_SERVER="viewtouch.com"</Elem>
+              <Elem>LINUX</Elem>
+              <Elem>VIEWTOUCH_PATH="/usr/viewtouch"</Elem>
+            </preprocessorList>
+          </cTool>
+          <ccTool>
+            <incDir>
+              <pElem>/usr/include/freetype2</pElem>
+              <pElem>term</pElem>
+              <pElem>external</pElem>
+              <pElem>/usr/include</pElem>
+              <pElem>.</pElem>
+              <pElem>zone</pElem>
+              <pElem>/usr/local/include</pElem>
+              <pElem>main</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>BUILD_NUMBER="4.2.79 201212171248"</Elem>
+              <Elem>DEBUG=1</Elem>
+              <Elem>KILLALL_CMD="/usr/bin/killall"</Elem>
+              <Elem>LICENSE_SERVER="viewtouch.com"</Elem>
+              <Elem>LINUX</Elem>
+              <Elem>VIEWTOUCH_PATH="/usr/viewtouch"</Elem>
+            </preprocessorList>
+          </ccTool>
+        </makeTool>
+      </makefileType>
+      <item path="authorize/authorize_main.cc" ex="true" tool="1" flavor2="0">
+      </item>
+      <item path="cdu/cdu_main.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="conf_file.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="data_file.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="debug.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="external/blowfish.c" ex="false" tool="0" flavor2="4">
+      </item>
+      <item path="external/sha1.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="generic_char.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="image_data.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="inttypes.h" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="loader/loader_main.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="logger.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/account.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/archive.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/cdu.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/cdu_att.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/chart.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/check.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/credit.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/customer.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/drawer.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/employee.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/exception.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/expense.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/inventory.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/labels.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/labor.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/license.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/license_hash.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/locale.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/manager.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/printer.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/remote_printer.cc" ex="true" tool="1" flavor2="0">
+      </item>
+      <item path="main/report.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/sales.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/settings.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/system.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/system_report.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/system_salesmix.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/temphash.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/terminal.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="main/tips.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="print/print_main.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="remote_link.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="scripts/getmid.cc" ex="true" tool="1" flavor2="0">
+      </item>
+      <item path="socket.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="term/layer.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="term/term_credit.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="term/term_credit_cheq.cc" ex="true" tool="1" flavor2="0">
+      </item>
+      <item path="term/term_credit_mcve.cc" ex="true" tool="1" flavor2="0">
+      </item>
+      <item path="term/term_dialog.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="term/term_main.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="term/term_view.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="term/touch_screen.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="utility.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="vt_ccq_pipe.cc" ex="true" tool="1" flavor2="0">
+      </item>
+      <item path="xpm/embossed-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/grass-6.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/gray-6.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/grayblue-3.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/lighttanparchment-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/redgravel-6.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/smoke-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/water-10.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/woodfloor-12.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/black.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/blueparchment.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/canvas-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/darksand-6.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/darkwood-10.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/embossed-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/grass-6.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/gray-6.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/grayblue-3.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/graymarble-12.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/grayparchment-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/greenmarble-12.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/leather-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/lighttanparchment-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/litewood-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/litsand-6.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/parchment-6.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/pearl-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/redgravel-6.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/sand-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/smoke-4.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/smoke-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/tanparchment-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/water-10.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/whiteMesh.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/wood-10.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/woodfloor-12.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/xpm/yellowstucco-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="xpm/yellowstucco-8.xpm" ex="true" tool="3" flavor2="0">
+      </item>
+      <item path="zone/account_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/button_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/cdu_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/chart_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/check_list_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/creditcard_list_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/dialog_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/drawer_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/expense_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/form_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/hardware_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/inventory_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/labor_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/layout_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/login_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/merchant_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/order_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/payment_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/payout_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/phrase_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/pos_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/printer_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/report_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/search_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/settings_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/split_check_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/table_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/user_edit_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/video_zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/zone.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="zone/zone_object.cc" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

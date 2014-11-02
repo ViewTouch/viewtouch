@@ -1,0 +1,50 @@
+#!/bin/sh
+
+BASEDIR=/usr/viewtouch
+BINDIR=$BASEDIR/bin
+LOGFILE=$BASEDIR/dat/updater.log
+BINARY=viewtouch-installer-MCVE-Linux-latest.pl
+
+function GetBinary () {
+    SERVER=http://www.viewtouch.com
+    SERVDIR=config/bins
+    echo Downloading $BINARY from ViewTouch
+    wget -cq $SERVER/$SERVDIR/$BINARY
+    if [ -f $BINARY ] ; then
+        echo "  Download successful"
+        return 0
+    else
+        echo "  Download failed"
+        exit 1
+    fi
+}
+
+function InstallBinary () {
+	$BINDIR/vt_shutdown
+	sleep 3
+	if perl $BINARY ; then
+        echo Installation successful
+    else
+        echo Installation failed
+        exit 1
+    fi
+}
+
+if [ "$1" = "restart" ] ; then
+    nohup $0 spawned >$LOGFILE 2>&1 &
+elif [ "$1" = "spawned" ] ; then
+    GetBinary
+    if InstallBinary ; then
+        cd $BINDIR
+        chmod u+x *
+        nohup ./vtpos &
+    fi
+else
+    $BINDIR/usercount
+    echo "Are you sure you want to update the binaries now? [y/N]  "
+    read ANS
+    if [ "$ANS" = "y" -o "$ANS" = "Y" ] ; then
+        GetBinary
+        InstallBinary
+    fi
+fi

@@ -1,0 +1,271 @@
+#!/usr/bin/perl -w
+
+# --------------------------------------------------------------------
+# Module:  vtrun
+# Description:  Configurable ViewTouch POS run/restart script.  Allows
+#   for scheduled reboots ("every night at midnight"), periodic
+#   verifications that ViewTouch is running, and automated restarts
+#   if ViewTouch is not running.  Can be running in daemon mode or
+#   via crontab.
+# Author:  Bruce Alon King
+# Created:  Thu Jun 27 09:45:08 2002
+# --------------------------------------------------------------------
+
+# ####################################################################
+# INITIALIZATION AND GLOBAL VARIABLES
+# ####################################################################
+use strict;
+use Config;
+use Getopt::Std;
+
+my @options = @ARGV;
+my @configs = ( "/etc/vtrunrc", $ENV{'HOME'}."/etc/vtrunrc", $ENV{'HOME'}."/.vtrunrc" );
+
+my $check_frequency = 60;  # check status every 60 seconds
+my $daemon_mode     = 1;
+my $nostart_file    = "/usr/viewtouch/bin/nostart";
+my $restart_file    = "/usr/viewtouch/bin/restart";
+my $restart_time    = "00:00";  # restart every day at midnight
+my $start_viewtouch = "/usr/viewtouch/bin/vtpos";
+my $stop_viewtouch  = "killall vt_term vt_main";
+my $verbose         = 1;
+
+my $restart_lock    = "/usr/viewtouch/bin/.no_restart";
+
+$SIG{CHLD} = 'IGNORE';
+
+# ####################################################################
+# MAINLOOP
+# ####################################################################
+ReadConfig();
+if ( $daemon_mode ) {
+    Daemon();
+} else {
+    OnePass();
+}
+
+
+# ####################################################################
+# SUBROUTINES
+# ####################################################################
+
+# --------------------------------------------------------------------
+# Daemon:  Go into an endless loop.  We won't fork() or another to
+#  spawn into the background.  Let the user handle that part (with
+#  nohup, et al).
+# --------------------------------------------------------------------
+sub Daemon {
+    while ( 1 ) {
+        OnePass();
+        last unless ( $check_frequency );
+        sleep( $check_frequency );
+    }
+}
+
+# --------------------------------------------------------------------
+# OnePass:  Perform one check of whether ViewTouch is running and
+#   whether it needs to be restarted.
+# --------------------------------------------------------------------
+sub OnePass {
+    my $active = IsRunning();
+    my $restart = CheckRestart();
+    if ( $restart ) {
+        Log( "Restarting ViewTouch POS..." );
+        StopViewTouch();
+        StartViewTouch();
+    } elsif ( $active == 0 ) {
+        Log( "Starting ViewTouch POS..." );
+        StartViewTouch();
+    }
+}
+
+# --------------------------------------------------------------------
+# CheckRestart:
+# --------------------------------------------------------------------
+sub CheckRestart {
+    my $retval = 0;
+    my $restart = IsRestartTime();
+    if ( -f $restart_file ) {
+        unlink( $restart_file );
+        system( "touch $restart_lock" );
+        $retval = 1;
+    } elsif ( $restart ) {
+        $retval = 1 unless ( -f $restart_lock );
+    } elsif ( -f $restart_lock ) {
+        unlink( $restart_lock );
+    }
+    return( $retval );
+}
+
+# --------------------------------------------------------------------
+# IsRestartTime:
+# --------------------------------------------------------------------
+sub IsRestartTime {
+    my $retval = 0;
+    my $rseconds = GetRestartSeconds();
+    my $cseconds = GetCurrentSeconds();
+    # convert to a range so we have Restart Time +/- Check Frequency
+    my $rstart = $rseconds - $check_frequency;
+    if ( $rstart < 0 ) {
+        my $secs = TimeToSeconds( 23, 59 ) + 59;
+        $rstart = $secs + $rstart;
+    }
+    my $rend   = $rseconds + $check_frequency;
+    if ( ( $cseconds > $rstart ) || ( $cseconds < $rend ) ) {
+        $retval = 1;
+    }
+    return( $retval );
+}
+
+# --------------------------------------------------------------------
+# GetRestartSeconds:  Sort of like seconds since Epoch, we want the
+#   number of seconds since midnight.  This makes it easier to do
+#   time comparisons, and it's fine grained enough to work here.
+# --------------------------------------------------------------------
+sub GetRestartSeconds {
+    my $retval = 0;
+    if ( $restart_time =~ /^(\d+):(\d+)$/ ) {
+        my ( $hour, $minute ) = ( $1, $2 );
+        $retval = TimeToSeconds( $hour, $minute );
+    }
+    return( $retval );
+}
+
+# --------------------------------------------------------------------
+# GetCurrentSeconds:  Same as GetRestartSeconds, but this is for
+#   the current time.
+# --------------------------------------------------------------------
+sub GetCurrentSeconds {
+    my $retval = 0;
+    my @ltime = localtime();
+    my $hour = $ltime[2];
+    my $minute = $ltime[1];
+    $retval = TimeToSeconds( $hour, $minute );
+    return( $retval );
+}
+
+# --------------------------------------------------------------------
+# TimeToSeconds:  Converts hours and minutes to seconds.
+# --------------------------------------------------------------------
+sub TimeToSeconds {
+    my ( $hour, $minute ) = @_;
+    $minute = $minute + ( $hour * 60 );
+    my $seconds = $minute * 60;
+    return( $seconds );
+}
+
+
+# --------------------------------------------------------------------
+# StartViewTouch:  Very simple procedure.  Starts ViewTouch if the
+#   $nostart_file does not exist.
+# --------------------------------------------------------------------
+sub StartViewTouch {
+    unless ( -f $nostart_file ) {
+        if ( fork() == 0 ) {
+            exec( $start_viewtouch );
+        }
+    }
+}
+
+# --------------------------------------------------------------------
+# StopViewTouch:  Very simple procedure.  It could certainly do some
+#  external checking to locate the killall command if that is called
+#  and whatever else might ensure platform independence, but for now
+#  we'll assume the user knows what to do.
+# --------------------------------------------------------------------
+sub StopViewTouch {
+    system( $stop_viewtouch );
+}
+
+# --------------------------------------------------------------------
+# IsRunning:  Return 1 if ViewTouch is running (verifies vt_main and
+#   at least one vt_term), 0 otherwise.
+# --------------------------------------------------------------------
+sub IsRunning {
+    my $retval = 0;
+    my @pslist = `ps ax`;
+    my $vt_main = grep( /vt_main/, @pslist );
+    my $vt_term = grep( /vt_term/, @pslist );
+    $retval = 1 if ( $vt_main && $vt_term );
+    return( $retval );
+}
+
+# --------------------------------------------------------------------
+# ReadConfig:  If a configuration file is available, parse it into
+#   the global variables.  File format is:
+# <option>: <value>
+#   The option can contain any characters except a colon.
+#   The option name must match one of the global variables.
+#   Any number of whitespace characters may follow the colon.
+#   Any whitespace characters preceding the colon are considered
+#     a part of the option name.
+#   The value may contain any characters.
+# --------------------------------------------------------------------
+sub ReadConfig {
+    my $rcfile = FindConfig();
+    if ( open( RC, $rcfile ) ) {
+        while ( <RC> ) {
+            my $line = $_;
+            next if ( $line =~ /^\#/ );
+            $line =~ s/^\s+|\s+$//gs;
+            $line =~ s/\#.*$//;
+            if ( $line =~ /^([^:]+):\s+(.+)$/ ) {
+                my ( $key, $value ) = ( $1, $2 );
+                for ( $key ) {
+                    /check[_\s]*frequency/i && do {
+                        $check_frequency = $value;
+                    };
+                    /daemon[_\s]*mode/i && do {
+                        $daemon_mode = $value;
+                    };
+                    /nostart[_\s]*file/i && do {
+                        $nostart_file = $value;
+                    };
+                    /restart[_\s]*file/i && do {
+                        $restart_file = $value;
+                    };
+                    /restart[_\s]*time/i && do {
+                        $restart_time = $value;
+                    };
+                    /verbose/i && do {
+                        $verbose = $value;
+                    };
+                    /start[_\s]*viewtouch/i && do {
+                        $start_viewtouch = $value;
+                    };
+                    /stop[_\s]*viewtouch/i && do {
+                        $stop_viewtouch = $value;
+                    };
+                }
+            }
+        }
+        close( RC );
+    } else {
+        # don't worry, we'll just use the defaults
+    }
+}
+
+# --------------------------------------------------------------------
+# FindConfig:  Returns the first valid file listed in @configs, or
+#   an empty string if no valid file is found.
+# --------------------------------------------------------------------
+sub FindConfig {
+    my $rcfile = "";
+    foreach ( @configs ) {
+        my $file = $_;
+        $rcfile = $file if ( -f $file );
+        last if $rcfile;
+    }
+    return( $rcfile );
+}
+
+# --------------------------------------------------------------------
+# Log:  If verbose mode is enabled, print the current time and the
+#   message.
+# --------------------------------------------------------------------
+sub Log {
+    my ( $message ) = @_;
+    return unless ( $verbose );
+    my $currtime = localtime();
+    print $currtime . " -->  " . $message . "\n";
+}

@@ -1,0 +1,79 @@
+#!/bin/sh
+
+ROOTDIR=$HOME/tmp/viewtouch
+REALROOT=/usr/viewtouch
+BAKDIR=$HOME/data/viewtouch/backups
+BAKSAVE=clean-data
+
+for argument in $* ; do
+    if [ "$argument" = "-h" -o "$argument" = "-help" -o "$argument" = "--help" ] ; then
+        echo
+        echo 'Usage:  vtsave [real] <save-name>'
+        echo '        vtsave data'
+        echo '        vtsave'
+        echo
+        echo "By default, vtsave saves to $BAKDIR/$BAKSAVE."
+        echo
+        echo "Giving the data argument will cause vtsave to backup only the vt_data file;"
+        echo "This affects only the $BAKSAVE save directory."
+        echo
+        exit 1
+    elif [ "$argument" = "-l" -o "$argument" = "-list" -o "$argument" = "--list" ] ; then
+        echo Available saves:
+        for file in `ls $BAKDIR` ; do
+            echo "  " $file
+        done
+        echo
+        exit
+    elif [ "$argument" = "data" -o "$argument" = "zones" ] ; then
+        SAVEDATA=yes
+    elif [ "$argument" = "real" ] ; then
+        ROOTDIR=$REALROOT
+    elif [ "$argument" = "macro" ] ; then
+        RUNMACRO=yes
+    elif [ -n "$argument" ] ; then
+        BAKSAVE=$argument
+    fi
+done
+BAKDIR=$BAKDIR/$BAKSAVE
+
+if [ -n "$SAVEDATA" ] ; then
+    cp $ROOTDIR/dat/vt_data $BAKDIR/dat/
+    cp $ROOTDIR/dat/tables.dat $BAKDIR/dat/
+    cp $ROOTDIR/dat/zone_db.dat $BAKDIR/dat/
+    cp $ROOTDIR/dat/system.dat $BAKDIR/dat/
+    exit
+fi
+
+rm -f  $ROOTDIR/bin/*.bak
+rm -f  $ROOTDIR/bin/*.bak2
+rm -f  $ROOTDIR/bin/*.core
+rm -f  $ROOTDIR/bin/.vtpos_command
+rm -f  $ROOTDIR/bin/.viewtouch_license
+rm -rf $ROOTDIR/bin/.lock
+rm -f  $ROOTDIR/dat/.restart_flag
+find   $ROOTDIR -name '*.fmt' | xargs rm -f
+rm -f  $ROOTDIR/dat/media-archive.dat
+rm -f  $ROOTDIR/dat/*.bak
+rm -f  $ROOTDIR/dat/*.bak2
+rm -f  $ROOTDIR/dat/*.txt
+
+if [ -n "$RUNMACRO" ] ; then
+    echo runmacros > $ROOTDIR/bin/.viewtouch_command_file
+fi
+
+rm -rf $BAKDIR/bin
+install -d $BAKDIR/bin
+
+MACROS=`ls -a | grep '\.record_[^.][^.]*\.macro'`
+if [ -n "$MACROS" ] ; then
+    cp -f $ROOTDIR/bin/.record_*.macro $BAKDIR/bin/
+fi
+
+if [ -f $ROOTDIR/bin/.viewtouch_command_file ] ; then
+    cp -f $ROOTDIR/bin/.viewtouch_command_file $BAKDIR/bin/
+fi
+
+rm -rf $BAKDIR/dat
+install -d $BAKDIR/dat
+cp -r $ROOTDIR/dat $BAKDIR

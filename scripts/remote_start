@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Simple script just to start ViewTouch for remote use.  I am getting
+# tired of typing this every time, and so here we are.
+# This can go either in /home/viewtouch/bin or /usr/viewtouch/bin.
+# Or it can be left completely alone.  It is not essential, it'll
+# just save some keystrokes.
+
+cd /usr/viewtouch/bin && nohup env DISPLAY=:0.0 ./vtpos &
+

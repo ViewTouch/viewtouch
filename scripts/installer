@@ -1,0 +1,71 @@
+#!/usr/bin/perl -w
+
+# ####################################################################
+# INITIALIZATION AND GLOBAL VARIABLES
+# ####################################################################
+use strict;
+
+my $filename = shift || print "Usage:  installer <filename> <path> [subst1 ].. substN]]\n";
+my $destpath = shift || print "Usage:  installer <filename> <path> [subst1 ].. substN]]\n";
+my ( $basename ) = $filename =~ m|/?([^/]+)$|;
+
+
+# ####################################################################
+# MAIN LOOP
+# ####################################################################
+my $file = ReadFile( $filename );
+
+my $replace = shift;
+while ( defined( $replace ) ) {
+    my ( $src, $dest ) = $replace =~ /^([^=]+)=(.*)$/;
+    if ( defined( $src ) && defined( $dest ) ) {
+        $file =~ s/$src/$dest/gs;
+    }
+    $replace = shift;
+}
+
+my $dest = GetDestName( $destpath, $basename );
+WriteFile( $file, $dest );
+
+# ####################################################################
+# SUBROUTINES
+# ####################################################################
+
+# --------------------------------------------------------------------
+# ReadFile:
+# --------------------------------------------------------------------
+sub ReadFile {
+    my ( $name ) = @_;
+    my $contents = "";
+    if (open( FILE, $name ) ) {
+        $contents = join( "", <FILE> );
+        close( FILE );
+    }
+    return( $contents );
+}   
+
+# --------------------------------------------------------------------
+# WriteFile:
+# --------------------------------------------------------------------
+sub WriteFile {
+    my ( $contents, $file ) = @_;
+    if ( open( FILE, ">".$file ) ) {
+        print FILE $contents;
+        close( FILE );
+        chmod( 0755, $file );
+    }
+}
+
+# --------------------------------------------------------------------
+# GetDestName:
+# --------------------------------------------------------------------
+sub GetDestName {
+    my ( $path, $name ) = @_;
+    my $dest = $path;
+
+    if ( $path =~ m|/$| ) {
+        $dest .= $name;
+    }
+
+    return $dest;
+}

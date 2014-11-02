@@ -1,0 +1,15 @@
+#!/bin/sh
+
+VTPATH=$1
+VTPOS=`cat $VTPATH/bin/.vtpos_command`
+VTRESTART=$VTPATH/dat/.restart_flag
+
+while [ ! -f $VTRESTART ];
+do
+	sleep 3
+done
+
+rm $VTRESTART
+exec $VTPOS
+
+
