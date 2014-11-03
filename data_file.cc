@@ -78,7 +78,7 @@ int InputDataFile::Open(char *name, int &version)
 	}
 
 	if (fp)
-		gzclose(fp);
+		gzclose((gzFile)fp);
 
 	version = 0;
 	fp = gzopen(name, "r");
@@ -107,7 +107,7 @@ int InputDataFile::Open(char *name, int &version)
 	}
 	else
 	{
-		gzclose(fp);
+		gzclose((gzFile)fp);
         fp = NULL;
         snprintf(errmsg, STRLENGTH, "Unknown file format for %s\n", name);
         ReportError(errmsg);
@@ -137,7 +137,7 @@ int InputDataFile::GetToken(char *buffer, int max_len)
 
     c = gzgetc((gzFile)fp);
     while (c >= 0 && isspace(c))
-        c = gzgetc(fp);
+        c = gzgetc((gzFile)fp);
 
     for (;;)
     {
@@ -161,7 +161,7 @@ int InputDataFile::GetToken(char *buffer, int max_len)
                 return 1;
             }
         }
-        c = gzgetc(fp);
+        c = gzgetc((gzFile)fp);
     }
  
     return 1;  // should never get this far
@@ -176,7 +176,7 @@ unsigned long long InputDataFile::GetValue()
     {
         for (;;)
         {
-            c = gzgetc(fp);
+            c = gzgetc((gzFile)fp);
             if (c < 0)
             {
                 end_of_file = 1;
@@ -190,9 +190,9 @@ unsigned long long InputDataFile::GetValue()
     }
     else
     {
-        c = gzgetc(fp);
+        c = gzgetc((gzFile)fp);
         while (isspace(c))
-            c = gzgetc(fp);
+            c = gzgetc((gzFile)fp);
         for (;;)
         {
             if (c < 0)
@@ -204,7 +204,7 @@ unsigned long long InputDataFile::GetValue()
                 return val;
             else
                 val = (val << 6) + NewDecodeDigit[c];
-            c = gzgetc(fp);
+            c = gzgetc((gzFile)fp);
         }
     }
 }
@@ -293,7 +293,7 @@ int InputDataFile::Read(Str *val)
 int InputDataFile::PeekTokens()
 {
     FnTrace("InputDataFile::PeekTokens()");
-    unsigned long savepos = gzseek(fp, 0L, SEEK_CUR);
+    unsigned long savepos = gzseek((gzFile)fp, 0L, SEEK_CUR);
     int count = 0;
     int havenl = 0;
     int started = 0;  // make sure we pass any preceding whitespace
@@ -302,7 +302,7 @@ int InputDataFile::PeekTokens()
     // count the tokens until newline
     while (havenl == 0 && end_of_file == 0)
     {
-        peekchar = gzgetc(fp);
+        peekchar = gzgetc((gzFile)fp);
         if (peekchar < 0)
             end_of_file = 1;
         else if (isspace(peekchar))
@@ -317,7 +317,7 @@ int InputDataFile::PeekTokens()
         }
     }
     // restore the original position
-    gzseek(fp, savepos, SEEK_SET);
+    gzseek((gzFile)fp, savepos, SEEK_SET);
     return count;
 }
 
@@ -328,7 +328,7 @@ int InputDataFile::PeekTokens()
 char *InputDataFile::ShowTokens(char *buffer, int lines)
 {
     FnTrace("InputDataFile::ShowTokens()");
-    unsigned long savepos = gzseek(fp, 0L, SEEK_CUR);
+    unsigned long savepos = gzseek((gzFile)fp, 0L, SEEK_CUR);
     static char buff2[STRLONG];
     int   buffidx = 0;
     char  peekchar = '\0';
@@ -338,12 +338,12 @@ char *InputDataFile::ShowTokens(char *buffer, int lines)
 
     while (lines > 0)
     {
-        peekchar = gzgetc(fp);
+        peekchar = gzgetc((gzFile)fp);
         while (peekchar != '\n' && end_of_file == 0)
         {
             buffer[buffidx] = peekchar;
             buffidx += 1;
-            peekchar = gzgetc(fp);
+            peekchar = gzgetc((gzFile)fp);
         }
         if (lines > 1)
             buffer[buffidx] = '\n';
@@ -351,7 +351,7 @@ char *InputDataFile::ShowTokens(char *buffer, int lines)
     }
     buffer[buffidx] = '\0';
 
-    gzseek(fp, savepos, SEEK_SET);
+    gzseek((gzFile)fp, savepos, SEEK_SET);
 
     return buffer;
 }
@@ -379,7 +379,7 @@ int OutputDataFile::Open(char *filepath, int version, int use_compression)
     compress = use_compression;
 
     if (compress)
-        fp = gzopen(filepath, "w");
+        fp = (void*)gzopen(filepath, "w");
     else
         fp = fopen(filepath, "w");
     if (fp == NULL)
@@ -394,7 +394,7 @@ int OutputDataFile::Open(char *filepath, int version, int use_compression)
     char str[32];
     sprintf(str, "vtpos 0 %d\n", version);
     if (compress)
-        gzwrite(fp, str, strlen(str));
+        gzwrite((gzFile)fp, str, strlen(str));
     else
         fwrite(str, 1, strlen(str), (FILE *) fp);
     return 0;
@@ -407,7 +407,7 @@ int OutputDataFile::Close()
     {
         if (compress)
         {
-            gzclose(fp);
+            gzclose((gzFile)fp);
         }
         else
         {
@@ -439,7 +439,7 @@ int OutputDataFile::PutValue(unsigned long long val, int bk = 0)
     while (val > 0);
 
     if (compress)
-        gzwrite(fp, c, strlen(c));
+        gzwrite((gzFile)fp, c, strlen(c));
     else
         fwrite(c, 1, strlen(c), (FILE *) fp);
     return 0;
@@ -451,9 +451,9 @@ int OutputDataFile::Write(Flt val, int bk)
     if (compress)
     {
         if (bk)
-            gzprintf(fp, "%g\n", val);
+            gzprintf((gzFile)fp, "%g\n", val);
         else
-            gzprintf(fp, "%g ", val);
+            gzprintf((gzFile)fp, "%g ", val);
     }
     else if (bk)
         fprintf((FILE *) fp, "%g\n", val);
@@ -474,9 +474,9 @@ int OutputDataFile::Write(char *val, int bk)
         if (compress)
         {
             if (bk)
-                gzwrite(fp, (void *)"~\n", 2);
+                gzwrite((gzFile)fp, (void *)"~\n", 2);
             else
-                gzwrite(fp, (void *)"~ ", 2);
+                gzwrite((gzFile)fp, (void *)"~ ", 2);
         }
         else if (bk)
             fwrite("~\n", 1, 2, (FILE *) fp);
@@ -493,7 +493,7 @@ int OutputDataFile::Write(char *val, int bk)
             if (out == '~' || out == ' ')
                 out = '_';
             if (compress)
-                gzputc(fp, out);
+                gzputc((gzFile)fp, out);
             else
                 fputc(out, (FILE *) fp);
             ++c;
@@ -503,7 +503,7 @@ int OutputDataFile::Write(char *val, int bk)
         else
             out = ' ';
         if (compress)
-            gzputc(fp, out);
+            gzputc((gzFile)fp, out);
         else
             fputc(out, (FILE *) fp);
     }
@@ -529,7 +529,7 @@ int OutputDataFile::Write(TimeInfo &timevar, int bk)
     if (bk)
     {
         if (compress)
-            gzputc(fp, '\n');
+            gzputc((gzFile)fp, '\n');
         else
             fputc('\n', (FILE *) fp);
     }

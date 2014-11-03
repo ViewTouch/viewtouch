@@ -38,6 +38,7 @@
 #include "license.hh"
 #include "debug.hh"
 #include "socket.hh"
+#include "build_number.h"
 
 #include <errno.h>
 #include <iostream>

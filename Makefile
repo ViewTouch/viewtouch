@@ -17,7 +17,7 @@ CREDIT_INC      =
 TERM_CREDIT     = term/term_credit.o
 VT_CCQ_PIPE     =
 VIEWTOUCH_PATH  = /usr/viewtouch
-DEBUG           = -DDEBUG=0
+DEBUG           = -DDEBUG=1
 MALLOC          =
 MALLOC_LIB      =
 DBGFLAG         = -ggdb3
@@ -32,7 +32,7 @@ LINK      = g++ $(DBGFLAG) -o $@
 DEFINE    = -DVIEWTOUCH_PATH=\"$(VIEWTOUCH_PATH)\" $(PLATFORM) $(TOUCHSCREEN) $(DEBUG) $(MALLOC) \
 	        -DBUILD_NUMBER=\"$(BUILD_NUMBER)\" -DKILLALL_CMD=\"$(KILLALL_CMD)\" \
 			-DLICENSE_SERVER=\"$(LICENSE_SERVER)\"
-CFLAGS    = -Wall -Wshadow $(OPTIMIZE) $(DEFINE) -fpermissive
+CFLAGS    = -Wall -Wshadow $(OPTIMIZE) $(DEFINE)
 RM        = rm -f
 CP        = cp -f
 MV        = mv -f

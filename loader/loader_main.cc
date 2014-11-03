@@ -40,6 +40,7 @@
 #include <dmalloc.h>
 #endif
 
+#include "build_number.h"
 #include "basic.hh"
 #include "generic_char.hh"
 #include "logger.hh"
