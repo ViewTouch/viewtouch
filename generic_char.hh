@@ -2,3 +2,5 @@
 #include "basic.hh"
 
 void GenericDrawString(Display *, Drawable, GC, int, int, genericChar *, int);
+
+//stuff
