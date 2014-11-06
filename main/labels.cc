@@ -1,18 +1,6 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
- *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  *  All Rights Reserved
+ * Confidential and Proprietary Information
  *
  * labels.cc - revision 46 (10/6/98)
  * Implementation of labels module
@@ -251,10 +239,10 @@ int PageShadowValue[] = {
     0, 4, 6, 9, -1};
 
 genericChar *PageSizeName[] = {
-    "640x480", "800x600", "1024x768", "1280x1024", "1600x1200", "768x1024", "800x480", "1920x1080", "1920x1200", "1680x1050", NULL};
+    "640x480",  "800x600", "1024x600", "1024x768", "1280x800", "1280x1024", "1366x768", "1440x900", "1600x900", "1680x1050",  "1920x1080", "1920x1200", "2560x1440", "2560x1600", NULL};
 int PageSizeValue[] = {
-    SIZE_640x480, SIZE_800x600, SIZE_1024x768, SIZE_1280x1024,
-    SIZE_1600x1200, SIZE_768x1024, SIZE_800x480, SIZE_1920x1080, SIZE_1920x1200, SIZE_1680x1050, -1};
+    SIZE_640x480, SIZE_800x600, SIZE_1024x600, SIZE_1024x768, SIZE_1280x800, SIZE_1280x1024, SIZE_1366x768,
+    SIZE_1440x900, SIZE_1600x900, SIZE_1680x1050, SIZE_1920x1080, SIZE_1920x1200, SIZE_2560x1440, SIZE_2560x1600, -1};
 
 genericChar *ColorName[] = {
     "Page Default", "Black", "White", "Red", "Green", "Blue", "Yellow",
