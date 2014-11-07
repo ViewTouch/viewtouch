@@ -6,7 +6,7 @@ set(LICENSE_SERVER "default_license_server" CACHE STRING "The license server to 
 #Stupid commment
 
 #set(CMAKE_CXX_FLAGS "-Wall")
-set(CMAKE_CXX_FLAGS " -Wno-format-security")
+set(CMAKE_CXX_FLAGS "-Wno-write-strings -Wno-format-security")
 include_directories(main)
 include_directories(zone)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
