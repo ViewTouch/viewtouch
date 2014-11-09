@@ -86,8 +86,8 @@ public:
     int         IsBlank();
     int         IsTraining(int set = -1);
 
-    virtual int SetFileName(genericChar *filename);
-    virtual int Load(genericChar *filename);
+    virtual int SetFileName(const genericChar *filename);
+    virtual int Load(const genericChar *filename);
     virtual int Save();
     virtual int Read(InputDataFile &df, int version);
     virtual int Write(OutputDataFile &df, int version);
@@ -97,23 +97,23 @@ public:
     virtual int          Type() { return type; }
     virtual int          CustomerID() { return id; }
     virtual int          Guests(int set = -1);
-    virtual genericChar *LastName(char *set = NULL);
-    virtual genericChar *FirstName(char *set = NULL);
-    virtual genericChar *Company(char *set = NULL);
-    virtual genericChar *PhoneNumber(char *set = NULL);
-    virtual genericChar *Extension(char *set = NULL);
-    virtual genericChar *Address(char *set = NULL);
-    virtual genericChar *Address2(char *set = NULL);
-    virtual genericChar *CrossStreet(char *set = NULL);
-    virtual genericChar *City(char *set = NULL);
-    virtual genericChar *State(char *set = NULL);
-    virtual genericChar *Postal(char *set = NULL);
-    virtual genericChar *License(char *set = NULL);
-    virtual genericChar *CCNumber(char *set = NULL);
-    virtual genericChar *CCExpire(char *set = NULL);
-    virtual genericChar *Comment(char *set = NULL);
-    virtual genericChar *Vehicle(char *set = NULL);
-    virtual int          Search(char *word);
+    virtual const genericChar *LastName(const char *set = NULL);
+    virtual const genericChar *FirstName(const char *set = NULL);
+    virtual const genericChar *Company(const char *set = NULL);
+    virtual const genericChar *PhoneNumber(const char *set = NULL);
+    virtual const genericChar *Extension(const char *set = NULL);
+    virtual const genericChar *Address(const char *set = NULL);
+    virtual const genericChar *Address2(const char *set = NULL);
+    virtual const genericChar *CrossStreet(const char *set = NULL);
+    virtual const genericChar *City(const char *set = NULL);
+    virtual const genericChar *State(const char *set = NULL);
+    virtual const genericChar *Postal(const char *set = NULL);
+    virtual const genericChar *License(const char *set = NULL);
+    virtual const genericChar *CCNumber(const char *set = NULL);
+    virtual const genericChar *CCExpire(const char *set = NULL);
+    virtual const genericChar *Comment(const char *set = NULL);
+    virtual const genericChar *Vehicle(const char *set = NULL);
+    virtual int          Search(const char *word);
 };
 
 
@@ -138,14 +138,14 @@ public:
     CustomerInfo *CustomerListEnd()               { return customers.Tail(); }
 
     int           Count();
-    int           Save(genericChar *filepath = NULL);
+    int           Save(const genericChar *filepath = NULL);
     int           Save(CustomerInfo *customer);
-    int           Load(genericChar *filepath);
+    int           Load(const genericChar *filepath);
     CustomerInfo *NewCustomer(int customer_type);
     int           Add(CustomerInfo *customer);
     int           Remove(CustomerInfo *customer);
     CustomerInfo *FindByID(int customer_id);
-    CustomerInfo *FindByString(genericChar *search_string, int start = -1);
+    CustomerInfo *FindByString(const genericChar *search_string, int start = -1);
     CustomerInfo *FindBlank();
 };
 

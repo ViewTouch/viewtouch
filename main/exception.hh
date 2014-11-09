@@ -125,7 +125,7 @@ public:
     RebuildException *RebuildList()  { return rebuild_list.Head(); }
     int               RebuildCount() { return rebuild_list.Count(); }
 
-    int Load(char *file);
+    int Load(const char *file);
     int Save();
     int Read(InputDataFile &df, int version);
     int Write(OutputDataFile &df, int version);

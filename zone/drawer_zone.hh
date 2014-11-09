@@ -51,7 +51,7 @@ public:
     int          Type() { return ZONE_DRAWER_ASSIGN; }
     RenderResult Render(Terminal *t, int update_flag);
     SignalResult Touch(Terminal *t, int tx, int ty);
-    int          Update(Terminal *t, int update_message, genericChar *value);
+    int          Update(Terminal *t, int update_message, const genericChar *value);
     int          ZoneStates() { return 1; }
 
     int MoveDrawers(Terminal *t, Employee *user);
@@ -87,10 +87,10 @@ public:
     // Member Functions
     int          Type() { return ZONE_DRAWER_MANAGE; }
     RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, genericChar *message);
+    SignalResult Signal(Terminal *t, const genericChar *message);
     SignalResult Touch(Terminal *t, int tx, int ty);
     SignalResult Keyboard(Terminal *t, int key, int state);
-    int          Update(Terminal *t, int update_message, genericChar *value);
+    int          Update(Terminal *t, int update_message, const genericChar *value);
     Flt         *Spacing() { return &spacing; }
     int         *DrawerZoneType() { return &drawer_zone_type; }
 

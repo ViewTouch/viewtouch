@@ -19,7 +19,10 @@ add_definitions(-DVIEWTOUCH_PATH="${VIEWTOUCH_PATH}")
 add_definitions(-DKILLALL_CMD="/usr/bin/killall")
 add_definitions(-DLICENSE_SERVER="${LICENSE_SERVER}")
 add_definitions(-D${SYSTEM_UPPER})
-
+add_definitions(
+    -Wfatal-errors
+	-Werror
+    )
 set(TERM_CREDIT credit CACHE STRING "Credit source mode.  Can be credit, credit_cheq, credit_mcve")
 
 add_library(conf_file conf_file.cc conf_file.hh)

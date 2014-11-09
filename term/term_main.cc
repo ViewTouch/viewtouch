@@ -41,7 +41,7 @@
 #endif
 
 /**** Main ****/
-int main(int argc, genericChar **argv)
+int main(int argc, const genericChar **argv)
 {
     genericChar socket_file[256] = "";
     struct sockaddr_un server_adr;

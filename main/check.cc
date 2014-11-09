@@ -51,9 +51,9 @@
 /**** Module Data & Definitions ****/
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
-static genericChar *EmptyStr = "";
+static const genericChar *EmptyStr = "";
 
-genericChar *CheckStatusName[] = { "Open", "Closed", "Voided", NULL };
+const genericChar *CheckStatusName[] = { "Open", "Closed", "Voided", NULL };
 int CheckStatusValue[] = { CHECK_OPEN, CHECK_CLOSED, CHECK_VOIDED, -1 };
 
 int tender_order[] = {
@@ -101,7 +101,7 @@ int tender_order[] = {
 
 
 /**** General Functions ****/
-genericChar *SeatName(int seat, genericChar *str, int guests)
+const genericChar *SeatName(int seat, const genericChar *str, int guests)
 {
     FnTrace("SeatName()");
     static genericChar buffer[16];
@@ -264,7 +264,7 @@ Check *Check::Copy(Settings *settings)
 }
 
 // Member Functions
-int Check::Load(Settings *settings, genericChar *file)
+int Check::Load(Settings *settings, const genericChar *file)
 {
     FnTrace("Check::Load()");
     filename.Set(file);
@@ -949,10 +949,10 @@ int Check::Status()
     return CHECK_OPEN;
 }
 
-genericChar *Check::StatusString(Terminal *term)
+const genericChar *Check::StatusString(Terminal *term)
 {
     FnTrace("Check::StatusString()");
-    genericChar *s =
+    const genericChar *s =
         FindStringByValue(Status(), CheckStatusValue, CheckStatusName, UnknownStr);
     return term->Translate(s);
 }
@@ -2329,7 +2329,7 @@ int Check::IsTraining()
         return 0;
 }
 
-genericChar *Check::PaymentSummary(Terminal *term)
+const genericChar *Check::PaymentSummary(Terminal *term)
 {
     FnTrace("Check::PaymentSummary()");
     static genericChar str[256];
@@ -2402,7 +2402,7 @@ genericChar *Check::PaymentSummary(Terminal *term)
  *   the CustomerInfo.
  * Returns:  1 if the word is contained in the check, 0 otherwise.
  ****/
-int Check::Search(genericChar *word)
+int Check::Search(const genericChar *word)
 {
     FnTrace("Check::Search()");
     int retval = 0;
@@ -2413,7 +2413,7 @@ int Check::Search(genericChar *word)
     return retval;
 }
 
-int Check::SetBatch(char *termid, char *batch)
+int Check::SetBatch(const char *termid, const char *batch)
 {
     FnTrace("Check::SetBatch()");
     int retval = 1;
@@ -2503,7 +2503,7 @@ int Check::IsForHere()
    return ct == CHECK_DINEIN;
 }
 
-genericChar *Check::Table(genericChar *set)
+const genericChar *Check::Table(const genericChar *set)
 {
     FnTrace("Check::Table()");
 
@@ -2513,7 +2513,7 @@ genericChar *Check::Table(genericChar *set)
     return label.Value();
 }
 
-genericChar *Check::Comment(genericChar *set)
+const genericChar *Check::Comment(const genericChar *set)
 {
     FnTrace("Check::Comment()");
 
@@ -2588,7 +2588,7 @@ int Check::CustomerID(int set)
     return customer_id;
 }
 
-genericChar *Check::Address(genericChar *set)
+const genericChar *Check::Address(const genericChar *set)
 {
     FnTrace("Check::Address()");
     if (customer)
@@ -2596,7 +2596,7 @@ genericChar *Check::Address(genericChar *set)
     return EmptyStr;
 }
 
-genericChar *Check::Address2(genericChar *set)
+const genericChar *Check::Address2(const genericChar *set)
 {
     FnTrace("Check::Address2()");
     if (customer)
@@ -2604,7 +2604,7 @@ genericChar *Check::Address2(genericChar *set)
     return EmptyStr;
 }
 
-genericChar *Check::CrossStreet(genericChar *set)
+const genericChar *Check::CrossStreet(const genericChar *set)
 {
     FnTrace("Check::CrossStreet()");
     if (customer)
@@ -2612,7 +2612,7 @@ genericChar *Check::CrossStreet(genericChar *set)
     return EmptyStr;
 }
 
-genericChar *Check::LastName(genericChar *set)
+const genericChar *Check::LastName(const genericChar *set)
 {
     FnTrace("Check::LastName()");
     if (customer)
@@ -2620,7 +2620,7 @@ genericChar *Check::LastName(genericChar *set)
     return EmptyStr;
 }
 
-genericChar *Check::FirstName(genericChar *set)
+const genericChar *Check::FirstName(const genericChar *set)
 {
     FnTrace("Check::FirstName()");
     if (customer)
@@ -2628,7 +2628,7 @@ genericChar *Check::FirstName(genericChar *set)
     return EmptyStr;
 }
 
-genericChar *Check::FullName(genericChar *dest)
+const genericChar *Check::FullName(const genericChar *dest)
 {
     FnTrace("Check::FullName()");
     static genericChar buffer[STRLENGTH];
@@ -2646,7 +2646,7 @@ genericChar *Check::FullName(genericChar *dest)
     return dest;
 }
 
-genericChar *Check::Company(genericChar *set)
+const genericChar *Check::Company(const genericChar *set)
 {
     FnTrace("Check::Company()");
     if (customer)
@@ -2654,7 +2654,7 @@ genericChar *Check::Company(genericChar *set)
     return EmptyStr;
 }
 
-genericChar *Check::City(genericChar *set)
+const genericChar *Check::City(const genericChar *set)
 {
     FnTrace("Check::City()");
     if (customer)
@@ -2662,7 +2662,7 @@ genericChar *Check::City(genericChar *set)
     return EmptyStr;
 }
 
-genericChar *Check::State(genericChar *set)
+const genericChar *Check::State(const genericChar *set)
 {
     FnTrace("Check::State()");
     if (customer)
@@ -2670,7 +2670,7 @@ genericChar *Check::State(genericChar *set)
     return EmptyStr;
 }
 
-genericChar *Check::Postal(genericChar *set)
+const genericChar *Check::Postal(const genericChar *set)
 {
     FnTrace("Check::Postal()");
     if (customer)
@@ -2678,7 +2678,7 @@ genericChar *Check::Postal(genericChar *set)
     return EmptyStr;
 }
 
-genericChar *Check::Vehicle(genericChar *set)
+const genericChar *Check::Vehicle(const genericChar *set)
 {
     FnTrace("Check::Vehicle()");
     if (customer)
@@ -2686,37 +2686,37 @@ genericChar *Check::Vehicle(genericChar *set)
     return EmptyStr;
 }
 
-genericChar *Check::CCNumber(genericChar *set)
+const genericChar *Check::CCNumber(const genericChar *set)
 {
     FnTrace("Check::CCNumber()");
-    genericChar *retval = EmptyStr;
+    const genericChar *retval = EmptyStr;
 
     if (customer)
         retval = customer->CCNumber(set);
     return retval;
 }
 
-genericChar *Check::CCExpire(genericChar *set)
+const genericChar *Check::CCExpire(const genericChar *set)
 {
     FnTrace("Check::CCExpire()");
-    genericChar *retval = EmptyStr;
+    const genericChar *retval = EmptyStr;
 
     if (customer)
         retval = customer->CCExpire(set);
     return retval;
 }
 
-genericChar *Check::License(genericChar *set)
+const genericChar *Check::License(const genericChar *set)
 {
     FnTrace("Check::License()");
-    genericChar *retval = EmptyStr;
+    const genericChar *retval = EmptyStr;
 
     if (customer)
         retval = customer->License(set);
     return retval;
 }
 
-genericChar *Check::PhoneNumber(genericChar *set)
+const genericChar *Check::PhoneNumber(const genericChar *set)
 {
     FnTrace("Check::PhoneNumber()");
     if (customer)
@@ -2724,7 +2724,7 @@ genericChar *Check::PhoneNumber(genericChar *set)
     return EmptyStr;
 }
 
-genericChar *Check::Extension(genericChar *set)
+const genericChar *Check::Extension(const genericChar *set)
 {
     FnTrace("Check::Extension()");
     if (customer)
@@ -4355,10 +4355,10 @@ int SubCheck::ReceiptReport(Terminal *t, Check *c, Drawer *d, Report *r)
     return 0;
 }
 
-genericChar *SubCheck::StatusString(Terminal *t)
+const genericChar *SubCheck::StatusString(Terminal *t)
 {
     FnTrace("SubCheck::StatusString()");
-    genericChar *s =
+    const genericChar *s =
         FindStringByValue(status, CheckStatusValue, CheckStatusName, UnknownStr);
     return t->Translate(s);
 }
@@ -4755,7 +4755,7 @@ int SubCheck::OnlyCredit()
     return retval;
 }
 
-int SubCheck::SetBatch(char *termid, char *batch)
+int SubCheck::SetBatch(const char *termid, const char *batch)
 {
     FnTrace("SubCheck::SetBatch()");
     int retval = 1;
@@ -4839,9 +4839,9 @@ Order::Order(Settings *settings, SalesItem *item, int qual, int price)
     auto_coupon_id  = -1;
 }
 
-Order::Order(genericChar *name, int price)
+Order::Order(const genericChar *name, int price)
 {
-    FnTrace("Order::Order(char *, int)");
+    FnTrace("Order::Order(const char *, int)");
     item_name.Set(name);
     item_cost       = price;
     item_type       = ITEM_NORMAL;
@@ -5079,7 +5079,7 @@ int Order::FigureCost()
     return 0;
 }
 
-genericChar *Order::Description(Terminal *t, genericChar *str)
+const genericChar *Order::Description(Terminal *t, const genericChar *str)
 {
     FnTrace("Order::Description()");
     static genericChar buffer[STRLENGTH];
@@ -5092,7 +5092,7 @@ genericChar *Order::Description(Terminal *t, genericChar *str)
     return str;
 }
 
-genericChar *Order::PrintDescription(genericChar *str, short pshort)
+const genericChar *Order::PrintDescription(const genericChar *str, short pshort)
 {
     FnTrace("Order::PrintDescription()");
     static genericChar buffer[256];
@@ -5208,7 +5208,7 @@ int Order::PrintStatus(Terminal *t, int target_printer, int reprint, int flag_se
         return 0; // Don't print
 }
 
-genericChar *Order::Seat(Settings *settings, genericChar *str)
+const genericChar *Order::Seat(Settings *settings, const genericChar *str)
 {
     FnTrace("Order::Seat()");
     static genericChar buffer[32];
@@ -5350,7 +5350,7 @@ int Order::VideoTarget(Settings *settings)
     return settings->video_target[fvalue];
 }
 
-int Order::AddQualifier(char *qualifier_str)
+int Order::AddQualifier(const char *qualifier_str)
 {
     FnTrace("Order::AddQualifier()");
     int retval = 1;
@@ -5481,7 +5481,7 @@ int Payment::Write(OutputDataFile &outfile, int version)
     return error;
 }
 
-genericChar *Payment::Description(Settings *settings, genericChar *str)
+const genericChar *Payment::Description(Settings *settings, const genericChar *str)
 {
     FnTrace("Payment::Description()");
     static genericChar buffer[128];
@@ -5583,7 +5583,7 @@ int Payment::FigureTotals(int also_preauth)
     return retval;
 }
 
-int Payment::SetBatch(char *termid, char *batch)
+int Payment::SetBatch(const char *termid, const char *batch)
 {
     FnTrace("Payment::SetBatch()");
     int retval = 1;

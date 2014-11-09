@@ -139,10 +139,10 @@ RenderResult UserEditZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult UserEditZone::Signal(Terminal *term, char *message)
+SignalResult UserEditZone::Signal(Terminal *term, const char *message)
 {
     FnTrace("UserEditZone::Signal()");
-    static char *commands[] = {
+    static const char *commands[] = {
         "active", "inactive", "clear password", "remove", "activate",
         "addjob", "killjob1", "killjob2", "killjob3", NULL};
     int idx = CompareList(message, commands);
@@ -278,7 +278,7 @@ SignalResult UserEditZone::Signal(Terminal *term, char *message)
     return SIGNAL_IGNORED;
 }
 
-int UserEditZone::Update(Terminal *term, int update_message, char *value)
+int UserEditZone::Update(Terminal *term, int update_message, const char *value)
 {
     if (update_message & UPDATE_JOB_FILTER)
     {
@@ -460,7 +460,7 @@ int UserEditZone::PrintRecord(Terminal *term, int record)
     return 1;
 }
 
-int UserEditZone::Search(Terminal *term, int record, char *word)
+int UserEditZone::Search(Terminal *term, int record, const char *word)
 {
     FnTrace("UserEditZone::Search()");
     int r = term->system_data->user_db.FindRecordByWord(term, word, view_active, record);
@@ -604,11 +604,11 @@ int JobSecurityZone::EmployeeIsUsing(Terminal *term, int active_job)
     return retval;
 }
 
-SignalResult JobSecurityZone::Signal(Terminal *term, char *message)
+SignalResult JobSecurityZone::Signal(Terminal *term, const char *message)
 {
     FnTrace("JobSecurityZone::Signal()");
     SignalResult retval = SIGNAL_IGNORED;
-    static genericChar *commands[] = { "jsz_no", "jsz_yes", NULL};
+    static const genericChar *commands[] = { "jsz_no", "jsz_yes", NULL};
     int idx = CompareListN(commands, message);
 
     switch (idx)

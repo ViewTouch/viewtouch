@@ -45,12 +45,12 @@
 #define NUMBER_MANUAL    1
 #define NUMBER_SWIPED    0
 
-int CCQ_AddString(char *dest, char *src, int length, char pad = ' ');
-int CCQ_GetStringDelim(char *dest, char *src, int start, char edelim, char sdelim = 0x00);
-int CCQ_GetStringCount(char *dest, char *src, int start, int count);
-int CCQ_GetKeyValue(char *destkey, char *destval, char *src, int start);
-int CCQ_GetDebitAccount(char *account_string);
-int CCQ_GetSwiped(char *swiped_string);
+int CCQ_AddString(const char *dest, const char *src, int length, char pad = ' ');
+int CCQ_GetStringDelim(const char *dest, const char *src, int start, char edelim, char sdelim = 0x00);
+int CCQ_GetStringCount(const char *dest, const char *src, int start, int count);
+int CCQ_GetKeyValue(const char *destkey, const char *destval, const char *src, int start);
+int CCQ_GetDebitAccount(const char *account_string);
+int CCQ_GetSwiped(const char *swiped_string);
 
 
 /*********************************************************************
@@ -144,7 +144,7 @@ class SAFClear {
 public:
     SAFClear();
     int Write();
-    int ParseSAF(char *results);
+    int ParseSAF(const char *results);
     void DebugPrint();
 };
 
@@ -194,7 +194,7 @@ int SAFClear::Write()
     return error;
 }
 
-int SAFClear::ParseSAF(char *results)
+int SAFClear::ParseSAF(const char *results)
 {
     FnTrace("SAFClear::ParseSAF()");
     int retval = 1;
@@ -288,8 +288,8 @@ public:
     int  amttr;
 
     CCInfo();
-    CCInfo(char *newname);
-    void SetName(char *newname);
+    CCInfo(const char *newname);
+    void SetName(const char *newname);
     void Clear();
     int  Write();
     void DebugPrint();
@@ -302,15 +302,15 @@ CCInfo::CCInfo()
     Clear();
 }
 
-CCInfo::CCInfo(char *newname)
+CCInfo::CCInfo(const char *newname)
 {
-    FnTrace("CCInfo::CCInfo(char *)");
+    FnTrace("CCInfo::CCInfo(const char *)");
 
     strcpy(name, newname);
     Clear();
 }
 
-void CCInfo::SetName(char *newname)
+void CCInfo::SetName(const char *newname)
 {
     FnTrace("CCInfo::SetName()");
 
@@ -381,13 +381,13 @@ class BatchInfo
     CCInfo refund;
     CCInfo voids;
 
-    int GetNum(char *value);
-    int GetAmt(char *dest, char *value);
+    int GetNum(const char *value);
+    int GetAmt(const char *dest, const char *value);
 
 public:
     BatchInfo();
     void Clear();
-    int ParseResults(char *results);
+    int ParseResults(const char *results);
     int Write();
     void DebugPrint();
 };
@@ -430,7 +430,7 @@ void BatchInfo::Clear()
     voids.SetName("Corrections");
 }
 
-int BatchInfo::ParseResults(char *results)
+int BatchInfo::ParseResults(const char *results)
 {
     FnTrace("BatchInfo::ParseResults()");
     int retval = 1;
@@ -623,7 +623,7 @@ void BatchInfo::DebugPrint()
     voids.DebugPrint();
 }
 
-int BatchInfo::GetNum(char *value)
+int BatchInfo::GetNum(const char *value)
 {
     FnTrace("BatchInfo::GetNum()");
     int  retval = 0;
@@ -642,7 +642,7 @@ int BatchInfo::GetNum(char *value)
     return retval;
 }
 
-int BatchInfo::GetAmt(char *dest, char *value)
+int BatchInfo::GetAmt(const char *dest, const char *value)
 {
     FnTrace("BatchInfo::GetAmt()");
     int retval = 0;
@@ -700,9 +700,9 @@ CCard::CCard()
     manual = 0;
 }
 
-CCard::CCard(char *serv, char *prt, char *id)
+CCard::CCard(const char *serv, const char *prt, const char *id)
 {
-    FnTrace("CCard::CCard(char *, char *, char *)");
+    FnTrace("CCard::CCard(const char *, const char *, const char *)");
     ipconn = -1;
     trans_success = 0;
     intcode = CC_STATUS_NONE;
@@ -862,7 +862,7 @@ int CCard::Clear()
     return 0;
 }
 
-int CCard::ParseResponse(char *response)
+int CCard::ParseResponse(const char *response)
 {
     FnTrace("CCard::ParseResponse()");
     int retval = 1;
@@ -952,7 +952,7 @@ int CCard::ParseReceipt()
     return 1;
 }
 
-int CCard::Command(char *trans_type, char *sub_type)
+int CCard::Command(const char *trans_type, const char *sub_type)
 {
     FnTrace("CCard::Command()");
     int retval = 1;
@@ -995,7 +995,7 @@ int CCard::Command(char *trans_type, char *sub_type)
  *   -1 on error
  *   number of bytes read otherwise
  ****/
-int CCard::SendCheq(char *trans_type, char *sub_type)
+int CCard::SendCheq(const char *trans_type, const char *sub_type)
 {
     FnTrace("CCard::SendCheq()");
     int retval = -1;
@@ -1039,7 +1039,7 @@ int CCard::SendCheq(char *trans_type, char *sub_type)
  *   -1 on error
  *   number of bytes read otherwise
  ****/
-int CCard::SendSAF(char *trans_type, char *sub_type)
+int CCard::SendSAF(const char *trans_type, const char *sub_type)
 {
     FnTrace("CCard::SendSAF()");
     int retval = -1;
@@ -1073,7 +1073,7 @@ int CCard::SendSAF(char *trans_type, char *sub_type)
 /****
  * ReadCheq:  Read what the server (Multi.exe or mlt_serv) has for us.
  ****/
-int CCard::ReadCheq(char *buffer, int buffsize)
+int CCard::ReadCheq(const char *buffer, int buffsize)
 {
     FnTrace("CCard::ReadCheq()");
     int retval = 1;
@@ -1452,7 +1452,7 @@ int CCard::SAFDetails()
 /****
  * CCQ_AddString:  
  ****/
-int CCQ_AddString(char *dest, char *src, int length, char pad)
+int CCQ_AddString(const char *dest, const char *src, int length, char pad)
 {
     FnTrace("CCQ_AddString()");
     int retval = 0;
@@ -1477,7 +1477,7 @@ int CCQ_AddString(char *dest, char *src, int length, char pad)
     return retval;
 }
 
-int CCQ_GetStringDelim(char *dest, char *src, int start, char edelim, char sdelim)
+int CCQ_GetStringDelim(const char *dest, const char *src, int start, char edelim, char sdelim)
 {
     FnTrace("CCQ_GetStringDelim()");
     int didx = 0;
@@ -1504,7 +1504,7 @@ int CCQ_GetStringDelim(char *dest, char *src, int start, char edelim, char sdeli
     return sidx;
 }
 
-int CCQ_GetStringCount(char *dest, char *src, int start, int count)
+int CCQ_GetStringCount(const char *dest, const char *src, int start, int count)
 {
     FnTrace("CCQ_GetStringCount()");
     int didx = 0;
@@ -1522,7 +1522,7 @@ int CCQ_GetStringCount(char *dest, char *src, int start, int count)
     return sidx;
 }
 
-int CCQ_GetKeyValue(char *destkey, char *destval, char *src, int start)
+int CCQ_GetKeyValue(const char *destkey, const char *destval, const char *src, int start)
 {
     FnTrace("CCQ_GetKeyValue()");
     int didx = 0;
@@ -1563,7 +1563,7 @@ int CCQ_GetKeyValue(char *destkey, char *destval, char *src, int start)
     return sidx;
 }
 
-int CCQ_GetDebitAccount(char *account_string)
+int CCQ_GetDebitAccount(const char *account_string)
 {
     FnTrace("CCQ_GetDebitAcct()");
     int retval = DEBIT_ACCT_NONE;
@@ -1578,7 +1578,7 @@ int CCQ_GetDebitAccount(char *account_string)
     return retval;
 }
 
-int CCQ_GetSwiped(char *swiped_string)
+int CCQ_GetSwiped(const char *swiped_string)
 {
     FnTrace("CCQ_GetSwiped()");
     int retval = NUMBER_MANUAL;

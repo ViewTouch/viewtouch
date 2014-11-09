@@ -38,7 +38,7 @@
 
 /**** ReportEntry Class ****/
 // Constructor
-ReportEntry::ReportEntry(char *t, int c, int a, int m)
+ReportEntry::ReportEntry(const char *t, int c, int a, int m)
 {
     FnTrace("ReportEntry::ReportEntry()");
     if (t)
@@ -109,7 +109,7 @@ int Report::Clear()
     return 0;
 }
 
-int Report::SetTitle(genericChar *title)
+int Report::SetTitle(const genericChar *title)
 {
     int retval = have_title;  // return previous value of have_title
     report_title.Set(title);
@@ -117,7 +117,7 @@ int Report::SetTitle(genericChar *title)
     return retval;
 }
 
-int Report::Load(char *textfile, int color)
+int Report::Load(const char *textfile, int color)
 {
     FnTrace("Report::Load()");
     char buffer[STRLENGTH];
@@ -817,7 +817,7 @@ int Report::Mode(int new_mode)
     return 0;
 }
 
-int Report::Text(char *text, int c, int align, float indent)
+int Report::Text(const char *text, int c, int align, float indent)
 {
     FnTrace("Report::Text()");
     int retval = 0;
@@ -842,7 +842,7 @@ int Report::Text(char *text, int c, int align, float indent)
  * Text2Col:  Prints the text across two columns, but requires that
  *   the page be at least 80 columns, for now at least.
  ***/
-int Report::Text2Col(char *text, int color, int align, float indent)
+int Report::Text2Col(const char *text, int color, int align, float indent)
 {
     FnTrace("Report::Text2Col()");
     int retval = 0;

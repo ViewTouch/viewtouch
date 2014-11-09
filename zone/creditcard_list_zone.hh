@@ -43,7 +43,7 @@ public:
 
     int          Type() { return ZONE_CREDITCARD_LIST; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar *message);
     SignalResult Touch(Terminal *term, int tx, int ty);
 
     Flt *Spacing() { return &list_spacing; }
@@ -54,7 +54,7 @@ public:
     int NewRecord(Terminal *term);
     int KillRecord(Terminal *term, int record);
     int PrintRecord(Terminal *term, int record);
-    int Search(Terminal *term, int record, genericChar *word);
+    int Search(Terminal *term, int record, const genericChar *word);
     int ListReport(Terminal *term, Report *report);
     int RecordCount(Terminal *term);
     CreditDB *GetDB(int in_system = 1);

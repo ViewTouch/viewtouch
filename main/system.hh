@@ -74,10 +74,10 @@ public:
     int shift_total[MAX_SHIFTS];
 
     MediaList();
-    MediaList(genericChar *namestr, int value);
-    MediaList(genericChar *namestr, int value, int shift);
+    MediaList(const genericChar *namestr, int value);
+    MediaList(const genericChar *namestr, int value, int shift);
     ~MediaList();
-    int Add(genericChar *namestr, int value, int shift = -1);
+    int Add(const genericChar *namestr, int value, int shift = -1);
     int Total(int shift = -1);
     int Print();
 } ;
@@ -88,7 +88,7 @@ class System
     DList<Check>   check_list;
     DList<Drawer>  drawer_list;
 
-    int CheckFileUpdate(char *file);
+    int CheckFileUpdate(const char *file);
 
 public:
     Str archive_path;
@@ -156,15 +156,15 @@ public:
 
     int LicenseExpired();
     // returns boolean - Is system software license expired?
-    int SetDataPath(char *path);
+    int SetDataPath(const char *path);
     // specify directory where system data is kept
     int CheckFileUpdates();
-    genericChar *FullPath(char *filename, genericChar *buffer = NULL);
+    const genericChar *FullPath(const char *filename, const genericChar *buffer = NULL);
     // returns string containing full filename for system datafile
-    int LoadCurrentData(char *path);
+    int LoadCurrentData(const char *path);
     // loads current day's data ('current' directory)
     int BackupCurrentData();
-    int ScanArchives(char *path, char *altmedia);
+    int ScanArchives(const char *path, const char *altmedia);
     // Loads all archive headers
     int UnloadArchives();
     // purges all archive info from memory
@@ -189,7 +189,7 @@ public:
     // removes all check, archive & work data
     int NewSerialNumber();
     // returns a unique id number for checks & drawers
-    genericChar *NewPrintFile(char *buffer = NULL);
+    const genericChar *NewPrintFile(const char *buffer = NULL);
     // returns filename to be used for output buffer
 
     // Check functions
@@ -201,9 +201,9 @@ public:
     // returns first check of archive or current checks
     int CountOpenChecks(Employee *e = NULL);
     // counts open checks owned by user (or by everyone)
-    int NumberStacked(char *table, Employee *e);
+    int NumberStacked(const char *table, Employee *e);
     // Returns number of open checks at tables
-    Check *FindOpenCheck(char *table, Employee *e);
+    Check *FindOpenCheck(const char *table, Employee *e);
     // Finds open check by table number & training status
     Check *FindCheckByID(int check_id);
     Check *ExtractOpenCheck(Check *check);

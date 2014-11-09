@@ -56,7 +56,7 @@ enum textures {
 #define IMAGE_DEFAULT   255
 
 extern int    ImageValue[];
-extern genericChar **ImageData[];
+extern const genericChar **ImageData[];
 
 /**** Functions ****/
 int ImageColorsUsed();  // Returns total colors used in all xpm files

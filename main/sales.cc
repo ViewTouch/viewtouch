@@ -37,10 +37,10 @@
 
 
 /**** Module Data ****/
-char *SalesGroupName[] = {
+const char *SalesGroupName[] = {
     "Unused", "Food", "Beverage", "Beer", "Wine", "Alcohol",
     "Merchandise", "Room", NULL};
-char *SalesGroupShortName[] = {
+const char *SalesGroupShortName[] = {
     "", "Food", "Bev", "Beer", "Wine", "Alcohol", "Merchan", "Room", NULL};
 int SalesGroupValue[] = {
     SALESGROUP_NONE, SALESGROUP_FOOD, SALESGROUP_BEVERAGE,
@@ -59,7 +59,7 @@ Component::Component()
 
 /**** SalesItem Class ****/
 // Constructor
-SalesItem::SalesItem(char *name)
+SalesItem::SalesItem(const char *name)
 {
     FnTrace("SalesItem::SalesItem()");
     if (name)
@@ -272,17 +272,17 @@ int SalesItem::Write(OutputDataFile &df, int version)
     return error;
 }
 
-char *SalesItem::Family(Terminal *t)
+const char *SalesItem::Family(Terminal *t)
 {
     FnTrace("SalesItem::Family()");
-    char *s = FindStringByValue(family, FamilyValue, FamilyName, UnknownStr);
+    const char *s = FindStringByValue(family, FamilyValue, FamilyName, UnknownStr);
     return t->Translate(s);
 }
 
-char *SalesItem::Printer(Terminal *t)
+const char *SalesItem::Printer(Terminal *t)
 {
     FnTrace("SalesItem::Printer()");
-    char *s = FindStringByValue(printer_id, PrinterIDValue, PrinterIDName, UnknownStr);
+    const char *s = FindStringByValue(printer_id, PrinterIDValue, PrinterIDName, UnknownStr);
     return t->Translate(s);
 }
 
@@ -307,7 +307,7 @@ int SalesItem::Price(Settings *s, int qualifier)
     return c;
 }
 
-char *SalesItem::ZoneName()
+const char *SalesItem::ZoneName()
 {
     FnTrace("SalesItem::ZoneName()");
     if (zone_name.length > 0)
@@ -316,7 +316,7 @@ char *SalesItem::ZoneName()
         return item_name.Value();
 }
 
-char *SalesItem::PrintName()
+const char *SalesItem::PrintName()
 {
     FnTrace("SalesItem::PrintName()");
     if (print_name.length > 0)
@@ -325,7 +325,7 @@ char *SalesItem::PrintName()
         return item_name.Value();
 }
 
-char *SalesItem::CallCenterName(Terminal *t)
+const char *SalesItem::CallCenterName(Terminal *t)
 {
     FnTrace("SalesItem::CallCenterName()");
     if (call_center_name.length > 0)
@@ -369,7 +369,7 @@ ItemDB::ItemDB()
 }
 
 // Member Functions
-int ItemDB::Load(char *file)
+int ItemDB::Load(const char *file)
 {
     FnTrace("ItemDB::Load()");
     if (file)
@@ -447,7 +447,7 @@ int ItemDB::Add(SalesItem *si)
         last_id = si->id + 1;
 
     // start at end of list and work backwords
-    char *n = si->item_name.Value();
+    const char *n = si->item_name.Value();
     SalesItem *ptr = ItemListEnd();
     while (ptr && StringCompare(n, ptr->item_name.Value()) < 0)
         ptr = ptr->fore;
@@ -486,7 +486,7 @@ int ItemDB::Purge()
     return 0;
 }
 
-SalesItem *ItemDB::FindByName(char *name)
+SalesItem *ItemDB::FindByName(const char *name)
 {
     FnTrace("ItemDB::FindByName()");
     if (name == NULL)
@@ -538,7 +538,7 @@ SalesItem *ItemDB::FindByRecord(int record)
     return name_array[record];
 }
 
-SalesItem *ItemDB::FindByWord(char *word, int &record)
+SalesItem *ItemDB::FindByWord(const char *word, int &record)
 {
     FnTrace("ItemDB::FindByWord()");
     if (name_array == NULL)
@@ -560,7 +560,7 @@ SalesItem *ItemDB::FindByWord(char *word, int &record)
     return NULL;
 }
 
-SalesItem *ItemDB::FindByCallCenterName(char *word, int &record)
+SalesItem *ItemDB::FindByCallCenterName(const char *word, int &record)
 {
     FnTrace("ItemDB::FindByCallCenterName()");
     if (name_array == NULL)
@@ -588,7 +588,7 @@ SalesItem *ItemDB::FindByCallCenterName(char *word, int &record)
     return retval;
 }
 
-SalesItem *ItemDB::FindByItemCode(char *code, int &record)
+SalesItem *ItemDB::FindByItemCode(const char *code, int &record)
 {
     FnTrace("ItemDB::FindByItemCode()");
     if (name_array == NULL)
@@ -734,7 +734,7 @@ int MergeQualifier(int &flag, int qualifier)
     return 0;
 }
 
-int PrintItem(char *buffer, int qualifier, char *item)
+int PrintItem(const char *buffer, int qualifier, const char *item)
 {
     FnTrace("PrintItem()");
     char pre[64]  = "";
@@ -765,7 +765,7 @@ int PrintItem(char *buffer, int qualifier, char *item)
     return 0;
 }
 
-char *FilterName(char *name, char *str)
+const char *FilterName(const char *name, const char *str)
 {
     FnTrace("FilterName()");
     static char buffer[1024];
@@ -773,7 +773,7 @@ char *FilterName(char *name, char *str)
         str = buffer;
 
     int space = 1;
-    char *s = name, *d = str;
+    const char *s = name, *d = str;
     while (*s)
     {
         if (*s == '\\' || isspace(*s))

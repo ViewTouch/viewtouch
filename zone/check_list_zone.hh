@@ -48,13 +48,13 @@ public:
     // Member Functions
     int          Type() { return ZONE_CHECK_LIST; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar *message);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, genericChar *value);
+    int          Update(Terminal *term, int update_message, const genericChar *value);
     Flt         *Spacing() { return &spacing; }
 
     int  MakeList(Terminal *term);
-    int  Search(Terminal *term, genericChar *name, Employee *start);
+    int  Search(Terminal *term, const genericChar *name, Employee *start);
 };
 
 class CheckEditZone : public FormZone
@@ -78,14 +78,14 @@ public:
     SignalResult Keyboard(Terminal *term, int my_key, int state);
     SignalResult Touch(Terminal *term, int tx, int ty);
     SignalResult Mouse(Terminal *term, int action, int mx, int my);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar *message);
     int          LoseFocus(Terminal *term, Zone *newfocus);
 
     Flt *Spacing() { return &list_spacing; }
 
     int LoadRecord(Terminal *term, int record);
     int SaveRecord(Terminal *term, int record, int write_file);
-    int Search(Terminal *term, int record, genericChar *word);
+    int Search(Terminal *term, int record, const genericChar *word);
     int ListReport(Terminal *term, Report *report);
     int RecordCount(Terminal *term);
 };

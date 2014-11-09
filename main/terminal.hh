@@ -289,7 +289,7 @@ private:
 	 
     // Constructor
     Terminal();
-    int CC_TermIDIsDupe(char *termid);
+    int CC_TermIDIsDupe(const char *termid);
     int CC_GetTermIDList(Terminal *start_term);
 
 public:
@@ -438,8 +438,8 @@ public:
     int AddClone(Terminal *cloneterm) { return clone_list.AddToTail(cloneterm); }
     int Initialize();
     int AllowBlanking(int allow = 1);
-    int TerminalError(char *message);         // method for reporting page errors
-    int SendTranslations(char **name_list);   // send translations for term_dialog
+    int TerminalError(const char *message);         // method for reporting page errors
+    int SendTranslations(const char **name_list);   // send translations for term_dialog
     int ChangePage(Page *p);                  // Changes current page
     int ClearPageStack();                     // clears stack
     int Draw(int update_flag);
@@ -450,15 +450,15 @@ public:
     int PopPage();                  // pulls page id off stack (0 - empty)
     int PriorTablePage();
     int PushPage(int page_id);      // puts page id on stack
-    int RunScript(char *script, int jump_type, int jump_id);
+    int RunScript(const char *script, int jump_type, int jump_id);
     int FastStartLogin();
-    int OpenTab(int phase = TABOPEN_START, char *message = NULL);
+    int OpenTab(int phase = TABOPEN_START, const char *message = NULL);
     int ContinueTab(int serial_number = -1);
     int CloseTab(int serial_number = -1);
-    int OpenTabList(char *message);
+    int OpenTabList(const char *message);
 
 	// Message handling
-    SignalResult Signal(char *message, int group_id); // Send message to terminal
+    SignalResult Signal(const char *message, int group_id); // Send message to terminal
     SignalResult Touch(int x, int y);                 // Send touch to terminal
     SignalResult Mouse(int action, int x, int y);     // Send mouse to terminal
     SignalResult Keyboard(int key, int state);        // Send keypress to terminal
@@ -476,7 +476,7 @@ public:
 
     int LoginUser(Employee *e, bool home_page=false);
     int LogoutUser(int update = 1); // Logout current user & stores check
-    int GetCheck(char *label, int customer_type); // Gets check (or creates new one)
+    int GetCheck(const char *label, int customer_type); // Gets check (or creates new one)
     int NewTakeOut(int customer_type); // Creates new take out order
     int NewFastFood(int customer_type); // Creates new fastfood order
     int QuickMode(int customer_type); // Creates new fastfood or takeout order
@@ -484,62 +484,62 @@ public:
     int StoreCheck(int update = 1); // Save check to disk & clears current check
     int NextPage();                 // jump to next page in edit mode
     int ForePage();                 // jump to previous page in edit mode
-    int Update(int update_message, genericChar *value); // Send update to current page
+    int Update(int update_message, const genericChar *value); // Send update to current page
     int OpenDrawer(int pos = 0);    // Send command to printer to open drawer
     int NeedDrawerBalanced(Employee *e);
     int CanSettleCheck();           // boolean - can current user settle?
     Drawer *FindDrawer();           // returns drawer available (if any)
     int StackCheck(int customer_type);
     int OpenDialog(Zone *z);    // opens new dialog
-    int OpenDialog(char *message);
+    int OpenDialog(const char *message);
     int NextDialog(Zone *z);    // stores a dialog to pop up after the current dialog closes
     int KillDialog();           // closes open dialog
     int HomePage();             // returns home page #
-    int UpdateAllTerms(int update_message, genericChar *value);
-    int UpdateOtherTerms(int update_message, genericChar *value);
+    int UpdateAllTerms(int update_message, const genericChar *value);
+    int UpdateOtherTerms(int update_message, const genericChar *value);
     int TermsInUse();           // # of terms in use (total)
     int OtherTermsInUse(int no_kitchen = 0);     // # of terms in use (except current)
     int EditTerm(int save_data = 1);             // toggles edit mode for terminal
     int TranslateTerm();        // toggles translate mode for terminal
     int UpdateZoneDB(Control *con); // updates zone_db for terminal
-    genericChar   *ReplaceSymbols(char *str);
+    genericChar   *ReplaceSymbols(const char *str);
     Printer *FindPrinter(int printer_id); // returns printer object based on printer id
     int FrameBorder(int appear, int shape); // returns border width of given appearence type
     int TextureTextColor(int appear); // nice default text color for appearence
     int FontSize(int font_id, int &w, int &h);
-    int TextWidth(char *string, int len = -1, int font_id = -1);
+    int TextWidth(const char *string, int len = -1, int font_id = -1);
     int IsUserOnline(Employee *e);
     int FinalizeOrders();
 
-    genericChar *Translate(char *string, int lang = LANG_PHRASE, int clear = 0); // calls proper local object for text translation
-    genericChar *TimeDate(TimeInfo &tm, int format, int lang = LANG_PHRASE);
-    genericChar *TimeDate(char *str, TimeInfo &tm, int format, int lang = LANG_PHRASE); // returns time and date formated & translated
-    genericChar *PageNo(int current, int max, int lang = LANG_PHRASE); // returns nicely formated & translated page numbers
-    genericChar *UserName(int user_id);
-    genericChar *UserName(char *str, int user_id); // returns string with user name
-    genericChar *FormatPrice(int price, int sign = 0);
-    genericChar *FormatPrice(char *str, int price, int sign = 0); // returns string with format price in default currency & notation
-    genericChar *SimpleFormatPrice(int price);
-    genericChar *SimpleFormatPrice(char *str, int price); // same as format price but with no commas
-    int          PriceToInteger(char *price);
+    const genericChar *Translate(const char *string, int lang = LANG_PHRASE, int clear = 0); // calls proper local object for text translation
+    const genericChar *TimeDate(TimeInfo &tm, int format, int lang = LANG_PHRASE);
+    const genericChar *TimeDate(const char *str, TimeInfo &tm, int format, int lang = LANG_PHRASE); // returns time and date formated & translated
+    const genericChar *PageNo(int current, int max, int lang = LANG_PHRASE); // returns nicely formated & translated page numbers
+    const genericChar *UserName(int user_id);
+    const genericChar *UserName(const char *str, int user_id); // returns string with user name
+    const genericChar *FormatPrice(int price, int sign = 0);
+    const genericChar *FormatPrice(const char *str, int price, int sign = 0); // returns string with format price in default currency & notation
+    const genericChar *SimpleFormatPrice(int price);
+    const genericChar *SimpleFormatPrice(const char *str, int price); // same as format price but with no commas
+    int          PriceToInteger(const char *price);
 
     int UserInput();
     int ClearSelectedZone();
     int DrawTitleBar();
     int RenderBlankPage();
     int RenderBackground();
-    int RenderText(char *str, int x, int y, int color, int font,
+    int RenderText(const char *str, int x, int y, int color, int font,
                    int align = ALIGN_LEFT, int max_pixel_width = 0, int mode = 0);
-    int RenderTextLen(char *str, int len, int x, int y, int color, int font,
+    int RenderTextLen(const char *str, int len, int x, int y, int color, int font,
                       int align = ALIGN_LEFT, int mode = 0, int max_pixel_width = 0);
-    int RenderZoneText(char *str, int x, int y, int w, int h,
+    int RenderZoneText(const char *str, int x, int y, int w, int h,
                        int color, int font);
     int RenderHLine(int x, int y, int len, int color, int lw = 1);
     int RenderVLine(int x, int y, int len, int color, int lw = 1);
     int RenderRectangle(int x, int y, int w, int h, int image);
     int RenderFrame(int x, int y, int w, int h, int thickness, int flags);
     int RenderFilledFrame(int x, int y, int w, int h, int thick, int texture, int flags = 0);
-    int RenderStatusBar(Zone *z, int bar_color, genericChar *text, int text_color);
+    int RenderStatusBar(Zone *z, int bar_color, const genericChar *text, int text_color);
     int RenderZone(Zone *z);
     int RedrawZone(Zone *z, int time);
     int RenderEditCursor(int x, int y, int w, int h);
@@ -553,7 +553,7 @@ public:
     int Bell();
 
     int CalibrateTS();
-    int SetMessage(char *string);
+    int SetMessage(const char *string);
     int ClearMessage();
     int SetIconify(int iconify);
     int KeyboardInput(char key, int code, int state);
@@ -594,10 +594,10 @@ public:
     int   WFlt(Flt val);
     int   WFlt(Flt *val);
     Flt   RFlt(Flt *val = NULL);
-    int   WStr(char *s, int len = 0);
+    int   WStr(const char *s, int len = 0);
     int   WStr(Str *s);
-    genericChar *RStr(char *s = NULL);  
-    genericChar *RStr(Str *s);
+    const genericChar *RStr(const char *s = NULL);  
+    const genericChar *RStr(Str *s);
     int   Send();
     int   SendNow();
 
@@ -614,11 +614,11 @@ public:
     int   CC_GetRefund();
     int   CC_GetRefundCancel();
     Terminal *CC_NextTermWithID(Terminal *cc_term);
-    int   CC_NextTermID(int *cc_state, char *termid);
+    int   CC_NextTermID(int *cc_state, const char *termid);
     int   CC_NextBatch(int *state, BatchItem **currbatch, long long *batch);
-    int   CC_Settle(char *batch = NULL, int reset = 0);
+    int   CC_Settle(const char *batch = NULL, int reset = 0);
     int   CC_Init();
-    int   CC_Totals(char *batch = NULL);
+    int   CC_Totals(const char *batch = NULL);
     int   CC_Details();
     int   CC_ClearSAF(int reset = 0);
     int   CC_SAFDetails();
@@ -631,15 +631,15 @@ public:
     int   SetCCTimeout(int cc_timeout);
 
     // friend functions
-    friend Terminal *NewTerminal(char *, int, int);
-    friend int       CloneTerminal(Terminal *, char *, char *);
+    friend Terminal *NewTerminal(const char *, int, int);
+    friend int       CloneTerminal(Terminal *, const char *, const char *);
 };
 
 
 /**** Funtions ****/
-int OpenTerminalSocket(char *hostname, int hardware_type = 0, int isserver = 0,
+int OpenTerminalSocket(const char *hostname, int hardware_type = 0, int isserver = 0,
                        int width = -1, int height = -1);
-Terminal *NewTerminal(char *host_name, int hardware_type = 0, int isserver = 0);
-int CloneTerminal(Terminal *term, char *dest, char *name);
+Terminal *NewTerminal(const char *host_name, int hardware_type = 0, int isserver = 0);
+int CloneTerminal(Terminal *term, const char *dest, const char *name);
 
 #endif

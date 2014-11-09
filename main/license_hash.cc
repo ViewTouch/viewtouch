@@ -64,16 +64,16 @@ typedef unsigned int u_int;
 #define MAXTEMPLEN   20
 
 // these are for internal use only and do not need to be translated
-genericChar *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
+const genericChar *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
                          "Aug", "Sep", "Oct", "Nov", "Dec"};
-genericChar *days[]   = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+const genericChar *days[]   = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
 /****
  * GenerateDDate:  Called by GenerateTempKey to generate a slightly
  *   obfuscated date string, the format of which depends on the
  *   weekday.
  ****/
-int GenerateDDate(genericChar *dest, int maxlen, struct tm *date)
+int GenerateDDate(const genericChar *dest, int maxlen, struct tm *date)
 {
     int retval = 0;
     int weekday = date->tm_wday;
@@ -115,17 +115,17 @@ int GenerateDDate(genericChar *dest, int maxlen, struct tm *date)
 /****
  * StringReverse:  just reverses a string in place.
  ****/
-int StringReverse(genericChar *dest)
+int StringReverse(const genericChar *dest)
 {
     int retval = 1;
     int dlen = strlen(dest);
     int didx = dlen - 1;
     int tidx = 0;
-    genericChar *temp;
+    const genericChar *temp;
 
     if (dlen > 1)
     {
-        temp = (genericChar *)malloc(dlen + 1);
+        temp = (const genericChar *)malloc(dlen + 1);
         if (temp != NULL)
         {
             while (tidx < dlen)
@@ -148,7 +148,7 @@ int StringReverse(genericChar *dest)
  *   obfuscated license string, the format of which depends on the
  *   weekday.
  ****/
-int GenerateDLicense(genericChar *dest, int maxlen, genericChar *license, int weekday)
+int GenerateDLicense(const genericChar *dest, int maxlen, const genericChar *license, int weekday)
 {
     int retval = 0;
     int didx;
@@ -227,7 +227,7 @@ int GenerateDLicense(genericChar *dest, int maxlen, genericChar *license, int we
  *  The key is built with both a date string and a license string, both of
  *  which are also formatted according to the weekday.
  ****/
-int GenerateTempKey(genericChar *dest, int maxlen, genericChar *licenseid)
+int GenerateTempKey(const genericChar *dest, int maxlen, const genericChar *licenseid)
 {
     int retval = 0;
     genericChar tempkey[STRLONG];
@@ -244,7 +244,7 @@ int GenerateTempKey(genericChar *dest, int maxlen, genericChar *licenseid)
     return retval;
 }
 
-int GenerateTempKeyLong(genericChar *dest, int maxlen, time_t timenow, genericChar *licenseid)
+int GenerateTempKeyLong(const genericChar *dest, int maxlen, time_t timenow, const genericChar *licenseid)
 {
     int retval = 0;
     struct tm now;
@@ -267,7 +267,7 @@ int GenerateTempKeyLong(genericChar *dest, int maxlen, time_t timenow, genericCh
     return retval;
 }
 
-int DigestString(genericChar *dest, int maxlen, genericChar *source)
+int DigestString(const genericChar *dest, int maxlen, const genericChar *source)
 {
     int retval = 0;
     uint8_t digest[SHA1HashSize];
@@ -287,7 +287,7 @@ int DigestString(genericChar *dest, int maxlen, genericChar *source)
     return retval;
 }
 
-int GetUnameInfo(char *buffer, int bufflen)
+int GetUnameInfo(const char *buffer, int bufflen)
 {
     struct utsname utsbuff;
 
@@ -295,7 +295,7 @@ int GetUnameInfo(char *buffer, int bufflen)
     {
         snprintf(buffer, bufflen, "%s %s %s %s", utsbuff.sysname, utsbuff.nodename,
                  utsbuff.release, utsbuff.machine);
-        printf("GetUnameInfo buffer(%s)\n",(char*)buffer);
+        printf("GetUnameInfo buffer(%s)\n",(const char*)buffer);
     }
     return 0;
 }
@@ -305,14 +305,14 @@ int GetUnameInfo(char *buffer, int bufflen)
  * GetInterfaceInfo:  grab the MAC.  This version uses the sysctl method,
  *  which works fine for FreeBSD, but not Linux.
  ****/
-int GetInterfaceInfo(char *stringbuff, int stringlen)
+int GetInterfaceInfo(const char *stringbuff, int stringlen)
 {
     size_t len;
     int mib[6];
-    char *buffer;
-    char *next;
+    const char *buffer;
+    const char *next;
     char address[256];
-    char *limit;
+    const char *limit;
     struct if_msghdr *ifmsg;
     struct sockaddr_dl *sdl;
     int retval = 1;
@@ -326,7 +326,7 @@ int GetInterfaceInfo(char *stringbuff, int stringlen)
 
     if (sysctl(mib, 6, NULL, &len, NULL, 0) < 0)
         return 1;
-    if ((buffer = (char *)malloc(len)) == NULL)
+    if ((buffer = (const char *)malloc(len)) == NULL)
         return 1;
     if (sysctl(mib, 6, buffer, &len, NULL, 0) < 0)
         return 1;
@@ -357,7 +357,7 @@ int GetInterfaceInfo(char *stringbuff, int stringlen)
 /*******
  * MacToString:  
  *******/
-int MacToString(char *macstr, int maxlen, unsigned char *mac)
+int MacToString(const char *macstr, int maxlen, unsigned const char *mac)
 {
     int retval = 0;
     int idx;
@@ -378,7 +378,7 @@ int MacToString(char *macstr, int maxlen, unsigned char *mac)
 /*******
  * MacFromName:  
  *******/
-int MacFromName(unsigned char *mac, char *name, int sockfd)
+int MacFromName(unsigned const char *mac, const char *name, int sockfd)
 {
     int retval = 1;
     int idx;
@@ -424,7 +424,7 @@ int ListAddresses( )
                 exit(1);
         }
   
-        io = ioctl(sockfd, SIOCGIFHWADDR, (char *)&ifr);
+        io = ioctl(sockfd, SIOCGIFHWADDR, (const char *)&ifr);
         if(io < 0){
                 perror("ioctl");
                 return 1;
@@ -488,7 +488,7 @@ int ListAddresses( )
 /*******
  * GetInterfaceInfo:  
  *******/
-int GetInterfaceInfo(char *stringbuf, int stringlen)
+int GetInterfaceInfo(const char *stringbuf, int stringlen)
 {
     printf("GetInterfaceInfo\n");
     ListAddresses();
@@ -502,8 +502,8 @@ int GetInterfaceInfo(char *stringbuf, int stringlen)
     int sockfd;
     int len;
     int lastlen;
-    char *buf;
-    char *ptr;
+    const char *buf;
+    const char *ptr;
     unsigned char mac[STRLENGTH];
     struct ifconf ifc;
     struct ifreq *ifr;
@@ -532,7 +532,7 @@ int GetInterfaceInfo(char *stringbuf, int stringlen)
     // delay, perhaps a few seconds.
     while (done == 0 && error == 0 && loops < maxloops)
     {
-        buf = (char *)malloc(len);
+        buf = (const char *)malloc(len);
         ifc.ifc_len = len;
         ifc.ifc_buf = buf;
         
@@ -611,7 +611,7 @@ int GetInterfaceInfo(char *stringbuf, int stringlen)
         exit(1);
     }
   
-    io = ioctl(sockfd, SIOCGIFHWADDR, (char *)&ifr);
+    io = ioctl(sockfd, SIOCGIFHWADDR, (const char *)&ifr);
     if(io < 0){
         perror("ioctl");
         return 1;
@@ -626,7 +626,7 @@ int GetInterfaceInfo(char *stringbuf, int stringlen)
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[4],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[5]
                ); 
-    stringlen = strlen((char*)stringbuf);
+    stringlen = strlen((const char*)stringbuf);
     */
     
     struct ifreq ifr;
@@ -668,7 +668,7 @@ int GetInterfaceInfo(char *stringbuf, int stringlen)
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[4],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[5]
                );
-    stringlen = strlen((char*)stringbuf);
+    stringlen = strlen((const char*)stringbuf);
     
     return 0;
 }
@@ -688,7 +688,7 @@ int GetInterfaceInfo(char *stringbuf, int stringlen)
  *  mika - 201212 failing to fetch the MAC address
  * 
  ****/
-int GetMacAddress(char *stringbuff, int stringlen)
+int GetMacAddress(const char *stringbuff, int stringlen)
 {
     genericChar mac[STRLENGTH];
 
@@ -735,7 +735,7 @@ int GetMacAddress(char *stringbuff, int stringlen)
     return retval;
 }
 
-int GetMachineDigest(char *digest_string, int maxlen)
+int GetMachineDigest(const char *digest_string, int maxlen)
 {
     printf("GetMachineDigest\n");
     int retval = 1;
@@ -747,7 +747,7 @@ int GetMachineDigest(char *digest_string, int maxlen)
         GetMacAddress(mac_address, STRLONG) == 0)
     {
         snprintf(buffer, STRLONG, "%s%s", mac_address, uname_info);
-        printf("GetMachineDigest (%s)\n",(char*)buffer);
+        printf("GetMachineDigest (%s)\n",(const char*)buffer);
         DigestString(digest_string, maxlen, buffer);
         retval = 0;
     }

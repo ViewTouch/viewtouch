@@ -46,7 +46,7 @@
 
 /**** TouchScreen Class ****/
 // Constructors
-TouchScreen::TouchScreen(char *device)
+TouchScreen::TouchScreen(const char *device)
 {
 	strcpy(INIT, "\001PN819600\n");
 	strcpy(PING, "\001Z\n");
@@ -70,7 +70,7 @@ TouchScreen::TouchScreen(char *device)
     failed = Connect(1);
 }
 
-TouchScreen::TouchScreen(char *h, int p)
+TouchScreen::TouchScreen(const char *h, int p)
 {
 	strcpy(INIT, "\001PN819600\n");
 	strcpy(PING, "\001Z\n");
@@ -168,11 +168,11 @@ int TouchScreen::Connect(int boot)
     return Init(boot);
 }
 
-int TouchScreen::SetMode(char* mode)
+int TouchScreen::SetMode(const char* mode)
 {
 	if( (strcmp("POINT", mode) == 0) && device_no > 0)
 	{
-		char *modeList[] = { FORMAT_HEX, MODE_POINT, AUTOBAUD_DISABLE, PARAM_LOCK };
+		const char *modeList[] = { FORMAT_HEX, MODE_POINT, AUTOBAUD_DISABLE, PARAM_LOCK };
 		for (int i = 0; i < 4; i++)
         {
 			write(device_no, modeList[i], strlen(modeList[i]));
@@ -201,7 +201,7 @@ int TouchScreen::Init(int boot)
 
 	//setup array of pointers and step through the desired mode
 	//list, writing the values out to the device, in order.
-	char *modeList[] = { INIT, AUTOBAUD_DISABLE, FORMAT_HEX, MODE_POINT, PARAM_LOCK };
+	const char *modeList[] = { INIT, AUTOBAUD_DISABLE, FORMAT_HEX, MODE_POINT, PARAM_LOCK };
 	for(int i=0; i<5; i++)
 	{
 		write(device_no, modeList[i], strlen(modeList[i]));

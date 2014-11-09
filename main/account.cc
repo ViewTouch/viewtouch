@@ -39,7 +39,7 @@ AccountEntry::AccountEntry()
     flags = 0;
 }
 
-AccountEntry::AccountEntry(char *desc, int amt)
+AccountEntry::AccountEntry(const char *desc, int amt)
 {
     description.Set(desc);
     amount = amt;
@@ -69,7 +69,7 @@ int AccountEntry::Write(OutputDataFile &df, int version)
     return error;
 }
 
-int AccountEntry::Search(genericChar *word)
+int AccountEntry::Search(const genericChar *word)
 {
     FnTrace("AccountEntry::Search()");
     int wordlen = strlen(word);
@@ -103,7 +103,7 @@ Account::Account(int no)
     time_created.Set();
 }
 
-Account::Account(int no, char *namestr)
+Account::Account(int no, const char *namestr)
 {
     number = no;
     name.Set(namestr);
@@ -113,7 +113,7 @@ Account::Account(int no, char *namestr)
     time_created.Set();
 }
 
-Account::Account(char *path, int no, genericChar *namestr)
+Account::Account(const char *path, int no, const genericChar *namestr)
 {
     number = no;
     name.Set(namestr);
@@ -138,7 +138,7 @@ Account *Account::Copy()
     return newAccount;
 }
 
-int Account::Load(char *path)
+int Account::Load(const char *path)
 {
     FnTrace("Account::Load()");
     InputDataFile df;
@@ -248,7 +248,7 @@ int Account::Purge()
     return 0;
 }
 
-int Account::AddEntry(char *desc, int amount)
+int Account::AddEntry(const char *desc, int amount)
 {
     FnTrace("Account::AddEntry()");
     AccountEntry *ae = new AccountEntry(desc, amount);
@@ -282,7 +282,7 @@ int Account::IsBlank()
  * Search:  Return 1 if word is found in the account, 0 otherwise.
  *   Searches word fields in the account as well as account entries.
  ****/
-int Account::Search(genericChar *word)
+int Account::Search(const genericChar *word)
 {
     FnTrace("Account::Search()");
     int found = 0;
@@ -441,7 +441,7 @@ int AccountDB::Save(Account *my_account, int do_sort)
     return retval;
 }
 
-int AccountDB::Load(char *path)
+int AccountDB::Load(const char *path)
 {
     FnTrace("AccountDB::Load()");
     if (path)
@@ -461,7 +461,7 @@ int AccountDB::Load(char *path)
         record = readdir(dp);
         if (record)
         {
-            genericChar *name = record->d_name;
+            const genericChar *name = record->d_name;
             no = atoi(name);
             if (no > 0)
             {
@@ -584,7 +584,7 @@ int AccountDB::FindRecordByNumber(int num)
     return record;
 }
 
-int AccountDB::FindRecordByWord(genericChar *word, int record)
+int AccountDB::FindRecordByWord(const genericChar *word, int record)
 {
     FnTrace("AccountDB::FindRecordByWord()");
     int retval = -1;

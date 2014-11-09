@@ -77,10 +77,10 @@ public:
     Translation *fore;
 
     Translation();
-    Translation(char *new_key, char *new_value);
-    int Match(char *check_key);
-    int GetKey(char *store, int maxlen);
-    int GetValue(char *store, int maxlen);
+    Translation(const char *new_key, const char *new_value);
+    int Match(const char *check_key);
+    int GetKey(const char *store, int maxlen);
+    int GetValue(const char *store, int maxlen);
 };
 
 class Translations
@@ -89,8 +89,8 @@ class Translations
 public:
     Translations();
     void Clear() { trans_list.Purge(); }
-    int AddTranslation(char *key, char *value);
-    char *GetTranslation(char *key);
+    int AddTranslation(const char *key, const char *value);
+    const char *GetTranslation(const char *key);
     void PrintTranslations();
 };
 
@@ -273,7 +273,7 @@ extern Pixmaps PixmapList;
 
 
 /*** Functions ****/
-extern int OpenTerm(char *display, TouchScreen *ts, int is_term_local, int term_hardware,
+extern int OpenTerm(const char *display, TouchScreen *ts, int is_term_local, int term_hardware,
                     int set_width = -1, int set_height = -1);
 extern int KillTerm();
 extern int ShowCursor(int type);
@@ -297,8 +297,8 @@ extern long long WLLong(long long val);
 extern long long RLLong();
 extern int   WFlt(Flt val);
 extern Flt   RFlt();
-extern int   WStr(char *s, int len = 0);
-extern genericChar *RStr(genericChar *s = NULL);
+extern int   WStr(const char *s, int len = 0);
+extern const genericChar *RStr(const genericChar *s = NULL);
 extern int   SendNow();
 
 #endif

@@ -31,7 +31,7 @@
 #include <dmalloc.h>
 #endif
 
-int compareString(char *big, genericChar *little)
+int compareString(const char *big, const genericChar *little)
 {
     FnTrace("compareString()");
     int lenbig = strlen(big);
@@ -84,7 +84,7 @@ Expense::Expense(int &no)
     flags = 0;
 }
 
-int Expense::SetFileName(char *buffer, int maxlen, genericChar *path)
+int Expense::SetFileName(const char *buffer, int maxlen, const genericChar *path)
 {
     FnTrace("Expense::SetFileName()");
     snprintf(buffer, maxlen, "%s/expense_%d", path, eid);
@@ -118,7 +118,7 @@ int Expense::Read(InputDataFile &infile, int version)
     return 0;
 }
 
-int Expense::Load(char *path)
+int Expense::Load(const char *path)
 {
     FnTrace("Expense::Load()");
     InputDataFile infile;
@@ -152,7 +152,7 @@ int Expense::Write(OutputDataFile &outfile, int version)
     return 0;
 }
 
-int Expense::Save(char *path)
+int Expense::Save(const char *path)
 {
     FnTrace("Expense::Save()");
     genericChar filename[STRLENGTH];
@@ -186,7 +186,7 @@ int Expense::IsBlank()
 //NOTE BAK-->For these functions, the length of the string is assumed to
 // be at least STRLENGTH (normally 256).
 //FIX BAK-->Should have a length parameter to these functions
-int Expense::Author(Terminal *term, genericChar *employee_name)
+int Expense::Author(Terminal *term, const genericChar *employee_name)
 {
     FnTrace("Expense::Author()");
     UserDB *employee_db = &(term->system_data->user_db);
@@ -200,7 +200,7 @@ int Expense::Author(Terminal *term, genericChar *employee_name)
     return 0;
 }
 
-int Expense::DrawerOwner(Terminal *term, genericChar *drawer_name, Archive *archive)
+int Expense::DrawerOwner(Terminal *term, const genericChar *drawer_name, Archive *archive)
 {
     FnTrace("Expense::DrawerOwner(term)");
     if (term == NULL || drawer_name == NULL)
@@ -240,7 +240,7 @@ int Expense::DrawerOwner(Terminal *term, genericChar *drawer_name, Archive *arch
  *   accounts are modified they don't affect the historical accuracy.  When accounts
  *   are moved into the archvies, the archive argument here will become relevant.
  ****/
-int Expense::AccountName(Terminal *term, genericChar *account_name, Archive *archive)
+int Expense::AccountName(Terminal *term, const genericChar *account_name, Archive *archive)
 {
     FnTrace("Expense::AccountName()");
     if (term == NULL || account_name == NULL)
@@ -286,12 +286,12 @@ int Expense::Copy(Expense *original)
     return 0;
 }
 
-int my_atoi(genericChar *source)
+int my_atoi(const genericChar *source)
 {
     FnTrace("my_atoi");
     int retval = 0;
     int done = 0;
-    genericChar *curr = source;
+    const genericChar *curr = source;
 
     while (done == 0 && *curr != '\0')
     {
@@ -310,7 +310,7 @@ int my_atoi(genericChar *source)
     return retval;
 }
 
-int Expense::WordMatch(Terminal *term, genericChar *word)
+int Expense::WordMatch(Terminal *term, const genericChar *word)
 {
     FnTrace("Expense::WordMatch()");
     genericChar employee_name[STRLONG];
@@ -472,12 +472,12 @@ int ExpenseDB::Write(OutputDataFile &outfile, int version)
     return 0;
 }
 
-int ExpenseDB::Load(char *path)
+int ExpenseDB::Load(const char *path)
 {
     FnTrace("ExpenseDB::Load()");
     InputDataFile infile;
     struct dirent *record = NULL;
-    genericChar *name;
+    const genericChar *name;
     genericChar fullpath[STRLENGTH];
     int version = 0;
     int error = 0;
@@ -868,7 +868,7 @@ Expense *ExpenseDB::FindByID(int id)
  *  FindRecordByWord:  returns record number of matching expense
  *    or -1 on failure
  ****/
-int ExpenseDB::FindRecordByWord(Terminal *term, genericChar *word, int start, Archive *archive)
+int ExpenseDB::FindRecordByWord(Terminal *term, const genericChar *word, int start, Archive *archive)
 {
     FnTrace("ExpenseDB::FindRecordByWord()");
     Drawer *dlist = NULL;

@@ -44,7 +44,7 @@ public:
 
     int          RenderInit(Terminal *t, int update_flag);
     RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, genericChar *message);
+    SignalResult Signal(Terminal *t, const genericChar *message);
     SignalResult Touch(Terminal *t, int tx, int ty);
     int          Update(Terminal *t, int update_message);
 };

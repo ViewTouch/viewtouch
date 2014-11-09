@@ -97,7 +97,7 @@ RenderResult LoginZone::Render(Terminal *term, int update_flag)
     int col = color[0];
     int tmp;
     genericChar str[256];
-    genericChar *currChar;
+    const genericChar *currChar;
 
     Settings *settings = term->GetSettings();
     Employee *employee = term->user;
@@ -195,10 +195,10 @@ RenderResult LoginZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult LoginZone::Signal(Terminal *term, genericChar *message)
+SignalResult LoginZone::Signal(Terminal *term, const genericChar *message)
 {
     FnTrace("LoginZone::Signal()");
-    genericChar *commands[] = {
+    const genericChar *commands[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
         "start", "clear", "backspace", "clockin", "clockout",
         "job0", "job1", "job2", "passwordgood", "passwordfailed",
@@ -333,7 +333,7 @@ SignalResult LoginZone::Keyboard(Terminal *term, int my_key, int key_state)
     }
 }
 
-int LoginZone::Update(Terminal *term, int update_message, genericChar *value)
+int LoginZone::Update(Terminal *term, int update_message, const genericChar *value)
 {
     FnTrace("LoginZone::Update()");
     if (update_message & UPDATE_TIMEOUT)
@@ -761,10 +761,10 @@ RenderResult LogoutZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult LogoutZone::Signal(Terminal *term, genericChar *message)
+SignalResult LogoutZone::Signal(Terminal *term, const genericChar *message)
 {
     FnTrace("LogoutZone::Signal()");
-    genericChar *commands[] = {
+    const genericChar *commands[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "00",
             "cancel", "clockoff", "backspace", "clear", "save", "break", NULL};
 	int idx = CompareList(message, commands);

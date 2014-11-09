@@ -114,7 +114,7 @@ public:
     int Add(WorkEntry *w);
     int Remove(WorkEntry *w);
     int Purge();
-    int Scan(char *filename);
+    int Scan(const char *filename);
     int Load();
     int Unload();
     int Save();
@@ -146,7 +146,7 @@ public:
     LaborPeriod *PeriodListEnd() { return period_list.Tail(); }
     int          PeriodCount()   { return period_list.Count(); }
 
-    int Load(char *path);
+    int Load(const char *path);
     int Add(LaborPeriod *lp);
     int Remove(LaborPeriod *lp);
     int Purge();
@@ -190,7 +190,7 @@ public:
     int Add(WorkEntry *we);
     int Remove(WorkEntry *we);
     int Purge();
-    int Load(char *file);
+    int Load(const char *file);
     int Save();
     int Read(InputDataFile &df, int version);
     int Write(OutputDataFile &df, int version);

@@ -118,7 +118,7 @@ SignalResult MessageButtonZone::SendandJump(Terminal *term)
     SignalResult sig = SIGNAL_OKAY;
     char signal[STRLONG] = "";
     char command[STRLONG] = VIEWTOUCH_PATH;
-    char *validcommand = NULL;
+    const char *validcommand = NULL;
     int len = 0;
     int idx = 0;
 
@@ -175,11 +175,11 @@ SignalResult MessageButtonZone::Touch(Terminal *term, int tx, int ty)
     return sig;
 }
 
-SignalResult MessageButtonZone::Signal(Terminal *term, char *signal_msg)
+SignalResult MessageButtonZone::Signal(Terminal *term, const char *signal_msg)
 {
     FnTrace("MessageButtonZone::Signal()");
     SignalResult sig = SIGNAL_OKAY;
-    char *command_list[] = {
+    const char *command_list[] = {
         "sendandjump", NULL };
     int idx = CompareListN(command_list, signal_msg);
 
@@ -204,10 +204,10 @@ SignalResult MessageButtonZone::Signal(Terminal *term, char *signal_msg)
  *  Returns the validated command, or NULL if the command is invalid.  The
  *  source will also be modified if the command is valid.
  ****/
-char *MessageButtonZone::ValidateCommand(char *source)
+const char *MessageButtonZone::ValidateCommand(const char *source)
 {
     FnTrace("MessageButtonZone::ValidCommand()");
-    char *retval = NULL;
+    const char *retval = NULL;
     int len = strlen(source);
     int sidx = 0;
     char dest[STRLONG] = "";
@@ -251,7 +251,7 @@ char *MessageButtonZone::ValidateCommand(char *source)
 
 
 /**** ConditionalZone class ****/
-static genericChar *KeyWords[] = {
+static const genericChar *KeyWords[] = {
     "check", "guests", "subchecks", "settle", "order", "drawer",
     "drawercount", "orderbyseat", "developer", "flow", "assigned",
     "local", "supervisor", "manager", "editusers", "merchandise",
@@ -259,7 +259,7 @@ static genericChar *KeyWords[] = {
     "payexpenses", "fastfood", "lastendday", "licenseexpired",
     "checkbalanced", "haspayments", "training", "selectedorder", NULL};
 
-static genericChar *OperatorWords[] = {
+static const genericChar *OperatorWords[] = {
     "=", ">", "<", "!=", ">=", NULL};
 
 // Constructor
@@ -333,7 +333,7 @@ SignalResult ConditionalZone::Touch(Terminal *term, int tx, int ty)
     return sig;
 }
 
-int ConditionalZone::Update(Terminal *term, int update_message, genericChar *value)
+int ConditionalZone::Update(Terminal *term, int update_message, const genericChar *value)
 {
     FnTrace("ConditionalZone::Update()");
     if (update_message & (UPDATE_CHECKS))
@@ -494,9 +494,9 @@ int ConditionalZone::EvalExp(Terminal *term)
 }
 
 /**** ToggleZone Class ****/
-int StrStates(char *str)
+int StrStates(const char *str)
 {
-    genericChar *c = str, d = str[0];
+    const genericChar *c = str, d = str[0];
     int count = 0;
 
     while (*c)
@@ -505,9 +505,9 @@ int StrStates(char *str)
     return count;
 }
 
-int StrString(char *buffer, genericChar *str, int state)
+int StrString(const char *buffer, const genericChar *str, int state)
 {
-    genericChar *c = str, d = str[0];
+    const genericChar *c = str, d = str[0];
 
     while (*c)
     {
@@ -566,7 +566,7 @@ SignalResult ToggleZone::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_OKAY;
 }
 
-char *ToggleZone::TranslateString(Terminal *term)
+const char *ToggleZone::TranslateString(Terminal *term)
 {
     FnTrace("ToggleZone::TranslateString()");
     static genericChar str[256];
@@ -623,7 +623,7 @@ SignalResult KillSystemZone::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_OKAY;
 }
 
-int KillSystemZone::Update(Terminal *term, int update_message, genericChar *value)
+int KillSystemZone::Update(Terminal *term, int update_message, const genericChar *value)
 {
     FnTrace("KillSystemZone::Update()");
     if (update_message & UPDATE_USERS)
@@ -651,9 +651,9 @@ RenderResult StatusZone::Render(Terminal *term, int update_flag)
     return LayoutZone::Render(term, update_flag);
 }
 
-SignalResult StatusZone::Signal(Terminal *term, genericChar *message)
+SignalResult StatusZone::Signal(Terminal *term, const genericChar *message)
 {
-    genericChar *command_list[] = {
+    const genericChar *command_list[] = {
         "status", "clearstatus", NULL };
     int idx = CompareListN(command_list, message);
 

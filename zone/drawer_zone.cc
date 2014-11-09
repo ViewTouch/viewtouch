@@ -219,17 +219,17 @@ int ServerDrawerObj::Layout(Terminal *term, int lx, int ly, int lw, int lh)
 int ServerDrawerObj::Render(Terminal *term)
 {
     FnTrace("ServerDrawerObj::Render()");
-    static genericChar *unassigned = "UNASSIGNED";
+    static const genericChar *unassigned = "UNASSIGNED";
 
     term->RenderButton(x, y, w, h, ZF_RAISED, IMAGE_SAND);
-    genericChar *name;
+    const genericChar *name;
     int color;
     if (user)
     {
         name  = user->system_name.Value();
         color = COLOR_BLACK;
 
-        genericChar *j = user->JobTitle(term);
+        const genericChar *j = user->JobTitle(term);
         term->RenderText(j, x + (w/2), y + 26, COLOR_BLUE, FONT_TIMES_20B,
                       ALIGN_CENTER, w - 8);
     }
@@ -295,7 +295,7 @@ SignalResult DrawerAssignZone::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_IGNORED;
 }
 
-int DrawerAssignZone::Update(Terminal *term, int update_message, genericChar *value)
+int DrawerAssignZone::Update(Terminal *term, int update_message, const genericChar *value)
 {
     if (update_message & (UPDATE_USERS | UPDATE_DRAWERS))
         return Draw(term, 1);
@@ -766,10 +766,10 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult DrawerManageZone::Signal(Terminal *term, genericChar *message)
+SignalResult DrawerManageZone::Signal(Terminal *term, const genericChar *message)
 {
     FnTrace("DrawerManageZone::Signal()");
-    static genericChar *commands[] = {
+    static const genericChar *commands[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "00", "-",
         "backspace", "clear", "enter", "pull", "save", "change view",
         "localprint", "reportprint", "merge", "mergeterm", "mergeall", NULL};
@@ -1080,7 +1080,7 @@ SignalResult DrawerManageZone::Keyboard(Terminal *term, int my_key, int state)
     return SIGNAL_OKAY;
 }
 
-int DrawerManageZone::Update(Terminal *term, int update_message, genericChar *value)
+int DrawerManageZone::Update(Terminal *term, int update_message, const genericChar *value)
 {
     if (update_message & UPDATE_ARCHIVE)
         return Draw(term, RENDER_NEW);

@@ -267,7 +267,7 @@ long long CharQueue::GetLLong()
     return retval;
 }
 
-int CharQueue::PutString(char *str, int len)
+int CharQueue::PutString(const char *str, int len)
 {
     FnTrace("CharQueue::PutString()");
     Send8(TYPE_STRING);
@@ -283,7 +283,7 @@ int CharQueue::PutString(char *str, int len)
     return 0;
 }
 
-int CharQueue::GetString(char *str)
+int CharQueue::GetString(const char *str)
 {
     FnTrace("CharQueue::GetString()");
     int type = Read8();
@@ -356,7 +356,7 @@ int CharQueue::Write(int device_no, int do_clear)
     {
         int s = size;
         Uchar str[1024];
-        Uchar *c = str;
+        Uconst char *c = str;
         while (size > 0)
             *c++ = (Uchar) Get8();
         *c = '\0';

@@ -60,7 +60,7 @@ int Chart::Clear()
     return 0;
 }
 
-int Chart::AddColumn(char *name)
+int Chart::AddColumn(const char *name)
 {
     ChartCell *c = new ChartCell;
     c->text.Set(name);
@@ -73,7 +73,7 @@ int Chart::SortByColumn(int id)
     return 0;
 }
 
-int Chart::AddRowCell(char *text)
+int Chart::AddRowCell(const char *text)
 {
     if (current_row == NULL)
     {

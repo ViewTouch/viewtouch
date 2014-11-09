@@ -285,8 +285,8 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
         case SERVER_TRANSLATE:
         {
             int no = term->RInt8(); // translation count
-            genericChar *s1;
-            genericChar *s2;
+            const genericChar *s1;
+            const genericChar *s2;
             for (int i = 0; i < no; ++i)
             {
                 s1 = term->RStr(str);
@@ -311,7 +311,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             break;
         case SERVER_SWIPE:
         {
-            char *s1 = term->RStr();
+            const char *s1 = term->RStr();
             if (strlen(s1) < STRLENGTH)
             {
                 sprintf(str, "swipe %s", s1);
@@ -577,7 +577,7 @@ Terminal::~Terminal()
  *   we have a page but can't find the page we want, we'll use
  *   dialogs.
  ****/
-int Terminal::TerminalError(genericChar *message)
+int Terminal::TerminalError(const genericChar *message)
 {
     FnTrace("Terminal::TerminalError()");
     fprintf(stderr, message);  //comprehensive coverage
@@ -635,7 +635,7 @@ int Terminal::AllowBlanking(int allow)
  * SendTranslations:  We need to let the dialogs know about translations.  This is
  *  primarily for family names at the moment.
  ****/
-int Terminal::SendTranslations(char **name_list)
+int Terminal::SendTranslations(const char **name_list)
 {
     FnTrace("Terminal::SendTranslations()");
     int retval = 0;
@@ -818,7 +818,7 @@ int Terminal::JumpToIndex(int idx)
         return ChangePage(p);
 }
 
-int Terminal::RunScript(genericChar *script, int jump_type, int jump_id)
+int Terminal::RunScript(const genericChar *script, int jump_type, int jump_id)
 {
     FnTrace("Terminal::RunScript()");
     // FIX - parsing script (hack -- should redo)
@@ -1044,7 +1044,7 @@ int Terminal::FastStartLogin()
     return retval;
 }
 
-int Terminal::OpenTab(int phase, char *message)
+int Terminal::OpenTab(int phase, const char *message)
 {
     FnTrace("Terminal::OpenTab()");
     int retval = 0;
@@ -1144,7 +1144,7 @@ int Terminal::CloseTab(int serial_number)
     return retval;
 }
 
-int Terminal::OpenTabList(char *message)
+int Terminal::OpenTabList(const char *message)
 {
     FnTrace("Terminal::OpenTabList()");
     int retval = 0;
@@ -1202,12 +1202,12 @@ int Terminal::OpenTabList(char *message)
     return retval;
 }
 
-SignalResult Terminal::Signal(genericChar *message, int group_id)
+SignalResult Terminal::Signal(const genericChar *message, int group_id)
 {
     FnTrace("Terminal::Signal()");
     SimpleDialog *sd = NULL;
     char msg[STRLONG] = "";
-    static char *commands[] = {
+    static const char *commands[] = {
         "logout", "next archive", "prior archive", "open drawer",
         "shutdown", "systemrestart", "calibrate", "wagefilterdialog",
         "servernext", "serverprior", "serverview", "licensecheck",
@@ -1802,7 +1802,7 @@ int Terminal::LogoutUser(int update)
     return 0;
 }
 
-int Terminal::GetCheck(genericChar *label, int customer_type)
+int Terminal::GetCheck(const genericChar *label, int customer_type)
 {
     FnTrace("Terminal::GetCheck()");
     if (user == NULL ||
@@ -2090,7 +2090,7 @@ int Terminal::ForePage()
     return ChangePage(currPage);
 }
 
-int Terminal::Update(int update_message, genericChar *value)
+int Terminal::Update(int update_message, const genericChar *value)
 {
     FnTrace("Terminal::Update()");
     if (page == NULL)
@@ -2255,7 +2255,7 @@ int Terminal::OpenDialog(Zone *currZone)
 	return 0;
 }
 
-int Terminal::OpenDialog(genericChar *message)
+int Terminal::OpenDialog(const genericChar *message)
 {
     FnTrace("Terminal::OpenDialog()");
     return OpenDialog(new MessageDialog(message));
@@ -2379,7 +2379,7 @@ int Terminal::HomePage()
         return PAGEID_LOGIN;
 }
 
-int Terminal::UpdateAllTerms(int update_message, genericChar *value)
+int Terminal::UpdateAllTerms(int update_message, const genericChar *value)
 {
     FnTrace("Terminal::UpdateAllTerms()");
     if (parent)
@@ -2388,7 +2388,7 @@ int Terminal::UpdateAllTerms(int update_message, genericChar *value)
         return Update(update_message, value);
 }
 
-int Terminal::UpdateOtherTerms(int update_message, genericChar *value)
+int Terminal::UpdateOtherTerms(int update_message, const genericChar *value)
 {
     FnTrace("Terminal::UpdateOtherTerms()");
     if (parent)
@@ -2688,10 +2688,10 @@ int Terminal::UpdateZoneDB(Control *con)
  *  (str contains a list of 'symbols' contained within '{ }'
  *  and terminated by a null character)
  ****/
-genericChar *Terminal::ReplaceSymbols(genericChar *str)
+const genericChar *Terminal::ReplaceSymbols(const genericChar *str)
 {
     FnTrace("Terminal::ReplaceSymbols()");
-	static genericChar *symbols[] = {
+	static const genericChar *symbols[] = {
 		"release", "time", "date", "name", "termname", "machineid",
         "machinekey", "licensedays", "creditid", "debitid",
         "merchantid", NULL
@@ -2703,11 +2703,11 @@ genericChar *Terminal::ReplaceSymbols(genericChar *str)
 	if (edit || str == NULL)
 		return str;
 
-	genericChar *rawBuffer = buffer;
+	const genericChar *rawBuffer = buffer;
 	if (str)
 	{
 		genericChar tmp[STRLENGTH];
-        genericChar *thisStr = str;
+        const genericChar *thisStr = str;
 		while (*thisStr)
 		{
 			if (*thisStr != '{')
@@ -2717,7 +2717,7 @@ genericChar *Terminal::ReplaceSymbols(genericChar *str)
 			else
 			{
 				++thisStr;
-				genericChar *t = tmp;
+				const genericChar *t = tmp;
 
 				// fill tmp with chars from str until '}'
 				while (*thisStr && *thisStr != '}')
@@ -2923,7 +2923,7 @@ int Terminal::FontSize(int font_id, int &w, int &h)
     return GetFontSize(font_id, w, h);
 }
 
-int Terminal::TextWidth(genericChar *my_string, int len, int font_id)
+int Terminal::TextWidth(const genericChar *my_string, int len, int font_id)
 {
     FnTrace("Terminal::TextWidth()");
 
@@ -3008,14 +3008,14 @@ int Terminal::FinalizeOrders()
     return 0;
 }
 
-genericChar *Terminal::PageNo(int current, int page_max, int lang)
+const genericChar *Terminal::PageNo(int current, int page_max, int lang)
 {
     FnTrace("Terminal::PageNo()");
     static genericChar buffer[32];
     return MasterLocale->Page(current, page_max, lang, buffer);
 }
 
-genericChar *Terminal::UserName(int user_id)
+const genericChar *Terminal::UserName(int user_id)
 {
     FnTrace("Terminal::UserName(int)");
     Employee *e = system_data->user_db.FindByID(user_id);
@@ -3025,38 +3025,38 @@ genericChar *Terminal::UserName(int user_id)
         return Translate(UnknownStr);
 }
 
-genericChar *Terminal::UserName(genericChar *str, int user_id)
+const genericChar *Terminal::UserName(const genericChar *str, int user_id)
 {
     FnTrace("Terminal::UserName(str, int)");
     strcpy(str, UserName(user_id));
     return str;
 }
 
-genericChar *Terminal::FormatPrice(int price, int sign)
+const genericChar *Terminal::FormatPrice(int price, int sign)
 {
     FnTrace("Terminal::FormatPrice(int, int)");
     return PriceFormat(GetSettings(), price, sign, 1);
 }
 
-genericChar *Terminal::FormatPrice(genericChar *str, int price, int sign)
+const genericChar *Terminal::FormatPrice(const genericChar *str, int price, int sign)
 {
     FnTrace("Terminal::FormatPrice(str, int, int)");
     return PriceFormat(GetSettings(), price, sign, 1, str);
 }
 
-genericChar *Terminal::SimpleFormatPrice(int price)
+const genericChar *Terminal::SimpleFormatPrice(int price)
 {
     FnTrace("Terminal::SimpleFormatPrice(int)");
     return PriceFormat(GetSettings(), price, 0, 0);
 }
 
-genericChar *Terminal::SimpleFormatPrice(genericChar *str, int price)
+const genericChar *Terminal::SimpleFormatPrice(const genericChar *str, int price)
 {
     FnTrace("Terminal::SimpleFormatPrice(str, int)");
     return PriceFormat(GetSettings(), price, 0, 0, str);
 }
 
-int Terminal::PriceToInteger(genericChar *price)
+int Terminal::PriceToInteger(const genericChar *price)
 {
     FnTrace("Terminal::PriceToInteger()");
     int intprice = 0;
@@ -3078,19 +3078,19 @@ int Terminal::PriceToInteger(genericChar *price)
     return intprice;
 }
 
-genericChar *Terminal::Translate(genericChar *str, int lang, int clear)
+const genericChar *Terminal::Translate(const genericChar *str, int lang, int clear)
 {
     FnTrace("Terminal::Translate()");
     return MasterLocale->Translate(str, lang, clear);
 }
 
-genericChar *Terminal::TimeDate(TimeInfo &timevar, int format, int lang)
+const genericChar *Terminal::TimeDate(TimeInfo &timevar, int format, int lang)
 {
     FnTrace("Terminal::TimeDate(timeinfo, int, int)");
     return MasterLocale->TimeDate(GetSettings(), timevar, format, lang);
 }
 
-genericChar *Terminal::TimeDate(genericChar *buffer, TimeInfo &timevar, int format, int lang)
+const genericChar *Terminal::TimeDate(const genericChar *buffer, TimeInfo &timevar, int format, int lang)
 {
     FnTrace("Terminal::TimeDate(char, timeinfo, int, int)");
     return MasterLocale->TimeDate(GetSettings(), timevar, format, lang, buffer);
@@ -3192,7 +3192,7 @@ int Terminal::RenderBlankPage()
     last_page_size = page->size;
 
 	// FIX - 
-    genericChar *pn = Translate(ReplaceSymbols(page->name.Value()));
+    const genericChar *pn = Translate(ReplaceSymbols(page->name.Value()));
     genericChar str[STRLENGTH];
     if (edit)
     {
@@ -3261,7 +3261,7 @@ int Terminal::RenderBackground()
     return Send();
 }
 
-int Terminal::RenderText(genericChar *str, int x, int y, int color, int font,
+int Terminal::RenderText(const genericChar *str, int x, int y, int color, int font,
                          int align, int max_pixel_width, int mode)
 {
     FnTrace("Terminal::RenderText()");
@@ -3313,7 +3313,7 @@ int Terminal::RenderText(genericChar *str, int x, int y, int color, int font,
     return Send();
 }
 
-int Terminal::RenderTextLen(genericChar *str, int len, int x, int y, int color,
+int Terminal::RenderTextLen(const genericChar *str, int len, int x, int y, int color,
                             int font, int align, int max_pixel_width, int mode)
 {
     FnTrace("Terminal::RenderTextLen()");
@@ -3362,7 +3362,7 @@ int Terminal::RenderTextLen(genericChar *str, int len, int x, int y, int color,
     return Send();
 }
 
-int Terminal::RenderZoneText(genericChar *str, int x, int y, int w, int h, int color, int font)
+int Terminal::RenderZoneText(const genericChar *str, int x, int y, int w, int h, int color, int font)
 {
     FnTrace("Terminal::RenderZoneText");
     if (w <= 0 || h <= 0 || str == NULL)
@@ -3481,7 +3481,7 @@ int Terminal::RenderFilledFrame(int x, int y, int w, int h, int fw,
     return Send();
 }
 
-int Terminal::RenderStatusBar(Zone *z, int bar_color, genericChar *text,
+int Terminal::RenderStatusBar(Zone *z, int bar_color, const genericChar *text,
                               int text_color)
 {
     FnTrace("Terminal::RenderStatusBar()");
@@ -3665,7 +3665,7 @@ int Terminal::CalibrateTS()
     return SendNow();
 }
 
-int Terminal::SetMessage(genericChar *message)
+int Terminal::SetMessage(const genericChar *message)
 {
     FnTrace("Terminal::SetMessage()");
     if (message == NULL)
@@ -3852,9 +3852,9 @@ Flt Terminal::RFlt(Flt *val)
     return f;
 }
 
-int Terminal::WStr(genericChar *s, int len)
+int Terminal::WStr(const genericChar *s, int len)
 {
-    FnTrace("Terminal::WStr(char *, len)");
+    FnTrace("Terminal::WStr(const char *, len)");
     if (s == NULL)
         return buffer_out->PutString("", 0);
     else
@@ -3870,9 +3870,9 @@ int Terminal::WStr(Str *s)
         return buffer_out->PutString(s->Value(), s->length);
 }
 
-genericChar *Terminal::RStr(genericChar *s)
+const genericChar *Terminal::RStr(const genericChar *s)
 {
-    FnTrace("Terminal::RStr(char *)");
+    FnTrace("Terminal::RStr(const char *)");
     static genericChar buffer[1024];
     if (s == NULL)
         s = buffer;
@@ -3886,7 +3886,7 @@ genericChar *Terminal::RStr(genericChar *s)
     return s;
 }
 
-genericChar *Terminal::RStr(Str *s)
+const genericChar *Terminal::RStr(Str *s)
 {
     FnTrace("Terminal::RStr(str)");
     static genericChar str[1024] = "";
@@ -4696,11 +4696,11 @@ int Terminal::TranslateZone(Zone *z)
         return 1;
 
     edit_zone = z;
-    genericChar *k = z->TranslateString(this);
+    const genericChar *k = z->TranslateString(this);
     if (k == NULL || strlen(k) <= 0)
         return 1;
 
-    genericChar *v = MasterLocale->Translate(k);
+    const genericChar *v = MasterLocale->Translate(k);
     WInt8(TERM_TRANSLATE);
     WInt8(1);
     WStr(k);
@@ -4718,8 +4718,8 @@ int Terminal::TranslatePage(Page *p)
         return 1;
 
     edit_page = p;
-    genericChar *k = p->name.Value();
-    genericChar *v = MasterLocale->Translate(k);
+    const genericChar *k = p->name.Value();
+    const genericChar *v = MasterLocale->Translate(k);
 
     WInt8(TERM_TRANSLATE);
     WInt8(1);
@@ -4788,7 +4788,7 @@ int Terminal::ReadZone()
         Str tempstr;  // try to prevent buffer overflows
         genericChar str[STRLENGTH];
         genericChar iname[STRLONG];
-        genericChar *n;
+        const genericChar *n;
         tempstr.Set(RStr());  // get item name and copy it into str
         strncpy(str, tempstr.Value(), STRLENGTH - 1);
         if (tempstr.length >= STRLENGTH)  // make sure we don't get buffer overflow
@@ -5492,7 +5492,7 @@ int Terminal::CC_GetRefundCancel()
 #define CC_SYS_STATE_DONE    3
 #define CC_SYS_STATE_NEXT    4  // mostly for MainStreet
 
-int Terminal::CC_TermIDIsDupe(char *termid)
+int Terminal::CC_TermIDIsDupe(const char *termid)
 {
     FnTrace("Terminal::CC_TermIDIsDupe()");
     int retval = 0;
@@ -5545,7 +5545,7 @@ int Terminal::CC_GetTermIDList(Terminal *start_term)
  * Terminal IDs for those processors that need it (e.g. CreditCheq
  * Multi).  Returns 1 if another ID is found, 0 if we're all done.
  ****/
-int Terminal::CC_NextTermID(int *cc_state, char *termid)
+int Terminal::CC_NextTermID(int *cc_state, const char *termid)
 {
     FnTrace("Terminal::CC_NextTermID()");
     int retval = 0;
@@ -5600,7 +5600,7 @@ int Terminal::CC_NextBatch(int *state, BatchItem **currbatch, long long *batch)
     return retval;
 }
 
-int Terminal::CC_Settle(char *batch, int reset)
+int Terminal::CC_Settle(const char *batch, int reset)
 {
     FnTrace("Terminal::CC_Settle()");
     int retval                  = 1;
@@ -5695,7 +5695,7 @@ int Terminal::CC_Init()
     return retval;
 }
 
-int Terminal::CC_Totals(char *batch)
+int Terminal::CC_Totals(const char *batch)
 {
     FnTrace("Terminal::CC_Totals()");
     int retval = 1;
@@ -6091,7 +6091,7 @@ int Terminal::SetCCTimeout(int cc_timeout)
  * OpenTerminalSocket:  Unfortunately, the name was chosen poorly.  This function
  *  also starts vt_term.
  ****/
-int OpenTerminalSocket(char *hostname, int hardware_type, int isserver, int width, int height)
+int OpenTerminalSocket(const char *hostname, int hardware_type, int isserver, int width, int height)
 {
     FnTrace("OpenTerminalSocket()");
     int socket_no = -1;
@@ -6151,7 +6151,7 @@ int OpenTerminalSocket(char *hostname, int hardware_type, int isserver, int widt
     return socket_no;
 }
 
-Terminal* NewTerminal(genericChar *hostname, int hardware_type, int isserver)
+Terminal* NewTerminal(const genericChar *hostname, int hardware_type, int isserver)
 {
     FnTrace("NewTerminal()");
     int socket_no = -1;
@@ -6171,7 +6171,7 @@ Terminal* NewTerminal(genericChar *hostname, int hardware_type, int isserver)
     return term;
 }
 
-int CloneTerminal(Terminal *term, char *dest, char *name)
+int CloneTerminal(Terminal *term, const char *dest, const char *name)
 {
     FnTrace("CloneTerminal()");
     int retval = 0;

@@ -49,16 +49,16 @@ int  Verbose                   = 0;        // verbose mode
 /*********************************************************************
  * PROTOTYPES
  ********************************************************************/
-int  ParseArguments(int argc, char *argv[]);
+int  ParseArguments(int argc, const char *argv[]);
 int  SetAttributes(int fd);
-void ShowHelp(char *progname);
+void ShowHelp(const char *progname);
 int  PrintFromRemote(int my_socket, int serial_port);
 
 
 /*********************************************************************
  * MAIN LOOP
  ********************************************************************/
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
     int my_socket;
     int lock;
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 /****
  * ShowHelp:
  ****/
-void ShowHelp(char *progname)
+void ShowHelp(const char *progname)
 {
     printf("\n");
     printf("Usage:  %s [OPTIONS]\n", progname);
@@ -143,9 +143,9 @@ void ShowHelp(char *progname)
 /****
  * ParseArguments:
  ****/
-int ParseArguments(int argc, char *argv[])
+int ParseArguments(int argc, const char *argv[])
 {
-    char *arg;
+    const char *arg;
     int idx = 1;  // first command line argument past binary name
     int retval = 0;
 

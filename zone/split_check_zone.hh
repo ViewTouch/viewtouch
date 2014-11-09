@@ -45,7 +45,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_SPLIT_CHECK; }
     RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, genericChar *message);
+    SignalResult Signal(Terminal *t, const genericChar *message);
     SignalResult Touch(Terminal *t, int tx, int ty);
     int          ZoneStates() { return 1; }
 
@@ -65,7 +65,7 @@ public:
     // Member Functions
     int Type() { return ZONE_ITEM_TARGET; }
     RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, genericChar *message);
+    SignalResult Signal(Terminal *t, const genericChar *message);
     SignalResult Touch(Terminal *t, int tx, int ty);
     int          ZoneStates() { return 1; }
 

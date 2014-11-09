@@ -59,7 +59,7 @@ Email::~Email()
 /****
  * AddFrom:
  ****/
-int Email::AddFrom(char *address)
+int Email::AddFrom(const char *address)
 {
     FnTrace("Email::AddFrom()");
     int retval = 0;
@@ -203,7 +203,7 @@ int Email::PrintEmail()
 /****
  * Sock_ntop
  ****/
-char *Sock_ntop(const struct sockaddr_in *sa, socklen_t addrlen)
+const char *Sock_ntop(const struct sockaddr_in *sa, socklen_t addrlen)
 {
     char portstr[STRLENGTH];
     static char str[STRLENGTH];
@@ -303,7 +303,7 @@ int Accept(int socknum, char *remote_address)
  * Connect:  Connects to the server, returning the socket descriptor on success,
  *  0 on failure.
  *******/
-int Connect(char *host, char *service)
+int Connect(const char *host, const char *service)
 {
     int retval = 0;
     int sockfd;
@@ -349,7 +349,7 @@ int Connect(char *host, char *service)
  * Connect:  Connects to the server, returning the socket descriptor on success,
  *  0 on failure.
  *******/
-int Connect(char *host, int port)
+int Connect(const char *host, int port)
 {
     int retval = 0;
     int sockfd;

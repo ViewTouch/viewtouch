@@ -157,9 +157,9 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult PayoutZone::Signal(Terminal *term, genericChar *message)
+SignalResult PayoutZone::Signal(Terminal *term, const genericChar *message)
 {
-    static genericChar *commands[] = {
+    static const genericChar *commands[] = {
         "payout", "next", "prior", "print", "localprint", "reportprint", NULL};
 
     if (payout >= 0)
@@ -402,12 +402,12 @@ RenderResult EndDayZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult EndDayZone::Signal(Terminal *term, genericChar *message)
+SignalResult EndDayZone::Signal(Terminal *term, const genericChar *message)
 {
     SimpleDialog *d = NULL;
     char buffer[STRLENGTH];
     SignalResult retval = SIGNAL_IGNORED;
-    static genericChar *commands[] = {"end", "force end", "enddaydone",
+    static const genericChar *commands[] = {"end", "force end", "enddaydone",
                                       "enddayfailed", "cceodnosettle", NULL};
     int idx = CompareList(message, commands);
 
@@ -484,7 +484,7 @@ SignalResult EndDayZone::Signal(Terminal *term, genericChar *message)
     return retval;
 }
 
-int EndDayZone::Update(Terminal *term, int update_message, genericChar *value)
+int EndDayZone::Update(Terminal *term, int update_message, const genericChar *value)
 {
     if (update_message & UPDATE_MINUTE)
         Draw(term, 0);

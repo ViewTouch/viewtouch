@@ -69,12 +69,12 @@ public:
     Check       *NextCheck(Check *check, int sort_order);
     Check       *GetDisplayCheck(Terminal *term);
     Check       *GetCheckByNum(Terminal *term);
-    SignalResult Signal(Terminal *t, genericChar *message);
+    SignalResult Signal(Terminal *t, const genericChar *message);
     SignalResult Touch(Terminal *t, int tx, int ty);
     SignalResult Mouse(Terminal *t, int action, int mx, int my);
     SignalResult ToggleCheckReport(Terminal *term);
     SignalResult Keyboard(Terminal *t, int key, int state);
-    int          Update(Terminal *t, int update_message, genericChar *value);
+    int          Update(Terminal *t, int update_message, const genericChar *value);
     int          State(Terminal *term);
     int         *ReportType()        { return &report_type; }
     int         *CheckDisplayNum()   { return &check_disp_num; }
@@ -102,7 +102,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_READ; }
     RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, genericChar *message);
+    SignalResult Signal(Terminal *t, const genericChar *message);
     SignalResult Touch(Terminal *t, int tx, int ty);
     SignalResult Keyboard(Terminal *t, int key, int state);
 

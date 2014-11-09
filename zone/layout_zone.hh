@@ -52,24 +52,24 @@ public:
     virtual int          SetSize(Terminal *t, int width, int height);
     virtual int          ZoneStates() { return 1; }
 
-    Flt TextWidth(Terminal *t, genericChar *str, int len = 0);
+    Flt TextWidth(Terminal *t, const genericChar *str, int len = 0);
     int SetMargins(int left, int right);
-    int TextL(Terminal *t, Flt line, genericChar *text,
+    int TextL(Terminal *t, Flt line, const genericChar *text,
               int color = COLOR_DEFAULT, int mode = 0);
-    int TextC(Terminal *t, Flt line, genericChar *text,
+    int TextC(Terminal *t, Flt line, const genericChar *text,
               int color = COLOR_DEFAULT, int mode = 0);
-    int TextR(Terminal *t, Flt line, genericChar *text,
+    int TextR(Terminal *t, Flt line, const genericChar *text,
               int color = COLOR_DEFAULT, int mode = 0);
 
-    int TextPosL(Terminal *t, Flt row, Flt line, genericChar *text,
+    int TextPosL(Terminal *t, Flt row, Flt line, const genericChar *text,
                  int color = COLOR_DEFAULT, int mode = 0);
-    int TextPosC(Terminal *t, Flt row, Flt line, genericChar *text,
+    int TextPosC(Terminal *t, Flt row, Flt line, const genericChar *text,
                  int color = COLOR_DEFAULT, int mode = 0);
-    int TextPosR(Terminal *t, Flt row, Flt line, genericChar *text,
+    int TextPosR(Terminal *t, Flt row, Flt line, const genericChar *text,
                  int color = COLOR_DEFAULT, int mode = 0);
 
     int TextLR(Terminal *t, Flt line,
-               genericChar *l_text, int l_color, genericChar *r_text, int r_color);
+               const genericChar *l_text, int l_color, const genericChar *r_text, int r_color);
 
     int Line(Terminal *t, Flt line, int color = COLOR_DEFAULT);
     int LinePos(Terminal *t, Flt row, Flt line, Flt len,

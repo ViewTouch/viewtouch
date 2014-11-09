@@ -158,7 +158,7 @@ public:
     // Member Functions
     int Draw(Terminal *t, int update_flag);
     int CopyZone(Zone *target);
-    int RenderZone(Terminal *t, genericChar *text, int update_flag);
+    int RenderZone(Terminal *t, const genericChar *text, int update_flag);
     // current zone appearance
     int ChangeJumpID(int old_id, int new_id);
     int RenderShadow(Terminal *t);
@@ -173,13 +173,13 @@ public:
     virtual int          RenderInit(Terminal *t, int update_flag);
     virtual RenderResult Render(Terminal *t, int update_flag);
     virtual int          RenderInfo(Terminal *t);
-    virtual SignalResult Signal(Terminal *t, genericChar *message);
+    virtual SignalResult Signal(Terminal *t, const genericChar *message);
     virtual SignalResult Keyboard(Terminal *t, int key, int state);
     virtual SignalResult Touch(Terminal *t, int tx, int ty);
     virtual SignalResult Mouse(Terminal *t, int action, int mx, int my);
-    virtual int          Update(Terminal *t, int update_message, genericChar *value);
+    virtual int          Update(Terminal *t, int update_message, const genericChar *value);
     virtual int          ShadowVal(Terminal *t);
-    virtual genericChar        *TranslateString(Terminal *t);
+    virtual const genericChar        *TranslateString(Terminal *t);
     virtual int          SetSize(Terminal *t, int width, int height);
     virtual int          SetPosition(Terminal *t, int pos_x, int pos_y);
 
@@ -296,11 +296,11 @@ public:
 	RenderResult Render(Terminal *t, int update_flag,
                         int x, int y, int w, int h);
 	// Renders all zones that are in the given area
-	SignalResult Signal(Terminal *t, genericChar *message, int group_id);
+	SignalResult Signal(Terminal *t, const genericChar *message, int group_id);
 	// Passes signal to all zones on page
 	SignalResult Keyboard(Terminal *t, int key, int state);
 	// Passes keypress to all zones on page
-	int Update(Terminal *t, int update_message, genericChar *value);
+	int Update(Terminal *t, int update_message, const genericChar *value);
 	// Passes update message to all zones on page
 	int Class();
 	// returns page class (see definitions above)
@@ -346,11 +346,11 @@ public:
     ZoneDB *Copy();
     // Returns copy of ZoneDB with all pages
     int Init();
-    int Load(char *filename);
-    int Save(char *filename, int section);
-    int LoadPages(char *path);
+    int Load(const char *filename);
+    int Save(const char *filename, int section);
+    int LoadPages(const char *path);
     int SaveChangedPages();
-    int ImportPage(char *filename);
+    int ImportPage(const char *filename);
     int ImportPages();
     int ExportPage(Page *page);
     int Add(Page *p);
@@ -384,9 +384,9 @@ public:
 
     int References(Page *p, int *list, int max, int &count);
     int PageListReport(Terminal *t, int show_system, Report *r);
-    int ChangeItemName(char *old_name, genericChar *new_name);
+    int ChangeItemName(const char *old_name, const genericChar *new_name);
 
-    int PrintZoneDB(char *dest = NULL, int brief = 0);  // for debugging only
+    int PrintZoneDB(const char *dest = NULL, int brief = 0);  // for debugging only
 };
 
 #endif

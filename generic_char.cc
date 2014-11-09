@@ -10,7 +10,7 @@
 int is_wide_char = 0;   // zero for false, all else for true
 
 
-void GenericDrawString(Display *display, Drawable d, GC gc, int x, int y, genericChar *str, int length)
+void GenericDrawString(Display *display, Drawable d, GC gc, int x, int y, const genericChar *str, int length)
 {
     if (is_wide_char == 0)
     {

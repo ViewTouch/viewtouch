@@ -50,7 +50,7 @@ public:
     // Member Functions
     int   Render(Terminal *t);
     int   Draw(Terminal *t);
-    genericChar *Name(Terminal *t);
+    const genericChar *Name(Terminal *t);
     int   PartID();
     int   AddIngredient(Recipe *rc);
     int   RemoveIngredient(Recipe *rc);
@@ -65,7 +65,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_INVENTORY; }
     RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, genericChar *message);
+    SignalResult Signal(Terminal *t, const genericChar *message);
     SignalResult Mouse(Terminal *t, int action, int mx, int my);
     Flt         *Spacing() { return &list_spacing; }
 
@@ -74,7 +74,7 @@ public:
     int UpdateForm(Terminal *t, int record);
     int NewRecord(Terminal *t);
     int KillRecord(Terminal *t, int record);
-    int Search(Terminal *t, int record, genericChar *word);
+    int Search(Terminal *t, int record, const genericChar *word);
     int ListReport(Terminal *t, Report *r);
     int RecordCount(Terminal *t);
 };
@@ -100,7 +100,7 @@ public:
     int SaveRecord(Terminal *t, int record, int write_file);
     int NewRecord(Terminal *t);
     int KillRecord(Terminal *t, int record);
-    int Search(Terminal *t, int record, genericChar *word);
+    int Search(Terminal *t, int record, const genericChar *word);
     int ListReport(Terminal *t, Report *r);
     int RecordCount(Terminal *t);
 
@@ -124,7 +124,7 @@ public:
     int SaveRecord(Terminal *t, int record, int write_file);
     int NewRecord(Terminal *t);
     int KillRecord(Terminal *t, int record);
-    int Search(Terminal *t, int record, genericChar *word);
+    int Search(Terminal *t, int record, const genericChar *word);
     int ListReport(Terminal *t, Report *r);
     int RecordCount(Terminal *t);
 };
@@ -146,7 +146,7 @@ public:
 
     int LoadRecord(Terminal *t, int record);
     int SaveRecord(Terminal *t, int record, int write_file);
-    int Search(Terminal *t, int record, genericChar *word);
+    int Search(Terminal *t, int record, const genericChar *word);
     int ListReport(Terminal *t, Report *r);
     int RecordCount(Terminal *t);
 };
@@ -167,7 +167,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_INVOICE; }
     RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, genericChar *message);
+    SignalResult Signal(Terminal *t, const genericChar *message);
     SignalResult Touch(Terminal *t, int tx, int ty);
     SignalResult Mouse(Terminal *t, int action, int mx, int my);
     Flt         *Spacing() { return &list_spacing; }
@@ -176,7 +176,7 @@ public:
     int SaveRecord(Terminal *t, int record, int write_file);
     int NewRecord(Terminal *t);
     int KillRecord(Terminal *t, int record);
-    int Search(Terminal *t, int record, genericChar *word);
+    int Search(Terminal *t, int record, const genericChar *word);
     int ListReport(Terminal *t, Report *r);
     int RecordCount(Terminal *t);
 };

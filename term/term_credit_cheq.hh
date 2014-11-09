@@ -66,16 +66,16 @@ protected:
     char receipt[STRLONG];
     char formatted[STRLONG];
 
-    int ParseResponse(char *response);
+    int ParseResponse(const char *response);
     int ParseReceipt();
-    int Command(char *trans_type, char *sub_type);
+    int Command(const char *trans_type, const char *sub_type);
 
 public:
     CCard();
-    CCard(char *serv, char *prt, char *id);
-    int SendCheq(char *trans_type, char *sub_type);
-    int SendSAF(char *trans_type, char *sub_type);
-    int ReadCheq(char *buffer, int buffsize);
+    CCard(const char *serv, const char *prt, const char *id);
+    int SendCheq(const char *trans_type, const char *sub_type);
+    int SendSAF(const char *trans_type, const char *sub_type);
+    int ReadCheq(const char *buffer, int buffsize);
     int Read();
     int Write();
     int Clear();

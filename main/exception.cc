@@ -189,7 +189,7 @@ ExceptionDB::ExceptionDB()
 }
 
 // Member Functions
-int ExceptionDB::Load(char *file)
+int ExceptionDB::Load(const char *file)
 {
     FnTrace("ExceptionDB::Load()");
     if (file)

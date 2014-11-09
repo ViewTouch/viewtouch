@@ -121,8 +121,8 @@
 
 
 /**** Global Data ****/
-extern char *SalesGroupName[];
-extern char *SalesGroupShortName[];
+extern const char *SalesGroupName[];
+extern const char *SalesGroupShortName[];
 extern int   SalesGroupValue[];
 
 
@@ -182,7 +182,7 @@ public:
     int   allow_increase; // whether to show the OrderAddZone button.
 
     // Constructor
-    SalesItem(char *name = NULL);
+    SalesItem(const char *name = NULL);
 
     // Member Functions
     Component *ComponentList() { return component_list.Head(); }
@@ -198,17 +198,17 @@ public:
     // Reads SalesItem object from file
     int Write(OutputDataFile &df, int version);
     // Writes SalesItem object to file
-    char *Family(Terminal *t);
+    const char *Family(Terminal *t);
     // Returns string with family name
-    char *Printer(Terminal *t);
+    const char *Printer(Terminal *t);
     // Returns string with printer destination name
     int Price(Settings *s, int qualifier);
     // Returns eat-in price for item based on qualifier
-    char *ZoneName();
+    const char *ZoneName();
     // Text to be put on item zone for the menu item
-    char *PrintName();
+    const char *PrintName();
     // Name to be used when printing
-    char *CallCenterName(Terminal *t);
+    const char *CallCenterName(Terminal *t);
 };
 
 class GroupItem
@@ -259,7 +259,7 @@ public:
     GroupItem *GroupListEnd() { return group_list.Tail(); }
     int        GroupCount()   { return group_list.Count(); }
 
-    int Load(char *filename);
+    int Load(const char *filename);
     // Reads SalesItem records from file into object
     int Save();
     // Writes all SalesItem records from object to file
@@ -269,15 +269,15 @@ public:
     // Removes SalesItem from object
     int Purge();
     // Removes & deletes all SalesItem records from object
-    SalesItem *FindByName(char *name);
+    SalesItem *FindByName(const char *name);
     // Finds SalesItem by name
     SalesItem *FindByID(int id);
     // Finds SalesItem by ID value
     SalesItem *FindByRecord(int record);
     // Finds SalesItem by record position
-    SalesItem *FindByWord(char *word, int &record);
-    SalesItem *FindByCallCenterName(char *word, int &record);
-    SalesItem *FindByItemCode(char *code, int &record);
+    SalesItem *FindByWord(const char *word, int &record);
+    SalesItem *FindByCallCenterName(const char *word, int &record);
+    SalesItem *FindByItemCode(const char *code, int &record);
     // Finds SalesItem by key word
     int DeleteUnusedItems(ZoneDB *zone_db);
     // Deletes SalesItems that are not in zone_db
@@ -286,7 +286,7 @@ public:
 
 /**** Functions ****/
 int   MergeQualifier(int &flag, int qualifier);
-int   PrintItem(char *buffer, int qualifier, char *item);
-char *FilterName(char *name, char *buffer = NULL);
+int   PrintItem(const char *buffer, int qualifier, const char *item);
+const char *FilterName(const char *name, const char *buffer = NULL);
 
 #endif

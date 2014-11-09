@@ -29,7 +29,7 @@
 /**** Types ****/
 class CharQueue
 {
-    Uchar *buffer;
+    Uconst char *buffer;
     int  start;
     int  end;
     int  code;
@@ -47,7 +47,7 @@ public:
     CharQueue(int max_size);
     ~CharQueue();
 
-    void SetCode(char *new_name, int new_code)
+    void SetCode(const char *new_name, int new_code)
     {
         strncpy(name, new_name, 256);
         code = new_code;
@@ -69,8 +69,8 @@ public:
     long long PutLLong(long long val);
     long long GetLLong();
 
-    int  PutString(char *str, int len);
-    int  GetString(char *str);
+    int  PutString(const char *str, int len);
+    int  GetString(const char *str);
 
     int  Read(int device_no);
     int  Write(int device_no, int do_clear = 1);

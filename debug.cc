@@ -74,7 +74,7 @@ const genericChar *event_names[] = {
     "MappingNotify",
     "LASTEvent"
 };
-int num_events = sizeof(event_names) / sizeof(char *);
+int num_events = sizeof(event_names) / sizeof(const char *);
 /****
  *  GetXEventName:  a simple routine to pull the message name out of event_name
  *  and return it.
@@ -109,7 +109,7 @@ void PrintXEventName( XEvent event, const genericChar *function, FILE *stream )
     }
 }
 
-char *term_codes[] = {
+const char *term_codes[] = {
     "TERM_UPDATEALL",
     "TERM_UPDATEAREA",
     "TERM_SETCLIP",
@@ -200,7 +200,7 @@ char *term_codes[] = {
     "",
     "TERM_DIE"
 };
-int num_term_codes = sizeof( term_codes ) / sizeof( genericChar * );
+int num_term_codes = sizeof( term_codes ) / sizeof( const genericChar * );
 void PrintTermCode( int code )
 {
     if ( code < num_term_codes )
@@ -209,7 +209,7 @@ void PrintTermCode( int code )
     }
 }
 
-char *server_codes[] = {
+const char *server_codes[] = {
     "",
     "SERVER_ERROR",
     "SERVER_TERMINFO",
@@ -233,7 +233,7 @@ char *server_codes[] = {
     "SERVER_PRINTER_DONE",
     "SERVER_BADFILE"
 };
-int num_server_codes = sizeof( server_codes ) / sizeof( genericChar * );
+int num_server_codes = sizeof( server_codes ) / sizeof( const genericChar * );
 void PrintServerCode( int code )
 {
     if ( code < num_server_codes )
