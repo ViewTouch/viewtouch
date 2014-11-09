@@ -536,8 +536,8 @@ int Page::Init(ZoneDB *zone_db)
     case SIZE_1680x1050: width = 1680; height = 1050; break;
     case SIZE_1920x1080: width = 1920; height = 1080; break;
     case SIZE_1920x1200: width = 1920; height = 1200; break;
-    case SIZE_1680x1050: width = 2560; height = 1440; break;
-    case SIZE_1680x1050: width = 2560; height = 1600; break;
+    case SIZE_2560x1440: width = 2560; height = 1440; break;	
+    case SIZE_2560x1600: width = 2560; height = 1600; break;
 	}
 
 	// FIX - should look up these values instead of having hardcoded values

@@ -128,6 +128,7 @@ enum page_sizes {
     SIZE_1280x1024,
     SIZE_1366x768,
     SIZE_1440x900,
+    SIZE_1600x900,
     SIZE_1600x1200,
     SIZE_1680x1050,
     SIZE_1920x1080,

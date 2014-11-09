@@ -3164,8 +3164,9 @@ int Terminal::RenderBlankPage()
     if (page->IsTable())
     {
         if (page->size == SIZE_640x480 ||
-            page->size == SIZE_800x600 ||
-            page->size == SIZE_800x480)
+            page->size == SIZE_800x600 
+      //    || page->size == SIZE_800x480
+            )
         {
             WInt16(160);
         }
