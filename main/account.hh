@@ -45,12 +45,12 @@ public:
 
     // Constructors
     AccountEntry();
-    AccountEntry(const char *desc, int x);
+    AccountEntry(char *desc, int x);
 
     // Member Functions
     int Read(InputDataFile &df, int version);
     int Write(OutputDataFile &df, int version);
-    int Search(const genericChar *word);
+    int Search(genericChar *word);
 };
 
 class Account
@@ -70,8 +70,8 @@ public:
     // Constructor
     Account();
     Account(int no);
-    Account(int no, const genericChar *desc);
-    Account(const char *path, int no = 0, const char *namestr = "");
+    Account(int no, genericChar *desc);
+    Account(char *path, int no = 0, char *namestr = "");
 
     // Member Functions
     AccountEntry *EntryList()    { return entry_list.Head(); }
@@ -79,16 +79,16 @@ public:
     int           EntryCount()   { return entry_list.Count(); }
 
     Account *Copy();
-    int      Load(const char *path);
+    int      Load(char *path);
     int      Save();
     int      ReadEntries(InputDataFile &df);
     int      WriteEntries(OutputDataFile &df, int version);
     int      Add(AccountEntry *ae);
     int      Remove(AccountEntry *ae);
     int      Purge();
-    int      AddEntry(const char *desc, int amount);
+    int      AddEntry(char *desc, int amount);
     int      IsBlank();
-    int      Search(const genericChar *word);
+    int      Search(genericChar *word);
 };
 
 
@@ -118,7 +118,7 @@ public:
     int      RemoveBlank();
     Account *NewAccount(int number = 0);
     int      Sort();
-    int      Load(const char *path);
+    int      Load(char *path);
     int      Save();
     int      Save(Account *acct, int do_sort = 1);
     int      Add(Account *acct);
@@ -129,7 +129,7 @@ public:
     Account *FindByNumber(int no);
     Account *FindByRecord(int rec_num);
     int      FindRecordByNumber(int num);
-    int      FindRecordByWord(const genericChar *word, int record = -1);
+    int      FindRecordByWord(genericChar *word, int record = -1);
     Account *Next();
 };
 

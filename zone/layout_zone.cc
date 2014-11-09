@@ -92,7 +92,7 @@ int LayoutZone::SetSize(Terminal *t, int width, int height)
     return 0;
 }
 
-Flt LayoutZone::TextWidth(Terminal *t, const genericChar *str, int len)
+Flt LayoutZone::TextWidth(Terminal *t, genericChar *str, int len)
 {
     if (str == NULL)
         return 0.0;
@@ -114,7 +114,7 @@ int LayoutZone::SetMargins(int left, int right)
     return 0;
 }
 
-int LayoutZone::TextL(Terminal *t, Flt line, const genericChar *text, int my_color, int mode)
+int LayoutZone::TextL(Terminal *t, Flt line, genericChar *text, int my_color, int mode)
 {
     FnTrace("LayoutZone::TextL()");
     if (line < 0.0 || line >= size_y || text == NULL)
@@ -130,7 +130,7 @@ int LayoutZone::TextL(Terminal *t, Flt line, const genericChar *text, int my_col
     return 0;
 }
 
-int LayoutZone::TextC(Terminal *t, Flt line, const genericChar *text, int my_color, int mode)
+int LayoutZone::TextC(Terminal *t, Flt line, genericChar *text, int my_color, int mode)
 {
     FnTrace("LayoutZone::TextC()");
     if (line < 0.0 || line >= size_y || text == NULL)
@@ -146,7 +146,7 @@ int LayoutZone::TextC(Terminal *t, Flt line, const genericChar *text, int my_col
     return 0;
 }
 
-int LayoutZone::TextR(Terminal *t, Flt line, const genericChar *text, int my_color, int mode)
+int LayoutZone::TextR(Terminal *t, Flt line, genericChar *text, int my_color, int mode)
 {
     FnTrace("LayoutZone::TextR()");
     if (line < 0.0 || line >= size_y || text == NULL)
@@ -168,7 +168,7 @@ int LayoutZone::TextR(Terminal *t, Flt line, const genericChar *text, int my_col
     return 0;
 }
 
-int LayoutZone::TextPosL(Terminal *t, Flt row, Flt line, const genericChar *text,
+int LayoutZone::TextPosL(Terminal *t, Flt row, Flt line, genericChar *text,
                          int my_color, int mode)
 {
     FnTrace("LayoutZone::TextPosL()");
@@ -189,7 +189,7 @@ int LayoutZone::TextPosL(Terminal *t, Flt row, Flt line, const genericChar *text
     return 0;
 }
 
-int LayoutZone::TextPosC(Terminal *t, Flt row, Flt line, const genericChar *text,
+int LayoutZone::TextPosC(Terminal *t, Flt row, Flt line, genericChar *text,
                          int my_color, int mode)
 {
     FnTrace("LayoutZone::TextPosC()");
@@ -206,7 +206,7 @@ int LayoutZone::TextPosC(Terminal *t, Flt row, Flt line, const genericChar *text
     return 0;
 }
 
-int LayoutZone::TextPosR(Terminal *t, Flt row, Flt line, const genericChar *text,
+int LayoutZone::TextPosR(Terminal *t, Flt row, Flt line, genericChar *text,
                          int my_color, int mode)
 {
     FnTrace("LayoutZone::TextPosR()");
@@ -224,7 +224,7 @@ int LayoutZone::TextPosR(Terminal *t, Flt row, Flt line, const genericChar *text
 }
 
 int LayoutZone::TextLR(Terminal *t, Flt line,
-                       const genericChar *l_text, int l_color, const genericChar *r_text, int r_color)
+                       genericChar *l_text, int l_color, genericChar *r_text, int r_color)
 {
     FnTrace("LayoutZone::TextLR()");
     if (line < 0.0 || line >= size_y)

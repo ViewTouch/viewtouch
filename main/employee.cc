@@ -39,7 +39,7 @@
 
 
 /**** Global Data ****/
-const char *JobName[] = {
+char *JobName[] = {
     "No Job", "Dishwasher", "Busperson", "Line Cook", "Prep Cook", "Chef",
     "Cashier", "Server", "Server/Cashier", "Bartender", "Host/Hostess",
     "Bookkeeper", "Supervisor", "Assistant Manager", "Manager", NULL};
@@ -48,7 +48,7 @@ int JobValue[] = {
     JOB_CASHIER, JOB_SERVER, JOB_SERVER2, JOB_BARTENDER, JOB_HOST,
     JOB_BOOKKEEPER, JOB_MANAGER, JOB_MANAGER2, JOB_MANAGER3, -1};
 
-const char *PayRateName[] = {
+char *PayRateName[] = {
     "Hour", "Day", "Week", "Month", NULL};
 int PayRateValue[] = {
     PERIOD_HOUR, PERIOD_DAY, PERIOD_WEEK, PERIOD_MONTH, -1};
@@ -58,7 +58,7 @@ int PayRateValue[] = {
 int FixPhoneNumber(Str &phone)
 {
     genericChar str[32];
-    const genericChar *p = phone.Value(), *s = str;
+    genericChar *p = phone.Value(), *s = str;
     while (*p)
     {
         if (isdigit(*p) || *p == ' ')
@@ -77,14 +77,14 @@ int FixPhoneNumber(Str &phone)
     return 0;
 }
 
-const char *FormatPhoneNumber(Str &phone)
+char *FormatPhoneNumber(Str &phone)
 {
     static genericChar buffer[32];
     if (phone.length < 10)
         strcpy(buffer, "---");
     else
     {
-        const genericChar *p = phone.Value();
+        genericChar *p = phone.Value();
         genericChar str[16];
         sprintf(str, "%c%c%c-%c%c%c%c", p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
         if (p[0] != ' ')
@@ -98,7 +98,7 @@ const char *FormatPhoneNumber(Str &phone)
 int FixSSN(Str &ssn)
 {
     genericChar str[32];
-    const genericChar *n = ssn.Value(), *s = str;
+    genericChar *n = ssn.Value(), *s = str;
     while (*n)
     {
         if (isdigit(*n))
@@ -179,10 +179,10 @@ int JobInfo::Write(OutputDataFile &df, int version)
     return error;
 }
 
-const char *JobInfo::Title(Terminal *t)
+char *JobInfo::Title(Terminal *t)
 {
     FnTrace("JobInfo::Title()");
-    const genericChar *s = FindStringByValue(job, JobValue, JobName, UnknownStr);
+    genericChar *s = FindStringByValue(job, JobValue, JobName, UnknownStr);
     return t->Translate(s);
 }
 
@@ -230,7 +230,7 @@ UserDB::~UserDB()
 }
 
 // Member Functions
-int UserDB::Load(const char *file)
+int UserDB::Load(char *file)
 {
     FnTrace("UserDB::Load()");
     if (file)
@@ -407,7 +407,7 @@ Employee *UserDB::FindByKey(int key)
     return NULL;
 }
 
-Employee *UserDB::FindByName(const char *name)
+Employee *UserDB::FindByName(char *name)
 {
     FnTrace("UserDB::FindByName()");
     for (Employee *e = UserList(); e != NULL; e = e->next)
@@ -416,7 +416,7 @@ Employee *UserDB::FindByName(const char *name)
     return NULL;
 }
 
-Employee *UserDB::NameSearch(const char *name, Employee *user)
+Employee *UserDB::NameSearch(char *name, Employee *user)
 {
     FnTrace("UserDB::NameSearch()");
     if (name == NULL)
@@ -434,7 +434,7 @@ Employee *UserDB::NameSearch(const char *name, Employee *user)
     return NULL;
 }
 
-int UserDB::FindRecordByWord(Terminal *t, const genericChar *word, int active, int start)
+int UserDB::FindRecordByWord(Terminal *t, genericChar *word, int active, int start)
 {
     FnTrace("UserDB::FindRecordByWord()");
     int val = atoi(word);
@@ -900,11 +900,11 @@ JobInfo *Employee::FindJobByNumber(int no)
     return job_list.Index(no);
 }
 
-const char *Employee::JobTitle(Terminal *t)
+char *Employee::JobTitle(Terminal *t)
 {
     FnTrace("Employee::JobTitle()");
     JobInfo *j = NULL;
-    const char *retval = NULL;
+    char *retval = NULL;
 
     if (last_job > 0)
     {
@@ -923,7 +923,7 @@ const char *Employee::JobTitle(Terminal *t)
     return retval;
 }
 
-const char *Employee::SSN()
+char *Employee::SSN()
 {
     FnTrace("Employee::SSN()");
     return ssn.Value();

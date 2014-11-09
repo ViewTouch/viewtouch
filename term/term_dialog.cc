@@ -58,7 +58,7 @@
 // Other Definitions
 #define MARGIN 43
 
-const char **translations = NULL;
+char **translations = NULL;
 
 /*********************************************************************
  * Functions
@@ -127,7 +127,7 @@ DialogEntry::DialogEntry()
 }
 
 // Member Functions
-int DialogEntry::Init(Widget parent, const char *label)
+int DialogEntry::Init(Widget parent, char *label)
 {
     if (entry || container)
         return 1;
@@ -173,7 +173,7 @@ int DialogEntry::Show(int flag)
     return 0;
 }
 
-int DialogEntry::Set(const char *val)
+int DialogEntry::Set(char *val)
 {
     XmTextSetString(entry, val);
     return 0;
@@ -195,12 +195,12 @@ int DialogEntry::Set(Flt val)
     return 0;
 }
 
-const char *DialogEntry::Value()
+char *DialogEntry::Value()
 {
     return XmTextGetString(entry);
 }
 
-int DialogEntry::Get(const char *str)
+int DialogEntry::Get(char *str)
 {
     strcpy(XmTextGetString(entry), str);
     return 0;
@@ -256,10 +256,10 @@ int DialogMenu::Clear()
     return 0;
 }
 
-int DialogMenu::Init(Widget parent, const char *label, const char **option_name,
+int DialogMenu::Init(Widget parent, char *label, char **option_name,
                      int *option_value, void *option_cb, void *client_data)
 {
-    const char *name;
+    char *name;
 
     if (container == NULL)
     {
@@ -347,7 +347,7 @@ int DialogMenu::Set(int value)
     return 0;
 }
 
-int DialogMenu::SetLabel(const char *label)
+int DialogMenu::SetLabel(char *label)
 {
     XmString label_string;
 
@@ -396,8 +396,8 @@ DialogDoubleMenu::~DialogDoubleMenu()
 }
 
 // Member Functions
-int DialogDoubleMenu::Init(Widget parent, const char *label,
-                           const char **op1_name, int *op1_value, const char **op2_name, int *op2_value)
+int DialogDoubleMenu::Init(Widget parent, char *label,
+                           char **op1_name, int *op1_value, char **op2_name, int *op2_value)
 {
     int i;
 

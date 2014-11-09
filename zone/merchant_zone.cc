@@ -29,12 +29,12 @@
 
 
 /**** Module Data ****/
-static const genericChar *TimeZoneName[] = {
+static genericChar *TimeZoneName[] = {
     "Eastern", "Central", "Mountain", "Pacific", NULL};
 static int TimeZoneValue[] = {
     705, 706, 707, 708, -1};
 
-static const genericChar *LanguageName[] = {
+static genericChar *LanguageName[] = {
     "U.S. English", "Spanish", "Portuguese", NULL};
 static int LanguageValue[] = {
     0, 1, 2, -1};

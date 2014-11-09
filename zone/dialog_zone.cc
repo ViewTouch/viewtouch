@@ -72,7 +72,7 @@ DialogZone *NewPrintDialog(int no_report)
  * MessageDialog Class
  ********************************************************************/
 
-MessageDialog::MessageDialog(const char *text)
+MessageDialog::MessageDialog(char *text)
 {
     FnTrace("Messagedialog::MessageDialog()");
     name.Set(text);
@@ -90,7 +90,7 @@ MessageDialog::MessageDialog(const char *text)
  * ButtonObj Class
  ********************************************************************/
 
-ButtonObj::ButtonObj(const char *text, const genericChar *msg)
+ButtonObj::ButtonObj(char *text, genericChar *msg)
 {
     FnTrace("ButtonObj::ButtonObj()");
     color = COLOR_BLACK;
@@ -157,7 +157,7 @@ SignalResult DialogZone::Mouse(Terminal *term, int action, int mx, int my)
     return retval;
 }
 
-ButtonObj *DialogZone::Button(const char *text, const genericChar *message)
+ButtonObj *DialogZone::Button(char *text, genericChar *message)
 {
     FnTrace("DialogZone::Button()");
 
@@ -192,7 +192,7 @@ int DialogZone::ClosingAction(int action_type, int action, int arg)
     return retval;
 }
 
-int DialogZone::ClosingAction(int action_type, int action, const char *message)
+int DialogZone::ClosingAction(int action_type, int action, char *message)
 {
     FnTrace("DialogZone::ClosingAction()");
     int retval = 0;
@@ -270,9 +270,9 @@ SimpleDialog::SimpleDialog()
     FnTrace("SimpleDialog::SimpleDialog()");
 }
 
-SimpleDialog::SimpleDialog(const char *title, int form)
+SimpleDialog::SimpleDialog(char *title, int form)
 {
-    FnTrace("SimpleDialog::SimpleDialog(const char *, int)");
+    FnTrace("SimpleDialog::SimpleDialog(char *, int)");
     // format = 0 is horizontal layout of buttons
     // format = 1 is 2 columns and as many rows as necessary
     // format = 2 is as many rows and columns as necessary, with paging
@@ -427,7 +427,7 @@ SignalResult SimpleDialog::Touch(Terminal *term, int tx, int ty)
     if (zo)
     {
         zo->Draw(term, 1);
-        const genericChar *msg = ((ButtonObj *) zo)->message.Value();
+        genericChar *msg = ((ButtonObj *) zo)->message.Value();
         if (target_zone)
             target_zone->Signal(term, msg);
         else
@@ -442,7 +442,7 @@ SignalResult SimpleDialog::Touch(Terminal *term, int tx, int ty)
  * UnitAmountDialog Class
  ********************************************************************/
 
-UnitAmountDialog::UnitAmountDialog(const char *title, UnitAmount &u)
+UnitAmountDialog::UnitAmountDialog(char *title, UnitAmount &u)
 {
     FnTrace("UnitAmountDialog::UnitAmountDialog()");
     int i;
@@ -627,10 +627,10 @@ SignalResult UnitAmountDialog::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_IGNORED;
 }
 
-SignalResult UnitAmountDialog::Signal(Terminal *term, const genericChar *message)
+SignalResult UnitAmountDialog::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("UnitAmountDialog::Signal()");
-    static const genericChar *command[] = {
+    static genericChar *command[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".",
             "enter", "backspace", "cancel", NULL};
 
@@ -648,7 +648,7 @@ SignalResult UnitAmountDialog::Signal(Terminal *term, const genericChar *message
     case 10:  // .
     {
         int dp = 0;
-        const genericChar *c = buffer;
+        genericChar *c = buffer;
         while (*c)
             if (*c++ == '.')
                 dp = 1;
@@ -745,9 +745,9 @@ TenKeyDialog::TenKeyDialog()
     strncpy(return_message, "amount", STRLENGTH);
 }
 
-TenKeyDialog::TenKeyDialog(const char *title, int amount, int cancel, int dp)
+TenKeyDialog::TenKeyDialog(char *title, int amount, int cancel, int dp)
 {
-    FnTrace("TenKeyDialog::TenKeyDialog(const char *, int, int, int)");
+    FnTrace("TenKeyDialog::TenKeyDialog(char *, int, int, int)");
     int i;
 
     lit = NULL;
@@ -779,9 +779,9 @@ TenKeyDialog::TenKeyDialog(const char *title, int amount, int cancel, int dp)
     strncpy(return_message, "amount", STRLENGTH);
 }
 
-TenKeyDialog::TenKeyDialog(const char *title, const char *retmsg, int amount, int dp)
+TenKeyDialog::TenKeyDialog(char *title, char *retmsg, int amount, int dp)
 {
-    FnTrace("TenKeyDialog::TenKeyDialog(const char *, const char *, int, int)");
+    FnTrace("TenKeyDialog::TenKeyDialog(char *, char *, int, int)");
     int i;
 
     lit = NULL;
@@ -890,10 +890,10 @@ SignalResult TenKeyDialog::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_IGNORED;
 }
 
-SignalResult TenKeyDialog::Signal(Terminal *term, const genericChar *message)
+SignalResult TenKeyDialog::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("TenKeyDialog::Signal()");
-    static const genericChar *command[] = {
+    static genericChar *command[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
             "enter", "backspace", "cancel", NULL};
 
@@ -1008,9 +1008,9 @@ GetTextDialog::GetTextDialog()
     enterkey  = Button("Enter", "enter");
 }
 
-GetTextDialog::GetTextDialog(const char *msg, const char *retmsg, int mlen)
+GetTextDialog::GetTextDialog(char *msg, char *retmsg, int mlen)
 {
-    FnTrace("GetTextDialog::GetTextDialog(const char *)");
+    FnTrace("GetTextDialog::GetTextDialog(char *)");
     int i;
 
     lit = NULL;
@@ -1131,11 +1131,11 @@ RenderResult GetTextDialog::Render(Terminal *term, int update_flag)
     return retval;
 }
 
-SignalResult GetTextDialog::Signal(Terminal *term, const genericChar *message)
+SignalResult GetTextDialog::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("GetTextDialog::Signal()");
     SignalResult retval = SIGNAL_OKAY;
-    static const genericChar *commands[] = {
+    static genericChar *commands[] = {
         "backspace", "clear", "enter", "cancel", NULL};
     int idx = CompareList(message, commands);
     int error = 0;
@@ -1242,13 +1242,13 @@ int GetTextDialog::DrawEntry(Terminal *term)
 int GetTextDialog::AddChar(Terminal *term, genericChar val)
 {
     FnTrace("GetTextDialog::AddChar()");
-    static const genericChar *okay = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    static genericChar *okay = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     if (buffidx >= max_len)
         return 1;
 
     genericChar  v = toupper(val);
-    const genericChar *c = okay;
+    genericChar *c = okay;
     while (*c)
     {
         if (*c == v)
@@ -1284,9 +1284,9 @@ int GetTextDialog::Backspace(Terminal *term)
  * PasswordDialog Class
  ********************************************************************/
 
-PasswordDialog::PasswordDialog(const char *pw)
+PasswordDialog::PasswordDialog(char *pw)
 {
-    FnTrace("PasswordDialog::PasswordDialog(const char *)");
+    FnTrace("PasswordDialog::PasswordDialog(char *)");
 
     strcpy(password, pw);
     force_change = 0;
@@ -1357,10 +1357,10 @@ RenderResult PasswordDialog::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult PasswordDialog::Signal(Terminal *term, const genericChar *message)
+SignalResult PasswordDialog::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("PasswordDialog::Signal()");
-    static const genericChar *commands[] = {
+    static genericChar *commands[] = {
         "enter", "change", "cancel", NULL};
 
     Employee *e = term->user;
@@ -1501,7 +1501,7 @@ CreditCardAmountDialog::CreditCardAmountDialog()
     name.Set("Enter Amount of Tip");
 }
 
-CreditCardAmountDialog::CreditCardAmountDialog(Terminal *term, const char *title, int type)
+CreditCardAmountDialog::CreditCardAmountDialog(Terminal *term, char *title, int type)
 {
     FnTrace("CreditCardAmountDialog::CreditCardAmountDialog()");
 
@@ -1512,11 +1512,11 @@ CreditCardAmountDialog::CreditCardAmountDialog(Terminal *term, const char *title
         buffer = term->auth_amount;
 }
 
-SignalResult CreditCardAmountDialog::Signal(Terminal *term, const genericChar *message)
+SignalResult CreditCardAmountDialog::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("CreditCardAmountDialog::Signal()");
     SignalResult retval = SIGNAL_IGNORED;
-    static const genericChar *command[] = { "cancel", "enter", NULL };
+    static genericChar *command[] = { "cancel", "enter", NULL };
     CreditCardDialog *ccm = NULL;
 
     int idx = CompareList(message, command);
@@ -1585,7 +1585,7 @@ CreditCardEntryDialog::CreditCardEntryDialog()
  *  The format is 'swipe manual <PAN>=<Expiry>', with all non-numeric characters
  *  removed from both PAN and Expiry.
  ****/
-int CreditCardEntryDialog::FormatCCInfo(const char *dest, const char *number, const char *expire)
+int CreditCardEntryDialog::FormatCCInfo(char *dest, char *number, char *expire)
 {
     FnTrace("CreditCardEntryDialog::FormatCCInfo()");
     int retval = 0;
@@ -1623,7 +1623,7 @@ int CreditCardEntryDialog::FormatCCInfo(const char *dest, const char *number, co
     return retval;
 }
 
-int CreditCardEntryDialog::SetCurrent(Terminal *term, const char *set)
+int CreditCardEntryDialog::SetCurrent(Terminal *term, char *set)
 {
     FnTrace("CreditCardEntryDialog::SetCurrent()");
     int retval = 0;
@@ -1672,10 +1672,10 @@ SignalResult CreditCardEntryDialog::Touch(Terminal *term, int tx, int ty)
     return retval;
 }
 
-SignalResult CreditCardEntryDialog::Signal(Terminal *term, const genericChar *message)
+SignalResult CreditCardEntryDialog::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("CreditCardEntryDialog::Signal()");
-    static const genericChar *command[] = {
+    static genericChar *command[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
         "enter", "backspace", "cancel", NULL };
     int len;
@@ -1838,9 +1838,9 @@ CreditCardVoiceDialog::CreditCardVoiceDialog()
     hh = 80;
 }
 
-CreditCardVoiceDialog::CreditCardVoiceDialog(const char *msg, const char *retmsg, int mlen)
+CreditCardVoiceDialog::CreditCardVoiceDialog(char *msg, char *retmsg, int mlen)
 {
-    FnTrace("CreditCardVoiceDialog::CreditCardVoiceDialog(const char *, const char *, int)");
+    FnTrace("CreditCardVoiceDialog::CreditCardVoiceDialog(char *, char *, int)");
 
     if (msg != NULL)
         strcpy(display_string, msg);
@@ -1883,11 +1883,11 @@ RenderResult CreditCardVoiceDialog::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult CreditCardVoiceDialog::Signal(Terminal *term, const genericChar *message)
+SignalResult CreditCardVoiceDialog::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("CreditCardVoiceDialog::Signal()");
     SignalResult retval = SIGNAL_OKAY;
-    static const genericChar *commands[] = {
+    static genericChar *commands[] = {
         "enter", "cancel", NULL};
     int idx = CompareList(message, commands);
     int error = 0;
@@ -1937,28 +1937,28 @@ CreditCardDialog::CreditCardDialog()
     Init(NULL, NULL, NULL);
 }
 
-CreditCardDialog::CreditCardDialog(Terminal *term, const char *swipe_value)
+CreditCardDialog::CreditCardDialog(Terminal *term, char *swipe_value)
 {
-    FnTrace("CreditCardDialog::CreditCardDialog(Terminal, const char *)");
+    FnTrace("CreditCardDialog::CreditCardDialog(Terminal, char *)");
 
     authorizing = AUTH_NONE;
     SetMessage(NULL, NULL, NULL);
     Init(term, NULL, swipe_value);
 }
 
-CreditCardDialog::CreditCardDialog(Terminal *term, SubCheck *subch, const char *swipe_value)
+CreditCardDialog::CreditCardDialog(Terminal *term, SubCheck *subch, char *swipe_value)
 {
-    FnTrace("CreditCardDialog::CreditCardDialog(Terminal, SubCheck, const char *)");
+    FnTrace("CreditCardDialog::CreditCardDialog(Terminal, SubCheck, char *)");
 
     authorizing = AUTH_NONE;
     SetMessage(NULL, NULL, NULL);
     Init(term, subch, swipe_value);
 }
 
-CreditCardDialog::CreditCardDialog(Terminal *term, int action, const char *message)
+CreditCardDialog::CreditCardDialog(Terminal *term, int action, char *message)
 {
-    FnTrace("CreditCardDialog::CreditCardDialog(Terminal, int, const char *)");
-    const char *swipe_msg = WAIT_MSG;
+    FnTrace("CreditCardDialog::CreditCardDialog(Terminal, int, char *)");
+    char *swipe_msg = WAIT_MSG;
 
     authorizing = action;
     if (term != NULL && term->credit != NULL && term->credit->CardType() == CARD_TYPE_DEBIT)
@@ -1975,7 +1975,7 @@ CreditCardDialog::CreditCardDialog(Terminal *term, int action, const char *messa
  *  constructors will call this function, which will initialize
  *  everything.
  ********************************************************************/
-void CreditCardDialog::Init(Terminal *term, SubCheck *subch, const char *swipe_value)
+void CreditCardDialog::Init(Terminal *term, SubCheck *subch, char *swipe_value)
 {
     FnTrace("CreditCardDialog::Init()");
 
@@ -2056,7 +2056,7 @@ void CreditCardDialog::Init(Terminal *term, SubCheck *subch, const char *swipe_v
     }
 }
 
-const char *CreditCardDialog::SetMessage(Terminal *term, const char *msg1, const char *msg2)
+char *CreditCardDialog::SetMessage(Terminal *term, char *msg1, char *msg2)
 {
     FnTrace("SetMessage()");
 
@@ -2507,7 +2507,7 @@ SignalResult CreditCardDialog::Touch(Terminal *term, int tx, int ty)
     return retval;
 }
 
-int CreditCardDialog::SetAction(Terminal *term, int action, const char *msg1, const char *msg2)
+int CreditCardDialog::SetAction(Terminal *term, int action, char *msg1, char *msg2)
 {
     FnTrace("CreditCardDialog::SetAction()");
     int retval = 1;
@@ -2567,11 +2567,11 @@ int CreditCardDialog::DialogDone(Terminal *term)
     return retval;
 }
 
-SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar *message)
+SignalResult CreditCardDialog::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("CreditCardDialog::Signal()");
     SignalResult retval = SIGNAL_OKAY;
-    const char *commands[] = { "swipe ", "ccauthorize", "ccpreauth", "cccomplete",
+    char *commands[] = { "swipe ", "ccauthorize", "ccpreauth", "cccomplete",
                          "ccvoid", "ccrefund", "ccaddtip", "cccancel",
                          "ccmanual", "ccdone", "ccprocessed", "cccredit",
                          "ccdebit", "ccswipe", "ccundorefund", "ccclear",
@@ -2817,7 +2817,7 @@ SignalResult CreditCardDialog::Keyboard(Terminal *term, int my_key, int state)
 }
 
 
-int CreditCardDialog::ProcessSwipe(Terminal *term, const char *swipe_value)
+int CreditCardDialog::ProcessSwipe(Terminal *term, char *swipe_value)
 {
     FnTrace("CreditCardDialog::ProcessSwipe()");
     int retval = 0;
@@ -3122,10 +3122,10 @@ RenderResult JobFilterDialog::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult JobFilterDialog::Signal(Terminal *term, const genericChar *message)
+SignalResult JobFilterDialog::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("JobFilterDialog::Signal()");
-    static const genericChar *commands[] = {"okay", "cancel", NULL};
+    static genericChar *commands[] = {"okay", "cancel", NULL};
 
     int idx = CompareList(message, commands);
     switch (idx)
@@ -3223,7 +3223,7 @@ RenderResult OpenTabDialog::Render(Terminal *term, int update_flag)
     return retval;
 }
 
-int OpenTabDialog::SetCurrent(Terminal *term, const char *set)
+int OpenTabDialog::SetCurrent(Terminal *term, char *set)
 {
     FnTrace("OpenTabDialog::SetCurrent()");
     int retval = 0;
@@ -3270,11 +3270,11 @@ SignalResult OpenTabDialog::Touch(Terminal *term, int tx, int ty)
     return retval;
 }
 
-SignalResult OpenTabDialog::Signal(Terminal *term, const genericChar *message)
+SignalResult OpenTabDialog::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("OpenTabDialog::Signal()");
     SignalResult retval = SIGNAL_OKAY;
-    static const char *command[] = { "enter", "backspace", "cancel", "clear", NULL };
+    static char *command[] = { "enter", "backspace", "cancel", "clear", NULL };
     int len;
     int idx = CompareList(message, command);
 

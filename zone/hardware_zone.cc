@@ -45,16 +45,16 @@ int IsKitchenPrinter(int type)
 }
 
 /**** HardwareZone class ****/
-static const genericChar *DrawerCountName[] = {
+static genericChar *DrawerCountName[] = {
     "None", "One", "Two", NULL};
 static int DrawerCountValue[] = {
     0, 1, 2, -1};
 
-static const genericChar *TermHardwareName[] = {
+static genericChar *TermHardwareName[] = {
     "Server", "NCD Explora", "Neo Station", NULL};
 static int TermHardwareValue[] = { 0, 1, 2, -1 };
 
-static const genericChar *DrawerPulseName[] = {
+static genericChar *DrawerPulseName[] = {
     "Pulse 1", "Pulse 2", NULL };
 static int          DrawerPulseValue[] = {
     0, 1, -1 };
@@ -203,10 +203,10 @@ int HardwareZone::UpdateForm(Terminal *term, int record)
     return retval;
 }
 
-SignalResult HardwareZone::Signal(Terminal *term, const genericChar *message)
+SignalResult HardwareZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("HardwareZone::Signal()");
-    static const genericChar *commands[] = {
+    static genericChar *commands[] = {
         "section0", "section1", "changestatus", "calibrate",
         "testreceipt", "testreport",
         "printertest", "opendrawer1", "opendrawer2", NULL};

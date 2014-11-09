@@ -80,7 +80,7 @@ public:
     // Functions
     int AddToBranch(ItemCount *branch, ItemCount *ic);
     int KillBranch(ItemCount *ic);
-    ItemCount *SearchBranch(ItemCount *ic, const genericChar *name, int cost, int family);
+    ItemCount *SearchBranch(ItemCount *ic, genericChar *name, int cost, int family);
     int CountOrder(Order *o);
     int CountOrderNoFamily(Order *o);
     
@@ -99,9 +99,9 @@ public:
     
     int Purge() {
         return KillBranch(head); }
-    ItemCount *Find(const char *name, int cost, int family) {
+    ItemCount *Find(char *name, int cost, int family) {
         return SearchBranch(head, name, cost, family); }
-    ItemCount *Find(const char *name, int cost) {
+    ItemCount *Find(char *name, int cost) {
         return SearchBranch(head, name, cost, FAMILY_UNKNOWN); }
 };
 
@@ -301,7 +301,7 @@ int ItemCountTree::KillBranch(ItemCount *ic)
     return 0;
 }
 
-ItemCount *ItemCountTree::SearchBranch(ItemCount *ic, const genericChar *name, int cost,
+ItemCount *ItemCountTree::SearchBranch(ItemCount *ic, genericChar *name, int cost,
                                        int family)
 {
     FnTrace("ItemCountTree::SearchBranch()");
@@ -435,7 +435,7 @@ int FamilyItemReport(Terminal *t, ItemCount *branch, Report *report_list[],
         if (report_list[f] == NULL)
         {
             report_list[f] = new Report;
-            const genericChar *s = FindStringByValue(branch->family, FamilyValue, FamilyName, UnknownStr);
+            genericChar *s = FindStringByValue(branch->family, FamilyValue, FamilyName, UnknownStr);
             sprintf(str, "%s: %s", t->Translate("Family"), t->Translate(s));
             report_list[f]->Mode(PRINT_UNDERLINE | PRINT_BOLD);
             report_list[f]->TextL(str);
@@ -632,7 +632,7 @@ int System::SalesMixReport(Terminal *t, TimeInfo &start_time, TimeInfo &end,
     {
         // Make report for each family
         genericChar str[STRLENGTH];
-        const genericChar *str2;
+        genericChar *str2;
         int cost[MAX_FAMILIES];
         int count[MAX_FAMILIES];
         int weight[MAX_FAMILIES];

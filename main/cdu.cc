@@ -81,7 +81,7 @@ int CDUString::Write(OutputDataFile &outfile, int version)
     return 0;
 }
 
-int CDUString::GetLine(const genericChar *dest, int line)
+int CDUString::GetLine(genericChar *dest, int line)
 {
     FnTrace("CDUString::GetLine()");
     if (line < 0)
@@ -190,7 +190,7 @@ int CDUStrings::Write(OutputDataFile &outfile, int version)
     return errval;
 }
 
-int CDUStrings::Load(const char *path)
+int CDUStrings::Load(char *path)
 {
     FnTrace("CDUStrings::Load()");
     InputDataFile infile;
@@ -207,7 +207,7 @@ int CDUStrings::Load(const char *path)
     return result;
 }
 
-int CDUStrings::Save(const char *path)
+int CDUStrings::Save(char *path)
 {
     FnTrace("CDUStrings::Save()");
     OutputDataFile outfile;
@@ -310,7 +310,7 @@ CDUString *CDUStrings::FindByID(int id)
     return retString;
 }
 
-int CDUStrings::FindRecordByWord(const genericChar *word, int record)
+int CDUStrings::FindRecordByWord(genericChar *word, int record)
 {
     FnTrace("CDUStrings::FindRecordByWord()");
     return -1;
@@ -350,9 +350,9 @@ CustDispUnit::CustDispUnit()
     target[0]   = '\0';
 }
 
-CustDispUnit::CustDispUnit(const char *filename)
+CustDispUnit::CustDispUnit(char *filename)
 {
-    FnTrace("CustDispUnit::CustDispUnit(const char *)");
+    FnTrace("CustDispUnit::CustDispUnit(char *)");
     strncpy(filepath, filename, 256);
     port_open   = 0;
     filedes     = -1;
@@ -367,9 +367,9 @@ CustDispUnit::CustDispUnit(const char *filename)
     target[0]   = '\0';
 }
 
-CustDispUnit::CustDispUnit(const char *filename, int verbose)
+CustDispUnit::CustDispUnit(char *filename, int verbose)
 {
-    FnTrace("CustDispUnit::CustDispUnit(const char *, int)");
+    FnTrace("CustDispUnit::CustDispUnit(char *, int)");
     strncpy(filepath, filename, 256);
     port_open   = 0;
     filedes     = -1;
@@ -384,9 +384,9 @@ CustDispUnit::CustDispUnit(const char *filename, int verbose)
     target[0]   = '\0';
 }
 
-CustDispUnit::CustDispUnit(const char *filename, int verbose, int allow_delay)
+CustDispUnit::CustDispUnit(char *filename, int verbose, int allow_delay)
 {
-    FnTrace("CustDispUnit::CustDispUnit(const char *, int, int)");
+    FnTrace("CustDispUnit::CustDispUnit(char *, int, int)");
     strncpy(filepath, filename, 256);
     port_open   = 0;
     filedes     = -1;
@@ -546,7 +546,7 @@ int CustDispUnit::Write(const char *buffer, int len)
     return written;
 }
 
-int CustDispUnit::Read(const char *buffer, int len)
+int CustDispUnit::Read(char *buffer, int len)
 {
     FnTrace("CustDispUnit::Read()");
     int retval = 0;
@@ -721,7 +721,7 @@ const char SET_TIMER[]  = { 0x1F, 0x54, 0xFF, 0xFF, 0x00 };
 const char BRIGHTNESS[] = { 0x1F, 0x58, 0xFF, 0x00 };
 #define BRIGHT_POS      2
 
-EpsonDispUnit::EpsonDispUnit(const char *filename)
+EpsonDispUnit::EpsonDispUnit(char *filename)
 {
     FnTrace("EpsonDispUnit::EpsonDispUnit()");
     strncpy(filepath, filename, 256);
@@ -731,9 +731,9 @@ EpsonDispUnit::EpsonDispUnit(const char *filename)
     delay = 0;
 }
 
-EpsonDispUnit::EpsonDispUnit(const char *filename, int verbose)
+EpsonDispUnit::EpsonDispUnit(char *filename, int verbose)
 {
-    FnTrace("EpsonDispUnit::EpsonDispUnit(const char *, int)");
+    FnTrace("EpsonDispUnit::EpsonDispUnit(char *, int)");
     strncpy(filepath, filename, 256);
     port_open = 0;
     filedes = -1;
@@ -741,9 +741,9 @@ EpsonDispUnit::EpsonDispUnit(const char *filename, int verbose)
     delay = 0;
 }
 
-EpsonDispUnit::EpsonDispUnit(const char *filename, int verbose, int allow_delay)
+EpsonDispUnit::EpsonDispUnit(char *filename, int verbose, int allow_delay)
 {
-    FnTrace("EpsonDispUnit::EpsonDispUnit(const char *, int, int)");
+    FnTrace("EpsonDispUnit::EpsonDispUnit(char *, int, int)");
     strncpy(filepath, filename, 256);
     port_open = 0;
     filedes = -1;
@@ -865,7 +865,7 @@ const char BA63_COUNTRY[]  = { 0x1B, 0x52, 0xFF, 0x00 };
 const char BA63_PLACE0[]   = { 0x1B, 0x5B, 0x48, 0x00 };
 
 
-BA63DispUnit::BA63DispUnit(const char *filename)
+BA63DispUnit::BA63DispUnit(char *filename)
 {
     FnTrace("BA63DispUnit::BA63DispUnit()");
     strncpy(filepath, filename, 256);
@@ -875,9 +875,9 @@ BA63DispUnit::BA63DispUnit(const char *filename)
     delay = 0;
 }
 
-BA63DispUnit::BA63DispUnit(const char *filename, int verbose)
+BA63DispUnit::BA63DispUnit(char *filename, int verbose)
 {
-    FnTrace("BA63DispUnit::BA63DispUnit(const char *, int)");
+    FnTrace("BA63DispUnit::BA63DispUnit(char *, int)");
     strncpy(filepath, filename, 256);
     port_open = 0;
     filedes = -1;
@@ -885,9 +885,9 @@ BA63DispUnit::BA63DispUnit(const char *filename, int verbose)
     delay = 0;
 }
 
-BA63DispUnit::BA63DispUnit(const char *filename, int verbose, int allow_delay)
+BA63DispUnit::BA63DispUnit(char *filename, int verbose, int allow_delay)
 {
-    FnTrace("BA63DispUnit::BA63DispUnit(const char *, int, int)");
+    FnTrace("BA63DispUnit::BA63DispUnit(char *, int, int)");
     strncpy(filepath, filename, 256);
     port_open = 0;
     filedes = -1;
@@ -978,7 +978,7 @@ int BA63DispUnit::Brightness(int level)
  * GENERAL FUNCTIONS
  ********************************************************************/
 
-CustDispUnit *NewCDUObject(const char *filename, int type)
+CustDispUnit *NewCDUObject(char *filename, int type)
 {
     FnTrace("NewCDUObject()");
     CustDispUnit *CDURetval = NULL;

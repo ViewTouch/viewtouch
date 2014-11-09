@@ -57,7 +57,7 @@ RenderResult ChartZone::Render(Terminal *t, int update_flag)
     return PosZone::Render(t, update_flag);
 }
 
-SignalResult ChartZone::Signal(Terminal *t, const genericChar *message)
+SignalResult ChartZone::Signal(Terminal *t, genericChar *message)
 {
     return PosZone::Signal(t, message);
 }

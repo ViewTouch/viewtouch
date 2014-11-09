@@ -31,7 +31,7 @@
 /**** Data & Definitions ****/
 #define PAGES 16
 
-static const genericChar *PageName[] = {
+static genericChar *PageName[] = {
     "Days of Week", "Abrv. Days of Week", "Months", "Abrv. Months",
     "General", "Greetings", "Statements", "Commands", "Errors",
     "Meal Period Index Names", "Jobs", "Families 1", "Families 2",
@@ -71,7 +71,7 @@ int PhraseZone::LoadRecord(Terminal *t, int record)
         {
             f->active = 1;
             f->label.Set(PhraseData[idx].text);
-            const genericChar *v = l->Translate(PhraseData[idx].text);
+            genericChar *v = l->Translate(PhraseData[idx].text);
             if (v == PhraseData[idx].text)
                 f->Set("");
             else

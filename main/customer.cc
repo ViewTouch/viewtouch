@@ -105,7 +105,7 @@ int CustomerInfo::IsTraining(int set)
  *  create the new CustomerInfo object and then set the path with this
  *  method.
  ****/
-int CustomerInfo::SetFileName(const genericChar *filename)
+int CustomerInfo::SetFileName(genericChar *filename)
 {
     FnTrace("CustomerInfo::SetFileName()");
     genericChar buffer[STRLONG];
@@ -119,7 +119,7 @@ int CustomerInfo::SetFileName(const genericChar *filename)
  * Load:  See the note for SetFileName() for some possibly important
  *  information.
  ****/
-int CustomerInfo::Load(const genericChar *filename)
+int CustomerInfo::Load(genericChar *filename)
 {
     FnTrace("CustomerInfo::Load()");
     InputDataFile infile;
@@ -278,7 +278,7 @@ int CustomerInfo::DeleteFile()
     return retval;
 }
 
-int CustomerInfo::Search(const char *word)
+int CustomerInfo::Search(char *word)
 {
     FnTrace("CustomerInfo::Search()");
     int retval = 0;
@@ -311,7 +311,7 @@ int CustomerInfo::Guests(int set)
     return guests;
 }
 
-const genericChar *CustomerInfo::LastName(const char *set)
+genericChar *CustomerInfo::LastName(char *set)
 {
     FnTrace("CustomerInfo::LastName()");
 
@@ -321,7 +321,7 @@ const genericChar *CustomerInfo::LastName(const char *set)
     return lastname.Value();
 }
 
-const genericChar *CustomerInfo::FirstName(const char *set)
+genericChar *CustomerInfo::FirstName(char *set)
 {
     FnTrace("CustomerInfo::FirstName()");
 
@@ -331,7 +331,7 @@ const genericChar *CustomerInfo::FirstName(const char *set)
     return firstname.Value();
 }
 
-const genericChar *CustomerInfo::Company(const char *set)
+genericChar *CustomerInfo::Company(char *set)
 {
     FnTrace("CustomerInfo::Company()");
 
@@ -341,7 +341,7 @@ const genericChar *CustomerInfo::Company(const char *set)
     return company.Value();
 }
 
-const genericChar *CustomerInfo::PhoneNumber(const char *set)
+genericChar *CustomerInfo::PhoneNumber(char *set)
 {
     FnTrace("CustomerInfo::PhoneNumber()");
 
@@ -351,7 +351,7 @@ const genericChar *CustomerInfo::PhoneNumber(const char *set)
     return phone.Value();
 }
 
-const genericChar *CustomerInfo::Extension(const char *set)
+genericChar *CustomerInfo::Extension(char *set)
 {
     FnTrace("CustomerInfo::Extension()");
 
@@ -361,7 +361,7 @@ const genericChar *CustomerInfo::Extension(const char *set)
     return extension.Value();
 }
 
-const genericChar *CustomerInfo::Address(const char *set)
+genericChar *CustomerInfo::Address(char *set)
 {
     FnTrace("CustomerInfo::Address()");
 
@@ -371,7 +371,7 @@ const genericChar *CustomerInfo::Address(const char *set)
     return address.Value();
 }
 
-const genericChar *CustomerInfo::Address2(const char *set)
+genericChar *CustomerInfo::Address2(char *set)
 {
     FnTrace("CustomerInfo::Address2()");
 
@@ -381,7 +381,7 @@ const genericChar *CustomerInfo::Address2(const char *set)
     return address2.Value();
 }
 
-const genericChar *CustomerInfo::CrossStreet(const char *set)
+genericChar *CustomerInfo::CrossStreet(char *set)
 {
     FnTrace("CustomerInfo::CrossStreet()");
 
@@ -391,7 +391,7 @@ const genericChar *CustomerInfo::CrossStreet(const char *set)
     return cross_street.Value();
 }
 
-const genericChar *CustomerInfo::City(const char *set)
+genericChar *CustomerInfo::City(char *set)
 {
     FnTrace("CustomerInfo::City()");
 
@@ -401,7 +401,7 @@ const genericChar *CustomerInfo::City(const char *set)
     return city.Value();
 }
 
-const genericChar *CustomerInfo::State(const char *set)
+genericChar *CustomerInfo::State(char *set)
 {
     FnTrace("CustomerInfo::State()");
 
@@ -411,7 +411,7 @@ const genericChar *CustomerInfo::State(const char *set)
     return state.Value();
 }
 
-const genericChar *CustomerInfo::Postal(const char *set)
+genericChar *CustomerInfo::Postal(char *set)
 {
     FnTrace("CustomerInfo::Postal()");
 
@@ -421,7 +421,7 @@ const genericChar *CustomerInfo::Postal(const char *set)
     return postal.Value();
 }
 
-const genericChar *CustomerInfo::License(const char *set)
+genericChar *CustomerInfo::License(char *set)
 {
     FnTrace("CustomerInfo::License()");
 
@@ -431,7 +431,7 @@ const genericChar *CustomerInfo::License(const char *set)
     return license.Value();
 }
 
-const genericChar *CustomerInfo::CCNumber(const char *set)
+genericChar *CustomerInfo::CCNumber(char *set)
 {
     FnTrace("CustomerInfo::CCNumber()");
 
@@ -441,7 +441,7 @@ const genericChar *CustomerInfo::CCNumber(const char *set)
     return cc_number.Value();
 }
 
-const genericChar *CustomerInfo::CCExpire(const char *set)
+genericChar *CustomerInfo::CCExpire(char *set)
 {
     FnTrace("CustomerInfo::CCExpire()");
 
@@ -451,7 +451,7 @@ const genericChar *CustomerInfo::CCExpire(const char *set)
     return cc_expire.Value();
 }
 
-const genericChar *CustomerInfo::Comment(const char *set)
+genericChar *CustomerInfo::Comment(char *set)
 {
     FnTrace("CustomerInfo::Comment()");
 
@@ -461,7 +461,7 @@ const genericChar *CustomerInfo::Comment(const char *set)
     return comment.Value();
 }
 
-const genericChar *CustomerInfo::Vehicle(const char *set)
+genericChar *CustomerInfo::Vehicle(char *set)
 {
     FnTrace("CustomerInfo::Vehicle()");
 
@@ -526,7 +526,7 @@ int CustomerInfoDB::Count()
     return count;
 }
 
-int CustomerInfoDB::Save(const genericChar *filepath)
+int CustomerInfoDB::Save(genericChar *filepath)
 {
     FnTrace("CustomerInfoDB::Save(genericChar)");
     int retval = 1;
@@ -558,7 +558,7 @@ int CustomerInfoDB::Save(CustomerInfo *customer)
     return retval;
 }
 
-int CustomerInfoDB::Load(const genericChar *filepath)
+int CustomerInfoDB::Load(genericChar *filepath)
 {
     FnTrace("CustomerInfoDB::Load()");
     int retval = 0;
@@ -581,7 +581,7 @@ int CustomerInfoDB::Load(const genericChar *filepath)
         record = readdir(dp);
         if (record)
         {
-            const genericChar *name = record->d_name;
+            genericChar *name = record->d_name;
             if (strncmp("customer_", name, 9) == 0)
             {
                 strcpy(buffer, pathname.Value());
@@ -665,7 +665,7 @@ CustomerInfo *CustomerInfoDB::FindByID(int customer_id)
     return retval;
 }
 
-CustomerInfo *CustomerInfoDB::FindByString(const genericChar *search_string, int start)
+CustomerInfo *CustomerInfoDB::FindByString(genericChar *search_string, int start)
 {
     FnTrace("CustomerInfoDB::FindByString()");
     CustomerInfo *retval = NULL;

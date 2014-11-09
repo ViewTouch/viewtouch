@@ -54,55 +54,55 @@
  * Global Data
  ********************************************************************/
 
-const char *StoreName[] = {
+char *StoreName[] = {
     "Other", "SunWest", NULL};
 int StoreValue[] = {
     STORE_OTHER, STORE_SUNWEST, -1};
 
-const char *PayPeriodName[] = {
+char *PayPeriodName[] = {
     "Weekly", "2 Week", "4 Week", "Semi Monthly", "Semi Monthly 11/26", "Monthly", NULL};
 int PayPeriodValue[] = {
     PERIOD_WEEK, PERIOD_2WEEKS, PERIOD_4WEEKS,
     PERIOD_HALFMONTH, PERIOD_HM_11, PERIOD_MONTH, -1};
 
-const char *MealStartName[] = {
+char *MealStartName[] = {
     "Breakfast", "Brunch", "Lunch", "Early Dinner",
     "Dinner", "Late Night", NULL};
 int MealStartValue[] = {
     INDEX_BREAKFAST, INDEX_BRUNCH, INDEX_LUNCH,
     INDEX_EARLY_DINNER, INDEX_DINNER, INDEX_LATE_NIGHT, -1};
 
-const char *DrawerModeName[] = {
+char *DrawerModeName[] = {
     "Normal", "Assigned", "Server Bank", NULL};
 int   DrawerModeValue[] = {
     DRAWER_NORMAL, DRAWER_ASSIGNED, DRAWER_SERVER, -1};
 
-const char *SaleCreditName[] = {
+char *SaleCreditName[] = {
     "First Server", "Last Server", NULL};
 int SaleCreditValue[] = {
     1, 0, -1};
 
-const char *SalesPeriodName[] = {
+char *SalesPeriodName[] = {
     "None", "1 Week", "2 Weeks", "4 Weeks", "Once/Month", "11/26", NULL};
 int SalesPeriodValue[] = {
     SP_NONE, SP_WEEK, SP_2WEEKS, SP_4WEEKS, SP_MONTH, SP_HM_11, -1};
 
-const char *ReceiptPrintName[] = {
+char *ReceiptPrintName[] = {
     "On Send", "On Finalize", "On Both", "Never", NULL};
 int ReceiptPrintValue[] = {
     RECEIPT_SEND, RECEIPT_FINALIZE, RECEIPT_BOTH, RECEIPT_NONE, -1};
 
-const char *DrawerPrintName[] = {
+char *DrawerPrintName[] = {
     "On Pull", "On Balance", "On Both", "Never", NULL};
 int DrawerPrintValue[] = {
     DRAWER_PRINT_PULL, DRAWER_PRINT_BALANCE, DRAWER_PRINT_BOTH, DRAWER_PRINT_NEVER, -1};
 
-const char *RoundingName[] = {
+char *RoundingName[] = {
     "None", "Drop Pennies", "Round Up Gratuity", NULL};
 int RoundingValue[] = {
     ROUNDING_NONE, ROUNDING_DROP_PENNIES, ROUNDING_UP_GRATUITY, -1};
 
-const char *PrinterName[] = {
+char *PrinterName[] = {
     "None", "Kitchen1", "Kitchen2", "Bar1", "Bar2", "Expediter",
     "Kitchen1 notify2", "Kitchen2 notify1", "Remote Order",
     "Default", NULL};
@@ -112,36 +112,36 @@ int PrinterValue[] = {
     PRINTER_KITCHEN1_NOTIFY, PRINTER_KITCHEN2_NOTIFY,
     PRINTER_REMOTEORDER, PRINTER_DEFAULT, -1};
 
-const char *MeasureSystemName[] = {"Standard U.S.", "Metric", NULL};
+char *MeasureSystemName[] = {"Standard U.S.", "Metric", NULL};
 int   MeasureSystemValue[] = {MEASURE_STANDARD, MEASURE_METRIC, -1};
 
-const char *DateFormatName[] = {"MM/DD/YY", "DD/MM/YY", NULL };
+char *DateFormatName[] = {"MM/DD/YY", "DD/MM/YY", NULL };
 int   DateFormatValue[] = {DATE_MMDDYY, DATE_DDMMYY, -1};
 
-const char *NumberFormatName[] = {"1,000,000.00", "1.000.000,00", NULL};
+char *NumberFormatName[] = {"1,000,000.00", "1.000.000,00", NULL};
 int   NumberFormatValue[] = {NUMBER_STANDARD, NUMBER_EURO, -1};
 
-const char *TimeFormatName[] = {"12 hour", "24 hour", NULL};
+char *TimeFormatName[] = {"12 hour", "24 hour", NULL};
 int   TimeFormatValue[] = {TIME_12HOUR, TIME_24HOUR, -1};
 
 #ifdef CREDITMCVE
-const char *AuthorizeName[] = {"None", "MainStreet", NULL};
+char *AuthorizeName[] = {"None", "MainStreet", NULL};
 int   AuthorizeValue[] = {CCAUTH_NONE, CCAUTH_MAINSTREET, -1};
 int   ccauth_defined = CCAUTH_MAINSTREET;
 #elif defined CREDITCHEQ
-const char *AuthorizeName[] = {"None", "CreditCheq", NULL};
+char *AuthorizeName[] = {"None", "CreditCheq", NULL};
 int   AuthorizeValue[] = {CCAUTH_NONE, CCAUTH_CREDITCHEQ, -1};
 int   ccauth_defined = CCAUTH_CREDITCHEQ;
 #else
-const char *AuthorizeName[] = {"None", NULL};
+char *AuthorizeName[] = {"None", NULL};
 int   AuthorizeValue[] = {CCAUTH_NONE, -1};
 int   ccauth_defined = CCAUTH_NONE;
 #endif
 
-const char *MarkName[] = {" ", "X", NULL};
+char *MarkName[] = {" ", "X", NULL};
 int   MarkValue[] = {0, 1, -1};
 
-const char *HourName[] = {
+char *HourName[] = {
     "12am", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
     "12pm", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
     "12am", NULL};
@@ -1128,7 +1128,7 @@ Printer *PrinterInfo::FindPrinter(Control *control_db)
     return control_db->FindPrinter(host.Value(), port);
 }
 
-const char *PrinterInfo::Name()
+char *PrinterInfo::Name()
 {
     FnTrace("PrinterInfo::Name()");
     if (name.length > 0)
@@ -1359,7 +1359,7 @@ Settings::Settings()
     }
 }
 
-int Settings::Load(const char *file)
+int Settings::Load(char *file)
 {
     FnTrace("Settings::Load()");
     if (file)
@@ -2550,7 +2550,7 @@ int Settings::MealCount(int local, int active)
  *  a separate file if they are global.  That way, for example, global coupons
  *  can be created at one store and distributed to all stores.
  ****/
-int Settings::LoadMedia(const char *file)
+int Settings::LoadMedia(char *file)
 {
     FnTrace("Settings::LoadMedia()");
     if (file)
@@ -2824,7 +2824,7 @@ int Settings::SaveMedia()
  *  SaveAltMedia will give us a static snapshot; it should be called only
  *  when the file does not exist.
  ****/
-int Settings::SaveAltMedia(const genericChar *altmedia)
+int Settings::SaveAltMedia(genericChar *altmedia)
 {
     FnTrace("Settings::SaveAltMedia()");
     int retval = 0;
@@ -2888,7 +2888,7 @@ int Settings::SaveAltMedia(const genericChar *altmedia)
     return retval;
 }
 
-int Settings::SaveAltSettings(const genericChar *altsettings)
+int Settings::SaveAltSettings(genericChar *altsettings)
 {
     FnTrace("Settings::SaveAltSettings()");
     int retval = 0;
@@ -3039,7 +3039,7 @@ int Settings::NextShift(int shift)
     return shift;
 }
 
-int Settings::ShiftText(const char *str, int shift)
+int Settings::ShiftText(char *str, int shift)
 {
     FnTrace("Settings::ShiftText()");
     int t[2], ns = NextShift(shift);
@@ -3434,7 +3434,7 @@ int Settings::OvertimeWeek(TimeInfo &ref, TimeInfo &start, TimeInfo &end)
     return 0;
 }
 
-const char *Settings::StoreNum(const char *dest)
+char *Settings::StoreNum(char *dest)
 {
     FnTrace("Settings::StoreNum()");
     static char buffer[STRLONG] = "";
@@ -3558,10 +3558,10 @@ int Settings::FigureVAT(int amount, TimeInfo &timevar, Flt tax)
     return total_tax;
 }
 
-const char *Settings::TenderName(int tender_type, int tender_id, const genericChar *str)
+char *Settings::TenderName(int tender_type, int tender_id, genericChar *str)
 {
     FnTrace("Settings::TenderName()");
-    static const genericChar *name[] = {
+    static genericChar *name[] = {
         "Cash Received", "Check", "Gift Certificate", "House Account", "Overage",
         "Change", "Tip", "Payout", "Money Lost", "Gratuity", "Tips Paid",
         "ATM/Debit Card", "Credit Card Tip", "Expenses", "Cash", NULL};
@@ -3570,7 +3570,7 @@ const char *Settings::TenderName(int tender_type, int tender_id, const genericCh
         TENDER_CHANGE, TENDER_CAPTURED_TIP, TENDER_PAYOUT, TENDER_MONEY_LOST,
         TENDER_GRATUITY, TENDER_PAID_TIP, TENDER_DEBIT_CARD,
         TENDER_CHARGED_TIP, TENDER_EXPENSE, TENDER_CASH_AVAIL, -1};
-    const char *temp;
+    char *temp;
     static char buffer[STRLENGTH];
 
     // We should pass in a Terminal instance, I guess, so we can properly translate.
@@ -4442,7 +4442,7 @@ MealInfo *Settings::FindMealByID(int id)
     return NULL;
 }
 
-TermInfo *Settings::FindServer(const genericChar *displaystr)
+TermInfo *Settings::FindServer(genericChar *displaystr)
 {
     FnTrace("Settings::FindServer()");
     TermInfo *retti = NULL;
@@ -4472,7 +4472,7 @@ TermInfo *Settings::FindServer(const genericChar *displaystr)
     return retti;
 }
 
-TermInfo *Settings::FindTerminal(const char *displaystr)
+TermInfo *Settings::FindTerminal(char *displaystr)
 {
     FnTrace("Settings:FindTermEntry()");
     TermInfo *retti = NULL;

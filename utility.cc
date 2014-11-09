@@ -67,7 +67,7 @@ void FnPrintLast(int depth)
         fprintf(stderr, "    (%d) %s\n", i + 1, BT_Stack[i]);
     fprintf(stderr, "\n");
 }
-const char *FnReturnLast()
+char *FnReturnLast()
 {
     static char last[STRLENGTH];
 
@@ -112,7 +112,7 @@ void vt_init_setproctitle(int argc, char *argv[])
 /****
  * vt_setproctitle:  Returns 1 on error, 0 otherwise.
  ****/
-int vt_setproctitle(const char *title)
+int vt_setproctitle(char *title)
 {
     FnTrace("setproctitle()");
     int retval = 1;
@@ -163,7 +163,7 @@ Str::Str()
     data       = (char *) NULL;
 }
 
-Str::Str(const char *str)
+Str::Str(char *str)
 {
     next       = NULL;
     fore       = NULL;
@@ -207,9 +207,9 @@ int Str::Clear()
     return 0;
 }
 
-int Str::Set(const char *str)
+int Str::Set(char *str)
 {
-    FnTrace("Str::Set(const char *)");
+    FnTrace("Str::Set(char *)");
 	int len = 0;
 	if (str)
 		len = strlen(str);
@@ -295,7 +295,7 @@ Flt Str::FltValue()
         return 0.0;
 }
 
-const char *Str::Value()
+char *Str::Value()
 {
     FnTrace("Str::Value()");
     static genericChar blank_string[] = "";
@@ -309,7 +309,7 @@ const char *Str::Value()
  * ValueSet:  Always return the new value of the variable, but
  *  only set it if set is non-NULL.
  ****/
-const char *Str::ValueSet(const char *set)
+char *Str::ValueSet(char *set)
 {
     FnTrace("Str::ValueSet()");
     if (set)
@@ -320,8 +320,8 @@ const char *Str::ValueSet(const char *set)
 int Str::operator > (Str &s)
 {
     FnTrace("Str::operator >()");
-    const genericChar *s1 = Value();
-    const genericChar *s2 = s.Value();
+    genericChar *s1 = Value();
+    genericChar *s2 = s.Value();
 
     while (*s1 && *s2)
     {
@@ -338,8 +338,8 @@ int Str::operator > (Str &s)
 int Str::operator < (Str &s)
 {
     FnTrace("Str::operator <()");
-    const genericChar *s1 = Value();
-    const genericChar *s2 = s.Value();
+    genericChar *s1 = Value();
+    genericChar *s2 = s.Value();
 
     while (*s1 && *s2)
     {
@@ -359,8 +359,8 @@ int Str::operator == (Str &s)
     if (length != s.length)
         return 0;
 
-    const genericChar *s1 = Value();
-    const genericChar *s2 = s.Value();
+    genericChar *s1 = Value();
+    genericChar *s2 = s.Value();
 
     while (*s1)
     {
@@ -377,8 +377,8 @@ int Str::operator != (Str &s)
     if (length != s.length)
         return 1;
 
-    const genericChar *s1 = Value();
-    const genericChar *s2 = s.Value();
+    genericChar *s1 = Value();
+    genericChar *s2 = s.Value();
 
     while (*s1)
     {
@@ -453,9 +453,9 @@ int TimeInfo::Set(time_t t)
  *   "DD/MM/YYYY,HH:MM" in 24hour format
  *  Returns 1 on error, 0 on success.
  ****/
-int TimeInfo::Set(const genericChar *date_string)
+int TimeInfo::Set(genericChar *date_string)
 {
-    FnTrace("TimeInfo::Set(const genericChar *)");
+    FnTrace("TimeInfo::Set(genericChar *)");
     int idx = 0;
     int buffer;
     int retval = 0;
@@ -702,7 +702,7 @@ int TimeInfo::AdjustYears(int amount)
 genericChar *TimeInfo::DebugPrint(genericChar *dest)
 {
     FnTrace("TimeInfo::DebugPrint()");
-    genericChar buffer[STRLONG];
+    static genericChar buffer[STRLONG];
     if (dest == NULL)
         dest = buffer;
     snprintf(dest, STRLONG, "%d %d, %d  %d:%02d", month, mday, year, hour, min);
@@ -711,7 +711,7 @@ genericChar *TimeInfo::DebugPrint(genericChar *dest)
 
 /****
  * ToString:  converts the TimeInfo to a string that can later be
- *  parsed by Set(const char *): "DD/MM/YY,HH:MM" in 24hour format
+ *  parsed by Set(char *): "DD/MM/YY,HH:MM" in 24hour format
  ****/
 genericChar *TimeInfo::ToString(genericChar *dest)
 {
@@ -955,22 +955,22 @@ int Price::Write(OutputDataFile &df, int version)
     return 1;
 }
 
-const char *Price::Format(int sign)
+char *Price::Format(int sign)
 {
     return NULL;
 }
 
-const char *Price::Format(const char *buffer, int sign)
+char *Price::Format(char *buffer, int sign)
 {
     return NULL;
 }
 
-const char *Price::SimpleFormat()
+char *Price::SimpleFormat()
 {
     return NULL;
 }
 
-const char *Price::SimpleFormat(const char *buffer)
+char *Price::SimpleFormat(char *buffer)
 {
     return NULL;
 }
@@ -1137,7 +1137,7 @@ int AdjustCaseAndSpacing(char *str)
     return 0;
 }
 
-const genericChar *NextName(const genericChar *name, const genericChar **list)
+genericChar *NextName(genericChar *name, genericChar **list)
 {
     FnTrace("NextName()");
     int idx = 0;
@@ -1188,7 +1188,7 @@ int ForeValue(int val, int *val_array)
  *  found (or not found) after the previous token.  idx must point to a
  *  storage space for the index.  src is NOT modified by NextToken.
  ****/
-int NextToken(genericChar *dest, const genericChar *src, genericChar sep, int *idx)
+int NextToken(genericChar *dest, genericChar *src, genericChar sep, int *idx)
 {
     FnTrace("NextToken()");
     int destidx = 0;
@@ -1215,7 +1215,7 @@ int NextToken(genericChar *dest, const genericChar *src, genericChar sep, int *i
  * NextInteger:  Like NextToken, but converts the resulting string to
  *  an integer and stores that value in dest.
  ****/
-int NextInteger(int *dest, const genericChar *src, genericChar sep, int *idx)
+int NextInteger(int *dest, genericChar *src, genericChar sep, int *idx)
 {
     FnTrace("NextInteger()");
     genericChar buffer[STRLONG];
@@ -1301,7 +1301,7 @@ Flt PercentToFlt(int percent)
 }
 
 
-const char *FindStringByValue(int val, int val_list[], const genericChar *str_list[], const genericChar *unknown)
+char *FindStringByValue(int val, int val_list[], genericChar *str_list[], genericChar *unknown)
 {
     FnTrace("FindStringByValue()");
 
@@ -1314,7 +1314,7 @@ const char *FindStringByValue(int val, int val_list[], const genericChar *str_li
     return unknown;
 }
 
-int FindValueByString(const genericChar *val, int val_list[], const genericChar *str_list[], int unknown)
+int FindValueByString(genericChar *val, int val_list[], genericChar *str_list[], int unknown)
 {
     FnTrace("FindValueByString()");
     int retval = unknown;
@@ -1571,9 +1571,9 @@ int StringCompare(const genericChar *str1, const genericChar *str2, int len)
  ****/
 int StringInString(const genericChar *haystack, const genericChar *needle)
 {
-    const genericChar *c1 = (const genericChar *)haystack;
-    const genericChar *l1 = (const genericChar *)haystack;
-    const genericChar *c2 = (const genericChar *)needle;
+    genericChar *c1 = (genericChar *)haystack;
+    genericChar *l1 = (genericChar *)haystack;
+    genericChar *c2 = (genericChar *)needle;
     int match = 0;
 
     while (*c1 && *c2)
@@ -1590,7 +1590,7 @@ int StringInString(const genericChar *haystack, const genericChar *needle)
         {
             if (match)
             {
-                c2 = (const genericChar *)needle;
+                c2 = (genericChar *)needle;
                 c1 = l1;
             }
             match = 0;
@@ -1605,7 +1605,7 @@ int StringInString(const genericChar *haystack, const genericChar *needle)
 }
 
 // FIX - convert the following three functions into a single template if possible
-int CompareList(const genericChar *str, const genericChar *list[], int unknown)
+int CompareList(genericChar *str, genericChar *list[], int unknown)
 {
     FnTrace("CompareList(char)");
     for (int i = 0; list[i] != NULL; ++i)
@@ -1631,7 +1631,7 @@ int CompareList(int val, int list[], int unknown)
  * HasSpace:  returns 1 if word contains a space character,
  *   0 otherwise.
  ****/
-int HasSpace(const genericChar *word)
+int HasSpace(genericChar *word)
 {
     FnTrace("HasSpace()");
     int len = strlen(word);
@@ -1667,7 +1667,7 @@ int HasSpace(const genericChar *word)
  * if match
  *     return index within list (not within string)
  ****/
-int CompareListN(const genericChar *list[], const genericChar *word, int unknown)
+int CompareListN(genericChar *list[], genericChar *word, int unknown)
 {
     FnTrace("CompareListN()");
     int wordlen = strlen(word);
@@ -1702,7 +1702,7 @@ int CompareListN(const genericChar *list[], const genericChar *word, int unknown
 
 #define LOCK_DIR VIEWTOUCH_PATH "/bin/.lock"
 
-int LockDevice(const genericChar *devpath)
+int LockDevice(genericChar *devpath)
 {
     FnTrace("LockDevice()");
     int retval = 0;

@@ -43,7 +43,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_HARDWARE; }
     RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar *message);
+    SignalResult Signal(Terminal *t, genericChar *message);
     Flt         *Spacing() { return &list_spacing; }
 
     int UpdateForm(Terminal *term, int record);

@@ -40,9 +40,9 @@ public:
     // Member Functions
     int          Type() { return ZONE_LOGIN; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar *message);
+    SignalResult Signal(Terminal *term, genericChar *message);
     SignalResult Keyboard(Terminal *term, int key, int state);
-    int          Update(Terminal *term, int update_message, const genericChar *value);
+    int          Update(Terminal *term, int update_message, genericChar *value);
 
     int ClockOn(Terminal *term, int job = -1);
     int ClockOff(Terminal *term);
@@ -62,7 +62,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_LOGOUT; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar *message);
+    SignalResult Signal(Terminal *term, genericChar *message);
     SignalResult Keyboard(Terminal *term, int key, int state);
 
     int RenderPaymentEntry(Terminal *term, int line);

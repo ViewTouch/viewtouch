@@ -42,14 +42,14 @@
  * SwitchZone Class
  ********************************************************************/
 
-static const genericChar *PasswordName[] = {"No", "Managers Only", "Everyone", NULL};
+static genericChar *PasswordName[] = {"No", "Managers Only", "Everyone", NULL};
 static int PasswordValue[] = {PW_NONE, PW_MANAGERS, PW_ALL, -1};
 
 // octal values for ISO-8859-15:
 // \244	= Euro 			("€") 
 // \243 = British pound ("£")
 // " "  = no symbol
-static const genericChar *MoneySymbolName[] = { "$", "\244", "\243", " ", NULL };
+static genericChar *MoneySymbolName[] = { "$", "\244", "\243", " ", NULL };
 
 SwitchZone::SwitchZone()
 {
@@ -95,7 +95,7 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
 
 	int   col = COLOR_BLUE;
     int   onoff = -1;
-	const char *str = NULL;
+	char *str = NULL;
 	switch (type)
 	{
     case SWITCH_SEATS:
@@ -318,7 +318,7 @@ SignalResult SwitchZone::Touch(Terminal *term, int tx, int ty)
 	return SIGNAL_OKAY;
 }
 
-int SwitchZone::Update(Terminal *term, int update_message, const genericChar *value)
+int SwitchZone::Update(Terminal *term, int update_message, genericChar *value)
 {
     FnTrace("SwitchZone::Update()");
     if (update_message & UPDATE_SETTINGS)
@@ -330,7 +330,7 @@ int SwitchZone::Update(Terminal *term, int update_message, const genericChar *va
     return 0;
 }
 
-const char *SwitchZone::TranslateString(Terminal *term)
+char *SwitchZone::TranslateString(Terminal *term)
 {
     FnTrace("SwitchZone::TranslateString()");
     int idx = CompareList(type, SwitchValue);
@@ -822,7 +822,7 @@ int TaxSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
  * CCSettingsZone Class
  ********************************************************************/
 
-const genericChar *CCNumName[] = { "1234 5678 9012 3456", "xxxx xxxx xxxx 3456", NULL };
+genericChar *CCNumName[] = { "1234 5678 9012 3456", "xxxx xxxx xxxx 3456", NULL };
 
 CCSettingsZone::CCSettingsZone()
 {
@@ -1239,10 +1239,10 @@ int DeveloperZone::SaveRecord(Terminal *term, int record, int write_file)
     return 0;
 }
 
-SignalResult DeveloperZone::Signal(Terminal *term, const genericChar *message)
+SignalResult DeveloperZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("DeveloperZone::Signal()");
-    static const genericChar *commands[] = {"clearsystem", "clear system", "clearsystemall",
+    static genericChar *commands[] = {"clearsystem", "clear system", "clearsystemall",
                                       "clearsystemsome", NULL};
     SimpleDialog *sd = NULL;
 
@@ -1281,8 +1281,8 @@ SignalResult DeveloperZone::Signal(Terminal *term, const genericChar *message)
 #define CP_TYPE_PERCENT  1
 #define CP_TYPE_SUBST    2
 
-static const char *TS_TypeName[] = {"dollar value", "percent of price", NULL};
-static const char *CP_TypeName[] = {"dollar value", "percent of price",
+static char *TS_TypeName[] = {"dollar value", "percent of price", NULL};
+static char *CP_TypeName[] = {"dollar value", "percent of price",
                               "substitute price", NULL};
 static int CP_TypeValue[] = { CP_TYPE_DOLLAR, CP_TYPE_PERCENT,
                               CP_TYPE_SUBST, -1 };
@@ -1435,10 +1435,10 @@ RenderResult TenderSetZone::Render(Terminal *term, int update_flag)
 	return RENDER_OKAY;
 }
 
-SignalResult TenderSetZone::Signal(Terminal *term, const genericChar *message)
+SignalResult TenderSetZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("TenderSetZone::Signal()");
-	static const genericChar *commands[] = {"section", "clearstart",
+	static genericChar *commands[] = {"section", "clearstart",
                                       "clearend", "clearweekday", NULL};
     SignalResult retval = SIGNAL_OKAY;
     int draw = 1;
@@ -2421,14 +2421,14 @@ RenderResult TimeSettingsZone::Render(Terminal *term, int update_flag)
 
     if (meal >= 0)
     {
-		const char *strMealLabel = FindStringByValue(meal, IndexValue, IndexName, UnknownStr);
+		char *strMealLabel = FindStringByValue(meal, IndexValue, IndexName, UnknownStr);
         sprintf(str, "%s: %s", term->Translate("Current Meal"), term->Translate(strMealLabel));
         TextPosR(term, size_x-10, 8, str, COLOR_DK_GREEN);
     }
     return RENDER_OKAY;
 }
 
-int TimeSettingsZone::Update(Terminal *term, int update_message, const genericChar *value)
+int TimeSettingsZone::Update(Terminal *term, int update_message, genericChar *value)
 {
     FnTrace("TimeSettingsZone::Update()");
     if (update_message & UPDATE_MINUTE)
@@ -2615,7 +2615,7 @@ RenderResult TaxSetZone::Render(Terminal *term, int update_flag)
     return ListFormZone::Render(term, update_flag);
 }
 
-SignalResult TaxSetZone::Signal(Terminal *term, const genericChar *message)
+SignalResult TaxSetZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("TaxSetZone::Signal()");
     return ListFormZone::Signal(term, message);
@@ -2672,7 +2672,7 @@ RenderResult MoneySetZone::Render(Terminal *term, int update_flag)
     return ListFormZone::Render(term, update_flag);
 }
 
-SignalResult MoneySetZone::Signal(Terminal *term, const genericChar *message)
+SignalResult MoneySetZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("MoneySetZone::Signal()");
     return ListFormZone::Signal(term, message);

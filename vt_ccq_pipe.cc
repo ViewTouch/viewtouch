@@ -68,22 +68,22 @@ int  use_rtscts             = 0;
 int  time_limit             = 0;  // time limit for inactive connection
 int  check_interval         = 0;  // how often to check if time limit is exceeded
 
-int  SocketToSerial(int listen_fd, const char *pinpad_device);
-int  SocketToSocket(int listen_fd, const char *host, int port);
-int  OpenSerial(const char *serial_port);
-void ShowHelp(const char *progname);
-int  ParseArguments(int argc, const char *argv[]);
+int  SocketToSerial(int listen_fd, char *pinpad_device);
+int  SocketToSocket(int listen_fd, char *host, int port);
+int  OpenSerial(char *serial_port);
+void ShowHelp(char *progname);
+int  ParseArguments(int argc, char *argv[]);
 int  ProcessConnection(int sockfd, int serialfd);
-int  ReadCmd(int fd, const char *dest, int destlen);
-int  Read(int fd, const char *buffer, int bufflen);
-int  Write(int fd, const char *buffer, int bufflen);
-void PrintRead(const char *label, const char *buffer, int bufflen);
+int  ReadCmd(int fd, char *dest, int destlen);
+int  Read(int fd, char *buffer, int bufflen);
+int  Write(int fd, char *buffer, int bufflen);
+void PrintRead(char *label, char *buffer, int bufflen);
 
 
 /*********************************************************************
  * Main Loop
  ********************************************************************/
-int main(int argc, const char *argv[])
+int main(int argc, char *argv[])
 {
     int retval = 0;
 
@@ -107,7 +107,7 @@ int main(int argc, const char *argv[])
 /****
  * SocketToSerial:
  ****/
-int SocketToSerial(int listen_port, const char *pinpad_device)
+int SocketToSerial(int listen_port, char *pinpad_device)
 {
     int      retval = 0;
     int      listen_fd = -1;
@@ -208,7 +208,7 @@ int SocketToSerial(int listen_port, const char *pinpad_device)
 /****
  * SocketToSocket:
  ****/
-int SocketToSocket(int listen_port, const char *host, int port)
+int SocketToSocket(int listen_port, char *host, int port)
 {
     int      retval = 0;
     int      listen_fd = -1;
@@ -289,7 +289,7 @@ int SocketToSocket(int listen_port, const char *host, int port)
 /****
  * OpenSerial:
  ****/
-int OpenSerial(const char *serial_port)
+int OpenSerial(char *serial_port)
 {
     int serial_fd = -1;
     struct termios options;
@@ -332,7 +332,7 @@ int OpenSerial(const char *serial_port)
 /****
  * ShowHelp:
  ****/
-void ShowHelp(const char *progname)
+void ShowHelp(char *progname)
 {
     printf("\n");
     printf("Usage:  %s [OPTIONS]\n", progname);
@@ -358,9 +358,9 @@ void ShowHelp(const char *progname)
 /****
  * ParseArguments:
  ****/
-int ParseArguments(int argc, const char *argv[])
+int ParseArguments(int argc, char *argv[])
 {
-    const char *arg;
+    char *arg;
     int idx = 1;  // first command line argument past binary name
     int retval = 0;
 
@@ -504,7 +504,7 @@ int ProcessConnection(int serverfd, int pinpadfd)
  *  (including STX) through the ETX (ASCII 0x03) and the following
  *  LRC.
  ****/
-int ReadCmd(int fd, const char *dest, int destlen)
+int ReadCmd(int fd, char *dest, int destlen)
 {
     int  readlen = 0;
     int  done = 0;
@@ -552,7 +552,7 @@ int ReadCmd(int fd, const char *dest, int destlen)
     return destidx;
 }
 
-int Read(int fd, const char *buffer, int bufflen)
+int Read(int fd, char *buffer, int bufflen)
 {
     int readlen = 0;
     char errbuff[STRLENGTH];
@@ -577,7 +577,7 @@ int Read(int fd, const char *buffer, int bufflen)
     return readlen;
 }
 
-int Write(int fd, const char *buffer, int bufflen)
+int Write(int fd, char *buffer, int bufflen)
 {
     int writelen = 0;
     int bytes;
@@ -599,7 +599,7 @@ int Write(int fd, const char *buffer, int bufflen)
     return writelen;
 }
 
-void PrintRead(const char *label, const char *buffer, int bufflen)
+void PrintRead(char *label, char *buffer, int bufflen)
 {
     int idx = 0;
 

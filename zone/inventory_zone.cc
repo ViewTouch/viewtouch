@@ -174,10 +174,10 @@ RenderResult ProductZone::Render(Terminal *t, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult ProductZone::Signal(Terminal *term, const genericChar *message)
+SignalResult ProductZone::Signal(Terminal *term, genericChar *message)
 {
 	FnTrace("ProductZone::Signal()");
-	static const genericChar *commands[] = {
+	static genericChar *commands[] = {
 		"count", "increase", "decrease", "cancel", "save",
 		"input", "next stock", "prior stock", "check", "print", NULL};
 
@@ -478,7 +478,7 @@ int ProductZone::RecordCount(Terminal *t)
     return t->system_data->inventory.ProductCount();
 }
 
-int ProductZone::Search(Terminal *t, int record, const genericChar *word)
+int ProductZone::Search(Terminal *t, int record, genericChar *word)
 {
     FnTrace("ProductZone::Search()");
     int r = 0;
@@ -532,7 +532,7 @@ int RC_Part::Render(Terminal *t)
     if (rc)
         color = COLOR_BLUE;
 
-    const genericChar *n = Name(t);
+    genericChar *n = Name(t);
     if (rp)
     {
         genericChar str[256];
@@ -552,7 +552,7 @@ int RC_Part::Draw(Terminal *t)
     return 0;
 }
 
-const char *RC_Part::Name(Terminal *t)
+char *RC_Part::Name(Terminal *t)
 {
     FnTrace("RC_Part::Name()");
     static genericChar str[256];
@@ -838,7 +838,7 @@ int RecipeZone::KillRecord(Terminal *t, int record)
     return 0;
 }
 
-int RecipeZone::Search(Terminal *t, int record, const genericChar *word)
+int RecipeZone::Search(Terminal *t, int record, genericChar *word)
 {
     FnTrace("RecipeZone::Search()");
     int r = 0;
@@ -1085,7 +1085,7 @@ int VendorZone::KillRecord(Terminal *t, int record)
     return 0;
 }
 
-int VendorZone::Search(Terminal *t, int record, const genericChar *word)
+int VendorZone::Search(Terminal *t, int record, genericChar *word)
 {
     FnTrace("VendorZone::Search()");
     int r = 0;
@@ -1258,8 +1258,8 @@ int ItemListZone::SaveRecord(Terminal *t, int record, int write_file)
         if (item_name != si->item_name)
         {
             name_change = 1;
-            const genericChar *old_name = si->item_name.Value();
-            const genericChar *new_name = FilterName(item_name.Value());
+            genericChar *old_name = si->item_name.Value();
+            genericChar *new_name = FilterName(item_name.Value());
             sys->inventory.ChangeRecipeName(old_name, new_name);
             Terminal *term = t->parent->TermList();
             while (term)
@@ -1294,7 +1294,7 @@ int ItemListZone::SaveRecord(Terminal *t, int record, int write_file)
     return 0;
 }
 
-int ItemListZone::Search(Terminal *t, int record, const genericChar *word)
+int ItemListZone::Search(Terminal *t, int record, genericChar *word)
 {
     FnTrace("ItemListZone::Search()");
     int r = 0;
@@ -1466,10 +1466,10 @@ RenderResult InvoiceZone::Render(Terminal *t, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult InvoiceZone::Signal(Terminal *t, const genericChar *message)
+SignalResult InvoiceZone::Signal(Terminal *t, genericChar *message)
 {
     FnTrace("InvoiceZone::Signal()");
-    static const genericChar *commands[] = {
+    static genericChar *commands[] = {
         "print", "save", "next", "prior", "input", "cancel", "edit",
             "next stock", "prior stock", NULL};
 
@@ -1695,7 +1695,7 @@ int InvoiceZone::KillRecord(Terminal *t, int record)
     return 1;
 }
 
-int InvoiceZone::Search(Terminal *t, int record, const genericChar *word)
+int InvoiceZone::Search(Terminal *t, int record, genericChar *word)
 {
     FnTrace("InvoiceZone::Search()");
     return 1;

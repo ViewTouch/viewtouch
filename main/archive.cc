@@ -86,9 +86,9 @@ Archive::Archive(TimeInfo &end)
     cc_settle_results      = NULL;
 }
 
-Archive::Archive(Settings *settings, const char *file)
+Archive::Archive(Settings *settings, char *file)
 {
-    FnTrace("Archive::Archive(Settings, const char *)");
+    FnTrace("Archive::Archive(Settings, char *)");
     filename.Set(file);
     next               = NULL;
     fore               = NULL;
@@ -152,13 +152,13 @@ Archive::Archive(Settings *settings, const char *file)
 }
 
 // Member Functions
-int Archive::LoadUnpacked(Settings *, const char *path)
+int Archive::LoadUnpacked(Settings *, char *path)
 {
     FnTrace("Archive::LoadUnpacked()");
     return 1; // FIX - finish Archive::LoadUnpacked()
 }
 
-int Archive::LoadPacked(Settings *settings, const char *file)
+int Archive::LoadPacked(Settings *settings, char *file)
 {
     FnTrace("Archive::LoadPacked()");
     char str[STRLENGTH];

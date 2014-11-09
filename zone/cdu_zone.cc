@@ -103,11 +103,11 @@ RenderResult CDUZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult CDUZone::Signal(Terminal *term, const genericChar *message)
+SignalResult CDUZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("CDUZone::Signal()");
     SignalResult signal = SIGNAL_IGNORED;
-    static const genericChar *commands[] = {"next", "prior", "change view",
+    static genericChar *commands[] = {"next", "prior", "change view",
                                       "restore", "new", NULL};
     int idx = CompareListN(commands, message);
     int draw = 0;
@@ -419,7 +419,7 @@ int CDUZone::PrintRecord(Terminal *term, int record)
     return 0;
 }
 
-int CDUZone::Search(Terminal *term, int record, const genericChar *word)
+int CDUZone::Search(Terminal *term, int record, genericChar *word)
 {
     FnTrace("CDUZone::Search()");
     int search_rec;

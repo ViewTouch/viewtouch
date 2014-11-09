@@ -119,8 +119,8 @@ struct LicenseData;
  * Function Prototypes
  ********************************************************************/
 int    ParseFile();
-int    GetUnameInfo(const char *buffer, int bufflen);
-int    GetCurrentDirectory(const char *dirstring, int maxlen);
+int    GetUnameInfo(char *buffer, int bufflen);
+int    GetCurrentDirectory(char *dirstring, int maxlen);
 int    CheckLicense(LicenseData *licensedat);
 int    PrintLicense(LicenseData *license);
 
@@ -197,7 +197,7 @@ TempLicenseData temp_license;
  *  This should be called immediately before writing the data to the license file and
  *  immediately after reading it back in.
  *******/
-int GetLicenseDigest(LicenseData *licensedat, const char *digest_string, int maxlen)
+int GetLicenseDigest(LicenseData *licensedat, char *digest_string, int maxlen)
 {
     FnTrace("GetLicenseDigest()");
     int retval = 0;
@@ -233,7 +233,7 @@ int GetLicenseDigest(LicenseData *licensedat, const char *digest_string, int max
  *  ViewTouch isn't running.
  *  Returns 0 on success, 1 otherwise.
  ****/
-int GetCurrentDirectory(const char *dirstring, int maxlen)
+int GetCurrentDirectory(char *dirstring, int maxlen)
 {
     FnTrace("GetCurrentDirectory()");
     DIR *currdir;
@@ -286,7 +286,7 @@ int GetCurrentDirectory(const char *dirstring, int maxlen)
  * KeyValue:  Given a key/value pair, determines whether it's useful and
  *  stores it in our LicenseData struct if so.
  ****/
-int KeyValue(LicenseData *licensedat, const genericChar *key, const genericChar *value)
+int KeyValue(LicenseData *licensedat, genericChar *key, genericChar *value)
 {
     FnTrace("KeyValue()");
     int retval = 0;
@@ -618,7 +618,7 @@ int SystemShutDown()
 int FreeHostEnt(struct hostent *hp)
 {
     FnTrace("FreeHostEnt()");
-    const char **ptr;
+    char **ptr;
 
     if (hp != NULL)
     {
@@ -652,7 +652,7 @@ int WriteHostEnt(int fd, struct hostent *hp)
     int retval = 1;
     char buffer[STRLONG];
     char addr[STRLONG];
-    const char **ptr;
+    char **ptr;
     int count;
 
     if (fd > 0 && hp != NULL)
@@ -700,7 +700,7 @@ struct hostent *ReadHostEnt(int fd)
     struct hostent *hp;
     char key[STRLONG];
     char value[STRLONG];
-    const char **ptr = NULL;
+    char **ptr = NULL;
     int num;
     KeyValueInputFile kvfile;
 
@@ -715,19 +715,19 @@ struct hostent *ReadHostEnt(int fd)
         }
         else if (strcmp(key, "h_name") == 0)
         {
-            hp->h_name = (const char *)malloc(strlen(value) + 1);
+            hp->h_name = (char *)malloc(strlen(value) + 1);
             strcpy(hp->h_name, value);
         }
         else if (strcmp(key, "numaliases") == 0)
         {
             num = atoi(value);
-            hp->h_aliases = (const char **)calloc(num + 1, sizeof(const char *));
+            hp->h_aliases = (char **)calloc(num + 1, sizeof(char *));
             ptr = hp->h_aliases;
         }
         else if (strcmp(key, "alias") == 0)
         {   // this should never come before numaliases
             // ptr needs to be assigned properly
-            *ptr = (const genericChar *)malloc(strlen(value) + 1);
+            *ptr = (genericChar *)malloc(strlen(value) + 1);
             strcpy(*ptr, value);
         }
         else if (strcmp(key, "h_addrtype") == 0)
@@ -741,12 +741,12 @@ struct hostent *ReadHostEnt(int fd)
         else if (strcmp(key, "numaddrs") == 0)
         {
             num = atoi(value);
-            hp->h_addr_list = (const char **)calloc(num + 1, sizeof(const char *));
+            hp->h_addr_list = (char **)calloc(num + 1, sizeof(char *));
             ptr = hp->h_addr_list;
         }
         else if (strcmp(key, "address") == 0)
         {
-            *ptr = (const char *)malloc(strlen(value) + 1);
+            *ptr = (char *)malloc(strlen(value) + 1);
             inet_pton(hp->h_addrtype, value, *ptr);
             ptr++;
         }
@@ -763,7 +763,7 @@ int PrintHostEnt(struct hostent *hp)
 {
     FnTrace("PrintHostEnt()");
     int retval = 0;
-    const char **ptr;
+    char **ptr;
     char addr[STRLONG];
 
     if (hp != NULL)
@@ -805,7 +805,7 @@ int PrintHostEnt(struct hostent *hp)
 #define DNSWAITNUM 300  /* number of times to wait (total time is WAITLEN * WAITNUM) */
 #define READ         0  /* the read and write descriptors for the ipc pipe */
 #define WRITE        1
-struct hostent *DNSLookup(const char *name)
+struct hostent *DNSLookup(char *name)
 {
     printf("DNSLookup\n");
     FnTrace("DNSLookup()");
@@ -937,7 +937,7 @@ int OpenSession()
  *
  *  <data>
  ****/
-int SendData(int sockfd, const char *hwid)
+int SendData(int sockfd, char *hwid)
 {
     FnTrace("SendData()");
     int retval = 0;
@@ -965,7 +965,7 @@ int SendData(int sockfd, const char *hwid)
 /****
  * ParseBodyData:  
  ****/
-int ParseBodyData(LicenseData *licensedat, const char *data, int datalen)
+int ParseBodyData(LicenseData *licensedat, char *data, int datalen)
 {
     printf("ParseBodyData\n");
     FnTrace("ParseBodyData()");
@@ -975,11 +975,11 @@ int ParseBodyData(LicenseData *licensedat, const char *data, int datalen)
     int which = 0;
     int idx = 0;
     int sign = 0;  // true = negative number
-    const char *ptr;
+    char *ptr;
     uint8_t digest[SHA1HashSize + 1];
     SHA1Context shacontext;
 
-    printf("SERVER(%s)\n",(const char*)data);
+    printf("SERVER(%s)\n",(char*)data);
     
     // may need to decrypt the data
     if (protocol > 1)
@@ -989,7 +989,7 @@ int ParseBodyData(LicenseData *licensedat, const char *data, int datalen)
         SHA1Input(&shacontext, (uint8_t *)BuildNumber, strlen(BuildNumber));
         SHA1Result(&shacontext, digest);
         // now decrypt the data
-        BFDecrypt((const char *)digest, SHA1HashSize, decrypted, STRLONG, data, &datalen);
+        BFDecrypt((char *)digest, SHA1HashSize, decrypted, STRLONG, data, &datalen);
         data[0] = '\0';
         strncpy(data, decrypted, datalen);
         data[datalen] = '\0';
@@ -1054,7 +1054,7 @@ int ReadData(int sockfd, LicenseData *licensedat)
     int retval = 0;
     int bytes;
     char buffer[STRLONG];
-    const char *data = NULL;
+    char *data = NULL;
     char key[STRLONG];
     char first[STRLONG];
     int keyidx = 0;
@@ -1070,7 +1070,7 @@ int ReadData(int sockfd, LicenseData *licensedat)
     int contentmax = 0;
     
     bytes = read(sockfd, buffer, STRLONG);
-    printf("ReadData pre(%d) buffer(%s)\n",bytes,(const char*)buffer);
+    printf("ReadData pre(%d) buffer(%s)\n",bytes,(char*)buffer);
     
     while (bytes > 0)
     {
@@ -1092,7 +1092,7 @@ int ReadData(int sockfd, LicenseData *licensedat)
             if ((datalen + bytes) < contentmax)
             {
                 if (data == NULL)
-                    data = (const char *)malloc(contentmax);
+                    data = (char *)malloc(contentmax);
                 memcpy(&data[datalen], buffer, bytes);
                 datalen += bytes;
             }
@@ -1111,7 +1111,7 @@ int ReadData(int sockfd, LicenseData *licensedat)
                     if (contentmax == 0)
                         contentmax = ( contentlength ? contentlength : STRLONG ) + 1;
                     if (data == NULL)
-                        data = (const char *)malloc(contentmax);
+                        data = (char *)malloc(contentmax);
                     memcpy(&data[datalen], &buffer[idx], bytes - idx);
                     datalen += ( bytes - idx );
                     idx = bytes;  // end this loop
@@ -1373,7 +1373,7 @@ int PrintLicense(LicenseData *license)
  *   given value, if any.  Returns 1 if the key is unknown, 0 if the
  *   value was assigned to the proper member.
  ****/
-int TempKeyValue(TempLicenseData *templicense, const genericChar *key, const genericChar *value)
+int TempKeyValue(TempLicenseData *templicense, genericChar *key, genericChar *value)
 {
     FnTrace("TempKeyValue()");
     int retval = 0;
@@ -1419,7 +1419,7 @@ int ReadTempLicense(void)
  *  o  the Machine ID (license_data.digest)
  *  o  the ViewTouch BuildNumber
  ****/
-int GetTempLicenseDigest(const genericChar *dest, int maxlen, time_t date, const genericChar *key)
+int GetTempLicenseDigest(genericChar *dest, int maxlen, time_t date, genericChar *key)
 {
     FnTrace("GetTempLicenseDigest()");
     int retval = 0;
@@ -1445,8 +1445,8 @@ int WriteTempLicense(void)
     int retval = 1;
     int fd = -1;
     time_t now = time(NULL);
-    const genericChar *key = temp_license.license_key;
-    const genericChar *digest = temp_license.license_digest;
+    genericChar *key = temp_license.license_key;
+    genericChar *digest = temp_license.license_digest;
 
     temp_license.date = now;
     GetTempLicenseDigest(digest, STRLONG, now, key);
@@ -1479,7 +1479,7 @@ int WriteTempLicense(void)
  *   month, and year only, not hours or minutes) and the license digest.
  *   Returns 1 for a valid license, 0 for an invalid license.
  ****/
-int ValidTempLicense(const genericChar *temp_license_key)
+int ValidTempLicense(genericChar *temp_license_key)
 {
     FnTrace("ValidTempLicense()");
     int retval = 0;  // guaranteed overdue
@@ -1503,8 +1503,8 @@ int ValidTempLicenseFile(TempLicenseData *templicense)
     FnTrace("ValidTempLicenseFile()");
     int retval = 0;
     time_t date = templicense->date;
-    const genericChar *key = templicense->license_key;
-    const genericChar *digest = templicense->license_digest;
+    genericChar *key = templicense->license_key;
+    genericChar *digest = templicense->license_digest;
     genericChar tempdigest[STRLONG];
     time_t now = time(NULL);
     struct stat sb;

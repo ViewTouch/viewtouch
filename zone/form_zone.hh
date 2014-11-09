@@ -64,7 +64,7 @@ public:
     FormField *FieldListEnd() { return field_list.Tail(); }
 
     virtual RenderResult Render(Terminal *term, int update_flag);
-    virtual SignalResult Signal(Terminal *term, const genericChar *message);
+    virtual SignalResult Signal(Terminal *term, genericChar *message);
     virtual SignalResult Keyboard(Terminal *term, int key, int state);
     virtual SignalResult Touch(Terminal *term, int tx, int ty);
     virtual SignalResult Mouse(Terminal *term, int action, int mx, int my);
@@ -75,21 +75,21 @@ public:
     virtual int NewRecord(Terminal *term)                      { return 1; }
     virtual int KillRecord(Terminal *term, int record)         { return 1; }
     virtual int PrintRecord(Terminal *term, int record)        { return 1; }
-    virtual int Search(Terminal *term, int record, const genericChar *word) { return 0; }
+    virtual int Search(Terminal *term, int record, genericChar *word) { return 0; }
     virtual int RecordCount(Terminal *term)                    { return 1; }
 
-    int AddLabel(const genericChar *label, Flt min_width = 0);
-    int AddSubmit(const genericChar *label, Flt min_width = 0);
-    int AddTextField(const genericChar *label, int max_len, int mod = 1, Flt min_label = 0);
-    int AddTimeField(const genericChar *l, int mod = 1, int can_unset = 1);
-    int AddDateField(const genericChar *l, int mod = 1, int can_unset = 1);
-    int AddTimeDateField(const genericChar *l, int mod = 1, int can_unset = 1);
-    int AddTimeDayField(const genericChar *l, int mod = 1, int can_unset = 1);
-    int AddWeekDayField(const genericChar *l, int mod = 1);
-    int AddListField(const genericChar *label, const genericChar **item_array, int *value_array = NULL,
+    int AddLabel(genericChar *label, Flt min_width = 0);
+    int AddSubmit(genericChar *label, Flt min_width = 0);
+    int AddTextField(genericChar *label, int max_len, int mod = 1, Flt min_label = 0);
+    int AddTimeField(genericChar *l, int mod = 1, int can_unset = 1);
+    int AddDateField(genericChar *l, int mod = 1, int can_unset = 1);
+    int AddTimeDateField(genericChar *l, int mod = 1, int can_unset = 1);
+    int AddTimeDayField(genericChar *l, int mod = 1, int can_unset = 1);
+    int AddWeekDayField(genericChar *l, int mod = 1);
+    int AddListField(genericChar *label, genericChar **item_array, int *value_array = NULL,
                      Flt min1 = 0, Flt min2 = 0);
-    int AddButtonField(const genericChar *label, const genericChar *message);
-    int AddTemplateField(const genericChar *label, const genericChar *temp, Flt min_label = 0);
+    int AddButtonField(genericChar *label, genericChar *message);
+    int AddTemplateField(genericChar *label, genericChar *temp, Flt min_label = 0);
     int AddNewLine(int lines = 1);
     int AddSpace(Flt s);
     int SetFlag(int value);
@@ -122,11 +122,11 @@ public:
 
     // Member Functions
     virtual RenderResult Render(Terminal *term, int update_flag);
-    virtual SignalResult Signal(Terminal *term, const genericChar *message);
+    virtual SignalResult Signal(Terminal *term, genericChar *message);
     virtual SignalResult Keyboard(Terminal *term, int key, int state);
     virtual SignalResult Touch(Terminal *term, int tx, int ty);
     virtual SignalResult Mouse(Terminal *term, int action, int mx, int my);
-    virtual int          Update(Terminal *term, int update_message, const genericChar *value);
+    virtual int          Update(Terminal *term, int update_message, genericChar *value);
 
     virtual int ListReport(Terminal *term, Report *report) = 0;
 };
@@ -166,19 +166,19 @@ public:
     virtual SignalResult Mouse(Terminal *term, FormZone *z,
                                int action, Flt mx, Flt my);
 
-    virtual int Set(const genericChar *v)     { return 1; }
+    virtual int Set(genericChar *v)     { return 1; }
     virtual int Set(Str  &v)     { return 1; }
     virtual int Set(int   v)     { return 1; }
     virtual int Set(Flt   v)     { return 1; }
     virtual int Set(TimeInfo &term) { return 1; }
     virtual int Set(TimeInfo *term) { return 1; }
-    virtual int SetList(const genericChar **options, int *values) { return 1; }
+    virtual int SetList(genericChar **options, int *values) { return 1; }
     virtual int SetActiveList(int *list)             { return 1; }
     virtual int SetNumRange(int lo, int hi)          { return 1; }
     virtual int SetName(Str &set_name) { return 1; }
     virtual int IsSet() { return 0; }
 
-    virtual int Append(const genericChar *str)    { return 1; }
+    virtual int Append(genericChar *str)    { return 1; }
     virtual int Append(Str &str)            { return 1; }
     virtual int Append(int val)             { return 1; }
     virtual int Append(Flt val)             { return 1; }
@@ -187,8 +187,8 @@ public:
     virtual int Remove(int num = 1)  { return 1; }
     virtual int Clear()              { return 1; }
 
-    virtual int Get(const genericChar *v, int len) { return 1; }
-    virtual int Get(const genericChar *v)          { return 1; }
+    virtual int Get(genericChar *v, int len) { return 1; }
+    virtual int Get(genericChar *v)          { return 1; }
     virtual int Get(Str &v)           { return 1; }
     virtual int Get(int &v)           { return 1; }
     virtual int Get(Flt &v)           { return 1; }
@@ -197,7 +197,7 @@ public:
     virtual int GetName(Str &get_name) { return 1; }
 
     virtual int ClearEntries()                  { return 1; }
-    virtual int AddEntry(const genericChar *name, int value) { return 1; }
+    virtual int AddEntry(genericChar *name, int value) { return 1; }
 
     virtual void Print(void);   // debug function, not for live code
 };

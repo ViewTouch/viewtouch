@@ -53,10 +53,10 @@ public:
     int          Type() { return ZONE_ORDER_ENTRY; }
     int          RenderInit(Terminal *term, int update_flag);
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar *message);
+    SignalResult Signal(Terminal *term, genericChar *message);
     SignalResult Keyboard(Terminal *term, int key, int state);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar *value);
+    int          Update(Terminal *term, int update_message, genericChar *value);
     int          AddQualifier(Terminal *term, int qualifier_type);
     Flt         *Spacing() { return &spacing; }
     Flt          SpacingValue(Terminal *term);  // returns spacing value
@@ -109,7 +109,7 @@ public:
     int          RenderInit(Terminal *term, int update_flag);
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar *value);
+    int          Update(Terminal *term, int update_message, genericChar *value);
     int          ZoneStates() { return 3; }
 };
 
@@ -128,7 +128,7 @@ public:
     int          RenderInit(Terminal *term, int update_flag);
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar *value);
+    int          Update(Terminal *term, int update_message, genericChar *value);
     int          ZoneStates() { return 3; }
 };
 
@@ -147,7 +147,7 @@ public:
     int          RenderInit(Terminal *term, int update_flag);
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar *value);
+    int          Update(Terminal *term, int update_message, genericChar *value);
     int          ZoneStates() { return 3; }
 };
 
@@ -185,10 +185,10 @@ public:
     int          Type() { return ZONE_ITEM; }
     Zone        *Copy();
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const char *message);
+    SignalResult Signal(Terminal *term, char *message);
     SignalResult Touch(Terminal *term, int tx, int ty);
     int          AddPayment(Terminal *term, int ptype, int pid, int pflags, int pamount);
-    int          Update(Terminal *term, int update_message, const genericChar *value);
+    int          Update(Terminal *term, int update_message, genericChar *value);
     SalesItem   *Item(ItemDB *db);
     genericChar        *TranslateString(Terminal *term) { return NULL; }
 
@@ -215,7 +215,7 @@ public:
     int          Type() { return ZONE_QUALIFIER; }
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar *value);
+    int          Update(Terminal *term, int update_message, genericChar *value);
     genericChar        *TranslateString(Terminal *term) { return NULL; }
 
     int *QualifierType() { return &qualifier_type; }

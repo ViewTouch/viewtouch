@@ -51,7 +51,7 @@ class BackTraceFunction
 {
 public:
     // Constructor
-    BackTraceFunction(const char *str, ...)
+    BackTraceFunction(char *str, ...)
     {
         if (BT_Track)
             printf("Entering %s\n", str);
@@ -68,7 +68,7 @@ public:
 #define FnTraceEnable(x) (BT_Track = (x))
 void FnPrintTrace(void);
 void FnPrintLast(int depth);
-const char *FnReturnLast();
+char *FnReturnLast();
 #define LINE() printf("%s:  Got to line %d\n", __FILE__, __LINE__)
 #else
 #define FnTrace(x)
@@ -79,8 +79,8 @@ const char *FnReturnLast();
 #define LINE()
 #endif
 
-void vt_init_setproctitle(int argc, const char *argv[]);
-int  vt_setproctitle(const char *title);
+void vt_init_setproctitle(int argc, char *argv[]);
+int  vt_setproctitle(char *title);
 
 
 /**** Types ****/
@@ -116,14 +116,14 @@ public:
 
     // Constructors
     Str();
-    Str(const char *str);
+    Str(char *str);
     Str(Str &s);
     // Destructor
     ~Str();
 
     // Member Functions
     int   Clear();
-    int   Set(const char *str);
+    int   Set(char *str);
     int   Set(int val);
     int   Set(Flt val);
     int   Set(Str &s) { return Set(s.Value()); }
@@ -131,10 +131,10 @@ public:
     int   ChangeAtoB(char a, genericChar b);  // character replace
     int   IntValue();
     Flt   FltValue();
-    const genericChar *Value();
-    const genericChar *ValueSet(const char *set = NULL);
+    genericChar *Value();
+    genericChar *ValueSet(char *set = NULL);
 
-    Str & operator =  (const char *s) { Set(s); return *this; }
+    Str & operator =  (char *s) { Set(s); return *this; }
     Str & operator =  (Str  &s) { Set(s); return *this; }
     Str & operator =  (int   s) { Set(s); return *this; }
     Str & operator =  (Flt   s) { Set(s); return *this; }
@@ -163,7 +163,7 @@ public:
     int   Set();                          // Sets time values to current time
     int   Set(int s, int y);
     int   Set(time_t t);
-    int   Set(const genericChar *date_string);
+    int   Set(genericChar *date_string);
     int   Set(TimeInfo *timevar);         // Copies time value or clears if NULL
     int   Set(TimeInfo &timevar);         // Copies time value
     TimeInfo *ValueSet(TimeInfo *timevar = NULL);
@@ -276,10 +276,10 @@ public:
     // Member Functions
     int   Read(InputDataFile &df, int version);
     int   Write(OutputDataFile &df, int version);
-    const genericChar *Format(int sign = 0);
-    const genericChar *Format(const char *buffer, int sign = 0);
-    const genericChar *SimpleFormat();
-    const genericChar *SimpleFormat(const char *buffer);
+    genericChar *Format(int sign = 0);
+    genericChar *Format(char *buffer, int sign = 0);
+    genericChar *SimpleFormat();
+    genericChar *SimpleFormat(char *buffer);
 };
 
 
@@ -289,7 +289,7 @@ extern TimeInfo SystemTime;
 
 
 /**** Other Functions ****/
-extern int ReportError(const char *message);
+extern int ReportError(char *message);
 // general error reporting function
 // (the prototype is here but the implementation isn't in utility.cc)
 // implementation is in main/manager.cc
@@ -301,8 +301,8 @@ int DaysInMonth(int month, int year);
 int DayOfTheWeek(int mday, int month, int year);
 // Returns what day of the week it is
 
-int StringElapsedToNow(const char *dest, int maxlen, TimeInfo &t1);
-int SecondsToString(const char *dest, int maxlen, int seconds);
+int StringElapsedToNow(char *dest, int maxlen, TimeInfo &t1);
+int SecondsToString(char *dest, int maxlen, int seconds);
 
 int SecondsElapsedToNow(TimeInfo &t1);
 int SecondsElapsed(TimeInfo &t1, TimeInfo &t2);
@@ -316,39 +316,39 @@ int StringCompare(const genericChar *str1, const genericChar *str2, int len = -1
 // Case insesitive string compare
 int StringInString(const genericChar *haystack, const genericChar *needle);
 
-const char *StringToLower(const char *str);
-const char *StringToUpper(const char *str);
+char *StringToLower(char *str);
+char *StringToUpper(char *str);
 // Convert string to lowercase/uppercase - returns string
-int   StripWhiteSpace(const genericChar *string);
+int   StripWhiteSpace(genericChar *string);
 
-const char *AdjustCase(const char *string);
+char *AdjustCase(char *string);
 // capitalizes 1st letter of every word in string - returns string
 
-int AdjustCaseAndSpacing(const char *str);
+int AdjustCaseAndSpacing(char *str);
 
-int CompareList(const genericChar *val, const genericChar *list[], int unknown = -1);
+int CompareList(genericChar *val, genericChar *list[], int unknown = -1);
 int CompareList(int   val, int   list[], int unknown = -1);
 // compares val with each item in list (NULL terminated or -1 terminated)
 // returns index of match or 'unknown' for no match.
 
-int CompareListN(const genericChar *list[], const genericChar *str, int unknown = -1);
+int CompareListN(genericChar *list[], genericChar *str, int unknown = -1);
 // automatically checks string length for each comparison, so
 // str="hello" will match list[0]="hello world".
 
-const char *FindStringByValue(int val, int val_list[], const genericChar *str_list[],
-                        const genericChar *unknown = NULL);
-int   FindValueByString(const genericChar *val, int val_list[], const genericChar *str_list[],
+char *FindStringByValue(int val, int val_list[], genericChar *str_list[],
+                        genericChar *unknown = NULL);
+int   FindValueByString(genericChar *val, int val_list[], genericChar *str_list[],
                         int unknown = -1);
 // finds string by finding val index
 int FindIndexOfValue(int value, int val_list[], int unknown = -1);
 
-const genericChar *NextName(const genericChar *name, const genericChar **list);
+genericChar *NextName(genericChar *name, genericChar **list);
 int NextValue(int val, int *val_array);
 int ForeValue(int val, int *val_array);
 // Finds next/prior value in array (-1 terminated)
 
-int NextToken(const genericChar *dest, const genericChar *src, genericChar sep, int *idx);
-int NextInteger(int *dest, const genericChar *src, genericChar sep, int *idx);
+int NextToken(genericChar *dest, genericChar *src, genericChar sep, int *idx);
+int NextInteger(int *dest, genericChar *src, genericChar sep, int *idx);
 
 int DoesFileExist(const genericChar *filename);
 // Returns 1 if file exists otherwise 0
@@ -372,6 +372,6 @@ Flt PercentToFlt(int percent);
 int FltToPercent(Flt value);
 // Conversion from Flt to percent (2 digits of accuracy) and back again
 
-int LockDevice(const genericChar *devpath);
+int LockDevice(genericChar *devpath);
 int UnlockDevice(int id);
 #endif

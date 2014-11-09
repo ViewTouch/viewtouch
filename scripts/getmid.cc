@@ -4,7 +4,7 @@
 
 #define STRLONG 4096
 
-int main(int argc, const char *argv[])
+int main(int argc, char *argv[])
 {
     char buffer[STRLONG];
 

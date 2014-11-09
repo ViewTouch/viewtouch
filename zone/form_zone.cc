@@ -41,7 +41,7 @@ public:
 
     // Constructor
     LabelField();
-    LabelField(const genericChar *lbl, Flt width);
+    LabelField(genericChar *lbl, Flt width);
 
     // Member Functions
     int          Init(Terminal *term, FormZone *fzone);
@@ -53,7 +53,7 @@ class SubmitField : public FormField
 public:
     Flt min_width;
 
-    SubmitField(const genericChar *lbl, Flt width);
+    SubmitField(genericChar *lbl, Flt width);
     // Member Functions
     int          Init(Terminal *term, FormZone *fzone);
     RenderResult Render(Terminal *term, FormZone *fzone);
@@ -72,22 +72,22 @@ public:
     int cursor;
 
     // Constructor
-    TextField(const genericChar *lbl, int max_entry, int mod, Flt min_label);
+    TextField(genericChar *lbl, int max_entry, int mod, Flt min_label);
 
     // Member Functions
     int          Init(Terminal *term, FormZone *fzone);
     RenderResult Render(Terminal *term, FormZone *fzone);
     SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state);
 
-    int Set(const genericChar *v);
+    int Set(genericChar *v);
     int Set(Str  &v);
     int Set(int   v);
     int Set(Flt   v);
     int SetNumRange(int lo, int hi);
 
-    int InsertStringAtCursor(const genericChar *my_string); // does the append/insert for strings
+    int InsertStringAtCursor(genericChar *my_string); // does the append/insert for strings
     int InsertDigits(int digits, int num = 1);  // does append for digits
-    int Append(const genericChar *my_string);  // these functions determine what to append
+    int Append(genericChar *my_string);  // these functions determine what to append
     int Append(Str &my_string);   // and whether the append should take place
     int Append(int val);       // they append after cursor, not at the end
     int Append(Flt val);       // of the string (using InsertStringAtCursor()
@@ -96,8 +96,8 @@ public:
     int Remove(int num = 1);   // removes the last genericChar (backspace) or num chars
     int Clear();  // sets buffer back to empty string
 
-    int Get(const genericChar *v, int len);
-    int Get(const genericChar *v);
+    int Get(genericChar *v, int len);
+    int Get(genericChar *v);
     int Get(Str &v);
     int Get(int &v);
     int Get(Flt &v);
@@ -116,7 +116,7 @@ public:
     int      show_time;
 
     // Constructor
-    TimeDateField(const genericChar *lbl, int mod, int can_unset);
+    TimeDateField(genericChar *lbl, int mod, int can_unset);
 
     // Member Functions
     int          Init(Terminal *term, FormZone *fzone);
@@ -142,7 +142,7 @@ public:
     int is_unset;
 
     // Constructor
-    TimeDayField(const genericChar *lbl, int mod, int can_unset);
+    TimeDayField(genericChar *lbl, int mod, int can_unset);
 
     // Member Functions
     int          Init(Terminal *term, FormZone *fzone);
@@ -163,7 +163,7 @@ public:
     int days;
     int current;
 
-    WeekDayField(const char *lbl, int mod = 1);
+    WeekDayField(char *lbl, int mod = 1);
     int          Init(Terminal *term, FormZone *fzone);
     RenderResult Render(Terminal *term, FormZone *fzone);
     SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state);
@@ -183,7 +183,7 @@ public:
     int active;
 
     // Constructor
-    ListFieldEntry(const genericChar *lbl, int val);
+    ListFieldEntry(genericChar *lbl, int val);
 };
 
 class ListField : public FormField
@@ -199,7 +199,7 @@ public:
     int light_up;  // boolean - hilight button for nonzero option?
 
     // Constructor
-    ListField(const genericChar *lbl, const genericChar **options, int *values,
+    ListField(genericChar *lbl, genericChar **options, int *values,
               Flt min_label, Flt min_list);
     // Destructor
     ~ListField();
@@ -222,12 +222,12 @@ public:
     int Get(int &v);
     int SetName(Str &set_name);
     int GetName(Str &get_name);
-    int SetList(const genericChar **ol, int *vl);
+    int SetList(genericChar **ol, int *vl);
     int SetActiveList(int *list);
     int Add(ListFieldEntry *lfe);
     int ClearEntries();
 
-    int AddEntry(const genericChar *name, int val) {
+    int AddEntry(genericChar *name, int val) {
         return Add(new ListFieldEntry(name, val)); }
     void Print(void);
 };
@@ -240,7 +240,7 @@ public:
     int lit;
 
     // Constructor
-    ButtonField(const genericChar *lbl, const genericChar *msg);
+    ButtonField(genericChar *lbl, genericChar *msg);
 
     // Member Functions
     int          Init(Terminal *term, FormZone *fzone);
@@ -259,25 +259,25 @@ public:
     int cursor;
 
     // Constructor
-    TemplateField(const genericChar *lbl, const genericChar *tem, Flt min_label);
+    TemplateField(genericChar *lbl, genericChar *tem, Flt min_label);
 
     // Member Functions
     int          Init(Terminal *term, FormZone *fzone);
     RenderResult Render(Terminal *term, FormZone *fzone);
     SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state);
 
-    int Set(const genericChar *v) { return buffer.Set(v); }
+    int Set(genericChar *v) { return buffer.Set(v); }
     int Set(Str  &v)        { return buffer.Set(v); }
     int Get(Str &v)         { v.Set(buffer); return 0; }
-    int Get(const genericChar *v) { strcpy(v, buffer.Value()); return 0; }
+    int Get(genericChar *v) { strcpy(v, buffer.Value()); return 0; }
 };
 
 
 /**** Functions ****/
-int TemplateBlanks(const genericChar *temp)
+int TemplateBlanks(genericChar *temp)
 {
     int blanks = 0;
-    const genericChar *term = temp;
+    genericChar *term = temp;
     while (*term)
     {
         if (*term == '_')
@@ -287,13 +287,13 @@ int TemplateBlanks(const genericChar *temp)
     return blanks;
 }
 
-const genericChar *FillTemplate(const genericChar *temp, const genericChar *str)
+genericChar *FillTemplate(genericChar *temp, genericChar *str)
 {
     static genericChar buffer[STRLENGTH];
 
-    const genericChar *term = temp;
-    const genericChar *b = buffer;
-    const genericChar *s = str;
+    genericChar *term = temp;
+    genericChar *b = buffer;
+    genericChar *s = str;
     while (*term)
     {
         if (*term != '_')
@@ -310,9 +310,9 @@ const genericChar *FillTemplate(const genericChar *temp, const genericChar *str)
     return buffer;
 }
 
-int TemplatePos(const genericChar *temp, int cursor)
+int TemplatePos(genericChar *temp, int cursor)
 {
-    const genericChar *term = temp;
+    genericChar *term = temp;
     int pos = 0;
     while (*term)
     {
@@ -388,10 +388,10 @@ RenderResult FormZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult FormZone::Signal(Terminal *term, const genericChar *message)
+SignalResult FormZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("FormZone::Signal()");
-    static const genericChar *commands[] = {
+    static genericChar *commands[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "00", ".",
         "backspace", "clear", "new",  "search", "nextsearch ", "restore",
          "next", "prior", "save", "delete", "print", "unfocus", NULL};
@@ -618,31 +618,31 @@ int FormZone::Add(FormField *fe)
     return 0;
 }
 
-int FormZone::AddLabel(const genericChar *label, Flt min_width)
+int FormZone::AddLabel(genericChar *label, Flt min_width)
 {
     FnTrace("FormZone::AddLabel()");
     return Add(new LabelField(label, min_width));
 }
 
-int FormZone::AddSubmit(const genericChar *label, Flt min_width)
+int FormZone::AddSubmit(genericChar *label, Flt min_width)
 {
     FnTrace("FormZone::AddSubmit()");
     return Add(new SubmitField(label, min_width));
 }
 
-int FormZone::AddTextField(const genericChar *label, int max_len, int mod, Flt min_label)
+int FormZone::AddTextField(genericChar *label, int max_len, int mod, Flt min_label)
 {
     FnTrace("FormZone::AddTextField()");
     return Add(new TextField(label, max_len, mod, min_label));
 }
 
-int FormZone::AddTimeDateField(const genericChar *label, int mod, int can_unset)
+int FormZone::AddTimeDateField(genericChar *label, int mod, int can_unset)
 {
     FnTrace("FormZone::AddTimeDateField()");
     return Add(new TimeDateField(label, mod, can_unset));
 }
 
-int FormZone::AddDateField(const genericChar *label, int mod, int can_unset)
+int FormZone::AddDateField(genericChar *label, int mod, int can_unset)
 {
     FnTrace("FormZone::AddDateField()");
     TimeDateField *tf = new TimeDateField(label, mod, can_unset);
@@ -650,7 +650,7 @@ int FormZone::AddDateField(const genericChar *label, int mod, int can_unset)
     return Add(tf);
 }
 
-int FormZone::AddTimeField(const genericChar *label, int mod, int can_unset)
+int FormZone::AddTimeField(genericChar *label, int mod, int can_unset)
 {
     FnTrace("FormZone::AddTimeField()");
     TimeDayField *wf = new TimeDayField(label, mod, can_unset);
@@ -658,32 +658,32 @@ int FormZone::AddTimeField(const genericChar *label, int mod, int can_unset)
     return Add(wf);
 }
 
-int FormZone::AddTimeDayField(const genericChar *label, int mod, int can_unset)
+int FormZone::AddTimeDayField(genericChar *label, int mod, int can_unset)
 {
     FnTrace("FormZone::AddTimeDayField()");
     return Add(new TimeDayField(label, mod, can_unset));
 }
 
-int FormZone::AddWeekDayField(const genericChar *label, int mod)
+int FormZone::AddWeekDayField(genericChar *label, int mod)
 {
     FnTrace("FormZone::AddWeekDayField()");
     return Add(new WeekDayField(label, mod));
 }
 
-int FormZone::AddListField(const genericChar *label, const genericChar **item_array,
+int FormZone::AddListField(genericChar *label, genericChar **item_array,
                            int *value_array, Flt min1, Flt min2)
 {
     FnTrace("FormZone::AddListField()");
     return Add(new ListField(label, item_array, value_array, min1, min2));
 }
 
-int FormZone::AddButtonField(const genericChar *label, const genericChar *message)
+int FormZone::AddButtonField(genericChar *label, genericChar *message)
 {
     FnTrace("FormZone::AddButtonField()");
     return Add(new ButtonField(label, message));
 }
 
-int FormZone::AddTemplateField(const genericChar *label, const genericChar *temp, Flt min_label)
+int FormZone::AddTemplateField(genericChar *label, genericChar *temp, Flt min_label)
 {
     FnTrace("FormZone::AddTemplateField()");
     return Add(new TemplateField(label, temp, min_label));
@@ -956,10 +956,10 @@ RenderResult ListFormZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult ListFormZone::Signal(Terminal *term, const genericChar *message)
+SignalResult ListFormZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("ListFormZone::Signal()");
-    static const genericChar *commands[] = {
+    static genericChar *commands[] = {
         "new", "next", "prior", "save", "restore",
         "delete", "print", "unfocus", "change view", NULL};
     int idx = CompareListN(commands, message);
@@ -1252,7 +1252,7 @@ SignalResult ListFormZone::Keyboard(Terminal *term, int my_key, int state)
     }
 }
 
-int ListFormZone::Update(Terminal *term, int update_message, const genericChar *value)
+int ListFormZone::Update(Terminal *term, int update_message, genericChar *value)
 {
     FnTrace("ListFormZone::Update()");
     if (show_list && list_report.update_flag & update_message)
@@ -1329,7 +1329,7 @@ LabelField::LabelField()
     modify = 0;
 }
 
-LabelField::LabelField(const genericChar *lbl, Flt width)
+LabelField::LabelField(genericChar *lbl, Flt width)
 {
     label.Set(lbl);
     min_width = width;
@@ -1357,7 +1357,7 @@ RenderResult LabelField::Render(Terminal *term, FormZone *fzone)
 }
 
 /**** SubmitField Class ****/
-SubmitField::SubmitField(const genericChar *lbl, Flt width)
+SubmitField::SubmitField(genericChar *lbl, Flt width)
 {
     label.Set(lbl);
     min_width = width;
@@ -1431,7 +1431,7 @@ SignalResult SubmitField::Mouse(Terminal *term, FormZone *fzone, int action, Flt
 
 /**** TextField Class ****/
 // Constructor
-TextField::TextField(const genericChar *lbl, int max_entry, int mod, Flt min_label)
+TextField::TextField(genericChar *lbl, int max_entry, int mod, Flt min_label)
 {
     label.Set(lbl);
     buffint = 0;
@@ -1443,7 +1443,7 @@ TextField::TextField(const genericChar *lbl, int max_entry, int mod, Flt min_lab
     hi_value = 0;
 }
 
-int TextField::Set(const genericChar *v)
+int TextField::Set(genericChar *v)
 {
     FnTrace("TextField::Set()");
     if ((flag & FF_MONEY) || (flag & FF_ONLYDIGITS))
@@ -1487,9 +1487,9 @@ int TextField::SetNumRange(int lo, int hi)
 }
 
 
-int TextField::Get(const genericChar *v, int len)
+int TextField::Get(genericChar *v, int len)
 {
-    FnTrace("TextField::Get(const char *, int)");
+    FnTrace("TextField::Get(char *, int)");
 
     if ((flag & FF_MONEY) || (flag & FF_ONLYDIGITS))
         buffer.Set(buffint);
@@ -1498,9 +1498,9 @@ int TextField::Get(const genericChar *v, int len)
     return 0;
 }
 
-int TextField::Get(const genericChar *v)
+int TextField::Get(genericChar *v)
 {
-    FnTrace("TextField::Get(const char *)");
+    FnTrace("TextField::Get(char *)");
 
     if ((flag & FF_MONEY) || (flag & FF_ONLYDIGITS))
         buffer.Set(buffint);
@@ -1551,10 +1551,10 @@ int TextField::Get(Flt &v)
  *  part after, and put the string together as
  *  "<before><string><after>"
  ****/
-int TextField::InsertStringAtCursor(const genericChar *my_string)
+int TextField::InsertStringAtCursor(genericChar *my_string)
 {
     FnTrace("TextField::InsertStringAtCursor()");
-    const genericChar *bbuff = buffer.Value();
+    genericChar *bbuff = buffer.Value();
     genericChar first[STRLENGTH] = "";
     genericChar last[STRLENGTH] = "";
     genericChar newstr[STRLENGTH];
@@ -1638,7 +1638,7 @@ int TextField::InsertDigits(int digits, int num)
  *     o  if the buffer is already full
  * Returns 0 for success.
  ****/
-int TextField::Append(const genericChar *my_string)
+int TextField::Append(genericChar *my_string)
 {
     FnTrace("TextField::Append()");
     int retval = 0;
@@ -1671,7 +1671,7 @@ int TextField::Append(const genericChar *my_string)
 int TextField::Append(Str &my_string)
 {
     FnTrace("TextField::Append()");
-    const genericChar *tbuff = NULL;
+    genericChar *tbuff = NULL;
     int retval = 0;
     int numdigits = 1;
 
@@ -1823,7 +1823,7 @@ RenderResult TextField::Render(Terminal *term, FormZone *fzone)
 {
     FnTrace("TextFields::Render()");
     int c = color, m = 0;
-    const genericChar *buff;
+    genericChar *buff;
 
     if (selected)
     {
@@ -1908,7 +1908,7 @@ static Flt TDF_Seg[] = {5, 9, 12, 17, 20};
 static Flt TDF_Len[] = {3, 2, 4, 2, 2};
 
 // Constructor
-TimeDateField::TimeDateField(const genericChar *lbl, int mod, int cu)
+TimeDateField::TimeDateField(genericChar *lbl, int mod, int cu)
 {
     label.Set(lbl);
     cursor    = 0;
@@ -2116,7 +2116,7 @@ int TimeDateField::Set(TimeInfo *timevar)
 
 /**** TimeDayField Class ****/
 // Constructor
-TimeDayField::TimeDayField(const genericChar *lbl, int mod, int unset)
+TimeDayField::TimeDayField(genericChar *lbl, int mod, int unset)
 {
     day = 0;
     hour = 0;
@@ -2494,7 +2494,7 @@ int TimeDayField::Get(int &minutes)
  * WeekDayField Class
  ********************************************************************/
 
-WeekDayField::WeekDayField(const char *lbl, int mod)
+WeekDayField::WeekDayField(char *lbl, int mod)
 {
     FnTrace("WeekDayField::WeekDayField()");
     label.Set(lbl);
@@ -2522,7 +2522,7 @@ RenderResult WeekDayField::Render(Terminal *term, FormZone *fzone)
     int  m = 0;
     Flt  xx;
     char buffer[STRLENGTH];
-    const char *daystr[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    char *daystr[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
     int  day;
     int  didx;
     Flt  len;
@@ -2643,7 +2643,7 @@ int WeekDayField::Get(int &d)
 
 /**** ListFieldEntry Class ****/
 // Constructor
-ListFieldEntry::ListFieldEntry(const genericChar *lbl, int val)
+ListFieldEntry::ListFieldEntry(genericChar *lbl, int val)
 {
     next = NULL;
     fore = NULL;
@@ -2654,7 +2654,7 @@ ListFieldEntry::ListFieldEntry(const genericChar *lbl, int val)
 
 /**** ListField Class ****/
 // Constructor
-ListField::ListField(const genericChar *lbl, const genericChar **options, int *values,
+ListField::ListField(genericChar *lbl, genericChar **options, int *values,
                      Flt min_label, Flt min_list)
 {
     current         = NULL;
@@ -2877,7 +2877,7 @@ int ListField::GetName(Str &get_name)
     return retval;
 }
 
-int ListField::SetList(const genericChar **option_list, int *value_list)
+int ListField::SetList(genericChar **option_list, int *value_list)
 {
     FnTrace("ListField::SetList()");
     ClearEntries();
@@ -2932,7 +2932,7 @@ void ListField::Print(void)
 
 /**** ButtonField Class ****/
 // Constructor
-ButtonField::ButtonField(const genericChar *lbl, const genericChar *msg)
+ButtonField::ButtonField(genericChar *lbl, genericChar *msg)
 {
     label.Set(lbl);
     message.Set(msg);
@@ -2984,7 +2984,7 @@ SignalResult ButtonField::Keyboard(Terminal *term, FormZone *fzone, int key, int
 
 /**** TemplateField Class ****/
 // Constructor
-TemplateField::TemplateField(const genericChar *lbl, const genericChar *tmp, Flt min_label)
+TemplateField::TemplateField(genericChar *lbl, genericChar *tmp, Flt min_label)
 {
     label.Set(lbl);
     temp.Set(tmp);
@@ -3021,7 +3021,7 @@ RenderResult TemplateField::Render(Terminal *term, FormZone *fzone)
     if (modify)
         fzone->Entry(term, xx, y, temp.length + 1.5);
 
-    const genericChar *b = FillTemplate(temp.Value(), buffer.Value());
+    genericChar *b = FillTemplate(temp.Value(), buffer.Value());
     fzone->TextPosL(term, xx, y, b, COLOR_WHITE);
     if (selected)
     {

@@ -40,8 +40,8 @@ public:
     // Member Functions
     int          Type() { return ZONE_USER_EDIT; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const char *message);
-    int          Update(Terminal *term, int update_message, const char *value);
+    SignalResult Signal(Terminal *term, char *message);
+    int          Update(Terminal *term, int update_message, char *value);
     Flt         *Spacing() { return &list_spacing; }
 
     int AddStartPages(Terminal *term, FormField *field);
@@ -50,7 +50,7 @@ public:
     int NewRecord(Terminal *t);
     int KillRecord(Terminal *term, int record);
     int PrintRecord(Terminal *term, int record);
-    int Search(Terminal *term, int record, const char *word);
+    int Search(Terminal *term, int record, char *word);
     int ListReport(Terminal *term, Report *r);
     int RecordCount(Terminal *term);
 };
@@ -70,7 +70,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_JOB_SECURITY; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const char *message);
+    SignalResult Signal(Terminal *term, char *message);
     SignalResult Touch(Terminal *term, int tx, int ty);
     SignalResult Mouse(Terminal *term, int action, int mx, int my);
     int          LoadRecord(Terminal *term, int record);

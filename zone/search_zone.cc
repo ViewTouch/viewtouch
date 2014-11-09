@@ -57,10 +57,10 @@ RenderResult SearchZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult SearchZone::Signal(Terminal *term, const genericChar *message)
+SignalResult SearchZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("SearchZone::Signal()");
-    static const genericChar *commands[] =
+    static genericChar *commands[] =
         {"nextsearch", "backspace", "clear", NULL};
     unsigned int bufflen = strlen(buffer);
     genericChar tbuff[STRLENGTH];

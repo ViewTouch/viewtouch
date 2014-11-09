@@ -87,26 +87,26 @@ public:
     int Add(Printer *p);
     int Remove(Terminal *t);
     int Remove(Printer *p);
-    Terminal *FindTermByHost(const char *host);
+    Terminal *FindTermByHost(char *host);
     int SetAllCursors(int cursor);
-    int SetAllMessages(const char *message);
+    int SetAllMessages(char *message);
     int SetAllTimeouts(int timeout);
     int SetAllIconify(int iconify);
     int ClearAllMessages();
     int ClearAllFocus();
     int LogoutAllUsers();
     int LogoutKitchenUsers();
-    int UpdateAll(int update_message, const genericChar *value);
-    int UpdateOther(Terminal *local, int update_message, const genericChar *value);
+    int UpdateAll(int update_message, genericChar *value);
+    int UpdateOther(Terminal *local, int update_message, genericChar *value);
     int IsUserOnline(Employee *e);
     int KillTerm(Terminal *t);
-    int OpenDialog(const char *message);
+    int OpenDialog(char *message);
     int KillAllDialogs();
-    Printer *FindPrinter(const char *host, int port);
-    Printer *FindPrinter(const char *term_name);
+    Printer *FindPrinter(char *host, int port);
+    Printer *FindPrinter(char *term_name);
     Printer *FindPrinter(int printer_type);
-    Printer *NewPrinter(const char *host, int port, int model);
-    Printer *NewPrinter(const char *term_name, const char *host, int port, int model);
+    Printer *NewPrinter(char *host, int port, int model);
+    Printer *NewPrinter(char *term_name, char *host, int port, int model);
     int KillPrinter(Printer *p, int update = 0);
     int TestPrinters(Terminal *t, int report);
 
@@ -119,18 +119,18 @@ public:
 
 /**** Functions ****/
 int CheckLicense(Settings *settings, int force_check = 0);
-void ViewTouchError(const char *message, int do_sleep = 1);  // reports an error with contact info
-int  ViewTouchLicense(const char *license, int maxlen);  // reports an error and receives a temporary license
+void ViewTouchError(char *message, int do_sleep = 1);  // reports an error with contact info
+int  ViewTouchLicense(char *license, int maxlen);  // reports an error and receives a temporary license
 
 int EndSystem();                     // Closes down the application & saves states
 int RestartSystem();                 // Sets up a system where ViewTouch will be nicely shut down and restarted.
-int KillTask(const char *name);            // kills all tasks matching name
-int ReportError(const char *message);      // error logging & reporting function
-int ReportLoader(const char *message);     // gives a message to the loader program if it is still active
+int KillTask(char *name);            // kills all tasks matching name
+int ReportError(char *message);      // error logging & reporting function
+int ReportLoader(char *message);     // gives a message to the loader program if it is still active
 
-const char *PriceFormat(Settings *s, int price, int use_sign, int use_comma,
-                  const genericChar *buffer = NULL); // formats price into string
-int ParsePrice(const char *source, int *val = NULL); // returns price value from given string
+char *PriceFormat(Settings *s, int price, int use_sign, int use_comma,
+                  genericChar *buffer = NULL); // formats price into string
+int ParsePrice(char *source, int *val = NULL); // returns price value from given string
 
 // Load/Save system pages & default system data - 'vt_data' file
 // (i.e. information specific to all pos systems)
@@ -162,7 +162,7 @@ int RemoveWorkFn(int fn_id);
 // looks at local copy of fonts so requests don't go to term programs
 // (layout functions should be moved to terms so these arn't needed here)
 int GetFontSize(int font_id, int &w, int &h);
-int GetTextWidth(const char *string, int len, int font_id);
+int GetTextWidth(char *string, int len, int font_id);
 
 
 /**** Global ****/
@@ -180,15 +180,15 @@ extern MachineInfo *ThisMachineInfo; // MachineInfo for this system
 extern int          AllowLogins;     // whether terms should permit logins
 
 // commonly used strings
-extern const genericChar *DayName[];
-extern const genericChar *ShortDayName[];
-extern const genericChar *MonthName[];
-extern const genericChar *ShortMonthName[];
-extern const genericChar *CheckRefName[];
+extern genericChar *DayName[];
+extern genericChar *ShortDayName[];
+extern genericChar *MonthName[];
+extern genericChar *ShortMonthName[];
+extern genericChar *CheckRefName[];
 extern int   CheckRefValue[];
-extern const genericChar *TermTypeName[];
+extern genericChar *TermTypeName[];
 extern int   TermTypeValue[];
-extern const genericChar *PrinterTypeName[];
+extern genericChar *PrinterTypeName[];
 extern int   PrinterTypeValue[];
 
 #endif

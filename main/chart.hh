@@ -61,9 +61,9 @@ public:
 
     // Member Functions
     int Clear();
-    int AddColumn(const char *name);
+    int AddColumn(char *name);
     int SortByColumn(int id);
-    int AddRowCell(const char *text);
+    int AddRowCell(char *text);
     int EndRow();
 };
 

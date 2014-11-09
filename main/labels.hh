@@ -25,126 +25,126 @@
 
 
 /**** Global Data ****/
-extern const char *UnknownStr;
+extern char *UnknownStr;
 
-extern const char *FullZoneTypeName[];
+extern char *FullZoneTypeName[];
 
 extern int   FullZoneTypeValue[];
-extern const char *ZoneTypeName[];  // Reduced list of zone types
+extern char *ZoneTypeName[];  // Reduced list of zone types
 extern int   ZoneTypeValue[];
 
-extern const char *ZoneBehaveName[];
+extern char *ZoneBehaveName[];
 extern int   ZoneBehaveValue[];
 
-extern const char *ZoneFrameName[];
+extern char *ZoneFrameName[];
 extern int   ZoneFrameValue[];
 
-extern const char *TextureName[];
+extern char *TextureName[];
 extern int   TextureValue[];
 
-extern const char *PageTypeName[];
+extern char *PageTypeName[];
 extern int   PageTypeValue[];
-extern const char *PageType2Name[];  // Reduced list of page types
+extern char *PageType2Name[];  // Reduced list of page types
 extern int   PageType2Value[];
 
-extern const char *FullJumpTypeName[];
+extern char *FullJumpTypeName[];
 extern int   FullJumpTypeValue[];
-extern const char *JumpTypeName[];
+extern char *JumpTypeName[];
 extern int   JumpTypeValue[];
 
-extern const char *ShadowName[];
+extern char *ShadowName[];
 extern int   ShadowValue[];
-extern const char *PageShadowName[];
+extern char *PageShadowName[];
 extern int   PageShadowValue[];
 
-extern const char *PageSizeName[];
+extern char *PageSizeName[];
 extern int   PageSizeValue[];
 
-extern const char *ColorName[];
+extern char *ColorName[];
 extern int   ColorValue[];
 
-extern const char *FontName[];
+extern char *FontName[];
 extern int   FontValue[];
 
-extern const char *IndexName[];
+extern char *IndexName[];
 extern int   IndexValue[];
 
-extern const char *ShapeName[];
+extern char *ShapeName[];
 extern int   ShapeValue[];
 
-extern const char *ItemTypeName[];
+extern char *ItemTypeName[];
 extern int   ItemTypeValue[];
 
-extern const char *FamilyName[];
+extern char *FamilyName[];
 extern int   FamilyValue[];
 
-extern const char *SalesTypeName[];
+extern char *SalesTypeName[];
 extern int   SalesTypeValue[];
 
-extern const char *CallOrderName[];
+extern char *CallOrderName[];
 extern int   CallOrderValue[];
 
-extern const char *QualifierName[];
-extern const char *QualifierShortName[];
+extern char *QualifierName[];
+extern char *QualifierShortName[];
 extern int   QualifierValue[];
 
-extern const char *SwitchName[];
+extern char *SwitchName[];
 extern int   SwitchValue[];
 
-extern const char *ReportTypeName[];
+extern char *ReportTypeName[];
 extern int   ReportTypeValue[];
 
-extern const char *CheckDisplayOrderName[];
+extern char *CheckDisplayOrderName[];
 extern int   CheckDisplayOrderValue[];
 
-extern const char *ReportPrintName[];
+extern char *ReportPrintName[];
 extern int   ReportPrintValue[];
 
-extern const char *TenderName[];
+extern char *TenderName[];
 extern int   TenderValue[];
 
-extern const char *PrinterIDName[];
+extern char *PrinterIDName[];
 extern int   PrinterIDValue[];
 
-extern const char *CustomerTypeName[];
+extern char *CustomerTypeName[];
 extern int   CustomerTypeValue[];
 
-extern const char *PriceTypeName[];
+extern char *PriceTypeName[];
 extern int   PriceTypeValue[];
 
-extern const char *DrawerZoneTypeName[];
+extern char *DrawerZoneTypeName[];
 extern int   DrawerZoneTypeValue[];
 
-extern const char *CustDispUnitName[];
+extern char *CustDispUnitName[];
 extern int          CustDispUnitValue[];
 
-extern const char *CCTypeName[];
+extern char *CCTypeName[];
 extern int          CCTypeValue[];
 
-extern const char *ReportPeriodName[];
+extern char *ReportPeriodName[];
 extern int          ReportPeriodValue[];
 
-extern const char *YesNoName[];
+extern char *YesNoName[];
 extern int   YesNoValue[];
-extern const char *NoYesName[];
+extern char *NoYesName[];
 extern int   NoYesValue[];
 
-extern const char *SplitCheckName[];
+extern char *SplitCheckName[];
 extern int   SplitCheckValue[];
 
-extern const char *ModSeparatorName[];
+extern char *ModSeparatorName[];
 extern int   ModSeparatorValue[];
 
-extern const char *CouponApplyName[];
+extern char *CouponApplyName[];
 extern int   CouponApplyValue[];
 
-extern const char *DateTimeName[];
+extern char *DateTimeName[];
 extern int   DateTimeValue[];
 
-extern const char *PrintModeName[];
+extern char *PrintModeName[];
 extern int PrintModeValue[];
 
-extern const char *KVPrintMethodName[];
+extern char *KVPrintMethodName[];
 extern int KVPrintMethodValue[];
 
 #endif

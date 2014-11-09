@@ -87,20 +87,20 @@ int          MachineID = 0;
 /************************************************************* 
  * Calendar Values
  *************************************************************/ 
-const char *DayName[] = { "Sunday", "Monday", "Tuesday", 
+char *DayName[] = { "Sunday", "Monday", "Tuesday", 
                     "Wednesday", "Thursday", "Friday", 
                     "Saturday", NULL};
 
-const char *ShortDayName[] = { "Sun", "Mon", "Tue", 
+char *ShortDayName[] = { "Sun", "Mon", "Tue", 
                          "Wed", "Thu", "Fri", 
                          "Sat", NULL};
 
-const char *MonthName[] = { "January", "February", "March", 
+char *MonthName[] = { "January", "February", "March", 
                       "April", "May", "June", 
                       "July", "August", "September", 
                       "October", "November", "December", NULL};
 
-const char *ShortMonthName[] = { "Jan", "Feb", "Mar", 
+char *ShortMonthName[] = { "Jan", "Feb", "Mar", 
                            "Apr", "May", "Jun", 
                            "Jul", "Aug", "Sep", 
                            "Oct", "Nov", "Dec", NULL};
@@ -109,7 +109,7 @@ const char *ShortMonthName[] = { "Jan", "Feb", "Mar",
 /*************************************************************
  * Terminal Type values
  *************************************************************/ 
-const char *TermTypeName[] = { 	"Normal", "Order Only", 
+char *TermTypeName[] = { 	"Normal", "Order Only", 
                             "Bar", "Bar2", 
                             "Fast Food", "Kitchen Video",
                             "Kitchen Video2", NULL};
@@ -122,7 +122,7 @@ int TermTypeValue[] = { TERMINAL_NORMAL, TERMINAL_ORDER_ONLY,
 /************************************************************* 
  * Printer Type values
  *************************************************************/ 
-const char *PrinterTypeName[] = { "Kitchen 1", "Kitchen 2", 
+char *PrinterTypeName[] = { "Kitchen 1", "Kitchen 2", 
                             "Kitchen 3", "Kitchen 4", 
                             "Bar 1", "Bar 2", 
                             "Expediter", "Report", 
@@ -164,7 +164,7 @@ struct FontDataType
     int id;
     int width;
     int height;
-    const genericChar *font;
+    genericChar *font;
 };
 
 static FontDataType FontData[] =
@@ -244,11 +244,11 @@ int      PingCheck();
 int      UserCount();
 int      RunEndDay(void);
 int      RunMacros(void);
-int      RunReport(const genericChar *report_string, Printer *printer);
-Printer *SetPrinter(const genericChar *printer_description);
+int      RunReport(genericChar *report_string, Printer *printer);
+Printer *SetPrinter(genericChar *printer_description);
 int      ReadViewTouchConfig();
 
-const genericChar *GetMachineName(const genericChar *str = NULL, int len = STRLENGTH)
+genericChar *GetMachineName(genericChar *str = NULL, int len = STRLENGTH)
 {
     FnTrace("GetMachineName()");
     struct utsname uts;
@@ -286,7 +286,7 @@ int CheckLicense(Settings *settings, int force_check)
     return DaysToExpire;
 }
 
-void ViewTouchError(const char *message, int do_sleep)
+void ViewTouchError(char *message, int do_sleep)
 {
     FnTrace("ViewTouchError()");
     genericChar errormsg[STRLONG];
@@ -317,11 +317,11 @@ void ViewTouchError(const char *message, int do_sleep)
  *  goes through LoaderSocket because vtpos should still be active at this point
  *  and it should have the con.
  ****/
-int ViewTouchLicense(const char *license, int maxlen)
+int ViewTouchLicense(char *license, int maxlen)
 {
     FnTrace("ViewTouchLicense()");
     int readlen = 0;
-    unsigned const char *key;
+    unsigned char *key;
 
     license[0] = '\0';
     write(LoaderSocket, "\r", 1);  // CR triggers license read session
@@ -329,7 +329,7 @@ int ViewTouchLicense(const char *license, int maxlen)
     if (readlen > 0)
     {
         license[readlen] = '\0';
-        key = (unsigned const char *)license;
+        key = (unsigned char *)license;
         while (*key != '\0')
         {
             *key = toupper(*key);
@@ -374,7 +374,7 @@ int ReadViewTouchConfig()
 /************************************************************* 
  * Main
  *************************************************************/ 
-int main(int argc, const genericChar *argv[])
+int main(int argc, genericChar *argv[])
 {
     FnTrace("main()");
     srand(time(NULL));
@@ -419,7 +419,7 @@ int main(int argc, const genericChar *argv[])
     genericChar data_path[256] = "\0";
 
     genericChar buffer[1024];
-    const genericChar *c = buffer;
+    genericChar *c = buffer;
     for (;;)
     {
         int no = read(LoaderSocket, c, 1);
@@ -514,7 +514,7 @@ int main(int argc, const genericChar *argv[])
 /************************************************************* 
  * Functions
  *************************************************************/ 
-int ReportError(const char *message)
+int ReportError(char *message)
 {
     FnTrace("ReportError()");
     fprintf(stderr, "%s\n", message);
@@ -537,7 +537,7 @@ int ReportError(const char *message)
     return 0;
 }
 
-int ReportLoader(const char *message)
+int ReportLoader(char *message)
 {
     FnTrace("ReportLoader()");
     if (LoaderSocket == 0)
@@ -700,7 +700,7 @@ int StartSystem(int my_use_net)
     FontHeight[FONT_DEFAULT] = FontHeight[FONT_TIMES_24];
 
     int argc = 0;
-    const genericChar *argv[] = {"vt_main"};
+    genericChar *argv[] = {"vt_main"};
     Dis = XtOpenDisplay(App, displaystr, NULL, NULL, NULL, 0, &argc, argv);
     if (Dis)
     {
@@ -1148,7 +1148,7 @@ int RestartSystem()
     return 0;
 }
 
-int KillTask(const char *name)
+int KillTask(char *name)
 {
     FnTrace("KillTask()");
     genericChar str[STRLONG];
@@ -1158,7 +1158,7 @@ int KillTask(const char *name)
     return 0;
 }
 
-const char *PriceFormat(Settings *settings, int price, int use_sign, int use_comma, const genericChar *str)
+char *PriceFormat(Settings *settings, int price, int use_sign, int use_comma, genericChar *str)
 {
     FnTrace("PriceFormat()");
     static genericChar buffer[32];
@@ -1209,11 +1209,11 @@ const char *PriceFormat(Settings *settings, int price, int use_sign, int use_com
     return str;
 }
 
-int ParsePrice(const char *source, int *value)
+int ParsePrice(char *source, int *value)
 {
     FnTrace("ParsePrice()");
     genericChar str[256];
-    const genericChar *c = str;
+    genericChar *c = str;
     int numformat = MasterSystem->settings.number_format;
 
     if (*source == '-')
@@ -1516,7 +1516,7 @@ int Control::Remove(Printer *p)
     return 0;
 }
 
-Terminal *Control::FindTermByHost(const char *host)
+Terminal *Control::FindTermByHost(char *host)
 {
     FnTrace("Control::FindTermByHost()");
 
@@ -1529,7 +1529,7 @@ Terminal *Control::FindTermByHost(const char *host)
     return NULL;
 }
 
-int Control::SetAllMessages(const char *message)
+int Control::SetAllMessages(char *message)
 {
     FnTrace("Control::SetAllMessages()");
     for (Terminal *term = TermList(); term != NULL; term = term->next)
@@ -1606,7 +1606,7 @@ int Control::LogoutKitchenUsers()
     return count;
 }
 
-int Control::UpdateAll(int update_message, const genericChar *value)
+int Control::UpdateAll(int update_message, genericChar *value)
 {
     FnTrace("Control::UpdateAll()");
     Terminal *term = TermList();
@@ -1619,7 +1619,7 @@ int Control::UpdateAll(int update_message, const genericChar *value)
     return 0;
 }
 
-int Control::UpdateOther(Terminal *local, int update_message, const genericChar *value)
+int Control::UpdateOther(Terminal *local, int update_message, genericChar *value)
 {
     FnTrace("Control::UpdateOther()");
     for (Terminal *term = TermList(); term != NULL; term = term->next)
@@ -1661,7 +1661,7 @@ int Control::KillTerm(Terminal *term)
     return 1;  // invalid pointer given
 }
 
-int Control::OpenDialog(const char *message)
+int Control::OpenDialog(char *message)
 {
     FnTrace("Control::OpenDialog()");
     for (Terminal *term = TermList(); term != NULL; term = term->next)
@@ -1677,9 +1677,9 @@ int Control::KillAllDialogs()
     return 0;
 }
 
-Printer *Control::FindPrinter(const char *host, int port)
+Printer *Control::FindPrinter(char *host, int port)
 {
-    FnTrace("Control::FindPrinter(const char *, int)");
+    FnTrace("Control::FindPrinter(char *, int)");
     for (Printer *p = PrinterList(); p != NULL; p = p->next)
 	{
         if (p->MatchHost(host, port))
@@ -1689,9 +1689,9 @@ Printer *Control::FindPrinter(const char *host, int port)
     return NULL;
 }
 
-Printer *Control::FindPrinter(const char *term_name)
+Printer *Control::FindPrinter(char *term_name)
 {
-    FnTrace("Control::FindPrinter(const char *)");
+    FnTrace("Control::FindPrinter(char *)");
 
     for (Printer *p = PrinterList(); p != NULL; p = p->next)
     {
@@ -1719,9 +1719,9 @@ Printer *Control::FindPrinter(int printer_type)
  * NewPrinter:  First we'll see if the specified printer already exists.
  *  If it doesn't, we'll create it, slipping i
  ****/
-Printer *Control::NewPrinter(const char *host, int port, int model)
+Printer *Control::NewPrinter(char *host, int port, int model)
 {
-    FnTrace("Control::NewPrinter(const char *, int, int)");
+    FnTrace("Control::NewPrinter(char *, int, int)");
 
     Printer *p = FindPrinter(host, port);
     if (p)
@@ -1733,9 +1733,9 @@ Printer *Control::NewPrinter(const char *host, int port, int model)
     return p;
 }
 
-Printer *Control::NewPrinter(const char *term_name, const char *host, int port, int model)
+Printer *Control::NewPrinter(char *term_name, char *host, int port, int model)
 {
-    FnTrace("Control::NewPrinter(const char *, const char *, int, int)");
+    FnTrace("Control::NewPrinter(char *, char *, int, int)");
 
     Printer *p = FindPrinter(term_name);
     if (p)
@@ -1847,7 +1847,7 @@ int Control::SaveTablePages()
 /************************************************************* 
  * More Functions
  *************************************************************/ 
-int GetTermWord(const char *dest, int maxlen, const char *src, int sidx)
+int GetTermWord(char *dest, int maxlen, char *src, int sidx)
 {
     FnTrace("GetTermWord()");
     int didx = 0;
@@ -1865,7 +1865,7 @@ int GetTermWord(const char *dest, int maxlen, const char *src, int sidx)
     return sidx;
 }
 
-int SetTermInfo(TermInfo *ti, const char *termname, const char *termhost, const char *term_info)
+int SetTermInfo(TermInfo *ti, char *termname, char *termhost, char *term_info)
 {
     FnTrace("SetTermInfo()");
     int  retval = 0;
@@ -1921,7 +1921,7 @@ int SetTermInfo(TermInfo *ti, const char *termname, const char *termhost, const 
  *  openterm Wincor wincor:0.0
  * Send everything to this function except the "openterm " portion.
  ****/
-int OpenDynTerminal(const char *remote_terminal)
+int OpenDynTerminal(char *remote_terminal)
 {
     FnTrace("OpenDynTerminal()");
     int retval = 1;
@@ -1972,7 +1972,7 @@ int OpenDynTerminal(const char *remote_terminal)
     return retval;
 }
 
-int CloseDynTerminal(const char *remote_terminal)
+int CloseDynTerminal(char *remote_terminal)
 {
     FnTrace("CloseDynTerminal()");
     int retval = 1;
@@ -1999,7 +1999,7 @@ int CloseDynTerminal(const char *remote_terminal)
     return retval;
 }
 
-int CloneDynTerminal(const char *remote_terminal)
+int CloneDynTerminal(char *remote_terminal)
 {
     FnTrace("CloneDynTerminal()");
     int retval = 1;
@@ -2022,7 +2022,7 @@ int CloneDynTerminal(const char *remote_terminal)
     return retval;
 }
 
-int ProcessRemoteOrderEntry(SubCheck *subcheck, Order **order, const char *key, const char *value)
+int ProcessRemoteOrderEntry(SubCheck *subcheck, Order **order, char *key, char *value)
 {
     FnTrace("ProcessRemoteOrderEntry()");
     int retval = CALLCTR_ERROR_NONE;
@@ -2173,7 +2173,7 @@ int SendRemoteOrderResult(int socket, Check *check, int result_code, int status)
     return retval;
 }
 
-int DeliveryToInt(const char *cost)
+int DeliveryToInt(char *cost)
 {
     FnTrace("DeliveryToInt()");
     int retval = 0;
@@ -2288,7 +2288,7 @@ int ProcessRemoteOrder(int sock_fd)
     return retval;
 }
 
-int CompareCardNumbers(const char *card1, const char *card2)
+int CompareCardNumbers(char *card1, char *card2)
 {
     FnTrace("CompreCardNumbers()");
     int retval = 0;
@@ -2314,7 +2314,7 @@ int CompareCardNumbers(const char *card1, const char *card2)
     return retval;
 }
 
-Check* FindCCData(const char *cardnum, int value)
+Check* FindCCData(char *cardnum, int value)
 {
     FnTrace("FindCCData()");
     Check    *ret_check = NULL;
@@ -2366,7 +2366,7 @@ Check* FindCCData(const char *cardnum, int value)
     return ret_check;
 }
 
-int GetCCData(const char *data)
+int GetCCData(char *data)
 {
     FnTrace("GetCCData()");
     int       retval = 0;
@@ -2428,7 +2428,7 @@ int GetCCData(const char *data)
     return retval;
 }
 
-int ProcessSocketRequest(const char *request)
+int ProcessSocketRequest(char *request)
 {
     FnTrace("ProcessSocketRequest()");
     int retval = 1;
@@ -2864,7 +2864,7 @@ int RunMacros()
  *  1 if the report has not been completed yet.  In the latter case, it should
  *  be called again with report_string set to NULL.
  ****/
-int RunReport(const genericChar *report_string, Printer *printer)
+int RunReport(genericChar *report_string, Printer *printer)
 {
     FnTrace("RunReport()");
     int retval = 0;
@@ -2954,7 +2954,7 @@ int RunReport(const genericChar *report_string, Printer *printer)
 /****
  * SetPrinter:
  ****/
-Printer *SetPrinter(const genericChar *printer_description)
+Printer *SetPrinter(genericChar *printer_description)
 {
     FnTrace("SetPrinter()");
     Printer *retPrinter = NULL;
@@ -2973,7 +2973,7 @@ int GetFontSize(int font_id, int &w, int &h)
     return 0;
 }
 
-int GetTextWidth(const char *my_string, int len, int font_id)
+int GetTextWidth(char *my_string, int len, int font_id)
 {
     FnTrace("GetTextWidth()");
     if (my_string == NULL || len <= 0)

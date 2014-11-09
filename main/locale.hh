@@ -54,7 +54,7 @@ public:
 
     // Constructors
     PhraseInfo();
-    PhraseInfo(const char *k, const genericChar *v);
+    PhraseInfo(char *k, genericChar *v);
 
     // Member Functions
     int Read(InputDataFile &df, int version);
@@ -70,9 +70,9 @@ public:
     POEntry *next;
 
     POEntry();
-    POEntry(const char *newkey, const char *newvalue);
-    const char *Key() { return key; }
-    const char *Value() { return value; }
+    POEntry(char *newkey, char *newvalue);
+    char *Key() { return key; }
+    char *Value() { return value; }
 };
 
 class POFile
@@ -86,14 +86,14 @@ class POFile
 
     int FindPOFilename();
     int ReadPO();
-    int Add(const char *newkey, const char *newvalue);
+    int Add(char *newkey, char *newvalue);
 
 public:
     POFile *next;
     POFile();
     POFile(int po_lang);
     int IsLang(int language) { return (lang == language); }
-    int Find(const char *dest, const char *str, int po_lang);
+    int Find(char *dest, char *str, int po_lang);
 };
 
 class POFileList
@@ -103,7 +103,7 @@ class POFileList
 public:
     POFileList();
     POFile *FindPOFile(int lang);
-    char   *FindPOString(const char *str, int lang, int clear = 0);
+    char   *FindPOString(char *str, int lang, int clear = 0);
 };
 
 
@@ -135,21 +135,21 @@ public:
     int         PhraseCount()   { return phrase_list.Count(); }
 
     int Save();
-    int Load(const char *file);
+    int Load(char *file);
     int Add(PhraseInfo *ph);
     int Remove(PhraseInfo *ph);
     int Purge();
 
     int BuildSearchArray();
-    PhraseInfo *Find(const char *key);
-    const genericChar *Translate(const char *str, int lang = LANG_PHRASE, int clear = 0);
-    const genericChar *TranslatePO(const char *str, int lang = LANG_ENGLISH, int clear = 0);
-    int NewTranslation(const char *str, const genericChar *value);
+    PhraseInfo *Find(char *key);
+    genericChar *Translate(char *str, int lang = LANG_PHRASE, int clear = 0);
+    genericChar *TranslatePO(char *str, int lang = LANG_ENGLISH, int clear = 0);
+    int NewTranslation(char *str, genericChar *value);
 
-    const genericChar *TimeDate(Settings *s, TimeInfo &tm, int format = 0,
-                          int lang = LANG_PHRASE, const genericChar *buffer = NULL);
-    const genericChar *Page(int current, int max = 0, int lang = LANG_PHRASE,
-                      const genericChar *buffer = NULL);
+    genericChar *TimeDate(Settings *s, TimeInfo &tm, int format = 0,
+                          int lang = LANG_PHRASE, genericChar *buffer = NULL);
+    genericChar *Page(int current, int max = 0, int lang = LANG_PHRASE,
+                      genericChar *buffer = NULL);
 };
 
 
@@ -161,7 +161,7 @@ extern Locale *MasterLocale;
 struct PhraseEntry
 {
     int page;
-    const genericChar *text;
+    genericChar *text;
 };
 
 extern PhraseEntry PhraseData[];

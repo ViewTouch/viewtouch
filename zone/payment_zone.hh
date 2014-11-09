@@ -46,13 +46,13 @@ public:
     // Memeber Functions
     int          Type() { return ZONE_PAYMENT_ENTRY; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar *message);
+    SignalResult Signal(Terminal *term, genericChar *message);
     SignalResult Keyboard(Terminal *term, int key, int state);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar *value);
+    int          Update(Terminal *term, int update_message, genericChar *value);
     int          AddPayment(Terminal *term, int type, int id,
                             int amount, int flags);
-    int          AddPayment(Terminal *term, int type, const genericChar *swipe_value);
+    int          AddPayment(Terminal *term, int type, genericChar *swipe_value);
     Flt         *Spacing() { return &spacing; }
 
     int  RenderPaymentEntry(Terminal *term);

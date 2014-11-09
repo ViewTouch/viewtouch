@@ -44,9 +44,9 @@ public:
 
     int          Type() { return ZONE_EXPENSE; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar *message);
+    SignalResult Signal(Terminal *term, genericChar *message);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar *value)
+    int          Update(Terminal *term, int update_message, genericChar *value)
                     { return FormZone::Update( term, update_message, value); }
     int          UpdateForm(Terminal *term, int record);
     int          HideFields();
@@ -60,7 +60,7 @@ public:
     int NewRecord(Terminal *term);
     int KillRecord(Terminal *term, int record);
     int PrintRecord(Terminal *term, int record);
-    int Search(Terminal *term, int record, const genericChar *word);
+    int Search(Terminal *term, int record, genericChar *word);
     int ListReport(Terminal *term, Report *report);
     int RecordCount(Terminal *term);
 };

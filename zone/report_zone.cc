@@ -634,10 +634,10 @@ int AdjustPeriod(TimeInfo &ref, int period, int adjust)
     return 0;
 }
 
-SignalResult ReportZone::Signal(Terminal *t, const genericChar *message)
+SignalResult ReportZone::Signal(Terminal *t, genericChar *message)
 {
     FnTrace("ReportZone::Signal()");
-    static const genericChar *commands[] = {
+    static genericChar *commands[] = {
         "next", "prior", "print", "localprint", "reportprint",
         "day period", "sales period", "labor period", "month period",
         "nextperiod", "sortby ", "undo", "ccinit", "cctotals", "cctotals ",
@@ -1100,7 +1100,7 @@ SignalResult ReportZone::Keyboard(Terminal *t, int my_key, int state)
     return SIGNAL_OKAY;
 }
 
-int ReportZone::Update(Terminal *t, int update_message, const genericChar *value)
+int ReportZone::Update(Terminal *t, int update_message, genericChar *value)
 {
     FnTrace("ReportZone::Update()");
     if ((update_message & UPDATE_REPORT) && temp_report)
@@ -1238,7 +1238,7 @@ RenderResult ReadZone::Render(Terminal *t, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult ReadZone::Signal(Terminal *t, const char *message)
+SignalResult ReadZone::Signal(Terminal *t, char *message)
 {
     FnTrace("ReadZone::Signal()");
     SignalResult retval = SIGNAL_IGNORED;

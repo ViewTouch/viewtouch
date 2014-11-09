@@ -334,10 +334,10 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult OrderEntryZone::Signal(Terminal *term, const genericChar *message)
+SignalResult OrderEntryZone::Signal(Terminal *term, genericChar *message)
 {
 	FnTrace("OrderEntryZone::Signal()");
-	static const genericChar *commands[] = {
+	static genericChar *commands[] = {
 		"cancel", "delete", "consolidate", "final",
         "next check", "prior check", "next seat", "prior seat",
         "takeoutseat", "takeoutattach", NULL};
@@ -508,7 +508,7 @@ SignalResult OrderEntryZone::Touch(Terminal *t, int tx, int ty)
     return SIGNAL_IGNORED;
 }
 
-int OrderEntryZone::Update(Terminal *t, int update_message, const genericChar *value)
+int OrderEntryZone::Update(Terminal *t, int update_message, genericChar *value)
 {
     FnTrace("OrderEntryZone::Update()");
     if (update_message & UPDATE_ORDERS)
@@ -962,7 +962,7 @@ SignalResult OrderPageZone::Touch(Terminal *t, int tx, int ty)
         return t->Signal("prior check", group_id);
 }
 
-const char *OrderPageZone::TranslateString(Terminal *t)
+char *OrderPageZone::TranslateString(Terminal *t)
 {
     FnTrace("OrderPageZone::TranslateString()");
     Settings *s = t->GetSettings();
@@ -1122,7 +1122,7 @@ SignalResult OrderFlowZone::Touch(Terminal *t, int tx, int ty)
         return SIGNAL_OKAY;
 }
 
-int OrderFlowZone::Update(Terminal *t, int update_message, const genericChar *value)
+int OrderFlowZone::Update(Terminal *t, int update_message, genericChar *value)
 {
     FnTrace("OrderFlowZone::Update()");
     Page *p = t->page;
@@ -1187,7 +1187,7 @@ RenderResult OrderAddZone::Render(Terminal *t, int update_flag)
 {
     FnTrace("OrderAddZone::Render()");
     RenderInit(t, update_flag);
-    const genericChar *str;
+    genericChar *str;
     switch (mode)
     {
     case 1: str = "Increase\\Item"; break;
@@ -1286,7 +1286,7 @@ SignalResult OrderAddZone::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_OKAY;
 }
 
-int OrderAddZone::Update(Terminal *t, int update_message, const genericChar *value)
+int OrderAddZone::Update(Terminal *t, int update_message, genericChar *value)
 {
     FnTrace("OrderAddZone::Update()");
     if (update_message & UPDATE_ORDERS)
@@ -1349,7 +1349,7 @@ RenderResult OrderDeleteZone::Render(Terminal *t, int update_flag)
 {
     FnTrace("OrderDeleteZone::Render()");
     RenderInit(t, update_flag);
-    const genericChar *str;
+    genericChar *str;
     switch (mode)
     {
     case 1: str = "Delete\\Item"; break;
@@ -1394,7 +1394,7 @@ SignalResult OrderDeleteZone::Touch(Terminal *term, int tx, int ty)
     return term->Signal("delete", group_id);
 }
 
-int OrderDeleteZone::Update(Terminal *term, int update_message, const genericChar *value)
+int OrderDeleteZone::Update(Terminal *term, int update_message, genericChar *value)
 {
     FnTrace("OrderDeleteZone::Update()");
     if (update_message & UPDATE_ORDERS)
@@ -1530,7 +1530,7 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
 
     if (t->show_info)
     {
-        const genericChar *str = item->item_name.Value();
+        genericChar *str = item->item_name.Value();
         t->RenderText(str, x + border, y + border, col, FONT_TIMES_14,
                       ALIGN_LEFT, w - border);
         str = item->Family(t);
@@ -1546,11 +1546,11 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult ItemZone::Signal(Terminal *t, const char *message)
+SignalResult ItemZone::Signal(Terminal *t, char *message)
 {
     FnTrace("ItemZone::Signal()");
     SignalResult retval = SIGNAL_IGNORED;
-	static const genericChar *commands[] = { "addanyway", "addandopentab", NULL };
+	static genericChar *commands[] = { "addanyway", "addandopentab", NULL };
     int idx = CompareList(message, commands);
 
     switch (idx)
@@ -1702,7 +1702,7 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
     return SIGNAL_OKAY;
 }
 
-int ItemZone::Update(Terminal *t, int update_message, const genericChar *value)
+int ItemZone::Update(Terminal *t, int update_message, genericChar *value)
 {
     FnTrace("ItemZone::Update()");
     if (update_message & UPDATE_MENU)
@@ -1770,7 +1770,7 @@ SignalResult QualifierZone::Touch(Terminal *t, int tx, int ty)
     return SIGNAL_OKAY;
 }
 
-int QualifierZone::Update(Terminal *t, int update_message, const genericChar *value)
+int QualifierZone::Update(Terminal *t, int update_message, genericChar *value)
 {
     FnTrace("QualifierZone::Update()");
     if (update_message & UPDATE_QUALIFIER)

@@ -35,8 +35,8 @@ public:
     Line *next;
     Line *fore;
     Str line;
-    int Set(const genericChar *lineval) {return line.Set(lineval);}
-    const genericChar *Value() {return line.Value();}
+    int Set(genericChar *lineval) {return line.Set(lineval);}
+    genericChar *Value() {return line.Value();}
     int Length() {return line.length;}
 };
 
@@ -50,7 +50,7 @@ private:
 public:
     Email();
     ~Email();
-    int AddFrom(const char *address);
+    int AddFrom(char *address);
     int From(char *buffer, int maxlen);
     int AddTo(char *address);
     int NextTo(char *buffer, int maxlen);
@@ -63,8 +63,8 @@ public:
 
 int  Listen(int port, int nonblocking = 0);
 int  Accept(int socknum, char *remote_address = NULL);
-int  Connect(const char *host, const char *service);
-int  Connect(const char *host, int port);
+int  Connect(char *host, char *service);
+int  Connect(char *host, int port);
 int  SelectIn(int fd, int u_sec);
 int  SelectOut(int fd, int u_sec);
 int  SMTP(int fd, Email *email);

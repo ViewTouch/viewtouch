@@ -60,14 +60,14 @@ public:
     // Member Functions
     int          RenderInit(Terminal *term, int update_flag);
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar *message);
+    SignalResult Signal(Terminal *term, genericChar *message);
     SignalResult Touch(Terminal *term, int tx, int ty);
 
     int LoadRecord(Terminal *term, int record);
     int SaveRecord(Terminal *term, int record, int write_file);
     int UpdateForm(Terminal *term, int record);
 
-    int ParseSwipe(Terminal *term, const genericChar *swipe);
+    int ParseSwipe(Terminal *term, genericChar *swipe);
 };
 
 // Constructor
@@ -221,11 +221,11 @@ SignalResult RoomDialog::Touch(Terminal *term, int tx, int ty)
     return FormZone::Touch(term, tx, ty);
 }
 
-SignalResult RoomDialog::Signal(Terminal *term, const genericChar *message)
+SignalResult RoomDialog::Signal(Terminal *term, genericChar *message)
 {
     if (StringCompare(message, "swipe ", 6) == 0)
     {
-        const genericChar *swipe = &message[6];
+        genericChar *swipe = &message[6];
         if (ParseSwipe(term, swipe) == 0)
             Draw(term, 0);
         return SIGNAL_OKAY;
@@ -313,11 +313,11 @@ int RoomDialog::UpdateForm(Terminal *term, int record)
     return status;
 }
 
-int RoomDialog::ParseSwipe(Terminal *term, const genericChar *value)
+int RoomDialog::ParseSwipe(Terminal *term, genericChar *value)
 {
     genericChar tmp[256];
-    const genericChar *s = value;
-    const genericChar *d;
+    genericChar *s = value;
+    genericChar *d;
     int i;
 
     d = tmp;
@@ -339,7 +339,7 @@ int RoomDialog::ParseSwipe(Terminal *term, const genericChar *value)
     --d;
 
     genericChar first[256], last[256];
-    const genericChar *fp = first, *lp = last;
+    genericChar *fp = first, *lp = last;
 
     int flag = 0;
     d = tmp;
@@ -497,11 +497,11 @@ RenderResult CustomerInfoZone::Render(Terminal *term, int update_flag)
     return retval;
 }
 
-SignalResult CustomerInfoZone::Signal(Terminal *term, const genericChar *message)
+SignalResult CustomerInfoZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("CustomerInfoZone::Signal()");
     SignalResult retval = SIGNAL_OKAY;
-    static const genericChar *commands[] = {
+    static genericChar *commands[] = {
         "next", "prior", "search", "nextsearch ", "new", NULL};
     int idx = CompareListN(commands, message);
     int draw = 0;
@@ -593,7 +593,7 @@ int CustomerInfoZone::LoadRecord(Terminal *term, int record)
     FnTrace("CustomerInfoZone::LoadRecord()");
     int retval = 0;
     FormField *fields = FieldList();
-    const genericChar *buffer;
+    genericChar *buffer;
 
     if (customer != NULL)
     {
@@ -737,7 +737,7 @@ int CustomerInfoZone::RecordCount(Terminal *term)
     return retval;
 }
 
-int CustomerInfoZone::Search(Terminal *term, int record, const genericChar *word)
+int CustomerInfoZone::Search(Terminal *term, int record, genericChar *word)
 {
     FnTrace("CustomerInfoZone::Search()");
 
@@ -765,7 +765,7 @@ int CustomerInfoZone::Search(Terminal *term, int record, const genericChar *word
 /*********************************************************************
  * CommandZone Class
  ********************************************************************/
-static const genericChar *ManagerStr = "Manager's Gateway";
+static genericChar *ManagerStr = "Manager's Gateway";
 
 CommandZone::CommandZone()
 {
@@ -792,7 +792,7 @@ RenderResult CommandZone::Render(Terminal *term, int update_flag)
 
     if (check && term->move_check)
     {
-        const genericChar *temp_str;
+        genericChar *temp_str;
         if (check->CustomerType() == CHECK_HOTEL)
             temp_str = term->Translate("Select Target Room");
         else
@@ -836,10 +836,10 @@ RenderResult CommandZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult CommandZone::Signal(Terminal *term, const genericChar *message)
+SignalResult CommandZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("CommandZone::Signal()");
-    static const genericChar *commands[] = {
+    static genericChar *commands[] = {
         "takeout", "printreceipt", "stack", "move", "more tables",
         "tablenext", "tableprior", "faststart", NULL};
 
@@ -969,7 +969,7 @@ SignalResult CommandZone::Keyboard(Terminal *term, int my_key, int state)
     return SIGNAL_IGNORED;
 }
 
-int CommandZone::Update(Terminal *term, int update_message, const genericChar *value)
+int CommandZone::Update(Terminal *term, int update_message, genericChar *value)
 {
     FnTrace("CommandZone::Update()");
     if (update_message & UPDATE_TIMEOUT)
@@ -980,7 +980,7 @@ int CommandZone::Update(Terminal *term, int update_message, const genericChar *v
         return 0;
 }
 
-const char *CommandZone::TranslateString(Terminal *term)
+char *CommandZone::TranslateString(Terminal *term)
 {
     return ManagerStr;
 }
@@ -1024,7 +1024,7 @@ int CommandZone::FastFood(Terminal *term)
     return 0;
 }
 
-Zone *CommandZone::FindTableZone(Terminal *term, const genericChar *table)
+Zone *CommandZone::FindTableZone(Terminal *term, genericChar *table)
 {
     FnTrace("CommandZone::FindTableZone()");
     if (table == NULL)
@@ -1239,7 +1239,7 @@ SignalResult TableZone::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_OKAY;
 }
 
-int TableZone::Update(Terminal *term, int update_message, const genericChar *value)
+int TableZone::Update(Terminal *term, int update_message, genericChar *value)
 {
     FnTrace("TableZone::Update()");
     Employee *e = term->user;
@@ -1319,10 +1319,10 @@ RenderResult GuestCountZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult GuestCountZone::Signal(Terminal *term, const genericChar *message)
+SignalResult GuestCountZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("GuestCountZone::Signal()");
-    static const genericChar *commands[] = {
+    static genericChar *commands[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "00",
         "backspace", "clear", "increase", "decrease",
         "done", "ordering", "okay", "cancel", NULL};
@@ -1425,7 +1425,7 @@ SignalResult GuestCountZone::Keyboard(Terminal *term, int my_key, int state)
     return Signal(term, str);
 }
 
-int GuestCountZone::Update(Terminal *term, int update_message, const genericChar *value)
+int GuestCountZone::Update(Terminal *term, int update_message, genericChar *value)
 {
     FnTrace("GuestCountZone::Update()");
     if (update_message & UPDATE_TIMEOUT)
@@ -1539,7 +1539,7 @@ int ServerTableObj::Render(Terminal *term)
     term->RenderText(user->system_name.Value(), xx, y + 6, COLOR_BLACK,
                      FONT_TIMES_20B, ALIGN_CENTER, w - 8);
 
-    const genericChar *j = user->JobTitle(term);
+    genericChar *j = user->JobTitle(term);
     term->RenderText(j, xx, y + 26, COLOR_BLUE, FONT_TIMES_20B,
                      ALIGN_CENTER, w - 8);
 
@@ -1620,7 +1620,7 @@ RenderResult TableAssignZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult TableAssignZone::Signal(Terminal *term, const genericChar *message)
+SignalResult TableAssignZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("TableAssignZone::Signal()");
     return SIGNAL_IGNORED;
@@ -1642,7 +1642,7 @@ SignalResult TableAssignZone::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_IGNORED;
 }
 
-int TableAssignZone::Update(Terminal *term, int update_message, const genericChar *value)
+int TableAssignZone::Update(Terminal *term, int update_message, genericChar *value)
 {
     if (update_message & (UPDATE_ALL_TABLES | UPDATE_USERS))
         Draw(term, 1);

@@ -111,7 +111,7 @@ int System::InitCurrentDay()
     return 0;
 }
 
-int System::LoadCurrentData(const char *path)
+int System::LoadCurrentData(char *path)
 {
 	FnTrace("System::LoadCurrentData()");
 	if (path == NULL)
@@ -126,7 +126,7 @@ int System::LoadCurrentData(const char *path)
 
 	current_path.Set(path);
 	char str[256];
-    const char *name;
+    char *name;
 	struct dirent *record = NULL;
 	do
 	{
@@ -223,7 +223,7 @@ int System::BackupCurrentData()
     return retval;
 }
 
-int System::ScanArchives(const char *path, const char *altmedia)
+int System::ScanArchives(char *path, char *altmedia)
 {
     FnTrace("System::ScanArchives()");
     if (path)
@@ -242,7 +242,7 @@ int System::ScanArchives(const char *path, const char *altmedia)
         record = readdir(dp);
         if (record)
         {
-            const genericChar *name = record->d_name;
+            genericChar *name = record->d_name;
             if (strncmp(name, "archive_", 8) == 0)
             {
                 int len = strlen(name);
@@ -747,7 +747,7 @@ int System::CheckEndDay(Terminal *term)
     return retval;
 }
 
-int System::SetDataPath(const char *path)
+int System::SetDataPath(char *path)
 {
     FnTrace("System::SetDataPath()");
     if (path == NULL)
@@ -846,7 +846,7 @@ int System::SetDataPath(const char *path)
  *  the file to the dat directory.
  * Returns 1 if the file exists and is successfully moved, 0 otherwise.
  ****/
-int System::CheckFileUpdate(const char *file)
+int System::CheckFileUpdate(char *file)
 {
     FnTrace("System::CheckFileUpdate()");
     int retval = 0;
@@ -893,7 +893,7 @@ int System::CheckFileUpdates()
     return retval;
 }
 
-const char *System::FullPath(const char *filename, const genericChar *buffer)
+char *System::FullPath(char *filename, genericChar *buffer)
 {
     FnTrace("System::FullPath()");
     static genericChar str[256];
@@ -910,7 +910,7 @@ int System::ClearSystem(int all)
     FnTrace("System::ClearSystem()");
     // Ouch! this kills all recorded data & takes down system
     genericChar  str[STRLONG];
-    const genericChar *p = data_path.Value();
+    genericChar *p = data_path.Value();
     sprintf(str, "%s/error_log.txt", p);
     DeleteFile(str);
     sprintf(str, "%s/exception.dat", p);
@@ -934,7 +934,7 @@ int System::NewSerialNumber()
     return last_serial_number;
 }
 
-const char *System::NewPrintFile(const char *str)
+char *System::NewPrintFile(char *str)
 {
     FnTrace("System::NewPrintFile()");
     static int counter = 0;
@@ -1054,7 +1054,7 @@ int System::CountOpenChecks(Employee *e)
     return count;
 }
 
-int System::NumberStacked(const char *table, Employee *e)
+int System::NumberStacked(char *table, Employee *e)
 {
     FnTrace("System::NumberStacked()");
     if (e == NULL)
@@ -1068,7 +1068,7 @@ int System::NumberStacked(const char *table, Employee *e)
     return count;
 }
 
-Check *System::FindOpenCheck(const char *table, Employee *e)
+Check *System::FindOpenCheck(char *table, Employee *e)
 {
     FnTrace("System::FindOpenCheck()");
     if (e == NULL)

@@ -46,10 +46,10 @@ public:
     ~InputDataFile() { Close(); }
 
     // Member Functions
-    int Open(const char *filename, int &version);
+    int Open(char *filename, int &version);
     int Close();
 
-    int   GetToken(const char *buffer, int max_len = 0);
+    int   GetToken(char *buffer, int max_len = 0);
     unsigned long long GetValue();
 
     int Read(char   &val) { val = (char)   GetValue(); return 0; }
@@ -70,8 +70,8 @@ public:
     int Read(Str *val);
 
     int PeekTokens();
-    const char *ShowTokens(const char *buffer = NULL, int lines = 1);
-    const char *FileName() { return filename; }
+    char *ShowTokens(char *buffer = NULL, int lines = 1);
+    char *FileName() { return filename; }
 };
 
 
@@ -91,7 +91,7 @@ public:
     ~OutputDataFile() { Close(); }
 
     // Member Functions
-    int Open(const char *filename, int version, int use_compression = 0);
+    int Open(char *filename, int version, int use_compression = 0);
     int Close();
 
     int PutValue(unsigned long long val, int bk);
@@ -106,10 +106,10 @@ public:
 
     // conditional writes (won't write if pointer is NULL)
     int Write(int  *val, int bk = 0);
-    int Write(const char *val, int bk = 0);
+    int Write(char *val, int bk = 0);
     int Write(Flt  *val, int bk = 0);
     int Write(Str  *val, int bk = 0);
-    const char *FileName() { return filename; }
+    char *FileName() { return filename; }
 };
 
 
@@ -133,16 +133,16 @@ private:
 public:
     KeyValueInputFile();
     KeyValueInputFile(int fd);
-    KeyValueInputFile(const char *filename);
+    KeyValueInputFile(char *filename);
     int Open();
-    int Open(const char *filename);
+    int Open(char *filename);
     int IsOpen();
     int Set(int fd);
-    int Set(const char *filename);
+    int Set(char *filename);
     char SetDelim(char delim);
     int Close();
     int Reset();
-    int Read(const char *key, const char *value, int maxlen);
+    int Read(char *key, char *value, int maxlen);
     
 };
 
@@ -159,14 +159,14 @@ private:
 public:
     KeyValueOutputFile();
     KeyValueOutputFile(int fd);
-    KeyValueOutputFile(const char *filename);
+    KeyValueOutputFile(char *filename);
     int Open();
-    int Open(const char *filename);
+    int Open(char *filename);
     int IsOpen();
     char SetDelim(char delim);
     int Close();
     int Reset();
-    int Write(const char *key, const char *value);
+    int Write(char *key, char *value);
 };
 
 #endif

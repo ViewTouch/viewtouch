@@ -49,10 +49,10 @@
 
 
 /**** Global Data ****/
-extern const genericChar *PurchaseUnitName[];
+extern genericChar *PurchaseUnitName[];
 extern int   PurchaseUnitValue[];
 
-extern const genericChar *RecipeUnitName[];
+extern genericChar *RecipeUnitName[];
 extern int   RecipeUnitValue[];
 
 
@@ -73,8 +73,8 @@ public:
     int   Read(InputDataFile &df, int version);
     int   Write(OutputDataFile &df, int version);
     int   Convert(int new_type);
-    const genericChar *Description(const char *str = NULL);
-    const genericChar *Measurement(const char *str = NULL);
+    genericChar *Description(char *str = NULL);
+    genericChar *Measurement(char *str = NULL);
 
     UnitAmount &operator = (UnitAmount &u) {
         amount = u.amount; type = u.type; return *this; }
@@ -264,7 +264,7 @@ public:
     int Remove(StockEntry *se);
     int Remove(Invoice *in);
     int Purge();
-    int Load(const char *file = NULL);
+    int Load(char *file = NULL);
     int Save();
     int Total();
     Invoice *NewInvoice(int vendor_id);
@@ -303,7 +303,7 @@ public:
     Stock   *StockListEnd()   { return stock_list.Tail(); }
     int      StockCount()     { return stock_list.Count(); }
 
-    int Load(const char *file);
+    int Load(char *file);
     int Save();
     int Add(Product *pr);
     int Add(Recipe *rc);
@@ -314,18 +314,18 @@ public:
     int Remove(Vendor *v);
     int Remove(Stock *s);
     int Purge();
-    int LoadStock(const char *path);
+    int LoadStock(char *path);
 
-    int PartMatches(const char *word);
+    int PartMatches(char *word);
     Product *FindProductByRecord(int record);
-    Product *FindProductByWord(const char *word, int &record);
+    Product *FindProductByWord(char *word, int &record);
     Product *FindProductByID(int id);
     Recipe  *FindRecipeByRecord(int record);
-    Recipe  *FindRecipeByWord(const char *word, int &record);
+    Recipe  *FindRecipeByWord(char *word, int &record);
     Recipe  *FindRecipeByID(int id);
-    Recipe  *FindRecipeByName(const char *name);
+    Recipe  *FindRecipeByName(char *name);
     Vendor  *FindVendorByRecord(int record);
-    Vendor  *FindVendorByWord(const char *word, int &record);
+    Vendor  *FindVendorByWord(char *word, int &record);
     Vendor  *FindVendorByID(int id);
 
     int ProductListReport(Terminal *t, Stock *s, Report *r);
@@ -333,7 +333,7 @@ public:
     int InvoiceReport(Terminal *t, Invoice *in, Report *r);
 
     int    ScanItems(ItemDB *db);
-    int    ChangeRecipeName(const char *old_name, const genericChar *new_name);
+    int    ChangeRecipeName(char *old_name, genericChar *new_name);
     Stock *CurrentStock();
     int    MakeOrder(Check *c);
 };

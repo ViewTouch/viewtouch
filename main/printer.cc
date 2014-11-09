@@ -56,7 +56,7 @@
 #define END_PAGE  8
 
 /**** Global Data ****/
-const genericChar *PrinterModelName[] = {
+genericChar *PrinterModelName[] = {
     "No Printer", "Epson", "Star", "HP", "Toshiba", "Ithaca",
     "HTML", "PostScript", "PDF", "Receipt Text",
     "Report Text", NULL};
@@ -65,12 +65,12 @@ int          PrinterModelValue[] = {
     MODEL_HTML, MODEL_POSTSCRIPT, MODEL_PDF, MODEL_RECEIPT_TEXT,
     MODEL_REPORT_TEXT, -1};
 
-// const genericChar *ReceiptPrinterModelName[] = {
+// genericChar *ReceiptPrinterModelName[] = {
     // "No Printer", "Epson", "Star", "Ithaca", "Text", NULL};
 // int          ReceiptPrinterModelValue[] = {
     // MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_ITHACA, MODEL_RECEIPT_TEXT, -1};
 
-const genericChar *ReceiptPrinterModelName[] = {
+genericChar *ReceiptPrinterModelName[] = {
     "No Printer", "Epson", "Star", "HP", "Toshiba", "Ithaca",
     "HTML", "PostScript", "PDF", "Receipt Text",
     "Report Text", NULL};
@@ -79,7 +79,7 @@ int          ReceiptPrinterModelValue[] = {
     MODEL_HTML, MODEL_POSTSCRIPT, MODEL_PDF, MODEL_RECEIPT_TEXT,
     MODEL_REPORT_TEXT, -1};
 
-const genericChar *ReportPrinterModelName[] = {
+genericChar *ReportPrinterModelName[] = {
     "No Printer", "HP", "Toshiba", "HTML", "PostScript",
     "PDF", "Text", NULL};
 int          ReportPrinterModelValue[] = {
@@ -95,7 +95,7 @@ int          ReportPrinterModelValue[] = {
 #define PORT_VT_DAEMON        65530
 #define PORT_SERVER_DEVICE    0
 
-const genericChar *PortName[] = {
+genericChar *PortName[] = {
     "XCD Parallel", "XCD Serial", "Explora Parallel", "Explora Serial",
     "VT Daemon", "Device On Server", NULL};
 int          PortValue[] = {
@@ -135,7 +135,7 @@ Printer::Printer()
     term_name.Set("");
 }
 
-Printer::Printer(const genericChar *host, int port, const genericChar *targetstr, int type)
+Printer::Printer(genericChar *host, int port, genericChar *targetstr, int type)
 {
     next         = NULL;
     fore         = NULL;
@@ -173,7 +173,7 @@ Printer::~Printer()
  *  ports.  But this should not happen as the new code allows for lpd, which will avoid
  *  the problem while also providing more versatility.
  ****/
-int Printer::MatchHost(const genericChar *host, int port)
+int Printer::MatchHost(genericChar *host, int port)
 {
     FnTrace("Printer::MatchHost()");
     int retval = 1;
@@ -184,7 +184,7 @@ int Printer::MatchHost(const genericChar *host, int port)
     return retval;
 }
 
-int Printer::MatchTerminal(const genericChar *termname)
+int Printer::MatchTerminal(genericChar *termname)
 {
     FnTrace("Printer::MatchTerminal()");
     int retval = 1;
@@ -229,7 +229,7 @@ int Printer::IsType(int type)
     return retval;
 }
 
-int Printer::SetTitle(const genericChar *title)
+int Printer::SetTitle(genericChar *title)
 {
     page_title.Set(title);
     have_title = 1;
@@ -473,7 +473,7 @@ int Printer::ValidChar(genericChar c)
  *   Most modern OSs will handle just about any character fine, but that
  *   doesn't mean we need to beg for trouble.
  ****/
-int Printer::MakeFileName(const genericChar *buffer, const genericChar *source, const genericChar *ext, int max_len)
+int Printer::MakeFileName(genericChar *buffer, genericChar *source, genericChar *ext, int max_len)
 {
     FnTrace("Printer::MakeFileName()");
     int len;
@@ -540,7 +540,7 @@ int Printer::MakeFileName(const genericChar *buffer, const genericChar *source, 
     return 0;
 }
 
-int Printer::IsDirectory(const genericChar *path)
+int Printer::IsDirectory(genericChar *path)
 {
     FnTrace("Printer::IsDirectory()");
     struct stat sb;
@@ -577,7 +577,7 @@ int Printer::FilePrint()
     return retval;
 }
 
-int Printer::GetFilePath(const char *dest)
+int Printer::GetFilePath(char *dest)
 {
     FnTrace("Printer::GetFilePath()");
     char filename[STRLENGTH];
@@ -688,7 +688,7 @@ int Printer::TestPrint(Terminal *t)
     return End();
 }
 
-int Printer::WriteLR(const genericChar *left, const genericChar *right, int flags)
+int Printer::WriteLR(genericChar *left, genericChar *right, int flags)
 {
     FnTrace("Printer::WriteLR()");
     if (WriteFlags(flags))
@@ -726,7 +726,7 @@ int Printer::WriteLR(const genericChar *left, const genericChar *right, int flag
     return 0;
 }
 
-int Printer::Write(const genericChar *my_string, int flags)
+int Printer::Write(genericChar *my_string, int flags)
 {
     FnTrace("Printer::Write()");
     if (temp_fd <= 0)
@@ -738,7 +738,7 @@ int Printer::Write(const genericChar *my_string, int flags)
     return 0;
 }
 
-int Printer::Put(const genericChar *my_string, int flags)
+int Printer::Put(genericChar *my_string, int flags)
 {
     FnTrace("Printer::Put()");
     if (WriteFlags(flags))
@@ -794,7 +794,7 @@ void Printer::DebugPrint(int printall)
 /*********************************************************************
  * ITHACA PRINTERS
  ********************************************************************/
-PrinterIthaca::PrinterIthaca(const genericChar *host, int port, const genericChar *targetstr, int type)
+PrinterIthaca::PrinterIthaca(genericChar *host, int port, genericChar *targetstr, int type)
 {
     next         = NULL;
     fore         = NULL;
@@ -988,7 +988,7 @@ int PrinterIthaca::CutPaper(int partial_only)
 /*********************************************************************
  * STAR PRINTERS
  ********************************************************************/
-PrinterStar::PrinterStar(const genericChar *host, int port, const genericChar *targetstr, int type)
+PrinterStar::PrinterStar(genericChar *host, int port, genericChar *targetstr, int type)
 {
     next         = NULL;
     fore         = NULL;
@@ -1221,7 +1221,7 @@ int PrinterStar::CutPaper(int partial_only)
 /*********************************************************************
  * EPSON PRINTERS
  ********************************************************************/
-PrinterEpson::PrinterEpson(const genericChar *host, int port, const genericChar *targetstr, int type)
+PrinterEpson::PrinterEpson(genericChar *host, int port, genericChar *targetstr, int type)
 {
     next         = NULL;
     fore         = NULL;
@@ -1444,7 +1444,7 @@ int PrinterEpson::CutPaper(int partial_only)
  * HP PRINTERS
  ********************************************************************/
 
-PrinterHP::PrinterHP(const genericChar *host, int port, const genericChar *targetstr, int type)
+PrinterHP::PrinterHP(genericChar *host, int port, genericChar *targetstr, int type)
 {
     next         = NULL;
     fore         = NULL;
@@ -1623,7 +1623,7 @@ int PrinterHP::CutPaper(int partial_only)
  *  prints to HTML for onscreen viewing as well as email
  *  delivery of reports
  ********************************************************************/
-PrinterHTML::PrinterHTML(const genericChar *host, int port, const genericChar *targetstr, int type)
+PrinterHTML::PrinterHTML(genericChar *host, int port, genericChar *targetstr, int type)
 {
     next         = NULL;
     fore         = NULL;
@@ -1801,7 +1801,7 @@ PrinterPostScript::PrinterPostScript()
     term_name.Set("");
 }
 
-PrinterPostScript::PrinterPostScript(const genericChar *host, int port, const genericChar *targetstr, int type)
+PrinterPostScript::PrinterPostScript(genericChar *host, int port, genericChar *targetstr, int type)
 {
     next         = NULL;
     fore         = NULL;
@@ -1894,7 +1894,7 @@ int PrinterPostScript::Init()
     FnTrace("PrinterPostScript::Init()");
     genericChar buffer[STRLENGTH];
     int idx = 0;
-    const genericChar *lines[STRLENGTH] = {
+    genericChar *lines[STRLENGTH] = {
         "%!PS-Adobe-2.0\n",
             "/TitleFontDict /Times-Roman findfont 16 scalefont def\n",
             "/TitleFont { TitleFontDict setfont } def\n",
@@ -1964,7 +1964,7 @@ int PrinterPostScript::NewLine()
     if (temp_fd <= 0)
         return 1;
 
-    const genericChar *newlinestr = "\n";
+    genericChar *newlinestr = "\n";
 
     if (putbuffer[0] != '\0')
         Put('\0', -1);
@@ -2033,7 +2033,7 @@ int PrinterPostScript::CutPaper(int partial_only)
     return 1;
 }
 
-int PrinterPostScript::WriteLR(const genericChar *left, const genericChar *right, int flags)
+int PrinterPostScript::WriteLR(genericChar *left, genericChar *right, int flags)
 {
     FnTrace("PrinterPostScript::WriteLR()");
     if (WriteFlags(flags))
@@ -2071,7 +2071,7 @@ int PrinterPostScript::WriteLR(const genericChar *left, const genericChar *right
     return 0;
 }
 
-int PrinterPostScript::Write(const genericChar *my_string, int flags)
+int PrinterPostScript::Write(genericChar *my_string, int flags)
 {
     FnTrace("PrinterPostScript::Write()");
     genericChar buffer[STRLONG];
@@ -2100,7 +2100,7 @@ int PrinterPostScript::Write(const genericChar *my_string, int flags)
     return 0;
 }
 
-int PrinterPostScript::Put(const genericChar *my_string, int flags)
+int PrinterPostScript::Put(genericChar *my_string, int flags)
 {
     FnTrace("PrinterPostScript::Put()");
     genericChar buffer[STRLONG];
@@ -2183,7 +2183,7 @@ PrinterPDF::PrinterPDF()
     term_name.Set("");
 }
 
-PrinterPDF::PrinterPDF(const genericChar *host, int port, const genericChar *targetstr, int type)
+PrinterPDF::PrinterPDF(genericChar *host, int port, genericChar *targetstr, int type)
 {
     next         = NULL;
     fore         = NULL;
@@ -2271,7 +2271,7 @@ PrinterReceiptText::PrinterReceiptText()
     term_name.Set("");
 }
 
-PrinterReceiptText::PrinterReceiptText(const genericChar *host, int port, const genericChar *targetstr, int type)
+PrinterReceiptText::PrinterReceiptText(genericChar *host, int port, genericChar *targetstr, int type)
 {
     next         = NULL;
     fore         = NULL;
@@ -2355,7 +2355,7 @@ int PrinterReceiptText::LineFeed(int lines)
  *  delivery of reports.  This differs from ReceiptText only
  *  in width.
  ********************************************************************/
-PrinterReportText::PrinterReportText(const genericChar *host, int port, const genericChar *targetstr, int type)
+PrinterReportText::PrinterReportText(genericChar *host, int port, genericChar *targetstr, int type)
 {
     next         = NULL;
     fore         = NULL;
@@ -2392,7 +2392,7 @@ PrinterReportText::PrinterReportText(const genericChar *host, int port, const ge
 /****
  * GetPort:  favors port set via 
  ****/
-int GetPort(const genericChar *target, int port)
+int GetPort(genericChar *target, int port)
 {
     FnTrace("GetPort()");
     int retval = 0;
@@ -2423,7 +2423,7 @@ int GetPort(const genericChar *target, int port)
     return retval;
 }
 
-int ParseDestination(int &type, const genericChar *target, int &port, const genericChar *destination)
+int ParseDestination(int &type, genericChar *target, int &port, genericChar *destination)
 {
     FnTrace("ParseDestination()");
     genericChar buffer[STRLENGTH];
@@ -2499,7 +2499,7 @@ int ParseDestination(int &type, const genericChar *target, int &port, const gene
  *   a printer object allocated based on that information.
  * The name contains Obj so as not to conflict with Control::NewPrinter.
  ****/
-Printer *NewPrinterObj(const genericChar *destination, int port, int model, int no)
+Printer *NewPrinterObj(genericChar *destination, int port, int model, int no)
 {
     FnTrace("NewPrinterObj()");
     Printer *retPrinter = NULL;
@@ -2551,7 +2551,7 @@ Printer *NewPrinterObj(const genericChar *destination, int port, int model, int 
     return retPrinter;
 }
 
-Printer *NewPrinterFromString(const genericChar *specification)
+Printer *NewPrinterFromString(genericChar *specification)
 {
     FnTrace("NewPrinterFromString()");
     Printer *retPrinter = NULL;

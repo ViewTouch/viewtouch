@@ -462,11 +462,11 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult PaymentZone::Signal(Terminal *term, const genericChar *message)
+SignalResult PaymentZone::Signal(Terminal *term, genericChar *message)
 {
     FnTrace("PaymentZone::Signal()");
 
-    static const genericChar *commands[] = {
+    static genericChar *commands[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "00",
         "cancel", "finalize", "finalize2", "finalize3",
         "print ", "backspace", "clear", "nextcheck", "nextcheckforce",
@@ -886,7 +886,7 @@ SignalResult PaymentZone::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_IGNORED;
 }
 
-int PaymentZone::Update(Terminal *term, int update_message, const genericChar *value)
+int PaymentZone::Update(Terminal *term, int update_message, genericChar *value)
 {
     FnTrace("PaymentZone::Update()");
 
@@ -1256,7 +1256,7 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, int pid, int pflags, int 
  *  and pop up the CreditCardDialogZone if we get a swipe.  This way, the user
  *  can touch the TenderZone for Credit Cards, or the user can simply swipe.
  ****/
-int PaymentZone::AddPayment(Terminal *term, int ptype, const genericChar *swipe_value)
+int PaymentZone::AddPayment(Terminal *term, int ptype, genericChar *swipe_value)
 {
     FnTrace("PaymentZone::AddPayment(credit card)");
     int retval = 0;

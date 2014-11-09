@@ -62,12 +62,12 @@
 #define SECURITY_EXPENSES   (1<<10) // payout from revenue
 
 // Data
-extern const genericChar *PayRateName[];
+extern genericChar *PayRateName[];
 extern int   PayRateValue[];
-extern const genericChar *JobName[];
+extern genericChar *JobName[];
 extern int   JobValue[];
 
-extern const genericChar *StartPageName[];
+extern genericChar *StartPageName[];
 extern int   StartPageValue[];
 
 
@@ -97,7 +97,7 @@ public:
     // Member Functions
     int   Read(InputDataFile &df, int version);
     int   Write(OutputDataFile &df, int version);
-    const genericChar *Title(Terminal *t);
+    genericChar *Title(Terminal *t);
 };
 
 class Employee
@@ -146,11 +146,11 @@ public:
     int Remove(JobInfo *j);
     JobInfo *FindJobByType(int job = -1);
     JobInfo *FindJobByNumber(int no);
-    const genericChar *JobTitle(Terminal *t);
+    genericChar *JobTitle(Terminal *t);
     // returns pointer to job string
     int Security(Settings *s);
     // returns security values
-    const genericChar *SSN();
+    genericChar *SSN();
     // returns ssn nicely formated
     int StartingPage();
     int SetStartingPage(int page_id);
@@ -206,7 +206,7 @@ public:
     Employee *UserListEnd() { return user_list.Tail(); }
     int       UserCount()   { return user_list.Count(); }
 
-    int       Load(const char *file);
+    int       Load(char *file);
     int       Save();
     int       Add(Employee *e);
     int       Remove(Employee *e);
@@ -214,10 +214,10 @@ public:
     int       Init(LaborDB *db);            // sets last_job flags
     Employee *FindByID(int id);
     Employee *FindByKey(int key);
-    Employee *FindByName(const char *name);
+    Employee *FindByName(char *name);
     Employee *FindByRecord(Terminal *t, int record, int active = 1);
-    Employee *NameSearch(const char *name, Employee *user);
-    int       FindRecordByWord(Terminal *t, const genericChar *word, int active = 1,
+    Employee *NameSearch(char *name, Employee *user);
+    int       FindRecordByWord(Terminal *t, genericChar *word, int active = 1,
                                int start = -1);
     int       FindUniqueID();
     int       FindUniqueKey();
@@ -240,6 +240,6 @@ public:
 
 /**** Functions ****/
 int   FixPhoneNumber(Str &phone);
-const char *FormatPhoneNumber(Str &phone);
+char *FormatPhoneNumber(Str &phone);
 
 #endif

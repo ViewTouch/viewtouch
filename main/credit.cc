@@ -66,26 +66,26 @@
 
 
 /**** Exported Varibles ****/
-const char *CardTypeName[] = {
+char *CardTypeName[] = {
     "Credit Card", "Debit Card", "Gift Card", NULL};
-const char *CardTypeShortName[] = {
+char *CardTypeShortName[] = {
     "Credit", "Debit", "Gift", NULL};
 int CardTypeValue[] = {
     CARD_TYPE_CREDIT, CARD_TYPE_DEBIT, CARD_TYPE_GIFT, -1};
-const char *CreditCardName[] = {
+char *CreditCardName[] = {
     "Visa", "MasterCard", "American Express", "Discover Card", "Diners Club",
     "JCB Card", NULL};
-const char *CreditCardShortName[] = {
+char *CreditCardShortName[] = {
     "Visa", "MC", "AMEX", "Discover", "Diners", "JCB", NULL};
 int CreditCardValue[] = {
     CREDIT_TYPE_VISA, CREDIT_TYPE_MASTERCARD, CREDIT_TYPE_AMEX, CREDIT_TYPE_DISCOVER,
     CREDIT_TYPE_DINERSCLUB, CREDIT_TYPE_JCB, -1};
-const char *DebitAcctName[] = {
+char *DebitAcctName[] = {
     "Checking", "Savings", NULL};
 int   DebitAcctValue[] = {
     DEBIT_ACCT_CHECKING, DEBIT_ACCT_SAVINGS, -1};
 
-const char *CreditCardStateName[] = {
+char *CreditCardStateName[] = {
     "Pre-Authorized", "Authorized", "Pre-Auth Completed", "Voided", "Refunded",
     "Refund Cancelled", "Pre-Auth Adviced", NULL };
 int   CreditCardStateValue[] = {
@@ -107,9 +107,9 @@ Credit::Credit()
     Clear();
 }
 
-Credit::Credit(const char *value)
+Credit::Credit(char *value)
 {
-    FnTrace("Credit::Credit(const char *)");
+    FnTrace("Credit::Credit(char *)");
 
     fore = NULL;
     next = NULL;
@@ -612,7 +612,7 @@ int Credit::Copy(Credit *credit)
     return retval;
 }
 
-const char *Credit::ReverseExpiry(const char *expiry)
+char *Credit::ReverseExpiry(char *expiry)
 {
     char hold;
 
@@ -715,7 +715,7 @@ int Credit::CanPrintSignature()
  * GetTrack:  Returns -1 on error, otherwise the last index of the source
  *   copied into the destination.
  ****/
-int Credit::GetTrack(const char *dest, const char *source, int maxlen)
+int Credit::GetTrack(char *dest, char *source, int maxlen)
 {
     FnTrace("Credit::GetTrack()");
     int retval = -1;
@@ -741,7 +741,7 @@ int Credit::GetTrack(const char *dest, const char *source, int maxlen)
     return retval;
 }
 
-int Credit::ParseTrack1(const char *swipe_value)
+int Credit::ParseTrack1(char *swipe_value)
 {
     FnTrace("Credit::ParseTrack1()");
     int   retval            = 0;
@@ -829,7 +829,7 @@ int Credit::ParseTrack1(const char *swipe_value)
     return retval;
 }
 
-int Credit::ParseTrack2(const char *swipe_value)
+int Credit::ParseTrack2(char *swipe_value)
 {
     FnTrace("Credit::ParseTrack2()");
     int retval = 0;
@@ -899,11 +899,11 @@ int Credit::ParseTrack2(const char *swipe_value)
     return retval;
 }
 
-int Credit::ParseTrack3(const char *swipe_value)
+int Credit::ParseTrack3(char *swipe_value)
 {
     FnTrace("Credit::ParseTrack3()");
     int retval = 0;
-    const char *curr              = swipe_value;
+    char *curr              = swipe_value;
     char  field_sep         = '=';
     int   idx;
 
@@ -1098,11 +1098,11 @@ int Credit::ParseTrack3(const char *swipe_value)
 /****
  * ParseManual:  returns -1 on error, 1 on success
  ****/
-int Credit::ParseManual(const char *swipe_value)
+int Credit::ParseManual(char *swipe_value)
 {
     FnTrace("Credit::ParseManual()");
     int retval = -1;
-    const char *curr = swipe_value;
+    char *curr = swipe_value;
     int idx;
 
     mn_pan[0] = '\0';
@@ -1143,7 +1143,7 @@ int Credit::ParseManual(const char *swipe_value)
  *  value of this function ends up also being returned by the
  *  IsValid() method.
  ****/
-int Credit::ParseSwipe(const char *value)
+int Credit::ParseSwipe(char *value)
 {
     FnTrace("Credit::ParseSwipe()");
     int   retval = 0;
@@ -1199,15 +1199,15 @@ int Credit::ParseSwipe(const char *value)
     return retval;
 }
 
-int Credit::ParseApproval(const char *value)
+int Credit::ParseApproval(char *value)
 {
     FnTrace("Credit::ParseApproval()");
     if (value == NULL)
         return 1;
 
     char  str[256];
-    const char *s = value;
-    const char *d = str;
+    char *s = value;
+    char *d = str;
     int quote = 0;
     while (*s)
     {
@@ -1229,7 +1229,7 @@ int Credit::ParseApproval(const char *value)
 int Credit::SetCreditType()
 {
     FnTrace("Credit::SetCreditType()");
-    const char *num = number.Value();
+    char *num = number.Value();
     int len = strlen(num);
     int v;
 
@@ -1277,11 +1277,11 @@ int Credit::CreditType()
     return credit_type;
 }
 
-const char *Credit::CreditTypeName(const char *str, int shortname)
+char *Credit::CreditTypeName(char *str, int shortname)
 {
     FnTrace("Credit::CreditTypeName()");
     static char buffer[32];
-    const char *hold = NULL;
+    char *hold = NULL;
 
     if (str == NULL)
         str = buffer;
@@ -1462,7 +1462,7 @@ int Credit::RequireSwipe()
     FnTrace("Credit::RequireSwipe()");
     int retval = 0;
     int len = number.length;
-    const char *numval = number.Value();
+    char *numval = number.Value();
 
     if (len < 1)
         retval = 1;
@@ -1589,7 +1589,7 @@ int Credit::Status()
 /****
  * Approval:  Returns the approval/authorization code.
  ****/
-const char *Credit::Approval()
+char *Credit::Approval()
 {
     FnTrace("Credit::Approval()");
     static char str[256];
@@ -1617,7 +1617,7 @@ const char *Credit::Approval()
  * other processing APIs, we mask all but the last four digits of
  * every card, including debit.  This is true as of June 30, 2005.
  ****/
-const char *Credit::PAN(int all)
+char *Credit::PAN(int all)
 {
     FnTrace("Credit::PAN()");
     static char str[STRSHORT];
@@ -1673,7 +1673,7 @@ const char *Credit::PAN(int all)
     return str;
 }
 
-const char *Credit::LastFour(const char *dest)
+char *Credit::LastFour(char *dest)
 {
     FnTrace("Credit::LastFour()");
     char buffer[STRLENGTH];
@@ -1701,7 +1701,7 @@ const char *Credit::LastFour(const char *dest)
     return dest;
 }
 
-const char *Credit::ExpireDate()
+char *Credit::ExpireDate()
 {
     FnTrace("Credit::ExpireDate()");
     static char str[16];
@@ -1709,7 +1709,7 @@ const char *Credit::ExpireDate()
     str[0] = '\0';
     if (expire.length > 0)
     {
-        const char *s = expire.Value();
+        char *s = expire.Value();
         if (expire.length < 4)
             sprintf(str, "%s/%s", "??", "??");  // to get rid of compiler warnings
         else
@@ -1719,7 +1719,7 @@ const char *Credit::ExpireDate()
     return str;
 }
 
-const char *Credit::Name()
+char *Credit::Name()
 {
     FnTrace("Credit::Name()");
     static char str[STRLENGTH];
@@ -1835,7 +1835,7 @@ int Credit::MaskCardNumber()
 {
     FnTrace("Credit::MaskCardNumber()");
     int retval = 0;
-    const char *cardnum = NULL;
+    char *cardnum = NULL;
 
     cardnum = PAN(0);
     number.Set(cardnum);
@@ -1896,7 +1896,7 @@ int Credit::TotalPreauth()
     return retval;
 }
 
-int Credit::SetBatch(long long batchnum, const char *btermid)
+int Credit::SetBatch(long long batchnum, char *btermid)
 {
     FnTrace("Credit::SetBatch()");
     int retval = 1;
@@ -2453,7 +2453,7 @@ int CreditDB::Save()
     return retval;
 }
 
-int CreditDB::Load(const char *path)
+int CreditDB::Load(char *path)
 {
     FnTrace("CreditDB::Load()");
     int retval = 0;
@@ -2566,7 +2566,7 @@ int CreditDB::MakeReport(Terminal *term, Report *report, LayoutZone *rzone)
     int color = COLOR_DEFAULT;
     int spacing = rzone->ColumnSpacing(term, 4);
     int indent = 0;
-    const char *state;
+    char *state;
     Settings *settings = term->GetSettings();
 
     if (credit_list.Count() < 1)
@@ -2655,18 +2655,18 @@ CCBInfo::CCBInfo()
     Clear();
 }
 
-CCBInfo::CCBInfo(const char *newname)
+CCBInfo::CCBInfo(char *newname)
 {
-    FnTrace("CCBInfo::CCBInfo(const char *)");
+    FnTrace("CCBInfo::CCBInfo(char *)");
 
     name.Set(newname);
     type = CC_INFO_NONE;
     Clear();
 }
 
-CCBInfo::CCBInfo(const char *newname, int settype)
+CCBInfo::CCBInfo(char *newname, int settype)
 {
-    FnTrace("CCBInfo::CCBInfo(const char *)");
+    FnTrace("CCBInfo::CCBInfo(char *)");
 
     name.Set(newname);
     settype = type;
@@ -2727,7 +2727,7 @@ void CCBInfo::Copy(CCBInfo *info)
     amtvt   = info->amtvt;
 }
 
-void CCBInfo::SetName(const char *newname)
+void CCBInfo::SetName(char *newname)
 {
     FnTrace("CCBInfo::SetName()");
 
@@ -2855,7 +2855,7 @@ CCSettle::CCSettle()
     Clear();
 }
 
-CCSettle::CCSettle(const char *fullpath)
+CCSettle::CCSettle(char *fullpath)
 {
     FnTrace("CCSettle::CCSettle()");
 
@@ -2988,7 +2988,7 @@ CCSettle *CCSettle::Last()
     return retval;
 }
 
-int CCSettle::Add(Terminal *term, const char *message)
+int CCSettle::Add(Terminal *term, char *message)
 {
     FnTrace("CCSettle::Add(Terminal)");
     int retval = 0;
@@ -3276,7 +3276,7 @@ int CCSettle::Write(OutputDataFile &df)
     return retval;
 }
 
-int CCSettle::Load(const char *filename)
+int CCSettle::Load(char *filename)
 {
     FnTrace("CCSettle::Load()");
     int retval = 0;
@@ -3528,7 +3528,7 @@ CCInit::CCInit()
     archive = NULL;
 }
 
-CCInit::CCInit(const char *fullpath)
+CCInit::CCInit(char *fullpath)
 {
     FnTrace("CCInit::CCInit()");
 
@@ -3692,7 +3692,7 @@ int CCInit::Write(OutputDataFile &df)
     return retval;
 }
 
-int CCInit::Load(const char *filename)
+int CCInit::Load(char *filename)
 {
     FnTrace("CCInit::Load()");
     int retval = 0;
@@ -3728,7 +3728,7 @@ int CCInit::Save()
     return retval;
 }
 
-int CCInit::Add(const char *termid, const char *result)
+int CCInit::Add(char *termid, char *result)
 {
     FnTrace("CCInit::Add()");
     int retval = 0;
@@ -3834,7 +3834,7 @@ int CCDetails::Add()
     return retval;
 }
 
-int CCDetails::Add(const char *line)
+int CCDetails::Add(char *line)
 {
     FnTrace("CCDetails::Add()");
     int retval = 0;
@@ -3890,7 +3890,7 @@ CCSAFDetails::CCSAFDetails()
     Clear();
 }
 
-CCSAFDetails::CCSAFDetails(const char *fullpath)
+CCSAFDetails::CCSAFDetails(char *fullpath)
 {
     FnTrace("CCSAFDetails::CCSAFDetails()");
 
@@ -4142,7 +4142,7 @@ int CCSAFDetails::Write(OutputDataFile &df)
     return retval;
 }
 
-int CCSAFDetails::Load(const char *filename)
+int CCSAFDetails::Load(char *filename)
 {
     FnTrace("CCSAFDetails::Load()");
     int retval = 0;
@@ -4337,7 +4337,7 @@ int CCSAFDetails::GenerateReport(Terminal *term, Report *report, ReportZone *rzo
 /****
  * CC_CreditType:  returns credit card type based on account number
  ****/
-int CC_CreditType(const char *a)
+int CC_CreditType(char *a)
 {
     FnTrace("CC_CreditType()");
     if (a == NULL)
@@ -4369,7 +4369,7 @@ int CC_CreditType(const char *a)
  * CC_IsValidAccountNumber: checks account number with Luhn check-digit
  *   algorithm - returns boolean
  ****/
-int CC_IsValidAccountNumber(const char *account_no)
+int CC_IsValidAccountNumber(char *account_no)
 {
     FnTrace("CC_IsValidAccountNumber()");
     int retval = 0;
@@ -4425,7 +4425,7 @@ int CC_IsValidAccountNumber(const char *account_no)
     return retval;
 }
 
-int CC_IsValidExpiry(const char *expiry)
+int CC_IsValidExpiry(char *expiry)
 {
     FnTrace("CC_IsValidExpiry()");
     int retval = 1;

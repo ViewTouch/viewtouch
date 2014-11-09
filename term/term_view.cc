@@ -69,7 +69,7 @@ struct FontDataType
 {
     int   id;
     int   height;
-    const genericChar *font;
+    genericChar *font;
 };
 
 static FontDataType FontData[] =
@@ -145,14 +145,14 @@ private:
     int parsed;
 
     void  MakeGeneric();
-    int   SetItem(const char *word);
+    int   SetItem(char *word);
 
 public:
     FontNameClass();
-    FontNameClass(const char *fontname);
+    FontNameClass(char *fontname);
 
     void Clear();
-    int  Parse(const char *fontname);
+    int  Parse(char *fontname);
     const char *ToString();
 
     const char *Foundry() { return foundry; }
@@ -186,18 +186,18 @@ public:
     void ClearAvgWidth() { strcpy(avgwidth, "*"); }
     void ClearCharSet() { strcpy(charset, "*"); }
 
-    void SetFoundry(const char *set) { strcpy(foundry, set); }
-    void SetFamily(const char *set) { strcpy(family, set); }
-    void SetWeight(const char *set) { strcpy(weight, set); }
-    void SetSlant(const char *set) { strcpy(slant, set); }
-    void SetWidth(const char *set) { strcpy(width, set); }
-    void SetPixels(const char *set) { strcpy(pixels, set); }
-    void SetPoints(const char *set) { strcpy(points, set); }
-    void SetHorRes(const char *set) { strcpy(horres, set); }
-    void SetVertRes(const char *set) { strcpy(vertres, set); }
-    void SetSpacing(const char *set) { strcpy(spacing, set); }
-    void SetAvgWidth(const char *set) { strcpy(avgwidth, set); }
-    void SetCharSet(const char *set) { strcpy(charset, set); }
+    void SetFoundry(char *set) { strcpy(foundry, set); }
+    void SetFamily(char *set) { strcpy(family, set); }
+    void SetWeight(char *set) { strcpy(weight, set); }
+    void SetSlant(char *set) { strcpy(slant, set); }
+    void SetWidth(char *set) { strcpy(width, set); }
+    void SetPixels(char *set) { strcpy(pixels, set); }
+    void SetPoints(char *set) { strcpy(points, set); }
+    void SetHorRes(char *set) { strcpy(horres, set); }
+    void SetVertRes(char *set) { strcpy(vertres, set); }
+    void SetSpacing(char *set) { strcpy(spacing, set); }
+    void SetAvgWidth(char *set) { strcpy(avgwidth, set); }
+    void SetCharSet(char *set) { strcpy(charset, set); }
 };
 
 FontNameClass::FontNameClass()
@@ -206,9 +206,9 @@ FontNameClass::FontNameClass()
     Clear();
 }
 
-FontNameClass::FontNameClass(const char *fontname)
+FontNameClass::FontNameClass(char *fontname)
 {
-    FnTrace("FontNameClass::FontNameClass(const char *)");
+    FnTrace("FontNameClass::FontNameClass(char *)");
     parsed = Parse(fontname);
 }
 
@@ -233,7 +233,7 @@ void FontNameClass::Clear()
     parsed = 0;
 }
 
-int FontNameClass::SetItem(const char *word)
+int FontNameClass::SetItem(char *word)
 {
     FnTrace("FontNameClass::SetItem()");
     int retval = 0;
@@ -271,7 +271,7 @@ int FontNameClass::SetItem(const char *word)
     return retval;
 }
 
-int FontNameClass::Parse(const char *fontname)
+int FontNameClass::Parse(char *fontname)
 {
     FnTrace("FontNameClass::Parse()");
     int retval = 0;
@@ -569,14 +569,14 @@ long long RLLong()   { return BufferIn.GetLLong(); }
 int  WFlt(Flt val)   { return BufferOut.Put32((int) (val * 100.0)); }
 Flt  RFlt()          { return (Flt) BufferIn.Get32() / 100.0; }
 
-int WStr(const char *s, int len)
+int WStr(char *s, int len)
 {
     FnTrace("WStr()");
     return BufferOut.PutString(s, len);
 
 }
 
-const genericChar *RStr(const genericChar *s)
+genericChar *RStr(genericChar *s)
 {
     FnTrace("RStr()");
 
@@ -587,7 +587,7 @@ const genericChar *RStr(const genericChar *s)
     return s;
 }
 
-int ReportError(const char *message)
+int ReportError(char *message)
 {
     FnTrace("ReportError()");
     if (SocketNo)
@@ -614,7 +614,7 @@ Translation::Translation()
     value[0] = '\0';
 }
 
-Translation::Translation(const char *new_key, const char *new_value)
+Translation::Translation(char *new_key, char *new_value)
 {
     FnTrace("Translation::Translation()");
 
@@ -626,7 +626,7 @@ Translation::Translation(const char *new_key, const char *new_value)
     strncpy(value, new_value, STRLONG);
 }
 
-int Translation::Match(const char *check_key)
+int Translation::Match(char *check_key)
 {
     FnTrace("Translation::Match()");
 
@@ -638,7 +638,7 @@ int Translation::Match(const char *check_key)
     return retval;
 }
 
-int Translation::GetKey(const char *store, int maxlen)
+int Translation::GetKey(char *store, int maxlen)
 {
     FnTrace("Translation::GetKey()");
 
@@ -647,7 +647,7 @@ int Translation::GetKey(const char *store, int maxlen)
     return retval;
 }
 
-int Translation::GetValue(const char *store, int maxlen)
+int Translation::GetValue(char *store, int maxlen)
 {
     FnTrace("Translation::GetValue()");
 
@@ -665,7 +665,7 @@ Translations::Translations()
     FnTrace("Translations::Translations()");
 }
 
-int Translations::AddTranslation(const char *key, const char *value)
+int Translations::AddTranslation(char *key, char *value)
 {
     FnTrace("Translations::AddTranslation()");
 
@@ -676,13 +676,13 @@ int Translations::AddTranslation(const char *key, const char *value)
     return retval;
 }
 
-const char *Translations::GetTranslation(const char *key)
+char *Translations::GetTranslation(char *key)
 {
     FnTrace("Translations::GetTranslation()");
 
     Translation *trans = trans_list.Head();
     char buffer[STRLONG];
-    const char *retval = buffer;
+    char *retval = buffer;
 
     strncpy(buffer, key, STRLONG);
     while (trans != NULL)
@@ -729,7 +729,7 @@ class IconifyButton : public LO_PushButton
 {
 public:
     // Constructor
-    IconifyButton(const char *str, int c1, int c2) : LO_PushButton(str, c1, c2) { }
+    IconifyButton(char *str, int c1, int c2) : LO_PushButton(str, c1, c2) { }
 
     /****
      * IsPointIn:  The problem is that the size of the iconize icon is very
@@ -783,27 +783,27 @@ int StopTouches();
 int StopUpdates();
 int ResetView();
 int SaveToPPM();
-int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericChar *title);
+int OpenLayer(int id, int x, int y, int w, int h, int win_frame, genericChar *title);
 int ShowLayer(int id);
 int KillLayer(int id);
 int SetTargetLayer(int id);
 int NewPushButton(int id, int x, int y, int w, int h,
-                  const genericChar *text, int font, int c1, int c2);
+                  genericChar *text, int font, int c1, int c2);
 int NewTextEntry(int id, int x, int y, int w, int h,
-                 const genericChar *text, int font, int c1, int c2);
+                 genericChar *text, int font, int c1, int c2);
 int NewItemList(int id, int x, int y, int w, int h,
-                const genericChar *text, int font, int c1, int c2);
+                genericChar *text, int font, int c1, int c2);
 int NewItemMenu(int id, int x, int y, int w, int h,
-                const genericChar *text, int font, int c1, int c2);
-XFontStruct *GetFont(Display *display, const char *displayname, const char *fontname);
-XFontStruct *GetAlternateFont(Display *display, const char *displayname, const char *fontname);
+                genericChar *text, int font, int c1, int c2);
+XFontStruct *GetFont(Display *display, char *displayname, char *fontname);
+XFontStruct *GetAlternateFont(Display *display, char *displayname, char *fontname);
 
 
 /*********************************************************************
  * Inline Functions
  ********************************************************************/
 
-inline int SetTitleBar(const char *my_time)
+inline int SetTitleBar(char *my_time)
 {
     FnTrace("SetTitleBar()");
 
@@ -1312,7 +1312,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
     int offset_y = l->y + py;
 
     int n1, n2, n3, n4, n5, n6, n7, n8;
-    const genericChar *s1, *s2;
+    genericChar *s1, *s2;
 
     failure = 0;
     genericChar s[STRLONG];
@@ -1835,7 +1835,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
 Layer       *TargetLayer = NULL;
 LayerObject *TargetObject = NULL;
 
-int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericChar *title)
+int OpenLayer(int id, int x, int y, int w, int h, int win_frame, genericChar *title)
 {
     FnTrace("OpenLayer()");
 
@@ -1916,7 +1916,7 @@ int SetTargetLayer(int id)
     return 0;
 }
 
-int NewPushButton(int id, int x, int y, int w, int h, const genericChar *text,
+int NewPushButton(int id, int x, int y, int w, int h, genericChar *text,
                   int font, int c1, int c2)
 {
     FnTrace("NewPushButton()");
@@ -1934,7 +1934,7 @@ int NewPushButton(int id, int x, int y, int w, int h, const genericChar *text,
 }
 
 int NewTextEntry(int id, int x, int y, int w, int h,
-                 const genericChar *text, int font, int c1, int c2)
+                 genericChar *text, int font, int c1, int c2)
 {
     FnTrace("NewTextEntry()");
 
@@ -1942,7 +1942,7 @@ int NewTextEntry(int id, int x, int y, int w, int h,
 }
 
 int NewItemList(int id, int x, int y, int w, int h,
-                const genericChar *text, int font, int c1, int c2)
+                genericChar *text, int font, int c1, int c2)
 {
     FnTrace("NewItemList()");
 
@@ -1950,14 +1950,14 @@ int NewItemList(int id, int x, int y, int w, int h,
 }
 
 int NewItemMenu(int id, int x, int y, int w, int h,
-                const genericChar *text, int font, int c1, int c2)
+                genericChar *text, int font, int c1, int c2)
 {
     FnTrace("NewItemMenu()");
 
     return 1;
 }
 
-XFontStruct *GetFont(Display *display, const char *displayname, const char *fontname)
+XFontStruct *GetFont(Display *display, char *displayname, char *fontname)
 {
     FnTrace("GetFont()");
     XFontStruct *retfont = NULL;
@@ -1975,7 +1975,7 @@ XFontStruct *GetFont(Display *display, const char *displayname, const char *font
     return retfont;
 }
 
-XFontStruct *GetAlternateFont(Display *display, const char *displayname, const char *fontname)
+XFontStruct *GetAlternateFont(Display *display, char *displayname, char *fontname)
 {
     FnTrace("GetAlternateFont()");
     XFontStruct *retfont = NULL;
@@ -2133,7 +2133,7 @@ int AddColor(int red, int green, int blue)
     return AddColor(c);
 }
 
-Pixmap LoadPixmap(const char **image_data)
+Pixmap LoadPixmap(char **image_data)
 {
     FnTrace("LoadPixmap()");
     
@@ -2152,7 +2152,7 @@ Pixmap LoadPixmap(const char **image_data)
  *   upper limits for the file: the file cannot be larger than MAX_XPM_SIZE and
  *   the image cannot be wider or taller than the screen.
  ****/
-Xpm *LoadPixmapFile(const char *file_name)
+Xpm *LoadPixmapFile(char *file_name)
 {
     FnTrace("LoadPixmapFile()");
     
@@ -2213,7 +2213,7 @@ int ReadScreenSaverPix()
         record = readdir(dp);
         if (record)
         {
-            const genericChar *name = record->d_name;
+            genericChar *name = record->d_name;
             len = strlen(name);
             if ((strcmp(&name[len-4], ".xpm") == 0) ||
                 (strcmp(&name[len-4], ".XPM") == 0))
@@ -2420,7 +2420,7 @@ int StopUpdates()
     return 0;
 }
 
-int OpenTerm(const char *display, TouchScreen *ts, int is_term_local, int term_hardware,
+int OpenTerm(char *display, TouchScreen *ts, int is_term_local, int term_hardware,
              int set_width, int set_height)
 {
     FnTrace("OpenTerm()");
@@ -2441,7 +2441,7 @@ int OpenTerm(const char *display, TouchScreen *ts, int is_term_local, int term_h
     // Start Display
     genericChar str[STRLENGTH];
     int argc = 1;
-    const genericChar *argv[] = {"vt_term"};
+    genericChar *argv[] = {"vt_term"};
     IsTermLocal = is_term_local;
     Dis = XtOpenDisplay(App, display, NULL, NULL, NULL, 0, &argc, argv);
     if (Dis == NULL)

@@ -74,7 +74,7 @@ int ImageValue[] = {
     IMAGE_WHITEMESH,
     -1};
 
-const char **ImageData[] = {
+char **ImageData[] = {
     SandData,
     LitSandData,
     DarkSandData,

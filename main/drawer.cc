@@ -134,7 +134,7 @@ int DrawerBalance::Write(OutputDataFile &df, int version)
     return error;
 }
 
-const char *DrawerBalance::Description(Settings *s, const genericChar *str)
+char *DrawerBalance::Description(Settings *s, genericChar *str)
 {
     return s->TenderName(tender_type, tender_id, str);
 }
@@ -321,7 +321,7 @@ int Drawer::Status()
         return DRAWER_OPEN;
 }
 
-int Drawer::Load(const char *file)
+int Drawer::Load(char *file)
 {
     FnTrace("Drawer::Load()");
     filename.Set(file);

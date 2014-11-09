@@ -56,7 +56,7 @@ InputDataFile::InputDataFile()
 }
 
 // Member Functions
-int InputDataFile::Open(const char *name, int &version)
+int InputDataFile::Open(char *name, int &version)
 {
 	FnTrace("InputDataFile::Open()");
     int i;
@@ -129,7 +129,7 @@ int InputDataFile::Close()
     return 0;
 }
 
-int InputDataFile::GetToken(const char *buffer, int max_len)
+int InputDataFile::GetToken(char *buffer, int max_len)
 {
     FnTrace("InputDataFile::GetToken()");
     int c;
@@ -325,7 +325,7 @@ int InputDataFile::PeekTokens()
  * ShowTokens:  Another debug method.  Just peeks ahead to gather the remaining tokens
  *  on the current line and returns a string containing those tokens.
  ****/
-const char *InputDataFile::ShowTokens(const char *buffer, int lines)
+char *InputDataFile::ShowTokens(char *buffer, int lines)
 {
     FnTrace("InputDataFile::ShowTokens()");
     unsigned long savepos = gzseek((gzFile)fp, 0L, SEEK_CUR);
@@ -367,7 +367,7 @@ OutputDataFile::OutputDataFile()
 }
 
 // Member Functions
-int OutputDataFile::Open(const char *filepath, int version, int use_compression)
+int OutputDataFile::Open(char *filepath, int version, int use_compression)
 {
     FnTrace("OutputDataFile::Open()");
     char errmsg[STRLENGTH];
@@ -422,7 +422,7 @@ int OutputDataFile::PutValue(unsigned long long val, int bk = 0)
 {
     FnTrace("OutputDataFile::PutValue()");
     char  str[32];
-    const char *c = &str[31];
+    char *c = &str[31];
     *c = '\0';
     --c;
     if (bk)
@@ -462,9 +462,9 @@ int OutputDataFile::Write(Flt val, int bk)
     return 0;
 }
 
-int OutputDataFile::Write(const char *val, int bk)
+int OutputDataFile::Write(char *val, int bk)
 {
-    FnTrace("OutputDataFile::Write(const char *)");
+    FnTrace("OutputDataFile::Write(char *)");
     if (val == NULL)
         return 1;
 
@@ -486,7 +486,7 @@ int OutputDataFile::Write(const char *val, int bk)
     else
     {
         int out;
-        const char *c = val;
+        char *c = val;
         while (*c)
         {
             out = *c;
@@ -608,9 +608,9 @@ KeyValueInputFile::KeyValueInputFile(int fd)
     inputfile[0] = '\0';
 }
 
-KeyValueInputFile::KeyValueInputFile(const char *filename)
+KeyValueInputFile::KeyValueInputFile(char *filename)
 {
-    FnTrace("KeyValueInputFile::KeyValueInputFile(const char *)");
+    FnTrace("KeyValueInputFile::KeyValueInputFile(char *)");
     filedes = -1;
     bytesread = 0;
     keyidx = 0;
@@ -645,9 +645,9 @@ int KeyValueInputFile::Open(void)
     return retval;
 }
 
-int KeyValueInputFile::Open(const char *filename)
+int KeyValueInputFile::Open(char *filename)
 {
-    FnTrace("KeyValueInputFile::Open(const char *)");
+    FnTrace("KeyValueInputFile::Open(char *)");
 
     strcpy(inputfile, filename);
     return Open();
@@ -667,9 +667,9 @@ int KeyValueInputFile::Set(int fd)
     return 0;
 }
 
-int KeyValueInputFile::Set(const char *filename)
+int KeyValueInputFile::Set(char *filename)
 {
-    FnTrace("KeyValueInputFile::Set(const char *)");
+    FnTrace("KeyValueInputFile::Set(char *)");
 
     strcpy(inputfile, filename);
     return 0;
@@ -735,7 +735,7 @@ int KeyValueInputFile::Reset()
  *  Returns 1 if a key/value pair was read (even if they're both 0 bytes;
  *  it simply means there may be more lines to read), 0 otherwise.
  ****/
-int KeyValueInputFile::Read(const char *key, const char *value, int maxlen)
+int KeyValueInputFile::Read(char *key, char *value, int maxlen)
 {
     FnTrace("KeyValueInputFile::Read()");
     int retval = 0;
@@ -829,9 +829,9 @@ KeyValueOutputFile::KeyValueOutputFile(int fd)
     outputfile[0] = '\0';
 }
 
-KeyValueOutputFile::KeyValueOutputFile(const char *filename)
+KeyValueOutputFile::KeyValueOutputFile(char *filename)
 {
-    FnTrace("KeyValueOutputFile::KeyValueOutputFile(const char *)");
+    FnTrace("KeyValueOutputFile::KeyValueOutputFile(char *)");
     filedes = -1;
     delimiter = ':';
     strcpy(outputfile, filename);
@@ -862,9 +862,9 @@ int KeyValueOutputFile::Open()
     return retval;
 }
 
-int KeyValueOutputFile::Open(const char *filename)
+int KeyValueOutputFile::Open(char *filename)
 {
-    FnTrace("KeyValueOutputFile::Open(const char *)");
+    FnTrace("KeyValueOutputFile::Open(char *)");
     int retval = 1;
 
     strcpy(outputfile, filename);
@@ -914,7 +914,7 @@ int KeyValueOutputFile::Reset()
     return retval;
 }
 
-int KeyValueOutputFile::Write(const char *key, const char *value)
+int KeyValueOutputFile::Write(char *key, char *value)
 {
     FnTrace("KeyValueOutputFile::Write()");
     int retval = 1;

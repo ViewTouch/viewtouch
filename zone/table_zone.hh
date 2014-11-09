@@ -48,7 +48,7 @@ public:
     int          Type() { return ZONE_CUSTOMER_INFO; }
     int          RenderInit(Terminal *term, int update_flag);
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar *message);
+    SignalResult Signal(Terminal *term, genericChar *message);
     SignalResult Touch(Terminal *term, int tx, int ty);
     int          LoseFocus(Terminal *term, Zone *newfocus);
 
@@ -56,7 +56,7 @@ public:
     int SaveRecord(Terminal *term, int record, int write_file);
     int UpdateForm(Terminal *term, int record);
     int RecordCount(Terminal *term);
-    int Search(Terminal *term, int record, const genericChar *word);
+    int Search(Terminal *term, int record, genericChar *word);
 };
 
 class CommandZone : public LayoutZone
@@ -68,16 +68,16 @@ public:
     // Member Functions
     int          Type() { return ZONE_COMMAND; }
     RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar *message);
+    SignalResult Signal(Terminal *t, genericChar *message);
     SignalResult Touch(Terminal *t, int tx, int ty);
     SignalResult Keyboard(Terminal *t, int key, int state);
-    int          Update(Terminal *t, int update_message, const genericChar *value);
+    int          Update(Terminal *t, int update_message, genericChar *value);
     genericChar        *TranslateString(Terminal *t);
     int          ZoneStates() { return 1; }
 
     int   TakeOut(Terminal *t);
     int   FastFood(Terminal *t);
-    Zone *FindTableZone(Terminal *t, const genericChar *table);
+    Zone *FindTableZone(Terminal *t, genericChar *table);
 };
 
 class TableZone : public PosZone
@@ -97,7 +97,7 @@ public:
     Zone        *Copy();
     RenderResult Render(Terminal *t, int update_flag);
     SignalResult Touch(Terminal *t, int tx, int ty);
-    int          Update(Terminal *t, int update_message, const genericChar *value);
+    int          Update(Terminal *t, int update_message, genericChar *value);
     int         *CustomerType() { return &customer_type; }
     Check       *GetCheck()     { return check; }
 };
@@ -114,9 +114,9 @@ public:
     // Member Functions
     int          Type() { return ZONE_GUEST_COUNT; }
     RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar *message);
+    SignalResult Signal(Terminal *t, genericChar *message);
     SignalResult Keyboard(Terminal *t, int key, int state);
-    int          Update(Terminal *t, int update_message, const genericChar *value);
+    int          Update(Terminal *t, int update_message, genericChar *value);
 };
 
 class TableAssignZone : public PosZone
@@ -127,9 +127,9 @@ public:
     // Member Functions
     int          Type() { return ZONE_TABLE_ASSIGN; }
     RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar *message);
+    SignalResult Signal(Terminal *t, genericChar *message);
     SignalResult Touch(Terminal *t, int tx, int ty);
-    int          Update(Terminal *t, int update_message, const genericChar *value);
+    int          Update(Terminal *t, int update_message, genericChar *value);
     int          ZoneStates() { return 1; }
 
     int MoveTables(Terminal *t, ServerTableObj *sto);

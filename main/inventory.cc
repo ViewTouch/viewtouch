@@ -39,7 +39,7 @@
 #define MAX_PARTS 18
 
 /**** Global Data ****/
-const char *PurchaseUnitName[] = {
+char *PurchaseUnitName[] = {
     "Count - Single", "Count - Dozen", "Count - Gross",
     "Weight - Ounce", "Weight - Pound",
     "Volume - Ounce", "Volume - Pint",
@@ -53,7 +53,7 @@ int PurchaseUnitValue[] = {
     VOLUME_QUART, VOLUME_GALLON,
     WEIGHT_G, WEIGHT_KG, VOLUME_ML, VOLUME_L, -1};
 
-const char *RecipeUnitName[] = {
+char *RecipeUnitName[] = {
     "Count - Single",
     "Weight - Dash", "Weight - Ounce",
     "Volume - Dram", "Volume - TSP", "Volume - TBS", "Volume - Ounce",
@@ -197,7 +197,7 @@ int UnitAmount::Convert(int new_type)
     return 0;
 }
 
-const char *UnitAmount::Description(const char *str)
+char *UnitAmount::Description(char *str)
 {
     FnTrace("UnitAmount::Description()");
     static genericChar buffer[256];
@@ -234,7 +234,7 @@ const char *UnitAmount::Description(const char *str)
     return str;
 }
 
-const char *UnitAmount::Measurement(const char *str)
+char *UnitAmount::Measurement(char *str)
 {
     FnTrace("UnitAmount::Measurement()");
     static genericChar buffer[16];
@@ -567,7 +567,7 @@ Inventory::Inventory()
 }
 
 // Member Functions
-int Inventory::Load(const char *file)
+int Inventory::Load(char *file)
 {
     FnTrace("Inventory::Load()");
     if (file)
@@ -781,7 +781,7 @@ int Inventory::Purge()
     return 0;
 }
 
-int Inventory::LoadStock(const char *path)
+int Inventory::LoadStock(char *path)
 {
     FnTrace("Inventory::LoadStock()");
     if (path)
@@ -797,7 +797,7 @@ int Inventory::LoadStock(const char *path)
         record = readdir(dp);
         if (record)
         {
-            const genericChar *name = record->d_name;
+            genericChar *name = record->d_name;
             int len = strlen(name);
             if (strcmp(&name[len-4], ".fmt") == 0)
                 continue;
@@ -824,7 +824,7 @@ int Inventory::LoadStock(const char *path)
     return 0;
 }
 
-int Inventory::PartMatches(const char *word)
+int Inventory::PartMatches(char *word)
 {
     FnTrace("Inventory::PartMatches()");
     if (word == NULL)
@@ -848,7 +848,7 @@ Product *Inventory::FindProductByRecord(int record)
     return product_list.Index(record);
 }
 
-Product *Inventory::FindProductByWord(const char *word, int &record)
+Product *Inventory::FindProductByWord(char *word, int &record)
 {
     FnTrace("Inventory::FindProductByWord()");
     if (word == NULL)
@@ -880,7 +880,7 @@ Recipe *Inventory::FindRecipeByRecord(int record)
     return recipe_list.Index(record);
 }
 
-Recipe *Inventory::FindRecipeByWord(const char *word, int &record)
+Recipe *Inventory::FindRecipeByWord(char *word, int &record)
 {
     FnTrace("Inventory::FindRecipeByWord()");
     if (word == NULL)
@@ -906,7 +906,7 @@ Recipe *Inventory::FindRecipeByID(int id)
     return NULL;
 }
 
-Recipe *Inventory::FindRecipeByName(const char *name)
+Recipe *Inventory::FindRecipeByName(char *name)
 {
     FnTrace("Inventory::FindRecipeByName()");
     for (Recipe *rc = RecipeList(); rc != NULL; rc = rc->next)
@@ -921,7 +921,7 @@ Vendor *Inventory::FindVendorByRecord(int record)
     return vendor_list.Index(record);
 }
 
-Vendor *Inventory::FindVendorByWord(const char *word, int &record)
+Vendor *Inventory::FindVendorByWord(char *word, int &record)
 {
     FnTrace("Inventory::FindVendorByWord()");
     if (word == NULL)
@@ -1124,7 +1124,7 @@ int Inventory::ScanItems(ItemDB *db)
     return 0;
 }
 
-int Inventory::ChangeRecipeName(const char *old_name, const char *new_name)
+int Inventory::ChangeRecipeName(char *old_name, char *new_name)
 {
     FnTrace("Inventory::ChangeRecipeName()");
     if (old_name == NULL || new_name == NULL)
@@ -1502,7 +1502,7 @@ int Stock::Purge()
     return 0;
 }
 
-int Stock::Load(const char *file)
+int Stock::Load(char *file)
 {
     FnTrace("Stock::Load()");
     if (file)

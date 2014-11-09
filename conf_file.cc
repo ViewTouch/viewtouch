@@ -393,7 +393,7 @@ void Trim(t_Str& str)
 }
 
 // fprintf for stream
-int WriteLn(fstream& stream,const char* fmt, ...)
+int WriteLn(fstream& stream, char* fmt, ...)
 {
     char buf[MAX_BUFFER_LEN + 1];
     int len;

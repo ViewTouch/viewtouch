@@ -217,52 +217,52 @@ extern int WeekDays[];
 
 
 // Data
-extern const genericChar *StoreName[];
+extern genericChar *StoreName[];
 extern int   StoreValue[];
 
-extern const genericChar *PayPeriodName[];
+extern genericChar *PayPeriodName[];
 extern int   PayPeriodValue[];
 
-extern const genericChar *MealStartName[];
+extern genericChar *MealStartName[];
 extern int   MealStartValue[];
 
-extern const genericChar *DrawerModeName[];
+extern genericChar *DrawerModeName[];
 extern int   DrawerModeValue[];
 
-extern const genericChar *SaleCreditName[];
+extern genericChar *SaleCreditName[];
 extern int   SaleCreditValue[];
 
-extern const genericChar *SalesPeriodName[];
+extern genericChar *SalesPeriodName[];
 extern int   SalesPeriodValue[];
 
-extern const genericChar *ReceiptPrintName[];
+extern genericChar *ReceiptPrintName[];
 extern int   ReceiptPrintValue[];
 
-extern const genericChar *DrawerPrintName[];
+extern genericChar *DrawerPrintName[];
 extern int   DrawerPrintValue[];
 
-extern const genericChar *RoundingName[];
+extern genericChar *RoundingName[];
 extern int   RoundingValue[];
 
-extern const genericChar *PrinterName[];
+extern genericChar *PrinterName[];
 extern int   PrinterValue[];
 
-extern const genericChar *MeasureSystemName[];
+extern genericChar *MeasureSystemName[];
 extern int   MeasureSystemValue[];
-extern const genericChar *DateFormatName[];
+extern genericChar *DateFormatName[];
 extern int   DateFormatValue[];
-extern const genericChar *NumberFormatName[];
+extern genericChar *NumberFormatName[];
 extern int   NumberFormatValue[];
-extern const genericChar *TimeFormatName[];
+extern genericChar *TimeFormatName[];
 extern int   TimeFormatValue[];
 
-extern const genericChar *AuthorizeName[];
+extern genericChar *AuthorizeName[];
 extern int   AuthorizeValue[];
 
-extern const genericChar *MarkName[];
+extern genericChar *MarkName[];
 extern int   MarkValue[];
 
-extern const genericChar *HourName[];
+extern genericChar *HourName[];
 
 
 /**** Types ****/
@@ -742,14 +742,14 @@ public:
     Settings();
 
     // Member Functions
-    int Load(const genericChar *filename);
+    int Load(genericChar *filename);
     // Loads settings from file
     int Save();
     // Saves settings to file
-    int LoadMedia(const genericChar *filename);
+    int LoadMedia(genericChar *filename);
     int SaveMedia();
-    int SaveAltMedia(const genericChar *filename);
-    int SaveAltSettings(const genericChar *filename);
+    int SaveAltMedia(genericChar *filename);
+    int SaveAltSettings(genericChar *filename);
     int MealPeriod(TimeInfo &tm);
     // Returns current meal period
     int FirstShift();
@@ -762,7 +762,7 @@ public:
     // Returns current shift number
     int NextShift(int shift);
     // Returns shift following this one
-    int ShiftText(const genericChar *str, int shift);
+    int ShiftText(genericChar *str, int shift);
     int ShiftStart(TimeInfo &start_time, int shift, TimeInfo &ref);
     // sets start_time to shift start
     int IsGroupActive(int sales_group);
@@ -778,7 +778,7 @@ public:
     int FigureMerchandiseTax(int amount, TimeInfo &time, Flt tax = -1);
     // returns tax on specified amount (at specified time)
 
-    const genericChar *TenderName(int type, int id, const genericChar *str = NULL);
+    genericChar *TenderName(int type, int id, genericChar *str = NULL);
     // returns text name of tender
     int MonthPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end);
     int SalesPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end);
@@ -787,7 +787,7 @@ public:
     // Calculates start & end of periods given reference time
     int OvertimeWeek(TimeInfo &ref, TimeInfo &start, TimeInfo &end);
     // Calculates wage overtime week for given time
-    const char *StoreNum(const char *dest = NULL);
+    char *StoreNum(char *dest = NULL);
 
     int MediaFirstID(MediaInfo *mi, int idnum);
     int MediaIsDupe(MediaInfo *mi, int id, int thresh = 0);
@@ -857,8 +857,8 @@ public:
 
     // term functions
     TermInfo *TermList() { return term_list.Head(); }
-    TermInfo *FindServer(const genericChar *displaystr = NULL);
-    TermInfo *FindTerminal(const char *displaystr);
+    TermInfo *FindServer(genericChar *displaystr = NULL);
+    TermInfo *FindTerminal(char *displaystr);
     TermInfo *FindTermByRecord(int record);
     int TermCount()      { return term_list.Count(); }
     

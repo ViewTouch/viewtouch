@@ -26,13 +26,13 @@
 #include "generic_char.hh"
 
 
-int GenerateTempKey(const genericChar *dest, int maxlen, const genericChar *licenseid);
-int GenerateTempKeyLong(const genericChar *dest, int maxlen, time_t license_time, const genericChar *licenseid);
-int DigestString(const genericChar *dest, int maxlen, const genericChar *source);
+int GenerateTempKey(genericChar *dest, int maxlen, genericChar *licenseid);
+int GenerateTempKeyLong(genericChar *dest, int maxlen, time_t license_time, genericChar *licenseid);
+int DigestString(genericChar *dest, int maxlen, genericChar *source);
 
-int GetUnameInfo(const char *buffer, int bufflen);
-int GetInterfaceInfo(const char *stringbuff, int stringlen);
-int GetMacAddress(const char *stringbuff, int stringlen);
-int GetMachineDigest(const char *digest_string, int maxlen);
+int GetUnameInfo(char *buffer, int bufflen);
+int GetInterfaceInfo(char *stringbuff, int stringlen);
+int GetMacAddress(char *stringbuff, int stringlen);
+int GetMachineDigest(char *digest_string, int maxlen);
 
 #endif
