@@ -1,18 +1,6 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
- *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  *  All Rights Reserved
+ * Confidential and Proprietary Information
  *
  * zone.cc - revision 244 (9/8/98)
  * Implementation of touch zone module
@@ -538,14 +526,18 @@ int Page::Init(ZoneDB *zone_db)
 	{
     case SIZE_640x480:   width = 640;  height = 480;  break;
     case SIZE_800x600:   width = 800;  height = 600;  break;
-    case SIZE_800x480:   width = 800;  height = 480;  break;
+    case SIZE_1024x600:   width = 1024;  height = 600;  break;
     case SIZE_1024x768:  width = 1024; height = 768;  break;
-    case SIZE_768x1024:  width = 768;  height = 1024; break;
+    case SIZE_1280x800: width = 1280; height = 800; break;   
     case SIZE_1280x1024: width = 1280; height = 1024; break;
-    case SIZE_1600x1200: width = 1600; height = 1200; break;
+    case SIZE_1366x768:  width = 1366;  height = 768; break;
+    case SIZE_1440x900:  width = 1440;  height = 900; break;
+    case SIZE_1600x900: width = 1600; height = 900; break;
+    case SIZE_1680x1050: width = 1680; height = 1050; break;
     case SIZE_1920x1080: width = 1920; height = 1080; break;
     case SIZE_1920x1200: width = 1920; height = 1200; break;
-    case SIZE_1680x1050: width = 1680; height = 1050; break;
+    case SIZE_1680x1050: width = 2560; height = 1440; break;
+    case SIZE_1680x1050: width = 2560; height = 1600; break;
 	}
 
 	// FIX - should look up these values instead of having hardcoded values
@@ -1959,3 +1951,4 @@ int ZoneDB::PrintZoneDB(char *dest, int brief)
         close(outfd);
     return retval;
 }
+

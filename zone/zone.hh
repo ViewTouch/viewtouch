@@ -1,18 +1,6 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
- *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  *  All Rights Reserved
+ * Confidential and Proprietary Information
  *
  * zone.hh - revision 224 (9/16/98)
  * Functions for managing zones on a view
@@ -99,15 +87,18 @@ enum behaviors {
 // Page Sizes (resolutions)
 #define SIZE_640x480   1 
 #define SIZE_800x600   2
-#define SIZE_1024x768  3  // default
-#define SIZE_1280x1024 4
-#define SIZE_1600x1200 5
-#define SIZE_768x1024  6
-#define SIZE_800x480   7
-#define SIZE_1920x1080 8
-#define SIZE_1920x1200 9
-#define SIZE_1680x1050 10
-
+#define SIZE_1024x600  3
+#define SIZE_1024x768  4  // default
+#define SIZE_1280x800  5
+#define SIZE_1280x1024 6
+#define SIZE_1366x768  7
+#define SIZE_1440x900  8
+#define SIZE_1600x900 9
+#define SIZE_1680x1050  10
+#define SIZE_1920x1080 11
+#define SIZE_1920x1200 12
+#define SIZE_2560x1440 13
+#define SIZE_2560x1600  14
 
 /**** Types ****/
 class Zone;
@@ -390,3 +381,4 @@ public:
 };
 
 #endif
+

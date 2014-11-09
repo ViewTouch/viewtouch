@@ -1,18 +1,6 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
- *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  *  All Rights Reserved
+ * Confidential and Proprietary Information
  *
  * layer.cc - revision 23 (9/8/98)
  * Implementation of Layer objects
@@ -123,9 +111,19 @@ int Layer::BlankPage(int mode, int texture, int tc, int size, int split,
         page_h = 600;
         frame_width = 2;
         break;
-    case SIZE_1024x768:
+   case SIZE_1024x600:
+        page_w = 1024;
+        page_h = 600;
+        frame_width = 2;
+        break;
+  case SIZE_1024x768:
         page_w = 1024;
         page_h = 768;
+        frame_width = 3;
+        break;
+    case SIZE_1280x800:
+        page_w = 1280;
+        page_h = 800;
         frame_width = 3;
         break;
     case SIZE_1280x1024:
@@ -133,22 +131,27 @@ int Layer::BlankPage(int mode, int texture, int tc, int size, int split,
         page_h = 1024;
         frame_width = 3;
         break;
-    case SIZE_1600x1200:
-        page_w = 1600;
-        page_h = 1200;
-        frame_width = 3;  //FIX BAK-> should this be 4?
-        break;
-    case SIZE_768x1024:
-        page_w = 768;
-        page_h = 1024;
+       case SIZE_1366x768:
+        page_w = 1366;
+        page_h = 768;
         frame_width = 3;
         break;
-    case SIZE_800x480:
-        page_w = 800;
-        page_h = 480;
-        frame_width = 2;
+    case SIZE_1440x900:
+        page_w = 1440;
+        page_h = 900;
+        frame_width = 3;
         break;
-    case SIZE_1920x1080:
+    case SIZE_1600x900:
+        page_w = 1600;
+        page_h = 900;
+        frame_width = 4;
+        break;
+    case SIZE_1680x1050:
+        page_w = 1680;
+        page_h = 1050;
+        frame_width = 4;
+        break;
+       case SIZE_1920x1080:
         page_w = 1920;
         page_h = 1080;
         frame_width = 4;
@@ -158,12 +161,17 @@ int Layer::BlankPage(int mode, int texture, int tc, int size, int split,
         page_h = 1200;
         frame_width = 4;
         break;
-    case SIZE_1680x1050:
-        page_w = 1680;
-        page_h = 1050;
+    case SIZE_2560x1440:
+        page_w = 2560;
+        page_h = 1440;
         frame_width = 4;
         break;
-    }
+    case SIZE_2560x1600:
+        page_w = 2560;
+        page_h = 1600;
+        frame_width = 4;
+        break;
+     }
     page_x = Max(w - page_w, 0) / 2 + offset_x;
     page_y = Max(h - page_h, 0) / 2 + offset_y;
     use_clip = 0;
@@ -2171,3 +2179,4 @@ int LO_TextEntry::MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y,
 
     return 0;
 }
+

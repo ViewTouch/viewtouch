@@ -1,18 +1,6 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
- *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  *  All Rights Reserved
+ * Confidential and Proprietary Information
  *
  * term_view.cc - revision 103 (10/8/98)
  * Terminal Display module
@@ -2650,24 +2638,32 @@ int OpenTerm(char *display, TouchScreen *ts, int is_term_local, int term_hardwar
 
     // Send server term size
     int screen_size = SIZE_640x480;
-    if (WinWidth >= 768 && WinWidth < 800)
-        screen_size = SIZE_768x1024;
-    else if (WinWidth >= 800 && WinWidth < 1024 && WinHeight == 480)
-        screen_size = SIZE_800x480;
-    else if (WinWidth >= 800 && WinWidth < 1024 && WinHeight == 600)
+          if (WinWidth == 800 && WinHeight == 600)			// 4:3
         screen_size = SIZE_800x600;
-    else if (WinWidth >= 1024 && WinWidth < 1280)
+      else if (WinWidth == 1024 && WinHeight == 600)		// 128:75
+        screen_size = SIZE_1024x600;
+      else if (WinWidth == 1024 && WinHeight == 768)		// 4:3
         screen_size = SIZE_1024x768;
-    else if (WinWidth >= 1280 && WinWidth < 1600)
+      else if  (WinWidth == 1280 && WinHeight == 800) 		// 16:10
+        screen_size = SIZE_1280x800;
+      else if (WinWidth == 1280 && WinHeight == 1024) 		// 5:4
         screen_size = SIZE_1280x1024;
-    else if (WinWidth >= 1600 && WinWidth < 1980)
-        screen_size = SIZE_1600x1200;
-    else if (WinWidth >= 1680 && WinWidth < 1920)
+      else if (WinWidth == 1366 && WinHeight == 768)		// 16:9
+        screen_size = SIZE_1366x768;
+      else if (WinWidth == 1440 && WinHeight == 900)		// 16:10
+        screen_size = SIZE_1440x900; 
+      else if (WinWidth == 1600 && WinHeight == 900)		// 16:9
+        screen_size = SIZE_1600x900;
+      else if (WinWidth == 1680 && WinHeight == 1050)		// 16:10
         screen_size = SIZE_1680x1050;
-    else if (WinWidth >= 1920 && WinHeight == 1080) 
+      else if (WinWidth == 1920 && WinHeight == 1080) 		// 16:9
         screen_size = SIZE_1920x1080;
-    else if (WinWidth >= 1920 && WinHeight == 1200) 
+      else if (WinWidth == 1920 && WinHeight == 1200) 		// 16:10
         screen_size = SIZE_1920x1200;
+      else if (WinWidth == 2560 && WinHeight == 1440) 		// 16:9
+        screen_size = SIZE_2560x1440;
+      else if (WinWidth == 2560 && WinHeight == 1600) 		// 16:10
+        screen_size = SIZE_2560x1600;
 
     WInt8(SERVER_TERMINFO);
     WInt8(screen_size);
@@ -2843,3 +2839,4 @@ Pixmap GetTexture(int texture)
     else
         return Texture[0]; // default texture
 }
+
