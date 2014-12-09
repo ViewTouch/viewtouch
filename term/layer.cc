@@ -87,7 +87,7 @@ int Layer::DrawAll()
 }
 
 int Layer::BlankPage(int mode, int texture, int tc, int size, int split,
-                     int so, genericChar *title, genericChar *my_time)
+                     int so, const genericChar* title, const genericChar* my_time)
 {
     FnTrace("Layer::BlankPage()");
 
@@ -380,7 +380,7 @@ int Layer::TitleBar()
     return 0;
 }
 
-int Layer::Text(char *string, int len, int tx, int ty, int c, int font,
+int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
                 int align, int max_pixel_width)
 {
     FnTrace("Layer::Text()");
@@ -439,12 +439,12 @@ int Layer::Text(char *string, int len, int tx, int ty, int c, int font,
     return 0;
 }
 
-int Layer::ZoneText(char *str, int tx, int ty, int tw, int th,
+int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
                     int color, int font, int align)
 {
     FnTrace("Layer::ZoneText()");
 
-    genericChar *sub_string[64];  // FIX - should allow any number of lines of text
+    const genericChar* sub_string[64];  // FIX - should allow any number of lines of text
     int   sub_length[64];
     int i;
 
@@ -456,7 +456,7 @@ int Layer::ZoneText(char *str, int tx, int ty, int tw, int th,
         max_lines = 63;
 
     int line = 0;
-    genericChar *c = str;
+    const genericChar* c = str;
     while (line < max_lines)
     {
         if (*c == '\0')
@@ -597,13 +597,13 @@ int Layer::Diamond(int dx, int dy, int dw, int dh, int image)
 
     dx += page_x;
     dy += page_y;
-    int mid_x = dx + (dw/2), far_x = dx + (dw-1);
-    int mid_y = dy + (dh/2), far_y = dy + (dh-1);
+    short mid_x = dx + (dw/2), far_x = dx + (dw-1);
+    short mid_y = dy + (dh/2), far_y = dy + (dh-1);
     XPoint pts[] = {
-        {mid_x,   dy},      {far_x,   mid_y-1},
+        {mid_x,   (short)dy},      {far_x,   (short)(mid_y-1)},
         {far_x,   mid_y},   {mid_x,   far_y},
-        {mid_x-1, far_y},   {dx,      mid_y},
-        {dx,      mid_y-1}, {mid_x-1, dy}};
+        {(short)(mid_x-1), far_y},   {(short)dx,      mid_y},
+        {(short)dx,      (short)(mid_y-1)}, {(short)(mid_x-1), (short)dy}};
 
     XSetTSOrigin(dis, gfx, page_x, page_y);
     XSetTile(dis, gfx, GetTexture(image));
@@ -845,7 +845,7 @@ int Layer::FilledFrame(int fx, int fy, int fw, int fh, int ww,
 }
 
 int Layer::StatusBar(int sx, int sy, int sw, int sh, int bar_color,
-                     genericChar *text, int font, int text_color)
+                     const genericChar* text, int font, int text_color)
 {
     FnTrace("Layer::StatusBar()");
 
@@ -923,14 +923,14 @@ int Layer::Shadow(int sx, int sy, int sw, int sh, int size, int shape)
     {
     case SHAPE_DIAMOND:
     {
-        int dx = page_x + sx + size, dy = page_y + sy + size;
-        int mid_x = dx + (sw / 2), far_x = dx + (sw - 1);
-        int mid_y = dy + (sh / 2), far_y = dy + (sh - 1);
+        short dx = page_x + sx + size, dy = page_y + sy + size;
+        short mid_x = dx + (sw / 2), far_x = dx + (sw - 1);
+        short mid_y = dy + (sh / 2), far_y = dy + (sh - 1);
         XPoint pts[] = {
-            {mid_x,   dy},      {far_x,   mid_y-1},
+            {mid_x,   dy},      {far_x,   (short)(mid_y-1)},
             {far_x,   mid_y},   {mid_x,   far_y},
-            {mid_x-1, far_y},   {dx,      mid_y},
-            {dx,      mid_y-1}, {mid_x-1, dy}};
+            {(short)(mid_x-1), far_y},   {dx,      mid_y},
+            {dx,      (short)(mid_y-1)}, {(short)(mid_x-1), dy}};
         XFillPolygon(dis, pix, gfx, pts, 8, Convex, CoordModeOrigin);
         XSetFillStyle(dis, gfx, FillSolid);
     }
@@ -1958,7 +1958,7 @@ int LayerObjectList::MouseAction(LayerList *ll, Layer *l,
 
 /**** LO_PushButton Class ****/
 // Constructor
-LO_PushButton::LO_PushButton(char *str, int normal_color, int active_color)
+LO_PushButton::LO_PushButton(const char* str, int normal_color, int active_color)
 {
     FnTrace("LO_PushButton::LO_PushButton()");
 

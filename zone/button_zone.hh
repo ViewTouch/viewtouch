@@ -60,8 +60,8 @@ public:
     virtual int          AcceptSignals() { return 1; }
     virtual Zone        *Copy();
     virtual SignalResult Touch(Terminal *term, int tx, int ty);
-    virtual SignalResult Signal(Terminal *term, char *signal_msg);
-    virtual char        *ValidateCommand(char *command);
+    virtual SignalResult Signal(Terminal *term, const char* signal_msg);
+    virtual char* ValidateCommand(char* command);
 
     Str *Message()    { return &message; }
     int *Confirm()    { return &confirm; }
@@ -82,7 +82,7 @@ public:
     Zone        *Copy();
     int          RenderInit(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, genericChar *value);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
 
     Str *Expression() { return &expression; }
     int  ZoneStates() { return 3; }
@@ -105,7 +105,7 @@ public:
     virtual int  AcceptSignals() { return 0; }
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    genericChar *TranslateString(Terminal *term);
+    const genericChar* TranslateString(Terminal *term);
     virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 
     Str *Message() { return &message; }
@@ -130,7 +130,7 @@ public:
     virtual int  AcceptSignals() { return 0; }
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, genericChar *value);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
 };
 
 class StatusZone : public LayoutZone
@@ -141,7 +141,7 @@ public:
     int          Type() { return ZONE_STATUS_BUTTON; }
     virtual int  AcceptSignals() { return 1; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 };
 

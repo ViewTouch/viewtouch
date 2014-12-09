@@ -244,9 +244,9 @@ RenderResult SplitKitchenZone::Render(Terminal *t, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult SplitKitchenZone::Signal(Terminal *t, genericChar *message)
+SignalResult SplitKitchenZone::Signal(Terminal *t, const genericChar* message)
 {
-    static genericChar *commands[] = {"cancel", NULL};
+    static const genericChar* commands[] = {"cancel", NULL};
 
     int idx = CompareList(message, commands);
     switch (idx)

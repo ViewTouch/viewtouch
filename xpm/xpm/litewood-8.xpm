@@ -1,6 +1,6 @@
 /* XPM */
-static char *LiteWoodData[] = {
-/* columns rows colors chars-per-pixel */
+static const char *LiteWoodData[] = {
+/* columns rows colors const chars-per-pixel */
 "128 128 8 1",
 "  c #b97d48",
 ". c #cb8d57",

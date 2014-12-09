@@ -49,15 +49,15 @@ public:
     int failure;
 
     // Constructor
-    RemotePrinter(char *host, int port, int mod, int no);
+    RemotePrinter(const char* host, int port, int mod, int no);
     // Destructor
     ~RemotePrinter();
 
     // Member Functions
     int   WInt8(int val);
     int   RInt8(int *val = NULL);
-    int   WStr(char *str, int len = 0);
-    genericChar *RStr(char *str = NULL);
+    int   WStr(const char* str, int len = 0);
+    const genericChar* RStr(const char* str = NULL);
     int   Send();
     int   SendNow();
 
@@ -69,7 +69,7 @@ public:
 
 
 // Constructor
-RemotePrinter::RemotePrinter(char *host, int port, int mod, int no)
+RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
 {
     host_name.Set(host);
     port_no = port;
@@ -154,7 +154,7 @@ int RemotePrinter::RInt8(int *val)
     return v;
 }
 
-int RemotePrinter::WStr(char *s, int len)
+int RemotePrinter::WStr(const char* s, int len)
 {
     if (s == NULL)
         return buffer_out->PutString("", 0);
@@ -162,7 +162,7 @@ int RemotePrinter::WStr(char *s, int len)
         return buffer_out->PutString(s, len);
 }
 
-char *RemotePrinter::RStr(char *s)
+const char* RemotePrinter::RStr(const char* s)
 {
     static genericChar buffer[1024];
     if (s == NULL)
@@ -307,7 +307,7 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
 
 
 /**** Functions ****/
-Printer *NewRemotePrinter(char *host, int port, int model, int no)
+Printer *NewRemotePrinter(const char* host, int port, int model, int no)
 {
     RemotePrinter *p = new RemotePrinter(host, port, model, no);
     if (p == NULL)

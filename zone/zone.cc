@@ -189,7 +189,7 @@ SignalResult Zone::Touch(Terminal *t, int touch_x, int touch_y)
     return SIGNAL_IGNORED;
 }
 
-SignalResult Zone::Signal(Terminal *t, genericChar *message)
+SignalResult Zone::Signal(Terminal *t, const genericChar* message)
 {
     FnTrace("Zone::Signal()");
     // Don't respond to messages
@@ -218,7 +218,7 @@ SignalResult Zone::Mouse(Terminal *t, int action, int mx, int my)
     }
 }
 
-int Zone::RenderZone(Terminal *term, genericChar *text, int update_flag)
+int Zone::RenderZone(Terminal *term, const genericChar* text, int update_flag)
 {
     FnTrace("Zone::RenderZone()");
     if (update_flag)
@@ -246,7 +246,7 @@ int Zone::RenderZone(Terminal *term, genericChar *text, int update_flag)
     {
         int bx = Max(border - 2, 0);
         int by = Max(border - 4, 0);
-        genericChar *b = term->ReplaceSymbols(text);
+        const genericChar* b = term->ReplaceSymbols(text);
         if (b)
         {
             if (behave == BEHAVE_DOUBLE)
@@ -325,7 +325,7 @@ RenderResult Zone::Render(Terminal *t, int update_flag)
     return RENDER_OKAY;
 }
 
-int Zone::Update(Terminal *t, int update_message, genericChar *value)
+int Zone::Update(Terminal *t, int update_message, const genericChar* value)
 {
     FnTrace("Zone::Update()");
     // No update by default
@@ -345,7 +345,7 @@ int Zone::ShadowVal(Terminal *t)
     return s;
 }
 
-char *Zone::TranslateString(Terminal *t)
+const char* Zone::TranslateString(Terminal *t)
 {
     FnTrace("Zone::TranslateString()");
     return name.Value();
@@ -791,7 +791,7 @@ RenderResult Page::Render(Terminal *t, int update_flag,
     return RENDER_OKAY;
 }
 
-SignalResult Page::Signal(Terminal *t, genericChar *message, int group_id)
+SignalResult Page::Signal(Terminal *t, const genericChar* message, int group_id)
 {
     FnTrace("Page::Signal()");
     SignalResult sig = SIGNAL_IGNORED;
@@ -940,7 +940,7 @@ int Page::IsZoneOnPage(Zone *z)
     return 0;  // False
 }
 
-int Page::Update(Terminal *t, int update_message, genericChar *value)
+int Page::Update(Terminal *t, int update_message, const genericChar* value)
 {
     FnTrace("Page::Update()");
     Page *p = this;
@@ -1039,7 +1039,7 @@ int ZoneDB::Init()
     return 0;
 }
 
-int ZoneDB::Load(char *filename)
+int ZoneDB::Load(const char* filename)
 {
     FnTrace("ZoneDB::Load()");
 
@@ -1100,7 +1100,7 @@ int ZoneDB::Load(char *filename)
     return 0;
 }
 
-int ZoneDB::Save(char *filename, int page_class)
+int ZoneDB::Save(const char* filename, int page_class)
 {
     FnTrace("ZoneDB::Save()");
     if (filename == NULL)
@@ -1133,7 +1133,7 @@ int ZoneDB::Save(char *filename, int page_class)
     return error;
 }
 
-int ZoneDB::LoadPages(char *path)
+int ZoneDB::LoadPages(const char* path)
 {
     FnTrace("ZoneDB::LoadPages()");
     return 0;
@@ -1145,7 +1145,7 @@ int ZoneDB::SaveChangedPages()
     return 0;
 }
 
-int ZoneDB::ImportPage(char *filename)
+int ZoneDB::ImportPage(const char* filename)
 {
     FnTrace("ZoneDB::ImportPage()");
     int retval = 0;
@@ -1209,7 +1209,7 @@ int ZoneDB::ImportPages()
     char importdir[STRLONG];
     DIR *dir = NULL;
     struct dirent *record = NULL;
-    char *name = NULL;
+    const char* name = NULL;
     char fullpath[STRLONG];
     int count = 0;
 
@@ -1874,7 +1874,7 @@ int ZoneDB::PageListReport(Terminal *t, int show_system, Report *r)
     return 0;
 }
 
-int ZoneDB::ChangeItemName(char *old_name, genericChar *new_name)
+int ZoneDB::ChangeItemName(const char* old_name, const genericChar* new_name)
 {
 	FnTrace("ZoneDB::ChangeItemName()");
 	int changed = 0;
@@ -1899,7 +1899,7 @@ int ZoneDB::ChangeItemName(char *old_name, genericChar *new_name)
  * PrintZoneDB:  This is for debugging purposes.  It just prints a list of
  *   pages and zones either to the given file or to STDOUT.
  ****/
-int ZoneDB::PrintZoneDB(char *dest, int brief)
+int ZoneDB::PrintZoneDB(const char* dest, int brief)
 {
     int retval = 0;
     int outfd = STDOUT_FILENO;

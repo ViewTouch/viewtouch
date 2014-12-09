@@ -35,8 +35,8 @@ public:
     Line *next;
     Line *fore;
     Str line;
-    int Set(genericChar *lineval) {return line.Set(lineval);}
-    genericChar *Value() {return line.Value();}
+    int Set(const genericChar* lineval) {return line.Set(lineval);}
+    const genericChar* Value() {return line.Value();}
     int Length() {return line.length;}
 };
 
@@ -50,21 +50,21 @@ private:
 public:
     Email();
     ~Email();
-    int AddFrom(char *address);
-    int From(char *buffer, int maxlen);
-    int AddTo(char *address);
-    int NextTo(char *buffer, int maxlen);
-    int AddSubject(char *subjectstr);
-    int Subject(char *buffer, int maxlen);
-    int AddBody(char *line);
-    int NextBody(char *buffer, int maxlen);
+    int AddFrom(const char* address);
+    int From(char* buffer, int maxlen);
+    int AddTo(const char* address);
+    int NextTo(char* buffer, int maxlen);
+    int AddSubject(const char* subjectstr);
+    int Subject(char* buffer, int maxlen);
+    int AddBody(const char* line);
+    int NextBody(char* buffer, int maxlen);
     int PrintEmail();
 };
 
 int  Listen(int port, int nonblocking = 0);
-int  Accept(int socknum, char *remote_address = NULL);
-int  Connect(char *host, char *service);
-int  Connect(char *host, int port);
+int  Accept(int socknum, char* remote_address = NULL);
+int  Connect(const char* host, const char* service);
+int  Connect(const char* host, int port);
 int  SelectIn(int fd, int u_sec);
 int  SelectOut(int fd, int u_sec);
 int  SMTP(int fd, Email *email);

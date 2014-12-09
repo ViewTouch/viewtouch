@@ -84,7 +84,7 @@ RenderResult AccountZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult AccountZone::Signal(Terminal *term, genericChar *message)
+SignalResult AccountZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("AccountZone::Signal()");
     SignalResult retval;
@@ -201,7 +201,7 @@ int AccountZone::PrintRecord(Terminal *term, int record)
     return 1;
 }
 
-int AccountZone::Search(Terminal *term, int record, genericChar *word)
+int AccountZone::Search(Terminal *term, int record, const genericChar* word)
 {
     FnTrace("AccountZone::Search()");
     AccountDB *acct_db = &(term->system_data->account_db);
@@ -267,7 +267,7 @@ int AccountZone::CheckAccountNumber(Terminal *term, int sendmsg)
     int number;
     genericChar msgbad[] = "status Account Number is out of range";
     genericChar msggood[] = "clearstatus";
-    genericChar *msgsend = msggood;
+    const genericChar* msgsend = msggood;
 
     if (account != NULL)
     {

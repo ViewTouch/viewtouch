@@ -59,7 +59,7 @@ Email::~Email()
 /****
  * AddFrom:
  ****/
-int Email::AddFrom(char *address)
+int Email::AddFrom(const char* address)
 {
     FnTrace("Email::AddFrom()");
     int retval = 0;
@@ -71,7 +71,7 @@ int Email::AddFrom(char *address)
 /****
  * From:  Puts the from address into buffer.
  ****/
-int Email::From(char *buffer, int maxlen)
+int Email::From(char* buffer, int maxlen)
 {
     FnTrace("Email::From()");
     int retval = 0;
@@ -83,7 +83,7 @@ int Email::From(char *buffer, int maxlen)
 /****
  * AddTo:
  ****/
-int Email::AddTo(char *address)
+int Email::AddTo(const char* address)
 {
     FnTrace("Email::AddTo()");
     int retval = 0;
@@ -98,7 +98,7 @@ int Email::AddTo(char *address)
 /****
  * NextTo:
  ****/
-int Email::NextTo(char *buffer, int maxlen)
+int Email::NextTo(char* buffer, int maxlen)
 {
     FnTrace("Email::NextTo()");
     int retval = 1;
@@ -120,7 +120,7 @@ int Email::NextTo(char *buffer, int maxlen)
 /****
  * AddSubject:
  ****/
-int Email::AddSubject(char *subjectstr)
+int Email::AddSubject(const char* subjectstr)
 {
     int retval = 0;
 
@@ -131,7 +131,7 @@ int Email::AddSubject(char *subjectstr)
 /****
  * Subject:
  ****/
-int Email::Subject(char *buffer, int maxlen)
+int Email::Subject(char* buffer, int maxlen)
 {
     int retval = 0;
 
@@ -142,7 +142,7 @@ int Email::Subject(char *buffer, int maxlen)
 /****
  * AddBody:
  ****/
-int Email::AddBody(char *line)
+int Email::AddBody(const char* line)
 {
     FnTrace("Email::AddBody()");
     int retval = 0;
@@ -157,7 +157,7 @@ int Email::AddBody(char *line)
 /****
  * NextBody:
  ****/
-int Email::NextBody(char *buffer, int maxlen)
+int Email::NextBody(char* buffer, int maxlen)
 {
     FnTrace("Email::NextBody()");
     int retval = 1;
@@ -203,7 +203,7 @@ int Email::PrintEmail()
 /****
  * Sock_ntop
  ****/
-char *Sock_ntop(const struct sockaddr_in *sa, socklen_t addrlen)
+const char* Sock_ntop(const struct sockaddr_in *sa, socklen_t addrlen)
 {
     char portstr[STRLENGTH];
     static char str[STRLENGTH];
@@ -278,7 +278,7 @@ int Listen(int port, int nonblocking)
 /****
  * Accept:  Accepts the socket and returns a file handle of the open connection
  ****/
-int Accept(int socknum, char *remote_address)
+int Accept(int socknum, char* remote_address)
 {
     int connect_fd;
     socklen_t sin_size;
@@ -303,7 +303,7 @@ int Accept(int socknum, char *remote_address)
  * Connect:  Connects to the server, returning the socket descriptor on success,
  *  0 on failure.
  *******/
-int Connect(char *host, char *service)
+int Connect(const char* host, const char* service)
 {
     int retval = 0;
     int sockfd;
@@ -349,7 +349,7 @@ int Connect(char *host, char *service)
  * Connect:  Connects to the server, returning the socket descriptor on success,
  *  0 on failure.
  *******/
-int Connect(char *host, int port)
+int Connect(const char* host, int port)
 {
     int retval = 0;
     int sockfd;
@@ -421,7 +421,7 @@ int SelectOut(int fd, int u_sec)
     return retval;
 }
 
-int GetResponse(int fd, char *bufferstr, int maxlen)
+int GetResponse(int fd, char* bufferstr, int maxlen)
 {
     int retval = 0;
     int bytesread = 0;

@@ -1,6 +1,6 @@
 /* XPM */
-static char *ParchmentData[] = {
-/* columns rows colors chars-per-pixel */
+static const char *ParchmentData[] = {
+/* columns rows colors const chars-per-pixel */
 "160 120 6 1",
 "  c #8f7a66",
 ". c #a68f76",

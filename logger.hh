@@ -11,7 +11,7 @@
 #include <syslog.h>
 
 
-int logmsg(int, const char *, ...);
+int logmsg(int, const char* , ...);
 
 #endif
 

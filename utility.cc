@@ -36,7 +36,7 @@
 #include <dmalloc.h>
 #endif
 
-char *progname = NULL;
+char* progname = NULL;
 int   progname_maxlen = 0;
 
 #ifdef DEBUG
@@ -67,7 +67,7 @@ void FnPrintLast(int depth)
         fprintf(stderr, "    (%d) %s\n", i + 1, BT_Stack[i]);
     fprintf(stderr, "\n");
 }
-char *FnReturnLast()
+const char* FnReturnLast()
 {
     static char last[STRLENGTH];
 
@@ -84,7 +84,7 @@ int debug_mode = 1;
 int debug_mode = 0;
 #endif
 
-void vt_init_setproctitle(int argc, char *argv[])
+void vt_init_setproctitle(int argc, char* argv[])
 {
 #ifdef BSD
     progname = NULL;
@@ -112,7 +112,7 @@ void vt_init_setproctitle(int argc, char *argv[])
 /****
  * vt_setproctitle:  Returns 1 on error, 0 otherwise.
  ****/
-int vt_setproctitle(char *title)
+int vt_setproctitle(const char* title)
 {
     FnTrace("setproctitle()");
     int retval = 1;
@@ -160,16 +160,16 @@ Str::Str()
     fore       = NULL;
     length     = 0;
     buffer_len = 0;
-    data       = (char *) NULL;
+    data       = (char* ) NULL;
 }
 
-Str::Str(char *str)
+Str::Str(const char* str)
 {
     next       = NULL;
     fore       = NULL;
     length     = 0;
     buffer_len = 0;
-    data     = (char *) NULL;
+    data     = (char* ) NULL;
     Set(str);
 }
 
@@ -179,7 +179,7 @@ Str::Str(Str &s)
     fore       = NULL;
     length     = 0;
     buffer_len = 0;
-    data     = (char *) NULL;
+    data     = (char* ) NULL;
     Set(s);
 }
 
@@ -199,7 +199,7 @@ int Str::Clear()
 	if (data)
 	{
 		delete [] data;
-		data = (char *) NULL;
+		data = (char* ) NULL;
 	}
 
     buffer_len = 0;
@@ -207,9 +207,9 @@ int Str::Clear()
     return 0;
 }
 
-int Str::Set(char *str)
+int Str::Set(const char* str)
 {
-    FnTrace("Str::Set(char *)");
+    FnTrace("Str::Set(const char* )");
 	int len = 0;
 	if (str)
 		len = strlen(str);
@@ -225,7 +225,7 @@ int Str::Set(char *str)
 	{
 		int   nlength;
         int   nbuffer_len;
-		char *nstring;
+		char* nstring;
 
 		nlength = len;
 		nbuffer_len = nlength + 1;
@@ -267,7 +267,7 @@ int Str::ChangeAtoB(genericChar a, genericChar b)
     if (data == NULL)
         return 1;
 
-    genericChar *c = data;
+    genericChar* c = data;
     while (*c)
     {
         if (*c == a)
@@ -295,7 +295,17 @@ Flt Str::FltValue()
         return 0.0;
 }
 
-char *Str::Value()
+const char* Str::Value() const
+{
+    FnTrace("Str::Value()");
+    static genericChar blank_string[] = "";
+    if (data)
+        return data;
+    else
+        return blank_string;
+}
+
+char* Str::Value()
 {
     FnTrace("Str::Value()");
     static genericChar blank_string[] = "";
@@ -309,7 +319,7 @@ char *Str::Value()
  * ValueSet:  Always return the new value of the variable, but
  *  only set it if set is non-NULL.
  ****/
-char *Str::ValueSet(char *set)
+const char* Str::ValueSet(const char* set)
 {
     FnTrace("Str::ValueSet()");
     if (set)
@@ -320,8 +330,8 @@ char *Str::ValueSet(char *set)
 int Str::operator > (Str &s)
 {
     FnTrace("Str::operator >()");
-    genericChar *s1 = Value();
-    genericChar *s2 = s.Value();
+    const genericChar* s1 = Value();
+    const genericChar* s2 = s.Value();
 
     while (*s1 && *s2)
     {
@@ -338,8 +348,8 @@ int Str::operator > (Str &s)
 int Str::operator < (Str &s)
 {
     FnTrace("Str::operator <()");
-    genericChar *s1 = Value();
-    genericChar *s2 = s.Value();
+    const genericChar* s1 = Value();
+    const genericChar* s2 = s.Value();
 
     while (*s1 && *s2)
     {
@@ -359,8 +369,8 @@ int Str::operator == (Str &s)
     if (length != s.length)
         return 0;
 
-    genericChar *s1 = Value();
-    genericChar *s2 = s.Value();
+    const genericChar* s1 = Value();
+    const genericChar* s2 = s.Value();
 
     while (*s1)
     {
@@ -377,8 +387,8 @@ int Str::operator != (Str &s)
     if (length != s.length)
         return 1;
 
-    genericChar *s1 = Value();
-    genericChar *s2 = s.Value();
+    const genericChar* s1 = Value();
+    const genericChar* s2 = s.Value();
 
     while (*s1)
     {
@@ -453,9 +463,9 @@ int TimeInfo::Set(time_t t)
  *   "DD/MM/YYYY,HH:MM" in 24hour format
  *  Returns 1 on error, 0 on success.
  ****/
-int TimeInfo::Set(genericChar *date_string)
+int TimeInfo::Set(const genericChar* date_string)
 {
-    FnTrace("TimeInfo::Set(genericChar *)");
+    FnTrace("TimeInfo::Set(const genericChar* )");
     int idx = 0;
     int buffer;
     int retval = 0;
@@ -699,7 +709,7 @@ int TimeInfo::AdjustYears(int amount)
     return 0;
 }
 
-genericChar *TimeInfo::DebugPrint(genericChar *dest)
+genericChar* TimeInfo::DebugPrint(genericChar* dest)
 {
     FnTrace("TimeInfo::DebugPrint()");
     static genericChar buffer[STRLONG];
@@ -711,9 +721,9 @@ genericChar *TimeInfo::DebugPrint(genericChar *dest)
 
 /****
  * ToString:  converts the TimeInfo to a string that can later be
- *  parsed by Set(char *): "DD/MM/YY,HH:MM" in 24hour format
+ *  parsed by Set(const char* ): "DD/MM/YY,HH:MM" in 24hour format
  ****/
-genericChar *TimeInfo::ToString(genericChar *dest)
+genericChar* TimeInfo::ToString(genericChar* dest)
 {
     FnTrace("TimeInfo::ToString()");
     static char buffer[STRLONG];
@@ -825,7 +835,7 @@ int TimeInfo::WeekDay()
     return (int)DayOfTheWeek(mday, month, year);
 }
 
-char *TimeInfo::Date(genericChar *dest)
+char* TimeInfo::Date(genericChar* dest)
 {
     FnTrace("TimeInfo::Date()");
     static char buffer[STRLONG] = "";
@@ -838,7 +848,7 @@ char *TimeInfo::Date(genericChar *dest)
     return dest;
 }
 
-char *TimeInfo::Time(genericChar *dest)
+char* TimeInfo::Time(genericChar* dest)
 {
     FnTrace("TimeInfo::Time()");
     static char buffer[STRLONG] = "";
@@ -955,22 +965,22 @@ int Price::Write(OutputDataFile &df, int version)
     return 1;
 }
 
-char *Price::Format(int sign)
+const char* Price::Format(int sign)
 {
     return NULL;
 }
 
-char *Price::Format(char *buffer, int sign)
+const char* Price::Format(const char* buffer, int sign)
 {
     return NULL;
 }
 
-char *Price::SimpleFormat()
+const char* Price::SimpleFormat()
 {
     return NULL;
 }
 
-char *Price::SimpleFormat(char *buffer)
+const char* Price::SimpleFormat(const char* buffer)
 {
     return NULL;
 }
@@ -1026,7 +1036,7 @@ int DayOfTheWeek(int mday, int month, int year)
 }
 
 
-char *StringToLower(char *str)
+char* StringToLower(char* str)
 {
     FnTrace("StringToLower()");
     while (*str)
@@ -1037,7 +1047,7 @@ char *StringToLower(char *str)
     return str;
 }
 
-char *StringToUpper(char *str)
+char* StringToUpper(char* str)
 {
     FnTrace("StringToUpper()");
     while (*str)
@@ -1052,7 +1062,7 @@ char *StringToUpper(char *str)
  * StripWhiteSpace:  remove all whitespace characters from the beginning
  *  and the end of string.
  ****/
-int StripWhiteSpace(genericChar *longstr)
+int StripWhiteSpace(genericChar* longstr)
 {
     FnTrace("StripWhiteSpace()");
     int idx = 0;
@@ -1084,10 +1094,10 @@ int StripWhiteSpace(genericChar *longstr)
     return count;
 }
 
-char *AdjustCase(char *str)
+char* AdjustCase(char* str)
 {
     FnTrace("AdjustCase()");
-    genericChar *c = str;
+    genericChar* c = str;
     int capital = 1;
     while (*c)
     {
@@ -1105,10 +1115,10 @@ char *AdjustCase(char *str)
     return str;
 }
 
-int AdjustCaseAndSpacing(char *str)
+int AdjustCaseAndSpacing(char* str)
 {
     FnTrace("AdjustCaseAndSpacing()");
-    genericChar *s = str, *d = str;
+    genericChar* s = str, *d = str;
     int word = 0;
 
     while (*s)
@@ -1137,7 +1147,7 @@ int AdjustCaseAndSpacing(char *str)
     return 0;
 }
 
-genericChar *NextName(genericChar *name, genericChar **list)
+const genericChar* NextName(const genericChar* name, const genericChar* *list)
 {
     FnTrace("NextName()");
     int idx = 0;
@@ -1188,7 +1198,7 @@ int ForeValue(int val, int *val_array)
  *  found (or not found) after the previous token.  idx must point to a
  *  storage space for the index.  src is NOT modified by NextToken.
  ****/
-int NextToken(genericChar *dest, genericChar *src, genericChar sep, int *idx)
+int NextToken(genericChar* dest, const genericChar* src, genericChar sep, int *idx)
 {
     FnTrace("NextToken()");
     int destidx = 0;
@@ -1215,7 +1225,7 @@ int NextToken(genericChar *dest, genericChar *src, genericChar sep, int *idx)
  * NextInteger:  Like NextToken, but converts the resulting string to
  *  an integer and stores that value in dest.
  ****/
-int NextInteger(int *dest, genericChar *src, genericChar sep, int *idx)
+int NextInteger(int *dest, const genericChar* src, genericChar sep, int *idx)
 {
     FnTrace("NextInteger()");
     genericChar buffer[STRLONG];
@@ -1229,7 +1239,7 @@ int NextInteger(int *dest, genericChar *src, genericChar sep, int *idx)
     return retval;
 }
 
-int BackupFile(const genericChar *filename)
+int BackupFile(const genericChar* filename)
 {
     FnTrace("BackupFile()");
     if (DoesFileExist(filename) == 0)
@@ -1256,7 +1266,7 @@ int BackupFile(const genericChar *filename)
     return 0;
 }
 
-int RestoreBackup(const genericChar *filename)
+int RestoreBackup(const genericChar* filename)
 {
     FnTrace("RestoreBackup()");
     genericChar str[256];
@@ -1301,7 +1311,7 @@ Flt PercentToFlt(int percent)
 }
 
 
-char *FindStringByValue(int val, int val_list[], genericChar *str_list[], genericChar *unknown)
+const char* FindStringByValue(int val, int val_list[], const genericChar* str_list[], const genericChar* unknown)
 {
     FnTrace("FindStringByValue()");
 
@@ -1314,7 +1324,7 @@ char *FindStringByValue(int val, int val_list[], genericChar *str_list[], generi
     return unknown;
 }
 
-int FindValueByString(genericChar *val, int val_list[], genericChar *str_list[], int unknown)
+int FindValueByString(const genericChar* val, int val_list[], const genericChar* str_list[], int unknown)
 {
     FnTrace("FindValueByString()");
     int retval = unknown;
@@ -1364,7 +1374,7 @@ int FindIndexOfValue(int value, int val_list[], int unknown)
 
 
 
-int DoesFileExist(const genericChar *filename)
+int DoesFileExist(const genericChar* filename)
 {
     FnTrace("DoesFileExist()");
     if (filename == NULL)
@@ -1378,7 +1388,7 @@ int DoesFileExist(const genericChar *filename)
  *  already exist.  Returns 0 if the file exists or if it is successfully
  *  created.  Returns 1 on error.
  ****/
-int EnsureFileExists(const genericChar *filename)
+int EnsureFileExists(const genericChar* filename)
 {
     FnTrace("EnsureFileExists()");
     int retval = 1;
@@ -1400,7 +1410,7 @@ int EnsureFileExists(const genericChar *filename)
     return retval;
 }
 
-int DeleteFile(const genericChar *filename)
+int DeleteFile(const genericChar* filename)
 {
     FnTrace("DeleteFile()");
     if (filename == NULL || strlen(filename) <= 0 || access(filename, F_OK))
@@ -1409,7 +1419,7 @@ int DeleteFile(const genericChar *filename)
     return 0;
 }
 
-int StringElapsedToNow(char *dest, int maxlen, TimeInfo &t1)
+int StringElapsedToNow(char* dest, int maxlen, TimeInfo &t1)
 {
     FnTrace("StringElapsedToNow()");
     TimeInfo now;
@@ -1424,7 +1434,7 @@ int StringElapsedToNow(char *dest, int maxlen, TimeInfo &t1)
     return 1;
 }
 
-int SecondsToString(char *dest, int maxlen, int seconds)
+int SecondsToString(char* dest, int maxlen, int seconds)
 {
     FnTrace("SecondsToString()");
     int minutes;
@@ -1535,7 +1545,7 @@ int MinutesElapsed(TimeInfo &t1, TimeInfo &t2)
         return (int) (difftime(time2, time1) / 60.0);
 }
 
-int StringCompare(const genericChar *str1, const genericChar *str2, int len)
+int StringCompare(const genericChar* str1, const genericChar* str2, int len)
 {
     FnTrace("StringCompare()");
 	char a, b;
@@ -1569,11 +1579,11 @@ int StringCompare(const genericChar *str1, const genericChar *str2, int len)
  *   NOTE:  this function does not return the position of needle in
  *   haystack, just whether or not it is there.
  ****/
-int StringInString(const genericChar *haystack, const genericChar *needle)
+int StringInString(const genericChar* haystack, const genericChar* needle)
 {
-    genericChar *c1 = (genericChar *)haystack;
-    genericChar *l1 = (genericChar *)haystack;
-    genericChar *c2 = (genericChar *)needle;
+    const genericChar* c1 = (const genericChar* )haystack;
+    const genericChar* l1 = (const genericChar* )haystack;
+    const genericChar* c2 = (const genericChar* )needle;
     int match = 0;
 
     while (*c1 && *c2)
@@ -1590,7 +1600,7 @@ int StringInString(const genericChar *haystack, const genericChar *needle)
         {
             if (match)
             {
-                c2 = (genericChar *)needle;
+                c2 = (const genericChar* )needle;
                 c1 = l1;
             }
             match = 0;
@@ -1605,7 +1615,7 @@ int StringInString(const genericChar *haystack, const genericChar *needle)
 }
 
 // FIX - convert the following three functions into a single template if possible
-int CompareList(genericChar *str, genericChar *list[], int unknown)
+int CompareList(const genericChar* str, const genericChar* list[], int unknown)
 {
     FnTrace("CompareList(char)");
     for (int i = 0; list[i] != NULL; ++i)
@@ -1631,7 +1641,7 @@ int CompareList(int val, int list[], int unknown)
  * HasSpace:  returns 1 if word contains a space character,
  *   0 otherwise.
  ****/
-int HasSpace(genericChar *word)
+int HasSpace(const genericChar* word)
 {
     FnTrace("HasSpace()");
     int len = strlen(word);
@@ -1667,7 +1677,7 @@ int HasSpace(genericChar *word)
  * if match
  *     return index within list (not within string)
  ****/
-int CompareListN(genericChar *list[], genericChar *word, int unknown)
+int CompareListN(const genericChar* list[], const genericChar* word, int unknown)
 {
     FnTrace("CompareListN()");
     int wordlen = strlen(word);
@@ -1702,7 +1712,7 @@ int CompareListN(genericChar *list[], genericChar *word, int unknown)
 
 #define LOCK_DIR VIEWTOUCH_PATH "/bin/.lock"
 
-int LockDevice(genericChar *devpath)
+int LockDevice(const genericChar* devpath)
 {
     FnTrace("LockDevice()");
     int retval = 0;

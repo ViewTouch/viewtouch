@@ -93,7 +93,7 @@ extern int tender_order[];
 #define CHECK_DISPLAY_ALL    255 // Display everything
 
 // Data
-extern genericChar *CheckStatusName[];
+extern const genericChar* CheckStatusName[];
 extern int   CheckStatusValue[];
 
 
@@ -157,7 +157,7 @@ public:
     // Constructors
     Order();
     Order(Settings *settings, SalesItem *si, int qual, int price = -1);
-    Order(genericChar *name, int price);
+    Order(const genericChar* name, int price);
     // Destructor
     ~Order();
 
@@ -168,13 +168,13 @@ public:
     int        Add(Order *o);  // Add a modifier order
     int        Remove(Order *o);  // Removes a modifier order
     int        FigureCost();  // Totals up order
-    genericChar      *Description(Terminal *t, genericChar *buffer = NULL);  // Returns string with order description
-    genericChar      *PrintDescription(genericChar *str = NULL, short pshort = 0);  // Returns string with printed order description
+    genericChar* Description(Terminal *t, genericChar* buffer = NULL);  // Returns string with order description
+    genericChar* PrintDescription( genericChar* str=NULL, short int pshort = 0 );  // Returns string with printed order description
     int        IsEntree();  // boolean - is this item an "Entree"?
     int        FindPrinterID(Settings *settings);  // PrinterID (based on family) for order
     SalesItem *Item(ItemDB *db);  // Returns menu item this order points to
     int        PrintStatus(Terminal *t, int printer_id, int reprint = 0, int flag_sent = ORDER_SENT);  // Returns 0-don't print, 1-print, 2-notify only
-    genericChar      *Seat(Settings *settings, genericChar *buffer = NULL);  // Returns string with order's seat
+    genericChar* Seat(Settings *settings, genericChar* buffer = NULL);  // Returns string with order's seat
     int        IsModifier();  // Boolean - Is this order a modifier?
     int        CanDiscount(int discount_alcohol, Payment *p);  // Boolean - Does this discount apply?
     int        Finalize();  // Finalizes order
@@ -182,7 +182,7 @@ public:
     int        IsEmployeeMeal(int set = -1);
     int        IsReduced(int set = -1);
     int        VideoTarget(Settings *settings); // returns the video target for this order
-    int        AddQualifier(char *qualifier_str);
+    int        AddQualifier(const char* qualifier_str);
 };
 
 class Payment
@@ -208,7 +208,7 @@ public:
     Payment *Copy();  // Returns exact copy of payment object
     int      Read(InputDataFile &df, int version);  // Reads payment from a file
     int      Write(OutputDataFile &df, int version);  // Write payment to a file
-    genericChar    *Description(Settings *settings, genericChar *str = NULL);  // Returns description of discount
+    genericChar* Description(Settings *settings, genericChar* str = NULL);  // Returns description of discount
     int      Priority();  // Sorting priority (higher goes 1st)
     int      Suppress();  // Boolean - Should payment be shown?
     int      IsDiscount();  // Boolean - Is payment a discount?
@@ -216,7 +216,7 @@ public:
     int      IsTab();
     int      TabRemain();
     int      FigureTotals(int also_preauth = 0);
-    int      SetBatch(char *termid, char *batch);
+    int      SetBatch(const char* termid, const char* batch);
 };
 
 class SubCheck
@@ -317,7 +317,7 @@ public:
     int       PrintReceipt(Terminal *t, Check *c, Printer *p,
                            Drawer *d = NULL, int open_drawer = 0);  // Prints receipt
     int       ReceiptReport(Terminal *t, Check *c, Drawer *d, Report *r);  // Makes report of receipt
-    genericChar     *StatusString(Terminal *t);  // Returns string with subcheck status (Open, Closed, Voided, etc.)
+    const genericChar* StatusString(Terminal *t);  // Returns string with subcheck status (Open, Closed, Voided, etc.)
     int       IsSeatOnCheck(int seat);  // Boolean - Are any of the orders for this seat?
     Order    *LastOrder(int seat);  // Returns last order for seat (Could be modifier)
     Order    *LastParentOrder(int seat);  // Returns last order for seat (Could NOT be modifier)
@@ -339,7 +339,7 @@ public:
     int       HasAuthedCreditCards();
     int       HasOpenTab();
     int       OnlyCredit();
-    int       SetBatch(char *termid, char *batch);
+    int       SetBatch(const char* termid, const char* batch);
 };
 
 class Check
@@ -394,7 +394,7 @@ public:
     int       SubCount()   { return sub_list.Count(); }
 
     Check    *Copy(Settings *settings);
-    int       Load(Settings *settings, genericChar *filename); // Loads check from file
+    int       Load(Settings *settings, const genericChar* filename); // Loads check from file
     int       Save();  // Saves check to disk
     int       Read(Settings *settings, InputDataFile &df, int version);  // Reads check data from file
     int       ReadFix(InputDataFile &datFile, int version);
@@ -413,7 +413,7 @@ public:
     int       Close(Terminal *t);  // Tries to close check (fails if not settled)
     int       Update(Settings *settings);  // updates check & all subchecks
     int       Status();  // returns status of check
-    genericChar     *StatusString(Terminal *t);  // Returns status string
+    const genericChar* StatusString(Terminal *t);  // Returns status string
     int       MoveOrdersBySeat(SubCheck *sb1, SubCheck *sb2, int seat);
     int       MergeOpenChecks(Settings *settings);
     int       SplitCheckBySeat(Settings *settings);
@@ -439,9 +439,9 @@ public:
     int       WhoGetsSale(Settings *settings);  // returns user_id of server
     int       SecondsOpen();  // total number of seconds open
     int       SeatsUsed();  // seat count across all subchecks
-    genericChar     *PaymentSummary(Terminal *t);
-    int       Search(genericChar *word);
-    int       SetBatch(char *termid, char *batch);
+    const genericChar* PaymentSummary(Terminal *t);
+    int       Search(const genericChar* word);
+    int       SetBatch(const char* termid, const char* batch);
     int       IsBatchSet();
 
     // CustomerInfo stuff
@@ -450,33 +450,33 @@ public:
     int       IsToGo();
     int       IsForHere();
     int       CustomerType(int set = -1);
-    genericChar     *Table(genericChar *set = NULL);  // FIX - name not general enough
+    const genericChar* Table(const genericChar* set = NULL);  // FIX - name not general enough
     int       Guests(int guests = -1);
     int              CallCenterID(int set = -1);
     int              CustomerID(int set = -1);
-    genericChar     *LastName(genericChar *set = NULL);
-    genericChar     *FirstName(genericChar *set = NULL);
-    genericChar     *FullName(genericChar *dest = NULL);
-    genericChar     *Company(genericChar *set = NULL);
-    genericChar     *Address(genericChar *set = NULL);
-    genericChar     *Address2(genericChar *set = NULL);
-    genericChar     *CrossStreet(genericChar *set = NULL);
-    genericChar     *City(genericChar *set = NULL);
-    genericChar     *State(genericChar *set = NULL);
-    genericChar     *Postal(genericChar *set = NULL);
-    genericChar     *Vehicle(genericChar *set = NULL);
-    genericChar     *CCNumber(genericChar *set = NULL);
-    genericChar     *CCExpire(genericChar *set = NULL);
-    genericChar     *License(genericChar *set = NULL);
-    genericChar     *Comment(genericChar *set = NULL);
-    genericChar     *PhoneNumber(genericChar *set = NULL);
-    genericChar     *Extension(genericChar *set = NULL);
+    const genericChar* LastName(const genericChar* set = NULL);
+    const genericChar* FirstName(const genericChar* set = NULL);
+    genericChar* FullName(genericChar* dest = NULL);
+    const genericChar* Company(const genericChar* set = NULL);
+    const genericChar* Address(const genericChar* set = NULL);
+    const genericChar* Address2(const genericChar* set = NULL);
+    const genericChar* CrossStreet(const genericChar* set = NULL);
+    const genericChar* City(const genericChar* set = NULL);
+    const genericChar* State(const genericChar* set = NULL);
+    const genericChar* Postal(const genericChar* set = NULL);
+    const genericChar* Vehicle(const genericChar* set = NULL);
+    const genericChar* CCNumber(const genericChar* set = NULL);
+    const genericChar* CCExpire(const genericChar* set = NULL);
+    const genericChar* License(const genericChar* set = NULL);
+    const genericChar* Comment(const genericChar* set = NULL);
+    const genericChar* PhoneNumber(const genericChar* set = NULL);
+    const genericChar* Extension(const genericChar* set = NULL);
     TimeInfo        *Date(TimeInfo *set = NULL);
     TimeInfo        *CheckIn(TimeInfo *timevar = NULL);
     TimeInfo        *CheckOut(TimeInfo *timevar = NULL);
 };
 
 /**** General Functions ****/
-genericChar *SeatName(int seat_no, genericChar *buffer = NULL, int guests = -1); // return pointer to string with seat letter
+genericChar* SeatName( int seat, genericChar* str, int guests = -1 ); // return pointer to string with seat letter
 
 #endif

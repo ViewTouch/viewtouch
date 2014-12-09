@@ -35,7 +35,7 @@ initlogger()
 }
 
 void
-setident(const char *ident)
+setident(const char* ident)
 {
     closelog();
     if (init == 0)
@@ -49,7 +49,7 @@ setident(const char *ident)
  *         -2 : error returned by vsnprintf(3)
  */
 int
-logmsg(int priority, const char *fmt, ...)
+logmsg(int priority, const char* fmt, ...)
 {
     va_list ap;
     int retval = 0;
@@ -76,7 +76,7 @@ logmsg(int priority, const char *fmt, ...)
     // made the string -- log it
     //   (even if it was truncated)
     if (retval >= -1)
-        syslog(priority, buf);
+        syslog(priority, "%s",buf);
 
     return retval;
 }

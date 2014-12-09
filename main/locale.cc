@@ -97,7 +97,7 @@ Locale *MasterLocale = NULL;
 #define PHRASE_ON                40
 #define PHRASE_OFF               41
 
-static genericChar *AMorPM[] = { "am", "pm"};
+static const genericChar* AMorPM[] = { "am", "pm"};
 
 PhraseEntry PhraseData[] = {
     // Days of Week (0 - 6)
@@ -296,9 +296,9 @@ PhraseInfo::PhraseInfo()
     fore = NULL;
 }
 
-PhraseInfo::PhraseInfo(char *k, genericChar *v)
+PhraseInfo::PhraseInfo(const char* k, const genericChar* v)
 {
-    FnTrace("PhraseInfo::PhraseInfo(char *, char *)");
+    FnTrace("PhraseInfo::PhraseInfo(const char* , const char* )");
     next = NULL;
     fore = NULL;
     key.Set(k);
@@ -335,7 +335,7 @@ POEntry::POEntry()
     next = NULL;
 }
 
-POEntry::POEntry(char *newkey, char *newvalue)
+POEntry::POEntry(const char* newkey, const char* newvalue)
 {
     if (strlen(newkey) < STRLONG && strlen(newvalue) < STRLONG)
     {
@@ -439,7 +439,7 @@ int POFile::ReadPO()
 /****
  * Add:  Returns 1 if the key/value pair is added, 0 otherwise.
  ****/
-int POFile::Add(char *newkey, char *newvalue)
+int POFile::Add(const char* newkey, const char* newvalue)
 {
     FnTrace("POFile::Add()");
     int retval = 0;
@@ -466,7 +466,7 @@ int POFile::Add(char *newkey, char *newvalue)
 /****
  * Find:  Returns 0 on failure, 1 on success.
  ****/
-int POFile::Find(char *dest, char *str, int po_lang)
+int POFile::Find(char* dest, const char* str, int po_lang)
 {
     FnTrace("POFile::Find()");
     int retval = 0;
@@ -518,7 +518,7 @@ POFile *POFileList::FindPOFile(int lang)
     return po_file;
 }
 
-char *POFileList::FindPOString(char *str, int lang, int clear)
+const char* POFileList::FindPOString(const char* str, int lang, int clear)
 {
     FnTrace("POFileList::FindPOString()");
     char buffer[STRLONG];
@@ -560,7 +560,7 @@ Locale::Locale()
     array_size = 0;
 }
 
-int Locale::Load(char *file)
+int Locale::Load(const char* file)
 {
     FnTrace("Locale::Load()");
     if (file)
@@ -640,7 +640,7 @@ int Locale::Add(PhraseInfo *ph)
     }
 
     // start at end of list and work backwords
-    genericChar *n = ph->key.Value();
+    const genericChar* n = ph->key.Value();
     PhraseInfo *ptr = PhraseListEnd();
     while (ptr && StringCompare(n, ptr->key.Value()) < 0)
         ptr = ptr->fore;
@@ -707,7 +707,7 @@ int Locale::BuildSearchArray()
 /****
  * Find: find record for word to translate - returns NULL if none
  ****/
-PhraseInfo *Locale::Find(char *key)
+PhraseInfo *Locale::Find(const char* key)
 {
     FnTrace("Locale::Find()");
     if (key == NULL)
@@ -737,7 +737,7 @@ PhraseInfo *Locale::Find(char *key)
  * Translate: translates string or just returns original string if no
  * translation
  ****/
-char *Locale::Translate(char *str, int lang, int clear)
+const char* Locale::Translate(const char* str, int lang, int clear)
 {
     FnTrace("Locale::Translate()");
     char buffer[STRLONG];
@@ -747,8 +747,8 @@ char *Locale::Translate(char *str, int lang, int clear)
         PhraseInfo *ph = Find(str);
         if (ph == NULL)
         {
-            if (clear)
-                str[0] = '\0';
+            //if (clear)
+                //str[0] = '\0';	#TODO
             return str;
         }
         else
@@ -766,7 +766,7 @@ char *Locale::Translate(char *str, int lang, int clear)
 /****
  * NewTranslation:  adds new translation to database
  ****/
-int Locale::NewTranslation(char *str, genericChar *value)
+int Locale::NewTranslation(const char* str, const genericChar* value)
 {
     FnTrace("Locale::NewTranslation()");
     PhraseInfo *ph = Find(str);
@@ -804,7 +804,7 @@ int Locale::NewTranslation(char *str, genericChar *value)
  * TimeDate: returns time/date nicely formated (format flags are in
  * locale.hh)
  ****/
-char *Locale::TimeDate(Settings *s, TimeInfo &timevar, int format, int lang, genericChar *str)
+const char* Locale::TimeDate(Settings *s, TimeInfo &timevar, int format, int lang, genericChar* str)
 {
     FnTrace("Locale::TimeDate()");
 	// FIX - implement handler for TD_SECONDS format flag
@@ -828,9 +828,9 @@ char *Locale::TimeDate(Settings *s, TimeInfo &timevar, int format, int lang, gen
         // Show Day of Week
         int wd = timevar.WeekDay();
         if (format & TD_SHORT_DAY)
-            sprintf(str, Translate(ShortDayName[wd], lang));
+            sprintf(str, "%s", Translate(ShortDayName[wd], lang));
         else
-            sprintf(str, Translate(DayName[wd], lang));
+            sprintf(str, "%s", Translate(DayName[wd], lang));
 
         if (!(format & TD_NO_TIME) || !(format & TD_NO_DATE))
             strcat(str, ", ");
@@ -951,7 +951,7 @@ char *Locale::TimeDate(Settings *s, TimeInfo &timevar, int format, int lang, gen
 /****
  * Page:  returns nicely formated & translated page numbering
  ****/
-char *Locale::Page(int current, int page_max, int lang, genericChar *str)
+char* Locale::Page(int current, int page_max, int lang, genericChar* str)
 {
     FnTrace("Locale::Page()");
     static genericChar buffer[32];

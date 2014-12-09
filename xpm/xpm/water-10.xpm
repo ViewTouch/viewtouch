@@ -1,6 +1,6 @@
 /* XPM */
-static char *WaterData[] = {
-/* columns rows colors chars-per-pixel */
+static const char *WaterData[] = {
+/* columns rows colors const chars-per-pixel */
 "240 182 10 1",
 "  c #266b99",
 ". c #2a7bb5",

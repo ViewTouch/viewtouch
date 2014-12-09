@@ -1,5 +1,5 @@
 /* XPM */
-static char * GrayParchmentData[] = {
+static const char * GrayParchmentData[] = {
 "144 144 17 1",
 " 	c None",
 ".	c #828282",

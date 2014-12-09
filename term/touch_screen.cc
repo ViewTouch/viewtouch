@@ -46,7 +46,7 @@
 
 /**** TouchScreen Class ****/
 // Constructors
-TouchScreen::TouchScreen(char *device)
+TouchScreen::TouchScreen(const char* device)
 {
 	strcpy(INIT, "\001PN819600\n");
 	strcpy(PING, "\001Z\n");
@@ -70,7 +70,7 @@ TouchScreen::TouchScreen(char *device)
     failed = Connect(1);
 }
 
-TouchScreen::TouchScreen(char *h, int p)
+TouchScreen::TouchScreen(const char* h, int p)
 {
 	strcpy(INIT, "\001PN819600\n");
 	strcpy(PING, "\001Z\n");
@@ -136,7 +136,7 @@ int TouchScreen::Connect(int boot)
             {
 				sprintf(str, "Can't resolve name '%s'", host.Value());
 				error.Set(str);
-                fprintf(stderr, str);
+                fprintf(stderr, "%s",str);
 				return 1;
             }
             bcopy(hp->h_addr, &inaddr.sin_addr.s_addr, hp->h_length);
@@ -146,7 +146,7 @@ int TouchScreen::Connect(int boot)
         if (device_no < 0)
         {
             error.Set("Can't open socket");
-            fprintf(stderr, str);
+            fprintf(stderr,"%s",str);
             device_no = 0;
             return 1;
         }
@@ -154,7 +154,7 @@ int TouchScreen::Connect(int boot)
         if (connect(device_no, (const sockaddr *) &inaddr, sizeof(inaddr)) < 0)
         {
             sprintf(str, "Connection refused with '%s'", host.Value());
-            fprintf(stderr, str);
+            fprintf(stderr,"%s", str);
             error.Set(str);
             close(device_no);
             device_no = 0;
@@ -168,11 +168,11 @@ int TouchScreen::Connect(int boot)
     return Init(boot);
 }
 
-int TouchScreen::SetMode(char* mode)
+int TouchScreen::SetMode(const char* mode)
 {
 	if( (strcmp("POINT", mode) == 0) && device_no > 0)
 	{
-		char *modeList[] = { FORMAT_HEX, MODE_POINT, AUTOBAUD_DISABLE, PARAM_LOCK };
+		const char* modeList[] = { FORMAT_HEX, MODE_POINT, AUTOBAUD_DISABLE, PARAM_LOCK };
 		for (int i = 0; i < 4; i++)
         {
 			write(device_no, modeList[i], strlen(modeList[i]));
@@ -188,7 +188,7 @@ int TouchScreen::Init(int boot)
     if (device_no <= 0)
     {
         error.Set("In TouchScreen::Init\nTouch screen device not open\n");
-        fprintf(stderr, error.Value());
+        fprintf(stderr, "%s",error.Value());
         return -1;
     }
 
@@ -201,7 +201,7 @@ int TouchScreen::Init(int boot)
 
 	//setup array of pointers and step through the desired mode
 	//list, writing the values out to the device, in order.
-	char *modeList[] = { INIT, AUTOBAUD_DISABLE, FORMAT_HEX, MODE_POINT, PARAM_LOCK };
+	const char* modeList[] = { INIT, AUTOBAUD_DISABLE, FORMAT_HEX, MODE_POINT, PARAM_LOCK };
 	for(int i=0; i<5; i++)
 	{
 		write(device_no, modeList[i], strlen(modeList[i]));
@@ -214,7 +214,7 @@ int TouchScreen::ReadTouch(int &x, int &y, int &mode)
     if (device_no <= 0)
     {
         error.Set("In TouchScreen::ReadTouch\nTouch screen device not open\n");
-        fprintf(stderr, error.Value());
+        fprintf(stderr, "%s",error.Value());
         return -1;
     }
 
@@ -253,7 +253,7 @@ int TouchScreen::ReadStatus()
     if (device_no <= 0)
     {
         error.Set("<< TouchScreen::ReadStatus() >> ERROR: Touch screen device not open\n");
-        fprintf(stderr, error.Value());
+        fprintf(stderr,"%s", error.Value());
         return -1;
     }
 
@@ -331,7 +331,7 @@ int TouchScreen::Reset()
         error.Set(str);
 
         fprintf(stderr, "\n");
-        fprintf(stderr, str);
+        fprintf(stderr, "%s",str);
         fprintf(stderr, "\nresult value returned: %d\n", result);
     }
 

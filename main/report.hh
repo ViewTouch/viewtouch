@@ -87,7 +87,7 @@ class ReportEntry
 public:
     ReportEntry *next;
     ReportEntry *fore;
-    genericChar *text;
+    genericChar* text;
     float pos;
     short max_len;
     short new_lines;
@@ -97,7 +97,7 @@ public:
     Uchar mode;
 
     // Constructor
-    ReportEntry(char *t, int c, int a, int m);
+    ReportEntry(const char* t, int c, int a, int m);
     // Destructor
     ~ReportEntry() { if (text) delete [] text; }
 };
@@ -143,16 +143,16 @@ public:
     int RemoveHead(ReportEntry *re) { return body_list.RemoveSafe(re); }
     int RemoveBody(ReportEntry *re) { return body_list.RemoveSafe(re); }
 
-    int  SetTitle(genericChar *title);
+    int  SetTitle(const genericChar* title);
     int  SetPageWidth(int pwidth)
     { int retval = pwidth; page_width = pwidth; return retval; }
     char SetDividerChar(char divc = '-')
     { char retval = div_char; div_char = divc; return retval; }
     int  Clear();                     // erases report
-    int  Load(char *textfile, int color = COLOR_DEFAULT);        // make report out of text file
+    int  Load(const char* textfile, int color = COLOR_DEFAULT);        // make report out of text file
     int  Mode(int flags);             // printing mode to use for next entries
-    int  Text(char *t, int c, int a, float indent); // Adds text entry
-    int  Text2Col(char *text, int color, int align, float indent);
+    int  Text(const char* t, int c, int a, float indent); // Adds text entry
+    int  Text2Col(const char* text, int color, int align, float indent);
     int  Number(int n, int c, int a, float indent); // Adds number entry
     int  Line(int c = COLOR_DEFAULT); // Adds line entry
     int  Underline(int len, int c, int a, float indent);
@@ -185,18 +185,18 @@ public:
     int Body()   { add_where = 0; return 0; }
     int Footer() { add_where = 2; return 0; }
 
-    int TextL(char *t, int c = COLOR_DEFAULT)
+    int TextL(const char* t, int c = COLOR_DEFAULT)
     { return Text(t, c, ALIGN_LEFT, 0); }
-    int TextC(char *t, int c = COLOR_DEFAULT)
+    int TextC(const char* t, int c = COLOR_DEFAULT)
     { return Text(t, c, ALIGN_CENTER, 0); }
-    int TextR(char *t, int c = COLOR_DEFAULT)
+    int TextR(const char* t, int c = COLOR_DEFAULT)
     { return Text(t, c, ALIGN_RIGHT, 0); }
 
-    int TextL2Col(char *t, int c = COLOR_DEFAULT)
+    int TextL2Col(const char* t, int c = COLOR_DEFAULT)
     { return Text2Col(t, c, ALIGN_LEFT, 0); }
-    int TextC2Col(char *t, int c = COLOR_DEFAULT)
+    int TextC2Col(const char* t, int c = COLOR_DEFAULT)
     { return Text2Col(t, c, ALIGN_CENTER, 0); }
-    int TextR2Col(char *t, int c = COLOR_DEFAULT)
+    int TextR2Col(const char* t, int c = COLOR_DEFAULT)
     { return Text2Col(t, c, ALIGN_RIGHT, 0); }
 
     int NumberL(int n, int c = COLOR_DEFAULT)
@@ -206,14 +206,14 @@ public:
     int NumberR(int n, int c = COLOR_DEFAULT)
     { return Number(n, c, ALIGN_RIGHT, 0); }
 
-    int TextPosL(int pos, genericChar *t, int c = COLOR_DEFAULT)
+    int TextPosL(int pos, const genericChar* t, int c = COLOR_DEFAULT)
     { return Text(t, c, ALIGN_LEFT, pos); }
-    int TextPosR(int pos, genericChar *t, int c = COLOR_DEFAULT)
+    int TextPosR(int pos, const genericChar* t, int c = COLOR_DEFAULT)
     { return Text(t, c, ALIGN_RIGHT, pos); }
 
-    int TextPosL2Col(int pos, genericChar *t, int c = COLOR_DEFAULT)
+    int TextPosL2Col(int pos, const genericChar* t, int c = COLOR_DEFAULT)
     { return Text2Col(t, c, ALIGN_LEFT, pos); }
-    int TextPosR2Col(int pos, genericChar *t, int c = COLOR_DEFAULT)
+    int TextPosR2Col(int pos, const genericChar* t, int c = COLOR_DEFAULT)
     { return Text2Col(t, c, ALIGN_RIGHT, pos); }
 
     int NumberPosL(int pos, int n, int c = COLOR_DEFAULT)

@@ -86,7 +86,7 @@ public:
     // Member Functions
     int   Read(InputDataFile &df, int version);
     int   Write(OutputDataFile &df, int version);
-    genericChar *Description(Settings *s, genericChar *str = NULL);
+    genericChar* Description(Settings *s, genericChar* str = NULL);
 };
 
 class Drawer
@@ -124,7 +124,7 @@ public:
 
     int Status();
     // returns current drawer status
-    int Load(char *file);
+    int Load(const char* file);
     // Loads file containing drawer data
     int Read(InputDataFile &df, int version);
     // Reads drawer data from file

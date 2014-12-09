@@ -1,5 +1,5 @@
 /* XPM */
-static char * PearlData[] = {
+static const char * PearlData[] = {
 "205 127 9 1",
 " 	c None",
 ".	c #E1E0E1",

@@ -52,9 +52,9 @@ public:
     // Member Functions
     int          Type() { return ZONE_LABOR; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, genericChar *value);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
     int          LoadRecord(Terminal *term, int record);
     int          SaveRecord(Terminal *term, int record, int write_file);
     int          UpdateForm(Terminal *term, int record);
@@ -75,7 +75,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_SCHEDULE; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     SignalResult Touch(Terminal *term, int tx, int ty);
     SignalResult Mouse(Terminal *term, int action, int mx, int my);
     int ZoneStates() { return 1; }

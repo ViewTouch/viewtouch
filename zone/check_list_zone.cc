@@ -48,7 +48,7 @@ enum checkList_types {
 	CL_FASTFOOD
 };
 
-char *CLName[] = {
+const char* CLName[] = {
     "All", "Open", "Take Out", "Closed", "Fast Food", NULL};
 int CLValue[] = {
     CL_ALL, CL_OPEN, CL_TAKEOUT, CL_CLOSED, CL_FASTFOOD, -1};
@@ -232,7 +232,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 		{
 			// for now we are using last 4 digits of phone number.
 			if (c->customer) {
-				genericChar *tmp = c->customer->PhoneNumber();
+				const genericChar* tmp = c->customer->PhoneNumber();
 				Str *tStr = new Str(tmp);
 				strncpy(str, tmp += (tStr->length - 4), 4);
 				str[4] = '\0';
@@ -266,10 +266,10 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 	return RENDER_OKAY;
 }
 
-SignalResult CheckListZone::Signal(Terminal *term, genericChar *message)
+SignalResult CheckListZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("CheckListZone::Signal()");
-    static genericChar *commands[] = {
+    static const genericChar* commands[] = {
         "status", "resend", NULL};
 
     Employee *e = term->user;
@@ -348,7 +348,7 @@ SignalResult CheckListZone::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_OKAY;
 }
 
-int CheckListZone::Update(Terminal *term, int update_message, genericChar *value)
+int CheckListZone::Update(Terminal *term, int update_message, const genericChar* value)
 {
     FnTrace("CheckListZone::Update()");
     int retval = 0;
@@ -415,7 +415,7 @@ int CheckListZone::MakeList(Terminal *term)
     return 0;
 }
 
-int CheckListZone::Search(Terminal *term, genericChar *emp_name, Employee *start)
+int CheckListZone::Search(Terminal *term, const genericChar* emp_name, Employee *start)
 {
     FnTrace("CheckListZone::Search()");
     Employee *e = term->system_data->user_db.NameSearch(emp_name, start);
@@ -431,7 +431,7 @@ int CheckListZone::Search(Terminal *term, genericChar *emp_name, Employee *start
  * CheckEditZone class
  ********************************************************************/
 
-genericChar *CHECK_TypesChar[] = { "Take Out", "Delivery", "Catering", NULL };
+const genericChar* CHECK_TypesChar[] = { "Take Out", "Delivery", "Catering", NULL };
 int          CHECK_TypesInt[]  = { CHECK_TAKEOUT, CHECK_DELIVERY, CHECK_CATERING, -1 };
 CheckEditZone::CheckEditZone()
 {
@@ -587,11 +587,11 @@ Check *GetPriorCheck(Check *current)
     return retval;
 }
 
-SignalResult CheckEditZone::Signal(Terminal *term, genericChar *message)
+SignalResult CheckEditZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("CheckEditZone::Signal()");
     SignalResult retval = SIGNAL_OKAY;
-    static genericChar *commands[] = { "next", "prior", "change view", "search",
+    static const genericChar* commands[] = { "next", "prior", "change view", "search",
                                        "nextsearch", "save", NULL};
     int idx = CompareListN(commands, message);
     int draw = 0;
@@ -741,7 +741,7 @@ int CheckEditZone::SaveRecord(Terminal *term, int record, int write_file)
     return retval;
 }
 
-int CheckEditZone::Search(Terminal *term, int record, genericChar *word)
+int CheckEditZone::Search(Terminal *term, int record, const genericChar* word)
 {
     FnTrace("CheckEditZone::Search()");
     int retval = 0;

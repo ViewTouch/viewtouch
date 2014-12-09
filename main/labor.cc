@@ -424,7 +424,7 @@ int LaborPeriod::Purge()
     return 0;
 }
 
-int LaborPeriod::Scan(char *filename)
+int LaborPeriod::Scan(const char* filename)
 {
     FnTrace("LaborPeriod::Scan()");
     if (filename == NULL)
@@ -779,7 +779,7 @@ LaborDB::LaborDB()
 }
 
 // Member Functions
-int LaborDB::Load(char *path)
+int LaborDB::Load(const char* path)
 {
     FnTrace("LaborDB::Load()");
     if (path)
@@ -798,7 +798,7 @@ int LaborDB::Load(char *path)
 		record = readdir(dp);
 		if (record)
 		{
-			char *name = record->d_name;
+			const char* name = record->d_name;
             int len = strlen(name);
             if (strcmp(&name[len-4], ".fmt") == 0)
                 continue;
@@ -1366,7 +1366,7 @@ int WorkDB::Purge()
     return 0;
 }
 
-int WorkDB::Load(char *file)
+int WorkDB::Load(const char* file)
 {
     FnTrace("WorkDB::Load()");
     if (file)

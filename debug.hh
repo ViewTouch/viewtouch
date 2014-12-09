@@ -30,14 +30,14 @@
 
 #ifdef DEBUG
 
-extern const genericChar *pos_data_filename;
+extern const genericChar* pos_data_filename;
 
-const genericChar *GetXEventName( XEvent );
-void PrintXEventName( XEvent, const genericChar *, FILE * );
+const genericChar* GetXEventName( XEvent );
+void PrintXEventName( XEvent, const genericChar* , FILE * );
 void PrintTermCode( int );
 void PrintServerCode( int );
 void PrintFamilyCode( int );
-const genericChar *GetZoneTypeName( int );
+const genericChar* GetZoneTypeName( int );
 
 #else
 

@@ -1,4 +1,4 @@
-static char *GrayBlueData[] = {
+static const char *GrayBlueData[] = {
 "128 128 3 1",
 ". c #7c80af",
 "# c #ffffff",

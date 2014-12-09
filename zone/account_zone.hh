@@ -40,7 +40,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_ACCOUNT; }
     virtual RenderResult Render(Terminal *term, int update_flag);
-    virtual SignalResult Signal(Terminal *term, genericChar *message);
+    virtual SignalResult Signal(Terminal *term, const genericChar* message);
     virtual SignalResult Keyboard(Terminal *term, int key, int state);
     virtual SignalResult Touch(Terminal *term, int tx, int ty);
     virtual SignalResult Mouse(Terminal *term, int action, int mx, int my);
@@ -50,7 +50,7 @@ public:
     int NewRecord(Terminal *term);
     int KillRecord(Terminal *term, int record);
     int PrintRecord(Terminal *term, int record);
-    int Search(Terminal *term, int record, char *word);
+    int Search(Terminal *term, int record, const char* word);
     int ListReport(Terminal *term, Report *report);
     int RecordCount(Terminal *term);
     int CheckAccountNumber(Terminal *term, int sendmsg = 1);

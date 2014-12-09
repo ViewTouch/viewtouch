@@ -1,5 +1,5 @@
 /* XPM */
-static char * smokeData[] = {
+static const char * smokeData[] = {
 "120 120 109 2",
 "  	c None",
 ". 	c #D2C2AD",

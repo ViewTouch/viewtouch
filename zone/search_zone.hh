@@ -36,7 +36,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_SEARCH; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     SignalResult Touch(Terminal *term, int tx, int ty);
     SignalResult Keyboard(Terminal *term, int key, int state);
     int          LoseFocus(Terminal *term, Zone *newfocus);

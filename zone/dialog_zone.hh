@@ -57,7 +57,7 @@ class UnitAmount;
 class MessageDialog : public PosZone
 {
 public:
-    MessageDialog(char *text);
+    MessageDialog(const char* text);
 };
 
 class ButtonObj : public ZoneObject
@@ -67,11 +67,11 @@ public:
     Str message;
     int color;
 
-    ButtonObj(char *text, genericChar *message = NULL);
+    ButtonObj(const char* text, const genericChar* message = NULL);
 
     int Render(Terminal *term);
-    int SetLabel(char *newlabel) { return label.Set(newlabel); }
-    int SetMessage(char *newmessage) { return message.Set(newmessage); }
+    int SetLabel(const char* newlabel) { return label.Set(newlabel); }
+    int SetMessage(const char* newmessage) { return message.Set(newmessage); }
 };
 
 class DialogZone : public LayoutZone
@@ -103,9 +103,9 @@ public:
     SignalResult Touch(Terminal *term, int tx, int ty);
     SignalResult Mouse(Terminal *term, int action, int mx, int my);
 
-    ButtonObj *Button(char *text, genericChar *message = NULL);
+    ButtonObj *Button(const char* text, const genericChar* message = NULL);
     int ClosingAction(int action_type, int action, int arg);
-    int ClosingAction(int action_type, int action, char *message);
+    int ClosingAction(int action_type, int action, const char* message);
     int SetAllActions(DialogZone *dest);
     int PrepareForClose(int action_type);
 };
@@ -123,9 +123,9 @@ public:
     int force_width;
 
     SimpleDialog();
-    SimpleDialog(char *title, int format = 0);
+    SimpleDialog(const char* title, int format = 0);
 
-    void         SetTitle(char *new_title) { name.Set(new_title); }
+    void         SetTitle(const char* new_title) { name.Set(new_title); }
     int          RenderInit(Terminal *term, int update_flag);
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
@@ -142,11 +142,11 @@ class UnitAmountDialog : public DialogZone
     int  unit_type;
 
 public:
-    UnitAmountDialog(char *title, UnitAmount &ua);
+    UnitAmountDialog(const char* title, UnitAmount &ua);
 
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     SignalResult Keyboard(Terminal *term, int key, int state);
 
     int RenderEntry(Terminal *term);
@@ -168,12 +168,12 @@ public:
     int max_amount;
 
     TenKeyDialog();
-    TenKeyDialog(char *title, int amount, int cancel = 1, int dp = 0);
-    TenKeyDialog(char *title, char *retmsg, int amount, int dp = 0);
+    TenKeyDialog(const char* title, int amount, int cancel = 1, int dp = 0);
+    TenKeyDialog(const char* title, const char* retmsg, int amount, int dp = 0);
 
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     SignalResult Keyboard(Terminal *term, int key, int state);
 
     virtual int RenderEntry(Terminal *term);
@@ -201,11 +201,11 @@ protected:
 
 public:
     GetTextDialog();
-    GetTextDialog(char *msg, char *retmsg, int mlen = 20);
+    GetTextDialog(const char* msg, const char* retmsg, int mlen = 20);
 
     virtual RenderResult Render(Terminal *term, int update_flag);
     virtual SignalResult Touch(Terminal *term, int tx, int ty);
-    virtual SignalResult Signal(Terminal *term, genericChar *message);
+    virtual SignalResult Signal(Terminal *term, const genericChar* message);
     virtual SignalResult Keyboard(Terminal *term, int key, int state);
 
     virtual int RenderEntry(Terminal *term);
@@ -225,10 +225,10 @@ protected:
     int  force_change;
 
 public:
-    PasswordDialog(char *password);
+    PasswordDialog(const char* password);
 
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
 
     int RenderEntry(Terminal *term);
     int PasswordOkay(Terminal *term);
@@ -242,9 +242,9 @@ class CreditCardAmountDialog : public TenKeyDialog
 
 public:
     CreditCardAmountDialog();
-    CreditCardAmountDialog(Terminal *term, char *title, int type);
+    CreditCardAmountDialog(Terminal *term, const char* title, int type);
 
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
 };
 
 class CreditCardEntryDialog : public TenKeyDialog
@@ -253,14 +253,14 @@ class CreditCardEntryDialog : public TenKeyDialog
     int         max_num;              // max length, not max value
     char        cc_expire[STRLENGTH];
     int         max_expire;           // max length
-    char       *current;              // tracks whether we're pointing to cc_num or cc_expire
-    char       *last_current;
+    char* current;              // tracks whether we're pointing to cc_num or cc_expire
+    char* last_current;
     int         max_current;          // set to either max_num or max_expire
     RegionInfo  entry_pos[2];         // contains the geometry and measurements of the edit regions
     RegionInfo *curr_entry;           // points to either entry_pos[0] or entry_pos[1]
 
-    int FormatCCInfo(char *dest, char *number, char *expire);
-    int SetCurrent(Terminal *term, char *set);
+    int FormatCCInfo(char* dest, const char* number, const char* expire);
+    int SetCurrent(Terminal *term, const char* set);
 
 public:
     CreditCardEntryDialog();
@@ -269,7 +269,7 @@ public:
 
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     SignalResult Keyboard(Terminal *term, int key, int state);
 
     int RenderEntry(Terminal *term);
@@ -279,11 +279,11 @@ class CreditCardVoiceDialog : public GetTextDialog
 {
 public:
     CreditCardVoiceDialog();
-    CreditCardVoiceDialog(char *msg, char *retmsg, int mlen = 20);
+    CreditCardVoiceDialog(const char* msg, const char* retmsg, int mlen = 20);
     ~CreditCardVoiceDialog();
 
     virtual RenderResult Render(Terminal *term, int update_flag);
-    virtual SignalResult Signal(Terminal *term, genericChar *message);
+    virtual SignalResult Signal(Terminal *term, const genericChar* message);
 };
 
 class CreditCardDialog : public DialogZone
@@ -317,23 +317,23 @@ class CreditCardDialog : public DialogZone
 
     Credit    *saved_credit;
 
-    void  Init(Terminal *term, SubCheck *subch, char *swipe_value);
-    char *SetMessage(Terminal *term, char *msg1, char *msg2 = NULL);
+    void  Init(Terminal *term, SubCheck *subch, const char* swipe_value);
+    const char* SetMessage(Terminal *term, const char* msg1, const char* msg2 = NULL);
 
 public:
     CreditCardDialog();
-    CreditCardDialog(Terminal *term, char *swipe_value = NULL);
-    CreditCardDialog(Terminal *term, SubCheck *subch, char *swipe_value = NULL);
-    CreditCardDialog(Terminal *term, int action, char *message);
+    CreditCardDialog(Terminal *term, const char* swipe_value = NULL);
+    CreditCardDialog(Terminal *term, SubCheck *subch, const char* swipe_value = NULL);
+    CreditCardDialog(Terminal *term, int action, const char* message);
 
     int          Type() { return ZONE_DLG_CREDIT; }
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          SetAction(Terminal *term, int action, char *msg1, char *msg2 = NULL);
+    int          SetAction(Terminal *term, int action, const char* msg1, const char* msg2 = NULL);
     int          ClearAction(Terminal *term, int all = 0);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     SignalResult Keyboard(Terminal *term, int my_key, int state);
-    int          ProcessSwipe(Terminal *term, char *swipe_value);
+    int          ProcessSwipe(Terminal *term, const char* swipe_value);
     int          DialogDone(Terminal *term);
     int          FinishCreditCard(Terminal *term);
     SignalResult ProcessCreditCard(Terminal *term);
@@ -349,7 +349,7 @@ public:
 
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     SignalResult Keyboard(Terminal *term, int key, int state);
 };
 
@@ -362,7 +362,7 @@ public:
 
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     SignalResult Keyboard(Terminal *term, int key, int state);
 };
 
@@ -378,13 +378,13 @@ class OpenTabDialog : public GetTextDialog
     int  max_phone;
     char customer_comment[STRLENGTH];
     int  max_comment;
-    char *current;
-    char *last_current;
+    char* current;
+    char* last_current;
     int  max_current;
     RegionInfo  entry_pos[3];    // contains the geometry and measurements of the edit regions
     RegionInfo *curr_entry;      // points to either entry_pos[0] or entry_pos[1]
 
-    int SetCurrent(Terminal *term, char *set);
+    int SetCurrent(Terminal *term, const char* set);
 
 public:
     OpenTabDialog(CustomerInfo *custinfo);
@@ -393,7 +393,7 @@ public:
 
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     SignalResult Keyboard(Terminal *term, int kb_key, int state);
 
     int RenderEntry(Terminal *term);

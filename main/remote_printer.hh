@@ -25,7 +25,7 @@
 class Printer;
 
 /**** Functions ****/
-Printer *NewReportPrinter(char *host, int port, int model, int no);
+Printer *NewReportPrinter(const char* host, int port, int model, int no);
 
 #endif
 

@@ -1,6 +1,6 @@
 /* XPM */
-static char *DarkSandData[] = {
-/* columns rows colors chars-per-pixel */
+static const char *DarkSandData[] = {
+/* columns rows colors const chars-per-pixel */
 "128 128 6 1",
 "  c #817356",
 ". c #7f7164",

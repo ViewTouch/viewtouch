@@ -113,12 +113,12 @@ public:
     int DrawArea(int dx, int dy, int dw, int dh);
     int DrawAll();
     int BlankPage(int mode, int texture, int title_color, int size, int split,
-                  int split_opt, genericChar *title, genericChar *time);
+                  int split_opt, const genericChar* title, const genericChar* time);
     int Background(int x, int y, int w, int h);
     int TitleBar();
-    int Text(char *string, int len, int tx, int ty, int color, int font,
+    int Text(const char* string, int len, int tx, int ty, int color, int font,
              int align, int max_pixel_width = 0);
-    int ZoneText(char *str, int x, int y, int w, int h,
+    int ZoneText(const char* str, int x, int y, int w, int h,
                  int color, int font, int align = ALIGN_CENTER);
     int Rectangle(int rx, int ry, int rw, int rh, int image);
     int SolidRectangle(int rx, int ry, int rw, int rh, int pixel_id);
@@ -137,7 +137,7 @@ public:
     int FilledFrame(int x, int y, int w, int h, int fw, int texture,
                     int flags = 0);
     int StatusBar(int x, int y, int w, int h, int bar_color,
-                  genericChar *text, int font, int text_color);
+                  const genericChar* text, int font, int text_color);
     int EditCursor(int x, int y, int w, int h);
     int FramedWindow(int x, int y, int w, int h, int color);
     int VGrip(int x, int y, int w, int h);
@@ -218,7 +218,7 @@ public:
     int font;
 
     // Constructor
-    LO_PushButton(char *str, int normal_color, int active_color);
+    LO_PushButton(const char* str, int normal_color, int active_color);
 
     // Member Functions
     int Render(Layer *l);

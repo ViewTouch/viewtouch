@@ -1,6 +1,6 @@
 /* XPM */
-static char *GreenMarbleData[] = {
-/* columns rows colors chars-per-pixel */
+static const char *GreenMarbleData[] = {
+/* columns rows colors const chars-per-pixel */
 "256 256 12 1",
 "  c #3b321b",
 ". c #3e3823",

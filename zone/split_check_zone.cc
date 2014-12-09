@@ -321,10 +321,10 @@ RenderResult SplitCheckZone::Render(Terminal *t, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult SplitCheckZone::Signal(Terminal *t, genericChar *message)
+SignalResult SplitCheckZone::Signal(Terminal *t, const genericChar* message)
 {
     FnTrace("SplitCheckZone::Signal()");
-    static genericChar *commands[] = {
+    static const genericChar* commands[] = {
         "change view", "print", "split by seat", "merge", "next", "prior",
         "amount ", NULL};
 
@@ -780,10 +780,10 @@ RenderResult ItemPrintTargetZone::Render(Terminal *t, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult ItemPrintTargetZone::Signal(Terminal *t, genericChar *message)
+SignalResult ItemPrintTargetZone::Signal(Terminal *t, const genericChar* message)
 {
     FnTrace("ItemPrintTargetZone::Signal()");
-    static genericChar *commands[] = {"final", "reset", NULL};
+    static const genericChar* commands[] = {"final", "reset", NULL};
     int idx = CompareList(message, commands);
     switch (idx)
     {

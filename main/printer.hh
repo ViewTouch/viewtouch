@@ -72,16 +72,16 @@ enum printer_models {
 
 
 /**** Global Data ****/
-extern genericChar *PrinterModelName[];
+extern const genericChar* PrinterModelName[];
 extern int          PrinterModelValue[];
 
-extern genericChar *ReceiptPrinterModelName[];
+extern const genericChar* ReceiptPrinterModelName[];
 extern int          ReceiptPrinterModelValue[];
 
-extern genericChar *ReportPrinterModelName[];
+extern const genericChar* ReportPrinterModelName[];
 extern int          ReportPrinterModelValue[];
 
-extern genericChar *PortName[];
+extern const genericChar* PortName[];
 extern int          PortValue[];
 
 
@@ -115,9 +115,9 @@ protected:
     int kitchen_mode;
 
     virtual int WriteFlags(int flags) = 0;
-    int MakeFileName(genericChar *buffer, genericChar *source, genericChar *ext, int max_len);
+    int MakeFileName(genericChar* buffer, const genericChar* source, const genericChar* ext, int max_len);
     int ValidChar(genericChar c);
-    int IsDirectory(genericChar *path);
+    int IsDirectory(const genericChar* path);
 
 public:
     Printer *next;
@@ -127,28 +127,28 @@ public:
     Str term_name;
 
     Printer();
-    Printer(genericChar *host, int port, genericChar *targetstr, int type);
+    Printer(const genericChar* host, int port, const genericChar* targetstr, int type);
     virtual ~Printer();
 
-    virtual int MatchHost(genericChar *host, int port);
-    virtual int MatchTerminal(genericChar *termname);
+    virtual int MatchHost(const genericChar* host, int port);
+    virtual int MatchTerminal(const genericChar* termname);
     virtual int SetKitchenMode(int mode);
     virtual int KitchenMode()   { return kitchen_mode; }
     virtual int SetType(int type);
     virtual int IsType(int type);
-    virtual int SetTitle(genericChar *title);
+    virtual int SetTitle(const genericChar* title);
     virtual int Open();
     virtual int Close();
     virtual int ParallelPrint();
     virtual int LPDPrint();
     virtual int SocketPrint();                           // print to TCP socket
     virtual int FilePrint();                             // print to local file
-    virtual int GetFilePath(char *dest);
+    virtual int GetFilePath(char* dest);
     virtual int EmailPrint();                            // mail printout to specified address
     virtual int TestPrint(Terminal *t);                  // print out test text message
-    virtual int WriteLR(genericChar *left, genericChar *right, int flags = 0);
-    virtual int Write(genericChar *string, int flags = 0);      // Prints string & new line
-    virtual int Put(genericChar *string, int flags = 0);        // just prints string
+    virtual int WriteLR(const genericChar* left, const genericChar* right, int flags = 0);
+    virtual int Write(const genericChar* string, int flags = 0);      // Prints string & new line
+    virtual int Put(const genericChar* string, int flags = 0);        // just prints string
     virtual int Put(genericChar c, int flags = 0);              // Single character print
 
     virtual int Model() = 0;                             // returns integer specifying model number
@@ -171,7 +171,7 @@ class PrinterIthaca : public Printer
 {
     virtual int WriteFlags(int flags);
 public:
-    PrinterIthaca(genericChar *host, int port, genericChar *targetstr, int type);
+    PrinterIthaca(const genericChar* host, int port, const genericChar* targetstr, int type);
     virtual int Model() { return MODEL_ITHACA; }
     virtual int Start();
     virtual int End();
@@ -191,7 +191,7 @@ class PrinterStar : public Printer
 {
     virtual int WriteFlags(int flags);
 public:
-    PrinterStar(genericChar *host, int port, genericChar *targetstr, int type);
+    PrinterStar(const genericChar* host, int port, const genericChar* targetstr, int type);
     virtual int Model() { return MODEL_STAR; }
     virtual int Start();
     virtual int End();
@@ -211,7 +211,7 @@ class PrinterEpson : public Printer
 {
     virtual int WriteFlags(int flags);
 public:
-    PrinterEpson(genericChar *host, int port, genericChar *targetstr, int type);
+    PrinterEpson(const genericChar* host, int port, const genericChar* targetstr, int type);
     virtual int Model() { return MODEL_EPSON; }
     virtual int Start();
     virtual int End();
@@ -231,7 +231,7 @@ class PrinterHP : public Printer
 {
     virtual int WriteFlags(int flags);
 public:
-    PrinterHP(genericChar *host, int port, genericChar *targetstr, int type);
+    PrinterHP(const genericChar* host, int port, const genericChar* targetstr, int type);
     virtual int Model() { return MODEL_HP; }
     virtual int Start();
     virtual int End();
@@ -251,7 +251,7 @@ class PrinterHTML : public Printer
 {
     virtual int WriteFlags(int flags);
 public:
-    PrinterHTML(genericChar *host, int port, genericChar *targetstr, int type);
+    PrinterHTML(const genericChar* host, int port, const genericChar* targetstr, int type);
     virtual int Model() { return MODEL_HTML; }
     virtual int Start();
     virtual int End();
@@ -274,7 +274,7 @@ class PrinterPostScript : public Printer
     int putbuffidx;
 public:
     PrinterPostScript();
-    PrinterPostScript(genericChar *host, int port, genericChar *targetstr, int type);
+    PrinterPostScript(const genericChar* host, int port, const genericChar* targetstr, int type);
     virtual int Model() { return MODEL_POSTSCRIPT; }
     virtual int Start();
     virtual int End();
@@ -288,9 +288,9 @@ public:
     virtual int StopPrint();
     virtual int OpenDrawer(int drawer);
     virtual int CutPaper(int partial_only = 0);
-    virtual int WriteLR(genericChar *left, genericChar *right, int flags = 0);
-    virtual int Write(genericChar *string, int flags);
-    virtual int Put(genericChar *string, int flags);
+    virtual int WriteLR(const genericChar* left, const genericChar* right, int flags = 0);
+    virtual int Write(const genericChar* string, int flags);
+    virtual int Put(const genericChar* string, int flags);
     virtual int Put(genericChar c, int flags);
 };
 
@@ -298,7 +298,7 @@ class PrinterPDF : public PrinterPostScript
 {
 public:
     PrinterPDF();
-    PrinterPDF(genericChar *host, int port, genericChar *targetstr, int type);
+    PrinterPDF(const genericChar* host, int port, const genericChar* targetstr, int type);
     virtual int Model() { return MODEL_PDF; }
     virtual int Close();
 };
@@ -308,7 +308,7 @@ class PrinterReceiptText : public Printer
     virtual int WriteFlags(int flags) { return 0; }
 public:
     PrinterReceiptText();
-    PrinterReceiptText(genericChar *host, int port, genericChar *targetstr, int type);
+    PrinterReceiptText(const genericChar* host, int port, const genericChar* targetstr, int type);
     virtual int Model() { return MODEL_RECEIPT_TEXT; }
     virtual int Start();
     virtual int End();
@@ -327,14 +327,14 @@ public:
 class PrinterReportText : public PrinterReceiptText
 {
 public:
-    PrinterReportText(genericChar *host, int port, genericChar *targetstr, int type);
+    PrinterReportText(const genericChar* host, int port, const genericChar* targetstr, int type);
     virtual int Model() { return MODEL_REPORT_TEXT; }
     virtual int MaxWidth() { return 80; }
     virtual int Width(int flags = 0) { return 80; }
 };
 
 
-Printer *NewPrinterObj(genericChar *host, int port, int model, int no = 0);
-Printer *NewPrinterFromString(genericChar *specification);
+Printer *NewPrinterObj(const genericChar* host, int port, int model, int no = 0);
+Printer *NewPrinterFromString(const genericChar* specification);
 
 #endif

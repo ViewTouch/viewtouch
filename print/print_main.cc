@@ -47,14 +47,14 @@ int  Verbose                   = 0;        // verbose mode
  * PROTOTYPES
  ********************************************************************/
 int  PrintFromRemote(int my_socket, int printer);
-int  ParseArguments(int argc, char *argv[]);
-void ShowHelp(char *progname);
+int  ParseArguments(int argc, const char* argv[]);
+void ShowHelp(const char* progname);
 
 
 /*********************************************************************
  * MAIN LOOP
  ********************************************************************/
-int main(int argc, char *argv[])
+int main(int argc, const char* argv[])
 {
     int my_socket;
     int lock;
@@ -138,7 +138,7 @@ int PrintFromRemote(int my_socket, int printer)
 /****
  * ShowHelp:
  ****/
-void ShowHelp(char *progname)
+void ShowHelp(const char* progname)
 {
     printf("\n");
     printf("Usage:  %s [OPTIONS]\n", progname);
@@ -157,9 +157,9 @@ void ShowHelp(char *progname)
  * ParseArguments: Walk through the arguments setting global
  *   variables as necessary.
  ****/
-int ParseArguments(int argc, char *argv[])
+int ParseArguments(int argc, const char* argv[])
 {
-    char *arg;
+    const char* arg;
     int idx = 1;  // first command line argument past binary name
     int retval = 0;
 

@@ -27,7 +27,7 @@
 
 
 /**** Main Line ****/
-int main(int argc, genericChar **argv)
+int main(int argc, const genericChar* *argv)
 {
   if (argc >= 2 && strcmp(argv[1], "-v") == 0)
   {

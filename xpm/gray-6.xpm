@@ -1,6 +1,6 @@
 /* XPM */
-static char *GrayData[] = {
-/* columns rows colors chars-per-pixel */
+static const char *GrayData[] = {
+/* columns rows colors const chars-per-pixel */
 "64 64 6 1",
 "  c #9fb8a1",
 ". c #99b4b9",

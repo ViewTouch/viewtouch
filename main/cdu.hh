@@ -66,7 +66,7 @@ public:
     CDUString();
     int             Read(InputDataFile &infile, int version);
     int             Write(OutputDataFile &outfile, int version);
-    int             GetLine(genericChar *dest, int line);
+    int             GetLine( genericChar* dest, int line );
     int             GetLine(Str &dest, int line);
     int             SetLine(Str &dest, int line);
     int             Copy(CDUString *source);
@@ -92,14 +92,14 @@ public:
     int             StringCount()   { return strings.Count(); }
     int             Read(InputDataFile &infile, int version);
     int             Write(OutputDataFile &outfile, int version);
-    int             Load(char *path);
-    int             Save(char *path = NULL);
+    int             Load(const char* path);
+    int             Save(const char* path = NULL);
     int             RemoveBlank();
     int             Remove(CDUString *cdustr);
     CDUString      *GetString(int idx = -1);
     CDUString      *FindByRecord(int record);
     CDUString      *FindByID(int id);
-    int             FindRecordByWord(genericChar *word, int record = -1);
+    int             FindRecordByWord(const genericChar* word, int record = -1);
     CDUString      *NewString();
 };
 
@@ -128,12 +128,12 @@ protected:
 public:
     CustDispUnit();
     virtual ~CustDispUnit();
-    CustDispUnit(char *filename);
-    CustDispUnit(char *filename, int verbose);
-    CustDispUnit(char *filename, int verbose, int allow_delay);
+    CustDispUnit(const char* filename);
+    CustDispUnit(const char* filename, int verbose);
+    CustDispUnit(const char* filename, int verbose, int allow_delay);
     virtual int ParseFileName();
-    virtual int Write(const char *buffer, int len = -1);
-    virtual int Read(char *buffer, int len);
+    virtual int Write(const char* buffer, int len = -1);
+    virtual int Read( char* buffer, int len );
     virtual int Refresh(int cycles = 0);
     virtual int ShowString(CDUStrings *stringlist, int idx = -1, int style = CDU_STYLE_RANDOM);
     virtual int SlideLeft(CDUString *cdustring);
@@ -163,9 +163,9 @@ public:
 class EpsonDispUnit : public CustDispUnit
 {
 public:
-    EpsonDispUnit(char *filename);
-    EpsonDispUnit(char *filename, int verbose);
-    EpsonDispUnit(char *filename, int verbose, int allow_delay);
+    EpsonDispUnit(const char* filename);
+    EpsonDispUnit(const char* filename, int verbose);
+    EpsonDispUnit(const char* filename, int verbose, int allow_delay);
 
     virtual ~EpsonDispUnit();
     
@@ -187,9 +187,9 @@ public:
 class BA63DispUnit : public CustDispUnit
 {
 public:
-    BA63DispUnit(char *filename);
-    BA63DispUnit(char *filename, int verbose);
-    BA63DispUnit(char *filename, int verbose, int allow_delay);
+    BA63DispUnit(const char* filename);
+    BA63DispUnit(const char* filename, int verbose);
+    BA63DispUnit(const char* filename, int verbose, int allow_delay);
     virtual ~BA63DispUnit();
 
     virtual int Type() { return CDU_TYPE_EPSON; }
@@ -208,6 +208,6 @@ public:
  * Functions
  *------------------------------------------------------------------*/
 
-CustDispUnit *NewCDUObject(char *filename, int type = 0);
+CustDispUnit *NewCDUObject(const char* filename, int type = 0);
 
 #endif

@@ -1,5 +1,5 @@
 /* XPM */
-static char * gradient_brown_xpm[] = {
+static const char * gradient_brown_xpm[] = {
 "90 90 582 2",
 "  	c None",
 ". 	c #CF4D43",

@@ -63,9 +63,9 @@ MediaList::MediaList()
     }
 }
 
-MediaList::MediaList(genericChar *namestr, int value)
+MediaList::MediaList(const genericChar* namestr, int value)
 {
-    FnTrace("MediaList::MediaList(char *, int)");
+    FnTrace("MediaList::MediaList(const char* , int)");
     next = NULL;
     strncpy(name, namestr, STRLONG);
     total = value;
@@ -76,9 +76,9 @@ MediaList::MediaList(genericChar *namestr, int value)
     }
 }
 
-MediaList::MediaList(genericChar *namestr, int value, int shift)
+MediaList::MediaList(const genericChar* namestr, int value, int shift)
 {
-    FnTrace("MediaList::MediaList(char *, int, int)");
+    FnTrace("MediaList::MediaList(const char* , int, int)");
 
     next = NULL;
     strncpy(name, namestr, STRLONG);
@@ -99,7 +99,7 @@ MediaList::~MediaList()
         delete next;
 }
 
-int MediaList::Add(genericChar *namestr, int value, int shift)
+int MediaList::Add(const genericChar* namestr, int value, int shift)
 {
     FnTrace("MediaList::Add()");
     int retval = 0;
@@ -2767,8 +2767,8 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
         short exception_was;
 		short reason_is;
         short reason_was;
-		char *item_is = NULL;
-        char *item_was = NULL;
+		const char* item_is = NULL;
+        const char* item_was = NULL;
 
 		ItemException *currException = FirstItemException(thisArchive);
 		while (currException)
@@ -2779,7 +2779,7 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
 			cost_is = currException->item_cost;
 			exception_is = currException->exception_type;
 			reason_is = currException->reason;
-			item_is = (char *)currException->item_name.Value();
+			item_is = (const char* )currException->item_name.Value();
 
 			// Duplicate Filter:
 			// if exact same item at exact same time, it's a duplicate
@@ -4168,7 +4168,7 @@ int GatherAuditChecks(AuditingData *adata)
     CompInfo *comp              = NULL;
     MealInfo *meal              = NULL;
     CreditCardInfo *creditcard  = NULL;
-    char *temp                  = NULL;
+    const char* temp                  = NULL;
     int guests_counted          = 0;
     int is_dinein               = 0;
     int sales                   = 0;  // payment - taxes - tips - adjustments

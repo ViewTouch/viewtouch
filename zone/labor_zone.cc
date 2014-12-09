@@ -166,10 +166,10 @@ RenderResult LaborZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult LaborZone::Signal(Terminal *term, genericChar *message)
+SignalResult LaborZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("LaborZone::Signal()");
-    static genericChar *commands[] = {
+    static const genericChar* commands[] = {
         "clockout", "break", "undo edit", "change view",
         "next server", "prior server", "next", "prior",
         "change period", "day", "period",
@@ -387,7 +387,7 @@ SignalResult LaborZone::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_IGNORED;
 }
 
-int LaborZone::Update(Terminal *term, int update_message, genericChar *value)
+int LaborZone::Update(Terminal *term, int update_message, const genericChar* value)
 {
     FnTrace("LaborZone::Update()");
     Report *r = report;
@@ -441,7 +441,7 @@ int LaborZone::LoadRecord(Terminal *term, int record)
     }
     else
     {
-        genericChar *s = FindStringByValue(work->job, JobValue, JobName, UnknownStr);
+        const genericChar* s = FindStringByValue(work->job, JobValue, JobName, UnknownStr);
         f->AddEntry(s, work->job);
     }
     f->Set(work->job);
@@ -628,7 +628,7 @@ RenderResult ScheduleZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult ScheduleZone::Signal(Terminal *term, genericChar *message)
+SignalResult ScheduleZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("ScheduleZone::Signal()");
     return SIGNAL_IGNORED;

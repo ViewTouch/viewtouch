@@ -32,11 +32,11 @@ class LayoutZone;
 #define CREDIT_CARD_VERSION  1
 #define CCBINFO_VERSION      2
 
-extern char *CardTypeName[];
-extern char *CardTypeShortName[];
+extern const char* CardTypeName[];
+extern const char* CardTypeShortName[];
 extern int   CardTypeValue[];
-extern char *CreditCardName[];
-extern char *CreditCardShortName[];
+extern const char* CreditCardName[];
+extern const char* CreditCardShortName[];
 extern int   CreditCardValue[];
 
 #define CC_STATUS_NONE        -2
@@ -155,9 +155,9 @@ extern int   CreditCardValue[];
 
 
 /**** Functions ****/
-int CC_CreditCardType(char *account_no);
-int CC_IsValidAccountNumber(char *account_no);
-int CC_IsValidExpiry(char *expiry);
+int CC_CreditCardType(const char* account_no);
+int CC_IsValidAccountNumber(const char* account_no);
+int CC_IsValidExpiry(const char* expiry);
 
 
 /**** Types ****/
@@ -284,12 +284,12 @@ class Credit
     int void_amount;
 
     int     SetCreditType();
-    int     GetTrack(char *dest, char *source, int maxlen);
-    int     ParseTrack1(char *swipe_value);
-    int     ParseTrack2(char *swipe_value);
-    int     ParseTrack3(char *swipe_value);
-    int     ParseManual(char *swipe_value);
-    char   *ReverseExpiry(char *expiry);
+    int     GetTrack( char* dest, const char* source, int maxlen );
+    int     ParseTrack1(const char* swipe_value);
+    int     ParseTrack2(const char* swipe_value);
+    int     ParseTrack3(const char* swipe_value);
+    int     ParseManual(const char* swipe_value);
+    char* ReverseExpiry( char* expiry );
     int     ValidateCardInfo();
     int     CanPrintSignature();
     int     ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter = NULL,
@@ -309,7 +309,7 @@ public:
 
     // Constructors
     Credit();
-    Credit(char *swipe_value);
+    Credit(const char* swipe_value);
     ~Credit();
 
     // Member Functions
@@ -319,10 +319,10 @@ public:
     int            AddError(Credit *ecredit);
     Credit        *Copy();
     int            Copy(Credit *credit);
-    int            ParseSwipe(char *swipe_value);
-    int            ParseApproval(char *value);
+    int            ParseSwipe(const char* swipe_value);
+    int            ParseApproval(const char* value);
     int            CardType() { return card_type; }
-    char          *CreditTypeName(char *buffer = NULL, int shortname = 0);
+    char* CreditTypeName( char* str=0, int shortname = 0 );
     int            CreditType();
     int            GetApproval(Terminal *term);
     int            GetPreApproval(Terminal *term);
@@ -348,31 +348,31 @@ public:
     int            ClearAuth();
     int            Finalize(Terminal *term);
     int            Status();
-    char          *Code() { return code.Value(); }
-    char          *Approval();
-    char          *Auth() { return auth.Value(); }
-    char          *PAN(int all = 0);
-    char          *LastFour(char *dest = NULL);
-    char          *ExpireDate(); // nicely formats expiration date
-    char          *Name();
-    char          *Verb() { return verb.Value(); }
+    const char* Code() { return code.Value(); }
+    const char* Approval();
+    const char* Auth() { return auth.Value(); }
+    const char* PAN(int all = 0);
+    char* LastFour( char* dest = 0);
+    const char* ExpireDate(); // nicely formats expiration date
+    const char* Name();
+    const char* Verb() { return verb.Value(); }
     long long      Batch() { return batch; }
-    char          *TermID() { return term_id.Value(); }
+    const char* TermID() { return term_id.Value(); }
     int            Country();
     int            LastAction(int last = -1);
 
     int            MaskCardNumber();
     int            ClearCardNumber() { number.Set(""); expire.Set(""); return 1; }
     int            SetCardType(int newtype) { return card_type = newtype; }
-    int            SetApproval(char *set) { approval.Set(set); return 0; }
-    int            SetCode(char *set) { code.Set(set); return 0; }
-    int            SetVerb(char *set) { verb.Set(set); return 0; }
-    int            SetAuth(char *set) { auth.Set(set); return 0; }
-    int            SetBatch(long long set, char *btermid = NULL);
+    int            SetApproval(const char* set) { approval.Set(set); return 0; }
+    int            SetCode(const char* set) { code.Set(set); return 0; }
+    int            SetVerb(const char* set) { verb.Set(set); return 0; }
+    int            SetAuth(const char* set) { auth.Set(set); return 0; }
+    int            SetBatch(long long set, const char* btermid = NULL);
     int            SetItem(long set) { item = set; return 0; }
     int            SetTTID(long set) { ttid = set; return 0; }
-    int            SetAVS(char *set) { AVS.Set(set); return 0; }
-    int            SetCV(char *set) { CV.Set(set); return 0; }
+    int            SetAVS(const char* set) { AVS.Set(set); return 0; }
+    int            SetCV(const char* set) { CV.Set(set); return 0; }
     int            SetState(int newstate = CCAUTH_FIND);
     int            SetStatus(int newstat) { return intcode = newstat; }
 
@@ -413,7 +413,7 @@ public:
     int      Read(InputDataFile &infile);
     int      Write(OutputDataFile &outfile);
     int      Save();
-    int      Load(char *path);
+    int      Load(const char* path);
     int      Add(Credit *credit);
     int      Add(Terminal *term, Credit *credit);
     int      Remove(int id);
@@ -440,14 +440,14 @@ class CCBInfo
 public:
 
     CCBInfo();
-    CCBInfo(char *newname);
-    CCBInfo(char *newname, int type);
+    CCBInfo(const char* newname);
+    CCBInfo(const char* newname, int type);
     int  Type() { return type; }
     int  Add(Credit *credit);
     int  Add(int amount);
     int  IsZero();
     void Copy(CCBInfo *info);
-    void SetName(char *newname);
+    void SetName(const char* newname);
     void Clear();
     int  Read(InputDataFile &df);
     int  Write(OutputDataFile &df);
@@ -507,26 +507,26 @@ public:
     TimeInfo settle_date;
 
     CCSettle();
-    CCSettle(char *fullpath);
+    CCSettle(const char* fullpath);
     ~CCSettle();
 
     int       Next(Terminal *term);
     int       Fore(Terminal *term);
     CCSettle *Last();
-    int       Add(Terminal *term, char *message = NULL);
+    int       Add(Terminal *term, const char* message = NULL);
     int       Add(Check *check);
     CCSettle *Copy();
     void      Clear();
     int       Read(InputDataFile &df);
     int       Write(OutputDataFile &df);
-    int       Load(char *filename);
+    int       Load(const char* filename);
     int       Save();
     int       ReadResults(Terminal *term);
     int       IsSettled();
     int       MakeReport(Terminal *term, Report *report, ReportZone *rzone);
     void      DebugPrint();
-    char     *Batch()  { return batch.Value(); }
-    char     *TermID() { return termid.Value(); }
+    const char* Batch()  { return batch.Value(); }
+    const char* TermID() { return termid.Value(); }
 };
 
 class CCInit
@@ -544,18 +544,18 @@ public:
     CCInit *fore;
 
     CCInit();
-    CCInit(char *fullpath);
+    CCInit(const char* fullpath);
     ~CCInit();
 
     int  Next(Terminal *term);
     int  Fore(Terminal *term);
     void Clear() { init_list.Purge(); }
     int  Count() { return init_list.Count(); }
-    int  Add(char *termid, char *result);
+    int  Add(const char* termid, const char* result);
     int  MakeReport(Terminal *term, Report *report, ReportZone *rzone);
     int  Read(InputDataFile &df);
     int  Write(OutputDataFile &df);
-    int  Load(char *filename);
+    int  Load(const char* filename);
     int  Save();
 };
 
@@ -571,7 +571,7 @@ public:
     void Clear();
     int  Count();
     int  Add();
-    int  Add(char *);
+    int  Add(const char* );
     int  MakeReport(Terminal *term, Report *report, ReportZone *rzone);
 };
 
@@ -606,7 +606,7 @@ public:
     Archive  *archive;
 
     CCSAFDetails();
-    CCSAFDetails(char *fullpath);
+    CCSAFDetails(const char* fullpath);
     ~CCSAFDetails();
 
     int           Next(Terminal *term);
@@ -614,7 +614,7 @@ public:
     CCSAFDetails *Last();
     int           Read(InputDataFile &df);
     int           Write(OutputDataFile &df);
-    int           Load(char *filename);
+    int           Load(const char* filename);
     int           Save();
     int           IsEmpty() { return (terminal.length == 0 ? 1 : 0); }
     void          Clear();

@@ -79,19 +79,19 @@ public:
 
     Expense();
     Expense(int &no);
-    int SetFileName(char *buffer, int maxlen, genericChar *path);
+    int SetFileName(char* buffer, int maxlen, const genericChar* path);
     int Read(InputDataFile &infile, int version);
     int Write(OutputDataFile &outfile, int version);
-    int Load(char *path);
-    int Save(char *path);
+    int Load(const char* path);
+    int Save(const char* path);
     int IsBlank();
-    int Author(Terminal *term, genericChar *employee_name);
-    int DrawerOwner(Terminal *term, genericChar *drawer_name, Archive *archive = NULL);
-    int AccountName(Terminal *term, genericChar *account_name, Archive *archive = NULL);
+    int Author(Terminal *term, genericChar* employee_name);
+    int DrawerOwner(Terminal *term, genericChar* drawer_name, Archive *archive = NULL);
+    int AccountName(Terminal *term, genericChar* account_name, Archive *archive = NULL);
     int IsTraining();
     int SetFlag(int flagval);
     int Copy(Expense *original);
-    int WordMatch(Terminal *term, genericChar *word);
+    int WordMatch(Terminal *term, const genericChar* word);
 };
 
 class ExpenseDB
@@ -109,7 +109,7 @@ public:
     int      StatusMatch(int status, int drawer_status);
     int      Read(InputDataFile &infile, int version);
     int      Write(OutputDataFile &outfile, int version);
-    int      Load(char *path);
+    int      Load(const char* path);
     int      RemoveBlank();
     int      Save();
     int      Save(int id);
@@ -123,7 +123,7 @@ public:
     int      MoveAll(ExpenseDB *exp_db);
     Expense *FindByRecord(Terminal *term, int no, int drawer_type = DRAWER_OPEN);
     Expense *FindByID(int id);
-    int      FindRecordByWord(Terminal *term, genericChar *word, int start = -1, Archive *archive = NULL);
+    int      FindRecordByWord(Terminal *term, const genericChar* word, int start = -1, Archive *archive = NULL);
     int      CountFromDrawer(int drawer_id, int training = 0);
     int      BalanceFromDrawer(int drawer_id, int training = 0);
     int      EnteredFromDrawer(int drawer_id, int training = 0);

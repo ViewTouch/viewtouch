@@ -104,7 +104,7 @@ void ExitLoader()
     exit(0);
 }
 
-int UpdateWindow(char *str = NULL)
+int UpdateWindow(const char* str = NULL)
 {
     if (str)
         strcpy(Message, str);
@@ -140,10 +140,10 @@ int UpdateWindow(char *str = NULL)
             }
             idx += 1;
             msg[msgidx] = '\0';
-            XftTextExtentsUtf8(Dis, loaderFont, (unsigned char *)msg, msgidx, &extents);
+            XftTextExtentsUtf8(Dis, loaderFont, (unsigned const char* )msg, msgidx, &extents);
             ww = (WIN_WIDTH - extents.width) / 2;
             XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont, ww, hh,
-                (unsigned char *)msg, msgidx);
+                (unsigned const char* )msg, msgidx);
             hh += loaderFont->height;
         }
     }
@@ -152,7 +152,7 @@ int UpdateWindow(char *str = NULL)
     return 0;
 }
 
-int UpdateKeyboard(char *str = NULL)
+int UpdateKeyboard(const char* str = NULL)
 {
     genericChar prompt[256] = "Temporary Key:";
     XGlyphInfo extents;
@@ -166,18 +166,18 @@ int UpdateKeyboard(char *str = NULL)
         WIN_WIDTH - 2, 3 * loaderFont->height);
 
     len = strlen(prompt);
-    XftTextExtents8(Dis, loaderFont, (unsigned char *)prompt, len, &extents);
+    XftTextExtents8(Dis, loaderFont, (unsigned const char* )prompt, len, &extents);
     XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont,
         (WIN_WIDTH - extents.width) / 2,
         WIN_HEIGHT - 2 * loaderFont->height,
-        (unsigned char *)prompt, len);
+        (unsigned const char* )prompt, len);
 
     len = strlen(KBInput);
-    XftTextExtents8(Dis, loaderFont, (unsigned char *)KBInput, len, &extents);
+    XftTextExtents8(Dis, loaderFont, (unsigned const char* )KBInput, len, &extents);
     XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont,
         (WIN_WIDTH - extents.width) / 2,
         WIN_HEIGHT - loaderFont->height,
-        (unsigned char *)KBInput, len);
+        (unsigned const char* )KBInput, len);
 
     XFlush(Dis);
     return 0;
@@ -247,7 +247,7 @@ void KeyPressCB(Widget widget, XtPointer client_data, XEvent *event, Boolean *ok
 void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
 {
     static genericChar buffer[256];
-    static genericChar *c = buffer;
+    static genericChar* c = buffer;
 
     int no = read(SocketNo, c, 1);
     if (no == 1)
@@ -289,7 +289,7 @@ void SetPerms()
     }
 }
 
-int WriteArgList(int argc, genericChar *argv[])
+int WriteArgList(int argc, genericChar* argv[])
 {
     int retval = 0, argidx = 0, fd;
 
@@ -309,7 +309,7 @@ int WriteArgList(int argc, genericChar *argv[])
     return retval;
 }
 
-int main(int argc, genericChar *argv[])
+int main(int argc, genericChar* argv[])
 {
     SetPerms();
 
@@ -320,7 +320,7 @@ int main(int argc, genericChar *argv[])
     int net_off = 0;
     int purge = 0;
     int notrace = 0;
-    char *data_path = NULL;
+    const char* data_path = NULL;
     for (int i = 1; i < argc; ++i)
     {
         if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "help") == 0)
@@ -402,19 +402,18 @@ int main(int argc, genericChar *argv[])
         logmsg(LOG_ERR, "Unable to load font\n");
         ExitLoader();
     }
-
     Arg args[] = {
         { XtNx,                (dis_width - WIN_WIDTH) / 2   },
         { XtNy,                (dis_height - WIN_HEIGHT) / 2 },
         { XtNwidth,            WIN_WIDTH                     },
         { XtNheight,           WIN_HEIGHT                    },
         { XtNborderWidth,      0                             },
-        { "minWidth",          WIN_WIDTH                     },
-        { "minHeight",         WIN_HEIGHT                    },
-        { "maxWidth",          WIN_WIDTH                     },
-        { "maxHeight",         WIN_HEIGHT                    },
-        { "mwmDecorations",    0                             },
-        { "mappedWhenManaged", False                         },
+        { (String)"minWidth",          WIN_WIDTH                     },
+        { (String)"minHeight",         WIN_HEIGHT                    },
+        { (String)"maxWidth",          WIN_WIDTH                     },
+        { (String)"maxHeight",         WIN_HEIGHT                    },
+        { (String)"mwmDecorations",    0                             },
+        { (String)"mappedWhenManaged", False                         },
     };
 
     shell = XtAppCreateShell("Welcome to POS", NULL,
@@ -473,7 +472,7 @@ int main(int argc, genericChar *argv[])
     XFlush(Dis);
 
     // Send Commands
-    genericChar *displaystr = DisplayString(Dis);
+    const genericChar* displaystr = DisplayString(Dis);
     int displaylen = strlen(displaystr);
     write(SocketNo, "display ", 8);
     write(SocketNo, displaystr, displaylen + 1);

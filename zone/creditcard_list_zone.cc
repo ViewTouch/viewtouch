@@ -122,11 +122,11 @@ RenderResult CreditCardListZone::Render(Terminal *term, int update_flag)
     return retval;
 }
 
-SignalResult CreditCardListZone::Signal(Terminal *term, genericChar *message)
+SignalResult CreditCardListZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("CreditCardListZone::Signal()");
     SignalResult retval = SIGNAL_OKAY;
-    static char *commands[] = {"ccexceptions", "ccrefunds", "ccvoids",
+    static const char* commands[] = {"ccexceptions", "ccrefunds", "ccvoids",
                                "next", "prev", "nextperiod", "prevperiod",
                                "process", NULL};
     int idx = CompareListN(commands, message);
@@ -304,7 +304,7 @@ int CreditCardListZone::PrintRecord(Terminal *term, int record)
     return retval;
 }
 
-int CreditCardListZone::Search(Terminal *term, int record, genericChar *word)
+int CreditCardListZone::Search(Terminal *term, int record, const genericChar* word)
 {
     FnTrace("CreditCardListZone::Search()");
 

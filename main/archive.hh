@@ -109,7 +109,7 @@ public:
 
     // Constructors
     Archive(TimeInfo &tm);
-    Archive(Settings *s, genericChar *file);
+    Archive(Settings *s, const genericChar* file);
     // Destructor
     ~Archive() { Unload(); }
 
@@ -124,9 +124,9 @@ public:
     CompInfo       *CompList()       { return comp_list.Head(); }
     MealInfo       *MealList()       { return meal_list.Head(); }
 
-    int LoadPacked(Settings *s, genericChar *filename = NULL);
+    int LoadPacked(Settings *s, const genericChar* filename = NULL);
     // Loads archive from single file
-    int LoadUnpacked(Settings *s, genericChar *path);
+    int LoadUnpacked(Settings *s, const genericChar* path);
     // Loads archive from files in directory (usually 'current' directory)
     int LoadAlternateMedia();
     int LoadAlternateSettings();

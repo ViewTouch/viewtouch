@@ -1,4 +1,4 @@
-static char *CanvasData[] = {
+static const char *CanvasData[] = {
 "320 200 8 1",
 "  c #76654c",
 ". c #8a7860",

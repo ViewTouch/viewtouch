@@ -34,9 +34,9 @@
 // the header file will revert things to empty definitions that won't take up
 // any processor time or memory; they simply get stripped from the executable.
 
-const genericChar *pos_data_filename = VIEWTOUCH_PATH "/dat/tmp/posdata.txt";
+const genericChar* pos_data_filename = VIEWTOUCH_PATH "/dat/tmp/posdata.txt";
 
-const genericChar *event_names[] = {
+const genericChar* event_names[] = {
     "Protocol Error",
     "Protocol Reply",
     "KeyPress",
@@ -74,12 +74,12 @@ const genericChar *event_names[] = {
     "MappingNotify",
     "LASTEvent"
 };
-int num_events = sizeof(event_names) / sizeof(char *);
+int num_events = sizeof(event_names) / sizeof(const char* );
 /****
  *  GetXEventName:  a simple routine to pull the message name out of event_name
  *  and return it.
  ****/
-const genericChar *GetXEventName( XEvent event )
+const genericChar* GetXEventName( XEvent event )
 {
     if ( event.type < num_events )
     {
@@ -95,9 +95,9 @@ const genericChar *GetXEventName( XEvent event )
  * PrintXEventName:  print the names of all events other than a few that we
  *  don't want (it's boring to read a bunch of mouse movements).
  ****/
-void PrintXEventName( XEvent event, const genericChar *function, FILE *stream )
+void PrintXEventName( XEvent event, const genericChar* function, FILE *stream )
 {
-    const genericChar *name = GetXEventName( event );
+    const genericChar* name = GetXEventName( event );
     if ( ( strcmp( name, "MotionNotify" ) == 0 ) ||
          ( strcmp( name, "NoExpose" ) == 0 ) )
     {
@@ -109,7 +109,7 @@ void PrintXEventName( XEvent event, const genericChar *function, FILE *stream )
     }
 }
 
-char *term_codes[] = {
+const char* term_codes[] = {
     "TERM_UPDATEALL",
     "TERM_UPDATEAREA",
     "TERM_SETCLIP",
@@ -200,7 +200,7 @@ char *term_codes[] = {
     "",
     "TERM_DIE"
 };
-int num_term_codes = sizeof( term_codes ) / sizeof( genericChar * );
+int num_term_codes = sizeof( term_codes ) / sizeof( const genericChar*  );
 void PrintTermCode( int code )
 {
     if ( code < num_term_codes )
@@ -209,7 +209,7 @@ void PrintTermCode( int code )
     }
 }
 
-char *server_codes[] = {
+const char* server_codes[] = {
     "",
     "SERVER_ERROR",
     "SERVER_TERMINFO",
@@ -233,7 +233,7 @@ char *server_codes[] = {
     "SERVER_PRINTER_DONE",
     "SERVER_BADFILE"
 };
-int num_server_codes = sizeof( server_codes ) / sizeof( genericChar * );
+int num_server_codes = sizeof( server_codes ) / sizeof( const genericChar*  );
 void PrintServerCode( int code )
 {
     if ( code < num_server_codes )
@@ -264,7 +264,7 @@ void PrintFamilyCode( int code )
 //FIX BAK --> Should get the zone type names out of labels.cc or otherwise
 //prevent the need to link everything with labels.o.  This solution, and really
 //the entire labels.cc file, just seems kludgy.
-const genericChar *GetZoneTypeName( int type )
+const genericChar* GetZoneTypeName( int type )
 {
     int idx = 0;
     int val = FullZoneTypeValue[idx];

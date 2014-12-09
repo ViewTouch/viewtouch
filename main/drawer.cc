@@ -134,7 +134,7 @@ int DrawerBalance::Write(OutputDataFile &df, int version)
     return error;
 }
 
-char *DrawerBalance::Description(Settings *s, genericChar *str)
+char* DrawerBalance::Description(Settings *s, genericChar* str)
 {
     return s->TenderName(tender_type, tender_id, str);
 }
@@ -321,7 +321,7 @@ int Drawer::Status()
         return DRAWER_OPEN;
 }
 
-int Drawer::Load(char *file)
+int Drawer::Load(const char* file)
 {
     FnTrace("Drawer::Load()");
     filename.Set(file);
@@ -467,7 +467,7 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         if (e)
             sprintf(str, "%s: %s", term->Translate("Drawer Assignment"), e->system_name.Value());
         else
-            sprintf(str, term->Translate("Drawer Hasn't Been Assigned"));
+            sprintf(str,"%s", term->Translate("Drawer Hasn't Been Assigned"));
         r->TextL(str);
         r->NewLine();
         

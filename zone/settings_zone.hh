@@ -42,8 +42,8 @@ public:
     Zone        *Copy();
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, genericChar *value);
-    genericChar        *TranslateString(Terminal *term);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
+    const genericChar* TranslateString(Terminal *term);
     int         *SwitchType() { return &type; }
 };
 
@@ -137,7 +137,7 @@ public:
     int          Type() { return ZONE_DEVELOPER; }
     int          AddFields();
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     int          LoadRecord(Terminal *term, int record);
     int          SaveRecord(Terminal *term, int record, int write_file);
 };
@@ -169,7 +169,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_TENDER_SET; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     Flt         *Spacing() { return &list_spacing; }
 
     int LoadRecord(Terminal *term, int record);
@@ -192,7 +192,7 @@ public:
     // Member Functions
     int Type() { return ZONE_MONEY_SET; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     Flt         *Spacing() { return &list_spacing; }
 
     int LoadRecord(Terminal *term, int record);
@@ -213,7 +213,7 @@ public:
     // Member Functions
     int Type() { return ZONE_TAX_SET; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     Flt *Spacing() { return &list_spacing; }
 
     int LoadRecord(Terminal *term, int record);
@@ -239,7 +239,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_TIME_SETTINGS; }
     RenderResult Render(Terminal *term, int update_flag);
-    int          Update(Terminal *term, int update_message, genericChar *value);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
 
     int LoadRecord(Terminal *term, int record);
     int SaveRecord(Terminal *term, int record, int write_file);

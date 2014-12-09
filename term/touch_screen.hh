@@ -59,8 +59,8 @@ public:
     Str error;        // holds description of any resulting errors
 
     // Constructors
-    TouchScreen(char *device);          // local device
-    TouchScreen(char *host, int port);  // remote device
+    TouchScreen(const char* device);          // local device
+    TouchScreen(const char* host, int port);  // remote device
     // Destructor
     ~TouchScreen();
 
@@ -75,7 +75,7 @@ public:
     int Calibrate();    // Sets device into calibration mode
     int Reset();        // Resets touch screen device
     int Flush();        // Clears device buffer
-	int SetMode(char* mode);
+	int SetMode(const char* mode);
 };
 
 #endif

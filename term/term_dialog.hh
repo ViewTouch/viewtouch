@@ -36,13 +36,13 @@ public:
     DialogEntry();
 
     // Member Functions
-    int   Init(Widget parent, genericChar *label);
+    int   Init(Widget parent, const genericChar* label);
     int   Show(int flag);
-    int   Set(char *val);
+    int   Set(const char* val);
     int   Set(int val);
     int   Set(Flt val);
-    genericChar *Value();
-    int   Get(char *result);
+    const genericChar* Value();
+    int   Get(const char* result);
     int   Get(int &result);
     int   Get(Flt &result);
 };
@@ -67,11 +67,11 @@ public:
 
     // Member Functions
     int Clear();
-    int Init(Widget parent, genericChar *label, genericChar **option_name, int *option_value,
+    int Init(Widget parent, const genericChar* label, const genericChar* *option_name, int *option_value,
              void *option_cb = NULL, void *client_data = NULL);
     int Show(int flag);
     int Set(int val);
-    int SetLabel(char *label);
+    int SetLabel(const char* label);
     int Value();
 };
 
@@ -96,8 +96,8 @@ public:
     // Destructor
     ~DialogDoubleMenu();
 
-    int Init(Widget parget, genericChar *label, genericChar **option1_name, int *option1_value,
-             genericChar **option2_name, int *option2_value);
+    int Init(Widget parget, const genericChar* label, const genericChar* *option1_name, int *option1_value,
+             const genericChar* *option2_name, int *option2_value);
     int Show(int flag);
     int Set(int o1, int o2);
     int Value(int &v1, int &v2);

@@ -62,11 +62,11 @@ protected:
     char receipt_line[STRLENGTH];
     char display_line[STRLENGTH];
 
-    int  SetValue(char *dest, const char *source);
+    int  SetValue(const char* dest, const char* source);
     int  TransSend(long identifier);
     int  TransSendSimple(long identifier);
     int  SetFields(int gut, long identifier);
-    int  GetBatchNumber(char *dest);
+    int  GetBatchNumber(const char* dest);
 
 public:
     CCard();

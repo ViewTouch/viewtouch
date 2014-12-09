@@ -1,5 +1,5 @@
 /* XPM */
-static char * YellowStuccoData[] = {
+static const char * YellowStuccoData[] = {
 "100 80 5 1",
 " 	c None",
 ".	c #DBD69D",

@@ -1,5 +1,5 @@
 /* XPM */
-static char * LeatherData[] = {
+static const char * LeatherData[] = {
 "128 128 9 1",
 " 	c None",
 ".	c #B5895C",

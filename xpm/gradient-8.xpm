@@ -1,5 +1,5 @@
 /* XPM */
-static char * gradient_8_xpm[] = {
+static const char * gradient_8_xpm[] = {
 "120 120 815 2",
 "  	c None",
 ". 	c #9D2D2E",

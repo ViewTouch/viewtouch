@@ -70,7 +70,7 @@ typedef SectionList::iterator SectionItor;
 /// General Purpose Utility Functions ///////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 void  Trim(t_Str& szStr);
-int   WriteLn(fstream& stream, char* fmt, ...);
+int   WriteLn(fstream& stream, const char* fmt, ...);
 
 
 

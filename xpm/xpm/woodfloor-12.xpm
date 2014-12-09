@@ -1,6 +1,6 @@
 /* XPM */
-static char *WoodFloorData[] = {
-/* columns rows colors chars-per-pixel */
+static const char *WoodFloorData[] = {
+/* columns rows colors const chars-per-pixel */
 "240 182 12 1",
 "  c #b5762f",
 ". c #9a6225",

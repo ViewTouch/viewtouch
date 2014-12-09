@@ -1,5 +1,5 @@
 /* XPM */
-static char *whiteMesh[]={
+static const char *whiteMesh[]={
 "4 4 3 1",
 "a c #a2a2a2",
 "# c #c6c6c6",

@@ -1,6 +1,6 @@
 /* XPM */
-static char *GrayMarbleData[] = {
-/* columns rows colors chars-per-pixel */
+static const char *GrayMarbleData[] = {
+/* columns rows colors const chars-per-pixel */
 "256 256 12 1",
 "  c #473a2f",
 ". c #52493b",

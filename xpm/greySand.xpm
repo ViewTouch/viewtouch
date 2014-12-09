@@ -1,5 +1,5 @@
 /* XPM */
-static char *greySand[]={
+static const char *greySand[]={
 "150 150 175 2",
 "al c #121212",
 "aS c #151515",

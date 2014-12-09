@@ -1,5 +1,5 @@
 /* XPM */
-static char * EmbossedData[] = {
+static const char * EmbossedData[] = {
 "120 120 9 1",
 " 	c None",
 ".	c #ADADAD",

@@ -135,11 +135,11 @@ RenderResult ExpenseZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult ExpenseZone::Signal(Terminal *term, genericChar *message)
+SignalResult ExpenseZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("ExpenseZone::Signal()");
     SignalResult signal = SIGNAL_IGNORED;
-    static genericChar *commands[] = {"next", "prior", "change view",
+    static const genericChar* commands[] = {"next", "prior", "change view",
                                       "restore", "test", "new", NULL};
     int idx = CompareListN(commands, message);
     int draw = 0;
@@ -624,7 +624,7 @@ int ExpenseZone::PrintRecord(Terminal *term, int record)
     return 0;
 }
 
-int ExpenseZone::Search(Terminal *term, int record, genericChar *word)
+int ExpenseZone::Search(Terminal *term, int record, const genericChar* word)
 {
     FnTrace("ExpenseZone::Search()");
     int search_rec;
@@ -654,7 +654,7 @@ int ExpenseZone::ListReport(Terminal *term, Report *my_report)
     Expense *currExpense = term->system_data->expense_db.ExpenseList();
     Drawer *dlist = term->system_data->DrawerList();
     Drawer *drawer;
-    genericChar *datestring;
+    const genericChar* datestring;
     genericChar employee_name[STRLENGTH] = "";
     genericChar drawer_name[STRLENGTH] = "";
     genericChar account_name[STRLENGTH] = "";

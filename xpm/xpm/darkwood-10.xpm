@@ -1,6 +1,6 @@
 /* XPM */
-static char *DarkWoodData[] = {
-/* columns rows colors chars-per-pixel */
+static const char *DarkWoodData[] = {
+/* columns rows colors const chars-per-pixel */
 "256 256 10 1",
 "  c #382f2a",
 ". c #32231a",

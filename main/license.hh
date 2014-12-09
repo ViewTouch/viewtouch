@@ -27,8 +27,8 @@
 #define MAX_LICENSE_WARN   0   // warn user when under this many days left on license
 
 int GetExpirationDate(Str &settings_license, int force_check = 0);
-int GetMachineID(char *stringbuff, int stringlen);
-int GetMachineDigest(char *digest_string, int maxlen);
+int GetMachineID(const char* stringbuff, int stringlen);
+int GetMachineDigest(const char* digest_string, int maxlen);
 int SaveLicenseData(void);
 int NumLicensedTerminals(void);
 int NumLicensedPrinters(void);

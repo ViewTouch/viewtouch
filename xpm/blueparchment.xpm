@@ -1,5 +1,5 @@
 /* XPM */
-static char * BlueParchementData[] = {
+static const char * BlueParchementData[] = {
 "100 100 17 1",
 " 	c None",
 ".	c #9AACAC",

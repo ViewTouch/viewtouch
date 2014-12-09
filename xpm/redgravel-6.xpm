@@ -1,6 +1,6 @@
 /* XPM */
-static char *RedGravelData[] = {
-/* columns rows colors chars-per-pixel */
+static const char *RedGravelData[] = {
+/* columns rows colors const chars-per-pixel */
 "256 256 6 1",
 "  c #583032",
 ". c #77494d",

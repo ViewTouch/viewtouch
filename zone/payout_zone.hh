@@ -51,7 +51,7 @@ public:
     // Member Functions
     int          Type() { return ZONE_PAYOUT; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
+    SignalResult Signal(Terminal *term, const genericChar* message);
     SignalResult Touch(Terminal *term, int tx, int ty);
 
     Flt *Spacing() { return &spacing; }
@@ -75,8 +75,8 @@ public:
     // Member Functions
     int          Type() { return ZONE_END_DAY; }
     RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, genericChar *message);
-    int          Update(Terminal *term, int update_message, genericChar *value);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
     int          EndOfDay(Terminal *term, int force = 0);
 };
 

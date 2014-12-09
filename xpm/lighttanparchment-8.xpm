@@ -1,5 +1,5 @@
 /* XPM */
-static char * LightTanParchmentData[] = {
+static const char * LightTanParchmentData[] = {
 "128 128 9 1",
 " 	c None",
 ".	c #DBCCB3",

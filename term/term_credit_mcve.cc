@@ -78,7 +78,7 @@ int GLFIELDS[15];
 int report_fields_set = 0;
 
 
-int AppendString(char *dest, int fwidth, const char *source)
+int AppendString(const char* dest, int fwidth, const char* source)
 {
     FnTrace("AppendString()");
     int retval = 0;
@@ -109,8 +109,8 @@ public:
     int  amttr;
 
     CCInfo();
-    CCInfo(char *newname);
-    void SetName(char *newname);
+    CCInfo(const char* newname);
+    void SetName(const char* newname);
     void Clear();
     int  Write();
     void DebugPrint();
@@ -123,15 +123,15 @@ CCInfo::CCInfo()
     Clear();
 }
 
-CCInfo::CCInfo(char *newname)
+CCInfo::CCInfo(const char* newname)
 {
-    FnTrace("CCInfo::CCInfo(char *)");
+    FnTrace("CCInfo::CCInfo(const char* )");
 
     strcpy(name, newname);
     Clear();
 }
 
-void CCInfo::SetName(char *newname)
+void CCInfo::SetName(const char* newname)
 {
     FnTrace("CCInfo::SetName()");
 
@@ -202,8 +202,8 @@ class BatchInfo
     CCInfo refund;
     CCInfo voids;
 
-    int GetNum(const char *value);
-    int GetAmt(char *dest, const char *value);
+    int GetNum(const char* value);
+    int GetAmt(const char* dest, const char* value);
 
 public:
     BatchInfo();
@@ -259,8 +259,8 @@ int BatchInfo::ParseResults(MCVE_CONN *conn, long id)
     int   rows;
     int   columns;
     int   is_sale = 0;
-    const char *trans;
-    const char *card;
+    const char* trans;
+    const char* card;
     int   amount;
 
     if (MCVE_ParseCommaDelimited(conn, id))
@@ -401,7 +401,7 @@ void BatchInfo::DebugPrint()
     voids.DebugPrint();
 }
 
-int BatchInfo::GetNum(const char *value)
+int BatchInfo::GetNum(const char* value)
 {
     FnTrace("BatchInfo::GetNum()");
     int  retval = 0;
@@ -425,7 +425,7 @@ int BatchInfo::GetNum(const char *value)
     return retval;
 }
 
-int BatchInfo::GetAmt(char *dest, const char *value)
+int BatchInfo::GetAmt(const char* dest, const char* value)
 {
     FnTrace("BatchInfo::GetAmt()");
     int retval = 0;
@@ -613,7 +613,7 @@ int CCard::Close()
     return retval;
 }
 
-int CCard::SetValue(char *dest, const char *source)
+int CCard::SetValue(const char* dest, const char* source)
 {
     FnTrace("CCard::SetValue()");
     int retval = 0;
@@ -782,7 +782,7 @@ int CCard::SetFields(int gut, long identifier)
     return retval;
 }
 
-int CCard::GetBatchNumber(char *dest)
+int CCard::GetBatchNumber(const char* dest)
 {
     FnTrace("CCard::GetBatchNumber()");
     int retval = 0;
