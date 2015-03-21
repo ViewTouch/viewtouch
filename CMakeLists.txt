@@ -25,7 +25,7 @@ set(TERM_CREDIT credit CACHE STRING "Credit source mode.  Can be credit, credit_
 
 add_library(conf_file conf_file.cc conf_file.hh)
 target_link_libraries(conf_file z)
-set(VT_XLIBS Xt X11 Xm Xmu Xpm Xft freetype fontconfig Xrender)
+set(VT_XLIBS X11 Xm Xmu Xt Xpm Xft freetype fontconfig Xrender)
 
 add_executable(vtpos 
 		loader/loader_main.cc 
