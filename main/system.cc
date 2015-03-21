@@ -763,6 +763,8 @@ int System::SetDataPath(const char* path)
     }
 
     int len = strlen(path);
+    if (len >= sizeof(str))
+    	len = sizeof(str)-1;
     while (len > 1)
     {
         if (path[len - 1] != '/')
@@ -770,9 +772,10 @@ int System::SetDataPath(const char* path)
         //path[len - 1] = '\0';
         --len;
     }
-    strncpy(str,path,len);
+    memcpy(str,path,len);
+    str[len] = 0;
     data_path.Set(str);
-    memset(str,256,0);
+    //memset(str,256,0);
 
     // Make sure all data directories in path are set up
     chmod(path, DIR_PERMISSIONS);
