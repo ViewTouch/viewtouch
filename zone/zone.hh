@@ -86,20 +86,20 @@ enum behaviors {
 
 // Page Sizes (resolutions)
 #define SIZE_640x480   1 
-#define SIZE_800x600   2
-#define SIZE_1024x768  3  // default
-#define SIZE_1280x1024 4
-#define SIZE_1600x1200 5
-#define SIZE_768x1024  6
-#define SIZE_800x480   7
-#define SIZE_1920x1080 8
-#define SIZE_1920x1200 9
-#define SIZE_1680x1050 10
-#define SIZE_1366x768  11
-#define SIZE_1440x900  12
-#define SIZE_1600x900  13
-#define SIZE_1024x600  14
-#define SIZE_1280x800  15
+#define SIZE_768x1024  2
+#define SIZE_800x480   3
+#define SIZE_800x600   4
+#define SIZE_1024x600  5
+#define SIZE_1024x768  6  // default
+#define SIZE_1280x800  7
+#define SIZE_1280x1024 8
+#define SIZE_1366x768  9
+#define SIZE_1440x900  10
+#define SIZE_1600x900  11
+#define SIZE_1600x1200 12
+#define SIZE_1680x1050 13
+#define SIZE_1920x1080 14
+#define SIZE_1920x1200 15
 #define SIZE_2560x1440 16
 #define SIZE_2560x1600 17
 
