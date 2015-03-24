@@ -612,6 +612,45 @@ int PosPage::Read(InputDataFile &infile, int version)
         type = PAGE_ITEM;
     infile.Read(index);
     infile.Read(size);
+
+    /*
+     * New screen sizes were added and it's necessary to remap the previous page sizes to preserve compatiblity
+     */
+    if (version <= 26) {
+      switch (size) {
+      case 2:
+	size = 4; // SIZE_800x600
+	break;
+      case 3:
+	size = 6; // SIZE_1024x768
+	break;
+      case 4:
+	size = 8; // SIZE_1280x1024
+	break;
+      case 5:
+	size = 12; // SIZE_1600x1200
+	break;
+      case 6:
+	size = 2; // SIZE_768x1024
+	break;
+      case 7:
+	size = 3; // SIZE_800x480
+	break;
+      case 8:
+	size = 14; // SIZE_1920x1080
+	break;
+      case 9:
+	size = 15; // SIZE_1920x1200
+	break;
+      case 10: 
+	size = 13; // SIZE_1680x1050
+	break;
+      case 14:
+	size = 15;
+	break;
+      }
+    }
+
     infile.Read(default_font);
     if (version <= 19)
     {

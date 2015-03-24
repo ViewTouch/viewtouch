@@ -53,10 +53,9 @@
 #include <sys/ioctl.h>
 #endif
 
-extern "C"
-{
+//extern "C" {
 #include "blowfish.h"
-}
+//}
 #include "data_file.hh"
 #include "license.hh"
 #include "license_hash.hh"

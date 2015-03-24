@@ -603,6 +603,10 @@ public:
     int last_money_id;
     int last_tax_id;
 
+    int food_inclusive;		// food prices already include tax
+    int alcohol_inclusive;	// alcohol prices already include tax
+    int merchandise_inclusive;	// merchandise prices already include tax
+
     Flt tax_food;
     Flt tax_alcohol;
     Flt tax_room;

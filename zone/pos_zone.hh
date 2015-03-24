@@ -25,7 +25,7 @@
 
 
 /**** Definitions ****/
-#define ZONE_VERSION 26
+#define ZONE_VERSION 27
 
 // Zone Types
 #define ZONE_UNDEFINED       0   // type not defined

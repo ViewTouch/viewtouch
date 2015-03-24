@@ -2638,32 +2638,39 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
     // Send server term size
     int screen_size = SIZE_640x480;
-          if (WinWidth == 800 && WinHeight == 600)			// 4:3
-        screen_size = SIZE_800x600;
-      else if (WinWidth == 1024 && WinHeight == 600)		// 128:75
-        screen_size = SIZE_1024x600;
-      else if (WinWidth == 1024 && WinHeight == 768)		// 4:3
-        screen_size = SIZE_1024x768;
-      else if  (WinWidth == 1280 && WinHeight == 800) 		// 16:10
-        screen_size = SIZE_1280x800;
-      else if (WinWidth == 1280 && WinHeight == 1024) 		// 5:4
-        screen_size = SIZE_1280x1024;
-      else if (WinWidth == 1366 && WinHeight == 768)		// 16:9
-        screen_size = SIZE_1366x768;
-      else if (WinWidth == 1440 && WinHeight == 900)		// 16:10
-        screen_size = SIZE_1440x900; 
-      else if (WinWidth == 1600 && WinHeight == 900)		// 16:9
-        screen_size = SIZE_1600x900;
-      else if (WinWidth == 1680 && WinHeight == 1050)		// 16:10
-        screen_size = SIZE_1680x1050;
-      else if (WinWidth == 1920 && WinHeight == 1080) 		// 16:9
-        screen_size = SIZE_1920x1080;
-      else if (WinWidth == 1920 && WinHeight == 1200) 		// 16:10
-        screen_size = SIZE_1920x1200;
-      else if (WinWidth == 2560 && WinHeight == 1440) 		// 16:9
-        screen_size = SIZE_2560x1440;
-      else if (WinWidth == 2560 && WinHeight == 1600) 		// 16:10
+
+    if (WinWidth >= 2560) 		// 16:10
         screen_size = SIZE_2560x1600;
+    else if (WinWidth >= 2560 && WinHeight < 1600) 		// 16:9
+        screen_size = SIZE_2560x1440;
+    else if (WinWidth >= 1920 && WinHeight >= 1200) 		// 16:10
+        screen_size = SIZE_1920x1200;
+    else if (WinWidth >= 1920 && WinHeight >= 1080) 		// 16:9
+        screen_size = SIZE_1920x1080;
+    else if (WinWidth >= 1680 && WinHeight >= 1050)		// 16:10
+        screen_size = SIZE_1680x1050;
+    else if (WinWidth >= 1600 && WinHeight >= 1200)
+      screen_size = SIZE_1600x1200;
+    else if (WinWidth >= 1600 && WinHeight >= 900)		// 16:9
+        screen_size = SIZE_1600x900;
+    else if (WinWidth >= 1440 && WinHeight >= 900)		// 16:10
+        screen_size = SIZE_1440x900; 
+    else if (WinWidth >= 1366 && WinHeight >= 768)		// 16:9
+        screen_size = SIZE_1366x768;
+    else if (WinWidth >= 1280 && WinHeight >= 1024) 		// 5:4
+        screen_size = SIZE_1280x1024;
+    else if  (WinWidth >= 1280 && WinHeight >= 800) 		// 16:10
+        screen_size = SIZE_1280x800;
+    else if (WinWidth >= 1024 && WinHeight >= 768)		// 4:3
+        screen_size = SIZE_1024x768;
+    else if (WinWidth >= 1024 && WinHeight >= 600)		// 128:75
+        screen_size = SIZE_1024x600;
+    else if (WinWidth >= 800 && WinHeight >= 600)			// 4:3
+      screen_size = SIZE_800x600;
+    else if (WinWidth >= 800 && WinHeight >= 480)
+        screen_size = SIZE_800x480;
+    else if (WinWidth >= 768 && WinHeight >= 1024)
+        screen_size = SIZE_768x1024;
 
     WInt8(SERVER_TERMINFO);
     WInt8(screen_size);

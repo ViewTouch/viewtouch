@@ -157,6 +157,7 @@ namespace confmap
         V_GST = 0, V_PST, V_HST, V_QST, V_ROYALTY_RATE, V_ADVERTISE_FUND,
         V_DAILY_CERT_FEE, V_DEBIT_COST, V_CREDIT_RATE, V_CREDIT_COST,
         V_LINE_ITEM_COST, V_TAX_TAKEOUT_FOOD, V_PERSONALIZE_FAST_FOOD,
+	V_FOOD_INCLUSIVE, V_ALCOHOL_INCLUSIVE, V_MERCHANDISE_INCLUSIVE
     };
 
     enum section_titles
@@ -169,6 +170,7 @@ namespace confmap
         "GST", "PST", "HST", "QST", "royalty_rate", "advertise_fund",
         "daily_cert_fee", "debit_cost", "credit_rate", "credit_cost",
         "line_item_cost", "tax_takeout_food", "personalize_fast_food",
+	"food_inclusive", "alcohol_inclusive", "merchandise_inclusive"
     };
 
     const char* sects[] =
@@ -1290,6 +1292,9 @@ Settings::Settings()
     tax_HST 				= 0.0; // Explicit Fix for Canadian Implementation
     tax_QST 				= 0.0; // Explicit Fix for Canadian Implementation
     tax_VAT                 = 0.0;
+    food_inclusive 	    = 0;
+    alcohol_inclusive 	    = 0;
+    merchandise_inclusive   = 0;
     
     // FastFood Settings
     tax_takeout_food        = 1;   // tax takeout food by default
@@ -2015,6 +2020,13 @@ int Settings::Load(const char* file)
 
         ConfFile conf(CONFIG_TAX_FILE, true);
         Flt conf_tmp;
+        if (conf.GetValue(conf_tmp, vars[V_FOOD_INCLUSIVE], sects[S_MISC]))
+	    food_inclusive = conf_tmp;
+        if (conf.GetValue(conf_tmp, vars[V_ALCOHOL_INCLUSIVE], sects[S_MISC]))
+	    alcohol_inclusive = conf_tmp;
+        if (conf.GetValue(conf_tmp, vars[V_MERCHANDISE_INCLUSIVE], sects[S_MISC]))
+	    merchandise_inclusive = conf_tmp;
+
         if (conf.GetValue(conf_tmp, vars[V_GST], sects[S_SALES_TAX_CANADA]))
             tax_GST = conf_tmp;
         if (conf.GetValue(conf_tmp, vars[V_PST], sects[S_SALES_TAX_CANADA]))
@@ -2339,6 +2351,9 @@ int Settings::Save()
         using namespace confmap;
 
         ConfFile conf(CONFIG_TAX_FILE);
+        error += conf.SetValue(food_inclusive, vars[V_FOOD_INCLUSIVE], sects[S_MISC]);
+        error += conf.SetValue(alcohol_inclusive, vars[V_ALCOHOL_INCLUSIVE], sects[S_MISC]);
+        error += conf.SetValue(merchandise_inclusive, vars[V_MERCHANDISE_INCLUSIVE], sects[S_MISC]);
         error += conf.SetValue(tax_GST, vars[V_GST], sects[S_SALES_TAX_CANADA]);
         error += conf.SetValue(tax_PST, vars[V_PST], sects[S_SALES_TAX_CANADA]);
         error += conf.SetValue(tax_HST, vars[V_HST], sects[S_SALES_TAX_CANADA]);
