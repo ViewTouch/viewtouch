@@ -770,12 +770,8 @@ int System::SetDataPath(const char* path)
         //path[len - 1] = '\0';
         --len;
     }
-#if 0	// FIX JCM
-    strncpy(str,path,len);
-#else
     memcpy(str, path, len);
     str[len] = 0;	
-#endif
     data_path.Set(str);
     memset(str,256,0);
 
