@@ -6,6 +6,7 @@ set(LICENSE_SERVER "default_license_server" CACHE STRING "The license server to 
 #Stupid commment
 
 #set(CMAKE_CXX_FLAGS "-Wall")
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
 set(CMAKE_CXX_FLAGS "-Wall -Werror -Wno-unused")
 include_directories(main)
@@ -22,6 +23,13 @@ add_definitions(-DLICENSE_SERVER="${LICENSE_SERVER}")
 add_definitions(-D${SYSTEM_UPPER})
 
 set(TERM_CREDIT credit CACHE STRING "Credit source mode.  Can be credit, credit_cheq, credit_mcve")
+
+if (${TERM_CREDIT} MATCHES "credit_mcve")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCREDITMCVE")
+	include_directories(/usr/local/monetra/include)
+	set(TERM_CREDIT_LIBS monetra)
+endif(${TERM_CREDIT} MATCHES "credit_mcve")
+
 
 add_library(conf_file conf_file.cc conf_file.hh)
 target_link_libraries(conf_file z)
@@ -72,7 +80,7 @@ add_executable(vt_term term/term_main.cc term/term_view.cc term/touch_screen.cc
 			     debug.cc generic_char.cc conf_file.cc
 		term/term_${TERM_CREDIT}.cc)
 
-target_link_libraries(vt_term ${VT_XLIBS})
+target_link_libraries(vt_term ${VT_XLIBS} ${TERM_CREDIT_LIBS})
 
 add_executable(vt_print print/print_main.cc utility.cc socket.cc conf_file.cc)
 add_executable(vt_cdu cdu/cdu_main.cc utility.cc socket.cc main/cdu_att.cc)
