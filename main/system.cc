@@ -762,7 +762,7 @@ int System::SetDataPath(const char* path)
         return 1;
     }
 
-    int len = strlen(path);
+    unsigned int len = strlen(path);
     if (len >= sizeof(str))
     	len = sizeof(str)-1;
     while (len > 1)
