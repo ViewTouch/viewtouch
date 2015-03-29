@@ -78,7 +78,7 @@ int GLFIELDS[15];
 int report_fields_set = 0;
 
 
-int AppendString(const char* dest, int fwidth, const char* source)
+int AppendString(char* dest, int fwidth, const char* source)
 {
     FnTrace("AppendString()");
     int retval = 0;
@@ -203,7 +203,7 @@ class BatchInfo
     CCInfo voids;
 
     int GetNum(const char* value);
-    int GetAmt(const char* dest, const char* value);
+    int GetAmt(char* dest, const char* value);
 
 public:
     BatchInfo();
@@ -425,7 +425,7 @@ int BatchInfo::GetNum(const char* value)
     return retval;
 }
 
-int BatchInfo::GetAmt(const char* dest, const char* value)
+int BatchInfo::GetAmt(char* dest, const char* value)
 {
     FnTrace("BatchInfo::GetAmt()");
     int retval = 0;
@@ -613,7 +613,7 @@ int CCard::Close()
     return retval;
 }
 
-int CCard::SetValue(const char* dest, const char* source)
+int CCard::SetValue(char* dest, const char* source)
 {
     FnTrace("CCard::SetValue()");
     int retval = 0;
@@ -782,7 +782,7 @@ int CCard::SetFields(int gut, long identifier)
     return retval;
 }
 
-int CCard::GetBatchNumber(const char* dest)
+int CCard::GetBatchNumber(char* dest)
 {
     FnTrace("CCard::GetBatchNumber()");
     int retval = 0;

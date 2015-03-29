@@ -753,8 +753,8 @@ int System::SetDataPath(const char* path)
     if (path == NULL)
         return 1;
 
-    genericChar str[256];
-    genericChar tmp[256];
+    genericChar str[256] = "";
+    genericChar tmp[256] = "";
     if (DoesFileExist(path) == 0)
     {
         sprintf(str, "Can't find path '%s'", path);

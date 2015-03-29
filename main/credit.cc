@@ -2466,7 +2466,7 @@ int CreditDB::Load(const char* path)
 
     if (fullpath[0] != '\0')
     {
-        infile.Open(fullpath, version);
+      if (infile.Open(fullpath, version) == 0) 
         Read(infile);
     }
     
