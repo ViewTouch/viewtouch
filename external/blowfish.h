@@ -1,4 +1,9 @@
+#ifndef BLOWFISH_H
+#define BLOWFISH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <sys/types.h>
 
 #define NROUNDS         16
@@ -22,3 +27,9 @@ typedef unsigned char bf_cblock[8];
 int  BFEncrypt(char *key, int keylen, char *ciphrtext, int ciphrlen, char *plaintext, int *plainlen);
 int  BFDecrypt(char *key, int keylen, char *plaintext, int plainlen, char *ciphrtext, int *ciphrlen);
 int  InitializeBlowfish(char *key, int keylen);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

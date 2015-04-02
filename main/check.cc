@@ -5079,12 +5079,14 @@ int Order::FigureCost()
 
     // remove already-included tax amounts
     // scaling minimizes discrepency with final total after tax is added
-    if (sales_type == SALES_FOOD)
-	cost = int(cost/(1.0+food_inctax) + food_inctax);
-    else if (sales_type == SALES_ALCOHOL)
+    if (sales_type & SALES_UNTAXED)
+        ;	// don't adjust
+    else if (sales_type & SALES_ALCOHOL)
 	cost = int(cost/(1.0+alcohol_inctax) + alcohol_inctax);
-    else if (sales_type == SALES_MERCHANDISE)
+    else if (sales_type & SALES_MERCHANDISE)
 	cost = int(cost/(1.0+merchandise_inctax) + merchandise_inctax);
+    else
+	cost = int(cost/(1.0+food_inctax) + food_inctax);
 
     total_cost = cost;
     total_comp = 0;

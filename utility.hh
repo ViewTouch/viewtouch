@@ -55,7 +55,7 @@ public:
     {
         if (BT_Track)
             printf("Entering %s\n", str);
-        sprintf(BT_Stack[BT_Depth++], str);
+        sprintf(BT_Stack[BT_Depth++], "%s", str);
     }
     // Destructor
     virtual ~BackTraceFunction()

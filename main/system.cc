@@ -753,8 +753,8 @@ int System::SetDataPath(const char* path)
     if (path == NULL)
         return 1;
 
-    genericChar str[256];
-    genericChar tmp[256];
+    genericChar str[256] = "";
+    genericChar tmp[256] = "";
     if (DoesFileExist(path) == 0)
     {
         sprintf(str, "Can't find path '%s'", path);
@@ -762,7 +762,9 @@ int System::SetDataPath(const char* path)
         return 1;
     }
 
-    int len = strlen(path);
+    unsigned int len = strlen(path);
+    if (len >= sizeof(str))
+    	len = sizeof(str)-1;
     while (len > 1)
     {
         if (path[len - 1] != '/')
@@ -773,7 +775,7 @@ int System::SetDataPath(const char* path)
     memcpy(str, path, len);
     str[len] = 0;	
     data_path.Set(str);
-    memset(str,256,0);
+    //memset(str,256,0);
 
     // Make sure all data directories in path are set up
     chmod(path, DIR_PERMISSIONS);

@@ -53,9 +53,8 @@
 #include <sys/ioctl.h>
 #endif
 
-//extern "C" {
 #include "blowfish.h"
-//}
+
 #include "data_file.hh"
 #include "license.hh"
 #include "license_hash.hh"
@@ -953,7 +952,7 @@ int SendData(int sockfd, const char* hwid)
     // send the headers
     snprintf(buffer, STRLONG, "POST %s HTTP/1.0\n", LICENSE_PATH);
     bytes = write(sockfd, buffer, strlen(buffer));
-    snprintf(buffer, STRLONG, "Content-Length: %ld\n\n", strlen(varsbuff));
+    snprintf(buffer, STRLONG, "Content-Length: %ld\n\n", (long) strlen(varsbuff));
     bytes = write(sockfd, buffer, strlen(buffer));
 
     // send the body

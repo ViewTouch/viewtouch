@@ -6,6 +6,8 @@ set(LICENSE_SERVER "default_license_server" CACHE STRING "The license server to 
 #Stupid commment
 
 #set(CMAKE_CXX_FLAGS "-Wall")
+#set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
 set(CMAKE_CXX_FLAGS "-Wall -Werror -Wno-unused")
 include_directories(main)
 include_directories(zone)
@@ -22,14 +24,22 @@ add_definitions(-D${SYSTEM_UPPER})
 
 set(TERM_CREDIT credit CACHE STRING "Credit source mode.  Can be credit, credit_cheq, credit_mcve")
 
+if (${TERM_CREDIT} MATCHES "credit_mcve")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCREDITMCVE")
+	include_directories(/usr/local/monetra/include)
+	set(TERM_CREDIT_LIBS monetra)
+endif(${TERM_CREDIT} MATCHES "credit_mcve")
+
+
 add_library(conf_file conf_file.cc conf_file.hh)
 target_link_libraries(conf_file z)
-set(VT_XLIBS Xt X11 Xm Xmu Xpm Xft freetype fontconfig Xrender)
+set(VT_XLIBS X11 Xm Xmu Xt Xpm Xft freetype fontconfig Xrender)
 
 add_executable(vtpos 
 		loader/loader_main.cc 
 		debug.cc debug.hh generic_char.cc 
-		generic_char.hh logger.cc logger.hh)
+		generic_char.hh logger.cc logger.hh
+		main/labels.cc)
 target_link_libraries(vtpos ${VT_XLIBS})
 
 add_library(zone zone/zone.cc zone/zone_object.cc zone/pos_zone.cc 
@@ -70,7 +80,7 @@ add_executable(vt_term term/term_main.cc term/term_view.cc term/touch_screen.cc
 			     debug.cc generic_char.cc conf_file.cc
 		term/term_${TERM_CREDIT}.cc)
 
-target_link_libraries(vt_term ${VT_XLIBS})
+target_link_libraries(vt_term ${VT_XLIBS} ${TERM_CREDIT_LIBS})
 
 add_executable(vt_print print/print_main.cc utility.cc socket.cc conf_file.cc)
 add_executable(vt_cdu cdu/cdu_main.cc utility.cc socket.cc main/cdu_att.cc)
@@ -78,11 +88,11 @@ add_executable(vt_cdu cdu/cdu_main.cc utility.cc socket.cc main/cdu_att.cc)
 add_executable(vt_temphash main/license_hash.cc main/temphash.cc external/sha1.cc)
 #add_executable(vt_ccq_pipe vt_ccq_pipe.cc socket.cc utility.cc conf_file.cc)
 
-#ADD_CUSTOM_TARGET(GenerateBuildNumber
-#                  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/scripts/BuildNumber.cmake
-# 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-#add_dependencies(zone GenerateBuildNumber)
-#add_dependencies(vtpos GenerateBuildNumber)
+ADD_CUSTOM_TARGET(GenerateBuildNumber
+                  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/scripts/BuildNumber.cmake
+ 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_dependencies(zone GenerateBuildNumber)
+add_dependencies(vtpos GenerateBuildNumber)
 
 
 install(TARGETS vtpos vt_temphash vt_cdu vt_print vt_term vt_main
