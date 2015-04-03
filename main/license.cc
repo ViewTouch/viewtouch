@@ -1190,6 +1190,9 @@ int CheckLicense(LicenseData *licensedat)
         return 0;
     }
 #endif
+#ifdef NODRM
+	return 0;
+#endif
 
     // open a socket to the web server (send headers here?)
     sockfd = OpenSession();
