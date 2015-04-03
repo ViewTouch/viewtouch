@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
+set(CMAKE_INSTALL_PREFIX "/usr")
 set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
 set(LICENSE_SERVER "default_license_server" CACHE STRING "The license server to be compiled into viewtouch")
 
