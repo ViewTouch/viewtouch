@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
+set(CMAKE_INSTALL_PREFIX "/usr")
 set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
 set(LICENSE_SERVER "default_license_server" CACHE STRING "The license server to be compiled into viewtouch")
 
@@ -8,7 +9,7 @@ set(LICENSE_SERVER "default_license_server" CACHE STRING "The license server to 
 #set(CMAKE_CXX_FLAGS "-Wall")
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG")
-set(CMAKE_CXX_FLAGS "-Wall -Werror -Wno-unused")
+set(CMAKE_CXX_FLAGS "-Wall -Wno-unused -Wno-unused-result")
 include_directories(main)
 include_directories(zone)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -21,6 +22,7 @@ add_definitions(-DVIEWTOUCH_PATH="${VIEWTOUCH_PATH}")
 add_definitions(-DKILLALL_CMD="/usr/bin/killall")
 add_definitions(-DLICENSE_SERVER="${LICENSE_SERVER}")
 add_definitions(-D${SYSTEM_UPPER})
+add_definitions(-DNODRM)
 
 set(TERM_CREDIT credit CACHE STRING "Credit source mode.  Can be credit, credit_cheq, credit_mcve")
 
@@ -107,8 +109,10 @@ install(PROGRAMS 	scripts/vtrestart
 			scripts/vt_ping 
 			scripts/lpd-restart
 			scripts/vt_openterm
+			scripts/runonce
 	DESTINATION viewtouch/bin
 )
+install(DIRECTORY dat DESTINATION viewtouch)
 install(PROGRAMS scripts/vtcommands.pl DESTINATION viewtouch/bin/vtcommands)
 
 #install(CODE "MESSAGE(\"Sample install message.\")")
