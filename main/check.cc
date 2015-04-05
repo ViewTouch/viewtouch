@@ -3457,10 +3457,6 @@ int SubCheck::FigureTotals(Settings *settings)
     order = OrderList();
     while (order)
     {
-	order->food_inctax = settings->food_inclusive ? food_tax : 0.0;
-	order->alcohol_inctax = settings->alcohol_inclusive ? alcohol_tax : 0.0;
-	order->merchandise_inctax = settings->merchandise_inclusive ? merchandise_tax : 0.0;
-
         order->FigureCost();
         raw_sales += order->total_cost;
 
@@ -4436,11 +4432,6 @@ int SubCheck::GrossSales(Check *check, Settings *settings, int sales_group)
         family = order->item_family;
         if (sales_group == 0 || (family != FAMILY_UNKNOWN && settings->family_group[family] == sales_group))
         {
-	    // handle tax-inclusive here? see SubCheck::FigureTotals()
-	    //order->food_inctax = settings->food_inclusive ? food_tax : 0.0;
-	    //order->alcohol_inctax = settings->alcohol_inclusive ? alcohol_tax : 0.0;
-	    //order->merchandise_inctax = settings->merchandise_inclusive ? merchandise_tax : 0.0;
-
             order->FigureCost();
             sales += order->total_cost;
         }
@@ -4811,10 +4802,15 @@ Order::Order()
     employee_meal   = 0;
     is_reduced      = 0;
     reduced_cost    = 0;
-    food_inctax     = 0.0;
-    alcohol_inctax  = 0.0;
-    merchandise_inctax  = 0.0;
     auto_coupon_id  = -1;
+}
+
+// helper to adjust cost if tax is already included
+static int adjust_cost(int cost, int inclusive, Flt tax)
+{
+    if (inclusive)
+        return int(cost/(1.0+tax) + tax);
+    return cost;
 }
 
 Order::Order(Settings *settings, SalesItem *item, int qual, int price)
@@ -4848,10 +4844,20 @@ Order::Order(Settings *settings, SalesItem *item, int qual, int price)
     employee_meal   = 0;
     is_reduced      = 0;
     reduced_cost    = 0;
-    food_inctax     = 0.0;
-    alcohol_inctax  = 0.0;
-    merchandise_inctax  = 0.0;
     auto_coupon_id  = -1;
+
+    // remove tax if already included in cost;
+    // scaling minimizes discrepency with final total after tax is added
+    if (sales_type & SALES_UNTAXED)
+	;
+    else if (sales_type & SALES_ALCOHOL)
+	item_cost = adjust_cost(item_cost, settings->alcohol_inclusive, settings->tax_alcohol);
+    else if (sales_type & SALES_MERCHANDISE)
+    	item_cost = adjust_cost(item_cost, settings->merchandise_inclusive, settings->tax_merchandise);
+    else if (sales_type & SALES_ROOM)
+        item_cost = adjust_cost(item_cost, settings->room_inclusive, settings->tax_room);
+    else
+        item_cost = adjust_cost(item_cost, settings->food_inclusive, settings->tax_food);
 }
 
 Order::Order(const genericChar* name, int price)
@@ -4882,9 +4888,6 @@ Order::Order(const genericChar* name, int price)
     employee_meal   = 0;
     is_reduced      = 0;
     reduced_cost    = 0;
-    food_inctax     = 0.0;
-    alcohol_inctax  = 0.0;
-    merchandise_inctax  = 0.0;
     auto_coupon_id  = -1;
 }
 
@@ -5076,17 +5079,6 @@ int Order::FigureCost()
 
     if (item_type == ITEM_POUND)
         cost = cost / 100;
-
-    // remove already-included tax amounts
-    // scaling minimizes discrepency with final total after tax is added
-    if (sales_type & SALES_UNTAXED)
-        ;	// don't adjust
-    else if (sales_type & SALES_ALCOHOL)
-	cost = int(cost/(1.0+alcohol_inctax) + alcohol_inctax);
-    else if (sales_type & SALES_MERCHANDISE)
-	cost = int(cost/(1.0+merchandise_inctax) + merchandise_inctax);
-    else
-	cost = int(cost/(1.0+food_inctax) + food_inctax);
 
     total_cost = cost;
     total_comp = 0;

@@ -154,10 +154,6 @@ public:
     short is_reduced;  // 1 = had "each item" coupon applied, 2 = auto coupon
     int   auto_coupon_id;
 
-    Flt   food_inctax;	// tax fraction already included in price
-    Flt   alcohol_inctax;
-    Flt   merchandise_inctax;
-
     // Constructors
     Order();
     Order(Settings *settings, SalesItem *si, int qual, int price = -1);
