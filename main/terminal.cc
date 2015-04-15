@@ -2971,7 +2971,7 @@ int Terminal::FinalizeOrders()
     check->FinalizeOrders(this);
     Update(UPDATE_ORDERS | UPDATE_CHECKS, NULL);
     UpdateOtherTerms(UPDATE_CHECKS, NULL);
-    check->FirstOpenSubCheck();
+    check->current_sub = check->FirstOpenSubCheck();
 
     if (is_bar_tab)
     {

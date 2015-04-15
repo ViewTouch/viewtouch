@@ -572,7 +572,7 @@ int Check::Add(SubCheck *sc)
     if (SubListEnd())
         sc->number = SubListEnd()->number + 1;
     else
-        sc->number = 0;
+        sc->number = 1;
         
     sc->check_type = type;
 
@@ -625,7 +625,6 @@ SubCheck *Check::NewSubCheck()
         return NULL;
     }
     
-   sc->check_type = type;
     Add(sc);
     current_sub = sc;
     return sc;
@@ -997,7 +996,7 @@ int Check::MergeOpenChecks(Settings *settings)
         }
     }
 
-    FirstOpenSubCheck();
+    current_sub = FirstOpenSubCheck();
     return Update(settings);
 }
 
@@ -1016,7 +1015,7 @@ int Check::SplitCheckBySeat(Settings *settings)
         SubCheck *sc = NewSubCheck();
         MoveOrdersBySeat(main, sc, i);
     }
-    FirstOpenSubCheck();
+    current_sub = FirstOpenSubCheck();
     return Update(settings);
 }
 
@@ -2137,6 +2136,7 @@ int Check::EntreeCount(int seat)
     return count;
 }
 
+// this no longer updates check->current_sub
 SubCheck *Check::FirstOpenSubCheck(int seat)
 {
     FnTrace("Check::FirstOpenSubCheck()");
@@ -2150,7 +2150,6 @@ SubCheck *Check::FirstOpenSubCheck(int seat)
         if (sc->status == CHECK_OPEN &&
             (seat < 0 || sc->IsSeatOnCheck(seat)))
         {
-            current_sub = sc;
             return sc;
         }
     }
@@ -2161,7 +2160,6 @@ SubCheck *Check::FirstOpenSubCheck(int seat)
         if (sc->status == CHECK_CLOSED &&
             (seat < 0 || sc->IsSeatOnCheck(seat)))
         {
-            current_sub = sc;
             return sc;
         }
     }
@@ -2169,11 +2167,8 @@ SubCheck *Check::FirstOpenSubCheck(int seat)
     // Failed to find any subchecks with seat
     if (seat >= 0)
         return FirstOpenSubCheck(); // search without seat
-    else
-    {
-        current_sub = SubList();
-        return current_sub;
-    }
+
+    return current_sub;
 }
 
 SubCheck *Check::NextOpenSubCheck(SubCheck *sc)

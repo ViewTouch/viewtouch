@@ -1101,7 +1101,7 @@ SignalResult OrderFlowZone::Touch(Terminal *t, int tx, int ty)
     {
         int customer_type = c->CustomerType();
 
-        c->FirstOpenSubCheck();
+        c->current_sub = c->FirstOpenSubCheck();
         t->Signal("ordering", group_id);
         if (customer_type == CHECK_HOTEL)
             error = t->JumpToIndex(INDEX_ROOM);

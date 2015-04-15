@@ -78,7 +78,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     SubCheck *subCheck = &work_sub;
     if (currCheck->current_sub == NULL)
     {
-        currCheck->FirstOpenSubCheck();
+        currCheck->current_sub = currCheck->FirstOpenSubCheck();
         if (currCheck->current_sub == NULL)
             return RENDER_OKAY;
         subCheck->Copy(currCheck->current_sub, settings);

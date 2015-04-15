@@ -2111,7 +2111,7 @@ int CompleteRemoteOrder(Check *check)
         check->FinalizeOrders(term);
         check->Save();
         MasterControl->UpdateAll(UPDATE_CHECKS, NULL);
-        check->FirstOpenSubCheck();
+        check->current_sub = check->FirstOpenSubCheck();
     
         // need to print the check
         printer = MasterControl->FindPrinter(PRINTER_REMOTEORDER);
