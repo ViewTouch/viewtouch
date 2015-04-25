@@ -322,6 +322,7 @@ public:
     Order    *LastOrder(int seat);  // Returns last order for seat (Could be modifier)
     Order    *LastParentOrder(int seat);  // Returns last order for seat (Could NOT be modifier)
     int       TotalTip();  // Returns amount of captured tip
+    void      ClearTips(); // Zeros out captured and charged tips
     int       GrossSales(Check *c, Settings *settings, int sales_group);  // Returns total sales on this subcheck for a sales group
     int       Settle(Terminal *t);
     int       Close(Terminal *t);  // Closes subcheck

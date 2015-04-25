@@ -95,6 +95,7 @@ public:
     int Copy(TipDB *db);
     int Total();
     // calculates total_paid, total_held, total_previous
+    void ClearHeld();	// clears total_held
     int PaidReport(Terminal *t, Report *r);
     int PayoutReceipt(Terminal *t, Employee *e, int amount, Report *r);
     int ListReport(Terminal *t, Employee *e, Report *r);

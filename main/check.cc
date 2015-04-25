@@ -4414,6 +4414,18 @@ int SubCheck::TotalTip()
     return tip;
 }
 
+void SubCheck::ClearTips()
+{
+    FnTrace("SubCheck::ClearTips()");
+    int tt;
+    for (Payment *payptr = PaymentList(); payptr != NULL; payptr = payptr->next)
+    {
+        tt = payptr->tender_type;
+        if (tt == TENDER_CAPTURED_TIP || tt == TENDER_CHARGED_TIP)
+            payptr->value = 0;
+    }
+}
+
 int SubCheck::GrossSales(Check *check, Settings *settings, int sales_group)
 {
     FnTrace("SubCheck::GrossSales()");

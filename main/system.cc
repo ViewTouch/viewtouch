@@ -1341,3 +1341,45 @@ int System::AddBatch(long long batchnum)
     return retval;
 }
 
+// Clear out "captured tips held".
+// Scanning logic is copied from System::DepositReport()
+void System::ClearCapturedTips(TimeInfo &start_time,
+                          TimeInfo &end_time, Archive *archive)
+{
+    FnTrace("System::ClearCapturedTips()");
+
+    TimeInfo end = SystemTime;
+    if (end_time.IsSet())
+        end = end_time;
+
+    if (!archive)
+        archive = FindByTime(start_time);
+
+    if (start_time < SystemTime)
+    {
+        Archive *a = archive;
+        for (;;)
+        {
+	    // clear tips in checks
+	    for (Check *check = FirstCheck(a); check; check = check->next) 
+	    {
+	    	if (check->IsTraining() > 0)
+		    continue;
+		for (SubCheck *subcheck = check->SubList(); subcheck != NULL; subcheck = subcheck->next)
+		    subcheck->ClearTips();
+	    }
+
+	    // clear tips in tip database
+            if (a)
+                a->tip_db.ClearHeld();
+            else
+                tip_db.ClearHeld();
+
+            if (a == NULL || archive)
+                break;
+            if (a->end_time >= end)
+                break;
+            a = a->next;
+        }
+    }
+}

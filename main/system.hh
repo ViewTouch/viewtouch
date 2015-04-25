@@ -191,6 +191,8 @@ public:
     // returns a unique id number for checks & drawers
     char* NewPrintFile( char* str );
     // returns filename to be used for output buffer
+    void ClearCapturedTips(TimeInfo &start_time, TimeInfo &end_time, Archive *archive);
+    // clear 'captured tips held' (from checks and tip DB)
 
     // Check functions
     int Add(Check *check);

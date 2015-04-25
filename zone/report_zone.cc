@@ -645,7 +645,8 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
         "ccsafdone", "ccsettledone", "ccinitdone", "cctotalsdone",
         "ccdetailsdone", "ccrefund", "ccvoids", "ccrefunds",
         "ccexceptions", "ccfinish", "ccfinish2 ", "ccfinish3 ",
-        "ccprocessed", "ccrefundamount ", "ccvoidttid ", NULL};
+        "ccprocessed", "ccrefundamount ", "ccvoidttid ", 
+	"zero captured tips", NULL};
 
     Employee         *e = t->user;
     System           *sys = t->system_data;
@@ -912,6 +913,9 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
             t->CC_GetVoid();
         }
         return SIGNAL_OKAY;
+    case 35: // zero captured tips
+        sys->ClearCapturedTips(day_start, day_end, t->archive);
+	return SIGNAL_OKAY;
     default:
         if (strncmp(message, "search ", 7) == 0)
         {
