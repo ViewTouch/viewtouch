@@ -1352,12 +1352,12 @@ void System::ClearCapturedTips(TimeInfo &start_time,
     if (end_time.IsSet())
         end = end_time;
 
-    if (!archive)
-        archive = FindByTime(start_time);
+    Archive *a = archive;
+    if (!a)
+        a = FindByTime(start_time);
 
     if (start_time < SystemTime)
     {
-        Archive *a = archive;
         for (;;)
         {
 	    // clear tips in checks

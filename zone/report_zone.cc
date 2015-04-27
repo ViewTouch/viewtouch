@@ -915,6 +915,7 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
         return SIGNAL_OKAY;
     case 35: // zero captured tips
         sys->ClearCapturedTips(day_start, day_end, t->archive);
+        Draw(t, 1);
 	return SIGNAL_OKAY;
     default:
         if (strncmp(message, "search ", 7) == 0)
