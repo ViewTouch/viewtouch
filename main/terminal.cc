@@ -4850,6 +4850,9 @@ int Terminal::ReadZone()
             si->print_name.Set(FilterName(RStr()));
             si->zone_name.Set(RStr());
             si->type          = RInt8();
+	    si->event_time.Set(RStr());
+	    si->total_tickets.Set(RStr());
+	    si->available_tickets.Set(RStr());
             si->cost          = ParsePrice(RStr());
             si->sub_cost      = ParsePrice(RStr());
             si->employee_cost = ParsePrice(RStr());
@@ -4865,6 +4868,9 @@ int Terminal::ReadZone()
         RStr();   // item printed name
         RStr();   // item zone name
         RInt8();  // item type
+	RStr();   // item event time
+	RStr();   // item total tickets
+	RStr();   // item available tickets
         RStr();   // item price
         RStr();   // item subprice
         RStr();   // employee price
