@@ -4664,6 +4664,9 @@ int Terminal::EditZone(Zone *currZone)
 		else
 			WStr(currItem->zone_name.Value());
 		WInt8(currItem->type);
+		WStr(currItem->event_time.Value());              // item event time
+		WStr(currItem->total_tickets.Value());          // item total tickets
+		WStr(currItem->available_tickets.Value());      // item available tickets
 		WStr(SimpleFormatPrice(currItem->cost));
 		WStr(SimpleFormatPrice(currItem->sub_cost));
         WStr(SimpleFormatPrice(currItem->employee_cost));
@@ -4678,6 +4681,9 @@ int Terminal::EditZone(Zone *currZone)
 		WStr("");          // item printed name
 		WStr("");          // item zone name
 		WInt8(0);          // item type
+		WStr("");          // item event time
+		WStr("");          // item total tickets
+		WStr("");          // item available tickets
 		WStr(SimpleFormatPrice(0)); // item price
 		WStr(SimpleFormatPrice(0)); // item sub price
         WStr(SimpleFormatPrice(0)); // employee price

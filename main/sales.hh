@@ -91,6 +91,7 @@
 #define ITEM_COMBO        4  // Item that is only served with another item
 #define ITEM_RECIPE       5  // Not for sale - recipe only
 #define ITEM_POUND        6  // For sale by the pound
+#define ITEM_ADMISSION    7  // Admission type
 
 // Sales Definitions
 #define SALES_FOOD          0
@@ -159,6 +160,9 @@ public:
     Str   zone_name;      // name shown on zone
     Str   print_name;     // name printer on customer check
     Str   call_center_name;  // name for call centers (remote, automated order entry)
+    Str   event_time;     // item event time
+    Str   total_tickets;  // item total tickets
+    Str   available_tickets; // item available tickets
     int   cost;           // Cost of product in cents
     int   employee_cost;  // Cost of product in cents for employees
     int   sub_cost;       // Cost of product if used for a substitute
