@@ -1469,8 +1469,8 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
         RenderZone(t, "<Unknown>", update_flag);
         return RENDER_OKAY;
     }
-
-    RenderZone(t, item->ZoneName(), update_flag);
+    const char* zn= item->type == ITEM_ADMISSION ? "" : item->ZoneName();
+    RenderZone(t, zn, update_flag);
     Settings *s = t->GetSettings();
     int sub = (item->type == ITEM_SUBSTITUTE && (t->qualifier & QUALIFIER_SUB));
     int cost = item->Price(s, t->qualifier);
@@ -1503,7 +1503,7 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
         }
     }
 
-    if (cost > 0.0 || item->type == ITEM_NORMAL || item->type == ITEM_SUBSTITUTE)
+    if (cost > 0.0 || item->type == ITEM_NORMAL || item->type == ITEM_SUBSTITUTE || item->type == ITEM_ADMISSION)
     {
         genericChar price[32];
         t->FormatPrice(price, cost);
@@ -1521,9 +1521,17 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
     
     if(item->type == ITEM_ADMISSION)
     {
-	genericChar dateTime[128]="7:00 PM";
+	int offsety=0;
+	t->RenderText(item->ZoneName(),x + border,y + border+offsety,col,FONT_TIMES_24B,ALIGN_LEFT);
+	offsety+=24;
+	t->RenderText(item->location.Value(),x + w / 2.0,y + border +offsety,col,FONT_TIMES_20B,ALIGN_CENTER);
+	offsety+=20;
+	t->RenderText(item->event_time.Value(),x + w / 2.0,y + border + offsety,col,FONT_TIMES_20B,ALIGN_CENTER);
+	offsety+=20;
 	int o=14;
-	t->RenderText(dateTime,x+border,y+border+o,col,FONT_TIMES_20B,ALIGN_RIGHT);
+	genericChar buffer[64];
+	snprintf(buffer,64,"%s/%s",item->available_tickets.Value(),item->total_tickets.Value());
+	t->RenderText(buffer,x + border,y + h - border - o,col,FONT_TIMES_20B,ALIGN_LEFT);
     }
 
     if (item->type == ITEM_MODIFIER || sub)

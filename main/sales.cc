@@ -69,8 +69,9 @@ SalesItem::SalesItem(const char* name)
     fore           = NULL;
     id             = 0;
     item_code.Set("");
-    event_time = "";
+    
     location = "";
+    event_time = "";
     total_tickets = "";
     available_tickets = "";
     cost           = 0;
@@ -111,8 +112,8 @@ int SalesItem::Copy(SalesItem *target)
         target->call_center_name.Set(call_center_name);
         target->id = id;
         target->item_code.Set(item_code);
-        target->event_time.Set(event_time);
 	target->location.Set(location);
+        target->event_time.Set(event_time);
         target->total_tickets.Set(total_tickets);
         target->available_tickets.Set(available_tickets);
         target->cost = cost;
