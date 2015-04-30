@@ -1509,6 +1509,7 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
         t->FormatPrice(price, cost);
         int o = 14;
         int f = FONT_TIMES_20B;
+	
         if (t->page->size >= SIZE_1280x1024)
         {
             o = 19;
@@ -1516,6 +1517,13 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
         }
         t->RenderText(price, x + w - border, y + h - border - o,
                       col, f, ALIGN_RIGHT);
+    }
+    
+    if(item->type == ITEM_ADMISSION)
+    {
+	genericChar dateTime[128]="7:00 PM";
+	int o=14;
+	t->RenderText(dateTime,x+border,y+border+o,col,FONT_TIMES_20B,ALIGN_RIGHT);
     }
 
     if (item->type == ITEM_MODIFIER || sub)
