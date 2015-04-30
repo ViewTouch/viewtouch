@@ -604,6 +604,7 @@ public:
     int last_tax_id;
 
     int food_inclusive;		// food prices already include tax
+    int room_inclusive;		// room prices already include tax
     int alcohol_inclusive;	// alcohol prices already include tax
     int merchandise_inclusive;	// merchandise prices already include tax
 

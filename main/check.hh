@@ -154,10 +154,6 @@ public:
     short is_reduced;  // 1 = had "each item" coupon applied, 2 = auto coupon
     int   auto_coupon_id;
 
-    Flt   food_inctax;	// tax fraction already included in price
-    Flt   alcohol_inctax;
-    Flt   merchandise_inctax;
-
     // Constructors
     Order();
     Order(Settings *settings, SalesItem *si, int qual, int price = -1);
@@ -326,6 +322,7 @@ public:
     Order    *LastOrder(int seat);  // Returns last order for seat (Could be modifier)
     Order    *LastParentOrder(int seat);  // Returns last order for seat (Could NOT be modifier)
     int       TotalTip();  // Returns amount of captured tip
+    void      ClearTips(); // Zeros out captured and charged tips
     int       GrossSales(Check *c, Settings *settings, int sales_group);  // Returns total sales on this subcheck for a sales group
     int       Settle(Terminal *t);
     int       Close(Terminal *t);  // Closes subcheck

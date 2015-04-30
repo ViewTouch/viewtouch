@@ -691,17 +691,23 @@ TaxSettingsZone::TaxSettingsZone()
     Center();
     AddLabel("United States Tax Settings");
     LeftAlign();
-    AddNewLine(2);
+    AddNewLine();
     AddTextField("Food Sales Tax %", 6);
+    AddListField("Prices include tax?", YesNoName, YesNoValue);
+    AddNewLine();
     AddTextField("Alcohol Sales Tax %", 6);
+    AddListField("Prices include tax?", YesNoName, YesNoValue);
     AddNewLine();
     AddTextField("Room Sales Tax %", 6); 
+    AddListField("Prices include tax?", YesNoName, YesNoValue);
+    AddNewLine();
     AddTextField("Merchandise Sales Tax %", 6);
+    AddListField("Prices inc tax?", YesNoName, YesNoValue);
     AddNewLine(2);
     Center();
     AddLabel("Canadian Tax Settings");
     LeftAlign();
-    AddNewLine(2);
+    AddNewLine();
     AddTextField("GST %", 6);
     AddTextField("PST %", 6);
     AddTextField("HST %", 6);
@@ -710,13 +716,13 @@ TaxSettingsZone::TaxSettingsZone()
     Center();
     AddLabel("European Tax Settings");
     LeftAlign();
-    AddNewLine(2);
+    AddNewLine();
     AddTextField("VAT %", 6);
     AddNewLine(2);
     Center();
     AddLabel("General Rate Settings");
     LeftAlign();
-    AddNewLine(2);
+    AddNewLine();
     AddTextField("Royalty Rate %", 6);
     AddNewLine();
     AddTextField("Advertising Fund %", 6);
@@ -742,10 +748,14 @@ int TaxSettingsZone::LoadRecord(Terminal *term, int record)
 
     f = f->next;  // skip US Tax label
     f->Set(settings->tax_food * 100.0); f = f->next;
+    f->Set(settings->food_inclusive); f = f->next;
     f->Set(settings->tax_alcohol * 100.0); f = f->next;
+    f->Set(settings->alcohol_inclusive); f = f->next;
 
     f->Set(settings->tax_room * 100.0); f = f->next;
+    f->Set(settings->room_inclusive); f = f->next;
     f->Set(settings->tax_merchandise * 100.0); f = f->next;
+    f->Set(settings->merchandise_inclusive); f = f->next;
 
     f = f->next;  // skip Canadian Tax label
 	f->Set(settings->tax_GST * 100.0); f = f->next;
@@ -770,9 +780,13 @@ int TaxSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
 
     f = f->next;  // skip US Tax label
     f->Get(settings->tax_food); f = f->next;        settings->tax_food    *= 0.01;
+    f->Get(settings->food_inclusive); f = f->next;
     f->Get(settings->tax_alcohol); f = f->next;     settings->tax_alcohol *= 0.01;
+    f->Get(settings->alcohol_inclusive); f = f->next;
     f->Get(settings->tax_room); f = f->next;        settings->tax_room    *= 0.01;
+    f->Get(settings->room_inclusive); f = f->next;
     f->Get(settings->tax_merchandise); f = f->next; settings->tax_merchandise *= 0.01;
+    f->Get(settings->merchandise_inclusive); f = f->next;
 	
     f = f->next;  // skip Canadian Tax label
     f->Get(settings->tax_GST); f = f->next;         settings->tax_GST *= 0.01;

@@ -298,6 +298,15 @@ int TipDB::Total()
     return 0;
 }
 
+void TipDB::ClearHeld()
+{
+    FnTrace("TipDB::ClearHeld()");
+    total_held     = 0;
+
+    for (TipEntry *te = TipList(); te != NULL; te = te->next)
+        te->amount = 0;
+}
+
 int TipDB::PaidReport(Terminal *t, Report *r)
 {
     FnTrace("TipDB::PaidReport()");
