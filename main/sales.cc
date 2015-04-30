@@ -74,6 +74,7 @@ SalesItem::SalesItem(const char* name)
     event_time = "";
     total_tickets = "";
     available_tickets = "";
+    price_label="";
     cost           = 0;
     sub_cost       = 0;
     employee_cost  = 0;
@@ -116,6 +117,7 @@ int SalesItem::Copy(SalesItem *target)
         target->event_time.Set(event_time);
         target->total_tickets.Set(total_tickets);
         target->available_tickets.Set(available_tickets);
+	target->price_label.Set(price_label);
         target->cost = cost;
         target->sub_cost = sub_cost;
         target->employee_cost = employee_cost;
@@ -172,6 +174,7 @@ int SalesItem::Read(InputDataFile &df, int version)
     // 11 (11/24/04) added allow_increase
     // 12 (08/18/05) added call_center_name and delivery_cost
     // 13 (09/14/05) added item_code
+    // 14 (04/30/15) added all properties relating to cinema mode.
 
     if (version < 8)
         return 1;
@@ -182,10 +185,14 @@ int SalesItem::Read(InputDataFile &df, int version)
         df.Read(zone_name);
     df.Read(print_name);
     df.Read(type);
-    df.Read(location);
-    df.Read(event_time);
-    df.Read(total_tickets);
-    df.Read(available_tickets);
+    if (version >= 14)
+    {
+	df.Read(location);
+	df.Read(event_time);
+	df.Read(total_tickets);
+	df.Read(available_tickets);
+	df.Read(price_label);
+    }
     df.Read(cost);
     df.Read(sub_cost);
     if (version >= 10)
@@ -251,10 +258,15 @@ int SalesItem::Write(OutputDataFile &df, int version)
 
     error += df.Write(print_name);
     error += df.Write(type);
-    error += df.Write(location);
-    error += df.Write(event_time);
-    error += df.Write(total_tickets);
-    error += df.Write(available_tickets);
+    
+    if (version >= 14)
+    {
+	error += df.Write(location);
+	error += df.Write(event_time);
+	error += df.Write(total_tickets);
+	error += df.Write(available_tickets);
+	error += df.Write(price_label);
+    }
     error += df.Write(cost);
     error += df.Write(sub_cost);
     if (version >= 10)

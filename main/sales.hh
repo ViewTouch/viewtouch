@@ -27,7 +27,7 @@
 
 /**** Definitions ****/
 
-#define SALES_ITEM_VERSION       13
+#define SALES_ITEM_VERSION       14 
 
 // Family Difinitions
 #define FAMILY_APPETIZERS        0
@@ -164,6 +164,7 @@ public:
     Str   event_time;     // item event time
     Str   total_tickets;  // item total tickets
     Str   available_tickets; // item available tickets
+    Str   price_label; //item price label (such as matinee, etc)
     int   cost;           // Cost of product in cents
     int   employee_cost;  // Cost of product in cents for employees
     int   sub_cost;       // Cost of product if used for a substitute

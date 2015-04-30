@@ -1215,6 +1215,7 @@ int ItemListZone::LoadRecord(Terminal *t, int record)
     f->Set(si->event_time); f = f->next;
     f->Set(si->total_tickets); f=f->next;
     f->Set(si->available_tickets); f = f->next;
+    f->Set(si->price_label); f=f->next;
     f->Set(t->SimpleFormatPrice(si->cost)); f = f->next;
     f->Set(t->SimpleFormatPrice(si->sub_cost)); f = f->next;
     f->Set(t->SimpleFormatPrice(si->employee_cost)); f = f->next;
@@ -1251,6 +1252,7 @@ int ItemListZone::SaveRecord(Terminal *t, int record, int write_file)
 	f->Get(si->event_time); f=f->next;
 	f->Get(si->total_tickets); f=f->next;
 	f->Get(si->available_tickets); f=f->next;
+	f->Get(si->price_label); f=f->next;
         f->GetPrice(si->cost); f = f->next;
         f->GetPrice(si->sub_cost); f = f->next;
         f->GetPrice(si->employee_cost); f = f->next;     

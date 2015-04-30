@@ -4668,6 +4668,7 @@ int Terminal::EditZone(Zone *currZone)
 		WStr(currItem->event_time.Value());              // item event time
 		WStr(currItem->total_tickets.Value());          // item total tickets
 		WStr(currItem->available_tickets.Value());      // item available tickets
+		WStr(currItem->price_label.Value());
 		WStr(SimpleFormatPrice(currItem->cost));
 		WStr(SimpleFormatPrice(currItem->sub_cost));
         WStr(SimpleFormatPrice(currItem->employee_cost));
@@ -4855,6 +4856,7 @@ int Terminal::ReadZone()
 	    si->event_time.Set(RStr());
 	    si->total_tickets.Set(RStr());
 	    si->available_tickets.Set(RStr());
+	    si->price_label.Set(RStr());
             si->cost          = ParsePrice(RStr());
             si->sub_cost      = ParsePrice(RStr());
             si->employee_cost = ParsePrice(RStr());

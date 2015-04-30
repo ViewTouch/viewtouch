@@ -880,8 +880,9 @@ ZoneDialog::ZoneDialog(Widget parent)
                    (void *) EZ_TypeCB, this);
     item_location.Init(container,"Event Location");
     item_event_time.Init(container, "Event Date/Time");
-    item_available_tickets.Init(container,"Seats Remaining");
     item_total_tickets.Init(container,"Total Seats");
+    item_available_tickets.Init(container,"Seats Remaining");
+    item_price_label.Init(container,"Price Class");
     
     item_price.Init(container, "Price");
     item_subprice.Init(container, "Substitute Price");
@@ -995,6 +996,7 @@ int ZoneDialog::Open()
     item_event_time.Set(RStr());
     item_available_tickets.Set(RStr());
     item_total_tickets.Set(RStr());
+    item_price_label.Set(RStr());
     item_price.Set(RStr());
     item_subprice.Set(RStr());
     item_employee_price.Set(RStr());
@@ -1050,11 +1052,12 @@ int ZoneDialog::Correct()
     item_event_time.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
     item_available_tickets.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
     item_total_tickets.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
+    item_price_label.Show(t==ZONE_ITEM && itype==ITEM_ADMISSION);
     item_price.Show(t == ZONE_ITEM);
     item_subprice.Show(t == ZONE_ITEM && itype == ITEM_SUBSTITUTE);
     item_employee_price.Show(t == ZONE_ITEM);
-    item_family.Show(t == ZONE_ITEM);
-    item_sales.Show(t == ZONE_ITEM);
+    item_family.Show(t == ZONE_ITEM && itype != ITEM_ADMISSION);
+    item_sales.Show(t == ZONE_ITEM && itype != ITEM_ADMISSION);
     item_printer.Show(t == ZONE_ITEM &&
                       (itype == ITEM_NORMAL ||
                        itype == ITEM_SUBSTITUTE ||
@@ -1175,6 +1178,7 @@ int ZoneDialog::Send()
     WStr(item_event_time.Value());
     WStr(item_available_tickets.Value());
     WStr(item_total_tickets.Value());
+    WStr(item_price_label.Value());
     WStr(item_price.Value());
     WStr(item_subprice.Value());
     WStr(item_employee_price.Value());
