@@ -878,6 +878,7 @@ ZoneDialog::ZoneDialog(Widget parent)
     item_print_name.Init(container, "Short Name (if different)");
     item_type.Init(container, "Item Type", ItemTypeName, ItemTypeValue,
                    (void *) EZ_TypeCB, this);
+    item_location.Init(container,"Event Location");
     item_event_time.Init(container, "Event Date/Time");
     item_available_tickets.Init(container,"Seats Remaining");
     item_total_tickets.Init(container,"Total Seats");
@@ -990,6 +991,7 @@ int ZoneDialog::Open()
     item_zone_name.Set(RStr());
     itype = RInt8();
     item_type.Set(itype);
+    item_location.Set(RStr());
     item_event_time.Set(RStr());
     item_available_tickets.Set(RStr());
     item_total_tickets.Set(RStr());
@@ -1044,6 +1046,7 @@ int ZoneDialog::Correct()
     item_zone_name.Show(t == ZONE_ITEM);
     item_print_name.Show(t == ZONE_ITEM);
     item_type.Show(t == ZONE_ITEM);
+    item_location.Show(t == ZONE_ITEM && itype == ITEM_ADMISSION);
     item_event_time.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
     item_available_tickets.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
     item_total_tickets.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
@@ -1168,6 +1171,7 @@ int ZoneDialog::Send()
     WStr(item_print_name.Value());
     WStr(item_zone_name.Value());
     WInt8(item_type.Value());
+    WStr(item_location.Value());
     WStr(item_event_time.Value());
     WStr(item_available_tickets.Value());
     WStr(item_total_tickets.Value());

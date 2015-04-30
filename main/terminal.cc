@@ -4664,6 +4664,7 @@ int Terminal::EditZone(Zone *currZone)
 		else
 			WStr(currItem->zone_name.Value());
 		WInt8(currItem->type);
+		WStr(currItem->location.Value());
 		WStr(currItem->event_time.Value());              // item event time
 		WStr(currItem->total_tickets.Value());          // item total tickets
 		WStr(currItem->available_tickets.Value());      // item available tickets
@@ -4850,6 +4851,7 @@ int Terminal::ReadZone()
             si->print_name.Set(FilterName(RStr()));
             si->zone_name.Set(RStr());
             si->type          = RInt8();
+	    si->location.Set(RStr());
 	    si->event_time.Set(RStr());
 	    si->total_tickets.Set(RStr());
 	    si->available_tickets.Set(RStr());

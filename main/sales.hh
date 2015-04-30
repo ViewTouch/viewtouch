@@ -160,6 +160,7 @@ public:
     Str   zone_name;      // name shown on zone
     Str   print_name;     // name printer on customer check
     Str   call_center_name;  // name for call centers (remote, automated order entry)
+    Str   location;
     Str   event_time;     // item event time
     Str   total_tickets;  // item total tickets
     Str   available_tickets; // item available tickets

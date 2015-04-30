@@ -70,6 +70,7 @@ SalesItem::SalesItem(const char* name)
     id             = 0;
     item_code.Set("");
     event_time = "";
+    location = "";
     total_tickets = "";
     available_tickets = "";
     cost           = 0;
@@ -111,6 +112,7 @@ int SalesItem::Copy(SalesItem *target)
         target->id = id;
         target->item_code.Set(item_code);
         target->event_time.Set(event_time);
+	target->location.Set(location);
         target->total_tickets.Set(total_tickets);
         target->available_tickets.Set(available_tickets);
         target->cost = cost;
@@ -179,6 +181,7 @@ int SalesItem::Read(InputDataFile &df, int version)
         df.Read(zone_name);
     df.Read(print_name);
     df.Read(type);
+    df.Read(location);
     df.Read(event_time);
     df.Read(total_tickets);
     df.Read(available_tickets);
@@ -247,6 +250,7 @@ int SalesItem::Write(OutputDataFile &df, int version)
 
     error += df.Write(print_name);
     error += df.Write(type);
+    error += df.Write(location);
     error += df.Write(event_time);
     error += df.Write(total_tickets);
     error += df.Write(available_tickets);
