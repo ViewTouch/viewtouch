@@ -1050,8 +1050,8 @@ int ZoneDialog::Correct()
     item_type.Show(t == ZONE_ITEM);
     item_location.Show(t == ZONE_ITEM && itype == ITEM_ADMISSION);
     item_event_time.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
-    item_available_tickets.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
     item_total_tickets.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
+    item_available_tickets.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
     item_price_label.Show(t==ZONE_ITEM && itype==ITEM_ADMISSION);
     item_price.Show(t == ZONE_ITEM);
     item_subprice.Show(t == ZONE_ITEM && itype == ITEM_SUBSTITUTE);
@@ -1176,8 +1176,8 @@ int ZoneDialog::Send()
     WInt8(item_type.Value());
     WStr(item_location.Value());
     WStr(item_event_time.Value());
-    WStr(item_available_tickets.Value());
     WStr(item_total_tickets.Value());
+    WStr(item_available_tickets.Value());
     WStr(item_price_label.Value());
     WStr(item_price.Value());
     WStr(item_subprice.Value());
