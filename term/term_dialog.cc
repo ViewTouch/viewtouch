@@ -1051,7 +1051,7 @@ int ZoneDialog::Correct()
     item_location.Show(t == ZONE_ITEM && itype == ITEM_ADMISSION);
     item_event_time.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
     item_total_tickets.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
-    item_available_tickets.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
+    item_available_tickets.Show(false && t == ZONE_ITEM && itype==ITEM_ADMISSION); //don't show the available tickets ever
     item_price_label.Show(t==ZONE_ITEM && itype==ITEM_ADMISSION);
     item_price.Show(t == ZONE_ITEM);
     item_subprice.Show(t == ZONE_ITEM && itype == ITEM_SUBSTITUTE);
