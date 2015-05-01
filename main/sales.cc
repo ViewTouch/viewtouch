@@ -71,10 +71,10 @@ SalesItem::SalesItem(const char* name)
     item_code.Set("");
     
     location = "";
-    event_time = "";
-    total_tickets = "";
-    available_tickets = "";
-    price_label="";
+    event_time = "January 1, 2015";
+    total_tickets = "100";
+    available_tickets = "100";
+    price_label="Adult";
     cost           = 0;
     sub_cost       = 0;
     employee_cost  = 0;

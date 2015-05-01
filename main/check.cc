@@ -3964,6 +3964,19 @@ int SubCheck::SeatsUsed()
     return count;
 }
 
+void spacefill(genericChar* buf,size_t n)
+{
+	bool zhit=false;
+	for(size_t i=0;i<n;i++)
+	{
+		zhit=zhit || buf[i]==0;
+		if(zhit)
+		{
+			buf[i]=' ';
+		}
+	}
+}
+
 int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawer *drawer, int open_drawer)
 {
     FnTrace("SubCheck::PrintReceipt()");
@@ -4346,6 +4359,18 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
         else if (flag)
             ++lines;
     }
+  
+  
+    genericChar charbuffer[15];
+    genericChar serialnumber[15];
+    genericChar blankbuffer[15];
+    
+    memset(charbuffer,0,15);
+    memset(serialnumber,0,15);
+    memset(blankbuffer,0,15);
+    
+    int leftflags=PRINT_LARGE;
+    int rightflags=PRINT_TALL;
     //PRINT TICKETS
     for(std::list<Order*>::iterator loi=tickets.begin();loi!=tickets.end();++loi)
     {
@@ -4354,16 +4379,53 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 	SalesItem* si=ord->Item(items);  
 	for(int i=0;i<count;i++)
 	{
+		snprintf(serialnumber,14,"%d-%d-%d",check->serial_number,number,i);
+		//print ticket and stub here.
+		printer->CutPaper(1);
+		
+		snprintf(charbuffer,14,"%s",si->item_name.Value());
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->Put(charbuffer,rightflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"%s",si->event_time.Value());
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->Put(charbuffer,rightflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"%s",si->location.Value());
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->Put(charbuffer,rightflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"1 %s",si->price_label.Value());
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->Put(charbuffer,rightflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"%s",term->FormatPrice(ord->cost));//Price
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->Put(serialnumber,rightflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"%s",settings->store_name.Value());//Store name
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"%s",serialnumber);//Store name
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->NewLine();
+		
 		int a=si->available_tickets.IntValue();
 		a--;
 		si->available_tickets.Set(a);
-		//print ticket and stub here.
-		
-		printer->CutPaper(1);
-		
-		//print ticket
-		
-		printer->CutPaper(1);
 	}
     }
     

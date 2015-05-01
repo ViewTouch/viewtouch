@@ -1521,24 +1521,32 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
     
     if(item->type == ITEM_ADMISSION)
     {
-	int offsety=0;
-	t->RenderText(item->ZoneName(),x + border,y + border+offsety,col,FONT_TIMES_24B,ALIGN_LEFT);
-	offsety+=24;
-	t->RenderText(item->location.Value(),x + w / 2.0,y + border +offsety,col,FONT_TIMES_20B,ALIGN_CENTER);
+	int offsety=border;
+	t->RenderText(item->ZoneName(),x + w / 2.0,y + offsety,col,FONT_TIMES_20B,ALIGN_CENTER);
 	offsety+=20;
-	t->RenderText(item->event_time.Value(),x + w / 2.0,y + border + offsety,col,FONT_TIMES_20B,ALIGN_CENTER);
-	offsety+=20;
-	int o=14;
-	genericChar buffer[64];
-	/* > Movie Title
-> Showtime
-> Show Location
-> Company Name
-> Price Class (Adult/Child/Student/Discount/Etc)
-> Available/Total
-> Price */
-	snprintf(buffer,64,"%s/%s",item->available_tickets.Value(),item->total_tickets.Value());
-	t->RenderText(buffer,x + border,y + h - border - o,col,FONT_TIMES_20B,ALIGN_LEFT);
+	t->RenderText(item->event_time.Value(),x + w / 2.0,y + offsety,col,FONT_TIMES_20B,ALIGN_CENTER);
+	if(item->location.length > 0)
+	{
+		offsety+=20;
+		t->RenderText(item->location.Value(),x + w / 2.0,y + offsety,col,FONT_TIMES_20B,ALIGN_CENTER);
+	}
+	if(s->store_name.length > 0)
+	{
+		offsety+=20;
+		t->RenderText(s->store_name.Value(),x + w / 2.0,y + offsety,col,FONT_TIMES_20B,ALIGN_CENTER);
+	}
+	if(item->price_label.length > 0)
+	{
+		offsety+=20;
+		t->RenderText(item->price_label.Value(),x + w / 2.0,y + offsety,col,FONT_TIMES_20B,ALIGN_CENTER);
+	}
+	if((item->available_tickets.length > 0) && (item->total_tickets.length > 0))
+	{
+		offsety+=20;
+		genericChar buffer[64];
+		snprintf(buffer,64,"%s/%s",item->available_tickets.Value(),item->total_tickets.Value());
+		t->RenderText(buffer,x + w / 2.0,y + offsety,col,FONT_TIMES_20B,ALIGN_CENTER);
+	}
     }
 
     if (item->type == ITEM_MODIFIER || sub)
