@@ -4381,6 +4381,8 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 	SalesItem* si=ord->Item(items);  
 	for(int i=0;i<count;i++)
 	{
+		//sys->NewSerialNumber()
+		
 		snprintf(serialnumber,14,"%d-%d",check->serial_number,ticket_count_on_subcheck);
 		ticket_count_on_subcheck++;
 		//print ticket and stub here.
@@ -4427,6 +4429,8 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 		printer->NewLine();
 		
 		printer->NewLine();
+		printer->NewLine();
+		
 		
 		int a=si->available_tickets.IntValue();
 		a--;
