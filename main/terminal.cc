@@ -4683,9 +4683,12 @@ int Terminal::EditZone(Zone *currZone)
 		WStr("");          // item printed name
 		WStr("");          // item zone name
 		WInt8(0);          // item type
+		WStr("");	   //location
 		WStr("");          // item event time
 		WStr("");          // item total tickets
 		WStr("");          // item available tickets
+		WStr("");	   // item price_label
+		
 		WStr(SimpleFormatPrice(0)); // item price
 		WStr(SimpleFormatPrice(0)); // item sub price
         WStr(SimpleFormatPrice(0)); // employee price
@@ -4872,9 +4875,11 @@ int Terminal::ReadZone()
         RStr();   // item printed name
         RStr();   // item zone name
         RInt8();  // item type
+	RStr();   // item location
 	RStr();   // item event time
 	RStr();   // item total tickets
 	RStr();   // item available tickets
+	RStr();   // item price_label
         RStr();   // item price
         RStr();   // item subprice
         RStr();   // employee price

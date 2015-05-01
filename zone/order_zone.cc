@@ -1530,6 +1530,13 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
 	offsety+=20;
 	int o=14;
 	genericChar buffer[64];
+	/* > Movie Title
+> Showtime
+> Show Location
+> Company Name
+> Price Class (Adult/Child/Student/Discount/Etc)
+> Available/Total
+> Price */
 	snprintf(buffer,64,"%s/%s",item->available_tickets.Value(),item->total_tickets.Value());
 	t->RenderText(buffer,x + border,y + h - border - o,col,FONT_TIMES_20B,ALIGN_LEFT);
     }

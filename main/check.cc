@@ -40,6 +40,7 @@
 #include <dirent.h>
 #include <sys/file.h>
 #include <cstring>
+#include <list>
 
 #include <iostream>
 
@@ -3983,6 +3984,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 
     System *sys = term->system_data;
     Settings *settings = &(sys->settings);
+    ItemDB* items= &(sys->menu);
     Employee *e = sys->user_db.FindByID(check->WhoGetsSale(settings));
     genericChar str[256];
     genericChar str1[64];
@@ -4114,9 +4116,15 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     printer->NewLine();
 
     check->PrintCustomerInfo(printer, 0);
+    
+    std::list<Order*> tickets;
 
     for (Order *order = OrderList(); order != NULL; order = order->next)
     {
+	if(order->item_type == ITEM_ADMISSION)
+	{
+		tickets.push_back(order);
+	}
         if (order->item_type == ITEM_POUND)
         {
             sprintf(str1, "%.2f %s                              ",
@@ -4338,6 +4346,27 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
         else if (flag)
             ++lines;
     }
+    //PRINT TICKETS
+    for(std::list<Order*>::iterator loi=tickets.begin();loi!=tickets.end();++loi)
+    {
+	Order* ord=*loi;
+	int count=ord->count;
+	SalesItem* si=ord->Item(items);  
+	for(int i=0;i<count;i++)
+	{
+		int a=si->available_tickets.IntValue();
+		a--;
+		si->available_tickets.Set(a);
+		//print ticket and stub here.
+		
+		printer->CutPaper(1);
+		
+		//print ticket
+		
+		printer->CutPaper(1);
+	}
+    }
+    
     printer->End();
 
     return 0;

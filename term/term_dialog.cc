@@ -994,8 +994,8 @@ int ZoneDialog::Open()
     item_type.Set(itype);
     item_location.Set(RStr());
     item_event_time.Set(RStr());
-    item_available_tickets.Set(RStr());
     item_total_tickets.Set(RStr());
+    item_available_tickets.Set(RStr());
     item_price_label.Set(RStr());
     item_price.Set(RStr());
     item_subprice.Set(RStr());
