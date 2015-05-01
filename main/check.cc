@@ -4371,6 +4371,8 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     
     int leftflags=PRINT_LARGE;
     int rightflags=PRINT_TALL;
+    
+    int ticket_count_on_subcheck=0;
     //PRINT TICKETS
     for(std::list<Order*>::iterator loi=tickets.begin();loi!=tickets.end();++loi)
     {
@@ -4379,7 +4381,8 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 	SalesItem* si=ord->Item(items);  
 	for(int i=0;i<count;i++)
 	{
-		snprintf(serialnumber,14,"%d-%d-%d",check->serial_number,number,i);
+		snprintf(serialnumber,14,"%d-%d",check->serial_number,ticket_count_on_subcheck);
+		ticket_count_on_subcheck++;
 		//print ticket and stub here.
 		printer->CutPaper(1);
 		
@@ -4423,12 +4426,14 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 		printer->Put(charbuffer,leftflags);
 		printer->NewLine();
 		
+		printer->NewLine();
+		
 		int a=si->available_tickets.IntValue();
 		a--;
 		si->available_tickets.Set(a);
 	}
     }
-    
+    printer->CutPaper(1);
     printer->End();
 
     return 0;
