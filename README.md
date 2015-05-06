@@ -18,25 +18,23 @@ ViewTouch.com offers paid support to businesses and individuals want business cl
 
 Screenshots
 =========
+Time Clock and Secure Log On
 ![Touchscreen Password, Log On and Timeclock](http://www.viewtouch.com/vtscrn1.png)
-"Time Clock and Secure Log On"
 
+Order Breakfast, then Display and/or Print in Kitchen
+A Lightning Fast, High Resolution Interface
 ![Order Breakfast, then Display and/or Print in Kitchen](http://www.viewtouch.com/vtscrn6.png)
-"A Lightning Fast, High Resolution Interface !
 
-Time-Of-Day Menus  >>  Breakfast, Brunch, Lunch, Early Bird, Dinner, Late Night, Happy Hour
-
-Time-Of Day Coupons !   Day-Of-Week Coupons !"
-
-
+Time Clock Review and Edit - Control Labor Expense 
+Back Office, Comprehensive Labor Costing, Overtime Alerts
+Interactive Time Clock Review and Editing
 ![Time Clock Review and Edit - Control Labor Expense ](http://www.viewtouch.com/vtscrn3.png)
-"Back Office, Comprehensive Labor Costing, Overtime Alerts
-Interactive Time Clock Review and Editing"
 
+Decision Support: Fly-Over, Drill-Down in Real Time
+Touch 'n' View Any Day or Any Period Updated Every Minute
 ![Decision Support: Fly-Over, Drill-Down in Real Time](http://www.viewtouch.com/vtscrn5.png)
-"Touch 'n' View Any Day or Any Period Updated Every Minute
 ViewTouch doesn't just store all of your data for you - it keeps your entire transaction history in Main Memory.  No Wonder It's Fast !
-Every restaurant needs these numbers. Rely on ViewTouch for the numbers you need with perfect accuracy and lightning speed. No one will ever be able to find fault with record keeping like this; auditors can see compliance across every period. Control NON CASH revenue adjustments and labor costs, including non-intuitive details. The only way you can run a business is `by the numbers' and here are the numbers you need, Shift By Shift, Weekly, Monthly, Quarterly and Yearly."
+Every restaurant needs these numbers. Rely on ViewTouch for the numbers you need with perfect accuracy and lightning speed. No one will ever be able to find fault with record keeping like this; auditors can see compliance across every period. Control NON CASH revenue adjustments and labor costs, including non-intuitive details. The only way you can run a business is `by the numbers' and here are the numbers you need, Shift By Shift, Weekly, Monthly, Quarterly and Yearly.
 
 History of the Viewtouch POS system
 =========
