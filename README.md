@@ -1,19 +1,30 @@
 Viewtouch
 =========
-
 ViewTouch is the world renowned, ORIGINAL Graphical Touchscreen Restaurant Point of Sale Interface.  Every other POS solution in the world came after we first created ViewTouch in 1986 and demonstrated it to many thousands worldwide.
 
 ViewTouch is the ONLY POS solution which encourages you to buy and attach as many of your own Android tablets to the POS system as you want without paying us anything!  Buy as many Android tablets of any size, any resolution as you want, and add them to your POS system.
 
 
-The ViewTouch code has recently been under the GPLv3 license.
+With the availability of ViewTouch source code under the GPL and of the Raspberry Pi computer it is now possible for a restaurateur to automate a restaurant of small to moderate size for about an hour's worth of sales revenue, or for a single day's profit. ViewTouch allows multiple touchscreen terminals, each powered by a Raspberry Pi. ViewTouch also allows Android tablets to be used as mobile POS terminals, making use of the ViewTouch X Server apk, downloadable from the ViewTouch web site.
+
+Restaurateurs wishing training and 24/7 support need only contact the support staff at http://www.viewtouch.com.
+
+Running ViewTouch requires graphical data files which are available by contacting me viewtouch.com
+--Gene Mosher
 
 Official website: http://www.viewtouch.com
 
+
+License
+=========
+
+The ViewTouch code has recently been released under the GPLv3 license.
+
 Commercial Support and Enquiries
 =========
-http://www.viewtouch.com is the business that initially created the ViewTouch software. 
 ViewTouch.com offers paid support to businesses and individuals want business class support for their Viewtouch Point Of Sale project. 
+
+The official website and contact point for the ViewTouch company is at http://www.viewtouch.com
 
 
 Screenshots
