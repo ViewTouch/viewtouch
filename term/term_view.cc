@@ -62,20 +62,20 @@ struct FontDataType
 
 static FontDataType FontData[] =
 {
-    {FONT_TIMES_20,    20, "-adobe-times-medium-r-normal--20-*-iso8859-15"},
-    {FONT_TIMES_24,    24, "-adobe-times-medium-r-normal--24-*-iso8859-15"},
-    {FONT_TIMES_34,    33, "-adobe-times-medium-r-normal--34-*-iso8859-15"},
-    {FONT_TIMES_20B,   20, "-adobe-times-bold-r-normal--20-*-iso8859-15"},
-    {FONT_TIMES_24B,   24, "-adobe-times-bold-r-normal--24-*-iso8859-15"},
-    {FONT_TIMES_34B,   33, "-adobe-times-bold-r-normal--34-*-iso8859-15"},
-    {FONT_TIMES_14,    14, "-adobe-times-medium-r-normal--14-*-iso8859-15"},
-    {FONT_TIMES_14B,   14, "-adobe-times-bold-r-normal--14-*-iso8859-15"},
-    {FONT_TIMES_18,    18, "-adobe-times-medium-r-normal--18-*-iso8859-15"},
-    {FONT_TIMES_18B,   18, "-adobe-times-bold-r-normal--18-*-iso8859-15"},
-    {FONT_COURIER_18,  18, "-adobe-courier-medium-r-normal--18-*-*-*-*-*-iso8859-15"},
-    {FONT_COURIER_18B, 18, "-adobe-courier-bold-r-normal--18-*-*-*-*-*-iso8859-15"},
-    {FONT_COURIER_20,  20, "-adobe-courier-medium-r-normal--20-*-*-*-*-*-iso8859-15"},
-    {FONT_COURIER_20B, 20, "-adobe-courier-bold-r-normal--20-*-*-*-*-*-iso8859-15"}
+    {FONT_TIMES_20,    20, "-adobe-times-medium-r-normal--20-*-iso8859-1*"},
+    {FONT_TIMES_24,    24, "-adobe-times-medium-r-normal--24-*-iso8859-1*"},
+    {FONT_TIMES_34,    33, "-adobe-times-medium-r-normal--34-*-iso8859-1*"},
+    {FONT_TIMES_20B,   20, "-adobe-times-bold-r-normal--20-*-iso8859-1*"},
+    {FONT_TIMES_24B,   24, "-adobe-times-bold-r-normal--24-*-iso8859-1*"},
+    {FONT_TIMES_34B,   33, "-adobe-times-bold-r-normal--34-*-iso8859-1*"},
+    {FONT_TIMES_14,    14, "-adobe-times-medium-r-normal--14-*-iso8859-1*"},
+    {FONT_TIMES_14B,   14, "-adobe-times-bold-r-normal--14-*-iso8859-1*"},
+    {FONT_TIMES_18,    18, "-adobe-times-medium-r-normal--18-*-iso8859-1*"},
+    {FONT_TIMES_18B,   18, "-adobe-times-bold-r-normal--18-*-iso8859-1*"},
+    {FONT_COURIER_18,  18, "-adobe-courier-medium-r-normal--18-*-*-*-*-*-iso8859-1*"},
+    {FONT_COURIER_18B, 18, "-adobe-courier-bold-r-normal--18-*-*-*-*-*-iso8859-1*"},
+    {FONT_COURIER_20,  20, "-adobe-courier-medium-r-normal--20-*-*-*-*-*-iso8859-1*"},
+    {FONT_COURIER_20B, 20, "-adobe-courier-bold-r-normal--20-*-*-*-*-*-iso8859-1*"}
 };
 
 struct PenDataType
