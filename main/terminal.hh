@@ -312,6 +312,7 @@ public:
     TimeInfo  time_out;       // time of last user input or timeout
     Zone     *selected_zone;  // zone currently selected (highlighted)
     Zone     *previous_zone;  // zone previously having focus
+    Zone     *active_zone;    // active kitchen display report zone
     int       timeout;        // current timeout length in seconds
     Locale   *locale_main;
     Locale   *locale_default;

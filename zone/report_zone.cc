@@ -646,7 +646,7 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
         "ccdetailsdone", "ccrefund", "ccvoids", "ccrefunds",
         "ccexceptions", "ccfinish", "ccfinish2 ", "ccfinish3 ",
         "ccprocessed", "ccrefundamount ", "ccvoidttid ", 
-	"zero captured tips", NULL};
+	"zero captured tips", "bump", NULL};
 
     Employee         *e = t->user;
     System           *sys = t->system_data;
@@ -678,6 +678,28 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
                 break;
             }
         }
+	else if (t->page && t->page->IsKitchen() && t->page->ZoneList()) 
+	{
+	    // highlight next report zone with a check
+	    Zone *zcur = t->active_zone;
+	    Zone *z = zcur;
+	    while (1)
+	    {
+	    	if (z == NULL)
+		    z = t->page->ZoneList();    // (re)start at top of list
+		else
+		    z = z->next;
+		if (z == zcur)
+		    break;
+	   	if (z && z->Type() == ZONE_REPORT && 
+				((ReportZone *)z)->GetDisplayCheck(t))
+		{
+		    t->active_zone = z;
+		    Draw(t, 1);
+		    return SIGNAL_END;
+		}
+	    }
+	}
         else
         {
             AdjustPeriod(ref, period_view, 1);
@@ -704,6 +726,28 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
                 break;
             }
         }
+	else if (t->page && t->page->IsKitchen() && t->page->ZoneList()) 
+	{
+	    // highlight previous report zone with a check
+	    Zone *zcur = t->active_zone;
+	    Zone *z = zcur;
+	    while (1)
+	    {
+	    	if (z == NULL)
+		    z = t->page->ZoneListEnd();    // (re)start at end of list
+		else
+		    z = z->fore;
+		if (z == zcur)
+		    break;
+	   	if (z && z->Type() == ZONE_REPORT && 
+				((ReportZone *)z)->GetDisplayCheck(t))
+		{
+		    t->active_zone = z;
+		    Draw(t, 1);
+		    return SIGNAL_END;
+		}
+	    }
+	}
         else
         {
             AdjustPeriod(ref, period_view, -1);
@@ -917,6 +961,10 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
         sys->ClearCapturedTips(day_start, day_end, t->archive);
         Draw(t, 1);
 	return SIGNAL_OKAY;
+    case 36: // bump active check
+        if (check_disp_num && this == t->active_zone)
+            return ToggleCheckReport(t);
+        break;
     default:
         if (strncmp(message, "search ", 7) == 0)
         {

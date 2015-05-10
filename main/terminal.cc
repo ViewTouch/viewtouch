@@ -473,7 +473,8 @@ Terminal::Terminal()
     dialog         = NULL;
     next_dialog    = NULL;
     selected_zone  = NULL;
-    previous_zone   = NULL;
+    previous_zone  = NULL;
+    active_zone    = NULL;
     timeout        = 15;
     reload_zone_db = 0;
     edit           = 0;
@@ -4884,8 +4885,10 @@ int Terminal::ReadZone()
     {
         if (edit_zone->page)
             edit_zone->page->Remove(edit_zone);
-        if (selected_zone != NULL && selected_zone == edit_zone)
+        if (selected_zone == edit_zone)
             selected_zone = NULL;
+        if (active_zone == edit_zone)
+            active_zone = NULL;
         delete edit_zone;
         edit_zone = NULL;
     }

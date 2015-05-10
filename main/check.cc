@@ -1054,10 +1054,13 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     FnTrace("Check::PrintWorkOrder()");
     int flag_sent = ORDER_SENT;
     int flag_printed = CF_PRINTED;
+    int color = COLOR_DEFAULT;
     if (rzone != NULL)
     {
         flag_sent = ORDER_SHOWN;
         flag_printed = CF_SHOWN;
+        if (rzone == term->active_zone) 
+	    color = COLOR_GREEN;	// FIXME configurable
     }
 
     Printer *printer = term->FindPrinter(printer_id);
@@ -1081,8 +1084,6 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     genericChar cststr[STRLENGTH];
     genericChar ordstr[STRLENGTH];
     genericChar tmpstr[STRLENGTH];
-    int idx;
-    int len;
     int pwidth = 80;
     int kitchen_mode = 0;
     if (rzone != NULL)
@@ -1091,8 +1092,8 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     }
     else if (printer != NULL)
     {
-        pwidth = printer->Width(kitchen_mode);
         kitchen_mode = printer->KitchenMode();
+        pwidth = printer->Width(kitchen_mode);
     }
     pwidth = MIN(pwidth, 256);
     TimeInfo now;
@@ -1114,120 +1115,21 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
         report->Underline(pwidth, COLOR_DEFAULT, ALIGN_CENTER, 0.0);
         report->NewLine();
     }
-    else if (CustomerType() == CHECK_TAKEOUT  ||
-             CustomerType() == CHECK_DELIVERY ||
-             CustomerType() == CHECK_CATERING ||
-             CustomerType() == CHECK_DINEIN   ||
-             CustomerType() == CHECK_TOGO     ||
-             CustomerType() == CHECK_CALLIN)
-    {
-        for (idx = 0; idx < pwidth - 1; idx++)
-            str1[idx] = ' ';
-        str1[idx] = '\0';
-        report->Mode(PRINT_LARGE);
-        report->TextL(str1, COLOR_DEFAULT);
-        report->Mode(0);
-        report->Underline(pwidth, COLOR_DEFAULT, ALIGN_CENTER, 0.0);
-        report->NewLine();
-        str[0] = '\0';
-        switch(CustomerType())
-        {
-        case CHECK_TAKEOUT:
-            if (!date.IsSet() || (date <= now))
-            {
-                strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
-            }
-            strcat(str, term->Translate("Take Out"));
-            break;
-        case CHECK_DELIVERY:
-            if (!date.IsSet() || (date <= now))
-            {
-                strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
-            }
-            strcpy(str, term->Translate("Delivery"));
-            break;
-        case CHECK_CATERING:
-            if (!date.IsSet() || (date <= now))
-            {
-                strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
-            }
-            strcpy(str, term->Translate("Catering"));
-            break;
-        case CHECK_DINEIN:
-            if (!date.IsSet() || (date <= now))
-            {
-                strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
-            }
-            strcpy(str, "Here");
-            break;
-        case CHECK_TOGO:
-            if (!date.IsSet() || (date <= now))
-            {
-                strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
-            }
-            strcpy(str, "To Go");
-            break;
-        case CHECK_CALLIN:
-            if (!date.IsSet() || (date <= now))
-            {
-                strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
-            }
-            strcpy(str, "Pick Up");
-            break;
-        }
-        snprintf(str1, pwidth, "** %s **", str);
-        report->Mode(PRINT_LARGE);
-        report->TextL(str1, COLOR_DEFAULT);
-        report->NewLine();
-        snprintf(str1, pwidth, "Due:  %s", term->TimeDate(date, TD_DATETIME));
-        len = strlen(str1);
-        if (pwidth > len)
-        {
-            for (idx = len; idx < pwidth - 1; idx++)
-                str1[idx] = ' ';
-            str1[idx] = '\0';
-        }
-        report->TextL(str1, COLOR_DEFAULT);
-        report->Mode(0);
-        report->NewLine();
-    }
 
-    sprintf(str1, "#%d", serial_number);
+    // order number
     if (reprint)
     {
-        sprintf(str, "REPRINT %s", str1);
+        strcpy(str, "REPRINT ");
         flags |= CF_REPRINT & CF_PRINTED;
     }
     else if (flags & flag_printed)
-        sprintf(str, "ADDITION %s", str1);
+        strcpy(str, "ADDITION ");
     else
-        sprintf(str, "NEW ORDER %s", str1);
-    report->Mode(kitchen_mode);
-    report->TextL(str, COLOR_DEFAULT);
-    // Show when it was made or the elapsed time that it's been in the kitchen
-    if (rzone != NULL)
-    {
-        if (undo == 0)
-        {
-            StringElapsedToNow(str, 256, chef_time);
-            report->TextR(str);
-        }
-        else
-            report->TextR(term->TimeDate(made_time, TD_TIME));
-    }
+    	str[0] = 0;
+    sprintf(str1, "#%d", serial_number);
+    strcat(str, str1);
 
-    report->NewLine();
-    term->TimeDate(str, SystemTime, TD_SHORT_MONTH | TD_NO_DAY | TD_SHORT_TIME);
-    report->TextL(str, COLOR_DEFAULT);
-    report->Mode(0);
-    report->NewLine();
-
+    // order type
     switch (CustomerType())
 	{
     case CHECK_RESTAURANT:
@@ -1239,54 +1141,73 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
         break;
 
     case CHECK_TAKEOUT:
-        sprintf(str1, "%s",term->Translate("TO GO"));
+        strcpy(str1, term->Translate("TO GO"));
         break;
 
     case CHECK_FASTFOOD:
-        sprintf(str1, "%s",term->Translate("Fast"));
+        strcpy(str1, term->Translate("Fast"));
         break;
 
     case CHECK_DELIVERY:
-        sprintf(str1,"%s", term->Translate("Deliver"));
+        strcpy(str1, term->Translate("Deliver"));
         break;
 
     case CHECK_RETAIL:
-        sprintf(str1, "%s",term->Translate("Retail"));
+        strcpy(str1, term->Translate("Retail"));
         break;
 
     case CHECK_DINEIN:
-        sprintf(str1,"%s", "Here");
+        strcpy(str1, "Here");
         break;
 
     case CHECK_TOGO:
-        sprintf(str1,"%s", "To Go");
+        strcpy(str1, "To Go");
         break;
 
     case CHECK_CALLIN:
-        sprintf(str1,"%s", "Pick Up");
+        strcpy(str1, "Pick Up");
         break;
 
     default:
-        break;
-        /* do nothing */
+	str1[0] = 0;
 	}
-
-    if (employee)
-        strcpy(str2, employee->system_name.Value());
-    else if (call_center_id > 0)
-        strcpy(str2, "Call Center");
-    else
-        strcpy(str2, UnknownStr);
-
-    str1[15] = '\0';
-    str2[10] = '\0';
-    sprintf(str, "%-10s%-10s", str1, str2);
-    str[pwidth] = '\0';
+    strcat(str, " ");
+    strcat(str, str1);
     report->Mode(kitchen_mode);
-    report->TextL(str, COLOR_DEFAULT);
+    report->TextL(str, color);
+
+    // Show when it was made or the elapsed time that it's been in the kitchen
+    if (rzone != NULL)
+    {
+        if (undo == 0)
+        {
+            StringElapsedToNow(str, 256, chef_time);
+            report->TextR(str);
+        }
+        else
+            report->TextR(term->TimeDate(made_time, TD_TIME));
+    }
+    report->NewLine();
+
+    // order source
+    if (employee)
+        strcpy(str, employee->system_name.Value());
+    else if (call_center_id > 0)
+        strcpy(str, "Call Center");
+    else
+        strcpy(str, UnknownStr);
+
+    if (check_state & ORDER_MADE)
+        strcat(str, " READY");
+
+    report->Mode(kitchen_mode);
+    report->TextL(str, color);
     report->Mode(0);
+
+// FIXME ADD PAID
+
     report->Underline(pwidth, COLOR_DEFAULT, ALIGN_LEFT, 0.0);
-    report->NewLine(2);
+    report->NewLine();
 
     if (settings->kv_show_user)
         PrintCustomerInfoReport(report, kitchen_mode);
