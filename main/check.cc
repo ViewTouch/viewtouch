@@ -1199,6 +1199,8 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
 
     if (check_state & ORDER_MADE)
         strcat(str, " READY");
+    if (Status() == CHECK_CLOSED)
+    	strcat(str, " PAID");
 
     report->Mode(kitchen_mode);
     report->TextL(str, color);
