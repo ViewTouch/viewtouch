@@ -4379,7 +4379,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     struct tm* dateinfo;
     time(&rawtime);
     dateinfo=localtime(&rawtime);
-    strftime(datebuffer,14,"%a, %b %e%p",dateinfo);
+    strftime(datebuffer,14,"%a, %b %e",dateinfo);
     
     int leftflags=PRINT_LARGE;
     int rightflags=PRINT_TALL;
