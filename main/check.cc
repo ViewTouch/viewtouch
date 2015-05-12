@@ -42,6 +42,7 @@
 #include <sys/file.h>
 #include <cstring>
 #include <list>
+#include <ctime>
 
 #include <iostream>
 
@@ -4366,10 +4367,19 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     genericChar charbuffer[15];
     genericChar serialnumber[15];
     genericChar blankbuffer[15];
+    genericChar datebuffer[15];
     
     memset(charbuffer,0,15);
     memset(serialnumber,0,15);
     memset(blankbuffer,0,15);
+    memset(datebuffer,0,15);
+    
+    
+    time_t rawtime;
+    struct tm* dateinfo;
+    time(&rawtime);
+    dateinfo=localtime(&rawtime);
+    strftime(datebuffer,14,"%a, %b %e%p",dateinfo);
     
     int leftflags=PRINT_LARGE;
     int rightflags=PRINT_TALL;
@@ -4398,7 +4408,12 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 		printer->Put(charbuffer,rightflags);
 		printer->NewLine();
 		
-		snprintf(charbuffer,14,"%s %s",si->event_time.Value());
+		spacefill(datebuffer,14);
+		printer->Put(datebuffer,leftflags);
+		printer->Put(datebuffer,rightflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"%s",si->event_time.Value());
 		spacefill(charbuffer,14);
 		printer->Put(charbuffer,leftflags);
 		printer->Put(charbuffer,rightflags);
