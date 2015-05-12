@@ -274,6 +274,10 @@ public:
     int Remove(SalesItem *mi);
     // Removes SalesItem from object
     int Purge();
+    // Ends the day
+    int ResetAdmissionItems();
+    
+    
     // Removes & deletes all SalesItem records from object
     SalesItem *FindByName(const char* name);
     // Finds SalesItem by name

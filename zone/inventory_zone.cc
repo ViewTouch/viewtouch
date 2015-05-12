@@ -82,6 +82,7 @@
 #include "image_data.hh"
 #include "manager.hh"
 #include <cstring>
+#include "admission.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -1338,7 +1339,9 @@ int ItemListZone::ListReport(Terminal *t, Report *r)
             my_color = COLOR_DK_GREEN;
         else if (si->type == ITEM_SUBSTITUTE)
             my_color = COLOR_DK_RED;
-        r->TextL(si->item_name.Value(), my_color);
+	Str name;
+	admission_parse_hash_name(name,si->item_name);
+        r->TextL(name.Value(), my_color);
         r->TextR(t->FormatPrice(si->cost), my_color);
         r->NewLine();
         si = si->next;

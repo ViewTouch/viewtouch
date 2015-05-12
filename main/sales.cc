@@ -27,6 +27,7 @@
 #include "settings.hh"
 #include "labels.hh"
 #include "manager.hh"
+#include "admission.hh"
 
 #include <cctype>
 #include <string.h>
@@ -336,13 +337,22 @@ int SalesItem::Price(Settings *s, int qualifier)
     return c;
 }
 
+static const char* filteredname(const Str& item_name)
+{
+	static genericChar buf[256];
+	Str outname;
+	admission_parse_hash_name(outname,item_name);
+	snprintf(buf,256,"%s",outname.Value());
+	return buf;
+}
+
 const char* SalesItem::ZoneName()
 {
     FnTrace("SalesItem::ZoneName()");
     if (zone_name.length > 0)
         return zone_name.Value();
     else
-        return item_name.Value();
+	return filteredname(item_name);
 }
 
 const char* SalesItem::PrintName()
@@ -351,7 +361,7 @@ const char* SalesItem::PrintName()
     if (print_name.length > 0)
         return print_name.Value();
     else
-        return item_name.Value();
+        return filteredname(item_name);
 }
 
 const char* SalesItem::CallCenterName(Terminal *t)
@@ -360,7 +370,7 @@ const char* SalesItem::CallCenterName(Terminal *t)
     if (call_center_name.length > 0)
         return call_center_name.Value();
     else
-        return item_name.Value();
+        return filteredname(item_name.Value());
 }
 
 
@@ -513,6 +523,18 @@ int ItemDB::Purge()
         array_size = 0;
     }
     return 0;
+}
+
+int ItemDB::ResetAdmissionItems()
+{
+	for(SalesItem* si=ItemList();si!=NULL;si=si->next)
+	{
+		if(si->type == ITEM_ADMISSION)
+		{
+			si->available_tickets.Set(si->total_tickets.IntValue());
+		}
+	}
+	return 0;
 }
 
 SalesItem *ItemDB::FindByName(const char* name)

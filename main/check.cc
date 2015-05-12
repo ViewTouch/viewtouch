@@ -35,6 +35,7 @@
 #include "customer.hh"
 #include "report_zone.hh"
 #include "manager.hh"
+#include "admission.hh"
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -137,6 +138,7 @@ genericChar* SeatName(int seat, genericChar* str, int guests)
     }
     return str;
 }
+
 
 
 /**** Check Class ****/
@@ -4378,7 +4380,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     {
 	Order* ord=*loi;
 	int count=ord->count;
-	SalesItem* si=ord->Item(items);  
+	SalesItem* si=ord->Item(items);
 	for(int i=0;i<count;i++)
 	{
 		//sys->NewSerialNumber()
@@ -4388,13 +4390,15 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 		//print ticket and stub here.
 		printer->CutPaper(1);
 		
-		snprintf(charbuffer,14,"%s",si->item_name.Value());
+		Str tname;
+		admission_parse_hash_name(tname,si->item_name);
+		snprintf(charbuffer,14,"%s",tname.Value());
 		spacefill(charbuffer,14);
 		printer->Put(charbuffer,leftflags);
 		printer->Put(charbuffer,rightflags);
 		printer->NewLine();
 		
-		snprintf(charbuffer,14,"%s",si->event_time.Value());
+		snprintf(charbuffer,14,"%s %s",si->event_time.Value());
 		spacefill(charbuffer,14);
 		printer->Put(charbuffer,leftflags);
 		printer->Put(charbuffer,rightflags);
@@ -4430,11 +4434,30 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 		
 		printer->NewLine();
 		printer->NewLine();
-		
-		
-		int a=si->available_tickets.IntValue();
-		a--;
-		si->available_tickets.Set(a);
+	}
+	
+	Str on,ohsh;
+	admission_parse_hash_name(on,ord->item_name);
+	admission_parse_hash_ltime_hash(ohsh,ord->item_name);
+	
+	for (SalesItem *sicheck = items->ItemList(); sicheck != NULL; sicheck = sicheck->next)
+	{
+		if(sicheck->type == ITEM_ADMISSION)
+		{
+			Str ckhsh,ckn;
+			admission_parse_hash_name(ckn,sicheck->item_name);
+			admission_parse_hash_ltime_hash(ckhsh,sicheck->item_name);
+			if(on == ckn && ohsh == ckhsh)
+			{
+				int a=sicheck->available_tickets.IntValue();
+				a-=count;
+				if(a < 0)
+				{
+					a=0;
+				}
+				sicheck->available_tickets.Set(a);
+			}
+		}
 	}
     }
     printer->CutPaper(1);
@@ -4923,7 +4946,8 @@ static int adjust_cost(int cost, int inclusive, Flt tax)
 Order::Order(Settings *settings, SalesItem *item, int qual, int price)
 {
     FnTrace("Order::Order(Settings, SalesItem, int)");
-    item_name   = item->item_name;
+    
+    item_name = item->item_name; //item_name;
     if (price >= 0)
         item_cost = price;
     else
@@ -5208,6 +5232,13 @@ int Order::FigureCost()
     return 0;
 }
 
+void PrintItemAdmissionFiltered(char* str,int qual,const genericChar* item_name)
+{
+	Str in(item_name);
+	admission_parse_hash_name(in,in);
+	PrintItem(str,qual,in.Value());
+}
+
 genericChar* Order::Description(Terminal *t, genericChar* str)
 {
     FnTrace("Order::Description()");
@@ -5216,7 +5247,7 @@ genericChar* Order::Description(Terminal *t, genericChar* str)
     if (str == NULL)
         str = buffer;
 
-    PrintItem(str, qualifier, item_name.Value());
+    PrintItemAdmissionFiltered(str, qualifier, item_name.Value());
     
     return str;
 }
@@ -5237,7 +5268,7 @@ genericChar* Order::PrintDescription(genericChar* str, short pshort)
             PrintItem(str, qualifier, si->PrintName());
     }
     else
-        PrintItem(str, qualifier, item_name.Value());
+        PrintItemAdmissionFiltered(str, qualifier, item_name.Value());
     return str;
 }
 
