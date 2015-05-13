@@ -1,4 +1,4 @@
-Viewtouch
+ViewTouch
 =========
 ViewTouch is the world renowned, ORIGINAL Graphical Touchscreen Restaurant Point of Sale Interface.  Every other POS solution in the world came after we first created ViewTouch in 1986 and demonstrated it to many thousands worldwide.
 
