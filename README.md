@@ -7,9 +7,9 @@ ViewTouch is the ONLY POS solution which encourages you to buy and attach as man
 
 With the availability of ViewTouch source code under the GPL and of the Raspberry Pi computer it is now possible for a restaurateur to automate a restaurant of small to moderate size for about an hour's worth of sales revenue, or for a single day's profit. ViewTouch allows multiple touchscreen terminals, each powered by a Raspberry Pi. ViewTouch also allows Android tablets to be used as mobile POS terminals, making use of the ViewTouch X Server apk, downloadable from the ViewTouch web site.
 
-Restaurateurs wishing training and 24/7 support need only contact the support staff at http://www.viewtouch.com.
+Restaurateurs wishing training and 24/7 support need only contact the support staff at http://www.viewtouch.com/contact.html
 
-Running ViewTouch requires graphical data files which are available by contacting me viewtouch.com
+Running ViewTouch requires graphical data files which are available at http://www.viewtouch.com/download.html
 --Gene Mosher
 
 Official website: http://www.viewtouch.com
@@ -24,7 +24,7 @@ Commercial Support and Enquiries
 =========
 ViewTouch.com offers paid support to businesses and individuals want business class support for their Viewtouch Point Of Sale project. 
 
-The official website and contact point for the ViewTouch company is at http://www.viewtouch.com
+The official website and contact point for the ViewTouch company is at http://www.viewtouch.com/contact.html
 
 
 Screenshots
@@ -52,12 +52,12 @@ History of the Viewtouch POS system
 ViewTouch first ran as a C program on the Atari ST computers. The Atari ST was a very exciting platform under Jack Tramiel from 1985 until 1993/4. In 1995 development of ViewTouch under UNIX began. At that time we were using Power Computing (i.e., Power PC) computers manufactured by The Computer Group at Motorola and the operating system was IBM's version of UNIX, which they called AIX.
 In 1997, Steve Jobs returned to Apple, the first thing he did was to kill the clones and to do that he bought PowerComputing outright to stop sales cannibalization of Apple-branded models. That was the end of the PowerPC at Motorola.
 When Atari died, if you didn't want to do Microsoft DOS or Apple, UNIX was your only choice, and X was your only choice to build the graphical interface. 
-We moved from AIX on PowerPC to Red Hat on X86. In 2000 moved to C++ and switched from Red Hat to Debian and remain with that as the default distribution today. ARM also is a completely valid hardware platform for us today, on the RPi and Oduino computers, so far. I expect ViewTouch on thumbstick computers at any time.
+We moved from AIX on PowerPC to Red Hat on X86. In 2000 we began the transition to C++ and switched from Red Hat to Debian.  We remain with that as the default distribution today, featuring the XFCE and LXDE desktop environments. ARM also is a completely valid hardware platform for ViewTouch, notably on the RPi and Oduino computers. ViewTouch can easily run on thumbstick computers, too.
 
 Discussion - On what hardware can I run this? Smaller ARM boards?
 =========
-Yes, absolutely, and even on the Oduino C1, which is also $35, but which runs faster than the latest RPi. All you have to do is to target ARM. Jack Morrison has already done this, and so have at least three other people working on the code and/or selling ViewTouch where they live. One is in West London, one is in Edinburgh, Jack is in L.A., and those are just the ones I know about.
-$35 POS to match and surpass the performance of $35,000 POS is what this is all about, and nothing less than that. It isn't just the power of Linux; it's all about the unrealized power of the remote display capabilities of The X Window System. You don't copy the program and data all over the place just to add users - all you do is open another remote window to the application. It's that easy.
+Yes, absolutely, and even on the Oduino C1, which is also $35, but which runs faster than the latest RPi. All you have to do is to target ARM. Jack Morrison has already done this, and so have at least three other people working on the code and/or selling ViewTouch where they live. Damon LoCascio in West London, John Watson in Edinburgh, Jack is in L.A., and others.
+$35 Point of Sale to match and surpass the performance of $35,000 POS offerings from many companies is what this is all about, and nothing less than that. It isn't just the power of Linux; it's all about the unrealized power of the remote display capabilities of The X Window System. One doesn't need to bother copying the program and its data all across the network to add users - all one does is open another remote window to the application by adding its IP address to the ViewTouch GUI. It's that easy.
 
 Payment gateway/processors
 =========
@@ -70,12 +70,12 @@ The interface ideas were first implemented 30 years ago, and the ideas were firs
 
 Webpage design comments
 ========
-I put all my time and money in the ViewTouch software, not in the web site. I figure that if the software that was written 20 years ago and works great then a web site that was written 20 years ago should work well enough. The software is heavily influenced by the work done by Richard W. Stevens, who passed away in 1999. Younger people usually tell me how outdated the web site is and older people usually tell me how nice it is to run across a web site that just lets them read about ViewTouch in as much depth as they care to. My favorite car and my favorite music are 50 years old. The house I grew up in is 250 years old and the castle I live in when I am in Belgium visiting my classmates from 50 years ago is 900 hundred years old. I like things that are aged.
+I spend virtually all of my time and money improving the ViewTouch software; I've spent very little time and no money at all in the web site. I figure that if the software that was written 20 years ago and works great then a web site that was written 20 years ago should work well enough. The software is heavily influenced by the work done by Richard W. Stevens, who passed away in 1999. Younger people are fond of telling me how outdated the ViewTouch web site is but older people typically tell me how nice it is to run across a web site that just lets them read about ViewTouch in as much depth as they care to. My favorite car and my favorite music are 50 years old. The house I grew up in is 250 years old and the castle I live in when I am in Belgium visiting my classmates from 50 years ago is 900 hundred years old. I like things that are aged.  If they're still around then it's for good reason.
 
 ViewTouch POS on Android
 =========
 
-ViewTouch looks exactly the same on any Android tablet as it does on any fixed display, regardless of the resolution. The Android X Server we use is based on SDL, which handles that transformation and much thanks to Sergii Pylypenko, of Kiev, for that!
+ViewTouch looks exactly the same on any Android tablet as it does on any display monitor, regardless of the resolution. The Android X Server we use is based on XSDL, which handles that transformation and much thanks to Sergii Pylypenko, of Kiev, for all of this!
 
 Discussion and comments regarding changing license to GPLv3
 =========
