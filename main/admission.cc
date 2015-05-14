@@ -56,6 +56,14 @@ void admission_parse_hash_ltime_hash(Str& hashout,const Str& ih)
 		hashout.Set("");
 	}
 }
+const char* admission_filteredname(const Str& item_name)
+{
+	static genericChar buf[256];
+	Str outname;
+	admission_parse_hash_name(outname,item_name);
+	snprintf(buf,256,"%s",outname.Value());
+	return buf;
+}
 /*
 void PrintItemAdmissionFiltered(char* buf,int qual,const char* item)
 {

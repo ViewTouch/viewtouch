@@ -337,40 +337,31 @@ int SalesItem::Price(Settings *s, int qualifier)
     return c;
 }
 
-static const char* filteredname(const Str& item_name)
-{
-	static genericChar buf[256];
-	Str outname;
-	admission_parse_hash_name(outname,item_name);
-	snprintf(buf,256,"%s",outname.Value());
-	return buf;
-}
-
 const char* SalesItem::ZoneName()
 {
     FnTrace("SalesItem::ZoneName()");
     if (zone_name.length > 0)
-        return zone_name.Value();
+        return admission_filteredname(zone_name);
     else
-	return filteredname(item_name);
+	return admission_filteredname(item_name);
 }
 
 const char* SalesItem::PrintName()
 {
     FnTrace("SalesItem::PrintName()");
     if (print_name.length > 0)
-        return print_name.Value();
+        return admission_filteredname(print_name);
     else
-        return filteredname(item_name);
+        return admission_filteredname(item_name);
 }
 
 const char* SalesItem::CallCenterName(Terminal *t)
 {
     FnTrace("SalesItem::CallCenterName()");
     if (call_center_name.length > 0)
-        return call_center_name.Value();
+        return admission_filteredname(call_center_name);
     else
-        return filteredname(item_name.Value());
+        return admission_filteredname(item_name);
 }
 
 
