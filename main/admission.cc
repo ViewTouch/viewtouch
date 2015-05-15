@@ -21,18 +21,24 @@ void admission_itemname_hash(Str& ih,const Str& name,const Str& location,const S
 		result |= hashbytes[i];
 	}
 	
-	snprintf(outbuf,256,"%s~@%08X:%s",name.Value(),result,price_class.Value());
+	snprintf(outbuf,256,"%s@%08X:%s",admission_filteredname(name),result,price_class.Value());
 	ih.Set(outbuf);
 }//converts a name to the item~hash form.
+
+
 
 void admission_parse_hash_name(Str& name,const Str& ih)
 {
 	static genericChar buffer[256];
 	strcpy(buffer,ih.Value());
-	char* zloc=strstr(buffer,"~@");
+	char* zloc=strchr(buffer,'@');
 	if(zloc)
 	{
-		*zloc=0;
+		memset(zloc,0,256-(zloc-buffer));
+		if(*(zloc-1)=='~')
+		{
+			*(zloc-1)=0;
+		}
 	}
 	name.Set(buffer);
 }
@@ -40,11 +46,11 @@ void admission_parse_hash_ltime_hash(Str& hashout,const Str& ih)
 {
 	static genericChar buffer[256];
 	strcpy(buffer,ih.Value());
-	char* zloc=strstr(buffer,"~@");
+	char* zloc=strchr(buffer,'@');
 	uint32_t val=0;
 	if(zloc)
 	{
-		val=strtoul(zloc+2,NULL,16);
+		val=strtoul(zloc+1,NULL,16);
 	}
 	if(val!=0)
 	{

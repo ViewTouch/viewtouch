@@ -1182,6 +1182,7 @@ int ZoneDialog::Send()
 	h_time.Set(item_event_time.Value());
 	h_location.Set(item_location.Value());
 	h_priceclass.Set(item_price_label.Value());
+	admission_parse_hash_name(h_itemname,h_itemname);
 	admission_itemname_hash(hout,h_itemname,h_time,h_location,h_priceclass);
 	WStr(hout.Value());
     }
