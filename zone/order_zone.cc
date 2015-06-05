@@ -340,7 +340,8 @@ SignalResult OrderEntryZone::Signal(Terminal *term, const genericChar* message)
 	static const genericChar* commands[] = {
 		"cancel", "delete", "consolidate", "final",
         "next check", "prior check", "next seat", "prior seat",
-        "takeoutseat", "takeoutattach", NULL};
+        "takeoutseat", "takeoutattach", 
+	"pickup", "quicktogo", "quickdinein", NULL};
 
     Check *currCheck = term->check;
     if (currCheck == NULL)
@@ -414,6 +415,21 @@ SignalResult OrderEntryZone::Signal(Terminal *term, const genericChar* message)
             }
             Draw(term, 1);
         }
+        result = 1;
+        break;
+    case 10:  // pickup/delivery
+    	term->QuickMode(CHECK_CALLIN);
+	term->Jump(JUMP_STEALTH, -8);
+        result = 1;
+        break;
+    case 11:  // quick to-go
+    	term->QuickMode(CHECK_TOGO);
+	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
+        result = 1;
+        break;
+    case 12:  // quick dine-in
+    	term->QuickMode(CHECK_DINEIN);
+	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
         result = 1;
         break;
     default:
