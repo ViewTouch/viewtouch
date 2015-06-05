@@ -27,6 +27,7 @@
 #include "settings.hh"
 #include "labels.hh"
 #include "manager.hh"
+#include "admission.hh"
 
 #include <cctype>
 #include <string.h>
@@ -69,6 +70,12 @@ SalesItem::SalesItem(const char* name)
     fore           = NULL;
     id             = 0;
     item_code.Set("");
+    
+    location = "";
+    event_time = "January 1, 2015";
+    total_tickets = "100";
+    available_tickets = "100";
+    price_label="Adult";
     cost           = 0;
     sub_cost       = 0;
     employee_cost  = 0;
@@ -107,6 +114,11 @@ int SalesItem::Copy(SalesItem *target)
         target->call_center_name.Set(call_center_name);
         target->id = id;
         target->item_code.Set(item_code);
+	target->location.Set(location);
+        target->event_time.Set(event_time);
+        target->total_tickets.Set(total_tickets);
+        target->available_tickets.Set(available_tickets);
+	target->price_label.Set(price_label);
         target->cost = cost;
         target->sub_cost = sub_cost;
         target->employee_cost = employee_cost;
@@ -163,6 +175,7 @@ int SalesItem::Read(InputDataFile &df, int version)
     // 11 (11/24/04) added allow_increase
     // 12 (08/18/05) added call_center_name and delivery_cost
     // 13 (09/14/05) added item_code
+    // 14 (04/30/15) added all properties relating to cinema mode.
 
     if (version < 8)
         return 1;
@@ -173,6 +186,14 @@ int SalesItem::Read(InputDataFile &df, int version)
         df.Read(zone_name);
     df.Read(print_name);
     df.Read(type);
+    if (version >= 14)
+    {
+	df.Read(location);
+	df.Read(event_time);
+	df.Read(total_tickets);
+	df.Read(available_tickets);
+	df.Read(price_label);
+    }
     df.Read(cost);
     df.Read(sub_cost);
     if (version >= 10)
@@ -238,6 +259,15 @@ int SalesItem::Write(OutputDataFile &df, int version)
 
     error += df.Write(print_name);
     error += df.Write(type);
+    
+    if (version >= 14)
+    {
+	error += df.Write(location);
+	error += df.Write(event_time);
+	error += df.Write(total_tickets);
+	error += df.Write(available_tickets);
+	error += df.Write(price_label);
+    }
     error += df.Write(cost);
     error += df.Write(sub_cost);
     if (version >= 10)
@@ -311,27 +341,27 @@ const char* SalesItem::ZoneName()
 {
     FnTrace("SalesItem::ZoneName()");
     if (zone_name.length > 0)
-        return zone_name.Value();
+        return admission_filteredname(zone_name);
     else
-        return item_name.Value();
+	return admission_filteredname(item_name);
 }
 
 const char* SalesItem::PrintName()
 {
     FnTrace("SalesItem::PrintName()");
     if (print_name.length > 0)
-        return print_name.Value();
+        return admission_filteredname(print_name);
     else
-        return item_name.Value();
+        return admission_filteredname(item_name);
 }
 
 const char* SalesItem::CallCenterName(Terminal *t)
 {
     FnTrace("SalesItem::CallCenterName()");
     if (call_center_name.length > 0)
-        return call_center_name.Value();
+        return admission_filteredname(call_center_name);
     else
-        return item_name.Value();
+        return admission_filteredname(item_name);
 }
 
 
@@ -484,6 +514,18 @@ int ItemDB::Purge()
         array_size = 0;
     }
     return 0;
+}
+
+int ItemDB::ResetAdmissionItems()
+{
+	for(SalesItem* si=ItemList();si!=NULL;si=si->next)
+	{
+		if(si->type == ITEM_ADMISSION)
+		{
+			si->available_tickets.Set(si->total_tickets.IntValue());
+		}
+	}
+	return 0;
 }
 
 SalesItem *ItemDB::FindByName(const char* name)

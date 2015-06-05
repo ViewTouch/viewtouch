@@ -289,10 +289,10 @@ int ShapeValue[] = {
     SHAPE_RECTANGLE, SHAPE_DIAMOND, SHAPE_CIRCLE, -1 };
 
 const genericChar* ItemTypeName[] = {
-    "Normal", "Modifier", "Non-Tracking Modifier", "Substitute", "By the Pound", NULL };
+    "Normal", "Modifier", "Non-Tracking Modifier", "Substitute", "By the Pound", "Admission", NULL };
 
 int ItemTypeValue[] = {
-    ITEM_NORMAL, ITEM_MODIFIER, ITEM_METHOD, ITEM_SUBSTITUTE, ITEM_POUND, -1};
+    ITEM_NORMAL, ITEM_MODIFIER, ITEM_METHOD, ITEM_SUBSTITUTE, ITEM_POUND, ITEM_ADMISSION, -1};
 
 const genericChar* FamilyName[] = {
     "A La Carte", "Appetizer", "Breakfast Entree",

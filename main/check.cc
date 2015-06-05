@@ -35,11 +35,14 @@
 #include "customer.hh"
 #include "report_zone.hh"
 #include "manager.hh"
+#include "admission.hh"
 
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/file.h>
 #include <cstring>
+#include <list>
+#include <ctime>
 
 #include <iostream>
 
@@ -136,6 +139,7 @@ genericChar* SeatName(int seat, genericChar* str, int guests)
     }
     return str;
 }
+
 
 
 /**** Check Class ****/
@@ -3886,6 +3890,19 @@ int SubCheck::SeatsUsed()
     return count;
 }
 
+void spacefill(genericChar* buf,size_t n)
+{
+	bool zhit=false;
+	for(size_t i=0;i<n;i++)
+	{
+		zhit=zhit || buf[i]==0;
+		if(zhit)
+		{
+			buf[i]=' ';
+		}
+	}
+}
+
 int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawer *drawer, int open_drawer)
 {
     FnTrace("SubCheck::PrintReceipt()");
@@ -3906,6 +3923,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 
     System *sys = term->system_data;
     Settings *settings = &(sys->settings);
+    ItemDB* items= &(sys->menu);
     Employee *e = sys->user_db.FindByID(check->WhoGetsSale(settings));
     genericChar str[256];
     genericChar str1[64];
@@ -4037,9 +4055,15 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     printer->NewLine();
 
     check->PrintCustomerInfo(printer, 0);
+    
+    std::list<Order*> tickets;
 
     for (Order *order = OrderList(); order != NULL; order = order->next)
     {
+	if(order->item_type == ITEM_ADMISSION)
+	{
+		tickets.push_back(order);
+	}
         if (order->item_type == ITEM_POUND)
         {
             sprintf(str1, "%.2f %s                              ",
@@ -4261,6 +4285,120 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
         else if (flag)
             ++lines;
     }
+  
+  
+    genericChar charbuffer[15];
+    genericChar serialnumber[15];
+    genericChar blankbuffer[15];
+    genericChar datebuffer[15];
+    
+    memset(charbuffer,0,15);
+    memset(serialnumber,0,15);
+    memset(blankbuffer,0,15);
+    memset(datebuffer,0,15);
+    
+    
+    time_t rawtime;
+    struct tm* dateinfo;
+    time(&rawtime);
+    dateinfo=localtime(&rawtime);
+    strftime(datebuffer,14,"%a, %b %e",dateinfo);
+    
+    int leftflags=PRINT_LARGE;
+    int rightflags=PRINT_TALL;
+    
+    int ticket_count_on_subcheck=0;
+    //PRINT TICKETS
+    for(std::list<Order*>::iterator loi=tickets.begin();loi!=tickets.end();++loi)
+    {
+	Order* ord=*loi;
+	int count=ord->count;
+	SalesItem* si=ord->Item(items);
+	for(int i=0;i<count;i++)
+	{
+		//sys->NewSerialNumber()
+		
+		snprintf(serialnumber,14,"%d-%d",check->serial_number,ticket_count_on_subcheck);
+		ticket_count_on_subcheck++;
+		//print ticket and stub here.
+		printer->CutPaper(1);
+		
+		Str tname;
+		admission_parse_hash_name(tname,si->item_name);
+		snprintf(charbuffer,14,"%s",tname.Value());
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->Put(charbuffer,rightflags);
+		printer->NewLine();
+		
+		spacefill(datebuffer,14);
+		printer->Put(datebuffer,leftflags);
+		printer->Put(datebuffer,rightflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"%s",si->event_time.Value());
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->Put(charbuffer,rightflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"%s",si->location.Value());
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->Put(charbuffer,rightflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"1 %s",si->price_label.Value());
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->Put(charbuffer,rightflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"%s",term->FormatPrice(ord->cost));//Price
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->Put(serialnumber,rightflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"%s",settings->store_name.Value());//Store name
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->NewLine();
+		
+		snprintf(charbuffer,14,"%s",serialnumber);//Store name
+		spacefill(charbuffer,14);
+		printer->Put(charbuffer,leftflags);
+		printer->NewLine();
+		
+		printer->NewLine();
+		printer->NewLine();
+	}
+	
+	Str on,ohsh;
+	admission_parse_hash_name(on,ord->item_name);
+	admission_parse_hash_ltime_hash(ohsh,ord->item_name);
+	
+	for (SalesItem *sicheck = items->ItemList(); sicheck != NULL; sicheck = sicheck->next)
+	{
+		if(sicheck->type == ITEM_ADMISSION)
+		{
+			Str ckhsh,ckn;
+			admission_parse_hash_name(ckn,sicheck->item_name);
+			admission_parse_hash_ltime_hash(ckhsh,sicheck->item_name);
+			if(on == ckn && ohsh == ckhsh)
+			{
+				int a=sicheck->available_tickets.IntValue();
+				a-=count;
+				if(a < 0)
+				{
+					a=0;
+				}
+				sicheck->available_tickets.Set(a);
+			}
+		}
+	}
+    }
+    printer->CutPaper(1);
     printer->End();
 
     return 0;
@@ -4746,7 +4884,8 @@ static int adjust_cost(int cost, int inclusive, Flt tax)
 Order::Order(Settings *settings, SalesItem *item, int qual, int price)
 {
     FnTrace("Order::Order(Settings, SalesItem, int)");
-    item_name   = item->item_name;
+    
+    item_name = item->item_name; //item_name;
     if (price >= 0)
         item_cost = price;
     else
@@ -5031,6 +5170,13 @@ int Order::FigureCost()
     return 0;
 }
 
+void PrintItemAdmissionFiltered(char* str,int qual,const genericChar* item_name)
+{
+	Str in(item_name);
+	admission_parse_hash_name(in,in);
+	PrintItem(str,qual,in.Value());
+}
+
 genericChar* Order::Description(Terminal *t, genericChar* str)
 {
     FnTrace("Order::Description()");
@@ -5039,7 +5185,7 @@ genericChar* Order::Description(Terminal *t, genericChar* str)
     if (str == NULL)
         str = buffer;
 
-    PrintItem(str, qualifier, item_name.Value());
+    PrintItemAdmissionFiltered(str, qualifier, item_name.Value());
     
     return str;
 }
@@ -5060,7 +5206,7 @@ genericChar* Order::PrintDescription(genericChar* str, short pshort)
             PrintItem(str, qualifier, si->PrintName());
     }
     else
-        PrintItem(str, qualifier, item_name.Value());
+        PrintItemAdmissionFiltered(str, qualifier, item_name.Value());
     return str;
 }
 

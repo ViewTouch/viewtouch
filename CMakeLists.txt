@@ -37,12 +37,16 @@ add_library(conf_file conf_file.cc conf_file.hh)
 target_link_libraries(conf_file z)
 set(VT_XLIBS X11 Xm Xmu Xt Xpm Xft freetype fontconfig Xrender)
 
+add_library(vtcore main/admission.cc  external/sha1.cc utility.cc remote_link.cc  debug.cc debug.hh generic_char.cc 
+		generic_char.hh logger.cc logger.hh socket.cc socket.hh
+		main/labels.cc
+	)
+
+
 add_executable(vtpos 
-		loader/loader_main.cc 
-		debug.cc debug.hh generic_char.cc 
-		generic_char.hh logger.cc logger.hh
-		main/labels.cc)
-target_link_libraries(vtpos ${VT_XLIBS})
+		loader/loader_main.cc )
+target_link_libraries(vtpos vtcore ${VT_XLIBS})
+
 
 add_library(zone zone/zone.cc zone/zone_object.cc zone/pos_zone.cc 
                  zone/layout_zone.cc zone/form_zone.cc 
@@ -58,13 +62,14 @@ add_library(zone zone/zone.cc zone/zone_object.cc zone/pos_zone.cc
                  zone/account_zone.cc zone/hardware_zone.cc 
                  zone/search_zone.cc zone/chart_zone.cc 
                  zone/video_zone.cc zone/expense_zone.cc 
-                 zone/cdu_zone.cc zone/creditcard_list_zone.cc)
+                 zone/cdu_zone.cc zone/creditcard_list_zone.cc
+                 )
 
 target_link_libraries(zone conf_file)
 
-add_executable(vt_main utility.cc data_file.cc remote_link.cc socket.cc 
+add_executable(vt_main data_file.cc 
                  main/manager.cc external/blowfish.c main/license_hash.cc 
-		 external/sha1.cc main/license.cc main/printer.cc 
+	         main/license.cc main/printer.cc 
                  main/terminal.cc main/settings.cc main/labels.cc 
                  main/locale.cc main/credit.cc main/sales.cc 
                  main/check.cc main/account.cc main/system.cc 
@@ -72,20 +77,21 @@ add_executable(vt_main utility.cc data_file.cc remote_link.cc socket.cc
                  main/employee.cc main/labor.cc main/tips.cc 
                  main/exception.cc main/customer.cc main/report.cc 
                  main/system_report.cc main/system_salesmix.cc 
-                 main/chart.cc main/expense.cc debug.cc 
-                 main/cdu.cc main/cdu_att.cc)
-target_link_libraries(vt_main zone ${VT_XLIBS})
+                 main/chart.cc main/expense.cc
+                 main/cdu.cc main/cdu_att.cc )
+target_link_libraries(vt_main zone vtcore ${VT_XLIBS})
 
 add_executable(vt_term term/term_main.cc term/term_view.cc term/touch_screen.cc 
 	             term/layer.cc term/term_dialog.cc 
-			     main/labels.cc utility.cc remote_link.cc image_data.cc 
-			     debug.cc generic_char.cc conf_file.cc
+			     image_data.cc
 		term/term_${TERM_CREDIT}.cc)
 
-target_link_libraries(vt_term ${VT_XLIBS} ${TERM_CREDIT_LIBS})
+target_link_libraries(vt_term vtcore conf_file ${VT_XLIBS} ${TERM_CREDIT_LIBS})
 
-add_executable(vt_print print/print_main.cc utility.cc socket.cc conf_file.cc)
-add_executable(vt_cdu cdu/cdu_main.cc utility.cc socket.cc main/cdu_att.cc)
+add_executable(vt_print print/print_main.cc)
+target_link_libraries(vt_print vtcore)
+add_executable(vt_cdu cdu/cdu_main.cc main/cdu_att.cc)
+target_link_libraries(vt_cdu vtcore)
 #add_executable(vt_authorize authorize_main.cc utility.cc)
 add_executable(vt_temphash main/license_hash.cc main/temphash.cc external/sha1.cc)
 #add_executable(vt_ccq_pipe vt_ccq_pipe.cc socket.cc utility.cc conf_file.cc)

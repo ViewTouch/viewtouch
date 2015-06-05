@@ -1485,12 +1485,20 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
         RenderZone(t, "<Unknown>", update_flag);
         return RENDER_OKAY;
     }
-
-    RenderZone(t, item->ZoneName(), update_flag);
+    const char* zn= item->type == ITEM_ADMISSION ? "" : item->ZoneName();
+    RenderZone(t, zn, update_flag);
     Settings *s = t->GetSettings();
     int sub = (item->type == ITEM_SUBSTITUTE && (t->qualifier & QUALIFIER_SUB));
     int cost = item->Price(s, t->qualifier);
-    int col = t->TextureTextColor(texture[State(t)]);
+    
+    int col = color[State(t)];
+    if (col == COLOR_PAGE_DEFAULT || col == COLOR_DEFAULT)
+    {
+	col =  t->TextureTextColor(texture[State(t)]);
+    } 
+    
+    int font_height, font_width;
+    t->FontSize(font, font_width, font_height);
 
     if (t->check != NULL &&
         strcmp(t->Translate(EMPLOYEE_TABLE), t->check->Table()) == 0 &&
@@ -1519,19 +1527,51 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
         }
     }
 
-    if (cost > 0.0 || item->type == ITEM_NORMAL || item->type == ITEM_SUBSTITUTE)
+    if (cost > 0.0 || item->type == ITEM_NORMAL || item->type == ITEM_SUBSTITUTE || item->type == ITEM_ADMISSION)
     {
         genericChar price[32];
         t->FormatPrice(price, cost);
-        int o = 14;
+      /*  int o = 14;
         int f = FONT_TIMES_20B;
+	
         if (t->page->size >= SIZE_1280x1024)
         {
             o = 19;
             f = FONT_TIMES_24B;
-        }
-        t->RenderText(price, x + w - border, y + h - border - o,
-                      col, f, ALIGN_RIGHT);
+        }*/
+      
+        t->RenderText(price, x + w - border, y + h - border - font_height,
+                      col, font, ALIGN_RIGHT);
+    }
+    
+    if(item->type == ITEM_ADMISSION)
+    {
+	int offsety=border;
+	t->RenderText(item->ZoneName(),x + w / 2.0,y + offsety,col,font,ALIGN_CENTER);
+	offsety+=font_height;
+	t->RenderText(item->event_time.Value(),x + w / 2.0,y + offsety,col,font,ALIGN_CENTER);
+	if(item->location.length > 0)
+	{
+		offsety+=font_height;
+		t->RenderText(item->location.Value(),x + w / 2.0,y + offsety,col,font,ALIGN_CENTER);
+	}
+	if(s->store_name.length > 0)
+	{
+		offsety+=font_height;
+		t->RenderText(s->store_name.Value(),x + w / 2.0,y + offsety,col,font,ALIGN_CENTER);
+	}
+	if(item->price_label.length > 0)
+	{
+		offsety+=font_height;
+		t->RenderText(item->price_label.Value(),x + w / 2.0,y + offsety,col,font,ALIGN_CENTER);
+	}
+	if((item->available_tickets.length > 0) && (item->total_tickets.length > 0))
+	{
+		offsety+=font_height;
+		genericChar buffer[64];
+		snprintf(buffer,64,"%s/%s",item->available_tickets.Value(),item->total_tickets.Value());
+		t->RenderText(buffer,x + w / 2.0,y + offsety,col,font,ALIGN_CENTER);
+	}
     }
 
     if (item->type == ITEM_MODIFIER || sub)

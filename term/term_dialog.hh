@@ -186,6 +186,11 @@ public:
     DialogEntry item_name;
     DialogEntry item_print_name;
     DialogEntry item_zone_name;
+    DialogEntry item_location;
+    DialogEntry item_event_time;
+    DialogEntry item_total_tickets;
+    DialogEntry item_available_tickets;
+    DialogEntry item_price_label;
     DialogEntry item_price;
     DialogEntry item_subprice;
     DialogEntry item_employee_price;

@@ -20,6 +20,7 @@
 
 #include "report.hh"
 #include "utility.hh"
+#include "admission.hh"
 #include "term_dialog.hh"
 #include "term_view.hh"
 #include "remote_link.hh"
@@ -878,6 +879,12 @@ ZoneDialog::ZoneDialog(Widget parent)
     item_print_name.Init(container, "Short Name (if different)");
     item_type.Init(container, "Item Type", ItemTypeName, ItemTypeValue,
                    (void *) EZ_TypeCB, this);
+    item_location.Init(container,"Event Location");
+    item_event_time.Init(container, "Event Time");
+    item_total_tickets.Init(container,"Total Seats");
+    item_available_tickets.Init(container,"Seats Remaining");
+    item_price_label.Init(container,"Price Class");
+    
     item_price.Init(container, "Price");
     item_subprice.Init(container, "Substitute Price");
     item_employee_price.Init(container, "Employee Price");
@@ -982,10 +989,19 @@ int ZoneDialog::Open()
     drawer_zone_type.Set(RInt8());
 
     item_name.Set(RStr());
+    Str hashname(item_name.Value());
+    admission_parse_hash_name(hashname,hashname);
+    item_name.Set(hashname.Value());
+    
     item_print_name.Set(RStr());
     item_zone_name.Set(RStr());
     itype = RInt8();
     item_type.Set(itype);
+    item_location.Set(RStr());
+    item_event_time.Set(RStr());
+    item_total_tickets.Set(RStr());
+    item_available_tickets.Set(RStr());
+    item_price_label.Set(RStr());
     item_price.Set(RStr());
     item_subprice.Set(RStr());
     item_employee_price.Set(RStr());
@@ -1037,15 +1053,21 @@ int ZoneDialog::Correct()
     item_zone_name.Show(t == ZONE_ITEM);
     item_print_name.Show(t == ZONE_ITEM);
     item_type.Show(t == ZONE_ITEM);
+    item_location.Show(t == ZONE_ITEM && itype == ITEM_ADMISSION);
+    item_event_time.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
+    item_total_tickets.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
+    item_available_tickets.Show(false && t == ZONE_ITEM && itype==ITEM_ADMISSION); //don't show the available tickets ever
+    item_price_label.Show(t==ZONE_ITEM && itype==ITEM_ADMISSION);
     item_price.Show(t == ZONE_ITEM);
     item_subprice.Show(t == ZONE_ITEM && itype == ITEM_SUBSTITUTE);
     item_employee_price.Show(t == ZONE_ITEM);
-    item_family.Show(t == ZONE_ITEM);
-    item_sales.Show(t == ZONE_ITEM);
+    item_family.Show(t == ZONE_ITEM && itype != ITEM_ADMISSION);
+    item_sales.Show(t == ZONE_ITEM && itype != ITEM_ADMISSION);
     item_printer.Show(t == ZONE_ITEM &&
                       (itype == ITEM_NORMAL ||
                        itype == ITEM_SUBSTITUTE ||
-                       itype == ITEM_POUND));
+                       itype == ITEM_POUND ||
+		       itype == ITEM_ADMISSION));
     item_order.Show(t == ZONE_ITEM &&
                     (itype != ITEM_NORMAL ||
                      itype != ITEM_POUND));
@@ -1153,10 +1175,29 @@ int ZoneDialog::Send()
     WInt16(customer_type.Value());
     WInt8(drawer_zone_type.Value());
 
-    WStr(item_name.Value());
+    if(item_type.Value() == ITEM_ADMISSION)
+    {
+	Str h_itemname,h_time,h_location,h_priceclass,hout;
+	h_itemname.Set(item_name.Value());
+	h_time.Set(item_event_time.Value());
+	h_location.Set(item_location.Value());
+	h_priceclass.Set(item_price_label.Value());
+	admission_parse_hash_name(h_itemname,h_itemname);
+	admission_itemname_hash(hout,h_itemname,h_time,h_location,h_priceclass);
+	WStr(hout.Value());
+    }
+    else
+    {
+	    WStr(item_name.Value());
+    }
     WStr(item_print_name.Value());
     WStr(item_zone_name.Value());
     WInt8(item_type.Value());
+    WStr(item_location.Value());
+    WStr(item_event_time.Value());
+    WStr(item_total_tickets.Value());
+    WStr(item_available_tickets.Value());
+    WStr(item_price_label.Value());
     WStr(item_price.Value());
     WStr(item_subprice.Value());
     WStr(item_employee_price.Value());

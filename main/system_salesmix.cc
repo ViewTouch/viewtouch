@@ -25,6 +25,7 @@
 #include "locale.hh"
 #include "manager.hh"
 #include "archive.hh"
+#include "admission.hh"
 #include <string.h>
 
 #ifdef DMALLOC
@@ -443,7 +444,7 @@ int FamilyItemReport(Terminal *t, ItemCount *branch, Report *report_list[],
         }
         r = report_list[f];
         r->NewLine();
-        r->TextPosL(2, branch->name.Value());
+        r->TextPosL(2, admission_filteredname(branch->name));  //here
         sales = branch->count * branch->cost;
         if (branch->type == ITEM_POUND)
         {
@@ -499,7 +500,7 @@ int NoFamilyItemReport(Terminal *t, ItemCount *branch, Report *r,
         NoFamilyItemReport(t, branch->left, r, total_count, total_cost, total_weight);
     
     r->NewLine();
-    r->TextPosL(0, branch->name.Value());
+    r->TextPosL(0, admission_filteredname(branch->name)); //here
     sales = branch->count * branch->cost;
     if (branch->type == ITEM_POUND)
     {

@@ -82,6 +82,7 @@
 #include "image_data.hh"
 #include "manager.hh"
 #include <cstring>
+#include "admission.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -1136,7 +1137,7 @@ ItemListZone::ItemListZone()
 }
 
 // Member Functions
-int ItemListZone::AddFields()
+int ItemListZone::AddFields()  
 {
     FnTrace("ItemListZone::AddFields()");
 
@@ -1211,6 +1212,11 @@ int ItemListZone::LoadRecord(Terminal *t, int record)
     f->Set(si->call_center_name); f = f->next;
     f->Set(si->item_code); f = f->next;
     f->Set(si->type); f = f->next;
+/*    f->Set(si->location); f = f->next; //the layout here is determined by AddFields
+    f->Set(si->event_time); f = f->next;
+    f->Set(si->total_tickets); f=f->next;
+    f->Set(si->available_tickets); f = f->next;
+    f->Set(si->price_label); f=f->next;*/
     f->Set(t->SimpleFormatPrice(si->cost)); f = f->next;
     f->Set(t->SimpleFormatPrice(si->sub_cost)); f = f->next;
     f->Set(t->SimpleFormatPrice(si->employee_cost)); f = f->next;
@@ -1243,6 +1249,12 @@ int ItemListZone::SaveRecord(Terminal *t, int record, int write_file)
         f->Get(si->call_center_name); f = f->next;
         f->Get(si->item_code); f = f->next;
         f->Get(tmp); si->type = tmp; f = f->next;
+	
+	/*f->Get(si->location); f=f->next;
+	f->Get(si->event_time); f=f->next;
+	f->Get(si->total_tickets); f=f->next;
+	f->Get(si->available_tickets); f=f->next;
+	f->Get(si->price_label); f=f->next;*/
         f->GetPrice(si->cost); f = f->next;
         f->GetPrice(si->sub_cost); f = f->next;
         f->GetPrice(si->employee_cost); f = f->next;     
@@ -1328,7 +1340,9 @@ int ItemListZone::ListReport(Terminal *t, Report *r)
             my_color = COLOR_DK_GREEN;
         else if (si->type == ITEM_SUBSTITUTE)
             my_color = COLOR_DK_RED;
-        r->TextL(si->item_name.Value(), my_color);
+	Str name;
+	admission_parse_hash_name(name,si->item_name);
+        r->TextL(name.Value(), my_color);
         r->TextR(t->FormatPrice(si->cost), my_color);
         r->NewLine();
         si = si->next;

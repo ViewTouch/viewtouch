@@ -4665,6 +4665,11 @@ int Terminal::EditZone(Zone *currZone)
 		else
 			WStr(currItem->zone_name.Value());
 		WInt8(currItem->type);
+		WStr(currItem->location.Value());
+		WStr(currItem->event_time.Value());              // item event time
+		WStr(currItem->total_tickets.Value());          // item total tickets
+		WStr(currItem->available_tickets.Value());      // item available tickets
+		WStr(currItem->price_label.Value());
 		WStr(SimpleFormatPrice(currItem->cost));
 		WStr(SimpleFormatPrice(currItem->sub_cost));
         WStr(SimpleFormatPrice(currItem->employee_cost));
@@ -4679,6 +4684,12 @@ int Terminal::EditZone(Zone *currZone)
 		WStr("");          // item printed name
 		WStr("");          // item zone name
 		WInt8(0);          // item type
+		WStr("");	   //location
+		WStr("");          // item event time
+		WStr("");          // item total tickets
+		WStr("");          // item available tickets
+		WStr("");	   // item price_label
+		
 		WStr(SimpleFormatPrice(0)); // item price
 		WStr(SimpleFormatPrice(0)); // item sub price
         WStr(SimpleFormatPrice(0)); // employee price
@@ -4845,6 +4856,11 @@ int Terminal::ReadZone()
             si->print_name.Set(FilterName(RStr()));
             si->zone_name.Set(RStr());
             si->type          = RInt8();
+	    si->location.Set(RStr());
+	    si->event_time.Set(RStr());
+	    si->total_tickets.Set(RStr());
+	    si->available_tickets.Set(RStr());
+	    si->price_label.Set(RStr());
             si->cost          = ParsePrice(RStr());
             si->sub_cost      = ParsePrice(RStr());
             si->employee_cost = ParsePrice(RStr());
@@ -4860,6 +4876,11 @@ int Terminal::ReadZone()
         RStr();   // item printed name
         RStr();   // item zone name
         RInt8();  // item type
+	RStr();   // item location
+	RStr();   // item event time
+	RStr();   // item total tickets
+	RStr();   // item available tickets
+	RStr();   // item price_label
         RStr();   // item price
         RStr();   // item subprice
         RStr();   // employee price

@@ -523,6 +523,8 @@ int System::EndDay()
     if (!AllDrawersPulled())
         return 1;  // all drawers must be pulled at once to end day
 
+    menu.ResetAdmissionItems();
+        
     UnloadArchives();
     BackupCurrentData();
 

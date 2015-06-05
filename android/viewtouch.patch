@@ -1,0 +1,81 @@
+diff --git a/project/jni/application/xserver/gfx.c b/project/jni/application/xserver/gfx.c
+index 4fd6c91..45b7272 100644
+--- a/project/jni/application/xserver/gfx.c
++++ b/project/jni/application/xserver/gfx.c
+@@ -419,16 +419,15 @@ void XSDL_showConfigMenu(int * resolutionW, int * displayW, int * resolutionH, i
+ 
+ 	const char * resStr[] =
+ 	{
+-		native, native56, native46, native36,
+-		native26, "1280x1024", "1280x960", "1280x720",
++		native, native56, native46, "1920x1080",
++		"1280x800", "1280x1024", "1280x960", "1280x720",
+ 		"1024x768", "800x600", "800x480", custom
+ 	};
+ 	const int resVal[][2] = {
+ 		{*resolutionW, *resolutionH},
+ 		{(*resolutionW * 5 / 6) & ~0x3, (*resolutionH * 5 / 6) & ~0x3},
+ 		{(*resolutionW * 4 / 6) & ~0x3, (*resolutionH * 4 / 6) & ~0x3},
+-		{(*resolutionW * 3 / 6) & ~0x3, (*resolutionH * 3 / 6) & ~0x3},
+-		{(*resolutionW * 2 / 6) & ~0x3, (*resolutionH * 2 / 6) & ~0x3},
++		{1920,1080}, {1280,800},
+ 		{1280,1024}, {1280,960}, {1280,720},
+ 		{1024,768}, {800,600}, {800,480}, {customX,customY}
+ 	};
+@@ -449,8 +448,6 @@ void XSDL_showConfigMenu(int * resolutionW, int * displayW, int * resolutionH, i
+ 	sprintf(native, "%dx%d", resVal[0][0], resVal[0][1]);
+ 	sprintf(native56, "%dx%d", resVal[1][0], resVal[1][1]);
+ 	sprintf(native46, "%dx%d", resVal[2][0], resVal[2][1]);
+-	sprintf(native36, "%dx%d", resVal[3][0], resVal[3][1]);
+-	sprintf(native26, "%dx%d", resVal[4][0], resVal[4][1]);
+ 
+ 	int savedRes = 0;
+ 	int savedDpi = 8;
+@@ -464,7 +461,10 @@ void XSDL_showConfigMenu(int * resolutionW, int * displayW, int * resolutionH, i
+ 	}
+ 	sprintf(custom, "%dx%d", customX, customY);
+ 
+-	int counter = 3000, config = 0;
++	if( SDL_ListModes(NULL, 0)[0]->w < resVal[savedRes][0] )
++		savedRes++; // Select smaller mode
++
++	int counter = 0, config = 0;
+ 	Uint32 curtime = SDL_GetTicks();
+ 	while ( counter > 0 && !config )
+ 	{
+@@ -705,7 +705,7 @@ void XSDL_generateBackground(const char * port, int showHelp, int resolutionW, i
+ 	surf = SDL_CreateRGBSurface(SDL_SWSURFACE, resolutionW, resolutionH, 24, 0x0000ff, 0x00ff00, 0xff0000, 0);
+ 	SDL_FillRect(surf, NULL, 0x00002f);
+ 
+-	renderStringScaled("Launch these commands on your Linux PC:", 12 * resolutionH / VID_Y, resolutionW/2, y, 255, 255, 255, surf);
++	renderStringScaled("Enter this IP address to your server:", 12 * resolutionH / VID_Y, resolutionW/2, y, 255, 255, 255, surf);
+ 	y += resolutionH * 30 / VID_Y;
+ 
+     sd = socket(PF_INET, SOCK_DGRAM, 0);
+@@ -734,10 +734,7 @@ void XSDL_generateBackground(const char * port, int showHelp, int resolutionW, i
+                 __android_log_print(ANDROID_LOG_INFO, "XSDL", "interface: %s address: %s\n", ifr[i].ifr_name, saddr);
+                 if (strcmp(saddr, "127.0.0.1") == 0)
+                     continue;
+-                sprintf (msg, "env DISPLAY=%s%s metacity &", saddr, port);
+-                renderStringScaled(msg, 12 * resolutionH / VID_Y, resolutionW/2, y, 255, 255, 255, surf);
+-                y += resolutionH * 15 / VID_Y;
+-                sprintf (msg, "env DISPLAY=%s%s gimp", saddr, port);
++                sprintf (msg, "%s%s", saddr, port);
+                 renderStringScaled(msg, 12 * resolutionH / VID_Y, resolutionW/2, y, 255, 255, 255, surf);
+                 y += resolutionH * 20 / VID_Y;
+             }
+@@ -746,12 +743,14 @@ void XSDL_generateBackground(const char * port, int showHelp, int resolutionW, i
+         close(sd);
+     }
+ 
++    /*
+     y += resolutionH * 10 / VID_Y;
+     sprintf (msg, "To tunnel X over SSH, forward port %d", atoi(port+1) + 6000);
+     renderStringScaled(msg, 12 * resolutionH / VID_Y, resolutionW/2, y, 255, 255, 255, surf);
+     y += resolutionH * 15 / VID_Y;
+     sprintf (msg, "in your SSH client");
+     renderStringScaled(msg, 12 * resolutionH / VID_Y, resolutionW/2, y, 255, 255, 255, surf);
++    */
+ 
+ 	SDL_SaveBMP(surf, "background.bmp");
+ 	SDL_FreeSurface(surf);
