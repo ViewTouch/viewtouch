@@ -206,6 +206,10 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             if (term->zone_db == NULL)
                 printf("ACK!!!! no zone_db\n");
 
+	    // for KDS terminals, default to kitchen page
+    	    else if (term->type == TERMINAL_KITCHEN_VIDEO || term->type == TERMINAL_KITCHEN_VIDEO2)
+	    	term->page = term->zone_db->FindByTerminal(term->type, -1, term->size);
+
             if (term->page)
                 term->Jump(JUMP_STEALTH, term->page->id);  // Get new best size for page
             else
