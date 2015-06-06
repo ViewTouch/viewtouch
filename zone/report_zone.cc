@@ -81,7 +81,8 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
     Settings *s = &(sys->settings);
     Report *r = temp_report;
 
-    if (e == NULL)
+    // allow no user signin for kitchen display
+    if (e == NULL && report_type != REPORT_CHECK)
         return RENDER_OKAY;
 
     if (r)
