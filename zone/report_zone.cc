@@ -1119,6 +1119,10 @@ SignalResult ReportZone::Keyboard(Terminal *t, int my_key, int state)
     if (report == NULL)
         return SIGNAL_IGNORED;
 
+    // automatically accept check number (in ascii) as keyboard shortcut to bump
+    if (my_key == check_disp_num + '0')
+	return ToggleCheckReport(t);
+
     int new_page = page;
     switch (my_key)
     {
