@@ -4475,7 +4475,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 		}
 	}
     }
-    printer->CutPaper(1);
+
     printer->End();
 
     return 0;
