@@ -23,6 +23,7 @@
 #include "terminal.hh"
 #include "manager.hh"
 #include "settings.hh"
+#include "admission.hh"
 
 #include <cctype>
 #include <cstring>
@@ -1845,7 +1846,7 @@ RenderResult TextField::Render(Terminal *term, FormZone *fzone)
         buffer.Set(buffint);
         cursor = buffer.length;
     }
-    buff = buffer.Value();
+    buff = admission_filteredname(buffer);
     fzone->TextPosL(term, xx, y, buff, COLOR_WHITE);
     if (selected)
     {
