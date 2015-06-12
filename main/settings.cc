@@ -895,6 +895,7 @@ TermInfo::TermInfo()
     display_host.Set("unknown");
     term_hardware = 0;
     isserver      = 0;
+    print_workorder = 1;
 
     cc_credit_termid.Set("");
     cc_debit_termid.Set("");
@@ -934,6 +935,9 @@ int TermInfo::Read(InputDataFile &df, int version)
         error += df.Read(cc_credit_termid);
         error += df.Read(cc_debit_termid);
     }
+    if (version >= 92)
+    	error += df.Read(print_workorder);
+
     // dpulse is used when there are two drawers attached to one
     // printer, and two terminals printing to that printer.  AKA,
     // the terminals share the printer, but each has its own
@@ -969,6 +973,7 @@ int TermInfo::Write(OutputDataFile &df, int version)
     error += df.Write(dpulse);
     error += df.Write(cc_credit_termid);
     error += df.Write(cc_debit_termid);
+    error += df.Write(print_workorder);
     
     return error;
 }
@@ -992,6 +997,7 @@ int TermInfo::OpenTerm(Control *control_db, int update)
     term->cdu = NewCDUObject(cdu_path.Value(), cdu_type);
     term->cc_credit_termid.Set(cc_credit_termid);
     term->cc_debit_termid.Set(cc_debit_termid);
+    term->print_workorder = print_workorder;
     if (printer_model != MODEL_NONE)
     {
         if (printer_host.length > 0)
@@ -1443,6 +1449,7 @@ int Settings::Load(const char* file)
     // 89 (05/25/05) added advertise_fund
     // 90 (06/29/05) added cc_print_custinfo
     // 91 (11/02/05) added kv_show_user
+    // 92 (06/11/15) added print_workorder
 
     genericChar str[256];
     if (version < 25 || version > SETTINGS_VERSION)

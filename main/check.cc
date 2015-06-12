@@ -777,14 +777,16 @@ int Check::FinalizeOrders(Terminal *term, int reprint)
     if (term != NULL)
     {
         // At this point, the report is just a throwaway report.
-        result += SendWorkOrder(term, PRINTER_KITCHEN1, reprint);
-        result += SendWorkOrder(term, PRINTER_KITCHEN2, reprint);
-        result += SendWorkOrder(term, PRINTER_KITCHEN3, reprint);
-        result += SendWorkOrder(term, PRINTER_KITCHEN4, reprint);
-        result += SendWorkOrder(term, PRINTER_BAR1, reprint);
-        result += SendWorkOrder(term, PRINTER_BAR2, reprint);
-        result += SendWorkOrder(term, PRINTER_EXPEDITER, reprint);
-    
+	if (term->print_workorder)
+	{
+            result += SendWorkOrder(term, PRINTER_KITCHEN1, reprint);
+            result += SendWorkOrder(term, PRINTER_KITCHEN2, reprint);
+            result += SendWorkOrder(term, PRINTER_KITCHEN3, reprint);
+            result += SendWorkOrder(term, PRINTER_KITCHEN4, reprint);
+            result += SendWorkOrder(term, PRINTER_BAR1, reprint);
+            result += SendWorkOrder(term, PRINTER_BAR2, reprint);
+            result += SendWorkOrder(term, PRINTER_EXPEDITER, reprint);
+	}
         if (result < 7)
             flags |= CF_PRINTED;
     

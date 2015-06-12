@@ -307,6 +307,7 @@ public:
     int       sortorder;      // kitchen video sort order; newest to oldest, et al
     Str       printer_host;   // location of receipt printer
     int       printer_port;   // connection type of printer
+    int	      print_workorder; // okay to print work order on kitchen/bar printer?
     CustDispUnit *cdu;        // the CDU object
     TimeInfo  last_input;     // time of last user input
     TimeInfo  time_out;       // time of last user input or timeout

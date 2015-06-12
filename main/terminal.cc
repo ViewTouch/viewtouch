@@ -428,6 +428,7 @@ Terminal::Terminal()
     last_index      = INDEX_GENERAL;
     job_filter      = 0;
     printer_port    = 0;
+    print_workorder = 1;
     cdu             = NULL;
     server          = NULL;
     expense_drawer  = NULL;
