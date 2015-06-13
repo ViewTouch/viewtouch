@@ -4310,6 +4310,11 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     int rightflags=PRINT_TALL;
     
     int ticket_count_on_subcheck=0;
+    
+    if(tickets.size() > 0)
+    {
+	    printer->LineFeed(8);
+    }
     //PRINT TICKETS
     for(std::list<Order*>::iterator loi=tickets.begin();loi!=tickets.end();++loi)
     {
