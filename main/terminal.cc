@@ -5638,13 +5638,11 @@ int Terminal::CC_Settle(const char* batch, int reset)
     int auth_method             = settings->authorize_method;
     char termid[STRLENGTH]      = "";
     static int state            = CC_SYS_STATE_START;
-    static Terminal *cc_term    = NULL;
     char batchstr[STRLENGTH]    = "";
 
     if (reset)
     {
         state = CC_SYS_STATE_START;
-        cc_term = NULL;
     }
     else if (user->training == 0 && OtherTermsInUse() == 0)
     {
@@ -5675,7 +5673,6 @@ int Terminal::CC_Settle(const char* batch, int reset)
             else
             {
                 state = CC_SYS_STATE_START;
-                cc_term = NULL;
             }
         }
     }
@@ -5733,7 +5730,6 @@ int Terminal::CC_Totals(const char* batch)
     int auth_method = settings->authorize_method;
     char termid[STRLENGTH] = "";
     static int state = CC_SYS_STATE_START;
-    static Terminal *cc_term = NULL;
     char batchnum[STRLENGTH] = "";
 
     if (user->training == 0)
@@ -5755,7 +5751,6 @@ int Terminal::CC_Totals(const char* batch)
             else
             {
                 state = CC_SYS_STATE_START;
-                cc_term = NULL;
             }
         }
     }
@@ -5790,7 +5785,6 @@ int Terminal::CC_Details()
     int auth_method = settings->authorize_method;
     char termid[STRLENGTH] = "";
     static int state = CC_SYS_STATE_START;
-    static Terminal *cc_term = NULL;
     char batchnum[STRLENGTH] = "";
 
     if (user->training == 0)
@@ -5808,7 +5802,6 @@ int Terminal::CC_Details()
             else
             {
                 state = CC_SYS_STATE_START;
-                cc_term = NULL;
             }
         }
     }
@@ -5843,12 +5836,10 @@ int Terminal::CC_ClearSAF(int reset)
     int auth_method = settings->authorize_method;
     char termid[STRLENGTH] = "";
     static int state = CC_SYS_STATE_START;
-    static Terminal *cc_term = NULL;
 
     if (reset)
     {
         state = CC_SYS_STATE_START;
-        cc_term = NULL;
     }
     else if (user->training == 0 && OtherTermsInUse() == 0)
     {
@@ -5864,7 +5855,6 @@ int Terminal::CC_ClearSAF(int reset)
             else
             {
                 state = CC_SYS_STATE_START;
-                cc_term = NULL;
             }
         }
     }
@@ -5890,7 +5880,6 @@ int Terminal::CC_SAFDetails()
     int auth_method = settings->authorize_method;
     char termid[STRLENGTH] = "";
     static int state = CC_SYS_STATE_START;
-    static Terminal *cc_term = NULL;
     
     if (user->training == 0 && OtherTermsInUse() == 0)
     {
@@ -5906,7 +5895,6 @@ int Terminal::CC_SAFDetails()
             else
             {
                 state = CC_SYS_STATE_START;
-                cc_term = NULL;
             }
         }
     }

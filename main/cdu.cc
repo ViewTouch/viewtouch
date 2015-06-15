@@ -98,8 +98,8 @@ int CDUString::GetLine(Str &dest, int line)
     FnTrace("CDUString::GetLine()");
     if (line < 0)
         line = 0;
-    else if (line > MAX_CDU_LINES)
-        line = MAX_CDU_LINES;
+    else if (line >= MAX_CDU_LINES)
+        line = MAX_CDU_LINES - 1;
 
     dest.Set(lines[line]);
     return 0;
@@ -109,8 +109,8 @@ int CDUString::SetLine(Str &source, int line)
 {
     if (line < 0)
         line = 0;
-    else if (line > MAX_CDU_LINES)
-        line = MAX_CDU_LINES;
+    else if (line >= MAX_CDU_LINES)
+        line = MAX_CDU_LINES - 1;
 
     lines[line].Set(source);
     return 0;

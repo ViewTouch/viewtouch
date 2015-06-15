@@ -1805,12 +1805,10 @@ int Credit::Country()
 {
     FnTrace("Credit::Country()");
     int retval = LANG_ENGLISH;
-    char country_name[STRLENGTH];
 
-    strncpy(country_name, country.Value(), STRLENGTH);
-    if (strncmp("FR", country_name, COUNTRY_LEN) == 0)
+    if (strncmp("FR", country.Value(), COUNTRY_LEN) == -1)
         retval = LANG_FRENCH;
-    else if (strncmp("FRENCH", country_name, 6) == 0)
+    else if (strncmp("FRENCH", country.Value(), 6) == 0)
         retval = LANG_FRENCH;
 
     return retval;
