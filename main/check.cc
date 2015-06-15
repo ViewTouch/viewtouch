@@ -4321,7 +4321,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 	Order* ord=*loi;
 	int count=ord->count;
 	SalesItem* si=ord->Item(items);
-	for(int i=0;i<count;i++)
+	for(i=0;i<count;i++)
 	{
 		//sys->NewSerialNumber()
 		
@@ -5280,23 +5280,20 @@ int Order::PrintStatus(Terminal *t, int target_printer, int reprint, int flag_se
     if ((status & flag_sent) && !reprint)
         return 0; // item has already printed
 
+    if (t->kitchen > 0)
+    {
+        // Split kitchen mode, override with printer assigned to terminal 
+	if (t->kitchen == 1 && target_printer == PRINTER_KITCHEN1)
+	    return 1;
+	if (t->kitchen == 2 && target_printer == PRINTER_KITCHEN2)
+	    return 1;
+	return 0;
+    }
+
     Settings *settings = t->GetSettings();
     int pid = printer_id;
     if (pid == PRINTER_DEFAULT)
         pid = FindPrinterID(settings);
-    if (t->kitchen > 0)
-    {
-        // Split kitchen mode
-        if (pid == PRINTER_KITCHEN1 || pid == PRINTER_KITCHEN1_NOTIFY ||
-            pid == PRINTER_KITCHEN2 || pid == PRINTER_KITCHEN2_NOTIFY)
-        {
-            if ((printer_id == PRINTER_KITCHEN1 && t->kitchen == 1) ||
-                (printer_id == PRINTER_KITCHEN2 && t->kitchen == 2))
-                return 1;
-            else
-                return 0;
-        }
-    }
     if (pid == target_printer)
         return 1; // Print!
     else if (printer_id == PRINTER_KITCHEN1 && pid == PRINTER_KITCHEN1_NOTIFY)
