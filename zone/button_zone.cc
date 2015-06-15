@@ -193,19 +193,23 @@ SignalResult MessageButtonZone::Signal(Terminal *term, const char* signal_msg)
         sig = SendandJump(term);
         break;
     case 1: // starttakeout
-	term->QuickMode(CHECK_TAKEOUT);
+	if (term->QuickMode(CHECK_TAKEOUT))
+	    return SIGNAL_IGNORED;
 	term->Jump(JUMP_STEALTH, -8);
         break;
     case 2:  // pickup/delivery
-    	term->QuickMode(CHECK_CALLIN);
+	if (term->QuickMode(CHECK_CALLIN))
+	    return SIGNAL_IGNORED;
 	term->Jump(JUMP_STEALTH, -8);
         break;
     case 3:  // quick to-go
-    	term->QuickMode(CHECK_TOGO);
+    	if (term->QuickMode(CHECK_TOGO))
+	    return SIGNAL_IGNORED;
 	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
         break;
     case 4:  // quick dine-in
-    	term->QuickMode(CHECK_DINEIN);
+    	if (term->QuickMode(CHECK_DINEIN))
+	    return SIGNAL_IGNORED;
 	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
         break;
     default:

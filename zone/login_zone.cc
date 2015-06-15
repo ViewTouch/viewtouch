@@ -231,6 +231,8 @@ SignalResult LoginZone::Signal(Terminal *term, const genericChar* message)
     {
     case 10:  // start
         Start(term);
+	if (term->user == NULL)
+	    return SIGNAL_ERROR;
         break;
     case 11:  // clear
         if (term->user)
