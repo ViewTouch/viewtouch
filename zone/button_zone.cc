@@ -25,6 +25,7 @@
 #include "check.hh"
 #include "sales.hh"
 #include "dialog_zone.hh"
+#include "labels.hh"
 #include "system.hh"
 #include <string.h>
 
@@ -180,13 +181,36 @@ SignalResult MessageButtonZone::Signal(Terminal *term, const char* signal_msg)
     FnTrace("MessageButtonZone::Signal()");
     SignalResult sig = SIGNAL_OKAY;
     const char* command_list[] = {
-        "sendandjump", NULL };
+        "sendandjump", 
+	"starttakeout", "pickup", "quicktogo", "quickdinein", NULL};
+
+    Settings *settings = term->GetSettings();
     int idx = CompareListN(command_list, signal_msg);
 
     switch (idx)
     {
     case 0: // sendandjump
         sig = SendandJump(term);
+        break;
+    case 1: // starttakeout
+	if (term->QuickMode(CHECK_TAKEOUT))
+	    return SIGNAL_IGNORED;
+	term->Jump(JUMP_STEALTH, -8);
+        break;
+    case 2:  // pickup/delivery
+	if (term->QuickMode(CHECK_CALLIN))
+	    return SIGNAL_IGNORED;
+	term->Jump(JUMP_STEALTH, -8);
+        break;
+    case 3:  // quick to-go
+    	if (term->QuickMode(CHECK_TOGO))
+	    return SIGNAL_IGNORED;
+	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
+        break;
+    case 4:  // quick dine-in
+    	if (term->QuickMode(CHECK_DINEIN))
+	    return SIGNAL_IGNORED;
+	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
         break;
     default:
         sig = SIGNAL_IGNORED;

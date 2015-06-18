@@ -307,11 +307,13 @@ public:
     int       sortorder;      // kitchen video sort order; newest to oldest, et al
     Str       printer_host;   // location of receipt printer
     int       printer_port;   // connection type of printer
+    int	      print_workorder; // okay to print work order on kitchen/bar printer?
     CustDispUnit *cdu;        // the CDU object
     TimeInfo  last_input;     // time of last user input
     TimeInfo  time_out;       // time of last user input or timeout
     Zone     *selected_zone;  // zone currently selected (highlighted)
     Zone     *previous_zone;  // zone previously having focus
+    Zone     *active_zone;    // active kitchen display report zone
     int       timeout;        // current timeout length in seconds
     Locale   *locale_main;
     Locale   *locale_default;

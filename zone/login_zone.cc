@@ -61,15 +61,19 @@ enum status {
     STATE_NOT_ALLOWED_IN
 };
 
-/* Leaving these alone */
-#define EXPEDITE_FASTFOOD   1
-#define EXPEDITE_TAKEOUT    2
+enum {	// expedited login
+	EXPEDITE_FASTFOOD   	= 1,
+	EXPEDITE_TAKEOUT,
 
-/* Adding 3 new ones */
+	EXPEDITE_PU_DELIV	= 11,
+	EXPEDITE_TOGO,
+	EXPEDITE_DINE_IN,
 
-#define EXPEDITE_PU_DELIV   11
-#define EXPEDITE_TOGO       12
-#define EXPEDITE_DINE_IN    13
+	EXPEDITE_KITCHEN1,
+	EXPEDITE_KITCHEN2,
+	EXPEDITE_BAR1,
+	EXPEDITE_BAR2
+};
 
 /***********************************************************************
  * LoginZone Class 
@@ -203,7 +207,8 @@ SignalResult LoginZone::Signal(Terminal *term, const genericChar* message)
         "start", "clear", "backspace", "clockin", "clockout",
         "job0", "job1", "job2", "passwordgood", "passwordfailed",
         "passwordcancel", "faststart", "starttakeout", "gettextcancel", 
-        "pickup", "quicktogo", "quickdinein", NULL};
+        "pickup", "quicktogo", "quickdinein", 
+	"kds1", "kds2", "bar1", "bar2", NULL};
  
     int idx = CompareList(message, commands);
 	if (idx < 0)
@@ -226,6 +231,8 @@ SignalResult LoginZone::Signal(Terminal *term, const genericChar* message)
     {
     case 10:  // start
         Start(term);
+	if (term->user == NULL)
+	    return SIGNAL_ERROR;
         break;
     case 11:  // clear
         if (term->user)
@@ -291,6 +298,18 @@ SignalResult LoginZone::Signal(Terminal *term, const genericChar* message)
         break;
     case 26: // Quick Dine-in
         Start(term, EXPEDITE_DINE_IN);
+        break; 
+    case 27: // direct to kitchen/bar video
+        Start(term, EXPEDITE_KITCHEN1);
+        break; 
+    case 28: 
+        Start(term, EXPEDITE_KITCHEN2);
+        break; 
+    case 29:
+        Start(term, EXPEDITE_BAR1);
+        break; 
+    case 30: 
+        Start(term, EXPEDITE_BAR2);
         break; 
     default:  // number keys or ignored
         if (idx >= 0 && idx <= 9 && input < 100000000)
@@ -582,7 +601,25 @@ int LoginZone::Start(Terminal *term, short expedite)
             }
             else
             {
-                //jump to default home page
+                // jump to special start page
+		int ptype = 0;
+            	if (expedite == EXPEDITE_KITCHEN1)
+			ptype = PAGE_KITCHEN_VID;
+            	else if (expedite == EXPEDITE_KITCHEN2)
+			ptype = PAGE_KITCHEN_VID2;
+            	else if (expedite == EXPEDITE_BAR1)
+			ptype = PAGE_BAR1;
+            	else if (expedite == EXPEDITE_BAR2)
+			ptype = PAGE_BAR2;
+		if (ptype) {
+			Page *pg = term->zone_db->FindByType(ptype, -1, term->size);
+			if (pg)
+			{
+            			term->Jump(JUMP_STEALTH, pg->id);
+				return 0;
+			}
+		}
+                // jump to home page
                 term->Jump(JUMP_STEALTH, term->HomePage());
             }
         }
@@ -662,6 +699,24 @@ int LoginZone::Start(Terminal *term, short expedite)
         }
         else
         {
+	    int ptype = 0;
+            if (expedite == EXPEDITE_KITCHEN1)
+		ptype = PAGE_KITCHEN_VID;
+            else if (expedite == EXPEDITE_KITCHEN2)
+		ptype = PAGE_KITCHEN_VID2;
+            else if (expedite == EXPEDITE_BAR1)
+		ptype = PAGE_BAR1;
+            else if (expedite == EXPEDITE_BAR2)
+		ptype = PAGE_BAR2;
+	    if (ptype) {
+		Page *pg = term->zone_db->FindByType(ptype, -1, term->size);
+		if (pg) {
+		    term->LoginUser(employee);
+		    term->Jump(JUMP_STEALTH, pg->id);
+		    return 0;
+		}
+	    }
+
             //send to homepage
             term->LoginUser(employee, 1); //login and jump to homepage
         }

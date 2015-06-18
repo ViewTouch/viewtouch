@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-#define SETTINGS_VERSION 91  // READ ABOVE
+#define SETTINGS_VERSION 92  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -481,6 +481,7 @@ public:
     int sound_volume;
     int term_hardware;
     int isserver;
+    int print_workorder;
     Str cc_credit_termid;
     Str cc_debit_termid;
 

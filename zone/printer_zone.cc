@@ -103,7 +103,7 @@ int PrintTargetZone::SaveRecord(Terminal *t, int record, int write_file)
 }
 
 
-/**** TermObj Class ****/
+/**** TermObj Class (for split kitchen) ****/
 class TermObj : public ZoneObject
 {
 public:
@@ -113,6 +113,7 @@ public:
     TermObj(Terminal *t);
 
     // Member Functions
+    bool IsValid(Terminal *t);
     int Render(Terminal *t);
 };
 
@@ -124,9 +125,25 @@ TermObj::TermObj(Terminal *t)
     h = 80;
 }
 
+// check if this terminal is still active (hasn't been deleted)
+// t = active terminal list
+bool TermObj::IsValid(Terminal *t)
+{
+    while (t)
+    {
+    	if (t == term)
+	    return true;
+	t = t->next;
+    }
+    return false;		// no longer in the active list
+}
+
 // Member Functions
 int TermObj::Render(Terminal *t)
 {
+    if (!IsValid(t->parent->TermList()))
+    	return 0;		// inactive, skip it
+
     int color;
     if (selected)
     {
@@ -282,9 +299,10 @@ SignalResult SplitKitchenZone::Touch(Terminal *t, int tx, int ty)
     return SIGNAL_IGNORED;
 }
 
+// assign all selected (and still active) terminals to kitchen "no"
 int SplitKitchenZone::MoveTerms(Terminal *t, int no)
 {
-    int my_update = 0;
+    Terminal *tlist = t->parent->TermList();	// active terminals
     ZoneObject *list = kitchens.List();
     while (list)
     {
@@ -294,15 +312,15 @@ int SplitKitchenZone::MoveTerms(Terminal *t, int no)
             if (zo->selected)
             {
                 zo->selected = 0;
-                ((TermObj *)zo)->term->kitchen = no;
-                my_update = 1;
+		TermObj *to = (TermObj *)zo;
+		if (to->IsValid(tlist))
+		    to->term->kitchen = no;
             }
             zo = zo->next;
         }
         list = list->next;
     }
-    if (my_update)
-        Draw(t, 1);
+    Draw(t, 1);
     return 0;
 }
 

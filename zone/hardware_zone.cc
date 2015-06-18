@@ -73,6 +73,7 @@ HardwareZone::HardwareZone()
     AddListField("Terminal Hardware", TermHardwareName, TermHardwareValue);
     AddListField("Terminal Type", TermTypeName, TermTypeValue);
     AddListField("Kitchen Video Sort Order", CheckDisplayOrderName, CheckDisplayOrderValue);
+    AddListField("Print Work Orders", NoYesName, NoYesValue);
     AddTextField("Display Address", 20);
     display_host_field = FieldListEnd();
     AddTextField("Printer Address (leave blank if same)", 50);
@@ -293,6 +294,7 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         thisForm->Set(ti->term_hardware); thisForm->active = !ti->IsServer(); thisForm = thisForm->next;
         thisForm->Set(ti->type); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->sortorder); thisForm->active = 1; thisForm = thisForm->next;
+        thisForm->Set(ti->print_workorder); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->display_host); thisForm->active = !ti->IsServer(); thisForm = thisForm->next;
         thisForm->Set(ti->printer_host); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->printer_port); thisForm->active = 1; thisForm = thisForm->next;
@@ -346,6 +348,7 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
             field->Get(ti->term_hardware); field = field->next;
             field->Get(ti->type); field = field->next;
             field->Get(ti->sortorder); field = field->next;
+            field->Get(ti->print_workorder); field = field->next;
             field->Get(tmp); field = field->next;
             if (tmp.length <= 0)
                 tmp.Set("unset");

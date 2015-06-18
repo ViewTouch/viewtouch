@@ -206,6 +206,10 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             if (term->zone_db == NULL)
                 printf("ACK!!!! no zone_db\n");
 
+	    // for KDS terminals, default to kitchen page
+    	    else if (term->type == TERMINAL_KITCHEN_VIDEO || term->type == TERMINAL_KITCHEN_VIDEO2)
+	    	term->page = term->zone_db->FindByTerminal(term->type, -1, term->size);
+
             if (term->page)
                 term->Jump(JUMP_STEALTH, term->page->id);  // Get new best size for page
             else
@@ -424,6 +428,7 @@ Terminal::Terminal()
     last_index      = INDEX_GENERAL;
     job_filter      = 0;
     printer_port    = 0;
+    print_workorder = 1;
     cdu             = NULL;
     server          = NULL;
     expense_drawer  = NULL;
@@ -473,7 +478,8 @@ Terminal::Terminal()
     dialog         = NULL;
     next_dialog    = NULL;
     selected_zone  = NULL;
-    previous_zone   = NULL;
+    previous_zone  = NULL;
+    active_zone    = NULL;
     timeout        = 15;
     reload_zone_db = 0;
     edit           = 0;
@@ -4905,8 +4911,10 @@ int Terminal::ReadZone()
     {
         if (edit_zone->page)
             edit_zone->page->Remove(edit_zone);
-        if (selected_zone != NULL && selected_zone == edit_zone)
+        if (selected_zone == edit_zone)
             selected_zone = NULL;
+        if (active_zone == edit_zone)
+            active_zone = NULL;
         delete edit_zone;
         edit_zone = NULL;
     }
@@ -5630,13 +5638,11 @@ int Terminal::CC_Settle(const char* batch, int reset)
     int auth_method             = settings->authorize_method;
     char termid[STRLENGTH]      = "";
     static int state            = CC_SYS_STATE_START;
-    static Terminal *cc_term    = NULL;
     char batchstr[STRLENGTH]    = "";
 
     if (reset)
     {
         state = CC_SYS_STATE_START;
-        cc_term = NULL;
     }
     else if (user->training == 0 && OtherTermsInUse() == 0)
     {
@@ -5667,7 +5673,6 @@ int Terminal::CC_Settle(const char* batch, int reset)
             else
             {
                 state = CC_SYS_STATE_START;
-                cc_term = NULL;
             }
         }
     }
@@ -5725,7 +5730,6 @@ int Terminal::CC_Totals(const char* batch)
     int auth_method = settings->authorize_method;
     char termid[STRLENGTH] = "";
     static int state = CC_SYS_STATE_START;
-    static Terminal *cc_term = NULL;
     char batchnum[STRLENGTH] = "";
 
     if (user->training == 0)
@@ -5747,7 +5751,6 @@ int Terminal::CC_Totals(const char* batch)
             else
             {
                 state = CC_SYS_STATE_START;
-                cc_term = NULL;
             }
         }
     }
@@ -5782,7 +5785,6 @@ int Terminal::CC_Details()
     int auth_method = settings->authorize_method;
     char termid[STRLENGTH] = "";
     static int state = CC_SYS_STATE_START;
-    static Terminal *cc_term = NULL;
     char batchnum[STRLENGTH] = "";
 
     if (user->training == 0)
@@ -5800,7 +5802,6 @@ int Terminal::CC_Details()
             else
             {
                 state = CC_SYS_STATE_START;
-                cc_term = NULL;
             }
         }
     }
@@ -5835,12 +5836,10 @@ int Terminal::CC_ClearSAF(int reset)
     int auth_method = settings->authorize_method;
     char termid[STRLENGTH] = "";
     static int state = CC_SYS_STATE_START;
-    static Terminal *cc_term = NULL;
 
     if (reset)
     {
         state = CC_SYS_STATE_START;
-        cc_term = NULL;
     }
     else if (user->training == 0 && OtherTermsInUse() == 0)
     {
@@ -5856,7 +5855,6 @@ int Terminal::CC_ClearSAF(int reset)
             else
             {
                 state = CC_SYS_STATE_START;
-                cc_term = NULL;
             }
         }
     }
@@ -5882,7 +5880,6 @@ int Terminal::CC_SAFDetails()
     int auth_method = settings->authorize_method;
     char termid[STRLENGTH] = "";
     static int state = CC_SYS_STATE_START;
-    static Terminal *cc_term = NULL;
     
     if (user->training == 0 && OtherTermsInUse() == 0)
     {
@@ -5898,7 +5895,6 @@ int Terminal::CC_SAFDetails()
             else
             {
                 state = CC_SYS_STATE_START;
-                cc_term = NULL;
             }
         }
     }
