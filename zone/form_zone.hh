@@ -186,8 +186,8 @@ public:
     virtual int Remove(int num = 1)  { return 1; }
     virtual int Clear()              { return 1; }
 
-    virtual int Get(const genericChar* v, int len) { return 1; }
-    virtual int Get(const genericChar* v)          { return 1; }
+    virtual int Get(genericChar* v, int len) { return 1; }
+    virtual int Get(genericChar* v)          { return 1; }
     virtual int Get(Str &v)           { return 1; }
     virtual int Get(int &v)           { return 1; }
     virtual int Get(Flt &v)           { return 1; }
