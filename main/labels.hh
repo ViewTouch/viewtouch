@@ -147,4 +147,7 @@ extern int PrintModeValue[];
 extern const char* KVPrintMethodName[];
 extern int KVPrintMethodValue[];
 
+extern const char* WOHeadingName[];
+extern int   WOHeadingValue[];
+
 #endif

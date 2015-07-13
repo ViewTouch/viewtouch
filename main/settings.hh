@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-#define SETTINGS_VERSION 92  // READ ABOVE
+#define SETTINGS_VERSION 93  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -482,6 +482,7 @@ public:
     int term_hardware;
     int isserver;
     int print_workorder;
+    int workorder_heading;	// 0=standard, 1=simple
     Str cc_credit_termid;
     Str cc_debit_termid;
 
@@ -508,6 +509,7 @@ public:
     int model;
     int port;
     int kitchen_mode;
+    int order_margin;		// blank lines at top of work order
 
     // Constructor
     PrinterInfo();

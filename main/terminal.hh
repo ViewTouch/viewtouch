@@ -308,6 +308,7 @@ public:
     Str       printer_host;   // location of receipt printer
     int       printer_port;   // connection type of printer
     int	      print_workorder; // okay to print work order on kitchen/bar printer?
+    int	      workorder_heading; // 0=normal, 1=simple kitchen display mode
     CustDispUnit *cdu;        // the CDU object
     TimeInfo  last_input;     // time of last user input
     TimeInfo  time_out;       // time of last user input or timeout

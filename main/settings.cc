@@ -896,6 +896,7 @@ TermInfo::TermInfo()
     term_hardware = 0;
     isserver      = 0;
     print_workorder = 1;
+    workorder_heading = 0;
 
     cc_credit_termid.Set("");
     cc_debit_termid.Set("");
@@ -937,6 +938,8 @@ int TermInfo::Read(InputDataFile &df, int version)
     }
     if (version >= 92)
     	error += df.Read(print_workorder);
+    if (version >= 93)
+    	error += df.Read(workorder_heading);
 
     // dpulse is used when there are two drawers attached to one
     // printer, and two terminals printing to that printer.  AKA,
@@ -974,6 +977,7 @@ int TermInfo::Write(OutputDataFile &df, int version)
     error += df.Write(cc_credit_termid);
     error += df.Write(cc_debit_termid);
     error += df.Write(print_workorder);
+    error += df.Write(workorder_heading);
     
     return error;
 }
@@ -998,6 +1002,7 @@ int TermInfo::OpenTerm(Control *control_db, int update)
     term->cc_credit_termid.Set(cc_credit_termid);
     term->cc_debit_termid.Set(cc_debit_termid);
     term->print_workorder = print_workorder;
+    term->workorder_heading = workorder_heading;
     if (printer_model != MODEL_NONE)
     {
         if (printer_host.length > 0)
@@ -1079,6 +1084,7 @@ PrinterInfo::PrinterInfo()
     type         = 0;
     model        = 0;
     port         = 0;
+    order_margin = 0;
     kitchen_mode = PRINT_LARGE | PRINT_NARROW;
 }
 
@@ -1096,6 +1102,8 @@ int PrinterInfo::Read(InputDataFile &df, int version)
     error += df.Read(type);
     if (version >= 50)
         error += df.Read(kitchen_mode);
+    if (version >= 93)
+        error += df.Read(order_margin);
 
     return error;
 }
@@ -1111,6 +1119,7 @@ int PrinterInfo::Write(OutputDataFile &df, int version)
     error += df.Write(model);
     error += df.Write(type);
     error += df.Write(kitchen_mode);
+    error += df.Write(order_margin);
 
     return error;
 }
@@ -1126,6 +1135,7 @@ int PrinterInfo::OpenPrinter(Control *control_db, int update)
     {
         p->SetType(type);
         p->SetKitchenMode(kitchen_mode);
+	p->order_margin = order_margin;
         if (update)
             control_db->UpdateAll(UPDATE_PRINTERS, NULL);
     }

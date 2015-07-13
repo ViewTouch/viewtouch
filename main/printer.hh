@@ -124,6 +124,7 @@ public:
     Printer *fore;
     Control *parent;
     int pulse;
+    int order_margin;
     Str term_name;
 
     Printer();

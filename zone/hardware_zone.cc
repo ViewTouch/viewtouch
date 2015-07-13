@@ -73,6 +73,7 @@ HardwareZone::HardwareZone()
     AddListField("Terminal Hardware", TermHardwareName, TermHardwareValue);
     AddListField("Terminal Type", TermTypeName, TermTypeValue);
     AddListField("Kitchen Video Sort Order", CheckDisplayOrderName, CheckDisplayOrderValue);
+    AddListField("Work Order Heading", WOHeadingName, WOHeadingValue);
     AddListField("Print Work Orders", NoYesName, NoYesValue);
     AddTextField("Display Address", 20);
     display_host_field = FieldListEnd();
@@ -120,6 +121,7 @@ HardwareZone::HardwareZone()
     AddListField("Model", PrinterModelName, PrinterModelValue);
     AddListField("Kitchen Print Mode", PrintModeName, PrintModeValue);
     kitchen_mode_field = FieldListEnd();
+    AddTextField("Workorder Header Margin", 4);
 }
 
 // Member Functions
@@ -283,6 +285,9 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         {
             thisForm->active = 1;
         }
+        thisForm = thisForm->next;
+	thisForm->Set(pi->order_margin); thisForm->active = 1;
+
         break;
     default:  // terminal
         ti = settings->FindTermByRecord(record);
@@ -294,6 +299,7 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         thisForm->Set(ti->term_hardware); thisForm->active = !ti->IsServer(); thisForm = thisForm->next;
         thisForm->Set(ti->type); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->sortorder); thisForm->active = 1; thisForm = thisForm->next;
+        thisForm->Set(ti->workorder_heading); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->print_workorder); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->display_host); thisForm->active = !ti->IsServer(); thisForm = thisForm->next;
         thisForm->Set(ti->printer_host); thisForm->active = 1; thisForm = thisForm->next;
@@ -348,6 +354,7 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
             field->Get(ti->term_hardware); field = field->next;
             field->Get(ti->type); field = field->next;
             field->Get(ti->sortorder); field = field->next;
+            field->Get(ti->workorder_heading); field = field->next;
             field->Get(ti->print_workorder); field = field->next;
             field->Get(tmp); field = field->next;
             if (tmp.length <= 0)
@@ -384,7 +391,8 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
             field->Get(pi->host); field = field->next;
             field->Get(pi->port); field = field->next;
             field->Get(pi->model); field = field->next;
-            field->Get(pi->kitchen_mode);
+            field->Get(pi->kitchen_mode); field = field->next;
+	    field->Get(pi->order_margin);
         }
         break;
 	}

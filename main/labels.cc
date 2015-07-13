@@ -508,3 +508,5 @@ const char* KVPrintMethodName[] = {
 int KVPrintMethodValue[] = {
     KV_PRINT_UNMATCHED, KV_PRINT_MATCHED, -1};
 
+const char* WOHeadingName[] = {"Standard", "Simple", NULL};
+int WOHeadingValue[] = {0, 1, -1};

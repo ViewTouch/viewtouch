@@ -416,7 +416,7 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
     ty += page_y + GetFontBaseline(f);
 
     int ul = 0;
-    int yy = ty + 3;
+    int yy = ty + 4;
     int xx = tx + tw;
     if (font & FONT_UNDERLINE)
         ul = 1; // print underline
