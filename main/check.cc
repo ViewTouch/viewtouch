@@ -1299,13 +1299,13 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
         strcpy(str, UnknownStr);
     report->TextL(str, color);
 
-    if (rzone == NULL) {	// for printer, put date on separate line
+    if (!rzone) 	// for printer, put date on separate line
     	report->NewLine();
-     	report->Underline(pwidth, COLOR_DEFAULT, ALIGN_LEFT, 0.0);
-    }
     term->TimeDate(str, SystemTime, TD_NO_YEAR | TD_SHORT_MONTH | TD_NO_DAY | TD_SHORT_TIME);
     report->TextR(str, COLOR_DK_BLUE);
     report->Mode(kitchen_mode);
+    if (!rzone)
+     	report->Underline(pwidth, COLOR_DEFAULT, ALIGN_LEFT, 0.0);
     report->NewLine();
 
     if (settings->kv_show_user)
