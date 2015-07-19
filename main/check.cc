@@ -1110,6 +1110,14 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     now.Set();
     int firstmod = 0;
 
+    // printer header margin
+    if (rzone == NULL)
+    {
+        report->Mode(PRINT_LARGE);
+        report->TextL(" ");
+        report->NewLine(printer->order_margin);
+    }
+
     if (employee && employee->training)
     {
         report->TextL(" ", COLOR_RED);
@@ -1132,13 +1140,10 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
              CustomerType() == CHECK_TOGO     ||
              CustomerType() == CHECK_CALLIN))
     {
-        // header margin (printer only)
         if (rzone == NULL)
 	{
-            report->Mode(PRINT_LARGE);
-            report->TextL(" ");
-            report->NewLine(printer->order_margin);
             report->Mode(0);
+            report->TextL(" ");
             report->Underline(pwidth, color, ALIGN_CENTER, 0.0);
             report->NewLine();
 	}
@@ -1302,8 +1307,8 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     if (!rzone) 	// for printer, put date on separate line
     	report->NewLine();
     term->TimeDate(str, SystemTime, TD_NO_YEAR | TD_SHORT_MONTH | TD_NO_DAY | TD_SHORT_TIME);
-    report->TextR(str, COLOR_DK_BLUE);
     report->Mode(kitchen_mode);
+    report->TextR(str, COLOR_DK_BLUE);
     if (!rzone)
      	report->Underline(pwidth, COLOR_DEFAULT, ALIGN_LEFT, 0.0);
     report->NewLine();
