@@ -1293,24 +1293,31 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     }
     report->NewLine();
 
-    // order source
-    if (rzone)
-     	report->Underline(pwidth, COLOR_DEFAULT, ALIGN_LEFT, 0.0);
+    // order source and timestamp
+    term->TimeDate(str, SystemTime, TD_NO_YEAR | TD_SHORT_MONTH | TD_NO_DAY | TD_SHORT_TIME);
+    sprintf(str1, "%*s", pwidth, str);	// pad to right justify, with space for underline
+
     if (employee)
         strcpy(str, employee->system_name.Value());
     else if (call_center_id > 0)
         strcpy(str, "Call Center");
     else
         strcpy(str, UnknownStr);
-    report->TextL(str, color);
 
-    if (!rzone) 	// for printer, put date on separate line
-    	report->NewLine();
-    term->TimeDate(str, SystemTime, TD_NO_YEAR | TD_SHORT_MONTH | TD_NO_DAY | TD_SHORT_TIME);
-    report->Mode(kitchen_mode);
-    report->TextR(str, COLOR_DK_BLUE);
-    if (!rzone)
+    if (rzone)		// video
+    {
      	report->Underline(pwidth, COLOR_DEFAULT, ALIGN_LEFT, 0.0);
+    	report->TextL(str, color);
+	report->TextR(str1, COLOR_DK_BLUE);
+    }
+    else		// printer - timestamp on separate line
+    {
+	report->Mode(kitchen_mode);
+    	report->TextL(str, color);
+    	report->NewLine();
+	report->Mode(kitchen_mode | PRINT_UNDERLINE);
+    	report->TextR(str1, COLOR_DK_BLUE);
+    }
     report->NewLine();
 
     if (settings->kv_show_user)
