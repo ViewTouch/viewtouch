@@ -1293,8 +1293,8 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     }
     report->NewLine();
 
-    // order source and timestamp
-    term->TimeDate(str, SystemTime, TD_NO_YEAR | TD_SHORT_MONTH | TD_NO_DAY | TD_SHORT_TIME);
+    // order source and creation timestamp
+    term->TimeDate(str, time_open, TD_NO_YEAR | TD_SHORT_MONTH | TD_NO_DAY | TD_SHORT_TIME);
     sprintf(str1, "%*s", pwidth, str);	// pad to right justify, with space for underline
 
     if (employee)
