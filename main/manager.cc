@@ -146,7 +146,7 @@ static int          FontHeight[32];
 int                 LoaderSocket = 0;
 int                 OpenTermPort = 10001;
 int                 OpenTermSocket = -1;
-int                 autoupdate = 0;
+int                 autoupdate = 1;
 
 // run the user command on startup if it is available; after that,
 // we'll only run it when we get SIGUSR2.  The 2 here indicates
@@ -214,21 +214,17 @@ static int LastDay  = -1;
 
 #define VIEWTOUCH_VTPOS     VIEWTOUCH_PATH "/bin/vtpos"
 #define VIEWTOUCH_RESTART   VIEWTOUCH_PATH "/bin/vtrestart"
-#define VIEWTOUCH_UPDATES   VIEWTOUCH_PATH "/bin/update-client"
+
+// downloaded script for auto update
+#define VIEWTOUCH_UPDATE_COMMAND "/tmp/vt-update"
+// command to download script; -nv=not verbose, -T=timeout seconds, -t=# tries, -O=output
+#define VIEWTOUCH_UPDATE_REQUEST \
+    "wget -nv -T 2 -t 2 http://www.viewtouch.com/vt_updates/vt-update -O " VIEWTOUCH_UPDATE_COMMAND
 
 #define VIEWTOUCH_CONFIG    VIEWTOUCH_PATH "/dat/.viewtouch_config"
 
-// We want to move vt_data to the dat directory for consistency
-// (all data should be in the dat directory), but we also need
-// to support older systems, so we'll write to the new location
-// and read from either, starting with any directory specified
-// by the -p or path command line switches, then vt_data in the
-// dat directory, and finally, for legacy systems, vt_data in
-// the bin directory.
-// vt_data_path will hold the path we end up using.
-#define SYSTEM_DATA_FILE     VIEWTOUCH_PATH "/dat/" MASTER_ZONE_DB3
-#define SYSTEM_DATA_FILE_OLD VIEWTOUCH_PATH "/bin/" MASTER_ZONE_DB3
-char vt_data_path[STRLONG] = "";
+// vt_data is back in bin/ after a brief stint in dat/
+#define SYSTEM_DATA_FILE     VIEWTOUCH_PATH "/bin/" MASTER_ZONE_DB3
 
 
 /************************************************************* 
@@ -488,12 +484,14 @@ int main(int argc, genericChar* argv[])
         MasterSystem->SetDataPath(data_path);
     else
         MasterSystem->SetDataPath(VIEWTOUCH_PATH "/dat");
-    // Check for updates to download if it's requested and
-    // we have the appropriate client script.
-    if (autoupdate && DoesFileExist(VIEWTOUCH_UPDATES))
+    // Check for updates from server if not disabled
+    if (autoupdate)
     {
         ReportError("Automatic check for updates...");
-    	system(VIEWTOUCH_UPDATES);
+	unlink(VIEWTOUCH_UPDATE_COMMAND);	// out with the old
+    	system(VIEWTOUCH_UPDATE_REQUEST);	// in with the new
+	chmod(VIEWTOUCH_UPDATE_COMMAND, 0755);	// set executable
+	system(VIEWTOUCH_UPDATE_COMMAND);	// try to run it
     }
     // Now process any locally available updates (updates
     // from the previous step will be installed and ready for
@@ -1247,46 +1245,28 @@ int ParsePrice(const char* source, int *value)
  *************************************************************/ 
 
 /****
- * FindVTData:  Originally, vt_data was located in the bin directory.  This caused
- *  problems with backups because it really was the only file in that directory
- *  that needed to be backed up.  Everything else was in dat.  So I moved it to dat
- *  but to make things easier on older systems, I still check bin if I can't find
- *  vt_data in dat.  Lastly, the first thing we need to check is whether we've
- *  been given a path ("./vtpos -p /user/viewtouch/remotes/store1").
+ * FindVTData:  Should be in bin/ directory, but for compatibility check in 
+ *  current data path if not there.
  *
  *  Opens the file if found.  Returns the version of the file, or -1 on error.
  ****/
 int FindVTData(InputDataFile *infile)
 {
     FnTrace("FindVTData()");
-    struct stat sb;
     int version = -1;
 
-    if (MasterSystem != NULL)
-        MasterSystem->FullPath("vt_data", vt_data_path);
+    // try official location
+    fprintf(stderr, "Trying VT_DATA: %s\n", SYSTEM_DATA_FILE);
+    if (infile->Open(SYSTEM_DATA_FILE, version) == 0)
+        return version;
 
-    if (stat(vt_data_path, &sb) == 0)
-    {
-        fprintf(stderr, "VT_DATA:  %s\n", vt_data_path);
-        if (infile->Open(vt_data_path, version))
-            return version;
-    }
-    else if (stat(SYSTEM_DATA_FILE, &sb) == 0)
-    {
-        strcpy(vt_data_path, SYSTEM_DATA_FILE);
-        fprintf(stderr, "VT_DATA:  %s\n", SYSTEM_DATA_FILE);
-        if (infile->Open(SYSTEM_DATA_FILE, version))
-            return version;
-    }
-    else if (stat(SYSTEM_DATA_FILE_OLD, &sb) == 0)
-    {
-        strcpy(vt_data_path, SYSTEM_DATA_FILE_OLD);
-        fprintf(stderr, "VT_DATA:  %s\n", SYSTEM_DATA_FILE_OLD);
-        if (infile->Open(SYSTEM_DATA_FILE_OLD, version))
-            return version;
-    }
+    // fallback, try current data path
+    const char *vt_data_path = MasterSystem->FullPath("vt_data");
+    fprintf(stderr, "Trying VT_DATA: %s\n", vt_data_path);
+    if (infile->Open(vt_data_path, version) == 0)
+        return version;
 
-    return version;
+    return -1;
 }
 
 int LoadSystemData()
@@ -1389,6 +1369,9 @@ int LoadSystemData()
 int SaveSystemData()
 {
     FnTrace("SaveSystemData()");
+
+    return 0; // no longer updating vt_data locally
+#if 0
     // Save version 1
     System  *sys = MasterSystem;
     Control *con = MasterControl;
@@ -1439,8 +1422,8 @@ int SaveSystemData()
         ac = ac->next;
     }
     return 0;
+#endif
 }
-
 
 /************************************************************* 
  * Control Class
@@ -2196,7 +2179,6 @@ int ProcessRemoteOrder(int sock_fd)
     SubCheck  *subcheck = NULL;
     Order     *order = NULL;
     char       StoreNum[STRSHORT];
-    char       OrderStatus;
     int        status = CALLCTR_STATUS_INCOMPLETE;
 
     kvif.Set(sock_fd);
@@ -2221,7 +2203,7 @@ int ProcessRemoteOrder(int sock_fd)
         else if (strncmp(key, "OrderType", 9) == 0)
             check->CustomerType((value[0] == 'D') ? CHECK_DELIVERY : CHECK_TAKEOUT);
         else if ( strncmp(key, "OrderStatus", 11) == 0)
-            OrderStatus = value[0];
+            ; // ignore this
         else if (strncmp(key, "FirstName", 9) == 0)
             check->FirstName(value);
         else if (strncmp(key, "LastName", 8) == 0)
@@ -2547,7 +2529,6 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
     SystemTime.Set();
     int update = 0;
 
-    int license_message = 0;
     System *sys = MasterSystem;
     Settings *settings = &(sys->settings);
     int day = SystemTime.Day();
@@ -2585,8 +2566,12 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
         {
             if (sys->expire.IsSet() && SystemTime >= sys->expire)
             {
-                ReportError("Setting legacy expire");
-                license_message = 1;
+    		static int license_message = 0;	// only complain once
+		if (!license_message)
+		{
+                    ReportError("Setting legacy expire");
+                    license_message = 1;
+		}
             }
             LastHour = hour;
             update |= UPDATE_HOUR;

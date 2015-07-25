@@ -895,7 +895,7 @@ int System::CheckFileUpdates()
     retval += CheckFileUpdate(MASTER_LOCALE);
     retval += CheckFileUpdate(MASTER_ZONE_DB1);
     retval += CheckFileUpdate(MASTER_ZONE_DB2);
-    retval += CheckFileUpdate(MASTER_ZONE_DB3);
+    //retval += CheckFileUpdate(MASTER_ZONE_DB3);
 
     return retval;
 }
