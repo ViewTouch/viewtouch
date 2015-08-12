@@ -423,7 +423,7 @@ public:
                          int flag_sent = ORDER_SENT);  // returns # of orders to be printed
     int       SendWorkOrder(Terminal *term, int printer_target, int reprint);
     int       PrintWorkOrder(Terminal *term, Report *report, int printer_id, int reprint,
-                             ReportZone *rzone = NULL);
+                             ReportZone *rzone = NULL, Printer *printer = NULL);
     int       PrintDeliveryOrder(Report *report, int pwidth = 80);
     int       PrintCustomerInfo(Printer *printer, int mode);
     int       PrintCustomerInfoReport(Report *report, int mode, int columns = 1, int pwidth = 40);

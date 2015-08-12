@@ -646,15 +646,30 @@ int Check::SendWorkOrder(Terminal *term, int printer_target, int reprint)
 {
     FnTrace("Check::SendWorkOrder()");
     Report *report = new Report();
-    Printer *printer = NULL;
-    int retval = 1;
+    if (report == NULL)
+    	return 1;
 
-    if (report != NULL)
+    Printer *printer = term->FindPrinter(printer_target);
+    int retval = PrintWorkOrder(term, report, printer_target, reprint, NULL, printer);
+    if (report->is_complete && printer != NULL && retval == 0)
+        retval = report->FormalPrint(printer);
+
+    // send to all other printers of this type 
+    // (e.g. to allow multiple KITCHEN1 printers)
+    Settings *settings = term->GetSettings();
+    for (PrinterInfo *pi = settings->PrinterList(); pi; pi=pi->next)
     {
-        retval = PrintWorkOrder(term, report, printer_target, reprint);
-        printer = term->FindPrinter(printer_target);
-        if (report->is_complete && printer != NULL && retval == 0)
-            retval = report->FormalPrint(printer);
+    	if (pi->type == printer_target)
+	{
+	    Printer *altprinter = pi->FindPrinter(term->parent);
+	    if (altprinter && altprinter != printer)
+	    {
+    		retval = PrintWorkOrder(term, report, printer_target, reprint, 
+				NULL, altprinter);
+    		if (report->is_complete && retval == 0)
+        		retval = report->FormalPrint(altprinter);
+	    }
+    	}
     }
 
     return retval;
@@ -1055,7 +1070,7 @@ int Check::PrintCount(Terminal *term, int printer_id, int reprint, int flag_sent
  *  [->][GUEST] [COUNT] ORDER [[MOD1] .. [MODn]]
  ****/
 int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int reprint,
-                          ReportZone *rzone)
+                          ReportZone *rzone, Printer *printer)
 {
     FnTrace("Check::PrintWorkOrder()");
     int flag_sent = ORDER_SENT;
@@ -1073,7 +1088,6 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
 	    full_hdr = false;
     }
 
-    Printer *printer = term->FindPrinter(printer_id);
     if (report == NULL && printer == NULL)
     {
         ReportError("No Printer Available For Work Order and No Report");
