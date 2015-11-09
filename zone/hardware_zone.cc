@@ -536,6 +536,9 @@ int HardwareZone::ChangeStatus(Terminal *term)
                     pi->OpenPrinter(term->parent, 1);
                 pi = pi->next;
             }
+
+	    // connect/create drawer for terminal
+	    MasterSystem->CreateFixedDrawers();
         }
         break;
     case 1:
