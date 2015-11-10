@@ -294,6 +294,9 @@ int UserEditZone::Update(Terminal *term, int update_message, const char* value)
     }
 }
 
+// setup list of valid starting pages.
+// return page number of 1st one greater than zero 
+// (normal start page, not bar/kitchen video), for use as a default
 int UserEditZone::AddStartPages(Terminal *term, FormField *field)
 {
     FnTrace("UserEditZone::AddStartPages()");
@@ -307,6 +310,8 @@ int UserEditZone::AddStartPages(Terminal *term, FormField *field)
         {
             last_page = p->id;
             field->AddEntry(p->name.Value(), p->id);
+	    if (p->id > 0 && retval == 0)	// (or maybe p->IsTable()?)
+	        retval = p->id;
         }
     }
     //NOTE BAK-->Check List Page is not a specific page, but a page type.
@@ -363,7 +368,10 @@ int UserEditZone::LoadRecord(Terminal *term, int record)
             f->active = 1; f->Set(j->job); f->SetActiveList(job_active); f = f->next;
             f->active = 1; f->Set(j->pay_rate); f = f->next;
             f->active = 1; f->Set(term->SimpleFormatPrice(j->pay_amount)); f = f->next;
-            f->active = 1; AddStartPages(term, f); f->Set(j->starting_page); f = f->next;
+            f->active = 1; int defpage = AddStartPages(term, f); 
+	    if (j->starting_page == -1)	// unset/default, use 1st normal start page
+		j->starting_page = defpage;
+	    f->Set(j->starting_page); f = f->next;
             f->active = 1; f->Set(j->dept_code); f = f->next;
             f->active = (e->JobCount() > 1); f = f->next;
             j = j->next;
