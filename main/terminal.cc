@@ -2055,7 +2055,8 @@ int Terminal::NextPage()
     if (currPage == NULL)
         return 1;
 
-    int flag = !(user->CanEditSystem() || translate);
+    // can't edit system pages?
+    int flag = !(CanEditSystem() || translate);
     do
         currPage = currPage->next;
     while (currPage && currPage->id < 0 && flag);
@@ -2079,7 +2080,8 @@ int Terminal::ForePage()
     if (currPage == NULL)
         return 1;
 
-    int flag = !(user->CanEditSystem() || translate);
+    // can't edit system pages?
+    int flag = !(CanEditSystem() || translate);
     do
         currPage = currPage->fore;
     while (currPage && currPage->id < 0 && flag);
@@ -2433,7 +2435,8 @@ int Terminal::OtherTermsInUse(int no_kitchen)
     return count;
 }
 
-int Terminal::EditTerm(int save_data)
+// toggle edit mode, optionally (edit_mode=2) allow system page edits
+int Terminal::EditTerm(int save_data, int edit_mode)
 {
     FnTrace("Terminal::EditTerm()");
     if (parent == NULL)
@@ -2452,7 +2455,6 @@ int Terminal::EditTerm(int save_data)
         WInt8(TERM_KILLWINDOW);
         WInt16(WIN_TOOLBAR);
         SendNow();
-        edit = 0;
         show_info = 0;
         if (save_data)
         {
@@ -2466,7 +2468,7 @@ int Terminal::EditTerm(int save_data)
             if (zone_db != NULL)
                 zone_db->ClearEdit(this);
             Draw(RENDER_NEW);
-            if (user && user->CanEditSystem())
+            if (edit_mode>1 && CanEditSystem())	// F9 at start and end
                 SaveSystemData();
             parent->SaveMenuPages();
             parent->SaveTablePages();
@@ -2480,6 +2482,8 @@ int Terminal::EditTerm(int save_data)
             org_page_id = page->id;
             UpdateZoneDB(parent);
         }
+        edit = 0;
+
         // make sure order entry window are saved
         Terminal *currTerm = parent->TermList();
         while (currTerm != NULL)
@@ -2518,7 +2522,7 @@ int Terminal::EditTerm(int save_data)
     }
 
     // Start editing term
-    edit = 1;
+    edit = edit_mode;
     Draw(RENDER_NEW);
 
     // Create Edit Tool Bar
@@ -3203,7 +3207,7 @@ int Terminal::RenderBlankPage()
     genericChar str[STRLENGTH];
     if (edit)
     {
-        if (user && (page->id >= 0 || user->CanEditSystem()))
+        if (user && (page->id >= 0 || CanEditSystem()))
         {
             int count = 0;
             int list[6], ref = zone_db->References(page, list, 6, count);
@@ -3995,6 +3999,10 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             OpenDialog(sd);
         }
         return 0;
+    case XK_F9:
+        if (state & ShiftMask)
+            return EditTerm(0);  // Exit edit without saving, if we're in edit mode
+        return EditTerm(1, 2);	 // edit allowing system page edits
     case XK_F11:  // exit edit without save
         return EditTerm(0);
     }
@@ -4953,10 +4961,10 @@ int Terminal::EditPage(Page *p)
 	if (user == NULL || !user->CanEdit())
 		return 1;
 
-	if (p && p->id < 0 && !user->CanEditSystem())
+	int edit_system = CanEditSystem();
+	if (p && p->id < 0 && !edit_system)
 		return 1;
 
-	int edit_system = user->CanEditSystem();
 	edit_page = p;
 
 	WInt8(TERM_EDITPAGE);
@@ -5046,7 +5054,7 @@ int Terminal::ReadPage()
     currPage->parent_id = RInt32();
     currPage->index = RInt8();
 
-    if (my_id < 0 && !user->CanEditSystem())
+    if (my_id < 0 && !CanEditSystem())
         my_id = 0;
 
     if (currPage->id != my_id && zone_db->IsPageDefined(my_id, currPage->size) == 0)
@@ -5093,7 +5101,7 @@ int Terminal::ShowPageList()
 	WInt8(TERM_LISTSTART);
 
 	genericChar str[256];
-	int edit_system = user->CanEditSystem(), last_id = 0;
+	int edit_system = CanEditSystem(), last_id = 0;
 
 	for (Page *p = zone_db->PageList(); p != NULL; p = p->next)
 		if ((p->id != last_id || p->id == 0) &&
@@ -5116,7 +5124,7 @@ int Terminal::JumpList(int selected)
     if (!edit && !translate)
         return 1;
 
-    int edit_system = user->CanEditSystem();
+    int edit_system = CanEditSystem();
     int last_id = 0;
 
     for (Page *currPage = zone_db->PageList(); currPage != NULL; currPage = currPage->next)
@@ -5957,11 +5965,10 @@ int Terminal::CC_GetInitResults()
     int retval = 1;
     Str termid;
     Str message;
-    int intcode;
 
     termid.Set(RStr());
     message.Set(RStr());
-    intcode = RInt8();
+    RInt8();	// skip intcode
 
     system_data->cc_init_results->Add(termid.Value(), message.Value());
     
@@ -6021,7 +6028,6 @@ int Terminal::CC_GetDetailsResults()
     int retval = 1;
     Str termid;
     Str message;
-    int intcode;
     int auth_method = GetSettings()->authorize_method;
     int rows;
     char line[STRLONG];
@@ -6041,7 +6047,7 @@ int Terminal::CC_GetDetailsResults()
     {
         termid.Set(RStr());
         message.Set(RStr());
-        intcode = RInt8();
+        RInt8();	// skip intcode
     }
 
     cc_processing = 0;
@@ -6102,6 +6108,13 @@ int Terminal::SetCCTimeout(int cc_timeout)
     return retval;
 }
 
+// allowed to edit system pages?
+bool Terminal::CanEditSystem()
+{
+    if (user && user->CanEditSystem() && edit > 1)
+    	return true;
+    return false;
+}
 
 /**** Functions ****/
 

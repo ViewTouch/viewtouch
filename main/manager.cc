@@ -1358,7 +1358,7 @@ int LoadSystemData()
     // Load any new imports
     if (zone_db->ImportPages() > 0)
     {
-        SaveSystemData();
+        // SaveSystemData(); // disabled, only save on edit now
         con->SaveMenuPages();
         con->SaveTablePages();
     }
@@ -1370,17 +1370,15 @@ int SaveSystemData()
 {
     FnTrace("SaveSystemData()");
 
-    return 0; // no longer updating vt_data locally
-#if 0
     // Save version 1
     System  *sys = MasterSystem;
     Control *con = MasterControl;
     if (con->zone_db == NULL)
         return 1;
 
-    BackupFile(vt_data_path);
+    BackupFile(SYSTEM_DATA_FILE);	// always save to normal location
     OutputDataFile df;
-    if (df.Open(vt_data_path, 1, 1))
+    if (df.Open(SYSTEM_DATA_FILE, 1, 1))
         return 1;
 
     // Write System Page Data
@@ -1422,7 +1420,6 @@ int SaveSystemData()
         ac = ac->next;
     }
     return 0;
-#endif
 }
 
 /************************************************************* 

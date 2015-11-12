@@ -390,7 +390,7 @@ public:
     // Edit / translate mode
     Page *edit_page;
     Zone *edit_zone;
-    int   edit;          // boolean - terminal in edit mode?
+    int   edit;          // 0=normal mode, 1=edit mode, 2=system edit mode
     int   translate;     // boolean - terminal in translate mode?
     int   last_x;
     int   last_y;
@@ -502,7 +502,7 @@ public:
     int UpdateOtherTerms(int update_message, const genericChar* value);
     int TermsInUse();           // # of terms in use (total)
     int OtherTermsInUse(int no_kitchen = 0);     // # of terms in use (except current)
-    int EditTerm(int save_data = 1);             // toggles edit mode for terminal
+    int EditTerm(int save_data = 1, int mode = 1);  // toggles edit mode for terminal
     int TranslateTerm();        // toggles translate mode for terminal
     int UpdateZoneDB(Control *con); // updates zone_db for terminal
     const genericChar* ReplaceSymbols(const char* str);
@@ -513,6 +513,7 @@ public:
     int TextWidth(const char* string, int len = -1, int font_id = -1);
     int IsUserOnline(Employee *e);
     int FinalizeOrders();
+    bool CanEditSystem();
 
     const genericChar* Translate(const char* string, int lang = LANG_PHRASE, int clear = 0); // calls proper local object for text translation
     const genericChar* TimeDate(TimeInfo &tm, int format, int lang = LANG_PHRASE);
