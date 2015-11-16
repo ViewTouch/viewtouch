@@ -2467,7 +2467,6 @@ int Terminal::EditTerm(int save_data, int edit_mode)
             parent->UpdateAll(UPDATE_MENU, NULL);
             if (zone_db != NULL)
                 zone_db->ClearEdit(this);
-            Draw(RENDER_NEW);
             if (edit_mode>1 && CanEditSystem())	// F9 at start and end
                 SaveSystemData();
             parent->SaveMenuPages();
@@ -2483,6 +2482,7 @@ int Terminal::EditTerm(int save_data, int edit_mode)
             UpdateZoneDB(parent);
         }
         edit = 0;
+        Draw(RENDER_NEW);
 
         // make sure order entry window are saved
         Terminal *currTerm = parent->TermList();
