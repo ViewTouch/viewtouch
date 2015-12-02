@@ -491,7 +491,8 @@ int main(int argc, genericChar* argv[])
 	unlink(VIEWTOUCH_UPDATE_COMMAND);	// out with the old
     	system(VIEWTOUCH_UPDATE_REQUEST);	// in with the new
 	chmod(VIEWTOUCH_UPDATE_COMMAND, 0755);	// set executable
-	system(VIEWTOUCH_UPDATE_COMMAND);	// try to run it
+	// try to run it, giving build-time base path
+	system(VIEWTOUCH_UPDATE_COMMAND " " VIEWTOUCH_PATH);	
     }
     // Now process any locally available updates (updates
     // from the previous step will be installed and ready for
@@ -622,6 +623,7 @@ int StartSystem(int my_use_net)
     }
 
     genericChar str[256];
+    EnsureFileExists(sys->data_path.Value());
     if (DoesFileExist(sys->data_path.Value()) == 0)
     {
         sprintf(str, "Can't find path '%s'", sys->data_path.Value());
