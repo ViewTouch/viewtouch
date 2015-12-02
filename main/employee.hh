@@ -67,9 +67,6 @@ extern int   PayRateValue[];
 extern const genericChar* JobName[];
 extern int   JobValue[];
 
-extern const genericChar* StartPageName[];
-extern int   StartPageValue[];
-
 
 /**** Types ****/
 class LaborDB;

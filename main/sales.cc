@@ -97,6 +97,7 @@ SalesItem::SalesItem(const char* name)
     price_type     = PRICE_PERITEM;
     changed = 0;
     allow_increase = 1;
+    ignore_split   = 0;
 }
 
 // Member Functions
@@ -140,6 +141,7 @@ int SalesItem::Copy(SalesItem *target)
         target->changed = changed;
         target->price_type = price_type;
         target->allow_increase = allow_increase;
+        target->ignore_split = ignore_split;
         retval = 0;
     }
     return retval;
@@ -176,6 +178,7 @@ int SalesItem::Read(InputDataFile &df, int version)
     // 12 (08/18/05) added call_center_name and delivery_cost
     // 13 (09/14/05) added item_code
     // 14 (04/30/15) added all properties relating to cinema mode.
+    // 15 (11/06/15) added ignore split kitchen 
 
     if (version < 8)
         return 1;
@@ -232,6 +235,8 @@ int SalesItem::Read(InputDataFile &df, int version)
     }
     if (version >= 13)
         df.Read(item_code);
+    if (version >= 15)
+        df.Read(ignore_split);
 
     // Item property checks
     if (call_order < 0)
@@ -298,6 +303,8 @@ int SalesItem::Write(OutputDataFile &df, int version)
     error += df.Write(call_center_name);
     error += df.Write(delivery_cost);
     error += df.Write(item_code);
+    if (version >= 15)
+        error += df.Write(ignore_split);
 
     return error;
 }

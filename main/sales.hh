@@ -27,7 +27,7 @@
 
 /**** Definitions ****/
 
-#define SALES_ITEM_VERSION       14 
+#define SALES_ITEM_VERSION       15 
 
 // Family Difinitions
 #define FAMILY_APPETIZERS        0
@@ -180,12 +180,13 @@ public:
     short sales_type;     // tax/discount catagory (soon to be obsolete)
     short stocked;        // boolean - is item stocked or made to order
     short has_zone;       // boolean - is there a zone that can order this item?
+    short allow_increase; // whether to show the OrderAddZone button.
+    short ignore_split;	  // ignore split kitchen?
     int   period;         // time of day served
     int   prepare_time;   // time to make menu item
     int   quanity;        // Number of item remaining
     int   changed;        // boolean - has this item been altered?
     int   price_type;     // price type (see above)
-    int   allow_increase; // whether to show the OrderAddZone button.
 
     // Constructor
     SalesItem(const char* name = NULL);

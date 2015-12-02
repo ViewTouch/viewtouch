@@ -5022,6 +5022,7 @@ Order::Order(Settings *settings, SalesItem *item, int qual, int price)
     sales_type      = item->sales_type;
     call_order      = item->call_order;
     allow_increase  = item->allow_increase;
+    ignore_split    = item->ignore_split;
     next            = NULL;
     fore            = NULL;
     parent          = NULL;
@@ -5066,6 +5067,7 @@ Order::Order(const genericChar* name, int price)
     sales_type      = SALES_FOOD;
     call_order      = 4;
     allow_increase  = 1;
+    ignore_split    = 0;
     next            = NULL;
     fore            = NULL;
     parent          = NULL;
@@ -5400,7 +5402,7 @@ int Order::PrintStatus(Terminal *t, int target_printer, int reprint, int flag_se
     if ((status & flag_sent) && !reprint)
         return 0; // item has already printed
 
-    if (t->kitchen > 0)
+    if (t->kitchen > 0 && !ignore_split)
     {
         // Split kitchen mode, override with printer assigned to terminal 
 	if (t->kitchen == 1 && target_printer == PRINTER_KITCHEN1)

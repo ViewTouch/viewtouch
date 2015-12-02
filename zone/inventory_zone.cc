@@ -1160,6 +1160,7 @@ int ItemListZone::AddFields()
     AddListField("Call Order", CallOrderName, CallOrderValue);
     AddListField("Is Item Stocked?", NoYesName);
     AddListField("Allow Increase Button?", NoYesName);
+    AddListField("Ignore Split Kitchen?", NoYesName);
 
     return 0;
 }
@@ -1229,6 +1230,7 @@ int ItemListZone::LoadRecord(Terminal *t, int record)
     f->Set(si->call_order); f = f->next;
     f->Set(si->stocked); f = f->next;
     f->Set(si->allow_increase); f = f->next;
+    f->Set(si->ignore_split);
     return 0;
 }
 
@@ -1267,6 +1269,7 @@ int ItemListZone::SaveRecord(Terminal *t, int record, int write_file)
         f->Get(tmp); f = f->next; si->call_order = tmp;
         f->Get(tmp); f = f->next; si->stocked = tmp;
         f->Get(tmp); f = f->next; si->allow_increase = tmp;
+        f->Get(tmp); f = f->next; si->ignore_split = tmp;
         if (item_name != si->item_name)
         {
             name_change = 1;
@@ -1340,9 +1343,9 @@ int ItemListZone::ListReport(Terminal *t, Report *r)
             my_color = COLOR_DK_GREEN;
         else if (si->type == ITEM_SUBSTITUTE)
             my_color = COLOR_DK_RED;
-	Str name;
-	admission_parse_hash_name(name,si->item_name);
-        r->TextL(name.Value(), my_color);
+	Str iname;
+	admission_parse_hash_name(iname,si->item_name);
+        r->TextL(iname.Value(), my_color);
         r->TextR(t->FormatPrice(si->cost), my_color);
         r->NewLine();
         si = si->next;

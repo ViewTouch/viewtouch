@@ -134,7 +134,6 @@ public:
     int   page_id;     // ID of page where item was ordered from
     Uchar discount;    // boolean - has order been discounted?
     Uchar call_order;  // order priority for modifiers
-    int   allow_increase;
 
     // Saved State
     Uchar item_type;   // type of item
@@ -152,6 +151,8 @@ public:
     short checknum;    // for kitchen video, ReportZone::Touch
     short employee_meal; // was this item ordered by an employee at a reduced price?
     short is_reduced;  // 1 = had "each item" coupon applied, 2 = auto coupon
+    short allow_increase;	// item allows increase - not really needed?
+    short ignore_split;	// ignore split kitchen
     int   auto_coupon_id;
 
     // Constructors
