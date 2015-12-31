@@ -2122,14 +2122,19 @@ Drawer *Terminal::FindDrawer()
     Drawer *d = system_data->FirstDrawer();
     while (d)
     {
-        if (d->IsOpen() && d->term == this)
+        if (d->IsOpen())
         {
             switch (dm)
             {
             default:
             case DRAWER_NORMAL:
+	    	if (d->term == this)
+                    return d;
+	        break;
             case DRAWER_SERVER:
-                return d;
+	    	if (d->number == -user->id)
+		    return d;
+	    	break;
             case DRAWER_ASSIGNED:
                 if (d->owner_id == user->id)
                     return d;
