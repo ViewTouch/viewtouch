@@ -1341,18 +1341,21 @@ int Drawer::Pull(int user_id)
     pull_time = SystemTime;
     Save();
 
-    if (IsServerBank() || number <= 0)
+    if (number <= 0)
         return 0;
 
+    // replace with fresh drawer
     // FIX - should confirm physical drawer exists in system
     Drawer *d = new Drawer(SystemTime);
     d->host     = host;
-    d->owner_id = owner_id;
+    if (!term || term->GetSettings()->drawer_mode != DRAWER_ASSIGNED)
+    	d->owner_id =  owner_id;
     d->term     = term;
     d->number   = number;
     d->position = position;
     MasterSystem->Add(d);
     d->Save();
+
     return 0;
 }
 

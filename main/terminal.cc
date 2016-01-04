@@ -2120,6 +2120,7 @@ Drawer *Terminal::FindDrawer()
 
     // Find Physical Drawers
     Drawer *d = system_data->FirstDrawer();
+    Drawer *avail = NULL;	// available for assigned mode
     while (d)
     {
         if (d->IsOpen())
@@ -2138,14 +2139,24 @@ Drawer *Terminal::FindDrawer()
             case DRAWER_ASSIGNED:
                 if (d->owner_id == user->id)
                     return d;
+		if (d->term == this && d->owner_id == 0 && d->IsEmpty())
+		    avail = d;
                 break;
             }
         }
         d = d->next;
     }
 
+    // None found; for server mode, create one
     if (dm == DRAWER_SERVER)
         return system_data->GetServerBank(user);
+
+    // or for assigned mode, if one was available, use that
+    if (dm == DRAWER_ASSIGNED && avail)
+    {
+	avail->ChangeOwner(user->id);
+    	return avail;
+    }
 
     return NULL;
 }
