@@ -88,13 +88,6 @@ int          ReportPrinterModelValue[] = {
 
 #define GENERIC_TITLE   "ViewTouch POS Report"  // page title when not otherwise specified
 
-#define PORT_XCD_PARALLEL     9100
-#define PORT_XCD_SERIAL       9101
-#define PORT_EXPLORA_PARALLEL 5964
-#define PORT_EXPLORA_SERIAL   87
-#define PORT_VT_DAEMON        65530
-#define PORT_SERVER_DEVICE    0
-
 const genericChar* PortName[] = {
     "XCD Parallel", "XCD Serial", "Explora Parallel", "Explora Serial",
     "VT Daemon", "Device On Server", NULL};

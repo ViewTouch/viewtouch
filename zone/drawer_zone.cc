@@ -128,15 +128,13 @@ int DrawerObj::Render(Terminal *term)
     {
         sprintf(str, "All Drawers");
     }
+    else if (drawer->term)
+    {
+        sprintf(str, drawer->term->name.Value());
+    }
     else
     {
-        if (drawer->term)
-        {
-            sprintf(str, "%s %s %d", drawer->term->name.Value(),
-                    term->Translate("Drawer"), drawer->number);
-        }
-        else
-            sprintf(str, "%s %d", term->Translate("Drawer"), drawer->number);
+        sprintf(str, "%s %d", term->Translate("Drawer"), drawer->number);
     }
     
     c = COLOR_WHITE;

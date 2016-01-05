@@ -4273,19 +4273,19 @@ int Settings::PrinterReport(Terminal *t, Report *r)
             r->TextL(t->Translate("Unknown Type"));
         else
             r->TextL(PrinterTypeName[idx]);
-        strncpy(buffer, pi->host.Value(), 15);
-        if (strlen(pi->host.Value()) > 15)
+        strncpy(buffer, pi->host.Value(), 45);
+        if (strlen(pi->host.Value()) > 45)
         {
-            buffer[15] = '\0';
+            buffer[45] = '\0';
             strcat(buffer, "...");
         }
         r->TextPosL(15, buffer);
 
-        idx = CompareList(pi->port, PortValue);
-        if (idx < 0)
-            r->TextPosL(30, t->Translate("Unknown Interface"));
-        else
-            r->TextPosL(30, PortName[idx]);
+        //idx = CompareList(pi->port, PortValue);
+        //if (idx < 0)
+            //r->TextPosL(30, t->Translate("Unknown Interface"));
+        //else
+            //r->TextPosL(30, PortName[idx]);
 
         idx = CompareList(pi->model, PrinterModelValue);
         if (idx < 0)

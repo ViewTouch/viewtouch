@@ -70,6 +70,15 @@ enum printer_models {
     MODEL_REPORT_TEXT
 };
 
+// obsolete port types
+#define PORT_XCD_PARALLEL     9100
+#define PORT_XCD_SERIAL       9101
+#define PORT_EXPLORA_PARALLEL 5964
+#define PORT_EXPLORA_SERIAL   87
+#define PORT_VT_DAEMON        65530
+#define PORT_SERVER_DEVICE    0
+
+
 
 /**** Global Data ****/
 extern const genericChar* PrinterModelName[];

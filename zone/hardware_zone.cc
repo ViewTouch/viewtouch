@@ -79,7 +79,7 @@ HardwareZone::HardwareZone()
     display_host_field = FieldListEnd();
     AddTextField("Printer Address (leave blank if same)", 50);
     printer_host_field = FieldListEnd();
-    AddListField("Connection Interface", PortName, PortValue);
+    //AddListField("Connection Interface", PortName, PortValue);
     AddListField("Printer Model", ReceiptPrinterModelName,
                  ReceiptPrinterModelValue);
     AddListField("Number Of Drawers", DrawerCountName, DrawerCountValue);
@@ -117,7 +117,7 @@ HardwareZone::HardwareZone()
     printer_start = FieldListEnd();
     AddListField("Printer Type", PrinterTypeName, PrinterTypeValue);
     AddTextField("Printer Address", 50);
-    AddListField("Connection Interface", PortName, PortValue);
+    //AddListField("Connection Interface", PortName, PortValue);
     AddListField("Model", PrinterModelName, PrinterModelValue);
     AddListField("Kitchen Print Mode", PrintModeName, PrintModeValue);
     kitchen_mode_field = FieldListEnd();
@@ -151,7 +151,7 @@ RenderResult HardwareZone::Render(Terminal *term, int update_flag)
             TextC(term, 0, term->Translate("Printers"), col);
             TextL(term, 2.3, term->Translate("Type/Location"), col);
             TextPosL(term, 15, 2.3, term->Translate("Host/Device"), col);
-            TextPosL(term, 30, 2.3, term->Translate("Interface"), col);
+            //TextPosL(term, 30, 2.3, term->Translate("Interface"), col);
             TextPosL(term, 47, 2.3, term->Translate("Model"), col);
             TextPosL(term, 58, 2.3, term->Translate("Status"), col);
             break;
@@ -186,7 +186,7 @@ int HardwareZone::UpdateForm(Terminal *term, int record)
         field = field->next;  // skip name
         field->Get(type); field = field->next;
         field = field->next;  // skip host
-        field = field->next;  // skip port
+        //field = field->next;  // skip port
         field->Get(model); field = field->next;
         if (IsKitchenPrinter(type) && (model == MODEL_EPSON))
             kitchen_mode_field->active = 1;
@@ -278,7 +278,7 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         thisForm->Set(pi->name); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(pi->type); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(pi->host); thisForm->active = 1; thisForm = thisForm->next;
-        thisForm->Set(pi->port); thisForm->active = 1; thisForm = thisForm->next;
+        //thisForm->Set(pi->port); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(pi->model); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(pi->kitchen_mode);
         if (IsKitchenPrinter(pi->type) && (pi->model == MODEL_EPSON))
@@ -303,7 +303,7 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         thisForm->Set(ti->print_workorder); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->display_host); thisForm->active = !ti->IsServer(); thisForm = thisForm->next;
         thisForm->Set(ti->printer_host); thisForm->active = 1; thisForm = thisForm->next;
-        thisForm->Set(ti->printer_port); thisForm->active = 1; thisForm = thisForm->next;
+        //thisForm->Set(ti->printer_port); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->printer_model); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->drawers); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->dpulse);
@@ -361,7 +361,8 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
                 tmp.Set("unset");
             ti->display_host.Set(tmp);
             field->Get(ti->printer_host); field = field->next;
-            field->Get(ti->printer_port); field = field->next;
+            //field->Get(ti->printer_port); field = field->next;
+	    ti->printer_port = PORT_VT_DAEMON;
             field->Get(ti->printer_model); field = field->next;
             field->Get(ti->drawers); field = field->next;
             field->Get(ti->dpulse); field = field->next;
@@ -389,7 +390,8 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
             field->Get(pi->name); field = field->next;
             field->Get(pi->type); field = field->next;
             field->Get(pi->host); field = field->next;
-            field->Get(pi->port); field = field->next;
+            //field->Get(pi->port); field = field->next;
+	    pi->port = PORT_VT_DAEMON;
             field->Get(pi->model); field = field->next;
             field->Get(pi->kitchen_mode); field = field->next;
 	    field->Get(pi->order_margin);
