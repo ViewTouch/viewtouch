@@ -4268,36 +4268,39 @@ int Settings::PrinterReport(Terminal *t, Report *r)
 
     while (pi)
     {
-        int idx = CompareList(pi->type, PrinterTypeValue);
-        if (idx < 0)
-            r->TextL(t->Translate("Unknown Type"));
-        else
-            r->TextL(PrinterTypeName[idx]);
-        strncpy(buffer, pi->host.Value(), 45);
-        if (strlen(pi->host.Value()) > 45)
+	strncpy(buffer, pi->name.Value(), 17);
+	if (strlen(pi->name.Value()) > 17)
+	{
+	    buffer[17] = '\0';
+	    strcat(buffer, "...");
+	}
+	r->TextL(buffer);
+
+        strncpy(buffer, pi->host.Value(), 19);
+        if (strlen(pi->host.Value()) > 19)
         {
-            buffer[45] = '\0';
+            buffer[19] = '\0';
             strcat(buffer, "...");
         }
-        r->TextPosL(15, buffer);
+        r->TextPosL(18, buffer);
 
-        //idx = CompareList(pi->port, PortValue);
-        //if (idx < 0)
-            //r->TextPosL(30, t->Translate("Unknown Interface"));
-        //else
-            //r->TextPosL(30, PortName[idx]);
+        int idx = CompareList(pi->type, PrinterTypeValue);
+        if (idx < 0)
+            r->TextPosL(38, t->Translate("Unknown Type"));
+        else
+            r->TextPosL(38, PrinterTypeName[idx]);
 
         idx = CompareList(pi->model, PrinterModelValue);
         if (idx < 0)
-            r->TextPosL(47, t->Translate("Unknown Model"));
+            r->TextPosL(52, t->Translate("Unknown"));
         else
-            r->TextPosL(47, PrinterModelName[idx]);
+            r->TextPosL(52, PrinterModelName[idx]);
 
         Printer *p = pi->FindPrinter(t->parent);
         if (p)
-            r->TextPosL(58, t->Translate("Okay"), COLOR_GREEN);
+            r->TextPosL(64, t->Translate("Okay"), COLOR_GREEN);
         else
-            r->TextPosL(58, t->Translate("Off Line"), COLOR_RED);
+            r->TextPosL(64, t->Translate("Off Line"), COLOR_RED);
 
         r->NewLine();
         pi = pi->next;

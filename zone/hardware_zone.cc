@@ -149,11 +149,11 @@ RenderResult HardwareZone::Render(Terminal *term, int update_flag)
             break;
         case 1:
             TextC(term, 0, term->Translate("Printers"), col);
-            TextL(term, 2.3, term->Translate("Type/Location"), col);
-            TextPosL(term, 15, 2.3, term->Translate("Host/Device"), col);
-            //TextPosL(term, 30, 2.3, term->Translate("Interface"), col);
-            TextPosL(term, 47, 2.3, term->Translate("Model"), col);
-            TextPosL(term, 58, 2.3, term->Translate("Status"), col);
+            TextL(term, 2.3, term->Translate("Printer Name"), col);
+            TextPosL(term, 18, 2.3, term->Translate("Host/Device"), col);
+            TextPosL(term, 38, 2.3, term->Translate("Type"), col);
+            TextPosL(term, 52, 2.3, term->Translate("Model"), col);
+            TextPosL(term, 64, 2.3, term->Translate("Status"), col);
             break;
         }
     }
