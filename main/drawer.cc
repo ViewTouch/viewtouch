@@ -1129,6 +1129,7 @@ int Drawer::ChangeOwner(int user_id)
         return 1;  // can't reassign
 
     owner_id = user_id;
+    Save();
     return 0;
 }
 
