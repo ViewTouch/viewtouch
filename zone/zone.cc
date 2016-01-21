@@ -61,7 +61,7 @@ Zone::Zone()
     header     = 0;
     footer     = 0;
     stay_lit   = 0;
-    shadow     = 256; // default
+    shadow     = SHADOW_DEFAULT;
     key        = 0;
     iscopy     = 0;
 }
@@ -335,14 +335,12 @@ int Zone::Update(Terminal *t, int update_message, const genericChar* value)
 int Zone::ShadowVal(Terminal *t)
 {
     FnTrace("Zone::ShadowVal()");
-    int s = shadow;
-    if (s == 256)
-    {
-        s = t->page->default_shadow;
-        if (s == 256)
-            return 0;
-    }
-    return s;
+    if (shadow != SHADOW_DEFAULT)
+    	return shadow;
+    int s = t->page->default_shadow;
+    if (s != SHADOW_DEFAULT)
+    	return s;
+    return t->zone_db->default_shadow;
 }
 
 const char* Zone::TranslateString(Terminal *t)
@@ -496,26 +494,26 @@ Page::Page()
     parent_page = NULL;
     id          = 0;
     parent_id   = 0;
-    image       = IMAGE_GRAY_MARBLE;
-    title_color = COLOR_BLUE;
+    image       = IMAGE_DEFAULT;
+    title_color = COLOR_DEFAULT;
     type        = PAGE_ITEM;
     index       = INDEX_GENERAL;
     size        = SIZE_1024x768;
     changed     = 0;
 
     // Defaults
-    default_font       = FONT_TIMES_24;
-    default_frame[0]   = ZF_RAISED;
-    default_texture[0] = IMAGE_SAND;
-    default_color[0]   = COLOR_BLACK;
-    default_frame[1]   = ZF_RAISED;
-    default_texture[1] = IMAGE_LIT_SAND;
-    default_color[1]   = COLOR_BLACK;
+    default_font       = FONT_DEFAULT;
+    default_frame[0]   = ZF_DEFAULT;
+    default_texture[0] = IMAGE_DEFAULT;
+    default_color[0]   = COLOR_DEFAULT;
+    default_frame[1]   = ZF_DEFAULT;
+    default_texture[1] = IMAGE_DEFAULT;
+    default_color[1]   = COLOR_DEFAULT;
     default_frame[2]   = ZF_HIDDEN;
-    default_texture[2] = IMAGE_SAND;
-    default_color[2]   = COLOR_BLACK;
-    default_spacing    = 2;
-    default_shadow     = 0;
+    default_texture[2] = IMAGE_DEFAULT;
+    default_color[2]   = COLOR_DEFAULT;
+    default_spacing    = 0;
+    default_shadow     = SHADOW_DEFAULT;
 }
 
 int Page::Init(ZoneDB *zone_db)
@@ -1013,6 +1011,9 @@ ZoneDB::ZoneDB()
     default_color[2]   = COLOR_BLACK;
     default_spacing    = 2;
     default_shadow     = 0;
+    default_image      = IMAGE_GRAY_MARBLE;
+    default_title_color = COLOR_BLUE;
+    default_size        = SIZE_1024x768;
 }
 
 // Member Functions
@@ -1097,6 +1098,22 @@ int ZoneDB::Load(const char* filename)
 		}
     }
 
+	// read global default properties
+	// note ZoneDB::Load() isn't used for system pages
+    if (version >= 28) {
+		infile.Read(default_font);
+		infile.Read(default_shadow);
+		infile.Read(default_spacing);
+		for (int i=0; i<3; i++) {
+			infile.Read(default_frame[i]);
+			infile.Read(default_texture[i]);
+			infile.Read(default_color[i]);
+		}
+    	infile.Read(default_image);
+    	infile.Read(default_title_color);
+    	infile.Read(default_size);
+	}
+	
     return 0;
 }
 
@@ -1116,7 +1133,7 @@ int ZoneDB::Save(const char* filename, int page_class)
         p = p->next;
     }
 
-    // see Zone::Read() for version notes
+    // see Zone::Read() (PosZone; pos_zone.cc) for version notes
     OutputDataFile df;
     if (df.Open(filename, ZONE_VERSION, 1))
         return 1;
@@ -1130,6 +1147,20 @@ int ZoneDB::Save(const char* filename, int page_class)
             error += p->Write(df, ZONE_VERSION);
         p = p->next;
     }
+
+	// save global default properties
+	df.Write(default_font);
+	df.Write(default_shadow);
+	df.Write(default_spacing);
+	for (int i=0; i<3; i++) {
+		df.Write(default_frame[i]);
+		df.Write(default_texture[i]);
+		df.Write(default_color[i]);
+	}
+	df.Write(default_image);
+	df.Write(default_title_color);
+	df.Write(default_size, 1);
+
     return error;
 }
 
@@ -1770,6 +1801,20 @@ ZoneDB *ZoneDB::Copy()
         new_db->Add(p->Copy());
         p = p->next;
     }
+
+    new_db->table_pages = table_pages;
+    new_db->default_font = default_font;
+    new_db->default_shadow = default_shadow;
+    new_db->default_spacing = default_spacing;
+    new_db->default_image = default_image;
+    new_db->default_title_color = default_title_color;
+    new_db->default_size = default_size;
+    for (int i=0; i<3; i++) {
+    	new_db->default_frame[i] = default_frame[i];
+    	new_db->default_texture[i] = default_texture[i];
+    	new_db->default_color[i] = default_color[i];
+    }
+
     return new_db;
 }
 

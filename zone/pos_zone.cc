@@ -58,7 +58,7 @@
 #include <dmalloc.h>
 #endif
 
-// VERSION NOTES for Read()/Write()
+// ZONE_VERSION NOTES for Read()/Write()
 // 17 (1/1/97)    earliest supported version
 // 18 (10/3/97)    key shortcut field added
 // 19 (11/10/97)   default_appear & default_color fields expanded in page
@@ -66,6 +66,8 @@
 // 21 (8/25/98)    added customer_type
 // 22 (4/9/2002)   added display_check_num for ReportZone
 // 26 (11/21/2003) added CCMessageSettings zone
+// 27 ???
+// 28 (1/20/2015)  added global page defaults for zonedb
 
 /**** Functions ****/
 // Zone Graphic Appearence (obsolete)

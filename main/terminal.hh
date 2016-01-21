@@ -156,6 +156,8 @@ enum colors {
 	COLOR_DK_SEAGREEN
 };
 
+#define SHADOW_DEFAULT	256
+
 // Text Alignment
 enum text_align {
 	ALIGN_LEFT,
@@ -515,6 +517,12 @@ public:
     int FinalizeOrders();
     bool CanEditSystem();
 
+    // resolve defaults to page or global setting
+    int FontID(int font_id);
+    int ColorID(int color);
+    int TextureID(int texture, int state=0);
+    int FrameID(int frame, int state=0);
+
     const genericChar* Translate(const char* string, int lang = LANG_PHRASE, int clear = 0); // calls proper local object for text translation
     const genericChar* TimeDate(TimeInfo &tm, int format, int lang = LANG_PHRASE);
     const genericChar* TimeDate(char* str, TimeInfo &tm, int format, int lang = LANG_PHRASE); // returns time and date formated & translated
@@ -574,6 +582,8 @@ public:
     int KillPage();
     int EditMultiZone(Page *p);
     int ReadMultiZone();
+    int EditDefaults();
+    int ReadDefaults();
     int TranslateZone(Zone *z);
     int TranslatePage(Page *p);
     int ShowPageList();

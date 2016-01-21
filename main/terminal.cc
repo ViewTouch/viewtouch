@@ -93,7 +93,9 @@ enum window_buttons {
 	WB_PRIOR,
 	WB_NEXT,
 	WB_ICONIFY,
-	WB_PRINTLIST
+	WB_PRINTLIST,
+	WB_DELETE,
+	WB_GLOBAL
 };
 
 // Other
@@ -285,6 +287,9 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
 
         case SERVER_KILLPAGE:
             term->KillPage(); break;
+
+        case SERVER_DEFPAGE:
+            term->ReadDefaults(); break;
 
         case SERVER_TRANSLATE:
         {
@@ -2475,6 +2480,7 @@ int Terminal::EditTerm(int save_data, int edit_mode)
         if (save_data)
         {
             parent->SetAllMessages("Saving...");
+            delete parent->zone_db;
             parent->zone_db = zone_db->Copy();
             system_data->menu.DeleteUnusedItems(zone_db);
             system_data->menu.Save();
@@ -2537,6 +2543,15 @@ int Terminal::EditTerm(int save_data, int edit_mode)
         }
     }
 
+    // currently on a system page and not system editing?
+    if (edit_mode != 2 && page->id < 0)
+    {
+        SimpleDialog *d = new SimpleDialog("System Page - Can't Edit");
+        d->Button("Continue");
+        OpenDialog(d);
+        return 1;
+    }
+
     // Start editing term
     edit = edit_mode;
     Draw(RENDER_NEW);
@@ -2547,7 +2562,7 @@ int Terminal::EditTerm(int save_data, int edit_mode)
     WInt16(64);  // x
     WInt16(64);  // y
     WInt16(120); // width
-    WInt16(300); // height
+    WInt16(360); // height
     WInt8(WINFRAME_BORDER | WINFRAME_TITLE | WINFRAME_MOVE);
     WStr("Edit ToolBar");
 
@@ -2588,26 +2603,38 @@ int Terminal::EditTerm(int save_data, int edit_mode)
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_BLUE); WInt8(COLOR_LT_BLUE);
 
     WInt8(TERM_PUSHBUTTON);
-    WInt16(WB_INFO);
+    WInt16(WB_DELETE);
     WInt16(0); WInt16(180); WInt16(60); WInt16(60);
+    WStr("Delete\\Button");
+    WInt8(FONT_TIMES_14); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
+
+    WInt8(TERM_PUSHBUTTON);
+    WInt16(WB_GLOBAL);
+    WInt16(60); WInt16(180); WInt16(60); WInt16(60);
+    WStr("Global\\Page\\Defaults");
+    WInt8(FONT_TIMES_14); WInt8(COLOR_DK_MAGENTA); WInt8(COLOR_MAGENTA);
+
+    WInt8(TERM_PUSHBUTTON);
+    WInt16(WB_INFO);
+    WInt16(0); WInt16(240); WInt16(60); WInt16(60);
     WStr("Show\\Button\\Info");
     WInt8(FONT_TIMES_14); WInt8(COLOR_GRAY); WInt8(COLOR_WHITE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_LIST);
-    WInt16(60); WInt16(180); WInt16(60); WInt16(60);
+    WInt16(60); WInt16(240); WInt16(60); WInt16(60);
     WStr("Show\\Page\\List");
     WInt8(FONT_TIMES_14); WInt8(COLOR_BROWN); WInt8(COLOR_ORANGE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_PRIOR);
-    WInt16(0); WInt16(240); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(300); WInt16(60); WInt16(60);
     WStr("Prior\\Page");
     WInt8(FONT_TIMES_18); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_NEXT);
-    WInt16(60); WInt16(240); WInt16(60); WInt16(60);
+    WInt16(60); WInt16(300); WInt16(60); WInt16(60);
     WStr("Next\\Page");
     WInt8(FONT_TIMES_18); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
 
@@ -2884,10 +2911,7 @@ int Terminal::FrameBorder(int frame, int shape)
     if (shape != SHAPE_RECTANGLE)
         offset = b * 3;
 
-    if (frame == ZF_DEFAULT)
-        frame = page->default_frame[0];
-
-    switch (frame)
+    switch (FrameID(frame))
     {
     case ZF_HIDDEN: case ZF_NONE:
         return offset;
@@ -2910,10 +2934,11 @@ int Terminal::FrameBorder(int frame, int shape)
 int Terminal::TextureTextColor(int texture)
 {
     FnTrace("Terminal::TextureTextColor()");
-    if (texture == IMAGE_DEFAULT)
-        texture = page->default_texture[0];
+    texture = TextureID(texture);
     if (texture == IMAGE_CLEAR)
         texture = page->image;
+    if (texture == IMAGE_DEFAULT)
+        texture = zone_db->default_image;
 
     switch (texture)
     {
@@ -2941,12 +2966,52 @@ int Terminal::TextureTextColor(int texture)
     }
 }
 
+// fallback to page or global defaults
+
+int Terminal::FontID(int font_id)
+{
+    if (font_id != FONT_DEFAULT)
+    	return font_id;
+    font_id = page->default_font;
+    if (font_id != FONT_DEFAULT)
+        return font_id;
+    return zone_db->default_font;
+}
+
+int Terminal::ColorID(int color)
+{
+    if (color != COLOR_PAGE_DEFAULT && color != COLOR_DEFAULT)
+        return color;
+    color = page->default_color[0];
+    if (color != COLOR_PAGE_DEFAULT && color != COLOR_DEFAULT)
+        return color;
+    return zone_db->default_color[0];
+}
+
+int Terminal::TextureID(int texture, int state)
+{
+    if (texture != IMAGE_DEFAULT)
+    	return texture;
+    texture = page->default_texture[state];
+    if (texture != IMAGE_DEFAULT)
+    	return texture;
+    return zone_db->default_texture[state];
+}
+
+int Terminal::FrameID(int frame, int state)
+{
+    if (frame != ZF_DEFAULT)
+    	return frame;
+    frame = page->default_frame[state];
+    if (frame != ZF_DEFAULT)
+    	return frame;
+    return zone_db->default_frame[state];
+}
+
 int Terminal::FontSize(int font_id, int &w, int &h)
 {
     FnTrace("Terminal::FontSize()");
-    if (font_id == FONT_DEFAULT)
-        font_id = page->default_font;
-    return GetFontSize(font_id, w, h);
+    return GetFontSize(FontID(font_id), w, h);
 }
 
 int Terminal::TextWidth(const genericChar* my_string, int len, int font_id)
@@ -2955,8 +3020,7 @@ int Terminal::TextWidth(const genericChar* my_string, int len, int font_id)
 
     if (font_id < 0)
         font_id = curr_font_id;
-    if (font_id == FONT_DEFAULT)
-        font_id = page->default_font;
+    font_id = FontID(font_id);
     if (font_id < 0)
         return 1;
 
@@ -3183,8 +3247,14 @@ int Terminal::RenderBlankPage()
 
     WInt8(TERM_BLANKPAGE);
     WInt8(mode);
-    WInt8(page->image);
-    WInt8(page->title_color);
+    if (page->image == IMAGE_DEFAULT)
+        WInt8(zone_db->default_image);
+    else
+        WInt8(page->image);
+    if (page->title_color == COLOR_PAGE_DEFAULT || page->title_color == COLOR_DEFAULT)
+        WInt8(zone_db->default_title_color);
+    else
+        WInt8(page->title_color);
     WInt8(page->size);
 
     if (page->IsTable())
@@ -3298,13 +3368,11 @@ int Terminal::RenderText(const genericChar* str, int x, int y, int color, int fo
     if (len <= 0)
         return 1;
 
-    if (color == COLOR_PAGE_DEFAULT || color == COLOR_DEFAULT)
-        color = page->default_color[0];
+    color = ColorID(color);
     if (color == COLOR_CLEAR || str == NULL || len <= 0)
         return 0;
 
-    if (font == FONT_DEFAULT)
-        font = page->default_font;
+    font = FontID(font);
     if (mode & PRINT_BOLD)
     {
         switch (font)
@@ -3347,13 +3415,11 @@ int Terminal::RenderTextLen(const genericChar* str, int len, int x, int y, int c
     if (str == NULL || len <= 0)
         return 1;
 
-    if (color == COLOR_PAGE_DEFAULT || color == COLOR_DEFAULT)
-        color = page->default_color[0];
+    color = ColorID(color);
     if (color == COLOR_CLEAR || str == NULL || len <= 0)
         return 0;
 
-    if (font == FONT_DEFAULT)
-        font = page->default_font;
+    font = FontID(font);
     if (mode & PRINT_BOLD)
     {
         switch (font)
@@ -3394,13 +3460,11 @@ int Terminal::RenderZoneText(const genericChar* str, int x, int y, int w, int h,
     FnTrace("Terminal::RenderZoneText");
     if (w <= 0 || h <= 0 || str == NULL)
         return 0;
-    if (color == COLOR_PAGE_DEFAULT || color == COLOR_DEFAULT)
-        color = page->default_color[0];
+    color = ColorID(color);
     if (color == COLOR_CLEAR)
         return 0;
 
-    if (font == FONT_DEFAULT)
-        font = page->default_font;
+    font = FontID(font);
 
     WInt8(TERM_ZONETEXTC);
     WStr(str);
@@ -3418,12 +3482,7 @@ int Terminal::RenderHLine(int x, int y, int len, int color, int lw)
     FnTrace("Terminal::RenderHLine()");
     if (lw <= 0 || len <= 0)
         return 1;
-    if (color == COLOR_PAGE_DEFAULT || color == COLOR_DEFAULT)
-    {
-        color = page->default_color[0];
-        if (color == COLOR_DEFAULT)
-            color = COLOR_WHITE;
-    }
+    color = ColorID(color);
     if (color == COLOR_CLEAR)
         return 0;
 
@@ -3441,12 +3500,7 @@ int Terminal::RenderVLine(int x, int y, int len, int color, int lw)
     FnTrace("Terminal::RenderVLine()");
     if (lw <= 0 || len <= 0)
         return 1;
-    if (color == COLOR_PAGE_DEFAULT || color == COLOR_DEFAULT)
-    {
-        color = page->default_color[0];
-        if (color == COLOR_DEFAULT)
-            color = COLOR_WHITE;
-    }
+    color = ColorID(color);
     if (color == COLOR_CLEAR)
         return 0;
 
@@ -3528,8 +3582,6 @@ int Terminal::RenderZone(Zone *z)
 {
     FnTrace("Terminal::RenderZone()");
     int state = z->State(this);
-    int zf = z->frame[state];
-    int zt = z->texture[state];
 
     if (z == selected_zone && !z->stay_lit)
     {
@@ -3539,18 +3591,8 @@ int Terminal::RenderZone(Zone *z)
             redraw_id = AddTimeOutFn((TimeOutFn) RedrawZoneCB, 1000, this);
     }
 
-    if (zf == ZF_DEFAULT)
-    {
-        zf = page->default_frame[state];
-        if (zf == ZF_DEFAULT)
-            zf = ZF_RAISED;
-    }
-    if (zt == IMAGE_DEFAULT)
-    {
-        zt = page->default_texture[state];
-        if (zt == IMAGE_DEFAULT)
-            zt = IMAGE_SAND;
-    }
+    int zf = FrameID(z->frame[state], state);
+    int zt = TextureID(z->texture[state], state);
 
     if (zf == ZF_HIDDEN || (zf == ZF_NONE && zt == IMAGE_CLEAR))
         return 0;
@@ -3596,11 +3638,8 @@ int Terminal::RenderButton(int x, int y, int w, int h,
     if (w <= 0 || h <= 0)
         return 0;
 
-    if (frame == ZF_DEFAULT)
-        frame = page->default_frame[0];
-    if (texture == IMAGE_DEFAULT)
-        texture = page->default_texture[0];
-    if (frame == ZF_HIDDEN || frame == ZF_DEFAULT || texture == IMAGE_DEFAULT)
+    frame = FrameID(frame);
+    if (frame == ZF_HIDDEN)
         return 0;
 
     WInt8(TERM_ZONE);
@@ -3609,7 +3648,7 @@ int Terminal::RenderButton(int x, int y, int w, int h,
     WInt16(w);
     WInt16(h);
     WInt8(frame);
-    WInt8(texture);
+    WInt8(TextureID(texture));
     WInt8(shape);
     return Send();
 }
@@ -3620,8 +3659,11 @@ int Terminal::RenderShadow(int x, int y, int w, int h, int shade, int shape)
     if (w <= 0 || h <= 0)
         return 0;
 
-    if (shade < 0 || shade > 255)
+    if (shade < 0 || shade >= SHADOW_DEFAULT) {
         shade = page->default_shadow;
+	if (shade >= SHADOW_DEFAULT)
+	    shade = zone_db->default_shadow;
+    }
 
     if (shade <= 0 || shade > 255)
         return 1;
@@ -4131,6 +4173,10 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
     case XK_D:
         zone_db->DeleteEdit(this);
         break;
+    case XK_g: // global page defaults
+    case XK_G:
+    	EditDefaults();
+    	break;
     case XK_i: // cycle info mode
     case XK_I:
         show_info ^= 1;
@@ -4399,7 +4445,13 @@ int Terminal::ButtonCommand(int command)
             r.FormalPrint(printer);
         }
     }
-    break;
+    	break;
+    case WB_GLOBAL:
+    	EditDefaults();
+	break;
+    case WB_DELETE:
+        zone_db->DeleteEdit(this);
+	break;
 	}
 	return 0;
 }
@@ -4663,7 +4715,7 @@ int Terminal::EditZone(Zone *currZone)
 			WInt8(0);
 		}
 		WInt8(SHAPE_RECTANGLE);         // Shape
-		WInt16(256);                    // Shadow
+		WInt16(SHADOW_DEFAULT);         // Shadow
 		WInt16(0);                      // Key
 		WStr("");                       // Expression
 		WStr("");                       // Message
@@ -5007,29 +5059,29 @@ int Terminal::EditPage(Page *p)
 		WInt32(p->parent_id);
 		WInt8(p->index);
 	}
-	else
+	else	// new page
 	{
-		WInt8(SIZE_1024x768);
+		WInt8(zone_db->default_size);
 		if (edit_system)
 			WInt8(PAGE_SYSTEM);
 		else
 			WInt8(PAGE_ITEM);
 		WStr("");
 		WInt32(0);
-		WInt8(COLOR_BLUE);
-		WInt8(IMAGE_GRAY_MARBLE);
-		WInt8(FONT_TIMES_24);
-		WInt8(ZF_RAISED);
-		WInt8(IMAGE_SAND);
-		WInt8(COLOR_BLACK);
-		WInt8(ZF_RAISED);
-		WInt8(IMAGE_LIT_SAND);
-		WInt8(COLOR_BLACK);
-		WInt8(ZF_HIDDEN);
-		WInt8(IMAGE_SAND);
-		WInt8(COLOR_BLACK);
-		WInt8(2);
-		WInt16(0);
+		WInt8(COLOR_PAGE_DEFAULT);	// title color
+		WInt8(IMAGE_DEFAULT);
+		WInt8(FONT_DEFAULT);
+		WInt8(ZF_DEFAULT);		// 0
+		WInt8(IMAGE_DEFAULT);
+		WInt8(COLOR_PAGE_DEFAULT);
+		WInt8(ZF_DEFAULT);		// 1
+		WInt8(IMAGE_DEFAULT);
+		WInt8(COLOR_PAGE_DEFAULT);
+		WInt8(ZF_DEFAULT);		// 2
+		WInt8(IMAGE_DEFAULT);
+		WInt8(COLOR_PAGE_DEFAULT);
+		WInt8(0);			// spacing, use zonedb default
+		WInt16(SHADOW_DEFAULT);
 		WInt32(0);
 		WInt8(INDEX_GENERAL);
 	}
@@ -5157,6 +5209,56 @@ int Terminal::JumpList(int selected)
     UserInput();
     return 0;
 }
+
+int Terminal::EditDefaults()
+{
+	FnTrace("Terminal::EditDefaults()");
+    	if (zone_db == NULL)
+        	return 1;
+
+	WInt8(TERM_DEFPAGE);
+	WInt8(zone_db->default_font);
+	WInt16(zone_db->default_shadow);
+	WInt8(zone_db->default_spacing);
+	for (int i = 0; i < 3; ++i)
+	{
+		WInt8(zone_db->default_frame[i]);
+		WInt8(zone_db->default_texture[i]);
+		WInt8(zone_db->default_color[i]);
+	}
+        WInt8(zone_db->default_image);
+        WInt8(zone_db->default_title_color);
+        WInt8(zone_db->default_size);
+
+	return SendNow();
+}
+
+int Terminal::ReadDefaults()
+{
+    FnTrace("Terminal::ReadDefaults()");
+    if (zone_db == NULL)
+        return 1;
+
+    zone_db->default_font = RInt8();
+    zone_db->default_shadow = RInt16();
+    zone_db->default_spacing = RInt8();
+
+    for (int i = 0; i < 3; ++i)
+    {
+        zone_db->default_frame[i] = RInt8();
+        zone_db->default_texture[i] = RInt8();
+        zone_db->default_color[i] = RInt8();
+    }
+    zone_db->default_image = RInt8();
+    zone_db->default_title_color = RInt8();
+    zone_db->default_size = RInt8();
+
+    Draw(RENDER_NEW);
+    UserInput();
+
+    return 0;
+}
+
 
 Settings *Terminal::GetSettings()
 {

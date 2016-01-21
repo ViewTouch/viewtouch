@@ -59,7 +59,7 @@
 // Other Definitions
 #define MARGIN 43
 
-const char* *translations = NULL;
+//const char* *translations = NULL;
 
 /*********************************************************************
  * Functions
@@ -622,15 +622,15 @@ PageDialog::PageDialog(Widget parent)
     name.Init(w, "Name");
     id.Init(w, "ID");
     title_color.Init(w, "Title Bar Color", ColorName, ColorValue);
-    texture.Init(w, "Background Texture", &TextureName[1], &TextureValue[1]);
+    texture.Init(w, "Background Texture", TextureName, TextureValue);
     AddLine(w);
 
     default_font.Init(w, "Default Font", FontName, FontValue);
     default_appear1.Init(w, "Default Appearance",
-                         &ZoneFrameName[1], &ZoneFrameValue[1], &TextureName[1], &TextureValue[1]);
+                         ZoneFrameName, ZoneFrameValue, TextureName, TextureValue);
     default_color1.Init(w, "Default Color", ColorName, ColorValue);
     default_appear2.Init(w, "Default Selected Appearance",
-                         &ZoneFrameName[1], &ZoneFrameValue[1], &TextureName[1], &TextureValue[1]);
+                         ZoneFrameName, ZoneFrameValue, TextureName, TextureValue);
     default_color2.Init(w, "Default Selected Color", ColorName, ColorValue);
     default_spacing.Init(w, "Default Spacing");
     default_shadow.Init(w, "Default Shadow", PageShadowName, PageShadowValue);
@@ -639,6 +639,7 @@ PageDialog::PageDialog(Widget parent)
     parent_page.Init(w, "Parent ID");
     index.Init(w, "Index Type", IndexName, IndexValue);
     AddLine(w);
+
     AddButtons(w, EP_OkayCB, EP_DeleteCB, EP_CancelCB, this);
     XtManageChild(w);
 }
@@ -670,7 +671,7 @@ int PageDialog::Open()
     v2 = RInt8();
     default_appear2.Set(v1, v2);
     default_color2.Set(RInt8());
-    RInt8(); RInt8(); RInt8();
+    RInt8(); RInt8(); RInt8();	// ignore default*[2]
     default_spacing.Set(RInt8());
     default_shadow.Set(RInt16());
     parent_page.Set(RInt32());
@@ -743,6 +744,142 @@ int PageDialog::Send()
     WInt16(default_shadow.Value());
     parent_page.Get(tmp); WInt32(tmp);
     WInt8(index.Value());
+    return SendNow();
+}
+
+
+/*********************************************************************
+ * DefaultDialog Class
+ ********************************************************************/
+
+// Callback Functions
+void DP_OkayCB(Widget widget, XtPointer client_data, XtPointer call_data)
+{
+    DefaultDialog *d = (DefaultDialog *) client_data;
+    d->Close();
+    d->Send();
+}
+
+void DP_CancelCB(Widget widget, XtPointer client_data, XtPointer call_data)
+{
+    DefaultDialog *d = (DefaultDialog *) client_data;
+    d->Close();
+}
+
+// Constructor
+DefaultDialog::DefaultDialog(Widget parent)
+{
+    full_edit = 0;
+    open      = 0;
+
+    Arg args[9];
+    XtSetArg(args[0], XmNtitle, "Global Page Default Properties");
+    XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
+    XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
+    dialog = XmCreateFormDialog(parent, (char*)"default page dialog", args, 3);
+
+    XtSetArg(args[0], XmNorientation,      XmVERTICAL);
+    XtSetArg(args[1], XmNtopAttachment,    XmATTACH_POSITION);
+    XtSetArg(args[2], XmNtopPosition,      1);
+    XtSetArg(args[3], XmNbottomAttachment, XmATTACH_POSITION);
+    XtSetArg(args[4], XmNbottomPosition,   99);
+    XtSetArg(args[5], XmNleftAttachment,   XmATTACH_POSITION);
+    XtSetArg(args[6], XmNleftPosition,     1);
+    XtSetArg(args[7], XmNrightAttachment,  XmATTACH_POSITION);
+    XtSetArg(args[8], XmNrightPosition,    99);
+    Widget w = XmCreateRowColumn(dialog, (char*)"", args, 9);
+
+    // skip first slot = Default
+    //size.Init(w, "Page Size", PageSizeName+1, PageSizeValue+1);
+    size.Init(w, "Page Size", PageSizeName, PageSizeValue);
+    title_color.Init(w, "Title Bar Color", &ColorName[1], &ColorValue[1]);
+    texture.Init(w, "Background Texture", &TextureName[1], &TextureValue[1]);
+    AddLine(w);
+
+    default_font.Init(w, "Default Font", &FontName[1], &FontValue[1]);
+    default_appear1.Init(w, "Default Appearance",
+                         &ZoneFrameName[1], &ZoneFrameValue[1], &TextureName[1], &TextureValue[1]);
+    default_color1.Init(w, "Default Color", &ColorName[1], &ColorValue[1]);
+    default_appear2.Init(w, "Default Selected Appearance",
+                         &ZoneFrameName[1], &ZoneFrameValue[1], &TextureName[1], &TextureValue[1]);
+    default_color2.Init(w, "Default Selected Color",  &ColorName[1], &ColorValue[1]);
+    default_spacing.Init(w, "Default Spacing");
+    default_shadow.Init(w, "Default Shadow", PageShadowName, PageShadowValue);
+    AddLine(w);
+
+    AddButtons(w, DP_OkayCB, NULL, DP_CancelCB, this);
+    XtManageChild(w);
+}
+
+// Member Functions
+int DefaultDialog::Open()
+{
+    // Load data
+    open = 1;
+    int v1, v2;
+    default_font.Set(RInt8());
+    default_shadow.Set(RInt16());
+    default_spacing.Set(RInt8());
+    v1 = RInt8();
+    v2 = RInt8();
+    default_appear1.Set(v1, v2);
+    default_color1.Set(RInt8());
+    v1 = RInt8();
+    v2 = RInt8();
+    default_appear2.Set(v1, v2);
+    default_color2.Set(RInt8());
+    RInt8(); RInt8(); RInt8();	// skip slot 2
+    texture.Set(RInt8());
+    title_color.Set(RInt8());
+    size.Set(RInt8());
+
+    // Show proper fields
+    size.Show(1);
+    title_color.Show(1);
+    texture.Show(1);
+    default_font.Show(1);
+    default_appear1.Show(1);
+    default_color1.Show(1);
+    default_appear2.Show(1);
+    default_color2.Show(1);
+    default_spacing.Show(1);
+    default_shadow.Show(1);
+
+    XtManageChild(dialog);
+    return 0;
+}
+
+int DefaultDialog::Close()
+{
+    open = 0;
+    if (XtIsManaged(dialog))
+        XtUnmanageChild(dialog);
+    return 0;
+}
+
+int DefaultDialog::Send()
+{
+    int tmp, v1, v2;
+    WInt8(SERVER_DEFPAGE);
+    WInt8(default_font.Value());
+    WInt16(default_shadow.Value());
+    default_spacing.Get(tmp); WInt8(tmp);
+
+    // 0
+    default_appear1.Value(v1, v2);
+    WInt8(v1); WInt8(v2);
+    WInt8(default_color1.Value());
+    // 1
+    default_appear2.Value(v1, v2);
+    WInt8(v1); WInt8(v2);
+    WInt8(default_color2.Value());
+    // 2
+    WInt8(ZF_HIDDEN); WInt8(IMAGE_SAND);
+    WInt8(COLOR_DEFAULT);
+
+    WInt8(texture.Value());
+    WInt8(title_color.Value());
+    WInt8(size.Value());
     return SendNow();
 }
 

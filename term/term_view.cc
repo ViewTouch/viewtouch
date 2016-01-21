@@ -506,6 +506,7 @@ static ZoneDialog      *ZDialog = NULL;
 static MultiZoneDialog *MDialog = NULL;
 static TranslateDialog *TDialog = NULL;
 static ListDialog      *LDialog = NULL;
+static DefaultDialog   *DDialog = NULL;
 #endif
 
 // So that translations aren't done every time a dialog is opened, we'll
@@ -1551,6 +1552,8 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
                 MDialog->Close();
             if (ZDialog)
                 ZDialog->Close();
+            if (DDialog)
+                DDialog->Close();
             if (PDialog)
                 PDialog->Open();
 #endif
@@ -1561,6 +1564,8 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
                 PDialog->Close();
             if (MDialog)
                 MDialog->Close();
+            if (DDialog)
+                DDialog->Close();
             if (ZDialog)
                 ZDialog->Open();
 #endif
@@ -1571,8 +1576,22 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
                 PDialog->Close();
             if (ZDialog)
                 ZDialog->Close();
+            if (DDialog)
+                DDialog->Close();
             if (MDialog)
                 MDialog->Open();
+#endif
+            break;
+        case TERM_DEFPAGE:
+#ifndef NO_MOTIF
+            if (PDialog)
+                PDialog->Close();
+            if (ZDialog)
+                ZDialog->Close();
+            if (MDialog)
+                MDialog->Close();
+            if (DDialog)
+                DDialog->Open();
 #endif
             break;
         case TERM_TRANSLATE:
@@ -2622,6 +2641,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 #ifndef NO_MOTIF
     // Setup Dialogs (obsolete)
     PDialog = new PageDialog(MainShell);
+    DDialog = new DefaultDialog(MainShell);
     ZDialog = new ZoneDialog(MainShell);
     MDialog = new MultiZoneDialog(MainShell);
     TDialog = new TranslateDialog(MainShell);
@@ -2738,6 +2758,8 @@ int KillTerm()
         delete LDialog;
         LDialog = NULL;
     }
+    delete DDialog;
+    DDialog = NULL;
 #endif
     if (ShadowPix)
     {

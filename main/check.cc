@@ -1082,8 +1082,11 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     {
         flag_sent = ORDER_SHOWN;
         flag_printed = CF_SHOWN;
-        if (rzone == term->active_zone)		// highlighted for bump bar
+        if (rzone == term->active_zone) {	// highlighted for bump bar
 	    color = ((Zone *)rzone)->page->default_color[1];
+	    if (color == COLOR_DEFAULT)
+	        color = term->zone_db->default_color[1];
+	}
         if (term->workorder_heading)		// use shorter/simpler heading?
 	    full_hdr = false;
     }

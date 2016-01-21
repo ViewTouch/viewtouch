@@ -158,7 +158,7 @@ const char* term_codes[] = {
     "TERM_LISTSTART",
     "TERM_LISTITEM",
     "TERM_LISTEND",
-    "",
+    "TERM_DEFPAGE",
     "TERM_NEWWINDOW",
     "TERM_SHOWWINDOW",
     "TERM_KILLWINDOW",
@@ -231,7 +231,8 @@ const char* server_codes[] = {
     "",
     "",
     "SERVER_PRINTER_DONE",
-    "SERVER_BADFILE"
+    "SERVER_BADFILE",
+    "SERVER_DEFPAGE"
 };
 int num_server_codes = sizeof( server_codes ) / sizeof( const genericChar*  );
 void PrintServerCode( int code )

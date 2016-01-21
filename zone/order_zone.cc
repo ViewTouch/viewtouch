@@ -913,8 +913,7 @@ Flt OrderEntryZone::SpacingValue(Terminal *t)
     Flt df = (Flt) t->page->default_spacing;
     if (df > 0)
         return df;
-    else
-        return 1.0;
+    return (Flt) t->zone_db->default_spacing;
 }
 
 

@@ -104,6 +104,7 @@ public:
 };
 
 // Dialog Classes
+
 class PageDialog
 {
 public:
@@ -214,6 +215,34 @@ public:
     int Close();
     int Send();
 };
+
+class DefaultDialog
+{
+public:
+    Widget dialog;
+    int full_edit;
+    int open;
+
+    DialogEntry default_spacing;
+    DialogMenu  size;
+    DialogMenu  title_color;
+    DialogMenu  texture;
+    DialogMenu  default_font;
+    DialogMenu  default_color1;
+    DialogMenu  default_color2;
+    DialogMenu  default_shadow;
+    DialogDoubleMenu default_appear1;
+    DialogDoubleMenu default_appear2;
+
+    // Constructor
+    DefaultDialog(Widget parent);
+
+    // Member Functions
+    int Open();
+    int Close();
+    int Send();
+};
+
 
 class MultiZoneDialog
 {

@@ -244,7 +244,7 @@ public:
 	Str   name;        // name of page
 	int   id;          // page id
 	int   parent_id;   // id of parent page
-	short image;       // background image
+	short image;       // background image (texture)
 	short title_color; // titlebar color
 	short type;        // page type
 	short index;       // index type page belongs to
@@ -318,16 +318,18 @@ class ZoneDB
     DList<Page> page_list;
 
 public:
-    Str   page_path;
     int   table_pages;
 
-    // Application Defaults
+    // Application global defaults
     short default_font;
     short default_shadow;
     short default_spacing;
     Uchar default_frame[3];
     Uchar default_texture[3];
     Uchar default_color[3];
+    short default_image;       // background image (texture)
+    short default_title_color; // titlebar color
+    short default_size;        // page size (screen resolution)
 
     // Constructor
     ZoneDB();

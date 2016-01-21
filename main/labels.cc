@@ -114,7 +114,7 @@ int ZoneBehaveValue[] = {
     BEHAVE_SELECT, BEHAVE_DOUBLE, BEHAVE_MISS, -1};
 
 const genericChar* ZoneFrameName[] = {
-    "Page Default", "Hide Button", "None",
+    "Default", "Hide Button", "None",
     "Raised Edge", "Inset Edge", "Double Raised Edge",
     "Raised Border", "Clear Border", "Sand Border", 
 	"Lit Sand Border", "Inset Border", "Parchment Border",
@@ -127,7 +127,7 @@ int ZoneFrameValue[] = {
     ZF_DOUBLE_BORDER, ZF_LIT_DOUBLE_BORDER, -1};
 
 const genericChar* TextureName[] = {
-    "Page Default",
+    "Default",
 	"Transparent",
 	"Sand",
 	"Lit Sand",
@@ -246,7 +246,7 @@ int PageSizeValue[] = {
   SIZE_1440x900, SIZE_1600x900, SIZE_1600x1200, SIZE_1680x1050, SIZE_1920x1080, SIZE_1920x1200, SIZE_2560x1440, SIZE_2560x1600, -1};
 
 const genericChar* ColorName[] = {
-    "Page Default", "Black", "White", "Red", "Green", "Blue", "Yellow",
+    "Default", "Black", "White", "Red", "Green", "Blue", "Yellow",
     "Brown", "Orange", "Purple", "Teal", "Gray", "Magenta", "Red-Orange",
     "Sea Green", "Light Blue", "Dark Red", "Dark Green",
     "Dark Blue", "Dark Teal", "Dark Magenta", "Dark Sea Green",
@@ -260,7 +260,7 @@ int ColorValue[] = {
     COLOR_CLEAR, -1};
 
 const genericChar* FontName[] = {
-    "Page Default", "Times 14", "Times 14 Bold", "Times 18", "Times 18 Bold",
+    "Default", "Times 14", "Times 14 Bold", "Times 18", "Times 18 Bold",
     "Times 20", "Times 20 Bold", "Times 24", "Times 24 Bold",
     "Times 34", "Times 34 Bold", "Courier 18", "Courier 18 Bold",
     "Courier 20", "Courier 20 Bold", NULL};

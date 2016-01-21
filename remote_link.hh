@@ -109,6 +109,7 @@ public:
 // ts   - time string          (STR)
 
 /**** Terminal Protocols ****/
+// any updates should be applied to debug.cc too
 #define TERM_UPDATEALL        1   // no args
 #define TERM_UPDATEAREA       2   // <x, y, w, h>
 #define TERM_SETCLIP          3   // <x, y, w, h>
@@ -152,6 +153,7 @@ public:
 #define TERM_LISTSTART        46  // see terminal.cc & term_dialog.cc
 #define TERM_LISTITEM         47  // see terminal.cc
 #define TERM_LISTEND          48
+#define TERM_DEFPAGE	      49  // see terminal.cc & term_dialog.cc
 
 #define TERM_NEWWINDOW        50  // <id, x, y, w, h, win_frame, title>
 #define TERM_SHOWWINDOW       51  // <id>
@@ -190,6 +192,7 @@ public:
 
 
 /**** Server Protocols ****/
+// any updates should be applied to debug.cc too
 #define SERVER_ERROR              1  // <s>
 #define SERVER_TERMINFO           2  // <sz, width, height, depth>
 #define SERVER_TOUCH              3  // <I2, x, y>
@@ -211,6 +214,7 @@ public:
 
 #define SERVER_PRINTER_DONE      20  // <str>   - printer done printing file <str>
 #define SERVER_BADFILE           21  // <str>   - invalid file given
+#define SERVER_DEFPAGE           22  // see term_dialog.cc
 
 #define SERVER_CC_PROCESSED      30  // see Terminal::ReadCreditCard()
 #define SERVER_CC_SETTLED        31
