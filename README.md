@@ -1,27 +1,27 @@
 ViewTouch
 =========
+ViewTouch is a registered trademark in the USA.
+
 ViewTouch is the ORIGINAL Graphical Touchscreen Restaurant Point of Sale Interface, first created by Gene Mosher in 1986. https://commons.wikimedia.org/wiki/File:Comdex_1986.png
 
 With the availability of ViewTouch source code under the GPL it is now possible for a restaurateur to automate a restaurant at minimal expense. ViewTouch allows Android tablets to be used as mobile or fixed POS terminals. The ViewTouch Android X Server is freely downloadable at http://viewtouch.com/download.html
 
+The intended purpose of the availability of ViewTouch source code here at GitHub is twofold.  Firstly, this availability serves the benefit of clients, customers and associates of Gene Mosher.  Secondly, this availability facilitates the public development and maintenance of ViewTouch source code.
+
 _An important link at the top of this page is the Wiki link. It contains a page with build instructions._
 
-Restaurateurs wishing training and 24/7 support need only contact support staff at http://www.viewtouch.com/contact.html
-
---Gene Mosher
+Restaurateurs who are clients or customers of ViewTouch and who wish training and 24/7 support need only contact Gene at http://www.viewtouch.com/contact.html
 
 Official website: http://www.viewtouch.com
 
 License
 =========
 
-The ViewTouch code has recently been released under the GPLv3 license.
+The ViewTouch code has been released under the GPLv3 license.
 
 Commercial Support and Enquiries
 =========
-ViewTouch.com offers paid support to businesses and individuals want business class support for their Viewtouch Point Of Sale project. 
-
-The official website and contact point for the ViewTouch company is at http://www.viewtouch.com/contact.html
+The official website and contact point for ViewTouch is at http://www.viewtouch.com/contact.html
 
 Screenshots
 =========
@@ -61,10 +61,7 @@ Payment gateway/processors
 =========
 The ViewTouch GUI has the Monetra Credit/Debit Card Verification engine integrated into it and can be used with every processor they allow, which is just about every one of them. If you visit the Monetra web site you can see the certifications, the site licenses they charge, which are quite reasonable, and the role they play in all this. ViewTouch does not have to play with any payment gateway at all - it's 100% optional.
 
-
 ViewTouch POS on Android
 =========
 
 ViewTouch looks exactly the same on any Android tablet as it does on any display monitor, regardless of the resolution. The Android X Server we use is based on XSDL, which handles that transformation and much thanks to Sergii Pylypenko, of Kiev, for all of this!
-
-
