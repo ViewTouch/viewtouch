@@ -1,5 +1,7 @@
 ViewTouch
 =========
+
+[![Join the chat at https://gitter.im/ViewTouch/viewtouch](https://badges.gitter.im/ViewTouch/viewtouch.svg)](https://gitter.im/ViewTouch/viewtouch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ViewTouch is a registered trademark in the USA.
 
 ViewTouch is the ORIGINAL Graphical Touchscreen Restaurant Point of Sale Interface, first created by Gene Mosher in 1986. https://commons.wikimedia.org/wiki/File:Comdex_1986.png
