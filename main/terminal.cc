@@ -441,6 +441,8 @@ Terminal::Terminal()
     record_fd       = -1;
     credit          = NULL;
     allow_blanking  = 1;
+    for (int i=0; i<4; i++)
+    	tax_inclusive[i] = -1;
 
 	//initialized through pointer in Control::Add() (in file manager.cc)
     system_data     = NULL; 

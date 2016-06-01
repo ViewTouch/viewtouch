@@ -485,6 +485,9 @@ int   YesNoValue[] = {1, 0, -1};
 const char* NoYesName[] = {"No", "Yes", NULL};
 int   NoYesValue[] = {0, 1, -1};
 
+const char* NoYesGlobalName[] = {"No", "Yes", "Global", NULL};
+int   NoYesGlobalValue[] = {0, 1, -1, -1};
+
 const char* SplitCheckName[]  = {"Item", "Seat", NULL};
 int   SplitCheckValue[] = {SPLIT_CHECK_ITEM, SPLIT_CHECK_SEAT, -1};
 

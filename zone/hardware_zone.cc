@@ -50,10 +50,6 @@ static const genericChar* DrawerCountName[] = {
 static int DrawerCountValue[] = {
     0, 1, 2, -1};
 
-static const genericChar* TermHardwareName[] = {
-    "Server", "NCD Explora", "Neo Station", NULL};
-static int TermHardwareValue[] = { 0, 1, 2, -1 };
-
 static const genericChar* DrawerPulseName[] = {
     "Pulse 1", "Pulse 2", NULL };
 static int          DrawerPulseValue[] = {
@@ -70,7 +66,6 @@ HardwareZone::HardwareZone()
     // Term Fields
     AddTextField("Terminal Name", 32);
     term_start = FieldListEnd();
-    AddListField("Terminal Hardware", TermHardwareName, TermHardwareValue);
     AddListField("Terminal Type", TermTypeName, TermTypeValue);
     AddListField("Kitchen Video Sort Order", CheckDisplayOrderName, CheckDisplayOrderValue);
     AddListField("Work Order Heading", WOHeadingName, WOHeadingValue);
@@ -89,6 +84,12 @@ HardwareZone::HardwareZone()
     AddNewLine();
     AddListField("Type of CDU", CustDispUnitName, CustDispUnitValue);
     AddTextField("CDU Device Path", 20);
+
+    AddNewLine();
+    AddListField("Food prices include tax?", NoYesGlobalName, NoYesGlobalValue);
+    AddListField("Alcohol prices include tax?", NoYesGlobalName, NoYesGlobalValue);
+    AddListField("Room prices include tax?", NoYesGlobalName, NoYesGlobalValue);
+    AddListField("Merchandise prices include tax?", NoYesGlobalName, NoYesGlobalValue);
 
     Center();
     AddNewLine();
@@ -296,7 +297,6 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         
         thisForm = term_start;
         thisForm->Set(ti->name); thisForm->active = 1; thisForm = thisForm->next;
-        thisForm->Set(ti->term_hardware); thisForm->active = !ti->IsServer(); thisForm = thisForm->next;
         thisForm->Set(ti->type); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->sortorder); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->workorder_heading); thisForm->active = 1; thisForm = thisForm->next;
@@ -313,6 +313,12 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         thisForm->Set(ti->stripe_reader); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->cdu_type); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->cdu_path); thisForm->active = 1; thisForm = thisForm->next;
+
+    	thisForm->Set(ti->tax_inclusive[0]); thisForm->active = 1; thisForm = thisForm->next;
+    	thisForm->Set(ti->tax_inclusive[2]); thisForm->active = 1; thisForm = thisForm->next;
+    	thisForm->Set(ti->tax_inclusive[1]); thisForm->active = 1; thisForm = thisForm->next;
+    	thisForm->Set(ti->tax_inclusive[3]); thisForm->active = 1; thisForm = thisForm->next;
+
         if (MasterSystem->settings.authorize_method == CCAUTH_CREDITCHEQ)
         {
             thisForm->active = 1;  thisForm = thisForm->next;  // skip label
@@ -351,7 +357,6 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
             Str tmp;
             field = term_start;
             field->Get(ti->name); field = field->next;
-            field->Get(ti->term_hardware); field = field->next;
             field->Get(ti->type); field = field->next;
             field->Get(ti->sortorder); field = field->next;
             field->Get(ti->workorder_heading); field = field->next;
@@ -362,13 +367,19 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
             ti->display_host.Set(tmp);
             field->Get(ti->printer_host); field = field->next;
             //field->Get(ti->printer_port); field = field->next;
-	    ti->printer_port = PORT_VT_DAEMON;
+	    	ti->printer_port = PORT_VT_DAEMON;
             field->Get(ti->printer_model); field = field->next;
             field->Get(ti->drawers); field = field->next;
             field->Get(ti->dpulse); field = field->next;
             field->Get(ti->stripe_reader); field = field->next;
             field->Get(ti->cdu_type); field = field->next;
             field->Get(ti->cdu_path); field = field->next;
+
+			field->Get(ti->tax_inclusive[0]); field = field->next;
+			field->Get(ti->tax_inclusive[2]); field = field->next;
+			field->Get(ti->tax_inclusive[1]); field = field->next;
+			field->Get(ti->tax_inclusive[3]); field = field->next;
+
             if (MasterSystem->settings.authorize_method == CCAUTH_CREDITCHEQ)
             {
                 field = field->next;  // skip label

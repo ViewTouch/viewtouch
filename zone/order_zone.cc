@@ -1652,7 +1652,7 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
     }
 
     // Create new order
-    Order *o = new Order(s, item, t->qualifier);
+    Order *o = new Order(s, item, t);
     if (o == NULL)
         return SIGNAL_IGNORED;
     o->IsEmployeeMeal(employee);

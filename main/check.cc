@@ -5004,22 +5004,32 @@ Order::Order()
 }
 
 // helper to adjust cost if tax is already included
-static int adjust_cost(int cost, int inclusive, Flt tax)
+// scaling minimizes discrepency with final total after tax is added
+static int adjust_cost(int cost, Flt tax, int type, Settings *settings, Terminal *term)
 {
+	int inclusive = -1;
+	if (term)
+		inclusive = term->tax_inclusive[type];		// per-terminal setting
+	if (inclusive < 0)						
+		inclusive = settings->tax_inclusive[type]; 	// use global default
     if (inclusive)
         return int(cost/(1.0+tax) + tax);
     return cost;
 }
 
-Order::Order(Settings *settings, SalesItem *item, int qual, int price)
+Order::Order(Settings *settings, SalesItem *item, Terminal *term, int price)
 {
     FnTrace("Order::Order(Settings, SalesItem, int)");
     
+    if (term)
+    	qualifier   = term->qualifier;
+    else
+		qualifier   = QUALIFIER_NONE;
     item_name = item->item_name; //item_name;
     if (price >= 0)
         item_cost = price;
     else
-        item_cost   = item->Price(settings, qual);
+        item_cost   = item->Price(settings, qualifier);
     item_type       = item->type;
     item_family     = item->family;
     sales_type      = item->sales_type;
@@ -5033,7 +5043,6 @@ Order::Order(Settings *settings, SalesItem *item, int qual, int price)
     status          = 0;
     cost            = 0;
     modifier_list   = NULL;
-    qualifier       = qual;
     user_id         = 0;
     page_id         = 0;
     seat            = 0;
@@ -5046,25 +5055,24 @@ Order::Order(Settings *settings, SalesItem *item, int qual, int price)
     reduced_cost    = 0;
     auto_coupon_id  = -1;
 
-    // remove tax if already included in cost;
-    // scaling minimizes discrepency with final total after tax is added
+    // remove tax if already included in cost
     if (sales_type & SALES_UNTAXED)
-	;
+		;
     else if (sales_type & SALES_ALCOHOL)
-	item_cost = adjust_cost(item_cost, settings->alcohol_inclusive, settings->tax_alcohol);
+		item_cost = adjust_cost(item_cost, settings->tax_alcohol, 2, settings, term);
     else if (sales_type & SALES_MERCHANDISE)
-    	item_cost = adjust_cost(item_cost, settings->merchandise_inclusive, settings->tax_merchandise);
+    	item_cost = adjust_cost(item_cost, settings->tax_merchandise, 3, settings, term);
     else if (sales_type & SALES_ROOM)
-        item_cost = adjust_cost(item_cost, settings->room_inclusive, settings->tax_room);
+        item_cost = adjust_cost(item_cost, settings->tax_room, 1, settings, term);
     else
-        item_cost = adjust_cost(item_cost, settings->food_inclusive, settings->tax_food);
+        item_cost = adjust_cost(item_cost, settings->tax_food, 0, settings, term);
 }
 
 Order::Order(const genericChar* name, int price)
 {
     FnTrace("Order::Order(const char* , int)");
     item_name.Set(name);
-    item_cost       = price;
+    item_cost       = price;	// Note no tax-inclusive adjustment
     item_type       = ITEM_NORMAL;
     item_family     = FAMILY_MERCHANDISE;
     sales_type      = SALES_FOOD;

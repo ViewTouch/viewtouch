@@ -157,7 +157,7 @@ public:
 
     // Constructors
     Order();
-    Order(Settings *settings, SalesItem *si, int qual, int price = -1);
+    Order(Settings *settings, SalesItem *si, Terminal *t, int price = -1);
     Order(const genericChar* name, int price);
     // Destructor
     ~Order();

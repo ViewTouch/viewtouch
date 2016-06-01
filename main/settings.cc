@@ -157,8 +157,8 @@ namespace confmap
         V_GST = 0, V_PST, V_HST, V_QST, V_ROYALTY_RATE, V_ADVERTISE_FUND,
         V_DAILY_CERT_FEE, V_DEBIT_COST, V_CREDIT_RATE, V_CREDIT_COST,
         V_LINE_ITEM_COST, V_TAX_TAKEOUT_FOOD, V_PERSONALIZE_FAST_FOOD,
-	V_FOOD_INCLUSIVE, V_ALCOHOL_INCLUSIVE, V_MERCHANDISE_INCLUSIVE, 
-	V_ROOM_INCLUSIVE
+		V_FOOD_INCLUSIVE, V_ALCOHOL_INCLUSIVE, V_MERCHANDISE_INCLUSIVE, 
+		V_ROOM_INCLUSIVE
     };
 
     enum section_titles
@@ -171,8 +171,8 @@ namespace confmap
         "GST", "PST", "HST", "QST", "royalty_rate", "advertise_fund",
         "daily_cert_fee", "debit_cost", "credit_rate", "credit_cost",
         "line_item_cost", "tax_takeout_food", "personalize_fast_food",
-	"food_inclusive", "alcohol_inclusive", "merchandise_inclusive",
-	"room_inclusive"
+		"food_inclusive", "alcohol_inclusive", "merchandise_inclusive",
+		"room_inclusive"
     };
 
     const char* sects[] =
@@ -898,6 +898,9 @@ TermInfo::TermInfo()
     print_workorder = 1;
     workorder_heading = 0;
 
+    for (int i=0; i<4; i++)
+    	tax_inclusive[i] = -1;
+
     cc_credit_termid.Set("");
     cc_debit_termid.Set("");
 }
@@ -940,6 +943,11 @@ int TermInfo::Read(InputDataFile &df, int version)
     	error += df.Read(print_workorder);
     if (version >= 93)
     	error += df.Read(workorder_heading);
+    if (version >= 94)
+    {
+	for (int i=0; i<4; i++)
+    		error += df.Read(tax_inclusive[i]);
+    }
 
     // dpulse is used when there are two drawers attached to one
     // printer, and two terminals printing to that printer.  AKA,
@@ -978,6 +986,8 @@ int TermInfo::Write(OutputDataFile &df, int version)
     error += df.Write(cc_debit_termid);
     error += df.Write(print_workorder);
     error += df.Write(workorder_heading);
+    for (int i=0; i<4; i++)
+    	error += df.Write(tax_inclusive[i]);
     
     return error;
 }
@@ -1003,6 +1013,9 @@ int TermInfo::OpenTerm(Control *control_db, int update)
     term->cc_debit_termid.Set(cc_debit_termid);
     term->print_workorder = print_workorder;
     term->workorder_heading = workorder_heading;
+    for (int i=0; i<4; i++)
+    	term->tax_inclusive[i] = tax_inclusive[i];
+
     if (printer_model != MODEL_NONE)
     {
         if (printer_host.length > 0)
@@ -1310,10 +1323,8 @@ Settings::Settings()
     tax_HST 				= 0.0; // Explicit Fix for Canadian Implementation
     tax_QST 				= 0.0; // Explicit Fix for Canadian Implementation
     tax_VAT                 = 0.0;
-    food_inclusive 	    = 0;
-    room_inclusive 	    = 0;
-    alcohol_inclusive 	    = 0;
-    merchandise_inclusive   = 0;
+    for (i=0; i<4; i++)
+    	tax_inclusive[i]	= 0;
     
     // FastFood Settings
     tax_takeout_food        = 1;   // tax takeout food by default
@@ -1460,6 +1471,8 @@ int Settings::Load(const char* file)
     // 90 (06/29/05) added cc_print_custinfo
     // 91 (11/02/05) added kv_show_user
     // 92 (06/11/15) added print_workorder
+    // 93 (07/13/15) added workorder_heading
+    // 94 (05/30/16) added per-terminal tax inclusive 
 
     genericChar str[256];
     if (version < 25 || version > SETTINGS_VERSION)
@@ -2041,13 +2054,13 @@ int Settings::Load(const char* file)
         ConfFile conf(CONFIG_TAX_FILE, true);
         Flt conf_tmp;
         if (conf.GetValue(conf_tmp, vars[V_FOOD_INCLUSIVE], sects[S_MISC]))
-	    food_inclusive = conf_tmp;
+	    	food_inclusive = conf_tmp;
         if (conf.GetValue(conf_tmp, vars[V_ROOM_INCLUSIVE], sects[S_MISC]))
-	    room_inclusive = conf_tmp;
+	    	room_inclusive = conf_tmp;
         if (conf.GetValue(conf_tmp, vars[V_ALCOHOL_INCLUSIVE], sects[S_MISC]))
-	    alcohol_inclusive = conf_tmp;
+	    	alcohol_inclusive = conf_tmp;
         if (conf.GetValue(conf_tmp, vars[V_MERCHANDISE_INCLUSIVE], sects[S_MISC]))
-	    merchandise_inclusive = conf_tmp;
+	    	merchandise_inclusive = conf_tmp;
 
         if (conf.GetValue(conf_tmp, vars[V_GST], sects[S_SALES_TAX_CANADA]))
             tax_GST = conf_tmp;

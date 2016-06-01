@@ -128,6 +128,8 @@ extern const char* YesNoName[];
 extern int   YesNoValue[];
 extern const char* NoYesName[];
 extern int   NoYesValue[];
+extern const char* NoYesGlobalName[];
+extern int   NoYesGlobalValue[];
 
 extern const char* SplitCheckName[];
 extern int   SplitCheckValue[];

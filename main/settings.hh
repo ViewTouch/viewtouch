@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-#define SETTINGS_VERSION 93  // READ ABOVE
+#define SETTINGS_VERSION 94  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -486,6 +486,12 @@ public:
     Str cc_credit_termid;
     Str cc_debit_termid;
 
+    // Tax settings override
+    //  0=prices don't include tax
+    //  1=prices already include tax
+    // -1=use global settings
+    int tax_inclusive[4];	// food/room/alcohol/merchandise
+
     // Constructor
     TermInfo();
 
@@ -497,6 +503,12 @@ public:
     Printer  *FindPrinter(Control *db);
     int IsServer(int set = -1);
 };
+
+// alternate names
+#define food_inclusive			tax_inclusive[0]
+#define room_inclusive			tax_inclusive[1]
+#define alcohol_inclusive		tax_inclusive[2]
+#define merchandise_inclusive	tax_inclusive[3]
 
 class PrinterInfo
 {
@@ -602,14 +614,12 @@ public:
     int store_code;
     int drawer_account;  // which account number to use when paying expenses from drawers
 
-    // Tax/Currency Settings
+    // Tax/Currency Settings (global defaults, terminal can override)
     int last_money_id;
     int last_tax_id;
 
-    int food_inclusive;		// food prices already include tax
-    int room_inclusive;		// room prices already include tax
-    int alcohol_inclusive;	// alcohol prices already include tax
-    int merchandise_inclusive;	// merchandise prices already include tax
+    // Do prices already include tax? (terminal can override)
+    int tax_inclusive[4];	// food/room/alcohol/merchandise
 
     Flt tax_food;
     Flt tax_alcohol;
