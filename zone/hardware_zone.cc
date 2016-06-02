@@ -72,7 +72,7 @@ HardwareZone::HardwareZone()
     AddListField("Print Work Orders", NoYesName, NoYesValue);
     AddTextField("Display Address", 20);
     display_host_field = FieldListEnd();
-    AddTextField("Printer Address (leave blank if same)", 50);
+    AddTextField("Receipt Printer Queue Name", 50);
     printer_host_field = FieldListEnd();
     //AddListField("Connection Interface", PortName, PortValue);
     AddListField("Printer Model", ReceiptPrinterModelName,
@@ -97,27 +97,27 @@ HardwareZone::HardwareZone()
     AddNewLine();
     LeftAlign();
     AddTextField("Credit Terminal ID", 20);
-    AddNewLine();
     AddTextField("Debit Terminal ID", 20);
 
-    AddNewLine(2);
+    AddNewLine();
     Center();
     Color(color[0]);
     AddLabel("Terminal Hardware Testing");
     Color(COLOR_DEFAULT);
     AddNewLine();
-    AddButtonField("Test Printer",  "printertest");
-    AddNewLine();
-    AddButtonField("Open Drawer 1", "opendrawer1");
-    AddNewLine();
-    AddButtonField("Open Drawer 2", "opendrawer2");
     LeftAlign();
+    AddSpace(4);
+    AddButtonField("Test Printer",  "printertest");
+    AddSpace(4);
+    AddButtonField("Open Drawer 1", "opendrawer1");
+    AddSpace(4);
+    AddButtonField("Open Drawer 2", "opendrawer2");
 
     // Printer Fields
     AddTextField("Printer Name", 32);
     printer_start = FieldListEnd();
     AddListField("Printer Type", PrinterTypeName, PrinterTypeValue);
-    AddTextField("Printer Address", 50);
+    AddTextField("Printer Queue Name", 50);
     //AddListField("Connection Interface", PortName, PortValue);
     AddListField("Model", PrinterModelName, PrinterModelValue);
     AddListField("Kitchen Print Mode", PrintModeName, PrintModeValue);
