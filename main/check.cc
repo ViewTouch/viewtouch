@@ -5013,7 +5013,8 @@ static int adjust_cost(int cost, Flt tax, int type, Settings *settings, Terminal
 	if (inclusive < 0)						
 		inclusive = settings->tax_inclusive[type]; 	// use global default
     if (inclusive)
-        return int(cost/(1.0+tax) + tax);
+        //return int(cost/(1.0+tax) + tax);			// for round-up
+        return int(cost/(1.0+tax) + 0.5);			// for rounding
     return cost;
 }
 

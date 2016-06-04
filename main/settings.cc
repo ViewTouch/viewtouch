@@ -3498,115 +3498,57 @@ char* Settings::StoreNum(char* dest)
     return dest;
 }
 
+static inline int tax_calc(int amount, Flt tax)
+{
+    return int(amount * tax + 0.5);	// round 
+}
+
 int Settings::FigureFoodTax(int amount, TimeInfo &timevar, Flt tax)
 {
-    FnTrace("Settings::FigureFoodTax()");
-    Flt tax_amount = (tax >= 0) ? tax : tax_food;
-    int total_tax = 0;
-
-    Flt f = (Flt) amount * tax_amount;
-    total_tax = (int) (f + .999999);  // round up
-
-    return total_tax;
+	return tax_calc(amount, tax >= 0 ? tax : tax_food);
 }
 
 int Settings::FigureAlcoholTax(int amount, TimeInfo &timevar, Flt tax)
 {
-    FnTrace("Settings::FigureAlcoholTax()");
-    Flt tax_amount = (tax >= 0) ? tax : tax_alcohol;
-    int total_tax = 0;
-
-    Flt f = (Flt) amount * tax_amount;
-    total_tax = (int) (f + .999999);  // round up
-
-    return total_tax;
+	return tax_calc(amount, tax >= 0 ? tax : tax_alcohol);
 }
 
 int Settings::FigureGST(int amount, TimeInfo &timevar, Flt tax)
 {
-    FnTrace("Settings::FigureGST()");
-    Flt tax_amount = (tax >= 0) ? tax : tax_GST;
-    int total_tax = 0;
-
-    Flt f = (Flt) amount * tax_amount;
-    total_tax = (int) (f + .999999);  // round up
-
-    return total_tax;
+	return tax_calc(amount, tax >= 0 ? tax : tax_GST);
 }
 
 int Settings::FigurePST(int amount, TimeInfo &timevar, bool isBeverage, Flt tax)
 {
     FnTrace("Settings::FigurePST()");
-    Flt tax_amount = (tax >= 0) ? tax : tax_PST;
-	int total_tax = 0;
-
-	if ((Flt)amount > 399 || isBeverage == true)
-    {
-		Flt f = (Flt) amount * tax_amount;
-		total_tax = (int) (f + .999999);  // round up
- 	}
-
-    return total_tax;
+	if (amount <= 399 && !isBeverage)
+		return 0;
+	return tax_calc(amount, (tax >= 0) ? tax : tax_PST);
 }
 
 int Settings::FigureHST(int amount, TimeInfo &timevar, Flt tax)
 {
-    FnTrace("Settings::FigureHST()");
-    Flt tax_amount = (tax >= 0) ? tax : tax_HST;
-    int total_tax = 0;
-
-    Flt f = (Flt) amount * tax_amount;
-    total_tax = (int) (f + .999999);  // round up
-
-    return total_tax;
+	return tax_calc(amount, tax >= 0 ? tax : tax_HST);
 }
 
 int Settings::FigureQST(int amount, int gst, TimeInfo &timevar, bool isBeverage, Flt tax)
 {
-    FnTrace("Settings::FigureQST()");
-    Flt tax_amount = (tax >= 0) ? tax : tax_QST;
-	int totalTax = 0;
-
-    Flt f = (Flt) (amount + gst) * tax_amount;
-    totalTax = (int) (f + .999999);  // round up
-
-    return totalTax;
+	return tax_calc(amount, tax >= 0 ? tax : tax_QST);
 }
 
 int Settings::FigureRoomTax(int amount, TimeInfo &timevar, Flt tax)
 {
-    FnTrace("Settings::FigureRoomTax()");
-    Flt tax_amount = (tax >= 0) ? tax : tax_room;
-    int total_tax = 0;
-
-    Flt f = (Flt) amount * tax_amount;
-    total_tax = (int) (f + .999999);  // round up
-
-    return total_tax;
+	return tax_calc(amount, tax >= 0 ? tax : tax_room);
 }
 
 int Settings::FigureMerchandiseTax(int amount, TimeInfo &timevar, Flt tax)
 {
-    FnTrace("Settings::FigureMerchandiseTax()");
-    Flt tax_amount = (tax >= 0) ? tax : tax_merchandise;
-    int total_tax = 0;
-
-    Flt f = (Flt) amount * tax_amount;
-    total_tax = (int) (f + .999999);  // round up
-
-    return total_tax;
+	return tax_calc(amount, tax >= 0 ? tax : tax_merchandise);
 }
 
 int Settings::FigureVAT(int amount, TimeInfo &timevar, Flt tax)
 {
-    FnTrace("Settings::FigureVAT()");
-    Flt tax_amount = (tax >= 0) ? tax : tax_VAT;
-    int total_tax = 0;
-
-    Flt f = (Flt) amount * tax_amount;
-    total_tax = (int) (f + .9999999);
-
-    return total_tax;
+	return tax_calc(amount, tax >= 0 ? tax : tax_VAT);
 }
 
 char* Settings::TenderName(int tender_type, int tender_id, genericChar* str)
