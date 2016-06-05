@@ -4511,19 +4511,5 @@ PrinterInfo *Settings::FindPrinterByType(int type)
 int Settings::GetDrawerFloatValue()
 {
     FnTrace("Settings::GetDrawerFloatValue()");
-    int floatval = 0;
-    TimeInfo now;
-    now.Set();
-    int nowint = (now.Hour() * 60) + now.Min();
-
-    if ((nowint >= drawer_day_start) &&
-        (nowint < drawer_night_start))
-    {
-        floatval = drawer_day_float;
-    }
-    else
-    {
-        floatval = drawer_night_float;
-    }
-    return floatval;
+    return 0;	// No longer used
 }

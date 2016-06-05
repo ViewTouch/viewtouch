@@ -378,12 +378,6 @@ SettingsZone::SettingsZone()
     AddLabel("-- Drawer Settings --");
     AddNewLine();
     LeftAlign();
-    AddTextField("Daytime Drawer Float Amount", 10);  SetFlag(FF_MONEY);
-    AddTimeField("Daytime Start");
-    AddNewLine();
-    AddTextField("Nighttime Drawer Float Amount", 10);  SetFlag(FF_MONEY);
-    AddTimeField("Nighttime Start");
-    AddNewLine();
     AddListField("Require user to balance drawer in ServerBank mode?", YesNoName, YesNoValue);
     AddNewLine();
     AddTextField("Default Tab Amount", 10);  SetFlag(FF_MONEY);
@@ -459,10 +453,6 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
     f->Set(settings->drawer_account);  f = f->next;
 
     f = f->next;  // skip past label
-    f->Set(settings->drawer_day_float);  f = f->next;
-    f->Set(settings->drawer_day_start);  f = f->next;
-    f->Set(settings->drawer_night_float);  f = f->next;
-    f->Set(settings->drawer_night_start);  f = f->next;
     f->Set(settings->require_drawer_balance);  f = f->next;
     f->Set(settings->default_tab_amount);  f = f->next;
 
@@ -509,10 +499,6 @@ int SettingsZone::SaveRecord(Terminal *term, int record, int write_file)
     f->Get(settings->drawer_account);  f = f->next;
 
     f = f->next;  // skip past label
-    f->Get(settings->drawer_day_float);  f = f->next;
-    f->Get(settings->drawer_day_start);  f = f->next;
-    f->Get(settings->drawer_night_float);  f = f->next;
-    f->Get(settings->drawer_night_start);  f = f->next;
     f->Get(settings->require_drawer_balance);  f = f->next;
     f->Get(settings->default_tab_amount);  f = f->next;
 

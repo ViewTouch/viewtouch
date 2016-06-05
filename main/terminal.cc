@@ -5101,7 +5101,6 @@ int Terminal::ReadPage()
     if (currPage == NULL)
     {
         currPage = NewPosPage();
-        zone_db->Add(currPage);
     }
 
     currPage->size = RInt8();
@@ -5124,8 +5123,14 @@ int Terminal::ReadPage()
     currPage->parent_id = RInt32();
     currPage->index = RInt8();
 
-    if (my_id < 0 && !CanEditSystem())
-        my_id = 0;
+    if (my_id == 0 || (my_id < 0 && !CanEditSystem())) {
+   	//TerminalError("Invalid page number");
+	if (currPage->id == 0)	// just created it
+	    delete currPage;
+	return 0;
+    }
+    if (currPage->id == 0)
+        zone_db->Add(currPage);
 
     if (currPage->id != my_id && zone_db->IsPageDefined(my_id, currPage->size) == 0)
     {

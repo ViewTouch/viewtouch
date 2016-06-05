@@ -493,7 +493,7 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
     r->NumberPosL(10, total_payments);
     r->NewLine();
 
-    int cash_float = term->GetSettings()->drawer_day_float;
+    int cash_float = 0;	//term->GetSettings()->drawer_day_float;
     int total_count = 0;
     int total_amount = cash_float;
     int total_entered = cash_float;
