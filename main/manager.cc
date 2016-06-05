@@ -1339,7 +1339,7 @@ int LoadSystemData()
     if (zone_db->Load(filename1))
     {
         RestoreBackup(filename1);
-        zone_db->Purge();
+        //zone_db->Purge();	// maybe remove non-system pages, but not all!
         zone_db->Load(filename1);
     }
 
@@ -1349,7 +1349,7 @@ int LoadSystemData()
     if (zone_db->Load(filename2))
     {
         RestoreBackup(filename2);
-        zone_db->Purge();
+        //zone_db->Purge();
         zone_db->Load(filename1);
         zone_db->Load(filename2);
     }
@@ -2019,7 +2019,7 @@ int ProcessRemoteOrderEntry(SubCheck *subcheck, Order **order, const char* key, 
             ReportError("Have an order we should get rid of....");
         sales_item = MasterSystem->menu.FindByItemCode(value, record);
         if (sales_item)
-            *order = new Order(&MasterSystem->settings, sales_item, 0);
+            *order = new Order(&MasterSystem->settings, sales_item, NULL);
         else
             retval = CALLCTR_ERROR_BADITEM;
     }
@@ -2030,7 +2030,7 @@ int ProcessRemoteOrderEntry(SubCheck *subcheck, Order **order, const char* key, 
             ReportError("Have a detail we should get rid of....");
         sales_item = MasterSystem->menu.FindByItemCode(value, record);
         if (sales_item)
-            detail = new Order(&MasterSystem->settings, sales_item, 0);
+            detail = new Order(&MasterSystem->settings, sales_item, NULL);
         else
             retval = CALLCTR_ERROR_BADDETAIL;
     }
