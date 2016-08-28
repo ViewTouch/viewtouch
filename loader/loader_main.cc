@@ -159,7 +159,7 @@ int UpdateKeyboard(const char* str = NULL)
     int len;
 
     if (str)
-        snprintf(KBInput, 4096, "%s_", str);
+        snprintf(KBInput, sizeof(KBInput), "%s_", str);
 
     // erase first
     XftDrawRect(xftdraw, &xftWhite, 1, WIN_HEIGHT - (3 * loaderFont->height),
