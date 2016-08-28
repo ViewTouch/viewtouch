@@ -1407,7 +1407,7 @@ int PrinterEpson::OpenDrawer(int drawer)
     if (temp_fd <= 0)
         return 1;
 
-	genericChar d = 0;
+    genericChar d = 0;
     if (pulse >= 0)
         d = (pulse % 2);
     else
