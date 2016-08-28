@@ -1951,7 +1951,7 @@ int Terminal::QuickMode(int customer_type)
     else
         customer = NULL;
 
-	if (customer_type == CHECK_FASTFOOD ||
+    if (customer_type == CHECK_FASTFOOD ||
         customer_type == CHECK_BAR ||
         (settings->fast_takeouts &&
          (customer_type == CHECK_TAKEOUT  ||
