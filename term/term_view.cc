@@ -670,23 +670,17 @@ const char* Translations::GetTranslation(const char* key)
     FnTrace("Translations::GetTranslation()");
 
     Translation *trans = trans_list.Head();
-    char buffer[STRLONG];
-    const char* retval = buffer;
-
-    strncpy(buffer, key, STRLONG);
     while (trans != NULL)
     {
         if (trans->Match(key))
         {
+            static char buffer[STRLONG];
             trans->GetValue(buffer, STRLONG);
-            trans = NULL;
+            return buffer;
         }
-        else
-        {
-            trans = trans->next;
-        }
+        trans = trans->next;
     }
-    return retval;
+    return key;
 }
 
 void Translations::PrintTranslations()
