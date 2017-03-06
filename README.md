@@ -6,7 +6,7 @@ ViewTouch is a registered trademark in the USA.
 
 ViewTouch is the ORIGINAL Graphical Touchscreen Restaurant Point of Sale Interface, first created by Gene Mosher in 1986. https://commons.wikimedia.org/wiki/File:Comdex_1986.png
 
-With the availability of ViewTouch source code under the GPL and the arrival of the Raspberry Pi Foundation's computers a restaurateur can automate one's own restaurant at virtually NO EXPENSE! Moreover, Android tablets can be used as X terminals. The ViewTouch Android X Server is downloadable at http://viewtouch.com/download.html
+With the availability of ViewTouch source code under the GPL and the arrival of the Raspberry Pi Foundation's computers a restaurateur can automate one's own restaurant at virtually NO EXPENSE! Android tablets can be used as X terminals by downloading the ViewTouch Android X Server at http://viewtouch.com/download.html  The most recent ViewTouch Raspberry Pi image is also available at this link.
 
 The availability of ViewTouch source code and documentation at GitHub is twofold: it benefits the clients, customers and associates of Gene Mosher and it facilitates the free development and maintenance of ViewTouch source code.
 
