@@ -1,0 +1,15 @@
+#mylabel {
+   background-color: rgba(0, 0, 0, 0);
+   font: Times Bold 10;
+   color: white;
+}
+#mygrid {
+   background-color: rgba(0, 0, 0, 0);
+}
+#mywindow {
+   background-color: black;
+   background: url('/usr/viewtouch/dat/vtlogo.xpm');
+   background-size: 640px 240px;
+   background-position: center;
+   background-repeat: no-repeat;
+}
