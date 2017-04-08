@@ -8,7 +8,7 @@
 }
 #mywindow {
    background-color: black;
-   background: url('/usr/viewtouch/dat/vtlogo.xpm');
+   background: url('/usr/viewtouch/graphics/vtlogo.xpm');
    background-size: 640px 240px;
    background-position: center;
    background-repeat: no-repeat;

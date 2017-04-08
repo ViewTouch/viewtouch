@@ -1,10 +1,14 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5.1)
 
 set(CMAKE_INSTALL_PREFIX "/usr")
 set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
 set(LICENSE_SERVER "default_license_server" CACHE STRING "The license server to be compiled into viewtouch")
 
-#Stupid commment
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+include_directories(${GTK3_INCLUDE_DIRS})
+link_directories(${GTK3_LIBRARY_DIRS})
+add_definitions(${GTK3_CFLAGS_OTHER})
 
 #set(CMAKE_CXX_FLAGS "-Wall")
 #set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -45,7 +49,7 @@ add_library(vtcore main/admission.cc  external/sha1.cc utility.cc remote_link.cc
 
 add_executable(vtpos 
 		loader/loader_main.cc )
-target_link_libraries(vtpos vtcore ${VT_XLIBS})
+target_link_libraries(vtpos vtcore ${GTK3_LIBRARIES})
 
 
 add_library(zone zone/zone.cc zone/zone_object.cc zone/pos_zone.cc 
@@ -119,6 +123,8 @@ install(PROGRAMS 	scripts/vtrestart
 	DESTINATION viewtouch/bin
 )
 install(DIRECTORY dat DESTINATION viewtouch)
+install(DIRECTORY graphics DESTINATION viewtouch)
+install(DIRECTORY css DESTINATION viewtouch)
 install(PROGRAMS scripts/vtcommands.pl DESTINATION viewtouch/bin/vtcommands)
 
 #install(CODE "MESSAGE(\"Sample install message.\")")
