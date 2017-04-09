@@ -38,8 +38,6 @@
 /**** Defintions ****/
 #define SOCKET_FILE    "/tmp/vt_main"
 #define COMMAND_FILE   VIEWTOUCH_PATH "/bin/.vtpos_command"
-#define WIN_WIDTH  640
-#define WIN_HEIGHT 240
 
 #ifdef DEBUG
 int debug_mode = 1;
@@ -48,22 +46,22 @@ int debug_mode = 0;
 #endif
 
 /**** Globals ****/
-GdkDisplay     *display         = NULL;
-GdkScreen      *screen          = NULL;
-const gchar    *displayname     = NULL;
-GtkCssProvider *provider        = NULL;
-GIOChannel     *loadstatus      = NULL;
+GdkDisplay      *display         = NULL;
+GdkScreen       *screen          = NULL;
+const gchar     *displayname     = NULL;
+GtkCssProvider  *provider        = NULL;
+GIOChannel      *loadstatus      = NULL;
 
-GtkWidget      *window          = NULL;
-GtkWidget      *grid            = NULL;
-GtkWidget      *label           = NULL;
-GtkWidget      *space           = NULL;
+GtkWidget       *window          = NULL;
+GtkWidget       *grid            = NULL;
+GtkWidget       *label           = NULL;
+GtkWidget       *space           = NULL;
 
-int            SocketNo         = 0;
-int            SocketNum        = 0;
-int            GetInput         = 0;
-char           KBInput[1024]    = "";
-char           BuildNumber[]    = BUILD_NUMBER;
+int             SocketNo         = 0;
+int             SocketNum        = 0;
+int             GetInput         = 0;
+char            KBInput[1024]    = "";
+char            BuildNumber[]    = BUILD_NUMBER;
 
 /**** Functions ****/
 void ExitLoader()
@@ -173,8 +171,26 @@ int SetupConnection(const char* socket_file)
 //Initial Widget setup
 static void OpenStatusBox()
 {
+    double scale = 1.0;
+    const gchar *logofile = "/usr/viewtouch/graphics/logofile";
+    GtkWidget *logo = gtk_image_new_from_file(logofile);
+    const GdkPixbuf *logopb = gtk_image_get_pixbuf(GTK_IMAGE(logo));
+
+    int winwidth = gdk_pixbuf_get_width(logopb);
+    int winheight = gdk_pixbuf_get_height(logopb);
+
+    std::cout<<winwidth<<"  "<<winheight<<std::endl;
+
+    if(winwidth>=winheight) scale = 640.0/winwidth;
+    else scale = 640.0/winheight;
+
+    winwidth*=scale;
+    winheight*=scale;
+
+    std::cout<<winwidth<<"  "<<winheight<<std::endl;
+
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(window), WIN_WIDTH, WIN_HEIGHT);
+    gtk_window_set_default_size(GTK_WINDOW(window), winwidth, winheight);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
     gtk_widget_set_name(window, "mywindow");
@@ -197,10 +213,10 @@ static void OpenStatusBox()
     gtk_grid_attach(GTK_GRID(grid), label, 1, 0, 2, 1);
     gtk_widget_set_hexpand(label, TRUE);
     gtk_widget_set_vexpand(label, FALSE);
-    gtk_label_set_width_chars(GTK_LABEL(label), WIN_WIDTH/20);
+    gtk_label_set_width_chars(GTK_LABEL(label), winwidth/20);
     gtk_widget_set_halign(label, GTK_ALIGN_CENTER);
     gtk_label_set_xalign(GTK_LABEL(label),0);
-    gtk_label_set_yalign(GTK_LABEL(label),0.9);
+    gtk_label_set_yalign(GTK_LABEL(label),1);
     gtk_widget_set_name(label, "mylabel");
 
     gtk_widget_show_all(window);
@@ -233,7 +249,7 @@ void Css()
                                    " #mywindow {\n"
                                    "   background-color: black;\n"
                                    "   background: url('/usr/viewtouch/graphics/vtlogo.xpm');\n"
-                                   "   background-size: 640px 240px;\n"
+                                   "   background-size: contain;\n"
                                    "   background-position: center;\n"
                                    "   background-repeat: no-repeat;\n"
                                    "}\n", -1, NULL);

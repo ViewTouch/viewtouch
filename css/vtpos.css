@@ -1,15 +1,15 @@
 #mylabel {
-   background-color: rgba(0, 0, 0, 0);
-   font: Times Bold 10;
-   color: white;
+   background-color: rgba(0, 0, 0, 0); /* leave transparent */
+   font: Times Bold 10; /* change font as desired */
+   color: white; /* make the font color contrasting the logo image */
 }
 #mygrid {
-   background-color: rgba(0, 0, 0, 0);
+   background-color: rgba(0, 0, 0, 0); /* leave transparent, this is just a container */
 }
 #mywindow {
-   background-color: black;
-   background: url('/usr/viewtouch/graphics/vtlogo.xpm');
-   background-size: 640px 240px;
+   background-color: rgba(0, 0, 0, 0);
+   background: url('/usr/viewtouch/graphics/logofile'); /* save your desired logo image to this filename */
+   background-size: contain;
    background-position: center;
    background-repeat: no-repeat;
 }
