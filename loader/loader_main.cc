@@ -248,14 +248,13 @@ void Css()
                                    "}\n"
                                    " #mywindow {\n"
                                    "   background-color: black;\n"
-                                   "   background: url('/usr/viewtouch/graphics/vtlogo.xpm');\n"
+                                   "   background: url('/usr/viewtouch/graphics/logofile');\n"
                                    "   background-size: contain;\n"
                                    "   background-position: center;\n"
                                    "   background-repeat: no-repeat;\n"
                                    "}\n", -1, NULL);
 */
-//  Imports the CSS from file: /usr/viewtouch/dat/vtpos.css.
-//  The viewtouch logo image (vtlogo.xpm) must also be located in /usr/viewtouch/dat/
+
     gtk_css_provider_load_from_file(GTK_CSS_PROVIDER(provider), g_file_new_for_path(vtpos_css), NULL);
 
     g_object_unref (provider);
