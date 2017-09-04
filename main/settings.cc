@@ -1,18 +1,18 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998
+
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * settings.cc - revision 103 (10/7/98)
  * Implementation of settings module
@@ -60,7 +60,7 @@ int StoreValue[] = {
     STORE_OTHER, STORE_SUNWEST, -1};
 
 const char* PayPeriodName[] = {
-    "Weekly", "2 Week", "4 Week", "Semi Monthly", "Semi Monthly 11/26", "Monthly", NULL};
+    "Weekly", "2 Weeks", "4 Weeks", "Semi Monthly", "Semi Monthly 11/26", "Monthly", NULL};
 int PayPeriodValue[] = {
     PERIOD_WEEK, PERIOD_2WEEKS, PERIOD_4WEEKS,
     PERIOD_HALFMONTH, PERIOD_HM_11, PERIOD_MONTH, -1};
@@ -83,7 +83,7 @@ int SaleCreditValue[] = {
     1, 0, -1};
 
 const char* SalesPeriodName[] = {
-    "None", "1 Week", "2 Weeks", "4 Weeks", "Once/Month", "11/26", NULL};
+    "None", "1 Week", "2 Weeks", "4 Weeks", "Month", "11/26", NULL};
 int SalesPeriodValue[] = {
     SP_NONE, SP_WEEK, SP_2WEEKS, SP_4WEEKS, SP_MONTH, SP_HM_11, -1};
 
@@ -157,7 +157,7 @@ namespace confmap
         V_GST = 0, V_PST, V_HST, V_QST, V_ROYALTY_RATE, V_ADVERTISE_FUND,
         V_DAILY_CERT_FEE, V_DEBIT_COST, V_CREDIT_RATE, V_CREDIT_COST,
         V_LINE_ITEM_COST, V_TAX_TAKEOUT_FOOD, V_PERSONALIZE_FAST_FOOD,
-		V_FOOD_INCLUSIVE, V_ALCOHOL_INCLUSIVE, V_MERCHANDISE_INCLUSIVE, 
+		V_FOOD_INCLUSIVE, V_ALCOHOL_INCLUSIVE, V_MERCHANDISE_INCLUSIVE,
 		V_ROOM_INCLUSIVE
     };
 
@@ -988,7 +988,7 @@ int TermInfo::Write(OutputDataFile &df, int version)
     error += df.Write(workorder_heading);
     for (int i=0; i<4; i++)
     	error += df.Write(tax_inclusive[i]);
-    
+
     return error;
 }
 
@@ -1313,7 +1313,7 @@ Settings::Settings()
     measure_system  = MEASURE_STANDARD;
     money_symbol.Set("$");
 
-    // Currency/Tax Settings  
+    // Currency/Tax Settings
     tax_food                = 0.0;
     tax_alcohol             = 0.0;
     tax_room                = 0.0;
@@ -1325,7 +1325,7 @@ Settings::Settings()
     tax_VAT                 = 0.0;
     for (i=0; i<4; i++)
     	tax_inclusive[i]	= 0;
-    
+
     // FastFood Settings
     tax_takeout_food        = 1;   // tax takeout food by default
     personalize_fast_food   = 0;   // don't force jump to customer data for fast food by default
@@ -1472,7 +1472,7 @@ int Settings::Load(const char* file)
     // 91 (11/02/05) added kv_show_user
     // 92 (06/11/15) added print_workorder
     // 93 (07/13/15) added workorder_heading
-    // 94 (05/30/16) added per-terminal tax inclusive 
+    // 94 (05/30/16) added per-terminal tax inclusive
 
     genericChar str[256];
     if (version < 25 || version > SETTINGS_VERSION)
@@ -2415,7 +2415,7 @@ int Settings::Save()
         }
 
         conf.SetFilename(CONFIG_FASTFOOD_FILE);
-        
+
         error += conf.SetValue(personalize_fast_food, vars[V_PERSONALIZE_FAST_FOOD], sects[S_MISC]);
         error += conf.SetValue(tax_takeout_food, vars[V_TAX_TAKEOUT_FOOD], sects[S_MISC]);
 
@@ -2881,7 +2881,7 @@ int Settings::SaveAltMedia(const genericChar* altmedia)
     int retval = 0;
     OutputDataFile outfile;
     struct stat sb;
-    
+
     altdiscount_filename.Set(altmedia);
     if (stat(altmedia, &sb) < 0)
     {
@@ -3165,14 +3165,14 @@ int Settings::MonthPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end)
     timevar.Sec(0);
     timevar.Min(0);
     timevar.Hour(0);
-    
+
     start = timevar;
     start.Day(1);
     end = start;
     end.AdjustDays(DaysInMonth(start.Month(), start.Year()));
-    
+
 //    printf("Settings::MonthPeriod(): ref=%d/%d/%d\nstart=%d/%d/%d\nend=%d/%d/%d\n",
-//    ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year()); 
+//    ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year());
     return 0;
 }
 
@@ -3218,7 +3218,7 @@ int Settings::SalesPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end)
         	end.AdjustDays(14);
         }
 //    printf("Settings::SalesPeriod(): ref=%d/%d/%d : start=%d/%d/%d : end=%d/%d/%d\n",
-//    ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year()); 
+//    ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year());
         return 0;
     }
 
@@ -3252,7 +3252,7 @@ int Settings::LaborPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end)
     FnTrace("Settings::LaborPeriod()");
     //printf("Settings::LaborPeriod(Start): ref=%d/%d/%d\nstart=%d/%d/%d\nend=%d/%d/%d\n",
     //ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year());
-    //printf("labor_period=%d, SP_MONTH=%d, SP_HM_11=%d, PERIOD_HM_11=%d\n",labor_period, SP_MONTH, SP_HM_11, PERIOD_HM_11); 
+    //printf("labor_period=%d, SP_MONTH=%d, SP_HM_11=%d, PERIOD_HM_11=%d\n",labor_period, SP_MONTH, SP_HM_11, PERIOD_HM_11);
     if (labor_period == SP_MONTH)
     {
         TimeInfo timevar = ref;
@@ -3337,7 +3337,7 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
     {
         fiscal->Sec(0);
         end = *fiscal;
-// printf("Settings::SetPeriod(): Fiscal reset end to %d/%d/%d\n", end.Month(), end.Day(), end.Year()); 
+// printf("Settings::SetPeriod(): Fiscal reset end to %d/%d/%d\n", end.Month(), end.Day(), end.Year());
     }
     else
     {
@@ -3348,10 +3348,10 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
         end.Day(1);
         end.Month(1);
         end.Year(SystemTime.Year());
-// printf("Settings::SetPeriod(): Fiscal not set so end set to %d/%d/%d\n", end.Month(), end.Day(), end.Year()); 
+// printf("Settings::SetPeriod(): Fiscal not set so end set to %d/%d/%d\n", end.Month(), end.Day(), end.Year());
     }
 //    printf("Settings::SetPeriod(): beginning ref=%d/%d/%d : start=%d/%d/%d : end=%d/%d/%d\n",
-//    ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year()); 
+//    ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year());
 
     // make sure we have the correct year
     while (end >= ref)
@@ -3373,7 +3373,7 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
             break;
         case SP_HM_11:
 //    printf("Settings::SetPeriod(): in top ref=%d/%d/%d : end=%d/%d/%d\n",
-//    ref.Month(), ref.Day(), ref.Year(), end.Month(), end.Day(), end.Year()); 
+//    ref.Month(), ref.Day(), ref.Year(), end.Month(), end.Day(), end.Year());
 			end.AdjustDays(1);
 			if (end >= ref) {
 				if (ref.Day() <= 10) {
@@ -3403,11 +3403,11 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
             break;
         }
 //    printf("Settings::SalesPeriod() Mid: end=%d/%d/%d\n",
-//    end.Month(), end.Day(), end.Year()); 
-        
+//    end.Month(), end.Day(), end.Year());
+
     }
 //    printf("Settings::SetPeriod(): mid ref=%d/%d/%d : start=%d/%d/%d : end=%d/%d/%d\n",
-//    ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year()); 
+//    ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year());
 
     // scroll the start back
     start = end;
@@ -3449,7 +3449,7 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
         break;
     }
 //    printf("Settings::SetPeriod(): end ref=%d/%d/%d : start=%d/%d/%d : end=%d/%d/%d\n",
-//    ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year()); 
+//    ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year());
 
 //    ref = start;
 
@@ -3500,7 +3500,7 @@ char* Settings::StoreNum(char* dest)
 
 static inline int tax_calc(int amount, Flt tax)
 {
-    return int(amount * tax + 0.5);	// round 
+    return int(amount * tax + 0.5);	// round
 }
 
 int Settings::FigureFoodTax(int amount, TimeInfo &timevar, Flt tax)
@@ -3905,7 +3905,7 @@ int Settings::DiscountReport(Terminal *t, Report *r)
     DiscountInfo *ds = discount_list.Head();
     if (ds == NULL)
     {
-        r->TextC(t->Translate("No Discounts Defined Yet"));
+        r->TextC(t->Translate("No Discount Definitions"));
         return 0;
     }
 
@@ -3928,7 +3928,7 @@ int Settings::DiscountReport(Terminal *t, Report *r)
                 sprintf(str, "%g%%", (Flt) ds->amount / 100.0);
             else
                 t->FormatPrice(str, ds->amount, 1);
-            r->TextR(str, color);      
+            r->TextR(str, color);
             r->NewLine();
         }
         ds = ds->next;
@@ -3946,7 +3946,7 @@ int Settings::CouponReport(Terminal *t, Report *r)
     CouponInfo *cp = coupon_list.Head();
     if (cp == NULL)
     {
-        r->TextC(t->Translate("No Coupons Defined Yet"));
+        r->TextC(t->Translate("No Coupon Definitions"));
         return 0;
     }
 
@@ -3987,7 +3987,7 @@ int Settings::CreditCardReport(Terminal *t, Report *r)
     CreditCardInfo *cc = creditcard_list.Head();
     if (cc == NULL)
     {
-        r->TextC(t->Translate("No Credit Cards Defined Yet"));
+        r->TextC(t->Translate("No Card Definitions"));
         return 0;
     }
 
@@ -4023,7 +4023,7 @@ int Settings::CompReport(Terminal *t, Report *r)
     CompInfo *cm = comp_list.Head();
     if (cm == NULL)
     {
-        r->TextC(t->Translate("No Whole Meal Comps Defined Yet"));
+        r->TextC(t->Translate("No Whole Meal Comp Definitions"));
         return 0;
     }
 
@@ -4058,7 +4058,7 @@ int Settings::MealReport(Terminal *t, Report *r)
     MealInfo *mi = meal_list.Head();
     if (mi == NULL)
     {
-        r->TextC(t->Translate("No Employee Discounts Defined Yet"));
+        r->TextC(t->Translate("No Employee Discount Definitions"));
         return 0;
     }
 
@@ -4088,7 +4088,7 @@ int Settings::MealReport(Terminal *t, Report *r)
 int Settings::RemoveInactiveMedia()
 {
     FnTrace("Settings::RemoveInactiveMedia()");
-    
+
     // Remove inactive discounts
     DiscountInfo *discount_node = discount_list.Head();
     while (discount_node != NULL)
@@ -4168,7 +4168,7 @@ int Settings::TermReport(Terminal *t, Report *r)
     TermInfo *ti = term_list.Head();
     if (ti == NULL)
     {
-        r->TextC(t->Translate("No Terminals Defined Yet"));
+        r->TextC(t->Translate("No Terminal Definitions"));
         return 0;
     }
 
@@ -4190,14 +4190,14 @@ int Settings::TermReport(Terminal *t, Report *r)
                 r->TextPosL(38, "---");
 
             if (term->page)
-                r->TextPosL(58, t->Translate("Okay"), COLOR_GREEN);
+                r->TextPosL(58, t->Translate("Active"), COLOR_GREEN);
             else
-                r->TextPosL(58, t->Translate("Connecting"), COLOR_BLUE);
+                r->TextPosL(58, t->Translate("Activating"), COLOR_BLUE);
         }
         else
         {
             r->TextPosL(38, "---");
-            r->TextPosL(58, t->Translate("Off Line"), COLOR_RED);
+            r->TextPosL(58, t->Translate("Inactive"), COLOR_RED);
         }
 
         r->NewLine();
@@ -4217,7 +4217,7 @@ int Settings::PrinterReport(Terminal *t, Report *r)
     PrinterInfo *pi = printer_list.Head();
     if (pi == NULL)
     {
-        r->TextC(t->Translate("No Printers Defined"));
+        r->TextC(t->Translate("No Printer Definitions"));
         return 0;
     }
 
@@ -4255,7 +4255,7 @@ int Settings::PrinterReport(Terminal *t, Report *r)
         if (p)
             r->TextPosL(64, t->Translate("Okay"), COLOR_GREEN);
         else
-            r->TextPosL(64, t->Translate("Off Line"), COLOR_RED);
+            r->TextPosL(64, t->Translate("Turned Off"), COLOR_RED);
 
         r->NewLine();
         pi = pi->next;

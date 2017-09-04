@@ -1,18 +1,18 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998
+
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * hardware_zone.cc - revision 3 (10/13/98)
  * Implementation of HardwareZone class (taken from settings_zone.cc)
@@ -64,32 +64,32 @@ HardwareZone::HardwareZone()
     section     = 0;
 
     // Term Fields
-    AddTextField("Terminal Name", 32);
+    AddTextField("This Display Terminal's Name is", 32);
     term_start = FieldListEnd();
-    AddListField("Terminal Type", TermTypeName, TermTypeValue);
-    AddListField("Kitchen Video Sort Order", CheckDisplayOrderName, CheckDisplayOrderValue);
-    AddListField("Work Order Heading", WOHeadingName, WOHeadingValue);
-    AddListField("Print Work Orders", NoYesName, NoYesValue);
-    AddTextField("Display Address", 20);
+    AddListField("This Display Terminal's Function is", TermTypeName, TermTypeValue);
+    AddListField("If This Display Terminal is a Kitchen Video Then It Sorts By", CheckDisplayOrderName, CheckDisplayOrderValue);
+    AddListField("The Requisition Ticket Heading is", WOHeadingName, WOHeadingValue);
+    AddListField("Does This Display Terminal Print Requisition Tickets?", NoYesName, NoYesValue);
+    AddTextField("This Display Terminal's IP Address is", 18);
     display_host_field = FieldListEnd();
-    AddTextField("Receipt Printer Queue Name", 50);
+    AddTextField("This Display Terminal's Receipt Printer Queue Name is", 20);
     printer_host_field = FieldListEnd();
     //AddListField("Connection Interface", PortName, PortValue);
-    AddListField("Printer Model", ReceiptPrinterModelName,
+    AddListField("This Receipt Printer's Model is ", ReceiptPrinterModelName,
                  ReceiptPrinterModelValue);
-    AddListField("Number Of Drawers", DrawerCountName, DrawerCountValue);
-    AddListField("Drawer Pulse", DrawerPulseName, DrawerPulseValue);
+    AddListField("How Many Cash Drawers Does This Display Terminal Have?", DrawerCountName, DrawerCountValue);
+    AddListField("The Drawer Opens On", DrawerPulseName, DrawerPulseValue);
     drawer_pulse_field = FieldListEnd();
-    AddListField("Card Stripe Reader", NoYesName, NoYesValue);
+    AddListField("Is A Card Reader Attached To This Display Terminal?", NoYesName, NoYesValue);
     AddNewLine();
-    AddListField("Type of CDU", CustDispUnitName, CustDispUnitValue);
-    AddTextField("CDU Device Path", 20);
+    AddListField("If This Is A Customer Display Then Its Type Is", CustDispUnitName, CustDispUnitValue);
+    AddTextField("If This Is A Customer Display Then Its Customer Display Device Path is", 20);
 
     AddNewLine();
-    AddListField("Food prices include tax?", NoYesGlobalName, NoYesGlobalValue);
-    AddListField("Alcohol prices include tax?", NoYesGlobalName, NoYesGlobalValue);
-    AddListField("Room prices include tax?", NoYesGlobalName, NoYesGlobalValue);
-    AddListField("Merchandise prices include tax?", NoYesGlobalName, NoYesGlobalValue);
+    AddListField("Do Food prices include tax?", NoYesGlobalName, NoYesGlobalValue);
+    AddListField("Do Alcohol prices include tax?", NoYesGlobalName, NoYesGlobalValue);
+    AddListField("Do Room prices include tax?", NoYesGlobalName, NoYesGlobalValue);
+    AddListField("Do Merchandise prices include tax?", NoYesGlobalName, NoYesGlobalValue);
 
     Center();
     AddNewLine();
@@ -107,22 +107,22 @@ HardwareZone::HardwareZone()
     AddNewLine();
     LeftAlign();
     AddSpace(4);
-    AddButtonField("Test Printer",  "printertest");
+    AddButtonField("Test This Receipt Printer",  "printertest");
     AddSpace(4);
-    AddButtonField("Open Drawer 1", "opendrawer1");
+    AddButtonField("Test Drawer 1", "opendrawer1");
     AddSpace(4);
-    AddButtonField("Open Drawer 2", "opendrawer2");
+    AddButtonField("Test Drawer 2", "opendrawer2");
 
     // Printer Fields
-    AddTextField("Printer Name", 32);
+    AddTextField("This Printer Is Identified As", 20);
     printer_start = FieldListEnd();
-    AddListField("Printer Type", PrinterTypeName, PrinterTypeValue);
-    AddTextField("Printer Queue Name", 50);
+    AddListField("This Printer's Assigned Task", PrinterTypeName, PrinterTypeValue);
+    AddTextField("This Printer's Queue Name Is", 20);
     //AddListField("Connection Interface", PortName, PortValue);
-    AddListField("Model", PrinterModelName, PrinterModelValue);
+    AddListField("This Printer's Output Is Formatted For", PrinterModelName, PrinterModelValue);
     AddListField("Kitchen Print Mode", PrintModeName, PrintModeValue);
     kitchen_mode_field = FieldListEnd();
-    AddTextField("Workorder Header Margin", 4);
+    AddTextField("Requisition Ticket Header Margin", 4);
 }
 
 // Member Functions
@@ -142,18 +142,18 @@ RenderResult HardwareZone::Render(Terminal *term, int update_flag)
         switch (section)
         {
         default:
-            TextC(term, 0, term->Translate("Terminals"), col);
+            TextC(term, 0, term->Translate("These Are Your Display Terminals and Their Designated Receipt Printers"), col);
             TextL(term, 2.3, term->Translate("Name"), col);
             TextPosL(term, 22, 2.3, term->Translate("Display Host"), col);
             TextPosL(term, 38, 2.3, term->Translate("Current User"), col);
             TextPosL(term, 58, 2.3, term->Translate("Status"), col);
             break;
         case 1:
-            TextC(term, 0, term->Translate("Printers"), col);
-            TextL(term, 2.3, term->Translate("Printer Name"), col);
-            TextPosL(term, 18, 2.3, term->Translate("Host/Device"), col);
-            TextPosL(term, 38, 2.3, term->Translate("Type"), col);
-            TextPosL(term, 52, 2.3, term->Translate("Model"), col);
+            TextC(term, 0, term->Translate("These Are Your Requisition Printers in Kitchens, Bars, Expediting Areas & Full Page Office Printers"), col);
+            TextL(term, 2.3, term->Translate("Printer's Name"), col);
+            TextPosL(term, 18, 2.3, term->Translate("lpd:queuename"), col);
+            TextPosL(term, 38, 2.3, term->Translate("Assigned Task"), col);
+            TextPosL(term, 52, 2.3, term->Translate("Format For"), col);
             TextPosL(term, 64, 2.3, term->Translate("Status"), col);
             break;
         }
@@ -163,10 +163,10 @@ RenderResult HardwareZone::Render(Terminal *term, int update_flag)
         switch (section)
         {
         default:
-            TextC(term, 0, term->Translate("Edit Terminal"), col);
+            TextC(term, 0, term->Translate("You May Now Edit This Display Terminal's Configuration"), col);
             break;
         case 1:
-            TextC(term, 0, term->Translate("Edit Printer"), col);
+            TextC(term, 0, term->Translate("You May Now Edit This Printer's Configuration"), col);
             break;
         }
     }
@@ -203,7 +203,7 @@ int HardwareZone::UpdateForm(Terminal *term, int record)
         else
             drawer_pulse_field->active = 0;
     }
-    
+
     return retval;
 }
 
@@ -274,7 +274,7 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         pi = settings->FindPrinterByRecord(record);
         if (pi == NULL)
             break;
-        
+
         thisForm = printer_start;
         thisForm->Set(pi->name); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(pi->type); thisForm->active = 1; thisForm = thisForm->next;
@@ -294,7 +294,7 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         ti = settings->FindTermByRecord(record);
         if (ti == NULL)
             break;
-        
+
         thisForm = term_start;
         thisForm->Set(ti->name); thisForm->active = 1; thisForm = thisForm->next;
         thisForm->Set(ti->type); thisForm->active = 1; thisForm = thisForm->next;
@@ -534,7 +534,7 @@ int HardwareZone::ChangeStatus(Terminal *term)
         else
         {
             // enable term
-            term->OpenDialog("Starting Terminal\\\\Please Wait");
+            term->OpenDialog("Starting The Display Terminal\\Please Wait");
             ti->OpenTerm(term->parent, 1);
             term->KillDialog();
             term->UpdateAllTerms(UPDATE_TERMINALS | UPDATE_PRINTERS, NULL);
@@ -568,7 +568,7 @@ int HardwareZone::ChangeStatus(Terminal *term)
         else
         {
             // enable printer
-            term->OpenDialog("Starting Printer\\\\Please Wait");
+            term->OpenDialog("Starting The Printer\\Please Wait");
             pi->OpenPrinter(term->parent, 1);
             term->KillDialog();
             term->UpdateAllTerms(UPDATE_PRINTERS, NULL);

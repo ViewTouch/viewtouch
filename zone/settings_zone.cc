@@ -1,23 +1,23 @@
-/************************************************************* 
+/*************************************************************
  *
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998
+
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * settings_zone.cc - revision 169 (10/13/98)
  * Implementation of SettingsZone module
- *************************************************************/ 
+ *************************************************************/
 
 #include "settings_zone.hh"
 #include "sales.hh"
@@ -46,7 +46,7 @@ static const genericChar* PasswordName[] = {"No", "Managers Only", "Everyone", N
 static int PasswordValue[] = {PW_NONE, PW_MANAGERS, PW_ALL, -1};
 
 // octal values for ISO-8859-15:
-// \244	= Euro 			("€") 
+// \244	= Euro 			("€")
 // \243 = British pound ("£")
 // " "  = no symbol
 static const genericChar* MoneySymbolName[] = { "$", "\244", "\243", " ", NULL };
@@ -145,7 +145,7 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         break;
     case SWITCH_TIME_FORMAT:
         str = FindStringByValue(settings->time_format, TimeFormatValue, TimeFormatName);
-        break;    
+        break;
     case SWITCH_AUTHORIZE_METHOD:
         str = FindStringByValue(settings->authorize_method, AuthorizeValue, AuthorizeName);
         break;
@@ -351,23 +351,23 @@ SettingsZone::SettingsZone()
 
     form_header = 0;
     AddNewLine();
-    AddTextField("Store Name", 32);
+    AddTextField("Your Business Name", 32);
     AddTextField("Address", 64);
-    AddTextField("Address 2", 64);
+    AddTextField("City State Zip Code", 64);
     AddTextField("Country Code", 8);
-    AddTextField("Store Code", 8);
+    AddTextField("Location Code", 8);
     AddNewLine();
     Center();
-    AddLabel("-- Screensaver settings --");
+    AddLabel("Set the Life of the Logon ID (Up to 999 seconds)");
     AddNewLine();
     LeftAlign();
-    AddTextField("Screen Saver delay (seconds)", 5); SetFlag(FF_ONLYDIGITS);
-    AddTextField("Delay to logout", 5); SetFlag(FF_ONLYDIGITS);
-    AddTextField("Delay to logout after settlement", 5); SetFlag(FF_ONLYDIGITS);
-    AddTextField("Delay to logout on login page", 5); SetFlag(FF_ONLYDIGITS);
+    AddTextField("Screen Saver", 5); SetFlag(FF_ONLYDIGITS);
+    AddTextField("On the Table Page", 5); SetFlag(FF_ONLYDIGITS);
+    AddTextField("After Settlement", 5); SetFlag(FF_ONLYDIGITS);
+    AddTextField("On Page One", 5); SetFlag(FF_ONLYDIGITS);
     AddNewLine();
     Center();
-    AddLabel("-- Account settings --");
+    AddLabel("Ledger Accounts");
     AddNewLine();
     LeftAlign();
     AddTextField("Lowest Account Number", 10);  SetFlag(FF_ONLYDIGITS);
@@ -375,7 +375,7 @@ SettingsZone::SettingsZone()
     AddListField("Account for expenses paid from drawers", NULL);
     AddNewLine();
     Center();
-    AddLabel("-- Drawer Settings --");
+    AddLabel("Drawer Settings");
     AddNewLine();
     LeftAlign();
     AddListField("Require user to balance drawer in ServerBank mode?", YesNoName, YesNoValue);
@@ -383,7 +383,7 @@ SettingsZone::SettingsZone()
     AddTextField("Default Tab Amount", 10);  SetFlag(FF_MONEY);
     AddNewLine();
     Center();
-    AddLabel("-- SMTP Settings --");
+    AddLabel("SMTP Settings");
     AddNewLine();
     LeftAlign();
     AddTextField("SMTP Server for Sending", 50);
@@ -391,7 +391,7 @@ SettingsZone::SettingsZone()
     AddTextField("SMTP Reply To Address", 50);
     AddNewLine();
     Center();
-    AddLabel("-- Miscellaneous Settings --");
+    AddLabel("Miscellaneous Settings");
     AddNewLine();
     LeftAlign();
     AddListField("Can select user for expenses?", YesNoName, YesNoValue);
@@ -400,13 +400,13 @@ SettingsZone::SettingsZone()
     AddNewLine();
     AddListField("FastFood mode for TakeOut orders?", YesNoName, YesNoValue);
     AddNewLine();
-    AddListField("Default Report Period", ReportPeriodName, ReportPeriodValue);
-    AddListField("Print Report Header", YesNoName, YesNoValue);
+    AddListField("Set Your Preferred Report Time Frame", ReportPeriodName, ReportPeriodValue);
+    AddListField("Print A Header on Reports?", YesNoName, YesNoValue);
     AddNewLine();
-    AddListField("Default Split Check View", SplitCheckName, SplitCheckValue);
-    AddListField("How to separate modifiers", ModSeparatorName, ModSeparatorValue);
-    AddListField("Start reports at midnight?", YesNoName, YesNoValue);
-    AddListField("Allow Iconify?", YesNoName, YesNoValue);
+    AddListField("Split Check View", SplitCheckName, SplitCheckValue);
+    AddListField("Modifier Separation", ModSeparatorName, ModSeparatorValue);
+    AddListField("Start reports at Midnight?", YesNoName, YesNoValue);
+    AddListField("Allow Background Icon?", YesNoName, YesNoValue);
 }
 
 RenderResult SettingsZone::Render(Terminal *term, int update_flag)
@@ -431,8 +431,8 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
     f->Set(settings->store_name); f = f->next;
     f->Set(settings->store_address); f = f->next;
     f->Set(settings->store_address2); f = f->next;
-    f->Set(settings->country_code);  f = f->next;
-    f->Set(settings->store_code);  f = f->next;
+    f->Set(settings->country_code); f = f->next;
+    f->Set(settings->store_code); f = f->next;
 
     f = f->next;  // skip past label
     f->Set(settings->screen_blank_time); f = f->next;
@@ -450,25 +450,25 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
         f->AddEntry(acct->name.Value(), acct->number);
         acct = acct->next;
     }
-    f->Set(settings->drawer_account);  f = f->next;
+    f->Set(settings->drawer_account); f = f->next;
 
     f = f->next;  // skip past label
-    f->Set(settings->require_drawer_balance);  f = f->next;
-    f->Set(settings->default_tab_amount);  f = f->next;
+    f->Set(settings->require_drawer_balance); f = f->next;
+    f->Set(settings->default_tab_amount); f = f->next;
 
     f = f->next;  // skip past label
-    f->Set(settings->email_send_server);  f = f->next;
+    f->Set(settings->email_send_server); f = f->next;
     f->Set(settings->email_replyto); f = f->next;
 
     f = f->next;  // skip past label
-    f->Set(settings->allow_user_select);  f = f->next;
+    f->Set(settings->allow_user_select); f = f->next;
     f->Set(day_length_hrs); f = f->next;
     f->Set(settings->fast_takeouts); f = f->next;
     f->Set(settings->default_report_period); f = f->next;
     f->Set(settings->print_report_header); f = f->next;
     f->Set(settings->split_check_view); f = f->next;
     f->Set(settings->mod_separator); f = f->next;
-    f->Set(settings->report_start_midnight);  f = f->next;
+    f->Set(settings->report_start_midnight); f = f->next;
     f->Set(settings->allow_iconify); f = f->next;
 
     return 0;
@@ -684,7 +684,7 @@ TaxSettingsZone::TaxSettingsZone()
     AddTextField("Alcohol Sales Tax %", 6);
     AddListField("Prices include tax?", YesNoName, YesNoValue);
     AddNewLine();
-    AddTextField("Room Sales Tax %", 6); 
+    AddTextField("Room Sales Tax %", 6);
     AddListField("Prices include tax?", YesNoName, YesNoValue);
     AddNewLine();
     AddTextField("Merchandise Sales Tax %", 6);
@@ -773,7 +773,7 @@ int TaxSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
     f->Get(settings->room_inclusive); f = f->next;
     f->Get(settings->tax_merchandise); f = f->next; settings->tax_merchandise *= 0.01;
     f->Get(settings->merchandise_inclusive); f = f->next;
-	
+
     f = f->next;  // skip Canadian Tax label
     f->Get(settings->tax_GST); f = f->next;         settings->tax_GST *= 0.01;
     f->Get(settings->tax_PST); f = f->next;         settings->tax_PST *= 0.01;
@@ -2662,7 +2662,7 @@ int TaxSetZone::RecordCount(Terminal *term)
  ********************************************************************/
 
 MoneySetZone::MoneySetZone()
-{ 
+{
     FnTrace("MoneySetZone::MoneySetZone()");
 }
 

@@ -1,18 +1,18 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998
+
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * button_zone.cc - revision 99 (10/13/98)
  * Implementation of ButtonZone classes
@@ -147,7 +147,7 @@ SignalResult MessageButtonZone::SendandJump(Terminal *term)
         else
             sig = term->Signal(signal, group_id);
     }
-    
+
     if (sig != SIGNAL_ERROR)
         term->Jump(jump_type, jump_id);
 
@@ -181,7 +181,7 @@ SignalResult MessageButtonZone::Signal(Terminal *term, const char* signal_msg)
     FnTrace("MessageButtonZone::Signal()");
     SignalResult sig = SIGNAL_OKAY;
     const char* command_list[] = {
-        "sendandjump", 
+        "sendandjump",
 	"starttakeout", "pickup", "quicktogo", "quickdinein", NULL};
 
     Settings *settings = term->GetSettings();
@@ -279,7 +279,7 @@ static const genericChar* KeyWords[] = {
     "check", "guests", "subchecks", "settle", "order", "drawer",
     "drawercount", "orderbyseat", "developer", "flow", "assigned",
     "local", "supervisor", "manager", "editusers", "merchandise",
-    "movetable", "tablepages", "passwords", "superuser", 
+    "movetable", "tablepages", "passwords", "superuser",
     "payexpenses", "fastfood", "lastendday", "licenseexpired",
     "checkbalanced", "haspayments", "training", "selectedorder", NULL};
 
@@ -639,10 +639,10 @@ SignalResult KillSystemZone::Touch(Terminal *term, int tx, int ty)
         return SIGNAL_IGNORED;
 
     SimpleDialog *d =
-        new SimpleDialog("Do You Intend To Shut Down POS?");
-    d->Button("Shut Down POS", "shutdown");
-    d->Button("Restart POS", "systemrestart");
-    d->Button("Cancel Shut Down");
+        new SimpleDialog("Confirm Your Choice:");
+    d->Button("Quit ViewTouch and Return To The Desktop", "shutdown");
+    d->Button("Refresh ViewTouch", "systemrestart");
+    d->Button("Don't Quit or Refresh");
     term->OpenDialog(d);
     return SIGNAL_OKAY;
 }

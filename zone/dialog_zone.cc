@@ -1,18 +1,18 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998
+
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * dialog_zone.cc - revision 55 (10/13/98)
  * Implementation of dialog_zone module
@@ -61,7 +61,7 @@ DialogZone *NewPrintDialog(int no_report)
     {
         d = new SimpleDialog("Select A Printer:");
         d->Button("Receipt Printer", "localprint");
-        d->Button("Page Printer", "reportprint");
+        d->Button("Full Page Printer", "reportprint");
         d->Button("Cancel");
     }
     return d;
@@ -281,7 +281,7 @@ SimpleDialog::SimpleDialog(const char* title, int form)
     name.Set(title);
     gap = 8;
     zofont = FONT_TIMES_24B;
-    // the following variables are only used for format > 0 
+    // the following variables are only used for format > 0
     head_height = 200;
     btn_height  = 92;  // not used for format == 2
     force_width = 0;
@@ -455,7 +455,7 @@ UnitAmountDialog::UnitAmountDialog(const char* title, UnitAmount &u)
     unit_type = u.type;
 
     genericChar str[256];
-    
+
     for (i = 0; i < 10; ++i)
     {
         sprintf(str, "%d", i);
@@ -671,7 +671,7 @@ SignalResult UnitAmountDialog::Signal(Terminal *term, const genericChar* message
             buffer[len - 1] = '\0';
         break;
     case 13:  // cancel
-        return SIGNAL_TERMINATE;      
+        return SIGNAL_TERMINATE;
     }
 
     RenderEntry(term);
@@ -835,7 +835,7 @@ RenderResult TenKeyDialog::Render(Terminal *term, int update_flag)
         bh = (h - (border * 2) - (gap * 4) - first_row) / 5;
     else
         bh = (h - (border * 2) - (gap * 3) - first_row) / 4;
-    
+
     int col[4];
     int row[5];
     col[0] = x + border;
@@ -915,7 +915,7 @@ SignalResult TenKeyDialog::Signal(Terminal *term, const genericChar* message)
         buffer /= 10;
         break;
     case 12:  // cancel
-        return SIGNAL_TERMINATE;      
+        return SIGNAL_TERMINATE;
     default:
         if (buffer < max_amount)
             buffer = buffer * 10 + idx;
@@ -1981,7 +1981,7 @@ void CreditCardDialog::Init(Terminal *term, SubCheck *subch, const char* swipe_v
 
     w              = CCD_WIDTH;
     h              = CCD_HEIGHT;
-            
+
     preauth_key    = Button("Pre-Authorize", "ccpreauth");
     complete_key   = Button("Pre-Auth Complete", "cccomplete");
     auth_key       = Button("Authorize", "ccauthorize");
@@ -2124,12 +2124,12 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
         sc = term->pending_subcheck;
     else if (term->check != NULL)
         sc = term->check->current_sub;
-    
+
     if (employee != NULL && employee->IsManager(settings))
         ismanager = 1;
     if (sc != NULL && sc->TotalTip() > 0)
         have_tip = 1;
- 
+
     if (lit != NULL)
     {
         lit->Draw(term, 0);
@@ -2171,7 +2171,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
              term->auth_action))
         {
             authorizing = term->auth_action;
-            
+
             // Make sure we have the right message to display.
             if (authorizing == AUTH_PICK)
             {
@@ -2447,7 +2447,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
         TextC(term, message_line, message_str, color_text);
         strcpy(last_message, message_str);
     }
-    
+
     // This must come after all drawing commands to make sure we
     // display everything we need to display.
     buttons.Render(term);
@@ -2697,7 +2697,7 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
     case 10:  // ccprocessed
         retval = ProcessCreditCard(term);
         ClearAction(term);
-        if (term->credit != NULL && 
+        if (term->credit != NULL &&
             term->credit->IsAuthed() &&
             settings->auto_authorize)
         {
@@ -2874,7 +2874,7 @@ int CreditCardDialog::FinishCreditCard(Terminal *term)
             retval = 1;
         }
         else if (term->credit->IsRefunded(1) && last_action == CCAUTH_REFUND)
-        { 
+        {
             term->credit->Finalize(term);
             retval = 1;
         }
