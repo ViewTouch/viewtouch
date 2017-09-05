@@ -64,23 +64,23 @@ HardwareZone::HardwareZone()
     section     = 0;
 
     // Term Fields
-    AddTextField("This Display Terminal's Name is", 32);
+    AddTextField("This Display's Name is", 32);
     term_start = FieldListEnd();
-    AddListField("This Display Terminal's Function is", TermTypeName, TermTypeValue);
-    AddListField("If This Display Terminal is a Kitchen Video Then It Sorts By", CheckDisplayOrderName, CheckDisplayOrderValue);
+    AddListField("This Display's Function is", TermTypeName, TermTypeValue);
+    AddListField("If This Display is a Kitchen Video Then It Sorts By", CheckDisplayOrderName, CheckDisplayOrderValue);
     AddListField("The Requisition Ticket Heading is", WOHeadingName, WOHeadingValue);
-    AddListField("Does This Display Terminal Print Requisition Tickets?", NoYesName, NoYesValue);
-    AddTextField("This Display Terminal's IP Address is", 18);
+    AddListField("Does This Display Print Requisition Tickets?", NoYesName, NoYesValue);
+    AddTextField("This Display's IP Address is", 18);
     display_host_field = FieldListEnd();
-    AddTextField("This Display Terminal's Receipt Printer Queue Name is", 20);
+    AddTextField("This Display's Receipt Printer Queue Name is", 20);
     printer_host_field = FieldListEnd();
     //AddListField("Connection Interface", PortName, PortValue);
-    AddListField("This Receipt Printer's Model is ", ReceiptPrinterModelName,
+    AddListField("This Receipt Printer's Output is Formatted For ", ReceiptPrinterModelName,
                  ReceiptPrinterModelValue);
-    AddListField("How Many Cash Drawers Does This Display Terminal Have?", DrawerCountName, DrawerCountValue);
+    AddListField("How Many Cash Drawers Does This Display Have?", DrawerCountName, DrawerCountValue);
     AddListField("The Drawer Opens On", DrawerPulseName, DrawerPulseValue);
     drawer_pulse_field = FieldListEnd();
-    AddListField("Is A Card Reader Attached To This Display Terminal?", NoYesName, NoYesValue);
+    AddListField("Is A Card Reader Attached To This Display?", NoYesName, NoYesValue);
     AddNewLine();
     AddListField("If This Is A Customer Display Then Its Type Is", CustDispUnitName, CustDispUnitValue);
     AddTextField("If This Is A Customer Display Then Its Customer Display Device Path is", 20);
@@ -142,18 +142,18 @@ RenderResult HardwareZone::Render(Terminal *term, int update_flag)
         switch (section)
         {
         default:
-            TextC(term, 0, term->Translate("These Are Your Display Terminals and Their Designated Receipt Printers"), col);
-            TextL(term, 2.3, term->Translate("Name"), col);
-            TextPosL(term, 22, 2.3, term->Translate("Display Host"), col);
+            TextC(term, 0, term->Translate("Configure Your Host Computer and Your Display Terminals, Then Assign Receipt Printer Queues To Them"), col);
+            TextL(term, 2.3, term->Translate("Display's Name"), col);
+            TextPosL(term, 22, 2.3, term->Translate("IP Address"), col);
             TextPosL(term, 38, 2.3, term->Translate("Current User"), col);
             TextPosL(term, 58, 2.3, term->Translate("Status"), col);
             break;
         case 1:
-            TextC(term, 0, term->Translate("These Are Your Requisition Printers in Kitchens, Bars, Expediting Areas & Full Page Office Printers"), col);
+            TextC(term, 0, term->Translate("Configure Your Requisition Printers in Kitchens, Bars, Expediting Areas & Your Office Printer"), col);
             TextL(term, 2.3, term->Translate("Printer's Name"), col);
             TextPosL(term, 18, 2.3, term->Translate("lpd:queuename"), col);
-            TextPosL(term, 38, 2.3, term->Translate("Assigned Task"), col);
-            TextPosL(term, 52, 2.3, term->Translate("Format For"), col);
+            TextPosL(term, 38, 2.3, term->Translate("Operation"), col);
+            TextPosL(term, 52, 2.3, term->Translate("Format"), col);
             TextPosL(term, 64, 2.3, term->Translate("Status"), col);
             break;
         }
