@@ -116,7 +116,7 @@ HardwareZone::HardwareZone()
     // Printer Fields
     AddTextField("This Printer Is Identified As", 20);
     printer_start = FieldListEnd();
-    AddListField("This Printer's Assigned Task", PrinterTypeName, PrinterTypeValue);
+    AddListField("This Printer's Performance Assignment Is", PrinterTypeName, PrinterTypeValue);
     AddTextField("This Printer's Queue Name Is", 20);
     //AddListField("Connection Interface", PortName, PortValue);
     AddListField("This Printer's Output Is Formatted For", PrinterModelName, PrinterModelValue);
@@ -152,7 +152,7 @@ RenderResult HardwareZone::Render(Terminal *term, int update_flag)
             TextC(term, 0, term->Translate("Configure Your Requisition Printers in Kitchens, Bars, Expediting Areas & Your Office Printer"), col);
             TextL(term, 2.3, term->Translate("Printer's Name"), col);
             TextPosL(term, 18, 2.3, term->Translate("lpd:queuename"), col);
-            TextPosL(term, 38, 2.3, term->Translate("Operation"), col);
+            TextPosL(term, 38, 2.3, term->Translate("Assigned To"), col);
             TextPosL(term, 52, 2.3, term->Translate("Format"), col);
             TextPosL(term, 64, 2.3, term->Translate("Status"), col);
             break;
