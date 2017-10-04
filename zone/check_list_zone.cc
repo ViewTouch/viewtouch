@@ -130,12 +130,13 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
     if (array_max_size > 0)
 	    max_pages = ((possible_size - 1) / array_max_size) + 1;
     else
-        max_pages = 1;
+        {max_pages = 1;}
 
-	int col = color[0];
+		int col = color[0];
 	// Header
-	char str[128];
-    char str2[128];
+		char str[128];
+		char str2[128];
+
 	if (term->server)
 		sprintf(str2, "%s's", term->server->system_name.Value());
 	else
