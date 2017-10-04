@@ -82,6 +82,9 @@
 #define QUALIFIER_LEFT      (1<<14)
 #define QUALIFIER_RIGHT     (1<<15)
 #define QUALIFIER_WHOLE     (1<<16)
+#define QUALIFIER_CUT2      (1<<17)
+#define QUALIFIER_CUT3      (1<<18)
+#define QUALIFIER_CUT4      (1<<19)
 
 // Item Definitions
 #define ITEM_NORMAL       0  // Regular menu item

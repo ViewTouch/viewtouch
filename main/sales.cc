@@ -115,11 +115,11 @@ int SalesItem::Copy(SalesItem *target)
         target->call_center_name.Set(call_center_name);
         target->id = id;
         target->item_code.Set(item_code);
-	target->location.Set(location);
+        target->location.Set(location);
         target->event_time.Set(event_time);
         target->total_tickets.Set(total_tickets);
         target->available_tickets.Set(available_tickets);
-	target->price_label.Set(price_label);
+	    target->price_label.Set(price_label);
         target->cost = cost;
         target->sub_cost = sub_cost;
         target->employee_cost = employee_cost;
@@ -772,6 +772,9 @@ int MergeQualifier(int &flag, int qualifier)
         case QUALIFIER_LEFT:     flag = QUALIFIER_LEFT;      break;
         case QUALIFIER_RIGHT:    flag = QUALIFIER_RIGHT;     break;
         case QUALIFIER_WHOLE:    flag = QUALIFIER_WHOLE;     break;
+		case QUALIFIER_CUT2:     flag = QUALIFIER_CUT2;      break;
+        case QUALIFIER_CUT3:     flag = QUALIFIER_CUT3;      break;
+        case QUALIFIER_CUT4:     flag = QUALIFIER_CUT4;      break;
         }
 
         if (side)
@@ -791,22 +794,24 @@ int PrintItem(char* buffer, int qualifier, const char* item)
     if ((qualifier & QUALIFIER_SIDE))
         sprintf(post, " (on side)");
 
-    if      ((qualifier & QUALIFIER_NO))        sprintf(pre, "NO ");
+    if      ((qualifier & QUALIFIER_NO))        sprintf(pre, "No ");
     else if ((qualifier & QUALIFIER_LITE))      sprintf(pre, "Lite ");
     else if ((qualifier & QUALIFIER_EXTRA))     sprintf(pre, "Extra ");
     else if ((qualifier & QUALIFIER_DOUBLE))    sprintf(pre, "Double ");
     else if ((qualifier & QUALIFIER_DRY))       sprintf(pre, "Dry ");
-    else if ((qualifier & QUALIFIER_UNTOASTED)) sprintf(pre, "Untoasted ");
-    else if ((qualifier & QUALIFIER_CRISPY))    sprintf(pre, "Crispy ");
+    else if ((qualifier & QUALIFIER_UNTOASTED)) sprintf(pre, "Untoast ");
+    else if ((qualifier & QUALIFIER_CRISPY))    sprintf(pre, "Crisp ");
     else if ((qualifier & QUALIFIER_SOFT))      sprintf(pre, "Soft ");
     else if ((qualifier & QUALIFIER_HARD))      sprintf(pre, "Hard ");
     else if ((qualifier & QUALIFIER_PLAIN))     sprintf(pre, "Plain ");
-    else if ((qualifier & QUALIFIER_TOASTED))   sprintf(pre, "Toasted ");
-    else if ((qualifier & QUALIFIER_GRILLED))   sprintf(pre, "Grilled ");
-    else if ((qualifier & QUALIFIER_LEFT))      sprintf(pre, "LEFT: ");
-    else if ((qualifier & QUALIFIER_RIGHT))     sprintf(pre, "RIGHT: ");
-    else if ((qualifier & QUALIFIER_WHOLE))     sprintf(pre, "WHOLE: ");
-
+    else if ((qualifier & QUALIFIER_TOASTED))   sprintf(pre, "Toast ");
+    else if ((qualifier & QUALIFIER_GRILLED))   sprintf(pre, "Grill ");
+    else if ((qualifier & QUALIFIER_LEFT))      sprintf(pre, "Left: ");
+    else if ((qualifier & QUALIFIER_RIGHT))     sprintf(pre, "Right: ");
+    else if ((qualifier & QUALIFIER_WHOLE))     sprintf(pre, "Whole: ");
+    else if ((qualifier & QUALIFIER_CUT2))      sprintf(pre, "Cut/2 ");
+    else if ((qualifier & QUALIFIER_CUT3))      sprintf(pre, "Cut/3 ");
+    else if ((qualifier & QUALIFIER_CUT4))      sprintf(pre, "Cut/4 ");
     if ((qualifier & QUALIFIER_SUB))
         sprintf(buffer, "SUB: %s%s%s", pre, item, post);
     else

@@ -107,7 +107,7 @@ int ZoneTypeValue[] = {
     ZONE_SIMPLE, ZONE_ITEM, ZONE_QUALIFIER, ZONE_TABLE, -1};
 
 const genericChar* ZoneBehaveName[] = {
-    "No Response", "Blink (Normal)", "Toggle", "Turn On", "Double Touch",
+    "No Response", "Blink", "Toggle", "Turn On", "Double Touch",
     "Touches Pass Through", NULL};
 int ZoneBehaveValue[] = {
     BEHAVE_NONE, BEHAVE_BLINK, BEHAVE_TOGGLE,
@@ -181,13 +181,13 @@ int TextureValue[] = {
 }; 
 
 const genericChar* PageTypeName[] = {
-    "Table Page", "Table Page w/ Check Detail",
-    "Index Page", "Item Page",
-    "Scripted Page", "Scripted Page 2", 
-	"Scripted Page 3", "Library Page", 
-	"System Page", "Check List Page",
-    "Kitchen Video Page", "Kitchen Video 2 Page",
-    "Bar Page", "Bar Page 2",
+    "Tables", "Tables Showing Guest Check",
+    "Index", "Menu Items",
+    "Modifiers", "Modifiers A", 
+	"Modifiers B", "Menu Board", 
+	"System", "Guest Check List",
+    "Kitchen 1", "Kitchen 2",
+    "Bar 1", "Bar 2",
     NULL};
 
 int PageTypeValue[] = {
@@ -201,10 +201,10 @@ int PageTypeValue[] = {
     -1};
 
 const genericChar* PageType2Name[] = {
-    "Table Page", "Table Page w/ Check Detail",
-    "Index Page", "Item Page",
-    "Scripted Page", "Scripted Page 2", 
-	"Scripted Page 3", "Library Page", NULL};
+    "Tables", "Tables Showing Guest Check",
+    "Index", "Menu Items",
+    "Modifiers", "Modifiers A", 
+	"Modifiers B", "Menu Board", NULL};
 
 int PageType2Value[] = {
     PAGE_TABLE, PAGE_TABLE2, 
@@ -213,28 +213,28 @@ int PageType2Value[] = {
 	PAGE_SCRIPTED3, PAGE_LIBRARY, -1};
 
 const genericChar* JumpTypeName[] = {
-    "* No Jump *", "Jump to Page...", "Move to Page...",
-    "Return From Previous Jump", "Continue With Script", "Return to Index", NULL};
+    "* No Jump *", "Jump", "Move",
+    "Return From A Jump", "Follow A Script", "Return to Index", NULL};
 int JumpTypeValue[] = {
     JUMP_NONE, JUMP_NORMAL, JUMP_STEALTH, JUMP_RETURN,
     JUMP_SCRIPT, JUMP_INDEX, -1};
 
 const genericChar* FullJumpTypeName[] = {
-    "* No Jump *", "Jump to Page...", "Move to Page...", 
-    "Return From Previous Jump", "Continue With Script",
-    "Return to Index", "Return to User's Starting Page",
-    "Query Password Then Jump to Page...", NULL};
+    "Remain On This Page", "Jump To A Modifier Page", "Move To A Menu Item Page", 
+    "Return From A Jump", "Follow The Script",
+    "Return to Index", "Return To The Starting Page",
+    "Query Password Then Jump", NULL};
 int FullJumpTypeValue[] = {
     JUMP_NONE, JUMP_NORMAL, JUMP_STEALTH, JUMP_RETURN, JUMP_SCRIPT,
     JUMP_INDEX, JUMP_HOME, JUMP_PASSWORD, -1};
 
 const genericChar* ShadowName[] = {
-    "Default", "None", "Thin", "Medium", "Thick", NULL};
+    "Default", "No Shadow", "Minimal", "Normal", "Maximum", NULL};
 int ShadowValue[] = {
     256, 0, 4, 6, 9, -1};
 
 const genericChar* PageShadowName[] = {
-    "None", "Thin", "Medium", "Thick", NULL};
+    "No Shadow", "Minimal", "Normal", "Maximum", NULL};
 int PageShadowValue[] = {
     0, 4, 6, 9, -1};
 
@@ -289,7 +289,7 @@ int ShapeValue[] = {
     SHAPE_RECTANGLE, SHAPE_DIAMOND, SHAPE_CIRCLE, -1 };
 
 const genericChar* ItemTypeName[] = {
-    "Normal", "Modifier", "Non-Tracking Modifier", "Substitute", "By the Pound", "Admission", NULL };
+    "Menu Item", "Modifier", "Non-Tracking Modifier", "Menu Item + Substitute", "Priced By Weight", "Event Admission", NULL };
 
 int ItemTypeValue[] = {
     ITEM_NORMAL, ITEM_MODIFIER, ITEM_METHOD, ITEM_SUBSTITUTE, ITEM_POUND, ITEM_ADMISSION, -1};
@@ -302,8 +302,8 @@ const genericChar* FamilyName[] = {
     "Side Order", "Pizza", "Specialty", "Specialty Entree",
     "Banquet", "Bakery",
     "Beverage", "Beer", "Bottled Beer",
-    "Wine", "Bottled Wine", "Reserved Wine", "Cocktail",
-    "Bottled Cocktail", "Modifier", "Reorder",
+    "Wine", "Bottled Wine", "Alcohol", "Cocktail",
+    "Malt Beverage", "Modifier", "Reorder",
     "Merchandise", "Room", NULL};
 
 int FamilyValue[] = {
@@ -324,15 +324,15 @@ const genericChar* SalesTypeName[] = {
     "Food (No Customer Discount)",
     "Food (No Employee Discount)",
     "Food (No Discount)",
-    "Food (No Comp/Discount)",
+    "Food (No Comp or Discount)",
     "Alcohol",
     "Alcohol (No Employee Discount)",
-    "Alcohol (No Comp/Discount)",
+    "Alcohol (No Comp or Discount)",
     "Room",
-    "Room (No Comp/Discount)",
+    "Room (No Comp or Discount)",
     "Merchandise",
-    "Merchandise (No Comp/Discount)",
-    "Untaxed (No Comp/Discount)",
+    "Merchandise (No Comp or Discount)",
+    "Not Taxed (No Comp or Discount)",
     NULL};
 
 int SalesTypeValue[] = {
@@ -357,22 +357,22 @@ int CallOrderValue[] = {
     0, 1, 2, 3, 4, -1};
 
 const genericChar* QualifierName[] = {
-    "No", "Sub", "On The Side", "Lite", "Extra", "Double",
-    "Dry", "Untoasted", "Crispy", "Soft", "Hard",
-    "Plain", "Toasted", "Grilled", "Left Side",
-    "Right Side", "Whole", NULL};
+    "No", "Sub", "On Side", "Lite", "Extra", "Double",
+    "Dry", "UnToast", "Crisp", "Soft", "Hard",
+    "Plain", "Toast", "Grill", "< Left",
+    "Right >", "Whole", "Cut/2", "Cut/3", "Cut/4", NULL};
 const genericChar* QualifierShortName[] = {
     "no", "sub", "side", "lite", "extra", "double",
-    "dry", "untoasted", "crispy", "soft", "hard",
-    "plain", "toasted", "grilled", "left",
-    "right", "whole", NULL};
+    "dry", "untoast", "crisp", "soft", "hard",
+    "plain", "toast", "grill", "< left",
+    "right >", "whole", "cut/2", "cut/3", "cut/4", NULL};
 int QualifierValue[] = {
     QUALIFIER_NO, QUALIFIER_SUB, QUALIFIER_SIDE,
     QUALIFIER_LITE, QUALIFIER_EXTRA, QUALIFIER_DOUBLE,
     QUALIFIER_DRY, QUALIFIER_UNTOASTED, QUALIFIER_CRISPY,
     QUALIFIER_SOFT, QUALIFIER_HARD, QUALIFIER_PLAIN,
     QUALIFIER_TOASTED, QUALIFIER_GRILLED, QUALIFIER_LEFT,
-    QUALIFIER_RIGHT, QUALIFIER_WHOLE, -1};
+    QUALIFIER_RIGHT, QUALIFIER_WHOLE, QUALIFIER_CUT2, QUALIFIER_CUT3, QUALIFIER_CUT4, -1};
 
 const genericChar* SwitchName[] = {
     "Seat Based Ordering", "Drawer Mode", "Use Passwords", "Credit For Sale",
@@ -382,8 +382,8 @@ const genericChar* SwitchName[] = {
     "Auto Receipt Printing", "Expand Labor", "Suppress Zero Values",
     "Show Family Groupings",
     "Date Format", "Number Format", "Language/Locale",
-    "Measurement System", "Credit Authorization Method",
-    "24 Hour Mode", "Use Item Target Page",
+    "Measurement Standard", "Credit Authorization Method",
+    "24 Hour Mode", "Item Targeting",
     "Expand Goodwill Adjustments", "Monetary Symbol",
     "Show Modifiers", "Allow Multiple Coupons",
     "Print All Modifiers on Receipt", "Auto Print Drawer Report",
@@ -502,7 +502,7 @@ int   DateTimeValue[] = {DATETIME_NONE, DATETIME_ONCE, DATETIME_DAILY,
                          DATETIME_MONTHLY, -1};
 
 const char* PrintModeName[] = {
-    "Normal", "Tall", "Wide", "Wide and Tall", NULL};
+    "Normal", "Tall", "Wide", "Wide & Tall", NULL};
 int PrintModeValue[] = {
     0, PRINT_TALL, PRINT_WIDE, PRINT_TALL | PRINT_WIDE, -1};
 

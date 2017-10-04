@@ -636,7 +636,7 @@ PageDialog::PageDialog(Widget parent)
     default_shadow.Init(w, "Default Shadow", PageShadowName, PageShadowValue);
     AddLine(w);
 
-    parent_page.Init(w, "Parent ID");
+    parent_page.Init(w, "Parent Page");
     index.Init(w, "Index Type", IndexName, IndexValue);
     AddLine(w);
 
@@ -985,7 +985,7 @@ ZoneDialog::ZoneDialog(Widget parent)
     type2.Init(container, "Type", ZoneTypeName, ZoneTypeValue,
                (void *) EZ_TypeCB, this);
     name.Init(container, "Button Name");
-    page.Init(container, "Page Location");
+    page.Init(container, "Page");
     group.Init(container, "Group ID");
     AddLine(container);
 
@@ -1011,9 +1011,9 @@ ZoneDialog::ZoneDialog(Widget parent)
     expression.Init(container, "Expression");
     message.Init(container, "Message");
     filename.Init(container, "File Name");
-    item_name.Init(container, "Formal Name");
-    item_zone_name.Init(container, "Screen Name (if different)");
-    item_print_name.Init(container, "Short Name (if different)");
+    item_name.Init(container, "True Name");
+    item_zone_name.Init(container, "Button Name");
+    item_print_name.Init(container, "Abbreviation");
     item_type.Init(container, "Item Type", ItemTypeName, ItemTypeValue,
                    (void *) EZ_TypeCB, this);
     item_location.Init(container,"Event Location");
@@ -1023,11 +1023,11 @@ ZoneDialog::ZoneDialog(Widget parent)
     item_price_label.Init(container,"Price Class");
     
     item_price.Init(container, "Price");
-    item_subprice.Init(container, "Substitute Price");
+    item_subprice.Init(container, "Price As A Substitute");
     item_employee_price.Init(container, "Employee Price");
     item_family.Init(container, "Family", FamilyName, FamilyValue);
     item_sales.Init(container, "Tax/Discount Category", SalesTypeName, SalesTypeValue);
-    item_printer.Init(container, "Printer Destination",
+    item_printer.Init(container, "Printer Target",
                       PrinterIDName, PrinterIDValue);
     item_order.Init(container, "Call Order", CallOrderName, CallOrderValue);
     tender_type.Init(container, "Tender Type", TenderName, TenderValue);
@@ -1037,9 +1037,9 @@ ZoneDialog::ZoneDialog(Widget parent)
     check_disp_num.Init(container, "Check to Display");
     video_target.Init(container, "Video Target", PrinterIDName, PrinterIDValue);
     report_print.Init(container, "Touch Print", ReportPrintName, ReportPrintValue);
-    page_list.Init(container, "Modifier Page Script");
+    page_list.Init(container, "Modifier Script");
     spacing.Init(container, "Line Spacing");
-    qualifier.Init(container, "Qualifier Type", QualifierName, QualifierValue);
+    qualifier.Init(container, "Selected Qualifier", QualifierName, QualifierValue);
     amount.Init(container, "Amount");
     switch_type.Init(container, "Switch Type", SwitchName, SwitchValue);
     jump_type.Init(container, "Jump Option", FullJumpTypeName, FullJumpTypeValue,
