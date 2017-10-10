@@ -1218,13 +1218,13 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
             strcat(str, "Pick Up");
             break;
         }
-        snprintf(str1, pwidth, "** %s **", str);
+        snprintf(str1, pwidth, "%s", str);
         report->Mode(PRINT_LARGE);
         report->TextL(str1, color);
         report->NewLine();
 
 	// order due time
-        snprintf(str1, pwidth, "Due:  %s", term->TimeDate(date, TD_DATETIME));
+        snprintf(str1, pwidth, "%s", term->TimeDate(date, TD_DATETIME));
         report->TextL(str1, color);
         report->Mode(0);
         report->NewLine();
