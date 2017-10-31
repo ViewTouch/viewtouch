@@ -71,7 +71,7 @@ int FullZoneTypeValue[] = {
 	ZONE_COMMENT, ZONE_SIMPLE,
 	ZONE_STANDARD, ZONE_ITEM,
 	ZONE_QUALIFIER, ZONE_TABLE,
-	ZONE_CONDITIONAL, ZONE_TOGGLE, 
+	ZONE_CONDITIONAL, ZONE_TOGGLE,
 	ZONE_TENDER, ZONE_LOGIN,
 	ZONE_LOGOUT, ZONE_COMMAND,
 	ZONE_GUEST_COUNT, ZONE_ORDER_ENTRY,
@@ -80,11 +80,11 @@ int FullZoneTypeValue[] = {
 	ZONE_PAYMENT_ENTRY, ZONE_CHECK_LIST,
 	ZONE_USER_EDIT, ZONE_SWITCH,
 	ZONE_SETTINGS, ZONE_TAX_SETTINGS,
-    ZONE_RECEIPTS, ZONE_DEVELOPER, 
+    ZONE_RECEIPTS, ZONE_DEVELOPER,
 	ZONE_CC_SETTINGS, ZONE_REPORT, ZONE_SCHEDULE,
 	ZONE_SPLIT_CHECK, ZONE_DRAWER_MANAGE,
 	ZONE_DRAWER_ASSIGN, ZONE_PRINT_TARGET,
-	ZONE_HARDWARE, ZONE_TIME_SETTINGS, 
+	ZONE_HARDWARE, ZONE_TIME_SETTINGS,
 	ZONE_TABLE_ASSIGN, ZONE_KILL_SYSTEM,
 	ZONE_SEARCH, ZONE_SPLIT_KITCHEN,
 	ZONE_PAYOUT, ZONE_END_DAY,
@@ -116,13 +116,13 @@ int ZoneBehaveValue[] = {
 const genericChar* ZoneFrameName[] = {
     "Default", "Hide Button", "None",
     "Raised Edge", "Inset Edge", "Double Raised Edge",
-    "Raised Border", "Clear Border", "Sand Border", 
+    "Raised Border", "Clear Border", "Sand Border",
 	"Lit Sand Border", "Inset Border", "Parchment Border",
     "Double Border", "Lit Double Border", NULL};
 int ZoneFrameValue[] = {
     ZF_DEFAULT, ZF_HIDDEN, ZF_NONE,
     ZF_RAISED, ZF_INSET, ZF_DOUBLE,
-    ZF_BORDER, ZF_CLEAR_BORDER, ZF_SAND_BORDER, 
+    ZF_BORDER, ZF_CLEAR_BORDER, ZF_SAND_BORDER,
 	ZF_LIT_SAND_BORDER, ZF_INSET_BORDER, ZF_PARCHMENT_BORDER,
     ZF_DOUBLE_BORDER, ZF_LIT_DOUBLE_BORDER, -1};
 
@@ -143,7 +143,7 @@ const genericChar* TextureName[] = {
 	"Canvas",
 	"Tan Parchment",
 	"Smoke",
-	"Leather", 
+	"Leather",
 	"Blue Parchment",
         "Gradient",
         "Brown Gradient",
@@ -169,8 +169,8 @@ int TextureValue[] = {
 	IMAGE_PARCHMENT,
 	IMAGE_CANVAS,
 	IMAGE_TAN_PARCHMENT,
-	IMAGE_SMOKE, 
-	IMAGE_LEATHER, 
+	IMAGE_SMOKE,
+	IMAGE_LEATHER,
 	IMAGE_BLUE_PARCHMENT,
 	IMAGE_GRADIENT,
 	IMAGE_GRADIENTBROWN,
@@ -178,23 +178,23 @@ int TextureValue[] = {
 	IMAGE_GREYSAND,
 	IMAGE_WHITEMESH,
 	-1
-}; 
+};
 
 const genericChar* PageTypeName[] = {
     "Tables", "Tables Showing Guest Check",
     "Index", "Menu Items",
-    "Modifiers", "Modifiers A", 
-	"Modifiers B", "Menu Board", 
+    "Modifiers", "Modifiers A",
+	"Modifiers B", "Menu Board",
 	"System", "Guest Check List",
     "Kitchen 1", "Kitchen 2",
     "Bar 1", "Bar 2",
     NULL};
 
 int PageTypeValue[] = {
-    PAGE_TABLE, PAGE_TABLE2, 
+    PAGE_TABLE, PAGE_TABLE2,
 	PAGE_INDEX, PAGE_ITEM,
-    PAGE_SCRIPTED, PAGE_SCRIPTED2, 
-	PAGE_SCRIPTED3, PAGE_LIBRARY, 
+    PAGE_SCRIPTED, PAGE_SCRIPTED2,
+	PAGE_SCRIPTED3, PAGE_LIBRARY,
 	PAGE_SYSTEM, PAGE_CHECKS,
     PAGE_KITCHEN_VID, PAGE_KITCHEN_VID2,
     PAGE_BAR1, PAGE_BAR2,
@@ -203,13 +203,13 @@ int PageTypeValue[] = {
 const genericChar* PageType2Name[] = {
     "Tables", "Tables Showing Guest Check",
     "Index", "Menu Items",
-    "Modifiers", "Modifiers A", 
+    "Modifiers", "Modifiers A",
 	"Modifiers B", "Menu Board", NULL};
 
 int PageType2Value[] = {
-    PAGE_TABLE, PAGE_TABLE2, 
+    PAGE_TABLE, PAGE_TABLE2,
 	PAGE_INDEX, PAGE_ITEM,
-    PAGE_SCRIPTED, PAGE_SCRIPTED2, 
+    PAGE_SCRIPTED, PAGE_SCRIPTED2,
 	PAGE_SCRIPTED3, PAGE_LIBRARY, -1};
 
 const genericChar* JumpTypeName[] = {
@@ -220,7 +220,7 @@ int JumpTypeValue[] = {
     JUMP_SCRIPT, JUMP_INDEX, -1};
 
 const genericChar* FullJumpTypeName[] = {
-    "Remain On This Page", "Jump To A Modifier Page", "Move To A Menu Item Page", 
+    "Remain On This Page", "Jump To A Modifier Page", "Move To A Menu Item Page",
     "Return From A Jump", "Follow The Script",
     "Return to Index", "Return To The Starting Page",
     "Query Password Then Jump", NULL};
@@ -239,7 +239,7 @@ int PageShadowValue[] = {
     0, 4, 6, 9, -1};
 
 const genericChar* PageSizeName[] = {
-  "640x480", "768x1024", "800x480", "800x600", "1024x600", "1024x768", "1280x800", "1280x1024", "1366x768", "1440x900", "1600x900", "1600x1200", "1680x1050",  
+  "640x480", "768x1024", "800x480", "800x600", "1024x600", "1024x768", "1280x800", "1280x1024", "1366x768", "1440x900", "1600x900", "1600x1200", "1680x1050",
   "1920x1080", "1920x1200", "2560x1440", "2560x1600", NULL};
 int PageSizeValue[] = {
   SIZE_640x480, SIZE_768x1024, SIZE_800x480, SIZE_800x600, SIZE_1024x600, SIZE_1024x768, SIZE_1280x800, SIZE_1280x1024, SIZE_1366x768,
@@ -360,12 +360,14 @@ const genericChar* QualifierName[] = {
     "No", "Sub", "On Side", "Lite", "Extra", "Double",
     "Dry", "UnToast", "Crisp", "Soft", "Hard",
     "Plain", "Toast", "Grill", "< Left",
-    "Right >", "Whole", "Cut/2", "Cut/3", "Cut/4", NULL};
+    "Right >", "Whole", "Cut/2", "Cut/3", "Cut/4",
+    "Only" NULL};
 const genericChar* QualifierShortName[] = {
     "no", "sub", "side", "lite", "extra", "double",
     "dry", "untoast", "crisp", "soft", "hard",
     "plain", "toast", "grill", "< left",
-    "right >", "whole", "cut/2", "cut/3", "cut/4", NULL};
+    "right >", "whole", "cut/2", "cut/3", "cut/4",
+    "only" NULL};
 int QualifierValue[] = {
     QUALIFIER_NO, QUALIFIER_SUB, QUALIFIER_SIDE,
     QUALIFIER_LITE, QUALIFIER_EXTRA, QUALIFIER_DOUBLE,
