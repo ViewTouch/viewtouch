@@ -361,13 +361,13 @@ const genericChar* QualifierName[] = {
     "Dry", "UnToast", "Crisp", "Soft", "Hard",
     "Plain", "Toast", "Grill", "< Left",
     "Right >", "Whole", "Cut/2", "Cut/3", "Cut/4",
-    "Only" NULL};
+    "Only", NULL};
 const genericChar* QualifierShortName[] = {
     "no", "sub", "side", "lite", "extra", "double",
     "dry", "untoast", "crisp", "soft", "hard",
     "plain", "toast", "grill", "< left",
     "right >", "whole", "cut/2", "cut/3", "cut/4",
-    "only" NULL};
+    "only", NULL};
 int QualifierValue[] = {
     QUALIFIER_NO, QUALIFIER_SUB, QUALIFIER_SIDE,
     QUALIFIER_LITE, QUALIFIER_EXTRA, QUALIFIER_DOUBLE,
