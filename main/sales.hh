@@ -1,18 +1,18 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998
+
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * sales.hh - revision 96 (8/27/98)
  * Definitions of sale item classes
@@ -27,7 +27,7 @@
 
 /**** Definitions ****/
 
-#define SALES_ITEM_VERSION       15 
+#define SALES_ITEM_VERSION       15
 
 // Family Difinitions
 #define FAMILY_APPETIZERS        0
@@ -69,28 +69,29 @@
 #define QUALIFIER_SIDE      (1<<1)
 #define QUALIFIER_SUB       (1<<2)
 #define QUALIFIER_LITE      (1<<3)
-#define QUALIFIER_EXTRA     (1<<4)
-#define QUALIFIER_DOUBLE    (1<<5)
-#define QUALIFIER_DRY       (1<<6)
-#define QUALIFIER_UNTOASTED (1<<7)
-#define QUALIFIER_CRISPY    (1<<8)
-#define QUALIFIER_HARD      (1<<9)
-#define QUALIFIER_SOFT      (1<<10)
-#define QUALIFIER_PLAIN     (1<<11)
-#define QUALIFIER_TOASTED   (1<<12)
-#define QUALIFIER_GRILLED   (1<<13)
-#define QUALIFIER_LEFT      (1<<14)
-#define QUALIFIER_RIGHT     (1<<15)
-#define QUALIFIER_WHOLE     (1<<16)
-#define QUALIFIER_CUT2      (1<<17)
-#define QUALIFIER_CUT3      (1<<18)
-#define QUALIFIER_CUT4      (1<<19)
+#define QUALIFIER_ONLY      (1<<4)
+#define QUALIFIER_EXTRA     (1<<5)
+#define QUALIFIER_DOUBLE    (1<<6)
+#define QUALIFIER_DRY       (1<<7)
+#define QUALIFIER_PLAIN     (1<<8)
+#define QUALIFIER_TOASTED   (1<<9)
+#define QUALIFIER_UNTOASTED (1<<10)
+#define QUALIFIER_CRISPY    (1<<11)
+#define QUALIFIER_HARD      (1<<12)
+#define QUALIFIER_SOFT      (1<<13)
+#define QUALIFIER_GRILLED   (1<<14)
+#define QUALIFIER_LEFT      (1<<15)
+#define QUALIFIER_RIGHT     (1<<16)
+#define QUALIFIER_WHOLE     (1<<17)
+#define QUALIFIER_CUT2      (1<<18)
+#define QUALIFIER_CUT3      (1<<19)
+#define QUALIFIER_CUT4      (1<<20)
 
 // Item Definitions
 #define ITEM_NORMAL       0  // Regular menu item
 #define ITEM_MODIFIER     1  // Modifier
 #define ITEM_METHOD       2  // Non-tracking modifier
-#define ITEM_SUBSTITUTE   3  // Menu item that can substituted for a modifier
+#define ITEM_SUBSTITUTE   3  // Menu item that can substituted (i.e., used) as a modifier
 #define ITEM_COMBO        4  // Item that is only served with another item
 #define ITEM_RECIPE       5  // Not for sale - recipe only
 #define ITEM_POUND        6  // For sale by the pound
@@ -280,8 +281,8 @@ public:
     int Purge();
     // Ends the day
     int ResetAdmissionItems();
-    
-    
+
+
     // Removes & deletes all SalesItem records from object
     SalesItem *FindByName(const char* name);
     // Finds SalesItem by name

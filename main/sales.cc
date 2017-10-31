@@ -1,18 +1,18 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998
+
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * sales.cc - revision 133 (9/8/98)
  * Implementation of sale item classes
@@ -70,7 +70,7 @@ SalesItem::SalesItem(const char* name)
     fore           = NULL;
     id             = 0;
     item_code.Set("");
-    
+
     location = "";
     event_time = "January 1, 2015";
     total_tickets = "100";
@@ -178,7 +178,7 @@ int SalesItem::Read(InputDataFile &df, int version)
     // 12 (08/18/05) added call_center_name and delivery_cost
     // 13 (09/14/05) added item_code
     // 14 (04/30/15) added all properties relating to cinema mode.
-    // 15 (11/06/15) added ignore split kitchen 
+    // 15 (11/06/15) added ignore split kitchen
 
     if (version < 8)
         return 1;
@@ -264,7 +264,7 @@ int SalesItem::Write(OutputDataFile &df, int version)
 
     error += df.Write(print_name);
     error += df.Write(type);
-    
+
     if (version >= 14)
     {
 	error += df.Write(location);
@@ -725,7 +725,7 @@ int ItemDB::ItemsInFamily(int family)
     FnTrace("ItemDB::ItemsInFamily()");
     int count = 0;
     SalesItem *item = ItemList();
-    
+
     while (item != NULL)
     {
         if (item->family == family)
@@ -751,16 +751,17 @@ int MergeQualifier(int &flag, int qualifier)
         switch (qualifier)
         {
         case QUALIFIER_LITE:      flag = QUALIFIER_LITE;      break;
+        case QUALIFIER_ONLY:      flag = QUALIFIER_ONLY;      break;
         case QUALIFIER_EXTRA:     flag = QUALIFIER_EXTRA;     break;
         case QUALIFIER_DOUBLE:    flag = QUALIFIER_DOUBLE;    break;
         case QUALIFIER_DRY:       flag = QUALIFIER_DRY;       break;
+        case QUALIFIER_PLAIN:     flag = QUALIFIER_PLAIN;     break;
+        case QUALIFIER_TOASTED:   flag = QUALIFIER_TOASTED;   break;
         case QUALIFIER_UNTOASTED: flag = QUALIFIER_UNTOASTED; break;
         case QUALIFIER_CRISPY:    flag = QUALIFIER_CRISPY;    break;
         case QUALIFIER_SOFT:      flag = QUALIFIER_SOFT;      break;
         case QUALIFIER_HARD:      flag = QUALIFIER_HARD;      break;
-        case QUALIFIER_PLAIN:     flag = QUALIFIER_PLAIN;     break;
         case QUALIFIER_GRILLED:   flag = QUALIFIER_GRILLED;   break;
-        case QUALIFIER_TOASTED:   flag = QUALIFIER_TOASTED;   break;
         case QUALIFIER_SIDE:
             if (flag != QUALIFIER_NO)
                 flag |= QUALIFIER_SIDE;
@@ -796,15 +797,16 @@ int PrintItem(char* buffer, int qualifier, const char* item)
 
     if      ((qualifier & QUALIFIER_NO))        sprintf(pre, "No ");
     else if ((qualifier & QUALIFIER_LITE))      sprintf(pre, "Lite ");
+    else if ((qualifier & QUALIFIER_ONLY))      sprintf(pre, "Only ");
     else if ((qualifier & QUALIFIER_EXTRA))     sprintf(pre, "Extra ");
     else if ((qualifier & QUALIFIER_DOUBLE))    sprintf(pre, "Double ");
     else if ((qualifier & QUALIFIER_DRY))       sprintf(pre, "Dry ");
+    else if ((qualifier & QUALIFIER_PLAIN))     sprintf(pre, "Plain ");
+    else if ((qualifier & QUALIFIER_TOASTED))   sprintf(pre, "Toast ");
     else if ((qualifier & QUALIFIER_UNTOASTED)) sprintf(pre, "Untoast ");
     else if ((qualifier & QUALIFIER_CRISPY))    sprintf(pre, "Crisp ");
     else if ((qualifier & QUALIFIER_SOFT))      sprintf(pre, "Soft ");
     else if ((qualifier & QUALIFIER_HARD))      sprintf(pre, "Hard ");
-    else if ((qualifier & QUALIFIER_PLAIN))     sprintf(pre, "Plain ");
-    else if ((qualifier & QUALIFIER_TOASTED))   sprintf(pre, "Toast ");
     else if ((qualifier & QUALIFIER_GRILLED))   sprintf(pre, "Grill ");
     else if ((qualifier & QUALIFIER_LEFT))      sprintf(pre, "Left: ");
     else if ((qualifier & QUALIFIER_RIGHT))     sprintf(pre, "Right: ");

@@ -357,25 +357,17 @@ int CallOrderValue[] = {
     0, 1, 2, 3, 4, -1};
 
 const genericChar* QualifierName[] = {
-    "No", "Sub", "On Side", "Lite", "Extra", "Double",
-    "Dry", "UnToast", "Crisp", "Soft", "Hard",
-    "Plain", "Toast", "Grill", "< Left",
-    "Right >", "Whole", "Cut/2", "Cut/3", "Cut/4",
-    "Only", NULL};
+    "No", "Sub", "On Side", "Lite", "Only", "Extra", "Double", "Dry",
+    "Plain", "Toast", "UnToast", "Crisp", "Soft", "Hard", "Grill",
+    "< Left", "Right >", "Whole", "Cut/2", "Cut/3", "Cut/4", NULL};
 const genericChar* QualifierShortName[] = {
-    "no", "sub", "side", "lite", "extra", "double",
-    "dry", "untoast", "crisp", "soft", "hard",
-    "plain", "toast", "grill", "< left",
-    "right >", "whole", "cut/2", "cut/3", "cut/4",
-    "only", NULL};
+    "no", "sub", "side", "lite", "only", "extra", "double", "dry",
+    "plain", "toast", "untoast", "crisp", "soft", "hard", "grill",
+    "< left", "right >", "whole", "cut/2", "cut/3", "cut/4", NULL};
 int QualifierValue[] = {
-    QUALIFIER_NO, QUALIFIER_SUB, QUALIFIER_SIDE,
-    QUALIFIER_LITE, QUALIFIER_EXTRA, QUALIFIER_DOUBLE,
-    QUALIFIER_DRY, QUALIFIER_UNTOASTED, QUALIFIER_CRISPY,
-    QUALIFIER_SOFT, QUALIFIER_HARD, QUALIFIER_PLAIN,
-    QUALIFIER_TOASTED, QUALIFIER_GRILLED, QUALIFIER_LEFT,
-    QUALIFIER_RIGHT, QUALIFIER_WHOLE, QUALIFIER_CUT2, QUALIFIER_CUT3, QUALIFIER_CUT4,
-    QUALIFIER_ONLY, -1};
+    QUALIFIER_NO, QUALIFIER_SUB, QUALIFIER_SIDE, QUALIFIER_LITE, QUALIFIER_ONLY, QUALIFIER_EXTRA, QUALIFIER_DOUBLE, QUALIFIER_DRY,
+    QUALIFIER_PLAIN, QUALIFIER_TOASTED, QUALIFIER_UNTOASTED, QUALIFIER_CRISPY, QUALIFIER_SOFT, QUALIFIER_HARD, QUALIFIER_GRILLED,
+    QUALIFIER_LEFT, QUALIFIER_RIGHT, QUALIFIER_WHOLE, QUALIFIER_CUT2, QUALIFIER_CUT3, QUALIFIER_CUT4, -1};
 
 const genericChar* SwitchName[] = {
     "Seat Based Ordering", "Drawer Mode", "Use Passwords", "Credit For Sale",
