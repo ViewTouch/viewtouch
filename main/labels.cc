@@ -46,7 +46,7 @@ const genericChar* FullZoneTypeName[] = {
 	"Payment Entry", "Check List",
 	"User Edit", "Setting Switch",
 	"General Settings", "Tax Settings",
-    "Receipt Settings", "Developer Settings",
+    "Receipt Settings", "Editor Settings",
 	"Charge Card Settings", "Report", "Scheduler",
 	"Split Check", "Drawer",
 	"Drawer Assign", "Printing Targets",

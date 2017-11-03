@@ -1,18 +1,18 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998
+
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * labor.cc - revision 174 (10/13/98)
  * Implementation of labor module
@@ -449,7 +449,7 @@ int LaborPeriod::Scan(const char* filename)
     int error = 0;
     error += df.Read(serial_number);
     error += df.Read(end_time);
-    return error;  
+    return error;
 }
 
 int LaborPeriod::Load()
@@ -786,7 +786,7 @@ int LaborDB::Load(const char* path)
     {
         pathname.Set(path);
     }
-  
+
     DIR *dp = opendir(pathname.Value());
     if (dp == NULL)
         return 1;
@@ -1041,8 +1041,8 @@ int LaborDB::ServerLaborReport(Terminal *t, Employee *e, TimeInfo &start,
     int total_wages = 0;
     int total_tips = 0;
 
-    r->TextC("Hour/Wage Report", COLOR_DK_BLUE);
-    r->NewLine();
+//    r->TextC("Hour/Wage Report", COLOR_DK_BLUE);           Let the Button's Name Field provide the Title for this report
+//    r->NewLine();
 
     char tm1[32];
     char tm2[32];

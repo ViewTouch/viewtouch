@@ -1,18 +1,18 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
+ * Copyright Gene Mosher, 1995
+
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * system_report.cc - revision 135 (10/13/98)
  * Implementation of system report generation functions
@@ -156,7 +156,7 @@ int MediaList::Print()
 // Member Functions
 
 /** Server Report **/
-int System::ServerReport(Terminal *term, TimeInfo &time_start, 
+int System::ServerReport(Terminal *term, TimeInfo &time_start,
                          TimeInfo &end_time, Employee *thisEmployee, Report *ptrReport)
 {
     FnTrace("System::ServerReport()");
@@ -352,17 +352,17 @@ int System::ServerReport(Terminal *term, TimeInfo &time_start,
 }
 
 /** ShiftBalance Report **/
-#define SHIFT_BALANCE_TITLE "Revenue and Productivity by Shift"
+#define SHIFT_BALANCE_TITLE "Revenue and Productivity: Time Slices"
 int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
 {
     FnTrace("System::ShiftBalanceReport()");
     if (ptrReport == NULL)
         return 1;
 
-    ptrReport->SetTitle(SHIFT_BALANCE_TITLE);
-    ptrReport->Mode(PRINT_BOLD | PRINT_LARGE);
-    ptrReport->TextC(SHIFT_BALANCE_TITLE);
-    ptrReport->NewLine();
+//    ptrReport->SetTitle(SHIFT_BALANCE_TITLE);           Let the Button's Name Field provide the Title for this report
+//    ptrReport->Mode(PRINT_BOLD | PRINT_LARGE);
+//    ptrReport->TextC(SHIFT_BALANCE_TITLE);
+//    ptrReport->NewLine();
     ptrReport->TextC(term->GetSettings()->store_name.Value());
     ptrReport->NewLine();
     ptrReport->Mode(0);
@@ -371,7 +371,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
     if (first_shift < 0)
     {
         // no shifts defined
-        ptrReport->TextC("Please Define The Shifts..");
+        ptrReport->TextC("Please Create Some Time Slices");
         return 0;
     }
 
@@ -498,13 +498,13 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
 		{
             if (thisCheck->IsTraining() > 0)
                 continue;
-            
+
             TimeInfo *timevar = thisCheck->TimeClosed();
             if (timevar == NULL && thisCheck->CustomerType() == CHECK_HOTEL)
                 timevar = &thisCheck->time_open;
             if (timevar == NULL || *timevar < time_start || *timevar >= end)
                 continue;
-            
+
             int sn = currSettings->ShiftNumber(*timevar);
             if (thisCheck->IsTakeOut())
                 ++takeout[sn];
@@ -538,7 +538,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
                 couponlist.Add(coupinfo->name.Value(), 0);
                 coupinfo = coupinfo->next;
             }
-            
+
 			for (SubCheck *sc = thisCheck->SubList(); sc != NULL; sc = sc->next)
 			{
 				for (int sg = SALESGROUP_FOOD; sg <= SALESGROUP_ROOM; ++sg)
@@ -756,7 +756,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
                         ptrReport->TextPosR(cr[i + 1], term->FormatPrice(group_sales[shift[i]][g]), color[i]);
                     }
                 }
-                
+
                 ptrReport->TextPosR(last_pos, term->FormatPrice(total_group_sales[g]), last_color);
                 per = 0;
                 if (total_sales > 0)
@@ -1105,11 +1105,11 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
                 ptrReport->TextPosR(cr[i + 1], str, color[i]);
             }
         }
-        
+
         sprintf(str, "%.1f", (Flt) total_labor_mins / 60.0);
         ptrReport->TextPosR(last_pos, str, last_color);
         ptrReport->NewLine();
-        
+
         ptrReport->TextL("Regular Cost");
         if (max_shifts > 1)
         {
@@ -1133,11 +1133,11 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
                 ptrReport->TextPosR(cr[i + 1], str, color[i]);
             }
         }
-        
+
         sprintf(str, "%.1f", (Flt) total_labor_otmins / 60.0);
         ptrReport->TextPosR(last_pos, str, last_color);
         ptrReport->NewLine();
-        
+
         ptrReport->TextL("Overtime Cost");
         if (max_shifts > 1)
         {
@@ -1445,28 +1445,28 @@ int BalanceReportWorkFn(BRData *brdata)
                     ++brdata->fastfood;
                 else
                     brdata->guests += c->Guests();
-                
+
                 for (SubCheck *sc = c->SubList(); sc != NULL; sc = sc->next)
                 {
                     for (int sg = SALESGROUP_FOOD; sg <= SALESGROUP_ROOM; ++sg)
                     {
                         brdata->group_sales[sg] += sc->GrossSales(c, currSettings, sg);
                     }
-                    
+
                     int x = sc->GrossSales(c, currSettings, 0);
                     brdata->sales += x;
 
                     if (c->IsTakeOut())
                         brdata->takeout_sales += x;
-                    
+
                     if (c->IsFastFood())
                         brdata->fastfood_sales += x;
-                    
+
                     CompInfo *compinfo;
                     DiscountInfo *discinfo;
                     CouponInfo *coupinfo;
                     MealInfo *mealinfo;
-                    
+
                     brdata->item_comp += sc->item_comps;
                     for (Payment *p = sc->PaymentList(); p != NULL; p = p->next)
                     {
@@ -1554,7 +1554,7 @@ int BalanceReportWorkFn(BRData *brdata)
     }
 
     LaborDB *ldb = &(sys->labor_db);
-    ldb->FigureLabor(currSettings, brdata->start, brdata->end, 0, labor_mins, 
+    ldb->FigureLabor(currSettings, brdata->start, brdata->end, 0, labor_mins,
                      labor_cost, labor_otmins, labor_otcost);
 
     if (term->expand_labor)
@@ -1562,7 +1562,7 @@ int BalanceReportWorkFn(BRData *brdata)
         int j;
         for (j = 1; JobValue[j] > 0; ++j)
 		{
-            ldb->FigureLabor(currSettings, brdata->start, brdata->end, JobValue[j], 
+            ldb->FigureLabor(currSettings, brdata->start, brdata->end, JobValue[j],
                              job_mins[j], job_cost[j], job_otmins[j], job_otcost[j]);
 		}
 	}
@@ -1587,13 +1587,13 @@ int BalanceReportWorkFn(BRData *brdata)
                 sprintf(str, "%s Sales", SalesGroupName[g]);
                 thisReport->TextL(str);
                 thisReport->TextPosR(last_pos, term->FormatPrice(brdata->group_sales[g]), color);
-                
+
                 per = 0;
                 if (brdata->sales > 0)
                     per = 100.0 * ((Flt) brdata->group_sales[g] / (Flt) brdata->sales);
-                
+
                 sprintf(str, "%.2f%%", per);
-                
+
                 thisReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
                 thisReport->NewLine();
             }
@@ -1894,10 +1894,10 @@ int System::BalanceReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
     if (report == NULL)
         return 1;
 
-    report->SetTitle(BALANCE_TITLE);
-    report->Mode(PRINT_BOLD | PRINT_LARGE);
-    report->TextC(BALANCE_TITLE);
-    report->NewLine();
+//    report->SetTitle(BALANCE_TITLE);          Let the Button's Name Field provide the Title for this report
+//    report->Mode(PRINT_BOLD | PRINT_LARGE);
+//    report->TextC(BALANCE_TITLE);
+//    report->NewLine();
     report->TextC(term->GetSettings()->store_name.Value());
     report->NewLine();
     report->Mode(0);
@@ -1935,15 +1935,15 @@ int System::BalanceReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
 
 /** Deposit Report **/
 #define DEPOSIT_TITLE "Final Balance Report"
-int System::DepositReport(Terminal *term, TimeInfo &start_time, 
-                          TimeInfo &end_time, Archive *archive, 
+int System::DepositReport(Terminal *term, TimeInfo &start_time,
+                          TimeInfo &end_time, Archive *archive,
                           Report *report)
 {
     FnTrace("System::DepositReport()");
     if (report == NULL)
         return 1;
 
-    report->SetTitle(DEPOSIT_TITLE);
+//    report->SetTitle(DEPOSIT_TITLE);              Let the Button's Name Field provide the Title for this report
     report->update_flag = UPDATE_ARCHIVE | UPDATE_CHECKS | UPDATE_SERVER;
     term->SetCursor(CURSOR_WAIT);
     Settings *s = &settings;
@@ -2116,7 +2116,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                         meallist.Add(mealinfo->name.Value(), balance);
                         mealinfo = mealinfo->next;
                     }
-                    
+
                     captured_tips += drawer->TotalBalance(TENDER_CAPTURED_TIP);
                     paid_tips     += drawer->TotalBalance(TENDER_PAID_TIP);
                     charged_tips  += drawer->TotalBalance(TENDER_CHARGED_TIP);
@@ -2133,7 +2133,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                     amex          += drawer->Balance(TENDER_CREDIT_CARD, CREDIT_TYPE_AMEX);
                     diners        += drawer->Balance(TENDER_CREDIT_CARD, CREDIT_TYPE_DINERSCLUB);
                     drawer_diff   += drawer->total_difference;
-                    
+
                     // skip ahead to the next drawer
                 }
                 if (drawer)
@@ -2180,13 +2180,13 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     total_adjust += discountlist.Total();
     total_adjust += couponlist.Total();
     total_adjust += meallist.Total();
-    
+
     // Make report
     genericChar str[256];
     int  col = COLOR_DEFAULT;
-    report->Mode(PRINT_BOLD | PRINT_LARGE);
-    report->TextC(DEPOSIT_TITLE, COLOR_DK_BLUE);
-    report->NewLine();
+//    report->Mode(PRINT_BOLD | PRINT_LARGE);
+//    report->TextC(DEPOSIT_TITLE, COLOR_DK_BLUE);
+//    report->NewLine();
     report->TextC(s->store_name.Value());
     report->NewLine();
     report->Mode(0);
@@ -2220,7 +2220,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
 
     // Sales
     report->Mode(PRINT_BOLD);
-    report->TextL("Revenue Group Totals", COLOR_DK_BLUE);
+    report->TextL("Sales Group Receipts", COLOR_DK_GREEN);
     report->NewLine();
     report->Mode(0);
     for (int g = SALESGROUP_FOOD; g <= SALESGROUP_ROOM; ++g)
@@ -2233,12 +2233,12 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
         }
 	}
 
-    report->TextPosL(3, "All Revenue");
+    report->TextPosL(3, "Total Unadjusted Receipts");
     report->TextPosR(0, term->FormatPrice(total_sales), col);
     report->NewLine();
 
     // Tax
-    report->TextL("Sales Tax: Food");
+    report->TextL("Sales Tax: Food & Beverage");
     report->TextPosR(-6, term->FormatPrice(tax_food), col);
     report->NewLine();
 
@@ -2253,7 +2253,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->TextL("Sales Tax: Merchandise");
     report->TextPosR(-6, term->FormatPrice(tax_merchandise), col);
     report->NewLine();
-	
+/*	                                                            This can be activated again when Zero Exclusion works
     report->TextL("Sales Tax: GST");
     report->TextPosR(-6, term->FormatPrice(tax_GST), col);
     report->NewLine();
@@ -2273,8 +2273,8 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->TextL("Value Added Tax");
     report->TextPosR(-6, term->FormatPrice(tax_VAT), col);
     report->NewLine();
-
-    report->TextPosL(3, "All Taxes");
+*/
+    report->TextPosL(3, "Accrued Tax Receipts");
 
     report->TextPosR(0, term->FormatPrice(total_tax), col);
     report->UnderlinePosR(0, 7, col);
@@ -2286,7 +2286,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
 
     // Adjustments
     report->Mode(PRINT_BOLD);
-    report->TextL("Adjustments", COLOR_DK_BLUE);
+    report->TextL("Non-Cash Receipts", COLOR_DK_RED);
     report->NewLine();
     report->Mode(0);
 
@@ -2342,12 +2342,12 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
         mediacoupon = mediacoupon->next;
     }
 
-    report->TextPosL(3, "All Adjustments");
+    report->TextPosL(3, "Total Non-Cash Receipts");
     report->TextR(term->FormatPrice(-total_adjust), col);
     report->NewLine(2);
 
     report->Mode(PRINT_BOLD);
-    report->TextPosL(0, "Other Transactions", COLOR_DK_BLUE);
+    report->TextPosL(0, "Adjustments To Receipts", COLOR_DK_RED);
     report->NewLine();
     report->Mode(0);
 
@@ -2367,11 +2367,11 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->TextPosR(-6, term->FormatPrice(0), col);
     report->NewLine();
 
-    report->TextL("Certif's Redeemed");
+    report->TextL("Certificates Accepted");
     report->TextPosR(-6, term->FormatPrice(-gift), col);
     report->NewLine();
 
-    report->TextL("Certif's Sold");
+    report->TextL("Certificates Issued");
     report->TextPosR(-6, term->FormatPrice(0), col);
     report->NewLine();
 
@@ -2394,7 +2394,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine(2);
 
     report->Mode(PRINT_BOLD);
-    report->TextL(term->Translate("Media Accounted For"), COLOR_DK_BLUE);
+    report->TextL(term->Translate("Receipts Accounted For"), COLOR_DK_BLUE);
     report->NewLine();
     report->Mode(0);
 
@@ -2448,11 +2448,11 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
         report->TextPosR(0, term->FormatPrice(amex), col);
         report->NewLine();
 
-        report->TextL("Diners");
+        report->TextL("Diners Club");
         report->TextPosR(0, term->FormatPrice(diners), col);
         report->NewLine();
 
-        report->TextL("Debit");
+        report->TextL("Other Debit Cards");
         report->TextPosR(0, term->FormatPrice(debit), col);
         report->NewLine();
 
@@ -2460,17 +2460,17 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
         total_credit = visa + mastercard + amex + diners + debit;
     }
 
-    report->TextPosL(3, "All Credit Cards");
+    report->TextPosL(3, "Total Debit & Credit Cards");
     report->TextPosR(0, term->FormatPrice(total_credit), col);
     report->UnderlinePosR(0, 7, col);
     report->NewLine();
 
-    report->TextPosL(3, "Total");
+    report->TextPosL(3, "Total Cash, Checks, Cards");
     report->TextPosR(0, term->FormatPrice(cash + check + total_credit), col);
     report->NewLine(2);
 
     if (tips_held > 0)
-        sprintf(str, "Set Aside %s Of Held Tips.", term->FormatPrice(tips_held, 1));
+        sprintf(str, "Set Aside %s Tips Captured on Cards", term->FormatPrice(tips_held, 1));
     else if (tips_held < 0)
         sprintf(str, "Tips Overpaid By %s.", term->FormatPrice(-tips_held, 1));
     else
@@ -2487,29 +2487,29 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
 
     if (settings.authorize_method == CCAUTH_NONE)
     {
-        report->TextPosL(3, "Total Deposit");
+        report->TextPosL(3, "Total Deposit: Cash, Checks, Cards");
         report->TextPosR(0, term->FormatPrice(cash + check + total_credit - tips_held), col);
         report->NewLine(2);
     }
     else
     {
-        report->TextPosL(3, "Total Cash Deposit");
+        report->TextPosL(3, "Total Deposit: Cash, Checks");
         report->TextPosR(0, term->FormatPrice(cash + check - tips_held), col);
         report->NewLine();
 
-        report->TextPosL(3, "Total Debit/Credit Deposit");
+        report->TextPosL(3, "Total Deposit: Debit/Credit");
         report->TextPosR(0, term->FormatPrice(total_credit), col);
         report->NewLine(2);
     }
 
     if (drawer_diff < 0)
     {
-        report->TextL("Combined Drawers Short By");
+        report->TextL("Combined Drawers Shortage ");
         report->TextPosR(-6, term->FormatPrice(-drawer_diff), col);
     }
     else if (drawer_diff > 0)
     {
-        report->TextL("Combined Drawers Over By");
+        report->TextL("Combined Drawers Overage ");
         report->TextPosR(-6, term->FormatPrice(drawer_diff), col);
     }
     else
@@ -2670,8 +2670,8 @@ int System::ClosedCheckReport(Terminal *term, TimeInfo &start_time, TimeInfo &en
     genericChar str[256], str2[32];
 
     thisReport->is_complete = 0;
-    thisReport->TextC(term->Translate("Closed Check Summary"), COLOR_DK_BLUE);
-    thisReport->NewLine();
+//    thisReport->TextC(term->Translate("Guest Check Summary"), COLOR_DK_BLUE);      Let the Button's Name Field provide the Title for this report
+//    thisReport->NewLine();
     sprintf(str, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
             term->TimeDate(end, TD5));
     thisReport->TextC(str, COLOR_DK_BLUE);
@@ -2679,10 +2679,10 @@ int System::ClosedCheckReport(Terminal *term, TimeInfo &start_time, TimeInfo &en
 
     thisReport->Mode(PRINT_UNDERLINE);
     thisReport->TextPosL(0,  "Check#", COLOR_DK_BLUE);
-    thisReport->TextPosL(7,  "Tbl", COLOR_DK_BLUE);
-    thisReport->TextPosL(11, "Gst", COLOR_DK_BLUE);
-    thisReport->TextPosR(22, "Amount", COLOR_DK_BLUE);
-    thisReport->TextPosL(23, "Payment", COLOR_DK_BLUE);
+    thisReport->TextPosL(8,  "Tbl", COLOR_DK_BLUE);
+    thisReport->TextPosL(13, "Gst", COLOR_DK_BLUE);
+    thisReport->TextPosR(25, "Amount", COLOR_DK_BLUE);
+    thisReport->TextPosL(27, "Payment", COLOR_DK_BLUE);
     thisReport->Mode(0);
     thisReport->NewLine();
 
@@ -2693,7 +2693,7 @@ int System::ClosedCheckReport(Terminal *term, TimeInfo &start_time, TimeInfo &en
 
 /** ItemException Report **/
 int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
-                                TimeInfo &end_time, int type, 
+                                TimeInfo &end_time, int type,
                                 Employee *thisEmployee, Report *thisReport)
 {
     FnTrace("System::ItemExceptionReport()");
@@ -2729,7 +2729,7 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
         strcpy(str, "Line Item Exceptions");
 
     thisReport->SetTitle(str);
-    thisReport->TextC(term->Translate(str), COLOR_DK_BLUE);
+    thisReport->TextC(term->Translate(str), COLOR_DK_RED);
     thisReport->NewLine();
 
     if (user_id > 0)
@@ -2793,9 +2793,9 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
                     (exception_is == type || type <= 0) &&
                     time_is >= start_time && time_is < end)
 				{
-					thisReport->TextL(term->TimeDate(time_is, TD5)); 
+					thisReport->TextL(term->TimeDate(time_is, TD5));
 
-					thisReport->TextPosL(15, term->UserName(id_is)); 
+					thisReport->TextPosL(15, term->UserName(id_is));
 					thisReport->TextPosL(27, currException->item_name.Value());
 
 					thisReport->TextR(term->FormatPrice(cost_is, 1));
@@ -3041,7 +3041,7 @@ int System::CustomerDetailReport(Terminal *term, Employee *e, Report *report)
     report->update_flag = UPDATE_CHECKS;
     for (Check *c = FirstCheck(); c != NULL; c = c->next)
 	{
-		if (c->CustomerType() != CHECK_HOTEL || 
+		if (c->CustomerType() != CHECK_HOTEL ||
             c->IsTraining() != training ||
             c->Status() != CHECK_OPEN)
         {
@@ -3470,10 +3470,10 @@ int System::ExpenseReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
     int sortby;
     int incomplete = 0;
 
-    report->SetTitle(EXPENSE_REPORT_TITLE);
-    report->Mode(PRINT_BOLD | PRINT_LARGE);
-    report->TextC(EXPENSE_REPORT_TITLE);
-    report->NewLine();
+//    report->SetTitle(EXPENSE_REPORT_TITLE);           Let the Button's Name Field provide the Title for this report
+//    report->Mode(PRINT_BOLD | PRINT_LARGE);
+//    report->TextC(EXPENSE_REPORT_TITLE);
+//    report->NewLine();
     report->TextC(term->GetSettings()->store_name.Value());
     report->NewLine();
     report->Mode(0);
@@ -3711,7 +3711,7 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
             // add this archive to the report
             if (archive->loaded == 0)
                 archive->LoadPacked(rdata->settings);
-            
+
             currCheck = archive->CheckList();
             currCoupon = archive->CouponList();
         }
@@ -3839,10 +3839,10 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
     int month = rdata->start_time.Month();
     int year  = rdata->start_time.Year();
 
-    report->SetTitle(ROYALTY_REPORT_TITLE);
-    report->Mode(PRINT_BOLD | PRINT_LARGE);
-    report->TextC(ROYALTY_REPORT_TITLE);
-    report->NewLine();
+//    report->SetTitle(ROYALTY_REPORT_TITLE);        Let the Button's Name Field provide the Title for this report
+//    report->Mode(PRINT_BOLD | PRINT_LARGE);
+//    report->TextC(ROYALTY_REPORT_TITLE);
+//    report->NewLine();
     report->Mode(0);
 
     report->TextL(settings->store_name.Value(), COLOR_DEFAULT);
@@ -3916,7 +3916,7 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
         check_avg = rdata->total_sales / rdata->total_guests;
     report->TextPosR(column + column4, term->FormatPrice(check_avg), color);
     report->Mode(0);
-                
+
     report->UnderlinePosL(0, zone_width - 1, COLOR_BLUE);
     report->NewLine(2);
 
@@ -4012,7 +4012,7 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
     report->TextPosR(far_column, term->FormatPrice(advertise_due), color);
     report->NewLine();
     report->Mode(0);
-    
+
     report->is_complete = 1;
     term->Update(UPDATE_REPORT, NULL);
     delete rdata;
@@ -4131,7 +4131,7 @@ AuditingData::AuditingData()
     total_gift_certificates = 0;
     total_tips              = 0;
     total_change            = 0;
-    
+
     total_dinein            = 0;
     total_dinein_sales      = 0;
     total_togo              = 0;
@@ -4141,7 +4141,7 @@ AuditingData::AuditingData()
     total_item_sales        = 0;
     total_taxes             = 0;
     total_adjusts           = 0;
-    
+
     incomplete              = 0;
 
     for (idx = 0; idx < MAX_FAMILIES; idx += 1)
@@ -4242,7 +4242,7 @@ int GatherAuditChecks(AuditingData *adata)
                         // haven't found any voided checks yet, so I'm
                         // not exactly sure what to do with them.
                     }
-                    
+
                     adata->total_sales += subcheck->raw_sales;
                     if (subcheck->IsTaxExempt() == 0)
                         adata->total_taxes += subcheck->TotalTax();
@@ -4438,10 +4438,10 @@ int AuditingReportWorkFn(AuditingData *adata)
     int gross_sales = adata->total_payments - adata->total_tips;
     int net_sales = gross_sales - adata->total_taxes;
 
-    report->SetTitle(AUDITING_REPORT_TITLE);
-    report->Mode(PRINT_BOLD | PRINT_LARGE);
-    report->TextC(AUDITING_REPORT_TITLE);
-    report->NewLine();
+//    report->SetTitle(AUDITING_REPORT_TITLE);           Let the Button's Name Field provide the Title for this report
+//    report->Mode(PRINT_BOLD | PRINT_LARGE);
+//    report->TextC(AUDITING_REPORT_TITLE);
+//    report->NewLine();
     report->Mode(0);
 
     report->Mode(PRINT_BOLD | PRINT_LARGE);
@@ -4787,7 +4787,7 @@ int CreditCardReportWorkFn(CCData *ccdata)
         {
             check     = ccdata->system->CheckList();
         }
-        
+
         while (check != NULL)
         {
             if (check->IsTraining() == 0)
@@ -4806,7 +4806,7 @@ int CreditCardReportWorkFn(CCData *ccdata)
             }
             check = check->next;
         }
-        
+
         // process for next archive and check exit condition
         // exit if we've gone one loop without an archive, or if
         // the next archive is past the end time
@@ -4903,7 +4903,7 @@ int System::CreditCardReport(Terminal *term, TimeInfo &start_time, TimeInfo &end
     if (cc_report_type == CC_REPORT_NORMAL)
     {
         ccdata = new CCData();
-        
+
         ccdata->term = term;
         ccdata->system = this;
         ccdata->settings = &settings;
@@ -4912,7 +4912,7 @@ int System::CreditCardReport(Terminal *term, TimeInfo &start_time, TimeInfo &end
         ccdata->end_time.Set(end_time);
         ccdata->archive = FindByTime(start_time);
         ccdata->report_zone = rzone;
-        
+
         report->is_complete = 0;
         AddWorkFn((WorkFn) CreditCardReportWorkFn, ccdata);
         retval = 0;

@@ -1144,10 +1144,10 @@ int DeveloperZone::AddFields()
 {
     FnTrace("DeveloperZone::AddFields()");
 
-    AddTextField("Developer Key", 9); SetFlag(FF_ONLYDIGITS);
-    AddTextField("Min Password Length", 2); SetFlag(FF_ONLYDIGITS);
-    AddTextField("Double Mult", 2);
-    AddTextField("Double Add", 5);
+    AddTextField("Editor's Password", 9); SetFlag(FF_ONLYDIGITS);
+    AddTextField("Minimum Password Length", 2); SetFlag(FF_ONLYDIGITS);
+    AddTextField("Multiply", 2);
+    AddTextField("Add or Subtract", 5);
     AddNewLine(2);
 
     int i = 0;

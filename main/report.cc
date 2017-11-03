@@ -1,18 +1,18 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998
+
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * report.cc - revision 80 (10/13/98)
  * Implementation of report classes
@@ -407,9 +407,9 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
         if (print)
         {
             if (max_pages > 1)
-                lz->TextPosL(term, 1, tl, term->Translate("Touch To Print"), color);
+                lz->TextPosL(term, 1, tl, term->Translate("Touch Here To See More"), color);
             else
-                lz->TextC(term, tl, term->Translate("Touch Report To Print"), color);
+                lz->TextC(term, tl, term->Translate("Touch To Print"), color);
         }
 
         if (max_pages > 1)

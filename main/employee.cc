@@ -213,7 +213,7 @@ UserDB::UserDB()
         JobInfo *j = new JobInfo;
         j->job = JOB_DEVELOPER;
         developer->Add(j);
-        developer->system_name.Set("Developer");
+        developer->system_name.Set("Editor");
         developer->id       = 2;
         developer->training = 1;
     }
