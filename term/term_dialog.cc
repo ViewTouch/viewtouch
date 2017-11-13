@@ -1,18 +1,18 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998
+
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * term_dialog.cc - revision 44 (9/1/98)
  * Implementation of term_dialog module
@@ -300,7 +300,7 @@ int DialogMenu::Init(Widget parent, const char* label, const char* *option_name,
 
     if (no_change_value)
     {
-        no_change_widget = XtVaCreateManagedWidget("** No Change **",
+        no_change_widget = XtVaCreateManagedWidget("** Various **",
                                                    xmPushButtonWidgetClass, menu, NULL);
         if (option_cb)
             XtAddCallback(no_change_widget, XmNactivateCallback,
@@ -449,9 +449,9 @@ int DialogDoubleMenu::Init(Widget parent, const char* label,
 
     if (no_change_value)
     {
-        no_change_widget1 = XtVaCreateManagedWidget("** No Change **",
+        no_change_widget1 = XtVaCreateManagedWidget("** Various **",
                                                     xmPushButtonWidgetClass, menu1, NULL);
-        no_change_widget2 = XtVaCreateManagedWidget("** No Change **",
+        no_change_widget2 = XtVaCreateManagedWidget("** Various **",
                                                     xmPushButtonWidgetClass, menu2, NULL);
     }
 
@@ -596,7 +596,7 @@ PageDialog::PageDialog(Widget parent)
     open      = 0;
 
     Arg args[9];
-    XtSetArg(args[0], XmNtitle, "Page Properties");
+    XtSetArg(args[0], XmNtitle, "Page Properties Dialog");
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
     dialog = XmCreateFormDialog(parent, (char*)"page dialog", args, 3);
@@ -612,32 +612,32 @@ PageDialog::PageDialog(Widget parent)
     XtSetArg(args[8], XmNrightPosition,    99);
     Widget w = XmCreateRowColumn(dialog, (char*)"", args, 9);
 
-    size.Init(w, "Page Size", PageSizeName, PageSizeValue);
+    size.Init(w, "Page Resolution", PageSizeName, PageSizeValue);
     type.Init(w, "Page Type", PageTypeName, PageTypeValue,
               (void *) EP_TypeCB, this);
     type2.Init(w, "Page Type", PageType2Name, PageType2Value,
                (void *) EP_TypeCB, this);
     AddLine(w);
 
-    name.Init(w, "Name");
-    id.Init(w, "ID");
-    title_color.Init(w, "Title Bar Color", ColorName, ColorValue);
-    texture.Init(w, "Background Texture", TextureName, TextureValue);
+    name.Init(w, "Name of This Page");
+    id.Init(w, "The Page Number");
+    title_color.Init(w, "This Page's Title Bar Color", ColorName, ColorValue);
+    texture.Init(w, "This Page's Background Texture", TextureName, TextureValue);
     AddLine(w);
 
-    default_font.Init(w, "Default Font", FontName, FontValue);
-    default_appear1.Init(w, "Default Appearance",
+    default_font.Init(w, "This Page's Default Font for All Buttons", FontName, FontValue);
+    default_appear1.Init(w, "This Page's Default Edge & Texture for All Buttons",
                          ZoneFrameName, ZoneFrameValue, TextureName, TextureValue);
-    default_color1.Init(w, "Default Color", ColorName, ColorValue);
-    default_appear2.Init(w, "Default Selected Appearance",
+    default_color1.Init(w, "This Page's Default Text Color for All Buttons", ColorName, ColorValue);
+    default_appear2.Init(w, "This Page's Default Edge & Texture for All Buttons When Selected",
                          ZoneFrameName, ZoneFrameValue, TextureName, TextureValue);
-    default_color2.Init(w, "Default Selected Color", ColorName, ColorValue);
-    default_spacing.Init(w, "Default Spacing");
-    default_shadow.Init(w, "Default Shadow", PageShadowName, PageShadowValue);
+    default_color2.Init(w, "This Page's Default Text Color for All Buttons When Selected", ColorName, ColorValue);
+    default_spacing.Init(w, "This Page's Default Spacing");
+    default_shadow.Init(w, "This Page's Default Shadow for All Buttons", PageShadowName, PageShadowValue);
     AddLine(w);
 
-    parent_page.Init(w, "Parent Page");
-    index.Init(w, "Index Type", IndexName, IndexValue);
+    parent_page.Init(w, "This Page's Parent Page");
+    index.Init(w, "This Page's Index Type", IndexName, IndexValue);
     AddLine(w);
 
     AddButtons(w, EP_OkayCB, EP_DeleteCB, EP_CancelCB, this);
@@ -773,10 +773,10 @@ DefaultDialog::DefaultDialog(Widget parent)
     open      = 0;
 
     Arg args[9];
-    XtSetArg(args[0], XmNtitle, "Global Page Default Properties");
+    XtSetArg(args[0], XmNtitle, "Global Page Property Defaults");
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
-    dialog = XmCreateFormDialog(parent, (char*)"default page dialog", args, 3);
+    dialog = XmCreateFormDialog(parent, (char*)"Global Page & Button Properties Dialog", args, 3);
 
     XtSetArg(args[0], XmNorientation,      XmVERTICAL);
     XtSetArg(args[1], XmNtopAttachment,    XmATTACH_POSITION);
@@ -791,20 +791,20 @@ DefaultDialog::DefaultDialog(Widget parent)
 
     // skip first slot = Default
     //size.Init(w, "Page Size", PageSizeName+1, PageSizeValue+1);
-    size.Init(w, "Page Size", PageSizeName, PageSizeValue);
-    title_color.Init(w, "Title Bar Color", &ColorName[1], &ColorValue[1]);
-    texture.Init(w, "Background Texture", &TextureName[1], &TextureValue[1]);
+    size.Init(w, "Global Page Size", PageSizeName, PageSizeValue);
+    title_color.Init(w, "Global Title Bar Color", &ColorName[1], &ColorValue[1]);
+    texture.Init(w, "Global Background Texture", &TextureName[1], &TextureValue[1]);
     AddLine(w);
 
-    default_font.Init(w, "Default Font", &FontName[1], &FontValue[1]);
-    default_appear1.Init(w, "Default Appearance",
+    default_font.Init(w, "Global Button Font", &FontName[1], &FontValue[1]);
+    default_appear1.Init(w, "Global Button Edge & Texture",
                          &ZoneFrameName[1], &ZoneFrameValue[1], &TextureName[1], &TextureValue[1]);
-    default_color1.Init(w, "Default Color", &ColorName[1], &ColorValue[1]);
-    default_appear2.Init(w, "Default Selected Appearance",
+    default_color1.Init(w, "Global Button Text Color", &ColorName[1], &ColorValue[1]);
+    default_appear2.Init(w, "Global Button Edge & Texture When Selected",
                          &ZoneFrameName[1], &ZoneFrameValue[1], &TextureName[1], &TextureValue[1]);
-    default_color2.Init(w, "Default Selected Color",  &ColorName[1], &ColorValue[1]);
-    default_spacing.Init(w, "Default Spacing");
-    default_shadow.Init(w, "Default Shadow", PageShadowName, PageShadowValue);
+    default_color2.Init(w, "Global Button Text Color When Selected",  &ColorName[1], &ColorValue[1]);
+    default_spacing.Init(w, "Global Line Spacing");
+    default_shadow.Init(w, "Global Button Shadow Intensity", PageShadowName, PageShadowValue);
     AddLine(w);
 
     AddButtons(w, DP_OkayCB, NULL, DP_CancelCB, this);
@@ -967,7 +967,7 @@ ZoneDialog::ZoneDialog(Widget parent)
     states = 2;
 
     Arg args[6];
-    XtSetArg(args[0], XmNtitle, "Button Properties");
+    XtSetArg(args[0], XmNtitle, "Button Properties Dialog");
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
     dialog = XmCreateFormDialog(parent, (char*)"singlezone dialog", args, 3);
@@ -980,30 +980,30 @@ ZoneDialog::ZoneDialog(Widget parent)
     XtSetArg(args[5], XmNpacking,          XmPACK_TIGHT);
     container = XmCreateRowColumn(dialog, (char*)"", args, 6);
 
-    type.Init(container, "Type", FullZoneTypeName, FullZoneTypeValue,
+    type.Init(container, "Button's Type", FullZoneTypeName, FullZoneTypeValue,
               (void *) EZ_TypeCB, this);
-    type2.Init(container, "Type", ZoneTypeName, ZoneTypeValue,
+    type2.Init(container, "Button's Type", ZoneTypeName, ZoneTypeValue,
                (void *) EZ_TypeCB, this);
-    name.Init(container, "Button Name");
-    page.Init(container, "Page");
+    name.Init(container, "Button's Name");
+    page.Init(container, "Button's Page Location");
     group.Init(container, "Group ID");
     AddLine(container);
 
-    behave.Init(container, "Behavior", ZoneBehaveName, ZoneBehaveValue);
+    behave.Init(container, "Button's Behavior", ZoneBehaveName, ZoneBehaveValue);
     confirm.Init(container, "Confirmation", YesNoName, YesNoValue);
     confirm_msg.Init(container, "Confirmation Message");
-    font.Init(container, "Font", FontName, FontValue);
-    appear1.Init(container, "Appearance", ZoneFrameName, ZoneFrameValue,
+    font.Init(container, "Button's Font", FontName, FontValue);
+    appear1.Init(container, "Button's Edge & Texture", ZoneFrameName, ZoneFrameValue,
                  TextureName, TextureValue);
-    color1.Init(container, "Text Color", ColorName, ColorValue);
-    appear2.Init(container, "Selected Appearance", ZoneFrameName, ZoneFrameValue,
+    color1.Init(container, "Button's Text Color", ColorName, ColorValue);
+    appear2.Init(container, "Button's Edge & Texture When Selected", ZoneFrameName, ZoneFrameValue,
                  TextureName, TextureValue);
-    color2.Init(container, "Selected Text Color", ColorName, ColorValue);
-    appear3.Init(container, "Disabled Appearance", ZoneFrameName, ZoneFrameValue,
+    color2.Init(container, "Button's Text Color When Selected", ColorName, ColorValue);
+    appear3.Init(container, "Button's Edge When Disabled", ZoneFrameName, ZoneFrameValue,
                  TextureName, TextureValue);
-    color3.Init(container, "Disabled Text Color", ColorName, ColorValue);
-    shape.Init(container, "Button Shape", ShapeName, ShapeValue);
-    shadow.Init(container, "Shadow Thickness", ShadowName, ShadowValue);
+    color3.Init(container, "Button's Text Color When Disabled", ColorName, ColorValue);
+    shape.Init(container, "Button's Shape", ShapeName, ShapeValue);
+    shadow.Init(container, "Button's Shadow Intensity", ShadowName, ShadowValue);
     key.Init(container, "Keyboard Shortcut");
     AddLine(container);
 
@@ -1011,21 +1011,21 @@ ZoneDialog::ZoneDialog(Widget parent)
     expression.Init(container, "Expression");
     message.Init(container, "Message");
     filename.Init(container, "File Name");
-    item_name.Init(container, "True Name");
-    item_zone_name.Init(container, "Button Name");
-    item_print_name.Init(container, "Abbreviation");
-    item_type.Init(container, "Item Type", ItemTypeName, ItemTypeValue,
+    item_name.Init(container, "This Button's True Name");
+    item_zone_name.Init(container, "This Button's On-Screen Name, if Different than its True Name");
+    item_print_name.Init(container, "This Button's Abbreviation for Remote Printing if Different than its True Name");
+    item_type.Init(container, "Menu Type", ItemTypeName, ItemTypeValue,
                    (void *) EZ_TypeCB, this);
     item_location.Init(container,"Event Location");
     item_event_time.Init(container, "Event Time");
     item_total_tickets.Init(container,"Total Seats");
     item_available_tickets.Init(container,"Seats Remaining");
     item_price_label.Init(container,"Price Class");
-    
-    item_price.Init(container, "Price");
-    item_subprice.Init(container, "Price As A Substitute");
-    item_employee_price.Init(container, "Employee Price");
-    item_family.Init(container, "Family", FamilyName, FamilyValue);
+
+    item_price.Init(container, "Selling Price");
+    item_subprice.Init(container, "Selling Price When Qualified as a Substitute");
+    item_employee_price.Init(container, "Special Price for Employees");
+    item_family.Init(container, "This Button's Family Assignment", FamilyName, FamilyValue);
     item_sales.Init(container, "Tax/Discount Category", SalesTypeName, SalesTypeValue);
     item_printer.Init(container, "Printer Target",
                       PrinterIDName, PrinterIDValue);
@@ -1037,16 +1037,16 @@ ZoneDialog::ZoneDialog(Widget parent)
     check_disp_num.Init(container, "Check to Display");
     video_target.Init(container, "Video Target", PrinterIDName, PrinterIDValue);
     report_print.Init(container, "Touch Print", ReportPrintName, ReportPrintValue);
-    page_list.Init(container, "Modifier Script");
+    page_list.Init(container, "Modifier Script Page Numbers");
     spacing.Init(container, "Line Spacing");
     qualifier.Init(container, "Selected Qualifier", QualifierName, QualifierValue);
     amount.Init(container, "Amount");
     switch_type.Init(container, "Switch Type", SwitchName, SwitchValue);
-    jump_type.Init(container, "Jump Option", FullJumpTypeName, FullJumpTypeValue,
+    jump_type.Init(container, "Jump Options", FullJumpTypeName, FullJumpTypeValue,
                    (void *) EZ_JumpCB, this);
-    jump_type2.Init(container, "Jump Option", JumpTypeName, JumpTypeValue,
+    jump_type2.Init(container, "Jump Options", JumpTypeName, JumpTypeValue,
                     (void *) EZ_JumpCB, this);
-    jump_id.Init(container, "Jump Page ID");
+    jump_id.Init(container, "Jump To Page Number");
     customer_type.Init(container, "Customer Type", CustomerTypeName, CustomerTypeValue);
 
     AddLine(container);
@@ -1064,7 +1064,7 @@ int ZoneDialog::Open()
         item_family.Init(container, "Family", FamilyName, FamilyValue);
         new_zone_translations = 0;
     }
-    
+
     // Load Data
     int v1;
     int v2;
@@ -1129,7 +1129,7 @@ int ZoneDialog::Open()
     Str hashname(item_name.Value());
     admission_parse_hash_name(hashname,hashname);
     item_name.Set(hashname.Value());
-    
+
     item_print_name.Set(RStr());
     item_zone_name.Set(RStr());
     itype = RInt8();
@@ -1368,7 +1368,7 @@ MultiZoneDialog::MultiZoneDialog(Widget parent)
 {
     open = 0;
     Arg args[6];
-    XtSetArg(args[0], XmNtitle, "Multi-Button Properties");
+    XtSetArg(args[0], XmNtitle, "Multi-Button Property Dialog");
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
     dialog = XmCreateFormDialog(parent, (char*)"multizone dialog", args, 3);
@@ -1382,23 +1382,23 @@ MultiZoneDialog::MultiZoneDialog(Widget parent)
     Widget w = XmCreateRowColumn(dialog, (char*)"", args, 6);
 
     behave.no_change_value = -1;
-    behave.Init(w, "Behavior", ZoneBehaveName, ZoneBehaveValue);
+    behave.Init(w, "Behavior of All Buttons", ZoneBehaveName, ZoneBehaveValue);
     font.no_change_value = -1;
-    font.Init(w, "Font", FontName, FontValue);
+    font.Init(w, "Fontfor All Buttons", FontName, FontValue);
     appear1.no_change_value = -1;
-    appear1.Init(w, "Appearance", ZoneFrameName, ZoneFrameValue,
+    appear1.Init(w, "Edge & Surface Texture of All Buttons", ZoneFrameName, ZoneFrameValue,
                  TextureName, TextureValue);
     color1.no_change_value = -1;
-    color1.Init(w, "Text Color", ColorName, ColorValue);
+    color1.Init(w, "Text Color of All Buttons", ColorName, ColorValue);
     appear2.no_change_value = -1;
-    appear2.Init(w, "Selected Appearance", ZoneFrameName, ZoneFrameValue,
+    appear2.Init(w, "Edge & Surface Texture of All Buttons When Selected", ZoneFrameName, ZoneFrameValue,
                  TextureName, TextureValue);
     color2.no_change_value = -1;
-    color2.Init(w, "Selected Text Color", ColorName, ColorValue);
+    color2.Init(w, "Text Color of All Buttons When Selected", ColorName, ColorValue);
     shape.no_change_value = -1;
-    shape.Init(w, "Button Shape", ShapeName, ShapeValue);
+    shape.Init(w, "Shape of All Buttons", ShapeName, ShapeValue);
     shadow.no_change_value = -1;
-    shadow.Init(w, "Shadow Thickness", ShadowName, ShadowValue);
+    shadow.Init(w, "Shadow Intensity of All Buttons", ShadowName, ShadowValue);
 
     AddLine(w);
     AddButtons(w, MZ_OkayCB, NULL, MZ_CancelCB, this);
@@ -1581,7 +1581,7 @@ ListDialog::ListDialog(Widget parent)
     items = 0;
 
     Arg args[11];
-    XtSetArg(args[0], XmNtitle, "Page List");
+    XtSetArg(args[0], XmNtitle, "List of Pages; Select Any Page to View and Visit it");
     dialog = XmCreateFormDialog(parent, (char*)"pagelist dialog", args, 1);
 
     Widget w, buttons;
