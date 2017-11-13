@@ -7,7 +7,7 @@
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
  *
- *   This program is distributed in the hope that it will be useful,
+ *   This program is distributed in the hope that it will be useful,`
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
@@ -2318,17 +2318,16 @@ TimeSettingsZone::TimeSettingsZone()
     }
 
     Color(COLOR_DK_BLUE);
-    AddTextField("Number of Shifts", 2);
+    AddTextField("Set the Number of Customer Activity Time Slices to Analyze", 2);
     AddNewLine();
 
     genericChar str[256];
     for (i = 0; i < MAX_SHIFTS; ++i)
     {
-        sprintf(str, "Shift %d Start", i+1);
+        sprintf(str, "Start Slice %d at", i+1);
         AddTimeField(str, 1, 0);
     }
-    AddNewLine(2);
-
+    AddNewLine(6);
     Color(COLOR_DK_GREEN);
     int m = 0;
     while (MealStartName[m])
@@ -2398,7 +2397,7 @@ RenderResult TimeSettingsZone::Render(Terminal *term, int update_flag)
     int shift = settings->ShiftNumber(SystemTime);
     if (shift >= 0)
     {
-        sprintf(str, "%s: %d", term->Translate("Current Shift"), shift + 1);
+        sprintf(str, "%s: %d", term->Translate("Current Slice"), shift + 1);
         TextPosL(term, 10, 8, str, COLOR_DK_BLUE);
     }
 
@@ -2422,7 +2421,7 @@ RenderResult TimeSettingsZone::Render(Terminal *term, int update_flag)
     if (meal >= 0)
     {
 		const char* strMealLabel = FindStringByValue(meal, IndexValue, IndexName, UnknownStr);
-        sprintf(str, "%s: %s", term->Translate("Current Meal"), term->Translate(strMealLabel));
+        sprintf(str, "%s: %s", term->Translate("Current Index"), term->Translate(strMealLabel));
         TextPosR(term, size_x-10, 8, str, COLOR_DK_GREEN);
     }
     return RENDER_OKAY;

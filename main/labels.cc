@@ -181,13 +181,13 @@ int TextureValue[] = {
 };
 
 const genericChar* PageTypeName[] = {
-    "Tables", "Tables Showing Guest Check",
-    "Index", "Menu Items",
-    "Modifiers", "Modifiers A",
-	"Modifiers B", "Menu Board",
-	"System", "Guest Check List",
-    "Kitchen 1", "Kitchen 2",
-    "Bar 1", "Bar 2",
+    "Table Page", "Table Page Showing Guest Check",
+    "Index Page", "Menu Item Page",
+    "Modifier Page", "Modifier A Page",
+	"Modifier B Page", "Menu Board Page",
+	"System Page", "Guest Check Page",
+    "Kitchen 1 Page", "Kitchen 2 Page",
+    "Bar 1 Page", "Bar 2 Page",
     NULL};
 
 int PageTypeValue[] = {
@@ -201,10 +201,10 @@ int PageTypeValue[] = {
     -1};
 
 const genericChar* PageType2Name[] = {
-    "Tables", "Tables Showing Guest Check",
-    "Index", "Menu Items",
-    "Modifiers", "Modifiers A",
-	"Modifiers B", "Menu Board", NULL};
+    "Table Page", "Table Page Showing Guest Check",
+    "Index Page", "Menu Item Page",
+    "Modifier Page", "Modifier Page without Continue",
+	"Modifier Page without Continue or Complete", "Menu Board Page", NULL};
 
 int PageType2Value[] = {
     PAGE_TABLE, PAGE_TABLE2,
