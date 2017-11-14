@@ -596,7 +596,7 @@ PageDialog::PageDialog(Widget parent)
     open      = 0;
 
     Arg args[9];
-    XtSetArg(args[0], XmNtitle, "Page Properties Dialog");
+    XtSetArg(args[0], XmNtitle, "Page & Button Property Defaults Dialog");
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
     dialog = XmCreateFormDialog(parent, (char*)"page dialog", args, 3);
@@ -619,21 +619,21 @@ PageDialog::PageDialog(Widget parent)
                (void *) EP_TypeCB, this);
     AddLine(w);
 
-    name.Init(w, "Name of This Page");
+    name.Init(w, "This Page's Name");
     id.Init(w, "The Page Number");
     title_color.Init(w, "This Page's Title Bar Color", ColorName, ColorValue);
     texture.Init(w, "This Page's Background Texture", TextureName, TextureValue);
     AddLine(w);
 
-    default_font.Init(w, "This Page's Default Font for All Buttons", FontName, FontValue);
-    default_appear1.Init(w, "This Page's Default Edge & Texture for All Buttons",
+    default_font.Init(w, "This Page's Font for All Buttons", FontName, FontValue);
+    default_appear1.Init(w, "This Page's Edge & Texture for All Buttons",
                          ZoneFrameName, ZoneFrameValue, TextureName, TextureValue);
-    default_color1.Init(w, "This Page's Default Text Color for All Buttons", ColorName, ColorValue);
-    default_appear2.Init(w, "This Page's Default Edge & Texture for All Buttons When Selected",
+    default_color1.Init(w, "This Page's Text Color for All Buttons", ColorName, ColorValue);
+    default_appear2.Init(w, "This Page's Edge & Texture for All Buttons When Selected",
                          ZoneFrameName, ZoneFrameValue, TextureName, TextureValue);
-    default_color2.Init(w, "This Page's Default Text Color for All Buttons When Selected", ColorName, ColorValue);
-    default_spacing.Init(w, "This Page's Default Spacing");
-    default_shadow.Init(w, "This Page's Default Shadow for All Buttons", PageShadowName, PageShadowValue);
+    default_color2.Init(w, "This Page's Text Color for All Buttons When Selected", ColorName, ColorValue);
+    default_spacing.Init(w, "This Page's Spacing");
+    default_shadow.Init(w, "This Page's Shadow Intensity for All Buttons", PageShadowName, PageShadowValue);
     AddLine(w);
 
     parent_page.Init(w, "This Page's Parent Page");
