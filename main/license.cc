@@ -29,8 +29,7 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <sys/resource.h>
-/* sys/param.h defines BSD.  Undefine it here just to get rid of a compiler
- * warning.  */
+/* sys/param.h defines BSD.  Undefine here to get rid of a compiler warning*/
 #undef BSD
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -88,9 +87,9 @@ int protocol              = PROTOCOL_VERSION;  // use this for incoming data
 // while the release settings will allow for several days or more.
 #define DAY                 86400  /* number of seconds in one day */
 #define LICENSE_PERIOD      DAY           /* don't check license more often than this */
-#define LICENSE_EXPIRE      DAY * 30      /* expire after this period */
-#define LICENSE_GRACE       DAY * 7       /* grace period after expiration */
-#define LICENSE_TEMPORARY   DAY * 7       /* how long a temporary license lasts */
+#define LICENSE_EXPIRE      DAY * 999      /* expire after this period */
+#define LICENSE_GRACE       DAY * 999      /* grace period after expiration */
+#define LICENSE_TEMPORARY   DAY * 999      /* how long a temporary license lasts */
 
 // Paths for various debug flag files.
 #define LICENSE_ISEXPIRED   VIEWTOUCH_PATH "/bin/.isexpired"          /* for testing expiration */
@@ -108,8 +107,8 @@ int protocol              = PROTOCOL_VERSION;  // use this for incoming data
 #define MAXKEYSIZE          64       /* max characters in key (subtract 1 for null byte)   */
 #define MAXVALSIZE          256      /* max characters in value (subtract 1 for null byte) */
 #define MACLENGTH           256
-#define DEFAULT_TERMINALS   2
-#define DEFAULT_PRINTERS    2
+#define DEFAULT_TERMINALS   16384
+#define DEFAULT_PRINTERS    16384
 
 struct LicenseData;
 

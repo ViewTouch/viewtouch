@@ -1,24 +1,24 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998
+
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * manager.cc - revision 252 (10/20/98)
  * Implementation of manager module
  */
 
-
+                            // ViewTouch includes
 #include "manager.hh"
 #include "system.hh"
 #include "check.hh"
@@ -39,23 +39,23 @@
 #include "debug.hh"
 #include "socket.hh"
 #include "build_number.h"
-
-#include <errno.h>
-#include <iostream>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/un.h>
-#include <sys/utsname.h>
-#include <sys/wait.h>
-#include <X11/Intrinsic.h>
-#include <string>
-#include <cctype>
-#include <cstring>
-#include <string>
-#include <csignal>
-#include <fcntl.h>
+                            // Standard C++ libraries
+#include <errno.h>          // system error numbers
+#include <iostream>         // basic input and output controls (C++ alone contains no facilities for IO)
+#include <unistd.h>         // standard symbolic constants and types
+#include <sys/socket.h>     // main sockets header
+#include <sys/stat.h>       // data returned by the stat() function
+#include <sys/types.h>      // data types
+#include <sys/un.h>         // definitions for UNIX domain sockets
+#include <sys/utsname.h>    // system name structure
+#include <sys/wait.h>       // declarations for waiting
+#include <X11/Intrinsic.h>  // libXt provides the X Toolkit Intrinsics, an abstract widget library on which ViewTouch is based
+#include <string>           // Introduces string types, character traits and a set of converting functions
+#include <cctype>           // Declares a set of functions to classify and transform individual characters
+#include <cstring>          // Functions for dealing with C-style strings — null-terminated arrays of characters; is the C++ version of the classic string.h header from C
+#include <string>           // Strings in C++ are of the std::string variety
+#include <csignal>          // C library to handle signals
+#include <fcntl.h>          // File Control
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -84,60 +84,49 @@ int          MachineID = 0;
 
 /**** System Data ****/
 
-/************************************************************* 
+/*************************************************************
  * Calendar Values
- *************************************************************/ 
-const char* DayName[] = { "Sunday", "Monday", "Tuesday", 
-                    "Wednesday", "Thursday", "Friday", 
-                    "Saturday", NULL};
+ *************************************************************/
+const char* DayName[] = { "Sunday", "Monday", "Tuesday", "Wednesday", 
+                    "Thursday", "Friday", "Saturday", NULL};
 
-const char* ShortDayName[] = { "Sun", "Mon", "Tue", 
-                         "Wed", "Thu", "Fri", 
-                         "Sat", NULL};
+const char* ShortDayName[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", NULL};
 
-const char* MonthName[] = { "January", "February", "March", 
-                      "April", "May", "June", 
-                      "July", "August", "September", 
+const char* MonthName[] = { "January", "February", "March", "April", 
+                      "May", "June", "July", "August", "September", 
                       "October", "November", "December", NULL};
 
-const char* ShortMonthName[] = { "Jan", "Feb", "Mar", 
-                           "Apr", "May", "Jun", 
-                           "Jul", "Aug", "Sep", 
-                           "Oct", "Nov", "Dec", NULL};
-
+const char* ShortMonthName[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                           "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", NULL};
 
 /*************************************************************
  * Terminal Type values
- *************************************************************/ 
-const char* TermTypeName[] = { 	"Normal", "Order Only", 
-                            "Bar", "Bar2", 
-                            "Fast Food", "Kitchen Video",
-                            "Kitchen Video2", NULL};
+ *************************************************************/
+const char* TermTypeName[] = { 	"Normal", "Order Only", "Bar", "Bar2", 
+                            "Fast Food", "Kitchen Video", "Kitchen Video2", NULL};
 
-int TermTypeValue[] = { TERMINAL_NORMAL, TERMINAL_ORDER_ONLY, 
+int TermTypeValue[] = { TERMINAL_NORMAL, TERMINAL_ORDER_ONLY,
                         TERMINAL_BAR, TERMINAL_BAR2,
                         TERMINAL_FASTFOOD, TERMINAL_KITCHEN_VIDEO,
                         TERMINAL_KITCHEN_VIDEO2, -1};
 
-/************************************************************* 
+/*************************************************************
  * Printer Type values
- *************************************************************/ 
-const char* PrinterTypeName[] = { "Kitchen 1", "Kitchen 2", 
-                            "Kitchen 3", "Kitchen 4", 
-                            "Bar 1", "Bar 2", 
-                            "Expediter", "Report", 
+ *************************************************************/
+const char* PrinterTypeName[] = { "Kitchen 1", "Kitchen 2", "Kitchen 3", "Kitchen 4",
+                            "Bar 1", "Bar 2", "Expediter", "Report",
                             "Credit Receipt", "Remote Order", NULL};
 
-int PrinterTypeValue[] = { PRINTER_KITCHEN1, PRINTER_KITCHEN2, 
-                           PRINTER_KITCHEN3, PRINTER_KITCHEN4, 
-                           PRINTER_BAR1, PRINTER_BAR2, 
-                           PRINTER_EXPEDITER, PRINTER_REPORT, 
+int PrinterTypeValue[] = { PRINTER_KITCHEN1, PRINTER_KITCHEN2,
+                           PRINTER_KITCHEN3, PRINTER_KITCHEN4,
+                           PRINTER_BAR1, PRINTER_BAR2,
+                           PRINTER_EXPEDITER, PRINTER_REPORT,
                            PRINTER_CREDITRECEIPT, PRINTER_REMOTEORDER, -1};
 
 
-/************************************************************* 
+/*************************************************************
  * Module Globals
- *************************************************************/ 
+ *************************************************************/
 static XtAppContext App = 0;
 static Display     *Dis = NULL;
 static XFontStruct *FontInfo[32];
@@ -191,9 +180,9 @@ static int LastHour = -1;
 static int LastMeal = -1;
 static int LastDay  = -1;
 
-/************************************************************* 
+/*************************************************************
  * Definitions
- *************************************************************/ 
+ *************************************************************/
 #define UPDATE_TIME 500
 #define CDU_UPDATE_CYCLE 50
 
@@ -227,9 +216,9 @@ static int LastDay  = -1;
 #define SYSTEM_DATA_FILE     VIEWTOUCH_PATH "/bin/" MASTER_ZONE_DB3
 
 
-/************************************************************* 
+/*************************************************************
  * Prototypes
- *************************************************************/ 
+ *************************************************************/
 void     Terminate(int signal);
 void     UserSignal1(int signal);
 void     UserSignal2(int signal);
@@ -292,8 +281,7 @@ void ViewTouchError(const char* message, int do_sleep)
     if (settings->expire_message1.length == 0)
     {
         snprintf(errormsg, STRLONG, "%s\\%s\\%s", message,
-             "Please contact support.",
-             " 541-515-5913");
+             "Please contact support.", " 541-515-5913");
     }
     else
     {
@@ -367,9 +355,9 @@ int ReadViewTouchConfig()
     return retval;
 }
 
-/************************************************************* 
+/*************************************************************
  * Main
- *************************************************************/ 
+ *************************************************************/
 int main(int argc, genericChar* argv[])
 {
     FnTrace("main()");
@@ -492,7 +480,7 @@ int main(int argc, genericChar* argv[])
     	system(VIEWTOUCH_UPDATE_REQUEST);	// in with the new
 	chmod(VIEWTOUCH_UPDATE_COMMAND, 0755);	// set executable
 	// try to run it, giving build-time base path
-	system(VIEWTOUCH_UPDATE_COMMAND " " VIEWTOUCH_PATH);	
+	system(VIEWTOUCH_UPDATE_COMMAND " " VIEWTOUCH_PATH);
     }
     // Now process any locally available updates (updates
     // from the previous step will be installed and ready for
@@ -510,9 +498,9 @@ int main(int argc, genericChar* argv[])
 }
 
 
-/************************************************************* 
+/*************************************************************
  * Functions
- *************************************************************/ 
+ *************************************************************/
 int ReportError(const char* message)
 {
     FnTrace("ReportError()");
@@ -1178,9 +1166,9 @@ char* PriceFormat(Settings *settings, int price, int use_sign, int use_comma, ge
 
     genericChar dollar_str[32];
     if (use_comma && dollars > 999999){
-        sprintf(dollar_str, "%d%c%03d%c%03d", 
+        sprintf(dollar_str, "%d%c%03d%c%03d",
                 dollars / 1000000, comma,
-                (dollars / 1000) % 1000, comma, 
+                (dollars / 1000) % 1000, comma,
                 dollars % 1000);
 	}
     else if (use_comma && dollars > 999)
@@ -1242,12 +1230,12 @@ int ParsePrice(const char* source, int *value)
     return v;
 }
 
-/************************************************************* 
+/*************************************************************
  * System Data Functions
- *************************************************************/ 
+ *************************************************************/
 
 /****
- * FindVTData:  Should be in bin/ directory, but for compatibility check in 
+ * FindVTData:  Should be in bin/ directory, but for compatibility check in
  *  current data path if not there.
  *
  *  Opens the file if found.  Returns the version of the file, or -1 on error.
@@ -1424,9 +1412,9 @@ int SaveSystemData()
     return 0;
 }
 
-/************************************************************* 
+/*************************************************************
  * Control Class
- *************************************************************/ 
+ *************************************************************/
 Control::Control()
 {
     FnTrace("Control::Control()");
@@ -1826,9 +1814,9 @@ int Control::SaveTablePages()
 }
 
 
-/************************************************************* 
+/*************************************************************
  * More Functions
- *************************************************************/ 
+ *************************************************************/
 int GetTermWord(char* dest, int maxlen, const char* src, int sidx)
 {
     FnTrace("GetTermWord()");
@@ -2094,7 +2082,7 @@ int CompleteRemoteOrder(Check *check)
         check->Save();
         MasterControl->UpdateAll(UPDATE_CHECKS, NULL);
         check->current_sub = check->FirstOpenSubCheck();
-    
+
         // need to print the check
         printer = MasterControl->FindPrinter(PRINTER_REMOTEORDER);
         if (printer != NULL) {
@@ -2107,7 +2095,7 @@ int CompleteRemoteOrder(Check *check)
                 }
             }
         }
-    
+
         status = CALLCTR_STATUS_COMPLETE;
     }
 
@@ -2381,7 +2369,7 @@ int GetCCData(const char* data)
     }
     camount[didx] = '\0';
     amount = atoi(camount);
-    
+
     check = FindCCData(cardnum, amount);
     if (check)
     {
@@ -2628,7 +2616,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
 
     if (UserCommand != 0)
         RunUserCommand();
-    
+
     // restart system timer
     UpdateID = XtAppAddTimeOut(App, UPDATE_TIME,
                                (XtTimerCallbackProc) UpdateSystemCB, client_data);
@@ -2784,7 +2772,7 @@ int UserCount()
     }
 
     return retval;
-    
+
 }
 
 
@@ -2837,7 +2825,7 @@ int RunMacros()
             retval = 1;
             count += 1;
         }
-            
+
     }
 
     return retval;
@@ -2865,10 +2853,10 @@ int RunReport(const genericChar* report_string, Printer *printer)
     if (report == NULL && report_string != NULL)
     {
         report = new Report;
-        
+
         report->Clear();
         report->is_complete = 0;
-        
+
         // need to pull out "Report From To"
         // date will be in the format "DD/MM/YY,HH:MM" in 24hour format
         if (NextToken(report_name, report_string, ' ', &idx))
@@ -2918,7 +2906,7 @@ int RunReport(const genericChar* report_string, Printer *printer)
             report = NULL;
         }
     }
-        
+
     if (report != NULL)
     {
         if (report->is_complete > 0)
