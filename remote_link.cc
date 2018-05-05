@@ -45,6 +45,7 @@ CharQueue::CharQueue(int max_size)
     send_size = (max_size / 2);
     if (send_size > 65535)
         send_size = 65535;
+        
     size = 0;
 
     buffer = new Uchar[buffer_size];
