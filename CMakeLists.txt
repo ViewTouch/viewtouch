@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 3.5.1)
 
 project(ViewTouch)
 message(STATUS "CMake version ${CMAKE_VERSION}")
-set(CMAKE_INSTALL_PREFIX "/usr")
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    # don't override user variables
+    set(CMAKE_INSTALL_PREFIX "/usr")
+endif()
 
 # https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html
 string(COMPARE EQUAL "${CMAKE_CXX_STANDARD}" "" no_cmake_cxx_standard_set)
