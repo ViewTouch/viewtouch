@@ -55,7 +55,8 @@ endif(${TERM_CREDIT} MATCHES "credit_mcve")
 
 
 add_library(conf_file conf_file.cc conf_file.hh)
-target_link_libraries(conf_file z)
+find_package(ZLIB REQUIRED)
+target_link_libraries(conf_file PRIVATE ZLIB::ZLIB)
 set(VT_XLIBS X11 Xm Xmu Xt Xpm Xft freetype fontconfig Xrender)
 
 add_library(vtcore main/admission.cc  external/sha1.cc utility.cc remote_link.cc  debug.cc debug.hh generic_char.cc 
