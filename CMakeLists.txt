@@ -64,6 +64,9 @@ add_library(vtcore main/admission.cc  external/sha1.cc utility.cc remote_link.cc
 		main/labels.cc
 	)
 
+target_include_directories(vtcore PUBLIC
+    ${CMAKE_CURRENT_BINARY_DIR}) # include generated files like build_number.h
+
 
 add_executable(vtpos 
 		loader/loader_main.cc )
@@ -118,11 +121,12 @@ target_link_libraries(vt_cdu vtcore)
 add_executable(vt_temphash main/license_hash.cc main/temphash.cc external/sha1.cc)
 #add_executable(vt_ccq_pipe vt_ccq_pipe.cc socket.cc utility.cc conf_file.cc)
 
-ADD_CUSTOM_TARGET(GenerateBuildNumber
-                  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/scripts/BuildNumber.cmake
- 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_dependencies(zone GenerateBuildNumber)
-add_dependencies(vtpos GenerateBuildNumber)
+# create build_number.h file
+file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/last-release-rev LAST_RELEASE_REV)
+execute_process(COMMAND "date" "+%Y%m%d%H%M" OUTPUT_VARIABLE TODAY OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(BUILD_NUMBER "\"${LAST_RELEASE_REV}-${TODAY}\"")
+MESSAGE(STATUS "BUILD_NUMBER=${BUILD_NUMBER}")
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/build_number.h.in ${CMAKE_CURRENT_BINARY_DIR}/build_number.h @ONLY)
 
 
 install(TARGETS vtpos vt_temphash vt_cdu vt_print vt_term vt_main
