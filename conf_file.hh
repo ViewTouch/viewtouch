@@ -14,8 +14,6 @@
 
 #include "basic.hh"
 
-using namespace std;
-
 // MAX_BUFFER_LEN
 // Used simply as a max size of some internal buffers. Determines the maximum
 // length of a line that will be read from or written to the file or the
@@ -70,7 +68,7 @@ typedef SectionList::iterator SectionItor;
 /// General Purpose Utility Functions ///////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 void  Trim(t_Str& szStr);
-int   WriteLn(fstream& stream, const char* fmt, ...);
+int   WriteLn(std::fstream& stream, const char* fmt, ...);
 
 
 

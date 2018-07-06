@@ -38,7 +38,7 @@ bool ConfFile::Load()
 {
     // don't create new files when attempting to read a non-existent one
     //fstream File(fileName.c_str(), ios::in|ios::nocreate);
-    fstream File(fileName.c_str(), ios::in);
+    std::fstream File(fileName.c_str(), std::ios::in);
 
     if (! File.is_open()) {
         return false;
@@ -111,10 +111,10 @@ bool ConfFile::Save()
         return false; 
     }
 
-    fstream File(fileName.c_str(), ios::out | ios::trunc);
+    std::fstream File(fileName.c_str(), std::ios::out | std::ios::trunc);
 
     if (! File.is_open()) {
-        cerr << "ConfFile::Save:  file open failure (" << fileName.c_str() << ")" << endl;
+        std::cerr << "ConfFile::Save:  file open failure (" << fileName.c_str() << ")" << std::endl;
         return false;
     }
 
@@ -393,7 +393,7 @@ void Trim(t_Str& str)
 }
 
 // fprintf for stream
-int WriteLn(fstream& stream, const char* fmt, ...)
+int WriteLn(std::fstream& stream, const char* fmt, ...)
 {
     char buf[MAX_BUFFER_LEN + 1];
     int len;

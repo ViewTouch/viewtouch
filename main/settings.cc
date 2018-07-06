@@ -2395,7 +2395,7 @@ int Settings::Save()
         error += conf.SetValue(tax_HST, vars[V_HST], sects[S_SALES_TAX_CANADA]);
         error += conf.SetValue(tax_QST, vars[V_QST], sects[S_SALES_TAX_CANADA]);
         if (! conf.Save()) {
-            cerr << "  failed to save tax config file" << endl;
+            std::cerr << "  failed to save tax config file" << std::endl;
             error++;
         }
 
@@ -2410,7 +2410,7 @@ int Settings::Save()
         error += conf.SetValue(credit_cost, vars[V_CREDIT_COST], sects[S_ELEC_TRANS]);
         error += conf.SetValue(line_item_cost, vars[V_LINE_ITEM_COST], sects[S_ELEC_TRANS]);
         if (! conf.Save()) {
-            cerr << "  failed to save fees config file" << endl;
+            std::cerr << "  failed to save fees config file" << std::endl;
             error++;
         }
 
@@ -2420,7 +2420,7 @@ int Settings::Save()
         error += conf.SetValue(tax_takeout_food, vars[V_TAX_TAKEOUT_FOOD], sects[S_MISC]);
 
         if (! conf.Save()) {
-            cerr << "  failed to save fastfood config file" << endl;
+            std::cerr << "  failed to save fastfood config file" << std::endl;
             error++;
         }
     }
