@@ -4,6 +4,17 @@ project(ViewTouch)
 message(STATUS "CMake version ${CMAKE_VERSION}")
 set(CMAKE_INSTALL_PREFIX "/usr")
 
+# https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html
+string(COMPARE EQUAL "${CMAKE_CXX_STANDARD}" "" no_cmake_cxx_standard_set)
+if(no_cmake_cxx_standard_set)
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+    message(STATUS "Using default C++ standard ${CMAKE_CXX_STANDARD}")
+else()
+    message(STATUS "Using user specified C++ standard ${CMAKE_CXX_STANDARD}")
+endif()
+
 set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
 set(LICENSE_SERVER "default_license_server" CACHE STRING "The license server to be compiled into viewtouch")
 
