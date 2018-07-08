@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5.1)
 
 project(ViewTouch)
+message(STATUS "CMake version ${CMAKE_VERSION}")
 set(CMAKE_INSTALL_PREFIX "/usr")
 
 set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
