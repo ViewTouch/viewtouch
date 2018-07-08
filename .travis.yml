@@ -39,6 +39,11 @@ matrix:
         BUILD_FLAVOR=debian
         BUILD_RELEASE=stretch
         BUILD_ARCH=amd64
+    - os: linux
+      env: >
+        BUILD_FLAVOR=debian
+        BUILD_RELEASE=buster
+        BUILD_ARCH=amd64
     # } // end Linux
 
 before_install:
