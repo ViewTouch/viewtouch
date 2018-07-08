@@ -1,6 +1,23 @@
 cmake_minimum_required(VERSION 3.5.1)
 
-set(CMAKE_INSTALL_PREFIX "/usr")
+project(ViewTouch)
+message(STATUS "CMake version ${CMAKE_VERSION}")
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    # don't override user variables
+    set(CMAKE_INSTALL_PREFIX "/usr")
+endif()
+
+# https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html
+string(COMPARE EQUAL "${CMAKE_CXX_STANDARD}" "" no_cmake_cxx_standard_set)
+if(no_cmake_cxx_standard_set)
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+    message(STATUS "Using default C++ standard ${CMAKE_CXX_STANDARD}")
+else()
+    message(STATUS "Using user specified C++ standard ${CMAKE_CXX_STANDARD}")
+endif()
+
 set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
 set(LICENSE_SERVER "default_license_server" CACHE STRING "The license server to be compiled into viewtouch")
 
@@ -38,13 +55,17 @@ endif(${TERM_CREDIT} MATCHES "credit_mcve")
 
 
 add_library(conf_file conf_file.cc conf_file.hh)
-target_link_libraries(conf_file z)
+find_package(ZLIB REQUIRED)
+target_link_libraries(conf_file PRIVATE ZLIB::ZLIB)
 set(VT_XLIBS X11 Xm Xmu Xt Xpm Xft freetype fontconfig Xrender)
 
 add_library(vtcore main/admission.cc  external/sha1.cc utility.cc remote_link.cc  debug.cc debug.hh generic_char.cc 
 		generic_char.hh logger.cc logger.hh socket.cc socket.hh
 		main/labels.cc
 	)
+
+target_include_directories(vtcore PUBLIC
+    ${CMAKE_CURRENT_BINARY_DIR}) # include generated files like build_number.h
 
 
 add_executable(vtpos 
@@ -100,11 +121,12 @@ target_link_libraries(vt_cdu vtcore)
 add_executable(vt_temphash main/license_hash.cc main/temphash.cc external/sha1.cc)
 #add_executable(vt_ccq_pipe vt_ccq_pipe.cc socket.cc utility.cc conf_file.cc)
 
-ADD_CUSTOM_TARGET(GenerateBuildNumber
-                  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/scripts/BuildNumber.cmake
- 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_dependencies(zone GenerateBuildNumber)
-add_dependencies(vtpos GenerateBuildNumber)
+# create build_number.h file
+file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/last-release-rev LAST_RELEASE_REV)
+execute_process(COMMAND "date" "+%Y%m%d%H%M" OUTPUT_VARIABLE TODAY OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(BUILD_NUMBER "\"${LAST_RELEASE_REV}-${TODAY}\"")
+MESSAGE(STATUS "BUILD_NUMBER=${BUILD_NUMBER}")
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/build_number.h.in ${CMAKE_CURRENT_BINARY_DIR}/build_number.h @ONLY)
 
 
 install(TARGETS vtpos vt_temphash vt_cdu vt_print vt_term vt_main
