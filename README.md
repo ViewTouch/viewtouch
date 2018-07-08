@@ -1,7 +1,7 @@
 ViewTouch
 =========
 
-[![Build Status](https://img.shields.io/travis/ViewTouch/viewtouch/master.svg?label=Travis)](https://travis-ci.org/ViewTouch/viewtouch/builds)
+[![Build Status](https://img.shields.io/travis/NeroBurner/viewtouch/ci_travis.svg?label=Travis)](https://travis-ci.org/NeroBurner/viewtouch/builds)
 
 [![Join the chat at https://gitter.im/ViewTouch/viewtouch](https://badges.gitter.im/ViewTouch/viewtouch.svg)](https://gitter.im/ViewTouch/viewtouch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ViewTouch is a registered trademark in the USA.
