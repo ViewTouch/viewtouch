@@ -12,13 +12,14 @@
 
 #include <iostream> // temp
 #include <string.h>
+#include <algorithm> // find_if
 
 // init, attempt to load file
-ConfFile::ConfFile(t_Str name, bool load)
+ConfFile::ConfFile(const std::string &name, const bool load) :
+    fileName(name),
+    dirty(false)
 {
-    dirty = false;
-    fileName = name;
-    sections.push_back(*(new t_Section));
+    sections.push_back(t_Section{});
 
     if (load)
         Load();
@@ -38,7 +39,7 @@ bool ConfFile::Load()
 {
     // don't create new files when attempting to read a non-existent one
     //fstream File(fileName.c_str(), ios::in|ios::nocreate);
-    fstream File(fileName.c_str(), ios::in);
+    std::ifstream File(fileName);
 
     if (! File.is_open()) {
         return false;
@@ -48,10 +49,9 @@ bool ConfFile::Load()
 
     sections.clear();
     
-    t_Str line;
+    std::string line;
     char buffer[MAX_BUFFER_LEN]; 
-    t_Section* section = GetSection("");
-
+    std::string section_name = "";
 
     while (!done) {
         memset(buffer, 0, MAX_BUFFER_LEN);
@@ -68,15 +68,15 @@ bool ConfFile::Load()
             continue;
         }
 
-        if (line.find_first_of('[') == 0) {
+        if (line[0] == '[') {
             line.erase(0, 1);
             // erase to eol
             line.erase(line.find_first_of(']'));
 
-            CreateSection(line);
-            section = GetSection(line);
+            section_name = line;
+            CreateSection(section_name);
         } else if (line.size() > 0) {
-            t_Str value;
+            std::string value;
             int split = line.find_first_of(EqualIndicators);
 
             if (split > 0) {
@@ -93,7 +93,7 @@ bool ConfFile::Load()
             Trim(line);
 
             if (line.size() > 0) {
-                SetValue(value, line, section->name);
+                SetValue(value, line, section_name);
             }
         }
     }
@@ -111,33 +111,27 @@ bool ConfFile::Save()
         return false; 
     }
 
-    fstream File(fileName.c_str(), ios::out | ios::trunc);
+    std::ofstream File(fileName, std::ios::out | std::ios::trunc);
 
     if (! File.is_open()) {
-        cerr << "ConfFile::Save:  file open failure (" << fileName.c_str() << ")" << endl;
+        std::cerr << "ConfFile::Save:  file open failure (" << fileName << ")" << std::endl;
         return false;
     }
 
-    SectionItor s_pos;
-    KeyItor k_pos;
-    t_Section section;
-    t_Key key;
-
-    for (s_pos = sections.begin(); s_pos != sections.end(); s_pos++) {
-        section = (*s_pos);
-
+    for (const t_Section &section : sections)
+    {
         if (section.name.size() > 0) {
-            WriteLn(File, "\n[%s]", section.name.c_str());
+            File << "\n[" << section.name << "]" << std::endl;
         }
 
-        for (k_pos = section.keys.begin(); k_pos != section.keys.end(); k_pos++) {
-            key = (*k_pos);
-
-            if (key.key.size() > 0) {
-                WriteLn(File, "%s%c%s", 
-                    key.key.c_str(),
-                    EqualIndicators[0],
-                    key.value.c_str());
+        for (const t_Key &elem : section.keys)
+        {
+            if (elem.key.size() > 0)
+            {
+                File << elem.key
+                     << EqualIndicators[0]
+                     << elem.value
+                     << std::endl;
             }
         }
     }
@@ -151,12 +145,19 @@ bool ConfFile::Save()
 }
 
 // set the given value.  if key doesn't exist, create it.
-bool ConfFile::SetValue(t_Str value, t_Str keyName, t_Str sectName)
+bool ConfFile::SetValue(const std::string &value, const std::string &keyName, const std::string &sectName)
 {
-    t_Key* key = GetKey(keyName, sectName);
+    if (value.empty())
+    {
+        return false;
+    }
+    if (keyName.empty())
+    {
+        return false;
+    }
     t_Section* section = GetSection(sectName);
 
-    if (section == NULL) {
+    if (section == nullptr) {
         if (! CreateSection(sectName))
             return false;
 
@@ -164,161 +165,165 @@ bool ConfFile::SetValue(t_Str value, t_Str keyName, t_Str sectName)
     }
 
     // Sanity check...
-    if ( section == NULL )
+    if ( section == nullptr )
         return false;
 
     // if the key does not exist in that section, and the value passed 
-    // is not t_Str("") then add the new key.
-    if (key == NULL) {
-        key = new t_Key;
-
-        key->key = keyName;
-        key->value = value;
-        
-        dirty = true;
-        section->keys.push_back(*key);
-        return true;
+    // is not "" then add the new key.
+    for (t_Key &entry : section->keys)
+    {
+        if (entry.key == keyName)
+        {
+            entry.value = value;
+            return true;
+        }
     }
 
-    if (key != NULL) {
-        key->value = value;
-        dirty = true;
-        return true;
-    }
+    // key does not exist, add new one
+    t_Key elem;
 
-    return false;
+    elem.key = keyName;
+    elem.value = value;
+
+    dirty = true;
+    section->keys.push_back(elem);
+    return true;
 }
 
 // set the given value.  if key doesn't exist, create it.
-bool ConfFile::SetValue(Flt value, t_Str key, t_Str section)
+bool ConfFile::SetValue(const Flt value, const std::string &key, const std::string &section)
 {
-    char buf[64];
-
-    snprintf(buf, 64, "%f", value);
-
-    return SetValue(buf, key, section);
+    return SetValue(std::to_string(value), key, section);
 }
 
 // set the given value.  if key doesn't exist, create it.
-bool ConfFile::SetValue(int value, t_Str key, t_Str section)
+bool ConfFile::SetValue(const int value, const std::string &key, const std::string &section)
 {
-    char buf[64];
-
-    snprintf(buf, 64, "%d", value);
-
-    return SetValue(buf, key, section);
-
+    return SetValue(std::to_string(value), key, section);
 }
 
 // get value for named key in named section.  if return value is false,
 //  key not found, contents of value is undefined.
-bool ConfFile::GetValue(t_Str &value, t_Str keyName, t_Str section)
+bool ConfFile::GetValue(std::string &value, const std::string &keyName, const std::string &sectName) const
 {
-    t_Key* key = GetKey(keyName, section);
-
-    if (key == NULL) {
+    const t_Section* section = GetSection(sectName);
+    // Since our default section has a name value of "" this should
+    // always return a valid section, wether or not it has any keys in it is
+    // another matter.
+    if (section == nullptr)
         return false;
+
+    for (const t_Key &entry : section->keys)
+    {
+        if (entry.key == keyName)
+        {
+            value = entry.value;
+            return true;
+        }
     }
 
-    value = key->value;
-    return true;
+    // key not found
+    return false;
 }
 
-bool ConfFile::GetValue(Flt &value, t_Str key, t_Str section)
+bool ConfFile::GetValue(Flt &value, const std::string &key, const std::string &section) const
 {
-    t_Str val;
+    std::string val;
 
     if (! GetValue(val, key, section))
         return false;
 
-    if (val.size() == 0)
+    if (val.empty())
         return false;
 
-    value = (Flt)atof(val.c_str());
+    value = std::stof(val);
     return true;
 }
 
-bool ConfFile::GetValue(int &value, t_Str key, t_Str section)
+bool ConfFile::GetValue(int &value, const std::string &key, const std::string &section) const
 {
-    t_Str val;
+    std::string val;
 
     if (! GetValue(val, key, section))
         return false;
 
-    if ( val.size() == 0 )
+    if (val.empty())
         return false;
 
-    value = atoi(val.c_str());
+    value = std::stoi(val);
     return true;
 }
 
 // delete a section -- "true" ==> deletion successful
-bool ConfFile::DeleteSection(t_Str section)
+bool ConfFile::DeleteSection(const std::string &section)
 {
-    SectionItor pos;
-
-    for (pos = sections.begin(); pos != sections.end(); pos++) {
-        if (strcasecmp((*pos).name.c_str(), section.c_str()) == 0) {
-            sections.erase(pos);
-            return true;
-        }
+    auto is_section = [section](const t_Section &elem)->bool
+    {
+        return (strcasecmp(elem.name.c_str(), section.c_str()) == 0);
+    };
+    const auto iter = std::find_if(sections.begin(), sections.end(), is_section);
+    if (iter != sections.end())
+    {
+        sections.erase(iter);
+        return true;
     }
 
     return false;
 }
 
 // delete a key in a section -- "true" ==> deletion successful
-bool ConfFile::DeleteKey(t_Str key, t_Str sectName)
+bool ConfFile::DeleteKey(const std::string &key, const std::string &sectName)
 {
-    KeyItor pos;
-    t_Section* section;
-
-    if ((section = GetSection(sectName)) == NULL)
+    t_Section* section = GetSection(sectName);
+    if (section == nullptr)
         return false;
 
-    for (pos = section->keys.begin(); pos != section->keys.end(); pos++) {
-        if (strcasecmp((*pos).key.c_str(), key.c_str()) == 0) {
-            section->keys.erase(pos);
-            return true;
-        }
+    auto is_elem = [key](const t_Key &elem)->bool
+    {
+        return (strcasecmp(elem.key.c_str(), key.c_str()) == 0);
+    };
+    const auto iter = std::find_if(section->keys.begin(), section->keys.end(), is_elem);
+    if (iter != section->keys.end())
+    {
+        section->keys.erase(iter);
+        return true;
     }
 
     return false;
 }
 
 // create a section -- returns true if created, false if already existed
-bool ConfFile::CreateSection(t_Str sectName)
+bool ConfFile::CreateSection(const std::string &sectName)
 {
-    t_Section* section = GetSection(sectName);
-
-    if (section) {
+    if (GetSection(sectName)) {
         // already exists
         return false;
     }
 
-    section = new t_Section;
+    t_Section section;
+    section.name = sectName;
 
-    section->name = sectName;
-    sections.push_back(*section);
+    sections.push_back(section);
     dirty = true;
 
     return true;
 }
 
 // number of sections in list
-int ConfFile::SectionCount() 
+int ConfFile::SectionCount() const
 { 
     return sections.size(); 
 }
 
 // number of keys in all sections
-int ConfFile::KeyCount()
+int ConfFile::KeyCount() const
 {
     int count = 0;
-    SectionItor pos;
 
-    for (pos = sections.begin(); pos != sections.end(); pos++)
-        count += (*pos).keys.size();
+    for (const t_Section &section : sections)
+    {
+        count += section.keys.size();
+    }
 
     return count;
 }
@@ -327,47 +332,39 @@ int ConfFile::KeyCount()
 // Protected Member Functions ///////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-// search for a key object by name and section
-t_Key* ConfFile::GetKey(t_Str keyName, t_Str sectName)
-{
-    KeyItor pos;
-    t_Section* section;
-
-    // Since our default section has a name value of t_Str("") this should
-    // always return a valid section, wether or not it has any keys in it is
-    // another matter.
-    if ((section = GetSection(sectName)) == NULL)
-        return NULL;
-
-    for (pos = section->keys.begin(); pos != section->keys.end(); pos++) {
-        if (strcasecmp((*pos).key.c_str(), keyName.c_str()) == 0)
-            return (t_Key*)&(*pos);
-    }
-
-    return NULL;
-}
-
 // search for a section object by name
-t_Section* ConfFile::GetSection(t_Str sectName)
+const t_Section* ConfFile::GetSection(const std::string &sectName) const
 {
-    SectionItor pos;
-
-    for (pos = sections.begin(); pos != sections.end(); pos++) {
-        if (strcasecmp((*pos).name.c_str(), sectName.c_str()) == 0) 
-            return (t_Section*)&(*pos);
+    for (const t_Section &sec : sections)
+    {
+        if (sec.name == sectName)
+        {
+            return &sec;
+        }
     }
-
-    return NULL;
+    return nullptr;
+}
+// search for a section object by name
+t_Section* ConfFile::GetSection(const std::string &sectName)
+{
+    for (t_Section &sec : sections)
+    {
+        if (sec.name == sectName)
+        {
+            return &sec;
+        }
+    }
+    return nullptr;
 }
 
-void ConfFile::SetFilename(t_Str name)
+void ConfFile::SetFilename(const std::string &name)
 {
-        if (fileName.size() != 0 && strcasecmp(name.c_str(), fileName.c_str()) != 0) {
-                dirty = true;
-        }
+    if (fileName.size() != 0 && strcasecmp(name.c_str(), fileName.c_str()) != 0) {
+        dirty = true;
+    }
 
-        fileName = name;
-        sections.clear();
+    fileName = name;
+    sections.clear();
 }
 
 
@@ -379,40 +376,15 @@ void ConfFile::SetFilename(t_Str name)
 // Trim
 // Trims whitespace from both sides of a string.
 // algorithm from g++ manual
-void Trim(t_Str& str)
+void Trim(std::string& str)
 {
-    t_Str trimChars = WhiteSpace;
-    
-    trimChars += EqualIndicators;
+    const std::string trimChars = WhiteSpace + EqualIndicators;
 
     // trim left
     str.erase(0, str.find_first_not_of(trimChars));
 
     // trim right
     str.erase(1 + str.find_last_not_of(trimChars));
-}
-
-// fprintf for stream
-int WriteLn(fstream& stream, const char* fmt, ...)
-{
-    char buf[MAX_BUFFER_LEN + 1];
-    int len;
-
-    memset(buf, 0, MAX_BUFFER_LEN + 1);
-    va_list args;
-
-    va_start(args, fmt);
-    len = vsnprintf(buf, MAX_BUFFER_LEN, fmt, args);
-    va_end(args);
-
-
-    if (buf[len] != '\n')
-        buf[len++] = '\n';
-
-
-    stream.write(buf, len);
-
-    return len;
 }
 
 /* done */
