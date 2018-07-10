@@ -11,8 +11,11 @@
 #include "conf_file.hh"
 
 #include <iostream> // temp
+#include <sstream> // stringstream
 #include <string.h>
 #include <algorithm> // find_if
+#include <locale> // always use "C" locale, ini file needs to be language
+                  // independent
 
 // init, attempt to load file
 ConfFile::ConfFile(const std::string &name, const bool load) :
@@ -193,13 +196,19 @@ bool ConfFile::SetValue(const std::string &value, const std::string &keyName, co
 // set the given value.  if key doesn't exist, create it.
 bool ConfFile::SetValue(const Flt value, const std::string &key, const std::string &section)
 {
-    return SetValue(std::to_string(value), key, section);
+    std::ostringstream ss;
+    ss.imbue(std::locale::classic()); // use "C" locale
+    ss << value;
+    return SetValue(ss.str(), key, section);
 }
 
 // set the given value.  if key doesn't exist, create it.
 bool ConfFile::SetValue(const int value, const std::string &key, const std::string &section)
 {
-    return SetValue(std::to_string(value), key, section);
+    std::ostringstream ss;
+    ss.imbue(std::locale::classic()); // use "C" locale
+    ss << value;
+    return SetValue(ss.str(), key, section);
 }
 
 // get value for named key in named section.  if return value is false,
@@ -236,7 +245,21 @@ bool ConfFile::GetValue(Flt &value, const std::string &key, const std::string &s
     if (val.empty())
         return false;
 
-    value = std::stof(val);
+    std::istringstream ss(val);
+    ss.imbue(std::locale::classic()); // use "C" locale
+    ss >> value;
+    if (ss.fail())
+    {
+        try
+        {
+            // handle 'inf' and '-inf' values
+            value = stod(val);
+        } catch (const std::invalid_argument &)
+        {
+            // can't convert, return false
+            return false;
+        }
+    }
     return true;
 }
 
@@ -250,7 +273,11 @@ bool ConfFile::GetValue(int &value, const std::string &key, const std::string &s
     if (val.empty())
         return false;
 
-    value = std::stoi(val);
+    std::istringstream ss(val);
+    ss.imbue(std::locale::classic()); // use "C" locale
+    ss >> value;
+    if (ss.fail()) // indicate a parser error
+        return false;
     return true;
 }
 
