@@ -9,7 +9,7 @@ env:
     - PROJECT_DIR: .
     - TOOLCHAIN: default
     - BUILD_PACKAGES: cmake
-    - RUN_TESTS: false
+    - RUN_TESTS: true
 
 matrix:
   include:
