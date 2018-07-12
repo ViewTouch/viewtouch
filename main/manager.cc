@@ -273,33 +273,6 @@ void ViewTouchError(const char* message, int do_sleep)
 }
 
 /****
- * ViewTouchLicense:  Gets a temporary license string from the user.  This
- *  goes through LoaderSocket because vtpos should still be active at this point
- *  and it should have the con.
- ****/
-int ViewTouchLicense(char* license, int maxlen)
-{
-    FnTrace("ViewTouchLicense()");
-    int readlen = 0;
-    unsigned char* key;
-
-    license[0] = '\0';
-    write(LoaderSocket, "\r", 1);  // CR triggers license read session
-    readlen = read(LoaderSocket, license, maxlen);
-    if (readlen > 0)
-    {
-        license[readlen] = '\0';
-        key = (unsigned char* )license;
-        while (*key != '\0')
-        {
-            *key = toupper(*key);
-            key++;
-        }
-    }
-    return readlen;
-}
-
-/****
  * ReadViewTouchConfig:  This reads a global, very early configuration.
  *  Most settings should go into settings.dat and be configurable through the
  *  GUI.  However, in some cases we must access a setting too early to have
