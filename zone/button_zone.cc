@@ -280,11 +280,21 @@ static const genericChar* KeyWords[] = {
     "drawercount", "orderbyseat", "developer", "flow", "assigned",
     "local", "supervisor", "manager", "editusers", "merchandise",
     "movetable", "tablepages", "passwords", "superuser",
-    "payexpenses", "fastfood", "lastendday", "licenseexpired",
+    "payexpenses", "fastfood", "lastendday",
     "checkbalanced", "haspayments", "training", "selectedorder", NULL};
+enum comms {
+    CHECK, GUESTS, SUBCHECKS, SETTLE, ORDER, DRAWER,
+    DRAWERCOUNT, ORDERBYSEAT, DEVELOPER, FLOW, ASSIGNED,
+    LOCAL, SUPERVISOR, MANAGER, EDITUSERS, MERCHANDISE,
+    MOVETABLE, TABLEPAGES, PASSWORDS, SUPERUSER,
+    PAYEXPENSES, FASTFOOD, LASTENDDAY,
+    CHECKBALANCED, HASPAYMENTS, TRAINING, SELECTORDER};
 
 static const genericChar* OperatorWords[] = {
     "=", ">", "<", "!=", ">=", NULL};
+enum operators {
+    EQUAL, GREATER, LESSER, NOTEQUAL, GREATEREQUAL
+};
 
 // Constructor
 ConditionalZone::ConditionalZone()
@@ -382,110 +392,104 @@ int ConditionalZone::EvalExp(Terminal *term)
 
     switch (keyword)
     {
-    case 0: // Check
+    case CHECK: // Check
         if (c)
             n = 1;
         break;
-    case 1: // Guests
+    case GUESTS: // Guests
         if (c)
             n = c->Guests();
         break;
-    case 2: // Subchecks
+    case SUBCHECKS: // Subchecks
         if (c)
             n = c->SubCount();
         break;
-    case 3: // settle (can settle checks)
+    case SETTLE: // settle (can settle checks)
         n = term->CanSettleCheck();
         break;
-    case 4: // order (can order food)
+    case ORDER: // order (can order food)
         if (e)
             n = e->CanOrder(s);
         break;
-    case 5: // drawer
+    case DRAWER: // drawer
         if (term->FindDrawer())
             n = 1;
         break;
-    case 6: // drawercount
+    case DRAWERCOUNT: // drawercount
         n = term->drawer_count;
         break;
-    case 7: // orderbyseats
+    case ORDERBYSEAT: // orderbyseat
         n = s->use_seats;
         break;
-    case 8: // developer
+    case DEVELOPER: // developer
         if (e)
             n = e->CanEdit();
         break;
-    case 9: // flow
+    case FLOW: // flow
         n = !(term->page->type == PAGE_SCRIPTED3);
         break;
-    case 10: // assigned
+    case ASSIGNED: // assigned
         n = (s->drawer_mode == DRAWER_ASSIGNED);
         break;
-    case 11: // local
+    case LOCAL: // local
         n = term->is_server;
         break;
-    case 12: // supervisor
+    case SUPERVISOR: // supervisor
         if (e)
             n = e->IsSupervisor(s);
         break;
-    case 13: // manager
+    case MANAGER: // manager
         if (e)
             n = e->IsManager(s);
         break;
-    case 14: // editusers
+    case EDITUSERS: // editusers
         if (e)
             n = e->CanEditUsers(s);
         break;
-    case 15: // merchandise
+    case MERCHANDISE: // merchandise
         n = s->family_group[FAMILY_MERCHANDISE] != SALESGROUP_NONE;
         break;
-    case 16: // movetable
+    case MOVETABLE: // movetable
         if (e)
             n = e->CanMoveTables(s);
         break;
-    case 17: // tablepages
+    case TABLEPAGES: // tablepages
         n = term->zone_db->table_pages;
         break;
-    case 18: // passwords
+    case PASSWORDS: // passwords
         n = s->password_mode;
         break;
-    case 19: // superuser
+    case SUPERUSER: // superuser
         if (e)
             n = e->CanEditSystem();
         break;
-    case 20: // payexpenses
+    case PAYEXPENSES: // payexpenses
         if (e)
             n = e->CanPayExpenses(s);
         break;
-    case 21: // fastfood
+    case FASTFOOD: // fastfood
         n = (term->type == TERMINAL_FASTFOOD);
         break;
-    case 22: // lastendday
+    case LASTENDDAY: // lastendday
         if (term && term->system_data && term->system_data->CheckEndDay(term) > 0)
             n = term->system_data->LastEndDay();
         else
             n = -1;
         break;
-    case 23: // license_expired
-        if (s->expire_days > 0)
-            n = 0;
-        else
-            n = 1;
-        break;
-    case 24: // checkbalanced
+    case CHECKBALANCED: // checkbalanced
         n = term->check_balanced;
         break;
-    case 25: // haspayments
+    case HASPAYMENTS: // haspayments
         n = term->has_payments;
         break;
-    case 26: // training
+    case TRAINING: // training
         // This is to allow buttons to be shown in training mode only.  The
         // buttons will primarily be for documentation.  Similar to the comment
         // button that only shows up for the superuser, but easier to program.
         if (e)
             n = e->training;
         break;
-    case 27:  // selectedorder
+    case SELECTORDER:  // selectedorder
         n = (term->order ? 1 : 0);
         break;
     default:
@@ -495,19 +499,19 @@ int ConditionalZone::EvalExp(Terminal *term)
     int retval = 0;
     switch (op)
     {
-    case 0:
+    case EQUAL:
         retval = (n == val);
         break;
-    case 1:
+    case GREATER:
         retval = (n > val);
         break;
-    case 2:
+    case LESSER:
         retval = (n < val);
         break;
-    case 3:
+    case NOTEQUAL:
         retval = (n != val);
         break;
-    case 4:
+    case GREATEREQUAL:
         retval = (n >= val);
         break;
     default:
