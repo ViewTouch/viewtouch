@@ -19,7 +19,6 @@ else()
 endif()
 
 set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
-set(LICENSE_SERVER "default_license_server" CACHE STRING "The license server to be compiled into viewtouch")
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
@@ -93,8 +92,10 @@ add_library(zone zone/zone.cc zone/zone_object.cc zone/pos_zone.cc
 target_link_libraries(zone conf_file)
 
 add_executable(vt_main data_file.cc 
-                 main/manager.cc external/blowfish.c main/license_hash.cc 
-	         main/license.cc main/printer.cc 
+    main/license_hash.cc
+    main/license_hash.hh
+                 main/manager.cc
+                 main/printer.cc
                  main/terminal.cc main/settings.cc main/labels.cc 
                  main/locale.cc main/credit.cc main/sales.cc 
                  main/check.cc main/account.cc main/system.cc 
