@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-#define SETTINGS_VERSION 94  // READ ABOVE
+constexpr int SETTINGS_VERSION = 95;  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -554,8 +554,6 @@ public:
     Str altdiscount_filename;    // discount, coupons, etc. for old archives
     Str altsettings_filename;    // filename for old tax settings, et al
     int changed;                 // boolean - has a setting been changed?
-    Str license_key;             // passed to license.cc for license validity check
-    int expire_days;             // days left until expiration
     Str email_send_server;       // what SMTP server to use for sending email
     Str email_replyto;           // Reply To address for outgoing emails
     int allow_iconify;           // Whether user can iconify window
