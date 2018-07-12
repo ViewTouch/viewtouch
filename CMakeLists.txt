@@ -118,7 +118,6 @@ target_link_libraries(vt_print vtcore)
 add_executable(vt_cdu cdu/cdu_main.cc main/cdu_att.cc)
 target_link_libraries(vt_cdu vtcore)
 #add_executable(vt_authorize authorize_main.cc utility.cc)
-add_executable(vt_temphash main/license_hash.cc main/temphash.cc external/sha1.cc)
 #add_executable(vt_ccq_pipe vt_ccq_pipe.cc socket.cc utility.cc conf_file.cc)
 
 # create build_number.h file
@@ -135,7 +134,7 @@ if(BUILD_TESTING)
     add_subdirectory(tests/conf_file)
 endif()
 
-install(TARGETS vtpos vt_temphash vt_cdu vt_print vt_term vt_main
+install(TARGETS vtpos vt_cdu vt_print vt_term vt_main
 	RUNTIME DESTINATION viewtouch/bin
         LIBRARY DESTINATION viewtouch/lib
 	ARCHIVE DESTINATION viewtouch/lib/static)
