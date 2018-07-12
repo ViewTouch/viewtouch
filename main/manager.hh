@@ -118,7 +118,6 @@ public:
 
 
 /**** Functions ****/
-int CheckLicense(Settings *settings, int force_check = 0);
 void ViewTouchError(const char* message, int do_sleep = 1);  // reports an error with contact info
 int  ViewTouchLicense(char* license, int maxlen);  // reports an error and receives a temporary license
 
