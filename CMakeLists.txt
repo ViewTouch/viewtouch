@@ -53,7 +53,13 @@ if (${TERM_CREDIT} MATCHES "credit_mcve")
 endif(${TERM_CREDIT} MATCHES "credit_mcve")
 
 
-add_library(conf_file conf_file.cc conf_file.hh)
+# read and write ini-config files
+add_library(conf_file STATIC
+    conf_file.cc conf_file.hh)
+# provide xdb image data, only vt_term needs to link, as it accesses 'ImageData'
+add_library(image_data STATIC
+    image_data.cc image_data.hh)
+
 find_package(ZLIB REQUIRED)
 target_link_libraries(conf_file PRIVATE ZLIB::ZLIB)
 set(VT_XLIBS X11 Xm Xmu Xt Xpm Xft freetype fontconfig Xrender)
@@ -117,11 +123,11 @@ add_executable(vt_term
     term/layer.hh
     term/term_dialog.cc
     term/term_dialog.hh
-    image_data.cc
-    image_data.hh
     term/term_${TERM_CREDIT}.cc)
 
-target_link_libraries(vt_term vtcore conf_file ${VT_XLIBS} ${TERM_CREDIT_LIBS})
+target_link_libraries(vt_term
+    vtcore conf_file image_data
+    ${VT_XLIBS} ${TERM_CREDIT_LIBS})
 
 add_executable(vt_print print/print_main.cc)
 target_link_libraries(vt_print vtcore)
