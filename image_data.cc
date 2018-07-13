@@ -21,6 +21,9 @@
 #include "basic.hh"
 #include "image_data.hh"
 
+#include <cassert>
+#include <sstream>
+
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
@@ -50,31 +53,8 @@
 
 
 /**** Image Values ****/
-int ImageValue[] = {
-    IMAGE_SAND,
-    IMAGE_LIT_SAND,
-    IMAGE_DARK_SAND,
-    IMAGE_LITE_WOOD,
-    IMAGE_WOOD,
-    IMAGE_DARK_WOOD,
-    IMAGE_GRAY_PARCHMENT,
-    IMAGE_GRAY_MARBLE,
-    IMAGE_GREEN_MARBLE,
-    IMAGE_PARCHMENT,
-    IMAGE_PEARL, 
-    IMAGE_CANVAS, 
-    IMAGE_TAN_PARCHMENT,
-    IMAGE_SMOKE,
-    IMAGE_LEATHER,
-    IMAGE_BLUE_PARCHMENT,
-    IMAGE_GRADIENT,
-    IMAGE_GRADIENTBROWN,
-    IMAGE_BLACK,
-    IMAGE_GREYSAND,
-    IMAGE_WHITEMESH,
-    -1};
 
-const char* *ImageData[] = {
+constexpr std::array<const char**, IMAGE_COUNT> ImageData = {
     SandData,
     LitSandData,
     DarkSandData,
@@ -95,8 +75,8 @@ const char* *ImageData[] = {
     gradient_brown_xpm,
     black_xpm,
     greySand,
-    whiteMesh,
-    NULL};
+    whiteMesh
+};
 
 /**** Functions ****/
 int ImageColorsUsed()
@@ -104,27 +84,38 @@ int ImageColorsUsed()
     int colors = 0;
     int tmp;
     int c;
-    for (int i = 0; ImageData[i] != NULL; ++i)
+    for (size_t image = 0; image < IMAGE_COUNT; ++image)
     {
-        sscanf(ImageData[i][0], "%d %d %d", &tmp, &tmp, &c);
+        std::istringstream ss(ImageData[image][0]);
+        ss >> tmp >> tmp >> c;
+        if (ss.fail())
+            assert(false);
         colors += c;
     }
     return colors;
 }
 
-int ImageWidth(int image)
+int ImageWidth(const size_t image)
 {
+    assert(image < IMAGE_COUNT);
     int width = 0;
-    sscanf(ImageData[image][0], "%d", &width);
+    std::istringstream ss(ImageData[image][0]);
+    ss >> width;
+    if (ss.fail())
+        assert(false);
 
     return width;
 }
 
-int ImageHeight(int image)
+int ImageHeight(const size_t image)
 {
+    assert(image < IMAGE_COUNT);
     int height = 0;
     int tmp;
-    sscanf(ImageData[image][0], "%d %d", &tmp, &height);
+    std::istringstream ss(ImageData[image][0]);
+    ss >> tmp >> height;
+    if (ss.fail())
+        assert(false);
 
     return height;
 }

@@ -22,10 +22,10 @@
 #define _IMAGE_DATA_HH
 
 
-#include "basic.hh"
+#include <array>
+#include <cstddef> // size_t
 
 /**** Image Data ****/
-#define IMAGE_COUNT  21
 
 enum textures {
 	IMAGE_SAND,
@@ -48,19 +48,19 @@ enum textures {
 	IMAGE_GRADIENTBROWN,
 	IMAGE_BLACK,
 	IMAGE_GREYSAND,
-	IMAGE_WHITEMESH
+    IMAGE_WHITEMESH,
+    IMAGE_COUNT // 21 // number of images
 };
 
-#define IMAGE_CLEAR     253
-#define IMAGE_UNCHANGED 254
-#define IMAGE_DEFAULT   255
+constexpr int IMAGE_CLEAR     = 253;
+constexpr int IMAGE_UNCHANGED = 254;
+constexpr int IMAGE_DEFAULT   = 255;
 
-extern int    ImageValue[];
-extern const genericChar* *ImageData[];
+extern const std::array<const char**, IMAGE_COUNT> ImageData;
 
 /**** Functions ****/
 int ImageColorsUsed();  // Returns total colors used in all xpm files
-int ImageWidth(int image);
-int ImageHeight(int image);
+int ImageWidth(const size_t image);
+int ImageHeight(const size_t image);
 
 #endif
