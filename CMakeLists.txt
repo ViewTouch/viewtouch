@@ -19,7 +19,6 @@ else()
 endif()
 
 set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
-set(LICENSE_SERVER "default_license_server" CACHE STRING "The license server to be compiled into viewtouch")
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
@@ -93,8 +92,10 @@ add_library(zone zone/zone.cc zone/zone_object.cc zone/pos_zone.cc
 target_link_libraries(zone conf_file)
 
 add_executable(vt_main data_file.cc 
-                 main/manager.cc external/blowfish.c main/license_hash.cc 
-	         main/license.cc main/printer.cc 
+    main/license_hash.cc
+    main/license_hash.hh
+                 main/manager.cc
+                 main/printer.cc
                  main/terminal.cc main/settings.cc main/labels.cc 
                  main/locale.cc main/credit.cc main/sales.cc 
                  main/check.cc main/account.cc main/system.cc 
@@ -118,7 +119,6 @@ target_link_libraries(vt_print vtcore)
 add_executable(vt_cdu cdu/cdu_main.cc main/cdu_att.cc)
 target_link_libraries(vt_cdu vtcore)
 #add_executable(vt_authorize authorize_main.cc utility.cc)
-add_executable(vt_temphash main/license_hash.cc main/temphash.cc external/sha1.cc)
 #add_executable(vt_ccq_pipe vt_ccq_pipe.cc socket.cc utility.cc conf_file.cc)
 
 # create build_number.h file
@@ -135,7 +135,7 @@ if(BUILD_TESTING)
     add_subdirectory(tests/conf_file)
 endif()
 
-install(TARGETS vtpos vt_temphash vt_cdu vt_print vt_term vt_main
+install(TARGETS vtpos vt_cdu vt_print vt_term vt_main
 	RUNTIME DESTINATION viewtouch/bin
         LIBRARY DESTINATION viewtouch/lib
 	ARCHIVE DESTINATION viewtouch/lib/static)

@@ -343,11 +343,6 @@ int Layer::TitleBar()
             Text("** RECORDING MACRO **", 21, page_w / 2, 6, c2,
                  FONT_TIMES_20B, ALIGN_CENTER);
         }
-        else if (title_mode == MODE_EXPIRED)
-        {
-            Text("** SOFTWARE EXPIRED **", 22, page_w / 2, 6, c2,
-                 FONT_TIMES_20B, ALIGN_CENTER);
-        }
         else if (title_mode == MODE_TRAINING)
         {
             Text("** TRAINING MODE **", 19, page_w / 2, 6, c2,

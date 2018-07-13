@@ -238,7 +238,7 @@ public:
 #define MODE_TRAINING  1  // current user is in training
 #define MODE_TRANSLATE 2  // edit mode - button translation
 #define MODE_EDIT      3  // edit mode - application building
-#define MODE_EXPIRED   4  // license for software has expired
+//#define MODE_EXPIRED   4  // license for software has expired // deprecated
 #define MODE_MACRO     5  // record a macro
 
 #define WINFRAME_BORDER 1  // regular border for window

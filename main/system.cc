@@ -95,11 +95,6 @@ System::~System()
 }
 
 // Member Functions
-int System::LicenseExpired()
-{
-    return (expire.IsSet() && SystemTime >= expire);
-}
-
 int System::InitCurrentDay()
 {
     FnTrace("System::InitCurrentDay()");

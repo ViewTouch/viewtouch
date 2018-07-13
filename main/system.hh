@@ -112,7 +112,6 @@ public:
     Str       data_path; // directory containing system data
     Str       temp_path; // directory for temporary file storage
     TimeInfo  start;     // time system started
-    TimeInfo  expire;    // time software expires
     TimeInfo  release;   // time software was released
 
     Settings         settings;
@@ -154,8 +153,6 @@ public:
     Drawer  *DrawerList()     { return drawer_list.Head(); }
     Drawer  *DrawerListEnd()  { return drawer_list.Tail(); }
 
-    int LicenseExpired();
-    // returns boolean - Is system software license expired?
     int SetDataPath(const char* path);
     // specify directory where system data is kept
     int CheckFileUpdates();

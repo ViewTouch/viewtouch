@@ -19,262 +19,35 @@
  * Shared functions for generating a temporary license.
  */
 
-/* bkk bsd6 compile */
-typedef unsigned int u_int;
-
-#include <arpa/inet.h>
-#include <errno.h>
-#include <string.h>
-#include <time.h>
-#include <sys/socket.h>
-#include <sys/sysctl.h>
-#include <sys/utsname.h>
-#include <net/if.h>
-#include <net/route.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <errno.h>
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <stdio.h>
-#include <sys/ioctl.h>
-
-#include "debug.hh"
 #include "license_hash.hh"
-#include "sha1.hh"
-#include "manager.hh"
+
+#include "basic.hh" // genericChar
+
+#include <sys/utsname.h> // uname()
+#include <net/if.h> // ifreq, ifconf
+#include <netinet/in.h> // IPPROTO_IP
+
+#include <cstring> // strcat, memset
+#include <cstdio> // snprintf
+#include <cstddef> // size_t
+
 
 #ifdef BSD
 #include <net/if_dl.h>
 #endif
 
 #ifdef LINUX
-#include <net/if_arp.h>
-#include <sys/ioctl.h>
+#include <sys/ioctl.h> // ioctl, SIOCGIFHWADDR
 #endif
 
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
 
-#define LICENCE_HASH_STRLENGTH   256 
-#define LICENCE_HASH_STRLONG    4096
-#define MAXTEMPLEN   20
 
-// these are for internal use only and do not need to be translated
-const genericChar* months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
-                         "Aug", "Sep", "Oct", "Nov", "Dec"};
-const genericChar* days[]   = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-
-/****
- * GenerateDDate:  Called by GenerateTempKey to generate a slightly
- *   obfuscated date string, the format of which depends on the
- *   weekday.
- ****/
-int GenerateDDate(genericChar* dest, int maxlen, struct tm *date)
-{
-    int retval = 0;
-    int weekday = date->tm_wday;
-
-    switch (weekday)
-    {
-    case 0:
-        snprintf(dest, maxlen, "%2d/%2d/%4d",
-                 date->tm_mday, date->tm_mon + 1, date->tm_year + 1900);
-        break;
-    case 1:
-        snprintf(dest, maxlen, "%2d %2d/%4d",
-                 date->tm_mday, date->tm_mon + 1, date->tm_year + 1900);
-        break;
-    case 2:
-        snprintf(dest, maxlen, "%2d %s %4d",
-                 date->tm_mday, months[date->tm_mon], date->tm_year + 1900);
-        break;
-    case 3:
-        snprintf(dest, maxlen, "%s %2d, %4d",
-                 months[date->tm_mon], date->tm_mday, date->tm_year + 1900);
-        break;
-    case 4:
-        snprintf(dest, maxlen, "%s %s %2d, %4d", days[date->tm_wday],
-                 months[date->tm_mon], date->tm_mday, date->tm_year + 1900);
-        break;
-    case 5:
-        snprintf(dest, maxlen, "%s %2d/%2d/%4d", days[date->tm_wday],
-                 date->tm_mday, date->tm_mon + 1, date->tm_year + 1900);
-        break;
-    case 6:
-        snprintf(dest, maxlen, "%s %2d %s %4d", days[date->tm_wday],
-                 date->tm_mday, months[date->tm_mon], date->tm_year + 1900);
-        break;
-    }
-    return retval;
-}
-
-/****
- * StringReverse:  just reverses a string in place.
- ****/
-int StringReverse(genericChar* dest)
-{
-    int retval = 1;
-    int dlen = strlen(dest);
-    int didx = dlen - 1;
-    int tidx = 0;
-    genericChar* temp;
-    
-    for(int i=0;i<(dlen/2);i++)
-    {
-	genericChar tmp=dest[i];
-	dest[i]=dest[dlen-i-1];
-	dest[dlen-i-1]=tmp;
-    }
-    return retval;
-}
-
-/****
- * GenerateDLicense:  Called by GenerateTempKey to generate a slightly
- *   obfuscated license string, the format of which depends on the
- *   weekday.
- ****/
-int GenerateDLicense(genericChar* dest, int maxlen, const genericChar* license, int weekday)
-{
-    int retval = 0;
-    int didx;
-    int lidx;
-    int pass;
-    int llen = strlen(license);
-
-    switch (weekday)
-    {
-    case 0:  // just the license
-        snprintf(dest, maxlen, "%s", license);
-        break;
-    case 1:  // every odd digit, then every even digit
-    case 5:  // the above reversed
-        didx = 0;
-        for (pass = 0; pass < 2; pass++)
-        {
-            lidx = pass;
-            while (lidx < llen)
-            {
-                dest[didx] = license[lidx];
-                didx += 1;
-                lidx += 2;
-            }
-        }
-        dest[didx] = '\0';
-        if (weekday == 5)
-            retval = StringReverse(dest);
-        break;
-    case 2:  // ever even digit, then every odd digit
-    case 6:  // the above reversed
-        didx = 0;
-        for (pass = 0; pass < 2; pass++)
-        {
-            lidx = !pass;
-            while (lidx < llen)
-            {
-                dest[didx] = license[lidx];
-                didx += 1;
-                lidx += 2;
-            }
-        }
-        dest[didx] = '\0';
-        if (weekday == 6)
-            retval = StringReverse(dest);
-        break;
-    case 3:  // odd digits forward, then even digits reversed
-        didx = 0;
-        lidx = 0;
-        while (lidx < llen)
-        {
-            dest[didx] = license[lidx];
-            didx += 1;
-            lidx += 2;
-        }
-        lidx -= 1;
-        while (lidx > 0)
-        {
-            dest[didx] = license[lidx];
-            didx += 1;
-            lidx -= 2;
-        }
-        dest[didx] = '\0';
-        break;
-    case 4:  // license reversed
-        strncpy(dest, license, maxlen);
-        retval = StringReverse(dest);
-        break;
-    }
-    return retval;
-}
-
-/****
- * GenerateTempKey:  Obfuscates things a bit, with consistency, by generating
- *  a temporary license key the format of which depends on the weekday.
- *  The key is built with both a date string and a license string, both of
- *  which are also formatted according to the weekday.
- ****/
-int GenerateTempKey(genericChar* dest, int maxlen, const genericChar* licenseid)
-{
-    int retval = 0;
-    genericChar tempkey[LICENCE_HASH_STRLONG];
-    int idx = 0;
-    time_t timenow = time(NULL);
-
-    GenerateTempKeyLong(tempkey, LICENCE_HASH_STRLONG, timenow, licenseid);
-    for (idx = 0; idx < MAXTEMPLEN; idx++)
-    {
-        dest[idx] = tempkey[idx];
-    }
-    dest[idx] = '\0';
-    
-    return retval;
-}
-
-int GenerateTempKeyLong(genericChar* dest, int maxlen, time_t timenow, const genericChar* licenseid)
-{
-    int retval = 0;
-    struct tm now;
-    genericChar ddate[LICENCE_HASH_STRLONG];
-    genericChar dlicense[LICENCE_HASH_STRLONG];
-    genericChar license_string[LICENCE_HASH_STRLONG];
-
-    // first we need to construct the digest based on the current time and
-    // license id
-    localtime_r(&timenow, &now);
-    GenerateDDate(ddate, LICENCE_HASH_STRLONG, &now);
-    GenerateDLicense(dlicense, LICENCE_HASH_STRLONG, licenseid, now.tm_wday);
-    if (now.tm_mday % 2)
-        snprintf(license_string, maxlen, "%s %s", ddate, dlicense);
-    else
-        snprintf(license_string, maxlen, "%s %s", dlicense, ddate);
-
-    DigestString(dest, maxlen, license_string);
-
-    return retval;
-}
-
-int DigestString(genericChar* dest, int maxlen, const genericChar* source)
-{
-    int retval = 0;
-    uint8_t digest[SHA1HashSize];
-    SHA1Context shacontext;
-    genericChar buffer[256];
-    int idx;
-
-    SHA1Reset(&shacontext);
-    SHA1Input(&shacontext, (uint8_t *)source, strlen(source));
-    SHA1Result(&shacontext, digest);
-    dest[0] = '\0';
-    for (idx = 0; idx < 20; idx++)
-    {
-        snprintf(buffer, LICENCE_HASH_STRLENGTH, "%02X", digest[idx]);
-        strncat(dest, buffer, maxlen);
-    }
-    return retval;
-}
+constexpr size_t LICENCE_HASH_STRLENGTH = 256;
+constexpr size_t LICENCE_HASH_STRLONG  = 4096;
+constexpr size_t MAXTEMPLEN = 20;
 
 int GetUnameInfo(char* buffer, int bufflen)
 {
@@ -290,6 +63,9 @@ int GetUnameInfo(char* buffer, int bufflen)
 }
 
 #ifdef BSD
+/* bkk bsd6 compile */
+typedef unsigned int u_int;
+
 /****
  * GetInterfaceInfo:  grab the MAC.  This version uses the sysctl method,
  *  which works fine for FreeBSD, but not Linux.
@@ -723,28 +499,3 @@ int GetMacAddress(char* stringbuff, int stringlen)
 
     return retval;
 }
-
-int GetMachineDigest(char* digest_string, int maxlen)
-{
-    printf("GetMachineDigest\n");
-    int retval = 1;
-    genericChar buffer[LICENCE_HASH_STRLONG];
-    genericChar uname_info[LICENCE_HASH_STRLONG];
-    genericChar mac_address[LICENCE_HASH_STRLONG];
-
-    if (GetUnameInfo(uname_info, LICENCE_HASH_STRLONG) == 0 &&
-        GetMacAddress(mac_address, LICENCE_HASH_STRLONG) == 0)
-    {
-        snprintf(buffer, LICENCE_HASH_STRLONG, "%s%s", mac_address, uname_info);
-        printf("GetMachineDigest (%s)\n",(const char*)buffer);
-        DigestString(digest_string, maxlen, buffer);
-        retval = 0;
-    }
-    else
-    {
-        printf("GetMachineDigest ERROR\n");
-    }
-
-    return retval;
-}
-

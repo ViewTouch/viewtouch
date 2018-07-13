@@ -1223,7 +1223,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
     static const char* commands[] = {
         "logout", "next archive", "prior archive", "open drawer",
         "shutdown", "systemrestart", "calibrate", "wagefilterdialog",
-        "servernext", "serverprior", "serverview", "licensecheck",
+        "servernext", "serverprior", "serverview",
         "ccqterminate", "ccaddbatch ", "lpdrestart", "adminforceauth1",
         "adminforceauth2", "adminforceauth3 ", "adminforceauth4",
         "faststartlogin", "opentab", "opentabcancel", "opentabamount",
@@ -1232,7 +1232,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
 	//for handy reference to the indices in the signal handler
 	enum comms  { LOGOUT, NEXT_ARCHIVE, PRIOR_ARCHIVE, OPEN_DRAWER,
                   SHUTDOWN, SYSTEM_RESTART, CALIBRATE, WAGE_FILTER_DIALOG,
-                  SERVER_NEXT, SERVER_PREV, SERVER_VIEW, LICENSE_CHECK,
+                  SERVER_NEXT, SERVER_PREV, SERVER_VIEW,
                   CCQ_TERMINATE, CC_ADDBATCH, LPD_RESTART, ADMINFORCE1,
                   ADMINFORCE2, ADMINFORCE3, ADMINFORCE4,
                   FASTSTARTLOGIN, OPENTAB, OPENTABCANCEL, OPENTABAMOUNT,
@@ -1327,10 +1327,6 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         else
             server = user;
         Update(UPDATE_SERVER, NULL);
-        return SIGNAL_OKAY;
-    case LICENSE_CHECK:  // licensecheck
-        CheckLicense(GetSettings(), 1);
-        Draw(1);
         return SIGNAL_OKAY;
     case CCQ_TERMINATE:
         strcpy(msg, "killall vt_ccq_pipe");
@@ -1827,14 +1823,6 @@ int Terminal::GetCheck(const genericChar* label, int customer_type)
     if (thisCheck == NULL)
     {
         // Create new thisCheck
-        if (system_data->LicenseExpired())
-        {
-            SimpleDialog *d = new SimpleDialog("New checks cannot be created until the license is renewed.");
-            d->Button("Continue");
-            OpenDialog(d);
-            return 1;
-        }
-
         thisCheck = new Check(settings, customer_type, user);
         if (thisCheck == NULL)
             return 1;
@@ -1864,15 +1852,6 @@ int Terminal::NewTakeOut(int customer_type)
          customer_type != CHECK_RETAIL))
         return 1;
 
-    if (system_data->LicenseExpired())
-    {
-        SimpleDialog *my_dialog = new SimpleDialog("New checks cannot be created until the license is renewed.");
-        my_dialog->Button("Continue");
-        OpenDialog(my_dialog);
-
-        return 1;
-    }
-
     Settings *settings = GetSettings();
     Check *thisCheck = new Check(settings, customer_type, user);
     if (thisCheck == NULL)
@@ -1889,14 +1868,6 @@ int Terminal::NewFastFood(int customer_type)
     FnTrace("Terminal::NewFastFood()");
     if (user == NULL || (customer_type != CHECK_FASTFOOD))
         return 1;
-
-    if (system_data->LicenseExpired())
-    {
-        SimpleDialog *d = new SimpleDialog("New checks cannot be created until the license is renewed.");
-        d->Button("Continue");
-        OpenDialog(d);
-        return 1;
-    }
 
     Settings *settings = GetSettings();
     Check *thisCheck = new Check(settings, customer_type, user);
@@ -1928,14 +1899,6 @@ int Terminal::QuickMode(int customer_type)
     {
         return 1;
 	}
-
-    if (system_data->LicenseExpired())
-    {
-        SimpleDialog *d = new SimpleDialog("New checks cannot be created until the license is renewed.");
-        d->Button("Continue");
-        OpenDialog(d);
-        return 1;
-    }
 
     if (customer != NULL)
         customer->Save();
@@ -2526,14 +2489,6 @@ int Terminal::EditTerm(int save_data, int edit_mode)
     if (translate)
         TranslateTerm();
 
-    if (system_data->LicenseExpired())
-    {
-        SimpleDialog *d = new SimpleDialog("Edit Mode is disabled");
-        d->Button("Continue");
-        OpenDialog(d);
-        return 0;
-    }
-
     for (Terminal *t = parent->TermList(); t != NULL; t = t->next)
     {
         if (t->edit || t->translate)
@@ -2665,14 +2620,6 @@ int Terminal::TranslateTerm()
 
     if (edit)
         EditTerm();
-
-    if (system_data->LicenseExpired())
-    {
-        SimpleDialog *d = new SimpleDialog("Translate Mode is disabled");
-        d->Button("Continue");
-        OpenDialog(d);
-        return 0;
-    }
 
     for (Terminal *t = parent->TermList(); t != NULL; t = t->next)
         if (t->edit || t->translate)
@@ -2806,11 +2753,11 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
                     GetMacAddress(tmp, STRLENGTH);
                     break;
                 case 6:  // machinekey
-                    GetMachineDigest(tmp, 20);
+                    GetUnameInfo(tmp, 20);
                     tmp[20] = '\0';
                     break;
                 case 7:  // licensedays
-                    sprintf(tmp, "%d", GetSettings()->expire_days);
+                    sprintf(tmp, "%d", 999);
                     break;
                 case 8:  // creditid
                     strcpy(tmp, cc_credit_termid.Value());
@@ -3236,9 +3183,7 @@ int Terminal::RenderBlankPage()
         return 1;
 
     int mode = MODE_NONE;
-    if (system_data->LicenseExpired())
-        mode = MODE_EXPIRED;
-    else if (record_activity)
+    if (record_activity)
         mode = MODE_MACRO;
     else if (edit)
         mode = MODE_EDIT;

@@ -35,7 +35,6 @@
 #include "settings.hh"
 #include "locale.hh"
 #include "credit.hh"
-#include "license.hh"
 #include "debug.hh"
 #include "socket.hh"
 #include "build_number.h"
@@ -248,29 +247,6 @@ genericChar* GetMachineName(genericChar* str = NULL, int len = STRLENGTH)
     return str;
 }
 
-int CheckLicense(Settings *settings, int force_check)
-{
-    FnTrace("CheckLicense()");
-    // bkk: always check the license
-    force_check = 1;
-
-    // Check Licensing
-    // GetExpirationDate() will kill the whole program if we're expired, so
-    // here we just check and report.
-    ReportLoader("Checking License...");
-    int DaysToExpire = GetExpirationDate(settings->license_key, force_check);
-    if (DaysToExpire > 0 && DaysToExpire < 1000)
-    {
-        char buffer[STRLENGTH];
-        snprintf(buffer, STRLENGTH, "You have %d days left on your license", DaysToExpire);
-        printf("%s\n", buffer);
-        ReportLoader(buffer);
-        sleep(1);
-    }
-    settings->expire_days = DaysToExpire;
-    return DaysToExpire;
-}
-
 void ViewTouchError(const char* message, int do_sleep)
 {
     FnTrace("ViewTouchError()");
@@ -294,33 +270,6 @@ void ViewTouchError(const char* message, int do_sleep)
     ReportLoader(errormsg);
     if (do_sleep)
         sleep(sleeplen);
-}
-
-/****
- * ViewTouchLicense:  Gets a temporary license string from the user.  This
- *  goes through LoaderSocket because vtpos should still be active at this point
- *  and it should have the con.
- ****/
-int ViewTouchLicense(char* license, int maxlen)
-{
-    FnTrace("ViewTouchLicense()");
-    int readlen = 0;
-    unsigned char* key;
-
-    license[0] = '\0';
-    write(LoaderSocket, "\r", 1);  // CR triggers license read session
-    readlen = read(LoaderSocket, license, maxlen);
-    if (readlen > 0)
-    {
-        license[readlen] = '\0';
-        key = (unsigned char* )license;
-        while (*key != '\0')
-        {
-            *key = toupper(*key);
-            key++;
-        }
-    }
-    return readlen;
 }
 
 /****
@@ -648,7 +597,6 @@ int StartSystem(int my_use_net)
         sys->account_db.low_acct_num = settings->low_acct_num;
         sys->account_db.high_acct_num = settings->high_acct_num;
     }
-    CheckLicense(settings);
     settings->Save();
     // Create alternate media file for old archives if it does not already exist
     sys->FullPath(MASTER_DISCOUNT_SAVE, altmedia);
@@ -715,7 +663,7 @@ int StartSystem(int my_use_net)
     LoadSystemData();
 
     // Add Remote terminals
-    int num_terms = NumLicensedTerminals();
+    int num_terms = 16384; // old value of license DEFAULT_TERMINALS
     if (my_use_net)
     {
         // Only allow as many terminals as the license permits, subtracting 1
@@ -1055,8 +1003,6 @@ int EndSystem()
     MasterSystem->cc_settle_results->Save();
     MasterSystem->cc_init_results->Save();
     MasterSystem->cc_saf_details_results->Save();
-
-    SaveLicenseData();
 
     // Delete databases
     if (MasterControl != NULL)
@@ -2524,9 +2470,11 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
     {
         if (LastDay != -1)
         {
-            ReportError("UpdateSystemCB checking license");
-            CheckLicense(settings);
-            settings->Save();
+            // TODO: what to do in this case?
+            // old code:
+            //ReportError("UpdateSystemCB checking license");
+            //CheckLicense(settings);
+            //settings->Save();
         }
         LastDay = day;
     }
@@ -2551,15 +2499,6 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
         int hour = SystemTime.Hour();
         if (LastHour != hour)
         {
-            if (sys->expire.IsSet() && SystemTime >= sys->expire)
-            {
-    		static int license_message = 0;	// only complain once
-		if (!license_message)
-		{
-                    ReportError("Setting legacy expire");
-                    license_message = 1;
-		}
-            }
             LastHour = hour;
             update |= UPDATE_HOUR;
         }

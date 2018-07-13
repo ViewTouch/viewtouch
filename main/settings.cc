@@ -1202,8 +1202,6 @@ Settings::Settings()
 {
     allow_iconify      = 1;
     email_send_server.Set("");
-    expire_days        = 0;
-    license_key.Set("");
     changed            = 0;
     screen_blank_time  = 60;
     start_page_timeout = 60;
@@ -1473,6 +1471,7 @@ int Settings::Load(const char* file)
     // 92 (06/11/15) added print_workorder
     // 93 (07/13/15) added workorder_heading
     // 94 (05/30/16) added per-terminal tax inclusive
+    // 95 (07/12/18) removed license_key
 
     genericChar str[256];
     if (version < 25 || version > SETTINGS_VERSION)
@@ -1919,8 +1918,11 @@ int Settings::Load(const char* file)
         df.Read(drawer_day_start);
         df.Read(drawer_night_start);
     }
-    if (version >= 42)
-        df.Read(license_key);
+    if (version >= 42 && version < 95)
+    {
+        Str dummy; // read value for backwards compatibility
+        df.Read(dummy); // license_key
+    }
     if (version >= 48)
         df.Read(email_send_server);
     if (version >= 49)
@@ -2318,7 +2320,6 @@ int Settings::Save()
     df.Write(min_day_length);
     df.Write(drawer_day_start);
     df.Write(drawer_night_start);
-    df.Write(license_key);
     df.Write(email_send_server);
     df.Write(email_replyto);
     df.Write(fast_takeouts);

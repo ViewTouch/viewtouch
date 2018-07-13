@@ -22,17 +22,8 @@
 #ifndef LICENSE_HASH_HH
 #define LICENSE_HASH_HH
 
-#include <time.h>
-#include "generic_char.hh"
-
-
-int GenerateTempKey( genericChar* dest, int maxlen, const genericChar* licenseid);
-int GenerateTempKeyLong(genericChar* dest, int maxlen, time_t license_time, const genericChar* licenseid);
-int DigestString( genericChar* dest, int maxlen, const genericChar* source);
-
 int GetUnameInfo(char* buffer, int bufflen);
 int GetInterfaceInfo(char* stringbuff, int stringlen);
 int GetMacAddress(char* stringbuff, int stringlen);
-int GetMachineDigest(char* digest_string, int maxlen);
 
 #endif
