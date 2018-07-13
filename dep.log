@@ -1,3 +1,0 @@
-find . -name '*.cc' -o -name '*.hh' | xargs /usr/X11R6/bin/makedepend  -DLINUX -I/usr/include -I/usr/include/freetype2 -I/usr/local/include -Iexternal/ -Imain/ -Iterm/ -Izone/ -I.  
-xargs: /usr/X11R6/bin/makedepend: No such file or directory
-make: *** [dep] Error 127
