@@ -28,6 +28,10 @@
 #include "socket.hh"
 #include "utility.hh"
 
+#include <string>
+#include <iostream>
+#include <sstream>
+
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
@@ -38,17 +42,21 @@
 #define DEVPORT  "/dev/lp0"
 #endif
 
-char PrinterDevName[STRLENGTH] = DEVPORT;  // the parallel device file
-int  InetPortNumber            = 65530;    // the socket on which to listen
-int  Verbose                   = 0;        // verbose mode
+constexpr int default_port_number = 65530; // the default socket on which to listen
 
+struct Parameter
+{
+    std::string PrinterDevName = DEVPORT;  // the parallel device file
+    int  InetPortNumber        = default_port_number; // the socket on which to listen
+    bool verbose               = false;    // verbose mode
+};
 
 /*********************************************************************
  * PROTOTYPES
  ********************************************************************/
-int  PrintFromRemote(int my_socket, int printer);
-int  ParseArguments(int argc, const char* argv[]);
-void ShowHelp(const char* progname);
+int  PrintFromRemote(const int my_socket, const int printer);
+Parameter ParseArguments(const int argc, const char* argv[]);
+void ShowHelp(const std::string &progname);
 
 
 /*********************************************************************
@@ -60,45 +68,46 @@ int main(int argc, const char* argv[])
     int lock;
     int printer;
     int connection;
-    char buffer[STRLENGTH];
 
     // parse the arguments for printer device
-    ParseArguments(argc, argv);
-    if (Verbose)
+    Parameter param = ParseArguments(argc, argv);
+    if (param.verbose)
     {
-        printf("Listening on port %d\n", InetPortNumber);
-        printf("Writing to printer at %s\n", PrinterDevName);
+        std::cout << "Listening on port " << param.InetPortNumber << std::endl;
+        std::cout << "Writing to printer at " << param.PrinterDevName << std::endl;
     }
+    exit(2);
 
     // listen for connections
-    my_socket = Listen(InetPortNumber);
+    my_socket = Listen(param.InetPortNumber);
     while (my_socket > -1)
     {
-        if (Verbose)
-            printf("Waiting to accept connection...\n");
+        if (param.verbose)
+            std::cout << "Waiting to accept connection..." << std::endl;
         connection = Accept(my_socket);
         if (connection > -1)
         {
-            lock = LockDevice(PrinterDevName);
+            lock = LockDevice(param.PrinterDevName.c_str());
             if (lock > 0)
             {
-                printer = open(PrinterDevName, O_WRONLY | O_APPEND);
+                printer = open(param.PrinterDevName.c_str(), O_WRONLY | O_APPEND);
                 if (printer >= 0)
                 {
                     PrintFromRemote(connection, printer);
-                    if (Verbose)
-                        printf("Closing Printer\n");
+                    if (param.verbose)
+                        std::cout << "Closing Printer" << std::endl;
                     close(printer);
                 }
                 else
                 {
-                    snprintf(buffer, STRLENGTH, "Failed to open %s", PrinterDevName);
-                    perror(buffer);
+                    const std::string msg =
+                            std::string("Failed to open ") + param.PrinterDevName;
+                    perror(msg.c_str());
                 }
                 UnlockDevice(lock);
             }
-            if (Verbose)
-                printf("Closing socket\n");
+            if (param.verbose)
+                std::cout << "Closing socket" << std::endl;
             close(connection);
         }
     }
@@ -115,7 +124,7 @@ int main(int argc, const char* argv[])
  * PrintFromRemote:  given an open socket and an open printer connection,
  *   reads from the socket and passes the data to the printer.
  ****/
-int PrintFromRemote(int my_socket, int printer)
+int PrintFromRemote(const int my_socket, const int printer)
 {
     char buffer[STRLENGTH];
     int active = 1;
@@ -138,18 +147,18 @@ int PrintFromRemote(int my_socket, int printer)
 /****
  * ShowHelp:
  ****/
-void ShowHelp(const char* progname)
+void ShowHelp(const std::string &progname)
 {
-    printf("\n");
-    printf("Usage:  %s [OPTIONS]\n", progname);
-    printf("  -d<device>  Printer device (default %s)\n", DEVPORT);
-    printf("  -h          Show this help screen\n");
-    printf("  -p<port>    Set the listening port (default %d)\n", InetPortNumber);
-    printf("  -v          Verbose mode\n");
-    printf("\n");
-    printf("Note:  there can be no spaces between an option and the associated\n");
-    printf("argument.  AKA, it's \"-p6555\" not \"-p 6555\".\n");
-    printf("\n");
+    std::cout << std::endl
+              << "Usage:  " << progname << " [OPTIONS]" << std::endl
+              << "  -d<device>  Printer device (default " << DEVPORT << ")" << std::endl
+              << "  -h          Show this help screen" << std::endl
+              << "  -p<port>    Set the listening port (default " << default_port_number << ")" << std::endl
+              << "  -v          Verbose mode" << std::endl
+              << std::endl
+              << "Note:  there can be no spaces between an option and the associated" << std::endl
+              << "argument.  AKA, it's \"-p6555\" not \"-p 6555\"." << std::endl
+              << std::endl;
     exit(1);
 }
 
@@ -157,33 +166,50 @@ void ShowHelp(const char* progname)
  * ParseArguments: Walk through the arguments setting global
  *   variables as necessary.
  ****/
-int ParseArguments(int argc, const char* argv[])
+Parameter ParseArguments(const int argc, const char* argv[])
 {
-    const char* arg;
-    int idx = 1;  // first command line argument past binary name
-    int retval = 0;
-
-    while (idx < argc)
+    Parameter param;
+    // start at 1, first command line argument past binary name
+    for (int idx = 1; idx < argc; idx++)
     {
-        arg = argv[idx];
-        if (arg[0] == '-')
+        std::string arg = argv[idx];
+        std::string prefix = arg.substr(0,2);
+        std::string val = arg.substr(2);
+        if (prefix == "-d")
         {
-            switch (arg[1])
+            if (val.empty())
             {
-            case 'd':
-                strncpy(PrinterDevName, &arg[2], STRLENGTH);
-                break;
-            case 'h':
+                std::cout << "Error parsing argument '" << arg << "'."
+                          << " No printer specified" << std::endl;
                 ShowHelp(argv[0]);
-                break;
-            case 'p':
-                InetPortNumber = atoi(&arg[2]);
-            case 'v':
-                Verbose = 1;
-                break;
             }
+            param.PrinterDevName = val;
+        } else if (prefix == "-h")
+        {
+            ShowHelp(argv[0]);
+        } else if (prefix == "-p")
+        {
+            if (val.empty())
+            {
+                std::cout << "Error parsing argument '" << arg << "'."
+                          << " No port number specified" << std::endl;
+                ShowHelp(argv[0]);
+            }
+            std::istringstream ss(val);
+            ss >> param.InetPortNumber;
+            if (ss.fail())
+            {
+                std::cout << "Can't parse port number: " << val << std::endl;
+                ShowHelp(argv[0]);
+            }
+        } else if (prefix == "-v")
+        {
+            param.verbose = true;
+        } else
+        {
+            std::cout << "Unrecognized parameter '" << arg << "'" << std::endl;
+            ShowHelp(argv[0]);
         }
-        idx += 1;
     }
-    return retval;
+    return param;
 }
