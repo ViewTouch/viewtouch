@@ -78,10 +78,17 @@ find_package(ZLIB REQUIRED)
 target_link_libraries(conf_file PRIVATE ZLIB::ZLIB)
 set(VT_XLIBS X11 Xm Xmu Xt Xpm Xft freetype fontconfig Xrender)
 
-add_library(vtcore main/admission.cc  external/sha1.cc utility.cc remote_link.cc  debug.cc debug.hh generic_char.cc 
-		generic_char.hh logger.cc logger.hh socket.cc socket.hh
-		main/labels.cc
-	)
+add_library(vtcore
+    main/admission.cc  main/admission.hh
+    external/sha1.cc   external/sha1.hh
+    utility.cc         utility.hh
+    remote_link.cc     remote_link.hh
+    debug.cc           debug.hh
+    generic_char.cc    generic_char.hh
+    logger.cc          logger.hh
+    socket.cc          socket.hh
+    main/labels.cc     main/labels.hh
+    )
 
 target_include_directories(vtcore PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}) # include generated files like build_number.h
@@ -92,39 +99,73 @@ add_executable(vtpos
 target_link_libraries(vtpos vtcore ${GTK3_LIBRARIES})
 
 
-add_library(zone zone/zone.cc zone/zone_object.cc zone/pos_zone.cc 
-                 zone/layout_zone.cc zone/form_zone.cc 
-                 zone/dialog_zone.cc zone/button_zone.cc 
-                 zone/order_zone.cc zone/payment_zone.cc 
-                 zone/login_zone.cc zone/user_edit_zone.cc 
-                 zone/check_list_zone.cc zone/settings_zone.cc 
-                 zone/report_zone.cc zone/table_zone.cc 
-                 zone/split_check_zone.cc zone/drawer_zone.cc 
-                 zone/printer_zone.cc zone/payout_zone.cc 
-                 zone/inventory_zone.cc zone/labor_zone.cc 
-                 zone/phrase_zone.cc zone/merchant_zone.cc 
-                 zone/account_zone.cc zone/hardware_zone.cc 
-                 zone/search_zone.cc zone/chart_zone.cc 
-                 zone/video_zone.cc zone/expense_zone.cc 
-                 zone/cdu_zone.cc zone/creditcard_list_zone.cc
-                 )
+add_library(zone
+    zone/zone.cc                 zone/zone.hh
+    zone/zone_object.cc          zone/zone_object.hh
+    zone/pos_zone.cc             zone/pos_zone.hh
+    zone/layout_zone.cc          zone/layout_zone.hh
+    zone/form_zone.cc            zone/form_zone.hh
+    zone/dialog_zone.cc          zone/dialog_zone.hh
+    zone/button_zone.cc          zone/button_zone.hh
+    zone/order_zone.cc           zone/order_zone.hh
+    zone/payment_zone.cc         zone/payment_zone.hh
+    zone/login_zone.cc           zone/login_zone.hh
+    zone/user_edit_zone.cc       zone/user_edit_zone.hh
+    zone/check_list_zone.cc      zone/check_list_zone.hh
+    zone/settings_zone.cc        zone/settings_zone.hh
+    zone/report_zone.cc          zone/report_zone.hh
+    zone/table_zone.cc           zone/table_zone.hh
+    zone/split_check_zone.cc     zone/split_check_zone.hh
+    zone/drawer_zone.cc          zone/drawer_zone.hh
+    zone/printer_zone.cc         zone/printer_zone.hh
+    zone/payout_zone.cc          zone/payout_zone.hh
+    zone/inventory_zone.cc       zone/inventory_zone.hh
+    zone/labor_zone.cc           zone/labor_zone.hh
+    zone/phrase_zone.cc          zone/phrase_zone.hh
+    zone/merchant_zone.cc        zone/merchant_zone.hh
+    zone/account_zone.cc         zone/account_zone.hh
+    zone/hardware_zone.cc        zone/hardware_zone.hh
+    zone/search_zone.cc          zone/search_zone.hh
+    zone/chart_zone.cc           zone/chart_zone.hh
+    zone/video_zone.cc           zone/video_zone.hh
+    zone/expense_zone.cc         zone/expense_zone.hh
+    zone/cdu_zone.cc             zone/cdu_zone.hh
+    zone/creditcard_list_zone.cc zone/creditcard_list_zone.hh
+    )
 
 target_link_libraries(zone conf_file)
 
-add_executable(vt_main data_file.cc 
-    main/license_hash.cc
-    main/license_hash.hh
-                 main/manager.cc
-                 main/printer.cc
-                 main/terminal.cc main/settings.cc main/labels.cc 
-                 main/locale.cc main/credit.cc main/sales.cc 
-                 main/check.cc main/account.cc main/system.cc 
-                 main/archive.cc main/drawer.cc main/inventory.cc 
-                 main/employee.cc main/labor.cc main/tips.cc 
-                 main/exception.cc main/customer.cc main/report.cc 
-                 main/system_report.cc main/system_salesmix.cc 
-                 main/chart.cc main/expense.cc
-                 main/cdu.cc main/cdu_att.cc )
+add_executable(vt_main
+    data_file.cc
+    data_file.hh
+    main/license_hash.cc    main/license_hash.hh
+    main/manager.cc         main/manager.hh
+    main/printer.cc         main/printer.hh
+    main/terminal.cc        main/terminal.hh
+    main/settings.cc        main/settings.hh
+    main/labels.cc          main/labels.hh
+    main/locale.cc          main/locale.hh
+    main/credit.cc          main/credit.hh
+    main/sales.cc           main/sales.hh
+    main/check.cc           main/check.hh
+    main/account.cc         main/account.hh
+    main/system.cc          main/system.hh
+    main/archive.cc         main/archive.hh
+    main/drawer.cc          main/drawer.hh
+    main/inventory.cc       main/inventory.hh
+    main/employee.cc        main/employee.hh
+    main/labor.cc           main/labor.hh
+    main/tips.cc            main/tips.hh
+    main/exception.cc       main/exception.hh
+    main/customer.cc        main/customer.hh
+    main/report.cc          main/report.hh
+    main/system_report.cc
+    main/system_salesmix.cc
+    main/chart.cc           main/chart.hh
+    main/expense.cc         main/expense.hh
+    main/cdu.cc             main/cdu.hh
+    main/cdu_att.cc         main/cdu_att.hh
+    )
 target_link_libraries(vt_main zone vtcore ${VT_XLIBS})
 
 add_executable(vt_term
