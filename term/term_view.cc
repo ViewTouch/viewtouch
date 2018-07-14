@@ -442,7 +442,7 @@ int SocketNo = 0;
 Display *Dis = NULL;
 GC       Gfx = 0;
 Window   MainWin;
-Pixmap   Texture[IMAGE_COUNT];
+std::array<Pixmap, IMAGE_COUNT> Texture;
 Pixmap   ShadowPix;
 int      ScrDepth = 0;
 Visual  *ScrVis = NULL;
@@ -2603,20 +2603,18 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     ResetView();
 
     // Set up textures
-    int image = 0;
-    while (ImageValue[image] >= 0)
+    for (int image = 0; image < IMAGE_COUNT; image++)
     {
         Pixmap pixmap = LoadPixmap(ImageData[image]);
         if (pixmap)
-            Texture[ImageValue[image]] = pixmap;
+            Texture[image] = pixmap;
         else
         {
             sprintf(str, "Can't Create Pixmap #%d On Display '%s'",
-                    ImageValue[image], display);
+                    image, display);
             ReportError(str);
             return 1;
         }
-        ++image;
     }
     ReadScreenSaverPix();
 
