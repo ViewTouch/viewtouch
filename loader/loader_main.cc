@@ -36,8 +36,8 @@
 #include "utility.hh"
 
 /**** Defintions ****/
-#define SOCKET_FILE    "/tmp/vt_main"
-#define COMMAND_FILE   VIEWTOUCH_PATH "/bin/.vtpos_command"
+const std::string SOCKET_FILE = "/tmp/vt_main";
+const std::string COMMAND_FILE = VIEWTOUCH_PATH "/bin/.vtpos_command";
 
 #ifdef DEBUG
 int debug_mode = 1;
@@ -127,14 +127,15 @@ gboolean SocketInputCB(GIOChannel *source, GIOCondition condition, gpointer data
     return TRUE;
 }
 
-int SetupConnection(const char* socket_file)
+int SetupConnection(const std::string &socket_file)
 {
     struct sockaddr_un server_adr, client_adr;
     server_adr.sun_family = AF_UNIX;
-    strcpy(server_adr.sun_path, socket_file);
-    unlink(socket_file);
+    strcpy(server_adr.sun_path, socket_file.c_str());
+    unlink(socket_file.c_str());
 
-    char str[256];
+    std::string str;
+    str.resize(256);
     int dev = socket(AF_UNIX, SOCK_STREAM, 0);
 
     if (dev <= 0)
@@ -149,8 +150,8 @@ int SetupConnection(const char* socket_file)
     {
         unsigned int len;
 
-        sprintf(str, VIEWTOUCH_PATH "/bin/vt_main %s&", socket_file);
-        system(str);
+        str = std::string(VIEWTOUCH_PATH) + "/bin/vt_main " + socket_file + "&";
+        system(str.c_str());
         listen(dev, 1);
         len = sizeof(client_adr);
         SocketNo = accept(dev, (struct sockaddr *) &client_adr, &len);
@@ -163,7 +164,7 @@ int SetupConnection(const char* socket_file)
 
     if (dev)
         close(dev);
-    unlink(SOCKET_FILE);
+    unlink(SOCKET_FILE.c_str());
 
     return SocketNo;
 }
@@ -256,24 +257,33 @@ void Css()
     g_object_unref (provider);
 }
 
-int WriteArgList(int argc, genericChar* argv[])
+bool WriteArgList(const int argc, char* argv[])
 {
-    int retval = 0, argidx = 0, fd = -1;
+    const std::string msg_base = "vtpos::WriteArgList(): ";
 
-    fd = open(COMMAND_FILE, O_CREAT | O_TRUNC | O_WRONLY, 0700);
-
-    if (fd >= 0)
     {
-        for (argidx = 0; argidx < argc; argidx++)
+        std::ofstream fout(COMMAND_FILE, std::fstream::trunc);
+        if (!fout.is_open())
         {
-            write(fd, argv[argidx], strlen(argv[argidx]));
-            write(fd, " ", 1);
+            std::cout << msg_base + "error while opening file '" + COMMAND_FILE + "'" << std::endl;
+            return false;
         }
-        close(fd);
-        chmod(COMMAND_FILE, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-        retval = 1;
+
+        for (int i = 0; i < argc; i++)
+        {
+            fout << argv[i] << " ";
+        }
+        // fout goes out of scope -> writes buffer to file and closes file handle
     }
-    return retval;
+    // modify file permissions (not possible with fstream
+    int ret = chmod(COMMAND_FILE.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if (ret != 0)
+    {
+        std::cout << msg_base + "error while modifying permissions for  file '"
+                  << COMMAND_FILE << "'" << std::endl;
+        return false;
+    }
+    return true;
 }
 
 void SignalFn(int my_signal)
@@ -359,7 +369,11 @@ int main(int argc, genericChar* argv[])
 
     // Write command line options to a file so that vt_main knows how to restart
     // the system
-    WriteArgList(argc, argv);
+    if (!WriteArgList(argc, argv))
+    {
+        std::cout << "Error while writing argument file for vt_main" << std::endl;
+        return 1;
+    }
 
     SocketNum = SetupConnection(SOCKET_FILE);
 
