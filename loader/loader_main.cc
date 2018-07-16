@@ -61,7 +61,7 @@ int             SocketNo         = 0;
 int             SocketNum        = 0;
 int             GetInput         = 0;
 char            KBInput[1024]    = "";
-char            BuildNumber[]    = BUILD_NUMBER;
+std::string     BuildNumber      = BUILD_NUMBER;
 
 /**** Functions ****/
 void ExitLoader()
