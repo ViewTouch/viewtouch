@@ -76,9 +76,9 @@ enum jump_tags {
 };
 
 // Other
-#define PAGE_STACK_SIZE     32
-#define SCRIPT_STACK_SIZE   32
-#define TITLE_HEIGHT        32
+constexpr int PAGE_STACK_SIZE   = 32;
+constexpr int SCRIPT_STACK_SIZE = 32;
+constexpr int TITLE_HEIGHT      = 32;
 
 // Terminal Types
 enum term_types {
@@ -92,60 +92,60 @@ enum term_types {
 };
 
 // Printer Types
-#define PRINTER_DEFAULT         0
-#define PRINTER_KITCHEN1        1
-#define PRINTER_KITCHEN2        2
-#define PRINTER_BAR1            3
-#define PRINTER_BAR2            4
-#define PRINTER_EXPEDITER       5
-#define PRINTER_RECEIPT         6
-#define PRINTER_REPORT          7
-#define PRINTER_CREDITRECEIPT   8
-#define PRINTER_REMOTEORDER     9
+constexpr int PRINTER_DEFAULT         = 0;
+constexpr int PRINTER_KITCHEN1        = 1;
+constexpr int PRINTER_KITCHEN2        = 2;
+constexpr int PRINTER_BAR1            = 3;
+constexpr int PRINTER_BAR2            = 4;
+constexpr int PRINTER_EXPEDITER       = 5;
+constexpr int PRINTER_RECEIPT         = 6;
+constexpr int PRINTER_REPORT          = 7;
+constexpr int PRINTER_CREDITRECEIPT   = 8;
+constexpr int PRINTER_REMOTEORDER     = 9;
 
-#define PRINTER_KITCHEN3        12
-#define PRINTER_KITCHEN4        13
+constexpr int PRINTER_KITCHEN3        = 12;
+constexpr int PRINTER_KITCHEN4        = 13;
 
 // Special printer codes
-#define PRINTER_KITCHEN1_NOTIFY 10
-#define PRINTER_KITCHEN2_NOTIFY 11
-#define PRINTER_KITCHEN3_NOTIFY 14
-#define PRINTER_KITCHEN4_NOTIFY 15
-#define PRINTER_NONE            99
+constexpr int PRINTER_KITCHEN1_NOTIFY = 10;
+constexpr int PRINTER_KITCHEN2_NOTIFY = 11;
+constexpr int PRINTER_KITCHEN3_NOTIFY = 14;
+constexpr int PRINTER_KITCHEN4_NOTIFY = 15;
+constexpr int PRINTER_NONE            = 99;
 
 // Update Messages
-#define UPDATE_MINUTE       (1<<0)  // Minute has passed
-#define UPDATE_HOUR         (1<<1)  // Hour has passed
-#define UPDATE_TIMEOUT      (1<<2)  // Too much time has passed with no input
-#define UPDATE_BLINK        (1<<3)  // Time to blink (local term)
-#define UPDATE_MEAL_PERIOD  (1<<4)  // Meal period has changed
-#define UPDATE_USERS        (1<<5)  // User or User list has changed
-#define UPDATE_CHECKS       (1<<6)  // Check list has changed
-#define UPDATE_ORDERS       (1<<7)  // Orders for current check have changed
-#define UPDATE_ORDER_SELECT (1<<8)  // Order selection has changed (local term)
-#define UPDATE_PAYMENTS     (1<<9)  // Payments for current check have changed
-#define UPDATE_TABLE        (1<<10) // Specific table has changed
-#define UPDATE_ALL_TABLES   (1<<11) // Check every table for change
-#define UPDATE_MENU         (1<<12) // Menu Items have changed
-#define UPDATE_DRAWER       (1<<13) // Drawer contents changed
-#define UPDATE_SALE         (1<<14) // New sale
-#define UPDATE_QUALIFIER    (1<<15) // terminal's qualifier state has changed
-#define UPDATE_GUESTS       (1<<16) // guest count entry changed
-#define UPDATE_DRAWERS      (1<<17) // drawer assignment/status has changed
-#define UPDATE_ARCHIVE      (1<<18) // terminal viewed archive changed
-#define UPDATE_SETTINGS     (1<<19) // system setting was changed
-#define UPDATE_JOB_FILTER   (1<<20) // job filter changed (local message only)
-#define UPDATE_TERMINALS    (1<<21) // terminal has been started/killed
-#define UPDATE_PRINTERS     (1<<22) // printer has been started/killed
-#define UPDATE_AUTHORIZE    (1<<23) // credit authorization done
-#define UPDATE_SERVER       (1<<24) // terminal viewed server changed
-#define UPDATE_REPORT       (1<<25) // requested report is done
+constexpr int UPDATE_MINUTE       = (1<< 0); // Minute has passed
+constexpr int UPDATE_HOUR         = (1<< 1); // Hour has passed
+constexpr int UPDATE_TIMEOUT      = (1<< 2); // Too much time has passed with no input
+constexpr int UPDATE_BLINK        = (1<< 3); // Time to blink (local term)
+constexpr int UPDATE_MEAL_PERIOD  = (1<< 4); // Meal period has changed
+constexpr int UPDATE_USERS        = (1<< 5); // User or User list has changed
+constexpr int UPDATE_CHECKS       = (1<< 6); // Check list has changed
+constexpr int UPDATE_ORDERS       = (1<< 7); // Orders for current check have changed
+constexpr int UPDATE_ORDER_SELECT = (1<< 8); // Order selection has changed (local term)
+constexpr int UPDATE_PAYMENTS     = (1<< 9); // Payments for current check have changed
+constexpr int UPDATE_TABLE        = (1<<10); // Specific table has changed
+constexpr int UPDATE_ALL_TABLES   = (1<<11); // Check every table for change
+constexpr int UPDATE_MENU         = (1<<12); // Menu Items have changed
+constexpr int UPDATE_DRAWER       = (1<<13); // Drawer contents changed
+constexpr int UPDATE_SALE         = (1<<14); // New sale
+constexpr int UPDATE_QUALIFIER    = (1<<15); // terminal's qualifier state has changed
+constexpr int UPDATE_GUESTS       = (1<<16); // guest count entry changed
+constexpr int UPDATE_DRAWERS      = (1<<17); // drawer assignment/status has changed
+constexpr int UPDATE_ARCHIVE      = (1<<18); // terminal viewed archive changed
+constexpr int UPDATE_SETTINGS     = (1<<19); // system setting was changed
+constexpr int UPDATE_JOB_FILTER   = (1<<20); // job filter changed (local message only)
+constexpr int UPDATE_TERMINALS    = (1<<21); // terminal has been started/killed
+constexpr int UPDATE_PRINTERS     = (1<<22); // printer has been started/killed
+constexpr int UPDATE_AUTHORIZE    = (1<<23); // credit authorization done
+constexpr int UPDATE_SERVER       = (1<<24); // terminal viewed server changed
+constexpr int UPDATE_REPORT       = (1<<25); // requested report is done
 
 // Colors
-#define COLOR_DEFAULT      255  // color determined by zone
-#define COLOR_PAGE_DEFAULT 254  // color determined by page setting
-#define COLOR_CLEAR        253  // text not rendered
-#define COLOR_UNCHANGED    252  // don't change value (or treat as default)
+constexpr int COLOR_DEFAULT      = 255; // color determined by zone
+constexpr int COLOR_PAGE_DEFAULT = 254; // color determined by page setting
+constexpr int COLOR_CLEAR        = 253; // text not rendered
+constexpr int COLOR_UNCHANGED    = 252; // don't change value (or treat as default)
 
 enum colors { 
 	COLOR_BLACK, COLOR_WHITE, COLOR_RED, COLOR_GREEN,
@@ -156,7 +156,7 @@ enum colors {
 	COLOR_DK_SEAGREEN
 };
 
-#define SHADOW_DEFAULT	256
+constexpr int SHADOW_DEFAULT = 256;
 
 // Text Alignment
 enum text_align {
@@ -175,10 +175,10 @@ enum shapes {
 };
 
 // Frame Properties
-#define FRAME_LIT       8   // alternate palette for frame
-#define FRAME_DARK      16  // (use 1)
-#define FRAME_INSET     32  // top-bottom, left-right colors switched
-#define FRAME_2COLOR    64  // 2 colors used instead of 4
+constexpr int FRAME_LIT     =  8;  // alternate palette for frame
+constexpr int FRAME_DARK    = 16;  // (use 1)
+constexpr int FRAME_INSET   = 32;  // top-bottom, left-right colors switched
+constexpr int FRAME_2COLOR  = 64;  // 2 colors used instead of 4
 
 // Fonts
 enum font_info {
