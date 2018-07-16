@@ -23,6 +23,7 @@
 
 #include "utility.hh"
 #include <zlib.h>
+#include <string>
 
 #define BLOCKSIZE   16384
 
@@ -35,7 +36,7 @@ class InputDataFile
 {
     gzFile fp;
     int old_format;
-    char filename[STRLONG];
+    std::string filename;
 
 public:
     int end_of_file;
@@ -46,7 +47,7 @@ public:
     ~InputDataFile() { Close(); }
 
     // Member Functions
-    int Open(const char* filename, int &version);
+    int Open(const std::string &filename, int &version);
     int Close();
 
     int   GetToken(char* buffer, int max_len = 0);
@@ -71,7 +72,7 @@ public:
 
     int PeekTokens();
     const char* ShowTokens(char* buffer = NULL, int lines = 1);
-    const char* FileName() { return filename; }
+    const std::string &FileName() { return filename; }
 };
 
 
@@ -80,9 +81,9 @@ public:
  ********************************************************************/
 class OutputDataFile
 {
-    void *fp;
-    int compress;
-    char filename[STRLONG];
+    void *fp = nullptr;
+    int compress = 0;
+    std::string filename;
 
 public:
     // Constructor
@@ -91,7 +92,7 @@ public:
     ~OutputDataFile() { Close(); }
 
     // Member Functions
-    int Open(const char* filename, int version, int use_compression = 0);
+    int Open(const std::string &filename, int version, int use_compression = 0);
     int Close();
 
     int PutValue(unsigned long long val, int bk);
@@ -109,7 +110,7 @@ public:
     int Write(const char* val, int bk = 0);
     int Write(Flt  *val, int bk = 0);
     int Write(Str  *val, int bk = 0);
-    const char* FileName() { return filename; }
+    std::string FileName() { return filename; }
 };
 
 
@@ -119,27 +120,27 @@ public:
 class KeyValueInputFile
 {
 private:
-    int filedes;
-    int bytesread;
-    int keyidx;
-    int validx;
-    int buffidx;
-    int comment;
-    int getvalue;
-    char delimiter;
-    char buffer[BLOCKSIZE];
-    char inputfile[STRLONG];
+    int filedes = -1;
+    int bytesread = 0;
+    int keyidx = 0;
+    int validx = 0;
+    int buffidx = 0;
+    int comment = 0;
+    int getvalue = 0;
+    char delimiter = ':';
+    char buffer[BLOCKSIZE] = {'\0'};
+    std::string inputfile;
 
 public:
     KeyValueInputFile();
-    KeyValueInputFile(int fd);
-    KeyValueInputFile(const char* filename);
-    int Open();
-    int Open(const char* filename);
-    int IsOpen();
-    int Set(int fd);
-    int Set(const char* filename);
-    char SetDelim(char delim);
+    KeyValueInputFile(const int fd);
+    KeyValueInputFile(const std::string &filename);
+    bool Open();
+    bool Open(const std::string &filename);
+    bool IsOpen();
+    int Set(const int fd);
+    int Set(const std::string &filename);
+    char SetDelim(const char delim);
     int Close();
     int Reset();
     int Read(char* key, char* value, int maxlen);
@@ -152,21 +153,21 @@ public:
 class KeyValueOutputFile
 {
 private:
-    int filedes;
-    char delimiter;
-    char outputfile[STRLONG];
+    int filedes = -1;
+    char delimiter = ':';
+    std::string outputfile;
 
 public:
     KeyValueOutputFile();
-    KeyValueOutputFile(int fd);
-    KeyValueOutputFile(const char* filename);
+    KeyValueOutputFile(const int fd);
+    KeyValueOutputFile(const std::string &filename);
     int Open();
-    int Open(const char* filename);
+    int Open(const std::string &filename);
     int IsOpen();
-    char SetDelim(char delim);
+    char SetDelim(const char delim);
     int Close();
     int Reset();
-    int Write(const char* key, const char* value);
+    int Write(const std::string &key, const std::string &value);
 };
 
 #endif
