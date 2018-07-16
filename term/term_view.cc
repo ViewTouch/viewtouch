@@ -562,7 +562,6 @@ int WStr(const char* s, int len)
 {
     FnTrace("WStr()");
     return BufferOut.PutString(s, len);
-
 }
 
 genericChar* RStr(genericChar* s)
@@ -576,13 +575,13 @@ genericChar* RStr(genericChar* s)
     return s;
 }
 
-int ReportError(const char* message)
+int ReportError(const std::string &message)
 {
     FnTrace("ReportError()");
     if (SocketNo)
     {
         WInt8(SERVER_ERROR);
-        WStr(message, 0);
+        WStr(message.c_str(), 0);
         return SendNow();
     }
     return 0;
