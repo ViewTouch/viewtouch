@@ -435,7 +435,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
                );
     stringlen = strlen((char*)stringbuf);
     
-    return 0;
+    return success;
 }
 #endif /* LINUX */
 
