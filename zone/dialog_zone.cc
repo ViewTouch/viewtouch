@@ -1454,13 +1454,8 @@ int PasswordDialog::RenderEntry(Terminal *term)
     FnTrace("PasswordDialog::RenderEntry()");
     Entry(term, (size_x/2) - 15, 2.5, 30);
     int  len = strlen(buffer);
-    genericChar str[len+2];
-    int i;
-
-    for (i = 0; i < len; ++i)
-        str[i] = '*';
-    str[len] = '\0';
-    TextC(term, 2.5, str, COLOR_WHITE);
+    std::string str(len, '*');
+    TextC(term, 2.5, str.c_str(), COLOR_WHITE);
     return 0;
 }
 
