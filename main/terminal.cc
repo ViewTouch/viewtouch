@@ -1364,6 +1364,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
             admin_forcing = 2;
             return SIGNAL_OKAY;
         }
+        break;
     case ADMINFORCE3: // adminforceauth3
         if (admin_forcing == 2)
         {
@@ -1383,6 +1384,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
                 credit->PrintAuth();
             admin_forcing = 0;
         }
+        break;
     case FASTSTARTLOGIN:
         FastStartLogin();
         return SIGNAL_OKAY;
