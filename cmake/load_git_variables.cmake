@@ -22,7 +22,8 @@ function(load_git_variables)
         COMMIT_COUNT
         COMMIT_COUNT_TOTAL
         COMMIT_HASH
-        REPO_IS_CLEAN)
+        REPO_IS_CLEAN
+        TIMESTAMP)
     cmake_parse_arguments(x "" "${one_value_args}" "" ${ARGV})
 
     # No free arguments allowed
@@ -62,6 +63,8 @@ function(load_git_variables)
         set(GIT_COMMIT_COUNT_TOTAL "~")
         set(GIT_COMMIT_HASH "dirty")
         set(GIT_REPO_IS_CLEAN "NO")
+        # if the repo is dirty use the current date and time
+        string(TIMESTAMP GIT_TIMESTAMP "%Y-%m-%d %H:%M:%S +0000" UTC)
     else()
         # VARIABLE: BRANCH
         # extract the name of the branch the last commit has been made on, so this also works
@@ -139,6 +142,19 @@ function(load_git_variables)
             set(GIT_REPO_IS_CLEAN "NO")
         endif()
 
+        # VARIABLE: COMMIT_TIMESTAMP
+        if (GIT_REPO_IS_CLEAN)
+            # if the repo is clean use the latest commit time
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} log -1 --format=%cd --date=iso
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                OUTPUT_VARIABLE GIT_TIMESTAMP
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                )
+        else()
+            # if the repo is dirty use the current date and time
+            string(TIMESTAMP GIT_TIMESTAMP "%Y-%m-%d %H:%M:%S +0000" UTC)
+        endif()
     endif()
 
     # fill return values if requested
