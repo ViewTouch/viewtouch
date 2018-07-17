@@ -149,16 +149,11 @@ public:
     const char* Slant() { return slant; }
     const char* Width() { return width; }
     const char* Pixels() { return pixels; }
-    const int   PixelsI() { return atoi(pixels); }
     const char* Points() { return points; }
-    const int   PointsI() { return atoi(points); }
     const char* HorRes() { return horres; }
-    const int   HorResI() { return atoi(horres); }
     const char* VertRes() { return vertres; }
-    const int   VertResI() { return atoi(vertres); }
     const char* Spacing() { return spacing; }
     const char* AvgWidth() { return avgwidth; }
-    const int   AvgWidthI() { return atoi(avgwidth); }
     const char* CharSet() { return charset; }
 
     void ClearFoundry() { strcpy(foundry, "*"); }
