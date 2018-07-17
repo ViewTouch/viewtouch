@@ -1,0 +1,18 @@
+#ifndef VT_VERSION_GENERATED_HPP
+#define VT_VERSION_GENERATED_HPP
+#include <string>
+namespace viewtouch
+{
+const std::string PROJECT         = "ViewTouch";
+const short VERSION_MAJOR         = @ViewTouch_VERSION_MAJOR@;
+const short VERSION_MINOR         = @ViewTouch_VERSION_MINOR@;
+const short VERSION_PATCH         = @ViewTouch_VERSION_PATCH@;
+const std::string VERSION_POSTFIX = "@ViewTouch_VERSION_POSTFIX@";
+const std::string VERSION         = "@ViewTouch_VERSION_STRING@";
+const std::string VERSION_EXT     = "@ViewTouch_VERSION_EXTENDED_STRING@";
+const std::string VERSION_FULL    = "@ViewTouch_VERSION_FULL_STRING@";
+const std::string COMPILER_TAG    = "@ViewTouch_COMPILER_TAG@";
+const std::string REVISION        = "@ViewTouch_REVISION@";
+const std::string CMAKE_TIMESTAMP = "@ViewTouch_TIMESTAMP@";
+}
+#endif // VT_VERSION_GENERATED_HPP
