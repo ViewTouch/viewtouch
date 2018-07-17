@@ -129,7 +129,7 @@ int TouchScreen::Connect(int boot)
         inaddr.sin_family      = AF_INET;
         inaddr.sin_port        = port;
         inaddr.sin_addr.s_addr = inet_addr(host.Value());
-        if (inaddr.sin_addr.s_addr == (Ulong) -1)
+        if (inaddr.sin_addr.s_addr == INADDR_NONE)
         {
             struct hostent *hp = gethostbyname(host.Value());
             if (hp == NULL || hp->h_addrtype != AF_INET)
