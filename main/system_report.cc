@@ -2760,13 +2760,13 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
 		TimeInfo time_is;
         TimeInfo time_was;
 		int id_is;
-        int id_was;
+        //int id_was;
 		int	cost_is;
-        int cost_was;
+        //int cost_was;
 		short exception_is;
-        short exception_was;
+        //short exception_was;
 		short reason_is;
-        short reason_was;
+        //short reason_was;
 		const char* item_is = NULL;
         const char* item_was = NULL;
 
@@ -2819,10 +2819,10 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
 			// exception info (for duplicate filter)
 
 			time_was = time_is;
-			id_was = id_is;
-			cost_was = cost_is;
-			exception_was = exception_is;
-			reason_was = reason_is;
+            //id_was = id_is;
+            //cost_was = cost_is;
+            //exception_was = exception_is;
+            //reason_was = reason_is;
 			item_was = item_is;
 
 			currException = currException->next;
@@ -3191,11 +3191,11 @@ Expenses::Expenses(Expense *expense, Terminal *term, Archive *archive)
 {
     UserDB *userdb = &(term->system_data->user_db);
     Employee *employee = userdb->FindByID(expense->employee_id);
-    Drawer *drawer_list;
-    if (archive != NULL)
-        drawer_list = archive->DrawerList();
-    else
-        drawer_list = term->system_data->DrawerList();
+    //Drawer *drawer_list;
+    //if (archive != NULL)
+    //    drawer_list = archive->DrawerList();
+    //else
+    //    drawer_list = term->system_data->DrawerList();
     AccountDB *acctdb = &(term->system_data->account_db);
     Account *tax_account = acctdb->FindByNumber(expense->tax_account_id);
     Account *dest_account = acctdb->FindByNumber(expense->dest_account_id);
