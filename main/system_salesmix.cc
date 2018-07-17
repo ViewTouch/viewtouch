@@ -124,7 +124,6 @@ int ItemCountList::AddCount(Order *item)
     ItemCount *previtem;
     int match;
     int item_count;
-    int item_cost;
 
     if (itemlist == NULL)
     {
@@ -143,7 +142,6 @@ int ItemCountList::AddCount(Order *item)
                 // always be 1.  But item->cost is item->item_cost
                 // multiplied by the original count.  So we divide
                 // item->cost by item->item_cost to get the correct count.
-                item_cost = item->item_cost;
                 item_count = item->cost / item->item_cost;
                 curritem->count += item_count;
                 curritem = NULL;  // break the loop
