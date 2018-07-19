@@ -23,6 +23,7 @@
 
 #include "basic.hh"
 #include <time.h>
+#include <string>
 
 extern int debug_mode;
 
@@ -290,7 +291,7 @@ extern TimeInfo SystemTime;
 
 
 /**** Other Functions ****/
-extern int ReportError(const char* message);
+extern int ReportError(const std::string &message);
 // general error reporting function
 // (the prototype is here but the implementation isn't in utility.cc)
 // implementation is in main/manager.cc

@@ -56,11 +56,10 @@ InputDataFile::InputDataFile()
 }
 
 // Member Functions
-int InputDataFile::Open(const char* name, int &version)
+int InputDataFile::Open(const std::string &name, int &version)
 {
 	FnTrace("InputDataFile::Open()");
     int i;
-    char errmsg[STRLENGTH];
 
 	if (IsDecodeReady == 0)
 	{
@@ -81,10 +80,11 @@ int InputDataFile::Open(const char* name, int &version)
 		gzclose((gzFile)fp);
 
 	version = 0;
-	fp = gzopen(name, "r");
+    fp = gzopen(name.c_str(), "r");
 	if (fp == NULL)
     {
-        snprintf(errmsg, STRLENGTH, "Unable to read %s:  %d", name, errno);
+        const std::string errmsg = "Unable to read file: '" + name
+                + "' errno: " + std::to_string(errno);
         ReportError(errmsg);
 		return 1;
     }
@@ -109,11 +109,11 @@ int InputDataFile::Open(const char* name, int &version)
 	{
 		gzclose((gzFile)fp);
         fp = NULL;
-        snprintf(errmsg, STRLENGTH, "Unknown file format for %s\n", name);
+        std::string errmsg = "Unknown file format for file: '" + name + "'";
         ReportError(errmsg);
 		return 1;
 	}
-    strcpy(filename, name);
+    filename = name;
 
 	return 0;
 }
@@ -361,42 +361,37 @@ const char* InputDataFile::ShowTokens(char* buffer, int lines)
 OutputDataFile::OutputDataFile()
 {
     FnTrace("OutputDataFile::OutputDataFile()");
-    fp       = NULL;
-    compress = 0;
-    filename[0] = '\0';
 }
 
 // Member Functions
-int OutputDataFile::Open(const char* filepath, int version, int use_compression)
+int OutputDataFile::Open(const std::string &filepath, int version, int use_compression)
 {
     FnTrace("OutputDataFile::Open()");
-    char errmsg[STRLENGTH];
 
-    if (filepath == NULL || strlen(filepath) <= 0)
+    if (filepath.empty())
         return 1;
 
-    strcpy(filename, filepath);
+    filename = filepath;
     compress = use_compression;
 
     if (compress)
-        fp = (void*)gzopen(filepath, "w");
+        fp = (void*)gzopen(filepath.c_str(), "w");
     else
-        fp = fopen(filepath, "w");
+        fp = fopen(filepath.c_str(), "w");
     if (fp == NULL)
     {
-        snprintf(errmsg, STRLENGTH, "OutputDataFile::Open error %d opening '%s'",
-                 errno, filepath);
+        std::string errmsg = std::string("OutputDataFile::Open error '")
+                + std::to_string(errno) + "' for '" + filepath + "'";
         ReportError(errmsg);
         return 1;
     }
 
     // write version string
-    char str[32];
-    sprintf(str, "vtpos 0 %d\n", version);
+    std::string str = "vtpos 0 " + std::to_string(version) + "\n";
     if (compress)
-        gzwrite((gzFile)fp, str, strlen(str));
+        gzwrite((gzFile)fp, str.c_str(), str.size());
     else
-        fwrite(str, 1, strlen(str), (FILE *) fp);
+        fwrite(str.c_str(), 1, str.size(), (FILE *) fp);
     return 0;
 }
 
@@ -581,63 +576,34 @@ keyn:  valuen  # this is the last key/value pair
 KeyValueInputFile::KeyValueInputFile()
 {
     FnTrace("KeyValueInputFile::KeyValueInputFile()");
-    filedes = -1;
-    bytesread = 0;
-    keyidx = 0;
-    validx = 0;
-    buffidx = 0;
-    comment = 0;
-    getvalue = 0;
-    delimiter = ':';
-    buffer[0] = '\0';
-    inputfile[0] = '\0';
 }
 
-KeyValueInputFile::KeyValueInputFile(int fd)
+KeyValueInputFile::KeyValueInputFile(const int fd) :
+    filedes(fd)
 {
-    FnTrace("KeyValueInputFile::KeyValueInputFile(int)");
-    filedes = fd;
-    bytesread = 0;
-    keyidx = 0;
-    validx = 0;
-    buffidx = 0;
-    comment = 0;
-    getvalue = 0;
-    delimiter = ':';
-    buffer[0] = '\0';
-    inputfile[0] = '\0';
+    FnTrace("KeyValueInputFile::KeyValueInputFile(const int)");
 }
 
-KeyValueInputFile::KeyValueInputFile(const char* filename)
+KeyValueInputFile::KeyValueInputFile(const std::string &filename) :
+    inputfile(filename)
 {
-    FnTrace("KeyValueInputFile::KeyValueInputFile(const char* )");
-    filedes = -1;
-    bytesread = 0;
-    keyidx = 0;
-    validx = 0;
-    buffidx = 0;
-    comment = 0;
-    getvalue = 0;
-    delimiter = ':';
-    buffer[0] = '\0';
-    strcpy(inputfile, filename);
+    FnTrace("KeyValueInputFile::KeyValueInputFile(const std::string &)");
 }
 
-int KeyValueInputFile::Open(void)
+bool KeyValueInputFile::Open(void)
 {
     FnTrace("KeyValueInputFile::Open()");
-    int retval = 0;
-    char errmsg[STRLENGTH];
+    bool retval = false;
 
-    if (strlen(inputfile) > 0)
+    if (!inputfile.empty())
     {
-        filedes = open(inputfile, O_RDONLY);
+        filedes = open(inputfile.c_str(), O_RDONLY);
         if (filedes > 0)
-            retval = 1;
+            retval = true;
         else if (filedes < 0)
         {
-            snprintf(errmsg, STRLENGTH, "KeyValueInputFile::Open error %d for %s",
-                     errno, inputfile);
+            const std::string errmsg = "KeyValueInputFile::Open error '"
+                    + std::to_string(errno) + "' for '" + inputfile + ";";
             ReportError(errmsg);
         }
     }
@@ -645,21 +611,21 @@ int KeyValueInputFile::Open(void)
     return retval;
 }
 
-int KeyValueInputFile::Open(const char* filename)
+bool KeyValueInputFile::Open(const std::string &filename)
 {
     FnTrace("KeyValueInputFile::Open(const char* )");
 
-    strcpy(inputfile, filename);
+    inputfile = filename;
     return Open();
 }
 
-int KeyValueInputFile::IsOpen()
+bool KeyValueInputFile::IsOpen()
 {
     FnTrace("KeyValueInputFile::IsOpen()");
     return (filedes > 0);
 }
 
-int KeyValueInputFile::Set(int fd)
+int KeyValueInputFile::Set(const int fd)
 {
     FnTrace("KeyValueInputFile::Set(int)");
     filedes = fd;
@@ -667,15 +633,15 @@ int KeyValueInputFile::Set(int fd)
     return 0;
 }
 
-int KeyValueInputFile::Set(const char* filename)
+int KeyValueInputFile::Set(const std::string &filename)
 {
     FnTrace("KeyValueInputFile::Set(const char* )");
 
-    strcpy(inputfile, filename);
+    inputfile = filename;
     return 0;
 }
 
-char KeyValueInputFile::SetDelim(char delim)
+char KeyValueInputFile::SetDelim(const char delim)
 {
     FnTrace("KeyValueInputFile::SetDelim()");
     char retval = delimiter;
@@ -718,7 +684,7 @@ int KeyValueInputFile::Reset()
     comment = 0;
     getvalue = 0;
     buffer[0] = '\0';
-    inputfile[0] = '\0';
+    inputfile = "";
 
     return retval;
 }
@@ -816,45 +782,37 @@ int KeyValueInputFile::Read(char* key, char* value, int maxlen)
 KeyValueOutputFile::KeyValueOutputFile()
 {
     FnTrace("KeyValueOutputFile::KeyValueOutputFile()");
-    filedes = -1;
-    delimiter = ':';
-    outputfile[0] = '\0';
 }
 
-KeyValueOutputFile::KeyValueOutputFile(int fd)
+KeyValueOutputFile::KeyValueOutputFile(const int fd) :
+    filedes(fd)
 {
     FnTrace("KeyValueOutputFile::KeyValueOutputFile(int)");
-    filedes = fd;
-    delimiter = ':';
-    outputfile[0] = '\0';
 }
 
-KeyValueOutputFile::KeyValueOutputFile(const char* filename)
+KeyValueOutputFile::KeyValueOutputFile(const std::string &filename) :
+    outputfile(filename)
 {
     FnTrace("KeyValueOutputFile::KeyValueOutputFile(const char* )");
-    filedes = -1;
-    delimiter = ':';
-    strcpy(outputfile, filename);
 }
    
 int KeyValueOutputFile::Open()
 {
     FnTrace("KeyValueOutputFile::Open()");
     int retval = 0;
-    char errmsg[STRLENGTH];
 
-    if (strlen(outputfile) > 0)
+    if (!outputfile.empty())
     {
         int mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
-        filedes = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, mode);
+        filedes = open(outputfile.c_str(), O_WRONLY | O_CREAT | O_TRUNC, mode);
         if (filedes > 0)
         {
             retval = 1;
         }
         else if (filedes < 0)
         {
-            snprintf(errmsg, STRLENGTH, "KeyValueOutputFile::Open error %d for %s",
-                     errno, outputfile);
+            std::string errmsg = std::string("KeyValueOutputFile::Open error '")
+                    + std::to_string(errno) + "' for '" + outputfile + "'";
             ReportError(errmsg);
         }
     }
@@ -862,12 +820,12 @@ int KeyValueOutputFile::Open()
     return retval;
 }
 
-int KeyValueOutputFile::Open(const char* filename)
+int KeyValueOutputFile::Open(const std::string &filename)
 {
     FnTrace("KeyValueOutputFile::Open(const char* )");
     int retval = 1;
 
-    strcpy(outputfile, filename);
+    outputfile = filename;
     retval = Open();
 
     return retval;
@@ -879,7 +837,7 @@ int KeyValueOutputFile::IsOpen()
     return (filedes > 0);
 }
 
-char KeyValueOutputFile::SetDelim(char delim)
+char KeyValueOutputFile::SetDelim(const char delim)
 {
     FnTrace("KeyValueOutputFile::SetDelim()");
     char retval = delimiter;
@@ -909,19 +867,18 @@ int KeyValueOutputFile::Reset()
     }
 
     filedes = -1;
-    outputfile[0] = '\0';
+    outputfile = "";
 
     return retval;
 }
 
-int KeyValueOutputFile::Write(const char* key, const char* value)
+int KeyValueOutputFile::Write(const std::string &key, const std::string &value)
 {
     FnTrace("KeyValueOutputFile::Write()");
     int retval = 1;
-    char buffer[STRLONG];
 
-    snprintf(buffer, STRLONG, "%s: %s\n", key, value);
-    retval = write(filedes, buffer, strlen(buffer));
+    std::string buffer = key + ": " + value + "\n";
+    retval = write(filedes, buffer.c_str(), buffer.size());
 
     return retval;
 }

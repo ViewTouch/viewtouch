@@ -38,9 +38,13 @@
 #include "debug.hh"
 #include "socket.hh"
 #include "build_number.h"
+
+#include "date/date.h"      // helper library to output date strings with std::chrono
+
                             // Standard C++ libraries
 #include <errno.h>          // system error numbers
 #include <iostream>         // basic input and output controls (C++ alone contains no facilities for IO)
+#include <fstream>          // basic file input and output
 #include <unistd.h>         // standard symbolic constants and types
 #include <sys/socket.h>     // main sockets header
 #include <sys/stat.h>       // data returned by the stat() function
@@ -55,16 +59,18 @@
 #include <string>           // Strings in C++ are of the std::string variety
 #include <csignal>          // C library to handle signals
 #include <fcntl.h>          // File Control
+#include <chrono>           // time durations and current clock
 
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
 
+using namespace date; // for date conversion on streams
 
 /**** System Globals ****/
 int VersionMajor = 4;
 int VersionMinor = 2;
-char BuildNumber[] = BUILD_NUMBER;
+std::string BuildNumber = BUILD_NUMBER;
 
 int ReleaseYear  = 1998;
 int ReleaseMonth = 10;
@@ -73,13 +79,13 @@ int ReleaseDay   = 20;
 Control     *MasterControl = NULL;
 int          MachineID = 0;
 
-#define CALLCTR_ERROR_NONE        0
-#define CALLCTR_ERROR_BADITEM     1
-#define CALLCTR_ERROR_BADDETAIL   2
+constexpr int CALLCTR_ERROR_NONE        = 0;
+constexpr int CALLCTR_ERROR_BADITEM     = 1;
+constexpr int CALLCTR_ERROR_BADDETAIL   = 2;
 
-#define CALLCTR_STATUS_INCOMPLETE 0
-#define CALLCTR_STATUS_COMPLETE   1
-#define CALLCTR_STATUS_FAILED     2
+constexpr int CALLCTR_STATUS_INCOMPLETE = 0;
+constexpr int CALLCTR_STATUS_COMPLETE   = 1;
+constexpr int CALLCTR_STATUS_FAILED     = 2;
 
 /**** System Data ****/
 
@@ -209,7 +215,7 @@ static int LastDay  = -1;
 #define VIEWTOUCH_UPDATE_REQUEST \
     "wget -nv -T 2 -t 2 http://www.viewtouch.com/vt_updates/vt-update -O " VIEWTOUCH_UPDATE_COMMAND
 
-#define VIEWTOUCH_CONFIG    VIEWTOUCH_PATH "/dat/.viewtouch_config"
+static const std::string VIEWTOUCH_CONFIG = VIEWTOUCH_PATH "/dat/.viewtouch_config";
 
 // vt_data is back in bin/ after a brief stint in dat/
 #define SYSTEM_DATA_FILE     VIEWTOUCH_PATH "/bin/" MASTER_ZONE_DB3
@@ -450,26 +456,25 @@ int main(int argc, genericChar* argv[])
 /*************************************************************
  * Functions
  *************************************************************/
-int ReportError(const char* message)
+int ReportError(const std::string &message)
 {
     FnTrace("ReportError()");
-    fprintf(stderr, "%s\n", message);
-    genericChar str[256];
-    if (MasterSystem)
-        sprintf(str, "%s/error_log.txt", MasterSystem->data_path.Value());
-    else
-        strcpy(str, VIEWTOUCH_PATH "/dat/error_log.txt");
+    std::cerr << message << std::endl;
 
-    FILE *fp = fopen(str, "a");
-    if (fp == NULL)
+
+    const std::string err_file = MasterSystem ?
+                std::string(MasterSystem->data_path.Value()) + "/error_log.txt" :
+                VIEWTOUCH_PATH "/dat/error_log.txt";
+    std::ofstream err_out(err_file, std::fstream::app);
+    if (!err_out.is_open())
         return 1;  // Error creating error log
 
-    TimeInfo timevar;
-    timevar.Set();
-    fprintf(fp, "[%02d/%02d/%02d %2d:%02d] %s\n", timevar.Month(), timevar.Day(),
-            timevar.Year() % 100, timevar.Hour(), timevar.Min(), message);
-
-    fclose(fp);
+    // get time rounded to minutes
+    auto now = date::floor<std::chrono::minutes>(std::chrono::system_clock::now());
+    // round to days
+    auto today = date::floor<date::days>(now);
+    err_out << "[" << today << " " << date::make_time(now - today) << " UTC] "
+            << message << std::endl;
     return 0;
 }
 

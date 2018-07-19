@@ -24,6 +24,7 @@
 
 #include "utility.hh"
 #include "list_utility.hh"
+#include <string>
 
 #define MASTER_USER_DB       "employee.dat"
 #define MASTER_MENU_DB       "menu.dat"
@@ -123,7 +124,7 @@ void ViewTouchError(const char* message, int do_sleep = 1);  // reports an error
 int EndSystem();                     // Closes down the application & saves states
 int RestartSystem();                 // Sets up a system where ViewTouch will be nicely shut down and restarted.
 int KillTask(const char* name);            // kills all tasks matching name
-int ReportError(const char* message);      // error logging & reporting function
+int ReportError(const std::string &message); // error logging & reporting function
 int ReportLoader(const char* message);     // gives a message to the loader program if it is still active
 
 char* PriceFormat(Settings *s, int price, int use_sign, int use_comma,
@@ -162,11 +163,10 @@ int RemoveWorkFn(int fn_id);
 int GetFontSize(int font_id, int &w, int &h);
 int GetTextWidth(const char* string, int len, int font_id);
 
-
 /**** Global ****/
 extern int VersionMajor;
 extern int VersionMinor;
-extern genericChar BuildNumber[];
+extern std::string BuildNumber;
 
 extern int ReleaseDay;
 extern int ReleaseMonth;

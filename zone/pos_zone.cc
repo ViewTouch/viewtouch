@@ -717,8 +717,7 @@ int PosPage::Read(InputDataFile &infile, int version)
     {
         if (infile.end_of_file)
         {
-            char msg[STRLONG];
-            snprintf(msg, STRLONG, "Unexpected end of %s file", infile.FileName());
+            std::string msg = "Unexpected end of file: '" + infile.FileName() + "'";
             ReportError(msg);
             return 1;
         }

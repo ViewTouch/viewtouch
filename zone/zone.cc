@@ -1065,8 +1065,7 @@ int ZoneDB::Load(const char* filename)
     {
         if (infile.end_of_file)
         {
-            char msg[STRLONG];
-            snprintf(msg, STRLONG, "Unexpected end of %s file", infile.FileName());
+            std::string msg = "Unexpected end of file: '" + infile.FileName() + "'";
             ReportError(msg);
             return 1;  // Error
         }
