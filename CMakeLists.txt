@@ -162,6 +162,7 @@ if(BUILD_TESTING)
     add_subdirectory(external/googletest EXCLUDE_FROM_ALL)
     enable_testing()
     add_subdirectory(tests/conf_file)
+    add_subdirectory(tests/image_data)
 endif()
 
 install(TARGETS vtpos vt_cdu vt_print vt_term vt_main
