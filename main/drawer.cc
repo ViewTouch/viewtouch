@@ -603,13 +603,13 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
 
     // Expense Payments
     int pay_amount = 0;
-    int pay_count = 0;
+    //int pay_count = 0;
     int pay_entered = 0;
     db = FindBalance(TENDER_EXPENSE, 0);
     if (db &&(db->amount != 0 || db->entered != 0))
     {
         pay_amount = db->amount;
-        pay_count = db->count;
+        //pay_count = db->count;
         pay_entered = db->entered;
     }
 

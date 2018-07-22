@@ -110,7 +110,6 @@ int TouchScreen::Connect(int boot)
     // default
     size = 0;
 
-    genericChar str[256];
     if (port <= 0)
     {
         // host is local device
@@ -129,15 +128,16 @@ int TouchScreen::Connect(int boot)
         inaddr.sin_family      = AF_INET;
         inaddr.sin_port        = port;
         inaddr.sin_addr.s_addr = inet_addr(host.Value());
-        if (inaddr.sin_addr.s_addr == (Ulong) -1)
+        if (inaddr.sin_addr.s_addr == INADDR_NONE)
         {
             struct hostent *hp = gethostbyname(host.Value());
             if (hp == NULL || hp->h_addrtype != AF_INET)
             {
-				sprintf(str, "Can't resolve name '%s'", host.Value());
-				error.Set(str);
-                fprintf(stderr, "%s",str);
-				return 1;
+                std::string str = std::string("Can't resolve name '")
+                        + host.Value() + "'";
+                error.Set(str.c_str());
+                std::cerr << str << std::endl;
+                return 1;
             }
             bcopy(hp->h_addr, &inaddr.sin_addr.s_addr, hp->h_length);
         }
@@ -145,17 +145,19 @@ int TouchScreen::Connect(int boot)
         device_no = socket(AF_INET, SOCK_STREAM, 0);
         if (device_no < 0)
         {
-            error.Set("Can't open socket");
-            fprintf(stderr,"%s",str);
+            std::string str = "Can't open socket";
+            error.Set(str.c_str());
+            std::cerr << str << std::endl;
             device_no = 0;
             return 1;
         }
 
         if (connect(device_no, (const sockaddr *) &inaddr, sizeof(inaddr)) < 0)
         {
-            sprintf(str, "Connection refused with '%s'", host.Value());
-            fprintf(stderr,"%s", str);
-            error.Set(str);
+            std::string str = std::string("Connection refused with '")
+                    + host.Value() + "'";
+            std::cerr << str << std::endl;
+            error.Set(str.c_str());
             close(device_no);
             device_no = 0;
             return 1;

@@ -157,14 +157,20 @@ int UnitAmount::Convert(int new_type)
             ; // FIX - do mililiter to fluid ounce conversion
         else if (type == WEIGHT_DASH || type == WEIGHT_OUNCE ||
                  type == WEIGHT_POUND)
-            ; // FIX - do gram to ounce conversion
+        {
+            // FIX - do gram to ounce conversion
+        }
     }
     else
     {
         if (type == WEIGHT_G || type == WEIGHT_KG)
-            ; // FIX - do ounce to gram conversion
+        {
+            // FIX - do ounce to gram conversion
+        }
         else if (type == VOLUME_ML || type == VOLUME_L)
-            ; // FIX - do fluid ounce to mililiter conversion
+        {
+            // FIX - do fluid ounce to mililiter conversion
+        }
     }
 
     switch (type)

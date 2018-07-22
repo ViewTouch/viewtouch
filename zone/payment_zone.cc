@@ -603,6 +603,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
             current_payment->credit->PrintReceipt(term, RECEIPT_PICK, printer, pamount);
             return SIGNAL_OKAY;
         }
+        break;
     case 16:  // Backspace
         if (sc && amount > 0)
         {
@@ -656,6 +657,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
                 return SIGNAL_TERMINATE;
             }
         }
+        break;
         // Undo and UndoCofirmed allow us to have a confirmation dialog.  For
         // now, just prevent undoing with authed credit cards.  This should
         // also be the case for the cancel message, but I haven't figured out

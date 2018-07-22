@@ -30,6 +30,7 @@
 #include "utility.hh"
 #include <cstring>
 #include <errno.h>
+#include <vector>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -519,8 +520,8 @@ int Report::FormalPrint(Printer *printer, int columns)
     }
 
     genericChar str[256];
-    genericChar text[max_h][max_w+4];
-    int  mode[max_h][max_w+4];
+    std::vector<std::vector<char>> text(max_h, std::vector<char>(max_w+4, 0));
+    std::vector<std::vector<int >> mode(max_h, std::vector<int >(max_w+4, 0));
 
     int header_lines = 0;
     ReportEntry *re = HeaderList();
@@ -591,11 +592,9 @@ int Report::FormalPrint(Printer *printer, int columns)
     while (re)
     {
         // clear page
-        int h;
-        int w;
-        for (h = 0; h < max_h; ++h)
+        for (int h = 0; h < max_h; ++h)
         {
-            for (w = 0; w < max_w; ++w)
+            for (int w = 0; w < max_w; ++w)
             {
                 text[h][w] = ' ';
                 mode[h][w] = 0;
@@ -610,7 +609,7 @@ int Report::FormalPrint(Printer *printer, int columns)
         ReportEntry *he = HeaderList();
         while (he)
         {
-            PrintEntry(he, 0, max_w, max_w, text[line], mode[line]);
+            PrintEntry(he, 0, max_w, max_w, text[line].data(), mode[line].data());
             if (he->new_lines > 0)
                 line += he->new_lines;
             he = he->next;
@@ -622,7 +621,7 @@ int Report::FormalPrint(Printer *printer, int columns)
         {
             while (re && line < max_lines)
             {
-                PrintEntry(re, column * 41, col_w, max_w, text[line], mode[line]);
+                PrintEntry(re, column * 41, col_w, max_w, text[line].data(), mode[line].data());
                 if (re->new_lines < 0)
                     line = max_lines;  // end of column
                 else if (re->new_lines > 0)
@@ -649,7 +648,7 @@ int Report::FormalPrint(Printer *printer, int columns)
         }
 
         // Print Page
-        for (h = 0; h < max_h; ++h)
+        for (int h = 0; h < max_h; ++h)
         {
             int max_end = max_w;
             int i;
