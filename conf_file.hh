@@ -6,13 +6,12 @@
 //
 
 
-#ifndef __CONF_FILE_H__
-#define __CONF_FILE_H__
+#ifndef CONF_FILE_HH
+#define CONF_FILE_HH
 
 #include <string>
 #include <vector>
-
-#include "basic.hh"
+#include <utility> // std::pair
 
 // MAX_BUFFER_LEN
 // Used simply as a max size of some internal buffers. Determines the maximum
@@ -24,59 +23,31 @@ const std::string CommentIndicators = ";#";
 const std::string EqualIndicators   = "=:";
 const std::string WhiteSpace = " \t\n\r";
 
-// st_key
-// This structure stores the definition of a key. A key is a named identifier
-// that is associated with a value.
-typedef struct st_key
-{
-    std::string key   = "";
-    std::string value = "";
-
-    st_key()
-    {}
-} t_Key;
-
-typedef std::vector<t_Key> KeyList;
-
-// st_section
-// This structure stores the definition of a section. A section contains any number
-// of keys (see st_keys).
-typedef struct st_section
-{
-    std::string  name = "";
-    KeyList      keys = {};
-
-    st_section()
-    {}
-} t_Section;
-
-typedef std::vector<t_Section> SectionList;
-typedef SectionList::iterator SectionItor;
-
-
-
-/// General Purpose Utility Functions ///////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////
-void  Trim(std::string& szStr);
-
-
-
 class ConfFile
 {
 public:
+    // a section is a list of key-value-pairs
+    typedef std::pair<std::string, std::string> SectionEntry;
+    typedef std::vector<SectionEntry> SectionEntries;
+
+    // create config-file, if load is true, try to load config-file into memory
+    // throws std::runtime_error if Load fails
                 ConfFile(const std::string &fileName, const bool load = false);
-    virtual     ~ConfFile();
+                ~ConfFile();
+
+    // set dirty flag, when dirty is set the config file will be written
+    void        set_dirty(const bool value=true);
 
     bool        Load();
     bool        Save();
 
                 // get a key's value;  overloaded for type conversion convenience
     bool        GetValue(std::string &value, const std::string &key, const std::string &section = "") const;
-    bool        GetValue(Flt &value, const std::string &key, const std::string &section = "") const;
+    bool        GetValue(double &value, const std::string &key, const std::string &section = "") const;
     bool        GetValue(int &value, const std::string &key, const std::string &section = "") const;
                 // set a key's value; created if doesn't exist
     bool        SetValue(const std::string &value, const std::string &key, const std::string &section = "");
-    bool        SetValue(const Flt value, const std::string &key, const std::string &section = "");
+    bool        SetValue(const double value, const std::string &key, const std::string &section = "");
     bool        SetValue(const int value, const std::string &key, const std::string &section = "");
 
                 // remove a key from a section
@@ -89,26 +60,30 @@ public:
     bool        CreateSection(const std::string &section);
 
                 // returns number of sections in file
-    int         SectionCount() const;
+    size_t      SectionCount() const;
                 // returns number of keys across all sections
-    int         KeyCount() const;
+    size_t      KeyCount() const;
 
-    void        SetFilename(const std::string &name);
+    // get a list of section names
+    const std::vector<std::string> &getSectionNames() const;
+    // get a list of keys of the specified section
+    // throws std::out_of_range if section does not exist
+    std::vector<std::string> keys(const std::string &section = "") const;
 
+    // GetSection: Returns the requested section (if found), otherwise std::out_of_range
+    const SectionEntries &at(const std::string &section) const;
+    // check if section is contained
+    bool contains(const std::string &section) const;
 
 protected:
-    // GetSection: Returns the requested section (if found), nullptr otherwise.
-    const t_Section* GetSection(const std::string &section) const;
-    t_Section* GetSection(const std::string &section);
+    // GetSection: Returns the requested section (if found), otherwise std::out_of_range
+    SectionEntries &at(const std::string &section);
 
-
-public:
-
-protected:
-    SectionList sections; // Our list of sections
-    std::string fileName; // The filename to write to
-    bool        dirty;    // Tracks whether or not data has changed.
+private:
+    const std::string fileName; // The filename to write to
+    std::vector<std::string> section_names = {""};
+    std::vector<SectionEntries> data = {{}};
+    bool dirty;    // Tracks whether or not data has changed.
 };
 
-
-#endif
+#endif // CONF_FILE_HH
