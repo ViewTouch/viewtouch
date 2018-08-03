@@ -2052,54 +2052,38 @@ int Settings::Load(const char* file)
 
     {
         using namespace confmap;
+        {
+            ConfFile conf(CONFIG_TAX_FILE, true);
+            // GetValue modifies target only if key exists
+            conf.GetValue(food_inclusive, vars[V_FOOD_INCLUSIVE], sects[S_MISC]);
+            conf.GetValue(room_inclusive, vars[V_ROOM_INCLUSIVE], sects[S_MISC]);
+            conf.GetValue(alcohol_inclusive, vars[V_ALCOHOL_INCLUSIVE], sects[S_MISC]);
+            conf.GetValue(merchandise_inclusive, vars[V_MERCHANDISE_INCLUSIVE], sects[S_MISC]);
 
-        ConfFile conf(CONFIG_TAX_FILE, true);
-        Flt conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_FOOD_INCLUSIVE], sects[S_MISC]))
-	    	food_inclusive = conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_ROOM_INCLUSIVE], sects[S_MISC]))
-	    	room_inclusive = conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_ALCOHOL_INCLUSIVE], sects[S_MISC]))
-	    	alcohol_inclusive = conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_MERCHANDISE_INCLUSIVE], sects[S_MISC]))
-	    	merchandise_inclusive = conf_tmp;
+            conf.GetValue(tax_GST, vars[V_GST], sects[S_SALES_TAX_CANADA]);
+            conf.GetValue(tax_PST, vars[V_PST], sects[S_SALES_TAX_CANADA]);
+            conf.GetValue(tax_HST, vars[V_HST], sects[S_SALES_TAX_CANADA]);
+            conf.GetValue(tax_QST, vars[V_QST], sects[S_SALES_TAX_CANADA]);
+        }
+        {
+            ConfFile conf(CONFIG_FEES_FILE, true);
+            conf.GetValue(royalty_rate, vars[V_ROYALTY_RATE], sects[S_MISC]);
+            conf.GetValue(advertise_fund, vars[V_ADVERTISE_FUND], sects[S_MISC]);
+            conf.GetValue(daily_cert_fee, vars[V_DAILY_CERT_FEE], sects[S_MISC]);
 
-        if (conf.GetValue(conf_tmp, vars[V_GST], sects[S_SALES_TAX_CANADA]))
-            tax_GST = conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_PST], sects[S_SALES_TAX_CANADA]))
-            tax_PST = conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_HST], sects[S_SALES_TAX_CANADA]))
-            tax_HST = conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_QST], sects[S_SALES_TAX_CANADA]))
-            tax_QST = conf_tmp;
-
-        conf.SetFilename(CONFIG_FEES_FILE);
-        conf.Load();
-        if (conf.GetValue(conf_tmp, vars[V_ROYALTY_RATE], sects[S_MISC]))
-            royalty_rate = conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_ADVERTISE_FUND], sects[S_MISC]))
-            advertise_fund = conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_DAILY_CERT_FEE], sects[S_MISC]))
-            daily_cert_fee = conf_tmp;
-
-        if (conf.GetValue(conf_tmp, vars[V_DEBIT_COST], sects[S_ELEC_TRANS]))
-            debit_cost = conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_CREDIT_RATE], sects[S_ELEC_TRANS]))
-            credit_rate = conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_CREDIT_COST], sects[S_ELEC_TRANS]))
-            credit_cost = conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_LINE_ITEM_COST], sects[S_ELEC_TRANS]))
-            line_item_cost = conf_tmp;
-
-        conf.SetFilename(CONFIG_FASTFOOD_FILE);
-        conf.Load();
-        if (conf.GetValue(conf_tmp, vars[V_PERSONALIZE_FAST_FOOD], sects[S_MISC]))
-            personalize_fast_food = conf_tmp;
-        if (conf.GetValue(conf_tmp, vars[V_TAX_TAKEOUT_FOOD], sects[S_MISC]))
-            tax_takeout_food = conf_tmp;
-        else
-            tax_takeout_food = 1;
-
+            conf.GetValue(debit_cost, vars[V_DEBIT_COST], sects[S_ELEC_TRANS]);
+            conf.GetValue(credit_rate, vars[V_CREDIT_RATE], sects[S_ELEC_TRANS]);
+            conf.GetValue(credit_cost, vars[V_CREDIT_COST], sects[S_ELEC_TRANS]);
+            conf.GetValue(line_item_cost, vars[V_LINE_ITEM_COST], sects[S_ELEC_TRANS]);
+        }
+        {
+            ConfFile conf(CONFIG_FASTFOOD_FILE, true);
+            conf.GetValue(personalize_fast_food, vars[V_PERSONALIZE_FAST_FOOD], sects[S_MISC]);
+            if (!conf.GetValue(tax_takeout_food, vars[V_TAX_TAKEOUT_FOOD], sects[S_MISC]))
+            {
+                tax_takeout_food = 1;
+            }
+        }
     }
 
     return error;
@@ -2399,8 +2383,10 @@ int Settings::Save()
             std::cerr << "  failed to save tax config file" << std::endl;
             error++;
         }
-
-        conf.SetFilename(CONFIG_FEES_FILE);
+    }
+    {
+        using namespace confmap;
+        ConfFile conf(CONFIG_FEES_FILE);
 
         error += conf.SetValue(royalty_rate, vars[V_ROYALTY_RATE], sects[S_MISC]);
         error += conf.SetValue(advertise_fund, vars[V_ADVERTISE_FUND], sects[S_MISC]);
@@ -2414,8 +2400,10 @@ int Settings::Save()
             std::cerr << "  failed to save fees config file" << std::endl;
             error++;
         }
-
-        conf.SetFilename(CONFIG_FASTFOOD_FILE);
+    }
+    {
+        using namespace confmap;
+        ConfFile conf(CONFIG_FASTFOOD_FILE);
 
         error += conf.SetValue(personalize_fast_food, vars[V_PERSONALIZE_FAST_FOOD], sects[S_MISC]);
         error += conf.SetValue(tax_takeout_food, vars[V_TAX_TAKEOUT_FOOD], sects[S_MISC]);
