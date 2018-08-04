@@ -39,6 +39,7 @@
 #include "socket.hh"
 #include "build_number.h"
 
+#include "conf_file.hh"
 #include "date/date.h"      // helper library to output date strings with std::chrono
 
                             // Standard C++ libraries
@@ -288,23 +289,26 @@ int ReadViewTouchConfig()
 {
     FnTrace("ReadViewTouchConfig()");
     int retval = 0;
-    KeyValueInputFile vtconfig;
-    char key[STRLENGTH];
-    char value[STRLENGTH];
 
-    if (vtconfig.Open(VIEWTOUCH_CONFIG))
+    try
     {
-        ReportError("Reading early configuration...");
-        while (vtconfig.Read(key, value, STRLENGTH) > 0)
-        {
-            if (strcmp(key, "autoupdate") == 0)
-                autoupdate = atoi(value);
-            else if (strcmp(key, "selecttimeout") == 0)
-                select_timeout = atoi(value);
-            else if (strcmp(key, "debugmode") == 0)
-                debug_mode = atoi(value);
-        }
-        vtconfig.Close();
+
+        ConfFile conf(VIEWTOUCH_CONFIG, true);
+        ReportError(
+                    std::string("ReadViewTouchConfig: ")
+                    + "Read early config from config file: "
+                    + VIEWTOUCH_CONFIG);
+        conf.GetValue(autoupdate, "autoupdate");
+        conf.GetValue(select_timeout, "selecttimeout");
+        conf.GetValue(debug_mode, "debugmode");
+    } catch (const std::runtime_error &e) {
+        ReportError(
+                    std::string("ReadViewTouchConfig: ")
+                    + "Failed to read early config from config file: "
+                    + VIEWTOUCH_CONFIG);
+        ReportError(
+                    std::string("ReadViewTouchConfig: ")
+                    + "Exception: " + e.what());
     }
 
     return retval;
