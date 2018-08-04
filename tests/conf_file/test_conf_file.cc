@@ -180,6 +180,22 @@ TEST(conf_file, load_string_as_number)
     int int_val;
     EXPECT_FALSE(conf.GetValue(int_val, "key"));
 }
+TEST(conf_file, getter_no_modification)
+{
+    // reads of non existing keys don't modify the target variable
+    const std::string filename = "conf_file_getter_no_modification.ini";
+    ConfFile conf(filename); // load config file
+
+    std::string val_str = "1337";
+    int val_int = 1337;
+    double val_dbl = 1337;
+    EXPECT_FALSE(conf.GetValue(val_str, "key"));
+    EXPECT_FALSE(conf.GetValue(val_int, "key"));
+    EXPECT_FALSE(conf.GetValue(val_dbl, "key"));
+    EXPECT_EQ(val_str, "1337");
+    EXPECT_EQ(val_int, 1337);
+    EXPECT_EQ(val_dbl, 1337);
+}
 TEST(conf_file, load_with_section)
 {
     const std::string filename = "load_with_section.ini";
@@ -231,4 +247,94 @@ TEST(conf_file, save_with_section)
     // try to read not available keys
     EXPECT_FALSE(conf.GetValue(val, "k_no_value", "section"));
     EXPECT_FALSE(conf.GetValue(val, "", "section"));
+}
+
+TEST(conf_file, no_delete_default_section)
+{
+    const std::string filename = "conf_file_no_delete_default_section.ini";
+    ConfFile conf(filename);
+    ASSERT_FALSE(conf.DeleteSection(""));
+}
+
+TEST(conf_file, delete_key_twice)
+{
+    const std::string filename = "conf_file_delete_key_twice.ini";
+    ConfFile conf(filename);
+    // add a key to delete later
+    ASSERT_TRUE(conf.SetValue("value", "key"));
+    // delete key
+    ASSERT_TRUE(conf.DeleteKey("key"));
+    // can't delete the same key twice
+    ASSERT_FALSE(conf.DeleteKey("key"));
+}
+
+TEST(conf_file, delete_empty_key)
+{
+    const std::string filename = "conf_file_delete_empty_key.ini";
+    ConfFile conf(filename);
+    ASSERT_FALSE(conf.DeleteKey(""));
+}
+
+TEST(conf_file, list_all_sections)
+{
+    const std::string filename = "conf_file_list_all_sections.ini";
+    ConfFile conf(filename);
+    conf.SetValue("value", "key");
+    conf.SetValue("section_value", "key", "section");
+
+    const std::vector<std::string> sections = conf.getSectionNames();
+    EXPECT_EQ(sections[0], "");
+    EXPECT_EQ(sections[1], "section");
+}
+
+TEST(conf_file, set_dirty_false)
+{
+    const std::string filename = "conf_file_set_dirty_false.ini";
+    {
+        ConfFile conf(filename);
+        conf.SetValue("value", "key");
+        conf.SetValue("section_value", "key", "section");
+        // disable writing of conf file
+        conf.set_dirty(false);
+    }
+    // file should not exist
+    std::ifstream conf_file(filename);
+    EXPECT_TRUE(conf_file.fail());
+}
+
+TEST(conf_file, keys_empty_section)
+{
+    const std::string filename = "conf_file_keys_empty_section.ini";
+    ConfFile conf(filename);
+    const std::vector<std::string> default_keys = conf.keys("");
+
+    ASSERT_EQ(default_keys.size(), 0);
+}
+
+TEST(conf_file, keys_exception_invalid_section)
+{
+    const std::string filename = "conf_file_keys_exception_invalid_section.ini";
+    ConfFile conf(filename);
+    ASSERT_THROW(conf.keys("invalid_section"), std::out_of_range);
+}
+
+TEST(conf_file, keys_list)
+{
+    const std::string filename = "conf_file_keys_list.ini";
+    ConfFile conf(filename);
+    conf.SetValue("value", "key1");
+    conf.SetValue("value", "key2");
+    conf.SetValue("value", "key3");
+    conf.SetValue("section_value", "key", "section");
+
+    const std::vector<std::string> default_keys = conf.keys("");
+    const std::vector<std::string> section_keys = conf.keys("section");
+
+    ASSERT_EQ(default_keys.size(), 3);
+    ASSERT_EQ(section_keys.size(), 1);
+
+    EXPECT_EQ(default_keys[0], "key1");
+    EXPECT_EQ(default_keys[1], "key2");
+    EXPECT_EQ(default_keys[2], "key3");
+    EXPECT_EQ(section_keys[0], "key");
 }
