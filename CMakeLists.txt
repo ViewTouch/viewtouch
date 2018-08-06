@@ -4,7 +4,7 @@ project(ViewTouch)
 message(STATUS "CMake version ${CMAKE_VERSION}")
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     # don't override user variables
-    set(CMAKE_INSTALL_PREFIX "/usr")
+    set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "prefix" FORCE)
 endif()
 
 # https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html
