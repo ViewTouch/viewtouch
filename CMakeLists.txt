@@ -44,6 +44,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format-truncation")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format-overflow")
 
+# set tz (timezone) library flags
+set(USE_SYSTEM_TZ_DB ON CACHE BOOL "Use the operating system's timezone database" FORCE)
+set(ENABLE_DATE_TESTING OFF CACHE BOOL "Enable unit tests" FORCE)
+set(DISABLE_STRING_VIEW ON CACHE BOOL "Disable string view" FORCE)
+add_subdirectory(external/date)
+
 include_directories(main)
 include_directories(zone)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -92,7 +98,7 @@ add_library(vtcore
 
 target_include_directories(vtcore PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}) # include generated files like build_number.h
-
+target_link_libraries(vtcore tz)
 
 add_executable(vtpos 
 		loader/loader_main.cc )
@@ -133,7 +139,7 @@ add_library(zone
     zone/creditcard_list_zone.cc zone/creditcard_list_zone.hh
     )
 
-target_link_libraries(zone conf_file)
+target_link_libraries(zone conf_file vtcore)
 
 add_executable(vt_main
     data_file.cc
@@ -167,6 +173,7 @@ add_executable(vt_main
     main/cdu_att.cc         main/cdu_att.hh
     )
 target_link_libraries(vt_main zone vtcore ${VT_XLIBS})
+target_link_libraries(vt_main tz)
 
 add_executable(vt_term
     term/term_main.cc
