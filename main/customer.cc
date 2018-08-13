@@ -205,7 +205,7 @@ int CustomerInfo::Read(InputDataFile &df, int version)
                 
                 stay_end.Set(stay_start);
                 if (len > 0)
-                    stay_end.AdjustDays(len);
+                    stay_end += date::days(len);
             }
         }
     }

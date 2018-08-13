@@ -1025,7 +1025,7 @@ int System::CountOpenChecks(Employee *e)
     int ctype;
     TimeInfo now;
     now.Set();
-    now.AdjustMinutes(60);
+    now += std::chrono::minutes(60);
 
     for (Check *check = CheckList(); check != NULL; check = check->next)
     {

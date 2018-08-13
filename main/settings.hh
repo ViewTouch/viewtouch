@@ -796,12 +796,10 @@ public:
 
     char* TenderName( int tender_type, int tender_id, genericChar* str );
     // returns text name of tender
-    int MonthPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end);
-    int SalesPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end);
     int LaborPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end);
     int SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end, int period_view, TimeInfo *fiscal = NULL);
     // Calculates start & end of periods given reference time
-    int OvertimeWeek(TimeInfo &ref, TimeInfo &start, TimeInfo &end);
+    int OvertimeWeek(const TimeInfo &ref, TimeInfo &start, TimeInfo &end);
     // Calculates wage overtime week for given time
     char* StoreNum( char* dest = 0);
 
