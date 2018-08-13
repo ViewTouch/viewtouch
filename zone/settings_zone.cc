@@ -2227,7 +2227,7 @@ int TenderSetZone::UpdateForm(Terminal *term, int record)
             end_time <= start_time)
         {
             end_time.Set(start_time);
-            end_time.AdjustMinutes(60);
+            end_time += std::chrono::minutes(60);
             coupon_time_end->Set(end_time);
         }
     }
@@ -2239,7 +2239,7 @@ int TenderSetZone::UpdateForm(Terminal *term, int record)
             start_time >= end_time)
         {
             start_time.Set(end_time);
-            start_time.AdjustMinutes(-60);
+            start_time -= std::chrono::minutes(60);
             coupon_time_start->Set(start_time);
         }
     }
@@ -2251,7 +2251,7 @@ int TenderSetZone::UpdateForm(Terminal *term, int record)
             end_date < start_date)
         {
             end_date.Set(start_date);
-            end_date.AdjustDays(1);
+            end_date += date::days(1);
             coupon_date_end->Set(end_date);
         }
     }
@@ -2263,7 +2263,7 @@ int TenderSetZone::UpdateForm(Terminal *term, int record)
             start_date > end_date)
         {
             start_date.Set(end_date);
-            start_date.AdjustDays(-1);
+            start_date -= date::days(1);
             coupon_date_start->Set(start_date);
         }
     }

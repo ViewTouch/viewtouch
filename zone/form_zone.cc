@@ -1935,7 +1935,7 @@ RenderResult TimeDateField::Render(Terminal *term, FormZone *fzone)
     FnTrace("TimeDateField::Render()");
     int c = color;
     int m = 0;
-    buffer.Sec(0);
+    buffer.Floor<std::chrono::minutes>();
     if (selected)
     {
         c = COLOR_LT_BLUE;
@@ -2038,11 +2038,11 @@ SignalResult TimeDateField::Keyboard(Terminal *term, FormZone *fzone, int key, i
         }
         switch (cursor)
         {
-        case 4: buffer.AdjustMinutes(1); break;
-        case 3: buffer.AdjustMinutes(60); break;
-        case 2: buffer.AdjustYears(1); break;
-        case 1: buffer.AdjustDays(1); break;
-        case 0: buffer.AdjustMonths(1); break;
+        case 4: buffer += std::chrono::minutes(1); break;
+        case 3: buffer += std::chrono::minutes(60); break;
+        case 2: buffer += date::years(1); break;
+        case 1: buffer += date::days(1); break;
+        case 0: buffer += date::months(1); break;
         }
         return SIGNAL_OKAY;
 
@@ -2052,16 +2052,16 @@ SignalResult TimeDateField::Keyboard(Terminal *term, FormZone *fzone, int key, i
         if (!buffer.IsSet())
         {
             buffer = SystemTime;
-            buffer.Sec(0);
+            buffer.Floor<std::chrono::minutes>();
             return SIGNAL_OKAY;
         }
         switch (cursor)
         {
-        case 4: buffer.AdjustMinutes(-1); break;
-        case 3: buffer.AdjustMinutes(-60); break;
-        case 2: buffer.AdjustYears(-1); break;
-        case 1: buffer.AdjustDays(-1); break;
-        case 0: buffer.AdjustMonths(-1); break;
+        case 4: buffer += std::chrono::minutes(-1); break;
+        case 3: buffer += std::chrono::minutes(-60); break;
+        case 2: buffer -= date::years(1); break;
+        case 1: buffer -= date::days(1); break;
+        case 0: buffer -= date::months(1); break;
         }
         return SIGNAL_OKAY;
 
@@ -2464,13 +2464,19 @@ int TimeDayField::Set(int minutes)
 int TimeDayField::Get(TimeInfo &tinfo)
 {
     FnTrace("TimeDayField::Get(TimeInfo &)");
-    
-    tinfo.Min(min);
-    tinfo.Hour(hour);
-    if (show_day)
-        tinfo.WeekDay(day);
-    if (is_unset == 0)
-        tinfo.Year(1);
+
+    if (!tinfo.IsSet())
+    {
+        // initialize tinfo to current time if not set
+        tinfo.Set();
+    }
+    tinfo.Floor<date::days>(); // reset time of tinfo object
+
+    tinfo += (std::chrono::hours(hour) + std::chrono::minutes(min));
+
+    // TODO: handle is_unset case
+    //if (is_unset == 0)
+    //    tinfo.Year(1);
 
     return 0;
 }

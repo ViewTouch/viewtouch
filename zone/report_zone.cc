@@ -564,68 +564,28 @@ int AdjustPeriod(TimeInfo &ref, int period, int adjust)
     switch (period)
     {
     case SP_DAY:
-        ref.AdjustDays(1 * adjust);
+        ref += date::days(1 * adjust);
         break;
     case SP_WEEK:
-        ref.AdjustDays(7 * adjust);
+        ref += date::days(7 * adjust);
         break;
     case SP_2WEEKS:
-        ref.AdjustDays(14 * adjust);
+        ref += date::days(14 * adjust);
         break;
     case SP_4WEEKS:
-        ref.AdjustDays(28 * adjust);
+        ref += date::days(28 * adjust);
         break;
     case SP_MONTH:
-        ref.AdjustMonths(1 * adjust);
+        ref += date::months(1 * adjust);
         break;
     case SP_HALF_MONTH:
-    	if ( -1 == adjust ) {
-    		if (15 == ref.Day()) {
-    			ref.Day(1);
-    		} else {
-    			ref.Day(15);
-		        ref.AdjustMonths(1 * adjust);
-    		}
-    	} else {
-    		if (15 == ref.Day()) {
-    			ref.Day(1);
-		        ref.AdjustMonths(1 * adjust);
-    		} else {
-    			ref.Day(15);
-    		}
-    	}    		
+        ref.half_month_jump(adjust, 1, 15);
         break;
     case SP_HM_11:
-    	if ( -1 == adjust ) {
-//  								  printf("AdjustPeriod(): ref=%d/%d/%d : adjust = %d\n", ref.Month(), ref.Day(), ref.Year(), adjust);
-    		if (ref.Day() > 26) {
-//   									 printf("AdjustPeriod(): setting day to 26\n");
-    			ref.Day(26);
-    		} else if (ref.Day() > 11) {
-// 										   printf("AdjustPeriod(): setting day to 11\n");
-    			ref.Day(11);
-    		} else {
-//   										 printf("AdjustPeriod(): setting day to 26 of last month\n");
-    			ref.Day(26);
-		        ref.AdjustMonths(adjust);
-    		}
-    	} else {
-//  										  printf("AdjustPeriod(): ref=%d/%d/%d : adjust = %d\n", ref.Month(), ref.Day(), ref.Year(), adjust);
-    		if (ref.Day() < 11) {
-// 										   printf("AdjustPeriod(): setting day to 11\n");
-    			ref.Day(11);
-    		} else if (ref.Day() < 26) {
-//  												  printf("AdjustPeriod(): setting day to 26\n");
-	   			ref.Day(26);
-    		} else {
-//  														  printf("AdjustPeriod(): setting day to 11 of next month\n");
-    			ref.Day(11);
-		        ref.AdjustMonths(adjust);
-    		}
-    	}    		
+        ref.half_month_jump(adjust, 11, 26);
         break;
     case SP_QUARTER:
-        ref.AdjustMonths(3 * adjust);
+        ref += date::months(3 * adjust);
         break;
     case SP_YTD:
         ref.AdjustYears(1 * adjust);

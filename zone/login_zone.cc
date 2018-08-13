@@ -774,9 +774,9 @@ RenderResult LogoutZone::Render(Terminal *term, int update_flag)
 
     TimeInfo start, end;
     start = work->start;
-    start.Sec(0);
+    start.Floor<std::chrono::minutes>();
     end   = time_out;
-    end.Sec(0);
+    end.Floor<std::chrono::minutes>();
 
     genericChar str[256];
     sprintf(str, "     Shift Start: %s", term->TimeDate(start, TD0));

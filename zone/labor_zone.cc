@@ -189,7 +189,7 @@ SignalResult LaborZone::Signal(Terminal *term, const genericChar* message)
             SaveRecord(term, 0, 0);
             work->Edit(employee->id);
             work->end = SystemTime;
-            work->end.Sec(0);
+            work->end.Floor<std::chrono::minutes>();
             work->end_shift = 1;
             LoadRecord(term, 0);
             Draw(term, 1);
@@ -202,7 +202,7 @@ SignalResult LaborZone::Signal(Terminal *term, const genericChar* message)
             SaveRecord(term, 0, 0);
             work->Edit(employee->id);
             work->end = SystemTime;
-            work->end.Sec(0);
+            work->end.Floor<std::chrono::minutes>();
             work->end_shift = 0;
             LoadRecord(term, 0);
             Draw(term, 1);
