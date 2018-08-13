@@ -18,11 +18,13 @@
  * General functions and data types than have no other place to go
  */
 
-#ifndef _UTILITY_HH
-#define _UTILITY_HH
+#ifndef VT_UTILITY_HH
+#define VT_UTILITY_HH
 
 #include "basic.hh"
-#include <time.h>
+#include "fntrace.hh"
+#include "time_info.hh"
+
 #include <string>
 
 extern int debug_mode;
@@ -41,44 +43,6 @@ extern int debug_mode;
 #define STRSHORT    64
 #define STRLENGTH   512   // constant to set the length of a string
 #define STRLONG     2048  // 2K string
-
-#ifdef DEBUG
-// BackTrace Functions/Data
-extern genericChar BT_Stack[STRLENGTH][STRLONG];
-extern int  BT_Depth;
-extern int  BT_Track;
-
-class BackTraceFunction
-{
-public:
-    // Constructor
-    BackTraceFunction(const char* str, ...)
-    {
-        if (BT_Track)
-            printf("Entering %s\n", str);
-        sprintf(BT_Stack[BT_Depth++], "%s", str);
-    }
-    // Destructor
-    virtual ~BackTraceFunction()
-    {
-        --BT_Depth;
-    }
-};
-
-#define FnTrace(x) BackTraceFunction _fn_start(x)
-#define FnTraceEnable(x) (BT_Track = (x))
-void FnPrintTrace(void);
-void FnPrintLast(int depth);
-const char* FnReturnLast();
-#define LINE() printf("%s:  Got to line %d\n", __FILE__, __LINE__)
-#else
-#define FnTrace(x)
-#define FnTraceEnable(x)
-#define FnPrintTrace()
-#define FnPrintLast(x)
-#define FnReturnLast() ""
-#define LINE()
-#endif
 
 void vt_init_setproctitle(int argc, char* argv[]);
 int  vt_setproctitle(const char* title);
@@ -144,64 +108,6 @@ public:
     int   operator <  (Str  &s);
     int   operator == (Str  &s);
     int   operator != (Str  &s);
-};
-
-// Time & Date (second accuracy) storage class
-class TimeInfo
-{
-    short year;
-    Uchar sec;
-    Uchar min;
-    Uchar hour;
-    Uchar mday;
-    Uchar month;
-    Schar wday;  // can be -1 (unknown)
-
-public:
-    // Constructor
-    TimeInfo();
-
-    // Member Functions
-    int   Set();                          // Sets time values to current time
-    int   Set(int s, int y);
-    int   Set(time_t t);
-    int   Set(const genericChar* date_string);
-    int   Set(TimeInfo *timevar);         // Copies time value or clears if NULL
-    int   Set(TimeInfo &timevar);         // Copies time value
-    TimeInfo *ValueSet(TimeInfo *timevar = NULL);
-    int   Clear();                        // Erases time value
-    int   IsSet();                        // boolean - has time been set?
-    int   AdjustMinutes(int amount);      // Adds 'amount' to current minute
-    int   AdjustDays(int amount);         // Adds 'amount' to current day
-    int   AdjustMonths(int amount);       // Adds 'amount' to current month
-    int   AdjustYears(int amount);        // Adds 'amount' to current year
-    genericChar* DebugPrint(genericChar* dest = NULL);  // Just prints the time value for debugging
-    genericChar* ToString(genericChar* dest = NULL);
-    genericChar* Date(genericChar* dest = NULL);
-    genericChar* Time(genericChar* dest = NULL);
-
-    TimeInfo & operator =  (TimeInfo &t);
-    int        operator >  (TimeInfo &t);
-    int        operator >= (TimeInfo &t);
-    int        operator <  (TimeInfo &t);
-    int        operator <= (TimeInfo &t);
-    int        operator == (TimeInfo &t);
-    int        operator != (TimeInfo &t);
-
-    int Sec()          { return (int) sec; }
-    int Sec(int s)     { sec = s; return s; }
-    int Min()          { return (int) min; }
-    int Min(int m)     { min = m; return m; }
-    int Hour()         { return (int) hour; }
-    int Hour(int h)    { hour = h; return h; }
-    int WeekDay();  // always calculate it; otherwise adjustments will skew it and we won't know
-    int WeekDay(int d) { wday = d; return d; }
-    int Day()          { return (int) mday; }
-    int Day(int d)     { mday = d; return d; }
-    int Month()        { return month; }
-    int Month(int m)   { month = m; return m; }
-    int Year()         { return year; }
-    int Year(int y)    { year = y; return y; }
 };
 
 // Rectangular Region class
@@ -285,34 +191,11 @@ public:
 };
 
 
-/**** Global Variables ****/
-extern TimeInfo SystemTime;
-// Current system time
-
-
 /**** Other Functions ****/
 extern int ReportError(const std::string &message);
 // general error reporting function
 // (the prototype is here but the implementation isn't in utility.cc)
 // implementation is in main/manager.cc
-
-int DaysInYear(int year);
-int DaysInMonth(int month, int year);
-// Returns number of days in given year or month
-
-int DayOfTheWeek(int mday, int month, int year);
-// Returns what day of the week it is
-
-int StringElapsedToNow(char* dest, int maxlen, TimeInfo &t1);
-int SecondsToString(char* dest, int maxlen, int seconds);
-
-int SecondsElapsedToNow(TimeInfo &t1);
-int SecondsElapsed(TimeInfo &t1, TimeInfo &t2);
-// Returns number of seconds between two times
-
-int MinutesElapsedToNow(TimeInfo &t1);
-int MinutesElapsed(TimeInfo &t1, TimeInfo &t2);
-// Returns minutes elapsed between two times (ingnoring second values)
 
 int StringCompare(const genericChar* str1, const genericChar* str2, int len = -1);
 // Case insesitive string compare
@@ -376,4 +259,4 @@ int FltToPercent(Flt value);
 
 int LockDevice(const genericChar* devpath);
 int UnlockDevice(int id);
-#endif
+#endif // VT_UTILITY_HH
