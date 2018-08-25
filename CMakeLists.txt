@@ -213,6 +213,7 @@ if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests/conf_file)
     add_subdirectory(tests/image_data)
+    add_subdirectory(tests/time_info)
 endif()
 
 install(TARGETS vtpos vt_cdu vt_print vt_term vt_main
