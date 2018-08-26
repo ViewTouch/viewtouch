@@ -87,6 +87,8 @@ set(VT_XLIBS X11 Xm Xmu Xt Xpm Xft freetype fontconfig Xrender)
 add_library(vtcore
     main/admission.cc  main/admission.hh
     external/sha1.cc   external/sha1.hh
+    fntrace.cc         fntrace.hh
+    time_info.cc       time_info.hh
     utility.cc         utility.hh
     remote_link.cc     remote_link.hh
     debug.cc           debug.hh
