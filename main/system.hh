@@ -112,7 +112,6 @@ public:
     Str       data_path; // directory containing system data
     Str       temp_path; // directory for temporary file storage
     TimeInfo  start;     // time system started
-    TimeInfo  release;   // time software was released
 
     Settings         settings;
     TipDB            tip_db;

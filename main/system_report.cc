@@ -383,7 +383,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
     TimeInfo time_start, end;
     currSettings->ShiftStart(time_start, first_shift, ref);
     end = time_start;
-    end.AdjustDays(1);
+    end += date::days(1);
 
     if (end > SystemTime)
     {
@@ -663,7 +663,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         currSettings->ShiftStart(t1, shift[i],   time_start);
         currSettings->ShiftStart(t2, shift[i+1], time_start);
         if (t2 < t1)
-            t2.AdjustDays(1);
+            t2 += date::days(1);
 
         // calculate labor in the period
         if (term->expand_labor)
@@ -4196,7 +4196,11 @@ int GatherAuditChecks(AuditingData *adata)
                 // haven't found any voided checks yet, so I'm not
                 // exactly sure what to do with them.
                 if (debug_mode)
-                    printf("Check Voided:  %s\n", check->time_open.DebugPrint());
+                {
+                    std::cout << "Check Voided: "
+                              << check->time_open.DebugPrint()
+                              << std::endl;
+                }
             }
 
             subcheck = check->SubList();

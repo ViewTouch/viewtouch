@@ -558,10 +558,10 @@ int StartSystem(int my_use_net)
     unlink(restart_flag_str);
 
     sys->start = SystemTime;
-    sys->release.Day(ReleaseDay);
-    sys->release.Month(ReleaseMonth);
-    sys->release.Year(ReleaseYear);
-    if (SystemTime <= sys->release)
+
+    TimeInfo release;
+    release.Set(0, ReleaseYear);
+    if (SystemTime <= release)
     {
         printf("\nYour computer clock is in error.\n");
         printf("Please correct your system time before starting again.\n");
@@ -2328,7 +2328,7 @@ int GetCCData(const char* data)
     check = FindCCData(cardnum, amount);
     if (check)
     {
-        printf("Card %s was processed on %s\n", cardnum, check->made_time.ToString());
+        printf("Card %s was processed on %s\n", cardnum, check->made_time.to_string());
         printf("    Check ID:  %d\n", check->serial_number);
         subcheck = check->SubList();
         while (subcheck != NULL)
@@ -2712,7 +2712,7 @@ int UserCount()
                 snprintf(message, STRLENGTH, "    %s is logged in to %s, last input at %s\n",
                        term->user->system_name.Value(),
                        term->name.Value(),
-                       term->last_input.ToString());
+                       term->last_input.to_string());
                 ReportError(message);
             }
             term = term->next;
@@ -2819,16 +2819,14 @@ int RunReport(const genericChar* report_string, Printer *printer)
         if (!from.IsSet())
         {  // set date to yesterday morning, 00:00
             from.Set();
-            from.AdjustDays(-1);
-            from.Hour(00);
-            from.Min(00);
+            from -= date::days(1);
+            from.Floor<date::days>();
         }
         if (!to.IsSet())
         {  // set date to last night, 23:59
             to.Set();
-            to.AdjustDays(-1);
-            to.Hour(23);
-            to.Min(59);
+            to.Floor<date::days>();
+            to -= std::chrono::seconds(1);
         }
         if (strcmp(report_name, "daily") == 0)
             system_data->DepositReport(term, from, to, NULL, report);

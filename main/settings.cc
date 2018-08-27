@@ -594,16 +594,16 @@ int CouponInfo::AppliesTime()
         TimeInfo end;
 
         now.Clear();
-        now.Hour(SystemTime.Hour());
-        now.Min(SystemTime.Min());
+        now = SystemTime;
+        now.Floor<std::chrono::minutes>();
 
         start.Clear();
-        start.Hour(start_time.Hour());
-        start.Min(start_time.Min());
+        start = start_time;
+        start.Floor<std::chrono::minutes>();
 
         end.Clear();
-        end.Hour(end_time.Hour());
-        end.Min(end_time.Min());
+        end = end_time;
+        end.Floor<std::chrono::minutes>();
 
         if (now < start || now > end)
             retval = 0;
@@ -3123,14 +3123,12 @@ int Settings::ShiftStart(TimeInfo &start_time, int shift, TimeInfo &ref)
         return 1;
 
     start_time = ref;
-    start_time.Sec(0);
-    start_time.Min(0);
-    start_time.Hour(0);
-    start_time.AdjustMinutes(shift_start[shift]);
+    start_time.Floor<date::days>();
+    start_time += std::chrono::minutes(shift_start[shift]);
 
     int minimum = (ref.Hour() * 60) + ref.Min();
     if (minimum < shift_start[first])
-        start_time.AdjustDays(-1);
+        start_time -= date::days(1);
     return 0;
 }
 
@@ -3147,95 +3145,6 @@ int Settings::IsGroupActive(int sales_group)
     return 0;
 }
 
-int Settings::MonthPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end)
-{
-    FnTrace("Settings::MonthPeriod()");
-    TimeInfo timevar = ref;
-    timevar.Sec(0);
-    timevar.Min(0);
-    timevar.Hour(0);
-
-    start = timevar;
-    start.Day(1);
-    end = start;
-    end.AdjustDays(DaysInMonth(start.Month(), start.Year()));
-
-//    printf("Settings::MonthPeriod(): ref=%d/%d/%d\nstart=%d/%d/%d\nend=%d/%d/%d\n",
-//    ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year());
-    return 0;
-}
-
-int Settings::SalesPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end)
-{
-    FnTrace("Settings::SalesPeriod()");
-    if (sales_period == SP_MONTH)
-    {
-        TimeInfo timevar = ref;
-        timevar.Sec(0);
-        timevar.Min(0);
-        timevar.Hour(0);
-
-        start = timevar;
-        start.Day(sales_start.Day());
-        end = start;
-        end.AdjustDays(DaysInMonth(start.Month(), start.Year()));
-        return 0;
-    }
-
-    if (sales_period == SP_HM_11)
-    {
-        TimeInfo timevar = ref;
-        timevar.Sec(0);
-        timevar.Min(0);
-        timevar.Hour(0);
-
-        start = timevar;
-        start.Day(sales_start.Day());
-        if (start.Day() <= 11) {
-        	start.Day(11);
-        	end = start;
-        	end.AdjustDays(14);
-        } else if (start.Day() < 26) {
-        	start.Day(26);
-	        end = start;
-	        end.AdjustMonths(1);
-	        end.Day(10);
-        } else {
-        	start.Day(11);
-        	start.AdjustMonths(1);
-    	    end = start;
-        	end.AdjustDays(14);
-        }
-//    printf("Settings::SalesPeriod(): ref=%d/%d/%d : start=%d/%d/%d : end=%d/%d/%d\n",
-//    ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year());
-        return 0;
-    }
-
-    int d = 0;
-    switch (sales_period)
-    {
-    case SP_WEEK:   d = 7; break;
-    case SP_2WEEKS: d = 14; break;
-    case SP_4WEEKS: d = 28; break;
-    default:
-        return 1;
-    }
-
-    sales_start.Sec(0);
-    sales_start.Min(0);
-    sales_start.Hour(0);
-
-    end = sales_start;
-    end.AdjustDays(d);
-
-    while (end <= ref)
-        end.AdjustDays(d);
-
-    start = end;
-    start.AdjustDays(-d);
-    return 0;
-}
-
 int Settings::LaborPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end)
 {
     FnTrace("Settings::LaborPeriod()");
@@ -3245,14 +3154,11 @@ int Settings::LaborPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end)
     if (labor_period == SP_MONTH)
     {
         TimeInfo timevar = ref;
-        timevar.Sec(0);
-        timevar.Min(0);
-        timevar.Hour(0);
+        timevar.Floor<date::days>();
 
         start = timevar;
-        start.Day(labor_start.Day());
         end = start;
-        end.AdjustDays(DaysInMonth(start.Month(), start.Year()));
+        end += date::months(1);
     //printf("Settings::LaborPeriod(Month): ref=%d/%d/%d\nstart=%d/%d/%d\nend=%d/%d/%d\n",
     //ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year());
         return 0;
@@ -3263,28 +3169,15 @@ int Settings::LaborPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end)
     if (labor_period == SP_HM_11)
     {
         TimeInfo timevar = ref;
-        timevar.Sec(0);
-        timevar.Min(0);
-        timevar.Hour(0);
+        timevar.Floor<date::days>();
 
         start = timevar;
         end = timevar;
-        if (start.Day() < 11) {
-        	start.Day(26);
-        	start.AdjustMonths(-1);
-//        	end.Day(10);
-        	end.Day(11);
-        } else if (start.Day() < 26) {
-        	start.Day(11);
-    	    end = start;
-//    	    end.AdjustDays(14);
-    	    end.AdjustDays(15);
-        } else {
-        	start.Day(26);
-//        	end.Day(10);
-        	end.Day(11);
-        	end.AdjustMonths(1);
-        }
+        // jump forward (or adjust downwards if not 11 or 26)
+        start.half_month_jump(1, 11, 26);
+        end = start;
+        // jump forward
+        end.half_month_jump(1, 11, 26);
     //printf("Settings::LaborPeriod(SP_HM_11): ref=%d/%d/%d\nstart=%d/%d/%d\nend=%d/%d/%d\n",
     //ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year());
         return 0;
@@ -3300,18 +3193,16 @@ int Settings::LaborPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end)
         return 1;
     }
 
-    labor_start.Sec(0);
-    labor_start.Min(0);
-    labor_start.Hour(0);
+    labor_start.Floor<date::days>();
 
     end = labor_start;
-    end.AdjustDays(d);
+    end += date::days(d);
 
     while (end <= ref)
-        end.AdjustDays(d);
+        end += date::days(d);
 
     start = end;
-    start.AdjustDays(-d);
+    start += date::days(-d);
     return 0;
 }
 
@@ -3324,19 +3215,13 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
     // first day of first month of current year if not.
     if (fiscal && fiscal->IsSet())
     {
-        fiscal->Sec(0);
+        fiscal->Floor<std::chrono::minutes>();
         end = *fiscal;
 // printf("Settings::SetPeriod(): Fiscal reset end to %d/%d/%d\n", end.Month(), end.Day(), end.Year());
     }
     else
     {
-        end.Set();
-        end.Sec(0);
-        end.Min(0);
-        end.Hour(0);
-        end.Day(1);
-        end.Month(1);
-        end.Year(SystemTime.Year());
+        end.Set(0, SystemTime.Year());
 // printf("Settings::SetPeriod(): Fiscal not set so end set to %d/%d/%d\n", end.Month(), end.Day(), end.Year());
     }
 //    printf("Settings::SetPeriod(): beginning ref=%d/%d/%d : start=%d/%d/%d : end=%d/%d/%d\n",
@@ -3344,51 +3229,43 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
 
     // make sure we have the correct year
     while (end >= ref)
-        end.AdjustYears(-1);
+        end -= date::years(1);
 
+    // special handling for half-month starting at 11th day of month
+    if (period_view == SP_HM_11)
+    {
+        start = ref;
+        start.half_month_jump(1, 11, 26);
+        end = start;
+        end.half_month_jump(1, 11, 26);
+        end -= date::days(1);
+        return 0;
+    }
     // advance until end is past reference point
     while (end <= ref)
     {
         switch (period_view)
         {
         case SP_DAY:
-            end.AdjustDays(1);
+            end += date::days(1);
             break;
         case SP_WEEK:
-            end.AdjustDays(7);
+            end += date::days(7);
             break;
         case SP_2WEEKS:
-            end.AdjustDays(14);
-            break;
-        case SP_HM_11:
-//    printf("Settings::SetPeriod(): in top ref=%d/%d/%d : end=%d/%d/%d\n",
-//    ref.Month(), ref.Day(), ref.Year(), end.Month(), end.Day(), end.Year());
-			end.AdjustDays(1);
-			if (end >= ref) {
-				if (ref.Day() <= 10) {
-//  										  printf("Settings::SetPeriod(): setting day to 10\n");
-					end.Day(10);
-				} else if (ref.Day() <= 25) {
-		        	end.Day(25);
-//    										printf("Settings::SetPeriod(): setting day to 25\n");
-        		} else {
-        			end.AdjustMonths(1);
-	        		end.Day(10);
-//    										printf("Settings::SetPeriod(): skipping to 10th of next month\n");
-				}
-			}
+            end += date::days(14);
             break;
         case SP_4WEEKS:
-            end.AdjustDays(28);
+            end += date::days(28);
             break;
         case SP_MONTH:
-            end.AdjustMonths(1);
+            end += date::months(1);
             break;
         case SP_QUARTER:
-            end.AdjustMonths(3);
+            end += date::months(3);
             break;
         case SP_YTD:
-            end.AdjustYears(1);
+            end += date::years(1);
             break;
         }
 //    printf("Settings::SalesPeriod() Mid: end=%d/%d/%d\n",
@@ -3403,38 +3280,25 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
     switch (period_view)
     {
     case SP_DAY:
-        start.AdjustDays(-1);
+        start -= date::days(1);
         break;
     case SP_WEEK:
-        start.AdjustDays(-7);
+        start -= date::days(7);
         break;
     case SP_2WEEKS:
-        start.AdjustDays(-14);
-        break;
-    case SP_HM_11:
-    // end.Day() should either be 10 or 26, so we need to set start to be
-    // the most previous 11 or 25.
-        if (end.Day() == 10) {
-        	start.Day(26);
-        	start.AdjustMonths(-1);
-//        	start.AdjustDays(-1*((DaysInMonth(start.Month()-1, start.Year()) - 26) +10));
-	    } else {
-	        start.AdjustDays(-14);
-        }
-        // ref = end;
-        ref = start;
+        start -= date::days(14);
         break;
     case SP_4WEEKS:
-        start.AdjustDays(-28);
+        start -= date::days(28);
         break;
     case SP_MONTH:
-        start.AdjustMonths(-1);
+        start -= date::months(1);
         break;
     case SP_QUARTER:
-        start.AdjustMonths(-3);
+        start -= date::months(3);
         break;
     case SP_YTD:
-        start.AdjustYears(-1);
+        start -= date::years(1);
         break;
     }
 //    printf("Settings::SetPeriod(): end ref=%d/%d/%d : start=%d/%d/%d : end=%d/%d/%d\n",
@@ -3445,32 +3309,41 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
     return 0;
 }
 
-int Settings::OvertimeWeek(TimeInfo &ref, TimeInfo &start, TimeInfo &end)
+int Settings::OvertimeWeek(const TimeInfo &ref, TimeInfo &start, TimeInfo &end)
 {
     FnTrace("Settings::OvertimeWeek()");
-    start = ref;
-    start.Min(wage_week_start % 60);
-    start.Hour((wage_week_start / 60) % 24);
+    // assume ref has time of 00:00:00
+    start = ref + std::chrono::seconds(wage_week_start);
 
     int wday = (wage_week_start / 1440) % 7;
     int ref_wday = ref.WeekDay();
     if (ref_wday == wday)
     {
         if (start > ref)
-            start.AdjustDays(-7);
+        {
+            start -= date::days(7);
+        }
     }
     else if (ref_wday > wday)
-        start.AdjustDays(wday - ref_wday);
-    else
-        start.AdjustDays(wday - (ref_wday + 7));
+    {
+        start += date::days(wday - ref_wday);
+    } else // ref_wday < wday
+    {
+        start += date::days(wday - (ref_wday + 7));
+    }
 
-    end = start;
-    end.AdjustDays(7);
+    end = start + date::days(7);
 
     if (start > ref)
+    {
         printf("start wrong\n");
+        throw std::runtime_error("OvertimeWeek: start wrong");
+    }
     if (end <= ref)
+    {
         printf("end wrong\n");
+        throw std::runtime_error("OvertimeWeek: end wrong");
+    }
     return 0;
 }
 

@@ -60,7 +60,7 @@ WorkEntry::WorkEntry(Employee *e, int j)
     fore       = NULL;
     user_id    = e->id;
     start      = SystemTime;
-    start.Sec(0);
+    start.Floor<std::chrono::minutes>();
     tips       = 0;
     edit_id    = 0;
     original   = NULL;
@@ -244,8 +244,8 @@ int WorkEntry::Read(InputDataFile &df, int version)
     error += df.Read(end);
     error += df.Read(end_shift);
 
-    start.Sec(0);
-    end.Sec(0);
+    start.Floor<std::chrono::minutes>();
+    end.Floor<std::chrono::minutes>();
 
     error += df.Read(edit_id);
     if (edit_id > 0)
@@ -352,7 +352,7 @@ int WorkEntry::EndEntry(TimeInfo &timevar)
 {
     FnTrace("WorkEntry::EndEntry()");
     end = timevar;
-    end.Sec(0);
+    end.Floor<std::chrono::minutes>();
 
     WorkEntry *work_entry = original;
     while (work_entry)
@@ -560,11 +560,11 @@ int LaborPeriod::WorkReport(Terminal *t, Employee *user, TimeInfo &tm_s,
     TimeInfo end;
     TimeInfo now;
     start = tm_s;
-    start.Sec(0);
+    start.Floor<std::chrono::minutes>();
     end = tm_e;
-    end.Sec(0);
+    end.Floor<std::chrono::minutes>();
     now = SystemTime;
-    now.Sec(0);
+    now.Floor<std::chrono::minutes>();
 
     r->min_width = 60;
     char str[256];
@@ -584,7 +584,7 @@ int LaborPeriod::WorkReport(Terminal *t, Employee *user, TimeInfo &tm_s,
         if (!te.IsSet())
         {
             te = now;
-            te.Sec(0);
+            te.Floor<std::chrono::minutes>();
         }
         if ((user == NULL || user->id == wid) && ts <= end && te >= start &&
             ((1 << work_entry->job) & t->job_filter) == 0)
@@ -700,9 +700,9 @@ WorkEntry *LaborPeriod::WorkReportEntry(Terminal *t, int line, Employee *user,
     FnTrace("LaborPeriod::WorkReportEntry()");
     TimeInfo start, end;
     start = tm_s;
-    start.Sec(0);
+    start.Floor<std::chrono::minutes>();
     end   = tm_e;
-    end.Sec(0);
+    end.Floor<std::chrono::minutes>();
 
     int last_id = -1, l = 0;
     WorkEntry *work_entry = WorkList();
@@ -740,9 +740,9 @@ int LaborPeriod::WorkReportLine(Terminal *t, WorkEntry *work, Employee *user,
     FnTrace("LaborPeriod::WorkReportLine()");
     TimeInfo start, end;
     start = tm_s;
-    start.Sec(0);
+    start.Floor<std::chrono::minutes>();
     end   = tm_e;
-    end.Sec(0);
+    end.Floor<std::chrono::minutes>();
 
     int last_id = -1, l = 0;
     WorkEntry *work_entry = WorkList();

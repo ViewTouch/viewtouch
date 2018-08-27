@@ -244,20 +244,9 @@ int InputDataFile::Read(Str &s)
 int InputDataFile::Read(TimeInfo &timevar)
 {
     FnTrace("InputDataFile::Read(TimeInfo &)");
-    int s = (int) GetValue();
-    int y = (int) GetValue();
-    if (y > 0)
-    {
-        int d = ((s / 86400)   % 31) + 1;
-        int m = ((s / 2678400) % 12) + 1;
-        timevar.Sec(s % 60);
-        timevar.Min((s / 60) % 60);
-        timevar.Hour((s / 3600) % 24);
-        timevar.Day(d);
-        timevar.Month(m);
-        timevar.WeekDay(DayOfTheWeek(d, m, y));
-        timevar.Year(y);
-    }
+    int s = static_cast<int>(GetValue());
+    int y = static_cast<int>(GetValue());
+    timevar.Set(s, y);
 
     return 0;
 }

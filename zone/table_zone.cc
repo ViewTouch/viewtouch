@@ -306,7 +306,7 @@ int RoomDialog::UpdateForm(Terminal *term, int record)
 
     if (end < start || end == start)
     {
-        start.AdjustDays(1);
+        start += date::days(1);
         check_out->Set(start);
         status = 0;
     }
