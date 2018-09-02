@@ -13,37 +13,198 @@
 #include <locale>
 
 TEST(time_info, addition_seconds_basic)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += std::chrono::seconds(15);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 1);
+    EXPECT_EQ(ti.Hour(), 0);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 15);
+}
 TEST(time_info, addition_seconds_wrapping_minute)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += std::chrono::seconds(60*3 + 15);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 1);
+    EXPECT_EQ(ti.Hour(), 0);
+    EXPECT_EQ(ti.Min(), 3);
+    EXPECT_EQ(ti.Sec(), 15);
+}
 TEST(time_info, addition_seconds_wrapping_hour)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += std::chrono::seconds(60*60*3 + 15);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 1);
+    EXPECT_EQ(ti.Hour(), 3);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 15);
+}
 TEST(time_info, addition_seconds_wrapping_day)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += std::chrono::seconds(60*60*24*3 + 15);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 4);
+    EXPECT_EQ(ti.Hour(), 0);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 15);
+}
 TEST(time_info, addition_seconds_wrapping_month)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += std::chrono::seconds(60*60*24*31 + 15);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 2);
+    EXPECT_EQ(ti.Day(), 1);
+    EXPECT_EQ(ti.Hour(), 0);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 15);
+}
 TEST(time_info, addition_seconds_wrapping_year)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += std::chrono::seconds(60*60*24*365 + 15);
+    EXPECT_EQ(ti.Year(), 2019);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 1);
+    EXPECT_EQ(ti.Hour(), 0);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 15);
+}
 TEST(time_info, addition_minutes_basic)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += std::chrono::minutes(3);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 1);
+    EXPECT_EQ(ti.Hour(), 0);
+    EXPECT_EQ(ti.Min(), 3);
+    EXPECT_EQ(ti.Sec(), 0);
+}
 TEST(time_info, addition_minutes_wrapping_hour)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += std::chrono::minutes(60*3);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 1);
+    EXPECT_EQ(ti.Hour(), 3);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 0);
+}
 TEST(time_info, addition_minutes_wrapping_day)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += std::chrono::minutes(60*24*3);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 4);
+    EXPECT_EQ(ti.Hour(), 0);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 0);
+}
 TEST(time_info, addition_hours_basic)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += std::chrono::hours(15);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 1);
+    EXPECT_EQ(ti.Hour(), 15);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 0);
+}
 TEST(time_info, addition_hours_wrapping_day)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += std::chrono::hours(24 + 15);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 2);
+    EXPECT_EQ(ti.Hour(), 15);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 0);
+}
 TEST(time_info, addition_days_basic)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += date::days(3);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 4);
+    EXPECT_EQ(ti.Hour(), 0);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 0);
+}
 TEST(time_info, addition_days_wrapping_month)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += date::days(31);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 2);
+    EXPECT_EQ(ti.Day(), 1);
+    EXPECT_EQ(ti.Hour(), 0);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 0);
+}
 TEST(time_info, addition_month_basic)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += date::months(2);
+    EXPECT_EQ(ti.Year(), 2018);
+    EXPECT_EQ(ti.Month(), 3);
+    EXPECT_EQ(ti.Day(), 1);
+    EXPECT_EQ(ti.Hour(), 0);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 0);
+}
 TEST(time_info, addition_month_wrapping_year)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += date::months(12);
+    EXPECT_EQ(ti.Year(), 2019);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 1);
+    EXPECT_EQ(ti.Hour(), 0);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 0);
+}
 TEST(time_info, addition_year_basic)
-{}
+{
+    TimeInfo ti;
+    ti.Set(0, 2018); // 2018-01-01 00:00::00
+    ti += date::years(2);
+    EXPECT_EQ(ti.Year(), 2020);
+    EXPECT_EQ(ti.Month(), 1);
+    EXPECT_EQ(ti.Day(), 1);
+    EXPECT_EQ(ti.Hour(), 0);
+    EXPECT_EQ(ti.Min(), 0);
+    EXPECT_EQ(ti.Sec(), 0);
+}
+
 TEST(time_info, set_year_results_in_jan_first_midnight)
 {
     TimeInfo ti;
