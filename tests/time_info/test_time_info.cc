@@ -253,30 +253,12 @@ TEST(time_info, set_yesterday_night_23_59)
     EXPECT_EQ(ti.Min(),  59);
     EXPECT_EQ(ti.Sec(),  59);
 }
-TEST(time_info, ceil_to_last_day_of_month)
-{
-    TimeInfo ti;
-    EXPECT_FALSE(ti.IsSet());
-    // set date to last night, 23:59
-    ti.Set(60*60*24*31 + 60*30 + 24, 2018); // 2018-01-04 00:30:24
-    //std::cout << ti.to_string() << std::endl;
-    //ti.Ceil<date::months>(); // 2018-01-31 23::59:59
-    //std::cout << ti.to_string() << std::endl;
-    //EXPECT_EQ(ti.Month(), 1);
-    //EXPECT_EQ(ti.Day(),  31);
-    //EXPECT_EQ(ti.Hour(), 23);
-    //EXPECT_EQ(ti.Min(),  59);
-    //EXPECT_EQ(ti.Sec(),  59);
-    // expect last day of month
-}
 
 TEST(time_info, adjust_month_doesnt_change_day_and_time)
 {
     TimeInfo ti;
     ti.Set(60*60*24*3 + 60*30 + 24, 2018); // 2018-01-04 00:30:24
-    std::cout << ti.to_string() << std::endl;
     ti += date::months(1);
-    std::cout << ti.to_string() << std::endl;
     EXPECT_EQ(ti.Month(), 2);
     EXPECT_EQ(ti.Day(),   4);
     EXPECT_EQ(ti.Hour(),  0);
@@ -287,9 +269,7 @@ TEST(time_info, adjust_year_doesnt_change_day_and_time)
 {
     TimeInfo ti;
     ti.Set(60*60*24*3 + 60*30 + 24, 2018); // 2018-01-04 00:30:24
-    std::cout << ti.to_string() << std::endl;
     ti += date::years(1);
-    std::cout << ti.to_string() << std::endl;
     EXPECT_EQ(ti.Month(), 1);
     EXPECT_EQ(ti.Day(),   4);
     EXPECT_EQ(ti.Hour(),  0);
