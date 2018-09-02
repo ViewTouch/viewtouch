@@ -518,8 +518,37 @@ int TimeInfo::WeekDay() const
 {
     FnTrace("TimeInfo::WeekDay()");
     date::weekday wd{date::floor<date::days>(t_)};
-    date::weekday_indexed wdi = wd[0];
-    return static_cast<int>(wdi.index());
+    // Workaround for missing unsigned operator to get stored weekday index
+    if (wd == date::Sunday)
+    {
+        return 0;
+    } else if (wd == date::Monday)
+    {
+        return 1;
+    } else if (wd == date::Tuesday)
+    {
+        return 2;
+    } else if (wd == date::Wednesday)
+    {
+        return 3;
+    } else if (wd == date::Thursday)
+    {
+        return 4;
+    } else if (wd == date::Friday)
+    {
+        return 5;
+    } else if (wd == date::Saturday)
+    {
+        return 6;
+    } else
+    {
+        std::cout << wd << std::endl;
+        throw std::runtime_error("TimeInfo::Weekday(): Unknown Weekday value");
+    }
+    // function using unsigned operator as defined in C++20
+    // https://en.cppreference.com/w/cpp/chrono/weekday/operator_unsigned
+    //unsigned wd_idx = static_cast<unsigned>(wd);
+    //return static_cast<int>(wd_idx);
 }
 
 int TimeInfo::DaysInMonth() const
