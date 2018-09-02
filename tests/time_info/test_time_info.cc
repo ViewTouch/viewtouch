@@ -397,8 +397,52 @@ TEST(time_info, floor_years_sets_all_lower_values_to_start)
     EXPECT_EQ(ti.Month(), 1);
 }
 
-TEST(time_info, check_weekday_has_the_ctime_indizes)
+TEST(time_info, check_weekday_has_the_ctime_indizes_Monday)
 {
     TimeInfo ti;
-    EXPECT_FALSE(true);
+    ti.Set(0, 2018); // Mon 2018-01-01 00:00:00
+    // ctime defines tm_wday as "days since Sunday in the range of 0 to 6
+    EXPECT_EQ(ti.WeekDay(), 1);
+}
+TEST(time_info, check_weekday_has_the_ctime_indizes_Tuesday)
+{
+    TimeInfo ti;
+    ti.Set(60*60*24*1, 2018); // Tue 2018-01-02 00:00:00
+    // ctime defines tm_wday as "days since Sunday in the range of 0 to 6
+    EXPECT_EQ(ti.WeekDay(), 2);
+}
+TEST(time_info, check_weekday_has_the_ctime_indizes_Wednesday)
+{
+    TimeInfo ti;
+    ti.Set(60*60*24*2, 2018); // Tue 2018-01-03 00:00:00
+    // ctime defines tm_wday as "days since Sunday in the range of 0 to 6
+    EXPECT_EQ(ti.WeekDay(), 3);
+}
+TEST(time_info, check_weekday_has_the_ctime_indizes_Thursday)
+{
+    TimeInfo ti;
+    ti.Set(60*60*24*3, 2018); // Thu 2018-01-04 00:00:00
+    // ctime defines tm_wday as "days since Sunday in the range of 0 to 6
+    EXPECT_EQ(ti.WeekDay(), 4);
+}
+TEST(time_info, check_weekday_has_the_ctime_indizes_Friday)
+{
+    TimeInfo ti;
+    ti.Set(60*60*24*4, 2018); // Fri 2018-01-05 00:00:00
+    // ctime defines tm_wday as "days since Sunday in the range of 0 to 6
+    EXPECT_EQ(ti.WeekDay(), 5);
+}
+TEST(time_info, check_weekday_has_the_ctime_indizes_Saturday)
+{
+    TimeInfo ti;
+    ti.Set(60*60*24*5, 2018); // Sat 2018-01-06 00:00:00
+    // ctime defines tm_wday as "days since Sunday in the range of 0 to 6
+    EXPECT_EQ(ti.WeekDay(), 6);
+}
+TEST(time_info, check_weekday_has_the_ctime_indizes_Sunday)
+{
+    TimeInfo ti;
+    ti.Set(60*60*24*6, 2018); // Sun 2018-01-07 00:00:00
+    // ctime defines tm_wday as "days since Sunday in the range of 0 to 6
+    EXPECT_EQ(ti.WeekDay(), 0);
 }
