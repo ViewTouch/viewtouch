@@ -10,6 +10,7 @@ env:
     - TOOLCHAIN: default
     - BUILD_PACKAGES: cmake
     - RUN_TESTS: true
+    - TZ: America/Los_Angeles
 
 matrix:
   include:
@@ -54,6 +55,7 @@ before_install:
     -e "s/@BUILD_RELEASE@/${BUILD_RELEASE}/g" \
     -e "s/@BUILD_ARCH@/${BUILD_ARCH}/g" \
     -e "s/@BUILD_PACKAGES@/${BUILD_PACKAGES}/g" \
+    -e "s#@TZ@#${TZ}#g" \
     ci/Dockerfile.template | tee ci/Dockerfile.$BUILD_FLAVOR.$BUILD_RELEASE.$BUILD_ARCH
   - docker build -f ci/Dockerfile.$BUILD_FLAVOR.$BUILD_RELEASE.$BUILD_ARCH -t vt-devel .
 
