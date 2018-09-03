@@ -54,7 +54,7 @@ before_install:
     -e "s/@BUILD_RELEASE@/${BUILD_RELEASE}/g" \
     -e "s/@BUILD_ARCH@/${BUILD_ARCH}/g" \
     -e "s/@BUILD_PACKAGES@/${BUILD_PACKAGES}/g" \
-    ci/Dockerfile.$BUILD_FLAVOR.template | tee ci/Dockerfile.$BUILD_FLAVOR.$BUILD_RELEASE.$BUILD_ARCH
+    ci/Dockerfile.template | tee ci/Dockerfile.$BUILD_FLAVOR.$BUILD_RELEASE.$BUILD_ARCH
   - docker build -f ci/Dockerfile.$BUILD_FLAVOR.$BUILD_RELEASE.$BUILD_ARCH -t vt-devel .
 
 script: |
@@ -66,5 +66,5 @@ script: |
   -e PROJECT_DIR="$PROJECT_DIR" \
   -e TOOLCHAIN="$TOOLCHAIN" \
   -e RUN_TESTS="$RUN_TESTS" \
-  -it vt-devel ./ci/travis.$BUILD_FLAVOR.sh
+  -it vt-devel ./ci/travis.sh
 
