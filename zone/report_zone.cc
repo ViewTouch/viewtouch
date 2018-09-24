@@ -752,6 +752,10 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
     case 9:  // nextperiod
       	printf("report_zone : nextperiod\n");
         period_view = NextValue(period_view, ReportPeriodValue);
+        if (period_view == SP_NONE)
+        {
+            period_view = SP_DAY;
+        }
         Draw(t, 1);
         return SIGNAL_OKAY;
     case 10:  // sortby
