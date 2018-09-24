@@ -397,7 +397,10 @@ void RedrawZoneCB(XtPointer client_data, XtIntervalId *timer_id)
 {
     FnTrace("RedrawZoneCB()");
     Terminal *t = (Terminal *) client_data;
-    t->redraw_id = 0;
+    {
+        std::unique_lock<std::mutex> lock(t->redraw_id_mutex);
+        t->redraw_id = 0;
+    }
 
     Zone *z = t->selected_zone;
     if (z)
@@ -3148,10 +3151,13 @@ int Terminal::UserInput()
 int Terminal::ClearSelectedZone()
 {
     FnTrace("Terminal::ClearSelectedZone()");
-    if (redraw_id)
     {
-        RemoveTimeOutFn(redraw_id);
-        redraw_id = 0;
+        std::unique_lock<std::mutex> lock(redraw_id_mutex);
+        if (redraw_id)
+        {
+            RemoveTimeOutFn(redraw_id);
+            redraw_id = 0;
+        }
     }
 
     Zone *z = selected_zone;
@@ -3534,6 +3540,7 @@ int Terminal::RenderZone(Zone *z)
 
     if (z == selected_zone && !z->stay_lit)
     {
+        std::unique_lock<std::mutex> lock(redraw_id_mutex);
         if (z->behave == BEHAVE_BLINK)
             redraw_id = AddTimeOutFn((TimeOutFn) RedrawZoneCB, 500, this);
         else if (z->behave == BEHAVE_DOUBLE)
@@ -3560,6 +3567,7 @@ int Terminal::RenderZone(Zone *z)
 int Terminal::RedrawZone(Zone *z, int timeint)
 {
     FnTrace("Terminal::RedrawZone()");
+    std::unique_lock<std::mutex> lock(redraw_id_mutex);
     if (redraw_id)
         RemoveTimeOutFn(redraw_id);
 

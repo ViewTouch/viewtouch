@@ -28,6 +28,7 @@
 #include "utility.hh"
 
 #include <string>
+#include <mutex>
 
 // FIX - split Terminal into core class and PosTerm
 
@@ -386,6 +387,7 @@ public:
     int socket_no;
     int input_id;
     int redraw_id;
+    std::mutex redraw_id_mutex;
     int message_set;
     int last_page_type;
     int last_page_size;
