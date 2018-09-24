@@ -367,7 +367,7 @@ int WorkEntry::Overlap(TimeInfo &st, TimeInfo &et)
 {
     FnTrace("WorkEntry::Overlap()");
     TimeInfo s, e;
-    if (start > st)
+    if (start.IsSet() && start > st)
         s = start;
     else
         s = st;
