@@ -147,16 +147,16 @@ int LoadLocalData();
 int SaveLocalData();
 
 // Add/Remove timeout function
-int AddTimeOutFn(TimeOutFn fn, int time, void *client_data);
-int RemoveTimeOutFn(int fn_id);
+unsigned long AddTimeOutFn(TimeOutFn fn, int time, void *client_data);
+int RemoveTimeOutFn(unsigned long fn_id);
 
 // Add/Remove input watching function
 int AddInputFn(InputFn fn, int device_no, void *client_data);
 int RemoveInputFn(int fn_id);
 
 // Add/Remove work function
-int AddWorkFn(WorkFn fn, void *client_data);
-int RemoveWorkFn(int fn_id);
+unsigned long AddWorkFn(WorkFn fn, void *client_data);
+int RemoveWorkFn(unsigned long fn_id);
 
 // looks at local copy of fonts so requests don't go to term programs
 // (layout functions should be moved to terms so these arn't needed here)

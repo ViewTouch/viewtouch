@@ -386,7 +386,7 @@ public:
     CharQueue *buffer_out;
     int socket_no;
     int input_id;
-    int redraw_id;
+    unsigned long redraw_id = 0;
     std::mutex redraw_id_mutex;
     int message_set;
     int last_page_type;
