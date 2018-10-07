@@ -2785,7 +2785,7 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
 			// if exact same item at exact same time, it's a duplicate
 			// (duplicate exceptions are a bug with the current
 			// exception tracking.  Need to fix)
-			bool IsSame  = ((time_is == time_was) && (item_is == item_was));
+            bool IsSame  = ((time_was.IsSet() && time_is == time_was) && (item_is == item_was));
 
 			if(! IsSame)
 			{
