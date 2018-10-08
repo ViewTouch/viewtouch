@@ -804,7 +804,7 @@ int Locale::NewTranslation(const char* str, const genericChar* value)
  * TimeDate: returns time/date nicely formated (format flags are in
  * locale.hh)
  ****/
-const char* Locale::TimeDate(Settings *s, TimeInfo &timevar, int format, int lang, genericChar* str)
+const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, int lang, genericChar* str)
 {
     FnTrace("Locale::TimeDate()");
 	// FIX - implement handler for TD_SECONDS format flag

@@ -146,7 +146,7 @@ public:
     const genericChar* TranslatePO(const char* str, int lang = LANG_ENGLISH, int clear = 0);
     int NewTranslation(const char* str, const genericChar* value);
 
-    const char* TimeDate( Settings* s, TimeInfo& timevar, int format, int lang, genericChar* str = 0);
+    const char* TimeDate(Settings* s, const TimeInfo &timevar, int format, int lang, genericChar* str = 0);
     char* Page( int current, int page_max, int lang, genericChar* str );
 };
 
