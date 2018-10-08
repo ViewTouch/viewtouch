@@ -320,7 +320,7 @@ int ReadViewTouchConfig()
 int main(int argc, genericChar* argv[])
 {
     FnTrace("main()");
-    srand(time(NULL));
+    srand(static_cast<unsigned int>(time(nullptr)));
     StartupLocalization();
     ReadViewTouchConfig();
 
