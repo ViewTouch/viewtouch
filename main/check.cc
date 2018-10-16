@@ -346,7 +346,7 @@ int Check::Read(Settings *settings, InputDataFile &infile, int version)
         if (customer)
             delete customer;
 
-        if (table.length > 0)
+        if (table.size() > 0)
         {
             customer = NewCustomerInfo(CHECK_RESTAURANT);
             customer->Guests(guests);
@@ -608,7 +608,7 @@ int Check::Count()
 int Check::DestroyFile()
 {
     FnTrace("Check::DestroyFile()");
-    if (filename.length <= 0)
+    if (filename.empty())
         return 1; // no file to destroy
 
     int result = DeleteFile(filename.Value());
@@ -1465,7 +1465,7 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
     report->NewLine();
     for (idx = 0; idx < MAX_HEADER_LINES; idx += 1)
     {
-        if (settings->receipt_footer[idx].length > 0)
+        if (settings->receipt_footer[idx].size() > 0)
         {
             sidx = 0;
             didx = 0;
@@ -3246,7 +3246,7 @@ int SubCheck::CancelPayments(Terminal *term)
         }
         payptr = ptr;
     }
-    if (tax_exempt.length > 0)
+    if (tax_exempt.size() > 0)
     {
         tax_exempt.Clear();
         change = 1;
@@ -4068,7 +4068,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     int i;
     for (i = 0; i < 4; ++i)
     {
-        if (settings->receipt_header[i].length > 0)
+        if (settings->receipt_header[i].size() > 0)
         {
             if (lines > 0)
             {
@@ -4390,7 +4390,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     lines = 0;	// blank footer lines skipped
     for (i = 0; i < 4; ++i)
     {
-        if (settings->receipt_footer[i].length > 0)
+        if (settings->receipt_footer[i].size() > 0)
         {
             if (flag == 0)
             {
@@ -4888,7 +4888,7 @@ int SubCheck::IsTaxExempt()
     FnTrace("SubCheck::IsTaxExempt()");
     int retval = 0;
 
-    if (tax_exempt.length > 0)
+    if (tax_exempt.size() > 0)
         retval = 1;
 
     return retval;

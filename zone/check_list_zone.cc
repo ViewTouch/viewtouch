@@ -235,7 +235,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 			if (c->customer) {
 				const genericChar* tmp = c->customer->PhoneNumber();
 				Str *tStr = new Str(tmp);
-				strncpy(str, tmp += (tStr->length - 4), 4);
+                strncpy(str, tmp += (tStr->size() - 4), 4);
 				str[4] = '\0';
 			}
 //			sprintf(str, "%d", c->Guests());

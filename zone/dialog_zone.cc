@@ -865,7 +865,7 @@ RenderResult TenKeyDialog::Render(Terminal *term, int update_flag)
         key[13]->SetRegion(col[2], row[3], bw, bh);
 
     // Render
-    if (name.length > 0)
+    if (name.size() > 0)
         TextC(term, 0, name.Value());
     RenderEntry(term);
     buttons.Render(term);
@@ -2039,7 +2039,7 @@ void CreditCardDialog::Init(Terminal *term, SubCheck *subch, const char* swipe_v
                     SetAction(term, AUTH_PICK, NULL);
             }
         } else if (term->credit != NULL &&
-            term->auth_voice.length > 0 &&
+            term->auth_voice.size() > 0 &&
             term->credit->Status() == CC_STATUS_NONE)
         {
             term->credit->SetAuth(term->auth_voice.Value());
@@ -2235,7 +2235,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
             snprintf(str, STRLENGTH, "%s, %s, %s", crdstr, tipstr, totstr);
             TextC(term, line, str, color_text);
         }
-        if (term->auth_voice.length > 0)
+        if (term->auth_voice.size() > 0)
         {
             line += space;
             snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Voice Auth"),

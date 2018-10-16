@@ -362,7 +362,7 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
             field->Get(ti->workorder_heading); field = field->next;
             field->Get(ti->print_workorder); field = field->next;
             field->Get(tmp); field = field->next;
-            if (tmp.length <= 0)
+            if (tmp.size() <= 0)
                 tmp.Set("unset");
             ti->display_host.Set(tmp);
             field->Get(ti->printer_host); field = field->next;

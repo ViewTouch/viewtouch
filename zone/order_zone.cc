@@ -417,17 +417,17 @@ SignalResult OrderEntryZone::Signal(Terminal *term, const genericChar* message)
         result = 1;
         break;
     default:
-        if (StringCompare(message, "void", 4) == 0)
+        if (StringCompare(message, "void") == 0)
         {
             VoidOrder(term, atoi(&message[4]));
             return SIGNAL_OKAY;
         }
-        else if (StringCompare(message, "comp", 4) == 0)
+        else if (StringCompare(message, "comp") == 0)
         {
             CompOrder(term, atoi(&message[4]));
             return SIGNAL_OKAY;
         }
-        else if (StringCompare(message, "amount ", 7) == 0)
+        else if (StringCompare(message, "amount ") == 0)
         {
             int count = atoi(&message[7]);
             if (count <= 0)
@@ -1452,9 +1452,9 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
     if (update_flag)
     {
         item = Item(&(t->system_data->menu));
-        if (name.length > 0)
+        if (!name.empty())
         {
-            if (item && item->zone_name.length <= 0)
+            if (item && item->zone_name.empty())
             {
                 item->zone_name.Set(name);
                 item->changed = 1;
@@ -1533,22 +1533,22 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
 	t->RenderText(item->ZoneName(),x + w / 2.0,y + offsety,col,font,ALIGN_CENTER);
 	offsety+=font_height;
 	t->RenderText(item->event_time.Value(),x + w / 2.0,y + offsety,col,font,ALIGN_CENTER);
-	if(item->location.length > 0)
+    if(item->location.size() > 0)
 	{
 		offsety+=font_height;
 		t->RenderText(item->location.Value(),x + w / 2.0,y + offsety,col,font,ALIGN_CENTER);
 	}
-	if(s->store_name.length > 0)
+    if(s->store_name.size() > 0)
 	{
 		offsety+=font_height;
 		t->RenderText(s->store_name.Value(),x + w / 2.0,y + offsety,col,font,ALIGN_CENTER);
 	}
-	if(item->price_label.length > 0)
+    if(item->price_label.size() > 0)
 	{
 		offsety+=font_height;
 		t->RenderText(item->price_label.Value(),x + w / 2.0,y + offsety,col,font,ALIGN_CENTER);
 	}
-	if((item->available_tickets.length > 0) && (item->total_tickets.length > 0))
+    if((item->available_tickets.size() > 0) && (item->total_tickets.size() > 0))
 	{
 		offsety+=font_height;
 		genericChar buffer[64];

@@ -741,7 +741,7 @@ RenderResult ItemPrintTargetZone::Render(Terminal *t, int update_flag)
             if (pi->type != PRINTER_RECEIPT && pi->type != PRINTER_REPORT)
             {
                 pto = new PrintTargetObj(t, c, pi->type);
-                if (pi->name.length > 0)
+                if (pi->name.size() > 0)
                     pto->name.Set(pi->name);
                 else
                     pto->name.Set(FindStringByValue(pi->type, PrinterTypeValue,

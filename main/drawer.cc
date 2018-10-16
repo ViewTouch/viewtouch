@@ -359,7 +359,7 @@ int Drawer::Save()
 int Drawer::DestroyFile()
 {
     FnTrace("Drawer::DestroyFile()");
-    if (filename.length <= 0)
+    if (filename.empty())
         return 0;
 
     int result = DeleteFile(filename.Value());
@@ -1604,7 +1604,7 @@ int MergeSystems(Terminal *term, int mergeall)
         mergedrawer = NULL;
         while (currdrawer != NULL)
         {
-            if (currdrawer->host.length == 0)
+            if (currdrawer->host.empty())
             {
                 if (mergedrawer == NULL)
                     mergedrawer = currdrawer;

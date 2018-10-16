@@ -397,18 +397,18 @@ int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
         FormField *f = FieldList();
         f->Get(e->key); f = f->next;
         f->Get(e->system_name); f = f->next;
-        AdjustCase((genericChar*)e->system_name.Value());
+        e->system_name = AdjustCase(e->system_name.str());
         f->Get(e->training); f = f->next;
         f->Get(e->last_name); f = f->next;
-        AdjustCase(e->last_name.Value());
+        e->last_name = AdjustCase(e->last_name.str());
         f->Get(e->first_name); f = f->next;
-        AdjustCase(e->first_name.Value());
+        e->first_name = AdjustCase(e->first_name.str());
         f->Get(e->address); f = f->next;
-        AdjustCase(e->address.Value());
+        e->address = AdjustCase(e->address.str());
         f->Get(e->city); f = f->next;
-        AdjustCase(e->city.Value());
+        e->city = AdjustCase(e->city.str());
         f->Get(e->state); f = f->next;
-        StringToUpper(e->state.Value());
+        e->state = StringToUpper(e->state.str());
         f->Get(e->phone); f = f->next;
         f->Get(e->ssn); f = f->next;
         f->Get(e->description); f = f->next;
@@ -426,8 +426,8 @@ int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
         }
     }
 
-    if ((e->system_name.length <= 0) &&
-        ((e->first_name.length > 0) && (e->last_name.length > 0)))
+    if ((e->system_name.empty()) &&
+        ((e->first_name.size() > 0) && (e->last_name.size() > 0)))
     {
         char tempname[STRLONG];
         snprintf(tempname, STRLONG, "%s %s", e->first_name.Value(), e->last_name.Value());

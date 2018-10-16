@@ -1382,7 +1382,7 @@ RenderResult SubmitField::Render(Terminal *term, FormZone *fzone)
     RenderResult retval = RENDER_OKAY;
 
     fzone->Button(term, x, y, w, selected);
-    if (label.length > 0)
+    if (label.size() > 0)
     {
         int c = color;
         int m = 0;
@@ -1644,7 +1644,7 @@ int TextField::Append(genericChar* my_string)
     int retval = 0;
     int numdigits = 1;
 
-    if (buffer.length >= max_buffer_len)
+    if (buffer.size() >= max_buffer_len)
         retval = 1;
     else if (flag & FF_MONEY || flag & FF_ONLYDIGITS)
     {
@@ -1675,7 +1675,7 @@ int TextField::Append(Str &my_string)
     int retval = 0;
     int numdigits = 1;
 
-    if (buffer.length >= max_buffer_len)
+    if (buffer.size() >= max_buffer_len)
         retval = 1;
     else if (flag & FF_MONEY || flag & FF_ONLYDIGITS)
     {  // AVOID this in favor of Append(int)
@@ -1706,7 +1706,7 @@ int TextField::Append(int val)
     int retval = 0;
     genericChar my_string[STRLENGTH];
 
-    if (buffer.length >= max_buffer_len)
+    if (buffer.size() >= max_buffer_len)
         retval = 1;
     else if ((flag & FF_MONEY) || (flag & FF_ONLYDIGITS))
     {
@@ -1736,7 +1736,7 @@ int TextField::Append(genericChar key)
     int retval = 0;
     genericChar str[2];
 
-    if (buffer.length >= max_buffer_len)
+    if (buffer.size() >= max_buffer_len)
         retval = 1;
     else if ((flag & FF_MONEY) || (flag & FF_ONLYDIGITS))
     {
@@ -1757,7 +1757,7 @@ int TextField::Remove(int num)
     genericChar bbuff[STRLENGTH];
     int bufflen;
 
-    if (buffer.length < 1)
+    if (buffer.size() < 1)
         return 1;
 
     strcpy(bbuff, buffer.Value());
@@ -1839,19 +1839,19 @@ RenderResult TextField::Render(Terminal *term, FormZone *fzone)
     if (flag & FF_MONEY)
     {
         buffer.Set(term->FormatPrice(buffint));
-        cursor = buffer.length;
+        cursor = buffer.size();
     }
     else if (flag & FF_ONLYDIGITS)
     {
         buffer.Set(buffint);
-        cursor = buffer.length;
+        cursor = buffer.size();
     }
     buff = admission_filteredname(buffer);
     fzone->TextPosL(term, xx, y, buff, COLOR_WHITE);
     if (selected)
     {
-        if (cursor > buffer.length)
-            cursor = buffer.length;
+        if (cursor > buffer.size())
+            cursor = buffer.size();
 
         Flt pos = 0;
         if (cursor > 0)
@@ -1859,7 +1859,7 @@ RenderResult TextField::Render(Terminal *term, FormZone *fzone)
         fzone->Underline(term, xx + pos, y, 1.0, COLOR_YELLOW);
     }
     else
-        cursor = buffer.length;
+        cursor = buffer.size();
     return RENDER_OKAY;
 }
 
@@ -1875,7 +1875,7 @@ SignalResult TextField::Keyboard(Terminal *term, FormZone *fzone, int key, int s
         --cursor;
         return SIGNAL_OKAY;
     case 17:  // ^R - right
-        if (cursor >= buffer.length)
+        if (cursor >= buffer.size())
             return SIGNAL_IGNORED;
         ++cursor;
         return SIGNAL_OKAY;
@@ -2694,7 +2694,7 @@ int ListField::Init(Terminal *term, FormZone *fzone)
     if (min_label_width > label_width)
         label_width = min_label_width;
 
-    if (label.length <= 0)
+    if (label.size() <= 0)
         w = entry_width + 1;
     else
         w = label_width + entry_width + 2.5;
@@ -2706,7 +2706,7 @@ RenderResult ListField::Render(Terminal *term, FormZone *fzone)
 {
     FnTrace("ListField::Render()");
     Flt xx = x;
-    if (label.length > 0)
+    if (label.size() > 0)
     {
         int c = color, m = 0;
         if (selected)
@@ -2754,7 +2754,7 @@ SignalResult ListField::Touch(Terminal *term, FormZone *fzone, Flt tx, Flt ty)
 {
     FnTrace("ListField::Touch()");
     Flt xx = x;
-    if (label.length > 0)
+    if (label.size() > 0)
         xx += label_width + .6;
 
     if (tx >= xx && tx <= (xx + entry_width + 1))
@@ -2767,7 +2767,7 @@ SignalResult ListField::Mouse(Terminal *term, FormZone *fzone,
 {
     FnTrace("ListField::Mouse()");
     Flt xx = x;
-    if (label.length > 0)
+    if (label.size() > 0)
         xx += label_width + 1;
 
     if (!(action & MOUSE_PRESS))
@@ -3008,7 +3008,7 @@ int TemplateField::Init(Terminal *term, FormZone *fzone)
         label_width = min_label_width;
 
     h = 2;
-    w = label_width + temp.length + 3.5;
+    w = label_width + temp.size() + 3.5;
     return 0;
 }
 
@@ -3025,14 +3025,14 @@ RenderResult TemplateField::Render(Terminal *term, FormZone *fzone)
 
     Flt xx = x + label_width + 1;
     if (modify)
-        fzone->Entry(term, xx, y, temp.length + 1.5);
+        fzone->Entry(term, xx, y, temp.size() + 1.5);
 
     const genericChar* b = FillTemplate((genericChar*)temp.Value(), buffer.Value());
     fzone->TextPosL(term, xx, y, b, COLOR_WHITE);
     if (selected)
     {
-        if (cursor > buffer.length)
-            cursor = buffer.length;
+        if (cursor > buffer.size())
+            cursor = buffer.size();
 
         int tp = TemplatePos(temp.Value(), cursor);
         Flt pos = 0;
@@ -3041,7 +3041,7 @@ RenderResult TemplateField::Render(Terminal *term, FormZone *fzone)
         fzone->Underline(term, xx + pos, y, 1.0, COLOR_YELLOW);
     }
     else
-        cursor = buffer.length;
+        cursor = buffer.size();
     return RENDER_OKAY;
 }
 
@@ -3059,7 +3059,7 @@ SignalResult TemplateField::Keyboard(Terminal *term, FormZone *fzone, int key, i
         return SIGNAL_OKAY;
 
     case 17:  // ^R - right
-        if (cursor >= buffer.length)
+        if (cursor >= buffer.size())
             return SIGNAL_IGNORED;
         ++cursor;
         return SIGNAL_OKAY;
@@ -3082,7 +3082,7 @@ SignalResult TemplateField::Keyboard(Terminal *term, FormZone *fzone, int key, i
     if (flag & FF_ALLCAPS)
         k = toupper(k);
 
-    if (isprint(k) && buffer.length < TemplateBlanks(temp.Value()))
+    if (isprint(k) && buffer.size() < TemplateBlanks(temp.Value()))
     {
         strncpy(str, b, cursor);
         str[cursor] = k;

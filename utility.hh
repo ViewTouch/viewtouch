@@ -70,44 +70,46 @@ enum SignalResult
 // Dynamic string storage class
 class Str
 {
-    genericChar* data;
-    short buffer_len;
+    std::string data;
 
 public:
-    Str *next;
-    Str *fore;
-
-    short length;
+    Str *next = nullptr;
+    Str *fore = nullptr;
 
     // Constructors
     Str();
-    Str(const char* str);
-    Str(Str &s);
+    Str(const std::string &str);
+    Str(const Str &s);
     // Destructor
     ~Str();
 
     // Member Functions
     int   Clear();
-    int   Set(const char* str);
-    int   Set(int val);
-    int   Set(Flt val);
-    int   Set(Str &s) { return Set(s.Value()); }
-    int   Set(Str *s) { return Set(s->Value()); }
-    int   ChangeAtoB(char a, genericChar b);  // character replace
-    int   IntValue();
-    Flt   FltValue();
-    const genericChar* Value() const;
-    genericChar* Value();
-    const genericChar* ValueSet(const char* set = NULL);
+    bool  Set(const char *str);
+    bool  Set(const std::string &str);
+    bool  Set(const int val);
+    bool  Set(const Flt val);
+    bool  Set(const Str &s) { data = s.data; return true; }
+    bool  Set(const Str *s) { return Set(s->Value()); }
+    void  ChangeAtoB(const char a, const char b);  // character replace
+    int   IntValue() const;
+    Flt   FltValue() const;
+    const char *Value() const;
+    const char *c_str() const;
+    std::string str() const;
+    const char* ValueSet(const char* set = nullptr);
+
+    bool   empty() const;
+    size_t size() const;
 
     Str & operator =  (const char* s) { Set(s); return *this; }
-    Str & operator =  (Str  &s) { Set(s); return *this; }
-    Str & operator =  (int   s) { Set(s); return *this; }
-    Str & operator =  (Flt   s) { Set(s); return *this; }
-    int   operator >  (Str  &s);
-    int   operator <  (Str  &s);
-    int   operator == (Str  &s);
-    int   operator != (Str  &s);
+    Str & operator =  (const Str  &s) { Set(s); return *this; }
+    Str & operator =  (const int   s) { Set(s); return *this; }
+    Str & operator =  (const Flt   s) { Set(s); return *this; }
+    int   operator >  (const Str  &s) const;
+    int   operator <  (const Str  &s) const;
+    int   operator == (const Str  &s) const;
+    int   operator != (const Str  &s) const;
 };
 
 // Rectangular Region class
@@ -197,19 +199,22 @@ extern int ReportError(const std::string &message);
 // (the prototype is here but the implementation isn't in utility.cc)
 // implementation is in main/manager.cc
 
-int StringCompare(const genericChar* str1, const genericChar* str2, int len = -1);
+int StringCompare(const std::string &str1, const std::string &str2);
 // Case insesitive string compare
 int StringInString(const genericChar* haystack, const genericChar* needle);
 
-char* StringToLower(char* str);
-char* StringToUpper(char* str);
+std::string StringToUpper(const std::string &str);
+std::string StringToLower(const std::string &str);
 // Convert string to lowercase/uppercase - returns string
 int   StripWhiteSpace(genericChar* string);
 
-char* AdjustCase(char* string);
-// capitalizes 1st letter of every word in string - returns string
+// strip leading and trailing whitespace, only one space between words
+std::string StringAdjustSpacing(const std::string &str);
 
-int AdjustCaseAndSpacing(char* str);
+// capitalizes 1st letter of every word in string - returns string
+std::string AdjustCase(const std::string &str);
+
+std::string AdjustCaseAndSpacing(const std::string &str);
 
 int CompareList(const genericChar* val, const genericChar* list[], int unknown = -1);
 int CompareList(int   val, int   list[], int unknown = -1);

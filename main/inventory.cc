@@ -646,7 +646,7 @@ int Inventory::Load(const char* file)
 int Inventory::Save()
 {
     FnTrace("Inventory::Save()");
-    if (filename.length <= 0)
+    if (filename.empty())
         return 1;
 
     BackupFile(filename.Value());
@@ -839,11 +839,11 @@ int Inventory::PartMatches(const char* word)
     int match = 0;
     int len = strlen(word);
     for (Product *pr = ProductList(); pr != NULL; pr = pr->next)
-        if (StringCompare(pr->name.Value(), word, len) == 0)
+        if (StringCompare(pr->name.Value(), word) == 0)
             ++match;
 
     for (Recipe *rc = RecipeList(); rc != NULL; rc = rc->next)
-        if (StringCompare(rc->name.Value(), word, len) == 0)
+        if (StringCompare(rc->name.Value(), word) == 0)
             ++match;
     return match;
 }
@@ -861,10 +861,9 @@ Product *Inventory::FindProductByWord(const char* word, int &record)
         return NULL;
 
     record = 0;
-    int len = strlen(word);
     for (Product *pr = ProductList(); pr != NULL; pr = pr->next)
     {
-        if (StringCompare(pr->name.Value(), word, len) == 0)
+        if (StringCompare(pr->name.Value(), word) == 0)
             return pr;
         ++record;
     }
@@ -893,10 +892,9 @@ Recipe *Inventory::FindRecipeByWord(const char* word, int &record)
         return NULL;
 
     record = 0;
-    int len = strlen(word);
     for (Recipe *rc = RecipeList(); rc != NULL; rc = rc->next)
     {
-        if (StringCompare(rc->name.Value(), word, len) == 0)
+        if (StringCompare(rc->name.Value(), word) == 0)
             return rc;
         ++record;
     }
@@ -934,10 +932,9 @@ Vendor *Inventory::FindVendorByWord(const char* word, int &record)
         return NULL;
 
     record = 0;
-    int len = strlen(word);
     for (Vendor *v = VendorList(); v != NULL; v = v->next)
     {
-        if (StringCompare(v->name.Value(), word, len) == 0)
+        if (StringCompare(v->name.Value(), word) == 0)
             return v;
         ++record;
     }
@@ -1130,11 +1127,13 @@ int Inventory::ScanItems(ItemDB *db)
     return 0;
 }
 
-int Inventory::ChangeRecipeName(const char* old_name, const char* new_name)
+bool Inventory::ChangeRecipeName(const std::string &old_name, const std::string &new_name)
 {
     FnTrace("Inventory::ChangeRecipeName()");
-    if (old_name == NULL || new_name == NULL)
-        return -1;
+    if (old_name == new_name)
+    {
+        return true;
+    }
 
     for (Recipe *r = RecipeList(); r != NULL; r = r->next)
     {

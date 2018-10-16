@@ -202,7 +202,7 @@ int System::BackupCurrentData()
     char bakname[STRLONG];
     char command[STRLONG];
 
-    if (current_path.length < 1)
+    if (current_path.empty())
         retval = 1;
     else
     {
@@ -1168,7 +1168,7 @@ int System::SaveCheck(Check *check)
     if (check->serial_number <= 0)
         check->serial_number = NewSerialNumber();
 
-    if (check->filename.length <= 0)
+    if (check->filename.empty())
     {
         genericChar str[256];
         sprintf(str, "%s/check_%d", current_path.Value(), check->serial_number);
@@ -1257,7 +1257,7 @@ int System::SaveDrawer(Drawer *drawer)
     if (drawer->serial_number <= 0 || drawer->archive)
         return 1;
 
-    if (drawer->filename.length <= 0)
+    if (drawer->filename.empty())
     {
         genericChar str[256];
         sprintf(str, "%s/drawer_%d", current_path.Value(), drawer->serial_number);

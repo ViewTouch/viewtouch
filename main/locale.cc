@@ -604,7 +604,7 @@ int Locale::Load(const char* file)
 int Locale::Save()
 {
     FnTrace("Locale::Save()");
-    if (filename.length <= 0)
+    if (filename.size() <= 0)
         return 1;
 
     BackupFile(filename.Value());
@@ -773,7 +773,7 @@ int Locale::NewTranslation(const char* str, const genericChar* value)
     if (ph)
     {
         ph->value.Set(value);
-        if (ph->value.length > 0)
+        if (ph->value.size() > 0)
             return 0;
 
         Remove(ph);

@@ -629,7 +629,7 @@ int CouponInfo::AppliesItem(SubCheck *subcheck)
         {
             if (order->item_family == family)
             {
-                if (item_name.length < 1)
+                if (item_name.empty())
                     retval += order->count;
                 else
                 {
@@ -655,7 +655,7 @@ int CouponInfo::AppliesItem(SalesItem *item)
         {
             if (family != item->family)
                 retval = 0;
-            else if (item_name.length == 0)
+            else if (item_name.empty())
                 retval = 0;
             else if (strcmp(item_name.Value(), item->item_name.Value()) == 0)
                 retval = 1;
@@ -1018,7 +1018,7 @@ int TermInfo::OpenTerm(Control *control_db, int update)
 
     if (printer_model != MODEL_NONE)
     {
-        if (printer_host.length > 0)
+        if (printer_host.size() > 0)
             term->printer_host.Set(printer_host);
         else
             term->printer_host.Set(display_host);
@@ -1062,7 +1062,7 @@ Terminal *TermInfo::FindTerm(Control *control_db)
 Printer *TermInfo::FindPrinter(Control *control_db)
 {
     FnTrace("TermInfo::FindPrinter()");
-    if (printer_host.length > 0)
+    if (printer_host.size() > 0)
         return control_db->FindPrinter(printer_host.Value(), printer_port);
     else
         return control_db->FindPrinter(display_host.Value(), printer_port);
@@ -1164,7 +1164,7 @@ Printer *PrinterInfo::FindPrinter(Control *control_db)
 const char* PrinterInfo::Name()
 {
     FnTrace("PrinterInfo::Name()");
-    if (name.length > 0)
+    if (name.size() > 0)
         return name.Value();
     else
         return FindStringByValue(type, PrinterTypeValue,
@@ -1667,7 +1667,7 @@ int Settings::Load(const char* file)
             df.Read(phost);
             df.Read(pport);
             df.Read(pmodel);
-            if (phost.length > 0)
+            if (phost.size() > 0)
             {
                 PrinterInfo *pi = new PrinterInfo;
                 pi->host.Set(phost);
@@ -1689,7 +1689,7 @@ int Settings::Load(const char* file)
             df.Read(ttype);
             df.Read(tkitchen);
 
-            if (thost.length > 0)
+            if (thost.size() > 0)
             {
                 TermInfo *ti = new TermInfo;
                 sprintf(str, "Term %d", i + 1);
@@ -1752,7 +1752,7 @@ int Settings::Load(const char* file)
         }
         DiscountInfo *ds = new DiscountInfo;
         ds->Read(df, version);
-        if (ds->name.length > 0)
+        if (ds->name.size() > 0)
         {
             if (MediaIsDupe(discount_list.Head(), ds->id))
                 ds->id = MediaFirstID(discount_list.Head(), 1);
@@ -1771,7 +1771,7 @@ int Settings::Load(const char* file)
         }
         CouponInfo *cp = new CouponInfo;
         cp->Read(df, version);
-        if (cp->name.length > 0)
+        if (cp->name.size() > 0)
         {
             if (MediaIsDupe(coupon_list.Head(), cp->id))
                 cp->id = MediaFirstID(coupon_list.Head(), 1);
@@ -1790,7 +1790,7 @@ int Settings::Load(const char* file)
         }
         CreditCardInfo *cc = new CreditCardInfo;
         cc->Read(df, version);
-        if (cc->name.length > 0)
+        if (cc->name.size() > 0)
         {
             if (MediaIsDupe(creditcard_list.Head(), cc->id))
                 cc->id = MediaFirstID(creditcard_list.Head(), 1);
@@ -1809,7 +1809,7 @@ int Settings::Load(const char* file)
         }
         CompInfo *cm = new CompInfo;
         cm->Read(df, version);
-        if (cm->name.length > 0)
+        if (cm->name.size() > 0)
         {
             if (MediaIsDupe(comp_list.Head(), cm->id))
                 cm->id = MediaFirstID(comp_list.Head(), 1);
@@ -1828,7 +1828,7 @@ int Settings::Load(const char* file)
         }
         MealInfo *mi = new MealInfo;
         mi->Read(df, version);
-        if (mi->name.length > 0)
+        if (mi->name.size() > 0)
         {
             if (MediaIsDupe(meal_list.Head(), mi->id))
                 mi->id = MediaFirstID(meal_list.Head(), 1);
@@ -2092,7 +2092,7 @@ int Settings::Load(const char* file)
 int Settings::Save()
 {
     FnTrace("Settings::Save()");
-    if (filename.length <= 0)
+    if (filename.empty())
         return 1;
     int error = 0;
     int count;

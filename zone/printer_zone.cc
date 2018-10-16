@@ -156,10 +156,8 @@ int TermObj::Render(Terminal *t)
         color = COLOR_WHITE;
     }
 
-    genericChar str[256];
-    strcpy(str, term->name.Value());
-    AdjustCase(str);
-    t->RenderZoneText(str, x, y, w, h, color, FONT_TIMES_24B);
+    const std::string str = AdjustCase(term->name.str());
+    t->RenderZoneText(str.c_str(), x, y, w, h, color, FONT_TIMES_24B);
     return 0;
 }
 

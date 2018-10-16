@@ -31,6 +31,7 @@
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <algorithm> // std::replace
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -107,142 +108,77 @@ int vt_setproctitle(const char* title)
 //int Str::nAllocated = 0;
 
 Str::Str()
+{}
+
+Str::Str(const std::string &str)
 {
-    next       = NULL;
-    fore       = NULL;
-    length     = 0;
-    buffer_len = 0;
-    data       = (char* ) NULL;
+    data = str;
 }
 
-Str::Str(const char* str)
+Str::Str(const Str &s)
 {
-    next       = NULL;
-    fore       = NULL;
-    length     = 0;
-    buffer_len = 0;
-    data     = (char* ) NULL;
-    Set(str);
-}
-
-Str::Str(Str &s)
-{
-    next       = NULL;
-    fore       = NULL;
-    length     = 0;
-    buffer_len = 0;
-    data     = (char* ) NULL;
-    Set(s);
+    data = s.Value();
 }
 
 // Destructor
 Str::~Str()
-{
-    if (data)
-	{
-        delete [] data;
-	}
-}
+{}
 
 // Member Functions
 int Str::Clear()
 {
     FnTrace("Str::Clear()");
-	if (data)
-	{
-		delete [] data;
-		data = (char* ) NULL;
-	}
-
-    buffer_len = 0;
-    length     = 0;
     return 0;
 }
 
-int Str::Set(const char* str)
+bool Str::Set(const char *str)
 {
-    FnTrace("Str::Set(const char* )");
-	int len = 0;
-	if (str)
-		len = strlen(str);
-
-	if (len <= 0)
-		Clear();
-	else if (buffer_len > len)
-	{
-		length = len;
-		strncpy(data, str, buffer_len);
-	}
-	else
-	{
-		int   nlength;
-        int   nbuffer_len;
-		char* nstring;
-
-		nlength = len;
-		nbuffer_len = nlength + 1;
-		nstring = new char[nbuffer_len];
-		if (nstring == NULL)
-			return 1;  // error - can't change data
-
-		length     = nlength;
-		buffer_len = nbuffer_len;
-
-		if (data)
-			delete [] data;
-
-		data     = nstring;
-		strncpy(data, str, buffer_len);
-	}
-	return 0;
+    FnTrace("Str::Set(const char *)");
+    data = str;
+    return true;
 }
 
-int Str::Set(int val)
+bool Str::Set(const std::string &str)
+{
+    FnTrace("Str::Set(const std::string &)");
+    data = str;
+    return true;
+}
+
+bool Str::Set(const int val)
 {
     FnTrace("Str::Set(int)");
-    genericChar buffer[32];
-    sprintf(buffer, "%d", val);
-    return Set(buffer);
+    data = std::to_string(val);
+    return true;
 }
 
-int Str::Set(Flt val)
+bool Str::Set(const Flt val)
 {
     FnTrace("Str::(Flt)");
-    genericChar buffer[32];
-    sprintf(buffer, "%g", val);
-    return Set(buffer);
+    data = std::to_string(val);
+    return true;
 }
 
-int Str::ChangeAtoB(genericChar a, genericChar b)
+void Str::ChangeAtoB(const char a, const char b)
 {
     FnTrace("Str::ChangeAtoB()");
-    if (data == NULL)
-        return 1;
-
-    genericChar* c = data;
-    while (*c)
-    {
-        if (*c == a)
-            *c = b;
-        ++c;
-    }
-    return 0;
+    std::replace(data.begin(), data.end(), a, b);
 }
 
-int Str::IntValue()
+int Str::IntValue() const
 {
     FnTrace("Str::IntValue()");
-    if (data)
-        return atoi(data);
+    if (!data.empty())
+        return std::stoi(data);
     else
         return 0;
 }
 
-Flt Str::FltValue()
+Flt Str::FltValue() const
 {
     FnTrace("Str::FltValue()");
-    if (data)
-        return atof(data);
+    if (!data.empty())
+        return std::stod(data);
     else
         return 0.0;
 }
@@ -250,21 +186,19 @@ Flt Str::FltValue()
 const char* Str::Value() const
 {
     FnTrace("Str::Value()");
-    static genericChar blank_string[] = "";
-    if (data)
-        return data;
-    else
-        return blank_string;
+    return data.c_str();
 }
 
-char* Str::Value()
+const char* Str::c_str() const
+{
+    FnTrace("Str::c_str()");
+    return data.c_str();
+}
+
+std::string Str::str() const
 {
     FnTrace("Str::Value()");
-    static genericChar blank_string[] = "";
-    if (data)
-        return data;
-    else
-        return blank_string;
+    return data;
 }
 
 /****
@@ -279,76 +213,38 @@ const char* Str::ValueSet(const char* set)
     return Value();
 }
 
-int Str::operator > (Str &s)
+bool   Str::empty() const
+{
+    return data.empty();
+}
+
+size_t Str::size() const
+{
+    return data.size();
+}
+
+int Str::operator > (const Str &s) const
 {
     FnTrace("Str::operator >()");
-    const genericChar* s1 = Value();
-    const genericChar* s2 = s.Value();
-
-    while (*s1 && *s2)
-    {
-        if (*s1 > *s2)
-            return 1;
-        else if (*s1 < *s2)
-            return 0;
-
-        ++s1; ++s2;
-    }
-    return (*s1 != '\0');
+    return this->data > s.data;
 }
 
-int Str::operator < (Str &s)
+int Str::operator < (const Str &s) const
 {
     FnTrace("Str::operator <()");
-    const genericChar* s1 = Value();
-    const genericChar* s2 = s.Value();
-
-    while (*s1 && *s2)
-    {
-        if (*s1 < *s2)
-            return 1;
-        else if (*s1 > *s2)
-            return 0;
-
-        ++s1; ++s2;
-    }
-    return (*s2 != '\0');
+    return this->data < s.data;
 }
 
-int Str::operator == (Str &s)
+int Str::operator == (const Str &s) const
 {
     FnTrace("Str::opterator ==()");
-    if (length != s.length)
-        return 0;
-
-    const genericChar* s1 = Value();
-    const genericChar* s2 = s.Value();
-
-    while (*s1)
-    {
-        if (*s1 != *s2)
-            return 0;
-        ++s1; ++s2;
-    }
-    return 1;
+    return this->data == s.data;
 }
 
-int Str::operator != (Str &s)
+int Str::operator != (const Str &s) const
 {
     FnTrace("Str::operator !=()");
-    if (length != s.length)
-        return 1;
-
-    const genericChar* s1 = Value();
-    const genericChar* s2 = s.Value();
-
-    while (*s1)
-    {
-        if (*s1 != *s2)
-            return 1;
-        ++s1; ++s2;
-    }
-    return 0;
+    return this->data != s.data;
 }
 
 
@@ -472,26 +368,26 @@ const char* Price::SimpleFormat(const char* buffer)
 
 
 /**** Other Functions ****/
-char* StringToLower(char* str)
+std::string StringToLower(const std::string &str)
 {
     FnTrace("StringToLower()");
-    while (*str)
+    std::string data = str;
+    for (char &c : data)
     {
-        *str = tolower(*str);
-        ++str;
+        c = std::tolower(c);
     }
-    return str;
+    return data;
 }
 
-char* StringToUpper(char* str)
+std::string StringToUpper(const std::string &str)
 {
     FnTrace("StringToUpper()");
-    while (*str)
+    std::string data = str;
+    for (char &c : data)
     {
-        *str = toupper(*str);
-        ++str;
+        c = std::toupper(c);
     }
-    return str;
+    return data;
 }
 
 /****
@@ -530,57 +426,63 @@ int StripWhiteSpace(genericChar* longstr)
     return count;
 }
 
-char* AdjustCase(char* str)
+std::string AdjustCase(const std::string &str)
 {
     FnTrace("AdjustCase()");
-    genericChar* c = str;
-    int capital = 1;
-    while (*c)
+
+    std::string data = str;
+    bool capital = true;
+    for (char &c : data)
     {
-        if (isspace(*c) || ispunct(*c))
-            capital = 1;
-        else if (capital)
+        if (isspace(c) || ispunct(c))
         {
-            *c = toupper(*c);
-            capital = 0;
+            capital = true; // next character should be upper case
+        } else if (capital)
+        {
+            c = std::toupper(c);
+            capital = false; // next character should be lower case
+        } else
+        {
+            c = std::tolower(c);
         }
-        else
-            *c = tolower(*c);
-        ++c;
     }
-    return str;
+    return data;
 }
 
-int AdjustCaseAndSpacing(char* str)
+std::string StringAdjustSpacing(const std::string &str)
 {
-    FnTrace("AdjustCaseAndSpacing()");
-    genericChar* s = str, *d = str;
-    int word = 0;
+    FnTrace("StringAdjustSpacing()");
+    std::string data;
+    data.reserve(str.size());
 
-    while (*s)
+    bool space = true; // flag to shorten spaces to one digit
+    for (const char &s : str)
     {
-        if (isspace(*s))
+        if (std::isspace(s))
         {
-            if (word)
+            if (!space)
             {
-                *d++ = *s;
-                word = 0;
+                space = true; // add only first space
+                data.push_back(' ');
             }
         }
-        else if (word)
-            *d++ = tolower(*s);
-        else
+        else if (std::isprint(s))
         {
-            *d++ = toupper(*s);
-            word = 1;
+            data.push_back(s);
+            space = false;
         }
-        ++s;
     }
+    if (space && !data.empty())
+    {
+        data.pop_back(); // remove trailing space
+    }
+    return data;
+}
 
-    if (d > str && isspace(*(d - 1)))
-        --d;
-    *d = '\0';
-    return 0;
+std::string AdjustCaseAndSpacing(const std::string &str)
+{
+    FnTrace("AdjustCaseAndSpacing()");
+    return AdjustCase(StringAdjustSpacing(str));
 }
 
 const genericChar* NextName(const genericChar* name, const genericChar* *list)
@@ -855,32 +757,21 @@ int DeleteFile(const genericChar* filename)
     return 0;
 }
 
-int StringCompare(const genericChar* str1, const genericChar* str2, int len)
+int StringCompare(const std::string &str1, const std::string &str2)
 {
     FnTrace("StringCompare()");
-	char a, b;
-    while (*str1 && *str2)
+    const std::string str1_lower = StringToLower(str1);
+    const std::string str2_lower = StringToLower(str2);
+    if (str1 < str2)
     {
-        a = tolower(*str1);
-        b = tolower(*str2);
-        if (a < b)
-            return -1;
-        else if (a > b)
-            return 1;
-
-        if (len > 0 && (--len == 0))
-            return 0;
-
-        ++str1;
-        ++str2;
-    }
-
-    if (*str1)
-        return 1;
-    else if (*str2)
         return -1;
-    else
+    } else if (str1 > str2)
+    {
+        return 1;
+    } else
+    {
         return 0;
+    }
 }
 
 /****
@@ -1001,7 +892,7 @@ int CompareListN(const genericChar* list[], const genericChar* word, int unknown
         itemlen = strlen(list[idx]);
 
         if (list[idx][itemlen - 1] == ' ')
-            search = StringCompare(word, list[idx], itemlen);
+            search = StringCompare(word, list[idx]);
         else if (itemlen == wordlen)
             search = StringCompare(word, list[idx]);
 

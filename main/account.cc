@@ -72,9 +72,8 @@ int AccountEntry::Write(OutputDataFile &df, int version)
 int AccountEntry::Search(const genericChar* word)
 {
     FnTrace("AccountEntry::Search()");
-    int wordlen = strlen(word);
     int found = 0;
-    if (StringCompare(description.Value(), word, wordlen) == 0)
+    if (StringCompare(description.Value(), word) == 0)
     {
         found = 1;
     }
@@ -270,7 +269,7 @@ int Account::IsBlank()
 
     if (number == 0)
         return 1;
-    if ((name.length < 1) &&
+    if ((name.empty()) &&
         (ibalance == 0))
     {
         return 1;
@@ -286,9 +285,8 @@ int Account::Search(const genericChar* word)
 {
     FnTrace("Account::Search()");
     int found = 0;
-    int wordlen = strlen(word);
 
-    if (StringCompare(name.Value(), word, wordlen) == 0)
+    if (StringCompare(name.Value(), word) == 0)
     {
         found = 1;
     }
@@ -447,7 +445,7 @@ int AccountDB::Load(const char* path)
     if (path)
         pathname.Set(path);
 
-    if (pathname.length <= 0)
+    if (pathname.empty())
         return 1;
 
     DIR *dp = opendir(pathname.Value());

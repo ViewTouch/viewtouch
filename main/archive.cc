@@ -503,7 +503,7 @@ int Archive::LoadAlternateMedia()
     int openfile = 0;
     InputDataFile mf;
 
-    if (altmedia.length)
+    if (altmedia.size())
     {
         openfile = mf.Open(altmedia.Value(), media_version);
         if (openfile == 0)
@@ -567,7 +567,7 @@ int Archive::LoadAlternateSettings()
     InputDataFile infile;
     int openfile = 0;
 
-    if (altsettings.length)
+    if (altsettings.size())
     {
         openfile = infile.Open(altsettings.Value(), settings_version);
         if (openfile == 0)

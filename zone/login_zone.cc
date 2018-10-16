@@ -646,7 +646,7 @@ int LoginZone::Start(Terminal *term, short expedite)
     }
     else if (employee->UsePassword(settings) &&
              ((employee->IsManager(settings) && (! term->password_given)) ||
-              settings->min_pw_len > employee->password.length))
+              settings->min_pw_len > employee->password.size()))
     {
         term->LoginUser(employee);
         term->OpenDialog(new PasswordDialog(employee->password.Value()));

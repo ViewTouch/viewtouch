@@ -520,7 +520,7 @@ Credit *Credit::Copy()
             ecredit = ecredit->next;
         }
 
-        if (newcredit->swipe.length > 0)
+        if (newcredit->swipe.size() > 0)
             newcredit->ParseSwipe(newcredit->swipe.Value());
     }
 
@@ -603,7 +603,7 @@ int Credit::Copy(Credit *credit)
             ecredit = ecredit->next;
         }
 
-        if (swipe.length > 0)
+        if (swipe.size() > 0)
             ParseSwipe(swipe.Value());
 
         retval = 1;
@@ -666,7 +666,7 @@ int Credit::ValidateCardInfo()
         country.Set("");
     }
 
-    if (number.length > 0 && expire.length > 0)
+    if (number.size() > 0 && expire.size() > 0)
     {
         valid_card = CC_IsValidAccountNumber(number.Value());
         valid_expiry = CC_IsValidExpiry(expire.Value());
@@ -1271,7 +1271,7 @@ int Credit::CreditType()
 {
     FnTrace("Credit::CreditType()");
 
-    if (credit_type == CREDIT_TYPE_UNKNOWN && number.length > 0)
+    if (credit_type == CREDIT_TYPE_UNKNOWN && number.size() > 0)
         SetCreditType();
 
     return credit_type;
@@ -1321,15 +1321,15 @@ int Credit::IsEmpty()
     FnTrace("Credit::IsEmpty()");
     int retval = 1;
 
-    if (swipe.length > 0)
+    if (swipe.size() > 0)
         return 0;
-    if (number.length > 0)
+    if (number.size() > 0)
         return 0;
-    if (name.length > 0)
+    if (name.size() > 0)
         return 0;
-    if (expire.length > 0)
+    if (expire.size() > 0)
         return 0;
-    if (country.length > 0)
+    if (country.size() > 0)
         return 0;
 
     return retval;
@@ -1340,7 +1340,7 @@ int Credit::IsValid()
     FnTrace("Credit::IsValid()");
     int retval = 0;
 
-    if (number.length > 0 && expire.length > 0)
+    if (number.size() > 0 && expire.size() > 0)
         retval = 1;
     
     return retval;
@@ -1461,7 +1461,7 @@ int Credit::RequireSwipe()
 {
     FnTrace("Credit::RequireSwipe()");
     int retval = 0;
-    int len = number.length;
+    int len = number.size();
     const char* numval = number.Value();
 
     if (len < 1)
@@ -1597,9 +1597,9 @@ const char* Credit::Approval()
     str[0] = '\0';
     if (processor == CCAUTH_CREDITCHEQ)
         sprintf(str, "%s", code.Value());
-    else if (approval.length <= 0)
+    else if (approval.empty())
         sprintf(str, "PENDING");
-    else if (approval.length > 0)
+    else if (approval.size() > 0)
         strcpy(str, approval.Value());
 
     return str;
@@ -1626,7 +1626,7 @@ const char* Credit::PAN(int all)
     int len;
 
     str[0] = '\0';
-    if (number.length > 0)
+    if (number.size() > 0)
     {
         strcpy(str, number.Value());
         
@@ -1684,7 +1684,7 @@ char* Credit::LastFour(char* dest)
     if (dest == NULL)
         dest = str;
 
-    if (number.length > 0)
+    if (number.size() > 0)
     {
         memset(dest, '\0', 10);
         strcpy(buffer, number.Value());
@@ -1707,10 +1707,10 @@ const char* Credit::ExpireDate()
     static char str[16];
 
     str[0] = '\0';
-    if (expire.length > 0)
+    if (expire.size() > 0)
     {
         const char* s = expire.Value();
-        if (expire.length < 4)
+        if (expire.size() < 4)
             sprintf(str, "%s/%s", "??", "??");  // to get rid of compiler warnings
         else
             sprintf(str, "%c%c/%c%c", s[0], s[1], s[2], s[3]);
@@ -2141,7 +2141,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
                 strcpy(buffer, term->Translate("Purchase", lang));
             else if (last_action == CCAUTH_PREAUTH)
                 strcpy(buffer, term->Translate("Pre-Authorization", lang));
-            else if (last_action == CCAUTH_COMPLETE && auth.length > 0)
+            else if (last_action == CCAUTH_COMPLETE && auth.size() > 0)
                 strcpy(buffer, term->Translate("Pre-Auth Completion", lang));
             else if (last_action == CCAUTH_COMPLETE)
                 strcpy(buffer, term->Translate("Pre-Auth Advice", lang));
@@ -2206,7 +2206,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
                 if (did_print)
                     printer->Write("");
             }
-            if (name.length > 0)
+            if (name.size() > 0)
             {
                 snprintf(buffer, STRLENGTH, "%s: %s",
                          term->Translate("Card Owner", lang), Name());
@@ -2230,7 +2230,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
         snprintf(buffer, STRLENGTH, "%s: %s", term->Translate("Account Type", lang),
                  buffer3);
         printer->Write(buffer);
-        if (server_date.length > 0 && server_time.length > 0)
+        if (server_date.size() > 0 && server_time.size() > 0)
         {
             snprintf(buffer, STRLENGTH, "%s: %s %s", term->Translate("Date/Time", lang),
                      server_date.Value(), server_time.Value());
@@ -2248,13 +2248,13 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
             snprintf(buffer, STRLENGTH, "%s: %s %s",
                      term->Translate("Reference Number", lang),
                      term_id.Value(), sequence.Value());
-            if (read_manual || b24code.length == 0)
+            if (read_manual || b24code.empty())
                 strcat(buffer, " M");
             else
                 strcat(buffer, " S");
             printer->Write(buffer);
         }
-        if (auth.length > 0)
+        if (auth.size() > 0)
         {
             snprintf(buffer, STRLENGTH, "%s: %s", term->Translate("Authorization Number", lang),
                      auth.Value());
@@ -2273,15 +2273,15 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
                 receipt_line.Set(term->Translate("APPROVED - THANK YOU", lang));
             }
             printer->LineFeed();
-            width = pwidth - (receipt_line.length);
-            width = (width / 2) + receipt_line.length;
+            width = pwidth - (receipt_line.size());
+            width = (width / 2) + receipt_line.size();
             snprintf(buffer, STRLENGTH, "%*s", width, receipt_line.Value());
 
             printer->Write(buffer);
         }
         else
         {
-            width = ((pwidth - verb.length) / 2) + verb.length;
+            width = ((pwidth - verb.size()) / 2) + verb.size();
             snprintf(buffer, STRLENGTH, "%*s", width, verb.Value());
             printer->Write(buffer);
         }
@@ -2993,7 +2993,7 @@ int CCSettle::Add(Terminal *term, const char* message)
     CCSettle *newsettle = NULL;
     CCSettle *curr = NULL;
 
-    if (result.length == 0)
+    if (result.empty())
     {
         if (message != NULL)
         {
@@ -3351,9 +3351,9 @@ int CCSettle::IsSettled()
     int retval = 0;
     int authmethod = MasterSystem->settings.authorize_method;
 
-    if (authmethod == CCAUTH_CREDITCHEQ && termid.length)
+    if (authmethod == CCAUTH_CREDITCHEQ && termid.size())
         retval = 1;
-    else if (authmethod == CCAUTH_MAINSTREET && batch.length)
+    else if (authmethod == CCAUTH_MAINSTREET && batch.size())
         retval = 1;
 
     return retval;
@@ -3373,15 +3373,15 @@ int CCSettle::GenerateReport(Terminal *term, Report *report, ReportZone *rzone, 
     int col1 = col2 - column_spacing;
     Settings *settings = term->GetSettings();
 
-    if (IsSettled() || errormsg.length > 0)
+    if (IsSettled() || errormsg.size() > 0)
     {
         snprintf(str, STRLENGTH, "%s: ", term->Translate("Merchant ID"));
-        if (merchid.length > 0)
+        if (merchid.size() > 0)
             strcat(str, merchid.Value());
         else
             strcat(str, settings->cc_merchant_id.Value());
         report->TextL(str);
-        if (termid.length > 0)
+        if (termid.size() > 0)
         {
             snprintf(str, STRLENGTH, "%s: %s", term->Translate("Terminal"), termid.Value());
             report->TextR(str);
@@ -3395,7 +3395,7 @@ int CCSettle::GenerateReport(Terminal *term, Report *report, ReportZone *rzone, 
         report->TextR(str);
         report->NewLine(2);
         
-        if (display.length > 0)
+        if (display.size() > 0)
         {
             report->Mode(PRINT_BOLD | PRINT_LARGE);
             report->TextC(display.Value());
@@ -3403,7 +3403,7 @@ int CCSettle::GenerateReport(Terminal *term, Report *report, ReportZone *rzone, 
             report->NewLine(2);
         }
         
-        if (errormsg.length > 0)
+        if (errormsg.size() > 0)
         {
             report->TextL("There was a problem closing the batch:");
             report->NewLine();
@@ -4182,7 +4182,7 @@ int CCSAFDetails::Count()
     int retval = 0;
     CCSAFDetails *node = next;
 
-    if (terminal.length > 0)
+    if (terminal.size() > 0)
     {
         retval = 1;
         while (node != NULL)
@@ -4227,7 +4227,7 @@ int CCSAFDetails::Add(Terminal *term)
     CCSAFDetails *newsaf = NULL;
     CCSAFDetails *node = this;
 
-    if (terminal.length == 0)
+    if (terminal.empty())
     {
         ReadResults(term);
     }
