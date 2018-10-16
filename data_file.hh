@@ -97,9 +97,10 @@ public:
 
     int PutValue(unsigned long long val, int bk);
 
-    int Write(short val, int bk = 0) { return PutValue((long long) val, bk); }
-    int Write(int   val, int bk = 0) { return PutValue((long long) val, bk); }
+    int Write(short val, int bk = 0) { return PutValue((unsigned long long) val, bk); }
+    int Write(int   val, int bk = 0) { return PutValue((unsigned long long) val, bk); }
     int Write(long long val, int bk = 0) { return PutValue(val, bk); }
+    int Write(size_t val, int bk = 0) { return PutValue(val, bk); }
     int Write(Str  &val, int bk = 0) { return Write(val.Value(), bk); }
 
     int Write(Flt       val, int bk = 0);
