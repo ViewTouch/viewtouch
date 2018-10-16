@@ -25,6 +25,8 @@
 #include "utility.hh"
 #include "list_utility.hh"
 
+#include <vector>
+
 #define ACCOUNT_VERSION         1
 #define ACCOUNT_ENTRY_VERSION   1
 #define ACCOUNT_FIRST_NUMBER    1000 // no account number should be below this
@@ -36,8 +38,6 @@ class OutputDataFile;
 class AccountEntry
 {
 public:
-    AccountEntry *next, *fore;
-
     Str      description;
     TimeInfo time;
     int      amount;
@@ -47,15 +47,18 @@ public:
     AccountEntry();
     AccountEntry(const char* desc, int x);
 
+    bool operator==(const AccountEntry &other) const;
+
     // Member Functions
     int Read(InputDataFile &df, int version);
     int Write(OutputDataFile &df, int version);
-    int Search(const genericChar* word);
+    int Search(const genericChar* word) const;
 };
 
 class Account
 {
-    DList<AccountEntry> entry_list;
+private:
+    std::vector<AccountEntry> entry_list;
 
 public:
     Account *next, *fore;
@@ -74,18 +77,17 @@ public:
     Account(const char* path, int no = 0, const char* namestr = "");
 
     // Member Functions
-    AccountEntry *EntryList()    { return entry_list.Head(); }
-    AccountEntry *EntryListEnd() { return entry_list.Tail(); }
-    int           EntryCount()   { return entry_list.Count(); }
+    std::vector<AccountEntry> &EntryList()    { return entry_list; }
 
     Account *Copy();
     int      Load(const char* path);
     int      Save();
     int      ReadEntries(InputDataFile &df);
     int      WriteEntries(OutputDataFile &df, int version);
-    int      Add(AccountEntry *ae);
-    int      Remove(AccountEntry *ae);
-    int      Purge();
+    void     Add(const AccountEntry &ae);
+    int      Remove(const AccountEntry &ae);
+    int      RemoveFile();
+    void     Purge();
     int      AddEntry(const char* desc, int amount);
     int      IsBlank();
     int      Search(const genericChar* word);
