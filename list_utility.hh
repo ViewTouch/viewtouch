@@ -382,7 +382,7 @@ public:
         list_tail = NULL;
     }
 
-    int Count()
+    int Count() const
     {
         FnTrace("DList::Count()");
         int count = 0;
