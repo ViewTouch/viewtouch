@@ -2902,7 +2902,7 @@ int GetTextWidth(const char* my_string, int len, int font_id)
         return FontWidth[font_id] * len;
 }
 
-int AddTimeOutFn(TimeOutFn fn, int timeint, void *client_data)
+unsigned long AddTimeOutFn(TimeOutFn fn, int timeint, void *client_data)
 {
     FnTrace("AddTimeOutFn()");
     return XtAppAddTimeOut(App, timeint, (XtTimerCallbackProc) fn,
@@ -2916,16 +2916,16 @@ int AddInputFn(InputFn fn, int device_no, void *client_data)
                          (XtInputCallbackProc) fn, (XtPointer) client_data);
 }
 
-int AddWorkFn(WorkFn fn, void *client_data)
+unsigned long AddWorkFn(WorkFn fn, void *client_data)
 {
     FnTrace("AddWorkFn()");
     return XtAppAddWorkProc(App, (XtWorkProc) fn, (XtPointer) client_data);
 }
 
-int RemoveTimeOutFn(int fn_id)
+int RemoveTimeOutFn(unsigned long fn_id)
 {
     FnTrace("RemoveTimeOutFn()");
-    if (fn_id > 0)
+    if (fn_id > 0l)
         XtRemoveTimeOut(fn_id);
     return 0;
 }
