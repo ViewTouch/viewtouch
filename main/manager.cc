@@ -103,7 +103,7 @@ const char* MonthName[] = { "January", "February", "March", "April",
                       "October", "November", "December", NULL};
 
 const char* ShortMonthName[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                           "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", NULL};
+                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", NULL};
 
 /*************************************************************
  * Terminal Type values
