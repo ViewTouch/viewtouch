@@ -9,8 +9,8 @@ void admission_itemname_hash(Str& ih,const Str& name,const Str& location,const S
 	genericChar outbuf[256];
 	SHA1Context sha1ctxt;
 	SHA1Reset(&sha1ctxt);
-	SHA1Input(&sha1ctxt,(const uint8_t*)location.Value(),location.length);
-	SHA1Input(&sha1ctxt,(const uint8_t*)time.Value(),time.length);
+    SHA1Input(&sha1ctxt,(const uint8_t*)location.Value(),location.size());
+    SHA1Input(&sha1ctxt,(const uint8_t*)time.Value(),time.size());
 	
 	uint8_t hashbytes[SHA1HashSize];
 	SHA1Result(&sha1ctxt,hashbytes);

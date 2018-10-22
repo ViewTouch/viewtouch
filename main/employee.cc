@@ -81,7 +81,7 @@ int FixPhoneNumber(Str &phone)
 const char* FormatPhoneNumber(Str &phone)
 {
     static genericChar buffer[32];
-    if (phone.length < 10)
+    if (phone.size() < 10)
         strcpy(buffer, "---");
     else
     {
@@ -280,7 +280,7 @@ int UserDB::Load(const char* file)
 int UserDB::Save()
 {
     FnTrace("UserDB::Save()");
-    if (filename.length <= 0)
+    if (filename.empty())
         return 1;
 
     BackupFile(filename.Value());
@@ -423,15 +423,14 @@ Employee *UserDB::NameSearch(const char* name, Employee *user)
     FnTrace("UserDB::NameSearch()");
     if (name == NULL)
         return NULL;
-    int len = strlen(name);
 
     if (user)
         for (Employee *e = user->next; e != NULL; e = e->next)
-            if (StringCompare(e->system_name.Value(), name, len) == 0)
+            if (StringCompare(e->system_name.Value(), name) == 0)
                 return e;
 
     for (Employee *e = UserList(); e != NULL; e = e->next)
-        if (StringCompare(e->system_name.Value(), name, len) == 0)
+        if (StringCompare(e->system_name.Value(), name) == 0)
             return e;
     return NULL;
 }
@@ -440,7 +439,6 @@ int UserDB::FindRecordByWord(Terminal *t, const genericChar* word, int active, i
 {
     FnTrace("UserDB::FindRecordByWord()");
     int val = atoi(word);
-    int len = strlen(word);
 
     Employee **array = NameArray();
     int record = 0, loop = 0;
@@ -456,19 +454,19 @@ int UserDB::FindRecordByWord(Terminal *t, const genericChar* word, int active, i
                 if (val >= 0 && e->key == val)
                     return record;
                 // check for system name
-                if (StringCompare(e->system_name.Value(), word, len) == 0)
+                if (StringCompare(e->system_name.Value(), word) == 0)
                     return record;
                 // check for last name
-                if (StringCompare(e->last_name.Value(), word, len) == 0)
+                if (StringCompare(e->last_name.Value(), word) == 0)
                     return record;
                 // check for first name
-                if (StringCompare(e->first_name.Value(), word, len) == 0)
+                if (StringCompare(e->first_name.Value(), word) == 0)
                     return record;
                 // check for address
-                if (StringCompare(e->address.Value(), word, len) == 0)
+                if (StringCompare(e->address.Value(), word) == 0)
                     return record;
                 // check for ssn
-                if (StringCompare(e->ssn.Value(), word, len) == 0)
+                if (StringCompare(e->ssn.Value(), word) == 0)
                     return record;
             }
             ++record;
@@ -564,9 +562,9 @@ int UserDB::ListReport(Terminal *t, int active, Report *r)
 
             r->TextC(e->JobTitle(t), col);
 
-            if (e->last_name.length > 0)
+            if (e->last_name.size() > 0)
                 sprintf(str, "%s, %s", e->last_name.Value(), e->first_name.Value());
-            else if (e->system_name.length > 0)
+            else if (e->system_name.size() > 0)
                 strcpy(str, e->system_name.Value());
             else
                 strcpy(str, "---");
@@ -787,19 +785,18 @@ int Employee::Read(InputDataFile &df, int version)
     // 7 (2/26/97) earliest supported version
     // 8 (8/13/97) dept code for each job; forced case convention
 
-    Str tmp;
     df.Read(system_name);
-    AdjustCase(system_name.Value());
+    system_name = AdjustCase(system_name.c_str());
     df.Read(last_name);
-    AdjustCase(last_name.Value());
+    last_name = AdjustCase(last_name.c_str());
     df.Read(first_name);
-    AdjustCase(first_name.Value());
+    first_name = AdjustCase(first_name.c_str());
     df.Read(address);
-    AdjustCase(address.Value());
+    address = AdjustCase(address.c_str());
     df.Read(city);
-    AdjustCase(city.Value());
+    city = AdjustCase(city.c_str());
     df.Read(state);
-    StringToUpper(state.Value());
+    state = StringToUpper(state.c_str());
     df.Read(phone);
     FixPhoneNumber(phone);
     df.Read(ssn);
@@ -983,7 +980,7 @@ int Employee::Security(Settings *s)
 int Employee::IsBlank()
 {
     FnTrace("Employee::IsBlank()");
-    return (system_name.length <= 0 || key <= 0);
+    return (system_name.empty() || key <= 0);
 }
 
 int Employee::CanEdit()

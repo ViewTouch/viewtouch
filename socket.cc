@@ -59,13 +59,12 @@ Email::~Email()
 /****
  * AddFrom:
  ****/
-int Email::AddFrom(const char* address)
+void Email::AddFrom(const char* address)
 {
     FnTrace("Email::AddFrom()");
     int retval = 0;
 
-    retval = from.Set(address);
-    return retval;
+    from.Set(address);
 }
 
 /****
@@ -120,12 +119,9 @@ int Email::NextTo(char* buffer, int maxlen)
 /****
  * AddSubject:
  ****/
-int Email::AddSubject(const char* subjectstr)
+void Email::AddSubject(const char* subjectstr)
 {
-    int retval = 0;
-
-    retval = subject.Set(subjectstr);
-    return retval;
+    subject = subjectstr;
 }
 
 /****

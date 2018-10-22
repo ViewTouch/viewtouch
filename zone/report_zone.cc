@@ -302,7 +302,7 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
 
     LayoutZone::Render(term, update_flag);
     int hs = 0;
-    if (name.length > 0)
+    if (name.size() > 0)
     {
         hs = 1;
         TextC(term, 0, name.Value(), color[0]);
@@ -1242,7 +1242,7 @@ RenderResult ReadZone::Render(Terminal *t, int update_flag)
     }
 
     LayoutZone::Render(t, update_flag);
-    if (loaded == 0 && filename.length > 0)
+    if (loaded == 0 && filename.size() > 0)
     {
         loaded = 1;
         report.Clear();
@@ -1250,7 +1250,7 @@ RenderResult ReadZone::Render(Terminal *t, int update_flag)
     }
 
     int hs = 0;
-    if (name.length > 0)
+    if (name.size() > 0)
     {
         TextC(t, 0, name.Value(), color[0]);
         hs = 1;

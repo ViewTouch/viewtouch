@@ -23,6 +23,7 @@
 
 #include "utility.hh"
 #include "list_utility.hh"
+#include <string>
 
 
 /**** Definitions ****/
@@ -284,7 +285,7 @@ public:
 
 
     // Removes & deletes all SalesItem records from object
-    SalesItem *FindByName(const char* name);
+    SalesItem *FindByName(const std::string &name);
     // Finds SalesItem by name
     SalesItem *FindByID(int id);
     // Finds SalesItem by ID value
@@ -302,6 +303,6 @@ public:
 /**** Functions ****/
 int   MergeQualifier(int &flag, int qualifier);
 int   PrintItem(char* buffer, int qualifier, const char* item);
-char* FilterName(char* name, char* buffer = NULL);
+std::string FilterName(const std::string &name);
 
 #endif

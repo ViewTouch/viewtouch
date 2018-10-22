@@ -604,7 +604,7 @@ int Locale::Load(const char* file)
 int Locale::Save()
 {
     FnTrace("Locale::Save()");
-    if (filename.length <= 0)
+    if (filename.size() <= 0)
         return 1;
 
     BackupFile(filename.Value());
@@ -773,7 +773,7 @@ int Locale::NewTranslation(const char* str, const genericChar* value)
     if (ph)
     {
         ph->value.Set(value);
-        if (ph->value.length > 0)
+        if (ph->value.size() > 0)
             return 0;
 
         Remove(ph);
@@ -804,7 +804,7 @@ int Locale::NewTranslation(const char* str, const genericChar* value)
  * TimeDate: returns time/date nicely formated (format flags are in
  * locale.hh)
  ****/
-const char* Locale::TimeDate(Settings *s, TimeInfo &timevar, int format, int lang, genericChar* str)
+const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, int lang, genericChar* str)
 {
     FnTrace("Locale::TimeDate()");
 	// FIX - implement handler for TD_SECONDS format flag

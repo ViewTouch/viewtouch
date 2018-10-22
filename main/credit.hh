@@ -616,7 +616,7 @@ public:
     int           Write(OutputDataFile &df);
     int           Load(const char* filename);
     int           Save();
-    int           IsEmpty() { return (terminal.length == 0 ? 1 : 0); }
+    bool          IsEmpty() { return terminal.empty(); }
     void          Clear();
     int           Count();
     int           Add(Terminal *term);

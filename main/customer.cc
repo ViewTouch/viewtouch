@@ -74,13 +74,13 @@ int CustomerInfo::IsBlank()
     FnTrace("CustomerInfo::IsBlank()");
     int retval = 0;
 
-    if (lastname.length < 1 &&
-        firstname.length < 1 &&
-        company.length < 1 &&
-        phone.length < 1 &&
-        address.length < 1 &&
-        postal.length < 1 &&
-        cc_number.length < 1)
+    if (lastname.empty() &&
+        firstname.empty() &&
+        company.empty() &&
+        phone.empty() &&
+        address.empty() &&
+        postal.empty() &&
+        cc_number.empty())
     {
         retval = 1;
     }
@@ -270,7 +270,7 @@ int CustomerInfo::DeleteFile()
     FnTrace("CustomerInfo::DeleteFile()");
     int retval = 1;
 
-    if (filepath.length > 0)
+    if (filepath.size() > 0)
     {
         unlink(filepath.Value());
         retval = 0;
@@ -569,7 +569,7 @@ int CustomerInfoDB::Load(const genericChar* filepath)
     if (filepath)
         pathname.Set(filepath);
 
-    if (pathname.length <= 0)
+    if (pathname.empty())
         return 1;
 
     dp = opendir(pathname.Value());

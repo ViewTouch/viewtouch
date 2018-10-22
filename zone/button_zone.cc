@@ -123,9 +123,9 @@ SignalResult MessageButtonZone::SendandJump(Terminal *term)
     int len = 0;
     int idx = 0;
 
-    if (message.length > 0)
+    if (message.size() > 0)
         strcpy(signal, message.Value());
-    else if (name.length > 0)
+    else if (name.size() > 0)
         strcpy(signal, name.Value());
 
     len = strlen(signal);
@@ -351,12 +351,12 @@ SignalResult ConditionalZone::Touch(Terminal *term, int tx, int ty)
     FnTrace("ConditionalZone::Touch()");
     SignalResult sig = SIGNAL_OKAY;
 
-    if (message.length > 0)
+    if (message.size() > 0)
     {
         // broadcast button's message
         sig = term->Signal(message.Value(), group_id);
     }
-    else if (name.length > 0)
+    else if (name.size() > 0)
     {
         // broadcast button's name
         sig = term->Signal(name.Value(), group_id);

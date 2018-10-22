@@ -27,6 +27,8 @@
 #include "list_utility.hh"
 #include "utility.hh"
 
+#include <string>
+
 extern int select_timeout;
 
 class Line
@@ -34,10 +36,10 @@ class Line
 public:
     Line *next;
     Line *fore;
-    Str line;
-    int Set(const genericChar* lineval) {return line.Set(lineval);}
-    const genericChar* Value() {return line.Value();}
-    int Length() {return line.length;}
+    std::string line;
+    void Set(const char* lineval) { line = lineval; }
+    const genericChar* Value() { return line.c_str(); }
+    size_t Length() {return line.size();}
 };
 
 class Email
@@ -50,11 +52,11 @@ private:
 public:
     Email();
     ~Email();
-    int AddFrom(const char* address);
+    void AddFrom(const char* address);
     int From(char* buffer, int maxlen);
     int AddTo(const char* address);
     int NextTo(char* buffer, int maxlen);
-    int AddSubject(const char* subjectstr);
+    void AddSubject(const char* subjectstr);
     int Subject(char* buffer, int maxlen);
     int AddBody(const char* line);
     int NextBody(char* buffer, int maxlen);

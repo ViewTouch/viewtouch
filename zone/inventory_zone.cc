@@ -183,7 +183,7 @@ SignalResult ProductZone::Signal(Terminal *term, const genericChar* message)
 		"input", "next stock", "prior stock", "check", "print", NULL};
 
     int idx = -1;
-    if (StringCompare(message, "amount ", 7) == 0)
+    if (StringCompare(message, "amount ") == 0)
         idx = 99;
     else
         idx = CompareList(message, commands);
@@ -1273,16 +1273,16 @@ int ItemListZone::SaveRecord(Terminal *t, int record, int write_file)
         if (item_name != si->item_name)
         {
             name_change = 1;
-            const genericChar* old_name = si->item_name.Value();
-            const genericChar* new_name = FilterName(item_name.Value());
-            sys->inventory.ChangeRecipeName(old_name, new_name);
+            const std::string old_name = si->item_name.Value();
+            const std::string new_name = FilterName(item_name.Value());
+            sys->inventory.ChangeRecipeName(old_name.c_str(), new_name.c_str());
             Terminal *term = t->parent->TermList();
             while (term)
             {
-                term->zone_db->ChangeItemName(old_name, new_name);
+                term->zone_db->ChangeItemName(old_name.c_str(), new_name.c_str());
                 term = term->next;
             }
-            t->parent->zone_db->ChangeItemName(old_name, new_name);
+            t->parent->zone_db->ChangeItemName(old_name.c_str(), new_name.c_str());
             si->item_name.Set(new_name);
             sys->menu.Remove(si);
             sys->menu.Add(si);
@@ -1491,7 +1491,7 @@ SignalResult InvoiceZone::Signal(Terminal *t, const genericChar* message)
             "next stock", "prior stock", NULL};
 
     int idx = -1;
-    if (StringCompare(message, "amount ", 7) == 0)
+    if (StringCompare(message, "amount ") == 0)
         idx = 99;
     else
         idx = CompareList(message, commands);

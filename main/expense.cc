@@ -485,7 +485,7 @@ int ExpenseDB::Load(const char* path)
     if (path)
         pathname.Set(path);
     
-    if (pathname.length <= 0)
+    if (pathname.empty())
         return 1;
 
     // first read the global ExpenseDB file
@@ -564,7 +564,7 @@ int ExpenseDB::RemoveBlank()
 int ExpenseDB::Save()
 {
     FnTrace("ExpenseDB::Save()");
-    if (pathname.length <= 0)
+    if (pathname.empty())
         return 1;
     genericChar fullpath[STRLENGTH];
     OutputDataFile outfile;

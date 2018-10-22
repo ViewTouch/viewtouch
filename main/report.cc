@@ -266,7 +266,7 @@ int Report::CreateHeader(Terminal *term, Printer *p, Employee *e)
     else
     {
         TextL(s->store_name.Value());
-        if (s->store_address2.length > 0)
+        if (s->store_address2.size() > 0)
         {
             snprintf(buffer, STRLENGTH, "%s, %s", s->store_address.Value(),
                      s->store_address2.Value());

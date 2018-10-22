@@ -212,7 +212,7 @@ int ExceptionDB::Save()
         return 0;
     }
 
-    if (filename.length <= 0)
+    if (filename.empty())
         return 1;
 
     BackupFile(filename.Value());

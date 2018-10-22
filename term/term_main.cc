@@ -43,7 +43,7 @@
 /**** Main ****/
 int main(int argc, const genericChar* *argv)
 {
-    genericChar socket_file[256] = "";
+    std::string socket_file = "";
     struct sockaddr_un server_adr;
     int val;
     int is_local = 0;
@@ -61,7 +61,7 @@ int main(int argc, const genericChar* *argv)
             printf("1\n");
             return 0;
         }
-        strcpy(socket_file, argv[1]);
+        socket_file = argv[1];
     }
 
     SocketNo = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -78,7 +78,7 @@ int main(int argc, const genericChar* *argv)
     sleep(1);  // give server time to setup connection
 
     server_adr.sun_family = AF_UNIX;
-    strcpy(server_adr.sun_path, socket_file);
+    strcpy(server_adr.sun_path, socket_file.c_str());
 
     if (connect(SocketNo, (struct sockaddr *) &server_adr,
                 SUN_LEN(&server_adr)) < 0)

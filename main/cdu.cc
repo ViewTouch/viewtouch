@@ -142,7 +142,7 @@ int CDUString::IsBlank()
     {
         while (idx < MAX_CDU_LINES && retval == 0)
         {
-            if (lines[idx].length < 1)
+            if (lines[idx].empty())
                 retval = 1;
             idx += 1;
         }
@@ -684,10 +684,10 @@ int CustDispUnit::Simple(CDUString *cdustring)
     for (idx = 0; idx < MAX_CDU_LINES; idx++)
     {
         cdustring->GetLine(line, idx);
-        if (line.length > 0)
+        if (line.size() > 0)
         {
             Write(line.Value());
-            if ((line.length < width) && (idx < (MAX_CDU_LINES - 1)))
+            if ((line.size() < width) && (idx < (MAX_CDU_LINES - 1)))
                 NewLine();
         }
     }

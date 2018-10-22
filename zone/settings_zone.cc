@@ -413,7 +413,7 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("SettingsZone::Render()");
     form_header = 0;
-    if (name.length > 0)
+    if (name.size() > 0)
         form_header = 1;
 
     FormZone::Render(term, update_flag);
@@ -598,7 +598,7 @@ RenderResult ReceiptSettingsZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("ReceiptSettingsZone::Render()");
     form_header = 0;
-    if (name.length > 0)
+    if (name.size() > 0)
         form_header = 1;
 
     FormZone::Render(term, update_flag);
@@ -718,7 +718,7 @@ RenderResult TaxSettingsZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("TaxSettingsZone::Render()");
     form_header = 0;
-    if (name.length > 0)
+    if (name.size() > 0)
         form_header = 1;
 
     FormZone::Render(term, update_flag);
@@ -875,11 +875,11 @@ RenderResult CCSettingsZone::Render(Terminal *term, int update_flag)
     RenderResult retval = RENDER_OKAY;
 
     form_header = 0;
-    if (name.length > 0)
+    if (name.size() > 0)
         form_header = 1;
 
     FormZone::Render(term, update_flag);
-    if (name.length > 0)
+    if (name.size() > 0)
         TextC(term, 0, name.Value(), color[0]);
 
     return retval;
@@ -1073,7 +1073,7 @@ RenderResult CCMessageSettingsZone::Render(Terminal *term, int update_flag)
     RenderResult retval = RENDER_OKAY;
 
     form_header = 0;
-    if (name.length > 0)
+    if (name.size() > 0)
         form_header = 1;
 
     FormZone::Render(term, update_flag);
@@ -1175,11 +1175,11 @@ RenderResult DeveloperZone::Render(Terminal *term, int update_flag)
         clear_flag = 0;
 
     form_header = 0;
-    if (name.length > 0)
+    if (name.size() > 0)
         form_header = 1;
 
     FormZone::Render(term, update_flag);
-    if (name.length > 0)
+    if (name.size() > 0)
         TextC(term, 0, name.Value(), color[0]);
     return RENDER_OKAY;
 }
@@ -1634,7 +1634,7 @@ int TenderSetZone::LoadRecord(Terminal *term, int record)
             thisForm = thisForm->next;
             // set item id
             ItemList(thisForm, cp->family, cp->item_id);
-            if (cp->item_name.length < 1)
+            if (cp->item_name.empty())
                 thisForm->Set(cp->item_id);
             else
                 thisForm->SetName(cp->item_name);
@@ -1817,7 +1817,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             if (!tmp)
                 ds->flags |= TF_NO_TAX;
             f->Get(ds->local);
-            if (ds->name.length < 1)
+            if (ds->name.empty())
             {
                 settings->Remove(ds);
             }
@@ -1891,7 +1891,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             f->Get(cp->family); f = f->next;
             f->GetName(cp->item_name); f = f->next;
 
-            if (cp->name.length < 1)
+            if (cp->name.empty())
             {
                 settings->Remove(cp);
             }
@@ -1935,7 +1935,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             cc->name.Set(FindStringByValue(hold, CCTypeValue, CCTypeName));
             f = f->next;
             f->Get(cc->local);
-            if (cc->name.length < 1)
+            if (cc->name.empty())
             {
                 settings->Remove(cc);
             }
@@ -1992,7 +1992,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             if (tmp)
                 cm->flags |= TF_MANAGER;
             f->Get(cm->local);
-            if (cm->name.length < 1)
+            if (cm->name.empty())
             {
                 settings->Remove(cm);
             }
@@ -2741,7 +2741,7 @@ RenderResult ExpireSettingsZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("ExpireSettingsZone::Render()");
     form_header = 0;
-    if (name.length > 0)
+    if (name.size() > 0)
         form_header = 1;
 
     FormZone::Render(term, update_flag);

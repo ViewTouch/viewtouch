@@ -604,7 +604,7 @@ int Printer::EmailPrint()
     int sockfd;
     Settings *settings = MasterControl->TermList()->GetSettings();
 
-    if (settings->email_replyto.length < 1 )
+    if (settings->email_replyto.empty())
     {
         ReportError("No ReplyTo address specified for emails");
         return 1;

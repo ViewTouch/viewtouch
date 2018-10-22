@@ -1202,7 +1202,7 @@ int LaborDB::WorkReceipt(Terminal *t, Employee *e, Report *r)
     int  idx = 0;
 
     r->Mode(PRINT_LARGE | PRINT_NARROW);
-    if (header->length > 0)
+    if (header->size() > 0)
     {
         // ugly hack: get rid of any initial spaces so we can center it properly
         strcpy(buff2, header->Value());

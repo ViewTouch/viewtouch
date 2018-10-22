@@ -331,9 +331,9 @@ int Layer::TitleBar()
         c1 = COLOR_BLACK;
         c2 = COLOR_BLUE;
     }
-    if (Message.length > 0)
+    if (Message.size() > 0)
     {
-        Text(Message.Value(), Message.length,
+        Text(Message.Value(), Message.size(),
              page_w / 2, 4, c1, FONT_TIMES_24, ALIGN_CENTER);
     }
     else
@@ -360,16 +360,16 @@ int Layer::TitleBar()
         }
         else
         {
-            Text(StoreName.Value(), StoreName.length, page_w / 2, 6, c2,
+            Text(StoreName.Value(), StoreName.size(), page_w / 2, 6, c2,
                  FONT_TIMES_20B, ALIGN_CENTER);
         }
 
-        Text(page_title.Value(), page_title.length, 20, 6, c1,
+        Text(page_title.Value(), page_title.size(), 20, 6, c1,
              FONT_TIMES_20, ALIGN_LEFT);
         int offset = 20;
         if (IsTermLocal && page_w >= WinWidth)
             offset = 36;
-        Text(TimeString.Value(), TimeString.length, page_w - offset, 6, c1,
+        Text(TimeString.Value(), TimeString.size(), page_w - offset, 6, c1,
              FONT_TIMES_20, ALIGN_RIGHT);
     }
     return 0;

@@ -58,11 +58,11 @@ MerchantZone::MerchantZone()
 RenderResult MerchantZone::Render(Terminal *t, int update_flag)
 {
     form_header = 0;
-    if (name.length > 0)
+    if (name.size() > 0)
         form_header = 1;
 
     FormZone::Render(t, update_flag);
-    if (name.length > 0)
+    if (name.size() > 0)
         TextC(t, 0, name.Value(), color[0]);
     return RENDER_OKAY;
 }

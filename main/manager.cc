@@ -261,7 +261,7 @@ void ViewTouchError(const char* message, int do_sleep)
     int sleeplen = (debug_mode ? 1 : 5);
     Settings *settings = &(MasterSystem->settings);
 
-    if (settings->expire_message1.length == 0)
+    if (settings->expire_message1.empty())
     {
         snprintf(errormsg, STRLONG, "%s\\%s\\%s", message,
              "Please contact support.", " 541-515-5913");
@@ -320,7 +320,7 @@ int ReadViewTouchConfig()
 int main(int argc, genericChar* argv[])
 {
     FnTrace("main()");
-    srand(time(NULL));
+    srand(static_cast<unsigned int>(time(nullptr)));
     StartupLocalization();
     ReadViewTouchConfig();
 
@@ -686,7 +686,7 @@ int StartSystem(int my_use_net)
             int found = 0;
             while (ti != NULL)
             {
-                if (ti->display_host.length > 0)
+                if (ti->display_host.size() > 0)
                 {
                     if (found)
                         ti->IsServer(0);
@@ -706,7 +706,7 @@ int StartSystem(int my_use_net)
             // displaystr.  So we only start up a remote terminal if
             // IsServer() returns false and the two display strings do
             // not match.  Otherwise, we do a little background maintenance.
-            if (ti->display_host.length == 0 && have_server == 0)
+            if (ti->display_host.empty() && have_server == 0)
             {
                 ti->display_host.Set(displaystr);
                 ti->IsServer(1);

@@ -1440,7 +1440,7 @@ SignalResult Terminal::Touch(int x, int y)
         Zone *z = dialog;
         if (dialog->IsPointIn(x, y))
         {
-            if (host.length > 0)
+            if (host.size() > 0)
                 Bell();
             sig = dialog->Touch(this, x, y);
         }
@@ -1489,7 +1489,7 @@ SignalResult Terminal::Touch(int x, int y)
 
         if (touch && z->active)
         {
-            if (host.length > 0)
+            if (host.size() > 0)
                 Bell();
             SetFocus(z);
             return z->Touch(this, x, y);
@@ -3893,7 +3893,7 @@ int Terminal::WStr(Str *s)
     if (s == NULL)
         return buffer_out->PutString("", 0);
     else
-        return buffer_out->PutString(s->Value(), s->length);
+        return buffer_out->PutString(s->Value(), s->size());
 }
 
 genericChar* Terminal::RStr(genericChar* s)
@@ -4698,7 +4698,7 @@ int Terminal::EditZone(Zone *currZone)
 	{
 		WStr(currItem->item_name.Value());
 		WStr(currItem->print_name.Value());
-		if (currItem->zone_name.length <= 0)
+        if (currItem->zone_name.empty())
 			WStr(currZone->name.Value());
 		else
 			WStr(currItem->zone_name.Value());
@@ -4838,31 +4838,30 @@ int Terminal::ReadZone()
     {
         Str tempstr;  // try to prevent buffer overflows
         genericChar str[STRLENGTH];
-        genericChar iname[STRLONG];
-        const genericChar* n;
+        std::string iname;
+        std::string n;
         tempstr.Set(RStr());  // get item name and copy it into str
         strncpy(str, tempstr.Value(), STRLENGTH - 1);
-        if (tempstr.length >= STRLENGTH)  // make sure we don't get buffer overflow
+        if (tempstr.size() >= STRLENGTH)  // make sure we don't get buffer overflow
             str[STRLENGTH - 1] = '\0';
-        iname[0] = '\0';
         if (strlen(str) > 0)
         {
             n = FilterName(str);
-            strncpy(iname, n, STRLONG);
+            iname = n;
         }
-        else if (newZone->name.length > 0)
+        else if (newZone->name.size() > 0)
         {
             n = FilterName(newZone->name.Value());
-            strncpy(iname, n, STRLONG);
+            iname = n;
         }
 
         // Try to find the existing item.  This will only match if the name has
         // not changed.
-        SalesItem *si = system_data->menu.FindByName(iname);
+        SalesItem *si = system_data->menu.FindByName(iname.c_str());
         if (si == NULL)
         {
             // We don't have a match, so create new menu item
-            si = new SalesItem(iname);
+            si = new SalesItem(iname.c_str());
             system_data->menu.Add(si);
             // Now see if we have an old copy of the item so we can move its
             // members over and delete the old item.  The old item must be
@@ -5393,9 +5392,9 @@ int Terminal::ReadCreditCard()
         credit->trans_success = RInt8();
 
         // kludge for CardNet, which doesn't apparently return Verb
-        if (credit->verb.length == 0)
+        if (credit->verb.empty())
         {
-            if (credit->code.length == 0 && credit->auth.length == 0)
+            if (credit->code.empty() && credit->auth.empty())
             {
                 credit->verb.Set(Translate("No Verbiage Set"));
             }
@@ -5638,14 +5637,14 @@ int Terminal::CC_GetTermIDList(Terminal *start_term)
 
     while (curr_term != NULL)
     {
-        if (curr_term->cc_debit_termid.length > 0 &&
+        if (curr_term->cc_debit_termid.size() > 0 &&
             CC_TermIDIsDupe(curr_term->cc_debit_termid.Value()) == 0)
         {
             term_id = new Str(curr_term->cc_debit_termid);
             term_id_list.AddToTail(term_id);
             retval += 1;
         }
-        if (curr_term->cc_credit_termid.length > 0 &&
+        if (curr_term->cc_credit_termid.size() > 0 &&
             CC_TermIDIsDupe(curr_term->cc_credit_termid.Value()) == 0)
         {
             term_id = new Str(curr_term->cc_credit_termid);

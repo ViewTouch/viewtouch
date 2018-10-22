@@ -333,7 +333,7 @@ public:
     int InvoiceReport(Terminal *t, Invoice *in, Report *r);
 
     int    ScanItems(ItemDB *db);
-    int    ChangeRecipeName(const char* old_name, const genericChar* new_name);
+    bool   ChangeRecipeName(const std::string &old_name, const std::string &new_name);
     Stock *CurrentStock();
     int    MakeOrder(Check *c);
 };

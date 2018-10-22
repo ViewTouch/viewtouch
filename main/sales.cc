@@ -347,7 +347,7 @@ int SalesItem::Price(Settings *s, int qualifier)
 const char* SalesItem::ZoneName()
 {
     FnTrace("SalesItem::ZoneName()");
-    if (zone_name.length > 0)
+    if (zone_name.size() > 0)
         return admission_filteredname(zone_name);
     else
 	return admission_filteredname(item_name);
@@ -356,7 +356,7 @@ const char* SalesItem::ZoneName()
 const char* SalesItem::PrintName()
 {
     FnTrace("SalesItem::PrintName()");
-    if (print_name.length > 0)
+    if (print_name.size() > 0)
         return admission_filteredname(print_name);
     else
         return admission_filteredname(item_name);
@@ -365,7 +365,7 @@ const char* SalesItem::PrintName()
 const char* SalesItem::CallCenterName(Terminal *t)
 {
     FnTrace("SalesItem::CallCenterName()");
-    if (call_center_name.length > 0)
+    if (call_center_name.size() > 0)
         return admission_filteredname(call_center_name);
     else
         return admission_filteredname(item_name);
@@ -440,7 +440,7 @@ int ItemDB::Load(const char* file)
 int ItemDB::Save()
 {
     FnTrace("ItemDB::Save()");
-    if (filename.length <= 0)
+    if (filename.empty())
         return 1;
 
     BackupFile(filename.Value());
@@ -535,12 +535,9 @@ int ItemDB::ResetAdmissionItems()
 	return 0;
 }
 
-SalesItem *ItemDB::FindByName(const char* name)
+SalesItem *ItemDB::FindByName(const std::string &name)
 {
     FnTrace("ItemDB::FindByName()");
-    if (name == NULL)
-        return NULL;
-
     if (name_array == NULL)
         BuildNameArray();
 
@@ -593,13 +590,12 @@ SalesItem *ItemDB::FindByWord(const char* word, int &record)
     if (name_array == NULL)
         BuildNameArray();
 
-    int len = strlen(word);
     SalesItem *si;
     for (int i = 0; i < array_size; ++i)
     {
         si = name_array[i];
-        if (si->item_name.length > 0 &&
-            StringCompare(si->item_name.Value(), word, len) == 0)
+        if (si->item_name.size() > 0 &&
+            StringCompare(si->item_name.Value(), word) == 0)
         {
             record = i;
             return si;
@@ -622,8 +618,8 @@ SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
     for (idx = 0; idx < array_size; idx += 1)
     {
         si = name_array[idx];
-        if (si->item_name.length > 0 &&
-            StringCompare(si->item_name.Value(), word, len) == 0)
+        if (si->item_name.size() > 0 &&
+            StringCompare(si->item_name.Value(), word) == 0)
         {
             record = idx;
             retval = si;
@@ -821,34 +817,33 @@ int PrintItem(char* buffer, int qualifier, const char* item)
     return 0;
 }
 
-char* FilterName(char* name, char* str)
+std::string FilterName(const std::string &name)
 {
     FnTrace("FilterName()");
-    static char buffer[1024];
-    if (str == NULL)
-        str = buffer;
+    std::string str = name;
+    str.reserve(name.size());
 
-    int space = 1;
-    char* s = name, *d = str;
-    while (*s)
+    bool space = false; // flag to shorten spaces to one digit
+
+    for (const char &s : name)
     {
-        if (*s == '\\' || isspace(*s))
+        if (s == '\\' || std::isspace(s))
         {
-            if (space == 0)
+            if (!space)
             {
-                space = 1;
-                *d++ = ' ';
+                space = true; // add only first space
+                str.push_back(' ');
             }
         }
-        else if (isprint(*s))
+        else if (std::isprint(s))
         {
-            *d++ = *s;
-            space = 0;
+            str.push_back(s);
+            space = false;
         }
-        ++s;
     }
-    if (space && s > name)
-        --d;
-    *d = '\0';
+    if (space && !str.empty())
+    {
+        str.pop_back();
+    }
     return str;
 }

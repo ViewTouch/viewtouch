@@ -26,6 +26,8 @@
 #include <dirent.h>
 #include <cstring>
 #include <unistd.h>
+#include <sstream>
+#include <iomanip> // setw, setfill
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -44,6 +46,14 @@ AccountEntry::AccountEntry(const char* desc, int amt)
     description.Set(desc);
     amount = amt;
     flags = 0;
+}
+
+bool AccountEntry::operator==(const AccountEntry &other) const
+{
+    return description == other.description &&
+            time == other.time &&
+            amount == other.amount &&
+            flags == other.flags;
 }
 
 // Member Functions
@@ -69,12 +79,11 @@ int AccountEntry::Write(OutputDataFile &df, int version)
     return error;
 }
 
-int AccountEntry::Search(const genericChar* word)
+int AccountEntry::Search(const genericChar* word) const
 {
     FnTrace("AccountEntry::Search()");
-    int wordlen = strlen(word);
     int found = 0;
-    if (StringCompare(description.Value(), word, wordlen) == 0)
+    if (StringCompare(description.Value(), word) == 0)
     {
         found = 1;
     }
@@ -194,8 +203,8 @@ int Account::ReadEntries(InputDataFile &df)
     df.Read(no);
     for (int i = 0; i < no; ++i)
     {
-        AccountEntry *ae = new AccountEntry;
-        ae->Read(df, entry_version);
+        AccountEntry ae;
+        ae.Read(df, entry_version);
         Add(ae);
     }
     return 0;
@@ -206,53 +215,51 @@ int Account::WriteEntries(OutputDataFile &df, int version)
     FnTrace("Account::WriteEntries()");
     // write entries out to file
     df.Write(version);
-    df.Write(EntryCount());  
-    for (AccountEntry *ae = EntryList(); ae != NULL; ae = ae->next)
-        ae->Write(df, version);
+    df.Write(entry_list.size());
+    for(AccountEntry &ae : entry_list)
+    {
+        ae.Write(df, version);
+    }
     return 0;
 }
 
-int Account::Add(AccountEntry *ae)
+void Account::Add(const AccountEntry &ae)
 {
     FnTrace("Account::Add()");
-    return entry_list.AddToTail(ae);
+    return entry_list.push_back(ae);
 }
 
-/****
- * Remove:  Do a bit of an overload here:  if ae == NULL, remove the entire
- *   account (AKA, delete the associated file).  Otherwise, just delete
- *   the account entry.
- ****/
-int Account::Remove(AccountEntry *ae = NULL)
+int Account::Remove(const AccountEntry &ae)
 {
     FnTrace("Account::Remove()");
-    genericChar filename[STRLENGTH];
+    entry_list.erase(std::remove(entry_list.begin(), entry_list.end(), ae),
+                     entry_list.end());
+}
+
+int Account::RemoveFile()
+{
+    FnTrace("Account::RemoveFile()");
     int retval = 0;
 
-    if (ae == NULL)
-    {
-        snprintf(filename, STRLENGTH, "%s/%04d", pathname.Value(), number);
-        retval = unlink(filename);
-    }
-    else
-    {
-        entry_list.Remove(ae);
-    }
+    std::ostringstream ss;
+    ss << pathname.Value() << "/"
+       << std::setfill('0') << std::setw(4) << number;
+    const std::string filename = ss.str();
+    retval = unlink(filename.c_str());
     return retval;
 }
 
-int Account::Purge()
+void Account::Purge()
 {
     FnTrace("Account::Purge()");
-    entry_list.Purge();
-    return 0;
+    entry_list.clear();
 }
 
 int Account::AddEntry(const char* desc, int amount)
 {
     FnTrace("Account::AddEntry()");
-    AccountEntry *ae = new AccountEntry(desc, amount);
-    Add(ae);
+    this->Add(AccountEntry(desc, amount));
+
     return 0;
 }
 
@@ -270,7 +277,7 @@ int Account::IsBlank()
 
     if (number == 0)
         return 1;
-    if ((name.length < 1) &&
+    if ((name.empty()) &&
         (ibalance == 0))
     {
         return 1;
@@ -285,25 +292,22 @@ int Account::IsBlank()
 int Account::Search(const genericChar* word)
 {
     FnTrace("Account::Search()");
-    int found = 0;
-    int wordlen = strlen(word);
 
-    if (StringCompare(name.Value(), word, wordlen) == 0)
+    if (StringCompare(name.Value(), word) == 0)
     {
-        found = 1;
+        return 1;
     }
     else
     {
-        AccountEntry *currAE = entry_list.Head();
-        while (currAE != NULL && found != 1)
+        for (const AccountEntry &currAE : entry_list)
         {
-            if (currAE->Search(word))
-                found = 1;
-            else
-                currAE = currAE->next;
+            if (currAE.Search(word))
+            {
+                return 1;
+            }
         }
     }
-    return found;
+    return 0;
 }
 
 
@@ -447,7 +451,7 @@ int AccountDB::Load(const char* path)
     if (path)
         pathname.Set(path);
 
-    if (pathname.length <= 0)
+    if (pathname.empty())
         return 1;
 
     DIR *dp = opendir(pathname.Value());
@@ -510,7 +514,7 @@ int AccountDB::Remove(Account *my_account)
     FnTrace("AccountDB::Remove()");
     int retval = 0;
     // need to remove the file
-    my_account->Remove();
+    my_account->RemoveFile();
     retval = account_list.Remove(my_account);
     Save();
     return retval;

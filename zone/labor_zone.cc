@@ -583,9 +583,9 @@ RenderResult ScheduleZone::Render(Terminal *term, int update_flag)
     Settings *s = &(sys->settings);
     for (employee = sys->user_db.UserList(); employee != NULL; employee = employee->next)
     {
-        if (employee->active && employee->system_name.length > name_len)
+        if (employee->active && employee->system_name.size() > name_len)
         {
-            name_len = employee->system_name.length;
+            name_len = employee->system_name.size();
             ++users;
         }
     }
