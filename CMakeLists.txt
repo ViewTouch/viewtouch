@@ -129,6 +129,10 @@ list(APPEND VT_XLIBS Freetype::Freetype)
 pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
 list(APPEND VT_XLIBS ${FONTCONFIG_LIBRARIES})
 
+foreach(vt_xlib ${VT_XLIBS})
+    message(STATUS "Linking ${vt_xlib}")
+endforeach()
+
 add_library(vtcore
     main/admission.cc  main/admission.hh
     external/sha1.cc   external/sha1.hh
