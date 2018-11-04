@@ -139,6 +139,9 @@ foreach(vt_xlib ${VT_XLIBS})
 endforeach()
 
 list(REMOVE_DUPLICATES VT_XLIBS_INCLUDE_DIRS)
+foreach(vt_xlib_include ${VT_XLIBS_INCLUDE_DIRS})
+    message(STATUS "Include X11 code from ${vt_xlib_include}")
+endforeach()
 
 add_library(vtcore
     main/admission.cc  main/admission.hh
