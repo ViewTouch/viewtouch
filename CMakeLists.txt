@@ -103,7 +103,31 @@ add_library(image_data STATIC
 
 find_package(ZLIB REQUIRED)
 target_link_libraries(conf_file PRIVATE ZLIB::ZLIB)
-set(VT_XLIBS X11 Xm Xmu Xt Xpm Xft freetype fontconfig Xrender)
+
+set(VT_XLIBS X11)
+find_package(${VT_XLIBS} REQUIRED)
+set(x11_required_libraries Xft Xmu Xpm Xrender Xt)
+foreach(x11_requirement ${x11_required_libraries})
+    if(NOT DEFINED X11_${x11_requirement}_FOUND)
+        list(APPEND x11_missing_requirements "${x11_requirement}")
+    endif()
+endforeach()
+if(DEFINED x11_missing_requirements)
+    foreach(x11_lib_missing ${x11_missing_requirements})
+        message(STATUS "X11: ${x11_lib_missing} library missing")
+    endforeach()
+    message(FATAL_ERROR "Missing X library dependencies")
+endif()
+list(APPEND VT_XLIBS ${x11_required_libraries})
+
+find_package(Motif REQUIRED)
+list(APPEND VT_XLIBS ${MOTIF_LIBRARIES})
+
+find_package(Freetype REQUIRED)
+list(APPEND VT_XLIBS Freetype::Freetype)
+
+pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
+list(APPEND VT_XLIBS ${FONTCONFIG_LIBRARIES})
 
 add_library(vtcore
     main/admission.cc  main/admission.hh
