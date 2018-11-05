@@ -47,6 +47,7 @@
 #endif
 #include "utility.hh"
 #include "zone.hh"
+#include "version/vt_version_info.hh"
 
 #include <ctype.h>
 #include <errno.h>
@@ -2737,7 +2738,9 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
 				switch (idx)
 				{
                 case 0:  // release
-                    sprintf(tmp, "POS %s - Copyright Gene Mosher 1986", BuildNumber);
+                    sprintf(tmp, "POS %s %s - \xa9 Gene Mosher 1986",
+                            viewtouch::get_version_extended().c_str(),
+                            viewtouch::get_version_timestamp().substr(0, 10).c_str());
                     break;
                 case 1:  // time
                     TimeDate(tmp, SystemTime, TD_TIME);
