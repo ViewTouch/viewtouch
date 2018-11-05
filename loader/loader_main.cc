@@ -29,11 +29,12 @@
 #include <dmalloc.h>
 #endif
 
-#include "build_number.h"
 #include "basic.hh"
 #include "generic_char.hh"
 #include "logger.hh"
 #include "utility.hh"
+
+#include "version/vt_version_info.hh"
 
 /**** Defintions ****/
 const std::string SOCKET_FILE = "/tmp/vt_main";
@@ -61,7 +62,6 @@ int             SocketNo         = 0;
 int             SocketNum        = 0;
 int             GetInput         = 0;
 char            KBInput[1024]    = "";
-std::string     BuildNumber      = BUILD_NUMBER;
 
 /**** Functions ****/
 void ExitLoader()
@@ -362,7 +362,9 @@ int main(int argc, genericChar* argv[])
         }
         else if (strcmp(argv[i], "-v") == 0)
         {
-            printf("POS Version:  %s\n", BuildNumber);
+            std::cout << viewtouch::get_project_name() << " "
+                      << viewtouch::get_version_info()
+                      << std::endl;
             exit(1);
         }
     }
