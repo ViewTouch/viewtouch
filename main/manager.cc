@@ -2328,7 +2328,7 @@ int GetCCData(const char* data)
     check = FindCCData(cardnum, amount);
     if (check)
     {
-        printf("Card %s was processed on %s\n", cardnum, check->made_time.to_string());
+        printf("Card %s was processed on %s\n", cardnum, check->made_time.to_string().c_str());
         printf("    Check ID:  %d\n", check->serial_number);
         subcheck = check->SubList();
         while (subcheck != NULL)
