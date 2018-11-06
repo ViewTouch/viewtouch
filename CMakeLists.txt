@@ -114,14 +114,10 @@ pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
 list(APPEND VT_XLIBS ${FONTCONFIG_LIBRARIES})
 list(APPEND VT_XLIBS_INCLUDE_DIRS ${FONTCONFIG_INCLUDE_DIRS})
 
-foreach(vt_xlib ${VT_XLIBS})
-    message(STATUS "Linking ${vt_xlib}")
-endforeach()
+string(REPLACE ";" " " _vt_xlibs_spaced "${VT_XLIBS}")
+message(STATUS "Linking X11 libraries: ${_vt_xlibs_spaced}")
 
 list(REMOVE_DUPLICATES VT_XLIBS_INCLUDE_DIRS)
-foreach(vt_xlib_include ${VT_XLIBS_INCLUDE_DIRS})
-    message(STATUS "Include X11 code from ${vt_xlib_include}")
-endforeach()
 
 add_library(vtcore
     main/admission.cc  main/admission.hh
