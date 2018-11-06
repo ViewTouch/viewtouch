@@ -86,6 +86,11 @@ target_link_libraries(conf_file PRIVATE ZLIB::ZLIB)
 set(VT_XLIBS X11)
 find_package(${VT_XLIBS} REQUIRED)
 set(VT_XLIBS_INCLUDE_DIRS ${X11_INCLUDE_DIR})
+
+find_package(Motif REQUIRED) # Library Xm must be linked before Xmu
+list(APPEND VT_XLIBS ${MOTIF_LIBRARIES})
+list(APPEND VT_XLIBS_INCLUDE_DIRS ${MOTIF_INCLUDE_DIR})
+
 set(x11_required_libraries Xft Xmu Xpm Xrender Xt)
 foreach(x11_requirement ${x11_required_libraries})
     if(NOT DEFINED X11_${x11_requirement}_FOUND)
@@ -101,10 +106,6 @@ if(DEFINED x11_missing_requirements)
     message(FATAL_ERROR "Missing X library dependencies")
 endif()
 list(APPEND VT_XLIBS ${x11_required_libraries})
-
-find_package(Motif REQUIRED)
-list(APPEND VT_XLIBS ${MOTIF_LIBRARIES})
-list(APPEND VT_XLIBS_INCLUDE_DIRS ${MOTIF_INCLUDE_DIR})
 
 find_package(Freetype REQUIRED)
 list(APPEND VT_XLIBS Freetype::Freetype)
