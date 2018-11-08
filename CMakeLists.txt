@@ -82,7 +82,42 @@ add_library(image_data STATIC
 
 find_package(ZLIB REQUIRED)
 target_link_libraries(conf_file PRIVATE ZLIB::ZLIB)
-set(VT_XLIBS X11 Xm Xmu Xt Xpm Xft freetype fontconfig Xrender)
+
+set(VT_XLIBS X11)
+find_package(${VT_XLIBS} REQUIRED)
+set(VT_XLIBS_INCLUDE_DIRS ${X11_INCLUDE_DIR})
+
+find_package(Motif REQUIRED) # Library Xm must be linked before Xmu
+list(APPEND VT_XLIBS ${MOTIF_LIBRARIES})
+list(APPEND VT_XLIBS_INCLUDE_DIRS ${MOTIF_INCLUDE_DIR})
+
+set(x11_required_libraries Xft Xmu Xpm Xrender Xt)
+foreach(x11_requirement ${x11_required_libraries})
+    if(NOT DEFINED X11_${x11_requirement}_FOUND)
+        list(APPEND x11_missing_requirements "${x11_requirement}")
+    else()
+        list(APPEND VT_XLIBS_INCLUDE_DIRS "${X11_${x11_requirement}_INCLUDE_PATH}")
+    endif()
+endforeach()
+if(DEFINED x11_missing_requirements)
+    foreach(x11_lib_missing ${x11_missing_requirements})
+        message(STATUS "X11: ${x11_lib_missing} library missing")
+    endforeach()
+    message(FATAL_ERROR "Missing X library dependencies")
+endif()
+list(APPEND VT_XLIBS ${x11_required_libraries})
+
+find_package(Freetype REQUIRED)
+list(APPEND VT_XLIBS Freetype::Freetype)
+
+pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
+list(APPEND VT_XLIBS ${FONTCONFIG_LIBRARIES})
+list(APPEND VT_XLIBS_INCLUDE_DIRS ${FONTCONFIG_INCLUDE_DIRS})
+
+string(REPLACE ";" " " _vt_xlibs_spaced "${VT_XLIBS}")
+message(STATUS "Linking X11 libraries: ${_vt_xlibs_spaced}")
+
+list(REMOVE_DUPLICATES VT_XLIBS_INCLUDE_DIRS)
 
 add_library(vtcore
     main/admission.cc  main/admission.hh
@@ -174,6 +209,7 @@ add_executable(vt_main
     main/cdu.cc             main/cdu.hh
     main/cdu_att.cc         main/cdu_att.hh
     )
+target_include_directories(vt_main PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
 target_link_libraries(vt_main zone vtcore ${VT_XLIBS})
 target_link_libraries(vt_main tz)
 
@@ -189,6 +225,7 @@ add_executable(vt_term
     term/term_dialog.hh
     term/term_${TERM_CREDIT}.cc)
 
+target_include_directories(vt_term PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
 target_link_libraries(vt_term
     vtcore conf_file image_data
     ${VT_XLIBS} ${TERM_CREDIT_LIBS})
