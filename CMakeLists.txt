@@ -108,7 +108,12 @@ endif()
 list(APPEND VT_XLIBS ${x11_required_libraries})
 
 find_package(Freetype REQUIRED)
-list(APPEND VT_XLIBS Freetype::Freetype)
+if(TARGET Freetype::Freetype) # prefer target
+	list(APPEND VT_XLIBS Freetype::Freetype)
+else() # fall back to variables
+	list(APPEND VT_XLIBS_INCLUDE_DIRS "${FREETYPE_INCLUDE_DIRS}")
+	list(APPEND VT_XLIBS ${FREETYPE_LIBRARIES})
+endif()
 
 pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
 list(APPEND VT_XLIBS ${FONTCONFIG_LIBRARIES})
