@@ -1,43 +1,44 @@
-#include "gtest/gtest.h"
+#define CATCH_CONFIG_MAIN
+#include "catch2/catch.hpp"
 #include "conf_file.hh"
 
 #include <string>
 #include <vector>
 #include <fstream>
 #include <limits> // std::numeric_limits
-#include <cmath> // std::isnan
+#include <cmath> // std::isnan, std::isinf
 #include <locale>
 
-TEST(conf_file, setter_default_section)
+TEST_CASE("setter_default_section", "[conf_file]")
 {
     ConfFile conf("setter.ini");
-    EXPECT_TRUE(conf.SetValue("value", "key"));
+    CHECK(conf.SetValue("value", "key"));
 
     std::string val;
-    EXPECT_TRUE(conf.GetValue(val, "key"));
-    EXPECT_EQ(val, "value");
+    CHECK(conf.GetValue(val, "key"));
+    CHECK(val == "value");
 }
-TEST(conf_file, setter_missing_section)
+TEST_CASE("setter_missing_section", "[conf_file]")
 {
     ConfFile conf("setter_missing_section.ini");
 
-    EXPECT_TRUE(conf.SetValue("value", "key", "new_section"));
+    CHECK(conf.SetValue("value", "key", "new_section"));
     std::string value_ret;
-    EXPECT_TRUE(conf.GetValue(value_ret, "key", "new_section"));
-    EXPECT_FALSE(conf.GetValue(value_ret, "key", "missing_section"));
+    CHECK(conf.GetValue(value_ret, "key", "new_section"));
+    CHECK_FALSE(conf.GetValue(value_ret, "key", "missing_section"));
 }
-TEST(conf_file, setter_emtpy_parameter)
+TEST_CASE("setter_emtpy_parameter", "[conf_file]")
 {
     ConfFile conf("setter_empty_parameter.ini");
 
-    EXPECT_FALSE(conf.SetValue("", "key"));
-    EXPECT_FALSE(conf.SetValue("value", ""));
+    CHECK_FALSE(conf.SetValue("", "key"));
+    CHECK_FALSE(conf.SetValue("value", ""));
 }
 
-TEST(conf_file, strings)
+TEST_CASE("strings", "[conf_file]")
 {
     ConfFile conf("strings.ini");
-    std::vector<std::string> strings = {
+    const std::vector<std::string> strings = {
         "a",
         "bb",
         "1",
@@ -52,15 +53,15 @@ TEST(conf_file, strings)
     for (const std::string &val : strings)
     {
         std::string val_ret;
-        ASSERT_TRUE(conf.SetValue(val, "key"));
-        EXPECT_TRUE(conf.GetValue(val_ret, "key"));
-        EXPECT_EQ(val, val_ret);
+        REQUIRE(conf.SetValue(val, "key"));
+        CHECK(conf.GetValue(val_ret, "key"));
+        CHECK(val == val_ret);
     }
 }
-TEST(conf_file, integer)
+TEST_CASE("integer", "[conf_file]")
 {
     ConfFile conf("integer.ini");
-    std::vector<int> integers = {
+    const std::vector<int> integers = {
         0,
          1,  3,  5,  7,  1337,
         -1, -3, -5, -7, -1337,
@@ -68,15 +69,15 @@ TEST(conf_file, integer)
     for (const int val : integers)
     {
         int val_ret;
-        ASSERT_TRUE(conf.SetValue(val, "key"));
-        EXPECT_TRUE(conf.GetValue(val_ret, "key"));
-        EXPECT_EQ(val, val_ret);
+        REQUIRE(conf.SetValue(val, "key"));
+        CHECK(conf.GetValue(val_ret, "key"));
+        CHECK(val == val_ret);
     }
 }
-TEST(conf_file, doubles)
+TEST_CASE("doubles", "[conf_file]")
 {
     ConfFile conf("doubles.ini");
-    std::vector<double> doubles = {
+    const std::vector<double> doubles = {
         0, 1, 3, 5, 7, 1337, -1, -3, -5, -7, -1337,
         0.001, 1.0/4,
         0.000031212421108108183401041,
@@ -84,39 +85,46 @@ TEST(conf_file, doubles)
     for (const double val : doubles)
     {
         double val_ret;
-        ASSERT_TRUE(conf.SetValue(val, "key"));
-        EXPECT_TRUE(conf.GetValue(val_ret, "key"));
+        REQUIRE(conf.SetValue(val, "key"));
+        CHECK(conf.GetValue(val_ret, "key"));
         // printf(%f) and std::to_string(double) have a standard precision of
         // 6 digits after the comma
-        EXPECT_NEAR(val, val_ret, 1e-6);
+        CHECK(val == Approx{val_ret}.epsilon(1e-6));
     }
 }
-TEST(conf_file, doubles_inf)
+TEST_CASE("doubles_inf", "[conf_file]")
 {
     ConfFile conf("doubles_inf.ini");
-    std::vector<double> doubles = {
+    const std::vector<double> doubles = {
         std::numeric_limits<double>::infinity(),
         -std::numeric_limits<double>::infinity(),
     };
     for (const double val : doubles)
     {
         double val_ret;
-        ASSERT_TRUE(conf.SetValue(val, "key"));
-        EXPECT_TRUE(conf.GetValue(val_ret, "key"));
-        EXPECT_EQ(val, val_ret);
+        REQUIRE(conf.SetValue(val, "key"));
+        CHECK(conf.GetValue(val_ret, "key"));
+        CHECK(std::signbit(val) == std::signbit(val_ret));
+        CHECK(std::isinf(val_ret));
     }
 }
-TEST(conf_file, doubles_nan)
+TEST_CASE("doubles_nan", "[conf_file]")
 {
     ConfFile conf("doubles_nan.ini");
     // can't compare NaN like the other doubles, NaN == NaN --> false
-    const double val = std::numeric_limits<double>::quiet_NaN();
-    double val_ret;
-    ASSERT_TRUE(conf.SetValue(val, "key"));
-    EXPECT_TRUE(conf.GetValue(val_ret, "key"));
-    EXPECT_TRUE(std::isnan(val_ret));
+    const std::vector<double> doubles = {
+        std::numeric_limits<double>::quiet_NaN(),
+        -std::numeric_limits<double>::signaling_NaN(),
+    };
+    for (const double val : doubles)
+    {
+        double val_ret;
+        REQUIRE(conf.SetValue(val, "key"));
+        CHECK(conf.GetValue(val_ret, "key"));
+        CHECK(std::isnan(val_ret));
+    }
 }
-TEST(conf_file, load_default_section)
+TEST_CASE("load_default_section", "[conf_file]")
 {
     const std::string filename = "load_default_section.ini";
     {
@@ -129,10 +137,10 @@ TEST(conf_file, load_default_section)
     ConfFile conf(filename, true); // load config file
 
     std::string val;
-    EXPECT_TRUE(conf.GetValue(val, "key"));
-    EXPECT_EQ(val, "value");
-    EXPECT_FALSE(conf.GetValue(val, "k_no_value"));
-    EXPECT_FALSE(conf.GetValue(val, ""));
+    CHECK(conf.GetValue(val, "key"));
+    CHECK(val == "value");
+    CHECK_FALSE(conf.GetValue(val, "k_no_value"));
+    CHECK_FALSE(conf.GetValue(val, ""));
 }
 
 namespace // locale namespace for load_double
@@ -145,7 +153,7 @@ protected:
     charT do_thousands_sep() const { return '.'; }
 };
 }
-TEST(conf_file, load_double)
+TEST_CASE("load_double", "[conf_file]")
 {
     // create and set a locale where '.' is the thousand separator and ',' is
     // the decimal separator (as is the case in locales (i.e. de_DE, nb_NO, ...)
@@ -161,12 +169,12 @@ TEST(conf_file, load_double)
     ConfFile conf(filename, true); // load config file
 
     double val;
-    EXPECT_TRUE(conf.GetValue(val, "key"));
-    EXPECT_NEAR(val, 1.337, 1e-6);
-    EXPECT_TRUE(conf.GetValue(val, "inf"));
-    EXPECT_EQ(val, std::numeric_limits<double>::infinity());
+    CHECK(conf.GetValue(val, "key"));
+    CHECK(val == Approx{1.337}.epsilon(1e-6));
+    CHECK(conf.GetValue(val, "inf"));
+    CHECK(val == std::numeric_limits<double>::infinity());
 }
-TEST(conf_file, load_string_as_number)
+TEST_CASE("load_string_as_number", "[conf_file]")
 {
     const std::string filename = "load_string_as_number.ini";
     {
@@ -176,11 +184,11 @@ TEST(conf_file, load_string_as_number)
     ConfFile conf(filename, true); // load config file
 
     double val;
-    EXPECT_FALSE(conf.GetValue(val, "key"));
+    CHECK_FALSE(conf.GetValue(val, "key"));
     int int_val;
-    EXPECT_FALSE(conf.GetValue(int_val, "key"));
+    CHECK_FALSE(conf.GetValue(int_val, "key"));
 }
-TEST(conf_file, getter_no_modification)
+TEST_CASE("getter_no_modification", "[conf_file]")
 {
     // reads of non existing keys don't modify the target variable
     const std::string filename = "conf_file_getter_no_modification.ini";
@@ -189,14 +197,14 @@ TEST(conf_file, getter_no_modification)
     std::string val_str = "1337";
     int val_int = 1337;
     double val_dbl = 1337;
-    EXPECT_FALSE(conf.GetValue(val_str, "key"));
-    EXPECT_FALSE(conf.GetValue(val_int, "key"));
-    EXPECT_FALSE(conf.GetValue(val_dbl, "key"));
-    EXPECT_EQ(val_str, "1337");
-    EXPECT_EQ(val_int, 1337);
-    EXPECT_EQ(val_dbl, 1337);
+    CHECK_FALSE(conf.GetValue(val_str, "key"));
+    CHECK_FALSE(conf.GetValue(val_int, "key"));
+    CHECK_FALSE(conf.GetValue(val_dbl, "key"));
+    CHECK(val_str == "1337");
+    CHECK(val_int == 1337);
+    CHECK(val_dbl == 1337);
 }
-TEST(conf_file, load_with_section)
+TEST_CASE("load_with_section", "[conf_file]")
 {
     const std::string filename = "load_with_section.ini";
     {
@@ -214,19 +222,19 @@ TEST(conf_file, load_with_section)
 
     std::string val;
     // read key from default section
-    EXPECT_TRUE(conf.GetValue(val, "key"));
-    EXPECT_EQ(val, "value");
+    CHECK(conf.GetValue(val, "key"));
+    CHECK(val == "value");
     // read key from section with no keys, expect failure
-    EXPECT_FALSE(conf.GetValue(val, "key", "section_no_keys"));
+    CHECK_FALSE(conf.GetValue(val, "key", "section_no_keys"));
     // read key from section, expect different value
-    EXPECT_TRUE(conf.GetValue(val, "key", "section"));
-    EXPECT_EQ(val, "section_value");
+    CHECK(conf.GetValue(val, "key", "section"));
+    CHECK(val == "section_value");
     // try to read not available keys
-    EXPECT_FALSE(conf.GetValue(val, "k_no_value", "section"));
-    EXPECT_FALSE(conf.GetValue(val, "", "section"));
+    CHECK_FALSE(conf.GetValue(val, "k_no_value", "section"));
+    CHECK_FALSE(conf.GetValue(val, "", "section"));
 }
 
-TEST(conf_file, save_with_section)
+TEST_CASE("save_with_section", "[conf_file]")
 {
     const std::string filename = "save_with_section.ini";
     {
@@ -239,43 +247,43 @@ TEST(conf_file, save_with_section)
 
     std::string val;
     // read key from default section
-    EXPECT_TRUE(conf.GetValue(val, "key"));
-    EXPECT_EQ(val, "value");
+    CHECK(conf.GetValue(val, "key"));
+    CHECK(val == "value");
     // read key from section, expect different value
-    EXPECT_TRUE(conf.GetValue(val, "key", "section"));
-    EXPECT_EQ(val, "section_value");
+    CHECK(conf.GetValue(val, "key", "section"));
+    CHECK(val == "section_value");
     // try to read not available keys
-    EXPECT_FALSE(conf.GetValue(val, "k_no_value", "section"));
-    EXPECT_FALSE(conf.GetValue(val, "", "section"));
+    CHECK_FALSE(conf.GetValue(val, "k_no_value", "section"));
+    CHECK_FALSE(conf.GetValue(val, "", "section"));
 }
 
-TEST(conf_file, no_delete_default_section)
+TEST_CASE("no_delete_default_section", "[conf_file]")
 {
     const std::string filename = "conf_file_no_delete_default_section.ini";
     ConfFile conf(filename);
-    ASSERT_FALSE(conf.DeleteSection(""));
+    CHECK_FALSE(conf.DeleteSection(""));
 }
 
-TEST(conf_file, delete_key_twice)
+TEST_CASE("delete_key_twice", "[conf_file]")
 {
     const std::string filename = "conf_file_delete_key_twice.ini";
     ConfFile conf(filename);
     // add a key to delete later
-    ASSERT_TRUE(conf.SetValue("value", "key"));
+    REQUIRE(conf.SetValue("value", "key"));
     // delete key
-    ASSERT_TRUE(conf.DeleteKey("key"));
+    REQUIRE(conf.DeleteKey("key"));
     // can't delete the same key twice
-    ASSERT_FALSE(conf.DeleteKey("key"));
+    CHECK_FALSE(conf.DeleteKey("key"));
 }
 
-TEST(conf_file, delete_empty_key)
+TEST_CASE("delete_empty_key", "[conf_file]")
 {
     const std::string filename = "conf_file_delete_empty_key.ini";
     ConfFile conf(filename);
-    ASSERT_FALSE(conf.DeleteKey(""));
+    CHECK_FALSE(conf.DeleteKey(""));
 }
 
-TEST(conf_file, list_all_sections)
+TEST_CASE("list_all_sections", "[conf_file]")
 {
     const std::string filename = "conf_file_list_all_sections.ini";
     ConfFile conf(filename);
@@ -283,11 +291,11 @@ TEST(conf_file, list_all_sections)
     conf.SetValue("section_value", "key", "section");
 
     const std::vector<std::string> sections = conf.getSectionNames();
-    EXPECT_EQ(sections[0], "");
-    EXPECT_EQ(sections[1], "section");
+    CHECK(sections[0] == "");
+    CHECK(sections[1] == "section");
 }
 
-TEST(conf_file, set_dirty_false)
+TEST_CASE("set_dirty_false", "[conf_file]")
 {
     const std::string filename = "conf_file_set_dirty_false.ini";
     {
@@ -299,26 +307,26 @@ TEST(conf_file, set_dirty_false)
     }
     // file should not exist
     std::ifstream conf_file(filename);
-    EXPECT_TRUE(conf_file.fail());
+    CHECK(conf_file.fail());
 }
 
-TEST(conf_file, keys_empty_section)
+TEST_CASE("keys_empty_section", "[conf_file]")
 {
     const std::string filename = "conf_file_keys_empty_section.ini";
     ConfFile conf(filename);
     const std::vector<std::string> default_keys = conf.keys("");
 
-    ASSERT_EQ(default_keys.size(), 0);
+    CHECK(default_keys.size() == 0);
 }
 
-TEST(conf_file, keys_exception_invalid_section)
+TEST_CASE("keys_exception_invalid_section", "[conf_file]")
 {
     const std::string filename = "conf_file_keys_exception_invalid_section.ini";
     ConfFile conf(filename);
-    ASSERT_THROW(conf.keys("invalid_section"), std::out_of_range);
+    CHECK_THROWS_AS(conf.keys("invalid_section"), std::out_of_range);
 }
 
-TEST(conf_file, keys_list)
+TEST_CASE("keys_list", "[conf_file]")
 {
     const std::string filename = "conf_file_keys_list.ini";
     ConfFile conf(filename);
@@ -330,11 +338,11 @@ TEST(conf_file, keys_list)
     const std::vector<std::string> default_keys = conf.keys("");
     const std::vector<std::string> section_keys = conf.keys("section");
 
-    ASSERT_EQ(default_keys.size(), 3);
-    ASSERT_EQ(section_keys.size(), 1);
+    REQUIRE(default_keys.size() == 3);
+    REQUIRE(section_keys.size() == 1);
 
-    EXPECT_EQ(default_keys[0], "key1");
-    EXPECT_EQ(default_keys[1], "key2");
-    EXPECT_EQ(default_keys[2], "key3");
-    EXPECT_EQ(section_keys[0], "key");
+    CHECK(default_keys[0] == "key1");
+    CHECK(default_keys[1] == "key2");
+    CHECK(default_keys[2] == "key3");
+    CHECK(section_keys[0] == "key");
 }
