@@ -251,7 +251,6 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/build_number.h.in ${CMAKE_CURRENT_BIN
 
 option(BUILD_TESTING "Build tests" ON)
 if(BUILD_TESTING)
-    add_subdirectory(external/googletest EXCLUDE_FROM_ALL)
     enable_testing()
     add_subdirectory(tests/conf_file)
     add_subdirectory(tests/image_data)
