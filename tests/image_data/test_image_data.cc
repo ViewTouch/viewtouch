@@ -1,24 +1,19 @@
-#include "gtest/gtest.h"
+#define CATCH_CONFIG_MAIN
+#include "catch2/catch.hpp"
 #include "image_data.hh"
 
-#include <string>
-#include <vector>
-#include <fstream>
-#include <limits> // std::numeric_limits
-#include <cmath> // std::isnan
-#include <locale>
 
-TEST(image_data, number_of_all_colors)
+TEST_CASE("number_of_all_colors", "[image_data]")
 {
-    EXPECT_EQ(ImageColorsUsed(), 1729);
+    CHECK(ImageColorsUsed() == 1729);
 }
 
-TEST(image_data, resolution_image_sand)
+TEST_CASE("resolution_image_sand", "[image_data]")
 {
     // test multiple times
-    EXPECT_EQ(ImageWidth(IMAGE_SAND), 256);
-    EXPECT_EQ(ImageWidth(IMAGE_SAND), 256);
+    CHECK(ImageWidth(IMAGE_SAND) == 256);
+    CHECK(ImageWidth(IMAGE_SAND) == 256);
     // test multiple times
-    EXPECT_EQ(ImageHeight(IMAGE_SAND), 256);
-    EXPECT_EQ(ImageHeight(IMAGE_SAND), 256);
+    CHECK(ImageHeight(IMAGE_SAND) == 256);
+    CHECK(ImageHeight(IMAGE_SAND) == 256);
 }
