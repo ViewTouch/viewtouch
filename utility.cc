@@ -96,11 +96,6 @@ int vt_setproctitle(const char* title)
 }
 
 
-/**** Definitions ****/
-#define MIN_STRING_SIZE 8
-#define VERY_LARGE (1<<30)-1
-
-
 /**** Str Class ****/
 // Constructors
 
