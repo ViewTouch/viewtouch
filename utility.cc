@@ -237,6 +237,12 @@ int Str::operator == (const Str &s) const
     return this->data == s.data;
 }
 
+bool Str::operator ==(const std::string &s) const
+{
+    FnTrace("Str::opterator ==()");
+    return this->data == s;
+}
+
 int Str::operator != (const Str &s) const
 {
     FnTrace("Str::operator !=()");

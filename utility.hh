@@ -109,6 +109,7 @@ public:
     int   operator >  (const Str  &s) const;
     int   operator <  (const Str  &s) const;
     int   operator == (const Str  &s) const;
+    bool operator == (const std::string &s) const;
     int   operator != (const Str  &s) const;
 };
 
