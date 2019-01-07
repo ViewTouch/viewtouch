@@ -820,7 +820,7 @@ int PrintItem(char* buffer, int qualifier, const char* item)
 std::string FilterName(const std::string &name)
 {
     FnTrace("FilterName()");
-    std::string str = name;
+    std::string str;
     str.reserve(name.size());
 
     bool space = false; // flag to shorten spaces to one digit
