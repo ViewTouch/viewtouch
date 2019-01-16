@@ -45,6 +45,14 @@ static int  IsDecodeReady = 0;
 static int  NewDecodeDigit[256];
 static char NewEncodeDigit[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+#ifdef VT_TESTING
+int ReportError(const std::string &message)
+{
+    FnTrace("ReportError()");
+    std::cerr << message << std::endl;
+    return 0;
+}
+#endif
 /**** InputDataFile Class ****/
 // Constructor
 InputDataFile::InputDataFile()
