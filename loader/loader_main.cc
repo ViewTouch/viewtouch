@@ -140,11 +140,11 @@ int SetupConnection(const std::string &socket_file)
 
     if (dev <= 0)
     {
-        logmsg(LOG_ERR, "Failed to open socket '%s'", SOCKET_FILE);
+        logmsg(LOG_ERR, "Failed to open socket '%s'", SOCKET_FILE.c_str());
     }
     else if (bind(dev, (struct sockaddr *) &server_adr, SUN_LEN(&server_adr)) < 0)
     {
-        logmsg(LOG_ERR, "Failed to bind socket '%s'", SOCKET_FILE);
+        logmsg(LOG_ERR, "Failed to bind socket '%s'", SOCKET_FILE.c_str());
     }
     else
     {
