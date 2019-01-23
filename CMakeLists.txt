@@ -262,9 +262,6 @@ target_link_libraries(vt_cdu vtcore)
 # create build_number.h file
 file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/last-release-rev LAST_RELEASE_REV)
 execute_process(COMMAND "date" "+%Y%m%d%H%M" OUTPUT_VARIABLE TODAY OUTPUT_STRIP_TRAILING_WHITESPACE)
-set(BUILD_NUMBER "\"${LAST_RELEASE_REV}-${TODAY}\"")
-MESSAGE(STATUS "BUILD_NUMBER=${BUILD_NUMBER}")
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/build_number.h.in ${CMAKE_CURRENT_BINARY_DIR}/build_number.h @ONLY)
 
 option(BUILD_TESTING "Build tests" ON)
 if(BUILD_TESTING)
