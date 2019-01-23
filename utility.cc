@@ -128,6 +128,7 @@ Str::~Str()
 int Str::Clear()
 {
     FnTrace("Str::Clear()");
+    data.clear();
     return 0;
 }
 
