@@ -96,11 +96,6 @@ int vt_setproctitle(const char* title)
 }
 
 
-/**** Definitions ****/
-#define MIN_STRING_SIZE 8
-#define VERY_LARGE (1<<30)-1
-
-
 /**** Str Class ****/
 // Constructors
 
@@ -240,6 +235,12 @@ int Str::operator == (const Str &s) const
 {
     FnTrace("Str::opterator ==()");
     return this->data == s.data;
+}
+
+bool Str::operator ==(const std::string &s) const
+{
+    FnTrace("Str::opterator ==()");
+    return this->data == s;
 }
 
 int Str::operator != (const Str &s) const

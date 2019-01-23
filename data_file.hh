@@ -60,6 +60,7 @@ public:
     int Read(int    &val) { val = (int)    GetValue(); return 0; }
     int Read(Uint   &val) { val = (Uint)   GetValue(); return 0; }
     int Read(long long &val) { val = GetValue(); return 0; }
+    int Read(size_t &val) { val = static_cast<size_t>(GetValue()); return 0; }
 
     int Read(Flt &val);
     int Read(Str &val);
