@@ -24,6 +24,7 @@
 #include "utility.hh"
 #include <zlib.h>
 #include <string>
+#include <cstdint> // intXX_t and uintXX_t types
 
 #define BLOCKSIZE   16384
 
@@ -51,16 +52,22 @@ public:
     int Close();
 
     int   GetToken(char* buffer, int max_len = 0);
-    unsigned long long GetValue();
+    uint64_t GetValue();
 
-    int Read(char   &val) { val = (char)   GetValue(); return 0; }
-    int Read(Uchar  &val) { val = (Uchar)  GetValue(); return 0; }
-    int Read(short  &val) { val = (short)  GetValue(); return 0; }
-    int Read(Ushort &val) { val = (Ushort) GetValue(); return 0; }
-    int Read(int    &val) { val = (int)    GetValue(); return 0; }
-    int Read(Uint   &val) { val = (Uint)   GetValue(); return 0; }
-    int Read(long long &val) { val = GetValue(); return 0; }
-    int Read(size_t &val) { val = static_cast<size_t>(GetValue()); return 0; }
+    // using the following conversions
+    // char      ... 1 byte
+    // short     ... 2 byte
+    // int       ... 4 byte
+    // long      ... 8 byte
+    // long long ... 8 byte
+    int Read( int8_t  &val) { val = static_cast< int8_t >(GetValue()); return 0; }
+    int Read(uint8_t  &val) { val = static_cast<uint8_t >(GetValue()); return 0; }
+    int Read( int16_t &val) { val = static_cast< int16_t>(GetValue()); return 0; }
+    int Read(uint16_t &val) { val = static_cast<uint16_t>(GetValue()); return 0; }
+    int Read( int32_t &val) { val = static_cast< int32_t>(GetValue()); return 0; }
+    int Read(uint32_t &val) { val = static_cast<uint32_t>(GetValue()); return 0; }
+    int Read( int64_t &val) { val = static_cast< int64_t>(GetValue()); return 0; }
+    int Read(uint64_t &val) { val = static_cast<uint64_t>(GetValue()); return 0; }
 
     int Read(Flt &val);
     int Read(Str &val);
@@ -96,12 +103,23 @@ public:
     int Open(const std::string &filename, int version, int use_compression = 0);
     int Close();
 
-    int PutValue(unsigned long long val, int bk);
+    int PutValue(uint64_t val, int bk);
 
-    int Write(short val, int bk = 0) { return PutValue((unsigned long long) val, bk); }
-    int Write(int   val, int bk = 0) { return PutValue((unsigned long long) val, bk); }
-    int Write(long long val, int bk = 0) { return PutValue(val, bk); }
-    int Write(size_t val, int bk = 0) { return PutValue(val, bk); }
+    // using the following conversions
+    // char      ... 1 byte
+    // short     ... 2 byte
+    // int       ... 4 byte
+    // long      ... 8 byte
+    // long long ... 8 byte
+    int Write( int8_t val, int bk = 0) { return PutValue(static_cast<uint64_t>(val), bk); }
+    int Write(uint8_t val, int bk = 0) { return PutValue(static_cast<uint64_t>(val), bk); }
+    int Write( int16_t val, int bk = 0) { return PutValue(static_cast<uint64_t>(val), bk); }
+    int Write(uint16_t val, int bk = 0) { return PutValue(static_cast<uint64_t>(val), bk); }
+    int Write( int32_t val, int bk = 0) { return PutValue(static_cast<uint64_t>(val), bk); }
+    int Write(uint32_t val, int bk = 0) { return PutValue(static_cast<uint64_t>(val), bk); }
+    int Write( int64_t val, int bk = 0) { return PutValue(static_cast<uint64_t>(val), bk); }
+    int Write(uint64_t val, int bk = 0) { return PutValue(static_cast<uint64_t>(val), bk); }
+
     int Write(Str  &val, int bk = 0) { return Write(val.Value(), bk); }
 
     int Write(Flt       val, int bk = 0);
