@@ -190,9 +190,9 @@ class Credit
     Str  b24code;
     Str  verb;
     Str  auth;
-    long long batch;
-    long long item;
-    long long ttid;
+    int64_t batch;
+    int64_t item;
+    int64_t ttid;
     Str  AVS;
     Str  CV;
     int  last_action;
