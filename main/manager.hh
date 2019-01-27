@@ -164,10 +164,6 @@ int GetFontSize(int font_id, int &w, int &h);
 int GetTextWidth(const char* string, int len, int font_id);
 
 /**** Global ****/
-extern int VersionMajor;
-extern int VersionMinor;
-extern std::string BuildNumber;
-
 extern int ReleaseDay;
 extern int ReleaseMonth;
 extern int ReleaseYear;

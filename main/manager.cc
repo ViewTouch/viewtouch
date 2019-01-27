@@ -37,7 +37,7 @@
 #include "credit.hh"
 #include "debug.hh"
 #include "socket.hh"
-#include "build_number.h"
+#include "version/vt_version_info.hh"
 
 #include "conf_file.hh"
 #include "date/date.h"      // helper library to output date strings with std::chrono
@@ -69,10 +69,6 @@
 using namespace date; // for date conversion on streams
 
 /**** System Globals ****/
-int VersionMajor = 4;
-int VersionMinor = 2;
-std::string BuildNumber = BUILD_NUMBER;
-
 int ReleaseYear  = 1998;
 int ReleaseMonth = 10;
 int ReleaseDay   = 20;

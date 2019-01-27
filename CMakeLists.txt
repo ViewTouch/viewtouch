@@ -18,6 +18,9 @@ else()
     message(STATUS "Using user specified C++ standard ${CMAKE_CXX_STANDARD}")
 endif()
 
+# define version number with build time, compiler tag, architecture
+include(version.cmake)
+
 set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
 
 find_package(PkgConfig REQUIRED)
@@ -71,6 +74,20 @@ if (${TERM_CREDIT} MATCHES "credit_mcve")
 	include_directories(/usr/local/monetra/include)
 	set(TERM_CREDIT_LIBS monetra)
 endif(${TERM_CREDIT} MATCHES "credit_mcve")
+
+
+
+add_library(vt_version STATIC
+    version_generated.hh.in
+    version/vt_version_info.hh
+    version/vt_version_info.cc
+    )
+target_include_directories(vt_version PUBLIC
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR})
+add_executable(vt_print_version
+    version/main_print_version.cc)
+target_link_libraries(vt_print_version vt_version)
 
 
 # read and write ini-config files
@@ -140,11 +157,11 @@ add_library(vtcore
 
 target_include_directories(vtcore PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}) # include generated files like build_number.h
-target_link_libraries(vtcore tz)
+target_link_libraries(vtcore vt_version tz)
 
 add_executable(vtpos 
 		loader/loader_main.cc )
-target_link_libraries(vtpos vtcore ${GTK3_LIBRARIES})
+target_link_libraries(vtpos vtcore vt_version ${GTK3_LIBRARIES})
 
 
 add_library(zone
@@ -245,9 +262,6 @@ target_link_libraries(vt_cdu vtcore)
 # create build_number.h file
 file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/last-release-rev LAST_RELEASE_REV)
 execute_process(COMMAND "date" "+%Y%m%d%H%M" OUTPUT_VARIABLE TODAY OUTPUT_STRIP_TRAILING_WHITESPACE)
-set(BUILD_NUMBER "\"${LAST_RELEASE_REV}-${TODAY}\"")
-MESSAGE(STATUS "BUILD_NUMBER=${BUILD_NUMBER}")
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/build_number.h.in ${CMAKE_CURRENT_BINARY_DIR}/build_number.h @ONLY)
 
 option(BUILD_TESTING "Build tests" ON)
 if(BUILD_TESTING)
