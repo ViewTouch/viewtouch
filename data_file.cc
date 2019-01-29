@@ -175,10 +175,10 @@ int InputDataFile::GetToken(char* buffer, int max_len)
     return 1;  // should never get this far
 }
 
-unsigned long long InputDataFile::GetValue()
+uint64_t InputDataFile::GetValue()
 {
     FnTrace("InputDataFile::GetValue()");
-    long long val = 0;
+    uint64_t val = 0;
     int c;
     if (old_format)
     {
@@ -410,7 +410,7 @@ int OutputDataFile::Close()
     return 0;
 }
 
-int OutputDataFile::PutValue(unsigned long long val, int bk = 0)
+int OutputDataFile::PutValue(uint64_t val, int bk = 0)
 {
     FnTrace("OutputDataFile::PutValue()");
     char  str[32];

@@ -32,6 +32,7 @@ TEST_CASE("odf")
     write_and_read(Str("char"));
     write_and_read(Str(""));
 
+    write_and_read<int>(-1);
     write_and_read<int>(1);
     write_and_read<size_t>(1337);
     //write_and_read(1l);
