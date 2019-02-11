@@ -23,6 +23,8 @@
 
 #include "utility.hh"
 
+#include <string>
+
 /**** Definitions ****/
 #define PRINT_RED       1   // use red ink (if available)
 #define PRINT_BOLD      2   // bold text
@@ -119,8 +121,8 @@ protected:
     int port_no;          // TCP/IP port number
     int active_flags;     // flags always on (print mode)
     int printer_type;     // receipt, report, etc.
-    int have_title;
-    Str page_title;
+    bool have_title = false;
+    std::string page_title;
     int kitchen_mode;
 
     virtual int WriteFlags(int flags) = 0;
@@ -146,7 +148,7 @@ public:
     virtual int KitchenMode()   { return kitchen_mode; }
     virtual int SetType(int type);
     virtual int IsType(int type);
-    virtual int SetTitle(const genericChar* title);
+    virtual int SetTitle(const std::string &title);
     virtual int Open();
     virtual int Close();
     virtual int ParallelPrint();

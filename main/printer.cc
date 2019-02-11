@@ -121,8 +121,6 @@ Printer::Printer()
     target_type  = TARGET_NONE;
     host_name.Set("");
     port_no      = 0;
-    have_title   = 0;
-    page_title.Set("");
     kitchen_mode = PRINT_LARGE | PRINT_NARROW;
     pulse        = -1;
     term_name.Set("");
@@ -148,8 +146,6 @@ Printer::Printer(const genericChar* host, int port, const genericChar* targetstr
     target_type  = type;
     host_name.Set(host);
     port_no      = port;
-    have_title   = 0;
-    page_title.Set("");
     kitchen_mode = PRINT_LARGE | PRINT_NARROW;
     pulse        = -1;
     term_name.Set("");
@@ -222,10 +218,10 @@ int Printer::IsType(int type)
     return retval;
 }
 
-int Printer::SetTitle(const genericChar* title)
+int Printer::SetTitle(const std::string &title)
 {
-    page_title.Set(title);
-    have_title = 1;
+    page_title = title;
+    have_title = true;
     return 0;
 }
 
@@ -479,7 +475,7 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
     if (source != NULL)
         strncpy(title, source, STRLENGTH);
     else if (have_title)
-        strncpy(title, page_title.Value(), STRLENGTH);
+        strncpy(title, page_title.c_str(), STRLENGTH);
     else
         strncpy(title, GENERIC_TITLE, STRLENGTH);
     len = strlen(title);
@@ -611,7 +607,7 @@ int Printer::EmailPrint()
     }
     email.AddTo(target.Value());
     email.AddFrom(settings->email_replyto.Value());
-    email.AddSubject(page_title.Value());
+    email.AddSubject(page_title.c_str());
 
     // now read in the file and add it to the email
     fd = open(temp_name.Value(), O_RDONLY);
@@ -763,7 +759,7 @@ void Printer::DebugPrint(int printall)
     printf("    Temp Name:  %s\n", temp_name.Value());
     printf("    Target:  %s\n", target.Value());
     printf("    Host Name:  %s\n", host_name.Value());
-    printf("    Page Title:  %s\n", page_title.Value());
+    printf("    Page Title:  %s\n", page_title.c_str());
     printf("    Last Mode:  %d\n", last_mode);
     printf("    Last Color:  %d\n", last_color);
     printf("    Last Uni:  %d\n", last_uni);
@@ -807,8 +803,6 @@ PrinterIthaca::PrinterIthaca(const genericChar* host, int port, const genericCha
     target_type  = type;
     host_name.Set(host);
     port_no      = port;
-    have_title   = 0;
-    page_title.Set("");
     pulse        = -1;
     term_name.Set("");
 }
@@ -859,8 +853,8 @@ int PrinterIthaca::End()
 
     FormFeed();
 	Close();
-    have_title = 0;
-    page_title.Set("");  // reset the title for a new print job
+    have_title = false;
+    page_title.clear();  // reset the title for a new print job
 	return 0;
 }
 
@@ -1001,8 +995,6 @@ PrinterStar::PrinterStar(const genericChar* host, int port, const genericChar* t
     target_type  = type;
     host_name.Set(host);
     port_no      = port;
-    have_title   = 0;
-    page_title.Set("");
     pulse        = -1;
     term_name.Set("");
 }
@@ -1081,8 +1073,8 @@ int PrinterStar::End()
     LineFeed(END_PAGE);
     CutPaper();
 	Close();
-    have_title = 0;
-    page_title.Set("");  // reset the title for a new print job
+    have_title = false;
+    page_title.clear();  // reset the title for a new print job
     return 0;
 }
 
@@ -1234,8 +1226,6 @@ PrinterEpson::PrinterEpson(const genericChar* host, int port, const genericChar*
     target_type  = type;
     host_name.Set(host);
     port_no      = port;
-    have_title   = 0;
-    page_title.Set("");
     pulse        = -1;
     term_name.Set("");
 }
@@ -1310,8 +1300,8 @@ int PrinterEpson::End()
     LineFeed(END_PAGE);
     CutPaper();
 	Close();
-    have_title = 0;
-    page_title.Set("");  // reset the title for a new print job
+    have_title = false;
+    page_title.clear();  // reset the title for a new print job
     return 0;
 }
 
@@ -1457,8 +1447,6 @@ PrinterHP::PrinterHP(const genericChar* host, int port, const genericChar* targe
     target_type  = type;
     host_name.Set(host);
     port_no      = port;
-    have_title   = 0;
-    page_title.Set("");
     pulse        = -1;
     term_name.Set("");
 }
@@ -1515,8 +1503,8 @@ int PrinterHP::End()
 
     FormFeed();
 	Close();
-    have_title = 0;
-    page_title.Set("");  // reset the title for a new print job
+    have_title = false;
+    page_title.clear();  // reset the title for a new print job
     return 0;
 }
 
@@ -1636,8 +1624,6 @@ PrinterHTML::PrinterHTML(const genericChar* host, int port, const genericChar* t
     target_type  = type;
     host_name.Set(host);
     port_no      = port;
-    have_title   = 0;
-    page_title.Set("");
     pulse        = -1;
     term_name.Set("");
 }
@@ -1721,8 +1707,8 @@ int PrinterHTML::End()
 
     Write("</pre>\n</body>\n</html>");
     Close();
-    have_title = 0;
-    page_title.Set("");  // reset the title for a new print job
+    have_title = false;
+    page_title.clear();  // reset the title for a new print job
     return 0;
 }
 
@@ -1732,9 +1718,9 @@ int PrinterHTML::Init()
     genericChar buffer[STRLENGTH];
 
     Write("<html>\n<head>", 0);
-    if (have_title == 0)
-        page_title.Set(GENERIC_TITLE);
-    snprintf(buffer, STRLENGTH, "<title>%s</title>", page_title.Value());
+    if (!have_title)
+        page_title = GENERIC_TITLE;
+    snprintf(buffer, STRLENGTH, "<title>%s</title>", page_title.c_str());
     Write(buffer, 0);
     Write("</head>", 0);
     Write("<body>", 0);
@@ -1786,8 +1772,6 @@ PrinterPostScript::PrinterPostScript()
     target_type  = TARGET_NONE;
     host_name.Set("");
     port_no      = 0;
-    have_title   = 0;
-    page_title.Set("");
     putbuffer[0] = '\0';
     putbuffidx   = 0;
     pulse        = -1;
@@ -1814,8 +1798,6 @@ PrinterPostScript::PrinterPostScript(const genericChar* host, int port, const ge
     target_type  = type;
     host_name.Set(host);
     port_no      = port;
-    have_title   = 0;
-    page_title.Set("");
     putbuffer[0] = '\0';
     putbuffidx   = 0;
     pulse        = -1;
@@ -1877,8 +1859,8 @@ int PrinterPostScript::End()
     write(temp_fd, showstring, strlen(showstring));
 
     Close();
-    have_title = 0;
-    page_title.Set("");  // reset the title for a new print job
+    have_title = false;
+    page_title.clear();  // reset the title for a new print job
     return 0;
 }
 
@@ -1944,9 +1926,9 @@ int PrinterPostScript::Init()
             break;
         idx += 1;
     }
-    if (have_title == 0)
-        page_title.Set(GENERIC_TITLE);
-    snprintf(buffer, STRLENGTH, "(%s) ShowTitleText\n", page_title.Value());
+    if (!have_title)
+        page_title = GENERIC_TITLE;
+    snprintf(buffer, STRLENGTH, "(%s) ShowTitleText\n", page_title.c_str());
     write(temp_fd, buffer, strlen(buffer));
     return 0;
 }
@@ -2170,8 +2152,6 @@ PrinterPDF::PrinterPDF()
     target_type  = TARGET_NONE;
     host_name.Set("");
     port_no      = 0;
-    have_title   = 0;
-    page_title.Set("");
     pulse        = -1;
     term_name.Set("");
 }
@@ -2196,8 +2176,6 @@ PrinterPDF::PrinterPDF(const genericChar* host, int port, const genericChar* tar
     target_type  = type;
     host_name.Set(host);
     port_no      = port;
-    have_title   = 0;
-    page_title.Set("");
     pulse        = -1;
     term_name.Set("");
 }
@@ -2258,8 +2236,6 @@ PrinterReceiptText::PrinterReceiptText()
     target_type  = 0;
     host_name.Set("");
     port_no      = 0;
-    have_title   = 0;
-    page_title.Set("");
     pulse        = -1;
     term_name.Set("");
 }
@@ -2284,8 +2260,6 @@ PrinterReceiptText::PrinterReceiptText(const genericChar* host, int port, const 
     target_type  = type;
     host_name.Set(host);
     port_no      = port;
-    have_title   = 0;
-    page_title.Set("");
     pulse        = -1;
     term_name.Set("");
 }
@@ -2308,8 +2282,8 @@ int PrinterReceiptText::End()
         return 1;
 
     Close();
-    have_title = 0;
-    page_title.Set("");  // reset the title for a new print job
+    have_title = false;
+    page_title.clear();  // reset the title for a new print job
     return 0;
 }
 
@@ -2317,8 +2291,8 @@ int PrinterReceiptText::Init()
 {
     FnTrace("PrinterReceiptText::Init()");
 
-    if (have_title == 0)
-        page_title.Set(GENERIC_TITLE);
+    if (!have_title)
+        page_title = GENERIC_TITLE;
 
     return 0;
 }
@@ -2368,8 +2342,6 @@ PrinterReportText::PrinterReportText(const genericChar* host, int port, const ge
     target_type  = type;
     host_name.Set(host);
     port_no      = port;
-    have_title   = 0;
-    page_title.Set("");
     pulse        = -1;
     term_name.Set("");
 }
