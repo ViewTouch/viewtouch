@@ -25,6 +25,9 @@
 #include "terminal.hh"
 #include "list_utility.hh"
 
+#include <string>
+#include <vector>
+
 
 /**** Definitions ****/
 // Report Types
@@ -85,29 +88,27 @@ class Printer;
 class ReportEntry
 {
 public:
-    ReportEntry *next;
-    ReportEntry *fore;
-    genericChar* text;
-    float pos;
-    short max_len;
-    short new_lines;
+    std::string text;
+    float pos = 0.0;
+    short max_len = 256;
+    short new_lines = 0;
     Uchar color;
     Uchar align;
     Uchar edge;
     Uchar mode;
 
     // Constructor
-    ReportEntry(const char* t, int c, int a, int m);
+    ReportEntry(const std::string &t, int c, int a, int m);
     // Destructor
-    ~ReportEntry() { if (text) delete [] text; }
+    ~ReportEntry() {}
 };
 
 
 class Report
 {
-    DList<ReportEntry> header_list;
-    DList<ReportEntry> body_list;
-    Str report_title;
+    std::vector<ReportEntry> header_list;
+    std::vector<ReportEntry> body_list;
+    std::string report_title;
     int have_title;
 
 public:
@@ -136,23 +137,17 @@ public:
     Report();
 
     // Member Functions
-    ReportEntry *HeaderList()       { return header_list.Head(); }
-    ReportEntry *HeaderListEnd()    { return header_list.Tail(); }
-    ReportEntry *BodyList()         { return body_list.Head(); }
-    ReportEntry *BodyListEnd()      { return body_list.Tail(); }
-    int RemoveHead(ReportEntry *re) { return body_list.RemoveSafe(re); }
-    int RemoveBody(ReportEntry *re) { return body_list.RemoveSafe(re); }
 
-    int  SetTitle(const genericChar* title);
+    int  SetTitle(const std::string &title);
     int  SetPageWidth(int pwidth)
     { int retval = pwidth; page_width = pwidth; return retval; }
     char SetDividerChar(char divc = '-')
     { char retval = div_char; div_char = divc; return retval; }
     int  Clear();                     // erases report
-    int  Load(const char* textfile, int color = COLOR_DEFAULT);        // make report out of text file
+    int  Load(const std::string &textfile, int color = COLOR_DEFAULT);        // make report out of text file
     int  Mode(int flags);             // printing mode to use for next entries
-    int  Text(const char* t, int c, int a, float indent); // Adds text entry
-    int  Text2Col(const char* text, int color, int align, float indent);
+    int  Text(const std::string &t, int c, int a, float indent); // Adds text entry
+    int  Text2Col(const std::string &text, int color, int align, float indent);
     int  Number(int n, int c, int a, float indent); // Adds number entry
     int  Line(int c = COLOR_DEFAULT); // Adds line entry
     int  Underline(int len, int c, int a, float indent);
@@ -161,18 +156,18 @@ public:
 
     int  Purge();                     // Deletes all entries
     int  PurgeHeader();               // Deletes report header only
-    int  Add(ReportEntry *re);        // Adds entry to report
-    int  Append(Report *r);           // Adds report to end of this one
+    int  Add(const ReportEntry &re);        // Adds entry to report
+    int  Append(const Report &r);           // Adds report to end of this one
     int  Render(Terminal *t, LayoutZone *lz, Flt header_size, Flt footer_size,
                 int page, int print, Flt spacing = 1.0);
     // Renders all or part of report
-    int  CreateHeader(Terminal *t, Printer *p, Employee *e);
+    int  CreateHeader(Terminal *t, Printer *p, const Employee *e);
     // Creates standard header
     int  Print(Printer *p);
     // Prints report (1 column, no page breaks)
     int  FormalPrint(Printer *p, int columns = 1);
     // Report printing with multi-columns, etc
-    int  PrintEntry(ReportEntry *re, int start, int width, int max_width,
+    int  PrintEntry(const ReportEntry &re, int start, int width, int max_width,
                     genericChar text[], int mode[]);
     int  TouchLine(Flt spacing, Flt line);
     // returns report line where touch happened
@@ -185,18 +180,18 @@ public:
     int Body()   { add_where = 0; return 0; }
     int Footer() { add_where = 2; return 0; }
 
-    int TextL(const char* t, int c = COLOR_DEFAULT)
+    int TextL(const std::string &t, int c = COLOR_DEFAULT)
     { return Text(t, c, ALIGN_LEFT, 0); }
-    int TextC(const char* t, int c = COLOR_DEFAULT)
+    int TextC(const std::string &t, int c = COLOR_DEFAULT)
     { return Text(t, c, ALIGN_CENTER, 0); }
-    int TextR(const char* t, int c = COLOR_DEFAULT)
+    int TextR(const std::string &t, int c = COLOR_DEFAULT)
     { return Text(t, c, ALIGN_RIGHT, 0); }
 
-    int TextL2Col(const char* t, int c = COLOR_DEFAULT)
+    int TextL2Col(const std::string &t, int c = COLOR_DEFAULT)
     { return Text2Col(t, c, ALIGN_LEFT, 0); }
-    int TextC2Col(const char* t, int c = COLOR_DEFAULT)
+    int TextC2Col(const std::string &t, int c = COLOR_DEFAULT)
     { return Text2Col(t, c, ALIGN_CENTER, 0); }
-    int TextR2Col(const char* t, int c = COLOR_DEFAULT)
+    int TextR2Col(const std::string &t, int c = COLOR_DEFAULT)
     { return Text2Col(t, c, ALIGN_RIGHT, 0); }
 
     int NumberL(int n, int c = COLOR_DEFAULT)
@@ -206,14 +201,14 @@ public:
     int NumberR(int n, int c = COLOR_DEFAULT)
     { return Number(n, c, ALIGN_RIGHT, 0); }
 
-    int TextPosL(int pos, const genericChar* t, int c = COLOR_DEFAULT)
+    int TextPosL(int pos, const std::string &t, int c = COLOR_DEFAULT)
     { return Text(t, c, ALIGN_LEFT, pos); }
-    int TextPosR(int pos, const genericChar* t, int c = COLOR_DEFAULT)
+    int TextPosR(int pos, const std::string &t, int c = COLOR_DEFAULT)
     { return Text(t, c, ALIGN_RIGHT, pos); }
 
-    int TextPosL2Col(int pos, const genericChar* t, int c = COLOR_DEFAULT)
+    int TextPosL2Col(int pos, const std::string &t, int c = COLOR_DEFAULT)
     { return Text2Col(t, c, ALIGN_LEFT, pos); }
-    int TextPosR2Col(int pos, const genericChar* t, int c = COLOR_DEFAULT)
+    int TextPosR2Col(int pos, const std::string &t, int c = COLOR_DEFAULT)
     { return Text2Col(t, c, ALIGN_RIGHT, pos); }
 
     int NumberPosL(int pos, int n, int c = COLOR_DEFAULT)

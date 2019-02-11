@@ -31,6 +31,7 @@
 #include <cstring>
 #include <errno.h>
 #include <vector>
+#include <numeric> // std::accumulate
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -39,26 +40,14 @@
 
 /**** ReportEntry Class ****/
 // Constructor
-ReportEntry::ReportEntry(const char* t, int c, int a, int m)
+ReportEntry::ReportEntry(const std::string &t, int c, int a, int m) :
+    text(t),
+    color(c),
+    align(a),
+    edge(a),
+    mode(m)
 {
     FnTrace("ReportEntry::ReportEntry()");
-    if (t)
-    {
-        text = new char[strlen(t)+1];
-        strcpy(text, t);
-    }
-    else
-        text = NULL; // draw a line
-
-    next      = NULL;
-    fore      = NULL;
-    color     = c;
-    align     = a;
-    new_lines = 0;
-    pos       = 0.0;
-    edge      = a;
-    mode      = m;
-    max_len   = 256;
 }
 
 
@@ -79,7 +68,7 @@ Report::Report()
     add_where     = 0;
     is_complete   = 1;
     update_flag   = 0;
-    report_title.Set("");
+    report_title.clear();
     have_title    = 0;
     destination   = RP_DEST_EITHER;
     page_width    = 0;
@@ -102,7 +91,7 @@ int Report::Clear()
     add_where     = 0;
     is_complete   = 1;
     update_flag   = 0;
-    report_title.Set("");
+    report_title.clear();
     have_title    = 0;
     destination   = RP_DEST_EITHER;
     page_width    = 0;
@@ -110,27 +99,27 @@ int Report::Clear()
     return 0;
 }
 
-int Report::SetTitle(const genericChar* title)
+int Report::SetTitle(const std::string &title)
 {
     int retval = have_title;  // return previous value of have_title
-    report_title.Set(title);
+    report_title = title;
     have_title = 1;
     return retval;
 }
 
-int Report::Load(const char* textfile, int color)
+int Report::Load(const std::string &textfile, int color)
 {
     FnTrace("Report::Load()");
     char buffer[STRLENGTH];
 
-    if (textfile == NULL)
+    if (textfile.empty())
         return 1;
 
-    FILE *fp = fopen(textfile, "r");
+    FILE *fp = fopen(textfile.c_str(), "r");
     if (fp == NULL)
     {
         snprintf(buffer, STRLENGTH, "Report::Load Error %d opening %s",
-                 errno, textfile);
+                 errno, textfile.c_str());
         ReportError(buffer);
         return 1;
     }
@@ -191,56 +180,44 @@ int Report::Load(const char* textfile, int color)
     return 0;
 }
 
-int Report::Add(ReportEntry *re)
+int Report::Add(const ReportEntry &re)
 {
-    if (re == NULL)
-        return 1;
-
     if (add_where == 1)
     {
         // Add to Header
-        header_list.AddToTail(re);
+        header_list.push_back(re);
     }
     else
     {
         // Add to Body
-        body_list.AddToTail(re);
+        body_list.push_back(re);
     }
     return 0;
 }
 
 int Report::Purge()
 {
-    body_list.Purge();
-    header_list.Purge();
+    body_list.clear();
+    header_list.clear();
     return 0;
 }
 
 int Report::PurgeHeader()
 {
-    header_list.Purge();
+    header_list.clear();
     return 0;
 }
 
-int Report::Append(Report *r)
+int Report::Append(const Report &r)
 {
     FnTrace("Report::Append()");
-    if (r == NULL)
-        return 1;
 
     NewLine();
-    while (r->BodyList())
-    {
-        ReportEntry *ptr = r->BodyList();
-        r->RemoveBody(ptr);
-        Add(ptr);
-    }
-
-    delete r;
+    body_list.insert(body_list.end(), r.body_list.begin(), r.body_list.end());
     return 0;
 }
 
-int Report::CreateHeader(Terminal *term, Printer *p, Employee *e)
+int Report::CreateHeader(Terminal *term, Printer *p, const Employee *e)
 {
     FnTrace("Report::CreateHeader()");
     char buffer[STRLENGTH];
@@ -288,30 +265,20 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
                    Flt footer_size, int p, int print, Flt spacing)
 {
     FnTrace("Report::Render()");
-    int last_line = 0;
-    ReportEntry *re = BodyList();
-    while (re)
+    auto get_line_count = [](const int &sum, const ReportEntry &re) -> int
     {
-        if (re->next)
-            last_line += re->new_lines;
-        else
-            ++last_line;
-        re = re->next;
-    }
+        return sum + re.new_lines;
+    };
+    // last entry counts only as one line, don't know why, original code was like this
+    int last_line = std::accumulate(body_list.cbegin(), std::prev(body_list.cend()), 1, get_line_count);
 
-    header = 0;
-    if (header_size > 0)
-        header = header_size + 1;
-
-    footer = 0;
-    if (footer_size > 0)
-        footer = footer_size + 1;
+    header = (header_size > 0) ? static_cast<float>(header_size + 1) : 0;
+    footer = (footer_size > 0) ? static_cast<float>(footer_size + 1) : 0;
 
     lines_shown = (int) ((lz->size_y - (header + footer)) / spacing + .5);
     if ((last_line > lines_shown || print) && footer < 2)
         footer = 2;
 
-    lines_shown = (int) ((lz->size_y - (header + footer)) / spacing + .5);
     if (debug_mode && lines_shown < 1)
     {  //FIX BAK-->Why does lines_shown sometimes hit 0?
         fprintf(stderr, "Report::Render lines_shown = %d, fixing\n", lines_shown);
@@ -344,57 +311,59 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
     }
 
     int line = 0;
-    re = BodyList();
-    while (re && line <= end_line)
+    for (ReportEntry &re : body_list)
     {
+        if (line > end_line)
+        {
+            break;
+        }
         if (line >= start_line)
         {
             Flt xx, rline = header + (Flt) (line - start_line) * spacing;
-            switch (re->edge)
+            switch (re.edge)
             {
             case ALIGN_CENTER:
                 xx = (lz->size_x / 2); break;
             case ALIGN_RIGHT:
-                xx = lz->size_x - re->pos; break;
+                xx = lz->size_x - re.pos; break;
             default:
-                xx = re->pos; break;
+                xx = re.pos; break;
             }
 
-            if (re->text == NULL)
+            if (re.text.empty())
             {
-                switch (re->align)
+                switch (re.align)
                 {
                 case ALIGN_CENTER:
-                    xx -= (Flt) re->max_len / 2; break;
+                    xx -= (Flt) re.max_len / 2; break;
                 case ALIGN_RIGHT:
-                    xx -= (Flt) re->max_len; break;
+                    xx -= (Flt) re.max_len; break;
                 }
-                Flt len = (Flt) re->max_len;
-                if (re->max_len <= 0)
+                Flt len = (Flt) re.max_len;
+                if (re.max_len <= 0)
                     len = lz->size_x;
-                if (re->mode & PRINT_UNDERLINE)
-                    lz->Underline(term, xx, rline, len, re->color);
+                if (re.mode & PRINT_UNDERLINE)
+                    lz->Underline(term, xx, rline, len, re.color);
                 else
-                    lz->Line(term, rline, re->color);
+                    lz->Line(term, rline, re.color);
             }
             else
             {
-                switch (re->align)
+                switch (re.align)
                 {
                 case ALIGN_LEFT:
-                    lz->TextPosL(term, xx, rline, re->text, re->color, re->mode);
+                    lz->TextPosL(term, xx, rline, re.text.c_str(), re.color, re.mode);
                     break;
                 case ALIGN_CENTER:
-                    lz->TextPosC(term, xx, rline, re->text, re->color, re->mode);
+                    lz->TextPosC(term, xx, rline, re.text.c_str(), re.color, re.mode);
                     break;
                 case ALIGN_RIGHT:
-                    lz->TextPosR(term, xx, rline, re->text, re->color, re->mode);
+                    lz->TextPosR(term, xx, rline, re.text.c_str(), re.color, re.mode);
                     break;
                 }
             }
         }
-        line += re->new_lines;
-        re = re->next;
+        line += re.new_lines;
     }
 
     int color = lz->color[0];
@@ -435,31 +404,31 @@ int Report::Print(Printer *printer)
     int  max_w = printer->MaxWidth();
     genericChar text[256];
     int  mode[256];
-    int i;
 
-    for (i = 0; i < max_w; ++i)
+    for (int i = 0; i < max_w; ++i)
     {
         text[i] = ' ';
         mode[i] = 0;
     }
 
     if (have_title)
-        printer->SetTitle(report_title.Value());
+        printer->SetTitle(report_title);
     printer->Start();
-    for (int z = 0; z < 2; ++z)
+    auto print_entries = [&](std::vector<ReportEntry> &entry_list)
     {
-        ReportEntry *re = BodyList();
-        if (z == 0)
-            re = HeaderList();
-        while (re)
+        for (size_t re_idx = 0; re_idx<entry_list.size(); re_idx++)
         {
-            int width = printer->Width(re->mode);
+            const ReportEntry &re = entry_list[re_idx];
+            // current element is the last element
+            bool last_entry = re_idx+1 == entry_list.size();
+
+            int width = printer->Width(re.mode);
             if (width > max_width)
                 width = max_width;
 
             PrintEntry(re, 0, width, max_w, text, mode);
 
-            if (re->new_lines > 0 || re->next == NULL)
+            if (re.new_lines > 0 || last_entry)
             {
                 int max_end = max_w;
                 while (max_end > 0 && text[max_end-1] == ' ' &&
@@ -467,31 +436,32 @@ int Report::Print(Printer *printer)
                 {
                     --max_end;
                 }
-                for (i = 0; i < max_end; ++i)
+                for (int i = 0; i < max_end; ++i)
                     printer->Put(text[i], mode[i]);
 
                 int next_mode = 0;
-                if (re->next)
+                if (!last_entry)
                 {
-                    next_mode = re->next->mode &
+                    const ReportEntry &re_next = entry_list[re_idx+1];
+                    next_mode = re_next.mode &
                         (PRINT_RED | PRINT_LARGE | PRINT_NARROW);
-                    printer->LineFeed(re->new_lines);
                 }
-                else
-                    printer->LineFeed(re->new_lines);
+                printer->LineFeed(re.new_lines);
 
-                for (i = 0; i < max_w; ++i)
+                for (int i = 0; i < max_w; ++i)
                 {
                     text[i] = ' ';
                     mode[i] = next_mode;
                 }
             }
-            re = re->next;
         }
-
-        if (z == 0 && HeaderList())
-            printer->LineFeed(1);
+    };
+    print_entries(header_list);
+    if (!header_list.empty())
+    {
+        printer->LineFeed(1);
     }
+    print_entries(body_list);
 
     printer->End();
     return 0;
@@ -523,13 +493,9 @@ int Report::FormalPrint(Printer *printer, int columns)
     std::vector<std::vector<char>> text(max_h, std::vector<char>(max_w+4, 0));
     std::vector<std::vector<int >> mode(max_h, std::vector<int >(max_w+4, 0));
 
-    int header_lines = 0;
-    ReportEntry *re = HeaderList();
-    while (re)
-    {
-        header_lines += re->new_lines;
-        re = re->next;
-    }
+    int header_lines = std::accumulate(
+                header_list.cbegin(), header_list.cend(), 0,
+                [](const int &sum, const ReportEntry &re) {return sum + re.new_lines;});
 
     int body_start = 2 + header_lines + 1;
     int max_lines  = max_h;
@@ -538,13 +504,12 @@ int Report::FormalPrint(Printer *printer, int columns)
         col_w = max_width;
 
     // Check without footer
-    re = BodyList();
     int line = body_start;
     int column = 1;
     int my_page_num = 1;
-    while (re)
+    for (const ReportEntry &re : body_list)
     {
-        line += re->new_lines;
+        line += re.new_lines;
         if (line >= max_lines)
         {
             line = body_start;
@@ -557,18 +522,16 @@ int Report::FormalPrint(Printer *printer, int columns)
             else if (col_w > 39)
                 col_w = 39;
         }
-        re = re->next;
     }
 
     if (my_page_num > 1)
     {
         // Check with footer
         max_lines = max_h - 2;
-        re = BodyList();
         line = body_start, column = 1, my_page_num = 1;
-        while (re)
+        for (const ReportEntry &re : body_list)
         {
-            line += re->new_lines;
+            line += re.new_lines;
             if (line >= max_lines)
             {
                 line = body_start;
@@ -579,17 +542,16 @@ int Report::FormalPrint(Printer *printer, int columns)
                     column = 1;
                 }
             }
-            re = re->next;
         }
     }
 
     int total_pages = my_page_num;
     my_page_num = 1;
     if (have_title)
-        printer->SetTitle(report_title.Value());
+        printer->SetTitle(report_title);
     printer->Start();
-    re = BodyList();
-    while (re)
+    size_t re_idx=0; // index to the currently processed body-ReportEntry
+    while (re_idx<body_list.size())
     {
         // clear page
         for (int h = 0; h < max_h; ++h)
@@ -606,27 +568,26 @@ int Report::FormalPrint(Printer *printer, int columns)
         column = 0;
 
         // Header
-        ReportEntry *he = HeaderList();
-        while (he)
+        for (const ReportEntry &he : header_list)
         {
             PrintEntry(he, 0, max_w, max_w, text[line].data(), mode[line].data());
-            if (he->new_lines > 0)
-                line += he->new_lines;
-            he = he->next;
+            if (he.new_lines > 0)
+                line += he.new_lines;
         }
         line = body_start;
 
         // Body
-        while (re && column < max_c)
+        while (re_idx < body_list.size() && column < max_c)
         {
-            while (re && line < max_lines)
+            while (re_idx < body_list.size() && line < max_lines)
             {
+                const ReportEntry &re = body_list.at(re_idx);
                 PrintEntry(re, column * 41, col_w, max_w, text[line].data(), mode[line].data());
-                if (re->new_lines < 0)
+                if (re.new_lines < 0)
                     line = max_lines;  // end of column
-                else if (re->new_lines > 0)
-                    line += re->new_lines;
-                re = re->next;
+                else if (re.new_lines > 0)
+                    line += re.new_lines;
+                re_idx++; // go to next ReportEntry
             }
             line = body_start;
             ++column;
@@ -635,10 +596,8 @@ int Report::FormalPrint(Printer *printer, int columns)
         // Footer
         if (total_pages > 1)
         {
-            int i;
-
             line = max_h - 2;
-            for (i = 0; i < max_w; ++i)
+            for (int i = 0; i < max_w; ++i)
                 mode[line][i] = PRINT_UNDERLINE;
             ++line;
             strcpy(str, MasterLocale->Page(my_page_num, total_pages, lang, buffer));
@@ -651,20 +610,19 @@ int Report::FormalPrint(Printer *printer, int columns)
         for (int h = 0; h < max_h; ++h)
         {
             int max_end = max_w;
-            int i;
 
             while ((max_end > 0 && text[h][max_end-1] == ' ') &&
                    ((mode[h][max_end-1] & PRINT_UNDERLINE) == 0))
                 --max_end;
 
-            for (i = 0; i < max_end; ++i)
+            for (int i = 0; i < max_end; ++i)
                 printer->Put(text[h][i], mode[h][i]);
 
             if (h < (max_h - 1))
             {
                 printer->LineFeed(1);
             }
-            else if (re)
+            else if (re_idx < body_list.size())
                 printer->FormFeed();
         }
     }
@@ -673,32 +631,30 @@ int Report::FormalPrint(Printer *printer, int columns)
     return 0;
 }
 
-int Report::PrintEntry(ReportEntry *report_entry, int start, int width, int my_max_width,
+int Report::PrintEntry(const ReportEntry &report_entry, int start, int width, int my_max_width,
                        genericChar text[], int mode[])
 {
     FnTrace("Report::PrintEntry()");
-    if (report_entry == NULL)
-        return 1;
 
     int len;
     int i;
     int c;
 
-    if (report_entry->text == NULL)
-        len = report_entry->max_len;
+    if (report_entry.text.empty())
+        len = report_entry.max_len;
     else
     {
-        len = strlen(report_entry->text);
-        if (len > report_entry->max_len)
-            len = report_entry->max_len;
+        len = report_entry.text.size();
+        if (len > report_entry.max_len)
+            len = report_entry.max_len;
     }
     if (len > (my_max_width - start))
         len = Max(my_max_width - start, 0);
     if (width > (my_max_width - start))
         width = Max(my_max_width - start, 0);
 
-    int xx = (int) (report_entry->pos + .5);
-    switch (report_entry->edge)
+    int xx = (int) (report_entry.pos + .5);
+    switch (report_entry.edge)
     {
     case ALIGN_CENTER:
         xx = (width / 2);
@@ -708,7 +664,7 @@ int Report::PrintEntry(ReportEntry *report_entry, int start, int width, int my_m
         break;
     }
 
-    switch (report_entry->align)
+    switch (report_entry.align)
     {
     case ALIGN_CENTER:
         xx -= len / 2;
@@ -725,18 +681,18 @@ int Report::PrintEntry(ReportEntry *report_entry, int start, int width, int my_m
         xx = 0;
     }
 
-    if (report_entry->text)
+    if (!report_entry.text.empty())
     {
         xx += start;
-        strncpy(&text[xx], report_entry->text, len);
-        if (report_entry->color == COLOR_RED || report_entry->color == COLOR_DK_RED)
+        strncpy(&text[xx], report_entry.text.c_str(), len);
+        if (report_entry.color == COLOR_RED || report_entry.color == COLOR_DK_RED)
             c = PRINT_RED;
-        else if (report_entry->color == COLOR_BLUE || report_entry->color == COLOR_DK_BLUE)
+        else if (report_entry.color == COLOR_BLUE || report_entry.color == COLOR_DK_BLUE)
             c = PRINT_BLUE;
         else
             c = 0;
         for (i = xx; i < (xx + len); ++i)
-            mode[i] = report_entry->mode | c;
+            mode[i] = report_entry.mode | c;
     }
     else
     {
@@ -745,9 +701,9 @@ int Report::PrintEntry(ReportEntry *report_entry, int start, int width, int my_m
         xx += start;
         for (i = xx; i < (xx + len); ++i)
         {
-            if (!(report_entry->mode & PRINT_UNDERLINE))
+            if (!(report_entry.mode & PRINT_UNDERLINE))
                 text[i]  = '-';
-            mode[i] = report_entry->mode;
+            mode[i] = report_entry.mode;
         }
     }
 
@@ -816,23 +772,23 @@ int Report::Mode(int new_mode)
     return 0;
 }
 
-int Report::Text(const char* text, int c, int align, float indent)
+int Report::Text(const std::string &text, int c, int align, float indent)
 {
     FnTrace("Report::Text()");
     int retval = 0;
-    ReportEntry *re = new ReportEntry(text, c, align, current_mode);
+    ReportEntry re(text, c, align, current_mode);
     if (indent > 0.01)
     {
-        re->pos  = indent;
-        re->edge = ALIGN_LEFT;
+        re.pos  = indent;
+        re.edge = ALIGN_LEFT;
     }
     else if (indent < -0.01)
     {
-        re->pos  = -indent;
-        re->edge = ALIGN_RIGHT;
+        re.pos  = -indent;
+        re.edge = ALIGN_RIGHT;
     }
     else
-        re->edge = align;
+        re.edge = align;
     retval = Add(re);
     return retval;
 }
@@ -841,20 +797,19 @@ int Report::Text(const char* text, int c, int align, float indent)
  * Text2Col:  Prints the text across two columns, but requires that
  *   the page be at least 80 columns, for now at least.
  ***/
-int Report::Text2Col(const char* text, int color, int align, float indent)
+int Report::Text2Col(const std::string &text, int color, int align, float indent)
 {
     FnTrace("Report::Text2Col()");
     int retval = 0;
     float col_width = (page_width / 2);
     float col2 = col_width + 1;
-    int len = strlen(text);
     float pos = 0;
 
     if (page_width >= 80)
     {
         if (align == ALIGN_CENTER)
         {
-            pos = (col_width - len) / 2;
+            pos = (col_width - text.size()) / 2;
             Text(text, color, ALIGN_LEFT, pos);
             pos += col_width;
             Text(text, color, ALIGN_LEFT, pos);
@@ -887,27 +842,27 @@ int Report::Number(int n, int c, int a, float indent)
 int Report::Line(int c)
 {
     FnTrace("Report::Line()");
-    ReportEntry *re = new ReportEntry(NULL, c, ALIGN_LEFT, current_mode);
+    ReportEntry re("", c, ALIGN_LEFT, current_mode);
     return Add(re);
 }
 
 int Report::Underline(int len, int c, int a, float indent)
 {
     FnTrace("Report::Underline()");
-    ReportEntry *re = new ReportEntry(NULL, c, a, PRINT_UNDERLINE);
+    ReportEntry re("", c, a, PRINT_UNDERLINE);
     if (indent > 0.01)
     {
-        re->pos  = indent;
-        re->edge = ALIGN_LEFT;
+        re.pos  = indent;
+        re.edge = ALIGN_LEFT;
     }
     else if (indent < -0.01)
     {
-        re->pos  = -indent;
-        re->edge = ALIGN_RIGHT;
+        re.pos  = -indent;
+        re.edge = ALIGN_RIGHT;
     }
     else
-        re->edge = a;
-    re->max_len = len;
+        re.edge = a;
+    re.max_len = len;
     return Add(re);
 }
 
@@ -916,15 +871,15 @@ int Report::NewLine(int nl)
     FnTrace("Report::NewLine()");
     if (add_where == 1)
     {
-        if (HeaderListEnd() == NULL || HeaderListEnd()->new_lines < 0)
+        if (header_list.empty() || header_list.back().new_lines < 0)
             return 1;
-        HeaderListEnd()->new_lines += nl;
+        header_list.back().new_lines += nl;
     }
     else
     {
-        if (BodyListEnd() == NULL || BodyListEnd()->new_lines < 0)
+        if (body_list.empty() || body_list.back().new_lines < 0)
             return 1;
-        BodyListEnd()->new_lines += nl;
+        body_list.back().new_lines += nl;
     }
 
     return 0;
@@ -933,9 +888,9 @@ int Report::NewLine(int nl)
 int Report::NewPage()
 {
     FnTrace("Report::NewPage()");
-    if (BodyListEnd() == NULL)
+    if (body_list.empty())
         return 1;
 
-    BodyListEnd()->new_lines = -1;
+    body_list.back().new_lines = -1;
     return 0;
 }
