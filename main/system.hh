@@ -244,7 +244,7 @@ public:
     // returns first rebuild exception of archive or current exceptions
 
     // report functions (see system_report.cc)
-    int SalesMixReport(Terminal *term, TimeInfo &start, TimeInfo &end,
+    int SalesMixReport(Terminal *term, const TimeInfo &start, const TimeInfo &end,
                        Employee *e, Report *report); // see system_salesmix.cc
     int ServerReport(Terminal *term, TimeInfo &start, TimeInfo &end,
                      Employee *e, Report *report);
