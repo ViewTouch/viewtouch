@@ -764,16 +764,7 @@ int StringCompare(const std::string &str1, const std::string &str2)
     FnTrace("StringCompare()");
     const std::string str1_lower = StringToLower(str1);
     const std::string str2_lower = StringToLower(str2);
-    if (str1 < str2)
-    {
-        return -1;
-    } else if (str1 > str2)
-    {
-        return 1;
-    } else
-    {
-        return 0;
-    }
+    return str1_lower.compare(str2_lower);
 }
 
 /****
