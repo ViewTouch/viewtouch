@@ -3131,13 +3131,13 @@ const genericChar* Terminal::Translate(const genericChar* str, int lang, int cle
     return MasterLocale->Translate(str, lang, clear);
 }
 
-const genericChar* Terminal::TimeDate(TimeInfo &timevar, int format, int lang)
+const genericChar* Terminal::TimeDate(const TimeInfo &timevar, int format, int lang)
 {
     FnTrace("Terminal::TimeDate(timeinfo, int, int)");
     return MasterLocale->TimeDate(GetSettings(), timevar, format, lang);
 }
 
-const genericChar* Terminal::TimeDate(genericChar* buffer, TimeInfo &timevar, int format, int lang)
+const genericChar* Terminal::TimeDate(genericChar* buffer, const TimeInfo &timevar, int format, int lang)
 {
     FnTrace("Terminal::TimeDate(char, timeinfo, int, int)");
     return MasterLocale->TimeDate(GetSettings(), timevar, format, lang, buffer);
