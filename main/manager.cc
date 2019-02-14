@@ -176,7 +176,7 @@ static FontDataType FontData[] =
     {FONT_COURIER_20B, 10, 20, "-adobe-courier-bold-r-normal--20-*-*-*-*-*-*-*"}
 };
 
-static int UpdateID = 0;   // update callback function id
+static XtIntervalId UpdateID = 0;   // update callback function id
 static int LastMin  = -1;
 static int LastHour = -1;
 static int LastMeal = -1;
