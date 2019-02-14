@@ -1132,7 +1132,13 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     {
         report->Mode(PRINT_LARGE);
         report->TextL(" ");
-        report->NewLine(printer->order_margin);
+        if (printer)
+        {
+            report->NewLine(printer->order_margin);
+        } else
+        {
+            report->NewLine();
+        }
     }
 
     if (employee && employee->training)
