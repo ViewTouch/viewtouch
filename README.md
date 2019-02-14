@@ -12,7 +12,7 @@ With the availability of ViewTouch source code under the GPL and the arrival of 
 
 The availability of ViewTouch source code and documentation at GitHub is twofold: it benefits the clients, customers and associates of Gene Mosher and it facilitates the free development and maintenance of ViewTouch source code.
 
-_An important link at the top of this page is the Wiki link. It contains a page with build instructions and a page with the latest news._
+_An important link at the top of this page is the Wiki link. It contains a page with build instructions and an 'Announcements' page with the latest news._
 
 Restaurateurs who are clients or customers of ViewTouch and who wish training and 24/7 support need only contact Gene at http://www.viewtouch.com/contact.html
 
