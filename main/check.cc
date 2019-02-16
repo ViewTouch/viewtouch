@@ -1543,12 +1543,12 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
         strcpy(str1, "Op:  callcenter");
     report->TextPosL2Col(20, str1);
     report->NewLine();
-    snprintf(str1, STRLONG, "Date:  %s", time_open.Date());
+    snprintf(str1, STRLONG, "Date:  %s", time_open.Date().c_str());
     report->TextL2Col(str1);
     snprintf(str1, STRLONG, "Order #:  %d", call_center_id);
     report->TextPosL2Col(20, str1);
     report->NewLine();
-    snprintf(str1, STRLONG, "Order Created:  %s", time_open.Time());
+    snprintf(str1, STRLONG, "Order Created:  %s", time_open.Time().c_str());
     report->TextL2Col(str1);
     report->NewLine();
     report->Divider2Col();

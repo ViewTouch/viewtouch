@@ -45,6 +45,15 @@ matrix:
         BUILD_FLAVOR=debian
         BUILD_RELEASE=buster
         BUILD_ARCH=amd64
+
+    # Clang
+    - os: linux
+      env: >
+        BUILD_FLAVOR=debian
+        BUILD_RELEASE=buster
+        BUILD_ARCH=amd64
+        TOOLCHAIN=clang-cxx17
+        BUILD_PACKAGES="cmake clang"
     # } // end Linux
 
 before_install:

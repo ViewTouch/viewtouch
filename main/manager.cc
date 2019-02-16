@@ -2705,11 +2705,14 @@ int UserCount()
         {
             if (term->user)
             {
-                snprintf(message, STRLENGTH, "    %s is logged in to %s, last input at %s\n",
-                       term->user->system_name.Value(),
-                       term->name.Value(),
-                       term->last_input.to_string());
-                ReportError(message);
+                const std::string msg = std::string("    ")
+                        + term->user->system_name.str()
+                        + " is logged in to "
+                        + term->name.str()
+                        + ", last input at "
+                        + term->last_input.to_string()
+                        + "\n";
+                ReportError(msg);
             }
             term = term->next;
         }
