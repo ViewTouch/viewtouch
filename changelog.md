@@ -3,13 +3,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
-## [Unreleased]
+## [v19.02.1] - 2019-02-16
 ### Added
 - support for building with clang toolchain
-
-### Changed
-
-### Removed
 
 ### Fixed
 - armhf and arm64 builds by using exact types for read and write operations
