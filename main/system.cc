@@ -342,7 +342,7 @@ Archive *System::NewArchive()
     return archive;
 }
 
-Archive *System::FindByTime(TimeInfo &timevar)
+Archive *System::FindByTime(const TimeInfo &timevar)
 {
     FnTrace("System::FindByTime()");
     Archive *archive = ArchiveListEnd();

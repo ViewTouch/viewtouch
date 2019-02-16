@@ -527,8 +527,8 @@ public:
     int FrameID(int frame, int state=0);
 
     const genericChar* Translate(const char* string, int lang = LANG_PHRASE, int clear = 0); // calls proper local object for text translation
-    const genericChar* TimeDate(TimeInfo &tm, int format, int lang = LANG_PHRASE);
-    const genericChar* TimeDate(char* str, TimeInfo &tm, int format, int lang = LANG_PHRASE); // returns time and date formated & translated
+    const genericChar* TimeDate(const TimeInfo &tm, int format, int lang = LANG_PHRASE);
+    const genericChar* TimeDate(char* str, const TimeInfo &tm, int format, int lang = LANG_PHRASE); // returns time and date formated & translated
     const genericChar* PageNo(int current, int max, int lang = LANG_PHRASE); // returns nicely formated & translated page numbers
     const genericChar* UserName(int user_id);
     genericChar* UserName(char* str, int user_id); // returns string with user name

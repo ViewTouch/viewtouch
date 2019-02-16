@@ -170,7 +170,7 @@ public:
     int Remove(Archive *archive);
     Archive *NewArchive();
     // start a new archive
-    Archive *FindByTime(TimeInfo &tm);
+    Archive *FindByTime(const TimeInfo &tm);
     // finds archive containing time
     Archive *FindByStart(TimeInfo &tm);
     // finds 1st archive starting at or after time
