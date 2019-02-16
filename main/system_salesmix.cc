@@ -26,7 +26,11 @@
 #include "manager.hh"
 #include "archive.hh"
 #include "admission.hh"
+
+#include <algorithm>
 #include <string.h>
+#include <string>
+#include <map>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -39,49 +43,46 @@
 class ItemCount;
 class ItemCountList
 {
-    ItemCount *itemlist;
 public:
-    ItemCountList();
+    // ordered list by item name
+    std::map<std::string, ItemCount> itemlist;
     int AddCount(Order *item);
-    int HaveItems() { return (itemlist != NULL); }
-    ItemCount *FirstItem() { return itemlist; }
+    bool empty() { return itemlist.empty(); }
 };
-
 class ItemCount
 {
 public:
-    ItemCount *left;  // left and right are for ItemCountTree
-    ItemCount *right;
-    ItemCount *next;  // for ItemCountList
+    ItemCount *left = nullptr;  // left and right are for ItemCountTree
+    ItemCount *right = nullptr;
+    ItemCount *next = nullptr;  // for ItemCountList
     ItemCountList mods;
-    Str name;
-    int family;
-    int cost;
-    int count;
-    int type;
+    std::string name;
+    uint8_t family = FAMILY_UNKNOWN;
+    int cost = 0;
+    int count = 0;
+    int type = 0;
 
     ItemCount(Order *o);
     ItemCount();
 
     int AddCount(Order *o);
-    int HaveMods() { return (mods.HaveItems()); }
-    ItemCount *ModList() { return mods.FirstItem(); }
 };
+
 
 class ItemCountTree
 {
 public:
-    ItemCount *head;
+    ItemCount *head = nullptr;
 
     // Constructor
-    ItemCountTree()  { head = NULL; }
+    ItemCountTree() = default;
     // Destructor
     ~ItemCountTree() { Purge(); }
 
     // Functions
     int AddToBranch(ItemCount *branch, ItemCount *ic);
     int KillBranch(ItemCount *ic);
-    ItemCount *SearchBranch(ItemCount *ic, const genericChar* name, int cost, int family);
+    ItemCount *SearchBranch(ItemCount *ic, const std::string &name, int cost, int family);
     int CountOrder(Order *o);
     int CountOrderNoFamily(Order *o);
     
@@ -100,9 +101,9 @@ public:
     
     int Purge() {
         return KillBranch(head); }
-    ItemCount *Find(const char* name, int cost, int family) {
+    ItemCount *Find(const std::string &name, int cost, int family) {
         return SearchBranch(head, name, cost, family); }
-    ItemCount *Find(const char* name, int cost) {
+    ItemCount *Find(const std::string &name, int cost) {
         return SearchBranch(head, name, cost, FAMILY_UNKNOWN); }
 };
 
@@ -110,69 +111,26 @@ public:
 /*********************************************************************
  * ItemCountList Class
  ********************************************************************/
-ItemCountList::ItemCountList()
-{
-    FnTrace("ItemCountList::ItemCountList()");
-    itemlist = NULL;
-}
-
 int ItemCountList::AddCount(Order *item)
 {
     FnTrace("ItemCountList::AddCount()");
-    ItemCount *newitem = new ItemCount(item);
-    ItemCount *curritem;
-    ItemCount *previtem;
-    int match;
-    int item_count;
 
-    if (itemlist == NULL)
+    ItemCount newitem(item);
+
+    if (itemlist.find(newitem.name) == itemlist.end())
     {
-        itemlist = newitem;
-    }
-    else
+        // new item, just insert it
+        itemlist.insert(std::make_pair(newitem.name, newitem));
+    } else
     {
-        curritem = itemlist;
-        previtem = NULL;
-        while (curritem != NULL)
-        {
-            match = strcmp(newitem->name.Value(), curritem->name.Value());
-            if (match == 0)
-            {
-                // oddly item->count is not the actual count.  It will
-                // always be 1.  But item->cost is item->item_cost
-                // multiplied by the original count.  So we divide
-                // item->cost by item->item_cost to get the correct count.
-                item_count = item->cost / item->item_cost;
-                curritem->count += item_count;
-                curritem = NULL;  // break the loop
-                delete newitem;  // don't need it
-            }
-            else if (match < 0)
-            {
-                newitem = new ItemCount(item);
-                if (previtem == NULL)
-                {  // add to head
-                    newitem->next = curritem;
-                    itemlist = newitem;
-                }
-                else
-                {  // add in place
-                    newitem->next = curritem;
-                    previtem->next = newitem;
-                }
-                curritem = NULL;  // break the loop
-            }
-            else if (curritem->next == NULL)
-            {  // add to tail
-                curritem->next = newitem;
-                curritem = NULL;
-            }
-            else
-            {
-                previtem = curritem;
-                curritem = curritem->next;
-            }
-        }
+        // update existing item
+        ItemCount &old_item = itemlist.at(newitem.name);
+        // oddly item->count is not the actual count.  It will
+        // always be 1.  But item->cost is item->item_cost
+        // multiplied by the original count.  So we divide
+        // item->cost by item->item_cost to get the correct count.
+        int item_count = item->cost / item->item_cost;
+        old_item.count += item_count;
     }
 
     return 0;
@@ -185,29 +143,14 @@ int ItemCountList::AddCount(Order *item)
 ItemCount::ItemCount(Order *o)
 {
     FnTrace("ItemCount::ItemCount(Order)");
-
-    left  = NULL;
-    right = NULL;
-    next  = NULL;
-
     if (o)
     {
-        int oidx = 0;
-        int didx = 0;
-        char dest[STRLENGTH];
-        char oname[STRLENGTH];
+        // trim leading '.' characters
+        std::string oname = o->item_name.str();
+        oname.erase(oname.begin(), std::find_if(oname.begin(), oname.end(),
+                     [](const char c) {return c != '.';}));
 
-        strcpy(oname, o->item_name.Value());
-        while (oname[oidx] == '.' && oname[oidx] != '\0')
-            oidx++;
-        while (oname[oidx] != '\0')
-        {
-            dest[didx] = oname[oidx];
-            didx++;
-            oidx++;
-        }
-        dest[didx] = '\0';
-        name.Set(dest);
+        name      = oname;
         family    = o->item_family;
         cost      = o->item_cost;
         count     = o->count;
@@ -215,24 +158,14 @@ ItemCount::ItemCount(Order *o)
     }
     else
     {
-        name.Set(UnknownStr);
-        family    = FAMILY_UNKNOWN;
-        cost      = 0;
-        count     = 1;
-        type      = 0;
+        name = UnknownStr;
+        count = 1;
     }
 }
 
 ItemCount::ItemCount()
 {
     FnTrace("ItemCount::ItemCount()");
-
-    left   = NULL;
-    right  = NULL;
-    next   = NULL;
-    family = FAMILY_UNKNOWN;
-    cost   = 0;
-    count  = 0;
 }
 
 int ItemCount::AddCount(Order *o)
@@ -255,7 +188,7 @@ int ItemCountTree::AddToBranch(ItemCount *branch, ItemCount *ic)
         return 1;
     
     // NOTE - the nature of the data order should keep the tree sort of balanced
-    int compare = StringCompare(ic->name.Value(), branch->name.Value());
+    int compare = StringCompare(ic->name, branch->name);
     if (compare < 0)
         goto add_left;
     else if (compare > 0)
@@ -300,14 +233,14 @@ int ItemCountTree::KillBranch(ItemCount *ic)
     return 0;
 }
 
-ItemCount *ItemCountTree::SearchBranch(ItemCount *ic, const genericChar* name, int cost,
+ItemCount *ItemCountTree::SearchBranch(ItemCount *ic, const std::string &name, int cost,
                                        int family)
 {
     FnTrace("ItemCountTree::SearchBranch()");
     if (ic == NULL)
         return NULL;
 
-    int compare = StringCompare(name, ic->name.Value());
+    int compare = StringCompare(name, ic->name);
     if (compare < 0)
         goto search_left;
     else if (compare > 0)
@@ -346,7 +279,7 @@ int ItemCountTree::CountOrder(Order *o)
         return 0;
     o->FigureCost();
     
-    ItemCount *ic = Find(o->item_name.Value(), o->item_cost, o->item_family);
+    ItemCount *ic = Find(o->item_name.str(), o->item_cost, o->item_family);
     if (ic)
         ic->AddCount(o);
     else
@@ -381,7 +314,7 @@ int ItemCountTree::CountOrderNoFamily(Order *o)
         return 0;
     o->FigureCost();
     
-    ic = Find(o->item_name.Value(), o->item_cost);
+    ic = Find(o->item_name.str(), o->item_cost);
     if (ic)
         ic->AddCount(o);
     else
@@ -411,74 +344,79 @@ int ItemCountTree::CountOrderNoFamily(Order *o)
 /*********************************************************************
  * SalesMixReport Function
  ********************************************************************/
-int FamilyItemReport(Terminal *t, ItemCount *branch, Report *report_list[],
-                     int count_list[], int cost_list[], int weight_list[])
+struct FamilyItem
+{
+    bool initialized = false;
+    Report fr;
+    int cost = 0;
+    int count = 0;
+    int weight = 0;
+};
+int FamilyItemReport(Terminal *t, ItemCount *branch,
+                     std::vector<FamilyItem> &family_items)
 {
     FnTrace("FamilyItemReport()");
-    int f = 0;
     int sales = 0;
     int modsales;
-    Report *r = NULL;
-    genericChar str[STRLENGTH];
-    ItemCount *modifier = NULL;
+    std::string str;
+    str.resize(STRLENGTH);
 
-    if (branch == NULL)
+    if (branch == nullptr)
         return 1;
     
     if (branch->left)
-        FamilyItemReport(t, branch->left, report_list, count_list, cost_list, weight_list);
+        FamilyItemReport(t, branch->left, family_items);
     
-    f = branch->family;
-    if (f < MAX_FAMILIES)
+    uint8_t f = branch->family;
+    if (f < family_items.size())
     {
-        if (report_list[f] == NULL)
+        FamilyItem &fi = family_items.at(f);
+        Report &r = fi.fr;
+        if (!fi.initialized)
         {
-            report_list[f] = new Report;
             const genericChar* s = FindStringByValue(branch->family, FamilyValue, FamilyName, UnknownStr);
-            sprintf(str, "%s: %s", t->Translate("Family"), t->Translate(s));
-            report_list[f]->Mode(PRINT_UNDERLINE | PRINT_BOLD);
-            report_list[f]->TextL(str);
-            report_list[f]->Mode(0);
+            str = std::string() + t->Translate("Family") + ": " + t->Translate(s);
+            r.Mode(PRINT_UNDERLINE | PRINT_BOLD);
+            r.TextL(std::string() + str);
+            r.Mode(0);
         }
-        r = report_list[f];
-        r->NewLine();
-        r->TextPosL(2, admission_filteredname(branch->name));  //here
+        r.NewLine();
+        r.TextPosL(2, admission_filteredname(branch->name));  //here
         sales = branch->count * branch->cost;
         if (branch->type == ITEM_POUND)
         {
-            r->TextPosR(WEIGHT_POS, t->FormatPrice(branch->count));
-            weight_list[f] += branch->count;
+            r.TextPosR(WEIGHT_POS, t->FormatPrice(branch->count));
+            fi.weight += branch->count;
             sales = sales / 100;
         }
         else
         {
-            r->NumberPosR(COUNT_POS, branch->count);
-            count_list[f] += branch->count;
+            r.NumberPosR(COUNT_POS, branch->count);
+            fi.count += branch->count;
         }
 
-        r->TextPosR(0, t->FormatPrice(sales));
-        cost_list[f]  += sales;
+        r.TextPosR(0, t->FormatPrice(sales));
+        fi.cost += sales;
 
-        if (branch->HaveMods() && t->GetSettings()->show_modifiers)
+        if (!branch->mods.empty() && t->GetSettings()->show_modifiers)
         {
-            modifier = branch->ModList();
-            while (modifier != NULL)
+            for (const auto &entry : branch->mods.itemlist)
             {
-                modsales = modifier->cost * modifier->count;
+                const ItemCount &modifier = entry.second;
+                modsales = modifier.cost * modifier.count;
                 // display the modifier name and count
-                r->NewLine();
-                r->TextPosL(5, modifier->name.Value());
-                r->NumberPosR(COUNT_POS, modifier->count);
-                r->TextPosR(0, t->FormatPrice(modsales));
-                count_list[f] += modifier->count;
-                cost_list[f] += modsales;
-                modifier = modifier->next;
+                r.NewLine();
+                r.TextPosL(5, modifier.name);
+                r.NumberPosR(COUNT_POS, modifier.count);
+                r.TextPosR(0, t->FormatPrice(modsales));
+                fi.count += modifier.count;
+                fi.cost += modsales;
             }
         }
     }
     
     if (branch->right)
-        FamilyItemReport(t, branch->right, report_list, count_list, cost_list, weight_list);
+        FamilyItemReport(t, branch->right, family_items);
 
     return 0;
 }
@@ -489,9 +427,8 @@ int NoFamilyItemReport(Terminal *t, ItemCount *branch, Report *r,
     FnTrace("NoFamilyItemReport()");
     int sales;
     int modsales;
-    ItemCount *modifier;
 
-    if (branch == NULL)
+    if (branch == nullptr)
         return 1;
     
     if (branch->left)
@@ -514,20 +451,19 @@ int NoFamilyItemReport(Terminal *t, ItemCount *branch, Report *r,
     r->TextPosR(0, t->FormatPrice(sales));
     total_cost  += sales;
 
-    if (branch->HaveMods() && t->GetSettings()->show_modifiers)
+    if (!branch->mods.empty() && t->GetSettings()->show_modifiers)
     {
-        modifier = branch->ModList();
-        while (modifier != NULL)
+        for (const auto &entry : branch->mods.itemlist)
         {
+            const ItemCount &modifier = entry.second;
             // display the modifier name and count
-            modsales = modifier->cost * modifier->count;
+            modsales = modifier.cost * modifier.count;
             r->NewLine();
-            r->TextPosL(5, modifier->name.Value());
-            r->NumberPosR(COUNT_POS, modifier->count);
+            r->TextPosL(5, modifier.name);
+            r->NumberPosR(COUNT_POS, modifier.count);
             r->TextPosR(0, t->FormatPrice(modsales));
             total_cost += modsales;
-            total_count += modifier->count;
-            modifier = modifier->next;
+            total_count += modifier.count;
         }
     }
     
@@ -538,11 +474,11 @@ int NoFamilyItemReport(Terminal *t, ItemCount *branch, Report *r,
 }
 
 #define SALESMIX_TITLE "Item Sales By Family"
-int System::SalesMixReport(Terminal *t, TimeInfo &start_time, TimeInfo &end,
+int System::SalesMixReport(Terminal *t, const TimeInfo &start_time, const TimeInfo &end,
                            Employee *e, Report *r)
 {
     FnTrace("System::SalesMixReport()");
-    if (r == NULL)
+    if (r == nullptr)
         return 1;
     
     r->update_flag = UPDATE_SERVER;
@@ -551,11 +487,7 @@ int System::SalesMixReport(Terminal *t, TimeInfo &start_time, TimeInfo &end,
     if (e)
         user_id = e->id;
     
-    TimeInfo et;
-    if (end.IsSet())
-        et = end;
-    else
-        et = SystemTime;
+    TimeInfo et = end.IsSet() ? end : SystemTime;
     
     // Go through archives
     int show_family = t->show_family;
@@ -632,47 +564,38 @@ int System::SalesMixReport(Terminal *t, TimeInfo &start_time, TimeInfo &end,
         // Make report for each family
         genericChar str[STRLENGTH];
         const genericChar* str2;
-        int cost[MAX_FAMILIES];
-        int count[MAX_FAMILIES];
-        int weight[MAX_FAMILIES];
-        Report *fr[MAX_FAMILIES];
-        int i;
-        for (i = 0; i < MAX_FAMILIES; ++i)
+        std::vector<FamilyItem> family_items(MAX_FAMILIES);
+        FamilyItemReport(t, tree.head, family_items);
+        for (const FamilyItem &fi : family_items)
         {
-            cost[i] = 0;
-            count[i] = 0;
-            weight[i] = 0;
-            fr[i] = NULL;
-        }
-        FamilyItemReport(t, tree.head, fr, count, cost, weight);
-        for (i = 0; i < MAX_FAMILIES; ++i)
-        {
-            total_count  += count[i];
-            total_cost   += cost[i];
-            total_weight += weight[i];
+            total_count  += fi.count;
+            total_cost   += fi.cost;
+            total_weight += fi.weight;
         }
         
-        for (i = 0; i < MAX_FAMILIES; ++i)
+        int i = 0;
+        for (const FamilyItem &fi : family_items)
         {
-            if (fr[i])
+            i++;
+            if (fi.initialized)
             {
-                r->Append(fr[i]);
+                r->Append(fi.fr);
                 r->UnderlinePosR(0, 12);
                 r->NewLine();
                 r->Mode(PRINT_BOLD | PRINT_BLUE);
                 str2 = FindStringByValue(i, FamilyValue, FamilyName, UnknownStr);
                 sprintf(str, "%s Total", MasterLocale->Translate(str2));
                 r->TextPosL(0, str, COLOR_DK_BLUE);
-                if (count[i])
-                    r->NumberPosR(COUNT_POS, count[i], COLOR_DK_BLUE);
+                if (fi.count)
+                    r->NumberPosR(COUNT_POS, fi.count, COLOR_DK_BLUE);
                 else
-                    r->TextPosR(WEIGHT_POS, t->FormatPrice(weight[i]), COLOR_DK_BLUE);
-                r->TextPosR(0, t->FormatPrice(cost[i], 1), COLOR_DK_BLUE);
+                    r->TextPosR(WEIGHT_POS, t->FormatPrice(fi.weight), COLOR_DK_BLUE);
+                r->TextPosR(0, t->FormatPrice(fi.cost, 1), COLOR_DK_BLUE);
                 r->NewLine();
                 r->Mode(0);
                 if (total_cost > 0)
                 {
-                    sprintf(str, "(%.1f%%)", ((Flt) cost[i] / (Flt) total_cost) * 100.0);
+                    sprintf(str, "(%.1f%%)", ((Flt) fi.cost / (Flt) total_cost) * 100.0);
                     r->TextPosR(0, str);
                     r->NewLine();
                 }
