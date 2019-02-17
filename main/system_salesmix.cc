@@ -379,6 +379,7 @@ int FamilyItemReport(Terminal *t, ItemCount *branch,
             r.Mode(PRINT_UNDERLINE | PRINT_BOLD);
             r.TextL(std::string() + str);
             r.Mode(0);
+            fi.initialized = true;
         }
         r.NewLine();
         r.TextPosL(2, admission_filteredname(branch->name));  //here
