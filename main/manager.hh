@@ -151,8 +151,8 @@ unsigned long AddTimeOutFn(TimeOutFn fn, int time, void *client_data);
 int RemoveTimeOutFn(unsigned long fn_id);
 
 // Add/Remove input watching function
-int AddInputFn(InputFn fn, int device_no, void *client_data);
-int RemoveInputFn(int fn_id);
+unsigned long AddInputFn(InputFn fn, int device_no, void *client_data);
+int RemoveInputFn(unsigned long fn_id);
 
 // Add/Remove work function
 unsigned long AddWorkFn(WorkFn fn, void *client_data);

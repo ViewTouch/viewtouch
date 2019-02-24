@@ -2908,7 +2908,7 @@ unsigned long AddTimeOutFn(TimeOutFn fn, int timeint, void *client_data)
                            (XtPointer) client_data);
 }
 
-int AddInputFn(InputFn fn, int device_no, void *client_data)
+unsigned long AddInputFn(InputFn fn, int device_no, void *client_data)
 {
     FnTrace("AddInputFn()");
     return XtAppAddInput(App, device_no, (XtPointer) XtInputReadMask,
@@ -2929,7 +2929,7 @@ int RemoveTimeOutFn(unsigned long fn_id)
     return 0;
 }
 
-int RemoveInputFn(int fn_id)
+int RemoveInputFn(unsigned long fn_id)
 {
     FnTrace("RemoveInputFn()");
     if (fn_id > 0)
