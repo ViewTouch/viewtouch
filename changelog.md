@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Fixed
 - segfault because of `input_id` narrowing conversion
 - unhandled exception when ConfFile doesn't exist
+- don't try to render reports that failed to load
 
 
 ## [v19.02.1] - 2019-02-16
