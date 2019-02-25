@@ -31,6 +31,8 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
+#include <fstream>
+
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
@@ -69,7 +71,14 @@ int InputDataFile::Open(const std::string &name, int &version)
 	FnTrace("InputDataFile::Open()");
     int i;
 
-	if (IsDecodeReady == 0)
+    if (!std::ifstream(name).good())
+    {
+        const std::string errmsg = "Unable to read non existing file: '" + name
+                + "'";
+        ReportError(errmsg);
+        return 1;
+    }
+    if (IsDecodeReady == 0)
 	{
 		// Initialize OldDecodeDigit[] first time a file is opened
 		IsDecodeReady = 1;
