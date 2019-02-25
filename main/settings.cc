@@ -20,6 +20,7 @@
 
 #include <cstring>
 #include <iostream>
+#include <fstream>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -2053,35 +2054,53 @@ int Settings::Load(const char* file)
     {
         using namespace confmap;
         {
-            ConfFile conf(CONFIG_TAX_FILE, true);
-            // GetValue modifies target only if key exists
-            conf.GetValue(food_inclusive, vars[V_FOOD_INCLUSIVE], sects[S_MISC]);
-            conf.GetValue(room_inclusive, vars[V_ROOM_INCLUSIVE], sects[S_MISC]);
-            conf.GetValue(alcohol_inclusive, vars[V_ALCOHOL_INCLUSIVE], sects[S_MISC]);
-            conf.GetValue(merchandise_inclusive, vars[V_MERCHANDISE_INCLUSIVE], sects[S_MISC]);
-
-            conf.GetValue(tax_GST, vars[V_GST], sects[S_SALES_TAX_CANADA]);
-            conf.GetValue(tax_PST, vars[V_PST], sects[S_SALES_TAX_CANADA]);
-            conf.GetValue(tax_HST, vars[V_HST], sects[S_SALES_TAX_CANADA]);
-            conf.GetValue(tax_QST, vars[V_QST], sects[S_SALES_TAX_CANADA]);
-        }
-        {
-            ConfFile conf(CONFIG_FEES_FILE, true);
-            conf.GetValue(royalty_rate, vars[V_ROYALTY_RATE], sects[S_MISC]);
-            conf.GetValue(advertise_fund, vars[V_ADVERTISE_FUND], sects[S_MISC]);
-            conf.GetValue(daily_cert_fee, vars[V_DAILY_CERT_FEE], sects[S_MISC]);
-
-            conf.GetValue(debit_cost, vars[V_DEBIT_COST], sects[S_ELEC_TRANS]);
-            conf.GetValue(credit_rate, vars[V_CREDIT_RATE], sects[S_ELEC_TRANS]);
-            conf.GetValue(credit_cost, vars[V_CREDIT_COST], sects[S_ELEC_TRANS]);
-            conf.GetValue(line_item_cost, vars[V_LINE_ITEM_COST], sects[S_ELEC_TRANS]);
-        }
-        {
-            ConfFile conf(CONFIG_FASTFOOD_FILE, true);
-            conf.GetValue(personalize_fast_food, vars[V_PERSONALIZE_FAST_FOOD], sects[S_MISC]);
-            if (!conf.GetValue(tax_takeout_food, vars[V_TAX_TAKEOUT_FOOD], sects[S_MISC]))
+            if (!std::ifstream(CONFIG_TAX_FILE).good())
             {
-                tax_takeout_food = 1;
+                std::cerr << "Config file does not exist: '"
+                          << CONFIG_TAX_FILE << "'" << std::endl;
+            } else {
+                ConfFile conf(CONFIG_TAX_FILE, true);
+                // GetValue modifies target only if key exists
+                conf.GetValue(food_inclusive, vars[V_FOOD_INCLUSIVE], sects[S_MISC]);
+                conf.GetValue(room_inclusive, vars[V_ROOM_INCLUSIVE], sects[S_MISC]);
+                conf.GetValue(alcohol_inclusive, vars[V_ALCOHOL_INCLUSIVE], sects[S_MISC]);
+                conf.GetValue(merchandise_inclusive, vars[V_MERCHANDISE_INCLUSIVE], sects[S_MISC]);
+
+                conf.GetValue(tax_GST, vars[V_GST], sects[S_SALES_TAX_CANADA]);
+                conf.GetValue(tax_PST, vars[V_PST], sects[S_SALES_TAX_CANADA]);
+                conf.GetValue(tax_HST, vars[V_HST], sects[S_SALES_TAX_CANADA]);
+                conf.GetValue(tax_QST, vars[V_QST], sects[S_SALES_TAX_CANADA]);
+            }
+        }
+        {
+            if (!std::ifstream(CONFIG_FEES_FILE).good())
+            {
+                std::cerr << "Config file does not exist: '"
+                          << CONFIG_FEES_FILE << "'" << std::endl;
+            } else {
+                ConfFile conf(CONFIG_FEES_FILE, true);
+                conf.GetValue(royalty_rate, vars[V_ROYALTY_RATE], sects[S_MISC]);
+                conf.GetValue(advertise_fund, vars[V_ADVERTISE_FUND], sects[S_MISC]);
+                conf.GetValue(daily_cert_fee, vars[V_DAILY_CERT_FEE], sects[S_MISC]);
+
+                conf.GetValue(debit_cost, vars[V_DEBIT_COST], sects[S_ELEC_TRANS]);
+                conf.GetValue(credit_rate, vars[V_CREDIT_RATE], sects[S_ELEC_TRANS]);
+                conf.GetValue(credit_cost, vars[V_CREDIT_COST], sects[S_ELEC_TRANS]);
+                conf.GetValue(line_item_cost, vars[V_LINE_ITEM_COST], sects[S_ELEC_TRANS]);
+            }
+        }
+        {
+            if (!std::ifstream(CONFIG_FASTFOOD_FILE).good())
+            {
+                std::cerr << "Config file does not exist: '"
+                          << CONFIG_FASTFOOD_FILE << "'" << std::endl;
+            } else {
+                ConfFile conf(CONFIG_FASTFOOD_FILE, true);
+                conf.GetValue(personalize_fast_food, vars[V_PERSONALIZE_FAST_FOOD], sects[S_MISC]);
+                if (!conf.GetValue(tax_takeout_food, vars[V_TAX_TAKEOUT_FOOD], sects[S_MISC]))
+                {
+                    tax_takeout_food = 1;
+                }
             }
         }
     }
