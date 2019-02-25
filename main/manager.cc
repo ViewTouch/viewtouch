@@ -955,13 +955,11 @@ int EndSystem()
     // Make sure this function is only called once
     static int flag = 0;
     ++flag;
-    if (flag == 2)
+    if (flag >= 2)
     {
         ReportError("Terminating without clean up - fatal error!");
         exit(0);
     }
-    else if (flag >= 3)
-        exit(0);
 
     // The begining of the end
     if (MasterControl)
