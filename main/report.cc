@@ -265,6 +265,11 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
                    Flt footer_size, int p, int print, Flt spacing)
 {
     FnTrace("Report::Render()");
+    if (body_list.empty())
+    {
+        ReportError("ReportRender: can't render report with empty body");
+        return 1;
+    }
     auto get_line_count = [](const int &sum, const ReportEntry &re) -> int
     {
         return sum + re.new_lines;
