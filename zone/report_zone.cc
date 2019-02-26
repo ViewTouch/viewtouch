@@ -1246,7 +1246,10 @@ RenderResult ReadZone::Render(Terminal *t, int update_flag)
     {
         loaded = 1;
         report.Clear();
-        report.Load(filename.Value(), color[0]);
+        if (report.Load(filename.Value(), color[0]) != 0)
+        {
+            return RENDER_ERROR;
+        }
     }
 
     int hs = 0;
@@ -1256,8 +1259,13 @@ RenderResult ReadZone::Render(Terminal *t, int update_flag)
         hs = 1;
     }
 
-    report.Render(t, this, hs, 0, page, 0);
-    return RENDER_OKAY;
+    if(report.Render(t, this, hs, 0, page, 0) == 0)
+    {
+        return RENDER_OKAY;
+    } else
+    {
+        return RENDER_ERROR;
+    }
 }
 
 SignalResult ReadZone::Signal(Terminal *t, const char* message)
