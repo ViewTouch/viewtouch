@@ -223,8 +223,6 @@ void Css()
 {
     provider = gtk_css_provider_new ();
 
-    const char* vtpos_css = "/usr/viewtouch/css/vtpos.css";
-
     gtk_style_context_add_provider_for_screen (screen,
                                  GTK_STYLE_PROVIDER (provider),
                                  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
@@ -233,11 +231,12 @@ void Css()
 // of both methods are included.  The embedded method (gtk_css_provider_load_from_data)
 // is commented out.  The import method (gtk_css_provider_load_from_file) with the
 // associated vtpos.css file allows for styling changes without recompiling.
-/*
     gtk_css_provider_load_from_data (GTK_CSS_PROVIDER(provider),
                                    " #mylabel {\n"
                                    "   background-color: rgba(0, 0, 0, 0);\n"
-                                   "   font: Times Bold 10;\n"
+                                   "   font-family: Times;\n"
+                                   "   font-size: 10px;\n"
+                                   "   font-weight: bold;\n"
                                    "   color: white;\n"
                                    "}\n"
                                    " #mygrid {\n"
@@ -245,14 +244,16 @@ void Css()
                                    "}\n"
                                    " #mywindow {\n"
                                    "   background-color: black;\n"
-                                   "   background: url('/usr/viewtouch/graphics/logofile');\n"
+                                   "   background: url('" VIEWTOUCH_PATH "graphics/logofile');\n"
                                    "   background-size: contain;\n"
                                    "   background-position: center;\n"
                                    "   background-repeat: no-repeat;\n"
-                                   "}\n", -1, NULL);
-*/
+                                   "}\n", -1, nullptr);
 
+/*
+    const char* vtpos_css = VIEWTOUCH_PATH "/css/vtpos.css";
     gtk_css_provider_load_from_file(GTK_CSS_PROVIDER(provider), g_file_new_for_path(vtpos_css), NULL);
+*/
 
     g_object_unref (provider);
 }
