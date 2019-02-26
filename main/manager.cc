@@ -137,7 +137,7 @@ static int          FontHeight[32];
 int                 LoaderSocket = 0;
 int                 OpenTermPort = 10001;
 int                 OpenTermSocket = -1;
-int                 autoupdate = 1;
+int                 autoupdate = 0;
 
 // run the user command on startup if it is available; after that,
 // we'll only run it when we get SIGUSR2.  The 2 here indicates
