@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 - disable auto updater of `vt_main`
+- print finalized check receipe also in training mode
 
 ### Removed
 

@@ -1046,7 +1046,7 @@ int PaymentZone::CloseCheck(Terminal *term, int force)
         // Update drawer record
         drawer_open = 0;
         Printer *pr = term->FindPrinter(PRINTER_RECEIPT);
-        if (pr && !currCheck->IsTraining() && (settings->receipt_print & RECEIPT_FINALIZE))
+        if (pr && (settings->receipt_print & RECEIPT_FINALIZE))
         {
             if (settings->cash_receipt || subCheck->OnlyCredit() == 0)
             {
