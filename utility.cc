@@ -762,8 +762,10 @@ int DeleteFile(const genericChar* filename)
 int StringCompare(const std::string &str1, const std::string &str2)
 {
     FnTrace("StringCompare()");
-    const std::string str1_lower = StringToLower(str1);
-    const std::string str2_lower = StringToLower(str2);
+    size_t common_length = std::min(str1.size(), str2.size());
+    const std::string str1_lower = StringToLower(str1.substr(0, common_length));
+    const std::string str2_lower = StringToLower(str2.substr(0, common_length));
+
     return str1_lower.compare(str2_lower);
 }
 
