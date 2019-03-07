@@ -200,6 +200,8 @@ extern int ReportError(const std::string &message);
 // (the prototype is here but the implementation isn't in utility.cc)
 // implementation is in main/manager.cc
 
+// compare same-length part of string
+// for example StringCompare("ab", "abcd")==0
 int StringCompare(const std::string &str1, const std::string &str2);
 // Case insesitive string compare
 int StringInString(const genericChar* haystack, const genericChar* needle);
