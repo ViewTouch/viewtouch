@@ -3,14 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
-## [Unreleased]
-### Added
-
+## [19.03.1] - 2019-03-08
 ### Changed
 - disable auto updater of `vt_main`
 - print finalized check receipe also in training mode
-
-### Removed
 
 ### Fixed
 - segfault because of `input_id` narrowing conversion
