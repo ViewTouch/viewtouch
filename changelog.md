@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Removed
 
 ### Fixed
+- add StringCompare len parameter, fixes "End of Day" behavior
 
 
 ## [19.03.1] - 2019-03-08
