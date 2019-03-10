@@ -839,11 +839,11 @@ int Inventory::PartMatches(const char* word)
     int match = 0;
     int len = strlen(word);
     for (Product *pr = ProductList(); pr != NULL; pr = pr->next)
-        if (StringCompare(pr->name.Value(), word) == 0)
+        if (StringCompare(pr->name.Value(), word, len) == 0)
             ++match;
 
     for (Recipe *rc = RecipeList(); rc != NULL; rc = rc->next)
-        if (StringCompare(rc->name.Value(), word) == 0)
+        if (StringCompare(rc->name.Value(), word, len) == 0)
             ++match;
     return match;
 }
@@ -861,9 +861,10 @@ Product *Inventory::FindProductByWord(const char* word, int &record)
         return NULL;
 
     record = 0;
+    int len = strlen(word);
     for (Product *pr = ProductList(); pr != NULL; pr = pr->next)
     {
-        if (StringCompare(pr->name.Value(), word) == 0)
+        if (StringCompare(pr->name.Value(), word, len) == 0)
             return pr;
         ++record;
     }
@@ -892,9 +893,10 @@ Recipe *Inventory::FindRecipeByWord(const char* word, int &record)
         return NULL;
 
     record = 0;
+    int len = strlen(word);
     for (Recipe *rc = RecipeList(); rc != NULL; rc = rc->next)
     {
-        if (StringCompare(rc->name.Value(), word) == 0)
+        if (StringCompare(rc->name.Value(), word, len) == 0)
             return rc;
         ++record;
     }
@@ -932,9 +934,10 @@ Vendor *Inventory::FindVendorByWord(const char* word, int &record)
         return NULL;
 
     record = 0;
+    int len = strlen(word);
     for (Vendor *v = VendorList(); v != NULL; v = v->next)
     {
-        if (StringCompare(v->name.Value(), word) == 0)
+        if (StringCompare(v->name.Value(), word, len) == 0)
             return v;
         ++record;
     }

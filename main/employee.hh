@@ -213,8 +213,8 @@ public:
     Employee *FindByKey(int key);
     Employee *FindByName(const char* name);
     Employee *FindByRecord(Terminal *t, int record, int active = 1);
-    Employee *NameSearch(const char* name, Employee *user);
-    int       FindRecordByWord(Terminal *t, const genericChar* word, int active = 1,
+    Employee *NameSearch(const std::string &name, Employee *user);
+    int       FindRecordByWord(Terminal *t, const std::string &word, int active = 1,
                                int start = -1);
     int       FindUniqueID();
     int       FindUniqueKey();

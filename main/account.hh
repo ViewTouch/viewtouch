@@ -52,7 +52,7 @@ public:
     // Member Functions
     int Read(InputDataFile &df, int version);
     int Write(OutputDataFile &df, int version);
-    int Search(const genericChar* word) const;
+    int Search(const std::string &word) const;
 };
 
 class Account
@@ -90,7 +90,7 @@ public:
     void     Purge();
     int      AddEntry(const char* desc, int amount);
     int      IsBlank();
-    int      Search(const genericChar* word);
+    int      Search(const std::string &word);
 };
 
 

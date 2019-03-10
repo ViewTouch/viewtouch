@@ -418,27 +418,28 @@ Employee *UserDB::FindByName(const char* name)
     return NULL;
 }
 
-Employee *UserDB::NameSearch(const char* name, Employee *user)
+Employee *UserDB::NameSearch(const std::string &name, Employee *user)
 {
     FnTrace("UserDB::NameSearch()");
-    if (name == NULL)
-        return NULL;
+    if (name.empty())
+        return nullptr;
 
     if (user)
         for (Employee *e = user->next; e != NULL; e = e->next)
-            if (StringCompare(e->system_name.Value(), name) == 0)
+            if (StringCompare(e->system_name.Value(), name, static_cast<int>(name.size())) == 0)
                 return e;
 
     for (Employee *e = UserList(); e != NULL; e = e->next)
-        if (StringCompare(e->system_name.Value(), name) == 0)
+        if (StringCompare(e->system_name.Value(), name, static_cast<int>(name.size())) == 0)
             return e;
-    return NULL;
+    return nullptr;
 }
 
-int UserDB::FindRecordByWord(Terminal *t, const genericChar* word, int active, int start)
+int UserDB::FindRecordByWord(Terminal *t, const std::string &word, int active, int start)
 {
     FnTrace("UserDB::FindRecordByWord()");
-    int val = atoi(word);
+    int val = std::stoi(word);
+    int len = static_cast<int>(word.size());
 
     Employee **array = NameArray();
     int record = 0, loop = 0;
@@ -454,19 +455,19 @@ int UserDB::FindRecordByWord(Terminal *t, const genericChar* word, int active, i
                 if (val >= 0 && e->key == val)
                     return record;
                 // check for system name
-                if (StringCompare(e->system_name.Value(), word) == 0)
+                if (StringCompare(e->system_name.Value(), word, len) == 0)
                     return record;
                 // check for last name
-                if (StringCompare(e->last_name.Value(), word) == 0)
+                if (StringCompare(e->last_name.Value(), word, len) == 0)
                     return record;
                 // check for first name
-                if (StringCompare(e->first_name.Value(), word) == 0)
+                if (StringCompare(e->first_name.Value(), word, len) == 0)
                     return record;
                 // check for address
-                if (StringCompare(e->address.Value(), word) == 0)
+                if (StringCompare(e->address.Value(), word, len) == 0)
                     return record;
                 // check for ssn
-                if (StringCompare(e->ssn.Value(), word) == 0)
+                if (StringCompare(e->ssn.Value(), word, len) == 0)
                     return record;
             }
             ++record;
