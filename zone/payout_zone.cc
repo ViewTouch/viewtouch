@@ -409,6 +409,11 @@ SignalResult EndDayZone::Signal(Terminal *term, const genericChar* message)
     SignalResult retval = SIGNAL_IGNORED;
     static const genericChar* commands[] = {"end", "force end", "enddaydone",
                                       "enddayfailed", "cceodnosettle", NULL};
+    const std::string msg(message);
+    if (msg == "enddaydone")
+    {
+        int i = 0;
+    }
     int idx = CompareList(message, commands);
 
     if (flag1 || flag2 || flag3 || flag4 || flag5)

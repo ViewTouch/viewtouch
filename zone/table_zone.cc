@@ -223,7 +223,7 @@ SignalResult RoomDialog::Touch(Terminal *term, int tx, int ty)
 
 SignalResult RoomDialog::Signal(Terminal *term, const genericChar* message)
 {
-    if (StringCompare(message, "swipe ") == 0)
+    if (StringCompare(message, "swipe ", 6) == 0)
     {
         const genericChar* swipe = &message[6];
         if (ParseSwipe(term, swipe) == 0)
@@ -1041,7 +1041,7 @@ Zone *CommandZone::FindTableZone(Terminal *term, const genericChar* table)
 
         for (Zone *z = my_page->ZoneList(); z != NULL; z = z->next)
             if (z->Type() == ZONE_TABLE &&
-                StringCompare(z->name.Value(), table) == 0)
+                StringCompare(z->name.Value(), table, len) == 0)
             {
                 term->ChangePage(my_page);
                 return z;

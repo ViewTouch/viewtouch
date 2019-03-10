@@ -417,17 +417,17 @@ SignalResult OrderEntryZone::Signal(Terminal *term, const genericChar* message)
         result = 1;
         break;
     default:
-        if (StringCompare(message, "void") == 0)
+        if (StringCompare(message, "void", 4) == 0)
         {
             VoidOrder(term, atoi(&message[4]));
             return SIGNAL_OKAY;
         }
-        else if (StringCompare(message, "comp") == 0)
+        else if (StringCompare(message, "comp", 4) == 0)
         {
             CompOrder(term, atoi(&message[4]));
             return SIGNAL_OKAY;
         }
-        else if (StringCompare(message, "amount ") == 0)
+        else if (StringCompare(message, "amount ", 7) == 0)
         {
             int count = atoi(&message[7]);
             if (count <= 0)

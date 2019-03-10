@@ -183,7 +183,7 @@ SignalResult ProductZone::Signal(Terminal *term, const genericChar* message)
 		"input", "next stock", "prior stock", "check", "print", NULL};
 
     int idx = -1;
-    if (StringCompare(message, "amount ") == 0)
+    if (StringCompare(message, "amount ", 7) == 0)
         idx = 99;
     else
         idx = CompareList(message, commands);
@@ -1491,7 +1491,7 @@ SignalResult InvoiceZone::Signal(Terminal *t, const genericChar* message)
             "next stock", "prior stock", NULL};
 
     int idx = -1;
-    if (StringCompare(message, "amount ") == 0)
+    if (StringCompare(message, "amount ", 7) == 0)
         idx = 99;
     else
         idx = CompareList(message, commands);

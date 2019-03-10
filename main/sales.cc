@@ -590,12 +590,13 @@ SalesItem *ItemDB::FindByWord(const char* word, int &record)
     if (name_array == NULL)
         BuildNameArray();
 
+    int len = strlen(word);
     SalesItem *si;
     for (int i = 0; i < array_size; ++i)
     {
         si = name_array[i];
         if (si->item_name.size() > 0 &&
-            StringCompare(si->item_name.Value(), word) == 0)
+            StringCompare(si->item_name.Value(), word, len) == 0)
         {
             record = i;
             return si;
@@ -619,7 +620,7 @@ SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
     {
         si = name_array[idx];
         if (si->item_name.size() > 0 &&
-            StringCompare(si->item_name.Value(), word) == 0)
+            StringCompare(si->item_name.Value(), word, len) == 0)
         {
             record = idx;
             retval = si;

@@ -759,13 +759,19 @@ int DeleteFile(const genericChar* filename)
     return 0;
 }
 
-int StringCompare(const std::string &str1, const std::string &str2)
+int StringCompare(const std::string &str1, const std::string &str2, int len)
 {
     FnTrace("StringCompare()");
-    size_t common_length = std::min(str1.size(), str2.size());
-    const std::string str1_lower = StringToLower(str1.substr(0, common_length));
-    const std::string str2_lower = StringToLower(str2.substr(0, common_length));
-
+    if (len < 0)
+    {
+        // compare full string
+        const std::string str1_lower = StringToLower(str1);
+        const std::string str2_lower = StringToLower(str2);
+        return str1_lower.compare(str2_lower);
+    }
+    // compare up to len
+    const std::string str1_lower = StringToLower(str1.substr(0, static_cast<size_t>(len)));
+    const std::string str2_lower = StringToLower(str2.substr(0, static_cast<size_t>(len)));
     return str1_lower.compare(str2_lower);
 }
 
@@ -887,7 +893,7 @@ int CompareListN(const genericChar* list[], const genericChar* word, int unknown
         itemlen = strlen(list[idx]);
 
         if (list[idx][itemlen - 1] == ' ')
-            search = StringCompare(word, list[idx]);
+            search = StringCompare(word, list[idx], itemlen);
         else if (itemlen == wordlen)
             search = StringCompare(word, list[idx]);
 

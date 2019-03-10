@@ -79,11 +79,11 @@ int AccountEntry::Write(OutputDataFile &df, int version)
     return error;
 }
 
-int AccountEntry::Search(const genericChar* word) const
+int AccountEntry::Search(const std::string &word) const
 {
     FnTrace("AccountEntry::Search()");
     int found = 0;
-    if (StringCompare(description.Value(), word) == 0)
+    if (StringCompare(description.Value(), word, static_cast<int>(word.size())) == 0)
     {
         found = 1;
     }
@@ -289,11 +289,11 @@ int Account::IsBlank()
  * Search:  Return 1 if word is found in the account, 0 otherwise.
  *   Searches word fields in the account as well as account entries.
  ****/
-int Account::Search(const genericChar* word)
+int Account::Search(const std::string &word)
 {
     FnTrace("Account::Search()");
 
-    if (StringCompare(name.Value(), word) == 0)
+    if (StringCompare(name.Value(), word, static_cast<int>(word.size())) == 0)
     {
         return 1;
     }
