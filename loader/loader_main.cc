@@ -30,7 +30,6 @@
 #endif
 
 #include "basic.hh"
-#include "generic_char.hh"
 #include "logger.hh"
 #include "utility.hh"
 
