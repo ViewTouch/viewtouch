@@ -263,10 +263,6 @@ target_link_libraries(vt_cdu vtcore)
 #add_executable(vt_authorize authorize_main.cc utility.cc)
 #add_executable(vt_ccq_pipe vt_ccq_pipe.cc socket.cc utility.cc conf_file.cc)
 
-# create build_number.h file
-file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/last-release-rev LAST_RELEASE_REV)
-execute_process(COMMAND "date" "+%Y%m%d%H%M" OUTPUT_VARIABLE TODAY OUTPUT_STRIP_TRAILING_WHITESPACE)
-
 option(BUILD_TESTING "Build tests" ON)
 if(BUILD_TESTING)
     enable_testing()
