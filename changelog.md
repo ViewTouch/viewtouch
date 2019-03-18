@@ -3,15 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
-## [Unreleased]
-### Added
 
-### Changed
-
-### Removed
-
+## [v19.03.2] - 2019-03-18
 ### Fixed
-- add StringCompare len parameter, fixes "End of Day" behavior
+- add StringCompare len parameter, fixes "End of Day" behavior and many other bugs
 
 
 ## [19.03.1] - 2019-03-08
