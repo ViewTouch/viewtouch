@@ -204,7 +204,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
                 term->allow_blanking = 0;
             }
             term->WInt8(TERM_STORENAME);
-            term->WStr(settings->store_name.Value());
+            term->WStr(settings->store_name);
 
             if (term->zone_db == NULL)
                 printf("ACK!!!! no zone_db\n");
@@ -3316,18 +3316,15 @@ int Terminal::RenderBackground()
     return Send();
 }
 
-int Terminal::RenderText(const genericChar* str, int x, int y, int color, int font,
+int Terminal::RenderText(const std::string &str, int x, int y, int color, int font,
                          int align, int max_pixel_width, int mode)
 {
     FnTrace("Terminal::RenderText()");
-    if (str == NULL)
-        return 1;
-    int len = strlen(str);
-    if (len <= 0)
+    if (str.empty())
         return 1;
 
     color = ColorID(color);
-    if (color == COLOR_CLEAR || str == NULL || len <= 0)
+    if (color == COLOR_CLEAR)
         return 0;
 
     font = FontID(font);
@@ -3357,7 +3354,7 @@ int Terminal::RenderText(const genericChar* str, int x, int y, int color, int fo
     else
         WInt8(TERM_TEXTR);
 
-    WStr(str, len);
+    WStr(str);
     WInt16(x);
     WInt16(y);
     WInt8(color);
@@ -3881,22 +3878,31 @@ Flt Terminal::RFlt(Flt *val)
     return f;
 }
 
-int Terminal::WStr(const genericChar* s, int len)
+int Terminal::WStr(const std::string &s, int len)
 {
-    FnTrace("Terminal::WStr(const char* , len)");
-    if (s == NULL)
+    FnTrace("Terminal::WStr(const string , len)");
+    if (s.empty())
         return buffer_out->PutString("", 0);
     else
         return buffer_out->PutString(s, len);
 }
 
-int Terminal::WStr(Str *s)
+int Terminal::WStr(const Str &s)
 {
-    FnTrace("Terminal::WStr(str)");
-    if (s == NULL)
+    FnTrace("Terminal::WStr(const Str)");
+    if (s.empty())
         return buffer_out->PutString("", 0);
     else
-        return buffer_out->PutString(s->Value(), s->size());
+        return buffer_out->PutString(s.str(), s.size());
+}
+
+int Terminal::WStr(const Str *s)
+{
+    FnTrace("Terminal::WStr(const Str)");
+    if (s == nullptr)
+        return buffer_out->PutString("", 0);
+    else
+        return buffer_out->PutString(s->str(), s->size());
 }
 
 genericChar* Terminal::RStr(genericChar* s)

@@ -543,7 +543,7 @@ public:
     int DrawTitleBar();
     int RenderBlankPage();
     int RenderBackground();
-    int RenderText(const char* str, int x, int y, int color, int font,
+    int RenderText(const std::string &str, int x, int y, int color, int font,
                    int align = ALIGN_LEFT, int max_pixel_width = 0, int mode = 0);
     int RenderTextLen(const char* str, int len, int x, int y, int color, int font,
                       int align = ALIGN_LEFT, int mode = 0, int max_pixel_width = 0);
@@ -611,9 +611,10 @@ public:
     int   WFlt(Flt val);
     int   WFlt(Flt *val);
     Flt   RFlt(Flt *val = NULL);
-    int   WStr(const char* s, int len = 0);
-    int   WStr(Str *s);
-    genericChar* RStr(char* s = NULL);  
+    int   WStr(const std::string &s, int len = 0);
+    int   WStr(const Str &s);
+    int   WStr(const Str *s);
+    genericChar* RStr(char* s = NULL);
     genericChar* RStr(Str *s);
     int   Send();
     int   SendNow();
