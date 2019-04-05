@@ -268,18 +268,17 @@ long long CharQueue::GetLLong()
     return retval;
 }
 
-int CharQueue::PutString(const char* str, int len)
+int CharQueue::PutString(const std::string &str, int len)
 {
     FnTrace("CharQueue::PutString()");
     Send8(TYPE_STRING);
     if (len <= 0)
-        len = strlen(str);
+        len = static_cast<int>(str.size());
 
     Put16(len);
     for (int i = 0; i < len; ++i)
     {
-        Send8((int) *str);
-        ++str;
+        Send8((int) str[i]);
     }
     return 0;
 }

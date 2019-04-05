@@ -24,6 +24,8 @@
 #include <string.h>
 #include "basic.hh"
 
+#include <string>
+
 #define QUEUE_SIZE 2097152
 
 /**** Types ****/
@@ -69,7 +71,7 @@ public:
     long long PutLLong(long long val);
     long long GetLLong();
 
-    int  PutString(const char* str, int len);
+    int  PutString(const std::string &str, int len);
     int  GetString(char* str);
 
     int  Read(int device_no);
