@@ -551,6 +551,15 @@ int TimeInfo::WeekDay() const
     //return static_cast<int>(wd_idx);
 }
 
+int TimeInfo::SecondsInYear() const
+{
+    using namespace date;
+    auto ld = local_days{date::year(this->Year()) / January / 1};
+    auto diff = t_ - ld;
+    std::chrono::seconds s = std::chrono::duration_cast<std::chrono::seconds>(diff);
+    return s.count();
+}
+
 int TimeInfo::DaysInMonth() const
 {
     using namespace date;
