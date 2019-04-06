@@ -671,7 +671,7 @@ int SecondsElapsed(const TimeInfo &t1, const TimeInfo &t2)
         return static_cast<int>(std::chrono::seconds{t1-t2}.count());
     } else
     {
-        return - static_cast<int>(std::chrono::seconds{t2-t1}.count());
+        return static_cast<int>(std::chrono::seconds{t2-t1}.count());
     }
 }
 

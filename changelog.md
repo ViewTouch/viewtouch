@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Removed
 
 ### Fixed
+- SecondsElapsed is expected to return the absolute difference between TimeInfo objects
 
 
 ## [v19.03.2] - 2019-03-18
