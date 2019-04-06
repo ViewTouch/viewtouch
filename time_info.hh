@@ -156,6 +156,7 @@ int StringElapsedToNow(char* dest, int maxlen, TimeInfo &t1);
 int SecondsToString(char* dest, int maxlen, int seconds);
 
 int SecondsElapsedToNow(const TimeInfo &t1);
+// SecondsElapsed always returns the absolute timedifference
 int SecondsElapsed(const TimeInfo &t1, const TimeInfo &t2);
 // Returns number of seconds between two times
 
