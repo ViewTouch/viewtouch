@@ -4,17 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
-## [Unreleased]
+## [v19.04.1] - 2019-04-06
 ### Added
 - add SecondsInYear function to TimeInfo
 
-### Changed
-
-### Removed
-
 ### Fixed
 - SecondsElapsed is expected to return the absolute difference between TimeInfo objects
-- use SecondsInYear function to fix TimeInfo file writing
+- use SecondsInYear function to fix TimeInfo file writing (fixes wrong date displayed after EndOfDay)
 
 
 ## [v19.03.2] - 2019-03-18
