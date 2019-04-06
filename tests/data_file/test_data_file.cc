@@ -45,3 +45,10 @@ TEST_CASE("odf")
     ti.Set(0, 2018);
     write_and_read(ti);
 }
+
+TEST_CASE("timedate")
+{
+    TimeInfo ti;
+    ti.Set(500, 2018);
+    write_and_read(ti);
+}
