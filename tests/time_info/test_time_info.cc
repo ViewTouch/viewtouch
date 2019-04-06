@@ -584,3 +584,13 @@ TEST_CASE("check_weekday_has_the_ctime_indizes_Sunday", "[time_info]")
     // ctime defines tm_wday as "days since Sunday in the range of 0 to 6
     CHECK(ti.WeekDay() ==  0);
 }
+
+TEST_CASE("SecondsElapsed always returns the absolute difference", "[time_info][SecondsElapsed]")
+{
+    TimeInfo ti1;
+    TimeInfo ti2;
+    ti1.Set( 0, 2018); // 2018-01-01 00:00::00
+    ti2.Set(60, 2018); // 2018-01-01 00:01::00
+    CHECK(SecondsElapsed(ti1, ti2) ==  60);
+    CHECK(SecondsElapsed(ti2, ti1) ==  60);
+}
