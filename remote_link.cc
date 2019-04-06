@@ -84,7 +84,7 @@ int CharQueue::Send8(int val)
         return 1;
     }
 
-    buffer[end] = (Uchar) (val & 255);
+    buffer[end] = static_cast<uint8_t>(val & 255);
     ++end;
     ++size;
     if (end >= buffer_size)
