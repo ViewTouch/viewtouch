@@ -520,9 +520,7 @@ int OutputDataFile::Write(const char* val, int bk)
 int OutputDataFile::Write(TimeInfo &timevar, int bk)
 {
     FnTrace("OutputDataFile::Write(TimeInfo &)");
-    int s = timevar.Sec() + (timevar.Min() * 60) + (timevar.Hour() * 3600) +
-        ((timevar.Day() - 1) * 86400) + ((timevar.Month() - 1) * 2678400);
-
+    int s = timevar.SecondsInYear();
     int error = 0;
 
     error += Write(s);

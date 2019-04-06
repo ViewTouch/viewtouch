@@ -126,6 +126,8 @@ public:
     int Year() const;
     // the weekday of the TimeInfo
     int WeekDay() const;
+    // get the seconds since midnight of the current year
+    int SecondsInYear() const;
     // get the days in the current month
     int DaysInMonth() const;
 

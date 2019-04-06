@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- add SecondsInYear function to TimeInfo
 
 ### Changed
 
@@ -13,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 - SecondsElapsed is expected to return the absolute difference between TimeInfo objects
+- use SecondsInYear function to fix TimeInfo file writing
 
 
 ## [v19.03.2] - 2019-03-18

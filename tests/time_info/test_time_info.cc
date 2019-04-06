@@ -594,3 +594,12 @@ TEST_CASE("SecondsElapsed always returns the absolute difference", "[time_info][
     CHECK(SecondsElapsed(ti1, ti2) ==  60);
     CHECK(SecondsElapsed(ti2, ti1) ==  60);
 }
+
+TEST_CASE("seconds in year", "[time_info][SecondsInYear]")
+{
+    TimeInfo ti;
+    ti.Set(600, 2018);
+    CHECK(ti.SecondsInYear() == 600);
+    CHECK(ti.SecondsInYear() == 600);
+    CHECK(ti.Year() == 2018);
+}
