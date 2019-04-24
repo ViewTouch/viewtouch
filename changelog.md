@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Removed
 
 ### Fixed
+- fix "Clear Highlighted Entries" button in payment zone
 
 
 ## [v19.04.1] - 2019-04-06
