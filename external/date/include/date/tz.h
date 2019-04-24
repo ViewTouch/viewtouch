@@ -368,7 +368,7 @@ public:
               >::type>
         explicit zoned_time(std::string_view name);
 #else
-#if !defined(_MSC_VER) || (_MSC_VER > 1900)
+#  if !defined(_MSC_VER) || (_MSC_VER > 1900)
     template <class T = TimeZonePtr,
               class = typename std::enable_if
               <
@@ -378,7 +378,7 @@ public:
                       decltype(zoned_traits<T>::locate_zone(std::string()))
                   >::value
               >::type>
-#endif
+#  endif
         explicit zoned_time(const std::string& name);
 #endif
 
@@ -891,8 +891,7 @@ inline
 sys_info
 time_zone::get_info(sys_time<Duration> st) const
 {
-    using namespace std::chrono;
-    return get_info_impl(date::floor<seconds>(st));
+    return get_info_impl(date::floor<std::chrono::seconds>(st));
 }
 
 template <class Duration>
@@ -900,8 +899,7 @@ inline
 local_info
 time_zone::get_info(local_time<Duration> tp) const
 {
-    using namespace std::chrono;
-    return get_info_impl(date::floor<seconds>(tp));
+    return get_info_impl(date::floor<std::chrono::seconds>(tp));
 }
 
 template <class Duration>
@@ -942,8 +940,6 @@ template <class Duration>
 sys_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 time_zone::to_sys_impl(local_time<Duration> tp, choose z, std::false_type) const
 {
-    using namespace date;
-    using namespace std::chrono;
     auto i = get_info(tp);
     if (i.result == local_info::nonexistent)
     {
@@ -961,8 +957,6 @@ template <class Duration>
 sys_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 time_zone::to_sys_impl(local_time<Duration> tp, choose, std::true_type) const
 {
-    using namespace date;
-    using namespace std::chrono;
     auto i = get_info(tp);
     if (i.result == local_info::nonexistent)
         throw nonexistent_local_time(tp, i);
@@ -1376,7 +1370,7 @@ zoned_time<Duration, TimeZonePtr>::zoned_time(TimeZonePtr z)
 #if HAS_STRING_VIEW
 
 template <class Duration, class TimeZonePtr>
-template <class, class>
+template <class T, class>
 inline
 zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name)
     : zoned_time(zoned_traits<TimeZonePtr>::locate_zone(name))
@@ -1451,7 +1445,7 @@ zoned_time<Duration, TimeZonePtr>::zoned_time(TimeZonePtr z,
 #if HAS_STRING_VIEW
 
 template <class Duration, class TimeZonePtr>
-template <class, class>
+template <class T, class>
 inline
 zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
                                               const sys_time<Duration>& st)
@@ -1459,7 +1453,7 @@ zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
     {}
 
 template <class Duration, class TimeZonePtr>
-template <class, class>
+template <class T, class>
 inline
 zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
                                               const local_time<Duration>& t)
@@ -1467,7 +1461,7 @@ zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
     {}
 
 template <class Duration, class TimeZonePtr>
-template <class, class>
+template <class T, class>
 inline
 zoned_time<Duration, TimeZonePtr>::zoned_time(std::string_view name,
                                               const local_time<Duration>& t, choose c)
@@ -1886,7 +1880,7 @@ template <class Duration>
 utc_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 utc_clock::from_sys(const sys_time<Duration>& st)
 {
-    using namespace std::chrono;
+    using std::chrono::seconds;
     using CD = typename std::common_type<Duration, seconds>::type;
     auto const& leaps = get_tzdb().leaps;
     auto const lt = std::upper_bound(leaps.begin(), leaps.end(), st);
@@ -1900,8 +1894,7 @@ template <class Duration>
 std::pair<bool, std::chrono::seconds>
 is_leap_second(date::utc_time<Duration> const& ut)
 {
-    using namespace date;
-    using namespace std::chrono;
+    using std::chrono::seconds;
     using duration = typename std::common_type<Duration, seconds>::type;
     auto const& leaps = get_tzdb().leaps;
     auto tp = sys_time<duration>{ut.time_since_epoch()};
@@ -1922,11 +1915,25 @@ is_leap_second(date::utc_time<Duration> const& ut)
     return {ls, ds};
 }
 
+struct leap_second_info
+{
+    bool is_leap_second;
+    std::chrono::seconds elapsed;
+};
+
+template <class Duration>
+leap_second_info
+get_leap_second_info(date::utc_time<Duration> const& ut)
+{
+    auto p = is_leap_second(ut);
+    return {p.first, p.second};
+}
+
 template <class Duration>
 sys_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 utc_clock::to_sys(const utc_time<Duration>& ut)
 {
-    using namespace std::chrono;
+    using std::chrono::seconds;
     using CD = typename std::common_type<Duration, seconds>::type;
     auto ls = is_leap_second(ut);
     auto tp = sys_time<CD>{ut.time_since_epoch() - ls.second};
@@ -1939,8 +1946,7 @@ inline
 utc_clock::time_point
 utc_clock::now()
 {
-    using namespace std::chrono;
-    return from_sys(system_clock::now());
+    return from_sys(std::chrono::system_clock::now());
 }
 
 template <class Duration>
@@ -1963,17 +1969,16 @@ std::basic_ostream<CharT, Traits>&
 to_stream(std::basic_ostream<CharT, Traits>& os, const CharT* fmt,
           const utc_time<Duration>& t)
 {
-    using namespace std;
-    using namespace std::chrono;
-    using CT = typename common_type<Duration, seconds>::type;
-    const string abbrev("UTC");
+    using std::chrono::seconds;
+    using CT = typename std::common_type<Duration, seconds>::type;
+    const std::string abbrev("UTC");
     CONSTDATA seconds offset{0};
     auto ls = is_leap_second(t);
     auto tp = sys_time<CT>{t.time_since_epoch() - ls.second};
     auto const sd = floor<days>(tp);
     year_month_day ymd = sd;
     auto time = make_time(tp - sys_seconds{sd});
-    time.seconds() += seconds{ls.first};
+    time.seconds(detail::undocumented{}) += seconds{ls.first};
     fields<CT> fds{ymd, time};
     return to_stream(os, fmt, fds, &abbrev, &offset);
 }
@@ -1992,30 +1997,30 @@ from_stream(std::basic_istream<CharT, Traits>& is, const CharT* fmt,
             utc_time<Duration>& tp, std::basic_string<CharT, Traits, Alloc>* abbrev = nullptr,
             std::chrono::minutes* offset = nullptr)
 {
-    using namespace std;
-    using namespace std::chrono;
-    using CT = typename common_type<Duration, seconds>::type;
+    using std::chrono::seconds;
+    using std::chrono::minutes;
+    using CT = typename std::common_type<Duration, seconds>::type;
     minutes offset_local{};
     auto offptr = offset ? offset : &offset_local;
     fields<CT> fds{};
     fds.has_tod = true;
     from_stream(is, fmt, fds, abbrev, offptr);
     if (!fds.ymd.ok())
-        is.setstate(ios::failbit);
+        is.setstate(std::ios::failbit);
     if (!is.fail())
     {
         bool is_60_sec = fds.tod.seconds() == seconds{60};
         if (is_60_sec)
-            fds.tod.seconds() -= seconds{1};
+            fds.tod.seconds(detail::undocumented{}) -= seconds{1};
         auto tmp = utc_clock::from_sys(sys_days(fds.ymd) - *offptr + fds.tod.to_duration());
         if (is_60_sec)
             tmp += seconds{1};
         if (is_60_sec != is_leap_second(tmp).first || !fds.tod.in_conventional_range())
         {
-            is.setstate(ios::failbit);
+            is.setstate(std::ios::failbit);
             return is;
         }
-        tp = time_point_cast<Duration>(tmp);
+        tp = std::chrono::time_point_cast<Duration>(tmp);
     }
     return is;
 }
@@ -2064,7 +2069,7 @@ inline
 utc_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 tai_clock::to_utc(const tai_time<Duration>& t) NOEXCEPT
 {
-    using namespace std::chrono;
+    using std::chrono::seconds;
     using CD = typename std::common_type<Duration, seconds>::type;
     return utc_time<CD>{t.time_since_epoch()} -
             (sys_days(year{1970}/January/1) - sys_days(year{1958}/January/1) + seconds{10});
@@ -2075,7 +2080,7 @@ inline
 tai_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 tai_clock::from_utc(const utc_time<Duration>& t) NOEXCEPT
 {
-    using namespace std::chrono;
+    using std::chrono::seconds;
     using CD = typename std::common_type<Duration, seconds>::type;
     return tai_time<CD>{t.time_since_epoch()} +
             (sys_days(year{1970}/January/1) - sys_days(year{1958}/January/1) + seconds{10});
@@ -2085,7 +2090,6 @@ inline
 tai_clock::time_point
 tai_clock::now()
 {
-    using namespace std::chrono;
     return from_utc(utc_clock::now());
 }
 
@@ -2185,7 +2189,7 @@ inline
 utc_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 gps_clock::to_utc(const gps_time<Duration>& t) NOEXCEPT
 {
-    using namespace std::chrono;
+    using std::chrono::seconds;
     using CD = typename std::common_type<Duration, seconds>::type;
     return utc_time<CD>{t.time_since_epoch()} +
             (sys_days(year{1980}/January/Sunday[1]) - sys_days(year{1970}/January/1) +
@@ -2197,7 +2201,7 @@ inline
 gps_time<typename std::common_type<Duration, std::chrono::seconds>::type>
 gps_clock::from_utc(const utc_time<Duration>& t) NOEXCEPT
 {
-    using namespace std::chrono;
+    using std::chrono::seconds;
     using CD = typename std::common_type<Duration, seconds>::type;
     return gps_time<CD>{t.time_since_epoch()} -
             (sys_days(year{1980}/January/Sunday[1]) - sys_days(year{1970}/January/1) +
@@ -2208,7 +2212,6 @@ inline
 gps_clock::time_point
 gps_clock::now()
 {
-    using namespace std::chrono;
     return from_utc(utc_clock::now());
 }
 
