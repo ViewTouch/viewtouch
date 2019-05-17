@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 - fix "Clear Highlighted Entries" button in payment zone
+- fix build on FreeBSD (error in `license_hash.cc`)
+- don't install `date` library and header files
+- handle missing 'dat' folder for install step
 
 
 ## [v19.04.1] - 2019-04-06
