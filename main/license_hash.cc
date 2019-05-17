@@ -62,7 +62,13 @@ int GetUnameInfo(char* buffer, int bufflen)
     return 0;
 }
 
-#ifdef BSD
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <net/if_dl.h>
+#include <net/route.h>
+
 /* bkk bsd6 compile */
 typedef unsigned int u_int;
 
@@ -70,11 +76,11 @@ typedef unsigned int u_int;
  * GetInterfaceInfo:  grab the MAC.  This version uses the sysctl method,
  *  which works fine for FreeBSD, but not Linux.
  ****/
-int GetInterfaceInfo(const char* stringbuff, int stringlen)
+int GetInterfaceInfo(char* stringbuff, int stringlen)
 {
     size_t len;
     int mib[6];
-    const char* buffer;
+    char* buffer;
     const char* next;
     char address[256];
     const char* limit;
@@ -91,7 +97,7 @@ int GetInterfaceInfo(const char* stringbuff, int stringlen)
 
     if (sysctl(mib, 6, NULL, &len, NULL, 0) < 0)
         return 1;
-    if ((buffer = (const char* )malloc(len)) == NULL)
+    if ((buffer = (char*)malloc(len)) == NULL)
         return 1;
     if (sysctl(mib, 6, buffer, &len, NULL, 0) < 0)
         return 1;
@@ -105,7 +111,7 @@ int GetInterfaceInfo(const char* stringbuff, int stringlen)
         if (ifmsg->ifm_type == RTM_IFINFO)
         {
 			sdl = (struct sockaddr_dl *)(ifmsg + 1);
-            if ((sdl->sdl_alen > 0) && (sdl->sdl_alen < 256))
+            if (sdl->sdl_alen > 0)
             {
                 memcpy(address, LLADDR(sdl), sdl->sdl_alen);
                 snprintf(stringbuff, stringlen, "%s", link_ntoa(sdl));
