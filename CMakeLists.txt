@@ -55,7 +55,7 @@ endif()
 set(USE_SYSTEM_TZ_DB ON CACHE BOOL "Use the operating system's timezone database" FORCE)
 set(ENABLE_DATE_TESTING OFF CACHE BOOL "Enable unit tests" FORCE)
 set(DISABLE_STRING_VIEW ON CACHE BOOL "Disable string view" FORCE)
-add_subdirectory(external/date)
+add_subdirectory(external/date EXCLUDE_FROM_ALL)
 
 include_directories(main)
 include_directories(zone)
