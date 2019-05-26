@@ -42,7 +42,7 @@ Slightly modified versions of `"date.h"` and `"tz.h"` were voted into the C++20 
 
 ## Build & Test
 
-You will need [CMake](https://cmake.org/) and a recent C++ compiler. Here follows a guide of how to build and test using the CMake Makefile generator.
+You can optionally build using [CMake](https://cmake.org/). Here is a guide of how to build and test using the CMake Makefile generator.
 
 ```bash
 mkdir build
@@ -55,5 +55,7 @@ cmake --build . --target testit # Consider '-- -j4' for multithreading
 * www.safe.com
 * www.webtoolkit.eu/wt
 * https://github.com/ViewTouch/viewtouch
+* https://routinghub.com
+* https://github.com/valhalla
 
 If you would like your project (or product) on this list, just let me know.
