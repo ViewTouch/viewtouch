@@ -463,46 +463,6 @@ int System::Remove(Drawer *drawer)
     return drawer_list.Remove(drawer);
 }
 
-int System::Add(WorkEntry *we)
-{
-    FnTrace("System::Add(WorkEntry)");
-    if (we == NULL)
-        return 1;
-
-    Archive *archive = FindByTime(we->start);
-    if (archive == NULL)
-    {
-        work_db.Add(we);
-        return 0;
-    }
-    else if (we->end <= archive->end_time)
-    {
-        archive->Add(we);
-        return 0;
-    }
-
-    while (archive)
-    {
-        if (we->end.IsSet() && we->end <= archive->end_time)
-        {
-            archive->Add(we);
-            return 0;
-        }
-        WorkEntry *w = we->Copy();
-        w->end.Clear();
-        archive->Add(w);
-
-        we->start.Clear();
-        archive = archive->next;
-    }
-    return 0;
-}
-
-int System::Remove(WorkEntry *we)
-{
-    return work_db.Remove(we);
-}
-
 /****
  * EndDay:  Copies all of today's data into a new archive and adds the archive
  *  to the list.

@@ -229,12 +229,6 @@ public:
     int AllDrawersPulled();
     // boolean - are all drawers pulled or balanced?
 
-    // Labor Functions
-    int Add(WorkEntry *we);
-    // adds workentry to current data
-    int Remove(WorkEntry *we);
-    // removes workentry from current data
-
     // Exception functions
     ItemException *FirstItemException(Archive *archive = NULL);
     // returns first item exception of archive or current exceptions
