@@ -58,7 +58,7 @@
 #define SECURITY_SUPERVISOR (1<<6)  // supervisor page
 #define SECURITY_MANAGER    (1<<7)  // manager page
 #define SECURITY_EMPLOYEES  (1<<8)  // view/alter employee records
-#define SECURITY_DEVELOPER  (1<<9)  // alter aplication
+#define SECURITY_DEVELOPER  (1<<9)  // alter application
 #define SECURITY_EXPENSES   (1<<10) // payout from revenue
 
 // Data
