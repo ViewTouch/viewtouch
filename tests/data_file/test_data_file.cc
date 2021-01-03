@@ -20,7 +20,7 @@ void write_and_read(T val, const std::string &filename="test.vtdata")
     {
         InputDataFile idf;
         int version;
-        idf.Open("test.vtdata", version);
+        idf.Open(filename, version);
         T reread;
         idf.Read(reread);
         CHECK(reread == val);
@@ -51,4 +51,24 @@ TEST_CASE("timedate")
     TimeInfo ti;
     ti.Set(500, 2018);
     write_and_read(ti);
+}
+
+TEST_CASE("timedate default read/write")
+{
+    TimeInfo ti;
+    const std::string filename = "test_data_file_timedate_default.vtdata";
+    {
+        OutputDataFile odf;
+        odf.Open(filename, 1, false);
+        odf.Write(ti);
+    }
+    {
+        InputDataFile idf;
+        int version;
+        idf.Open(filename, version);
+        TimeInfo reread;
+        idf.Read(reread);
+        CHECK(!ti.IsSet());
+        CHECK(!reread.IsSet());
+    }
 }

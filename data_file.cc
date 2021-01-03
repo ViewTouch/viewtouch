@@ -263,6 +263,12 @@ int InputDataFile::Read(TimeInfo &timevar)
     FnTrace("InputDataFile::Read(TimeInfo &)");
     int s = static_cast<int>(GetValue());
     int y = static_cast<int>(GetValue());
+    if (s == 0 && y == 0) // year of 0 is treated as not set
+    {
+        timevar.Clear();
+        return 0;
+    }
+    // otherwise set the read time
     timevar.Set(s, y);
 
     return 0;
@@ -520,11 +526,22 @@ int OutputDataFile::Write(const char* val, int bk)
 int OutputDataFile::Write(TimeInfo &timevar, int bk)
 {
     FnTrace("OutputDataFile::Write(TimeInfo &)");
-    int s = timevar.SecondsInYear();
     int error = 0;
+    if (!timevar.IsSet())
+    {
+        int s = 0;
+        int year = 0;
+        error += Write(s);
+        error += Write(year);
+    }
+    else
+    {
+        int s = timevar.SecondsInYear();
+        int year = timevar.Year();
+        error += Write(s);
+        error += Write(year);
+    }
 
-    error += Write(s);
-    error += Write(timevar.Year());
     if (bk)
     {
         if (compress)
