@@ -270,6 +270,7 @@ if(BUILD_TESTING)
     add_subdirectory(tests/image_data)
     add_subdirectory(tests/time_info)
     add_subdirectory(tests/data_file)
+    add_subdirectory(tests/main)
 endif()
 
 install(TARGETS vtpos vt_cdu vt_print vt_term vt_main

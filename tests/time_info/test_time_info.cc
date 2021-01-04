@@ -603,3 +603,11 @@ TEST_CASE("seconds in year", "[time_info][SecondsInYear]")
     CHECK(ti.SecondsInYear() == 600);
     CHECK(ti.Year() == 2018);
 }
+
+TEST_CASE("unset value for TimeInfo::Year() is not 0", "[time_info][Year]")
+{
+    // when we write not set TimeInfo to file use 0 to indicate not set
+    TimeInfo ti;
+    CHECK(!ti.IsSet());
+    CHECK(ti.Year() != 0);
+}
