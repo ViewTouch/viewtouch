@@ -559,7 +559,15 @@ int LaborPeriod::WorkReport(Terminal *t, Employee *user, TimeInfo &tm_s,
     TimeInfo start;
     TimeInfo end;
     TimeInfo now;
-    start = tm_s;
+    // interpret non-set start time as "all of time"
+    if (tm_s.IsSet())
+    {
+        start = tm_s;
+    }
+    else
+    {
+        start.Set(0,0);
+    }
     start.Floor<std::chrono::minutes>();
     end = tm_e;
     end.Floor<std::chrono::minutes>();
@@ -739,7 +747,15 @@ int LaborPeriod::WorkReportLine(Terminal *t, WorkEntry *work, Employee *user,
 {
     FnTrace("LaborPeriod::WorkReportLine()");
     TimeInfo start, end;
-    start = tm_s;
+    // interpret non-set start time as "all of time"
+    if (tm_s.IsSet())
+    {
+        start = tm_s;
+    }
+    else
+    {
+        start.Set(0,0);
+    }
     start.Floor<std::chrono::minutes>();
     end   = tm_e;
     end.Floor<std::chrono::minutes>();
