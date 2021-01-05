@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 - fix "Users have to once again Clock In when ViewTouch exits and is restarted" #108
+- fix "Timeclock" page by handling non-set start TimeInfo
 
 
 ## [v19.05.1] - 2019-05-26
