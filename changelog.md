@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
+## [Unreleased]
+### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+
+
 ## [v21.01.1] - 2021-01-06
 ### Fixed
 - fix "Users have to once again Clock In when ViewTouch exits and is restarted" #108
