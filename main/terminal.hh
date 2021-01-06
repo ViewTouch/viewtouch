@@ -290,8 +290,15 @@ private:
     DList<Terminal> clone_list;
     SList<Str>     term_id_list;  // for CreditCheq Batch Settle
 	 
+#ifdef VT_TESTING
+public:
     // Constructor
     Terminal();
+private:
+#else
+    // Constructor
+    Terminal();
+#endif
     int CC_TermIDIsDupe(const char* termid);
     int CC_GetTermIDList(Terminal *start_term);
 

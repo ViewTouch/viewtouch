@@ -1,6 +1,8 @@
 #include "catch2/catch.hpp"
 #include "labor.hh"
 #include "employee.hh"
+#include "terminal.hh"
+#include "system.hh"
 #include "data_file.hh"
 
 #include <string>
@@ -107,4 +109,117 @@ TEST_CASE("labor: LaborPeriod: employee logged in must be still logged in after 
     db.Add(reread);
     // The employee must still be logged in
     CHECK(db.IsUserOnClock(&e) == true);
+}
+
+TEST_CASE("labor: LaborPeriod: WorkReport: finding the one and only WorkEntry")
+{
+    SystemTime.Set(); // set SystemTime to now, needed if end is not set, used to set WorkEntry.start
+    Employee e;
+    e.id = 10; // normal id, no superuser, needs to clock in
+    REQUIRE(e.UseClock());
+    LaborDB db;
+    REQUIRE(db.IsUserOnClock(&e) == false);
+    db.NewWorkEntry(&e, 0);
+    REQUIRE(db.IsUserOnClock(&e) == true);
+    LaborPeriod *lp = db.CurrentPeriod();
+    WorkEntry *work = db.CurrentWorkEntry(&e);
+
+    Terminal term; // for testing the Terminal() constructor is made public
+    term.system_data = new System; // add default system data, otherwise constructor segfaults
+
+    TimeInfo start, end;
+    end.Set();
+    int selected_line =
+        lp->WorkReportLine(&term, work, term.server, start, end);
+    CHECK(selected_line == 0);
+}
+TEST_CASE("labor: LaborPeriod: WorkReport: no crash on empty WorkEntry")
+{
+    SystemTime.Set(); // set SystemTime to now, needed if end is not set, used to set WorkEntry.start
+    Employee e;
+    e.id = 10; // normal id, no superuser, needs to clock in
+    REQUIRE(e.UseClock());
+    LaborDB db;
+    REQUIRE(db.IsUserOnClock(&e) == false);
+    db.NewWorkEntry(&e, 0);
+    REQUIRE(db.IsUserOnClock(&e) == true);
+    LaborPeriod *lp = db.CurrentPeriod();
+    WorkEntry *work = new WorkEntry;
+
+    Terminal term; // for testing the Terminal() constructor is made public
+    term.system_data = new System; // add default system data, otherwise constructor segfaults
+
+    TimeInfo start, end;
+    end.Set();
+    int selected_line =
+        lp->WorkReportLine(&term, work, term.server, start, end);
+    CHECK(selected_line == -1); // indicating not found
+}
+TEST_CASE("labor: LaborPeriod: WorkReport: handle WorkEntry not in LaborPeriod")
+{
+    SystemTime.Set(); // set SystemTime to now, needed if end is not set, used to set WorkEntry.start
+    Employee e;
+    e.id = 10; // normal id, no superuser, needs to clock in
+    REQUIRE(e.UseClock());
+    LaborDB db;
+    REQUIRE(db.IsUserOnClock(&e) == false);
+    db.NewWorkEntry(&e, 0);
+    REQUIRE(db.IsUserOnClock(&e) == true);
+    LaborPeriod *lp = db.CurrentPeriod();
+
+    Terminal term; // for testing the Terminal() constructor is made public
+    term.system_data = new System; // add default system data, otherwise constructor segfaults
+
+    // create new WorkEntry not in LaborDB
+    WorkEntry *work = new WorkEntry;
+    TimeInfo start, end;
+    end.Set();
+    int selected_line =
+        lp->WorkReportLine(&term, work, term.server, start, end);
+    CHECK(selected_line == -1); // indicating not found
+}
+TEST_CASE("labor: LaborPeriod: WorkReport: handle non set start time")
+{
+    SystemTime.Set(); // set SystemTime to now, needed if end is not set, used to set WorkEntry.start
+    Employee e;
+    e.id = 10; // normal id, no superuser, needs to clock in
+    REQUIRE(e.UseClock());
+    LaborDB db;
+    REQUIRE(db.IsUserOnClock(&e) == false);
+    db.NewWorkEntry(&e, 0);
+    REQUIRE(db.IsUserOnClock(&e) == true);
+    LaborPeriod *lp = db.CurrentPeriod();
+    WorkEntry *work = db.CurrentWorkEntry(&e);
+
+    Terminal term; // for testing the Terminal() constructor is made public
+    term.system_data = new System; // add default system data, otherwise constructor segfaults
+
+    TimeInfo start, end;
+    end.Set();
+    int selected_line =
+        lp->WorkReportLine(&term, work, term.server, start, end);
+    CHECK(selected_line == 0);
+}
+TEST_CASE("labor: LaborPeriod: WorkReport: find nothing when end time is before now")
+{
+    SystemTime.Set(); // set SystemTime to now, needed if end is not set, used to set WorkEntry.start
+    Employee e;
+    e.id = 10; // normal id, no superuser, needs to clock in
+    REQUIRE(e.UseClock());
+    LaborDB db;
+    REQUIRE(db.IsUserOnClock(&e) == false);
+    db.NewWorkEntry(&e, 0);
+    REQUIRE(db.IsUserOnClock(&e) == true);
+    LaborPeriod *lp = db.CurrentPeriod();
+    WorkEntry *work = db.CurrentWorkEntry(&e);
+
+    Terminal term; // for testing the Terminal() constructor is made public
+    term.system_data = new System; // add default system data, otherwise constructor segfaults
+
+    TimeInfo start, end;
+    end.Set();
+    end.AdjustDays(-1); // yesterday is before now
+    int selected_line =
+        lp->WorkReportLine(&term, work, term.server, start, end);
+    CHECK(selected_line == -1); // no line found
 }
