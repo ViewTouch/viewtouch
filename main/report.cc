@@ -40,12 +40,23 @@
 
 /**** ReportEntry Class ****/
 // Constructor
+ReportEntry::ReportEntry(const char *t, int c, int a, int m) :
+    text(t ? t : ""),
+    color(c),
+    align(a),
+    edge(a),
+    mode(m),
+    draw_a_line(t==nullptr)
+{
+    FnTrace("ReportEntry::ReportEntry()");
+}
 ReportEntry::ReportEntry(const std::string &t, int c, int a, int m) :
     text(t),
     color(c),
     align(a),
     edge(a),
-    mode(m)
+    mode(m),
+    draw_a_line(false)
 {
     FnTrace("ReportEntry::ReportEntry()");
 }
@@ -284,6 +295,7 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
     if ((last_line > lines_shown || print) && footer < 2)
         footer = 2;
 
+    lines_shown = (int) ((lz->size_y - (header + footer)) / spacing + .5);
     if (debug_mode && lines_shown < 1)
     {  //FIX BAK-->Why does lines_shown sometimes hit 0?
         fprintf(stderr, "Report::Render lines_shown = %d, fixing\n", lines_shown);
@@ -335,7 +347,7 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
                 xx = re.pos; break;
             }
 
-            if (re.text.empty())
+            if (re.draw_a_line)
             {
                 switch (re.align)
                 {
@@ -645,7 +657,7 @@ int Report::PrintEntry(const ReportEntry &report_entry, int start, int width, in
     int i;
     int c;
 
-    if (report_entry.text.empty())
+    if (report_entry.draw_a_line)
         len = report_entry.max_len;
     else
     {
@@ -686,7 +698,7 @@ int Report::PrintEntry(const ReportEntry &report_entry, int start, int width, in
         xx = 0;
     }
 
-    if (!report_entry.text.empty())
+    if (!report_entry.draw_a_line)
     {
         xx += start;
         strncpy(&text[xx], report_entry.text.c_str(), len);
@@ -777,6 +789,26 @@ int Report::Mode(int new_mode)
     return 0;
 }
 
+int Report::Text(const char *text, int c, int align, float indent)
+{
+    FnTrace("Report::Text()");
+    int retval = 0;
+    ReportEntry re(text, c, align, current_mode);
+    if (indent > 0.01)
+    {
+        re.pos  = indent;
+        re.edge = ALIGN_LEFT;
+    }
+    else if (indent < -0.01)
+    {
+        re.pos  = -indent;
+        re.edge = ALIGN_RIGHT;
+    }
+    else
+        re.edge = align;
+    retval = Add(re);
+    return retval;
+}
 int Report::Text(const std::string &text, int c, int align, float indent)
 {
     FnTrace("Report::Text()");

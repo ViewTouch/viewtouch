@@ -96,8 +96,10 @@ public:
     Uchar align;
     Uchar edge;
     Uchar mode;
+    bool draw_a_line=false; // draw a line if text char ptr is a nullptr
 
     // Constructor
+    ReportEntry(const char *t, int c, int a, int m);
     ReportEntry(const std::string &t, int c, int a, int m);
     // Destructor
     ~ReportEntry() {}
@@ -146,6 +148,7 @@ public:
     int  Clear();                     // erases report
     int  Load(const std::string &textfile, int color = COLOR_DEFAULT);        // make report out of text file
     int  Mode(int flags);             // printing mode to use for next entries
+    int  Text(const char *t, int c, int a, float indent); // Adds text entry
     int  Text(const std::string &t, int c, int a, float indent); // Adds text entry
     int  Text2Col(const std::string &text, int color, int align, float indent);
     int  Number(int n, int c, int a, float indent); // Adds number entry

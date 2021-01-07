@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Removed
 
 ### Fixed
+- fix double line after header in some report tables #115
 
 
 ## [v21.01.1] - 2021-01-06
