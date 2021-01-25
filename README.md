@@ -54,7 +54,7 @@ ViewTouch first ran as a C program on the Atari ST computers in 1986. The Atari 
 When computer manufacturer Atari ceased operations, in 1993, if one didn't want to use Microsoft DOS or Apple computers, UNIX was one's only choice, and MIT's X Window System was the only practical choice with which one could build tools which could then be used to create a network transparent graphical interface.  This is precisely the decision which was made for ViewTouch in early 1995.
 In 1997 the decision was made to move from AIX on the Motorola PowerPC to the Red Hat Linux distribution on the Intel X86 platform. In 2000 a transition from C to C++ and from Red Hat to Debian took place.  ViewTouch remains on Debian as the default distribution and features the XFCE desktop.
 Since 2016 the default hardware platform for Viewtouch is the family of Raspberry Pi computers. ViewTouch production POS computers provide a desktop icon which compiles and installs the latest version of the code from GitHub.
-ViewTouch Point of Sale isn't just about the advantage of the power of Linux; it's also about the advantage of the remote display capability of The X Window System. To add display terminals one doesn't need to replicate either the program or data.  One only needs to open additional user display terminals by adding their IP addresses to the ViewTouch page 'View & Manage Displays & Printers'.
+ViewTouch Point of Sale isn't just about the advantage of the power of Linux; it's also about the advantage of the remote display capability of The X Window System. To add additional ViewTouch PoS sessions, use either Android Tablets running the ViewTouch Android XServer .apk file or or touchscreen monitors driven by any Raspberry Pi computer.  Then just add the IP address of such a device to the ViewTouch page 'View & Manage Displays & Printers'.
 
 Payment gateway/processors
 =========
@@ -62,4 +62,4 @@ The ViewTouch GUI has the Monetra Credit/Debit Card Verification engine integrat
 
 ViewTouch POS on Android
 =========
-ViewTouch can send a remote display/input session to any Android tablet or smartphone. The Android X Server is based on XSDL and can be downloaded from QR Codes found either on the ViewTouch desktop or from http://www.viewtouch.com/nc.html.  Many thanks to Sergii Pylypenko, of Kiev, Ukraine for creating a special version of XSDL for ViewTouch !!
+ViewTouch can send a remote display/input session to any Android tablet or smartphone. The Android X Server is based on XSDL and can be downloaded from QR Codes found either on the ViewTouch desktop or from http://www.viewtouch.com/nc.html.  Many, many thanks to Sergii Pylypenko, of Kiev, Ukraine for creating and maintaining a special version of XSDL for ViewTouch !!
