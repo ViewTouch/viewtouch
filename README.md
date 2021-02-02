@@ -27,6 +27,10 @@ Commercial Support and Enquiries
 =========
 The ViewTouch website and contact point is http://www.viewtouch.com  Email: gene@viewtouch.com  Phone: 541-515-5913
 
+ViewTouch microSD image
+=========
+<a href="http://www.viewtouch.com/nc.html">The latest ViewTouch image for the Raspberry Pi</a> can be downloaded, decompressed and copied to a 16Gb or larger microSD card.  This image boots to the ViewTouch desktop and offers many desktop support features for the ViewTouch Point of Sale program.   <a href="mailto:sales@viewtouch.com">A bootable 32Gb microSD card with this image is available for $25.</a>
+
 Screenshots
 =========
 These screenshots are in 1280 x 1024 resolution, however, default graphical resolution is 1920 x 1080.
