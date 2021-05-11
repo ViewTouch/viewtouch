@@ -240,7 +240,6 @@ PhraseEntry PhraseData[] = {
     {12, FamilyName[28]},
     {12, FamilyName[29]},
     {12, FamilyName[30]},
-    {12, FamilyName[31]},
 
     {13, "Pre-Authorize"},
     {13, "Authorize"},
