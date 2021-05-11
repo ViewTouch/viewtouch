@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 - fix double line after header in some report tables #115
+- fix Segfault in Page 13 of 16 in "Customize Job Title, Families, Phrases" #117
 
 
 ## [v21.01.1] - 2021-01-06
