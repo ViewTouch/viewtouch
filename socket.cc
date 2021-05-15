@@ -62,8 +62,6 @@ Email::~Email()
 void Email::AddFrom(const char* address)
 {
     FnTrace("Email::AddFrom()");
-    int retval = 0;
-
     from.Set(address);
 }
 
