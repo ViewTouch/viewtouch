@@ -42,6 +42,10 @@
 #include <dmalloc.h>
 #endif
 
+#include <filesystem>       // generic filesystem functions available since C++17
+
+namespace fs = std::filesystem;
+
 /*********************************************************************
  * Definitions
  ********************************************************************/
@@ -2195,7 +2199,13 @@ int ReadScreenSaverPix()
     Xpm *newpm;
     genericChar fullpath[STRLONG];
     int len;
-    
+    if (!fs::is_directory(SCREENSAVER_DIR))
+    {
+        std::cerr << "Screen saver directory does not exist: '"
+            << SCREENSAVER_DIR << "' creating it" << std::endl;
+        fs::create_directory(SCREENSAVER_DIR);
+        fs::permissions(SCREENSAVER_DIR, fs::perms::all); // be sure read/write/execute flags are set
+    }
     dp = opendir(SCREENSAVER_DIR);
     if (dp == NULL)
     {

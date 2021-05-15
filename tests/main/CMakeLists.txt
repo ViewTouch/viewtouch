@@ -18,6 +18,10 @@ target_link_libraries(test_main PRIVATE zone vtcore ${VT_XLIBS})
 target_link_libraries(test_main PRIVATE tz)
 
 target_link_libraries(test_main PRIVATE ZLIB::ZLIB)
+# on gcc 8 need to link against std++fs for std::filesystem support
+# https://stackoverflow.com/questions/54290254/problem-adding-stdfilesystem-to-cmake-project
+target_link_libraries(test_main PRIVATE stdc++fs)
+
 target_sources(test_main PRIVATE
     # for OutputDataFile and InputDataFile
     ../../data_file.hh

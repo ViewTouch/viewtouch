@@ -42,6 +42,11 @@
 #include "conf_file.hh"
 #include "date/date.h"      // helper library to output date strings with std::chrono
 
+#include <curlpp/cURLpp.hpp>
+#include <curlpp/Easy.hpp>
+#include <curlpp/Options.hpp>
+#include <curlpp/Exception.hpp>
+
                             // Standard C++ libraries
 #include <errno.h>          // system error numbers
 #include <iostream>         // basic input and output controls (C++ alone contains no facilities for IO)
@@ -61,11 +66,13 @@
 #include <csignal>          // C library to handle signals
 #include <fcntl.h>          // File Control
 #include <chrono>           // time durations and current clock
+#include <filesystem>       // generic filesystem functions available since C++17
 
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
 
+namespace fs = std::filesystem;
 using namespace date; // for date conversion on streams
 
 /**** System Globals ****/
@@ -273,6 +280,26 @@ void ViewTouchError(const char* message, int do_sleep)
     ReportLoader(errormsg);
     if (do_sleep)
         sleep(sleeplen);
+}
+
+void DownloadFile(const std::string &url, const std::string &destination)
+{
+    std::ofstream fout(destination, std::ios::binary);
+    try {
+        curlpp::Cleanup cleaner;
+        curlpp::Easy request;
+
+        fout << curlpp::options::Url(url) << std::endl;
+        std::cerr << "Successfully downloaded file '" << destination << "' from '" << url << "'" << std::endl;
+    }
+    catch (const curlpp::LogicError & e)
+    {
+        std::cerr << "Error downloading file: " << e.what() << std::endl;
+    }
+    catch (const curlpp::RuntimeError &e)
+    {
+        std::cerr << "Error downloading file: " << e.what() << std::endl;
+    }
 }
 
 /****
@@ -775,6 +802,11 @@ int StartSystem(int my_use_net)
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Menu");
     sys->FullPath(MASTER_MENU_DB, str);
+    if (!fs::exists(str))
+    {
+        const std::string menu_url = "http://www.viewtouch.com/menu.dat";
+        DownloadFile(menu_url, str);
+    }
     if (sys->menu.Load(str))
     {
         RestoreBackup(str);
@@ -1205,6 +1237,13 @@ int FindVTData(InputDataFile *infile)
     if (infile->Open(vt_data_path, version) == 0)
         return version;
 
+    // download to official location and then try to read again
+    const std::string vtdata_url = "http://www.viewtouch.com/vt_data";
+    fprintf(stderr, "Trying download VT_DATA: %s from '%s'\n", SYSTEM_DATA_FILE, vtdata_url.c_str());
+    DownloadFile(vtdata_url, SYSTEM_DATA_FILE);
+    if (infile->Open(SYSTEM_DATA_FILE, version) == 0)
+        return version;
+
     return -1;
 }
 
@@ -1270,8 +1309,13 @@ int LoadSystemData()
     df.Close();
 
     // Load Tables
-    genericChar filename1[256];
-    sprintf(filename1, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB1);
+    const std::string tables_filepath = (fs::path{sys->data_path.str()} / fs::path{MASTER_ZONE_DB1} ).generic_string();
+    const char *filename1 = tables_filepath.c_str();
+    if (!fs::exists(tables_filepath))
+    {
+        const std::string tables_url = "http://www.viewtouch.com/tables.dat";
+        DownloadFile(tables_url, tables_filepath);
+    }
 
     if (zone_db->Load(filename1))
     {
@@ -1281,8 +1325,13 @@ int LoadSystemData()
     }
 
     // Load Menu
-    genericChar filename2[256];
-    sprintf(filename2, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB2);
+    const std::string zone_db_filepath = (fs::path{sys->data_path.str()} / fs::path{MASTER_ZONE_DB2} ).generic_string();
+    const char *filename2 = zone_db_filepath.c_str();
+    if (!fs::exists(zone_db_filepath))
+    {
+        const std::string zone_db_url = "http://www.viewtouch.com/zone_db.dat";
+        DownloadFile(zone_db_url, zone_db_filepath);
+    }
     if (zone_db->Load(filename2))
     {
         RestoreBackup(filename2);

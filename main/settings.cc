@@ -45,11 +45,15 @@
 
 
 
+#define CONFIG_DIR VIEWTOUCH_PATH "/dat/conf"
 #define CONFIG_TAX_FILE VIEWTOUCH_PATH "/dat/conf/tax.ini"
 #define CONFIG_FEES_FILE VIEWTOUCH_PATH "/dat/conf/fees.ini"
 #define CONFIG_FASTFOOD_FILE VIEWTOUCH_PATH "/dat/conf/fastfood.ini"
 
+#include <filesystem>
 #include <iostream> // temp
+
+namespace fs = std::filesystem;
 
 /*********************************************************************
  * Global Data
@@ -2386,6 +2390,13 @@ int Settings::Save()
 
     // save settings to config files.  eventually all settings should be
     // written to config files instead of .dat files.
+    if (!fs::is_directory(CONFIG_DIR))
+    {
+        std::cerr << "Config directory does not exist: '"
+            << CONFIG_DIR << "' creating it" << std::endl;
+        fs::create_directory(CONFIG_DIR);
+        fs::permissions(CONFIG_DIR, fs::perms::all); // be sure read/write/execute flags are set
+    }
     {
         using namespace confmap;
 

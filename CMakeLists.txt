@@ -10,7 +10,7 @@ endif()
 # https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html
 string(COMPARE EQUAL "${CMAKE_CXX_STANDARD}" "" no_cmake_cxx_standard_set)
 if(no_cmake_cxx_standard_set)
-    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set(CMAKE_CXX_EXTENSIONS OFF)
     message(STATUS "Using default C++ standard ${CMAKE_CXX_STANDARD}")
@@ -56,6 +56,13 @@ set(USE_SYSTEM_TZ_DB ON CACHE BOOL "Use the operating system's timezone database
 set(ENABLE_DATE_TESTING OFF CACHE BOOL "Enable unit tests" FORCE)
 set(DISABLE_STRING_VIEW ON CACHE BOOL "Disable string view" FORCE)
 add_subdirectory(external/date EXCLUDE_FROM_ALL)
+
+# don't need the curlpp shared lib, using the statically linked one
+set(CURLPP_BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
+add_subdirectory(external/curlpp EXCLUDE_FROM_ALL)
+if(NOT TARGET curlpp_static)
+    message(FATAL_ERROR "missing 'curlpp_static' target")
+endif()
 
 include_directories(main)
 include_directories(zone)
@@ -237,7 +244,10 @@ add_executable(vt_main
     )
 target_include_directories(vt_main PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
 target_link_libraries(vt_main zone vtcore ${VT_XLIBS})
-target_link_libraries(vt_main tz)
+target_link_libraries(vt_main tz curlpp_static)
+# on gcc 8 need to link against std++fs for std::filesystem support
+# https://stackoverflow.com/questions/54290254/problem-adding-stdfilesystem-to-cmake-project
+target_link_libraries(vt_main stdc++fs)
 
 add_executable(vt_term
     term/term_main.cc
