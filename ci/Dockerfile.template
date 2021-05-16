@@ -22,7 +22,8 @@ RUN apt-get update && \
   xfonts-75dpi \
   xfonts-100dpi \
   tzdata \
-  g++
+  g++ \
+  libcurl4-gnutls-dev
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
