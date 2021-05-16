@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- download bootstrap files if missing #119
+  - `viewouch/bin/vt_data`     from http://www.viewtouch.com/vt_data
+  - `viewouch/dat/tables.dat`  from http://www.viewtouch.com/tables.dat
+  - `viewouch/dat/menu.dat`    from http://www.viewtouch.com/menu.dat
+  - `viewouch/dat/zone_db.dat` from http://www.viewtouch.com/zone_db.dat
+  - download functionality require a package providing `libcurl-dev`, for example `libcurl4-gntuls-dev` on Debian/Ubuntu
+- create `viewtouch/dat/conf` directory if missing #119
+- create `viewtouch/dat/screensaver` directory if missing #119
+- require at least gcc-8 and C++17 for `std::filesystem` support #119
 
 ### Changed
 - update external copy of Catch2 to v2.13.4

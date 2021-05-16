@@ -92,7 +92,7 @@ endif( )
 target_link_libraries( tz ${CMAKE_THREAD_LIBS_INIT} ${OPTIONAL_LIBRARIES} )
 
 # add include folders to the library and targets that consume it
-target_include_directories(tz PUBLIC
+target_include_directories(tz PUBLIC 
     $<BUILD_INTERFACE:
         ${CMAKE_CURRENT_SOURCE_DIR}/${HEADER_FOLDER}
     >
