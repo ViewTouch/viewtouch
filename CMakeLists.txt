@@ -265,6 +265,9 @@ target_include_directories(vt_term PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
 target_link_libraries(vt_term
     vtcore conf_file image_data
     ${VT_XLIBS} ${TERM_CREDIT_LIBS})
+# on gcc 8 need to link against std++fs for std::filesystem support
+# https://stackoverflow.com/questions/54290254/problem-adding-stdfilesystem-to-cmake-project
+target_link_libraries(vt_term stdc++fs)
 
 add_executable(vt_print print/print_main.cc)
 target_link_libraries(vt_print vtcore)
