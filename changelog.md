@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
-## [Unreleased]
+## [v21.05.1] - 2021-05-18
 ### Added
 - download bootstrap files if missing #119
   - `viewouch/bin/vt_data`     from http://www.viewtouch.com/vt_data
@@ -18,8 +18,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 - update external copy of Catch2 to v2.13.4
-
-### Removed
 
 ### Fixed
 - fix double line after header in some report tables #115
