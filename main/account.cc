@@ -232,8 +232,10 @@ void Account::Add(const AccountEntry &ae)
 int Account::Remove(const AccountEntry &ae)
 {
     FnTrace("Account::Remove()");
+    int retval = std::find(entry_list.begin(), entry_list.end(), ae) != entry_list.end();
     entry_list.erase(std::remove(entry_list.begin(), entry_list.end(), ae),
                      entry_list.end());
+    return retval;
 }
 
 int Account::RemoveFile()

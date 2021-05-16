@@ -76,9 +76,6 @@ public:
     genericChar* Description( char* str = NULL);
     genericChar* Measurement( char* str = NULL);
 
-    UnitAmount &operator = (UnitAmount &u) {
-        amount = u.amount; type = u.type; return *this; }
-
     UnitAmount &operator *= (Flt a) {
         amount *= a; return *this; }
     UnitAmount &operator /= (Flt a) {
