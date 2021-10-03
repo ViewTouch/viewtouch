@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Changed
 
 ### Removed
+- remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
 
 ### Fixed
 

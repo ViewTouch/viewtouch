@@ -23,12 +23,6 @@ include(version.cmake)
 
 set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-include_directories(SYSTEM ${GTK3_INCLUDE_DIRS})
-link_directories(${GTK3_LIBRARY_DIRS})
-add_definitions(${GTK3_CFLAGS_OTHER})
-
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # add macro define 'DEBUG' to debug build
@@ -172,7 +166,7 @@ target_link_libraries(vtcore vt_version tz)
 
 add_executable(vtpos 
 		loader/loader_main.cc )
-target_link_libraries(vtpos vtcore vt_version ${GTK3_LIBRARIES})
+target_link_libraries(vtpos vtcore vt_version ${VT_XLIBS})
 
 
 add_library(zone
@@ -306,8 +300,6 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dat" AND IS_DIRECTORY "${CMAKE_CURRENT_SO
 else()
     message(STATUS "'dat' folder is missing in source directory, excluding it from install target. You can get the bootstrap files from http://www.viewtouch.com/vt_data.html")
 endif()
-install(DIRECTORY graphics DESTINATION viewtouch)
-install(DIRECTORY css DESTINATION viewtouch)
 install(PROGRAMS scripts/vtcommands.pl DESTINATION viewtouch/bin/vtcommands)
 
 #install(CODE "MESSAGE(\"Sample install message.\")")

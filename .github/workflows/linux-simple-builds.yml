@@ -39,6 +39,9 @@ jobs:
           - cxx: clang++-8
             cc: clang-8
             other_pkgs: clang-8
+          - cxx: clang++-9
+            cc: clang-9
+            other_pkgs: clang-9
           - cxx: clang++-10
             cc: clang-10
             other_pkgs: clang-10
@@ -70,7 +73,6 @@ jobs:
           xorg-dev \
           libmotif-dev \
           libfreetype6-dev \
-          libgtk-3-dev \
           cmake \
           git \
           xwit \
