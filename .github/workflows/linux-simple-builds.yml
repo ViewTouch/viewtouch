@@ -70,7 +70,6 @@ jobs:
           xorg-dev \
           libmotif-dev \
           libfreetype6-dev \
-          libgtk-3-dev \
           cmake \
           git \
           xwit \

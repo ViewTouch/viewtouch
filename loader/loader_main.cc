@@ -14,20 +14,9 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * loader_main.cc - revision 8 (March 2006) implemented in GTK+3 in Septmber 2016
+ * loader_main.cc - revision 9 (October 2021) moved from GTK+3 back to X11
  * Implementation of system starting command
  */
-#include <gtk/gtk.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/un.h>
-#include <fcntl.h>
-#include <iostream>
-#include <fstream>
-
-#ifdef DMALLOC
-#include <dmalloc.h>
-#endif
 
 #include "basic.hh"
 #include "logger.hh"
@@ -35,9 +24,34 @@
 
 #include "version/vt_version_info.hh"
 
+// system libraries
+#include <X11/Intrinsic.h>
+#include <X11/keysym.h>
+#include <X11/Shell.h>
+#include <X11/Xft/Xft.h>
+#include <Xm/MainW.h>
+#include <Xm/MwmUtil.h>
+#include <Xm/Xm.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/un.h>
+#include <fcntl.h>
+#include <unistd.h>
+// standard libraries
+#include <csignal>
+#include <iostream>
+#include <fstream>
+
+#ifdef DMALLOC
+#include <dmalloc.h>
+#endif
+
 /**** Defintions ****/
 const std::string SOCKET_FILE = "/tmp/vt_main";
 const std::string COMMAND_FILE = VIEWTOUCH_PATH "/bin/.vtpos_command";
+constexpr const char *FONT_NAME  = "utopia,serif-14:style=regular:dpi=100";
+constexpr size_t WIN_WIDTH  = 640;
+constexpr size_t WIN_HEIGHT = 240;
 
 #ifdef DEBUG
 int debug_mode = 1;
@@ -46,21 +60,21 @@ int debug_mode = 0;
 #endif
 
 /**** Globals ****/
-GdkDisplay      *display         = NULL;
-GdkScreen       *screen          = NULL;
-const gchar     *displayname     = NULL;
-GtkCssProvider  *provider        = NULL;
-GIOChannel      *loadstatus      = NULL;
+Display     *Dis = nullptr;
+//Window       Win = 0;
+XftFont     *loaderFont = nullptr;
+XftDraw     *xftdraw = nullptr;
+XftColor     xftBlack, xftWhite;
+int          screen_no        = 0;
+int          ColorBlack       = 0;
+int          ColorWhite       = 1;
 
-GtkWidget       *window          = NULL;
-GtkWidget       *grid            = NULL;
-GtkWidget       *label           = NULL;
-GtkWidget       *space           = NULL;
+char Message[1024] = "";
+char KBInput[1024] = "";
+bool GetInput = false;
 
 int             SocketNo         = 0;
 int             SocketNum        = 0;
-int             GetInput         = 0;
-char            KBInput[1024]    = "";
 
 /**** Functions ****/
 void ExitLoader()
@@ -68,62 +82,190 @@ void ExitLoader()
     if (SocketNo)
         close(SocketNo);
 
-    gtk_main_quit();
-
+    if (xftdraw) {
+        logmsg(LOG_DEBUG, "Freeing 'black' XftColor\n");
+        XftColorFree(Dis, DefaultVisual(Dis, screen_no),
+            DefaultColormap(Dis, screen_no), &xftBlack);
+        logmsg(LOG_DEBUG, "Freeing 'white' XftColor\n");
+        XftColorFree(Dis, DefaultVisual(Dis, screen_no),
+            DefaultColormap(Dis, screen_no), &xftWhite);
+        logmsg(LOG_DEBUG, "Freeing XftDraw *\n");
+        XftDrawDestroy(xftdraw);
+        logmsg(LOG_DEBUG, "Closing Xft loader font\n");
+        XftFontClose(Dis, loaderFont);
+    }
+    if (Dis) {
+        logmsg(LOG_DEBUG, "Closing X display\n");
+        XCloseDisplay(Dis);
+    }
     exit(0);
 }
 
-void UpdateStatusBox(gchar *msg)
+int UpdateWindow(const char* str = NULL)
 {
-    gtk_label_set_text(GTK_LABEL(label), msg);
-    gtk_widget_show(label);
+    if (str)
+        strcpy(Message, str);
+
+    XftDrawRect(xftdraw, &xftWhite, 0, 0, WIN_WIDTH, WIN_HEIGHT);
+
+    int len = strlen(Message);
+    if (len > 0)
+    {
+        int lines = 1;
+        char msg[4096];
+        int msgidx = 0;
+        int idx = 0;
+        int ww;
+        int hh = 0;
+        XGlyphInfo extents;
+        for (idx = 0; idx < len; idx++)
+        {
+            if (Message[idx] == '\\')
+                lines += 1;
+        }
+        idx = 0;
+
+        hh = (WIN_HEIGHT - (lines * loaderFont->height)) / 2;
+        while (idx < len && msgidx < 4096)
+        {
+            msgidx = 0;
+            while (Message[idx] != '\\' && Message[idx] != '\0' && idx < len)
+            {
+                msg[msgidx] = Message[idx];
+                idx += 1;
+                msgidx += 1;
+            }
+            idx += 1;
+            msg[msgidx] = '\0';
+            XftTextExtentsUtf8(Dis, loaderFont, (unsigned const char* )msg, msgidx, &extents);
+            ww = (WIN_WIDTH - extents.width) / 2;
+            XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont, ww, hh,
+                (unsigned const char* )msg, msgidx);
+            hh += loaderFont->height;
+        }
+    }
+
+    XFlush(Dis);
+    return 0;
 }
 
-void UpdateKeyboard(const char* str)
+int UpdateKeyboard(const char* str = nullptr)
 {
-    genericChar prompt[256] = "Temporary Key: ";
-    genericChar temp[4096]  = "";
+    genericChar prompt[256] = "Temporary Key:";
+    XGlyphInfo extents;
+    int len;
 
     if (str)
         snprintf(KBInput, sizeof(KBInput), "%s_", str);
 
-    snprintf(temp, 4096, "%s%s", prompt, KBInput);
+    // erase first
+    XftDrawRect(xftdraw, &xftWhite, 1, WIN_HEIGHT - (3 * loaderFont->height),
+        WIN_WIDTH - 2, 3 * loaderFont->height);
 
-    UpdateStatusBox(&temp[0]);
+    len = strlen(prompt);
+    XftTextExtents8(Dis, loaderFont, (unsigned const char* )prompt, len, &extents);
+    XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont,
+        (WIN_WIDTH - extents.width) / 2,
+        WIN_HEIGHT - 2 * loaderFont->height,
+        (unsigned const char* )prompt, len);
+
+    len = strlen(KBInput);
+    XftTextExtents8(Dis, loaderFont, (unsigned const char* )KBInput, len, &extents);
+    XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont,
+        (WIN_WIDTH - extents.width) / 2,
+        WIN_HEIGHT - loaderFont->height,
+        (unsigned const char* )KBInput, len);
+
+    XFlush(Dis);
+    return 0;
 }
 
-gboolean SocketInputCB(GIOChannel *source, GIOCondition condition, gpointer data)
+void ExposeCB(Widget widget, XtPointer client_data, XEvent *event,
+              Boolean *okay)
 {
-    static char buffer[256];
-    static char* c = buffer;
-
-    while (read(SocketNo, c, 1) == 1)
+    XExposeEvent *e = (XExposeEvent *) event;
+    if (e->count <= 0)
     {
-        switch (*c)
-        {
-            case '\0':
-                c = buffer;
-                if (strcmp(buffer, "done") == 0)
-                    ExitLoader();
-                else
-                {
-                    UpdateStatusBox(buffer);
-                    return TRUE;
-                }
-                break;
-
-            case '\r':
-                GetInput = 1;
-                *c = '\0';
-                UpdateKeyboard("");
-                break;
-
-            default:
-                c++;
-                break;
-        }
+        UpdateWindow();
+        if (GetInput)
+            UpdateKeyboard();
     }
-    return TRUE;
+}
+
+void KeyPressCB(Widget widget, XtPointer client_data, XEvent *event, Boolean *okay)
+{
+    static genericChar buffer[256] = "";
+    static genericChar keybuff[32] = "";
+
+    if (GetInput)
+    {
+        XKeyEvent *e = (XKeyEvent *) event;
+        KeySym key = 0;
+        int bufflen = strlen(buffer);
+
+        int len = XLookupString(e, keybuff, 31, &key, NULL);
+        if (len < 0)
+            len = 0;
+        keybuff[len] = '\0';
+
+        switch (key)
+        {
+        case XK_Return:
+            // send the entered string (or quit) to vt_main
+            if (bufflen < 1)
+                write(SocketNo, "quit", 4);
+            else
+                write(SocketNo, buffer, strlen(buffer));
+            // clear the string for another run
+            GetInput = false;
+            memset(buffer, '\0', 256);
+            memset(keybuff, '\0', 32);
+            break;
+        case XK_BackSpace:
+            if (bufflen > 0)
+                buffer[bufflen - 1] = '\0';
+            break;
+        default:
+            if (((keybuff[0] >= '0' && keybuff[0] <= '9') ||
+                (keybuff[0] >= 'A' && keybuff[0] <= 'F')  ||
+                (keybuff[0] >= 'a' && keybuff[0] <= 'f')) &&
+                // temp key len is actually only 20
+                (strlen(buffer) <= 32))
+            {
+                keybuff[0] = toupper(keybuff[0]);
+                strcat(buffer, keybuff);
+            }
+            break;
+        }
+        UpdateKeyboard(buffer);
+    }
+}
+
+void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
+{
+    static genericChar buffer[256];
+    static genericChar* c = buffer;
+
+    int no = read(SocketNo, c, 1);
+    if (no == 1)
+    {
+        if (*c == '\0')
+        {
+            c = buffer;
+            if (strcmp(buffer, "done") == 0)
+                ExitLoader();
+            else
+                UpdateWindow(buffer);
+        }
+        else if (*c == '\r')
+        {
+            GetInput = true;
+            *c = '\0';
+            UpdateKeyboard("");
+        }
+        else
+            ++c;
+    }
 }
 
 int SetupConnection(const std::string &socket_file)
@@ -168,93 +310,64 @@ int SetupConnection(const std::string &socket_file)
     return SocketNo;
 }
 
-//Initial Widget setup
-static void OpenStatusBox()
+XtAppContext InitializeDisplay(int argc, char **argv)
 {
-    double scale = 1.0;
-    const gchar *logofile = "/usr/viewtouch/graphics/logofile";
-    GtkWidget *logo = gtk_image_new_from_file(logofile);
-    const GdkPixbuf *logopb = gtk_image_get_pixbuf(GTK_IMAGE(logo));
+    XtToolkitInitialize();
+    XtAppContext app = XtCreateApplicationContext();
 
-    int winwidth = gdk_pixbuf_get_width(logopb);
-    int winheight = gdk_pixbuf_get_height(logopb);
+    Dis = XtOpenDisplay(app, NULL, NULL, NULL, NULL, 0, &argc, argv);
+    if (Dis == NULL)
+    {
+        logmsg(LOG_ERR, "Unable to open display\n");
+        ExitLoader();
+    }
 
-    if(winwidth>=winheight) scale = 640.0/winwidth;
-    else scale = 640.0/winheight;
+    screen_no  = DefaultScreen(Dis);
+    ColorBlack = BlackPixel(Dis, screen_no);
+    ColorWhite = WhitePixel(Dis, screen_no);
 
-    winwidth*=scale;
-    winheight*=scale;
-
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(window), winwidth, winheight);
-    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-    gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
-    gtk_widget_set_name(window, "mywindow");
-
-//  Grids are the preferred container since GTK+3 was released
-    grid = gtk_grid_new();
-    gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
-    gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
-    gtk_container_add(GTK_CONTAINER(window), grid);
-    gtk_widget_set_name(grid, "mygrid");
-
-//  A blank label to help position the message label properly
-    space = gtk_label_new("");
-    gtk_grid_attach(GTK_GRID(grid), space, 0, 0, 3, 9);
-    gtk_widget_set_vexpand(space, FALSE);
-    gtk_widget_set_hexpand(space, FALSE);
-
-//  This is the label that status messages are displayed in
-    label = gtk_label_new("");
-    gtk_grid_attach(GTK_GRID(grid), label, 1, 9, 2, 1);
-    gtk_widget_set_hexpand(label, TRUE);
-    gtk_widget_set_vexpand(label, FALSE);
-    gtk_label_set_width_chars(GTK_LABEL(label), winwidth/20);
-    gtk_widget_set_halign(label, GTK_ALIGN_CENTER);
-    //gtk_label_set_xalign(GTK_LABEL(label),0);
-    //gtk_label_set_yalign(GTK_LABEL(label),1);
-    gtk_widget_set_name(label, "mylabel");
-
-    gtk_widget_show_all(window);
+    loaderFont = XftFontOpenName(Dis, screen_no, FONT_NAME);
+    if (loaderFont == NULL)
+    {
+        logmsg(LOG_ERR, "Unable to load font\n");
+        ExitLoader();
+    }
+    return app;
 }
 
-void Css()
+Widget OpenStatusBox(XtAppContext app)
 {
-    provider = gtk_css_provider_new ();
+    int dis_width = 0, dis_height = 0;
+    dis_width  = DisplayWidth(Dis, screen_no);
+    dis_height = DisplayHeight(Dis, screen_no);
+    Arg args[] = {
+        { XtNx,                (dis_width - static_cast<int>(WIN_WIDTH)) / 2   },
+        { XtNy,                (dis_height - static_cast<int>(WIN_HEIGHT)) / 2 },
+        { XtNwidth,            WIN_WIDTH                     },
+        { XtNheight,           WIN_HEIGHT                    },
+        { XtNborderWidth,      0                             },
+        { (String)"minWidth",          WIN_WIDTH                     },
+        { (String)"minHeight",         WIN_HEIGHT                    },
+        { (String)"maxWidth",          WIN_WIDTH                     },
+        { (String)"maxHeight",         WIN_HEIGHT                    },
+        { (String)"mwmDecorations",    0                             },
+        { (String)"mappedWhenManaged", False                         },
+    };
 
-    gtk_style_context_add_provider_for_screen (screen,
-                                 GTK_STYLE_PROVIDER (provider),
-                                 GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    Widget shell = XtAppCreateShell("Welcome to POS", NULL,
+        applicationShellWidgetClass, Dis, args, XtNumber(args));
+    XtRealizeWidget(shell);
 
-// CSS can be embedded in the code or imported from a file.  A demonstration
-// of both methods are included.  The embedded method (gtk_css_provider_load_from_data)
-// is commented out.  The import method (gtk_css_provider_load_from_file) with the
-// associated vtpos.css file allows for styling changes without recompiling.
-    gtk_css_provider_load_from_data (GTK_CSS_PROVIDER(provider),
-                                   " #mylabel {\n"
-                                   "   background-color: rgba(0, 0, 0, 0);\n"
-                                   "   font-family: Times;\n"
-                                   "   font-size: 10px;\n"
-                                   "   font-weight: bold;\n"
-                                   "   color: white;\n"
-                                   "}\n"
-                                   " #mygrid {\n"
-                                   "   background-color: rgba(0, 0, 0, 0);\n"
-                                   "}\n"
-                                   " #mywindow {\n"
-                                   "   background-color: black;\n"
-                                   "   background: url('" VIEWTOUCH_PATH "graphics/logofile');\n"
-                                   "   background-size: contain;\n"
-                                   "   background-position: center;\n"
-                                   "   background-repeat: no-repeat;\n"
-                                   "}\n", -1, nullptr);
+    Window Win = XtWindow(shell);
+    xftdraw = XftDrawCreate(Dis, Win, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no));
+    XftColorAllocName(Dis, DefaultVisual(Dis, screen_no),
+        DefaultColormap(Dis, screen_no), "black", &xftBlack);
+    XftColorAllocName(Dis, DefaultVisual(Dis, screen_no),
+        DefaultColormap(Dis, screen_no), "white", &xftWhite);
 
-/*
-    const char* vtpos_css = VIEWTOUCH_PATH "/css/vtpos.css";
-    gtk_css_provider_load_from_file(GTK_CSS_PROVIDER(provider), g_file_new_for_path(vtpos_css), NULL);
-*/
-
-    g_object_unref (provider);
+    XtAddEventHandler(shell, ExposureMask, FALSE, ExposeCB, NULL);
+    XtAddEventHandler(shell, KeyPressMask, FALSE, KeyPressCB, NULL);
+    return shell;
 }
 
 bool WriteArgList(const int argc, char* argv[])
@@ -309,12 +422,14 @@ int main(int argc, genericChar* argv[])
 {
     SetPerms();
 
+    // Set up signal interrupts
     signal(SIGINT,  SignalFn);
 
+    // Parse command line options
     int net_off = 0;
     int purge = 0;
     int notrace = 0;
-    const char* data_path = NULL;
+    const char* data_path = nullptr;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -377,19 +492,19 @@ int main(int argc, genericChar* argv[])
         return 1;
     }
 
+    // Xt toolkit init & window
+    XtAppContext app = InitializeDisplay(argc, argv);
+    Widget shell = OpenStatusBox(app);
+
+    // Setup Connection
     SocketNum = SetupConnection(SOCKET_FILE);
 
-    gtk_init(&argc, &argv);
-
-    display = gdk_display_get_default ();
-    screen = gdk_display_get_default_screen (display);
-
-    OpenStatusBox();
-
-    Css();
+    // Show Window
+    XtMapWidget(shell);
+    XFlush(Dis);
 
     // Send Commands
-    const genericChar* displaystr = gdk_display_get_name(display);
+    const char* displaystr = DisplayString(Dis);
     int displaylen = strlen(displaystr);
     write(SocketNo, "display ", 8);
     write(SocketNo, displaystr, displaylen + 1);
@@ -406,11 +521,20 @@ int main(int argc, genericChar* argv[])
         write(SocketNo, "notrace", 8);
     write(SocketNo, "done", 5);
 
-    loadstatus = g_io_channel_unix_new(SocketNum);
+    // Read Status Messages
+    XtAppAddInput(app, SocketNo, (XtPointer) XtInputReadMask,
+                  (XtInputCallbackProc) SocketInputCB, NULL);
 
-    g_io_add_watch(loadstatus, G_IO_IN, SocketInputCB, NULL);
-
-    gtk_main();
-
+    XEvent event;
+    for (;;)
+    {
+        XtAppNextEvent(app, &event);
+        switch (event.type)
+        {
+        case MappingNotify:
+            XRefreshKeyboardMapping((XMappingEvent *) &event); break;
+        }
+        XtDispatchEvent(&event);
+    }
     return (0);
 }
