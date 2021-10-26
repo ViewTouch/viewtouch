@@ -22,12 +22,14 @@ Official website: http://www.viewtouch.com
 
 License
 =========
-
 ViewTouch is released under the GNU Public License, version 3.
 
-Commercial Support and Enquiries
+The ViewTouch Point of Sale Computer, Commercial Support and Enquiries
 =========
-The ViewTouch website and contact point is http://www.viewtouch.com  Email: gene@viewtouch.com  Phone: 541-515-5913
+ViewTouch all-in-one Point of Sale (PoS) Computer with Raspberry Pi and 15.8" Display: $399 plus shipping.
+![ViewTouch Point of Sale Computer with 15.8" Display](http://www.viewtouch.com/poscomputer.avif)
+The ViewTouch website and contact point is http://www.viewtouch.com  Email: gene@viewtouch.com  Phone: 541-515-5913.
+Shown here and on the ViewTouch home page, the ViewTouch all-in-one touchscreen PoS computer powered by the Raspberry Pi and is manufactured by ChipSee, Bejing, China.
 
 ViewTouch microSD image
 =========
