@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
 
 ### Fixed
+- fix configure step by searching for `PkgConfig` before using `pkg_check_module` #128
 
 
 ## [v21.05.1] - 2021-05-18
