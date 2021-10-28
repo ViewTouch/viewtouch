@@ -137,6 +137,7 @@ else() # fall back to variables
 	list(APPEND VT_XLIBS ${FREETYPE_LIBRARIES})
 endif()
 
+find_package(PkgConfig REQUIRED) # https://cmake.org/cmake/help/latest/module/FindPkgConfig.html
 pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
 list(APPEND VT_XLIBS ${FONTCONFIG_LIBRARIES})
 list(APPEND VT_XLIBS_INCLUDE_DIRS ${FONTCONFIG_INCLUDE_DIRS})
