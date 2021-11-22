@@ -1,4 +1,4 @@
-ViewTouch
+ViewTouch©
 =========
 
 [![Build Status](https://img.shields.io/travis/ViewTouch/viewtouch/master.svg?label=Travis)](https://travis-ci.org/ViewTouch/viewtouch/builds)
@@ -6,17 +6,19 @@ ViewTouch
 [![Join the chat at https://gitter.im/ViewTouch/viewtouch](https://badges.gitter.im/ViewTouch/viewtouch.svg)](https://gitter.im/ViewTouch/viewtouch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ViewTouch is a registered trademark in the USA.
 
-ViewTouch is the ORIGINAL Graphical Touchscreen Restaurant Point of Sale Interface, first created by restaurateur Gene Mosher and C programmer, Nick Colley, in 1986.  Initial funding of the development of the code in '86 was due to the effort of Ed Ramsay.  ViewTouch was first demonstrated to the public at ComDex, Las Vegas in November, 1986. https://commons.wikimedia.org/wiki/File:Comdex_1986.png  The current version of ViewTouch was first created in 1995-98 by Gene Mosher and C Programmer, Richard Bradley.  Major funding of the development of the code during the '95-'98 period is due to the effort of Billy Foster.  Extensive enhancement of the code was carried out from 2000-04 by Bruce King. Major funding of the development of the code during the '00-'04 period is due to the effort of Doug DeLeeuw.  Since the arrival of ViewTouch under the GNU Public License in 2014 ViewTouch code has been available at GitHub and a great deal of refinement and modernization of the code has taken place.  Special thanks to Jack Morrison and Reinhold Gschweicher.  Gene and Barbara Mosher have provided lifetime support and funding for ViewTouch from its inception. Gene owns the ViewTouch copyright and has overseen the management of the code during its entire lifetime.
+History
+=========
+ViewTouch© is the ORIGINAL Graphical Touchscreen Restaurant Point of Sale Interface, first created by restaurateur Gene Mosher and C programmer, Nick Colley, in 1986.  Initial funding of the development of the code in '86 was due to the effort of Ed Ramsay.  Barbara Mosher has been a perennial financial supporter from the beginning in 1986 and continuing into present day.  ViewTouch was first demonstrated to the public at ComDex, Las Vegas in November, 1986. https://commons.wikimedia.org/wiki/File:Comdex_1986.png  Early funding was due, in part, by the generosity of John King, M.D., Chicago.  The current version of ViewTouch was first created in 1995-98 by Gene Mosher and C Programmer, Richard Bradley.  Major funding of the development of the code during the '95-'98 period is due to the much appreciated effort of Billy Foster.  Extensive enhancement of the code was carried out from 2000-04 by Bruce King. Major funding of the development of the code during the '00-'04 period is due to the effort of Doug DeLeeuw.  Since the arrival of ViewTouch under the GNU Public License in 2014 ViewTouch code has been available at GitHub and a great deal of refinement and modernization of the code has taken place.  Special thanks to Jack Morrison for amazing debugging skills and to Reinhold Gschweicher for major refactoring and code standardization.  Gene and Barbara Mosher have provided lifetime support and funding for ViewTouch from its inception. Gene owns the ViewTouch copyright. He began writing Point of Sale Code in 1979. His passion and  vision has overseen the development, management and maintainance of the code on a wide array of computers and point of sale equipment across six decades.
 
+Contact
+=========
 With the availability of ViewTouch source code under the GPL and the arrival of the Raspberry Pi Foundation's computers a restaurateur can automate one's own restaurant.  ViewTouch makes available Point of Sale computers powered by the Raspberry Pi Compute Module.  These are made by the Chinese company, Chipsee.
-
-Android tablets and smartphones can be used as mobile POS devices by using a QR Code scanner at http://viewtouch.com/nc.html to install the ViewTouch Android X Server on them. The most recent ViewTouch Raspberry Pi image is also available at this link.
 
 The availability of ViewTouch source code and documentation at GitHub benefits the clients, customers and associates of Gene Mosher and it facilitates the development and maintenance of ViewTouch source code.
 
 _An important link at the top of this page is the Wiki link. It contains a page with build instructions and an 'Announcements' page with the latest news._
 
-Restaurateurs who are clients or customers of ViewTouch and who wish training and 24/7 support need only contact Gene at http://www.viewtouch.com/contact.html
+Restaurateurs who are clients or customers of ViewTouch and who wish training and 24/7 support need only contact Gene at http://www.viewtouch.com/contact.html or phone: 541-515-5913.
 
 Official website: http://www.viewtouch.com
 
@@ -26,14 +28,14 @@ ViewTouch is released under the GNU Public License, version 3.
 
 The ViewTouch Point of Sale Computer, Commercial Support and Enquiries
 =========
-ViewTouch all-in-one Point of Sale (PoS) Computer with Raspberry Pi and 15.8" Display: $399 plus shipping.
+ViewTouch all-in-one Point of Sale (PoS) Computer with Raspberry Pi and 15.8" Display: $399 plus shipping and bank fund transfer charges.  MicroSD card available separately from Gene Mosher, ViewTouch maintainer/guardian, 2842 Wingate Street, Eugene, Oregon,  
 ![ViewTouch Point of Sale Computer with 15.8" Display](http://www.viewtouch.com/poscomputer.avif)
 The ViewTouch website and contact point is http://www.viewtouch.com  Email: gene@viewtouch.com  Phone: 541-515-5913.
-Shown here and on the ViewTouch home page, the ViewTouch all-in-one touchscreen PoS computer powered by the Raspberry Pi and is manufactured by ChipSee, Bejing, China.
+Shown here and on the ViewTouch home page, the ViewTouch all-in-one touchscreen PoS computer powered by the Raspberry Pi, manufactured by Chipsee, Bejing, China and shipped directly to customers via FedEx.
 
 ViewTouch microSD image
 =========
-<a href="http://www.viewtouch.com/nc.html">The latest ViewTouch image for the Raspberry Pi</a> can be downloaded, decompressed and copied to a 16Gb or larger microSD card.  This image boots to the ViewTouch desktop and offers many desktop support features for the ViewTouch Point of Sale program.   <a href="mailto:sales@viewtouch.com">A bootable 32Gb microSD card with this image is available for $25.</a>
+<a href="http://www.viewtouch.com/nc.html">The latest ViewTouch image for the Raspberry Pi</a> can be downloaded, decompressed and copied to a 32Gb or larger microSD card.  This image boots to the ViewTouch desktop and offers many desktop support features for the ViewTouch Point of Sale program.   <a href="mailto:sales@viewtouch.com">A bootable 32Gb microSD card with this image is available for $25.</a>
 
 Screenshots
 =========
