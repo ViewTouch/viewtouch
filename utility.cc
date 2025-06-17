@@ -20,6 +20,7 @@
 
 #include "manager.hh"
 #include "utility.hh"
+#include "fntrace.hh"
 
 #include <unistd.h>
 #include <ctime>

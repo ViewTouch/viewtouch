@@ -23,6 +23,7 @@
 #include <sys/file.h>
 #include <unistd.h>
 #include <string.h>
+#include "fntrace.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>

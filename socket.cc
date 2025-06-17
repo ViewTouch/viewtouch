@@ -18,6 +18,7 @@
  */
 
 #include "socket.hh"
+#include "fntrace.hh"
 #include "utility.hh"
 
 #include <sys/types.h>

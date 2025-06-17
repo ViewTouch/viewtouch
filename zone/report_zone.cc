@@ -108,23 +108,24 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
         }
     }
 
+    int saved_page = page; // <--- Save current page
+
     if (update_flag)
     {
         if (report)
         {
             delete report;
             report = NULL;
-            page = 0;
+            // page = 0;  // <--- REMOVE THIS LINE!
         }
 
         if (update_flag == RENDER_NEW)
         {  // set relevant variables to default values
- //   		printf("ReportZone::Render() update_flag == RENDER_NEW\n");
             day_start.Clear();
             day_end.Clear();
             ref  = SystemTime;
             period_view = s->default_report_period;
-            page = 0;
+            page = 0; // <--- Only reset page on NEW
 
             if (term->server == NULL && s->drawer_mode == DRAWER_SERVER)
                 term->server = e;
@@ -299,6 +300,10 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
             temp_report = NULL;
         }
     }
+
+    // If not a new report, restore the saved page
+    if (update_flag != RENDER_NEW)
+        page = saved_page;
 
     LayoutZone::Render(term, update_flag);
     int hs = 0;
@@ -965,6 +970,12 @@ SignalResult ReportZone::Touch(Terminal *term, int tx, int ty)
 
     int new_page = page;
     LayoutZone::Touch(term, tx, ty);
+
+    // Use member variables for debounce
+    if (selected_y == last_selected_y_touch && page == last_page_touch) {
+        return SIGNAL_IGNORED;
+    }
+
     if (selected_y <= 3.0)
     {
         --new_page;
@@ -975,10 +986,14 @@ SignalResult ReportZone::Touch(Terminal *term, int tx, int ty)
     }
     else if (check_disp_num)
     {
+        last_selected_y_touch = selected_y;
+        last_page_touch = page;
         return ToggleCheckReport(term);
     }
     else
     {
+        last_selected_y_touch = selected_y;
+        last_page_touch = page;
         if (Print(term, print))
             return SIGNAL_IGNORED;
         return SIGNAL_OKAY;
@@ -994,6 +1009,8 @@ SignalResult ReportZone::Touch(Terminal *term, int tx, int ty)
         return SIGNAL_IGNORED;
 
     page = new_page;
+    last_selected_y_touch = selected_y;
+    last_page_touch = page;
     Draw(term, 0);
     return SIGNAL_OKAY;
 }

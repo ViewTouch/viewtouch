@@ -16,10 +16,11 @@
  *			This needs to be fixed.
  */
 
-#ifndef _LIST_UTILITY_HH
-#define _LIST_UTILITY_HH
+#ifndef VT_LIST_UTILITY_HH
+#define VT_LIST_UTILITY_HH
 
 #include "basic.hh"
+#include "fntrace.hh"
 #include "utility.hh"
 
 /**** Types ****/
