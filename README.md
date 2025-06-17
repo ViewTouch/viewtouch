@@ -12,15 +12,11 @@ ViewTouch© is the ORIGINAL Graphical Touchscreen Restaurant Point of Sale Inter
 
 Contact
 =========
-With the availability of ViewTouch source code under the GPL and the arrival of the Raspberry Pi Foundation's computers a restaurateur can automate one's own restaurant.  ViewTouch makes available Point of Sale computers powered by the Raspberry Pi Compute Module.  These are made by the Chinese company, Chipsee.
+With the availability of ViewTouch source code under the GPL and the arrival of the Raspberry Pi Foundation's computers a restaurateur can automate one's own restaurant.  ViewTouch makes available all-in-one Point of Sale computers with a 15.8" touchscreen and Raspberry Pi 5 Compute Module, made by Chipsee, in Beijing, China.
 
-The availability of ViewTouch source code and documentation at GitHub benefits the clients, customers and associates of Gene Mosher and it facilitates the development and maintenance of ViewTouch source code.
+The availability of ViewTouch source code and documentation at GitHub benefits the clients, customers and associates of Gene Mosher, facilitating the enhancement and extention of ViewTouch source code.
 
 _An important link at the top of this page is the Wiki link. It contains a page with build instructions and an 'Announcements' page with the latest news._
-
-Restaurateurs who are clients or customers of ViewTouch and who wish training and 24/7 support need only contact Gene at http://www.viewtouch.com/contact.html or phone: 541-515-5913.
-
-Official website: http://www.viewtouch.com
 
 License
 =========
@@ -28,14 +24,13 @@ ViewTouch is released under the GNU Public License, version 3.
 
 The ViewTouch Point of Sale Computer, Commercial Support and Enquiries
 =========
-ViewTouch all-in-one Point of Sale (PoS) Computer with Raspberry Pi and 15.8" Display: $399 plus shipping and bank fund transfer charges.  MicroSD card available separately from Gene Mosher, ViewTouch maintainer/guardian, 2842 Wingate Street, Eugene, Oregon,  
-![ViewTouch Point of Sale Computer with 15.8" Display](http://www.viewtouch.com/poscomputer.avif)
+![ViewTouch Point of Sale Computer with 15.8" Display](https://www.viewtouch.com/poscomputer.avif)
 The ViewTouch website and contact point is http://www.viewtouch.com  Email: gene@viewtouch.com  Phone: 541-515-5913.
-Shown here and on the ViewTouch home page, the ViewTouch all-in-one touchscreen PoS computer powered by the Raspberry Pi, manufactured by Chipsee, Bejing, China and shipped directly to customers via FedEx.
+Shown here and on the ViewTouch home page, the ViewTouch all-in-one touchscreen PoS computer powered by the Raspberry Pi, manufactured by Chipsee, Bejing, China.
 
 ViewTouch microSD image
 =========
-<a href="http://www.viewtouch.com/nc.html">The latest ViewTouch image for the Raspberry Pi</a> can be downloaded, decompressed and copied to a 32Gb or larger microSD card.  This image boots to the ViewTouch desktop and offers many desktop support features for the ViewTouch Point of Sale program.   <a href="mailto:sales@viewtouch.com">A bootable 32Gb microSD card with this image is available for $25.</a>
+<a href="http://www.viewtouch.com/nc.html">The latest ViewTouch image for the Raspberry Pi</a> can be downloaded, decompressed and copied to a 32Gb or larger microSD card.  The image boots to the ViewTouch desktop and offers desktop support features for ViewTouch Point of Sale.
 
 Screenshots
 =========
@@ -56,20 +51,15 @@ Interactive Time Clock Review and Editing
 Decision Support: Fly-Over, Drill-Down in Real Time
 Touch 'n' View Any Day or Any Period Updated Every Minute
 ![Decision Support: Fly-Over, Drill-Down in Real Time](http://www.viewtouch.com/vtscrn5.png)
-ViewTouch doesn't just store all of your data for you - it keeps your entire transaction history in RAM. Rely on ViewTouch for the report data you need with perfect accuracy and lightning speed. Auditors can see compliance across every period. Control NON CASH revenue adjustments and labor costs, including non-intuitive details. The only way you can run a business is 'by the numbers' and here are the numbers you need, Shift By Shift, Weekly, Monthly, Quarterly and Yearly.
+ViewTouch doesn't just store all of your data for you - it keeps your entire transaction history in RAM. Rely on ViewTouch for the report data you need with perfect accuracy and lightning speed. Auditors can see compliance across every period. Control NON CASH revenue adjustments and labor costs, including non-intuitive details, Shift By Shift, Weekly, Monthly, Quarterly and Yearly.
 
 More Viewtouch POS (Point of Sale) History
 =========
-ViewTouch first ran as a C program on the Atari ST computers in 1986. The Atari ST was a very exciting platform under Jack Tramiel from 1985 until 1993/4. In 1995 development of ViewTouch under UNIX began. At that time we were using Power Computing (i.e., Power PC) computers manufactured by The Computer Group at Motorola and the operating system was IBM's version of UNIX, (AIX).
-When computer manufacturer Atari ceased operations, in 1993, if one didn't want to use Microsoft DOS or Apple computers, UNIX was one's only choice, and MIT's X Window System was the only practical choice with which one could build tools which could then be used to create a network transparent graphical interface.  This is precisely the decision which was made for ViewTouch in early 1995.
-In 1997 the decision was made to move from AIX on the Motorola PowerPC to the Red Hat Linux distribution on the Intel X86 platform. In 2000 a transition from C to C++ and from Red Hat to Debian took place.  ViewTouch remains on Debian as the default distribution and features the XFCE desktop.
+ViewTouch first ran as a C program on the Atari ST computers in 1986. The Atari ST was a very exciting platform under Jack Tramiel from 1985 until 1993/4. In 1995 development of ViewTouch under UNIX (AIX) was initiated. MIT's X Window System was chosen to build the ViewTouch network transparent graphical interface. This decision which was made for ViewTouch in early 1995.
+In 1997 a decision was made to move from AIX on the Motorola PowerPC to Linux on the Intel X86. In 2000 a transition from C to C++ took place.  ViewTouch remains on Debian as the default distribution and features the XFCE desktop.
 Since 2016 the default hardware platform for Viewtouch is the family of Raspberry Pi computers. ViewTouch production POS computers provide a desktop icon which compiles and installs the latest version of the code from GitHub.
-ViewTouch Point of Sale isn't just about the advantage of the power of Linux; it's also about the advantage of the remote display capability of The X Window System. To add additional ViewTouch PoS sessions, use either Android Tablets running the ViewTouch Android XServer .apk file or or touchscreen monitors driven by any Raspberry Pi computer.  Then just add the IP address of such a device to the ViewTouch page 'View & Manage Displays & Printers'.
+ViewTouch Point of Sale isn't just about the advantage of the power of Linux; it's also about the advantages of the remote display capability of The X Window System. Just add the IP address of remote displays to the ViewTouch page 'View & Manage Displays & Printers'.
 
 Payment gateway/processors
 =========
-The ViewTouch GUI has the Monetra Credit/Debit Card Verification engine integrated into it and can be used with virtually any payment processor. Visit the Monetra web site to see the certifications and the site licenses charges, which are quite reasonable, and the role they play in all this. ViewTouch does not have to play with any payment gateway at all - it's 100% optional.
-
-ViewTouch POS on Android
-=========
-ViewTouch can send a remote display/input session to any Android tablet or smartphone. The Android X Server is based on XSDL and can be downloaded from QR Codes found either on the ViewTouch desktop or from http://www.viewtouch.com/nc.html.  Many, many thanks to Sergii Pylypenko, of Kiev, Ukraine for creating and maintaining a special version of XSDL for ViewTouch !!
+ViewTouch does not manage electronic payment processing.  Please make your own decisions with regard to this functionality.
