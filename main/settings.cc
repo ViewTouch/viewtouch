@@ -163,7 +163,7 @@ namespace confmap
         V_DAILY_CERT_FEE, V_DEBIT_COST, V_CREDIT_RATE, V_CREDIT_COST,
         V_LINE_ITEM_COST, V_TAX_TAKEOUT_FOOD, V_PERSONALIZE_FAST_FOOD,
 		V_FOOD_INCLUSIVE, V_ALCOHOL_INCLUSIVE, V_MERCHANDISE_INCLUSIVE,
-		V_ROOM_INCLUSIVE
+		V_ROOM_INCLUSIVE, V_MERCHANDISE_TAX
     };
 
     enum section_titles
@@ -177,7 +177,7 @@ namespace confmap
         "daily_cert_fee", "debit_cost", "credit_rate", "credit_cost",
         "line_item_cost", "tax_takeout_food", "personalize_fast_food",
 		"food_inclusive", "alcohol_inclusive", "merchandise_inclusive",
-		"room_inclusive"
+		"room_inclusive", "merchandise_tax"
     };
 
     const char* sects[] =
@@ -2070,6 +2070,7 @@ int Settings::Load(const char* file)
                 conf.GetValue(alcohol_inclusive, vars[V_ALCOHOL_INCLUSIVE], sects[S_MISC]);
                 conf.GetValue(merchandise_inclusive, vars[V_MERCHANDISE_INCLUSIVE], sects[S_MISC]);
 
+                conf.GetValue(tax_merchandise, vars[V_MERCHANDISE_TAX], sects[S_SALES_TAX_CANADA]);
                 conf.GetValue(tax_GST, vars[V_GST], sects[S_SALES_TAX_CANADA]);
                 conf.GetValue(tax_PST, vars[V_PST], sects[S_SALES_TAX_CANADA]);
                 conf.GetValue(tax_HST, vars[V_HST], sects[S_SALES_TAX_CANADA]);
@@ -2405,6 +2406,7 @@ int Settings::Save()
         error += conf.SetValue(room_inclusive, vars[V_ROOM_INCLUSIVE], sects[S_MISC]);
         error += conf.SetValue(alcohol_inclusive, vars[V_ALCOHOL_INCLUSIVE], sects[S_MISC]);
         error += conf.SetValue(merchandise_inclusive, vars[V_MERCHANDISE_INCLUSIVE], sects[S_MISC]);
+        error += conf.SetValue(tax_merchandise, vars[V_MERCHANDISE_TAX], sects[S_SALES_TAX_CANADA]);
         error += conf.SetValue(tax_GST, vars[V_GST], sects[S_SALES_TAX_CANADA]);
         error += conf.SetValue(tax_PST, vars[V_PST], sects[S_SALES_TAX_CANADA]);
         error += conf.SetValue(tax_HST, vars[V_HST], sects[S_SALES_TAX_CANADA]);

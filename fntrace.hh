@@ -1,29 +1,12 @@
-/*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
- *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
- *
- * utility.hh - revision 106 (10/20/98)
- * General functions and data types than have no other place to go
- */
-
 #ifndef VT_FNTRACE_HH
 #define VT_FNTRACE_HH
 
 #include "basic.hh"
-
 #include <string>
+#include <chrono>
+#include <mutex>
+#include <atomic>
+#include <memory>
 
 extern int debug_mode;
 
@@ -33,38 +16,62 @@ extern int debug_mode;
 
 #ifdef DEBUG
 // BackTrace Functions/Data
-extern genericChar BT_Stack[STRLENGTH][STRLONG];
-extern int  BT_Depth;
-extern int  BT_Track;
+struct TraceEntry {
+    char function[STRLONG];
+    char file[STRLENGTH];
+    int line;
+    std::chrono::steady_clock::time_point timestamp;
+    size_t memory_usage;
+};
+
+extern TraceEntry BT_Stack[STRLENGTH];
+extern std::atomic<int> BT_Depth;
+extern std::atomic<int> BT_Track;
+extern std::mutex BT_Mutex;
 
 class BackTraceFunction
 {
 public:
     // Constructor
-    BackTraceFunction(const char* str, ...)
+    BackTraceFunction(const char* func, const char* file, int line)
     {
-        if (BT_Track)
-            printf("Entering %s\n", str);
-        sprintf(BT_Stack[BT_Depth++], "%s", str);
+        if (BT_Track) {
+            std::lock_guard<std::mutex> lock(BT_Mutex);
+            auto& entry = BT_Stack[BT_Depth++];
+            snprintf(entry.function, STRLONG, "%s", func);
+            snprintf(entry.file, STRLENGTH, "%s", file);
+            entry.line = line;
+            entry.timestamp = std::chrono::steady_clock::now();
+            entry.memory_usage = get_current_memory_usage();
+            
+            printf("Entering %s (%s:%d)\n", func, file, line);
+        }
     }
+    
     // Destructor
     virtual ~BackTraceFunction()
     {
-        --BT_Depth;
+        if (BT_Track) {
+            std::lock_guard<std::mutex> lock(BT_Mutex);
+            --BT_Depth;
+        }
     }
+
+private:
+    size_t get_current_memory_usage();
 };
 
-#define FnTrace(x) BackTraceFunction _fn_start(x)
+#define FnTrace(func) BackTraceFunction _fn_start(func, __FILE__, __LINE__)
 #define FnTraceEnable(x) (BT_Track = (x))
-void FnPrintTrace(void);
-void FnPrintLast(int depth);
+void FnPrintTrace(bool include_timing = true, bool include_memory = true);
+void FnPrintLast(int depth, bool include_timing = true, bool include_memory = true);
 const char* FnReturnLast();
 #define LINE() printf("%s:  Got to line %d\n", __FILE__, __LINE__)
 #else
-#define FnTrace(x)
+#define FnTrace()
 #define FnTraceEnable(x)
-#define FnPrintTrace()
-#define FnPrintLast(x)
+#define FnPrintTrace(...)
+#define FnPrintLast(...)
 #define FnReturnLast() ""
 #define LINE()
 #endif

@@ -44,7 +44,7 @@ TimeInfo SystemTime;
 // Constructor
 TimeInfo::TimeInfo()
 {
-    Clear();
+    this->is_valid_ = false;
 }
 
 TimeInfo::TimeInfo(const TimeInfo &other)
@@ -422,16 +422,28 @@ void TimeInfo::operator+=(const date::years &dy)
 bool TimeInfo::operator> (const TimeInfo &other) const
 {
     FnTrace("TimeInfo::operator >()");
-    assert(this->is_valid_);
-    assert(other.is_valid_);
+
+    if (!this->is_valid_ || !other.is_valid_) {
+        std::cerr << "[WARNING] TimeInfo comparison with invalid values.\n";
+        std::cerr << "  this->is_valid_: " << this->is_valid_ << "\n";
+        std::cerr << "  other.is_valid_: " << other.is_valid_ << "\n";
+        return false;
+    }
+
     return (this->t_ > other.t_);
 }
 
 bool TimeInfo::operator>= (const TimeInfo &other) const
 {
     FnTrace("TimeInfo::operator >=()");
-    assert(this->is_valid_);
-    assert(other.is_valid_);
+
+    if (!this->is_valid_ || !other.is_valid_) {
+        std::cerr << "[WARNING] Invalid TimeInfo in operator>=()\n";
+        std::cerr << "  this->is_valid_: " << this->is_valid_ << "\n";
+        std::cerr << "  other.is_valid_: " << other.is_valid_ << "\n";
+        return false;
+    }
+
     return (this->t_ >= other.t_);
 }
 
