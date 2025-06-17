@@ -68,7 +68,7 @@ void FnPrintLast(int depth, bool include_timing = true, bool include_memory = tr
 const char* FnReturnLast();
 #define LINE() printf("%s:  Got to line %d\n", __FILE__, __LINE__)
 #else
-#define FnTrace()
+#define FnTrace(...)
 #define FnTraceEnable(x)
 #define FnPrintTrace(...)
 #define FnPrintLast(...)
