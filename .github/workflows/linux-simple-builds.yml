@@ -60,6 +60,7 @@ jobs:
       run: |
         sudo ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime
         echo ${TZ} | sudo tee /etc/timezone
+        sudo apt-get update -q
         sudo apt-get install -y -y --no-install-recommends \
           ${{matrix.other_pkgs}} \
           build-essential \
