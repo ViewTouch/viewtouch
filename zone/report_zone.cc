@@ -118,9 +118,12 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
             report = NULL;
             // page = 0;  // <--- REMOVE THIS LINE!
         }
-
+        // Fix: Only reset page to 0 on RENDER_NEW. This prevents the check from always returning to page 1
+        // when navigating to page 2 and beyond.
         if (update_flag == RENDER_NEW)
         {  // set relevant variables to default values
+            // Restored: printf for debugging when update_flag == RENDER_NEW
+            printf("ReportZone::Render() update_flag == RENDER_NEW\n");
             day_start.Clear();
             day_end.Clear();
             ref  = SystemTime;
