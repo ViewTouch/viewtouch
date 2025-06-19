@@ -10,7 +10,7 @@ endif()
 add_executable(test_data_file test_data_file.cc)
 add_test(test_data_file test_data_file)
 target_link_libraries(test_data_file PRIVATE
-	vtcore tz)
+	vtcore)
 
 target_link_libraries(test_data_file PRIVATE ZLIB::ZLIB)
 target_sources(test_data_file PRIVATE
