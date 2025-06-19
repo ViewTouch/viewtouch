@@ -8,6 +8,7 @@ then
   date >> /usr/viewtouch/dat/runlog
   echo "ViewTouch was not running, starting now" >> /usr/viewtouch/dat/runlog
   date >> /usr/viewtouch/dat/debuglog
+  export DISPLAY=:0 # Fix: Ensure X11 display is set before launching vtpos
   /usr/viewtouch/bin/vtpos >> /usr/viewtouch/dat/debuglog 2>&1 &
   exit 0
 fi

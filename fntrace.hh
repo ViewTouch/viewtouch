@@ -14,8 +14,8 @@
  *   You should have received a copy of the GNU General Public License 
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  *
- * utility.cc - revision 124 (10/6/98)
- * Implementation of utility module
+ * fntrace.hh - revision 124 (10/6/98)
+ * Implementation of fntrace module
  */
 
 #ifndef VT_FNTRACE_HH
@@ -27,6 +27,7 @@
 #include <mutex>
 #include <atomic>
 #include <memory>
+#include <cstring>
 
 extern int debug_mode;
 
@@ -58,8 +59,13 @@ public:
         if (BT_Track) {
             std::lock_guard<std::mutex> lock(BT_Mutex);
             auto& entry = BT_Stack[BT_Depth++];
-            snprintf(entry.function, STRLONG, "%s", func);
-            snprintf(entry.file, STRLENGTH, "%s", file);
+            // Fixed: use strncpy for simple string copy instead of snprintf
+            strncpy(entry.function, func, STRLONG);
+            // Fixed: use strncpy for simple string copy instead of snprintf
+            entry.function[STRLONG-1] = '\0';
+            // Fixed: ensure null-termination
+            strncpy(entry.file, file, STRLENGTH);
+            entry.file[STRLENGTH-1] = '\0';
             entry.line = line;
             entry.timestamp = std::chrono::steady_clock::now();
             entry.memory_usage = get_current_memory_usage();
