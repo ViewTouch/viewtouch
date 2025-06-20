@@ -1238,7 +1238,7 @@ int FindVTData(InputDataFile *infile)
         return version;
 
     // download to official location and then try to read again
-    const std::string vtdata_url = "http://www.viewtouch.com/vt_data";
+    const std::string vtdata_url = "https://www.viewtouch.com/vt_data";
     fprintf(stderr, "Trying download VT_DATA: %s from '%s'\n", SYSTEM_DATA_FILE, vtdata_url.c_str());
     DownloadFile(vtdata_url, SYSTEM_DATA_FILE);
     if (infile->Open(SYSTEM_DATA_FILE, version) == 0)

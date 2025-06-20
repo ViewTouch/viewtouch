@@ -299,7 +299,7 @@ install(PROGRAMS 	scripts/vtrestart
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dat" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dat")
     install(DIRECTORY dat DESTINATION viewtouch)
 else()
-    message(STATUS "'dat' folder is missing in source directory, excluding it from install target. You can get the bootstrap files from http://www.viewtouch.com/vt_data.html")
+    message(STATUS "'dat' folder is missing in source directory, excluding it from install target. You can get the bootstrap files from https://www.viewtouch.com/vt_data.html")
 endif()
 install(PROGRAMS scripts/vtcommands.pl DESTINATION viewtouch/bin/vtcommands)
 
