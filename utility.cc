@@ -587,12 +587,12 @@ int BackupFile(const genericChar* filename)
         return 1;  // No file to backup
 
     genericChar bak[256];
-    sprintf(bak,  "%s.bak", filename);
+    snprintf(bak, sizeof(bak), "%s.bak", filename);
 
     if (DoesFileExist(bak))
     {
         genericChar bak2[256];
-        sprintf(bak2, "%s.bak2", filename);
+        snprintf(bak2, sizeof(bak2), "%s.bak2", filename);
 
         // delete *.bak2
         unlink(bak2);
@@ -611,12 +611,12 @@ int RestoreBackup(const genericChar* filename)
 {
     FnTrace("RestoreBackup()");
     genericChar str[256];
-    sprintf(str, "%s.bak", filename);
+    snprintf(str, sizeof(str), "%s.bak", filename);
 
     if (DoesFileExist(str) == 0)
         return 1;  // No backup to restore
 
-    sprintf(str, "/bin/cp %s.bak %s", filename, filename);
+    snprintf(str, sizeof(str), "/bin/cp %s.bak %s", filename, filename);
     return system(str);
 }
 
