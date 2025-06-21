@@ -70,7 +70,7 @@ int FixPhoneNumber(Str &phone)
     genericChar tmp[32];
     if (strlen(str) == 7)
     {
-        sprintf(tmp, "   %s", str);
+        snprintf(tmp, sizeof(tmp), "   %s", str);
         phone.Set(tmp);
     }
     else
@@ -87,9 +87,9 @@ const char* FormatPhoneNumber(Str &phone)
     {
         const genericChar* p = phone.Value();
         genericChar str[16];
-        sprintf(str, "%c%c%c-%c%c%c%c", p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
+        snprintf(str, sizeof(str), "%c%c%c-%c%c%c%c", p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
         if (p[0] != ' ')
-            sprintf(buffer, "(%c%c%c) %s", p[0], p[1], p[2], str);
+            snprintf(buffer, sizeof(buffer), "(%c%c%c) %s", p[0], p[1], p[2], str);
         else
             strcpy(buffer, str);
     }
@@ -246,7 +246,7 @@ int UserDB::Load(const char* file)
     if (version < 7 || version > 8)
     {
         genericChar str[64];
-        sprintf(str, "Unknown UserDB file version %d", version);
+        snprintf(str, sizeof(str), "Unknown UserDB file version %d", version);
         ReportError(str);
         return 1;
     }
@@ -564,7 +564,7 @@ int UserDB::ListReport(Terminal *t, int active, Report *r)
             r->TextC(e->JobTitle(t), col);
 
             if (e->last_name.size() > 0)
-                sprintf(str, "%s, %s", e->last_name.Value(), e->first_name.Value());
+                snprintf(str, sizeof(str), "%s, %s", e->last_name.Value(), e->first_name.Value());
             else if (e->system_name.size() > 0)
                 strcpy(str, e->system_name.Value());
             else
@@ -572,8 +572,8 @@ int UserDB::ListReport(Terminal *t, int active, Report *r)
 
             if (conflict)
             {
-                sprintf(str2, " (ID Conflict with %s)", conflict->system_name.Value());
-                strcat(str, str2);
+                snprintf(str2, sizeof(str2), " (ID Conflict with %s)", conflict->system_name.Value());
+                strncat(str, str2, sizeof(str) - strlen(str) - 1);
             }
 
             r->TextL(str, col);

@@ -117,7 +117,7 @@ genericChar* SeatName(int seat, genericChar* str, int guests)
     }
     else if (seat < -1)
     {
-        sprintf(str, "%d", seat);
+        snprintf(str, sizeof(str), "%d", seat);
     }
     else if (seat < 26)
     {
@@ -322,7 +322,7 @@ int Check::Read(Settings *settings, InputDataFile &infile, int version)
     if (version < 7 || version > CHECK_VERSION)
     {
         genericChar str[32];
-        sprintf(str, "Unknown check version '%d'", version);
+        snprintf(str, sizeof(str), "Unknown check version '%d'", version);
         ReportError(str);
         return 1;
     }
@@ -495,7 +495,7 @@ int Check::Write(OutputDataFile &datFile, int version)
     if (version < 7)
     {
         genericChar str[64];
-        sprintf(str, "Invalid check version '%d' for saving", version);
+        snprintf(str, sizeof(str), "Invalid check version '%d' for saving", version);
         ReportError(str);
         return 1;
     }
@@ -1179,49 +1179,49 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
             if (!date.IsSet() || (date <= now))
             {
                 strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
+                strncat(str, " ", sizeof(str) - strlen(str) - 1);
             }
-            strcat(str, term->Translate("Take Out"));
+            strncat(str, term->Translate("Take Out"), sizeof(str) - strlen(str) - 1);
             break;
         case CHECK_DELIVERY:
             if (!date.IsSet() || (date <= now))
             {
                 strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
+                strncat(str, " ", sizeof(str) - strlen(str) - 1);
             }
-            strcat(str, term->Translate("Delivery"));
+            strncat(str, term->Translate("Delivery"), sizeof(str) - strlen(str) - 1);
             break;
         case CHECK_CATERING:
             if (!date.IsSet() || (date <= now))
             {
                 strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
+                strncat(str, " ", sizeof(str) - strlen(str) - 1);
             }
-            strcat(str, term->Translate("Catering"));
+            strncat(str, term->Translate("Catering"), sizeof(str) - strlen(str) - 1);
             break;
         case CHECK_DINEIN:
             if (!date.IsSet() || (date <= now))
             {
                 strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
+                strncat(str, " ", sizeof(str) - strlen(str) - 1);
             }
-            strcat(str, "Here");
+            strncat(str, "Here", sizeof(str) - strlen(str) - 1);
             break;
         case CHECK_TOGO:
             if (!date.IsSet() || (date <= now))
             {
                 strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
+                strncat(str, " ", sizeof(str) - strlen(str) - 1);
             }
-            strcat(str, "To Go");
+            strncat(str, "To Go", sizeof(str) - strlen(str) - 1);
             break;
         case CHECK_CALLIN:
             if (!date.IsSet() || (date <= now))
             {
                 strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
+                strncat(str, " ", sizeof(str) - strlen(str) - 1);
             }
-            strcat(str, "Pick Up");
+            strncat(str, "Pick Up", sizeof(str) - strlen(str) - 1);
             break;
         }
         snprintf(str1, pwidth, "%s", str);
@@ -1240,11 +1240,11 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     switch (CustomerType())
 	{
     case CHECK_RESTAURANT:
-        sprintf(str1, "%s %s-%d", term->Translate("Table"), Table(), Guests());
+        snprintf(str1, sizeof(str1), "%s %s-%d", term->Translate("Table"), Table(), Guests());
         break;
 
     case CHECK_HOTEL:
-        sprintf(str1, "%s %s", term->Translate("Room"), Table());
+        snprintf(str1, sizeof(str1), "%s %s", term->Translate("Room"), Table());
         break;
 
     case CHECK_TAKEOUT:
@@ -1295,10 +1295,10 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
         strcpy(str, "Restored ");
     else
     	str[0] = 0;
-    sprintf(str2, "#%d ", serial_number % 10000);	// max 4 digits
-    strcat(str, str2);
+    snprintf(str2, sizeof(str2), "#%d ", serial_number % 10000);	// max 4 digits
+    strncat(str, str2, sizeof(str) - strlen(str) - 1);
     if (!full_hdr && str1[0])	// combine order type on this line
-	strcat(str, str1);
+        strncat(str, str1, sizeof(str) - strlen(str) - 1);
     report->Mode(kitchen_mode);
     // green if paid
     report->TextL(str, Status() == CHECK_CLOSED ? COLOR_DK_GREEN : color);
@@ -1318,7 +1318,7 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
 
     // order source and creation timestamp
     term->TimeDate(str, time_open, TD_NO_YEAR | TD_SHORT_MONTH | TD_NO_DAY | TD_SHORT_TIME);
-    sprintf(str1, "%*s", pwidth, str);	// pad to right justify, with space for underline
+    snprintf(str1, sizeof(str1), "%*s", pwidth, str);	// pad to right justify, with space for underline
 
     if (employee)
         strcpy(str, employee->system_name.Value());
@@ -1362,19 +1362,19 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                 else
                     cststr[0] = '\0';
                 if (settings->mod_separator == MOD_SEPARATE_CM)
-                    sprintf(ordstr, "%s  ", cststr);
+                    snprintf(ordstr, sizeof(ordstr), "%s  ", cststr);
 
                 // get the description 
                 order->PrintDescription(str2);
                 if (pval > 1)
-                    strcat(ordstr, "->");
+                    strncat(ordstr, "->", sizeof(ordstr) - strlen(ordstr) - 1);
                 if (order->item_type == ITEM_POUND)
-                    sprintf(str1, "%.2f %s", ((Flt) order->count / 100.0), str2);
+                    snprintf(str1, sizeof(str1), "%.2f %s", ((Flt) order->count / 100.0), str2);
                 else if (order->count >= 1)
-                    sprintf(str1, "%d %s", order->count, str2);
+                    snprintf(str1, sizeof(str1), "%d %s", order->count, str2);
                 else
-                    sprintf(str1, "%s", str2);
-                strcat(ordstr, str1);
+                    snprintf(str1, sizeof(str1), "%s", str2);
+                strncat(ordstr, str1, sizeof(ordstr) - strlen(ordstr) - 1);
                 report->Mode(kitchen_mode);
                 report->TextL(ordstr, COLOR_DEFAULT);
                 report->TextR(cststr, COLOR_DEFAULT);
@@ -1390,9 +1390,9 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                     {
                         mod->PrintDescription(str1);
                         if (pval > 1)
-                            sprintf(str2, "-> %s", str1);
+                            snprintf(str2, sizeof(str2), "-> %s", str1);
                         else
-                            sprintf(str2, "  %s", str1);
+                            snprintf(str2, sizeof(str2), "  %s", str1);
                         if (settings->mod_separator == MOD_SEPARATE_NL)
                         {
                             // write out the line for newline mode
@@ -1406,20 +1406,20 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                         {
                             strcpy(tmpstr, ordstr);  // save a backup copy
                             if (firstmod == 0)
-                                strcat(ordstr, ",");
+                                strncat(ordstr, ",", sizeof(ordstr) - strlen(ordstr) - 1);
                             firstmod = 0;
-                            strcat(ordstr, str2);
+                            strncat(ordstr, str2, sizeof(ordstr) - strlen(ordstr) - 1);
                             if (strlen(ordstr) >= ((unsigned int)(pwidth - 1)))
                             {
-                                strcat(tmpstr, ",");
+                                strncat(tmpstr, ",", sizeof(tmpstr) - strlen(tmpstr) - 1);
                                 report->Mode(kitchen_mode);
                                 report->TextL(tmpstr, COLOR_RED);
                                 report->TextR("", COLOR_RED);
                                 report->Mode(0);
                                 report->NewLine();
                                 ordstr[0] = '\0';
-                                strcat(ordstr, "  ");
-                                strcat(ordstr, str2);
+                                strncat(ordstr, "  ", sizeof(ordstr) - strlen(ordstr) - 1);
+                                strncat(ordstr, str2, sizeof(ordstr) - strlen(ordstr) - 1);
                             }
                         }
                     }
@@ -1569,12 +1569,12 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
             // get the description 
             order->PrintDescription(str2, 1);
             if (order->item_type == ITEM_POUND)
-                sprintf(str1, "%.2f    %s", ((Flt) order->count / 100.0), str2);
+                snprintf(str1, sizeof(str1), "%.2f    %s", ((Flt) order->count / 100.0), str2);
             else if (order->count >= 1)
-                sprintf(str1, "%d    %s", order->count, str2);
+                snprintf(str1, sizeof(str1), "%d    %s", order->count, str2);
             else
-                sprintf(str1, "%s", str2);
-            strcat(ordstr, str1);
+                snprintf(str1, sizeof(str1), "%s", str2);
+            strncat(ordstr, str1, sizeof(ordstr) - strlen(ordstr) - 1);
             report->TextL2Col(ordstr);
             if (order->cost > 0)
             {
@@ -1631,9 +1631,9 @@ int Check::PrintCustomerInfo(Printer *printer, int mode)
         // name
         str[0] = '\0';
         if (strlen(FirstName()) > 0)
-            sprintf(str, "%s %s", FirstName(), LastName());
+            snprintf(str, sizeof(str), "%s %s", FirstName(), LastName());
         else if (strlen(LastName()) > 0)
-            sprintf(str, "%s", LastName());
+            snprintf(str, sizeof(str), "%s", LastName());
         if (str[0] != '\0')
         {
             custinfo = 1;
@@ -1666,7 +1666,7 @@ int Check::PrintCustomerInfo(Printer *printer, int mode)
         // city, state
         str[0] = '\0';
         if (strlen(City()) > 0)
-            sprintf(str, "%s  %s", City(), State());
+            snprintf(str, sizeof(str), "%s  %s", City(), State());
         else if (strlen(State()) > 0)
             strcpy(str, State());
         if (str[0] != '\0')
@@ -1696,11 +1696,11 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
         // name
         str[0] = '\0';
         if (strlen(FirstName()) > 0)
-            sprintf(str, "Name:  %s %s", FirstName(), LastName());
+            snprintf(str, sizeof(str), "Name:  %s %s", FirstName(), LastName());
         else if (strlen(LastName()) > 0)
-            sprintf(str, "Last Name:  %s", LastName());
+            snprintf(str, sizeof(str), "Last Name:  %s", LastName());
         else if (strlen(FullName()) > 0)
-            sprintf(str, "Name:  %s", FullName());
+            snprintf(str, sizeof(str), "Name:  %s", FullName());
         if (str[0] != '\0')
         {
             custinfo = 1;
@@ -1713,7 +1713,7 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
         if (strlen(PhoneNumber()) > 0)
         {
             custinfo = 1;
-            sprintf(str, "Phone:  %s", PhoneNumber());
+            snprintf(str, sizeof(str), "Phone:  %s", PhoneNumber());
             report->TextPosL(column1, str, COLOR_DEFAULT);
             if (columns > 1)
                 report->TextPosL(column2, str, COLOR_DEFAULT);
@@ -1723,7 +1723,7 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
         if (strlen(Address()) > 0)
         {
             custinfo = 1;
-            sprintf(str, "Street:  %s", Address());
+            snprintf(str, sizeof(str), "Street:  %s", Address());
             report->TextPosL(column1, str, COLOR_DEFAULT);
             if (columns > 1)
                 report->TextPosL(column2, str, COLOR_DEFAULT);
@@ -1733,7 +1733,7 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
         if (strlen(Address2()) > 0)
         {
             custinfo = 1;
-            sprintf(str, "Address 2:  %s", Address2());
+            snprintf(str, sizeof(str), "Address 2:  %s", Address2());
             report->TextPosL(column1, str, COLOR_DEFAULT);
             if (columns > 1)
                 report->TextPosL(column2, str, COLOR_DEFAULT);
@@ -1743,7 +1743,7 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
         if (strlen(CrossStreet()) > 0)
         {
             custinfo = 1;
-            sprintf(str, "Cross Street:  %s", CrossStreet());
+            snprintf(str, sizeof(str), "Cross Street:  %s", CrossStreet());
             report->TextPosL(column1, str, COLOR_DEFAULT);
             if (columns > 1)
                 report->TextPosL(column2, str, COLOR_DEFAULT);
@@ -1752,11 +1752,11 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
         // city, state
         str[0] = '\0';
         if (strlen(City()) > 0 && strlen(State()) > 0)
-            sprintf(str, "City and State:  %s  %s", City(), State());
+            snprintf(str, sizeof(str), "City and State:  %s  %s", City(), State());
         else if (strlen(City()) > 0)
-            sprintf(str, "City:  %s", City());
+            snprintf(str, sizeof(str), "City:  %s", City());
         else if (strlen(State()) > 0)
-            sprintf(str, "State:  %s", State());
+            snprintf(str, sizeof(str), "State:  %s", State());
         if (str[0] != '\0')
         {
             custinfo = 1;
@@ -1873,28 +1873,28 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
     if (IsTraining())
         strcpy(str, term->Translate("Training Check"));
     else if (video_target == PRINTER_DEFAULT)
-        sprintf(str, "#%09d", serial_number);
+        snprintf(str, sizeof(str), "#%09d", serial_number);
     else
-        sprintf(str, "#%d", serial_number);
+        snprintf(str, sizeof(str), "#%d", serial_number);
 
     report->TextR(str);
     report->NewLine();
     if (video_target == PRINTER_DEFAULT)
     {
-        sprintf(str, "%s: %s", term->Translate("Opened"),
+        snprintf(str, sizeof(str), "%s: %s", term->Translate("Opened"),
                 term->TimeDate(time_open, TD_SHORT_DATE | TD_NO_DAY));
         report->TextL(str);
         report->NewLine();
         if (date.IsSet())
         {
-            sprintf(str, "%s: %s", term->Translate("Due"),
+            snprintf(str, sizeof(str), "%s: %s", term->Translate("Due"),
                     term->TimeDate(date, TD_SHORT_DATE | TD_NO_DAY));
             report->TextL(str);
             report->NewLine();
         }
         if (user_open != user_owner)
         {
-            sprintf(str, "%s: %s", term->Translate("Original Owner"),
+            snprintf(str, sizeof(str), "%s: %s", term->Translate("Original Owner"),
                     term->UserName(user_open));
             report->TextL(str);
             report->NewLine();
@@ -1903,7 +1903,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
     }
     else
     {
-        sprintf(str, "%s: %s", term->Translate("Table"), Table());
+        snprintf(str, sizeof(str), "%s: %s", term->Translate("Table"), Table());
         report->TextL(str);
         report->NewLine();
     }
@@ -1915,9 +1915,9 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
         // print customer name
         str[0] = '\0';
         if (strlen(customer->FirstName()) > 0)
-            sprintf(str, "%s %s", customer->FirstName(), customer->LastName());
+            snprintf(str, sizeof(str), "%s %s", customer->FirstName(), customer->LastName());
         else if (strlen(customer->LastName()) > 0)
-            sprintf(str, "%s", customer->LastName());
+            snprintf(str, sizeof(str), "%s", customer->LastName());
         if (strlen(str) > 0)
         {
             custinfo = 1;
@@ -1938,14 +1938,14 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
         if (strlen(customer->City()) > 0)
         {
             if (strlen(customer->State()) > 0)
-                sprintf(str, "%s %s  %s", customer->City(), customer->State(), customer->Postal());
+                snprintf(str, sizeof(str), "%s %s  %s", customer->City(), customer->State(), customer->Postal());
             else
-                sprintf(str, "%s  %s", customer->City(), customer->Postal());
+                snprintf(str, sizeof(str), "%s  %s", customer->City(), customer->Postal());
         }
         else if (strlen(customer->State()) > 0)
-            sprintf(str, "%s  %s", customer->State(), customer->Postal());
+            snprintf(str, sizeof(str), "%s  %s", customer->State(), customer->Postal());
         else if (strlen(customer->Postal()) > 0)
-            sprintf(str, "%s", customer->Postal());
+            snprintf(str, sizeof(str), "%s", customer->Postal());
         if (strlen(str) > 0)
         {
             report->TextL(str);
@@ -1975,7 +1975,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
     {
         if (subs > 1)
         {
-            sprintf(str, "%s #%d - %s", term->Translate("Check"),
+            snprintf(str, sizeof(str), "%s #%d - %s", term->Translate("Check"),
                     i, sc->StatusString(term));
             report->Mode(PRINT_UNDERLINE);
             report->TextC(str);
@@ -1996,24 +1996,24 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                 if (d->IsServerBank())
                     strcpy(str, term->Translate("Server Bank"));
                 else
-                    sprintf(str, "%s %d", term->Translate("Drawer"), d->number);
+                    snprintf(str, sizeof(str), "%s %d", term->Translate("Drawer"), d->number);
                 report->TextL(str);
                 
-                sprintf(str, "%s: %s", term->Translate("Cashier"),
+                snprintf(str, sizeof(str), "%s: %s", term->Translate("Cashier"),
                         term->UserName(sc->settle_user));
                 report->TextR(str);
                 report->NewLine();
             }
             else if (sc->drawer_id)
             {
-                sprintf(str, "%s #%09d", term->Translate("Drawer"), sc->drawer_id);
+                snprintf(str, sizeof(str), "%s #%09d", term->Translate("Drawer"), sc->drawer_id);
                 report->TextC(str);
                 report->NewLine();
             }
             
             if (sc->settle_time.IsSet())
             {
-                sprintf(str, "%s: %s", term->Translate("Time Settled"),
+                snprintf(str, sizeof(str), "%s: %s", term->Translate("Time Settled"),
                         term->TimeDate(sc->settle_time, TD_SHORT_DATE | TD_NO_DAY));
                 report->TextL(str);
                 report->NewLine();
@@ -2028,7 +2028,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
             first = 1;
             int order_target = order->VideoTarget(settings);
             if (order->sales_type & SALES_TAKE_OUT)
-                sprintf(str2, "%s ", term->Translate("TO"));
+                snprintf(str2, sizeof(str2), "%s ", term->Translate("TO"));
             else
                 str2[0] = '\0';
             if ((video_target == PRINTER_DEFAULT) ||
@@ -2036,10 +2036,10 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
             {
                 if (video_target != PRINTER_DEFAULT)
                 {
-                    sprintf(str, "%s%-2d %s", str2, order->count, order->PrintDescription());
+                    snprintf(str, sizeof(str), "%s%-2d %s", str2, order->count, order->PrintDescription());
                 }
                 else
-                    sprintf(str, "%s%-2d %s", str2, order->count, order->Description(term));
+                    snprintf(str, sizeof(str), "%s%-2d %s", str2, order->count, order->Description(term));
                 report->TextL(str);
 
                 // BAK->I'm not going to worry about fitting this in with the
@@ -2071,20 +2071,20 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                         {
                             if (first)
                             {
-                                sprintf(str, "    %s", mod->PrintDescription());
+                                snprintf(str, sizeof(str), "    %s", mod->PrintDescription());
                             }
                             else
                             {
                                 char tmpstr[STRLENGTH];
                                 strcpy(tmpstr, mod->PrintDescription());
-                                sprintf(str, ", %s", tmpstr);
+                                snprintf(str, sizeof(str), ", %s", tmpstr);
                                 Flt swidth = rzone->TextWidth(term, str);
                                 if ((pos + swidth) >= (rzone->Width(term) - 3))
                                 {
                                     report->Text(",", COLOR_DEFAULT, ALIGN_LEFT, pos);
                                     report->NewLine();
                                     pos = 0.0;
-                                    sprintf(str, "    %s", tmpstr);
+                                    snprintf(str, sizeof(str), "    %s", tmpstr);
                                 }
                             }
                             report->Text(str, COLOR_DEFAULT, ALIGN_LEFT, pos);
@@ -2092,7 +2092,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                         }
                         else
                         {
-                            sprintf(str, "    %s", mod->Description(term));
+                            snprintf(str, sizeof(str), "    %s", mod->Description(term));
                             report->Text(str, COLOR_DEFAULT, ALIGN_LEFT, pos);
                         }
                         if (show_what & CHECK_DISPLAY_CASH)
@@ -2129,7 +2129,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                     report->TextPosR(-8, "Tax Exempt");
                     report->TextR(term->FormatPrice(-tax));
                     report->NewLine();
-                    sprintf(str, "Tax ID:  %s", sc->tax_exempt.Value());
+                    snprintf(str, sizeof(str), "Tax ID:  %s", sc->tax_exempt.Value());
                     report->Mode(PRINT_BOLD);
                     report->TextL(str);
                     report->NewLine();
@@ -2420,23 +2420,23 @@ const genericChar* Check::PaymentSummary(Terminal *term)
 		}// end for
 
         str[0] = '\0';
-        if (credit)   strcat(str, "CC,");
-        if (gift)     strcat(str, "G,");
-        if (coupon)   strcat(str, "Cp,");
-        if (comp)     strcat(str, "WC,");
-        if (discount) strcat(str, "D,");
-        if (emeal)    strcat(str, "E,");
-        if (check)    strcat(str, "Ck,");
-        if (account)  strcat(str, "A,");
+        if (credit)   strncat(str, "CC,", sizeof(str) - strlen(str) - 1);
+        if (gift)     strncat(str, "G,", sizeof(str) - strlen(str) - 1);
+        if (coupon)   strncat(str, "Cp,", sizeof(str) - strlen(str) - 1);
+        if (comp)     strncat(str, "WC,", sizeof(str) - strlen(str) - 1);
+        if (discount) strncat(str, "D,", sizeof(str) - strlen(str) - 1);
+        if (emeal)    strncat(str, "E,", sizeof(str) - strlen(str) - 1);
+        if (check)    strncat(str, "Ck,", sizeof(str) - strlen(str) - 1);
+        if (account)  strncat(str, "A,", sizeof(str) - strlen(str) - 1);
         if (room)
         {
-            sprintf(tmp, "R#%d,", room);
-            strcat(str, tmp);
+            snprintf(tmp, sizeof(tmp), "R#%d,", room);
+            strncat(str, tmp, sizeof(str) - strlen(str) - 1);
         }
-        if (cash)
+        if (settings->money_symbol.size() > 0)
         {
-            strcat(str, settings->money_symbol.Value());
-            strcat(str, ",");
+            strncat(str, settings->money_symbol.Value(), sizeof(str) - strlen(str) - 1);
+            strncat(str, ",", sizeof(str) - strlen(str) - 1);
         }
 
         int len = strlen(str);
@@ -2903,7 +2903,7 @@ int SubCheck::Read(Settings *settings, InputDataFile &infile, int version)
             {
                 delete order;
                 genericChar str[64];
-                sprintf(str, "Error reading order %d of %d", i+1, count);
+                snprintf(str, sizeof(str), "Error reading order %d of %d", i+1, count);
                 ReportError(str);
                 return error;
             }
@@ -4093,34 +4093,34 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     switch (check->CustomerType())
 	{
     case CHECK_RESTAURANT:
-        snprintf(str1, 64, "%s %s #%d", term->Translate("Table"), check->Table(), number);
+        snprintf(str1, sizeof(str1), "%s %s #%d", term->Translate("Table"), check->Table(), number);
         break;
     case CHECK_HOTEL:
-        snprintf(str1, 64, "%s %s", term->Translate("Room"), check->Table());
+        snprintf(str1, sizeof(str1), "%s %s", term->Translate("Room"), check->Table());
         break;
     case CHECK_TAKEOUT:
-        snprintf(str1, 64, "%s",term->Translate("Take Out"));
+        snprintf(str1, sizeof(str1), "%s",term->Translate("Take Out"));
         break;
     case CHECK_FASTFOOD:
-        snprintf(str1, 64, "%s",term->Translate("Fast"));
+        snprintf(str1, sizeof(str1), "%s",term->Translate("Fast"));
         break;
     case CHECK_CATERING:
-        snprintf(str1, 64,"%s", term->Translate("Catering"));
+        snprintf(str1, sizeof(str1),"%s", term->Translate("Catering"));
         break;
     case CHECK_DELIVERY:
-        snprintf(str1, 64, "%s",term->Translate("Deliver"));
+        snprintf(str1, sizeof(str1), "%s",term->Translate("Deliver"));
         break;
     case CHECK_RETAIL:
-        snprintf(str1, 64, "%s",term->Translate("Retail"));
+        snprintf(str1, sizeof(str1), "%s",term->Translate("Retail"));
         break;
     case CHECK_DINEIN:
-        snprintf(str1, 64, "Here");
+        snprintf(str1, sizeof(str1), "Here");
         break;
     case CHECK_TOGO:
-        snprintf(str1, 64, "To Go");
+        snprintf(str1, sizeof(str1), "To Go");
         break;
     case CHECK_CALLIN:
-        snprintf(str1, 64, "Pick Up");
+        snprintf(str1, sizeof(str1), "Pick Up");
         break;
     default:
         str1[0] = '\0';
@@ -4128,11 +4128,11 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 	}
 
     if (e)
-        sprintf(str2, "%s: %s", term->Translate("Server"), e->system_name.Value());
+        snprintf(str2, sizeof(str2), "%s: %s", term->Translate("Server"), e->system_name.Value());
     else
-        sprintf(str2, "%s: %s", term->Translate("Server"), term->Translate(UnknownStr));
+        snprintf(str2, sizeof(str2), "%s: %s", term->Translate("Server"), term->Translate(UnknownStr));
 
-    sprintf(str, "%-14s%19s", str1, str2);
+    snprintf(str, sizeof(str), "%-14s%19s", str1, str2);
     printer->Write(str, settings->table_num_style);
 
     if (drawer == NULL)
@@ -4148,7 +4148,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 		if (drawer->IsServerBank())
 			strcpy(str1, term->Translate("Server Bank"));
 		else
-			sprintf(str1, "%s %d", term->Translate("Drawer"), drawer->number);
+			snprintf(str1, sizeof(str1), "%s %d", term->Translate("Drawer"), drawer->number);
 
 		Employee *cashier = NULL;
 		if (settle_user > 0)
@@ -4157,13 +4157,13 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 			cashier = sys->user_db.FindByID(drawer->owner_id);
 
 		if (cashier)
-			sprintf(str2, "%s: %s", term->Translate("Cashier"),
+			snprintf(str2, sizeof(str2), "%s: %s", term->Translate("Cashier"),
 					cashier->system_name.Value());
 		else
-			sprintf(str2, "%s: %s", term->Translate("Cashier"),
+			snprintf(str2, sizeof(str2), "%s: %s", term->Translate("Cashier"),
 					term->Translate(UnknownStr));
 
-		sprintf(str, "%-14s%19s", str1, str2);
+		snprintf(str, sizeof(str), "%-14s%19s", str1, str2);
 		printer->Write(str);
 	}
 
@@ -4172,12 +4172,12 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
         check->CustomerType() == CHECK_DELIVERY ||
         check->CustomerType() == CHECK_CATERING)
     {
-        sprintf(str, "Due:  %s", term->TimeDate(check->date, TD_DATETIME));
+        snprintf(str, sizeof(str), "Due:  %s", term->TimeDate(check->date, TD_DATETIME));
         printer->Write(str, PRINT_BOLD);
     }
     if (check->serial_number > 0)
     {
-        sprintf(str, "#%04d", check->serial_number % 10000);
+        snprintf(str, sizeof(str), "#%04d", check->serial_number % 10000);
         printer->Write(str, settings->order_num_style);
     }
     printer->NewLine();
@@ -4194,12 +4194,12 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 	}
         if (order->item_type == ITEM_POUND)
         {
-            sprintf(str1, "%.2f %s                              ",
+            snprintf(str1, sizeof(str1), "%.2f %s                              ",
                     ((Flt)order->count / 100), order->Description(term));
         }
         else
         {
-            sprintf(str1, "%d %s                              ",
+            snprintf(str1, sizeof(str1), "%d %s                              ",
                     order->count, order->Description(term));
         }
         if (order->status & ORDER_COMP)
@@ -4207,7 +4207,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
         else
             term->FormatPrice(str2, order->cost);
         str1[32 - strlen(str2)] = '\0';
-        sprintf(str, "%s %s", str1, str2);
+        snprintf(str, sizeof(str), "%s %s", str1, str2);
         printer->Write(str);
 
         for (Order *mod = order->modifier_list; mod != NULL; mod = mod->next)
@@ -4221,7 +4221,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
                 else
                     term->FormatPrice(str2, mod->cost);
                 str2[23] = '\0';
-                sprintf(str, "   %-23s %6s", mod->Description(term), str2);
+                snprintf(str, sizeof(str), "   %-23s %6s", mod->Description(term), str2);
                 printer->Write(str);
             }
 		}
@@ -4233,7 +4233,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     Credit *cr = CurrentCredit();
 
     printer->Write("                           ------");
-    sprintf(str, "              Sales Total %7s", term->FormatPrice(raw_sales - item_comps));
+    snprintf(str, sizeof(str), "              Sales Total %7s", term->FormatPrice(raw_sales - item_comps));
     printer->Write(str);
 
     int tc = raw_sales - item_comps;
@@ -4254,7 +4254,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
                     pay->tender_type == TENDER_DISCOUNT ||
                     pay->tender_type == TENDER_COMP)
                 {
-                    sprintf(str, "%25.25s %7s", pay->Description(settings),
+                    snprintf(str, sizeof(str), "%25.25s %7s", pay->Description(settings),
                             term->FormatPrice(-pay->value));
                     printer->Write(str);
                     tc -= pay->value;
@@ -4269,47 +4269,47 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     {
         if (settings->tax_GST > 0)
         {
-            sprintf(str, "                     GST: %7s", term->FormatPrice(total_tax_GST));
+            snprintf(str, sizeof(str), "                     GST: %7s", term->FormatPrice(total_tax_GST));
             printer->Write(str);
         }
 
         str[0] = '\0';
         if (settings->tax_QST > 0)
-			sprintf(str, "                     QST: %7s", term->FormatPrice(total_tax_QST));
+			snprintf(str, sizeof(str), "                     QST: %7s", term->FormatPrice(total_tax_QST));
         else if (settings->tax_PST > 0)
-			sprintf(str, "                     PST: %7s", term->FormatPrice(total_tax_PST));
+			snprintf(str, sizeof(str), "                     PST: %7s", term->FormatPrice(total_tax_PST));
         if (str[0] != '\0')
             printer->Write(str);
 	}
 	else
 	{
-		sprintf(str, "                      HST: %7s", term->FormatPrice(total_tax_HST));
+		snprintf(str, sizeof(str), "                      HST: %7s", term->FormatPrice(total_tax_HST));
 		printer->Write(str);
 	}
     if (settings->tax_VAT > 0)
-        sprintf(str, "                      VAT: %7s", term->FormatPrice(total_tax_VAT));
+        snprintf(str, sizeof(str), "                      VAT: %7s", term->FormatPrice(total_tax_VAT));
 		
-    sprintf(str, "                Total Tax %7s", term->FormatPrice(TotalTax()));
+    snprintf(str, sizeof(str), "                Total Tax %7s", term->FormatPrice(TotalTax()));
     printer->Write(str);
 
     if (IsTaxExempt())
     {
-        sprintf(str, "               Tax Exempt %7s", term->FormatPrice(-TotalTax()));
+        snprintf(str, sizeof(str), "               Tax Exempt %7s", term->FormatPrice(-TotalTax()));
         printer->Write(str);
-        sprintf(str, "Tax ID:  %s\n", tax_exempt.Value());
+        snprintf(str, sizeof(str), "Tax ID:  %s\n", tax_exempt.Value());
         printer->Write(str, PRINT_BOLD);
     }
 
 
     if (gratuity)
     {
-        sprintf(str, "%25.25s %7s", gratuity->Description(settings),
+        snprintf(str, sizeof(str), "%25.25s %7s", gratuity->Description(settings),
                 term->FormatPrice(-gratuity->value));
         printer->Write(str);
     }
 
     printer->Write("                           ------");
-    sprintf(str, "                    Total %7s", term->FormatPrice(tc, 1));
+    snprintf(str, sizeof(str), "                    Total %7s", term->FormatPrice(tc, 1));
     printer->Write(str);
 
     if (PaymentList())
@@ -4327,25 +4327,25 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
                     str[0] = '\0';
                     if (tmp && settings->authorize_method == CCAUTH_NONE)
                     {
-                        sprintf(str, "%25.25s %7s",
+                        snprintf(str, sizeof(str), "%25.25s %7s",
                                 tmp->CreditTypeName(), term->FormatPrice(pay->value));
                     }
                     else
                     {
-                        sprintf(str, "%25.25s %7s", pay->Description(settings),
+                        snprintf(str, sizeof(str), "%25.25s %7s", pay->Description(settings),
                                 term->FormatPrice(pay->value));
                     }
                     printer->Write(str);
                     if (tmp && settings->authorize_method == CCAUTH_NONE)
                     {
                         printer->LineFeed(1);
-                        sprintf(str, "  Account       %s", tmp->PAN(settings->show_entire_cc_num));
+                        snprintf(str, sizeof(str), "  Account       %s", tmp->PAN(settings->show_entire_cc_num));
                         printer->Write(str);
-                        sprintf(str, "  Card Holder   %s", tmp->Name());
+                        snprintf(str, sizeof(str), "  Card Holder   %s", tmp->Name());
                         printer->Write(str);
-                        sprintf(str, "  Card Expires  %s", tmp->ExpireDate());
+                        snprintf(str, sizeof(str), "  Card Expires  %s", tmp->ExpireDate());
                         printer->Write(str);
-                        sprintf(str, "  Authorization %s", tmp->Approval());
+                        snprintf(str, sizeof(str), "  Authorization %s", tmp->Approval());
                     }
                 }
             }
@@ -4354,24 +4354,24 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
         printer->LineFeed(1);
         if (payment > 0)
         {
-            sprintf(str, "          Amount Tendered %7s", term->FormatPrice(payment, 1));
+            snprintf(str, sizeof(str), "          Amount Tendered %7s", term->FormatPrice(payment, 1));
             printer->Write(str);
         }
         if (balance > 0)
         {
-            sprintf(str, "              Balance Due %7s", term->FormatPrice(balance, 1));
+            snprintf(str, sizeof(str), "              Balance Due %7s", term->FormatPrice(balance, 1));
             printer->Write(str);
         }
         else
         {
-            sprintf(str, "                   Change %7s", term->FormatPrice(change_value, 1));
+            snprintf(str, sizeof(str), "                   Change %7s", term->FormatPrice(change_value, 1));
             printer->Write(str);
         }
 
         if (item_comps > 0)
         {
             printer->LineFeed(1);
-            sprintf(str, "               Total Comp %7s", term->FormatPrice(item_comps, 1));
+            snprintf(str, sizeof(str), "               Total Comp %7s", term->FormatPrice(item_comps, 1));
             printer->Write(str);
         }
     }
@@ -5194,7 +5194,7 @@ int Order::Read(InputDataFile &infile, int version)
     if (error)
     {
         genericChar str[256];
-        sprintf(str, "Error in reading version %d order data", version);
+        snprintf(str, sizeof(str), "Error in reading version %d order data", version);
         ReportError(str);
     }
     return error;
@@ -5733,7 +5733,7 @@ genericChar* Payment::Description(Settings *settings, genericChar* str)
 
     if (tender_type == TENDER_CREDIT_CARD && credit != NULL)
     {
-        sprintf(str, "Credit Card (%s)", credit->CreditTypeName(NULL, 1));
+        snprintf(str, sizeof(str), "Credit Card (%s)", credit->CreditTypeName(NULL, 1));
         return str;
     }
 
@@ -5741,8 +5741,8 @@ genericChar* Payment::Description(Settings *settings, genericChar* str)
     if (flags & TF_IS_PERCENT)
     {
         genericChar tmp[32];
-        sprintf(tmp, " %g%%", (Flt) amount / 100.0);
-        strcat(str, tmp);
+        snprintf(tmp, sizeof(tmp), " %g%%", (Flt) amount / 100.0);
+        strncat(str, tmp, sizeof(str) - strlen(str) - 1);
     }
     return str;
 }
