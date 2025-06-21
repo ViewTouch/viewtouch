@@ -241,7 +241,7 @@ int Report::CreateHeader(Terminal *term, Printer *p, const Employee *e)
     Header();
 
     genericChar str[256];
-    sprintf(str, "%s: %s", term->Translate("Author"), e->system_name.Value());
+    snprintf(str, 256, "%s: %s", term->Translate("Author"), e->system_name.Value());
 
     if (p == NULL || p->Width() < 80)
     {
@@ -872,7 +872,7 @@ int Report::Number(int n, int c, int a, float indent)
 {
     FnTrace("Report::Number()");
     genericChar str[32];
-    sprintf(str, "%d", n);
+    snprintf(str, 32, "%d", n);
     return Text(str, c, a, indent);
 }
 
