@@ -202,7 +202,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
 
     if (version < 2 || version > ARCHIVE_VERSION)
     {
-        sprintf(str, "Unknown archive file version %d", version);
+        snprintf(str, STRLENGTH, "Unknown archive file version %d", version);
         ReportError(str);
         return 1;
     }
@@ -228,8 +228,8 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         {
             if (df.end_of_file)
             {
-                sprintf(str, "Unexpected end of drawers in archive (%d of %d so far)",
-                        i + 1, count);
+                snprintf(str, STRLENGTH, "Unexpected end of drawers in archive (%d of %d so far)",
+                         i + 1, count);
                 ReportError(str);
                 goto archive_read_error;
             }
@@ -238,7 +238,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
             if (error)
             {
                 delete drawer;
-                sprintf(str, "Error %d in reading drawer %d of %d", error, i + 1, count);
+                snprintf(str, STRLENGTH, "Error %d in reading drawer %d of %d", error, i + 1, count);
                 ReportError(str);
                 goto archive_read_error;
             }
@@ -265,7 +265,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
             if (error)
             {
                 delete check;
-                sprintf(str, "Error %d in check %d of %d", error, i + 1, count);
+                snprintf(str, STRLENGTH, "Error %d in check %d of %d", error, i + 1, count);
                 ReportError(str);
                 goto archive_read_error;
             }
@@ -293,7 +293,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
             if (error)
             {
                 delete te;
-                sprintf(str, "Error %d in tip %d of %d", error, i + 1, count);
+                snprintf(str, STRLENGTH, "Error %d in tip %d of %d", error, i + 1, count);
                 ReportError(str);
                 goto archive_read_error;
             }
@@ -309,8 +309,8 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         error = exception_db.Read(df, exception_version);
         if (error)
         {
-            sprintf(str, "Error %d loading exception data (version %d) from archive",
-                    error, exception_version);
+            snprintf(str, STRLENGTH, "Error %d loading exception data (version %d) from archive",
+                     error, exception_version);
             ReportError(str);
             goto archive_read_error;
         }
@@ -487,7 +487,7 @@ archive_read_error:
     df.Close();
     loaded = 1;
     corrupt = 1;
-    sprintf(str, "Archive '%s' (version %d) invalid", filename.Value(), version);
+    snprintf(str, STRLENGTH, "Archive '%s' (version %d) invalid", filename.Value(), version);
     ReportError(str);
     changed = 0;
     Unload();
