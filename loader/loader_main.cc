@@ -233,7 +233,7 @@ void KeyPressCB(Widget widget, XtPointer client_data, XEvent *event, Boolean *ok
                 (strlen(buffer) <= 32))
             {
                 keybuff[0] = toupper(keybuff[0]);
-                strcat(buffer, keybuff);
+                strncat(buffer, keybuff, sizeof(buffer) - strlen(buffer) - 1);
             }
             break;
         }
