@@ -348,13 +348,13 @@ int TipDB::PayoutReceipt(Terminal *t, Employee *e, int amount, Report *r)
     r->NewLine(2);
     r->Mode(0);
 
-    sprintf(str, "     Server: %s", e->system_name.Value());
+    snprintf(str, STRLENGTH, "     Server: %s", e->system_name.Value());
     r->TextL(str);
     r->NewLine();
-    sprintf(str, "       Time: %s", t->TimeDate(SystemTime, TD2));
+    snprintf(str, STRLENGTH, "       Time: %s", t->TimeDate(SystemTime, TD2));
     r->TextL(str);
     r->NewLine();
-    sprintf(str, "Amount Paid: %s", t->FormatPrice(amount, 1));
+    snprintf(str, STRLENGTH, "Amount Paid: %s", t->FormatPrice(amount, 1));
     r->TextL(str);
     r->NewLine(3);
     r->Mode(PRINT_UNDERLINE);
@@ -380,7 +380,7 @@ int TipDB::ListReport(Terminal *t, Employee *e, Report *r)
             r->TextC(t->FormatPrice(te->paid));
             genericChar str[256];
             if (te->previous_amount != 0 && te->amount != 0)
-                sprintf(str, "(!) %s", t->FormatPrice(te->amount));
+                snprintf(str, STRLENGTH, "(!) %s", t->FormatPrice(te->amount));
             else
                 t->FormatPrice(str, te->amount);
             int c = COLOR_RED;

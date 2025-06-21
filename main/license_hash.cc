@@ -1,4 +1,3 @@
-
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -138,7 +137,7 @@ int MacToString(char* macstr, int maxlen, unsigned const char* mac)
     for (idx = 0; idx < IFHWADDRLEN; idx++)
     {
         if (idx)
-            strcat(macstr, ":");
+            strncat(macstr, ":", sizeof(macstr) - strlen(macstr) - 1);
         snprintf(buffer, LICENCE_HASH_STRLENGTH, "%02X", mac[idx]);
         strncat(macstr, buffer, maxlen);
     }
@@ -374,7 +373,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
     char buffer[1024];
     struct ifreq ifr;
  
-    sprintf(ifr.ifr_name, "eth0");
+    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "eth0");
   
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sockfd < 0){
@@ -389,7 +388,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
     }
     
     printf("fetched HW address with ioctl on sockfd.\n");
-    sprintf(stringbuf,"%02X:%02X:%02X:%02X:%02X:%02X",
+    snprintf(stringbuf, sizeof(stringbuf), "%02X:%02X:%02X:%02X:%02X:%02X",
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[0],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[1],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[2],
@@ -431,7 +430,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
         }
     }
         
-    sprintf(stringbuf,"%02X:%02X:%02X:%02X:%02X:%02X",
+    snprintf(stringbuf, sizeof(stringbuf), "%02X:%02X:%02X:%02X:%02X:%02X",
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[0],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[1],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[2],

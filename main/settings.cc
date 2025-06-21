@@ -1481,7 +1481,7 @@ int Settings::Load(const char* file)
     genericChar str[256];
     if (version < 25 || version > SETTINGS_VERSION)
     {
-        sprintf(str, "Unknown Settings file version %d", version);
+        snprintf(str, STRLENGTH, "Unknown Settings file version %d", version);
         ReportError(str);
         return 1;
     }
@@ -1697,7 +1697,7 @@ int Settings::Load(const char* file)
             if (thost.size() > 0)
             {
                 TermInfo *ti = new TermInfo;
-                sprintf(str, "Term %d", i + 1);
+                snprintf(str, STRLENGTH, "Term %d", i + 1);
                 ti->name.Set(str);
                 ti->type = ttype;
                 ti->display_host.Set(thost);
@@ -3133,17 +3133,17 @@ int Settings::ShiftText(char* str, int shift)
             h = 12;
 
         if (m)
-            sprintf(buffer[i], "%d:%02d", h, m);
+            snprintf(buffer[i], 32, "%d:%02d", h, m);
         else
-            sprintf(buffer[i], "%d", h);
+            snprintf(buffer[i], 32, "%d", h);
 
         if (pm)
-            strcat(buffer[i], "pm");
+            strncat(buffer[i], "pm", 32 - strlen(buffer[i]) - 1);
         else
-            strcat(buffer[i], "am");
+            strncat(buffer[i], "am", 32 - strlen(buffer[i]) - 1);
     }
 
-    sprintf(str, "%s-%s", buffer[0], buffer[1]);
+    snprintf(str, STRLENGTH, "%s-%s", buffer[0], buffer[1]);
     return 0;
 }
 
@@ -3387,7 +3387,7 @@ char* Settings::StoreNum(char* dest)
     if (dest == NULL)
         dest = buffer;
 
-    sprintf(dest, "%d", store_code);
+    snprintf(dest, STRLONG, "%d", store_code);
 
     return dest;
 }
@@ -3476,7 +3476,7 @@ char* Settings::TenderName(int tender_type, int tender_id, genericChar* str)
         if (tender_id <= 0)
             strcpy(str, "Room Charge");
         else
-            sprintf(str, "Charge Room #%d", tender_id);
+            snprintf(str, STRLENGTH, "Charge Room #%d", tender_id);
     }
     else if (tender_type == TENDER_CHARGE_CARD)
     {
@@ -3819,7 +3819,7 @@ int Settings::DiscountReport(Terminal *t, Report *r)
                 r->TextC(str, COLOR_RED);
             }
             if (ds->flags & TF_IS_PERCENT)
-                sprintf(str, "%g%%", (Flt) ds->amount / 100.0);
+                snprintf(str, STRLENGTH, "%g%%", (Flt) ds->amount / 100.0);
             else
                 t->FormatPrice(str, ds->amount, 1);
             r->TextR(str, color);
@@ -3860,7 +3860,7 @@ int Settings::CouponReport(Terminal *t, Report *r)
                 r->TextC(str, COLOR_RED);
             }
             if (cp->flags & TF_IS_PERCENT)
-                sprintf(str, "%g%%", (Flt) cp->amount / 100.0);
+                snprintf(str, STRLENGTH, "%g%%", (Flt) cp->amount / 100.0);
             else
                 t->FormatPrice(str, cp->amount, 1);
             r->TextR(str, color);
@@ -3963,7 +3963,7 @@ int Settings::MealReport(Terminal *t, Report *r)
         {
             r->TextL(mi->name.Value());
             if (mi->flags & TF_IS_PERCENT)
-                sprintf(str, "%g%%", (Flt) mi->amount / 100.0);
+                snprintf(str, STRLENGTH, "%g%%", (Flt) mi->amount / 100.0);
             else
                 t->FormatPrice(str, mi->amount, 1);
             if (debug_mode)
@@ -4121,7 +4121,7 @@ int Settings::PrinterReport(Terminal *t, Report *r)
 	if (strlen(pi->name.Value()) > 17)
 	{
 	    buffer[17] = '\0';
-	    strcat(buffer, "...");
+	    strncat(buffer, "...", sizeof(buffer) - strlen(buffer) - 1);
 	}
 	r->TextL(buffer);
 
@@ -4129,7 +4129,7 @@ int Settings::PrinterReport(Terminal *t, Report *r)
         if (strlen(pi->host.Value()) > 19)
         {
             buffer[19] = '\0';
-            strcat(buffer, "...");
+            strncat(buffer, "...", sizeof(buffer) - strlen(buffer) - 1);
         }
         r->TextPosL(18, buffer);
 
