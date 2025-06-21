@@ -228,7 +228,7 @@ int KitchenObj::Render(Terminal *t)
     }
     else
     {
-        sprintf(str, "Kitchen #%d", number);
+        snprintf(str, STRLENGTH, "Kitchen #%d", number);
         color = COLOR_BLACK;
     }
 
