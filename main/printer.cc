@@ -496,7 +496,7 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
         // append the date
         now.Set();
         snprintf(timestr, STRLENGTH, "-%02d-%02d-%d", now.Day(), now.Month(), now.Year());
-        strcat(buffer, timestr);
+        strncat(buffer, timestr, sizeof(buffer) - strlen(buffer) - 1);
 
         if (ext == NULL)
         {
@@ -504,26 +504,26 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
             switch (Model())
             {
             case MODEL_HTML:
-                strcat(buffer, ".html");
+                strncat(buffer, ".html", sizeof(buffer) - strlen(buffer) - 1);
                 break;
             case MODEL_POSTSCRIPT:
-                strcat(buffer, ".ps");
+                strncat(buffer, ".ps", sizeof(buffer) - strlen(buffer) - 1);
                 break;
             case MODEL_PDF:
-                strcat(buffer, ".pdf");
+                strncat(buffer, ".pdf", sizeof(buffer) - strlen(buffer) - 1);
                 break;
             case MODEL_RECEIPT_TEXT:
             case MODEL_REPORT_TEXT:
-                strcat(buffer, ".txt");
+                strncat(buffer, ".txt", sizeof(buffer) - strlen(buffer) - 1);
                 break;
             default:
-                strcat(buffer, ".prn");
+                strncat(buffer, ".prn", sizeof(buffer) - strlen(buffer) - 1);
                 break;
             }
         }
         else
         {
-            strcat(buffer, ext);
+            strncat(buffer, ext, sizeof(buffer) - strlen(buffer) - 1);
         }
     }
     return 0;
@@ -668,9 +668,9 @@ int Printer::TestPrint(Terminal *t)
 
     genericChar str[256];
     NewLine();
-    sprintf(str, "\r** %s **\r", t->Translate("Printer Test"));
+    snprintf(str, STRLENGTH, "\r** %s **\r", t->Translate("Printer Test"));
     Write(str, PRINT_RED | PRINT_BOLD | PRINT_UNDERLINE | PRINT_LARGE | PRINT_NARROW);
-    sprintf(str, "Host: %s\r", target.Value());
+    snprintf(str, STRLENGTH, "Host: %s\r", target.Value());
     Write(str);
     t->TimeDate(str, SystemTime, TD0);
     Write(str);
@@ -1646,37 +1646,37 @@ int PrinterHTML::WriteFlags(int flags)
     if (last_red != red)
     {
         if (red)
-            strcat(flagstr, "<font color=\"red\">");
+            strncat(flagstr, "<font color=\"red\">", sizeof(flagstr) - strlen(flagstr) - 1);
         else
-            strcat(flagstr, "</font>");
+            strncat(flagstr, "</font>", sizeof(flagstr) - strlen(flagstr) - 1);
     }
     if (last_blue != blue)
     {
         if (blue)
-            strcat(flagstr, "<font color=\"blue\">");
+            strncat(flagstr, "<font color=\"blue\">", sizeof(flagstr) - strlen(flagstr) - 1);
         else
-            strcat(flagstr, "</font>");
+            strncat(flagstr, "</font>", sizeof(flagstr) - strlen(flagstr) - 1);
     }
     if (last_bold != bold)
     {
         if (bold)
-            strcat(flagstr, "<b>");
+            strncat(flagstr, "<b>", sizeof(flagstr) - strlen(flagstr) - 1);
         else
-            strcat(flagstr, "</b>");
+            strncat(flagstr, "</b>", sizeof(flagstr) - strlen(flagstr) - 1);
     }
     if (last_underline != underline)
     {
         if (underline)
-            strcat(flagstr, "<u>");
+            strncat(flagstr, "<u>", sizeof(flagstr) - strlen(flagstr) - 1);
         else
-            strcat(flagstr, "</u>");
+            strncat(flagstr, "</u>", sizeof(flagstr) - strlen(flagstr) - 1);
     }
     if (last_large != large || last_wide != wide)
     {
         if (large || wide)
-            strcat(flagstr, "<font size=\"+2\">");
+            strncat(flagstr, "<font size=\"+2\">", sizeof(flagstr) - strlen(flagstr) - 1);
         else
-            strcat(flagstr, "</font>");
+            strncat(flagstr, "</font>", sizeof(flagstr) - strlen(flagstr) - 1);
     }
     if (flagstr[0] != '\0')
         write(temp_fd, flagstr, strlen(flagstr));

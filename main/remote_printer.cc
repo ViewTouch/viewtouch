@@ -84,7 +84,7 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     buffer_out = new CharQueue(1024);
     genericChar str[256], tmp[256];
     struct sockaddr name;
-    sprintf(str, "/tmp/vt_print%d", no);
+    snprintf(str, sizeof(str), "/tmp/vt_print%d", no);
     name.sa_family = AF_UNIX;
     strcpy(name.sa_data, str);
     DeleteFile(str);
@@ -92,19 +92,19 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     int dev = socket(AF_UNIX, SOCK_STREAM, 0);
     if (dev <= 0)
     {
-        sprintf(tmp, "Failed to open socket '%s'", str);
+        snprintf(tmp, sizeof(tmp), "Failed to open socket '%s'", str);
         ReportError(tmp);
         return;
     }
     if (bind(dev, &name, sizeof(name)) == -1)
     {
         close(dev);
-        sprintf(tmp, "Failed to bind socket '%s'", str);
+        snprintf(tmp, sizeof(tmp), "Failed to bind socket '%s'", str);
         ReportError(tmp);
         return;
     }
 
-    sprintf(str, "vt_print %d %s %d %d&", no, host, port, mod);
+    snprintf(str, sizeof(str), "vt_print %d %s %d %d&", no, host, port, mod);
     system(str);
     listen(dev, 1);
 
@@ -113,7 +113,7 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     socket_no = accept(dev, (struct sockaddr *) str, &len);
     if (socket_no <= 0)
     {
-        sprintf(tmp, "Failed to get connection with printer %d", no);
+        snprintf(tmp, sizeof(tmp), "Failed to get connection with printer %d", no);
         ReportError(tmp);
     }
     close(dev);
@@ -205,7 +205,7 @@ int RemotePrinter::Start()
 
     filename.Set(MasterSystem->NewPrintFile());
     genericChar str[256];
-    sprintf(str, "/tmp/vt_%s", host_name.Value());
+    snprintf(str, sizeof(str), "/tmp/vt_%s", host_name.Value());
     device_no = creat(str, 0666);
 
     if (device_no <= 0)
@@ -288,7 +288,7 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
         switch (code)
         {
         case SERVER_ERROR:
-            sprintf(str, "PrinterError: %s", p->RStr());
+            snprintf(str, sizeof(str), "PrinterError: %s", p->RStr());
             ReportError(str);
             break;
         case SERVER_PRINTER_DONE:

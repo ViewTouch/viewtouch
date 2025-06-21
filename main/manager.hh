@@ -162,6 +162,7 @@ int RemoveWorkFn(unsigned long fn_id);
 // (layout functions should be moved to terms so these arn't needed here)
 int GetFontSize(int font_id, int &w, int &h);
 int GetTextWidth(const char* string, int len, int font_id);
+const char* GetScalableFontName(int font_id);
 
 /**** Global ****/
 extern int ReleaseDay;

@@ -75,6 +75,12 @@
 namespace fs = std::filesystem;
 using namespace date; // for date conversion on streams
 
+// Add at the top with other includes
+#include <X11/Xft/Xft.h>
+
+// Forward declaration for GetFontInfo
+XftFont *GetFontInfo(int font_id);
+
 /**** System Globals ****/
 int ReleaseYear  = 1998;
 int ReleaseMonth = 10;
@@ -138,7 +144,7 @@ int PrinterTypeValue[] = { PRINTER_KITCHEN1, PRINTER_KITCHEN2,
  *************************************************************/
 static XtAppContext App = 0;
 static Display     *Dis = NULL;
-static XFontStruct *FontInfo[32];
+static XftFont     *FontInfo[32];
 static int          FontWidth[32];
 static int          FontHeight[32];
 int                 LoaderSocket = 0;
@@ -545,7 +551,7 @@ void Terminate(int my_signal)
     default:
     {
         genericChar str[256];
-        sprintf(str, "Unknown my_signal %d received (ignored)", my_signal);
+        snprintf(str, sizeof(str), "Unknown my_signal %d received (ignored)", my_signal);
         ReportError(str);
         return;
     }
@@ -595,14 +601,14 @@ int StartSystem(int my_use_net)
     EnsureFileExists(sys->data_path.Value());
     if (DoesFileExist(sys->data_path.Value()) == 0)
     {
-        sprintf(str, "Can't find path '%s'", sys->data_path.Value());
+        snprintf(str, sizeof(str), "Can't find path '%s'", sys->data_path.Value());
         ReportError(str);
         ReportLoader("POS cannot be started.");
         sleep(1);
         EndSystem();
     }
 
-    sprintf(str, "Starting System on %s", GetMachineName());
+    snprintf(str, sizeof(str), "Starting System on %s", GetMachineName());
     printf("Starting system:  %s\n", GetMachineName());
     ReportLoader(str);
 
@@ -675,10 +681,12 @@ int StartSystem(int my_use_net)
         for (i = 0; i < FONT_COUNT; ++i)
         {
             int f = FontData[i].id;
-            FontInfo[f] = XLoadQueryFont(Dis, FontData[i].font);
+            // Use scalable font names instead of bitmapped font names
+            const char* scalable_font_name = GetScalableFontName(FontData[i].id);
+            FontInfo[f] = XftFontOpenName(Dis, DefaultScreen(Dis), scalable_font_name);
             if (FontInfo[f] == NULL)
             {
-                sprintf(str, "Can't load font '%s'", FontData[i].font);
+                snprintf(str, sizeof(str), "Can't load font '%s'", scalable_font_name);
                 ReportError(str);
             }
         }
@@ -743,7 +751,7 @@ int StartSystem(int my_use_net)
             {
                 if (count < allowed)
                 {
-                    sprintf(str, "Opening Remote Display '%s'", ti->name.Value());
+                    snprintf(str, sizeof(str), "Opening Remote Display '%s'", ti->name.Value());
                     ReportLoader(str);
                     ReportError(str);
                     ti->OpenTerm(MasterControl);
@@ -775,7 +783,7 @@ int StartSystem(int my_use_net)
         ReportError("Can't scan archives");
 
     // Load Employees
-	sprintf(msg, "Attempting to load file %s...", MASTER_USER_DB);
+	snprintf(msg, sizeof(msg), "Attempting to load file %s...", MASTER_USER_DB);
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Employees");
     sys->FullPath(MASTER_USER_DB, str);
@@ -787,18 +795,18 @@ int StartSystem(int my_use_net)
     }
     // set developer key (this should be done somewhere else)
     sys->user_db.developer->key = settings->developer_key;
-	sprintf(msg, "%s OK", MASTER_USER_DB);
+	snprintf(msg, sizeof(msg), "%s OK", MASTER_USER_DB);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Labor
-    sprintf(msg, "Attempting to load labor info...");
+    snprintf(msg, sizeof(msg), "Attempting to load labor info...");
     ReportLoader(msg);
     sys->FullPath(LABOR_DATA_DIR, str);
     if (sys->labor_db.Load(str))
         ReportError("Can't find labor directory");
 
     // Load Menu
-	sprintf(msg, "Attempting to load file %s...", MASTER_MENU_DB);
+	snprintf(msg, sizeof(msg), "Attempting to load file %s...", MASTER_MENU_DB);
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Menu");
     sys->FullPath(MASTER_MENU_DB, str);
@@ -813,11 +821,11 @@ int StartSystem(int my_use_net)
         sys->menu.Purge();
         sys->menu.Load(str);
     }
-	sprintf(msg, "%s OK", MASTER_MENU_DB);
+	snprintf(msg, sizeof(msg), "%s OK", MASTER_MENU_DB);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Exceptions
-	sprintf(msg, "Attempting to load file %s...", MASTER_EXCEPTION);
+	snprintf(msg, sizeof(msg), "Attempting to load file %s...", MASTER_EXCEPTION);
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Exception Records");
     sys->FullPath(MASTER_EXCEPTION, str);
@@ -827,11 +835,11 @@ int StartSystem(int my_use_net)
         sys->exception_db.Purge();
         sys->exception_db.Load(str);
     }
-	sprintf(msg, "%s OK", MASTER_EXCEPTION);
+	snprintf(msg, sizeof(msg), "%s OK", MASTER_EXCEPTION);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Inventory
-	sprintf(msg, "Attempting to load file %s...", MASTER_INVENTORY);
+	snprintf(msg, sizeof(msg), "Attempting to load file %s...", MASTER_INVENTORY);
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Inventory");
     sys->FullPath(MASTER_INVENTORY, str);
@@ -844,7 +852,7 @@ int StartSystem(int my_use_net)
     sys->inventory.ScanItems(&sys->menu);
     sys->FullPath(STOCK_DATA_DIR, str);
     sys->inventory.LoadStock(str);
-	sprintf(msg, "%s OK", MASTER_INVENTORY);
+	snprintf(msg, sizeof(msg), "%s OK", MASTER_INVENTORY);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Customers
@@ -901,7 +909,7 @@ int StartSystem(int my_use_net)
         PrinterInfo *report_printer = new PrinterInfo;
         report_printer->name.Set("Report Printer");
         sys->FullPath("html", str);
-        snprintf(prtstr, STRLONG, "file:%s/", str);
+        snprintf(prtstr, sizeof(prtstr), "file:%s/", str);
         report_printer->host.Set(prtstr);
         report_printer->model = MODEL_HTML;
         report_printer->type = PRINTER_REPORT;
@@ -1147,33 +1155,33 @@ char* PriceFormat(Settings *settings, int price, int use_sign, int use_comma, ge
 
     genericChar dollar_str[32];
     if (use_comma && dollars > 999999){
-        sprintf(dollar_str, "%d%c%03d%c%03d",
+        snprintf(dollar_str, sizeof(dollar_str), "%d%c%03d%c%03d",
                 dollars / 1000000, comma,
                 (dollars / 1000) % 1000, comma,
                 dollars % 1000);
 	}
     else if (use_comma && dollars > 999)
-        sprintf(dollar_str, "%d%c%03d", dollars / 1000, comma, dollars % 1000);
+        snprintf(dollar_str, sizeof(dollar_str), "%d%c%03d", dollars / 1000, comma, dollars % 1000);
     else if (dollars > 0)
-        sprintf(dollar_str, "%d", dollars);
+        snprintf(dollar_str, sizeof(dollar_str), "%d", dollars);
     else
         dollar_str[0] = '\0';
 
     if (use_sign)
     {
         if (price < 0)
-            sprintf(str, "%s-%s%c%02d", settings->money_symbol.Value(),
+            snprintf(str, sizeof(str), "%s-%s%c%02d", settings->money_symbol.Value(),
                     dollar_str, point, change);
         else
-            sprintf(str, "%s%s%c%02d", settings->money_symbol.Value(),
+            snprintf(str, sizeof(str), "%s%s%c%02d", settings->money_symbol.Value(),
                     dollar_str, point, change);
     }
     else
     {
         if (price < 0)
-            sprintf(str, "-%s%c%02d", dollar_str, point, change);
+            snprintf(str, sizeof(str), "-%s%c%02d", dollar_str, point, change);
         else
-            sprintf(str, "%s%c%02d", dollar_str, point, change);
+            snprintf(str, sizeof(str), "%s%c%02d", dollar_str, point, change);
     }
     return str;
 }
@@ -1793,7 +1801,7 @@ int Control::SaveMenuPages()
         return 1;
 
     genericChar str[256];
-    sprintf(str, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB2);
+    snprintf(str, sizeof(str), "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB2);
     BackupFile(str);
     return zone_db->Save(str, PAGECLASS_MENU);
 }
@@ -1806,7 +1814,7 @@ int Control::SaveTablePages()
         return 1;
 
     genericChar str[256];
-    sprintf(str, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB1);
+    snprintf(str, sizeof(str), "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB1);
     BackupFile(str);
     return zone_db->Save(str, PAGECLASS_TABLE);
 }
@@ -2112,29 +2120,29 @@ int SendRemoteOrderResult(int socket, Check *check, int result_code, int status)
     if (result_code == CALLCTR_ERROR_NONE)
     {
         if (status == CALLCTR_STATUS_COMPLETE)
-            strcat(result_str, "COMPLETE");
+            strncat(result_str, "COMPLETE", sizeof(result_str) - strlen(result_str) - 1);
         else if (status == CALLCTR_STATUS_INCOMPLETE)
-            strcat(result_str, "INCOMPLETE");
+            strncat(result_str, "INCOMPLETE", sizeof(result_str) - strlen(result_str) - 1);
         else if (status == CALLCTR_STATUS_FAILED)
-            strcat(result_str, "FAILED");
+            strncat(result_str, "FAILED", sizeof(result_str) - strlen(result_str) - 1);
         else
-            strcat(result_str, "UNKNOWNSTAT");
+            strncat(result_str, "UNKNOWNSTAT", sizeof(result_str) - strlen(result_str) - 1);
     }
     else
     {
         if (result_code == CALLCTR_ERROR_BADITEM)
-            strcat(result_str, "BADITEM");
+            strncat(result_str, "BADITEM", sizeof(result_str) - strlen(result_str) - 1);
         else if (result_code == CALLCTR_ERROR_BADDETAIL)
-            strcat(result_str, "BADDETAIL");
+            strncat(result_str, "BADDETAIL", sizeof(result_str) - strlen(result_str) - 1);
         else
-            strcat(result_str, "UNKNOWNERR");
+            strncat(result_str, "UNKNOWNERR", sizeof(result_str) - strlen(result_str) - 1);
     }
 
-    strcat(result_str, ":");
+    strncat(result_str, ":", sizeof(result_str) - strlen(result_str) - 1);
     if (result_code == CALLCTR_ERROR_NONE)
-        strcat(result_str, "PRINTED");
+        strncat(result_str, "PRINTED", sizeof(result_str) - strlen(result_str) - 1);
     else
-        strcat(result_str, "NOTPRINTED");
+        strncat(result_str, "NOTPRINTED", sizeof(result_str) - strlen(result_str) - 1);
 
     write(socket, result_str, strlen(result_str));
 
@@ -2932,8 +2940,28 @@ Printer *SetPrinter(const genericChar* printer_description)
 int GetFontSize(int font_id, int &w, int &h)
 {
     FnTrace("GetFontSize()");
-    w = FontWidth[font_id];
-    h = FontHeight[font_id];
+    
+    // Check if we have a valid font_id
+    if (font_id < 0 || font_id >= 32)
+    {
+        w = FontWidth[FONT_DEFAULT];
+        h = FontHeight[FONT_DEFAULT];
+        return 0;
+    }
+    
+    // If we have Xft fonts loaded, use them
+    if (FontInfo[font_id] && Dis)
+    {
+        // Use XftFont metrics
+        w = FontInfo[font_id]->max_advance_width; // Approximate character width
+        h = FontInfo[font_id]->height;
+    }
+    else
+    {
+        // Fall back to legacy font metrics
+        w = FontWidth[font_id];
+        h = FontHeight[font_id];
+    }
     return 0;
 }
 
@@ -2942,10 +2970,24 @@ int GetTextWidth(const char* my_string, int len, int font_id)
     FnTrace("GetTextWidth()");
     if (my_string == NULL || len <= 0)
         return 0;
-    else if (FontInfo[font_id])
-        return XTextWidth(FontInfo[font_id], my_string, len);
+    
+    // Check if we have a valid font_id
+    if (font_id < 0 || font_id >= 32)
+        font_id = FONT_DEFAULT;
+    
+    // If we have Xft fonts loaded and display is available, use Xft
+    if (FontInfo[font_id] && Dis)
+    {
+        // Use Xft for accurate text measurement
+        XGlyphInfo extents;
+        XftTextExtentsUtf8(Dis, FontInfo[font_id], (unsigned const char*)my_string, len, &extents);
+        return extents.width;
+    }
     else
+    {
+        // Fall back to legacy calculation
         return FontWidth[font_id] * len;
+    }
 }
 
 unsigned long AddTimeOutFn(TimeOutFn fn, int timeint, void *client_data)
@@ -2990,4 +3032,23 @@ int ReportWorkFn(int fn_id)
     if (fn_id > 0)
         XtRemoveWorkProc(fn_id);
     return 0;
+}
+
+// Add this function in main/manager.cc
+const char* GetScalableFontName(int font_id)
+{
+    switch (font_id)
+    {
+    case FONT_TIMES_14:  return "Times New Roman-14:style=Regular";
+    case FONT_TIMES_18:  return "Times New Roman-18:style=Regular";
+    case FONT_TIMES_20:  return "Times New Roman-20:style=Regular";
+    case FONT_TIMES_24:  return "Times New Roman-24:style=Regular";
+    case FONT_TIMES_34:  return "Times New Roman-34:style=Regular";
+    case FONT_TIMES_14B: return "Times New Roman-14:style=Bold";
+    case FONT_TIMES_18B: return "Times New Roman-18:style=Bold";
+    case FONT_TIMES_20B: return "Times New Roman-20:style=Bold";
+    case FONT_TIMES_24B: return "Times New Roman-24:style=Bold";
+    case FONT_TIMES_34B: return "Times New Roman-34:style=Bold";
+    default:             return "Times New Roman-24:style=Regular";
+    }
 }
