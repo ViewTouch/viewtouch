@@ -22,7 +22,6 @@
 #include "manager.hh"
 #include "system.hh"
 #include "check.hh"
-#include "sales.hh"
 #include "pos_zone.hh"
 #include "terminal.hh"
 #include "printer.hh"
