@@ -223,7 +223,7 @@ static int LastDay  = -1;
 #define VIEWTOUCH_UPDATE_COMMAND "/tmp/vt-update"
 // command to download script; -nv=not verbose, -T=timeout seconds, -t=# tries, -O=output
 #define VIEWTOUCH_UPDATE_REQUEST \
-    "wget -nv -T 2 -t 2 http://www.viewtouch.com/vt_updates/vt-update -O " VIEWTOUCH_UPDATE_COMMAND
+    "wget -nv -T 2 -t 2 https://www.viewtouch.com/vt_updates/vt-update -O " VIEWTOUCH_UPDATE_COMMAND
 
 static const std::string VIEWTOUCH_CONFIG = VIEWTOUCH_PATH "/dat/.viewtouch_config";
 
@@ -812,7 +812,7 @@ int StartSystem(int my_use_net)
     sys->FullPath(MASTER_MENU_DB, str);
     if (!fs::exists(str))
     {
-        const std::string menu_url = "http://www.viewtouch.com/menu.dat";
+        const std::string menu_url = "https://www.viewtouch.com/menu.dat";
         DownloadFile(menu_url, str);
     }
     if (sys->menu.Load(str))
@@ -1321,7 +1321,7 @@ int LoadSystemData()
     const char *filename1 = tables_filepath.c_str();
     if (!fs::exists(tables_filepath))
     {
-        const std::string tables_url = "http://www.viewtouch.com/tables.dat";
+        const std::string tables_url = "https://www.viewtouch.com/tables.dat";
         DownloadFile(tables_url, tables_filepath);
     }
 
@@ -1337,7 +1337,7 @@ int LoadSystemData()
     const char *filename2 = zone_db_filepath.c_str();
     if (!fs::exists(zone_db_filepath))
     {
-        const std::string zone_db_url = "http://www.viewtouch.com/zone_db.dat";
+        const std::string zone_db_url = "https://www.viewtouch.com/zone_db.dat";
         DownloadFile(zone_db_url, zone_db_filepath);
     }
     if (zone_db->Load(filename2))
