@@ -141,18 +141,18 @@ RenderResult RoomDialog::Render(Terminal *term, int update_flag)
             total   += sc->total_cost + sc->payment;
             balance += sc->balance;
         }
-        sprintf(str, "%s %s", term->Translate("Room"), check->Table());
+        snprintf(str, sizeof(str), "%s %s", term->Translate("Room"), check->Table());
         no = check->serial_number;
     }
     else
-        sprintf(str, "%s ???", term->Translate("Room"));
+        snprintf(str, sizeof(str), "%s ???", term->Translate("Room"));
 
     if (no <= 0)
         TextC(term, 0, str);
     else
     {
         TextL(term, 0, str);
-        sprintf(str, "%s %06d", term->Translate("Folio No"), no);
+        snprintf(str, sizeof(str), "%s %06d", term->Translate("Folio No"), no);
         TextR(term, 0, str);
     }
 
@@ -166,10 +166,10 @@ RenderResult RoomDialog::Render(Terminal *term, int update_flag)
     if (total > 0)
     {
         if (balance == 0)
-            sprintf(str, "Account Total:  %s      Account Paid",
+            snprintf(str, sizeof(str), "Account Total:  %s      Account Paid",
                     term->FormatPrice(total, 1));
         else
-            sprintf(str, "Account Total:  %s      Unpaid Balance:  %s",
+            snprintf(str, sizeof(str), "Account Total:  %s      Unpaid Balance:  %s",
                     term->FormatPrice(total, 1), term->FormatPrice(balance, 1));
         TextC(term, max_size_y - 4.5, str);
     }
@@ -390,7 +390,7 @@ int RoomDialog::ParseSwipe(Terminal *term, const genericChar* value)
     tmp[2] = '\0';
     int month = atoi(tmp);
 
-    sprintf(expire, "%02d%04d", month, year);
+    snprintf(expire, sizeof(expire), "%02d%04d", month, year);
 
     //sprintf(tmp, "expire: '%s'", expire);
     //ReportError(tmp);
@@ -801,13 +801,13 @@ RenderResult CommandZone::Render(Terminal *term, int update_flag)
     }
     else
     {
-        sprintf(str, "%s %s", term->Translate("Hello"), employee->system_name.Value());
+        snprintf(str, sizeof(str), "%s %s", term->Translate("Hello"), employee->system_name.Value());
         TextC(term, .3, str, col);
     }
 
     if (buffer[0])
     {
-        sprintf(str, "%s_", buffer);
+        snprintf(str, sizeof(str), "%s_", buffer);
         TextC(term, 1.3, str);
     }
     else if (check)
@@ -817,7 +817,7 @@ RenderResult CommandZone::Render(Terminal *term, int update_flag)
         else if (check->IsFastFood())
             strcpy(str, "Fast Food Order Selected");
 		else
-            sprintf(str, "Table Selected: %s", check->Table());
+            snprintf(str, sizeof(str), "Table Selected: %s", check->Table());
 
         TextC(term, 1.3, str);
     }
@@ -827,7 +827,7 @@ RenderResult CommandZone::Render(Terminal *term, int update_flag)
         if (drawer->IsServerBank())
             strcpy(str, "You May Settle Here");
         else
-            sprintf(str, "Drawer Available: #%d", drawer->number);
+            snprintf(str, sizeof(str), "Drawer Available: #%d", drawer->number);
         TextC(term, 2.3, str, col);
     }
     else if (employee->IsSupervisor(settings))
@@ -1132,9 +1132,9 @@ RenderResult TableZone::Render(Terminal *term, int update_flag)
         genericChar str[32];
         int subs = check->SubCount();
         if (subs > 1)
-            sprintf(str, "%d/%d", check->Guests(), subs);
+            snprintf(str, sizeof(str), "%d/%d", check->Guests(), subs);
         else
-            sprintf(str, "%d", check->Guests());
+            snprintf(str, sizeof(str), "%d", check->Guests());
 
         int bar_color, text_color, off = 0;
         if (check->user_current > 0 && check->user_current != employee->id)
@@ -1307,13 +1307,13 @@ RenderResult GuestCountZone::Render(Terminal *term, int update_flag)
     }
 
     genericChar str[256];
-    sprintf(str, "Guest Count for Table %s", check->Table());
+    snprintf(str, STRLENGTH, "Guest Count for Table %s", check->Table());
     TextC(term, 0, str, color[0]);
     Entry(term, 3, 2, size_x - 6);
     if (term->guests <= 0)
-        sprintf(str, "_");
+        snprintf(str, STRLENGTH, "_");
     else
-        sprintf(str, "%d_", term->guests);
+        snprintf(str, STRLENGTH, "%d_", term->guests);
 
     TextC(term, 2, str, COLOR_WHITE);
     return RENDER_OKAY;
@@ -1564,7 +1564,7 @@ int ServerTableObj::Layout(Terminal *term, int lx, int ly, int lw, int lh)
 
     if (tables.Count() > ((width_left / width) * (height_left / height)))
     {
-        // Full sized tables don'term fit - make them smaller (at least fit 2x2)
+        // Full sized tables don't fit - make them smaller (at least fit 2x2)
         height = Min(60, height_left / 2);
         width  = Min(60, width_left / 2);
     }

@@ -1299,7 +1299,7 @@ SignalResult ReadZone::Signal(Terminal *t, const char* message)
         if (message[9] != '/')
         {
             MasterSystem->FullPath("text/", newfile);
-            strcat(newfile, &message[9]);
+            strncat(newfile, &message[9], sizeof(newfile) - strlen(newfile) - 1);
             filename.Set(newfile);
         }
         else
