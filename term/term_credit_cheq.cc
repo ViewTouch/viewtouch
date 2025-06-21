@@ -647,7 +647,7 @@ int BatchInfo::GetAmt(const char* dest, const char* value)
     FnTrace("BatchInfo::GetAmt()");
     int retval = 0;
 
-    sprintf(dest, "%d", GetNum(value));
+    snprintf(dest, sizeof(dest), "%d", GetNum(value));
 
     return retval;
 }
@@ -982,7 +982,7 @@ int CCard::Command(const char* trans_type, const char* sub_type)
         }
         else
         {
-            sprintf(code, "NOCONN");
+            snprintf(code, sizeof(code), "NOCONN");
             intcode = CC_STATUS_NOCONNECT;
         }
     }
@@ -1484,7 +1484,7 @@ int CCQ_GetStringDelim(const char* dest, const char* src, int start, char edelim
     int sidx = start;
     int slen = strlen(src);
 
-    if (sdelim > 0)
+    if (ssdelim > 0)
     {
         while (src[sidx] != sdelim && src[sidx] != '\0' && sidx < slen)
         {

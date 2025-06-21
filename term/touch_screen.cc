@@ -328,7 +328,7 @@ int TouchScreen::Reset()
     {
 		//output a status message
         genericChar str[256];
-        sprintf(str, "TouchScreen Reset failed for host '%s'", host.Value());
+        snprintf(str, sizeof(str), "TouchScreen Reset failed for host '%s'", host.Value());
 
         error.Set(str);
 

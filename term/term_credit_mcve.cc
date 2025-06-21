@@ -85,7 +85,7 @@ int AppendString(char* dest, int fwidth, const char* source)
     char buffer[STRLONG];
 
     snprintf(buffer, STRLONG, "%-*s", fwidth, source);
-    strcat(dest, buffer);
+    strncat(dest, buffer, sizeof(dest) - strlen(dest) - 1);
 
     return retval;
 }
@@ -430,7 +430,7 @@ int BatchInfo::GetAmt(char* dest, const char* value)
     FnTrace("BatchInfo::GetAmt()");
     int retval = 0;
 
-    sprintf(dest, "%d", GetNum(value));
+    snprintf(dest, sizeof(dest), "%d", GetNum(value));
 
     return retval;
 }
@@ -819,7 +819,7 @@ int CCard::GetBatchNumber(char* dest)
         {
         }
     }
-    sprintf(dest, "%d", batchnum);
+    snprintf(dest, sizeof(dest), "%d", batchnum);
 
     return retval;
 }
