@@ -1596,9 +1596,9 @@ const char* Credit::Approval()
 
     str[0] = '\0';
     if (processor == CCAUTH_CREDITCHEQ)
-        sprintf(str, "%s", code.Value());
+        snprintf(str, 256, "%s", code.Value());
     else if (approval.empty())
-        sprintf(str, "PENDING");
+        snprintf(str, 256, "PENDING");
     else if (approval.size() > 0)
         strcpy(str, approval.Value());
 
@@ -1711,9 +1711,9 @@ const char* Credit::ExpireDate()
     {
         const char* s = expire.Value();
         if (expire.size() < 4)
-            sprintf(str, "%s/%s", "??", "??");  // to get rid of compiler warnings
+            snprintf(str, 16, "%s/%s", "??", "??");  // to get rid of compiler warnings
         else
-            sprintf(str, "%c%c/%c%c", s[0], s[1], s[2], s[3]);
+            snprintf(str, 16, "%c%c/%c%c", s[0], s[1], s[2], s[3]);
     }
 
     return str;
@@ -2249,9 +2249,9 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
                      term->Translate("Reference Number", lang),
                      term_id.Value(), sequence.Value());
             if (read_manual || b24code.empty())
-                strcat(buffer, " M");
+                strncat(buffer, " M", sizeof(buffer) - strlen(buffer) - 1);
             else
-                strcat(buffer, " S");
+                strncat(buffer, " S", sizeof(buffer) - strlen(buffer) - 1);
             printer->Write(buffer);
         }
         if (auth.size() > 0)
@@ -3377,9 +3377,9 @@ int CCSettle::GenerateReport(Terminal *term, Report *report, ReportZone *rzone, 
     {
         snprintf(str, STRLENGTH, "%s: ", term->Translate("Merchant ID"));
         if (merchid.size() > 0)
-            strcat(str, merchid.Value());
+            strncat(str, merchid.Value(), sizeof(str) - strlen(str) - 1);
         else
-            strcat(str, settings->cc_merchant_id.Value());
+            strncat(str, settings->cc_merchant_id.Value(), sizeof(str) - strlen(str) - 1);
         report->TextL(str);
         if (termid.size() > 0)
         {

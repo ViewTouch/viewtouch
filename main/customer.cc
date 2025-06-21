@@ -585,8 +585,8 @@ int CustomerInfoDB::Load(const genericChar* filepath)
             if (strncmp("customer_", name, 9) == 0)
             {
                 strcpy(buffer, pathname.Value());
-                strcat(buffer, "/");
-                strcat(buffer, name);
+                strncat(buffer, "/", sizeof(buffer) - strlen(buffer) - 1);
+                strncat(buffer, name, sizeof(buffer) - strlen(buffer) - 1);
                 CustomerInfo *custinfo = new CustomerInfo();
                 if (custinfo->Load(buffer))
                     ReportError("Error loading customer");
