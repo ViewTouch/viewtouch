@@ -714,7 +714,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
     }
 
     // Main header
-    sprintf(str, "%s --  %s", term->TimeDate(str2, time_start, TD0),
+    snprintf(str, STRLENGTH, "%s --  %s", term->TimeDate(str2, time_start, TD0),
             term->TimeDate(end, TD0));
     ptrReport->TextC(str, COLOR_DK_BLUE);
     ptrReport->NewLine(2);
@@ -747,7 +747,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         {
             if (term->hide_zeros == 0 || total_group_sales[g] != 0)
             {
-                sprintf(str, "%s Sales", SalesGroupName[g]);
+                snprintf(str, STRLENGTH, "%s Sales", SalesGroupName[g]);
                 ptrReport->TextL(str);
                 if (max_shifts > 1)
                 {
@@ -761,7 +761,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
                 per = 0;
                 if (total_sales > 0)
                     per = 100.0 * ((Flt) total_group_sales[g] / (Flt) total_sales);
-                sprintf(str, "%.2f%%", per);
+                snprintf(str, STRLENGTH, "%.2f%%", per);
                 ptrReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
                 ptrReport->NewLine();
             }
@@ -973,7 +973,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
     }
 
     ptrReport->TextPosR(last_pos, term->FormatPrice(total_adjust), last_color);
-    sprintf(str, "%.2f%%", per);
+    snprintf(str, STRLENGTH, "%.2f%%", per);
     ptrReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
     ptrReport->NewLine();
 
@@ -990,7 +990,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
             }
         }
         ptrReport->TextPosR(last_pos, term->FormatPrice(total_net_sales, 1), last_color);
-        sprintf(str, "%.2f%%", 100.0 - per);
+        snprintf(str, STRLENGTH, "%.2f%%", 100.0 - per);
         ptrReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
         ptrReport->NewLine(2);
     }
@@ -1101,12 +1101,12 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         {
             for (i = 0; i < shifts; ++i)
             {
-                sprintf(str, "%.1f", (Flt) labor_mins[shift[i]] / 60.0);
+                snprintf(str, STRLENGTH, "%.1f", (Flt) labor_mins[shift[i]] / 60.0);
                 ptrReport->TextPosR(cr[i + 1], str, color[i]);
             }
         }
 
-        sprintf(str, "%.1f", (Flt) total_labor_mins / 60.0);
+        snprintf(str, STRLENGTH, "%.1f", (Flt) total_labor_mins / 60.0);
         ptrReport->TextPosR(last_pos, str, last_color);
         ptrReport->NewLine();
 
@@ -1129,12 +1129,12 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         {
             for (i = 0; i < shifts; ++i)
             {
-                sprintf(str, "%.1f", (Flt) labor_otmins[shift[i]] / 60.0);
+                snprintf(str, STRLENGTH, "%.1f", (Flt) labor_otmins[shift[i]] / 60.0);
                 ptrReport->TextPosR(cr[i + 1], str, color[i]);
             }
         }
 
-        sprintf(str, "%.1f", (Flt) total_labor_otmins / 60.0);
+        snprintf(str, STRLENGTH, "%.1f", (Flt) total_labor_otmins / 60.0);
         ptrReport->TextPosR(last_pos, str, last_color);
         ptrReport->NewLine();
 
@@ -1157,17 +1157,17 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         {
             if (currSettings->job_active[JobValue[j]] && (term->hide_zeros == 0 || total_job_mins[j] != 0))
             {
-                sprintf(str, "%s Hours", JobName[j]);
+                snprintf(str, STRLENGTH, "%s Hours", JobName[j]);
                 ptrReport->TextL(str);
 				if (max_shifts > 1)
 				{
 					for (i = 0; i < shifts; ++i)
 					{
-						sprintf(str, "%.1f", (Flt) job_mins[shift[i]][j] / 60.0);
+						snprintf(str, STRLENGTH, "%.1f", (Flt) job_mins[shift[i]][j] / 60.0);
 						ptrReport->TextPosR(cr[i + 1], str, color[i]);
 					}
 				}
-				sprintf(str, "%.1f", (Flt) total_job_mins[j] / 60.0);
+				snprintf(str, STRLENGTH, "%.1f", (Flt) total_job_mins[j] / 60.0);
 				ptrReport->TextPosR(last_pos, str, last_color);
 				ptrReport->NewLine();
 				if (total_job_otmins[j] > 0)
@@ -1177,11 +1177,11 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
                     {
 						for (i = 0; i < shifts; ++i)
 						{
-							sprintf(str, "%.1f", (Flt) job_otmins[shift[i]][j] / 60.0);
+							snprintf(str, STRLENGTH, "%.1f", (Flt) job_otmins[shift[i]][j] / 60.0);
 							ptrReport->TextPosR(cr[i + 1], str, color[i]);
 						}
                     }
-					sprintf(str, "%.1f", (Flt) total_job_otmins[j] / 60.0);
+					snprintf(str, STRLENGTH, "%.1f", (Flt) total_job_otmins[j] / 60.0);
 					ptrReport->TextPosR(last_pos, str, last_color);
 					ptrReport->NewLine();
 				}
@@ -1199,12 +1199,12 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
 	{
         for (i = 0; i < shifts; ++i)
         {
-            sprintf(str, "%.1f", (Flt) (labor_mins[shift[i]] + labor_otmins[shift[i]]) / 60.0);
+            snprintf(str, STRLENGTH, "%.1f", (Flt) (labor_mins[shift[i]] + labor_otmins[shift[i]]) / 60.0);
             ptrReport->TextPosR(cr[i + 1], str, color[i]);
         }
 	}
 
-    sprintf(str, "%.1f", (Flt) (total_labor_mins + total_labor_otmins) / 60.0);
+    snprintf(str, STRLENGTH, "%.1f", (Flt) (total_labor_mins + total_labor_otmins) / 60.0);
     ptrReport->TextPosR(last_pos, str, last_color);
     ptrReport->NewLine();
 
@@ -1215,7 +1215,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         {
             if (currSettings->job_active[JobValue[j]] && (term->hide_zeros == 0 || total_job_cost[j] != 0))
             {
-                sprintf(str, "%s Cost", JobName[j]);
+                snprintf(str, STRLENGTH, "%s Cost", JobName[j]);
                 ptrReport->TextL(str);
                 if (max_shifts > 1)
                 {
@@ -1316,7 +1316,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
             else
 				f = 0;
 
-            sprintf(str, "%.2f%%", f);
+            snprintf(str, STRLENGTH, "%.2f%%", f);
             ptrReport->TextPosR(cr[i + 1] + 1, str, color[i]);
         }
 	}
@@ -1326,7 +1326,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
     else
         f = 0;
 
-    sprintf(str, "%.2f%%", f);
+    snprintf(str, STRLENGTH, "%.2f%%", f);
     ptrReport->TextPosR(last_pos, str, last_color);
     term->SetCursor(CURSOR_POINTER);
     return 0;
@@ -1584,7 +1584,7 @@ int BalanceReportWorkFn(BRData *brdata)
         {
             if (term->hide_zeros == 0 || brdata->group_sales[g] != 0)
             {
-                sprintf(str, "%s Sales", SalesGroupName[g]);
+                snprintf(str, STRLENGTH, "%s Sales", SalesGroupName[g]);
                 thisReport->TextL(str);
                 thisReport->TextPosR(last_pos, term->FormatPrice(brdata->group_sales[g]), color);
 
@@ -1592,7 +1592,7 @@ int BalanceReportWorkFn(BRData *brdata)
                 if (brdata->sales > 0)
                     per = 100.0 * ((Flt) brdata->group_sales[g] / (Flt) brdata->sales);
 
-                sprintf(str, "%.2f%%", per);
+                snprintf(str, STRLENGTH, "%.2f%%", per);
 
                 thisReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
                 thisReport->NewLine();
@@ -1712,13 +1712,13 @@ int BalanceReportWorkFn(BRData *brdata)
         per = (Flt) adjust / (Flt) brdata->sales;
 
     thisReport->TextPosR(last_pos, term->FormatPrice(adjust), color);
-    sprintf(str, "%.2f%%", per * 100.0);
+    snprintf(str, STRLENGTH, "%.2f%%", per * 100.0);
     thisReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
     thisReport->NewLine(2);
 
     thisReport->TextL("Cash Sales");
     thisReport->TextPosR(last_pos, term->FormatPrice(brdata->sales - adjust, 1), color);
-    sprintf(str, "%.2f%%", (1 - per) * 100.0);
+    snprintf(str, STRLENGTH, "%.2f%%", (1 - per) * 100.0);
     thisReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
     thisReport->NewLine(2);
 
@@ -1775,7 +1775,7 @@ int BalanceReportWorkFn(BRData *brdata)
     if (term->hide_zeros == 0 || labor_cost != 0)
     {
         thisReport->TextL("Regular Hours");
-        sprintf(str, "%.1f", (Flt) labor_mins / 60.0);
+        snprintf(str, STRLENGTH, "%.1f", (Flt) labor_mins / 60.0);
         thisReport->TextPosR(last_pos, str, color);
         thisReport->NewLine();
         thisReport->TextL("Regular Cost");
@@ -1786,7 +1786,7 @@ int BalanceReportWorkFn(BRData *brdata)
     if (term->hide_zeros == 0 || labor_otcost != 0)
     {
         thisReport->TextL("Overtime Hours");
-        sprintf(str, "%.1f", (Flt) labor_otmins / 60.0);
+        snprintf(str, STRLENGTH, "%.1f", (Flt) labor_otmins / 60.0);
         thisReport->TextPosR(last_pos, str, color);
         thisReport->NewLine();
         thisReport->TextL("Overtime Cost");
@@ -1801,16 +1801,16 @@ int BalanceReportWorkFn(BRData *brdata)
         {
             if (currSettings->job_active[JobValue[j]] && (term->hide_zeros == 0 || job_mins[j] != 0))
             {
-                sprintf(str, "%s Hours", JobName[j]);
+                snprintf(str, STRLENGTH, "%s Hours", JobName[j]);
                 thisReport->TextL(str);
-                sprintf(str, "%.1f", (Flt) job_mins[j] / 60.0);
+                snprintf(str, STRLENGTH, "%.1f", (Flt) job_mins[j] / 60.0);
                 thisReport->TextPosR(last_pos, str, color);
                 thisReport->NewLine();
 
                 if (job_otmins[j] > 0)
                 {
                     thisReport->TextL("Overtime");
-                    sprintf(str, "%.1f", (Flt) job_otmins[j] / 60.0);
+                    snprintf(str, STRLENGTH, "%.1f", (Flt) job_otmins[j] / 60.0);
                     thisReport->TextPosR(last_pos, str, color);
                     thisReport->NewLine();
                 }
@@ -1821,7 +1821,7 @@ int BalanceReportWorkFn(BRData *brdata)
     }
     else
         thisReport->TextL("Total Hours");
-    sprintf(str, "%.1f", (Flt) (labor_mins + labor_otmins) / 60.0);
+    snprintf(str, STRLENGTH, "%.1f", (Flt) (labor_mins + labor_otmins) / 60.0);
     thisReport->TextPosR(last_pos, str, color);
     thisReport->NewLine();
 
@@ -1832,7 +1832,7 @@ int BalanceReportWorkFn(BRData *brdata)
         {
             if (currSettings->job_active[JobValue[j]] && (term->hide_zeros == 0 || job_mins[j] != 0))
             {
-                sprintf(str, "%s Cost", JobName[j]);
+                snprintf(str, STRLENGTH, "%s Cost", JobName[j]);
                 thisReport->TextL(str);
                 thisReport->TextPosR(last_pos, term->FormatPrice(job_cost[j], 1), color);
                 thisReport->NewLine();
@@ -1877,7 +1877,7 @@ int BalanceReportWorkFn(BRData *brdata)
     Flt f = 0;
     if (brdata->sales > 0)
         f = (Flt) ((labor_cost + labor_otcost) * 100) / (Flt) brdata->sales;
-    sprintf(str, "%.2f%%", f);
+    snprintf(str, STRLENGTH, "%.2f%%", f);
     thisReport->TextPosR(last_pos, str, color);
 
     thisReport->is_complete = 1;
@@ -1922,7 +1922,7 @@ int System::BalanceReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
     genericChar str[256];
     genericChar str2[32];
     report->is_complete = 0;
-    sprintf(str, "%s  --  %s", term->TimeDate(str2, brdata->start, TD0),
+    snprintf(str, STRLENGTH, "%s  --  %s", term->TimeDate(str2, brdata->start, TD0),
             term->TimeDate(brdata->end, TD0));
     report->TextC(str, COLOR_DK_BLUE);
     report->NewLine(3);
@@ -2470,9 +2470,9 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine(2);
 
     if (tips_held > 0)
-        sprintf(str, "Set Aside %s Tips Captured on Cards", term->FormatPrice(tips_held, 1));
+        snprintf(str, STRLENGTH, "Set Aside %s Tips Captured on Cards", term->FormatPrice(tips_held, 1));
     else if (tips_held < 0)
-        sprintf(str, "Tips Overpaid By %s.", term->FormatPrice(-tips_held, 1));
+        snprintf(str, STRLENGTH, "Tips Overpaid By %s.", term->FormatPrice(-tips_held, 1));
     else
         strcpy(str, "All Captured Tips Have Been Paid.");
 
@@ -2588,7 +2588,7 @@ int ClosedCheckReportWorkFn(CCRData *ccrdata)
 
             if (flag)
             {
-                sprintf(str, "%06d", thisCheck->serial_number);
+                snprintf(str, STRLENGTH, "%06d", thisCheck->serial_number);
                 thisReport->TextPosL(0, str);
                 ccrdata->none = 0;
                 ccrdata->total_amount += amount;
@@ -2672,7 +2672,7 @@ int System::ClosedCheckReport(Terminal *term, TimeInfo &start_time, TimeInfo &en
     thisReport->is_complete = 0;
 //    thisReport->TextC(term->Translate("Guest Check Summary"), COLOR_DK_BLUE);      Let the Button's Name Field provide the Title for this report
 //    thisReport->NewLine();
-    sprintf(str, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
+    snprintf(str, STRLENGTH, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
             term->TimeDate(end, TD5));
     thisReport->TextC(str, COLOR_DK_BLUE);
     thisReport->NewLine(2);
@@ -2738,7 +2738,7 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
         thisReport->NewLine();
     }
 
-    sprintf(str, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
+    snprintf(str, STRLENGTH, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
             term->TimeDate(end, TD5));
 
     thisReport->TextC(str, COLOR_DK_BLUE);
@@ -2871,7 +2871,7 @@ int System::TableExceptionReport(Terminal *term, TimeInfo &start_time,
         report->NewLine();
     }
 
-    sprintf(str, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
+    snprintf(str, STRLENGTH, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
             term->TimeDate(end, TD5));
     report->TextC(str, COLOR_DK_BLUE);
     report->NewLine(2);
@@ -2943,7 +2943,7 @@ int System::RebuildExceptionReport(Terminal *term, TimeInfo &start_time,
         report->NewLine();
     }
 
-    sprintf(str, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
+    snprintf(str, STRLENGTH, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
             term->TimeDate(end, TD5));
     report->TextC(str, COLOR_DK_BLUE);
     report->NewLine(2);
@@ -2966,7 +2966,7 @@ int System::RebuildExceptionReport(Terminal *term, TimeInfo &start_time,
             {
                 report->TextL(term->TimeDate(re->time, TD5));
                 report->TextPosL(15, term->UserName(re->user_id));
-                sprintf(str, "%06d", re->check_serial);
+                snprintf(str, STRLENGTH, "%06d", re->check_serial);
                 report->TextPosL(27, str);
                 report->NewLine();
             }
@@ -3061,7 +3061,7 @@ int System::CustomerDetailReport(Terminal *term, Employee *e, Report *report)
 				strcpy(name, c->FirstName());
 		}
 		else
-			sprintf(name, "%s, %s", c->LastName(), c->FirstName());
+			snprintf(name, sizeof(name), "%s, %s", c->LastName(), c->FirstName());
 
 		name[24] = '\0';
 
