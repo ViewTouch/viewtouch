@@ -2845,15 +2845,15 @@ int RunReport(const genericChar* report_string, Printer *printer)
     static Report *report = NULL;
     genericChar report_name[STRLONG] = "";
     genericChar report_from[STRLONG] = "";
-    TimeInfo from;
     genericChar report_to[STRLONG] = "";
-    TimeInfo to;
     int idx = 0;
     Terminal *term = MasterControl->TermList();
     System *system_data = term->system_data;
 
     if (report == NULL && report_string != NULL)
     {
+        TimeInfo from;
+        TimeInfo to;
         report = new Report;
 
         report->Clear();

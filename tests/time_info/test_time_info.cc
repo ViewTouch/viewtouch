@@ -611,3 +611,29 @@ TEST_CASE("unset value for TimeInfo::Year() is not 0", "[time_info][Year]")
     CHECK(!ti.IsSet());
     CHECK(ti.Year() != 0);
 }
+
+TEST_CASE("check set time_info from string works two digit year YY", "[time_info][Set(string_2)][YY]")
+{
+    // "DD/MM/YY,HH:MM"   in 24hour format
+    TimeInfo ti;
+    ti.Set("12/03/25,15:16");
+    REQUIRE(ti.IsSet());
+    CHECK(ti.Day() == 12);
+    CHECK(ti.Month() == 3);
+    CHECK(ti.Year() == 2025);
+    CHECK(ti.Hour() == 15);
+    CHECK(ti.Min() == 16);
+}
+
+TEST_CASE("check set time_info from string works YYYY", "[time_info][Set(string)][YYYY]")
+{
+    // "DD/MM/YYYY,HH:MM" in 24hour format
+    TimeInfo ti;
+    ti.Set("12/03/2025,15:16");
+    REQUIRE(ti.IsSet());
+    CHECK(ti.Day() == 12);
+    CHECK(ti.Month() == 3);
+    CHECK(ti.Year() == 2025);
+    CHECK(ti.Hour() == 15);
+    CHECK(ti.Min() == 16);
+}
