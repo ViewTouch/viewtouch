@@ -133,9 +133,9 @@ RenderResult LaborZone::Render(Terminal *term, int update_flag)
         strcpy(str2, term->Translate("Labor Period Time Clock View"));
 
     if (term->server)
-        sprintf(str, "%s for %s", str2, term->server->system_name.Value());
+        snprintf(str, STRLENGTH, "%s for %s", str2, term->server->system_name.Value());
     else
-        sprintf(str, "%s for Everyone", str2);
+        snprintf(str, STRLENGTH, "%s for Everyone", str2);
     TextC(term, 0, str, c);
 
     genericChar tm1[32];
@@ -143,7 +143,7 @@ RenderResult LaborZone::Render(Terminal *term, int update_flag)
         term->TimeDate(tm1, start, TD_SHORT_DAY | TD_SHORT_DATE | TD_SHORT_TIME);
     else
         strcpy(tm1, term->Translate("System Start"));
-    sprintf(str, "%s  to  %s", tm1,
+    snprintf(str, STRLENGTH, "%s  to  %s", tm1,
             term->TimeDate(end, TD_SHORT_DAY | TD_SHORT_DATE | TD_SHORT_TIME));
     TextC(term, 1, str, c);
 
