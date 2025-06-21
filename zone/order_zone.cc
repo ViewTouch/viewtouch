@@ -180,61 +180,61 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
     switch (c->CustomerType())
 	{
     case CHECK_RESTAURANT:
-        sprintf(str, "%s %s", t->Translate("Tbl"), c->Table());
+        snprintf(str, STRLENGTH, "%s %s", t->Translate("Tbl"), c->Table());
         TextL(t, 1, str, col);
         if (use_seats)
         {
-            sprintf(str, "%s %s", t->Translate("Seat"),
+            snprintf(str, STRLENGTH, "%s %s", t->Translate("Seat"),
                     SeatName(t->seat, NULL, c->Guests()));
             TextC(t, 1, str, col);
         }
         else if (subs > 1)
         {
-            sprintf(str, "(%d of %d)", sc->number, subs);
+            snprintf(str, STRLENGTH, "(%d of %d)", sc->number, subs);
             TextC(t, 1, str, COLOR_DK_RED);
         }
-        sprintf(str, "%s %2d", t->Translate("Guests"), c->Guests());
+        snprintf(str, STRLENGTH, "%s %2d", t->Translate("Guests"), c->Guests());
         TextR(t, 1, str, col);
         break;
     case CHECK_HOTEL:
-        sprintf(str, "%s %s", t->Translate("Room"), c->Table());
+        snprintf(str, STRLENGTH, "%s %s", t->Translate("Room"), c->Table());
         TextL(t, 1, str, col);
         if (subs > 1)
         {
-            sprintf(str, "(%d of %d)", sc->number, subs);
+            snprintf(str, STRLENGTH, "(%d of %d)", sc->number, subs);
             TextC(t, 1, str, COLOR_DK_RED);
         }
-        sprintf(str, "%s %2d", t->Translate("Guests"), c->Guests());
+        snprintf(str, STRLENGTH, "%s %2d", t->Translate("Guests"), c->Guests());
         TextR(t, 1, str, col);
         break;
     case CHECK_TAKEOUT:
         TextL(t, 1, t->Translate("Take Out"), col);
-        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        snprintf(str, STRLENGTH, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_FASTFOOD:
         TextL(t, 1, t->Translate("Fast Food"), col);
-        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        snprintf(str, STRLENGTH, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_DELIVERY:
         TextL(t, 1, t->Translate("Delivery"), col);
-        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        snprintf(str, STRLENGTH, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_RETAIL:
         TextL(t, 1, t->Translate("Retail"), col);
-        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        snprintf(str, STRLENGTH, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_TOGO:
         TextL(t, 1, "To Go", col);
-        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        snprintf(str, STRLENGTH, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_DINEIN:
         TextL(t, 1, "Here", col);
-        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        snprintf(str, STRLENGTH, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
 	}
@@ -303,11 +303,11 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
             str3[0] = '\0';
         o->Description(t, str2);
         if (o->IsModifier())
-            sprintf(str, "    %s", str2);
+            snprintf(str, STRLENGTH, "    %s", str2);
         else if (o->item_type == ITEM_POUND)
-            sprintf(str, "%s%.2f %s", str3, ((Flt)o->count / 100), str2);
+            snprintf(str, STRLENGTH, "%s%.2f %s", str3, ((Flt)o->count / 100), str2);
         else
-            sprintf(str, "%s%d %s", str3, o->count, str2);
+            snprintf(str, STRLENGTH, "%s%d %s", str3, o->count, str2);
 
         if (o->cost != 0.0 || (o->status & ORDER_COMP))
         {
@@ -686,7 +686,7 @@ int OrderEntryZone::CompOrder(Terminal *term, int reason)
         CompInfo *compInfo = currSettings->CompList();
         while (compInfo)
         {
-            sprintf(str, "comp %d", compInfo->id);
+            snprintf(str, STRLENGTH, "comp %d", compInfo->id);
             d->Button(compInfo->name.Value(), str);
             compInfo = compInfo->next;
         }
@@ -725,7 +725,7 @@ int OrderEntryZone::VoidOrder(Terminal *term, int reason)
         CompInfo *compInfo = currSettings->CompList();
         while (compInfo)
         {
-            sprintf(str, "void %d", compInfo->id);
+            snprintf(str, STRLENGTH, "void %d", compInfo->id);
             d->Button(compInfo->name.Value(), str);
             compInfo = compInfo->next;
         }
@@ -1044,7 +1044,7 @@ RenderResult OrderFlowZone::Render(Terminal *term, int update_flag)
         else
         {
             int cl = CompareList(meal, IndexValue, 0);
-            sprintf(str, "Order %s", IndexName[cl]);
+            snprintf(str, STRLENGTH, "Order %s", IndexName[cl]);
         }
     }
     else if (pt == PAGE_ITEM)
@@ -1055,7 +1055,7 @@ RenderResult OrderFlowZone::Render(Terminal *term, int update_flag)
         else
         {
             int cl = CompareList(idx, IndexValue, 0);
-            sprintf(str, "%s Index", IndexName[cl]);
+            snprintf(str, STRLENGTH, "%s Index", IndexName[cl]);
         }
     }
     else if (pt == PAGE_SCRIPTED || pt == PAGE_SCRIPTED2)
@@ -1066,7 +1066,7 @@ RenderResult OrderFlowZone::Render(Terminal *term, int update_flag)
         else
         {
             int cl = CompareList(idx, IndexValue, 0);
-            sprintf(str, "Continue Ordering %s", IndexName[cl]);
+            snprintf(str, STRLENGTH, "Continue Ordering %s", IndexName[cl]);
         }
     }
 

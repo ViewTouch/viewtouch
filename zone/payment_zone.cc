@@ -123,17 +123,17 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     else if(currCheck->IsForHere())
         strcpy(str, MasterLocale->Translate("For Here"));
     else
-        sprintf(str, "Table %s", currCheck->Table());
+        snprintf(str, STRLENGTH, "Table %s", currCheck->Table());
 
     TextL(term, line, str, text);
     if (currCheck->SubCount() > 1)
     {
-        sprintf(str, "#%d", subCheck->number);
+        snprintf(str, STRLENGTH, "#%d", subCheck->number);
         TextC(term, line, str, text);
     }
     int guests = currCheck->Guests();
     if (guests > 0)
-        sprintf(str, "Guests %d", guests);
+        snprintf(str, STRLENGTH, "Guests %d", guests);
     else
         strcpy(str, "No Guests");
     TextR(term, line, str, text);
@@ -143,7 +143,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     if (strlen(currCheck->FirstName()) > 0)
     {
         if (strlen(currCheck->LastName()) > 0)
-            sprintf(str, "%s %s", currCheck->FirstName(), currCheck->LastName());
+            snprintf(str, STRLENGTH, "%s %s", currCheck->FirstName(), currCheck->LastName());
         else
             strcpy(str, currCheck->FirstName());
         TextL(term, line, str, text);
@@ -233,14 +233,14 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
         TextPosR(term, mark, line, term->Translate("Tax Exempt"));
         TextPosR(term, mark + 9, line, term->FormatPrice(-subCheck->TotalTax()));
         line += min_spacing;
-        sprintf(str, "Tax ID:  %s", subCheck->tax_exempt.Value());
+        snprintf(str, STRLENGTH, "Tax ID:  %s", subCheck->tax_exempt.Value());
         TextL(term, line, str);
         line += min_spacing;
     }
     
     if (gratuity)
     {
-        sprintf(str, "%g%% Gratuity", (Flt) gratuity->amount / 100.0);
+        snprintf(str, STRLENGTH, "%g%% Gratuity", (Flt) gratuity->amount / 100.0);
         TextPosR(term, mark, line, str);
         TextPosR(term, mark + 9, line, term->FormatPrice(-gratuity->value));
         line += min_spacing;
@@ -872,8 +872,8 @@ SignalResult PaymentZone::Touch(Terminal *term, int tx, int ty)
     if (current_payment != NULL && current_payment->credit != NULL)
     {
         char str[STRLENGTH] = "";
-        strcat(str, "Would you like to print the receipt for\\");
-        strcat(str, "the credit card or the subcheck?");
+        strncat(str, "Would you like to print the receipt for\\", sizeof(str) - strlen(str) - 1);
+        strncat(str, "the credit card or the subcheck?", sizeof(str) - strlen(str) - 1);
         SimpleDialog *sd = new SimpleDialog(str);
         sd->Button("Credit Card", "print credit");
         sd->Button("SubCheck", "print subcheck");
@@ -1529,7 +1529,7 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
                 cr->Tip(amount);
             }
         }
-        sprintf(str, "tender %d 0 0 %d", tt, amount);
+        snprintf(str, STRLENGTH, "tender %d 0 0 %d", tt, amount);
         retval = term->Signal(str, group_id);
     }
     break;
@@ -1548,7 +1548,7 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
 
         if (count == 1 && ptr)
         {
-            sprintf(str, "tender %d %d %d %d", TENDER_EMPLOYEE_MEAL,
+            snprintf(str, STRLENGTH, "tender %d %d %d %d", TENDER_EMPLOYEE_MEAL,
                     ptr->id, ptr->flags, ptr->amount);
             retval = term->Signal(str, group_id);
         }
@@ -1561,7 +1561,7 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
             {
                 if (!(mi->flags & TF_MANAGER) || employee->IsManager(settings))
                 {
-                    sprintf(str, "tender %d %d %d %d", TENDER_EMPLOYEE_MEAL,
+                    snprintf(str, STRLENGTH, "tender %d %d %d %d", TENDER_EMPLOYEE_MEAL,
                             mi->id, mi->flags, mi->amount);
                     dialog->Button(mi->name.Value(), str);
                 }
@@ -1595,7 +1595,7 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
             {
                 if (cc->active)
                 {
-                    sprintf(str, "tender %d %d", TENDER_CHARGE_CARD, cc->id);
+                    snprintf(str, STRLENGTH, "tender %d %d", TENDER_CHARGE_CARD, cc->id);
                     dialog->Button(cc->name.Value(), str);
                 }
                 cc = cc->next;
@@ -1612,7 +1612,7 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
         {
             if (ds->active)
             {
-                sprintf(str, "tender %d %d %d %d", TENDER_DISCOUNT,
+                snprintf(str, STRLENGTH, "tender %d %d %d %d", TENDER_DISCOUNT,
                         ds->id, ds->flags, ds->amount);
                 dialog->Button(ds->name.Value(), str);
             }
@@ -1635,7 +1635,7 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
             if (applies)
             {
                 cp_count += 1;
-                sprintf(str, "tender %d %d %d %d", TENDER_COUPON,
+                snprintf(str, STRLENGTH, "tender %d %d %d %d", TENDER_COUPON,
                         cp->id, cp->flags, cp->amount);
                 dialog->Button(cp->name.Value(), str);
             }
@@ -1655,7 +1655,7 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
         {
             if (cm->active)
             {
-                sprintf(str, "tender %d %d %d %d", TENDER_COMP,
+                snprintf(str, STRLENGTH, "tender %d %d %d %d", TENDER_COMP,
                         cm->id, cm->flags | TF_IS_PERCENT, 10000);
                 dialog->Button(cm->name.Value(), str);
             }
@@ -1669,7 +1669,7 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
         int flags = 0;
         if (tender_type == TENDER_GRATUITY)
             flags |= TF_IS_PERCENT;
-        sprintf(str, "tender %d 0 %d %d", tender_type, flags, amount);
+        snprintf(str, STRLENGTH, "tender %d 0 %d %d", tender_type, flags, amount);
         retval = term->Signal(str, group_id);
     }
 	} // end switch
