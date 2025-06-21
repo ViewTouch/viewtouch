@@ -251,7 +251,7 @@ int Zone::RenderZone(Terminal *term, const genericChar* text, int update_flag)
         {
             if (behave == BEHAVE_DOUBLE)
             {
-                sprintf(str, "%s\\( 2X )", b);
+                snprintf(str, STRLENGTH, "%s\\( 2X )", b);
                 b = str;
             }
             int c = color[state];
@@ -276,7 +276,7 @@ int Zone::RenderInfo(Terminal *term)
     genericChar str[32];
     if (group_id != 0)
     {
-        sprintf(str, "ID %d", group_id);
+        snprintf(str, 32, "ID %d", group_id);
         term->RenderText(str, x + border, y + 16, COLOR_BLACK, FONT_TIMES_14);
     }
 
@@ -285,10 +285,10 @@ int Zone::RenderInfo(Terminal *term)
         switch (*JumpType())
 		{
         case JUMP_NORMAL:
-            sprintf(str, "J %d", *JumpID());
+            snprintf(str, 32, "J %d", *JumpID());
             break;
         case JUMP_STEALTH:
-            sprintf(str, "J %d*", *JumpID());
+            snprintf(str, 32, "J %d*", *JumpID());
             break;
         case JUMP_RETURN:
             strcpy(str, "J back");
@@ -455,10 +455,10 @@ int Zone::ChangeJumpID(int old_id, int new_id)
                 {
                     genericChar num[16];
                     if (i == 0)
-                        sprintf(num, "%d", j[0]);
+                        snprintf(num, sizeof(num), "%d", j[0]);
                     else
-                        sprintf(num, " %d", j[i]);
-                    strcat(str, num);
+                        snprintf(num, sizeof(num), " %d", j[i]);
+                    strncat(str, num, sizeof(str) - strlen(str) - 1);
                 }
                 Script()->Set(str);
             }
@@ -1053,7 +1053,7 @@ int ZoneDB::Load(const char* filename)
     genericChar str[STRLENGTH];
     if (version < 17 || version > ZONE_VERSION)
     {
-        sprintf(str, "Unknown ZoneDB file version %d", version);
+        snprintf(str, STRLENGTH, "Unknown ZoneDB file version %d", version);
         ReportError(str);
         return 1;  // Error
     }
@@ -1075,7 +1075,7 @@ int ZoneDB::Load(const char* filename)
 		{
 			if (currPage->Read(infile, version))
 			{
-				sprintf(str, "Error in page %d '%s' of file '%s'",
+				snprintf(str, STRLENGTH, "Error in page %d '%s' of file '%s'",
 						currPage->id, currPage->name.Value(), filename);
 
 				ReportError(str);
@@ -1203,7 +1203,7 @@ int ZoneDB::ImportPage(const char* filename)
         return retval;
     if (version < 17 || version > ZONE_VERSION)
     {
-        sprintf(str, "Unknown ZoneDB file version %d", version);
+        snprintf(str, STRLENGTH, "Unknown ZoneDB file version %d", version);
         ReportError(str);
         return 1;  // Error
     }
@@ -1285,7 +1285,7 @@ int ZoneDB::ExportPage(Page *page)
     MasterSystem->FullPath(PAGEEXPORTS_DIR, fullpath);
     EnsureFileExists(fullpath);
     snprintf(filepath, STRLONG, "/page_%d", page->id);
-    strcat(fullpath, filepath);
+    strncat(fullpath, filepath, sizeof(fullpath) - strlen(fullpath) - 1);
     if (outfile.Open(fullpath, ZONE_VERSION) == 0)
     {
         page->Write(outfile, ZONE_VERSION);
@@ -1344,16 +1344,15 @@ int ZoneDB::AddUnique(Page *page)
     {
         if (Remove(oldpage))
         {
-            sprintf(str, "Error removing page %d", pagenum);
+            snprintf(str, STRLENGTH, "Error removing page %d", pagenum);
             ReportError(str);
-            return 1;  // Error
-        }   
+        }
     }
 
     // add the new page in
     if (Add(page))
     {
-        sprintf(str, "Error adding page %d", pagenum);
+        snprintf(str, STRLENGTH, "Error adding page %d", pagenum);
         ReportError(str);
         return 1;  // Error
     }
@@ -1913,7 +1912,7 @@ int ZoneDB::PageListReport(Terminal *t, int show_system, Report *r)
 
     r->NewLine();
     genericChar str[32];
-    sprintf(str, "Total Pages: %d", count);
+    snprintf(str, 32, "Total Pages: %d", count);
     r->TextC(str);
     return 0;
 }

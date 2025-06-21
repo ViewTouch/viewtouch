@@ -628,7 +628,7 @@ RenderResult KillSystemZone::Render(Terminal *term, int update_flag)
     else
     {
         genericChar str[32];
-        sprintf(str, "%d Terminals Busy", users);
+        snprintf(str, 32, "%d Terminals Busy", users);
         RenderZone(term, str, update_flag);
     }
     return RENDER_OKAY;
