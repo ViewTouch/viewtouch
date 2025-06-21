@@ -346,7 +346,7 @@ Zone *NewPosZone(int type)
 	if (pNewZone == NULL)
 	{
 		char str[64];
-		sprintf(str, "Creation of PosZone object type %d failed", type);
+		snprintf(str, 64, "Creation of PosZone object type %d failed", type);
 		ReportError(str);
 	}
 
@@ -729,13 +729,13 @@ int PosPage::Read(InputDataFile &infile, int version)
         Zone *z = NewPosZone(z_type);
         if (z == NULL)
         {
-            sprintf(str, "Error in creating touch zone type %d", type);
+            snprintf(str, STRLENGTH, "Error in creating touch zone type %d", type);
             ReportError(str);
             return 1;
         }
         if (z->Read(infile, version))
         {
-            sprintf(str, "Error in reading touch zone type %d", type);
+            snprintf(str, STRLENGTH, "Error in reading touch zone type %d", type);
             ReportError(str);
             delete z;
             return 1;

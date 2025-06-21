@@ -110,9 +110,9 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
         Employee *e = sys->user_db.FindByID(user_id);
         term->FormatPrice(price, amount, 1);
         if (e)
-            sprintf(str, "Pay out %s to %s", price, e->system_name.Value());
+            snprintf(str, STRLENGTH, "Pay out %s to %s", price, e->system_name.Value());
         else
-            sprintf(str, "Pay out %s", price);
+            snprintf(str, STRLENGTH, "Pay out %s", price);
 
         TextC(term, ++line, str);
         TextC(term, ++line, "Press any button to continue");
@@ -152,7 +152,7 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
     else
         strcpy(t2, "Now");
 
-    sprintf(str, "%s - %s", t1, t2);
+    snprintf(str, STRLENGTH, "%s - %s", t1, t2);
     TextC(term, 1, str, COLOR_BLUE);
     return RENDER_OKAY;
 }
