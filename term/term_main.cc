@@ -99,7 +99,7 @@ int main(int argc, const genericChar* *argv)
 #ifdef USE_TOUCHSCREEN
     if (argc >= 4)
     {
-        sprintf(display, "%s", argv[3]);
+        snprintf(display, sizeof(display), "%s", argv[3]);
         ts = new TouchScreen(argv[3], 87); // explora serial port
     }
     else
@@ -112,7 +112,7 @@ int main(int argc, const genericChar* *argv)
 #else
     if (argc >= 4)
     {
-        sprintf(display, "%s", argv[3]);
+        snprintf(display, sizeof(display), "%s", argv[3]);
     }
     else
     {
@@ -128,7 +128,7 @@ int main(int argc, const genericChar* *argv)
         set_height = atoi(argv[6]);
 
     if (strchr(display, ':') == NULL)
-        strcat(display, ":0");
+        strncat(display, ":0", sizeof(display) - strlen(display) - 1);
 
     // if OpenTerm() returns there must be an error
     if (OpenTerm(display, ts, is_local, 0, set_width, set_height))

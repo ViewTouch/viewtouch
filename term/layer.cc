@@ -16,6 +16,9 @@
 #include "image_data.hh"
 #include "remote_link.hh"
 
+// Add Xft for scalable font rendering
+#include <X11/Xft/Xft.h>
+
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
@@ -381,13 +384,17 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
     FnTrace("Layer::Text()");
 
     int f = font & 31;
-    XFontStruct *font_info = GetFontInfo(f);
+    // Use XftFont instead of XFontStruct for scalable fonts
+    XftFont *font_info = (XftFont*)GetFontInfo(f);
     if (max_pixel_width > 0)
     {
         int i;
         for (i = len; i > 0; --i)
         {
-            if (XTextWidth(font_info, string, i) <= max_pixel_width)
+            // Use Xft for text width measurement
+            XGlyphInfo extents;
+            XftTextExtentsUtf8(dis, font_info, (unsigned const char*)string, i, &extents);
+            if (extents.width <= max_pixel_width)
                 break;
         }
         len = i;
@@ -398,7 +405,11 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
         return 1;
     }
 
-    int tw = XTextWidth(font_info, string, len);
+    // Use Xft for text width measurement
+    XGlyphInfo extents;
+    XftTextExtentsUtf8(dis, font_info, (unsigned const char*)string, len, &extents);
+    int tw = extents.width;
+    
     if (align == ALIGN_CENTER)
     {
         tx -= (tw + 1) / 2;
@@ -408,7 +419,7 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
         tx -= tw;
     }
     tx += page_x;
-    ty += page_y + GetFontBaseline(f);
+    ty += page_y + font_info->ascent; // Use Xft ascent instead of GetFontBaseline
 
     int ul = 0;
     int yy = ty + 4;
@@ -416,21 +427,60 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
     if (font & FONT_UNDERLINE)
         ul = 1; // print underline
 
-    XSetFont(dis, gfx, font_info->fid);
-    XSetForeground(dis, gfx, ColorTextH[c]);
-    GenericDrawString(dis, pix, gfx, tx - 1, ty - 1, string, len);
+    // Create XftDraw for rendering to pixmap
+    XftDraw *xftdraw = XftDrawCreate(dis, pix, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)));
+    
+    // Create XftColor objects from X11 pixel values
+    XftColor xftColorH, xftColorS, xftColorT;
+    XColor xcolorH, xcolorS, xcolorT;
+    
+    // Convert pixel values to XColor (RGB)
+    xcolorH.pixel = ColorTextH[c];
+    xcolorS.pixel = ColorTextS[c];
+    xcolorT.pixel = ColorTextT[c];
+    XQueryColor(dis, DefaultColormap(dis, DefaultScreen(dis)), &xcolorH);
+    XQueryColor(dis, DefaultColormap(dis, DefaultScreen(dis)), &xcolorS);
+    XQueryColor(dis, DefaultColormap(dis, DefaultScreen(dis)), &xcolorT);
+    
+    // Convert XColor to XRenderColor
+    XRenderColor renderColorH = {xcolorH.red, xcolorH.green, xcolorH.blue, 0xffff};
+    XRenderColor renderColorS = {xcolorS.red, xcolorS.green, xcolorS.blue, 0xffff};
+    XRenderColor renderColorT = {xcolorT.red, xcolorT.green, xcolorT.blue, 0xffff};
+    
+    // Allocate XftColor objects
+    XftColorAllocValue(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), 
+                       &renderColorH, &xftColorH);
+    XftColorAllocValue(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), 
+                       &renderColorS, &xftColorS);
+    XftColorAllocValue(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), 
+                       &renderColorT, &xftColorT);
+    
+    // Preserve the embossed text effect using Xft
+    // 1. Shadow (darker, offset down-right)
+    XftDrawStringUtf8(xftdraw, &xftColorH, font_info, tx - 1, ty - 1,
+                      (unsigned const char*)string, len);
     if (ul)
         XDrawLine(dis, pix, gfx, tx - 1, yy - 1, xx - 1, yy - 1);
 
-    XSetForeground(dis, gfx, ColorTextS[c]);
-    GenericDrawString(dis, pix, gfx, tx + 1, ty + 1, string, len);
+    // 2. Highlight (lighter, offset up-left)
+    XftDrawStringUtf8(xftdraw, &xftColorS, font_info, tx + 1, ty + 1,
+                      (unsigned const char*)string, len);
     if (ul)
         XDrawLine(dis, pix, gfx, tx + 1, yy + 1, xx + 1, yy + 1);
 
-    XSetForeground(dis, gfx, ColorTextT[c]);
-    GenericDrawString(dis, pix, gfx, tx, ty, string, len);
+    // 3. Main text (normal position)
+    XftDrawStringUtf8(xftdraw, &xftColorT, font_info, tx, ty,
+                      (unsigned const char*)string, len);
     if (ul)
         XDrawLine(dis, pix, gfx, tx, yy, xx, yy);
+    
+    // Clean up XftColor objects
+    XftColorFree(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), &xftColorH);
+    XftColorFree(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), &xftColorS);
+    XftColorFree(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), &xftColorT);
+    
+    // Clean up XftDraw
+    XftDrawDestroy(xftdraw);
     return 0;
 }
 
@@ -444,8 +494,8 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
     int i;
 
     int f = font & 31;
-    XFontStruct *font_info = GetFontInfo(f);
-    int font_h = GetFontHeight(f);
+    XftFont *font_info = (XftFont*)GetFontInfo(f);
+    int font_h = font_info->height; // Use XftFont height directly
     int max_lines = th / font_h;
     if (max_lines > 63)
         max_lines = 63;
@@ -463,7 +513,10 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
         while (line < max_lines)
         {
             sub_string[line] = c;
-            if (XTextWidth(font_info, c, len) <= tw)
+            // Use Xft for text width measurement
+            XGlyphInfo extents;
+            XftTextExtentsUtf8(dis, font_info, (unsigned const char*)c, len, &extents);
+            if (extents.width <= tw)
             {
                 sub_length[line] = len;
                 c += len;
@@ -480,8 +533,8 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
             int lw;
             for (lw = len; lw > 0; --lw)
             {
-                if (isspace(c[lw]) && !isspace(c[lw-1]) &&
-                    (XTextWidth(font_info, c, lw) <= tw))
+                XftTextExtentsUtf8(dis, font_info, (unsigned const char*)c, lw, &extents);
+                if (isspace(c[lw]) && !isspace(c[lw-1]) && (extents.width <= tw))
                 {
                     break;
                 }
@@ -491,7 +544,8 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
                 // Truncate name
                 for (lw = len; lw > 1; --lw)
                 {
-                    if (XTextWidth(font_info, c, lw) <= tw)
+                    XftTextExtentsUtf8(dis, font_info, (unsigned const char*)c, lw, &extents);
+                    if (extents.width <= tw)
                         break;
                 }
             }

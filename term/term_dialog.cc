@@ -183,7 +183,7 @@ int DialogEntry::Set(const char* val)
 int DialogEntry::Set(int val)
 {
     char str[32];
-    sprintf(str, "%d", val);
+    snprintf(str, sizeof(str), "%d", val);
     XmTextSetString(entry, str);
     return 0;
 }
@@ -191,7 +191,7 @@ int DialogEntry::Set(int val)
 int DialogEntry::Set(Flt val)
 {
     char str[32];
-    sprintf(str, "%g", val);
+    snprintf(str, sizeof(str), "%g", val);
     XmTextSetString(entry, str);
     return 0;
 }

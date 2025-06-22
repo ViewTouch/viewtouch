@@ -12,6 +12,7 @@
 #include "list_utility.hh"
 #include "utility.hh"
 #include <X11/Xlib.h>
+#include <X11/Xft/Xft.h>
 
 
 /**** Globals ****/
@@ -275,10 +276,11 @@ extern int ShowCursor(int type);
 extern int BlankScreen();
 extern int DrawScreenSaver();
 
-extern XFontStruct *GetFontInfo(int font_id);
+extern XftFont *GetFontInfo(int font_id);
 extern int          GetFontBaseline(int font_id);
 extern int          GetFontHeight(int font_id);
 extern Pixmap       GetTexture(int texture);
+extern const char*  GetScalableFontName(int font_id);
 
 extern int   WInt8(int val);
 extern int   RInt8();

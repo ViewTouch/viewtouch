@@ -46,6 +46,9 @@
 
 namespace fs = std::filesystem;
 
+// Add Xft for scalable font rendering
+#include <X11/Xft/Xft.h>
+
 /*********************************************************************
  * Definitions
  ********************************************************************/
@@ -251,8 +254,8 @@ int FontNameClass::SetItem(const char* word)
         strcpy(charset, word);
     else
     {
-        strcat(charset, "-");
-        strcat(charset, word);
+        strncat(charset, "-", sizeof(charset) - strlen(charset) - 1);
+        strncat(charset, word, sizeof(charset) - strlen(charset) - 1);
     }
     
     return retval;
@@ -451,9 +454,10 @@ int      WinHeight = 0;
 int      IsTermLocal = 0;
 int      Connection = 0;
 
-XFontStruct *FontInfo[FONT_SPACE];
-int FontBaseline[FONT_SPACE];
-int FontHeight[FONT_SPACE];
+// Update font arrays to use XftFont instead of XFontStruct
+static XftFont *FontInfo[32];
+static int      FontHeight[32];
+static int      FontBaseline[32];
 
 int ColorTextT[TEXT_COLORS];
 int ColorTextH[TEXT_COLORS];
@@ -1076,53 +1080,53 @@ void KeyPressCB(Widget widget, XtPointer client_data,
             swipe_buffer[0] = '\0';
             if (randcc == 0)
             {
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS^;??");
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS^;??", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
             }
             else if (randcc == 1 || randcc == 3 || randcc == 5)
             {  // correct data, tracks 1 and 2
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
-                strcat(swipe_buffer, ";5186900000000121=");
-                strcat(swipe_buffer, "08051015877400050041?");
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "^08051011234567890131674486261606288842611?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, ";5186900000000121=", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "08051015877400050041?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
             }
             else if (randcc == 2)
             {
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "^08051011234567890131674486261606288842611?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
             }
             else if (randcc == 4)
             {
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
-                strcat(swipe_buffer, ";5186900000000121=");
-                strcat(swipe_buffer, "08051015877400050041?");
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "^08051011234567890131674486261606288842611?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, ";5186900000000121=", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "08051015877400050041?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
             }
             else if (randcc == 6)
             {
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "08051015877400050041?");
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "08051015877400050041?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
             }
             else if (randcc == 7)
             {
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "^08051011234567890131674486261606288842611?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strncat(swipe_buffer, "^08051011234567890131674486261606288842611?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
             }
             else if (randcc == 8)
             {
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
             }
             else if (randcc == 9)
             {
-                strcat(swipe_buffer, "%B\n\n");
+                strncat(swipe_buffer, "%B\n\n", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
             }
             fake_cc = 0;
             printf("Sending Fake Credit Card:  '%s'\n", swipe_buffer);
@@ -2065,14 +2069,14 @@ int SaveToPPM()
     // Find first unused filename (starting with 0)
     while (1)
     {
-        sprintf(filename, "%s/vtscreen%d.wd", SCREEN_DIR, no++);
+        snprintf(filename, sizeof(filename), "%s/vtscreen%d.wd", SCREEN_DIR, no++);
         if (!DoesFileExist(filename))
             break;
     }
 
     // Log the action
     genericChar str[256];
-    sprintf(str, "Saving screen image to file '%s'", filename);
+    snprintf(str, sizeof(str), "Saving screen image to file '%s'", filename);
     ReportError(str);
 
     // Generate the screenshot
@@ -2451,7 +2455,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     Dis = XtOpenDisplay(App, display, NULL, NULL, NULL, 0, &argc,(char**) argv);
     if (Dis == NULL)
     {
-        sprintf(str, "Can't open display '%s'", display);
+        snprintf(str, sizeof(str), "Can't open display '%s'", display);
         ReportError(str);
         return 1;
     }
@@ -2476,14 +2480,25 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     TScreen    = ts;
     RootWin    = RootWindow(Dis, ScrNo);
 
-    // Load Fonts
+    // Load Fonts using Xft for scalable fonts
     for (i = 0; i < FONTS; ++i)
     {
         int f = FontData[i].id;
-        FontInfo[f] = GetFont(Dis, display, FontData[i].font);
+        const char* scalable_font_name = GetScalableFontName(f);
+        FontInfo[f] = XftFontOpenName(Dis, ScrNo, scalable_font_name);
         if (FontInfo[f] == NULL)
-            return 1;
-        FontHeight[f]   = FontData[i].height;
+        {
+            // Fallback to default font if scalable font fails
+            FontInfo[f] = XftFontOpenName(Dis, ScrNo, "Times:size=24:style=regular");
+            if (FontInfo[f] == NULL)
+            {
+                snprintf(str, sizeof(str), "Can't load scalable font '%s'", scalable_font_name);
+                ReportError(str);
+                return 1;
+            }
+        }
+        // Calculate font metrics from XftFont
+        FontHeight[f] = FontInfo[f]->height;
         FontBaseline[f] = FontInfo[f]->ascent;
     }
 
@@ -2614,7 +2629,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
             Texture[image] = pixmap;
         else
         {
-            sprintf(str, "Can't Create Pixmap #%d On Display '%s'",
+            snprintf(str, sizeof(str), "Can't Create Pixmap #%d On Display '%s'",
                     image, display);
             ReportError(str);
             return 1;
@@ -2796,7 +2811,7 @@ int KillTerm()
     for (i = 1; i < FONT_SPACE; ++i)
         if (FontInfo[i])
         {
-            XFreeFont(Dis, FontInfo[i]);
+            XftFontClose(Dis, FontInfo[i]);
             FontInfo[i] = NULL;
         }
 
@@ -2822,7 +2837,7 @@ int KillTerm()
  * External Data Functions
  ********************************************************************/
 
-XFontStruct *GetFontInfo(int font_id)
+XftFont *GetFontInfo(int font_id)
 {
     FnTrace("GetFontInfo()");
 
@@ -2863,5 +2878,28 @@ Pixmap GetTexture(int texture)
         return Texture[texture];
     else
         return Texture[0]; // default texture
+}
+
+// Function to get scalable font names for Xft
+const char* GetScalableFontName(int font_id)
+{
+    switch (font_id)
+    {
+    case FONT_TIMES_20:   return "Times:size=20:style=regular";
+    case FONT_TIMES_24:   return "Times:size=24:style=regular";
+    case FONT_TIMES_34:   return "Times:size=34:style=regular";
+    case FONT_TIMES_20B:  return "Times:size=20:style=bold";
+    case FONT_TIMES_24B:  return "Times:size=24:style=bold";
+    case FONT_TIMES_34B:  return "Times:size=34:style=bold";
+    case FONT_TIMES_14:   return "Times:size=14:style=regular";
+    case FONT_TIMES_14B:  return "Times:size=14:style=bold";
+    case FONT_TIMES_18:   return "Times:size=18:style=regular";
+    case FONT_TIMES_18B:  return "Times:size=18:style=bold";
+    case FONT_COURIER_18: return "Courier:size=18:style=regular";
+    case FONT_COURIER_18B: return "Courier:size=18:style=bold";
+    case FONT_COURIER_20: return "Courier:size=20:style=regular";
+    case FONT_COURIER_20B: return "Courier:size=20:style=bold";
+    default:              return "Times:size=24:style=regular";
+    }
 }
 
