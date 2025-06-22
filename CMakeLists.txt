@@ -45,11 +45,12 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-const-variable")
 endif()
 
-# set tz (timezone) library flags
+# set date::date-tz (timezone) library flags
 set(USE_SYSTEM_TZ_DB ON CACHE BOOL "Use the operating system's timezone database" FORCE)
 set(ENABLE_DATE_TESTING OFF CACHE BOOL "Enable unit tests" FORCE)
 set(DISABLE_STRING_VIEW ON CACHE BOOL "Disable string view" FORCE)
-add_subdirectory(external/date EXCLUDE_FROM_ALL)
+set (BUILD_TZ_LIB ON CACHE BOOL "required for testing" FORCE)
+add_subdirectory(external/date-3.0.4 EXCLUDE_FROM_ALL)
 
 # don't need the curlpp shared lib, using the statically linked one
 set(CURLPP_BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
@@ -163,7 +164,8 @@ add_library(vtcore
 
 target_include_directories(vtcore PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}) # include generated files like build_number.h
-target_link_libraries(vtcore vt_version tz)
+target_link_libraries(vtcore PRIVATE vt_version)
+target_link_libraries(vtcore PUBLIC date::date-tz)
 
 add_executable(vtpos 
 		loader/loader_main.cc )
@@ -239,7 +241,7 @@ add_executable(vt_main
     )
 target_include_directories(vt_main PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
 target_link_libraries(vt_main zone vtcore ${VT_XLIBS})
-target_link_libraries(vt_main tz curlpp_static)
+target_link_libraries(vt_main date::date-tz curlpp_static)
 # on gcc 8 need to link against std++fs for std::filesystem support
 # https://stackoverflow.com/questions/54290254/problem-adding-stdfilesystem-to-cmake-project
 target_link_libraries(vt_main stdc++fs)
