@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - `viewouch/dat/menu.dat`    from https://www.viewtouch.com/menu.dat #159
   - `viewouch/dat/zone_db.dat` from https://www.viewtouch.com/zone_db.dat #159
 - fix CMake warning about deprecated `exec_program()` and replace with `execute_process()` #154
+- fix CMake < 3.10 deprecation warning, require CMake 3.25.1 at least #156
 
 
 ## [v21.05.1] - 2021-05-18

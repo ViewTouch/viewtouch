@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.25.1...3.31.6)
 
 project(ViewTouch)
 message(STATUS "CMake version ${CMAKE_VERSION}")
