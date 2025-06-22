@@ -210,7 +210,7 @@ static int LastDay  = -1;
 #define VIEWTOUCH_UPDATE_COMMAND "/tmp/vt-update"
 // command to download script; -nv=not verbose, -T=timeout seconds, -t=# tries, -O=output
 #define VIEWTOUCH_UPDATE_REQUEST \
-    "wget -nv -T 2 -t 2 http://www.viewtouch.com/vt_updates/vt-update -O " VIEWTOUCH_UPDATE_COMMAND
+    "wget -nv -T 2 -t 2 https//www.viewtouch.com/vt_updates/vt-update -O " VIEWTOUCH_UPDATE_COMMAND
 
 static const std::string VIEWTOUCH_CONFIG = VIEWTOUCH_PATH "/dat/.viewtouch_config";
 

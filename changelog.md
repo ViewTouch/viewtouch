@@ -17,6 +17,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - update embedded `catch.hpp` to `v2.13.10` to fix compilation on Ubuntu 20.04 and newer #131
 - fix `TimeInfo.Set(date_string)` function fixing `RunReport` `to`/`from` fields and C++20 compatibility #145
 - update embedded `date` to `v3.0.4` and fix CMake 4+ compatibility #155
+- update download URLs from `http` to `https`, otherwise redirect html is downloaded
+  - `viewouch/bin/vt_data`     from https://www.viewtouch.com/vt_data #151
+  - `viewouch/dat/tables.dat`  from https://www.viewtouch.com/tables.dat #159
+  - `viewouch/dat/menu.dat`    from https://www.viewtouch.com/menu.dat #159
+  - `viewouch/dat/zone_db.dat` from https://www.viewtouch.com/zone_db.dat #159
 
 
 ## [v21.05.1] - 2021-05-18
