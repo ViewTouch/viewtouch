@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Added
 
 ### Changed
+- cmake: `gen_compiler_tag`: handle Clang compiler to contain compiler version #163
 
 ### Removed
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
@@ -23,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - `viewouch/dat/tables.dat`  from https://www.viewtouch.com/tables.dat #159
   - `viewouch/dat/menu.dat`    from https://www.viewtouch.com/menu.dat #159
   - `viewouch/dat/zone_db.dat` from https://www.viewtouch.com/zone_db.dat #159
+- fix CMake warning about deprecated `exec_program()` and replace with `execute_process()` #154
 
 
 ## [v21.05.1] - 2021-05-18
