@@ -140,9 +140,9 @@ RenderResult ProductZone::Render(Terminal *t, int update_flag)
             strcpy(tm2, "Now");
 
         if (t->stock && final)
-            sprintf(str, "Actual Count #%d (%s - %s)", t->stock->id, tm1, tm2);
+            snprintf(str, STRLENGTH, "Actual Count #%d (%s - %s)", t->stock->id, tm1, tm2);
         else
-            sprintf(str, "Current Inventory (%s - %s)", tm1, tm2);
+            snprintf(str, STRLENGTH, "Current Inventory (%s - %s)", tm1, tm2);
         TextC(t, 0, str, col);
 
         TextL(t, 2.4, "Product Name", col);
@@ -169,7 +169,7 @@ RenderResult ProductZone::Render(Terminal *t, int update_flag)
         if (records == 1)
             strcpy(str, "Invoice Product");
         else
-            sprintf(str, "Invoice Product %d of %d", record_no + 1, records);
+            snprintf(str, STRLENGTH, "Invoice Product %d of %d", record_no + 1, records);
         TextC(t, 0, str, col);
     }
     return RENDER_OKAY;
@@ -537,7 +537,7 @@ int RC_Part::Render(Terminal *t)
     if (rp)
     {
         genericChar str[256];
-        sprintf(str, "%s %s", rp->amount.Description(), n);
+        snprintf(str, STRLENGTH, "%s %s", rp->amount.Description(), n);
         t->RenderText(str, x + 6, yy, color, font, ALIGN_LEFT, w - 10);
     }
     else
@@ -562,7 +562,7 @@ const char* RC_Part::Name(Terminal *t)
     else if (pr)
         strcpy(str, pr->name.Value());
     else if (rp)
-        sprintf(str, "%s (%d)", t->Translate(UnknownStr), rp->part_id);
+        snprintf(str, STRLENGTH, "%s (%d)", t->Translate(UnknownStr), rp->part_id);
     else
         strcpy(str, t->Translate(UnknownStr));
     return str;
@@ -692,7 +692,7 @@ RenderResult RecipeZone::Render(Terminal *t, int update_flag)
     else if (records == 1)
         strcpy(str, "Recipe");
     else
-        sprintf(str, "Recipe %d of %d", record_no + 1, records);
+        snprintf(str, STRLENGTH, "Recipe %d of %d", record_no + 1, records);
 
     TextC(t, 0, str, color[0]);
     return RENDER_OKAY;
@@ -995,7 +995,7 @@ RenderResult VendorZone::Render(Terminal *t, int update_flag)
     else if (records == 1)
         strcpy(str, "Vendor");
     else
-        sprintf(str, "Vendor %d of %d", record_no + 1, records);
+        snprintf(str, STRLENGTH, "Vendor %d of %d", record_no + 1, records);
     TextC(t, 0, str, c);
 
     if (show_list)
@@ -1188,7 +1188,7 @@ RenderResult ItemListZone::Render(Terminal *t, int update_flag)
     else if (records == 1)
         strcpy(str, "Menu Item");
     else
-        sprintf(str, "Menu Item %d of %d", record_no + 1, records);
+        snprintf(str, STRLENGTH, "Menu Item %d of %d", record_no + 1, records);
     TextC(t, 0, str, c);
 
     if (show_list)
@@ -1432,7 +1432,7 @@ RenderResult InvoiceZone::Render(Terminal *t, int update_flag)
 
         edit = 0;
         genericChar str[256];
-        sprintf(str, "List of Invoices (%s - %s)", tm1, tm2);
+        snprintf(str, STRLENGTH, "List of Invoices (%s - %s)", tm1, tm2);
         TextC(t, 0, str, col);
         TextL(t, 2.3, "Invoice Date", col);
         TextC(t, 2.3, "Vendor", col);
@@ -1742,7 +1742,7 @@ int InvoiceZone::ListReport(Terminal *t, Report *r)
             r->TextC(v->name.Value());
         else
             r->TextC("Unknown Vendor");
-        sprintf(str, "%d", in->id);
+        snprintf(str, STRLENGTH, "%d", in->id);
         r->TextR(str);
         r->NewLine();
         in = in->next;

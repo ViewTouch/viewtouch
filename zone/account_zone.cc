@@ -68,8 +68,8 @@ RenderResult AccountZone::Render(Terminal *term, int update_flag)
         indent += num_spaces;
         TextPosL(term, indent, 1.3, "Balance");
 
-        sprintf(str, "%s: %d", term->Translate("Total Accounts Active"),
-                term->system_data->account_db.AccountCount());
+        snprintf(str, STRLENGTH, "%s: %d", term->Translate("Total Accounts Active"),
+                 term->system_data->account_db.AccountCount());
         TextC(term, size_y - 1, str);
     }
     else

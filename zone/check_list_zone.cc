@@ -138,14 +138,14 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 		char str2[128];
 
 	if (term->server)
-		sprintf(str2, "%s's", term->server->system_name.Value());
+		snprintf(str2, STRLENGTH, "%s's", term->server->system_name.Value());
 	else
-		strcpy(str2, "All");
+		strcpy(str2, "System");
 
 	if (status != CL_ALL)
-		sprintf(str, "%s %s Checks", str2, term->Translate(CLName[status]));
+		snprintf(str, STRLENGTH, "%s %s Checks", str2, term->Translate(CLName[status]));
 	else
-		sprintf(str, "%s Checks", str2);
+		snprintf(str, STRLENGTH, "%s Checks", str2);
 	TextC(term, 1, str, col);
 
 	if (term->archive == NULL)
@@ -162,7 +162,11 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 			term->TimeDate(str2, term->archive->fore->end_time, TD5);
 		else
 			strcpy(str2, term->Translate("System Start"));
-		sprintf(str, "%s  to  %s", str2, term->TimeDate(term->archive->end_time, TD5));
+		if (term->archive->start_time.IsSet())
+			strcpy(str2, term->TimeDate(term->archive->start_time, TD5));
+		else
+			strcpy(str2, term->Translate("System Start"));
+		snprintf(str, STRLENGTH, "%s  to  %s", str2, term->TimeDate(term->archive->end_time, TD5));
 	}
 	TextC(term, 0, str, COLOR_BLUE);
 
@@ -176,9 +180,13 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 	// Footer
 	if (possible_size > 0)
 	{
-		sprintf(str, "%s: %d", term->Translate("Number of checks"), possible_size);
+		snprintf(str, STRLENGTH, "%s: %d", term->Translate("Number of checks"), possible_size);
 		TextC(term, size_y - 3, str, col);
 	}
+	else
+		snprintf(str, STRLENGTH, "No %s checks", term->Translate(CLName[status]));
+	// TextC(term, line, str, COLOR_RED);  // line not defined yet
+
 	if (max_pages > 1)
 		TextL(term, size_y - 1, term->PageNo(page_no + 1, max_pages), col);
 
@@ -188,7 +196,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 		if (status == CL_ALL)
 			strcpy(str, term->Translate("No checks of any kind"));
 		else
-			sprintf(str, "No %s checks", term->Translate(CLName[status]));
+			snprintf(str, STRLENGTH, "No %s checks", term->Translate(CLName[status]));
 		TextC(term, line, str, COLOR_RED);
 	}
 
@@ -224,7 +232,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
             else if (c->CustomerType() == CHECK_BAR)
                 strcpy(str, term->Translate("Bar"));
             else
-                sprintf(str, "%.4s", c->Table());
+                snprintf(str, STRLENGTH, "%.4s", c->Table());
             break;
         }
 
@@ -243,7 +251,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 //			str[1] = '\0';
 		}
 		else
-			sprintf(str, "%d", c->Guests());
+			snprintf(str, STRLENGTH, "%d", c->Guests());
 		TextPosL(term, x1, line, str, tc);
 
 		if (status == CL_OPEN || status == CL_TAKEOUT || status == CL_FASTFOOD)
@@ -253,7 +261,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 			TimeInfo time_close;
 			time_close.Set(c->TimeClosed());
 			if (time_close.IsSet())
-				sprintf(str, "%s %s", term->TimeDate(str2, c->time_open, TD_TIME),
+				snprintf(str, STRLENGTH, "%s %s", term->TimeDate(str2, c->time_open, TD_TIME),
 						term->TimeDate(time_close, TD_TIME));
 			else
 				term->TimeDate(str, c->time_open, TD_TIME);

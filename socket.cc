@@ -208,7 +208,7 @@ const char* Sock_ntop(const struct sockaddr_in *sa, socklen_t addrlen)
     if (ntohs(sa->sin_port) != 0)
     {
         snprintf(portstr, sizeof(portstr), ":%d", ntohs(sa->sin_port));
-        strcat(str, portstr);
+        strncat(str, portstr, sizeof(str) - strlen(str) - 1);
     }
 
     return str;
@@ -506,9 +506,9 @@ int SMTP(int fd, Email *email)
         {
             outgoing[0] = '\0';
             if (buffer[0] == '.')
-                strcat(outgoing, ".");
-            strcat(outgoing, buffer);
-            strcat(outgoing, "\r\n");
+                strncat(outgoing, ".", sizeof(outgoing) - strlen(outgoing) - 1);
+            strncat(outgoing, buffer, sizeof(outgoing) - strlen(outgoing) - 1);
+            strncat(outgoing, "\r\n", sizeof(outgoing) - strlen(outgoing) - 1);
             write(fd, outgoing, strlen(outgoing));
         }
         write(fd, ".\r\n", 2);

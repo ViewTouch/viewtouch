@@ -223,7 +223,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             break;
 
         case SERVER_ERROR:
-            sprintf(str, "TermError: %s", term->RStr());
+            snprintf(str, sizeof(str), "TermError: %s", term->RStr());
             ReportError(str);
             break;
 
@@ -324,7 +324,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             const char* s1 = term->RStr();
             if (strlen(s1) < STRLENGTH)
             {
-                sprintf(str, "swipe %s", s1);
+                snprintf(str, sizeof(str), "swipe %s", s1);
                 term->Signal(str, 0);
             }
         }
@@ -382,9 +382,9 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             term->eod_failed = 1;
             break;
         default:
-            snprintf(str, STRLENGTH, "Cannot process unknown code:  %d", code);
+            snprintf(str, sizeof(str), "Cannot process unknown code:  %d", code);
             ReportError(str);
-            snprintf(str, STRLENGTH, "  Last code processed was %d", last_code);
+            snprintf(str, sizeof(str), "  Last code processed was %d", last_code);
             ReportError(str);
             printf("Terminating due to unforseen error....\n");
             EndSystem();
@@ -777,7 +777,7 @@ int Terminal::Jump(int jump_type, int jump_id)
     if (targetPage == NULL)
 	{
         genericChar buffer[STRLENGTH];
-        snprintf(buffer, STRLENGTH, "Unable to find jump target (%d, %d) for %s",
+        snprintf(buffer, sizeof(buffer), "Unable to find jump target (%d, %d) for %s",
                  jump_id, size, name.Value());
         TerminalError(buffer);
         return 1;
@@ -826,7 +826,7 @@ int Terminal::JumpToIndex(int idx)
         else
         {
             genericChar str[64];
-            sprintf(str, "'%s' Index doesn't exist - can't jump", IndexName[cl]);
+            snprintf(str, sizeof(str), "'%s' Index doesn't exist - can't jump", IndexName[cl]);
             ReportError(str);
         }
         return 1;
@@ -1201,8 +1201,8 @@ int Terminal::OpenTabList(const char* message)
                 }
                 subcheck = subcheck->next;
             }
-            snprintf(btitle, STRLENGTH, "%s\\%s", fname, four);
-            snprintf(bmesg, STRLENGTH, "%s %d", message, currcheck->serial_number);
+            snprintf(btitle, sizeof(btitle), "%s\\%s", fname, four);
+            snprintf(bmesg, sizeof(bmesg), "%s %d", message, currcheck->serial_number);
             sd->Button(btitle, bmesg);
         }
         currcheck = currcheck->next;
@@ -1336,9 +1336,9 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         strcpy(msg, "killall vt_ccq_pipe");
         system(msg);
         msg[0] = '\0';
-        strcat(msg, "Connection reset.\\");
-        strcat(msg, "Please wait 60 seconds\\");
-        strcat(msg, "and try again.");
+        strncat(msg, "Connection reset.\\", sizeof(msg) - strlen(msg) - 1);
+        strncat(msg, "Please wait 60 seconds\\", sizeof(msg) - strlen(msg) - 1);
+        strncat(msg, "and try again.", sizeof(msg) - strlen(msg) - 1);
         sd = new SimpleDialog(msg);
         sd->Button(Translate("Okay"));
         OpenDialog(sd);
@@ -2738,7 +2738,7 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
 				switch (idx)
 				{
                 case 0:  // release
-                    sprintf(tmp, "POS %s %s - \xa9 Gene Mosher 1986",
+                    snprintf(tmp, sizeof(tmp), "POS %s %s - \xa9 Gene Mosher 1986",
                             viewtouch::get_version_extended().c_str(),
                             viewtouch::get_version_timestamp().substr(0, 10).c_str());
                     break;
@@ -2765,7 +2765,7 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
                     tmp[20] = '\0';
                     break;
                 case 7:  // licensedays
-                    sprintf(tmp, "%d", 999);
+                    snprintf(tmp, sizeof(tmp), "%d", 999);
                     break;
                 case 8:  // creditid
                     strcpy(tmp, cc_credit_termid.Value());
@@ -3262,17 +3262,17 @@ int Terminal::RenderBlankPage()
                 while (i < 6 && i < ref)
                 {
                     if (i == 0)
-                        sprintf(str, ": %d", list[i]);
+                        snprintf(str, sizeof(str), ": %d", list[i]);
                     else
-                        sprintf(str, ",%d", list[i]);
-                    strcat(ref_list, str);
+                        snprintf(str, sizeof(str), ",%d", list[i]);
+                    strncat(ref_list, str, sizeof(ref_list) - strlen(ref_list) - 1);
                     ++i;
                 }
                 if (ref > 6)
-                    strcat(ref_list, "...");
+                    strncat(ref_list, "...", sizeof(ref_list) - strlen(ref_list) - 1);
             }
 
-            sprintf(str, "%d %s (refs %d%s)", page->id, pn, count, ref_list);
+            snprintf(str, sizeof(str), "%d %s (refs %d%s)", page->id, pn, count, ref_list);
             WStr(str);
 
             count = 0;
@@ -3288,10 +3288,10 @@ int Terminal::RenderBlankPage()
             }
 
             if ( pt == PAGE_INDEX )
-                sprintf(str, "%-13s  %-14s  %2d", PageTypeName[s1],
+                snprintf(str, sizeof(str), "%-13s  %-14s  %2d", PageTypeName[s1],
                         IndexName[s2], count);
             else
-                sprintf(str, "%s  %2d", PageTypeName[s1], count);
+                snprintf(str, sizeof(str), "%s  %2d", PageTypeName[s1], count);
             WStr(str);
         }
         else
@@ -5147,7 +5147,7 @@ int Terminal::ShowPageList()
 		{
 			last_id = p->id;
 			WInt8(TERM_LISTITEM);
-			sprintf(str, "%4d %s", p->id, Translate(p->name.Value()));
+			snprintf(str, sizeof(str), "%4d %s", p->id, Translate(p->name.Value()));
 			WStr(str);
 			Send();
 		}
@@ -6225,24 +6225,24 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
     dev = socket(AF_UNIX, SOCK_STREAM, 0);
     if (dev <= 0)
     {
-        sprintf(str, "Failed to open socket '%s'", SOCKET_FILE);
+        snprintf(str, sizeof(str), "Failed to open socket '%s'", SOCKET_FILE);
         ReportError(str);
     }
     else if (bind(dev, (struct sockaddr *) &server_adr, SUN_LEN(&server_adr)) < 0)
     {
-        sprintf(str, "Failed to bind socket '%s'", SOCKET_FILE);
+        snprintf(str, sizeof(str), "Failed to bind socket '%s'", SOCKET_FILE);
         ReportError(str);
     }
     else
     {
         if (width > -1 && height > -1)
         {
-            sprintf(str, VIEWTOUCH_PATH "/bin/vt_term %s %d %s %d %d %d &",
+            snprintf(str, sizeof(str), VIEWTOUCH_PATH "/bin/vt_term %s %d %s %d %d %d &",
                     SOCKET_FILE, hardware_type, hostname, isserver, width, height);
         }
         else
         {
-            sprintf(str, VIEWTOUCH_PATH "/bin/vt_term %s %d %s %d&",
+            snprintf(str, sizeof(str), VIEWTOUCH_PATH "/bin/vt_term %s %d %s %d&",
                     SOCKET_FILE, hardware_type, hostname, isserver);
         }
         system(str);
@@ -6258,7 +6258,7 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
         socket_no = accept(dev, (struct sockaddr *) &client_adr, &len);
         if (socket_no <= 0)
         {
-            sprintf(str, "Failed to open term on host '%s'", hostname);
+            snprintf(str, sizeof(str), "Failed to open term on host '%s'", hostname);
             ReportError(str);
         }
     }

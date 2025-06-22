@@ -214,28 +214,28 @@ char* UnitAmount::Description(char* str)
     switch (type)
     {
     case UNIT_NONE:     strcpy(str, "---"); break;
-    case COUNT_SINGLE:  sprintf(str, "%g", amount); break;
-    case COUNT_DOZEN:   sprintf(str, "%g Dzn.", amount); break;
-    case COUNT_GROSS:   sprintf(str, "%g Grs.", amount); break;
+    case COUNT_SINGLE:  snprintf(str, sizeof(str), "%g", amount); break;
+    case COUNT_DOZEN:   snprintf(str, sizeof(str), "%g Dzn.", amount); break;
+    case COUNT_GROSS:   snprintf(str, sizeof(str), "%g Grs.", amount); break;
 
         // Standard Units
-    case WEIGHT_DASH:   sprintf(str, "%g", amount); break;
-    case WEIGHT_OUNCE:  sprintf(str, "%g Ou.", amount); break;
-    case WEIGHT_POUND:  sprintf(str, "%g Lbs.", amount); break;
-    case VOLUME_DRAM:   sprintf(str, "%g Dram", amount); break;
-    case VOLUME_TSP:    sprintf(str, "%g Tsp.", amount); break;
-    case VOLUME_TBS:    sprintf(str, "%g Tbs.", amount); break;
-    case VOLUME_OUNCE:  sprintf(str, "%g Oz.", amount); break;
-    case VOLUME_CUP:    sprintf(str, "%g Cup", amount); break;
-    case VOLUME_PINT:   sprintf(str, "%g Pint", amount); break;
-    case VOLUME_QUART:  sprintf(str, "%g Qt.", amount); break;
-    case VOLUME_GALLON: sprintf(str, "%g Gal.", amount); break;
+    case WEIGHT_DASH:   snprintf(str, sizeof(str), "%g", amount); break;
+    case WEIGHT_OUNCE:  snprintf(str, sizeof(str), "%g Ou.", amount); break;
+    case WEIGHT_POUND:  snprintf(str, sizeof(str), "%g Lbs.", amount); break;
+    case VOLUME_DRAM:   snprintf(str, sizeof(str), "%g Dram", amount); break;
+    case VOLUME_TSP:    snprintf(str, sizeof(str), "%g Tsp.", amount); break;
+    case VOLUME_TBS:    snprintf(str, sizeof(str), "%g Tbs.", amount); break;
+    case VOLUME_OUNCE:  snprintf(str, sizeof(str), "%g Oz.", amount); break;
+    case VOLUME_CUP:    snprintf(str, sizeof(str), "%g Cup", amount); break;
+    case VOLUME_PINT:   snprintf(str, sizeof(str), "%g Pint", amount); break;
+    case VOLUME_QUART:  snprintf(str, sizeof(str), "%g Qt.", amount); break;
+    case VOLUME_GALLON: snprintf(str, sizeof(str), "%g Gal.", amount); break;
 
         // Metric Units
-    case WEIGHT_G:  sprintf(str, "%g g", amount); break;
-    case WEIGHT_KG: sprintf(str, "%g kg", amount); break;
-    case VOLUME_ML: sprintf(str, "%g ml", amount); break;
-    case VOLUME_L:  sprintf(str, "%g l", amount); break;
+    case WEIGHT_G:  snprintf(str, sizeof(str), "%g g", amount); break;
+    case WEIGHT_KG: snprintf(str, sizeof(str), "%g kg", amount); break;
+    case VOLUME_ML: snprintf(str, sizeof(str), "%g ml", amount); break;
+    case VOLUME_L:  snprintf(str, sizeof(str), "%g l", amount); break;
     }
     return str;
 }
@@ -587,7 +587,7 @@ int Inventory::Load(const char* file)
     if (version < 3)
     {
         genericChar str[256];
-        sprintf(str, "Unknown Inventory version %d", version);
+        snprintf(str, sizeof(str), "Unknown Inventory version %d", version);
         ReportError(str);
         return 1;
     }
@@ -812,7 +812,7 @@ int Inventory::LoadStock(const char* path)
             if (strncmp(name, "stock_", 6) == 0)
             {
                 genericChar str[256];
-                sprintf(str, "%s/%s", stock_path.Value(), name);
+                snprintf(str, sizeof(str), "%s/%s", stock_path.Value(), name);
                 Stock *s = new Stock;
                 if (s == NULL)
                     ReportError("Couldn't create stock");
@@ -1006,20 +1006,20 @@ int Inventory::ProductListReport(Terminal *t, Stock *s, Report *r)
         r->TextPosL(-35, ua1.Measurement());
         if (s->end_time.IsSet())
         {
-            sprintf(str, "%g", ua3.amount);
+            snprintf(str, sizeof(str), "%g", ua3.amount);
             r->TextPosR(-22, str);
-            sprintf(str, "%g", ua2.amount);
+            snprintf(str, sizeof(str), "%g", ua2.amount);
             r->TextPosR(-11, str);
-            sprintf(str, "%g", ua4.amount);
+            snprintf(str, sizeof(str), "%g", ua4.amount);
             r->TextR(str);
         }
         else
         {
-            sprintf(str, "%g", ua1.amount);
+            snprintf(str, sizeof(str), "%g", ua1.amount);
             r->TextPosR(-22, str);
-            sprintf(str, "%g", used.amount);
+            snprintf(str, sizeof(str), "%g", used.amount);
             r->TextPosR(-11, str);
-            sprintf(str, "%g", ua2.amount);
+            snprintf(str, sizeof(str), "%g", ua2.amount);
             r->TextR(str);
         }
 
@@ -1056,7 +1056,7 @@ int Inventory::ProductListReport(Terminal *t, Invoice *in, Report *r)
             ua.Clear();
 
         ua.Convert(pr->purchase.type);
-        sprintf(str, "%g", ua.amount);
+        snprintf(str, sizeof(str), "%g", ua.amount);
         r->TextPosR(-20, str);
         r->TextPosR(-10, t->FormatPrice((int) ((Flt)pr->cost / pr->purchase.amount)));
 
@@ -1159,7 +1159,7 @@ Stock *Inventory::CurrentStock()
         Add(s);
 
         genericChar str[256];
-        sprintf(str, "%s/stock_%09d", stock_path.Value(), s->id);
+        snprintf(str, sizeof(str), "%s/stock_%09d", stock_path.Value(), s->id);
         s->file_name.Set(str);
     }
     return end;
@@ -1217,12 +1217,12 @@ int Inventory::InvoiceReport(Terminal *t, Invoice *in, Report *r)
     else
         r->TextL("No Vendor Set");
 
-    sprintf(str, "Invoice Date %s", t->TimeDate(in->time, TD_DATE));
+    snprintf(str, sizeof(str), "Invoice Date %s", t->TimeDate(in->time, TD_DATE));
     r->Mode(PRINT_UNDERLINE);
     r->TextC(str);
     r->Mode(0);
 
-    sprintf(str, "REF: %d", in->id);
+    snprintf(str, sizeof(str), "REF: %d", in->id);
     r->TextR(str);
     r->NewLine(2);
 
@@ -1239,7 +1239,7 @@ int Inventory::InvoiceReport(Terminal *t, Invoice *in, Report *r)
     InvoiceEntry *ie = in->EntryList();
     while (ie)
     {
-        sprintf(str, "%g", ie->amount.amount);
+        snprintf(str, sizeof(str), "%g", ie->amount.amount);
         r->TextL(str);
         r->TextPosL(5, ie->amount.Measurement());
         Product *pr = FindProductByID(ie->product_id);
@@ -1249,9 +1249,10 @@ int Inventory::InvoiceReport(Terminal *t, Invoice *in, Report *r)
             UnitAmount ua;
             ua = ie->amount;
             ua.Convert(pr->purchase.type);
-            sprintf(str, "%g", ua.amount);
+            snprintf(str, sizeof(str), "%g", ua.amount);
             r->TextPosR(-20, str);
             r->TextPosR(-10, t->FormatPrice((int) ((Flt)pr->cost / pr->purchase.amount)));
+
             int cost = (int) ((ua.amount /= pr->purchase.amount) * (Flt) pr->cost);
             total_cost += cost;
             r->TextR(t->FormatPrice(cost));

@@ -1969,22 +1969,22 @@ RenderResult TimeDateField::Render(Terminal *term, FormZone *fzone)
 
     val = buffer.WeekDay();
     if (!buffer.IsSet() || val < 0 || val > 6)
-        sprintf(str, "---");
+        snprintf(str, STRLENGTH, "---");
     else
-        sprintf(str, "%s",term->Translate(ShortDayName[val]));
+        snprintf(str, STRLENGTH, "%s",term->Translate(ShortDayName[val]));
     fzone->TextPosL(term, xx,        y, str, COLOR_WHITE);
 
     val = buffer.Month() - 1;
     if (!buffer.IsSet() || val < 0 || val > 11)
-        sprintf(str, "---");
+        snprintf(str, STRLENGTH, "---");
     else
-        sprintf(str, "%s",term->Translate(ShortMonthName[val]));
+        snprintf(str, STRLENGTH, "%s",term->Translate(ShortMonthName[val]));
     fzone->TextPosC(term, xx + 6.5,  y, str, COLOR_WHITE);
 
-    sprintf(str, "%d", buffer.Day());
+    snprintf(str, STRLENGTH, "%d", buffer.Day());
     fzone->TextPosC(term, xx + 10,   y, str, COLOR_WHITE);
     fzone->TextPosC(term, xx + 11.5, y, ",", COLOR_WHITE);
-    sprintf(str, "%d", buffer.Year());
+    snprintf(str, STRLENGTH, "%d", buffer.Year());
     fzone->TextPosC(term, xx + 14,   y, str, COLOR_WHITE);
 
     if (show_time)
@@ -1992,10 +1992,10 @@ RenderResult TimeDateField::Render(Terminal *term, FormZone *fzone)
         int hour = buffer.Hour() % 12;
         if (hour == 0)
             hour = 12;
-        sprintf(str, "%d", hour);
+        snprintf(str, STRLENGTH, "%d", hour);
         fzone->TextPosC(term, xx + 18,   y, str, COLOR_WHITE);
         fzone->TextPosC(term, xx + 19.5, y, ":", COLOR_WHITE);
-        sprintf(str, "%02d", buffer.Min());
+        snprintf(str, STRLENGTH, "%02d", buffer.Min());
         fzone->TextPosC(term, xx + 21,   y, str, COLOR_WHITE);
         if (buffer.Hour() >= 12)
             strcpy(str, "pm");
@@ -2215,13 +2215,13 @@ RenderResult TimeDayField::Render(Terminal *term, FormZone *fzone)
     if (is_unset)
         strcpy(str, "--");
     else
-        sprintf(str, "%d", my_hour);
+        snprintf(str, STRLENGTH, "%d", my_hour);
     fzone->TextPosC(term, xx + 6,   y, str, COLOR_WHITE);
     fzone->TextPosC(term, xx + 7.5, y, ":", COLOR_WHITE);
     if (is_unset)
         strcpy(str, "--");
     else
-        sprintf(str, "%02d", min);
+        snprintf(str, STRLENGTH, "%02d", min);
     fzone->TextPosC(term, xx + 9,   y, str, COLOR_WHITE);
     if (!is_unset)
     {

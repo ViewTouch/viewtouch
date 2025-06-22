@@ -261,7 +261,7 @@ int CheckObj::Render(Terminal *t)
 
     genericChar str[256];
     if (sub)
-        sprintf(str, "%s %d", t->Translate("Check"), sub->number);
+        snprintf(str, STRLENGTH, "%s %d", t->Translate("Check"), sub->number);
     else
         strcpy(str, t->Translate("Blank Check"));
 

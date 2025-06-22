@@ -155,7 +155,7 @@ int Account::Load(const char* path)
     pathname.Set(path);
 
     genericChar filename[STRLENGTH];
-    sprintf(filename, "%s/%04d", path, number);
+    snprintf(filename, STRLENGTH, "%s/%04d", path, number);
     if (df.Open(filename, version))
         return 1;
     
@@ -167,7 +167,7 @@ int Account::Load(const char* path)
     if (ReadEntries(df))
     {
         genericChar str[STRLENGTH];
-        sprintf(str, "Error in reading Account #%d Entries", number);
+        snprintf(str, STRLENGTH, "Error in reading Account #%d Entries", number);
         ReportError(str);
         return 1;  // df destructor will close the file
     }
@@ -181,7 +181,7 @@ int Account::Save()
     genericChar filename[STRLENGTH];
     OutputDataFile df;
 
-    sprintf(filename, "%s/%04d", pathname.Value(), number);
+    snprintf(filename, STRLENGTH, "%s/%04d", pathname.Value(), number);
     if (df.Open(filename, ACCOUNT_VERSION))
         return 1;
     df.Write(name);

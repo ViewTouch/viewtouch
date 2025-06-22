@@ -449,16 +449,15 @@ UnitAmountDialog::UnitAmountDialog(const char* title, UnitAmount &u)
 
     lit = NULL;
     name.Set(title);
-    buffer[0] = '\0';
     if (u.amount != 0.0)
-        sprintf(buffer, "%g", u.amount);
+        snprintf(buffer, STRLENGTH, "%g", u.amount);
     unit_type = u.type;
 
     genericChar str[256];
 
     for (i = 0; i < 10; ++i)
     {
-        sprintf(str, "%d", i);
+        snprintf(str, STRLENGTH, "%d", i);
         key[i] = Button(str, str);
     }
 
@@ -643,7 +642,7 @@ SignalResult UnitAmountDialog::Signal(Terminal *term, const genericChar* message
     {
     default:
         if (len < 10 && (len > 0 || idx != 0))
-            strcat(buffer, message);
+            strncat(buffer, message, sizeof(buffer) - strlen(buffer) - 1);
         break;
     case 10:  // .
     {
@@ -653,13 +652,13 @@ SignalResult UnitAmountDialog::Signal(Terminal *term, const genericChar* message
             if (*c++ == '.')
                 dp = 1;
         if (dp == 0)
-            strcat(buffer, ".");
+            strncat(buffer, ".", sizeof(buffer) - strlen(buffer) - 1);
         break;
     }
     case 11:  // enter
     {
         genericChar str[256];
-        sprintf(str, "amount %d %s", unit_type, buffer);
+        snprintf(str, STRLENGTH, "amount %d %s", unit_type, buffer);
         if (target_zone)
             target_zone->Signal(term, str);
         else
@@ -705,9 +704,9 @@ int UnitAmountDialog::RenderEntry(Terminal *term)
     ua.type = unit_type;
     genericChar str[256];
     if (buffer[0] == '\0')
-        sprintf(str, "0 %s", ua.Measurement());
+        snprintf(str, STRLENGTH, "0 %s", ua.Measurement());
     else
-        sprintf(str, "%s %s", buffer, ua.Measurement());
+        snprintf(str, STRLENGTH, "%s %s", buffer, ua.Measurement());
     TextC(term, 1.5, str, COLOR_WHITE);
     return 0;
 }
@@ -730,7 +729,7 @@ TenKeyDialog::TenKeyDialog()
     genericChar str[256];
     for (i = 0; i < 10; ++i)
     {
-        sprintf(str, "%d", i);
+        snprintf(str, STRLENGTH, "%d", i);
         key[i] = Button(str, str);
     }
 
@@ -758,7 +757,7 @@ TenKeyDialog::TenKeyDialog(const char* title, int amount, int cancel, int dp)
     genericChar str[256];
     for (i = 0; i < 10; ++i)
     {
-        sprintf(str, "%d", i);
+        snprintf(str, STRLENGTH, "%d", i);
         key[i] = Button(str, str);
     }
 
@@ -792,7 +791,7 @@ TenKeyDialog::TenKeyDialog(const char* title, const char* retmsg, int amount, in
     genericChar str[256];
     for (i = 0; i < 10; ++i)
     {
-        sprintf(str, "%d", i);
+        snprintf(str, STRLENGTH, "%d", i);
         key[i] = Button(str, str);
     }
 
@@ -905,7 +904,7 @@ SignalResult TenKeyDialog::Signal(Terminal *term, const genericChar* message)
     switch (idx)
     {
     case 10:  // enter
-        sprintf(str, "%s %d", return_message, buffer);
+        snprintf(str, STRLENGTH, "%s %d", return_message, buffer);
         if (target_zone)
             target_zone->Signal(term, str);
         else
@@ -955,7 +954,7 @@ int TenKeyDialog::RenderEntry(Terminal *term)
         Flt amount = 0;
         if (buffer > 0)
             amount = (Flt)buffer / 100;
-        sprintf(str, "%.2f", amount);
+        snprintf(str, sizeof(str), "%.2f", amount);
     }
     else if (buffer == 0)
     {
@@ -963,7 +962,7 @@ int TenKeyDialog::RenderEntry(Terminal *term)
     }
     else
     {
-        sprintf(str, "%d", buffer);
+        snprintf(str, sizeof(str), "%d", buffer);
     }
     TextC(term, 1.5, str, COLOR_WHITE);
     return 0;
@@ -1332,7 +1331,7 @@ RenderResult PasswordDialog::Render(Terminal *term, int update_flag)
         TextC(term, 1, term->Translate("Enter Your Old Password"), col);
         if (force_change)
         {
-            sprintf(str, "(%s)", term->Translate("You Must Change Your Password To Continue"));
+            snprintf(str, STRLENGTH, "(%s)", term->Translate("You Must Change Your Password To Continue"));
             TextC(term, 4.5, str);
         }
         break;
@@ -1347,7 +1346,7 @@ RenderResult PasswordDialog::Render(Terminal *term, int update_flag)
     min_len = s->min_pw_len;
     if (min_len > 0 && (stage == 2 || stage == 3))
     {
-        sprintf(str, "(%s %d)",
+        snprintf(str, STRLENGTH, "(%s %d)",
                 term->Translate("Minimum Password Length Is"), min_len);
         TextC(term, 4.5, str);
     }
@@ -1787,7 +1786,7 @@ int CreditCardEntryDialog::RenderEntry(Terminal *term)
     else
         strncpy(buff, cc_num, STRLENGTH);
     if (current == cc_num)
-        strcat(buff, "_");
+        strncat(buff, "_", sizeof(buff) - strlen(buff) - 1);
     TextPosL(term, 6, num_pos + 1.0, buff, COLOR_WHITE);
     term->UpdateArea(entry_pos[0].x, entry_pos[0].y, entry_pos[0].w, entry_pos[0].h);
 
@@ -1801,7 +1800,7 @@ int CreditCardEntryDialog::RenderEntry(Terminal *term)
     else
         strncpy(buff, cc_expire, STRLENGTH);
     if (current == cc_expire)
-        strcat(buff, "_");
+        strncat(buff, "_", sizeof(buff) - strlen(buff) - 1);
     TextPosL(term, 6, exp_pos + 1.0, buff, COLOR_WHITE);
     term->UpdateArea(entry_pos[1].x, entry_pos[1].y, entry_pos[1].w, entry_pos[1].h);
 
@@ -2992,9 +2991,9 @@ SignalResult CreditCardDialog::ProcessCreditCard(Terminal *term)
             if (strcmp(term->credit->Verb(), "No Card Information Entered") == 0)
             {
                 char message[STRLONG] = "";
-                strcat(message, term->credit->Verb());
-                strcat(message, "\\This could indicate a bad connection.");
-                strcat(message, "\\Would you like to reset the connection?");
+                strncat(message, term->credit->Verb(), sizeof(message) - strlen(message) - 1);
+                strncat(message, "\\This could indicate a bad connection.", sizeof(message) - strlen(message) - 1);
+                strncat(message, "\\Would you like to reset the connection?", sizeof(message) - strlen(message) - 1);
                 sd = new SimpleDialog(message);
                 sd->Button(term->Translate("Yes"), "ccqterminate");
                 sd->Button(term->Translate("No"));
@@ -3033,7 +3032,7 @@ JobFilterDialog::JobFilterDialog()
     int i = 1;
     while (JobName[i])
     {
-        sprintf(str, "%d", i);
+        snprintf(str, STRLENGTH, "%d", i);
         job[jobs] = Button(JobName[i], str);
         ++jobs; ++i;
     }
@@ -3388,7 +3387,7 @@ int OpenTabDialog::RenderEntry(Terminal *term)
     else
         strncpy(buff, customer_name, STRLENGTH);
     if (current == customer_name)
-        strcat(buff, "_");
+        strncat(buff, "_", sizeof(buff) - strlen(buff) - 1);
     TextPosL(term, entry_x + 1, name_pos + 1.0, buff, COLOR_WHITE);
     term->UpdateArea(entry_pos[0].x, entry_pos[0].y, entry_pos[0].w, entry_pos[0].h);
 
@@ -3402,7 +3401,7 @@ int OpenTabDialog::RenderEntry(Terminal *term)
     else
         strncpy(buff, customer_phone, STRLENGTH);
     if (current == customer_phone)
-        strcat(buff, "_");
+        strncat(buff, "_", sizeof(buff) - strlen(buff) - 1);
     TextPosL(term, entry_x + 1, phone_pos + 1.0, buff, COLOR_WHITE);
     term->UpdateArea(entry_pos[1].x, entry_pos[1].y, entry_pos[1].w, entry_pos[1].h);
 
@@ -3416,7 +3415,7 @@ int OpenTabDialog::RenderEntry(Terminal *term)
     else
         strncpy(buff, customer_comment, STRLENGTH);
     if (current == customer_comment)
-        strcat(buff, "_");
+        strncat(buff, "_", sizeof(buff) - strlen(buff) - 1);
     TextPosL(term, entry_x + 1, comment_pos + 1.0, buff, COLOR_WHITE);
     term->UpdateArea(entry_pos[2].x, entry_pos[2].y, entry_pos[2].w, entry_pos[2].h);
 

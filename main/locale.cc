@@ -576,7 +576,7 @@ int Locale::Load(const char* file)
     genericChar str[256];
     if (version < 1 || version > 1)
     {
-        sprintf(str, "Unknown locale file version %d", version);
+        snprintf(str, sizeof(str), "Unknown locale file version %d", version);
         ReportError(str);
         return 1;
     }
@@ -815,7 +815,7 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
 
     if (!timevar.IsSet())
     {
-        sprintf(str, "<NOT SET>");
+        snprintf(str, sizeof(str), "<NOT SET>");
         return str;
     }
 
@@ -827,12 +827,12 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
         // Show Day of Week
         int wd = timevar.WeekDay();
         if (format & TD_SHORT_DAY)
-            sprintf(str, "%s", Translate(ShortDayName[wd], lang));
+            snprintf(str, sizeof(str), "%s", Translate(ShortDayName[wd], lang));
         else
-            sprintf(str, "%s", Translate(DayName[wd], lang));
+            snprintf(str, sizeof(str), "%s", Translate(DayName[wd], lang));
 
         if (!(format & TD_NO_TIME) || !(format & TD_NO_DATE))
-            strcat(str, ", ");
+            strncat(str, ", ", sizeof(str) - strlen(str) - 1);
     }
 
     if (!(format & TD_NO_DATE))
@@ -851,14 +851,14 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             }
 	
             if (format & TD_PAD)
-                sprintf(tempstr, "%2d/%2d", m, d);
+                snprintf(tempstr, sizeof(tempstr), "%2d/%2d", m, d);
             else
-                sprintf(tempstr, "%d/%d", m, d);
-            strcat(str, tempstr);
+                snprintf(tempstr, sizeof(tempstr), "%d/%d", m, d);
+            strncat(str, tempstr, sizeof(str) - strlen(str) - 1);
             if (!(format & TD_NO_YEAR))
             {
-                sprintf(tempstr, "/%02d", y % 100);
-                strcat(str, tempstr);
+                snprintf(tempstr, sizeof(tempstr), "/%02d", y % 100);
+                strncat(str, tempstr, sizeof(str) - strlen(str) - 1);
             }
         }
         else
@@ -866,32 +866,32 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             if (format & TD_SHORT_MONTH)
             {
                 if (format & TD_MONTH_ONLY)
-                    sprintf(tempstr, "%s", Translate(ShortMonthName[m - 1], lang));
+                    snprintf(tempstr, sizeof(tempstr), "%s", Translate(ShortMonthName[m - 1], lang));
                 else if (format & TD_PAD)
-                    sprintf(tempstr, "%s %2d", Translate(ShortMonthName[m - 1], lang), d);
+                    snprintf(tempstr, sizeof(tempstr), "%s %2d", Translate(ShortMonthName[m - 1], lang), d);
                 else
-                    sprintf(tempstr, "%s %d", Translate(ShortMonthName[m - 1], lang), d);
+                    snprintf(tempstr, sizeof(tempstr), "%s %d", Translate(ShortMonthName[m - 1], lang), d);
             }
             else
             {
                 if (format & TD_MONTH_ONLY)
-                    sprintf(tempstr, "%s", Translate(MonthName[m - 1], lang));
+                    snprintf(tempstr, sizeof(tempstr), "%s", Translate(MonthName[m - 1], lang));
                 else if (format & TD_PAD)
-                    sprintf(tempstr, "%s %2d", Translate(MonthName[m - 1], lang), d);
+                    snprintf(tempstr, sizeof(tempstr), "%s %2d", Translate(MonthName[m - 1], lang), d);
                 else
-                    sprintf(tempstr, "%s %d", Translate(MonthName[m - 1], lang), d);
+                    snprintf(tempstr, sizeof(tempstr), "%s %d", Translate(MonthName[m - 1], lang), d);
             }
-            strcat(str, tempstr);
+            strncat(str, tempstr, sizeof(str) - strlen(str) - 1);
 
             if (!(format & TD_NO_YEAR))
             {
-                sprintf(tempstr, ", %d", y);
-                strcat(str, tempstr);
+                snprintf(tempstr, sizeof(tempstr), ", %d", y);
+                strncat(str, tempstr, sizeof(str) - strlen(str) - 1);
             }
         }
 
         if (! (format & TD_NO_TIME))
-            strcat(str, " - ");
+            strncat(str, " - ", sizeof(str) - strlen(str) - 1);
     }
 
     if (! (format & TD_NO_TIME))
@@ -912,16 +912,16 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             if (format & TD_SHORT_TIME)
 			{
 				if(format & TD_SECONDS)
-					sprintf(tempstr, "%2d:%02d:%2d%c", hr, minute, sec, AMorPM[pm][0]);
+					snprintf(tempstr, sizeof(tempstr), "%2d:%02d:%2d%c", hr, minute, sec, AMorPM[pm][0]);
 				else
-					sprintf(tempstr, "%2d:%02d%c", hr, minute, AMorPM[pm][0]);
+					snprintf(tempstr, sizeof(tempstr), "%2d:%02d%c", hr, minute, AMorPM[pm][0]);
 			}
             else
 			{
 				if(format & TD_SECONDS)
-					sprintf(tempstr, "%2d:%02d:%2d %s", hr, minute, sec, AMorPM[pm]);
+					snprintf(tempstr, sizeof(tempstr), "%2d:%02d:%2d %s", hr, minute, sec, AMorPM[pm]);
 				else
-					sprintf(tempstr, "%2d:%02d %s", hr, minute, AMorPM[pm]);
+					snprintf(tempstr, sizeof(tempstr), "%2d:%02d %s", hr, minute, AMorPM[pm]);
 			}
         }
         else
@@ -929,19 +929,19 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             if (format & TD_SHORT_TIME)
 			{
 				if(format & TD_SECONDS)
-					sprintf(tempstr, "%2d:%02d:%2d%c", hr, minute, sec, AMorPM[pm][0]);
+					snprintf(tempstr, sizeof(tempstr), "%2d:%02d:%2d%c", hr, minute, sec, AMorPM[pm][0]);
 				else
-					sprintf(tempstr, "%d:%02d%c", hr, minute, AMorPM[pm][0]);
+					snprintf(tempstr, sizeof(tempstr), "%d:%02d%c", hr, minute, AMorPM[pm][0]);
 			}
             else
 			{
 				if(format & TD_SECONDS)
-					sprintf(tempstr, "%2d:%02d:%2d %s", hr, minute, sec, AMorPM[pm]);
+					snprintf(tempstr, sizeof(tempstr), "%2d:%02d:%2d %s", hr, minute, sec, AMorPM[pm]);
 				else
-					sprintf(tempstr, "%d:%02d %s", hr, minute, AMorPM[pm]);
+					snprintf(tempstr, sizeof(tempstr), "%d:%02d %s", hr, minute, AMorPM[pm]);
 			}
         }
-        strcat(str, tempstr);
+        strncat(str, tempstr, sizeof(str) - strlen(str) - 1);
     }
 
     return str;
@@ -958,9 +958,9 @@ char* Locale::Page(int current, int page_max, int lang, genericChar* str)
         str = buffer;
 
     if (page_max <= 0)
-        sprintf(str, "%s %d", Translate("Page", lang), current);
+        snprintf(str, sizeof(str), "%s %d", Translate("Page", lang), current);
     else
-        sprintf(str, "%s %d %s %d", Translate("Page", lang), current,
+        snprintf(str, sizeof(str), "%s %d %s %d", Translate("Page", lang), current,
                 Translate("of", lang), page_max);
     return str;
 }

@@ -131,11 +131,11 @@ RenderResult LoginZone::Render(Terminal *term, int update_flag)
         break;
 
     case STATE_USER_ONLINE:
-        sprintf(str, "%s %s", term->Translate("Hello"), employee->system_name.Value());
+        snprintf(str, STRLENGTH, "%s %s", term->Translate("Hello"), employee->system_name.Value());
         TextC(term, .5, str, col);
         if (time.IsSet())
         {
-            sprintf(str, "%s %s", term->Translate("Starting Time Is"),
+            snprintf(str, STRLENGTH, "%s %s", term->Translate("Starting Time Is"),
                     term->TimeDate(time, TD_TIME));
             TextC(term, 1.5, str, col);
         }
@@ -431,14 +431,14 @@ int LoginZone::ClockOn(Terminal *term, int job_no)
 
         // Ask user for job to work
         genericChar str[256];
-        sprintf(str, "%s %s \\%s", term->Translate("Hello"), employee->system_name.Value(),
+        snprintf(str, STRLENGTH, "%s %s \\%s", term->Translate("Hello"), employee->system_name.Value(),
                 term->Translate("Pick A Job For This Shift"));
         SimpleDialog *d = new SimpleDialog(str);
 
         int n = 0;
         for (JobInfo *j = employee->JobList(); j != NULL; j = j->next)
         {
-            sprintf(str, "job%d", n++);
+            snprintf(str, STRLENGTH, "job%d", n++);
             d->Button(j->Title(term), str);
         }
 
@@ -779,33 +779,33 @@ RenderResult LogoutZone::Render(Terminal *term, int update_flag)
     end.Floor<std::chrono::minutes>();
 
     genericChar str[256];
-    sprintf(str, "     Shift Start: %s", term->TimeDate(start, TD0));
+    snprintf(str, STRLENGTH, "     Shift Start: %s", term->TimeDate(start, TD0));
     TextL(term, 5, str, color[0]);
 
-    sprintf(str, "    Current Time: %s", term->TimeDate(end, TD0));
+    snprintf(str, STRLENGTH, "    Current Time: %s", term->TimeDate(end, TD0));
     TextL(term, 6, str, color[0]);
 
     genericChar hstr[32], mstr[32];
     int hour = (shift_min / 60), m = (shift_min % 60);
     if (hour == 1)
-        strcpy(hstr, "1 hour");
+        snprintf(hstr, STRLENGTH, "1 hour");
     else
-        sprintf(hstr, "%d hours", hour);
+        snprintf(hstr, STRLENGTH, "%d hours", hour);
 
-    if (m == 1)
-        strcpy(mstr, "1 minute");
+    if (m == 0)
+        snprintf(mstr, STRLENGTH, "0 minutes");
     else
-        sprintf(mstr, "%d minutes", m);
+        snprintf(mstr, STRLENGTH, "%d minutes", m);
 
     genericChar str2[256];
     if (hour > 0 && m > 0)
-        sprintf(str2, "%s, %s", hstr, mstr);
+        snprintf(str2, STRLENGTH, "%s, %s", hstr, mstr);
     else if (hour > 0)
         strcpy(str2, hstr);
     else
         strcpy(str2, mstr);
 
-    sprintf(str, " Total Work Time: %s", str2);
+    snprintf(str, STRLENGTH, " Total Work Time: %s", str2);
     TextL(term, 7, str, color[0]);
 
     if (!employee->CanOrder(settings))
@@ -928,9 +928,9 @@ int LogoutZone::RenderPaymentEntry(Terminal *term, int line)
 
     TextL(term, line, " Input Amount:", color[0]);
     if (dollars <= 0)
-        sprintf(str, ".%02d", cents);
+        snprintf(str, STRLENGTH, ".%02d", cents);
     else
-        sprintf(str, "%d.%02d", dollars, cents);
+        snprintf(str, STRLENGTH, "%d.%02d", dollars, cents);
 
     Entry(term, 16, line, 7);
     TextPosR(term, 23, line, str, COLOR_YELLOW);

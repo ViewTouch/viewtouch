@@ -420,7 +420,7 @@ int ItemDB::Load(const char* file)
     char str[256];
     if (version < 8 || version > SALES_ITEM_VERSION)
     {
-        sprintf(str, "Unknown ItemDB version %d", version);
+        snprintf(str, sizeof(str), "Unknown ItemDB version %d", version);
         ReportError(str);
         return 1;
     }
@@ -790,31 +790,31 @@ int PrintItem(char* buffer, int qualifier, const char* item)
     char pre[64]  = "";
     char post[64] = "";
     if ((qualifier & QUALIFIER_SIDE))
-        sprintf(post, " (on side)");
+        snprintf(post, sizeof(post), " (on side)");
 
-    if      ((qualifier & QUALIFIER_NO))        sprintf(pre, "No ");
-    else if ((qualifier & QUALIFIER_LITE))      sprintf(pre, "Lite ");
-    else if ((qualifier & QUALIFIER_ONLY))      sprintf(pre, "Only ");
-    else if ((qualifier & QUALIFIER_EXTRA))     sprintf(pre, "Extra ");
-    else if ((qualifier & QUALIFIER_DOUBLE))    sprintf(pre, "Double ");
-    else if ((qualifier & QUALIFIER_DRY))       sprintf(pre, "Dry ");
-    else if ((qualifier & QUALIFIER_PLAIN))     sprintf(pre, "Plain ");
-    else if ((qualifier & QUALIFIER_TOASTED))   sprintf(pre, "Toast ");
-    else if ((qualifier & QUALIFIER_UNTOASTED)) sprintf(pre, "Untoast ");
-    else if ((qualifier & QUALIFIER_CRISPY))    sprintf(pre, "Crisp ");
-    else if ((qualifier & QUALIFIER_SOFT))      sprintf(pre, "Soft ");
-    else if ((qualifier & QUALIFIER_HARD))      sprintf(pre, "Hard ");
-    else if ((qualifier & QUALIFIER_GRILLED))   sprintf(pre, "Grill ");
-    else if ((qualifier & QUALIFIER_LEFT))      sprintf(pre, "Left: ");
-    else if ((qualifier & QUALIFIER_RIGHT))     sprintf(pre, "Right: ");
-    else if ((qualifier & QUALIFIER_WHOLE))     sprintf(pre, "Whole: ");
-    else if ((qualifier & QUALIFIER_CUT2))      sprintf(pre, "Cut/2 ");
-    else if ((qualifier & QUALIFIER_CUT3))      sprintf(pre, "Cut/3 ");
-    else if ((qualifier & QUALIFIER_CUT4))      sprintf(pre, "Cut/4 ");
+    if      ((qualifier & QUALIFIER_NO))        snprintf(pre, sizeof(pre), "No ");
+    else if ((qualifier & QUALIFIER_LITE))      snprintf(pre, sizeof(pre), "Lite ");
+    else if ((qualifier & QUALIFIER_ONLY))      snprintf(pre, sizeof(pre), "Only ");
+    else if ((qualifier & QUALIFIER_EXTRA))     snprintf(pre, sizeof(pre), "Extra ");
+    else if ((qualifier & QUALIFIER_DOUBLE))    snprintf(pre, sizeof(pre), "Double ");
+    else if ((qualifier & QUALIFIER_DRY))       snprintf(pre, sizeof(pre), "Dry ");
+    else if ((qualifier & QUALIFIER_PLAIN))     snprintf(pre, sizeof(pre), "Plain ");
+    else if ((qualifier & QUALIFIER_TOASTED))   snprintf(pre, sizeof(pre), "Toast ");
+    else if ((qualifier & QUALIFIER_UNTOASTED)) snprintf(pre, sizeof(pre), "Untoast ");
+    else if ((qualifier & QUALIFIER_CRISPY))    snprintf(pre, sizeof(pre), "Crisp ");
+    else if ((qualifier & QUALIFIER_SOFT))      snprintf(pre, sizeof(pre), "Soft ");
+    else if ((qualifier & QUALIFIER_HARD))      snprintf(pre, sizeof(pre), "Hard ");
+    else if ((qualifier & QUALIFIER_GRILLED))   snprintf(pre, sizeof(pre), "Grill ");
+    else if ((qualifier & QUALIFIER_LEFT))      snprintf(pre, sizeof(pre), "Left: ");
+    else if ((qualifier & QUALIFIER_RIGHT))     snprintf(pre, sizeof(pre), "Right: ");
+    else if ((qualifier & QUALIFIER_WHOLE))     snprintf(pre, sizeof(pre), "Whole: ");
+    else if ((qualifier & QUALIFIER_CUT2))      snprintf(pre, sizeof(pre), "Cut/2 ");
+    else if ((qualifier & QUALIFIER_CUT3))      snprintf(pre, sizeof(pre), "Cut/3 ");
+    else if ((qualifier & QUALIFIER_CUT4))      snprintf(pre, sizeof(pre), "Cut/4 ");
     if ((qualifier & QUALIFIER_SUB))
-        sprintf(buffer, "SUB: %s%s%s", pre, item, post);
+        snprintf(buffer, sizeof(buffer), "SUB: %s%s%s", pre, item, post);
     else
-        sprintf(buffer, "%s%s%s", pre, item, post);
+        snprintf(buffer, sizeof(buffer), "%s%s%s", pre, item, post);
     return 0;
 }
 

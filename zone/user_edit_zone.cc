@@ -133,7 +133,7 @@ RenderResult UserEditZone::Render(Terminal *term, int update_flag)
         if (records == 1)
             strcpy(str, "Employee Record");
         else
-            sprintf(str, "Employee Record %d of %d", record_no + 1, records);
+            snprintf(str, STRLENGTH, "Employee Record %d of %d", record_no + 1, records);
         TextC(term, 0, str, col);
     }
     return RENDER_OKAY;
@@ -193,9 +193,9 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
             else
             {
                 char str[STRLENGTH] = "";
-                strcat(str, "This employee is clocked in.  You cannot\\");
-                strcat(str, "change the employee's status until he or\\");
-                strcat(str, "she is clocked out of the system.");
+                strncat(str, "This employee is clocked in.  You cannot\\", sizeof(str) - strlen(str) - 1);
+                strncat(str, "change the employee's status until he or\\", sizeof(str) - strlen(str) - 1);
+                strncat(str, "she is clocked out of the system.", sizeof(str) - strlen(str) - 1);
                 SimpleDialog *d = new SimpleDialog(str);
                 d->force_width = 600;
                 d->Button("Okay");
@@ -205,8 +205,8 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
         else
         {
             char str[STRLENGTH];
-            sprintf(str, "Employee '%s' is inactive.  What do you want to do?",
-                    user->system_name.Value());
+            snprintf(str, STRLENGTH, "Employee '%s' is inactive.  What do you want to do?",
+                     user->system_name.Value());
             SimpleDialog *d = new SimpleDialog(str);
             d->Button("Reactivate this employee", "activate");
             d->Button("Completely remove employee", "delete");

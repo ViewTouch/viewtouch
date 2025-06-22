@@ -94,12 +94,12 @@ int DrawerObj::Render(Terminal *term)
         case DRAWER_BALANCED:
             if (drawer->total_difference > 0)
             {
-                sprintf(str, "+ %s", term->FormatPrice(drawer->total_difference));
+                snprintf(str, STRLENGTH, "+ %s", term->FormatPrice(drawer->total_difference));
                 c = COLOR_BLUE;
             }
             else if (drawer->total_difference < 0)
             {
-                sprintf(str, "- %s", term->FormatPrice(-drawer->total_difference));
+                snprintf(str, STRLENGTH, "- %s", term->FormatPrice(-drawer->total_difference));
                 c = COLOR_RED;
             }
             else
@@ -126,15 +126,15 @@ int DrawerObj::Render(Terminal *term)
     }
     else if (drawer->serial_number == ALL_DRAWERS)
     {
-        sprintf(str, "All Drawers");
+        snprintf(str, STRLENGTH, "All Drawers");
     }
     else if (drawer->term)
     {
-        sprintf(str, drawer->term->name.Value());
+        snprintf(str, STRLENGTH, "%s", drawer->term->name.Value());
     }
     else
     {
-        sprintf(str, "%s %d", term->Translate("Drawer"), drawer->number);
+        snprintf(str, STRLENGTH, "%s %d", term->Translate("Drawer"), drawer->number);
     }
     
     c = COLOR_WHITE;
@@ -640,7 +640,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
             else
                 strcpy(tm1, term->Translate("System Start"));
             term->TimeDate(tm2, archive->end_time, TD4);
-            sprintf(str, "%s  -  %s", tm1, tm2);
+            snprintf(str, STRLENGTH, "%s  -  %s", tm1, tm2);
         }
         report->TextC(str);
 
