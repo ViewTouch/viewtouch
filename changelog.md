@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 - cmake: `gen_compiler_tag`: handle Clang compiler to contain compiler version #163
+- Button Properties Dialog: Updated font choices to provide better progression for scalable fonts, moved away from legacy bitmapped font limitations to more appropriate scalable font sizes
+- Dialog fonts: Applied temporary fix changing oversized dialog text from Times 34 to Times 24 Bold in MessageDialog, DialogZone, CreditCardEntryDialog, OpenTabDialog, SimpleDialog, and CreditCardDialog classes
+- Global Button Font: Changed default from Times 24 to Times 24 Bold in ZoneDB constructor
 
 ### Removed
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127

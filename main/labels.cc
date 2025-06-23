@@ -259,6 +259,8 @@ int ColorValue[] = {
     COLOR_DK_BLUE, COLOR_DK_TEAL, COLOR_DK_MAGENTA, COLOR_DK_SEAGREEN,
     COLOR_CLEAR, -1};
 
+// Updated font choices to provide better progression for scalable fonts in Button Properties Dialog
+// Moved away from legacy bitmapped font limitations to more appropriate scalable font sizes
 const genericChar* FontName[] = {
     "Default", "Times 14", "Times 14 Bold", "Times 18", "Times 18 Bold",
     "Times 20", "Times 20 Bold", "Times 24", "Times 24 Bold",
