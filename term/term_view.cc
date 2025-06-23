@@ -2075,7 +2075,9 @@ int SaveToPPM()
     }
 
     // Log the action
-    genericChar str[256];
+    // FIXED: Increased buffer from 256 to 512 bytes to prevent format truncation
+    // Compiler warned: format string + max filename (255 chars) could exceed 256-byte buffer
+    genericChar str[512];  // Increased buffer size to prevent truncation
     snprintf(str, sizeof(str), "Saving screen image to file '%s'", filename);
     ReportError(str);
 
@@ -2489,10 +2491,15 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         if (FontInfo[f] == NULL)
         {
             // Fallback to default font if scalable font fails
+            // ADDED: Enhanced error messaging per PR review feedback - helps users debug font issues
+            // Requested: "add a message that we're using a fallback font and which font we didn't find"
+            snprintf(str, sizeof(str), "Warning: Could not load font '%s', falling back to default", scalable_font_name);
+            ReportError(str);
             FontInfo[f] = XftFontOpenName(Dis, ScrNo, "Times:size=24:style=regular");
             if (FontInfo[f] == NULL)
             {
-                snprintf(str, sizeof(str), "Can't load scalable font '%s'", scalable_font_name);
+                // IMPROVED: More specific error message - shows which fallback failed, not original font
+                snprintf(str, sizeof(str), "Can't load fallback font 'Times:size=24:style=regular'");
                 ReportError(str);
                 return 1;
             }
@@ -2510,19 +2517,22 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     // Create Window
     int n = 0;
     Arg args[16];
-    XtSetArg(args[n], "visual",       ScrVis); ++n;
+    // FIXED: const_cast needed for X11/Motif compatibility
+    // Modern C++ string literals are 'const char*' but X11 expects 'char*'
+    // const_cast safely removes const qualifier for legacy library compatibility
+    XtSetArg(args[n], const_cast<char*>("visual"),       ScrVis); ++n;
     XtSetArg(args[n], XtNdepth,       ScrDepth); ++n;
-    //XtSetArg(args[n], "mappedWhenManaged", False); ++n;
+    //XtSetArg(args[n], const_cast<char*>("mappedWhenManaged"), False); ++n;
     XtSetArg(args[n], XtNx,           0); ++n;
     XtSetArg(args[n], XtNy,           0); ++n;
     XtSetArg(args[n], XtNwidth,       WinWidth); ++n;
     XtSetArg(args[n], XtNheight,      WinHeight); ++n;
     XtSetArg(args[n], XtNborderWidth, 0); ++n;
-    XtSetArg(args[n], "minWidth",     WinWidth); ++n;
-    XtSetArg(args[n], "minHeight",    WinHeight); ++n;
-    XtSetArg(args[n], "maxWidth",     WinWidth); ++n;
-    XtSetArg(args[n], "maxHeight"   , WinHeight); ++n;
-    XtSetArg(args[n], "mwmDecorations", 0); ++n;
+    XtSetArg(args[n], const_cast<char*>("minWidth"),     WinWidth); ++n;
+    XtSetArg(args[n], const_cast<char*>("minHeight"),    WinHeight); ++n;
+    XtSetArg(args[n], const_cast<char*>("maxWidth"),     WinWidth); ++n;
+    XtSetArg(args[n], const_cast<char*>("maxHeight"),    WinHeight); ++n;
+    XtSetArg(args[n], const_cast<char*>("mwmDecorations"), 0); ++n;
 
     MainShell = XtAppCreateShell("POS", "viewtouch",
                                  applicationShellWidgetClass, Dis, args, n);
@@ -2629,7 +2639,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
             Texture[image] = pixmap;
         else
         {
-            snprintf(str, sizeof(str), "Can't Create Pixmap #%d On Display '%s'",
+            sprintf(str, "Can't Create Pixmap #%d On Display '%s'",
                     image, display);
             ReportError(str);
             return 1;

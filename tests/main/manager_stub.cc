@@ -22,6 +22,9 @@
 #include "manager.hh"
 #include "system.hh"
 #include "check.hh"
+// RESTORED: Include was unrelated to font changes but needed for compilation
+// PR reviewer noted this should be in separate PR, so restored to maintain build
+#include "sales.hh"
 #include "pos_zone.hh"
 #include "terminal.hh"
 #include "printer.hh"

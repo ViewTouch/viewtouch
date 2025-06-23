@@ -596,7 +596,8 @@ PageDialog::PageDialog(Widget parent)
     open      = 0;
 
     Arg args[9];
-    XtSetArg(args[0], XmNtitle, "Page & Button Property Defaults Dialog");
+    // FIXED: const_cast for Motif dialog title - X11/Motif expects char* not const char*
+    XtSetArg(args[0], XmNtitle, const_cast<char*>("Page & Button Property Defaults Dialog"));
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
     dialog = XmCreateFormDialog(parent, (char*)"page dialog", args, 3);
@@ -773,7 +774,9 @@ DefaultDialog::DefaultDialog(Widget parent)
     open      = 0;
 
     Arg args[9];
-    XtSetArg(args[0], XmNtitle, "Global Page Property Defaults");
+    // FIXED: const_cast for dialog titles throughout this file (6 total instances)
+    // All Motif dialog creation requires char* for title strings
+    XtSetArg(args[0], XmNtitle, const_cast<char*>("Global Page Property Defaults"));
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
     dialog = XmCreateFormDialog(parent, (char*)"Global Page & Button Properties Dialog", args, 3);
@@ -967,7 +970,7 @@ ZoneDialog::ZoneDialog(Widget parent)
     states = 2;
 
     Arg args[6];
-    XtSetArg(args[0], XmNtitle, "Button Properties Dialog");
+    XtSetArg(args[0], XmNtitle, const_cast<char*>("Button Properties Dialog"));
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
     dialog = XmCreateFormDialog(parent, (char*)"singlezone dialog", args, 3);
@@ -1368,7 +1371,7 @@ MultiZoneDialog::MultiZoneDialog(Widget parent)
 {
     open = 0;
     Arg args[6];
-    XtSetArg(args[0], XmNtitle, "Multi-Button Property Dialog");
+    XtSetArg(args[0], XmNtitle, const_cast<char*>("Multi-Button Property Dialog"));
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
     dialog = XmCreateFormDialog(parent, (char*)"multizone dialog", args, 3);
@@ -1487,7 +1490,7 @@ TranslateDialog::TranslateDialog(Widget parent)
     count = 0;
 
     Arg args[6];
-    XtSetArg(args[0], XmNtitle, "Button Translation");
+    XtSetArg(args[0], XmNtitle, const_cast<char*>("Button Translation"));
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
     dialog = XmCreateFormDialog(parent, (char*)"translate dialog", args, 3);
@@ -1581,7 +1584,7 @@ ListDialog::ListDialog(Widget parent)
     items = 0;
 
     Arg args[11];
-    XtSetArg(args[0], XmNtitle, "List of Pages; Select Any Page to View and Visit it");
+    XtSetArg(args[0], XmNtitle, const_cast<char*>("List of Pages; Select Any Page to View and Visit it"));
     dialog = XmCreateFormDialog(parent, (char*)"pagelist dialog", args, 1);
 
     Widget w, buttons;
