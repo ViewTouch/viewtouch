@@ -127,7 +127,9 @@ int GetInterfaceInfo(char* stringbuff, int stringlen)
 /*******
  * MacToString:  
  *******/
-int MacToString(char* macstr, int maxlen, unsigned const char* mac)
+// FIXED: Corrected parameter type from 'unsigned const char*' to 'const unsigned char*'
+// In C++, the correct syntax puts 'const' qualifier first
+int MacToString(char* macstr, int maxlen, const unsigned char* mac)
 {
     int retval = 0;
     int idx;

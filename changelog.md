@@ -6,14 +6,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Scalable Font Support**: Implemented Xft (X FreeType) font rendering system for resolution-independent text display
+  - Added XftFont loading with automatic fallback to default fonts when requested fonts are unavailable  
+  - Integrated XftTextExtentsUtf8 for accurate scalable font text measurement in UI layout calculations
+  - Added XftDrawStringUtf8 rendering with preserved 3D embossed text effects (shadow, highlight, main text)
+  - Enhanced error reporting with specific font loading failure messages and fallback notifications
+- **Modern C++ Type Safety**: Implemented proper type casting practices throughout font rendering subsystem
+  - Added reinterpret_cast for safe conversion between char* and unsigned char* pointer types
+  - Added const_cast for legacy X11/Motif library compatibility while maintaining const correctness
 
 ### Changed
 - cmake: `gen_compiler_tag`: handle Clang compiler to contain compiler version #163
+- **Font System Migration**: Migrated from legacy bitmapped fonts to scalable Xft outline fonts for improved rendering quality and resolution independence
+  - Core text rendering in `term/layer.cc` now uses XftTextExtentsUtf8 and XftDrawStringUtf8 for scalable font measurement and rendering
+  - Terminal initialization in `term/term_view.cc` loads scalable fonts via XftFontOpenName with fallback support
+  - Loader interface in `loader/loader_main.cc` updated to use Xft font rendering for startup messages
+  - UI layout calculations in `main/manager.cc` use Xft text measurement for accurate scalable font sizing
+- Button Properties Dialog: Updated font choices to provide better progression for scalable fonts, moved away from legacy bitmapped font limitations to more appropriate scalable font sizes
+- Dialog fonts: Applied temporary fix changing oversized dialog text from Times 34 to Times 24 Bold in MessageDialog, DialogZone, CreditCardEntryDialog, OpenTabDialog, SimpleDialog, and CreditCardDialog classes
+- Global Button Font: Changed default from Times 24 to Times 24 Bold in ZoneDB constructor
+- **Cast Modernization**: Updated C-style casts to modern C++ style casts throughout font rendering code
+  - Changed `(unsigned const char*)` casts to `reinterpret_cast<const unsigned char*>()` for Xft function compatibility
+  - Replaced legacy `(String)` casts with safer `const_cast<char*>()` for X11/Motif string arguments
+- **Error Message Enhancement**: Improved font loading diagnostics with detailed fallback notifications and specific error reporting for missing scalable fonts
 
 ### Removed
+- **Documentation Files**: Removed `SCALABLE_FONTS_MIGRATION.md` per PR review feedback - migration documentation better suited for PR descriptions rather than repository files
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
 
 ### Fixed
+- **Font System Build Errors**: Resolved compilation failures preventing scalable font system from building
+  - Fixed `invalid 'static_cast' from type 'const char*' to type 'const unsigned char*'` errors in text rendering functions
+  - Corrected type casting issues in `term/layer.cc`, `loader/loader_main.cc`, and `main/manager.cc` for Xft font compatibility
+  - Fixed parameter type syntax error in `main/license_hash.cc` (`unsigned const char*` → `const unsigned char*`)
+- **Compiler Warnings**: Eliminated 50+ warnings that were cluttering build output
+  - Fixed ISO C++ string constant warnings: "forbids converting a string constant to 'String'" in X11/Motif code
+  - Resolved format truncation warnings by increasing buffer sizes in `term/term_view.cc` and other files
+  - Applied `const_cast<char*>()` fixes for X11/Motif compatibility in widget creation and dialog titles
+- **Build System**: Ensured complete compilation of all executables (vt_main, vt_term, vt_print, vt_cdu) and test suite
+- **Code Documentation**: Added comprehensive inline comments explaining all font system changes, cast fixes, and compatibility requirements for future maintenance
 - fix configure step by searching for `PkgConfig` before using `pkg_check_module` #128
 - update embedded `catch.hpp` to `v2.13.10` to fix compilation on Ubuntu 20.04 and newer #131
 - fix `TimeInfo.Set(date_string)` function fixing `RunReport` `to`/`from` fields and C++20 compatibility #145

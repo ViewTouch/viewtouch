@@ -79,7 +79,7 @@ MessageDialog::MessageDialog(const char* text)
     color[0]   = COLOR_BLACK;
     frame[0]   = ZF_RAISED;
     texture[0] = IMAGE_LITE_WOOD;
-    font       = FONT_TIMES_34;
+    font       = FONT_TIMES_24B; // Changed from FONT_TIMES_34 - temporary fix for oversized dialog text
     shadow     = 16;
     h          = 360;
     w          = 600;
@@ -127,7 +127,7 @@ DialogZone::DialogZone()
     color[0]   = COLOR_BLACK;
     frame[0]   = ZF_RAISED;
     texture[0] = IMAGE_LITE_WOOD;
-    font       = FONT_TIMES_34;
+    font       = FONT_TIMES_24B; // Changed from FONT_TIMES_34 - temporary fix for oversized dialog text
     shadow     = 16;
 }
 
@@ -304,7 +304,7 @@ int SimpleDialog::RenderInit(Terminal *term, int update_flag)
 
         // set up sizes based on the number of buttons
         if ( bcount < 3 )
-            zofont = FONT_TIMES_34B;
+            zofont = FONT_TIMES_24B; // Changed from FONT_TIMES_34B - temporary fix for oversized dialog text
         else if ( bcount < 7 )
             zofont = FONT_TIMES_24B;
         else if ( bcount < 11 )
@@ -1645,7 +1645,7 @@ RenderResult CreditCardEntryDialog::Render(Terminal *term, int update_flag)
     FnTrace("CreditCardEntryDialog::Render()");
     RenderResult retval = RENDER_OKAY;
 
-    font       = FONT_TIMES_34;
+    font       = FONT_TIMES_24B; // Changed from FONT_TIMES_34 - temporary fix for oversized dialog text
     retval = TenKeyDialog::Render(term, update_flag);
 
     return retval;
@@ -2262,7 +2262,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
                 font_color = color_success;
             else
                 font_color = color_error;
-            font = FONT_TIMES_34B;
+            font = FONT_TIMES_24B; // Changed from FONT_TIMES_34B - temporary fix for oversized dialog text
             TextC(term, 4, str, font_color);
         }
     }
@@ -3184,7 +3184,7 @@ OpenTabDialog::OpenTabDialog(CustomerInfo *custinfo)
 {
     FnTrace("OpenTabDialog::OpenTabDialog()");
 
-    main_font = FONT_TIMES_34;
+    main_font = FONT_TIMES_24B; // Changed from FONT_TIMES_34 - temporary fix for oversized dialog text
     entry_font = FONT_TIMES_24B;
 
     customer = custinfo;

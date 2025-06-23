@@ -393,7 +393,10 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
         {
             // Use Xft for text width measurement
             XGlyphInfo extents;
-            XftTextExtentsUtf8(dis, font_info, (unsigned const char*)string, i, &extents);
+            // FIXED: Changed static_cast to reinterpret_cast - static_cast cannot convert 
+            // between unrelated pointer types (const char* to const unsigned char*)
+            // Xft functions require unsigned char* but we work with char* strings
+            XftTextExtentsUtf8(dis, font_info, reinterpret_cast<const unsigned char*>(string), i, &extents);
             if (extents.width <= max_pixel_width)
                 break;
         }
@@ -407,7 +410,9 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
 
     // Use Xft for text width measurement
     XGlyphInfo extents;
-    XftTextExtentsUtf8(dis, font_info, (unsigned const char*)string, len, &extents);
+    // FIXED: reinterpret_cast needed for Xft compatibility - converts const char* to const unsigned char*
+    // for scalable font text measurement (part of font system migration from bitmapped to Xft fonts)
+    XftTextExtentsUtf8(dis, font_info, reinterpret_cast<const unsigned char*>(string), len, &extents);
     int tw = extents.width;
     
     if (align == ALIGN_CENTER)
@@ -455,22 +460,26 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
     XftColorAllocValue(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), 
                        &renderColorT, &xftColorT);
     
-    // Preserve the embossed text effect using Xft
+    // Preserve the embossed text effect using Xft scalable fonts
+    // FIXED: All three XftDrawStringUtf8 calls use reinterpret_cast for type compatibility
+    // Changed from static_cast which failed compilation - reinterpret_cast required for 
+    // unrelated pointer type conversion (const char* to const unsigned char*)
+    
     // 1. Shadow (darker, offset down-right)
     XftDrawStringUtf8(xftdraw, &xftColorH, font_info, tx - 1, ty - 1,
-                      (unsigned const char*)string, len);
+                      reinterpret_cast<const unsigned char*>(string), len);
     if (ul)
         XDrawLine(dis, pix, gfx, tx - 1, yy - 1, xx - 1, yy - 1);
 
     // 2. Highlight (lighter, offset up-left)
     XftDrawStringUtf8(xftdraw, &xftColorS, font_info, tx + 1, ty + 1,
-                      (unsigned const char*)string, len);
+                      reinterpret_cast<const unsigned char*>(string), len);
     if (ul)
         XDrawLine(dis, pix, gfx, tx + 1, yy + 1, xx + 1, yy + 1);
 
     // 3. Main text (normal position)
     XftDrawStringUtf8(xftdraw, &xftColorT, font_info, tx, ty,
-                      (unsigned const char*)string, len);
+                      reinterpret_cast<const unsigned char*>(string), len);
     if (ul)
         XDrawLine(dis, pix, gfx, tx, yy, xx, yy);
     
@@ -515,7 +524,8 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
             sub_string[line] = c;
             // Use Xft for text width measurement
             XGlyphInfo extents;
-            XftTextExtentsUtf8(dis, font_info, (unsigned const char*)c, len, &extents);
+            // FIXED: reinterpret_cast for Xft word-wrapping text measurement
+            XftTextExtentsUtf8(dis, font_info, reinterpret_cast<const unsigned char*>(c), len, &extents);
             if (extents.width <= tw)
             {
                 sub_length[line] = len;
@@ -533,7 +543,8 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
             int lw;
             for (lw = len; lw > 0; --lw)
             {
-                XftTextExtentsUtf8(dis, font_info, (unsigned const char*)c, lw, &extents);
+                // FIXED: reinterpret_cast for word break detection in text wrapping
+                XftTextExtentsUtf8(dis, font_info, reinterpret_cast<const unsigned char*>(c), lw, &extents);
                 if (isspace(c[lw]) && !isspace(c[lw-1]) && (extents.width <= tw))
                 {
                     break;
@@ -544,7 +555,8 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
                 // Truncate name
                 for (lw = len; lw > 1; --lw)
                 {
-                    XftTextExtentsUtf8(dis, font_info, (unsigned const char*)c, lw, &extents);
+                    // FIXED: reinterpret_cast for text truncation measurement
+                    XftTextExtentsUtf8(dis, font_info, reinterpret_cast<const unsigned char*>(c), lw, &extents);
                     if (extents.width <= tw)
                         break;
                 }

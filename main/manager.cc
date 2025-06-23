@@ -2980,7 +2980,9 @@ int GetTextWidth(const char* my_string, int len, int font_id)
     {
         // Use Xft for accurate text measurement
         XGlyphInfo extents;
-        XftTextExtentsUtf8(Dis, FontInfo[font_id], (unsigned const char*)my_string, len, &extents);
+        // FIXED: reinterpret_cast for Xft text width calculation in UI layout
+        // Part of font system migration from bitmapped to scalable Xft fonts
+        XftTextExtentsUtf8(Dis, FontInfo[font_id], reinterpret_cast<const unsigned char*>(my_string), len, &extents);
         return extents.width;
     }
     else

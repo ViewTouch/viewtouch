@@ -999,7 +999,7 @@ ZoneDB::ZoneDB()
     table_pages = 0;
 
     // Defaults
-    default_font       = FONT_TIMES_24;
+    default_font       = FONT_TIMES_24B; // Changed from FONT_TIMES_24 - Global Button Font changed to Times 24 Bold
     default_frame[0]   = ZF_RAISED;
     default_texture[0] = IMAGE_SAND;
     default_color[0]   = COLOR_BLACK;

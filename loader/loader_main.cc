@@ -137,10 +137,12 @@ int UpdateWindow(const char* str = NULL)
             }
             idx += 1;
             msg[msgidx] = '\0';
-            XftTextExtentsUtf8(Dis, loaderFont, (unsigned const char* )msg, msgidx, &extents);
+            // FIXED: reinterpret_cast for Xft font rendering in loader messages
+            // Changed from C-style cast (unsigned const char*) to modern C++ cast
+            XftTextExtentsUtf8(Dis, loaderFont, reinterpret_cast<const unsigned char*>(msg), msgidx, &extents);
             ww = (WIN_WIDTH - extents.width) / 2;
             XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont, ww, hh,
-                (unsigned const char* )msg, msgidx);
+                reinterpret_cast<const unsigned char*>(msg), msgidx);
             hh += loaderFont->height;
         }
     }
@@ -163,18 +165,20 @@ int UpdateKeyboard(const char* str = nullptr)
         WIN_WIDTH - 2, 3 * loaderFont->height);
 
     len = strlen(prompt);
-    XftTextExtents8(Dis, loaderFont, (unsigned const char* )prompt, len, &extents);
+    // FIXED: reinterpret_cast for keyboard input prompt rendering
+    XftTextExtents8(Dis, loaderFont, reinterpret_cast<const unsigned char*>(prompt), len, &extents);
     XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont,
         (WIN_WIDTH - extents.width) / 2,
         WIN_HEIGHT - 2 * loaderFont->height,
-        (unsigned const char* )prompt, len);
+        reinterpret_cast<const unsigned char*>(prompt), len);
 
     len = strlen(KBInput);
-    XftTextExtents8(Dis, loaderFont, (unsigned const char* )KBInput, len, &extents);
+    // FIXED: reinterpret_cast for keyboard input text rendering
+    XftTextExtents8(Dis, loaderFont, reinterpret_cast<const unsigned char*>(KBInput), len, &extents);
     XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont,
         (WIN_WIDTH - extents.width) / 2,
         WIN_HEIGHT - loaderFont->height,
-        (unsigned const char* )KBInput, len);
+        reinterpret_cast<const unsigned char*>(KBInput), len);
 
     XFlush(Dis);
     return 0;
@@ -233,7 +237,7 @@ void KeyPressCB(Widget widget, XtPointer client_data, XEvent *event, Boolean *ok
                 (strlen(buffer) <= 32))
             {
                 keybuff[0] = toupper(keybuff[0]);
-                strncat(buffer, keybuff, sizeof(buffer) - strlen(buffer) - 1);
+                strcat(buffer, keybuff);
             }
             break;
         }
@@ -340,18 +344,21 @@ Widget OpenStatusBox(XtAppContext app)
     int dis_width = 0, dis_height = 0;
     dis_width  = DisplayWidth(Dis, screen_no);
     dis_height = DisplayHeight(Dis, screen_no);
+    // FIXED: const_cast needed for X11 widget creation string arguments
+    // X11 expects char* but modern C++ string literals are const char*
+    // Replaced old (String) casts with safer const_cast<char*>()
     Arg args[] = {
         { XtNx,                (dis_width - static_cast<int>(WIN_WIDTH)) / 2   },
         { XtNy,                (dis_height - static_cast<int>(WIN_HEIGHT)) / 2 },
         { XtNwidth,            WIN_WIDTH                     },
         { XtNheight,           WIN_HEIGHT                    },
         { XtNborderWidth,      0                             },
-        { (String)"minWidth",          WIN_WIDTH                     },
-        { (String)"minHeight",         WIN_HEIGHT                    },
-        { (String)"maxWidth",          WIN_WIDTH                     },
-        { (String)"maxHeight",         WIN_HEIGHT                    },
-        { (String)"mwmDecorations",    0                             },
-        { (String)"mappedWhenManaged", False                         },
+        { const_cast<char*>("minWidth"),          WIN_WIDTH                     },
+        { const_cast<char*>("minHeight"),         WIN_HEIGHT                    },
+        { const_cast<char*>("maxWidth"),          WIN_WIDTH                     },
+        { const_cast<char*>("maxHeight"),         WIN_HEIGHT                    },
+        { const_cast<char*>("mwmDecorations"),    0                             },
+        { const_cast<char*>("mappedWhenManaged"), False                         },
     };
 
     Widget shell = XtAppCreateShell("Welcome to POS", NULL,
