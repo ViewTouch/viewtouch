@@ -11,6 +11,7 @@
 #include <cassert>
 
 #include "conf_file.hh"
+#include "basic.hh"  // REFACTOR: Added for Flt type definition
 
 #include <iostream> // temp
 #include <sstream> // stringstream
@@ -325,6 +326,35 @@ bool ConfFile::GetValue(int &value, const std::string &key, const std::string &s
     ss >> value;
     if (ss.fail()) // indicate a parser error
         return false;
+    return true;
+}
+
+// REFACTOR: Added GetValue overload for Flt (float) type
+bool ConfFile::GetValue(Flt &value, const std::string &key, const std::string &section) const
+{
+    std::string val;
+
+    if (! GetValue(val, key, section))
+        return false;
+
+    if (val.empty())
+        return false;
+
+    std::istringstream ss(val);
+    ss.imbue(std::locale::classic()); // use "C" locale
+    ss >> value;
+    if (ss.fail())
+    {
+        try
+        {
+            // handle 'inf' and '-inf' values - convert to float  
+            value = static_cast<Flt>(stod(val));  // REFACTOR: Cast double to Flt
+        } catch (const std::invalid_argument &)
+        {
+            // can't convert, return false
+            return false;
+        }
+    }
     return true;
 }
 

@@ -35,7 +35,7 @@ static const genericChar* PageName[] = {
     "Days of Week", "Abrv. Days of Week", "Months", "Abrv. Months",
     "General", "Greetings", "Statements", "Commands", "Errors",
     "Meal Period Index Names", "Jobs", "Families 1", "Families 2",
-    "Card Terms","Card Expressions 1", "Card Expressions 2", NULL };
+    "Card Terms","Card Expressions 1", "Card Expressions 2", nullptr };
 
 
 /**** PhraseZone Class ****/
@@ -117,7 +117,7 @@ int PhraseZone::SaveRecord(Terminal *t, int record, int write_file)
     if (record == 11 || record == 12)
     {
         t->SendTranslations(FamilyName);
-        t->system_data->phrases_changed = time(NULL);
+        t->system_data->phrases_changed = time(nullptr);
     }
 
     return 0;

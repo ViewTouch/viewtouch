@@ -6,8 +6,7 @@
  * Terminal Display module
  */
 
-#ifndef _TERM_VIEW_HH
-#define _TERM_VIEW_HH
+#pragma once  // REFACTOR: Replaced #ifndef _TERM_VIEW_HH guard with modern pragma once
 
 #include "list_utility.hh"
 #include "utility.hh"
@@ -295,8 +294,6 @@ extern long long RLLong();
 extern int   WFlt(Flt val);
 extern Flt   RFlt();
 extern int   WStr(const char* s, int len = 0);
-extern genericChar* RStr(genericChar* s = NULL);
+extern genericChar* RStr(genericChar* s = nullptr);
 extern int   SendNow();
-
-#endif
 

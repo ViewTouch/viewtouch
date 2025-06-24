@@ -49,7 +49,7 @@ int main(int argc, const genericChar* *argv)
     int is_local = 0;
     int term_hardware = 0;
     genericChar display[256] = "";
-    TouchScreen *ts = NULL;
+    TouchScreen *ts = nullptr;
     int set_width = -1;
     int set_height = -1;
 
@@ -127,7 +127,7 @@ int main(int argc, const genericChar* *argv)
     if (argc >= 7)
         set_height = atoi(argv[6]);
 
-    if (strchr(display, ':') == NULL)
+    if (strchr(display, ':') == nullptr)
         strncat(display, ":0", sizeof(display) - strlen(display) - 1);
 
     // if OpenTerm() returns there must be an error

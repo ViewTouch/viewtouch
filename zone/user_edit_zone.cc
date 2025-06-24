@@ -59,7 +59,7 @@ UserEditZone::UserEditZone()
     AddListField("Job", JobName, JobValue);
     AddListField("Pay Rate", PayRateName, PayRateValue);
     AddTextField("Amount", 7);
-    AddListField("Start Page", NULL);
+    AddListField("Start Page", nullptr);
     AddTextField("Department", 8);
     Color(COLOR_RED);
     AddButtonField("Remove This Job", "killjob1");
@@ -72,7 +72,7 @@ UserEditZone::UserEditZone()
     AddListField("Job", JobName, JobValue);
     AddListField("Pay Rate", PayRateName, PayRateValue);
     AddTextField("Amount", 7);
-    AddListField("Start Page", NULL);
+    AddListField("Start Page", nullptr);
     AddTextField("Department", 8);
     Color(COLOR_RED);
     AddButtonField("Remove This Job", "killjob2");
@@ -85,7 +85,7 @@ UserEditZone::UserEditZone()
     AddListField("Job", JobName, JobValue);
     AddListField("Pay Rate", PayRateName, PayRateValue);
     AddTextField("Amount", 7);
-    AddListField("Start Page", NULL);
+    AddListField("Start Page", nullptr);
     AddTextField("Department", 8);
     Color(COLOR_RED);
     AddButtonField("Remove This Job", "killjob3");
@@ -144,7 +144,7 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
     FnTrace("UserEditZone::Signal()");
     static const char* commands[] = {
         "active", "inactive", "clear password", "remove", "activate",
-        "addjob", "killjob1", "killjob2", "killjob3", NULL};
+        "addjob", "killjob1", "killjob2", "killjob3", nullptr};
     int idx = CompareList(message, commands);
 
     if (idx < 0)
@@ -166,7 +166,7 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
         return SIGNAL_OKAY;
     }
 
-    if (user == NULL)
+    if (user == nullptr)
         return SIGNAL_IGNORED;
 
     switch (idx)
@@ -234,7 +234,7 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
             JobInfo *j = new JobInfo;
             user->Add(j);
             LoadRecord(term, record_no);
-            keyboard_focus = NULL;
+            keyboard_focus = nullptr;
             Draw(term, 0);
         }
         break;
@@ -246,7 +246,7 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
             user->Remove(j);
             delete j;
             LoadRecord(term, record_no);
-            keyboard_focus = NULL;
+            keyboard_focus = nullptr;
             Draw(term, 0);
         }
         break;
@@ -258,7 +258,7 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
             user->Remove(j);
             delete j;
             LoadRecord(term, record_no);
-            keyboard_focus = NULL;
+            keyboard_focus = nullptr;
             Draw(term, 0);
         }
         break;
@@ -270,7 +270,7 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
             user->Remove(j);
             delete j;
             LoadRecord(term, record_no);
-            keyboard_focus = NULL;
+            keyboard_focus = nullptr;
             Draw(term, 0);
         }
         break;
@@ -304,7 +304,7 @@ int UserEditZone::AddStartPages(Terminal *term, FormField *field)
 
     int last_page = 0;
     field->ClearEntries();
-    for (Page *p = term->zone_db->PageList(); p != NULL; p = p->next)
+    for (Page *p = term->zone_db->PageList(); p != nullptr; p = p->next)
     {
         if (p->IsStartPage() && p->id != last_page)
         {
@@ -325,7 +325,7 @@ int UserEditZone::LoadRecord(Terminal *term, int record)
     FnTrace("UserEditZone::LoadRecord()");
     System *sys = term->system_data;
     Employee *e = sys->user_db.FindByRecord(term, record, view_active);
-    if (e == NULL)
+    if (e == nullptr)
         return 1;
 
     Settings *s = &(sys->settings);
@@ -414,7 +414,7 @@ int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
         f->Get(e->description); f = f->next;
         f->Get(e->employee_no); f = f->next;
 
-        for (JobInfo *j = e->JobList(); j != NULL; j = j->next)
+        for (JobInfo *j = e->JobList(); j != nullptr; j = j->next)
         {
             f = f->next;
             f->Get(j->job); f = f->next;
@@ -453,11 +453,11 @@ int UserEditZone::NewRecord(Terminal *term)
 int UserEditZone::KillRecord(Terminal *term, int record)
 {
     FnTrace("UserEditZone::KillRecord()");
-    if (user == NULL || term->IsUserOnline(user))
+    if (user == nullptr || term->IsUserOnline(user))
         return 1;
     term->system_data->user_db.Remove(user);
     delete user;
-    user = NULL;
+    user = nullptr;
     return 0;
 }
 
@@ -499,20 +499,20 @@ JobSecurityZone::JobSecurityZone()
     columns     = 11;
     int i;
 
-    for (i = 1; JobName[i] != NULL; ++i)
+    for (i = 1; JobName[i] != nullptr; ++i)
     {
         AddLabel(JobName[i], 17);
-        AddListField("", MarkName, NULL, 0, 4);
+        AddListField("", MarkName, nullptr, 0, 4);
         AddSpace(1);
-        AddListField("", MarkName, NULL, 0, 7);
-        AddListField("", MarkName, NULL, 0, 7);
-        AddListField("", MarkName, NULL, 0, 7);
-        AddListField("", MarkName, NULL, 0, 7);
-        AddListField("", MarkName, NULL, 0, 7);
-        AddListField("", MarkName, NULL, 0, 7);
-        AddListField("", MarkName, NULL, 0, 7);
-        AddListField("", MarkName, NULL, 0, 7);
-        AddListField("", MarkName, NULL, 0, 7);
+        AddListField("", MarkName, nullptr, 0, 7);
+        AddListField("", MarkName, nullptr, 0, 7);
+        AddListField("", MarkName, nullptr, 0, 7);
+        AddListField("", MarkName, nullptr, 0, 7);
+        AddListField("", MarkName, nullptr, 0, 7);
+        AddListField("", MarkName, nullptr, 0, 7);
+        AddListField("", MarkName, nullptr, 0, 7);
+        AddListField("", MarkName, nullptr, 0, 7);
+        AddListField("", MarkName, nullptr, 0, 7);
         AddNewLine();
     }
 }
@@ -559,7 +559,7 @@ int JobSecurityZone::DisablingCategory()
     int counter      = 0;
     int is_active    = 0;  // container for the field's value
 
-    while (field != NULL && retval == 0)
+    while (field != nullptr && retval == 0)
     {
         // Every 'columns' columns, we have the label.  The next
         // field over is the "active" field for the current job,
@@ -577,7 +577,7 @@ int JobSecurityZone::DisablingCategory()
                 retval = ((counter - 1) / columns) + 1;
             }
         }
-        if (field != NULL)
+        if (field != nullptr)
             field = field->next;
         counter += 1;
     }
@@ -592,14 +592,14 @@ int JobSecurityZone::EmployeeIsUsing(Terminal *term, int active_job)
 {
     FnTrace("JobSecurityZone::EmployeeIsUsing()");
     int retval = 0;
-    Employee *employee   = NULL;
-    JobInfo  *jobinfo    = NULL;
+    Employee *employee   = nullptr;
+    JobInfo  *jobinfo    = nullptr;
 
     employee = MasterSystem->user_db.UserList();
-    while (employee != NULL && retval == 0)
+    while (employee != nullptr && retval == 0)
     {
         jobinfo = employee->JobList();
-        while (jobinfo != NULL && retval == 0)
+        while (jobinfo != nullptr && retval == 0)
         {
             if (jobinfo->job == active_job)
                 retval = 1;
@@ -616,19 +616,19 @@ SignalResult JobSecurityZone::Signal(Terminal *term, const char* message)
 {
     FnTrace("JobSecurityZone::Signal()");
     SignalResult retval = SIGNAL_IGNORED;
-    static const genericChar* commands[] = { "jsz_no", "jsz_yes", NULL};
+    static const genericChar* commands[] = { "jsz_no", "jsz_yes", nullptr};
     int idx = CompareListN(commands, message);
 
     switch (idx)
     {
     case 0:
-        last_focus = NULL;
+        last_focus = nullptr;
         break;
     case 1:
-        if (last_focus != NULL)
+        if (last_focus != nullptr)
         {
             keyboard_focus = last_focus;
-            last_focus = NULL;
+            last_focus = nullptr;
             keyboard_focus->Touch(term, this, keyboard_focus->x + 1, keyboard_focus->y + 1);
             UpdateForm(term, 0);
             Draw(term, 0);
@@ -647,7 +647,7 @@ SignalResult JobSecurityZone::Touch(Terminal *term, int tx, int ty)
     FnTrace("JobSecurityZone::Touch()");
     int active_cat        = 0;
     int is_used           = 0;
-    SimpleDialog *sdialog = NULL;
+    SimpleDialog *sdialog = nullptr;
     if (records <= 0)
         return SIGNAL_IGNORED;
     

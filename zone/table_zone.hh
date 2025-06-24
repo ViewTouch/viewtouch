@@ -18,8 +18,7 @@
  * Table page & table control zone objects
  */
 
-#ifndef _TABLE_ZONE_HH
-#define _TABLE_ZONE_HH
+#pragma once  // REFACTOR: Replaced #ifndef _TABLE_ZONE_HH guard with modern pragma once
 
 #include "check.hh"
 #include "customer.hh"
@@ -134,5 +133,3 @@ public:
 
     int MoveTables(Terminal *t, ServerTableObj *sto);
 };
-
-#endif

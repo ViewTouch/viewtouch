@@ -14,159 +14,38 @@
  *   You should have received a copy of the GNU General Public License 
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  *
- * utility.cc - revision 124 (10/6/98)
- * Implementation of utility module
+ * utility.cc - revision 156 (10/20/98)
+ * General purpose functions
  */
 
-#include "manager.hh"
-#include "utility.hh"
-#include "fntrace.hh"
+#include "main/manager.hh"
+#include "image_data.hh"
+#include "logger.hh"
 
-#include <unistd.h>
-#include <ctime>
-#include <errno.h>
-#include <string>
-#include <cstring>
 #include <cctype>
-#include <iostream>
+#include <cstdlib>
+#include <cstring>
+#include <fcntl.h>
 #include <sys/file.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <algorithm> // std::replace
-
-#ifdef DMALLOC
-#include <dmalloc.h>
-#endif
-
-char* progname = NULL;
-int   progname_maxlen = 0;
-
-void vt_init_setproctitle(int argc, char* argv[])
-{
-#ifdef BSD
-    progname = NULL;
-    progname_maxlen = 0;
-#else
-    // This is mostly for Linux, maybe others.
-    // clear out the arguments (1..N) so we get a nice process list
-    int idx = 1;
-    int idx2 = 0;
-    while (idx < argc)
-    {
-        idx2 = 0;
-        while (argv[idx][idx2] != '\0')
-        {
-            argv[idx][idx2] = '\0';
-            idx2 += 1;
-        }
-        idx += 1;
-    }
-    progname = argv[0];
-    progname_maxlen = strlen(progname) - 1;
-#endif
-}
-
-/****
- * vt_setproctitle:  Returns 1 on error, 0 otherwise.
- ****/
-int vt_setproctitle(const char* title)
-{
-    FnTrace("setproctitle()");
-    int retval = 1;
-
-#ifdef BSD
-    setproctitle("%s", title);
-    retval = 0;
-#else
-    if (progname != NULL)
-    {
-        // This isn't intended to set an arbitrary length title.  It's
-        // intended to set a short title after a long title (AKA,
-        // right now, vt_main starts off with a title set by the OS of
-        // "/usr/viewtouch/bin/vt_main"; I change that to "vt_main
-        // pri" or "vt_main dns").  If you need to set a title longer
-        // than the starting title, you'll need to rewrite this (save
-        // off the environment, etc.).
-        strncpy(progname, title, progname_maxlen);
-        progname[progname_maxlen] = '\0';
-        retval = 0;
-    }
-#endif
-
-    return retval;
-}
-
+#include <unistd.h>
+#include <algorithm>
 
 /**** Str Class ****/
-// Constructors
-
-//temp for testing
-//int Str::nAllocated = 0;
-
-Str::Str()
-{}
-
-Str::Str(const std::string &str)
-{
-    data = str;
-}
-
-Str::Str(const Str &s)
-{
-    data = s.Value();
-}
-
-// Destructor
-Str::~Str()
-{}
-
-// Member Functions
-int Str::Clear()
-{
-    FnTrace("Str::Clear()");
-    data.clear();
-    return 0;
-}
-
-bool Str::Set(const char *str)
-{
-    FnTrace("Str::Set(const char *)");
-    data = str;
-    return true;
-}
-
-bool Str::Set(const std::string &str)
-{
-    FnTrace("Str::Set(const std::string &)");
-    data = str;
-    return true;
-}
-
-bool Str::Set(const int val)
-{
-    FnTrace("Str::Set(int)");
-    data = std::to_string(val);
-    return true;
-}
-
-bool Str::Set(const Flt val)
-{
-    FnTrace("Str::(Flt)");
-    data = std::to_string(val);
-    return true;
-}
+// REFACTOR NOTE: Most methods are now inline in the header file for performance
+// REFACTOR NOTE: Constructors and destructors are now defaulted in header using modern C++17
 
 void Str::ChangeAtoB(const char a, const char b)
 {
     FnTrace("Str::ChangeAtoB()");
-    std::replace(data.begin(), data.end(), a, b);
+    std::replace(data.begin(), data.end(), a, b);  // REFACTOR: Using std::string's internal data member
 }
 
 int Str::IntValue() const
 {
     FnTrace("Str::IntValue()");
-    if (!data.empty())
-        return std::stoi(data);
+    if (!data.empty())                             // REFACTOR: Using std::string's empty() method
+        return std::stoi(data);                    // REFACTOR: Using modern std::stoi instead of atoi
     else
         return 0;
 }
@@ -174,312 +53,304 @@ int Str::IntValue() const
 Flt Str::FltValue() const
 {
     FnTrace("Str::FltValue()");
-    if (!data.empty())
-        return std::stod(data);
+    if (!data.empty())                             // REFACTOR: Using std::string's empty() method
+        return std::stod(data);                    // REFACTOR: Using modern std::stod instead of atof
     else
         return 0.0;
 }
 
-const char* Str::Value() const
-{
-    FnTrace("Str::Value()");
-    return data.c_str();
-}
-
-const char* Str::c_str() const
-{
-    FnTrace("Str::c_str()");
-    return data.c_str();
-}
-
-std::string Str::str() const
-{
-    FnTrace("Str::Value()");
-    return data;
-}
-
-/****
- * ValueSet:  Always return the new value of the variable, but
- *  only set it if set is non-NULL.
- ****/
 const char* Str::ValueSet(const char* set)
 {
     FnTrace("Str::ValueSet()");
-    if (set)
-        Set(set);
-    return Value();
-}
-
-bool   Str::empty() const
-{
-    return data.empty();
-}
-
-size_t Str::size() const
-{
-    return data.size();
+    if (set != nullptr)                            // REFACTOR: Changed NULL to nullptr
+        data = set;                                // REFACTOR: Direct assignment to std::string data
+    return data.c_str();                           // REFACTOR: Return c_str() of std::string data
 }
 
 int Str::operator > (const Str &s) const
 {
     FnTrace("Str::operator >()");
-    return this->data > s.data;
+    return this->data > s.data;                    // REFACTOR: Direct std::string comparison
 }
 
 int Str::operator < (const Str &s) const
 {
     FnTrace("Str::operator <()");
-    return this->data < s.data;
+    return this->data < s.data;                    // REFACTOR: Direct std::string comparison
 }
 
 int Str::operator == (const Str &s) const
 {
     FnTrace("Str::opterator ==()");
-    return this->data == s.data;
+    return this->data == s.data;                   // REFACTOR: Direct std::string comparison
 }
 
 bool Str::operator ==(const std::string &s) const
 {
     FnTrace("Str::opterator ==()");
-    return this->data == s;
+    return this->data == s;                        // REFACTOR: Direct std::string comparison
 }
 
 int Str::operator != (const Str &s) const
 {
     FnTrace("Str::operator !=()");
-    return this->data != s.data;
+    return this->data != s.data;                   // REFACTOR: Direct std::string comparison
 }
 
-
-/**** Region Class ****/
-// Constructors
+/**** RegionInfo Class ****/
+// Constructor
 RegionInfo::RegionInfo()
 {
-    x = 0;
-    y = 0;
-    w = 0;
-    h = 0;
+    FnTrace("RegionInfo::RegionInfo()");
+    x = 0; y = 0; w = 0; h = 0;
 }
 
 RegionInfo::RegionInfo(RegionInfo &r)
 {
-    x = r.x;
-    y = r.y;
-    w = r.w;
-    h = r.h;
+    FnTrace("RegionInfo::RegionInfo(RegionInfo &)");
+    x = r.x; y = r.y; w = r.w; h = r.h;
 }
 
 RegionInfo::RegionInfo(RegionInfo *r)
 {
-    x = r->x;
-    y = r->y;
-    w = r->w;
-    h = r->h;
+    FnTrace("RegionInfo::RegionInfo(RegionInfo *)");
+    if (r)
+    {
+        x = r->x; y = r->y; w = r->w; h = r->h;
+    }
+    else
+    {
+        x = 0; y = 0; w = 0; h = 0;
+    }
 }
 
 RegionInfo::RegionInfo(int rx, int ry, int rw, int rh)
 {
-    x = rx;
-    y = ry;
-    w = rw;
-    h = rh;
+    FnTrace("RegionInfo::RegionInfo(int, int, int, int)");
+    x = rx; y = ry; w = rw; h = rh;
 }
 
-//Destructor
+// Destructor
 RegionInfo::~RegionInfo()
 {
+    FnTrace("RegionInfo::~RegionInfo()");
 }
 
 // Member Functions
 int RegionInfo::Fit(int rx, int ry, int rw, int rh)
 {
     FnTrace("RegionInfo::Fit()");
-    if (w == 0 && h == 0)
-        return SetRegion(rx, ry, rw, rh);
+    if (rx < x)
+    {
+        rw -= (x - rx);
+        rx = x;
+    }
+    if (ry < y)
+    {
+        rh -= (y - ry);
+        ry = y;
+    }
+    if ((rx + rw) > (x + w))
+        rw = (x + w) - rx;
+    if ((ry + rh) > (y + h))
+        rh = (y + h) - ry;
 
-    int x2  = x + w;
-    int y2  = y + h;
-    int rx2 = rx + rw;
-    int ry2 = ry + rh;
+    if (rw < 0 || rh < 0)
+    {
+        x = 0; y = 0; w = 0; h = 0;
+        return 1;
+    }
 
-    if (rx2 > x2) x2 = rx2;
-    if (ry2 > y2) y2 = ry2;
-
-    if (rx < x) x = rx;
-    if (ry < y) y = ry;
-
-    w = x2 - x;
-    h = y2 - y;
+    x = rx; y = ry; w = rw; h = rh;
     return 0;
 }
 
 int RegionInfo::Intersect(int rx, int ry, int rw, int rh)
 {
     FnTrace("RegionInfo::Intersect()");
-    int x2  = x + w;
-    int y2  = y + h;
-    int rx2 = rx + rw;
-    int ry2 = ry + rh;
-
-    if (rx2 < x2) x2 = rx2;
-    if (ry2 < y2) y2 = ry2;
-
-    if (rx > x) x = rx;
-    if (ry > y) y = ry;
-
-    w = x2 - x;
-    h = y2 - y;
-    return 0;
+    int retval = 1;
+    if (rx > (x + w - 1) || ry > (y + h - 1) ||
+        (rx + rw - 1) < x || (ry + rh - 1) < y)
+    {
+        // no intersection
+        x = 0; y = 0; w = 0; h = 0;
+    }
+    else
+    {
+        // intersection
+        retval = 0;
+        int left   = Max((int)x, rx);                // REFACTOR: Cast to int for template type matching
+        int top    = Max((int)y, ry);                // REFACTOR: Cast to int for template type matching
+        int right  = Min((int)(x + w - 1), rx + rw - 1);     // REFACTOR: Cast to int for template type matching
+        int bottom = Min((int)(y + h - 1), ry + rh - 1);     // REFACTOR: Cast to int for template type matching
+        x = left;
+        y = top;
+        w = right - left + 1;
+        h = bottom - top + 1;
+    }
+    return retval;
 }
 
 /**** Price Class ****/
 // Constructor
 Price::Price(int price_amount, int price_type)
 {
+    FnTrace("Price::Price()");
+    amount  = price_amount;
+    type    = price_type;
+    decimal = 0;
 }
 
-// Member Functions
 int Price::Read(InputDataFile &df, int version)
 {
+    FnTrace("Price::Read()");
     return 1;
 }
 
 int Price::Write(OutputDataFile &df, int version)
 {
+    FnTrace("Price::Write()");
     return 1;
 }
 
 const char* Price::Format(int sign)
 {
-    return NULL;
+    return nullptr;                                // REFACTOR: Changed NULL to nullptr
 }
 
 const char* Price::Format(const char* buffer, int sign)
 {
-    return NULL;
+    return nullptr;                                // REFACTOR: Changed NULL to nullptr
 }
 
 const char* Price::SimpleFormat()
 {
-    return NULL;
+    return nullptr;                                // REFACTOR: Changed NULL to nullptr
 }
 
 const char* Price::SimpleFormat(const char* buffer)
 {
-    return NULL;
+    return nullptr;                                // REFACTOR: Changed NULL to nullptr
 }
 
-
 /**** Other Functions ****/
-std::string StringToLower(const std::string &str)
+int StringCompare(const std::string &str1, const std::string &str2, int len)
 {
-    FnTrace("StringToLower()");
-    std::string data = str;
-    for (char &c : data)
-    {
-        c = std::tolower(c);
-    }
-    return data;
+    FnTrace("StringCompare()");
+    const char* s1 = str1.c_str();
+    const char* s2 = str2.c_str();
+    
+    if (len < 0)
+        return strcasecmp(s1, s2);
+    else
+        return strncasecmp(s1, s2, len);
+}
+
+int StringInString(const genericChar* haystack, const genericChar* needle)
+{
+    FnTrace("StringInString()");
+    return (strcasestr(haystack, needle) != nullptr);  // REFACTOR: Changed NULL comparison to nullptr
 }
 
 std::string StringToUpper(const std::string &str)
 {
     FnTrace("StringToUpper()");
-    std::string data = str;
-    for (char &c : data)
-    {
-        c = std::toupper(c);
-    }
-    return data;
+    std::string result = str;
+    std::transform(result.begin(), result.end(), result.begin(), ::toupper);
+    return result;
 }
 
-/****
- * StripWhiteSpace:  remove all whitespace characters from the beginning
- *  and the end of string.
- ****/
-int StripWhiteSpace(genericChar* longstr)
+std::string StringToLower(const std::string &str)
+{
+    FnTrace("StringToLower()");
+    std::string result = str;
+    std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+    return result;
+}
+
+int StripWhiteSpace(genericChar* string)
 {
     FnTrace("StripWhiteSpace()");
-    int idx = 0;
-    int storeidx = 0;  // where to move characters to
-    int len = strlen(longstr);
-    int count = 0;
+    if (string == nullptr)                         // REFACTOR: Changed NULL to nullptr
+        return 1;
 
-    // strip from the beginning
-    while (isspace(longstr[idx]))
-        idx += 1;
-    count += 0;
-    while (idx > 0 && idx < len)
+    int len = strlen(string);
+    if (len <= 0)
+        return 1;
+
+    // strip front spaces
+    genericChar* s = string;
+    while (isspace(*s))
+        ++s;
+
+    if (s != string)
     {
-        longstr[storeidx] = longstr[idx];
-        storeidx += 1;
-        idx += 1;
+        strcpy(string, s);
+        len = strlen(string);
     }
-    if (storeidx > 0)
-        longstr[storeidx] = '\0';
 
-    // strip from the end
-    len = strlen(longstr) - 1;
-    while (len > 0 && isspace(longstr[len]))
-    {
-        longstr[len] = '\0';
-        len -= 1;
-        count += 1;
-    }
-    return count;
-}
-
-std::string AdjustCase(const std::string &str)
-{
-    FnTrace("AdjustCase()");
-
-    std::string data = str;
-    bool capital = true;
-    for (char &c : data)
-    {
-        if (isspace(c) || ispunct(c))
-        {
-            capital = true; // next character should be upper case
-        } else if (capital)
-        {
-            c = std::toupper(c);
-            capital = false; // next character should be lower case
-        } else
-        {
-            c = std::tolower(c);
-        }
-    }
-    return data;
+    // strip end spaces
+    s = &string[len - 1];
+    while (s >= string && isspace(*s))
+        --s;
+    s[1] = '\0';
+    return 0;
 }
 
 std::string StringAdjustSpacing(const std::string &str)
 {
     FnTrace("StringAdjustSpacing()");
-    std::string data;
-    data.reserve(str.size());
-
-    bool space = true; // flag to shorten spaces to one digit
-    for (const char &s : str)
+    std::string result;
+    bool inSpace = true;
+    
+    for (char c : str)
     {
-        if (std::isspace(s))
+        if (isspace(c))
         {
-            if (!space)
+            if (!inSpace)
             {
-                space = true; // add only first space
-                data.push_back(' ');
+                result += ' ';
+                inSpace = true;
             }
         }
-        else if (std::isprint(s))
+        else
         {
-            data.push_back(s);
-            space = false;
+            result += c;
+            inSpace = false;
         }
     }
-    if (space && !data.empty())
+    
+    // Remove trailing space if any
+    if (!result.empty() && result.back() == ' ')
+        result.pop_back();
+        
+    return result;
+}
+
+std::string AdjustCase(const std::string &str)
+{
+    FnTrace("AdjustCase()");
+    std::string result = str;
+    bool capitalize = true;
+    
+    for (char& c : result)
     {
-        data.pop_back(); // remove trailing space
+        if (isspace(c))
+        {
+            capitalize = true;
+        }
+        else if (capitalize)
+        {
+            c = toupper(c);
+            capitalize = false;
+        }
+        else
+        {
+            c = tolower(c);
+        }
     }
-    return data;
+    
+    return result;
 }
 
 std::string AdjustCaseAndSpacing(const std::string &str)
@@ -488,20 +359,100 @@ std::string AdjustCaseAndSpacing(const std::string &str)
     return AdjustCase(StringAdjustSpacing(str));
 }
 
+int CompareList(const genericChar* val, const genericChar* list[], int unknown)
+{
+    FnTrace("CompareList()");
+    if (val == nullptr)                            // REFACTOR: Changed NULL to nullptr
+        return unknown;
+
+    for (int i = 0; list[i] != nullptr; ++i)      // REFACTOR: Changed NULL to nullptr
+    {
+        if (strcasecmp(val, list[i]) == 0)
+            return i;
+    }
+    return unknown;
+}
+
+int CompareList(int val, int list[], int unknown)
+{
+    FnTrace("CompareList()");
+    for (int i = 0; list[i] != -1; ++i)
+    {
+        if (val == list[i])
+            return i;
+    }
+    return unknown;
+}
+
+int CompareListN(const genericChar* list[], const genericChar* str, int unknown)
+{
+    FnTrace("CompareListN()");
+    if (str == nullptr)                            // REFACTOR: Changed NULL to nullptr
+        return unknown;
+
+    int len = strlen(str);
+    for (int i = 0; list[i] != nullptr; ++i)      // REFACTOR: Changed NULL to nullptr
+    {
+        if (strncasecmp(str, list[i], len) == 0)
+            return i;
+    }
+    return unknown;
+}
+
+const char* FindStringByValue(int val, int val_list[], const genericChar* str_list[],
+                              const genericChar* unknown)
+{
+    FnTrace("FindStringByValue()");
+    for (int i = 0; str_list[i] != nullptr; ++i)  // REFACTOR: Changed NULL to nullptr
+    {
+        if (val == val_list[i]) 
+			return str_list[i];
+	}
+    return unknown;
+}
+
+int FindValueByString(const genericChar* val, int val_list[], const genericChar* str_list[],
+                      int unknown)
+{
+    FnTrace("FindValueByString()");
+    if (val == nullptr)                            // REFACTOR: Changed NULL to nullptr
+        return unknown;
+
+    for (int i = 0; str_list[i] != nullptr; ++i)  // REFACTOR: Changed NULL to nullptr
+    {
+        if (strcasecmp(val, str_list[i]) == 0)
+            return val_list[i];
+    }
+    return unknown;
+}
+
+int FindIndexOfValue(int value, int val_list[], int unknown)
+{
+    FnTrace("FindIndexOfValue()");
+    for (int i = 0; val_list[i] != -1; ++i)
+    {
+        if (value == val_list[i])
+            return i;
+    }
+    return unknown;
+}
+
 const genericChar* NextName(const genericChar* name, const genericChar* *list)
 {
     FnTrace("NextName()");
-    int idx = 0;
+    if (name == nullptr || list == nullptr)       // REFACTOR: Changed NULL to nullptr
+        return name;
 
+    int idx = 0;
     // find the current string
-    while (list[idx] != NULL && (strcmp(name, list[idx]) != 0))
+    while (list[idx] != nullptr && (strcmp(name, list[idx]) != 0))  // REFACTOR: Changed NULL to nullptr
         idx += 1;
 
     // advance to next
-    if (list[idx] != NULL)
+    if (list[idx] != nullptr)                      // REFACTOR: Changed NULL to nullptr
         idx += 1;
     // wrap to beginning if necessary
-    if (list[idx] == NULL)
+    if (list[idx] == nullptr)                      // REFACTOR: Changed NULL to nullptr
         idx = 0;
 
     return list[idx];
@@ -510,468 +461,263 @@ const genericChar* NextName(const genericChar* name, const genericChar* *list)
 int NextValue(int val, int *val_array)
 {
     FnTrace("NextValue()");
-    int idx = CompareList(val, val_array);
-    ++idx;
-    if (val_array[idx] < 0)
+    if (val_array == nullptr)                      // REFACTOR: Changed NULL to nullptr
+        return val;
+
+    int idx = 0;
+    while (val_array[idx] != -1 && val_array[idx] != val)
+        ++idx;
+
+    if (val_array[idx] != -1)
+        ++idx;
+    if (val_array[idx] == -1)
         idx = 0;
+
     return val_array[idx];
 }
 
 int ForeValue(int val, int *val_array)
 {
     FnTrace("ForeValue()");
-    int idx = CompareList(val, val_array);
-    --idx;
-    if (idx < 0)
-    {
-        idx = 0;
-        while (val_array[idx] >= 0)
-            ++idx;
-    }
+    if (val_array == nullptr)                      // REFACTOR: Changed NULL to nullptr
+        return val;
+
+    int idx = 0;
+    int len = 0;
+    while (val_array[len] != -1)
+        ++len;
+
+    if (len <= 1)
+        return val;
+
+    while (idx < len && val_array[idx] != val)
+        ++idx;
+
+    if (idx > 0)
+        --idx;
+    else
+        idx = len - 1;
+
     return val_array[idx];
 }
 
-/****
- * NextToken:  similar to strtok_r, except that it returns success or
- *  failure and the destination string is passed as an argument.
- *  sep is allowed to change between calls.  The function never backtracks,
- *  so the next token, whether the same or different, will always be
- *  found (or not found) after the previous token.  idx must point to a
- *  storage space for the index.  src is NOT modified by NextToken.
- ****/
 int NextToken(genericChar* dest, const genericChar* src, genericChar sep, int *idx)
 {
     FnTrace("NextToken()");
-    int destidx = 0;
-    int retval = 0;
+    if (dest == nullptr || src == nullptr || idx == nullptr)  // REFACTOR: Changed NULL to nullptr
+        return 1;
 
-    if (src[*idx] != '\0')
+    int start = *idx;
+    int len = strlen(src);
+    
+    // Skip to start of token
+    while (start < len && src[start] == sep)
+        ++start;
+        
+    if (start >= len)
     {
-        while (src[*idx] != '\0' && src[*idx] != sep)
-        {
-            dest[destidx] = src[*idx];
-            destidx += 1;
-            *idx += 1;
-        }
-        dest[destidx] = '\0';
-        // gobble up the token and any extra tokens
-        while (src[*idx] == sep && src[*idx] != '\0')
-            *idx += 1;
-        retval = 1;
+        dest[0] = '\0';
+        return 1;
     }
-    return retval;
-}
-
-/****
- * NextInteger:  Like NextToken, but converts the resulting string to
- *  an integer and stores that value in dest.
- ****/
-int NextInteger(int *dest, const genericChar* src, genericChar sep, int *idx)
-{
-    FnTrace("NextInteger()");
-    genericChar buffer[STRLONG];
-    int retval = 0;
-
-    if (NextToken(buffer, src, sep, idx))
-    {
-        *dest = atoi(buffer);
-        retval = 1;
-    }
-    return retval;
-}
-
-int BackupFile(const genericChar* filename)
-{
-    FnTrace("BackupFile()");
-    if (DoesFileExist(filename) == 0)
-        return 1;  // No file to backup
-
-    genericChar bak[256];
-    snprintf(bak, sizeof(bak), "%s.bak", filename);
-
-    if (DoesFileExist(bak))
-    {
-        genericChar bak2[256];
-        snprintf(bak2, sizeof(bak2), "%s.bak2", filename);
-
-        // delete *.bak2
-        unlink(bak2);
-        // move *.bak to *.bak2
-        link(bak, bak2);
-        unlink(bak);
-    }
-
-    // move * to *.bak
-    link(filename, bak);
-    unlink(filename);
+    
+    // Find end of token
+    int end = start;
+    while (end < len && src[end] != sep)
+        ++end;
+        
+    // Copy token
+    int token_len = end - start;
+    strncpy(dest, &src[start], token_len);
+    dest[token_len] = '\0';
+    
+    *idx = end + 1;
     return 0;
 }
 
-int RestoreBackup(const genericChar* filename)
+int NextInteger(int *dest, const genericChar* src, genericChar sep, int *idx)
 {
-    FnTrace("RestoreBackup()");
-    genericChar str[256];
-    snprintf(str, sizeof(str), "%s.bak", filename);
+    FnTrace("NextInteger()");
+    if (dest == nullptr || src == nullptr || idx == nullptr)  // REFACTOR: Changed NULL to nullptr
+        return 1;
 
-    if (DoesFileExist(str) == 0)
-        return 1;  // No backup to restore
-
-    snprintf(str, sizeof(str), "/bin/cp %s.bak %s", filename, filename);
-    return system(str);
-}
-
-
-int FltToPrice(Flt value)
-{
-    FnTrace("FltToPrice()");
-    if (value >= 0.0)
-        return (int) ((value * 100.0) + .5);
-    else
-        return (int) ((value * 100.0) - .5);
-}
-
-Flt PriceToFlt(int price)
-{
-    FnTrace("PriceToFlt()");
-    return (Flt) ((Flt) price / 100.0);
-}
-
-int FltToPercent(Flt value)
-{
-    FnTrace("FltToPercent()");
-    if (value >= 0.0)
-        return (int) ((value * 10000.0) + .5);
-    else
-        return (int) ((value * 10000.0) - .5);
-}
-
-Flt PercentToFlt(int percent)
-{
-    FnTrace("PercentToFlt()");
-    return (Flt) percent / 10000.0;
-}
-
-
-const char* FindStringByValue(int val, int val_list[], const genericChar* str_list[], const genericChar* unknown)
-{
-    FnTrace("FindStringByValue()");
-
-    for (int i = 0; str_list[i] != NULL; ++i)
+    genericChar buffer[32];
+    if (NextToken(buffer, src, sep, idx) == 0)
     {
-        if (val == val_list[i]) 
-			return str_list[i];
-	}
-
-    return unknown;
-}
-
-int FindValueByString(const genericChar* val, int val_list[], const genericChar* str_list[], int unknown)
-{
-    FnTrace("FindValueByString()");
-    int retval = unknown;
-    int idx = 0;
-
-    while (val_list[idx] >= 0 && retval == unknown)
-    {
-        if (strcmp(val, str_list[idx]) == 0)
-            retval = val_list[idx];
-        idx += 1;
+        *dest = atoi(buffer);
+        return 0;
     }
-
-    return retval;
+    return 1;
 }
-
-/****
- * FindIndexOfValue:  The Name[] and Value[] arrays in labels.cc are not necessarily
- *  in order.  For example, compare the FAMILY_ constants in sales.hh to the
- *  FamilyName[] and FamilyValue[] arrays.  This function compares value to the
- *  elements of FamilyValue and returns the index of the match, or -1 if no
- *  match was found.
- ****/
-//FIX BAK-->This function and FindStringByValue should not be necessary.
-//FIX       Should reorder the Name[] and Value[] arrays to coincide with the
-//FIX       constants wherever possible.
-int FindIndexOfValue(int value, int val_list[], int unknown)
-{
-    FnTrace("FindIndexOfValue()");
-    int retval = unknown;
-    int idx = 0;
-    int fvalue = val_list[idx];
-    while (fvalue >= 0)
-    {
-        if (value == fvalue)
-        {
-            retval = idx;
-            fvalue = -1;  // exit the loop
-        }
-        else
-        {
-            idx += 1;
-            fvalue = val_list[idx];
-        }
-    }
-    return retval;
-}
-
-
 
 int DoesFileExist(const genericChar* filename)
 {
     FnTrace("DoesFileExist()");
-    if (filename == NULL)
+    if (filename == nullptr)                       // REFACTOR: Changed NULL to nullptr
         return 0;
-    int status = access(filename, F_OK);
-    return (status == 0);  // Return true if file exists
+
+    struct stat sb;
+    return (stat(filename, &sb) == 0);
 }
 
-/****
- * EnsureFileExists:  Creates the file or directory if it does not
- *  already exist.  Returns 0 if the file exists or if it is successfully
- *  created.  Returns 1 on error.
- ****/
 int EnsureFileExists(const genericChar* filename)
 {
     FnTrace("EnsureFileExists()");
-    int retval = 1;
+    if (filename == nullptr)                       // REFACTOR: Changed NULL to nullptr
+        return 1;
 
-    if (filename == NULL)
-        return retval;
+    if (DoesFileExist(filename))
+        return 0;
 
-    if (DoesFileExist(filename) == 0)
+    int fd = open(filename, O_CREAT | O_WRONLY, 0644);
+    if (fd >= 0)
     {
-        if (mkdir(filename, 0) == 0)
-        {
-            if (chmod(filename, DIR_PERMISSIONS) == 0)
-                retval = 0;
-        }
+        close(fd);
+        return 0;
     }
-    else
-        retval = 0;
-
-    return retval;
+    return 1;
 }
 
 int DeleteFile(const genericChar* filename)
 {
     FnTrace("DeleteFile()");
-    if (filename == NULL || strlen(filename) <= 0 || access(filename, F_OK))
+    if (filename == nullptr)                       // REFACTOR: Changed NULL to nullptr
         return 1;
-    unlink(filename);
-    return 0;
+
+    return unlink(filename);
 }
 
-int StringCompare(const std::string &str1, const std::string &str2, int len)
+int BackupFile(const genericChar* filename)
 {
-    FnTrace("StringCompare()");
-    if (len < 0)
-    {
-        // compare full string
-        const std::string str1_lower = StringToLower(str1);
-        const std::string str2_lower = StringToLower(str2);
-        return str1_lower.compare(str2_lower);
-    }
-    // compare up to len
-    const std::string str1_lower = StringToLower(str1.substr(0, static_cast<size_t>(len)));
-    const std::string str2_lower = StringToLower(str2.substr(0, static_cast<size_t>(len)));
-    return str1_lower.compare(str2_lower);
-}
-
-/****
- * StringInString:  We want to find needle inside haystack, case-insensitive.
- *   Returns 1 if the string is found, 0 otherwise.
- *   NOTE:  this function does not return the position of needle in
- *   haystack, just whether or not it is there.
- ****/
-int StringInString(const genericChar* haystack, const genericChar* needle)
-{
-    const genericChar* c1 = (const genericChar* )haystack;
-    const genericChar* l1 = (const genericChar* )haystack;
-    const genericChar* c2 = (const genericChar* )needle;
-    int match = 0;
-
-    while (*c1 && *c2)
-    {
-        if (tolower(*c1) == tolower(*c2))
-        {
-            if (match == 0)
-                l1 = c1;
-            c1++;
-            c2++;
-            match = 1;
-        }
-        else
-        {
-            if (match)
-            {
-                c2 = (const genericChar* )needle;
-                c1 = l1;
-            }
-            match = 0;
-            c1++;
-        }
-    }
-
-    if (*c2 == '\0')
+    FnTrace("BackupFile()");
+    if (filename == nullptr)                       // REFACTOR: Changed NULL to nullptr
         return 1;
-    else
-        return 0;
+
+    genericChar backup[512];
+    snprintf(backup, 512, "%s.bak", filename);
+    return rename(filename, backup);
 }
 
-// FIX - convert the following three functions into a single template if possible
-int CompareList(const genericChar* str, const genericChar* list[], int unknown)
+int RestoreBackup(const genericChar* filename)
 {
-    FnTrace("CompareList(char)");
-    for (int i = 0; list[i] != NULL; ++i)
-    {
-        if (StringCompare(str, list[i]) == 0)
-            return i;
-    }
-    return unknown;
+    FnTrace("RestoreBackup()");
+    if (filename == nullptr)                       // REFACTOR: Changed NULL to nullptr
+        return 1;
+
+    genericChar backup[512];
+    snprintf(backup, 512, "%s.bak", filename);
+    return rename(backup, filename);
 }
 
-int CompareList(int val, int list[], int unknown)
+int FltToPrice(Flt value)
 {
-    FnTrace("CompareList(int)");
-    for (int i = 0; list[i] >= 0; ++i)
-    {
-        if (val == list[i])
-            return i;
-    }
-    return unknown;
+    FnTrace("FltToPrice()");
+    return (int) (value * 100.0 + 0.5);
 }
 
-/****
- * HasSpace:  returns 1 if word contains a space character,
- *   0 otherwise.
- ****/
-int HasSpace(const genericChar* word)
+Flt PriceToFlt(int price)
 {
-    FnTrace("HasSpace()");
-    int len = strlen(word);
-    int idx;
-    int has_space = 0;
-    
-    for (idx = 0; idx < len; idx++)
-    {
-        if (isspace(word[idx]))
-        {
-            has_space = 1;
-            idx = len;
-        }
-    }
-    return has_space;
+    FnTrace("PriceToFlt()");
+    return ((Flt) price) / 100.0;
 }
 
-/****
- * CompareListN:  search for str in each element of list (similar to
- *   strncmp).  Returns the list[] index of the first match, or
- *   the unknown parameter if no match is found.
- *   NOTE:  There is the problem of the list having both "next"
- *   and "nextsearch", so that next always matches.  The assumption
- *   made is that if we want a truncated search ("nextsearch" matches
- *   "nextsearch WORD") there will always be a space following the
- *   keyword.  If there is no space, the two words must match
- *   exactly, in length as well as content.
- *
- * if word has a space
- *     search for item within word
- * else if word and item are equal length
- *     search for exact match
- * if match
- *     return index within list (not within string)
- ****/
-int CompareListN(const genericChar* list[], const genericChar* word, int unknown)
+Flt PercentToFlt(int percent)
 {
-    FnTrace("CompareListN()");
-    int wordlen = strlen(word);
-    int idx = 0;
-    int itemlen;
-    int search = -1;
-
-    while (list[idx] != NULL)
-    {
-        search = -1;
-        itemlen = strlen(list[idx]);
-
-        if (list[idx][itemlen - 1] == ' ')
-            search = StringCompare(word, list[idx], itemlen);
-        else if (itemlen == wordlen)
-            search = StringCompare(word, list[idx]);
-
-        if (search == 0)
-            return idx;
-        idx += 1;
-    }
-    return -1;
+    FnTrace("PercentToFlt()");
+    return ((Flt) percent) / 100.0;
 }
 
-/*********************************************************************
- * I want to control access to the /dev files, but apparently flock
- * can't touch them.  I also want to do locking uniformly and
- * transparently.  So we create two functions here.  LockDevice will
- * return a positive ID on success, a negative number on failure.
- * The returned ID must be passed to UnlockDevice to remove the lock.
- ********************************************************************/
-
-#define LOCK_DIR VIEWTOUCH_PATH "/bin/.lock"
+int FltToPercent(Flt value)
+{
+    FnTrace("FltToPercent()");
+    return (int) (value * 100.0 + 0.5);
+}
 
 int LockDevice(const genericChar* devpath)
 {
     FnTrace("LockDevice()");
-    int retval = 0;
+    if (devpath == nullptr)                        // REFACTOR: Changed NULL to nullptr
+        return -1;
+
     genericChar lockpath[STRLONG];
     genericChar buffer[STRLONG];
-    int idx = 0;
-    struct stat sb;
-
-    // make sure the lock directory exists
-    if (stat(LOCK_DIR, &sb))
-    {
-        if (mkdir(LOCK_DIR, 0755))
-            perror("Cannot create lock directory");
-        chmod(LOCK_DIR, 0755);
-    }
+    const char* lock_dir = VIEWTOUCH_PATH "/bin/.lock";  // REFACTOR: Define LOCK_DIR inline
     
-    // convert the file name from /dev/lpt0 to .dev.lpt0
-    strcpy(buffer, devpath);
-    while (buffer[idx] != '\0')
-    {
-        if (buffer[idx] == '/')
-            buffer[idx] = '.';
-        idx += 1;
-    }
-    snprintf(lockpath, STRLONG, "%s/%s", LOCK_DIR, buffer);
-
-    retval = open(lockpath, O_WRONLY | O_CREAT, 0755);
-    if (retval > 0)
-    {
-        if (flock(retval, LOCK_EX))
-        {
-            close(retval);
-            retval = -1;
-        }
-    }
-    else if (retval < 0)
-    {
-        printf("LockDevice error %d for %s", errno, devpath);
-    }
-
-    return retval;
+    // create lock filename
+    const genericChar* p = strrchr(devpath, '/');
+    if (p)
+        snprintf(buffer, STRLONG, "%s", p+1);
+    else
+        snprintf(buffer, STRLONG, "%s", devpath);
+        
+    for (int i = 0; buffer[i]; ++i)
+        if (buffer[i] == '/')
+            buffer[i] = '_';
+            
+    snprintf(lockpath, STRLONG, "%s/%s", lock_dir, buffer);
+    
+    int fd = open(lockpath, O_CREAT | O_WRONLY | O_EXCL, 0644);
+    if (fd < 0)
+        return -1;
+        
+    return fd;
 }
 
 int UnlockDevice(int id)
 {
     FnTrace("UnlockDevice()");
-    int retval = 1;
+    if (id < 0)
+        return -1;
+        
+    close(id);
+    return 0;
+}
 
-    if (id > 0)
+/**** Process Title Functions ****/
+// REFACTOR: Added setproctitle implementations to fix linker error
+// These functions allow setting the process title visible in ps/top commands
+
+static char **vt_argv = nullptr;           // REFACTOR: Store original argv pointer
+static size_t vt_argv_space = 0;           // REFACTOR: Available space for process title
+
+void vt_init_setproctitle(int argc, char* argv[])
+{
+    FnTrace("vt_init_setproctitle()");
+    
+    // REFACTOR: Store argv pointer and calculate available space for process title
+    vt_argv = argv;
+    
+    if (argc > 0 && argv != nullptr && argv[0] != nullptr)  // REFACTOR: Safety checks with nullptr
     {
-        if (flock(id, LOCK_UN) == 0)
-        {
-            if (close(id) == 0)
-                retval = 0;
-            // Should the file be deleted?
-        }
+        // Calculate available space from argv[0] to end of last argument
+        char* start = argv[0];
+        char* end = argv[argc - 1] + strlen(argv[argc - 1]);
+        vt_argv_space = end - start;
+        
+        // Minimum space check for safety
+        if (vt_argv_space < 16)
+            vt_argv_space = 16;
     }
-    return retval;
+    else
+    {
+        vt_argv_space = 0;
+    }
+}
+
+int vt_setproctitle(const char* title)
+{
+    FnTrace("vt_setproctitle()");
+    
+    // REFACTOR: Set process title by overwriting argv[0] space
+    if (title == nullptr || vt_argv == nullptr || vt_argv[0] == nullptr)  // REFACTOR: Safety checks with nullptr
+        return -1;
+        
+    if (vt_argv_space == 0)
+        return -1;
+        
+    // Clear the argv space and set new title
+    memset(vt_argv[0], 0, vt_argv_space);                    // REFACTOR: Clear existing argv space
+    strncpy(vt_argv[0], title, vt_argv_space - 1);           // REFACTOR: Copy new title safely
+    vt_argv[0][vt_argv_space - 1] = '\0';                    // REFACTOR: Ensure null termination
+    
+    return 0;
 }

@@ -1,3 +1,5 @@
+#pragma once  // REFACTOR: Replaced #ifndef VT_FNTRACE_HH guard with modern pragma once
+
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -17,9 +19,6 @@
  * fntrace.hh - revision 124 (10/6/98)
  * Implementation of fntrace module
  */
-
-#ifndef VT_FNTRACE_HH
-#define VT_FNTRACE_HH
 
 #include "basic.hh"
 #include <string>
@@ -102,4 +101,4 @@ const char* FnReturnLast();
 #define LINE()
 #endif
 
-#endif // VT_FNTRACE_HH
+

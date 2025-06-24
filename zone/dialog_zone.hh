@@ -18,8 +18,7 @@
  * Zone dialog box classes
  */
 
-#ifndef _DIALOG_ZONE_HH
-#define _DIALOG_ZONE_HH
+#pragma once  // REFACTOR: Replaced #ifndef _DIALOG_ZONE_HH guard with modern pragma once
 
 #include "check.hh"
 #include "layout_zone.hh"
@@ -67,7 +66,7 @@ public:
     Str message;
     int color;
 
-    ButtonObj(const char* text, const genericChar* message = NULL);
+    ButtonObj(const char* text, const genericChar* message = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
 
     int Render(Terminal *term);
     int SetLabel(const char* newlabel) { return label.Set(newlabel); }
@@ -96,14 +95,14 @@ public:
     Zone        *Copy()
     {
         printf("Error:  No DialogZone::Copy() method defined for subclass!\n");
-        return NULL;
+        return nullptr;     // REFACTOR: Changed NULL to nullptr for modern C++
     }
     int Type() { return ZONE_DLG_UNKNOWN; }
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
     SignalResult Mouse(Terminal *term, int action, int mx, int my);
 
-    ButtonObj *Button(const char* text, const genericChar* message = NULL);
+    ButtonObj *Button(const char* text, const genericChar* message = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     int ClosingAction(int action_type, int action, int arg);
     int ClosingAction(int action_type, int action, const char* message);
     int SetAllActions(DialogZone *dest);
@@ -402,5 +401,3 @@ public:
 
 /**** Functions ****/
 DialogZone *NewPrintDialog(int no_report = 1);
-
-#endif

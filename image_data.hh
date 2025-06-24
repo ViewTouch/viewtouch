@@ -1,3 +1,5 @@
+#pragma once  // REFACTOR: Replaced #ifndef VT_IMAGE_DATA_HH guard with modern pragma once
+
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -17,10 +19,6 @@
  * image_data.hh - revision 25 (1/7/98)
  * Data for textures in XPM format
  */
-
-#ifndef _IMAGE_DATA_HH
-#define _IMAGE_DATA_HH
-
 
 #include <array>
 #include <cstddef> // size_t
@@ -62,5 +60,3 @@ extern const std::array<const char**, IMAGE_COUNT> ImageData;
 int ImageColorsUsed();  // Returns total colors used in all xpm files
 int ImageWidth(const size_t image);
 int ImageHeight(const size_t image);
-
-#endif

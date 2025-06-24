@@ -34,8 +34,8 @@ Layer::Layer(Display *d, GC g, Window draw_win, int lw, int lh)
     gfx  = g;
     win  = draw_win;
     pix  = XCreatePixmap(dis, draw_win, lw, lh, DefaultDepth(d, no));
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     id   = 0;
     offset_x = 0;
     offset_y = 0;
@@ -1329,7 +1329,7 @@ LayerList::LayerList()
 {
     FnTrace("LayerList::LayerList()");
 
-    dis = NULL;
+    dis = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     gfx = 0;
     win = 0;
     select_on = 0;
@@ -1337,7 +1337,7 @@ LayerList::LayerList()
     select_y1 = 0;
     select_x2 = 0;
     select_y2 = 0;
-    drag = NULL;
+    drag = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     drag_x = 0;
     drag_y = 0;
     mouse_x = 0;
@@ -1345,8 +1345,8 @@ LayerList::LayerList()
     screen_blanked = 0;
     active_frame_color = COLOR_DK_RED;
     inactive_frame_color = COLOR_DK_BLUE;
-    last_object = NULL;
-    last_layer  = NULL;
+    last_object = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    last_layer  = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 }
 
 // Member Functions
@@ -1366,7 +1366,7 @@ int LayerList::Add(Layer *l, int update)
 {
     FnTrace("LayerList::Add()");
 
-    if (l == NULL)
+    if (l == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         return 1;
 
     list.AddToTail(l);
@@ -1386,7 +1386,7 @@ int LayerList::Remove(Layer *l, int update)
 {
     FnTrace("LayerList::Remove()");
 
-    if (l == NULL)
+    if (l == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         return 1;
 
     // check to see if layer was in active list
@@ -1414,7 +1414,7 @@ int LayerList::Remove(Layer *l, int update)
         UpdateArea(l->x, l->y, l->w, l->h);
         if (last_layer == l)
         {
-            last_object = NULL;
+            last_object = nullptr; // REFACTOR: NULL -> nullptr for modern C++
             last_layer  = FindByPoint(mouse_x, mouse_y);
             if (last_layer)
                 last_layer->MouseEnter(this);
@@ -1436,13 +1436,13 @@ Layer *LayerList::FindByPoint(int x, int y)
 {
     FnTrace("LayerList::FindByPoint()");
 
-    for (Layer *l = list.Tail(); l != NULL; l = l->fore)
+    for (Layer *l = list.Tail(); l != nullptr; l = l->fore) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (l->IsPointIn(x, y))
             return l;
     }
 
-    return NULL;
+    return nullptr; // REFACTOR: NULL -> nullptr for modern C++
 }
 
 Layer *LayerList::FindByID(int id)
@@ -1451,14 +1451,14 @@ Layer *LayerList::FindByID(int id)
 
     Layer *l;
 
-    for (l = list.Head(); l != NULL; l = l->next)
+    for (l = list.Head(); l != nullptr; l = l->next) // REFACTOR: NULL -> nullptr for modern C++
         if (l->id == id)
             return l;
 
-    for (l = inactive.Head(); l != NULL; l = l->next)
+    for (l = inactive.Head(); l != nullptr; l = l->next) // REFACTOR: NULL -> nullptr for modern C++
         if (l->id == id)
             return l;
-    return NULL;
+    return nullptr; // REFACTOR: NULL -> nullptr for modern C++
 }
 
 int LayerList::SetScreenBlanker(int set)
@@ -1467,7 +1467,7 @@ int LayerList::SetScreenBlanker(int set)
 
     if (set == screen_blanked)
         return 1;
-    drag = NULL;
+    drag = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     screen_blanked = set;
     if (set)
         ShowCursor(CURSOR_BLANK);
@@ -1500,7 +1500,7 @@ int LayerList::UpdateAll(int select_all)
     }
     
     Layer *l = list.Head();
-    if (l == NULL)
+    if (l == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         return 0;
     
     if (select_all)
@@ -1514,23 +1514,23 @@ int LayerList::UpdateAll(int select_all)
     l->DrawArea(0, 0, l->w, l->h);
 
     Layer *next_layer = l->fore;
-    if (next_layer)
-    {
-        int p0 = l->x;
-        int p1 = l->y;
-        int p2 = p0 + l->w;
-        int p3 = p1 + l->h;
-        if (p1 > 0)
-            OptimalUpdateArea(0, 0, WinWidth, p1, next_layer);
-        if (p0 > 0)
-            OptimalUpdateArea(0, p1, p0, l->h, next_layer);
-        if (p2 < WinWidth)
-            OptimalUpdateArea(p2, p1, WinWidth - p2, l->h, next_layer);
-        if (p3 < WinHeight)
-            OptimalUpdateArea(0, p3, WinWidth, WinHeight - p3, next_layer);
-    }
+    if (next_layer == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        return 0;
 
-    for (l = list.Head(); l != NULL; l = l->next)
+    int p0 = l->x;
+    int p1 = l->y;
+    int p2 = p0 + l->w;
+    int p3 = p1 + l->h;
+    if (p1 > 0)
+        OptimalUpdateArea(0, 0, WinWidth, p1, next_layer);
+    if (p0 > 0)
+        OptimalUpdateArea(0, p1, p0, l->h, next_layer);
+    if (p2 < WinWidth)
+        OptimalUpdateArea(p2, p1, WinWidth - p2, l->h, next_layer);
+    if (p3 < WinHeight)
+        OptimalUpdateArea(0, p3, WinWidth, WinHeight - p3, next_layer);
+
+    for (l = list.Head(); l != nullptr; l = l->next)
         l->update = 0;
     return 0;
 }
@@ -1549,7 +1549,7 @@ int LayerList::UpdateArea(int ax, int ay, int aw, int ah)
         return 0;
     }
     
-    for (l = list.Head(); l != NULL; l = l->next)
+    for (l = list.Head(); l != nullptr; l = l->next) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (l->Overlap(ax, ay, aw, ah))
             l->update = 1;
@@ -1557,7 +1557,7 @@ int LayerList::UpdateArea(int ax, int ay, int aw, int ah)
 
     OptimalUpdateArea(ax, ay, aw, ah);
 
-    for (l = list.Head(); l != NULL; l = l->next)
+    for (l = list.Head(); l != nullptr; l = l->next) // REFACTOR: NULL -> nullptr for modern C++
         l->update = 0;
     return 0;
 }
@@ -1578,7 +1578,7 @@ int LayerList::OptimalUpdateArea(int ax, int ay, int aw, int ah, Layer *end)
             break;
         l = l->fore;
     }
-    if (l == NULL)
+    if (l == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         return 0;
 
     RegionInfo r;
@@ -1590,7 +1590,7 @@ int LayerList::OptimalUpdateArea(int ax, int ay, int aw, int ah, Layer *end)
     }
 
     Layer *next_layer = l->fore;
-    if (next_layer == NULL)
+    if (next_layer == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         return 0;
 
     int p0 = l->x;
@@ -1696,7 +1696,7 @@ int LayerList::MouseAction(int x, int y, int code)
     if (!(code & (MOUSE_LEFT | MOUSE_RIGHT | MOUSE_MIDDLE)) ||
         (code & MOUSE_RELEASE))
     {
-        drag = NULL;
+        drag = nullptr;
     }
     if (drag)
     {
@@ -1720,11 +1720,11 @@ int LayerList::MouseAction(int x, int y, int code)
     }
 
     Layer *l = FindByPoint(x, y);
-    if (l == NULL)
+    if (l == nullptr)
     {
-        drag        = NULL;
-        last_layer  = NULL;
-        last_object = NULL;
+        drag        = nullptr;
+        last_layer  = nullptr;
+        last_object = nullptr;
         return 0;
     }
 
@@ -1734,7 +1734,7 @@ int LayerList::MouseAction(int x, int y, int code)
     {
         // Object mouse focus has changed
         last_object->MouseExit(this, last_layer);
-        last_object = NULL;
+        last_object = nullptr;
     }
 
     if (last_layer != l)
@@ -1767,7 +1767,7 @@ int LayerList::DragLayer(int x, int y)
 {
     FnTrace("LayerList::DragLayer()");
 
-    if (drag == NULL)
+    if (drag == nullptr)
         return 1;
 
     if (x < 0)
@@ -1885,8 +1885,8 @@ LayerObject::LayerObject()
 {
     FnTrace("LayerObject::LayerObject()");
 
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     hilight = 0;
     select = 0;
     id = 0;
@@ -1958,31 +1958,31 @@ LayerObject *LayerObjectList::FindByID(int id)
 {
     FnTrace("LayerObjectList::FindByID()");
 
-    for (LayerObject *l = list.Tail(); l != NULL; l = l->fore)
+    for (LayerObject *l = list.Tail(); l != nullptr; l = l->fore)
         if (l->id == id)
             return l;
-    return NULL;
+    return nullptr;
 }
 
 LayerObject *LayerObjectList::FindByPoint(int x, int y)
 {
     FnTrace("LayerObjectList::FindByPoint()");
 
-    for (LayerObject *l = list.Tail(); l != NULL; l = l->fore)
+    for (LayerObject *l = list.Tail(); l != nullptr; l = l->fore)
     {
         if (l->IsPointIn(x, y))
         {
             return l;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 int LayerObjectList::Render(Layer *l)
 {
     FnTrace("LayerObjectList::Render()");
 
-    for (LayerObject *lo = list.Head(); lo != NULL; lo = lo->next)
+    for (LayerObject *lo = list.Head(); lo != nullptr; lo = lo->next)
         lo->Render(l);
     return 0;
 }
@@ -1991,7 +1991,7 @@ int LayerObjectList::Layout(Layer *l)
 {
     FnTrace("LayerObjectList::Layout()");
 
-    for (LayerObject *lo = list.Head(); lo != NULL; lo = lo->next)
+    for (LayerObject *lo = list.Head(); lo != nullptr; lo = lo->next)
         lo->Layout(l);
     return 0;
 }

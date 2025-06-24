@@ -18,8 +18,7 @@
  * Report container
  */
 
-#ifndef _CHART_HH
-#define _CHART_HH
+#pragma once  // REFACTOR: Replaced #ifndef _CHART_HH guard with modern pragma once
 
 #include "list_utility.hh"
 #include "utility.hh"
@@ -66,5 +65,3 @@ public:
     int AddRowCell(const char* text);
     int EndRow();
 };
-
-#endif

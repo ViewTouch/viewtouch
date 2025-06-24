@@ -18,8 +18,7 @@
  * Various symbols & definitions
  */
 
-#ifndef _LABELS_HH
-#define _LABELS_HH
+#pragma once
 
 #include "basic.hh"
 
@@ -151,5 +150,3 @@ extern int KVPrintMethodValue[];
 
 extern const char* WOHeadingName[];
 extern int   WOHeadingValue[];
-
-#endif

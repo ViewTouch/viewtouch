@@ -18,8 +18,7 @@
  * Definition of report information display zone
  */
 
-#ifndef _REPORT_ZONE_HH
-#define _REPORT_ZONE_HH
+#pragma once  // REFACTOR: Replaced #ifndef _REPORT_ZONE_HH guard with modern pragma once
 
 #include "layout_zone.hh"
 #include "report.hh"
@@ -112,5 +111,3 @@ public:
 
     Str *FileName() { return &filename; }
 };
-
-#endif

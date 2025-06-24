@@ -59,21 +59,21 @@
 const genericChar* PrinterModelName[] = {
     "No Printer", "Epson", "Star", "HP", "Toshiba", "Ithaca",
     "HTML", "PostScript", "PDF", "Receipt Text",
-    "Report Text", NULL};
+    "Report Text", nullptr};  // REFACTOR: Converted NULL to nullptr
 int          PrinterModelValue[] = {
     MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_HP, MODEL_TOSHIBA, MODEL_ITHACA,
     MODEL_HTML, MODEL_POSTSCRIPT, MODEL_PDF, MODEL_RECEIPT_TEXT,
     MODEL_REPORT_TEXT, -1};
 
 // const genericChar* ReceiptPrinterModelName[] = {
-    // "No Printer", "Epson", "Star", "Ithaca", "Text", NULL};
+    // "No Printer", "Epson", "Star", "Ithaca", "Text", nullptr};  // REFACTOR: Converted NULL to nullptr
 // int          ReceiptPrinterModelValue[] = {
     // MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_ITHACA, MODEL_RECEIPT_TEXT, -1};
 
 const genericChar* ReceiptPrinterModelName[] = {
     "No Printer", "Epson", "Star", "HP", "Toshiba", "Ithaca",
     "HTML", "PostScript", "PDF", "Receipt Text",
-    "Report Text", NULL};
+    "Report Text", nullptr};  // REFACTOR: Converted NULL to nullptr
 int          ReceiptPrinterModelValue[] = {
     MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_HP, MODEL_TOSHIBA, MODEL_ITHACA,
     MODEL_HTML, MODEL_POSTSCRIPT, MODEL_PDF, MODEL_RECEIPT_TEXT,
@@ -81,7 +81,7 @@ int          ReceiptPrinterModelValue[] = {
 
 const genericChar* ReportPrinterModelName[] = {
     "No Printer", "HP", "Toshiba", "HTML", "PostScript",
-    "PDF", "Text", NULL};
+    "PDF", "Text", nullptr};  // REFACTOR: Converted NULL to nullptr
 int          ReportPrinterModelValue[] = {
     MODEL_NONE, MODEL_HP, MODEL_TOSHIBA, MODEL_HTML, MODEL_POSTSCRIPT,
     MODEL_PDF, MODEL_REPORT_TEXT, -1};
@@ -90,7 +90,7 @@ int          ReportPrinterModelValue[] = {
 
 const genericChar* PortName[] = {
     "XCD Parallel", "XCD Serial", "Explora Parallel", "Explora Serial",
-    "VT Daemon", "Device On Server", NULL};
+    "VT Daemon", "Device On Server", nullptr};  // REFACTOR: Converted NULL to nullptr
 int          PortValue[] = {
     PORT_XCD_PARALLEL, PORT_XCD_SERIAL, PORT_EXPLORA_PARALLEL, PORT_EXPLORA_SERIAL,
     PORT_VT_DAEMON, PORT_SERVER_DEVICE, -1};
@@ -103,9 +103,9 @@ int          PortValue[] = {
 
 Printer::Printer()
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -128,9 +128,9 @@ Printer::Printer()
 
 Printer::Printer(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -328,7 +328,7 @@ int Printer::ParallelPrint()
                 while (bytes > 0)
                 {
                     bytes = write(outfd, buff, bytes);
-                    select(0, NULL, NULL, NULL, &timeout);
+                    select(0, nullptr, nullptr, nullptr, &timeout);  // REFACTOR: Converted NULL to nullptr
                     if (bytes > 0)
                         bytes = read(infd, buff, STRLENGTH);
                 }
@@ -392,7 +392,7 @@ int Printer::SocketPrint()
     struct sockaddr_in their_addr; // connector's address information
 
     he = gethostbyname(target.Value());  // get the host info
-    if (he == NULL)
+    if (he == nullptr)  // REFACTOR: Converted NULL to nullptr
     {
         perror("gethostbyname");
         return 1;
@@ -472,7 +472,7 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
     genericChar timestr[STRLENGTH];
     genericChar title[STRLENGTH];
 
-    if (source != NULL)
+    if (source != nullptr)  // REFACTOR: Converted NULL to nullptr
         strncpy(title, source, STRLENGTH);
     else if (have_title)
         strncpy(title, page_title.c_str(), STRLENGTH);
@@ -498,7 +498,7 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
         snprintf(timestr, STRLENGTH, "-%02d-%02d-%d", now.Day(), now.Month(), now.Year());
         strncat(buffer, timestr, sizeof(buffer) - strlen(buffer) - 1);
 
-        if (ext == NULL)
+        if (ext == nullptr)
         {
             // append an extension
             switch (Model())
@@ -573,7 +573,7 @@ int Printer::GetFilePath(char* dest)
 
     if (IsDirectory(target.Value()))
     {
-        MakeFileName(filename, NULL, NULL, STRLENGTH);
+        MakeFileName(filename, nullptr, nullptr, STRLENGTH);
         snprintf(dest, STRLENGTH, "%s/%s", target.Value(), filename);
     }
     else
@@ -775,7 +775,7 @@ void Printer::DebugPrint(int printall)
     printf("    Have Title:  %d\n", have_title);
     printf("    Kitchen Mode:  %d\n", kitchen_mode);
 
-    if (printall && next != NULL)
+    if (printall && next != nullptr)
         next->DebugPrint(printall);
 }
 
@@ -785,9 +785,9 @@ void Printer::DebugPrint(int printall)
  ********************************************************************/
 PrinterIthaca::PrinterIthaca(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -977,9 +977,9 @@ int PrinterIthaca::CutPaper(int partial_only)
  ********************************************************************/
 PrinterStar::PrinterStar(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1208,9 +1208,9 @@ int PrinterStar::CutPaper(int partial_only)
  ********************************************************************/
 PrinterEpson::PrinterEpson(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1429,9 +1429,9 @@ int PrinterEpson::CutPaper(int partial_only)
 
 PrinterHP::PrinterHP(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1606,9 +1606,9 @@ int PrinterHP::CutPaper(int partial_only)
  ********************************************************************/
 PrinterHTML::PrinterHTML(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1754,9 +1754,9 @@ int PrinterHTML::LineFeed(int lines)
  ********************************************************************/
 PrinterPostScript::PrinterPostScript()
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1780,9 +1780,9 @@ PrinterPostScript::PrinterPostScript()
 
 PrinterPostScript::PrinterPostScript(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1914,13 +1914,13 @@ int PrinterPostScript::Init()
             "RegularFont\n",
             "} def\n",
             "NewPage\n",
-            NULL
+            nullptr
             };
     
     if (temp_fd <= 0)
         return 1;
 
-    while (lines[idx] != NULL)
+    while (lines[idx] != nullptr)
     {
         if (write(temp_fd, lines[idx], strlen(lines[idx])) < 0)
             break;
@@ -2134,9 +2134,9 @@ int PrinterPostScript::Put(genericChar c, int flags)
 
 PrinterPDF::PrinterPDF()
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2158,9 +2158,9 @@ PrinterPDF::PrinterPDF()
 
 PrinterPDF::PrinterPDF(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2193,7 +2193,7 @@ int PrinterPDF::Close()
     close(temp_fd);
 
     // create the PDF filename and convert the temp file
-    MakeFileName(filename, NULL, ".pdf", STRLONG);
+    MakeFileName(filename, nullptr, ".pdf", STRLONG);
     snprintf(pdffullpath, STRLONG, "/tmp/%s", filename);
     snprintf(command, STRLONG, "ps2pdf %s %s", temp_name.Value(), pdffullpath);
     system(command);
@@ -2218,9 +2218,9 @@ int PrinterPDF::Close()
  ********************************************************************/
 PrinterReceiptText::PrinterReceiptText()
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2242,9 +2242,9 @@ PrinterReceiptText::PrinterReceiptText()
 
 PrinterReceiptText::PrinterReceiptText(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2324,9 +2324,9 @@ int PrinterReceiptText::LineFeed(int lines)
  ********************************************************************/
 PrinterReportText::PrinterReportText(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    fore         = nullptr;  // REFACTOR: Converted NULL to nullptr
+    parent       = nullptr;  // REFACTOR: Converted NULL to nullptr
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2467,7 +2467,7 @@ int ParseDestination(int &type, genericChar* target, int &port, const genericCha
 Printer *NewPrinterObj(const genericChar* destination, int port, int model, int no)
 {
     FnTrace("NewPrinterObj()");
-    Printer *retPrinter = NULL;
+    Printer *retPrinter = nullptr;
     genericChar target[STRLENGTH] = "";
     int target_type;
 
@@ -2508,7 +2508,7 @@ Printer *NewPrinterObj(const genericChar* destination, int port, int model, int 
             retPrinter = new PrinterReportText(destination, port, target, target_type);
             break;
         default:
-            retPrinter = NULL;
+            retPrinter = nullptr;
             break;
         }
     }
@@ -2519,7 +2519,7 @@ Printer *NewPrinterObj(const genericChar* destination, int port, int model, int 
 Printer *NewPrinterFromString(const genericChar* specification)
 {
     FnTrace("NewPrinterFromString()");
-    Printer *retPrinter = NULL;
+    Printer *retPrinter = nullptr;
     genericChar destination[STRLONG] = "";
     genericChar modelstr[STRLONG] = "";
     int model = MODEL_HTML;  // use default model

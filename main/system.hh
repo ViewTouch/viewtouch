@@ -18,8 +18,7 @@
  * Data storage & report generation for current/previous business days
  */
 
-#ifndef _SYSTEM_HH
-#define _SYSTEM_HH
+#pragma once  // REFACTOR: Replaced #ifndef _SYSTEM_HH guard with modern pragma once
 
 #include "tips.hh"
 #include "labor.hh"
@@ -155,7 +154,7 @@ public:
     int SetDataPath(const char* path);
     // specify directory where system data is kept
     int CheckFileUpdates();
-    genericChar* FullPath(const char* filename, genericChar* buffer = NULL);
+    genericChar* FullPath(const char* filename, genericChar* buffer = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     // returns string containing full filename for system datafile
     int LoadCurrentData(const char* path);
     // loads current day's data ('current' directory)
@@ -195,9 +194,9 @@ public:
     // adds check to current data
     int Remove(Check *check);
     // removes check from current check list (doesn't delete)
-    Check *FirstCheck(Archive *archive = NULL);
+    Check *FirstCheck(Archive *archive = nullptr);                      // REFACTOR: Changed NULL to nullptr for modern C++
     // returns first check of archive or current checks
-    int CountOpenChecks(Employee *e = NULL);
+    int CountOpenChecks(Employee *e = nullptr);                         // REFACTOR: Changed NULL to nullptr for modern C++
     // counts open checks owned by user (or by everyone)
     int NumberStacked(const char* table, Employee *e);
     // Returns number of open checks at tables
@@ -216,7 +215,7 @@ public:
     // adds drawer to current data
     int Remove(Drawer *drawer);
     // removes drawer from current drawer list (doesn't delete)
-    Drawer *FirstDrawer(Archive *archive = NULL);
+    Drawer *FirstDrawer(Archive *archive = nullptr);                    // REFACTOR: Changed NULL to nullptr for modern C++
     // returns first drawer of archive or current drawers
     Drawer *GetServerBank(Employee *e);
     // returns server bank for user (creates new one if needed)
@@ -230,11 +229,11 @@ public:
     // boolean - are all drawers pulled or balanced?
 
     // Exception functions
-    ItemException *FirstItemException(Archive *archive = NULL);
+    ItemException *FirstItemException(Archive *archive = nullptr);       // REFACTOR: Changed NULL to nullptr for modern C++
     // returns first item exception of archive or current exceptions
-    TableException *FirstTableException(Archive *archive = NULL);
+    TableException *FirstTableException(Archive *archive = nullptr);     // REFACTOR: Changed NULL to nullptr for modern C++
     // returns first table exception of archive or current exceptions
-    RebuildException *FirstRebuildException(Archive *archive = NULL);
+    RebuildException *FirstRebuildException(Archive *archive = nullptr); // REFACTOR: Changed NULL to nullptr for modern C++
     // returns first rebuild exception of archive or current exceptions
 
     // report functions (see system_report.cc)
@@ -271,5 +270,3 @@ public:
 
 /**** Globals ****/
 extern System *MasterSystem;
-
-#endif

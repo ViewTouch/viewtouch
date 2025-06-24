@@ -18,8 +18,7 @@
  * Definition of check management classes
  */
 
-#ifndef _CHECK_HH
-#define _CHECK_HH
+#pragma once  // REFACTOR: Replaced #ifndef _CHECK_HH guard with modern pragma once
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -92,10 +91,22 @@ extern int tender_order[];
 #define CHECK_DISPLAY_CASH   128 // Display money Info
 #define CHECK_DISPLAY_ALL    255 // Display everything
 
+// Check Display Types (for report display options)
+#define CHECK_DISPLAY_ALONE    1
+#define CHECK_DISPLAY_ORDER    2  
+#define CHECK_DISPLAY_KV1      3
+#define CHECK_DISPLAY_KV2      4
+#define CHECK_DISPLAY_KVALL    5
+#define CHECK_DISPLAY_BV1      6
+#define CHECK_DISPLAY_BV2      7
+#define CHECK_DISPLAY_BVALL    8
+#define CHECK_DISPLAY_SPLIT    9
+#define CHECK_DISPLAY_TABLE   10
+
 // Data
 extern const genericChar* CheckStatusName[];
 extern int   CheckStatusValue[];
-
+extern int   last_check_serial;  // Global serial number counter for checks
 
 /**** Types ****/
 class Archive;
@@ -169,13 +180,13 @@ public:
     int        Add(Order *o);  // Add a modifier order
     int        Remove(Order *o);  // Removes a modifier order
     int        FigureCost();  // Totals up order
-    genericChar* Description(Terminal *t, genericChar* buffer = NULL);  // Returns string with order description
-    genericChar* PrintDescription( genericChar* str=NULL, short int pshort = 0 );  // Returns string with printed order description
+    genericChar* Description(Terminal *t, genericChar* buffer = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    genericChar* PrintDescription( genericChar* str=nullptr, short int pshort = 0 );  // REFACTOR: Changed NULL to nullptr for modern C++
     int        IsEntree();  // boolean - is this item an "Entree"?
     int        FindPrinterID(Settings *settings);  // PrinterID (based on family) for order
     SalesItem *Item(ItemDB *db);  // Returns menu item this order points to
     int        PrintStatus(Terminal *t, int printer_id, int reprint = 0, int flag_sent = ORDER_SENT);  // Returns 0-don't print, 1-print, 2-notify only
-    genericChar* Seat(Settings *settings, genericChar* buffer = NULL);  // Returns string with order's seat
+    genericChar* Seat(Settings *settings, genericChar* buffer = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     int        IsModifier();  // Boolean - Is this order a modifier?
     int        CanDiscount(int discount_alcohol, Payment *p);  // Boolean - Does this discount apply?
     int        Finalize();  // Finalizes order
@@ -209,7 +220,7 @@ public:
     Payment *Copy();  // Returns exact copy of payment object
     int      Read(InputDataFile &df, int version);  // Reads payment from a file
     int      Write(OutputDataFile &df, int version);  // Write payment to a file
-    genericChar* Description(Settings *settings, genericChar* str = NULL);  // Returns description of discount
+    genericChar* Description(Settings *settings, genericChar* str = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     int      Priority();  // Sorting priority (higher goes 1st)
     int      Suppress();  // Boolean - Should payment be shown?
     int      IsDiscount();  // Boolean - Is payment a discount?
@@ -294,13 +305,13 @@ public:
     }
 
     SubCheck *Copy(Settings *settings);  // Creates a subcheck copy
-    int       Copy(SubCheck *sc, Settings *settings = NULL, int restore = 0);  // Copies the contents of a subcheck
+    int       Copy(SubCheck *sc, Settings *settings = nullptr, int restore = 0);  // REFACTOR: Changed NULL to nullptr for modern C++
     int       Read(Settings *settings, InputDataFile &df, int version);  // Reads subcheck from file
     int       Write(OutputDataFile &df, int version);  // Writes subcheck to file
-    int       Add(Order *o, Settings *settings = NULL);  // Adds an order - recalculates if settings are given
-    int       Add(Payment *p, Settings *settings = NULL);  // Adds a payment - recalculates if settings are given
-    int       Remove(Order *o, Settings *settings = NULL);  // Removes an order - recalculates if settings are given
-    int       Remove(Payment *p, Settings *settings = NULL);  // Removes a payment - recalculates if settings are given
+    int       Add(Order *o, Settings *settings = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    int       Add(Payment *p, Settings *settings = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    int       Remove(Order *o, Settings *settings = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    int       Remove(Payment *p, Settings *settings = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     int       Purge(int restore = 0);  // Removes all payments & orders
     Order    *RemoveOne(Order *o);  // Removes one order & returns it
     Order    *RemoveCount(Order *o, int count = 1);
@@ -310,13 +321,13 @@ public:
     int       FigureTotals(Settings *settings);  // Totals costs & payments
     int       TabRemain();
     int       SettleTab(Terminal *term, int payment_type, int payment_id, int payment_flags);
-    int       ConsolidateOrders(Settings *settings = NULL, int relaxed = 0);  // Combines like orders - recalculates if settings are given
-    int       ConsolidatePayments(Settings *settings = NULL);  // Combines like payments - recalculates if settings are given
+    int       ConsolidateOrders(Settings *settings = nullptr, int relaxed = 0);  // REFACTOR: Changed NULL to nullptr for modern C++
+    int       ConsolidatePayments(Settings *settings = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     int       FinalizeOrders();  // Makes all ordered items final
     int       Void();  // Voids check
     int       SeatsUsed();  // number of seats with orders
     int       PrintReceipt(Terminal *t, Check *c, Printer *p,
-                           Drawer *d = NULL, int open_drawer = 0);  // Prints receipt
+                           Drawer *d = nullptr, int open_drawer = 0);  // REFACTOR: Changed NULL to nullptr for modern C++
     int       ReceiptReport(Terminal *t, Check *c, Drawer *d, Report *r);  // Makes report of receipt
     const genericChar* StatusString(Terminal *t);  // Returns string with subcheck status (Open, Closed, Voided, etc.)
     int       IsSeatOnCheck(int seat);  // Boolean - Are any of the orders for this seat?
@@ -386,7 +397,7 @@ public:
 
     // Constructors
     Check();
-    Check(Settings *settings, int customer_type, Employee *e = NULL);
+    Check(Settings *settings, int customer_type, Employee *e = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     // Destructor
     ~Check();
 
@@ -424,19 +435,19 @@ public:
                          int flag_sent = ORDER_SENT);  // returns # of orders to be printed
     int       SendWorkOrder(Terminal *term, int printer_target, int reprint);
     int       PrintWorkOrder(Terminal *term, Report *report, int printer_id, int reprint,
-                             ReportZone *rzone = NULL, Printer *printer = NULL);
+                             ReportZone *rzone = nullptr, Printer *printer = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     int       PrintDeliveryOrder(Report *report, int pwidth = 80);
     int       PrintCustomerInfo(Printer *printer, int mode);
     int       PrintCustomerInfoReport(Report *report, int mode, int columns = 1, int pwidth = 40);
     int       ListOrdersForReport(Terminal *term, Report *report);
     int       MakeReport(Terminal *t, Report *r, int show_what = CHECK_DISPLAY_ALL,
-                         int video_target = PRINTER_DEFAULT, ReportZone *rzone = NULL);  // makes report showing all subchecks
+                         int video_target = PRINTER_DEFAULT, ReportZone *rzone = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     int       HasOpenTab();
     int       IsEmpty();  // boolean - is check blank?
     int       IsTraining();  // boolean - is this a training check?
     int       EntreeCount(int seat);  // counts total entrees at seat
     SubCheck *FirstOpenSubCheck(int seat = -1);  // returns 1st open subcheck (by seat if needed) - sets current_sub
-    SubCheck *NextOpenSubCheck(SubCheck *sc = NULL);  // returns next open subcheck in check - sets current_sub
+    SubCheck *NextOpenSubCheck(SubCheck *sc = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     TimeInfo *TimeClosed();  // returns ptr to time closed
     int       WhoGetsSale(Settings *settings);  // returns user_id of server
     int       SecondsOpen();  // total number of seconds open
@@ -452,33 +463,31 @@ public:
     int       IsToGo();
     int       IsForHere();
     int       CustomerType(int set = -1);
-    const genericChar* Table(const genericChar* set = NULL);  // FIX - name not general enough
+    const genericChar* Table(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     int       Guests(int guests = -1);
     int              CallCenterID(int set = -1);
     int              CustomerID(int set = -1);
-    const genericChar* LastName(const genericChar* set = NULL);
-    const genericChar* FirstName(const genericChar* set = NULL);
-    genericChar* FullName(genericChar* dest = NULL);
-    const genericChar* Company(const genericChar* set = NULL);
-    const genericChar* Address(const genericChar* set = NULL);
-    const genericChar* Address2(const genericChar* set = NULL);
-    const genericChar* CrossStreet(const genericChar* set = NULL);
-    const genericChar* City(const genericChar* set = NULL);
-    const genericChar* State(const genericChar* set = NULL);
-    const genericChar* Postal(const genericChar* set = NULL);
-    const genericChar* Vehicle(const genericChar* set = NULL);
-    const genericChar* CCNumber(const genericChar* set = NULL);
-    const genericChar* CCExpire(const genericChar* set = NULL);
-    const genericChar* License(const genericChar* set = NULL);
-    const genericChar* Comment(const genericChar* set = NULL);
-    const genericChar* PhoneNumber(const genericChar* set = NULL);
-    const genericChar* Extension(const genericChar* set = NULL);
-    TimeInfo        *Date(TimeInfo *set = NULL);
-    TimeInfo        *CheckIn(TimeInfo *timevar = NULL);
-    TimeInfo        *CheckOut(TimeInfo *timevar = NULL);
+    const genericChar* LastName(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* FirstName(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    genericChar* FullName(genericChar* dest = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* Company(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* Address(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* Address2(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* CrossStreet(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* City(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* State(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* Postal(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* Vehicle(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* CCNumber(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* CCExpire(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* License(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* Comment(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* PhoneNumber(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    const genericChar* Extension(const genericChar* set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    TimeInfo        *Date(TimeInfo *set = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    TimeInfo        *CheckIn(TimeInfo *timevar = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    TimeInfo        *CheckOut(TimeInfo *timevar = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
 };
 
 /**** General Functions ****/
 genericChar* SeatName( int seat, genericChar* str, int guests = -1 ); // return pointer to string with seat letter
-
-#endif

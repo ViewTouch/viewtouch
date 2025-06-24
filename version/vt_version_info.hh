@@ -1,5 +1,4 @@
-#ifndef VT_VERSION_INFO_HPP
-#define VT_VERSION_INFO_HPP
+#pragma once  // REFACTOR: Replaced #ifndef VT_VERSION_INFO_HPP guard with modern pragma once
 
 #include <string>
 
@@ -14,4 +13,3 @@ std::string get_version_info();
 std::string get_version_timestamp();
 
 } // end namespace viewtouch
-#endif // VT_VERSION_INFO_HPP

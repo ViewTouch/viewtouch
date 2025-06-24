@@ -85,7 +85,7 @@ int Email::AddTo(const char* address)
 {
     FnTrace("Email::AddTo()");
     int retval = 0;
-    Line *newadd = NULL;
+    Line *newadd = nullptr;
 
     newadd = new Line;
     newadd->Set(address);
@@ -100,13 +100,13 @@ int Email::NextTo(char* buffer, int maxlen)
 {
     FnTrace("Email::NextTo()");
     int retval = 1;
-    static Line *currLine = NULL;
+    static Line *currLine = nullptr;
 
-    if (currLine == NULL)
+    if (currLine == nullptr)
         currLine = tos.Head();
     else
         currLine = currLine->next;
-    if (currLine != NULL && currLine->Length() > 0)
+    if (currLine != nullptr && currLine->Length() > 0)
     {
         strncpy(buffer, currLine->Value(), maxlen);
         retval = 0;
@@ -141,7 +141,7 @@ int Email::AddBody(const char* line)
 {
     FnTrace("Email::AddBody()");
     int retval = 0;
-    Line *newbody = NULL;
+    Line *newbody = nullptr;
 
     newbody = new Line;
     newbody->Set(line);
@@ -156,13 +156,13 @@ int Email::NextBody(char* buffer, int maxlen)
 {
     FnTrace("Email::NextBody()");
     int retval = 1;
-    static Line *currBody = NULL;
+    static Line *currBody = nullptr;
 
-    if (currBody == NULL)
+    if (currBody == nullptr)
         currBody = body.Head();
     else
         currBody = currBody->next;
-    if (currBody != NULL && currBody->Length() > 0)
+    if (currBody != nullptr && currBody->Length() > 0)
     {
         strncpy(buffer, currBody->Value(), maxlen);
         retval = 0;
@@ -203,8 +203,8 @@ const char* Sock_ntop(const struct sockaddr_in *sa, socklen_t addrlen)
     char portstr[STRLENGTH];
     static char str[STRLENGTH];
 
-    if (inet_ntop(AF_INET, &sa->sin_addr, str, sizeof(str)) == NULL)
-        return NULL;
+    if (inet_ntop(AF_INET, &sa->sin_addr, str, sizeof(str)) == nullptr)  // REFACTOR: Changed NULL to nullptr for modern C++
+        return nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
     if (ntohs(sa->sin_port) != 0)
     {
         snprintf(portstr, sizeof(portstr), ":%d", ntohs(sa->sin_port));
@@ -286,7 +286,7 @@ int Accept(int socknum, char* remote_address)
         if (errno != EWOULDBLOCK)
             perror("accept");
     }
-    else if (remote_address != NULL)
+    else if (remote_address != nullptr)
     {
         strcpy(remote_address, Sock_ntop(&their_addr, sin_size));
     }
@@ -308,13 +308,13 @@ int Connect(const char* host, const char* service)
     struct servent *sp;
 
     hp = gethostbyname(host);
-    if (hp != NULL)
+    if (hp != nullptr)
     {
         sp = getservbyname(service, "tcp");
-        if (sp != NULL)
+        if (sp != nullptr)
         {
             pptr = (struct in_addr **)hp->h_addr_list;
-            for (; *pptr != NULL; pptr++)
+            for (; *pptr != nullptr; pptr++)
             {
                 sockfd = socket(AF_INET, SOCK_STREAM, 0);
                 bzero(&servaddr, sizeof(servaddr));
@@ -353,10 +353,10 @@ int Connect(const char* host, int port)
     struct hostent *hp;
 
     hp = gethostbyname(host);
-    if (hp != NULL)
+    if (hp != nullptr)
     {
         pptr = (struct in_addr **)hp->h_addr_list;
-        for (; *pptr != NULL; pptr++)
+        for (; *pptr != nullptr; pptr++)
         {
             sockfd = socket(AF_INET, SOCK_STREAM, 0);
             bzero(&servaddr, sizeof(servaddr));
@@ -397,7 +397,7 @@ int SelectIn(int fd, int u_sec)
     timeout.tv_sec = seconds;
     timeout.tv_usec = milliseconds;
 
-    retval = select(fd + 1, &infds, NULL, NULL, &timeout);
+    retval = select(fd + 1, &infds, nullptr, nullptr, &timeout);
     return retval;
 }
 
@@ -412,7 +412,7 @@ int SelectOut(int fd, int u_sec)
     timeout.tv_sec = 0;
     timeout.tv_usec = u_sec;
 
-    retval = select(fd + 1, NULL, &outfds, NULL, &timeout);
+    retval = select(fd + 1, nullptr, &outfds, nullptr, &timeout);
     return retval;
 }
 

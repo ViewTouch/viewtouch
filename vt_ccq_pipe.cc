@@ -159,7 +159,7 @@ int SocketToSerial(int listen_port, const char* pinpad_device)
             FD_SET(listen_fd, &in_fds);
             timeout.tv_sec = 0;
             timeout.tv_usec = 10;
-            reads = select(nfds, &in_fds, NULL, NULL, &timeout);
+            reads = select(nfds, &in_fds, nullptr, nullptr, &timeout);
             if (reads > 0)
             {
                 if (FD_ISSET(pinpad_fd, &in_fds))
@@ -255,7 +255,7 @@ int SocketToSocket(int listen_port, const char* host, int port)
             FD_SET(listen_fd, &in_fds);
             timeout.tv_sec = 0;
             timeout.tv_usec = 10;
-            reads = select(nfds, &in_fds, NULL, NULL, &timeout);
+            reads = select(nfds, &in_fds, nullptr, nullptr, &timeout);
             if (reads > 0)
             {
                 if (FD_ISSET(listen_fd, &in_fds))
@@ -441,10 +441,10 @@ int ProcessConnection(int serverfd, int pinpadfd)
         {
             timeout.tv_sec  = check_interval;
             timeout.tv_usec = 0;
-            readies = select(nfds, &in_fds, NULL, NULL, &timeout);
+            readies = select(nfds, &in_fds, nullptr, nullptr, &timeout);
         }
         else
-            readies = select(nfds, &in_fds, NULL, NULL, NULL);
+            readies = select(nfds, &in_fds, nullptr, nullptr, nullptr);
         if (readies < 0)
         {
             perror("ProcessConnection select");
@@ -458,7 +458,7 @@ int ProcessConnection(int serverfd, int pinpadfd)
                 readlen = ReadCmd(serverfd, buffer, STRLONG);
                 if (readlen >= 0)
                 {
-                    lastserver = time(NULL);
+                    lastserver = time(nullptr);
                     // send to pinpad
                     if (diagnostics)
                         PrintRead("from Socket", buffer, readlen);
@@ -488,7 +488,7 @@ int ProcessConnection(int serverfd, int pinpadfd)
         }
         else if (lastserver && time_limit)
         {  // check for timeouts
-            now = time(NULL);
+            now = time(nullptr);
             if ((now - lastserver) > time_limit)
                 retval = ERR_TIMEOUT;
         }

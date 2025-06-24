@@ -18,8 +18,7 @@
  * Work scheduling & time clock classes
  */
 
-#ifndef _LABOR_HH
-#define _LABOR_HH
+#pragma once  // REFACTOR: Replaced #ifndef _LABOR_HH guard with modern pragma once
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -195,5 +194,3 @@ public:
     int Read(InputDataFile &df, int version);
     int Write(OutputDataFile &df, int version);
 };
-
-#endif

@@ -18,8 +18,7 @@
  * Pixmap graphic buffer objects
  */
 
-#ifndef _LAYER_HH
-#define _LAYER_HH
+#pragma once  // REFACTOR: Replaced #ifndef _LAYER_HH guard with modern pragma once
 
 #include "term_view.hh"
 #include "list_utility.hh"
@@ -198,7 +197,7 @@ public:
     // redraws all layers (only layers with update flag if select_all = 0)
     int UpdateArea(int x, int y, int w, int h);
     // redraws all layers in region
-    int OptimalUpdateArea(int x, int y, int w, int h, Layer *end = NULL);
+    int OptimalUpdateArea(int x, int y, int w, int h, Layer *end = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     // redraws all layers with update flag set in region
     int RubberBandOff();
     int RubberBandUpdate(int x, int y);
@@ -273,5 +272,3 @@ public:
     int Render(Layer *l);
     int MouseAction(LayerList *ll, Layer *l, int x, int y, int code);
 };
-
-#endif

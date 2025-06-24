@@ -117,7 +117,7 @@ RenderResult ProductZone::Render(Terminal *t, int update_flag)
     if (update_flag == RENDER_NEW)
         record_no = 0;
 
-    if (t->stock == NULL)
+    if (t->stock == nullptr)
         t->stock = t->system_data->inventory.CurrentStock();
 
     ListFormZone::Render(t, update_flag);
@@ -180,7 +180,7 @@ SignalResult ProductZone::Signal(Terminal *term, const genericChar* message)
 	FnTrace("ProductZone::Signal()");
 	static const genericChar* commands[] = {
 		"count", "increase", "decrease", "cancel", "save",
-		"input", "next stock", "prior stock", "check", "print", NULL};
+		"input", "next stock", "prior stock", "check", "print", nullptr};
 
     int idx = -1;
     if (StringCompare(message, "amount ", 7) == 0)
@@ -190,16 +190,16 @@ SignalResult ProductZone::Signal(Terminal *term, const genericChar* message)
     if (idx < 0)
         return ListFormZone::Signal(term, message);
 
-    if (term->stock == NULL)
+    if (term->stock == nullptr)
         return SIGNAL_IGNORED;
 
     System *sys = term->system_data;
     Product *pr = sys->inventory.FindProductByRecord(record_no);
-    if (pr == NULL)
+    if (pr == nullptr)
         return SIGNAL_IGNORED;
 
     int final = term->stock->end_time.IsSet();
-    StockEntry *stock_entry = NULL;
+    StockEntry *stock_entry = nullptr;
 
     if (final)
         stock_entry = term->stock->FindStock(pr->id, 1);
@@ -249,19 +249,19 @@ SignalResult ProductZone::Signal(Terminal *term, const genericChar* message)
         return SIGNAL_IGNORED;
 
     case 6:  // next stock
-        if (term->stock == NULL || term->stock->next == NULL)
+        if (term->stock == nullptr || term->stock->next == nullptr)
             return SIGNAL_IGNORED;
         term->stock = term->stock->next;
         break;
 
     case 7:  // prior stock
-        if (term->stock == NULL || term->stock->fore == NULL)
+        if (term->stock == nullptr || term->stock->fore == nullptr)
             return SIGNAL_IGNORED;
         term->stock = term->stock->fore;
         break;
 
     case 8:  // check
-        if (term->stock == NULL)
+        if (term->stock == nullptr)
             return SIGNAL_IGNORED;
         if (term->stock->next)
             term->stock = sys->inventory.CurrentStock();
@@ -325,7 +325,7 @@ int ProductZone::LoadRecord(Terminal *term, int record)
     FnTrace("ProductZone::LoadRecord()");
     Product *prod = term->system_data->inventory.FindProductByRecord(record);
 
-    if (prod == NULL)
+    if (prod == nullptr)
     {
         printf("Can'term Load Record %d\n", record);
         return 1;
@@ -459,7 +459,7 @@ int ProductZone::KillRecord(Terminal *t, int record)
     FnTrace("ProductZone::KillRecord()");
     System *sys = t->system_data;
     Product *pr = sys->inventory.FindProductByRecord(record);
-    if (pr == NULL)
+    if (pr == nullptr)
         return 1;
     sys->inventory.Remove(pr);
     delete pr;
@@ -484,7 +484,7 @@ int ProductZone::Search(Terminal *t, int record, const genericChar* word)
     FnTrace("ProductZone::Search()");
     int r = 0;
     Product *pr = t->system_data->inventory.FindProductByWord(word, r);
-    if (pr == NULL)
+    if (pr == nullptr)
         return 0;  // no matches
     record_no = r;
     return 1;  // one match (only one for now)
@@ -495,10 +495,10 @@ int ProductZone::Search(Terminal *t, int record, const genericChar* word)
 // Constructor
 RC_Part::RC_Part()
 {
-    next = NULL;
-    rc   = NULL;
-    pr   = NULL;
-    rp   = NULL;
+    next = nullptr;
+    rc   = nullptr;
+    pr   = nullptr;
+    rp   = nullptr;
     page = 0;
     lit  = 0;
 }
@@ -600,7 +600,7 @@ int RC_Part::RemoveIngredient(Recipe *r)
     {
         r->Remove(rp);
         delete rp;
-        rp = NULL;
+        rp = nullptr;
         return 0;
     }
     else
@@ -677,12 +677,12 @@ RenderResult RecipeZone::Render(Terminal *t, int update_flag)
     {
         RC_Part *p;
         LayoutParts();
-        for (p = part_list.Head(); p != NULL; p = p->next)
+        for (p = part_list.Head(); p != nullptr; p = p->next)
             if (p->page == part_page)
                 p->Render(t);
 
         LayoutRecipe();
-        for (p = recipe_list.Head(); p != NULL; p = p->next)
+        for (p = recipe_list.Head(); p != nullptr; p = p->next)
             p->Render(t);
     }
 
@@ -729,7 +729,7 @@ SignalResult RecipeZone::Touch(Terminal *t, int tx, int ty)
             if (p->page == part_page && p->IsPointIn(tx, ty))
             {
                 Recipe *rc = sys->inventory.FindRecipeByRecord(record_no);
-                if (rc == NULL)
+                if (rc == nullptr)
                     return SIGNAL_IGNORED;
                 p->lit = 1;
                 p->Draw(t);
@@ -746,7 +746,7 @@ SignalResult RecipeZone::Touch(Terminal *t, int tx, int ty)
             if (p->IsPointIn(tx, ty))
             {
                 Recipe *rc = sys->inventory.FindRecipeByRecord(record_no);
-                if (rc == NULL)
+                if (rc == nullptr)
                     return SIGNAL_IGNORED;
                 p->lit = 1;
                 p->Draw(t);
@@ -764,7 +764,7 @@ int RecipeZone::LoadRecord(Terminal *t, int record)
 {
     FnTrace("RecipeZone::LoadRecord()");
     Recipe *rc = t->system_data->inventory.FindRecipeByRecord(record);
-    if (rc == NULL)
+    if (rc == nullptr)
         return 1;
 
     FormField *f = FieldList();
@@ -810,7 +810,7 @@ int RecipeZone::NewRecord(Terminal *t)
 {
     FnTrace("RecipeZone::NewRecord()");
     Recipe *rc = new Recipe;
-    if (rc == NULL)
+    if (rc == nullptr)
         return 1;
     if (t->system_data->inventory.Add(rc))
     {
@@ -831,7 +831,7 @@ int RecipeZone::KillRecord(Terminal *t, int record)
     FnTrace("RecipeZone::KillRecord()");
     System *sys = t->system_data;
     Recipe *rc = sys->inventory.FindRecipeByRecord(record);
-    if (rc == NULL)
+    if (rc == nullptr)
         return 1;
     sys->inventory.Remove(rc);
     delete rc;
@@ -844,7 +844,7 @@ int RecipeZone::Search(Terminal *t, int record, const genericChar* word)
     FnTrace("RecipeZone::Search()");
     int r = 0;
     Recipe *rc = t->system_data->inventory.FindRecipeByWord(word, r);
-    if (rc == NULL)
+    if (rc == nullptr)
         return 0;  // no matches
     record_no = r;
     return 1;  // one match (only one for now)
@@ -853,12 +853,12 @@ int RecipeZone::Search(Terminal *t, int record, const genericChar* word)
 int RecipeZone::ListReport(Terminal *t, Report *r)
 {
     FnTrace("RecipeZone::ListReport()");
-    if (r == NULL)
+    if (r == nullptr)
         return 1;
 
     r->update_flag = UPDATE_MENU;
     Recipe *rc = t->system_data->inventory.RecipeList();
-    if (rc == NULL)
+    if (rc == nullptr)
     {
         r->TextC(t->Translate("There are no recipes defined"));
         return 0;
@@ -888,7 +888,7 @@ int RecipeZone::LayoutParts()
     int my_page = 0;
     int xx = x + border;
     int yy = y + b;
-    for (RC_Part *rpart = part_list.Head(); rpart != NULL; rpart = rpart->next)
+    for (RC_Part *rpart = part_list.Head(); rpart != nullptr; rpart = rpart->next)
     {
         rpart->lit  = 0;
         rpart->x    = xx;
@@ -912,7 +912,7 @@ int RecipeZone::LayoutParts()
 int RecipeZone::MakeRecipe(Terminal *t, Recipe *rc)
 {
     FnTrace("RecipeZone::MakeRecipe()");
-    if (rc == NULL)
+    if (rc == nullptr)
         return 1;
 
     System *sys = t->system_data;
@@ -948,7 +948,7 @@ int RecipeZone::LayoutRecipe()
     int hh   = 36;
     int xx = topx, yy = topy;
 
-    for (RC_Part *p = recipe_list.Head(); p != NULL; p = p->next)
+    for (RC_Part *p = recipe_list.Head(); p != nullptr; p = p->next)
     {
         p->lit = 0;
         p->x = xx;
@@ -1010,7 +1010,7 @@ int VendorZone::LoadRecord(Terminal *t, int record)
 {
     FnTrace("VendorZone::LoadRecord()");
     Vendor *v = t->system_data->inventory.FindVendorByRecord(record);
-    if (v == NULL)
+    if (v == nullptr)
         return 1;
 
     FormField *f = FieldList();
@@ -1078,7 +1078,7 @@ int VendorZone::KillRecord(Terminal *t, int record)
     FnTrace("VendorZone::KillRecord()");
     System *sys = t->system_data;
     Vendor *v = sys->inventory.FindVendorByRecord(record);
-    if (v == NULL)
+    if (v == nullptr)
         return 1;
     sys->inventory.Remove(v);
     delete v;
@@ -1091,7 +1091,7 @@ int VendorZone::Search(Terminal *t, int record, const genericChar* word)
     FnTrace("VendorZone::Search()");
     int r = 0;
     Vendor *v = t->system_data->inventory.FindVendorByWord(word, r);
-    if (v == NULL)
+    if (v == nullptr)
         return 0;  // no matches
     record_no = r;
     return 1;  // one match (only one for now)
@@ -1100,11 +1100,11 @@ int VendorZone::Search(Terminal *t, int record, const genericChar* word)
 int VendorZone::ListReport(Terminal *t, Report *r)
 {
     FnTrace("VendorZone::ListReport()");
-    if (r == NULL)
+    if (r == nullptr)
         return 1;
 
     Vendor *v = t->system_data->inventory.VendorList();
-    if (v == NULL)
+    if (v == nullptr)
     {
         r->TextC(t->Translate("There are no vendors defined"));
         return 0;
@@ -1203,7 +1203,7 @@ int ItemListZone::LoadRecord(Terminal *t, int record)
 {
     FnTrace("ItemListZone::LoadRecord()");
     SalesItem *si = t->system_data->menu.FindByRecord(record);
-    if (si == NULL)
+    if (si == nullptr)
         return 1;
 
     FormField *f = FieldList();
@@ -1292,7 +1292,7 @@ int ItemListZone::SaveRecord(Terminal *t, int record, int write_file)
                 si = si->fore;
                 ++record_no;
             }
-            t->UpdateOtherTerms(UPDATE_MENU, NULL);
+            t->UpdateOtherTerms(UPDATE_MENU, nullptr);
         }
     }
 
@@ -1314,7 +1314,7 @@ int ItemListZone::Search(Terminal *t, int record, const genericChar* word)
     FnTrace("ItemListZone::Search()");
     int r = 0;
     SalesItem *mi = t->system_data->menu.FindByWord(word, r);
-    if (mi == NULL)
+    if (mi == nullptr)
         return 0;  // no matches
     record_no = r;
     return 1;  // one match (only 1 for now)
@@ -1323,12 +1323,12 @@ int ItemListZone::Search(Terminal *t, int record, const genericChar* word)
 int ItemListZone::ListReport(Terminal *t, Report *r)
 {
     FnTrace("ItemListZone::ListRecord()");
-    if (r == NULL)
+    if (r == nullptr)
         return 1;
 
     r->update_flag = UPDATE_MENU;
     SalesItem *si = t->system_data->menu.ItemList();
-    if (si == NULL)
+    if (si == nullptr)
     {
         r->TextC(t->Translate("There are no menu items defined"));
         return 0;
@@ -1364,13 +1364,13 @@ int ItemListZone::RecordCount(Terminal *t)
 // Constructor
 InvoiceZone::InvoiceZone()
 {
-    invoice_report = NULL;
+    invoice_report = nullptr;
     invoice_page   = 0;
     edit           = 0;
     list_header = 3;
     form_header = 2;
 
-    AddListField("Vendor", NULL);
+    AddListField("Vendor", nullptr);
     AddTextField("ID", 9);
     AddDateField("Date", 1, 0);
 }
@@ -1391,7 +1391,7 @@ RenderResult InvoiceZone::Render(Terminal *t, int update_flag)
         if (invoice_report)
         {
             delete invoice_report;
-            invoice_report = NULL;
+            invoice_report = nullptr;
         }
         if (update_flag == RENDER_NEW)
         {
@@ -1402,7 +1402,7 @@ RenderResult InvoiceZone::Render(Terminal *t, int update_flag)
     }
 
     System *sys = t->system_data;
-    if (t->stock == NULL)
+    if (t->stock == nullptr)
         t->stock = sys->inventory.CurrentStock();
 
     FormField *f = FieldList();
@@ -1412,12 +1412,12 @@ RenderResult InvoiceZone::Render(Terminal *t, int update_flag)
 
     no_line = !show_list;
     ListFormZone::Render(t, update_flag);
-    if (t->stock == NULL)
+    if (t->stock == nullptr)
         return RENDER_OKAY;
 
     Invoice *in = t->stock->FindInvoiceByRecord(record_no);
     int col = color[0];
-    if (in == NULL || show_list)
+    if (in == nullptr || show_list)
     {
         // normal list mode
         genericChar tm1[32], tm2[32];
@@ -1440,7 +1440,7 @@ RenderResult InvoiceZone::Render(Terminal *t, int update_flag)
         if (invoice_report)
         {
             delete invoice_report;
-            invoice_report = NULL;
+            invoice_report = nullptr;
         }
     }
     else
@@ -1453,7 +1453,7 @@ RenderResult InvoiceZone::Render(Terminal *t, int update_flag)
             TextPosR(t, size_x - 20, 4, "Amount", COLOR_RED);
             TextPosR(t, size_x - 10, 4, "Unit Cost", col);
             TextPosR(t, size_x,      4, "Total Cost", col);
-            if (invoice_report == NULL)
+            if (invoice_report == nullptr)
             {
                 invoice_report = new Report;
                 sys->inventory.ProductListReport(t, in, invoice_report);
@@ -1468,7 +1468,7 @@ RenderResult InvoiceZone::Render(Terminal *t, int update_flag)
         {
             // invoice view
             TextC(t, 0, "View Invoice", col);
-            if (invoice_report == NULL)
+            if (invoice_report == nullptr)
             {
                 invoice_report = new Report;
                 sys->inventory.InvoiceReport(t, in, invoice_report);
@@ -1488,7 +1488,7 @@ SignalResult InvoiceZone::Signal(Terminal *t, const genericChar* message)
     FnTrace("InvoiceZone::Signal()");
     static const genericChar* commands[] = {
         "print", "save", "next", "prior", "input", "cancel", "edit",
-            "next stock", "prior stock", NULL};
+            "next stock", "prior stock", nullptr};
 
     int idx = -1;
     if (StringCompare(message, "amount ", 7) == 0)
@@ -1499,7 +1499,7 @@ SignalResult InvoiceZone::Signal(Terminal *t, const genericChar* message)
         return ListFormZone::Signal(t, message);
 
     System *sys = t->system_data;
-    Invoice *in = t->stock ? t->stock->FindInvoiceByRecord(record_no) : NULL;
+    Invoice *in = t->stock ? t->stock->FindInvoiceByRecord(record_no) : nullptr;
     switch (idx)
     {
     case 0:  // print
@@ -1560,7 +1560,7 @@ SignalResult InvoiceZone::Signal(Terminal *t, const genericChar* message)
         Draw(t, 1);
         return SIGNAL_OKAY;
     case 7:  // next stock
-        if (t->stock == NULL || t->stock->next == NULL)
+        if (t->stock == nullptr || t->stock->next == nullptr)
             return SIGNAL_IGNORED;
         t->stock = t->stock->next;
         record_no = 0;
@@ -1569,7 +1569,7 @@ SignalResult InvoiceZone::Signal(Terminal *t, const genericChar* message)
         Draw(t, 1);
         return SIGNAL_OKAY;
     case 8:  // prior stock
-        if (t->stock == NULL || t->stock->fore == NULL)
+        if (t->stock == nullptr || t->stock->fore == nullptr)
             return SIGNAL_IGNORED;
         t->stock = t->stock->fore;
         record_no = 0;
@@ -1592,7 +1592,7 @@ SignalResult InvoiceZone::Signal(Terminal *t, const genericChar* message)
                     ie->amount.type   = ut;
                     ie->amount.amount = amt;
                     delete invoice_report;
-                    invoice_report = NULL;
+                    invoice_report = nullptr;
                     Draw(t, 0);
                     return SIGNAL_OKAY;
                 }
@@ -1648,15 +1648,15 @@ int InvoiceZone::LoadRecord(Terminal *t, int record)
     if (invoice_report)
     {
         delete invoice_report;
-        invoice_report = NULL;
+        invoice_report = nullptr;
         entry_no = 0;
     }
 
-    if (t->stock == NULL)
+    if (t->stock == nullptr)
         return 1;
 
     Invoice *in = t->stock->FindInvoiceByRecord(record);
-    if (in == NULL)
+    if (in == nullptr)
         return 1;
 
     FormField *f = FieldList();
@@ -1681,11 +1681,11 @@ int InvoiceZone::LoadRecord(Terminal *t, int record)
 int InvoiceZone::SaveRecord(Terminal *t, int record, int write_file)
 {
     FnTrace("InvoiceZone::SaveRecord()");
-    if (t->stock == NULL)
+    if (t->stock == nullptr)
         return 1;
 
     Invoice *in = t->stock->FindInvoiceByRecord(record);
-    if (in == NULL)
+    if (in == nullptr)
         return 1;
     FormField *f = FieldList();
     f->Get(in->vendor_id); f = f->next;
@@ -1697,7 +1697,7 @@ int InvoiceZone::SaveRecord(Terminal *t, int record, int write_file)
 int InvoiceZone::NewRecord(Terminal *t)
 {
     FnTrace("InvoiceZone::NewRecord()");
-    if (t->stock == NULL)
+    if (t->stock == nullptr)
         return 1;
     t->stock->NewInvoice(0);
     edit = 1;
@@ -1707,7 +1707,7 @@ int InvoiceZone::NewRecord(Terminal *t)
 int InvoiceZone::KillRecord(Terminal *t, int record)
 {
     FnTrace("InvoiceZone::KillRecord()");
-    if (t->stock == NULL)
+    if (t->stock == nullptr)
         return 1;
     return 1;
 }
@@ -1721,11 +1721,11 @@ int InvoiceZone::Search(Terminal *t, int record, const genericChar* word)
 int InvoiceZone::ListReport(Terminal *t, Report *r)
 {
     FnTrace("InvoiceZone::ListReport()");
-    if (r == NULL)
+    if (r == nullptr)
         return 1;
 
     Stock *s = t->stock;
-    if (s == NULL || s->InvoiceList() == NULL)
+    if (s == nullptr || s->InvoiceList() == nullptr)
     {
         r->TextC(t->Translate("No Invoices for this period"));
         return 0;
@@ -1753,7 +1753,7 @@ int InvoiceZone::ListReport(Terminal *t, Report *r)
 int InvoiceZone::RecordCount(Terminal *t)
 {
     FnTrace("InvoiceZone::RecordCount()");
-    if (t->stock == NULL)
+    if (t->stock == nullptr)
         return 0;
 
     return t->stock->InvoiceCount();

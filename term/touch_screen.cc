@@ -131,7 +131,7 @@ int TouchScreen::Connect(int boot)
         if (inaddr.sin_addr.s_addr == INADDR_NONE)
         {
             struct hostent *hp = gethostbyname(host.Value());
-            if (hp == NULL || hp->h_addrtype != AF_INET)
+            if (hp == nullptr || hp->h_addrtype != AF_INET)
             {
                 std::string str = std::string("Can't resolve name '")
                         + host.Value() + "'";

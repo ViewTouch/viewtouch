@@ -18,8 +18,7 @@
  * Implementation of edit mode dialogs
  */
 
-#ifndef _TERM_DIALOG_HH
-#define _TERM_DIALOG_HH
+#pragma once  // REFACTOR: Replaced #ifndef _TERM_DIALOG_HH guard with modern pragma once
 
 #include <Xm/Xm.h>
 #include "basic.hh"
@@ -68,7 +67,7 @@ public:
     // Member Functions
     int Clear();
     int Init(Widget parent, const genericChar* label, const genericChar* *option_name, int *option_value,
-             void *option_cb = NULL, void *client_data = NULL);
+             void *option_cb = nullptr, void *client_data = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     int Show(int flag);
     int Set(int val);
     int SetLabel(const char* label);
@@ -304,5 +303,3 @@ public:
     int Close();
     int Send();
 };
-
-#endif

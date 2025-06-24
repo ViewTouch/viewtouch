@@ -18,8 +18,7 @@
  * Credit/charge card verification/authorization
  */
 
-#ifndef _CREDIT_HH
-#define _CREDIT_HH
+#pragma once  // REFACTOR: Replaced #ifndef _CREDIT_HH guard with modern pragma once
 
 #include "list_utility.hh"
 #include "printer.hh"
@@ -622,5 +621,3 @@ public:
     int           Add(Terminal *term);
     int           MakeReport(Terminal *term, Report *report, ReportZone *rzone);
 };
-
-#endif

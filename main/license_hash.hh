@@ -1,3 +1,4 @@
+#pragma once  // REFACTOR: Replaced #ifndef _LICENSE_HASH_HH guard with modern pragma once
 
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
@@ -19,11 +20,10 @@
  * Shared functions for generating a temporary license.
  */
 
-#ifndef LICENSE_HASH_HH
-#define LICENSE_HASH_HH
+#include "basic.hh"
 
 int GetUnameInfo(char* buffer, int bufflen);
 int GetInterfaceInfo(char* stringbuff, int stringlen);
 int GetMacAddress(char* stringbuff, int stringlen);
-
-#endif
+int GetFingerPrint(const unsigned char* data, int len);
+int GetStringMD5(const char* passwd, unsigned char* result);

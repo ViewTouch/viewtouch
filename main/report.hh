@@ -18,8 +18,7 @@
  * layout & formating of report information
  */
 
-#ifndef _REPORT_HH
-#define _REPORT_HH
+#pragma once  // REFACTOR: Replaced #ifndef _REPORT_HH guard with modern pragma once
 
 #include "utility.hh"
 #include "terminal.hh"
@@ -225,5 +224,3 @@ public:
     { return Underline(len, c, ALIGN_RIGHT, pos); }
 
 };
-
-#endif

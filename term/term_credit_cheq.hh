@@ -19,7 +19,7 @@
  *   keeping them in vt_term ensures that only the local terminal will be locked.
  */
 
-#ifndef __TERM_CREDIT__
+#pragma once  // REFACTOR: Replaced #ifndef __TERM_CREDIT__ guard with modern pragma once
 
 #include "utility.hh"
 
@@ -95,6 +95,3 @@ public:
     int ClearSAF();
     int SAFDetails();
 };
-
-#define __TERM_CREDIT__
-#endif  // __TERM_CREDIT__

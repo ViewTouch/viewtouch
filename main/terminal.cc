@@ -115,7 +115,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
 
     FnTrace("TermCB()");
     Terminal *term = (Terminal *) client_data;
-    Terminal *errterm = NULL;
+    Terminal *errterm = nullptr;
     int val = term->buffer_in->Read(*fid);
     static int last_code = 0;
 
@@ -127,7 +127,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
         if (*fid != term->socket_no)
         {
             Terminal *currterm = term->CloneList();
-            while (currterm != NULL && errterm == NULL)
+            while (currterm != nullptr && errterm == nullptr)
             {
                 if (*fid == currterm->socket_no)
                     errterm = currterm;
@@ -206,7 +206,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             term->WInt8(TERM_STORENAME);
             term->WStr(settings->store_name);
 
-            if (term->zone_db == NULL)
+            if (term->zone_db == nullptr)
                 printf("ACK!!!! no zone_db\n");
 
 	    // for KDS terminals, default to kitchen page
@@ -218,7 +218,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             else
             {
                 term->Jump(JUMP_STEALTH, PAGEID_LOGIN); // Show Login Page
-                term->UpdateAllTerms(UPDATE_TERMINALS, NULL);
+                term->UpdateAllTerms(UPDATE_TERMINALS, nullptr);
             }
             break;
 
@@ -307,12 +307,12 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             if (term->edit_zone)
             {
                 term->edit_zone->Draw(term, 0);
-                term->edit_zone = NULL;
+                term->edit_zone = nullptr;
             }
             else if (term->edit_page)
             {
                 term->Draw(0);
-                term->edit_page = NULL;
+                term->edit_page = nullptr;
             }
         }
         break;
@@ -334,7 +334,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             term->ButtonCommand(term->RInt16());
             break;
         case SERVER_SHUTDOWN:  // only allow easy exits on debug platforms
-            if (term->user != NULL && (term->user->id == 1 || term->user->id == 2))
+            if (term->user != nullptr && (term->user->id == 1 || term->user->id == 2))
                 EndSystem();  // superuser and developer can end system
             else if (debug_mode)
                 EndSystem();  // anyone in debug mode can end system
@@ -370,7 +370,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             term->eod_failed = 1;
             if (term->GetSettings()->authorize_method == CCAUTH_MAINSTREET)
             {
-                term->CC_Settle(NULL, 1);
+                term->CC_Settle(nullptr, 1);
                 char errormsg[STRLENGTH];
                 term->RStr(errormsg);
                 term->system_data->cc_settle_results->Add(term, errormsg);
@@ -406,7 +406,7 @@ void RedrawZoneCB(XtPointer client_data, XtIntervalId *timer_id)
     Zone *z = t->selected_zone;
     if (z)
     {
-        t->selected_zone = NULL;
+        t->selected_zone = nullptr;
         z->Draw(t, 0);
     }
 }
@@ -415,11 +415,11 @@ void RedrawZoneCB(XtPointer client_data, XtIntervalId *timer_id)
 // Constructor
 Terminal::Terminal()
 {
-    next            = NULL;
-    fore            = NULL;
-    parent          = NULL;
-    check           = NULL;
-    customer        = NULL;
+    next            = nullptr;
+    fore            = nullptr;
+    parent          = nullptr;
+    check           = nullptr;
+    customer        = nullptr;
     seat            = 0;
     password_given  = 0;
     password_jump   = 0;
@@ -431,28 +431,28 @@ Terminal::Terminal()
     sortorder       = CHECK_ORDER_NEWOLD;
     qualifier       = QUALIFIER_NONE;
     guests          = 0;
-    archive         = NULL;
-    order           = NULL;
-    stock           = NULL;
+    archive         = nullptr;
+    order           = nullptr;
+    stock           = nullptr;
     last_index      = INDEX_GENERAL;
     job_filter      = 0;
     printer_port    = 0;
     print_workorder = 1;
-    cdu             = NULL;
-    server          = NULL;
-    expense_drawer  = NULL;
+    cdu             = nullptr;
+    server          = nullptr;
+    expense_drawer  = nullptr;
     record_activity = 0;
     record_fd       = -1;
-    credit          = NULL;
+    credit          = nullptr;
     allow_blanking  = 1;
     for (int i=0; i<4; i++)
     	tax_inclusive[i] = -1;
 
 	//initialized through pointer in Control::Add() (in file manager.cc)
-    system_data     = NULL; 
+    system_data     = nullptr; 
 
-    buffer_in       = NULL;
-    buffer_out      = NULL;
+    buffer_in       = nullptr;
+    buffer_out      = nullptr;
 
     // General Inits
     size      = 0;
@@ -473,8 +473,8 @@ Terminal::Terminal()
     last_x    = 0;
     last_y    = 0;
     zone_modify = 0;
-    edit_page = NULL;
-    edit_zone = NULL;
+    edit_page = nullptr;
+    edit_zone = nullptr;
     failure = 0;
     last_page_type = -1;
     last_page_size = -1;
@@ -482,15 +482,15 @@ Terminal::Terminal()
     force_jump     = 0;
     force_jump_source = 0;
 
-    zone_db        = NULL;
-    page           = NULL;
+    zone_db        = nullptr;
+    page           = nullptr;
     org_page_id    = 0;
-    user           = NULL;
-    dialog         = NULL;
-    next_dialog    = NULL;
-    selected_zone  = NULL;
-    previous_zone  = NULL;
-    active_zone    = NULL;
+    user           = nullptr;
+    dialog         = nullptr;
+    next_dialog    = nullptr;
+    selected_zone  = nullptr;
+    previous_zone  = nullptr;
+    active_zone    = nullptr;
     timeout        = 15;
     reload_zone_db = 0;
     edit           = 0;
@@ -498,8 +498,8 @@ Terminal::Terminal()
     is_server      = 0;
     kill_me        = 0;
     show_info      = 0;
-    locale_main    = NULL;
-    locale_default = NULL;
+    locale_main    = nullptr;
+    locale_default = nullptr;
     size           = 0;
     time_out.Set();
     ClearPageStack();
@@ -519,13 +519,13 @@ Terminal::Terminal()
     check_balanced = 0;
     has_payments   = 0;
 
-    pending_subcheck = NULL;
+    pending_subcheck = nullptr;
     auth_amount    = 0;
     void_amount    = 0;
     auth_action    = CCAUTH_NOACTION;
     auth_swipe     = 0;
-    auth_message   = NULL;
-    auth_message2  = NULL;
+    auth_message   = nullptr;
+    auth_message2  = nullptr;
     admin_forcing  = 0;
 
     curr_font_id   = -1;
@@ -538,7 +538,7 @@ Terminal::~Terminal()
 	FnTrace("Terminal::~Terminal()");
 
     Terminal *currterm = clone_list.Head();
-    while (currterm != NULL)
+    while (currterm != nullptr)
     {
         if (currterm->input_id)
             RemoveInputFn(currterm->input_id);
@@ -546,10 +546,10 @@ Terminal::~Terminal()
     }
 
     Drawer *drawer = system_data->DrawerList();
-    while (drawer != NULL)
+    while (drawer != nullptr)
     {
         if (drawer->term == this)
-            drawer->term = NULL;
+            drawer->term = nullptr;
         drawer = drawer->next;
     }
 
@@ -659,14 +659,14 @@ int Terminal::SendTranslations(const char* *name_list)
     int idx = 0;
     int count = 0;
 
-    for (idx = 0; name_list[idx] != NULL; idx += 1)
+    for (idx = 0; name_list[idx] != nullptr; idx += 1)
         count += 1;
 
     if (count > 0)
     {
         WInt8(TERM_TRANSLATIONS);
         WInt8(count);
-        for (idx = 0; name_list[idx] != NULL; idx += 1)
+        for (idx = 0; name_list[idx] != nullptr; idx += 1)
         {
             WStr(name_list[idx]);
             WStr(MasterLocale->Translate(name_list[idx]));
@@ -704,14 +704,14 @@ int Terminal::Draw(int update_flag, int x, int y, int w, int h)
 int Terminal::Jump(int jump_type, int jump_id)
 {
     FnTrace("Terminal::Jump()");
-    if (zone_db == NULL)
+    if (zone_db == nullptr)
         return 1;
 
     check_balanced = 0;
-    if (check != NULL)
+    if (check != nullptr)
     {
         SubCheck *sc = check->FirstOpenSubCheck();
-        if (sc == NULL || sc->balance == 0)
+        if (sc == nullptr || sc->balance == 0)
             check_balanced = 1;
     }
     Settings *settings = GetSettings();
@@ -741,7 +741,7 @@ int Terminal::Jump(int jump_type, int jump_id)
         else
             return JumpToIndex(last_index);
     case JUMP_PASSWORD:
-        if (user == NULL)
+        if (user == nullptr)
             return 1;
         if (user->UsePassword(settings) && (! password_given))
         {
@@ -759,7 +759,7 @@ int Terminal::Jump(int jump_type, int jump_id)
 
     if (force_jump)
     {
-        if (page != NULL && page->id != force_jump_source)
+        if (page != nullptr && page->id != force_jump_source)
         {
             jump_type = JUMP_STEALTH;
             jump_id = force_jump;
@@ -774,7 +774,7 @@ int Terminal::Jump(int jump_type, int jump_id)
     }
 
     Page *targetPage = zone_db->FindByID(jump_id, size);
-    if (targetPage == NULL)
+    if (targetPage == nullptr)
 	{
         genericChar buffer[STRLENGTH];
         snprintf(buffer, sizeof(buffer), "Unable to find jump target (%d, %d) for %s",
@@ -798,7 +798,7 @@ int Terminal::Jump(int jump_type, int jump_id)
 int Terminal::JumpToIndex(int idx)
 {
     FnTrace("Terminal::JumpToIndex()");
-    if (zone_db == NULL)
+    if (zone_db == nullptr)
         return 1;
 
     Settings *settings = GetSettings();
@@ -806,7 +806,7 @@ int Terminal::JumpToIndex(int idx)
 	// hack for SunWest
     if (settings->store == STORE_SUNWEST)
     {
-        if (check == NULL)
+        if (check == nullptr)
             return 1;
         if (check->EntreeCount(seat) <= 0)
             return Jump(JUMP_STEALTH, 200);
@@ -815,7 +815,7 @@ int Terminal::JumpToIndex(int idx)
     }
 
     Page *p = zone_db->FindByType(PAGE_INDEX, idx, size);
-    if (p == NULL)
+    if (p == nullptr)
     {
 		// No matching p type found, so provide meaningfull error message
 		// then bail out 
@@ -842,7 +842,7 @@ int Terminal::RunScript(const genericChar* script, int jump_type, int jump_id)
     Settings *s = GetSettings();
     int j[16];
     int jump_count = 0;
-    if (script == NULL)
+    if (script == nullptr)
         jump_count = 0;
     else
         jump_count = sscanf(script, "%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
@@ -899,7 +899,7 @@ int Terminal::ChangePage(Page *targetPage)
 {
     FnTrace("Terminal::ChangePage()");
 
-    if (targetPage == NULL)
+    if (targetPage == nullptr)
     {
         return 1; // Error
     }
@@ -918,7 +918,7 @@ int Terminal::ChangePage(Page *targetPage)
         no_parent_flag = 1;
 	}
     else
-        selected_zone = NULL;
+        selected_zone = nullptr;
 
     page = targetPage;
 
@@ -973,7 +973,7 @@ int Terminal::NextTablePage()
 {
     FnTrace("Terminal::NextTablePage()");
     Page *p = page;
-    if (p == NULL || zone_db == NULL)
+    if (p == nullptr || zone_db == nullptr)
         return 1;
 
     for (int l = 0; l < 2; ++l)
@@ -983,7 +983,7 @@ int Terminal::NextTablePage()
             if (p->id > 0 && p->IsTable() && p->id != page->id)
             {
                 // set the user's current starting page
-                if (user != NULL)
+                if (user != nullptr)
                     user->SetStartingPage(p->id);                
 
                 // and jump us there
@@ -1009,7 +1009,7 @@ int Terminal::PriorTablePage()
 {
     FnTrace("Terminal::PriorTablePage()");
     Page *p = page;
-    if (p == NULL || zone_db == NULL)
+    if (p == nullptr || zone_db == nullptr)
         return 1;
 
     for (int l = 0; l < 2; ++l)
@@ -1045,7 +1045,7 @@ int Terminal::FastStartLogin()
     int target = 0;
 
     Drawer *drawer = FindDrawer();
-    if (drawer == NULL)
+    if (drawer == nullptr)
     {
         DialogZone *diag = new SimpleDialog("No drawer available for payments");
         diag->Button("Okay");
@@ -1069,7 +1069,7 @@ int Terminal::OpenTab(int phase, const char* message)
     if (phase == TABOPEN_START)
     {
         QuickMode(CHECK_BAR);
-        if (check != NULL && check->customer != NULL)
+        if (check != nullptr && check->customer != nullptr)
         {
             OpenTabDialog *otd = new OpenTabDialog(check->customer);
             OpenDialog(otd);
@@ -1082,17 +1082,17 @@ int Terminal::OpenTab(int phase, const char* message)
     }
     else if (phase == TABOPEN_CARD)
     {
-        if (check != NULL)
+        if (check != nullptr)
         {
             SubCheck *sc =check->current_sub;
-            if (sc == NULL)
+            if (sc == nullptr)
                 sc = check->NewSubCheck();
-            if (message != NULL)
+            if (message != nullptr)
                 auth_amount = atoi(&message[11]);
             else
                 auth_amount = 5000;  // $50.00
             auth_action = AUTH_PREAUTH;
-            CreditCardDialog *ccd = new CreditCardDialog(this, sc, NULL);
+            CreditCardDialog *ccd = new CreditCardDialog(this, sc, nullptr);
             ccd->ClosingAction(ACTION_SUCCESS, ACTION_JUMPINDEX, INDEX_BAR);
             ccd->ClosingAction(ACTION_CANCEL, ACTION_SIGNAL, "opentabfailed");
             OpenDialog(ccd);
@@ -1100,9 +1100,9 @@ int Terminal::OpenTab(int phase, const char* message)
     }
     else if (phase == TABOPEN_CANCEL)
     {
-        if (check != NULL && check->IsEmpty())
+        if (check != nullptr && check->IsEmpty())
             delete check;
-        check = NULL;
+        check = nullptr;
     }
 
     return retval;
@@ -1116,12 +1116,12 @@ int Terminal::ContinueTab(int serial_number)
     
     if (serial_number > 0)
     {
-        while (currcheck != NULL)
+        while (currcheck != nullptr)
         {
             if (currcheck->serial_number == serial_number)
             {
                 check = currcheck;
-                currcheck = NULL;
+                currcheck = nullptr;
                 is_bar_tab = 1;
                 JumpToIndex(INDEX_BAR);
             }
@@ -1143,12 +1143,12 @@ int Terminal::CloseTab(int serial_number)
     
     if (serial_number > 0)
     {
-        while (currcheck != NULL)
+        while (currcheck != nullptr)
         {
             if (currcheck->serial_number == serial_number)
             {
                 check = currcheck;
-                currcheck = NULL;
+                currcheck = nullptr;
                 Jump(JUMP_STEALTH, PAGE_ID_SETTLEMENT);
             }
             else
@@ -1165,10 +1165,10 @@ int Terminal::OpenTabList(const char* message)
 {
     FnTrace("Terminal::OpenTabList()");
     int retval = 0;
-    SimpleDialog *sd = NULL;
+    SimpleDialog *sd = nullptr;
     Check *currcheck = system_data->CheckList();
-    SubCheck *subcheck = NULL;
-    Payment *payment = NULL;
+    SubCheck *subcheck = nullptr;
+    Payment *payment = nullptr;
     char fname[STRLENGTH];
     char four[STRLENGTH];
     char btitle[STRLENGTH];
@@ -1176,25 +1176,25 @@ int Terminal::OpenTabList(const char* message)
     int count = 0;
 
     sd = new SimpleDialog(Translate("Select a Bar Tab"), 2);
-    while (currcheck != NULL)
+    while (currcheck != nullptr)
     {
         if (currcheck->type == CHECK_BAR &&
-            currcheck->customer != NULL &&
+            currcheck->customer != nullptr &&
             currcheck->HasOpenTab())
         {
             count += 1;
             four[0] = '\0';
             strcpy(fname, currcheck->customer->FirstName());
             subcheck = currcheck->SubList();
-            while (subcheck != NULL)
+            while (subcheck != nullptr)
             {
                 payment = subcheck->PaymentList();
-                while (payment != NULL)
+                while (payment != nullptr)
                 {
-                    if (payment->credit != NULL && payment->credit->IsPreauthed())
+                    if (payment->credit != nullptr && payment->credit->IsPreauthed())
                     {
                         payment->credit->LastFour(four);
-                        payment = NULL;
+                        payment = nullptr;
                     }
                     else
                         payment = payment->next;
@@ -1222,7 +1222,7 @@ int Terminal::OpenTabList(const char* message)
 SignalResult Terminal::Signal(const genericChar* message, int group_id)
 {
     FnTrace("Terminal::Signal()");
-    SimpleDialog *sd = NULL;
+    SimpleDialog *sd = nullptr;
     char msg[STRLONG] = "";
     static const char* commands[] = {
         "logout", "next archive", "prior archive", "open drawer",
@@ -1232,7 +1232,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         "adminforceauth2", "adminforceauth3 ", "adminforceauth4",
         "faststartlogin", "opentab", "opentabcancel", "opentabamount",
         "opentabcard ", "opentabpay ", "continuetab", "continuetab2 ",
-        "closetab", "closetab2 ", "forcereturn ", NULL};
+        "closetab", "closetab2 ", "forcereturn ", nullptr};
 	//for handy reference to the indices in the signal handler
 	enum comms  { LOGOUT, NEXT_ARCHIVE, PRIOR_ARCHIVE, OPEN_DRAWER,
                   SHUTDOWN, SYSTEM_RESTART, CALIBRATE, WAGE_FILTER_DIALOG,
@@ -1252,11 +1252,11 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
             KillDialog();
     }
 
-    if (page == NULL)
+    if (page == nullptr)
         return SIGNAL_IGNORED;
 
     same_signal = 0;
-    if (system_data->eod_term == NULL)
+    if (system_data->eod_term == nullptr)
     {
         SignalResult sig = page->Signal(this, message, group_id);
         if (sig != SIGNAL_IGNORED)
@@ -1270,20 +1270,20 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         LogoutUser();
         return SIGNAL_OKAY;
     case NEXT_ARCHIVE:  // next archive
-        if (archive == NULL)
+        if (archive == nullptr)
             return SIGNAL_IGNORED;
         archive = archive->next;
-        Update(UPDATE_ARCHIVE, NULL);
+        Update(UPDATE_ARCHIVE, nullptr);
         return SIGNAL_OKAY;
 
     case PRIOR_ARCHIVE:  // prior archive
-        if (archive == NULL)
+        if (archive == nullptr)
             archive = system_data->ArchiveListEnd();
         else if (archive->fore)
             archive = archive->fore;
         else
             return SIGNAL_IGNORED;
-        Update(UPDATE_ARCHIVE, NULL);
+        Update(UPDATE_ARCHIVE, nullptr);
         return SIGNAL_OKAY;
 
     case OPEN_DRAWER:  // open drawer
@@ -1314,7 +1314,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
             server = system_data->user_db.NextUser(this, server);
         else
             server = user;
-        Update(UPDATE_SERVER, NULL);
+        Update(UPDATE_SERVER, nullptr);
         return SIGNAL_OKAY;
 
     case SERVER_PREV: // serverprior
@@ -1322,15 +1322,15 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
             server = system_data->user_db.ForeUser(this, server);
         else
             server = user;
-        Update(UPDATE_SERVER, NULL);
+        Update(UPDATE_SERVER, nullptr);
         return SIGNAL_OKAY;
 
     case SERVER_VIEW: // serverview
         if (server)
-            server = NULL;
+            server = nullptr;
         else
             server = user;
-        Update(UPDATE_SERVER, NULL);
+        Update(UPDATE_SERVER, nullptr);
         return SIGNAL_OKAY;
     case CCQ_TERMINATE:
         strcpy(msg, "killall vt_ccq_pipe");
@@ -1361,7 +1361,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         if (admin_forcing == 1)
         {
             TenKeyDialog *tkd = new TenKeyDialog("Enter Final Amount", "adminforceauth3", 0, 1);
-            if (dialog != NULL)
+            if (dialog != nullptr)
                 NextDialog(tkd);
             else
                 OpenDialog(tkd);
@@ -1384,7 +1384,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
     case ADMINFORCE4:
         if (admin_forcing == 3)
         {
-            if (credit != NULL)
+            if (credit != nullptr)
                 credit->PrintAuth();
             admin_forcing = 0;
         }
@@ -1431,7 +1431,7 @@ SignalResult Terminal::Touch(int x, int y)
 {
     FnTrace("Terminal::Touch()");
 
-    if (system_data->eod_term != NULL)
+    if (system_data->eod_term != nullptr)
         return SIGNAL_IGNORED;
 
     if (dialog)
@@ -1450,7 +1450,7 @@ SignalResult Terminal::Touch(int x, int y)
         return sig;
     }
 
-    if (page == NULL)
+    if (page == nullptr)
         return SIGNAL_IGNORED;
 
     int touch;
@@ -1507,7 +1507,7 @@ SignalResult Terminal::Mouse(int action, int x, int y)
 {
     FnTrace("Terminal::Mouse()");
 
-    if (system_data->eod_term != NULL)
+    if (system_data->eod_term != nullptr)
         return SIGNAL_IGNORED;
 
     if (dialog)
@@ -1522,7 +1522,7 @@ SignalResult Terminal::Mouse(int action, int x, int y)
         return sig;
     }
 
-    if (page == NULL)
+    if (page == nullptr)
     {
         return SIGNAL_IGNORED;
     }
@@ -1575,7 +1575,7 @@ SignalResult Terminal::Keyboard(int key, int state)
 {
     FnTrace("Terminal::Keyboard()");
 
-    if (system_data->eod_term != NULL)
+    if (system_data->eod_term != nullptr)
         return SIGNAL_IGNORED;
 
     if (dialog)
@@ -1588,7 +1588,7 @@ SignalResult Terminal::Keyboard(int key, int state)
         return sig;
     }
 
-    if (page == NULL)
+    if (page == nullptr)
         return SIGNAL_IGNORED;
 
     return page->Keyboard(this, key, state);
@@ -1731,12 +1731,12 @@ int Terminal::ReadRecordFile()
 int Terminal::SetFocus(Zone *newzone)
 {
     FnTrace("Terminal::SetFocus()");
-    if (newzone == NULL || edit != 0)
+    if (newzone == nullptr || edit != 0)
         return 1;
 
     if ((newzone != previous_zone) && newzone->GainFocus(this, previous_zone))
     {
-        if (previous_zone != NULL)
+        if (previous_zone != nullptr)
             previous_zone->LoseFocus(this, newzone);
         previous_zone = newzone;
     }
@@ -1750,10 +1750,10 @@ int Terminal::LoginUser(Employee *employee, bool home_page)
     if (AllowLogins == 0)
         return 1;
 
-    if (employee == NULL || (user != employee && parent->IsUserOnline(employee)))
+    if (employee == nullptr || (user != employee && parent->IsUserOnline(employee)))
         return 1;  // User already online on another terminal
 
-    if (user != NULL && user != employee)
+    if (user != nullptr && user != employee)
         LogoutUser(0);
 
     Settings *settings    = GetSettings();
@@ -1769,14 +1769,15 @@ int Terminal::LoginUser(Employee *employee, bool home_page)
         Jump(JUMP_STEALTH, homepage);
 	}
 
-    UpdateOtherTerms(UPDATE_USERS, NULL);
+    UpdateOtherTerms(UPDATE_USERS, nullptr);
     return 0;
 }
 
 int Terminal::LogoutUser(int update)
 {
     FnTrace("Terminal::LogoutUser()");
-    if (parent == NULL)
+    if (parent == nullptr)
+    if (parent == nullptr)
         return 1;
 
     int error = StoreCheck(0);
@@ -1788,9 +1789,9 @@ int Terminal::LogoutUser(int update)
     // Reset terminal values
     Settings *s = GetSettings();
     timeout        = s->delay_time1;
-    archive        = NULL;
-    stock          = NULL;
-    server         = NULL;
+    archive        = nullptr;
+    stock          = nullptr;
+    server         = nullptr;
     password_given = 0;
     last_index     = INDEX_GENERAL;
     job_filter     = 0;
@@ -1802,13 +1803,13 @@ int Terminal::LogoutUser(int update)
     if (user)
 	{
 		user->current_job = 0;
-		user = NULL;
+		user = nullptr;
 		if (update)
 		{
 			if (error)
-				UpdateOtherTerms(UPDATE_USERS, NULL);
+				UpdateOtherTerms(UPDATE_USERS, nullptr);
 			else
-				UpdateOtherTerms(UPDATE_USERS | UPDATE_CHECKS, NULL);
+				UpdateOtherTerms(UPDATE_USERS | UPDATE_CHECKS, nullptr);
 		}
 	}
 
@@ -1820,17 +1821,17 @@ int Terminal::LogoutUser(int update)
 int Terminal::GetCheck(const genericChar* label, int customer_type)
 {
     FnTrace("Terminal::GetCheck()");
-    if (user == NULL ||
+    if (user == nullptr ||
         (customer_type != CHECK_RESTAURANT && customer_type != CHECK_HOTEL))
         return 1;  // No current user
 
     Settings *settings = GetSettings();
     Check *thisCheck = system_data->FindOpenCheck(label, user);
-    if (thisCheck == NULL)
+    if (thisCheck == nullptr)
     {
         // Create new thisCheck
         thisCheck = new Check(settings, customer_type, user);
-        if (thisCheck == NULL)
+        if (thisCheck == nullptr)
             return 1;
 
         thisCheck->Table(label);
@@ -1852,7 +1853,7 @@ int Terminal::NewTakeOut(int customer_type)
     FnTrace("Terminal::NewTakeOut()");
 
 	//break if undefined user or incorrect mode
-    if (user == NULL || 
+    if (user == nullptr || 
         (customer_type != CHECK_TAKEOUT && 
          customer_type != CHECK_DELIVERY && 
          customer_type != CHECK_RETAIL))
@@ -1860,7 +1861,7 @@ int Terminal::NewTakeOut(int customer_type)
 
     Settings *settings = GetSettings();
     Check *thisCheck = new Check(settings, customer_type, user);
-    if (thisCheck == NULL)
+    if (thisCheck == nullptr)
         return 1;
 
     thisCheck->Guests(0);  // No guests for takeout
@@ -1872,12 +1873,12 @@ int Terminal::NewTakeOut(int customer_type)
 int Terminal::NewFastFood(int customer_type)
 {
     FnTrace("Terminal::NewFastFood()");
-    if (user == NULL || (customer_type != CHECK_FASTFOOD))
+    if (user == nullptr || (customer_type != CHECK_FASTFOOD))
         return 1;
 
     Settings *settings = GetSettings();
     Check *thisCheck = new Check(settings, customer_type, user);
-    if (thisCheck == NULL)
+    if (thisCheck == nullptr)
         return 1;
 
     thisCheck->Guests(0);  // No guest
@@ -1892,7 +1893,7 @@ int Terminal::NewFastFood(int customer_type)
 int Terminal::QuickMode(int customer_type)
 {
     FnTrace("Terminal::QuickMode()");
-    if (user == NULL || 
+    if (user == nullptr || 
         ((customer_type != CHECK_FASTFOOD) && 
          (customer_type != CHECK_RETAIL) &&
          (customer_type != CHECK_DELIVERY) &&
@@ -1906,19 +1907,19 @@ int Terminal::QuickMode(int customer_type)
         return 1;
 	}
 
-    if (customer != NULL)
+    if (customer != nullptr)
         customer->Save();
 
     Settings *settings = GetSettings();
     Check *thisCheck = new Check(settings, customer_type, user);
-    if (thisCheck->customer != NULL)
+    if (thisCheck->customer != nullptr)
     {
         customer = thisCheck->customer;
         if (thisCheck->IsTraining())
             customer->IsTraining(1);
     }
     else
-        customer = NULL;
+        customer = nullptr;
 
     if (customer_type == CHECK_FASTFOOD ||
         customer_type == CHECK_BAR ||
@@ -1933,7 +1934,7 @@ int Terminal::QuickMode(int customer_type)
         type = TERMINAL_FASTFOOD;
     }
 
-    if (thisCheck == NULL)
+    if (thisCheck == nullptr)
         return 1;
 
     thisCheck->Guests(0);  // No guest
@@ -1946,9 +1947,9 @@ int Terminal::QuickMode(int customer_type)
 int Terminal::SetCheck(Check *currCheck, int update_local)
 {
     FnTrace("Terminal::SetCheck()");
-    if (user == NULL || currCheck == NULL || (user->training && !currCheck->IsTraining()))
+    if (user == nullptr || currCheck == nullptr || (user->training && !currCheck->IsTraining()))
         return 1;  // can't set currCheck
-    SubCheck *currsub = NULL;
+    SubCheck *currsub = nullptr;
 
     if (currCheck->user_current > 0 && currCheck->user_current != user->id)
         return 1;  // someone else is holding the currCheck
@@ -1968,9 +1969,9 @@ int Terminal::SetCheck(Check *currCheck, int update_local)
 
     // set check_balanced
     currsub = currCheck->current_sub;
-    if (currsub == NULL)
+    if (currsub == nullptr)
         currsub = currCheck->FirstOpenSubCheck();
-    if (currsub != NULL)
+    if (currsub != nullptr)
         check_balanced = (currsub->balance == 0) ? 1 : 0;
 
     if (settings->drawer_mode == DRAWER_SERVER &&
@@ -1990,7 +1991,7 @@ int Terminal::SetCheck(Check *currCheck, int update_local)
 int Terminal::StoreCheck(int update)
 {
     FnTrace("Terminal::StoreCheck()");
-    if (check == NULL)
+    if (check == nullptr)
         return 1;  // No current check
 
     // Save (or delete) check
@@ -2002,13 +2003,13 @@ int Terminal::StoreCheck(int update)
     }
     else
     {
-        check->current_sub  = NULL;
+        check->current_sub  = nullptr;
         check->user_current = 0;
         check->Save();
     }
 
-    order      = NULL;
-    check      = NULL;
+    order      = nullptr;
+    check      = nullptr;
     seat       = 0;
     move_check = 0;
     guests     = 0;
@@ -2028,7 +2029,7 @@ int Terminal::NextPage()
 {
     FnTrace("Terminal::NextPage()");
     Page *currPage = page;
-    if (currPage == NULL)
+    if (currPage == nullptr)
         return 1;
 
     // can't edit system pages?
@@ -2037,13 +2038,13 @@ int Terminal::NextPage()
         currPage = currPage->next;
     while (currPage && currPage->id < 0 && flag);
 
-    if (currPage == NULL)
+    if (currPage == nullptr)
     {
         currPage = zone_db->PageList();
         while (currPage && currPage->id < 0 && flag)
             currPage = currPage->next;
 
-        if (currPage == NULL)
+        if (currPage == nullptr)
             return 1;  // No valid pages to jump to
     }
     return ChangePage(currPage);
@@ -2053,7 +2054,7 @@ int Terminal::ForePage()
 {
     FnTrace("Terminal::ForePage()");
     Page *currPage = page;
-    if (currPage == NULL)
+    if (currPage == nullptr)
         return 1;
 
     // can't edit system pages?
@@ -2062,13 +2063,13 @@ int Terminal::ForePage()
         currPage = currPage->fore;
     while (currPage && currPage->id < 0 && flag);
 
-    if (currPage == NULL)
+    if (currPage == nullptr)
     {
         currPage = zone_db->PageListEnd();
         while (currPage && currPage->id < 0 && flag)
             currPage = currPage->fore;
 
-        if (currPage == NULL)
+        if (currPage == nullptr)
             return 1;  // No valid pages to jump to
     }
     return ChangePage(currPage);
@@ -2077,7 +2078,7 @@ int Terminal::ForePage()
 int Terminal::Update(int update_message, const genericChar* value)
 {
     FnTrace("Terminal::Update()");
-    if (page == NULL)
+    if (page == nullptr)
         return 1;
 
     if (update_message & UPDATE_MINUTE)
@@ -2088,15 +2089,15 @@ int Terminal::Update(int update_message, const genericChar* value)
 Drawer *Terminal::FindDrawer()
 {
     FnTrace("Terminal::FindDrawer()");
-    if (user == NULL || user->training)
-        return NULL;
+    if (user == nullptr || user->training)
+        return nullptr;
 
     Settings *settings = GetSettings();
     int dm = settings->drawer_mode;
 
     // Find Physical Drawers
     Drawer *d = system_data->FirstDrawer();
-    Drawer *avail = NULL;	// available for assigned mode
+    Drawer *avail = nullptr;	// available for assigned mode
     while (d)
     {
         if (d->IsOpen())
@@ -2134,17 +2135,17 @@ Drawer *Terminal::FindDrawer()
     	return avail;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 int Terminal::OpenDrawer(int position)
 {
     FnTrace("Terminal::OpenDrawer()");
-    if (user == NULL || drawer_count <= 0 || parent == NULL)
+    if (user == nullptr || drawer_count <= 0 || parent == nullptr)
         return 1;  // No drawer to open
 
     Printer *p = parent->FindPrinter(name.Value());
-    if (p == NULL)
+    if (p == nullptr)
         return 1;
 
     p->OpenDrawer(position);
@@ -2160,12 +2161,12 @@ int Terminal::NeedDrawerBalanced(Employee *e)
 
     if (settings->drawer_mode == DRAWER_SERVER && settings->require_drawer_balance == 1)
     {
-        while (drawer != NULL)
+        while (drawer != nullptr)
         {
             if (drawer->owner_id == e->id && drawer->IsEmpty() == 0)
             {
                 retval = 1;
-                drawer = NULL;  // exit loop
+                drawer = nullptr;  // exit loop
             }
             else
                 drawer = drawer->next;
@@ -2179,7 +2180,7 @@ int Terminal::CanSettleCheck()
 {
     FnTrace("Terminal::CanSettleCheck()");
     Settings *s = GetSettings();
-    if (user == NULL || !user->CanSettle(s) || check == NULL)
+    if (user == nullptr || !user->CanSettle(s) || check == nullptr)
         return 0;  // no
     else if (user->training)
         return 1;  // yes
@@ -2192,13 +2193,13 @@ int Terminal::CanSettleCheck()
     Drawer *d = FindDrawer();
     if (d && d->IsServerBank() && check->user_owner != user->id)
         return 0;  // no
-    return (d != NULL);
+    return (d != nullptr);
 }
 
 int Terminal::StackCheck(int customer_type)
 {
     FnTrace("Terminal::StackCheck()");
-    if (user == NULL || check == NULL)
+    if (user == nullptr || check == nullptr)
         return 1;
 
     int my_depth = system_data->NumberStacked(check->Table(), user);
@@ -2207,7 +2208,7 @@ int Terminal::StackCheck(int customer_type)
 
     Settings *s = GetSettings();
     Check *c = new Check(s, customer_type, user);
-    if (c == NULL)
+    if (c == nullptr)
         return 1;
 
     c->Table(check->Table());
@@ -2222,7 +2223,7 @@ int Terminal::OpenDialog(Zone *currZone)
 {
 	FnTrace("Terminal::OpenDialog()");
 
-	if (currZone == NULL || page == NULL)
+	if (currZone == nullptr || page == nullptr)
 		return 1;
 
 	if (dialog)
@@ -2266,7 +2267,7 @@ int Terminal::NextDialog(Zone *currZone)
     FnTrace("Terminal::NextDialog()");
     int retval = 0;
 
-    if (next_dialog != NULL)
+    if (next_dialog != nullptr)
         delete next_dialog;
     next_dialog = currZone;
 
@@ -2279,11 +2280,11 @@ int Terminal::KillDialog()
     int jump_index = 0;
     char next_signal[STRLENGTH];
 
-    if (dialog == NULL)
+    if (dialog == nullptr)
         return 1;
 
     if (selected_zone == dialog)
-        selected_zone = NULL;
+        selected_zone = nullptr;
 
     jump_index = ((DialogZone *)dialog)->target_index;
     strcpy(next_signal, ((DialogZone *)dialog)->target_signal);
@@ -2291,7 +2292,7 @@ int Terminal::KillDialog()
     r.w += dialog->shadow;
     r.h += dialog->shadow;
     delete dialog;
-    dialog = NULL;
+    dialog = nullptr;
     
     Draw(1);
     UpdateAll();
@@ -2305,7 +2306,7 @@ int Terminal::KillDialog()
     {
         Draw(1);
         OpenDialog(next_dialog);
-        next_dialog = NULL;
+        next_dialog = nullptr;
     }
 
     return 0;
@@ -2316,10 +2317,10 @@ int Terminal::HomePage()
     FnTrace("Terminal::HomePage()");
     char not_allowed[] = "User not allowed in system.";
     Settings *settings = GetSettings();
-    Page *currPage = NULL;
-    SimpleDialog *sd = NULL;
+    Page *currPage = nullptr;
+    SimpleDialog *sd = nullptr;
 
-    if (user == NULL || (! user->CanEnterSystem(settings)))
+    if (user == nullptr || (! user->CanEnterSystem(settings)))
     {
         fprintf(stderr, "%s\n", not_allowed);
         sd = new SimpleDialog(not_allowed);
@@ -2335,31 +2336,31 @@ int Terminal::HomePage()
     if (type == TERMINAL_KITCHEN_VIDEO || type == TERMINAL_KITCHEN_VIDEO2 ||
         type == TERMINAL_BAR || type == TERMINAL_BAR2)
     {
-        if ((currPage = zone_db->FindByTerminal(type, -1, size)) == NULL)
+        if ((currPage = zone_db->FindByTerminal(type, -1, size)) == nullptr)
             fprintf(stderr, "Could not find page for terminal %s\n", name.Value());
     }
 
     // If we didn't get a page from Terminal Type, get one normally.
-    if (currPage == NULL)
+    if (currPage == nullptr)
     {
         int start = user->StartingPage();
         if (start > 0)
         {
-            if ((currPage = zone_db->FindByID(start, size)) == NULL)
+            if ((currPage = zone_db->FindByID(start, size)) == nullptr)
                 fprintf(stderr, "Could not find start page\n");
         }
         else if (start == 0)
         {
-            if ((currPage = zone_db->FindByType(PAGE_CHECKS, -1, size)) == NULL)
+            if ((currPage = zone_db->FindByType(PAGE_CHECKS, -1, size)) == nullptr)
                 fprintf(stderr, "Could not find checks page\n");
         }
         else
         {
-            if ((currPage = zone_db->FindByID(start, size)) == NULL)
+            if ((currPage = zone_db->FindByID(start, size)) == nullptr)
                 fprintf(stderr, "Could not find start page\n");
-            if (currPage == NULL || currPage->IsStartPage() == 0)
+            if (currPage == nullptr || currPage->IsStartPage() == 0)
             {
-                if ((currPage = zone_db->FirstTablePage(size)) == NULL)
+                if ((currPage = zone_db->FirstTablePage(size)) == nullptr)
                     fprintf(stderr, "Could not find table page\n");
             }
         }
@@ -2401,7 +2402,7 @@ int Terminal::TermsInUse()
 {
     FnTrace("Terminal::TermsInUse()");
     int count = 0;
-    for (Terminal *t = parent->TermList(); t != NULL; t = t->next)
+    for (Terminal *t = parent->TermList(); t != nullptr; t = t->next)
     {
         if (t->user)
             ++count;
@@ -2413,11 +2414,11 @@ int Terminal::OtherTermsInUse(int no_kitchen)
 {
     FnTrace("Terminal::OtherTermsInUse()");
     int count = 0;
-    for (Terminal *t = parent->TermList(); t != NULL; t = t->next)
+    for (Terminal *t = parent->TermList(); t != nullptr; t = t->next)
     {
         if (t != this)
         {
-            if (no_kitchen == 0 || t->page == NULL || t->page->IsKitchen() == 0)
+            if (no_kitchen == 0 || t->page == nullptr || t->page->IsKitchen() == 0)
             {
                 if (t->user)
                     ++count;
@@ -2431,14 +2432,14 @@ int Terminal::OtherTermsInUse(int no_kitchen)
 int Terminal::EditTerm(int save_data, int edit_mode)
 {
     FnTrace("Terminal::EditTerm()");
-    if (parent == NULL)
+    if (parent == nullptr)
         return 1;
-    if (user == NULL || !user->CanEdit())
+    if (user == nullptr || !user->CanEdit())
         return 1;
 
     Settings *settings = GetSettings();
 
-    previous_zone = NULL;
+    previous_zone = nullptr;
 
     if (edit)
     {
@@ -2457,8 +2458,8 @@ int Terminal::EditTerm(int save_data, int edit_mode)
             system_data->menu.Save();
             system_data->inventory.ScanItems(&(system_data->menu));
             parent->ClearAllFocus();
-            parent->UpdateAll(UPDATE_MENU, NULL);
-            if (zone_db != NULL)
+            parent->UpdateAll(UPDATE_MENU, nullptr);
+            if (zone_db != nullptr)
                 zone_db->ClearEdit(this);
             if (edit_mode>1 && CanEditSystem())	// F9 at start and end
                 SaveSystemData();
@@ -2479,7 +2480,7 @@ int Terminal::EditTerm(int save_data, int edit_mode)
 
         // make sure order entry window are saved
         Terminal *currTerm = parent->TermList();
-        while (currTerm != NULL)
+        while (currTerm != nullptr)
         {
             currTerm->ClearMessage();
             currTerm->reload_zone_db = 1;
@@ -2495,7 +2496,7 @@ int Terminal::EditTerm(int save_data, int edit_mode)
     if (translate)
         TranslateTerm();
 
-    for (Terminal *t = parent->TermList(); t != NULL; t = t->next)
+    for (Terminal *t = parent->TermList(); t != nullptr; t = t->next)
     {
         if (t->edit || t->translate)
         {
@@ -2611,9 +2612,9 @@ int Terminal::EditTerm(int save_data, int edit_mode)
 int Terminal::TranslateTerm()
 {
     FnTrace("Terminal::TranslateTerm()");
-    if (parent == NULL)
+    if (parent == nullptr)
         return 1;
-    if (user == NULL || !user->CanEdit())
+    if (user == nullptr || !user->CanEdit())
         return 1;
 
     if (translate)
@@ -2627,7 +2628,7 @@ int Terminal::TranslateTerm()
     if (edit)
         EditTerm();
 
-    for (Terminal *t = parent->TermList(); t != NULL; t = t->next)
+    for (Terminal *t = parent->TermList(); t != nullptr; t = t->next)
         if (t->edit || t->translate)
             return 1;  // another terminal already being edited
 
@@ -2650,7 +2651,7 @@ int Terminal::TranslateTerm()
 int Terminal::UpdateZoneDB(Control *con)
 {
     FnTrace("Terminal::UpdateZoneDB()");
-    if (con == NULL)
+    if (con == nullptr)
         return 1;
 
     parent = con;
@@ -2663,24 +2664,24 @@ int Terminal::UpdateZoneDB(Control *con)
 
     reload_zone_db = 0;
     zone_db = con->NewZoneDB();
-    if (zone_db == NULL)
+    if (zone_db == nullptr)
         return 1;
 
     if (page)
     {
         // invalid page pointer - Return to the login page.
-        page = NULL;
+        page = nullptr;
         if (org_page_id)
             page = zone_db->FindByID(org_page_id, size);
-        if (page == NULL)
+        if (page == nullptr)
             page = zone_db->FindByID(PAGEID_LOGIN, size);
-        if (page == NULL)
+        if (page == nullptr)
         {
             genericChar buffer[STRLONG];
             snprintf(buffer, STRLONG, "Can't Find Login Page (%d) for %s",
                      PAGEID_LOGIN, name.Value());
             ReportError(buffer);
-            page = NULL;
+            page = nullptr;
         }
         Draw(1);
     }
@@ -2702,13 +2703,13 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
 	static const genericChar* symbols[] = {
 		"release", "time", "date", "name", "termname", "machineid",
         "machinekey", "licensedays", "creditid", "debitid",
-        "merchantid", NULL
+        "merchantid", nullptr
     };
 
 
 	static genericChar buffer[1024];
 
-	if (edit || str == NULL)
+	if (edit || str == nullptr)
 		return (genericChar*)str;		//TODO: what to do in edit mode?  This is impossible to do correctly.  Can cause a stack overlflow
 
 	genericChar* rawBuffer = buffer;
@@ -2798,8 +2799,8 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
 Printer *Terminal::FindPrinter(int printer_id)
 {
     FnTrace("Terminal::FindPrinter()");
-	if (parent == NULL)
-		return NULL;
+	if (parent == nullptr)
+		return nullptr;
 
 	Printer *currPrinter = parent->FindPrinter(printer_host.Value(), printer_port);
 
@@ -2853,7 +2854,7 @@ Printer *Terminal::FindPrinter(int printer_id)
             printer_id = PRINTER_RECEIPT;
             break;
         default:
-            return NULL;
+            return nullptr;
 		}
 	}
 }
@@ -2990,7 +2991,7 @@ int Terminal::TextWidth(const genericChar* my_string, int len, int font_id)
 int Terminal::IsUserOnline(Employee *e)
 {
     FnTrace("Terminal::IsUserOnline()");
-    if (e == NULL)
+    if (e == nullptr)
         return 0;
 
     if (parent)
@@ -3004,20 +3005,20 @@ int Terminal::FinalizeOrders()
     FnTrace("Terminal::FinalizeOrders()");
     int jump_target = PAGE_ID_SETTLEMENT;
     char str[STRLENGTH];
-    if (check == NULL)
+    if (check == nullptr)
         return 1;
 
     SubCheck *sc = check->current_sub;
-    if (sc == NULL)
+    if (sc == nullptr)
         return 1;
 
     seat  = 0;
-    order = NULL;
+    order = nullptr;
     qualifier = QUALIFIER_NONE;
     check->Save();
     check->FinalizeOrders(this);
-    Update(UPDATE_ORDERS | UPDATE_CHECKS, NULL);
-    UpdateOtherTerms(UPDATE_CHECKS, NULL);
+    Update(UPDATE_ORDERS | UPDATE_CHECKS, nullptr);
+    UpdateOtherTerms(UPDATE_CHECKS, nullptr);
     check->current_sub = check->FirstOpenSubCheck();
 
     if (is_bar_tab)
@@ -3037,8 +3038,8 @@ int Terminal::FinalizeOrders()
                 ReportError("Couldn't jump to Login page");
             break;
         case TERMINAL_FASTFOOD:
-            if (FindDrawer() == NULL &&
-                (user == NULL || user->training == 0))
+            if (FindDrawer() == nullptr &&
+                (user == nullptr || user->training == 0))
                 jump_target = -1;        
             if (Jump(JUMP_NORMAL, jump_target))
             {
@@ -3166,7 +3167,7 @@ int Terminal::ClearSelectedZone()
     Zone *z = selected_zone;
     if (z)
     {
-        selected_zone = NULL;
+        selected_zone = nullptr;
         z->Draw(this, 0);
     }
     return 0;
@@ -3190,7 +3191,7 @@ int Terminal::DrawTitleBar()
 int Terminal::RenderBlankPage()
 {
     FnTrace("Terminal::RenderBlankPage()");
-    if (page == NULL)
+    if (page == nullptr)
         return 1;
 
     int mode = MODE_NONE;
@@ -3367,11 +3368,11 @@ int Terminal::RenderTextLen(const genericChar* str, int len, int x, int y, int c
                             int font, int align, int max_pixel_width, int mode)
 {
     FnTrace("Terminal::RenderTextLen()");
-    if (str == NULL || len <= 0)
+    if (str == nullptr || len <= 0)
         return 1;
 
     color = ColorID(color);
-    if (color == COLOR_CLEAR || str == NULL || len <= 0)
+    if (color == COLOR_CLEAR || str == nullptr || len <= 0)
         return 0;
 
     font = FontID(font);
@@ -3413,7 +3414,7 @@ int Terminal::RenderTextLen(const genericChar* str, int len, int x, int y, int c
 int Terminal::RenderZoneText(const genericChar* str, int x, int y, int w, int h, int color, int font)
 {
     FnTrace("Terminal::RenderZoneText");
-    if (w <= 0 || h <= 0 || str == NULL)
+    if (w <= 0 || h <= 0 || str == nullptr)
         return 0;
     color = ColorID(color);
     if (color == COLOR_CLEAR)
@@ -3694,7 +3695,7 @@ int Terminal::CalibrateTS()
 int Terminal::SetMessage(const genericChar* message)
 {
     FnTrace("Terminal::SetMessage()");
-    if (message == NULL)
+    if (message == nullptr)
         return 1;
 
     message_set = 1;
@@ -3733,7 +3734,7 @@ int Terminal::WInt8(int val)
 int Terminal::WInt8(int *val)
 {
     FnTrace("Terminal::WInt8(int *)");
-    if (val == NULL)
+    if (val == nullptr)
         return WInt8(0);
     else
         return WInt8(*val);
@@ -3759,7 +3760,7 @@ int Terminal::WInt16(int val)
 int Terminal::WInt16(int *val)
 {
     FnTrace("Terminal::WInt16(int *)");
-    if (val == NULL)
+    if (val == nullptr)
         return WInt16(0);
     else
         return WInt16(*val);
@@ -3783,7 +3784,7 @@ int Terminal::WInt32(int val)
 int Terminal::WInt32(int *val)
 {
     FnTrace("Terminal::WInt32(int *)"); 
-    if (val == NULL)
+    if (val == nullptr)
         return WInt32(0);
     else
         return WInt32(*val);
@@ -3809,7 +3810,7 @@ long Terminal::WLong(long *val)
 {
     FnTrace("Terminal::WLong(long *)");
 
-    if (val == NULL)
+    if (val == nullptr)
         return WLong((long)0);
     else
         return WLong(*val);
@@ -3836,7 +3837,7 @@ long long Terminal::WLLong(long long *val)
 {
     FnTrace("Terminal::WLLong(long long *)");
 
-    if (val == NULL)
+    if (val == nullptr)
         return WLLong((long long)0);
     else
         return WLLong(*val);
@@ -3862,7 +3863,7 @@ int Terminal::WFlt(Flt val)
 int Terminal::WFlt(Flt *val)
 {
     FnTrace("Terminal::WFlt(flt *)");
-    if (val == NULL)
+    if (val == nullptr)
         return WFlt(0.0);
     else
         return WFlt(*val);
@@ -3909,13 +3910,13 @@ genericChar* Terminal::RStr(genericChar* s)
 {
     FnTrace("Terminal::RStr(const char* )");
     static genericChar buffer[1024];
-    if (s == NULL)
+    if (s == nullptr)
         s = buffer;
 
     if (buffer_in->GetString(s))
     {
         s[0] = '\0';
-        s = NULL;
+        s = nullptr;
     }
 
     return s;
@@ -3949,7 +3950,7 @@ int Terminal::SendNow()
     FnTrace("Terminal::SendNow()");
     Terminal *currterm = clone_list.Head();
 
-    while (currterm != NULL)
+    while (currterm != nullptr)
     {
         buffer_out->Write(currterm->socket_no, 0);
         currterm = currterm->next;
@@ -3969,7 +3970,7 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
     last_input = SystemTime;
     int edit_system = 0;
     int edit_user   = 0;
-    SimpleDialog *sd = NULL;
+    SimpleDialog *sd = nullptr;
 
     switch (my_code)
     {
@@ -4009,7 +4010,7 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             Signal("adminforceauth1", 0);
         return 0;
     case XK_F7:
-        if (user != NULL && page != NULL && edit == 0)
+        if (user != nullptr && page != nullptr && edit == 0)
         {
             edit_system = (page->id < 0 && user->CanEditSystem());
             edit_user   = (page->id >= 0 && user->CanEdit());
@@ -4158,11 +4159,11 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
         break;
     case XK_n: // new item zone
     case XK_N:
-        EditZone(NULL);
+        EditZone(nullptr);
         break;
     case XK_p: // new page
     case XK_P:
-        EditPage(NULL);
+        EditPage(nullptr);
         break;
     }
     return 0;
@@ -4174,13 +4175,13 @@ int Terminal::MouseInput(int action, int x, int y)
     time_out   = SystemTime;
     last_input = SystemTime;
 
-    Zone *zone = NULL;
+    Zone *zone = nullptr;
     if (translate)
     {
         zone = page->FindTranslateZone(this, x, y);
         if ((action & MOUSE_RIGHT) && (action & MOUSE_PRESS))
         {
-            if (zone == NULL && y < 32)
+            if (zone == nullptr && y < 32)
                 return TranslatePage(page);
             else
                 return TranslateZone(zone);
@@ -4203,7 +4204,7 @@ int Terminal::MouseInput(int action, int x, int y)
         last_x = x - (x % grid_x);
         last_y = y - (y % grid_y);
         zone_modify = 0;
-        if (zone == NULL)
+        if (zone == nullptr)
         {
             if (select_on)
                 WInt8(TERM_SELECTOFF);
@@ -4238,10 +4239,10 @@ int Terminal::MouseInput(int action, int x, int y)
             return 0;
         }
 
-        if ((action & MOUSE_SHIFT) == 0 && (zone == NULL || zone->edit == 0))
+        if ((action & MOUSE_SHIFT) == 0 && (zone == nullptr || zone->edit == 0))
             zone_db->ClearEdit(this);
 
-        if (zone == NULL)
+        if (zone == nullptr)
             return 0;
 
         if (action & MOUSE_LEFT)
@@ -4370,10 +4371,10 @@ int Terminal::ButtonCommand(int command)
 	switch (command)
 	{
     case WB_NEWZONE:
-        EditZone(NULL);
+        EditZone(nullptr);
         break;
     case WB_NEWPAGE:
-        EditPage(NULL);
+        EditPage(nullptr);
         break;
     case WB_ALL:
         zone_db->ToggleEdit(this, 0);
@@ -4426,9 +4427,9 @@ int Terminal::SizeToMouse()
 {
     FnTrace("Terminal::SizeToMouse()");
     int retval = 1;
-    Zone *currzone = NULL;
-    Zone *sizezone = NULL;
-    Page *currpage = NULL;
+    Zone *currzone = nullptr;
+    Zone *sizezone = nullptr;
+    Page *currpage = nullptr;
     int count = 0;
 
     // won't resize if we have more than one selected zone
@@ -4448,7 +4449,7 @@ int Terminal::SizeToMouse()
         currpage = currpage->next;
     }
 
-    if (count == 1 && sizezone != NULL)
+    if (count == 1 && sizezone != nullptr)
     {
         int x1 = sizezone->x;
         int x2 = sizezone->x + sizezone->w;
@@ -4490,7 +4491,7 @@ int Terminal::SizeToMouse()
 int Terminal::EditMultiZone(Page *currPage)
 {
 	FnTrace("Terminal::EditMultiZone()");
-	if (currPage == NULL || user == NULL)
+	if (currPage == nullptr || user == nullptr)
 		return 1;
 
 	int behave = 1;
@@ -4505,10 +4506,10 @@ int Terminal::EditMultiZone(Page *currPage)
     int color2 = 1;
 	int count = 0;
 
-	Zone *last = NULL;
+	Zone *last = nullptr;
 	while (currPage)
 	{
-		for (Zone *currZone = currPage->ZoneList(); currZone != NULL; currZone = currZone->next)
+		for (Zone *currZone = currPage->ZoneList(); currZone != nullptr; currZone = currZone->next)
 			if (currZone->edit && currZone->CanEdit(this))
 			{
 				if (last)
@@ -4539,7 +4540,7 @@ int Terminal::EditMultiZone(Page *currPage)
 		return 0;
     }
 
-	edit_zone = NULL;
+	edit_zone = nullptr;
 	edit_page = currPage;
 	WInt8(TERM_EDITMULTIZONE);
 	WInt8(user->CanEditSystem());
@@ -4574,11 +4575,11 @@ int Terminal::ReadMultiZone()
     int shadow = RInt16();
 
     Page *currPage = edit_page;
-    if (currPage == NULL)
+    if (currPage == nullptr)
         currPage = page;
     while (currPage)
     {
-        for (Zone *currZone = page->ZoneList(); currZone != NULL; currZone = currZone->next)
+        for (Zone *currZone = page->ZoneList(); currZone != nullptr; currZone = currZone->next)
             if (currZone->edit && currZone->CanEdit(this))
             {
                 if (behave != -1) currZone->behave     = behave;
@@ -4595,7 +4596,7 @@ int Terminal::ReadMultiZone()
         currPage = currPage->parent_page;
     }
 
-    edit_page = NULL;
+    edit_page = nullptr;
     Draw(RENDER_NEW);
     UserInput();
 
@@ -4606,11 +4607,11 @@ int Terminal::EditZone(Zone *currZone)
 {
 	FnTrace("Terminal::EditZone()");
 
-	if (user == NULL)
+	if (user == nullptr)
 		return 1;
 
 	edit_zone = currZone;
-	SalesItem *currItem = NULL;
+	SalesItem *currItem = nullptr;
 
 	WInt8(TERM_EDITZONE);
 	WInt8(user->CanEditSystem());
@@ -4752,12 +4753,12 @@ int Terminal::EditZone(Zone *currZone)
 int Terminal::TranslateZone(Zone *z)
 {
     FnTrace("Terminal::TranslateZone()");
-    if (z == NULL)
+    if (z == nullptr)
         return 1;
 
     edit_zone = z;
     const genericChar* k = z->TranslateString(this);
-    if (k == NULL || strlen(k) <= 0)
+    if (k == nullptr || strlen(k) <= 0)
         return 1;
 
     const genericChar* v = MasterLocale->Translate(k);
@@ -4774,7 +4775,7 @@ int Terminal::TranslateZone(Zone *z)
 int Terminal::TranslatePage(Page *p)
 {
     FnTrace("Terminal::TranslatePage()");
-    if (p == NULL)
+    if (p == nullptr)
         return 1;
 
     edit_page = p;
@@ -4867,7 +4868,7 @@ int Terminal::ReadZone()
         // Try to find the existing item.  This will only match if the name has
         // not changed.
         SalesItem *si = system_data->menu.FindByName(iname.c_str());
-        if (si == NULL)
+        if (si == nullptr)
         {
             // We don't have a match, so create new menu item
             si = new SalesItem(iname.c_str());
@@ -4877,10 +4878,10 @@ int Terminal::ReadZone()
             // deleted because SalesItem::FindByName() does a binary search;
             // thus the members must be internally sorted by item_name, which
             // has changed.
-            if (edit_zone != NULL && edit_zone->Type() == ZONE_ITEM)
+            if (edit_zone != nullptr && edit_zone->Type() == ZONE_ITEM)
             {
                 SalesItem *olditem = system_data->menu.FindByName(edit_zone->ItemName()->Value());
-                if (olditem != NULL)
+                if (olditem != nullptr)
                 {
                     olditem->Copy(si);
                     // only remove the old item if this is a copy.
@@ -4895,7 +4896,7 @@ int Terminal::ReadZone()
         }
 
         newZone->ItemName()->Set(iname);
-        if (si != NULL)
+        if (si != nullptr)
         {
             // DO NOT forget to also modify the "else throw away" block below
             // if you make any changes to the number or types of items read.
@@ -4941,7 +4942,7 @@ int Terminal::ReadZone()
         page_size = edit_zone->page->size;
 
     Page *currPage = zone_db->FindByID(my_page_id, page_size);
-    if (currPage == NULL)
+    if (currPage == nullptr)
     {
         currPage = page;
         if (edit_zone && edit_zone->page)
@@ -4953,11 +4954,11 @@ int Terminal::ReadZone()
         if (edit_zone->page)
             edit_zone->page->Remove(edit_zone);
         if (selected_zone == edit_zone)
-            selected_zone = NULL;
+            selected_zone = nullptr;
         if (active_zone == edit_zone)
-            active_zone = NULL;
+            active_zone = nullptr;
         delete edit_zone;
-        edit_zone = NULL;
+        edit_zone = nullptr;
     }
 
     if (newZone->Type() == ZONE_COMMENT)
@@ -4980,7 +4981,7 @@ int Terminal::KillZone()
             edit_zone->page->Remove(edit_zone);
         delete edit_zone;
 
-        edit_zone = NULL;
+        edit_zone = nullptr;
         Draw(RENDER_NEW);
     }
     UserInput();
@@ -4991,7 +4992,7 @@ int Terminal::KillZone()
 int Terminal::EditPage(Page *p)
 {
 	FnTrace("Terminal::EditPage()");
-	if (user == NULL || !user->CanEdit())
+	if (user == nullptr || !user->CanEdit())
 		return 1;
 
 	int edit_system = CanEditSystem();
@@ -5059,9 +5060,9 @@ int Terminal::ReadPage()
     FnTrace("Terminal::ReadPage()");
 
     Page *currPage = edit_page;
-    edit_page = NULL;
+    edit_page = nullptr;
 
-    if (currPage == NULL)
+    if (currPage == nullptr)
     {
         currPage = NewPosPage();
     }
@@ -5112,13 +5113,13 @@ int Terminal::KillPage()
 {
 	FnTrace("Terminal::KillPage()");
 	Page *currPage = edit_page;
-	edit_page = NULL;
+	edit_page = nullptr;
 
 	Page *jump = currPage->next;
-	if (jump == NULL)
+	if (jump == nullptr)
 	{
 		jump = currPage->fore;
-		if (jump == NULL)
+		if (jump == nullptr)
 			return 1;
 	}
 
@@ -5126,7 +5127,7 @@ int Terminal::KillPage()
 	delete currPage;
 
 	zone_db->Init();
-	page = NULL;
+	page = nullptr;
 	ChangePage(jump);
 	UserInput();
 
@@ -5141,7 +5142,7 @@ int Terminal::ShowPageList()
 	genericChar str[256];
 	int edit_system = CanEditSystem(), last_id = 0;
 
-	for (Page *p = zone_db->PageList(); p != NULL; p = p->next)
+	for (Page *p = zone_db->PageList(); p != nullptr; p = p->next)
 		if ((p->id != last_id || p->id == 0) &&
             (p->id >= 0 || edit_system))
 		{
@@ -5165,7 +5166,7 @@ int Terminal::JumpList(int selected)
     int edit_system = CanEditSystem();
     int last_id = 0;
 
-    for (Page *currPage = zone_db->PageList(); currPage != NULL; currPage = currPage->next)
+    for (Page *currPage = zone_db->PageList(); currPage != nullptr; currPage = currPage->next)
 	{
         if ((currPage->id != last_id || currPage->id == 0) && (currPage->id >= 0 || edit_system))
         {
@@ -5183,7 +5184,7 @@ int Terminal::JumpList(int selected)
 int Terminal::EditDefaults()
 {
 	FnTrace("Terminal::EditDefaults()");
-    	if (zone_db == NULL)
+    	if (zone_db == nullptr)
         	return 1;
 
 	WInt8(TERM_DEFPAGE);
@@ -5206,7 +5207,7 @@ int Terminal::EditDefaults()
 int Terminal::ReadDefaults()
 {
     FnTrace("Terminal::ReadDefaults()");
-    if (zone_db == NULL)
+    if (zone_db == nullptr)
         return 1;
 
     zone_db->default_font = RInt8();
@@ -5233,8 +5234,8 @@ int Terminal::ReadDefaults()
 Settings *Terminal::GetSettings()
 {
     FnTrace("Terminal::GetSettings()");
-    if (system_data == NULL)
-        return NULL;
+    if (system_data == nullptr)
+        return nullptr;
 
     return &(system_data->settings);
 }
@@ -5261,12 +5262,12 @@ int Terminal::EndDay()
 
     if (eod_failed)
     {
-        system_data->eod_term = NULL;
+        system_data->eod_term = nullptr;
         system_data->non_eod_settle = 0;
         eod_processing = EOD_DONE;
         eod_failed = 0;
         CC_ClearSAF(1);
-        CC_Settle(NULL, 1);
+        CC_Settle(nullptr, 1);
         Signal("enddayfailed", 0);
         retval = 0;
     }
@@ -5304,7 +5305,7 @@ int Terminal::EndDay()
     {
         system_data->EndDay();
 
-        system_data->eod_term = NULL;
+        system_data->eod_term = nullptr;
         system_data->non_eod_settle = 0;
         eod_processing = EOD_DONE;
         Signal("enddaydone", 0);
@@ -5320,7 +5321,7 @@ int Terminal::WriteCreditCard(int amount)
     int retval = 1;
     Settings *settings = GetSettings();
 
-    if (credit != NULL)
+    if (credit != nullptr)
     {
         WStr(settings->cc_server.Value());
         WStr(settings->cc_port.Value());
@@ -5375,7 +5376,7 @@ int Terminal::ReadCreditCard()
     int retval = 1;
     int auth = GetSettings()->authorize_method;
 
-    if (credit != NULL)
+    if (credit != nullptr)
     {
         credit->approval.Set(RStr());
         credit->number.Set(RStr());
@@ -5485,7 +5486,7 @@ int Terminal::CC_GetApproval()
         WInt8(TERM_CC_AUTH);
         WriteCreditCard();
         retval = SendNow();
-        if (retval < 0 && credit != NULL)
+        if (retval < 0 && credit != nullptr)
             credit->intcode = CC_STATUS_WRITEFAIL;
     }
 
@@ -5510,7 +5511,7 @@ int Terminal::CC_GetPreApproval()
         }
         WriteCreditCard(amount);
         retval = SendNow();
-        if (retval < 0 && credit != NULL)
+        if (retval < 0 && credit != nullptr)
             credit->intcode = CC_STATUS_WRITEFAIL;
     }
 
@@ -5529,7 +5530,7 @@ int Terminal::CC_GetFinalApproval()
         WInt8(TERM_CC_FINALAUTH);
         WriteCreditCard();
         retval = SendNow();
-        if (retval < 0 && credit != NULL)
+        if (retval < 0 && credit != nullptr)
             credit->intcode = CC_STATUS_WRITEFAIL;
     }
 
@@ -5548,7 +5549,7 @@ int Terminal::CC_GetVoid()
         WInt8(TERM_CC_VOID);
         WriteCreditCard();
         retval = SendNow();
-        if (retval < 0 && credit != NULL)
+        if (retval < 0 && credit != nullptr)
             credit->intcode = CC_STATUS_WRITEFAIL;
     }
 
@@ -5567,7 +5568,7 @@ int Terminal::CC_GetVoidCancel()
         WInt8(TERM_CC_VOID_CANCEL);
         WriteCreditCard();
         retval = SendNow();
-        if (retval < 0 && credit != NULL)
+        if (retval < 0 && credit != nullptr)
             credit->intcode = CC_STATUS_WRITEFAIL;
     }
 
@@ -5586,7 +5587,7 @@ int Terminal::CC_GetRefund()
         WInt8(TERM_CC_REFUND);
         WriteCreditCard();
         retval = SendNow();
-        if (retval < 0 && credit != NULL)
+        if (retval < 0 && credit != nullptr)
             credit->intcode = CC_STATUS_WRITEFAIL;
     }
 
@@ -5605,7 +5606,7 @@ int Terminal::CC_GetRefundCancel()
         WInt8(TERM_CC_REFUND_CANCEL);
         WriteCreditCard();
         retval = SendNow();
-        if (retval < 0 && credit != NULL)
+        if (retval < 0 && credit != nullptr)
             credit->intcode = CC_STATUS_WRITEFAIL;
     }
 
@@ -5624,7 +5625,7 @@ int Terminal::CC_TermIDIsDupe(const char* termid)
     int retval = 0;
     Str *curr_termid = term_id_list.Head();
 
-    while (curr_termid != NULL && retval == 0)
+    while (curr_termid != nullptr && retval == 0)
     {
         if (strcmp(curr_termid->Value(), termid) == 0)
             retval = 1;
@@ -5644,7 +5645,7 @@ int Terminal::CC_GetTermIDList(Terminal *start_term)
 
     term_id_list.Purge();
 
-    while (curr_term != NULL)
+    while (curr_term != nullptr)
     {
         if (curr_term->cc_debit_termid.size() > 0 &&
             CC_TermIDIsDupe(curr_term->cc_debit_termid.Value()) == 0)
@@ -5675,7 +5676,7 @@ int Terminal::CC_NextTermID(int *cc_state, char* termid)
 {
     FnTrace("Terminal::CC_NextTermID()");
     int retval = 0;
-    static Str *next_id = NULL;
+    static Str *next_id = nullptr;
     Settings *settings = GetSettings();
 
     if (settings->authorize_method == CCAUTH_CREDITCHEQ)
@@ -5687,7 +5688,7 @@ int Terminal::CC_NextTermID(int *cc_state, char* termid)
             next_id = term_id_list.Head();
         }
 
-        if (next_id != NULL)
+        if (next_id != nullptr)
         {
             strcpy(termid, next_id->Value());
             next_id = next_id->next;
@@ -5711,13 +5712,13 @@ int Terminal::CC_NextBatch(int *state, BatchItem **currbatch, long long *batch)
     if (*state == CC_SYS_STATE_START)
     {
         *currbatch = system_data->BatchList.Head();
-        if (*currbatch != NULL)
+        if (*currbatch != nullptr)
             *state = CC_SYS_STATE_NEXT;
     }
     else
         *currbatch = (*currbatch)->next;
 
-    if (*currbatch != NULL)
+    if (*currbatch != nullptr)
     {
         *batch = (*currbatch)->batch;
         retval = 1;
@@ -5746,7 +5747,7 @@ int Terminal::CC_Settle(const char* batch, int reset)
         {
             if (state == CC_SYS_STATE_START)
             {
-                if (batch != NULL)
+                if (batch != nullptr)
                     strcpy(batchstr, batch);
                 else
                     strcpy(batchstr, "find");
@@ -5832,7 +5833,7 @@ int Terminal::CC_Totals(const char* batch)
     {
         if (auth_method == CCAUTH_MAINSTREET)
         {
-            if (batch != NULL)
+            if (batch != nullptr)
                 strcpy(batchnum, batch);
             else
                 strcpy(batchnum, "all");
@@ -6027,7 +6028,7 @@ int Terminal::CC_GetSettlementResults()
         if (strlen(batch) > 0)
         {
             currcheck = system_data->CheckList();
-            while (currcheck != NULL && currcheck->IsBatchSet() == 0)
+            while (currcheck != nullptr && currcheck->IsBatchSet() == 0)
             {
                 currcheck->SetBatch(termid, batch);
                 system_data->cc_settle_results->Add(currcheck);
@@ -6082,7 +6083,7 @@ int Terminal::CC_GetTotalsResults()
         int total_rows = rows;
         while (rows > 0)
         {
-            if (RStr(line) == NULL)
+            if (RStr(line) == nullptr)
             {
                 snprintf(line, STRLONG, "Failed at %d reading totals results", total_rows - rows);
                 ReportError(line);
@@ -6274,7 +6275,7 @@ Terminal* NewTerminal(const genericChar* hostname, int hardware_type, int isserv
 {
     FnTrace("NewTerminal()");
     int socket_no = -1;
-    Terminal *term = NULL;
+    Terminal *term = nullptr;
 
     socket_no = OpenTerminalSocket(hostname, hardware_type, isserver);
     if (socket_no > 0)
@@ -6295,15 +6296,15 @@ int CloneTerminal(Terminal *term, const char* dest, const char* name)
     FnTrace("CloneTerminal()");
     int retval = 0;
     int socket_no = -1;
-    Terminal *new_term = NULL;
+    Terminal *new_term = nullptr;
 
     socket_no = OpenTerminalSocket(dest, 0, 0, term->width, term->height);
     if (socket_no > 0)
     {
         new_term = new Terminal;
         new_term->socket_no = socket_no;
-        new_term->buffer_in = NULL;
-        new_term->buffer_out = NULL;
+        new_term->buffer_in = nullptr;
+        new_term->buffer_out = nullptr;
         term->host.Set(name);
         new_term->input_id = AddInputFn((InputFn) TermCB, new_term->socket_no, term);
         term->AddClone(new_term);

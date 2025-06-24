@@ -182,7 +182,7 @@ KitchenObj::KitchenObj(Control *db, int no)
 {
     number = no;
 
-    for (Terminal *t = db->TermList(); t != NULL; t = t->next)
+    for (Terminal *t = db->TermList(); t != nullptr; t = t->next)
         if (t->kitchen == no)
             terms.Add(new TermObj(t));
 }
@@ -244,7 +244,7 @@ int KitchenObj::Render(Terminal *t)
 // Member Functions
 RenderResult SplitKitchenZone::Render(Terminal *t, int update_flag)
 {
-    RenderZone(t, NULL, update_flag);
+    RenderZone(t, nullptr, update_flag);
     if (update_flag)
     {
         kitchens.Purge();
@@ -261,7 +261,7 @@ RenderResult SplitKitchenZone::Render(Terminal *t, int update_flag)
 
 SignalResult SplitKitchenZone::Signal(Terminal *t, const genericChar* message)
 {
-    static const genericChar* commands[] = {"cancel", NULL};
+    static const genericChar* commands[] = {"cancel", nullptr};
 
     int idx = CompareList(message, commands);
     switch (idx)

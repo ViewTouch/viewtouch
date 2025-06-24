@@ -1,18 +1,8 @@
+#pragma once  // REFACTOR: Replaced include guards with modern pragma once
 
 /*
- * logging utilities
+ * simple logging library - header
  */
 
-
-#ifndef LOGGER_H
-#define LOGGER_H
-
-#include <stdarg.h>
-#include <syslog.h>
-
-
-int logmsg(int, const char* , ...);
-
-#endif
-
-/* done */
+void setident(const char* ident);
+void logmsg(int priority, const char* fmt, ...);

@@ -18,8 +18,7 @@
  * Touch zone for managing credit cards
  */
 
-#ifndef CREDITCARD_LIST_ZONE_HH
-#define CREDITCARD_LIST_ZONE_HH
+#pragma once  // REFACTOR: Replaced #ifndef CREDITCARD_LIST_ZONE_HH guard with modern pragma once
 
 #include "form_zone.hh"
 #include "credit.hh"
@@ -61,5 +60,3 @@ public:
     CreditDB *NextCreditDB(Terminal *term);
     CreditDB *PrevCreditDB(Terminal *term);
 };
-
-#endif

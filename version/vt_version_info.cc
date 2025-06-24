@@ -79,7 +79,7 @@ std::string get_version_string()
 //    return msg.str();
 //}
 
-} // loacl namespace
+} // local namespace
 
 
 std::string viewtouch::get_project_name()

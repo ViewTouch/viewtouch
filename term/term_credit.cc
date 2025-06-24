@@ -27,8 +27,8 @@
  ********************************************************************/
 
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -152,12 +152,12 @@ int CCard::Clear()
     card_type = 0;
 
     // specific to CreditCheq
-    reference[0] = '0';
-    sequence[0] = '0';
-    server_date[0] = '0';
-    server_time[0] = '0';
-    receipt_line[0] = '0';
-    display_line[0] = '0';
+    reference[0] = '\0';
+    sequence[0] = '\0';
+    server_date[0] = '\0';
+    server_time[0] = '\0';
+    receipt_line[0] = '\0';
+    display_line[0] = '\0';
 
     return 0;
 }

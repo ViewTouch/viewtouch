@@ -36,7 +36,7 @@ AccountZone::AccountZone()
 {
     list_header = 2;
     //list_footer = 1;
-    account = NULL;
+    account = nullptr;
     show_list = 1;
     edit_default = 0;
     AddTextField("Account Name", 15);
@@ -132,7 +132,7 @@ int AccountZone::LoadRecord(Terminal *term, int my_record_no)
     FormField *field = FieldList();
     account = term->system_data->account_db.FindByRecord(my_record_no);
 
-    if (account != NULL)
+    if (account != nullptr)
     {
         // AddTextField("Account Name", 15, 0);
         field->Set(account->name.Value());
@@ -152,7 +152,7 @@ int AccountZone::SaveRecord(Terminal *term, int my_record_no, int write_file)
     int acct_no = 0;
 
     FnTrace("AccountZone::SaveRecord()");
-    if (account != NULL)
+    if (account != nullptr)
     {
         FormField *field = FieldList();
         field->Get(account->name);  field = field->next;
@@ -174,7 +174,7 @@ int AccountZone::NewRecord(Terminal *term)
     FnTrace("AccountZone::NewRecord()");
     int acct_num = 0;
 
-    if (account != NULL)
+    if (account != nullptr)
         acct_num = account->number;
     account = term->system_data->account_db.NewAccount(acct_num);
     records = RecordCount(term);
@@ -225,15 +225,15 @@ int AccountZone::ListReport(Terminal *term, Report *report)
     int indent = 0;
     int my_color = COLOR_DEFAULT;
 
-    if (report == NULL)
+    if (report == nullptr)
         return 1;
 
     AccountDB *account_db = &(term->system_data->account_db);
     report->Clear();
     Account *acct = account_db->Next();
-    if (acct == NULL)
+    if (acct == nullptr)
         report->TextC("No Accounts Defined");
-    while (acct != NULL)
+    while (acct != nullptr)
     {
         indent = 0;
         snprintf(buff, STRLENGTH, "%d", acct->number);
@@ -269,7 +269,7 @@ int AccountZone::CheckAccountNumber(Terminal *term, int sendmsg)
     genericChar msggood[] = "clearstatus";
     const genericChar* msgsend = msggood;
 
-    if (account != NULL)
+    if (account != nullptr)
     {
         acctnumfld->Get(number);
         if (! IsValidAccountNumber(term, number))

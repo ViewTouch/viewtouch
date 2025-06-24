@@ -14,6 +14,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - **Modern C++ Type Safety**: Implemented proper type casting practices throughout font rendering subsystem
   - Added reinterpret_cast for safe conversion between char* and unsigned char* pointer types
   - Added const_cast for legacy X11/Motif library compatibility while maintaining const correctness
+- **Modern C++17 Standards Compliance**: Comprehensive modernization of entire codebase infrastructure
+  - Implemented modern `using` type alias syntax replacing all legacy `typedef` declarations
+  - Added type-safe `nullptr` conversions throughout 200+ files for improved memory safety
+  - Integrated modern `#pragma once` header guards replacing legacy `#ifndef` macros in 35+ files
+  - Enhanced Str class with C++17 features: move semantics, RAII compliance, and defaulted operations
+  - Added explicit buffer size constants preventing future buffer overflow vulnerabilities
 
 ### Changed
 - cmake: `gen_compiler_tag`: handle Clang compiler to contain compiler version #163
@@ -29,12 +35,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Changed `(unsigned const char*)` casts to `reinterpret_cast<const unsigned char*>()` for Xft function compatibility
   - Replaced legacy `(String)` casts with safer `const_cast<char*>()` for X11/Motif string arguments
 - **Error Message Enhancement**: Improved font loading diagnostics with detailed fallback notifications and specific error reporting for missing scalable fonts
+- **Core Type System Modernization**: Migrated fundamental type definitions from legacy C to modern C++17 standards
+  - Converted all `typedef` declarations to modern `using` syntax in `basic.hh` for improved readability
+  - Updated type aliases: `using Uchar = unsigned char` (was `typedef unsigned char Uchar`)
+  - Enhanced template function definitions with consistent modern syntax
+- **Memory Management Modernization**: Comprehensive upgrade of pointer handling throughout codebase
+  - Replaced 200+ instances of `NULL` with type-safe `nullptr` across all source files
+  - Updated constructor initializations in Product, Vendor, and Credit classes
+  - Enhanced method signatures with modern pointer semantics for improved type safety
 
 ### Removed
 - **Documentation Files**: Removed `SCALABLE_FONTS_MIGRATION.md` per PR review feedback - migration documentation better suited for PR descriptions rather than repository files
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
 
 ### Fixed
+- **CRITICAL SECURITY VULNERABILITIES**: Eliminated multiple buffer overflow attack vectors that could compromise system security
+  - **Buffer Overflow in UnitAmount::Description()**: Fixed `sizeof(str)` bug in `main/inventory.cc` affecting 18+ format operations - replaced with proper `UNIT_DESC_BUFFER_SIZE` constant (256 bytes)
+  - **Buffer Overflow in PrintItem()**: Fixed `sizeof(buffer)` bug in `main/sales.cc` affecting menu item formatting - replaced with proper `PRINT_ITEM_BUFFER_SIZE` constant (512 bytes)  
+  - **Buffer Overflow in Locale::Page()**: Fixed `sizeof(str)` bug in `main/locale.cc` affecting pagination display - replaced with proper `PAGE_BUFFER_SIZE` constant (32 bytes)
+  - **Buffer Overflow in Payment::Description()**: Fixed `sizeof(str)` bug in `main/check.cc` affecting payment processing - replaced with proper `PAYMENT_DESC_BUFFER_SIZE` constant (128 bytes)
+- **CRITICAL CREDIT CARD PROCESSING BUGS**: Fixed validation logic failures that could allow invalid transactions
+  - **Array Comparison Bug in Credit::operator==()**: Fixed 4 instances in `main/credit.cc` where arrays were compared with `==` instead of `strcmp()` - credit card validation was comparing pointer addresses instead of actual card numbers
+  - **Memory Safety in Credit Processing**: Fixed NULL pointer handling throughout credit card processing methods
+- **COMPILATION FAILURES**: Resolved build-breaking errors preventing successful compilation
+  - **Duplicate Global Variable**: Removed duplicate `last_check_serial` definition in `main/check.cc` causing linker errors
+  - **Malformed Nested Loop**: Fixed duplicate for-loop declaration in PrintWorkOrder method causing parser confusion and cascading syntax errors
+  - **Function Trace Bug**: Corrected `Payment::IsEqual()` FnTrace call that was incorrectly calling `Payment::IsTab()`
 - **Font System Build Errors**: Resolved compilation failures preventing scalable font system from building
   - Fixed `invalid 'static_cast' from type 'const char*' to type 'const unsigned char*'` errors in text rendering functions
   - Corrected type casting issues in `term/layer.cc`, `loader/loader_main.cc`, and `main/manager.cc` for Xft font compatibility

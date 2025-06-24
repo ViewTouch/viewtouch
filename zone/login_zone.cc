@@ -106,7 +106,7 @@ RenderResult LoginZone::Render(Terminal *term, int update_flag)
     Settings *settings = term->GetSettings();
     Employee *employee = term->user;
 
-    if (employee == NULL && state == STATE_USER_ONLINE)
+    if (employee == nullptr && state == STATE_USER_ONLINE)
         state = STATE_GET_USER_ID;
 
 	//this switch statement assigns the message in the upper
@@ -208,7 +208,7 @@ SignalResult LoginZone::Signal(Terminal *term, const genericChar* message)
         "job0", "job1", "job2", "passwordgood", "passwordfailed",
         "passwordcancel", "faststart", "starttakeout", "gettextcancel", 
         "pickup", "quicktogo", "quickdinein", 
-	"kds1", "kds2", "bar1", "bar2", NULL};
+	"kds1", "kds2", "bar1", "bar2", nullptr};
  
     int idx = CompareList(message, commands);
 	if (idx < 0)
@@ -231,7 +231,7 @@ SignalResult LoginZone::Signal(Terminal *term, const genericChar* message)
     {
     case 10:  // start
         Start(term);
-	if (term->user == NULL)
+	if (term->user == nullptr)
 	    return SIGNAL_ERROR;
         break;
     case 11:  // clear
@@ -372,10 +372,10 @@ int LoginZone::ClockOn(Terminal *term, int job_no)
     Employee *employee = term->user;
     Settings *settings = &(sys->settings);
 
-    if (employee == NULL)
+    if (employee == nullptr)
         employee = sys->user_db.FindByKey(input);
 
-    if (employee == NULL)
+    if (employee == nullptr)
     {
         state = STATE_UNKNOWN_USER;
         Draw(term, 0);
@@ -405,7 +405,7 @@ int LoginZone::ClockOn(Terminal *term, int job_no)
     if (job_no >= 0)
     {
         JobInfo *j = employee->FindJobByNumber(job_no);
-        if (j == NULL)
+        if (j == nullptr)
         {
             printf("error finding job!\n");
             return 1; // shouldn't happen
@@ -436,7 +436,7 @@ int LoginZone::ClockOn(Terminal *term, int job_no)
         SimpleDialog *d = new SimpleDialog(str);
 
         int n = 0;
-        for (JobInfo *j = employee->JobList(); j != NULL; j = j->next)
+        for (JobInfo *j = employee->JobList(); j != nullptr; j = j->next)
         {
             snprintf(str, STRLENGTH, "job%d", n++);
             d->Button(j->Title(term), str);
@@ -475,7 +475,7 @@ int LoginZone::ClockOff(Terminal *term)
     FnTrace("LoginZone::ClockOff()");
     System *sys = term->system_data;
     Employee *employee = term->user;
-    if (employee == NULL)
+    if (employee == nullptr)
     {
         employee = sys->user_db.FindByKey(input);
         input = 0;
@@ -515,7 +515,7 @@ int LoginZone::Start(Terminal *term, short expedite)
 	// the 'expedite' param is the flag to invoke fast food mode
     System *sys = term->system_data;
     Settings *settings = &(sys->settings);
-    Employee *employee = NULL;
+    Employee *employee = nullptr;
 
 	//establish the current meal period and use that info 
 	//to determine which meal index page to load
@@ -550,7 +550,7 @@ int LoginZone::Start(Terminal *term, short expedite)
         return 0;
     }
 
-    if (employee == NULL)
+    if (employee == nullptr)
     {
         // no user found for given key
         state = STATE_UNKNOWN_USER;
@@ -740,7 +740,7 @@ int LoginZone::Start(Terminal *term, short expedite)
 
 LogoutZone::LogoutZone()
 {
-    work = NULL;
+    work = nullptr;
 }
 
 RenderResult LogoutZone::Render(Terminal *term, int update_flag)
@@ -748,7 +748,7 @@ RenderResult LogoutZone::Render(Terminal *term, int update_flag)
     FnTrace("LogoutZone::Render()");
     LayoutZone::Render(term, update_flag);
     Employee *employee = term->user;
-    if (employee == NULL)
+    if (employee == nullptr)
     {
         TextC(term, 1, "No Employee Logged In");
         return RENDER_OKAY;
@@ -762,7 +762,7 @@ RenderResult LogoutZone::Render(Terminal *term, int update_flag)
         work     = sys->labor_db.CurrentWorkEntry(employee);
     }
 
-    if (work == NULL)
+    if (work == nullptr)
     {
         TextC(term, 1, "Strange, No Work Info For You...");
         return RENDER_OKAY;
@@ -821,7 +821,7 @@ SignalResult LogoutZone::Signal(Terminal *term, const genericChar* message)
     FnTrace("LogoutZone::Signal()");
     const genericChar* commands[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "00",
-            "cancel", "clockoff", "backspace", "clear", "save", "break", NULL};
+            "cancel", "clockoff", "backspace", "clear", "save", "break", nullptr};
 	int idx = CompareList(message, commands);
 
 	if (idx < 0)
@@ -835,7 +835,7 @@ SignalResult LogoutZone::Signal(Terminal *term, const genericChar* message)
     }
 
     Employee *employee = term->user;
-    if (employee == NULL || work == NULL)
+    if (employee == nullptr || work == nullptr)
         return SIGNAL_IGNORED;
 
     System *sys = term->system_data;
@@ -919,7 +919,7 @@ SignalResult LogoutZone::Keyboard(Terminal *term, int my_key, int state)
 int LogoutZone::RenderPaymentEntry(Terminal *term, int line)
 {
     FnTrace("LogoutZone::RenderPaymentEntry()");
-    if (work == NULL)
+    if (work == nullptr)
         return 1;
 
     genericChar str[128];
@@ -949,7 +949,7 @@ int LogoutZone::ClockOff(Terminal *term, int end_shift)
 {
     FnTrace("LogoutZone::ClockOff()");
     Employee *e = term->user;
-    if (e == NULL || work == NULL)
+    if (e == nullptr || work == nullptr)
         return 1;
 
     System *sys = term->system_data;

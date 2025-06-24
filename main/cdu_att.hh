@@ -18,12 +18,9 @@
  *  (8N1, et al) for the CDU devices.
  */
 
-#ifndef VT_CDU_ATT_HH
+#pragma once
 
 #define CDU_PORT 65529
 
 int EpsonSetAttributes(int fd);
 int BA63SetAttributes(int fd);
-
-#define VT_CDU_ATT_HH
-#endif
