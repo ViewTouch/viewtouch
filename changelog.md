@@ -71,6 +71,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Applied `const_cast<char*>()` fixes for X11/Motif compatibility in widget creation and dialog titles
 - **Build System**: Ensured complete compilation of all executables (vt_main, vt_term, vt_print, vt_cdu) and test suite
 - **Code Documentation**: Added comprehensive inline comments explaining all font system changes, cast fixes, and compatibility requirements for future maintenance
+- **CRITICAL TEST FAILURE**: Fixed `test_data_file` failure caused by incorrect format specifier in float serialization
+  - **Float Format Bug in InputDataFile::Read()**: Fixed `sscanf(str, "%lf", &v)` bug in `data_file.cc` - wrong format specifier for `Flt` type
+  - Root cause: `Flt` is typedef'd as `float` but Read method used `%lf` (double format) instead of `%f` (float format)
+  - Impact: Float values were reading as `0.0f` instead of actual values, breaking data file serialization
+  - Result: Complete test suite now passes at 100% success rate
 - fix configure step by searching for `PkgConfig` before using `pkg_check_module` #128
 - update embedded `catch.hpp` to `v2.13.10` to fix compilation on Ubuntu 20.04 and newer #131
 - fix `TimeInfo.Set(date_string)` function fixing `RunReport` `to`/`from` fields and C++20 compatibility #145

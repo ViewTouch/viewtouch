@@ -234,7 +234,7 @@ int InputDataFile::Read(Flt &val)
         return 1;
 
     Flt v = 0.0;
-    if (sscanf(str, "%lf", &v) != 1)
+    if (sscanf(str, "%f", &v) != 1)  // REFACTOR: Fixed format specifier - %f for float, %lf for double
         return 1;
 
     val = v;
