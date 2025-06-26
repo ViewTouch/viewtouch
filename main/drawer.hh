@@ -18,7 +18,7 @@
  * Drawer balance, report, use classes
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _DRAWER_HH guard with modern pragma once
+#pragma once
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -85,7 +85,7 @@ public:
     // Member Functions
     int   Read(InputDataFile &df, int version);
     int   Write(OutputDataFile &df, int version);
-    genericChar* Description(Settings *s, genericChar* str = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    genericChar* Description(Settings *s, genericChar* str = nullptr);
 };
 
 class Drawer
@@ -96,7 +96,7 @@ class Drawer
 public:
     Drawer    *next;
     Drawer    *fore;      // linked list pointers
-    Archive   *archive;          // parent archive (nullptr if current drawer)  // REFACTOR: Changed NULL to nullptr for modern C++
+    Archive   *archive;          // parent archive (nullptr if current drawer)
     TimeInfo   start_time;       // time of drawer initialization
     TimeInfo   pull_time;        // time of drawer pull
     TimeInfo   balance_time;     // time of drawer balance

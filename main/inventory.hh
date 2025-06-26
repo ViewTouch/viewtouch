@@ -18,7 +18,7 @@
  * Raw Product, Receipe & Vendor data bases
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _INVENTORY_HH guard with modern pragma once
+#pragma once
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -72,8 +72,8 @@ public:
     int   Read(InputDataFile &df, int version);
     int   Write(OutputDataFile &df, int version);
     int   Convert(int new_type);
-    genericChar* Description( char* str = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
-    genericChar* Measurement( char* str = nullptr); // REFACTOR: Changed NULL to nullptr for modern C++
+    genericChar* Description( char* str = nullptr);
+    genericChar* Measurement( char* str = nullptr);
 
     UnitAmount &operator *= (Flt a) {
         amount *= a; return *this; }
@@ -260,7 +260,7 @@ public:
     int Remove(StockEntry *se);
     int Remove(Invoice *in);
     int Purge();
-    int Load(const char* file = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    int Load(const char* file = nullptr);
     int Save();
     int Total();
     Invoice *NewInvoice(int vendor_id);

@@ -71,6 +71,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Applied `const_cast<char*>()` fixes for X11/Motif compatibility in widget creation and dialog titles
 - **Build System**: Ensured complete compilation of all executables (vt_main, vt_term, vt_print, vt_cdu) and test suite
 - **Code Documentation**: Added comprehensive inline comments explaining all font system changes, cast fixes, and compatibility requirements for future maintenance
+- **CRITICAL DIRECTORY ACCESS ISSUE**: Fixed directory permission bug introduced during C++17 refactor that made `/usr/viewtouch/dat` inaccessible
+  - **Root Cause**: C++17 refactor added `umask(0111)` in `main/manager.cc` which removed execute permissions from all created directories
+  - **Impact**: Directories created with `mkdir(dirname, 0755)` resulted in 644 permissions instead of 755, breaking file manager access with "Access was denied" errors
+  - **Fix**: Changed `umask(0111)` to `umask(0022)` to preserve execute permissions needed for directory access while maintaining security
+  - **Directory Permissions**: Updated `scripts/vtcommands.pl` to use 0775 permissions for bin/dat directories to ensure consistency
+  - **Result**: Directories now receive proper 755 permissions (rwxr-xr-x) allowing normal file manager access
 - **CRITICAL TEST FAILURE**: Fixed `test_data_file` failure caused by incorrect format specifier in float serialization
   - **Float Format Bug in InputDataFile::Read()**: Fixed `sscanf(str, "%lf", &v)` bug in `data_file.cc` - wrong format specifier for `Flt` type
   - Root cause: `Flt` is typedef'd as `float` but Read method used `%lf` (double format) instead of `%f` (float format)

@@ -401,7 +401,7 @@ int StartSystem(int my_use_net)
     }
 
     genericChar str[256];
-    EnsureFileExists(sys->data_path.Value());
+    EnsureDirExists(sys->data_path.Value());
     if (DoesFileExist(sys->data_path.Value()) == 0)
     {
         sprintf(str, "Can't find path '%s'", sys->data_path.Value());

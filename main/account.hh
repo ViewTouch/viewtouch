@@ -18,7 +18,7 @@
  * Account handling class objects
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _ACCOUNT_HH guard with modern pragma once
+#pragma once
 
 #include "terminal.hh"
 #include "utility.hh"

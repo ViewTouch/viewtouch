@@ -18,7 +18,7 @@
  * Definition of captured tip payouts
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _PAYOUT_ZONE_HH guard with modern pragma once
+#pragma once
 
 #include "layout_zone.hh"
 

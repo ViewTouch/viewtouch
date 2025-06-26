@@ -1,5 +1,3 @@
-#pragma once  // REFACTOR: Replaced #ifndef VT_FNTRACE_HH guard with modern pragma once
-
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -16,9 +14,10 @@
  *   You should have received a copy of the GNU General Public License 
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  *
- * fntrace.hh - revision 124 (10/6/98)
- * Implementation of fntrace module
+ * fntrace.hh - Function tracing module
  */
+
+#pragma once
 
 #include "basic.hh"
 #include <string>

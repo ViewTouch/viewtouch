@@ -21,4 +21,4 @@
  *  socket.  And vice versa.
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef VT_CCQ_PIPE_H guard with modern pragma once
+#pragma once

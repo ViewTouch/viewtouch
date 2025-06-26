@@ -1,5 +1,3 @@
-#pragma once  // REFACTOR: Replaced #ifndef VT_UTILITY_HH guard with modern pragma once
-
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -19,6 +17,8 @@
  * utility.hh - revision 106 (10/20/98)
  * General functions and data types than have no other place to go
  */
+
+#pragma once
 
 #include "basic.hh"
 #include "fntrace.hh"
@@ -66,68 +66,67 @@ enum SignalResult
     SIGNAL_TERMINATE   // signal received - terminate me
 };
 
-// REFACTOR: Completely modernized Str class with C++17 features and RAII
+
 // Dynamic string storage class
 class Str
 {
-    std::string data;  // REFACTOR: Changed from public to private member for encapsulation
+    std::string data;
 
 public:
-    Str*   next = nullptr;  // REFACTOR: Added default nullptr initialization
-    Str*   fore = nullptr;  // REFACTOR: Added default nullptr initialization
+    Str*   next = nullptr;
+    Str*   fore = nullptr;
 
-    // REFACTOR: Added modern C++17 constructors with proper initialization
+
     // Constructors
-    Str() = default;                                               // REFACTOR: Defaulted default constructor
+    Str() = default;
     explicit Str(const std::string& str) : data(str) {}           // REFACTOR: Added explicit constructor from std::string
     explicit Str(const char* str) : data(str ? str : "") {}       // REFACTOR: Added explicit constructor from C-string with null check
     
-    // REFACTOR: Added modern copy semantics for proper object management
+
     // Copy operations
-    Str(const Str& other) = default;                              // REFACTOR: Defaulted copy constructor
-    Str& operator=(const Str& other) = default;                   // REFACTOR: Defaulted copy assignment
+    Str(const Str& other) = default;
+    Str& operator=(const Str& other) = default;
     
-    // REFACTOR: Added modern move semantics for performance optimization
+
     // Move operations  
     Str(Str&& other) noexcept = default;                          // REFACTOR: Added move constructor
-    Str& operator=(Str&& other) noexcept = default;               // REFACTOR: Added move assignment
+    Str& operator=(Str&& other) noexcept = default;
     
-    // REFACTOR: Defaulted destructor for RAII compliance
+
     // Destructor
-    ~Str() = default;                                              // REFACTOR: Defaulted destructor
+    ~Str() = default;
 
     // REFACTOR: Converted methods to inline implementations for performance
     // Methods
-    int   Clear() { data.clear(); return 0; }                                     // REFACTOR: Made inline, was external implementation
-    bool  Set(const char *str) { data = str ? str : ""; return true; }           // REFACTOR: Made inline with null check
-    bool  Set(const std::string &str) { data = str; return true; }               // REFACTOR: Made inline
-    bool  Set(const int val) { data = std::to_string(val); return true; }        // REFACTOR: Made inline
-    bool  Set(const Flt val) { data = std::to_string(val); return true; }        // REFACTOR: Made inline
-    bool  Set(const Str &s) { data = s.data; return true; }                      // REFACTOR: Added Str-to-Str assignment
+    int   Clear() { data.clear(); return 0; }
+    bool  Set(const char *str) { data = str ? str : ""; return true; }
+    bool  Set(const std::string &str) { data = str; return true; }
+    bool  Set(const int val) { data = std::to_string(val); return true; }
+    bool  Set(const Flt val) { data = std::to_string(val); return true; }
+    bool  Set(const Str &s) { data = s.data; return true; }
     bool  Set(const Str *s) { return Set(s->Value()); }                          // REFACTOR: Added pointer variant
-    void  ChangeAtoB(const char a, const char b);                                // REFACTOR: Kept as external implementation
-    int   IntValue() const;                                                       // REFACTOR: Kept as external implementation
-    Flt   FltValue() const;                                                       // REFACTOR: Kept as external implementation
-    const char *Value() const { return data.c_str(); }                           // REFACTOR: Made inline accessor
-    const char *c_str() const { return data.c_str(); }                           // REFACTOR: Made inline accessor
-    std::string str() const { return data; }                                     // REFACTOR: Made inline accessor
-    const char* ValueSet(const char* set = nullptr);                             // REFACTOR: Kept as external implementation
+    void  ChangeAtoB(const char a, const char b);
+    int   IntValue() const;
+    Flt   FltValue() const;
+    const char *Value() const { return data.c_str(); }
+    const char *c_str() const { return data.c_str(); }
+    std::string str() const { return data; }
+    const char* ValueSet(const char* set = nullptr);
 
-    bool   empty() const { return data.empty(); }                                // REFACTOR: Made inline accessor
-    size_t size() const { return data.size(); }                                  // REFACTOR: Made inline accessor
+    bool   empty() const { return data.empty(); }
+    size_t size() const { return data.size(); }
 
-    // REFACTOR: Added assignment operators for backward compatibility
     // Assignment operators for compatibility
-    Str & operator =  (const char* s) { Set(s); return *this; }                  // REFACTOR: Added C-string assignment
-    Str & operator =  (const std::string &s) { Set(s); return *this; }           // REFACTOR: Added std::string assignment
-    Str & operator =  (const int s) { Set(s); return *this; }                    // REFACTOR: Added integer assignment
-    Str & operator =  (const Flt s) { Set(s); return *this; }                    // REFACTOR: Added float assignment
+    Str & operator =  (const char* s) { Set(s); return *this; }
+    Str & operator =  (const std::string &s) { Set(s); return *this; }
+    Str & operator =  (const int s) { Set(s); return *this; }
+    Str & operator =  (const Flt s) { Set(s); return *this; }
 
-    int   operator >  (const Str  &s) const;                                     // REFACTOR: Kept as external implementation
-    int   operator <  (const Str  &s) const;                                     // REFACTOR: Kept as external implementation
-    int   operator == (const Str  &s) const;                                     // REFACTOR: Kept as external implementation
-    bool operator == (const std::string &s) const;                               // REFACTOR: Kept as external implementation
-    int   operator != (const Str  &s) const;                                     // REFACTOR: Kept as external implementation
+    int   operator >  (const Str  &s) const;
+    int   operator <  (const Str  &s) const;
+    int   operator == (const Str  &s) const;
+    bool operator == (const std::string &s) const;
+    int   operator != (const Str  &s) const;
 };
 
 // Rectangular Region class
@@ -266,6 +265,7 @@ int DoesFileExist(const genericChar* filename);
 // Returns 1 if file exists otherwise 0
 
 int EnsureFileExists(const genericChar* filename);
+int EnsureDirExists(const genericChar* dirname);
 
 int DeleteFile(const genericChar* filename);
 // Deletes file from disk

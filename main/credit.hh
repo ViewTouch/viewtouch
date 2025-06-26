@@ -18,7 +18,7 @@
  * Credit/charge card verification/authorization
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _CREDIT_HH guard with modern pragma once
+#pragma once
 
 #include "list_utility.hh"
 #include "printer.hh"

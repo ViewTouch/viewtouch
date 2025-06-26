@@ -18,7 +18,7 @@
  * Handeling of captured tips and tip payout
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _TIPS_HH guard with modern pragma once
+#pragma once
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -85,7 +85,7 @@ public:
     int Remove(TipEntry *te);
     int Purge();
     TipEntry *FindByUser(int id);
-    TipEntry *FindByRecord(int record, Employee *e = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    TipEntry *FindByRecord(int record, Employee *e = nullptr);
     int CaptureTip(int user_id, int amount);
     int TransferTip(int user_id, int amount);
     int PayoutTip(int user_id, int amount);

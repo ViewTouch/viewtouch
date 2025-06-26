@@ -18,7 +18,7 @@
  * layout & formating of report information
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _REPORT_HH guard with modern pragma once
+#pragma once
 
 #include "utility.hh"
 #include "terminal.hh"

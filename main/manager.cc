@@ -39,6 +39,32 @@
 #include "socket.hh"
 #include "version/vt_version_info.hh"
 
+// Modern POS font constants - define locally to avoid header conflicts
+#define FONT_DEJAVU_14    20
+#define FONT_DEJAVU_16    21
+#define FONT_DEJAVU_18    22
+#define FONT_DEJAVU_20    23
+#define FONT_DEJAVU_24    24
+#define FONT_DEJAVU_28    25
+#define FONT_DEJAVU_14B   26
+#define FONT_DEJAVU_16B   27
+#define FONT_DEJAVU_18B   28
+#define FONT_DEJAVU_20B   29
+#define FONT_DEJAVU_24B   30
+#define FONT_DEJAVU_28B   31
+
+// Monospace fonts for prices and data alignment
+#define FONT_MONO_14      32
+#define FONT_MONO_16      33
+#define FONT_MONO_18      34
+#define FONT_MONO_20      35
+#define FONT_MONO_24      36
+#define FONT_MONO_14B     37
+#define FONT_MONO_16B     38
+#define FONT_MONO_18B     39
+#define FONT_MONO_20B     40
+#define FONT_MONO_24B     41
+
 #include "conf_file.hh"
 #include "date/date.h"      // helper library to output date strings with std::chrono
 
@@ -66,13 +92,11 @@
 #include <csignal>          // C library to handle signals
 #include <fcntl.h>          // File Control
 #include <chrono>           // time durations and current clock
-#include <filesystem>       // generic filesystem functions available since C++17
+#include <sys/stat.h>       // for stat functions
 
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
-
-namespace fs = std::filesystem;
 using namespace date; // for date conversion on streams
 
 // Add at the top with other includes
@@ -86,7 +110,7 @@ int ReleaseYear  = 1998;
 int ReleaseMonth = 10;
 int ReleaseDay   = 20;
 
-Control     *MasterControl = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+Control     *MasterControl = nullptr;
 int          MachineID = 0;
 
 constexpr int CALLCTR_ERROR_NONE        = 0;
@@ -103,22 +127,22 @@ constexpr int CALLCTR_STATUS_FAILED     = 2;
  * Calendar Values
  *************************************************************/
 const char* DayName[] = { "Sunday", "Monday", "Tuesday", "Wednesday", 
-                    "Thursday", "Friday", "Saturday", nullptr}; // REFACTOR: NULL -> nullptr for modern C++
+                    "Thursday", "Friday", "Saturday", nullptr};
 
-const char* ShortDayName[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", nullptr}; // REFACTOR: NULL -> nullptr for modern C++
+const char* ShortDayName[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", nullptr};
 
 const char* MonthName[] = { "January", "February", "March", "April", 
                       "May", "June", "July", "August", "September", 
-                      "October", "November", "December", nullptr}; // REFACTOR: NULL -> nullptr for modern C++
+                      "October", "November", "December", nullptr};
 
 const char* ShortMonthName[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", nullptr}; // REFACTOR: NULL -> nullptr for modern C++
+                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", nullptr};
 
 /*************************************************************
  * Terminal Type values
  *************************************************************/
 const char* TermTypeName[] = { 	"Normal", "Order Only", "Bar", "Bar2", 
-                            "Fast Food", "Kitchen Video", "Kitchen Video2", nullptr}; // REFACTOR: NULL -> nullptr for modern C++
+                            "Fast Food", "Kitchen Video", "Kitchen Video2", nullptr};
 
 int TermTypeValue[] = { TERMINAL_NORMAL, TERMINAL_ORDER_ONLY,
                         TERMINAL_BAR, TERMINAL_BAR2,
@@ -130,7 +154,7 @@ int TermTypeValue[] = { TERMINAL_NORMAL, TERMINAL_ORDER_ONLY,
  *************************************************************/
 const char* PrinterTypeName[] = { "Kitchen 1", "Kitchen 2", "Kitchen 3", "Kitchen 4",
                             "Bar 1", "Bar 2", "Expediter", "Report",
-                            "Credit Receipt", "Remote Order", nullptr}; // REFACTOR: NULL -> nullptr for modern C++
+                            "Credit Receipt", "Remote Order", nullptr};
 
 int PrinterTypeValue[] = { PRINTER_KITCHEN1, PRINTER_KITCHEN2,
                            PRINTER_KITCHEN3, PRINTER_KITCHEN4,
@@ -143,7 +167,7 @@ int PrinterTypeValue[] = { PRINTER_KITCHEN1, PRINTER_KITCHEN2,
  * Module Globals
  *************************************************************/
 static XtAppContext App = 0;
-static Display     *Dis = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+static Display     *Dis = nullptr;
 static XftFont     *FontInfo[32];
 static int          FontWidth[32];
 static int          FontHeight[32];
@@ -248,12 +272,12 @@ int      RunReport(const genericChar* report_string, Printer *printer);
 Printer *SetPrinter(const genericChar* printer_description);
 int      ReadViewTouchConfig();
 
-genericChar* GetMachineName(genericChar* str = nullptr, int len = STRLENGTH) // REFACTOR: NULL -> nullptr for modern C++
+genericChar* GetMachineName(genericChar* str = nullptr, int len = STRLENGTH)
 {
     FnTrace("GetMachineName()");
     struct utsname uts;
     static genericChar buffer[STRLENGTH];
-    if (str == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (str == nullptr)
         str = buffer;
 
     if (uname(&uts) == 0)
@@ -445,13 +469,18 @@ int main(int argc, genericChar* argv[])
     signal(SIGPIPE, SIG_IGN);
 
     // Set up default umask
-    umask(0111); // a+rw, a-x
+    // REFACTOR FIX: Changed from umask(0111) to umask(0022) to fix directory access issues.
+    // The previous umask(0111) removed execute permissions from directories, making them
+    // inaccessible (644 instead of 755). This broke /usr/viewtouch/dat access in file managers.
+    // umask(0022) maintains security by removing write for group/other while preserving
+    // execute permissions needed for directory access.
+    umask(0022); // u+rwx, g+rx, o+rx (removes write for group/other, preserves execute for directories)
 
     SystemTime.Set();
 
     // Start application
     MasterSystem = new System;
-    if (MasterSystem == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (MasterSystem == nullptr)
     {
         ReportError("Couldn't create main system object");
         EndSystem();
@@ -598,7 +627,7 @@ int StartSystem(int my_use_net)
     }
 
     genericChar str[256];
-    EnsureFileExists(sys->data_path.Value());
+    EnsureDirExists(sys->data_path.Value());
     if (DoesFileExist(sys->data_path.Value()) == 0)
     {
         snprintf(str, sizeof(str), "Can't find path '%s'", sys->data_path.Value());
@@ -658,7 +687,7 @@ int StartSystem(int my_use_net)
     // Set up local fonts (only used for formating info)
     for (i = 0; i < 32; ++i)
     {
-        FontInfo[i]   = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+        FontInfo[i]   = nullptr;
         FontWidth[i]  = 0;
         FontHeight[i] = 0;
     }
@@ -675,7 +704,7 @@ int StartSystem(int my_use_net)
 
     int argc = 0;
     const genericChar* argv[] = {"vt_main"};
-    Dis = XtOpenDisplay(App, displaystr, nullptr, nullptr, nullptr, 0, &argc, (genericChar**)argv); // REFACTOR: NULL -> nullptr for modern C++
+    Dis = XtOpenDisplay(App, displaystr, nullptr, nullptr, nullptr, 0, &argc, (genericChar**)argv);
     if (Dis)
     {
         for (i = 0; i < FONT_COUNT; ++i)
@@ -684,7 +713,7 @@ int StartSystem(int my_use_net)
             // Use scalable font names instead of bitmapped font names
             const char* scalable_font_name = GetScalableFontName(FontData[i].id);
             FontInfo[f] = XftFontOpenName(Dis, DefaultScreen(Dis), scalable_font_name);
-            if (FontInfo[f] == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (FontInfo[f] == nullptr)
             {
                 snprintf(str, sizeof(str), "Can't load font '%s'", scalable_font_name);
                 ReportError(str);
@@ -715,7 +744,7 @@ int StartSystem(int my_use_net)
         if (have_server > 1)
         {
             int found = 0;
-            while (ti != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            while (ti != nullptr)
             {
                 if (ti->display_host.size() > 0)
                 {
@@ -730,7 +759,7 @@ int StartSystem(int my_use_net)
                 ti = ti->next;
             }
         }
-        while (ti != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        while (ti != nullptr)
         {
             // this early, the TermInfo entry is the server entry if its
             // isserver value is true or if display_host is equal to
@@ -810,7 +839,8 @@ int StartSystem(int my_use_net)
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Menu");
     sys->FullPath(MASTER_MENU_DB, str);
-    if (!fs::exists(str))
+    struct stat st;
+    if (stat(str, &st) != 0)
     {
         const std::string menu_url = "https://www.viewtouch.com/menu.dat";
         DownloadFile(menu_url, str);
@@ -892,7 +922,7 @@ int StartSystem(int my_use_net)
     // Start work/report printers
     int have_report = 0;
     PrinterInfo *pi;
-    for (pi = settings->PrinterList(); pi != nullptr; pi = pi->next) // REFACTOR: NULL -> nullptr for modern C++
+    for (pi = settings->PrinterList(); pi != nullptr; pi = pi->next)
     {
         if (my_use_net || pi->port == 0)
         {
@@ -946,7 +976,7 @@ int StartSystem(int my_use_net)
     }
 
     Terminal *term = MasterControl->TermList();
-    while (term != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (term != nullptr)
     {
         term->Initialize();
         term = term->next;
@@ -1005,9 +1035,9 @@ int EndSystem()
     if (MasterControl)
     {
         Terminal *term = MasterControl->TermList();
-        while (term != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        while (term != nullptr)
         {
-            if (term->cdu != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (term->cdu != nullptr)
                 term->cdu->Clear();
             term = term->next;
         }
@@ -1023,7 +1053,7 @@ int EndSystem()
     if (Dis)
     {
         XtCloseDisplay(Dis);
-        Dis = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+        Dis = nullptr;
     }
     if (App)
     {
@@ -1048,7 +1078,7 @@ int EndSystem()
     MasterSystem->cc_saf_details_results->Save();
 
     // Delete databases
-    if (MasterControl != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (MasterControl != nullptr)
     {
         // Deleting MasterControl keeps giving me error messages:
         //     "vt_main in free(): warning: chunk is already free"
@@ -1116,7 +1146,7 @@ int RestartSystem()
         // Here we want to exec a script that will wait for EndSystem() to
         // complete and then start vtpos all over again with the exact
         // same arguments.
-        execl(VIEWTOUCH_RESTART, VIEWTOUCH_RESTART, VIEWTOUCH_PATH, nullptr); // REFACTOR: NULL -> nullptr for modern C++
+        execl(VIEWTOUCH_RESTART, VIEWTOUCH_RESTART, VIEWTOUCH_PATH, nullptr);
     }
     else
     {  // parent
@@ -1317,9 +1347,10 @@ int LoadSystemData()
     df.Close();
 
     // Load Tables
-    const std::string tables_filepath = (fs::path{sys->data_path.str()} / fs::path{MASTER_ZONE_DB1} ).generic_string();
+    const std::string tables_filepath = std::string(sys->data_path.str()) + "/" + MASTER_ZONE_DB1;
     const char *filename1 = tables_filepath.c_str();
-    if (!fs::exists(tables_filepath))
+    struct stat st;
+    if (stat(tables_filepath.c_str(), &st) != 0)
     {
         const std::string tables_url = "https://www.viewtouch.com/tables.dat";
         DownloadFile(tables_url, tables_filepath);
@@ -1333,9 +1364,10 @@ int LoadSystemData()
     }
 
     // Load Menu
-    const std::string zone_db_filepath = (fs::path{sys->data_path.str()} / fs::path{MASTER_ZONE_DB2} ).generic_string();
+    const std::string zone_db_filepath = std::string(sys->data_path.str()) + "/" + MASTER_ZONE_DB2;
     const char *filename2 = zone_db_filepath.c_str();
-    if (!fs::exists(zone_db_filepath))
+    struct stat st2;
+    if (stat(zone_db_filepath.c_str(), &st2) != 0)
     {
         const std::string zone_db_url = "https://www.viewtouch.com/zone_db.dat";
         DownloadFile(zone_db_url, zone_db_filepath);
@@ -1424,15 +1456,15 @@ int SaveSystemData()
 Control::Control()
 {
     FnTrace("Control::Control()");
-    zone_db     = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    zone_db     = nullptr;
     master_copy = 0;
-    term_list   = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    term_list   = nullptr;
 }
 
 int Control::Add(Terminal *term)
 {
     FnTrace("Control::Add(Terminal)");
-    if (term == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (term == nullptr)
         return 1;
 
     term->system_data = MasterSystem;
@@ -1445,7 +1477,7 @@ int Control::Add(Printer *p)
 {
     FnTrace("Control::Add(Printer)");
 
-    if (p == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (p == nullptr)
         return 1;
 
     p->parent = this;
@@ -1456,10 +1488,10 @@ int Control::Add(Printer *p)
 int Control::Remove(Terminal *term)
 {
     FnTrace("Control::Remove(Terminal)");
-    if (term == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (term == nullptr)
         return 1;
 
-    term->parent = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    term->parent = nullptr;
     term_list.Remove(term);
 
     if (zone_db == term->zone_db)
@@ -1475,8 +1507,8 @@ int Control::Remove(Terminal *term)
             }
             ptr = ptr->next;
         }
-        if (ptr == nullptr) // REFACTOR: NULL -> nullptr for modern C++
-            zone_db = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+        if (ptr == nullptr)
+            zone_db = nullptr;
     }
     return 0;
 }
@@ -1484,10 +1516,10 @@ int Control::Remove(Terminal *term)
 int Control::Remove(Printer *p)
 {
     FnTrace("Control::Remove(Printer)");
-    if (p == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (p == nullptr)
         return 1;
 
-    p->parent = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    p->parent = nullptr;
     printer_list.Remove(p);
     return 0;
 }
@@ -3036,11 +3068,12 @@ int ReportWorkFn(int fn_id)
     return 0;
 }
 
-// Add this function in main/manager.cc
+// Scalable font name mapping for Xft fonts
 const char* GetScalableFontName(int font_id)
 {
     switch (font_id)
     {
+    // Legacy Times fonts (kept for compatibility)
     case FONT_TIMES_14:  return "Times New Roman-14:style=Regular";
     case FONT_TIMES_18:  return "Times New Roman-18:style=Regular";
     case FONT_TIMES_20:  return "Times New Roman-20:style=Regular";
@@ -3051,6 +3084,38 @@ const char* GetScalableFontName(int font_id)
     case FONT_TIMES_20B: return "Times New Roman-20:style=Bold";
     case FONT_TIMES_24B: return "Times New Roman-24:style=Bold";
     case FONT_TIMES_34B: return "Times New Roman-34:style=Bold";
-    default:             return "Times New Roman-24:style=Regular";
+    case FONT_COURIER_18: return "Courier New-18:style=Regular";
+    case FONT_COURIER_18B: return "Courier New-18:style=Bold";
+    case FONT_COURIER_20: return "Courier New-20:style=Regular";
+    case FONT_COURIER_20B: return "Courier New-20:style=Bold";
+    
+    // Modern POS Fonts - DejaVu Sans (Superior readability for POS)
+    case FONT_DEJAVU_14:  return "DejaVu Sans-14:style=Book";
+    case FONT_DEJAVU_16:  return "DejaVu Sans-16:style=Book";
+    case FONT_DEJAVU_18:  return "DejaVu Sans-18:style=Book";
+    case FONT_DEJAVU_20:  return "DejaVu Sans-20:style=Book";
+    case FONT_DEJAVU_24:  return "DejaVu Sans-24:style=Book";
+    case FONT_DEJAVU_28:  return "DejaVu Sans-28:style=Book";
+    case FONT_DEJAVU_14B: return "DejaVu Sans-14:style=Bold";
+    case FONT_DEJAVU_16B: return "DejaVu Sans-16:style=Bold";
+    case FONT_DEJAVU_18B: return "DejaVu Sans-18:style=Bold";
+    case FONT_DEJAVU_20B: return "DejaVu Sans-20:style=Bold";
+    case FONT_DEJAVU_24B: return "DejaVu Sans-24:style=Bold";
+    case FONT_DEJAVU_28B: return "DejaVu Sans-28:style=Bold";
+    
+    // Monospace fonts - Perfect for prices, numbers, and financial data
+    case FONT_MONO_14:    return "DejaVu Sans Mono-14:style=Book";
+    case FONT_MONO_16:    return "DejaVu Sans Mono-16:style=Book";
+    case FONT_MONO_18:    return "DejaVu Sans Mono-18:style=Book";
+    case FONT_MONO_20:    return "DejaVu Sans Mono-20:style=Book";
+    case FONT_MONO_24:    return "DejaVu Sans Mono-24:style=Book";
+    case FONT_MONO_14B:   return "DejaVu Sans Mono-14:style=Bold";
+    case FONT_MONO_16B:   return "DejaVu Sans Mono-16:style=Bold";
+    case FONT_MONO_18B:   return "DejaVu Sans Mono-18:style=Bold";
+    case FONT_MONO_20B:   return "DejaVu Sans Mono-20:style=Bold";
+    case FONT_MONO_24B:   return "DejaVu Sans Mono-24:style=Bold";
+    
+    // Default to modern DejaVu Sans instead of Times New Roman
+    default:              return "DejaVu Sans-18:style=Book";
     }
 }

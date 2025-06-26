@@ -28,7 +28,7 @@
 //  for one value per drawer.  Thus the current method which may, in
 //  the end, not work.
 
-#pragma once  // REFACTOR: Replaced #ifndef _EXPENSE_HH guard with modern pragma once
+#pragma once
 
 #include "list_utility.hh"
 #include "utility.hh"

@@ -460,7 +460,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         df.Read(advertise_fund);
 
     // Initialize Data
-    for (drawer = DrawerList(); drawer != nullptr; drawer = drawer->next) // REFACTOR: NULL -> nullptr for modern C++
+    for (drawer = DrawerList(); drawer != nullptr; drawer = drawer->next)
     {
         drawer->Total(CheckList());
     }
@@ -468,10 +468,10 @@ int Archive::LoadPacked(Settings *settings, const char* file)
     {
         Check *check = CheckList();
         SubCheck *subcheck;
-        while (check != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        while (check != nullptr)
         {
             subcheck = check->SubList();
-            while (subcheck != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            while (subcheck != nullptr)
             {
                 subcheck->archive = this;
                 subcheck->FigureTotals(settings);
@@ -687,7 +687,7 @@ int Archive::SavePacked()
     df.Write(media_version);
     df.Write(DiscountCount());
     DiscountInfo *discount = DiscountList();
-    while (discount != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (discount != nullptr)
     {
         discount->Write(df, media_version);
         discount = discount->next;
@@ -695,7 +695,7 @@ int Archive::SavePacked()
 
     df.Write(CouponCount());
     CouponInfo *coupon = CouponList();
-    while (coupon != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (coupon != nullptr)
     {
         coupon->Write(df, media_version);
         coupon = coupon->next;
@@ -703,7 +703,7 @@ int Archive::SavePacked()
 
     df.Write(CreditCardCount());
     CreditCardInfo *creditcard = CreditCardList();
-    while (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (creditcard != nullptr)
     {
         creditcard->Write(df, media_version);
         creditcard = creditcard->next;
@@ -711,7 +711,7 @@ int Archive::SavePacked()
 
     df.Write(CompCount());
     CompInfo *comp = CompList();
-    while (comp != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (comp != nullptr)
     {
         comp->Write(df, media_version);
         comp = comp->next;
@@ -719,7 +719,7 @@ int Archive::SavePacked()
 
     df.Write(MealCount());
     MealInfo *meal = MealList();
-    while (meal != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (meal != nullptr)
     {
         meal->Write(df, media_version);
         meal = meal->next;
@@ -742,23 +742,23 @@ int Archive::SavePacked()
     df.Write(discount_alcohol);
     df.Write(tax_VAT);
 
-    if (cc_exception_db == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (cc_exception_db == nullptr)
         cc_exception_db = new CreditDB(CC_DBTYPE_EXCEPT);
     cc_exception_db->Write(df);
-    if (cc_refund_db == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (cc_refund_db == nullptr)
         cc_refund_db = new CreditDB(CC_DBTYPE_REFUND);
     cc_refund_db->Write(df);
-    if (cc_void_db == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (cc_void_db == nullptr)
         cc_void_db = new CreditDB(CC_DBTYPE_VOID);
     cc_void_db->Write(df);
 
-    if (cc_init_results == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (cc_init_results == nullptr)
         cc_init_results = new CCInit();
     cc_init_results->Write(df);
-    if (cc_saf_details_results == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (cc_saf_details_results == nullptr)
         cc_saf_details_results = new CCSAFDetails();
     cc_saf_details_results->Write(df);
-    if (cc_settle_results == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (cc_settle_results == nullptr)
         cc_settle_results = new CCSettle();
     cc_settle_results->Write(df);
 
@@ -792,22 +792,22 @@ int Archive::Unload()
     expense_db.Purge();
 
     delete cc_exception_db;
-    cc_exception_db = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    cc_exception_db = nullptr;
 
     delete cc_refund_db;
-    cc_refund_db = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    cc_refund_db = nullptr;
 
     delete cc_void_db;
-    cc_void_db = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    cc_void_db = nullptr;
 
     delete cc_init_results;
-    cc_init_results = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    cc_init_results = nullptr;
 
     delete cc_saf_details_results;
-    cc_saf_details_results = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    cc_saf_details_results = nullptr;
 
     delete cc_settle_results;
-    cc_settle_results = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    cc_settle_results = nullptr;
 
     loaded = 0;
     return 0;
@@ -816,7 +816,7 @@ int Archive::Unload()
 int Archive::Add(Check *c)
 {
     FnTrace("Archive::Add(Check)");
-    if (loaded == 0 || c == nullptr || c->Status() == CHECK_OPEN) // REFACTOR: NULL -> nullptr for modern C++
+    if (loaded == 0 || c == nullptr || c->Status() == CHECK_OPEN)
         return 1; // can't archive open check
 
     c->archive = this;
@@ -831,10 +831,10 @@ int Archive::Add(Check *c)
 int Archive::Remove(Check *c)
 {
     FnTrace("Archive::Remove(Check)");
-    if (c == nullptr || c->archive != this) // REFACTOR: NULL -> nullptr for modern C++
+    if (c == nullptr || c->archive != this)
         return 1;
 
-    c->archive = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    c->archive = nullptr;
     check_list.Remove(c);
 
     changed = 1;
@@ -844,7 +844,7 @@ int Archive::Remove(Check *c)
 int Archive::Add(Drawer *drawer)
 {
     FnTrace("Archive::Add(Drawer)");
-    if (drawer == nullptr || loaded == 0) // REFACTOR: NULL -> nullptr for modern C++
+    if (drawer == nullptr || loaded == 0)
         return 1;
 
     drawer->archive = this;
@@ -860,10 +860,10 @@ int Archive::Add(Drawer *drawer)
 int Archive::Remove(Drawer *drawer)
 {
     FnTrace("Archive::Remove(Drawer)");
-    if (drawer == nullptr || drawer->archive != this) // REFACTOR: NULL -> nullptr for modern C++
+    if (drawer == nullptr || drawer->archive != this)
         return 1;
 
-    drawer->archive = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    drawer->archive = nullptr;
     drawer_list.Remove(drawer);
 
     changed = 1;
@@ -873,7 +873,7 @@ int Archive::Remove(Drawer *drawer)
 int Archive::Add(WorkEntry *we)
 {
     FnTrace("Archive::Add(WorkEntry)");
-    if (we == nullptr || loaded == 0) // REFACTOR: NULL -> nullptr for modern C++
+    if (we == nullptr || loaded == 0)
         return 1;
 
     work_db.Add(we);
@@ -890,7 +890,7 @@ int Archive::Remove(WorkEntry *we)
 int Archive::Add(DiscountInfo *discount)
 {
     FnTrace("Archive::Add(Discount)");
-    if (discount == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (discount == nullptr)
         return 1;
     return discount_list.AddToTail(discount);
 }
@@ -898,7 +898,7 @@ int Archive::Add(DiscountInfo *discount)
 int Archive::Add(CouponInfo *coupon)
 {
     FnTrace("Archive::Add(Coupon)");
-    if (coupon == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (coupon == nullptr)
         return 1;
     return coupon_list.AddToTail(coupon);
 }
@@ -906,7 +906,7 @@ int Archive::Add(CouponInfo *coupon)
 int Archive::Add(CreditCardInfo *creditcard)
 {
     FnTrace("Archive::Add(CreditCard)");
-    if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (creditcard == nullptr)
         return 1;
     return creditcard_list.AddToTail(creditcard);
 }
@@ -914,7 +914,7 @@ int Archive::Add(CreditCardInfo *creditcard)
 int Archive::Add(CompInfo *comp)
 {
     FnTrace("Archive::Add(Comp)");
-    if (comp == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (comp == nullptr)
         return 1;
     return comp_list.AddToTail(comp);
 }
@@ -922,7 +922,7 @@ int Archive::Add(CompInfo *comp)
 int Archive::Add(MealInfo *meal)
 {
     FnTrace("Archive::Add(Meal)");
-    if (meal == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (meal == nullptr)
         return 1;
     return meal_list.AddToTail(meal);
 }
@@ -932,7 +932,7 @@ int Archive::DiscountCount()
     FnTrace("Archive::DiscountCount()");
     int count = 0;
     DiscountInfo *discount = DiscountList();
-    while (discount != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (discount != nullptr)
     {
         count += 1;
         discount = discount->next;
@@ -945,7 +945,7 @@ int Archive::CouponCount()
     FnTrace("Archive::CouponCount()");
     int count = 0;
     CouponInfo *coupon = CouponList();
-    while (coupon != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (coupon != nullptr)
     {
         count += 1;
         coupon = coupon->next;
@@ -958,7 +958,7 @@ int Archive::CreditCardCount()
     FnTrace("Archive::CreditCardCount()");
     int count = 0;
     CreditCardInfo *creditcard = CreditCardList();
-    while (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (creditcard != nullptr)
     {
         count += 1;
         creditcard = creditcard->next;
@@ -971,7 +971,7 @@ int Archive::CompCount()
     FnTrace("Archive::CompCount()");
     int count = 0;
     CompInfo *comp = CompList();
-    while (comp != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (comp != nullptr)
     {
         count += 1;
         comp = comp->next;
@@ -984,7 +984,7 @@ int Archive::MealCount()
     FnTrace("Archive::MealCount()");
     int count = 0;
     MealInfo *meal = MealList();
-    while (meal != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (meal != nullptr)
     {
         count += 1;
         meal = meal->next;
@@ -995,54 +995,54 @@ int Archive::MealCount()
 DiscountInfo *Archive::FindDiscountByID(int discount_id)
 {
     FnTrace("Archive::FindDiscountByID()");
-    for (DiscountInfo *ds = discount_list.Head(); ds != nullptr; ds = ds->next) // REFACTOR: NULL -> nullptr for modern C++
+    for (DiscountInfo *ds = discount_list.Head(); ds != nullptr; ds = ds->next)
     {
         if (ds->id == discount_id)
             return ds;
     }
-    return nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    return nullptr;
 }
 
 CouponInfo *Archive::FindCouponByID(int coupon_id)
 {
     FnTrace("Archive::FindCouponByID()");
-    for (CouponInfo *cp = coupon_list.Head(); cp != nullptr; cp = cp->next) // REFACTOR: NULL -> nullptr for modern C++
+    for (CouponInfo *cp = coupon_list.Head(); cp != nullptr; cp = cp->next)
     {
         if (cp->id == coupon_id)
             return cp;
     }
-    return nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    return nullptr;
 }
 
 CompInfo *Archive::FindCompByID(int comp_id)
 {
     FnTrace("Archive::FindCompByID()");
-    for (CompInfo *cm = comp_list.Head(); cm != nullptr; cm = cm->next) // REFACTOR: NULL -> nullptr for modern C++
+    for (CompInfo *cm = comp_list.Head(); cm != nullptr; cm = cm->next)
     {
         if (cm->id == comp_id)
             return cm;
     }
-    return nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    return nullptr;
 }
 
 CreditCardInfo *Archive::FindCreditCardByID(int creditcard_id)
 {
     FnTrace("Archive::FindCreditCardByID()");
-    for (CreditCardInfo *cc = creditcard_list.Head(); cc != nullptr; cc = cc->next) // REFACTOR: NULL -> nullptr for modern C++
+    for (CreditCardInfo *cc = creditcard_list.Head(); cc != nullptr; cc = cc->next)
     {
         if (cc->id == creditcard_id)
             return cc;
     }
-    return nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    return nullptr;
 }
 
 MealInfo *Archive::FindMealByID(int meal_id)
 {
     FnTrace("Archive::FindMealByID()");
-    for (MealInfo *mi = meal_list.Head(); mi != nullptr; mi = mi->next) // REFACTOR: NULL -> nullptr for modern C++
+    for (MealInfo *mi = meal_list.Head(); mi != nullptr; mi = mi->next)
     {
         if (mi->id == meal_id)
             return mi;
     }
-    return nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    return nullptr;
 }

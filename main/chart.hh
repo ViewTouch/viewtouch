@@ -18,7 +18,7 @@
  * Report container
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _CHART_HH guard with modern pragma once
+#pragma once
 
 #include "list_utility.hh"
 #include "utility.hh"

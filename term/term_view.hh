@@ -6,7 +6,7 @@
  * Terminal Display module
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _TERM_VIEW_HH guard with modern pragma once
+#pragma once
 
 #include "list_utility.hh"
 #include "utility.hh"
@@ -198,6 +198,33 @@ enum page_sizes {
 #define FONT_COURIER_18B 15
 #define FONT_COURIER_20  16
 #define FONT_COURIER_20B 17
+
+// Modern POS Fonts - DejaVu Sans (Superior for POS interfaces)
+#define FONT_DEJAVU_14    18
+#define FONT_DEJAVU_16    19
+#define FONT_DEJAVU_18    20
+#define FONT_DEJAVU_20    21
+#define FONT_DEJAVU_24    22
+#define FONT_DEJAVU_28    23
+#define FONT_DEJAVU_14B   24
+#define FONT_DEJAVU_16B   25
+#define FONT_DEJAVU_18B   26
+#define FONT_DEJAVU_20B   27
+#define FONT_DEJAVU_24B   28
+#define FONT_DEJAVU_28B   29
+
+// Monospace Fonts - Perfect for prices and numbers
+#define FONT_MONO_14      30
+#define FONT_MONO_16      31
+#define FONT_MONO_18      32
+#define FONT_MONO_20      33
+#define FONT_MONO_24      34
+#define FONT_MONO_14B     35
+#define FONT_MONO_16B     36
+#define FONT_MONO_18B     37
+#define FONT_MONO_20B     38
+#define FONT_MONO_24B     39
+
 #define FONT_UNDERLINE  128
 
 // Zone Frame Appearence

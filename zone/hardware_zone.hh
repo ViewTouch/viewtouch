@@ -18,7 +18,7 @@
  * Hardware settings (taken from settings_zone.hh)
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _HARDWARE_ZONE_HH guard with modern pragma once
+#pragma once
 
 #include "form_zone.hh"
 

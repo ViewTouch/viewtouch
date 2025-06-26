@@ -203,8 +203,8 @@ const char* Sock_ntop(const struct sockaddr_in *sa, socklen_t addrlen)
     char portstr[STRLENGTH];
     static char str[STRLENGTH];
 
-    if (inet_ntop(AF_INET, &sa->sin_addr, str, sizeof(str)) == nullptr)  // REFACTOR: Changed NULL to nullptr for modern C++
-        return nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
+    if (inet_ntop(AF_INET, &sa->sin_addr, str, sizeof(str)) == nullptr)
+        return nullptr;
     if (ntohs(sa->sin_port) != 0)
     {
         snprintf(portstr, sizeof(portstr), ":%d", ntohs(sa->sin_port));

@@ -18,7 +18,7 @@
  * Table page & table control zone objects
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _TABLE_ZONE_HH guard with modern pragma once
+#pragma once
 
 #include "check.hh"
 #include "customer.hh"

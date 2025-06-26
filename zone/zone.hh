@@ -6,7 +6,7 @@
  * Functions for managing zones on a view
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _ZONE_HH guard with modern pragma once
+#pragma once
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -199,32 +199,32 @@ public:
     // boolean - can zone be copied/moved/deleted?
 
     virtual int ZoneStates() { return 2; }
-    virtual SalesItem *Item(ItemDB *db) { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
+    virtual SalesItem *Item(ItemDB *db) { return nullptr; }
 
     // Interface for zone settings (FIX - should be moved to pos_zone module)
-    virtual int   *Amount()          { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual Str   *Expression()      { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual Str   *FileName()        { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual Str   *ItemName()        { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *JumpType()        { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *JumpID()          { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual Str   *Message()         { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *QualifierType()   { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *ReportType()      { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *ReportPrint()     { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual Str   *Script()          { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual Flt   *Spacing()         { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *SwitchType()      { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *TenderType()      { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *TenderAmount()    { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *Columns()         { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *CustomerType()    { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual Check *GetCheck()      { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *CheckDisplayNum() { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *VideoTarget()     { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *DrawerZoneType()  { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual int   *Confirm()         { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
-    virtual Str   *ConfirmMsg()      { return nullptr; }   // REFACTOR: Changed NULL to nullptr for modern C++
+    virtual int   *Amount()          { return nullptr; }
+    virtual Str   *Expression()      { return nullptr; }
+    virtual Str   *FileName()        { return nullptr; }
+    virtual Str   *ItemName()        { return nullptr; }
+    virtual int   *JumpType()        { return nullptr; }
+    virtual int   *JumpID()          { return nullptr; }
+    virtual Str   *Message()         { return nullptr; }
+    virtual int   *QualifierType()   { return nullptr; }
+    virtual int   *ReportType()      { return nullptr; }
+    virtual int   *ReportPrint()     { return nullptr; }
+    virtual Str   *Script()          { return nullptr; }
+    virtual Flt   *Spacing()         { return nullptr; }
+    virtual int   *SwitchType()      { return nullptr; }
+    virtual int   *TenderType()      { return nullptr; }
+    virtual int   *TenderAmount()    { return nullptr; }
+    virtual int   *Columns()         { return nullptr; }
+    virtual int   *CustomerType()    { return nullptr; }
+    virtual Check *GetCheck()      { return nullptr; }
+    virtual int   *CheckDisplayNum() { return nullptr; }
+    virtual int   *VideoTarget()     { return nullptr; }
+    virtual int   *DrawerZoneType()  { return nullptr; }
+    virtual int   *Confirm()         { return nullptr; }
+    virtual Str   *ConfirmMsg()      { return nullptr; }
 };
 
 class Page
@@ -381,6 +381,6 @@ public:
     int PageListReport(Terminal *t, int show_system, Report *r);
     int ChangeItemName(const char* old_name, const genericChar* new_name);
 
-    int PrintZoneDB(const char* dest = nullptr, int brief = 0);  // REFACTOR: Changed NULL to nullptr for modern C++
+    int PrintZoneDB(const char* dest = nullptr, int brief = 0);
 };
 

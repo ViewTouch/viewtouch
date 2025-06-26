@@ -16,7 +16,7 @@
  *			This needs to be fixed.
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef VT_LIST_UTILITY_HH guard with modern pragma once
+#pragma once
 
 #include "basic.hh"
 #include "fntrace.hh"
@@ -30,7 +30,7 @@ class SList
 
 public:
     // Constructors
-    SList()           { list_head = nullptr; list_tail = nullptr; }  // REFACTOR: Changed NULL to nullptr for modern C++
+    SList()           { list_head = nullptr; list_tail = nullptr; }
     SList(type *item) { list_head = item; list_tail = item; }
 
     // Destructor
@@ -42,18 +42,18 @@ public:
 
     int IsEmpty()
     {
-        return (list_head == nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+        return (list_head == nullptr);
     }
 
     int AddToHead(type *item)
     {
         FnTrace("SList::AddToHead()");
-        if (item == nullptr)            // REFACTOR: Changed NULL to nullptr for modern C++
+        if (item == nullptr)
             return 1;
 
         item->next = list_head;
 
-        if (list_tail == nullptr)       // REFACTOR: Changed NULL to nullptr for modern C++
+        if (list_tail == nullptr)
             list_tail = item;
 
         list_head = item;
@@ -63,10 +63,10 @@ public:
     int AddToTail(type *item)
     {
         FnTrace("SList::AddToTail()");
-        if (item == nullptr)        // REFACTOR: Changed NULL to nullptr for modern C++
+        if (item == nullptr)
             return 1;
 
-        item->next = nullptr;       // REFACTOR: Changed NULL to nullptr for modern C++
+        item->next = nullptr;
 
         if (list_tail)
             list_tail->next = item;
@@ -79,7 +79,7 @@ public:
     int AddAfterNode(type *node, type *item)
     {
         FnTrace("SList::AddAfterNode()");
-        if (node == nullptr)        // REFACTOR: Changed NULL to nullptr for modern C++
+        if (node == nullptr)
             return AddToHead(item);
         if (node == list_tail)
             return AddToTail(item);
@@ -98,15 +98,15 @@ public:
             list_head = list_head->next;
             delete tmp;
         }
-        list_tail = nullptr;        // REFACTOR: Changed NULL to nullptr for modern C++
+        list_tail = nullptr;
     }
 
     int Remove(type *node)
     {
         FnTrace("SList::Remove()");
-        if (node == nullptr)        // REFACTOR: Changed NULL to nullptr for modern C++
+        if (node == nullptr)
             return 1;
-        for (type *n = list_head, *p = nullptr; n != nullptr; p = n, n = n->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+        for (type *n = list_head, *p = nullptr; n != nullptr; p = n, n = n->next)
             if (node == n)
             {
                 if (p)
@@ -115,7 +115,7 @@ public:
                     list_head = node->next;
                 if (list_tail == node)
                     list_tail = p;
-                node->next = nullptr;   // REFACTOR: Changed NULL to nullptr for modern C++
+                node->next = nullptr;
                 return 0;
             }
         return 1;
@@ -125,7 +125,7 @@ public:
     {
         FnTrace("SList::Count()");
         int count = 0;
-        for (type *n = list_head; n != nullptr; n = n->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+        for (type *n = list_head; n != nullptr; n = n->next)
             ++count;
         return count;
     }
@@ -134,10 +134,10 @@ public:
     {
         FnTrace("SList::Index()");
         if (i < 0)
-            return nullptr;         // REFACTOR: Changed NULL to nullptr for modern C++
+            return nullptr;
 
         type *n = list_head;
-        while (n != nullptr && i > 0)  // REFACTOR: Changed NULL to nullptr for modern C++
+        while (n != nullptr && i > 0)
             --i, n = n->next;
         return n;
     }
@@ -156,16 +156,16 @@ class DList
         type *p, *q, *e, *tail;
         int insize, nmerges, psize, qsize, i;
         
-        if (list == nullptr)        // REFACTOR: Changed NULL to nullptr for modern C++
-            return nullptr;          // REFACTOR: Changed NULL to nullptr for modern C++
+        if (list == nullptr)
+            return nullptr;
 
         insize = 1;
         
         while (1)
         {
             p = list;
-            list = nullptr;          // REFACTOR: Changed NULL to nullptr for modern C++
-            tail = nullptr;          // REFACTOR: Changed NULL to nullptr for modern C++
+            list = nullptr;
+            tail = nullptr;
             
             nmerges = 0;  /* count number of merges we do in this pass */
             
@@ -225,7 +225,7 @@ class DList
                 /* now p has stepped `insize' places along, and q has too */
                 p = q;
             }
-            tail->next = nullptr;    // REFACTOR: Changed NULL to nullptr for modern C++
+            tail->next = nullptr;
             
             /* If we have done only one merge, we're finished. */
             if (nmerges <= 1)   /* allow for nmerges==0, the empty list case */
@@ -238,7 +238,7 @@ class DList
     
 public:
     // Constructors
-    DList()           { list_head = nullptr; list_tail = nullptr; }  // REFACTOR: Changed NULL to nullptr for modern C++
+    DList()           { list_head = nullptr; list_tail = nullptr; }
     DList(type *item) { list_head = item; list_tail = item; }
 
     // Destructor
@@ -254,16 +254,16 @@ public:
 
     int IsEmpty()
     {
-        return (list_head == nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+        return (list_head == nullptr);
     }
 
     int AddToHead(type *item)
     {
         FnTrace("DList::AddToHead()");
-        if (item == nullptr)            // REFACTOR: Changed NULL to nullptr for modern C++
+        if (item == nullptr)
             return 1;
 
-        item->fore = nullptr;           // REFACTOR: Changed NULL to nullptr for modern C++
+        item->fore = nullptr;
         item->next = list_head;
         if (list_head)
             list_head->fore = item;
@@ -276,11 +276,11 @@ public:
     int AddToTail(type *item)
     {
         FnTrace("DList::AddToTail()");
-        if (item == nullptr)        // REFACTOR: Changed NULL to nullptr for modern C++
+        if (item == nullptr)
             return 1;
 
         item->fore = list_tail;
-        item->next = nullptr;       // REFACTOR: Changed NULL to nullptr for modern C++
+        item->next = nullptr;
         if (list_tail)
             list_tail->next = item;
         else
@@ -292,7 +292,7 @@ public:
     int AddAfterNode(type *node, type *item)
     {
         FnTrace("DList::AddAfterNode()");
-        if (node == nullptr)        // REFACTOR: Changed NULL to nullptr for modern C++
+        if (node == nullptr)
             return AddToHead(item);
         if (node == list_tail)
             return AddToTail(item);
@@ -307,7 +307,7 @@ public:
     int AddBeforeNode(type *node, type *item)
     {
         FnTrace("DList::AddBeforeNode()");
-        if (node == nullptr)        // REFACTOR: Changed NULL to nullptr for modern C++
+        if (node == nullptr)
             return AddToTail(item);
         if (node == list_head)
             return AddToHead(item);
@@ -322,13 +322,13 @@ public:
     int Exists(type *item, int (*cmp)(type *, type*))
     {
         FnTrace("DList::Exists()");
-        if (item == nullptr)        // REFACTOR: Changed NULL to nullptr for modern C++
+        if (item == nullptr)
             return 1;
 
         type *curr = list_head;
         int found = 0;
 
-        while (curr != nullptr && found == 0)  // REFACTOR: Changed NULL to nullptr for modern C++
+        while (curr != nullptr && found == 0)
         {
             if (cmp(item, curr) == 0)
                 found = 1;
@@ -342,7 +342,7 @@ public:
     int Remove(type *item)
     {
         FnTrace("DList::Remove()");
-        if (item == nullptr)        // REFACTOR: Changed NULL to nullptr for modern C++
+        if (item == nullptr)
             return 1;
 
         if (list_head == item)
@@ -353,17 +353,17 @@ public:
             item->next->fore = item->fore;
         if (item->fore)
             item->fore->next = item->next;
-        item->fore = nullptr;       // REFACTOR: Changed NULL to nullptr for modern C++
-        item->next = nullptr;       // REFACTOR: Changed NULL to nullptr for modern C++
+        item->fore = nullptr;
+        item->next = nullptr;
         return 0;
     }
 
     int RemoveSafe(type *node)
     {
         FnTrace("DList::RemoveSafe()");
-        if (node == nullptr)        // REFACTOR: Changed NULL to nullptr for modern C++
+        if (node == nullptr)
             return 1;
-        for (type *n = list_head; n != nullptr; n = n->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+        for (type *n = list_head; n != nullptr; n = n->next)
             if (n == node)
                 return Remove(node);
         return 1;
@@ -379,14 +379,14 @@ public:
             list_head = list_head->next;
             delete tmp;
         }
-        list_tail = nullptr;        // REFACTOR: Changed NULL to nullptr for modern C++
+        list_tail = nullptr;
     }
 
     int Count() const
     {
         FnTrace("DList::Count()");
         int count = 0;
-        for (type *n = list_head; n != nullptr; n = n->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+        for (type *n = list_head; n != nullptr; n = n->next)
             ++count;
         return count;
     }
@@ -395,10 +395,10 @@ public:
     {
         FnTrace("DList::Index()");
         if (i < 0)
-            return nullptr;         // REFACTOR: Changed NULL to nullptr for modern C++
+            return nullptr;
 
         type *n = list_head;
-        while (n != nullptr && i > 0)  // REFACTOR: Changed NULL to nullptr for modern C++
+        while (n != nullptr && i > 0)
         {
             --i;
             n = n->next;
@@ -411,9 +411,9 @@ public:
         FnTrace("DList::Sort()");
         list_head = InternalSort(list_head, cmp);
         list_tail = list_head;
-        if (list_tail != nullptr)          // REFACTOR: Changed NULL to nullptr for modern C++
+        if (list_tail != nullptr)
         {
-            while (list_tail->next != nullptr)  // REFACTOR: Changed NULL to nullptr for modern C++
+            while (list_tail->next != nullptr)
                 list_tail = list_tail->next;
         }
         return 0;

@@ -315,8 +315,8 @@ UnitAmount &UnitAmount::operator-= (UnitAmount &ua)
 // Constructor
 Product::Product()
 {
-    next = nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++ - eliminates ambiguous NULL macro
-    fore = nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++ - eliminates ambiguous NULL macro
+    next = nullptr;
+    fore = nullptr;
     cost = 0;
     id   = 0;
 }
@@ -363,8 +363,8 @@ int Product::DoesVendorHave(int vendor_id)
 // Constructor
 RecipePart::RecipePart()
 {
-    next    = nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
-    fore    = nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
+    next    = nullptr;
+    fore    = nullptr;
     part_id = 0;
 }
 
@@ -403,8 +403,8 @@ int RecipePart::Write(OutputDataFile &df, int version)
 // Constructor
 Recipe::Recipe()
 {
-    next              = nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
-    fore              = nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
+    next              = nullptr;
+    fore              = nullptr;
     prepare_time      = 0;
     id                = 0;
     in_menu           = 0;
@@ -535,8 +535,8 @@ int Recipe::RemoveIngredient(int part_id, UnitAmount &ua)
 // Constructor
 Vendor::Vendor()
 {
-    next = nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++ - eliminates ambiguous NULL macro
-    fore = nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++ - eliminates ambiguous NULL macro
+    next = nullptr;
+    fore = nullptr;
     id   = 0;
 }
 

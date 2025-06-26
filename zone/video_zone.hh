@@ -19,7 +19,7 @@
  *  to determine which food types get sent to the Kitchen Video reports.
  */
 
-#pragma once  // REFACTOR: Added modern pragma once for include protection
+#pragma once
 
 #define VIDEO_TARGET_NORMAL  0
 #define VIDEO_TARGET_KITCHEN 1

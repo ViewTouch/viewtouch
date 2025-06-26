@@ -18,7 +18,7 @@
  * Touch zone for managing credit cards
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef CREDITCARD_LIST_ZONE_HH guard with modern pragma once
+#pragma once
 
 #include "form_zone.hh"
 #include "credit.hh"

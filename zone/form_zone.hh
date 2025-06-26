@@ -18,7 +18,7 @@
  * base touch zone for data entry and display
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _FORM_ZONE_HH guard with modern pragma once
+#pragma once
 
 #include "layout_zone.hh"
 #include "report.hh"

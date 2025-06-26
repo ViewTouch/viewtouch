@@ -18,7 +18,7 @@
  * Zone for editing users & job security information
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _USER_EDIT_ZONE_HH guard with modern pragma once
+#pragma once
 
 #include "form_zone.hh"
 

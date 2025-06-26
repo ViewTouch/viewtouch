@@ -18,7 +18,7 @@
  * Credit/Debit Card merchant authorization infomation entry zone
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _MERCHANT_ZONE_HH guard with modern pragma once
+#pragma once
 
 #include "form_zone.hh"
 
