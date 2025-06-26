@@ -1,4 +1,4 @@
-#pragma once  // REFACTOR: Replaced include guards with modern pragma once
+#pragma once
 
 /*
  * simple logging library - header

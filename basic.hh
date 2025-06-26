@@ -1,7 +1,5 @@
-#pragma once
-
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -16,9 +14,10 @@
  *   You should have received a copy of the GNU General Public License 
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  *
- * basic.hh - revision 13 (10/20/98)
- * Basic Data Types & Definitions 
+ * basic.hh - Basic types & definitions
  */
+
+#pragma once
 
 #include <cstdio>
 #include <cstdlib>

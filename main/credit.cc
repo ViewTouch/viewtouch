@@ -18,8 +18,6 @@
  * Implementation of credit module
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _FILENAME_HH guard with modern pragma once
-
 #include "check.hh"
 #include "data_file.hh"
 #include "labels.hh"
@@ -103,8 +101,8 @@ Credit::Credit()
 {
     FnTrace("Credit::Credit()");
 
-    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    fore = nullptr;
+    next = nullptr;
 
     Clear();
 }
@@ -113,12 +111,12 @@ Credit::Credit(const char* value)
 {
     FnTrace("Credit::Credit(const char* )");
 
-    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    fore = nullptr;
+    next = nullptr;
 
     Clear();
 
-    if (value != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (value != nullptr)
     {
         swipe.Set(value);
         valid = ParseSwipe(value);
@@ -413,7 +411,7 @@ int Credit::Write(OutputDataFile &df, int version)
     error += df.Write(settle_time);
 
     error += df.Write(errors_list.Count());
-    while (ecredit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (ecredit != nullptr)
     {
         ecredit->Write(df, version);
         ecredit = ecredit->next;
@@ -449,7 +447,7 @@ Credit *Credit::Copy()
     Credit *newcredit = new Credit();
     Credit *ecredit;
 
-    if (newcredit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (newcredit != nullptr)
     {
         newcredit->card_id = card_id;
         newcredit->db_type   = db_type;
@@ -515,7 +513,7 @@ Credit *Credit::Copy()
         newcredit->read_manual = read_manual;
 
         ecredit = errors_list.Head();
-        while (ecredit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        while (ecredit != nullptr)
         {
             newcredit->AddError(ecredit);
             ecredit = ecredit->next;
@@ -534,7 +532,7 @@ int Credit::Copy(Credit *credit)
     Credit *ecredit;
     int retval = 1;
 
-    if (credit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (credit != nullptr)
     {
         card_id = credit->card_id;
         db_type   = credit->db_type;
@@ -1203,7 +1201,7 @@ int Credit::ParseSwipe(const char* value)
 int Credit::ParseApproval(const char* value)
 {
     FnTrace("Credit::ParseApproval()");
-    if (value == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (value == nullptr)
         return 1;
 
     char  str[256];
@@ -1282,9 +1280,9 @@ char* Credit::CreditTypeName(char* str, int shortname)
 {
     FnTrace("Credit::CreditTypeName()");
     static char buffer[32];
-    const char* hold = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    const char* hold = nullptr;
 
-    if (str == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (str == nullptr)
         str = buffer;
 
     strcpy(str, UnknownStr);
@@ -1311,7 +1309,7 @@ char* Credit::CreditTypeName(char* str, int shortname)
         }
     }
 
-    if (hold != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (hold != nullptr)
         strcpy(str, hold);
 
     return str;
@@ -1682,7 +1680,7 @@ char* Credit::LastFour(char* dest)
     int sidx = 0;
     int didx = 0;
     int len = 0;
-    if (dest == nullptr) // REFACTOR: NULL -> nullptr for modern C++ - eliminates ambiguous NULL macro, improves type safety
+    if (dest == nullptr)
         dest = str;
 
     if (number.size() > 0)
@@ -1834,7 +1832,7 @@ int Credit::MaskCardNumber()
 {
     FnTrace("Credit::MaskCardNumber()");
     int retval = 0;
-    const char* cardnum = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    const char* cardnum = nullptr;
 
     cardnum = PAN(0);
     number.Set(cardnum);
@@ -1900,7 +1898,7 @@ int Credit::SetBatch(long long batchnum, const char* btermid)
     FnTrace("Credit::SetBatch()");
     int retval = 1;
 
-    if (btermid != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (btermid != nullptr)
     {
         if (batch <= 0 && strcmp(batch_term_id.Value(), btermid) == 0)
         {
@@ -1968,7 +1966,7 @@ int Credit::GetApproval(Terminal *term)
     FnTrace("Credit::GetApproval()");
     int retval = 1;
 
-    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
+    if (term->credit != nullptr && term->credit != this)
     {
         if (debug_mode) printf("Have stale card in GetApproval...\n");
     }
@@ -1984,7 +1982,7 @@ int Credit::GetPreApproval(Terminal *term)
     FnTrace("Credit::GetPreApproval()");
     int retval = 1;
     
-    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
+    if (term->credit != nullptr && term->credit != this)
     {
         if (debug_mode) printf("Have stale card in GetPreApproval...\n");
     }
@@ -2000,7 +1998,7 @@ int Credit::GetFinalApproval(Terminal *term)
     FnTrace("Credit::GetFinalApproval()");
     int retval = 1;
 
-    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
+    if (term->credit != nullptr && term->credit != this)
     {
         if (debug_mode) printf("Have stale card in GetFinalApproval...\n");
     }
@@ -2016,7 +2014,7 @@ int Credit::GetVoid(Terminal *term)
     FnTrace("Credit::GetVoid()");
     int retval = 1;
 
-    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
+    if (term->credit != nullptr && term->credit != this)
     {
         if (debug_mode) printf("Have stale card in GetVoid...\n");
     }
@@ -2032,7 +2030,7 @@ int Credit::GetVoidCancel(Terminal *term)
     FnTrace("Credit::GetVoidCancel()");
     int retval = 1;
 
-    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
+    if (term->credit != nullptr && term->credit != this)
     {
         if (debug_mode) printf("Have stale card in GetVoidCancel...\n");
     }
@@ -2048,7 +2046,7 @@ int Credit::GetRefund(Terminal *term)
     FnTrace("Credit::GetRefund()");
     int retval = 1;
 
-    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
+    if (term->credit != nullptr && term->credit != this)
     {
         if (debug_mode) printf("Have stale card in GetRefund...\n");
     }
@@ -2064,7 +2062,7 @@ int Credit::GetRefundCancel(Terminal *term)
     FnTrace("Credit::GetRefundCancel()");
     int retval = 1;
 
-    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
+    if (term->credit != nullptr && term->credit != this)
     {
         if (debug_mode) printf("Have stale card in GetRefundCancel...\n");
     }
@@ -2099,9 +2097,9 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
     static int count = 0;  // for saving receipts for Moneris testing
     Check *parent = term->system_data->FindCheckByID(check_id);
 
-    if (printer == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (printer == nullptr)
         printer = term->FindPrinter(PRINTER_RECEIPT);
-    if (printer != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (printer != nullptr)
     {
         pwidth = printer->MaxWidth();
         snprintf(line, STRLENGTH, "%*s", pwidth, "________________");
@@ -2185,7 +2183,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
         // card and date information
         if (settings->cc_print_custinfo)
         {
-            if (parent != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (parent != nullptr)
             {
                 int did_print = 0;
                 strcpy(buffer2, parent->FullName());
@@ -2365,15 +2363,15 @@ CreditDB *CreditDB::Copy()
     FnTrace("CreditDB::Copy()");
     CreditDB *newdb;
     Credit   *credit = credit_list.Head();
-    Credit   *crednext = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    Credit   *crednext = nullptr;
 
     newdb = new CreditDB(db_type);
-    if (newdb != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (newdb != nullptr)
     {
         strcpy(newdb->fullpath, fullpath);
         newdb->last_card_id = last_card_id;
 
-        while (credit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        while (credit != nullptr)
         {
             crednext = credit->next;
             newdb->credit_list.AddToTail(credit);
@@ -2417,7 +2415,7 @@ int CreditDB::Write(OutputDataFile &outfile)
 
     outfile.Write(CREDIT_CARD_VERSION);
     outfile.Write(count);
-    while (credit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (credit != nullptr)
     {
         if (credit->IsEmpty() == 0)
             credit->Write(outfile, CREDIT_CARD_VERSION);
@@ -2460,7 +2458,7 @@ int CreditDB::Load(const char* path)
     int version;  // a throwaway for infile; we save version manually so that
                   // Read() and Write() don't have to wonder.
 
-    if (path != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (path != nullptr)
         strcpy(fullpath, path);
 
     if (fullpath[0] != '\0')
@@ -2482,7 +2480,7 @@ int CreditDB::Add(Credit *credit)
     FnTrace("CreditDB::Add(Credit)");
     int retval = 0;
 
-    if (credit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (credit != nullptr)
     {
         if (credit->card_id == 0)
         {
@@ -2546,10 +2544,10 @@ int CreditDB::Remove(int id)
     int retval = 0;
     Credit *credit = credit_list.Head();
 
-    while (credit != nullptr && credit->card_id != id) // REFACTOR: NULL -> nullptr for modern C++
+    while (credit != nullptr && credit->card_id != id)
         credit = credit->next;
 
-    if (credit != nullptr && credit->card_id == id) // REFACTOR: NULL -> nullptr for modern C++
+    if (credit != nullptr && credit->card_id == id)
     {
         credit_list.Remove(credit);
     }
@@ -2561,7 +2559,7 @@ int CreditDB::MakeReport(Terminal *term, Report *report, LayoutZone *rzone)
 {
     FnTrace("CreditDB::MakeReport()");
     int retval = 0;
-    Credit *credit = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    Credit *credit = nullptr;
     int color = COLOR_DEFAULT;
     int spacing = rzone->ColumnSpacing(term, 4);
     int indent = 0;
@@ -2575,7 +2573,7 @@ int CreditDB::MakeReport(Terminal *term, Report *report, LayoutZone *rzone)
     else
     {
         credit = credit_list.Head();
-        while (credit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        while (credit != nullptr)
         {
             indent = 0;
             report->TextPosL(indent, credit->PAN(settings->show_entire_cc_num));
@@ -2600,12 +2598,12 @@ int CreditDB::MakeReport(Terminal *term, Report *report, LayoutZone *rzone)
 Credit *CreditDB::FindByRecord(Terminal *term, int record)
 {
     FnTrace("CreditDB::FindByRecord()");
-    Credit *retval = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    Credit *retval = nullptr;
     Credit *curr = credit_list.Head();
     int count = 0;
     int done = 0;
     
-    while (curr != nullptr && done == 0) // REFACTOR: NULL -> nullptr for modern C++
+    while (curr != nullptr && done == 0)
     {
         if (count == record)
         {
@@ -2629,7 +2627,7 @@ int CreditDB::HaveOpenCards()
     int retval = 0;
     Credit *curr = credit_list.Head();
 
-    while (curr != nullptr && retval == 0) // REFACTOR: NULL -> nullptr for modern C++
+    while (curr != nullptr && retval == 0)
     {
         if (curr->Status() != CCAUTH_VOID && curr->Status() != CCAUTH_REFUND)
             retval = 1;
@@ -2846,11 +2844,11 @@ CCSettle::CCSettle()
 {
     FnTrace("CCSettle::CCSettle()");
 
-    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    next = nullptr;
+    fore = nullptr;
     filepath[0] = '\0';
-    current = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    archive = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    current = nullptr;
+    archive = nullptr;
     Clear();
 }
 
@@ -2858,18 +2856,18 @@ CCSettle::CCSettle(const char* fullpath)
 {
     FnTrace("CCSettle::CCSettle()");
 
-    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    next = nullptr;
+    fore = nullptr;
     strcpy(filepath, fullpath);
-    current = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    archive = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    current = nullptr;
+    archive = nullptr;
     Clear();
 }
 
 CCSettle::~CCSettle()
 {
     FnTrace("CCSettle::~CCSettle()");
-    if (next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (next != nullptr)
         delete next;
 }
 
@@ -2880,7 +2878,7 @@ int CCSettle::Next(Terminal *term)
     int loops = 0;
     Settings *settings = term->GetSettings();
 
-    if (current == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (current == nullptr)
     {
         current = this;
     }
@@ -2891,11 +2889,11 @@ int CCSettle::Next(Terminal *term)
         // avoid grabbing NULLs.
         while (loops < MAX_LOOPS)
         {
-            if (current != nullptr && current->next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (current != nullptr && current->next != nullptr)
                 current = current->next;
             else
             { // search archives
-                if (archive == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+                if (archive == nullptr)
                 {
                     archive = MasterSystem->ArchiveList();
                     if (archive && archive->loaded == 0)
@@ -2908,15 +2906,15 @@ int CCSettle::Next(Terminal *term)
                         archive = archive->next;
                         if (archive && archive->loaded == 0)
                             archive->LoadPacked(settings);
-                    } while (archive != nullptr && archive->cc_settle_results == nullptr); // REFACTOR: NULL -> nullptr for modern C++
+                    } while (archive != nullptr && archive->cc_settle_results == nullptr);
                 }
 
-                if (archive != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+                if (archive != nullptr)
                     current = archive->cc_settle_results;
                 else
                     current = this;
             }
-            loops += ((current != nullptr) ? MAX_LOOPS : 1); // REFACTOR: NULL -> nullptr for modern C++
+            loops += ((current != nullptr) ? MAX_LOOPS : 1);
         }
     }
 
@@ -2930,7 +2928,7 @@ int CCSettle::Fore(Terminal *term)
     int loops = 0;
     Settings *settings = term->GetSettings();
 
-    if (current == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (current == nullptr)
     {
         current = this;
     }
@@ -2941,11 +2939,11 @@ int CCSettle::Fore(Terminal *term)
         // avoid grabbing NULLs.
         while (loops < MAX_LOOPS)
         {
-            if (current != nullptr && current->fore != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (current != nullptr && current->fore != nullptr)
                 current = current->fore;
             else
             { // search archives
-                if (archive == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+                if (archive == nullptr)
                 {
                     archive = MasterSystem->ArchiveListEnd();
                     if (archive && archive->loaded == 0)
@@ -2958,18 +2956,18 @@ int CCSettle::Fore(Terminal *term)
                         archive = archive->fore;
                         if (archive && archive->loaded == 0)
                             archive->LoadPacked(settings);
-                    } while (archive != nullptr && archive->cc_settle_results == nullptr); // REFACTOR: NULL -> nullptr for modern C++
+                    } while (archive != nullptr && archive->cc_settle_results == nullptr);
                 }
 
-                if (archive != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+                if (archive != nullptr)
                     current = archive->cc_settle_results;
                 else
                     current = this;
 
-                while (current!= nullptr && current->next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+                while (current!= nullptr && current->next != nullptr)
                     current = current->next;
             }
-            loops += ((current != nullptr) ? MAX_LOOPS : 1); // REFACTOR: NULL -> nullptr for modern C++
+            loops += ((current != nullptr) ? MAX_LOOPS : 1);
         }
     }
 
@@ -2981,7 +2979,7 @@ CCSettle *CCSettle::Last()
     FnTrace("CCSettle:Last()");
     CCSettle *retval = this;
 
-    while (retval->next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (retval->next != nullptr)
         retval = retval->next;
 
     return retval;
@@ -2991,12 +2989,12 @@ int CCSettle::Add(Terminal *term, const char* message)
 {
     FnTrace("CCSettle::Add(Terminal)");
     int retval = 0;
-    CCSettle *newsettle = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    CCSettle *curr = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    CCSettle *newsettle = nullptr;
+    CCSettle *curr = nullptr;
 
     if (result.empty())
     {
-        if (message != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        if (message != nullptr)
         {
             result.Set("Batch Settle Failed");
             errormsg.Set(message);
@@ -3008,7 +3006,7 @@ int CCSettle::Add(Terminal *term, const char* message)
     else
     {
         newsettle = new CCSettle();
-        if (message != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        if (message != nullptr)
         {
             newsettle->result.Set("Batch Settle Failed");
             newsettle->errormsg.Set(message);
@@ -3017,7 +3015,7 @@ int CCSettle::Add(Terminal *term, const char* message)
             newsettle->ReadResults(term);
         // Add to tail
         curr = this;
-        while (curr->next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        while (curr->next != nullptr)
             curr = curr->next;
         curr->next = newsettle;
         newsettle->fore = curr;
@@ -3036,15 +3034,15 @@ int CCSettle::Add(Check *check)
     FnTrace("CCSettle::Add(Check)");
     int retval = 1;
     SubCheck *subcheck = check->SubList();
-    Payment *payment = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    Credit *credit = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    Payment *payment = nullptr;
+    Credit *credit = nullptr;
 
-    while (subcheck != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (subcheck != nullptr)
     {
         payment = subcheck->PaymentList();
-        while (payment != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        while (payment != nullptr)
         {
-            if (payment->credit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (payment->credit != nullptr)
             {
                 credit = payment->credit;
                 if (credit->CardType() == CARD_TYPE_DEBIT)
@@ -3120,7 +3118,7 @@ CCSettle *CCSettle::Copy()
 
     newsettle->settle_date.Set(settle_date);
 
-    if (next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (next != nullptr)
         newsettle->next = next->Copy();
 
     return newsettle;

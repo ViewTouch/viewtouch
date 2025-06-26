@@ -26,6 +26,31 @@
 #include "drawer_zone.hh"
 #include "cdu.hh"
 
+// Font constants for the UI dropdown (avoid header conflicts)
+#define FONT_DEJAVU_14    20
+#define FONT_DEJAVU_16    21
+#define FONT_DEJAVU_18    22
+#define FONT_DEJAVU_20    23
+#define FONT_DEJAVU_24    24
+#define FONT_DEJAVU_28    25
+#define FONT_DEJAVU_14B   26
+#define FONT_DEJAVU_16B   27
+#define FONT_DEJAVU_18B   28
+#define FONT_DEJAVU_20B   29
+#define FONT_DEJAVU_24B   30
+#define FONT_DEJAVU_28B   31
+
+#define FONT_MONO_14      32
+#define FONT_MONO_16      33
+#define FONT_MONO_18      34
+#define FONT_MONO_20      35
+#define FONT_MONO_24      36
+#define FONT_MONO_14B     37
+#define FONT_MONO_16B     38
+#define FONT_MONO_18B     39
+#define FONT_MONO_20B     40
+#define FONT_MONO_24B     41
+
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
@@ -261,16 +286,49 @@ int ColorValue[] = {
 
 // Updated font choices to provide better progression for scalable fonts in Button Properties Dialog
 // Moved away from legacy bitmapped font limitations to more appropriate scalable font sizes
+// Added modern POS fonts for better readability and professional appearance
 const genericChar* FontName[] = {
-    "Default", "Times 14", "Times 14 Bold", "Times 18", "Times 18 Bold",
+    "Default", 
+    
+    // Legacy Times fonts (maintained for compatibility)
+    "Times 14", "Times 14 Bold", "Times 18", "Times 18 Bold",
     "Times 20", "Times 20 Bold", "Times 24", "Times 24 Bold",
-    "Times 34", "Times 34 Bold", "Courier 18", "Courier 18 Bold",
-    "Courier 20", "Courier 20 Bold", nullptr};
+    "Times 34", "Times 34 Bold", 
+    
+    // Legacy Courier fonts (maintained for compatibility)
+    "Courier 18", "Courier 18 Bold", "Courier 20", "Courier 20 Bold", 
+    
+    // Modern DejaVu Sans fonts - Recommended for POS interfaces
+    "DejaVu Sans 14", "DejaVu Sans 16", "DejaVu Sans 18", "DejaVu Sans 20",
+    "DejaVu Sans 24", "DejaVu Sans 28",
+    "DejaVu Sans 14 Bold", "DejaVu Sans 16 Bold", "DejaVu Sans 18 Bold", 
+    "DejaVu Sans 20 Bold", "DejaVu Sans 24 Bold", "DejaVu Sans 28 Bold",
+    
+    // Monospace fonts - Perfect for prices and data alignment
+    "Monospace 14", "Monospace 16", "Monospace 18", "Monospace 20", "Monospace 24",
+    "Monospace 14 Bold", "Monospace 16 Bold", "Monospace 18 Bold", 
+    "Monospace 20 Bold", "Monospace 24 Bold", nullptr};
+    
 int FontValue[] = {
-    FONT_DEFAULT, FONT_TIMES_14, FONT_TIMES_14B, FONT_TIMES_18, FONT_TIMES_18B,
+    FONT_DEFAULT, 
+    
+    // Legacy Times fonts
+    FONT_TIMES_14, FONT_TIMES_14B, FONT_TIMES_18, FONT_TIMES_18B,
     FONT_TIMES_20, FONT_TIMES_20B, FONT_TIMES_24, FONT_TIMES_24B,
-    FONT_TIMES_34, FONT_TIMES_34B, FONT_COURIER_18, FONT_COURIER_18B,
-    FONT_COURIER_20, FONT_COURIER_20B, -1};
+    FONT_TIMES_34, FONT_TIMES_34B, 
+    
+    // Legacy Courier fonts
+    FONT_COURIER_18, FONT_COURIER_18B, FONT_COURIER_20, FONT_COURIER_20B,
+    
+    // Modern DejaVu Sans fonts
+    FONT_DEJAVU_14, FONT_DEJAVU_16, FONT_DEJAVU_18, FONT_DEJAVU_20,
+    FONT_DEJAVU_24, FONT_DEJAVU_28,
+    FONT_DEJAVU_14B, FONT_DEJAVU_16B, FONT_DEJAVU_18B, 
+    FONT_DEJAVU_20B, FONT_DEJAVU_24B, FONT_DEJAVU_28B,
+    
+    // Monospace fonts
+    FONT_MONO_14, FONT_MONO_16, FONT_MONO_18, FONT_MONO_20, FONT_MONO_24,
+    FONT_MONO_14B, FONT_MONO_16B, FONT_MONO_18B, FONT_MONO_20B, FONT_MONO_24B, -1};
 
 const genericChar* IndexName[] = {
     "General", "Breakfast", "Brunch", "Lunch",

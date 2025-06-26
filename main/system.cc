@@ -737,7 +737,7 @@ int System::SetDataPath(const char* path)
     // Make sure all data directories in path are set up
     chmod(path, DIR_PERMISSIONS);
     snprintf(str, STRLENGTH, "%s/current", path);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     // consolidate checks & drawers
     snprintf(tmp, STRLENGTH, "%s/checks", path);
@@ -761,44 +761,44 @@ int System::SetDataPath(const char* path)
     }
 
     snprintf(str, STRLENGTH, "%s/%s", path, ARCHIVE_DATA_DIR);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     snprintf(str, STRLENGTH, "%s/%s", path, LABOR_DATA_DIR);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     snprintf(str, STRLENGTH, "%s/%s", path, STOCK_DATA_DIR);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     snprintf(str, STRLENGTH, "%s/%s", path, LANGUAGE_DATA_DIR);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     snprintf(str, STRLENGTH, "%s/%s", path, ACCOUNTS_DATA_DIR);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     snprintf(str, STRLENGTH, "%s/%s", path, EXPENSE_DATA_DIR);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     snprintf(str, STRLENGTH, "%s/%s", path, CUSTOMER_DATA_DIR);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     snprintf(str, STRLENGTH, "%s/%s", path, HTML_DATA_DIR);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     snprintf(str, STRLENGTH, "%s/%s", path, TEXT_DATA_DIR);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     snprintf(str, STRLENGTH, "%s/%s", path, PAGEEXPORTS_DIR);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     snprintf(str, STRLENGTH, "%s/%s", path, PAGEIMPORTS_DIR);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     snprintf(str, STRLENGTH, "%s/%s", path, UPDATES_DATA_DIR);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     snprintf(str, STRLENGTH, "%s/%s", path, BACKUP_DATA_DIR);
     backup_path.Set(str);
-    EnsureFileExists(str);
+    EnsureDirExists(str);
 
     return 0;
 }

@@ -2115,7 +2115,7 @@ int TenderSetZone::KillRecord(Terminal *term, int record)
     {
         DiscountInfo *ds = settings->FindDiscountByRecord(record);
         ds->active = 0;
-        if (ds->next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        if (ds->next != nullptr)
             display_id = ds->next->id;
         else
             record_no = -1;
@@ -2180,7 +2180,7 @@ int TenderSetZone::UpdateForm(Terminal *term, int record)
 {
     FnTrace("TenderSetZone::UpdateForm()");
     int retval = 0;
-    FormField *field = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    FormField *field = nullptr;
     int is_item_specific = 0;
     int is_active = 0;
     static int last_family = -1;
@@ -2201,7 +2201,7 @@ int TenderSetZone::UpdateForm(Terminal *term, int record)
         field = field->next;
         if (is_item_specific)
             is_active = 1;
-        while (field != nullptr && field != creditcard_start) // REFACTOR: NULL -> nullptr for modern C++
+        while (field != nullptr && field != creditcard_start)
         {
             field->active = is_active;
             field = field->next;
@@ -2282,7 +2282,7 @@ int TenderSetZone::ItemList(FormField *itemfield, int family, int item_id)
     if (items->ItemsInFamily(family) > 0)
     {
         itemfield->AddEntry(ALL_ITEMS_STRING, -1);
-        while (item != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        while (item != nullptr)
         {
             if (item->family == family)
             {

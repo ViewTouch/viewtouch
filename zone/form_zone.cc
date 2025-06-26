@@ -333,7 +333,7 @@ int TemplatePos(const genericChar* temp, int cursor)
 // Constructor
 FormZone::FormZone()
 {
-    keyboard_focus = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    keyboard_focus = nullptr;
     record_no      = 0;
     keep_focus     = 1;
     wrap           = 1;
@@ -359,7 +359,7 @@ RenderResult FormZone::Render(Terminal *term, int update_flag)
     }
 
     if (update_flag || keep_focus == 0)
-        keyboard_focus = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+        keyboard_focus = nullptr;
 	
 
     LayoutZone::Render(term, update_flag);
@@ -379,7 +379,7 @@ RenderResult FormZone::Render(Terminal *term, int update_flag)
 
     LayoutForm(term);
 
-    for (FormField *f = FieldList(); f != nullptr; f = f->next) // REFACTOR: NULL -> nullptr for modern C++
+    for (FormField *f = FieldList(); f != nullptr; f = f->next)
     {
         f->selected = (keyboard_focus == f);
         if (f->active)
@@ -401,7 +401,7 @@ SignalResult FormZone::Signal(Terminal *term, const genericChar* message)
 
     // initial decisions; put these here so we don't have to duplicate them for
     // various cases below
-    if (keyboard_focus == nullptr && idx < 14) // REFACTOR: NULL -> nullptr for modern C++
+    if (keyboard_focus == nullptr && idx < 14)
     {
         // don't handle numeric keypad if we don't have any fields selected
         return SIGNAL_IGNORED;
@@ -487,7 +487,7 @@ SignalResult FormZone::Signal(Terminal *term, const genericChar* message)
             LoadRecord(term, record_no);
         break;
     case 22:  // Print
-        if (p == nullptr || e == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        if (p == nullptr || e == nullptr)
             return SIGNAL_IGNORED;
         SaveRecord(term, record_no, 0);
         if (PrintRecord(term, record_no))
@@ -609,7 +609,7 @@ SignalResult FormZone::Keyboard(Terminal *term, int my_key, int state)
 int FormZone::Add(FormField *fe)
 {
     FnTrace("FormZone::Add()");
-    if (fe == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (fe == nullptr)
         return 1; // Error
 
     field_list.AddToTail(fe);
@@ -754,7 +754,7 @@ int FormZone::RightAlign()
 int FormZone::Remove(FormField *f)
 {
     FnTrace("FormZone::Remove()");
-    if (f == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (f == nullptr)
         return 1;
 
     return field_list.Remove(f);
@@ -818,7 +818,7 @@ int FormZone::LayoutForm(Terminal *term)
 FormField *FormZone::Find(Flt px, Flt py)
 {
     FnTrace("FormZone::Find()");
-    for (FormField *fe = FieldList(); fe != nullptr; fe = fe->next) // REFACTOR: NULL -> nullptr for modern C++
+    for (FormField *fe = FieldList(); fe != nullptr; fe = fe->next)
     {
         if (fe->active && fe->modify &&
             py >= (fe->y -.5) && py <= (fe->y + fe->h -.5) &&
@@ -827,19 +827,19 @@ FormField *FormZone::Find(Flt px, Flt py)
             return fe;
         }
     }
-    return nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    return nullptr;
 }
 
 int FormZone::NextField()
 {
     FnTrace("FormZone::NextField()");
-    if (keyboard_focus == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (keyboard_focus == nullptr)
         return FirstField();
 
     do
     {
         keyboard_focus = keyboard_focus->next;
-        if (keyboard_focus == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        if (keyboard_focus == nullptr)
             return FirstField();
     }
     while (keyboard_focus->modify == 0 || keyboard_focus->active == 0);
@@ -849,13 +849,13 @@ int FormZone::NextField()
 int FormZone::ForeField()
 {
     FnTrace("FormZone::ForeField()");
-    if (keyboard_focus == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (keyboard_focus == nullptr)
         return LastField();
 
     do
     {
         keyboard_focus = keyboard_focus->fore;
-        if (keyboard_focus == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        if (keyboard_focus == nullptr)
             return LastField();
     }
     while (keyboard_focus->modify == 0 || keyboard_focus->active == 0);
@@ -1035,7 +1035,7 @@ SignalResult ListFormZone::Signal(Terminal *term, const genericChar* message)
             LoadRecord(term, record_no);
         break;
     case 6:  // Print
-        if (p == nullptr || e == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+        if (p == nullptr || e == nullptr)
             return SIGNAL_IGNORED;
         if (show_list)
         {
@@ -1671,7 +1671,7 @@ int TextField::Append(genericChar* my_string)
 int TextField::Append(Str &my_string)
 {
     FnTrace("TextField::Append()");
-    genericChar* tbuff = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    genericChar* tbuff = nullptr;
     int retval = 0;
     int numdigits = 1;
 

@@ -18,7 +18,7 @@
  * Work scheduling & time clock classes
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _LABOR_HH guard with modern pragma once
+#pragma once
 
 #include "utility.hh"
 #include "list_utility.hh"

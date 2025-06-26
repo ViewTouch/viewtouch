@@ -38,14 +38,14 @@
 void Str::ChangeAtoB(const char a, const char b)
 {
     FnTrace("Str::ChangeAtoB()");
-    std::replace(data.begin(), data.end(), a, b);  // REFACTOR: Using std::string's internal data member
+    std::replace(data.begin(), data.end(), a, b);
 }
 
 int Str::IntValue() const
 {
     FnTrace("Str::IntValue()");
-    if (!data.empty())                             // REFACTOR: Using std::string's empty() method
-        return std::stoi(data);                    // REFACTOR: Using modern std::stoi instead of atoi
+    if (!data.empty())
+        return std::stoi(data);
     else
         return 0;
 }
@@ -53,8 +53,8 @@ int Str::IntValue() const
 Flt Str::FltValue() const
 {
     FnTrace("Str::FltValue()");
-    if (!data.empty())                             // REFACTOR: Using std::string's empty() method
-        return std::stod(data);                    // REFACTOR: Using modern std::stod instead of atof
+    if (!data.empty())
+        return std::stod(data);
     else
         return 0.0;
 }
@@ -63,38 +63,38 @@ const char* Str::ValueSet(const char* set)
 {
     FnTrace("Str::ValueSet()");
     if (set != nullptr)                            // REFACTOR: Changed NULL to nullptr
-        data = set;                                // REFACTOR: Direct assignment to std::string data
-    return data.c_str();                           // REFACTOR: Return c_str() of std::string data
+        data = set;
+    return data.c_str();
 }
 
 int Str::operator > (const Str &s) const
 {
     FnTrace("Str::operator >()");
-    return this->data > s.data;                    // REFACTOR: Direct std::string comparison
+    return this->data > s.data;
 }
 
 int Str::operator < (const Str &s) const
 {
     FnTrace("Str::operator <()");
-    return this->data < s.data;                    // REFACTOR: Direct std::string comparison
+    return this->data < s.data;
 }
 
 int Str::operator == (const Str &s) const
 {
     FnTrace("Str::opterator ==()");
-    return this->data == s.data;                   // REFACTOR: Direct std::string comparison
+    return this->data == s.data;
 }
 
 bool Str::operator ==(const std::string &s) const
 {
     FnTrace("Str::opterator ==()");
-    return this->data == s;                        // REFACTOR: Direct std::string comparison
+    return this->data == s;
 }
 
 int Str::operator != (const Str &s) const
 {
     FnTrace("Str::operator !=()");
-    return this->data != s.data;                   // REFACTOR: Direct std::string comparison
+    return this->data != s.data;
 }
 
 /**** RegionInfo Class ****/
@@ -179,10 +179,10 @@ int RegionInfo::Intersect(int rx, int ry, int rw, int rh)
     {
         // intersection
         retval = 0;
-        int left   = Max((int)x, rx);                // REFACTOR: Cast to int for template type matching
-        int top    = Max((int)y, ry);                // REFACTOR: Cast to int for template type matching
-        int right  = Min((int)(x + w - 1), rx + rw - 1);     // REFACTOR: Cast to int for template type matching
-        int bottom = Min((int)(y + h - 1), ry + rh - 1);     // REFACTOR: Cast to int for template type matching
+        int left   = Max((int)x, rx);
+        int top    = Max((int)y, ry);
+        int right  = Min((int)(x + w - 1), rx + rw - 1);
+        int bottom = Min((int)(y + h - 1), ry + rh - 1);
         x = left;
         y = top;
         w = right - left + 1;
@@ -562,7 +562,7 @@ int DoesFileExist(const genericChar* filename)
 int EnsureFileExists(const genericChar* filename)
 {
     FnTrace("EnsureFileExists()");
-    if (filename == nullptr)                       // REFACTOR: Changed NULL to nullptr
+    if (filename == nullptr)
         return 1;
 
     if (DoesFileExist(filename))
@@ -574,6 +574,28 @@ int EnsureFileExists(const genericChar* filename)
         close(fd);
         return 0;
     }
+    return 1;
+}
+
+int EnsureDirExists(const genericChar* dirname)
+{
+    FnTrace("EnsureDirExists()");
+    if (dirname == nullptr)
+        return 1;
+
+    struct stat st;
+    if (stat(dirname, &st) == 0)
+    {
+        if (S_ISDIR(st.st_mode))
+            return 0; // Directory already exists
+        else
+            return 1; // Path exists but is not a directory
+    }
+
+    // Create directory with proper permissions
+    if (mkdir(dirname, 0755) == 0)
+        return 0;
+    
     return 1;
 }
 
@@ -676,14 +698,14 @@ int UnlockDevice(int id)
 // REFACTOR: Added setproctitle implementations to fix linker error
 // These functions allow setting the process title visible in ps/top commands
 
-static char **vt_argv = nullptr;           // REFACTOR: Store original argv pointer
+static char **vt_argv = nullptr;
 static size_t vt_argv_space = 0;           // REFACTOR: Available space for process title
 
 void vt_init_setproctitle(int argc, char* argv[])
 {
     FnTrace("vt_init_setproctitle()");
     
-    // REFACTOR: Store argv pointer and calculate available space for process title
+
     vt_argv = argv;
     
     if (argc > 0 && argv != nullptr && argv[0] != nullptr)  // REFACTOR: Safety checks with nullptr
@@ -715,8 +737,8 @@ int vt_setproctitle(const char* title)
         return -1;
         
     // Clear the argv space and set new title
-    memset(vt_argv[0], 0, vt_argv_space);                    // REFACTOR: Clear existing argv space
-    strncpy(vt_argv[0], title, vt_argv_space - 1);           // REFACTOR: Copy new title safely
+    memset(vt_argv[0], 0, vt_argv_space);
+    strncpy(vt_argv[0], title, vt_argv_space - 1);
     vt_argv[0][vt_argv_space - 1] = '\0';                    // REFACTOR: Ensure null termination
     
     return 0;

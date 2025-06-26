@@ -17,7 +17,7 @@
  * search_zone.hh - revision 1 (10/13/98)
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _SEARCH_ZONE_HH guard with modern pragma once
+#pragma once
 
 #include "layout_zone.hh"
 

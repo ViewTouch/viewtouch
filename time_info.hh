@@ -1,4 +1,4 @@
-#pragma once  // REFACTOR: Replaced #ifndef VT_TIME_INFO_HH guard with modern pragma once
+#pragma once
 
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  

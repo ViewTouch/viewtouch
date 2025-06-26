@@ -18,7 +18,7 @@
  * Definition of printer device class
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _PRINTER_HH guard with modern pragma once
+#pragma once
 
 #include "utility.hh"
 

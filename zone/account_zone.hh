@@ -18,7 +18,7 @@
  * Chart of Accounts entry/edit/list module
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _ACCOUNT_ZONE_HH guard with modern pragma once
+#pragma once
 
 #include "form_zone.hh"
 

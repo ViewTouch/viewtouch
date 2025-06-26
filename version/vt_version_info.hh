@@ -1,4 +1,4 @@
-#pragma once  // REFACTOR: Replaced #ifndef VT_VERSION_INFO_HPP guard with modern pragma once
+#pragma once
 
 #include <string>
 

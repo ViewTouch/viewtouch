@@ -18,7 +18,7 @@
  * functions for using the touch-screen services
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _TOUCH_SCREEN_HH guard with modern pragma once
+#pragma once
 
 #include <string>
 #include "utility.hh"

@@ -18,7 +18,7 @@
  * Employee information classes
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _EMPLOYEE_HH guard with modern pragma once
+#pragma once
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -164,7 +164,7 @@ public:
     int UsePassword(Settings *s);
     // does user use passwords?
 
-    int IsTraining(Settings *s = nullptr) { return training; }  // REFACTOR: Changed NULL to nullptr for modern C++
+    int IsTraining(Settings *s = nullptr) { return training; }
     int CanEnterSystem(Settings *s) { return Security(s) & SECURITY_TABLES; }
     int CanOrder(Settings *s)       { return Security(s) & SECURITY_ORDER; }
     int CanSettle(Settings *s)      { return Security(s) & SECURITY_SETTLE; }

@@ -18,7 +18,7 @@
  * Pixmap graphic buffer objects
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef _LAYER_HH guard with modern pragma once
+#pragma once
 
 #include "term_view.hh"
 #include "list_utility.hh"
@@ -197,7 +197,7 @@ public:
     // redraws all layers (only layers with update flag if select_all = 0)
     int UpdateArea(int x, int y, int w, int h);
     // redraws all layers in region
-    int OptimalUpdateArea(int x, int y, int w, int h, Layer *end = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
+    int OptimalUpdateArea(int x, int y, int w, int h, Layer *end = nullptr);
     // redraws all layers with update flag set in region
     int RubberBandOff();
     int RubberBandUpdate(int x, int y);

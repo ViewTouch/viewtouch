@@ -1290,7 +1290,7 @@ int ZoneDB::ExportPage(Page *page)
         return retval;
 
     MasterSystem->FullPath(PAGEEXPORTS_DIR, fullpath);
-    EnsureFileExists(fullpath);
+    EnsureDirExists(fullpath);
     snprintf(filepath, STRLONG, "/page_%d", page->id);
     strncat(fullpath, filepath, sizeof(fullpath) - strlen(fullpath) - 1);
     if (outfile.Open(fullpath, ZONE_VERSION) == 0)

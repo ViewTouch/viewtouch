@@ -1,7 +1,5 @@
-#pragma once  // REFACTOR: Replaced #ifndef VT_DEBUG_HH guard with modern pragma once
-
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -16,8 +14,10 @@
  *   You should have received a copy of the GNU General Public License 
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  *
- * debug.hh - revision 8 (9/3/98)
+ * debug.hh - Debug module
  */
+
+#pragma once
 
 #include "basic.hh"
 #include <X11/Xlib.h>

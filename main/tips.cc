@@ -38,8 +38,8 @@
 TipEntry::TipEntry()
 {
     FnTrace("TipEntry::TipEntry()");
-    next            = nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
-    fore            = nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
+    next            = nullptr;
+    fore            = nullptr;
     user_id         = 0;
     amount          = 0;
     previous_amount = 0;
@@ -71,8 +71,8 @@ TipEntry *TipEntry::Copy()
 {
     FnTrace("TipEntry::Copy()");
     TipEntry *te = new TipEntry;
-    if (te == nullptr)  // REFACTOR: Changed NULL to nullptr for modern C++
-        return nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
+    if (te == nullptr)
+        return nullptr;
 
     te->user_id = user_id;
     te->amount  = amount;
@@ -84,7 +84,7 @@ int TipEntry::Count()
 {
     FnTrace("TipEntry::Count()");
     int count = 1;
-    for (TipEntry *te = next; te != nullptr; te = te->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+    for (TipEntry *te = next; te != nullptr; te = te->next)
         ++count;
     return count;
 }
@@ -94,7 +94,7 @@ int TipEntry::Count()
 TipDB::TipDB()
 {
     FnTrace("TipDB::TipDB()");
-    archive        = nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
+    archive        = nullptr;
     total_paid     = 0;
     total_held     = 0;
     total_previous = 0;
@@ -104,7 +104,7 @@ TipDB::TipDB()
 int TipDB::Add(TipEntry *te)
 {
     FnTrace("TipDB::Add()");
-    if (te == nullptr)  // REFACTOR: Changed NULL to nullptr for modern C++
+    if (te == nullptr)
         return 1;
 
     // search for previous entry for user
@@ -143,30 +143,30 @@ int TipDB::Purge()
 TipEntry *TipDB::FindByUser(int id)
 {
     FnTrace("TipDB::FindByUser()");
-    for (TipEntry *te = TipList(); te != nullptr; te = te->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+    for (TipEntry *te = TipList(); te != nullptr; te = te->next)
     {
         if (te->user_id == id)
             return te;
     }
-    return nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
+    return nullptr;
 }
 
 TipEntry *TipDB::FindByRecord(int record, Employee *e)
 {
     FnTrace("TipDB::FindByRecord()");
     if (record < 0)
-        return nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
+        return nullptr;
 
-    for (TipEntry *te = TipList(); te != nullptr; te = te->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+    for (TipEntry *te = TipList(); te != nullptr; te = te->next)
     {
-        if (e == nullptr || te->user_id == e->id)  // REFACTOR: Changed NULL to nullptr for modern C++
+        if (e == nullptr || te->user_id == e->id)
         {
             if (record <= 0)
                 return te;
             --record;
         }
     }
-    return nullptr;  // REFACTOR: Changed NULL to nullptr for modern C++
+    return nullptr;
 }
 
 int TipDB::CaptureTip(int user_id, int amount)
@@ -221,7 +221,7 @@ int TipDB::PayoutTip(int user_id, int amount)
 {
     FnTrace("TipDB::PayoutTip()");
     TipEntry *te = FindByUser(user_id);
-    if (te == nullptr || te->amount <= 0)  // REFACTOR: Changed NULL to nullptr for modern C++
+    if (te == nullptr || te->amount <= 0)
         return 1;  // no captured tip to payout
 
     te->amount -= amount;
@@ -246,9 +246,9 @@ int TipDB::Calculate(Settings *s, TipDB *previous,
     }
 
     // figure today's tips
-    for (Check *c = check_list; c != nullptr; c = c->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+    for (Check *c = check_list; c != nullptr; c = c->next)
     {
-        for (SubCheck *sc = c->SubList(); sc != nullptr; sc = sc->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+        for (SubCheck *sc = c->SubList(); sc != nullptr; sc = sc->next)
         {
             int tips = sc->TotalTip();
             if (tips != 0)
@@ -257,9 +257,9 @@ int TipDB::Calculate(Settings *s, TipDB *previous,
     }
 
     // subract amount paid out
-    for (Drawer *d = drawer_list; d != nullptr; d = d->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+    for (Drawer *d = drawer_list; d != nullptr; d = d->next)
     {
-        for (DrawerPayment *dp = d->PaymentList(); dp != nullptr; dp = dp->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+        for (DrawerPayment *dp = d->PaymentList(); dp != nullptr; dp = dp->next)
         {
             if (dp->tender_type == TENDER_PAID_TIP)
                 PayoutTip(dp->target_id, dp->amount);
@@ -274,7 +274,7 @@ int TipDB::Copy(TipDB *db)
     FnTrace("TipDB::Copy()");
     Purge();
 
-    for (TipEntry *te = db->TipList(); te != nullptr; te = te->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+    for (TipEntry *te = db->TipList(); te != nullptr; te = te->next)
         Add(te->Copy());
     return 0;
 }
@@ -286,7 +286,7 @@ int TipDB::Total()
     total_held     = 0;
     total_previous = 0;
 
-    for (TipEntry *te = TipList(); te != nullptr; te = te->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+    for (TipEntry *te = TipList(); te != nullptr; te = te->next)
     {
         if (te->paid > 0)
             total_paid += te->paid;
@@ -303,21 +303,21 @@ void TipDB::ClearHeld()
     FnTrace("TipDB::ClearHeld()");
     total_held     = 0;
 
-    for (TipEntry *te = TipList(); te != nullptr; te = te->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+    for (TipEntry *te = TipList(); te != nullptr; te = te->next)
         te->amount = 0;
 }
 
 int TipDB::PaidReport(Terminal *t, Report *r)
 {
     FnTrace("TipDB::PaidReport()");
-    if (r == nullptr)  // REFACTOR: Changed NULL to nullptr for modern C++
+    if (r == nullptr)
         return 1;
 
     r->TextC("Tips Paid Report");
     r->NewLine(2);
 
     int total = 0;
-    for (TipEntry *te = TipList(); te != nullptr; te = te->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+    for (TipEntry *te = TipList(); te != nullptr; te = te->next)
     {
         if (te->paid > 0)
         {
@@ -339,7 +339,7 @@ int TipDB::PaidReport(Terminal *t, Report *r)
 int TipDB::PayoutReceipt(Terminal *t, Employee *e, int amount, Report *r)
 {
     FnTrace("TipDB::PayoutReceipt()");
-    if (r == nullptr || e == nullptr || amount <= 0)  // REFACTOR: Changed NULL to nullptr for modern C++
+    if (r == nullptr || e == nullptr || amount <= 0)
         return 1;
 
     genericChar str[256];
@@ -365,14 +365,14 @@ int TipDB::PayoutReceipt(Terminal *t, Employee *e, int amount, Report *r)
 int TipDB::ListReport(Terminal *t, Employee *e, Report *r)
 {
     FnTrace("TipDB::ListReport()");
-    if (r == nullptr || e == nullptr)  // REFACTOR: Changed NULL to nullptr for modern C++
+    if (r == nullptr || e == nullptr)
         return 1;
 
     Settings *s = t->GetSettings();
     int flag = e->IsSupervisor(s);
     int count = 0;
 
-    for (TipEntry *te = TipList(); te != nullptr; te = te->next)  // REFACTOR: Changed NULL to nullptr for modern C++
+    for (TipEntry *te = TipList(); te != nullptr; te = te->next)
     {
         if (te->user_id == e->id || flag)
         {
@@ -414,6 +414,6 @@ int TipDB::Update(System *sys)
         Calculate(s, &a->tip_db, sys->CheckList(), sys->DrawerList());
     }
     else
-        Calculate(s, nullptr, sys->CheckList(), sys->DrawerList());  // REFACTOR: Changed NULL to nullptr for modern C++
+        Calculate(s, nullptr, sys->CheckList(), sys->DrawerList());
     return 0;
 }

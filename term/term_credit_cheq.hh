@@ -19,7 +19,7 @@
  *   keeping them in vt_term ensures that only the local terminal will be locked.
  */
 
-#pragma once  // REFACTOR: Replaced #ifndef __TERM_CREDIT__ guard with modern pragma once
+#pragma once
 
 #include "utility.hh"
 

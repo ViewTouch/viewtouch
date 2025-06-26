@@ -42,9 +42,7 @@
 #include <dmalloc.h>
 #endif
 
-#include <filesystem>       // generic filesystem functions available since C++17
-
-namespace fs = std::filesystem;
+#include <sys/stat.h>       // for mkdir and stat functions
 
 // Add Xft for scalable font rendering
 #include <X11/Xft/Xft.h>
@@ -348,16 +346,16 @@ const char* FontNameClass::ToString()
  *------------------------------------------------------------------*/
 Xpm::Xpm()
 {
-    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    next = nullptr;
+    fore = nullptr;
     width = 0;
     height = 0;
 }
 
 Xpm::Xpm(Pixmap pm)
 {
-    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    next = nullptr;
+    fore = nullptr;
     width = 0;
     height = 0;
     pixmap = pm;
@@ -365,8 +363,8 @@ Xpm::Xpm(Pixmap pm)
 
 Xpm::Xpm(Pixmap pm, int w, int h)
 {
-    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    next = nullptr;
+    fore = nullptr;
     width = w;
     height = h;
     pixmap = pm;
@@ -392,17 +390,17 @@ Xpm *Pixmaps::Get(int idx)
 {
     int curridx = 0;
     Xpm *currXpm = pixmaps.Head();
-    Xpm *retval = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    Xpm *retval = nullptr;
     
     if (pixmaps.Count() < 1)
         return retval;
 
-    while (currXpm != nullptr && curridx < count) // REFACTOR: NULL -> nullptr for modern C++
+    while (currXpm != nullptr && curridx < count)
     {
         if (curridx == idx)
         {
             retval = currXpm;
-            currXpm = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+            currXpm = nullptr;
         }
         else
         {
@@ -416,7 +414,7 @@ Xpm *Pixmaps::Get(int idx)
 
 Xpm *Pixmaps::GetRandom()
 {
-    Xpm *retval = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    Xpm *retval = nullptr;
 
     if (pixmaps.Count() < 2)
         return retval;
@@ -437,17 +435,17 @@ Pixmaps PixmapList;
  ********************************************************************/
 
 LayerList Layers;
-Layer *MainLayer = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+Layer *MainLayer = nullptr;
 
 int SocketNo = 0;
 
-Display *Dis = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+Display *Dis = nullptr;
 GC       Gfx = 0;
 Window   MainWin;
 std::array<Pixmap, IMAGE_COUNT> Texture;
 Pixmap   ShadowPix;
 int      ScrDepth = 0;
-Visual  *ScrVis = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+Visual  *ScrVis = nullptr;
 Colormap ScrCol = 0;
 int      WinWidth  = 0;
 int      WinHeight = 0;
@@ -482,9 +480,9 @@ Str StoreName;
 Str Message;
 
 static XtAppContext App;
-static Widget       MainShell = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+static Widget       MainShell = nullptr;
 static int          ScrNo     = 0;
-static Screen      *ScrPtr    = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+static Screen      *ScrPtr    = nullptr;
 static int          ScrHeight = 0;
 static int          ScrWidth  = 0;
 static Window       RootWin;
@@ -494,7 +492,7 @@ static Ulong        Palette[256];
 static int          ScreenBlankTime = 60;
 static int          UpdateTimerID = 0;
 static int          TouchInputID  = 0;
-static TouchScreen *TScreen = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+static TouchScreen *TScreen = nullptr;
 static int          ResetTime = 20;
 static TimeInfo     TimeOut, LastInput;
 static int          CalibrateStage = 0;
@@ -504,12 +502,12 @@ static Cursor       CursorBlank = 0;
 static Cursor       CursorWait = 0;
 
 #ifndef NO_MOTIF
-static PageDialog      *PDialog = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-static ZoneDialog      *ZDialog = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-static MultiZoneDialog *MDialog = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-static TranslateDialog *TDialog = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-static ListDialog      *LDialog = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-static DefaultDialog   *DDialog = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+static PageDialog      *PDialog = nullptr;
+static ZoneDialog      *ZDialog = nullptr;
+static MultiZoneDialog *MDialog = nullptr;
+static TranslateDialog *TDialog = nullptr;
+static ListDialog      *LDialog = nullptr;
+static DefaultDialog   *DDialog = nullptr;
 #endif
 
 // So that translations aren't done every time a dialog is opened, we'll
@@ -533,7 +531,7 @@ struct timeval last_mouse_time;
 int last_x_pos = 0;
 int last_y_pos = 0;
 
-CCard *creditcard = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+CCard *creditcard = nullptr;
 int ConnectionTimeOut = 30;
 
 int allow_iconify = 1;
@@ -572,7 +570,7 @@ genericChar* RStr(genericChar* s)
     FnTrace("RStr()");
 
     static genericChar buffer[1024] = "";
-    if (s == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (s == nullptr)
         s = buffer;
     BufferIn.GetString(s);
     return s;
@@ -599,8 +597,8 @@ Translation::Translation()
 {
     FnTrace("Translation::Translation()");
 
-    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    next = nullptr;
+    fore = nullptr;
     key[0] = '\0';
     value[0] = '\0';
 }
@@ -609,8 +607,8 @@ Translation::Translation(const char* new_key, const char* new_value)
 {
     FnTrace("Translation::Translation()");
 
-    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    next = nullptr;
+    fore = nullptr;
     key[0] = '\0';
     strncpy(key, new_key, STRLONG);
     value[0] = '\0';
@@ -672,7 +670,7 @@ const char* Translations::GetTranslation(const char* key)
     FnTrace("Translations::GetTranslation()");
 
     Translation *trans = trans_list.Head();
-    while (trans != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (trans != nullptr)
     {
         if (trans->Match(key))
         {
@@ -693,7 +691,7 @@ void Translations::PrintTranslations()
     char key[STRLONG];
     char value[STRLONG];
 
-    while (trans != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    while (trans != nullptr)
     {
         trans->GetKey(key, STRLONG);
         trans->GetValue(value, STRLONG);
@@ -860,7 +858,7 @@ void TouchScreenCB(XtPointer client_data, int *fid, XtInputId *id)
     FnTrace("TouchScreenCB()");
 
     TouchScreen *ts = TScreen;
-    if (ts == nullptr && silent_mode > 0) // REFACTOR: NULL -> nullptr for modern C++
+    if (ts == nullptr && silent_mode > 0)
         return;
 
     int tx = -1;
@@ -944,7 +942,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
     KeySym key = 0;
     genericChar buffer[32];
 
-    int len = XLookupString(e, buffer, 31, &key, nullptr); // REFACTOR: NULL -> nullptr for modern C++
+    int len = XLookupString(e, buffer, 31, &key, nullptr);
     if (len < 0)
         len = 0;
     buffer[len] = '\0';
@@ -1679,9 +1677,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             new_zone_translations = 1;
             break;
         case TERM_CC_AUTH:
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->Sale();
@@ -1692,9 +1690,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_PREAUTH:
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->PreAuth();
@@ -1705,9 +1703,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_FINALAUTH:
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->FinishAuth();
@@ -1718,9 +1716,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_VOID:
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->Void();
@@ -1731,9 +1729,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_VOID_CANCEL:
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->VoidCancel();
@@ -1744,9 +1742,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_REFUND:
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->Refund();
@@ -1757,9 +1755,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_REFUND_CANCEL:
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->RefundCancel();
@@ -1771,54 +1769,54 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             break;
         case TERM_CC_SETTLE:
             // BatchSettle() should also write the response to vt_main
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->BatchSettle();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_INIT:
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->CCInit();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_TOTALS:
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->Totals();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_DETAILS:
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->Details();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_CLEARSAF:
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->ClearSAF();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_SAFDETAILS:
-            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard == nullptr)
                 creditcard = new CCard;
-            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
+            if (creditcard != nullptr)
             {
                 creditcard->SAFDetails();
                 creditcard->Clear();
@@ -1835,8 +1833,8 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
  * General Functions
  ********************************************************************/
 
-Layer       *TargetLayer = nullptr; // REFACTOR: NULL -> nullptr for modern C++
-LayerObject *TargetObject = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+Layer       *TargetLayer = nullptr;
+LayerObject *TargetObject = nullptr;
 
 int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericChar* title)
 {
@@ -1850,7 +1848,7 @@ int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericCh
 
     KillLayer(id);
     Layer *l = new Layer(Dis, Gfx, MainWin, w, h);
-    if (l == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (l == nullptr)
         return 1;
 
     if (l->pix == 0)
@@ -1879,7 +1877,7 @@ int ShowLayer(int id)
     FnTrace("ShowLayer()");
 
     Layer *l = Layers.FindByID(id);
-    if (l == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (l == nullptr)
         return 1;
 
     l->buttons.Render(l);
@@ -1912,7 +1910,7 @@ int SetTargetLayer(int id)
     FnTrace("SetTargetLayer()");
 
     Layer *l = Layers.FindByID(id);
-    if (l == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (l == nullptr)
         return 1;
 
     TargetLayer = l;
@@ -1925,7 +1923,7 @@ int NewPushButton(int id, int x, int y, int w, int h, const genericChar* text,
     FnTrace("NewPushButton()");
 
     Layer *l = TargetLayer;
-    if (l == nullptr) // REFACTOR: NULL -> nullptr for modern C++
+    if (l == nullptr)
         return 1;
     LO_PushButton *b = new LO_PushButton(text, c1, c2);
     b->SetRegion(x + l->offset_x, y + l->offset_y, w, h);
@@ -2205,12 +2203,13 @@ int ReadScreenSaverPix()
     Xpm *newpm;
     genericChar fullpath[STRLONG];
     int len;
-    if (!fs::is_directory(SCREENSAVER_DIR))
+    struct stat st;
+    if (stat(SCREENSAVER_DIR, &st) != 0 || !S_ISDIR(st.st_mode))
     {
         std::cerr << "Screen saver directory does not exist: '"
             << SCREENSAVER_DIR << "' creating it" << std::endl;
-        fs::create_directory(SCREENSAVER_DIR);
-        fs::permissions(SCREENSAVER_DIR, fs::perms::all); // be sure read/write/execute flags are set
+        mkdir(SCREENSAVER_DIR, 0755);
+        chmod(SCREENSAVER_DIR, 0755); // set read/write/execute permissions
     }
     dp = opendir(SCREENSAVER_DIR);
     if (dp == nullptr)
@@ -2890,26 +2889,55 @@ Pixmap GetTexture(int texture)
         return Texture[0]; // default texture
 }
 
-// Function to get scalable font names for Xft
+// Function to get scalable font names for Xft - consistent with manager.cc
 const char* GetScalableFontName(int font_id)
 {
     switch (font_id)
     {
-    case FONT_TIMES_20:   return "Times:size=20:style=regular";
-    case FONT_TIMES_24:   return "Times:size=24:style=regular";
-    case FONT_TIMES_34:   return "Times:size=34:style=regular";
-    case FONT_TIMES_20B:  return "Times:size=20:style=bold";
-    case FONT_TIMES_24B:  return "Times:size=24:style=bold";
-    case FONT_TIMES_34B:  return "Times:size=34:style=bold";
-    case FONT_TIMES_14:   return "Times:size=14:style=regular";
-    case FONT_TIMES_14B:  return "Times:size=14:style=bold";
-    case FONT_TIMES_18:   return "Times:size=18:style=regular";
-    case FONT_TIMES_18B:  return "Times:size=18:style=bold";
-    case FONT_COURIER_18: return "Courier:size=18:style=regular";
-    case FONT_COURIER_18B: return "Courier:size=18:style=bold";
-    case FONT_COURIER_20: return "Courier:size=20:style=regular";
-    case FONT_COURIER_20B: return "Courier:size=20:style=bold";
-    default:              return "Times:size=24:style=regular";
+    // Legacy Times fonts (kept for compatibility)
+    case FONT_TIMES_14:  return "Times New Roman-14:style=Regular";
+    case FONT_TIMES_18:  return "Times New Roman-18:style=Regular";
+    case FONT_TIMES_20:  return "Times New Roman-20:style=Regular";
+    case FONT_TIMES_24:  return "Times New Roman-24:style=Regular";
+    case FONT_TIMES_34:  return "Times New Roman-34:style=Regular";
+    case FONT_TIMES_14B: return "Times New Roman-14:style=Bold";
+    case FONT_TIMES_18B: return "Times New Roman-18:style=Bold";
+    case FONT_TIMES_20B: return "Times New Roman-20:style=Bold";
+    case FONT_TIMES_24B: return "Times New Roman-24:style=Bold";
+    case FONT_TIMES_34B: return "Times New Roman-34:style=Bold";
+    case FONT_COURIER_18: return "Courier New-18:style=Regular";
+    case FONT_COURIER_18B: return "Courier New-18:style=Bold";
+    case FONT_COURIER_20: return "Courier New-20:style=Regular";
+    case FONT_COURIER_20B: return "Courier New-20:style=Bold";
+    
+    // Modern POS Fonts - DejaVu Sans (Superior readability for POS)
+    case FONT_DEJAVU_14:  return "DejaVu Sans-14:style=Book";
+    case FONT_DEJAVU_16:  return "DejaVu Sans-16:style=Book";
+    case FONT_DEJAVU_18:  return "DejaVu Sans-18:style=Book";
+    case FONT_DEJAVU_20:  return "DejaVu Sans-20:style=Book";
+    case FONT_DEJAVU_24:  return "DejaVu Sans-24:style=Book";
+    case FONT_DEJAVU_28:  return "DejaVu Sans-28:style=Book";
+    case FONT_DEJAVU_14B: return "DejaVu Sans-14:style=Bold";
+    case FONT_DEJAVU_16B: return "DejaVu Sans-16:style=Bold";
+    case FONT_DEJAVU_18B: return "DejaVu Sans-18:style=Bold";
+    case FONT_DEJAVU_20B: return "DejaVu Sans-20:style=Bold";
+    case FONT_DEJAVU_24B: return "DejaVu Sans-24:style=Bold";
+    case FONT_DEJAVU_28B: return "DejaVu Sans-28:style=Bold";
+    
+    // Monospace fonts - Perfect for prices, numbers, and financial data
+    case FONT_MONO_14:    return "DejaVu Sans Mono-14:style=Book";
+    case FONT_MONO_16:    return "DejaVu Sans Mono-16:style=Book";
+    case FONT_MONO_18:    return "DejaVu Sans Mono-18:style=Book";
+    case FONT_MONO_20:    return "DejaVu Sans Mono-20:style=Book";
+    case FONT_MONO_24:    return "DejaVu Sans Mono-24:style=Book";
+    case FONT_MONO_14B:   return "DejaVu Sans Mono-14:style=Bold";
+    case FONT_MONO_16B:   return "DejaVu Sans Mono-16:style=Bold";
+    case FONT_MONO_18B:   return "DejaVu Sans Mono-18:style=Bold";
+    case FONT_MONO_20B:   return "DejaVu Sans Mono-20:style=Bold";
+    case FONT_MONO_24B:   return "DejaVu Sans Mono-24:style=Bold";
+    
+    // Default to modern DejaVu Sans instead of Times New Roman
+    default:              return "DejaVu Sans-18:style=Book";
     }
 }
 
