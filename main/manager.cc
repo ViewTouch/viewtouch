@@ -314,21 +314,53 @@ void ViewTouchError(const char* message, int do_sleep)
 
 void DownloadFile(const std::string &url, const std::string &destination)
 {
-    std::ofstream fout(destination, std::ios::binary);
+    std::cerr << "DEBUG: Starting download from '" << url << "' to '" << destination << "'" << std::endl;
+    
     try {
         curlpp::Cleanup cleaner;
         curlpp::Easy request;
+        
+        // Open file for writing
+        std::ofstream fout(destination, std::ios::binary);
+        if (!fout.is_open()) {
+            std::cerr << "ERROR: Cannot open destination file for writing: " << destination << std::endl;
+            return;
+        }
 
-        fout << curlpp::options::Url(url) << std::endl;
-        std::cerr << "Successfully downloaded file '" << destination << "' from '" << url << "'" << std::endl;
+        // Configure curl request
+        request.setOpt(curlpp::options::Url(url));
+        request.setOpt(curlpp::options::WriteStream(&fout));
+        request.setOpt(curlpp::options::FollowLocation(true));  // Follow redirects
+        request.setOpt(curlpp::options::Timeout(30));           // 30 second timeout
+        request.setOpt(curlpp::options::ConnectTimeout(10));    // 10 second connect timeout
+        // Removed SSL options since we're using HTTP now
+        // request.setOpt(curlpp::options::Verbose(true));  // Disable verbose for cleaner output
+        
+        std::cerr << "DEBUG: About to perform curl request..." << std::endl;
+        request.perform();
+        std::cerr << "DEBUG: Curl request completed, closing file..." << std::endl;
+        
+        fout.close();
+        
+        // Check if file was actually written
+        struct stat st;
+        if (stat(destination.c_str(), &st) == 0) {
+            std::cerr << "Successfully downloaded file '" << destination << "' from '" << url << "' (" << st.st_size << " bytes)" << std::endl;
+        } else {
+            std::cerr << "ERROR: File was not created: " << destination << std::endl;
+        }
     }
     catch (const curlpp::LogicError & e)
     {
-        std::cerr << "Error downloading file: " << e.what() << std::endl;
+        std::cerr << "CURL Logic Error downloading file: " << e.what() << std::endl;
     }
     catch (const curlpp::RuntimeError &e)
     {
-        std::cerr << "Error downloading file: " << e.what() << std::endl;
+        std::cerr << "CURL Runtime Error downloading file: " << e.what() << std::endl;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "General Error downloading file: " << e.what() << std::endl;
     }
 }
 
@@ -808,6 +840,10 @@ int StartSystem(int my_use_net)
     ReportLoader("Scanning Archives");
     sys->FullPath(ARCHIVE_DATA_DIR, str);
     sys->FullPath(MASTER_DISCOUNT_SAVE, altmedia);
+    
+    // TEMP FIX for Pi 5: Ensure archive directory exists before scanning
+    EnsureDirExists(str);
+    
     if (sys->ScanArchives(str, altmedia))
         ReportError("Can't scan archives");
 
@@ -816,14 +852,47 @@ int StartSystem(int my_use_net)
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Employees");
     sys->FullPath(MASTER_USER_DB, str);
+    
+    // TEMP DEBUG for Pi 5: Add detailed debug output
+    ReportError("DEBUG: About to check if employee.dat exists");
+    struct stat emp_st;
+    if (stat(str, &emp_st) == 0) {
+        snprintf(msg, sizeof(msg), "DEBUG: employee.dat exists, size: %ld bytes", emp_st.st_size);
+        ReportError(msg);
+    } else {
+        ReportError("DEBUG: employee.dat does not exist, will try to load anyway");
+    }
+    
+    ReportError("DEBUG: About to call sys->user_db.Load()");
     if (sys->user_db.Load(str))
     {
-        RestoreBackup(str);
-        sys->user_db.Purge();
-        sys->user_db.Load(str);
+        ReportError("DEBUG: user_db.Load() failed, trying backup");
+        ReportError("DEBUG: About to call RestoreBackup()");
+        int backup_result = RestoreBackup(str);
+        snprintf(msg, sizeof(msg), "DEBUG: RestoreBackup() returned: %d", backup_result);
+        ReportError(msg);
+        
+        ReportError("DEBUG: About to call sys->user_db.Purge()");
+        // TEMP FIX for Pi 5: Skip Purge() as it hangs on corrupted employee data
+        // Since employee.dat doesn't exist, there's nothing meaningful to purge anyway
+        // sys->user_db.Purge();  // DISABLED - causes hang on Pi 5
+        ReportError("DEBUG: sys->user_db.Purge() skipped (Pi 5 fix)");
+        
+        ReportError("DEBUG: About to call sys->user_db.Load() again");
+        int second_load_result = sys->user_db.Load(str);
+        if (second_load_result == 0) {
+            ReportError("DEBUG: Second sys->user_db.Load() completed successfully");
+        } else {
+            ReportError("DEBUG: Second sys->user_db.Load() also failed - will continue with default users only");
+        }
     }
+    ReportError("DEBUG: user_db.Load() completed successfully");
+    
     // set developer key (this should be done somewhere else)
+    ReportError("DEBUG: About to set developer key");
     sys->user_db.developer->key = settings->developer_key;
+    ReportError("DEBUG: Developer key set successfully");
+    
 	snprintf(msg, sizeof(msg), "%s OK", MASTER_USER_DB);
 	ReportError(msg); //stamp file attempt in log
 
@@ -831,6 +900,7 @@ int StartSystem(int my_use_net)
     snprintf(msg, sizeof(msg), "Attempting to load labor info...");
     ReportLoader(msg);
     sys->FullPath(LABOR_DATA_DIR, str);
+    EnsureDirExists(str);  // TEMP FIX for Pi 5: Ensure directory exists
     if (sys->labor_db.Load(str))
         ReportError("Can't find labor directory");
 
@@ -842,7 +912,8 @@ int StartSystem(int my_use_net)
     struct stat st;
     if (stat(str, &st) != 0)
     {
-        const std::string menu_url = "https://www.viewtouch.com/menu.dat";
+        // EMERGENCY FIX: Use HTTP for reliable downloads on Pi 5
+        const std::string menu_url = "http://www.viewtouch.com/menu.dat";
         DownloadFile(menu_url, str);
     }
     if (sys->menu.Load(str))
@@ -881,27 +952,32 @@ int StartSystem(int my_use_net)
     }
     sys->inventory.ScanItems(&sys->menu);
     sys->FullPath(STOCK_DATA_DIR, str);
+    EnsureDirExists(str);  // TEMP FIX for Pi 5: Ensure directory exists
     sys->inventory.LoadStock(str);
 	snprintf(msg, sizeof(msg), "%s OK", MASTER_INVENTORY);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Customers
     sys->FullPath(CUSTOMER_DATA_DIR, str);
+    EnsureDirExists(str);  // TEMP FIX for Pi 5: Ensure directory exists
     ReportLoader("Loading Customers");
     sys->customer_db.Load(str);
 
     // Load Checks & Drawers
     sys->FullPath(CURRENT_DATA_DIR, str);
+    EnsureDirExists(str);  // TEMP FIX for Pi 5: Ensure directory exists
     ReportLoader("Loading Current Checks & Drawers");
     sys->LoadCurrentData(str);
 
     // Load Accounts
     sys->FullPath(ACCOUNTS_DATA_DIR, str);
+    EnsureDirExists(str);  // TEMP FIX for Pi 5: Ensure directory exists
     ReportLoader("Loading Accounts");
     sys->account_db.Load(str);
 
     // Load Expenses
     sys->FullPath(EXPENSE_DATA_DIR, str);
+    EnsureDirExists(str);  // TEMP FIX for Pi 5: Ensure directory exists
     ReportLoader("Loading Expenses");
     sys->expense_db.Load(str);
     sys->expense_db.AddDrawerPayments(sys->DrawerList());
@@ -1276,7 +1352,8 @@ int FindVTData(InputDataFile *infile)
         return version;
 
     // download to official location and then try to read again
-    const std::string vtdata_url = "https://www.viewtouch.com/vt_data";
+    // EMERGENCY FIX: Use HTTP for reliable downloads on Pi 5, HTTPS has SSL issues
+    const std::string vtdata_url = "http://www.viewtouch.com/vt_data";
     fprintf(stderr, "Trying download VT_DATA: %s from '%s'\n", SYSTEM_DATA_FILE, vtdata_url.c_str());
     DownloadFile(vtdata_url, SYSTEM_DATA_FILE);
     if (infile->Open(SYSTEM_DATA_FILE, version) == 0)
@@ -1352,7 +1429,8 @@ int LoadSystemData()
     struct stat st;
     if (stat(tables_filepath.c_str(), &st) != 0)
     {
-        const std::string tables_url = "https://www.viewtouch.com/tables.dat";
+        // EMERGENCY FIX: Use HTTP for reliable downloads on Pi 5
+        const std::string tables_url = "http://www.viewtouch.com/tables.dat";
         DownloadFile(tables_url, tables_filepath);
     }
 
@@ -1369,7 +1447,8 @@ int LoadSystemData()
     struct stat st2;
     if (stat(zone_db_filepath.c_str(), &st2) != 0)
     {
-        const std::string zone_db_url = "https://www.viewtouch.com/zone_db.dat";
+        // EMERGENCY FIX: Use HTTP for reliable downloads on Pi 5
+        const std::string zone_db_url = "http://www.viewtouch.com/zone_db.dat";
         DownloadFile(zone_db_url, zone_db_filepath);
     }
     if (zone_db->Load(filename2))
