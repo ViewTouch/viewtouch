@@ -20,6 +20,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Integrated modern `#pragma once` header guards replacing legacy `#ifndef` macros in 35+ files
   - Enhanced Str class with C++17 features: move semantics, RAII compliance, and defaulted operations
   - Added explicit buffer size constants preventing future buffer overflow vulnerabilities
+- **Comprehensive Debug Infrastructure**: Added detailed diagnostic output for troubleshooting startup and platform-specific issues
+  - Added step-by-step debug output for employee database loading with file existence checks and load status reporting
+  - Enhanced DownloadFile function with verbose curl output, file size verification, and detailed error categorization
+  - Added debug tracking for RestoreBackup operations with return code reporting and error path analysis
+  - Implemented platform-specific debug markers for Pi 5 ARM64 vs x86_64 desktop behavior differences
 
 ### Changed
 - cmake: `gen_compiler_tag`: handle Clang compiler to contain compiler version #163
@@ -49,6 +54,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
 
 ### Fixed
+- **CRITICAL SYSTEM STARTUP FAILURES**: Resolved major platform-specific hang and download issues preventing system startup
+  - **Fixed DownloadFile Function**: Corrected critical bug where DownloadFile was writing URL strings to files instead of downloading actual content
+    - Root cause: `fout << curlpp::options::Url(url)` was writing URL text instead of performing actual download
+    - Impact: All bootstrap files (vt_data, menu.dat, tables.dat, zone_db.dat) were corrupted with URL strings, causing system crashes
+    - Fix: Implemented proper curl request with `request.setOpt()` and `request.perform()` for actual file downloads
+    - Added timeout and error handling with 30-second download timeout and 10-second connection timeout
+  - **Fixed Pi 5 UserDB::Purge() Hang**: Resolved infinite hang in employee database cleanup on Raspberry Pi 5 ARM64 platform
+    - Root cause: Memory corruption in Employee linked list causing infinite loop in `DList::Purge()` destructor calls
+    - Impact: System would hang indefinitely after "DEBUG: About to call sys->user_db.Purge()" on Pi 5 only
+    - Fix: Skip UserDB::Purge() when employee.dat doesn't exist since there's nothing meaningful to purge
+    - Platform-specific: Only affects ARM64 Pi systems due to different memory management vs x86_64 desktop systems
+  - **Fixed SSL Certificate Issues on Pi 5**: Added HTTP fallback for bootstrap file downloads to resolve SSL certificate problems
+    - Root cause: Raspberry Pi 5 systems often have outdated SSL certificates causing HTTPS download failures
+    - Impact: Critical system files (zone_db.dat, menu.dat) couldn't be downloaded, resulting in "no zone_db" crashes
+    - Fix: Temporarily use HTTP URLs for reliable downloads while preserving HTTPS for security when certificates are available
+    - Added comprehensive debug output and error reporting for download troubleshooting
+  - **Fixed Missing Directory Creation**: Added automatic creation of required data directories preventing startup failures
+    - Added `EnsureDirExists()` calls for archive, current, accounts, expenses, customers, labor, and stock directories
+    - Prevents "Can't find directory" errors on fresh installations or incomplete data setups
 - **CRITICAL SECURITY VULNERABILITIES**: Eliminated multiple buffer overflow attack vectors that could compromise system security
   - **Buffer Overflow in UnitAmount::Description()**: Fixed `sizeof(str)` bug in `main/inventory.cc` affecting 18+ format operations - replaced with proper `UNIT_DESC_BUFFER_SIZE` constant (256 bytes)
   - **Buffer Overflow in PrintItem()**: Fixed `sizeof(buffer)` bug in `main/sales.cc` affecting menu item formatting - replaced with proper `PRINT_ITEM_BUFFER_SIZE` constant (512 bytes)  
