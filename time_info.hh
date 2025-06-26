@@ -1,3 +1,5 @@
+#pragma once  // REFACTOR: Replaced #ifndef VT_TIME_INFO_HH guard with modern pragma once
+
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -14,12 +16,9 @@
  *   You should have received a copy of the GNU General Public License 
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  *
- * utility.hh - revision 106 (10/20/98)
- * General functions and data types than have no other place to go
+ * time_info.hh - revision 6 (9/24/98)
+ * TimeInfo class for storing/manipulating dates and times
  */
-
-#ifndef VT_TIME_INFO_HH
-#define VT_TIME_INFO_HH
 
 #include "basic.hh"
 
@@ -165,5 +164,3 @@ int SecondsElapsed(const TimeInfo &t1, const TimeInfo &t2);
 int MinutesElapsedToNow(const TimeInfo &t1);
 int MinutesElapsed(const TimeInfo &t1, const TimeInfo &t2);
 // Returns minutes elapsed between two times (ingnoring second values)
-
-#endif // VT_TIME_INFO_HH

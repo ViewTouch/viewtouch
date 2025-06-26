@@ -18,8 +18,7 @@
  * Phrase lookup/translation & local conventions module
  */
 
-#ifndef _LOCALE_HH
-#define _LOCALE_HH
+#pragma once
 
 #include "data_file.hh"
 #include "utility.hh"
@@ -163,5 +162,3 @@ struct PhraseEntry
 };
 
 extern PhraseEntry PhraseData[];
-
-#endif

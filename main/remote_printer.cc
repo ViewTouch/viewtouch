@@ -44,6 +44,7 @@ public:
     Str host_name;
     int port_no;
     int model;
+    int number;
     CharQueue *buffer_in, *buffer_out;
     Str filename;
     int failure;
@@ -55,16 +56,28 @@ public:
 
     // Member Functions
     int   WInt8(int val);
-    int   RInt8(int *val = NULL);
+    int   RInt8(int *val = nullptr);
     int   WStr(const char* str, int len = 0);
-    const genericChar* RStr(const char* str = NULL);
+    const genericChar* RStr(genericChar* str = nullptr);
     int   Send();
     int   SendNow();
 
-    int   StopPrint();
-    int   OpenDrawer(int drawer);
-    int   Start();
-    int   End();
+    // Pure virtual method implementations from Printer base class
+    virtual int WriteFlags(int flags) override { return 0; }
+    virtual int Model() override { return model; }
+    virtual int Init() override { return 0; }
+    virtual int NewLine() override { return 0; }
+    virtual int LineFeed(int lines = 1) override { return 0; }
+    virtual int FormFeed() override { return 0; }
+    virtual int MaxWidth() override { return 80; }
+    virtual int MaxLines() override { return -1; }
+    virtual int Width(int flags = 0) override { return 80; }
+    virtual int CutPaper(int partial_only = 0) override { return 0; }
+
+    int   StopPrint() override;
+    int   OpenDrawer(int drawer) override;
+    int   Start() override;
+    int   End() override;
 };
 
 
@@ -152,16 +165,16 @@ int RemotePrinter::RInt8(int *val)
 
 int RemotePrinter::WStr(const char* s, int len)
 {
-    if (s == NULL)
+    if (s == nullptr)
         return buffer_out->PutString("", 0);
     else
         return buffer_out->PutString(s, len);
 }
 
-const char* RemotePrinter::RStr(const char* s)
+const char* RemotePrinter::RStr(genericChar* s)
 {
     static genericChar buffer[1024];
-    if (s == NULL)
+    if (s == nullptr)
         s = buffer;
     buffer_in->GetString(s);
     return s;
@@ -197,18 +210,18 @@ int RemotePrinter::OpenDrawer(int drawer)
 
 int RemotePrinter::Start()
 {
-    if (device_no)
+    if (temp_fd)
     {
         DeleteFile(filename.Value());
-        close(device_no);
+        close(temp_fd);
     }
 
     filename.Set(MasterSystem->NewPrintFile());
     genericChar str[256];
     snprintf(str, sizeof(str), "/tmp/vt_%s", host_name.Value());
-    device_no = creat(str, 0666);
+    temp_fd = creat(str, 0666);
 
-    if (device_no <= 0)
+    if (temp_fd <= 0)
     {
         filename.Clear();
         return 1;
@@ -218,7 +231,7 @@ int RemotePrinter::Start()
     {
         // reset printer head
         genericChar str[] = { 0x1b, 0x3c };
-        write(device_no, str, sizeof(str));
+        write(temp_fd, str, sizeof(str));
     }
     else if (model == MODEL_STAR)
         LineFeed(2);
@@ -227,7 +240,7 @@ int RemotePrinter::Start()
 
 int RemotePrinter::End()
 {
-    if (device_no <= 0)
+    if (temp_fd <= 0)
         return 1;
 
     switch (model)
@@ -245,8 +258,8 @@ int RemotePrinter::End()
         break;
     }
 
-    close(device_no);
-    device_no = 0;
+    close(temp_fd);
+    temp_fd = 0;
 
     WInt8(PRINTER_FILE);
     WStr(filename.Value());
@@ -288,14 +301,14 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
         switch (code)
         {
         case SERVER_ERROR:
-            snprintf(str, sizeof(str), "PrinterError: %s", p->RStr());
+            snprintf(str, sizeof(str), "PrinterError: %s", p->RStr(nullptr));
             ReportError(str);
             break;
         case SERVER_PRINTER_DONE:
-            DeleteFile(p->RStr());
+            DeleteFile(p->RStr(nullptr));
             break;
         case SERVER_BADFILE:
-            p->RStr();
+            p->RStr(nullptr);
             break;
         }
     }
@@ -306,13 +319,13 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
 Printer *NewRemotePrinter(const char* host, int port, int model, int no)
 {
     RemotePrinter *p = new RemotePrinter(host, port, model, no);
-    if (p == NULL)
-        return NULL;
+    if (p == nullptr)
+        return nullptr;
 
     if (p->socket_no <= 0)
     {
         delete p;
-        return NULL;
+        return nullptr;
     }
 
     p->input_id = AddInputFn((InputFn) PrinterCB, p->socket_no, p);

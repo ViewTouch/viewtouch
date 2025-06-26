@@ -64,7 +64,7 @@ const genericChar* FullZoneTypeName[] = {
     "Expense", "Status", "CDU Messages",
     "Customer Information", "Check Edit",
     "Credit Card List", "Credit Card Messages",
-    "Expire Messages", NULL
+    "Expire Messages", nullptr
 };
 
 int FullZoneTypeValue[] = {
@@ -102,13 +102,13 @@ int FullZoneTypeValue[] = {
 };
 
 const genericChar* ZoneTypeName[] = {
-    "Standard", "Menu", "Qualifier", "Table", NULL};
+    "Standard", "Menu", "Qualifier", "Table", nullptr};
 int ZoneTypeValue[] = {
     ZONE_SIMPLE, ZONE_ITEM, ZONE_QUALIFIER, ZONE_TABLE, -1};
 
 const genericChar* ZoneBehaveName[] = {
     "No Response", "Blink", "Toggle", "Turn On", "Double Touch",
-    "Touches Pass Through", NULL};
+    "Touches Pass Through", nullptr};
 int ZoneBehaveValue[] = {
     BEHAVE_NONE, BEHAVE_BLINK, BEHAVE_TOGGLE,
     BEHAVE_SELECT, BEHAVE_DOUBLE, BEHAVE_MISS, -1};
@@ -118,7 +118,7 @@ const genericChar* ZoneFrameName[] = {
     "Raised Edge", "Inset Edge", "Double Raised Edge",
     "Raised Border", "Clear Border", "Sand Border",
 	"Lit Sand Border", "Inset Border", "Parchment Border",
-    "Double Border", "Lit Double Border", NULL};
+    "Double Border", "Lit Double Border", nullptr};
 int ZoneFrameValue[] = {
     ZF_DEFAULT, ZF_HIDDEN, ZF_NONE,
     ZF_RAISED, ZF_INSET, ZF_DOUBLE,
@@ -150,7 +150,7 @@ const genericChar* TextureName[] = {
         "Black",
         "Gray Sand",
         "White Mesh",
-	NULL
+	nullptr
 };
 
 int TextureValue[] = {
@@ -188,7 +188,7 @@ const genericChar* PageTypeName[] = {
 	"System Page", "Guest Check Page",
     "Kitchen 1 Page", "Kitchen 2 Page",
     "Bar 1 Page", "Bar 2 Page",
-    NULL};
+    nullptr};
 
 int PageTypeValue[] = {
     PAGE_TABLE, PAGE_TABLE2,
@@ -204,7 +204,7 @@ const genericChar* PageType2Name[] = {
     "Table Page", "Table Page Showing Guest Check",
     "Index Page", "Menu Item Page",
     "Modifier Page", "Modifier Page without Continue",
-	"Modifier Page without Continue or Complete", "Menu Board Page", NULL};
+	"Modifier Page without Continue or Complete", "Menu Board Page", nullptr};
 
 int PageType2Value[] = {
     PAGE_TABLE, PAGE_TABLE2,
@@ -214,7 +214,7 @@ int PageType2Value[] = {
 
 const genericChar* JumpTypeName[] = {
     "* No Jump *", "Jump", "Move",
-    "Return From A Jump", "Follow A Script", "Return to Index", NULL};
+    "Return From A Jump", "Follow A Script", "Return to Index", nullptr};
 int JumpTypeValue[] = {
     JUMP_NONE, JUMP_NORMAL, JUMP_STEALTH, JUMP_RETURN,
     JUMP_SCRIPT, JUMP_INDEX, -1};
@@ -223,24 +223,24 @@ const genericChar* FullJumpTypeName[] = {
     "Remain On This Page", "Jump To A Modifier Page", "Move To A Menu Item Page",
     "Return From A Jump", "Follow The Script",
     "Return to Index", "Return To The Starting Page",
-    "Query Password Then Jump", NULL};
+    "Query Password Then Jump", nullptr};
 int FullJumpTypeValue[] = {
     JUMP_NONE, JUMP_NORMAL, JUMP_STEALTH, JUMP_RETURN, JUMP_SCRIPT,
     JUMP_INDEX, JUMP_HOME, JUMP_PASSWORD, -1};
 
 const genericChar* ShadowName[] = {
-    "Default", "No Shadow", "Minimal", "Normal", "Maximum", NULL};
+    "Default", "No Shadow", "Minimal", "Normal", "Maximum", nullptr};
 int ShadowValue[] = {
     256, 0, 4, 6, 9, -1};
 
 const genericChar* PageShadowName[] = {
-    "No Shadow", "Minimal", "Normal", "Maximum", NULL};
+    "No Shadow", "Minimal", "Normal", "Maximum", nullptr};
 int PageShadowValue[] = {
     0, 4, 6, 9, -1};
 
 const genericChar* PageSizeName[] = {
   "640x480", "768x1024", "800x480", "800x600", "1024x600", "1024x768", "1280x800", "1280x1024", "1366x768", "1440x900", "1600x900", "1600x1200", "1680x1050",
-  "1920x1080", "1920x1200", "2560x1440", "2560x1600", NULL};
+  "1920x1080", "1920x1200", "2560x1440", "2560x1600", nullptr};
 int PageSizeValue[] = {
   SIZE_640x480, SIZE_768x1024, SIZE_800x480, SIZE_800x600, SIZE_1024x600, SIZE_1024x768, SIZE_1280x800, SIZE_1280x1024, SIZE_1366x768,
   SIZE_1440x900, SIZE_1600x900, SIZE_1600x1200, SIZE_1680x1050, SIZE_1920x1080, SIZE_1920x1200, SIZE_2560x1440, SIZE_2560x1600, -1};
@@ -250,7 +250,7 @@ const genericChar* ColorName[] = {
     "Brown", "Orange", "Purple", "Teal", "Gray", "Magenta", "Red-Orange",
     "Sea Green", "Light Blue", "Dark Red", "Dark Green",
     "Dark Blue", "Dark Teal", "Dark Magenta", "Dark Sea Green",
-    "Transparent", NULL};
+    "Transparent", nullptr};
 int ColorValue[] = {
     COLOR_PAGE_DEFAULT, COLOR_BLACK, COLOR_WHITE, COLOR_RED, COLOR_GREEN,
     COLOR_BLUE, COLOR_YELLOW, COLOR_BROWN, COLOR_ORANGE, COLOR_PURPLE,
@@ -265,7 +265,7 @@ const genericChar* FontName[] = {
     "Default", "Times 14", "Times 14 Bold", "Times 18", "Times 18 Bold",
     "Times 20", "Times 20 Bold", "Times 24", "Times 24 Bold",
     "Times 34", "Times 34 Bold", "Courier 18", "Courier 18 Bold",
-    "Courier 20", "Courier 20 Bold", NULL};
+    "Courier 20", "Courier 20 Bold", nullptr};
 int FontValue[] = {
     FONT_DEFAULT, FONT_TIMES_14, FONT_TIMES_14B, FONT_TIMES_18, FONT_TIMES_18B,
     FONT_TIMES_20, FONT_TIMES_20B, FONT_TIMES_24, FONT_TIMES_24B,
@@ -276,7 +276,7 @@ const genericChar* IndexName[] = {
     "General", "Breakfast", "Brunch", "Lunch",
     "Early Dinner", "Dinner", "Late Night",
     "Bar", "Wine", "Cafe",
-    "Room", "Retail", NULL };
+    "Room", "Retail", nullptr };
 
 int IndexValue[] = {
     INDEX_GENERAL, INDEX_BREAKFAST, INDEX_BRUNCH, INDEX_LUNCH,
@@ -285,13 +285,13 @@ int IndexValue[] = {
     INDEX_ROOM, INDEX_RETAIL, -1 };
 
 const genericChar* ShapeName[] = {
-    "Rectangle", "Diamond", "Circle", NULL };
+    "Rectangle", "Diamond", "Circle", nullptr };
 
 int ShapeValue[] = {
     SHAPE_RECTANGLE, SHAPE_DIAMOND, SHAPE_CIRCLE, -1 };
 
 const genericChar* ItemTypeName[] = {
-    "Menu Item", "Modifier", "Non-Tracking Modifier", "Menu Item + Substitute", "Priced By Weight", "Event Admission", NULL };
+    "Menu Item", "Modifier", "Non-Tracking Modifier", "Menu Item + Substitute", "Priced By Weight", "Event Admission", nullptr };
 
 int ItemTypeValue[] = {
     ITEM_NORMAL, ITEM_MODIFIER, ITEM_METHOD, ITEM_SUBSTITUTE, ITEM_POUND, ITEM_ADMISSION, -1};
@@ -306,7 +306,7 @@ const genericChar* FamilyName[] = {
     "Beverage", "Beer", "Bottled Beer",
     "Wine", "Bottled Wine", "Alcohol", "Cocktail",
     "Malt Beverage", "Modifier", "Reorder",
-    "Merchandise", "Room", NULL};
+    "Merchandise", "Room", nullptr};
 
 int FamilyValue[] = {
     FAMILY_ALACARTE, FAMILY_APPETIZERS, FAMILY_BREAKFAST_ENTREES,
@@ -335,7 +335,7 @@ const genericChar* SalesTypeName[] = {
     "Merchandise",
     "Merchandise (No Comp or Discount)",
     "Not Taxed (No Comp or Discount)",
-    NULL};
+    nullptr};
 
 int SalesTypeValue[] = {
     SALES_FOOD,
@@ -354,18 +354,18 @@ int SalesTypeValue[] = {
     -1};
 
 const genericChar* CallOrderName[] = {
-    "1st (top)", "2nd", "3rd (middle)", "4th", "5th (bottom)", NULL};
+    "1st (top)", "2nd", "3rd (middle)", "4th", "5th (bottom)", nullptr};
 int CallOrderValue[] = {
     0, 1, 2, 3, 4, -1};
 
 const genericChar* QualifierName[] = {
     "No", "Sub", "On Side", "Lite", "Only", "Extra", "Double", "Dry",
     "Plain", "Toast", "UnToast", "Crisp", "Soft", "Hard", "Grill",
-    "< Left", "Right >", "Whole", "Cut/2", "Cut/3", "Cut/4", NULL};
+    "< Left", "Right >", "Whole", "Cut/2", "Cut/3", "Cut/4", nullptr};
 const genericChar* QualifierShortName[] = {
     "no", "sub", "side", "lite", "only", "extra", "double", "dry",
     "plain", "toast", "untoast", "crisp", "soft", "hard", "grill",
-    "< left", "right >", "whole", "cut/2", "cut/3", "cut/4", NULL};
+    "< left", "right >", "whole", "cut/2", "cut/3", "cut/4", nullptr};
 int QualifierValue[] = {
     QUALIFIER_NO, QUALIFIER_SUB, QUALIFIER_SIDE, QUALIFIER_LITE, QUALIFIER_ONLY, QUALIFIER_EXTRA, QUALIFIER_DOUBLE, QUALIFIER_DRY,
     QUALIFIER_PLAIN, QUALIFIER_TOASTED, QUALIFIER_UNTOASTED, QUALIFIER_CRISPY, QUALIFIER_SOFT, QUALIFIER_HARD, QUALIFIER_GRILLED,
@@ -384,7 +384,7 @@ const genericChar* SwitchName[] = {
     "Expand Goodwill Adjustments", "Monetary Symbol",
     "Show Modifiers", "Allow Multiple Coupons",
     "Print All Modifiers on Receipt", "Auto Print Drawer Report",
-    "Balance Automatic Coupons", NULL};
+    "Balance Automatic Coupons", nullptr};
 int SwitchValue[] = {
     SWITCH_SEATS, SWITCH_DRAWER_MODE, SWITCH_PASSWORDS, SWITCH_SALE_CREDIT,
     SWITCH_DISCOUNT_ALCOHOL, SWITCH_CHANGE_FOR_CHECKS,
@@ -405,7 +405,7 @@ const genericChar* ReportTypeName[] = {
     "Server Labor", "Item Comp Exception", "Item Void Exception",
     "Table Exception", "Check Rebuild Exception",
     "Customer Detail", "Expenses", "Royalty",
-    "Auditing", "CreditCard", NULL};
+    "Auditing", "CreditCard", nullptr};
 int ReportTypeValue[] = {
     REPORT_SERVER, REPORT_CLOSEDCHECK, REPORT_DRAWER,
     REPORT_CHECK, REPORT_SALES, REPORT_BALANCE, REPORT_DEPOSIT,
@@ -415,20 +415,20 @@ int ReportTypeValue[] = {
     REPORT_AUDITING, REPORT_CREDITCARD, -1};
 
 const genericChar* CheckDisplayOrderName[] = {
-    "Oldest to Newest", "Newest to Oldest", NULL };
+    "Oldest to Newest", "Newest to Oldest", nullptr };
 int CheckDisplayOrderValue[] = {
     CHECK_ORDER_OLDNEW, CHECK_ORDER_NEWOLD, -1 };
 
 const genericChar* ReportPrintName[] = {
     "Don't Print On Touch", "Print On Local Printer", "Print On Report Printer",
-    "Ask User", NULL};
+    "Ask User", nullptr};
 int ReportPrintValue[] = {
     RP_NO_PRINT, RP_PRINT_LOCAL, RP_PRINT_REPORT, RP_ASK, -1};
 
 const genericChar* TenderName[] = {
     "Cash", "Check", "Gift Certificate", "House Account",
     "Charge Room", "Gratuity", "Credit Card", "Discount",
-    "Coupon", "Comp", "Employee Meal", "Tip", NULL};
+    "Coupon", "Comp", "Employee Meal", "Tip", nullptr};
 int TenderValue[] = {
     TENDER_CASH, TENDER_CHECK, TENDER_GIFT, TENDER_ACCOUNT,
     TENDER_CHARGE_ROOM, TENDER_GRATUITY, TENDER_CHARGE_CARD, TENDER_DISCOUNT,
@@ -437,7 +437,7 @@ int TenderValue[] = {
 const genericChar* PrinterIDName[] = {
     "Default", "Kitchen1", "Kitchen2", "Bar1", "Bar2", "Expediter",
     "Kitchen1 notify2", "Kitchen2 notify1",
-    "Remote Order", "None", NULL};
+    "Remote Order", "None", nullptr};
 int PrinterIDValue[] = {
     PRINTER_DEFAULT, PRINTER_KITCHEN1, PRINTER_KITCHEN2, PRINTER_BAR1,
     PRINTER_BAR2, PRINTER_EXPEDITER,
@@ -445,68 +445,68 @@ int PrinterIDValue[] = {
     PRINTER_REMOTEORDER, PRINTER_NONE, -1};
 
 const genericChar* CustomerTypeName[] = {
-    "Restaurant", "Take Out", "Delivery", "Hotel", "Retail", "Fast Food", "For Here", "To Go", "Call In", NULL};
+    "Restaurant", "Take Out", "Delivery", "Hotel", "Retail", "Fast Food", "For Here", "To Go", "Call In", nullptr};
 int CustomerTypeValue[] = {
     CHECK_RESTAURANT, CHECK_TAKEOUT, CHECK_DELIVERY, CHECK_HOTEL, CHECK_RETAIL, CHECK_FASTFOOD, CHECK_DINEIN, CHECK_TOGO, CHECK_CALLIN, -1};
 
 const genericChar* PriceTypeName[] = {
-    "Price/Item", "Price/Hour", "Price/Day", NULL };
+    "Price/Item", "Price/Hour", "Price/Day", nullptr };
 int PriceTypeValue[] = {
     PRICE_PERITEM, PRICE_PERHOUR, PRICE_PERDAY, -1};
 
 const genericChar* DrawerZoneTypeName[] = {
-    "Pull/Balance", "Drawer Selecter", NULL };
+    "Pull/Balance", "Drawer Selecter", nullptr };
 int   DrawerZoneTypeValue[] = {
     DRAWER_ZONE_BALANCE, DRAWER_ZONE_SELECT, -1 };
 
 const genericChar* CustDispUnitName[] = {
-    "None", "Epson", "Ba63", NULL };
+    "None", "Epson", "Ba63", nullptr };
 int          CustDispUnitValue[] = {
     CDU_TYPE_NONE, CDU_TYPE_EPSON, CDU_TYPE_BA63, -1 };
 
 const genericChar* CCTypeName[] = {
     "VISA", "MasterCard", "American Express",
-    "Discover", "Diner's Club", "Debit", NULL };
+    "Discover", "Diner's Club", "Debit", nullptr };
 int          CCTypeValue[] = {
     CREDIT_TYPE_VISA, CREDIT_TYPE_MASTERCARD, CREDIT_TYPE_AMEX,
     CREDIT_TYPE_DISCOVER, CREDIT_TYPE_DINERSCLUB, CREDIT_TYPE_DEBIT, -1 };
 
 const genericChar* ReportPeriodName[] = {
-    "Archive", "Day", "Week", "2 Weeks", "Month", "Quarter", "Year to Date", NULL };
+    "Archive", "Day", "Week", "2 Weeks", "Month", "Quarter", "Year to Date", nullptr };
 int ReportPeriodValue[] = {
     SP_NONE, SP_DAY, SP_WEEK, SP_2WEEKS, SP_MONTH, SP_QUARTER, SP_YTD, -1 };
 
-const char* YesNoName[] = {"Yes", "No", NULL};
+const char* YesNoName[] = {"Yes", "No", nullptr};
 int   YesNoValue[] = {1, 0, -1};
 
-const char* NoYesName[] = {"No", "Yes", NULL};
+const char* NoYesName[] = {"No", "Yes", nullptr};
 int   NoYesValue[] = {0, 1, -1};
 
-const char* NoYesGlobalName[] = {"No", "Yes", "Global", NULL};
+const char* NoYesGlobalName[] = {"No", "Yes", "Global", nullptr};
 int   NoYesGlobalValue[] = {0, 1, -1, -1};
 
-const char* SplitCheckName[]  = {"Item", "Seat", NULL};
+const char* SplitCheckName[]  = {"Item", "Seat", nullptr};
 int   SplitCheckValue[] = {SPLIT_CHECK_ITEM, SPLIT_CHECK_SEAT, -1};
 
-const char* ModSeparatorName[] = {"New Line", "Comma", NULL};
+const char* ModSeparatorName[] = {"New Line", "Comma", nullptr};
 int   ModSeparatorValue[] = {MOD_SEPARATE_NL, MOD_SEPARATE_CM, -1};
 
-const char* CouponApplyName[] = {"Once", "Each", NULL};
+const char* CouponApplyName[] = {"Once", "Each", nullptr};
 int   CouponApplyValue[] = {COUPON_APPLY_ONCE, COUPON_APPLY_EACH, -1};
 
-const char* DateTimeName[] = {"Always Available", "Once", "Daily", "Monthly", NULL};
+const char* DateTimeName[] = {"Always Available", "Once", "Daily", "Monthly", nullptr};
 int   DateTimeValue[] = {DATETIME_NONE, DATETIME_ONCE, DATETIME_DAILY,
                          DATETIME_MONTHLY, -1};
 
 const char* PrintModeName[] = {
-    "Normal", "Tall", "Wide", "Wide & Tall", NULL};
+    "Normal", "Tall", "Wide", "Wide & Tall", nullptr};
 int PrintModeValue[] = {
     0, PRINT_TALL, PRINT_WIDE, PRINT_TALL | PRINT_WIDE, -1};
 
 const char* KVPrintMethodName[] = {
-    "Unmatched", "Matched", NULL};
+    "Unmatched", "Matched", nullptr};
 int KVPrintMethodValue[] = {
     KV_PRINT_UNMATCHED, KV_PRINT_MATCHED, -1};
 
-const char* WOHeadingName[] = {"Standard", "Simple", NULL};
+const char* WOHeadingName[] = {"Standard", "Simple", nullptr};
 int WOHeadingValue[] = {0, 1, -1};

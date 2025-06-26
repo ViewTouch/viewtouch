@@ -18,8 +18,7 @@
  * Account handling class objects
  */
 
-#ifndef _ACCOUNT_HH
-#define _ACCOUNT_HH
+#pragma once  // REFACTOR: Replaced #ifndef _ACCOUNT_HH guard with modern pragma once
 
 #include "terminal.hh"
 #include "utility.hh"
@@ -139,6 +138,3 @@ public:
 // GENERAL FUNCTIONS
 
 int IsValidAccountNumber(Terminal *term, int number);
-
-
-#endif

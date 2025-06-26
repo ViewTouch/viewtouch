@@ -37,6 +37,7 @@
 #include <sys/un.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <syslog.h>         // REFACTOR: Added syslog.h include for syslog constants
 // standard libraries
 #include <csignal>
 #include <iostream>
@@ -101,7 +102,7 @@ void ExitLoader()
     exit(0);
 }
 
-int UpdateWindow(const char* str = NULL)
+int UpdateWindow(const char* str = nullptr)
 {
     if (str)
         strcpy(Message, str);
@@ -207,7 +208,7 @@ void KeyPressCB(Widget widget, XtPointer client_data, XEvent *event, Boolean *ok
         KeySym key = 0;
         int bufflen = strlen(buffer);
 
-        int len = XLookupString(e, keybuff, 31, &key, NULL);
+        int len = XLookupString(e, keybuff, 31, &key, nullptr);
         if (len < 0)
             len = 0;
         keybuff[len] = '\0';
@@ -319,8 +320,8 @@ XtAppContext InitializeDisplay(int argc, char **argv)
     XtToolkitInitialize();
     XtAppContext app = XtCreateApplicationContext();
 
-    Dis = XtOpenDisplay(app, NULL, NULL, NULL, NULL, 0, &argc, argv);
-    if (Dis == NULL)
+    Dis = XtOpenDisplay(app, nullptr, nullptr, nullptr, nullptr, 0, &argc, argv);
+    if (Dis == nullptr)
     {
         logmsg(LOG_ERR, "Unable to open display\n");
         ExitLoader();
@@ -331,7 +332,7 @@ XtAppContext InitializeDisplay(int argc, char **argv)
     ColorWhite = WhitePixel(Dis, screen_no);
 
     loaderFont = XftFontOpenName(Dis, screen_no, FONT_NAME);
-    if (loaderFont == NULL)
+    if (loaderFont == nullptr)
     {
         logmsg(LOG_ERR, "Unable to load font\n");
         ExitLoader();
@@ -361,7 +362,7 @@ Widget OpenStatusBox(XtAppContext app)
         { const_cast<char*>("mappedWhenManaged"), False                         },
     };
 
-    Widget shell = XtAppCreateShell("Welcome to POS", NULL,
+    Widget shell = XtAppCreateShell("Welcome to POS", nullptr,
         applicationShellWidgetClass, Dis, args, XtNumber(args));
     XtRealizeWidget(shell);
 
@@ -372,8 +373,8 @@ Widget OpenStatusBox(XtAppContext app)
     XftColorAllocName(Dis, DefaultVisual(Dis, screen_no),
         DefaultColormap(Dis, screen_no), "white", &xftWhite);
 
-    XtAddEventHandler(shell, ExposureMask, FALSE, ExposeCB, NULL);
-    XtAddEventHandler(shell, KeyPressMask, FALSE, KeyPressCB, NULL);
+    XtAddEventHandler(shell, ExposureMask, FALSE, ExposeCB, nullptr);
+    XtAddEventHandler(shell, KeyPressMask, FALSE, KeyPressCB, nullptr);
     return shell;
 }
 
@@ -530,7 +531,7 @@ int main(int argc, genericChar* argv[])
 
     // Read Status Messages
     XtAppAddInput(app, SocketNo, (XtPointer) XtInputReadMask,
-                  (XtInputCallbackProc) SocketInputCB, NULL);
+                  (XtInputCallbackProc) SocketInputCB, nullptr);
 
     XEvent event;
     for (;;)

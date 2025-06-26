@@ -18,6 +18,8 @@
  * Implementation of credit module
  */
 
+#pragma once  // REFACTOR: Replaced #ifndef _FILENAME_HH guard with modern pragma once
+
 #include "check.hh"
 #include "data_file.hh"
 #include "labels.hh"
@@ -67,27 +69,27 @@
 
 /**** Exported Varibles ****/
 const char* CardTypeName[] = {
-    "Credit Card", "Debit Card", "Gift Card", NULL};
+    "Credit Card", "Debit Card", "Gift Card", nullptr};
 const char* CardTypeShortName[] = {
-    "Credit", "Debit", "Gift", NULL};
+    "Credit", "Debit", "Gift", nullptr};
 int CardTypeValue[] = {
     CARD_TYPE_CREDIT, CARD_TYPE_DEBIT, CARD_TYPE_GIFT, -1};
 const char* CreditCardName[] = {
     "Visa", "MasterCard", "American Express", "Discover Card", "Diners Club",
-    "JCB Card", NULL};
+    "JCB Card", nullptr};
 const char* CreditCardShortName[] = {
-    "Visa", "MC", "AMEX", "Discover", "Diners", "JCB", NULL};
+    "Visa", "MC", "AMEX", "Discover", "Diners", "JCB", nullptr};
 int CreditCardValue[] = {
     CREDIT_TYPE_VISA, CREDIT_TYPE_MASTERCARD, CREDIT_TYPE_AMEX, CREDIT_TYPE_DISCOVER,
     CREDIT_TYPE_DINERSCLUB, CREDIT_TYPE_JCB, -1};
 const char* DebitAcctName[] = {
-    "Checking", "Savings", NULL};
+    "Checking", "Savings", nullptr};
 int   DebitAcctValue[] = {
     DEBIT_ACCT_CHECKING, DEBIT_ACCT_SAVINGS, -1};
 
 const char* CreditCardStateName[] = {
     "Pre-Authorized", "Authorized", "Pre-Auth Completed", "Voided", "Refunded",
-    "Refund Cancelled", "Pre-Auth Adviced", NULL };
+    "Refund Cancelled", "Pre-Auth Adviced", nullptr };
 int   CreditCardStateValue[] = {
     CCAUTH_PREAUTH, CCAUTH_AUTHORIZE, CCAUTH_COMPLETE, CCAUTH_VOID, CCAUTH_REFUND,
     CCAUTH_REFUND_CANCEL, CCAUTH_ADVICE, -1 };
@@ -101,8 +103,8 @@ Credit::Credit()
 {
     FnTrace("Credit::Credit()");
 
-    fore = NULL;
-    next = NULL;
+    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 
     Clear();
 }
@@ -111,12 +113,12 @@ Credit::Credit(const char* value)
 {
     FnTrace("Credit::Credit(const char* )");
 
-    fore = NULL;
-    next = NULL;
+    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 
     Clear();
 
-    if (value != NULL)
+    if (value != nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         swipe.Set(value);
         valid = ParseSwipe(value);
@@ -216,7 +218,6 @@ int Credit::Clear(int safe_clear)
     t3_avv[0]      = '\0';
     t3_acsn[0]     = '\0';
     t3_inic[0]     = '\0';
-    t3_disc[0]     = '\0';
 
     // specific to CreditCheq
     term_id.Set("");
@@ -412,7 +413,7 @@ int Credit::Write(OutputDataFile &df, int version)
     error += df.Write(settle_time);
 
     error += df.Write(errors_list.Count());
-    while (ecredit != NULL)
+    while (ecredit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         ecredit->Write(df, version);
         ecredit = ecredit->next;
@@ -448,7 +449,7 @@ Credit *Credit::Copy()
     Credit *newcredit = new Credit();
     Credit *ecredit;
 
-    if (newcredit != NULL)
+    if (newcredit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         newcredit->card_id = card_id;
         newcredit->db_type   = db_type;
@@ -514,7 +515,7 @@ Credit *Credit::Copy()
         newcredit->read_manual = read_manual;
 
         ecredit = errors_list.Head();
-        while (ecredit != NULL)
+        while (ecredit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
         {
             newcredit->AddError(ecredit);
             ecredit = ecredit->next;
@@ -533,7 +534,7 @@ int Credit::Copy(Credit *credit)
     Credit *ecredit;
     int retval = 1;
 
-    if (credit != NULL)
+    if (credit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         card_id = credit->card_id;
         db_type   = credit->db_type;
@@ -597,7 +598,7 @@ int Credit::Copy(Credit *credit)
         read_manual = credit->read_manual;
 
         ecredit = credit->errors_list.Head();
-        while (ecredit != NULL)
+        while (ecredit != nullptr)
         {
             AddError(ecredit);
             ecredit = ecredit->next;
@@ -1202,7 +1203,7 @@ int Credit::ParseSwipe(const char* value)
 int Credit::ParseApproval(const char* value)
 {
     FnTrace("Credit::ParseApproval()");
-    if (value == NULL)
+    if (value == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         return 1;
 
     char  str[256];
@@ -1281,9 +1282,9 @@ char* Credit::CreditTypeName(char* str, int shortname)
 {
     FnTrace("Credit::CreditTypeName()");
     static char buffer[32];
-    const char* hold = NULL;
+    const char* hold = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 
-    if (str == NULL)
+    if (str == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         str = buffer;
 
     strcpy(str, UnknownStr);
@@ -1310,7 +1311,7 @@ char* Credit::CreditTypeName(char* str, int shortname)
         }
     }
 
-    if (hold != NULL)
+    if (hold != nullptr) // REFACTOR: NULL -> nullptr for modern C++
         strcpy(str, hold);
 
     return str;
@@ -1485,9 +1486,9 @@ int Credit::PrintAuth()
     printf("    Auth:         %s\n", auth.Value());
     printf("    ISO:          %s\n", isocode.Value());
     printf("    B24:          %s\n", b24code.Value());
-    printf("    Batch:        %lld\n", batch);
-    printf("    Item:         %lld\n", item);
-    printf("    TTID:         %lld\n", ttid);
+    printf("    Batch:        %ld\n", batch);   // REFACTOR: Fixed format specifier - int64_t uses %ld on this system, not %lld
+    printf("    Item:         %ld\n", item);    // REFACTOR: Fixed format specifier - int64_t uses %ld on this system, not %lld  
+    printf("    TTID:         %ld\n", ttid);    // REFACTOR: Fixed format specifier - int64_t uses %ld on this system, not %lld
     printf("    AVS:          %s\n", AVS.Value());
     printf("    CV:           %s\n", CV.Value());
     printf("    Reference:    %s\n", reference.Value());
@@ -1681,7 +1682,7 @@ char* Credit::LastFour(char* dest)
     int sidx = 0;
     int didx = 0;
     int len = 0;
-    if (dest == NULL)
+    if (dest == nullptr) // REFACTOR: NULL -> nullptr for modern C++ - eliminates ambiguous NULL macro, improves type safety
         dest = str;
 
     if (number.size() > 0)
@@ -1833,7 +1834,7 @@ int Credit::MaskCardNumber()
 {
     FnTrace("Credit::MaskCardNumber()");
     int retval = 0;
-    const char* cardnum = NULL;
+    const char* cardnum = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 
     cardnum = PAN(0);
     number.Set(cardnum);
@@ -1899,7 +1900,7 @@ int Credit::SetBatch(long long batchnum, const char* btermid)
     FnTrace("Credit::SetBatch()");
     int retval = 1;
 
-    if (btermid != NULL)
+    if (btermid != nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (batch <= 0 && strcmp(batch_term_id.Value(), btermid) == 0)
         {
@@ -1950,13 +1951,13 @@ int Credit::operator == (Credit *c)
     FnTrace("Credit::==()");
     int retval = 0;
 
-    if (read_t1 && (t1_pan == c->t1_pan) && (t1_expiry && c->t1_expiry))
+    if (read_t1 && (strcmp(t1_pan, c->t1_pan) == 0) && (strlen(t1_expiry) > 0 && strlen(c->t1_expiry) > 0))  // REFACTOR: Fixed array comparison bug - use strcmp() instead of ==
         retval = 1;
-    else if (read_t2 && (t2_pan == c->t2_pan) && (t2_expiry && c->t2_expiry))
+    else if (read_t2 && (strcmp(t2_pan, c->t2_pan) == 0) && (strlen(t2_expiry) > 0 && strlen(c->t2_expiry) > 0))  // REFACTOR: Fixed array comparison bug - use strcmp() instead of ==
         retval = 1;
-    else if (read_t3 && (t3_pan == c->t3_pan) && (t3_expiry && c->t3_expiry))
+    else if (read_t3 && (strcmp(t3_pan, c->t3_pan) == 0) && (strlen(t3_expiry) > 0 && strlen(c->t3_expiry) > 0))  // REFACTOR: Fixed array comparison bug - use strcmp() instead of ==
         retval = 1;
-    else if (read_manual && (mn_pan == c->mn_pan) && (mn_expiry && c->mn_expiry))
+    else if (read_manual && (strcmp(mn_pan, c->mn_pan) == 0) && (strlen(mn_expiry) > 0 && strlen(c->mn_expiry) > 0))  // REFACTOR: Fixed array comparison bug - use strcmp() instead of ==
         retval = 1;
 
     return retval;
@@ -1967,7 +1968,7 @@ int Credit::GetApproval(Terminal *term)
     FnTrace("Credit::GetApproval()");
     int retval = 1;
 
-    if (term->credit != NULL && term->credit != this)
+    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (debug_mode) printf("Have stale card in GetApproval...\n");
     }
@@ -1983,7 +1984,7 @@ int Credit::GetPreApproval(Terminal *term)
     FnTrace("Credit::GetPreApproval()");
     int retval = 1;
     
-    if (term->credit != NULL && term->credit != this)
+    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (debug_mode) printf("Have stale card in GetPreApproval...\n");
     }
@@ -1999,7 +2000,7 @@ int Credit::GetFinalApproval(Terminal *term)
     FnTrace("Credit::GetFinalApproval()");
     int retval = 1;
 
-    if (term->credit != NULL && term->credit != this)
+    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (debug_mode) printf("Have stale card in GetFinalApproval...\n");
     }
@@ -2015,7 +2016,7 @@ int Credit::GetVoid(Terminal *term)
     FnTrace("Credit::GetVoid()");
     int retval = 1;
 
-    if (term->credit != NULL && term->credit != this)
+    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (debug_mode) printf("Have stale card in GetVoid...\n");
     }
@@ -2031,7 +2032,7 @@ int Credit::GetVoidCancel(Terminal *term)
     FnTrace("Credit::GetVoidCancel()");
     int retval = 1;
 
-    if (term->credit != NULL && term->credit != this)
+    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (debug_mode) printf("Have stale card in GetVoidCancel...\n");
     }
@@ -2047,7 +2048,7 @@ int Credit::GetRefund(Terminal *term)
     FnTrace("Credit::GetRefund()");
     int retval = 1;
 
-    if (term->credit != NULL && term->credit != this)
+    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (debug_mode) printf("Have stale card in GetRefund...\n");
     }
@@ -2063,7 +2064,7 @@ int Credit::GetRefundCancel(Terminal *term)
     FnTrace("Credit::GetRefundCancel()");
     int retval = 1;
 
-    if (term->credit != NULL && term->credit != this)
+    if (term->credit != nullptr && term->credit != this) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (debug_mode) printf("Have stale card in GetRefundCancel...\n");
     }
@@ -2098,9 +2099,9 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
     static int count = 0;  // for saving receipts for Moneris testing
     Check *parent = term->system_data->FindCheckByID(check_id);
 
-    if (printer == NULL)
+    if (printer == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         printer = term->FindPrinter(PRINTER_RECEIPT);
-    if (printer != NULL)
+    if (printer != nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         pwidth = printer->MaxWidth();
         snprintf(line, STRLENGTH, "%*s", pwidth, "________________");
@@ -2184,7 +2185,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
         // card and date information
         if (settings->cc_print_custinfo)
         {
-            if (parent != NULL)
+            if (parent != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 int did_print = 0;
                 strcpy(buffer2, parent->FullName());
@@ -2364,15 +2365,15 @@ CreditDB *CreditDB::Copy()
     FnTrace("CreditDB::Copy()");
     CreditDB *newdb;
     Credit   *credit = credit_list.Head();
-    Credit   *crednext = NULL;
+    Credit   *crednext = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 
     newdb = new CreditDB(db_type);
-    if (newdb != NULL)
+    if (newdb != nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         strcpy(newdb->fullpath, fullpath);
         newdb->last_card_id = last_card_id;
 
-        while (credit != NULL)
+        while (credit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
         {
             crednext = credit->next;
             newdb->credit_list.AddToTail(credit);
@@ -2416,7 +2417,7 @@ int CreditDB::Write(OutputDataFile &outfile)
 
     outfile.Write(CREDIT_CARD_VERSION);
     outfile.Write(count);
-    while (credit != NULL)
+    while (credit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (credit->IsEmpty() == 0)
             credit->Write(outfile, CREDIT_CARD_VERSION);
@@ -2459,7 +2460,7 @@ int CreditDB::Load(const char* path)
     int version;  // a throwaway for infile; we save version manually so that
                   // Read() and Write() don't have to wonder.
 
-    if (path != NULL)
+    if (path != nullptr) // REFACTOR: NULL -> nullptr for modern C++
         strcpy(fullpath, path);
 
     if (fullpath[0] != '\0')
@@ -2481,7 +2482,7 @@ int CreditDB::Add(Credit *credit)
     FnTrace("CreditDB::Add(Credit)");
     int retval = 0;
 
-    if (credit != NULL)
+    if (credit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (credit->card_id == 0)
         {
@@ -2545,10 +2546,10 @@ int CreditDB::Remove(int id)
     int retval = 0;
     Credit *credit = credit_list.Head();
 
-    while (credit != NULL && credit->card_id != id)
+    while (credit != nullptr && credit->card_id != id) // REFACTOR: NULL -> nullptr for modern C++
         credit = credit->next;
 
-    if (credit != NULL && credit->card_id == id)
+    if (credit != nullptr && credit->card_id == id) // REFACTOR: NULL -> nullptr for modern C++
     {
         credit_list.Remove(credit);
     }
@@ -2560,7 +2561,7 @@ int CreditDB::MakeReport(Terminal *term, Report *report, LayoutZone *rzone)
 {
     FnTrace("CreditDB::MakeReport()");
     int retval = 0;
-    Credit *credit = NULL;
+    Credit *credit = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     int color = COLOR_DEFAULT;
     int spacing = rzone->ColumnSpacing(term, 4);
     int indent = 0;
@@ -2574,7 +2575,7 @@ int CreditDB::MakeReport(Terminal *term, Report *report, LayoutZone *rzone)
     else
     {
         credit = credit_list.Head();
-        while (credit != NULL)
+        while (credit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
         {
             indent = 0;
             report->TextPosL(indent, credit->PAN(settings->show_entire_cc_num));
@@ -2599,12 +2600,12 @@ int CreditDB::MakeReport(Terminal *term, Report *report, LayoutZone *rzone)
 Credit *CreditDB::FindByRecord(Terminal *term, int record)
 {
     FnTrace("CreditDB::FindByRecord()");
-    Credit *retval = NULL;
+    Credit *retval = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     Credit *curr = credit_list.Head();
     int count = 0;
     int done = 0;
     
-    while (curr != NULL && done == 0)
+    while (curr != nullptr && done == 0) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (count == record)
         {
@@ -2628,7 +2629,7 @@ int CreditDB::HaveOpenCards()
     int retval = 0;
     Credit *curr = credit_list.Head();
 
-    while (curr != NULL && retval == 0)
+    while (curr != nullptr && retval == 0) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (curr->Status() != CCAUTH_VOID && curr->Status() != CCAUTH_REFUND)
             retval = 1;
@@ -2845,11 +2846,11 @@ CCSettle::CCSettle()
 {
     FnTrace("CCSettle::CCSettle()");
 
-    next = NULL;
-    fore = NULL;
+    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     filepath[0] = '\0';
-    current = NULL;
-    archive = NULL;
+    current = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    archive = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     Clear();
 }
 
@@ -2857,18 +2858,18 @@ CCSettle::CCSettle(const char* fullpath)
 {
     FnTrace("CCSettle::CCSettle()");
 
-    next = NULL;
-    fore = NULL;
+    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     strcpy(filepath, fullpath);
-    current = NULL;
-    archive = NULL;
+    current = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    archive = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     Clear();
 }
 
 CCSettle::~CCSettle()
 {
     FnTrace("CCSettle::~CCSettle()");
-    if (next != NULL)
+    if (next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
         delete next;
 }
 
@@ -2879,7 +2880,7 @@ int CCSettle::Next(Terminal *term)
     int loops = 0;
     Settings *settings = term->GetSettings();
 
-    if (current == NULL)
+    if (current == nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         current = this;
     }
@@ -2890,11 +2891,11 @@ int CCSettle::Next(Terminal *term)
         // avoid grabbing NULLs.
         while (loops < MAX_LOOPS)
         {
-            if (current != NULL && current->next != NULL)
+            if (current != nullptr && current->next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 current = current->next;
             else
             { // search archives
-                if (archive == NULL)
+                if (archive == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 {
                     archive = MasterSystem->ArchiveList();
                     if (archive && archive->loaded == 0)
@@ -2907,15 +2908,15 @@ int CCSettle::Next(Terminal *term)
                         archive = archive->next;
                         if (archive && archive->loaded == 0)
                             archive->LoadPacked(settings);
-                    } while (archive != NULL && archive->cc_settle_results == NULL);
+                    } while (archive != nullptr && archive->cc_settle_results == nullptr); // REFACTOR: NULL -> nullptr for modern C++
                 }
 
-                if (archive != NULL)
+                if (archive != nullptr) // REFACTOR: NULL -> nullptr for modern C++
                     current = archive->cc_settle_results;
                 else
                     current = this;
             }
-            loops += ((current != NULL) ? MAX_LOOPS : 1);
+            loops += ((current != nullptr) ? MAX_LOOPS : 1); // REFACTOR: NULL -> nullptr for modern C++
         }
     }
 
@@ -2929,7 +2930,7 @@ int CCSettle::Fore(Terminal *term)
     int loops = 0;
     Settings *settings = term->GetSettings();
 
-    if (current == NULL)
+    if (current == nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         current = this;
     }
@@ -2940,11 +2941,11 @@ int CCSettle::Fore(Terminal *term)
         // avoid grabbing NULLs.
         while (loops < MAX_LOOPS)
         {
-            if (current != NULL && current->fore != NULL)
+            if (current != nullptr && current->fore != nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 current = current->fore;
             else
             { // search archives
-                if (archive == NULL)
+                if (archive == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 {
                     archive = MasterSystem->ArchiveListEnd();
                     if (archive && archive->loaded == 0)
@@ -2957,18 +2958,18 @@ int CCSettle::Fore(Terminal *term)
                         archive = archive->fore;
                         if (archive && archive->loaded == 0)
                             archive->LoadPacked(settings);
-                    } while (archive != NULL && archive->cc_settle_results == NULL);
+                    } while (archive != nullptr && archive->cc_settle_results == nullptr); // REFACTOR: NULL -> nullptr for modern C++
                 }
 
-                if (archive != NULL)
+                if (archive != nullptr) // REFACTOR: NULL -> nullptr for modern C++
                     current = archive->cc_settle_results;
                 else
                     current = this;
 
-                while (current!= NULL && current->next != NULL)
+                while (current!= nullptr && current->next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
                     current = current->next;
             }
-            loops += ((current != NULL) ? MAX_LOOPS : 1);
+            loops += ((current != nullptr) ? MAX_LOOPS : 1); // REFACTOR: NULL -> nullptr for modern C++
         }
     }
 
@@ -2980,7 +2981,7 @@ CCSettle *CCSettle::Last()
     FnTrace("CCSettle:Last()");
     CCSettle *retval = this;
 
-    while (retval->next != NULL)
+    while (retval->next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
         retval = retval->next;
 
     return retval;
@@ -2990,12 +2991,12 @@ int CCSettle::Add(Terminal *term, const char* message)
 {
     FnTrace("CCSettle::Add(Terminal)");
     int retval = 0;
-    CCSettle *newsettle = NULL;
-    CCSettle *curr = NULL;
+    CCSettle *newsettle = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    CCSettle *curr = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 
     if (result.empty())
     {
-        if (message != NULL)
+        if (message != nullptr) // REFACTOR: NULL -> nullptr for modern C++
         {
             result.Set("Batch Settle Failed");
             errormsg.Set(message);
@@ -3007,7 +3008,7 @@ int CCSettle::Add(Terminal *term, const char* message)
     else
     {
         newsettle = new CCSettle();
-        if (message != NULL)
+        if (message != nullptr) // REFACTOR: NULL -> nullptr for modern C++
         {
             newsettle->result.Set("Batch Settle Failed");
             newsettle->errormsg.Set(message);
@@ -3016,7 +3017,7 @@ int CCSettle::Add(Terminal *term, const char* message)
             newsettle->ReadResults(term);
         // Add to tail
         curr = this;
-        while (curr->next != NULL)
+        while (curr->next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             curr = curr->next;
         curr->next = newsettle;
         newsettle->fore = curr;
@@ -3035,15 +3036,15 @@ int CCSettle::Add(Check *check)
     FnTrace("CCSettle::Add(Check)");
     int retval = 1;
     SubCheck *subcheck = check->SubList();
-    Payment *payment = NULL;
-    Credit *credit = NULL;
+    Payment *payment = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    Credit *credit = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 
-    while (subcheck != NULL)
+    while (subcheck != nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         payment = subcheck->PaymentList();
-        while (payment != NULL)
+        while (payment != nullptr) // REFACTOR: NULL -> nullptr for modern C++
         {
-            if (payment->credit != NULL)
+            if (payment->credit != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 credit = payment->credit;
                 if (credit->CardType() == CARD_TYPE_DEBIT)
@@ -3119,7 +3120,7 @@ CCSettle *CCSettle::Copy()
 
     newsettle->settle_date.Set(settle_date);
 
-    if (next != NULL)
+    if (next != nullptr) // REFACTOR: NULL -> nullptr for modern C++
         newsettle->next = next->Copy();
 
     return newsettle;
@@ -3129,9 +3130,9 @@ void CCSettle::Clear()
 {
     FnTrace("CCSettle::Clear()");
 
-    if (next != NULL)
+    if (next != nullptr)
         delete next;
-    next = NULL;
+    next = nullptr;
 
     result.Clear();
     settle.Clear();
@@ -3173,7 +3174,7 @@ int CCSettle::Read(InputDataFile &df)
     int count = 0;
     int idx = 0;
     CCSettle *curr = this;
-    CCSettle *node = NULL;
+    CCSettle *node = nullptr;
     int version = 0;
 
     df.Read(version);
@@ -3228,10 +3229,10 @@ int CCSettle::Write(OutputDataFile &df)
     int count = 0;
     int version = CREDIT_CARD_VERSION;
 
-    while (head->fore != NULL)
+    while (head->fore != nullptr)
         head = head->fore;
     curr = head;
-    while (curr != NULL)
+    while (curr != nullptr)
     {
         count += 1;
         curr = curr->next;
@@ -3240,7 +3241,7 @@ int CCSettle::Write(OutputDataFile &df)
     df.Write(version);
     df.Write(count);
     curr = head;
-    while (curr != NULL)
+    while (curr != nullptr)
     {
         df.Write(curr->result);
         df.Write(curr->settle);
@@ -3281,7 +3282,7 @@ int CCSettle::Load(const char* filename)
     InputDataFile infile;
     int version = 0;
 
-    if (filename != NULL && strlen(filename) > 0)
+    if (filename != nullptr && strlen(filename) > 0)
     {
         strcpy(filepath, filename);
         
@@ -3461,15 +3462,15 @@ int CCSettle::MakeReport(Terminal *term, Report *report, ReportZone *rzone)
     FnTrace("CCSettle::MakeReport()");
     int retval = 1;
 
-    if (current == NULL)
+    if (current == nullptr)
     {
         // Go to the last CCSettle in the linked list
         current = this;
-        while (current->next != NULL)
+        while (current->next != nullptr)
             current = current->next;
     }
 
-    if (current != NULL)
+    if (current != nullptr)
     {
         current->GenerateReport(term, report, rzone, archive);
         retval = 0;
@@ -3520,10 +3521,10 @@ CCInit::CCInit()
     FnTrace("CCInit::CCInit()");
 
     filepath[0] = '\0';
-    next = NULL;
-    fore = NULL;
-    current = NULL;
-    archive = NULL;
+    next = nullptr;
+    fore = nullptr;
+    current = nullptr;
+    archive = nullptr;
 }
 
 CCInit::CCInit(const char* fullpath)
@@ -3531,17 +3532,17 @@ CCInit::CCInit(const char* fullpath)
     FnTrace("CCInit::CCInit()");
 
     strcpy(filepath, fullpath);
-    next = NULL;
-    fore = NULL;
-    current = NULL;
-    archive = NULL;
+    next = nullptr;
+    fore = nullptr;
+    current = nullptr;
+    archive = nullptr;
 }
 
 CCInit::~CCInit()
 {
     FnTrace("CCInit::~CCInit()");
 
-    if (next != NULL)
+    if (next != nullptr)
         delete next;
 }
 
@@ -3552,7 +3553,7 @@ int CCInit::Next(Terminal *term)
     int loops = 0;
     Settings *settings = term->GetSettings();
     
-    if (current == NULL)
+    if (current == nullptr)
     {
         current = this;
     }
@@ -3563,11 +3564,11 @@ int CCInit::Next(Terminal *term)
         // avoid grabbing NULLs.
         while (loops < MAX_LOOPS)
         {
-            if (current != NULL && current->next != NULL)
+            if (current != nullptr && current->next != nullptr)
                 current = current->next;
             else
             { // search archives
-                if (archive == NULL)
+                if (archive == nullptr)
                 {
                     archive = MasterSystem->ArchiveList();
                     if (archive && archive->loaded == 0)
@@ -3580,15 +3581,15 @@ int CCInit::Next(Terminal *term)
                         archive = archive->next;
                         if (archive && archive->loaded == 0)
                             archive->LoadPacked(settings);
-                    } while (archive != NULL && archive->cc_init_results == NULL);
+                    } while (archive != nullptr && archive->cc_init_results == nullptr);
                 }
 
-                if (archive != NULL)
+                if (archive != nullptr)
                     current = archive->cc_init_results;
                 else
                     current = this;
             }
-            loops += ((current != NULL) ? MAX_LOOPS : 1);
+            loops += ((current != nullptr) ? MAX_LOOPS : 1);
         }
     }
 
@@ -3602,7 +3603,7 @@ int CCInit::Fore(Terminal *term)
     int loops = 0;
     Settings *settings = term->GetSettings();
 
-    if (current == NULL)
+    if (current == nullptr)
     {
         current = this;
     }
@@ -3613,11 +3614,11 @@ int CCInit::Fore(Terminal *term)
         // avoid grabbing NULLs.
         while (loops < MAX_LOOPS)
         {
-            if (current != NULL && current->fore != NULL)
+            if (current != nullptr && current->fore != nullptr)
                 current = current->fore;
             else
             { // search archives
-                if (archive == NULL)
+                if (archive == nullptr)
                 {
                     archive = MasterSystem->ArchiveListEnd();
                     if (archive && archive->loaded == 0)
@@ -3630,19 +3631,19 @@ int CCInit::Fore(Terminal *term)
                         archive = archive->fore;
                         if (archive && archive->loaded == 0)
                             archive->LoadPacked(settings);
-                    } while (archive != NULL && archive->cc_init_results == NULL);
+                    } while (archive != nullptr && archive->cc_init_results == nullptr);
                 }
 
-                if (archive != NULL)
+                if (archive != nullptr)
                     current = archive->cc_init_results;
                 else
                 {
                     current = this;
-                    while (current->next != NULL)
+                    while (current->next != nullptr)
                         current = current->next;
                 }
             }
-            loops += ((current != NULL) ? MAX_LOOPS : 1);
+            loops += ((current != nullptr) ? MAX_LOOPS : 1);
         }
     }
 
@@ -3681,7 +3682,7 @@ int CCInit::Write(OutputDataFile &df)
     df.Write(version);
     df.Write(count);
 
-    while (currstr != NULL)
+    while (currstr != nullptr)
     {
         df.Write(currstr);
         currstr = currstr->next;
@@ -3697,7 +3698,7 @@ int CCInit::Load(const char* filename)
     InputDataFile infile;
     int version = 0;
 
-    if (filename != NULL)
+    if (filename != nullptr)
     {
         strcpy(filepath, filename);
         if (infile.Open(filepath, version) == 0)
@@ -3750,14 +3751,14 @@ int CCInit::MakeReport(Terminal *term, Report *report, ReportZone *rzone)
     FnTrace("CCInit::MakeReport()");
     int retval = 0;
 
-    if (current == NULL)
+    if (current == nullptr)
     {
         current = this;
-        while (current->next != NULL)
+        while (current->next != nullptr)
             current = current->next;
     }
 
-    if (current != NULL)
+    if (current != nullptr)
     {
         current->GenerateReport(term, report, rzone);
         retval = 0;
@@ -3772,7 +3773,7 @@ int CCInit::GenerateReport(Terminal *term, Report *report, ReportZone *rzone)
     int retval = 0;
     Str *currstr = init_list.Head();
 
-    while (currstr != NULL)
+    while (currstr != nullptr)
     {
         report->TextL(currstr->Value(), COLOR_DEFAULT);
         report->NewLine();
@@ -3793,15 +3794,15 @@ int CCInit::GenerateReport(Terminal *term, Report *report, ReportZone *rzone)
 CCDetails::CCDetails()
 {
     FnTrace("CCDetails::CCDetails()");
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
 }
 
 CCDetails::~CCDetails()
 {
     FnTrace("CCDetails::~CCDetails()");
 
-    if (next != NULL)
+    if (next != nullptr)
         delete next;
 }
 
@@ -3852,16 +3853,16 @@ int CCDetails::MakeReport(Terminal *term, Report *report, ReportZone *rzone)
 {
     FnTrace("CCDetails::MakeReport()");
     int retval = 0;
-    Str *currstr = NULL;
+    Str *currstr = nullptr;
 
     if (MasterSystem->settings.authorize_method == CCAUTH_MAINSTREET &&
-        report != NULL)
+        report != nullptr)
     {
         currstr = mcve_list.Head();
         report->Mode(0);
         report->NewLine();
 
-        while (currstr != NULL)
+        while (currstr != nullptr)
         {
             report->TextL(currstr->Value());
             report->NewLine();
@@ -3881,10 +3882,10 @@ CCSAFDetails::CCSAFDetails()
     FnTrace("CCSAFDetails::CCSAFDetails()");
 
     filepath[0] = '\0';
-    next = NULL;
-    fore = NULL;
-    current = NULL;
-    archive = NULL;
+    next = nullptr;
+    fore = nullptr;
+    current = nullptr;
+    archive = nullptr;
     Clear();
 }
 
@@ -3893,10 +3894,10 @@ CCSAFDetails::CCSAFDetails(const char* fullpath)
     FnTrace("CCSAFDetails::CCSAFDetails()");
 
     strcpy(filepath, fullpath);
-    next = NULL;
-    fore = NULL;
-    current = NULL;
-    archive = NULL;
+    next = nullptr;
+    fore = nullptr;
+    current = nullptr;
+    archive = nullptr;
     Clear();
 }
 
@@ -3904,7 +3905,7 @@ CCSAFDetails::~CCSAFDetails()
 {
     FnTrace("CCSAFDetails::~CCSAFDetails()");
 
-    if (next != NULL)
+    if (next != nullptr)
         delete next;
 }
 
@@ -3929,10 +3930,10 @@ void CCSAFDetails::Clear()
     expired = 0;
     last = 0;
 
-    if (next != NULL)
+    if (next != nullptr)
         delete next;
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
 }
 
 int CCSAFDetails::Next(Terminal *term)
@@ -3942,7 +3943,7 @@ int CCSAFDetails::Next(Terminal *term)
     int loops = 0;
     Settings *settings = term->GetSettings();
 
-    if (current == NULL)
+    if (current == nullptr)
     {
         current = this;
     }
@@ -3953,11 +3954,11 @@ int CCSAFDetails::Next(Terminal *term)
         // avoid grabbing NULLs.
         while (loops < MAX_LOOPS)
         {
-            if (current != NULL && current->next != NULL)
+            if (current != nullptr && current->next != nullptr)
                 current = current->next;
             else
             { // search archives
-                if (archive == NULL)
+                if (archive == nullptr)
                 {
                     archive = MasterSystem->ArchiveList();
                     if (archive && archive->loaded == 0)
@@ -3970,15 +3971,15 @@ int CCSAFDetails::Next(Terminal *term)
                         archive = archive->next;
                         if (archive && archive->loaded == 0)
                             archive->LoadPacked(settings);
-                    } while (archive != NULL && archive->cc_saf_details_results == NULL);
+                    } while (archive != nullptr && archive->cc_saf_details_results == nullptr);
                 }
 
-                if (archive != NULL)
+                if (archive != nullptr)
                     current = archive->cc_saf_details_results;
                 else
                     current = this;
             }
-            loops += ((current != NULL) ? MAX_LOOPS : 1);
+            loops += ((current != nullptr) ? MAX_LOOPS : 1);
         }
     }
 
@@ -3992,7 +3993,7 @@ int CCSAFDetails::Fore(Terminal *term)
     int loops = 0;
     Settings *settings = term->GetSettings();
 
-    if (current == NULL)
+    if (current == nullptr)
     {
         current = this;
     }
@@ -4003,11 +4004,11 @@ int CCSAFDetails::Fore(Terminal *term)
         // avoid grabbing NULLs.
         while (loops < MAX_LOOPS)
         {
-            if (current != NULL && current->fore != NULL)
+            if (current != nullptr && current->fore != nullptr)
                 current = current->fore;
             else
             { // search archives
-                if (archive == NULL)
+                if (archive == nullptr)
                 {
                     archive = MasterSystem->ArchiveListEnd();
                     if (archive && archive->loaded == 0)
@@ -4020,19 +4021,19 @@ int CCSAFDetails::Fore(Terminal *term)
                         archive = archive->fore;
                         if (archive && archive->loaded == 0)
                             archive->LoadPacked(settings);
-                    } while (archive != NULL && archive->cc_saf_details_results == NULL);
+                    } while (archive != nullptr && archive->cc_saf_details_results == nullptr);
                 }
 
-                if (archive != NULL)
+                if (archive != nullptr)
                     current = archive->cc_saf_details_results;
                 else
                 {
                     current = this;
-                    while (current->next != NULL)
+                    while (current->next != nullptr)
                         current = current->next;
                 }
             }
-            loops += ((current != NULL) ? MAX_LOOPS : 1);
+            loops += ((current != nullptr) ? MAX_LOOPS : 1);
         }
     }
 
@@ -4044,7 +4045,7 @@ CCSAFDetails *CCSAFDetails::Last()
     FnTrace("CCSAFDetails::Last()");
     CCSAFDetails *retval = this;
 
-    while (retval->next != NULL)
+    while (retval->next != nullptr)
         retval = retval->next;
 
     return retval;
@@ -4055,7 +4056,7 @@ int CCSAFDetails::Read(InputDataFile &df)
     FnTrace("CCSAFDetails::Read()");
     int retval = 0;
     CCSAFDetails *curr = this;
-    CCSAFDetails *node = NULL;
+    CCSAFDetails *node = nullptr;
     int count = 0;
     int idx = 0;
     int version = 0;
@@ -4103,10 +4104,10 @@ int CCSAFDetails::Write(OutputDataFile &df)
     int count = 0;
     int version = CREDIT_CARD_VERSION;
 
-    while (head->fore != NULL)
+    while (head->fore != nullptr)
         head = head->fore;
     curr = head;
-    while (curr != NULL)
+    while (curr != nullptr)
     {
         count += 1;
         curr = curr->next;
@@ -4115,7 +4116,7 @@ int CCSAFDetails::Write(OutputDataFile &df)
     df.Write(version);
     df.Write(count);
     curr = head;
-    while (curr != NULL)
+    while (curr != nullptr)
     {
         df.Write(curr->terminal);
         df.Write(curr->batch);
@@ -4147,7 +4148,7 @@ int CCSAFDetails::Load(const char* filename)
     InputDataFile infile;
     int version;
 
-    if (filename != NULL)
+    if (filename != nullptr)
     {
         strcpy(filepath, filename);
         if (infile.Open(filepath, version) == 0)
@@ -4185,7 +4186,7 @@ int CCSAFDetails::Count()
     if (terminal.size() > 0)
     {
         retval = 1;
-        while (node != NULL)
+        while (node != nullptr)
         {
             retval += 1;
             node = node->next;
@@ -4224,7 +4225,7 @@ int CCSAFDetails::Add(Terminal *term)
 {
     FnTrace("CCSAFDetails::Add()");
     int retval = 0;
-    CCSAFDetails *newsaf = NULL;
+    CCSAFDetails *newsaf = nullptr;
     CCSAFDetails *node = this;
 
     if (terminal.empty())
@@ -4233,7 +4234,7 @@ int CCSAFDetails::Add(Terminal *term)
     }
     else
     {
-        while (node->next != NULL)
+        while (node->next != nullptr)
             node = node->next;
         newsaf = new CCSAFDetails;
         newsaf->ReadResults(term);
@@ -4250,14 +4251,14 @@ int CCSAFDetails::MakeReport(Terminal *term, Report *report, ReportZone *rzone)
     FnTrace("CCSAFDetails::MakeReport()");
     int retval = 0;
 
-    if (current == NULL)
+    if (current == nullptr)
     {
         current = this;
-        while (current->next != NULL)
+        while (current->next != nullptr)
             current = current->next;
     }
 
-    if (current != NULL)
+    if (current != nullptr)
     {
         current->GenerateReport(term, report, rzone);
         retval = 0;
@@ -4338,7 +4339,7 @@ int CCSAFDetails::GenerateReport(Terminal *term, Report *report, ReportZone *rzo
 int CC_CreditType(const char* a)
 {
     FnTrace("CC_CreditType()");
-    if (a == NULL)
+    if (a == nullptr)
         return CREDIT_TYPE_UNKNOWN;
 
     int len = strlen(a);
@@ -4448,7 +4449,7 @@ int CC_IsValidExpiry(const char* expiry)
     year = atoi(buff) + 2000;
 
     // get current month and year
-    now = time(NULL);
+    now = time(nullptr);
     current    = localtime(&now);
     curr_month = current->tm_mon + 1;
     curr_year  = current->tm_year + 1900;

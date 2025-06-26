@@ -18,8 +18,7 @@
  * Credit/Debit Card merchant authorization infomation entry zone
  */
 
-#ifndef _MERCHANT_ZONE_HH
-#define _MERCHANT_ZONE_HH
+#pragma once  // REFACTOR: Replaced #ifndef _MERCHANT_ZONE_HH guard with modern pragma once
 
 #include "form_zone.hh"
 
@@ -39,5 +38,3 @@ public:
     int LoadRecord(Terminal *t, int record_no);
     int SaveRecord(Terminal *t, int record_no, int write_file);
 };
-
-#endif

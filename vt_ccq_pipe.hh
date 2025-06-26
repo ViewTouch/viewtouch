@@ -21,8 +21,4 @@
  *  socket.  And vice versa.
  */
 
-#ifndef VT_CCQ_PIPE_H
-
-
-#define VT_CCQ_PIPE_H
-#endif
+#pragma once  // REFACTOR: Replaced #ifndef VT_CCQ_PIPE_H guard with modern pragma once

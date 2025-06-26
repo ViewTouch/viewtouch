@@ -19,8 +19,7 @@
  *   display styles (slide in from left, fade in, etc.), and that sort of thing.
  */
 
-#ifndef CDU_HH
-#define CDU_HH
+#pragma once  // REFACTOR: Replaced #ifndef CDU_HH guard with modern pragma once
 
 #include "list_utility.hh"
 #include "data_file.hh"
@@ -93,7 +92,7 @@ public:
     int             Read(InputDataFile &infile, int version);
     int             Write(OutputDataFile &outfile, int version);
     int             Load(const char* path);
-    int             Save(const char* path = NULL);
+    int             Save(const char* path = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     int             RemoveBlank();
     int             Remove(CDUString *cdustr);
     CDUString      *GetString(int idx = -1);
@@ -209,5 +208,3 @@ public:
  *------------------------------------------------------------------*/
 
 CustDispUnit *NewCDUObject(const char* filename, int type = 0);
-
-#endif

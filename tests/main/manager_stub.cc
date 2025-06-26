@@ -75,7 +75,7 @@ int ReleaseYear  = 1998;
 int ReleaseMonth = 10;
 int ReleaseDay   = 20;
 
-Control     *MasterControl = NULL;
+Control     *MasterControl = nullptr;
 int          MachineID = 0;
 
 constexpr int CALLCTR_ERROR_NONE        = 0;
@@ -92,22 +92,22 @@ constexpr int CALLCTR_STATUS_FAILED     = 2;
  * Calendar Values
  *************************************************************/
 const char* DayName[] = { "Sunday", "Monday", "Tuesday", "Wednesday", 
-                    "Thursday", "Friday", "Saturday", NULL};
+                    "Thursday", "Friday", "Saturday", nullptr};
 
-const char* ShortDayName[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", NULL};
+const char* ShortDayName[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", nullptr};
 
 const char* MonthName[] = { "January", "February", "March", "April", 
                       "May", "June", "July", "August", "September", 
-                      "October", "November", "December", NULL};
+                      "October", "November", "December", nullptr};
 
 const char* ShortMonthName[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", NULL};
+                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", nullptr};
 
 /*************************************************************
  * Terminal Type values
  *************************************************************/
 const char* TermTypeName[] = { 	"Normal", "Order Only", "Bar", "Bar2", 
-                            "Fast Food", "Kitchen Video", "Kitchen Video2", NULL};
+                            "Fast Food", "Kitchen Video", "Kitchen Video2", nullptr};
 
 int TermTypeValue[] = { TERMINAL_NORMAL, TERMINAL_ORDER_ONLY,
                         TERMINAL_BAR, TERMINAL_BAR2,
@@ -119,7 +119,7 @@ int TermTypeValue[] = { TERMINAL_NORMAL, TERMINAL_ORDER_ONLY,
  *************************************************************/
 const char* PrinterTypeName[] = { "Kitchen 1", "Kitchen 2", "Kitchen 3", "Kitchen 4",
                             "Bar 1", "Bar 2", "Expediter", "Report",
-                            "Credit Receipt", "Remote Order", NULL};
+                            "Credit Receipt", "Remote Order", nullptr};
 
 int PrinterTypeValue[] = { PRINTER_KITCHEN1, PRINTER_KITCHEN2,
                            PRINTER_KITCHEN3, PRINTER_KITCHEN4,
@@ -132,7 +132,7 @@ int PrinterTypeValue[] = { PRINTER_KITCHEN1, PRINTER_KITCHEN2,
  * Module Globals
  *************************************************************/
 static XtAppContext App = 0;
-static Display     *Dis = NULL;
+static Display     *Dis = nullptr;
 static XFontStruct *FontInfo[32];
 static int          FontWidth[32];
 static int          FontHeight[32];
@@ -237,12 +237,12 @@ int      RunReport(const genericChar* report_string, Printer *printer);
 Printer *SetPrinter(const genericChar* printer_description);
 int      ReadViewTouchConfig();
 
-genericChar* GetMachineName(genericChar* str = NULL, int len = STRLENGTH)
+genericChar* GetMachineName(genericChar* str = nullptr, int len = STRLENGTH)
 {
     FnTrace("GetMachineName()");
     struct utsname uts;
     static genericChar buffer[STRLENGTH];
-    if (str == NULL)
+    if (str == nullptr)
         str = buffer;
 
     if (uname(&uts) == 0)
@@ -461,7 +461,7 @@ int StartSystem(int my_use_net)
     // Set up local fonts (only used for formating info)
     for (i = 0; i < 32; ++i)
     {
-        FontInfo[i]   = NULL;
+        FontInfo[i]   = nullptr;
         FontWidth[i]  = 0;
         FontHeight[i] = 0;
     }
@@ -478,14 +478,14 @@ int StartSystem(int my_use_net)
 
     int argc = 0;
     const genericChar* argv[] = {"vt_main"};
-    Dis = XtOpenDisplay(App, displaystr, NULL, NULL, NULL, 0, &argc, (genericChar**)argv);
+    Dis = XtOpenDisplay(App, displaystr, nullptr, nullptr, nullptr, 0, &argc, (genericChar**)argv);
     if (Dis)
     {
         for (i = 0; i < FONT_COUNT; ++i)
         {
             int f = FontData[i].id;
             FontInfo[f] = XLoadQueryFont(Dis, FontData[i].font);
-            if (FontInfo[f] == NULL)
+            if (FontInfo[f] == nullptr)
             {
                 sprintf(str, "Can't load font '%s'", FontData[i].font);
                 ReportError(str);
@@ -516,7 +516,7 @@ int StartSystem(int my_use_net)
         if (have_server > 1)
         {
             int found = 0;
-            while (ti != NULL)
+            while (ti != nullptr)
             {
                 if (ti->display_host.size() > 0)
                 {
@@ -531,7 +531,7 @@ int StartSystem(int my_use_net)
                 ti = ti->next;
             }
         }
-        while (ti != NULL)
+        while (ti != nullptr)
         {
             // this early, the TermInfo entry is the server entry if its
             // isserver value is true or if display_host is equal to
@@ -688,7 +688,7 @@ int StartSystem(int my_use_net)
     // Start work/report printers
     int have_report = 0;
     PrinterInfo *pi;
-    for (pi = settings->PrinterList(); pi != NULL; pi = pi->next)
+    for (pi = settings->PrinterList(); pi != nullptr; pi = pi->next)
     {
         if (my_use_net || pi->port == 0)
         {
@@ -735,14 +735,14 @@ int StartSystem(int my_use_net)
     else
         ViewTouchError("No terminals allowed.");
 
-    if (MasterControl->TermList() == NULL)
+    if (MasterControl->TermList() == nullptr)
     {
         ReportError("No terminals could be opened");
         EndSystem();
     }
 
     Terminal *term = MasterControl->TermList();
-    while (term != NULL)
+    while (term != nullptr)
     {
         term->Initialize();
         term = term->next;
@@ -753,7 +753,7 @@ int StartSystem(int my_use_net)
 
     // Start update system timer
     UpdateID = XtAppAddTimeOut(App, UPDATE_TIME,
-                               (XtTimerCallbackProc) UpdateSystemCB, NULL);
+                               (XtTimerCallbackProc) UpdateSystemCB, nullptr);
 
     // Break connection with loader
     if (LoaderSocket)
@@ -801,9 +801,9 @@ int EndSystem()
     if (MasterControl)
     {
         Terminal *term = MasterControl->TermList();
-        while (term != NULL)
+        while (term != nullptr)
         {
-            if (term->cdu != NULL)
+            if (term->cdu != nullptr)
                 term->cdu->Clear();
             term = term->next;
         }
@@ -819,7 +819,7 @@ int EndSystem()
     if (Dis)
     {
         XtCloseDisplay(Dis);
-        Dis = NULL;
+        Dis = nullptr;
     }
     if (App)
     {
@@ -844,7 +844,7 @@ int EndSystem()
     MasterSystem->cc_saf_details_results->Save();
 
     // Delete databases
-    if (MasterControl != NULL)
+    if (MasterControl != nullptr)
     {
         // Deleting MasterControl keeps giving me error messages:
         //     "vt_main in free(): warning: chunk is already free"
@@ -853,12 +853,12 @@ int EndSystem()
         // There's no destructor, so this step shouldn't be necessary
         // anyway.
         // delete MasterControl;
-        MasterControl = NULL;
+        MasterControl = nullptr;
     }
     if (MasterSystem)
     {
         delete MasterSystem;
-        MasterSystem = NULL;
+        MasterSystem = nullptr;
     }
     ReportError("EndSystem:  Normal shutdown.");
 
@@ -912,7 +912,7 @@ int RestartSystem()
         // Here we want to exec a script that will wait for EndSystem() to
         // complete and then start vtpos all over again with the exact
         // same arguments.
-        execl(VIEWTOUCH_RESTART, VIEWTOUCH_RESTART, VIEWTOUCH_PATH, NULL);
+        execl(VIEWTOUCH_RESTART, VIEWTOUCH_RESTART, VIEWTOUCH_PATH, nullptr);
     }
     else
     {  // parent
@@ -935,7 +935,7 @@ char* PriceFormat(Settings *settings, int price, int use_sign, int use_comma, ge
 {
     FnTrace("PriceFormat()");
     static genericChar buffer[32];
-    if (str == NULL)
+    if (str == nullptr)
         str = buffer;
 
     genericChar point = '.';
@@ -1075,7 +1075,7 @@ int LoadSystemData()
     }
 
     // Read System Page Data
-    Page *p = NULL;
+    Page *p = nullptr;
     int zone_version = 0, count = 0;
     ZoneDB *zone_db = new ZoneDB;
     df.Read(zone_version);
@@ -1148,7 +1148,7 @@ int SaveSystemData()
     // Save version 1
     System  *sys = MasterSystem;
     Control *con = MasterControl;
-    if (con->zone_db == NULL)
+    if (con->zone_db == nullptr)
         return 1;
 
     BackupFile(SYSTEM_DATA_FILE);	// always save to normal location
@@ -1203,15 +1203,15 @@ int SaveSystemData()
 Control::Control()
 {
     FnTrace("Control::Control()");
-    zone_db     = NULL;
+    zone_db     = nullptr;
     master_copy = 0;
-    term_list   = NULL;
+    term_list   = nullptr;
 }
 
 int Control::Add(Terminal *term)
 {
     FnTrace("Control::Add(Terminal)");
-    if (term == NULL)
+    if (term == nullptr)
         return 1;
 
     term->system_data = MasterSystem;
@@ -1224,7 +1224,7 @@ int Control::Add(Printer *p)
 {
     FnTrace("Control::Add(Printer)");
 
-    if (p == NULL)
+    if (p == nullptr)
         return 1;
 
     p->parent = this;
@@ -1235,10 +1235,10 @@ int Control::Add(Printer *p)
 int Control::Remove(Terminal *term)
 {
     FnTrace("Control::Remove(Terminal)");
-    if (term == NULL)
+    if (term == nullptr)
         return 1;
 
-    term->parent = NULL;
+    term->parent = nullptr;
     term_list.Remove(term);
 
     if (zone_db == term->zone_db)
@@ -1254,8 +1254,8 @@ int Control::Remove(Terminal *term)
             }
             ptr = ptr->next;
         }
-        if (ptr == NULL)
-            zone_db = NULL;
+        if (ptr == nullptr)
+            zone_db = nullptr;
     }
     return 0;
 }
@@ -1263,10 +1263,10 @@ int Control::Remove(Terminal *term)
 int Control::Remove(Printer *p)
 {
     FnTrace("Control::Remove(Printer)");
-    if (p == NULL)
+    if (p == nullptr)
         return 1;
 
-    p->parent = NULL;
+    p->parent = nullptr;
     printer_list.Remove(p);
     return 0;
 }
@@ -1275,19 +1275,19 @@ Terminal *Control::FindTermByHost(const char* host)
 {
     FnTrace("Control::FindTermByHost()");
 
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
     {
         if (strcmp(term->host.Value(), host) == 0)
             return term;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 int Control::SetAllMessages(const char* message)
 {
     FnTrace("Control::SetAllMessages()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->SetMessage(message);
     return 0;
 }
@@ -1295,7 +1295,7 @@ int Control::SetAllMessages(const char* message)
 int Control::SetAllTimeouts(int timeout)
 {
     FnTrace("Control::SetAllTimeouts()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->SetCCTimeout(timeout);
     return 0;
 }
@@ -1303,7 +1303,7 @@ int Control::SetAllTimeouts(int timeout)
 int Control::SetAllCursors(int cursor)
 {
     FnTrace("Control::SetAllCursors()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->SetCursor(cursor);
     return 0;
 }
@@ -1311,7 +1311,7 @@ int Control::SetAllCursors(int cursor)
 int Control::SetAllIconify(int iconify)
 {
     FnTrace("Control::SetAllIconify()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->SetIconify(iconify);
     return 0;
 }
@@ -1319,7 +1319,7 @@ int Control::SetAllIconify(int iconify)
 int Control::ClearAllMessages()
 {
     FnTrace("Control::ClearAllMessages()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->ClearMessage();
     return 0;
 }
@@ -1327,15 +1327,15 @@ int Control::ClearAllMessages()
 int Control::ClearAllFocus()
 {
     FnTrace("Control::ClearAllFocus()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
-        term->previous_zone = NULL;
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
+        term->previous_zone = nullptr;
     return 0;
 }
 
 int Control::LogoutAllUsers()
 {
     FnTrace("Control::LogoutAllUsers()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->LogoutUser();
     return 0;
 }
@@ -1346,7 +1346,7 @@ int Control::LogoutKitchenUsers()
     Terminal *term = TermList();
     int count = 0;
 
-    while (term != NULL)
+    while (term != nullptr)
     {
         if ((term->type == TERMINAL_KITCHEN_VIDEO ||
              term->type == TERMINAL_KITCHEN_VIDEO2) &&
@@ -1366,7 +1366,7 @@ int Control::UpdateAll(int update_message, const genericChar* value)
     FnTrace("Control::UpdateAll()");
     Terminal *term = TermList();
 
-    while (term != NULL)
+    while (term != nullptr)
     {
         term->Update(update_message, value);
         term = term->next;
@@ -1377,7 +1377,7 @@ int Control::UpdateAll(int update_message, const genericChar* value)
 int Control::UpdateOther(Terminal *local, int update_message, const genericChar* value)
 {
     FnTrace("Control::UpdateOther()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         if (term != local)
             term->Update(update_message, value);
     return 0;
@@ -1386,10 +1386,10 @@ int Control::UpdateOther(Terminal *local, int update_message, const genericChar*
 int Control::IsUserOnline(Employee *e)
 {
     FnTrace("Control::IsUserOnline()");
-    if (e == NULL)
+    if (e == nullptr)
         return 0;
 
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
     {
         if (term->user == e)
             return 1;
@@ -1408,7 +1408,7 @@ int Control::KillTerm(Terminal *term)
             term->StoreCheck(0);
             Remove(term);
             delete term;
-            UpdateAll(UPDATE_TERMINALS, NULL);
+            UpdateAll(UPDATE_TERMINALS, nullptr);
             return 0;
         }
         ptr = ptr->next;
@@ -1419,7 +1419,7 @@ int Control::KillTerm(Terminal *term)
 int Control::OpenDialog(const char* message)
 {
     FnTrace("Control::OpenDialog()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->OpenDialog(message);
     return 0;
 }
@@ -1427,7 +1427,7 @@ int Control::OpenDialog(const char* message)
 int Control::KillAllDialogs()
 {
     FnTrace("Control::KillAllDialogs()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->KillDialog();
     return 0;
 }
@@ -1435,39 +1435,39 @@ int Control::KillAllDialogs()
 Printer *Control::FindPrinter(const char* host, int port)
 {
     FnTrace("Control::FindPrinter(const char* , int)");
-    for (Printer *p = PrinterList(); p != NULL; p = p->next)
+    for (Printer *p = PrinterList(); p != nullptr; p = p->next)
 	{
         if (p->MatchHost(host, port))
             return p;
 	}
 
-    return NULL;
+    return nullptr;
 }
 
 Printer *Control::FindPrinter(const char* term_name)
 {
     FnTrace("Control::FindPrinter(const char* )");
 
-    for (Printer *p = PrinterList(); p != NULL; p = p->next)
+    for (Printer *p = PrinterList(); p != nullptr; p = p->next)
     {
         if (strcmp(p->term_name.Value(), term_name) == 0)
             return p;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 Printer *Control::FindPrinter(int printer_type)
 {
     FnTrace("Control::FindPrinter(int)");
 
-    for (Printer *p = PrinterList(); p != NULL; p = p->next)
+    for (Printer *p = PrinterList(); p != nullptr; p = p->next)
     {
         if (p->IsType(printer_type))
             return p;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 /****
@@ -1504,7 +1504,7 @@ Printer *Control::NewPrinter(const char* term_name, const char* host, int port, 
 int Control::KillPrinter(Printer *p, int update)
 {
     FnTrace("Control::KillPrinter()");
-    if (p == NULL)
+    if (p == nullptr)
         return 1;
 
     Printer *ptr = PrinterList();
@@ -1515,7 +1515,7 @@ int Control::KillPrinter(Printer *p, int update)
             Remove(p);
             delete p;
             if (update)
-                UpdateAll(UPDATE_PRINTERS, NULL);
+                UpdateAll(UPDATE_PRINTERS, nullptr);
             return 0;
         }
         ptr = ptr->next;
@@ -1528,7 +1528,7 @@ int Control::TestPrinters(Terminal *term, int report)
 
     FnTrace("Control::TestPrinters()");
 
-    for (Printer *p = PrinterList(); p != NULL; p = p->next)
+    for (Printer *p = PrinterList(); p != nullptr; p = p->next)
 	{
         if ((p->IsType(PRINTER_REPORT) && report) ||
             (!p->IsType(PRINTER_REPORT) && !report))
@@ -1556,8 +1556,8 @@ int Control::TestPrinters(Terminal *term, int report)
 ZoneDB *Control::NewZoneDB()
 {
     FnTrace("Control::NewZoneDB()");
-    if (zone_db == NULL)
-        return NULL;
+    if (zone_db == nullptr)
+        return nullptr;
 
     ZoneDB *db;
     if (master_copy)
@@ -1576,7 +1576,7 @@ int Control::SaveMenuPages()
 {
     FnTrace("Control::SaveMenuPages()");
     System  *sys = MasterSystem;
-    if (zone_db == NULL || sys == NULL)
+    if (zone_db == nullptr || sys == nullptr)
         return 1;
 
     genericChar str[256];
@@ -1589,7 +1589,7 @@ int Control::SaveTablePages()
 {
     FnTrace("Control::SaveTablePages()");
     System  *sys = MasterSystem;
-    if (zone_db == NULL || sys == NULL)
+    if (zone_db == nullptr || sys == nullptr)
         return 1;
 
     genericChar str[256];
@@ -1644,7 +1644,7 @@ int SetTermInfo(TermInfo *ti, const char* termname, const char* termhost, const 
     }
 
     ti->name.Set(termname);
-    if (termhost != NULL)
+    if (termhost != nullptr)
         ti->display_host.Set(termhost);
     if (strcmp(termtype, "kitchen") == 0)
         ti->type = TERMINAL_KITCHEN_VIDEO;
@@ -1680,7 +1680,7 @@ int OpenDynTerminal(const char* remote_terminal)
 {
     FnTrace("OpenDynTerminal()");
     int retval = 1;
-    TermInfo *ti = NULL;
+    TermInfo *ti = nullptr;
     char termname[STRLENGTH];
     char termhost[STRLENGTH];
     char update[STRLENGTH];
@@ -1704,13 +1704,13 @@ int OpenDynTerminal(const char* remote_terminal)
     if (termname[0] != '\0' && termhost[0] != '\0')
     {
         ti = MasterSystem->settings.FindTerminal(termhost);
-        if (ti != NULL)
+        if (ti != nullptr)
         {
             term = ti->FindTerm(MasterControl);
-            if (term == NULL)
+            if (term == nullptr)
             {
                 if (strcmp(update, "update") == 0)
-                    SetTermInfo(ti, termname, NULL, &remote_terminal[idx]);
+                    SetTermInfo(ti, termname, nullptr, &remote_terminal[idx]);
                 ti->OpenTerm(MasterControl, 1);
             }
         }
@@ -1733,13 +1733,13 @@ int CloseDynTerminal(const char* remote_terminal)
     int retval = 1;
     char termhost[STRLENGTH];
     int idx = 0;
-    Terminal *term = NULL;
-    TermInfo *ti = NULL;
-    Printer  *printer = NULL;
+    Terminal *term = nullptr;
+    TermInfo *ti = nullptr;
+    Printer  *printer = nullptr;
 
     idx = GetTermWord(termhost, STRLENGTH, remote_terminal, idx);
     ti = MasterSystem->settings.FindTerminal(termhost);
-    if (ti != NULL)
+    if (ti != nullptr)
     {
         term = ti->FindTerm(MasterControl);
         if (term)
@@ -1761,16 +1761,16 @@ int CloneDynTerminal(const char* remote_terminal)
     char termhost[STRLENGTH];
     char clonedest[STRLENGTH];
     int idx = 0;
-    Terminal *term = NULL;
-    TermInfo *ti = NULL;
+    Terminal *term = nullptr;
+    TermInfo *ti = nullptr;
 
     idx = GetTermWord(termhost, STRLENGTH, remote_terminal, idx);
     idx = GetTermWord(clonedest, STRLENGTH, remote_terminal, idx);
     ti = MasterSystem->settings.FindTerminal(termhost);
-    if (ti != NULL)
+    if (ti != nullptr)
     {
         term = ti->FindTerm(MasterControl);
-        if (term != NULL)
+        if (term != nullptr)
             retval = CloneTerminal(term, clonedest, termhost);
     }
 
@@ -1781,29 +1781,29 @@ int ProcessRemoteOrderEntry(SubCheck *subcheck, Order **order, const char* key, 
 {
     FnTrace("ProcessRemoteOrderEntry()");
     int retval = CALLCTR_ERROR_NONE;
-    static Order *detail = NULL;
+    static Order *detail = nullptr;
     SalesItem *sales_item;
     int record;  // not really used; only for FindByItemCode
 
     if ((strncmp(key, "ItemCode", 8) == 0) ||
         (strncmp(key, "ProductCode", 11) == 0))
     {
-        if (*order != NULL)
+        if (*order != nullptr)
             ReportError("Have an order we should get rid of....");
         sales_item = MasterSystem->menu.FindByItemCode(value, record);
         if (sales_item)
-            *order = new Order(&MasterSystem->settings, sales_item, NULL);
+            *order = new Order(&MasterSystem->settings, sales_item, nullptr);
         else
             retval = CALLCTR_ERROR_BADITEM;
     }
     else if ((strncmp(key, "DetailCode", 10) == 0) ||
              (strncmp(key, "AddonCode", 9) == 0))
     {
-        if (detail != NULL)
+        if (detail != nullptr)
             ReportError("Have a detail we should get rid of....");
         sales_item = MasterSystem->menu.FindByItemCode(value, record);
         if (sales_item)
-            detail = new Order(&MasterSystem->settings, sales_item, NULL);
+            detail = new Order(&MasterSystem->settings, sales_item, nullptr);
         else
             retval = CALLCTR_ERROR_BADDETAIL;
     }
@@ -1811,21 +1811,21 @@ int ProcessRemoteOrderEntry(SubCheck *subcheck, Order **order, const char* key, 
              (strncmp(key, "EndProduct", 10) == 0))
     {
         subcheck->Add(*order, &MasterSystem->settings);
-        *order = NULL;
+        *order = nullptr;
     }
     else if ((strncmp(key, "EndDetail", 9) == 0) ||
              (strncmp(key, "EndAddon", 8) == 0))
     {
         (*order)->Add(detail);
-        detail = NULL;
+        detail = nullptr;
     }
-    else if (*order != NULL)
+    else if (*order != nullptr)
     {
         if (strncmp(key, "ItemQTY", 7) == 0)
             (*order)->count = atoi(value);
         else if (strncmp(key, "ProductQTY", 10) == 0)
             (*order)->count = atoi(value);
-        else if (detail != NULL && strncmp(key, "AddonQualifier", 14) == 0)
+        else if (detail != nullptr && strncmp(key, "AddonQualifier", 14) == 0)
             detail->AddQualifier(value);
     }
     else if (debug_mode)
@@ -1841,17 +1841,17 @@ int CompleteRemoteOrder(Check *check)
     FnTrace("CompleteRemoteOrder()");
     int       status = CALLCTR_STATUS_INCOMPLETE;
     int       order_count = 0;
-    SubCheck *subcheck = NULL;
-    Order    *order = NULL;
-    Printer  *printer = NULL;
-    Report   *report = NULL;
+    SubCheck *subcheck = nullptr;
+    Order    *order = nullptr;
+    Printer  *printer = nullptr;
+    Report   *report = nullptr;
     Terminal *term = MasterControl->TermList();
 
     subcheck = check->SubList();
-    while (subcheck != NULL)
+    while (subcheck != nullptr)
     {
         order = subcheck->OrderList();
-        while (order != NULL)
+        while (order != nullptr)
         {
             order_count += 1;
             order = order->next;
@@ -1865,12 +1865,12 @@ int CompleteRemoteOrder(Check *check)
         check->date.Set();
         check->FinalizeOrders(term);
         check->Save();
-        MasterControl->UpdateAll(UPDATE_CHECKS, NULL);
+        MasterControl->UpdateAll(UPDATE_CHECKS, nullptr);
         check->current_sub = check->FirstOpenSubCheck();
 
         // need to print the check
         printer = MasterControl->FindPrinter(PRINTER_REMOTEORDER);
-        if (printer != NULL) {
+        if (printer != nullptr) {
             report = new Report();
             if (report)
             {
@@ -1947,9 +1947,9 @@ int ProcessRemoteOrder(int sock_fd)
     char       key[STRLONG];
     char       value[STRLONG];
     Settings  *settings = &MasterSystem->settings;
-    Check     *check = NULL;
-    SubCheck  *subcheck = NULL;
-    Order     *order = NULL;
+    Check     *check = nullptr;
+    SubCheck  *subcheck = nullptr;
+    Order     *order = nullptr;
     char       StoreNum[STRSHORT];
     int        status = CALLCTR_STATUS_INCOMPLETE;
 
@@ -1958,10 +1958,10 @@ int ProcessRemoteOrder(int sock_fd)
     write(sock_fd, "SENDORDER\n", 10);
 
     check = new Check(settings, CHECK_DELIVERY);
-    if (check == NULL)
+    if (check == nullptr)
         return retval;
     subcheck = check->NewSubCheck();
-    if (subcheck == NULL)
+    if (subcheck == nullptr)
         return retval;
 
     while ((status == CALLCTR_STATUS_INCOMPLETE) &&
@@ -2071,26 +2071,26 @@ int CompareCardNumbers(const char* card1, const char* card2)
 Check* FindCCData(const char* cardnum, int value)
 {
     FnTrace("FindCCData()");
-    Check    *ret_check = NULL;
-    Check    *curr_check = NULL;
-    Archive  *archive = NULL;
-    SubCheck *subcheck = NULL;
-    Payment  *payment = NULL;
-    Credit   *credit = NULL;
+    Check    *ret_check = nullptr;
+    Check    *curr_check = nullptr;
+    Archive  *archive = nullptr;
+    SubCheck *subcheck = nullptr;
+    Payment  *payment = nullptr;
+    Credit   *credit = nullptr;
     char      cn[STRLENGTH];
 
     curr_check = MasterSystem->CheckList();
-    while (ret_check == NULL && archive != MasterSystem->ArchiveList())
+    while (ret_check == nullptr && archive != MasterSystem->ArchiveList())
     {
-        while (curr_check != NULL && ret_check == NULL)
+        while (curr_check != nullptr && ret_check == nullptr)
         {
             subcheck = curr_check->SubList();
-            while (subcheck != NULL && ret_check == NULL)
+            while (subcheck != nullptr && ret_check == nullptr)
             {
                 payment = subcheck->PaymentList();
-                while (payment != NULL && ret_check == NULL)
+                while (payment != nullptr && ret_check == nullptr)
                 {
-                    if (payment->credit != NULL)
+                    if (payment->credit != nullptr)
                     {
                         credit = payment->credit;
                         strcpy(cn, credit->PAN(2));
@@ -2105,9 +2105,9 @@ Check* FindCCData(const char* cardnum, int value)
             }
             curr_check = curr_check->next;
         }
-        if (ret_check == NULL)
+        if (ret_check == nullptr)
         {
-            if (archive == NULL)
+            if (archive == nullptr)
                 archive = MasterSystem->ArchiveListEnd();
             else
                 archive = archive->fore;
@@ -2130,10 +2130,10 @@ int GetCCData(const char* data)
     int       sidx = 0;
     int       didx = 0;
     int       maxlen = 28;  // arbitrary:  19 chars for PAN, 8 for amount, 1 for space
-    Check    *check = NULL;
-    SubCheck *subcheck = NULL;
-    Payment  *payment = NULL;
-    Credit   *credit = NULL;
+    Check    *check = nullptr;
+    SubCheck *subcheck = nullptr;
+    Payment  *payment = nullptr;
+    Credit   *credit = nullptr;
 
     // get cardnum
     while (data[sidx] != ' ' && data[sidx] != '\0' && sidx < maxlen)
@@ -2161,12 +2161,12 @@ int GetCCData(const char* data)
         printf("Card %s was processed on %s\n", cardnum, check->made_time.to_string().c_str());
         printf("    Check ID:  %d\n", check->serial_number);
         subcheck = check->SubList();
-        while (subcheck != NULL)
+        while (subcheck != nullptr)
         {
             payment = subcheck->PaymentList();
-            while (payment != NULL)
+            while (payment != nullptr)
             {
-                if (payment->credit != NULL)
+                if (payment->credit != nullptr)
                 {
                     credit = payment->credit;
                     printf("    Card Name:  %s\n", credit->Name());
@@ -2286,7 +2286,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
 
     if (UserRestart)
     {
-        if (MasterControl->TermList() != NULL &&
+        if (MasterControl->TermList() != nullptr &&
             MasterControl->TermList()->TermsInUse() == 0)
         {
             RestartSystem();
@@ -2318,7 +2318,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
         LastDay = day;
     }
 
-    if (sys->eod_term != NULL && sys->eod_term->eod_processing != EOD_DONE)
+    if (sys->eod_term != nullptr && sys->eod_term->eod_processing != EOD_DONE)
     {
         sys->eod_term->EndDay();
     }
@@ -2349,7 +2349,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
     while (term)
     {
         Terminal *tnext = term->next;
-        if (term->reload_zone_db && term->user == NULL)
+        if (term->reload_zone_db && term->user == nullptr)
         {
             // Reload zone information if needed
             ReportError("Updating zone information");
@@ -2375,10 +2375,10 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
             if (term->page->IsTable() || term->page->IsKitchen())
                 u |= UPDATE_BLINK;  // half second blink message for table pages
             if (u)
-                term->Update(u, NULL);
+                term->Update(u, nullptr);
         }
 
-        if (term->cdu != NULL)
+        if (term->cdu != nullptr)
             term->cdu->Refresh();
 
         if (term->kill_me)
@@ -2386,7 +2386,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
         term = tnext;
     }
 
-    if (con->TermList() == NULL)
+    if (con->TermList() == nullptr)
     {
         ReportError("All terminals lost - shutting down system");
         EndSystem();
@@ -2432,8 +2432,8 @@ int RunUserCommand(void)
     static int working = 0;
     static int macros  = 0;
     static int endday  = 0;
-    static Printer *printer = NULL;
-    static Report *report = NULL;
+    static Printer *printer = nullptr;
+    static Report *report = nullptr;
     static KeyValueInputFile kvfile;
     static int exit_system = 0;
 
@@ -2442,7 +2442,7 @@ int RunUserCommand(void)
 
     if (working)
     {
-        working = RunReport(NULL, printer);
+        working = RunReport(nullptr, printer);
     }
     else if (endday)
     {
@@ -2482,9 +2482,9 @@ int RunUserCommand(void)
             kvfile.Reset();
             unlink(VIEWTOUCH_COMMAND);
         }
-        if (printer != NULL)
+        if (printer != nullptr)
             delete printer;
-        if (report != NULL)
+        if (report != nullptr)
             delete report;
         // only allow system exit if we're running at startup (to be used to
         // run multiple reports for multiple data sets, not to be used for
@@ -2526,7 +2526,7 @@ int UserCount()
     int retval = 0;
     int count = 0;
     char message[STRLENGTH];
-    Terminal *term = NULL;
+    Terminal *term = nullptr;
 
     count = MasterControl->TermList()->TermsInUse();
     snprintf(message, STRLENGTH, "UserCount:  %d users active", count);
@@ -2535,7 +2535,7 @@ int UserCount()
     if (count > 0)
     {
         term = MasterControl->TermList();
-        while (term != NULL)
+        while (term != nullptr)
         {
             if (term->user)
             {
@@ -2582,16 +2582,16 @@ int RunEndDay()
 int RunMacros()
 {
     FnTrace("RunMacros()");
-    static Terminal *term = NULL;
+    static Terminal *term = nullptr;
     static int count = 0;
     int retval = 0;
 
-    if (term == NULL)
+    if (term == nullptr)
         term = MasterControl->TermListEnd();
 
-    while (term != NULL && retval == 0)
+    while (term != nullptr && retval == 0)
     {
-        if (term->page != NULL)
+        if (term->page != nullptr)
         {
             term->ReadRecordFile();
             term = term->next;
@@ -2621,7 +2621,7 @@ int RunReport(const genericChar* report_string, Printer *printer)
 {
     FnTrace("RunReport()");
     int retval = 0;
-    static Report *report = NULL;
+    static Report *report = nullptr;
     genericChar report_name[STRLONG] = "";
     genericChar report_from[STRLONG] = "";
     TimeInfo from;
@@ -2631,7 +2631,7 @@ int RunReport(const genericChar* report_string, Printer *printer)
     Terminal *term = MasterControl->TermList();
     System *system_data = term->system_data;
 
-    if (report == NULL && report_string != NULL)
+    if (report == nullptr && report_string != nullptr)
     {
         report = new Report;
 
@@ -2662,37 +2662,37 @@ int RunReport(const genericChar* report_string, Printer *printer)
             to -= std::chrono::seconds(1);
         }
         if (strcmp(report_name, "daily") == 0)
-            system_data->DepositReport(term, from, to, NULL, report);
+            system_data->DepositReport(term, from, to, nullptr, report);
         else if (strcmp(report_name, "expense") == 0)
-            system_data->ExpenseReport(term, from, to, NULL, report, NULL);
+            system_data->ExpenseReport(term, from, to, nullptr, report, nullptr);
         else if (strcmp(report_name, "revenue") == 0)
             system_data->BalanceReport(term, from, to, report);
         else if (strcmp(report_name, "royalty") == 0)
-            system_data->RoyaltyReport(term, from, to, NULL, report, NULL);
+            system_data->RoyaltyReport(term, from, to, nullptr, report, nullptr);
         else if (strcmp(report_name, "sales") == 0)
-            system_data->SalesMixReport(term, from, to, NULL, report);
+            system_data->SalesMixReport(term, from, to, nullptr, report);
         else if (strcmp(report_name, "audit") == 0)
-            system_data->AuditingReport(term, from, to, NULL, report, NULL);
+            system_data->AuditingReport(term, from, to, nullptr, report, nullptr);
         else if (strcmp(report_name, "batchsettle") == 0)
         {
             MasterSystem->cc_report_type = CC_REPORT_BATCH;
-            system_data->CreditCardReport(term, from, to, NULL, report, NULL);
+            system_data->CreditCardReport(term, from, to, nullptr, report, nullptr);
         }
         else
         {
             fprintf(stderr, "Unknown report '%s'\n", report_name);
             delete report;
-            report = NULL;
+            report = nullptr;
         }
     }
 
-    if (report != NULL)
+    if (report != nullptr)
     {
         if (report->is_complete > 0)
         {
             report->Print(printer);
             delete report;
-            report = NULL;
+            report = nullptr;
             retval = 0;
         }
         else
@@ -2708,7 +2708,7 @@ int RunReport(const genericChar* report_string, Printer *printer)
 Printer *SetPrinter(const genericChar* printer_description)
 {
     FnTrace("SetPrinter()");
-    Printer *retPrinter = NULL;
+    Printer *retPrinter = nullptr;
 
     retPrinter = NewPrinterFromString(printer_description);
     return retPrinter;
@@ -2727,7 +2727,7 @@ int GetFontSize(int font_id, int &w, int &h)
 int GetTextWidth(const char* my_string, int len, int font_id)
 {
     FnTrace("GetTextWidth()");
-    if (my_string == NULL || len <= 0)
+    if (my_string == nullptr || len <= 0)
         return 0;
     else if (FontInfo[font_id])
         return XTextWidth(FontInfo[font_id], my_string, len);

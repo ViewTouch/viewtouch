@@ -40,9 +40,9 @@
 /**** Module Data ****/
 const char* SalesGroupName[] = {
     "Unused", "Food", "Beverage", "Beer", "Wine", "Alcohol",
-    "Merchandise", "Room", NULL};
+    "Merchandise", "Room", nullptr};
 const char* SalesGroupShortName[] = {
-    "", "Food", "Bev", "Beer", "Wine", "Alcohol", "Merchan", "Room", NULL};
+    "", "Food", "Bev", "Beer", "Wine", "Alcohol", "Merchan", "Room", nullptr};
 int SalesGroupValue[] = {
     SALESGROUP_NONE, SALESGROUP_FOOD, SALESGROUP_BEVERAGE,
     SALESGROUP_BEER, SALESGROUP_WINE, SALESGROUP_ALCOHOL,
@@ -53,8 +53,8 @@ int SalesGroupValue[] = {
 // Constructor
 Component::Component()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     item_id = 0;
 }
 
@@ -66,8 +66,8 @@ SalesItem::SalesItem(const char* name)
     if (name)
         item_name.Set(name);
 
-    next           = NULL;
-    fore           = NULL;
+    next           = nullptr;
+    fore           = nullptr;
     id             = 0;
     item_code.Set("");
 
@@ -107,7 +107,7 @@ int SalesItem::Copy(SalesItem *target)
     FnTrace("SalesItem::Copy()");
     int retval = 1;
 
-    if (target != NULL)
+    if (target != nullptr)
     {
         target->item_name.Set(item_name);
         target->zone_name.Set(zone_name);
@@ -348,27 +348,27 @@ const char* SalesItem::ZoneName()
 {
     FnTrace("SalesItem::ZoneName()");
     if (zone_name.size() > 0)
-        return admission_filteredname(zone_name);
+                return admission_filteredname(zone_name.str());        // REFACTOR: Added .str() to convert Str to std::string for new signature
     else
-	return admission_filteredname(item_name);
+        return admission_filteredname(item_name.str());       // REFACTOR: Added .str() to convert Str to std::string for new signature
 }
 
 const char* SalesItem::PrintName()
 {
     FnTrace("SalesItem::PrintName()");
     if (print_name.size() > 0)
-        return admission_filteredname(print_name);
+        return admission_filteredname(print_name.str());       // REFACTOR: Added .str() to convert Str to std::string for new signature
     else
-        return admission_filteredname(item_name);
+        return admission_filteredname(item_name.str());      // REFACTOR: Added .str() to convert Str to std::string for new signature
 }
 
 const char* SalesItem::CallCenterName(Terminal *t)
 {
     FnTrace("SalesItem::CallCenterName()");
     if (call_center_name.size() > 0)
-        return admission_filteredname(call_center_name);
+        return admission_filteredname(call_center_name.str()); // REFACTOR: Added .str() to convert Str to std::string for new signature
     else
-        return admission_filteredname(item_name);
+        return admission_filteredname(item_name.str());     // REFACTOR: Added .str() to convert Str to std::string for new signature
 }
 
 
@@ -376,8 +376,8 @@ const char* SalesItem::CallCenterName(Terminal *t)
 // Constructor
 GroupItem::GroupItem()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
 }
 
 // Member Functions
@@ -397,7 +397,7 @@ ItemDB::ItemDB()
 {
     last_id           = 0;
     changed           = 0;
-    name_array        = NULL;
+    name_array        = nullptr;
     array_size        = 0;
     merchandise_count = 0;
     merchandise_sales = 0;
@@ -452,7 +452,7 @@ int ItemDB::Save()
     int error = 0;
     error += df.Write(ItemCount());
 
-    for (SalesItem *si = ItemList(); si != NULL; si = si->next)
+    for (SalesItem *si = ItemList(); si != nullptr; si = si->next)
     {
         error += si->Write(df, SALES_ITEM_VERSION);
         si->changed = 0;
@@ -464,13 +464,13 @@ int ItemDB::Save()
 int ItemDB::Add(SalesItem *si)
 {
     FnTrace("ItemDB::Add()");
-    if (si == NULL)
+    if (si == nullptr)
         return 1;
 
-    if (name_array != NULL)
+    if (name_array != nullptr)
     {
         delete [] name_array;
-        name_array = NULL;
+        name_array = nullptr;
         array_size = 0;
     }
 
@@ -496,13 +496,13 @@ int ItemDB::Add(SalesItem *si)
 int ItemDB::Remove(SalesItem *si)
 {
     FnTrace("ItemDB::Remove()");
-    if (si == NULL)
+    if (si == nullptr)
         return 1;
 
-    if (name_array != NULL)
+    if (name_array != nullptr)
     {
         delete [] name_array;
-        name_array = NULL;
+        name_array = nullptr;
         array_size = 0;
     }
     return item_list.Remove(si);
@@ -514,10 +514,10 @@ int ItemDB::Purge()
     item_list.Purge();
     group_list.Purge();
 
-    if (name_array != NULL)
+    if (name_array != nullptr)
     {
         delete [] name_array;
-        name_array = NULL;
+        name_array = nullptr;
         array_size = 0;
     }
     return 0;
@@ -525,7 +525,7 @@ int ItemDB::Purge()
 
 int ItemDB::ResetAdmissionItems()
 {
-	for(SalesItem* si=ItemList();si!=NULL;si=si->next)
+	for(SalesItem* si=ItemList();si!=nullptr;si=si->next)
 	{
 		if(si->type == ITEM_ADMISSION)
 		{
@@ -538,7 +538,7 @@ int ItemDB::ResetAdmissionItems()
 SalesItem *ItemDB::FindByName(const std::string &name)
 {
     FnTrace("ItemDB::FindByName()");
-    if (name_array == NULL)
+    if (name_array == nullptr)
         BuildNameArray();
 
     // use binary search to find item
@@ -557,37 +557,37 @@ SalesItem *ItemDB::FindByName(const std::string &name)
         else
             return mi;
     }
-    return NULL;
+    return nullptr;
 }
 
 SalesItem *ItemDB::FindByID(int id)
 {
     FnTrace("ItemDB::FindByID()");
     if (id <= 0)
-        return NULL;
+        return nullptr;
 
-    for (SalesItem *si = ItemList(); si != NULL; si = si->next)
+    for (SalesItem *si = ItemList(); si != nullptr; si = si->next)
         if (si->id == id)
             return si;
-    return NULL;
+    return nullptr;
 }
 
 SalesItem *ItemDB::FindByRecord(int record)
 {
     FnTrace("ItemDB::FindByRecord()");
     if (record < 0)
-        return NULL;
-    if (name_array == NULL)
+        return nullptr;
+    if (name_array == nullptr)
         BuildNameArray();
     if (record >= array_size)
-        return NULL;
+        return nullptr;
     return name_array[record];
 }
 
 SalesItem *ItemDB::FindByWord(const char* word, int &record)
 {
     FnTrace("ItemDB::FindByWord()");
-    if (name_array == NULL)
+    if (name_array == nullptr)
         BuildNameArray();
 
     int len = strlen(word);
@@ -603,16 +603,16 @@ SalesItem *ItemDB::FindByWord(const char* word, int &record)
         }
     }
     record = 0;
-    return NULL;
+    return nullptr;
 }
 
 SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
 {
     FnTrace("ItemDB::FindByCallCenterName()");
-    if (name_array == NULL)
+    if (name_array == nullptr)
         BuildNameArray();
-    SalesItem *retval = NULL;
-    SalesItem *si = NULL;
+    SalesItem *retval = nullptr;
+    SalesItem *si = nullptr;
     int len = strlen(word);
     int idx = 0;
 
@@ -628,7 +628,7 @@ SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
         }
     }
 
-    if (retval == NULL)
+    if (retval == nullptr)
         record = 0;
 
     return retval;
@@ -637,10 +637,10 @@ SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
 SalesItem *ItemDB::FindByItemCode(const char* code, int &record)
 {
     FnTrace("ItemDB::FindByItemCode()");
-    if (name_array == NULL)
+    if (name_array == nullptr)
         BuildNameArray();
-    SalesItem *retval = NULL;
-    SalesItem *si = NULL;
+    SalesItem *retval = nullptr;
+    SalesItem *si = nullptr;
     int idx = 0;
 
     for (idx = 0; idx < array_size; idx += 1)
@@ -660,24 +660,24 @@ SalesItem *ItemDB::FindByItemCode(const char* code, int &record)
 int ItemDB::BuildNameArray()
 {
     FnTrace("ItemDB::BuildNameArray()");
-    if (name_array != NULL)
+    if (name_array != nullptr)
     {
 	free(name_array);
-        name_array = NULL;
+        name_array = nullptr;
         array_size = 0;
     }
 
     // Build search array
     array_size = ItemCount();
     name_array = (SalesItem **)calloc(sizeof(SalesItem *), (array_size + 1));
-    if (name_array == NULL)
+    if (name_array == nullptr)
     {
         array_size = 0;
         return 1;
     }
 
     int i = 0;
-    for (SalesItem *si = ItemList(); si != NULL; si = si->next)
+    for (SalesItem *si = ItemList(); si != nullptr; si = si->next)
         name_array[i++] = si;
 
     return 0;
@@ -686,13 +686,13 @@ int ItemDB::BuildNameArray()
 int ItemDB::DeleteUnusedItems(ZoneDB *zone_db)
 {
     FnTrace("ItemDB::DeleteUnusedItems()");
-    if (zone_db == NULL)
+    if (zone_db == nullptr)
         return 1;
 
     // crossreference items with touchzones
-    for (Page *p = zone_db->PageList(); p != NULL; p = p->next)
+    for (Page *p = zone_db->PageList(); p != nullptr; p = p->next)
     {
-        for (Zone *z = p->ZoneList(); z != NULL; z = z->next)
+        for (Zone *z = p->ZoneList(); z != nullptr; z = z->next)
         {
             SalesItem *si = z->Item(this);
             if (si)
@@ -702,7 +702,7 @@ int ItemDB::DeleteUnusedItems(ZoneDB *zone_db)
 
     // delete items not used
     SalesItem *si = ItemList();
-    while (si)
+    while (si != nullptr)
     {
         SalesItem *ptr = si->next;
         if (si->has_zone <= 0)
@@ -723,7 +723,7 @@ int ItemDB::ItemsInFamily(int family)
     int count = 0;
     SalesItem *item = ItemList();
 
-    while (item != NULL)
+    while (item != nullptr)
     {
         if (item->family == family)
             count += 1;
@@ -787,6 +787,10 @@ int MergeQualifier(int &flag, int qualifier)
 int PrintItem(char* buffer, int qualifier, const char* item)
 {
     FnTrace("PrintItem()");
+    static constexpr size_t PRINT_ITEM_BUFFER_SIZE = 512;  // REFACTOR: Define buffer size constant for safety
+                                                            // CRITICAL FIX: Prevents buffer overflow vulnerability
+                                                            // Problem: sizeof(buffer) on pointer parameter returns 8 bytes, not buffer size  
+                                                            // Solution: Use explicit constant matching caller's buffer allocation (512 bytes)
     char pre[64]  = "";
     char post[64] = "";
     if ((qualifier & QUALIFIER_SIDE))
@@ -812,9 +816,9 @@ int PrintItem(char* buffer, int qualifier, const char* item)
     else if ((qualifier & QUALIFIER_CUT3))      snprintf(pre, sizeof(pre), "Cut/3 ");
     else if ((qualifier & QUALIFIER_CUT4))      snprintf(pre, sizeof(pre), "Cut/4 ");
     if ((qualifier & QUALIFIER_SUB))
-        snprintf(buffer, sizeof(buffer), "SUB: %s%s%s", pre, item, post);
+        snprintf(buffer, PRINT_ITEM_BUFFER_SIZE, "SUB: %s%s%s", pre, item, post);  // REFACTOR: Fixed sizeof(buffer) bug - buffer is pointer, not array
     else
-        snprintf(buffer, sizeof(buffer), "%s%s%s", pre, item, post);
+        snprintf(buffer, PRINT_ITEM_BUFFER_SIZE, "%s%s%s", pre, item, post);       // REFACTOR: Fixed sizeof(buffer) bug - buffer is pointer, not array
     return 0;
 }
 

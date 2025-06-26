@@ -88,9 +88,9 @@ public:
     
     int Add(ItemCount *ic)
         {
-            if (ic == NULL)
+            if (ic == nullptr)
                 return 1;
-            else if (head == NULL)
+            else if (head == nullptr)
             {
                 head = ic;
                 return 0;
@@ -184,7 +184,7 @@ int ItemCount::AddCount(Order *o)
 int ItemCountTree::AddToBranch(ItemCount *branch, ItemCount *ic)
 {
     FnTrace("ItemCountTree::AddToBranch()");
-    if (branch == NULL || ic == NULL)
+    if (branch == nullptr || ic == nullptr)
         return 1;
     
     // NOTE - the nature of the data order should keep the tree sort of balanced
@@ -223,7 +223,7 @@ add_right:
 int ItemCountTree::KillBranch(ItemCount *ic)
 {
     FnTrace("ItemCountTree::KillBranch()");
-    if (ic == NULL)
+    if (ic == nullptr)
         return 1;
     if (ic->left)
         KillBranch(ic->left);
@@ -237,8 +237,8 @@ ItemCount *ItemCountTree::SearchBranch(ItemCount *ic, const std::string &name, i
                                        int family)
 {
     FnTrace("ItemCountTree::SearchBranch()");
-    if (ic == NULL)
-        return NULL;
+    if (ic == nullptr)
+        return nullptr;
 
     int compare = StringCompare(name, ic->name);
     if (compare < 0)
@@ -273,7 +273,7 @@ int ItemCountTree::CountOrder(Order *o)
     FnTrace("ItemCountTree::CountOrder()");
     Order *mod;
 
-    if (o == NULL)
+    if (o == nullptr)
         return 1;
     if ((o->qualifier & QUALIFIER_NO) || o->count == 0)
         return 0;
@@ -291,7 +291,7 @@ int ItemCountTree::CountOrder(Order *o)
     if (ic)
     {
         mod = o->modifier_list;
-        while (mod != NULL)
+        while (mod != nullptr)
         {
             if (mod->total_cost > 0)
                 ic->mods.AddCount(mod);
@@ -305,10 +305,10 @@ int ItemCountTree::CountOrder(Order *o)
 int ItemCountTree::CountOrderNoFamily(Order *o)
 {
     FnTrace("ItemCountTree::CountOrderNoFamily()");
-    Order *mod = NULL;
-    ItemCount *ic = NULL;
+    Order *mod = nullptr;
+    ItemCount *ic = nullptr;
 
-    if (o == NULL)
+    if (o == nullptr)
         return 1;
     if ((o->qualifier & QUALIFIER_NO) || o->count == 0)
         return 0;
@@ -326,7 +326,7 @@ int ItemCountTree::CountOrderNoFamily(Order *o)
     if (ic)
     {
         mod = o->modifier_list;
-        while (mod != NULL)
+        while (mod != nullptr)
         {
             if (mod->cost > 0)
                 ic->mods.AddCount(mod);
@@ -497,17 +497,17 @@ int System::SalesMixReport(Terminal *t, const TimeInfo &start_time, const TimeIn
     Archive *a = FindByTime(start_time);
     for (;;)
     {
-        for (Check *c = FirstCheck(a); c != NULL; c = c->next)
+        for (Check *c = FirstCheck(a); c != nullptr; c = c->next)
         {
             if ((c->IsTraining() == 0) && (user_id == 0 || user_id == c->WhoGetsSale(s)))
             {
-                for (SubCheck *sc = c->SubList(); sc != NULL; sc = sc->next)
+                for (SubCheck *sc = c->SubList(); sc != nullptr; sc = sc->next)
                 {
                     if (sc->settle_time.IsSet() &&
                         sc->settle_time < end &&
                         sc->settle_time > start_time)
                     {
-                        for (Order *o = sc->OrderList(); o != NULL; o = o->next)
+                        for (Order *o = sc->OrderList(); o != nullptr; o = o->next)
                         {
                             if (show_family)
                                 tree.CountOrder(o);
@@ -519,7 +519,7 @@ int System::SalesMixReport(Terminal *t, const TimeInfo &start_time, const TimeIn
             }
         }
         
-        if (a == NULL || a->end_time > end)
+        if (a == nullptr || a->end_time > end)
             break; // kill loop
         a = a->next;
     }

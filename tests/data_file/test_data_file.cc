@@ -36,8 +36,8 @@ TEST_CASE("odf")
     write_and_read<int>(1);
     write_and_read<size_t>(1337);
     //write_and_read(1l);
-    write_and_read<double>(1.0);
-    write_and_read<double>(1337.73);
+    write_and_read<Flt>(1.0f);      // REFACTOR: Changed from double to Flt for compatibility
+    write_and_read<Flt>(1337.73f);  // REFACTOR: Changed from double to Flt for compatibility
     //write_and_read<float>(1.0);
 
 

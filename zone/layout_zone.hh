@@ -18,8 +18,7 @@
  * base class zone object for display layout
  */
 
-#ifndef _LAYOUT_ZONE_HH
-#define _LAYOUT_ZONE_HH
+#pragma once  // REFACTOR: Replaced #ifndef _LAYOUT_ZONE_HH guard with modern pragma once
 
 #include "pos_zone.hh"
 #include "terminal.hh"
@@ -75,7 +74,7 @@ public:
     int LinePos(Terminal *t, Flt row, Flt line, Flt len,
                 int color = COLOR_DEFAULT);
 
-    int Entry(Terminal *t, Flt px, Flt py, Flt len, RegionInfo *place = NULL);
+    int Entry(Terminal *t, Flt px, Flt py, Flt len, RegionInfo *place = nullptr);  // REFACTOR: Changed NULL to nullptr for modern C++
     int Button(Terminal *t, Flt px, Flt py, Flt len, int lit = 0);
     int Background(Terminal *t, Flt line, Flt h, int texture);
     int Raised(Terminal *t, Flt line, Flt h);
@@ -84,5 +83,3 @@ public:
     int ColumnSpacing(Terminal *term, int num_columns);
     int Width(Terminal *term);
 };
-
-#endif

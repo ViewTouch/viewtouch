@@ -348,16 +348,16 @@ const char* FontNameClass::ToString()
  *------------------------------------------------------------------*/
 Xpm::Xpm()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     width = 0;
     height = 0;
 }
 
 Xpm::Xpm(Pixmap pm)
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     width = 0;
     height = 0;
     pixmap = pm;
@@ -365,8 +365,8 @@ Xpm::Xpm(Pixmap pm)
 
 Xpm::Xpm(Pixmap pm, int w, int h)
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     width = w;
     height = h;
     pixmap = pm;
@@ -392,17 +392,17 @@ Xpm *Pixmaps::Get(int idx)
 {
     int curridx = 0;
     Xpm *currXpm = pixmaps.Head();
-    Xpm *retval = NULL;
+    Xpm *retval = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     
     if (pixmaps.Count() < 1)
         return retval;
 
-    while (currXpm != NULL && curridx < count)
+    while (currXpm != nullptr && curridx < count) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (curridx == idx)
         {
             retval = currXpm;
-            currXpm = NULL;
+            currXpm = nullptr; // REFACTOR: NULL -> nullptr for modern C++
         }
         else
         {
@@ -416,7 +416,7 @@ Xpm *Pixmaps::Get(int idx)
 
 Xpm *Pixmaps::GetRandom()
 {
-    Xpm *retval = NULL;
+    Xpm *retval = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 
     if (pixmaps.Count() < 2)
         return retval;
@@ -437,17 +437,17 @@ Pixmaps PixmapList;
  ********************************************************************/
 
 LayerList Layers;
-Layer *MainLayer = NULL;
+Layer *MainLayer = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 
 int SocketNo = 0;
 
-Display *Dis = NULL;
+Display *Dis = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 GC       Gfx = 0;
 Window   MainWin;
 std::array<Pixmap, IMAGE_COUNT> Texture;
 Pixmap   ShadowPix;
 int      ScrDepth = 0;
-Visual  *ScrVis = NULL;
+Visual  *ScrVis = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 Colormap ScrCol = 0;
 int      WinWidth  = 0;
 int      WinHeight = 0;
@@ -482,9 +482,9 @@ Str StoreName;
 Str Message;
 
 static XtAppContext App;
-static Widget       MainShell = NULL;
+static Widget       MainShell = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 static int          ScrNo     = 0;
-static Screen      *ScrPtr    = NULL;
+static Screen      *ScrPtr    = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 static int          ScrHeight = 0;
 static int          ScrWidth  = 0;
 static Window       RootWin;
@@ -494,7 +494,7 @@ static Ulong        Palette[256];
 static int          ScreenBlankTime = 60;
 static int          UpdateTimerID = 0;
 static int          TouchInputID  = 0;
-static TouchScreen *TScreen = NULL;
+static TouchScreen *TScreen = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 static int          ResetTime = 20;
 static TimeInfo     TimeOut, LastInput;
 static int          CalibrateStage = 0;
@@ -504,12 +504,12 @@ static Cursor       CursorBlank = 0;
 static Cursor       CursorWait = 0;
 
 #ifndef NO_MOTIF
-static PageDialog      *PDialog = NULL;
-static ZoneDialog      *ZDialog = NULL;
-static MultiZoneDialog *MDialog = NULL;
-static TranslateDialog *TDialog = NULL;
-static ListDialog      *LDialog = NULL;
-static DefaultDialog   *DDialog = NULL;
+static PageDialog      *PDialog = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+static ZoneDialog      *ZDialog = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+static MultiZoneDialog *MDialog = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+static TranslateDialog *TDialog = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+static ListDialog      *LDialog = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+static DefaultDialog   *DDialog = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 #endif
 
 // So that translations aren't done every time a dialog is opened, we'll
@@ -533,7 +533,7 @@ struct timeval last_mouse_time;
 int last_x_pos = 0;
 int last_y_pos = 0;
 
-CCard *creditcard = NULL;
+CCard *creditcard = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 int ConnectionTimeOut = 30;
 
 int allow_iconify = 1;
@@ -572,7 +572,7 @@ genericChar* RStr(genericChar* s)
     FnTrace("RStr()");
 
     static genericChar buffer[1024] = "";
-    if (s == NULL)
+    if (s == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         s = buffer;
     BufferIn.GetString(s);
     return s;
@@ -599,8 +599,8 @@ Translation::Translation()
 {
     FnTrace("Translation::Translation()");
 
-    next = NULL;
-    fore = NULL;
+    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     key[0] = '\0';
     value[0] = '\0';
 }
@@ -609,8 +609,8 @@ Translation::Translation(const char* new_key, const char* new_value)
 {
     FnTrace("Translation::Translation()");
 
-    next = NULL;
-    fore = NULL;
+    next = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+    fore = nullptr; // REFACTOR: NULL -> nullptr for modern C++
     key[0] = '\0';
     strncpy(key, new_key, STRLONG);
     value[0] = '\0';
@@ -672,7 +672,7 @@ const char* Translations::GetTranslation(const char* key)
     FnTrace("Translations::GetTranslation()");
 
     Translation *trans = trans_list.Head();
-    while (trans != NULL)
+    while (trans != nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         if (trans->Match(key))
         {
@@ -693,7 +693,7 @@ void Translations::PrintTranslations()
     char key[STRLONG];
     char value[STRLONG];
 
-    while (trans != NULL)
+    while (trans != nullptr) // REFACTOR: NULL -> nullptr for modern C++
     {
         trans->GetKey(key, STRLONG);
         trans->GetValue(value, STRLONG);
@@ -852,7 +852,7 @@ void UpdateCB(XtPointer client_data, XtIntervalId *timer_id)
             TScreen->Reset();
         }
     }
-    UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, NULL);
+    UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, nullptr);
 }
 
 void TouchScreenCB(XtPointer client_data, int *fid, XtInputId *id)
@@ -860,7 +860,7 @@ void TouchScreenCB(XtPointer client_data, int *fid, XtInputId *id)
     FnTrace("TouchScreenCB()");
 
     TouchScreen *ts = TScreen;
-    if (ts == NULL && silent_mode > 0)
+    if (ts == nullptr && silent_mode > 0) // REFACTOR: NULL -> nullptr for modern C++
         return;
 
     int tx = -1;
@@ -944,7 +944,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
     KeySym key = 0;
     genericChar buffer[32];
 
-    int len = XLookupString(e, buffer, 31, &key, NULL);
+    int len = XLookupString(e, buffer, 31, &key, nullptr); // REFACTOR: NULL -> nullptr for modern C++
     if (len < 0)
         len = 0;
     buffer[len] = '\0';
@@ -1236,7 +1236,7 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
 
     // try to intelligently determine whether this might be
     // a touch
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
     if ((now.tv_sec - last_mouse_time.tv_sec) > 1 ||
         (now.tv_usec - last_mouse_time.tv_usec) > 100000)
     {
@@ -1679,9 +1679,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             new_zone_translations = 1;
             break;
         case TERM_CC_AUTH:
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->Read();
                 creditcard->Sale();
@@ -1692,9 +1692,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_PREAUTH:
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->Read();
                 creditcard->PreAuth();
@@ -1705,9 +1705,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_FINALAUTH:
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->Read();
                 creditcard->FinishAuth();
@@ -1718,9 +1718,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_VOID:
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->Read();
                 creditcard->Void();
@@ -1731,9 +1731,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_VOID_CANCEL:
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->Read();
                 creditcard->VoidCancel();
@@ -1744,9 +1744,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_REFUND:
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->Read();
                 creditcard->Refund();
@@ -1757,9 +1757,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_REFUND_CANCEL:
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->Read();
                 creditcard->RefundCancel();
@@ -1771,54 +1771,54 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             break;
         case TERM_CC_SETTLE:
             // BatchSettle() should also write the response to vt_main
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->BatchSettle();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_INIT:
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->CCInit();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_TOTALS:
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->Totals();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_DETAILS:
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->Details();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_CLEARSAF:
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->ClearSAF();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_SAFDETAILS:
-            if (creditcard == NULL)
+            if (creditcard == nullptr) // REFACTOR: NULL -> nullptr for modern C++
                 creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard != nullptr) // REFACTOR: NULL -> nullptr for modern C++
             {
                 creditcard->SAFDetails();
                 creditcard->Clear();
@@ -1835,8 +1835,8 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
  * General Functions
  ********************************************************************/
 
-Layer       *TargetLayer = NULL;
-LayerObject *TargetObject = NULL;
+Layer       *TargetLayer = nullptr; // REFACTOR: NULL -> nullptr for modern C++
+LayerObject *TargetObject = nullptr; // REFACTOR: NULL -> nullptr for modern C++
 
 int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericChar* title)
 {
@@ -1850,7 +1850,7 @@ int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericCh
 
     KillLayer(id);
     Layer *l = new Layer(Dis, Gfx, MainWin, w, h);
-    if (l == NULL)
+    if (l == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         return 1;
 
     if (l->pix == 0)
@@ -1879,7 +1879,7 @@ int ShowLayer(int id)
     FnTrace("ShowLayer()");
 
     Layer *l = Layers.FindByID(id);
-    if (l == NULL)
+    if (l == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         return 1;
 
     l->buttons.Render(l);
@@ -1912,7 +1912,7 @@ int SetTargetLayer(int id)
     FnTrace("SetTargetLayer()");
 
     Layer *l = Layers.FindByID(id);
-    if (l == NULL)
+    if (l == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         return 1;
 
     TargetLayer = l;
@@ -1925,7 +1925,7 @@ int NewPushButton(int id, int x, int y, int w, int h, const genericChar* text,
     FnTrace("NewPushButton()");
 
     Layer *l = TargetLayer;
-    if (l == NULL)
+    if (l == nullptr) // REFACTOR: NULL -> nullptr for modern C++
         return 1;
     LO_PushButton *b = new LO_PushButton(text, c1, c2);
     b->SetRegion(x + l->offset_x, y + l->offset_y, w, h);
@@ -1963,11 +1963,11 @@ int NewItemMenu(int id, int x, int y, int w, int h,
 XFontStruct *GetFont(Display *display, const char* displayname, const char* fontname)
 {
     FnTrace("GetFont()");
-    XFontStruct *retfont = NULL;
+    XFontStruct *retfont = nullptr;
     char str[STRLONG];
     
     retfont = XLoadQueryFont(Dis, fontname);
-    if (retfont == NULL)
+    if (retfont == nullptr)
     {
         snprintf(str, STRLENGTH, "Can't load font '%s' on display '%s'",
                  fontname, displayname);
@@ -1981,7 +1981,7 @@ XFontStruct *GetFont(Display *display, const char* displayname, const char* font
 XFontStruct *GetAlternateFont(Display *display, const char* displayname, const char* fontname)
 {
     FnTrace("GetAlternateFont()");
-    XFontStruct *retfont = NULL;
+    XFontStruct *retfont = nullptr;
     FontNameClass font;
     char str[STRLENGTH];
 
@@ -1991,31 +1991,31 @@ XFontStruct *GetAlternateFont(Display *display, const char* displayname, const c
     // see if we have the same font in a different foundry
     font.ClearFoundry();
     retfont = XLoadQueryFont(Dis, font.ToString());
-    if (retfont != NULL)
+    if (retfont != nullptr)
         goto done;
 
     // try switching families
     if (strcmp(font.Family(), "courier") == 0)
         font.SetFamily("fixed");
     XLoadQueryFont(Dis, font.ToString());
-    if (retfont != NULL)
+    if (retfont != nullptr)
         goto done;
 
     font.ClearCharSet();
     retfont = XLoadQueryFont(Dis, font.ToString());
-    if (retfont != NULL)
+    if (retfont != nullptr)
         goto done;
 
     font.ClearWeight();
     retfont = XLoadQueryFont(Dis, font.ToString());
-    if (retfont != NULL)
+    if (retfont != nullptr)
         goto done;
 
     font.ClearPixels();
     retfont = XLoadQueryFont(Dis, font.ToString());
     
 done:
-    if (retfont == NULL)
+    if (retfont == nullptr)
         ReportError("  Unable to find alternative!!");
     else
     {
@@ -2145,7 +2145,7 @@ Pixmap LoadPixmap(const char**image_data)
     Pixmap retxpm = 0;
     int status;
     
-    status = XpmCreatePixmapFromData(Dis, MainWin, (char**)image_data, &retxpm, NULL, NULL);
+    status = XpmCreatePixmapFromData(Dis, MainWin, (char**)image_data, &retxpm, nullptr, nullptr);
     if (status != XpmSuccess)
         fprintf(stderr, "XpmError:  %s\n", XpmGetErrorString(status));
     
@@ -2161,7 +2161,7 @@ Xpm *LoadPixmapFile(char* file_name)
 {
     FnTrace("LoadPixmapFile()");
     
-    Xpm *retxpm = NULL;
+    Xpm *retxpm = nullptr;
     Pixmap xpm;
     XpmAttributes attributes;
     int status;
@@ -2172,7 +2172,7 @@ Xpm *LoadPixmapFile(char* file_name)
         if (sb.st_size <= MAX_XPM_SIZE)
         {
             attributes.valuemask = 0;
-            status = XpmReadFileToPixmap(Dis, MainWin, file_name, &xpm, NULL, &attributes);
+            status = XpmReadFileToPixmap(Dis, MainWin, file_name, &xpm, nullptr, &attributes);
             if (status != XpmSuccess)
             {
                 fprintf(stderr, "XpmError %s for %s\n", XpmGetErrorString(status), file_name);
@@ -2200,7 +2200,7 @@ Xpm *LoadPixmapFile(char* file_name)
 int ReadScreenSaverPix()
 {
     FnTrace("ReadScreenSaverPix()");
-    struct dirent *record = NULL;
+    struct dirent *record = nullptr;
     DIR *dp;
     Xpm *newpm;
     genericChar fullpath[STRLONG];
@@ -2213,7 +2213,7 @@ int ReadScreenSaverPix()
         fs::permissions(SCREENSAVER_DIR, fs::perms::all); // be sure read/write/execute flags are set
     }
     dp = opendir(SCREENSAVER_DIR);
-    if (dp == NULL)
+    if (dp == nullptr)
     {
         ReportError("Can't find screen saver directory");
         return 1;
@@ -2231,7 +2231,7 @@ int ReadScreenSaverPix()
             {
                 snprintf(fullpath, STRLONG, "%s/%s", SCREENSAVER_DIR, name);
                 newpm = LoadPixmapFile(fullpath);
-                if (newpm != NULL)
+                if (newpm != nullptr)
                     PixmapList.Add(newpm);
             }
         }
@@ -2264,7 +2264,7 @@ int BlankScreen()
 int DrawScreenSaver()
 {
     FnTrace("DrawScreenSaver()");
-    static Xpm *lastimage = NULL;
+    static Xpm *lastimage = nullptr;
 
     ShowCursor(CURSOR_BLANK);
     Layers.SetScreenBlanker(1);
@@ -2274,7 +2274,7 @@ int DrawScreenSaver()
     XFillRectangle(Dis, MainWin, Gfx, 0, 0, WinWidth, WinHeight);
     
     Xpm *image = PixmapList.GetRandom(); 
-    if (image != NULL && image != lastimage)
+    if (image != nullptr && image != lastimage)
     {
         Layers.SetScreenImage(1);
         XSetClipMask(Dis, Gfx, None);
@@ -2323,7 +2323,7 @@ int Calibrate(int status)
 {
     FnTrace("Calibrate()");
 
-    if (TScreen == NULL)
+    if (TScreen == nullptr)
         return 1;
 
     ResetView();
@@ -2340,7 +2340,7 @@ int Calibrate(int status)
         TScreen->Calibrate();
         TouchInputID =
             XtAppAddInput(App, TScreen->device_no, (XtPointer)XtInputReadMask,
-                          (XtInputCallbackProc)CalibrateCB, NULL);
+                          (XtInputCallbackProc)CalibrateCB, nullptr);
         break;
     case 1:   // 2nd stage - get lower left touch
         XSetTile(Dis, Gfx, Texture[IMAGE_LIT_SAND]);
@@ -2392,7 +2392,7 @@ int StartTimers()
     if (UpdateTimerID == 0)
 	{
         UpdateTimerID = XtAppAddTimeOut(App, UPDATE_TIME,
-                                        (XtTimerCallbackProc) UpdateCB, NULL);
+                                        (XtTimerCallbackProc) UpdateCB, nullptr);
 	}
 
     if (TouchInputID == 0 && TScreen && TScreen->device_no > 0)
@@ -2401,7 +2401,7 @@ int StartTimers()
                                      TScreen->device_no, 
                                      (XtPointer) XtInputReadMask, 
                                      (XtInputCallbackProc) TouchScreenCB, 
-                                     NULL);
+                                     nullptr);
 	}
 
     return 0;
@@ -2438,7 +2438,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
     int i;
 
-    srand(time(NULL));
+    srand(time(nullptr));
 
     // Init Xt & Create Application Context
     App = XtCreateApplicationContext();
@@ -2447,15 +2447,15 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     for (i = 0; i < IMAGE_COUNT; ++i)
         Texture[i] = 0;
     for (i = 0; i < FONT_SPACE; ++i)
-        FontInfo[i] = NULL;
+        FontInfo[i] = nullptr;
 
     // Start Display
     genericChar str[STRLENGTH];
     int argc = 1;
     const genericChar* argv[] = {"vt_term"};
     IsTermLocal = is_term_local;
-    Dis = XtOpenDisplay(App, display, NULL, NULL, NULL, 0, &argc,(char**) argv);
-    if (Dis == NULL)
+    Dis = XtOpenDisplay(App, display, nullptr, nullptr, nullptr, 0, &argc,(char**) argv);
+    if (Dis == nullptr)
     {
         snprintf(str, sizeof(str), "Can't open display '%s'", display);
         ReportError(str);
@@ -2488,7 +2488,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         int f = FontData[i].id;
         const char* scalable_font_name = GetScalableFontName(f);
         FontInfo[f] = XftFontOpenName(Dis, ScrNo, scalable_font_name);
-        if (FontInfo[f] == NULL)
+        if (FontInfo[f] == nullptr)
         {
             // Fallback to default font if scalable font fails
             // ADDED: Enhanced error messaging per PR review feedback - helps users debug font issues
@@ -2496,7 +2496,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
             snprintf(str, sizeof(str), "Warning: Could not load font '%s', falling back to default", scalable_font_name);
             ReportError(str);
             FontInfo[f] = XftFontOpenName(Dis, ScrNo, "Times:size=24:style=regular");
-            if (FontInfo[f] == NULL)
+            if (FontInfo[f] == nullptr)
             {
                 // IMPROVED: More specific error message - shows which fallback failed, not original font
                 snprintf(str, sizeof(str), "Can't load fallback font 'Times:size=24:style=regular'");
@@ -2585,7 +2585,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     ColorBlack = ColorTextT[0];
     ColorWhite = ColorTextT[1];
 
-    Gfx       = XCreateGC(Dis, MainWin, 0, NULL);
+    Gfx       = XCreateGC(Dis, MainWin, 0, nullptr);
     ShadowPix = XmuCreateStippledPixmap(ScrPtr, 0, 1, 1);
     XSetStipple(Dis, Gfx, ShadowPix);
 
@@ -2594,7 +2594,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     CursorWait = XCreateFontCursor(Dis, XC_watch);
     // Setup Blank Cursor
     Pixmap p   = XCreatePixmap(Dis, MainWin, 16, 16, 1);
-    GC     pgc = XCreateGC(Dis, p, 0, NULL);
+    GC     pgc = XCreateGC(Dis, p, 0, nullptr);
     XSetForeground(Dis, pgc, BlackPixel(Dis, ScrNo));
     XSetFillStyle(Dis, pgc, FillSolid);
     XFillRectangle(Dis, p, pgc, 0, 0, 16, 16);
@@ -2675,7 +2675,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     LastInput = SystemTime;
 
     SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
-                                  (XtInputCallbackProc) SocketInputCB, NULL);
+                                  (XtInputCallbackProc) SocketInputCB, nullptr);
 
     // Send server term size
     int screen_size = SIZE_640x480;
@@ -2722,11 +2722,11 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     if (TScreen)
         TScreen->Flush();
 
-    XtAddEventHandler(MainShell, KeyPressMask, FALSE, KeyPressCB, NULL);
-    XtAddEventHandler(MainShell, ExposureMask, FALSE, ExposeCB, NULL);
-    XtAddEventHandler(MainShell, ButtonPressMask, FALSE, MouseClickCB, NULL);
-    XtAddEventHandler(MainShell, ButtonReleaseMask, FALSE, MouseReleaseCB, NULL);
-    XtAddEventHandler(MainShell, PointerMotionMask, FALSE, MouseMoveCB, NULL);
+    XtAddEventHandler(MainShell, KeyPressMask, FALSE, KeyPressCB, nullptr);
+    XtAddEventHandler(MainShell, ExposureMask, FALSE, ExposeCB, nullptr);
+    XtAddEventHandler(MainShell, ButtonPressMask, FALSE, MouseClickCB, nullptr);
+    XtAddEventHandler(MainShell, ButtonReleaseMask, FALSE, MouseReleaseCB, nullptr);
+    XtAddEventHandler(MainShell, PointerMotionMask, FALSE, MouseMoveCB, nullptr);
 
     //Boolean okay;
     XEvent event;
@@ -2757,30 +2757,30 @@ int KillTerm()
     if (ZDialog)
     {
         delete ZDialog;
-        ZDialog = NULL;
+        ZDialog = nullptr;
     }
     if (MDialog)
     {
         delete MDialog;
-        MDialog = NULL;
+        MDialog = nullptr;
     }
     if (PDialog)
     {
         delete PDialog;
-        PDialog = NULL;
+        PDialog = nullptr;
     }
     if (TDialog)
     {
         delete TDialog;
-        TDialog = NULL;
+        TDialog = nullptr;
     }
     if (LDialog)
     {
         delete LDialog;
-        LDialog = NULL;
+        LDialog = nullptr;
     }
     delete DDialog;
-    DDialog = NULL;
+    DDialog = nullptr;
 #endif
     if (ShadowPix)
     {
@@ -2815,14 +2815,14 @@ int KillTerm()
     if (Gfx)
     {
         XFreeGC(Dis, Gfx);
-        Gfx = NULL;
+        Gfx = nullptr;
     }
 
     for (i = 1; i < FONT_SPACE; ++i)
         if (FontInfo[i])
         {
             XftFontClose(Dis, FontInfo[i]);
-            FontInfo[i] = NULL;
+            FontInfo[i] = nullptr;
         }
 
     if (ScrCol)
@@ -2833,12 +2833,12 @@ int KillTerm()
     if (Dis)
     {
         XtCloseDisplay(Dis);
-        Dis = NULL;
+        Dis = nullptr;
     }
     if (App)
     {
         XtDestroyApplicationContext(App);
-        App = NULL;
+        App = nullptr;
     }
     return 0;
 }

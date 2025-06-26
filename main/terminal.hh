@@ -18,8 +18,7 @@
  * POS terminal state class
  */
 
-#ifndef _TERMINAL_HH
-#define _TERMINAL_HH
+#pragma once
 
 #include "cdu.hh"
 #include "credit.hh"
@@ -467,7 +466,7 @@ public:
     int PushPage(int page_id);      // puts page id on stack
     int RunScript(const char* script, int jump_type, int jump_id);
     int FastStartLogin();
-    int OpenTab(int phase = TABOPEN_START, const char* message = NULL);
+    int OpenTab(int phase = TABOPEN_START, const char* message = nullptr);
     int ContinueTab(int serial_number = -1);
     int CloseTab(int serial_number = -1);
     int OpenTabList(const char* message);
@@ -602,26 +601,26 @@ public:
     // Data read/write functions
     int   WInt8(int val);
     int   WInt8(int *val);
-    int   RInt8(int *val = NULL);
+    int   RInt8(int *val = nullptr);
     int   WInt16(int val);
     int   WInt16(int *val);
-    int   RInt16(int *val = NULL);
+    int   RInt16(int *val = nullptr);
     int   WInt32(int val);
     int   WInt32(int *val);
-    int   RInt32(int *val = NULL);
+    int   RInt32(int *val = nullptr);
     long  WLong(long val);
     long  WLong(long *val);
-    long  RLong(long *val = NULL);
+    long  RLong(long *val = nullptr);
     long long WLLong(long long val);
     long long WLLong(long long *val);
-    long long RLLong(long long *val = NULL);
+    long long RLLong(long long *val = nullptr);
     int   WFlt(Flt val);
     int   WFlt(Flt *val);
-    Flt   RFlt(Flt *val = NULL);
+    Flt   RFlt(Flt *val = nullptr);
     int   WStr(const std::string &s, int len = 0);
     int   WStr(const Str &s);
     int   WStr(const Str *s);
-    genericChar* RStr(char* s = NULL);
+    genericChar* RStr(char* s = nullptr);
     genericChar* RStr(Str *s);
     int   Send();
     int   SendNow();
@@ -641,9 +640,9 @@ public:
     Terminal *CC_NextTermWithID(Terminal *cc_term);
     int   CC_NextTermID( int* cc_state, char* termid );
     int   CC_NextBatch(int *state, BatchItem **currbatch, long long *batch);
-    int   CC_Settle(const char* batch = NULL, int reset = 0);
+    int   CC_Settle(const char* batch = nullptr, int reset = 0);
     int   CC_Init();
-    int   CC_Totals(const char* batch = NULL);
+    int   CC_Totals(const char* batch = nullptr);
     int   CC_Details();
     int   CC_ClearSAF(int reset = 0);
     int   CC_SAFDetails();
@@ -666,5 +665,3 @@ int OpenTerminalSocket(const char* hostname, int hardware_type = 0, int isserver
                        int width = -1, int height = -1);
 Terminal *NewTerminal(const char* host_name, int hardware_type = 0, int isserver = 0);
 int CloneTerminal(Terminal *term, const char* dest, const char* name);
-
-#endif

@@ -18,8 +18,7 @@
  * Chart of Accounts entry/edit/list module
  */
 
-#ifndef _ACCOUNT_ZONE_HH
-#define _ACCOUNT_ZONE_HH
+#pragma once  // REFACTOR: Replaced #ifndef _ACCOUNT_ZONE_HH guard with modern pragma once
 
 #include "form_zone.hh"
 
@@ -55,5 +54,3 @@ public:
     int RecordCount(Terminal *term);
     int CheckAccountNumber(Terminal *term, int sendmsg = 1);
 };
-
-#endif

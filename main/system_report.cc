@@ -53,7 +53,7 @@
 MediaList::MediaList()
 {
     FnTrace("MediaList::MediaList()");
-    next = NULL;
+    next = nullptr;
     name[0] = '\0';
     total = 0;
     int i;
@@ -66,7 +66,7 @@ MediaList::MediaList()
 MediaList::MediaList(const genericChar* namestr, int value)
 {
     FnTrace("MediaList::MediaList(const char* , int)");
-    next = NULL;
+    next = nullptr;
     strncpy(name, namestr, STRLONG);
     total = value;
     int i;
@@ -80,7 +80,7 @@ MediaList::MediaList(const genericChar* namestr, int value, int shift)
 {
     FnTrace("MediaList::MediaList(const char* , int, int)");
 
-    next = NULL;
+    next = nullptr;
     strncpy(name, namestr, STRLONG);
     total = value;
     int i;
@@ -95,7 +95,7 @@ MediaList::MediaList(const genericChar* namestr, int value, int shift)
 MediaList::~MediaList()
 {
     FnTrace("MediaList::~MediaList()");
-    if (next != NULL)
+    if (next != nullptr)
         delete next;
 }
 
@@ -117,7 +117,7 @@ int MediaList::Add(const genericChar* namestr, int value, int shift)
         if (shift >= 0 && shift < MAX_SHIFTS)
             shift_total[shift] += value;
     }
-    else if (next != NULL)
+    else if (next != nullptr)
     {  // try the next entry
         next->Add(namestr, value, shift);
     }
@@ -137,7 +137,7 @@ int MediaList::Total(int shift)
         retval = shift_total[shift];
     else
         retval = total;
-    if (next != NULL)
+    if (next != nullptr)
         retval += next->Total(shift);
     return retval;
 }
@@ -146,7 +146,7 @@ int MediaList::Print()
 {
     FnTrace("MediaList::Print()");
     printf("%s:  $%d\n", name, total);
-    if (next != NULL)
+    if (next != nullptr)
         next->Print();
     return 0;
 }
@@ -160,7 +160,7 @@ int System::ServerReport(Terminal *term, TimeInfo &time_start,
                          TimeInfo &end_time, Employee *thisEmployee, Report *ptrReport)
 {
     FnTrace("System::ServerReport()");
-    if (ptrReport == NULL)
+    if (ptrReport == nullptr)
         return 1;
 
     ptrReport->update_flag = UPDATE_ARCHIVE | UPDATE_CHECKS | UPDATE_SERVER;
@@ -193,7 +193,7 @@ int System::ServerReport(Terminal *term, TimeInfo &time_start,
     Archive *thisArchive = FindByTime(time_start);
     for (;;)
     {
-        if (thisArchive == NULL)
+        if (thisArchive == nullptr)
             ptrReport->update_flag |= UPDATE_MINUTE;
 
         Check *thisCheck = FirstCheck(thisArchive);
@@ -223,7 +223,7 @@ int System::ServerReport(Terminal *term, TimeInfo &time_start,
                     ++closed;
                 }
 
-                for (SubCheck *sc = thisCheck->SubList(); sc != NULL; sc = sc->next)
+                for (SubCheck *sc = thisCheck->SubList(); sc != nullptr; sc = sc->next)
                 {
                     if (thisCheck->IsTakeOut())
                         takeout_sales += sc->total_sales;
@@ -237,7 +237,7 @@ int System::ServerReport(Terminal *term, TimeInfo &time_start,
             }
             thisCheck = thisCheck->next;
         }
-        if (thisArchive == NULL || thisArchive->end_time > end)
+        if (thisArchive == nullptr || thisArchive->end_time > end)
             break; // kill loop
         thisArchive = thisArchive->next;
     }
@@ -356,7 +356,7 @@ int System::ServerReport(Terminal *term, TimeInfo &time_start,
 int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
 {
     FnTrace("System::ShiftBalanceReport()");
-    if (ptrReport == NULL)
+    if (ptrReport == nullptr)
         return 1;
 
 //    ptrReport->SetTitle(SHIFT_BALANCE_TITLE);           Let the Button's Name Field provide the Title for this report
@@ -494,15 +494,15 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
     Archive *a = FindByTime(time_start);
     for (;;)
     {
-        for (Check *thisCheck = FirstCheck(a); thisCheck != NULL; thisCheck = thisCheck->next)
+        for (Check *thisCheck = FirstCheck(a); thisCheck != nullptr; thisCheck = thisCheck->next)
 		{
             if (thisCheck->IsTraining() > 0)
                 continue;
 
             TimeInfo *timevar = thisCheck->TimeClosed();
-            if (timevar == NULL && thisCheck->CustomerType() == CHECK_HOTEL)
+            if (timevar == nullptr && thisCheck->CustomerType() == CHECK_HOTEL)
                 timevar = &thisCheck->time_open;
-            if (timevar == NULL || *timevar < time_start || *timevar >= end)
+            if (timevar == nullptr || *timevar < time_start || *timevar >= end)
                 continue;
 
             int sn = currSettings->ShiftNumber(*timevar);
@@ -515,31 +515,31 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
 
             // Add all of the media
             CompInfo *compinfo = a ? a->CompList() : settings.CompList();
-            while (compinfo != NULL)
+            while (compinfo != nullptr)
             {
                 complist.Add(compinfo->name.Value(), 0);
                 compinfo = compinfo->next;
             }
             MealInfo *mealinfo = a ? a->MealList() : settings.MealList();
-            while (mealinfo != NULL)
+            while (mealinfo != nullptr)
             {
                 meallist.Add(mealinfo->name.Value(), 0);
                 mealinfo = mealinfo->next;
             }
             DiscountInfo *discinfo = a ? a->DiscountList() : settings.DiscountList();
-            while (discinfo != NULL)
+            while (discinfo != nullptr)
             {
                 discountlist.Add(discinfo->name.Value(), 0);
                 discinfo = discinfo->next;
             }
             CouponInfo *coupinfo = a ? a->CouponList() : settings.CouponList();
-            while (coupinfo != NULL)
+            while (coupinfo != nullptr)
             {
                 couponlist.Add(coupinfo->name.Value(), 0);
                 coupinfo = coupinfo->next;
             }
 
-			for (SubCheck *sc = thisCheck->SubList(); sc != NULL; sc = sc->next)
+			for (SubCheck *sc = thisCheck->SubList(); sc != nullptr; sc = sc->next)
 			{
 				for (int sg = SALESGROUP_FOOD; sg <= SALESGROUP_ROOM; ++sg)
 					group_sales[sn][sg] += sc->GrossSales(thisCheck, currSettings, sg);
@@ -554,13 +554,13 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
 					fastfood_sales[sn] += my_sales;
 
 				item_comp[sn] += sc->item_comps;
-				for (Payment *thisPayment = sc->PaymentList(); thisPayment != NULL; thisPayment = thisPayment->next)
+				for (Payment *thisPayment = sc->PaymentList(); thisPayment != nullptr; thisPayment = thisPayment->next)
 				{
 					switch (thisPayment->tender_type)
 					{
                     case TENDER_COMP:
                     {
-                        compinfo = NULL;
+                        compinfo = nullptr;
                         if (a)
                             compinfo = a->FindCompByID(thisPayment->tender_id);
                         else
@@ -571,7 +571,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
                         break;
                     case TENDER_EMPLOYEE_MEAL:
                     {
-                        mealinfo = NULL;
+                        mealinfo = nullptr;
                         if (a)
                             mealinfo = a->FindMealByID(thisPayment->tender_id);
                         else
@@ -582,7 +582,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
                         break;
                     case TENDER_DISCOUNT:
                     {
-                        discinfo = NULL;
+                        discinfo = nullptr;
                         if (a)
                             discinfo = a->FindDiscountByID(thisPayment->tender_id);
                         else
@@ -593,7 +593,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
                         break;
                     case TENDER_COUPON:
                     {
-                        coupinfo = NULL;
+                        coupinfo = nullptr;
                         if (a)
                             coupinfo = a->FindCouponByID(thisPayment->tender_id);
                         else
@@ -609,7 +609,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
 			}
 		}
 
-        if (a == NULL || a->end_time > end)
+        if (a == nullptr || a->end_time > end)
             break;
 
         a = a->next;
@@ -806,7 +806,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         if (term->expand_goodwill)
         {
             MediaList *comps = &complist;
-            while (comps != NULL)
+            while (comps != nullptr)
             {
                 if (comps->name[0] != '\0' && (comps->total != 0 || term->hide_zeros == 0))
                 {
@@ -858,7 +858,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         if (term->expand_goodwill)
         {
             MediaList *meals = &meallist;
-            while (meals != NULL)
+            while (meals != nullptr)
             {
                 if (meals->name[0] != '\0' && (meals->total != 0 || term->hide_zeros == 0))
                 {
@@ -896,7 +896,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         if (term->expand_goodwill)
         {
             MediaList *discounts = &discountlist;
-            while (discounts != NULL)
+            while (discounts != nullptr)
             {
                 if (discounts->name[0] != '\0' && (discounts->total != 0 || term->hide_zeros == 0))
                 {
@@ -934,7 +934,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         if (term->expand_goodwill)
         {
             MediaList *coupons = &couponlist;
-            while (coupons != NULL)
+            while (coupons != nullptr)
             {
                 if (coupons->name[0] != '\0' && (coupons->total != 0 || term->hide_zeros == 0))
                 {
@@ -1361,12 +1361,12 @@ public:
     // Constructor
     BRData()
     {
-        system = NULL;
-        report = NULL;
-        term = NULL;
-        archive = NULL;
-        lastArchive = NULL;
-        check = NULL;
+        system = nullptr;
+        report = nullptr;
+        term = nullptr;
+        archive = nullptr;
+        lastArchive = nullptr;
+        check = nullptr;
         guests = 0;
         sales = 0;
 		takeout_sales = 0;
@@ -1391,7 +1391,7 @@ int BalanceReportWorkFn(BRData *brdata)
 
     // Calculate sales
     Check *c = brdata->check;
-    if (c == NULL)
+    if (c == nullptr)
         c = sys->FirstCheck(brdata->archive);
 
     while (c && c->IsTraining())
@@ -1400,30 +1400,30 @@ int BalanceReportWorkFn(BRData *brdata)
     // Process Media entries if both archive and lastArchive are null, in which
     // case we just process the media entries in settings, or once for each
     // archive.
-    if ((brdata->archive == NULL && brdata->lastArchive == NULL) ||
+    if ((brdata->archive == nullptr && brdata->lastArchive == nullptr) ||
         (brdata->archive && (brdata->archive != brdata->lastArchive)))
     {
         // Add the media titles for this archive
         CompInfo *compinfo = brdata->archive ? brdata->archive->CompList() : currSettings->CompList();
-        while (compinfo != NULL)
+        while (compinfo != nullptr)
         {
             brdata->complist.Add(compinfo->name.Value(), 0);
             compinfo = compinfo->next;
         }
         MealInfo *mealinfo = brdata->archive ? brdata->archive->MealList() : currSettings->MealList();
-        while (mealinfo != NULL)
+        while (mealinfo != nullptr)
         {
             brdata->meallist.Add(mealinfo->name.Value(), 0);
             mealinfo = mealinfo->next;
         }
         DiscountInfo *discinfo = brdata->archive ? brdata->archive->DiscountList() : currSettings->DiscountList();
-        while (discinfo != NULL)
+        while (discinfo != nullptr)
         {
             brdata->discountlist.Add(discinfo->name.Value(), 0);
             discinfo = discinfo->next;
         }
         CouponInfo *coupinfo = brdata->archive ? brdata->archive->CouponList() : currSettings->CouponList();
-        while (coupinfo != NULL)
+        while (coupinfo != nullptr)
         {
             brdata->couponlist.Add(coupinfo->name.Value(), 0);
             coupinfo = coupinfo->next;
@@ -1446,7 +1446,7 @@ int BalanceReportWorkFn(BRData *brdata)
                 else
                     brdata->guests += c->Guests();
 
-                for (SubCheck *sc = c->SubList(); sc != NULL; sc = sc->next)
+                for (SubCheck *sc = c->SubList(); sc != nullptr; sc = sc->next)
                 {
                     for (int sg = SALESGROUP_FOOD; sg <= SALESGROUP_ROOM; ++sg)
                     {
@@ -1468,12 +1468,12 @@ int BalanceReportWorkFn(BRData *brdata)
                     MealInfo *mealinfo;
 
                     brdata->item_comp += sc->item_comps;
-                    for (Payment *p = sc->PaymentList(); p != NULL; p = p->next)
+                    for (Payment *p = sc->PaymentList(); p != nullptr; p = p->next)
                     {
                         switch (p->tender_type)
                         {
                         case TENDER_COMP:
-                            compinfo = NULL;
+                            compinfo = nullptr;
                             if (brdata->archive)
                                 compinfo = brdata->archive->FindCompByID(p->tender_id);
                             else
@@ -1482,7 +1482,7 @@ int BalanceReportWorkFn(BRData *brdata)
                                 brdata->complist.Add(compinfo->name.Value(), p->value);
                             break;
                         case TENDER_EMPLOYEE_MEAL:
-                            mealinfo = NULL;
+                            mealinfo = nullptr;
                             if (brdata->archive)
                                 mealinfo = brdata->archive->FindMealByID(p->tender_id);
                             else
@@ -1491,7 +1491,7 @@ int BalanceReportWorkFn(BRData *brdata)
                                 brdata->meallist.Add(mealinfo->name.Value(), p->value);
                             break;
                         case TENDER_DISCOUNT:
-                            discinfo = NULL;
+                            discinfo = nullptr;
                             if (brdata->archive)
                                 discinfo = brdata->archive->FindDiscountByID(p->tender_id);
                             else
@@ -1500,7 +1500,7 @@ int BalanceReportWorkFn(BRData *brdata)
                                 brdata->discountlist.Add(discinfo->name.Value(), p->value);
                             break;
                         case TENDER_COUPON:
-                            coupinfo = NULL;
+                            coupinfo = nullptr;
                             if (brdata->archive)
                                 coupinfo = brdata->archive->FindCouponByID(p->tender_id);
                             else
@@ -1620,7 +1620,7 @@ int BalanceReportWorkFn(BRData *brdata)
         if (term->expand_goodwill)
         {
             MediaList *comps = &(brdata->complist);
-            while (comps != NULL)
+            while (comps != nullptr)
             {
                 if (comps->name[0] != '\0' && (comps->total != 0 || term->hide_zeros == 0))
                 {
@@ -1649,7 +1649,7 @@ int BalanceReportWorkFn(BRData *brdata)
         if (term->expand_goodwill)
         {
             MediaList *meals = &(brdata->meallist);
-            while (meals != NULL)
+            while (meals != nullptr)
             {
                 if (meals->name[0] != '\0' && (meals->total != 0 || term->hide_zeros == 0))
                 {
@@ -1671,7 +1671,7 @@ int BalanceReportWorkFn(BRData *brdata)
         if (term->expand_goodwill)
         {
             MediaList *discounts = &(brdata->discountlist);
-            while (discounts != NULL)
+            while (discounts != nullptr)
             {
                 if (discounts->name[0] != '\0' && (discounts->total != 0 || term->hide_zeros == 0))
                 {
@@ -1693,7 +1693,7 @@ int BalanceReportWorkFn(BRData *brdata)
         if (term->expand_goodwill)
         {
             MediaList *coupons = &(brdata->couponlist);
-            while (coupons != NULL)
+            while (coupons != nullptr)
             {
                 if (coupons->name[0] != '\0' && (coupons->total != 0 || term->hide_zeros == 0))
                 {
@@ -1881,7 +1881,7 @@ int BalanceReportWorkFn(BRData *brdata)
     thisReport->TextPosR(last_pos, str, color);
 
     thisReport->is_complete = 1;
-    brdata->term->Update(UPDATE_REPORT, NULL);
+    brdata->term->Update(UPDATE_REPORT, nullptr);
     delete brdata;
 
     return 1;  // end work fn
@@ -1891,7 +1891,7 @@ int BalanceReportWorkFn(BRData *brdata)
 int System::BalanceReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_time, Report *report)
 {
     FnTrace("System::BalanceReport()");
-    if (report == NULL)
+    if (report == nullptr)
         return 1;
 
 //    report->SetTitle(BALANCE_TITLE);          Let the Button's Name Field provide the Title for this report
@@ -1940,7 +1940,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                           Report *report)
 {
     FnTrace("System::DepositReport()");
-    if (report == NULL)
+    if (report == nullptr)
         return 1;
 
 //    report->SetTitle(DEPOSIT_TITLE);              Let the Button's Name Field provide the Title for this report
@@ -2011,7 +2011,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
         {
             Check *firstcheck = FirstCheck(a);
             // Scan checks
-            for (Check *c = firstcheck; c != NULL; c = c->next)
+            for (Check *c = firstcheck; c != nullptr; c = c->next)
             {
                 if (c->IsTraining() > 0)
                     continue;
@@ -2019,15 +2019,15 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
 					continue;
 
                 TimeInfo *timevar = c->TimeClosed();
-                if (timevar != NULL && *timevar >= start_time && *timevar < end_time)
+                if (timevar != nullptr && *timevar >= start_time && *timevar < end_time)
                 {
                     // bury the incomplete check here.  That way it won't be incomplete just
                     // because we hit the end of the archives, but because we hit the end
                     // of the archives and still had qualifying data.
-                    if (a == NULL)
+                    if (a == nullptr)
                         incomplete = 1;
                     for (SubCheck *subcheck = c->SubList();
-                         subcheck != NULL;
+                         subcheck != nullptr;
                          subcheck = subcheck->next)
                     {
                         if (subcheck->settle_time.IsSet() &&
@@ -2061,14 +2061,14 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                 // the drawer must exist and it either must be today's drawer while today is
                 // being processed (incomplete != 0) or it must fit into the date range
                 // of the report.
-                if (drawer != NULL &&
+                if (drawer != nullptr &&
                     (incomplete ||
                      (drawer->balance_time >= start_time &&
                       drawer->balance_time < end_time)))
                 {
                     drawer->Total(firstcheck, 1);
                     CreditCardInfo *credinfo = a ? a->CreditCardList() : s->CreditCardList();
-                    while (credinfo != NULL)
+                    while (credinfo != nullptr)
                     {
                         int balance = 0;
                         if (drawer)
@@ -2078,7 +2078,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                     }
 
                     DiscountInfo *discinfo = a ? a->DiscountList() : s->DiscountList();
-                    while (discinfo != NULL)
+                    while (discinfo != nullptr)
                     {
                         int balance = 0;
                         if (drawer)
@@ -2088,7 +2088,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                     }
 
                     CouponInfo *coupinfo = a ? a->CouponList() : s->CouponList();
-                    while (coupinfo != NULL)
+                    while (coupinfo != nullptr)
                     {
                         int balance = 0;
                         if (drawer)
@@ -2098,7 +2098,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                     }
 
                     CompInfo *compinfo = a ? a->CompList() : s->CompList();
-                    while (compinfo != NULL)
+                    while (compinfo != nullptr)
                     {
                         int balance = 0;
                         if (drawer)
@@ -2108,7 +2108,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                     }
 
                     MealInfo *mealinfo = a ? a->MealList() : s->MealList();
-                    while (mealinfo != NULL)
+                    while (mealinfo != nullptr)
                     {
                         int balance = 0;
                         if (drawer)
@@ -2138,7 +2138,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                 }
                 if (drawer)
                     drawer = drawer->next;
-            } while (drawer != NULL);
+            } while (drawer != nullptr);
 
             // Scan Tips
             if (a)
@@ -2154,7 +2154,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                 tips_held += tip_db.total_held;
             }
 
-            if (a == NULL || archive)
+            if (a == nullptr || archive)
                 break;
             if (a->end_time >= end)
             {
@@ -2291,7 +2291,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->Mode(0);
 
     MediaList *mediacomp = &complist;
-    while (mediacomp != NULL)
+    while (mediacomp != nullptr)
     {
         if (mediacomp->name[0] != '\0')
         {
@@ -2307,7 +2307,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine();
 
     MediaList *mediameal = &meallist;
-    while (mediameal != NULL)
+    while (mediameal != nullptr)
     {
         if (mediameal->name[0] != '\0')
         {
@@ -2319,7 +2319,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     }
 
     MediaList *mediadiscount = &discountlist;
-    while (mediadiscount != NULL)
+    while (mediadiscount != nullptr)
     {
         if (mediadiscount->name[0] != '\0')
         {
@@ -2331,7 +2331,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     }
 
     MediaList *mediacoupon = &couponlist;
-    while (mediacoupon != NULL)
+    while (mediacoupon != nullptr)
     {
         if (mediacoupon->name[0] != '\0')
         {
@@ -2422,7 +2422,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     if (settings.authorize_method == CCAUTH_NONE)
     {
         MediaList *mediacredit = &creditcardlist;
-        while (mediacredit != NULL)
+        while (mediacredit != nullptr)
         {
             if (mediacredit->name[0] != '\0')
             {
@@ -2545,15 +2545,15 @@ public:
     // Constructor
     CCRData()
     {
-        report = NULL;
+        report = nullptr;
         none = 1;
         total_amount = 0;
         total_guests = 0;
         total_number = 0;
-        term = NULL;
-        system = NULL;
-        archive = NULL;
-        check = NULL;
+        term = nullptr;
+        system = nullptr;
+        archive = nullptr;
+        check = nullptr;
         user_id = 0;
         training = 0;
     }
@@ -2569,7 +2569,7 @@ int ClosedCheckReportWorkFn(CCRData *ccrdata)
     genericChar str[256];
 
     Check *thisCheck = ccrdata->check;
-    if (thisCheck == NULL)
+    if (thisCheck == nullptr)
         thisCheck = sys->FirstCheck(ccrdata->archive);
 
     while (thisCheck)
@@ -2578,7 +2578,7 @@ int ClosedCheckReportWorkFn(CCRData *ccrdata)
             thisCheck->WhoGetsSale(s) == ccrdata->user_id)
         {
             int amount = 0, flag = 0;
-            for (SubCheck *sc = thisCheck->SubList(); sc != NULL; sc = sc->next)
+            for (SubCheck *sc = thisCheck->SubList(); sc != nullptr; sc = sc->next)
                 if (sc->status == CHECK_CLOSED && sc->settle_time < ccrdata->end &&
                     sc->settle_time >= ccrdata->start)
                 {
@@ -2634,7 +2634,7 @@ int ClosedCheckReportWorkFn(CCRData *ccrdata)
     thisReport->TextPosR(22, term->FormatPrice(ccrdata->total_amount));
 
     thisReport->is_complete = 1;
-    ccrdata->term->Update(UPDATE_REPORT, NULL);
+    ccrdata->term->Update(UPDATE_REPORT, nullptr);
     delete ccrdata;
     return 1;  // end work fn
 }
@@ -2643,7 +2643,7 @@ int System::ClosedCheckReport(Terminal *term, TimeInfo &start_time, TimeInfo &en
                               Employee *thisEmployee, Report *thisReport)
 {
     FnTrace("System::ClosedCheckReport()");
-    if (thisReport == NULL)
+    if (thisReport == nullptr)
         return 1;
 
     thisReport->update_flag = UPDATE_ARCHIVE | UPDATE_CHECKS | UPDATE_SERVER;
@@ -2697,7 +2697,7 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
                                 Employee *thisEmployee, Report *thisReport)
 {
     FnTrace("System::ItemExceptionReport()");
-    if (thisReport == NULL)
+    if (thisReport == nullptr)
         return 1;
 
     thisReport->update_flag = UPDATE_ARCHIVE | UPDATE_SERVER;
@@ -2767,8 +2767,8 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
         //short exception_was;
 		short reason_is;
         //short reason_was;
-		const char* item_is = NULL;
-        const char* item_was = NULL;
+		const char* item_is = nullptr;
+        const char* item_was = nullptr;
 
 		ItemException *currException = FirstItemException(thisArchive);
 		while (currException)
@@ -2828,7 +2828,7 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
 			currException = currException->next;
 		}
 
-		if (thisArchive == NULL || (thisArchive->end_time > end))
+		if (thisArchive == nullptr || (thisArchive->end_time > end))
 			break;
 
 		thisArchive = thisArchive->next;
@@ -2844,7 +2844,7 @@ int System::TableExceptionReport(Terminal *term, TimeInfo &start_time,
                                  TimeInfo &end_time, Employee *e, Report *report)
 {
     FnTrace("System::TableExceptionReport()");
-    if (report == NULL)
+    if (report == nullptr)
         return 1;
 
     report->update_flag = UPDATE_ARCHIVE | UPDATE_SERVER;
@@ -2903,7 +2903,7 @@ int System::TableExceptionReport(Terminal *term, TimeInfo &start_time,
             }
             te = te->next;
         }
-        if (a == NULL || a->end_time > end)
+        if (a == nullptr || a->end_time > end)
             break;
         a = a->next;
     }
@@ -2916,7 +2916,7 @@ int System::RebuildExceptionReport(Terminal *term, TimeInfo &start_time,
                                    TimeInfo &end_time, Employee *e, Report *report)
 {
     FnTrace("System::RebuildExceptionReport()");
-    if (report == NULL)
+    if (report == nullptr)
         return 1;
 
     report->update_flag = UPDATE_ARCHIVE | UPDATE_SERVER;
@@ -2973,7 +2973,7 @@ int System::RebuildExceptionReport(Terminal *term, TimeInfo &start_time,
             re = re->next;
         }
 
-        if (a == NULL || a->end_time > end)
+        if (a == nullptr || a->end_time > end)
             break;
         a = a->next;
     }
@@ -2985,7 +2985,7 @@ int System::DrawerSummaryReport(Terminal *term, Drawer *my_drawer_list,
                                 Check *my_check_list, Report *report)
 {
     FnTrace("System::DrawerSummaryReport()");
-    if (my_check_list == NULL || report == NULL)
+    if (my_check_list == nullptr || report == nullptr)
         return 1;
 
     report->update_flag = UPDATE_ARCHIVE | UPDATE_CHECKS | UPDATE_SERVER;
@@ -2995,7 +2995,7 @@ int System::DrawerSummaryReport(Terminal *term, Drawer *my_drawer_list,
     report->NewLine(2);
 
     int open = 0, closed = 0, diff = 0;
-    for (Drawer *drawer = my_drawer_list; drawer != NULL; drawer = drawer->next)
+    for (Drawer *drawer = my_drawer_list; drawer != nullptr; drawer = drawer->next)
 	{
 		drawer->Total(my_check_list);
 		int status = drawer->Status();
@@ -3024,7 +3024,7 @@ int System::DrawerSummaryReport(Terminal *term, Drawer *my_drawer_list,
 int System::CustomerDetailReport(Terminal *term, Employee *e, Report *report)
 {
     FnTrace("System::CustomerDetailReport()");
-    if (report == NULL || e == NULL)
+    if (report == nullptr || e == nullptr)
         return 1;
 
     report->Mode(PRINT_UNDERLINE);
@@ -3039,7 +3039,7 @@ int System::CustomerDetailReport(Terminal *term, Employee *e, Report *report)
     genericChar name[256];
     int training = e->training;
     report->update_flag = UPDATE_CHECKS;
-    for (Check *c = FirstCheck(); c != NULL; c = c->next)
+    for (Check *c = FirstCheck(); c != nullptr; c = c->next)
 	{
 		if (c->CustomerType() != CHECK_HOTEL ||
             c->IsTraining() != training ||
@@ -3049,7 +3049,7 @@ int System::CustomerDetailReport(Terminal *term, Employee *e, Report *report)
         }
 
 		int balance = 0;
-		for (SubCheck *sc = c->SubList(); sc != NULL; sc = sc->next)
+		for (SubCheck *sc = c->SubList(); sc != nullptr; sc = sc->next)
 			balance += sc->balance;
 
 		TimeInfo *timevar = c->CheckOut();
@@ -3163,7 +3163,7 @@ public:
     int Copy(Expenses *exp2);
     Expenses *ImportExpenseDB(ExpenseDB *expense_db, Terminal *term,
                               Archive *archive, int sortby = 0);
-    Expenses *Insert(Expense *expense, Terminal *term, int sortby, Archive *archive = NULL);
+    Expenses *Insert(Expense *expense, Terminal *term, int sortby, Archive *archive = nullptr);
     int LessThan(Expenses *exp2, int sortby);
     int GreaterThan(Expenses *exp2, int sortby);
     void Print();
@@ -3171,7 +3171,7 @@ public:
 
 Expenses::Expenses()
 {
-    next = NULL;
+    next = nullptr;
     payer_id = 0;
     payer_name[0] = '\0';
     date.Set();
@@ -3192,7 +3192,7 @@ Expenses::Expenses(Expense *expense, Terminal *term, Archive *archive)
     UserDB *userdb = &(term->system_data->user_db);
     Employee *employee = userdb->FindByID(expense->employee_id);
     //Drawer *drawer_list;
-    //if (archive != NULL)
+    //if (archive != nullptr)
     //    drawer_list = archive->DrawerList();
     //else
     //    drawer_list = term->system_data->DrawerList();
@@ -3200,12 +3200,12 @@ Expenses::Expenses(Expense *expense, Terminal *term, Archive *archive)
     Account *tax_account = acctdb->FindByNumber(expense->tax_account_id);
     Account *dest_account = acctdb->FindByNumber(expense->dest_account_id);
 
-    next = NULL;
+    next = nullptr;
 
     date = expense->exp_date;
 
     payer_id = expense->employee_id;
-    if (employee != NULL)
+    if (employee != nullptr)
         strncpy(payer_name, employee->system_name.Value(), STRLENGTH);
     else
         strncpy(payer_name, "Unknown", STRLENGTH);
@@ -3219,14 +3219,14 @@ Expenses::Expenses(Expense *expense, Terminal *term, Archive *archive)
         strncpy(source_name, "Unknown", STRLENGTH);
 
     tax_account_num = expense->tax_account_id;
-    if (tax_account != NULL)
+    if (tax_account != nullptr)
         strncpy(tax_account_name, tax_account->name.Value(), STRLENGTH);
     else
         strncpy(tax_account_name, "Unknown", STRLENGTH);
     tax_amount = expense->tax;
 
     dest_account_num = expense->dest_account_id;
-    if (dest_account != NULL)
+    if (dest_account != nullptr)
         strncpy(dest_account_name, dest_account->name.Value(), STRLENGTH);
     else
         strncpy(dest_account_name, "Unknown", STRLENGTH);
@@ -3238,14 +3238,14 @@ Expenses::Expenses(Expense *expense, Terminal *term, Archive *archive)
 
 Expenses::~Expenses()
 {
-    if (next != NULL)
+    if (next != nullptr)
         delete next;
 }
 
 int Expenses::Copy(Expenses *exp2)
 {
     FnTrace("Expenses::Copy()");
-    next = NULL;
+    next = nullptr;
     payer_id = exp2->payer_id;
     strncpy(payer_name, exp2->payer_name, STRLENGTH);
     date.Set(exp2->date);
@@ -3269,7 +3269,7 @@ Expenses *Expenses::ImportExpenseDB(ExpenseDB *expense_db, Terminal *term,
     Expenses *retNode = this;
     Expense *currExpense = expense_db->ExpenseList();
 
-    while (currExpense != NULL)
+    while (currExpense != nullptr)
     {
         retNode = retNode->Insert(currExpense, term, sortby, archive);
         currExpense = currExpense->next;
@@ -3282,7 +3282,7 @@ Expenses *Expenses::Insert(Expense *expense, Terminal *term, int sortby, Archive
 {
     FnTrace("Expenses::Insert()");
     Expenses *currNode = this;
-    Expenses *prevNode = NULL;
+    Expenses *prevNode = nullptr;
     Expenses *newNode = new Expenses(expense, term, archive);
     Expenses *retNode = this;  // we'll return this
     int comparison;
@@ -3295,7 +3295,7 @@ Expenses *Expenses::Insert(Expense *expense, Terminal *term, int sortby, Archive
         done = 1;
     }
 
-    while (currNode != NULL && done != 1)
+    while (currNode != nullptr && done != 1)
     {
         if (sortby & EXPENSE_SORTBY_ASCEND)
             comparison = newNode->LessThan(currNode, sortby);
@@ -3304,7 +3304,7 @@ Expenses *Expenses::Insert(Expense *expense, Terminal *term, int sortby, Archive
 
         if (comparison)
         {
-            if (prevNode == NULL)
+            if (prevNode == nullptr)
             { // at the head
                 retNode = newNode;
                 newNode->next = currNode;
@@ -3324,7 +3324,7 @@ Expenses *Expenses::Insert(Expense *expense, Terminal *term, int sortby, Archive
     }
     if (done == 0)
     {
-        if (prevNode == NULL)
+        if (prevNode == nullptr)
         { // at the head
             retNode = newNode;
             newNode->next = currNode;
@@ -3441,7 +3441,7 @@ void Expenses::Print()
     FnTrace("Expenses::Print()");
     Expenses *currNode = this;
 
-    while (currNode != NULL)
+    while (currNode != nullptr)
     {
         printf("    %d\n", currNode->amount);
         currNode = currNode->next;
@@ -3458,7 +3458,7 @@ int System::ExpenseReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
                           Archive *archive, Report *report, ReportZone *rzone)
 {
     FnTrace("System::ExpenseReport()");
-    if (report == NULL)
+    if (report == nullptr)
         return 1;
 
     Expenses *expenselist = new Expenses;
@@ -3482,10 +3482,10 @@ int System::ExpenseReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
     int total_expenses = 0;
 
     archive = FindByTime(start_time);
-    if (archive == NULL)
+    if (archive == nullptr)
     {  // didn't find any archive; process today's expenses
         ExpenseDB *my_expense_db = &(term->system_data->expense_db);
-        expenselist = expenselist->ImportExpenseDB(my_expense_db, term, NULL, sortby);
+        expenselist = expenselist->ImportExpenseDB(my_expense_db, term, nullptr, sortby);
         incomplete = 1;
     }
     else
@@ -3493,12 +3493,12 @@ int System::ExpenseReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
         Expense *expense;
         Archive *currArchive = archive;
 
-        while ((currArchive != NULL) && (currArchive->end_time <= end_time))
+        while ((currArchive != nullptr) && (currArchive->end_time <= end_time))
         {
             if (currArchive->loaded == 0)
                 currArchive->LoadPacked(term->GetSettings());
             expense = currArchive->expense_db.ExpenseList();
-            while (expense != NULL)
+            while (expense != nullptr)
             {
                 if (expense->exp_date >= start_time && expense->exp_date < end_time)
                 {
@@ -3508,7 +3508,7 @@ int System::ExpenseReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
             }
             currArchive = currArchive->next;
         }
-        if (currArchive == NULL)
+        if (currArchive == nullptr)
             incomplete = 1;
     }
 
@@ -3523,7 +3523,7 @@ int System::ExpenseReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
         report->TextL(buffer, color);
     report->NewLine(2);
 
-    if (rzone != NULL)
+    if (rzone != nullptr)
     {
         column_spacing = rzone->ColumnSpacing(term, 5);
         width = rzone->Width(term);
@@ -3552,7 +3552,7 @@ int System::ExpenseReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
 
     // now walk through the generated lists of expenses and create the report
     currExpense = expenselist;
-    while (currExpense != NULL)
+    while (currExpense != nullptr)
     {
         column = 0;
         report->TextPosL(column, term->TimeDate(currExpense->date, TD_DATE), color);
@@ -3569,7 +3569,7 @@ int System::ExpenseReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
         report->TextPosL(column, currExpense->document, color);
         column = (column_spacing * 2) + 10;
         report->TextPosL(column, currExpense->explanation, color);
-        if (currExpense->next == NULL)
+        if (currExpense->next == nullptr)
             color = COLOR_DK_BLUE;
         report->UnderlinePosL(0, width - 1, color);
         report->NewLine();
@@ -3625,10 +3625,10 @@ public:
             customers[idx] = 0;
             sales[idx]     = 0;
         }
-        system            = NULL;
-        report            = NULL;
-        term              = NULL;
-        archive           = NULL;
+        system            = nullptr;
+        report            = nullptr;
+        term              = nullptr;
+        archive           = nullptr;
         maxdays           = 0;
         incomplete        = 0;
         total_sales       = 0;
@@ -3665,16 +3665,16 @@ public:
 
 Vouchers::Vouchers()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     type = -1;
     id   = -1;
 }
 
 Vouchers::Vouchers(int vtype, int vid)
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     type = vtype;
     id   = vid;
 }
@@ -3697,9 +3697,9 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
     Archive *archive = rdata->archive;
     int day;
     int vouchers;
-    Check *currCheck = NULL;
-    SubCheck *currSubcheck = NULL;
-    CouponInfo *currCoupon = NULL;
+    Check *currCheck = nullptr;
+    SubCheck *currSubcheck = nullptr;
+    CouponInfo *currCoupon = nullptr;
     DList<Vouchers> voucher_list;
     Vouchers *currVoucher;
     int guests_counted = 0;
@@ -3721,7 +3721,7 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
             currCoupon = rdata->settings->CouponList();
         }
 
-        while (currCoupon != NULL)
+        while (currCoupon != nullptr)
         {
             if ((currCoupon->flags & TF_ROYALTY) ||
                 (strcmp(currCoupon->name.Value(), "Head Office") == 0))
@@ -3732,7 +3732,7 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
             currCoupon = currCoupon->next;
         }
 
-        while (currCheck != NULL)
+        while (currCheck != nullptr)
         {
             if ((currCheck->IsTraining() == 0) &&
                 (currCheck->time_open >= rdata->start_time) &&
@@ -3743,12 +3743,12 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
                 if (day < rdata->maxdays)
                 {
                     currSubcheck = currCheck->SubList();
-                    while (currSubcheck != NULL)
+                    while (currSubcheck != nullptr)
                     {
                         if (currSubcheck->settle_time.IsSet() &&
                             currSubcheck->settle_time > rdata->start_time &&
                             currSubcheck->settle_time < rdata->end_time &&
-                            (archive == NULL ||
+                            (archive == nullptr ||
                              (currSubcheck->settle_time >= archive->start_time &&
                               currSubcheck->settle_time <= archive->end_time)))
                         {
@@ -3771,7 +3771,7 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
                             rdata->total_sales += currSubcheck->total_sales;
                             // now check vouchers
                             currVoucher = voucher_list.Head();
-                            while (currVoucher != NULL)
+                            while (currVoucher != nullptr)
                             {
                                 vouchers = currSubcheck->TotalPayment(currVoucher->type, currVoucher->id);
                                 if (vouchers)
@@ -4014,7 +4014,7 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
     report->Mode(0);
 
     report->is_complete = 1;
-    term->Update(UPDATE_REPORT, NULL);
+    term->Update(UPDATE_REPORT, nullptr);
     delete rdata;
 
     return 1;  // end of work fn
@@ -4024,7 +4024,7 @@ int System::RoyaltyReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
                           Archive *archive, Report *report, ReportZone *rzone)
 {
     FnTrace("System::RoyaltyReport()");
-    if (report == NULL)
+    if (report == nullptr)
         return 1;
 
     RoyaltyData *rdata = new RoyaltyData();
@@ -4038,7 +4038,7 @@ int System::RoyaltyReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
     rdata->archive = FindByTime(start_time);
     if (report->destination == RP_DEST_PRINTER)
         rdata->zone_width = report->max_width;
-    else if (rzone != NULL)
+    else if (rzone != nullptr)
         rdata->zone_width   = rzone->Width(term);
     else
         rdata->zone_width = 80;
@@ -4049,7 +4049,7 @@ int System::RoyaltyReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
     }
     else
     {  // two columns
-        if (rzone != NULL && report->destination != RP_DEST_PRINTER)
+        if (rzone != nullptr && report->destination != RP_DEST_PRINTER)
             rdata->column_width = rzone->ColumnSpacing(term, 2);
         else
             rdata->column_width = rdata->zone_width / 2;
@@ -4116,13 +4116,13 @@ AuditingData::AuditingData()
     FnTrace("AuditingData::AuditingData()");
     int idx = 0;
 
-    term                    = NULL;
-    system                  = NULL;
-    settings                = NULL;
-    report                  = NULL;
+    term                    = nullptr;
+    system                  = nullptr;
+    settings                = nullptr;
+    report                  = nullptr;
     start_time.Clear();
     end_time.Clear();
-    archive                 = NULL;
+    archive                 = nullptr;
     done                    = 0;
 
     total_payments          = 0;
@@ -4158,17 +4158,17 @@ int GatherAuditChecks(AuditingData *adata)
     FnTrace("GatherAuditChecks()");
     Archive *archive            = adata->archive;
     Settings *settings          = adata->settings;
-    Check *check                = NULL;
-    SubCheck *subcheck          = NULL;
-    Order *order                = NULL;
-    Order *modifier             = NULL;
-    Payment *payment            = NULL;
-    DiscountInfo *discount      = NULL;
-    CouponInfo *coupon          = NULL;
-    CompInfo *comp              = NULL;
-    MealInfo *meal              = NULL;
-    CreditCardInfo *creditcard  = NULL;
-    const char* temp                  = NULL;
+    Check *check                = nullptr;
+    SubCheck *subcheck          = nullptr;
+    Order *order                = nullptr;
+    Order *modifier             = nullptr;
+    Payment *payment            = nullptr;
+    DiscountInfo *discount      = nullptr;
+    CouponInfo *coupon          = nullptr;
+    CompInfo *comp              = nullptr;
+    MealInfo *meal              = nullptr;
+    CreditCardInfo *creditcard  = nullptr;
+    const char* temp                  = nullptr;
     int guests_counted          = 0;
     int is_dinein               = 0;
     int sales                   = 0;  // payment - taxes - tips - adjustments
@@ -4185,7 +4185,7 @@ int GatherAuditChecks(AuditingData *adata)
         check     = adata->system->CheckList();
     }
 
-    while (check != NULL)
+    while (check != nullptr)
     {
         if (check->IsTraining() == 0)
         {
@@ -4204,7 +4204,7 @@ int GatherAuditChecks(AuditingData *adata)
             }
 
             subcheck = check->SubList();
-            while (subcheck != NULL)
+            while (subcheck != nullptr)
             {
                 if (subcheck->settle_time.IsSet() &&
                     subcheck->settle_time > adata->start_time &&
@@ -4251,13 +4251,13 @@ int GatherAuditChecks(AuditingData *adata)
                     if (subcheck->IsTaxExempt() == 0)
                         adata->total_taxes += subcheck->TotalTax();
                     order = subcheck->OrderList();
-                    while (order != NULL)
+                    while (order != nullptr)
                     {
                         order->FigureCost();
                         adata->by_family[order->item_family] += order->cost;
                         adata->total_item_sales += order->cost;
                         modifier = order->modifier_list;
-                        while (modifier != NULL)
+                        while (modifier != nullptr)
                         {
                             adata->by_family[modifier->item_family] += modifier->cost;
                             adata->total_item_sales += modifier->cost;
@@ -4267,7 +4267,7 @@ int GatherAuditChecks(AuditingData *adata)
                     }
 
                     payment = subcheck->PaymentList();
-                    while (payment != NULL)
+                    while (payment != nullptr)
                     {
                         switch (payment->tender_type)
                         {
@@ -4299,14 +4299,14 @@ int GatherAuditChecks(AuditingData *adata)
                                 creditcard = archive->FindCreditCardByID(payment->tender_id);
                             else
                                 creditcard = settings->FindCreditCardByID(payment->tender_id);
-                            if (creditcard != NULL)
+                            if (creditcard != nullptr)
                                 adata->creditcards.Add(creditcard->name.Value(), payment->value);
                             adata->total_payments += payment->amount;
                             sales += payment->value;
                             break;
                         case TENDER_CREDIT_CARD:
                             temp = FindStringByValue(payment->tender_id, CreditCardValue, CreditCardName);
-                            if (temp != NULL)
+                            if (temp != nullptr)
                             {
                                 adata->creditcards.Add(temp, payment->value);
                                 adata->total_payments += payment->amount;
@@ -4315,7 +4315,7 @@ int GatherAuditChecks(AuditingData *adata)
                             break;
                         case TENDER_DEBIT_CARD:
                             temp = FindStringByValue(CARD_TYPE_DEBIT, CardTypeValue, CardTypeName);
-                            if (temp != NULL)
+                            if (temp != nullptr)
                             {
                                 adata->creditcards.Add(temp, payment->value);
                                 adata->total_payments += payment->amount;
@@ -4327,7 +4327,7 @@ int GatherAuditChecks(AuditingData *adata)
                                 coupon = archive->FindCouponByID(payment->tender_id);
                             else
                                 coupon = settings->FindCouponByID(payment->tender_id);
-                            if (coupon != NULL)
+                            if (coupon != nullptr)
                                 adata->coupons.Add(coupon->name.Value(), payment->value);
                             adata->total_adjusts += payment->value;
                             break;
@@ -4336,7 +4336,7 @@ int GatherAuditChecks(AuditingData *adata)
                                 discount = archive->FindDiscountByID(payment->tender_id);
                             else
                                 discount = settings->FindDiscountByID(payment->tender_id);
-                            if (discount != NULL)
+                            if (discount != nullptr)
                                 adata->discounts.Add(discount->name.Value(), payment->value);
                             adata->total_adjusts += payment->value;
                             break;
@@ -4345,7 +4345,7 @@ int GatherAuditChecks(AuditingData *adata)
                                 comp = archive->FindCompByID(payment->tender_id);
                             else
                                 comp = settings->FindCompByID(payment->tender_id);
-                            if (comp != NULL)
+                            if (comp != nullptr)
                                 adata->comps.Add(comp->name.Value(), payment->value);
                             adata->total_adjusts += payment->value;
                             break;
@@ -4354,7 +4354,7 @@ int GatherAuditChecks(AuditingData *adata)
                                 meal = archive->FindMealByID(payment->tender_id);
                             else
                                 meal = settings->FindMealByID(payment->tender_id);
-                            if (meal != NULL)
+                            if (meal != nullptr)
                                 adata->meals.Add(meal->name.Value(), payment->value);
                             adata->total_adjusts += payment->value;
                             break;
@@ -4540,7 +4540,7 @@ int AuditingReportWorkFn(AuditingData *adata)
         report->TextR(term->FormatPrice(adata->total_item_sales), color);
         report->NewLine();
         idx = 0;
-        while (FamilyName[idx] != NULL)
+        while (FamilyName[idx] != nullptr)
         {
             family_idx = FamilyValue[idx];
             if ((term->hide_zeros == 0) || (adata->by_family[family_idx] > 0))
@@ -4578,7 +4578,7 @@ int AuditingReportWorkFn(AuditingData *adata)
     }
     if ((term->hide_zeros == 0) || (total_creditcards > 0))
     {
-        while (creditcard != NULL)
+        while (creditcard != nullptr)
         {
             if ((term->hide_zeros == 0) || (creditcard->total > 0))
             {
@@ -4628,7 +4628,7 @@ int AuditingReportWorkFn(AuditingData *adata)
         report->NewLine();
         report->TextL(term->Translate("Breakdown of Coupons"), color);
         report->NewLine();
-        while (coupon != NULL)
+        while (coupon != nullptr)
         {
             report->TextPosL(indent, term->Translate(coupon->name), color);
             report->TextR(term->FormatPrice(coupon->total), color);
@@ -4642,7 +4642,7 @@ int AuditingReportWorkFn(AuditingData *adata)
         report->NewLine();
         report->TextL(term->Translate("Breakdown of Discounts"), color);
         report->NewLine();
-        while (discount != NULL)
+        while (discount != nullptr)
         {
             report->TextPosL(indent, term->Translate(discount->name), color);
             report->TextR(term->FormatPrice(discount->total), color);
@@ -4656,7 +4656,7 @@ int AuditingReportWorkFn(AuditingData *adata)
         report->NewLine();
         report->TextL(term->Translate("Breakdown of Comps"), color);
         report->NewLine();
-        while (comp != NULL)
+        while (comp != nullptr)
         {
             report->TextPosL(indent, term->Translate(comp->name), color);
             report->TextR(term->FormatPrice(comp->total), color);
@@ -4670,7 +4670,7 @@ int AuditingReportWorkFn(AuditingData *adata)
         report->NewLine();
         report->TextL(term->Translate("Breakdown of Employee Meals"), color);
         report->NewLine();
-        while (meal != NULL)
+        while (meal != nullptr)
         {
             report->TextPosL(indent, term->Translate(meal->name), color);
             report->TextR(term->FormatPrice(meal->total), color);
@@ -4680,7 +4680,7 @@ int AuditingReportWorkFn(AuditingData *adata)
     }
 
     report->is_complete = 1;
-    term->Update(UPDATE_REPORT, NULL);
+    term->Update(UPDATE_REPORT, nullptr);
     delete adata;
 
     return 1;  // end of work fn
@@ -4690,7 +4690,7 @@ int System::AuditingReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_t
                            Archive *archive, Report *report, ReportZone *rzone)
 {
     FnTrace("System::AuditingReport()");
-    if (report == NULL)
+    if (report == nullptr)
         return 1;
 
     AuditingData *adata = new AuditingData;
@@ -4731,14 +4731,14 @@ public:
 
 CCData::CCData()
 {
-    term = NULL;
-    system = NULL;
-    settings = NULL;
-    report = NULL;
+    term = nullptr;
+    system = nullptr;
+    settings = nullptr;
+    report = nullptr;
     start_time.Clear();
     end_time.Clear();
-    archive = NULL;
-    report_zone = NULL;
+    archive = nullptr;
+    report_zone = nullptr;
     done = 0;
 }
 
@@ -4747,7 +4747,7 @@ int GetCreditCardPayments(CCData *ccdata, Payment *payment)
     FnTrace("GetCreditCardPayments()");
     int retval = 0;
 
-    while (payment != NULL)
+    while (payment != nullptr)
     {
         switch (payment->tender_type)
         {
@@ -4772,8 +4772,8 @@ int CreditCardReportWorkFn(CCData *ccdata)
     Settings *settings = ccdata->settings;
     Terminal *term = ccdata->term;
     Archive  *archive = ccdata->archive;
-    Check    *check = NULL;
-    SubCheck *subcheck = NULL;
+    Check    *check = nullptr;
+    SubCheck *subcheck = nullptr;
 
     //////
     // Collect the data
@@ -4792,12 +4792,12 @@ int CreditCardReportWorkFn(CCData *ccdata)
             check     = ccdata->system->CheckList();
         }
 
-        while (check != NULL)
+        while (check != nullptr)
         {
             if (check->IsTraining() == 0)
             {
                 subcheck = check->SubList();
-                while (subcheck != NULL)
+                while (subcheck != nullptr)
                 {
                     if (subcheck->settle_time.IsSet() &&
                         subcheck->settle_time > ccdata->start_time &&
@@ -4831,7 +4831,7 @@ int CreditCardReportWorkFn(CCData *ccdata)
     //////
 
     report->is_complete = 1;
-    term->Update(UPDATE_REPORT, NULL);
+    term->Update(UPDATE_REPORT, nullptr);
     delete ccdata;
 
     return 1;
@@ -4842,12 +4842,12 @@ int System::CreditCardReport(Terminal *term, TimeInfo &start_time, TimeInfo &end
 {
     FnTrace("System::CreditCardReport()");
     int     retval = 1;
-    CCData *ccdata = NULL;
+    CCData *ccdata = nullptr;
     int     color       = COLOR_DEFAULT;
     int     date_format = TD_SHORT_MONTH | TD_NO_DAY;
     char    str[STRLONG];
 
-    if (report == NULL)
+    if (report == nullptr)
         return retval;
 
     //////
@@ -4970,9 +4970,9 @@ int System::CreditCardReport(Terminal *term, TimeInfo &start_time, TimeInfo &end
     }
     else if (cc_report_type == CC_REPORT_FINISH)
     {
-        if (cc_finish != NULL)
+        if (cc_finish != nullptr)
         {
-            if (rzone != NULL)
+            if (rzone != nullptr)
                 rzone->Page(0);
             report->NewLine();
             report->TextL(cc_finish->Code(), COLOR_DEFAULT);

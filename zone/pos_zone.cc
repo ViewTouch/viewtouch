@@ -133,7 +133,7 @@ int ConvertAppear(int appear, Uchar &f, Uchar &t)
 
 Zone *NewPosZone(int type)
 {
-	Zone *pNewZone = NULL;
+	Zone *pNewZone = nullptr;
 	switch (type)
 	{
 		// General Zone Types
@@ -343,7 +343,7 @@ Zone *NewPosZone(int type)
         break;
 	}
 
-	if (pNewZone == NULL)
+	if (pNewZone == nullptr)
 	{
 		char str[64];
 		snprintf(str, 64, "Creation of PosZone object type %d failed", type);
@@ -356,7 +356,7 @@ Zone *NewPosZone(int type)
 Page *NewPosPage()
 {
     PosPage *p = new PosPage;
-    if (p == NULL)
+    if (p == nullptr)
         ReportError("Creation of PosPage object failed");
 
     return p;
@@ -374,11 +374,11 @@ Zone *PosZone::Copy()
 
 int PosZone::CanSelect(Terminal *t)
 {
-    if (page == NULL)
+    if (page == nullptr)
         return 1;
 
     Employee *e = t->user;
-    if (e == NULL)
+    if (e == nullptr)
         return 0;
 
     if (page->id < 0 && !e->CanEditSystem() && Type() != ZONE_ORDER_ENTRY)
@@ -388,11 +388,11 @@ int PosZone::CanSelect(Terminal *t)
 
 int PosZone::CanEdit(Terminal *t)
 {
-    if (page == NULL)
+    if (page == nullptr)
         return 1;
 
     Employee *e = t->user;
-    if (e == NULL)
+    if (e == nullptr)
         return 0;
 
     if (page->id < 0 && !e->CanEditSystem())
@@ -403,7 +403,7 @@ int PosZone::CanEdit(Terminal *t)
 int PosZone::CanCopy(Terminal *t)
 {
     Employee *e = t->user;
-    if (e == NULL)
+    if (e == nullptr)
         return 0;
 
     if (page->id < 0 && !e->CanEditSystem())
@@ -572,10 +572,10 @@ int PosZone::Write(OutputDataFile &df, int version)
 Page *PosPage::Copy()
 {
     PosPage *p = new PosPage;
-    if (p == NULL)
+    if (p == nullptr)
     {
         ReportError("Can't create copy of page");
-        return NULL;
+        return nullptr;
     }
 
     p->name            = name;
@@ -596,7 +596,7 @@ Page *PosPage::Copy()
         p->default_color[i]   = default_color[i];
     }
 
-    for (Zone *z = ZoneList(); z != NULL; z = z->next)
+    for (Zone *z = ZoneList(); z != nullptr; z = z->next)
         p->Add(z->Copy());
 
     return p;
@@ -727,7 +727,7 @@ int PosPage::Read(InputDataFile &infile, int version)
         infile.Read(z_type);
 
         Zone *z = NewPosZone(z_type);
-        if (z == NULL)
+        if (z == nullptr)
         {
             snprintf(str, STRLENGTH, "Error in creating touch zone type %d", type);
             ReportError(str);
@@ -776,7 +776,7 @@ int PosPage::Write(OutputDataFile &df, int version)
     // Write all touch zones
     error += df.Write(ZoneCount(), 1);
 
-    for (Zone *z = ZoneList(); z != NULL; z = z->next)
+    for (Zone *z = ZoneList(); z != nullptr; z = z->next)
     {
         error += df.Write(z->Type());
         error += z->Write(df, version);

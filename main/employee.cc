@@ -42,14 +42,14 @@
 const char* JobName[] = {
     "No Job", "Dishwasher", "Busperson", "Line Cook", "Prep Cook", "Chef",
     "Cashier", "Server", "Server/Cashier", "Bartender", "Host/Hostess",
-    "Bookkeeper", "Supervisor", "Assistant Manager", "Manager", NULL};
+    "Bookkeeper", "Supervisor", "Assistant Manager", "Manager", nullptr};
 int JobValue[] = {
     JOB_NONE, JOB_DISHWASHER, JOB_BUSPERSON, JOB_COOK, JOB_COOK2, JOB_COOK3,
     JOB_CASHIER, JOB_SERVER, JOB_SERVER2, JOB_BARTENDER, JOB_HOST,
     JOB_BOOKKEEPER, JOB_MANAGER, JOB_MANAGER2, JOB_MANAGER3, -1};
 
 const char* PayRateName[] = {
-    "Hour", "Day", "Week", "Month", NULL};
+    "Hour", "Day", "Week", "Month", nullptr};
 int PayRateValue[] = {
     PERIOD_HOUR, PERIOD_DAY, PERIOD_WEEK, PERIOD_MONTH, -1};
 
@@ -144,8 +144,8 @@ static int UserIdCompare(const void *u1, const void *u2)
 JobInfo::JobInfo()
 {
     FnTrace("JobInfo::JobInfo()");
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     job = 0;
     starting_page = -1;
     curr_starting_page = -1;
@@ -217,9 +217,6 @@ UserDB::UserDB()
         developer->id       = 2;
         developer->training = 1;
     }
-
-    name_array = NULL;
-    id_array = NULL;
 }
 
 // Destructor
@@ -262,7 +259,7 @@ int UserDB::Load(const char* file)
         }
 
         Employee *e = new Employee;
-        if (e == NULL)
+        if (e == nullptr)
         {
             ReportError("Couldn't create employee record");
             return 1;
@@ -306,18 +303,18 @@ int UserDB::Add(Employee *e)
 {
 
     FnTrace("UserDB::Add(Employee)");
-    if (e == NULL)
+    if (e == nullptr)
         return 1;
 
     if (name_array)
     {
 	free(name_array);
-        name_array = NULL;
+        name_array = nullptr;
     }
     if (id_array)
     {
 	free(id_array);
-        id_array = NULL;
+        id_array = nullptr;
     }
 
     if (e->id <= 0)
@@ -332,18 +329,18 @@ int UserDB::Remove(Employee *e)
 {
 
     FnTrace("UserDB::Remove(Employee)");
-    if (e == NULL)
+    if (e == nullptr)
         return 1;
 
     if (name_array)
     {
 	free(name_array);
-        name_array = NULL;
+        name_array = nullptr;
     }
     if (id_array)
     {
 	free(id_array);
-        id_array = NULL;
+        id_array = nullptr;
     }
 
     return user_list.Remove(e);
@@ -356,12 +353,12 @@ int UserDB::Purge()
     if (name_array)
     {
 	free(name_array);
-        name_array = NULL;
+        name_array = nullptr;
     }
     if (id_array)
     {
 	free(id_array);
-        id_array = NULL;
+        id_array = nullptr;
     }
 
     user_list.Purge();
@@ -371,7 +368,7 @@ int UserDB::Purge()
 int UserDB::Init(LaborDB *db)
 {
     FnTrace("UserDB::Init()");
-    for (Employee *e = UserList(); e != NULL; e = e->next)
+    for (Employee *e = UserList(); e != nullptr; e = e->next)
         e->last_job = db->CurrentJob(e);
     return 0;
 }
@@ -379,7 +376,7 @@ int UserDB::Init(LaborDB *db)
 Employee *UserDB::FindByID(int user_id)
 {
     FnTrace("UserDB::FindByID()");
-    for (Employee *e = UserList(); e != NULL; e = e->next)
+    for (Employee *e = UserList(); e != nullptr; e = e->next)
     {
         if (e->id == user_id)
             return e;
@@ -390,7 +387,7 @@ Employee *UserDB::FindByID(int user_id)
     else if (super_user && super_user->id == user_id)
         return super_user;
 
-    return NULL;
+    return nullptr;
 }
 
 Employee *UserDB::FindByKey(int key)
@@ -399,23 +396,23 @@ Employee *UserDB::FindByKey(int key)
     if (developer && key == developer->key)
         return developer;
 
-    for (Employee *e = UserList(); e != NULL; e = e->next)
+    for (Employee *e = UserList(); e != nullptr; e = e->next)
         if (e->key == key)
             return e;
 
     if (super_user && super_user->key == key)
         return super_user;
 
-    return NULL;
+    return nullptr;
 }
 
 Employee *UserDB::FindByName(const char* name)
 {
     FnTrace("UserDB::FindByName()");
-    for (Employee *e = UserList(); e != NULL; e = e->next)
+    for (Employee *e = UserList(); e != nullptr; e = e->next)
         if (StringCompare(e->system_name.Value(), name) == 0)
             return e;
-    return NULL;
+    return nullptr;
 }
 
 Employee *UserDB::NameSearch(const std::string &name, Employee *user)
@@ -425,11 +422,11 @@ Employee *UserDB::NameSearch(const std::string &name, Employee *user)
         return nullptr;
 
     if (user)
-        for (Employee *e = user->next; e != NULL; e = e->next)
+        for (Employee *e = user->next; e != nullptr; e = e->next)
             if (StringCompare(e->system_name.Value(), name, static_cast<int>(name.size())) == 0)
                 return e;
 
-    for (Employee *e = UserList(); e != NULL; e = e->next)
+    for (Employee *e = UserList(); e != nullptr; e = e->next)
         if (StringCompare(e->system_name.Value(), name, static_cast<int>(name.size())) == 0)
             return e;
     return nullptr;
@@ -490,7 +487,7 @@ Employee *UserDB::FindByRecord(Terminal *t, int record, int active)
 {
     FnTrace("UserDB::FindByRecord()");
     if (record < 0)
-        return NULL;
+        return nullptr;
 
     Employee **array = NameArray();
     for (int i = 0; i < UserCount(); ++i)
@@ -503,7 +500,7 @@ Employee *UserDB::FindByRecord(Terminal *t, int record, int active)
                 return e;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 int UserDB::FindUniqueID()
@@ -513,7 +510,7 @@ int UserDB::FindUniqueID()
     for (;;)
     {
         Employee *e = FindByID(new_id);
-        if (e == NULL)
+        if (e == nullptr)
             return new_id;
         ++new_id;
     }
@@ -526,7 +523,7 @@ int UserDB::FindUniqueKey()
     for (;;)
     {
         Employee *e = FindByKey(new_key);
-        if (e == NULL)
+        if (e == nullptr)
             return new_key;
         ++new_key;
     }
@@ -535,7 +532,7 @@ int UserDB::FindUniqueKey()
 int UserDB::ListReport(Terminal *t, int active, Report *r)
 {
     FnTrace("UserDB::ListReport()");
-    if (r == NULL)
+    if (r == nullptr)
         return 1;
     LaborDB *ldb = &(t->system_data->labor_db);
 
@@ -597,7 +594,7 @@ int UserDB::UserCount(Terminal *t, int active)
 {
     FnTrace("UserDB::UserCount()");
     int count = 0;
-    for (Employee *e = UserList(); e != NULL; e = e->next)
+    for (Employee *e = UserList(); e != nullptr; e = e->next)
         if (e->Show(t, active))
             ++count;
     return count;
@@ -606,8 +603,8 @@ int UserDB::UserCount(Terminal *t, int active)
 Employee *UserDB::NextUser(Terminal *term, Employee *employee, int active)
 {
     FnTrace("UserDB::NextUser()");
-    if (employee == NULL || UserList() == NULL)
-        return NULL;
+    if (employee == nullptr || UserList() == nullptr)
+        return nullptr;
 
     if (employee == super_user || employee == developer)
         return NextUser(term, UserListEnd(), active);
@@ -617,26 +614,26 @@ Employee *UserDB::NextUser(Terminal *term, Employee *employee, int active)
     Employee *em = employee->next;
     while (em != employee)
     {
-        if (em == NULL)
+        if (em == nullptr)
         {
             em = UserList();
             ++count;
             if (count > 2)
-                return NULL;
+                return nullptr;
         }
         if ((em->active == active || active < 0) && em->CanEnterSystem(s))
             return em;
         em = em->next;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 Employee *UserDB::ForeUser(Terminal *t, Employee *e, int active)
 {
     FnTrace("UserDB::ForeUser()");
-    if (e == NULL || UserListEnd() == NULL)
-        return NULL;
+    if (e == nullptr || UserListEnd() == nullptr)
+        return nullptr;
 
     if (e == super_user || e == developer)
         return ForeUser(t, UserList(), active);
@@ -646,18 +643,18 @@ Employee *UserDB::ForeUser(Terminal *t, Employee *e, int active)
     Employee *em = e->fore;
     while (em != e)
     {
-        if (em == NULL)
+        if (em == nullptr)
         {
             em = UserListEnd();
             ++count;
             if (count > 2)
-                return NULL;
+                return nullptr;
         }
         if ((em->active == active || active < 0) && em->CanEnterSystem(s))
             return em;
         em = em->fore;
     }
-    return NULL;
+    return nullptr;
 }
 
 int UserDB::ChangePageID(int old_id, int new_id)
@@ -667,8 +664,8 @@ int UserDB::ChangePageID(int old_id, int new_id)
         return 0;  // no changes
 
     int changes = 0;
-    for (Employee *e = UserList(); e != NULL; e = e->next)
-        for (JobInfo *j = e->JobList(); j != NULL; j = j->next)
+    for (Employee *e = UserList(); e != nullptr; e = e->next)
+        for (JobInfo *j = e->JobList(); j != nullptr; j = j->next)
             if (j->starting_page == old_id)
             {
                 ++changes;
@@ -707,17 +704,17 @@ Employee *UserDB::NewUser()
 Employee *UserDB::KeyConflict(Employee *server)
 {
     FnTrace("UserDB::KeyConflict()");
-    for (Employee *e = UserList(); e != NULL; e = e->next)
+    for (Employee *e = UserList(); e != nullptr; e = e->next)
         if (e != server && e->key == server->key)
             return e; // key conflict
-    return NULL;  // no conflicts
+    return nullptr;  // no conflicts
 }
 
 Employee **UserDB::NameArray(int resort)
 {
     FnTrace("UserDB::NameArray()");
     int users = UserCount();
-    if (name_array == NULL)
+    if (name_array == nullptr)
     {
         resort = 1;
 	name_array = (Employee **)calloc(sizeof(Employee *), users);
@@ -741,7 +738,7 @@ Employee **UserDB::IdArray(int resort)
 {
     FnTrace("UserDB::IdArray()");
     int users = UserCount();
-    if (id_array == NULL)
+    if (id_array == nullptr)
     {
         resort = 1;
 	id_array = (Employee **)calloc(sizeof(Employee *), users);
@@ -750,7 +747,7 @@ Employee **UserDB::IdArray(int resort)
     if (resort)
     {
         int i = 0;
-        for (Employee *e = UserList(); e != NULL; e = e->next)
+        for (Employee *e = UserList(); e != nullptr; e = e->next)
             id_array[i++] = e;
 
         qsort(id_array, users, sizeof(Employee *), UserIdCompare);
@@ -764,8 +761,8 @@ Employee **UserDB::IdArray(int resort)
 Employee::Employee()
 {
     FnTrace("Employee::Employee()");
-    next           = NULL;
-    fore           = NULL;
+    next           = nullptr;
+    fore           = nullptr;
     id             = 0;
     employee_no    = 0;
     training       = 1;  // new employee default to training mode
@@ -857,7 +854,7 @@ int Employee::Write(OutputDataFile &df, int version)
     error += df.Write(active, 1);
 
     error += df.Write(JobCount());
-    for (JobInfo *j = JobList(); j != NULL; j = j->next)
+    for (JobInfo *j = JobList(); j != nullptr; j = j->next)
         error += j->Write(df, version);
     return error;
 }
@@ -878,14 +875,14 @@ JobInfo *Employee::FindJobByType(int job)
 {
     FnTrace("Employee::FindJobByType()");
     JobInfo *jinfo = JobList();
-    JobInfo *retval = NULL;
+    JobInfo *retval = nullptr;
 
-    while (jinfo != NULL)
+    while (jinfo != nullptr)
     {
         if (jinfo->job == job)
         {
             retval = jinfo;
-            jinfo = NULL;
+            jinfo = nullptr;
         }
         else
             jinfo = jinfo->next;
@@ -903,19 +900,19 @@ JobInfo *Employee::FindJobByNumber(int no)
 const char* Employee::JobTitle(Terminal *t)
 {
     FnTrace("Employee::JobTitle()");
-    JobInfo *j = NULL;
-    const char* retval = NULL;
+    JobInfo *j = nullptr;
+    const char* retval = nullptr;
 
     if (last_job > 0)
     {
         j = FindJobByType(last_job);
-        if (j == NULL)
+        if (j == nullptr)
             j = JobList();
     }
     else
         j = JobList();
 
-    if (j == NULL)
+    if (j == nullptr)
         retval = t->Translate(UnknownStr);
     else
         retval = j->Title(t);
@@ -933,7 +930,7 @@ int Employee::StartingPage()
 {
     FnTrace("Employee::StartingPage()");
     JobInfo *j = FindJobByType(current_job);
-    if (j == NULL)
+    if (j == nullptr)
         return -1;
     else if (j->curr_starting_page != j->starting_page)
         return j->curr_starting_page;
@@ -947,7 +944,7 @@ int Employee::SetStartingPage(int spage_id)
     int retval = 1;
     JobInfo *j = FindJobByType(current_job);
 
-    if (j != NULL)
+    if (j != nullptr)
     {
         retval = 1;
         j->curr_starting_page = spage_id;
@@ -971,7 +968,7 @@ int Employee::Security(Settings *s)
         job = current_job;
     else if (last_job > 0)
         job = last_job;
-    else if (JobList())
+    else if (JobList() != nullptr)
         job = JobList()->job;
 
     // allow individual security settings later
@@ -1026,7 +1023,7 @@ int Employee::Show(Terminal *t, int act)
     if (act >= 0 && active != act)
         return 0;
 
-    for (JobInfo *j = JobList(); j != NULL; j = j->next)
+    for (JobInfo *j = JobList(); j != nullptr; j = j->next)
         if (j->job != JOB_NONE && ((1 << j->job) & t->job_filter) == 0)
             return 1;
     return (t->job_filter == 0);

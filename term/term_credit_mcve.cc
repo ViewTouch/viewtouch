@@ -441,7 +441,7 @@ int BatchInfo::GetAmt(char* dest, const char* value)
  ********************************************************************/
 CCard::CCard()
 {
-    conn = NULL;
+    conn = nullptr;
     trans_success = 0;
     intcode = CC_STATUS_NONE;
 
@@ -569,9 +569,9 @@ int CCard::Connect()
 
     if (server[0] != '\0' && port[0] != '\0')
     {
-        if (conn == NULL)
+        if (conn == nullptr)
             conn = new MCVE_CONN;
-        MCVE_InitEngine(NULL);
+        MCVE_InitEngine(nullptr);
         MCVE_InitConn(conn);
         if (MCVE_SetIP(conn, server, atoi(port)))
         {
@@ -587,7 +587,7 @@ int CCard::Connect()
                 intcode = CC_STATUS_NOCONNECT;
                 MCVE_DestroyConn(conn);
                 MCVE_DestroyEngine();
-                conn = NULL;
+                conn = nullptr;
             }
         }
     }
@@ -600,13 +600,13 @@ int CCard::Close()
     FnTrace("CCard::Close()");
     int retval = 1;
 
-    if (conn != NULL)
+    if (conn != nullptr)
     {
         strcpy(code, "NOCONN");
         intcode = CC_STATUS_NOCONNECT;
         MCVE_DestroyConn(conn);
         MCVE_DestroyEngine();
-        conn = NULL;
+        conn = nullptr;
         retval = 0;
     }
 
@@ -619,7 +619,7 @@ int CCard::SetValue(char* dest, const char* source)
     int retval = 0;
 
     dest[0] = '\0';
-    if (source != NULL)
+    if (source != nullptr)
         strcpy(dest, source);
 
     return retval;
@@ -771,7 +771,7 @@ int CCard::SetFields(int gut, long identifier)
 
 
         MCVE_DestroyConn(conn);
-        conn = NULL;
+        conn = nullptr;
     }
     else
         retval = 1;
@@ -1015,7 +1015,7 @@ int CCard::BatchSettle()
     if (retval)
     {
         WInt8(SERVER_CC_SETTLEFAILED);
-        if (conn != NULL)
+        if (conn != nullptr)
         {
             SetValue(msgbuff, MCVE_TransactionText(conn, identifier));
             if (strlen(msgbuff) < 1)

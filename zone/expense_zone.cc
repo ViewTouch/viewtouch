@@ -31,28 +31,28 @@
 
 ExpenseZone::ExpenseZone()
 {
-    expense = NULL;
-    saved_expense = NULL;
+    expense = nullptr;
+    saved_expense = nullptr;
     show_expense = 0;
     // form_header defines the top of the space where the form fields will be drawn
     form_header = -11;
     list_footer = 12;
     form_spacing = 0.65;
     AddTextField("Expense ID", 5, 0);
-    AddListField("Payer", NULL);
+    AddListField("Payer", nullptr);
     AddNewLine();
 
     AddTextField("Expense Amount", 10);  SetFlag(FF_MONEY);
-    AddListField("Expense Drawer", NULL);
+    AddListField("Expense Drawer", nullptr);
     AddLabel("  or  ");
-    AddListField("Account", NULL);
+    AddListField("Account", nullptr);
     AddNewLine();
 
-    AddListField("Destination Account", NULL);
+    AddListField("Destination Account", nullptr);
     AddNewLine();
 
     AddTextField("Tax Amount", 10);  SetFlag(FF_MONEY);
-    AddListField("Tax Account", NULL);
+    AddListField("Tax Account", nullptr);
     AddNewLine();
 
     AddTextField("Document", 25);
@@ -61,7 +61,7 @@ ExpenseZone::ExpenseZone()
     AddSubmit("Submit", 10);
 
     record_no = -1;
-    report = NULL;
+    report = nullptr;
     page = 0;
     no_line = 1;
     lines_shown = 0;
@@ -70,9 +70,9 @@ ExpenseZone::ExpenseZone()
 
 ExpenseZone::~ExpenseZone()
 {
-    if (report != NULL)
+    if (report != nullptr)
         delete report;
-    if (saved_expense != NULL)
+    if (saved_expense != nullptr)
         delete saved_expense;
 }
 
@@ -112,9 +112,9 @@ RenderResult ExpenseZone::Render(Terminal *term, int update_flag)
     TextC(term, size_y - 1, buff, col);
 
     // generate and display the list of expenses
-    if (update || update_flag || (report == NULL))
+    if (update || update_flag || (report == nullptr))
     {
-        if (report != NULL)
+        if (report != nullptr)
             delete report;
         report = new Report;
         ListReport(term, report);
@@ -140,7 +140,7 @@ SignalResult ExpenseZone::Signal(Terminal *term, const genericChar* message)
     FnTrace("ExpenseZone::Signal()");
     SignalResult signal = SIGNAL_IGNORED;
     static const genericChar* commands[] = {"next", "prior", "change view",
-                                      "restore", "test", "new", NULL};
+                                      "restore", "test", "new", nullptr};
     int idx = CompareListN(commands, message);
     int draw = 0;
 
@@ -185,7 +185,7 @@ SignalResult ExpenseZone::Signal(Terminal *term, const genericChar* message)
     case 4:  // test  -- this could mess everything up.  Don't do it in live code
     {
         ExpenseDB *exp_db = &(term->system_data->expense_db);
-        exp_db->MoveAll(NULL);
+        exp_db->MoveAll(nullptr);
         draw = 1;
         break;
     }
@@ -224,7 +224,7 @@ SignalResult ExpenseZone::Touch(Terminal *term, int tx, int ty)
     FnTrace("ExpenseZone::Touch()");
     SignalResult retval = SIGNAL_IGNORED;
 
-    if (report != NULL)
+    if (report != nullptr)
     {
         FormZone::Touch(term, tx, ty);
         int yy = report->TouchLine(list_spacing, selected_y);
@@ -286,7 +286,7 @@ int ExpenseZone::UpdateForm(Terminal *term, int record)
     Str doc;
     FormField *field = FieldList();
 
-    if (expense == NULL || show_expense == 0)
+    if (expense == nullptr || show_expense == 0)
         return 1;
 
     field = field->next;  // skip expense id label
@@ -334,10 +334,10 @@ int ExpenseZone::UpdateForm(Terminal *term, int record)
 
     if (changed)
     {
-        if (report != NULL)
+        if (report != nullptr)
         {
             delete report;
-            report = NULL;
+            report = nullptr;
         }
         update = 1;
     }
@@ -349,7 +349,7 @@ int ExpenseZone::HideFields()
     FnTrace("ExpenseZone::HideFields()");
     FormField *field = FieldList();
 
-    while (field != NULL)
+    while (field != nullptr)
     {
         field->active = 0;
         field = field->next;
@@ -362,7 +362,7 @@ int ExpenseZone::ShowFields()
     FnTrace("ExpenseZone::ShowFields()");
     FormField *field = FieldList();
 
-    while (field != NULL)
+    while (field != nullptr)
     {
         field->active = 1;
         field = field->next;
@@ -375,33 +375,33 @@ int ExpenseZone::LoadRecord(Terminal *term, int record)
     FnTrace("ExpenseZone::LoadRecord()");
     FormField *field = FieldList();
     UserDB *employees = &(term->system_data->user_db);
-    Employee *employee = NULL;
+    Employee *employee = nullptr;
     AccountDB *accounts = &(term->system_data->account_db);
-    Account *account = NULL;
+    Account *account = nullptr;
     genericChar buffer[STRLENGTH];
 
     if (show_expense)
         expense = term->system_data->expense_db.FindByRecord(term, record);
     else
-        expense = NULL;
+        expense = nullptr;
 
-    if (expense != NULL)
+    if (expense != nullptr)
     {
         record_no = record;
         // save off the expense for Undo
-        if (saved_expense == NULL)
+        if (saved_expense == nullptr)
             saved_expense = new Expense;
         saved_expense->Copy(expense);
         //  AddTextField("Expense ID", 5, 0);
         field->Set(expense->eid);
         field = field->next;
 
-        //  AddListField("Payer", NULL);
+        //  AddListField("Payer", nullptr);
         field->ClearEntries();
         if (term->GetSettings()->allow_user_select)
         {
             employee = employees->UserList();
-            while (employee != NULL)
+            while (employee != nullptr)
             {
                 if (employee->active)
                     field->AddEntry(employee->system_name.Value(), employee->id);
@@ -421,11 +421,11 @@ int ExpenseZone::LoadRecord(Terminal *term, int record)
         field->Set(expense->amount);
         field = field->next;
 
-        //  AddListField("Expense Drawer", NULL);
+        //  AddListField("Expense Drawer", nullptr);
         field->ClearEntries();
         Drawer *drawer = term->system_data->DrawerList();
         field->AddEntry("Not Set", -1);
-        while (drawer != NULL)
+        while (drawer != nullptr)
         {
             if (drawer->IsOpen())
             {
@@ -457,11 +457,11 @@ int ExpenseZone::LoadRecord(Terminal *term, int record)
         //  AddLabel("  or  ");
         field = field->next;
 
-        //  AddListField("Account", NULL);
+        //  AddListField("Account", nullptr);
         field->ClearEntries();
         account = accounts->AccountList();
         field->AddEntry("Not Set", -1);
-        while (account != NULL)
+        while (account != nullptr)
         {
             if (IsValidAccountNumber(term, account->number))
                 field->AddEntry(account->name.Value(), account->number);
@@ -474,7 +474,7 @@ int ExpenseZone::LoadRecord(Terminal *term, int record)
         field->ClearEntries();
         account = accounts->AccountList();
         field->AddEntry("Not Set", -1);
-        while (account != NULL)
+        while (account != nullptr)
         {
             if (IsValidAccountNumber(term, account->number))
                 field->AddEntry(account->name.Value(), account->number);
@@ -487,10 +487,10 @@ int ExpenseZone::LoadRecord(Terminal *term, int record)
         field->Set(expense->tax);
         field = field->next;
 
-        //  AddListField("Tax Account", NULL);
+        //  AddListField("Tax Account", nullptr);
         field->ClearEntries();
         account = accounts->AccountList();
-        while (account != NULL)
+        while (account != nullptr)
         {
             field->AddEntry(account->name.Value(), account->number);
             account = account->next;
@@ -524,7 +524,7 @@ int ExpenseZone::SaveRecord(Terminal *term, int record, int write_file)
     FnTrace("ExpenseZone::SaveRecord()");
     Drawer *dlist = term->system_data->DrawerList();
 
-    if (expense != NULL)
+    if (expense != nullptr)
     {
         FormField *field = FieldList();
         field->Get(expense->eid);  field = field->next;
@@ -544,17 +544,17 @@ int ExpenseZone::SaveRecord(Terminal *term, int record, int write_file)
     //...coming back to this page should reset everything, but who knows...
     if (record == -1)
         term->system_data->expense_db.Save();
-    else if (expense != NULL)
+    else if (expense != nullptr)
         term->system_data->expense_db.Save(expense->eid);
     records = RecordCount(term);
     if (record_no >= records)
         record_no = records - 1;
     // Update the drawer balance entry
     term->system_data->expense_db.AddDrawerPayments(dlist);
-    if (report != NULL)
+    if (report != nullptr)
         delete report;
-    report = NULL;
-    expense = NULL;
+    report = nullptr;
+    expense = nullptr;
     show_expense = 0;
     update = 1;
     return 0;
@@ -564,7 +564,7 @@ int ExpenseZone::RestoreRecord(Terminal *term)
 {
     FnTrace("ExpenseZone::RestoreRecord()");
 
-    if (expense != NULL && saved_expense != NULL)
+    if (expense != nullptr && saved_expense != nullptr)
     {
         expense->Copy(saved_expense);
         LoadRecord(term, record_no);
@@ -600,7 +600,7 @@ int ExpenseZone::KillRecord(Terminal *term, int record)
         {
             term->system_data->expense_db.Remove(delexp);
             delete delexp;
-            expense = NULL;
+            expense = nullptr;
             records = RecordCount(term);
             if (record_no > records)
                 record_no = records - 1;
@@ -642,7 +642,7 @@ int ExpenseZone::Search(Terminal *term, int record, const genericChar* word)
         record_no = -1;
         show_expense = 0;
         delete report;
-        report = NULL;
+        report = nullptr;
     }
     return 1;
 }
@@ -665,10 +665,10 @@ int ExpenseZone::ListReport(Terminal *term, Report *my_report)
     if (records < 1)
         my_report->TextC("No Expenses Entered", my_color);
 
-    while (currExpense != NULL)
+    while (currExpense != nullptr)
     {
         drawer = dlist->FindBySerial(currExpense->drawer_id);
-        if ((drawer == NULL) || (drawer->Status() == DRAWER_OPEN))
+        if ((drawer == nullptr) || (drawer->Status() == DRAWER_OPEN))
         {
             if (currExpense->IsTraining())
                 my_color = COLOR_BLUE;

@@ -19,6 +19,8 @@
  */
 
 #include "license_hash.hh"
+#include "external/sha1.hh"
+#include "utility.hh"
 
 #include "basic.hh" // genericChar
 
@@ -48,6 +50,8 @@ constexpr size_t LICENCE_HASH_STRLENGTH = 256;
 constexpr size_t LICENCE_HASH_STRLONG  = 4096;
 constexpr size_t MAXTEMPLEN = 20;
 
+using u_int = unsigned int;
+
 int GetUnameInfo(char* buffer, int bufflen)
 {
     struct utsname utsbuff;
@@ -69,7 +73,7 @@ int GetUnameInfo(char* buffer, int bufflen)
 #include <net/route.h>
 
 /* bkk bsd6 compile */
-typedef unsigned int u_int;
+using u_int = unsigned int;  // REFACTOR: Converted typedef to modern using declaration
 
 /****
  * GetInterfaceInfo:  grab the MAC.  This version uses the sysctl method,
@@ -94,11 +98,11 @@ int GetInterfaceInfo(char* stringbuff, int stringlen)
     mib[4] = NET_RT_IFLIST;
     mib[5] = 0;
 
-    if (sysctl(mib, 6, NULL, &len, NULL, 0) < 0)
+    if (sysctl(mib, 6, nullptr, &len, nullptr, 0) < 0)
         return 1;
-    if ((buffer = (char*)malloc(len)) == NULL)
+    if ((buffer = (char*)malloc(len)) == nullptr)
         return 1;
-    if (sysctl(mib, 6, buffer, &len, NULL, 0) < 0)
+    if (sysctl(mib, 6, buffer, &len, nullptr, 0) < 0)
         return 1;
 
     stringbuff[0] = '\0';
@@ -127,8 +131,8 @@ int GetInterfaceInfo(char* stringbuff, int stringlen)
 /*******
  * MacToString:  
  *******/
-// FIXED: Corrected parameter type from 'unsigned const char*' to 'const unsigned char*'
-// In C++, the correct syntax puts 'const' qualifier first
+// REFACTOR: Corrected parameter type from 'unsigned const char*' to 'const unsigned char*'
+// REFACTOR: In C++, the correct syntax puts 'const' qualifier first
 int MacToString(char* macstr, int maxlen, const unsigned char* mac)
 {
     int retval = 0;
@@ -365,7 +369,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
     }
     
     close(sockfd);
-    if (buf != NULL)
+    if (buf != nullptr)
         free(buf);
     
     */
@@ -432,7 +436,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
         }
     }
         
-    snprintf(stringbuf, sizeof(stringbuf), "%02X:%02X:%02X:%02X:%02X:%02X",
+    snprintf(stringbuf, stringlen, "%02X:%02X:%02X:%02X:%02X:%02X",  // REFACTOR: Fixed sizeof(stringbuf) bug - stringbuf is pointer, not array
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[0],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[1],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[2],

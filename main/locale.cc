@@ -37,7 +37,7 @@
 
 void StartupLocalization()
 {
-    if (setlocale(LC_ALL, "") == NULL)
+    if (setlocale(LC_ALL, "") == nullptr)
     {
 	    (void) fprintf(stderr, "Cannot set locale.\n");
 	    exit(1);
@@ -46,7 +46,7 @@ void StartupLocalization()
 
 
 /**** Global Data ****/
-Locale *MasterLocale = NULL;
+Locale *MasterLocale = nullptr;
 
 
 /**** Phrase Data (default U.S. English) ****/
@@ -281,7 +281,7 @@ PhraseEntry PhraseData[] = {
     {15, "Pre-Auth Complete"},
     {15, "Fast Food"},
 
-    {-1, NULL}
+    {-1, nullptr}
 };
 
 /*********************************************************************
@@ -291,15 +291,15 @@ PhraseEntry PhraseData[] = {
 PhraseInfo::PhraseInfo()
 {
     FnTrace("PhraseInfo::PhraseInfo()");
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
 }
 
 PhraseInfo::PhraseInfo(const char* k, const genericChar* v)
 {
     FnTrace("PhraseInfo::PhraseInfo(const char* , const char* )");
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     key.Set(k);
     value.Set(v);
 }
@@ -331,7 +331,7 @@ POEntry::POEntry()
 {
     key[0] = '\0';
     value[0] = '\0';
-    next = NULL;
+    next = nullptr;
 }
 
 POEntry::POEntry(const char* newkey, const char* newvalue)
@@ -347,7 +347,7 @@ POEntry::POEntry(const char* newkey, const char* newvalue)
         value[0] = '\0';
     }
 
-    next = NULL;
+    next = nullptr;
 }
 
 
@@ -366,9 +366,9 @@ POFile::POFile()
     lang        = LANG_NONE;
     loaded      = 0;
     filename[0] = '\0';
-    infile      = NULL;
-    entry_head  = NULL;
-    entry_tail  = NULL;
+    infile      = nullptr;
+    entry_head  = nullptr;
+    entry_tail  = nullptr;
 }
 
 POFile::POFile(int po_lang)
@@ -377,9 +377,9 @@ POFile::POFile(int po_lang)
     lang        = po_lang;
     loaded      = 0;
     filename[0] = '\0';
-    infile      = NULL;
-    entry_head  = NULL;
-    entry_tail  = NULL;
+    infile      = nullptr;
+    entry_head  = nullptr;
+    entry_tail  = nullptr;
 
     ReadPO();
 }
@@ -445,9 +445,9 @@ int POFile::Add(const char* newkey, const char* newvalue)
     POEntry *entry;
     
     entry = new POEntry(newkey, newvalue);
-    if (entry != NULL)
+    if (entry != nullptr)
     {
-        if (entry_head == NULL)
+        if (entry_head == nullptr)
         {
             entry_head = entry;
             entry_tail = entry;
@@ -473,12 +473,12 @@ int POFile::Find(char* dest, const char* str, int po_lang)
 
     if (po_lang == lang)
     {
-        while (po_entry != NULL)
+        while (po_entry != nullptr)
         {
             if (strcmp(str, po_entry->Key()) == 0)
             {
                 strcpy(dest, po_entry->Value());
-                po_entry = NULL;  // exit condition
+                po_entry = nullptr;  // exit condition
                 retval = 1; 
             }
             else
@@ -497,16 +497,16 @@ int POFile::Find(char* dest, const char* str, int po_lang)
 POFileList::POFileList()
 {
     FnTrace("POFileList::POFileList()");
-    head = NULL;
+    head = nullptr;
 }
 
 POFile *POFileList::FindPOFile(int lang)
 {
     FnTrace("POFileList::FindPOFile()");
     POFile *po_file = head;
-    POFile *retval  = NULL;
+    POFile *retval  = nullptr;
 
-    while (po_file != NULL && retval == NULL)
+    while (po_file != nullptr && retval == nullptr)
     {
         if (po_file->IsLang(lang))
             retval = po_file;
@@ -522,7 +522,7 @@ const char* POFileList::FindPOString(const char* str, int lang, int clear)
     FnTrace("POFileList::FindPOString()");
     char buffer[STRLONG];
     static char retstr[STRLONG];
-    POFile *po_file = NULL;
+    POFile *po_file = nullptr;
 
     if (clear)
         retstr[0] = '\0';
@@ -530,14 +530,14 @@ const char* POFileList::FindPOString(const char* str, int lang, int clear)
         strcpy(retstr, str);
 
     po_file = FindPOFile(lang);
-    if (po_file == NULL)
+    if (po_file == nullptr)
     {
         po_file = new POFile(lang);
         po_file->next = head;
         head = po_file;
     }
 
-    if (po_file != NULL)
+    if (po_file != nullptr)
     {
         if (po_file->Find(buffer, str, lang))
             strcpy(retstr, buffer);
@@ -553,9 +553,9 @@ const char* POFileList::FindPOString(const char* str, int lang, int clear)
 Locale::Locale()
 {
     FnTrace("Locale::Locale()");
-    next = NULL;
-    fore = NULL;
-    search_array = NULL;
+    next = nullptr;
+    fore = nullptr;
+    search_array = nullptr;
     array_size = 0;
 }
 
@@ -620,7 +620,7 @@ int Locale::Save()
     df.Write(0);
 
     df.Write(PhraseCount());
-    for (PhraseInfo *ph = PhraseList(); ph != NULL; ph = ph->next)
+    for (PhraseInfo *ph = PhraseList(); ph != nullptr; ph = ph->next)
         ph->Write(df, 1);
     return 0;
 }
@@ -628,13 +628,13 @@ int Locale::Save()
 int Locale::Add(PhraseInfo *ph)
 {
     FnTrace("Locale::Add()");
-    if (ph == NULL)
+    if (ph == nullptr)
         return 1;
 
     if (search_array)
     {
 	free(search_array);
-        search_array = NULL;
+        search_array = nullptr;
         array_size = 0;
     }
 
@@ -651,13 +651,13 @@ int Locale::Add(PhraseInfo *ph)
 int Locale::Remove(PhraseInfo *ph)
 {
     FnTrace("Locale::Remove()");
-    if (ph == NULL)
+    if (ph == nullptr)
         return 1;
 
     if (search_array)
     {
 	free(search_array);
-        search_array = NULL;
+        search_array = nullptr;
         array_size = 0;
     }
     return phrase_list.Remove(ph);
@@ -671,7 +671,7 @@ int Locale::Purge()
     if (search_array)
     {
 	free(search_array);
-        search_array = NULL;
+        search_array = nullptr;
         array_size = 0;
     }
     return 0;
@@ -691,7 +691,7 @@ int Locale::BuildSearchArray()
 
     array_size = PhraseCount();
     search_array = (PhraseInfo **)calloc(sizeof(PhraseInfo *), (array_size + 1));
-    if (search_array == NULL)
+    if (search_array == nullptr)
         return 1;
 
     PhraseInfo *ph = PhraseList();
@@ -704,14 +704,14 @@ int Locale::BuildSearchArray()
 }
 
 /****
- * Find: find record for word to translate - returns NULL if none
+ * Find: find record for word to translate - returns nullptr if none
  ****/
 PhraseInfo *Locale::Find(const char* key)
 {
     FnTrace("Locale::Find()");
-    if (key == NULL)
-        return NULL;
-    if (search_array == NULL)
+    if (key == nullptr)
+        return nullptr;
+    if (search_array == nullptr)
         BuildSearchArray();
 
     int l = 0;
@@ -729,7 +729,7 @@ PhraseInfo *Locale::Find(const char* key)
         else
             return ph;
     }
-    return NULL;
+    return nullptr;
 }
 
 /****
@@ -744,7 +744,7 @@ const char* Locale::Translate(const char* str, int lang, int clear)
     if (lang == LANG_PHRASE)
     {
         PhraseInfo *ph = Find(str);
-        if (ph == NULL)
+        if (ph == nullptr)
         {
             //if (clear)
                 //str[0] = '\0';	#TODO
@@ -781,19 +781,19 @@ int Locale::NewTranslation(const char* str, const genericChar* value)
         if (search_array)
         {
 	    free(search_array);
-            search_array = NULL;
+            search_array = nullptr;
             array_size = 0;
         }
         return 0;
     }
 
-    if (value == NULL || strlen(value) <= 0)
+    if (value == nullptr || strlen(value) <= 0)
         return 1;
 
     if (search_array)
     {
 	free(search_array);
-        search_array = NULL;
+        search_array = nullptr;
         array_size = 0;
     }
     return Add(new PhraseInfo(str, value));
@@ -810,12 +810,13 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
 	// Mon Oct  1 13:14:27 PDT 2001: some work done in this direction - JMK
 
     static genericChar buffer[256];
-    if (str == NULL)
+    static constexpr size_t TIME_DATE_BUFFER_SIZE = 256;  // REFACTOR: Define buffer size constant for safety
+    if (str == nullptr)
         str = buffer;
 
     if (!timevar.IsSet())
     {
-        snprintf(str, sizeof(str), "<NOT SET>");
+        snprintf(str, TIME_DATE_BUFFER_SIZE, "<NOT SET>");  // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
         return str;
     }
 
@@ -827,9 +828,9 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
         // Show Day of Week
         int wd = timevar.WeekDay();
         if (format & TD_SHORT_DAY)
-            snprintf(str, sizeof(str), "%s", Translate(ShortDayName[wd], lang));
+            snprintf(str, TIME_DATE_BUFFER_SIZE, "%s", Translate(ShortDayName[wd], lang));  // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
         else
-            snprintf(str, sizeof(str), "%s", Translate(DayName[wd], lang));
+            snprintf(str, TIME_DATE_BUFFER_SIZE, "%s", Translate(DayName[wd], lang));       // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
 
         if (!(format & TD_NO_TIME) || !(format & TD_NO_DATE))
             strncat(str, ", ", sizeof(str) - strlen(str) - 1);
@@ -954,13 +955,17 @@ char* Locale::Page(int current, int page_max, int lang, genericChar* str)
 {
     FnTrace("Locale::Page()");
     static genericChar buffer[32];
-    if (str == NULL)
+    static constexpr size_t PAGE_BUFFER_SIZE = 32;  // REFACTOR: Define buffer size constant for safety
+                                                     // CRITICAL FIX: Prevents buffer overflow vulnerability
+                                                     // Problem: sizeof(str) on pointer parameter returns 8 bytes, not buffer size
+                                                     // Solution: Use explicit constant matching actual buffer size (32 bytes)
+    if (str == nullptr)
         str = buffer;
 
     if (page_max <= 0)
-        snprintf(str, sizeof(str), "%s %d", Translate("Page", lang), current);
+        snprintf(str, PAGE_BUFFER_SIZE, "%s %d", Translate("Page", lang), current);  // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
     else
-        snprintf(str, sizeof(str), "%s %d %s %d", Translate("Page", lang), current,
+        snprintf(str, PAGE_BUFFER_SIZE, "%s %d %s %d", Translate("Page", lang), current,  // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
                 Translate("of", lang), page_max);
     return str;
 }

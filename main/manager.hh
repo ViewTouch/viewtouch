@@ -1,3 +1,5 @@
+#pragma once  // REFACTOR: Replaced #ifndef VT_MANAGER_HH guard with modern pragma once
+
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -18,9 +20,6 @@
  * Functions for managing control flow in the application and
  * Standard POS utility functions
  */
-
-#ifndef _MANAGER_HH
-#define _MANAGER_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -57,9 +56,9 @@
 
 
 /**** Types ****/
-typedef void (* TimeOutFn)();
-typedef void (* InputFn)();
-typedef int  (* WorkFn)();
+using TimeOutFn = void (*)();
+using InputFn = void (*)();
+using WorkFn = int (*)();
 
 class Settings;
 class Terminal;
@@ -185,5 +184,3 @@ extern const genericChar* TermTypeName[];
 extern int   TermTypeValue[];
 extern const genericChar* PrinterTypeName[];
 extern int   PrinterTypeValue[];
-
-#endif

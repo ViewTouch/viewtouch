@@ -28,8 +28,7 @@
 //  for one value per drawer.  Thus the current method which may, in
 //  the end, not work.
 
-#ifndef _EXPENSE_HH
-#define _EXPENSE_HH
+#pragma once  // REFACTOR: Replaced #ifndef _EXPENSE_HH guard with modern pragma once
 
 #include "list_utility.hh"
 #include "utility.hh"
@@ -86,8 +85,8 @@ public:
     int Save(const char* path);
     int IsBlank();
     int Author(Terminal *term, genericChar* employee_name);
-    int DrawerOwner(Terminal *term, genericChar* drawer_name, Archive *archive = NULL);
-    int AccountName(Terminal *term, genericChar* account_name, Archive *archive = NULL);
+    int DrawerOwner(Terminal *term, genericChar* drawer_name, Archive *archive = nullptr);
+    int AccountName(Terminal *term, genericChar* account_name, Archive *archive = nullptr);
     int IsTraining();
     int SetFlag(int flagval);
     int Copy(Expense *original);
@@ -104,7 +103,7 @@ public:
     ~ExpenseDB();
     Expense *ExpenseList()    { return expense_list.Head(); }
     Expense *ExpenseListEnd() { return expense_list.Tail(); }
-    int      ExpenseCount(Terminal *term = NULL, int status = DRAWER_ANY);
+    int      ExpenseCount(Terminal *term = nullptr, int status = DRAWER_ANY);
 
     int      StatusMatch(int status, int drawer_status);
     int      Read(InputDataFile &infile, int version);
@@ -123,7 +122,7 @@ public:
     int      MoveAll(ExpenseDB *exp_db);
     Expense *FindByRecord(Terminal *term, int no, int drawer_type = DRAWER_OPEN);
     Expense *FindByID(int id);
-    int      FindRecordByWord(Terminal *term, const genericChar* word, int start = -1, Archive *archive = NULL);
+    int      FindRecordByWord(Terminal *term, const genericChar* word, int start = -1, Archive *archive = nullptr);
     int      CountFromDrawer(int drawer_id, int training = 0);
     int      BalanceFromDrawer(int drawer_id, int training = 0);
     int      EnteredFromDrawer(int drawer_id, int training = 0);
@@ -133,5 +132,3 @@ public:
     int      TotalExpenses(int training = 0);
     int      PrintExpenses();  // debugging function
 };
-
-#endif
