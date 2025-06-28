@@ -62,11 +62,11 @@ void admission_parse_hash_ltime_hash(Str& hashout,const Str& ih)
 		hashout.Set("");
 	}
 }
-const char* admission_filteredname(const std::string& item_name)  // REFACTOR: Changed parameter from Str& to std::string&
+const char* admission_filteredname(const std::string& item_name)
 {
 	static genericChar buf[256];
 	Str outname;
-	Str temp_name(item_name);  // REFACTOR: Convert std::string to Str for compatibility with existing code
+	Str temp_name(item_name);
 	admission_parse_hash_name(outname, temp_name);
 	snprintf(buf,256,"%s",outname.Value());
 	return buf;

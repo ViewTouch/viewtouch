@@ -1846,7 +1846,7 @@ RenderResult TextField::Render(Terminal *term, FormZone *fzone)
         buffer.Set(buffint);
         cursor = buffer.size();
     }
-    buff = admission_filteredname(buffer.str());   // REFACTOR: Added .str() to convert Str to std::string for new signature
+    buff = admission_filteredname(buffer.str());
     fzone->TextPosL(term, xx, y, buff, COLOR_WHITE);
     if (selected)
     {

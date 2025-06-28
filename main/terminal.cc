@@ -507,6 +507,7 @@ Terminal::Terminal()
     // report flags
     expand_labor    = 0;
     hide_zeros      = 0;
+    zero_exclusion  = 1;  // Default ON - hide zero Canadian tax lines
     show_family     = 1;
     expand_goodwill = 0;
 

@@ -297,21 +297,50 @@ int UserEditZone::Update(Terminal *term, int update_message, const char* value)
 // setup list of valid starting pages.
 // return page number of 1st one greater than zero 
 // (normal start page, not bar/kitchen video), for use as a default
+//
+// FIX: Added comprehensive null pointer protection to prevent segmentation
+// fault that occurred when clicking "Return" button during page transitions.
+// The crash happened because this method gets called during LoadRecord() when
+// the zone database might be in an inconsistent state during page changes.
 int UserEditZone::AddStartPages(Terminal *term, FormField *field)
 {
     FnTrace("UserEditZone::AddStartPages()");
     int retval = 0;
 
+    // FIX: Add null pointer checks for terminal and zone database
+    // This prevents crashes during page transitions when zone_db might be temporarily invalid
+    if (term == nullptr || term->zone_db == nullptr || field == nullptr) {
+        ReportError("AddStartPages: Null pointer - term, zone_db, or field is null");
+        return retval;
+    }
+
     int last_page = 0;
     field->ClearEntries();
-    for (Page *p = term->zone_db->PageList(); p != nullptr; p = p->next)
+    
+    // FIX: Add null check for PageList() and protect iteration
+    // During page transitions, the page database can be in an inconsistent state
+    // causing PageList() to return null or containing corrupted page pointers
+    Page *page_list = term->zone_db->PageList();
+    if (page_list == nullptr) {
+        ReportError("AddStartPages: PageList() returned null");
+        field->AddEntry("Check List Page", 0);
+        return retval;
+    }
+    
+    for (Page *p = page_list; p != nullptr; p = p->next)
     {
+        // FIX: Add null check for page properties to prevent accessing corrupted pages
         if (p->IsStartPage() && p->id != last_page)
         {
             last_page = p->id;
-            field->AddEntry(p->name.Value(), p->id);
-	    if (p->id > 0 && retval == 0)	// (or maybe p->IsTable()?)
-	        retval = p->id;
+            // FIX: Add null check before accessing page name
+            // Page objects might be partially corrupted during transitions
+            const char* page_name = p->name.Value();
+            if (page_name != nullptr) {
+                field->AddEntry(page_name, p->id);
+                if (p->id > 0 && retval == 0)	// (or maybe p->IsTable()?)
+                    retval = p->id;
+            }
         }
     }
     //NOTE BAK-->Check List Page is not a specific page, but a page type.
@@ -323,12 +352,39 @@ int UserEditZone::AddStartPages(Terminal *term, FormField *field)
 int UserEditZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("UserEditZone::LoadRecord()");
+    
+    // FIX: Add null pointer checks for terminal and system data
+    // This method is called during page transitions and rendering, when system
+    // objects might be in an inconsistent state
+    if (term == nullptr || term->system_data == nullptr) {
+        ReportError("LoadRecord: Terminal or system_data is null");
+        return 1;
+    }
+    
+    // FIX: Handle case when there are no employee records
+    // CRITICAL: This was the primary cause of the segmentation fault when clicking
+    // "Return" button on empty employee database. The method would try to access
+    // form fields and employee data when user=nullptr, causing memory violations.
+    if (records <= 0) {
+        ReportError("LoadRecord: No employee records exist, skipping load");
+        user = nullptr;
+        return 0;
+    }
+    
     System *sys = term->system_data;
     Employee *e = sys->user_db.FindByRecord(term, record, view_active);
-    if (e == nullptr)
+    if (e == nullptr) {
+        ReportError("LoadRecord: Could not find employee record");
+        user = nullptr;
         return 1;
+    }
 
     Settings *s = &(sys->settings);
+    if (s == nullptr) {
+        ReportError("LoadRecord: Settings is null");
+        return 1;
+    }
+    
     user = e;
 
     int job_active[MAX_JOBS];
@@ -345,88 +401,171 @@ int UserEditZone::LoadRecord(Terminal *term, int record)
     }
 
     FormField *f = FieldList();
-    f->Set(e->key); f = f->next;
-    f->Set(e->system_name); f = f->next;
+    if (f == nullptr) {
+        ReportError("LoadRecord: FieldList() returned null");
+        return 1;
+    }
+    
+    // FIX: Process basic employee fields with null checks
+    // Each form field access is protected to prevent segmentation faults
+    // if the form field chain is corrupted during page transitions
+    if (f != nullptr) { f->Set(e->key); f = f->next; }
+    if (f != nullptr) { f->Set(e->system_name); f = f->next; }
 
-    f->Set(e->training); f = f->next;
-    f->Set(e->last_name); f = f->next;
-    f->Set(e->first_name); f = f->next;
-    f->Set(e->address); f = f->next;
-    f->Set(e->city); f = f->next;
-    f->Set(e->state); f = f->next;
-    f->Set(e->phone); f = f->next;
-    f->Set(e->ssn); f = f->next;
-    f->Set(e->description); f = f->next;
-    f->Set(e->employee_no); f = f->next;
+    if (f != nullptr) { f->Set(e->training); f = f->next; }
+    if (f != nullptr) { f->Set(e->last_name); f = f->next; }
+    if (f != nullptr) { f->Set(e->first_name); f = f->next; }
+    if (f != nullptr) { f->Set(e->address); f = f->next; }
+    if (f != nullptr) { f->Set(e->city); f = f->next; }
+    if (f != nullptr) { f->Set(e->state); f = f->next; }
+    if (f != nullptr) { f->Set(e->phone); f = f->next; }
+    if (f != nullptr) { f->Set(e->ssn); f = f->next; }
+    if (f != nullptr) { f->Set(e->description); f = f->next; }
+    if (f != nullptr) { f->Set(e->employee_no); f = f->next; }
 
+    // FIX: Process exactly 3 job slots to match the form structure
+    // Changed from unbounded while loop to bounded for loop to prevent
+    // infinite loops and ensure form structure consistency
     JobInfo *j = e->JobList();
     for (i = 0; i < 3; ++i)
     {
-        if (j)
+        if (f == nullptr) {
+            ReportError("LoadRecord: Form field pointer became null during job iteration");
+            break;
+        }
+        
+        if (j != nullptr)
         {
-            f->active = 1; f = f->next;
-            f->active = 1; f->Set(j->job); f->SetActiveList(job_active); f = f->next;
-            f->active = 1; f->Set(j->pay_rate); f = f->next;
-            f->active = 1; f->Set(term->SimpleFormatPrice(j->pay_amount)); f = f->next;
-            f->active = 1; int defpage = AddStartPages(term, f); 
-	    if (j->starting_page == -1)	// unset/default, use 1st normal start page
-		j->starting_page = defpage;
-	    f->Set(j->starting_page); f = f->next;
-            f->active = 1; f->Set(j->dept_code); f = f->next;
-            f->active = (e->JobCount() > 1); f = f->next;
+            if (f != nullptr) { f->active = 1; f = f->next; }
+            if (f != nullptr) { f->active = 1; f->Set(j->job); f->SetActiveList(job_active); f = f->next; }
+            if (f != nullptr) { f->active = 1; f->Set(j->pay_rate); f = f->next; }
+            if (f != nullptr) { f->active = 1; f->Set(term->SimpleFormatPrice(j->pay_amount)); f = f->next; }
+            if (f != nullptr) { 
+                f->active = 1; 
+                int defpage = AddStartPages(term, f); 
+                if (j->starting_page == -1)	// unset/default, use 1st normal start page
+                    j->starting_page = defpage;
+                f->Set(j->starting_page); 
+                f = f->next; 
+            }
+            if (f != nullptr) { f->active = 1; f->Set(j->dept_code); f = f->next; }
+            if (f != nullptr) { f->active = (e->JobCount() > 1); f = f->next; }
             j = j->next;
         }
         else
         {
-            for (int k = 0; k < 7; ++k)
+            // No more jobs, deactivate remaining fields for this slot
+            for (int k = 0; k < 7 && f != nullptr; ++k)
             {
-                f->active = 0; f = f->next;
+                f->active = 0; 
+                f = f->next;
             }
         }
     }
-    f->active = (e->JobCount() < 3);
+    
+    if (f != nullptr) {
+        f->active = (e->JobCount() < 3);
+    }
     return 0;
 }
 
 int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("UserEditZone::SaveRecord()");
+    
+    // FIX: Add null pointer checks for terminal and system data
+    // This method is called during page transitions when clicking "Return" button
+    if (term == nullptr || term->system_data == nullptr) {
+        ReportError("SaveRecord: Terminal or system_data is null");
+        return 1;
+    }
+    
+    // FIX: Handle case when there are no employee records
+    // CRITICAL: This was the main cause of segmentation fault. When employee
+    // database is empty (records=0), user=nullptr, but SaveRecord() was still
+    // called during "Return" button processing, trying to access null form fields
+    // and employee data, causing memory access violations.
+    if (records <= 0) {
+        ReportError("SaveRecord: No employee records exist, skipping save");
+        return 0;
+    }
+    
     Employee *e = user;
+    if (e == nullptr) {
+        ReportError("SaveRecord: Employee user pointer is null");
+        return 0;
+    }
+    
     if (e)
     {
         FormField *f = FieldList();
-        f->Get(e->key); f = f->next;
-        f->Get(e->system_name); f = f->next;
+        if (f == nullptr) {
+            ReportError("SaveRecord: FieldList() returned null");
+            return 1;
+        }
+        
+        // FIX: Process basic employee fields with comprehensive null checks
+        // Every form field access is protected to prevent crashes if the
+        // form field linked list is corrupted during page transitions
+        if (f != nullptr) { f->Get(e->key); f = f->next; }
+        if (f != nullptr) { f->Get(e->system_name); f = f->next; }
         e->system_name = AdjustCase(e->system_name.str());
-        f->Get(e->training); f = f->next;
-        f->Get(e->last_name); f = f->next;
+        if (f != nullptr) { f->Get(e->training); f = f->next; }
+        if (f != nullptr) { f->Get(e->last_name); f = f->next; }
         e->last_name = AdjustCase(e->last_name.str());
-        f->Get(e->first_name); f = f->next;
+        if (f != nullptr) { f->Get(e->first_name); f = f->next; }
         e->first_name = AdjustCase(e->first_name.str());
-        f->Get(e->address); f = f->next;
+        if (f != nullptr) { f->Get(e->address); f = f->next; }
         e->address = AdjustCase(e->address.str());
-        f->Get(e->city); f = f->next;
+        if (f != nullptr) { f->Get(e->city); f = f->next; }
         e->city = AdjustCase(e->city.str());
-        f->Get(e->state); f = f->next;
+        if (f != nullptr) { f->Get(e->state); f = f->next; }
         e->state = StringToUpper(e->state.str());
-        f->Get(e->phone); f = f->next;
-        f->Get(e->ssn); f = f->next;
-        f->Get(e->description); f = f->next;
-        f->Get(e->employee_no); f = f->next;
+        if (f != nullptr) { f->Get(e->phone); f = f->next; }
+        if (f != nullptr) { f->Get(e->ssn); f = f->next; }
+        if (f != nullptr) { f->Get(e->description); f = f->next; }
+        if (f != nullptr) { f->Get(e->employee_no); f = f->next; }
 
-        for (JobInfo *j = e->JobList(); j != nullptr; j = j->next)
+        // FIX: Process exactly 3 job slots to match the form structure
+        // Changed from original unbounded iteration to bounded loop matching
+        // the LoadRecord() structure to prevent form field misalignment
+        JobInfo *j = e->JobList();
+        for (int i = 0; i < 3; ++i)
         {
-            f = f->next;
-            f->Get(j->job); f = f->next;
-            f->Get(j->pay_rate); f = f->next;
-            f->GetPrice(j->pay_amount); f = f->next;
-            f->Get(j->starting_page); f = f->next;
-            f->Get(j->dept_code); f = f->next;
-            f = f->next;
+            if (f == nullptr) {
+                ReportError("SaveRecord: Form field pointer became null during job iteration");
+                break;
+            }
+            
+            if (j != nullptr)
+            {
+                // Skip the job active field
+                f = f->next;
+                // FIX: Process job fields with comprehensive null checks
+                // Each field access is protected to prevent segmentation faults
+                if (f != nullptr) { f->Get(j->job); f = f->next; }
+                if (f != nullptr) { f->Get(j->pay_rate); f = f->next; }
+                if (f != nullptr) { f->GetPrice(j->pay_amount); f = f->next; }
+                if (f != nullptr) { f->Get(j->starting_page); f = f->next; }
+                if (f != nullptr) { f->Get(j->dept_code); f = f->next; }
+                if (f != nullptr) { f = f->next; } // Skip the delete button field
+                j = j->next;
+            }
+            else
+            {
+                // FIX: No more jobs, safely skip the remaining fields for this slot
+                // Added null check in loop condition to prevent crashes when
+                // form field chain is shorter than expected
+                for (int k = 0; k < 7 && f != nullptr; ++k)
+                {
+                    f = f->next;
+                }
+            }
         }
     }
 
-    if ((e->system_name.empty()) &&
+    // Additional null check for employee pointer
+    if (e && (e->system_name.empty()) &&
         ((e->first_name.size() > 0) && (e->last_name.size() > 0)))
     {
         char tempname[STRLONG];

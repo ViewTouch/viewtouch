@@ -810,13 +810,13 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
 	// Mon Oct  1 13:14:27 PDT 2001: some work done in this direction - JMK
 
     static genericChar buffer[256];
-    static constexpr size_t TIME_DATE_BUFFER_SIZE = 256;  // REFACTOR: Define buffer size constant for safety
+    static constexpr size_t TIME_DATE_BUFFER_SIZE = 256;
     if (str == nullptr)
         str = buffer;
 
     if (!timevar.IsSet())
     {
-        snprintf(str, TIME_DATE_BUFFER_SIZE, "<NOT SET>");  // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
+        snprintf(str, TIME_DATE_BUFFER_SIZE, "<NOT SET>");
         return str;
     }
 
@@ -828,9 +828,9 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
         // Show Day of Week
         int wd = timevar.WeekDay();
         if (format & TD_SHORT_DAY)
-            snprintf(str, TIME_DATE_BUFFER_SIZE, "%s", Translate(ShortDayName[wd], lang));  // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
+            snprintf(str, TIME_DATE_BUFFER_SIZE, "%s", Translate(ShortDayName[wd], lang));
         else
-            snprintf(str, TIME_DATE_BUFFER_SIZE, "%s", Translate(DayName[wd], lang));       // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
+            snprintf(str, TIME_DATE_BUFFER_SIZE, "%s", Translate(DayName[wd], lang));
 
         if (!(format & TD_NO_TIME) || !(format & TD_NO_DATE))
             strncat(str, ", ", sizeof(str) - strlen(str) - 1);
@@ -955,7 +955,7 @@ char* Locale::Page(int current, int page_max, int lang, genericChar* str)
 {
     FnTrace("Locale::Page()");
     static genericChar buffer[32];
-    static constexpr size_t PAGE_BUFFER_SIZE = 32;  // REFACTOR: Define buffer size constant for safety
+    static constexpr size_t PAGE_BUFFER_SIZE = 32;
                                                      // CRITICAL FIX: Prevents buffer overflow vulnerability
                                                      // Problem: sizeof(str) on pointer parameter returns 8 bytes, not buffer size
                                                      // Solution: Use explicit constant matching actual buffer size (32 bytes)
@@ -963,9 +963,9 @@ char* Locale::Page(int current, int page_max, int lang, genericChar* str)
         str = buffer;
 
     if (page_max <= 0)
-        snprintf(str, PAGE_BUFFER_SIZE, "%s %d", Translate("Page", lang), current);  // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
+        snprintf(str, PAGE_BUFFER_SIZE, "%s %d", Translate("Page", lang), current);
     else
-        snprintf(str, PAGE_BUFFER_SIZE, "%s %d %s %d", Translate("Page", lang), current,  // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
+        snprintf(str, PAGE_BUFFER_SIZE, "%s %d %s %d", Translate("Page", lang), current,
                 Translate("of", lang), page_max);
     return str;
 }

@@ -161,6 +161,9 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
     case SWITCH_HIDE_ZEROS:
         onoff = term->hide_zeros;
         break;
+    case SWITCH_ZERO_EXCLUSION:
+        onoff = term->zero_exclusion;
+        break;
     case SWITCH_SHOW_FAMILY:
         onoff = term->show_family;
         break;
@@ -276,6 +279,10 @@ SignalResult SwitchZone::Touch(Terminal *term, int tx, int ty)
         break;
     case SWITCH_HIDE_ZEROS:
         term->hide_zeros ^= 1;
+        no_update = 1;
+        break;
+    case SWITCH_ZERO_EXCLUSION:
+        term->zero_exclusion ^= 1;
         no_update = 1;
         break;
     case SWITCH_SHOW_FAMILY:
@@ -733,28 +740,28 @@ int TaxSettingsZone::LoadRecord(Terminal *term, int record)
     FormField *f = FieldList();
 
     f = f->next;  // skip US Tax label
-    f->Set((Flt)(settings->tax_food * 100.0)); f = f->next;          // REFACTOR: Cast to Flt to resolve ambiguity
+    f->Set((Flt)(settings->tax_food * 100.0)); f = f->next;
     f->Set(settings->food_inclusive); f = f->next;
-    f->Set((Flt)(settings->tax_alcohol * 100.0)); f = f->next;       // REFACTOR: Cast to Flt to resolve ambiguity
+    f->Set((Flt)(settings->tax_alcohol * 100.0)); f = f->next;
     f->Set(settings->alcohol_inclusive); f = f->next;
 
-    f->Set((Flt)(settings->tax_room * 100.0)); f = f->next;          // REFACTOR: Cast to Flt to resolve ambiguity
+    f->Set((Flt)(settings->tax_room * 100.0)); f = f->next;
     f->Set(settings->room_inclusive); f = f->next;
-    f->Set((Flt)(settings->tax_merchandise * 100.0)); f = f->next;   // REFACTOR: Cast to Flt to resolve ambiguity
+    f->Set((Flt)(settings->tax_merchandise * 100.0)); f = f->next;
     f->Set(settings->merchandise_inclusive); f = f->next;
 
     f = f->next;  // skip Canadian Tax label
-	        f->Set((Flt)(settings->tax_GST * 100.0)); f = f->next;          // REFACTOR: Cast to Flt to resolve ambiguity
-        f->Set((Flt)(settings->tax_PST * 100.0)); f = f->next;          // REFACTOR: Cast to Flt to resolve ambiguity
-        f->Set((Flt)(settings->tax_HST * 100.0)); f = f->next;          // REFACTOR: Cast to Flt to resolve ambiguity
-        f->Set((Flt)(settings->tax_QST * 100.0)); f = f->next;          // REFACTOR: Cast to Flt to resolve ambiguity
+	        f->Set((Flt)(settings->tax_GST * 100.0)); f = f->next;
+        f->Set((Flt)(settings->tax_PST * 100.0)); f = f->next;
+        f->Set((Flt)(settings->tax_HST * 100.0)); f = f->next;
+        f->Set((Flt)(settings->tax_QST * 100.0)); f = f->next;
 
     f = f->next;  // skip Euro Tax label
-    f->Set((Flt)(settings->tax_VAT * 100.0)); f = f->next;          // REFACTOR: Cast to Flt to resolve ambiguity
+    f->Set((Flt)(settings->tax_VAT * 100.0)); f = f->next;
 
     f = f->next;  // skip General Rates label
-    f->Set((Flt)(settings->royalty_rate * 100.0)); f = f->next;     // REFACTOR: Cast to Flt to resolve ambiguity
-    f->Set((Flt)(settings->advertise_fund * 100.0)); f = f->next;  // REFACTOR: Cast to Flt to resolve ambiguity
+    f->Set((Flt)(settings->royalty_rate * 100.0)); f = f->next;
+    f->Set((Flt)(settings->advertise_fund * 100.0)); f = f->next;
     return 0;
 }
 

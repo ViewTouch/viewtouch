@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include <stdio.h>  /* vsnprintf */
 #include <string.h> /* memset */
-#include <syslog.h>  // REFACTOR: Added syslog.h include for syslog() function
+#include <syslog.h>
 
 #include "logger.hh"
 
@@ -49,7 +49,7 @@ setident(const char* ident)
  *         -1 : message truncated (didn't fit into buffer)
  *         -2 : error returned by vsnprintf(3)
  */
-void                                                  // REFACTOR: Changed return type from int to void to match header
+void
 logmsg(int priority, const char* fmt, ...)
 {
     va_list ap;

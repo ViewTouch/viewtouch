@@ -1484,9 +1484,9 @@ int Credit::PrintAuth()
     printf("    Auth:         %s\n", auth.Value());
     printf("    ISO:          %s\n", isocode.Value());
     printf("    B24:          %s\n", b24code.Value());
-    printf("    Batch:        %ld\n", batch);   // REFACTOR: Fixed format specifier - int64_t uses %ld on this system, not %lld
-    printf("    Item:         %ld\n", item);    // REFACTOR: Fixed format specifier - int64_t uses %ld on this system, not %lld  
-    printf("    TTID:         %ld\n", ttid);    // REFACTOR: Fixed format specifier - int64_t uses %ld on this system, not %lld
+    printf("    Batch:        %ld\n", batch);
+    printf("    Item:         %ld\n", item);
+    printf("    TTID:         %ld\n", ttid);
     printf("    AVS:          %s\n", AVS.Value());
     printf("    CV:           %s\n", CV.Value());
     printf("    Reference:    %s\n", reference.Value());
@@ -1949,13 +1949,13 @@ int Credit::operator == (Credit *c)
     FnTrace("Credit::==()");
     int retval = 0;
 
-    if (read_t1 && (strcmp(t1_pan, c->t1_pan) == 0) && (strlen(t1_expiry) > 0 && strlen(c->t1_expiry) > 0))  // REFACTOR: Fixed array comparison bug - use strcmp() instead of ==
+    if (read_t1 && (strcmp(t1_pan, c->t1_pan) == 0) && (strlen(t1_expiry) > 0 && strlen(c->t1_expiry) > 0))
         retval = 1;
-    else if (read_t2 && (strcmp(t2_pan, c->t2_pan) == 0) && (strlen(t2_expiry) > 0 && strlen(c->t2_expiry) > 0))  // REFACTOR: Fixed array comparison bug - use strcmp() instead of ==
+    else if (read_t2 && (strcmp(t2_pan, c->t2_pan) == 0) && (strlen(t2_expiry) > 0 && strlen(c->t2_expiry) > 0))
         retval = 1;
-    else if (read_t3 && (strcmp(t3_pan, c->t3_pan) == 0) && (strlen(t3_expiry) > 0 && strlen(c->t3_expiry) > 0))  // REFACTOR: Fixed array comparison bug - use strcmp() instead of ==
+    else if (read_t3 && (strcmp(t3_pan, c->t3_pan) == 0) && (strlen(t3_expiry) > 0 && strlen(c->t3_expiry) > 0))
         retval = 1;
-    else if (read_manual && (strcmp(mn_pan, c->mn_pan) == 0) && (strlen(mn_expiry) > 0 && strlen(c->mn_expiry) > 0))  // REFACTOR: Fixed array comparison bug - use strcmp() instead of ==
+    else if (read_manual && (strcmp(mn_pan, c->mn_pan) == 0) && (strlen(mn_expiry) > 0 && strlen(c->mn_expiry) > 0))
         retval = 1;
 
     return retval;

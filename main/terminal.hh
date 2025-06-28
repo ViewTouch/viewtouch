@@ -420,7 +420,8 @@ public:
     int is_server;       // boolean - is the terminal the server display?
     int expand_labor;    // boolean - expand report labor?
     int hide_zeros;      // boolean - hide zero amounts in reports?
-    int show_family;     // boolean - show family grouping in reports?
+    int zero_exclusion;  // boolean - hide zero Canadian tax lines in reports?
+    int show_family;     // boolean - show item family groupings in reports?
     int expand_goodwill; // boolean - show expanded goodwill adjustments list?
 
     // Font/Graphics Info

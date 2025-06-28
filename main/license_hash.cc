@@ -73,7 +73,7 @@ int GetUnameInfo(char* buffer, int bufflen)
 #include <net/route.h>
 
 /* bkk bsd6 compile */
-using u_int = unsigned int;  // REFACTOR: Converted typedef to modern using declaration
+using u_int = unsigned int;
 
 /****
  * GetInterfaceInfo:  grab the MAC.  This version uses the sysctl method,
@@ -131,8 +131,7 @@ int GetInterfaceInfo(char* stringbuff, int stringlen)
 /*******
  * MacToString:  
  *******/
-// REFACTOR: Corrected parameter type from 'unsigned const char*' to 'const unsigned char*'
-// REFACTOR: In C++, the correct syntax puts 'const' qualifier first
+
 int MacToString(char* macstr, int maxlen, const unsigned char* mac)
 {
     int retval = 0;
@@ -436,7 +435,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
         }
     }
         
-    snprintf(stringbuf, stringlen, "%02X:%02X:%02X:%02X:%02X:%02X",  // REFACTOR: Fixed sizeof(stringbuf) bug - stringbuf is pointer, not array
+    snprintf(stringbuf, stringlen, "%02X:%02X:%02X:%02X:%02X:%02X",
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[0],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[1],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[2],

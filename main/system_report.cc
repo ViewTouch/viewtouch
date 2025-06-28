@@ -2253,27 +2253,44 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->TextL("Sales Tax: Merchandise");
     report->TextPosR(-6, term->FormatPrice(tax_merchandise), col);
     report->NewLine();
-/*	                                                            This can be activated again when Zero Exclusion works
-    report->TextL("Sales Tax: GST");
-    report->TextPosR(-6, term->FormatPrice(tax_GST), col);
-    report->NewLine();
 
-    report->TextL("Sales Tax: PST");
-    report->TextPosR(-6, term->FormatPrice(tax_PST), col);
-    report->NewLine();
+    // Canadian Tax Lines - controlled by Zero Exclusion setting
+    // Show these tax lines if Zero Exclusion is off OR if the tax amount is non-zero
+    if (term->zero_exclusion == 0 || tax_GST != 0)
+    {
+        report->TextL("Sales Tax: GST");
+        report->TextPosR(-6, term->FormatPrice(tax_GST), col);
+        report->NewLine();
+    }
 
-    report->TextL("Sales Tax: HST");
-    report->TextPosR(-6, term->FormatPrice(tax_HST), col);
-    report->NewLine();
+    if (term->zero_exclusion == 0 || tax_PST != 0)
+    {
+        report->TextL("Sales Tax: PST");
+        report->TextPosR(-6, term->FormatPrice(tax_PST), col);
+        report->NewLine();
+    }
 
-    report->TextL("Sales Tax: QST");
-    report->TextPosR(-6, term->FormatPrice(tax_QST), col);
-    report->NewLine();
+    if (term->zero_exclusion == 0 || tax_HST != 0)
+    {
+        report->TextL("Sales Tax: HST");
+        report->TextPosR(-6, term->FormatPrice(tax_HST), col);
+        report->NewLine();
+    }
 
-    report->TextL("Value Added Tax");
-    report->TextPosR(-6, term->FormatPrice(tax_VAT), col);
-    report->NewLine();
-*/
+    if (term->zero_exclusion == 0 || tax_QST != 0)
+    {
+        report->TextL("Sales Tax: QST");
+        report->TextPosR(-6, term->FormatPrice(tax_QST), col);
+        report->NewLine();
+    }
+
+    if (term->zero_exclusion == 0 || tax_VAT != 0)
+    {
+        report->TextL("Value Added Tax");
+        report->TextPosR(-6, term->FormatPrice(tax_VAT), col);
+        report->NewLine();
+    }
+
     report->TextPosL(3, "Accrued Tax Receipts");
 
     report->TextPosR(0, term->FormatPrice(total_tax), col);

@@ -210,7 +210,7 @@ char* UnitAmount::Description(char* str)
     if (str == nullptr)
         str = buffer;
 
-    static constexpr size_t UNIT_DESC_BUFFER_SIZE = 256;  // REFACTOR: Define buffer size constant for safety
+    static constexpr size_t UNIT_DESC_BUFFER_SIZE = 256;
                                                                        // CRITICAL FIX: Prevents buffer overflow vulnerability
                                                                        // Problem: sizeof(str) on pointer parameter returns 8 bytes, not buffer size
                                                                        // Solution: Use explicit constant matching actual buffer size (256 bytes)
@@ -219,28 +219,28 @@ char* UnitAmount::Description(char* str)
     switch (type)
     {
     case UNIT_NONE:     strcpy(str, "---"); break;
-    case COUNT_SINGLE:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g", amount); break;                    // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case COUNT_DOZEN:   snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Dzn.", amount); break;              // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case COUNT_GROSS:   snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Grs.", amount); break;              // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
+    case COUNT_SINGLE:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g", amount); break;
+    case COUNT_DOZEN:   snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Dzn.", amount); break;
+    case COUNT_GROSS:   snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Grs.", amount); break;
 
         // Standard Units
-    case WEIGHT_DASH:   snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g", amount); break;                   // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case WEIGHT_OUNCE:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Ou.", amount); break;               // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case WEIGHT_POUND:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Lbs.", amount); break;              // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case VOLUME_DRAM:   snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Dram", amount); break;              // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case VOLUME_TSP:    snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Tsp.", amount); break;              // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case VOLUME_TBS:    snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Tbs.", amount); break;              // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case VOLUME_OUNCE:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Oz.", amount); break;               // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case VOLUME_CUP:    snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Cup", amount); break;               // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case VOLUME_PINT:   snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Pint", amount); break;              // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case VOLUME_QUART:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Qt.", amount); break;               // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case VOLUME_GALLON: snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Gal.", amount); break;              // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
+    case WEIGHT_DASH:   snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g", amount); break;
+    case WEIGHT_OUNCE:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Ou.", amount); break;
+    case WEIGHT_POUND:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Lbs.", amount); break;
+    case VOLUME_DRAM:   snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Dram", amount); break;
+    case VOLUME_TSP:    snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Tsp.", amount); break;
+    case VOLUME_TBS:    snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Tbs.", amount); break;
+    case VOLUME_OUNCE:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Oz.", amount); break;
+    case VOLUME_CUP:    snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Cup", amount); break;
+    case VOLUME_PINT:   snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Pint", amount); break;
+    case VOLUME_QUART:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Qt.", amount); break;
+    case VOLUME_GALLON: snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g Gal.", amount); break;
 
         // Metric Units
-    case WEIGHT_G:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g g", amount); break;                     // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case WEIGHT_KG: snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g kg", amount); break;                    // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case VOLUME_ML: snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g ml", amount); break;                    // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
-    case VOLUME_L:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g l", amount); break;                     // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
+    case WEIGHT_G:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g g", amount); break;
+    case WEIGHT_KG: snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g kg", amount); break;
+    case VOLUME_ML: snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g ml", amount); break;
+    case VOLUME_L:  snprintf(str, UNIT_DESC_BUFFER_SIZE, "%g l", amount); break;
     }
     return str;
 }
