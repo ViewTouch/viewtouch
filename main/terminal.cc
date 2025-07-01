@@ -1486,6 +1486,8 @@ SignalResult Terminal::Touch(int x, int y)
             {
                 selected_zone = z;
                 z->Draw(this, 0);
+                // Force immediate screen refresh for the newly selected zone
+                UpdateArea(z->x, z->y, z->w, z->h);
             }
         }
 
@@ -1496,6 +1498,11 @@ SignalResult Terminal::Touch(int x, int y)
             SetFocus(z);
             return z->Touch(this, x, y);
         }
+    }
+    else
+    {
+        // Click in open area - clear any selected zone
+        ClearSelectedZone();
     }
     return SIGNAL_IGNORED;
 }
@@ -1559,6 +1566,8 @@ SignalResult Terminal::Mouse(int action, int x, int y)
             {
                 selected_zone = z;
                 z->Draw(this, 0);
+                // Force immediate screen refresh for the newly selected zone
+                UpdateArea(z->x, z->y, z->w, z->h);
             }
         }
 
@@ -1568,6 +1577,11 @@ SignalResult Terminal::Mouse(int action, int x, int y)
                 SetFocus(z);
             return z->Mouse(this, action, x, y);
         }
+    }
+    else if (action & MOUSE_PRESS)
+    {
+        // Click in open area - clear any selected zone
+        ClearSelectedZone();
     }
     return SIGNAL_IGNORED;
 }
@@ -3170,6 +3184,8 @@ int Terminal::ClearSelectedZone()
     {
         selected_zone = nullptr;
         z->Draw(this, 0);
+        // Force immediate screen refresh for the specific zone area
+        UpdateArea(z->x, z->y, z->w, z->h);
     }
     return 0;
 }
@@ -4233,8 +4249,14 @@ int Terminal::MouseInput(int action, int x, int y)
         last_x = x - (x % grid_x);
         last_y = y - (y % grid_y);
         zone_modify = 0;
+        
+        // Handle drag selection (clicking in open area)
         if (zone == nullptr)
         {
+            // Deselect all buttons when clicking in open area (unless Shift is held for multi-select)
+            if ((action & MOUSE_SHIFT) == 0)
+                zone_db->ClearEdit(this);
+            
             if (select_on)
                 WInt8(TERM_SELECTOFF);
             WInt8(TERM_SELECTUPDATE);
@@ -4245,16 +4267,18 @@ int Terminal::MouseInput(int action, int x, int y)
             select_x2 = x;
             select_y2 = y;
             select_on = 1;
+            return 0; // Exit early for drag selection
         }
         else
             select_on = 0;
 
+        // Handle right-click (context menu)
         if (action & MOUSE_RIGHT)
         {
             if (zone)
-			{
+            {
                 if (zone->edit == 0)
-				{
+                {
                     if ((action & MOUSE_SHIFT) == 0)
                         zone_db->ClearEdit(this);
                     zone->edit = 1;
@@ -4270,11 +4294,10 @@ int Terminal::MouseInput(int action, int x, int y)
             return 0;
         }
 
-        if ((action & MOUSE_SHIFT) == 0 && (zone == nullptr || zone->edit == 0))
+        // Handle zone selection and movement
+        // Only clear other selections if we're not starting a move operation on already selected zones
+        if ((action & MOUSE_SHIFT) == 0 && zone->edit == 0)
             zone_db->ClearEdit(this);
-
-        if (zone == nullptr)
-            return 0;
 
         if (action & MOUSE_LEFT)
         {
@@ -4295,6 +4318,7 @@ int Terminal::MouseInput(int action, int x, int y)
                 zone_modify |= MODIFY_RESIZE_RE;
         }
 
+        // Multi-select: toggle selection if Shift is held, otherwise single-select
         if (action & MOUSE_SHIFT)
             zone->edit ^= 1;
         else

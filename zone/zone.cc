@@ -1510,10 +1510,10 @@ int ZoneDB::IsPageDefined(int my_page_id, int size)
 int ZoneDB::ClearEdit(Terminal *t)
 {
     FnTrace("ZoneDB::ClearEdit()");
-    RegionInfo r;
     int count = 0;
 
-    Page *p = page_list.Head();;
+    // Clear edit flags on all zones in the current page and parent pages
+    Page *p = t->page;
     while (p != nullptr)
     {
         Zone *z = p->ZoneList();
@@ -1522,18 +1522,17 @@ int ZoneDB::ClearEdit(Terminal *t)
             if (z->edit)
             {
                 z->edit = 0;
-                r.Fit(z->x, z->y, z->w, z->h);
                 ++count;
             }
             z = z->next;
         }
-        p = p->next;
+        p = p->parent_page;
     }
 
     if (count)
     {
-        t->Draw(1, r.x, r.y, r.w, r.h);
-        // Force immediate buffer flush for real-time editing feedback
+        // Force a full screen refresh to ensure all cleared selections are visible
+        t->Draw(1);
         t->SendNow();
     }
     return 0;
@@ -1676,7 +1675,11 @@ int ZoneDB::CopyEdit(Terminal *t, int modify_x, int modify_y)
     }
 
     if (count)
-        t->Draw(1, r.x, r.y, r.w, r.h);
+    {
+        // Always force a full screen refresh after Copy Selected
+        t->Draw(1);
+        t->SendNow();
+    }
     return 0;
 }
 
@@ -1773,8 +1776,8 @@ int ZoneDB::ToggleEdit(Terminal *t, int toggle)
 
     if (count)
     {
-        t->Draw(1, r.x, r.y, r.w, r.h);
-        // Force immediate buffer flush for real-time editing feedback
+        // Always force a full screen refresh after Select All
+        t->Draw(1);
         t->SendNow();
     }
     return 0;
@@ -1807,8 +1810,8 @@ int ZoneDB::ToggleEdit(Terminal *t, int toggle, int rx, int ry, int rw, int rh)
 
     if (count)
     {
-        t->Draw(1, r.x, r.y, r.w, r.h);
-        // Force immediate buffer flush for real-time editing feedback
+        // Always force a full screen refresh after drag selection
+        t->Draw(1);
         t->SendNow();
     }
     return 0;

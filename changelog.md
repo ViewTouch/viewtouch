@@ -54,7 +54,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
 
 ### Fixed
-- **UI REFRESH AND EDITING ISSUES**: Resolved multiple screen update problems affecting button editing, drag-and-drop, and keyboard operations
+- **UI REFRESH AND EDITING ISSUES**: Resolved multiple screen update problems affecting button editing, drag-and-drop, keyboard operations, and open area clicks
   - **Fixed Button Editing Screen Refresh**: Corrected issue where moving, resizing, or unselecting buttons did not immediately update the screen
     - Root cause: Editing functions in `zone/zone.cc` were calling `Draw(0)` instead of `Draw(1)`, preventing immediate refresh
     - Impact: Users had to manually refresh or perform other actions to see button position/size changes
@@ -67,6 +67,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Root cause: Keyboard editing operations in `zone/zone.cc` were not calling `Draw(1)` after position/size changes
     - Impact: Users had to perform additional actions to see keyboard-driven button changes
     - Fix: Added explicit `Draw(1)` calls after all keyboard editing operations including resize, move, and selection commands
+  - **Fixed Open Area Click Unselection**: Resolved issue where clicking in open areas did not unselect previously selected buttons
+    - Root cause: `Terminal::Touch()` and `Terminal::Mouse()` methods only called `ClearSelectedZone()` when clicking on zones, not in open areas
+    - Impact: Users had to click on another button to unselect a selected button, or the selection would persist visually
+    - Fix: Added `ClearSelectedZone()` calls when clicking in open areas and enhanced `ClearSelectedZone()` to force immediate screen refresh
+  - **Fixed Edit Mode Single-Select Behavior**: Resolved issue where selecting a new button in edit mode would show both the old and new button as selected
+    - Root cause: `ZoneDB::ClearEdit()` was using incorrect page iteration and region-based refresh instead of full refresh
+    - Impact: Users could not properly single-select buttons in edit mode, making it confusing to work with individual buttons
+    - Fix: Updated `ClearEdit()` to properly iterate through current page and parent pages, and force full screen refresh after clearing selections
+  - **Enhanced Edit Mode Selection Logic**: Improved single-select vs multi-select behavior in edit mode
+    - Root cause: Selection logic was not consistently clearing other selections when clicking on new buttons
+    - Impact: Inconsistent selection behavior made edit mode confusing to use
+    - Fix: Simplified selection logic to always clear other selections unless Shift is held for multi-select, ensuring predictable single-select behavior
+  - **Fixed Multi-Select Drag and Move Operations**: Resolved issues with shift+drag selection and moving multiple selected buttons
+    - Root cause: Drag selection logic was not properly handling Shift key, and move operations were clearing other selections
+    - Impact: Users could not use shift+drag to select multiple buttons, and moving multiple selected buttons only moved one
+    - Fix: Updated drag selection logic to properly handle Shift key, and modified move logic to preserve existing selections when clicking on already-selected zones
+  - **Enhanced Drag Selection Screen Refresh**: Improved visual feedback for drag selection operations
+    - Root cause: Drag selection was using region-based refresh instead of full screen refresh
+    - Impact: Drag selection visual feedback was incomplete or missing
+    - Fix: Updated drag selection to use full screen refresh for consistent visual feedback
+  - **Fixed Open Area Click Deselection in Edit Mode**: Resolved issue where clicking in open areas did not deselect buttons in edit mode
+    - Root cause: Drag selection logic was not clearing existing selections when clicking in open areas
+    - Impact: Users had to manually deselect buttons or click on other buttons to clear selections
+    - Fix: Added deselection logic to drag selection code, clearing all selections when clicking in open areas (unless Shift is held for multi-select)
   - **Fixed Drag-and-Drop Real-Time Updates**: Resolved issue where left-click dragging buttons did not provide real-time visual feedback
     - Root cause: Mouse drag events in `zone/zone.cc` were making position/size edits without triggering immediate redraw
     - Impact: Users could not see button position/size changes during drag operations until mouse release
