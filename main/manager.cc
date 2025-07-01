@@ -1297,7 +1297,11 @@ int ParsePrice(const char* source, int *value)
     FnTrace("ParsePrice()");
     genericChar str[256];
     genericChar* c = str;
-    int numformat = MasterSystem->settings.number_format;
+    int numformat = NUMBER_STANDARD;  // Default to standard format
+    
+    // Safely get number format from MasterSystem if available
+    if (MasterSystem != nullptr)
+        numformat = MasterSystem->settings.number_format;
 
     if (*source == '-')
     {
@@ -1317,7 +1321,7 @@ int ParsePrice(const char* source, int *value)
     *c = '\0';
 
     Flt val;
-    if (sscanf(str, "%lf", &val) != 1)
+    if (sscanf(str, "%f", &val) != 1)
         return 1;
     int v = FltToPrice(val);
     if (value)

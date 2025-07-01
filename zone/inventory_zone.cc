@@ -1243,6 +1243,12 @@ int ItemListZone::SaveRecord(Terminal *t, int record, int write_file)
     {
         int tmp;
         Str item_name, tmp_name;
+        Str old_zone_name = si->zone_name;
+        Str old_print_name = si->print_name;
+        Str old_call_center_name = si->call_center_name;
+        Str old_item_code = si->item_code;
+        int old_type = si->type;
+        
         FormField *f = FieldList();
         f->Get(item_name); f = f->next;
         f->Get(si->zone_name); f = f->next;
@@ -1251,17 +1257,48 @@ int ItemListZone::SaveRecord(Terminal *t, int record, int write_file)
         f->Get(si->call_center_name); f = f->next;
         f->Get(si->item_code); f = f->next;
         f->Get(tmp); si->type = tmp; f = f->next;
+        
+        // Set changed flag if any string fields were modified
+        if (old_zone_name != si->zone_name || old_print_name != si->print_name ||
+            old_call_center_name != si->call_center_name || old_item_code != si->item_code ||
+            old_type != si->type)
+        {
+            si->changed = 1;
+        }
 	
 	/*f->Get(si->location); f=f->next;
 	f->Get(si->event_time); f=f->next;
 	f->Get(si->total_tickets); f=f->next;
 	f->Get(si->available_tickets); f=f->next;
 	f->Get(si->price_label); f=f->next;*/
+        int old_cost = si->cost;
+        int old_sub_cost = si->sub_cost;
+        int old_employee_cost = si->employee_cost;
+        int old_takeout_cost = si->takeout_cost;
+        int old_delivery_cost = si->delivery_cost;
+        
         f->GetPrice(si->cost); f = f->next;
         f->GetPrice(si->sub_cost); f = f->next;
         f->GetPrice(si->employee_cost); f = f->next;     
         f->GetPrice(si->takeout_cost); f = f->next;
-        f->GetPrice(si->delivery_cost); f = f->next;       
+        f->GetPrice(si->delivery_cost); f = f->next;
+        
+        // Set changed flag if any price was modified
+        if (old_cost != si->cost || old_sub_cost != si->sub_cost || 
+            old_employee_cost != si->employee_cost || old_takeout_cost != si->takeout_cost ||
+            old_delivery_cost != si->delivery_cost)
+        {
+            si->changed = 1;
+        }       
+        int old_price_type = si->price_type;
+        int old_family = si->family;
+        int old_sales_type = si->sales_type;
+        int old_printer_id = si->printer_id;
+        int old_call_order = si->call_order;
+        int old_stocked = si->stocked;
+        int old_allow_increase = si->allow_increase;
+        int old_ignore_split = si->ignore_split;
+        
         f->Get(tmp); f = f->next; si->price_type = tmp;
         f->Get(tmp); f = f->next; si->family = tmp;
         f->Get(tmp); f = f->next; si->sales_type = tmp;
@@ -1270,6 +1307,15 @@ int ItemListZone::SaveRecord(Terminal *t, int record, int write_file)
         f->Get(tmp); f = f->next; si->stocked = tmp;
         f->Get(tmp); f = f->next; si->allow_increase = tmp;
         f->Get(tmp); f = f->next; si->ignore_split = tmp;
+        
+        // Set changed flag if any other fields were modified
+        if (old_price_type != si->price_type || old_family != si->family ||
+            old_sales_type != si->sales_type || old_printer_id != si->printer_id ||
+            old_call_order != si->call_order || old_stocked != si->stocked ||
+            old_allow_increase != si->allow_increase || old_ignore_split != si->ignore_split)
+        {
+            si->changed = 1;
+        }
         if (item_name != si->item_name)
         {
             name_change = 1;
