@@ -29,6 +29,9 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
+//
+// VERSION 95: TAX PRECISION FIX - Store tax values directly as Flt instead of 
+// converting to/from integer percentages to preserve decimal precision (e.g., 8.3%).
 constexpr int SETTINGS_VERSION = 95;  // READ ABOVE
 
 
@@ -149,7 +152,7 @@ constexpr int SETTINGS_VERSION = 95;  // READ ABOVE
 #define SWITCH_CHANGE_FOR_ROOM   21 // allow change for room charges?
 #define SWITCH_TIME_FORMAT       22 // 12/24 hour clock
 #define SWITCH_ITEM_TARGET       23 // force item target page after orders?
-#define SWITCH_SHOW_FAMILY       24 // report family grouping on/off
+#define SWITCH_SHOW_FAMILY       24 // Show item family groupings or not
 #define SWITCH_GOODWILL          25 // show expanded goodwill list
 #define SWITCH_MONEY_SYMBOL      26 // whether to use $ or ¤ or what
 #define SWITCH_SHOW_MODIFIERS    27 // for Item Sales report
@@ -157,6 +160,7 @@ constexpr int SETTINGS_VERSION = 95;  // READ ABOVE
 #define SWITCH_RECEIPT_ALL_MODS  29 // whether to print all modifiers on the receipt
 #define SWITCH_DRAWER_PRINT      30 // whether and when to auto print drawer reports
 #define SWITCH_BALANCE_AUTO_CPNS 31 // whether to list auto-coupons in drawer balance
+#define SWITCH_ZERO_EXCLUSION    32 // Hide zero Canadian tax lines (GST/PST/HST/QST/VAT)
 
 #define MOD_SEPARATE_NL           1 // New line
 #define MOD_SEPARATE_CM           2 // Comma

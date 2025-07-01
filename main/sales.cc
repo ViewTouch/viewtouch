@@ -348,27 +348,27 @@ const char* SalesItem::ZoneName()
 {
     FnTrace("SalesItem::ZoneName()");
     if (zone_name.size() > 0)
-                return admission_filteredname(zone_name.str());        // REFACTOR: Added .str() to convert Str to std::string for new signature
+                return admission_filteredname(zone_name.str());
     else
-        return admission_filteredname(item_name.str());       // REFACTOR: Added .str() to convert Str to std::string for new signature
+        return admission_filteredname(item_name.str());
 }
 
 const char* SalesItem::PrintName()
 {
     FnTrace("SalesItem::PrintName()");
     if (print_name.size() > 0)
-        return admission_filteredname(print_name.str());       // REFACTOR: Added .str() to convert Str to std::string for new signature
+        return admission_filteredname(print_name.str());
     else
-        return admission_filteredname(item_name.str());      // REFACTOR: Added .str() to convert Str to std::string for new signature
+        return admission_filteredname(item_name.str());
 }
 
 const char* SalesItem::CallCenterName(Terminal *t)
 {
     FnTrace("SalesItem::CallCenterName()");
     if (call_center_name.size() > 0)
-        return admission_filteredname(call_center_name.str()); // REFACTOR: Added .str() to convert Str to std::string for new signature
+        return admission_filteredname(call_center_name.str());
     else
-        return admission_filteredname(item_name.str());     // REFACTOR: Added .str() to convert Str to std::string for new signature
+        return admission_filteredname(item_name.str());
 }
 
 
@@ -787,7 +787,7 @@ int MergeQualifier(int &flag, int qualifier)
 int PrintItem(char* buffer, int qualifier, const char* item)
 {
     FnTrace("PrintItem()");
-    static constexpr size_t PRINT_ITEM_BUFFER_SIZE = 512;  // REFACTOR: Define buffer size constant for safety
+    static constexpr size_t PRINT_ITEM_BUFFER_SIZE = 512;
                                                             // CRITICAL FIX: Prevents buffer overflow vulnerability
                                                             // Problem: sizeof(buffer) on pointer parameter returns 8 bytes, not buffer size  
                                                             // Solution: Use explicit constant matching caller's buffer allocation (512 bytes)
@@ -816,9 +816,9 @@ int PrintItem(char* buffer, int qualifier, const char* item)
     else if ((qualifier & QUALIFIER_CUT3))      snprintf(pre, sizeof(pre), "Cut/3 ");
     else if ((qualifier & QUALIFIER_CUT4))      snprintf(pre, sizeof(pre), "Cut/4 ");
     if ((qualifier & QUALIFIER_SUB))
-        snprintf(buffer, PRINT_ITEM_BUFFER_SIZE, "SUB: %s%s%s", pre, item, post);  // REFACTOR: Fixed sizeof(buffer) bug - buffer is pointer, not array
+        snprintf(buffer, PRINT_ITEM_BUFFER_SIZE, "SUB: %s%s%s", pre, item, post);
     else
-        snprintf(buffer, PRINT_ITEM_BUFFER_SIZE, "%s%s%s", pre, item, post);       // REFACTOR: Fixed sizeof(buffer) bug - buffer is pointer, not array
+        snprintf(buffer, PRINT_ITEM_BUFFER_SIZE, "%s%s%s", pre, item, post);
     return 0;
 }
 

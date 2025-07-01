@@ -11,7 +11,7 @@
 #include <cassert>
 
 #include "conf_file.hh"
-#include "basic.hh"  // REFACTOR: Added for Flt type definition
+#include "basic.hh"
 
 #include <iostream> // temp
 #include <sstream> // stringstream
@@ -329,7 +329,6 @@ bool ConfFile::GetValue(int &value, const std::string &key, const std::string &s
     return true;
 }
 
-// REFACTOR: Added GetValue overload for Flt (float) type
 bool ConfFile::GetValue(Flt &value, const std::string &key, const std::string &section) const
 {
     std::string val;
@@ -348,7 +347,7 @@ bool ConfFile::GetValue(Flt &value, const std::string &key, const std::string &s
         try
         {
             // handle 'inf' and '-inf' values - convert to float  
-            value = static_cast<Flt>(stod(val));  // REFACTOR: Cast double to Flt
+            value = static_cast<Flt>(stod(val));
         } catch (const std::invalid_argument &)
         {
             // can't convert, return false

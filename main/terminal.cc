@@ -507,6 +507,7 @@ Terminal::Terminal()
     // report flags
     expand_labor    = 0;
     hide_zeros      = 0;
+    zero_exclusion  = 1;  // Default ON - hide zero Canadian tax lines
     show_family     = 1;
     expand_goodwill = 0;
 
@@ -4065,12 +4066,16 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             zone_db->CopyEdit(this, 0, MOVE_UP);
         else
             zone_db->PositionEdit(this, 0, -grid_y);
+        // Force immediate screen refresh for keyboard position editing
+        Draw(1);
         break;
     case XK_KP_9:
         if (state & ControlMask)
             zone_db->CopyEdit(this, MOVE_RIGHT, MOVE_UP);
         else
             zone_db->PositionEdit(this, grid_x, -grid_y);
+        // Force immediate screen refresh for keyboard position editing
+        Draw(1);
         break;
     case XK_Right:
     case XK_KP_6:
@@ -4078,12 +4083,16 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             zone_db->CopyEdit(this, MOVE_RIGHT, 0);
         else
             zone_db->PositionEdit(this, grid_x, 0);
+        // Force immediate screen refresh for keyboard position editing
+        Draw(1);
         break;
     case XK_KP_3:
         if (state & ControlMask)
             zone_db->CopyEdit(this, MOVE_RIGHT, MOVE_DOWN);
         else
             zone_db->PositionEdit(this, grid_x, grid_y);
+        // Force immediate screen refresh for keyboard position editing
+        Draw(1);
         break;
     case XK_Down:
     case XK_KP_2:
@@ -4091,12 +4100,16 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             zone_db->CopyEdit(this, 0, MOVE_DOWN);
         else 
             zone_db->PositionEdit(this, 0, grid_y);
+        // Force immediate screen refresh for keyboard position editing
+        Draw(1);
         break;
     case XK_KP_1:
         if (state & ControlMask)
             zone_db->CopyEdit(this, MOVE_LEFT, MOVE_DOWN);
         else
             zone_db->PositionEdit(this, -grid_x, grid_y);
+        // Force immediate screen refresh for keyboard position editing
+        Draw(1);
         break;
     case XK_Left:
     case XK_KP_4:
@@ -4104,24 +4117,36 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             zone_db->CopyEdit(this, MOVE_LEFT, 0);
         else
             zone_db->PositionEdit(this, -grid_x, 0);
+        // Force immediate screen refresh for keyboard position editing
+        Draw(1);
         break;
     case XK_KP_7:
         if (state & ControlMask)
             zone_db->CopyEdit(this, MOVE_LEFT, MOVE_UP);
         else
             zone_db->PositionEdit(this, -grid_x, -grid_y);
+        // Force immediate screen refresh for keyboard position editing
+        Draw(1);
         break;
     case XK_w:
         zone_db->SizeEdit(this, grid_x, 0);
+        // Force immediate screen refresh for keyboard size editing
+        Draw(1);
         break;
     case XK_W:
         zone_db->SizeEdit(this, -grid_x, 0);
+        // Force immediate screen refresh for keyboard size editing
+        Draw(1);
         break;
     case XK_h:
         zone_db->SizeEdit(this, 0, grid_y);
+        // Force immediate screen refresh for keyboard size editing
+        Draw(1);
         break;
     case XK_H:
         zone_db->SizeEdit(this, 0, -grid_y);
+        // Force immediate screen refresh for keyboard size editing
+        Draw(1);
         break;
     case XK_r:
         SizeToMouse();
@@ -4135,10 +4160,14 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
     case XK_c: // copy zones
     case XK_C:
         zone_db->CopyEdit(this);
+        // Force immediate screen refresh for keyboard copy editing
+        Draw(1);
         break;
     case XK_d: // delete zone(s)
     case XK_D:
         zone_db->DeleteEdit(this);
+        // Force immediate screen refresh for keyboard delete editing
+        Draw(1);
         break;
     case XK_g: // global page defaults
     case XK_G:
@@ -4229,7 +4258,9 @@ int Terminal::MouseInput(int action, int x, int y)
                     if ((action & MOUSE_SHIFT) == 0)
                         zone_db->ClearEdit(this);
                     zone->edit = 1;
-                    zone->Draw(this, 0);
+                    zone->Draw(this, 1);
+                    // Force immediate buffer flush for real-time editing feedback
+                    SendNow();
                 }
                 EditMultiZone(page);
             }
@@ -4268,7 +4299,9 @@ int Terminal::MouseInput(int action, int x, int y)
             zone->edit ^= 1;
         else
             zone->edit = 1;
-        zone->Draw(this, 0);
+        zone->Draw(this, 1);
+        // Force immediate buffer flush for real-time editing feedback
+        SendNow();
         if (zone->edit == 0)
             zone_modify = 0;
     }
@@ -4294,7 +4327,11 @@ int Terminal::MouseInput(int action, int x, int y)
         last_y = current_y;
 
         if (zone_modify & MODIFY_MOVE)
+        {
             zone_db->PositionEdit(this, dir_x, dir_y);
+            // Force immediate screen refresh for drag and drop movement
+            Draw(1);
+        }
         else
         {
             int dw = 0, dh = 0, move_x = 0, move_y = 0;
@@ -4314,6 +4351,8 @@ int Terminal::MouseInput(int action, int x, int y)
                 move_x = 1;
             }
             zone_db->SizeEdit(this, dw, dh, move_x, move_y);
+            // Force immediate screen refresh for drag and drop resizing
+            Draw(1);
         }
     }
     else if (action & MOUSE_RELEASE)
@@ -4481,6 +4520,8 @@ int Terminal::SizeToMouse()
         }
 
         zone_db->SizeEdit(this, change_w, change_h, move_x, move_y);
+        // Force immediate screen refresh for SizeToMouse operation
+        Draw(1);
 
         retval = 0;
     }

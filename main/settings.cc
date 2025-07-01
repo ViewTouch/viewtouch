@@ -1490,28 +1490,86 @@ int Settings::Load(const char* file)
         df.Read(store_address2);
     df.Read(region);
     df.Read(store);
-    df.Read(val); tax_food    = PercentToFlt(val);
-    df.Read(val); tax_alcohol = PercentToFlt(val);
+    
+    // TAX PRECISION FIX (Version 95+): 
+    // Problem: Previous versions stored tax values as integer percentages, causing precision loss.
+    // For example, 8.3% would be rounded to 8% because FltToPercent(0.083) = 8.
+    // Solution: Store tax values directly as Flt (0.083) instead of converting to integers.
+    // This preserves decimal precision while maintaining backwards compatibility.
+    if (version >= 95)
+    {
+        // New format: Read tax values directly as Flt (e.g., 0.083 for 8.3%)
+        df.Read(tax_food);
+        df.Read(tax_alcohol);
+    }
+    else
+    {
+        // Old format: Convert from integer percentages for backwards compatibility
+        df.Read(val); tax_food    = PercentToFlt(val);
+        df.Read(val); tax_alcohol = PercentToFlt(val);
+    }
 
     if (version >= 30)
     {
-        df.Read(val); tax_room        = PercentToFlt(val);
-        df.Read(val); tax_merchandise = PercentToFlt(val);
+        if (version >= 95)
+        {
+            // TAX PRECISION FIX: Read room and merchandise taxes as Flt
+            df.Read(tax_room);
+            df.Read(tax_merchandise);
+        }
+        else
+        {
+            // Old format: Convert from integer percentages
+            df.Read(val); tax_room        = PercentToFlt(val);
+            df.Read(val); tax_merchandise = PercentToFlt(val);
+        }
     }
 
-    df.Read(val); tax_GST             = PercentToFlt(val);
-    df.Read(val); tax_PST             = PercentToFlt(val);
-    df.Read(val); tax_HST             = PercentToFlt(val);
-    df.Read(val); tax_QST             = PercentToFlt(val);
+    // TAX PRECISION FIX: Handle Canadian tax values (GST, PST, HST, QST)
+    if (version >= 95)
+    {
+        // New format: Read directly as Flt to preserve decimal precision
+        df.Read(tax_GST);
+        df.Read(tax_PST);
+        df.Read(tax_HST);
+        df.Read(tax_QST);
+    }
+    else
+    {
+        // Old format: Convert from integer percentages for backwards compatibility
+        df.Read(val); tax_GST             = PercentToFlt(val);
+        df.Read(val); tax_PST             = PercentToFlt(val);
+        df.Read(val); tax_HST             = PercentToFlt(val);
+        df.Read(val); tax_QST             = PercentToFlt(val);
+    }
+    
     if (version >= 45)
     {
-        df.Read(val);
-        royalty_rate    = PercentToFlt(val);
+        if (version >= 95)
+        {
+            // TAX PRECISION FIX: Read royalty rate directly as Flt
+            df.Read(royalty_rate);
+        }
+        else
+        {
+            // Old format: Convert from integer percentage
+            df.Read(val);
+            royalty_rate    = PercentToFlt(val);
+        }
     }
     if (version >= 52)
     {
-        df.Read(val);
-        tax_VAT         = PercentToFlt(val);
+        if (version >= 95)
+        {
+            // TAX PRECISION FIX: Read European VAT tax directly as Flt
+            df.Read(tax_VAT);
+        }
+        else
+        {
+            // Old format: Convert from integer percentage
+            df.Read(val);
+            tax_VAT         = PercentToFlt(val);
+        }
     }
 
     df.Read(screen_blank_time);
@@ -2133,16 +2191,19 @@ int Settings::Save()
     df.Write(region);
     df.Write(store);
 
-    df.Write(FltToPercent(tax_food));
-    df.Write(FltToPercent(tax_alcohol));
-    df.Write(FltToPercent(tax_room));
-    df.Write(FltToPercent(tax_merchandise));
-    df.Write(FltToPercent(tax_GST)); // Explicit Fix for canadian implementation
-    df.Write(FltToPercent(tax_PST)); // Explicit Fix for canadian implementation
-    df.Write(FltToPercent(tax_HST)); // Explicit Fix for canadian implementation
-    df.Write(FltToPercent(tax_QST)); // Explicit Fix for canadian implementation
-    df.Write(FltToPercent(royalty_rate));
-    df.Write(FltToPercent(tax_VAT));
+    // TAX PRECISION FIX (Version 95+): Store tax values directly as Flt
+    // Previous versions used FltToPercent() which rounded to integers, losing decimal precision.
+    // For example, 8.3% became 8% after save/load. Now we store 0.083 directly to preserve 8.3%.
+    df.Write(tax_food);              // Store as 0.083 instead of converting to integer 8
+    df.Write(tax_alcohol);           // Preserves decimal precision for alcohol tax
+    df.Write(tax_room);              // Preserves decimal precision for room tax  
+    df.Write(tax_merchandise);       // Preserves decimal precision for merchandise tax
+    df.Write(tax_GST);               // Canadian Goods and Services Tax
+    df.Write(tax_PST);               // Canadian Provincial Sales Tax
+    df.Write(tax_HST);               // Canadian Harmonized Sales Tax
+    df.Write(tax_QST);               // Canadian Quebec Sales Tax
+    df.Write(royalty_rate);          // Preserves decimal precision for royalty rates
+    df.Write(tax_VAT);               // European Value Added Tax
 
     df.Write(screen_blank_time);
     df.Write(start_page_timeout);

@@ -111,7 +111,7 @@ genericChar* SeatName(int seat, genericChar* str, int guests)
 {
     FnTrace("SeatName()");
     static genericChar buffer[16];
-    static constexpr size_t SEAT_NAME_BUFFER_SIZE = 16;  // REFACTOR: Define buffer size constant for safety
+    static constexpr size_t SEAT_NAME_BUFFER_SIZE = 16;
     if (str == nullptr)
         str = buffer;
 
@@ -121,7 +121,7 @@ genericChar* SeatName(int seat, genericChar* str, int guests)
     }
     else if (seat < -1)
     {
-        snprintf(str, SEAT_NAME_BUFFER_SIZE, "%d", seat);  // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
+        snprintf(str, SEAT_NAME_BUFFER_SIZE, "%d", seat);
     }
     else if (seat < 26)
     {
@@ -1383,7 +1383,7 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                 ordstr[0] = '\0';
                 str2[0] = '\0';
                 firstmod = 1;
-                // REFACTOR: Fixed duplicate nested for loop that was causing compilation errors
+
                 // Original code had two identical for loop declarations which caused:
                 // - "warning: declaration of 'mod' shadows a previous local"
                 // - "error: qualified-id in declaration before '(' token" for subsequent methods
@@ -5731,14 +5731,14 @@ genericChar* Payment::Description(Settings *settings, genericChar* str)
 {
     FnTrace("Payment::Description()");
     static genericChar buffer[128];
-    static constexpr size_t PAYMENT_DESC_BUFFER_SIZE = 128;  // REFACTOR: Define buffer size constant for safety
+    static constexpr size_t PAYMENT_DESC_BUFFER_SIZE = 128;
 
     if (str == nullptr)
         str = buffer;
 
     if (tender_type == TENDER_CREDIT_CARD && credit != nullptr)
     {
-        snprintf(str, PAYMENT_DESC_BUFFER_SIZE, "Credit Card (%s)", credit->CreditTypeName(nullptr, 1));  // REFACTOR: Fixed sizeof(str) bug - str is pointer, not array
+        snprintf(str, PAYMENT_DESC_BUFFER_SIZE, "Credit Card (%s)", credit->CreditTypeName(nullptr, 1));
         return str;
     }
 

@@ -54,6 +54,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
 
 ### Fixed
+- **UI REFRESH AND EDITING ISSUES**: Resolved multiple screen update problems affecting button editing, drag-and-drop, and keyboard operations
+  - **Fixed Button Editing Screen Refresh**: Corrected issue where moving, resizing, or unselecting buttons did not immediately update the screen
+    - Root cause: Editing functions in `zone/zone.cc` were calling `Draw(0)` instead of `Draw(1)`, preventing immediate refresh
+    - Impact: Users had to manually refresh or perform other actions to see button position/size changes
+    - Fix: Changed all editing operations to use `Draw(1)` with `update_flag=1` and added `SendNow()` calls for immediate buffer flush
+  - **Fixed Report Zone Refresh Blocking**: Resolved issue where `ReportZone::Render()` was forcibly setting `update_flag=0` during temp report processing
+    - Root cause: `update_flag` was being overwritten to 0, blocking all screen updates during report rendering
+    - Impact: Screen updates were blocked during report operations, affecting overall UI responsiveness
+    - Fix: Modified to preserve and restore original `update_flag` while maintaining pagination fixes for long checks
+  - **Fixed Keyboard Editing Updates**: Resolved issue where keyboard inputs for resizing buttons (w, W, h, H keys) did not update screen immediately
+    - Root cause: Keyboard editing operations in `zone/zone.cc` were not calling `Draw(1)` after position/size changes
+    - Impact: Users had to perform additional actions to see keyboard-driven button changes
+    - Fix: Added explicit `Draw(1)` calls after all keyboard editing operations including resize, move, and selection commands
+  - **Fixed Drag-and-Drop Real-Time Updates**: Resolved issue where left-click dragging buttons did not provide real-time visual feedback
+    - Root cause: Mouse drag events in `zone/zone.cc` were making position/size edits without triggering immediate redraw
+    - Impact: Users could not see button position/size changes during drag operations until mouse release
+    - Fix: Added `Draw(1)` calls after drag move and resize operations to ensure real-time visual feedback during dragging
+- **CRITICAL PRICE SAVING BUGS**: Fixed issues preventing correct price changes from being saved
+  - **Fixed Price Change Detection**: Resolved issue where changing item prices did not set the `changed` flag in `SalesItem`
+    - Root cause: `ItemListZone::SaveRecord()` in `zone/order_zone.cc` was not setting `changed` flag when prices or other fields were modified
+    - Impact: Price changes and other field modifications were not being saved to the database
+    - Fix: Updated function to set `changed` flag whenever any relevant field (price, name, etc.) is modified
+  - **Fixed Price Parsing Format Bug**: Resolved issue where prices were being set to .00 instead of actual values
+    - Root cause: `ParsePrice` function in `main/manager.cc` used `%lf` format specifier for `float` type `Flt` and accessed `MasterSystem` without null checks
+    - Impact: All price inputs were being parsed as 0.00, breaking price editing functionality
+    - Fix: Changed sscanf format from `%lf` to `%f` for float compatibility and added null check for `MasterSystem` with default number format
 - **CRITICAL SYSTEM STARTUP FAILURES**: Resolved major platform-specific hang and download issues preventing system startup
   - **Fixed DownloadFile Function**: Corrected critical bug where DownloadFile was writing URL strings to files instead of downloading actual content
     - Root cause: `fout << curlpp::options::Url(url)` was writing URL text instead of performing actual download

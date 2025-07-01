@@ -37,7 +37,7 @@
 #include <sys/un.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <syslog.h>         // REFACTOR: Added syslog.h include for syslog constants
+#include <syslog.h>
 // standard libraries
 #include <csignal>
 #include <iostream>

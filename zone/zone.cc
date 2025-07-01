@@ -1531,7 +1531,11 @@ int ZoneDB::ClearEdit(Terminal *t)
     }
 
     if (count)
-        t->Draw(0, r.x, r.y, r.w, r.h);
+    {
+        t->Draw(1, r.x, r.y, r.w, r.h);
+        // Force immediate buffer flush for real-time editing feedback
+        t->SendNow();
+    }
     return 0;
 }
 
@@ -1563,7 +1567,11 @@ int ZoneDB::SizeEdit(Terminal *t, int wchange, int hchange,
     }
 
     if (count > 0)
-        t->Draw(0, r.x, r.y, r.w, r.h);
+    {
+        t->Draw(1, r.x, r.y, r.w, r.h);
+        // Force immediate buffer flush for real-time editing feedback
+        t->SendNow();
+    }
     return 0;
 }
 
@@ -1594,7 +1602,11 @@ int ZoneDB::PositionEdit(Terminal *t, int xchange, int ychange)
     }
 
     if (count > 0)
-        t->Draw(0, r.x, r.y, r.w, r.h);
+    {
+        t->Draw(1, r.x, r.y, r.w, r.h);
+        // Force immediate buffer flush for real-time editing feedback
+        t->SendNow();
+    }
     return 0;
 }
 
@@ -1704,7 +1716,11 @@ int ZoneDB::RelocateEdit(Terminal *t)
     }
 
     if (count)
-        t->Draw(0, r.x, r.y, r.w, r.h);
+    {
+        t->Draw(1, r.x, r.y, r.w, r.h);
+        // Force immediate buffer flush for real-time editing feedback
+        t->SendNow();
+    }
     return 0;
 }
 
@@ -1756,7 +1772,11 @@ int ZoneDB::ToggleEdit(Terminal *t, int toggle)
     }
 
     if (count)
-        t->Draw(0, r.x, r.y, r.w, r.h);
+    {
+        t->Draw(1, r.x, r.y, r.w, r.h);
+        // Force immediate buffer flush for real-time editing feedback
+        t->SendNow();
+    }
     return 0;
 }
 
@@ -1786,7 +1806,11 @@ int ZoneDB::ToggleEdit(Terminal *t, int toggle, int rx, int ry, int rw, int rh)
     }
 
     if (count)
-        t->Draw(0, r.x, r.y, r.w, r.h);
+    {
+        t->Draw(1, r.x, r.y, r.w, r.h);
+        // Force immediate buffer flush for real-time editing feedback
+        t->SendNow();
+    }
     return 0;
 }
 

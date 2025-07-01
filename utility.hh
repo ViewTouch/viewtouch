@@ -22,7 +22,7 @@
 
 #include "basic.hh"
 #include "fntrace.hh"
-#include "time_info.hh"  // REFACTOR: Re-added time_info.hh include as it's needed by other headers
+#include "time_info.hh"
 
 #include <string>
 
@@ -79,8 +79,8 @@ public:
 
     // Constructors
     Str() = default;
-    explicit Str(const std::string& str) : data(str) {}           // REFACTOR: Added explicit constructor from std::string
-    explicit Str(const char* str) : data(str ? str : "") {}       // REFACTOR: Added explicit constructor from C-string with null check
+    explicit Str(const std::string& str) : data(str) {}
+    explicit Str(const char* str) : data(str ? str : "") {}
     
 
     // Copy operations
@@ -89,14 +89,14 @@ public:
     
 
     // Move operations  
-    Str(Str&& other) noexcept = default;                          // REFACTOR: Added move constructor
+    Str(Str&& other) noexcept = default;
     Str& operator=(Str&& other) noexcept = default;
     
 
     // Destructor
     ~Str() = default;
 
-    // REFACTOR: Converted methods to inline implementations for performance
+
     // Methods
     int   Clear() { data.clear(); return 0; }
     bool  Set(const char *str) { data = str ? str : ""; return true; }
@@ -104,7 +104,7 @@ public:
     bool  Set(const int val) { data = std::to_string(val); return true; }
     bool  Set(const Flt val) { data = std::to_string(val); return true; }
     bool  Set(const Str &s) { data = s.data; return true; }
-    bool  Set(const Str *s) { return Set(s->Value()); }                          // REFACTOR: Added pointer variant
+    bool  Set(const Str *s) { return Set(s->Value()); }
     void  ChangeAtoB(const char a, const char b);
     int   IntValue() const;
     Flt   FltValue() const;
@@ -247,7 +247,7 @@ int CompareListN(const genericChar* list[], const genericChar* str, int unknown 
 // str="hello" will match list[0]="hello world".
 
 const char* FindStringByValue(int val, int val_list[], const genericChar* str_list[],
-                        const genericChar* unknown = nullptr);  // REFACTOR: Changed NULL to nullptr
+                        const genericChar* unknown = nullptr);
 int   FindValueByString(const genericChar* val, int val_list[], const genericChar* str_list[],
                         int unknown = -1);
 // finds string by finding val index

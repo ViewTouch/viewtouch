@@ -32,8 +32,6 @@
 #include <algorithm>
 
 /**** Str Class ****/
-// REFACTOR NOTE: Most methods are now inline in the header file for performance
-// REFACTOR NOTE: Constructors and destructors are now defaulted in header using modern C++17
 
 void Str::ChangeAtoB(const char a, const char b)
 {
@@ -62,7 +60,7 @@ Flt Str::FltValue() const
 const char* Str::ValueSet(const char* set)
 {
     FnTrace("Str::ValueSet()");
-    if (set != nullptr)                            // REFACTOR: Changed NULL to nullptr
+    if (set != nullptr)
         data = set;
     return data.c_str();
 }
@@ -215,22 +213,22 @@ int Price::Write(OutputDataFile &df, int version)
 
 const char* Price::Format(int sign)
 {
-    return nullptr;                                // REFACTOR: Changed NULL to nullptr
+    return nullptr;
 }
 
 const char* Price::Format(const char* buffer, int sign)
 {
-    return nullptr;                                // REFACTOR: Changed NULL to nullptr
+    return nullptr;
 }
 
 const char* Price::SimpleFormat()
 {
-    return nullptr;                                // REFACTOR: Changed NULL to nullptr
+    return nullptr;
 }
 
 const char* Price::SimpleFormat(const char* buffer)
 {
-    return nullptr;                                // REFACTOR: Changed NULL to nullptr
+    return nullptr;
 }
 
 /**** Other Functions ****/
@@ -249,7 +247,7 @@ int StringCompare(const std::string &str1, const std::string &str2, int len)
 int StringInString(const genericChar* haystack, const genericChar* needle)
 {
     FnTrace("StringInString()");
-    return (strcasestr(haystack, needle) != nullptr);  // REFACTOR: Changed NULL comparison to nullptr
+    return (strcasestr(haystack, needle) != nullptr);
 }
 
 std::string StringToUpper(const std::string &str)
@@ -271,7 +269,7 @@ std::string StringToLower(const std::string &str)
 int StripWhiteSpace(genericChar* string)
 {
     FnTrace("StripWhiteSpace()");
-    if (string == nullptr)                         // REFACTOR: Changed NULL to nullptr
+    if (string == nullptr)
         return 1;
 
     int len = strlen(string);
@@ -362,10 +360,10 @@ std::string AdjustCaseAndSpacing(const std::string &str)
 int CompareList(const genericChar* val, const genericChar* list[], int unknown)
 {
     FnTrace("CompareList()");
-    if (val == nullptr)                            // REFACTOR: Changed NULL to nullptr
+    if (val == nullptr)
         return unknown;
 
-    for (int i = 0; list[i] != nullptr; ++i)      // REFACTOR: Changed NULL to nullptr
+    for (int i = 0; list[i] != nullptr; ++i)
     {
         if (strcasecmp(val, list[i]) == 0)
             return i;
@@ -387,11 +385,11 @@ int CompareList(int val, int list[], int unknown)
 int CompareListN(const genericChar* list[], const genericChar* str, int unknown)
 {
     FnTrace("CompareListN()");
-    if (str == nullptr)                            // REFACTOR: Changed NULL to nullptr
+    if (str == nullptr)
         return unknown;
 
     int len = strlen(str);
-    for (int i = 0; list[i] != nullptr; ++i)      // REFACTOR: Changed NULL to nullptr
+    for (int i = 0; list[i] != nullptr; ++i)
     {
         if (strncasecmp(str, list[i], len) == 0)
             return i;
@@ -403,7 +401,7 @@ const char* FindStringByValue(int val, int val_list[], const genericChar* str_li
                               const genericChar* unknown)
 {
     FnTrace("FindStringByValue()");
-    for (int i = 0; str_list[i] != nullptr; ++i)  // REFACTOR: Changed NULL to nullptr
+    for (int i = 0; str_list[i] != nullptr; ++i)
     {
         if (val == val_list[i]) 
 			return str_list[i];
@@ -415,10 +413,10 @@ int FindValueByString(const genericChar* val, int val_list[], const genericChar*
                       int unknown)
 {
     FnTrace("FindValueByString()");
-    if (val == nullptr)                            // REFACTOR: Changed NULL to nullptr
+    if (val == nullptr)
         return unknown;
 
-    for (int i = 0; str_list[i] != nullptr; ++i)  // REFACTOR: Changed NULL to nullptr
+    for (int i = 0; str_list[i] != nullptr; ++i)
     {
         if (strcasecmp(val, str_list[i]) == 0)
             return val_list[i];
@@ -440,19 +438,19 @@ int FindIndexOfValue(int value, int val_list[], int unknown)
 const genericChar* NextName(const genericChar* name, const genericChar* *list)
 {
     FnTrace("NextName()");
-    if (name == nullptr || list == nullptr)       // REFACTOR: Changed NULL to nullptr
+    if (name == nullptr || list == nullptr)
         return name;
 
     int idx = 0;
     // find the current string
-    while (list[idx] != nullptr && (strcmp(name, list[idx]) != 0))  // REFACTOR: Changed NULL to nullptr
+    while (list[idx] != nullptr && (strcmp(name, list[idx]) != 0))
         idx += 1;
 
     // advance to next
-    if (list[idx] != nullptr)                      // REFACTOR: Changed NULL to nullptr
+    if (list[idx] != nullptr)
         idx += 1;
     // wrap to beginning if necessary
-    if (list[idx] == nullptr)                      // REFACTOR: Changed NULL to nullptr
+    if (list[idx] == nullptr)
         idx = 0;
 
     return list[idx];
@@ -461,7 +459,7 @@ const genericChar* NextName(const genericChar* name, const genericChar* *list)
 int NextValue(int val, int *val_array)
 {
     FnTrace("NextValue()");
-    if (val_array == nullptr)                      // REFACTOR: Changed NULL to nullptr
+    if (val_array == nullptr)
         return val;
 
     int idx = 0;
@@ -479,7 +477,7 @@ int NextValue(int val, int *val_array)
 int ForeValue(int val, int *val_array)
 {
     FnTrace("ForeValue()");
-    if (val_array == nullptr)                      // REFACTOR: Changed NULL to nullptr
+    if (val_array == nullptr)
         return val;
 
     int idx = 0;
@@ -504,7 +502,7 @@ int ForeValue(int val, int *val_array)
 int NextToken(genericChar* dest, const genericChar* src, genericChar sep, int *idx)
 {
     FnTrace("NextToken()");
-    if (dest == nullptr || src == nullptr || idx == nullptr)  // REFACTOR: Changed NULL to nullptr
+    if (dest == nullptr || src == nullptr || idx == nullptr)
         return 1;
 
     int start = *idx;
@@ -537,7 +535,7 @@ int NextToken(genericChar* dest, const genericChar* src, genericChar sep, int *i
 int NextInteger(int *dest, const genericChar* src, genericChar sep, int *idx)
 {
     FnTrace("NextInteger()");
-    if (dest == nullptr || src == nullptr || idx == nullptr)  // REFACTOR: Changed NULL to nullptr
+    if (dest == nullptr || src == nullptr || idx == nullptr)
         return 1;
 
     genericChar buffer[32];
@@ -552,7 +550,7 @@ int NextInteger(int *dest, const genericChar* src, genericChar sep, int *idx)
 int DoesFileExist(const genericChar* filename)
 {
     FnTrace("DoesFileExist()");
-    if (filename == nullptr)                       // REFACTOR: Changed NULL to nullptr
+    if (filename == nullptr)
         return 0;
 
     struct stat sb;
@@ -602,7 +600,7 @@ int EnsureDirExists(const genericChar* dirname)
 int DeleteFile(const genericChar* filename)
 {
     FnTrace("DeleteFile()");
-    if (filename == nullptr)                       // REFACTOR: Changed NULL to nullptr
+    if (filename == nullptr)
         return 1;
 
     return unlink(filename);
@@ -611,7 +609,7 @@ int DeleteFile(const genericChar* filename)
 int BackupFile(const genericChar* filename)
 {
     FnTrace("BackupFile()");
-    if (filename == nullptr)                       // REFACTOR: Changed NULL to nullptr
+    if (filename == nullptr)
         return 1;
 
     genericChar backup[512];
@@ -622,7 +620,7 @@ int BackupFile(const genericChar* filename)
 int RestoreBackup(const genericChar* filename)
 {
     FnTrace("RestoreBackup()");
-    if (filename == nullptr)                       // REFACTOR: Changed NULL to nullptr
+    if (filename == nullptr)
         return 1;
 
     genericChar backup[512];
@@ -642,6 +640,10 @@ Flt PriceToFlt(int price)
     return ((Flt) price) / 100.0;
 }
 
+// NOTE: These functions cause precision loss for decimal percentages!
+// PercentToFlt() takes an int parameter, so 8.3% becomes 8%
+// FltToPercent() returns an int, rounding 8.3% down to 8%
+// See TAX PRECISION FIX in settings.cc for the solution.
 Flt PercentToFlt(int percent)
 {
     FnTrace("PercentToFlt()");
@@ -657,12 +659,12 @@ int FltToPercent(Flt value)
 int LockDevice(const genericChar* devpath)
 {
     FnTrace("LockDevice()");
-    if (devpath == nullptr)                        // REFACTOR: Changed NULL to nullptr
+    if (devpath == nullptr)
         return -1;
 
     genericChar lockpath[STRLONG];
     genericChar buffer[STRLONG];
-    const char* lock_dir = VIEWTOUCH_PATH "/bin/.lock";  // REFACTOR: Define LOCK_DIR inline
+    const char* lock_dir = VIEWTOUCH_PATH "/bin/.lock";
     
     // create lock filename
     const genericChar* p = strrchr(devpath, '/');
@@ -695,11 +697,10 @@ int UnlockDevice(int id)
 }
 
 /**** Process Title Functions ****/
-// REFACTOR: Added setproctitle implementations to fix linker error
 // These functions allow setting the process title visible in ps/top commands
 
 static char **vt_argv = nullptr;
-static size_t vt_argv_space = 0;           // REFACTOR: Available space for process title
+static size_t vt_argv_space = 0;
 
 void vt_init_setproctitle(int argc, char* argv[])
 {
@@ -708,7 +709,7 @@ void vt_init_setproctitle(int argc, char* argv[])
 
     vt_argv = argv;
     
-    if (argc > 0 && argv != nullptr && argv[0] != nullptr)  // REFACTOR: Safety checks with nullptr
+    if (argc > 0 && argv != nullptr && argv[0] != nullptr)
     {
         // Calculate available space from argv[0] to end of last argument
         char* start = argv[0];
@@ -729,8 +730,8 @@ int vt_setproctitle(const char* title)
 {
     FnTrace("vt_setproctitle()");
     
-    // REFACTOR: Set process title by overwriting argv[0] space
-    if (title == nullptr || vt_argv == nullptr || vt_argv[0] == nullptr)  // REFACTOR: Safety checks with nullptr
+    // Set process title by overwriting argv[0] space
+    if (title == nullptr || vt_argv == nullptr || vt_argv[0] == nullptr)
         return -1;
         
     if (vt_argv_space == 0)
@@ -739,7 +740,7 @@ int vt_setproctitle(const char* title)
     // Clear the argv space and set new title
     memset(vt_argv[0], 0, vt_argv_space);
     strncpy(vt_argv[0], title, vt_argv_space - 1);
-    vt_argv[0][vt_argv_space - 1] = '\0';                    // REFACTOR: Ensure null termination
+    vt_argv[0][vt_argv_space - 1] = '\0';
     
     return 0;
 }

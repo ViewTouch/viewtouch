@@ -87,6 +87,9 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
 
     if (r)
     {
+        // Don't override update_flag during editing operations to preserve screen refresh
+        // Only set update_flag = 0 for report processing, not for screen updates
+        int report_update_flag = update_flag;
         update_flag = 0;
         if (r->is_complete)
         {
@@ -106,6 +109,8 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
                 return RENDER_OKAY;
             }
         }
+        // Restore the original update_flag for screen refresh operations
+        update_flag = report_update_flag;
     }
 
     int saved_page = page; // <--- Save current page
