@@ -176,4 +176,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Impact: Users could not access page properties dialog via right-click on page bar, limiting edit mode functionality
     - Fix: Moved right-click handling outside of `MOUSE_PRESS` block to ensure right-click events are processed regardless of event type (press/release)
     - Result: Right-click on page bar (top 32 pixels) now properly opens page properties dialog for editing page settings
+- **Font System Enhancement**: Implemented bundled font system for consistent appearance across different systems
+  - **Added Bundled Fonts**: Included DejaVu Sans, URW Bookman, and Nimbus Roman fonts in `/fonts/` directory for reliable font availability
+  - **Font Configuration**: Created Fontconfig rules in `fonts/fonts.conf` for font aliases and rendering quality optimization
+  - **Updated Font Mappings**: Changed Times fonts to use Nimbus Roman, Courier fonts to use DejaVu Sans Mono, and Garamond fonts to use URW Bookman for better compatibility
+  - **Installation Integration**: Fonts are automatically installed to `/usr/viewtouch/fonts/` during build process
+  - **Fallback Support**: Added robust font loading with fallback to system fonts when bundled fonts are unavailable
 - update embedded `

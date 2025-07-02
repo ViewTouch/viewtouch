@@ -2481,6 +2481,18 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     TScreen    = ts;
     RootWin    = RootWindow(Dis, ScrNo);
 
+    // Set up font configuration for bundled fonts
+    char font_config_path[STRLENGTH];
+    // Try installed location first, then current directory for development
+    snprintf(font_config_path, sizeof(font_config_path), "/usr/viewtouch/fonts/fonts.conf");
+    if (access(font_config_path, R_OK) != 0) {
+        // Fallback to current directory for development builds
+        snprintf(font_config_path, sizeof(font_config_path), "%s/fonts/fonts.conf", getenv("PWD") ? getenv("PWD") : ".");
+    }
+    if (access(font_config_path, R_OK) == 0) {
+        FcConfigAppFontAddFile(nullptr, (const FcChar8*)font_config_path);
+    }
+    
     // Load Fonts using Xft for scalable fonts
     // First load legacy fonts from FontData array
     for (i = 0; i < FONTS; ++i)
@@ -2928,21 +2940,21 @@ const char* GetScalableFontName(int font_id)
 {
     switch (font_id)
     {
-    // Legacy Times fonts (kept for compatibility)
-    case FONT_TIMES_14:  return "Times New Roman-14:style=Regular";
-    case FONT_TIMES_18:  return "Times New Roman-18:style=Regular";
-    case FONT_TIMES_20:  return "Times New Roman-20:style=Regular";
-    case FONT_TIMES_24:  return "Times New Roman-24:style=Regular";
-    case FONT_TIMES_34:  return "Times New Roman-34:style=Regular";
-    case FONT_TIMES_14B: return "Times New Roman-14:style=Bold";
-    case FONT_TIMES_18B: return "Times New Roman-18:style=Bold";
-    case FONT_TIMES_20B: return "Times New Roman-20:style=Bold";
-    case FONT_TIMES_24B: return "Times New Roman-24:style=Bold";
-    case FONT_TIMES_34B: return "Times New Roman-34:style=Bold";
-    case FONT_COURIER_18: return "Courier New-18:style=Regular";
-    case FONT_COURIER_18B: return "Courier New-18:style=Bold";
-    case FONT_COURIER_20: return "Courier New-20:style=Regular";
-    case FONT_COURIER_20B: return "Courier New-20:style=Bold";
+    // Legacy Times fonts (using DejaVu Serif as replacement)
+    case FONT_TIMES_14:  return "DejaVu Serif-14:style=Book";
+    case FONT_TIMES_18:  return "DejaVu Serif-18:style=Book";
+    case FONT_TIMES_20:  return "DejaVu Serif-20:style=Book";
+    case FONT_TIMES_24:  return "DejaVu Serif-24:style=Book";
+    case FONT_TIMES_34:  return "DejaVu Serif-34:style=Book";
+    case FONT_TIMES_14B: return "DejaVu Serif-14:style=Bold";
+    case FONT_TIMES_18B: return "DejaVu Serif-18:style=Bold";
+    case FONT_TIMES_20B: return "DejaVu Serif-20:style=Bold";
+    case FONT_TIMES_24B: return "DejaVu Serif-24:style=Bold";
+    case FONT_TIMES_34B: return "DejaVu Serif-34:style=Bold";
+    case FONT_COURIER_18: return "DejaVu Sans Mono-18:style=Book";
+    case FONT_COURIER_18B: return "DejaVu Sans Mono-18:style=Bold";
+    case FONT_COURIER_20: return "DejaVu Sans Mono-20:style=Book";
+    case FONT_COURIER_20B: return "DejaVu Sans Mono-20:style=Bold";
     
     // Modern POS Fonts - DejaVu Sans (Superior readability for POS)
     case FONT_DEJAVU_14:  return "DejaVu Sans-14:style=Book";
@@ -2970,19 +2982,19 @@ const char* GetScalableFontName(int font_id)
     case FONT_MONO_20B:   return "DejaVu Sans Mono-20:style=Bold";
     case FONT_MONO_24B:   return "DejaVu Sans Mono-24:style=Bold";
     
-    // Classic Serif Fonts - EB Garamond 8 (elegant serif)
-    case FONT_GARAMOND_14:  return "EB Garamond-14:style=Regular";
-    case FONT_GARAMOND_16:  return "EB Garamond-16:style=Regular";
-    case FONT_GARAMOND_18:  return "EB Garamond-18:style=Regular";
-    case FONT_GARAMOND_20:  return "EB Garamond-20:style=Regular";
-    case FONT_GARAMOND_24:  return "EB Garamond-24:style=Regular";
-    case FONT_GARAMOND_28:  return "EB Garamond-28:style=Regular";
-    case FONT_GARAMOND_14B: return "EB Garamond-14:style=Bold";
-    case FONT_GARAMOND_16B: return "EB Garamond-16:style=Bold";
-    case FONT_GARAMOND_18B: return "EB Garamond-18:style=Bold";
-    case FONT_GARAMOND_20B: return "EB Garamond-20:style=Bold";
-    case FONT_GARAMOND_24B: return "EB Garamond-24:style=Bold";
-    case FONT_GARAMOND_28B: return "EB Garamond-28:style=Bold";
+    // Classic Serif Fonts - URW Bookman (elegant serif replacement for EB Garamond)
+    case FONT_GARAMOND_14:  return "URW Bookman-14:style=Light";
+    case FONT_GARAMOND_16:  return "URW Bookman-16:style=Light";
+    case FONT_GARAMOND_18:  return "URW Bookman-18:style=Light";
+    case FONT_GARAMOND_20:  return "URW Bookman-20:style=Light";
+    case FONT_GARAMOND_24:  return "URW Bookman-24:style=Light";
+    case FONT_GARAMOND_28:  return "URW Bookman-28:style=Light";
+    case FONT_GARAMOND_14B: return "URW Bookman-14:style=Demi";
+    case FONT_GARAMOND_16B: return "URW Bookman-16:style=Demi";
+    case FONT_GARAMOND_18B: return "URW Bookman-18:style=Demi";
+    case FONT_GARAMOND_20B: return "URW Bookman-20:style=Demi";
+    case FONT_GARAMOND_24B: return "URW Bookman-24:style=Demi";
+    case FONT_GARAMOND_28B: return "URW Bookman-28:style=Demi";
     
     // Classic Serif Fonts - URW Bookman (warm, readable serif)
     case FONT_BOOKMAN_14:   return "URW Bookman-14:style=Light";
