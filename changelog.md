@@ -166,4 +166,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - update embedded `catch.hpp` to `v2.13.10` to fix compilation on Ubuntu 20.04 and newer #131
 - fix `TimeInfo.Set(date_string)` function fixing `RunReport` `to`/`from` fields and C++20 compatibility #145
 - update embedded `date` to `v3.0.4` and fix CMake 4+ compatibility #155
+- **Edit Mode UI Consistency and Functionality**: Fixed minor UI issues in edit mode for improved user experience
+  - **Fixed Edit Toolbar Font Size Consistency**: Resolved inconsistent font sizes in edit toolbar where top/bottom buttons used larger fonts than middle buttons
+    - Root cause: New Button, New Page, Prior Page, and Next Page used `FONT_TIMES_18` while middle 8 buttons used `FONT_TIMES_14`
+    - Impact: Visual inconsistency made toolbar appear unbalanced and unprofessional
+    - Fix: Updated all middle buttons (Select All, Toggle Selected, Copy Selected, Move Selected, Delete Button, Global Page Defaults, Show Button Info, Show Page List) to use `FONT_TIMES_18` for consistent appearance
+  - **Fixed Right-Click Page Properties Dialog**: Resolved issue where right-clicking on page bar did not open page properties dialog
+    - Root cause: Right-click handling was only inside `MOUSE_PRESS` block, preventing detection of right-click events that might be sent as different event types
+    - Impact: Users could not access page properties dialog via right-click on page bar, limiting edit mode functionality
+    - Fix: Moved right-click handling outside of `MOUSE_PRESS` block to ensure right-click events are processed regardless of event type (press/release)
+    - Result: Right-click on page bar (top 32 pixels) now properly opens page properties dialog for editing page settings
 - update embedded `
