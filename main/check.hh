@@ -429,6 +429,7 @@ public:
     const genericChar* StatusString(Terminal *t);  // Returns status string
     int       MoveOrdersBySeat(SubCheck *sb1, SubCheck *sb2, int seat);
     int       MergeOpenChecks(Settings *settings);
+    int       MergeWithCheck(Check *other_check, Settings *settings);
     int       SplitCheckBySeat(Settings *settings);
 
     int       PrintCount(Terminal *t, int printer_id, int reprint = 0,
