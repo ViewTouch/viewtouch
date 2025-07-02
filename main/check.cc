@@ -58,7 +58,7 @@
 int last_check_serial = 0;  // Global serial number counter for checks
 static const genericChar* EmptyStr = "";
 
-const genericChar* CheckStatusName[] = { "none", "Open", "Closed", "Voided", nullptr };
+const genericChar* CheckStatusName[] = { "Open", "Closed", "Voided", nullptr };
 int CheckStatusValue[] = { CHECK_OPEN, CHECK_CLOSED, CHECK_VOIDED, -1 };
 
 const genericChar* CheckDisplayName[] = {
