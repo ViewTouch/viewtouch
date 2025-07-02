@@ -2011,6 +2011,8 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
     int subs = SubCount();
     for (SubCheck *sc = SubList(); sc != nullptr; sc = sc->next)
     {
+        if (sc->status == CHECK_VOIDED)
+            continue; // Skip voided subchecks
         if (subs > 1)
         {
             snprintf(str, sizeof(str), "%s #%d - %s", term->Translate("Check"),
@@ -3398,7 +3400,14 @@ int SubCheck::FigureTotals(Settings *settings)
         case TENDER_COMP:
         case TENDER_EMPLOYEE_MEAL:
         case TENDER_DISCOUNT:
-            discount = payptr; // only one discount allowed at a time
+            // Fix: For percent comps, if 100%, comp the full total (including tax)
+            if ((payptr->tender_type == TENDER_COMP || payptr->tender_type == TENDER_EMPLOYEE_MEAL) && (payptr->flags & TF_IS_PERCENT) && payptr->amount >= 10000) {
+                // 100% comp: set value to the full total due (including tax)
+                payptr->value = total_cost;
+                balance -= payptr->value; // Subtract comp value from balance
+            } else {
+                discount = payptr; // only one discount allowed at a time
+            }
             break;
         case TENDER_COUPON:
             if ((payptr->flags & TF_APPLY_EACH) == 0)
