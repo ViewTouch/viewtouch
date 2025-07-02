@@ -65,6 +65,46 @@
 #define FONT_MONO_20B     40
 #define FONT_MONO_24B     41
 
+// Classic Serif Fonts - EB Garamond 8, Bookman, Nimbus Roman
+#define FONT_GARAMOND_14    42
+#define FONT_GARAMOND_16    43
+#define FONT_GARAMOND_18    44
+#define FONT_GARAMOND_20    45
+#define FONT_GARAMOND_24    46
+#define FONT_GARAMOND_28    47
+#define FONT_GARAMOND_14B   48
+#define FONT_GARAMOND_16B   49
+#define FONT_GARAMOND_18B   50
+#define FONT_GARAMOND_20B   51
+#define FONT_GARAMOND_24B   52
+#define FONT_GARAMOND_28B   53
+
+#define FONT_BOOKMAN_14     54
+#define FONT_BOOKMAN_16     55
+#define FONT_BOOKMAN_18     56
+#define FONT_BOOKMAN_20     57
+#define FONT_BOOKMAN_24     58
+#define FONT_BOOKMAN_28     59
+#define FONT_BOOKMAN_14B    60
+#define FONT_BOOKMAN_16B    61
+#define FONT_BOOKMAN_18B    62
+#define FONT_BOOKMAN_20B    63
+#define FONT_BOOKMAN_24B    64
+#define FONT_BOOKMAN_28B    65
+
+#define FONT_NIMBUS_14      66
+#define FONT_NIMBUS_16      67
+#define FONT_NIMBUS_18      68
+#define FONT_NIMBUS_20      69
+#define FONT_NIMBUS_24      70
+#define FONT_NIMBUS_28      71
+#define FONT_NIMBUS_14B     72
+#define FONT_NIMBUS_16B     73
+#define FONT_NIMBUS_18B     74
+#define FONT_NIMBUS_20B     75
+#define FONT_NIMBUS_24B     76
+#define FONT_NIMBUS_28B     77
+
 #include "conf_file.hh"
 #include "date/date.h"      // helper library to output date strings with std::chrono
 
@@ -168,9 +208,9 @@ int PrinterTypeValue[] = { PRINTER_KITCHEN1, PRINTER_KITCHEN2,
  *************************************************************/
 static XtAppContext App = 0;
 static Display     *Dis = nullptr;
-static XftFont     *FontInfo[32];
-static int          FontWidth[32];
-static int          FontHeight[32];
+static XftFont     *FontInfo[80];  // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
+static int          FontWidth[80];  // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
+static int          FontHeight[80]; // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
 int                 LoaderSocket = 0;
 int                 OpenTermPort = 10001;
 int                 OpenTermSocket = -1;
@@ -3198,7 +3238,49 @@ const char* GetScalableFontName(int font_id)
     case FONT_MONO_20B:   return "DejaVu Sans Mono-20:style=Bold";
     case FONT_MONO_24B:   return "DejaVu Sans Mono-24:style=Bold";
     
+    // Classic Serif Fonts - EB Garamond 8 (elegant serif)
+    case FONT_GARAMOND_14:  return "EB Garamond-14:style=Regular";
+    case FONT_GARAMOND_16:  return "EB Garamond-16:style=Regular";
+    case FONT_GARAMOND_18:  return "EB Garamond-18:style=Regular";
+    case FONT_GARAMOND_20:  return "EB Garamond-20:style=Regular";
+    case FONT_GARAMOND_24:  return "EB Garamond-24:style=Regular";
+    case FONT_GARAMOND_28:  return "EB Garamond-28:style=Regular";
+    case FONT_GARAMOND_14B: return "EB Garamond-14:style=Bold";
+    case FONT_GARAMOND_16B: return "EB Garamond-16:style=Bold";
+    case FONT_GARAMOND_18B: return "EB Garamond-18:style=Bold";
+    case FONT_GARAMOND_20B: return "EB Garamond-20:style=Bold";
+    case FONT_GARAMOND_24B: return "EB Garamond-24:style=Bold";
+    case FONT_GARAMOND_28B: return "EB Garamond-28:style=Bold";
+    
+    // Classic Serif Fonts - URW Bookman (warm, readable serif)
+    case FONT_BOOKMAN_14:   return "URW Bookman-14:style=Light";
+    case FONT_BOOKMAN_16:   return "URW Bookman-16:style=Light";
+    case FONT_BOOKMAN_18:   return "URW Bookman-18:style=Light";
+    case FONT_BOOKMAN_20:   return "URW Bookman-20:style=Light";
+    case FONT_BOOKMAN_24:   return "URW Bookman-24:style=Light";
+    case FONT_BOOKMAN_28:   return "URW Bookman-28:style=Light";
+    case FONT_BOOKMAN_14B:  return "URW Bookman-14:style=Demi";
+    case FONT_BOOKMAN_16B:  return "URW Bookman-16:style=Demi";
+    case FONT_BOOKMAN_18B:  return "URW Bookman-18:style=Demi";
+    case FONT_BOOKMAN_20B:  return "URW Bookman-20:style=Demi";
+    case FONT_BOOKMAN_24B:  return "URW Bookman-24:style=Demi";
+    case FONT_BOOKMAN_28B:  return "URW Bookman-28:style=Demi";
+    
+    // Classic Serif Fonts - Nimbus Roman (clean, professional serif)
+    case FONT_NIMBUS_14:    return "Nimbus Roman-14:style=Regular";
+    case FONT_NIMBUS_16:    return "Nimbus Roman-16:style=Regular";
+    case FONT_NIMBUS_18:    return "Nimbus Roman-18:style=Regular";
+    case FONT_NIMBUS_20:    return "Nimbus Roman-20:style=Regular";
+    case FONT_NIMBUS_24:    return "Nimbus Roman-24:style=Regular";
+    case FONT_NIMBUS_28:    return "Nimbus Roman-28:style=Regular";
+    case FONT_NIMBUS_14B:   return "Nimbus Roman-14:style=Bold";
+    case FONT_NIMBUS_16B:   return "Nimbus Roman-16:style=Bold";
+    case FONT_NIMBUS_18B:   return "Nimbus Roman-18:style=Bold";
+    case FONT_NIMBUS_20B:   return "Nimbus Roman-20:style=Bold";
+    case FONT_NIMBUS_24B:   return "Nimbus Roman-24:style=Bold";
+    case FONT_NIMBUS_28B:   return "Nimbus Roman-28:style=Bold";
+    
     // Default to modern DejaVu Sans instead of Times New Roman
-    default:              return "DejaVu Sans-18:style=Book";
+    default:                return "DejaVu Sans-18:style=Book";
     }
 }

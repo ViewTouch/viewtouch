@@ -225,6 +225,46 @@ enum page_sizes {
 #define FONT_MONO_20B     38
 #define FONT_MONO_24B     39
 
+// Classic Serif Fonts - EB Garamond 8, Bookman, Nimbus Roman
+#define FONT_GARAMOND_14    40
+#define FONT_GARAMOND_16    41
+#define FONT_GARAMOND_18    42
+#define FONT_GARAMOND_20    43
+#define FONT_GARAMOND_24    44
+#define FONT_GARAMOND_28    45
+#define FONT_GARAMOND_14B   46
+#define FONT_GARAMOND_16B   47
+#define FONT_GARAMOND_18B   48
+#define FONT_GARAMOND_20B   49
+#define FONT_GARAMOND_24B   50
+#define FONT_GARAMOND_28B   51
+
+#define FONT_BOOKMAN_14     52
+#define FONT_BOOKMAN_16     53
+#define FONT_BOOKMAN_18     54
+#define FONT_BOOKMAN_20     55
+#define FONT_BOOKMAN_24     56
+#define FONT_BOOKMAN_28     57
+#define FONT_BOOKMAN_14B    58
+#define FONT_BOOKMAN_16B    59
+#define FONT_BOOKMAN_18B    60
+#define FONT_BOOKMAN_20B    61
+#define FONT_BOOKMAN_24B    62
+#define FONT_BOOKMAN_28B    63
+
+#define FONT_NIMBUS_14      64
+#define FONT_NIMBUS_16      65
+#define FONT_NIMBUS_18      66
+#define FONT_NIMBUS_20      67
+#define FONT_NIMBUS_24      68
+#define FONT_NIMBUS_28      69
+#define FONT_NIMBUS_14B     70
+#define FONT_NIMBUS_16B     71
+#define FONT_NIMBUS_18B     72
+#define FONT_NIMBUS_20B     73
+#define FONT_NIMBUS_24B     74
+#define FONT_NIMBUS_28B     75
+
 #define FONT_UNDERLINE  128
 
 // Zone Frame Appearence

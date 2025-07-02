@@ -115,7 +115,7 @@ static PenDataType PenData[] =
 };
 
 #define FONTS         (int)(sizeof(FontData)/sizeof(FontDataType))
-#define FONT_SPACE    (FONTS+4)
+#define FONT_SPACE    80  // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
 #define TEXT_COLORS   (int)(sizeof(PenData)/sizeof(PenDataType))
 
 class FontNameClass
@@ -453,9 +453,9 @@ int      IsTermLocal = 0;
 int      Connection = 0;
 
 // Update font arrays to use XftFont instead of XFontStruct
-static XftFont *FontInfo[32];
-static int      FontHeight[32];
-static int      FontBaseline[32];
+static XftFont *FontInfo[80];  // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
+static int      FontHeight[80];  // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
+static int      FontBaseline[80]; // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
 
 int ColorTextT[TEXT_COLORS];
 int ColorTextH[TEXT_COLORS];
@@ -2482,6 +2482,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     RootWin    = RootWindow(Dis, ScrNo);
 
     // Load Fonts using Xft for scalable fonts
+    // First load legacy fonts from FontData array
     for (i = 0; i < FONTS; ++i)
     {
         int f = FontData[i].id;
@@ -2499,6 +2500,39 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
             {
                 // IMPROVED: More specific error message - shows which fallback failed, not original font
                 snprintf(str, sizeof(str), "Can't load fallback font 'Times:size=24:style=regular'");
+                ReportError(str);
+                return 1;
+            }
+        }
+        // Calculate font metrics from XftFont
+        FontHeight[f] = FontInfo[f]->height;
+        FontBaseline[f] = FontInfo[f]->ascent;
+    }
+    
+    // Load new font families (Garamond, Bookman, Nimbus)
+    int new_font_ids[] = {
+        FONT_GARAMOND_14, FONT_GARAMOND_16, FONT_GARAMOND_18, FONT_GARAMOND_20, FONT_GARAMOND_24, FONT_GARAMOND_28,
+        FONT_GARAMOND_14B, FONT_GARAMOND_16B, FONT_GARAMOND_18B, FONT_GARAMOND_20B, FONT_GARAMOND_24B, FONT_GARAMOND_28B,
+        FONT_BOOKMAN_14, FONT_BOOKMAN_16, FONT_BOOKMAN_18, FONT_BOOKMAN_20, FONT_BOOKMAN_24, FONT_BOOKMAN_28,
+        FONT_BOOKMAN_14B, FONT_BOOKMAN_16B, FONT_BOOKMAN_18B, FONT_BOOKMAN_20B, FONT_BOOKMAN_24B, FONT_BOOKMAN_28B,
+        FONT_NIMBUS_14, FONT_NIMBUS_16, FONT_NIMBUS_18, FONT_NIMBUS_20, FONT_NIMBUS_24, FONT_NIMBUS_28,
+        FONT_NIMBUS_14B, FONT_NIMBUS_16B, FONT_NIMBUS_18B, FONT_NIMBUS_20B, FONT_NIMBUS_24B, FONT_NIMBUS_28B
+    };
+    
+    for (i = 0; i < sizeof(new_font_ids)/sizeof(new_font_ids[0]); ++i)
+    {
+        int f = new_font_ids[i];
+        const char* scalable_font_name = GetScalableFontName(f);
+        FontInfo[f] = XftFontOpenName(Dis, ScrNo, scalable_font_name);
+        if (FontInfo[f] == nullptr)
+        {
+            // Fallback to default font if new font fails
+            snprintf(str, sizeof(str), "Warning: Could not load new font '%s', falling back to default", scalable_font_name);
+            ReportError(str);
+            FontInfo[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Sans-18:style=Book");
+            if (FontInfo[f] == nullptr)
+            {
+                snprintf(str, sizeof(str), "Can't load fallback font 'DejaVu Sans-18:style=Book'");
                 ReportError(str);
                 return 1;
             }
@@ -2936,8 +2970,50 @@ const char* GetScalableFontName(int font_id)
     case FONT_MONO_20B:   return "DejaVu Sans Mono-20:style=Bold";
     case FONT_MONO_24B:   return "DejaVu Sans Mono-24:style=Bold";
     
+    // Classic Serif Fonts - EB Garamond 8 (elegant serif)
+    case FONT_GARAMOND_14:  return "EB Garamond-14:style=Regular";
+    case FONT_GARAMOND_16:  return "EB Garamond-16:style=Regular";
+    case FONT_GARAMOND_18:  return "EB Garamond-18:style=Regular";
+    case FONT_GARAMOND_20:  return "EB Garamond-20:style=Regular";
+    case FONT_GARAMOND_24:  return "EB Garamond-24:style=Regular";
+    case FONT_GARAMOND_28:  return "EB Garamond-28:style=Regular";
+    case FONT_GARAMOND_14B: return "EB Garamond-14:style=Bold";
+    case FONT_GARAMOND_16B: return "EB Garamond-16:style=Bold";
+    case FONT_GARAMOND_18B: return "EB Garamond-18:style=Bold";
+    case FONT_GARAMOND_20B: return "EB Garamond-20:style=Bold";
+    case FONT_GARAMOND_24B: return "EB Garamond-24:style=Bold";
+    case FONT_GARAMOND_28B: return "EB Garamond-28:style=Bold";
+    
+    // Classic Serif Fonts - URW Bookman (warm, readable serif)
+    case FONT_BOOKMAN_14:   return "URW Bookman-14:style=Light";
+    case FONT_BOOKMAN_16:   return "URW Bookman-16:style=Light";
+    case FONT_BOOKMAN_18:   return "URW Bookman-18:style=Light";
+    case FONT_BOOKMAN_20:   return "URW Bookman-20:style=Light";
+    case FONT_BOOKMAN_24:   return "URW Bookman-24:style=Light";
+    case FONT_BOOKMAN_28:   return "URW Bookman-28:style=Light";
+    case FONT_BOOKMAN_14B:  return "URW Bookman-14:style=Demi";
+    case FONT_BOOKMAN_16B:  return "URW Bookman-16:style=Demi";
+    case FONT_BOOKMAN_18B:  return "URW Bookman-18:style=Demi";
+    case FONT_BOOKMAN_20B:  return "URW Bookman-20:style=Demi";
+    case FONT_BOOKMAN_24B:  return "URW Bookman-24:style=Demi";
+    case FONT_BOOKMAN_28B:  return "URW Bookman-28:style=Demi";
+    
+    // Classic Serif Fonts - Nimbus Roman (clean, professional serif)
+    case FONT_NIMBUS_14:    return "Nimbus Roman-14:style=Regular";
+    case FONT_NIMBUS_16:    return "Nimbus Roman-16:style=Regular";
+    case FONT_NIMBUS_18:    return "Nimbus Roman-18:style=Regular";
+    case FONT_NIMBUS_20:    return "Nimbus Roman-20:style=Regular";
+    case FONT_NIMBUS_24:    return "Nimbus Roman-24:style=Regular";
+    case FONT_NIMBUS_28:    return "Nimbus Roman-28:style=Regular";
+    case FONT_NIMBUS_14B:   return "Nimbus Roman-14:style=Bold";
+    case FONT_NIMBUS_16B:   return "Nimbus Roman-16:style=Bold";
+    case FONT_NIMBUS_18B:   return "Nimbus Roman-18:style=Bold";
+    case FONT_NIMBUS_20B:   return "Nimbus Roman-20:style=Bold";
+    case FONT_NIMBUS_24B:   return "Nimbus Roman-24:style=Bold";
+    case FONT_NIMBUS_28B:   return "Nimbus Roman-28:style=Bold";
+    
     // Default to modern DejaVu Sans instead of Times New Roman
-    default:              return "DejaVu Sans-18:style=Book";
+    default:                return "DejaVu Sans-18:style=Book";
     }
 }
 
