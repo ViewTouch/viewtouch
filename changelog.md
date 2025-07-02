@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Additional XPM Texture Options**: Added 12 new texture options to enhance UI customization
+  - Added 4color.png, brass-8.xpm, concrete-8.xpm, copper-8.xpm, demo-converted.xpm, glass-8.xpm, metal-8.xpm, plastic-8.xpm, silk-8.xpm, steel-8.xpm, stone-8.xpm, velvet-8.xpm
+  - Enhanced texture variety for improved visual customization of the interface
 - **Scalable Font Support**: Implemented Xft (X FreeType) font rendering system for resolution-independent text display
   - Added XftFont loading with automatic fallback to default fonts when requested fonts are unavailable  
   - Integrated XftTextExtentsUtf8 for accurate scalable font text measurement in UI layout calculations

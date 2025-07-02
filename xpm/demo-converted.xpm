@@ -1,0 +1,20 @@
+/* XPM */
+static const char *demo_xpm[] = {
+/* columns rows colors chars-per-pixel */
+"5 8 6 1 ",
+"  c #4E4B53",
+". c #A86C58",
+"X c #99529E",
+"o c #5191C7",
+"O c #B38E9C",
+"+ c #3F77A3",
+/* pixels */
+"XX. o",
+"XO. o",
+"XO +o",
+"X. oo",
+"O. oo",
+"O +oo",
+". ooo",
+". ooo"
+};
