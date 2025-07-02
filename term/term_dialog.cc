@@ -282,7 +282,10 @@ int DialogMenu::Init(Widget parent, const char* label, const char* *option_name,
                                      nullptr);
 
     Arg args[5];
-    menu = XmCreatePulldownMenu(container, (char*)"menu", args, 0);
+    // Set visible item count for pulldown menu to 15
+    Arg menu_args[1];
+    XtSetArg(menu_args[0], XmNvisibleItemCount, 15);
+    menu = XmCreatePulldownMenu(container, (char*)"menu", menu_args, 1);
     XtSetArg(args[0], XmNsubMenuId,        menu);
     XtSetArg(args[1], XmNtopAttachment,    XmATTACH_FORM);
     XtSetArg(args[2], XmNbottomAttachment, XmATTACH_FORM);
@@ -369,6 +372,330 @@ int DialogMenu::Value()
     for (int i = 0; i < choice_count; ++i)
         if (choice == choice_list[i])
             return value_list[i];
+    return -1;
+}
+
+/*********************************************************************
+ * ScrollableDialogMenu Class
+ ********************************************************************/
+
+ScrollableDialogMenu::ScrollableDialogMenu()
+{
+    choice_list  = nullptr;
+    choice_count = 0;
+    value_list   = nullptr;
+    no_change_widget = 0;
+    no_change_value  = 0;
+    container = nullptr;
+    scrolled_list = nullptr;
+}
+
+ScrollableDialogMenu::~ScrollableDialogMenu()
+{
+    if (choice_list)
+        delete [] choice_list;
+}
+
+// Member Functions
+
+/****
+ * Clear:  Do not call this function unless the program is exiting or
+ *  Init will be called immediately after.
+ ****/
+int ScrollableDialogMenu::Clear()
+{
+    XtDestroyWidget(mlabel);
+    XtDestroyWidget(menu);
+    XtDestroyWidget(option);
+    if (scrolled_list) XtDestroyWidget(scrolled_list);
+    if (choice_list)
+    {
+        delete [] choice_list;
+        choice_list = nullptr;
+    }
+    return 0;
+}
+
+int ScrollableDialogMenu::Init(Widget parent, const char* label, const char* *option_name,
+                     int *option_value, void *option_cb, void *client_data)
+{
+    const char* name;
+
+    if (container == nullptr)
+    {
+        container = XtVaCreateWidget("form",
+                                     xmFormWidgetClass,   parent,
+                                     XmNleftAttachment,   XmATTACH_POSITION,
+                                     XmNleftPosition,     1,
+                                     XmNrightAttachment,  XmATTACH_POSITION,
+                                     XmNrightPosition,    99,
+                                     nullptr);
+    }
+    mlabel = XtVaCreateManagedWidget(label,
+                                     xmLabelWidgetClass,  container,
+                                     XmNtopAttachment,    XmATTACH_FORM,
+                                     XmNbottomAttachment, XmATTACH_FORM,
+                                     XmNleftAttachment,   XmATTACH_FORM,
+                                     XmNrightAttachment,  XmATTACH_POSITION,
+                                     XmNrightPosition,    MARGIN,
+                                     nullptr);
+
+    // Create a scrolled list instead of a pulldown menu
+    Arg args[5];
+    XtSetArg(args[0], XmNvisibleItemCount, 15);  // Show 15 items at a time
+    XtSetArg(args[1], XmNselectionPolicy, XmSINGLE_SELECT);
+    XtSetArg(args[2], XmNscrollBarDisplayPolicy, XmSTATIC);
+    scrolled_list = XmCreateScrolledList(container, (char*)"scrollable_menu", args, 3);
+
+    // Create a button that shows the scrolled list when clicked
+    XtSetArg(args[0], XmNtopAttachment,    XmATTACH_FORM);
+    XtSetArg(args[1], XmNbottomAttachment, XmATTACH_FORM);
+    XtSetArg(args[2], XmNleftAttachment,   XmATTACH_POSITION);
+    XtSetArg(args[3], XmNleftPosition,     MARGIN);
+    option = XmCreatePushButton(container, (char*)"option", args, 4);
+
+    int count = 0;
+    while (option_name[count])
+        ++count;
+
+    choice_count = count;
+    choice_list  = new Widget[count];
+    value_list   = option_value;
+
+    // Add items to scrolled list
+    XmStringTable xm_items = (XmStringTable)XtMalloc(sizeof(XmString) * count);
+    for (int i = 0; i < count; ++i)
+    {
+        name = MasterTranslations.GetTranslation(option_name[i]);
+        xm_items[i] = XmStringCreateLtoR((char*)name, XmFONTLIST_DEFAULT_TAG);
+    }
+    XtVaSetValues(scrolled_list, XmNitems, xm_items, XmNitemCount, count, NULL);
+    for (int i = 0; i < count; ++i) XmStringFree(xm_items[i]);
+    XtFree((char*)xm_items);
+
+    // Add callback for selection
+    if (option_cb)
+        XtAddCallback(scrolled_list, XmNdefaultActionCallback,
+                      (XtCallbackProc) option_cb, (XtPointer) client_data);
+
+    // Initially hide the scrolled list
+    XtUnmanageChild(scrolled_list);
+
+    // Add callback to show/hide the list when button is clicked
+    XtAddCallback(option, XmNactivateCallback, 
+                  (XtCallbackProc) ScrollableDialogMenu::ToggleListCB, (XtPointer) this);
+
+    XtManageChild(option);
+    XtManageChild(container);
+    return 0;
+}
+
+int ScrollableDialogMenu::Show(int flag)
+{
+    if (flag)
+    {
+        if (!XtIsManaged(container))
+            XtManageChild(container);
+    }
+    else
+    {
+        if (XtIsManaged(container))
+            XtUnmanageChild(container);
+    }
+    return 0;
+}
+
+int ScrollableDialogMenu::Set(int value)
+{
+    int idx = CompareList(value, value_list, 0);
+    if (idx >= 0 && idx < choice_count)
+    {
+        XmListSelectPos(scrolled_list, idx + 1, 0);  // List positions are 1-based
+        // Update button label to show selected item
+        const char* name = MasterTranslations.GetTranslation(FontName[idx]);
+        XmString label_string = XmStringCreateLtoR((char*)name, XmFONTLIST_DEFAULT_TAG);
+        XtVaSetValues(option, XmNlabelString, label_string, nullptr);
+        XmStringFree(label_string);
+    }
+    return 0;
+}
+
+int ScrollableDialogMenu::SetLabel(const char* label)
+{
+    XmString label_string;
+
+    label_string = XmStringCreateLtoR((char*)label, XmFONTLIST_DEFAULT_TAG);
+    XtVaSetValues(mlabel, XmNlabelString, label_string, nullptr);
+    XmStringFree(label_string);
+
+    return 0;
+}
+
+int ScrollableDialogMenu::Value()
+{
+    int *pos_list;
+    int pos_count;
+    XmListGetSelectedPos(scrolled_list, &pos_list, &pos_count);
+    
+    if (pos_count > 0 && pos_list)
+    {
+        int idx = pos_list[0] - 1;  // Convert to 0-based index
+        XtFree((char*)pos_list);
+        if (idx >= 0 && idx < choice_count)
+            return value_list[idx];
+    }
+    return -1;
+}
+
+void ScrollableDialogMenu::ToggleListCB(Widget w, XtPointer client_data, XtPointer call_data)
+{
+    ScrollableDialogMenu* menu = (ScrollableDialogMenu*)client_data;
+    if (XtIsManaged(menu->scrolled_list))
+        XtUnmanageChild(menu->scrolled_list);
+    else
+        XtManageChild(menu->scrolled_list);
+}
+
+/*********************************************************************
+ * ScrolledFontMenu Class
+ ********************************************************************/
+
+ScrolledFontMenu::ScrolledFontMenu()
+{
+    choice_list = nullptr;
+    choice_count = 0;
+    value_list = nullptr;
+    selected_index = 0;
+    container = nullptr;
+    label = nullptr;
+    list_widget = nullptr;
+}
+
+ScrolledFontMenu::~ScrolledFontMenu()
+{
+    if (choice_list)
+        delete [] choice_list;
+}
+
+int ScrolledFontMenu::Clear()
+{
+    if (label) XtDestroyWidget(label);
+    if (list_widget) XtDestroyWidget(list_widget);
+    if (choice_list)
+    {
+        delete [] choice_list;
+        choice_list = nullptr;
+    }
+    return 0;
+}
+
+int ScrolledFontMenu::Init(Widget parent, const char* label_text, const char* *option_name,
+                          int *option_value, void *option_cb, void *client_data)
+{
+    if (container == nullptr)
+    {
+        container = XtVaCreateWidget("form",
+                                     xmFormWidgetClass,   parent,
+                                     XmNleftAttachment,   XmATTACH_POSITION,
+                                     XmNleftPosition,     1,
+                                     XmNrightAttachment,  XmATTACH_POSITION,
+                                     XmNrightPosition,    99,
+                                     nullptr);
+    }
+
+    // Create label
+    label = XtVaCreateManagedWidget(label_text,
+                                    xmLabelWidgetClass,  container,
+                                    XmNtopAttachment,    XmATTACH_FORM,
+                                    XmNleftAttachment,   XmATTACH_FORM,
+                                    XmNrightAttachment,  XmATTACH_POSITION,
+                                    XmNrightPosition,    MARGIN,
+                                    nullptr);
+
+    // Create scrolled list widget
+    Arg args[5];
+    XtSetArg(args[0], XmNvisibleItemCount, 8);  // Show 8 items at a time
+    XtSetArg(args[1], XmNselectionPolicy, XmSINGLE_SELECT);
+    XtSetArg(args[2], XmNscrollBarDisplayPolicy, XmSTATIC);  // Always show scroll bar when needed
+    list_widget = XmCreateScrolledList(container, (char*)"font_list", args, 3);
+
+    // Count options
+    int count = 0;
+    while (option_name[count])
+        ++count;
+
+    choice_count = count;
+    choice_list = new Widget[count];
+    value_list = option_value;
+
+    // Add items to list
+    XmStringTable xm_items = (XmStringTable)XtMalloc(sizeof(XmString) * count);
+    for (int i = 0; i < count; ++i)
+    {
+        const char* name = MasterTranslations.GetTranslation(option_name[i]);
+        xm_items[i] = XmStringCreateLtoR((char*)name, XmFONTLIST_DEFAULT_TAG);
+    }
+    XtVaSetValues(list_widget, XmNitems, xm_items, XmNitemCount, count, NULL);
+    for (int i = 0; i < count; ++i) XmStringFree(xm_items[i]);
+    XtFree((char*)xm_items);
+
+    // Add callback for selection
+    if (option_cb)
+        XtAddCallback(list_widget, XmNdefaultActionCallback,
+                      (XtCallbackProc) option_cb, (XtPointer) client_data);
+
+    XtManageChild(list_widget);
+    XtManageChild(container);
+    return 0;
+}
+
+int ScrolledFontMenu::Show(int flag)
+{
+    if (flag)
+    {
+        if (!XtIsManaged(container))
+            XtManageChild(container);
+    }
+    else
+    {
+        if (XtIsManaged(container))
+            XtUnmanageChild(container);
+    }
+    return 0;
+}
+
+int ScrolledFontMenu::Set(int value)
+{
+    int idx = CompareList(value, value_list, 0);
+    if (idx >= 0 && idx < choice_count)
+    {
+        XmListSelectPos(list_widget, idx + 1, 0);  // List positions are 1-based
+        selected_index = idx;
+    }
+    return 0;
+}
+
+int ScrolledFontMenu::SetLabel(const char* label_text)
+{
+    XmString label_string = XmStringCreateLtoR((char*)label_text, XmFONTLIST_DEFAULT_TAG);
+    XtVaSetValues(label, XmNlabelString, label_string, nullptr);
+    XmStringFree(label_string);
+    return 0;
+}
+
+int ScrolledFontMenu::Value()
+{
+    int *pos_list;
+    int pos_count;
+    XmListGetSelectedPos(list_widget, &pos_list, &pos_count);
+    
+    if (pos_count > 0 && pos_list)
+    {
+        int idx = pos_list[0] - 1;  // Convert to 0-based index
+        XtFree((char*)pos_list);
+        if (idx >= 0 && idx < choice_count)
+            return value_list[idx];
+    }
     return -1;
 }
 
@@ -626,7 +953,7 @@ PageDialog::PageDialog(Widget parent)
     texture.Init(w, "This Page's Background Texture", TextureName, TextureValue);
     AddLine(w);
 
-    default_font.Init(w, "This Page's Font for All Buttons", FontName, FontValue);
+    default_font.Init(w, "This Page's Default Font", FontName, FontValue);
     default_appear1.Init(w, "This Page's Edge & Texture for All Buttons",
                          ZoneFrameName, ZoneFrameValue, TextureName, TextureValue);
     default_color1.Init(w, "This Page's Text Color for All Buttons", ColorName, ColorValue);
@@ -672,7 +999,6 @@ int PageDialog::Open()
     v2 = RInt8();
     default_appear2.Set(v1, v2);
     default_color2.Set(RInt8());
-    RInt8(); RInt8(); RInt8();	// ignore default*[2]
     default_spacing.Set(RInt8());
     default_shadow.Set(RInt16());
     parent_page.Set(RInt32());
@@ -799,7 +1125,7 @@ DefaultDialog::DefaultDialog(Widget parent)
     texture.Init(w, "Global Background Texture", &TextureName[1], &TextureValue[1]);
     AddLine(w);
 
-    default_font.Init(w, "Global Button Font", &FontName[1], &FontValue[1]);
+    default_font.Init(w, "Global Button Font", FontName, FontValue);
     default_appear1.Init(w, "Global Button Edge & Texture",
                          &ZoneFrameName[1], &ZoneFrameValue[1], &TextureName[1], &TextureValue[1]);
     default_color1.Init(w, "Global Button Text Color", &ColorName[1], &ColorValue[1]);
@@ -1670,3 +1996,88 @@ int ListDialog::Send()
     WInt32(selected);
     return SendNow();
 }
+
+// FontSelectDialog implementation
+FontSelectDialog::FontSelectDialog(Widget parent) {
+    open = 0;
+    selected_font = 0;
+    // Create dialog shell
+    Arg args[2];
+    XtSetArg(args[0], XmNtitle, (char*)"Select Font");
+    dialog = XmCreateFormDialog(parent, (char*)"FontSelectDialog", args, 1);
+
+    // Font label
+    font_label = XtVaCreateManagedWidget("Current Font:", xmLabelWidgetClass, dialog,
+        XmNtopAttachment, XmATTACH_FORM,
+        XmNleftAttachment, XmATTACH_FORM,
+        XmNrightAttachment, XmATTACH_FORM,
+        nullptr);
+
+    // Scrolled font menu
+    font_menu.Init(dialog, "Available Fonts", FontName, FontValue);
+    font_menu.Show(1);
+
+    // OK/Cancel buttons
+    ok_button = XtVaCreateManagedWidget("OK", xmPushButtonWidgetClass, dialog,
+        XmNbottomAttachment, XmATTACH_FORM,
+        XmNleftAttachment, XmATTACH_POSITION, XmNleftPosition, 10,
+        nullptr);
+    cancel_button = XtVaCreateManagedWidget("Cancel", xmPushButtonWidgetClass, dialog,
+        XmNbottomAttachment, XmATTACH_FORM,
+        XmNrightAttachment, XmATTACH_POSITION, XmNrightPosition, 90,
+        nullptr);
+
+    XtAddCallback(ok_button, XmNactivateCallback, OkCB, (XtPointer)this);
+    XtAddCallback(cancel_button, XmNactivateCallback, CancelCB, (XtPointer)this);
+    XtAddCallback(font_menu.list_widget, XmNdefaultActionCallback, FontSelectCB, (XtPointer)this);
+}
+
+int FontSelectDialog::Open(int current_font) {
+    open = 1;
+    selected_font = current_font;
+    font_menu.Set(current_font);
+    // Update label
+    XmString label_string = XmStringCreateLtoR((char*)FontName[current_font], XmFONTLIST_DEFAULT_TAG);
+    XtVaSetValues(font_label, XmNlabelString, label_string, nullptr);
+    XmStringFree(label_string);
+    XtManageChild(dialog);
+    return 0;
+}
+
+int FontSelectDialog::Close() {
+    open = 0;
+    if (XtIsManaged(dialog))
+        XtUnmanageChild(dialog);
+    return 0;
+}
+
+void FontSelectDialog::FontSelectCB(Widget w, XtPointer client_data, XtPointer call_data) {
+    FontSelectDialog* dlg = (FontSelectDialog*)client_data;
+    int idx = dlg->font_menu.Value();
+    if (idx >= 0) {
+        dlg->selected_font = idx;
+        XmString label_string = XmStringCreateLtoR((char*)FontName[idx], XmFONTLIST_DEFAULT_TAG);
+        XtVaSetValues(dlg->font_label, XmNlabelString, label_string, nullptr);
+        XmStringFree(label_string);
+    }
+}
+
+void FontSelectDialog::OkCB(Widget w, XtPointer client_data, XtPointer call_data) {
+    FontSelectDialog* dlg = (FontSelectDialog*)client_data;
+    dlg->Close();
+}
+
+void FontSelectDialog::CancelCB(Widget w, XtPointer client_data, XtPointer call_data) {
+    FontSelectDialog* dlg = (FontSelectDialog*)client_data;
+    dlg->Close();
+}
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,160 @@
+#include <X11/Xlib.h>
+#include <X11/Xft/Xft.h>
+#include <iostream>
+#include <cstring>
+
+// FontName and FontValue arrays (from main/labels.cc)
+const char* FontName[] = {
+    "Default",
+    "Times 14", "Times 14 Bold", "Times 18", "Times 18 Bold",
+    "Times 20", "Times 20 Bold", "Times 24", "Times 24 Bold",
+    "Times 34", "Times 34 Bold",
+    "Courier 18", "Courier 18 Bold", "Courier 20", "Courier 20 Bold",
+    "DejaVu Sans 14", "DejaVu Sans 16", "DejaVu Sans 18", "DejaVu Sans 20",
+    "DejaVu Sans 24", "DejaVu Sans 28",
+    "DejaVu Sans 14 Bold", "DejaVu Sans 16 Bold", "DejaVu Sans 18 Bold",
+    "DejaVu Sans 20 Bold", "DejaVu Sans 24 Bold", "DejaVu Sans 28 Bold",
+    "Monospace 14", "Monospace 16", "Monospace 18", "Monospace 20", "Monospace 24",
+    "Monospace 14 Bold", "Monospace 16 Bold", "Monospace 18 Bold", "Monospace 20 Bold", "Monospace 24 Bold",
+    "EB Garamond 14", "EB Garamond 18", "EB Garamond 24",
+    "EB Garamond 14 Bold", "EB Garamond 18 Bold", "EB Garamond 24 Bold",
+    "Bookman 14", "Bookman 18", "Bookman 24",
+    "Bookman 14 Bold", "Bookman 18 Bold", "Bookman 24 Bold",
+    "Nimbus Roman 14", "Nimbus Roman 18", "Nimbus Roman 24",
+    "Nimbus Roman 14 Bold", "Nimbus Roman 18 Bold", "Nimbus Roman 24 Bold", nullptr
+};
+
+const int FontValue[] = {
+    0,
+    10, 11, 12, 13, 4, 7, 5, 8, 6, 9,
+    14, 15, 16, 17,
+    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+    30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+    40, 42, 44, 46, 48, 50,
+    52, 54, 56, 58, 60, 62,
+    64, 66, 68, 70, 72, 74, -1
+};
+
+// GetScalableFontName (from main/manager.cc)
+const char* GetScalableFontName(int font_id) {
+    switch (font_id) {
+    case 10:  return "Times New Roman-14:style=Regular";
+    case 12:  return "Times New Roman-18:style=Regular";
+    case 4:   return "Times New Roman-20:style=Regular";
+    case 5:   return "Times New Roman-24:style=Regular";
+    case 6:   return "Times New Roman-34:style=Regular";
+    case 11:  return "Times New Roman-14:style=Bold";
+    case 13:  return "Times New Roman-18:style=Bold";
+    case 7:   return "Times New Roman-20:style=Bold";
+    case 8:   return "Times New Roman-24:style=Bold";
+    case 9:   return "Times New Roman-34:style=Bold";
+    case 14:  return "Courier New-18:style=Regular";
+    case 15:  return "Courier New-18:style=Bold";
+    case 16:  return "Courier New-20:style=Regular";
+    case 17:  return "Courier New-20:style=Bold";
+    case 18:  return "DejaVu Sans-14:style=Book";
+    case 19:  return "DejaVu Sans-16:style=Book";
+    case 20:  return "DejaVu Sans-18:style=Book";
+    case 21:  return "DejaVu Sans-20:style=Book";
+    case 22:  return "DejaVu Sans-24:style=Book";
+    case 23:  return "DejaVu Sans-28:style=Book";
+    case 24:  return "DejaVu Sans-14:style=Bold";
+    case 25:  return "DejaVu Sans-16:style=Bold";
+    case 26:  return "DejaVu Sans-18:style=Bold";
+    case 27:  return "DejaVu Sans-20:style=Bold";
+    case 28:  return "DejaVu Sans-24:style=Bold";
+    case 29:  return "DejaVu Sans-28:style=Bold";
+    case 30:  return "DejaVu Sans Mono-14:style=Book";
+    case 31:  return "DejaVu Sans Mono-16:style=Book";
+    case 32:  return "DejaVu Sans Mono-18:style=Book";
+    case 33:  return "DejaVu Sans Mono-20:style=Book";
+    case 34:  return "DejaVu Sans Mono-24:style=Book";
+    case 35:  return "DejaVu Sans Mono-14:style=Bold";
+    case 36:  return "DejaVu Sans Mono-16:style=Bold";
+    case 37:  return "DejaVu Sans Mono-18:style=Bold";
+    case 38:  return "DejaVu Sans Mono-20:style=Bold";
+    case 39:  return "DejaVu Sans Mono-24:style=Bold";
+    case 40:  return "EB Garamond-14:style=Regular";
+    case 42:  return "EB Garamond-18:style=Regular";
+    case 44:  return "EB Garamond-24:style=Regular";
+    case 46:  return "EB Garamond-14:style=Bold";
+    case 48:  return "EB Garamond-18:style=Bold";
+    case 50:  return "EB Garamond-24:style=Bold";
+    case 52:  return "URW Bookman-14:style=Light";
+    case 54:  return "URW Bookman-18:style=Light";
+    case 56:  return "URW Bookman-24:style=Light";
+    case 58:  return "URW Bookman-14:style=Demi";
+    case 60:  return "URW Bookman-18:style=Demi";
+    case 62:  return "URW Bookman-24:style=Demi";
+    case 64:  return "Nimbus Roman-14:style=Regular";
+    case 66:  return "Nimbus Roman-18:style=Regular";
+    case 68:  return "Nimbus Roman-24:style=Regular";
+    case 70:  return "Nimbus Roman-14:style=Bold";
+    case 72:  return "Nimbus Roman-18:style=Bold";
+    case 74:  return "Nimbus Roman-24:style=Bold";
+    default:  return "DejaVu Sans-18:style=Book";
+    }
+}
+
+int main() {
+    Display *display = XOpenDisplay(nullptr);
+    if (!display) {
+        std::cerr << "Cannot open display" << std::endl;
+        return 1;
+    }
+    int screen = DefaultScreen(display);
+    int win_width = 700, win_height = 200;
+    Window win = XCreateSimpleWindow(display, RootWindow(display, screen), 100, 100, win_width, win_height, 1, BlackPixel(display, screen), WhitePixel(display, screen));
+    XSelectInput(display, win, ExposureMask | KeyPressMask | ButtonPressMask);
+    XMapWindow(display, win);
+    XFlush(display);
+
+    XftDraw* draw = nullptr;
+    XftColor xft_color;
+    XRenderColor render_color = {0, 0, 0, 65535}; // black
+    XftColorAllocValue(display, DefaultVisual(display, screen), DefaultColormap(display, screen), &render_color, &xft_color);
+
+    for (int i = 0; FontValue[i] != -1; ++i) {
+        int font_id = FontValue[i];
+        const char* font_label = FontName[i];
+        const char* font_xft = GetScalableFontName(font_id);
+        XftFont *font = XftFontOpenName(display, screen, font_xft);
+        bool success = false;
+        if (!font) {
+            // Show error visually
+            XClearWindow(display, win);
+            if (!draw) draw = XftDrawCreate(display, win, DefaultVisual(display, screen), DefaultColormap(display, screen));
+            XftDrawStringUtf8(draw, &xft_color, font, 20, 80, (XftChar8*)"FAILED TO LOAD FONT", 19);
+            XftDrawStringUtf8(draw, &xft_color, font, 20, 120, (XftChar8*)font_xft, strlen(font_xft));
+            XFlush(display);
+        } else {
+            XClearWindow(display, win);
+            if (!draw) draw = XftDrawCreate(display, win, DefaultVisual(display, screen), DefaultColormap(display, screen));
+            // Draw font label and Xft string
+            std::string label = std::string(font_label) + " (" + font_xft + ")";
+            XftDrawStringUtf8(draw, &xft_color, font, 20, 40, (XftChar8*)label.c_str(), label.length());
+            // Draw sample text
+            const char* sample = "The quick brown fox jumps over 1234567890";
+            XftDrawStringUtf8(draw, &xft_color, font, 20, 100, (XftChar8*)sample, strlen(sample));
+            XFlush(display);
+            XftFontClose(display, font);
+            success = true;
+        }
+        // Wait for key or mouse press
+        XEvent ev;
+        while (1) {
+            XNextEvent(display, &ev);
+            if (ev.type == KeyPress || ev.type == ButtonPress) break;
+        }
+        // Print result to terminal
+        if (success) {
+            std::cout << "\u2713 " << font_label << " (" << font_xft << ") - DISPLAYED" << std::endl;
+        } else {
+            std::cout << "\u2717 " << font_label << " (" << font_xft << ") - FAILED" << std::endl;
+        }
+    }
+    if (draw) XftDrawDestroy(draw);
+    XDestroyWindow(display, win);
+    XCloseDisplay(display);
+    return 0;
+} 

@@ -273,6 +273,9 @@ target_link_libraries(vt_cdu vtcore)
 #add_executable(vt_authorize authorize_main.cc utility.cc)
 #add_executable(vt_ccq_pipe vt_ccq_pipe.cc socket.cc utility.cc conf_file.cc)
 
+add_executable(font_check font_check.cc)
+target_link_libraries(font_check X11 Xft)
+
 option(BUILD_TESTING "Build tests" ON)
 if(BUILD_TESTING)
     enable_testing()
