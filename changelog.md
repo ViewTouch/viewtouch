@@ -169,8 +169,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - **Edit Mode UI Consistency and Functionality**: Fixed minor UI issues in edit mode for improved user experience
   - **Fixed Edit Toolbar Font Size Consistency**: Resolved inconsistent font sizes in edit toolbar where top/bottom buttons used larger fonts than middle buttons
     - Root cause: New Button, New Page, Prior Page, and Next Page used `FONT_TIMES_18` while middle 8 buttons used `FONT_TIMES_14`
-    - Impact: Visual inconsistency made toolbar appear unbalanced and unprofessional
-    - Fix: Updated all middle buttons (Select All, Toggle Selected, Copy Selected, Move Selected, Delete Button, Global Page Defaults, Show Button Info, Show Page List) to use `FONT_TIMES_18` for consistent appearance
+    - Impact: Visual inconsistency made toolbar appear unbalanced and unprofessional, with text potentially overflowing button boundaries
+    - Fix: Changed top/bottom buttons (New Button, New Page, Prior Page, Next Page) to use `FONT_TIMES_14` for better fit within button boundaries
+  - **Enhanced Edit Toolbar Layout**: Improved edit toolbar window dimensions and button sizing for better usability
+    - Increased toolbar width from 120 to 140 pixels to provide more breathing room around buttons
+    - Increased button width from 60 to 65 pixels for better proportions and text fit
+    - Better visual balance and improved text readability within button boundaries
   - **Fixed Right-Click Page Properties Dialog**: Resolved issue where right-clicking on page bar did not open page properties dialog
     - Root cause: Right-click handling was only inside `MOUSE_PRESS` block, preventing detection of right-click events that might be sent as different event types
     - Impact: Users could not access page properties dialog via right-click on page bar, limiting edit mode functionality
@@ -183,3 +187,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Installation Integration**: Fonts are automatically installed to `/usr/viewtouch/fonts/` during build process
   - **Fallback Support**: Added robust font loading with fallback to system fonts when bundled fonts are unavailable
 - update embedded `
+- **Edit Toolbar Button Scaling**: All edit toolbar buttons now scale to fill the toolbar width, use FONT_TIMES_14 for consistent appearance, and text fits cleanly without awkward wrapping for a more professional look.
