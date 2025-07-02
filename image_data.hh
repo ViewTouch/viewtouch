@@ -47,7 +47,19 @@ enum textures {
     IMAGE_BLACK,
     IMAGE_GREYSAND,
     IMAGE_WHITEMESH,
-    IMAGE_COUNT // 21 // number of images
+    IMAGE_METAL,
+    IMAGE_STONE,
+    IMAGE_GLASS,
+    IMAGE_VELVET,
+    IMAGE_CONCRETE,
+    IMAGE_SILK,
+    IMAGE_BRASS,
+    IMAGE_COPPER,
+    IMAGE_STEEL,
+    IMAGE_PLASTIC,
+    IMAGE_DEMO,
+
+    IMAGE_COUNT // 32 // number of images
 };
 
 constexpr int IMAGE_CLEAR     = 253;

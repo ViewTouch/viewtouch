@@ -228,12 +228,23 @@ const genericChar* TextureName[] = {
 	"Smoke",
 	"Leather",
 	"Blue Parchment",
-        "Gradient",
-        "Brown Gradient",
-        "Black",
-        "Gray Sand",
-        "White Mesh",
-	nullptr
+    "Brown Gradient",
+    "Black",
+    "Gray Sand",
+    "White Mesh",
+    "Metal",
+    "Stone",
+    "Glass",
+    "Velvet",
+    "Concrete",
+    "Silk",
+    "Brass",
+    "Copper",
+    "Steel",
+    "Plastic",
+    "Demo",
+
+    nullptr
 };
 
 int TextureValue[] = {
@@ -255,12 +266,23 @@ int TextureValue[] = {
 	IMAGE_SMOKE,
 	IMAGE_LEATHER,
 	IMAGE_BLUE_PARCHMENT,
-	IMAGE_GRADIENT,
-	IMAGE_GRADIENTBROWN,
+    IMAGE_GRADIENTBROWN,
 	IMAGE_BLACK,
 	IMAGE_GREYSAND,
 	IMAGE_WHITEMESH,
-	-1
+    IMAGE_METAL,
+    IMAGE_STONE,
+    IMAGE_GLASS,
+    IMAGE_VELVET,
+    IMAGE_CONCRETE,
+    IMAGE_SILK,
+    IMAGE_BRASS,
+    IMAGE_COPPER,
+    IMAGE_STEEL,
+    IMAGE_PLASTIC,
+    IMAGE_DEMO,
+
+    -1
 };
 
 const genericChar* PageTypeName[] = {

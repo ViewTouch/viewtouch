@@ -5,7 +5,7 @@
 
 TEST_CASE("number_of_all_colors", "[image_data]")
 {
-    CHECK(ImageColorsUsed() == 1729);
+    CHECK(ImageColorsUsed() == 1891);
 }
 
 TEST_CASE("resolution_image_sand", "[image_data]")

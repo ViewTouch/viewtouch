@@ -1193,7 +1193,24 @@ SignalResult TableZone::Touch(Terminal *term, int tx, int ty)
         }
 
         if (check)
-            return SIGNAL_OKAY;  // check already at table
+        {
+            // Merge checks - there's already a check at this table
+            Settings *settings = term->GetSettings();
+            if (check->MergeWithCheck(term->check, settings) == 0)
+            {
+                // Successfully merged, now destroy the source check
+                term->system_data->DestroyCheck(term->check);
+                term->check = check;  // Set the merged check as current
+                term->move_check = 0;
+                term->UpdateAllTerms(UPDATE_ALL_TABLES | UPDATE_CHECKS, nullptr);
+                return SIGNAL_OKAY;
+            }
+            else
+            {
+                // Merge failed, don't do anything
+                return SIGNAL_OKAY;
+            }
+        }
 
         // move check to this table & update
         term->check->Table(name.Value());

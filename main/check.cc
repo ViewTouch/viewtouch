@@ -58,7 +58,7 @@
 int last_check_serial = 0;  // Global serial number counter for checks
 static const genericChar* EmptyStr = "";
 
-const genericChar* CheckStatusName[] = { "none", "Open", "Closed", "Voided", nullptr };
+const genericChar* CheckStatusName[] = { "Open", "Closed", "Voided", nullptr };
 int CheckStatusValue[] = { CHECK_OPEN, CHECK_CLOSED, CHECK_VOIDED, -1 };
 
 const genericChar* CheckDisplayName[] = {
@@ -1037,6 +1037,40 @@ int Check::SplitCheckBySeat(Settings *settings)
     }
     current_sub = FirstOpenSubCheck();
     return Update(settings);
+}
+
+int Check::MergeWithCheck(Check *other_check, Settings *settings)
+{
+    FnTrace("Check::MergeWithCheck()");
+    if (other_check == nullptr || other_check == this)
+        return 1;
+
+    // Merge all subchecks from the other check into this check
+    SubCheck *sc = other_check->SubList();
+    while (sc != nullptr)
+    {
+        SubCheck *next_sc = sc->next;
+        
+        // Remove the subcheck from the other check
+        other_check->Remove(sc);
+        
+        // Add it to this check
+        Add(sc);
+        
+        sc = next_sc;
+    }
+
+    // Update guest count to be the sum of both checks
+    int total_guests = Guests() + other_check->Guests();
+    Guests(total_guests);
+
+    // Update the check
+    Update(settings);
+    
+    // Set current subcheck to the first open one
+    current_sub = FirstOpenSubCheck();
+    
+    return 0;
 }
 
 int Check::PrintCount(Terminal *term, int printer_id, int reprint, int flag_sent)
