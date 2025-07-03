@@ -306,6 +306,14 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dat" AND IS_DIRECTORY "${CMAKE_CURRENT_SO
 else()
     message(STATUS "'dat' folder is missing in source directory, excluding it from install target. You can get the bootstrap files from https://www.viewtouch.com/vt_data.html")
 endif()
+
+# Install bundled fonts
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/fonts" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fonts")
+    install(DIRECTORY fonts DESTINATION viewtouch)
+    message(STATUS "Installing bundled fonts to viewtouch/fonts")
+else()
+    message(STATUS "'fonts' folder is missing in source directory, excluding it from install target")
+endif()
 install(PROGRAMS scripts/vtcommands.pl DESTINATION viewtouch/bin/vtcommands)
 
 #install(CODE "MESSAGE(\"Sample install message.\")")

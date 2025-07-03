@@ -2540,82 +2540,82 @@ int Terminal::EditTerm(int save_data, int edit_mode)
     WInt16(WIN_TOOLBAR);
     WInt16(64);  // x
     WInt16(64);  // y
-    WInt16(120); // width
+    WInt16(140); // width
     WInt16(360); // height
     WInt8(WINFRAME_BORDER | WINFRAME_TITLE | WINFRAME_MOVE);
     WStr("Edit ToolBar");
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_NEWZONE);
-    WInt16(0); WInt16(0); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(0); WInt16(70); WInt16(60);
     WStr("New\\Button");
-    WInt8(FONT_TIMES_18); WInt8(COLOR_DK_BLUE); WInt8(COLOR_LT_BLUE);
+    WInt8(FONT_TIMES_14); WInt8(COLOR_DK_BLUE); WInt8(COLOR_LT_BLUE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_NEWPAGE);
-    WInt16(60); WInt16(0); WInt16(60); WInt16(60);
+    WInt16(70); WInt16(0); WInt16(70); WInt16(60);
     WStr("New\\Page");
-    WInt8(FONT_TIMES_18); WInt8(COLOR_DK_GREEN); WInt8(COLOR_GREEN);
+    WInt8(FONT_TIMES_14); WInt8(COLOR_DK_GREEN); WInt8(COLOR_GREEN);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_ALL);
-    WInt16(0); WInt16(60); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(60); WInt16(70); WInt16(60);
     WStr("Select\\All");
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_TEAL); WInt8(COLOR_TEAL);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_TOGGLE);
-    WInt16(60); WInt16(60); WInt16(60); WInt16(60);
+    WInt16(70); WInt16(60); WInt16(70); WInt16(60);
     WStr("Toggle\\Selected");
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_MAGENTA); WInt8(COLOR_MAGENTA);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_COPY);
-    WInt16(0); WInt16(120); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(120); WInt16(70); WInt16(60);
     WStr("Copy\\Selected");
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_GREEN); WInt8(COLOR_GREEN);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_MOVE);
-    WInt16(60); WInt16(120); WInt16(60); WInt16(60);
+    WInt16(70); WInt16(120); WInt16(70); WInt16(60);
     WStr("Move\\Selected");
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_BLUE); WInt8(COLOR_LT_BLUE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_DELETE);
-    WInt16(0); WInt16(180); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(180); WInt16(70); WInt16(60);
     WStr("Delete\\Button");
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_GLOBAL);
-    WInt16(60); WInt16(180); WInt16(60); WInt16(60);
+    WInt16(70); WInt16(180); WInt16(70); WInt16(60);
     WStr("Global\\Page\\Defaults");
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_MAGENTA); WInt8(COLOR_MAGENTA);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_INFO);
-    WInt16(0); WInt16(240); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(240); WInt16(70); WInt16(60);
     WStr("Show\\Button\\Info");
     WInt8(FONT_TIMES_14); WInt8(COLOR_GRAY); WInt8(COLOR_WHITE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_LIST);
-    WInt16(60); WInt16(240); WInt16(60); WInt16(60);
+    WInt16(70); WInt16(240); WInt16(70); WInt16(60);
     WStr("Show\\Page\\List");
     WInt8(FONT_TIMES_14); WInt8(COLOR_BROWN); WInt8(COLOR_ORANGE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_PRIOR);
-    WInt16(0); WInt16(300); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(300); WInt16(70); WInt16(60);
     WStr("Prior\\Page");
-    WInt8(FONT_TIMES_18); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
+    WInt8(FONT_TIMES_14); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_NEXT);
-    WInt16(60); WInt16(300); WInt16(60); WInt16(60);
+    WInt16(70); WInt16(300); WInt16(70); WInt16(60);
     WStr("Next\\Page");
-    WInt8(FONT_TIMES_18); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
+    WInt8(FONT_TIMES_14); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
 
     // Show Edit Tool Bar
     WInt8(TERM_SHOWWINDOW);
@@ -4243,6 +4243,33 @@ int Terminal::MouseInput(int action, int x, int y)
     mouse_x = x;
     mouse_y = y;
 
+    // Handle right-click events (both press and release)
+    if (action & MOUSE_RIGHT)
+    {
+        zone = page->FindEditZone(this, x, y);
+        
+        if (zone)
+        {
+            if (zone->edit == 0)
+            {
+                if ((action & MOUSE_SHIFT) == 0)
+                    zone_db->ClearEdit(this);
+                zone->edit = 1;
+                zone->Draw(this, 1);
+                // Force immediate buffer flush for real-time editing feedback
+                SendNow();
+            }
+            EditMultiZone(page);
+        }
+        else if (page && y <= TITLE_HEIGHT && x >= 0 && x < page->width)
+        {
+            // Right-click on page bar - open page properties dialog
+            EditPage(page);
+        }
+
+        return 0;
+    }
+
     if ((action & MOUSE_PRESS) && user)
     {
         zone = page->FindEditZone(this, x, y);
@@ -4271,28 +4298,6 @@ int Terminal::MouseInput(int action, int x, int y)
         }
         else
             select_on = 0;
-
-        // Handle right-click (context menu)
-        if (action & MOUSE_RIGHT)
-        {
-            if (zone)
-            {
-                if (zone->edit == 0)
-                {
-                    if ((action & MOUSE_SHIFT) == 0)
-                        zone_db->ClearEdit(this);
-                    zone->edit = 1;
-                    zone->Draw(this, 1);
-                    // Force immediate buffer flush for real-time editing feedback
-                    SendNow();
-                }
-                EditMultiZone(page);
-            }
-            else if (y <= 32 && x >= 0 && x < page->width)
-                EditPage(page);
-
-            return 0;
-        }
 
         // Handle zone selection and movement
         // Only clear other selections if we're not starting a move operation on already selected zones

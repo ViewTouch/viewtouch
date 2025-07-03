@@ -166,4 +166,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - update embedded `catch.hpp` to `v2.13.10` to fix compilation on Ubuntu 20.04 and newer #131
 - fix `TimeInfo.Set(date_string)` function fixing `RunReport` `to`/`from` fields and C++20 compatibility #145
 - update embedded `date` to `v3.0.4` and fix CMake 4+ compatibility #155
+- **Edit Mode UI Consistency and Functionality**: Fixed minor UI issues in edit mode for improved user experience
+  - **Fixed Edit Toolbar Font Size Consistency**: Resolved inconsistent font sizes in edit toolbar where top/bottom buttons used larger fonts than middle buttons
+    - Root cause: New Button, New Page, Prior Page, and Next Page used `FONT_TIMES_18` while middle 8 buttons used `FONT_TIMES_14`
+    - Impact: Visual inconsistency made toolbar appear unbalanced and unprofessional, with text potentially overflowing button boundaries
+    - Fix: Changed top/bottom buttons (New Button, New Page, Prior Page, Next Page) to use `FONT_TIMES_14` for better fit within button boundaries
+  - **Enhanced Edit Toolbar Layout**: Improved edit toolbar window dimensions and button sizing for better usability
+    - Increased toolbar width from 120 to 140 pixels to provide more breathing room around buttons
+    - Increased button width from 60 to 65 pixels for better proportions and text fit
+    - Better visual balance and improved text readability within button boundaries
+  - **Fixed Right-Click Page Properties Dialog**: Resolved issue where right-clicking on page bar did not open page properties dialog
+    - Root cause: Right-click handling was only inside `MOUSE_PRESS` block, preventing detection of right-click events that might be sent as different event types
+    - Impact: Users could not access page properties dialog via right-click on page bar, limiting edit mode functionality
+    - Fix: Moved right-click handling outside of `MOUSE_PRESS` block to ensure right-click events are processed regardless of event type (press/release)
+    - Result: Right-click on page bar (top 32 pixels) now properly opens page properties dialog for editing page settings
+- **Font System Enhancement**: Implemented bundled font system for consistent appearance across different systems
+  - **Added Bundled Fonts**: Included DejaVu Sans, URW Bookman, and Nimbus Roman fonts in `/fonts/` directory for reliable font availability
+  - **Font Configuration**: Created Fontconfig rules in `fonts/fonts.conf` for font aliases and rendering quality optimization
+  - **Updated Font Mappings**: Changed Times fonts to use Nimbus Roman, Courier fonts to use DejaVu Sans Mono, and Garamond fonts to use URW Bookman for better compatibility
+  - **Installation Integration**: Fonts are automatically installed to `/usr/viewtouch/fonts/` during build process
+  - **Fallback Support**: Added robust font loading with fallback to system fonts when bundled fonts are unavailable
 - update embedded `
+- **Edit Toolbar Button Scaling**: All edit toolbar buttons now scale to fill the toolbar width, use FONT_TIMES_14 for consistent appearance, and text fits cleanly without awkward wrapping for a more professional look.
