@@ -41,12 +41,13 @@ extern int AdjustPeriod(TimeInfo &ref, int period, int adjust);
 // Constructor
 LaborZone::LaborZone()
 {
-    report   = nullptr;
-    period   = nullptr;
-    work     = nullptr;
-    page     = 0;
-    day_view = 1;
-    spacing  = 1.0;
+    font        = FONT_TIMES_24B;  // Set appropriate font for labor UI
+    report      = nullptr;
+    period      = nullptr;
+    work        = nullptr;
+    page        = 0;
+    day_view    = 1;
+    spacing     = 1.0;
 
     no_line      = 1;
     form_header  = -3;

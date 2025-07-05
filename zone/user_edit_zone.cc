@@ -635,23 +635,22 @@ JobSecurityZone::JobSecurityZone()
     wrap        = 0;
     keep_focus  = 0;
     form_header = 2;
-    columns     = 11;
+    font        = FONT_DEJAVU_18;
     int i;
 
     for (i = 1; JobName[i] != nullptr; ++i)
     {
-        AddLabel(JobName[i], 17);
-        AddListField("", MarkName, nullptr, 0, 4);
-        AddSpace(1);
-        AddListField("", MarkName, nullptr, 0, 7);
-        AddListField("", MarkName, nullptr, 0, 7);
-        AddListField("", MarkName, nullptr, 0, 7);
-        AddListField("", MarkName, nullptr, 0, 7);
-        AddListField("", MarkName, nullptr, 0, 7);
-        AddListField("", MarkName, nullptr, 0, 7);
-        AddListField("", MarkName, nullptr, 0, 7);
-        AddListField("", MarkName, nullptr, 0, 7);
-        AddListField("", MarkName, nullptr, 0, 7);
+        AddLabel(JobName[i], 10);  // label width 10 (narrower)
+        AddListField("", MarkName, nullptr, 0, 2);  // Active (box width 2)
+        AddListField("", MarkName, nullptr, 0, 2);  // Enter System
+        AddListField("", MarkName, nullptr, 0, 2);  // Order
+        AddListField("", MarkName, nullptr, 0, 2);  // Settle
+        AddListField("", MarkName, nullptr, 0, 2);  // Move Table
+        AddListField("", MarkName, nullptr, 0, 2);  // Rebuild Edit
+        AddListField("", MarkName, nullptr, 0, 2);  // Comp
+        AddListField("", MarkName, nullptr, 0, 2);  // Supervisor Functions
+        AddListField("", MarkName, nullptr, 0, 2);  // Manager Functions
+        AddListField("", MarkName, nullptr, 0, 2);  // Employee Records
         AddNewLine();
     }
 }
@@ -663,23 +662,35 @@ RenderResult JobSecurityZone::Render(Terminal *term, int update_flag)
 
     int col = color[0];
     FormZone::Render(term, update_flag);
-    TextPosC(term,   6,   .5, "Job", col);
-    TextPosC(term,  21,   .5, "Active", col);
-    TextPosC(term,  29.5,  0, "Enter", col);
-    TextPosC(term,  29.5,  1, "System", col);
-    TextPosC(term,  38.5, .5, "Order", col);
-    TextPosC(term,  47.5, .5, "Settle", col);
-    TextPosC(term,  56.5,  0, "Move", col);
-    TextPosC(term,  56.5,  1, "Table", col);
-    TextPosC(term,  65.5,  0, "Rebuild", col);
-    TextPosC(term,  65.5,  1, "Edit", col);
-    TextPosC(term,  74.5, .5, "Comp", col);
-    TextPosC(term,  83.5,  0, "Supervisor", col);
-    TextPosC(term,  83.5,  1, "Functions", col);
-    TextPosC(term,  92.5,  0, "Manager", col);
-    TextPosC(term,  92.5,  1, "Functions", col);
-    TextPosC(term, 101.5,  0, "Employee", col);
-    TextPosC(term, 101.5,  1, "Records", col);
+    // Header positions based on actual field layout:
+    int x = 0;
+    TextPosC(term, x + 5.5,   .5, "Job", col);           // center of label (0-11)
+    x = 12;
+    TextPosC(term, x + 1.5,   .5, "Active", col);         // center of first box (12-15)
+    x += 4;
+    TextPosC(term, x + 1.5,   0, "Enter", col);
+    TextPosC(term, x + 1.5,   1, "System", col);
+    x += 4;
+    TextPosC(term, x + 1.5,   .5, "Order", col);
+    x += 4;
+    TextPosC(term, x + 1.5,   .5, "Settle", col);
+    x += 4;
+    TextPosC(term, x + 1.5,   0, "Move", col);
+    TextPosC(term, x + 1.5,   1, "Table", col);
+    x += 4;
+    TextPosC(term, x + 1.5,   0, "Rebuild", col);
+    TextPosC(term, x + 1.5,   1, "Edit", col);
+    x += 4;
+    TextPosC(term, x + 1.5,   .5, "Comp", col);
+    x += 4;
+    TextPosC(term, x + 1.5,   0, "Supervisor", col);
+    TextPosC(term, x + 1.5,   1, "Functions", col);
+    x += 4;
+    TextPosC(term, x + 1.5,   0, "Manager", col);
+    TextPosC(term, x + 1.5,   1, "Functions", col);
+    x += 4;
+    TextPosC(term, x + 1.5,   0, "Employee", col);
+    TextPosC(term, x + 1.5,   1, "Records", col);
     return RENDER_OKAY;
 }
 

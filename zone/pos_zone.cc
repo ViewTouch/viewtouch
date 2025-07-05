@@ -446,9 +446,9 @@ int PosZone::Read(InputDataFile &df, int version)
 	{
 		switch (font)
 		{
-        case FONT_FIXED_14: font = FONT_TIMES_14; break;
-        case FONT_FIXED_20: font = FONT_FIXED_20; break;
-        case FONT_FIXED_24: font = FONT_FIXED_24; break;
+        case FONT_MONO_14: font = FONT_MONO_14; break;
+        case FONT_MONO_20: font = FONT_MONO_20; break;
+        case FONT_MONO_24: font = FONT_MONO_24; break;
 		} //end switch
 	}
 
@@ -658,9 +658,9 @@ int PosPage::Read(InputDataFile &infile, int version)
     {
         switch (default_font)
         {
-        case FONT_FIXED_14: default_font = FONT_TIMES_14; break;
-        case FONT_FIXED_20: default_font = FONT_FIXED_20; break;
-        case FONT_FIXED_24: default_font = FONT_FIXED_24; break;
+        case FONT_MONO_14: default_font = FONT_MONO_14; break;
+        case FONT_MONO_20: default_font = FONT_MONO_20; break;
+        case FONT_MONO_24: default_font = FONT_MONO_24; break;
         }
 
         int appear;

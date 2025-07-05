@@ -194,3 +194,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Fallback Support**: Added robust font loading with fallback to system fonts when bundled fonts are unavailable
 - update embedded `
 - **Edit Toolbar Button Scaling**: All edit toolbar buttons now scale to fill the toolbar width, use FONT_TIMES_14 for consistent appearance, and text fits cleanly without awkward wrapping for a more professional look.
+- Improved Job Authorization UI: Permission boxes are now smaller, the job label column is narrower, and permission headers are perfectly aligned with their boxes for better readability and usability. (2024-07-05)

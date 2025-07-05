@@ -42,6 +42,7 @@ static const genericChar* PageName[] = {
 // Constructor
 PhraseZone::PhraseZone()
 {
+    font        = FONT_TIMES_24B;  // Set appropriate font for phrase UI
     form_header = 1;
     for (int i = 0; i < 31; ++i)
         AddTextField("", 40, 1, 40);

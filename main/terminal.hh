@@ -25,6 +25,7 @@
 #include "customer.hh"
 #include "locale.hh"
 #include "utility.hh"
+#include "font_ids.hh"
 
 #include <string>
 #include <mutex>
@@ -181,26 +182,6 @@ constexpr int FRAME_INSET   = 32;  // top-bottom, left-right colors switched
 constexpr int FRAME_2COLOR  = 64;  // 2 colors used instead of 4
 
 // Fonts
-enum font_info {
-	FONT_DEFAULT     ,
-	FONT_FIXED_14    ,
-	FONT_FIXED_20    ,
-	FONT_FIXED_24    ,
-	FONT_TIMES_20    ,
-	FONT_TIMES_24    ,
-	FONT_TIMES_34    ,
-	FONT_TIMES_20B   ,
-	FONT_TIMES_24B   ,
-	FONT_TIMES_34B   ,
-	FONT_TIMES_14    ,
-	FONT_TIMES_14B   ,
-	FONT_TIMES_18    ,
-	FONT_TIMES_18B   ,
-    FONT_COURIER_18  ,
-    FONT_COURIER_18B ,
-    FONT_COURIER_20  ,
-    FONT_COURIER_20B
-};
 
 #define FONT_UNDERLINE  128
 

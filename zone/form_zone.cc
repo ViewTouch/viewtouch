@@ -812,6 +812,10 @@ int FormZone::LayoutForm(Terminal *term)
 
         f = f->next;
     }
+    // Debug: print label, x, and w for each field
+    for (FormField *ff = FieldList(); ff != nullptr; ff = ff->next) {
+        printf("Field: '%s'  x: %.2f  w: %.2f\n", ff->label.Value(), ff->x, ff->w);
+    }
     return 0;
 }
 

@@ -56,6 +56,7 @@
 #include <sys/utsname.h>    // system name structure
 #include <sys/wait.h>       // declarations for waiting
 #include <X11/Intrinsic.h>  // libXt provides the X Toolkit Intrinsics, an abstract widget library on which ViewTouch is based
+#include <X11/Xft/Xft.h>    // Xft for scalable font rendering
 #include <string>           // Introduces string types, character traits and a set of converting functions
 #include <cctype>           // Declares a set of functions to classify and transform individual characters
 #include <cstring>          // Functions for dealing with C-style strings — null-terminated arrays of characters; is the C++ version of the classic string.h header from C
@@ -133,9 +134,9 @@ int PrinterTypeValue[] = { PRINTER_KITCHEN1, PRINTER_KITCHEN2,
  *************************************************************/
 static XtAppContext App = 0;
 static Display     *Dis = nullptr;
-static XFontStruct *FontInfo[32];
-static int          FontWidth[32];
-static int          FontHeight[32];
+static XftFont *FontInfo[80];  // Increased to accommodate new font families and use XftFont instead of XFontStruct
+static int          FontWidth[80];  // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
+static int          FontHeight[80];  // Increased to accommodate new font families
 int                 LoaderSocket = 0;
 int                 OpenTermPort = 10001;
 int                 OpenTermSocket = -1;
@@ -459,7 +460,7 @@ int StartSystem(int my_use_net)
     App = XtCreateApplicationContext();
 
     // Set up local fonts (only used for formating info)
-    for (i = 0; i < 32; ++i)
+    for (i = 0; i < 80; ++i)
     {
         FontInfo[i]   = nullptr;
         FontWidth[i]  = 0;
@@ -484,10 +485,12 @@ int StartSystem(int my_use_net)
         for (i = 0; i < FONT_COUNT; ++i)
         {
             int f = FontData[i].id;
-            FontInfo[f] = XLoadQueryFont(Dis, FontData[i].font);
+            // Use scalable font names instead of bitmapped font names - consistent with main application
+            const char* scalable_font_name = GetScalableFontName(FontData[i].id);
+            FontInfo[f] = XftFontOpenName(Dis, DefaultScreen(Dis), scalable_font_name);
             if (FontInfo[f] == nullptr)
             {
-                sprintf(str, "Can't load font '%s'", FontData[i].font);
+                sprintf(str, "Can't load font '%s'", scalable_font_name);
                 ReportError(str);
             }
         }
@@ -2724,15 +2727,57 @@ int GetFontSize(int font_id, int &w, int &h)
     return 0;
 }
 
+// Scalable font name mapping for Xft fonts - simplified for test stub
+const char* GetScalableFontName(int font_id)
+{
+    switch (font_id)
+    {
+    // Legacy Times fonts (kept for compatibility)
+    case FONT_TIMES_14:  return "Times New Roman-14:style=Regular";
+    case FONT_TIMES_18:  return "Times New Roman-18:style=Regular";
+    case FONT_TIMES_20:  return "Times New Roman-20:style=Regular";
+    case FONT_TIMES_24:  return "Times New Roman-24:style=Regular";
+    case FONT_TIMES_34:  return "Times New Roman-34:style=Regular";
+    case FONT_TIMES_14B: return "Times New Roman-14:style=Bold";
+    case FONT_TIMES_18B: return "Times New Roman-18:style=Bold";
+    case FONT_TIMES_20B: return "Times New Roman-20:style=Bold";
+    case FONT_TIMES_24B: return "Times New Roman-24:style=Bold";
+    case FONT_TIMES_34B: return "Times New Roman-34:style=Bold";
+    case FONT_COURIER_18: return "Courier New-18:style=Regular";
+    case FONT_COURIER_18B: return "Courier New-18:style=Bold";
+    case FONT_COURIER_20: return "Courier New-20:style=Regular";
+    case FONT_COURIER_20B: return "Courier New-20:style=Bold";
+    
+    // Default to Times New Roman for test stub
+    default:                return "Times New Roman-24:style=Regular";
+    }
+}
+
 int GetTextWidth(const char* my_string, int len, int font_id)
 {
     FnTrace("GetTextWidth()");
     if (my_string == nullptr || len <= 0)
         return 0;
-    else if (FontInfo[font_id])
-        return XTextWidth(FontInfo[font_id], my_string, len);
+    
+    // Check if we have a valid font_id
+    if (font_id < 0 || font_id >= 80)  // Increased to accommodate new font families
+        font_id = FONT_DEFAULT;
+    
+    // If we have Xft fonts loaded and display is available, use Xft
+    if (FontInfo[font_id] && Dis)
+    {
+        // Use Xft for accurate text measurement
+        XGlyphInfo extents;
+        // FIXED: reinterpret_cast for Xft text width calculation in UI layout
+        // Part of font system migration from bitmapped to scalable Xft fonts
+        XftTextExtentsUtf8(Dis, FontInfo[font_id], reinterpret_cast<const unsigned char*>(my_string), len, &extents);
+        return extents.width;
+    }
     else
+    {
+        // Fall back to legacy calculation
         return FontWidth[font_id] * len;
+    }
 }
 
 unsigned long AddTimeOutFn(TimeOutFn fn, int timeint, void *client_data)

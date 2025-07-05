@@ -12,6 +12,7 @@
 #include "utility.hh"
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
+#include "font_ids.hh"
 
 
 /**** Globals ****/

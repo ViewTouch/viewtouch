@@ -356,6 +356,7 @@ SettingsZone::SettingsZone()
 {
     FnTrace("SettingsZone::SettingsZone()");
 
+    font        = FONT_TIMES_24B;  // Set appropriate font for settings UI
     form_header = 0;
     AddNewLine();
     AddTextField("Your Business Name", 32);

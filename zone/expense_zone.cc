@@ -31,7 +31,8 @@
 
 ExpenseZone::ExpenseZone()
 {
-    expense = nullptr;
+    font         = FONT_TIMES_24B;  // Set appropriate font for expense UI
+    expense      = nullptr;
     saved_expense = nullptr;
     show_expense = 0;
     // form_header defines the top of the space where the form fields will be drawn
