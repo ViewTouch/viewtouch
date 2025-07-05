@@ -29,6 +29,7 @@
 
 CDUZone::CDUZone()
 {
+    font         = FONT_DEJAVU_20B;  // Set appropriate font for CDU UI
     // form_header defines the top of the space where the form fields will be drawn
     form_header = -11;
     list_footer = 12;

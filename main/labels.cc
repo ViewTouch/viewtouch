@@ -26,88 +26,7 @@
 #include "drawer_zone.hh"
 #include "cdu.hh"
 
-// Font constants for the UI dropdown (matching term_view.hh)
-#define FONT_DEFAULT     0
-#define FONT_TIMES_20    4
-#define FONT_TIMES_24    5
-#define FONT_TIMES_34    6
-#define FONT_TIMES_20B   7
-#define FONT_TIMES_24B   8
-#define FONT_TIMES_34B   9
-#define FONT_TIMES_14    10
-#define FONT_TIMES_14B   11
-#define FONT_TIMES_18    12
-#define FONT_TIMES_18B   13
-#define FONT_COURIER_18  14
-#define FONT_COURIER_18B 15
-#define FONT_COURIER_20  16
-#define FONT_COURIER_20B 17
-
-// Modern POS Fonts - DejaVu Sans
-#define FONT_DEJAVU_14    18
-#define FONT_DEJAVU_16    19
-#define FONT_DEJAVU_18    20
-#define FONT_DEJAVU_20    21
-#define FONT_DEJAVU_24    22
-#define FONT_DEJAVU_28    23
-#define FONT_DEJAVU_14B   24
-#define FONT_DEJAVU_16B   25
-#define FONT_DEJAVU_18B   26
-#define FONT_DEJAVU_20B   27
-#define FONT_DEJAVU_24B   28
-#define FONT_DEJAVU_28B   29
-
-// Monospace Fonts
-#define FONT_MONO_14      30
-#define FONT_MONO_16      31
-#define FONT_MONO_18      32
-#define FONT_MONO_20      33
-#define FONT_MONO_24      34
-#define FONT_MONO_14B     35
-#define FONT_MONO_16B     36
-#define FONT_MONO_18B     37
-#define FONT_MONO_20B     38
-#define FONT_MONO_24B     39
-
-// Classic Serif Fonts - EB Garamond 8, Bookman, Nimbus Roman
-#define FONT_GARAMOND_14    40
-#define FONT_GARAMOND_16    41
-#define FONT_GARAMOND_18    42
-#define FONT_GARAMOND_20    43
-#define FONT_GARAMOND_24    44
-#define FONT_GARAMOND_28    45
-#define FONT_GARAMOND_14B   46
-#define FONT_GARAMOND_16B   47
-#define FONT_GARAMOND_18B   48
-#define FONT_GARAMOND_20B   49
-#define FONT_GARAMOND_24B   50
-#define FONT_GARAMOND_28B   51
-
-#define FONT_BOOKMAN_14     52
-#define FONT_BOOKMAN_16     53
-#define FONT_BOOKMAN_18     54
-#define FONT_BOOKMAN_20     55
-#define FONT_BOOKMAN_24     56
-#define FONT_BOOKMAN_28     57
-#define FONT_BOOKMAN_14B    58
-#define FONT_BOOKMAN_16B    59
-#define FONT_BOOKMAN_18B    60
-#define FONT_BOOKMAN_20B    61
-#define FONT_BOOKMAN_24B    62
-#define FONT_BOOKMAN_28B    63
-
-#define FONT_NIMBUS_14      64
-#define FONT_NIMBUS_16      65
-#define FONT_NIMBUS_18      66
-#define FONT_NIMBUS_20      67
-#define FONT_NIMBUS_24      68
-#define FONT_NIMBUS_28      69
-#define FONT_NIMBUS_14B     70
-#define FONT_NIMBUS_16B     71
-#define FONT_NIMBUS_18B     72
-#define FONT_NIMBUS_20B     73
-#define FONT_NIMBUS_24B     74
-#define FONT_NIMBUS_28B     75
+#include "font_ids.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -390,16 +309,16 @@ const genericChar* FontName[] = {
     "Monospace 20 Bold", "Monospace 24 Bold",
     
     // Premium serif fonts - Professional typography for menus and displays
-    "EB Garamond 14", "EB Garamond 18", "EB Garamond 24",
-    "EB Garamond 14 Bold", "EB Garamond 18 Bold", "EB Garamond 24 Bold",
+    "EB Garamond 14", "EB Garamond 16", "EB Garamond 18", "EB Garamond 20", "EB Garamond 24", "EB Garamond 28",
+    "EB Garamond 14 Bold", "EB Garamond 16 Bold", "EB Garamond 18 Bold", "EB Garamond 20 Bold", "EB Garamond 24 Bold", "EB Garamond 28 Bold",
     
     // Classic serif fonts - Traditional and elegant
-    "Bookman 14", "Bookman 18", "Bookman 24",
-    "Bookman 14 Bold", "Bookman 18 Bold", "Bookman 24 Bold",
+    "Bookman 14", "Bookman 16", "Bookman 18", "Bookman 20", "Bookman 24", "Bookman 28",
+    "Bookman 14 Bold", "Bookman 16 Bold", "Bookman 18 Bold", "Bookman 20 Bold", "Bookman 24 Bold", "Bookman 28 Bold",
     
     // Nimbus Roman - High-quality serif alternative
-    "Nimbus Roman 14", "Nimbus Roman 18", "Nimbus Roman 24",
-    "Nimbus Roman 14 Bold", "Nimbus Roman 18 Bold", "Nimbus Roman 24 Bold", nullptr};
+    "Nimbus Roman 14", "Nimbus Roman 16", "Nimbus Roman 18", "Nimbus Roman 20", "Nimbus Roman 24", "Nimbus Roman 28",
+    "Nimbus Roman 14 Bold", "Nimbus Roman 16 Bold", "Nimbus Roman 18 Bold", "Nimbus Roman 20 Bold", "Nimbus Roman 24 Bold", "Nimbus Roman 28 Bold", nullptr};
     
 int FontValue[] = {
     FONT_DEFAULT, 
@@ -423,16 +342,16 @@ int FontValue[] = {
     FONT_MONO_14B, FONT_MONO_16B, FONT_MONO_18B, FONT_MONO_20B, FONT_MONO_24B,
     
     // Premium serif fonts - Professional typography for menus and displays
-    FONT_GARAMOND_14, FONT_GARAMOND_18, FONT_GARAMOND_24,
-    FONT_GARAMOND_14B, FONT_GARAMOND_18B, FONT_GARAMOND_24B,
+    FONT_GARAMOND_14, FONT_GARAMOND_16, FONT_GARAMOND_18, FONT_GARAMOND_20, FONT_GARAMOND_24, FONT_GARAMOND_28,
+    FONT_GARAMOND_14B, FONT_GARAMOND_16B, FONT_GARAMOND_18B, FONT_GARAMOND_20B, FONT_GARAMOND_24B, FONT_GARAMOND_28B,
     
     // Classic serif fonts - Traditional and elegant
-    FONT_BOOKMAN_14, FONT_BOOKMAN_18, FONT_BOOKMAN_24,
-    FONT_BOOKMAN_14B, FONT_BOOKMAN_18B, FONT_BOOKMAN_24B,
+    FONT_BOOKMAN_14, FONT_BOOKMAN_16, FONT_BOOKMAN_18, FONT_BOOKMAN_20, FONT_BOOKMAN_24, FONT_BOOKMAN_28,
+    FONT_BOOKMAN_14B, FONT_BOOKMAN_16B, FONT_BOOKMAN_18B, FONT_BOOKMAN_20B, FONT_BOOKMAN_24B, FONT_BOOKMAN_28B,
     
     // Nimbus Roman - High-quality serif alternative
-    FONT_NIMBUS_14, FONT_NIMBUS_18, FONT_NIMBUS_24,
-    FONT_NIMBUS_14B, FONT_NIMBUS_18B, FONT_NIMBUS_24B, -1};
+    FONT_NIMBUS_14, FONT_NIMBUS_16, FONT_NIMBUS_18, FONT_NIMBUS_20, FONT_NIMBUS_24, FONT_NIMBUS_28,
+    FONT_NIMBUS_14B, FONT_NIMBUS_16B, FONT_NIMBUS_18B, FONT_NIMBUS_20B, FONT_NIMBUS_24B, FONT_NIMBUS_28B, -1};
 
 const genericChar* IndexName[] = {
     "General", "Breakfast", "Brunch", "Lunch",

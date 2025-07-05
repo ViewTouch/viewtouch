@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Table Merge Confirmation Dialog**: Added safety confirmation when merging tables with existing tickets
+  - Added confirmation dialog asking "Are you sure you want to merge tables?" with Yes/No options
+  - Prevents accidental table merges that could result in data loss or confusion
+  - If user selects "No", the merge operation is canceled and tables remain separate
+  - If user selects "Yes", tables are merged as before with proper ticket consolidation
+  - Enhanced user experience by providing clear feedback before destructive operations
 - **Additional XPM Texture Options**: Added 12 new texture options to enhance UI customization
   - Added 4color.png, brass-8.xpm, concrete-8.xpm, copper-8.xpm, demo-converted.xpm, glass-8.xpm, metal-8.xpm, plastic-8.xpm, silk-8.xpm, steel-8.xpm, stone-8.xpm, velvet-8.xpm
   - Enhanced texture variety for improved visual customization of the interface
@@ -31,7 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Interactive `font_check` utility: visually and programmatically verifies all program fonts, displaying each font in an X11 window and logging results to the terminal.
 
 ### Changed
-- cmake: `gen_compiler_tag`: handle Clang compiler to contain compiler version #163
+- All system and button fonts now use **EB Garamond 14 Bold** (`FONT_GARAMOND_14B`) as the global default for a more elegant and professional UI.
+- It is **recommended** to use EB Garamond 14 Bold, or any other 14 Bold font, for the best UI appearance and consistency across all zones and dialogs.
 - **Font System Migration**: Migrated from legacy bitmapped fonts to scalable Xft outline fonts for improved rendering quality and resolution independence
   - Core text rendering in `term/layer.cc` now uses XftTextExtentsUtf8 and XftDrawStringUtf8 for scalable font measurement and rendering
   - Terminal initialization in `term/term_view.cc` loads scalable fonts via XftFontOpenName with fallback support
@@ -188,3 +195,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Fallback Support**: Added robust font loading with fallback to system fonts when bundled fonts are unavailable
 - update embedded `
 - **Edit Toolbar Button Scaling**: All edit toolbar buttons now scale to fill the toolbar width, use FONT_TIMES_14 for consistent appearance, and text fits cleanly without awkward wrapping for a more professional look.
+- Improved Job Authorization UI: Permission boxes are now smaller, the job label column is narrower, and permission headers are perfectly aligned with their boxes for better readability and usability. (2024-07-05)

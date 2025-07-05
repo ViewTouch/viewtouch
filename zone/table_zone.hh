@@ -95,10 +95,12 @@ public:
     int          Type() { return ZONE_TABLE; }
     Zone        *Copy();
     RenderResult Render(Terminal *t, int update_flag);
+    SignalResult Signal(Terminal *t, const genericChar* message);
     SignalResult Touch(Terminal *t, int tx, int ty);
     int          Update(Terminal *t, int update_message, const genericChar* value);
     int         *CustomerType() { return &customer_type; }
     Check       *GetCheck()     { return check; }
+    void         SetCheck(Check *c) { check = c; }
 };
 
 class GuestCountZone : public LayoutZone

@@ -23,6 +23,7 @@
 
 #include "utility.hh"
 #include "list_utility.hh"
+#include "font_ids.hh"
 #include <string>
 
 #define MASTER_USER_DB       "employee.dat"

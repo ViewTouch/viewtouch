@@ -22,7 +22,6 @@
 #include "manager.hh"
 #include "system.hh"
 #include "check.hh"
-#include "sales.hh"
 #include "pos_zone.hh"
 #include "terminal.hh"
 #include "printer.hh"
@@ -39,71 +38,7 @@
 #include "socket.hh"
 #include "version/vt_version_info.hh"
 
-// Modern POS font constants - define locally to avoid header conflicts
-#define FONT_DEJAVU_14    20
-#define FONT_DEJAVU_16    21
-#define FONT_DEJAVU_18    22
-#define FONT_DEJAVU_20    23
-#define FONT_DEJAVU_24    24
-#define FONT_DEJAVU_28    25
-#define FONT_DEJAVU_14B   26
-#define FONT_DEJAVU_16B   27
-#define FONT_DEJAVU_18B   28
-#define FONT_DEJAVU_20B   29
-#define FONT_DEJAVU_24B   30
-#define FONT_DEJAVU_28B   31
-
-// Monospace fonts for prices and data alignment
-#define FONT_MONO_14      32
-#define FONT_MONO_16      33
-#define FONT_MONO_18      34
-#define FONT_MONO_20      35
-#define FONT_MONO_24      36
-#define FONT_MONO_14B     37
-#define FONT_MONO_16B     38
-#define FONT_MONO_18B     39
-#define FONT_MONO_20B     40
-#define FONT_MONO_24B     41
-
-// Classic Serif Fonts - EB Garamond 8, Bookman, Nimbus Roman
-#define FONT_GARAMOND_14    42
-#define FONT_GARAMOND_16    43
-#define FONT_GARAMOND_18    44
-#define FONT_GARAMOND_20    45
-#define FONT_GARAMOND_24    46
-#define FONT_GARAMOND_28    47
-#define FONT_GARAMOND_14B   48
-#define FONT_GARAMOND_16B   49
-#define FONT_GARAMOND_18B   50
-#define FONT_GARAMOND_20B   51
-#define FONT_GARAMOND_24B   52
-#define FONT_GARAMOND_28B   53
-
-#define FONT_BOOKMAN_14     54
-#define FONT_BOOKMAN_16     55
-#define FONT_BOOKMAN_18     56
-#define FONT_BOOKMAN_20     57
-#define FONT_BOOKMAN_24     58
-#define FONT_BOOKMAN_28     59
-#define FONT_BOOKMAN_14B    60
-#define FONT_BOOKMAN_16B    61
-#define FONT_BOOKMAN_18B    62
-#define FONT_BOOKMAN_20B    63
-#define FONT_BOOKMAN_24B    64
-#define FONT_BOOKMAN_28B    65
-
-#define FONT_NIMBUS_14      66
-#define FONT_NIMBUS_16      67
-#define FONT_NIMBUS_18      68
-#define FONT_NIMBUS_20      69
-#define FONT_NIMBUS_24      70
-#define FONT_NIMBUS_28      71
-#define FONT_NIMBUS_14B     72
-#define FONT_NIMBUS_16B     73
-#define FONT_NIMBUS_18B     74
-#define FONT_NIMBUS_20B     75
-#define FONT_NIMBUS_24B     76
-#define FONT_NIMBUS_28B     77
+// Font constants are now centralized in font_ids.hh - removed local definitions
 
 #include "conf_file.hh"
 #include "date/date.h"      // helper library to output date strings with std::chrono
@@ -757,7 +692,7 @@ int StartSystem(int my_use_net)
     App = XtCreateApplicationContext();
 
     // Set up local fonts (only used for formating info)
-    for (i = 0; i < 32; ++i)
+    for (i = 0; i < 80; ++i)  // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
     {
         FontInfo[i]   = nullptr;
         FontWidth[i]  = 0;
@@ -779,6 +714,7 @@ int StartSystem(int my_use_net)
     Dis = XtOpenDisplay(App, displaystr, nullptr, nullptr, nullptr, 0, &argc, (genericChar**)argv);
     if (Dis)
     {
+        // Load legacy fonts from FontData array
         for (i = 0; i < FONT_COUNT; ++i)
         {
             int f = FontData[i].id;
@@ -791,6 +727,36 @@ int StartSystem(int my_use_net)
                 ReportError(str);
             }
         }
+        
+        // Load new font families (Garamond, Bookman, Nimbus) - consistent with terminal
+        int new_font_ids[] = {
+            FONT_GARAMOND_14, FONT_GARAMOND_16, FONT_GARAMOND_18, FONT_GARAMOND_20, FONT_GARAMOND_24, FONT_GARAMOND_28,
+            FONT_GARAMOND_14B, FONT_GARAMOND_16B, FONT_GARAMOND_18B, FONT_GARAMOND_20B, FONT_GARAMOND_24B, FONT_GARAMOND_28B,
+            FONT_BOOKMAN_14, FONT_BOOKMAN_16, FONT_BOOKMAN_18, FONT_BOOKMAN_20, FONT_BOOKMAN_24, FONT_BOOKMAN_28,
+            FONT_BOOKMAN_14B, FONT_BOOKMAN_16B, FONT_BOOKMAN_18B, FONT_BOOKMAN_20B, FONT_BOOKMAN_24B, FONT_BOOKMAN_28B,
+            FONT_NIMBUS_14, FONT_NIMBUS_16, FONT_NIMBUS_18, FONT_NIMBUS_20, FONT_NIMBUS_24, FONT_NIMBUS_28,
+            FONT_NIMBUS_14B, FONT_NIMBUS_16B, FONT_NIMBUS_18B, FONT_NIMBUS_20B, FONT_NIMBUS_24B, FONT_NIMBUS_28B
+        };
+        
+        for (i = 0; i < sizeof(new_font_ids)/sizeof(new_font_ids[0]); ++i)
+        {
+            int f = new_font_ids[i];
+            const char* scalable_font_name = GetScalableFontName(f);
+            FontInfo[f] = XftFontOpenName(Dis, DefaultScreen(Dis), scalable_font_name);
+            if (FontInfo[f] == nullptr)
+            {
+                // Fallback to default font if new font fails
+                snprintf(str, sizeof(str), "Warning: Could not load new font '%s', falling back to default", scalable_font_name);
+                ReportError(str);
+                FontInfo[f] = XftFontOpenName(Dis, DefaultScreen(Dis), GetScalableFontName(FONT_TIMES_24));
+                if (FontInfo[f] == nullptr)
+                {
+                    snprintf(str, sizeof(str), "Can't load fallback font '%s'", GetScalableFontName(FONT_TIMES_24));
+                    ReportError(str);
+                }
+            }
+        }
+        
         FontInfo[FONT_DEFAULT] = FontInfo[FONT_TIMES_24];
     }
 
@@ -3097,7 +3063,7 @@ int GetFontSize(int font_id, int &w, int &h)
     FnTrace("GetFontSize()");
     
     // Check if we have a valid font_id
-    if (font_id < 0 || font_id >= 32)
+    if (font_id < 0 || font_id >= 80)  // Increased to accommodate new font families
     {
         w = FontWidth[FONT_DEFAULT];
         h = FontHeight[FONT_DEFAULT];
@@ -3127,7 +3093,7 @@ int GetTextWidth(const char* my_string, int len, int font_id)
         return 0;
     
     // Check if we have a valid font_id
-    if (font_id < 0 || font_id >= 32)
+    if (font_id < 0 || font_id >= 80)  // Increased to accommodate new font families
         font_id = FONT_DEFAULT;
     
     // If we have Xft fonts loaded and display is available, use Xft

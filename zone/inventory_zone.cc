@@ -520,12 +520,12 @@ int RC_Part::Render(Terminal *t)
     int font, yy;
     if (h > 35)
     {
-        font = FONT_TIMES_24;
+        font = FONT_GARAMOND_14B;
         yy   = y + ((h - 25) / 2);
     }
     else
     {
-        font = FONT_TIMES_20;
+        font = FONT_GARAMOND_14B;
         yy   = y + ((h - 20) / 2);
     }
 

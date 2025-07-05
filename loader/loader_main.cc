@@ -50,7 +50,8 @@
 /**** Defintions ****/
 const std::string SOCKET_FILE = "/tmp/vt_main";
 const std::string COMMAND_FILE = VIEWTOUCH_PATH "/bin/.vtpos_command";
-constexpr const char *FONT_NAME  = "utopia,serif-14:style=regular:dpi=100";
+// Use consistent font loading with the rest of the system
+constexpr const char *FONT_NAME  = "Times New Roman-14:style=Regular";
 constexpr size_t WIN_WIDTH  = 640;
 constexpr size_t WIN_HEIGHT = 240;
 

@@ -41,12 +41,13 @@ extern int AdjustPeriod(TimeInfo &ref, int period, int adjust);
 // Constructor
 LaborZone::LaborZone()
 {
-    report   = nullptr;
-    period   = nullptr;
-    work     = nullptr;
-    page     = 0;
-    day_view = 1;
-    spacing  = 1.0;
+    font        = FONT_DEJAVU_20B;  // Set appropriate font for labor UI
+    report      = nullptr;
+    period      = nullptr;
+    work        = nullptr;
+    page        = 0;
+    day_view    = 1;
+    spacing     = 1.0;
 
     no_line      = 1;
     form_header  = -3;
@@ -608,7 +609,7 @@ RenderResult ScheduleZone::Render(Terminal *term, int update_flag)
         term->RenderVLine(cx, y + border + font_height, h - border*2 - font_height,
                        COLOR_BLACK);
         term->RenderText(HourName[hour], cx, y + border, COLOR_BLACK,
-                      FONT_TIMES_20, ALIGN_CENTER);
+                      FONT_DEJAVU_18, ALIGN_CENTER);
         ++hour;
         if (hour >= 24)
             hour = 0;
@@ -621,7 +622,7 @@ RenderResult ScheduleZone::Render(Terminal *term, int update_flag)
         {
             cy = top_margin + y + ((ch * no) / users) + (ch / (users *2));
             term->RenderText(employee->system_name.Value(), x + border*2, cy,
-                          color[0], FONT_TIMES_20);
+                          color[0], FONT_DEJAVU_18);
             ++no;
         }
     }
