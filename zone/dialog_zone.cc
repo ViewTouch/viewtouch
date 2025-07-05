@@ -79,7 +79,7 @@ MessageDialog::MessageDialog(const char* text)
     color[0]   = COLOR_BLACK;
     frame[0]   = ZF_RAISED;
     texture[0] = IMAGE_LITE_WOOD;
-    font       = FONT_TIMES_24B; // Changed from FONT_TIMES_34 - temporary fix for oversized dialog text
+    font       = FONT_DEJAVU_20B; // Modern dialog font for better readability
     shadow     = 16;
     h          = 360;
     w          = 600;
@@ -99,7 +99,7 @@ ButtonObj::ButtonObj(const char* text, const genericChar* msg)
         message.Set(msg);
     else
         message.Set(text);
-    font = FONT_TIMES_24B;
+    font = FONT_DEJAVU_20B;
 }
 
 int ButtonObj::Render(Terminal *term)
@@ -127,7 +127,7 @@ DialogZone::DialogZone()
     color[0]   = COLOR_BLACK;
     frame[0]   = ZF_RAISED;
     texture[0] = IMAGE_LITE_WOOD;
-    font       = FONT_TIMES_24B; // Changed from FONT_TIMES_34 - temporary fix for oversized dialog text
+    font       = FONT_DEJAVU_20B; // Modern dialog font for better readability
     shadow     = 16;
 }
 
@@ -280,7 +280,7 @@ SimpleDialog::SimpleDialog(const char* title, int form)
     format = form;
     name.Set(title);
     gap = 8;
-    zofont = FONT_TIMES_24B;
+    zofont = FONT_DEJAVU_20B;
     // the following variables are only used for format > 0
     head_height = 200;
     btn_height  = 92;  // not used for format == 2
@@ -304,18 +304,18 @@ int SimpleDialog::RenderInit(Terminal *term, int update_flag)
 
         // set up sizes based on the number of buttons
         if ( bcount < 3 )
-            zofont = FONT_TIMES_24B; // Changed from FONT_TIMES_34B - temporary fix for oversized dialog text
+            zofont = FONT_DEJAVU_20B; // Modern dialog font for better readability
         else if ( bcount < 7 )
-            zofont = FONT_TIMES_24B;
+            zofont = FONT_DEJAVU_20B;
         else if ( bcount < 11 )
         {
-            zofont = FONT_TIMES_20B;
+            zofont = FONT_DEJAVU_18B;
             head_height = 100;
             btn_height = 72;
         }
         else
         {
-            zofont = FONT_TIMES_18B;
+            zofont = FONT_DEJAVU_16B;
             head_height = 50;
             btn_height = 50;
         }
@@ -1651,7 +1651,7 @@ RenderResult CreditCardEntryDialog::Render(Terminal *term, int update_flag)
     FnTrace("CreditCardEntryDialog::Render()");
     RenderResult retval = RENDER_OKAY;
 
-    font       = FONT_TIMES_24B; // Changed from FONT_TIMES_34 - temporary fix for oversized dialog text
+    font       = FONT_DEJAVU_20B; // Modern dialog font for better readability
     retval = TenKeyDialog::Render(term, update_flag);
 
     return retval;
@@ -2204,7 +2204,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
     {
         status = term->credit->Status();
 
-        font = FONT_TIMES_24;
+        font = FONT_DEJAVU_20;
         snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Card Number"),
                  term->credit->PAN(settings->show_entire_cc_num));
         TextC(term, line, str, color_text);
@@ -3191,8 +3191,8 @@ OpenTabDialog::OpenTabDialog(CustomerInfo *custinfo)
 {
     FnTrace("OpenTabDialog::OpenTabDialog()");
 
-    main_font = FONT_TIMES_24B; // Changed from FONT_TIMES_34 - temporary fix for oversized dialog text
-    entry_font = FONT_TIMES_24B;
+    main_font = FONT_DEJAVU_20B; // Modern dialog font for better readability
+    entry_font = FONT_DEJAVU_20B;
 
     customer = custinfo;
     h = 750;

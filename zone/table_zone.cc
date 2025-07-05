@@ -75,7 +75,7 @@ RoomDialog::RoomDialog()
 {
     FnTrace("RoomDialog::RoomDialog()");
 
-    font = FONT_TIMES_24;
+    font = FONT_GARAMOND_14B;
     AddTextField("Last Name", 32);
     AddTextField("First Name", 32);
     AddTextField("Company", 32);
@@ -417,7 +417,7 @@ int RoomDialog::ParseSwipe(Terminal *term, const genericChar* value)
  ********************************************************************/
 CustomerInfoZone::CustomerInfoZone()
 {
-    font        = FONT_TIMES_24;
+    font        = FONT_DEJAVU_20;
     customer    = nullptr;
     my_update   = 1;
     form_header = 0.65;

@@ -36,6 +36,7 @@
 // Constructor
 UserEditZone::UserEditZone()
 {
+    font = FONT_GARAMOND_14B;  // Use global default button font
     list_header = 2;
     AddTextField("User ID", 9); SetFlag(FF_ONLYDIGITS);
     AddTextField("Nickname", 10);

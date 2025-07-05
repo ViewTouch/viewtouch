@@ -43,7 +43,7 @@ static int LanguageValue[] = {
 // Constructor
 MerchantZone::MerchantZone()
 {
-    font = FONT_TIMES_24B;  // Set appropriate font for merchant UI
+    font = FONT_GARAMOND_14B;  // Use global default button font
     AddTextField("Acquirer BIN", 6);
     AddTextField("Merchant Number", 12);
     AddTextField("Store Number", 4);

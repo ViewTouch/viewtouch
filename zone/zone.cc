@@ -48,7 +48,7 @@ Zone::Zone()
     group_id   = 0;
     shadow     = 4;
     behave     = BEHAVE_DOUBLE;
-    font       = FONT_TIMES_14;
+    font       = FONT_DEJAVU_18;
     frame[0]   = ZF_RAISED;
     frame[1]   = ZF_RAISED;
     frame[2]   = ZF_RAISED;
@@ -1006,7 +1006,7 @@ ZoneDB::ZoneDB()
     table_pages = 0;
 
     // Defaults
-    default_font       = FONT_TIMES_24B; // Changed from FONT_TIMES_24 - Global Button Font changed to Times 24 Bold
+    default_font       = FONT_GARAMOND_14B; // Global system button font set to EB Garamond 14 Bold
     default_frame[0]   = ZF_RAISED;
     default_texture[0] = IMAGE_SAND;
     default_color[0]   = COLOR_BLACK;

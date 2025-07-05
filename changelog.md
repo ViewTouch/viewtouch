@@ -37,7 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Interactive `font_check` utility: visually and programmatically verifies all program fonts, displaying each font in an X11 window and logging results to the terminal.
 
 ### Changed
-- cmake: `gen_compiler_tag`: handle Clang compiler to contain compiler version #163
+- All system and button fonts now use **EB Garamond 14 Bold** (`FONT_GARAMOND_14B`) as the global default for a more elegant and professional UI.
+- It is **recommended** to use EB Garamond 14 Bold, or any other 14 Bold font, for the best UI appearance and consistency across all zones and dialogs.
 - **Font System Migration**: Migrated from legacy bitmapped fonts to scalable Xft outline fonts for improved rendering quality and resolution independence
   - Core text rendering in `term/layer.cc` now uses XftTextExtentsUtf8 and XftDrawStringUtf8 for scalable font measurement and rendering
   - Terminal initialization in `term/term_view.cc` loads scalable fonts via XftFontOpenName with fallback support

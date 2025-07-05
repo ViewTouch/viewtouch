@@ -16,12 +16,12 @@ const char* FontName[] = {
     "DejaVu Sans 20 Bold", "DejaVu Sans 24 Bold", "DejaVu Sans 28 Bold",
     "Monospace 14", "Monospace 16", "Monospace 18", "Monospace 20", "Monospace 24",
     "Monospace 14 Bold", "Monospace 16 Bold", "Monospace 18 Bold", "Monospace 20 Bold", "Monospace 24 Bold",
-    "EB Garamond 14", "EB Garamond 18", "EB Garamond 24",
-    "EB Garamond 14 Bold", "EB Garamond 18 Bold", "EB Garamond 24 Bold",
-    "Bookman 14", "Bookman 18", "Bookman 24",
-    "Bookman 14 Bold", "Bookman 18 Bold", "Bookman 24 Bold",
-    "Nimbus Roman 14", "Nimbus Roman 18", "Nimbus Roman 24",
-    "Nimbus Roman 14 Bold", "Nimbus Roman 18 Bold", "Nimbus Roman 24 Bold", nullptr
+    "EB Garamond 14", "EB Garamond 16", "EB Garamond 18", "EB Garamond 20", "EB Garamond 24", "EB Garamond 28",
+    "EB Garamond 14 Bold", "EB Garamond 16 Bold", "EB Garamond 18 Bold", "EB Garamond 20 Bold", "EB Garamond 24 Bold", "EB Garamond 28 Bold",
+    "Bookman 14", "Bookman 16", "Bookman 18", "Bookman 20", "Bookman 24", "Bookman 28",
+    "Bookman 14 Bold", "Bookman 16 Bold", "Bookman 18 Bold", "Bookman 20 Bold", "Bookman 24 Bold", "Bookman 28 Bold",
+    "Nimbus Roman 14", "Nimbus Roman 16", "Nimbus Roman 18", "Nimbus Roman 20", "Nimbus Roman 24", "Nimbus Roman 28",
+    "Nimbus Roman 14 Bold", "Nimbus Roman 16 Bold", "Nimbus Roman 18 Bold", "Nimbus Roman 20 Bold", "Nimbus Roman 24 Bold", "Nimbus Roman 28 Bold", nullptr
 };
 
 const int FontValue[] = {
@@ -30,9 +30,9 @@ const int FontValue[] = {
     14, 15, 16, 17,
     18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
     30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
-    40, 42, 44, 46, 48, 50,
-    52, 54, 56, 58, 60, 62,
-    64, 66, 68, 70, 72, 74, -1
+    40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+    64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, -1
 };
 
 // GetScalableFontName (from main/manager.cc)
@@ -75,23 +75,41 @@ const char* GetScalableFontName(int font_id) {
     case 38:  return "DejaVu Sans Mono-20:style=Bold";
     case 39:  return "DejaVu Sans Mono-24:style=Bold";
     case 40:  return "EB Garamond-14:style=Regular";
+    case 41:  return "EB Garamond-16:style=Regular";
     case 42:  return "EB Garamond-18:style=Regular";
+    case 43:  return "EB Garamond-20:style=Regular";
     case 44:  return "EB Garamond-24:style=Regular";
+    case 45:  return "EB Garamond-28:style=Regular";
     case 46:  return "EB Garamond-14:style=Bold";
+    case 47:  return "EB Garamond-16:style=Bold";
     case 48:  return "EB Garamond-18:style=Bold";
+    case 49:  return "EB Garamond-20:style=Bold";
     case 50:  return "EB Garamond-24:style=Bold";
+    case 51:  return "EB Garamond-28:style=Bold";
     case 52:  return "URW Bookman-14:style=Light";
+    case 53:  return "URW Bookman-16:style=Light";
     case 54:  return "URW Bookman-18:style=Light";
+    case 55:  return "URW Bookman-20:style=Light";
     case 56:  return "URW Bookman-24:style=Light";
+    case 57:  return "URW Bookman-28:style=Light";
     case 58:  return "URW Bookman-14:style=Demi";
+    case 59:  return "URW Bookman-16:style=Demi";
     case 60:  return "URW Bookman-18:style=Demi";
+    case 61:  return "URW Bookman-20:style=Demi";
     case 62:  return "URW Bookman-24:style=Demi";
+    case 63:  return "URW Bookman-28:style=Demi";
     case 64:  return "Nimbus Roman-14:style=Regular";
+    case 65:  return "Nimbus Roman-16:style=Regular";
     case 66:  return "Nimbus Roman-18:style=Regular";
+    case 67:  return "Nimbus Roman-20:style=Regular";
     case 68:  return "Nimbus Roman-24:style=Regular";
+    case 69:  return "Nimbus Roman-28:style=Regular";
     case 70:  return "Nimbus Roman-14:style=Bold";
+    case 71:  return "Nimbus Roman-16:style=Bold";
     case 72:  return "Nimbus Roman-18:style=Bold";
+    case 73:  return "Nimbus Roman-20:style=Bold";
     case 74:  return "Nimbus Roman-24:style=Bold";
+    case 75:  return "Nimbus Roman-28:style=Bold";
     default:  return "DejaVu Sans-18:style=Book";
     }
 }

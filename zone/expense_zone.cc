@@ -31,7 +31,7 @@
 
 ExpenseZone::ExpenseZone()
 {
-    font         = FONT_TIMES_24B;  // Set appropriate font for expense UI
+    font         = FONT_DEJAVU_20B;  // Set appropriate font for expense UI
     expense      = nullptr;
     saved_expense = nullptr;
     show_expense = 0;

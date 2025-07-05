@@ -38,71 +38,7 @@
 #include "socket.hh"
 #include "version/vt_version_info.hh"
 
-// Modern POS font constants - define locally to avoid header conflicts
-#define FONT_DEJAVU_14    20
-#define FONT_DEJAVU_16    21
-#define FONT_DEJAVU_18    22
-#define FONT_DEJAVU_20    23
-#define FONT_DEJAVU_24    24
-#define FONT_DEJAVU_28    25
-#define FONT_DEJAVU_14B   26
-#define FONT_DEJAVU_16B   27
-#define FONT_DEJAVU_18B   28
-#define FONT_DEJAVU_20B   29
-#define FONT_DEJAVU_24B   30
-#define FONT_DEJAVU_28B   31
-
-// Monospace fonts for prices and data alignment
-#define FONT_MONO_14      32
-#define FONT_MONO_16      33
-#define FONT_MONO_18      34
-#define FONT_MONO_20      35
-#define FONT_MONO_24      36
-#define FONT_MONO_14B     37
-#define FONT_MONO_16B     38
-#define FONT_MONO_18B     39
-#define FONT_MONO_20B     40
-#define FONT_MONO_24B     41
-
-// Classic Serif Fonts - EB Garamond 8, Bookman, Nimbus Roman
-#define FONT_GARAMOND_14    42
-#define FONT_GARAMOND_16    43
-#define FONT_GARAMOND_18    44
-#define FONT_GARAMOND_20    45
-#define FONT_GARAMOND_24    46
-#define FONT_GARAMOND_28    47
-#define FONT_GARAMOND_14B   48
-#define FONT_GARAMOND_16B   49
-#define FONT_GARAMOND_18B   50
-#define FONT_GARAMOND_20B   51
-#define FONT_GARAMOND_24B   52
-#define FONT_GARAMOND_28B   53
-
-#define FONT_BOOKMAN_14     54
-#define FONT_BOOKMAN_16     55
-#define FONT_BOOKMAN_18     56
-#define FONT_BOOKMAN_20     57
-#define FONT_BOOKMAN_24     58
-#define FONT_BOOKMAN_28     59
-#define FONT_BOOKMAN_14B    60
-#define FONT_BOOKMAN_16B    61
-#define FONT_BOOKMAN_18B    62
-#define FONT_BOOKMAN_20B    63
-#define FONT_BOOKMAN_24B    64
-#define FONT_BOOKMAN_28B    65
-
-#define FONT_NIMBUS_14      66
-#define FONT_NIMBUS_16      67
-#define FONT_NIMBUS_18      68
-#define FONT_NIMBUS_20      69
-#define FONT_NIMBUS_24      70
-#define FONT_NIMBUS_28      71
-#define FONT_NIMBUS_14B     72
-#define FONT_NIMBUS_16B     73
-#define FONT_NIMBUS_18B     74
-#define FONT_NIMBUS_20B     75
-#define FONT_NIMBUS_24B     76
-#define FONT_NIMBUS_28B     77
+// Font constants are now centralized in font_ids.hh - removed local definitions
 
 #include "conf_file.hh"
 #include "date/date.h"      // helper library to output date strings with std::chrono
