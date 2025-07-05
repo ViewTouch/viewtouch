@@ -1195,21 +1195,13 @@ SignalResult TableZone::Touch(Terminal *term, int tx, int ty)
         if (check)
         {
             // Merge checks - there's already a check at this table
-            Settings *settings = term->GetSettings();
-            if (check->MergeWithCheck(term->check, settings) == 0)
-            {
-                // Successfully merged, now destroy the source check
-                term->system_data->DestroyCheck(term->check);
-                term->check = check;  // Set the merged check as current
-                term->move_check = 0;
-                term->UpdateAllTerms(UPDATE_ALL_TABLES | UPDATE_CHECKS, nullptr);
-                return SIGNAL_OKAY;
-            }
-            else
-            {
-                // Merge failed, don't do anything
-                return SIGNAL_OKAY;
-            }
+            // Show confirmation dialog before merging
+            SimpleDialog *d = new SimpleDialog("Are you sure you want to merge tables?");
+            d->Button("Yes", "merge_tables");
+            d->Button("No", "cancel_merge");
+            d->target_zone = this;
+            term->OpenDialog(d);
+            return SIGNAL_OKAY;
         }
 
         // move check to this table & update
@@ -1254,6 +1246,38 @@ SignalResult TableZone::Touch(Terminal *term, int tx, int ty)
         }
     }
     return SIGNAL_OKAY;
+}
+
+SignalResult TableZone::Signal(Terminal *term, const genericChar* message)
+{
+    FnTrace("TableZone::Signal()");
+    static const genericChar* commands[] = {
+        "merge_tables", "cancel_merge", nullptr};
+
+    int idx = CompareList(message, commands);
+    switch (idx)
+    {
+    case 0:  // merge_tables
+        if (check && term->check && term->move_check)
+        {
+            Settings *settings = term->GetSettings();
+            if (check->MergeWithCheck(term->check, settings) == 0)
+            {
+                // Successfully merged, now destroy the source check
+                term->system_data->DestroyCheck(term->check);
+                term->check = check;  // Set the merged check as current
+                term->move_check = 0;
+                term->UpdateAllTerms(UPDATE_ALL_TABLES | UPDATE_CHECKS, nullptr);
+            }
+        }
+        return SIGNAL_OKAY;
+    case 1:  // cancel_merge
+        // Just cancel the move operation
+        term->move_check = 0;
+        term->Update(UPDATE_ALL_TABLES, nullptr);
+        return SIGNAL_OKAY;
+    }
+    return SIGNAL_IGNORED;
 }
 
 int TableZone::Update(Terminal *term, int update_message, const genericChar* value)

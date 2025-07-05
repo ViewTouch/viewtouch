@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Table Merge Confirmation Dialog**: Added safety confirmation when merging tables with existing tickets
+  - Added confirmation dialog asking "Are you sure you want to merge tables?" with Yes/No options
+  - Prevents accidental table merges that could result in data loss or confusion
+  - If user selects "No", the merge operation is canceled and tables remain separate
+  - If user selects "Yes", tables are merged as before with proper ticket consolidation
+  - Enhanced user experience by providing clear feedback before destructive operations
 - **Additional XPM Texture Options**: Added 12 new texture options to enhance UI customization
   - Added 4color.png, brass-8.xpm, concrete-8.xpm, copper-8.xpm, demo-converted.xpm, glass-8.xpm, metal-8.xpm, plastic-8.xpm, silk-8.xpm, steel-8.xpm, stone-8.xpm, velvet-8.xpm
   - Enhanced texture variety for improved visual customization of the interface
