@@ -1,31 +1,395 @@
-Account Type:  Type de compte
-Approval:  Approuv�e
-Card Number:  Nombre de carte
-Date:  Date
-Time:  Heure
-Date/Time:  Date/Heure
-Author. \#:  \# Autor.
-Cardholder Signature:  Signature De D�tenteur De Carte
-Purchase:  Achat
-Refund:  Remise d'Achat
-Purchase Correction:  Correction d'Achat
-Refund Correction:  Correction Remise d'Achat
-Pre-authorization:  Pre-Autorisation
-Pre-Authorization:  Pre-Autorisation
-Pre-auth Completion:  Avis d'Achat
-Pre-Auth Completion:  Avis d'Achat
-Pre-Auth Advice:  Avis d'Achat
-Reference Number:  \# Reference
-Authorization Number:  Autor
-Transaction Type:  Type De Transaction
-Amount:  Montant
-Tip:  Pourboire
-Total:  Total
-Customer Agreement 1:  Le Titulaire versera ce montant a
-Customer Agreement 2:  L'emmetteur conformement au
-Customer Agreement 3:  contrat adherent.
-==== TRANSACTION RECORD ====:  ==== RELEVE DE TRANSACTION ====
-Checking:  Cheque
-Chequing:  Cheque
-Savings:  Epargne
-Debit Card Number:  Debit N. De Carte
+# ViewTouch French Translation File
+# Format: key: value
+
+# Common Dialog Buttons
+Yes: Oui
+No: Non
+Okay: D'accord
+Cancel: Annuler
+Enter: Entrer
+Clear: Effacer
+Space: Espace
+Back Space: Retour Arrière
+Print: Imprimer
+Quit ViewTouch and Return To The Desktop: Quitter ViewTouch et Retourner au Bureau
+Refresh ViewTouch: Actualiser ViewTouch
+Don't Quit or Refresh: Ne Pas Quitter ou Actualiser
+
+# Credit Card Dialog Buttons
+Authorize: Autoriser
+Add Tip: Ajouter Pourboire
+Void: Annuler
+Refund: Rembourser
+Undo Refund: Annuler Remboursement
+Manual Entry: Saisie Manuelle
+Done: Terminé
+Credit: Crédit
+Debit: Débit
+Swipe: Glisser
+Voice Authorization: Autorisation Vocale
+New Card: Nouvelle Carte
+
+# Payment Dialog Buttons
+Credit Card: Carte de Crédit
+SubCheck: Sous-Chèque
+Hold Anyway: Maintenir Quand Même
+Finalize Anyway: Finaliser Quand Même
+End Without Settlement: Terminer Sans Règlement
+End the Day Now: Terminer la Journée Maintenant
+Cancel,\\Don't end the Day: Annuler,\\Ne pas terminer la Journée
+
+# Settings Form Fields
+Your Business Name: Nom de Votre Entreprise
+Address: Adresse
+City State Zip Code: Ville État Code Postal
+Country Code: Code Pays
+Location Code: Code Emplacement
+Set the Life of the Logon ID (Up to 999 seconds): Définir la Durée de Vie de l'ID de Connexion (Jusqu'à 999 secondes)
+Screen Saver: Économiseur d'Écran
+On the Table Page: Sur la Page de Table
+After Settlement: Après Règlement
+On Page One: Sur la Page Un
+Ledger Accounts: Comptes du Grand Livre
+Lowest Account Number: Numéro de Compte le Plus Bas
+Highest Account Number: Numéro de Compte le Plus Élevé
+Account for expenses paid from drawers: Compte pour les dépenses payées depuis les tiroirs
+Drawer Settings: Paramètres de Tiroir
+Require user to balance drawer in ServerBank mode?: Exiger que l'utilisateur équilibre le tiroir en mode ServerBank?
+Default Tab Amount: Montant d'Onglet par Défaut
+SMTP Settings: Paramètres SMTP
+SMTP Server for Sending: Serveur SMTP pour l'Envoi
+SMTP Reply To Address: Adresse de Réponse SMTP
+Miscellaneous Settings: Paramètres Divers
+Can select user for expenses?: Peut sélectionner l'utilisateur pour les dépenses?
+Minimum Day Length (hours): Durée Minimale du Jour (heures)
+FastFood mode for TakeOut orders?: Mode FastFood pour les commandes à emporter?
+Set Your Preferred Report Time Frame: Définir Votre Cadre Temporel de Rapport Préféré
+Print A Header on Reports?: Imprimer un En-tête sur les Rapports?
+Split Check View: Vue de Division de Chèque
+Modifier Separation: Séparation de Modificateur
+Start reports at Midnight?: Commencer les rapports à Minuit?
+Allow Background Icon?: Autoriser l'Icône d'Arrière-plan?
+
+# Receipt Settings
+Receipt Header: En-tête de Reçu
+Line 1: Ligne 1
+Line 2: Ligne 2
+Line 3: Ligne 3
+Line 4: Ligne 4
+Header Length: Longueur d'En-tête
+Order Number Style: Style de Numéro de Commande
+Table Number Style: Style de Numéro de Table
+Receipt Footer: Pied de Page de Reçu
+Kitchen Video/Printouts: Vidéo de Cuisine/Impressions
+Kitchen Video Print Method: Méthode d'Impression Vidéo de Cuisine
+Kitchen Video Show User: Vidéo de Cuisine Afficher l'Utilisateur
+
+# Tax Settings
+United States Tax Settings: Paramètres de Taxe des États-Unis
+Food Sales Tax %: Taxe de Vente Alimentaire %
+Prices include tax?: Les prix incluent-ils la taxe?
+Alcohol Sales Tax %: Taxe de Vente d'Alcool %
+Room Sales Tax %: Taxe de Vente de Chambre %
+Merchandise Sales Tax %: Taxe de Vente de Marchandise %
+Prices inc tax?: Prix incluant la taxe?
+Canadian Tax Settings: Paramètres de Taxe Canadienne
+GST %: TPS %
+PST %: TVP %
+HST %: TVH %
+QST %: TVQ %
+European Tax Settings: Paramètres de Taxe Européenne
+VAT %: TVA %
+General Rate Settings: Paramètres de Taux Général
+Royalty Rate %: Taux de Redevance %
+Advertising Fund %: Fonds Publicitaire %
+
+# Credit Card Processing Settings
+Processing Server: Serveur de Traitement
+Processing Port: Port de Traitement
+Merchant ID: ID du Marchand
+User name: Nom d'utilisateur
+Password: Mot de passe
+Connect Timeout: Délai de Connexion
+Amount to Add for PreAuth: Montant à Ajouter pour Pré-Autorisation
+Support Credit Cards?: Supporter les Cartes de Crédit?
+Support Debit Cards?: Supporter les Cartes de Débit?
+Support Gift Cards?: Supporter les Cartes-Cadeaux?
+Allow PreAuthorizations?: Autoriser les Pré-Autorisations?
+Allow auths to be cancelled?: Autoriser l'annulation des autorisations?
+Also print a merchant receipt?: Imprimer aussi un reçu marchand?
+Also print a cash receipt?: Imprimer aussi un reçu de caisse?
+Print receipt for PreAuth Complete?: Imprimer un reçu pour Pré-Auth Terminé?
+Print receipt for Voids?: Imprimer un reçu pour les Annulations?
+Print Customer Information?: Imprimer les Informations Client?
+Automatically authorize on scan?: Autoriser automatiquement au scan?
+Use Bar mode for PreAuth Completes?: Utiliser le mode Bar pour les Pré-Auth Terminés?
+How to use card number in memory?: Comment utiliser le numéro de carte en mémoire?
+How to save card number?: Comment sauvegarder le numéro de carte?
+How to display card number?: Comment afficher le numéro de carte?
+
+# Credit Card Messages
+Credit Card No Connection Messages: Messages de Pas de Connexion Carte de Crédit
+Credit Card Voice Authorization Messages: Messages d'Autorisation Vocale Carte de Crédit
+Editor's Password: Mot de Passe de l'Éditeur
+Minimum Password Length: Longueur Minimale du Mot de Passe
+Multiply: Multiplier
+
+# User Edit Form Fields
+User ID: ID Utilisateur
+Nickname: Surnom
+Last Name: Nom de Famille
+First Name: Prénom
+Address: Adresse
+City: Ville
+State: État
+Job Info: Info Emploi
+Employee #: # Employé
+Primary Job: Emploi Principal
+Amount: Montant
+Department: Département
+2nd Job: 2ème Emploi
+3rd Job: 3ème Emploi
+Employee Name: Nom de l'Employé
+Job Title: Titre du Poste
+Phone Number: Numéro de Téléphone
+Reactivate this employee: Réactiver cet employé
+Completely remove employee: Supprimer complètement l'employé
+Oops!\\Leave as is: Oups!\\Laisser tel quel
+
+# Account Form Fields
+Account Name: Nom du Compte
+Account No: N° de Compte
+Balance: Solde
+No Accounts Defined: Aucun Compte Défini
+
+# Inventory Form Fields
+Name: Nom
+Recipe Unit: Unité de Recette
+Invoice Unit: Unité de Facture
+Cost: Coût
+Servings in Invoice Unit: Portions dans l'Unité de Facture
+Serving Cost: Coût de Portion
+Minutes to Prepare: Minutes de Préparation
+Portion Unit: Unité de Portion
+Contact: Contact
+Item Name: Nom de l'Article
+Button Name (if different): Nom du Bouton (si différent)
+Printed Name (if different): Nom Imprimé (si différent)
+Call Center Name: Nom du Centre d'Appel
+Item Code: Code Article
+Item Type: Type d'Article
+Price: Prix
+Substitute Price: Prix de Substitut
+Employee Price: Prix Employé
+Takeout Price: Prix à Emporter
+Delivery Price: Prix de Livraison
+Price Type: Type de Prix
+Family: Famille
+Tax/Discount Class: Classe de Taxe/Réduction
+Printer Target: Cible d'Imprimante
+Call Order: Ordre d'Appel
+Is Item Stocked?: L'article est-il en stock?
+Allow Increase Button?: Autoriser le Bouton d'Augmentation?
+Ignore Split Kitchen?: Ignorer la Cuisine Divisée?
+Vendor: Fournisseur
+ID: ID
+
+# Labor Form Fields
+Job: Emploi
+Pay: Salaire
+Rate: Taux
+Tips: Pourboires
+
+# Expense Form Fields
+Expense ID: ID de Dépense
+Payer: Payeur
+Expense Amount: Montant de Dépense
+Expense Drawer: Tiroir de Dépense
+or: ou
+Account: Compte
+Destination Account: Compte de Destination
+Tax Amount: Montant de Taxe
+Tax Account: Compte de Taxe
+Document: Document
+Explanation: Explication
+
+# Login Messages
+Welcome: Bienvenue
+Please Enter Your User ID: Veuillez Entrer Votre ID Utilisateur
+Press START To Enter: Appuyez sur DÉMARRER Pour Entrer
+Password Incorrect: Mot de Passe Incorrect
+Please Try Again: Veuillez Réessayer
+Unknown User ID: ID Utilisateur Inconnu
+You're Using Another Terminal: Vous Utilisez un Autre Terminal
+You're Already On The Clock: Vous Êtes Déjà à l'Horloge
+You're Not On The Clock: Vous N'Êtes Pas à l'Horloge
+You Don't Use The Clock: Vous N'Utilisez Pas l'Horloge
+You Still Have Open Checks: Vous Avez Encore des Chèques Ouverts
+You Still Have An Assigned Drawer: Vous Avez Encore un Tiroir Assigné
+Your Record Is Inactive: Votre Enregistrement Est Inactif
+Contact a manager to be reactivated: Contactez un gestionnaire pour être réactivé
+You Need to Balance Your Drawer: Vous Devez Équilibrer Votre Tiroir
+Contact a manager: Contactez un gestionnaire
+User is not allowed into the system: L'utilisateur n'est pas autorisé dans le système
+No Employee Logged In: Aucun Employé Connecté
+Strange, No Work Info For You...: Étrange, Aucune Info de Travail Pour Vous...
+Shift Work Summary: Résumé du Travail de Quart
+Enter Declared Tips Total: Entrez le Total des Pourboires Déclarés
+Input Amount:: Montant Saisi:
+
+# Payout Messages
+Press any button to continue: Appuyez sur n'importe quel bouton pour continuer
+Employee: Employé
+Amount Paid: Montant Payé
+Amount Owed: Montant Dû
+This is the first business day: C'est le premier jour ouvrable
+This business day started: Cette journée ouvrable a commencé
+You may end the day when ready: Vous pouvez terminer la journée quand vous êtes prêt
+
+# Search
+Search For...: Rechercher...
+
+# Printer Settings
+Standard Target: Cible Standard
+Kitchen #: Cuisine #
+
+# CDU Messages
+Customer Display Unit Messages: Messages d'Unité d'Affichage Client
+First Line: Première Ligne
+Second Line: Deuxième Ligne
+No Messages Entered: Aucun Message Saisi
+
+# Hardware Configuration
+Configure Your Host Computer and Your Display Terminals, Then Assign Receipt Printer Queues To Them: Configurez Votre Ordinateur Hôte et Vos Terminaux d'Affichage, Puis Assignez les Files d'Imprimante de Reçu
+Display's Name: Nom de l'Affichage
+Configure Your Requisition Printers in Kitchens, Bars, Expediting Areas & Your Office Printer: Configurez Vos Imprimantes de Réquisition dans les Cuisines, Bars, Zones d'Expédition et Votre Imprimante de Bureau
+Printer's Name: Nom de l'Imprimante
+You May Now Edit This Display Terminal's Configuration: Vous Pouvez Maintenant Éditer la Configuration de Ce Terminal d'Affichage
+You May Now Edit This Printer's Configuration: Vous Pouvez Maintenant Éditer la Configuration de Cette Imprimante
+
+# Order Types
+Take Out: À Emporter
+Fast Food: Restauration Rapide
+Delivery: Livraison
+Retail: Détail
+To Go: À Emporter
+Here: Ici
+CLOSED: FERMÉ
+VOID: ANNULÉ
+
+# Order Actions
+Comp this Item: Compter cet Article
+Void this Item: Annuler cet Article
+Yes: Oui
+No, just add the order: Non, juste ajouter la commande
+Cancel: Annuler
+skipit: passer
+
+# Payment Messages
+Check Voided: Chèque Annulé
+Check Closed: Chèque Fermé
+Select 'Clear All Entries': Sélectionner 'Effacer Toutes les Entrées'
+To Rebuild: Pour Reconstruire
+Check Blank: Chèque Vide
+Balance Covered: Solde Couvert
+Working...: Travail en Cours...
+No Check Selected: Aucun Chèque Sélectionné
+
+# Table Messages
+No customer available: Aucun client disponible
+Yes: Oui
+No, that was a mistake: Non, c'était une erreur
+
+# Drawer Messages
+There Are No Open Drawers For: Il N'y A Aucun Tiroir Ouvert Pour
+There Are No Balanced Drawers For: Il N'y A Aucun Tiroir Équilibré Pour
+Please Enter These Amounts: Veuillez Entrer Ces Montants
+
+# Credit Card Processing
+Pre-Authorize: Pré-Autoriser
+Pre-Auth Complete: Pré-Auth Terminé
+Pre-Auth Advice: Conseil Pré-Auth
+Credit Card Number: Numéro de Carte de Crédit
+Expiration Date: Date d'Expiration
+Please select card type.: Veuillez sélectionner le type de carte.
+Please select card entry method.: Veuillez sélectionner la méthode de saisie de carte.
+Please swipe the card: Veuillez glisser la carte
+or select Manual Entry: ou sélectionner Saisie Manuelle
+Wage Group Filter: Filtre de Groupe de Salaire
+First Name: Prénom
+Comment: Commentaire
+
+# Password Change
+Enter Your Password: Entrez Votre Mot de Passe
+Enter Your Old Password: Entrez Votre Ancien Mot de Passe
+Enter Your New Password: Entrez Votre Nouveau Mot de Passe
+Enter Your New Password Again: Entrez Votre Nouveau Mot de Passe Encore
+Change Password: Changer le Mot de Passe
+
+# Page List
+Page List: Liste des Pages
+
+# Common System Messages
+Off: Désactivé
+On: Activé
+No: Non
+Managers Only: Gestionnaires Seulement
+Everyone: Tout le Monde
+
+# Common Button Actions
+sendandjump: envoyeretsauter
+shutdown: arrêt
+systemrestart: redémarragesystème
+localprint: impressionlocale
+reportprint: impressionrapport
+enter: entrer
+backspace: retourarrière
+cancel: annuler
+clear: effacer
+change: changer
+ccpreauth: ccpreauth
+cccomplete: cccomplete
+ccauthorize: ccauthorize
+ccadvice: ccadvice
+ccaddtip: ccaddtip
+cccancel: cccancel
+ccvoid: ccvoid
+ccrefund: ccrefund
+ccundorefund: ccundorefund
+ccmanual: ccmanual
+ccdone: ccdone
+cccredit: cccredit
+ccdebit: ccdebit
+ccswipe: ccswipe
+ccclear: ccclear
+ccvoice: ccvoice
+ccqterminate: ccqterminate
+okay: d'accord
+print credit: imprimer crédit
+print subcheck: imprimer sous-chèque
+noprint: pas d'impression
+nevermind: peu importe
+finalize2: finaliser2
+swipe newcard: glisser nouvelle carte
+nocard: pas de carte
+nextcheckforce: forcer prochain chèque
+addandopentab: ajouter et ouvrir onglet
+addanyway: ajouter quand même
+comp-1: comp-1
+void-1: annuler-1
+merge_tables: fusionner_tables
+cancel_merge: annuler_fusion
+activate: activer
+delete: supprimer
+jsz_yes: jsz_oui
+jsz_no: jsz_non
+cceodnosettle: cceodnosettle
+force end: forcer fin
+next: suivant
+prior: précédent
+change view: changer vue
+restore: restaurer
+new: nouveau
+unfocus: perdre focus
+search: rechercher
+nextsearch: recherche suivante

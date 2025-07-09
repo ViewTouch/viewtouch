@@ -251,7 +251,10 @@ int Zone::RenderZone(Terminal *term, const genericChar* text, int update_flag)
     {
         int bx = Max(border - 2, 0);
         int by = Max(border - 4, 0);
-        const genericChar* b = term->ReplaceSymbols(text);
+        
+        // First try UI data translation, then fall back to symbol replacement
+        const genericChar* translated_text = MasterLocale->TranslateUIData(text);
+        const genericChar* b = term->ReplaceSymbols(translated_text);
         if (b)
         {
             if (behave == BEHAVE_DOUBLE)

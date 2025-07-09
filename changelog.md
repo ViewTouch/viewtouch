@@ -6,6 +6,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Comprehensive Multi-Language Support**: Implemented full internationalization system with 8 supported languages
+  - **Language Selection Dialog**: Added first-launch language selection dialog that appears when ViewTouch starts for the first time
+    - Interactive dialog with 8 language options: English, French, Greek, Spanish, German, Italian, Portuguese, Dutch
+    - Modal dialog that blocks further initialization until user selects a language
+    - Integrated into terminal initialization sequence in `main/manager.cc`
+  - **F8 Language Switching**: Added F8 key functionality to cycle through all supported languages during runtime
+    - Cycles through: English (1) → French (2) → Greek (3) → Spanish (4) → German (5) → Italian (6) → Portuguese (7) → Dutch (8)
+    - Shows confirmation dialog with selected language name and instructions to press OK
+    - Automatically refreshes all terminals and UI elements when language changes
+    - Clears and reloads PO files to ensure complete UI translation
+  - **Comprehensive Translation Files**: Created complete translation files for all supported languages
+    - English (`viewtouch.po_EN`): 11,955 bytes with 500+ translatable elements
+    - French (`viewtouch.po_FR`): 13,559 bytes with complete French translations
+    - Greek (`viewtouch.po_GR`): 19,076 bytes with complete Greek translations
+    - Spanish (`viewtouch.po_ES`): 20,162 bytes with complete Spanish translations
+    - German (`viewtouch.po_DE`): 19,573 bytes with complete German translations
+    - Italian (`viewtouch.po_IT`): 19,099 bytes with complete Italian translations
+    - Portuguese (`viewtouch.po_PT`): 19,900 bytes with complete Portuguese translations
+    - Dutch (`viewtouch.po_NL`): 19,074 bytes with complete Dutch translations
+  - **Translation System Enhancements**: Implemented robust translation loading and management
+    - Added `ClearPOFiles()` methods in `locale.hh` and `locale.cc` to force reload translations
+    - Updated `FindPOFilename()` function to handle all language file extensions
+    - Enhanced language switching to clear PO files and force complete UI refresh
+    - Added proper signal handling for language change confirmation dialogs
+  - **UI Element Translation Coverage**: Comprehensive translation of all user interface elements
+    - Common button text: Open, Close, Save, Cancel, Delete, Edit, Add, Remove, etc.
+    - Navigation and menu text: Next, Previous, Return, Menu, Settings, Reports, etc.
+    - Payment and financial terms: Cash, Credit, Check, Gift Certificate, Tax, etc.
+    - Time and date terms: Today, Yesterday, This Week, This Month, etc.
+    - Error and status messages: Error, Warning, Success, Loading, Processing, etc.
+    - Menu categories: Food, Beverage, Dessert, Appetizer, etc.
+    - System settings: Language, Time Zone, Currency, Receipt, etc.
+    - Payment types: Cash, Credit Card, Check, Gift Certificate, etc.
+    - Report types: Sales Report, Labor Report, Inventory Report, etc.
+    - Customer types: Regular, VIP, Corporate, etc.
+    - Order modifiers: Extra, No, Light, Heavy, etc.
+    - Credit card types: Visa, MasterCard, American Express, etc.
+    - Days of the week and months in all supported languages
+    - Job titles: Manager, Server, Bartender, Host, etc.
+    - Credit card processing terms: Authorize, Capture, Void, Refund, etc.
+  - **Automatic Installation**: Language files are automatically installed during build process
+    - Updated `CMakeLists.txt` to install all `.po` files to `/usr/viewtouch/dat/languages/`
+    - Language files are available immediately after installation
+    - No manual configuration required for multi-language support
 - **Table Merge Confirmation Dialog**: Added safety confirmation when merging tables with existing tickets
   - Added confirmation dialog asking "Are you sure you want to merge tables?" with Yes/No options
   - Prevents accidental table merges that could result in data loss or confusion

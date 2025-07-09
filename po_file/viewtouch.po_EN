@@ -1,7 +1,397 @@
-Customer Agreement 1:  Cardholder will pay card issuer above
-Customer Agreement 2:  amount pursuant to Cardholder Agreement.
-Voided:  Purchase Correction
-Refund Cancel:  Refund Correction
-Checking: Chequing
-Pre-auth Completion:  Pre-Auth Advice
-Pre-Auth Completion:  Pre-Auth Advice
+# ViewTouch English Translation File
+# Format: key: value
+
+# Common Dialog Buttons
+Yes: Yes
+No: No
+Okay: Okay
+Cancel: Cancel
+Enter: Enter
+Clear: Clear
+Space: Space
+Back Space: Back Space
+Print: Print
+Quit ViewTouch and Return To The Desktop: Quit ViewTouch and Return To The Desktop
+Refresh ViewTouch: Refresh ViewTouch
+Don't Quit or Refresh: Don't Quit or Refresh
+
+# Credit Card Dialog Buttons
+Authorize: Authorize
+Add Tip: Add Tip
+Void: Void
+Refund: Refund
+Undo Refund: Undo Refund
+Manual Entry: Manual Entry
+Done: Done
+Credit: Credit
+Debit: Debit
+Swipe: Swipe
+Voice Authorization: Voice Authorization
+New Card: New Card
+
+# Payment Dialog Buttons
+Credit Card: Credit Card
+SubCheck: SubCheck
+Hold Anyway: Hold Anyway
+Finalize Anyway: Finalize Anyway
+End Without Settlement: End Without Settlement
+End the Day Now: End the Day Now
+Cancel,\\Don't end the Day: Cancel,\\Don't end the Day
+
+# Settings Form Fields
+Your Business Name: Your Business Name
+Address: Address
+City State Zip Code: City State Zip Code
+Country Code: Country Code
+Location Code: Location Code
+Set the Life of the Logon ID (Up to 999 seconds): Set the Life of the Logon ID (Up to 999 seconds)
+Screen Saver: Screen Saver
+On the Table Page: On the Table Page
+After Settlement: After Settlement
+On Page One: On Page One
+Ledger Accounts: Ledger Accounts
+Lowest Account Number: Lowest Account Number
+Highest Account Number: Highest Account Number
+Account for expenses paid from drawers: Account for expenses paid from drawers
+Drawer Settings: Drawer Settings
+Require user to balance drawer in ServerBank mode?: Require user to balance drawer in ServerBank mode?
+Default Tab Amount: Default Tab Amount
+SMTP Settings: SMTP Settings
+SMTP Server for Sending: SMTP Server for Sending
+SMTP Reply To Address: SMTP Reply To Address
+Miscellaneous Settings: Miscellaneous Settings
+Can select user for expenses?: Can select user for expenses?
+Minimum Day Length (hours): Minimum Day Length (hours)
+FastFood mode for TakeOut orders?: FastFood mode for TakeOut orders?
+Set Your Preferred Report Time Frame: Set Your Preferred Report Time Frame
+Print A Header on Reports?: Print A Header on Reports?
+Split Check View: Split Check View
+Modifier Separation: Modifier Separation
+Start reports at Midnight?: Start reports at Midnight?
+Allow Background Icon?: Allow Background Icon?
+
+# Receipt Settings
+Receipt Header: Receipt Header
+Line 1: Line 1
+Line 2: Line 2
+Line 3: Line 3
+Line 4: Line 4
+Header Length: Header Length
+Order Number Style: Order Number Style
+Table Number Style: Table Number Style
+Receipt Footer: Receipt Footer
+Kitchen Video/Printouts: Kitchen Video/Printouts
+Kitchen Video Print Method: Kitchen Video Print Method
+Kitchen Video Show User: Kitchen Video Show User
+
+# Tax Settings
+United States Tax Settings: United States Tax Settings
+Food Sales Tax %: Food Sales Tax %
+Prices include tax?: Prices include tax?
+Alcohol Sales Tax %: Alcohol Sales Tax %
+Room Sales Tax %: Room Sales Tax %
+Merchandise Sales Tax %: Merchandise Sales Tax %
+Prices inc tax?: Prices inc tax?
+Canadian Tax Settings: Canadian Tax Settings
+GST %: GST %
+PST %: PST %
+HST %: HST %
+QST %: QST %
+European Tax Settings: European Tax Settings
+VAT %: VAT %
+General Rate Settings: General Rate Settings
+Royalty Rate %: Royalty Rate %
+Advertising Fund %: Advertising Fund %
+
+# Credit Card Processing Settings
+Processing Server: Processing Server
+Processing Port: Processing Port
+Merchant ID: Merchant ID
+User name: User name
+Password: Password
+Connect Timeout: Connect Timeout
+Amount to Add for PreAuth: Amount to Add for PreAuth
+Support Credit Cards?: Support Credit Cards?
+Support Debit Cards?: Support Debit Cards?
+Support Gift Cards?: Support Gift Cards?
+Allow PreAuthorizations?: Allow PreAuthorizations?
+Allow auths to be cancelled?: Allow auths to be cancelled?
+Also print a merchant receipt?: Also print a merchant receipt?
+Also print a cash receipt?: Also print a cash receipt?
+Print receipt for PreAuth Complete?: Print receipt for PreAuth Complete?
+Print receipt for Voids?: Print receipt for Voids?
+Print Customer Information?: Print Customer Information?
+Automatically authorize on scan?: Automatically authorize on scan?
+Use Bar mode for PreAuth Completes?: Use Bar mode for PreAuth Completes?
+How to use card number in memory?: How to use card number in memory?
+How to save card number?: How to save card number?
+How to display card number?: How to display card number?
+
+# Credit Card Messages
+Credit Card No Connection Messages: Credit Card No Connection Messages
+Credit Card Voice Authorization Messages: Credit Card Voice Authorization Messages
+Editor's Password: Editor's Password
+Minimum Password Length: Minimum Password Length
+Multiply: Multiply
+
+# User Edit Form Fields
+User ID: User ID
+Nickname: Nickname
+Last Name: Last Name
+First Name: First Name
+Address: Address
+City: City
+State: State
+Job Info: Job Info
+Employee #: Employee #
+Primary Job: Primary Job
+Amount: Amount
+Department: Department
+2nd Job: 2nd Job
+3rd Job: 3rd Job
+Employee Name: Employee Name
+Job Title: Job Title
+Phone Number: Phone Number
+Reactivate this employee: Reactivate this employee
+Completely remove employee: Completely remove employee
+Oops!\\Leave as is: Oops!\\Leave as is
+
+# Account Form Fields
+Account Name: Account Name
+Account No: Account No
+Balance: Balance
+No Accounts Defined: No Accounts Defined
+
+# Inventory Form Fields
+Name: Name
+Recipe Unit: Recipe Unit
+Invoice Unit: Invoice Unit
+Cost: Cost
+Servings in Invoice Unit: Servings in Invoice Unit
+Serving Cost: Serving Cost
+Minutes to Prepare: Minutes to Prepare
+Portion Unit: Portion Unit
+Contact: Contact
+Item Name: Item Name
+Button Name (if different): Button Name (if different)
+Printed Name (if different): Printed Name (if different)
+Call Center Name: Call Center Name
+Item Code: Item Code
+Item Type: Item Type
+Price: Price
+Substitute Price: Substitute Price
+Employee Price: Employee Price
+Takeout Price: Takeout Price
+Delivery Price: Delivery Price
+Price Type: Price Type
+Family: Family
+Tax/Discount Class: Tax/Discount Class
+Printer Target: Printer Target
+Call Order: Call Order
+Is Item Stocked?: Is Item Stocked?
+Allow Increase Button?: Allow Increase Button?
+Ignore Split Kitchen?: Ignore Split Kitchen?
+Vendor: Vendor
+ID: ID
+
+# Labor Form Fields
+Job: Job
+Pay: Pay
+Rate: Rate
+Tips: Tips
+
+# Expense Form Fields
+Expense ID: Expense ID
+Payer: Payer
+Expense Amount: Expense Amount
+Expense Drawer: Expense Drawer
+or: or
+Account: Account
+Destination Account: Destination Account
+Tax Amount: Tax Amount
+Tax Account: Tax Account
+Document: Document
+Explanation: Explanation
+
+# Login Messages
+Welcome: Welcome
+Please Enter Your User ID: Please Enter Your User ID
+Press START To Enter: Press START To Enter
+Password Incorrect: Password Incorrect
+Please Try Again: Please Try Again
+Unknown User ID: Unknown User ID
+You're Using Another Terminal: You're Using Another Terminal
+You're Already On The Clock: You're Already On The Clock
+You're Not On The Clock: You're Not On The Clock
+You Don't Use The Clock: You Don't Use The Clock
+You Still Have Open Checks: You Still Have Open Checks
+You Still Have An Assigned Drawer: You Still Have An Assigned Drawer
+Your Record Is Inactive: Your Record Is Inactive
+Contact a manager to be reactivated: Contact a manager to be reactivated
+You Need to Balance Your Drawer: You Need to Balance Your Drawer
+Contact a manager: Contact a manager
+User is not allowed into the system: User is not allowed into the system
+No Employee Logged In: No Employee Logged In
+Strange, No Work Info For You...: Strange, No Work Info For You...
+Shift Work Summary: Shift Work Summary
+Enter Declared Tips Total: Enter Declared Tips Total
+Input Amount:: Input Amount:
+
+# Payout Messages
+Press any button to continue: Press any button to continue
+Employee: Employee
+Amount Paid: Amount Paid
+Amount Owed: Amount Owed
+This is the first business day: This is the first business day
+This business day started: This business day started
+You may end the day when ready: You may end the day when ready
+End the Day Now: End the Day Now
+Cancel,\\Don't end the Day: Cancel,\\Don't end the Day
+
+# Search
+Search For...: Search For...
+
+# Printer Settings
+Standard Target: Standard Target
+Kitchen #: Kitchen #
+
+# CDU Messages
+Customer Display Unit Messages: Customer Display Unit Messages
+First Line: First Line
+Second Line: Second Line
+No Messages Entered: No Messages Entered
+
+# Hardware Configuration
+Configure Your Host Computer and Your Display Terminals, Then Assign Receipt Printer Queues To Them: Configure Your Host Computer and Your Display Terminals, Then Assign Receipt Printer Queues To Them
+Display's Name: Display's Name
+Configure Your Requisition Printers in Kitchens, Bars, Expediting Areas & Your Office Printer: Configure Your Requisition Printers in Kitchens, Bars, Expediting Areas & Your Office Printer
+Printer's Name: Printer's Name
+You May Now Edit This Display Terminal's Configuration: You May Now Edit This Display Terminal's Configuration
+You May Now Edit This Printer's Configuration: You May Now Edit This Printer's Configuration
+
+# Order Types
+Take Out: Take Out
+Fast Food: Fast Food
+Delivery: Delivery
+Retail: Retail
+To Go: To Go
+Here: Here
+CLOSED: CLOSED
+VOID: VOID
+
+# Order Actions
+Comp this Item: Comp this Item
+Void this Item: Void this Item
+Yes: Yes
+No, just add the order: No, just add the order
+Cancel: Cancel
+skipit: skipit
+
+# Payment Messages
+Check Voided: Check Voided
+Check Closed: Check Closed
+Select 'Clear All Entries': Select 'Clear All Entries'
+To Rebuild: To Rebuild
+Check Blank: Check Blank
+Balance Covered: Balance Covered
+Working...: Working...
+No Check Selected: No Check Selected
+
+# Table Messages
+No customer available: No customer available
+Yes: Yes
+No, that was a mistake: No, that was a mistake
+
+# Drawer Messages
+There Are No Open Drawers For: There Are No Open Drawers For
+There Are No Balanced Drawers For: There Are No Balanced Drawers For
+Please Enter These Amounts: Please Enter These Amounts
+
+# Credit Card Processing
+Pre-Authorize: Pre-Authorize
+Pre-Auth Complete: Pre-Auth Complete
+Pre-Auth Advice: Pre-Auth Advice
+Credit Card Number: Credit Card Number
+Expiration Date: Expiration Date
+Please select card type.: Please select card type.
+Please select card entry method.: Please select card entry method.
+Please swipe the card: Please swipe the card
+or select Manual Entry: or select Manual Entry
+Wage Group Filter: Wage Group Filter
+First Name: First Name
+Comment: Comment
+
+# Password Change
+Enter Your Password: Enter Your Password
+Enter Your Old Password: Enter Your Old Password
+Enter Your New Password: Enter Your New Password
+Enter Your New Password Again: Enter Your New Password Again
+Change Password: Change Password
+
+# Page List
+Page List: Page List
+
+# Common System Messages
+Off: Off
+On: On
+No: No
+Managers Only: Managers Only
+Everyone: Everyone
+
+# Common Button Actions
+sendandjump: sendandjump
+shutdown: shutdown
+systemrestart: systemrestart
+localprint: localprint
+reportprint: reportprint
+enter: enter
+backspace: backspace
+cancel: cancel
+clear: clear
+change: change
+ccpreauth: ccpreauth
+cccomplete: cccomplete
+ccauthorize: ccauthorize
+ccadvice: ccadvice
+ccaddtip: ccaddtip
+cccancel: cccancel
+ccvoid: ccvoid
+ccrefund: ccrefund
+ccundorefund: ccundorefund
+ccmanual: ccmanual
+ccdone: ccdone
+cccredit: cccredit
+ccdebit: ccdebit
+ccswipe: ccswipe
+ccclear: ccclear
+ccvoice: ccvoice
+ccqterminate: ccqterminate
+okay: okay
+print credit: print credit
+print subcheck: print subcheck
+noprint: noprint
+nevermind: nevermind
+finalize2: finalize2
+swipe newcard: swipe newcard
+nocard: nocard
+nextcheckforce: nextcheckforce
+addandopentab: addandopentab
+addanyway: addanyway
+comp-1: comp-1
+void-1: void-1
+merge_tables: merge_tables
+cancel_merge: cancel_merge
+activate: activate
+delete: delete
+jsz_yes: jsz_yes
+jsz_no: jsz_no
+cceodnosettle: cceodnosettle
+force end: force end
+next: next
+prior: prior
+change view: change view
+restore: restore
+new: new
+unfocus: unfocus
+search: search
+nextsearch: nextsearch

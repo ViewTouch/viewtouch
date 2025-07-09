@@ -30,6 +30,10 @@
 #include <cstring>
 #include <cctype>
 #include <clocale>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <map>
+
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -394,6 +398,18 @@ int POFile::FindPOFilename()
         snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "EN");
     else if (lang == LANG_FRENCH)
         snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "FR");
+    else if (lang == LANG_GREEK)
+        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "GR");
+    else if (lang == LANG_SPANISH)
+        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "ES");
+    else if (lang == LANG_GERMAN)
+        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "DE");
+    else if (lang == LANG_ITALIAN)
+        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "IT");
+    else if (lang == LANG_PORTUGUESE)
+        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "PT");
+    else if (lang == LANG_DUTCH)
+        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "NL");
 
     if (filename[0] != '\0')
         retval = 0;
@@ -546,6 +562,19 @@ const char* POFileList::FindPOString(const char* str, int lang, int clear)
     return retstr;
 }
 
+void POFileList::ClearPOFiles()
+{
+    FnTrace("POFileList::ClearPOFiles()");
+    POFile *po_file = head;
+    while (po_file != nullptr)
+    {
+        POFile *next = po_file->next;
+        delete po_file;
+        po_file = next;
+    }
+    head = nullptr;
+}
+
 
 /*********************************************************************
  * Locale Class
@@ -597,6 +626,10 @@ int Locale::Load(const char* file)
         ph->Read(df, 1);
         Add(ph);
     }
+    
+    // Load UI data translations
+    LoadUIDataTranslations();
+    
     return 0;
 }
 
@@ -799,6 +832,12 @@ int Locale::NewTranslation(const char* str, const genericChar* value)
     return Add(new PhraseInfo(str, value));
 }
 
+void Locale::ClearPOFiles()
+{
+    FnTrace("Locale::ClearPOFiles()");
+    pofile_list.ClearPOFiles();
+}
+
 /****
  * TimeDate: returns time/date nicely formated (format flags are in
  * locale.hh)
@@ -969,3 +1008,150 @@ char* Locale::Page(int current, int page_max, int lang, genericChar* str)
                 Translate("of", lang), page_max);
     return str;
 }
+
+const genericChar* Locale::TranslateUIData(const genericChar* key)
+{
+    FnTrace("Locale::TranslateUIData()");
+    if (key == nullptr || strlen(key) == 0)
+        return key;
+
+    auto it = ui_data_translations.find(key);
+    if (it != ui_data_translations.end())
+        return it->second.c_str();
+    
+    return key;  // Return original if no translation found
+}
+
+int Locale::NewUIDataTranslation(const genericChar* key, const genericChar* value)
+{
+    FnTrace("Locale::NewUIDataTranslation()");
+    if (key == nullptr || strlen(key) == 0)
+        return 1;
+
+    if (value == nullptr || strlen(value) == 0)
+    {
+        // Remove translation if value is empty
+        ui_data_translations.erase(key);
+    }
+    else
+    {
+        ui_data_translations[key] = value;
+    }
+    
+    return 0;
+}
+
+int Locale::LoadUIDataTranslations()
+{
+    FnTrace("Locale::LoadUIDataTranslations()");
+    
+    // Clear existing translations
+    ui_data_translations.clear();
+    
+    // Build translation file path
+    System *sys = MasterSystem;
+    if (sys == nullptr)
+        return 1;
+        
+    // Get current language from system settings
+    int current_language = LANG_ENGLISH;  // Default to English
+    if (sys->settings.locale >= 1 && sys->settings.locale <= 8)
+        current_language = sys->settings.locale;
+        
+    ui_data_translation_file = std::string(sys->data_path.str()) + "/languages/ui_data_" + 
+                               std::to_string(current_language) + ".po";
+    
+    // Try to load the translation file
+    FILE *fp = fopen(ui_data_translation_file.c_str(), "r");
+    if (fp == nullptr)
+        return 1;  // File doesn't exist, which is okay
+    
+    char line[STRLENGTH];
+    
+    while (fgets(line, STRLENGTH, fp))
+    {
+        // Remove newline
+        line[strcspn(line, "\n\r")] = '\0';
+        
+        // Skip empty lines and comments
+        if (strlen(line) == 0 || line[0] == '#')
+            continue;
+        
+        // Check if this is a key-value pair (key: value format)
+        char *colon = strchr(line, ':');
+        if (colon != nullptr)
+        {
+            *colon = '\0';  // Split the line
+            char *key = line;
+            char *value = colon + 1;
+            
+            // Trim whitespace
+            while (*key == ' ' || *key == '\t') key++;
+            while (*value == ' ' || *value == '\t') value++;
+            
+            char *end = key + strlen(key) - 1;
+            while (end > key && (*end == ' ' || *end == '\t')) *end-- = '\0';
+            
+            end = value + strlen(value) - 1;
+            while (end > value && (*end == ' ' || *end == '\t')) *end-- = '\0';
+            
+            if (strlen(key) > 0)
+            {
+                ui_data_translations[key] = value;
+            }
+        }
+    }
+    
+    fclose(fp);
+    return 0;
+}
+
+int Locale::SaveUIDataTranslations()
+{
+    FnTrace("Locale::SaveUIDataTranslations()");
+    
+    if (ui_data_translation_file.empty())
+        return 1;
+    
+    // Ensure languages directory exists
+    System *sys = MasterSystem;
+    if (sys == nullptr)
+        return 1;
+        
+    std::string languages_dir = std::string(sys->data_path.str()) + "/languages";
+    struct stat st;
+    if (stat(languages_dir.c_str(), &st) != 0)
+    {
+        mkdir(languages_dir.c_str(), 0755);
+    }
+    
+    FILE *fp = fopen(ui_data_translation_file.c_str(), "w");
+    if (fp == nullptr)
+        return 1;
+    
+    // Get current language from system settings
+    int current_language = LANG_ENGLISH;  // Default to English
+    if (sys->settings.locale >= 1 && sys->settings.locale <= 8)
+        current_language = sys->settings.locale;
+    
+    fprintf(fp, "# UI Data Translations for language %d\n", current_language);
+    fprintf(fp, "# Format: key: value\n");
+    fprintf(fp, "# This file contains translations for UI elements in po_file/vt_data\n");
+    fprintf(fp, "# Generated by ViewTouch translation system\n\n");
+    
+    for (const auto& pair : ui_data_translations)
+    {
+        fprintf(fp, "%s: %s\n", pair.first.c_str(), pair.second.c_str());
+    }
+    
+    fclose(fp);
+    return 0;
+}
+
+void Locale::ClearUIDataTranslations()
+{
+    FnTrace("Locale::ClearUIDataTranslations()");
+    ui_data_translations.clear();
+}
+
+

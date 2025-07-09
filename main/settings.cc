@@ -1310,6 +1310,7 @@ Settings::Settings()
     time_format     = TIME_12HOUR;
     date_format     = DATE_MMDDYY;
     number_format   = NUMBER_STANDARD;
+    locale          = LANG_ENGLISH;
     measure_system  = MEASURE_STANDARD;
     money_symbol.Set("$");
 
@@ -1660,6 +1661,10 @@ int Settings::Load(const char* file)
         df.Read(date_format);
         df.Read(number_format);
         df.Read(measure_system);
+        if (version >= 50)  // Add locale support in version 50
+        {
+            df.Read(locale);
+        }
     }
 
     int n = 0;
@@ -2241,6 +2246,7 @@ int Settings::Save()
     df.Write(date_format);
     df.Write(number_format);
     df.Write(measure_system);
+    df.Write(locale);
 
     for (i = 0; i < MAX_JOBS; ++i)
         if (job_active[i])

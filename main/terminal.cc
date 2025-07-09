@@ -626,6 +626,17 @@ int Terminal::Initialize()
     SetCCTimeout(settings->cc_connect_timeout);
     SetIconify(settings->allow_iconify);
 
+    // Check if language has been selected before, if not show language selection dialog
+    // This should happen BEFORE any UI is drawn
+    if (!settings->language_selected)
+    {
+        // Show language selection dialog - it should be modal
+        ShowLanguageSelectionDialog();
+    }
+    
+    // Load UI data translations
+    // LoadUIDataTranslations();
+    
     return retval;
 }
 
@@ -1233,7 +1244,9 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         "adminforceauth2", "adminforceauth3 ", "adminforceauth4",
         "faststartlogin", "opentab", "opentabcancel", "opentabamount",
         "opentabcard ", "opentabpay ", "continuetab", "continuetab2 ",
-        "closetab", "closetab2 ", "forcereturn ", nullptr};
+        "closetab", "closetab2 ", "forcereturn ", "apply_language_change",
+        "set_language_1", "set_language_2", "set_language_3", "set_language_4",
+        "set_language_5", "set_language_6", "set_language_7", "set_language_8", nullptr};
 	//for handy reference to the indices in the signal handler
 	enum comms  { LOGOUT, NEXT_ARCHIVE, PRIOR_ARCHIVE, OPEN_DRAWER,
                   SHUTDOWN, SYSTEM_RESTART, CALIBRATE, WAGE_FILTER_DIALOG,
@@ -1242,7 +1255,9 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
                   ADMINFORCE2, ADMINFORCE3, ADMINFORCE4,
                   FASTSTARTLOGIN, OPENTAB, OPENTABCANCEL, OPENTABAMOUNT,
                   OPENTABCARD, OPENTABPAY, CONTINUETAB, CONTINUETAB2,
-                  CLOSETAB, CLOSETAB2, FORCERETURN};
+                  CLOSETAB, CLOSETAB2, FORCERETURN, APPLY_LANGUAGE_CHANGE,
+                  SET_LANGUAGE_1, SET_LANGUAGE_2, SET_LANGUAGE_3, SET_LANGUAGE_4,
+                  SET_LANGUAGE_5, SET_LANGUAGE_6, SET_LANGUAGE_7, SET_LANGUAGE_8 };
 
     if (dialog)
     {
@@ -1423,6 +1438,65 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
             force_jump_source = page->id;
         else
             force_jump_source = 0;
+        break;
+    case APPLY_LANGUAGE_CHANGE:
+        // Apply the language change that was set up in F8 handler
+        {
+                    // Clear PO files to force reload of translations
+        MasterLocale->ClearPOFiles();
+        
+        // Reload UI data translations for new language
+        MasterLocale->LoadUIDataTranslations();
+        
+        // Force reload of current page to trigger translation updates
+        if (page != nullptr)
+        {
+            // Force a complete page reload
+            Page *current_page = page;
+            ChangePage(current_page);
+        }
+            
+            // Update all terminals with new translations
+            UpdateAllTerms(UPDATE_SETTINGS, nullptr);
+            
+            // Send updated translations to all terminals
+            for (Terminal *t = parent->TermList(); t != nullptr; t = t->next)
+            {
+                t->SendTranslations(FamilyName);
+                t->SendTranslations(SwitchName);
+                t->SendTranslations(TenderName);
+                t->SendTranslations(ReportTypeName);
+                t->SendTranslations(CustomerTypeName);
+                
+                // Force complete redraw and refresh
+                t->Draw(RENDER_NEW);
+                t->UpdateAll();
+            }
+        }
+        break;
+    case SET_LANGUAGE_1:
+    case SET_LANGUAGE_2:
+    case SET_LANGUAGE_3:
+    case SET_LANGUAGE_4:
+    case SET_LANGUAGE_5:
+    case SET_LANGUAGE_6:
+    case SET_LANGUAGE_7:
+    case SET_LANGUAGE_8:
+    {
+        int lang = idx - SET_LANGUAGE_1 + 1; // 1-based language index
+        GetSettings()->locale = lang;
+        GetSettings()->language_selected = 1;
+        // Save settings if needed
+        // Close dialog and reload translations
+        KillDialog();
+        MasterLocale->ClearPOFiles();
+        if (page != nullptr) {
+            Page *current_page = page;
+            ChangePage(current_page);
+        }
+        UpdateAllTerms(UPDATE_SETTINGS, nullptr);
+        return SIGNAL_OKAY;
+    }
 	}
 
     return SIGNAL_IGNORED;
@@ -3144,6 +3218,13 @@ int Terminal::PriceToInteger(const genericChar* price)
 const genericChar* Terminal::Translate(const genericChar* str, int lang, int clear)
 {
     FnTrace("Terminal::Translate()");
+    // If no specific language is provided, use the locale setting from settings
+    if (lang == LANG_PHRASE)
+    {
+        Settings *settings = GetSettings();
+        if (settings != nullptr)
+            lang = settings->locale;
+    }
     return MasterLocale->Translate(str, lang, clear);
 }
 
@@ -4025,6 +4106,66 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
     case XK_F6:
         if (debug_mode)
             Signal("adminforceauth1", 0);
+        return 0;
+    case XK_F8:
+        // Language switcher
+        if (edit == 0)  // Only allow language switching when not in edit mode
+        {
+            Settings *settings = GetSettings();
+            if (settings != nullptr)
+            {
+                // Cycle through languages: English -> French -> Greek -> Spanish -> German -> Italian -> Portuguese -> Dutch
+                if (settings->locale == LANG_ENGLISH)
+                    settings->locale = LANG_FRENCH;
+                else if (settings->locale == LANG_FRENCH)
+                    settings->locale = LANG_GREEK;
+                else if (settings->locale == LANG_GREEK)
+                    settings->locale = LANG_SPANISH;
+                else if (settings->locale == LANG_SPANISH)
+                    settings->locale = LANG_GERMAN;
+                else if (settings->locale == LANG_GERMAN)
+                    settings->locale = LANG_ITALIAN;
+                else if (settings->locale == LANG_ITALIAN)
+                    settings->locale = LANG_PORTUGUESE;
+                else if (settings->locale == LANG_PORTUGUESE)
+                    settings->locale = LANG_DUTCH;
+                else
+                    settings->locale = LANG_ENGLISH;
+                
+                settings->changed = 1;
+                
+                // Show current language
+                const char* lang_name = "English";
+                if (settings->locale == LANG_FRENCH)
+                    lang_name = "Français";
+                else if (settings->locale == LANG_GREEK)
+                    lang_name = "Ελληνικά";
+                else if (settings->locale == LANG_SPANISH)
+                    lang_name = "Español";
+                else if (settings->locale == LANG_GERMAN)
+                    lang_name = "Deutsch";
+                else if (settings->locale == LANG_ITALIAN)
+                    lang_name = "Italiano";
+                else if (settings->locale == LANG_PORTUGUESE)
+                    lang_name = "Português";
+                else if (settings->locale == LANG_DUTCH)
+                    lang_name = "Nederlands";
+                
+                // Show language change confirmation
+                char msg[256];
+                snprintf(msg, sizeof(msg), "Language changed to: %s\n\nPress OK to apply the language change.", 
+                        lang_name);
+                sd = new SimpleDialog(msg);
+                sd->Button("OK", "apply_language_change");
+                
+                // Set up the dialog to apply language change when OK is pressed
+                sd->ClosingAction(ACTION_SUCCESS, ACTION_SIGNAL, "apply_language_change");
+                OpenDialog(sd);
+                
+                // The language change will be applied when the user presses OK
+                // via the Signal handler for "apply_language_change"
+            }
+        }
         return 0;
     case XK_F7:
         if (user != nullptr && page != nullptr && edit == 0)
@@ -6265,6 +6406,34 @@ int Terminal::SetCCTimeout(int cc_timeout)
     
 
     return retval;
+}
+
+int Terminal::ShowLanguageSelectionDialog()
+{
+    FnTrace("Terminal::ShowLanguageSelectionDialog()");
+    
+    // Create a simple dialog with language options
+    SimpleDialog *lang_dialog = new SimpleDialog("Select Your Language / Seleccione su idioma / Choisissez votre langue");
+    lang_dialog->SetRegion(100, 200, 600, 400);
+    
+    // Add language buttons
+    lang_dialog->Button("English", "set_language_1");
+    lang_dialog->Button("Français", "set_language_2");
+    lang_dialog->Button("Ελληνικά", "set_language_3");
+    lang_dialog->Button("Español", "set_language_4");
+    lang_dialog->Button("Deutsch", "set_language_5");
+    lang_dialog->Button("Italiano", "set_language_6");
+    lang_dialog->Button("Português", "set_language_7");
+    lang_dialog->Button("Nederlands", "set_language_8");
+    
+    // Set up signal handling
+    lang_dialog->target_zone = nullptr;
+    strcpy(lang_dialog->target_signal, "language_selected");
+    
+    // Show the dialog
+    OpenDialog(lang_dialog);
+    
+    return 0;
 }
 
 // allowed to edit system pages?

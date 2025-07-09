@@ -646,6 +646,8 @@ public:
 
     // Locale/Region Settings
     Str language;                // name of default language
+    int locale;                  // current language setting
+    int language_selected;       // boolean - has user selected a language?
     int date_format;
     int number_format;
     int time_format;

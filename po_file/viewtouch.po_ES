@@ -1,0 +1,673 @@
+# Spanish Translation File for ViewTouch POS
+# Format: key: translation
+
+# Common Button Text
+Okay: Aceptar
+Cancel: Cancelar
+Yes: Sí
+No: No
+Continue: Continuar
+Start: Iniciar
+Stop: Detener
+Save: Guardar
+Delete: Eliminar
+Edit: Editar
+Add: Agregar
+Remove: Quitar
+Enter: Entrar
+Backspace: Retroceso
+Clear: Limpiar
+Change: Cambiar
+Print: Imprimir
+Next: Siguiente
+Prior: Anterior
+Done: Hecho
+Quit: Salir
+Exit: Salir
+Logout: Cerrar Sesión
+
+# Navigation & Menu Text
+Menu: Menú
+Settings: Configuración
+Reports: Reportes
+Orders: Pedidos
+Payments: Pagos
+Tables: Mesas
+Users: Usuarios
+System: Sistema
+Help: Ayuda
+Welcome: Bienvenido
+Hello: Hola
+Please: Por favor
+Select: Seleccionar
+Choose: Elegir
+Click: Hacer clic
+Press: Presionar
+Touch: Tocar
+
+# Payment & Financial Terms
+Cash: Efectivo
+Credit: Crédito
+Debit: Débito
+Check: Cheque
+Tax: Impuesto
+Total: Total
+Subtotal: Subtotal
+Discount: Descuento
+Tip: Propina
+Change: Cambio
+Amount: Cantidad
+Price: Precio
+Gift Certificate: Certificado de Regalo
+House Account: Cuenta de la Casa
+Charge Room: Cargar Habitación
+Gratuity: Gratificación
+Coupon: Cupón
+Comp: Cortesía
+Employee Meal: Comida de Empleado
+VISA: VISA
+MasterCard: MasterCard
+American Express: American Express
+Discover: Discover
+Diner's Club: Diner's Club
+
+# Time & Date Terms
+Time: Hora
+Date: Fecha
+Today: Hoy
+Yesterday: Ayer
+Tomorrow: Mañana
+Week: Semana
+Month: Mes
+Year: Año
+Hour: Hora
+Minute: Minuto
+Second: Segundo
+Current Time: Hora Actual
+Current Slice: Período Actual
+
+# Error & Status Messages
+Error: Error
+Warning: Advertencia
+Success: Éxito
+Failed: Falló
+Invalid: Inválido
+Required: Requerido
+Missing: Faltante
+Not Found: No Encontrado
+Access Denied: Acceso Denegado
+Permission: Permiso
+Password Incorrect: Contraseña Incorrecta
+Unknown User ID: ID de Usuario Desconocido
+You're Using Another Terminal: Está Usando Otro Terminal
+You're Not On The Clock: No Está Registrado
+You're Already On The Clock: Ya Está Registrado
+You Don't Use The Clock: No Usa el Reloj
+You Still Have Open Checks: Aún Tiene Cheques Abiertos
+
+# Order & Service Terms
+Take Out: Para Llevar
+Fast Food: Comida Rápida
+To Go: Para Llevar
+For Here: Para Aquí
+Call In: Llamar
+Delivery: Entrega
+Catering: Catering
+Room: Habitación
+Table: Mesa
+Guests: Invitados
+Customer: Cliente
+Server: Servidor
+Kitchen: Cocina
+Bar: Bar
+
+# Menu Categories (FamilyName)
+A La Carte: A La Carta
+Appetizer: Aperitivo
+Breakfast Entree: Plato Principal de Desayuno
+Burger: Hamburguesa
+Lunch Entree: Plato Principal de Almuerzo
+Light Dinner: Cena Ligera
+Dinner Entree: Plato Principal de Cena
+Soup: Sopa
+Child Menu: Menú Infantil
+Dessert: Postre
+Salad: Ensalada
+Sandwich: Sándwich
+Seafood: Mariscos
+Side Order: Acompañamiento
+Pizza: Pizza
+Specialty: Especialidad
+Specialty Entree: Plato Principal Especial
+Banquet: Banquete
+Bakery: Panadería
+Beverage: Bebida
+Beer: Cerveza
+Bottled Beer: Cerveza en Botella
+Wine: Vino
+Bottled Wine: Vino en Botella
+Alcohol: Alcohol
+Cocktail: Cóctel
+Malt Beverage: Bebida de Malta
+Modifier: Modificador
+Reorder: Reordenar
+Merchandise: Mercancía
+
+# System Settings (SwitchName)
+Seat Based Ordering: Pedidos por Asiento
+Drawer Mode: Modo Cajón
+Use Passwords: Usar Contraseñas
+Credit For Sale: Crédito para Venta
+Allow Discounts For Alcohol: Permitir Descuentos en Alcohol
+Make Change For Checks: Dar Cambio para Cheques
+Make Change For Credit Cards: Dar Cambio para Tarjetas de Crédito
+Make Change For Gift Certificates: Dar Cambio para Certificados de Regalo
+Make Change For Room Charges: Dar Cambio para Cargos de Habitación
+Company: Empresa
+Sales Price Rounding: Redondeo de Precio de Venta
+Auto Receipt Printing: Impresión Automática de Recibo
+Expand Labor: Expandir Trabajo
+Suppress Zero Values: Suprimir Valores Cero
+Show Family Groupings: Mostrar Agrupaciones de Familia
+Date Format: Formato de Fecha
+Number Format: Formato de Número
+Language/Locale: Idioma/Localización
+Measurement Standard: Estándar de Medida
+Credit Authorization Method: Método de Autorización de Crédito
+24 Hour Mode: Modo 24 Horas
+Item Targeting: Destino de Artículos
+Expand Goodwill Adjustments: Expandir Ajustes de Buena Voluntad
+Monetary Symbol: Símbolo Monetario
+Show Modifiers: Mostrar Modificadores
+Allow Multiple Coupons: Permitir Múltiples Cupones
+Print All Modifiers on Receipt: Imprimir Todos los Modificadores en el Recibo
+Auto Print Drawer Report: Imprimir Automáticamente Reporte de Cajón
+Balance Automatic Coupons: Balancear Cupones Automáticos
+Zero Exclusion: Exclusión Cero
+
+# Payment Types (TenderName)
+Cash: Efectivo
+Check: Cheque
+Gift Certificate: Certificado de Regalo
+House Account: Cuenta de la Casa
+Charge Room: Cargar Habitación
+Gratuity: Gratificación
+Credit Card: Tarjeta de Crédito
+Discount: Descuento
+Coupon: Cupón
+Comp: Cortesía
+Employee Meal: Comida de Empleado
+Tip: Propina
+
+# Report Types (ReportTypeName)
+Server: Servidor
+Closed Check: Cheque Cerrado
+Drawer: Cajón
+Check: Cheque
+Sales: Ventas
+System Balance: Balance del Sistema
+Deposit/Book Balance: Balance de Depósito/Libro
+Server Labor: Trabajo del Servidor
+Item Comp Exception: Excepción de Cortesía de Artículo
+Item Void Exception: Excepción de Anulación de Artículo
+Table Exception: Excepción de Mesa
+Check Rebuild Exception: Excepción de Reconstrucción de Cheque
+Customer Detail: Detalle del Cliente
+Expenses: Gastos
+Royalty: Regalías
+Auditing: Auditoría
+CreditCard: Tarjeta de Crédito
+
+# Customer Types (CustomerTypeName)
+Restaurant: Restaurante
+Take Out: Para Llevar
+Delivery: Entrega
+Hotel: Hotel
+Retail: Minorista
+Fast Food: Comida Rápida
+For Here: Para Aquí
+To Go: Para Llevar
+Call In: Llamar
+
+# Order Modifiers (QualifierName)
+No: No
+Sub: Sustituto
+On Side: Al Lado
+Lite: Ligero
+Only: Solo
+Extra: Extra
+Double: Doble
+Dry: Seco
+Plain: Simple
+Toast: Tostado
+UnToast: Sin Tostar
+Crisp: Crujiente
+Soft: Suave
+Hard: Duro
+Grill: A la Parrilla
+< Left: < Izquierda
+Right >: Derecha >
+Whole: Entero
+Cut/2: Cortado/2
+Cut/3: Cortado/3
+Cut/4: Cortado/4
+
+# Credit Card Types (CCTypeName)
+VISA: VISA
+MasterCard: MasterCard
+American Express: American Express
+Discover: Discover
+Diner's Club: Diner's Club
+Debit: Débito
+
+# Days of Week
+Sunday: Domingo
+Monday: Lunes
+Tuesday: Martes
+Wednesday: Miércoles
+Thursday: Jueves
+Friday: Viernes
+Saturday: Sábado
+Sun: Dom
+Mon: Lun
+Tue: Mar
+Wed: Mié
+Thu: Jue
+Fri: Vie
+Sat: Sáb
+
+# Months
+January: Enero
+February: Febrero
+March: Marzo
+April: Abril
+May: Mayo
+June: Junio
+July: Julio
+August: Agosto
+September: Septiembre
+October: Octubre
+November: Noviembre
+December: Diciembre
+Jan: Ene
+Feb: Feb
+Mar: Mar
+Apr: Abr
+May: May
+Jun: Jun
+Jul: Jul
+Aug: Ago
+Sep: Sep
+Oct: Oct
+Nov: Nov
+Dec: Dic
+
+# Jobs
+No Job: Sin Trabajo
+Dishwasher: Lavador de Platos
+Busperson: Ayudante de Mesa
+Line Cook: Cocinero de Línea
+Prep Cook: Cocinero de Preparación
+Chef: Chef
+Cashier: Cajero
+Server: Servidor
+Server/Cashier: Servidor/Cajero
+Bartender: Cantinero
+Host/Hostess: Anfitrión/Anfitriona
+Bookkeeper: Contador
+Supervisor: Supervisor
+Assistant Manager: Subgerente
+Manager: Gerente
+
+# Credit Card Processing
+Pre-Authorize: Pre-Autorizar
+Authorize: Autorizar
+Void: Anular
+Refund: Reembolso
+Add Tip: Agregar Propina
+Manual Entry: Entrada Manual
+Swipe: Deslizar
+Card Number: Número de Tarjeta
+Expires: Vence
+Holder: Titular
+Charge Amount: Cantidad a Cargar
+Tip Amount: Cantidad de Propina
+Void Successful: Anulación Exitosa
+Refund Successful: Reembolso Exitoso
+Please select card type: Por favor seleccione el tipo de tarjeta
+Please swipe the card: Por favor deslice la tarjeta
+PreAuthorizing: Pre-Autorizando
+Authorizing: Autorizando
+Voiding: Anulando
+Refunding: Reembolsando
+Please Wait: Por favor espere
+
+# System Terms
+Active: Activo
+Inactive: Inactivo
+Unknown: Desconocido
+Turned Off: Apagado
+Archive: Archivo
+Balance: Balance
+Deposit: Depósito
+Expenses: Gastos
+Royalty: Regalías
+Auditing: Auditoría
+
+# Form Labels
+First Line: Primera Línea
+Second Line: Segunda Línea
+Customer Display Unit Messages: Mensajes de Unidad de Pantalla del Cliente
+Date: Fecha
+Payer: Pagador
+Source: Fuente
+Document: Documento
+Name: Nombre
+Password: Contraseña
+User ID: ID de Usuario
+
+# Additional Terms
+Page: Página
+of: de
+Current: Actual
+General: General
+Breakfast: Desayuno
+Brunch: Almuerzo
+Lunch: Almuerzo
+Early Dinner: Cena Temprana
+Dinner: Cena
+Late Night: Noche Tardía
+Bar: Bar
+Wine: Vino
+Cafe: Café
+Starting Time Is: La Hora de Inicio Es
+Ending Time Is: La Hora de Finalización Es
+Pick A Job For This Shift: Elija un Trabajo para Este Turno
+Please Enter Your User ID: Por favor ingrese su ID de Usuario
+Press START To Enter: Presione INICIAR para Entrar
+Please Try Again: Por favor intente de nuevo
+Contact a manager to be reactivated: Contacte a un gerente para ser reactivado
+You Still Have An Assigned Drawer: Aún tiene un cajón asignado
+Your Record Is Inactive: Su registro está inactivo
+
+# Additional UI Elements from Zone Files
+Space: Espacio
+Back Space: Retroceso
+Quit ViewTouch and Return To The Desktop: Salir de ViewTouch y Volver al Escritorio
+Refresh ViewTouch: Actualizar ViewTouch
+Don't Quit or Refresh: No Salir ni Actualizar
+Voice Authorization: Autorización por Voz
+New Card: Nueva Tarjeta
+SubCheck: Sub-Cheque
+Hold Anyway: Mantener de Todos Modos
+Finalize Anyway: Finalizar de Todos Modos
+End Without Settlement: Terminar Sin Liquidación
+End the Day Now: Terminar el Día Ahora
+Cancel,\\Don't end the Day: Cancelar,\\No Terminar el Día
+Your Business Name: Nombre de Su Negocio
+City State Zip Code: Ciudad Estado Código Postal
+Country Code: Código de País
+Location Code: Código de Ubicación
+Set the Life of the Logon ID (Up to 999 seconds): Establecer la Vida del ID de Inicio de Sesión (Hasta 999 segundos)
+Screen Saver: Protector de Pantalla
+On the Table Page: En la Página de Mesa
+After Settlement: Después de Liquidación
+On Page One: En la Página Uno
+Ledger Accounts: Cuentas del Libro Mayor
+Lowest Account Number: Número de Cuenta Más Bajo
+Highest Account Number: Número de Cuenta Más Alto
+Account for expenses paid from drawers: Cuenta para gastos pagados desde cajones
+Drawer Settings: Configuración de Cajón
+Require user to balance drawer in ServerBank mode?: ¿Requiere que el usuario balancee el cajón en modo ServerBank?
+Default Tab Amount: Cantidad de Tab Predeterminada
+SMTP Settings: Configuración SMTP
+SMTP Server for Sending: Servidor SMTP para Envío
+SMTP Reply To Address: Dirección de Respuesta SMTP
+Miscellaneous Settings: Configuración Miscelánea
+Can select user for expenses?: ¿Puede seleccionar usuario para gastos?
+Minimum Day Length (hours): Duración Mínima del Día (horas)
+FastFood mode for TakeOut orders?: ¿Modo FastFood para pedidos para llevar?
+Set Your Preferred Report Time Frame: Establecer Su Marco de Tiempo de Reporte Preferido
+Print A Header on Reports?: ¿Imprimir un Encabezado en los Reportes?
+Split Check View: Vista de Cheque Dividido
+Modifier Separation: Separación de Modificador
+Start reports at Midnight?: ¿Comenzar reportes a Medianoche?
+Allow Background Icon?: ¿Permitir Icono de Fondo?
+Receipt Header: Encabezado de Recibo
+Line 1: Línea 1
+Line 2: Línea 2
+Line 3: Línea 3
+Line 4: Línea 4
+Header Length: Longitud de Encabezado
+Order Number Style: Estilo de Número de Orden
+Table Number Style: Estilo de Número de Mesa
+Receipt Footer: Pie de Página de Recibo
+Kitchen Video/Printouts: Video de Cocina/Impresiones
+Kitchen Video Print Method: Método de Impresión de Video de Cocina
+Kitchen Video Show User: Video de Cocina Mostrar Usuario
+United States Tax Settings: Configuración de Impuestos de Estados Unidos
+Food Sales Tax %: Impuesto de Venta de Alimentos %
+Prices include tax?: ¿Los precios incluyen impuesto?
+Alcohol Sales Tax %: Impuesto de Venta de Alcohol %
+Room Sales Tax %: Impuesto de Venta de Habitación %
+Merchandise Sales Tax %: Impuesto de Venta de Mercancía %
+Prices inc tax?: ¿Precios incluyen impuesto?
+Canadian Tax Settings: Configuración de Impuestos Canadienses
+GST %: GST %
+PST %: PST %
+HST %: HST %
+QST %: QST %
+European Tax Settings: Configuración de Impuestos Europeos
+VAT %: IVA %
+General Rate Settings: Configuración de Tasa General
+Royalty Rate %: Tasa de Regalías %
+Advertising Fund %: Fondo Publicitario %
+Processing Server: Servidor de Procesamiento
+Processing Port: Puerto de Procesamiento
+Merchant ID: ID del Comerciante
+User name: Nombre de usuario
+Connect Timeout: Tiempo de Espera de Conexión
+Amount to Add for PreAuth: Cantidad a Agregar para Pre-Autorización
+Support Credit Cards?: ¿Soporta Tarjetas de Crédito?
+Support Debit Cards?: ¿Soporta Tarjetas de Débito?
+Support Gift Cards?: ¿Soporta Tarjetas de Regalo?
+Allow PreAuthorizations?: ¿Permitir Pre-Autorizaciones?
+Allow auths to be cancelled?: ¿Permitir que las autorizaciones sean canceladas?
+Also print a merchant receipt?: ¿También imprimir recibo del comerciante?
+Also print a cash receipt?: ¿También imprimir recibo de efectivo?
+Print receipt for PreAuth Complete?: ¿Imprimir recibo para Pre-Auth Completo?
+Print receipt for Voids?: ¿Imprimir recibo para Anulaciones?
+Print Customer Information?: ¿Imprimir Información del Cliente?
+Automatically authorize on scan?: ¿Autorizar automáticamente al escanear?
+Use Bar mode for PreAuth Completes?: ¿Usar modo Bar para Pre-Auth Completos?
+How to use card number in memory?: ¿Cómo usar número de tarjeta en memoria?
+How to save card number?: ¿Cómo guardar número de tarjeta?
+How to display card number?: ¿Cómo mostrar número de tarjeta?
+Credit Card No Connection Messages: Mensajes de Sin Conexión de Tarjeta de Crédito
+Credit Card Voice Authorization Messages: Mensajes de Autorización por Voz de Tarjeta de Crédito
+Editor's Password: Contraseña del Editor
+Minimum Password Length: Longitud Mínima de Contraseña
+Multiply: Multiplicar
+Nickname: Apodo
+Last Name: Apellido
+First Name: Nombre
+City: Ciudad
+State: Estado
+Job Info: Información de Trabajo
+Employee #: # de Empleado
+Primary Job: Trabajo Principal
+Department: Departamento
+2nd Job: 2do Trabajo
+3rd Job: 3er Trabajo
+Employee Name: Nombre del Empleado
+Job Title: Título del Trabajo
+Phone Number: Número de Teléfono
+Reactivate this employee: Reactivar este empleado
+Completely remove employee: Eliminar completamente empleado
+Oops!\\Leave as is: ¡Ups!\\Dejar como está
+Account Name: Nombre de Cuenta
+Account No: Número de Cuenta
+No Accounts Defined: No Hay Cuentas Definidas
+Recipe Unit: Unidad de Receta
+Invoice Unit: Unidad de Factura
+Cost: Costo
+Servings in Invoice Unit: Porciones en Unidad de Factura
+Serving Cost: Costo de Porción
+Minutes to Prepare: Minutos para Preparar
+Portion Unit: Unidad de Porción
+Contact: Contacto
+Item Name: Nombre del Artículo
+Button Name (if different): Nombre del Botón (si es diferente)
+Printed Name (if different): Nombre Impreso (si es diferente)
+Call Center Name: Nombre del Centro de Llamadas
+Item Code: Código del Artículo
+Item Type: Tipo de Artículo
+Substitute Price: Precio Sustituto
+Employee Price: Precio de Empleado
+Takeout Price: Precio para Llevar
+Delivery Price: Precio de Entrega
+Price Type: Tipo de Precio
+Family: Familia
+Tax/Discount Class: Clase de Impuesto/Descuento
+Printer Target: Objetivo de Impresora
+Call Order: Orden de Llamada
+Is Item Stocked?: ¿El artículo está en inventario?
+Allow Increase Button?: ¿Permitir Botón de Aumentar?
+Ignore Split Kitchen?: ¿Ignorar Cocina Dividida?
+Vendor: Proveedor
+ID: ID
+Pay: Pago
+Rate: Tasa
+Tips: Propinas
+Expense ID: ID de Gasto
+Payer: Pagador
+Expense Amount: Cantidad de Gasto
+Expense Drawer: Cajón de Gasto
+or: o
+Account: Cuenta
+Destination Account: Cuenta de Destino
+Tax Amount: Cantidad de Impuesto
+Tax Account: Cuenta de Impuesto
+Document: Documento
+Explanation: Explicación
+You Need to Balance Your Drawer: Necesita Balancear Su Cajón
+Contact a manager: Contacte a un gerente
+User is not allowed into the system: El usuario no está permitido en el sistema
+No Employee Logged In: No Hay Empleado Conectado
+Strange, No Work Info For You...: Extraño, No Hay Información de Trabajo Para Usted...
+Shift Work Summary: Resumen de Trabajo de Turno
+Enter Declared Tips Total: Ingrese Total de Propinas Declaradas
+Input Amount:: Cantidad de Entrada:
+Press any button to continue: Presione cualquier botón para continuar
+Employee: Empleado
+Amount Paid: Cantidad Pagada
+Amount Owed: Cantidad Debida
+This is the first business day: Este es el primer día de negocio
+This business day started: Este día de negocio comenzó
+You may end the day when ready: Puede terminar el día cuando esté listo
+Search For...: Buscar...
+Standard Target: Objetivo Estándar
+Kitchen #: Cocina #
+No Messages Entered: No Se Han Ingresado Mensajes
+Configure Your Host Computer and Your Display Terminals, Then Assign Receipt Printer Queues To Them: Configure Su Computadora Host y Sus Terminales de Pantalla, Luego Asigne Colas de Impresora de Recibo a Ellos
+Display's Name: Nombre de la Pantalla
+Configure Your Requisition Printers in Kitchens, Bars, Expediting Areas & Your Office Printer: Configure Sus Impresoras de Requisición en Cocinas, Barras, Áreas de Expedición y Su Impresora de Oficina
+Printer's Name: Nombre de la Impresora
+You May Now Edit This Display Terminal's Configuration: Ahora Puede Editar la Configuración de Este Terminal de Pantalla
+You May Now Edit This Printer's Configuration: Ahora Puede Editar la Configuración de Esta Impresora
+Here: Aquí
+CLOSED: CERRADO
+VOID: ANULADO
+Comp this Item: Cortesía este Artículo
+Void this Item: Anular este Artículo
+No, just add the order: No, solo agregar la orden
+skipit: omitir
+Check Voided: Cheque Anulado
+Check Closed: Cheque Cerrado
+Select 'Clear All Entries': Seleccionar 'Limpiar Todas las Entradas'
+To Rebuild: Para Reconstruir
+Check Blank: Cheque en Blanco
+Balance Covered: Balance Cubierto
+Working...: Trabajando...
+No Check Selected: No Se Ha Seleccionado Cheque
+No customer available: No hay cliente disponible
+No, that was a mistake: No, eso fue un error
+There Are No Open Drawers For: No Hay Cajones Abiertos Para
+There Are No Balanced Drawers For: No Hay Cajones Balanceados Para
+Please Enter These Amounts: Por Favor Ingrese Estas Cantidades
+Pre-Auth Complete: Pre-Auth Completo
+Pre-Auth Advice: Consejo Pre-Auth
+Credit Card Number: Número de Tarjeta de Crédito
+Expiration Date: Fecha de Vencimiento
+Please select card type.: Por favor seleccione tipo de tarjeta.
+Please select card entry method.: Por favor seleccione método de entrada de tarjeta.
+or select Manual Entry: o seleccione Entrada Manual
+Wage Group Filter: Filtro de Grupo Salarial
+First Name: Nombre
+Comment: Comentario
+Enter Your Password: Ingrese Su Contraseña
+Enter Your Old Password: Ingrese Su Contraseña Anterior
+Enter Your New Password: Ingrese Su Nueva Contraseña
+Enter Your New Password Again: Ingrese Su Nueva Contraseña Nuevamente
+Change Password: Cambiar Contraseña
+Page List: Lista de Páginas
+Off: Apagado
+On: Encendido
+Managers Only: Solo Gerentes
+Everyone: Todos
+sendandjump: enviarysaltar
+shutdown: apagar
+systemrestart: reiniciarsistema
+localprint: imprimirlocal
+reportprint: imprimirreporte
+enter: entrar
+backspace: retroceso
+cancel: cancelar
+clear: limpiar
+change: cambiar
+ccpreauth: ccpreauth
+cccomplete: cccompleto
+ccauthorize: ccautorizar
+ccadvice: ccconsejo
+ccaddtip: ccagregarpropina
+cccancel: cccancelar
+ccvoid: ccanular
+ccrefund: ccreembolso
+ccundorefund: ccdeshacerreembolso
+ccmanual: ccmanual
+ccdone: cchecho
+cccredit: cccredito
+ccdebit: ccdebito
+ccswipe: ccdeslizar
+ccclear: cclimpiar
+ccvoice: ccvoz
+ccqterminate: ccterminar
+okay: aceptar
+print credit: imprimir credito
+print subcheck: imprimir subcheque
+noprint: noimprimir
+nevermind: noimporta
+finalize2: finalizar2
+swipe newcard: deslizar nuevatarjeta
+nocard: notarjeta
+nextcheckforce: forzarproximocheque
+addandopentab: agregaryabrirpestaña
+addanyway: agregarde todosmodos
+comp-1: cortesia-1
+void-1: anular-1
+merge_tables: fusionar_mesas
+cancel_merge: cancelar_fusion
+activate: activar
+delete: eliminar
+jsz_yes: jsz_si
+jsz_no: jsz_no
+cceodnosettle: cceodnosettle
+force end: forzar fin
+next: siguiente
+prior: anterior
+change view: cambiar vista
+restore: restaurar
+new: nuevo
+unfocus: perder foco
+search: buscar
+nextsearch: siguiente busqueda 
