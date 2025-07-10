@@ -636,6 +636,9 @@ public:
     int   CC_GetSAFDetails();
     int   SetCCTimeout(int cc_timeout);
 
+    // Language selection
+    int   ShowLanguageSelectionDialog();
+
     // friend functions
     friend Terminal *NewTerminal(const char* , int, int);
     friend int       CloneTerminal(Terminal *, const char* , const char* );

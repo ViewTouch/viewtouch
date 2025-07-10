@@ -23,11 +23,18 @@
 #include "data_file.hh"
 #include "utility.hh"
 #include "list_utility.hh"
+#include <map>
 
 #define LANG_NONE                -1  // uninitialized POFile class
 #define LANG_PHRASE               0  // for old defaults; do not search POFile classes
 #define LANG_ENGLISH              1
 #define LANG_FRENCH               2
+#define LANG_GREEK                3
+#define LANG_SPANISH              4
+#define LANG_GERMAN               5
+#define LANG_ITALIAN              6
+#define LANG_PORTUGUESE           7
+#define LANG_DUTCH                8
 
 
 /*********************************************************************
@@ -103,6 +110,7 @@ public:
     POFileList();
     POFile *FindPOFile(int lang);
     const char* FindPOString(const char* str, int lang, int clear = 0);
+    void ClearPOFiles();  // Clear all loaded PO files to force reload
 };
 
 
@@ -144,9 +152,22 @@ public:
     const char* Translate(const char* str, int lang = 0, int clear = 0 );
     const genericChar* TranslatePO(const char* str, int lang = LANG_ENGLISH, int clear = 0);
     int NewTranslation(const char* str, const genericChar* value);
+    void ClearPOFiles();  // Clear PO files to force reload
 
     const char* TimeDate(Settings* s, const TimeInfo &timevar, int format, int lang, genericChar* str = 0);
     char* Page( int current, int page_max, int lang, genericChar* str );
+
+    // UI Data Translation Methods (for po_file/vt_data content)
+    const genericChar* TranslateUIData(const genericChar* key);
+    int NewUIDataTranslation(const genericChar* key, const genericChar* value);
+    int LoadUIDataTranslations();
+    int SaveUIDataTranslations();
+    void ClearUIDataTranslations();
+
+private:
+    // UI Data Translation Storage
+    std::map<std::string, std::string> ui_data_translations;
+    std::string ui_data_translation_file;
 };
 
 

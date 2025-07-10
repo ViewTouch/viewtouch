@@ -318,3 +318,22 @@ install(PROGRAMS scripts/vtcommands.pl DESTINATION viewtouch/bin/vtcommands)
 
 #install(CODE "MESSAGE(\"Sample install message.\")")
 
+# Install all language files
+install(DIRECTORY po_file/ DESTINATION viewtouch/dat/languages FILES_MATCHING PATTERN "viewtouch.po_*")
+
+# Install language files
+install(FILES
+    po_file/viewtouch.po_EN
+    po_file/viewtouch.po_FR
+    po_file/viewtouch.po_GR
+    po_file/viewtouch.po_ES
+    po_file/viewtouch.po_DE
+    po_file/viewtouch.po_IT
+    po_file/viewtouch.po_PT
+    po_file/viewtouch.po_NL
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/dat/languages)
+
+# Install UI data translation files if present
+file(GLOB UI_DATA_PO_FILES "${CMAKE_SOURCE_DIR}/po_file/ui_data_*.po")
+install(FILES ${UI_DATA_PO_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/dat/languages)
+
