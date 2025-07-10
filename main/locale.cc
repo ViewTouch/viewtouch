@@ -639,7 +639,9 @@ int Locale::Save()
     if (filename.size() <= 0)
         return 1;
 
-    BackupFile(filename.Value());
+    // Only backup if the file exists
+    if (DoesFileExist(filename.Value()))
+        BackupFile(filename.Value());
 
     // Save Version 1
     OutputDataFile df;

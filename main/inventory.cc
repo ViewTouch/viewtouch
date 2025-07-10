@@ -654,7 +654,9 @@ int Inventory::Save()
     if (filename.empty())
         return 1;
 
-    BackupFile(filename.Value());
+    // Only backup if the file exists
+    if (DoesFileExist(filename.Value()))
+        BackupFile(filename.Value());
 
     // Save version 7
     OutputDataFile df;

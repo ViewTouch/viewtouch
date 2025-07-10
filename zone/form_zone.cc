@@ -466,7 +466,14 @@ SignalResult FormZone::Signal(Terminal *term, const genericChar* message)
         SaveRecord(term, record_no, 0);
         --record_no;
         if (record_no < 0)
+        {
             record_no = records - 1;
+            // Show a brief message that we've cycled to the last record
+            if (records > 1)
+            {
+                term->SetMessage("Back to last record");
+            }
+        }
         if (record_no < 0)
             record_no = 0;
         else
@@ -968,7 +975,7 @@ SignalResult ListFormZone::Signal(Terminal *term, const genericChar* message)
         "delete", "print", "unfocus", "change view", nullptr};
     int idx = CompareListN(commands, message);
 
-	if (idx == -1)
+    if (idx == -1)
     {
         // let parent class give the message a try
         return FormZone::Signal(term, message);
@@ -976,18 +983,34 @@ SignalResult ListFormZone::Signal(Terminal *term, const genericChar* message)
 
     if (idx == 0) // New
     {
-        if (records > 0)
+        ReportError("DEBUG: ListFormZone::Signal() - 'new' case entered");
+        if (records > 0) {
+            ReportError("DEBUG: ListFormZone::Signal() - calling SaveRecord");
             SaveRecord(term, record_no, 0);
+            ReportError("DEBUG: ListFormZone::Signal() - SaveRecord returned");
+        }
         record_no = records;
-        if (NewRecord(term))
+        ReportError("DEBUG: ListFormZone::Signal() - calling NewRecord");
+        if (NewRecord(term)) {
+            ReportError("DEBUG: ListFormZone::Signal() - NewRecord returned SIGNAL_IGNORED");
             return SIGNAL_IGNORED;
+        }
+        ReportError("DEBUG: ListFormZone::Signal() - NewRecord call completed");
+        ReportError("DEBUG: ListFormZone::Signal() - about to call RecordCount");
         records = RecordCount(term);
+        ReportError("DEBUG: ListFormZone::Signal() - RecordCount returned: " + std::to_string(records));
+        ReportError("DEBUG: ListFormZone::Signal() - calling LoadRecord");
         if (record_no >= records)
             record_no = records - 1;
         LoadRecord(term, record_no);
+        ReportError("DEBUG: ListFormZone::Signal() - LoadRecord returned");
+        ReportError("DEBUG: ListFormZone::Signal() - calling FirstField");
         FirstField();
+        ReportError("DEBUG: ListFormZone::Signal() - FirstField returned");
         show_list = 0;
+        ReportError("DEBUG: ListFormZone::Signal() - calling Draw");
         Draw(term, 0);
+        ReportError("DEBUG: ListFormZone::Signal() - Draw returned");
         return SIGNAL_OKAY;
     }
 

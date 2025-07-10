@@ -217,6 +217,9 @@ UserDB::UserDB()
         developer->id       = 2;
         developer->training = 1;
     }
+
+    name_array = nullptr;
+    id_array = nullptr;
 }
 
 // Destructor
@@ -280,7 +283,9 @@ int UserDB::Save()
     if (filename.empty())
         return 1;
 
-    BackupFile(filename.Value());
+    // Only backup if the file exists
+    if (DoesFileExist(filename.Value()))
+        BackupFile(filename.Value());
 
     // Save version 8
     OutputDataFile df;
@@ -486,20 +491,41 @@ int UserDB::FindRecordByWord(Terminal *t, const std::string &word, int active, i
 Employee *UserDB::FindByRecord(Terminal *t, int record, int active)
 {
     FnTrace("UserDB::FindByRecord()");
-    if (record < 0)
+    ReportError("DEBUG: FindByRecord() called with record=" + std::to_string(record) + ", active=" + std::to_string(active));
+    
+    if (record < 0) {
+        ReportError("DEBUG: FindByRecord() - record < 0, returning nullptr");
         return nullptr;
+    }
 
+    ReportError("DEBUG: FindByRecord() - about to call NameArray()");
     Employee **array = NameArray();
-    for (int i = 0; i < UserCount(); ++i)
+    ReportError("DEBUG: FindByRecord() - NameArray() returned");
+    
+    int user_count = UserCount();
+    ReportError("DEBUG: FindByRecord() - UserCount() returned: " + std::to_string(user_count));
+    
+    for (int i = 0; i < user_count; ++i)
     {
+        ReportError("DEBUG: FindByRecord() - checking array[" + std::to_string(i) + "]");
         Employee *e = array[i];
+        if (e == nullptr) {
+            ReportError("DEBUG: FindByRecord() - array[" + std::to_string(i) + "] is nullptr!");
+            continue;
+        }
+        
+        ReportError("DEBUG: FindByRecord() - calling e->Show() for employee: " + std::string(e->system_name.Value()));
         if (e->Show(t, active))
         {
             --record;
-            if (record < 0)
+            ReportError("DEBUG: FindByRecord() - employee shown, record now: " + std::to_string(record));
+            if (record < 0) {
+                ReportError("DEBUG: FindByRecord() - found employee, returning: " + std::string(e->system_name.Value()));
                 return e;
+            }
         }
     }
+    ReportError("DEBUG: FindByRecord() - no employee found, returning nullptr");
     return nullptr;
 }
 
@@ -680,24 +706,31 @@ int UserDB::ChangePageID(int old_id, int new_id)
 Employee *UserDB::NewUser()
 {
     FnTrace("UserDB::NewUser()");
+    ReportError("DEBUG: Entered NewUser()");
     Employee *e = UserList(), *enext;
     while (e)
     {
         enext = e->next;
         if (e->IsBlank())
         {
+            ReportError("DEBUG: Removing blank employee");
             Remove(e);
             delete e;
         }
         e = enext;
     }
+    ReportError("DEBUG: Creating new Employee");
     e = new Employee;
     if (e)
     {
+        ReportError("DEBUG: Creating new JobInfo");
         JobInfo *j = new JobInfo;
+        ReportError("DEBUG: Adding JobInfo to Employee");
         e->Add(j);
+        ReportError("DEBUG: Adding Employee to list");
         Add(e);
     }
+    ReportError("DEBUG: Returning new Employee");
     return e;
 }
 
@@ -713,24 +746,35 @@ Employee *UserDB::KeyConflict(Employee *server)
 Employee **UserDB::NameArray(int resort)
 {
     FnTrace("UserDB::NameArray()");
+    ReportError("DEBUG: NameArray() called with resort=" + std::to_string(resort));
+    
     int users = UserCount();
+    ReportError("DEBUG: NameArray() - UserCount() returned: " + std::to_string(users));
+    
     if (name_array == nullptr)
     {
+        ReportError("DEBUG: NameArray() - name_array is nullptr, allocating");
         resort = 1;
 	name_array = (Employee **)calloc(sizeof(Employee *), users);
+        ReportError("DEBUG: NameArray() - allocated name_array");
     }
 
     if (resort)
     {
+        ReportError("DEBUG: NameArray() - resorting array");
         int i = 0;
         Employee *e = UserList();
         while (e)
         {
+            ReportError("DEBUG: NameArray() - adding employee " + std::string(e->system_name.Value()) + " to array[" + std::to_string(i) + "]");
             name_array[i++] = e;
             e = e->next;
         }
+        ReportError("DEBUG: NameArray() - about to call qsort with " + std::to_string(users) + " elements");
         qsort(name_array, users, sizeof(Employee *), UserNameCompare);
+        ReportError("DEBUG: NameArray() - qsort completed");
     }
+    ReportError("DEBUG: NameArray() - returning name_array");
     return name_array;
 }
 

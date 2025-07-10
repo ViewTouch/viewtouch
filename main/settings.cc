@@ -2183,7 +2183,9 @@ int Settings::Save()
     int n = 0;
     int i;
 
-    BackupFile(filename.Value());
+    // Only backup if the file exists
+    if (DoesFileExist(filename.Value()))
+        BackupFile(filename.Value());
 
     // Write out SETTINGS_VERSION
     OutputDataFile df;
@@ -2858,7 +2860,9 @@ int Settings::SaveMedia()
     FnTrace("Settings::SaveMedia()");
     int count;
 
-    BackupFile(discount_filename.Value());
+    // Only backup if the file exists
+    if (DoesFileExist(discount_filename.Value()))
+        BackupFile(discount_filename.Value());
 
     // Write out SETTINGS_VERSION
     OutputDataFile df;

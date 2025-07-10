@@ -215,7 +215,9 @@ int ExceptionDB::Save()
     if (filename.empty())
         return 1;
 
-    BackupFile(filename.Value());
+    // Only backup if the file exists
+    if (DoesFileExist(filename.Value()))
+        BackupFile(filename.Value());
     OutputDataFile df;
     if (df.Open(filename.Value(), EXCEPTION_VERSION))
         return 1;

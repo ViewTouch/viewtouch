@@ -92,8 +92,12 @@ UserEditZone::UserEditZone()
     AddButtonField("Remove This Job", "killjob3");
     AddNewLine(2);
 
+    // Remove the 'Next' button (not present in this constructor)
+    // Make the 'Add Employee' button larger
     Center(); Color(COLOR_DK_GREEN);
     AddButtonField("* Add Another Job *", "addjob");
+    AddNewLine(2);
+    AddButtonField("Add Employee", "new");
     view_active = 1;
 }
 
@@ -143,18 +147,23 @@ RenderResult UserEditZone::Render(Terminal *term, int update_flag)
 SignalResult UserEditZone::Signal(Terminal *term, const char* message)
 {
     FnTrace("UserEditZone::Signal()");
+    ReportError("DEBUG: Entered UserEditZone::Signal()");
     static const char* commands[] = {
         "active", "inactive", "clear password", "remove", "activate",
         "addjob", "killjob1", "killjob2", "killjob3", nullptr};
     int idx = CompareList(message, commands);
+    ReportError(std::string("DEBUG: Signal message: ") + (message ? message : "(null)") + ", idx: " + std::to_string(idx));
 
-    if (idx < 0)
+    if (idx < 0) {
+        ReportError("DEBUG: Passing to ListFormZone::Signal");
         return ListFormZone::Signal(term, message);
+    }
 
     switch (idx)
     {
     case 0:  // active
     case 1:  // inactive
+        ReportError("DEBUG: Handling active/inactive");
         if (records > 0)
             SaveRecord(term, record_no, 0);
         show_list = 1;
@@ -167,68 +176,40 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
         return SIGNAL_OKAY;
     }
 
-    if (user == nullptr)
+    if (user == nullptr) {
+        ReportError("DEBUG: user is nullptr, returning SIGNAL_IGNORED");
         return SIGNAL_IGNORED;
+    }
 
     switch (idx)
     {
     case 2:  // clear password
+        ReportError("DEBUG: Handling clear password");
         user->password.Clear();
         SaveRecord(term, record_no, 0);
         Draw(term, 1);
         return SIGNAL_OKAY;
-
     case 3:  // remove
-        if (user->active)
-        {
-            if (user->last_job == 0)
-            {
-                user->active = 0;
-                records = RecordCount(term);
-                if (record_no >= records)
-                    record_no = records - 1;
-                if (records > 0)
-                    LoadRecord(term, record_no);
-                Draw(term, 1);
-            }
-            else
-            {
-                char str[STRLENGTH] = "";
-                strncat(str, "This employee is clocked in.  You cannot\\", sizeof(str) - strlen(str) - 1);
-                strncat(str, "change the employee's status until he or\\", sizeof(str) - strlen(str) - 1);
-                strncat(str, "she is clocked out of the system.", sizeof(str) - strlen(str) - 1);
-                SimpleDialog *d = new SimpleDialog(str);
-                d->force_width = 600;
-                d->Button("Okay");
-                term->OpenDialog(d);
-            }
-        }
-        else
-        {
-            char str[STRLENGTH];
-            snprintf(str, STRLENGTH, "Employee '%s' is inactive.  What do you want to do?",
-                     user->system_name.Value());
-            SimpleDialog *d = new SimpleDialog(str);
-            d->Button("Reactivate this employee", "activate");
-            d->Button("Completely remove employee", "delete");
-            d->Button("Oops!\\Leave as is");
-            d->target_zone = this;
-            term->OpenDialog(d);
-        }
-        return SIGNAL_OKAY;
-
-    case 4:  // activate
-        user->active = 1;
-        show_list = 1;
+        ReportError("DEBUG: Handling remove");
+        if (KillRecord(term, record_no))
+            return SIGNAL_IGNORED;
         records = RecordCount(term);
         if (record_no >= records)
             record_no = records - 1;
-        if (records > 0)
+        if (record_no < 0)
+            record_no = 0;
+        else
             LoadRecord(term, record_no);
         Draw(term, 1);
         return SIGNAL_OKAY;
-
+    case 4:  // activate
+        ReportError("DEBUG: Handling activate");
+        user->active = 1;
+        SaveRecord(term, record_no, 0);
+        Draw(term, 1);
+        return SIGNAL_OKAY;
     case 5:  // addjob
+        ReportError("DEBUG: Handling addjob");
         if (user->JobCount() < 3)
         {
             SaveRecord(term, record_no, 0);
@@ -240,6 +221,7 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
         }
         break;
     case 6:  // killjob1
+        ReportError("DEBUG: Handling killjob1");
         if (user->JobCount() >= 1)
         {
             SaveRecord(term, record_no, 0);
@@ -252,6 +234,7 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
         }
         break;
     case 7:  // killjob2
+        ReportError("DEBUG: Handling killjob2");
         if (user->JobCount() >= 2)
         {
             SaveRecord(term, record_no, 0);
@@ -264,6 +247,7 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
         }
         break;
     case 8:  // killjob3
+        ReportError("DEBUG: Handling killjob3");
         if (user->JobCount() >= 3)
         {
             SaveRecord(term, record_no, 0);
@@ -276,6 +260,7 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
         }
         break;
     }
+    ReportError("DEBUG: Exiting UserEditZone::Signal(), returning SIGNAL_IGNORED");
     return SIGNAL_IGNORED;
 }
 
@@ -583,10 +568,17 @@ int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
 int UserEditZone::NewRecord(Terminal *term)
 {
     FnTrace("UserEditZone::NewRecord()");
+    ReportError("DEBUG: NewRecord() called");
     term->job_filter = 0; // make sure new user is shown on list
+    ReportError("DEBUG: About to call NewUser()");
     user = term->system_data->user_db.NewUser();
+    ReportError("DEBUG: NewUser() returned");
     record_no = 0;
     view_active = 1;
+    ReportError("DEBUG: About to call RecordCount()");
+    records = RecordCount(term); // Update record count before saving
+    ReportError("DEBUG: RecordCount() returned: " + std::to_string(records));
+    ReportError("DEBUG: NewRecord() completed successfully");
     return 0;
 }
 

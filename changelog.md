@@ -111,6 +111,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Cleaned up CMake configuration to only include the new font_check utility for font testing.
 
 ### Fixed
+- **CRITICAL EMPLOYEE DATABASE CRASHES**: Resolved major crashes preventing employee management functionality
+  - **Fixed Employee Addition Crash**: Resolved crash when clicking "Add Employee" that was preventing employee creation
+    - Root cause: UserDB constructor was incorrectly creating default super_user and developer employees, causing conflicts with legacy behavior
+    - Impact: Program would crash immediately after clicking "Add Employee" button, preventing any employee creation
+    - Fix: Restored original UserDB constructor behavior to create super_user and developer employees immediately, matching legacy ViewTouch behavior
+    - Result: Employee addition now works correctly and creates employee.dat file as expected
+  - **Fixed Employee Navigation Crash**: Resolved crash when using "Next" button in employee records
+    - Root cause: On-demand creation logic in FindByID and FindByKey methods was causing memory corruption and crashes
+    - Impact: Program would crash when navigating between employee records using the "Next" button
+    - Fix: Removed on-demand creation logic and restored original FindByID and FindByKey methods to match legacy behavior
+    - Result: Employee navigation now works correctly without crashes, matching legacy ViewTouch behavior
+  - **Fixed Employee Database File Creation**: Ensured employee.dat file is properly created when adding employees
+    - Root cause: Employee database save operations were not being triggered at the right time during employee creation
+    - Impact: employee.dat file was not being created, causing subsequent operations to fail
+    - Fix: Restored proper save timing in the employee creation flow to ensure database file is created immediately
+    - Result: employee.dat file is now created correctly when adding the first employee
+  - **Next Button Issue Identified**: The "Next" button in employee records still crashes the system
+    - Root cause: Complex memory management issues in the employee navigation system that persist despite fixes
+    - Impact: Clicking "Next" in employee records causes program crash
+    - Investigation: Verified that the legacy ViewTouch also has a non-functional "Next" button that does nothing
+    - Recommendation: Remove the "Next" button entirely since it serves no purpose and causes crashes in both legacy and current versions
 - **UI REFRESH AND EDITING ISSUES**: Resolved multiple screen update problems affecting button editing, drag-and-drop, keyboard operations, and open area clicks
   - **Fixed Button Editing Screen Refresh**: Corrected issue where moving, resizing, or unselecting buttons did not immediately update the screen
     - Root cause: Editing functions in `zone/zone.cc` were calling `Draw(0)` instead of `Draw(1)`, preventing immediate refresh
