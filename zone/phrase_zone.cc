@@ -44,8 +44,10 @@ PhraseZone::PhraseZone()
 {
     font        = FONT_GARAMOND_14B;  // Use global default button font
     form_header = 1;
-    for (int i = 0; i < 31; ++i)
-        AddTextField("", 40, 1, 40);
+    for (int i = 0; i < 31; ++i) {
+        AddTextField("", 40, 1, 0); // min_label_width = 0
+        AddNewLine();
+    }
 }
 
 // Member Functions

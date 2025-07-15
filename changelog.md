@@ -257,6 +257,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Impact: Users could not easily select their preferred language
     - Fix: Replaced cycling behavior with a proper language selection dialog
     - Result: F8 key now shows a proper language selection interface
+- **Entry Field Layout in Customize Job Titles, Families, Phrases**: Fixed the layout so each entry field now appears on its own line and is properly sized in the PhraseZone (zone/phrase_zone.cc). This resolves the issue where entry fields were overflowing or not visible due to being placed on a single line with excessive width.
 
 ### Known Issues
 - **Customize Job Titles Entry Fields**: Entry fields in the "Customize Job Titles, Families, Phrases" page still need to be fixed
