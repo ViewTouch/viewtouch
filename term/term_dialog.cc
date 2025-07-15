@@ -1004,6 +1004,16 @@ int PageDialog::Open()
     parent_page.Set(RInt32());
     index.Set(RInt8());
 
+    // Validate parent page ID - should be between -99 and 0 for system pages
+    int parent_id = 0;
+    parent_page.Get(parent_id);
+    if (parent_id < -99 || parent_id > 0)
+    {
+        // Invalid parent page ID, reset to 0
+        parent_id = 0;
+        parent_page.Set(parent_id);
+    }
+
     // Show proper fields
     size.Show(1);
     type.Show(full_edit);

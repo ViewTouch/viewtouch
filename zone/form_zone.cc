@@ -933,6 +933,19 @@ RenderResult ListFormZone::Render(Terminal *term, int update_flag)
 
     if (show_list)
     {
+        // Calculate proper line spacing based on font height
+        int font_width, font_height;
+        term->FontSize(font, font_width, font_height);
+        
+        // Ensure we have reasonable font metrics - this prevents employee names stacking
+        if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+        
+        // Convert font height to floating point spacing (add some padding)
+        list_spacing = (Flt)font_height / 20.0f;  // Scale factor to convert pixels to spacing units
+        
+        // Ensure minimum spacing to prevent stacking
+        if (list_spacing < 1.0f) list_spacing = 1.0f;
+        
         if (records > 0)
             list_report.selected_line = record_no;
         else

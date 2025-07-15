@@ -38,6 +38,7 @@ public:
     int LoadRecord(Terminal *t, int record);
     int SaveRecord(Terminal *t, int record, int write_file);
     int RecordCount(Terminal *t);
+    SignalResult Signal(Terminal *t, const genericChar* message);
 };
 
 #endif

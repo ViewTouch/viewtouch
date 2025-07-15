@@ -331,9 +331,9 @@ install(FILES
     po_file/viewtouch.po_IT
     po_file/viewtouch.po_PT
     po_file/viewtouch.po_NL
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/dat/languages)
+    DESTINATION viewtouch/dat/languages)
 
 # Install UI data translation files if present
 file(GLOB UI_DATA_PO_FILES "${CMAKE_SOURCE_DIR}/po_file/ui_data_*.po")
-install(FILES ${UI_DATA_PO_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/dat/languages)
+install(FILES ${UI_DATA_PO_FILES} DESTINATION viewtouch/dat/languages)
 

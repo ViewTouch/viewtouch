@@ -1497,6 +1497,29 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         UpdateAllTerms(UPDATE_SETTINGS, nullptr);
         return SIGNAL_OKAY;
     }
+
+    case XK_F8:
+        // Language switcher
+        if (edit == 0)  // Only allow language switching when not in edit mode
+        {
+            Settings *settings = GetSettings();
+            if (settings != nullptr)
+            {
+                // Create a language selection dialog
+                SimpleDialog *lang_dialog = new SimpleDialog("Select Language:");
+                lang_dialog->Button("English", "set_language_1");
+                lang_dialog->Button("Français", "set_language_2");
+                lang_dialog->Button("Ελληνικά", "set_language_3");
+                lang_dialog->Button("Español", "set_language_4");
+                lang_dialog->Button("Deutsch", "set_language_5");
+                lang_dialog->Button("Italiano", "set_language_6");
+                lang_dialog->Button("Português", "set_language_7");
+                lang_dialog->Button("Nederlands", "set_language_8");
+                lang_dialog->Button("Cancel", "cancel");
+                OpenDialog(lang_dialog);
+            }
+        }
+        return SIGNAL_OKAY;
 	}
 
     return SIGNAL_IGNORED;
@@ -4114,59 +4137,21 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             Settings *settings = GetSettings();
             if (settings != nullptr)
             {
-                // Cycle through languages: English -> French -> Greek -> Spanish -> German -> Italian -> Portuguese -> Dutch
-                if (settings->locale == LANG_ENGLISH)
-                    settings->locale = LANG_FRENCH;
-                else if (settings->locale == LANG_FRENCH)
-                    settings->locale = LANG_GREEK;
-                else if (settings->locale == LANG_GREEK)
-                    settings->locale = LANG_SPANISH;
-                else if (settings->locale == LANG_SPANISH)
-                    settings->locale = LANG_GERMAN;
-                else if (settings->locale == LANG_GERMAN)
-                    settings->locale = LANG_ITALIAN;
-                else if (settings->locale == LANG_ITALIAN)
-                    settings->locale = LANG_PORTUGUESE;
-                else if (settings->locale == LANG_PORTUGUESE)
-                    settings->locale = LANG_DUTCH;
-                else
-                    settings->locale = LANG_ENGLISH;
-                
-                settings->changed = 1;
-                
-                // Show current language
-                const char* lang_name = "English";
-                if (settings->locale == LANG_FRENCH)
-                    lang_name = "Français";
-                else if (settings->locale == LANG_GREEK)
-                    lang_name = "Ελληνικά";
-                else if (settings->locale == LANG_SPANISH)
-                    lang_name = "Español";
-                else if (settings->locale == LANG_GERMAN)
-                    lang_name = "Deutsch";
-                else if (settings->locale == LANG_ITALIAN)
-                    lang_name = "Italiano";
-                else if (settings->locale == LANG_PORTUGUESE)
-                    lang_name = "Português";
-                else if (settings->locale == LANG_DUTCH)
-                    lang_name = "Nederlands";
-                
-                // Show language change confirmation
-                char msg[256];
-                snprintf(msg, sizeof(msg), "Language changed to: %s\n\nPress OK to apply the language change.", 
-                        lang_name);
-                sd = new SimpleDialog(msg);
-                sd->Button("OK", "apply_language_change");
-                
-                // Set up the dialog to apply language change when OK is pressed
-                sd->ClosingAction(ACTION_SUCCESS, ACTION_SIGNAL, "apply_language_change");
-                OpenDialog(sd);
-                
-                // The language change will be applied when the user presses OK
-                // via the Signal handler for "apply_language_change"
+                // Create a language selection dialog
+                SimpleDialog *lang_dialog = new SimpleDialog("Select Language:");
+                lang_dialog->Button("English", "set_language_1");
+                lang_dialog->Button("Français", "set_language_2");
+                lang_dialog->Button("Ελληνικά", "set_language_3");
+                lang_dialog->Button("Español", "set_language_4");
+                lang_dialog->Button("Deutsch", "set_language_5");
+                lang_dialog->Button("Italiano", "set_language_6");
+                lang_dialog->Button("Português", "set_language_7");
+                lang_dialog->Button("Nederlands", "set_language_8");
+                lang_dialog->Button("Cancel", "cancel");
+                OpenDialog(lang_dialog);
             }
         }
-        return 0;
+        return SIGNAL_OKAY;
     case XK_F7:
         if (user != nullptr && page != nullptr && edit == 0)
         {

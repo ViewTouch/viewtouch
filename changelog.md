@@ -111,6 +111,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Cleaned up CMake configuration to only include the new font_check utility for font testing.
 
 ### Fixed
+- **COMPREHENSIVE UI RENDERING FIXES**: Resolved critical font metric initialization issues affecting all UI elements
+  - **Fixed Entry Fields and Button Positioning**: Resolved issues where entry fields and buttons appeared in wrong positions or were misplaced
+    - Root cause: `font_width` and `font_height` were 0 when zones were first created, causing all UI calculations to be wrong
+    - Impact: Entry fields, buttons, text, and other UI elements were positioned incorrectly or appeared in wrong locations
+    - Fix: Added comprehensive font metric validation throughout `LayoutZone` class with fallback values (12 for width, 24 for height)
+    - Result: All UI elements now render in correct positions with proper spacing and alignment
+  - **Fixed Text Rendering and Positioning**: Resolved issues with text overlapping, incorrect positioning, and layout problems
+    - Root cause: Text rendering methods used uninitialized font metrics, causing division by zero and incorrect positioning
+    - Impact: Text appeared in wrong positions, overlapped, or was completely misplaced
+    - Fix: Added font metric validation to all text rendering methods (`TextL`, `TextC`, `TextR`, `TextPosL`, `TextPosC`, `TextPosR`, `TextLR`)
+    - Result: All text now renders in correct positions with proper alignment and spacing
+  - **Fixed Layout Calculations**: Resolved issues with zone sizing, margins, and layout calculations
+    - Root cause: Layout methods used uninitialized font metrics for size and margin calculations
+    - Impact: Zones had incorrect sizes, margins were wrong, and layout was broken
+    - Fix: Added font metric validation to `SetMargins()`, `SetSize()`, `Touch()`, `ColumnSpacing()`, and `Width()` methods
+    - Result: All zones now have correct sizes, margins, and layout calculations
+  - **Fixed Background and Line Rendering**: Resolved issues with background areas, lines, and underlines
+    - Root cause: Background and line rendering methods used uninitialized font metrics
+    - Impact: Background areas, horizontal lines, and underlines appeared in wrong positions
+    - Fix: Added font metric validation to `Background()`, `Raised()`, `Line()`, and `Underline()` methods
+    - Result: All background areas, lines, and underlines now render in correct positions
+  - **Enhanced Font Metric Initialization**: Improved font metric handling throughout the rendering pipeline
+    - Root cause: Font metrics were initialized after rendering, causing initial layout to be wrong
+    - Impact: First render of any zone had incorrect layout and positioning
+    - Fix: Moved font metric initialization to the beginning of `Render()` method before any layout calculations
+    - Result: All zones now render correctly from the first display, with proper font metrics available throughout
+  - **Fixed Employee List Spacing**: Resolved issue where employee names were stacking on the same line
+    - Root cause: `list_spacing` parameter was fixed at 1, which was too small for the new font system
+    - Impact: Employee names appeared stacked on the same line instead of being properly spaced
+    - Fix: Modified `ListFormZone::Render()` to dynamically calculate `list_spacing` based on actual font height
+    - Result: Employee names now display with proper line spacing and are clearly readable
 - **CRITICAL EMPLOYEE DATABASE CRASHES**: Resolved major crashes preventing employee management functionality
   - **Fixed Employee Addition Crash**: Resolved crash when clicking "Add Employee" that was preventing employee creation
     - Root cause: UserDB constructor was incorrectly creating default super_user and developer employees, causing conflicts with legacy behavior
@@ -198,66 +229,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Impact: Critical system files (zone_db.dat, menu.dat) couldn't be downloaded, resulting in "no zone_db" crashes
     - Fix: Temporarily use HTTP URLs for reliable downloads while preserving HTTPS for security when certificates are available
     - Added comprehensive debug output and error reporting for download troubleshooting
-  - **Fixed Missing Directory Creation**: Added automatic creation of required data directories preventing startup failures
-    - Added `EnsureDirExists()` calls for archive, current, accounts, expenses, customers, labor, and stock directories
-    - Prevents "Can't find directory" errors on fresh installations or incomplete data setups
-- **CRITICAL SECURITY VULNERABILITIES**: Eliminated multiple buffer overflow attack vectors that could compromise system security
-  - **Buffer Overflow in UnitAmount::Description()**: Fixed `sizeof(str)` bug in `main/inventory.cc` affecting 18+ format operations - replaced with proper `UNIT_DESC_BUFFER_SIZE` constant (256 bytes)
-  - **Buffer Overflow in PrintItem()**: Fixed `sizeof(buffer)` bug in `main/sales.cc` affecting menu item formatting - replaced with proper `PRINT_ITEM_BUFFER_SIZE` constant (512 bytes)  
-  - **Buffer Overflow in Locale::Page()**: Fixed `sizeof(str)` bug in `main/locale.cc` affecting pagination display - replaced with proper `PAGE_BUFFER_SIZE` constant (32 bytes)
-  - **Buffer Overflow in Payment::Description()**: Fixed `sizeof(str)` bug in `main/check.cc` affecting payment processing - replaced with proper `PAYMENT_DESC_BUFFER_SIZE` constant (128 bytes)
-- **CRITICAL CREDIT CARD PROCESSING BUGS**: Fixed validation logic failures that could allow invalid transactions
-  - **Array Comparison Bug in Credit::operator==()**: Fixed 4 instances in `main/credit.cc` where arrays were compared with `==` instead of `strcmp()` - credit card validation was comparing pointer addresses instead of actual card numbers
-  - **Memory Safety in Credit Processing**: Fixed NULL pointer handling throughout credit card processing methods
-- **COMPILATION FAILURES**: Resolved build-breaking errors preventing successful compilation
-  - **Duplicate Global Variable**: Removed duplicate `last_check_serial` definition in `main/check.cc` causing linker errors
-  - **Malformed Nested Loop**: Fixed duplicate for-loop declaration in PrintWorkOrder method causing parser confusion and cascading syntax errors
-  - **Function Trace Bug**: Corrected `Payment::IsEqual()` FnTrace call that was incorrectly calling `Payment::IsTab()`
-- **Font System Build Errors**: Resolved compilation failures preventing scalable font system from building
-  - Fixed `invalid 'static_cast' from type 'const char*' to type 'const unsigned char*'` errors in text rendering functions
-  - Corrected type casting issues in `term/layer.cc`, `loader/loader_main.cc`, and `main/manager.cc` for Xft font compatibility
-  - Fixed parameter type syntax error in `main/license_hash.cc` (`unsigned const char*` → `const unsigned char*`)
-- **Compiler Warnings**: Eliminated 50+ warnings that were cluttering build output
-  - Fixed ISO C++ string constant warnings: "forbids converting a string constant to 'String'" in X11/Motif code
-  - Resolved format truncation warnings by increasing buffer sizes in `term/term_view.cc` and other files
-  - Applied `const_cast<char*>()` fixes for X11/Motif compatibility in widget creation and dialog titles
-- **Build System**: Ensured complete compilation of all executables (vt_main, vt_term, vt_print, vt_cdu) and test suite
-- **Code Documentation**: Added comprehensive inline comments explaining all font system changes, cast fixes, and compatibility requirements for future maintenance
-- **CRITICAL DIRECTORY ACCESS ISSUE**: Fixed directory permission bug introduced during C++17 refactor that made `/usr/viewtouch/dat` inaccessible
-  - **Root Cause**: C++17 refactor added `umask(0111)` in `main/manager.cc` which removed execute permissions from all created directories
-  - **Impact**: Directories created with `mkdir(dirname, 0755)` resulted in 644 permissions instead of 755, breaking file manager access with "Access was denied" errors
-  - **Fix**: Changed `umask(0111)` to `umask(0022)` to preserve execute permissions needed for directory access while maintaining security
-  - **Directory Permissions**: Updated `scripts/vtcommands.pl` to use 0775 permissions for bin/dat directories to ensure consistency
-  - **Result**: Directories now receive proper 755 permissions (rwxr-xr-x) allowing normal file manager access
-- **CRITICAL TEST FAILURE**: Fixed `test_data_file` failure caused by incorrect format specifier in float serialization
-  - **Float Format Bug in InputDataFile::Read()**: Fixed `sscanf(str, "%lf", &v)` bug in `data_file.cc` - wrong format specifier for `Flt` type
-  - Root cause: `Flt` is typedef'd as `float` but Read method used `%lf` (double format) instead of `%f` (float format)
-  - Impact: Float values were reading as `0.0f` instead of actual values, breaking data file serialization
-  - Result: Complete test suite now passes at 100% success rate
-- fix configure step by searching for `PkgConfig` before using `pkg_check_module` #128
-- update embedded `catch.hpp` to `v2.13.10` to fix compilation on Ubuntu 20.04 and newer #131
-- fix `TimeInfo.Set(date_string)` function fixing `RunReport` `to`/`from` fields and C++20 compatibility #145
-- update embedded `date` to `v3.0.4` and fix CMake 4+ compatibility #155
-- **Edit Mode UI Consistency and Functionality**: Fixed minor UI issues in edit mode for improved user experience
-  - **Fixed Edit Toolbar Font Size Consistency**: Resolved inconsistent font sizes in edit toolbar where top/bottom buttons used larger fonts than middle buttons
-    - Root cause: New Button, New Page, Prior Page, and Next Page used `FONT_TIMES_18` while middle 8 buttons used `FONT_TIMES_14`
-    - Impact: Visual inconsistency made toolbar appear unbalanced and unprofessional, with text potentially overflowing button boundaries
-    - Fix: Changed top/bottom buttons (New Button, New Page, Prior Page, Next Page) to use `FONT_TIMES_14` for better fit within button boundaries
-  - **Enhanced Edit Toolbar Layout**: Improved edit toolbar window dimensions and button sizing for better usability
-    - Increased toolbar width from 120 to 140 pixels to provide more breathing room around buttons
-    - Increased button width from 60 to 65 pixels for better proportions and text fit
-    - Better visual balance and improved text readability within button boundaries
-  - **Fixed Right-Click Page Properties Dialog**: Resolved issue where right-clicking on page bar did not open page properties dialog
-    - Root cause: Right-click handling was only inside `MOUSE_PRESS` block, preventing detection of right-click events that might be sent as different event types
-    - Impact: Users could not access page properties dialog via right-click on page bar, limiting edit mode functionality
-    - Fix: Moved right-click handling outside of `MOUSE_PRESS` block to ensure right-click events are processed regardless of event type (press/release)
-    - Result: Right-click on page bar (top 32 pixels) now properly opens page properties dialog for editing page settings
-- **Font System Enhancement**: Implemented bundled font system for consistent appearance across different systems
-  - **Added Bundled Fonts**: Included DejaVu Sans, URW Bookman, and Nimbus Roman fonts in `/fonts/` directory for reliable font availability
-  - **Font Configuration**: Created Fontconfig rules in `fonts/fonts.conf` for font aliases and rendering quality optimization
-  - **Updated Font Mappings**: Changed Times fonts to use Nimbus Roman, Courier fonts to use DejaVu Sans Mono, and Garamond fonts to use URW Bookman for better compatibility
-  - **Installation Integration**: Fonts are automatically installed to `/usr/viewtouch/fonts/` during build process
-  - **Fallback Support**: Added robust font loading with fallback to system fonts when bundled fonts are unavailable
-- update embedded `
-- **Edit Toolbar Button Scaling**: All edit toolbar buttons now scale to fill the toolbar width, use FONT_TIMES_14 for consistent appearance, and text fits cleanly without awkward wrapping for a more professional look.
-- Improved Job Authorization UI: Permission boxes are now smaller, the job label column is narrower, and permission headers are perfectly aligned with their boxes for better readability and usability. (2024-07-05)
+- **CMake Install Path Fixes**: Resolved issues with language files being installed to wrong directories
+  - **Fixed Language File Installation**: Corrected CMakeLists.txt to install language files to correct directory
+    - Root cause: Conflicting install directives were installing language files to `/usr/dat/languages` instead of `/usr/viewtouch/dat/languages`
+    - Impact: Language files were not found by the application, breaking multi-language support
+    - Fix: Updated CMakeLists.txt to use correct install paths for all language files
+    - Result: Language files now install to the correct directory and are properly accessible
+- **Settings Corruption Fixes**: Resolved issues with corrupted settings files causing system problems
+  - **Fixed Corrupted Settings Files**: Removed corrupted settings files and rebuilt settings system
+    - Root cause: Settings files were corrupted during development, causing various system issues
+    - Impact: System settings were not working correctly and could cause crashes
+    - Fix: Removed corrupted files and rebuilt settings from scratch
+    - Result: Settings system now works correctly without corruption issues
+- **Navigation and UI Flow Fixes**: Resolved multiple navigation and UI interaction issues
+  - **Fixed Customize Job Titles Next Page Button**: Resolved issue where Next Page button stopped working
+    - Root cause: Missing signal handling for navigation in the Customize Job Titles page
+    - Impact: Users could not navigate to the next page in the Customize Job Titles interface
+    - Fix: Added proper signal handling for navigation buttons
+    - Result: Next Page button now works correctly for navigation
+  - **Fixed Page & Button Property Defaults Dialog**: Resolved issue with strange numbers showing in dialog
+    - Root cause: Invalid parent page numbers were being displayed in the dialog
+    - Impact: Dialog showed confusing or incorrect numbers instead of proper page information
+    - Fix: Added validation for parent page numbers to ensure only valid values are displayed
+    - Result: Dialog now shows correct and meaningful information
+  - **Fixed F8 Language Key Behavior**: Replaced F8 key cycling with proper language selection dialog
+    - Root cause: F8 key was cycling through languages instead of showing language choices
+    - Impact: Users could not easily select their preferred language
+    - Fix: Replaced cycling behavior with a proper language selection dialog
+    - Result: F8 key now shows a proper language selection interface
+
+### Known Issues
+- **Customize Job Titles Entry Fields**: Entry fields in the "Customize Job Titles, Families, Phrases" page still need to be fixed
+  - Issue: Entry fields may not be rendering correctly or may have positioning issues
+  - Status: Investigation needed to identify specific entry field rendering problems
+  - Impact: Users may have difficulty entering or editing job titles, families, and phrases
+  - Priority: Medium - affects customization functionality but not core system operation

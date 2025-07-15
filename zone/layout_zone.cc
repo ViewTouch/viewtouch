@@ -50,8 +50,15 @@ LayoutZone::LayoutZone()
 RenderResult LayoutZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("LayoutZone::Render()");
-    RenderZone(term, nullptr, update_flag);
+    
+    // Initialize font metrics FIRST before any rendering or layout calculations
     term->FontSize(font, font_width, font_height);
+    
+    // Ensure we have reasonable font metrics - this prevents UI layout issues
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+    
+    RenderZone(term, nullptr, update_flag);
 
     int lw = w - (border * 2) - left_margin - right_margin;
     int lh = h - (border * 2) - header      - footer;
@@ -66,6 +73,11 @@ RenderResult LayoutZone::Render(Terminal *term, int update_flag)
 SignalResult LayoutZone::Touch(Terminal *t, int tx, int ty)
 {
     FnTrace("LayoutZone::Touch()");
+    
+    // Ensure we have valid font metrics before calculating touch coordinates
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+    
     selected_x = (Flt) (tx - (x + border + left_margin)) / (Flt) font_width;
     selected_y = (Flt) (ty - (y + border + header))      / (Flt) font_height;
 
@@ -75,6 +87,11 @@ SignalResult LayoutZone::Touch(Terminal *t, int tx, int ty)
 int LayoutZone::SetSize(Terminal *t, int width, int height)
 {
     FnTrace("LayoutZone::SetSize()");
+    
+    // Ensure we have valid font metrics before calculating minimum sizes
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+    
     int mw = (int) (min_size_x * (Flt) font_width) +
         (border * 2) + left_margin + right_margin;
     mw -= mw % t->grid_x;
@@ -99,6 +116,10 @@ Flt LayoutZone::TextWidth(Terminal *t, const genericChar* str, int len)
 
     if (len <= 0)
         len = strlen(str);
+    
+    // Ensure we have valid font metrics before calculating text width
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    
     return (Flt) t->TextWidth(str, len, font) / (Flt) font_width;
 }
 
@@ -107,6 +128,11 @@ int LayoutZone::SetMargins(int left, int right)
     FnTrace("LayoutZone::SetMargins()");
     left_margin  = left;
     right_margin = right;
+    
+    // Ensure we have valid font metrics before calculating layout
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+    
     int lw = w - (border * 2) - left_margin - right_margin;
     int lh = h - (border * 2) - header      - footer;
     size_x = (Flt) lw / (Flt) font_width;
@@ -123,6 +149,9 @@ int LayoutZone::TextL(Terminal *t, Flt line, const genericChar* text, int my_col
     if (my_color == COLOR_DEFAULT)
         my_color = t->TextureTextColor(texture[0]);
 
+    // Ensure we have valid font metrics before calculating text position
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+
     int pw = w - (border * 2) - left_margin - right_margin;
     int px = x + border + left_margin;
     int py = y + border + header + (int) (line * (Flt) font_height);
@@ -138,6 +167,9 @@ int LayoutZone::TextC(Terminal *t, Flt line, const genericChar* text, int my_col
 
     if (my_color == COLOR_DEFAULT)
         my_color = t->TextureTextColor(texture[0]);
+
+    // Ensure we have valid font metrics before calculating text position
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
 
     int pw = w - (border * 2) - left_margin - right_margin;
     int px = x + border + left_margin + (pw / 2);
@@ -162,6 +194,9 @@ int LayoutZone::TextR(Terminal *t, Flt line, const genericChar* text, int my_col
         len = (int) size_x;
     }
 
+    // Ensure we have valid font metrics before calculating text position
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+
     int px = x + w - border - right_margin;
     int py = y + border + header + (int) (line * (Flt) font_height);
     t->RenderTextLen(&text[pos], len, px, py, my_color, font, ALIGN_RIGHT, 0, mode);
@@ -177,6 +212,10 @@ int LayoutZone::TextPosL(Terminal *t, Flt row, Flt line, const genericChar* text
 
     if (my_color == COLOR_DEFAULT)
         my_color = t->TextureTextColor(texture[0]);
+
+    // Ensure we have valid font metrics before calculating text position
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
 
     int offset = (int) (row * (Flt) font_width) + border;
     int px = x + left_margin + offset;
@@ -199,6 +238,10 @@ int LayoutZone::TextPosC(Terminal *t, Flt row, Flt line, const genericChar* text
     if (my_color == COLOR_DEFAULT)
         my_color = t->TextureTextColor(texture[0]);
 
+    // Ensure we have valid font metrics before calculating text position
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+
     int px = x + border + left_margin + (int) (row  * (Flt) font_width);
     int py = y + border + header      + (int) (line * (Flt) font_height);
 
@@ -216,6 +259,10 @@ int LayoutZone::TextPosR(Terminal *t, Flt row, Flt line, const genericChar* text
     if (my_color == COLOR_DEFAULT)
         my_color = t->TextureTextColor(texture[0]);
 
+    // Ensure we have valid font metrics before calculating text position
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+
     int px = x + border + left_margin + (int) (row  * (Flt) font_width);
     int py = y + border + header      + (int) (line * (Flt) font_height);
 
@@ -229,6 +276,10 @@ int LayoutZone::TextLR(Terminal *t, Flt line,
     FnTrace("LayoutZone::TextLR()");
     if (line < 0.0 || line >= size_y)
         return 1;  // Can't draw text
+
+    // Ensure we have valid font metrics before calculating text position
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
 
     int l_len = 0, l_width = 0, r_len = 0, r_width = 0;
     if (l_text)
@@ -280,6 +331,9 @@ int LayoutZone::Line(Terminal *t, Flt line, int my_color)
     if (my_color == COLOR_DEFAULT)
         my_color = t->TextureTextColor(texture[0]);
 
+    // Ensure we have valid font metrics before calculating line position
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+
     int x1 = x + border - 2 + left_margin;
     int y1 = y + border + header + (int) (line * (Flt) font_height) +
         (font_height / 2) - 1;
@@ -299,6 +353,10 @@ int LayoutZone::Entry(Terminal *t, Flt px, Flt py, Flt len, RegionInfo *place)
     FnTrace("LayoutZone::Entry()");
     if (px >= size_x || py >= size_y)
         return 1;
+
+    // Ensure we have valid font metrics before calculating entry dimensions
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
 
     int xx = (int) (px * (Flt) font_width);
     int sx = x + border - 2 + left_margin + xx;
@@ -349,6 +407,10 @@ int LayoutZone::Button(Terminal *t, Flt px, Flt py, Flt len, int lit)
     if (px >= size_x || py >= size_y)
         return 1;
 
+    // Ensure we have valid font metrics before calculating button dimensions
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+
     int xx = (int) (px * (Flt) font_width);
     int sx = x + border - 3 + left_margin + xx;
     int sy = y + border - 4 + header + (int) (py * (Flt) font_height);
@@ -372,6 +434,9 @@ int LayoutZone::Background(Terminal *t, Flt line, Flt height, int my_texture)
     if (line >= size_y)
         return 1;
 
+    // Ensure we have valid font metrics before calculating background dimensions
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+
     int sx = x + border - 3 + left_margin;
     int sy = y + border - 1 + header + (int) ((line * (Flt) font_height) + .5);
     int sw = w - (border * 2) + 6 - left_margin - right_margin;
@@ -391,6 +456,9 @@ int LayoutZone::Raised(Terminal *t, Flt line, Flt height)
     if (line >= size_y)
         return 1;
 
+    // Ensure we have valid font metrics before calculating raised area dimensions
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+
     int sx = x + border - 3 + left_margin;
     int sy = y + border - 1 + header + (int) ((line * (Flt) font_height) + .5);
     int sw = w - (border * 2) + 6 - left_margin - right_margin;
@@ -407,6 +475,11 @@ int LayoutZone::Raised(Terminal *t, Flt line, Flt height)
 int LayoutZone::Underline(Terminal *t, Flt px, Flt py, Flt len, int my_color)
 {
     FnTrace("LayoutZone::Underline()");
+    
+    // Ensure we have valid font metrics before calculating underline position and length
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
+    
     int xx = x + border + left_margin + (int) (px * (Flt) font_width);
     int yy = y + border + header + (int) ((py + .95) * (Flt) font_height);
     int ll = (int) (len * (Flt) font_width);
@@ -425,6 +498,10 @@ int LayoutZone::ColumnSpacing(Terminal *term, int num_columns)
     if (num_columns > 0)
     {
         term->FontSize(font, font_width, font_height);
+        
+        // Ensure we have valid font metrics before calculating spacing
+        if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+        
         num_spaces = w / font_width / num_columns;
     }
 
@@ -435,5 +512,9 @@ int LayoutZone::Width(Terminal *term)
 {
     FnTrace("LayoutZone::Width()");
     term->FontSize(font, font_width, font_height);
+    
+    // Ensure we have valid font metrics before calculating width
+    if (font_width <= 0) font_width = 12;  // Fallback to reasonable default
+    
     return w/font_width;
 }

@@ -128,3 +128,33 @@ int PhraseZone::RecordCount(Terminal *t)
 {
     return PAGES;
 }
+
+SignalResult PhraseZone::Signal(Terminal *t, const genericChar* message)
+{
+    FnTrace("PhraseZone::Signal()");
+    
+    // Handle navigation commands
+    if (strcmp(message, "next") == 0)
+    {
+        SaveRecord(t, record_no, 0);
+        ++record_no;
+        if (record_no >= PAGES)
+            record_no = 0;
+        LoadRecord(t, record_no);
+        Draw(t, 1);
+        return SIGNAL_OKAY;
+    }
+    else if (strcmp(message, "prior") == 0)
+    {
+        SaveRecord(t, record_no, 0);
+        --record_no;
+        if (record_no < 0)
+            record_no = PAGES - 1;
+        LoadRecord(t, record_no);
+        Draw(t, 1);
+        return SIGNAL_OKAY;
+    }
+    
+    // Let the parent FormZone handle other signals
+    return FormZone::Signal(t, message);
+}

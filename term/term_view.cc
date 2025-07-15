@@ -458,6 +458,7 @@ int      Connection = 0;
 static XftFont *FontInfo[80];  // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
 static int      FontHeight[80];  // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
 static int      FontBaseline[80]; // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
+static int      FontWidth[80];   // Added for character width calculation
 
 int ColorTextT[TEXT_COLORS];
 int ColorTextH[TEXT_COLORS];
@@ -2521,6 +2522,13 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         // Calculate font metrics from XftFont
         FontHeight[f] = FontInfo[f]->height;
         FontBaseline[f] = FontInfo[f]->ascent;
+        
+        // Calculate approximate character width for text layout
+        FontWidth[f] = FontInfo[f]->max_advance_width;
+        
+        // Ensure we have reasonable values - this prevents employee names stacking
+        if (FontWidth[f] <= 0) FontWidth[f] = 12;  // Fallback to reasonable default
+        if (FontHeight[f] <= 0) FontHeight[f] = FontData[i].height;  // Use original height as fallback
     }
     
     // Load new font families (Garamond, Bookman, Nimbus)
@@ -2554,12 +2562,20 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         // Calculate font metrics from XftFont
         FontHeight[f] = FontInfo[f]->height;
         FontBaseline[f] = FontInfo[f]->ascent;
+        
+        // Calculate approximate character width for text layout
+        FontWidth[f] = FontInfo[f]->max_advance_width;
+        
+        // Ensure we have reasonable values - this prevents employee names stacking
+        if (FontWidth[f] <= 0) FontWidth[f] = 12;  // Fallback to reasonable default
+        if (FontHeight[f] <= 0) FontHeight[f] = 24;  // Fallback to reasonable default
     }
 
     // Set Default Font
     FontInfo[FONT_DEFAULT]     = FontInfo[FONT_TIMES_24];
     FontHeight[FONT_DEFAULT]   = FontHeight[FONT_TIMES_24];
     FontBaseline[FONT_DEFAULT] = FontBaseline[FONT_TIMES_24];
+    FontWidth[FONT_DEFAULT]    = FontWidth[FONT_TIMES_24];
 
     // Create Window
     int n = 0;
