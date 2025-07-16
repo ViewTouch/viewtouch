@@ -612,6 +612,7 @@ int UserDB::ListReport(Terminal *t, int active, Report *r)
             r->TextC("There Are No Active Employees");
         else
             r->TextC("There Are No Inactive Employees");
+        r->NewLine();  // Ensure proper line break even when no employees
     }
     return 0;
 }

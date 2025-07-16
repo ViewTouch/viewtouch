@@ -44,8 +44,10 @@ PhraseZone::PhraseZone()
 {
     font        = FONT_GARAMOND_14B;  // Use global default button font
     form_header = 1;
-    for (int i = 0; i < 31; ++i)
-        AddTextField("", 40, 1, 40);
+    for (int i = 0; i < 31; ++i) {
+        AddTextField("", 40, 1, 0); // min_label_width = 0
+        AddNewLine();
+    }
 }
 
 // Member Functions
@@ -127,4 +129,34 @@ int PhraseZone::SaveRecord(Terminal *t, int record, int write_file)
 int PhraseZone::RecordCount(Terminal *t)
 {
     return PAGES;
+}
+
+SignalResult PhraseZone::Signal(Terminal *t, const genericChar* message)
+{
+    FnTrace("PhraseZone::Signal()");
+    
+    // Handle navigation commands
+    if (strcmp(message, "next") == 0)
+    {
+        SaveRecord(t, record_no, 0);
+        ++record_no;
+        if (record_no >= PAGES)
+            record_no = 0;
+        LoadRecord(t, record_no);
+        Draw(t, 1);
+        return SIGNAL_OKAY;
+    }
+    else if (strcmp(message, "prior") == 0)
+    {
+        SaveRecord(t, record_no, 0);
+        --record_no;
+        if (record_no < 0)
+            record_no = PAGES - 1;
+        LoadRecord(t, record_no);
+        Draw(t, 1);
+        return SIGNAL_OKAY;
+    }
+    
+    // Let the parent FormZone handle other signals
+    return FormZone::Signal(t, message);
 }

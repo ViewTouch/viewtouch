@@ -755,6 +755,20 @@ int StartSystem(int my_use_net)
                     ReportError(str);
                 }
             }
+            
+            // Set font metrics for proper text layout and spacing
+            if (FontInfo[f] != nullptr)
+            {
+                // Calculate approximate character width from XftFont metrics
+                FontWidth[f] = FontInfo[f]->max_advance_width;
+                FontHeight[f] = FontInfo[f]->height;
+            }
+            else
+            {
+                // Fallback to reasonable defaults if font loading failed
+                FontWidth[f] = FontWidth[FONT_TIMES_24];
+                FontHeight[f] = FontHeight[FONT_TIMES_24];
+            }
         }
         
         FontInfo[FONT_DEFAULT] = FontInfo[FONT_TIMES_24];
@@ -3076,12 +3090,45 @@ int GetFontSize(int font_id, int &w, int &h)
         // Use XftFont metrics
         w = FontInfo[font_id]->max_advance_width; // Approximate character width
         h = FontInfo[font_id]->height;
+        
+        // Ensure we have reasonable values - this prevents employee names stacking
+        if (w <= 0) w = FontWidth[FONT_DEFAULT];
+        if (h <= 0) h = FontHeight[FONT_DEFAULT];
+        
+        // Debug output for employee list issue
+        if (font_id == FONT_TIMES_24)  // This is likely the font used for employee lists
+        {
+            static int debug_count = 0;
+            if (debug_count++ < 5)  // Only print first 5 times to avoid spam
+            {
+                char debug_msg[256];
+                snprintf(debug_msg, sizeof(debug_msg), "DEBUG: GetFontSize(font_id=%d) - Xft metrics: w=%d, h=%d", font_id, w, h);
+                ReportError(debug_msg);
+            }
+        }
     }
     else
     {
         // Fall back to legacy font metrics
         w = FontWidth[font_id];
         h = FontHeight[font_id];
+        
+        // Ensure we have reasonable values - this prevents employee names stacking
+        if (w <= 0) w = FontWidth[FONT_DEFAULT];
+        if (h <= 0) h = FontHeight[FONT_DEFAULT];
+        
+        // Debug output for employee list issue
+        if (font_id == FONT_TIMES_24)  // This is likely the font used for employee lists
+        {
+            static int debug_count = 0;
+            if (debug_count++ < 5)  // Only print first 5 times to avoid spam
+            {
+                char debug_msg[256];
+                snprintf(debug_msg, sizeof(debug_msg), "DEBUG: GetFontSize(font_id=%d) - Legacy metrics: w=%d, h=%d, FontInfo[%d]=%p, Dis=%p", 
+                        font_id, w, h, font_id, FontInfo[font_id], Dis);
+                ReportError(debug_msg);
+            }
+        }
     }
     return 0;
 }
