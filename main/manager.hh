@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -21,9 +19,11 @@
  * Standard POS utility functions
  */
 
+#ifndef _MANAGER_HH
+#define _MANAGER_HH
+
 #include "utility.hh"
 #include "list_utility.hh"
-#include "font_ids.hh"
 #include <string>
 
 #define MASTER_USER_DB       "employee.dat"
@@ -57,9 +57,9 @@
 
 
 /**** Types ****/
-using TimeOutFn = void (*)();
-using InputFn = void (*)();
-using WorkFn = int (*)();
+typedef void (* TimeOutFn)();
+typedef void (* InputFn)();
+typedef int  (* WorkFn)();
 
 class Settings;
 class Terminal;
@@ -162,7 +162,7 @@ int RemoveWorkFn(unsigned long fn_id);
 // (layout functions should be moved to terms so these arn't needed here)
 int GetFontSize(int font_id, int &w, int &h);
 int GetTextWidth(const char* string, int len, int font_id);
-const char* GetScalableFontName(int font_id);
+int ReloadFonts();  // Reload fonts when global defaults change
 
 /**** Global ****/
 extern int ReleaseDay;
@@ -185,3 +185,5 @@ extern const genericChar* TermTypeName[];
 extern int   TermTypeValue[];
 extern const genericChar* PrinterTypeName[];
 extern int   PrinterTypeValue[];
+
+#endif

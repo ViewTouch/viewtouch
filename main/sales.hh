@@ -18,7 +18,8 @@
  * Definitions of sale item classes
  */
 
-#pragma once
+#ifndef _SALES_HH
+#define _SALES_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -193,7 +194,7 @@ public:
     int   price_type;     // price type (see above)
 
     // Constructor
-    SalesItem(const char* name = nullptr);
+    SalesItem(const char* name = NULL);
 
     // Member Functions
     Component *ComponentList() { return component_list.Head(); }
@@ -303,3 +304,5 @@ public:
 int   MergeQualifier(int &flag, int qualifier);
 int   PrintItem(char* buffer, int qualifier, const char* item);
 std::string FilterName(const std::string &name);
+
+#endif

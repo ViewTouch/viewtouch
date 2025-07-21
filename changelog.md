@@ -6,262 +6,128 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
-- **Comprehensive Multi-Language Support**: Implemented full internationalization system with 8 supported languages
-  - **Language Selection Dialog**: Added first-launch language selection dialog that appears when ViewTouch starts for the first time
-    - Interactive dialog with 8 language options: English, French, Greek, Spanish, German, Italian, Portuguese, Dutch
-    - Modal dialog that blocks further initialization until user selects a language
-    - Integrated into terminal initialization sequence in `main/manager.cc`
-  - **F8 Language Switching**: Added F8 key functionality to cycle through all supported languages during runtime
-    - Cycles through: English (1) → French (2) → Greek (3) → Spanish (4) → German (5) → Italian (6) → Portuguese (7) → Dutch (8)
-    - Shows confirmation dialog with selected language name and instructions to press OK
-    - Automatically refreshes all terminals and UI elements when language changes
-    - Clears and reloads PO files to ensure complete UI translation
-  - **Comprehensive Translation Files**: Created complete translation files for all supported languages
-    - English (`viewtouch.po_EN`): 11,955 bytes with 500+ translatable elements
-    - French (`viewtouch.po_FR`): 13,559 bytes with complete French translations
-    - Greek (`viewtouch.po_GR`): 19,076 bytes with complete Greek translations
-    - Spanish (`viewtouch.po_ES`): 20,162 bytes with complete Spanish translations
-    - German (`viewtouch.po_DE`): 19,573 bytes with complete German translations
-    - Italian (`viewtouch.po_IT`): 19,099 bytes with complete Italian translations
-    - Portuguese (`viewtouch.po_PT`): 19,900 bytes with complete Portuguese translations
-    - Dutch (`viewtouch.po_NL`): 19,074 bytes with complete Dutch translations
-  - **Translation System Enhancements**: Implemented robust translation loading and management
-    - Added `ClearPOFiles()` methods in `locale.hh` and `locale.cc` to force reload translations
-    - Updated `FindPOFilename()` function to handle all language file extensions
-    - Enhanced language switching to clear PO files and force complete UI refresh
-    - Added proper signal handling for language change confirmation dialogs
-  - **UI Element Translation Coverage**: Comprehensive translation of all user interface elements
-    - Common button text: Open, Close, Save, Cancel, Delete, Edit, Add, Remove, etc.
-    - Navigation and menu text: Next, Previous, Return, Menu, Settings, Reports, etc.
-    - Payment and financial terms: Cash, Credit, Check, Gift Certificate, Tax, etc.
-    - Time and date terms: Today, Yesterday, This Week, This Month, etc.
-    - Error and status messages: Error, Warning, Success, Loading, Processing, etc.
-    - Menu categories: Food, Beverage, Dessert, Appetizer, etc.
-    - System settings: Language, Time Zone, Currency, Receipt, etc.
-    - Payment types: Cash, Credit Card, Check, Gift Certificate, etc.
-    - Report types: Sales Report, Labor Report, Inventory Report, etc.
-    - Customer types: Regular, VIP, Corporate, etc.
-    - Order modifiers: Extra, No, Light, Heavy, etc.
-    - Credit card types: Visa, MasterCard, American Express, etc.
-    - Days of the week and months in all supported languages
-    - Job titles: Manager, Server, Bartender, Host, etc.
-    - Credit card processing terms: Authorize, Capture, Void, Refund, etc.
-  - **Automatic Installation**: Language files are automatically installed during build process
-    - Updated `CMakeLists.txt` to install all `.po` files to `/usr/viewtouch/dat/languages/`
-    - Language files are available immediately after installation
-    - No manual configuration required for multi-language support
-- **Table Merge Confirmation Dialog**: Added safety confirmation when merging tables with existing tickets
-  - Added confirmation dialog asking "Are you sure you want to merge tables?" with Yes/No options
-  - Prevents accidental table merges that could result in data loss or confusion
-  - If user selects "No", the merge operation is canceled and tables remain separate
-  - If user selects "Yes", tables are merged as before with proper ticket consolidation
-  - Enhanced user experience by providing clear feedback before destructive operations
-- **Additional XPM Texture Options**: Added 12 new texture options to enhance UI customization
-  - Added 4color.png, brass-8.xpm, concrete-8.xpm, copper-8.xpm, demo-converted.xpm, glass-8.xpm, metal-8.xpm, plastic-8.xpm, silk-8.xpm, steel-8.xpm, stone-8.xpm, velvet-8.xpm
-  - Enhanced texture variety for improved visual customization of the interface
-- **Scalable Font Support**: Implemented Xft (X FreeType) font rendering system for resolution-independent text display
-  - Added XftFont loading with automatic fallback to default fonts when requested fonts are unavailable  
-  - Integrated XftTextExtentsUtf8 for accurate scalable font text measurement in UI layout calculations
-  - Added XftDrawStringUtf8 rendering with preserved 3D embossed text effects (shadow, highlight, main text)
-  - Enhanced error reporting with specific font loading failure messages and fallback notifications
-- **Modern C++ Type Safety**: Implemented proper type casting practices throughout font rendering subsystem
-  - Added reinterpret_cast for safe conversion between char* and unsigned char* pointer types
-  - Added const_cast for legacy X11/Motif library compatibility while maintaining const correctness
-- **Modern C++17 Standards Compliance**: Comprehensive modernization of entire codebase infrastructure
-  - Implemented modern `using` type alias syntax replacing all legacy `typedef` declarations
-  - Added type-safe `nullptr` conversions throughout 200+ files for improved memory safety
-  - Integrated modern `#pragma once` header guards replacing legacy `#ifndef` macros in 35+ files
-  - Enhanced Str class with C++17 features: move semantics, RAII compliance, and defaulted operations
-  - Added explicit buffer size constants preventing future buffer overflow vulnerabilities
-- **Comprehensive Debug Infrastructure**: Added detailed diagnostic output for troubleshooting startup and platform-specific issues
-  - Added step-by-step debug output for employee database loading with file existence checks and load status reporting
-  - Enhanced DownloadFile function with verbose curl output, file size verification, and detailed error categorization
-  - Added debug tracking for RestoreBackup operations with return code reporting and error path analysis
-  - Implemented platform-specific debug markers for Pi 5 ARM64 vs x86_64 desktop behavior differences
-- Interactive `font_check` utility: visually and programmatically verifies all program fonts, displaying each font in an X11 window and logging results to the terminal.
+- Complete Greek (EL) and Spanish (ES) localization for ViewTouch POS system
+  - Added comprehensive translation files: `po_file/viewtouch.po_EL` and `po_file/viewtouch.po_ES`
+  - Translated all user-facing UI strings, system messages, error messages, and report titles
+  - Translated payment and receipt terms, order and table management, labor and time clock functionality
+  - Translated system configuration labels, credit card types, transaction types, and sales categories
+  - Translated dialog messages, form field labels, and status notifications
+  - Maintained proper nouns, brand names, and technical codes untranslated as appropriate
+  - Both languages now provide complete localization coverage for the ViewTouch POS interface
+- Enhanced "Move Guest Check to Another Table" functionality to support merging tables with existing checks
+  - When moving a check to a table that already has a check, users are now prompted to merge the tables
+  - Merging combines all orders from both checks into a single check at the target table
+  - Guest counts are automatically combined when merging tables
+  - Provides confirmation dialog to prevent accidental merges
+- Improved download functionality for vt_data, menu.dat, table.dat, and zone_db.dat files
+  - Added support for both HTTPS and HTTP protocols with automatic fallback
+  - Enhanced error handling and file verification for reliable downloads
+  - Improved compatibility with Raspberry Pi and other systems with SSL/TLS issues
+  - Added proper timeout and connection settings for network requests
+  - Implemented file size verification to ensure complete downloads
+- Fixed "Suppress Zero Values" functionality in Accountant's Report: Receipt & Cash Deposit
+  - Zero values are now properly suppressed when the setting is enabled
+  - Report automatically refreshes when the setting is toggled for immediate visual feedback
+  - Applied to all relevant sections: tax types, non-cash receipts, adjustments, and payment methods
+- Migrated from Catch2 v2.13.10 to Catch2 v3.8.1
+  - Updated from single-header approach to library-based architecture
+  - Improved compile times by only including necessary headers
+  - Added comprehensive test infrastructure with basic and feature demonstration tests
+  - Enhanced testing capabilities with improved matchers, generators, and reporting
+  - Created detailed migration documentation in CATCH2_V3_MIGRATION.md
 
 ### Changed
-- All system and button fonts now use **EB Garamond 14 Bold** (`FONT_GARAMOND_14B`) as the global default for a more elegant and professional UI.
-- It is **recommended** to use EB Garamond 14 Bold, or any other 14 Bold font, for the best UI appearance and consistency across all zones and dialogs.
-- **Font System Migration**: Migrated from legacy bitmapped fonts to scalable Xft outline fonts for improved rendering quality and resolution independence
-  - Core text rendering in `term/layer.cc` now uses XftTextExtentsUtf8 and XftDrawStringUtf8 for scalable font measurement and rendering
-  - Terminal initialization in `term/term_view.cc` loads scalable fonts via XftFontOpenName with fallback support
-  - Loader interface in `loader/loader_main.cc` updated to use Xft font rendering for startup messages
-  - UI layout calculations in `main/manager.cc` use Xft text measurement for accurate scalable font sizing
-- Button Properties Dialog: Updated font choices to provide better progression for scalable fonts, moved away from legacy bitmapped font limitations to more appropriate scalable font sizes
-- Dialog fonts: Applied temporary fix changing oversized dialog text from Times 34 to Times 24 Bold in MessageDialog, DialogZone, CreditCardEntryDialog, OpenTabDialog, SimpleDialog, and CreditCardDialog classes
-- Global Button Font: Changed default from Times 24 to Times 24 Bold in ZoneDB constructor
-- **Cast Modernization**: Updated C-style casts to modern C++ style casts throughout font rendering code
-  - Changed `(unsigned const char*)` casts to `reinterpret_cast<const unsigned char*>()` for Xft function compatibility
-  - Replaced legacy `(String)` casts with safer `const_cast<char*>()` for X11/Motif string arguments
-- **Error Message Enhancement**: Improved font loading diagnostics with detailed fallback notifications and specific error reporting for missing scalable fonts
-- **Core Type System Modernization**: Migrated fundamental type definitions from legacy C to modern C++17 standards
-  - Converted all `typedef` declarations to modern `using` syntax in `basic.hh` for improved readability
-  - Updated type aliases: `using Uchar = unsigned char` (was `typedef unsigned char Uchar`)
-  - Enhanced template function definitions with consistent modern syntax
-- **Memory Management Modernization**: Comprehensive upgrade of pointer handling throughout codebase
-  - Replaced 200+ instances of `NULL` with type-safe `nullptr` across all source files
-  - Updated constructor initializations in Product, Vendor, and Credit classes
-  - Enhanced method signatures with modern pointer semantics for improved type safety
+- Font selection now updates all zones and all toolbar/dialog buttons for consistent UI appearance
+- Font compatibility is enforced: only fonts with compatible metrics are available for selection, preventing UI breakage
+- Font size and weight selection logic improved and consolidated for reliability
 
 ### Removed
-- **Documentation Files**: Removed `SCALABLE_FONTS_MIGRATION.md` per PR review feedback - migration documentation better suited for PR descriptions rather than repository files
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
-- Deleted obsolete font test utilities: `font_test_simple.cc` and `font_demo_example.cc`.
-- Cleaned up CMake configuration to only include the new font_check utility for font testing.
 
 ### Fixed
-- **COMPREHENSIVE UI RENDERING FIXES**: Resolved critical font metric initialization issues affecting all UI elements
-  - **Fixed Entry Fields and Button Positioning**: Resolved issues where entry fields and buttons appeared in wrong positions or were misplaced
-    - Root cause: `font_width` and `font_height` were 0 when zones were first created, causing all UI calculations to be wrong
-    - Impact: Entry fields, buttons, text, and other UI elements were positioned incorrectly or appeared in wrong locations
-    - Fix: Added comprehensive font metric validation throughout `LayoutZone` class with fallback values (12 for width, 24 for height)
-    - Result: All UI elements now render in correct positions with proper spacing and alignment
-  - **Fixed Text Rendering and Positioning**: Resolved issues with text overlapping, incorrect positioning, and layout problems
-    - Root cause: Text rendering methods used uninitialized font metrics, causing division by zero and incorrect positioning
-    - Impact: Text appeared in wrong positions, overlapped, or was completely misplaced
-    - Fix: Added font metric validation to all text rendering methods (`TextL`, `TextC`, `TextR`, `TextPosL`, `TextPosC`, `TextPosR`, `TextLR`)
-    - Result: All text now renders in correct positions with proper alignment and spacing
-  - **Fixed Layout Calculations**: Resolved issues with zone sizing, margins, and layout calculations
-    - Root cause: Layout methods used uninitialized font metrics for size and margin calculations
-    - Impact: Zones had incorrect sizes, margins were wrong, and layout was broken
-    - Fix: Added font metric validation to `SetMargins()`, `SetSize()`, `Touch()`, `ColumnSpacing()`, and `Width()` methods
-    - Result: All zones now have correct sizes, margins, and layout calculations
-  - **Fixed Background and Line Rendering**: Resolved issues with background areas, lines, and underlines
-    - Root cause: Background and line rendering methods used uninitialized font metrics
-    - Impact: Background areas, horizontal lines, and underlines appeared in wrong positions
-    - Fix: Added font metric validation to `Background()`, `Raised()`, `Line()`, and `Underline()` methods
-    - Result: All background areas, lines, and underlines now render in correct positions
-  - **Enhanced Font Metric Initialization**: Improved font metric handling throughout the rendering pipeline
-    - Root cause: Font metrics were initialized after rendering, causing initial layout to be wrong
-    - Impact: First render of any zone had incorrect layout and positioning
-    - Fix: Moved font metric initialization to the beginning of `Render()` method before any layout calculations
-    - Result: All zones now render correctly from the first display, with proper font metrics available throughout
-  - **Fixed Employee List Spacing**: Resolved issue where employee names were stacking on the same line
-    - Root cause: `list_spacing` parameter was fixed at 1, which was too small for the new font system
-    - Impact: Employee names appeared stacked on the same line instead of being properly spaced
-    - Fix: Modified `ListFormZone::Render()` to dynamically calculate `list_spacing` based on actual font height
-    - Result: Employee names now display with proper line spacing and are clearly readable
-- **CRITICAL EMPLOYEE DATABASE CRASHES**: Resolved major crashes preventing employee management functionality
-  - **Fixed Employee Addition Crash**: Resolved crash when clicking "Add Employee" that was preventing employee creation
-    - Root cause: UserDB constructor was incorrectly creating default super_user and developer employees, causing conflicts with legacy behavior
-    - Impact: Program would crash immediately after clicking "Add Employee" button, preventing any employee creation
-    - Fix: Restored original UserDB constructor behavior to create super_user and developer employees immediately, matching legacy ViewTouch behavior
-    - Result: Employee addition now works correctly and creates employee.dat file as expected
-  - **Fixed Employee Navigation Crash**: Resolved crash when using "Next" button in employee records
-    - Root cause: On-demand creation logic in FindByID and FindByKey methods was causing memory corruption and crashes
-    - Impact: Program would crash when navigating between employee records using the "Next" button
-    - Fix: Removed on-demand creation logic and restored original FindByID and FindByKey methods to match legacy behavior
-    - Result: Employee navigation now works correctly without crashes, matching legacy ViewTouch behavior
-  - **Fixed Employee Database File Creation**: Ensured employee.dat file is properly created when adding employees
-    - Root cause: Employee database save operations were not being triggered at the right time during employee creation
-    - Impact: employee.dat file was not being created, causing subsequent operations to fail
-    - Fix: Restored proper save timing in the employee creation flow to ensure database file is created immediately
-    - Result: employee.dat file is now created correctly when adding the first employee
-  - **Next Button Issue Identified**: The "Next" button in employee records still crashes the system
-    - Root cause: Complex memory management issues in the employee navigation system that persist despite fixes
-    - Impact: Clicking "Next" in employee records causes program crash
-    - Investigation: Verified that the legacy ViewTouch also has a non-functional "Next" button that does nothing
-    - Recommendation: Remove the "Next" button entirely since it serves no purpose and causes crashes in both legacy and current versions
-- **UI REFRESH AND EDITING ISSUES**: Resolved multiple screen update problems affecting button editing, drag-and-drop, keyboard operations, and open area clicks
-  - **Fixed Button Editing Screen Refresh**: Corrected issue where moving, resizing, or unselecting buttons did not immediately update the screen
-    - Root cause: Editing functions in `zone/zone.cc` were calling `Draw(0)` instead of `Draw(1)`, preventing immediate refresh
-    - Impact: Users had to manually refresh or perform other actions to see button position/size changes
-    - Fix: Changed all editing operations to use `Draw(1)` with `update_flag=1` and added `SendNow()` calls for immediate buffer flush
-  - **Fixed Report Zone Refresh Blocking**: Resolved issue where `ReportZone::Render()` was forcibly setting `update_flag=0` during temp report processing
-    - Root cause: `update_flag` was being overwritten to 0, blocking all screen updates during report rendering
-    - Impact: Screen updates were blocked during report operations, affecting overall UI responsiveness
-    - Fix: Modified to preserve and restore original `update_flag` while maintaining pagination fixes for long checks
-  - **Fixed Keyboard Editing Updates**: Resolved issue where keyboard inputs for resizing buttons (w, W, h, H keys) did not update screen immediately
-    - Root cause: Keyboard editing operations in `zone/zone.cc` were not calling `Draw(1)` after position/size changes
-    - Impact: Users had to perform additional actions to see keyboard-driven button changes
-    - Fix: Added explicit `Draw(1)` calls after all keyboard editing operations including resize, move, and selection commands
-  - **Fixed Open Area Click Unselection**: Resolved issue where clicking in open areas did not unselect previously selected buttons
-    - Root cause: `Terminal::Touch()` and `Terminal::Mouse()` methods only called `ClearSelectedZone()` when clicking on zones, not in open areas
-    - Impact: Users had to click on another button to unselect a selected button, or the selection would persist visually
-    - Fix: Added `ClearSelectedZone()` calls when clicking in open areas and enhanced `ClearSelectedZone()` to force immediate screen refresh
-  - **Fixed Edit Mode Single-Select Behavior**: Resolved issue where selecting a new button in edit mode would show both the old and new button as selected
-    - Root cause: `ZoneDB::ClearEdit()` was using incorrect page iteration and region-based refresh instead of full refresh
-    - Impact: Users could not properly single-select buttons in edit mode, making it confusing to work with individual buttons
-    - Fix: Updated `ClearEdit()` to properly iterate through current page and parent pages, and force full screen refresh after clearing selections
-  - **Enhanced Edit Mode Selection Logic**: Improved single-select vs multi-select behavior in edit mode
-    - Root cause: Selection logic was not consistently clearing other selections when clicking on new buttons
-    - Impact: Inconsistent selection behavior made edit mode confusing to use
-    - Fix: Simplified selection logic to always clear other selections unless Shift is held for multi-select, ensuring predictable single-select behavior
-  - **Fixed Multi-Select Drag and Move Operations**: Resolved issues with shift+drag selection and moving multiple selected buttons
-    - Root cause: Drag selection logic was not properly handling Shift key, and move operations were clearing other selections
-    - Impact: Users could not use shift+drag to select multiple buttons, and moving multiple selected buttons only moved one
-    - Fix: Updated drag selection logic to properly handle Shift key, and modified move logic to preserve existing selections when clicking on already-selected zones
-  - **Enhanced Drag Selection Screen Refresh**: Improved visual feedback for drag selection operations
-    - Root cause: Drag selection was using region-based refresh instead of full screen refresh
-    - Impact: Drag selection visual feedback was incomplete or missing
-    - Fix: Updated drag selection to use full screen refresh for consistent visual feedback
-  - **Fixed Open Area Click Deselection in Edit Mode**: Resolved issue where clicking in open areas did not deselect buttons in edit mode
-    - Root cause: Drag selection logic was not clearing existing selections when clicking in open areas
-    - Impact: Users had to manually deselect buttons or click on other buttons to clear selections
-    - Fix: Added deselection logic to drag selection code, clearing all selections when clicking in open areas (unless Shift is held for multi-select)
-  - **Fixed Drag-and-Drop Real-Time Updates**: Resolved issue where left-click dragging buttons did not provide real-time visual feedback
-    - Root cause: Mouse drag events in `zone/zone.cc` were making position/size edits without triggering immediate redraw
-    - Impact: Users could not see button position/size changes during drag operations until mouse release
-    - Fix: Added `Draw(1)` calls after drag move and resize operations to ensure real-time visual feedback during dragging
-- **CRITICAL PRICE SAVING BUGS**: Fixed issues preventing correct price changes from being saved
-  - **Fixed Price Change Detection**: Resolved issue where changing item prices did not set the `changed` flag in `SalesItem`
-    - Root cause: `ItemListZone::SaveRecord()` in `zone/order_zone.cc` was not setting `changed` flag when prices or other fields were modified
-    - Impact: Price changes and other field modifications were not being saved to the database
-    - Fix: Updated function to set `changed` flag whenever any relevant field (price, name, etc.) is modified
-  - **Fixed Price Parsing Format Bug**: Resolved issue where prices were being set to .00 instead of actual values
-    - Root cause: `ParsePrice` function in `main/manager.cc` used `%lf` format specifier for `float` type `Flt` and accessed `MasterSystem` without null checks
-    - Impact: All price inputs were being parsed as 0.00, breaking price editing functionality
-    - Fix: Changed sscanf format from `%lf` to `%f` for float compatibility and added null check for `MasterSystem` with default number format
-- **CRITICAL SYSTEM STARTUP FAILURES**: Resolved major platform-specific hang and download issues preventing system startup
-  - **Fixed DownloadFile Function**: Corrected critical bug where DownloadFile was writing URL strings to files instead of downloading actual content
-    - Root cause: `fout << curlpp::options::Url(url)` was writing URL text instead of performing actual download
-    - Impact: All bootstrap files (vt_data, menu.dat, tables.dat, zone_db.dat) were corrupted with URL strings, causing system crashes
-    - Fix: Implemented proper curl request with `request.setOpt()` and `request.perform()` for actual file downloads
-    - Added timeout and error handling with 30-second download timeout and 10-second connection timeout
-  - **Fixed Pi 5 UserDB::Purge() Hang**: Resolved infinite hang in employee database cleanup on Raspberry Pi 5 ARM64 platform
-    - Root cause: Memory corruption in Employee linked list causing infinite loop in `DList::Purge()` destructor calls
-    - Impact: System would hang indefinitely after "DEBUG: About to call sys->user_db.Purge()" on Pi 5 only
-    - Fix: Skip UserDB::Purge() when employee.dat doesn't exist since there's nothing meaningful to purge
-    - Platform-specific: Only affects ARM64 Pi systems due to different memory management vs x86_64 desktop systems
-  - **Fixed SSL Certificate Issues on Pi 5**: Added HTTP fallback for bootstrap file downloads to resolve SSL certificate problems
-    - Root cause: Raspberry Pi 5 systems often have outdated SSL certificates causing HTTPS download failures
-    - Impact: Critical system files (zone_db.dat, menu.dat) couldn't be downloaded, resulting in "no zone_db" crashes
-    - Fix: Temporarily use HTTP URLs for reliable downloads while preserving HTTPS for security when certificates are available
-    - Added comprehensive debug output and error reporting for download troubleshooting
-- **CMake Install Path Fixes**: Resolved issues with language files being installed to wrong directories
-  - **Fixed Language File Installation**: Corrected CMakeLists.txt to install language files to correct directory
-    - Root cause: Conflicting install directives were installing language files to `/usr/dat/languages` instead of `/usr/viewtouch/dat/languages`
-    - Impact: Language files were not found by the application, breaking multi-language support
-    - Fix: Updated CMakeLists.txt to use correct install paths for all language files
-    - Result: Language files now install to the correct directory and are properly accessible
-- **Settings Corruption Fixes**: Resolved issues with corrupted settings files causing system problems
-  - **Fixed Corrupted Settings Files**: Removed corrupted settings files and rebuilt settings system
-    - Root cause: Settings files were corrupted during development, causing various system issues
-    - Impact: System settings were not working correctly and could cause crashes
-    - Fix: Removed corrupted files and rebuilt settings from scratch
-    - Result: Settings system now works correctly without corruption issues
-- **Navigation and UI Flow Fixes**: Resolved multiple navigation and UI interaction issues
-  - **Fixed Customize Job Titles Next Page Button**: Resolved issue where Next Page button stopped working
-    - Root cause: Missing signal handling for navigation in the Customize Job Titles page
-    - Impact: Users could not navigate to the next page in the Customize Job Titles interface
-    - Fix: Added proper signal handling for navigation buttons
-    - Result: Next Page button now works correctly for navigation
-  - **Fixed Page & Button Property Defaults Dialog**: Resolved issue with strange numbers showing in dialog
-    - Root cause: Invalid parent page numbers were being displayed in the dialog
-    - Impact: Dialog showed confusing or incorrect numbers instead of proper page information
-    - Fix: Added validation for parent page numbers to ensure only valid values are displayed
-    - Result: Dialog now shows correct and meaningful information
-  - **Fixed F8 Language Key Behavior**: Replaced F8 key cycling with proper language selection dialog
-    - Root cause: F8 key was cycling through languages instead of showing language choices
-    - Impact: Users could not easily select their preferred language
-    - Fix: Replaced cycling behavior with a proper language selection dialog
-    - Result: F8 key now shows a proper language selection interface
-- **Entry Field Layout in Customize Job Titles, Families, Phrases**: Fixed the layout so each entry field now appears on its own line and is properly sized in the PhraseZone (zone/phrase_zone.cc). This resolves the issue where entry fields were overflowing or not visible due to being placed on a single line with excessive width.
+- fix configure step by searching for `PkgConfig` before using `pkg_check_module` #128
+- update embedded `catch.hpp` to `v2.13.10` to fix compilation on Ubuntu 20.04 and newer #131
+- Fixed: Changing font now updates all UI elements, including toolbar and dialog buttons, not just some zones
+- Fixed: UI no longer breaks or crashes when switching to scalable fonts; only compatible fonts are shown
+- Fixed: Font size and weight selection no longer causes crashes or mismatches
+- Fixed: Catch2 v3 migration completed successfully with all tests passing
 
-### Known Issues
-- **Customize Job Titles Entry Fields**: Entry fields in the "Customize Job Titles, Families, Phrases" page still need to be fixed
-  - Issue: Entry fields may not be rendering correctly or may have positioning issues
-  - Status: Investigation needed to identify specific entry field rendering problems
-  - Impact: Users may have difficulty entering or editing job titles, families, and phrases
-  - Priority: Medium - affects customization functionality but not core system operation
+
+## [v21.05.1] - 2021-05-18
+### Added
+- download bootstrap files if missing #119
+  - `viewouch/bin/vt_data`     from http://www.viewtouch.com/vt_data
+  - `viewouch/dat/tables.dat`  from http://www.viewtouch.com/tables.dat
+  - `viewouch/dat/menu.dat`    from http://www.viewtouch.com/menu.dat
+  - `viewouch/dat/zone_db.dat` from http://www.viewtouch.com/zone_db.dat
+  - download functionality require a package providing `libcurl-dev`, for example `libcurl4-gntuls-dev` on Debian/Ubuntu
+- create `viewtouch/dat/conf` directory if missing #119
+- create `viewouch/dat/screensaver` directory if missing #119
+- require at least gcc-8 and C++17 for `std::filesystem` support #119
+
+### Changed
+- update external copy of Catch2 to v2.13.4
+
+### Fixed
+- fix double line after header in some report tables #115
+- fix Segfault in Page 13 of 16 in "Customize Job Title, Families, Phrases" #117
+
+
+## [v21.01.1] - 2021-01-06
+### Fixed
+- fix "Users have to once again Clock In when ViewTouch exits and is restarted" #108
+- fix "Timeclock" page by handling non-set start TimeInfo
+
+
+## [v19.05.1] - 2019-05-26
+### Changed
+- update embedded date library
+
+### Fixed
+- fix "Clear Highlighted Entries" button in payment zone
+- fix build on FreeBSD (error in `license_hash.cc`)
+- don't install `date` library and header files
+- handle missing 'dat' folder for install step
+
+
+## [v19.04.1] - 2019-04-06
+### Added
+- add SecondsInYear function to TimeInfo
+
+### Fixed
+- SecondsElapsed is expected to return the absolute difference between TimeInfo objects
+- use SecondsInYear function to fix TimeInfo file writing (fixes wrong date displayed after EndOfDay)
+
+
+## [v19.03.2] - 2019-03-18
+### Fixed
+- add StringCompare len parameter, fixes "End of Day" behavior and many other bugs
+
+
+## [19.03.1] - 2019-03-08
+### Changed
+- disable auto updater of `vt_main`
+- print finalized check receipe also in training mode
+
+### Fixed
+- segfault because of `input_id` narrowing conversion
+- unhandled exception when ConfFile doesn't exist
+- don't try to render reports that failed to load
+- loader logofile path can be something other than `/usr/viewtouch/graphics/logofile`
+- loader CSS deprecation warnings
+- regression in StringCompare, old behavior restored (fixes subcheck receipe printing)
+
+
+## [v19.02.1] - 2019-02-16
+### Added
+- support for building with clang toolchain
+
+### Fixed
+- armhf and arm64 builds by using exact types for read and write operations
+- segfault when printing a work order when no printer is configured
+- crash on shutdown preventing modifications to interface to be saved
+
+
+## [v19.01.1] - 2019-01-21
+First release after versioning change
+

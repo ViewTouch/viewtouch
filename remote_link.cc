@@ -51,7 +51,7 @@ CharQueue::CharQueue(int max_size)
 
     buffer = new Uchar[buffer_size];
 
-    if (buffer == nullptr)
+    if (buffer == NULL)
         buffer_size = 0;
 
     Clear();

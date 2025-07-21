@@ -17,7 +17,8 @@
  * search_zone.hh - revision 1 (10/13/98)
  */
 
-#pragma once
+#ifndef _SEARCH_ZONE_HH
+#define _SEARCH_ZONE_HH
 
 #include "layout_zone.hh"
 
@@ -41,3 +42,5 @@ public:
     int          LoseFocus(Terminal *term, Zone *newfocus);
     int          ZoneStates() { return 2; }
 };
+
+#endif

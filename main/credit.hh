@@ -18,7 +18,8 @@
  * Credit/charge card verification/authorization
  */
 
-#pragma once
+#ifndef _CREDIT_HH
+#define _CREDIT_HH
 
 #include "list_utility.hh"
 #include "printer.hh"
@@ -621,3 +622,5 @@ public:
     int           Add(Terminal *term);
     int           MakeReport(Terminal *term, Report *report, ReportZone *rzone);
 };
+
+#endif

@@ -18,7 +18,8 @@
  * functions for using the touch-screen services
  */
 
-#pragma once
+#ifndef _TOUCH_SCREEN_HH
+#define _TOUCH_SCREEN_HH
 
 #include <string>
 #include "utility.hh"
@@ -76,3 +77,5 @@ public:
     int Flush();        // Clears device buffer
 	int SetMode(const char* mode);
 };
+
+#endif

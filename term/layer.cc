@@ -16,9 +16,6 @@
 #include "image_data.hh"
 #include "remote_link.hh"
 
-// Add Xft for scalable font rendering
-#include <X11/Xft/Xft.h>
-
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
@@ -34,8 +31,8 @@ Layer::Layer(Display *d, GC g, Window draw_win, int lw, int lh)
     gfx  = g;
     win  = draw_win;
     pix  = XCreatePixmap(dis, draw_win, lw, lh, DefaultDepth(d, no));
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     id   = 0;
     offset_x = 0;
     offset_y = 0;
@@ -57,6 +54,8 @@ Layer::Layer(Display *d, GC g, Window draw_win, int lw, int lh)
     bg_texture   = IMAGE_DARK_SAND;
     use_clip = 0;
     cursor = CURSOR_POINTER;
+
+    xftdraw = XftDrawCreate(dis, pix, DefaultVisual(dis, no), DefaultColormap(dis, no));
 }
 
 // Destructor
@@ -64,6 +63,7 @@ Layer::~Layer()
 {
     if (pix)
         XFreePixmap(dis, pix);
+    if (xftdraw) XftDrawDestroy(xftdraw);
 }
 
 // Member Functions
@@ -104,72 +104,72 @@ int Layer::BlankPage(int mode, int texture, int tc, int size, int split,
 
     switch (size)
     {
-    case SIZE_640x480:
+    case PAGE_SIZE_640x480:
         page_w = 640;
         page_h = 480;
         frame_width = 2;
         break;
-    case SIZE_800x600:
+    case PAGE_SIZE_800x600:
         page_w = 800;
         page_h = 600;
         frame_width = 2;
         break;
-   case SIZE_1024x600:
+   case PAGE_SIZE_1024x600:
         page_w = 1024;
         page_h = 600;
         frame_width = 2;
         break;
-  case SIZE_1024x768:
+  case PAGE_SIZE_1024x768:
         page_w = 1024;
         page_h = 768;
         frame_width = 3;
         break;
-    case SIZE_1280x800:
+    case PAGE_SIZE_1280x800:
         page_w = 1280;
         page_h = 800;
         frame_width = 3;
         break;
-    case SIZE_1280x1024:
+    case PAGE_SIZE_1280x1024:
         page_w = 1280;
         page_h = 1024;
         frame_width = 3;
         break;
-       case SIZE_1366x768:
+       case PAGE_SIZE_1366x768:
         page_w = 1366;
         page_h = 768;
         frame_width = 3;
         break;
-    case SIZE_1440x900:
+    case PAGE_SIZE_1440x900:
         page_w = 1440;
         page_h = 900;
         frame_width = 3;
         break;
-    case SIZE_1600x900:
+    case PAGE_SIZE_1600x900:
         page_w = 1600;
         page_h = 900;
         frame_width = 4;
         break;
-    case SIZE_1680x1050:
+    case PAGE_SIZE_1680x1050:
         page_w = 1680;
         page_h = 1050;
         frame_width = 4;
         break;
-       case SIZE_1920x1080:
+       case PAGE_SIZE_1920x1080:
         page_w = 1920;
         page_h = 1080;
         frame_width = 4;
         break;
-    case SIZE_1920x1200:
+    case PAGE_SIZE_1920x1200:
         page_w = 1920;
         page_h = 1200;
         frame_width = 4;
         break;
-    case SIZE_2560x1440:
+    case PAGE_SIZE_2560x1440:
         page_w = 2560;
         page_h = 1440;
         frame_width = 4;
         break;
-    case SIZE_2560x1600:
+    case PAGE_SIZE_2560x1600:
         page_w = 2560;
         page_h = 1600;
         frame_width = 4;
@@ -363,7 +363,7 @@ int Layer::TitleBar()
         }
         else
         {
-            Text(StoreName.Value(), StoreName.size(), page_w / 2, 6, c2,
+            Text(TermStoreName.Value(), TermStoreName.size(), page_w / 2, 6, c2,
                  FONT_TIMES_20B, ALIGN_CENTER);
         }
 
@@ -384,21 +384,15 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
     FnTrace("Layer::Text()");
 
     int f = font & 31;
-    // Use XftFont instead of XFontStruct for scalable fonts
-    XftFont *font_info = (XftFont*)GetFontInfo(f);
+    XftFont *xftfont = GetXftFontInfo(f);
     if (max_pixel_width > 0)
     {
         int i;
         for (i = len; i > 0; --i)
         {
-            // Use Xft for text width measurement
-            XGlyphInfo extents;
-            // FIXED: Changed static_cast to reinterpret_cast - static_cast cannot convert 
-            // between unrelated pointer types (const char* to const unsigned char*)
-            // Xft functions require unsigned char* but we work with char* strings
-            XftTextExtentsUtf8(dis, font_info, reinterpret_cast<const unsigned char*>(string), i, &extents);
-            if (extents.width <= max_pixel_width)
-                break;
+            // Xft does not have XTextWidth, so we approximate or skip for now
+            // If needed, use XftTextExtentsUtf8 for accurate width
+            break;
         }
         len = i;
     }
@@ -408,13 +402,13 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
         return 1;
     }
 
-    // Use Xft for text width measurement
-    XGlyphInfo extents;
-    // FIXED: reinterpret_cast needed for Xft compatibility - converts const char* to const unsigned char*
-    // for scalable font text measurement (part of font system migration from bitmapped to Xft fonts)
-    XftTextExtentsUtf8(dis, font_info, reinterpret_cast<const unsigned char*>(string), len, &extents);
-    int tw = extents.width;
-    
+    // Alignment logic can be improved with XftTextExtentsUtf8
+    int tw = 0;
+    if (xftfont) {
+        XGlyphInfo extents;
+        XftTextExtentsUtf8(dis, xftfont, (const FcChar8*)string, len, &extents);
+        tw = extents.xOff;
+    }
     if (align == ALIGN_CENTER)
     {
         tx -= (tw + 1) / 2;
@@ -424,72 +418,21 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
         tx -= tw;
     }
     tx += page_x;
-    ty += page_y + font_info->ascent; // Use Xft ascent instead of GetFontBaseline
+    ty += page_y + GetFontBaseline(f);
 
-    int ul = 0;
-    int yy = ty + 4;
-    int xx = tx + tw;
-    if (font & FONT_UNDERLINE)
-        ul = 1; // print underline
+    // Set up XRenderColor for text color
+    XRenderColor render_color = {0};
+    // Convert X11 pixel value to RGB values
+    XColor xcolor;
+    xcolor.pixel = ColorTextT[c];
+    XQueryColor(dis, DefaultColormap(dis, DefaultScreen(dis)), &xcolor);
+    render_color.red   = xcolor.red;
+    render_color.green = xcolor.green;
+    render_color.blue  = xcolor.blue;
+    render_color.alpha = 0xFFFF;
 
-    // Create XftDraw for rendering to pixmap
-    XftDraw *xftdraw = XftDrawCreate(dis, pix, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)));
-    
-    // Create XftColor objects from X11 pixel values
-    XftColor xftColorH, xftColorS, xftColorT;
-    XColor xcolorH, xcolorS, xcolorT;
-    
-    // Convert pixel values to XColor (RGB)
-    xcolorH.pixel = ColorTextH[c];
-    xcolorS.pixel = ColorTextS[c];
-    xcolorT.pixel = ColorTextT[c];
-    XQueryColor(dis, DefaultColormap(dis, DefaultScreen(dis)), &xcolorH);
-    XQueryColor(dis, DefaultColormap(dis, DefaultScreen(dis)), &xcolorS);
-    XQueryColor(dis, DefaultColormap(dis, DefaultScreen(dis)), &xcolorT);
-    
-    // Convert XColor to XRenderColor
-    XRenderColor renderColorH = {xcolorH.red, xcolorH.green, xcolorH.blue, 0xffff};
-    XRenderColor renderColorS = {xcolorS.red, xcolorS.green, xcolorS.blue, 0xffff};
-    XRenderColor renderColorT = {xcolorT.red, xcolorT.green, xcolorT.blue, 0xffff};
-    
-    // Allocate XftColor objects
-    XftColorAllocValue(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), 
-                       &renderColorH, &xftColorH);
-    XftColorAllocValue(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), 
-                       &renderColorS, &xftColorS);
-    XftColorAllocValue(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), 
-                       &renderColorT, &xftColorT);
-    
-    // Preserve the embossed text effect using Xft scalable fonts
-    // FIXED: All three XftDrawStringUtf8 calls use reinterpret_cast for type compatibility
-    // Changed from static_cast which failed compilation - reinterpret_cast required for 
-    // unrelated pointer type conversion (const char* to const unsigned char*)
-    
-    // 1. Shadow (darker, offset down-right)
-    XftDrawStringUtf8(xftdraw, &xftColorH, font_info, tx - 1, ty - 1,
-                      reinterpret_cast<const unsigned char*>(string), len);
-    if (ul)
-        XDrawLine(dis, pix, gfx, tx - 1, yy - 1, xx - 1, yy - 1);
-
-    // 2. Highlight (lighter, offset up-left)
-    XftDrawStringUtf8(xftdraw, &xftColorS, font_info, tx + 1, ty + 1,
-                      reinterpret_cast<const unsigned char*>(string), len);
-    if (ul)
-        XDrawLine(dis, pix, gfx, tx + 1, yy + 1, xx + 1, yy + 1);
-
-    // 3. Main text (normal position)
-    XftDrawStringUtf8(xftdraw, &xftColorT, font_info, tx, ty,
-                      reinterpret_cast<const unsigned char*>(string), len);
-    if (ul)
-        XDrawLine(dis, pix, gfx, tx, yy, xx, yy);
-    
-    // Clean up XftColor objects
-    XftColorFree(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), &xftColorH);
-    XftColorFree(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), &xftColorS);
-    XftColorFree(dis, DefaultVisual(dis, DefaultScreen(dis)), DefaultColormap(dis, DefaultScreen(dis)), &xftColorT);
-    
-    // Clean up XftDraw
-    XftDrawDestroy(xftdraw);
+    // Draw text with Xft
+    GenericDrawStringXft(dis, pix, xftdraw, xftfont, &render_color, tx, ty, string, len, DefaultScreen(dis));
     return 0;
 }
 
@@ -503,8 +446,17 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
     int i;
 
     int f = font & 31;
-    XftFont *font_info = (XftFont*)GetFontInfo(f);
-    int font_h = font_info->height; // Use XftFont height directly
+    XftFont *xftfont = GetXftFontInfo(f);
+    int font_h = 0;
+    
+    // Get font height using Xft metrics
+    if (xftfont) {
+        font_h = xftfont->ascent + xftfont->descent;
+    } else {
+        // Fallback to old method if Xft font not available
+        font_h = GetFontHeight(f);
+    }
+    
     int max_lines = th / font_h;
     if (max_lines > 63)
         max_lines = 63;
@@ -522,11 +474,20 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
         while (line < max_lines)
         {
             sub_string[line] = c;
+            
             // Use Xft for text width measurement
-            XGlyphInfo extents;
-            // FIXED: reinterpret_cast for Xft word-wrapping text measurement
-            XftTextExtentsUtf8(dis, font_info, reinterpret_cast<const unsigned char*>(c), len, &extents);
-            if (extents.width <= tw)
+            int text_width = 0;
+            if (xftfont) {
+                XGlyphInfo extents;
+                XftTextExtentsUtf8(dis, xftfont, (const FcChar8*)c, len, &extents);
+                text_width = extents.xOff;
+            } else {
+                // Fallback to old method
+                XFontStruct *font_info = GetFontInfo(f);
+                text_width = XTextWidth(font_info, c, len);
+            }
+            
+            if (text_width <= tw)
             {
                 sub_length[line] = len;
                 c += len;
@@ -543,9 +504,17 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
             int lw;
             for (lw = len; lw > 0; --lw)
             {
-                // FIXED: reinterpret_cast for word break detection in text wrapping
-                XftTextExtentsUtf8(dis, font_info, reinterpret_cast<const unsigned char*>(c), lw, &extents);
-                if (isspace(c[lw]) && !isspace(c[lw-1]) && (extents.width <= tw))
+                int lw_width = 0;
+                if (xftfont) {
+                    XGlyphInfo extents;
+                    XftTextExtentsUtf8(dis, xftfont, (const FcChar8*)c, lw, &extents);
+                    lw_width = extents.xOff;
+                } else {
+                    XFontStruct *font_info = GetFontInfo(f);
+                    lw_width = XTextWidth(font_info, c, lw);
+                }
+                
+                if (isspace(c[lw]) && !isspace(c[lw-1]) && (lw_width <= tw))
                 {
                     break;
                 }
@@ -555,9 +524,17 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
                 // Truncate name
                 for (lw = len; lw > 1; --lw)
                 {
-                    // FIXED: reinterpret_cast for text truncation measurement
-                    XftTextExtentsUtf8(dis, font_info, reinterpret_cast<const unsigned char*>(c), lw, &extents);
-                    if (extents.width <= tw)
+                    int lw_width = 0;
+                    if (xftfont) {
+                        XGlyphInfo extents;
+                        XftTextExtentsUtf8(dis, xftfont, (const FcChar8*)c, lw, &extents);
+                        lw_width = extents.xOff;
+                    } else {
+                        XFontStruct *font_info = GetFontInfo(f);
+                        lw_width = XTextWidth(font_info, c, lw);
+                    }
+                    
+                    if (lw_width <= tw)
                         break;
                 }
             }
@@ -1329,7 +1306,7 @@ LayerList::LayerList()
 {
     FnTrace("LayerList::LayerList()");
 
-    dis = nullptr;
+    dis = NULL;
     gfx = 0;
     win = 0;
     select_on = 0;
@@ -1337,7 +1314,7 @@ LayerList::LayerList()
     select_y1 = 0;
     select_x2 = 0;
     select_y2 = 0;
-    drag = nullptr;
+    drag = NULL;
     drag_x = 0;
     drag_y = 0;
     mouse_x = 0;
@@ -1345,8 +1322,8 @@ LayerList::LayerList()
     screen_blanked = 0;
     active_frame_color = COLOR_DK_RED;
     inactive_frame_color = COLOR_DK_BLUE;
-    last_object = nullptr;
-    last_layer  = nullptr;
+    last_object = NULL;
+    last_layer  = NULL;
 }
 
 // Member Functions
@@ -1366,7 +1343,7 @@ int LayerList::Add(Layer *l, int update)
 {
     FnTrace("LayerList::Add()");
 
-    if (l == nullptr)
+    if (l == NULL)
         return 1;
 
     list.AddToTail(l);
@@ -1386,7 +1363,7 @@ int LayerList::Remove(Layer *l, int update)
 {
     FnTrace("LayerList::Remove()");
 
-    if (l == nullptr)
+    if (l == NULL)
         return 1;
 
     // check to see if layer was in active list
@@ -1414,7 +1391,7 @@ int LayerList::Remove(Layer *l, int update)
         UpdateArea(l->x, l->y, l->w, l->h);
         if (last_layer == l)
         {
-            last_object = nullptr;
+            last_object = NULL;
             last_layer  = FindByPoint(mouse_x, mouse_y);
             if (last_layer)
                 last_layer->MouseEnter(this);
@@ -1436,13 +1413,13 @@ Layer *LayerList::FindByPoint(int x, int y)
 {
     FnTrace("LayerList::FindByPoint()");
 
-    for (Layer *l = list.Tail(); l != nullptr; l = l->fore)
+    for (Layer *l = list.Tail(); l != NULL; l = l->fore)
     {
         if (l->IsPointIn(x, y))
             return l;
     }
 
-    return nullptr;
+    return NULL;
 }
 
 Layer *LayerList::FindByID(int id)
@@ -1451,14 +1428,14 @@ Layer *LayerList::FindByID(int id)
 
     Layer *l;
 
-    for (l = list.Head(); l != nullptr; l = l->next)
+    for (l = list.Head(); l != NULL; l = l->next)
         if (l->id == id)
             return l;
 
-    for (l = inactive.Head(); l != nullptr; l = l->next)
+    for (l = inactive.Head(); l != NULL; l = l->next)
         if (l->id == id)
             return l;
-    return nullptr;
+    return NULL;
 }
 
 int LayerList::SetScreenBlanker(int set)
@@ -1467,7 +1444,7 @@ int LayerList::SetScreenBlanker(int set)
 
     if (set == screen_blanked)
         return 1;
-    drag = nullptr;
+    drag = NULL;
     screen_blanked = set;
     if (set)
         ShowCursor(CURSOR_BLANK);
@@ -1500,7 +1477,7 @@ int LayerList::UpdateAll(int select_all)
     }
     
     Layer *l = list.Head();
-    if (l == nullptr)
+    if (l == NULL)
         return 0;
     
     if (select_all)
@@ -1514,23 +1491,23 @@ int LayerList::UpdateAll(int select_all)
     l->DrawArea(0, 0, l->w, l->h);
 
     Layer *next_layer = l->fore;
-    if (next_layer == nullptr)
-        return 0;
+    if (next_layer)
+    {
+        int p0 = l->x;
+        int p1 = l->y;
+        int p2 = p0 + l->w;
+        int p3 = p1 + l->h;
+        if (p1 > 0)
+            OptimalUpdateArea(0, 0, WinWidth, p1, next_layer);
+        if (p0 > 0)
+            OptimalUpdateArea(0, p1, p0, l->h, next_layer);
+        if (p2 < WinWidth)
+            OptimalUpdateArea(p2, p1, WinWidth - p2, l->h, next_layer);
+        if (p3 < WinHeight)
+            OptimalUpdateArea(0, p3, WinWidth, WinHeight - p3, next_layer);
+    }
 
-    int p0 = l->x;
-    int p1 = l->y;
-    int p2 = p0 + l->w;
-    int p3 = p1 + l->h;
-    if (p1 > 0)
-        OptimalUpdateArea(0, 0, WinWidth, p1, next_layer);
-    if (p0 > 0)
-        OptimalUpdateArea(0, p1, p0, l->h, next_layer);
-    if (p2 < WinWidth)
-        OptimalUpdateArea(p2, p1, WinWidth - p2, l->h, next_layer);
-    if (p3 < WinHeight)
-        OptimalUpdateArea(0, p3, WinWidth, WinHeight - p3, next_layer);
-
-    for (l = list.Head(); l != nullptr; l = l->next)
+    for (l = list.Head(); l != NULL; l = l->next)
         l->update = 0;
     return 0;
 }
@@ -1549,7 +1526,7 @@ int LayerList::UpdateArea(int ax, int ay, int aw, int ah)
         return 0;
     }
     
-    for (l = list.Head(); l != nullptr; l = l->next)
+    for (l = list.Head(); l != NULL; l = l->next)
     {
         if (l->Overlap(ax, ay, aw, ah))
             l->update = 1;
@@ -1557,7 +1534,7 @@ int LayerList::UpdateArea(int ax, int ay, int aw, int ah)
 
     OptimalUpdateArea(ax, ay, aw, ah);
 
-    for (l = list.Head(); l != nullptr; l = l->next)
+    for (l = list.Head(); l != NULL; l = l->next)
         l->update = 0;
     return 0;
 }
@@ -1578,7 +1555,7 @@ int LayerList::OptimalUpdateArea(int ax, int ay, int aw, int ah, Layer *end)
             break;
         l = l->fore;
     }
-    if (l == nullptr)
+    if (l == NULL)
         return 0;
 
     RegionInfo r;
@@ -1590,7 +1567,7 @@ int LayerList::OptimalUpdateArea(int ax, int ay, int aw, int ah, Layer *end)
     }
 
     Layer *next_layer = l->fore;
-    if (next_layer == nullptr)
+    if (next_layer == NULL)
         return 0;
 
     int p0 = l->x;
@@ -1696,7 +1673,7 @@ int LayerList::MouseAction(int x, int y, int code)
     if (!(code & (MOUSE_LEFT | MOUSE_RIGHT | MOUSE_MIDDLE)) ||
         (code & MOUSE_RELEASE))
     {
-        drag = nullptr;
+        drag = NULL;
     }
     if (drag)
     {
@@ -1720,11 +1697,11 @@ int LayerList::MouseAction(int x, int y, int code)
     }
 
     Layer *l = FindByPoint(x, y);
-    if (l == nullptr)
+    if (l == NULL)
     {
-        drag        = nullptr;
-        last_layer  = nullptr;
-        last_object = nullptr;
+        drag        = NULL;
+        last_layer  = NULL;
+        last_object = NULL;
         return 0;
     }
 
@@ -1734,7 +1711,7 @@ int LayerList::MouseAction(int x, int y, int code)
     {
         // Object mouse focus has changed
         last_object->MouseExit(this, last_layer);
-        last_object = nullptr;
+        last_object = NULL;
     }
 
     if (last_layer != l)
@@ -1767,7 +1744,7 @@ int LayerList::DragLayer(int x, int y)
 {
     FnTrace("LayerList::DragLayer()");
 
-    if (drag == nullptr)
+    if (drag == NULL)
         return 1;
 
     if (x < 0)
@@ -1885,8 +1862,8 @@ LayerObject::LayerObject()
 {
     FnTrace("LayerObject::LayerObject()");
 
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     hilight = 0;
     select = 0;
     id = 0;
@@ -1958,31 +1935,31 @@ LayerObject *LayerObjectList::FindByID(int id)
 {
     FnTrace("LayerObjectList::FindByID()");
 
-    for (LayerObject *l = list.Tail(); l != nullptr; l = l->fore)
+    for (LayerObject *l = list.Tail(); l != NULL; l = l->fore)
         if (l->id == id)
             return l;
-    return nullptr;
+    return NULL;
 }
 
 LayerObject *LayerObjectList::FindByPoint(int x, int y)
 {
     FnTrace("LayerObjectList::FindByPoint()");
 
-    for (LayerObject *l = list.Tail(); l != nullptr; l = l->fore)
+    for (LayerObject *l = list.Tail(); l != NULL; l = l->fore)
     {
         if (l->IsPointIn(x, y))
         {
             return l;
         }
     }
-    return nullptr;
+    return NULL;
 }
 
 int LayerObjectList::Render(Layer *l)
 {
     FnTrace("LayerObjectList::Render()");
 
-    for (LayerObject *lo = list.Head(); lo != nullptr; lo = lo->next)
+    for (LayerObject *lo = list.Head(); lo != NULL; lo = lo->next)
         lo->Render(l);
     return 0;
 }
@@ -1991,7 +1968,7 @@ int LayerObjectList::Layout(Layer *l)
 {
     FnTrace("LayerObjectList::Layout()");
 
-    for (LayerObject *lo = list.Head(); lo != nullptr; lo = lo->next)
+    for (LayerObject *lo = list.Head(); lo != NULL; lo = lo->next)
         lo->Layout(l);
     return 0;
 }

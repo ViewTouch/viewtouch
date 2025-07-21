@@ -59,7 +59,7 @@ int ReportError(const std::string &message)
 // Constructor
 InputDataFile::InputDataFile()
 {
-    fp          = nullptr;
+    fp          = NULL;
     end_of_file = 0;
     old_format  = 0;
     filename[0] = '\0';
@@ -98,7 +98,7 @@ int InputDataFile::Open(const std::string &name, int &version)
 
 	version = 0;
     fp = gzopen(name.c_str(), "r");
-	if (fp == nullptr)
+	if (fp == NULL)
     {
         const std::string errmsg = "Unable to read file: '" + name
                 + "' errno: " + std::to_string(errno);
@@ -125,7 +125,7 @@ int InputDataFile::Open(const std::string &name, int &version)
 	else
 	{
 		gzclose((gzFile)fp);
-        fp = nullptr;
+        fp = NULL;
         std::string errmsg = "Unknown file format for file: '" + name + "'";
         ReportError(errmsg);
 		return 1;
@@ -141,7 +141,7 @@ int InputDataFile::Close()
     if (fp)
     {
         gzclose((gzFile)fp);
-        fp = nullptr;
+        fp = NULL;
     }
     return 0;
 }
@@ -234,7 +234,7 @@ int InputDataFile::Read(Flt &val)
         return 1;
 
     Flt v = 0.0;
-    if (sscanf(str, "%f", &v) != 1)
+    if (sscanf(str, "%lf", &v) != 1)
         return 1;
 
     val = v;
@@ -277,7 +277,7 @@ int InputDataFile::Read(TimeInfo &timevar)
 int InputDataFile::Read(int *val)
 {
     FnTrace("InputDataFile::Read(int *)");
-    if (val == nullptr)
+    if (val == NULL)
         return 0;
     return Read(*val);
 }
@@ -285,7 +285,7 @@ int InputDataFile::Read(int *val)
 int InputDataFile::Read(Flt *val)
 {
     FnTrace("InputDataFile::Read(Flt *)");
-    if (val == nullptr)
+    if (val == NULL)
         return 0;
     return Read(*val);
 }
@@ -293,7 +293,7 @@ int InputDataFile::Read(Flt *val)
 int InputDataFile::Read(Str *val)
 {
     FnTrace("InputDataFile::Read(Str *)");
-    if (val == nullptr)
+    if (val == NULL)
         return 0;
     return Read(*val);
 }
@@ -345,7 +345,7 @@ const char* InputDataFile::ShowTokens(char* buffer, int lines)
     int   buffidx = 0;
     char  peekchar = '\0';
 
-    if (buffer == nullptr)
+    if (buffer == NULL)
         buffer = buff2;
 
     while (lines > 0)
@@ -390,7 +390,7 @@ int OutputDataFile::Open(const std::string &filepath, int version, int use_compr
         fp = (void*)gzopen(filepath.c_str(), "w");
     else
         fp = fopen(filepath.c_str(), "w");
-    if (fp == nullptr)
+    if (fp == NULL)
     {
         std::string errmsg = std::string("OutputDataFile::Open error '")
                 + std::to_string(errno) + "' for '" + filepath + "'";
@@ -420,7 +420,7 @@ int OutputDataFile::Close()
         {
             fclose((FILE *) fp);
         }
-        fp = nullptr;
+        fp = NULL;
     }
     return 0;
 }
@@ -472,7 +472,7 @@ int OutputDataFile::Write(Flt val, int bk)
 int OutputDataFile::Write(const char* val, int bk)
 {
     FnTrace("OutputDataFile::Write(const char* )");
-    if (val == nullptr)
+    if (val == NULL)
         return 1;
 
     int length = strlen(val);
@@ -555,7 +555,7 @@ int OutputDataFile::Write(TimeInfo &timevar, int bk)
 int OutputDataFile::Write(int *val, int bk)
 {
     FnTrace("OutputDataFile::Write(int *)");
-    if (val == nullptr)
+    if (val == NULL)
         return 0;
     return Write(*val, bk);
 }
@@ -563,7 +563,7 @@ int OutputDataFile::Write(int *val, int bk)
 int OutputDataFile::Write(Flt *val, int bk)
 {
     FnTrace("OutputDataFile::Write(Flt *)");
-    if (val == nullptr)
+    if (val == NULL)
         return 0;
     return Write(*val, bk);
 }
@@ -571,7 +571,7 @@ int OutputDataFile::Write(Flt *val, int bk)
 int OutputDataFile::Write(Str *val, int bk)
 {
     FnTrace("OutputDataFile::Write(Str *)");
-    if (val == nullptr)
+    if (val == NULL)
         return 0;
     return Write(*val, bk);
 }

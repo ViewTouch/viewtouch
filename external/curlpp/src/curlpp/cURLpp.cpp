@@ -98,7 +98,11 @@ std::string
 curlpp::libcurlVersion()
 {
   char* p = curl_version();
-
+   if (!p)
+   {
+      throw RuntimeError("unable to get the libcurl version"); //we got an error
+   }
+      
    return std::string(p);
 }
 

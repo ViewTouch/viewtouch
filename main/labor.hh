@@ -18,7 +18,8 @@
  * Work scheduling & time clock classes
  */
 
-#pragma once
+#ifndef _LABOR_HH
+#define _LABOR_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -194,3 +195,5 @@ public:
     int Read(InputDataFile &df, int version);
     int Write(OutputDataFile &df, int version);
 };
+
+#endif

@@ -10,7 +10,6 @@ do
 done
 
 rm $VTRESTART
-export DISPLAY=:0 # Fix: Ensure X11 display is set before launching vtpos
 exec $VTPOS
 
 

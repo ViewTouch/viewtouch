@@ -333,7 +333,7 @@ int TemplatePos(const genericChar* temp, int cursor)
 // Constructor
 FormZone::FormZone()
 {
-    keyboard_focus = nullptr;
+    keyboard_focus = NULL;
     record_no      = 0;
     keep_focus     = 1;
     wrap           = 1;
@@ -359,7 +359,7 @@ RenderResult FormZone::Render(Terminal *term, int update_flag)
     }
 
     if (update_flag || keep_focus == 0)
-        keyboard_focus = nullptr;
+        keyboard_focus = NULL;
 	
 
     LayoutZone::Render(term, update_flag);
@@ -379,7 +379,7 @@ RenderResult FormZone::Render(Terminal *term, int update_flag)
 
     LayoutForm(term);
 
-    for (FormField *f = FieldList(); f != nullptr; f = f->next)
+    for (FormField *f = FieldList(); f != NULL; f = f->next)
     {
         f->selected = (keyboard_focus == f);
         if (f->active)
@@ -394,16 +394,16 @@ SignalResult FormZone::Signal(Terminal *term, const genericChar* message)
     static const genericChar* commands[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "00", ".",
         "backspace", "clear", "new",  "search", "nextsearch ", "restore",
-         "next", "prior", "save", "delete", "print", "unfocus", nullptr};
+         "next", "prior", "save", "delete", "print", "unfocus", NULL};
     Employee *e = term->user;
     Printer  *p = term->FindPrinter(PRINTER_REPORT);
     int idx = CompareListN(commands, message);
 
-    // initial decisions; put these here so we don't have to duplicate them for
+    // initial decisions; put these here so we don'term have to duplicate them for
     // various cases below
-    if (keyboard_focus == nullptr && idx < 14)
+    if (keyboard_focus == NULL && idx < 14)
     {
-        // don't handle numeric keypad if we don't have any fields selected
+        // don'term handle numeric keypad if we don'term have any fields selected
         return SIGNAL_IGNORED;
     }
     else if (idx != 14 && records <= 0)
@@ -466,14 +466,7 @@ SignalResult FormZone::Signal(Terminal *term, const genericChar* message)
         SaveRecord(term, record_no, 0);
         --record_no;
         if (record_no < 0)
-        {
             record_no = records - 1;
-            // Show a brief message that we've cycled to the last record
-            if (records > 1)
-            {
-                term->SetMessage("Back to last record");
-            }
-        }
         if (record_no < 0)
             record_no = 0;
         else
@@ -494,7 +487,7 @@ SignalResult FormZone::Signal(Terminal *term, const genericChar* message)
             LoadRecord(term, record_no);
         break;
     case 22:  // Print
-        if (p == nullptr || e == nullptr)
+        if (p == NULL || e == NULL)
             return SIGNAL_IGNORED;
         SaveRecord(term, record_no, 0);
         if (PrintRecord(term, record_no))
@@ -506,7 +499,7 @@ SignalResult FormZone::Signal(Terminal *term, const genericChar* message)
         if (strlen(message) == 1)
         {  // adding a letter
             keyboard_focus->Append(message);
-            idx = 0;  // Make sure focus doesn't get lost
+            idx = 0;  // Make sure focus doesn'term get lost
         }
         else
             return SIGNAL_IGNORED;
@@ -591,7 +584,7 @@ SignalResult FormZone::Keyboard(Terminal *term, int my_key, int state)
         return Signal(term, "next");
     }
 
-    if (keyboard_focus == nullptr)
+    if (keyboard_focus == NULL)
         return SIGNAL_IGNORED;
 
     switch (my_key)
@@ -616,7 +609,7 @@ SignalResult FormZone::Keyboard(Terminal *term, int my_key, int state)
 int FormZone::Add(FormField *fe)
 {
     FnTrace("FormZone::Add()");
-    if (fe == nullptr)
+    if (fe == NULL)
         return 1; // Error
 
     field_list.AddToTail(fe);
@@ -761,7 +754,7 @@ int FormZone::RightAlign()
 int FormZone::Remove(FormField *f)
 {
     FnTrace("FormZone::Remove()");
-    if (f == nullptr)
+    if (f == NULL)
         return 1;
 
     return field_list.Remove(f);
@@ -819,17 +812,13 @@ int FormZone::LayoutForm(Terminal *term)
 
         f = f->next;
     }
-    // Debug: print label, x, and w for each field
-    for (FormField *ff = FieldList(); ff != nullptr; ff = ff->next) {
-        printf("Field: '%s'  x: %.2f  w: %.2f\n", ff->label.Value(), ff->x, ff->w);
-    }
     return 0;
 }
 
 FormField *FormZone::Find(Flt px, Flt py)
 {
     FnTrace("FormZone::Find()");
-    for (FormField *fe = FieldList(); fe != nullptr; fe = fe->next)
+    for (FormField *fe = FieldList(); fe != NULL; fe = fe->next)
     {
         if (fe->active && fe->modify &&
             py >= (fe->y -.5) && py <= (fe->y + fe->h -.5) &&
@@ -838,19 +827,19 @@ FormField *FormZone::Find(Flt px, Flt py)
             return fe;
         }
     }
-    return nullptr;
+    return NULL;
 }
 
 int FormZone::NextField()
 {
     FnTrace("FormZone::NextField()");
-    if (keyboard_focus == nullptr)
+    if (keyboard_focus == NULL)
         return FirstField();
 
     do
     {
         keyboard_focus = keyboard_focus->next;
-        if (keyboard_focus == nullptr)
+        if (keyboard_focus == NULL)
             return FirstField();
     }
     while (keyboard_focus->modify == 0 || keyboard_focus->active == 0);
@@ -860,13 +849,13 @@ int FormZone::NextField()
 int FormZone::ForeField()
 {
     FnTrace("FormZone::ForeField()");
-    if (keyboard_focus == nullptr)
+    if (keyboard_focus == NULL)
         return LastField();
 
     do
     {
         keyboard_focus = keyboard_focus->fore;
-        if (keyboard_focus == nullptr)
+        if (keyboard_focus == NULL)
             return LastField();
     }
     while (keyboard_focus->modify == 0 || keyboard_focus->active == 0);
@@ -927,25 +916,12 @@ RenderResult ListFormZone::Render(Terminal *term, int update_flag)
     }
 
     if (update_flag || keep_focus == 0)
-        keyboard_focus = nullptr;
+        keyboard_focus = NULL;
 
     LayoutZone::Render(term, update_flag);
 
     if (show_list)
     {
-        // Calculate proper line spacing based on font height
-        int font_width, font_height;
-        term->FontSize(font, font_width, font_height);
-        
-        // Ensure we have reasonable font metrics - this prevents employee names stacking
-        if (font_height <= 0) font_height = 24;  // Fallback to reasonable default
-        
-        // Convert font height to floating point spacing (add some padding)
-        list_spacing = (Flt)font_height / 20.0f;  // Scale factor to convert pixels to spacing units
-        
-        // Ensure minimum spacing to prevent stacking
-        if (list_spacing < 1.0f) list_spacing = 1.0f;
-        
         if (records > 0)
             list_report.selected_line = record_no;
         else
@@ -969,7 +945,7 @@ RenderResult ListFormZone::Render(Terminal *term, int update_flag)
         if (records > 0)
         {
             LayoutForm(term);
-            for (FormField *f = FieldList(); f != nullptr; f = f->next)
+            for (FormField *f = FieldList(); f != NULL; f = f->next)
             {
                 f->selected = (keyboard_focus == f);
                 if (f->active)
@@ -985,10 +961,10 @@ SignalResult ListFormZone::Signal(Terminal *term, const genericChar* message)
     FnTrace("ListFormZone::Signal()");
     static const genericChar* commands[] = {
         "new", "next", "prior", "save", "restore",
-        "delete", "print", "unfocus", "change view", nullptr};
+        "delete", "print", "unfocus", "change view", NULL};
     int idx = CompareListN(commands, message);
 
-    if (idx == -1)
+	if (idx == -1)
     {
         // let parent class give the message a try
         return FormZone::Signal(term, message);
@@ -996,34 +972,18 @@ SignalResult ListFormZone::Signal(Terminal *term, const genericChar* message)
 
     if (idx == 0) // New
     {
-        ReportError("DEBUG: ListFormZone::Signal() - 'new' case entered");
-        if (records > 0) {
-            ReportError("DEBUG: ListFormZone::Signal() - calling SaveRecord");
+        if (records > 0)
             SaveRecord(term, record_no, 0);
-            ReportError("DEBUG: ListFormZone::Signal() - SaveRecord returned");
-        }
         record_no = records;
-        ReportError("DEBUG: ListFormZone::Signal() - calling NewRecord");
-        if (NewRecord(term)) {
-            ReportError("DEBUG: ListFormZone::Signal() - NewRecord returned SIGNAL_IGNORED");
+        if (NewRecord(term))
             return SIGNAL_IGNORED;
-        }
-        ReportError("DEBUG: ListFormZone::Signal() - NewRecord call completed");
-        ReportError("DEBUG: ListFormZone::Signal() - about to call RecordCount");
         records = RecordCount(term);
-        ReportError("DEBUG: ListFormZone::Signal() - RecordCount returned: " + std::to_string(records));
-        ReportError("DEBUG: ListFormZone::Signal() - calling LoadRecord");
         if (record_no >= records)
             record_no = records - 1;
         LoadRecord(term, record_no);
-        ReportError("DEBUG: ListFormZone::Signal() - LoadRecord returned");
-        ReportError("DEBUG: ListFormZone::Signal() - calling FirstField");
         FirstField();
-        ReportError("DEBUG: ListFormZone::Signal() - FirstField returned");
         show_list = 0;
-        ReportError("DEBUG: ListFormZone::Signal() - calling Draw");
         Draw(term, 0);
-        ReportError("DEBUG: ListFormZone::Signal() - Draw returned");
         return SIGNAL_OKAY;
     }
 
@@ -1075,7 +1035,7 @@ SignalResult ListFormZone::Signal(Terminal *term, const genericChar* message)
             LoadRecord(term, record_no);
         break;
     case 6:  // Print
-        if (p == nullptr || e == nullptr)
+        if (p == NULL || e == NULL)
             return SIGNAL_IGNORED;
         if (show_list)
         {
@@ -1270,7 +1230,7 @@ SignalResult ListFormZone::Keyboard(Terminal *term, int my_key, int state)
         return SIGNAL_OKAY;
     }
 
-    if (keyboard_focus == nullptr)
+    if (keyboard_focus == NULL)
         return SIGNAL_IGNORED;
 
     switch (my_key)
@@ -1305,8 +1265,8 @@ int ListFormZone::Update(Terminal *term, int update_message, const genericChar* 
 // Constructor
 FormField::FormField()
 {
-    next     = nullptr;
-    fore     = nullptr;
+    next     = NULL;
+    fore     = NULL;
     new_line = 0;
     x        = 0;
     y        = 0;
@@ -1711,7 +1671,7 @@ int TextField::Append(genericChar* my_string)
 int TextField::Append(Str &my_string)
 {
     FnTrace("TextField::Append()");
-    genericChar* tbuff = nullptr;
+    genericChar* tbuff = NULL;
     int retval = 0;
     int numdigits = 1;
 
@@ -1886,7 +1846,7 @@ RenderResult TextField::Render(Terminal *term, FormZone *fzone)
         buffer.Set(buffint);
         cursor = buffer.size();
     }
-    buff = admission_filteredname(buffer.str());
+    buff = admission_filteredname(buffer);
     fzone->TextPosL(term, xx, y, buff, COLOR_WHITE);
     if (selected)
     {
@@ -1995,9 +1955,9 @@ RenderResult TimeDateField::Render(Terminal *term, FormZone *fzone)
     if (!buffer.IsSet())
     {
         if (show_time)
-            fzone->TextPosC(term, xx + 12.5, y, "Time/Date Not Set", COLOR_WHITE);
+            fzone->TextPosC(term, xx + 12.5, y, GlobalTranslate("Time/Date Not Set"), COLOR_WHITE);
         else
-            fzone->TextPosC(term, xx + 8, y, "Date Not Set", COLOR_WHITE);
+            fzone->TextPosC(term, xx + 8, y, GlobalTranslate("Date Not Set"), COLOR_WHITE);
         return RENDER_OKAY;
     }
 
@@ -2009,22 +1969,22 @@ RenderResult TimeDateField::Render(Terminal *term, FormZone *fzone)
 
     val = buffer.WeekDay();
     if (!buffer.IsSet() || val < 0 || val > 6)
-        snprintf(str, STRLENGTH, "---");
+        sprintf(str, "---");
     else
-        snprintf(str, STRLENGTH, "%s",term->Translate(ShortDayName[val]));
+        sprintf(str, "%s",term->Translate(ShortDayName[val]));
     fzone->TextPosL(term, xx,        y, str, COLOR_WHITE);
 
     val = buffer.Month() - 1;
     if (!buffer.IsSet() || val < 0 || val > 11)
-        snprintf(str, STRLENGTH, "---");
+        sprintf(str, "---");
     else
-        snprintf(str, STRLENGTH, "%s",term->Translate(ShortMonthName[val]));
+        sprintf(str, "%s",term->Translate(ShortMonthName[val]));
     fzone->TextPosC(term, xx + 6.5,  y, str, COLOR_WHITE);
 
-    snprintf(str, STRLENGTH, "%d", buffer.Day());
+    sprintf(str, "%d", buffer.Day());
     fzone->TextPosC(term, xx + 10,   y, str, COLOR_WHITE);
     fzone->TextPosC(term, xx + 11.5, y, ",", COLOR_WHITE);
-    snprintf(str, STRLENGTH, "%d", buffer.Year());
+    sprintf(str, "%d", buffer.Year());
     fzone->TextPosC(term, xx + 14,   y, str, COLOR_WHITE);
 
     if (show_time)
@@ -2032,15 +1992,15 @@ RenderResult TimeDateField::Render(Terminal *term, FormZone *fzone)
         int hour = buffer.Hour() % 12;
         if (hour == 0)
             hour = 12;
-        snprintf(str, STRLENGTH, "%d", hour);
+        sprintf(str, "%d", hour);
         fzone->TextPosC(term, xx + 18,   y, str, COLOR_WHITE);
         fzone->TextPosC(term, xx + 19.5, y, ":", COLOR_WHITE);
-        snprintf(str, STRLENGTH, "%02d", buffer.Min());
+        sprintf(str, "%02d", buffer.Min());
         fzone->TextPosC(term, xx + 21,   y, str, COLOR_WHITE);
         if (buffer.Hour() >= 12)
-            strcpy(str, "pm");
+            strcpy(str, GlobalTranslate("pm"));
         else
-            strcpy(str, "am");
+            strcpy(str, GlobalTranslate("am"));
         fzone->TextPosL(term, xx + 22.3, y, str, COLOR_WHITE);
     }
     return RENDER_OKAY;
@@ -2255,20 +2215,20 @@ RenderResult TimeDayField::Render(Terminal *term, FormZone *fzone)
     if (is_unset)
         strcpy(str, "--");
     else
-        snprintf(str, STRLENGTH, "%d", my_hour);
+        sprintf(str, "%d", my_hour);
     fzone->TextPosC(term, xx + 6,   y, str, COLOR_WHITE);
     fzone->TextPosC(term, xx + 7.5, y, ":", COLOR_WHITE);
     if (is_unset)
         strcpy(str, "--");
     else
-        snprintf(str, STRLENGTH, "%02d", min);
+        sprintf(str, "%02d", min);
     fzone->TextPosC(term, xx + 9,   y, str, COLOR_WHITE);
     if (!is_unset)
     {
         if (hour >= 12)
-            strcpy(str, "pm");
+            strcpy(str, GlobalTranslate("pm"));
         else
-            strcpy(str, "am");
+            strcpy(str, GlobalTranslate("am"));
         fzone->TextPosL(term, xx + 10.3, y, str, COLOR_WHITE);
     }
     return RENDER_OKAY;
@@ -2456,7 +2416,7 @@ int TimeDayField::Set(TimeInfo *tinfo)
 {
     FnTrace("TimeDayField::Set(TimeInfo *)");
 
-    if (tinfo != nullptr && tinfo->IsSet())
+    if (tinfo != NULL && tinfo->IsSet())
     {
         is_unset = 0;
         day = tinfo->WeekDay();
@@ -2691,8 +2651,8 @@ int WeekDayField::Get(int &d)
 // Constructor
 ListFieldEntry::ListFieldEntry(const genericChar* lbl, int val)
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     label.Set(lbl);
     value  = val;
     active = 1;
@@ -2703,7 +2663,7 @@ ListFieldEntry::ListFieldEntry(const genericChar* lbl, int val)
 ListField::ListField(const genericChar* lbl, const genericChar* *options, int *values,
                      Flt min_label, Flt min_list)
 {
-    current         = nullptr;
+    current         = NULL;
     label.Set(lbl);
     SetList(options, values);
     modify          = 1;
@@ -2723,7 +2683,7 @@ int ListField::Init(Terminal *term, FormZone *fzone)
 {
     FnTrace("ListField::Init()");
     entry_width = min_entry_width;
-    for (ListFieldEntry *lfe = EntryList(); lfe != nullptr; lfe = lfe->next)
+    for (ListFieldEntry *lfe = EntryList(); lfe != NULL; lfe = lfe->next)
     {
         Flt len = fzone->TextWidth(term, lfe->label.Value());
         if (len > entry_width)
@@ -2758,7 +2718,7 @@ RenderResult ListField::Render(Terminal *term, FormZone *fzone)
         xx += label_width + 1;
     }
 
-    if (current == nullptr)
+    if (current == NULL)
         current = EntryList();
 
     fzone->Button(term, xx, y, entry_width, selected);
@@ -2820,7 +2780,7 @@ SignalResult ListField::Mouse(Terminal *term, FormZone *fzone,
         else if (action & MOUSE_RIGHT)
             ForeEntry();
         else if (action & MOUSE_MIDDLE)
-            current = nullptr;
+            current = NULL;
     }
     return SIGNAL_OKAY;
 }
@@ -2830,13 +2790,13 @@ int ListField::NextEntry(int loop)
     FnTrace("ListField::NextEntry()");
     if (current)
         current = current->next;
-    if (current == nullptr)
+    if (current == NULL)
     {
         current = EntryList();
         ++loop;
     }
 
-    if (current == nullptr || loop > 1)
+    if (current == NULL || loop > 1)
         return 1;
     if (current->active == 0)
         return NextEntry(loop);
@@ -2849,13 +2809,13 @@ int ListField::ForeEntry(int loop)
     FnTrace("ListField::ForeEntry()");
     if (current)
         current = current->fore;
-    if (current == nullptr)
+    if (current == NULL)
     {
         current = EntryListEnd();
         ++loop;
     }
 
-    if (current == nullptr || loop > 1)
+    if (current == NULL || loop > 1)
         return 1;
     if (current->active == 0)
         return ForeEntry(loop);
@@ -2866,7 +2826,7 @@ int ListField::ForeEntry(int loop)
 int ListField::Set(int v)
 {
     FnTrace("ListField::Set()");
-    for (ListFieldEntry *lfe = EntryList(); lfe != nullptr; lfe = lfe->next)
+    for (ListFieldEntry *lfe = EntryList(); lfe != NULL; lfe = lfe->next)
     {
         if (lfe->value == v)
         {
@@ -2894,13 +2854,13 @@ int ListField::SetName(Str &set_name)
     int retval = 1;
     ListFieldEntry *lfe = EntryList();
 
-    while (lfe != nullptr)
+    while (lfe != NULL)
     {
         if (strcmp(set_name.Value(), lfe->label.Value()) == 0)
         {
             current = lfe;
             retval = 0;
-            lfe = nullptr;
+            lfe = NULL;
         }
         else
             lfe = lfe->next;
@@ -2914,7 +2874,7 @@ int ListField::GetName(Str &get_name)
     FnTrace("ListField::GetName()");
     int retval = 1;
 
-    if (current != nullptr)
+    if (current != NULL)
     {
         get_name.Set(current->label.Value());
         retval = 0;
@@ -2927,11 +2887,11 @@ int ListField::SetList(const genericChar* *option_list, int *value_list)
 {
     FnTrace("ListField::SetList()");
     ClearEntries();
-    if (option_list == nullptr)
+    if (option_list == NULL)
         return 0;
 
     int i = 0;
-    while (option_list[i] != nullptr)
+    while (option_list[i] != NULL)
     {
         int val = i;
         if (value_list)
@@ -2966,7 +2926,7 @@ int ListField::ClearEntries()
 {
     FnTrace("ListField::ClearEntries()");
     entry_list.Purge();
-    current = nullptr;
+    current = NULL;
     return 0;
 }
 

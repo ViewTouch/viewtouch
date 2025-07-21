@@ -1,3 +1,4 @@
+
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -19,8 +20,6 @@
  */
 
 #include "license_hash.hh"
-#include "external/sha1.hh"
-#include "utility.hh"
 
 #include "basic.hh" // genericChar
 
@@ -50,8 +49,6 @@ constexpr size_t LICENCE_HASH_STRLENGTH = 256;
 constexpr size_t LICENCE_HASH_STRLONG  = 4096;
 constexpr size_t MAXTEMPLEN = 20;
 
-using u_int = unsigned int;
-
 int GetUnameInfo(char* buffer, int bufflen)
 {
     struct utsname utsbuff;
@@ -73,7 +70,7 @@ int GetUnameInfo(char* buffer, int bufflen)
 #include <net/route.h>
 
 /* bkk bsd6 compile */
-using u_int = unsigned int;
+typedef unsigned int u_int;
 
 /****
  * GetInterfaceInfo:  grab the MAC.  This version uses the sysctl method,
@@ -98,11 +95,11 @@ int GetInterfaceInfo(char* stringbuff, int stringlen)
     mib[4] = NET_RT_IFLIST;
     mib[5] = 0;
 
-    if (sysctl(mib, 6, nullptr, &len, nullptr, 0) < 0)
+    if (sysctl(mib, 6, NULL, &len, NULL, 0) < 0)
         return 1;
-    if ((buffer = (char*)malloc(len)) == nullptr)
+    if ((buffer = (char*)malloc(len)) == NULL)
         return 1;
-    if (sysctl(mib, 6, buffer, &len, nullptr, 0) < 0)
+    if (sysctl(mib, 6, buffer, &len, NULL, 0) < 0)
         return 1;
 
     stringbuff[0] = '\0';
@@ -131,8 +128,7 @@ int GetInterfaceInfo(char* stringbuff, int stringlen)
 /*******
  * MacToString:  
  *******/
-
-int MacToString(char* macstr, int maxlen, const unsigned char* mac)
+int MacToString(char* macstr, int maxlen, unsigned const char* mac)
 {
     int retval = 0;
     int idx;
@@ -142,7 +138,7 @@ int MacToString(char* macstr, int maxlen, const unsigned char* mac)
     for (idx = 0; idx < IFHWADDRLEN; idx++)
     {
         if (idx)
-            strncat(macstr, ":", sizeof(macstr) - strlen(macstr) - 1);
+            strcat(macstr, ":");
         snprintf(buffer, LICENCE_HASH_STRLENGTH, "%02X", mac[idx]);
         strncat(macstr, buffer, maxlen);
     }
@@ -368,7 +364,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
     }
     
     close(sockfd);
-    if (buf != nullptr)
+    if (buf != NULL)
         free(buf);
     
     */
@@ -378,7 +374,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
     char buffer[1024];
     struct ifreq ifr;
  
-    snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), "eth0");
+    sprintf(ifr.ifr_name, "eth0");
   
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sockfd < 0){
@@ -393,7 +389,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
     }
     
     printf("fetched HW address with ioctl on sockfd.\n");
-    snprintf(stringbuf, sizeof(stringbuf), "%02X:%02X:%02X:%02X:%02X:%02X",
+    sprintf(stringbuf,"%02X:%02X:%02X:%02X:%02X:%02X",
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[0],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[1],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[2],
@@ -435,7 +431,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
         }
     }
         
-    snprintf(stringbuf, stringlen, "%02X:%02X:%02X:%02X:%02X:%02X",
+    sprintf(stringbuf,"%02X:%02X:%02X:%02X:%02X:%02X",
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[0],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[1],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[2],

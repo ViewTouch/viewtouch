@@ -86,7 +86,7 @@ int TimeInfo::Set(int s, int y)
 }
 
 /****
- * Set:  Parses date strings.  Acceptable formats:
+ * Set:  Parses date strings.  Acceptible formats:
  *   "DD/MM/YY,HH:MM"   in 24hour format
  *   "DD/MM/YYYY,HH:MM" in 24hour format
  *  Returns 1 on error, 0 on success.
@@ -97,12 +97,12 @@ int TimeInfo::Set(const std::string &date_string)
     using namespace date;
 
     std::istringstream ss(date_string);
-    ss >> date::parse("%d/%m/%y,%H:%M", t_);
+    sys_time<std::chrono::milliseconds> t;
+    ss >> date::parse("%d/%m/%y,%h:%m", t);
     if (ss.fail())
     {
-        std::istringstream ss2(date_string);
-        ss2 >> date::parse("%d/%m/%Y,%H:%M", t_);
-        if (ss2.fail())
+        ss >> date::parse("%d/%m/%Y,%h:%m", t);
+        if (ss.fail())
         {
             Clear();
             return false;

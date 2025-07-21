@@ -31,7 +31,7 @@
 // Constructor
 ChartZone::ChartZone()
 {
-    chart = nullptr;
+    chart = NULL;
 }
 
 // Destructor
@@ -44,7 +44,7 @@ ChartZone::~ChartZone()
 // Member Functions
 Zone *ChartZone::Copy()
 {
-    return nullptr;
+    return NULL;
 }
 
 int ChartZone::RenderInit(Terminal *t, int update_flag)

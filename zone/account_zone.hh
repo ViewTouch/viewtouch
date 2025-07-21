@@ -18,7 +18,8 @@
  * Chart of Accounts entry/edit/list module
  */
 
-#pragma once
+#ifndef _ACCOUNT_ZONE_HH
+#define _ACCOUNT_ZONE_HH
 
 #include "form_zone.hh"
 
@@ -54,3 +55,5 @@ public:
     int RecordCount(Terminal *term);
     int CheckAccountNumber(Terminal *term, int sendmsg = 1);
 };
+
+#endif

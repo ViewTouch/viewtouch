@@ -18,7 +18,8 @@
  * Employee information classes
  */
 
-#pragma once
+#ifndef _EMPLOYEE_HH
+#define _EMPLOYEE_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -164,7 +165,7 @@ public:
     int UsePassword(Settings *s);
     // does user use passwords?
 
-    int IsTraining(Settings *s = nullptr) { return training; }
+    int IsTraining(Settings *s = NULL) { return training; }
     int CanEnterSystem(Settings *s) { return Security(s) & SECURITY_TABLES; }
     int CanOrder(Settings *s)       { return Security(s) & SECURITY_ORDER; }
     int CanSettle(Settings *s)      { return Security(s) & SECURITY_SETTLE; }
@@ -237,3 +238,5 @@ public:
 /**** Functions ****/
 int   FixPhoneNumber(Str &phone);
 const char* FormatPhoneNumber(Str &phone);
+
+#endif

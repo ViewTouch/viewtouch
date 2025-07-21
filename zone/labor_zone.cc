@@ -41,28 +41,27 @@ extern int AdjustPeriod(TimeInfo &ref, int period, int adjust);
 // Constructor
 LaborZone::LaborZone()
 {
-    font        = FONT_DEJAVU_20B;  // Set appropriate font for labor UI
-    report      = nullptr;
-    period      = nullptr;
-    work        = nullptr;
-    page        = 0;
-    day_view    = 1;
-    spacing     = 1.0;
+    report   = NULL;
+    period   = NULL;
+    work     = NULL;
+    page     = 0;
+    day_view = 1;
+    spacing  = 1.0;
 
     no_line      = 1;
     form_header  = -3;
     form_spacing = .65;
-    AddTimeDateField("Start", 1, 0);
-    AddTimeDateField("End", 1, 1);
+    AddTimeDateField(GlobalTranslate("Start"), 1, 0);
+    AddTimeDateField(GlobalTranslate("End"), 1, 1);
     Color(COLOR_DK_GREEN);
-    AddButtonField("Clock Out", "clockout");
-    AddButtonField("Start Break", "break");
+    AddButtonField(GlobalTranslate("Clock Out"), "clockout");
+    AddButtonField(GlobalTranslate("Start Break"), "break");
     Color(COLOR_DEFAULT);
     AddNewLine();
-    AddListField("Job", nullptr);
-    AddTextField("Pay", 7);
-    AddListField("Rate", PayRateName, PayRateValue);
-    AddTextField("Tips", 7);
+    AddListField(GlobalTranslate("Job"), NULL);
+    AddTextField(GlobalTranslate("Pay"), 7);
+    AddListField(GlobalTranslate("Rate"), PayRateName, PayRateValue);
+    AddTextField(GlobalTranslate("Tips"), 7);
 }
 
 // Destructor
@@ -78,18 +77,18 @@ RenderResult LaborZone::Render(Terminal *term, int update_flag)
 	//printf("LaborZone::Render  update_flag=%d; period=%d RENDER_NEW=%d\n",update_flag, period, RENDER_NEW);
     FnTrace("LaborZone::Render()");
     System *sys = term->system_data;
-    if (update_flag || period == nullptr)
+    if (update_flag || period == NULL)
     {
         if (report)
         {
             delete report;
-            report = nullptr;
+            report = NULL;
         }
 
-        if (update_flag == RENDER_NEW || period == nullptr)
+        if (update_flag == RENDER_NEW || period == NULL)
         {
             ref    = SystemTime;
-            work   = nullptr;
+            work   = NULL;
             page   = 0;
             period = sys->labor_db.CurrentPeriod();
             day_view = 1;
@@ -118,10 +117,10 @@ RenderResult LaborZone::Render(Terminal *term, int update_flag)
        	//printf("Render after settings:LaborPeriod: ref=%d/%d/%d : start=%d/%d/%d: end=%d/%d/%d : System=%d/%d/%d\n", ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year(), SystemTime.Month(), SystemTime.Day(), SystemTime.Year());
     }
 
-    if (report == nullptr && period)
+    if (report == NULL && period)
     {
         report = new Report;
-        report->SetTitle("Time Clock Summary");
+        report->SetTitle(GlobalTranslate("Time Clock Summary"));
         period->WorkReport(term, term->server, start, end, report);
     }
     FormZone::Render(term, update_flag);
@@ -134,9 +133,9 @@ RenderResult LaborZone::Render(Terminal *term, int update_flag)
         strcpy(str2, term->Translate("Labor Period Time Clock View"));
 
     if (term->server)
-        snprintf(str, STRLENGTH, "%s for %s", str2, term->server->system_name.Value());
+        sprintf(str, "%s for %s", str2, term->server->system_name.Value());
     else
-        snprintf(str, STRLENGTH, "%s for Everyone", str2);
+        sprintf(str, "%s for Everyone", str2);
     TextC(term, 0, str, c);
 
     genericChar tm1[32];
@@ -144,17 +143,17 @@ RenderResult LaborZone::Render(Terminal *term, int update_flag)
         term->TimeDate(tm1, start, TD_SHORT_DAY | TD_SHORT_DATE | TD_SHORT_TIME);
     else
         strcpy(tm1, term->Translate("System Start"));
-    snprintf(str, STRLENGTH, "%s  to  %s", tm1,
+    sprintf(str, "%s  to  %s", tm1,
             term->TimeDate(end, TD_SHORT_DAY | TD_SHORT_DATE | TD_SHORT_TIME));
     TextC(term, 1, str, c);
 
-    TextPosL(term, 0,         2.3, "Name", c);
-    TextPosL(term, size_x-44, 2.3, "Date", c);
-    TextPosL(term, size_x-36, 2.3, "Start", c);
-    TextPosL(term, size_x-29, 2.3, "End", c);
-    TextPosL(term, size_x-22, 2.3, "Elapsed", c);
-    TextPosL(term, size_x-13, 2.3, "Wages", c);
-    TextPosL(term, size_x-5,  2.3, "Tips", c);
+            TextPosL(term, 0,         2.3, term->Translate("Name"), c);
+        TextPosL(term, size_x-44, 2.3, term->Translate("Date"), c);
+        TextPosL(term, size_x-36, 2.3, term->Translate("Start"), c);
+        TextPosL(term, size_x-29, 2.3, term->Translate("End"), c);
+        TextPosL(term, size_x-22, 2.3, term->Translate("Elapsed"), c);
+        TextPosL(term, size_x-13, 2.3, term->Translate("Wages"), c);
+        TextPosL(term, size_x-5,  2.3, term->Translate("Tips"), c);
 
     if (report)
     {
@@ -174,10 +173,10 @@ SignalResult LaborZone::Signal(Terminal *term, const genericChar* message)
         "clockout", "break", "undo edit", "change view",
         "next server", "prior server", "next", "prior",
         "change period", "day", "period",
-        "print", "localprint", "reportprint", nullptr};
+        "print", "localprint", "reportprint", NULL};
 
     Employee *employee = term->user;
-    if (employee == nullptr || period == nullptr)
+    if (employee == NULL || period == NULL)
         return SIGNAL_IGNORED;
 
     System *sys = term->system_data;
@@ -221,19 +220,19 @@ SignalResult LaborZone::Signal(Terminal *term, const genericChar* message)
         break;
     case 3:  // change view
         if (term->server)
-            term->server = nullptr;
+            term->server = NULL;
         else if (work)
             term->server = sys->user_db.FindByID(work->user_id);
         else
             term->server = sys->user_db.UserList();
-        term->Update(UPDATE_SERVER, nullptr);
+        term->Update(UPDATE_SERVER, NULL);
         return SIGNAL_OKAY;
     case 4:  // next server
         if (term->server)
         {
             if (work)
             {
-                work = nullptr;
+                work = NULL;
                 LoadRecord(term, 0);
             }
             term->server = sys->user_db.NextUser(term, term->server);
@@ -242,14 +241,14 @@ SignalResult LaborZone::Signal(Terminal *term, const genericChar* message)
             term->server = sys->user_db.FindByID(work->user_id);
         else
             term->server = sys->user_db.UserList();
-        term->Update(UPDATE_SERVER, nullptr);
+        term->Update(UPDATE_SERVER, NULL);
         return SIGNAL_OKAY;
     case 5:  // prior server
         if (term->server)
         {
             if (work)
             {
-                work = nullptr;
+                work = NULL;
                 LoadRecord(term, 0);
             }
             term->server = sys->user_db.ForeUser(term, term->server);
@@ -258,16 +257,16 @@ SignalResult LaborZone::Signal(Terminal *term, const genericChar* message)
             term->server = sys->user_db.FindByID(work->user_id);
         else
             term->server = sys->user_db.UserList();
-        term->Update(UPDATE_SERVER, nullptr);
+        term->Update(UPDATE_SERVER, NULL);
         return SIGNAL_OKAY;
     case 6:  // next
       	//printf("\n\nlabor_zone -> next(): ref=%d/%d/%d : start=%d/%d/%d: end=%d/%d/%d : System=%d/%d/%d\n", ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year(), SystemTime.Month(), SystemTime.Day(), SystemTime.Year());
         if (day_view)
         {
-            if (term->archive == nullptr)
+            if (term->archive == NULL)
                 return SIGNAL_IGNORED;
             term->archive = term->archive->next;
-            term->Update(UPDATE_ARCHIVE, nullptr);
+            term->Update(UPDATE_ARCHIVE, NULL);
         } else {
         	ref = end;
          	//printf("labor_zone->next prior to AdjustPeriod ref=%d/%d/%d : start=%d/%d/%d: end=%d/%d/%d : System=%d/%d/%d\n", ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year(), SystemTime.Month(), SystemTime.Day(), SystemTime.Year());
@@ -283,13 +282,13 @@ SignalResult LaborZone::Signal(Terminal *term, const genericChar* message)
       	//printf("\n\nlabor_zone -> prior(): ref=%d/%d/%d : start=%d/%d/%d: end=%d/%d/%d : System=%d/%d/%d\n", ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year(), SystemTime.Month(), SystemTime.Day(), SystemTime.Year());
         if (day_view)
         {
-            if (term->archive == nullptr)
+            if (term->archive == NULL)
                 term->archive = sys->ArchiveListEnd();
             else if (term->archive->fore)
                 term->archive = term->archive->fore;
             else
                 return SIGNAL_IGNORED;
-            term->Update(UPDATE_ARCHIVE, nullptr);
+            term->Update(UPDATE_ARCHIVE, NULL);
         } else {
         	ref = start;
         	//printf("labor_zone->prior before Adjust ref=%d/%d/%d : start=%d/%d/%d: end=%d/%d/%d : System=%d/%d/%d\n", ref.Month(), ref.Day(), ref.Year(), start.Month(), start.Day(), start.Year(), end.Month(), end.Day(), end.Year(), SystemTime.Month(), SystemTime.Day(), SystemTime.Year());
@@ -341,7 +340,7 @@ SignalResult LaborZone::Signal(Terminal *term, const genericChar* message)
 SignalResult LaborZone::Touch(Terminal *term, int tx, int ty)
 {
     FnTrace("LaborZone::Touch()");
-    if (period == nullptr || report == nullptr)
+    if (period == NULL || report == NULL)
         return SIGNAL_IGNORED;
 
     LayoutZone::Touch(term, tx, ty);
@@ -392,7 +391,7 @@ int LaborZone::Update(Terminal *term, int update_message, const genericChar* val
 {
     FnTrace("LaborZone::Update()");
     Report *r = report;
-    if (r == nullptr || r->update_flag & update_message)
+    if (r == NULL || r->update_flag & update_message)
         return Draw(term, 1);
 
     // FIX - obsolete - replace with value in r->update_flag
@@ -405,7 +404,7 @@ int LaborZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("LaborZone::LoadRecord()");
     FormField *f = FieldList();
-    if (work == nullptr)
+    if (work == NULL)
     {
         while (f)
         {
@@ -437,7 +436,7 @@ int LaborZone::LoadRecord(Terminal *term, int record)
     Employee *employee = term->system_data->user_db.FindByID(work->user_id);
     if (employee)
     {
-        for (JobInfo *j = employee->JobList(); j != nullptr; j = j->next)
+        for (JobInfo *j = employee->JobList(); j != NULL; j = j->next)
             f->AddEntry(j->Title(term), j->job);
     }
     else
@@ -463,7 +462,7 @@ int LaborZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("LaborZone::SaveRecord()");
     Employee *employee = term->user;
-    if (employee == nullptr)
+    if (employee == NULL)
         return 1;
 
     if (work)
@@ -504,7 +503,7 @@ int LaborZone::UpdateForm(Terminal *term, int record)
 {
     FnTrace("LaborZone::UpdateForm()");
     Employee *employee = term->user;
-    if (employee == nullptr || work == nullptr)
+    if (employee == NULL || work == NULL)
         return 1;
 
     TimeInfo work_start;
@@ -521,7 +520,7 @@ int LaborZone::UpdateForm(Terminal *term, int record)
         if (report)
         {
             delete report;
-            report = nullptr;
+            report = NULL;
         }
     }
     return 0;
@@ -534,12 +533,12 @@ int LaborZone::Print(Terminal *term, int print_mode)
         return 0;
 
     Employee *employee = term->user;
-    if (employee == nullptr || report == nullptr)
+    if (employee == NULL || report == NULL)
         return 1;
 
     Printer *p1 = term->FindPrinter(PRINTER_RECEIPT);
     Printer *p2 = term->FindPrinter(PRINTER_REPORT);
-    if (p1 == nullptr && p2 == nullptr)
+    if (p1 == NULL && p2 == NULL)
         return 1;
 
     if (print_mode == RP_ASK)
@@ -551,9 +550,9 @@ int LaborZone::Print(Terminal *term, int print_mode)
     }
 
     Printer *printer = p1;
-    if ((print_mode == RP_PRINT_REPORT && p2) || p1 == nullptr)
+    if ((print_mode == RP_PRINT_REPORT && p2) || p1 == NULL)
         printer = p2;
-    if (printer == nullptr)
+    if (printer == NULL)
         return 1;
 
     report->CreateHeader(term, printer, employee);
@@ -576,13 +575,13 @@ RenderResult ScheduleZone::Render(Terminal *term, int update_flag)
     FnTrace("ScheduleZone::Render()");
     Employee *employee;
 
-    RenderZone(term, nullptr, update_flag);
+    RenderZone(term, NULL, update_flag);
 
     int users = 0;
     name_len = 0;
     System *sys = term->system_data;
     Settings *s = &(sys->settings);
-    for (employee = sys->user_db.UserList(); employee != nullptr; employee = employee->next)
+    for (employee = sys->user_db.UserList(); employee != NULL; employee = employee->next)
     {
         if (employee->active && employee->system_name.size() > name_len)
         {
@@ -609,20 +608,20 @@ RenderResult ScheduleZone::Render(Terminal *term, int update_flag)
         term->RenderVLine(cx, y + border + font_height, h - border*2 - font_height,
                        COLOR_BLACK);
         term->RenderText(HourName[hour], cx, y + border, COLOR_BLACK,
-                      FONT_DEJAVU_18, ALIGN_CENTER);
+                      FONT_TIMES_20, ALIGN_CENTER);
         ++hour;
         if (hour >= 24)
             hour = 0;
     }
 
     int no = 0;
-    for (employee = sys->user_db.UserList(); employee != nullptr; employee = employee->next)
+    for (employee = sys->user_db.UserList(); employee != NULL; employee = employee->next)
     {
         if (employee->active)
         {
             cy = top_margin + y + ((ch * no) / users) + (ch / (users *2));
             term->RenderText(employee->system_name.Value(), x + border*2, cy,
-                          color[0], FONT_DEJAVU_18);
+                          color[0], FONT_TIMES_20);
             ++no;
         }
     }

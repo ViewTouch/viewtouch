@@ -18,7 +18,8 @@
  * Definition of report information display zone
  */
 
-#pragma once
+#ifndef _REPORT_ZONE_HH
+#define _REPORT_ZONE_HH
 
 #include "layout_zone.hh"
 #include "report.hh"
@@ -111,3 +112,5 @@ public:
 
     Str *FileName() { return &filename; }
 };
+
+#endif

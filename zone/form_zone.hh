@@ -18,7 +18,8 @@
  * base touch zone for data entry and display
  */
 
-#pragma once
+#ifndef _FORM_ZONE_HH
+#define _FORM_ZONE_HH
 
 #include "layout_zone.hh"
 #include "report.hh"
@@ -199,3 +200,5 @@ public:
 
     virtual void Print(void);   // debug function, not for live code
 };
+
+#endif

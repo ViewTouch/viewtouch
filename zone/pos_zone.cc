@@ -133,7 +133,7 @@ int ConvertAppear(int appear, Uchar &f, Uchar &t)
 
 Zone *NewPosZone(int type)
 {
-	Zone *pNewZone = nullptr;
+	Zone *pNewZone = NULL;
 	switch (type)
 	{
 		// General Zone Types
@@ -343,10 +343,10 @@ Zone *NewPosZone(int type)
         break;
 	}
 
-	if (pNewZone == nullptr)
+	if (pNewZone == NULL)
 	{
 		char str[64];
-		snprintf(str, 64, "Creation of PosZone object type %d failed", type);
+		sprintf(str, "Creation of PosZone object type %d failed", type);
 		ReportError(str);
 	}
 
@@ -356,7 +356,7 @@ Zone *NewPosZone(int type)
 Page *NewPosPage()
 {
     PosPage *p = new PosPage;
-    if (p == nullptr)
+    if (p == NULL)
         ReportError("Creation of PosPage object failed");
 
     return p;
@@ -374,11 +374,11 @@ Zone *PosZone::Copy()
 
 int PosZone::CanSelect(Terminal *t)
 {
-    if (page == nullptr)
+    if (page == NULL)
         return 1;
 
     Employee *e = t->user;
-    if (e == nullptr)
+    if (e == NULL)
         return 0;
 
     if (page->id < 0 && !e->CanEditSystem() && Type() != ZONE_ORDER_ENTRY)
@@ -388,11 +388,11 @@ int PosZone::CanSelect(Terminal *t)
 
 int PosZone::CanEdit(Terminal *t)
 {
-    if (page == nullptr)
+    if (page == NULL)
         return 1;
 
     Employee *e = t->user;
-    if (e == nullptr)
+    if (e == NULL)
         return 0;
 
     if (page->id < 0 && !e->CanEditSystem())
@@ -403,7 +403,7 @@ int PosZone::CanEdit(Terminal *t)
 int PosZone::CanCopy(Terminal *t)
 {
     Employee *e = t->user;
-    if (e == nullptr)
+    if (e == NULL)
         return 0;
 
     if (page->id < 0 && !e->CanEditSystem())
@@ -446,9 +446,9 @@ int PosZone::Read(InputDataFile &df, int version)
 	{
 		switch (font)
 		{
-        case FONT_MONO_14: font = FONT_MONO_14; break;
-        case FONT_MONO_20: font = FONT_MONO_20; break;
-        case FONT_MONO_24: font = FONT_MONO_24; break;
+        case FONT_FIXED_14: font = FONT_TIMES_14; break;
+        case FONT_FIXED_20: font = FONT_FIXED_20; break;
+        case FONT_FIXED_24: font = FONT_FIXED_24; break;
 		} //end switch
 	}
 
@@ -572,10 +572,10 @@ int PosZone::Write(OutputDataFile &df, int version)
 Page *PosPage::Copy()
 {
     PosPage *p = new PosPage;
-    if (p == nullptr)
+    if (p == NULL)
     {
         ReportError("Can't create copy of page");
-        return nullptr;
+        return NULL;
     }
 
     p->name            = name;
@@ -596,7 +596,7 @@ Page *PosPage::Copy()
         p->default_color[i]   = default_color[i];
     }
 
-    for (Zone *z = ZoneList(); z != nullptr; z = z->next)
+    for (Zone *z = ZoneList(); z != NULL; z = z->next)
         p->Add(z->Copy());
 
     return p;
@@ -658,9 +658,9 @@ int PosPage::Read(InputDataFile &infile, int version)
     {
         switch (default_font)
         {
-        case FONT_MONO_14: default_font = FONT_MONO_14; break;
-        case FONT_MONO_20: default_font = FONT_MONO_20; break;
-        case FONT_MONO_24: default_font = FONT_MONO_24; break;
+        case FONT_FIXED_14: default_font = FONT_TIMES_14; break;
+        case FONT_FIXED_20: default_font = FONT_FIXED_20; break;
+        case FONT_FIXED_24: default_font = FONT_FIXED_24; break;
         }
 
         int appear;
@@ -727,15 +727,15 @@ int PosPage::Read(InputDataFile &infile, int version)
         infile.Read(z_type);
 
         Zone *z = NewPosZone(z_type);
-        if (z == nullptr)
+        if (z == NULL)
         {
-            snprintf(str, STRLENGTH, "Error in creating touch zone type %d", type);
+            sprintf(str, "Error in creating touch zone type %d", type);
             ReportError(str);
             return 1;
         }
         if (z->Read(infile, version))
         {
-            snprintf(str, STRLENGTH, "Error in reading touch zone type %d", type);
+            sprintf(str, "Error in reading touch zone type %d", type);
             ReportError(str);
             delete z;
             return 1;
@@ -776,7 +776,7 @@ int PosPage::Write(OutputDataFile &df, int version)
     // Write all touch zones
     error += df.Write(ZoneCount(), 1);
 
-    for (Zone *z = ZoneList(); z != nullptr; z = z->next)
+    for (Zone *z = ZoneList(); z != NULL; z = z->next)
     {
         error += df.Write(z->Type());
         error += z->Write(df, version);

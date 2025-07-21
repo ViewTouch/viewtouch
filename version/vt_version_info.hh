@@ -1,4 +1,5 @@
-#pragma once
+#ifndef VT_VERSION_INFO_HPP
+#define VT_VERSION_INFO_HPP
 
 #include <string>
 
@@ -13,3 +14,4 @@ std::string get_version_info();
 std::string get_version_timestamp();
 
 } // end namespace viewtouch
+#endif // VT_VERSION_INFO_HPP

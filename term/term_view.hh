@@ -6,13 +6,13 @@
  * Terminal Display module
  */
 
-#pragma once
+#ifndef _TERM_VIEW_HH
+#define _TERM_VIEW_HH
 
 #include "list_utility.hh"
 #include "utility.hh"
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
-#include "font_ids.hh"
 
 
 /**** Globals ****/
@@ -41,7 +41,7 @@ extern int ColorBlack;
 extern int ColorWhite;
 
 extern Str TimeString;
-extern Str StoreName;
+extern Str TermStoreName;
 extern Str Message;
 
 extern short new_page_translations;
@@ -121,23 +121,23 @@ extern Translations MasterTranslations;
 
 // Page Sizes (resolutions)
 enum page_sizes {
-  SIZE_640x480 =  1,
-  SIZE_768x1024,
-  SIZE_800x480,
-  SIZE_800x600,
-  SIZE_1024x600,
-  SIZE_1024x768,
-  SIZE_1280x800,
-  SIZE_1280x1024,
-  SIZE_1366x768,
-  SIZE_1440x900,
-  SIZE_1600x900,
-  SIZE_1600x1200,
-  SIZE_1680x1050,
-  SIZE_1920x1080,
-  SIZE_1920x1200,
-  SIZE_2560x1440,
-  SIZE_2560x1600
+  PAGE_SIZE_640x480 =  1,
+  PAGE_SIZE_768x1024,
+  PAGE_SIZE_800x480,
+  PAGE_SIZE_800x600,
+  PAGE_SIZE_1024x600,
+  PAGE_SIZE_1024x768,
+  PAGE_SIZE_1280x800,
+  PAGE_SIZE_1280x1024,
+  PAGE_SIZE_1366x768,
+  PAGE_SIZE_1440x900,
+  PAGE_SIZE_1600x900,
+  PAGE_SIZE_1600x1200,
+  PAGE_SIZE_1680x1050,
+  PAGE_SIZE_1920x1080,
+  PAGE_SIZE_1920x1200,
+  PAGE_SIZE_2560x1440,
+  PAGE_SIZE_2560x1600
 };
 
 // Colors
@@ -199,74 +199,6 @@ enum page_sizes {
 #define FONT_COURIER_18B 15
 #define FONT_COURIER_20  16
 #define FONT_COURIER_20B 17
-
-// Modern POS Fonts - DejaVu Sans (Superior for POS interfaces)
-#define FONT_DEJAVU_14    18
-#define FONT_DEJAVU_16    19
-#define FONT_DEJAVU_18    20
-#define FONT_DEJAVU_20    21
-#define FONT_DEJAVU_24    22
-#define FONT_DEJAVU_28    23
-#define FONT_DEJAVU_14B   24
-#define FONT_DEJAVU_16B   25
-#define FONT_DEJAVU_18B   26
-#define FONT_DEJAVU_20B   27
-#define FONT_DEJAVU_24B   28
-#define FONT_DEJAVU_28B   29
-
-// Monospace Fonts - Perfect for prices and numbers
-#define FONT_MONO_14      30
-#define FONT_MONO_16      31
-#define FONT_MONO_18      32
-#define FONT_MONO_20      33
-#define FONT_MONO_24      34
-#define FONT_MONO_14B     35
-#define FONT_MONO_16B     36
-#define FONT_MONO_18B     37
-#define FONT_MONO_20B     38
-#define FONT_MONO_24B     39
-
-// Classic Serif Fonts - EB Garamond 8, Bookman, Nimbus Roman
-#define FONT_GARAMOND_14    40
-#define FONT_GARAMOND_16    41
-#define FONT_GARAMOND_18    42
-#define FONT_GARAMOND_20    43
-#define FONT_GARAMOND_24    44
-#define FONT_GARAMOND_28    45
-#define FONT_GARAMOND_14B   46
-#define FONT_GARAMOND_16B   47
-#define FONT_GARAMOND_18B   48
-#define FONT_GARAMOND_20B   49
-#define FONT_GARAMOND_24B   50
-#define FONT_GARAMOND_28B   51
-
-#define FONT_BOOKMAN_14     52
-#define FONT_BOOKMAN_16     53
-#define FONT_BOOKMAN_18     54
-#define FONT_BOOKMAN_20     55
-#define FONT_BOOKMAN_24     56
-#define FONT_BOOKMAN_28     57
-#define FONT_BOOKMAN_14B    58
-#define FONT_BOOKMAN_16B    59
-#define FONT_BOOKMAN_18B    60
-#define FONT_BOOKMAN_20B    61
-#define FONT_BOOKMAN_24B    62
-#define FONT_BOOKMAN_28B    63
-
-#define FONT_NIMBUS_14      64
-#define FONT_NIMBUS_16      65
-#define FONT_NIMBUS_18      66
-#define FONT_NIMBUS_20      67
-#define FONT_NIMBUS_24      68
-#define FONT_NIMBUS_28      69
-#define FONT_NIMBUS_14B     70
-#define FONT_NIMBUS_16B     71
-#define FONT_NIMBUS_18B     72
-#define FONT_NIMBUS_20B     73
-#define FONT_NIMBUS_24B     74
-#define FONT_NIMBUS_28B     75
-
-#define FONT_UNDERLINE  128
 
 // Zone Frame Appearence
 #define ZF_UNCHANGED 0  // no change (or default)
@@ -343,11 +275,11 @@ extern int ShowCursor(int type);
 extern int BlankScreen();
 extern int DrawScreenSaver();
 
-extern XftFont *GetFontInfo(int font_id);
+extern XFontStruct *GetFontInfo(int font_id);
+extern XftFont *GetXftFontInfo(int font_id);
 extern int          GetFontBaseline(int font_id);
 extern int          GetFontHeight(int font_id);
 extern Pixmap       GetTexture(int texture);
-extern const char*  GetScalableFontName(int font_id);
 
 extern int   WInt8(int val);
 extern int   RInt8();
@@ -362,6 +294,10 @@ extern long long RLLong();
 extern int   WFlt(Flt val);
 extern Flt   RFlt();
 extern int   WStr(const char* s, int len = 0);
-extern genericChar* RStr(genericChar* s = nullptr);
+extern genericChar* RStr(genericChar* s = NULL);
 extern int   SendNow();
+extern int   ReloadTermFonts();  // Reload fonts when global defaults change
+void TerminalReloadFonts();
+
+#endif
 

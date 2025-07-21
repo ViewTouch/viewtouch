@@ -42,12 +42,12 @@ CreditCardListZone::CreditCardListZone()
 {
     FnTrace("CreditCardListZone::CreditCardListZone()");
 
-    report      = nullptr;
-    credit      = nullptr;
+    report      = NULL;
+    credit      = NULL;
     mode        = MODE_EXCEPTIONS;
     no_line     = 1;
     creditdb    = MasterSystem->cc_exception_db;
-    archive     = nullptr;
+    archive     = NULL;
     lines_shown = 0;
     list_footer = 1;
 }
@@ -69,8 +69,8 @@ RenderResult CreditCardListZone::Render(Terminal *term, int update_flag)
 
     if (update_flag == RENDER_NEW)
     {
-        credit = nullptr;
-        archive = nullptr;
+        credit = NULL;
+        archive = NULL;
         mode = MODE_EXCEPTIONS;
         creditdb = MasterSystem->cc_exception_db;
     }
@@ -95,17 +95,17 @@ RenderResult CreditCardListZone::Render(Terminal *term, int update_flag)
     indent += num_spaces;
     TextPosL(term, indent, header_line, term->Translate("Status"), col);
 
-    if (update || update_flag || (report == nullptr))
+    if (update || update_flag || (report == NULL))
     {
-        if (report != nullptr)
+        if (report != NULL)
             delete report;
         report = new Report;
         ListReport(term, report);
     }
 
-    if (report != nullptr)
+    if (report != NULL)
     {
-        if (credit != nullptr)
+        if (credit != NULL)
             report->selected_line = record_no;
         else
             report->selected_line = -1;
@@ -128,17 +128,17 @@ SignalResult CreditCardListZone::Signal(Terminal *term, const genericChar* messa
     SignalResult retval = SIGNAL_OKAY;
     static const char* commands[] = {"ccexceptions", "ccrefunds", "ccvoids",
                                "next", "prev", "nextperiod", "prevperiod",
-                               "process", nullptr};
+                               "process", NULL};
     int idx = CompareListN(commands, message);
-    CreditCardDialog *ccdialog = nullptr;
+    CreditCardDialog *ccdialog = NULL;
 
     switch (idx)
     {
     case 0:  // ccexception
         if (mode != MODE_EXCEPTIONS)
         {
-            credit = nullptr;
-            archive = nullptr;
+            credit = NULL;
+            archive = NULL;
             record_no = -1;
             creditdb = term->system_data->cc_exception_db;
             mode = MODE_EXCEPTIONS;
@@ -147,8 +147,8 @@ SignalResult CreditCardListZone::Signal(Terminal *term, const genericChar* messa
     case 1:  // ccrefund
         if (mode != MODE_REFUNDS)
         {
-            credit = nullptr;
-            archive = nullptr;
+            credit = NULL;
+            archive = NULL;
             record_no = -1;
             creditdb = term->system_data->cc_refund_db;
             mode = MODE_REFUNDS;
@@ -157,8 +157,8 @@ SignalResult CreditCardListZone::Signal(Terminal *term, const genericChar* messa
     case 2:  // ccvoid
         if (mode != MODE_VOIDS)
         {
-            credit = nullptr;
-            archive = nullptr;
+            credit = NULL;
+            archive = NULL;
             record_no = -1;
             creditdb = term->system_data->cc_void_db;
             mode = MODE_VOIDS;
@@ -178,16 +178,16 @@ SignalResult CreditCardListZone::Signal(Terminal *term, const genericChar* messa
         break;
     case 5:  // nextperiod
         creditdb = NextCreditDB(term);
-        credit = nullptr;
+        credit = NULL;
         record_no = -1;
         break;
     case 6:  // prevperiod
         creditdb = PrevCreditDB(term);
-        credit = nullptr;
+        credit = NULL;
         record_no = -1;
         break;
     case 7:  // process
-        if (credit != nullptr)
+        if (credit != NULL)
         {
             term->credit = credit;
             ccdialog = new CreditCardDialog(term);
@@ -209,7 +209,7 @@ SignalResult CreditCardListZone::Touch(Terminal *term, int tx, int ty)
     FnTrace("CreditCardListZone::Touch()");
     SignalResult retval = SIGNAL_IGNORED;
 
-    if (report != nullptr)
+    if (report != NULL)
     {
         FormZone::Touch(term, tx, ty);
         int yy = report->TouchLine(list_spacing, selected_y);
@@ -253,10 +253,10 @@ int CreditCardListZone::LoadRecord(Terminal *term, int record)
     FnTrace("CreditCardListZone::LoadRecord()");
     int retval = 1;
 
-    if (creditdb != nullptr)
+    if (creditdb != NULL)
         credit = creditdb->FindByRecord(term, record);
 
-    if (credit != nullptr)
+    if (credit != NULL)
         record_no = record;
     else
         record_no = -1;
@@ -336,7 +336,7 @@ int CreditCardListZone::RecordCount(Terminal *term)
 CreditDB *CreditCardListZone::GetDB(int in_system)
 {
     FnTrace("CreditCardListZone::GetDB()");
-    CreditDB *retval = nullptr;
+    CreditDB *retval = NULL;
 
     if (in_system)
     {
@@ -353,7 +353,7 @@ CreditDB *CreditCardListZone::GetDB(int in_system)
             break;
         }
     }
-    else if (archive != nullptr)
+    else if (archive != NULL)
     {
         switch (mode)
         {
@@ -375,30 +375,30 @@ CreditDB *CreditCardListZone::GetDB(int in_system)
 CreditDB *CreditCardListZone::NextCreditDB(Terminal *term)
 {
     FnTrace("CreditCardListZone::NextCreditDB()");
-    CreditDB *retval = nullptr;
+    CreditDB *retval = NULL;
     int loops = 0;
 
-    if (creditdb == nullptr)
+    if (creditdb == NULL)
         retval = GetDB(FROM_SYSTEM);
     else
     {
         while (loops < MAX_LOOPS)
         {
-            if (archive == nullptr)
+            if (archive == NULL)
                 archive = MasterSystem->ArchiveList();
             else
             {
                 do
                 {
                     archive = archive->next;
-                } while (archive != nullptr && GetDB(FROM_ARCHIVE) == nullptr);
+                } while (archive != NULL && GetDB(FROM_ARCHIVE) == NULL);
             }
 
-            if (archive != nullptr)
+            if (archive != NULL)
                 retval = GetDB(FROM_ARCHIVE);
             else
                 retval = GetDB(FROM_SYSTEM);
-            loops += ((retval == nullptr) ? 1 : MAX_LOOPS);
+            loops += ((retval == NULL) ? 1 : MAX_LOOPS);
         }
     }
     
@@ -408,30 +408,30 @@ CreditDB *CreditCardListZone::NextCreditDB(Terminal *term)
 CreditDB *CreditCardListZone::PrevCreditDB(Terminal *term)
 {
     FnTrace("CreditCardListZone::PrevCreditDB()");
-    CreditDB *retval = nullptr;
+    CreditDB *retval = NULL;
     int loops = 0;
 
-    if (creditdb == nullptr)
+    if (creditdb == NULL)
         retval = GetDB(FROM_SYSTEM);
     else
     {
         while (loops < MAX_LOOPS)
         {
-            if (archive == nullptr)
+            if (archive == NULL)
                 archive = MasterSystem->ArchiveListEnd();
             else
             {
                 do
                 {
                     archive = archive->fore;
-                } while (archive != nullptr && GetDB(FROM_ARCHIVE) == nullptr);
+                } while (archive != NULL && GetDB(FROM_ARCHIVE) == NULL);
             }
 
-            if (archive != nullptr)
+            if (archive != NULL)
                 retval = GetDB(FROM_ARCHIVE);
             else
                 retval = GetDB(FROM_SYSTEM);
-            loops += ((retval == nullptr) ? 1 : MAX_LOOPS);
+            loops += ((retval == NULL) ? 1 : MAX_LOOPS);
         }
     }
     

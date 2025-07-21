@@ -14,19 +14,15 @@ function(gen_compiler_tag BUILD_TAG_OUT)
 
 	# identify compiler and possibly version
 	string(COMPARE EQUAL "${CMAKE_CXX_COMPILER_ID}" "GNU" is_GNU)
-	string(COMPARE EQUAL "${CMAKE_CXX_COMPILER_ID}" "Clang" is_Clang)
-	if(is_GNU OR is_Clang)
-		# using GCC or clang
-		execute_process(COMMAND ${CMAKE_CXX_COMPILER}
-			${CMAKE_CXX_COMPILER_ARG1} -dumpversion
+	if(is_GNU)
+		# using GCC
+		exec_program(${CMAKE_CXX_COMPILER}
+			ARGS ${CMAKE_CXX_COMPILER_ARG1} -dumpversion
 			OUTPUT_VARIABLE GPLUSPLUS_COMPILER_VERSION_NUMBER
-			OUTPUT_STRIP_TRAILING_WHITESPACE
 		)
 
 		if(MINGW) # MinGW
 			set(SYS_COMPILER_TAG "mgw${GPLUSPLUS_COMPILER_VERSION_NUMBER}")
-		elseif(is_Clang)
-			set(SYS_COMPILER_TAG "clang${GPLUSPLUS_COMPILER_VERSION_NUMBER}")
 		else() # any other GCC flavor
 			set(SYS_COMPILER_TAG "gcc${GPLUSPLUS_COMPILER_VERSION_NUMBER}")
 		endif()

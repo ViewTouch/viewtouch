@@ -49,7 +49,7 @@ int main(int argc, const genericChar* *argv)
     int is_local = 0;
     int term_hardware = 0;
     genericChar display[256] = "";
-    TouchScreen *ts = nullptr;
+    TouchScreen *ts = NULL;
     int set_width = -1;
     int set_height = -1;
 
@@ -99,7 +99,7 @@ int main(int argc, const genericChar* *argv)
 #ifdef USE_TOUCHSCREEN
     if (argc >= 4)
     {
-        snprintf(display, sizeof(display), "%s", argv[3]);
+        sprintf(display, "%s", argv[3]);
         ts = new TouchScreen(argv[3], 87); // explora serial port
     }
     else
@@ -112,7 +112,7 @@ int main(int argc, const genericChar* *argv)
 #else
     if (argc >= 4)
     {
-        snprintf(display, sizeof(display), "%s", argv[3]);
+        sprintf(display, "%s", argv[3]);
     }
     else
     {
@@ -127,12 +127,15 @@ int main(int argc, const genericChar* *argv)
     if (argc >= 7)
         set_height = atoi(argv[6]);
 
-    if (strchr(display, ':') == nullptr)
-        strncat(display, ":0", sizeof(display) - strlen(display) - 1);
+    if (strchr(display, ':') == NULL)
+        strcat(display, ":0");
 
     // if OpenTerm() returns there must be an error
     if (OpenTerm(display, ts, is_local, 0, set_width, set_height))
         return 1;
+
+    // After loading fonts and before entering the event loop, call ReloadFonts to ensure all Xft fonts are up to date
+    TerminalReloadFonts();
 
     if (SocketNo > 0)
     {

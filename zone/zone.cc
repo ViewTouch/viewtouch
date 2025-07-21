@@ -33,47 +33,42 @@
  ***********************************************************************/
 Zone::Zone()
 {
-    FnTrace("Zone::Zone()");
-    next       = nullptr;
-    fore       = nullptr;
-    page       = nullptr;
-    border     = 0;
-    header     = 0;
-    footer     = 0;
+    next       = NULL;
+    fore       = NULL;
+    page       = NULL;
+    group_id   = 0;
+    w          = 140;
+    h          = 100;
+    behave     = BEHAVE_BLINK;
+    font       = FONT_DEFAULT;
+    shape      = SHAPE_RECTANGLE;
+    frame[0]   = ZF_DEFAULT;
+    texture[0] = IMAGE_DEFAULT;
+    color[0]   = COLOR_DEFAULT;
+    image[0]   = 0;
+    frame[1]   = ZF_DEFAULT;
+    texture[1] = IMAGE_DEFAULT;
+    color[1]   = COLOR_DEFAULT;
+    image[1]   = 0;
+    frame[2]   = ZF_HIDDEN;
+    texture[2] = IMAGE_SAND;
+    color[2]   = COLOR_DEFAULT;
+    image[2]   = 0;
     edit       = 0;
     active     = 1;
     update     = 0;
+    border     = 0;
+    header     = 0;
+    footer     = 0;
     stay_lit   = 0;
+    shadow     = SHADOW_DEFAULT;
     key        = 0;
-    group_id   = 0;
-    shadow     = 4;
-    behave     = BEHAVE_DOUBLE;
-    font       = FONT_DEJAVU_18;
-    frame[0]   = ZF_RAISED;
-    frame[1]   = ZF_RAISED;
-    frame[2]   = ZF_RAISED;
-    texture[0] = IMAGE_SAND;
-    texture[1] = IMAGE_SAND;
-    texture[2] = IMAGE_SAND;
-    color[0]   = COLOR_BLACK;
-    color[1]   = COLOR_BLACK;
-    color[2]   = COLOR_BLACK;
-    image[0]   = IMAGE_SAND;
-    image[1]   = IMAGE_SAND;
-    image[2]   = IMAGE_SAND;
-    shape      = SHAPE_RECTANGLE;
     iscopy     = 0;
-
-    // Position and size defaults
-    x          = 0;
-    y          = 0;
-    w          = 140;
-    h          = 140;
 }
 
 int Zone::CopyZone(Zone *target)
 {
-    if (target == nullptr)
+    if (target == NULL)
         return 1;
 
     target->SetRegion(this);
@@ -251,15 +246,12 @@ int Zone::RenderZone(Terminal *term, const genericChar* text, int update_flag)
     {
         int bx = Max(border - 2, 0);
         int by = Max(border - 4, 0);
-        
-        // First try UI data translation, then fall back to symbol replacement
-        const genericChar* translated_text = MasterLocale->TranslateUIData(text);
-        const genericChar* b = term->ReplaceSymbols(translated_text);
+        const genericChar* b = term->ReplaceSymbols(text);
         if (b)
         {
             if (behave == BEHAVE_DOUBLE)
             {
-                snprintf(str, STRLENGTH, "%s\\( 2X )", b);
+                sprintf(str, "%s\\( 2X )", b);
                 b = str;
             }
             int c = color[state];
@@ -284,7 +276,7 @@ int Zone::RenderInfo(Terminal *term)
     genericChar str[32];
     if (group_id != 0)
     {
-        snprintf(str, 32, "ID %d", group_id);
+        sprintf(str, "ID %d", group_id);
         term->RenderText(str, x + border, y + 16, COLOR_BLACK, FONT_TIMES_14);
     }
 
@@ -293,22 +285,22 @@ int Zone::RenderInfo(Terminal *term)
         switch (*JumpType())
 		{
         case JUMP_NORMAL:
-            snprintf(str, 32, "J %d", *JumpID());
+            sprintf(str, "J %d", *JumpID());
             break;
         case JUMP_STEALTH:
-            snprintf(str, 32, "J %d*", *JumpID());
+            sprintf(str, "J %d*", *JumpID());
             break;
         case JUMP_RETURN:
-            strcpy(str, "J back");
+            strcpy(str, GlobalTranslate("J back"));
             break;
         case JUMP_HOME:
-            strcpy(str, "J home");
+            strcpy(str, GlobalTranslate("J home"));
             break;
         case JUMP_SCRIPT:
-            strcpy(str, "J continue");
+            strcpy(str, GlobalTranslate("J continue"));
             break;
         case JUMP_INDEX:
-            strcpy(str, "J index");
+            strcpy(str, GlobalTranslate("J index"));
             break;
         default:
             return 0;
@@ -400,7 +392,7 @@ int Zone::AlterSize(Terminal *t, int wchange, int hchange,
 int Zone::AlterPosition(Terminal *t, int xchange, int ychange)
 {
     FnTrace("Zone::AlterPosition()");
-    if (page == nullptr)
+    if (page == NULL)
         return 1;
 
     int grid_x = t->grid_x;
@@ -463,10 +455,10 @@ int Zone::ChangeJumpID(int old_id, int new_id)
                 {
                     genericChar num[16];
                     if (i == 0)
-                        snprintf(num, sizeof(num), "%d", j[0]);
+                        sprintf(num, "%d", j[0]);
                     else
-                        snprintf(num, sizeof(num), " %d", j[i]);
-                    strncat(str, num, sizeof(str) - strlen(str) - 1);
+                        sprintf(num, " %d", j[i]);
+                    strcat(str, num);
                 }
                 Script()->Set(str);
             }
@@ -491,17 +483,15 @@ int Zone::RenderShadow(Terminal *t)
     return 0;
 }
 
-// CanSelect method is already defined inline in zone.hh
-
 
 /***********************************************************************
  * Page Class
  ***********************************************************************/
 Page::Page()
 {
-    next        = nullptr;
-    fore        = nullptr;
-    parent_page = nullptr;
+    next        = NULL;
+    fore        = NULL;
+    parent_page = NULL;
     id          = 0;
     parent_id   = 0;
     image       = IMAGE_DEFAULT;
@@ -565,7 +555,7 @@ int Page::Init(ZoneDB *zone_db)
 	if (zone_db)
 		parent_page = zone_db->FindByID(parent_id, size);
 	else
-		parent_page = nullptr;
+		parent_page = NULL;
 
 	// Check for circular parent pointers
 	int count = 0;
@@ -576,7 +566,7 @@ int Page::Init(ZoneDB *zone_db)
 		{
 			// loop detected - kill parent pointer
 			parent_id   = 0;
-			parent_page = nullptr;
+			parent_page = NULL;
 			break;
 		}
 		++count;
@@ -588,7 +578,7 @@ int Page::Init(ZoneDB *zone_db)
 int Page::Add(Zone *z)
 {
     FnTrace("Page::Add()");
-    if (z == nullptr)
+    if (z == NULL)
         return 1;
 
     z->page = this;
@@ -610,7 +600,7 @@ int Page::Add(Zone *z)
 int Page::AddFront(Zone *z)
 {
     FnTrace("Page::AddFront()");
-    if (z == nullptr)
+    if (z == NULL)
         return 1;
 
     z->page = this;
@@ -632,11 +622,11 @@ int Page::AddFront(Zone *z)
 int Page::Remove(Zone *z)
 {
     FnTrace("Page::Remove()");
-    if (z == nullptr)
+    if (z == NULL)
         return 1;
 
     zone_list.Remove(z);
-    z->page = nullptr;
+    z->page = NULL;
     return 0;
 }
 
@@ -806,9 +796,9 @@ SignalResult Page::Signal(Terminal *t, const genericChar* message, int group_id)
     SignalResult res;
 
     Page *startpage = t->page;
-    for (Page *p = this; p != nullptr; p = p->parent_page)
+    for (Page *p = this; p != NULL; p = p->parent_page)
     {
-        for (Zone *z = p->ZoneList(); z != nullptr; z = z->next)
+        for (Zone *z = p->ZoneList(); z != NULL; z = z->next)
         {
             if (z->AcceptSignals() &&
                 z->active &&
@@ -841,9 +831,9 @@ SignalResult Page::Keyboard(Terminal *t, int key, int state)
     SignalResult sig = SIGNAL_IGNORED;
 
     Page *startpage = t->page;
-    for (Page *p = this; p != nullptr; p = p->parent_page)
+    for (Page *p = this; p != NULL; p = p->parent_page)
     {
-        for (Zone *z = p->ZoneList(); z != nullptr; z = z->next)
+        for (Zone *z = p->ZoneList(); z != NULL; z = z->next)
         {
             if (z->active)
             {
@@ -871,73 +861,73 @@ Zone *Page::FindZone(Terminal *t, int x, int y)
 {
     FnTrace("Page::FindZone()");
     Zone *z;
-    if (parent_page != nullptr)
+    if (parent_page)
     {
         z = parent_page->FindZone(t, x, y);
-        if (z != nullptr)
+        if (z)
             return z;
     }
 
     z = zone_list.Head();
-    while (z != nullptr)
+    while (z)
     {
         if (z->behave != BEHAVE_MISS && z->active && z->IsPointIn(x, y))
             return z;
         z = z->next;
     }
-    return nullptr;
+    return NULL;
 }
 
 Zone *Page::FindEditZone(Terminal *t, int x, int y)
 {
     FnTrace("Page::FindEditZone()");
     Zone *z;
-    if (parent_page != nullptr)
+    if (parent_page)
     {
         z = parent_page->FindEditZone(t, x, y);
-        if (z != nullptr)
+        if (z)
             return z;
     }
 
     z = zone_list.Head();
-    while (z != nullptr)
+    while (z)
     {
         if (z->IsPointIn(x, y) && z->CanSelect(t))
             return z;
         z = z->next;
     }
-    return nullptr;
+    return NULL;
 }
 
 Zone *Page::FindTranslateZone(Terminal *t, int x, int y)
 {
     FnTrace("Page::FindTranslateZone()");
     Zone *z;
-    if (parent_page != nullptr)
+    if (parent_page)
     {
         z = parent_page->FindEditZone(t, x, y);
-        if (z != nullptr)
+        if (z)
             return z;
     }
 
     z = zone_list.Head();
-    while (z != nullptr)
+    while (z)
     {
         if (z->IsPointIn(x, y))
             return z;
         z = z->next;
     }
-    return nullptr;
+    return NULL;
 }
 
 int Page::IsZoneOnPage(Zone *z)
 {
     FnTrace("Page::IsZoneOnPage()");
     Page *p = this;
-    while (p != nullptr)
+    while (p)
     {
         Zone *zz = p->ZoneList();
-        while (zz != nullptr)
+        while (zz)
         {
             if (zz == z)
                 return 1;  // True
@@ -952,10 +942,10 @@ int Page::Update(Terminal *t, int update_message, const genericChar* value)
 {
     FnTrace("Page::Update()");
     Page *p = this;
-    while (p != nullptr)
+    while (p)
     {
         Zone *z = p->ZoneList();
-        while (z != nullptr)
+        while (z)
         {
             z->Update(t, update_message, value);
             z = z->next;
@@ -1009,7 +999,7 @@ ZoneDB::ZoneDB()
     table_pages = 0;
 
     // Defaults
-    default_font       = FONT_GARAMOND_14B; // Global system button font set to EB Garamond 14 Bold
+    default_font       = FONT_TIMES_24;
     default_frame[0]   = ZF_RAISED;
     default_texture[0] = IMAGE_SAND;
     default_color[0]   = COLOR_BLACK;
@@ -1034,7 +1024,7 @@ int ZoneDB::Init()
     int last_page = 0;
 
     Page *p = page_list.Head();
-    while (p != nullptr)
+    while (p)
     {
         if (p->IsTable() && (p->id != 0) && (p->id != last_page))
         {
@@ -1063,7 +1053,7 @@ int ZoneDB::Load(const char* filename)
     genericChar str[STRLENGTH];
     if (version < 17 || version > ZONE_VERSION)
     {
-        snprintf(str, STRLENGTH, "Unknown ZoneDB file version %d", version);
+        sprintf(str, "Unknown ZoneDB file version %d", version);
         ReportError(str);
         return 1;  // Error
     }
@@ -1081,11 +1071,11 @@ int ZoneDB::Load(const char* filename)
         }
 
         Page *currPage = NewPosPage();
-        if (currPage != nullptr)
+        if (currPage)
 		{
 			if (currPage->Read(infile, version))
 			{
-				snprintf(str, STRLENGTH, "Error in page %d '%s' of file '%s'",
+				sprintf(str, "Error in page %d '%s' of file '%s'",
 						currPage->id, currPage->name.Value(), filename);
 
 				ReportError(str);
@@ -1129,13 +1119,13 @@ int ZoneDB::Load(const char* filename)
 int ZoneDB::Save(const char* filename, int page_class)
 {
     FnTrace("ZoneDB::Save()");
-    if (filename == nullptr)
+    if (filename == NULL)
         return 1;
 
     // Count pages to save
     Page *p = page_list.Head();
     int save_pages = 0;
-    while (p != nullptr)
+    while (p)
     {
         if (p->Class() & page_class)
             ++save_pages;
@@ -1150,7 +1140,7 @@ int ZoneDB::Save(const char* filename, int page_class)
     int error = 0;
     error += df.Write(save_pages, 1);
     p = page_list.Head();
-    while (p != nullptr)
+    while (p)
     {
         if (p->Class() & page_class)
             error += p->Write(df, ZONE_VERSION);
@@ -1192,13 +1182,13 @@ int ZoneDB::ImportPage(const char* filename)
     int pagenum;
     int idx;
     int len = strlen(filename);
-    Page *newpage = nullptr;
+    Page *newpage = NULL;
     InputDataFile infile;
     int version = 0;
     char str[STRLONG];
     int count = 0;
-    SalesItem *salesitem = nullptr;
-    SalesItem *olditem = nullptr;
+    SalesItem *salesitem = NULL;
+    SalesItem *olditem = NULL;
 
     idx = len - 1;
     while (idx > 0 && filename[idx - 1] != '_')
@@ -1213,12 +1203,12 @@ int ZoneDB::ImportPage(const char* filename)
         return retval;
     if (version < 17 || version > ZONE_VERSION)
     {
-        snprintf(str, STRLENGTH, "Unknown ZoneDB file version %d", version);
+        sprintf(str, "Unknown ZoneDB file version %d", version);
         ReportError(str);
         return 1;  // Error
     }
     newpage = NewPosPage();
-    if (newpage != nullptr)
+    if (newpage != NULL)
     {
         newpage->Read(infile, version);
         newpage->id = pagenum;
@@ -1231,7 +1221,7 @@ int ZoneDB::ImportPage(const char* filename)
         salesitem = new SalesItem();
         salesitem->Read(infile, SALES_ITEM_VERSION);
         olditem = MasterSystem->menu.FindByName(salesitem->item_name.Value());
-        if (olditem != nullptr)
+        if (olditem != NULL)
             MasterSystem->menu.Remove(olditem);
         MasterSystem->menu.Add(salesitem);
         count -= 1;
@@ -1247,18 +1237,18 @@ int ZoneDB::ImportPages()
 {
     FnTrace("ZoneDB::ImportPages()");
     char importdir[STRLONG];
-    DIR *dir = nullptr;
-    struct dirent *record = nullptr;
-    const char* name = nullptr;
+    DIR *dir = NULL;
+    struct dirent *record = NULL;
+    const char* name = NULL;
     char fullpath[STRLONG];
     int count = 0;
 
     MasterSystem->FullPath(PAGEIMPORTS_DIR, importdir);
     dir = opendir(importdir);
-    if (dir != nullptr)
+    if (dir != NULL)
     {
         record = readdir(dir);
-        while (record != nullptr)
+        while (record != NULL)
         {
             name = record->d_name;
             if (strncmp(name, "page_", 5) == 0)
@@ -1285,22 +1275,22 @@ int ZoneDB::ExportPage(Page *page)
     char fullpath[STRLONG];
     char filepath[STRLONG];
     OutputDataFile outfile;
-    Zone *zone = nullptr;
-    SalesItem *salesitem = nullptr;
+    Zone *zone = NULL;
+    SalesItem *salesitem = NULL;
     int count = 0;
 
-    if (page == nullptr)
+    if (page == NULL)
         return retval;
 
     MasterSystem->FullPath(PAGEEXPORTS_DIR, fullpath);
-    EnsureDirExists(fullpath);
+    EnsureFileExists(fullpath);
     snprintf(filepath, STRLONG, "/page_%d", page->id);
-    strncat(fullpath, filepath, sizeof(fullpath) - strlen(fullpath) - 1);
+    strcat(fullpath, filepath);
     if (outfile.Open(fullpath, ZONE_VERSION) == 0)
     {
         page->Write(outfile, ZONE_VERSION);
         zone = page->ZoneList();
-        while (zone != nullptr)
+        while (zone != NULL)
         {
             if (zone->ItemName())
                 count += 1;
@@ -1308,12 +1298,12 @@ int ZoneDB::ExportPage(Page *page)
         }
         outfile.Write(count);
         zone = page->ZoneList();
-        while (zone != nullptr)
+        while (zone != NULL)
         {
             if (zone->ItemName())
             {
                 salesitem = MasterSystem->menu.FindByName(zone->ItemName()->Value());
-                if (salesitem != nullptr)
+                if (salesitem != NULL)
                     salesitem->Write(outfile, SALES_ITEM_VERSION);
             }
             zone = zone->next;
@@ -1328,7 +1318,7 @@ int ZoneDB::ExportPage(Page *page)
 int ZoneDB::Add(Page *p)
 {
     FnTrace("ZoneDB::Add()");
-    if (p == nullptr)
+    if (p == NULL)
         return 1;
 
     // start at end of list and work backwords
@@ -1344,25 +1334,26 @@ int ZoneDB::AddUnique(Page *page)
 {
     FnTrace("ZoneDB::AddUnique()");
     int retval = 0;
-    Page *oldpage = nullptr;
+    Page *oldpage = NULL;
     int pagenum = page->id;
     char str[STRLENGTH];
 
     // remove a page if there is already one at this ID (of the same size)
     oldpage = FindByID(pagenum, page->size);
-    if (oldpage != nullptr && oldpage->size == page->size)
+    if (oldpage != NULL && oldpage->size == page->size)
     {
         if (Remove(oldpage))
         {
-            snprintf(str, STRLENGTH, "Error removing page %d", pagenum);
+            sprintf(str, "Error removing page %d", pagenum);
             ReportError(str);
-        }
+            return 1;  // Error
+        }   
     }
 
     // add the new page in
     if (Add(page))
     {
-        snprintf(str, STRLENGTH, "Error adding page %d", pagenum);
+        sprintf(str, "Error adding page %d", pagenum);
         ReportError(str);
         return 1;  // Error
     }
@@ -1387,11 +1378,11 @@ Page *ZoneDB::FindByID(int id, int max_size)
 {
     FnTrace("ZoneDB::FindByID()");
 	if (id == 0)
-		return nullptr;
+		return NULL;
 
-    Page *retPage = nullptr;
+    Page *retPage = NULL;
 	Page *currPage = page_list.Head();
-	while ((retPage == nullptr) && (currPage != nullptr))
+	while ((retPage == NULL) && (currPage != NULL))
 	{
 		if (currPage->id == id && currPage->size <= max_size)
 			retPage = currPage;
@@ -1405,7 +1396,7 @@ Page *ZoneDB::FindByType(int type, int period, int max_size)
 {
     FnTrace("ZoneDB::FindByType()");
     Page *thisPage = page_list.Head();
-    while (thisPage != nullptr)
+    while (thisPage)
     {
         if ((thisPage->type == type) && 
             (thisPage->index == period || period == INDEX_ANY) &&
@@ -1415,12 +1406,12 @@ Page *ZoneDB::FindByType(int type, int period, int max_size)
             return thisPage;
         }
         if (thisPage == page_list.Tail()) {
-        	return nullptr;
+        	return NULL;
         } else {
             thisPage = thisPage->next;
         }
     }
-    return nullptr;
+    return NULL;
 }
 
 Page *ZoneDB::FindByTerminal(int term_type, int period, int max_size)
@@ -1437,20 +1428,20 @@ Page *ZoneDB::FindByTerminal(int term_type, int period, int max_size)
     if (type != 0)
         return FindByType(type, period, max_size);
     else
-        return nullptr;
+        return NULL;
 }
 
 Page *ZoneDB::FirstTablePage(int max_size)
 {
     FnTrace("ZoneDB::FirstTablePage()");
     Page *p = page_list.Head();
-    while (p != nullptr)
+    while (p)
     {
         if (p->IsTable() && p->size <= max_size && p->id != 0)
             return p;
         p = p->next;
     }
-    return nullptr;
+    return NULL;
 }
 
 int ZoneDB::ChangePageID(Page *target, int new_id)
@@ -1463,17 +1454,17 @@ int ZoneDB::ChangePageID(Page *target, int new_id)
     if (old_id != 0)
     {
         Page *p = page_list.Head(), *pnext;
-        while (p != nullptr)
+        while (p)
         {
             if (p->parent_id == old_id)
                 p->parent_id = new_id;
-            for (Zone *z = p->ZoneList(); z != nullptr; z = z->next)
+            for (Zone *z = p->ZoneList(); z != NULL; z = z->next)
                 z->ChangeJumpID(old_id, new_id);
             p = p->next;
         }
 
         p = page_list.Head();
-        while (p != nullptr)
+        while (p)
         {
             pnext = p->next;
             if (p->id == old_id)
@@ -1501,7 +1492,7 @@ int ZoneDB::IsPageDefined(int my_page_id, int size)
         return 0;   // FALSE
 
     Page *p = page_list.Head();
-    while (p != nullptr)
+    while (p)
     {
         if (p->id == my_page_id && p->size == size)
             return 1; // TRUE
@@ -1513,31 +1504,28 @@ int ZoneDB::IsPageDefined(int my_page_id, int size)
 int ZoneDB::ClearEdit(Terminal *t)
 {
     FnTrace("ZoneDB::ClearEdit()");
+    RegionInfo r;
     int count = 0;
 
-    // Clear edit flags on all zones in the current page and parent pages
-    Page *p = t->page;
-    while (p != nullptr)
+    Page *p = page_list.Head();;
+    while (p)
     {
         Zone *z = p->ZoneList();
-        while (z != nullptr)
+        while (z)
         {
             if (z->edit)
             {
                 z->edit = 0;
+                r.Fit(z->x, z->y, z->w, z->h);
                 ++count;
             }
             z = z->next;
         }
-        p = p->parent_page;
+        p = p->next;
     }
 
     if (count)
-    {
-        // Force a full screen refresh to ensure all cleared selections are visible
-        t->Draw(1);
-        t->SendNow();
-    }
+        t->Draw(0, r.x, r.y, r.w, r.h);
     return 0;
 }
 
@@ -1550,10 +1538,10 @@ int ZoneDB::SizeEdit(Terminal *t, int wchange, int hchange,
 
     Zone *z;
     Page *p = t->page;
-    while (p != nullptr)
+    while (p)
     {
         z = p->ZoneList();
-        while (z != nullptr)
+        while (z)
         {
             if (z->edit)
             {
@@ -1569,11 +1557,7 @@ int ZoneDB::SizeEdit(Terminal *t, int wchange, int hchange,
     }
 
     if (count > 0)
-    {
-        t->Draw(1, r.x, r.y, r.w, r.h);
-        // Force immediate buffer flush for real-time editing feedback
-        t->SendNow();
-    }
+        t->Draw(0, r.x, r.y, r.w, r.h);
     return 0;
 }
 
@@ -1585,10 +1569,10 @@ int ZoneDB::PositionEdit(Terminal *t, int xchange, int ychange)
 
     Zone *z;
     Page *p = t->page;
-    while (p != nullptr)
+    while (p)
     {
         z = p->ZoneList();
-        while (z != nullptr)
+        while (z)
         {
             if (z->edit)
             {
@@ -1604,11 +1588,7 @@ int ZoneDB::PositionEdit(Terminal *t, int xchange, int ychange)
     }
 
     if (count > 0)
-    {
-        t->Draw(1, r.x, r.y, r.w, r.h);
-        // Force immediate buffer flush for real-time editing feedback
-        t->SendNow();
-    }
+        t->Draw(0, r.x, r.y, r.w, r.h);
     return 0;
 }
 
@@ -1619,18 +1599,18 @@ int ZoneDB::CopyEdit(Terminal *t, int modify_x, int modify_y)
     RegionInfo r;
     int count = 0;
 
-    Zone *list = nullptr;
+    Zone *list = NULL;
     Page *p = page_list.Head();
-    while (p != nullptr)
+    while (p)
     {
         Zone *z = p->ZoneList();
-        while (z != nullptr)
+        while (z)
         {
             if (z->edit && z->CanEdit(t))
             {
                 z->edit = 0;
                 Zone *ptr = z->Copy();
-                if (ptr != nullptr)
+                if (ptr)
                 {
                     ptr->edit = 1;
                     int s = ptr->ShadowVal(t);
@@ -1670,7 +1650,7 @@ int ZoneDB::CopyEdit(Terminal *t, int modify_x, int modify_y)
         p = p->next;
     }
 
-    while (list != nullptr)
+    while (list)
     {
         Zone *z = list;
         list = list->next;
@@ -1678,23 +1658,19 @@ int ZoneDB::CopyEdit(Terminal *t, int modify_x, int modify_y)
     }
 
     if (count)
-    {
-        // Always force a full screen refresh after Copy Selected
-        t->Draw(1);
-        t->SendNow();
-    }
+        t->Draw(1, r.x, r.y, r.w, r.h);
     return 0;
 }
 
 int ZoneDB::RelocateEdit(Terminal *t)
 {
     FnTrace("ZoneDB::RelocateEdit()");
-    Zone *list = nullptr;
+    Zone *list = NULL;
     Page *p = page_list.Head();
-    while (p != nullptr)
+    while (p)
     {
         Zone *z = p->ZoneList();
-        while (z != nullptr)
+        while (z)
         {
             Zone *ptr = z->next;
             if (z->edit && z->CanEdit(t))
@@ -1710,7 +1686,7 @@ int ZoneDB::RelocateEdit(Terminal *t)
 
     RegionInfo r;
     int count = 0;
-    while (list != nullptr)
+    while (list)
     {
         Zone *z = list;
         list = list->next;
@@ -1722,11 +1698,7 @@ int ZoneDB::RelocateEdit(Terminal *t)
     }
 
     if (count)
-    {
-        t->Draw(1, r.x, r.y, r.w, r.h);
-        // Force immediate buffer flush for real-time editing feedback
-        t->SendNow();
-    }
+        t->Draw(0, r.x, r.y, r.w, r.h);
     return 0;
 }
 
@@ -1736,7 +1708,7 @@ int ZoneDB::DeleteEdit(Terminal *term)
     int count = 0;
     int retval = 0;
     Zone *del_zone = term->page->ZoneList();
-    while (del_zone != nullptr)
+    while (del_zone)
     {
         Zone *next_zone = del_zone->next;
         if (del_zone->edit && del_zone->CanEdit(term))
@@ -1761,10 +1733,10 @@ int ZoneDB::ToggleEdit(Terminal *t, int toggle)
 
     Zone *z;
     Page *p = t->page;
-    while (p != nullptr)
+    while (p)
     {
         z = p->ZoneList();
-        while (z != nullptr)
+        while (z)
         {
             if ((z->edit == 0 || toggle) && z->CanSelect(t))
             {
@@ -1778,11 +1750,7 @@ int ZoneDB::ToggleEdit(Terminal *t, int toggle)
     }
 
     if (count)
-    {
-        // Always force a full screen refresh after Select All
-        t->Draw(1);
-        t->SendNow();
-    }
+        t->Draw(0, r.x, r.y, r.w, r.h);
     return 0;
 }
 
@@ -1794,10 +1762,10 @@ int ZoneDB::ToggleEdit(Terminal *t, int toggle, int rx, int ry, int rw, int rh)
 
     Zone *z;
     Page *p = t->page;
-    while (p != nullptr)
+    while (p)
     {
         z = p->ZoneList();
-        while (z != nullptr)
+        while (z)
         {
             if ((z->edit == 0 || toggle) && z->Overlap(rx, ry, rw, rh) &&
                 z->CanSelect(t))
@@ -1812,11 +1780,7 @@ int ZoneDB::ToggleEdit(Terminal *t, int toggle, int rx, int ry, int rw, int rh)
     }
 
     if (count)
-    {
-        // Always force a full screen refresh after drag selection
-        t->Draw(1);
-        t->SendNow();
-    }
+        t->Draw(0, r.x, r.y, r.w, r.h);
     return 0;
 }
 
@@ -1824,14 +1788,14 @@ ZoneDB *ZoneDB::Copy()
 {
     FnTrace("ZoneDB::Copy()");
     ZoneDB *new_db = new ZoneDB;
-    if (new_db == nullptr)
+    if (new_db == NULL)
     {
         ReportError("Couldn't create copy of ZoneDB");
-        return nullptr;
+        return NULL;
     }
 
     Page *p = page_list.Head();
-    while (p != nullptr)
+    while (p)
     {
         new_db->Add(p->Copy());
         p = p->next;
@@ -1863,7 +1827,7 @@ int ZoneDB::References(Page *page, int *list, int my_max, int &count)
     count = 0;
     int ref = 0, last = 0;
     Page *thisPage = page_list.Head();
-    while (thisPage != nullptr)
+    while (thisPage)
 	{
 		if (thisPage != page)
 		{
@@ -1880,7 +1844,7 @@ int ZoneDB::References(Page *page, int *list, int my_max, int &count)
 			}
 
 			Zone *thisZone = thisPage->ZoneList();
-			while (thisZone != nullptr)
+			while (thisZone)
 			{
 				if (thisZone->JumpID() && *thisZone->JumpID() == id)
 				{
@@ -1924,7 +1888,7 @@ int ZoneDB::References(Page *page, int *list, int my_max, int &count)
 int ZoneDB::PageListReport(Terminal *t, int show_system, Report *r)
 {
     FnTrace("ZoneDB::PageListReport()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
 
     r->TextC("Page List", PRINT_UNDERLINE);
@@ -1932,7 +1896,7 @@ int ZoneDB::PageListReport(Terminal *t, int show_system, Report *r)
 
     int count = 0;
     Page *p = page_list.Head();
-    while (p != nullptr)
+    while (p)
     {
         if (show_system || (p->type != PAGE_SYSTEM && p->type != PAGE_CHECKS))
         {
@@ -1949,7 +1913,7 @@ int ZoneDB::PageListReport(Terminal *t, int show_system, Report *r)
 
     r->NewLine();
     genericChar str[32];
-    snprintf(str, 32, "Total Pages: %d", count);
+    sprintf(str, "Total Pages: %d", count);
     r->TextC(str);
     return 0;
 }
@@ -1959,9 +1923,9 @@ int ZoneDB::ChangeItemName(const char* old_name, const genericChar* new_name)
 	FnTrace("ZoneDB::ChangeItemName()");
 	int changed = 0;
 	Page *thisPage = page_list.Head();
-	while (thisPage != nullptr)
+	while (thisPage)
 	{
-		for (Zone *z = thisPage->ZoneList(); z != nullptr; z = z->next)
+		for (Zone *z = thisPage->ZoneList(); z != NULL; z = z->next)
 		{
 			if (z->ItemName() &&
                 StringCompare(z->ItemName()->Value(), old_name) == 0)
@@ -1989,7 +1953,7 @@ int ZoneDB::PrintZoneDB(const char* dest, int brief)
     int pcount = 0;
     int zcount = 0;
 
-    if (dest != nullptr)
+    if (dest != NULL)
     {
         outfd = open(dest, O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (outfd <= 0)
@@ -2000,7 +1964,7 @@ int ZoneDB::PrintZoneDB(const char* dest, int brief)
             outfd = STDOUT_FILENO;
         }
     }
-    while (currPage != nullptr)
+    while (currPage != NULL)
     {
         if (brief == 0)
         {
@@ -2011,7 +1975,7 @@ int ZoneDB::PrintZoneDB(const char* dest, int brief)
         }
         currZone = currPage->ZoneList();
         pcount += 1;
-        while (currZone != nullptr)
+        while (currZone != NULL)
         {
             if (brief == 0)
             {

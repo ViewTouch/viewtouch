@@ -18,7 +18,8 @@
  * Handeling of captured tips and tip payout
  */
 
-#pragma once
+#ifndef _TIPS_HH
+#define _TIPS_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -85,7 +86,7 @@ public:
     int Remove(TipEntry *te);
     int Purge();
     TipEntry *FindByUser(int id);
-    TipEntry *FindByRecord(int record, Employee *e = nullptr);
+    TipEntry *FindByRecord(int record, Employee *e = NULL);
     int CaptureTip(int user_id, int amount);
     int TransferTip(int user_id, int amount);
     int PayoutTip(int user_id, int amount);
@@ -100,3 +101,5 @@ public:
     int ListReport(Terminal *t, Employee *e, Report *r);
     int Update(System *sys);
 };
+
+#endif

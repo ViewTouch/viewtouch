@@ -26,8 +26,6 @@
 #include "drawer_zone.hh"
 #include "cdu.hh"
 
-#include "font_ids.hh"
-
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
@@ -66,7 +64,7 @@ const genericChar* FullZoneTypeName[] = {
     "Expense", "Status", "CDU Messages",
     "Customer Information", "Check Edit",
     "Credit Card List", "Credit Card Messages",
-    "Expire Messages", nullptr
+    "Expire Messages", NULL
 };
 
 int FullZoneTypeValue[] = {
@@ -104,13 +102,13 @@ int FullZoneTypeValue[] = {
 };
 
 const genericChar* ZoneTypeName[] = {
-    "Standard", "Menu", "Qualifier", "Table", nullptr};
+    "Standard", "Menu", "Qualifier", "Table", NULL};
 int ZoneTypeValue[] = {
     ZONE_SIMPLE, ZONE_ITEM, ZONE_QUALIFIER, ZONE_TABLE, -1};
 
 const genericChar* ZoneBehaveName[] = {
     "No Response", "Blink", "Toggle", "Turn On", "Double Touch",
-    "Touches Pass Through", nullptr};
+    "Touches Pass Through", NULL};
 int ZoneBehaveValue[] = {
     BEHAVE_NONE, BEHAVE_BLINK, BEHAVE_TOGGLE,
     BEHAVE_SELECT, BEHAVE_DOUBLE, BEHAVE_MISS, -1};
@@ -120,7 +118,7 @@ const genericChar* ZoneFrameName[] = {
     "Raised Edge", "Inset Edge", "Double Raised Edge",
     "Raised Border", "Clear Border", "Sand Border",
 	"Lit Sand Border", "Inset Border", "Parchment Border",
-    "Double Border", "Lit Double Border", nullptr};
+    "Double Border", "Lit Double Border", NULL};
 int ZoneFrameValue[] = {
     ZF_DEFAULT, ZF_HIDDEN, ZF_NONE,
     ZF_RAISED, ZF_INSET, ZF_DOUBLE,
@@ -147,23 +145,12 @@ const genericChar* TextureName[] = {
 	"Smoke",
 	"Leather",
 	"Blue Parchment",
-    "Brown Gradient",
-    "Black",
-    "Gray Sand",
-    "White Mesh",
-    "Metal",
-    "Stone",
-    "Glass",
-    "Velvet",
-    "Concrete",
-    "Silk",
-    "Brass",
-    "Copper",
-    "Steel",
-    "Plastic",
-    "Demo",
-
-    nullptr
+        "Gradient",
+        "Brown Gradient",
+        "Black",
+        "Gray Sand",
+        "White Mesh",
+	NULL
 };
 
 int TextureValue[] = {
@@ -185,23 +172,12 @@ int TextureValue[] = {
 	IMAGE_SMOKE,
 	IMAGE_LEATHER,
 	IMAGE_BLUE_PARCHMENT,
-    IMAGE_GRADIENTBROWN,
+	IMAGE_GRADIENT,
+	IMAGE_GRADIENTBROWN,
 	IMAGE_BLACK,
 	IMAGE_GREYSAND,
 	IMAGE_WHITEMESH,
-    IMAGE_METAL,
-    IMAGE_STONE,
-    IMAGE_GLASS,
-    IMAGE_VELVET,
-    IMAGE_CONCRETE,
-    IMAGE_SILK,
-    IMAGE_BRASS,
-    IMAGE_COPPER,
-    IMAGE_STEEL,
-    IMAGE_PLASTIC,
-    IMAGE_DEMO,
-
-    -1
+	-1
 };
 
 const genericChar* PageTypeName[] = {
@@ -212,7 +188,7 @@ const genericChar* PageTypeName[] = {
 	"System Page", "Guest Check Page",
     "Kitchen 1 Page", "Kitchen 2 Page",
     "Bar 1 Page", "Bar 2 Page",
-    nullptr};
+    NULL};
 
 int PageTypeValue[] = {
     PAGE_TABLE, PAGE_TABLE2,
@@ -228,7 +204,7 @@ const genericChar* PageType2Name[] = {
     "Table Page", "Table Page Showing Guest Check",
     "Index Page", "Menu Item Page",
     "Modifier Page", "Modifier Page without Continue",
-	"Modifier Page without Continue or Complete", "Menu Board Page", nullptr};
+	"Modifier Page without Continue or Complete", "Menu Board Page", NULL};
 
 int PageType2Value[] = {
     PAGE_TABLE, PAGE_TABLE2,
@@ -238,7 +214,7 @@ int PageType2Value[] = {
 
 const genericChar* JumpTypeName[] = {
     "* No Jump *", "Jump", "Move",
-    "Return From A Jump", "Follow A Script", "Return to Index", nullptr};
+    "Return From A Jump", "Follow A Script", "Return to Index", NULL};
 int JumpTypeValue[] = {
     JUMP_NONE, JUMP_NORMAL, JUMP_STEALTH, JUMP_RETURN,
     JUMP_SCRIPT, JUMP_INDEX, -1};
@@ -247,24 +223,24 @@ const genericChar* FullJumpTypeName[] = {
     "Remain On This Page", "Jump To A Modifier Page", "Move To A Menu Item Page",
     "Return From A Jump", "Follow The Script",
     "Return to Index", "Return To The Starting Page",
-    "Query Password Then Jump", nullptr};
+    "Query Password Then Jump", NULL};
 int FullJumpTypeValue[] = {
     JUMP_NONE, JUMP_NORMAL, JUMP_STEALTH, JUMP_RETURN, JUMP_SCRIPT,
     JUMP_INDEX, JUMP_HOME, JUMP_PASSWORD, -1};
 
 const genericChar* ShadowName[] = {
-    "Default", "No Shadow", "Minimal", "Normal", "Maximum", nullptr};
+    "Default", "No Shadow", "Minimal", "Normal", "Maximum", NULL};
 int ShadowValue[] = {
     256, 0, 4, 6, 9, -1};
 
 const genericChar* PageShadowName[] = {
-    "No Shadow", "Minimal", "Normal", "Maximum", nullptr};
+    "No Shadow", "Minimal", "Normal", "Maximum", NULL};
 int PageShadowValue[] = {
     0, 4, 6, 9, -1};
 
 const genericChar* PageSizeName[] = {
   "640x480", "768x1024", "800x480", "800x600", "1024x600", "1024x768", "1280x800", "1280x1024", "1366x768", "1440x900", "1600x900", "1600x1200", "1680x1050",
-  "1920x1080", "1920x1200", "2560x1440", "2560x1600", nullptr};
+  "1920x1080", "1920x1200", "2560x1440", "2560x1600", NULL};
 int PageSizeValue[] = {
   SIZE_640x480, SIZE_768x1024, SIZE_800x480, SIZE_800x600, SIZE_1024x600, SIZE_1024x768, SIZE_1280x800, SIZE_1280x1024, SIZE_1366x768,
   SIZE_1440x900, SIZE_1600x900, SIZE_1600x1200, SIZE_1680x1050, SIZE_1920x1080, SIZE_1920x1200, SIZE_2560x1440, SIZE_2560x1600, -1};
@@ -274,7 +250,7 @@ const genericChar* ColorName[] = {
     "Brown", "Orange", "Purple", "Teal", "Gray", "Magenta", "Red-Orange",
     "Sea Green", "Light Blue", "Dark Red", "Dark Green",
     "Dark Blue", "Dark Teal", "Dark Magenta", "Dark Sea Green",
-    "Transparent", nullptr};
+    "Transparent", NULL};
 int ColorValue[] = {
     COLOR_PAGE_DEFAULT, COLOR_BLACK, COLOR_WHITE, COLOR_RED, COLOR_GREEN,
     COLOR_BLUE, COLOR_YELLOW, COLOR_BROWN, COLOR_ORANGE, COLOR_PURPLE,
@@ -283,81 +259,48 @@ int ColorValue[] = {
     COLOR_DK_BLUE, COLOR_DK_TEAL, COLOR_DK_MAGENTA, COLOR_DK_SEAGREEN,
     COLOR_CLEAR, -1};
 
-// Updated font choices to provide better progression for scalable fonts in Button Properties Dialog
-// Moved away from legacy bitmapped font limitations to more appropriate scalable font sizes
-// Added modern POS fonts for better readability and professional appearance
 const genericChar* FontName[] = {
-    "Default", 
-    
-    // Legacy Times fonts (maintained for compatibility)
-    "Times 14", "Times 14 Bold", "Times 18", "Times 18 Bold",
-    "Times 20", "Times 20 Bold", "Times 24", "Times 24 Bold",
-    "Times 34", "Times 34 Bold", 
-    
-    // Legacy Courier fonts (maintained for compatibility)
-    "Courier 18", "Courier 18 Bold", "Courier 20", "Courier 20 Bold", 
-    
-    // Modern DejaVu Sans fonts - Recommended for POS interfaces
-    "DejaVu Sans 14", "DejaVu Sans 16", "DejaVu Sans 18", "DejaVu Sans 20",
-    "DejaVu Sans 24", "DejaVu Sans 28",
-    "DejaVu Sans 14 Bold", "DejaVu Sans 16 Bold", "DejaVu Sans 18 Bold", 
-    "DejaVu Sans 20 Bold", "DejaVu Sans 24 Bold", "DejaVu Sans 28 Bold",
-    
-    // Monospace fonts - Perfect for prices and data alignment
-    "Monospace 14", "Monospace 16", "Monospace 18", "Monospace 20", "Monospace 24",
-    "Monospace 14 Bold", "Monospace 16 Bold", "Monospace 18 Bold", 
-    "Monospace 20 Bold", "Monospace 24 Bold",
-    
-    // Premium serif fonts - Professional typography for menus and displays
-    "EB Garamond 14", "EB Garamond 16", "EB Garamond 18", "EB Garamond 20", "EB Garamond 24", "EB Garamond 28",
-    "EB Garamond 14 Bold", "EB Garamond 16 Bold", "EB Garamond 18 Bold", "EB Garamond 20 Bold", "EB Garamond 24 Bold", "EB Garamond 28 Bold",
-    
-    // Classic serif fonts - Traditional and elegant
-    "Bookman 14", "Bookman 16", "Bookman 18", "Bookman 20", "Bookman 24", "Bookman 28",
-    "Bookman 14 Bold", "Bookman 16 Bold", "Bookman 18 Bold", "Bookman 20 Bold", "Bookman 24 Bold", "Bookman 28 Bold",
-    
-    // Nimbus Roman - High-quality serif alternative
-    "Nimbus Roman 14", "Nimbus Roman 16", "Nimbus Roman 18", "Nimbus Roman 20", "Nimbus Roman 24", "Nimbus Roman 28",
-    "Nimbus Roman 14 Bold", "Nimbus Roman 16 Bold", "Nimbus Roman 18 Bold", "Nimbus Roman 20 Bold", "Nimbus Roman 24 Bold", "Nimbus Roman 28 Bold", nullptr};
-    
+    "Default",
+    // Core working fonts only
+    "DejaVu Serif 14pt",
+    "DejaVu Serif 18pt", 
+    "DejaVu Serif 20pt",
+    "DejaVu Serif 24pt",
+    "DejaVu Serif 34pt",
+    "DejaVu Serif 14pt Bold",
+    "DejaVu Serif 18pt Bold",
+    "DejaVu Serif 20pt Bold", 
+    "DejaVu Serif 24pt Bold",
+    "DejaVu Serif 34pt Bold",
+    "Liberation Serif 18pt",
+    "Liberation Serif 20pt",
+    "Liberation Serif 18pt Bold",
+    "Liberation Serif 20pt Bold",
+    NULL};
 int FontValue[] = {
-    FONT_DEFAULT, 
-    
-    // Legacy Times fonts
-    FONT_TIMES_14, FONT_TIMES_14B, FONT_TIMES_18, FONT_TIMES_18B,
-    FONT_TIMES_20, FONT_TIMES_20B, FONT_TIMES_24, FONT_TIMES_24B,
-    FONT_TIMES_34, FONT_TIMES_34B, 
-    
-    // Legacy Courier fonts
-    FONT_COURIER_18, FONT_COURIER_18B, FONT_COURIER_20, FONT_COURIER_20B,
-    
-    // Modern DejaVu Sans fonts
-    FONT_DEJAVU_14, FONT_DEJAVU_16, FONT_DEJAVU_18, FONT_DEJAVU_20,
-    FONT_DEJAVU_24, FONT_DEJAVU_28,
-    FONT_DEJAVU_14B, FONT_DEJAVU_16B, FONT_DEJAVU_18B, 
-    FONT_DEJAVU_20B, FONT_DEJAVU_24B, FONT_DEJAVU_28B,
-    
-    // Monospace fonts
-    FONT_MONO_14, FONT_MONO_16, FONT_MONO_18, FONT_MONO_20, FONT_MONO_24,
-    FONT_MONO_14B, FONT_MONO_16B, FONT_MONO_18B, FONT_MONO_20B, FONT_MONO_24B,
-    
-    // Premium serif fonts - Professional typography for menus and displays
-    FONT_GARAMOND_14, FONT_GARAMOND_16, FONT_GARAMOND_18, FONT_GARAMOND_20, FONT_GARAMOND_24, FONT_GARAMOND_28,
-    FONT_GARAMOND_14B, FONT_GARAMOND_16B, FONT_GARAMOND_18B, FONT_GARAMOND_20B, FONT_GARAMOND_24B, FONT_GARAMOND_28B,
-    
-    // Classic serif fonts - Traditional and elegant
-    FONT_BOOKMAN_14, FONT_BOOKMAN_16, FONT_BOOKMAN_18, FONT_BOOKMAN_20, FONT_BOOKMAN_24, FONT_BOOKMAN_28,
-    FONT_BOOKMAN_14B, FONT_BOOKMAN_16B, FONT_BOOKMAN_18B, FONT_BOOKMAN_20B, FONT_BOOKMAN_24B, FONT_BOOKMAN_28B,
-    
-    // Nimbus Roman - High-quality serif alternative
-    FONT_NIMBUS_14, FONT_NIMBUS_16, FONT_NIMBUS_18, FONT_NIMBUS_20, FONT_NIMBUS_24, FONT_NIMBUS_28,
-    FONT_NIMBUS_14B, FONT_NIMBUS_16B, FONT_NIMBUS_18B, FONT_NIMBUS_20B, FONT_NIMBUS_24B, FONT_NIMBUS_28B, -1};
+    FONT_DEFAULT,
+    // Core working fonts only
+    FONT_TIMES_14, // DejaVu Serif 14pt
+    FONT_TIMES_18, // DejaVu Serif 18pt
+    FONT_TIMES_20, // DejaVu Serif 20pt
+    FONT_TIMES_24, // DejaVu Serif 24pt
+    FONT_TIMES_34, // DejaVu Serif 34pt
+    FONT_TIMES_14B, // DejaVu Serif 14pt Bold
+    FONT_TIMES_18B, // DejaVu Serif 18pt Bold
+    FONT_TIMES_20B, // DejaVu Serif 20pt Bold
+    FONT_TIMES_24B, // DejaVu Serif 24pt Bold
+    FONT_TIMES_34B, // DejaVu Serif 34pt Bold
+    FONT_COURIER_18, // Liberation Serif 18pt
+    FONT_COURIER_20, // Liberation Serif 20pt
+    FONT_COURIER_18B, // Liberation Serif 18pt Bold
+    FONT_COURIER_20B, // Liberation Serif 20pt Bold
+    -1};
 
 const genericChar* IndexName[] = {
     "General", "Breakfast", "Brunch", "Lunch",
     "Early Dinner", "Dinner", "Late Night",
     "Bar", "Wine", "Cafe",
-    "Room", "Retail", nullptr };
+    "Room", "Retail", NULL };
 
 int IndexValue[] = {
     INDEX_GENERAL, INDEX_BREAKFAST, INDEX_BRUNCH, INDEX_LUNCH,
@@ -366,13 +309,13 @@ int IndexValue[] = {
     INDEX_ROOM, INDEX_RETAIL, -1 };
 
 const genericChar* ShapeName[] = {
-    "Rectangle", "Diamond", "Circle", nullptr };
+    "Rectangle", "Diamond", "Circle", NULL };
 
 int ShapeValue[] = {
     SHAPE_RECTANGLE, SHAPE_DIAMOND, SHAPE_CIRCLE, -1 };
 
 const genericChar* ItemTypeName[] = {
-    "Menu Item", "Modifier", "Non-Tracking Modifier", "Menu Item + Substitute", "Priced By Weight", "Event Admission", nullptr };
+    "Menu Item", "Modifier", "Non-Tracking Modifier", "Menu Item + Substitute", "Priced By Weight", "Event Admission", NULL };
 
 int ItemTypeValue[] = {
     ITEM_NORMAL, ITEM_MODIFIER, ITEM_METHOD, ITEM_SUBSTITUTE, ITEM_POUND, ITEM_ADMISSION, -1};
@@ -387,7 +330,7 @@ const genericChar* FamilyName[] = {
     "Beverage", "Beer", "Bottled Beer",
     "Wine", "Bottled Wine", "Alcohol", "Cocktail",
     "Malt Beverage", "Modifier", "Reorder",
-    "Merchandise", "Room", nullptr};
+    "Merchandise", "Room", NULL};
 
 int FamilyValue[] = {
     FAMILY_ALACARTE, FAMILY_APPETIZERS, FAMILY_BREAKFAST_ENTREES,
@@ -416,7 +359,7 @@ const genericChar* SalesTypeName[] = {
     "Merchandise",
     "Merchandise (No Comp or Discount)",
     "Not Taxed (No Comp or Discount)",
-    nullptr};
+    NULL};
 
 int SalesTypeValue[] = {
     SALES_FOOD,
@@ -435,18 +378,18 @@ int SalesTypeValue[] = {
     -1};
 
 const genericChar* CallOrderName[] = {
-    "1st (top)", "2nd", "3rd (middle)", "4th", "5th (bottom)", nullptr};
+    "1st (top)", "2nd", "3rd (middle)", "4th", "5th (bottom)", NULL};
 int CallOrderValue[] = {
     0, 1, 2, 3, 4, -1};
 
 const genericChar* QualifierName[] = {
     "No", "Sub", "On Side", "Lite", "Only", "Extra", "Double", "Dry",
     "Plain", "Toast", "UnToast", "Crisp", "Soft", "Hard", "Grill",
-    "< Left", "Right >", "Whole", "Cut/2", "Cut/3", "Cut/4", nullptr};
+    "< Left", "Right >", "Whole", "Cut/2", "Cut/3", "Cut/4", NULL};
 const genericChar* QualifierShortName[] = {
     "no", "sub", "side", "lite", "only", "extra", "double", "dry",
     "plain", "toast", "untoast", "crisp", "soft", "hard", "grill",
-    "< left", "right >", "whole", "cut/2", "cut/3", "cut/4", nullptr};
+    "< left", "right >", "whole", "cut/2", "cut/3", "cut/4", NULL};
 int QualifierValue[] = {
     QUALIFIER_NO, QUALIFIER_SUB, QUALIFIER_SIDE, QUALIFIER_LITE, QUALIFIER_ONLY, QUALIFIER_EXTRA, QUALIFIER_DOUBLE, QUALIFIER_DRY,
     QUALIFIER_PLAIN, QUALIFIER_TOASTED, QUALIFIER_UNTOASTED, QUALIFIER_CRISPY, QUALIFIER_SOFT, QUALIFIER_HARD, QUALIFIER_GRILLED,
@@ -465,7 +408,7 @@ const genericChar* SwitchName[] = {
     "Expand Goodwill Adjustments", "Monetary Symbol",
     "Show Modifiers", "Allow Multiple Coupons",
     "Print All Modifiers on Receipt", "Auto Print Drawer Report",
-    "Balance Automatic Coupons", "Zero Exclusion", nullptr};
+    "Balance Automatic Coupons", NULL};
 int SwitchValue[] = {
     SWITCH_SEATS, SWITCH_DRAWER_MODE, SWITCH_PASSWORDS, SWITCH_SALE_CREDIT,
     SWITCH_DISCOUNT_ALCOHOL, SWITCH_CHANGE_FOR_CHECKS,
@@ -478,7 +421,7 @@ int SwitchValue[] = {
     SWITCH_ITEM_TARGET, SWITCH_GOODWILL, SWITCH_MONEY_SYMBOL,
     SWITCH_SHOW_MODIFIERS, SWITCH_ALLOW_MULT_COUPON,
     SWITCH_RECEIPT_ALL_MODS, SWITCH_DRAWER_PRINT,
-    SWITCH_BALANCE_AUTO_CPNS, SWITCH_ZERO_EXCLUSION, -1};
+    SWITCH_BALANCE_AUTO_CPNS, -1};
 
 const genericChar* ReportTypeName[] = {
     "Server", "Closed Check", "Drawer",
@@ -486,7 +429,7 @@ const genericChar* ReportTypeName[] = {
     "Server Labor", "Item Comp Exception", "Item Void Exception",
     "Table Exception", "Check Rebuild Exception",
     "Customer Detail", "Expenses", "Royalty",
-    "Auditing", "CreditCard", nullptr};
+    "Auditing", "CreditCard", NULL};
 int ReportTypeValue[] = {
     REPORT_SERVER, REPORT_CLOSEDCHECK, REPORT_DRAWER,
     REPORT_CHECK, REPORT_SALES, REPORT_BALANCE, REPORT_DEPOSIT,
@@ -496,20 +439,20 @@ int ReportTypeValue[] = {
     REPORT_AUDITING, REPORT_CREDITCARD, -1};
 
 const genericChar* CheckDisplayOrderName[] = {
-    "Oldest to Newest", "Newest to Oldest", nullptr };
+    "Oldest to Newest", "Newest to Oldest", NULL };
 int CheckDisplayOrderValue[] = {
     CHECK_ORDER_OLDNEW, CHECK_ORDER_NEWOLD, -1 };
 
 const genericChar* ReportPrintName[] = {
     "Don't Print On Touch", "Print On Local Printer", "Print On Report Printer",
-    "Ask User", nullptr};
+    "Ask User", NULL};
 int ReportPrintValue[] = {
     RP_NO_PRINT, RP_PRINT_LOCAL, RP_PRINT_REPORT, RP_ASK, -1};
 
 const genericChar* TenderName[] = {
     "Cash", "Check", "Gift Certificate", "House Account",
     "Charge Room", "Gratuity", "Credit Card", "Discount",
-    "Coupon", "Comp", "Employee Meal", "Tip", nullptr};
+    "Coupon", "Comp", "Employee Meal", "Tip", NULL};
 int TenderValue[] = {
     TENDER_CASH, TENDER_CHECK, TENDER_GIFT, TENDER_ACCOUNT,
     TENDER_CHARGE_ROOM, TENDER_GRATUITY, TENDER_CHARGE_CARD, TENDER_DISCOUNT,
@@ -518,7 +461,7 @@ int TenderValue[] = {
 const genericChar* PrinterIDName[] = {
     "Default", "Kitchen1", "Kitchen2", "Bar1", "Bar2", "Expediter",
     "Kitchen1 notify2", "Kitchen2 notify1",
-    "Remote Order", "None", nullptr};
+    "Remote Order", "None", NULL};
 int PrinterIDValue[] = {
     PRINTER_DEFAULT, PRINTER_KITCHEN1, PRINTER_KITCHEN2, PRINTER_BAR1,
     PRINTER_BAR2, PRINTER_EXPEDITER,
@@ -526,68 +469,68 @@ int PrinterIDValue[] = {
     PRINTER_REMOTEORDER, PRINTER_NONE, -1};
 
 const genericChar* CustomerTypeName[] = {
-    "Restaurant", "Take Out", "Delivery", "Hotel", "Retail", "Fast Food", "For Here", "To Go", "Call In", nullptr};
+    "Restaurant", "Take Out", "Delivery", "Hotel", "Retail", "Fast Food", "For Here", "To Go", "Call In", NULL};
 int CustomerTypeValue[] = {
     CHECK_RESTAURANT, CHECK_TAKEOUT, CHECK_DELIVERY, CHECK_HOTEL, CHECK_RETAIL, CHECK_FASTFOOD, CHECK_DINEIN, CHECK_TOGO, CHECK_CALLIN, -1};
 
 const genericChar* PriceTypeName[] = {
-    "Price/Item", "Price/Hour", "Price/Day", nullptr };
+    "Price/Item", "Price/Hour", "Price/Day", NULL };
 int PriceTypeValue[] = {
     PRICE_PERITEM, PRICE_PERHOUR, PRICE_PERDAY, -1};
 
 const genericChar* DrawerZoneTypeName[] = {
-    "Pull/Balance", "Drawer Selecter", nullptr };
+    "Pull/Balance", "Drawer Selecter", NULL };
 int   DrawerZoneTypeValue[] = {
     DRAWER_ZONE_BALANCE, DRAWER_ZONE_SELECT, -1 };
 
 const genericChar* CustDispUnitName[] = {
-    "None", "Epson", "Ba63", nullptr };
+    "None", "Epson", "Ba63", NULL };
 int          CustDispUnitValue[] = {
     CDU_TYPE_NONE, CDU_TYPE_EPSON, CDU_TYPE_BA63, -1 };
 
 const genericChar* CCTypeName[] = {
     "VISA", "MasterCard", "American Express",
-    "Discover", "Diner's Club", "Debit", nullptr };
+    "Discover", "Diner's Club", "Debit", NULL };
 int          CCTypeValue[] = {
     CREDIT_TYPE_VISA, CREDIT_TYPE_MASTERCARD, CREDIT_TYPE_AMEX,
     CREDIT_TYPE_DISCOVER, CREDIT_TYPE_DINERSCLUB, CREDIT_TYPE_DEBIT, -1 };
 
 const genericChar* ReportPeriodName[] = {
-    "Archive", "Day", "Week", "2 Weeks", "Month", "Quarter", "Year to Date", nullptr };
+    "Archive", "Day", "Week", "2 Weeks", "Month", "Quarter", "Year to Date", NULL };
 int ReportPeriodValue[] = {
     SP_NONE, SP_DAY, SP_WEEK, SP_2WEEKS, SP_MONTH, SP_QUARTER, SP_YTD, -1 };
 
-const char* YesNoName[] = {"Yes", "No", nullptr};
+const char* YesNoName[] = {"Yes", "No", NULL};
 int   YesNoValue[] = {1, 0, -1};
 
-const char* NoYesName[] = {"No", "Yes", nullptr};
+const char* NoYesName[] = {"No", "Yes", NULL};
 int   NoYesValue[] = {0, 1, -1};
 
-const char* NoYesGlobalName[] = {"No", "Yes", "Global", nullptr};
+const char* NoYesGlobalName[] = {"No", "Yes", "Global", NULL};
 int   NoYesGlobalValue[] = {0, 1, -1, -1};
 
-const char* SplitCheckName[]  = {"Item", "Seat", nullptr};
+const char* SplitCheckName[]  = {"Item", "Seat", NULL};
 int   SplitCheckValue[] = {SPLIT_CHECK_ITEM, SPLIT_CHECK_SEAT, -1};
 
-const char* ModSeparatorName[] = {"New Line", "Comma", nullptr};
+const char* ModSeparatorName[] = {"New Line", "Comma", NULL};
 int   ModSeparatorValue[] = {MOD_SEPARATE_NL, MOD_SEPARATE_CM, -1};
 
-const char* CouponApplyName[] = {"Once", "Each", nullptr};
+const char* CouponApplyName[] = {"Once", "Each", NULL};
 int   CouponApplyValue[] = {COUPON_APPLY_ONCE, COUPON_APPLY_EACH, -1};
 
-const char* DateTimeName[] = {"Always Available", "Once", "Daily", "Monthly", nullptr};
+const char* DateTimeName[] = {"Always Available", "Once", "Daily", "Monthly", NULL};
 int   DateTimeValue[] = {DATETIME_NONE, DATETIME_ONCE, DATETIME_DAILY,
                          DATETIME_MONTHLY, -1};
 
 const char* PrintModeName[] = {
-    "Normal", "Tall", "Wide", "Wide & Tall", nullptr};
+    "Normal", "Tall", "Wide", "Wide & Tall", NULL};
 int PrintModeValue[] = {
     0, PRINT_TALL, PRINT_WIDE, PRINT_TALL | PRINT_WIDE, -1};
 
 const char* KVPrintMethodName[] = {
-    "Unmatched", "Matched", nullptr};
+    "Unmatched", "Matched", NULL};
 int KVPrintMethodValue[] = {
     KV_PRINT_UNMATCHED, KV_PRINT_MATCHED, -1};
 
-const char* WOHeadingName[] = {"Standard", "Simple", nullptr};
+const char* WOHeadingName[] = {"Standard", "Simple", NULL};
 int WOHeadingValue[] = {0, 1, -1};

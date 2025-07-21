@@ -213,17 +213,13 @@ sub ShowHelp {
 # MakeDirs:
 # --------------------------------------------------------------------
 sub MakeDirs {
-    # REFACTOR FIX: Changed bin and dat directory permissions from 0755 to 0775
-    # to ensure both directories have identical permissions. This maintains
-    # consistency with existing /usr/viewtouch/bin directory which has 775 permissions.
-    # Combined with umask(0022) fix in main/manager.cc, this ensures proper directory access.
     unless ( -d $bindir ) {
-        if ( !mkdir( $bindir, 0775 ) ) {
+        if ( !mkdir( $bindir, 0755 ) ) {
             print STDERR "Failed to create $bindir:  $!\n";
         }
     }
     unless ( -d $datdir ) {
-        if ( !mkdir( $datdir, 0775 ) ) {
+        if ( !mkdir( $datdir, 0755 ) ) {
             print STDERR "Failed to create $datdir:  $!\n";
         }
     }

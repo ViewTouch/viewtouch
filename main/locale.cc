@@ -30,27 +30,47 @@
 #include <cstring>
 #include <cctype>
 #include <clocale>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <map>
-
 
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
 
+// Global current language variable for static translation function
+static int global_current_language = LANG_ENGLISH;
+
 void StartupLocalization()
 {
-    if (setlocale(LC_ALL, "") == nullptr)
+    if (setlocale(LC_ALL, "") == NULL)
     {
 	    (void) fprintf(stderr, "Cannot set locale.\n");
 	    exit(1);
 	}
 }
 
+// Global translation function that can be used anywhere
+const genericChar* GlobalTranslate(const genericChar* str)
+{
+    if (MasterLocale == NULL)
+        return str;
+    
+    return MasterLocale->Translate(str, global_current_language, 0);
+}
+
+// Function to set the global current language
+void SetGlobalLanguage(int language)
+{
+    global_current_language = language;
+}
+
+// Function to get the global current language
+int GetGlobalLanguage()
+{
+    return global_current_language;
+}
+
 
 /**** Global Data ****/
-Locale *MasterLocale = nullptr;
+Locale *MasterLocale = NULL;
 
 
 /**** Phrase Data (default U.S. English) ****/
@@ -285,7 +305,7 @@ PhraseEntry PhraseData[] = {
     {15, "Pre-Auth Complete"},
     {15, "Fast Food"},
 
-    {-1, nullptr}
+    {-1, NULL}
 };
 
 /*********************************************************************
@@ -295,15 +315,15 @@ PhraseEntry PhraseData[] = {
 PhraseInfo::PhraseInfo()
 {
     FnTrace("PhraseInfo::PhraseInfo()");
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
 }
 
 PhraseInfo::PhraseInfo(const char* k, const genericChar* v)
 {
     FnTrace("PhraseInfo::PhraseInfo(const char* , const char* )");
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     key.Set(k);
     value.Set(v);
 }
@@ -335,7 +355,7 @@ POEntry::POEntry()
 {
     key[0] = '\0';
     value[0] = '\0';
-    next = nullptr;
+    next = NULL;
 }
 
 POEntry::POEntry(const char* newkey, const char* newvalue)
@@ -351,7 +371,7 @@ POEntry::POEntry(const char* newkey, const char* newvalue)
         value[0] = '\0';
     }
 
-    next = nullptr;
+    next = NULL;
 }
 
 
@@ -370,9 +390,9 @@ POFile::POFile()
     lang        = LANG_NONE;
     loaded      = 0;
     filename[0] = '\0';
-    infile      = nullptr;
-    entry_head  = nullptr;
-    entry_tail  = nullptr;
+    infile      = NULL;
+    entry_head  = NULL;
+    entry_tail  = NULL;
 }
 
 POFile::POFile(int po_lang)
@@ -381,9 +401,9 @@ POFile::POFile(int po_lang)
     lang        = po_lang;
     loaded      = 0;
     filename[0] = '\0';
-    infile      = nullptr;
-    entry_head  = nullptr;
-    entry_tail  = nullptr;
+    infile      = NULL;
+    entry_head  = NULL;
+    entry_tail  = NULL;
 
     ReadPO();
 }
@@ -398,18 +418,10 @@ int POFile::FindPOFilename()
         snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "EN");
     else if (lang == LANG_FRENCH)
         snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "FR");
-    else if (lang == LANG_GREEK)
-        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "GR");
     else if (lang == LANG_SPANISH)
         snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "ES");
-    else if (lang == LANG_GERMAN)
-        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "DE");
-    else if (lang == LANG_ITALIAN)
-        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "IT");
-    else if (lang == LANG_PORTUGUESE)
-        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "PT");
-    else if (lang == LANG_DUTCH)
-        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "NL");
+    else if (lang == LANG_GREEK)
+        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "EL");
 
     if (filename[0] != '\0')
         retval = 0;
@@ -461,9 +473,9 @@ int POFile::Add(const char* newkey, const char* newvalue)
     POEntry *entry;
     
     entry = new POEntry(newkey, newvalue);
-    if (entry != nullptr)
+    if (entry != NULL)
     {
-        if (entry_head == nullptr)
+        if (entry_head == NULL)
         {
             entry_head = entry;
             entry_tail = entry;
@@ -489,12 +501,12 @@ int POFile::Find(char* dest, const char* str, int po_lang)
 
     if (po_lang == lang)
     {
-        while (po_entry != nullptr)
+        while (po_entry != NULL)
         {
             if (strcmp(str, po_entry->Key()) == 0)
             {
                 strcpy(dest, po_entry->Value());
-                po_entry = nullptr;  // exit condition
+                po_entry = NULL;  // exit condition
                 retval = 1; 
             }
             else
@@ -513,16 +525,16 @@ int POFile::Find(char* dest, const char* str, int po_lang)
 POFileList::POFileList()
 {
     FnTrace("POFileList::POFileList()");
-    head = nullptr;
+    head = NULL;
 }
 
 POFile *POFileList::FindPOFile(int lang)
 {
     FnTrace("POFileList::FindPOFile()");
     POFile *po_file = head;
-    POFile *retval  = nullptr;
+    POFile *retval  = NULL;
 
-    while (po_file != nullptr && retval == nullptr)
+    while (po_file != NULL && retval == NULL)
     {
         if (po_file->IsLang(lang))
             retval = po_file;
@@ -538,7 +550,7 @@ const char* POFileList::FindPOString(const char* str, int lang, int clear)
     FnTrace("POFileList::FindPOString()");
     char buffer[STRLONG];
     static char retstr[STRLONG];
-    POFile *po_file = nullptr;
+    POFile *po_file = NULL;
 
     if (clear)
         retstr[0] = '\0';
@@ -546,33 +558,20 @@ const char* POFileList::FindPOString(const char* str, int lang, int clear)
         strcpy(retstr, str);
 
     po_file = FindPOFile(lang);
-    if (po_file == nullptr)
+    if (po_file == NULL)
     {
         po_file = new POFile(lang);
         po_file->next = head;
         head = po_file;
     }
 
-    if (po_file != nullptr)
+    if (po_file != NULL)
     {
         if (po_file->Find(buffer, str, lang))
             strcpy(retstr, buffer);
     }
 
     return retstr;
-}
-
-void POFileList::ClearPOFiles()
-{
-    FnTrace("POFileList::ClearPOFiles()");
-    POFile *po_file = head;
-    while (po_file != nullptr)
-    {
-        POFile *next = po_file->next;
-        delete po_file;
-        po_file = next;
-    }
-    head = nullptr;
 }
 
 
@@ -582,9 +581,9 @@ void POFileList::ClearPOFiles()
 Locale::Locale()
 {
     FnTrace("Locale::Locale()");
-    next = nullptr;
-    fore = nullptr;
-    search_array = nullptr;
+    next = NULL;
+    fore = NULL;
+    search_array = NULL;
     array_size = 0;
 }
 
@@ -605,7 +604,7 @@ int Locale::Load(const char* file)
     genericChar str[256];
     if (version < 1 || version > 1)
     {
-        snprintf(str, sizeof(str), "Unknown locale file version %d", version);
+        sprintf(str, "Unknown locale file version %d", version);
         ReportError(str);
         return 1;
     }
@@ -626,10 +625,6 @@ int Locale::Load(const char* file)
         ph->Read(df, 1);
         Add(ph);
     }
-    
-    // Load UI data translations
-    LoadUIDataTranslations();
-    
     return 0;
 }
 
@@ -639,9 +634,7 @@ int Locale::Save()
     if (filename.size() <= 0)
         return 1;
 
-    // Only backup if the file exists
-    if (DoesFileExist(filename.Value()))
-        BackupFile(filename.Value());
+    BackupFile(filename.Value());
 
     // Save Version 1
     OutputDataFile df;
@@ -655,7 +648,7 @@ int Locale::Save()
     df.Write(0);
 
     df.Write(PhraseCount());
-    for (PhraseInfo *ph = PhraseList(); ph != nullptr; ph = ph->next)
+    for (PhraseInfo *ph = PhraseList(); ph != NULL; ph = ph->next)
         ph->Write(df, 1);
     return 0;
 }
@@ -663,13 +656,13 @@ int Locale::Save()
 int Locale::Add(PhraseInfo *ph)
 {
     FnTrace("Locale::Add()");
-    if (ph == nullptr)
+    if (ph == NULL)
         return 1;
 
     if (search_array)
     {
 	free(search_array);
-        search_array = nullptr;
+        search_array = NULL;
         array_size = 0;
     }
 
@@ -686,13 +679,13 @@ int Locale::Add(PhraseInfo *ph)
 int Locale::Remove(PhraseInfo *ph)
 {
     FnTrace("Locale::Remove()");
-    if (ph == nullptr)
+    if (ph == NULL)
         return 1;
 
     if (search_array)
     {
 	free(search_array);
-        search_array = nullptr;
+        search_array = NULL;
         array_size = 0;
     }
     return phrase_list.Remove(ph);
@@ -706,7 +699,7 @@ int Locale::Purge()
     if (search_array)
     {
 	free(search_array);
-        search_array = nullptr;
+        search_array = NULL;
         array_size = 0;
     }
     return 0;
@@ -726,7 +719,7 @@ int Locale::BuildSearchArray()
 
     array_size = PhraseCount();
     search_array = (PhraseInfo **)calloc(sizeof(PhraseInfo *), (array_size + 1));
-    if (search_array == nullptr)
+    if (search_array == NULL)
         return 1;
 
     PhraseInfo *ph = PhraseList();
@@ -739,14 +732,14 @@ int Locale::BuildSearchArray()
 }
 
 /****
- * Find: find record for word to translate - returns nullptr if none
+ * Find: find record for word to translate - returns NULL if none
  ****/
 PhraseInfo *Locale::Find(const char* key)
 {
     FnTrace("Locale::Find()");
-    if (key == nullptr)
-        return nullptr;
-    if (search_array == nullptr)
+    if (key == NULL)
+        return NULL;
+    if (search_array == NULL)
         BuildSearchArray();
 
     int l = 0;
@@ -764,7 +757,7 @@ PhraseInfo *Locale::Find(const char* key)
         else
             return ph;
     }
-    return nullptr;
+    return NULL;
 }
 
 /****
@@ -779,7 +772,7 @@ const char* Locale::Translate(const char* str, int lang, int clear)
     if (lang == LANG_PHRASE)
     {
         PhraseInfo *ph = Find(str);
-        if (ph == nullptr)
+        if (ph == NULL)
         {
             //if (clear)
                 //str[0] = '\0';	#TODO
@@ -816,28 +809,22 @@ int Locale::NewTranslation(const char* str, const genericChar* value)
         if (search_array)
         {
 	    free(search_array);
-            search_array = nullptr;
+            search_array = NULL;
             array_size = 0;
         }
         return 0;
     }
 
-    if (value == nullptr || strlen(value) <= 0)
+    if (value == NULL || strlen(value) <= 0)
         return 1;
 
     if (search_array)
     {
 	free(search_array);
-        search_array = nullptr;
+        search_array = NULL;
         array_size = 0;
     }
     return Add(new PhraseInfo(str, value));
-}
-
-void Locale::ClearPOFiles()
-{
-    FnTrace("Locale::ClearPOFiles()");
-    pofile_list.ClearPOFiles();
 }
 
 /****
@@ -851,13 +838,12 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
 	// Mon Oct  1 13:14:27 PDT 2001: some work done in this direction - JMK
 
     static genericChar buffer[256];
-    static constexpr size_t TIME_DATE_BUFFER_SIZE = 256;
-    if (str == nullptr)
+    if (str == NULL)
         str = buffer;
 
     if (!timevar.IsSet())
     {
-        snprintf(str, TIME_DATE_BUFFER_SIZE, "<NOT SET>");
+        sprintf(str, "<NOT SET>");
         return str;
     }
 
@@ -869,12 +855,12 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
         // Show Day of Week
         int wd = timevar.WeekDay();
         if (format & TD_SHORT_DAY)
-            snprintf(str, TIME_DATE_BUFFER_SIZE, "%s", Translate(ShortDayName[wd], lang));
+            sprintf(str, "%s", Translate(ShortDayName[wd], lang));
         else
-            snprintf(str, TIME_DATE_BUFFER_SIZE, "%s", Translate(DayName[wd], lang));
+            sprintf(str, "%s", Translate(DayName[wd], lang));
 
         if (!(format & TD_NO_TIME) || !(format & TD_NO_DATE))
-            strncat(str, ", ", sizeof(str) - strlen(str) - 1);
+            strcat(str, ", ");
     }
 
     if (!(format & TD_NO_DATE))
@@ -893,14 +879,14 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             }
 	
             if (format & TD_PAD)
-                snprintf(tempstr, sizeof(tempstr), "%2d/%2d", m, d);
+                sprintf(tempstr, "%2d/%2d", m, d);
             else
-                snprintf(tempstr, sizeof(tempstr), "%d/%d", m, d);
-            strncat(str, tempstr, sizeof(str) - strlen(str) - 1);
+                sprintf(tempstr, "%d/%d", m, d);
+            strcat(str, tempstr);
             if (!(format & TD_NO_YEAR))
             {
-                snprintf(tempstr, sizeof(tempstr), "/%02d", y % 100);
-                strncat(str, tempstr, sizeof(str) - strlen(str) - 1);
+                sprintf(tempstr, "/%02d", y % 100);
+                strcat(str, tempstr);
             }
         }
         else
@@ -908,32 +894,32 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             if (format & TD_SHORT_MONTH)
             {
                 if (format & TD_MONTH_ONLY)
-                    snprintf(tempstr, sizeof(tempstr), "%s", Translate(ShortMonthName[m - 1], lang));
+                    sprintf(tempstr, "%s", Translate(ShortMonthName[m - 1], lang));
                 else if (format & TD_PAD)
-                    snprintf(tempstr, sizeof(tempstr), "%s %2d", Translate(ShortMonthName[m - 1], lang), d);
+                    sprintf(tempstr, "%s %2d", Translate(ShortMonthName[m - 1], lang), d);
                 else
-                    snprintf(tempstr, sizeof(tempstr), "%s %d", Translate(ShortMonthName[m - 1], lang), d);
+                    sprintf(tempstr, "%s %d", Translate(ShortMonthName[m - 1], lang), d);
             }
             else
             {
                 if (format & TD_MONTH_ONLY)
-                    snprintf(tempstr, sizeof(tempstr), "%s", Translate(MonthName[m - 1], lang));
+                    sprintf(tempstr, "%s", Translate(MonthName[m - 1], lang));
                 else if (format & TD_PAD)
-                    snprintf(tempstr, sizeof(tempstr), "%s %2d", Translate(MonthName[m - 1], lang), d);
+                    sprintf(tempstr, "%s %2d", Translate(MonthName[m - 1], lang), d);
                 else
-                    snprintf(tempstr, sizeof(tempstr), "%s %d", Translate(MonthName[m - 1], lang), d);
+                    sprintf(tempstr, "%s %d", Translate(MonthName[m - 1], lang), d);
             }
-            strncat(str, tempstr, sizeof(str) - strlen(str) - 1);
+            strcat(str, tempstr);
 
             if (!(format & TD_NO_YEAR))
             {
-                snprintf(tempstr, sizeof(tempstr), ", %d", y);
-                strncat(str, tempstr, sizeof(str) - strlen(str) - 1);
+                sprintf(tempstr, ", %d", y);
+                strcat(str, tempstr);
             }
         }
 
         if (! (format & TD_NO_TIME))
-            strncat(str, " - ", sizeof(str) - strlen(str) - 1);
+            strcat(str, " - ");
     }
 
     if (! (format & TD_NO_TIME))
@@ -954,16 +940,16 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             if (format & TD_SHORT_TIME)
 			{
 				if(format & TD_SECONDS)
-					snprintf(tempstr, sizeof(tempstr), "%2d:%02d:%2d%c", hr, minute, sec, AMorPM[pm][0]);
+					sprintf(tempstr, "%2d:%02d:%2d%c", hr, minute, sec, AMorPM[pm][0]);
 				else
-					snprintf(tempstr, sizeof(tempstr), "%2d:%02d%c", hr, minute, AMorPM[pm][0]);
+					sprintf(tempstr, "%2d:%02d%c", hr, minute, AMorPM[pm][0]);
 			}
             else
 			{
 				if(format & TD_SECONDS)
-					snprintf(tempstr, sizeof(tempstr), "%2d:%02d:%2d %s", hr, minute, sec, AMorPM[pm]);
+					sprintf(tempstr, "%2d:%02d:%2d %s", hr, minute, sec, AMorPM[pm]);
 				else
-					snprintf(tempstr, sizeof(tempstr), "%2d:%02d %s", hr, minute, AMorPM[pm]);
+					sprintf(tempstr, "%2d:%02d %s", hr, minute, AMorPM[pm]);
 			}
         }
         else
@@ -971,19 +957,19 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             if (format & TD_SHORT_TIME)
 			{
 				if(format & TD_SECONDS)
-					snprintf(tempstr, sizeof(tempstr), "%2d:%02d:%2d%c", hr, minute, sec, AMorPM[pm][0]);
+					sprintf(tempstr, "%2d:%02d:%2d%c", hr, minute, sec, AMorPM[pm][0]);
 				else
-					snprintf(tempstr, sizeof(tempstr), "%d:%02d%c", hr, minute, AMorPM[pm][0]);
+					sprintf(tempstr, "%d:%02d%c", hr, minute, AMorPM[pm][0]);
 			}
             else
 			{
 				if(format & TD_SECONDS)
-					snprintf(tempstr, sizeof(tempstr), "%2d:%02d:%2d %s", hr, minute, sec, AMorPM[pm]);
+					sprintf(tempstr, "%2d:%02d:%2d %s", hr, minute, sec, AMorPM[pm]);
 				else
-					snprintf(tempstr, sizeof(tempstr), "%d:%02d %s", hr, minute, AMorPM[pm]);
+					sprintf(tempstr, "%d:%02d %s", hr, minute, AMorPM[pm]);
 			}
         }
-        strncat(str, tempstr, sizeof(str) - strlen(str) - 1);
+        strcat(str, tempstr);
     }
 
     return str;
@@ -996,164 +982,13 @@ char* Locale::Page(int current, int page_max, int lang, genericChar* str)
 {
     FnTrace("Locale::Page()");
     static genericChar buffer[32];
-    static constexpr size_t PAGE_BUFFER_SIZE = 32;
-                                                     // CRITICAL FIX: Prevents buffer overflow vulnerability
-                                                     // Problem: sizeof(str) on pointer parameter returns 8 bytes, not buffer size
-                                                     // Solution: Use explicit constant matching actual buffer size (32 bytes)
-    if (str == nullptr)
+    if (str == NULL)
         str = buffer;
 
     if (page_max <= 0)
-        snprintf(str, PAGE_BUFFER_SIZE, "%s %d", Translate("Page", lang), current);
+        sprintf(str, "%s %d", Translate("Page", lang), current);
     else
-        snprintf(str, PAGE_BUFFER_SIZE, "%s %d %s %d", Translate("Page", lang), current,
+        sprintf(str, "%s %d %s %d", Translate("Page", lang), current,
                 Translate("of", lang), page_max);
     return str;
 }
-
-const genericChar* Locale::TranslateUIData(const genericChar* key)
-{
-    FnTrace("Locale::TranslateUIData()");
-    if (key == nullptr || strlen(key) == 0)
-        return key;
-
-    auto it = ui_data_translations.find(key);
-    if (it != ui_data_translations.end())
-        return it->second.c_str();
-    
-    return key;  // Return original if no translation found
-}
-
-int Locale::NewUIDataTranslation(const genericChar* key, const genericChar* value)
-{
-    FnTrace("Locale::NewUIDataTranslation()");
-    if (key == nullptr || strlen(key) == 0)
-        return 1;
-
-    if (value == nullptr || strlen(value) == 0)
-    {
-        // Remove translation if value is empty
-        ui_data_translations.erase(key);
-    }
-    else
-    {
-        ui_data_translations[key] = value;
-    }
-    
-    return 0;
-}
-
-int Locale::LoadUIDataTranslations()
-{
-    FnTrace("Locale::LoadUIDataTranslations()");
-    
-    // Clear existing translations
-    ui_data_translations.clear();
-    
-    // Build translation file path
-    System *sys = MasterSystem;
-    if (sys == nullptr)
-        return 1;
-        
-    // Get current language from system settings
-    int current_language = LANG_ENGLISH;  // Default to English
-    if (sys->settings.locale >= 1 && sys->settings.locale <= 8)
-        current_language = sys->settings.locale;
-        
-    ui_data_translation_file = std::string(sys->data_path.str()) + "/languages/ui_data_" + 
-                               std::to_string(current_language) + ".po";
-    
-    // Try to load the translation file
-    FILE *fp = fopen(ui_data_translation_file.c_str(), "r");
-    if (fp == nullptr)
-        return 1;  // File doesn't exist, which is okay
-    
-    char line[STRLENGTH];
-    
-    while (fgets(line, STRLENGTH, fp))
-    {
-        // Remove newline
-        line[strcspn(line, "\n\r")] = '\0';
-        
-        // Skip empty lines and comments
-        if (strlen(line) == 0 || line[0] == '#')
-            continue;
-        
-        // Check if this is a key-value pair (key: value format)
-        char *colon = strchr(line, ':');
-        if (colon != nullptr)
-        {
-            *colon = '\0';  // Split the line
-            char *key = line;
-            char *value = colon + 1;
-            
-            // Trim whitespace
-            while (*key == ' ' || *key == '\t') key++;
-            while (*value == ' ' || *value == '\t') value++;
-            
-            char *end = key + strlen(key) - 1;
-            while (end > key && (*end == ' ' || *end == '\t')) *end-- = '\0';
-            
-            end = value + strlen(value) - 1;
-            while (end > value && (*end == ' ' || *end == '\t')) *end-- = '\0';
-            
-            if (strlen(key) > 0)
-            {
-                ui_data_translations[key] = value;
-            }
-        }
-    }
-    
-    fclose(fp);
-    return 0;
-}
-
-int Locale::SaveUIDataTranslations()
-{
-    FnTrace("Locale::SaveUIDataTranslations()");
-    
-    if (ui_data_translation_file.empty())
-        return 1;
-    
-    // Ensure languages directory exists
-    System *sys = MasterSystem;
-    if (sys == nullptr)
-        return 1;
-        
-    std::string languages_dir = std::string(sys->data_path.str()) + "/languages";
-    struct stat st;
-    if (stat(languages_dir.c_str(), &st) != 0)
-    {
-        mkdir(languages_dir.c_str(), 0755);
-    }
-    
-    FILE *fp = fopen(ui_data_translation_file.c_str(), "w");
-    if (fp == nullptr)
-        return 1;
-    
-    // Get current language from system settings
-    int current_language = LANG_ENGLISH;  // Default to English
-    if (sys->settings.locale >= 1 && sys->settings.locale <= 8)
-        current_language = sys->settings.locale;
-    
-    fprintf(fp, "# UI Data Translations for language %d\n", current_language);
-    fprintf(fp, "# Format: key: value\n");
-    fprintf(fp, "# This file contains translations for UI elements in po_file/vt_data\n");
-    fprintf(fp, "# Generated by ViewTouch translation system\n\n");
-    
-    for (const auto& pair : ui_data_translations)
-    {
-        fprintf(fp, "%s: %s\n", pair.first.c_str(), pair.second.c_str());
-    }
-    
-    fclose(fp);
-    return 0;
-}
-
-void Locale::ClearUIDataTranslations()
-{
-    FnTrace("Locale::ClearUIDataTranslations()");
-    ui_data_translations.clear();
-}
-
-

@@ -18,7 +18,8 @@
  * Data storage past business days
  */
 
-#pragma once
+#ifndef _ARCHIVE_HH
+#define _ARCHIVE_HH
 
 #include "tips.hh"
 #include "labor.hh"
@@ -123,7 +124,7 @@ public:
     CompInfo       *CompList()       { return comp_list.Head(); }
     MealInfo       *MealList()       { return meal_list.Head(); }
 
-    int LoadPacked(Settings *s, const genericChar* filename = nullptr);
+    int LoadPacked(Settings *s, const genericChar* filename = NULL);
     // Loads archive from single file
     int LoadUnpacked(Settings *s, const genericChar* path);
     // Loads archive from files in directory (usually 'current' directory)
@@ -161,3 +162,5 @@ public:
     CreditCardInfo *FindCreditCardByID(int creditcard_id);
     MealInfo       *FindMealByID(int meal_id);
 };
+
+#endif

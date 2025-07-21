@@ -18,7 +18,8 @@
  * Definition of printer device class
  */
 
-#pragma once
+#ifndef _PRINTER_HH
+#define _PRINTER_HH
 
 #include "utility.hh"
 
@@ -347,3 +348,5 @@ public:
 
 Printer *NewPrinterObj(const genericChar* host, int port, int model, int no = 0);
 Printer *NewPrinterFromString(const genericChar* specification);
+
+#endif

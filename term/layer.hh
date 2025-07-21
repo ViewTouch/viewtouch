@@ -18,10 +18,12 @@
  * Pixmap graphic buffer objects
  */
 
-#pragma once
+#ifndef _LAYER_HH
+#define _LAYER_HH
 
 #include "term_view.hh"
 #include "list_utility.hh"
+#include <X11/Xft/Xft.h>
 
 
 /**** Types ****/
@@ -68,6 +70,9 @@ public:
     int Render(Layer *l);
     int Layout(Layer *l);
     int MouseAction(LayerList *ll, Layer *l, int x, int y, int code);
+    
+    // Access to internal list for font updates
+    LayerObject *Head() { return list.Head(); }
 };
 
 class Layer : public RegionInfo
@@ -102,6 +107,7 @@ public:
     int use_clip;
     Str page_title;
     LayerObjectList buttons;
+    XftDraw *xftdraw; // XftDraw context for scalable font rendering
 
     // Constructor
     Layer(Display *d, GC g, Window dw, int lw, int lh);
@@ -197,7 +203,7 @@ public:
     // redraws all layers (only layers with update flag if select_all = 0)
     int UpdateArea(int x, int y, int w, int h);
     // redraws all layers in region
-    int OptimalUpdateArea(int x, int y, int w, int h, Layer *end = nullptr);
+    int OptimalUpdateArea(int x, int y, int w, int h, Layer *end = NULL);
     // redraws all layers with update flag set in region
     int RubberBandOff();
     int RubberBandUpdate(int x, int y);
@@ -207,6 +213,9 @@ public:
     int Keyboard(char key, int code, int state);
     int HideCursor();
     int SetCursor(Layer *l, int type);
+    
+    // Access to internal list for font updates
+    Layer *Head() { return list.Head(); }
 };
 
 class LO_PushButton : public LayerObject
@@ -272,3 +281,5 @@ public:
     int Render(Layer *l);
     int MouseAction(LayerList *ll, Layer *l, int x, int y, int code);
 };
+
+#endif

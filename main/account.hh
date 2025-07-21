@@ -18,7 +18,8 @@
  * Account handling class objects
  */
 
-#pragma once
+#ifndef _ACCOUNT_HH
+#define _ACCOUNT_HH
 
 #include "terminal.hh"
 #include "utility.hh"
@@ -138,3 +139,6 @@ public:
 // GENERAL FUNCTIONS
 
 int IsValidAccountNumber(Terminal *term, int number);
+
+
+#endif

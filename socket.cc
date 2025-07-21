@@ -85,7 +85,7 @@ int Email::AddTo(const char* address)
 {
     FnTrace("Email::AddTo()");
     int retval = 0;
-    Line *newadd = nullptr;
+    Line *newadd = NULL;
 
     newadd = new Line;
     newadd->Set(address);
@@ -100,13 +100,13 @@ int Email::NextTo(char* buffer, int maxlen)
 {
     FnTrace("Email::NextTo()");
     int retval = 1;
-    static Line *currLine = nullptr;
+    static Line *currLine = NULL;
 
-    if (currLine == nullptr)
+    if (currLine == NULL)
         currLine = tos.Head();
     else
         currLine = currLine->next;
-    if (currLine != nullptr && currLine->Length() > 0)
+    if (currLine != NULL && currLine->Length() > 0)
     {
         strncpy(buffer, currLine->Value(), maxlen);
         retval = 0;
@@ -141,7 +141,7 @@ int Email::AddBody(const char* line)
 {
     FnTrace("Email::AddBody()");
     int retval = 0;
-    Line *newbody = nullptr;
+    Line *newbody = NULL;
 
     newbody = new Line;
     newbody->Set(line);
@@ -156,13 +156,13 @@ int Email::NextBody(char* buffer, int maxlen)
 {
     FnTrace("Email::NextBody()");
     int retval = 1;
-    static Line *currBody = nullptr;
+    static Line *currBody = NULL;
 
-    if (currBody == nullptr)
+    if (currBody == NULL)
         currBody = body.Head();
     else
         currBody = currBody->next;
-    if (currBody != nullptr && currBody->Length() > 0)
+    if (currBody != NULL && currBody->Length() > 0)
     {
         strncpy(buffer, currBody->Value(), maxlen);
         retval = 0;
@@ -203,12 +203,12 @@ const char* Sock_ntop(const struct sockaddr_in *sa, socklen_t addrlen)
     char portstr[STRLENGTH];
     static char str[STRLENGTH];
 
-    if (inet_ntop(AF_INET, &sa->sin_addr, str, sizeof(str)) == nullptr)
-        return nullptr;
+    if (inet_ntop(AF_INET, &sa->sin_addr, str, sizeof(str)) == NULL)
+        return NULL;
     if (ntohs(sa->sin_port) != 0)
     {
         snprintf(portstr, sizeof(portstr), ":%d", ntohs(sa->sin_port));
-        strncat(str, portstr, sizeof(str) - strlen(str) - 1);
+        strcat(str, portstr);
     }
 
     return str;
@@ -286,7 +286,7 @@ int Accept(int socknum, char* remote_address)
         if (errno != EWOULDBLOCK)
             perror("accept");
     }
-    else if (remote_address != nullptr)
+    else if (remote_address != NULL)
     {
         strcpy(remote_address, Sock_ntop(&their_addr, sin_size));
     }
@@ -308,13 +308,13 @@ int Connect(const char* host, const char* service)
     struct servent *sp;
 
     hp = gethostbyname(host);
-    if (hp != nullptr)
+    if (hp != NULL)
     {
         sp = getservbyname(service, "tcp");
-        if (sp != nullptr)
+        if (sp != NULL)
         {
             pptr = (struct in_addr **)hp->h_addr_list;
-            for (; *pptr != nullptr; pptr++)
+            for (; *pptr != NULL; pptr++)
             {
                 sockfd = socket(AF_INET, SOCK_STREAM, 0);
                 bzero(&servaddr, sizeof(servaddr));
@@ -353,10 +353,10 @@ int Connect(const char* host, int port)
     struct hostent *hp;
 
     hp = gethostbyname(host);
-    if (hp != nullptr)
+    if (hp != NULL)
     {
         pptr = (struct in_addr **)hp->h_addr_list;
-        for (; *pptr != nullptr; pptr++)
+        for (; *pptr != NULL; pptr++)
         {
             sockfd = socket(AF_INET, SOCK_STREAM, 0);
             bzero(&servaddr, sizeof(servaddr));
@@ -397,7 +397,7 @@ int SelectIn(int fd, int u_sec)
     timeout.tv_sec = seconds;
     timeout.tv_usec = milliseconds;
 
-    retval = select(fd + 1, &infds, nullptr, nullptr, &timeout);
+    retval = select(fd + 1, &infds, NULL, NULL, &timeout);
     return retval;
 }
 
@@ -412,7 +412,7 @@ int SelectOut(int fd, int u_sec)
     timeout.tv_sec = 0;
     timeout.tv_usec = u_sec;
 
-    retval = select(fd + 1, nullptr, &outfds, nullptr, &timeout);
+    retval = select(fd + 1, NULL, &outfds, NULL, &timeout);
     return retval;
 }
 
@@ -506,9 +506,9 @@ int SMTP(int fd, Email *email)
         {
             outgoing[0] = '\0';
             if (buffer[0] == '.')
-                strncat(outgoing, ".", sizeof(outgoing) - strlen(outgoing) - 1);
-            strncat(outgoing, buffer, sizeof(outgoing) - strlen(outgoing) - 1);
-            strncat(outgoing, "\r\n", sizeof(outgoing) - strlen(outgoing) - 1);
+                strcat(outgoing, ".");
+            strcat(outgoing, buffer);
+            strcat(outgoing, "\r\n");
             write(fd, outgoing, strlen(outgoing));
         }
         write(fd, ".\r\n", 2);

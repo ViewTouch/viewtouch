@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997  
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -14,31 +14,37 @@
  *   You should have received a copy of the GNU General Public License 
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  *
- * basic.hh - Basic types & definitions
+ * basic.hh - revision 13 (10/20/98)
+ * Standard types, macros & definitions used in application
  */
 
-#pragma once
+#ifndef _BASIC_HH
+#define _BASIC_HH
 
 #include <cstdio>
 #include <cstdlib>
-#include <algorithm>
 
-/**** Type Definitions ****/
-using Uchar = unsigned char;
-using Short = short;
-using Ushort = unsigned short;
-using Int = int;
-using Uint = unsigned int;
-using Long = long;
-using Ulong = unsigned long;
-using Flt = float;
-using Dbl = double;
-using genericChar = char;
+/**** Types ****/
+typedef char           genericChar;
+typedef unsigned char  Uchar;
+typedef signed char    Schar;
+typedef unsigned short Ushort;
+typedef unsigned int   Uint;
+typedef unsigned long  Ulong;
+typedef double         Flt;
 
-/**** Template Function Definitions ****/
-template<class T> T Max(const T& a, const T& b) { return (a > b) ? a : b; }
-template<class T> T Min(const T& a, const T& b) { return (a < b) ? a : b; }
-template<class T> T Abs(const T& a) { return (a < 0) ? -a : a; }
 
-/**** Global Constants ****/
-constexpr int STRLENGTH = 512;
+/**** Inlined Functions ****/
+template <class type>
+inline type Max(type a, type b) { return (a > b) ?  (a) : (b); }
+// Returns the higher of both arguments
+
+template <class type>
+inline type Min(type a, type b) { return (a > b) ?  (b) : (a); }
+// Returns the lower of both arguments
+
+template <class type>
+inline type Abs(type a)         { return (a < 0) ? (-a) : (a); }
+// Returns the absolute value of the given argument
+
+#endif
