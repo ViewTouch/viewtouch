@@ -27,11 +27,11 @@ jobs:
             other_pkgs: build-essential
             std: 20
             build_type: Debug
-          # Clang + C++20
+          # Clang + C++17
           - cxx: clang++
             cc: clang
             other_pkgs: clang
-            std: 20
+            std: 17
             build_type: Debug
 
     steps:
@@ -68,6 +68,11 @@ jobs:
       # Note: $GITHUB_WORKSPACE is distinct from ${{runner.workspace}}.
       #       This is important
       run: |
+        # Debug compiler information
+        echo "Using compiler: ${{matrix.cxx}}"
+        ${{matrix.cxx}} --version
+        echo "C++ standard: ${{matrix.std}}"
+        
         cmake -S $GITHUB_WORKSPACE -B _build_${{matrix.cxx}}_${{matrix.std}} \
           -DCMAKE_INSTALL_PREFIX="${PWD}/_install_${{matrix.cxx}}_${{matrix.std}}" \
           -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" \
