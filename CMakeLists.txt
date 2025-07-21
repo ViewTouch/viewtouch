@@ -32,6 +32,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsign-compare")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow")
+
 # disable specific compiler warnings
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused") # also disables other unused warnings
@@ -43,12 +44,29 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format-overflow")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-const-variable")
+	# Additional clang-specific flags for better compatibility
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format-security")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format-overflow")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format-truncation")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-stringop-overflow")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overloaded-virtual")
+	# For C++20 compatibility
+	if(CMAKE_CXX_STANDARD EQUAL 20)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++20-compat")
+	endif()
 endif()
 
 # set tz (timezone) library flags
 set(USE_SYSTEM_TZ_DB ON CACHE BOOL "Use the operating system's timezone database" FORCE)
 set(ENABLE_DATE_TESTING OFF CACHE BOOL "Enable unit tests" FORCE)
 set(DISABLE_STRING_VIEW ON CACHE BOOL "Disable string view" FORCE)
+
+# Ensure external libraries use the same C++ standard
+if(CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD ${CMAKE_CXX_STANDARD} CACHE STRING "C++ standard for external libraries" FORCE)
+endif()
+
 add_subdirectory(external/date EXCLUDE_FROM_ALL)
 
 # don't need the curlpp shared lib, using the statically linked one
