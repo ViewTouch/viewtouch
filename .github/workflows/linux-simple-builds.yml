@@ -3,8 +3,9 @@ name: Linux builds (basic)
 on: [push, pull_request]
 
 jobs:
-  build:
-    name: ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
+  # x86_64 builds (current)
+  build-x86_64:
+    name: ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}} (x86_64)
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -79,11 +80,18 @@ jobs:
           -DCMAKE_CXX_STANDARD=${{matrix.std}} \
           -DCMAKE_CXX_EXTENSIONS=OFF \
 
-    - name: Build tests + lib
+    - name: Build full program
       working-directory: ${{runner.workspace}}
       run: |
         cmake --build _build_${{matrix.cxx}}_${{matrix.std}} -j2
+        echo "Build completed successfully"
+        
+    - name: Install full program
+      working-directory: ${{runner.workspace}}
+      run: |
         cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target install
+        echo "Install completed successfully"
+        ls -la _install_${{matrix.cxx}}_${{matrix.std}}/viewtouch/bin/
 
     - name: Run tests
       env:
@@ -96,3 +104,79 @@ jobs:
           CTEST_OUTPUT_ON_FAILURE: 1
       working-directory: ${{runner.workspace}}
       run: cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target test_all
+
+    - name: Verify main executables
+      working-directory: ${{runner.workspace}}
+      run: |
+        echo "Checking main ViewTouch executables:"
+        ls -la _build_${{matrix.cxx}}_${{matrix.std}}/vtpos
+        ls -la _build_${{matrix.cxx}}_${{matrix.std}}/vt_main
+        ls -la _build_${{matrix.cxx}}_${{matrix.std}}/vt_term
+        ls -la _build_${{matrix.cxx}}_${{matrix.std}}/vt_print
+        ls -la _build_${{matrix.cxx}}_${{matrix.std}}/vt_cdu
+        echo "All main executables built successfully!"
+
+  # ARM builds (Raspberry Pi compatibility)
+  build-arm:
+    name: ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}} (ARM)
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        cxx:
+          - g++
+        build_type: [Debug]
+        std: [17]
+        include:
+          - cxx: g++
+            cc: gcc
+            other_pkgs: build-essential
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Prepare environment
+      env:
+        TZ: "America/Los_Angeles"
+      run: |
+        sudo ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime
+        echo ${TZ} | sudo tee /etc/timezone
+        
+        sudo apt-get update -q
+        sudo apt-get install -y --no-install-recommends \
+          ${{matrix.other_pkgs}} \
+          gcc-arm-linux-gnueabihf \
+          g++-arm-linux-gnueabihf \
+          cmake \
+          git \
+          tzdata \
+          libcurl4-gnutls-dev
+
+    - name: Configure build (ARM)
+      working-directory: ${{runner.workspace}}
+      env:
+        CC: arm-linux-gnueabihf-gcc
+        CXX: arm-linux-gnueabihf-g++
+      run: |
+        # Debug compiler information
+        echo "Using ARM compiler: arm-linux-gnueabihf-g++"
+        arm-linux-gnueabihf-g++ --version
+        echo "C++ standard: ${{matrix.std}}"
+        
+        cmake -S $GITHUB_WORKSPACE -B _build_arm_${{matrix.std}} \
+          -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" \
+          -DCMAKE_CXX_STANDARD=${{matrix.std}} \
+          -DCMAKE_CXX_EXTENSIONS=OFF \
+          -DCMAKE_SYSTEM_NAME=Linux \
+          -DCMAKE_SYSTEM_PROCESSOR=arm
+
+    - name: Build tests + lib (ARM)
+      working-directory: ${{runner.workspace}}
+      run: |
+        cmake --build _build_arm_${{matrix.std}} -j2
+
+    - name: Run tests (ARM)
+      env:
+          CTEST_OUTPUT_ON_FAILURE: 1
+      working-directory: ${{runner.workspace}}
+      run: cmake --build _build_arm_${{matrix.std}} --target test_all
