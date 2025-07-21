@@ -271,8 +271,7 @@ target_link_libraries(vt_cdu vtcore)
 #add_executable(vt_authorize authorize_main.cc utility.cc)
 #add_executable(vt_ccq_pipe vt_ccq_pipe.cc socket.cc utility.cc conf_file.cc)
 
-# Add Catch2 v3 testing framework (for future use)
-add_subdirectory(external/catch2 EXCLUDE_FROM_ALL)
+
 
 install(TARGETS vtpos vt_cdu vt_print vt_term vt_main
 	RUNTIME DESTINATION viewtouch/bin
