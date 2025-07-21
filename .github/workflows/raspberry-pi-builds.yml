@@ -31,9 +31,7 @@ jobs:
           git \
           tzdata \
           libcurl4-gnutls-dev \
-          xorg-dev \
-          libmotif-dev \
-          libfreetype6-dev
+          zlib1g-dev
 
     - name: Configure build (Pi)
       working-directory: ${{runner.workspace}}
@@ -50,7 +48,8 @@ jobs:
           -DCMAKE_CXX_STANDARD=${{matrix.std}} \
           -DCMAKE_CXX_EXTENSIONS=OFF \
           -DCMAKE_SYSTEM_NAME=Linux \
-          -DCMAKE_SYSTEM_PROCESSOR=arm
+          -DCMAKE_SYSTEM_PROCESSOR=arm \
+          -DBUILD_GUI=OFF
 
     - name: Build full program (Pi)
       working-directory: ${{runner.workspace}}
@@ -72,13 +71,12 @@ jobs:
       run: |
         cmake --build _build_pi_${{matrix.std}} --target test_all || echo "Some tests may fail on cross-compilation"
 
-    - name: Verify main executables (Pi)
+    - name: Verify core executables (Pi)
       working-directory: ${{runner.workspace}}
       run: |
-        echo "Checking main ViewTouch executables for Raspberry Pi:"
-        ls -la _build_pi_${{matrix.std}}/vtpos || echo "vtpos not found"
-        ls -la _build_pi_${{matrix.std}}/vt_main || echo "vt_main not found"
-        ls -la _build_pi_${{matrix.std}}/vt_term || echo "vt_term not found"
+        echo "Checking core ViewTouch executables for Raspberry Pi (headless mode):"
         ls -la _build_pi_${{matrix.std}}/vt_print || echo "vt_print not found"
         ls -la _build_pi_${{matrix.std}}/vt_cdu || echo "vt_cdu not found"
-        echo "ARM build verification completed!" 
+        ls -la _build_pi_${{matrix.std}}/vtcore || echo "vtcore library not found"
+        ls -la _build_pi_${{matrix.std}}/conf_file || echo "conf_file library not found"
+        echo "ARM headless build verification completed!" 

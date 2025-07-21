@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.5.1)
 
 project(ViewTouch)
 message(STATUS "CMake version ${CMAKE_VERSION}")
+
+# Build options
+option(BUILD_GUI "Build GUI components (X11, Motif)" ON)
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     # don't override user variables
     set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "prefix" FORCE)
@@ -136,47 +140,57 @@ add_library(image_data STATIC
 find_package(ZLIB REQUIRED)
 target_link_libraries(conf_file PRIVATE ZLIB::ZLIB)
 
-set(VT_XLIBS X11)
-find_package(${VT_XLIBS} REQUIRED)
-set(VT_XLIBS_INCLUDE_DIRS ${X11_INCLUDE_DIR})
+# Initialize X11 libraries list
+set(VT_XLIBS "")
+set(VT_XLIBS_INCLUDE_DIRS "")
 
-find_package(Motif REQUIRED) # Library Xm must be linked before Xmu
-list(APPEND VT_XLIBS ${MOTIF_LIBRARIES})
-list(APPEND VT_XLIBS_INCLUDE_DIRS ${MOTIF_INCLUDE_DIR})
+if(BUILD_GUI)
+    message(STATUS "Building with GUI support (X11, Motif)")
+    
+    set(VT_XLIBS X11)
+    find_package(${VT_XLIBS} REQUIRED)
+    set(VT_XLIBS_INCLUDE_DIRS ${X11_INCLUDE_DIR})
 
-set(x11_required_libraries Xft Xmu Xpm Xrender Xt)
-foreach(x11_requirement ${x11_required_libraries})
-    if(NOT DEFINED X11_${x11_requirement}_FOUND)
-        list(APPEND x11_missing_requirements "${x11_requirement}")
-    else()
-        list(APPEND VT_XLIBS_INCLUDE_DIRS "${X11_${x11_requirement}_INCLUDE_PATH}")
-    endif()
-endforeach()
-if(DEFINED x11_missing_requirements)
-    foreach(x11_lib_missing ${x11_missing_requirements})
-        message(STATUS "X11: ${x11_lib_missing} library missing")
+    find_package(Motif REQUIRED) # Library Xm must be linked before Xmu
+    list(APPEND VT_XLIBS ${MOTIF_LIBRARIES})
+    list(APPEND VT_XLIBS_INCLUDE_DIRS ${MOTIF_INCLUDE_DIR})
+
+    set(x11_required_libraries Xft Xmu Xpm Xrender Xt)
+    foreach(x11_requirement ${x11_required_libraries})
+        if(NOT DEFINED X11_${x11_requirement}_FOUND)
+            list(APPEND x11_missing_requirements "${x11_requirement}")
+        else()
+            list(APPEND VT_XLIBS_INCLUDE_DIRS "${X11_${x11_requirement}_INCLUDE_PATH}")
+        endif()
     endforeach()
-    message(FATAL_ERROR "Missing X library dependencies")
+    if(DEFINED x11_missing_requirements)
+        foreach(x11_lib_missing ${x11_missing_requirements})
+            message(STATUS "X11: ${x11_lib_missing} library missing")
+        endforeach()
+        message(FATAL_ERROR "Missing X library dependencies")
+    endif()
+    list(APPEND VT_XLIBS ${x11_required_libraries})
+
+    find_package(Freetype REQUIRED)
+    if(TARGET Freetype::Freetype) # prefer target
+        list(APPEND VT_XLIBS Freetype::Freetype)
+    else() # fall back to variables
+        list(APPEND VT_XLIBS_INCLUDE_DIRS "${FREETYPE_INCLUDE_DIRS}")
+        list(APPEND VT_XLIBS ${FREETYPE_LIBRARIES})
+    endif()
+
+    find_package(PkgConfig REQUIRED) # https://cmake.org/cmake/help/latest/module/FindPkgConfig.html
+    pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
+    list(APPEND VT_XLIBS ${FONTCONFIG_LIBRARIES})
+    list(APPEND VT_XLIBS_INCLUDE_DIRS ${FONTCONFIG_INCLUDE_DIRS})
+
+    string(REPLACE ";" " " _vt_xlibs_spaced "${VT_XLIBS}")
+    message(STATUS "Linking X11 libraries: ${_vt_xlibs_spaced}")
+
+    list(REMOVE_DUPLICATES VT_XLIBS_INCLUDE_DIRS)
+else()
+    message(STATUS "Building without GUI support (headless mode)")
 endif()
-list(APPEND VT_XLIBS ${x11_required_libraries})
-
-find_package(Freetype REQUIRED)
-if(TARGET Freetype::Freetype) # prefer target
-	list(APPEND VT_XLIBS Freetype::Freetype)
-else() # fall back to variables
-	list(APPEND VT_XLIBS_INCLUDE_DIRS "${FREETYPE_INCLUDE_DIRS}")
-	list(APPEND VT_XLIBS ${FREETYPE_LIBRARIES})
-endif()
-
-find_package(PkgConfig REQUIRED) # https://cmake.org/cmake/help/latest/module/FindPkgConfig.html
-pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
-list(APPEND VT_XLIBS ${FONTCONFIG_LIBRARIES})
-list(APPEND VT_XLIBS_INCLUDE_DIRS ${FONTCONFIG_INCLUDE_DIRS})
-
-string(REPLACE ";" " " _vt_xlibs_spaced "${VT_XLIBS}")
-message(STATUS "Linking X11 libraries: ${_vt_xlibs_spaced}")
-
-list(REMOVE_DUPLICATES VT_XLIBS_INCLUDE_DIRS)
 
 add_library(vtcore
     main/admission.cc  main/admission.hh
@@ -196,104 +210,120 @@ target_include_directories(vtcore PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}) # include generated files like build_number.h
 target_link_libraries(vtcore vt_version tz)
 
-add_executable(vtpos 
-		loader/loader_main.cc )
-target_link_libraries(vtpos vtcore vt_version ${VT_XLIBS})
+if(BUILD_GUI)
+    add_executable(vtpos 
+            loader/loader_main.cc )
+    target_link_libraries(vtpos vtcore vt_version ${VT_XLIBS})
+else()
+    message(STATUS "Skipping vtpos (requires GUI)")
+endif()
 
 
-add_library(zone
-    zone/zone.cc                 zone/zone.hh
-    zone/zone_object.cc          zone/zone_object.hh
-    zone/pos_zone.cc             zone/pos_zone.hh
-    zone/layout_zone.cc          zone/layout_zone.hh
-    zone/form_zone.cc            zone/form_zone.hh
-    zone/dialog_zone.cc          zone/dialog_zone.hh
-    zone/button_zone.cc          zone/button_zone.hh
-    zone/order_zone.cc           zone/order_zone.hh
-    zone/payment_zone.cc         zone/payment_zone.hh
-    zone/login_zone.cc           zone/login_zone.hh
-    zone/user_edit_zone.cc       zone/user_edit_zone.hh
-    zone/check_list_zone.cc      zone/check_list_zone.hh
-    zone/settings_zone.cc        zone/settings_zone.hh
-    zone/report_zone.cc          zone/report_zone.hh
-    zone/table_zone.cc           zone/table_zone.hh
-    zone/split_check_zone.cc     zone/split_check_zone.hh
-    zone/drawer_zone.cc          zone/drawer_zone.hh
-    zone/printer_zone.cc         zone/printer_zone.hh
-    zone/payout_zone.cc          zone/payout_zone.hh
-    zone/inventory_zone.cc       zone/inventory_zone.hh
-    zone/labor_zone.cc           zone/labor_zone.hh
-    zone/phrase_zone.cc          zone/phrase_zone.hh
-    zone/merchant_zone.cc        zone/merchant_zone.hh
-    zone/account_zone.cc         zone/account_zone.hh
-    zone/hardware_zone.cc        zone/hardware_zone.hh
-    zone/search_zone.cc          zone/search_zone.hh
-    zone/chart_zone.cc           zone/chart_zone.hh
-    zone/video_zone.cc           zone/video_zone.hh
-    zone/expense_zone.cc         zone/expense_zone.hh
-    zone/cdu_zone.cc             zone/cdu_zone.hh
-    zone/creditcard_list_zone.cc zone/creditcard_list_zone.hh
-    )
+if(BUILD_GUI)
+    add_library(zone
+        zone/zone.cc                 zone/zone.hh
+        zone/zone_object.cc          zone/zone_object.hh
+        zone/pos_zone.cc             zone/pos_zone.hh
+        zone/layout_zone.cc          zone/layout_zone.hh
+        zone/form_zone.cc            zone/form_zone.hh
+        zone/dialog_zone.cc          zone/dialog_zone.hh
+        zone/button_zone.cc          zone/button_zone.hh
+        zone/order_zone.cc           zone/order_zone.hh
+        zone/payment_zone.cc         zone/payment_zone.hh
+        zone/login_zone.cc           zone/login_zone.hh
+        zone/user_edit_zone.cc       zone/user_edit_zone.hh
+        zone/check_list_zone.cc      zone/check_list_zone.hh
+        zone/settings_zone.cc        zone/settings_zone.hh
+        zone/report_zone.cc          zone/report_zone.hh
+        zone/table_zone.cc           zone/table_zone.hh
+        zone/split_check_zone.cc     zone/split_check_zone.hh
+        zone/drawer_zone.cc          zone/drawer_zone.hh
+        zone/printer_zone.cc         zone/printer_zone.hh
+        zone/payout_zone.cc          zone/payout_zone.hh
+        zone/inventory_zone.cc       zone/inventory_zone.hh
+        zone/labor_zone.cc           zone/labor_zone.hh
+        zone/phrase_zone.cc          zone/phrase_zone.hh
+        zone/merchant_zone.cc        zone/merchant_zone.hh
+        zone/account_zone.cc         zone/account_zone.hh
+        zone/hardware_zone.cc        zone/hardware_zone.hh
+        zone/search_zone.cc          zone/search_zone.hh
+        zone/chart_zone.cc           zone/chart_zone.hh
+        zone/video_zone.cc           zone/video_zone.hh
+        zone/expense_zone.cc         zone/expense_zone.hh
+        zone/cdu_zone.cc             zone/cdu_zone.hh
+        zone/creditcard_list_zone.cc zone/creditcard_list_zone.hh
+        )
 
-target_link_libraries(zone conf_file vtcore)
+    target_link_libraries(zone conf_file vtcore)
+else()
+    message(STATUS "Skipping zone library (requires GUI)")
+endif()
 
-add_executable(vt_main
-    data_file.cc
-    data_file.hh
-    main/license_hash.cc    main/license_hash.hh
-    main/manager.cc         main/manager.hh
-    main/printer.cc         main/printer.hh
-    main/terminal.cc        main/terminal.hh
-    main/settings.cc        main/settings.hh
-    main/labels.cc          main/labels.hh
-    main/locale.cc          main/locale.hh
-    main/credit.cc          main/credit.hh
-    main/sales.cc           main/sales.hh
-    main/check.cc           main/check.hh
-    main/account.cc         main/account.hh
-    main/system.cc          main/system.hh
-    main/archive.cc         main/archive.hh
-    main/drawer.cc          main/drawer.hh
-    main/inventory.cc       main/inventory.hh
-    main/employee.cc        main/employee.hh
-    main/labor.cc           main/labor.hh
-    main/tips.cc            main/tips.hh
-    main/exception.cc       main/exception.hh
-    main/customer.cc        main/customer.hh
-    main/report.cc          main/report.hh
-    main/system_report.cc
-    main/system_salesmix.cc
-    main/chart.cc           main/chart.hh
-    main/expense.cc         main/expense.hh
-    main/cdu.cc             main/cdu.hh
-    main/cdu_att.cc         main/cdu_att.hh
-    )
-target_include_directories(vt_main PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
-target_link_libraries(vt_main zone vtcore ${VT_XLIBS})
-target_link_libraries(vt_main tz curlpp_static)
-# on gcc 8 need to link against std++fs for std::filesystem support
-# https://stackoverflow.com/questions/54290254/problem-adding-stdfilesystem-to-cmake-project
-target_link_libraries(vt_main stdc++fs)
+if(BUILD_GUI)
+    add_executable(vt_main
+        data_file.cc
+        data_file.hh
+        main/license_hash.cc    main/license_hash.hh
+        main/manager.cc         main/manager.hh
+        main/printer.cc         main/printer.hh
+        main/terminal.cc        main/terminal.hh
+        main/settings.cc        main/settings.hh
+        main/labels.cc          main/labels.hh
+        main/locale.cc          main/locale.hh
+        main/credit.cc          main/credit.hh
+        main/sales.cc           main/sales.hh
+        main/check.cc           main/check.hh
+        main/account.cc         main/account.hh
+        main/system.cc          main/system.hh
+        main/archive.cc         main/archive.hh
+        main/drawer.cc          main/drawer.hh
+        main/inventory.cc       main/inventory.hh
+        main/employee.cc        main/employee.hh
+        main/labor.cc           main/labor.hh
+        main/tips.cc            main/tips.hh
+        main/exception.cc       main/exception.hh
+        main/customer.cc        main/customer.hh
+        main/report.cc          main/report.hh
+        main/system_report.cc
+        main/system_salesmix.cc
+        main/chart.cc           main/chart.hh
+        main/expense.cc         main/expense.hh
+        main/cdu.cc             main/cdu.hh
+        main/cdu_att.cc         main/cdu_att.hh
+        )
+    target_include_directories(vt_main PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
+    target_link_libraries(vt_main zone vtcore ${VT_XLIBS})
+    target_link_libraries(vt_main tz curlpp_static)
+    # on gcc 8 need to link against std++fs for std::filesystem support
+    # https://stackoverflow.com/questions/54290254/problem-adding-stdfilesystem-to-cmake-project
+    target_link_libraries(vt_main stdc++fs)
+else()
+    message(STATUS "Skipping vt_main (requires GUI)")
+endif()
 
-add_executable(vt_term
-    term/term_main.cc
-    term/term_view.cc
-    term/term_view.hh
-    term/touch_screen.cc
-    term/touch_screen.hh
-    term/layer.cc
-    term/layer.hh
-    term/term_dialog.cc
-    term/term_dialog.hh
-    term/term_${TERM_CREDIT}.cc)
+if(BUILD_GUI)
+    add_executable(vt_term
+        term/term_main.cc
+        term/term_view.cc
+        term/term_view.hh
+        term/touch_screen.cc
+        term/touch_screen.hh
+        term/layer.cc
+        term/layer.hh
+        term/term_dialog.cc
+        term/term_dialog.hh
+        term/term_${TERM_CREDIT}.cc)
 
-target_include_directories(vt_term PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
-target_link_libraries(vt_term
-    vtcore conf_file image_data
-    ${VT_XLIBS} ${TERM_CREDIT_LIBS})
-# on gcc 8 need to link against std++fs for std::filesystem support
-# https://stackoverflow.com/questions/54290254/problem-adding-stdfilesystem-to-cmake-project
-target_link_libraries(vt_term stdc++fs)
+    target_include_directories(vt_term PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
+    target_link_libraries(vt_term
+        vtcore conf_file image_data
+        ${VT_XLIBS} ${TERM_CREDIT_LIBS})
+    # on gcc 8 need to link against std++fs for std::filesystem support
+    # https://stackoverflow.com/questions/54290254/problem-adding-stdfilesystem-to-cmake-project
+    target_link_libraries(vt_term stdc++fs)
+else()
+    message(STATUS "Skipping vt_term (requires GUI)")
+endif()
 
 add_executable(vt_print print/print_main.cc)
 target_link_libraries(vt_print vtcore)
@@ -311,10 +341,17 @@ enable_testing()
 # Add tests
 add_subdirectory(tests)
 
-install(TARGETS vtpos vt_cdu vt_print vt_term vt_main
-	RUNTIME DESTINATION viewtouch/bin
+if(BUILD_GUI)
+    install(TARGETS vtpos vt_cdu vt_print vt_term vt_main
+        RUNTIME DESTINATION viewtouch/bin
         LIBRARY DESTINATION viewtouch/lib
-	ARCHIVE DESTINATION viewtouch/lib/static)
+        ARCHIVE DESTINATION viewtouch/lib/static)
+else()
+    install(TARGETS vt_cdu vt_print
+        RUNTIME DESTINATION viewtouch/bin
+        LIBRARY DESTINATION viewtouch/lib
+        ARCHIVE DESTINATION viewtouch/lib/static)
+endif()
 
 install(PROGRAMS 	scripts/vtrestart 
 			scripts/vtrun
