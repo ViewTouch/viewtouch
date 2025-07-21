@@ -52,7 +52,7 @@ jobs:
             build_type: Debug
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Prepare environment
       env:
@@ -102,3 +102,9 @@ jobs:
           CTEST_OUTPUT_ON_FAILURE: 1
       working-directory: ${{runner.workspace}}
       run: cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target test
+
+    - name: Run all tests (Catch2 integration)
+      env:
+          CTEST_OUTPUT_ON_FAILURE: 1
+      working-directory: ${{runner.workspace}}
+      run: cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target test_all
