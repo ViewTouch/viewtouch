@@ -44,7 +44,6 @@ public:
     Str host_name;
     int port_no;
     int model;
-    int number;
     CharQueue *buffer_in, *buffer_out;
     Str filename;
     int failure;
@@ -56,28 +55,16 @@ public:
 
     // Member Functions
     int   WInt8(int val);
-    int   RInt8(int *val = nullptr);
+    int   RInt8(int *val = NULL);
     int   WStr(const char* str, int len = 0);
-    const genericChar* RStr(genericChar* str = nullptr);
+    const genericChar* RStr(const char* str = NULL);
     int   Send();
     int   SendNow();
 
-    // Pure virtual method implementations from Printer base class
-    virtual int WriteFlags(int flags) override { return 0; }
-    virtual int Model() override { return model; }
-    virtual int Init() override { return 0; }
-    virtual int NewLine() override { return 0; }
-    virtual int LineFeed(int lines = 1) override { return 0; }
-    virtual int FormFeed() override { return 0; }
-    virtual int MaxWidth() override { return 80; }
-    virtual int MaxLines() override { return -1; }
-    virtual int Width(int flags = 0) override { return 80; }
-    virtual int CutPaper(int partial_only = 0) override { return 0; }
-
-    int   StopPrint() override;
-    int   OpenDrawer(int drawer) override;
-    int   Start() override;
-    int   End() override;
+    int   StopPrint();
+    int   OpenDrawer(int drawer);
+    int   Start();
+    int   End();
 };
 
 
@@ -97,7 +84,7 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     buffer_out = new CharQueue(1024);
     genericChar str[256], tmp[256];
     struct sockaddr name;
-    snprintf(str, sizeof(str), "/tmp/vt_print%d", no);
+    sprintf(str, "/tmp/vt_print%d", no);
     name.sa_family = AF_UNIX;
     strcpy(name.sa_data, str);
     DeleteFile(str);
@@ -105,19 +92,19 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     int dev = socket(AF_UNIX, SOCK_STREAM, 0);
     if (dev <= 0)
     {
-        snprintf(tmp, sizeof(tmp), "Failed to open socket '%s'", str);
+        sprintf(tmp, "Failed to open socket '%s'", str);
         ReportError(tmp);
         return;
     }
     if (bind(dev, &name, sizeof(name)) == -1)
     {
         close(dev);
-        snprintf(tmp, sizeof(tmp), "Failed to bind socket '%s'", str);
+        sprintf(tmp, "Failed to bind socket '%s'", str);
         ReportError(tmp);
         return;
     }
 
-    snprintf(str, sizeof(str), "vt_print %d %s %d %d&", no, host, port, mod);
+    sprintf(str, "vt_print %d %s %d %d&", no, host, port, mod);
     system(str);
     listen(dev, 1);
 
@@ -126,7 +113,7 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     socket_no = accept(dev, (struct sockaddr *) str, &len);
     if (socket_no <= 0)
     {
-        snprintf(tmp, sizeof(tmp), "Failed to get connection with printer %d", no);
+        sprintf(tmp, "Failed to get connection with printer %d", no);
         ReportError(tmp);
     }
     close(dev);
@@ -165,16 +152,16 @@ int RemotePrinter::RInt8(int *val)
 
 int RemotePrinter::WStr(const char* s, int len)
 {
-    if (s == nullptr)
+    if (s == NULL)
         return buffer_out->PutString("", 0);
     else
         return buffer_out->PutString(s, len);
 }
 
-const char* RemotePrinter::RStr(genericChar* s)
+const char* RemotePrinter::RStr(const char* s)
 {
     static genericChar buffer[1024];
-    if (s == nullptr)
+    if (s == NULL)
         s = buffer;
     buffer_in->GetString(s);
     return s;
@@ -210,18 +197,18 @@ int RemotePrinter::OpenDrawer(int drawer)
 
 int RemotePrinter::Start()
 {
-    if (temp_fd)
+    if (device_no)
     {
         DeleteFile(filename.Value());
-        close(temp_fd);
+        close(device_no);
     }
 
     filename.Set(MasterSystem->NewPrintFile());
     genericChar str[256];
-    snprintf(str, sizeof(str), "/tmp/vt_%s", host_name.Value());
-    temp_fd = creat(str, 0666);
+    sprintf(str, "/tmp/vt_%s", host_name.Value());
+    device_no = creat(str, 0666);
 
-    if (temp_fd <= 0)
+    if (device_no <= 0)
     {
         filename.Clear();
         return 1;
@@ -231,7 +218,7 @@ int RemotePrinter::Start()
     {
         // reset printer head
         genericChar str[] = { 0x1b, 0x3c };
-        write(temp_fd, str, sizeof(str));
+        write(device_no, str, sizeof(str));
     }
     else if (model == MODEL_STAR)
         LineFeed(2);
@@ -240,7 +227,7 @@ int RemotePrinter::Start()
 
 int RemotePrinter::End()
 {
-    if (temp_fd <= 0)
+    if (device_no <= 0)
         return 1;
 
     switch (model)
@@ -258,8 +245,8 @@ int RemotePrinter::End()
         break;
     }
 
-    close(temp_fd);
-    temp_fd = 0;
+    close(device_no);
+    device_no = 0;
 
     WInt8(PRINTER_FILE);
     WStr(filename.Value());
@@ -301,14 +288,14 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
         switch (code)
         {
         case SERVER_ERROR:
-            snprintf(str, sizeof(str), "PrinterError: %s", p->RStr(nullptr));
+            sprintf(str, "PrinterError: %s", p->RStr());
             ReportError(str);
             break;
         case SERVER_PRINTER_DONE:
-            DeleteFile(p->RStr(nullptr));
+            DeleteFile(p->RStr());
             break;
         case SERVER_BADFILE:
-            p->RStr(nullptr);
+            p->RStr();
             break;
         }
     }
@@ -319,13 +306,13 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
 Printer *NewRemotePrinter(const char* host, int port, int model, int no)
 {
     RemotePrinter *p = new RemotePrinter(host, port, model, no);
-    if (p == nullptr)
-        return nullptr;
+    if (p == NULL)
+        return NULL;
 
     if (p->socket_no <= 0)
     {
         delete p;
-        return nullptr;
+        return NULL;
     }
 
     p->input_id = AddInputFn((InputFn) PrinterCB, p->socket_no, p);

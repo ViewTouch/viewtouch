@@ -29,87 +29,53 @@
 #endif
 
 /**** Textures ****/
-#include "xpm/black.xpm"
-#include "xpm/blueparchment.xpm"
-#include "xpm/brass-8.xpm"
-#include "xpm/canvas-8.xpm"
-#include "xpm/concrete-8.xpm"
-#include "xpm/copper-8.xpm"
 #include "xpm/darksand-6.xpm"
 #include "xpm/darkwood-10.xpm"
-#include "xpm/demo-converted.xpm"
-#include "xpm/embossed-8.xpm"
-#include "xpm/glass-8.xpm"
-#include "xpm/gradient-8.xpm"
-#include "xpm/gradient-brown.xpm"
-#include "xpm/grass-6.xpm"
-#include "xpm/gray-6.xpm"
-#include "xpm/grayblue-3.xpm"
-#include "xpm/graymarble-12.xpm"
 #include "xpm/grayparchment-8.xpm"
+#include "xpm/graymarble-12.xpm"
 #include "xpm/greenmarble-12.xpm"
-#include "xpm/greySand.xpm"
-#include "xpm/leather-8.xpm"
-#include "xpm/lighttanparchment-8.xpm"
 #include "xpm/litewood-8.xpm"
 #include "xpm/litsand-6.xpm"
-#include "xpm/metal-8.xpm"
-#include "xpm/parchment-6.xpm"
-#include "xpm/pearl-8.xpm"
-#include "xpm/plastic-8.xpm"
-#include "xpm/redgravel-6.xpm"
 #include "xpm/sand-8.xpm"
-#include "xpm/silk-8.xpm"
-#include "xpm/smoke-4.xpm"
-#include "xpm/smoke-8.xpm"
-#include "xpm/steel-8.xpm"
-#include "xpm/stone-8.xpm"
-#include "xpm/tanparchment-8.xpm"
-#include "xpm/velvet-8.xpm"
-#include "xpm/water-10.xpm"
-#include "xpm/whiteMesh.xpm"
 #include "xpm/wood-10.xpm"
-#include "xpm/woodfloor-12.xpm"
-#include "xpm/yellowstucco-8.xpm"
-
+#include "xpm/canvas-8.xpm"
+#include "xpm/pearl-8.xpm"
+#include "xpm/parchment-6.xpm"
+#include "xpm/tanparchment-8.xpm"
+#include "xpm/smoke-4.xpm"
+#include "xpm/leather-8.xpm"
+#include "xpm/gradient-8.xpm"
+#include "xpm/black.xpm"
+#include "xpm/gradient-brown.xpm"
+#include "xpm/blueparchment.xpm"
+#include "xpm/greySand.xpm"
+#include "xpm/whiteMesh.xpm"
 
 
 /**** Image Values ****/
 
 constexpr std::array<const char**, IMAGE_COUNT> ImageData = {
-    SandData,           // IMAGE_SAND
-    LitSandData,        // IMAGE_LIT_SAND
-    DarkSandData,       // IMAGE_DARK_SAND
-    LiteWoodData,       // IMAGE_LITE_WOOD
-    WoodData,           // IMAGE_WOOD
-    DarkWoodData,       // IMAGE_DARK_WOOD
-    GrayParchmentData,  // IMAGE_GRAY_PARCHMENT
-    GrayMarbleData,     // IMAGE_GRAY_MARBLE
-    GreenMarbleData,    // IMAGE_GREEN_MARBLE
-    ParchmentData,      // IMAGE_PARCHMENT
-    PearlData,          // IMAGE_PEARL
-    CanvasData,         // IMAGE_CANVAS
-    LightTanParchmentData, // IMAGE_TAN_PARCHMENT
-    smoke8_xpm,         // IMAGE_SMOKE
-    LeatherData,        // IMAGE_LEATHER
-    BlueParchementData, // IMAGE_BLUE_PARCHMENT
-    gradient_8_xpm,     // IMAGE_GRADIENT
-    gradient_brown_xpm, // IMAGE_GRADIENTBROWN
-    black_xpm,          // IMAGE_BLACK
-    greySand,           // IMAGE_GREYSAND
-    whiteMesh,          // IMAGE_WHITEMESH
-    metal_xpm,          // IMAGE_METAL
-    stone_xpm,          // IMAGE_STONE
-    glass_xpm,          // IMAGE_GLASS
-    velvet_xpm,         // IMAGE_VELVET
-    concrete_xpm,       // IMAGE_CONCRETE
-    silk_xpm,           // IMAGE_SILK
-    brass_xpm,          // IMAGE_BRASS
-    copper_xpm,         // IMAGE_COPPER
-    steel_xpm,          // IMAGE_STEEL
-    plastic_xpm,        // IMAGE_PLASTIC
-    demo_xpm,           // IMAGE_DEMO
-
+    SandData,
+    LitSandData,
+    DarkSandData,
+    LiteWoodData,
+    WoodData,
+    DarkWoodData,
+    GrayParchmentData,
+    GrayMarbleData,
+    GreenMarbleData,
+    ParchmentData,
+    PearlData,
+    CanvasData,
+    TanParchmentData,
+    smokeData,
+    LeatherData,
+    BlueParchementData,
+    gradient_8_xpm,
+    gradient_brown_xpm,
+    black_xpm,
+    greySand,
+    whiteMesh
 };
 
 /**** Functions ****/

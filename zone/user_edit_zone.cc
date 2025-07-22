@@ -36,68 +36,63 @@
 // Constructor
 UserEditZone::UserEditZone()
 {
-    font = FONT_GARAMOND_14B;  // Use global default button font
     list_header = 2;
-    AddTextField("User ID", 9); SetFlag(FF_ONLYDIGITS);
-    AddTextField("Nickname", 10);
+    AddTextField(GlobalTranslate("User ID"), 9); SetFlag(FF_ONLYDIGITS);
+    AddTextField(GlobalTranslate("Nickname"), 10);
     AddListField("Training", NoYesName);
     AddNewLine(2);
-    AddTextField("Last Name", 16);
-    AddTextField("First Name", 16);
-    AddTextField("Address", 40);
-    AddTextField("City", 16);
-    AddTextField("State", 3); SetFlag(FF_ALLCAPS);
+    AddTextField(GlobalTranslate("Last Name"), 16);
+    AddTextField(GlobalTranslate("First Name"), 16);
+    AddTextField(GlobalTranslate("Address"), 40);
+    AddTextField(GlobalTranslate("City"), 16);
+    AddTextField(GlobalTranslate("State"), 3); SetFlag(FF_ALLCAPS);
     AddTemplateField("Phone", "(___) ___-____"); SetFlag(FF_ONLYDIGITS);
     AddTemplateField("SSN", "___-__-____");  SetFlag(FF_ONLYDIGITS);
-    AddTextField("Job Info", 24);
-    AddTextField("Employee #", 8);
+    AddTextField(GlobalTranslate("Job Info"), 24);
+    AddTextField(GlobalTranslate("Employee #"), 8);
     AddNewLine(2);
 
     Center(); Color(COLOR_WHITE);
     AddLabel("Primary Job");
     AddNewLine();
     LeftAlign(); Color(COLOR_DEFAULT);
-    AddListField("Job", JobName, JobValue);
-    AddListField("Pay Rate", PayRateName, PayRateValue);
-    AddTextField("Amount", 7);
-    AddListField("Start Page", nullptr);
-    AddTextField("Department", 8);
+    AddListField(GlobalTranslate("Job"), JobName, JobValue);
+    AddListField(GlobalTranslate("Pay Rate"), PayRateName, PayRateValue);
+    AddTextField(GlobalTranslate("Amount"), 7);
+    AddListField(GlobalTranslate("Start Page"), NULL);
+    AddTextField(GlobalTranslate("Department"), 8);
     Color(COLOR_RED);
-    AddButtonField("Remove This Job", "killjob1");
+    AddButtonField(GlobalTranslate("Remove This Job"), "killjob1");
     AddNewLine(2);
 
     Center(); Color(COLOR_WHITE);
     AddLabel("2nd Job");
     AddNewLine();
     LeftAlign(); Color(COLOR_DEFAULT);
-    AddListField("Job", JobName, JobValue);
-    AddListField("Pay Rate", PayRateName, PayRateValue);
-    AddTextField("Amount", 7);
-    AddListField("Start Page", nullptr);
-    AddTextField("Department", 8);
+    AddListField(GlobalTranslate("Job"), JobName, JobValue);
+    AddListField(GlobalTranslate("Pay Rate"), PayRateName, PayRateValue);
+    AddTextField(GlobalTranslate("Amount"), 7);
+    AddListField(GlobalTranslate("Start Page"), NULL);
+    AddTextField(GlobalTranslate("Department"), 8);
     Color(COLOR_RED);
-    AddButtonField("Remove This Job", "killjob2");
+    AddButtonField(GlobalTranslate("Remove This Job"), "killjob2");
     AddNewLine(2);
 
     Center(); Color(COLOR_WHITE);
     AddLabel("3rd Job");
     AddNewLine();
     LeftAlign(); Color(COLOR_DEFAULT);
-    AddListField("Job", JobName, JobValue);
-    AddListField("Pay Rate", PayRateName, PayRateValue);
-    AddTextField("Amount", 7);
-    AddListField("Start Page", nullptr);
-    AddTextField("Department", 8);
+    AddListField(GlobalTranslate("Job"), JobName, JobValue);
+    AddListField(GlobalTranslate("Pay Rate"), PayRateName, PayRateValue);
+    AddTextField(GlobalTranslate("Amount"), 7);
+    AddListField(GlobalTranslate("Start Page"), NULL);
+    AddTextField(GlobalTranslate("Department"), 8);
     Color(COLOR_RED);
-    AddButtonField("Remove This Job", "killjob3");
+    AddButtonField(GlobalTranslate("Remove This Job"), "killjob3");
     AddNewLine(2);
 
-    // Remove the 'Next' button (not present in this constructor)
-    // Make the 'Add Employee' button larger
     Center(); Color(COLOR_DK_GREEN);
-    AddButtonField("* Add Another Job *", "addjob");
-    AddNewLine(2);
-    AddButtonField("Add Employee", "new");
+    AddButtonField(GlobalTranslate("* Add Another Job *"), "addjob");
     view_active = 1;
 }
 
@@ -116,16 +111,16 @@ RenderResult UserEditZone::Render(Terminal *term, int update_flag)
         if (term->job_filter)
         {
             if (view_active)
-                strcpy(str, "Filtered Active Employees");
+                strcpy(str, GlobalTranslate("Filtered Active Employees"));
             else
-                strcpy(str, "Filtered Inactive Employees");
+                strcpy(str, GlobalTranslate("Filtered Inactive Employees"));
         }
         else
         {
             if (view_active)
-                strcpy(str, "All Active Employees");
+                strcpy(str, GlobalTranslate("All Active Employees"));
             else
-                strcpy(str, "All Inactive Employees");
+                strcpy(str, GlobalTranslate("All Inactive Employees"));
         }
 
         TextC(term, 0, term->Translate(str), col);
@@ -136,9 +131,9 @@ RenderResult UserEditZone::Render(Terminal *term, int update_flag)
     else
     {
         if (records == 1)
-            strcpy(str, "Employee Record");
+            strcpy(str, GlobalTranslate("Employee Record"));
         else
-            snprintf(str, STRLENGTH, "Employee Record %d of %d", record_no + 1, records);
+            sprintf(str, "Employee Record %d of %d", record_no + 1, records);
         TextC(term, 0, str, col);
     }
     return RENDER_OKAY;
@@ -147,23 +142,18 @@ RenderResult UserEditZone::Render(Terminal *term, int update_flag)
 SignalResult UserEditZone::Signal(Terminal *term, const char* message)
 {
     FnTrace("UserEditZone::Signal()");
-    ReportError("DEBUG: Entered UserEditZone::Signal()");
     static const char* commands[] = {
         "active", "inactive", "clear password", "remove", "activate",
-        "addjob", "killjob1", "killjob2", "killjob3", nullptr};
+        "addjob", "killjob1", "killjob2", "killjob3", NULL};
     int idx = CompareList(message, commands);
-    ReportError(std::string("DEBUG: Signal message: ") + (message ? message : "(null)") + ", idx: " + std::to_string(idx));
 
-    if (idx < 0) {
-        ReportError("DEBUG: Passing to ListFormZone::Signal");
+    if (idx < 0)
         return ListFormZone::Signal(term, message);
-    }
 
     switch (idx)
     {
     case 0:  // active
     case 1:  // inactive
-        ReportError("DEBUG: Handling active/inactive");
         if (records > 0)
             SaveRecord(term, record_no, 0);
         show_list = 1;
@@ -176,52 +166,79 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
         return SIGNAL_OKAY;
     }
 
-    if (user == nullptr) {
-        ReportError("DEBUG: user is nullptr, returning SIGNAL_IGNORED");
+    if (user == NULL)
         return SIGNAL_IGNORED;
-    }
 
     switch (idx)
     {
     case 2:  // clear password
-        ReportError("DEBUG: Handling clear password");
         user->password.Clear();
         SaveRecord(term, record_no, 0);
         Draw(term, 1);
         return SIGNAL_OKAY;
+
     case 3:  // remove
-        ReportError("DEBUG: Handling remove");
-        if (KillRecord(term, record_no))
-            return SIGNAL_IGNORED;
+        if (user->active)
+        {
+            if (user->last_job == 0)
+            {
+                user->active = 0;
+                records = RecordCount(term);
+                if (record_no >= records)
+                    record_no = records - 1;
+                if (records > 0)
+                    LoadRecord(term, record_no);
+                Draw(term, 1);
+            }
+            else
+            {
+                char str[STRLENGTH] = "";
+                strcat(str, "This employee is clocked in.  You cannot\\");
+                strcat(str, "change the employee's status until he or\\");
+                strcat(str, "she is clocked out of the system.");
+                SimpleDialog *d = new SimpleDialog(str);
+                d->force_width = 600;
+                d->Button("Okay");
+                term->OpenDialog(d);
+            }
+        }
+        else
+        {
+            char str[STRLENGTH];
+            sprintf(str, "Employee '%s' is inactive.  What do you want to do?",
+                    user->system_name.Value());
+            SimpleDialog *d = new SimpleDialog(str);
+            d->Button("Reactivate this employee", "activate");
+            d->Button("Completely remove employee", "delete");
+            d->Button("Oops!\\Leave as is");
+            d->target_zone = this;
+            term->OpenDialog(d);
+        }
+        return SIGNAL_OKAY;
+
+    case 4:  // activate
+        user->active = 1;
+        show_list = 1;
         records = RecordCount(term);
         if (record_no >= records)
             record_no = records - 1;
-        if (record_no < 0)
-            record_no = 0;
-        else
+        if (records > 0)
             LoadRecord(term, record_no);
         Draw(term, 1);
         return SIGNAL_OKAY;
-    case 4:  // activate
-        ReportError("DEBUG: Handling activate");
-        user->active = 1;
-        SaveRecord(term, record_no, 0);
-        Draw(term, 1);
-        return SIGNAL_OKAY;
+
     case 5:  // addjob
-        ReportError("DEBUG: Handling addjob");
         if (user->JobCount() < 3)
         {
             SaveRecord(term, record_no, 0);
             JobInfo *j = new JobInfo;
             user->Add(j);
             LoadRecord(term, record_no);
-            keyboard_focus = nullptr;
+            keyboard_focus = NULL;
             Draw(term, 0);
         }
         break;
     case 6:  // killjob1
-        ReportError("DEBUG: Handling killjob1");
         if (user->JobCount() >= 1)
         {
             SaveRecord(term, record_no, 0);
@@ -229,12 +246,11 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
             user->Remove(j);
             delete j;
             LoadRecord(term, record_no);
-            keyboard_focus = nullptr;
+            keyboard_focus = NULL;
             Draw(term, 0);
         }
         break;
     case 7:  // killjob2
-        ReportError("DEBUG: Handling killjob2");
         if (user->JobCount() >= 2)
         {
             SaveRecord(term, record_no, 0);
@@ -242,12 +258,11 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
             user->Remove(j);
             delete j;
             LoadRecord(term, record_no);
-            keyboard_focus = nullptr;
+            keyboard_focus = NULL;
             Draw(term, 0);
         }
         break;
     case 8:  // killjob3
-        ReportError("DEBUG: Handling killjob3");
         if (user->JobCount() >= 3)
         {
             SaveRecord(term, record_no, 0);
@@ -255,12 +270,11 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
             user->Remove(j);
             delete j;
             LoadRecord(term, record_no);
-            keyboard_focus = nullptr;
+            keyboard_focus = NULL;
             Draw(term, 0);
         }
         break;
     }
-    ReportError("DEBUG: Exiting UserEditZone::Signal(), returning SIGNAL_IGNORED");
     return SIGNAL_IGNORED;
 }
 
@@ -283,50 +297,21 @@ int UserEditZone::Update(Terminal *term, int update_message, const char* value)
 // setup list of valid starting pages.
 // return page number of 1st one greater than zero 
 // (normal start page, not bar/kitchen video), for use as a default
-//
-// FIX: Added comprehensive null pointer protection to prevent segmentation
-// fault that occurred when clicking "Return" button during page transitions.
-// The crash happened because this method gets called during LoadRecord() when
-// the zone database might be in an inconsistent state during page changes.
 int UserEditZone::AddStartPages(Terminal *term, FormField *field)
 {
     FnTrace("UserEditZone::AddStartPages()");
     int retval = 0;
 
-    // FIX: Add null pointer checks for terminal and zone database
-    // This prevents crashes during page transitions when zone_db might be temporarily invalid
-    if (term == nullptr || term->zone_db == nullptr || field == nullptr) {
-        ReportError("AddStartPages: Null pointer - term, zone_db, or field is null");
-        return retval;
-    }
-
     int last_page = 0;
     field->ClearEntries();
-    
-    // FIX: Add null check for PageList() and protect iteration
-    // During page transitions, the page database can be in an inconsistent state
-    // causing PageList() to return null or containing corrupted page pointers
-    Page *page_list = term->zone_db->PageList();
-    if (page_list == nullptr) {
-        ReportError("AddStartPages: PageList() returned null");
-        field->AddEntry("Check List Page", 0);
-        return retval;
-    }
-    
-    for (Page *p = page_list; p != nullptr; p = p->next)
+    for (Page *p = term->zone_db->PageList(); p != NULL; p = p->next)
     {
-        // FIX: Add null check for page properties to prevent accessing corrupted pages
         if (p->IsStartPage() && p->id != last_page)
         {
             last_page = p->id;
-            // FIX: Add null check before accessing page name
-            // Page objects might be partially corrupted during transitions
-            const char* page_name = p->name.Value();
-            if (page_name != nullptr) {
-                field->AddEntry(page_name, p->id);
-                if (p->id > 0 && retval == 0)	// (or maybe p->IsTable()?)
-                    retval = p->id;
-            }
+            field->AddEntry(p->name.Value(), p->id);
+	    if (p->id > 0 && retval == 0)	// (or maybe p->IsTable()?)
+	        retval = p->id;
         }
     }
     //NOTE BAK-->Check List Page is not a specific page, but a page type.
@@ -338,39 +323,12 @@ int UserEditZone::AddStartPages(Terminal *term, FormField *field)
 int UserEditZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("UserEditZone::LoadRecord()");
-    
-    // FIX: Add null pointer checks for terminal and system data
-    // This method is called during page transitions and rendering, when system
-    // objects might be in an inconsistent state
-    if (term == nullptr || term->system_data == nullptr) {
-        ReportError("LoadRecord: Terminal or system_data is null");
-        return 1;
-    }
-    
-    // FIX: Handle case when there are no employee records
-    // CRITICAL: This was the primary cause of the segmentation fault when clicking
-    // "Return" button on empty employee database. The method would try to access
-    // form fields and employee data when user=nullptr, causing memory violations.
-    if (records <= 0) {
-        ReportError("LoadRecord: No employee records exist, skipping load");
-        user = nullptr;
-        return 0;
-    }
-    
     System *sys = term->system_data;
     Employee *e = sys->user_db.FindByRecord(term, record, view_active);
-    if (e == nullptr) {
-        ReportError("LoadRecord: Could not find employee record");
-        user = nullptr;
+    if (e == NULL)
         return 1;
-    }
 
     Settings *s = &(sys->settings);
-    if (s == nullptr) {
-        ReportError("LoadRecord: Settings is null");
-        return 1;
-    }
-    
     user = e;
 
     int job_active[MAX_JOBS];
@@ -387,171 +345,88 @@ int UserEditZone::LoadRecord(Terminal *term, int record)
     }
 
     FormField *f = FieldList();
-    if (f == nullptr) {
-        ReportError("LoadRecord: FieldList() returned null");
-        return 1;
-    }
-    
-    // FIX: Process basic employee fields with null checks
-    // Each form field access is protected to prevent segmentation faults
-    // if the form field chain is corrupted during page transitions
-    if (f != nullptr) { f->Set(e->key); f = f->next; }
-    if (f != nullptr) { f->Set(e->system_name); f = f->next; }
+    f->Set(e->key); f = f->next;
+    f->Set(e->system_name); f = f->next;
 
-    if (f != nullptr) { f->Set(e->training); f = f->next; }
-    if (f != nullptr) { f->Set(e->last_name); f = f->next; }
-    if (f != nullptr) { f->Set(e->first_name); f = f->next; }
-    if (f != nullptr) { f->Set(e->address); f = f->next; }
-    if (f != nullptr) { f->Set(e->city); f = f->next; }
-    if (f != nullptr) { f->Set(e->state); f = f->next; }
-    if (f != nullptr) { f->Set(e->phone); f = f->next; }
-    if (f != nullptr) { f->Set(e->ssn); f = f->next; }
-    if (f != nullptr) { f->Set(e->description); f = f->next; }
-    if (f != nullptr) { f->Set(e->employee_no); f = f->next; }
+    f->Set(e->training); f = f->next;
+    f->Set(e->last_name); f = f->next;
+    f->Set(e->first_name); f = f->next;
+    f->Set(e->address); f = f->next;
+    f->Set(e->city); f = f->next;
+    f->Set(e->state); f = f->next;
+    f->Set(e->phone); f = f->next;
+    f->Set(e->ssn); f = f->next;
+    f->Set(e->description); f = f->next;
+    f->Set(e->employee_no); f = f->next;
 
-    // FIX: Process exactly 3 job slots to match the form structure
-    // Changed from unbounded while loop to bounded for loop to prevent
-    // infinite loops and ensure form structure consistency
     JobInfo *j = e->JobList();
     for (i = 0; i < 3; ++i)
     {
-        if (f == nullptr) {
-            ReportError("LoadRecord: Form field pointer became null during job iteration");
-            break;
-        }
-        
-        if (j != nullptr)
+        if (j)
         {
-            if (f != nullptr) { f->active = 1; f = f->next; }
-            if (f != nullptr) { f->active = 1; f->Set(j->job); f->SetActiveList(job_active); f = f->next; }
-            if (f != nullptr) { f->active = 1; f->Set(j->pay_rate); f = f->next; }
-            if (f != nullptr) { f->active = 1; f->Set(term->SimpleFormatPrice(j->pay_amount)); f = f->next; }
-            if (f != nullptr) { 
-                f->active = 1; 
-                int defpage = AddStartPages(term, f); 
-                if (j->starting_page == -1)	// unset/default, use 1st normal start page
-                    j->starting_page = defpage;
-                f->Set(j->starting_page); 
-                f = f->next; 
-            }
-            if (f != nullptr) { f->active = 1; f->Set(j->dept_code); f = f->next; }
-            if (f != nullptr) { f->active = (e->JobCount() > 1); f = f->next; }
+            f->active = 1; f = f->next;
+            f->active = 1; f->Set(j->job); f->SetActiveList(job_active); f = f->next;
+            f->active = 1; f->Set(j->pay_rate); f = f->next;
+            f->active = 1; f->Set(term->SimpleFormatPrice(j->pay_amount)); f = f->next;
+            f->active = 1; int defpage = AddStartPages(term, f); 
+	    if (j->starting_page == -1)	// unset/default, use 1st normal start page
+		j->starting_page = defpage;
+	    f->Set(j->starting_page); f = f->next;
+            f->active = 1; f->Set(j->dept_code); f = f->next;
+            f->active = (e->JobCount() > 1); f = f->next;
             j = j->next;
         }
         else
         {
-            // No more jobs, deactivate remaining fields for this slot
-            for (int k = 0; k < 7 && f != nullptr; ++k)
+            for (int k = 0; k < 7; ++k)
             {
-                f->active = 0; 
-                f = f->next;
+                f->active = 0; f = f->next;
             }
         }
     }
-    
-    if (f != nullptr) {
-        f->active = (e->JobCount() < 3);
-    }
+    f->active = (e->JobCount() < 3);
     return 0;
 }
 
 int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("UserEditZone::SaveRecord()");
-    
-    // FIX: Add null pointer checks for terminal and system data
-    // This method is called during page transitions when clicking "Return" button
-    if (term == nullptr || term->system_data == nullptr) {
-        ReportError("SaveRecord: Terminal or system_data is null");
-        return 1;
-    }
-    
-    // FIX: Handle case when there are no employee records
-    // CRITICAL: This was the main cause of segmentation fault. When employee
-    // database is empty (records=0), user=nullptr, but SaveRecord() was still
-    // called during "Return" button processing, trying to access null form fields
-    // and employee data, causing memory access violations.
-    if (records <= 0) {
-        ReportError("SaveRecord: No employee records exist, skipping save");
-        return 0;
-    }
-    
     Employee *e = user;
-    if (e == nullptr) {
-        ReportError("SaveRecord: Employee user pointer is null");
-        return 0;
-    }
-    
     if (e)
     {
         FormField *f = FieldList();
-        if (f == nullptr) {
-            ReportError("SaveRecord: FieldList() returned null");
-            return 1;
-        }
-        
-        // FIX: Process basic employee fields with comprehensive null checks
-        // Every form field access is protected to prevent crashes if the
-        // form field linked list is corrupted during page transitions
-        if (f != nullptr) { f->Get(e->key); f = f->next; }
-        if (f != nullptr) { f->Get(e->system_name); f = f->next; }
+        f->Get(e->key); f = f->next;
+        f->Get(e->system_name); f = f->next;
         e->system_name = AdjustCase(e->system_name.str());
-        if (f != nullptr) { f->Get(e->training); f = f->next; }
-        if (f != nullptr) { f->Get(e->last_name); f = f->next; }
+        f->Get(e->training); f = f->next;
+        f->Get(e->last_name); f = f->next;
         e->last_name = AdjustCase(e->last_name.str());
-        if (f != nullptr) { f->Get(e->first_name); f = f->next; }
+        f->Get(e->first_name); f = f->next;
         e->first_name = AdjustCase(e->first_name.str());
-        if (f != nullptr) { f->Get(e->address); f = f->next; }
+        f->Get(e->address); f = f->next;
         e->address = AdjustCase(e->address.str());
-        if (f != nullptr) { f->Get(e->city); f = f->next; }
+        f->Get(e->city); f = f->next;
         e->city = AdjustCase(e->city.str());
-        if (f != nullptr) { f->Get(e->state); f = f->next; }
+        f->Get(e->state); f = f->next;
         e->state = StringToUpper(e->state.str());
-        if (f != nullptr) { f->Get(e->phone); f = f->next; }
-        if (f != nullptr) { f->Get(e->ssn); f = f->next; }
-        if (f != nullptr) { f->Get(e->description); f = f->next; }
-        if (f != nullptr) { f->Get(e->employee_no); f = f->next; }
+        f->Get(e->phone); f = f->next;
+        f->Get(e->ssn); f = f->next;
+        f->Get(e->description); f = f->next;
+        f->Get(e->employee_no); f = f->next;
 
-        // FIX: Process exactly 3 job slots to match the form structure
-        // Changed from original unbounded iteration to bounded loop matching
-        // the LoadRecord() structure to prevent form field misalignment
-        JobInfo *j = e->JobList();
-        for (int i = 0; i < 3; ++i)
+        for (JobInfo *j = e->JobList(); j != NULL; j = j->next)
         {
-            if (f == nullptr) {
-                ReportError("SaveRecord: Form field pointer became null during job iteration");
-                break;
-            }
-            
-            if (j != nullptr)
-            {
-                // Skip the job active field
-                f = f->next;
-                // FIX: Process job fields with comprehensive null checks
-                // Each field access is protected to prevent segmentation faults
-                if (f != nullptr) { f->Get(j->job); f = f->next; }
-                if (f != nullptr) { f->Get(j->pay_rate); f = f->next; }
-                if (f != nullptr) { f->GetPrice(j->pay_amount); f = f->next; }
-                if (f != nullptr) { f->Get(j->starting_page); f = f->next; }
-                if (f != nullptr) { f->Get(j->dept_code); f = f->next; }
-                if (f != nullptr) { f = f->next; } // Skip the delete button field
-                j = j->next;
-            }
-            else
-            {
-                // FIX: No more jobs, safely skip the remaining fields for this slot
-                // Added null check in loop condition to prevent crashes when
-                // form field chain is shorter than expected
-                for (int k = 0; k < 7 && f != nullptr; ++k)
-                {
-                    f = f->next;
-                }
-            }
+            f = f->next;
+            f->Get(j->job); f = f->next;
+            f->Get(j->pay_rate); f = f->next;
+            f->GetPrice(j->pay_amount); f = f->next;
+            f->Get(j->starting_page); f = f->next;
+            f->Get(j->dept_code); f = f->next;
+            f = f->next;
         }
     }
 
-    // Additional null check for employee pointer
-    if (e && (e->system_name.empty()) &&
+    if ((e->system_name.empty()) &&
         ((e->first_name.size() > 0) && (e->last_name.size() > 0)))
     {
         char tempname[STRLONG];
@@ -568,28 +443,21 @@ int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
 int UserEditZone::NewRecord(Terminal *term)
 {
     FnTrace("UserEditZone::NewRecord()");
-    ReportError("DEBUG: NewRecord() called");
     term->job_filter = 0; // make sure new user is shown on list
-    ReportError("DEBUG: About to call NewUser()");
     user = term->system_data->user_db.NewUser();
-    ReportError("DEBUG: NewUser() returned");
     record_no = 0;
     view_active = 1;
-    ReportError("DEBUG: About to call RecordCount()");
-    records = RecordCount(term); // Update record count before saving
-    ReportError("DEBUG: RecordCount() returned: " + std::to_string(records));
-    ReportError("DEBUG: NewRecord() completed successfully");
     return 0;
 }
 
 int UserEditZone::KillRecord(Terminal *term, int record)
 {
     FnTrace("UserEditZone::KillRecord()");
-    if (user == nullptr || term->IsUserOnline(user))
+    if (user == NULL || term->IsUserOnline(user))
         return 1;
     term->system_data->user_db.Remove(user);
     delete user;
-    user = nullptr;
+    user = NULL;
     return 0;
 }
 
@@ -628,22 +496,23 @@ JobSecurityZone::JobSecurityZone()
     wrap        = 0;
     keep_focus  = 0;
     form_header = 2;
-    font        = FONT_DEJAVU_18;
+    columns     = 11;
     int i;
 
-    for (i = 1; JobName[i] != nullptr; ++i)
+    for (i = 1; JobName[i] != NULL; ++i)
     {
-        AddLabel(JobName[i], 10);  // label width 10 (narrower)
-        AddListField("", MarkName, nullptr, 0, 2);  // Active (box width 2)
-        AddListField("", MarkName, nullptr, 0, 2);  // Enter System
-        AddListField("", MarkName, nullptr, 0, 2);  // Order
-        AddListField("", MarkName, nullptr, 0, 2);  // Settle
-        AddListField("", MarkName, nullptr, 0, 2);  // Move Table
-        AddListField("", MarkName, nullptr, 0, 2);  // Rebuild Edit
-        AddListField("", MarkName, nullptr, 0, 2);  // Comp
-        AddListField("", MarkName, nullptr, 0, 2);  // Supervisor Functions
-        AddListField("", MarkName, nullptr, 0, 2);  // Manager Functions
-        AddListField("", MarkName, nullptr, 0, 2);  // Employee Records
+        AddLabel(JobName[i], 17);
+        AddListField("", MarkName, NULL, 0, 4);
+        AddSpace(1);
+        AddListField("", MarkName, NULL, 0, 7);
+        AddListField("", MarkName, NULL, 0, 7);
+        AddListField("", MarkName, NULL, 0, 7);
+        AddListField("", MarkName, NULL, 0, 7);
+        AddListField("", MarkName, NULL, 0, 7);
+        AddListField("", MarkName, NULL, 0, 7);
+        AddListField("", MarkName, NULL, 0, 7);
+        AddListField("", MarkName, NULL, 0, 7);
+        AddListField("", MarkName, NULL, 0, 7);
         AddNewLine();
     }
 }
@@ -655,35 +524,23 @@ RenderResult JobSecurityZone::Render(Terminal *term, int update_flag)
 
     int col = color[0];
     FormZone::Render(term, update_flag);
-    // Header positions based on actual field layout:
-    int x = 0;
-    TextPosC(term, x + 5.5,   .5, "Job", col);           // center of label (0-11)
-    x = 12;
-    TextPosC(term, x + 1.5,   .5, "Active", col);         // center of first box (12-15)
-    x += 4;
-    TextPosC(term, x + 1.5,   0, "Enter", col);
-    TextPosC(term, x + 1.5,   1, "System", col);
-    x += 4;
-    TextPosC(term, x + 1.5,   .5, "Order", col);
-    x += 4;
-    TextPosC(term, x + 1.5,   .5, "Settle", col);
-    x += 4;
-    TextPosC(term, x + 1.5,   0, "Move", col);
-    TextPosC(term, x + 1.5,   1, "Table", col);
-    x += 4;
-    TextPosC(term, x + 1.5,   0, "Rebuild", col);
-    TextPosC(term, x + 1.5,   1, "Edit", col);
-    x += 4;
-    TextPosC(term, x + 1.5,   .5, "Comp", col);
-    x += 4;
-    TextPosC(term, x + 1.5,   0, "Supervisor", col);
-    TextPosC(term, x + 1.5,   1, "Functions", col);
-    x += 4;
-    TextPosC(term, x + 1.5,   0, "Manager", col);
-    TextPosC(term, x + 1.5,   1, "Functions", col);
-    x += 4;
-    TextPosC(term, x + 1.5,   0, "Employee", col);
-    TextPosC(term, x + 1.5,   1, "Records", col);
+    TextPosC(term,   6,   .5, "Job", col);
+    TextPosC(term,  21,   .5, "Active", col);
+    TextPosC(term,  29.5,  0, "Enter", col);
+    TextPosC(term,  29.5,  1, "System", col);
+    TextPosC(term,  38.5, .5, "Order", col);
+    TextPosC(term,  47.5, .5, "Settle", col);
+    TextPosC(term,  56.5,  0, "Move", col);
+    TextPosC(term,  56.5,  1, "Table", col);
+    TextPosC(term,  65.5,  0, "Rebuild", col);
+    TextPosC(term,  65.5,  1, "Edit", col);
+    TextPosC(term,  74.5, .5, "Comp", col);
+    TextPosC(term,  83.5,  0, "Supervisor", col);
+    TextPosC(term,  83.5,  1, "Functions", col);
+    TextPosC(term,  92.5,  0, "Manager", col);
+    TextPosC(term,  92.5,  1, "Functions", col);
+    TextPosC(term, 101.5,  0, "Employee", col);
+    TextPosC(term, 101.5,  1, "Records", col);
     return RENDER_OKAY;
 }
 
@@ -702,7 +559,7 @@ int JobSecurityZone::DisablingCategory()
     int counter      = 0;
     int is_active    = 0;  // container for the field's value
 
-    while (field != nullptr && retval == 0)
+    while (field != NULL && retval == 0)
     {
         // Every 'columns' columns, we have the label.  The next
         // field over is the "active" field for the current job,
@@ -720,7 +577,7 @@ int JobSecurityZone::DisablingCategory()
                 retval = ((counter - 1) / columns) + 1;
             }
         }
-        if (field != nullptr)
+        if (field != NULL)
             field = field->next;
         counter += 1;
     }
@@ -735,14 +592,14 @@ int JobSecurityZone::EmployeeIsUsing(Terminal *term, int active_job)
 {
     FnTrace("JobSecurityZone::EmployeeIsUsing()");
     int retval = 0;
-    Employee *employee   = nullptr;
-    JobInfo  *jobinfo    = nullptr;
+    Employee *employee   = NULL;
+    JobInfo  *jobinfo    = NULL;
 
     employee = MasterSystem->user_db.UserList();
-    while (employee != nullptr && retval == 0)
+    while (employee != NULL && retval == 0)
     {
         jobinfo = employee->JobList();
-        while (jobinfo != nullptr && retval == 0)
+        while (jobinfo != NULL && retval == 0)
         {
             if (jobinfo->job == active_job)
                 retval = 1;
@@ -759,19 +616,19 @@ SignalResult JobSecurityZone::Signal(Terminal *term, const char* message)
 {
     FnTrace("JobSecurityZone::Signal()");
     SignalResult retval = SIGNAL_IGNORED;
-    static const genericChar* commands[] = { "jsz_no", "jsz_yes", nullptr};
+    static const genericChar* commands[] = { "jsz_no", "jsz_yes", NULL};
     int idx = CompareListN(commands, message);
 
     switch (idx)
     {
     case 0:
-        last_focus = nullptr;
+        last_focus = NULL;
         break;
     case 1:
-        if (last_focus != nullptr)
+        if (last_focus != NULL)
         {
             keyboard_focus = last_focus;
-            last_focus = nullptr;
+            last_focus = NULL;
             keyboard_focus->Touch(term, this, keyboard_focus->x + 1, keyboard_focus->y + 1);
             UpdateForm(term, 0);
             Draw(term, 0);
@@ -790,7 +647,7 @@ SignalResult JobSecurityZone::Touch(Terminal *term, int tx, int ty)
     FnTrace("JobSecurityZone::Touch()");
     int active_cat        = 0;
     int is_used           = 0;
-    SimpleDialog *sdialog = nullptr;
+    SimpleDialog *sdialog = NULL;
     if (records <= 0)
         return SIGNAL_IGNORED;
     
@@ -805,8 +662,7 @@ SignalResult JobSecurityZone::Touch(Terminal *term, int tx, int ty)
     if (is_used)
     {
         last_focus = keyboard_focus;
-        sdialog = new SimpleDialog("This category is in use.  Are \
-                                    you sure you want to disable it?");
+        sdialog = new SimpleDialog(term->Translate("This category is in use. Are you sure you want to disable it?"));
         sdialog->Button("Yes", "jsz_yes");
         sdialog->Button("No", "jsz_no");
         term->OpenDialog(sdialog);

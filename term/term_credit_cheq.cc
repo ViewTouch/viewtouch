@@ -93,7 +93,7 @@ int my_connect(int sockfd, struct sockaddr *serv_addr, socklen_t addrlen, int ti
         writeset = readset;
         timev.tv_sec = timeout;
         timev.tv_usec = 0;
-        result = select(sockfd + 1, &readset, &writeset, nullptr, &timev);
+        result = select(sockfd + 1, &readset, &writeset, NULL, &timev);
         if (FD_ISSET(sockfd, &readset) || FD_ISSET(sockfd, &writeset))
             retval = 0;
         else
@@ -418,16 +418,16 @@ void BatchInfo::Clear()
     iso[0]     = '\0';
     b24[0]     = '\0';
 
-    visa.SetName("Visa");
-    mastercard.SetName("MasterCard");
-    amex.SetName("American Express");
-    diners.SetName("Diners");
-    debit.SetName("Debit");
-    discover.SetName("Discover");
-    jcb.SetName("JCB");
-    purchase.SetName("Purchase");
-    refund.SetName("Refund");
-    voids.SetName("Corrections");
+    visa.SetName(GlobalTranslate("Visa"));
+    mastercard.SetName(GlobalTranslate("MasterCard"));
+    amex.SetName(GlobalTranslate("American Express"));
+    diners.SetName(GlobalTranslate("Diners"));
+    debit.SetName(GlobalTranslate("Debit"));
+    discover.SetName(GlobalTranslate("Discover"));
+    jcb.SetName(GlobalTranslate("JCB"));
+    purchase.SetName(GlobalTranslate("Purchase"));
+    refund.SetName(GlobalTranslate("Refund"));
+    voids.SetName(GlobalTranslate("Corrections"));
 }
 
 int BatchInfo::ParseResults(const char* results)
@@ -647,7 +647,7 @@ int BatchInfo::GetAmt(const char* dest, const char* value)
     FnTrace("BatchInfo::GetAmt()");
     int retval = 0;
 
-    snprintf(dest, sizeof(dest), "%d", GetNum(value));
+    sprintf(dest, "%d", GetNum(value));
 
     return retval;
 }
@@ -982,7 +982,7 @@ int CCard::Command(const char* trans_type, const char* sub_type)
         }
         else
         {
-            snprintf(code, sizeof(code), "NOCONN");
+            sprintf(code, "NOCONN");
             intcode = CC_STATUS_NOCONNECT;
         }
     }
@@ -1099,7 +1099,7 @@ int CCard::ReadCheq(const char* buffer, int buffsize)
             FD_SET(ipconn, &readfd);
             timeout.tv_sec = 0;
             timeout.tv_usec = 50;
-            selresult = select(nfds, &readfd, nullptr, nullptr, &timeout);
+            selresult = select(nfds, &readfd, NULL, NULL, &timeout);
             if (selresult > 0)
             {
                 counter = 0;
@@ -1484,7 +1484,7 @@ int CCQ_GetStringDelim(const char* dest, const char* src, int start, char edelim
     int sidx = start;
     int slen = strlen(src);
 
-    if (ssdelim > 0)
+    if (sdelim > 0)
     {
         while (src[sidx] != sdelim && src[sidx] != '\0' && sidx < slen)
         {

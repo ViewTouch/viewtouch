@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -19,6 +17,9 @@
  * remote_link.hh - revision 48 (10/6/98)
  * Functions/Protocols for server/terminal/printer communication
  */
+
+#ifndef _REMOTE_LINK_HH
+#define _REMOTE_LINK_HH
 
 #include <string.h>
 #include "basic.hh"
@@ -247,3 +248,5 @@ public:
 #define WINFRAME_MOVE   4  // window can be moved by titlebar
 #define WINFRAME_RESIZE 8  // resize window handles on border
 #define WINFRAME_CLOSE  16 // close button on window border
+
+#endif

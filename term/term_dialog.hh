@@ -18,7 +18,8 @@
  * Implementation of edit mode dialogs
  */
 
-#pragma once
+#ifndef _TERM_DIALOG_HH
+#define _TERM_DIALOG_HH
 
 #include <Xm/Xm.h>
 #include "basic.hh"
@@ -67,66 +68,7 @@ public:
     // Member Functions
     int Clear();
     int Init(Widget parent, const genericChar* label, const genericChar* *option_name, int *option_value,
-             void *option_cb = nullptr, void *client_data = nullptr);
-    int Show(int flag);
-    int Set(int val);
-    int SetLabel(const char* label);
-    int Value();
-};
-
-// Scrollable Dialog Menu for font selection
-class ScrollableDialogMenu
-{
-public:
-    Widget  container;
-    Widget  option;
-    Widget  mlabel; 
-    Widget  menu;
-    Widget  scrolled_list;
-    Widget *choice_list;
-    int     choice_count;
-    int    *value_list;
-    Widget  no_change_widget;
-    int     no_change_value;
-
-    // Constructor
-    ScrollableDialogMenu();
-    // Destructor
-    ~ScrollableDialogMenu();
-
-    // Member Functions
-    int Clear();
-    int Init(Widget parent, const genericChar* label, const genericChar* *option_name, int *option_value,
-             void *option_cb = nullptr, void *client_data = nullptr);
-    int Show(int flag);
-    int Set(int val);
-    int SetLabel(const char* label);
-    int Value();
-    static void ToggleListCB(Widget w, XtPointer client_data, XtPointer call_data);
-};
-
-// Scrolled Font Selection Widget
-class ScrolledFontMenu
-{
-public:
-    Widget  container;
-    Widget  label;
-    Widget  scrolled_window;
-    Widget  list_widget;
-    Widget *choice_list;
-    int     choice_count;
-    int    *value_list;
-    int     selected_index;
-
-    // Constructor
-    ScrolledFontMenu();
-    // Destructor
-    ~ScrolledFontMenu();
-
-    // Member Functions
-    int Clear();
-    int Init(Widget parent, const genericChar* label, const genericChar* *option_name, int *option_value,
-             void *option_cb = nullptr, void *client_data = nullptr);
+             void *option_cb = NULL, void *client_data = NULL);
     int Show(int flag);
     int Set(int val);
     int SetLabel(const char* label);
@@ -159,26 +101,6 @@ public:
     int Show(int flag);
     int Set(int o1, int o2);
     int Value(int &v1, int &v2);
-};
-
-// Font selection dialog for all font pickers
-class FontSelectDialog {
-public:
-    Widget dialog;
-    Widget font_label;
-    Widget ok_button;
-    Widget cancel_button;
-    ScrolledFontMenu font_menu;
-    int selected_font;
-    int open;
-
-    FontSelectDialog(Widget parent);
-    int Open(int current_font);
-    int Close();
-    int GetSelectedFont() const { return selected_font; }
-    static void FontSelectCB(Widget w, XtPointer client_data, XtPointer call_data);
-    static void OkCB(Widget w, XtPointer client_data, XtPointer call_data);
-    static void CancelCB(Widget w, XtPointer client_data, XtPointer call_data);
 };
 
 // Dialog Classes
@@ -383,6 +305,4 @@ public:
     int Send();
 };
 
-
-
-
+#endif

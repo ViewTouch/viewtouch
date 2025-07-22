@@ -18,11 +18,14 @@
  * Remote Printer link module
  */
 
-#pragma once
+#ifndef _REMOTE_PRINTER_HH
+#define _REMOTE_PRINTER_HH
 
 /**** Types ****/
 class Printer;
 
 /**** Functions ****/
 Printer *NewReportPrinter(const char* host, int port, int model, int no);
+
+#endif
 

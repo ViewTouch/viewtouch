@@ -59,21 +59,21 @@
 const genericChar* PrinterModelName[] = {
     "No Printer", "Epson", "Star", "HP", "Toshiba", "Ithaca",
     "HTML", "PostScript", "PDF", "Receipt Text",
-    "Report Text", nullptr};
+    "Report Text", NULL};
 int          PrinterModelValue[] = {
     MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_HP, MODEL_TOSHIBA, MODEL_ITHACA,
     MODEL_HTML, MODEL_POSTSCRIPT, MODEL_PDF, MODEL_RECEIPT_TEXT,
     MODEL_REPORT_TEXT, -1};
 
 // const genericChar* ReceiptPrinterModelName[] = {
-    // "No Printer", "Epson", "Star", "Ithaca", "Text", nullptr};
+    // "No Printer", "Epson", "Star", "Ithaca", "Text", NULL};
 // int          ReceiptPrinterModelValue[] = {
     // MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_ITHACA, MODEL_RECEIPT_TEXT, -1};
 
 const genericChar* ReceiptPrinterModelName[] = {
     "No Printer", "Epson", "Star", "HP", "Toshiba", "Ithaca",
     "HTML", "PostScript", "PDF", "Receipt Text",
-    "Report Text", nullptr};
+    "Report Text", NULL};
 int          ReceiptPrinterModelValue[] = {
     MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_HP, MODEL_TOSHIBA, MODEL_ITHACA,
     MODEL_HTML, MODEL_POSTSCRIPT, MODEL_PDF, MODEL_RECEIPT_TEXT,
@@ -81,7 +81,7 @@ int          ReceiptPrinterModelValue[] = {
 
 const genericChar* ReportPrinterModelName[] = {
     "No Printer", "HP", "Toshiba", "HTML", "PostScript",
-    "PDF", "Text", nullptr};
+    "PDF", "Text", NULL};
 int          ReportPrinterModelValue[] = {
     MODEL_NONE, MODEL_HP, MODEL_TOSHIBA, MODEL_HTML, MODEL_POSTSCRIPT,
     MODEL_PDF, MODEL_REPORT_TEXT, -1};
@@ -90,7 +90,7 @@ int          ReportPrinterModelValue[] = {
 
 const genericChar* PortName[] = {
     "XCD Parallel", "XCD Serial", "Explora Parallel", "Explora Serial",
-    "VT Daemon", "Device On Server", nullptr};
+    "VT Daemon", "Device On Server", NULL};
 int          PortValue[] = {
     PORT_XCD_PARALLEL, PORT_XCD_SERIAL, PORT_EXPLORA_PARALLEL, PORT_EXPLORA_SERIAL,
     PORT_VT_DAEMON, PORT_SERVER_DEVICE, -1};
@@ -103,9 +103,9 @@ int          PortValue[] = {
 
 Printer::Printer()
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -128,9 +128,9 @@ Printer::Printer()
 
 Printer::Printer(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -328,7 +328,7 @@ int Printer::ParallelPrint()
                 while (bytes > 0)
                 {
                     bytes = write(outfd, buff, bytes);
-                    select(0, nullptr, nullptr, nullptr, &timeout);
+                    select(0, NULL, NULL, NULL, &timeout);
                     if (bytes > 0)
                         bytes = read(infd, buff, STRLENGTH);
                 }
@@ -392,7 +392,7 @@ int Printer::SocketPrint()
     struct sockaddr_in their_addr; // connector's address information
 
     he = gethostbyname(target.Value());  // get the host info
-    if (he == nullptr)
+    if (he == NULL)
     {
         perror("gethostbyname");
         return 1;
@@ -472,7 +472,7 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
     genericChar timestr[STRLENGTH];
     genericChar title[STRLENGTH];
 
-    if (source != nullptr)
+    if (source != NULL)
         strncpy(title, source, STRLENGTH);
     else if (have_title)
         strncpy(title, page_title.c_str(), STRLENGTH);
@@ -496,34 +496,34 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
         // append the date
         now.Set();
         snprintf(timestr, STRLENGTH, "-%02d-%02d-%d", now.Day(), now.Month(), now.Year());
-        strncat(buffer, timestr, sizeof(buffer) - strlen(buffer) - 1);
+        strcat(buffer, timestr);
 
-        if (ext == nullptr)
+        if (ext == NULL)
         {
             // append an extension
             switch (Model())
             {
             case MODEL_HTML:
-                strncat(buffer, ".html", sizeof(buffer) - strlen(buffer) - 1);
+                strcat(buffer, ".html");
                 break;
             case MODEL_POSTSCRIPT:
-                strncat(buffer, ".ps", sizeof(buffer) - strlen(buffer) - 1);
+                strcat(buffer, ".ps");
                 break;
             case MODEL_PDF:
-                strncat(buffer, ".pdf", sizeof(buffer) - strlen(buffer) - 1);
+                strcat(buffer, ".pdf");
                 break;
             case MODEL_RECEIPT_TEXT:
             case MODEL_REPORT_TEXT:
-                strncat(buffer, ".txt", sizeof(buffer) - strlen(buffer) - 1);
+                strcat(buffer, ".txt");
                 break;
             default:
-                strncat(buffer, ".prn", sizeof(buffer) - strlen(buffer) - 1);
+                strcat(buffer, ".prn");
                 break;
             }
         }
         else
         {
-            strncat(buffer, ext, sizeof(buffer) - strlen(buffer) - 1);
+            strcat(buffer, ext);
         }
     }
     return 0;
@@ -573,7 +573,7 @@ int Printer::GetFilePath(char* dest)
 
     if (IsDirectory(target.Value()))
     {
-        MakeFileName(filename, nullptr, nullptr, STRLENGTH);
+        MakeFileName(filename, NULL, NULL, STRLENGTH);
         snprintf(dest, STRLENGTH, "%s/%s", target.Value(), filename);
     }
     else
@@ -668,9 +668,9 @@ int Printer::TestPrint(Terminal *t)
 
     genericChar str[256];
     NewLine();
-    snprintf(str, STRLENGTH, "\r** %s **\r", t->Translate("Printer Test"));
+    sprintf(str, "\r** %s **\r", t->Translate("Printer Test"));
     Write(str, PRINT_RED | PRINT_BOLD | PRINT_UNDERLINE | PRINT_LARGE | PRINT_NARROW);
-    snprintf(str, STRLENGTH, "Host: %s\r", target.Value());
+    sprintf(str, "Host: %s\r", target.Value());
     Write(str);
     t->TimeDate(str, SystemTime, TD0);
     Write(str);
@@ -775,7 +775,7 @@ void Printer::DebugPrint(int printall)
     printf("    Have Title:  %d\n", have_title);
     printf("    Kitchen Mode:  %d\n", kitchen_mode);
 
-    if (printall && next != nullptr)
+    if (printall && next != NULL)
         next->DebugPrint(printall);
 }
 
@@ -785,9 +785,9 @@ void Printer::DebugPrint(int printall)
  ********************************************************************/
 PrinterIthaca::PrinterIthaca(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -977,9 +977,9 @@ int PrinterIthaca::CutPaper(int partial_only)
  ********************************************************************/
 PrinterStar::PrinterStar(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1208,9 +1208,9 @@ int PrinterStar::CutPaper(int partial_only)
  ********************************************************************/
 PrinterEpson::PrinterEpson(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1429,9 +1429,9 @@ int PrinterEpson::CutPaper(int partial_only)
 
 PrinterHP::PrinterHP(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1606,9 +1606,9 @@ int PrinterHP::CutPaper(int partial_only)
  ********************************************************************/
 PrinterHTML::PrinterHTML(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1646,37 +1646,37 @@ int PrinterHTML::WriteFlags(int flags)
     if (last_red != red)
     {
         if (red)
-            strncat(flagstr, "<font color=\"red\">", sizeof(flagstr) - strlen(flagstr) - 1);
+            strcat(flagstr, "<font color=\"red\">");
         else
-            strncat(flagstr, "</font>", sizeof(flagstr) - strlen(flagstr) - 1);
+            strcat(flagstr, "</font>");
     }
     if (last_blue != blue)
     {
         if (blue)
-            strncat(flagstr, "<font color=\"blue\">", sizeof(flagstr) - strlen(flagstr) - 1);
+            strcat(flagstr, "<font color=\"blue\">");
         else
-            strncat(flagstr, "</font>", sizeof(flagstr) - strlen(flagstr) - 1);
+            strcat(flagstr, "</font>");
     }
     if (last_bold != bold)
     {
         if (bold)
-            strncat(flagstr, "<b>", sizeof(flagstr) - strlen(flagstr) - 1);
+            strcat(flagstr, "<b>");
         else
-            strncat(flagstr, "</b>", sizeof(flagstr) - strlen(flagstr) - 1);
+            strcat(flagstr, "</b>");
     }
     if (last_underline != underline)
     {
         if (underline)
-            strncat(flagstr, "<u>", sizeof(flagstr) - strlen(flagstr) - 1);
+            strcat(flagstr, "<u>");
         else
-            strncat(flagstr, "</u>", sizeof(flagstr) - strlen(flagstr) - 1);
+            strcat(flagstr, "</u>");
     }
     if (last_large != large || last_wide != wide)
     {
         if (large || wide)
-            strncat(flagstr, "<font size=\"+2\">", sizeof(flagstr) - strlen(flagstr) - 1);
+            strcat(flagstr, "<font size=\"+2\">");
         else
-            strncat(flagstr, "</font>", sizeof(flagstr) - strlen(flagstr) - 1);
+            strcat(flagstr, "</font>");
     }
     if (flagstr[0] != '\0')
         write(temp_fd, flagstr, strlen(flagstr));
@@ -1754,9 +1754,9 @@ int PrinterHTML::LineFeed(int lines)
  ********************************************************************/
 PrinterPostScript::PrinterPostScript()
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1780,9 +1780,9 @@ PrinterPostScript::PrinterPostScript()
 
 PrinterPostScript::PrinterPostScript(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1914,13 +1914,13 @@ int PrinterPostScript::Init()
             "RegularFont\n",
             "} def\n",
             "NewPage\n",
-            nullptr
+            NULL
             };
     
     if (temp_fd <= 0)
         return 1;
 
-    while (lines[idx] != nullptr)
+    while (lines[idx] != NULL)
     {
         if (write(temp_fd, lines[idx], strlen(lines[idx])) < 0)
             break;
@@ -2134,9 +2134,9 @@ int PrinterPostScript::Put(genericChar c, int flags)
 
 PrinterPDF::PrinterPDF()
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2158,9 +2158,9 @@ PrinterPDF::PrinterPDF()
 
 PrinterPDF::PrinterPDF(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2193,7 +2193,7 @@ int PrinterPDF::Close()
     close(temp_fd);
 
     // create the PDF filename and convert the temp file
-    MakeFileName(filename, nullptr, ".pdf", STRLONG);
+    MakeFileName(filename, NULL, ".pdf", STRLONG);
     snprintf(pdffullpath, STRLONG, "/tmp/%s", filename);
     snprintf(command, STRLONG, "ps2pdf %s %s", temp_name.Value(), pdffullpath);
     system(command);
@@ -2218,9 +2218,9 @@ int PrinterPDF::Close()
  ********************************************************************/
 PrinterReceiptText::PrinterReceiptText()
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2242,9 +2242,9 @@ PrinterReceiptText::PrinterReceiptText()
 
 PrinterReceiptText::PrinterReceiptText(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2324,9 +2324,9 @@ int PrinterReceiptText::LineFeed(int lines)
  ********************************************************************/
 PrinterReportText::PrinterReportText(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = nullptr;
-    fore         = nullptr;
-    parent       = nullptr;
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2467,7 +2467,7 @@ int ParseDestination(int &type, genericChar* target, int &port, const genericCha
 Printer *NewPrinterObj(const genericChar* destination, int port, int model, int no)
 {
     FnTrace("NewPrinterObj()");
-    Printer *retPrinter = nullptr;
+    Printer *retPrinter = NULL;
     genericChar target[STRLENGTH] = "";
     int target_type;
 
@@ -2508,7 +2508,7 @@ Printer *NewPrinterObj(const genericChar* destination, int port, int model, int 
             retPrinter = new PrinterReportText(destination, port, target, target_type);
             break;
         default:
-            retPrinter = nullptr;
+            retPrinter = NULL;
             break;
         }
     }
@@ -2519,7 +2519,7 @@ Printer *NewPrinterObj(const genericChar* destination, int port, int model, int 
 Printer *NewPrinterFromString(const genericChar* specification)
 {
     FnTrace("NewPrinterFromString()");
-    Printer *retPrinter = nullptr;
+    Printer *retPrinter = NULL;
     genericChar destination[STRLONG] = "";
     genericChar modelstr[STRLONG] = "";
     int model = MODEL_HTML;  // use default model

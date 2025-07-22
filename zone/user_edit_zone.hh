@@ -18,7 +18,8 @@
  * Zone for editing users & job security information
  */
 
-#pragma once
+#ifndef _USER_EDIT_ZONE_HH
+#define _USER_EDIT_ZONE_HH
 
 #include "form_zone.hh"
 
@@ -76,3 +77,5 @@ public:
     int          SaveRecord(Terminal *term, int record, int write_file);
     int          UpdateForm(Terminal *term, int record);
 };
+
+#endif

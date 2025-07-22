@@ -21,4 +21,8 @@
  *  socket.  And vice versa.
  */
 
-#pragma once
+#ifndef VT_CCQ_PIPE_H
+
+
+#define VT_CCQ_PIPE_H
+#endif

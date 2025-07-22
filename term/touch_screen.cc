@@ -131,7 +131,7 @@ int TouchScreen::Connect(int boot)
         if (inaddr.sin_addr.s_addr == INADDR_NONE)
         {
             struct hostent *hp = gethostbyname(host.Value());
-            if (hp == nullptr || hp->h_addrtype != AF_INET)
+            if (hp == NULL || hp->h_addrtype != AF_INET)
             {
                 std::string str = std::string("Can't resolve name '")
                         + host.Value() + "'";
@@ -328,7 +328,7 @@ int TouchScreen::Reset()
     {
 		//output a status message
         genericChar str[256];
-        snprintf(str, sizeof(str), "TouchScreen Reset failed for host '%s'", host.Value());
+        sprintf(str, "TouchScreen Reset failed for host '%s'", host.Value());
 
         error.Set(str);
 

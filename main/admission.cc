@@ -21,7 +21,7 @@ void admission_itemname_hash(Str& ih,const Str& name,const Str& location,const S
 		result |= hashbytes[i];
 	}
 	
-	snprintf(outbuf,256,"%s@%08X:%s",admission_filteredname(name.str()),result,price_class.Value());
+	snprintf(outbuf,256,"%s@%08X:%s",admission_filteredname(name),result,price_class.Value());
 	ih.Set(outbuf);
 }//converts a name to the item~hash form.
 
@@ -62,12 +62,11 @@ void admission_parse_hash_ltime_hash(Str& hashout,const Str& ih)
 		hashout.Set("");
 	}
 }
-const char* admission_filteredname(const std::string& item_name)
+const char* admission_filteredname(const Str& item_name)
 {
 	static genericChar buf[256];
 	Str outname;
-	Str temp_name(item_name);
-	admission_parse_hash_name(outname, temp_name);
+	admission_parse_hash_name(outname,item_name);
 	snprintf(buf,256,"%s",outname.Value());
 	return buf;
 }

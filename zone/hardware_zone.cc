@@ -46,12 +46,12 @@ int IsKitchenPrinter(int type)
 
 /**** HardwareZone class ****/
 static const genericChar* DrawerCountName[] = {
-    "None", "One", "Two", nullptr};
+    "None", "One", "Two", NULL};
 static int DrawerCountValue[] = {
     0, 1, 2, -1};
 
 static const genericChar* DrawerPulseName[] = {
-    "Pulse 1", "Pulse 2", nullptr };
+    "Pulse 1", "Pulse 2", NULL };
 static int          DrawerPulseValue[] = {
     0, 1, -1 };
 
@@ -213,9 +213,9 @@ SignalResult HardwareZone::Signal(Terminal *term, const genericChar* message)
     static const genericChar* commands[] = {
         "section0", "section1", "changestatus", "calibrate",
         "testreceipt", "testreport",
-        "printertest", "opendrawer1", "opendrawer2", nullptr};
+        "printertest", "opendrawer1", "opendrawer2", NULL};
 
-    Printer *printer = nullptr;
+    Printer *printer = NULL;
     int idx = CompareList(message, commands);
     switch (idx)
     {
@@ -260,11 +260,11 @@ SignalResult HardwareZone::Signal(Terminal *term, const genericChar* message)
 int HardwareZone::LoadRecord(Terminal *term, int record)
 {
 	FnTrace("HardwareZone::LoadRecord()");
-    PrinterInfo *pi = nullptr;
-    TermInfo    *ti = nullptr;
-    FormField   *thisForm = nullptr;
+    PrinterInfo *pi = NULL;
+    TermInfo    *ti = NULL;
+    FormField   *thisForm = NULL;
 
-	for (FormField *field = FieldList(); field != nullptr; field = field->next)
+	for (FormField *field = FieldList(); field != NULL; field = field->next)
 		field->active = 0;
 
 	Settings *settings = term->GetSettings();
@@ -272,7 +272,7 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
 	{
     case 1:  // remote printer
         pi = settings->FindPrinterByRecord(record);
-        if (pi == nullptr)
+        if (pi == NULL)
             break;
 
         thisForm = printer_start;
@@ -292,7 +292,7 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         break;
     default:  // terminal
         ti = settings->FindTermByRecord(record);
-        if (ti == nullptr)
+        if (ti == NULL)
             break;
 
         thisForm = term_start;
@@ -343,10 +343,10 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
 int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
 {
 	FnTrace("HardwareZone::SaveRecord()");
-    TermInfo    *ti = nullptr;
-    PrinterInfo *pi = nullptr;
+    TermInfo    *ti = NULL;
+    PrinterInfo *pi = NULL;
 	Settings    *settings = term->GetSettings();
-	FormField   *field = nullptr;
+	FormField   *field = NULL;
 
 	switch (section)
 	{
@@ -511,16 +511,16 @@ int HardwareZone::ChangeStatus(Terminal *term)
 {
     FnTrace("HardwareZone::ChangeStatus()");
     Settings    *settings = term->GetSettings();
-    TermInfo    *ti = nullptr;
-    Terminal    *terminal = nullptr;
-    PrinterInfo *pi = nullptr;
-    Printer     *printer = nullptr;
+    TermInfo    *ti = NULL;
+    Terminal    *terminal = NULL;
+    PrinterInfo *pi = NULL;
+    Printer     *printer = NULL;
 
     switch (section)
     {
     default:
         ti = settings->FindTermByRecord(record_no);
-        if (ti == nullptr || ti->IsServer())
+        if (ti == NULL || ti->IsServer())
             return 0;
 
         terminal = ti->FindTerm(term->parent);
@@ -537,14 +537,14 @@ int HardwareZone::ChangeStatus(Terminal *term)
             term->OpenDialog("Starting The Display Terminal\\Please Wait");
             ti->OpenTerm(term->parent, 1);
             term->KillDialog();
-            term->UpdateAllTerms(UPDATE_TERMINALS | UPDATE_PRINTERS, nullptr);
+            term->UpdateAllTerms(UPDATE_TERMINALS | UPDATE_PRINTERS, NULL);
 
             // enable any associated printers
             pi = settings->PrinterList();
             while (pi)
             {
                 printer = pi->FindPrinter(term->parent);
-                if (printer == nullptr &&
+                if (printer == NULL &&
                     (pi->host == ti->printer_host || pi->host == ti->display_host))
                     pi->OpenPrinter(term->parent, 1);
                 pi = pi->next;
@@ -556,7 +556,7 @@ int HardwareZone::ChangeStatus(Terminal *term)
         break;
     case 1:
         pi = settings->FindPrinterByRecord(record_no);
-        if (pi == nullptr)
+        if (pi == NULL)
             return 0;
 
         printer = pi->FindPrinter(term->parent);
@@ -571,7 +571,7 @@ int HardwareZone::ChangeStatus(Terminal *term)
             term->OpenDialog("Starting The Printer\\Please Wait");
             pi->OpenPrinter(term->parent, 1);
             term->KillDialog();
-            term->UpdateAllTerms(UPDATE_PRINTERS, nullptr);
+            term->UpdateAllTerms(UPDATE_PRINTERS, NULL);
         }
         break;
     }
@@ -586,11 +586,11 @@ int HardwareZone::Calibrate(Terminal *term)
 
     Settings *settings = term->GetSettings();
     TermInfo *ti = settings->FindTermByRecord(record_no);
-    if (ti == nullptr)
+    if (ti == NULL)
         return 0;
 
     Terminal *parent_term = ti->FindTerm(term->parent);
-    if (parent_term == nullptr)
+    if (parent_term == NULL)
         return 0;
     else
         return parent_term->CalibrateTS();
@@ -604,5 +604,5 @@ Printer *HardwareZone::FindPrinter(Terminal *term)
     if (ti)
         return ti->FindPrinter(MasterControl);
     else
-        return nullptr;
+        return NULL;
 }

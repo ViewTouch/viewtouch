@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 #include <utility> // std::pair
-#include "basic.hh"
 
 // MAX_BUFFER_LEN
 // Used simply as a max size of some internal buffers. Determines the maximum
@@ -46,7 +45,6 @@ public:
     bool        GetValue(std::string &value, const std::string &key, const std::string &section = "") const;
     bool        GetValue(double &value, const std::string &key, const std::string &section = "") const;
     bool        GetValue(int &value, const std::string &key, const std::string &section = "") const;
-    bool        GetValue(Flt &value, const std::string &key, const std::string &section = "") const;
                 // set a key's value; created if doesn't exist
     bool        SetValue(const std::string &value, const std::string &key, const std::string &section = "");
     bool        SetValue(const double value, const std::string &key, const std::string &section = "");

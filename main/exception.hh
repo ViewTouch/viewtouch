@@ -18,7 +18,8 @@
  * Record of voids/comps and other system changes
  */
 
-#pragma once
+#ifndef _EXCEPTION_HH
+#define _EXCEPTION_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -141,3 +142,5 @@ public:
     int AddTableException(Terminal *t, Check *c, int target_id);
     int AddRebuildException(Terminal *t, Check *c);
 };
+
+#endif

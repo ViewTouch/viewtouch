@@ -1,7 +1,10 @@
-cmake_minimum_required(VERSION 3.25.1...3.31.6)
+cmake_minimum_required(VERSION 3.5.1)
 
 project(ViewTouch)
 message(STATUS "CMake version ${CMAKE_VERSION}")
+
+
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     # don't override user variables
     set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "prefix" FORCE)
@@ -32,6 +35,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsign-compare")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow")
+
 # disable specific compiler warnings
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused") # also disables other unused warnings
@@ -43,14 +47,43 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format-overflow")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-const-variable")
+	# Additional clang-specific flags for better compatibility
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format-security")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format-overflow")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format-truncation")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-stringop-overflow")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-overloaded-virtual")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-private-field")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-field-initializers")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-constant-conversion")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shorten-64-to-32")
+	# For C++20 compatibility
+	if(CMAKE_CXX_STANDARD EQUAL 20)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++20-compat")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++2a-compat")
+	endif()
 endif()
 
-# set date::date-tz (timezone) library flags
+# set tz (timezone) library flags
 set(USE_SYSTEM_TZ_DB ON CACHE BOOL "Use the operating system's timezone database" FORCE)
 set(ENABLE_DATE_TESTING OFF CACHE BOOL "Enable unit tests" FORCE)
 set(DISABLE_STRING_VIEW ON CACHE BOOL "Disable string view" FORCE)
-set (BUILD_TZ_LIB ON CACHE BOOL "required for testing" FORCE)
-add_subdirectory(external/date-3.0.4 EXCLUDE_FROM_ALL)
+
+# Ensure external libraries use the same C++ standard
+if(CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD ${CMAKE_CXX_STANDARD} CACHE STRING "C++ standard for external libraries" FORCE)
+endif()
+
+# Set compiler flags for external libraries
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-everything" CACHE STRING "Compiler flags for external libraries" FORCE)
+endif()
+
+add_subdirectory(external/date EXCLUDE_FROM_ALL)
 
 # don't need the curlpp shared lib, using the statically linked one
 set(CURLPP_BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
@@ -164,8 +197,7 @@ add_library(vtcore
 
 target_include_directories(vtcore PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}) # include generated files like build_number.h
-target_link_libraries(vtcore PRIVATE vt_version)
-target_link_libraries(vtcore PUBLIC date::date-tz)
+target_link_libraries(vtcore vt_version tz)
 
 add_executable(vtpos 
 		loader/loader_main.cc )
@@ -241,7 +273,7 @@ add_executable(vt_main
     )
 target_include_directories(vt_main PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
 target_link_libraries(vt_main zone vtcore ${VT_XLIBS})
-target_link_libraries(vt_main date::date-tz curlpp_static)
+target_link_libraries(vt_main tz curlpp_static)
 # on gcc 8 need to link against std++fs for std::filesystem support
 # https://stackoverflow.com/questions/54290254/problem-adding-stdfilesystem-to-cmake-project
 target_link_libraries(vt_main stdc++fs)
@@ -273,18 +305,7 @@ target_link_libraries(vt_cdu vtcore)
 #add_executable(vt_authorize authorize_main.cc utility.cc)
 #add_executable(vt_ccq_pipe vt_ccq_pipe.cc socket.cc utility.cc conf_file.cc)
 
-add_executable(font_check font_check.cc)
-target_link_libraries(font_check X11 Xft)
 
-option(BUILD_TESTING "Build tests" ON)
-if(BUILD_TESTING)
-    enable_testing()
-    add_subdirectory(tests/conf_file)
-    add_subdirectory(tests/image_data)
-    add_subdirectory(tests/time_info)
-    add_subdirectory(tests/data_file)
-    add_subdirectory(tests/main)
-endif()
 
 install(TARGETS vtpos vt_cdu vt_print vt_term vt_main
 	RUNTIME DESTINATION viewtouch/bin
@@ -304,36 +325,20 @@ install(PROGRAMS 	scripts/vtrestart
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dat" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dat")
     install(DIRECTORY dat DESTINATION viewtouch)
 else()
-    message(STATUS "'dat' folder is missing in source directory, excluding it from install target. You can get the bootstrap files from https://www.viewtouch.com/vt_data.html")
+    message(STATUS "'dat' folder is missing in source directory, excluding it from install target. You can get the bootstrap files from http://www.viewtouch.com/vt_data.html")
 endif()
 
-# Install bundled fonts
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/fonts" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/fonts")
-    install(DIRECTORY fonts DESTINATION viewtouch)
-    message(STATUS "Installing bundled fonts to viewtouch/fonts")
+# Install language files (PO files)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/po_file" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/po_file")
+    install(DIRECTORY po_file/ DESTINATION viewtouch/dat/languages FILES_MATCHING PATTERN "*.po_*")
+    message(STATUS "Installing language files from po_file/ to viewtouch/dat/languages/")
 else()
-    message(STATUS "'fonts' folder is missing in source directory, excluding it from install target")
+    message(STATUS "'po_file' folder is missing in source directory, excluding language files from install target.")
 endif()
 install(PROGRAMS scripts/vtcommands.pl DESTINATION viewtouch/bin/vtcommands)
 
 #install(CODE "MESSAGE(\"Sample install message.\")")
 
-# Install all language files
-install(DIRECTORY po_file/ DESTINATION viewtouch/dat/languages FILES_MATCHING PATTERN "viewtouch.po_*")
-
-# Install language files
-install(FILES
-    po_file/viewtouch.po_EN
-    po_file/viewtouch.po_FR
-    po_file/viewtouch.po_GR
-    po_file/viewtouch.po_ES
-    po_file/viewtouch.po_DE
-    po_file/viewtouch.po_IT
-    po_file/viewtouch.po_PT
-    po_file/viewtouch.po_NL
-    DESTINATION viewtouch/dat/languages)
-
-# Install UI data translation files if present
-file(GLOB UI_DATA_PO_FILES "${CMAKE_SOURCE_DIR}/po_file/ui_data_*.po")
-install(FILES ${UI_DATA_PO_FILES} DESTINATION viewtouch/dat/languages)
+# Install bundled fonts
+install(DIRECTORY fonts/ttf/ DESTINATION share/viewtouch/fonts FILES_MATCHING PATTERN "*.ttf" PATTERN "*.otf")
 

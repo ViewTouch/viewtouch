@@ -1,23 +1,5 @@
-/*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
- *   This program is free software: you can redistribute it and/or modify 
- *   it under the terms of the GNU General Public License as published by 
- *   the Free Software Foundation, either version 3 of the License, or 
- *   (at your option) any later version.
- * 
- *   This program is distributed in the hope that it will be useful, 
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of 
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
- *   GNU General Public License for more details. 
- * 
- *   You should have received a copy of the GNU General Public License 
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
- *
- * fntrace.hh - Function tracing module
- */
-
-#pragma once
+#ifndef VT_FNTRACE_HH
+#define VT_FNTRACE_HH
 
 #include "basic.hh"
 #include <string>
@@ -25,7 +7,6 @@
 #include <mutex>
 #include <atomic>
 #include <memory>
-#include <cstring>
 
 extern int debug_mode;
 
@@ -57,13 +38,8 @@ public:
         if (BT_Track) {
             std::lock_guard<std::mutex> lock(BT_Mutex);
             auto& entry = BT_Stack[BT_Depth++];
-            // Fixed: use strncpy for simple string copy instead of snprintf
-            strncpy(entry.function, func, STRLONG);
-            // Fixed: use strncpy for simple string copy instead of snprintf
-            entry.function[STRLONG-1] = '\0';
-            // Fixed: ensure null-termination
-            strncpy(entry.file, file, STRLENGTH);
-            entry.file[STRLENGTH-1] = '\0';
+            snprintf(entry.function, STRLONG, "%s", func);
+            snprintf(entry.file, STRLENGTH, "%s", file);
             entry.line = line;
             entry.timestamp = std::chrono::steady_clock::now();
             entry.memory_usage = get_current_memory_usage();
@@ -100,4 +76,4 @@ const char* FnReturnLast();
 #define LINE()
 #endif
 
-
+#endif // VT_FNTRACE_HH

@@ -76,7 +76,7 @@ int OrderEntryZone::RenderInit(Terminal *term, int update_flag)
     }
 
     Check *thisCheck = term->check;
-    if (thisCheck == nullptr || orders_per_page <= 0)
+    if (thisCheck == NULL || orders_per_page <= 0)
         return 0;  // Error
 
     int use_seats = currSettings->use_seats;
@@ -84,16 +84,16 @@ int OrderEntryZone::RenderInit(Terminal *term, int update_flag)
         use_seats = 0;
 
     SubCheck *thisSubCheck = thisCheck->current_sub;
-    if (thisSubCheck == nullptr)
+    if (thisSubCheck == NULL)
     {
-        term->order = nullptr;
+        term->order = NULL;
         term->seat  = 0;
         if (use_seats)
             thisSubCheck = thisCheck->FirstOpenSubCheck(0);
         else
             thisSubCheck = thisCheck->FirstOpenSubCheck();
 
-        if (thisSubCheck == nullptr)
+        if (thisSubCheck == NULL)
             return 0;
     }
 
@@ -112,7 +112,7 @@ int OrderEntryZone::RenderInit(Terminal *term, int update_flag)
     int offset = orders_per_page * page_no;
     shown_count = 0;
 
-    for (Order *o = thisSubCheck->OrderList(); o != nullptr; o = o->next)
+    for (Order *o = thisSubCheck->OrderList(); o != NULL; o = o->next)
     {
         if (use_seats == 0 || o->seat == term->seat)
         {
@@ -121,7 +121,7 @@ int OrderEntryZone::RenderInit(Terminal *term, int update_flag)
             else if (shown_count < orders_per_page)
                 orders_shown[shown_count++] = o;
 
-            for (Order *mod = o->modifier_list; mod != nullptr; mod = mod->next)
+            for (Order *mod = o->modifier_list; mod != NULL; mod = mod->next)
             {
                 if (offset > 0)
                     --offset;
@@ -132,7 +132,7 @@ int OrderEntryZone::RenderInit(Terminal *term, int update_flag)
     }
 
     // Select Last Order (no modifier) if no orders are already selected
-    if (term->order == nullptr && thisCheck->current_sub)
+    if (term->order == NULL && thisCheck->current_sub)
         term->order = thisCheck->current_sub->LastParentOrder(term->seat);
 
     return 0;
@@ -143,7 +143,7 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
     FnTrace("OrderEntryZone::Render()");
     LayoutZone::Render(t, update_flag);
     Check *c = t->check;
-    if (c == nullptr)
+    if (c == NULL)
         return RENDER_OKAY;
 
     // See if list size has changed
@@ -160,10 +160,10 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
     }
 
     SubCheck *sc = c->current_sub;
-    if (sc == nullptr)
+    if (sc == NULL)
         return RENDER_OKAY;
 
-    genericChar str[1024];  // Use larger buffer to prevent overflow
+    genericChar str[256];
     genericChar str2[256];
     genericChar str3[256];
     int col = color[0];
@@ -180,61 +180,61 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
     switch (c->CustomerType())
 	{
     case CHECK_RESTAURANT:
-        snprintf(str, STRLENGTH, "%s %s", t->Translate("Tbl"), c->Table());
+        sprintf(str, "%s %s", t->Translate("Tbl"), c->Table());
         TextL(t, 1, str, col);
         if (use_seats)
         {
-            snprintf(str, STRLENGTH, "%s %s", t->Translate("Seat"),
-                    SeatName(t->seat, nullptr, c->Guests()));
+            sprintf(str, "%s %s", t->Translate("Seat"),
+                    SeatName(t->seat, NULL, c->Guests()));
             TextC(t, 1, str, col);
         }
         else if (subs > 1)
         {
-            snprintf(str, STRLENGTH, "(%d of %d)", sc->number, subs);
+            sprintf(str, "(%d of %d)", sc->number, subs);
             TextC(t, 1, str, COLOR_DK_RED);
         }
-        snprintf(str, STRLENGTH, "%s %2d", t->Translate("Guests"), c->Guests());
+        sprintf(str, "%s %2d", t->Translate("Guests"), c->Guests());
         TextR(t, 1, str, col);
         break;
     case CHECK_HOTEL:
-        snprintf(str, STRLENGTH, "%s %s", t->Translate("Room"), c->Table());
+        sprintf(str, "%s %s", t->Translate("Room"), c->Table());
         TextL(t, 1, str, col);
         if (subs > 1)
         {
-            snprintf(str, STRLENGTH, "(%d of %d)", sc->number, subs);
+            sprintf(str, "(%d of %d)", sc->number, subs);
             TextC(t, 1, str, COLOR_DK_RED);
         }
-        snprintf(str, STRLENGTH, "%s %2d", t->Translate("Guests"), c->Guests());
+        sprintf(str, "%s %2d", t->Translate("Guests"), c->Guests());
         TextR(t, 1, str, col);
         break;
     case CHECK_TAKEOUT:
         TextL(t, 1, t->Translate("Take Out"), col);
-        snprintf(str, STRLENGTH, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_FASTFOOD:
         TextL(t, 1, t->Translate("Fast Food"), col);
-        snprintf(str, STRLENGTH, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_DELIVERY:
         TextL(t, 1, t->Translate("Delivery"), col);
-        snprintf(str, STRLENGTH, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_RETAIL:
         TextL(t, 1, t->Translate("Retail"), col);
-        snprintf(str, STRLENGTH, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_TOGO:
-        TextL(t, 1, "To Go", col);
-        snprintf(str, STRLENGTH, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        TextL(t, 1, GlobalTranslate("To Go"), col);
+        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_DINEIN:
-        TextL(t, 1, "Here", col);
-        snprintf(str, STRLENGTH, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        TextL(t, 1, GlobalTranslate("Here"), col);
+        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
 	}
@@ -298,21 +298,21 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
         }
 
         if (o->sales_type == SALES_TAKE_OUT)
-            strcpy(str3, "TO ");
+            strcpy(str3, GlobalTranslate("TO "));
         else
             str3[0] = '\0';
         o->Description(t, str2);
         if (o->IsModifier())
-            snprintf(str, sizeof(str), "    %s", str2);
+            sprintf(str, "    %s", str2);
         else if (o->item_type == ITEM_POUND)
-            snprintf(str, sizeof(str), "%s%.2f %s", str3, ((Flt)o->count / 100), str2);
+            sprintf(str, "%s%.2f %s", str3, ((Flt)o->count / 100), str2);
         else
-            snprintf(str, sizeof(str), "%s%d %s", str3, o->count, str2);
+            sprintf(str, "%s%d %s", str3, o->count, str2);
 
         if (o->cost != 0.0 || (o->status & ORDER_COMP))
         {
             if (o->status & ORDER_COMP)
-                strcpy(str2, t->Translate("COMP"));
+                strcpy(str2, GlobalTranslate("COMP"));
             else
                 t->FormatPrice(str2, o->cost);
             TextLR(t, line, str, tc, str2, tc);
@@ -340,14 +340,14 @@ SignalResult OrderEntryZone::Signal(Terminal *term, const genericChar* message)
 	static const genericChar* commands[] = {
 		"cancel", "delete", "consolidate", "final",
         "next check", "prior check", "next seat", "prior seat",
-        "takeoutseat", "takeoutattach", nullptr};
+        "takeoutseat", "takeoutattach", NULL};
 
     Check *currCheck = term->check;
-    if (currCheck == nullptr)
+    if (currCheck == NULL)
         return SIGNAL_IGNORED;
 
     SubCheck *subcheck = currCheck->current_sub;
-    if (subcheck == nullptr)
+    if (subcheck == NULL)
         return SIGNAL_IGNORED;
 
     Settings *settings = term->GetSettings();
@@ -367,8 +367,8 @@ SignalResult OrderEntryZone::Signal(Terminal *term, const genericChar* message)
     case 2:  // Consolidate
         ClearQualifier(term);
         subcheck->ConsolidateOrders();
-        term->order = nullptr;
-        term->Update(UPDATE_ORDERS, nullptr);
+        term->order = NULL;
+        term->Update(UPDATE_ORDERS, NULL);
         break;
 
     case 3:  // Final
@@ -434,7 +434,7 @@ SignalResult OrderEntryZone::Signal(Terminal *term, const genericChar* message)
                 count = 1;
             term->order->count = count;
             subcheck->FigureTotals(settings);
-            term->Update(UPDATE_ORDERS, nullptr);
+            term->Update(UPDATE_ORDERS, NULL);
             return SIGNAL_OKAY;
         }
 
@@ -475,7 +475,7 @@ SignalResult OrderEntryZone::Keyboard(Terminal *t, int my_key, int state)
 SignalResult OrderEntryZone::Touch(Terminal *t, int tx, int ty)
 {
     FnTrace("OrderEntryZone::Touch()");
-    if (t->check == nullptr)
+    if (t->check == NULL)
         return SIGNAL_IGNORED;
 
     LayoutZone::Touch(t, tx, ty);
@@ -502,7 +502,7 @@ SignalResult OrderEntryZone::Touch(Terminal *t, int tx, int ty)
     if (t->order != orders_shown[line])
     {
         t->order = orders_shown[line];
-        t->Update(UPDATE_ORDERS, nullptr);
+        t->Update(UPDATE_ORDERS, NULL);
         return SIGNAL_OKAY;
     }
     return SIGNAL_IGNORED;
@@ -568,7 +568,7 @@ int OrderEntryZone::CancelOrders(Terminal *t)
 {
     FnTrace("OrderEntryZone::CancelOrders()");
     Check *c = t->check;
-    if (c == nullptr)
+    if (c == NULL)
         return 1;  // Error -- No current check
 
     Settings  *s = t->GetSettings();
@@ -576,9 +576,9 @@ int OrderEntryZone::CancelOrders(Terminal *t)
     t->qualifier = QUALIFIER_NONE;
     c->CancelOrders(s);
 
-    t->order = nullptr;
-    t->Update(UPDATE_ORDERS, nullptr);
-    t->UpdateOtherTerms(UPDATE_CHECKS, nullptr);
+    t->order = NULL;
+    t->Update(UPDATE_ORDERS, NULL);
+    t->UpdateOtherTerms(UPDATE_CHECKS, NULL);
     return 0;
 }
 
@@ -586,11 +586,11 @@ int OrderEntryZone::AddQualifier(Terminal *t, int qualifier_type)
 {
     FnTrace("OrderEntryZone::AddQualifier()");
     Check *c = t->check;
-    if (c == nullptr)
+    if (c == NULL)
         return 1;
 
     SubCheck *sc = c->current_sub;
-    if (sc == nullptr || sc->status != CHECK_OPEN)
+    if (sc == NULL || sc->status != CHECK_OPEN)
         return 1;
 
     MergeQualifier(t->qualifier, qualifier_type);
@@ -604,11 +604,11 @@ int OrderEntryZone::DeleteOrder(Terminal *term, int is_void)
     FnTrace("OrderEntryZone::DeleteOrder()");
 
     Check *thisCheck = term->check;
-    if (thisCheck == nullptr || term->order == nullptr)
+    if (thisCheck == NULL || term->order == NULL)
         return 1;
 
     SubCheck *sc = thisCheck->current_sub;
-    if (sc == nullptr)
+    if (sc == NULL)
         return 1;
 
     int jump = 0;
@@ -629,7 +629,7 @@ int OrderEntryZone::DeleteOrder(Terminal *term, int is_void)
 			delete o; // deleting member from order obj? If so, this should be handled elswhere (like within the class)
 		}
 
-		term->Update(UPDATE_ORDERS, nullptr);
+		term->Update(UPDATE_ORDERS, NULL);
 		term->RunScript(term->order->script.Value(), JUMP_NONE, 0);
 	}
     else
@@ -650,7 +650,7 @@ int OrderEntryZone::DeleteOrder(Terminal *term, int is_void)
             if (term->order->next && term->order->next->seat == term->order->seat)
                 term->order = term->order->next;
             else
-                term->order = nullptr; // next order isn'term on same seat
+                term->order = NULL; // next order isn'term on same seat
         }
         sc->Remove(o);
         delete o;
@@ -660,7 +660,7 @@ int OrderEntryZone::DeleteOrder(Terminal *term, int is_void)
     if (jump && jump != term->page->id)
         term->Jump(JUMP_NORMAL, jump);
     else
-        term->Update(UPDATE_ORDERS, nullptr);
+        term->Update(UPDATE_ORDERS, NULL);
     return 0;
 }
 
@@ -672,21 +672,21 @@ int OrderEntryZone::CompOrder(Terminal *term, int reason)
     Employee *employee = term->user;
     Settings *currSettings = term->GetSettings();
 
-    if (thisCheck == nullptr || employee == nullptr || !employee->CanCompOrder(currSettings))
+    if (thisCheck == NULL || employee == NULL || !employee->CanCompOrder(currSettings))
         return 1;
 
     SubCheck *thisSubCheck = thisCheck->current_sub;
-    if (thisSubCheck == nullptr)
+    if (thisSubCheck == NULL)
         return 1;
 
     if (reason < 0)
     {
         genericChar str[32];
-        SimpleDialog *d = new SimpleDialog("Reason for comping this item:", 1);
+        SimpleDialog *d = new SimpleDialog(term->Translate("Reason for comping this item:"), 1);
         CompInfo *compInfo = currSettings->CompList();
         while (compInfo)
         {
-            snprintf(str, STRLENGTH, "comp %d", compInfo->id);
+            sprintf(str, "comp %d", compInfo->id);
             d->Button(compInfo->name.Value(), str);
             compInfo = compInfo->next;
         }
@@ -704,7 +704,7 @@ int OrderEntryZone::CompOrder(Terminal *term, int reason)
 	// Does its current location cause unintended duplication?
 	thisSubCheck->CompOrder(currSettings, term->order, 1);
 
-    term->Update(UPDATE_ORDERS, nullptr);
+    term->Update(UPDATE_ORDERS, NULL);
     return 0;
 }
 
@@ -715,17 +715,17 @@ int OrderEntryZone::VoidOrder(Terminal *term, int reason)
     Employee *employee = term->user;
     Settings *currSettings = term->GetSettings();
 
-    if (thisCheck == nullptr || employee == nullptr || !employee->CanCompOrder(currSettings))
+    if (thisCheck == NULL || employee == NULL || !employee->CanCompOrder(currSettings))
         return 1;
 
     if (reason < 0)
     {
         genericChar str[32];
-        SimpleDialog *d = new SimpleDialog("Reason for voiding this item:", 1);
+        SimpleDialog *d = new SimpleDialog(term->Translate("Reason for voiding this item:"), 1);
         CompInfo *compInfo = currSettings->CompList();
         while (compInfo)
         {
-            snprintf(str, STRLENGTH, "void %d", compInfo->id);
+            sprintf(str, "void %d", compInfo->id);
             d->Button(compInfo->name.Value(), str);
             compInfo = compInfo->next;
         }
@@ -748,16 +748,16 @@ int OrderEntryZone::NextCheck(Terminal *t)
 {
     FnTrace("OrderEntryZone::NextCheck()");
     Check *c = t->check;
-    if (c == nullptr)
+    if (c == NULL)
         return 1;
 
     SubCheck *sc = c->current_sub;
-    if (sc == nullptr)
+    if (sc == NULL)
         return 1;
 
     if (sc->next)
         c->current_sub = sc->next;
-    else if (sc->OrderList() == nullptr || c->Status() != CHECK_OPEN)
+    else if (sc->OrderList() == NULL || c->Status() != CHECK_OPEN)
     {
         c->Update(t->GetSettings());
         c->current_sub = c->SubList();
@@ -769,7 +769,7 @@ int OrderEntryZone::NextCheck(Terminal *t)
         // Select Last Order (no modifier)
         t->order = c->current_sub->LastParentOrder(t->seat);
 
-    t->Update(UPDATE_ORDERS, nullptr);
+    t->Update(UPDATE_ORDERS, NULL);
     return 0;
 }
 
@@ -777,11 +777,11 @@ int OrderEntryZone::PriorCheck(Terminal *t)
 {
     FnTrace("OrderEntryZone::PriorCheck()");
     Check *c = t->check;
-    if (c == nullptr)
+    if (c == NULL)
         return 1;
 
     SubCheck *sc = c->current_sub;
-    if (sc == nullptr)
+    if (sc == NULL)
         return 1;
 
     if (sc->fore)
@@ -798,7 +798,7 @@ int OrderEntryZone::PriorCheck(Terminal *t)
         // Select Last Order (no modifier)
         t->order = c->current_sub->LastParentOrder(t->seat);
 
-    t->Update(UPDATE_ORDERS, nullptr);
+    t->Update(UPDATE_ORDERS, NULL);
     return 0;
 }
 
@@ -807,11 +807,11 @@ int OrderEntryZone::ShowSeat(Terminal *t, int seat)
     FnTrace("OrderEntryZone::ShowSeat()");
     Settings *s = t->GetSettings();
     Check    *c = t->check;
-    if (c == nullptr || !s->use_seats)
+    if (c == NULL || !s->use_seats)
         return 1;
 
     SubCheck *sc = c->current_sub;
-    if (sc == nullptr)
+    if (sc == NULL)
         return 1;
 
     int guests = c->Guests();
@@ -831,11 +831,11 @@ int OrderEntryZone::ShowSeat(Terminal *t, int seat)
 
     sc->ConsolidateOrders();
     sc = c->FirstOpenSubCheck(t->seat);
-    if (sc == nullptr)
+    if (sc == NULL)
         return 1;
 
-    t->order = nullptr;
-    t->Update(UPDATE_ORDERS, nullptr);
+    t->order = NULL;
+    t->Update(UPDATE_ORDERS, NULL);
 
     if (s->store == STORE_SUNWEST)
     {
@@ -881,11 +881,11 @@ int OrderEntryZone::ClearQualifier(Terminal *t)
 {
     FnTrace("OrderEntryZone::ClearQualifier()");
     Check *c = t->check;
-    if (c == nullptr)
+    if (c == NULL)
         return 1;
 
     SubCheck *sc = c->current_sub;
-    if (sc == nullptr)
+    if (sc == NULL)
         return 1;
 
     // attach "on the side" qualifier to the order item if needed
@@ -948,7 +948,7 @@ SignalResult OrderPageZone::Touch(Terminal *t, int tx, int ty)
     Settings *s = t->GetSettings();
     Check *c = t->check;
 
-    if (s->use_seats && (c == nullptr || c->CustomerType() == CHECK_RESTAURANT))
+    if (s->use_seats && (c == NULL || c->CustomerType() == CHECK_RESTAURANT))
     {
         if (amount > 0)
             return t->Signal("next seat", group_id);
@@ -968,17 +968,17 @@ const char* OrderPageZone::TranslateString(Terminal *t)
     Check *c = t->check;
 
     static genericChar str[256];
-    if (s->use_seats && (c == nullptr || c->CustomerType() == CHECK_RESTAURANT))
+    if (s->use_seats && (c == NULL || c->CustomerType() == CHECK_RESTAURANT))
     {
         if (amount > 0)
-            strcpy(str, "Next\\Seat");
+            strcpy(str, GlobalTranslate("Next\\Seat"));
         else
-            strcpy(str, "Prior\\Seat");
+            strcpy(str, GlobalTranslate("Prior\\Seat"));
     }
     else if (amount > 0)
-        strcpy(str, "Next\\Check");
+        strcpy(str, GlobalTranslate("Next\\Check"));
     else
-        strcpy(str, "Prior\\Check");
+        strcpy(str, GlobalTranslate("Prior\\Check"));
     return str;
 }
 
@@ -999,8 +999,8 @@ int OrderFlowZone::RenderInit(Terminal *t, int update_flag)
     {
         Employee *e = t->user;
         Check    *c = t->check;
-        active = !(c == nullptr || (t->guests <= 0 && !( c->IsTakeOut() || c->IsFastFood())) ||
-                   e == nullptr || !e->CanOrder(s) ||
+        active = !(c == NULL || (t->guests <= 0 && !( c->IsTakeOut() || c->IsFastFood())) ||
+                   e == NULL || !e->CanOrder(s) ||
                    (!e->IsSupervisor(s) && c->user_owner != e->id));
     }
     else
@@ -1040,33 +1040,33 @@ RenderResult OrderFlowZone::Render(Terminal *term, int update_flag)
     {
         // Start Order
         if (meal == INDEX_GENERAL || customer_type == CHECK_HOTEL || customer_type == CHECK_RETAIL)
-            strcpy(str, "Order Entry");
+            strcpy(str, GlobalTranslate("Order Entry"));
         else
         {
             int cl = CompareList(meal, IndexValue, 0);
-            snprintf(str, STRLENGTH, "Order %s", IndexName[cl]);
+            sprintf(str, "Order %s", IndexName[cl]);
         }
     }
     else if (pt == PAGE_ITEM)
     {
         // Order Index
         if (idx == INDEX_GENERAL)
-            strcpy(str, "Index");
+            strcpy(str, GlobalTranslate("Index"));
         else
         {
             int cl = CompareList(idx, IndexValue, 0);
-            snprintf(str, STRLENGTH, "%s Index", IndexName[cl]);
+            sprintf(str, "%s Index", IndexName[cl]);
         }
     }
     else if (pt == PAGE_SCRIPTED || pt == PAGE_SCRIPTED2)
     {
         // Continue Order Script
         if (idx == INDEX_GENERAL)
-            strcpy(str, "Continue Ordering");
+            strcpy(str, GlobalTranslate("Continue Ordering"));
         else
         {
             int cl = CompareList(idx, IndexValue, 0);
-            snprintf(str, STRLENGTH, "Continue Ordering %s", IndexName[cl]);
+            sprintf(str, "Continue Ordering %s", IndexName[cl]);
         }
     }
 
@@ -1078,7 +1078,7 @@ SignalResult OrderFlowZone::Touch(Terminal *t, int tx, int ty)
 {
     FnTrace("OrderFlowZone::Touch()");
     Check *c = t->check;
-    if (c == nullptr)
+    if (c == NULL)
         return SIGNAL_IGNORED;
 
     int error = 1;
@@ -1158,10 +1158,10 @@ int OrderAddZone::RenderInit(Terminal *t, int update_flag)
        return 0;
     }
 
-    if (o == nullptr && thisCheck->current_sub)
+    if (o == NULL && thisCheck->current_sub)
         o = thisCheck->current_sub->LastParentOrder(t->seat);
     
-    if (o == nullptr)
+    if (o == NULL)
         mode = 0;
     else if (o->allow_increase == 0)
         mode = 0;
@@ -1192,8 +1192,8 @@ RenderResult OrderAddZone::Render(Terminal *t, int update_flag)
     case 1: str = "Increase\\Item"; break;
     case 2: str = "Reorder\\Item"; break;
     case 3: str = "Undo\\Comp"; break;
-    case 4: str = "Enter Item Count"; break;
-    case 5: str = "Enter Quantity"; break;
+    case 4: str = GlobalTranslate("Enter Item Count"); break;
+    case 5: str = GlobalTranslate("Enter Quantity"); break;
     default: str = ""; break;
     }
     RenderZone(t, str, update_flag);
@@ -1204,16 +1204,16 @@ SignalResult OrderAddZone::Touch(Terminal *term, int tx, int ty)
 {
     FnTrace("OrderAddZone::Touch()");
     Check *c = term->check;
-    if (c == nullptr || term->order == nullptr)
+    if (c == NULL || term->order == NULL)
         return SIGNAL_IGNORED;
 
     SubCheck *sc = c->current_sub;
-    if (sc == nullptr || sc->status != CHECK_OPEN)
+    if (sc == NULL || sc->status != CHECK_OPEN)
         return SIGNAL_IGNORED;
 
     Order *order = term->order;
     Settings *s = term->GetSettings();
-    if (order == nullptr)
+    if (order == NULL)
     {
         return SIGNAL_IGNORED;
     }
@@ -1223,7 +1223,7 @@ SignalResult OrderAddZone::Touch(Terminal *term, int tx, int ty)
     }
     else if (order->item_type == ITEM_POUND)
     {
-        TenKeyDialog *d = new TenKeyDialog("Enter Quantity", 0, 1, 1);
+        TenKeyDialog *d = new TenKeyDialog(GlobalTranslate("Enter Quantity"), 0, 1, 1);
         d->max_amount = 10000; // this will allow up to 999
         term->OpenDialog(d);
         return SIGNAL_OKAY;
@@ -1258,7 +1258,7 @@ SignalResult OrderAddZone::Touch(Terminal *term, int tx, int ty)
             mod = mod->next;
         }
         sc->Add(thisOrder);
-        term->order = nullptr;
+        term->order = NULL;
     }
     else
     {
@@ -1270,7 +1270,7 @@ SignalResult OrderAddZone::Touch(Terminal *term, int tx, int ty)
             //term->Signal() and exits.  On the order page the OrderEntry
             //zone will normally trap the message and apply it to the
             //current order.
-            TenKeyDialog *d = new TenKeyDialog("Enter Item Count", 0, 1);
+            TenKeyDialog *d = new TenKeyDialog(GlobalTranslate("Enter Item Count"), 0, 1);
             d->max_amount = 100; // this will allow up to 999
             term->OpenDialog(d);
             return SIGNAL_OKAY;
@@ -1281,7 +1281,7 @@ SignalResult OrderAddZone::Touch(Terminal *term, int tx, int ty)
         sc->FigureTotals(s);
     }
 
-    term->Update(UPDATE_ORDERS, nullptr);
+    term->Update(UPDATE_ORDERS, NULL);
     return SIGNAL_OKAY;
 }
 
@@ -1321,10 +1321,10 @@ int OrderDeleteZone::RenderInit(Terminal *t, int update_flag)
        return 0;
     }
 
-    if (o == nullptr && thisCheck->current_sub)
+    if (o == NULL && thisCheck->current_sub)
         o = thisCheck->current_sub->LastParentOrder(t->seat);
     
-    if (o == nullptr)
+    if (o == NULL)
         mode = 0;
     else if (o->status & ORDER_FINAL)
     {
@@ -1355,8 +1355,8 @@ RenderResult OrderDeleteZone::Render(Terminal *t, int update_flag)
     case 2: str = "Delete\\Modifier"; break;
     case 3: str = "Decrease\\Item"; break;
     case 4: str = "Rebuild\\Item"; break;
-    case 5: str = "Comp or Void Item"; break;
-    case 6: str = "Comp or Void Modifier"; break;
+    case 5: str = GlobalTranslate("Comp or Void Item"); break;
+    case 6: str = GlobalTranslate("Comp or Void Modifier"); break;
     default: str = "";
     }
     RenderZone(t, str, update_flag);
@@ -1369,11 +1369,11 @@ SignalResult OrderDeleteZone::Touch(Terminal *term, int tx, int ty)
 
     Check    *thisCheck = term->check;
     Employee *thisEmployee = term->user;
-    if (thisCheck == nullptr || thisEmployee == nullptr || term->order == nullptr)
+    if (thisCheck == NULL || thisEmployee == NULL || term->order == NULL)
         return SIGNAL_IGNORED;
 
     SubCheck *sc = thisCheck->current_sub;
-    if (sc == nullptr || sc->status != CHECK_OPEN)
+    if (sc == NULL || sc->status != CHECK_OPEN)
         return SIGNAL_IGNORED;
 
     Settings *s = term->GetSettings();
@@ -1383,10 +1383,10 @@ SignalResult OrderDeleteZone::Touch(Terminal *term, int tx, int ty)
         if (!thisEmployee->CanRebuild(s))
             return SIGNAL_IGNORED;
 
-        SimpleDialog *d = new SimpleDialog("What do you want to do with this Item?");
-        d->Button("Comp this Item", "comp-1");
-        d->Button("Void this Item", "void-1");
-        d->Button("Cancel");
+        SimpleDialog *d = new SimpleDialog(term->Translate("What do you want to do with this Item?"));
+        d->Button(GlobalTranslate("Comp this Item"), "comp-1");
+        d->Button(GlobalTranslate("Void this Item"), "void-1");
+        d->Button(GlobalTranslate("Cancel"));
         term->OpenDialog(d);
         return SIGNAL_OKAY;
     }
@@ -1414,7 +1414,7 @@ ItemZone::ItemZone()
 {
     jump_type = JUMP_NONE;
     jump_id   = 0;
-    item      = nullptr;
+    item      = NULL;
     footer    = 14;
     iscopy    = 0;
     addanyway = 0;
@@ -1463,7 +1463,7 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
         }
     }
 
-    if (item == nullptr)
+    if (item == NULL)
     {
         RenderZone(t, "<Unknown>", update_flag);
         return RENDER_OKAY;
@@ -1483,7 +1483,7 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
     int font_height, font_width;
     t->FontSize(font, font_width, font_height);
 
-    if (t->check != nullptr &&
+    if (t->check != NULL &&
         strcmp(t->Translate(EMPLOYEE_TABLE), t->check->Table()) == 0 &&
         item->cost != item->employee_cost)
     {
@@ -1493,13 +1493,13 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
     else
     {
         CouponInfo *coupon = s->FindCouponByItem(item, 1);
-        if (coupon != nullptr)
+        if (coupon != NULL)
         {
             // If this coupon is only supposed to be applied once, then we
             // need to verify there isn't already an applicable item on the
             // subcheck
-            SubCheck *currsub = nullptr;
-            if (t->check != nullptr)
+            SubCheck *currsub = NULL;
+            if (t->check != NULL)
                 currsub = t->check->current_sub;
             int count = coupon->Applies(currsub, 1);
             if ((coupon->flags & TF_APPLY_EACH) || (count < 1))
@@ -1589,7 +1589,7 @@ SignalResult ItemZone::Signal(Terminal *t, const char* message)
 {
     FnTrace("ItemZone::Signal()");
     SignalResult retval = SIGNAL_IGNORED;
-	static const genericChar* commands[] = { "addanyway", "addandopentab", nullptr };
+	static const genericChar* commands[] = { "addanyway", "addandopentab", NULL };
     int idx = CompareList(message, commands);
 
     switch (idx)
@@ -1623,11 +1623,11 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
     int reduced_price = 0;
     int coupon_id = -1;
 
-    if (c == nullptr || e == nullptr || !e->CanOrder(s) || item == nullptr)
+    if (c == NULL || e == NULL || !e->CanOrder(s) || item == NULL)
         return SIGNAL_IGNORED;
 
     SubCheck *sc = c->current_sub;
-    if (sc == nullptr || sc->status != CHECK_OPEN)
+    if (sc == NULL || sc->status != CHECK_OPEN)
         return SIGNAL_IGNORED;
 
     if (strcmp("Employee", c->Table()) == 0)
@@ -1638,7 +1638,7 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
     else
     {
         coupon = s->FindCouponByItem(item, 1);
-        if (coupon != nullptr)
+        if (coupon != NULL)
         {
             int count = coupon->Applies(sc, 1);
             if ((coupon->flags & TF_APPLY_EACH) ||
@@ -1653,7 +1653,7 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
 
     // Create new order
     Order *o = new Order(s, item, t);
-    if (o == nullptr)
+    if (o == NULL)
         return SIGNAL_IGNORED;
     o->IsEmployeeMeal(employee);
     o->IsReduced(reduced);
@@ -1665,19 +1665,19 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
         o->count = 100;
 
     // If we have a tab, we need to verify we aren't exceeding the tab.
-    if (addanyway == 0 && t->check != nullptr && t->is_bar_tab)
+    if (addanyway == 0 && t->check != NULL && t->is_bar_tab)
     {
         o->FigureCost();
         if ((sc->TabRemain() - o->total_cost) < 0)
         {
             char str[STRLENGTH] = "";
-            strcpy(str, "This order will reduce the tab remaining below 0.\\");
-            strcpy(str, "Would you like to extend the tab?");
+            strcpy(str, GlobalTranslate("This order will reduce the tab remaining below 0.\\"));
+            strcpy(str, GlobalTranslate("Would you like to extend the tab?"));
             SimpleDialog *sd = new SimpleDialog(str);
-            sd->Button("Yes", "addandopentab");
-            sd->Button("No, just add the order", "addanyway");
+            sd->Button(GlobalTranslate("Yes"), "addandopentab");
+            sd->Button(GlobalTranslate("No, just add the order"), "addanyway");
             addanyway = 1;
-            sd->Button("Cancel", "skipit");
+            sd->Button(GlobalTranslate("Cancel"), "skipit");
             t->OpenDialog(sd);
             return SIGNAL_OKAY;
         }
@@ -1720,9 +1720,9 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
         t->qualifier = QUALIFIER_NONE;
     }
 
-    t->Update(my_update, nullptr);
+    t->Update(my_update, NULL);
     t->RunScript(modifier_script.Value(), jump_type, jump_id);
-    if (t->cdu != nullptr)
+    if (t->cdu != NULL)
     {
         genericChar buffer[STRLONG];
         int buflen;
@@ -1792,11 +1792,11 @@ SignalResult QualifierZone::Touch(Terminal *t, int tx, int ty)
 {
     FnTrace("QualifierZone::Touch()");
     Check *c = t->check;
-    if (qualifier_type <= 0 || c == nullptr)
+    if (qualifier_type <= 0 || c == NULL)
         return SIGNAL_IGNORED;
 
     SubCheck *sc = c->current_sub;
-    if (sc == nullptr || sc->status != CHECK_OPEN)
+    if (sc == NULL || sc->status != CHECK_OPEN)
         return SIGNAL_IGNORED;
 
     if (t->qualifier & qualifier_type)
@@ -1804,7 +1804,7 @@ SignalResult QualifierZone::Touch(Terminal *t, int tx, int ty)
     else
         MergeQualifier(t->qualifier, qualifier_type);
 
-    t->Update(UPDATE_QUALIFIER, nullptr);
+    t->Update(UPDATE_QUALIFIER, NULL);
     t->Jump(jump_type, jump_id);
     return SIGNAL_OKAY;
 }

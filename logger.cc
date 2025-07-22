@@ -5,7 +5,6 @@
 #include <stdarg.h>
 #include <stdio.h>  /* vsnprintf */
 #include <string.h> /* memset */
-#include <syslog.h>
 
 #include "logger.hh"
 
@@ -49,7 +48,7 @@ setident(const char* ident)
  *         -1 : message truncated (didn't fit into buffer)
  *         -2 : error returned by vsnprintf(3)
  */
-void
+int
 logmsg(int priority, const char* fmt, ...)
 {
     va_list ap;
@@ -78,6 +77,8 @@ logmsg(int priority, const char* fmt, ...)
     //   (even if it was truncated)
     if (retval >= -1)
         syslog(priority, "%s",buf);
+
+    return retval;
 }
 
 /* done */

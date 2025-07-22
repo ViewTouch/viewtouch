@@ -36,14 +36,14 @@ AccountZone::AccountZone()
 {
     list_header = 2;
     //list_footer = 1;
-    account = nullptr;
+    account = NULL;
     show_list = 1;
     edit_default = 0;
-    AddTextField("Account Name", 15);
-    AddTextField("Account No", 5);
+    AddTextField(GlobalTranslate("Account Name"), 15);
+    AddTextField(GlobalTranslate("Account No"), 5);
     SetFlag(FF_ONLYDIGITS);
     acctnumfld = FieldListEnd();
-    AddTextField("Balance", 12);
+    AddTextField(GlobalTranslate("Balance"), 12);
     SetFlag(FF_MONEY);
 }
 
@@ -64,12 +64,12 @@ RenderResult AccountZone::Render(Terminal *term, int update_flag)
         indent = 0;
         TextPosL(term, indent, 1.3, "No.");
         indent += num_spaces;
-        TextPosL(term, indent, 1.3, "Name");
+        TextPosL(term, indent, 1.3, GlobalTranslate("Name"));
         indent += num_spaces;
-        TextPosL(term, indent, 1.3, "Balance");
+        TextPosL(term, indent, 1.3, GlobalTranslate("Balance"));
 
-        snprintf(str, STRLENGTH, "%s: %d", term->Translate("Total Accounts Active"),
-                 term->system_data->account_db.AccountCount());
+        sprintf(str, "%s: %d", term->Translate("Total Accounts Active"),
+                term->system_data->account_db.AccountCount());
         TextC(term, size_y - 1, str);
     }
     else
@@ -78,7 +78,7 @@ RenderResult AccountZone::Render(Terminal *term, int update_flag)
         if (account)
             snprintf(buff, STRLENGTH, "Account %d of %d", record_no + 1, my_records);
         else
-            snprintf(buff, STRLENGTH, "%s", "No Accounts");
+            snprintf(buff, STRLENGTH, "%s", GlobalTranslate("No Accounts"));
         TextC(term, 0, buff, col);
     }
     return RENDER_OKAY;
@@ -132,7 +132,7 @@ int AccountZone::LoadRecord(Terminal *term, int my_record_no)
     FormField *field = FieldList();
     account = term->system_data->account_db.FindByRecord(my_record_no);
 
-    if (account != nullptr)
+    if (account != NULL)
     {
         // AddTextField("Account Name", 15, 0);
         field->Set(account->name.Value());
@@ -152,7 +152,7 @@ int AccountZone::SaveRecord(Terminal *term, int my_record_no, int write_file)
     int acct_no = 0;
 
     FnTrace("AccountZone::SaveRecord()");
-    if (account != nullptr)
+    if (account != NULL)
     {
         FormField *field = FieldList();
         field->Get(account->name);  field = field->next;
@@ -174,7 +174,7 @@ int AccountZone::NewRecord(Terminal *term)
     FnTrace("AccountZone::NewRecord()");
     int acct_num = 0;
 
-    if (account != nullptr)
+    if (account != NULL)
         acct_num = account->number;
     account = term->system_data->account_db.NewAccount(acct_num);
     records = RecordCount(term);
@@ -225,15 +225,15 @@ int AccountZone::ListReport(Terminal *term, Report *report)
     int indent = 0;
     int my_color = COLOR_DEFAULT;
 
-    if (report == nullptr)
+    if (report == NULL)
         return 1;
 
     AccountDB *account_db = &(term->system_data->account_db);
     report->Clear();
     Account *acct = account_db->Next();
-    if (acct == nullptr)
-        report->TextC("No Accounts Defined");
-    while (acct != nullptr)
+    if (acct == NULL)
+        report->TextC(GlobalTranslate("No Accounts Defined"));
+    while (acct != NULL)
     {
         indent = 0;
         snprintf(buff, STRLENGTH, "%d", acct->number);
@@ -269,7 +269,7 @@ int AccountZone::CheckAccountNumber(Terminal *term, int sendmsg)
     genericChar msggood[] = "clearstatus";
     const genericChar* msgsend = msggood;
 
-    if (account != nullptr)
+    if (account != NULL)
     {
         acctnumfld->Get(number);
         if (! IsValidAccountNumber(term, number))

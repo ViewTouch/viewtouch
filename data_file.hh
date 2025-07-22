@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -19,6 +17,9 @@
  * data_file.hh - revision 15 (8/25/98)
  * Functions for the reading & writing of data files
  */
+
+#ifndef _DATA_FILE_HH
+#define _DATA_FILE_HH
 
 #include "utility.hh"
 #include <zlib.h>
@@ -188,3 +189,5 @@ public:
     int Reset();
     int Write(const std::string &key, const std::string &value);
 };
+
+#endif

@@ -14,16 +14,22 @@
  *   You should have received a copy of the GNU General Public License 
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  *
- * debug.hh - Debug module
+ * debug.cc
+ * Some debug functions that may or may not help in the debugging process.
+ * If they don't help, don't use them.  Heh.
+ * Created By:  Bruce Alon King, Tue Apr  2 08:45:15 2002
  */
 
-#pragma once
+#ifndef _DEBUG_FUNCS_HH
+#define _DEBUG_FUNCS_HH
 
 #include "basic.hh"
-#include <X11/Xlib.h>
-#include <cstdio>
 
-extern int debug_mode;
+#include <stdio.h>
+#include <X11/Xlib.h>
+
+#ifdef DEBUG
+
 extern const genericChar* pos_data_filename;
 
 const genericChar* GetXEventName( XEvent );
@@ -31,9 +37,16 @@ void PrintXEventName( XEvent, const genericChar* , FILE * );
 void PrintTermCode( int );
 void PrintServerCode( int );
 void PrintFamilyCode( int );
-
-#ifdef DEBUG
 const genericChar* GetZoneTypeName( int );
+
 #else
+
+#define GetXEventName(x)
+#define PrintXEventName(x,y,z)
+#define PrintTermCode(x)
+#define PrintServerCode(x)
+#define PrintFamilyCode(x)
 #define GetZoneTypeName(x)
+
+#endif
 #endif

@@ -18,7 +18,8 @@
  * General functions and data types than have no other place to go
  */
 
-#pragma once
+#ifndef VT_UTILITY_HH
+#define VT_UTILITY_HH
 
 #include "basic.hh"
 #include "fntrace.hh"
@@ -66,62 +67,45 @@ enum SignalResult
     SIGNAL_TERMINATE   // signal received - terminate me
 };
 
-
 // Dynamic string storage class
 class Str
 {
     std::string data;
 
 public:
-    Str*   next = nullptr;
-    Str*   fore = nullptr;
-
+    Str *next = nullptr;
+    Str *fore = nullptr;
 
     // Constructors
-    Str() = default;
-    explicit Str(const std::string& str) : data(str) {}
-    explicit Str(const char* str) : data(str ? str : "") {}
-    
-
-    // Copy operations
-    Str(const Str& other) = default;
-    Str& operator=(const Str& other) = default;
-    
-
-    // Move operations  
-    Str(Str&& other) noexcept = default;
-    Str& operator=(Str&& other) noexcept = default;
-    
-
+    Str();
+    Str(const std::string &str);
+    Str(const Str &s);
     // Destructor
-    ~Str() = default;
+    ~Str();
 
-
-    // Methods
-    int   Clear() { data.clear(); return 0; }
-    bool  Set(const char *str) { data = str ? str : ""; return true; }
-    bool  Set(const std::string &str) { data = str; return true; }
-    bool  Set(const int val) { data = std::to_string(val); return true; }
-    bool  Set(const Flt val) { data = std::to_string(val); return true; }
+    // Member Functions
+    int   Clear();
+    bool  Set(const char *str);
+    bool  Set(const std::string &str);
+    bool  Set(const int val);
+    bool  Set(const Flt val);
     bool  Set(const Str &s) { data = s.data; return true; }
     bool  Set(const Str *s) { return Set(s->Value()); }
-    void  ChangeAtoB(const char a, const char b);
+    void  ChangeAtoB(const char a, const char b);  // character replace
     int   IntValue() const;
     Flt   FltValue() const;
-    const char *Value() const { return data.c_str(); }
-    const char *c_str() const { return data.c_str(); }
-    std::string str() const { return data; }
+    const char *Value() const;
+    const char *c_str() const;
+    std::string str() const;
     const char* ValueSet(const char* set = nullptr);
 
-    bool   empty() const { return data.empty(); }
-    size_t size() const { return data.size(); }
+    bool   empty() const;
+    size_t size() const;
 
-    // Assignment operators for compatibility
     Str & operator =  (const char* s) { Set(s); return *this; }
-    Str & operator =  (const std::string &s) { Set(s); return *this; }
-    Str & operator =  (const int s) { Set(s); return *this; }
-    Str & operator =  (const Flt s) { Set(s); return *this; }
-
+    Str & operator =  (const Str  &s) { Set(s); return *this; }
+    Str & operator =  (const int   s) { Set(s); return *this; }
+    Str & operator =  (const Flt   s) { Set(s); return *this; }
     int   operator >  (const Str  &s) const;
     int   operator <  (const Str  &s) const;
     int   operator == (const Str  &s) const;
@@ -247,7 +231,7 @@ int CompareListN(const genericChar* list[], const genericChar* str, int unknown 
 // str="hello" will match list[0]="hello world".
 
 const char* FindStringByValue(int val, int val_list[], const genericChar* str_list[],
-                        const genericChar* unknown = nullptr);
+                        const genericChar* unknown = NULL);
 int   FindValueByString(const genericChar* val, int val_list[], const genericChar* str_list[],
                         int unknown = -1);
 // finds string by finding val index
@@ -265,7 +249,6 @@ int DoesFileExist(const genericChar* filename);
 // Returns 1 if file exists otherwise 0
 
 int EnsureFileExists(const genericChar* filename);
-int EnsureDirExists(const genericChar* dirname);
 
 int DeleteFile(const genericChar* filename);
 // Deletes file from disk
@@ -286,3 +269,4 @@ int FltToPercent(Flt value);
 
 int LockDevice(const genericChar* devpath);
 int UnlockDevice(int id);
+#endif // VT_UTILITY_HH

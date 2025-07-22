@@ -18,7 +18,8 @@
  * Drawer balance, report, use classes
  */
 
-#pragma once
+#ifndef _DRAWER_HH
+#define _DRAWER_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -85,7 +86,7 @@ public:
     // Member Functions
     int   Read(InputDataFile &df, int version);
     int   Write(OutputDataFile &df, int version);
-    genericChar* Description(Settings *s, genericChar* str = nullptr);
+    genericChar* Description(Settings *s, genericChar* str = NULL);
 };
 
 class Drawer
@@ -96,7 +97,7 @@ class Drawer
 public:
     Drawer    *next;
     Drawer    *fore;      // linked list pointers
-    Archive   *archive;          // parent archive (nullptr if current drawer)
+    Archive   *archive;          // parent archive (NULL if current drawer)
     TimeInfo   start_time;       // time of drawer initialization
     TimeInfo   pull_time;        // time of drawer pull
     TimeInfo   balance_time;     // time of drawer balance
@@ -180,3 +181,5 @@ public:
 };
 
 int MergeSystems(Terminal *term, int mergeall = 0);
+
+#endif

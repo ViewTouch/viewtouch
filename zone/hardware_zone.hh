@@ -18,7 +18,8 @@
  * Hardware settings (taken from settings_zone.hh)
  */
 
-#pragma once
+#ifndef _HARDWARE_ZONE_HH
+#define _HARDWARE_ZONE_HH
 
 #include "form_zone.hh"
 
@@ -57,3 +58,5 @@ public:
     int Calibrate(Terminal *t);
     Printer *FindPrinter(Terminal *t);
 };
+
+#endif

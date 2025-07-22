@@ -30,8 +30,8 @@
 // Constructors
 ZoneObject::ZoneObject()
 {
-    fore = nullptr;
-    next = nullptr;
+    fore = NULL;
+    next = NULL;
     selected = 0;
     active = 1;
     font = FONT_DEFAULT;
@@ -95,7 +95,7 @@ int ZoneObjectList::Remove(ZoneObject *zo)
 int ZoneObjectList::CountSelected()
 {
     int count = 0;
-    for (ZoneObject *zo = List(); zo != nullptr; zo = zo->next)
+    for (ZoneObject *zo = List(); zo != NULL; zo = zo->next)
         if (zo->selected && zo->active)
             ++count;
     return count;
@@ -109,15 +109,15 @@ int ZoneObjectList::Purge()
 
 ZoneObject *ZoneObjectList::Find(int x, int y)
 {
-    for (ZoneObject *zo = List(); zo != nullptr; zo = zo->next)
+    for (ZoneObject *zo = List(); zo != NULL; zo = zo->next)
         if (zo->IsPointIn(x, y) && zo->active)
             return zo;
-    return nullptr;
+    return NULL;
 }
 
 int ZoneObjectList::Render(Terminal *t)
 {
-    for (ZoneObject *zo = List(); zo != nullptr; zo = zo->next)
+    for (ZoneObject *zo = List(); zo != NULL; zo = zo->next)
         if (zo->active && zo->w > 0 && zo->h > 0)
             zo->Render(t);
     return 0;
@@ -125,14 +125,14 @@ int ZoneObjectList::Render(Terminal *t)
 
 int ZoneObjectList::SetActive(int val)
 {
-    for (ZoneObject *zo = List(); zo != nullptr; zo = zo->next)
+    for (ZoneObject *zo = List(); zo != NULL; zo = zo->next)
         zo->active = val;
     return 0;
 }
 
 int ZoneObjectList::SetSelected(int val)
 {
-    for (ZoneObject *zo = List(); zo != nullptr; zo = zo->next)
+    for (ZoneObject *zo = List(); zo != NULL; zo = zo->next)
         zo->selected = val;
     return 0;
 }
@@ -146,7 +146,7 @@ int ZoneObjectList::LayoutRows(Terminal *t, int x, int y, int w, int h,
         return 0;  // nothing to layout
 
     int pos = 0, ly;
-    for (ZoneObject *zo = List(); zo != nullptr; zo = zo->next)
+    for (ZoneObject *zo = List(); zo != NULL; zo = zo->next)
     {
         ly = y + ((h * pos) / no);
         zo->Layout(t, x, ly, w, (y + ((h * (pos + 1)) / no)) - ly);
@@ -165,7 +165,7 @@ int ZoneObjectList::LayoutColumns(Terminal *t, int x, int y, int w, int h,
 
     int i = 0, s, e;
     int ww = w - (gap * (no - 1));
-    for (ZoneObject *zo = List(); zo != nullptr; zo = zo->next)
+    for (ZoneObject *zo = List(); zo != NULL; zo = zo->next)
     {
         s = ((ww * i) / no) + (gap * i);
         e = ((ww * (i + 1)) / no) + (gap * i);
@@ -199,7 +199,7 @@ int ZoneObjectList::LayoutGrid(Terminal *t, int x, int y, int w, int h,
 
     // Layout servers left to right, top to bottom
     r = 0; c = 0;
-    for (ZoneObject *zo = List(); zo != nullptr; zo = zo->next)
+    for (ZoneObject *zo = List(); zo != NULL; zo = zo->next)
     {
         // FIX - height/width should be calculated each time to remove error
         zo->Layout(t, x + (c * sw), y + (r * sh), sw, sh);

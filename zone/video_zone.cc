@@ -46,7 +46,7 @@ int VideoTargetZone::AddFields()
 
     int i = 0;
 
-    for (i = 0; FamilyName[i] != nullptr; i++)
+    for (i = 0; FamilyName[i] != NULL; i++)
     {
         AddListField(MasterLocale->Translate(FamilyName[i]),
                      PrinterIDName, PrinterIDValue);

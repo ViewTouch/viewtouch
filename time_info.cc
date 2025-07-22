@@ -31,6 +31,11 @@
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sstream>
+#include <chrono>
+#include <stdexcept>
+#include <cassert>
+#include <limits>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -86,7 +91,7 @@ int TimeInfo::Set(int s, int y)
 }
 
 /****
- * Set:  Parses date strings.  Acceptable formats:
+ * Set:  Parses date strings.  Acceptible formats:
  *   "DD/MM/YY,HH:MM"   in 24hour format
  *   "DD/MM/YYYY,HH:MM" in 24hour format
  *  Returns 1 on error, 0 on success.
@@ -97,19 +102,30 @@ int TimeInfo::Set(const std::string &date_string)
     using namespace date;
 
     std::istringstream ss(date_string);
-    ss >> date::parse("%d/%m/%y,%H:%M", t_);
+    sys_time<std::chrono::seconds> t;
+    
+    // Try parsing with 2-digit year format first
+    std::string abbrev;
+    std::chrono::minutes offset{0};
+    date::from_stream(ss, "%d/%m/%y,%H:%M", t, &abbrev, &offset);
     if (ss.fail())
     {
-        std::istringstream ss2(date_string);
-        ss2 >> date::parse("%d/%m/%Y,%H:%M", t_);
-        if (ss2.fail())
+        // Reset stream and try 4-digit year format
+        ss.clear();
+        ss.str(date_string);
+        date::from_stream(ss, "%d/%m/%Y,%H:%M", t, &abbrev, &offset);
+        if (ss.fail())
         {
             Clear();
-            return false;
+            return 1; // error
         }
     }
+    
+    // Convert to local time
+    auto zt = make_zoned(current_zone(), t);
+    t_ = zt.get_local_time();
     is_valid_ = true;
-    return true;
+    return 0; // success
 }
 
 int TimeInfo::Set(const TimeInfo *other)

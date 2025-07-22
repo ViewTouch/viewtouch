@@ -182,7 +182,7 @@ KitchenObj::KitchenObj(Control *db, int no)
 {
     number = no;
 
-    for (Terminal *t = db->TermList(); t != nullptr; t = t->next)
+    for (Terminal *t = db->TermList(); t != NULL; t = t->next)
         if (t->kitchen == no)
             terms.Add(new TermObj(t));
 }
@@ -223,12 +223,12 @@ int KitchenObj::Render(Terminal *t)
 
     if (number <= 0)
     {
-        strcpy(str, "Standard Target");
+        strcpy(str, GlobalTranslate("Standard Target"));
         color = COLOR_RED;
     }
     else
     {
-        snprintf(str, STRLENGTH, "Kitchen #%d", number);
+        sprintf(str, "Kitchen #%d", number);
         color = COLOR_BLACK;
     }
 
@@ -244,7 +244,7 @@ int KitchenObj::Render(Terminal *t)
 // Member Functions
 RenderResult SplitKitchenZone::Render(Terminal *t, int update_flag)
 {
-    RenderZone(t, nullptr, update_flag);
+    RenderZone(t, NULL, update_flag);
     if (update_flag)
     {
         kitchens.Purge();
@@ -261,7 +261,7 @@ RenderResult SplitKitchenZone::Render(Terminal *t, int update_flag)
 
 SignalResult SplitKitchenZone::Signal(Terminal *t, const genericChar* message)
 {
-    static const genericChar* commands[] = {"cancel", nullptr};
+    static const genericChar* commands[] = {"cancel", NULL};
 
     int idx = CompareList(message, commands);
     switch (idx)
@@ -327,7 +327,7 @@ int SplitKitchenZone::MoveTerms(Terminal *t, int no)
 ReceiptSetZone::ReceiptSetZone()
 {
     Center();
-    AddLabel("Receipt Header");
+    AddLabel(GlobalTranslate("Receipt Header"));
     AddNewLine();
     LeftAlign();
     AddTextField("Line 1", 32);
@@ -339,7 +339,7 @@ ReceiptSetZone::ReceiptSetZone()
     AddTextField("Line 4", 32);
     AddNewLine(2);
     Center();
-    AddLabel("Receipt Footer");
+    AddLabel(GlobalTranslate("Receipt Footer"));
     AddNewLine();
     LeftAlign();
     AddTextField("Line 1", 32);

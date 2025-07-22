@@ -18,7 +18,8 @@
  * layout & formating of report information
  */
 
-#pragma once
+#ifndef _REPORT_HH
+#define _REPORT_HH
 
 #include "utility.hh"
 #include "terminal.hh"
@@ -224,3 +225,5 @@ public:
     { return Underline(len, c, ALIGN_RIGHT, pos); }
 
 };
+
+#endif

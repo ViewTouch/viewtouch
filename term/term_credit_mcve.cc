@@ -85,7 +85,7 @@ int AppendString(char* dest, int fwidth, const char* source)
     char buffer[STRLONG];
 
     snprintf(buffer, STRLONG, "%-*s", fwidth, source);
-    strncat(dest, buffer, sizeof(dest) - strlen(dest) - 1);
+    strcat(dest, buffer);
 
     return retval;
 }
@@ -239,16 +239,16 @@ void BatchInfo::Clear()
     iso[0]     = '\0';
     b24[0]     = '\0';
 
-    visa.SetName("Visa");
-    mastercard.SetName("MasterCard");
-    amex.SetName("American Express");
-    diners.SetName("Diners");
-    debit.SetName("Debit");
-    discover.SetName("Discover");
-    jcb.SetName("JCB");
-    purchase.SetName("Purchase");
-    refund.SetName("Refund");
-    voids.SetName("Corrections");
+    visa.SetName(GlobalTranslate("Visa"));
+    mastercard.SetName(GlobalTranslate("MasterCard"));
+    amex.SetName(GlobalTranslate("American Express"));
+    diners.SetName(GlobalTranslate("Diners"));
+    debit.SetName(GlobalTranslate("Debit"));
+    discover.SetName(GlobalTranslate("Discover"));
+    jcb.SetName(GlobalTranslate("JCB"));
+    purchase.SetName(GlobalTranslate("Purchase"));
+    refund.SetName(GlobalTranslate("Refund"));
+    voids.SetName(GlobalTranslate("Corrections"));
 }
 
 int BatchInfo::ParseResults(MCVE_CONN *conn, long id)
@@ -430,7 +430,7 @@ int BatchInfo::GetAmt(char* dest, const char* value)
     FnTrace("BatchInfo::GetAmt()");
     int retval = 0;
 
-    snprintf(dest, sizeof(dest), "%d", GetNum(value));
+    sprintf(dest, "%d", GetNum(value));
 
     return retval;
 }
@@ -441,7 +441,7 @@ int BatchInfo::GetAmt(char* dest, const char* value)
  ********************************************************************/
 CCard::CCard()
 {
-    conn = nullptr;
+    conn = NULL;
     trans_success = 0;
     intcode = CC_STATUS_NONE;
 
@@ -569,9 +569,9 @@ int CCard::Connect()
 
     if (server[0] != '\0' && port[0] != '\0')
     {
-        if (conn == nullptr)
+        if (conn == NULL)
             conn = new MCVE_CONN;
-        MCVE_InitEngine(nullptr);
+        MCVE_InitEngine(NULL);
         MCVE_InitConn(conn);
         if (MCVE_SetIP(conn, server, atoi(port)))
         {
@@ -583,11 +583,11 @@ int CCard::Connect()
             }
             else
             {
-                strcpy(verb, "No Connection");
+                strcpy(verb, GlobalTranslate("No Connection"));
                 intcode = CC_STATUS_NOCONNECT;
                 MCVE_DestroyConn(conn);
                 MCVE_DestroyEngine();
-                conn = nullptr;
+                conn = NULL;
             }
         }
     }
@@ -600,13 +600,13 @@ int CCard::Close()
     FnTrace("CCard::Close()");
     int retval = 1;
 
-    if (conn != nullptr)
+    if (conn != NULL)
     {
-        strcpy(code, "NOCONN");
+                    strcpy(code, GlobalTranslate("NOCONN"));
         intcode = CC_STATUS_NOCONNECT;
         MCVE_DestroyConn(conn);
         MCVE_DestroyEngine();
-        conn = nullptr;
+        conn = NULL;
         retval = 0;
     }
 
@@ -619,7 +619,7 @@ int CCard::SetValue(char* dest, const char* source)
     int retval = 0;
 
     dest[0] = '\0';
-    if (source != nullptr)
+    if (source != NULL)
         strcpy(dest, source);
 
     return retval;
@@ -771,7 +771,7 @@ int CCard::SetFields(int gut, long identifier)
 
 
         MCVE_DestroyConn(conn);
-        conn = nullptr;
+        conn = NULL;
     }
     else
         retval = 1;
@@ -819,7 +819,7 @@ int CCard::GetBatchNumber(char* dest)
         {
         }
     }
-    snprintf(dest, sizeof(dest), "%d", batchnum);
+    sprintf(dest, "%d", batchnum);
 
     return retval;
 }
@@ -1015,14 +1015,14 @@ int CCard::BatchSettle()
     if (retval)
     {
         WInt8(SERVER_CC_SETTLEFAILED);
-        if (conn != nullptr)
+        if (conn != NULL)
         {
             SetValue(msgbuff, MCVE_TransactionText(conn, identifier));
             if (strlen(msgbuff) < 1)
-                strcpy(msgbuff, "Unknown");
+                strcpy(msgbuff, GlobalTranslate("Unknown"));
         }
         else
-            strcpy(msgbuff, "Connect error");
+            strcpy(msgbuff, GlobalTranslate("Connect error"));
         WStr(msgbuff);
         snprintf(errbuff, STRLENGTH, "Failed to close batch '%s'", batchnum);
         ReportError(errbuff);
@@ -1078,15 +1078,15 @@ int CCard::Totals()
                 WInt16(rows + 1);
                 columns = MCVE_NumColumns(conn, identifier);
                 buffer[0] = '\0';
-                AppendString(buffer, 8, "TTID");
-                AppendString(buffer, 10, "Type");
-                AppendString(buffer, 7, "Card");
-                AppendString(buffer, 20, "Account");
-                AppendString(buffer, 7, "Exp");
-                AppendString(buffer, 7, "Amt");
-                AppendString(buffer, 18, "Time Stamp");
-                AppendString(buffer, 8, "Auth");
-                AppendString(buffer, 6, "Batch");
+                        AppendString(buffer, 8, GlobalTranslate("TTID"));
+        AppendString(buffer, 10, GlobalTranslate("Type"));
+        AppendString(buffer, 7, GlobalTranslate("Card"));
+        AppendString(buffer, 20, GlobalTranslate("Account"));
+        AppendString(buffer, 7, GlobalTranslate("Exp"));
+        AppendString(buffer, 7, GlobalTranslate("Amt"));
+        AppendString(buffer, 18, GlobalTranslate("Time Stamp"));
+        AppendString(buffer, 8, GlobalTranslate("Auth"));
+        AppendString(buffer, 6, GlobalTranslate("Batch"));
                 WStr(buffer);
                 for (row = 0; row < rows; row++)
                 {
@@ -1167,16 +1167,16 @@ int CCard::Details()
                 WInt8(SERVER_CC_DETAILS);
                 WInt16(rows + 1);
                 buffer[0] = '\0';
-                AppendString(buffer, 8, "TTID");
-                AppendString(buffer, 10, "Type");
-                AppendString(buffer, 7, "Card");
-                AppendString(buffer, 7, "Acct");
-                AppendString(buffer, 7, "Exp");
-                AppendString(buffer, 7, "Amt");
-                AppendString(buffer, 8, "Auth");
-                AppendString(buffer, 18, "Time Stamp");
-                AppendString(buffer, 6, "Batch");
-                AppendString(buffer, 5, "Item");
+                AppendString(buffer, 8, GlobalTranslate("TTID"));
+                AppendString(buffer, 10, GlobalTranslate("Type"));
+                AppendString(buffer, 7, GlobalTranslate("Card"));
+                AppendString(buffer, 7, GlobalTranslate("Acct"));
+                AppendString(buffer, 7, GlobalTranslate("Exp"));
+                AppendString(buffer, 7, GlobalTranslate("Amt"));
+                AppendString(buffer, 8, GlobalTranslate("Auth"));
+                AppendString(buffer, 18, GlobalTranslate("Time Stamp"));
+                AppendString(buffer, 6, GlobalTranslate("Batch"));
+                AppendString(buffer, 5, GlobalTranslate("Item"));
                 WStr(buffer);
                 for (row = 0; row < rows; row++)
                 {

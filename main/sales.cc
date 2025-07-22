@@ -39,10 +39,10 @@
 
 /**** Module Data ****/
 const char* SalesGroupName[] = {
-    "Unused", "Food", "Beverage", "Beer", "Wine", "Alcohol",
-    "Merchandise", "Room", nullptr};
+    GlobalTranslate("Unused"), GlobalTranslate("Food"), GlobalTranslate("Beverage"), GlobalTranslate("Beer"), GlobalTranslate("Wine"), GlobalTranslate("Alcohol"),
+    GlobalTranslate("Merchandise"), GlobalTranslate("Room"), NULL};
 const char* SalesGroupShortName[] = {
-    "", "Food", "Bev", "Beer", "Wine", "Alcohol", "Merchan", "Room", nullptr};
+    "", GlobalTranslate("Food"), GlobalTranslate("Bev"), GlobalTranslate("Beer"), GlobalTranslate("Wine"), GlobalTranslate("Alcohol"), GlobalTranslate("Merchan"), GlobalTranslate("Room"), NULL};
 int SalesGroupValue[] = {
     SALESGROUP_NONE, SALESGROUP_FOOD, SALESGROUP_BEVERAGE,
     SALESGROUP_BEER, SALESGROUP_WINE, SALESGROUP_ALCOHOL,
@@ -53,8 +53,8 @@ int SalesGroupValue[] = {
 // Constructor
 Component::Component()
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     item_id = 0;
 }
 
@@ -66,8 +66,8 @@ SalesItem::SalesItem(const char* name)
     if (name)
         item_name.Set(name);
 
-    next           = nullptr;
-    fore           = nullptr;
+    next           = NULL;
+    fore           = NULL;
     id             = 0;
     item_code.Set("");
 
@@ -75,7 +75,7 @@ SalesItem::SalesItem(const char* name)
     event_time = "January 1, 2015";
     total_tickets = "100";
     available_tickets = "100";
-    price_label="Adult";
+    price_label=GlobalTranslate("Adult");
     cost           = 0;
     sub_cost       = 0;
     employee_cost  = 0;
@@ -107,7 +107,7 @@ int SalesItem::Copy(SalesItem *target)
     FnTrace("SalesItem::Copy()");
     int retval = 1;
 
-    if (target != nullptr)
+    if (target != NULL)
     {
         target->item_name.Set(item_name);
         target->zone_name.Set(zone_name);
@@ -348,27 +348,27 @@ const char* SalesItem::ZoneName()
 {
     FnTrace("SalesItem::ZoneName()");
     if (zone_name.size() > 0)
-                return admission_filteredname(zone_name.str());
+        return admission_filteredname(zone_name);
     else
-        return admission_filteredname(item_name.str());
+	return admission_filteredname(item_name);
 }
 
 const char* SalesItem::PrintName()
 {
     FnTrace("SalesItem::PrintName()");
     if (print_name.size() > 0)
-        return admission_filteredname(print_name.str());
+        return admission_filteredname(print_name);
     else
-        return admission_filteredname(item_name.str());
+        return admission_filteredname(item_name);
 }
 
 const char* SalesItem::CallCenterName(Terminal *t)
 {
     FnTrace("SalesItem::CallCenterName()");
     if (call_center_name.size() > 0)
-        return admission_filteredname(call_center_name.str());
+        return admission_filteredname(call_center_name);
     else
-        return admission_filteredname(item_name.str());
+        return admission_filteredname(item_name);
 }
 
 
@@ -376,8 +376,8 @@ const char* SalesItem::CallCenterName(Terminal *t)
 // Constructor
 GroupItem::GroupItem()
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
 }
 
 // Member Functions
@@ -397,7 +397,7 @@ ItemDB::ItemDB()
 {
     last_id           = 0;
     changed           = 0;
-    name_array        = nullptr;
+    name_array        = NULL;
     array_size        = 0;
     merchandise_count = 0;
     merchandise_sales = 0;
@@ -420,7 +420,7 @@ int ItemDB::Load(const char* file)
     char str[256];
     if (version < 8 || version > SALES_ITEM_VERSION)
     {
-        snprintf(str, sizeof(str), "Unknown ItemDB version %d", version);
+        sprintf(str, "Unknown ItemDB version %d", version);
         ReportError(str);
         return 1;
     }
@@ -443,9 +443,7 @@ int ItemDB::Save()
     if (filename.empty())
         return 1;
 
-    // Only backup if the file exists
-    if (DoesFileExist(filename.Value()))
-        BackupFile(filename.Value());
+    BackupFile(filename.Value());
 
     OutputDataFile df;
     if (df.Open(filename.Value(), SALES_ITEM_VERSION))
@@ -454,7 +452,7 @@ int ItemDB::Save()
     int error = 0;
     error += df.Write(ItemCount());
 
-    for (SalesItem *si = ItemList(); si != nullptr; si = si->next)
+    for (SalesItem *si = ItemList(); si != NULL; si = si->next)
     {
         error += si->Write(df, SALES_ITEM_VERSION);
         si->changed = 0;
@@ -466,13 +464,13 @@ int ItemDB::Save()
 int ItemDB::Add(SalesItem *si)
 {
     FnTrace("ItemDB::Add()");
-    if (si == nullptr)
+    if (si == NULL)
         return 1;
 
-    if (name_array != nullptr)
+    if (name_array != NULL)
     {
         delete [] name_array;
-        name_array = nullptr;
+        name_array = NULL;
         array_size = 0;
     }
 
@@ -498,13 +496,13 @@ int ItemDB::Add(SalesItem *si)
 int ItemDB::Remove(SalesItem *si)
 {
     FnTrace("ItemDB::Remove()");
-    if (si == nullptr)
+    if (si == NULL)
         return 1;
 
-    if (name_array != nullptr)
+    if (name_array != NULL)
     {
         delete [] name_array;
-        name_array = nullptr;
+        name_array = NULL;
         array_size = 0;
     }
     return item_list.Remove(si);
@@ -516,10 +514,10 @@ int ItemDB::Purge()
     item_list.Purge();
     group_list.Purge();
 
-    if (name_array != nullptr)
+    if (name_array != NULL)
     {
         delete [] name_array;
-        name_array = nullptr;
+        name_array = NULL;
         array_size = 0;
     }
     return 0;
@@ -527,7 +525,7 @@ int ItemDB::Purge()
 
 int ItemDB::ResetAdmissionItems()
 {
-	for(SalesItem* si=ItemList();si!=nullptr;si=si->next)
+	for(SalesItem* si=ItemList();si!=NULL;si=si->next)
 	{
 		if(si->type == ITEM_ADMISSION)
 		{
@@ -540,7 +538,7 @@ int ItemDB::ResetAdmissionItems()
 SalesItem *ItemDB::FindByName(const std::string &name)
 {
     FnTrace("ItemDB::FindByName()");
-    if (name_array == nullptr)
+    if (name_array == NULL)
         BuildNameArray();
 
     // use binary search to find item
@@ -559,37 +557,37 @@ SalesItem *ItemDB::FindByName(const std::string &name)
         else
             return mi;
     }
-    return nullptr;
+    return NULL;
 }
 
 SalesItem *ItemDB::FindByID(int id)
 {
     FnTrace("ItemDB::FindByID()");
     if (id <= 0)
-        return nullptr;
+        return NULL;
 
-    for (SalesItem *si = ItemList(); si != nullptr; si = si->next)
+    for (SalesItem *si = ItemList(); si != NULL; si = si->next)
         if (si->id == id)
             return si;
-    return nullptr;
+    return NULL;
 }
 
 SalesItem *ItemDB::FindByRecord(int record)
 {
     FnTrace("ItemDB::FindByRecord()");
     if (record < 0)
-        return nullptr;
-    if (name_array == nullptr)
+        return NULL;
+    if (name_array == NULL)
         BuildNameArray();
     if (record >= array_size)
-        return nullptr;
+        return NULL;
     return name_array[record];
 }
 
 SalesItem *ItemDB::FindByWord(const char* word, int &record)
 {
     FnTrace("ItemDB::FindByWord()");
-    if (name_array == nullptr)
+    if (name_array == NULL)
         BuildNameArray();
 
     int len = strlen(word);
@@ -605,16 +603,16 @@ SalesItem *ItemDB::FindByWord(const char* word, int &record)
         }
     }
     record = 0;
-    return nullptr;
+    return NULL;
 }
 
 SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
 {
     FnTrace("ItemDB::FindByCallCenterName()");
-    if (name_array == nullptr)
+    if (name_array == NULL)
         BuildNameArray();
-    SalesItem *retval = nullptr;
-    SalesItem *si = nullptr;
+    SalesItem *retval = NULL;
+    SalesItem *si = NULL;
     int len = strlen(word);
     int idx = 0;
 
@@ -630,7 +628,7 @@ SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
         }
     }
 
-    if (retval == nullptr)
+    if (retval == NULL)
         record = 0;
 
     return retval;
@@ -639,10 +637,10 @@ SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
 SalesItem *ItemDB::FindByItemCode(const char* code, int &record)
 {
     FnTrace("ItemDB::FindByItemCode()");
-    if (name_array == nullptr)
+    if (name_array == NULL)
         BuildNameArray();
-    SalesItem *retval = nullptr;
-    SalesItem *si = nullptr;
+    SalesItem *retval = NULL;
+    SalesItem *si = NULL;
     int idx = 0;
 
     for (idx = 0; idx < array_size; idx += 1)
@@ -662,24 +660,24 @@ SalesItem *ItemDB::FindByItemCode(const char* code, int &record)
 int ItemDB::BuildNameArray()
 {
     FnTrace("ItemDB::BuildNameArray()");
-    if (name_array != nullptr)
+    if (name_array != NULL)
     {
 	free(name_array);
-        name_array = nullptr;
+        name_array = NULL;
         array_size = 0;
     }
 
     // Build search array
     array_size = ItemCount();
     name_array = (SalesItem **)calloc(sizeof(SalesItem *), (array_size + 1));
-    if (name_array == nullptr)
+    if (name_array == NULL)
     {
         array_size = 0;
         return 1;
     }
 
     int i = 0;
-    for (SalesItem *si = ItemList(); si != nullptr; si = si->next)
+    for (SalesItem *si = ItemList(); si != NULL; si = si->next)
         name_array[i++] = si;
 
     return 0;
@@ -688,13 +686,13 @@ int ItemDB::BuildNameArray()
 int ItemDB::DeleteUnusedItems(ZoneDB *zone_db)
 {
     FnTrace("ItemDB::DeleteUnusedItems()");
-    if (zone_db == nullptr)
+    if (zone_db == NULL)
         return 1;
 
     // crossreference items with touchzones
-    for (Page *p = zone_db->PageList(); p != nullptr; p = p->next)
+    for (Page *p = zone_db->PageList(); p != NULL; p = p->next)
     {
-        for (Zone *z = p->ZoneList(); z != nullptr; z = z->next)
+        for (Zone *z = p->ZoneList(); z != NULL; z = z->next)
         {
             SalesItem *si = z->Item(this);
             if (si)
@@ -704,7 +702,7 @@ int ItemDB::DeleteUnusedItems(ZoneDB *zone_db)
 
     // delete items not used
     SalesItem *si = ItemList();
-    while (si != nullptr)
+    while (si)
     {
         SalesItem *ptr = si->next;
         if (si->has_zone <= 0)
@@ -725,7 +723,7 @@ int ItemDB::ItemsInFamily(int family)
     int count = 0;
     SalesItem *item = ItemList();
 
-    while (item != nullptr)
+    while (item != NULL)
     {
         if (item->family == family)
             count += 1;
@@ -789,38 +787,34 @@ int MergeQualifier(int &flag, int qualifier)
 int PrintItem(char* buffer, int qualifier, const char* item)
 {
     FnTrace("PrintItem()");
-    static constexpr size_t PRINT_ITEM_BUFFER_SIZE = 512;
-                                                            // CRITICAL FIX: Prevents buffer overflow vulnerability
-                                                            // Problem: sizeof(buffer) on pointer parameter returns 8 bytes, not buffer size  
-                                                            // Solution: Use explicit constant matching caller's buffer allocation (512 bytes)
     char pre[64]  = "";
     char post[64] = "";
     if ((qualifier & QUALIFIER_SIDE))
-        snprintf(post, sizeof(post), " (on side)");
+        sprintf(post, " (on side)");
 
-    if      ((qualifier & QUALIFIER_NO))        snprintf(pre, sizeof(pre), "No ");
-    else if ((qualifier & QUALIFIER_LITE))      snprintf(pre, sizeof(pre), "Lite ");
-    else if ((qualifier & QUALIFIER_ONLY))      snprintf(pre, sizeof(pre), "Only ");
-    else if ((qualifier & QUALIFIER_EXTRA))     snprintf(pre, sizeof(pre), "Extra ");
-    else if ((qualifier & QUALIFIER_DOUBLE))    snprintf(pre, sizeof(pre), "Double ");
-    else if ((qualifier & QUALIFIER_DRY))       snprintf(pre, sizeof(pre), "Dry ");
-    else if ((qualifier & QUALIFIER_PLAIN))     snprintf(pre, sizeof(pre), "Plain ");
-    else if ((qualifier & QUALIFIER_TOASTED))   snprintf(pre, sizeof(pre), "Toast ");
-    else if ((qualifier & QUALIFIER_UNTOASTED)) snprintf(pre, sizeof(pre), "Untoast ");
-    else if ((qualifier & QUALIFIER_CRISPY))    snprintf(pre, sizeof(pre), "Crisp ");
-    else if ((qualifier & QUALIFIER_SOFT))      snprintf(pre, sizeof(pre), "Soft ");
-    else if ((qualifier & QUALIFIER_HARD))      snprintf(pre, sizeof(pre), "Hard ");
-    else if ((qualifier & QUALIFIER_GRILLED))   snprintf(pre, sizeof(pre), "Grill ");
-    else if ((qualifier & QUALIFIER_LEFT))      snprintf(pre, sizeof(pre), "Left: ");
-    else if ((qualifier & QUALIFIER_RIGHT))     snprintf(pre, sizeof(pre), "Right: ");
-    else if ((qualifier & QUALIFIER_WHOLE))     snprintf(pre, sizeof(pre), "Whole: ");
-    else if ((qualifier & QUALIFIER_CUT2))      snprintf(pre, sizeof(pre), "Cut/2 ");
-    else if ((qualifier & QUALIFIER_CUT3))      snprintf(pre, sizeof(pre), "Cut/3 ");
-    else if ((qualifier & QUALIFIER_CUT4))      snprintf(pre, sizeof(pre), "Cut/4 ");
+    if      ((qualifier & QUALIFIER_NO))        sprintf(pre, "No ");
+    else if ((qualifier & QUALIFIER_LITE))      sprintf(pre, "Lite ");
+    else if ((qualifier & QUALIFIER_ONLY))      sprintf(pre, "Only ");
+    else if ((qualifier & QUALIFIER_EXTRA))     sprintf(pre, "Extra ");
+    else if ((qualifier & QUALIFIER_DOUBLE))    sprintf(pre, "Double ");
+    else if ((qualifier & QUALIFIER_DRY))       sprintf(pre, "Dry ");
+    else if ((qualifier & QUALIFIER_PLAIN))     sprintf(pre, "Plain ");
+    else if ((qualifier & QUALIFIER_TOASTED))   sprintf(pre, "Toast ");
+    else if ((qualifier & QUALIFIER_UNTOASTED)) sprintf(pre, "Untoast ");
+    else if ((qualifier & QUALIFIER_CRISPY))    sprintf(pre, "Crisp ");
+    else if ((qualifier & QUALIFIER_SOFT))      sprintf(pre, "Soft ");
+    else if ((qualifier & QUALIFIER_HARD))      sprintf(pre, "Hard ");
+    else if ((qualifier & QUALIFIER_GRILLED))   sprintf(pre, "Grill ");
+    else if ((qualifier & QUALIFIER_LEFT))      sprintf(pre, "Left: ");
+    else if ((qualifier & QUALIFIER_RIGHT))     sprintf(pre, "Right: ");
+    else if ((qualifier & QUALIFIER_WHOLE))     sprintf(pre, "Whole: ");
+    else if ((qualifier & QUALIFIER_CUT2))      sprintf(pre, "Cut/2 ");
+    else if ((qualifier & QUALIFIER_CUT3))      sprintf(pre, "Cut/3 ");
+    else if ((qualifier & QUALIFIER_CUT4))      sprintf(pre, "Cut/4 ");
     if ((qualifier & QUALIFIER_SUB))
-        snprintf(buffer, PRINT_ITEM_BUFFER_SIZE, "SUB: %s%s%s", pre, item, post);
+        sprintf(buffer, "SUB: %s%s%s", pre, item, post);
     else
-        snprintf(buffer, PRINT_ITEM_BUFFER_SIZE, "%s%s%s", pre, item, post);
+        sprintf(buffer, "%s%s%s", pre, item, post);
     return 0;
 }
 

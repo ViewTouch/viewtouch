@@ -54,9 +54,9 @@ PayoutZone::PayoutZone()
     amount   = 0;
     user_id  = 0;
     page     = 0;
-    archive  = nullptr;
-    tip_db   = nullptr;
-    report   = nullptr;
+    archive  = NULL;
+    tip_db   = NULL;
+    report   = NULL;
 }
 
 // Destructor
@@ -76,12 +76,12 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
         if (update_flag == RENDER_NEW)
         {
             sys->tip_db.Update(sys);
-            archive = nullptr;
+            archive = NULL;
         }
         if (report)
         {
             delete report;
-            report = nullptr;
+            report = NULL;
         }
         if (archive)
             tip_db = &(archive->tip_db);
@@ -91,10 +91,10 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
         payout   = -1;
     }
 
-    if (tip_db == nullptr)
+    if (tip_db == NULL)
         return RENDER_OKAY;
 
-    if (report == nullptr)
+    if (report == NULL)
     {
         report = new Report;
         tip_db->ListReport(term, term->user, report);
@@ -110,18 +110,18 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
         Employee *e = sys->user_db.FindByID(user_id);
         term->FormatPrice(price, amount, 1);
         if (e)
-            snprintf(str, STRLENGTH, "Pay out %s to %s", price, e->system_name.Value());
+            sprintf(str, "Pay out %s to %s", price, e->system_name.Value());
         else
-            snprintf(str, STRLENGTH, "Pay out %s", price);
+            sprintf(str, "Pay out %s", price);
 
         TextC(term, ++line, str);
-        TextC(term, ++line, "Press any button to continue");
+        TextC(term, ++line, term->Translate("Press any button to continue"));
     }
     else
     {
-        TextL(term, 2.3, "Employee", col);
-        TextC(term, 2.3, "Amount Paid", col);
-        TextR(term, 2.3, "Amount Owed", col);
+        TextL(term, 2.3, term->Translate("Employee"), col);
+        TextC(term, 2.3, term->Translate("Amount Paid"), col);
+        TextR(term, 2.3, term->Translate("Amount Owed"), col);
         report->selected_line = selected;
         report->Render(term, this, HEADER-1, 0, page, 0, spacing);
     }
@@ -136,13 +136,13 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
         timevar = archive->fore->end_time;
         term->TimeDate(t1, timevar, TD0);
     }
-    else if (archive == nullptr && sys->ArchiveListEnd())
+    else if (archive == NULL && sys->ArchiveListEnd())
     {
         timevar = sys->ArchiveListEnd()->end_time;
         term->TimeDate(t1, timevar, TD0);
     }
     else
-        strcpy(t1, "System start");
+        strcpy(t1, term->Translate("System start"));
 
     if (archive)
     {
@@ -150,9 +150,9 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
         term->TimeDate(t2, timevar, TD0);
     }
     else
-        strcpy(t2, "Now");
+        strcpy(t2, term->Translate("Now"));
 
-    snprintf(str, STRLENGTH, "%s - %s", t1, t2);
+    sprintf(str, "%s - %s", t1, t2);
     TextC(term, 1, str, COLOR_BLUE);
     return RENDER_OKAY;
 }
@@ -160,7 +160,7 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
 SignalResult PayoutZone::Signal(Terminal *term, const genericChar* message)
 {
     static const genericChar* commands[] = {
-        "payout", "next", "prior", "print", "localprint", "reportprint", nullptr};
+        "payout", "next", "prior", "print", "localprint", "reportprint", NULL};
 
     if (payout >= 0)
     {
@@ -176,7 +176,7 @@ SignalResult PayoutZone::Signal(Terminal *term, const genericChar* message)
         PayoutTips(term);
         return SIGNAL_OKAY;
     case 1:  // Next
-        if (archive == nullptr)
+        if (archive == NULL)
             break;
         archive = archive->next;
         Draw(term, 1);
@@ -184,7 +184,7 @@ SignalResult PayoutZone::Signal(Terminal *term, const genericChar* message)
     case 2:  // Prior
         if (archive)
         {
-            if (archive->fore == nullptr)
+            if (archive->fore == NULL)
                 return SIGNAL_IGNORED;
             archive = archive->fore;
         }
@@ -208,7 +208,7 @@ SignalResult PayoutZone::Signal(Terminal *term, const genericChar* message)
 SignalResult PayoutZone::Touch(Terminal *term, int tx, int ty)
 {
     FnTrace("PayoutZone::Touch()");
-    if (report == nullptr)
+    if (report == NULL)
         return SIGNAL_IGNORED;
 
     int new_page = page;
@@ -218,7 +218,7 @@ SignalResult PayoutZone::Touch(Terminal *term, int tx, int ty)
         --new_page;
     else if (line == -2) // footer
         ++new_page;
-    else if (archive == nullptr)
+    else if (archive == NULL)
     {
         selected = line;
         Draw(term, 0);
@@ -241,21 +241,21 @@ SignalResult PayoutZone::Touch(Terminal *term, int tx, int ty)
 int PayoutZone::PayoutTips(Terminal *term)
 {
     Employee *e = term->user;
-    if (e == nullptr || e->training || tip_db == nullptr || report == nullptr)
+    if (e == NULL || e->training || tip_db == NULL || report == NULL)
         return 1;
 
     System *sys = term->system_data;
     Settings *s = &(sys->settings);
-    TipEntry *te = nullptr;
+    TipEntry *te = NULL;
     if (e->IsSupervisor(s))
-        te = tip_db->FindByRecord(selected, nullptr);
+        te = tip_db->FindByRecord(selected, NULL);
     else
         te = tip_db->FindByRecord(selected, e);
-    if (te == nullptr)
+    if (te == NULL)
         return 1;
 
     Drawer *d = term->FindDrawer();
-    if (d == nullptr)
+    if (d == NULL)
         return 1;
 
     amount  = te->amount;
@@ -273,7 +273,7 @@ int PayoutZone::PayoutTips(Terminal *term)
     Draw(term, 0);
 
     Printer *p = term->FindPrinter(PRINTER_RECEIPT);
-    if (p == nullptr)
+    if (p == NULL)
         return 0;
 
     Report r;
@@ -290,12 +290,12 @@ int PayoutZone::Print(Terminal *term, int print_mode)
         return 0;
 
     Employee *e = term->user;
-    if (e == nullptr || tip_db == nullptr)
+    if (e == NULL || tip_db == NULL)
         return 1;
 
     Printer *p1 = term->FindPrinter(PRINTER_RECEIPT);
     Printer *p2 = term->FindPrinter(PRINTER_REPORT);
-    if (p1 == nullptr && p2 == nullptr)
+    if (p1 == NULL && p2 == NULL)
         return 1;
 
     if (print_mode == RP_ASK)
@@ -307,10 +307,10 @@ int PayoutZone::Print(Terminal *term, int print_mode)
     }
 
     Printer *p = p1;
-    if ((print_mode == RP_PRINT_REPORT && p2) || p1 == nullptr)
+    if ((print_mode == RP_PRINT_REPORT && p2) || p1 == NULL)
         p = p2;
 
-    if (p == nullptr)
+    if (p == NULL)
         return 1;
 
     Report r;
@@ -347,7 +347,7 @@ RenderResult EndDayZone::Render(Terminal *term, int update_flag)
     int min_day_hrs = min_day_secs / 60 / 60;
 
     int line = 0;
-    if (a == nullptr)
+    if (a == NULL)
     {
         TextC(term, ++line, term->Translate("This is the first business day"));
         flag3 = 0;
@@ -404,11 +404,11 @@ RenderResult EndDayZone::Render(Terminal *term, int update_flag)
 
 SignalResult EndDayZone::Signal(Terminal *term, const genericChar* message)
 {
-    SimpleDialog *d = nullptr;
+    SimpleDialog *d = NULL;
     char buffer[STRLENGTH];
     SignalResult retval = SIGNAL_IGNORED;
     static const genericChar* commands[] = {"end", "force end", "enddaydone",
-                                      "enddayfailed", "cceodnosettle", nullptr};
+                                      "enddayfailed", "cceodnosettle", NULL};
     const std::string msg(message);
     int idx = CompareList(message, commands);
 
@@ -432,12 +432,12 @@ SignalResult EndDayZone::Signal(Terminal *term, const genericChar* message)
             else if (flag5)
                 d = new SimpleDialog(ERR_CC_EXCEPT);
             
-            if (d != nullptr)
+            if (d != NULL)
             {
-                d->font = FONT_GARAMOND_14B;
+                d->font = FONT_TIMES_24B;
                 d->color[0] = COLOR_RED;
                 d->force_width = 640;
-                d->Button("Okay");
+                d->Button(GlobalTranslate("Okay"));
                 term->OpenDialog(d);
             }
             
@@ -465,9 +465,9 @@ SignalResult EndDayZone::Signal(Terminal *term, const genericChar* message)
     case 3:  // enddayfailed
         term->parent->KillAllDialogs();
         term->Draw(1);
-        d = new SimpleDialog("End of Day Credit Card Processing Failed");
-        d->Button("Okay");
-        d->Button("End Without Settlement", "cceodnosettle");
+        d = new SimpleDialog(term->Translate("End of Day Credit Card Processing Failed"));
+        d->Button(GlobalTranslate("Okay"));
+        d->Button(GlobalTranslate("End Without Settlement"), "cceodnosettle");
         term->OpenDialog(d);
         retval = SIGNAL_OKAY;
         break;
@@ -503,9 +503,9 @@ int EndDayZone::EndOfDay(Terminal *term, int force)
     if (force == 0)
     {
         // confirm end of day
-        SimpleDialog *d = new SimpleDialog("Confirm end of business day:");
-        d->Button("End the Day Now", "force end");
-        d->Button("Cancel,\\Don't end the Day");
+        SimpleDialog *d = new SimpleDialog(term->Translate("Confirm end of business day:"));
+        d->Button(GlobalTranslate("End the Day Now"), "force end");
+        d->Button(GlobalTranslate("Cancel,\\Don't end the Day"));
         d->target_zone = this;
         term->OpenDialog(d);
         return 0;

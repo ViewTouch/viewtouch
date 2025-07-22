@@ -38,8 +38,8 @@
 TipEntry::TipEntry()
 {
     FnTrace("TipEntry::TipEntry()");
-    next            = nullptr;
-    fore            = nullptr;
+    next            = NULL;
+    fore            = NULL;
     user_id         = 0;
     amount          = 0;
     previous_amount = 0;
@@ -71,8 +71,8 @@ TipEntry *TipEntry::Copy()
 {
     FnTrace("TipEntry::Copy()");
     TipEntry *te = new TipEntry;
-    if (te == nullptr)
-        return nullptr;
+    if (te == NULL)
+        return NULL;
 
     te->user_id = user_id;
     te->amount  = amount;
@@ -84,7 +84,7 @@ int TipEntry::Count()
 {
     FnTrace("TipEntry::Count()");
     int count = 1;
-    for (TipEntry *te = next; te != nullptr; te = te->next)
+    for (TipEntry *te = next; te != NULL; te = te->next)
         ++count;
     return count;
 }
@@ -94,7 +94,7 @@ int TipEntry::Count()
 TipDB::TipDB()
 {
     FnTrace("TipDB::TipDB()");
-    archive        = nullptr;
+    archive        = NULL;
     total_paid     = 0;
     total_held     = 0;
     total_previous = 0;
@@ -104,7 +104,7 @@ TipDB::TipDB()
 int TipDB::Add(TipEntry *te)
 {
     FnTrace("TipDB::Add()");
-    if (te == nullptr)
+    if (te == NULL)
         return 1;
 
     // search for previous entry for user
@@ -143,30 +143,30 @@ int TipDB::Purge()
 TipEntry *TipDB::FindByUser(int id)
 {
     FnTrace("TipDB::FindByUser()");
-    for (TipEntry *te = TipList(); te != nullptr; te = te->next)
+    for (TipEntry *te = TipList(); te != NULL; te = te->next)
     {
         if (te->user_id == id)
             return te;
     }
-    return nullptr;
+    return NULL;
 }
 
 TipEntry *TipDB::FindByRecord(int record, Employee *e)
 {
     FnTrace("TipDB::FindByRecord()");
     if (record < 0)
-        return nullptr;
+        return NULL;
 
-    for (TipEntry *te = TipList(); te != nullptr; te = te->next)
+    for (TipEntry *te = TipList(); te != NULL; te = te->next)
     {
-        if (e == nullptr || te->user_id == e->id)
+        if (e == NULL || te->user_id == e->id)
         {
             if (record <= 0)
                 return te;
             --record;
         }
     }
-    return nullptr;
+    return NULL;
 }
 
 int TipDB::CaptureTip(int user_id, int amount)
@@ -221,7 +221,7 @@ int TipDB::PayoutTip(int user_id, int amount)
 {
     FnTrace("TipDB::PayoutTip()");
     TipEntry *te = FindByUser(user_id);
-    if (te == nullptr || te->amount <= 0)
+    if (te == NULL || te->amount <= 0)
         return 1;  // no captured tip to payout
 
     te->amount -= amount;
@@ -246,9 +246,9 @@ int TipDB::Calculate(Settings *s, TipDB *previous,
     }
 
     // figure today's tips
-    for (Check *c = check_list; c != nullptr; c = c->next)
+    for (Check *c = check_list; c != NULL; c = c->next)
     {
-        for (SubCheck *sc = c->SubList(); sc != nullptr; sc = sc->next)
+        for (SubCheck *sc = c->SubList(); sc != NULL; sc = sc->next)
         {
             int tips = sc->TotalTip();
             if (tips != 0)
@@ -257,9 +257,9 @@ int TipDB::Calculate(Settings *s, TipDB *previous,
     }
 
     // subract amount paid out
-    for (Drawer *d = drawer_list; d != nullptr; d = d->next)
+    for (Drawer *d = drawer_list; d != NULL; d = d->next)
     {
-        for (DrawerPayment *dp = d->PaymentList(); dp != nullptr; dp = dp->next)
+        for (DrawerPayment *dp = d->PaymentList(); dp != NULL; dp = dp->next)
         {
             if (dp->tender_type == TENDER_PAID_TIP)
                 PayoutTip(dp->target_id, dp->amount);
@@ -274,7 +274,7 @@ int TipDB::Copy(TipDB *db)
     FnTrace("TipDB::Copy()");
     Purge();
 
-    for (TipEntry *te = db->TipList(); te != nullptr; te = te->next)
+    for (TipEntry *te = db->TipList(); te != NULL; te = te->next)
         Add(te->Copy());
     return 0;
 }
@@ -286,7 +286,7 @@ int TipDB::Total()
     total_held     = 0;
     total_previous = 0;
 
-    for (TipEntry *te = TipList(); te != nullptr; te = te->next)
+    for (TipEntry *te = TipList(); te != NULL; te = te->next)
     {
         if (te->paid > 0)
             total_paid += te->paid;
@@ -303,21 +303,21 @@ void TipDB::ClearHeld()
     FnTrace("TipDB::ClearHeld()");
     total_held     = 0;
 
-    for (TipEntry *te = TipList(); te != nullptr; te = te->next)
+    for (TipEntry *te = TipList(); te != NULL; te = te->next)
         te->amount = 0;
 }
 
 int TipDB::PaidReport(Terminal *t, Report *r)
 {
     FnTrace("TipDB::PaidReport()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
 
-    r->TextC("Tips Paid Report");
+    r->TextC(GlobalTranslate("Tips Paid Report"));
     r->NewLine(2);
 
     int total = 0;
-    for (TipEntry *te = TipList(); te != nullptr; te = te->next)
+    for (TipEntry *te = TipList(); te != NULL; te = te->next)
     {
         if (te->paid > 0)
         {
@@ -331,7 +331,7 @@ int TipDB::PaidReport(Terminal *t, Report *r)
     // Total
     r->TextR("--------");
     r->NewLine();
-    r->TextL("Total Tips Paid");
+    r->TextL(GlobalTranslate("Total Tips Paid"));
     r->TextR(t->FormatPrice(total));
     return 0;
 }
@@ -339,22 +339,22 @@ int TipDB::PaidReport(Terminal *t, Report *r)
 int TipDB::PayoutReceipt(Terminal *t, Employee *e, int amount, Report *r)
 {
     FnTrace("TipDB::PayoutReceipt()");
-    if (r == nullptr || e == nullptr || amount <= 0)
+    if (r == NULL || e == NULL || amount <= 0)
         return 1;
 
     genericChar str[256];
     r->Mode(PRINT_LARGE | PRINT_NARROW);
-    r->TextC("Tip Payout Receipt");
+    r->TextC(GlobalTranslate("Tip Payout Receipt"));
     r->NewLine(2);
     r->Mode(0);
 
-    snprintf(str, STRLENGTH, "     Server: %s", e->system_name.Value());
+    sprintf(str, "     Server: %s", e->system_name.Value());
     r->TextL(str);
     r->NewLine();
-    snprintf(str, STRLENGTH, "       Time: %s", t->TimeDate(SystemTime, TD2));
+    sprintf(str, "       Time: %s", t->TimeDate(SystemTime, TD2));
     r->TextL(str);
     r->NewLine();
-    snprintf(str, STRLENGTH, "Amount Paid: %s", t->FormatPrice(amount, 1));
+    sprintf(str, "Amount Paid: %s", t->FormatPrice(amount, 1));
     r->TextL(str);
     r->NewLine(3);
     r->Mode(PRINT_UNDERLINE);
@@ -365,14 +365,14 @@ int TipDB::PayoutReceipt(Terminal *t, Employee *e, int amount, Report *r)
 int TipDB::ListReport(Terminal *t, Employee *e, Report *r)
 {
     FnTrace("TipDB::ListReport()");
-    if (r == nullptr || e == nullptr)
+    if (r == NULL || e == NULL)
         return 1;
 
     Settings *s = t->GetSettings();
     int flag = e->IsSupervisor(s);
     int count = 0;
 
-    for (TipEntry *te = TipList(); te != nullptr; te = te->next)
+    for (TipEntry *te = TipList(); te != NULL; te = te->next)
     {
         if (te->user_id == e->id || flag)
         {
@@ -380,7 +380,7 @@ int TipDB::ListReport(Terminal *t, Employee *e, Report *r)
             r->TextC(t->FormatPrice(te->paid));
             genericChar str[256];
             if (te->previous_amount != 0 && te->amount != 0)
-                snprintf(str, STRLENGTH, "(!) %s", t->FormatPrice(te->amount));
+                sprintf(str, "(!) %s", t->FormatPrice(te->amount));
             else
                 t->FormatPrice(str, te->amount);
             int c = COLOR_RED;
@@ -395,9 +395,9 @@ int TipDB::ListReport(Terminal *t, Employee *e, Report *r)
     if (count == 0)
     {
         if (flag == 0)
-            r->TextC("You Have No Captured Tips", COLOR_RED);
+            r->TextC(GlobalTranslate("You Have No Captured Tips"), COLOR_RED);
         else
-            r->TextC("None", COLOR_RED);
+            r->TextC(GlobalTranslate("None"), COLOR_RED);
     }
     return 0;
 }
@@ -414,6 +414,6 @@ int TipDB::Update(System *sys)
         Calculate(s, &a->tip_db, sys->CheckList(), sys->DrawerList());
     }
     else
-        Calculate(s, nullptr, sys->CheckList(), sys->DrawerList());
+        Calculate(s, NULL, sys->CheckList(), sys->DrawerList());
     return 0;
 }

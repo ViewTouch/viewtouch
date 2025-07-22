@@ -21,6 +21,7 @@
 #include "basic.hh"
 #include "logger.hh"
 #include "utility.hh"
+#include "locale.hh"
 
 #include "version/vt_version_info.hh"
 
@@ -37,7 +38,6 @@
 #include <sys/un.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <syslog.h>
 // standard libraries
 #include <csignal>
 #include <iostream>
@@ -50,8 +50,7 @@
 /**** Defintions ****/
 const std::string SOCKET_FILE = "/tmp/vt_main";
 const std::string COMMAND_FILE = VIEWTOUCH_PATH "/bin/.vtpos_command";
-// Use consistent font loading with the rest of the system
-constexpr const char *FONT_NAME  = "Times New Roman-14:style=Regular";
+constexpr const char *FONT_NAME  = "utopia,serif-14:style=regular:dpi=100";
 constexpr size_t WIN_WIDTH  = 640;
 constexpr size_t WIN_HEIGHT = 240;
 
@@ -103,7 +102,7 @@ void ExitLoader()
     exit(0);
 }
 
-int UpdateWindow(const char* str = nullptr)
+int UpdateWindow(const char* str = NULL)
 {
     if (str)
         strcpy(Message, str);
@@ -139,12 +138,10 @@ int UpdateWindow(const char* str = nullptr)
             }
             idx += 1;
             msg[msgidx] = '\0';
-            // FIXED: reinterpret_cast for Xft font rendering in loader messages
-            // Changed from C-style cast (unsigned const char*) to modern C++ cast
-            XftTextExtentsUtf8(Dis, loaderFont, reinterpret_cast<const unsigned char*>(msg), msgidx, &extents);
+            XftTextExtentsUtf8(Dis, loaderFont, (unsigned const char* )msg, msgidx, &extents);
             ww = (WIN_WIDTH - extents.width) / 2;
             XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont, ww, hh,
-                reinterpret_cast<const unsigned char*>(msg), msgidx);
+                (unsigned const char* )msg, msgidx);
             hh += loaderFont->height;
         }
     }
@@ -167,20 +164,18 @@ int UpdateKeyboard(const char* str = nullptr)
         WIN_WIDTH - 2, 3 * loaderFont->height);
 
     len = strlen(prompt);
-    // FIXED: reinterpret_cast for keyboard input prompt rendering
-    XftTextExtents8(Dis, loaderFont, reinterpret_cast<const unsigned char*>(prompt), len, &extents);
+    XftTextExtents8(Dis, loaderFont, (unsigned const char* )prompt, len, &extents);
     XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont,
         (WIN_WIDTH - extents.width) / 2,
         WIN_HEIGHT - 2 * loaderFont->height,
-        reinterpret_cast<const unsigned char*>(prompt), len);
+        (unsigned const char* )prompt, len);
 
     len = strlen(KBInput);
-    // FIXED: reinterpret_cast for keyboard input text rendering
-    XftTextExtents8(Dis, loaderFont, reinterpret_cast<const unsigned char*>(KBInput), len, &extents);
+    XftTextExtents8(Dis, loaderFont, (unsigned const char* )KBInput, len, &extents);
     XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont,
         (WIN_WIDTH - extents.width) / 2,
         WIN_HEIGHT - loaderFont->height,
-        reinterpret_cast<const unsigned char*>(KBInput), len);
+        (unsigned const char* )KBInput, len);
 
     XFlush(Dis);
     return 0;
@@ -209,7 +204,7 @@ void KeyPressCB(Widget widget, XtPointer client_data, XEvent *event, Boolean *ok
         KeySym key = 0;
         int bufflen = strlen(buffer);
 
-        int len = XLookupString(e, keybuff, 31, &key, nullptr);
+        int len = XLookupString(e, keybuff, 31, &key, NULL);
         if (len < 0)
             len = 0;
         keybuff[len] = '\0';
@@ -321,8 +316,8 @@ XtAppContext InitializeDisplay(int argc, char **argv)
     XtToolkitInitialize();
     XtAppContext app = XtCreateApplicationContext();
 
-    Dis = XtOpenDisplay(app, nullptr, nullptr, nullptr, nullptr, 0, &argc, argv);
-    if (Dis == nullptr)
+    Dis = XtOpenDisplay(app, NULL, NULL, NULL, NULL, 0, &argc, argv);
+    if (Dis == NULL)
     {
         logmsg(LOG_ERR, "Unable to open display\n");
         ExitLoader();
@@ -333,7 +328,7 @@ XtAppContext InitializeDisplay(int argc, char **argv)
     ColorWhite = WhitePixel(Dis, screen_no);
 
     loaderFont = XftFontOpenName(Dis, screen_no, FONT_NAME);
-    if (loaderFont == nullptr)
+    if (loaderFont == NULL)
     {
         logmsg(LOG_ERR, "Unable to load font\n");
         ExitLoader();
@@ -346,24 +341,21 @@ Widget OpenStatusBox(XtAppContext app)
     int dis_width = 0, dis_height = 0;
     dis_width  = DisplayWidth(Dis, screen_no);
     dis_height = DisplayHeight(Dis, screen_no);
-    // FIXED: const_cast needed for X11 widget creation string arguments
-    // X11 expects char* but modern C++ string literals are const char*
-    // Replaced old (String) casts with safer const_cast<char*>()
     Arg args[] = {
         { XtNx,                (dis_width - static_cast<int>(WIN_WIDTH)) / 2   },
         { XtNy,                (dis_height - static_cast<int>(WIN_HEIGHT)) / 2 },
         { XtNwidth,            WIN_WIDTH                     },
         { XtNheight,           WIN_HEIGHT                    },
         { XtNborderWidth,      0                             },
-        { const_cast<char*>("minWidth"),          WIN_WIDTH                     },
-        { const_cast<char*>("minHeight"),         WIN_HEIGHT                    },
-        { const_cast<char*>("maxWidth"),          WIN_WIDTH                     },
-        { const_cast<char*>("maxHeight"),         WIN_HEIGHT                    },
-        { const_cast<char*>("mwmDecorations"),    0                             },
-        { const_cast<char*>("mappedWhenManaged"), False                         },
+        { (String)"minWidth",          WIN_WIDTH                     },
+        { (String)"minHeight",         WIN_HEIGHT                    },
+        { (String)"maxWidth",          WIN_WIDTH                     },
+        { (String)"maxHeight",         WIN_HEIGHT                    },
+        { (String)"mwmDecorations",    0                             },
+        { (String)"mappedWhenManaged", False                         },
     };
 
-    Widget shell = XtAppCreateShell("Welcome to POS", nullptr,
+    Widget shell = XtAppCreateShell("Welcome to POS", NULL,
         applicationShellWidgetClass, Dis, args, XtNumber(args));
     XtRealizeWidget(shell);
 
@@ -374,8 +366,8 @@ Widget OpenStatusBox(XtAppContext app)
     XftColorAllocName(Dis, DefaultVisual(Dis, screen_no),
         DefaultColormap(Dis, screen_no), "white", &xftWhite);
 
-    XtAddEventHandler(shell, ExposureMask, FALSE, ExposeCB, nullptr);
-    XtAddEventHandler(shell, KeyPressMask, FALSE, KeyPressCB, nullptr);
+    XtAddEventHandler(shell, ExposureMask, FALSE, ExposeCB, NULL);
+    XtAddEventHandler(shell, KeyPressMask, FALSE, KeyPressCB, NULL);
     return shell;
 }
 
@@ -532,7 +524,7 @@ int main(int argc, genericChar* argv[])
 
     // Read Status Messages
     XtAppAddInput(app, SocketNo, (XtPointer) XtInputReadMask,
-                  (XtInputCallbackProc) SocketInputCB, nullptr);
+                  (XtInputCallbackProc) SocketInputCB, NULL);
 
     XEvent event;
     for (;;)

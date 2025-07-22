@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -19,6 +17,10 @@
  * image_data.hh - revision 25 (1/7/98)
  * Data for textures in XPM format
  */
+
+#ifndef _IMAGE_DATA_HH
+#define _IMAGE_DATA_HH
+
 
 #include <array>
 #include <cstddef> // size_t
@@ -47,19 +49,7 @@ enum textures {
     IMAGE_BLACK,
     IMAGE_GREYSAND,
     IMAGE_WHITEMESH,
-    IMAGE_METAL,
-    IMAGE_STONE,
-    IMAGE_GLASS,
-    IMAGE_VELVET,
-    IMAGE_CONCRETE,
-    IMAGE_SILK,
-    IMAGE_BRASS,
-    IMAGE_COPPER,
-    IMAGE_STEEL,
-    IMAGE_PLASTIC,
-    IMAGE_DEMO,
-
-    IMAGE_COUNT // 32 // number of images
+    IMAGE_COUNT // 21 // number of images
 };
 
 constexpr int IMAGE_CLEAR     = 253;
@@ -72,3 +62,5 @@ extern const std::array<const char**, IMAGE_COUNT> ImageData;
 int ImageColorsUsed();  // Returns total colors used in all xpm files
 int ImageWidth(const size_t image);
 int ImageHeight(const size_t image);
+
+#endif

@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
   
@@ -18,6 +16,8 @@
  *
  * socket.hh  Functions to make socket connections and operations easier.
  */
+
+#ifndef VT_SOCKET_HH
 
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -70,3 +70,6 @@ int  Connect(const char* host, int port);
 int  SelectIn(int fd, int u_sec);
 int  SelectOut(int fd, int u_sec);
 int  SMTP(int fd, Email *email);
+
+#define VT_SOCKET_HH
+#endif

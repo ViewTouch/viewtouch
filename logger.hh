@@ -1,8 +1,18 @@
-#pragma once
 
 /*
- * simple logging library - header
+ * logging utilities
  */
 
-void setident(const char* ident);
-void logmsg(int priority, const char* fmt, ...);
+
+#ifndef LOGGER_H
+#define LOGGER_H
+
+#include <stdarg.h>
+#include <syslog.h>
+
+
+int logmsg(int, const char* , ...);
+
+#endif
+
+/* done */

@@ -18,14 +18,14 @@
  * POS terminal state class
  */
 
-#pragma once
+#ifndef _TERMINAL_HH
+#define _TERMINAL_HH
 
 #include "cdu.hh"
 #include "credit.hh"
 #include "customer.hh"
 #include "locale.hh"
 #include "utility.hh"
-#include "font_ids.hh"
 
 #include <string>
 #include <mutex>
@@ -182,6 +182,26 @@ constexpr int FRAME_INSET   = 32;  // top-bottom, left-right colors switched
 constexpr int FRAME_2COLOR  = 64;  // 2 colors used instead of 4
 
 // Fonts
+enum font_info {
+	FONT_DEFAULT     ,
+	FONT_FIXED_14    ,
+	FONT_FIXED_20    ,
+	FONT_FIXED_24    ,
+	FONT_TIMES_20    ,
+	FONT_TIMES_24    ,
+	FONT_TIMES_34    ,
+	FONT_TIMES_20B   ,
+	FONT_TIMES_24B   ,
+	FONT_TIMES_34B   ,
+	FONT_TIMES_14    ,
+	FONT_TIMES_14B   ,
+	FONT_TIMES_18    ,
+	FONT_TIMES_18B   ,
+    FONT_COURIER_18  ,
+    FONT_COURIER_18B ,
+    FONT_COURIER_20  ,
+    FONT_COURIER_20B
+};
 
 #define FONT_UNDERLINE  128
 
@@ -393,6 +413,9 @@ public:
     int   select_x2;
     int   select_y2;
 
+    // Language settings
+    int   current_language;  // current UI language (LANG_ENGLISH, LANG_FRENCH, etc.)
+
     // Flags
     int failure;         // communications failure count
     int reload_zone_db;  // boolean - does zone_db file needs updating?
@@ -401,8 +424,7 @@ public:
     int is_server;       // boolean - is the terminal the server display?
     int expand_labor;    // boolean - expand report labor?
     int hide_zeros;      // boolean - hide zero amounts in reports?
-    int zero_exclusion;  // boolean - hide zero Canadian tax lines in reports?
-    int show_family;     // boolean - show item family groupings in reports?
+    int show_family;     // boolean - show family grouping in reports?
     int expand_goodwill; // boolean - show expanded goodwill adjustments list?
 
     // Font/Graphics Info
@@ -448,7 +470,7 @@ public:
     int PushPage(int page_id);      // puts page id on stack
     int RunScript(const char* script, int jump_type, int jump_id);
     int FastStartLogin();
-    int OpenTab(int phase = TABOPEN_START, const char* message = nullptr);
+    int OpenTab(int phase = TABOPEN_START, const char* message = NULL);
     int ContinueTab(int serial_number = -1);
     int CloseTab(int serial_number = -1);
     int OpenTabList(const char* message);
@@ -511,6 +533,7 @@ public:
     // resolve defaults to page or global setting
     int FontID(int font_id);
     int ColorID(int color);
+    int ReloadFonts();  // Reload fonts when global defaults change
     int TextureID(int texture, int state=0);
     int FrameID(int frame, int state=0);
 
@@ -525,6 +548,11 @@ public:
     genericChar* SimpleFormatPrice(int price);
     genericChar* SimpleFormatPrice(char* str, int price); // same as format price but with no commas
     int          PriceToInteger(const char* price);
+
+    // Language management
+    int SetLanguage(int lang);
+    int GetLanguage() { return current_language; }
+    int OpenLanguageDialog();
 
     int UserInput();
     int ClearSelectedZone();
@@ -583,26 +611,26 @@ public:
     // Data read/write functions
     int   WInt8(int val);
     int   WInt8(int *val);
-    int   RInt8(int *val = nullptr);
+    int   RInt8(int *val = NULL);
     int   WInt16(int val);
     int   WInt16(int *val);
-    int   RInt16(int *val = nullptr);
+    int   RInt16(int *val = NULL);
     int   WInt32(int val);
     int   WInt32(int *val);
-    int   RInt32(int *val = nullptr);
+    int   RInt32(int *val = NULL);
     long  WLong(long val);
     long  WLong(long *val);
-    long  RLong(long *val = nullptr);
+    long  RLong(long *val = NULL);
     long long WLLong(long long val);
     long long WLLong(long long *val);
-    long long RLLong(long long *val = nullptr);
+    long long RLLong(long long *val = NULL);
     int   WFlt(Flt val);
     int   WFlt(Flt *val);
-    Flt   RFlt(Flt *val = nullptr);
+    Flt   RFlt(Flt *val = NULL);
     int   WStr(const std::string &s, int len = 0);
     int   WStr(const Str &s);
     int   WStr(const Str *s);
-    genericChar* RStr(char* s = nullptr);
+    genericChar* RStr(char* s = NULL);
     genericChar* RStr(Str *s);
     int   Send();
     int   SendNow();
@@ -622,9 +650,9 @@ public:
     Terminal *CC_NextTermWithID(Terminal *cc_term);
     int   CC_NextTermID( int* cc_state, char* termid );
     int   CC_NextBatch(int *state, BatchItem **currbatch, long long *batch);
-    int   CC_Settle(const char* batch = nullptr, int reset = 0);
+    int   CC_Settle(const char* batch = NULL, int reset = 0);
     int   CC_Init();
-    int   CC_Totals(const char* batch = nullptr);
+    int   CC_Totals(const char* batch = NULL);
     int   CC_Details();
     int   CC_ClearSAF(int reset = 0);
     int   CC_SAFDetails();
@@ -635,9 +663,6 @@ public:
     int   CC_GetSAFClearedResults();
     int   CC_GetSAFDetails();
     int   SetCCTimeout(int cc_timeout);
-
-    // Language selection
-    int   ShowLanguageSelectionDialog();
 
     // friend functions
     friend Terminal *NewTerminal(const char* , int, int);
@@ -650,3 +675,5 @@ int OpenTerminalSocket(const char* hostname, int hardware_type = 0, int isserver
                        int width = -1, int height = -1);
 Terminal *NewTerminal(const char* host_name, int hardware_type = 0, int isserver = 0);
 int CloneTerminal(Terminal *term, const char* dest, const char* name);
+
+#endif

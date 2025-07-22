@@ -12,6 +12,8 @@
 #include <X11/Xmu/Drawing.h>
 #include <X11/cursorfont.h>
 #include <X11/xpm.h>
+#include <X11/Xft/Xft.h>
+#include <fontconfig/fontconfig.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -21,6 +23,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <iostream>
+#include <string>
 
 #include "debug.hh"
 #include "term_view.hh"
@@ -42,12 +45,9 @@
 #include <dmalloc.h>
 #endif
 
-#include <sys/stat.h>       // for mkdir and stat functions
+#include <filesystem>       // generic filesystem functions available since C++17
 
-// Add Xft for scalable font rendering
-#include <X11/Xft/Xft.h>
-
-#include "font_ids.hh"
+namespace fs = std::filesystem;
 
 /*********************************************************************
  * Definitions
@@ -55,6 +55,9 @@
 #define UPDATE_TIME 500
 #define XWD         "/usr/X11R6/bin/xwd"          /* screen capture utility */
 #define SCREEN_DIR  "/usr/viewtouch/screenshots"  /* where to save screenshots */
+// Font directory will be detected at runtime
+
+#define TERM_RELOAD_FONTS 0xA5
 
 /*********************************************************************
  * Data
@@ -62,27 +65,26 @@
 
 struct FontDataType
 {
-    int   id;
-    int   height;
+    int id;
     const genericChar* font;
 };
 
 static FontDataType FontData[] =
 {
-    {FONT_TIMES_20,    20, "-adobe-times-medium-r-normal--20-*-iso8859-1*"},
-    {FONT_TIMES_24,    24, "-adobe-times-medium-r-normal--24-*-iso8859-1*"},
-    {FONT_TIMES_34,    33, "-adobe-times-medium-r-normal--34-*-iso8859-1*"},
-    {FONT_TIMES_20B,   20, "-adobe-times-bold-r-normal--20-*-iso8859-1*"},
-    {FONT_TIMES_24B,   24, "-adobe-times-bold-r-normal--24-*-iso8859-1*"},
-    {FONT_TIMES_34B,   33, "-adobe-times-bold-r-normal--34-*-iso8859-1*"},
-    {FONT_TIMES_14,    14, "-adobe-times-medium-r-normal--14-*-iso8859-1*"},
-    {FONT_TIMES_14B,   14, "-adobe-times-bold-r-normal--14-*-iso8859-1*"},
-    {FONT_TIMES_18,    18, "-adobe-times-medium-r-normal--18-*-iso8859-1*"},
-    {FONT_TIMES_18B,   18, "-adobe-times-bold-r-normal--18-*-iso8859-1*"},
-    {FONT_COURIER_18,  18, "-adobe-courier-medium-r-normal--18-*-*-*-*-*-iso8859-1*"},
-    {FONT_COURIER_18B, 18, "-adobe-courier-bold-r-normal--18-*-*-*-*-*-iso8859-1*"},
-    {FONT_COURIER_20,  20, "-adobe-courier-medium-r-normal--20-*-*-*-*-*-iso8859-1*"},
-    {FONT_COURIER_20B, 20, "-adobe-courier-bold-r-normal--20-*-*-*-*-*-iso8859-1*"}
+    {FONT_TIMES_20,     "DejaVu Serif:size=12:style=Book"},
+    {FONT_TIMES_24,     "DejaVu Serif:size=14:style=Book"},
+    {FONT_TIMES_34,     "DejaVu Serif:size=18:style=Book"},
+    {FONT_TIMES_20B,    "DejaVu Serif:size=12:style=Bold"},
+    {FONT_TIMES_24B,    "DejaVu Serif:size=14:style=Bold"},
+    {FONT_TIMES_34B,    "DejaVu Serif:size=18:style=Bold"},
+    {FONT_TIMES_14,     "DejaVu Serif:size=10:style=Book"},
+    {FONT_TIMES_14B,    "DejaVu Serif:size=10:style=Bold"},
+    {FONT_TIMES_18,     "DejaVu Serif:size=11:style=Book"},
+    {FONT_TIMES_18B,    "DejaVu Serif:size=11:style=Bold"},
+    {FONT_COURIER_18,   "Liberation Serif:size=11:style=Regular"},
+    {FONT_COURIER_18B,  "Liberation Serif:size=11:style=Bold"},
+    {FONT_COURIER_20,   "Liberation Serif:size=12:style=Regular"},
+    {FONT_COURIER_20B,  "Liberation Serif:size=12:style=Bold"}
 };
 
 struct PenDataType
@@ -117,7 +119,7 @@ static PenDataType PenData[] =
 };
 
 #define FONTS         (int)(sizeof(FontData)/sizeof(FontDataType))
-#define FONT_SPACE    80  // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
+#define FONT_SPACE    (FONTS+4)
 #define TEXT_COLORS   (int)(sizeof(PenData)/sizeof(PenDataType))
 
 class FontNameClass
@@ -254,8 +256,8 @@ int FontNameClass::SetItem(const char* word)
         strcpy(charset, word);
     else
     {
-        strncat(charset, "-", sizeof(charset) - strlen(charset) - 1);
-        strncat(charset, word, sizeof(charset) - strlen(charset) - 1);
+        strcat(charset, "-");
+        strcat(charset, word);
     }
     
     return retval;
@@ -348,16 +350,16 @@ const char* FontNameClass::ToString()
  *------------------------------------------------------------------*/
 Xpm::Xpm()
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     width = 0;
     height = 0;
 }
 
 Xpm::Xpm(Pixmap pm)
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     width = 0;
     height = 0;
     pixmap = pm;
@@ -365,8 +367,8 @@ Xpm::Xpm(Pixmap pm)
 
 Xpm::Xpm(Pixmap pm, int w, int h)
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     width = w;
     height = h;
     pixmap = pm;
@@ -392,17 +394,17 @@ Xpm *Pixmaps::Get(int idx)
 {
     int curridx = 0;
     Xpm *currXpm = pixmaps.Head();
-    Xpm *retval = nullptr;
+    Xpm *retval = NULL;
     
     if (pixmaps.Count() < 1)
         return retval;
 
-    while (currXpm != nullptr && curridx < count)
+    while (currXpm != NULL && curridx < count)
     {
         if (curridx == idx)
         {
             retval = currXpm;
-            currXpm = nullptr;
+            currXpm = NULL;
         }
         else
         {
@@ -416,7 +418,7 @@ Xpm *Pixmaps::Get(int idx)
 
 Xpm *Pixmaps::GetRandom()
 {
-    Xpm *retval = nullptr;
+    Xpm *retval = NULL;
 
     if (pixmaps.Count() < 2)
         return retval;
@@ -437,28 +439,27 @@ Pixmaps PixmapList;
  ********************************************************************/
 
 LayerList Layers;
-Layer *MainLayer = nullptr;
+Layer *MainLayer = NULL;
 
 int SocketNo = 0;
 
-Display *Dis = nullptr;
+Display *Dis = NULL;
 GC       Gfx = 0;
 Window   MainWin;
 std::array<Pixmap, IMAGE_COUNT> Texture;
 Pixmap   ShadowPix;
 int      ScrDepth = 0;
-Visual  *ScrVis = nullptr;
+Visual  *ScrVis = NULL;
 Colormap ScrCol = 0;
 int      WinWidth  = 0;
 int      WinHeight = 0;
 int      IsTermLocal = 0;
 int      Connection = 0;
 
-// Update font arrays to use XftFont instead of XFontStruct
-static XftFont *FontInfo[80];  // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
-static int      FontHeight[80];  // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
-static int      FontBaseline[80]; // Increased to accommodate new font families (Garamond, Bookman, Nimbus)
-static int      FontWidth[80];   // Added for character width calculation
+XFontStruct *FontInfo[FONT_SPACE];
+XftFont *XftFontsArr[FONT_SPACE];
+int FontBaseline[FONT_SPACE];
+int FontHeight[FONT_SPACE];
 
 int ColorTextT[TEXT_COLORS];
 int ColorTextH[TEXT_COLORS];
@@ -479,13 +480,13 @@ int ColorBlack;
 int ColorWhite;
 
 Str TimeString;
-Str StoreName;
+Str TermStoreName;
 Str Message;
 
 static XtAppContext App;
-static Widget       MainShell = nullptr;
+static Widget       MainShell = NULL;
 static int          ScrNo     = 0;
-static Screen      *ScrPtr    = nullptr;
+static Screen      *ScrPtr    = NULL;
 static int          ScrHeight = 0;
 static int          ScrWidth  = 0;
 static Window       RootWin;
@@ -495,7 +496,7 @@ static Ulong        Palette[256];
 static int          ScreenBlankTime = 60;
 static int          UpdateTimerID = 0;
 static int          TouchInputID  = 0;
-static TouchScreen *TScreen = nullptr;
+static TouchScreen *TScreen = NULL;
 static int          ResetTime = 20;
 static TimeInfo     TimeOut, LastInput;
 static int          CalibrateStage = 0;
@@ -505,12 +506,12 @@ static Cursor       CursorBlank = 0;
 static Cursor       CursorWait = 0;
 
 #ifndef NO_MOTIF
-static PageDialog      *PDialog = nullptr;
-static ZoneDialog      *ZDialog = nullptr;
-static MultiZoneDialog *MDialog = nullptr;
-static TranslateDialog *TDialog = nullptr;
-static ListDialog      *LDialog = nullptr;
-static DefaultDialog   *DDialog = nullptr;
+static PageDialog      *PDialog = NULL;
+static ZoneDialog      *ZDialog = NULL;
+static MultiZoneDialog *MDialog = NULL;
+static TranslateDialog *TDialog = NULL;
+static ListDialog      *LDialog = NULL;
+static DefaultDialog   *DDialog = NULL;
 #endif
 
 // So that translations aren't done every time a dialog is opened, we'll
@@ -534,7 +535,7 @@ struct timeval last_mouse_time;
 int last_x_pos = 0;
 int last_y_pos = 0;
 
-CCard *creditcard = nullptr;
+CCard *creditcard = NULL;
 int ConnectionTimeOut = 30;
 
 int allow_iconify = 1;
@@ -573,7 +574,7 @@ genericChar* RStr(genericChar* s)
     FnTrace("RStr()");
 
     static genericChar buffer[1024] = "";
-    if (s == nullptr)
+    if (s == NULL)
         s = buffer;
     BufferIn.GetString(s);
     return s;
@@ -600,8 +601,8 @@ Translation::Translation()
 {
     FnTrace("Translation::Translation()");
 
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     key[0] = '\0';
     value[0] = '\0';
 }
@@ -610,8 +611,8 @@ Translation::Translation(const char* new_key, const char* new_value)
 {
     FnTrace("Translation::Translation()");
 
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     key[0] = '\0';
     strncpy(key, new_key, STRLONG);
     value[0] = '\0';
@@ -673,7 +674,7 @@ const char* Translations::GetTranslation(const char* key)
     FnTrace("Translations::GetTranslation()");
 
     Translation *trans = trans_list.Head();
-    while (trans != nullptr)
+    while (trans != NULL)
     {
         if (trans->Match(key))
         {
@@ -694,7 +695,7 @@ void Translations::PrintTranslations()
     char key[STRLONG];
     char value[STRLONG];
 
-    while (trans != nullptr)
+    while (trans != NULL)
     {
         trans->GetKey(key, STRLONG);
         trans->GetValue(value, STRLONG);
@@ -853,7 +854,7 @@ void UpdateCB(XtPointer client_data, XtIntervalId *timer_id)
             TScreen->Reset();
         }
     }
-    UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, nullptr);
+    UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, NULL);
 }
 
 void TouchScreenCB(XtPointer client_data, int *fid, XtInputId *id)
@@ -861,7 +862,7 @@ void TouchScreenCB(XtPointer client_data, int *fid, XtInputId *id)
     FnTrace("TouchScreenCB()");
 
     TouchScreen *ts = TScreen;
-    if (ts == nullptr && silent_mode > 0)
+    if (ts == NULL && silent_mode > 0)
         return;
 
     int tx = -1;
@@ -945,7 +946,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
     KeySym key = 0;
     genericChar buffer[32];
 
-    int len = XLookupString(e, buffer, 31, &key, nullptr);
+    int len = XLookupString(e, buffer, 31, &key, NULL);
     if (len < 0)
         len = 0;
     buffer[len] = '\0';
@@ -1081,53 +1082,53 @@ void KeyPressCB(Widget widget, XtPointer client_data,
             swipe_buffer[0] = '\0';
             if (randcc == 0)
             {
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS^;??", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS^;??");
             }
             else if (randcc == 1 || randcc == 3 || randcc == 5)
             {  // correct data, tracks 1 and 2
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "^08051011234567890131674486261606288842611?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, ";5186900000000121=", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "08051015877400050041?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
+                strcat(swipe_buffer, ";5186900000000121=");
+                strcat(swipe_buffer, "08051015877400050041?");
             }
             else if (randcc == 2)
             {
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "^08051011234567890131674486261606288842611?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
             }
             else if (randcc == 4)
             {
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "^08051011234567890131674486261606288842611?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, ";5186900000000121=", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "08051015877400050041?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
+                strcat(swipe_buffer, ";5186900000000121=");
+                strcat(swipe_buffer, "08051015877400050041?");
             }
             else if (randcc == 6)
             {
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "08051015877400050041?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "08051015877400050041?");
             }
             else if (randcc == 7)
             {
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "^08051011234567890131674486261606288842611?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
-                strncat(swipe_buffer, "^08051011234567890131674486261606288842611?", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
             }
             else if (randcc == 8)
             {
-                strncat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
             }
             else if (randcc == 9)
             {
-                strncat(swipe_buffer, "%B\n\n", sizeof(swipe_buffer) - strlen(swipe_buffer) - 1);
+                strcat(swipe_buffer, "%B\n\n");
             }
             fake_cc = 0;
             printf("Sending Fake Credit Card:  '%s'\n", swipe_buffer);
@@ -1237,7 +1238,7 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
 
     // try to intelligently determine whether this might be
     // a touch
-    gettimeofday(&now, nullptr);
+    gettimeofday(&now, NULL);
     if ((now.tv_sec - last_mouse_time.tv_sec) > 1 ||
         (now.tv_usec - last_mouse_time.tv_usec) > 100000)
     {
@@ -1532,7 +1533,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             UserInput();
             break;
         case TERM_STORENAME:
-            StoreName.Set(RStr()); break;
+            TermStoreName.Set(RStr()); break;
         case TERM_CONNTIMEOUT:
             ConnectionTimeOut = RInt16();
             break;
@@ -1680,9 +1681,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             new_zone_translations = 1;
             break;
         case TERM_CC_AUTH:
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->Read();
                 creditcard->Sale();
@@ -1693,9 +1694,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_PREAUTH:
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->Read();
                 creditcard->PreAuth();
@@ -1706,9 +1707,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_FINALAUTH:
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->Read();
                 creditcard->FinishAuth();
@@ -1719,9 +1720,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_VOID:
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->Read();
                 creditcard->Void();
@@ -1732,9 +1733,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_VOID_CANCEL:
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->Read();
                 creditcard->VoidCancel();
@@ -1745,9 +1746,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_REFUND:
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->Read();
                 creditcard->Refund();
@@ -1758,9 +1759,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_REFUND_CANCEL:
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->Read();
                 creditcard->RefundCancel();
@@ -1772,54 +1773,54 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             break;
         case TERM_CC_SETTLE:
             // BatchSettle() should also write the response to vt_main
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->BatchSettle();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_INIT:
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->CCInit();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_TOTALS:
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->Totals();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_DETAILS:
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->Details();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_CLEARSAF:
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->ClearSAF();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_SAFDETAILS:
-            if (creditcard == nullptr)
+            if (creditcard == NULL)
                 creditcard = new CCard;
-            if (creditcard != nullptr)
+            if (creditcard != NULL)
             {
                 creditcard->SAFDetails();
                 creditcard->Clear();
@@ -1827,6 +1828,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             break;
         case TERM_SET_ICONIFY:
             allow_iconify = RInt8();
+            break;
+        case TERM_RELOAD_FONTS:
+            TerminalReloadFonts();
             break;
         }
 	}
@@ -1836,8 +1840,8 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
  * General Functions
  ********************************************************************/
 
-Layer       *TargetLayer = nullptr;
-LayerObject *TargetObject = nullptr;
+Layer       *TargetLayer = NULL;
+LayerObject *TargetObject = NULL;
 
 int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericChar* title)
 {
@@ -1851,7 +1855,7 @@ int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericCh
 
     KillLayer(id);
     Layer *l = new Layer(Dis, Gfx, MainWin, w, h);
-    if (l == nullptr)
+    if (l == NULL)
         return 1;
 
     if (l->pix == 0)
@@ -1880,7 +1884,7 @@ int ShowLayer(int id)
     FnTrace("ShowLayer()");
 
     Layer *l = Layers.FindByID(id);
-    if (l == nullptr)
+    if (l == NULL)
         return 1;
 
     l->buttons.Render(l);
@@ -1913,7 +1917,7 @@ int SetTargetLayer(int id)
     FnTrace("SetTargetLayer()");
 
     Layer *l = Layers.FindByID(id);
-    if (l == nullptr)
+    if (l == NULL)
         return 1;
 
     TargetLayer = l;
@@ -1926,7 +1930,7 @@ int NewPushButton(int id, int x, int y, int w, int h, const genericChar* text,
     FnTrace("NewPushButton()");
 
     Layer *l = TargetLayer;
-    if (l == nullptr)
+    if (l == NULL)
         return 1;
     LO_PushButton *b = new LO_PushButton(text, c1, c2);
     b->SetRegion(x + l->offset_x, y + l->offset_y, w, h);
@@ -1964,16 +1968,33 @@ int NewItemMenu(int id, int x, int y, int w, int h,
 XFontStruct *GetFont(Display *display, const char* displayname, const char* fontname)
 {
     FnTrace("GetFont()");
-    XFontStruct *retfont = nullptr;
+    XFontStruct *retfont = NULL;
     char str[STRLONG];
     
-    retfont = XLoadQueryFont(Dis, fontname);
-    if (retfont == nullptr)
+    // First try to load as scalable font using Xft
+    XftFont *xftfont = XftFontOpenName(Dis, ScrNo, fontname);
+    if (xftfont != NULL)
     {
-        snprintf(str, STRLENGTH, "Can't load font '%s' on display '%s'",
-                 fontname, displayname);
-        ReportError(str);
-        retfont = GetAlternateFont(Dis, displayname, fontname);
+        // For now, we'll still need to return an XFontStruct for compatibility
+        // We'll store the XftFont separately and use it for rendering
+        retfont = XLoadQueryFont(Dis, "fixed"); // fallback font
+        if (retfont == NULL)
+        {
+            // If even the fallback fails, try to get any available font
+            retfont = XLoadQueryFont(Dis, "*");
+        }
+    }
+    else
+    {
+        // Try traditional X11 font loading
+        retfont = XLoadQueryFont(Dis, fontname);
+        if (retfont == NULL)
+        {
+            snprintf(str, STRLENGTH, "Can't load font '%s' on display '%s'",
+                     fontname, displayname);
+            ReportError(str);
+            retfont = GetAlternateFont(Dis, displayname, fontname);
+        }
     }
 
     return retfont;
@@ -1982,7 +2003,7 @@ XFontStruct *GetFont(Display *display, const char* displayname, const char* font
 XFontStruct *GetAlternateFont(Display *display, const char* displayname, const char* fontname)
 {
     FnTrace("GetAlternateFont()");
-    XFontStruct *retfont = nullptr;
+    XFontStruct *retfont = NULL;
     FontNameClass font;
     char str[STRLENGTH];
 
@@ -1992,31 +2013,31 @@ XFontStruct *GetAlternateFont(Display *display, const char* displayname, const c
     // see if we have the same font in a different foundry
     font.ClearFoundry();
     retfont = XLoadQueryFont(Dis, font.ToString());
-    if (retfont != nullptr)
+    if (retfont != NULL)
         goto done;
 
     // try switching families
     if (strcmp(font.Family(), "courier") == 0)
         font.SetFamily("fixed");
     XLoadQueryFont(Dis, font.ToString());
-    if (retfont != nullptr)
+    if (retfont != NULL)
         goto done;
 
     font.ClearCharSet();
     retfont = XLoadQueryFont(Dis, font.ToString());
-    if (retfont != nullptr)
+    if (retfont != NULL)
         goto done;
 
     font.ClearWeight();
     retfont = XLoadQueryFont(Dis, font.ToString());
-    if (retfont != nullptr)
+    if (retfont != NULL)
         goto done;
 
     font.ClearPixels();
     retfont = XLoadQueryFont(Dis, font.ToString());
     
 done:
-    if (retfont == nullptr)
+    if (retfont == NULL)
         ReportError("  Unable to find alternative!!");
     else
     {
@@ -2070,16 +2091,14 @@ int SaveToPPM()
     // Find first unused filename (starting with 0)
     while (1)
     {
-        snprintf(filename, sizeof(filename), "%s/vtscreen%d.wd", SCREEN_DIR, no++);
+        sprintf(filename, "%s/vtscreen%d.wd", SCREEN_DIR, no++);
         if (!DoesFileExist(filename))
             break;
     }
 
     // Log the action
-    // FIXED: Increased buffer from 256 to 512 bytes to prevent format truncation
-    // Compiler warned: format string + max filename (255 chars) could exceed 256-byte buffer
-    genericChar str[512];  // Increased buffer size to prevent truncation
-    snprintf(str, sizeof(str), "Saving screen image to file '%s'", filename);
+    genericChar str[256];
+    sprintf(str, "Saving screen image to file '%s'", filename);
     ReportError(str);
 
     // Generate the screenshot
@@ -2146,7 +2165,7 @@ Pixmap LoadPixmap(const char**image_data)
     Pixmap retxpm = 0;
     int status;
     
-    status = XpmCreatePixmapFromData(Dis, MainWin, (char**)image_data, &retxpm, nullptr, nullptr);
+    status = XpmCreatePixmapFromData(Dis, MainWin, (char**)image_data, &retxpm, NULL, NULL);
     if (status != XpmSuccess)
         fprintf(stderr, "XpmError:  %s\n", XpmGetErrorString(status));
     
@@ -2162,7 +2181,7 @@ Xpm *LoadPixmapFile(char* file_name)
 {
     FnTrace("LoadPixmapFile()");
     
-    Xpm *retxpm = nullptr;
+    Xpm *retxpm = NULL;
     Pixmap xpm;
     XpmAttributes attributes;
     int status;
@@ -2173,7 +2192,7 @@ Xpm *LoadPixmapFile(char* file_name)
         if (sb.st_size <= MAX_XPM_SIZE)
         {
             attributes.valuemask = 0;
-            status = XpmReadFileToPixmap(Dis, MainWin, file_name, &xpm, nullptr, &attributes);
+            status = XpmReadFileToPixmap(Dis, MainWin, file_name, &xpm, NULL, &attributes);
             if (status != XpmSuccess)
             {
                 fprintf(stderr, "XpmError %s for %s\n", XpmGetErrorString(status), file_name);
@@ -2201,21 +2220,20 @@ Xpm *LoadPixmapFile(char* file_name)
 int ReadScreenSaverPix()
 {
     FnTrace("ReadScreenSaverPix()");
-    struct dirent *record = nullptr;
+    struct dirent *record = NULL;
     DIR *dp;
     Xpm *newpm;
     genericChar fullpath[STRLONG];
     int len;
-    struct stat st;
-    if (stat(SCREENSAVER_DIR, &st) != 0 || !S_ISDIR(st.st_mode))
+    if (!fs::is_directory(SCREENSAVER_DIR))
     {
         std::cerr << "Screen saver directory does not exist: '"
             << SCREENSAVER_DIR << "' creating it" << std::endl;
-        mkdir(SCREENSAVER_DIR, 0755);
-        chmod(SCREENSAVER_DIR, 0755); // set read/write/execute permissions
+        fs::create_directory(SCREENSAVER_DIR);
+        fs::permissions(SCREENSAVER_DIR, fs::perms::all); // be sure read/write/execute flags are set
     }
     dp = opendir(SCREENSAVER_DIR);
-    if (dp == nullptr)
+    if (dp == NULL)
     {
         ReportError("Can't find screen saver directory");
         return 1;
@@ -2233,7 +2251,7 @@ int ReadScreenSaverPix()
             {
                 snprintf(fullpath, STRLONG, "%s/%s", SCREENSAVER_DIR, name);
                 newpm = LoadPixmapFile(fullpath);
-                if (newpm != nullptr)
+                if (newpm != NULL)
                     PixmapList.Add(newpm);
             }
         }
@@ -2266,7 +2284,7 @@ int BlankScreen()
 int DrawScreenSaver()
 {
     FnTrace("DrawScreenSaver()");
-    static Xpm *lastimage = nullptr;
+    static Xpm *lastimage = NULL;
 
     ShowCursor(CURSOR_BLANK);
     Layers.SetScreenBlanker(1);
@@ -2276,7 +2294,7 @@ int DrawScreenSaver()
     XFillRectangle(Dis, MainWin, Gfx, 0, 0, WinWidth, WinHeight);
     
     Xpm *image = PixmapList.GetRandom(); 
-    if (image != nullptr && image != lastimage)
+    if (image != NULL && image != lastimage)
     {
         Layers.SetScreenImage(1);
         XSetClipMask(Dis, Gfx, None);
@@ -2325,7 +2343,7 @@ int Calibrate(int status)
 {
     FnTrace("Calibrate()");
 
-    if (TScreen == nullptr)
+    if (TScreen == NULL)
         return 1;
 
     ResetView();
@@ -2342,7 +2360,7 @@ int Calibrate(int status)
         TScreen->Calibrate();
         TouchInputID =
             XtAppAddInput(App, TScreen->device_no, (XtPointer)XtInputReadMask,
-                          (XtInputCallbackProc)CalibrateCB, nullptr);
+                          (XtInputCallbackProc)CalibrateCB, NULL);
         break;
     case 1:   // 2nd stage - get lower left touch
         XSetTile(Dis, Gfx, Texture[IMAGE_LIT_SAND]);
@@ -2394,7 +2412,7 @@ int StartTimers()
     if (UpdateTimerID == 0)
 	{
         UpdateTimerID = XtAppAddTimeOut(App, UPDATE_TIME,
-                                        (XtTimerCallbackProc) UpdateCB, nullptr);
+                                        (XtTimerCallbackProc) UpdateCB, NULL);
 	}
 
     if (TouchInputID == 0 && TScreen && TScreen->device_no > 0)
@@ -2403,7 +2421,7 @@ int StartTimers()
                                      TScreen->device_no, 
                                      (XtPointer) XtInputReadMask, 
                                      (XtInputCallbackProc) TouchScreenCB, 
-                                     nullptr);
+                                     NULL);
 	}
 
     return 0;
@@ -2440,7 +2458,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
     int i;
 
-    srand(time(nullptr));
+    srand(time(NULL));
 
     // Init Xt & Create Application Context
     App = XtCreateApplicationContext();
@@ -2449,17 +2467,17 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     for (i = 0; i < IMAGE_COUNT; ++i)
         Texture[i] = 0;
     for (i = 0; i < FONT_SPACE; ++i)
-        FontInfo[i] = nullptr;
+        FontInfo[i] = NULL;
 
     // Start Display
     genericChar str[STRLENGTH];
     int argc = 1;
     const genericChar* argv[] = {"vt_term"};
     IsTermLocal = is_term_local;
-    Dis = XtOpenDisplay(App, display, nullptr, nullptr, nullptr, 0, &argc,(char**) argv);
-    if (Dis == nullptr)
+    Dis = XtOpenDisplay(App, display, NULL, NULL, NULL, 0, &argc,(char**) argv);
+    if (Dis == NULL)
     {
-        snprintf(str, sizeof(str), "Can't open display '%s'", display);
+        sprintf(str, "Can't open display '%s'", display);
         ReportError(str);
         return 1;
     }
@@ -2484,118 +2502,62 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     TScreen    = ts;
     RootWin    = RootWindow(Dis, ScrNo);
 
-    // Set up font configuration for bundled fonts
-    char font_config_path[STRLENGTH];
-    // Try installed location first, then current directory for development
-    snprintf(font_config_path, sizeof(font_config_path), "/usr/viewtouch/fonts/fonts.conf");
-    if (access(font_config_path, R_OK) != 0) {
-        // Fallback to current directory for development builds
-        snprintf(font_config_path, sizeof(font_config_path), "%s/fonts/fonts.conf", getenv("PWD") ? getenv("PWD") : ".");
-    }
-    if (access(font_config_path, R_OK) == 0) {
-        FcConfigAppFontAddFile(nullptr, (const FcChar8*)font_config_path);
-    }
-    
-    // Load Fonts using Xft for scalable fonts
-    // First load legacy fonts from FontData array
+    // Load Fonts
     for (i = 0; i < FONTS; ++i)
     {
         int f = FontData[i].id;
-        const char* scalable_font_name = GetScalableFontName(f);
-        FontInfo[f] = XftFontOpenName(Dis, ScrNo, scalable_font_name);
-        if (FontInfo[f] == nullptr)
-        {
-            // Fallback to default font if scalable font fails
-            // ADDED: Enhanced error messaging per PR review feedback - helps users debug font issues
-            // Requested: "add a message that we're using a fallback font and which font we didn't find"
-            snprintf(str, sizeof(str), "Warning: Could not load font '%s', falling back to default", scalable_font_name);
-            ReportError(str);
-            FontInfo[f] = XftFontOpenName(Dis, ScrNo, GetScalableFontName(FONT_TIMES_24));
-            if (FontInfo[f] == nullptr)
-            {
-                // IMPROVED: More specific error message - shows which fallback failed, not original font
-                snprintf(str, sizeof(str), "Can't load fallback font '%s'", GetScalableFontName(FONT_TIMES_24));
-                ReportError(str);
-                return 1;
+
+        
+        FontInfo[f] = GetFont(Dis, display, FontData[i].font);
+        if (FontInfo[f] == NULL)
+            return 1;
+        
+        // Load Xft font using the correct specification
+        const char* xft_font_name = FontData[i].font;
+        XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
+        
+        // If Xft font loading failed, try a simple fallback
+        if (XftFontsArr[f] == NULL) {
+            printf("Failed to load Xft font: %s, trying fallback\n", xft_font_name);
+            XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book");
+            if (XftFontsArr[f] == NULL) {
+                printf("Failed to load fallback font too!\n");
             }
         }
-        // Calculate font metrics from XftFont
-        FontHeight[f] = FontInfo[f]->height;
-        FontBaseline[f] = FontInfo[f]->ascent;
         
-        // Calculate approximate character width for text layout
-        FontWidth[f] = FontInfo[f]->max_advance_width;
-        
-        // Ensure we have reasonable values - this prevents employee names stacking
-        if (FontWidth[f] <= 0) FontWidth[f] = 12;  // Fallback to reasonable default
-        if (FontHeight[f] <= 0) FontHeight[f] = FontData[i].height;  // Use original height as fallback
-    }
-    
-    // Load new font families (Garamond, Bookman, Nimbus)
-    int new_font_ids[] = {
-        FONT_GARAMOND_14, FONT_GARAMOND_16, FONT_GARAMOND_18, FONT_GARAMOND_20, FONT_GARAMOND_24, FONT_GARAMOND_28,
-        FONT_GARAMOND_14B, FONT_GARAMOND_16B, FONT_GARAMOND_18B, FONT_GARAMOND_20B, FONT_GARAMOND_24B, FONT_GARAMOND_28B,
-        FONT_BOOKMAN_14, FONT_BOOKMAN_16, FONT_BOOKMAN_18, FONT_BOOKMAN_20, FONT_BOOKMAN_24, FONT_BOOKMAN_28,
-        FONT_BOOKMAN_14B, FONT_BOOKMAN_16B, FONT_BOOKMAN_18B, FONT_BOOKMAN_20B, FONT_BOOKMAN_24B, FONT_BOOKMAN_28B,
-        FONT_NIMBUS_14, FONT_NIMBUS_16, FONT_NIMBUS_18, FONT_NIMBUS_20, FONT_NIMBUS_24, FONT_NIMBUS_28,
-        FONT_NIMBUS_14B, FONT_NIMBUS_16B, FONT_NIMBUS_18B, FONT_NIMBUS_20B, FONT_NIMBUS_24B, FONT_NIMBUS_28B
-    };
-    
-    for (i = 0; i < sizeof(new_font_ids)/sizeof(new_font_ids[0]); ++i)
-    {
-        int f = new_font_ids[i];
-        const char* scalable_font_name = GetScalableFontName(f);
-        FontInfo[f] = XftFontOpenName(Dis, ScrNo, scalable_font_name);
-        if (FontInfo[f] == nullptr)
-        {
-            // Fallback to default font if new font fails
-            snprintf(str, sizeof(str), "Warning: Could not load new font '%s', falling back to default", scalable_font_name);
-            ReportError(str);
-            FontInfo[f] = XftFontOpenName(Dis, ScrNo, GetScalableFontName(FONT_TIMES_24));
-            if (FontInfo[f] == nullptr)
-            {
-                snprintf(str, sizeof(str), "Can't load fallback font '%s'", GetScalableFontName(FONT_TIMES_24));
-                ReportError(str);
-                return 1;
-            }
+        // Calculate font metrics from Xft font
+        if (XftFontsArr[f]) {
+            FontHeight[f] = XftFontsArr[f]->ascent + XftFontsArr[f]->descent;
+            FontBaseline[f] = XftFontsArr[f]->ascent;
+        } else {
+            // Fallback values if font loading fails
+            FontHeight[f] = 28; // Default height
+            FontBaseline[f] = 20; // Default baseline
         }
-        // Calculate font metrics from XftFont
-        FontHeight[f] = FontInfo[f]->height;
-        FontBaseline[f] = FontInfo[f]->ascent;
-        
-        // Calculate approximate character width for text layout
-        FontWidth[f] = FontInfo[f]->max_advance_width;
-        
-        // Ensure we have reasonable values - this prevents employee names stacking
-        if (FontWidth[f] <= 0) FontWidth[f] = 12;  // Fallback to reasonable default
-        if (FontHeight[f] <= 0) FontHeight[f] = 24;  // Fallback to reasonable default
     }
 
     // Set Default Font
     FontInfo[FONT_DEFAULT]     = FontInfo[FONT_TIMES_24];
+    XftFontsArr[FONT_DEFAULT]  = XftFontsArr[FONT_TIMES_24];
     FontHeight[FONT_DEFAULT]   = FontHeight[FONT_TIMES_24];
     FontBaseline[FONT_DEFAULT] = FontBaseline[FONT_TIMES_24];
-    FontWidth[FONT_DEFAULT]    = FontWidth[FONT_TIMES_24];
 
     // Create Window
     int n = 0;
     Arg args[16];
-    // FIXED: const_cast needed for X11/Motif compatibility
-    // Modern C++ string literals are 'const char*' but X11 expects 'char*'
-    // const_cast safely removes const qualifier for legacy library compatibility
-    XtSetArg(args[n], const_cast<char*>("visual"),       ScrVis); ++n;
+    XtSetArg(args[n], "visual",       ScrVis); ++n;
     XtSetArg(args[n], XtNdepth,       ScrDepth); ++n;
-    //XtSetArg(args[n], const_cast<char*>("mappedWhenManaged"), False); ++n;
+    //XtSetArg(args[n], "mappedWhenManaged", False); ++n;
     XtSetArg(args[n], XtNx,           0); ++n;
     XtSetArg(args[n], XtNy,           0); ++n;
     XtSetArg(args[n], XtNwidth,       WinWidth); ++n;
     XtSetArg(args[n], XtNheight,      WinHeight); ++n;
     XtSetArg(args[n], XtNborderWidth, 0); ++n;
-    XtSetArg(args[n], const_cast<char*>("minWidth"),     WinWidth); ++n;
-    XtSetArg(args[n], const_cast<char*>("minHeight"),    WinHeight); ++n;
-    XtSetArg(args[n], const_cast<char*>("maxWidth"),     WinWidth); ++n;
-    XtSetArg(args[n], const_cast<char*>("maxHeight"),    WinHeight); ++n;
-    XtSetArg(args[n], const_cast<char*>("mwmDecorations"), 0); ++n;
+    XtSetArg(args[n], "minWidth",     WinWidth); ++n;
+    XtSetArg(args[n], "minHeight",    WinHeight); ++n;
+    XtSetArg(args[n], "maxWidth",     WinWidth); ++n;
+    XtSetArg(args[n], "maxHeight"   , WinHeight); ++n;
+    XtSetArg(args[n], "mwmDecorations", 0); ++n;
 
     MainShell = XtAppCreateShell("POS", "viewtouch",
                                  applicationShellWidgetClass, Dis, args, n);
@@ -2648,7 +2610,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     ColorBlack = ColorTextT[0];
     ColorWhite = ColorTextT[1];
 
-    Gfx       = XCreateGC(Dis, MainWin, 0, nullptr);
+    Gfx       = XCreateGC(Dis, MainWin, 0, NULL);
     ShadowPix = XmuCreateStippledPixmap(ScrPtr, 0, 1, 1);
     XSetStipple(Dis, Gfx, ShadowPix);
 
@@ -2657,7 +2619,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     CursorWait = XCreateFontCursor(Dis, XC_watch);
     // Setup Blank Cursor
     Pixmap p   = XCreatePixmap(Dis, MainWin, 16, 16, 1);
-    GC     pgc = XCreateGC(Dis, p, 0, nullptr);
+    GC     pgc = XCreateGC(Dis, p, 0, NULL);
     XSetForeground(Dis, pgc, BlackPixel(Dis, ScrNo));
     XSetFillStyle(Dis, pgc, FillSolid);
     XFillRectangle(Dis, p, pgc, 0, 0, 16, 16);
@@ -2738,43 +2700,43 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     LastInput = SystemTime;
 
     SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
-                                  (XtInputCallbackProc) SocketInputCB, nullptr);
+                                  (XtInputCallbackProc) SocketInputCB, NULL);
 
     // Send server term size
-    int screen_size = SIZE_640x480;
+    int screen_size = PAGE_SIZE_640x480;
 
     if (WinWidth >= 2560) 		// 16:10
-        screen_size = SIZE_2560x1600;
+        screen_size = PAGE_SIZE_2560x1600;
     else if (WinWidth >= 2560 && WinHeight < 1600) 		// 16:9
-        screen_size = SIZE_2560x1440;
+        screen_size = PAGE_SIZE_2560x1440;
     else if (WinWidth >= 1920 && WinHeight >= 1200) 		// 16:10
-        screen_size = SIZE_1920x1200;
+        screen_size = PAGE_SIZE_1920x1200;
     else if (WinWidth >= 1920 && WinHeight >= 1080) 		// 16:9
-        screen_size = SIZE_1920x1080;
+        screen_size = PAGE_SIZE_1920x1080;
     else if (WinWidth >= 1680 && WinHeight >= 1050)		// 16:10
-        screen_size = SIZE_1680x1050;
+        screen_size = PAGE_SIZE_1680x1050;
     else if (WinWidth >= 1600 && WinHeight >= 1200)
-      screen_size = SIZE_1600x1200;
+      screen_size = PAGE_SIZE_1600x1200;
     else if (WinWidth >= 1600 && WinHeight >= 900)		// 16:9
-        screen_size = SIZE_1600x900;
+        screen_size = PAGE_SIZE_1600x900;
     else if (WinWidth >= 1440 && WinHeight >= 900)		// 16:10
-        screen_size = SIZE_1440x900; 
+        screen_size = PAGE_SIZE_1440x900; 
     else if (WinWidth >= 1366 && WinHeight >= 768)		// 16:9
-        screen_size = SIZE_1366x768;
+        screen_size = PAGE_SIZE_1366x768;
     else if (WinWidth >= 1280 && WinHeight >= 1024) 		// 5:4
-        screen_size = SIZE_1280x1024;
+        screen_size = PAGE_SIZE_1280x1024;
     else if  (WinWidth >= 1280 && WinHeight >= 800) 		// 16:10
-        screen_size = SIZE_1280x800;
+        screen_size = PAGE_SIZE_1280x800;
     else if (WinWidth >= 1024 && WinHeight >= 768)		// 4:3
-        screen_size = SIZE_1024x768;
+        screen_size = PAGE_SIZE_1024x768;
     else if (WinWidth >= 1024 && WinHeight >= 600)		// 128:75
-        screen_size = SIZE_1024x600;
+        screen_size = PAGE_SIZE_1024x600;
     else if (WinWidth >= 800 && WinHeight >= 600)			// 4:3
-      screen_size = SIZE_800x600;
+      screen_size = PAGE_SIZE_800x600;
     else if (WinWidth >= 800 && WinHeight >= 480)
-        screen_size = SIZE_800x480;
+        screen_size = PAGE_SIZE_800x480;
     else if (WinWidth >= 768 && WinHeight >= 1024)
-        screen_size = SIZE_768x1024;
+        screen_size = PAGE_SIZE_768x1024;
 
     WInt8(SERVER_TERMINFO);
     WInt8(screen_size);
@@ -2785,11 +2747,11 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     if (TScreen)
         TScreen->Flush();
 
-    XtAddEventHandler(MainShell, KeyPressMask, FALSE, KeyPressCB, nullptr);
-    XtAddEventHandler(MainShell, ExposureMask, FALSE, ExposeCB, nullptr);
-    XtAddEventHandler(MainShell, ButtonPressMask, FALSE, MouseClickCB, nullptr);
-    XtAddEventHandler(MainShell, ButtonReleaseMask, FALSE, MouseReleaseCB, nullptr);
-    XtAddEventHandler(MainShell, PointerMotionMask, FALSE, MouseMoveCB, nullptr);
+    XtAddEventHandler(MainShell, KeyPressMask, FALSE, KeyPressCB, NULL);
+    XtAddEventHandler(MainShell, ExposureMask, FALSE, ExposeCB, NULL);
+    XtAddEventHandler(MainShell, ButtonPressMask, FALSE, MouseClickCB, NULL);
+    XtAddEventHandler(MainShell, ButtonReleaseMask, FALSE, MouseReleaseCB, NULL);
+    XtAddEventHandler(MainShell, PointerMotionMask, FALSE, MouseMoveCB, NULL);
 
     //Boolean okay;
     XEvent event;
@@ -2820,30 +2782,30 @@ int KillTerm()
     if (ZDialog)
     {
         delete ZDialog;
-        ZDialog = nullptr;
+        ZDialog = NULL;
     }
     if (MDialog)
     {
         delete MDialog;
-        MDialog = nullptr;
+        MDialog = NULL;
     }
     if (PDialog)
     {
         delete PDialog;
-        PDialog = nullptr;
+        PDialog = NULL;
     }
     if (TDialog)
     {
         delete TDialog;
-        TDialog = nullptr;
+        TDialog = NULL;
     }
     if (LDialog)
     {
         delete LDialog;
-        LDialog = nullptr;
+        LDialog = NULL;
     }
     delete DDialog;
-    DDialog = nullptr;
+    DDialog = NULL;
 #endif
     if (ShadowPix)
     {
@@ -2878,14 +2840,22 @@ int KillTerm()
     if (Gfx)
     {
         XFreeGC(Dis, Gfx);
-        Gfx = nullptr;
+        Gfx = NULL;
     }
 
     for (i = 1; i < FONT_SPACE; ++i)
         if (FontInfo[i])
         {
-            XftFontClose(Dis, FontInfo[i]);
-            FontInfo[i] = nullptr;
+            XFreeFont(Dis, FontInfo[i]);
+            FontInfo[i] = NULL;
+        }
+
+    // Clean up Xft fonts
+    for (i = 1; i < FONT_SPACE; ++i)
+        if (XftFontsArr[i])
+        {
+            XftFontClose(Dis, XftFontsArr[i]);
+            XftFontsArr[i] = NULL;
         }
 
     if (ScrCol)
@@ -2896,12 +2866,12 @@ int KillTerm()
     if (Dis)
     {
         XtCloseDisplay(Dis);
-        Dis = nullptr;
+        Dis = NULL;
     }
     if (App)
     {
         XtDestroyApplicationContext(App);
-        App = nullptr;
+        App = NULL;
     }
     return 0;
 }
@@ -2910,7 +2880,7 @@ int KillTerm()
  * External Data Functions
  ********************************************************************/
 
-XftFont *GetFontInfo(int font_id)
+XFontStruct *GetFontInfo(int font_id)
 {
     FnTrace("GetFontInfo()");
 
@@ -2924,7 +2894,9 @@ int GetFontBaseline(int font_id)
 {
     FnTrace("GetFontBaseline()");
 
-    if (font_id >= 0 && font_id < FONT_SPACE && FontInfo[font_id])
+    if (font_id >= 0 && font_id < FONT_SPACE && XftFontsArr[font_id])
+        return XftFontsArr[font_id]->ascent;
+    else if (font_id >= 0 && font_id < FONT_SPACE && FontInfo[font_id])
         return FontBaseline[font_id];
     else
         return FontBaseline[FONT_DEFAULT];
@@ -2936,7 +2908,9 @@ int GetFontHeight(int font_id)
 
     int retval = 0;
 
-    if (font_id >= 0 && font_id < FONT_SPACE && FontInfo[font_id])
+    if (font_id >= 0 && font_id < FONT_SPACE && XftFontsArr[font_id])
+        retval = XftFontsArr[font_id]->ascent + XftFontsArr[font_id]->descent;
+    else if (font_id >= 0 && font_id < FONT_SPACE && FontInfo[font_id])
         retval = FontHeight[font_id];
     else
         retval = FontHeight[FONT_DEFAULT];
@@ -2953,97 +2927,61 @@ Pixmap GetTexture(int texture)
         return Texture[0]; // default texture
 }
 
-// Function to get scalable font names for Xft - consistent with manager.cc
-const char* GetScalableFontName(int font_id)
+XftFont *GetXftFontInfo(int font_id)
 {
-    switch (font_id)
-    {
-    // Legacy Times fonts (kept for compatibility)
-    case FONT_TIMES_14:  return "Times New Roman-14:style=Regular";
-    case FONT_TIMES_18:  return "Times New Roman-18:style=Regular";
-    case FONT_TIMES_20:  return "Times New Roman-20:style=Regular";
-    case FONT_TIMES_24:  return "Times New Roman-24:style=Regular";
-    case FONT_TIMES_34:  return "Times New Roman-34:style=Regular";
-    case FONT_TIMES_14B: return "Times New Roman-14:style=Bold";
-    case FONT_TIMES_18B: return "Times New Roman-18:style=Bold";
-    case FONT_TIMES_20B: return "Times New Roman-20:style=Bold";
-    case FONT_TIMES_24B: return "Times New Roman-24:style=Bold";
-    case FONT_TIMES_34B: return "Times New Roman-34:style=Bold";
-    case FONT_COURIER_18: return "Courier New-18:style=Regular";
-    case FONT_COURIER_18B: return "Courier New-18:style=Bold";
-    case FONT_COURIER_20: return "Courier New-20:style=Regular";
-    case FONT_COURIER_20B: return "Courier New-20:style=Bold";
-    
-    // Modern POS Fonts - DejaVu Sans (Superior readability for POS)
-    case FONT_DEJAVU_14:  return "DejaVu Sans-14:style=Book";
-    case FONT_DEJAVU_16:  return "DejaVu Sans-16:style=Book";
-    case FONT_DEJAVU_18:  return "DejaVu Sans-18:style=Book";
-    case FONT_DEJAVU_20:  return "DejaVu Sans-20:style=Book";
-    case FONT_DEJAVU_24:  return "DejaVu Sans-24:style=Book";
-    case FONT_DEJAVU_28:  return "DejaVu Sans-28:style=Book";
-    case FONT_DEJAVU_14B: return "DejaVu Sans-14:style=Bold";
-    case FONT_DEJAVU_16B: return "DejaVu Sans-16:style=Bold";
-    case FONT_DEJAVU_18B: return "DejaVu Sans-18:style=Bold";
-    case FONT_DEJAVU_20B: return "DejaVu Sans-20:style=Bold";
-    case FONT_DEJAVU_24B: return "DejaVu Sans-24:style=Bold";
-    case FONT_DEJAVU_28B: return "DejaVu Sans-28:style=Bold";
-    
-    // Monospace fonts - Perfect for prices, numbers, and financial data
-    case FONT_MONO_14:    return "DejaVu Sans Mono-14:style=Book";
-    case FONT_MONO_16:    return "DejaVu Sans Mono-16:style=Book";
-    case FONT_MONO_18:    return "DejaVu Sans Mono-18:style=Book";
-    case FONT_MONO_20:    return "DejaVu Sans Mono-20:style=Book";
-    case FONT_MONO_24:    return "DejaVu Sans Mono-24:style=Book";
-    case FONT_MONO_14B:   return "DejaVu Sans Mono-14:style=Bold";
-    case FONT_MONO_16B:   return "DejaVu Sans Mono-16:style=Bold";
-    case FONT_MONO_18B:   return "DejaVu Sans Mono-18:style=Bold";
-    case FONT_MONO_20B:   return "DejaVu Sans Mono-20:style=Bold";
-    case FONT_MONO_24B:   return "DejaVu Sans Mono-24:style=Bold";
-    
-    // Classic Serif Fonts - EB Garamond 8 (elegant serif)
-    case FONT_GARAMOND_14:  return "EB Garamond-14:style=Regular";
-    case FONT_GARAMOND_16:  return "EB Garamond-16:style=Regular";
-    case FONT_GARAMOND_18:  return "EB Garamond-18:style=Regular";
-    case FONT_GARAMOND_20:  return "EB Garamond-20:style=Regular";
-    case FONT_GARAMOND_24:  return "EB Garamond-24:style=Regular";
-    case FONT_GARAMOND_28:  return "EB Garamond-28:style=Regular";
-    case FONT_GARAMOND_14B: return "EB Garamond-14:style=Bold";
-    case FONT_GARAMOND_16B: return "EB Garamond-16:style=Bold";
-    case FONT_GARAMOND_18B: return "EB Garamond-18:style=Bold";
-    case FONT_GARAMOND_20B: return "EB Garamond-20:style=Bold";
-    case FONT_GARAMOND_24B: return "EB Garamond-24:style=Bold";
-    case FONT_GARAMOND_28B: return "EB Garamond-28:style=Bold";
-    
-    // Classic Serif Fonts - URW Bookman (warm, readable serif)
-    case FONT_BOOKMAN_14:   return "URW Bookman-14:style=Light";
-    case FONT_BOOKMAN_16:   return "URW Bookman-16:style=Light";
-    case FONT_BOOKMAN_18:   return "URW Bookman-18:style=Light";
-    case FONT_BOOKMAN_20:   return "URW Bookman-20:style=Light";
-    case FONT_BOOKMAN_24:   return "URW Bookman-24:style=Light";
-    case FONT_BOOKMAN_28:   return "URW Bookman-28:style=Light";
-    case FONT_BOOKMAN_14B:  return "URW Bookman-14:style=Demi";
-    case FONT_BOOKMAN_16B:  return "URW Bookman-16:style=Demi";
-    case FONT_BOOKMAN_18B:  return "URW Bookman-18:style=Demi";
-    case FONT_BOOKMAN_20B:  return "URW Bookman-20:style=Demi";
-    case FONT_BOOKMAN_24B:  return "URW Bookman-24:style=Demi";
-    case FONT_BOOKMAN_28B:  return "URW Bookman-28:style=Demi";
-    
-    // Classic Serif Fonts - Nimbus Roman (clean, professional serif)
-    case FONT_NIMBUS_14:    return "Nimbus Roman-14:style=Regular";
-    case FONT_NIMBUS_16:    return "Nimbus Roman-16:style=Regular";
-    case FONT_NIMBUS_18:    return "Nimbus Roman-18:style=Regular";
-    case FONT_NIMBUS_20:    return "Nimbus Roman-20:style=Regular";
-    case FONT_NIMBUS_24:    return "Nimbus Roman-24:style=Regular";
-    case FONT_NIMBUS_28:    return "Nimbus Roman-28:style=Regular";
-    case FONT_NIMBUS_14B:   return "Nimbus Roman-14:style=Bold";
-    case FONT_NIMBUS_16B:   return "Nimbus Roman-16:style=Bold";
-    case FONT_NIMBUS_18B:   return "Nimbus Roman-18:style=Bold";
-    case FONT_NIMBUS_20B:   return "Nimbus Roman-20:style=Bold";
-    case FONT_NIMBUS_24B:   return "Nimbus Roman-24:style=Bold";
-    case FONT_NIMBUS_28B:   return "Nimbus Roman-28:style=Bold";
-    
-    // Default to modern DejaVu Sans instead of Times New Roman
-    default:                return "DejaVu Sans-18:style=Book";
+    FnTrace("GetXftFontInfo()");
+
+    if (font_id >= 0 && font_id < FONT_SPACE && XftFontsArr[font_id])
+        return XftFontsArr[font_id];
+    else
+        return XftFontsArr[FONT_DEFAULT];
+}
+
+// Reload all Xft fonts and update font metrics
+void TerminalReloadFonts()
+{
+    // Free existing Xft fonts
+    for (int i = 0; i < FONTS; ++i) {
+        int f = FontData[i].id;
+        if (XftFontsArr[f]) {
+            XftFontClose(Dis, XftFontsArr[f]);
+            XftFontsArr[f] = NULL;
+        }
     }
+    // Reload fonts
+    for (int i = 0; i < FONTS; ++i) {
+        int f = FontData[i].id;
+        const char* xft_font_name = FontData[i].font;
+        XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
+        if (XftFontsArr[f]) {
+            FontHeight[f] = XftFontsArr[f]->ascent + XftFontsArr[f]->descent;
+            FontBaseline[f] = XftFontsArr[f]->ascent;
+        } else {
+            FontHeight[f] = 0;
+            FontBaseline[f] = 0;
+        }
+    }
+    
+    // Update all layer objects (buttons) to use the new fonts
+    // This ensures toolbar buttons and other layer objects get updated fonts
+    Layer *layer = Layers.Head();
+    while (layer != NULL) {
+        LayerObject *obj = layer->buttons.Head();
+        while (obj != NULL) {
+            // Try to cast to LO_PushButton to check if it's a button
+            LO_PushButton *button = dynamic_cast<LO_PushButton*>(obj);
+            if (button != NULL) {
+                // Update button font to use the current font family
+                // The font family will change while keeping the same size
+                // Force redraw of this button
+                layer->update = 1;
+            }
+            obj = obj->next;
+        }
+        layer = layer->next;
+    }
+    
+    // Force redraw of all layers to show updated fonts
+    Layers.UpdateAll();
 }
 

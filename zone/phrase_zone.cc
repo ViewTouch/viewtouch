@@ -35,19 +35,16 @@ static const genericChar* PageName[] = {
     "Days of Week", "Abrv. Days of Week", "Months", "Abrv. Months",
     "General", "Greetings", "Statements", "Commands", "Errors",
     "Meal Period Index Names", "Jobs", "Families 1", "Families 2",
-    "Card Terms","Card Expressions 1", "Card Expressions 2", nullptr };
+    "Card Terms","Card Expressions 1", "Card Expressions 2", NULL };
 
 
 /**** PhraseZone Class ****/
 // Constructor
 PhraseZone::PhraseZone()
 {
-    font        = FONT_GARAMOND_14B;  // Use global default button font
     form_header = 1;
-    for (int i = 0; i < 31; ++i) {
-        AddTextField("", 40, 1, 0); // min_label_width = 0
-        AddNewLine();
-    }
+    for (int i = 0; i < 31; ++i)
+        AddTextField("", 40, 1, 40);
 }
 
 // Member Functions
@@ -120,7 +117,7 @@ int PhraseZone::SaveRecord(Terminal *t, int record, int write_file)
     if (record == 11 || record == 12)
     {
         t->SendTranslations(FamilyName);
-        t->system_data->phrases_changed = time(nullptr);
+        t->system_data->phrases_changed = time(NULL);
     }
 
     return 0;
@@ -129,34 +126,4 @@ int PhraseZone::SaveRecord(Terminal *t, int record, int write_file)
 int PhraseZone::RecordCount(Terminal *t)
 {
     return PAGES;
-}
-
-SignalResult PhraseZone::Signal(Terminal *t, const genericChar* message)
-{
-    FnTrace("PhraseZone::Signal()");
-    
-    // Handle navigation commands
-    if (strcmp(message, "next") == 0)
-    {
-        SaveRecord(t, record_no, 0);
-        ++record_no;
-        if (record_no >= PAGES)
-            record_no = 0;
-        LoadRecord(t, record_no);
-        Draw(t, 1);
-        return SIGNAL_OKAY;
-    }
-    else if (strcmp(message, "prior") == 0)
-    {
-        SaveRecord(t, record_no, 0);
-        --record_no;
-        if (record_no < 0)
-            record_no = PAGES - 1;
-        LoadRecord(t, record_no);
-        Draw(t, 1);
-        return SIGNAL_OKAY;
-    }
-    
-    // Let the parent FormZone handle other signals
-    return FormZone::Signal(t, message);
 }

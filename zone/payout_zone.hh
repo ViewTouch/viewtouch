@@ -18,7 +18,8 @@
  * Definition of captured tip payouts
  */
 
-#pragma once
+#ifndef _PAYOUT_ZONE_HH
+#define _PAYOUT_ZONE_HH
 
 #include "layout_zone.hh"
 
@@ -78,3 +79,5 @@ public:
     int          Update(Terminal *term, int update_message, const genericChar* value);
     int          EndOfDay(Terminal *term, int force = 0);
 };
+
+#endif

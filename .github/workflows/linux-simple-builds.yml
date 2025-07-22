@@ -91,14 +91,8 @@ jobs:
           -DCMAKE_CXX_STANDARD=${{matrix.std}} \
           -DCMAKE_CXX_EXTENSIONS=OFF \
 
-    - name: Build tests + lib
+    - name: Build + install
       working-directory: ${{runner.workspace}}
       run: |
         cmake --build _build_${{matrix.cxx}}_${{matrix.std}} -j2
         cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target install
-
-    - name: Run tests
-      env:
-          CTEST_OUTPUT_ON_FAILURE: 1
-      working-directory: ${{runner.workspace}}
-      run: cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target test

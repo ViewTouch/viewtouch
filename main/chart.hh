@@ -18,7 +18,8 @@
  * Report container
  */
 
-#pragma once
+#ifndef _CHART_HH
+#define _CHART_HH
 
 #include "list_utility.hh"
 #include "utility.hh"
@@ -65,3 +66,5 @@ public:
     int AddRowCell(const char* text);
     int EndRow();
 };
+
+#endif

@@ -41,8 +41,8 @@
 // Constructors
 DrawerPayment::DrawerPayment()
 {
-    next        = nullptr;
-    fore        = nullptr;
+    next        = NULL;
+    fore        = NULL;
     tender_type = TENDER_CASH;
     amount      = 0;
     user_id     = 0;
@@ -51,8 +51,8 @@ DrawerPayment::DrawerPayment()
 
 DrawerPayment::DrawerPayment(int tender, int amt, int user, TimeInfo &timevar, int target)
 {
-    next        = nullptr;
-    fore        = nullptr;
+    next        = NULL;
+    fore        = NULL;
     tender_type = tender;
     amount      = amt;
     user_id     = user;
@@ -73,7 +73,7 @@ int DrawerPayment::Read(InputDataFile &df, int version)
     if (error)
     {
         genericChar str[256];
-        snprintf(str, 256, "Error in reading drawer payment version %d data", version);
+        sprintf(str, "Error in reading drawer payment version %d data", version);
         ReportError(str);
     }
     return error;
@@ -95,8 +95,8 @@ int DrawerPayment::Write(OutputDataFile &df, int version)
 // Contructor
 DrawerBalance::DrawerBalance()
 {
-    next        = nullptr;
-    fore        = nullptr;
+    next = NULL;
+    fore = NULL;
     tender_type = TENDER_CHECK;
     tender_id   = 0;
     amount      = 0;
@@ -106,8 +106,8 @@ DrawerBalance::DrawerBalance()
 
 DrawerBalance::DrawerBalance(int type, int id)
 {
-    next        = nullptr;
-    fore        = nullptr;
+    next = NULL;
+    fore = NULL;
     tender_type = type;
     tender_id   = id;
     amount      = 0;
@@ -148,7 +148,7 @@ Drawer::Drawer()
 
     owner_id         = 0;
     puller_id        = 0;
-    term             = nullptr;
+    term             = NULL;
     serial_number    = 0;
     number           = 0;
     total_difference = 0;
@@ -156,7 +156,7 @@ Drawer::Drawer()
     total_payments   = 0;
     position         = 0;
     media_balanced   = 0;
-    archive          = nullptr;
+    archive = NULL;
 }
 
 Drawer::Drawer(TimeInfo &timevar)
@@ -166,7 +166,7 @@ Drawer::Drawer(TimeInfo &timevar)
     start_time       = timevar;
     owner_id         = 0;
     puller_id        = 0;
-    term             = nullptr;
+    term             = NULL;
     serial_number    = 0;
     number           = 0;
     total_difference = 0;
@@ -174,7 +174,7 @@ Drawer::Drawer(TimeInfo &timevar)
     total_payments   = 0;
     position         = 0;
     media_balanced   = 0;
-    archive          = nullptr;
+    archive = NULL;
 }
 
 // Member Functions
@@ -188,7 +188,7 @@ int Drawer::Read(InputDataFile &df, int version)
     genericChar str[256];
     if (version < 5 || version > 5)
     {
-        snprintf(str, 256, "Unknown drawer version %d", version);
+        sprintf(str, "Unknown drawer version %d", version);
         ReportError(str);
         return 1;
     }
@@ -208,15 +208,15 @@ int Drawer::Read(InputDataFile &df, int version)
     error += df.Read(n);
     if (n > 100)
     {
-        snprintf(str, 256, "Unusually high DrawerBalance count (%d)", n);
+        sprintf(str, "Unusually high DrawerBalance count (%d)", n);
         ReportError(str);
     }
     for (i = 0; i < n; ++i)
     {
         if (df.end_of_file)
         {
-            snprintf(str, 256, "Unexpected end of DrawerBalances (%d of %d so far)",
-                     i+1, n);
+            sprintf(str, "Unexpected end of DrawerBalances (%d of %d so far)",
+                    i+1, n);
             ReportError(str);
             return 1;
         }
@@ -226,7 +226,7 @@ int Drawer::Read(InputDataFile &df, int version)
         if (error)
         {
             delete db;
-            snprintf(str, 256, "Error reading DrawerBalance %d of %d", i+1, n);
+            sprintf(str, "Error reading DrawerBalance %d of %d", i+1, n);
             ReportError(str);
             return 1;
         }
@@ -239,8 +239,8 @@ int Drawer::Read(InputDataFile &df, int version)
     {
         if (df.end_of_file)
         {
-            snprintf(str, 256, "Unexpected end of DrawerPayments (%d of %d so far)",
-                     i+1, n);
+            sprintf(str, "Unexpected end of DrawerPayments (%d of %d so far)",
+                    i+1, n);
             ReportError(str);
             return 1;
         }
@@ -250,7 +250,7 @@ int Drawer::Read(InputDataFile &df, int version)
         if (error)
         {
             delete dp;
-            snprintf(str, 256, "Error reading DrawerPayment %d of %d", i+1, n);
+            sprintf(str, "Error reading DrawerPayment %d of %d", i+1, n);
             ReportError(str);
             return 1;
         }
@@ -266,7 +266,7 @@ int Drawer::Write(OutputDataFile &df, int version)
     if (version < 5 || version > 5)
     {
         genericChar str[256];
-        snprintf(str, 256, "Invalid drawer version '%d' for writing", version);
+        sprintf(str, "Invalid drawer version '%d' for writing", version);
         ReportError(str);
         return 1;
     }
@@ -288,13 +288,13 @@ int Drawer::Write(OutputDataFile &df, int version)
 
     // save drawer balances
     int count = 0;
-    for (balance = balance_list.Head(); balance != nullptr; balance = balance->next)
+    for (balance = balance_list.Head(); balance != NULL; balance = balance->next)
     {
         if (balance->entered)
             ++count;
     }
     error += df.Write(count, 1);
-    for (balance = balance_list.Head(); balance != nullptr; balance = balance->next)
+    for (balance = balance_list.Head(); balance != NULL; balance = balance->next)
     {
         if (balance->entered)
             error += balance->Write(df, version);
@@ -302,7 +302,7 @@ int Drawer::Write(OutputDataFile &df, int version)
 
     // save drawer payments
     error += df.Write(payment_list.Count(), 1);
-    for (dpaymnt = payment_list.Head(); dpaymnt != nullptr; dpaymnt = dpaymnt->next)
+    for (dpaymnt = payment_list.Head(); dpaymnt != NULL; dpaymnt = dpaymnt->next)
     {
         error += dpaymnt->Write(df, version);
     }
@@ -408,7 +408,7 @@ int Drawer::Count()
 {
     FnTrace("Drawer::Count()");
     int count = 1;
-    for (Drawer *d = next; d != nullptr; d = d->next)
+    for (Drawer *d = next; d != NULL; d = d->next)
         ++count;
     return count;
 }
@@ -417,11 +417,11 @@ int Drawer::Count()
 int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
 {
     FnTrace("Drawer::MakeReport()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
 
     r->update_flag = UPDATE_ARCHIVE | UPDATE_CHECKS | UPDATE_SERVER;
-    if (term == nullptr)
+    if (term == NULL)
         term = my_term;
     System *sys = term->system_data;
     Settings *s = &(sys->settings);
@@ -433,7 +433,7 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
     if (IsServerBank())
         strcpy(str, term->Translate("Server Bank Report"));
     else if (number > 0)
-        snprintf(str, 256, "Drawer #%d Balance Report", number);
+        sprintf(str, "Drawer #%d Balance Report", number);
     else
         strcpy(str, term->Translate("Cashier Balance Report"));
 
@@ -445,14 +445,14 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
 
     // write hostname
     Terminal *termlist = my_term->parent->TermList();
-    while (termlist != nullptr)
+    while (termlist != NULL)
     {
         if (termlist->host == host)
         {
             snprintf(str, 256, "Host:  %s", termlist->name.Value());
             r->TextL(str);
             r->NewLine();
-            termlist = nullptr;
+            termlist = NULL;
         }
         else
         {
@@ -465,9 +465,9 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
     {
         Employee *e = sys->user_db.FindByID(owner_id);
         if (e)
-            snprintf(str, 256, "%s: %s", term->Translate("Drawer Assignment"), e->system_name.Value());
+            sprintf(str, "%s: %s", term->Translate("Drawer Assignment"), e->system_name.Value());
         else
-            snprintf(str, 256, "%s", term->Translate("Drawer Hasn't Been Assigned"));
+            sprintf(str,"%s", term->Translate("Drawer Hasn't Been Assigned"));
         r->TextL(str);
         r->NewLine();
         
@@ -628,7 +628,7 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
     //as the new method simultaneously.  The assumption is that there
     //will be overlap only during a transition stage.
     // Credit Cards, original
-    for (CreditCardInfo *cc = s->CreditCardList(); cc != nullptr; cc = cc->next)
+    for (CreditCardInfo *cc = s->CreditCardList(); cc != NULL; cc = cc->next)
     {
         db = FindBalance(TENDER_CHARGE_CARD, cc->id);
         if (db && (db->amount != 0 || db->entered != 0))
@@ -713,7 +713,7 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
 
     // Discounts
     r->Mode(PRINT_RED);
-    for (CouponInfo *cp = s->CouponList(); cp != nullptr; cp = cp->next)
+    for (CouponInfo *cp = s->CouponList(); cp != NULL; cp = cp->next)
     {
         db = FindBalance(TENDER_COUPON, cp->id);
         if (db && (db->amount != 0 || db->entered != 0))
@@ -731,7 +731,7 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         }
     }
 
-    for (CompInfo *cm = s->CompList(); cm != nullptr; cm = cm->next)
+    for (CompInfo *cm = s->CompList(); cm != NULL; cm = cm->next)
     {
         db = FindBalance(TENDER_COMP, cm->id);
         if (db && (db->amount != 0 || db->entered != 0))
@@ -782,7 +782,7 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         r->NewLine();
     }
 
-    for (DiscountInfo *ds = s->DiscountList(); ds != nullptr; ds = ds->next)
+    for (DiscountInfo *ds = s->DiscountList(); ds != NULL; ds = ds->next)
     {
         db = FindBalance(TENDER_DISCOUNT, ds->id);
         if (db && (db->amount != 0 || db->entered != 0))
@@ -809,7 +809,7 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         }
     }
 
-    for (MealInfo *mi = s->MealList(); mi != nullptr; mi = mi->next)
+    for (MealInfo *mi = s->MealList(); mi != NULL; mi = mi->next)
     {
         db = FindBalance(TENDER_EMPLOYEE_MEAL, mi->id);
         if (db && (db->amount != 0 || db->entered != 0))
@@ -936,7 +936,7 @@ int Drawer::Open()
     if (IsServerBank())
         return 1;
 
-    if (term == nullptr)
+    if (term == NULL)
         term = MasterControl->FindTermByHost(host.Value());
 
     if (term)
@@ -948,7 +948,7 @@ int Drawer::Open()
 int Drawer::Total(Check *check_list, int force)
 {
     FnTrace("Drawer::Total()");
-    if (check_list == nullptr && force != 1)
+    if (check_list == NULL && force != 1)
         return 1;
 
     int i;
@@ -963,7 +963,7 @@ int Drawer::Total(Check *check_list, int force)
     total_payments = 0;
     total_difference = 0;
 
-    for (balance = balance_list.Head(); balance != nullptr; balance = balance->next)
+    for (balance = balance_list.Head(); balance != NULL; balance = balance->next)
     {
         //FIX BAK-->This may or may not need to be fixed:
         // TENDER_EXPENSE totals are calculated by
@@ -990,12 +990,12 @@ int Drawer::Total(Check *check_list, int force)
     }
 
     // Go through checks
-    for (check = check_list; check != nullptr; check = check->next)
+    for (check = check_list; check != NULL; check = check->next)
     {
         if (check->IsTraining() > 0)
             continue;
 
-        for (subcheck = check->SubList(); subcheck != nullptr; subcheck = subcheck->next)
+        for (subcheck = check->SubList(); subcheck != NULL; subcheck = subcheck->next)
         {
             if (subcheck->drawer_id != serial_number)
                 continue;
@@ -1007,7 +1007,7 @@ int Drawer::Total(Check *check_list, int force)
                 ++count[TENDER_ITEM_COMP];
             }
 
-            for (payment = subcheck->PaymentList(); payment != nullptr; payment = payment->next)
+            for (payment = subcheck->PaymentList(); payment != NULL; payment = payment->next)
             {
                 int idx = payment->tender_type;
                 int pid = payment->tender_id;
@@ -1037,7 +1037,7 @@ int Drawer::Total(Check *check_list, int force)
     }
 
     // Go through payments
-    for (dpaymnt = payment_list.Head(); dpaymnt != nullptr; dpaymnt = dpaymnt->next)
+    for (dpaymnt = payment_list.Head(); dpaymnt != NULL; dpaymnt = dpaymnt->next)
     {
         ++total_payments;
         int idx = dpaymnt->tender_type;
@@ -1074,20 +1074,20 @@ int Drawer::Total(Check *check_list, int force)
     // on the drawer balancing page while the drawer is pulled and also on the
     // Final Balance Report.
     DrawerBalance *cash_avail = FindBalance(TENDER_CASH_AVAIL, 0, 1);
-    if (cash_avail != nullptr)
+    if (cash_avail != NULL)
     {
         int cashamount = 0;
         int cashentered = 0;
         int expenseamount = 0;
         int expenseentered = 0;
         DrawerBalance *cash     = FindBalance(TENDER_CASH, 0);
-        if (cash != nullptr)
+        if (cash != NULL)
         {
             cashamount = cash->amount;
             cashentered = cash->entered;
         }
         DrawerBalance *expenses = FindBalance(TENDER_EXPENSE, 0);
-        if (expenses != nullptr)
+        if (expenses != NULL)
         {
             expenseamount = expenses->amount;
             expenseentered = expenses->entered;
@@ -1112,7 +1112,7 @@ int Drawer::Total(Check *check_list, int force)
         total_payments += balance->count;
 
     // Calculate total difference
-    for (balance = balance_list.Head(); balance != nullptr; balance = balance->next)
+    for (balance = balance_list.Head(); balance != NULL; balance = balance->next)
     {
         if (media_balanced & (1 << balance->tender_type))
         {
@@ -1136,7 +1136,7 @@ int Drawer::ChangeOwner(int user_id)
 int Drawer::RecordSale(SubCheck *sc)
 {
     FnTrace("Drawer::RecordSale()");
-    if (sc == nullptr)
+    if (sc == NULL)
         return 1;
 
     if (sc->drawer_id > 0)
@@ -1163,7 +1163,7 @@ int Drawer::TotalPaymentAmount(int tender_type)
     DrawerPayment *currPayment = payment_list.Head();
     int retval = 0;
 
-    while (currPayment != nullptr)
+    while (currPayment != NULL)
     {
         if (currPayment->tender_type == tender_type)
             retval += currPayment->amount;
@@ -1202,7 +1202,7 @@ int Drawer::IsEmpty()
 {
     FnTrace("Drawer::IsEmpty()");
     int no_checks = (total_checks <= 0);
-    int empty_payment_list = (payment_list.Head() == nullptr);
+    int empty_payment_list = (payment_list.Head() == NULL);
     int no_payments = (total_payments <= 0);
 
     return (no_checks && empty_payment_list && no_payments);
@@ -1213,7 +1213,7 @@ DrawerBalance *Drawer::FindBalance(int tender, int id, int make_new)
     FnTrace("Drawer::FindBalance()");
     DrawerBalance *balance;
 
-    for (balance = balance_list.Head(); balance != nullptr; balance = balance->next)
+    for (balance = balance_list.Head(); balance != NULL; balance = balance->next)
     {
         if (balance->tender_type == tender && balance->tender_id == id)
         {
@@ -1227,7 +1227,7 @@ DrawerBalance *Drawer::FindBalance(int tender, int id, int make_new)
         Add(balance);
         return balance;
     }
-    return nullptr;
+    return NULL;
 }
 
 /****
@@ -1239,7 +1239,7 @@ void Drawer::ListBalances()
     DrawerBalance *balance = balance_list.Head();
 
     printf("Listing Balances for Drawer %d\n", serial_number);
-    while (balance != nullptr)
+    while (balance != NULL)
     {
         printf("    Type:     %d\n", balance->tender_type);
         printf("    ID:       %d\n", balance->tender_id);
@@ -1253,7 +1253,7 @@ void Drawer::ListBalances()
 int Drawer::Balance(int tender, int id)
 {
     FnTrace("Drawer::Balance(int, int)");
-    for (DrawerBalance *b = balance_list.Head(); b != nullptr; b = b->next)
+    for (DrawerBalance *b = balance_list.Head(); b != NULL; b = b->next)
     {
         if (b->tender_type == tender && b->tender_id == id)
         {
@@ -1273,7 +1273,7 @@ int Drawer::TotalBalance(int tender)
     int amount_total = 0;
     int retval = 0;
 
-    for (DrawerBalance *b = balance_list.Head(); b != nullptr; b = b->next)
+    for (DrawerBalance *b = balance_list.Head(); b != NULL; b = b->next)
     {
         if (b->tender_type == tender)
         {
@@ -1292,33 +1292,33 @@ int Drawer::TotalBalance(int tender)
 Drawer *Drawer::FindBySerial(int serial)
 {
     FnTrace("Drawer::FindBySerial()");
-    for (Drawer *d = this; d != nullptr; d = d->next)
+    for (Drawer *d = this; d != NULL; d = d->next)
     {
         if (d->serial_number == serial)
             return d;
     }
-    return nullptr;
+    return NULL;
 }
 
 Drawer *Drawer::FindByNumber(int no, int status)
 {
     FnTrace("Drawer::FindByNumber()");
-    for (Drawer *d = this; d != nullptr; d = d->next)
+    for (Drawer *d = this; d != NULL; d = d->next)
         if (d->number == no && d->Status() == status)
             return d;
-    return nullptr;
+    return NULL;
 }
 
 Drawer *Drawer::FindByOwner(Employee *e, int status)
 {
     FnTrace("Drawer::FindByOwner()");
     if (e->training)
-        return nullptr;
+        return NULL;
 
-    for (Drawer *d = this; d != nullptr; d = d->next)
+    for (Drawer *d = this; d != NULL; d = d->next)
         if (d->owner_id == e->id && d->Status() == status)
             return d;
-    return nullptr;
+    return NULL;
 }
 
 int Drawer::Balance(int user_id)
@@ -1391,10 +1391,10 @@ int Drawer::MergeServerBanks()
         {
             drawer_change = 1;
             // Reassign drawer_id in checks
-            for (Check *c = check_list; c != nullptr; c = c->next)
+            for (Check *c = check_list; c != NULL; c = c->next)
             {
                 check_change = 0;
-                for (SubCheck *sc = c->SubList(); sc != nullptr; sc = sc->next)
+                for (SubCheck *sc = c->SubList(); sc != NULL; sc = sc->next)
                     if (sc->drawer_id == d->serial_number)
                     {
                         check_change = 1;
@@ -1415,7 +1415,7 @@ int Drawer::MergeServerBanks()
                 dp = dp_next;
             }
             // Move balances
-            for (DrawerBalance *b = d->balance_list.Head(); b != nullptr; b = b->next)
+            for (DrawerBalance *b = d->balance_list.Head(); b != NULL; b = b->next)
             {
                 DrawerBalance *mdb = FindBalance(b->tender_type, b->tender_id, 1);
                 mdb->entered += b->entered;
@@ -1484,10 +1484,10 @@ int Drawer::MergeSystems(int mergeall)
         {
             drawer_change = 1;
             // Reassign drawer_id in checks
-            for (Check *c = check_list; c != nullptr; c = c->next)
+            for (Check *c = check_list; c != NULL; c = c->next)
             {
                 check_change = 0;
-                for (SubCheck *sc = c->SubList(); sc != nullptr; sc = sc->next)
+                for (SubCheck *sc = c->SubList(); sc != NULL; sc = sc->next)
                     if (sc->drawer_id == d->serial_number)
                     {
                         check_change = 1;
@@ -1508,7 +1508,7 @@ int Drawer::MergeSystems(int mergeall)
                 dp = dp_next;
             }
             // Move balances
-            for (DrawerBalance *b = d->balance_list.Head(); b != nullptr; b = b->next)
+            for (DrawerBalance *b = d->balance_list.Head(); b != NULL; b = b->next)
             {
                 DrawerBalance *mdb = FindBalance(b->tender_type, b->tender_id, 1);
                 mdb->entered += b->entered;
@@ -1574,23 +1574,23 @@ int MergeSystems(Terminal *term, int mergeall)
         
         // gather drawers attached to terminals
         Terminal *termlist = term->parent->TermList();
-        while (termlist != nullptr)
+        while (termlist != NULL)
         {
             // count the drawers for this hostname
             count = 0;
             currdrawer = firstdrawer;
-            mergedrawer = nullptr;
-            while (currdrawer != nullptr)
+            mergedrawer = NULL;
+            while (currdrawer != NULL)
             {
                 if (currdrawer->host == termlist->host)
                 {
-                    if (mergedrawer == nullptr)
+                    if (mergedrawer == NULL)
                         mergedrawer = currdrawer;
                     count += 1;
                 }
                 currdrawer = currdrawer->next;
             }
-            if (count > 1 && mergedrawer != nullptr)
+            if (count > 1 && mergedrawer != NULL)
             {
                 mergedrawer->MergeSystems();
                 retval = 1;
@@ -1601,18 +1601,18 @@ int MergeSystems(Terminal *term, int mergeall)
         // now gather the drawers that have no assigned host
         count = 0;
         currdrawer = firstdrawer;
-        mergedrawer = nullptr;
-        while (currdrawer != nullptr)
+        mergedrawer = NULL;
+        while (currdrawer != NULL)
         {
             if (currdrawer->host.empty())
             {
-                if (mergedrawer == nullptr)
+                if (mergedrawer == NULL)
                     mergedrawer = currdrawer;
                 count += 1;
             }
             currdrawer = currdrawer->next;
         }
-        if (count > 1 && mergedrawer != nullptr)
+        if (count > 1 && mergedrawer != NULL)
         {
             mergedrawer->MergeSystems();
             retval = 0;

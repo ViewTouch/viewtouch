@@ -1,0 +1,2126 @@
+[33mcommit 86202113819e0c17e496cb8095d3c57d91738242[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: Ariel Brambila Pelayo <arielbrambila117@gmail.com>
+Date:   Wed Jun 4 23:03:13 2025 -0700
+
+    Fixed Crashing On Accounting
+
+[33mcommit 9655da9866ea633f9a20acd8d753c3b9e36b7691[m
+Merge: a848ed0 ce8ea30
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Mon Jan 16 10:12:40 2023 +0100
+
+    Merge pull request #132 from ViewTouch/catch_v2.13.10
+    
+    Update embedded catch.hpp to v2.13.10 to fix Ubuntu 20.04 build
+
+[33mcommit ce8ea30cc8fa87711ecd0b20cd3e66d28b529e60[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Jan 16 10:03:38 2023 +0100
+
+    Update embedded catch.hpp to v2.13.10 to fix Ubuntu 20.04 build
+    
+    Fixes: https://github.com/ViewTouch/viewtouch/issues/131
+
+[33mcommit a848ed0245d1317992dce5f87a48f9084ee32c43[m
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Nov 22 07:35:56 2021 -0800
+
+    Update README.md
+
+[33mcommit 8854a05ac5fc7eaa8ada0af24a6d0f33b97753f6[m
+Merge: 0d88194 0780b11
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Thu Oct 28 17:25:50 2021 +0200
+
+    Merge pull request #130 from ViewTouch/ci_gcc_11
+    
+    CI: add G++11 to build matrix
+
+[33mcommit 0780b115e6255b88dac080729206cc57e519f1e5[m
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Thu Oct 28 17:20:11 2021 +0200
+
+    CI: add G++11 to build matrix
+
+[33mcommit 0d88194b3a0543697064094a672145cbf88ec7b5[m
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Thu Oct 28 08:41:46 2021 +0200
+
+    cmake: search for PkgConfig before using pkg_check_modules (#128)
+
+[33mcommit d01573127883d6f87d3e5399f62ca26901ef392d[m
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Oct 25 19:51:42 2021 -0700
+
+    Update README.md
+
+[33mcommit c3bf7a5a0a6299b7a7113986db554a2ba6fa6631[m
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Oct 4 00:40:56 2021 -0700
+
+    Update README.md
+
+[33mcommit f284f9b1f994770270452c272871cdefac2ba5a0[m
+Merge: c4d690e dc8b923
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sun Oct 3 13:27:48 2021 -0700
+
+    Merge pull request #127 from NeroBurner/loader_x11
+
+[33mcommit dc8b923e885474967d209d7aed970420f680a411[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sun Oct 3 19:11:42 2021 +0200
+
+    CI: install clang-9 package explicitly
+
+[33mcommit 7a07efc3f1723b7cfaa9330550f7ca6b38661869[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sun Oct 3 18:53:35 2021 +0200
+
+    loader: move back from GTK+3 to X11
+    
+    Remove GTK+3 specific css and vtlogo.xpm files as well as they are now
+    unused.
+
+[33mcommit c4d690e3137e422f21b2ac52164174146aba4026[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sun May 16 16:45:27 2021 +0200
+
+    log: add unreleased stub
+
+[33mcommit ee0f4db7710629c65b27233895c60acf61d8d146[m[33m ([m[1;33mtag: [m[1;33mv21.05.1[m[33m)[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sun May 16 16:44:57 2021 +0200
+
+    Push version number to v21.05.1
+
+[33mcommit 60b5c2b6264b6d42012bac8f08bb09d387696837[m
+Merge: 49c76e4 87e7529
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Sun May 16 23:36:56 2021 +0200
+
+    Merge pull request #123 from NeroBurner/github_actions
+    
+    Add github action linux simple builds using ubuntu-20.04
+
+[33mcommit 87e75293e6a38400e9cee965f26f706ebc8ac795[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sun May 16 22:28:00 2021 +0200
+
+    Add github action linux simple builds using ubuntu-20.04
+    
+    Only different compiler versions are covered. Different distros like
+    Debian or other versions of Ubuntu are not covered.
+    
+    Fixes: https://github.com/ViewTouch/viewtouch/issues/122
+
+[33mcommit 49c76e4efad05ee567c027820ac832de5fdf6ddc[m
+Merge: 7ac2d40 64d8d75
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Sun May 16 21:07:47 2021 +0200
+
+    Merge pull request #121 from NeroBurner/download_bootstrap_files_on_first_start_if_missing
+    
+    Download bootstrap files on first start if missing
+
+[33mcommit 64d8d75f72fc6243da7fb41a72f4d159cced196a[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sun May 16 16:38:54 2021 +0200
+
+    cmake: need to link stdc++fs to vt_term for screensaver creation as well
+
+[33mcommit 463310bbedfa0c3da0c0a0202c3216d3159ba499[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sat May 15 21:20:11 2021 +0200
+
+    Use std::filesystem and curlpp to download missing files and create dirs
+    
+    - Require C++17 for std::filesystem and link to stdc++fs for gcc 8 builds
+    - cmake: add curlpp and link curlpp_static to vt_main
+    - main/manager: if missing download missing bootstrap files
+      - `vt_data`     from http://www.viewtouch.com/vt_data
+      - `tables.dat`  from http://www.viewtouch.com/tables.dat
+      - `menu.dat`    from http://www.viewtouch.com/menu.dat
+      - `zone_db.dat` from http://www.viewtouch.com/zone_db.dat
+    - main/settings: if missing create dat/conf dir for config ini files
+    - term/term_view: if missing create dat/screenshot directory
+    
+    Fixes: https://github.com/ViewTouch/viewtouch/issues/119
+
+[33mcommit f7baede8d8bef7ffe4c5e657bc1556281ebffdeb[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sun May 16 08:29:52 2021 +0200
+
+    ci: install libcurl4-gnutls-dev, update base images to newer versions
+    
+    We now require C++17 feature std::filesystem, which is provided starting
+    with gcc-8. Instead of testing default (which is now C++17) and later
+    explicitly C++17, we test against C++20.
+    
+    - Remove Ubuntu 16.04 xenial (out of regular support, no gcc-8)
+    - Remove Debian 9 stretch (old gcc, no C++17, Raspian images moved on)
+    - Add Ubuntu 20.04 focal
+    - Add Debian 11 bullseye
+    - Use Ubuntu 20.04 focal for gcc-cxx20 build (instead of bionic C++17)
+    - Use Debian 11 bullseye for clang-cxx20 build (instead of buster C++17)
+    - Add link to debian releases documentation: https://www.debian.org/releases/
+    - On Ubuntu 20.04 bionic explicitly install and build with gcc-8
+      (default is gcc-7)
+    - remove unused toolchains for C++11 and C++14
+
+[33mcommit d751548f31e297ffe4d4fc729d52665ffbc8ac89[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sat May 15 23:57:27 2021 +0200
+
+    external: add curlpp C++ wrapper around libcurl
+    
+    Based on [CMake] Make Curl linking with static CRT when option CURLPP_STATIC_CRT is ON 5e25a51e8dc75e05b707e08536abee28e0a45738
+    
+    With stripped down CMakeLists.txt file and PUBLIC include dirs for
+    static target.
+    
+    Also applied:
+    - https://github.com/jpbarrette/curlpp/pull/121
+      Fix pedantic warnings about extra ';'
+
+[33mcommit dd6e4e8396d40b1d9be13d90162174c7ef0f0542[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sat May 15 22:12:37 2021 +0200
+
+    Update date library for C++17 warning silencing
+    
+    Based on commit Add tests for %I and %p format options 6e921e1b1d21e84a5c82416ba7ecd98e33a436d0
+
+[33mcommit 7ac2d40d4722719011f0889fd9eff2084cc5e93f[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sun May 16 13:51:55 2021 +0200
+
+    zone: remove debug code, that shouldn't have landed in production
+
+[33mcommit aea1256641cf4ed55220a907b2eb86594af6f729[m
+Merge: c232b61 6b8a168
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Sun May 16 11:46:46 2021 +0200
+
+    Merge pull request #120 from ViewTouch/small_fixes
+    
+    Small warning fixes
+
+[33mcommit 6b8a1682e33526a163da51077b587b00d5ccfd21[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sun May 16 00:39:26 2021 +0200
+
+    main/inventory: remove custom copy assignment to fix deprecated-copy warning
+    
+    Error message:
+    
+    ```
+    [build] viewtouch/zone/inventory_zone.cc: In member function ‘virtual int ProductZone::LoadRecord(Terminal*, int)’:
+    [build] viewtouch/zone/inventory_zone.cc:334:36: warning: implicitly-declared ‘constexpr UnitAmount::UnitAmount(const UnitAmount&)’ is deprecated [-Wdeprecated-copy]
+    [build]   334 |     UnitAmount unit_amount = prod->purchase;
+    [build]       |                                    ^~~~~~~~
+    [build] In file included from viewtouch/zone/inventory_zone.cc:75:
+    [build] viewtouch/main/inventory.hh:79:17: note: because ‘UnitAmount’ has user-provided ‘UnitAmount& UnitAmount::operator=(UnitAmount&)’
+    [build]    79 |     UnitAmount &operator = (UnitAmount &u)
+    ```
+
+[33mcommit fa8f4aa4906352e563758016699dca385044151c[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sun May 16 00:36:55 2021 +0200
+
+    main/account: fix no return warning in Account::Remove
+    
+    The functions seems unused, but better implemented than sorry later.
+
+[33mcommit 7cd6242dce338bce1f49fda7cdc2c291aa9fb236[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sat May 15 21:58:16 2021 +0200
+
+    Remove unused variable in socket.cc
+
+[33mcommit c232b612f22cefd0afa43e57b2a1596d537a05bd[m
+Merge: 4404676 1410573
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Tue May 11 22:37:45 2021 +0200
+
+    Merge pull request #118 from ViewTouch/phrase_zone_page_13_segfault
+    
+    main/locale: remove FamilyName NULL reference on Page 13 of 16
+
+[33mcommit 14105737e2a0e9291b0f30bcea82e99b7b47fa22[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Tue May 11 22:05:53 2021 +0200
+
+    main/locale: remove FamilyName NULL reference on Page 13 of 16
+    
+    Page 13 of 16 (page index 12) has a reference to FamilyName[31], which
+    is a char* pointer initialized with `NULL`. When this `nullptr` is
+    passed to `Str::Set(const char *)` this results in a Segmentation fault.
+    
+    Fixes: https://github.com/ViewTouch/viewtouch/issues/117
+
+[33mcommit 44046769bffce7258b0ace11d8c7d9851e596639[m
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Feb 1 19:37:34 2021 -0800
+
+    Update README.md
+
+[33mcommit 1ccefab7fe639ad715f9a5d863e35fb5f7a4bf4f[m
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Jan 25 10:32:31 2021 -0800
+
+    Update README.md
+
+[33mcommit 477011ae08d71d04b83f4fb32f12bc83b33d1b97[m
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu Jan 14 09:07:44 2021 -0800
+
+    Create SECURITY.md
+
+[33mcommit 2a02a071de3690d21437ffd07e568d43e5817d73[m
+Merge: f9ff79a 94d9fd5
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu Jan 7 14:37:30 2021 -0800
+
+    Merge pull request #116 from ViewTouch/fix_report_table_header_line
+    
+    main: report: Handle nullptr const char ptr in Report::Text again
+
+[33mcommit 94d9fd55f3688598ccc0872dc3f8adcf102ea864[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Wed Jan 6 23:45:16 2021 +0100
+
+    main: report: Handle nullptr const char ptr in Report::Text again
+    
+    In 9f10c00e461f6b86c8f9c2f9c058698df228efc7 main: report: remove custom DList, updates
+    the `Report::Text` function was switched to accept `std::string&` instead
+    of `const char*`. In the conversion the possibility of the char ptr to
+    be a nullptr was forgotten. A nullptr for text is interpreted as
+    `draw_a_line`. As `std::string` has no distinction between nullptr and
+    an empty string introduce the variable `bool draw_a_line` and
+    reintroduce the `const char*` overloads for `Report::Text` and
+    `ReportEntry()`.
+    
+    Add tests to check ReportEntry constructors with `const char *` and
+    `std::string`. Especially the new behavior when `nullptr` is passed as
+    text, which should be the only instance `draw_a_line` should be set to
+    true.
+    
+    fixes: https://github.com/ViewTouch/viewtouch/issues/115
+
+[33mcommit f9ff79a82d3f84ae8bd70ef38d603281abacfe33[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Thu Jan 7 22:24:08 2021 +0100
+
+    external: catch2: update to v2.13.4
+
+[33mcommit e932136869e21edafd5bd1e335d8f8b29a541e0e[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Wed Jan 6 22:02:56 2021 +0100
+
+    log: add unreleased stub
+
+[33mcommit 96e5a1d1e7b8c29fc2b0c51c48e20bea6d333a66[m[33m ([m[1;33mtag: [m[1;33mv21.01.1[m[33m)[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Wed Jan 6 22:02:09 2021 +0100
+
+    Push version number to v21.01.1
+
+[33mcommit e8da47cfd5192325c5f4b6477038f1e84f7c7236[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Wed Jan 6 21:57:49 2021 +0100
+
+    tests: main: check WorkReportLine handling non-set start time
+    
+    For testing make the Terminal() constructor public, otherwise it's near
+    impossible for me to create a testcase of a function using Terminal as
+    one of the arguments.
+
+[33mcommit 81593b93132bc304d522229b0e8b668c85df41bd[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sat Jan 2 13:33:03 2021 +0100
+
+    main: remove unused System::Add/Remove(WorkEntry) functions
+
+[33mcommit ba73b948c13314960d9977c172a7f77ceb43b7ed[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sat Jan 2 13:22:03 2021 +0100
+
+    fix typo in employee comment
+
+[33mcommit e5f3f7df0c81ef97ff220f6e8ec3fb129a3df926[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Tue Jan 5 22:17:56 2021 +0100
+
+    log: fix Timeclock page
+
+[33mcommit bcebf64a24ad212e89279c07fc6665ba546f949b[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Tue Jan 5 22:06:58 2021 +0100
+
+    Fix WorkReport when start time is not set
+    
+    When start time is not set assume that all of time is meant (no bounds
+    by start time).
+    
+    This fixes the "Timeclock" administration page.
+
+[33mcommit 75fc4672f748802f394b64c57e48ca486ac20897[m
+Merge: 8a1f72e 216b6c6
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Jan 4 07:17:39 2021 -0800
+
+    Merge pull request #114 from ViewTouch/fix_clock_in_again
+    
+    Handle non-set TimeInfo Read/Write fixing Clock In bug
+
+[33mcommit 216b6c66513dd7a44bb090e7ea9583029cc64543[m
+Author: Reinhold Gschweicher <pyro4hell@gmail.com>
+Date:   Sun Jan 3 18:07:38 2021 +0100
+
+    Handle non-set TimeInfo Read/Write fixing Clock In bug
+    
+    The bug was caused by the unhandled case of an uninitialized TimeInfo written
+    to a file and read back. The read back version was initialized to 0 sec in year
+    1970. The LaborDB::IsUserOnClock() checks the end TimeInfo to be uninizialized.
+    With this bug the employee is never clocked in after a restart of viewtouch.
+    
+    Fix this by writing out non-set TimeInfo values as sec==0 year==0, and when
+    handle them accordingly in the Read(TimeInfo) function.
+    
+    Add tests for TimeInfo and a regression test for this bug to never again
+    creep in unnoticed.
+    
+    Fixes: https://github.com/ViewTouch/viewtouch/issues/108
+
+[33mcommit 8a1f72e12c27d2900e57e32a7707e9cd8dda53ab[m
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sun Jul 12 15:27:52 2020 -0700
+
+    Update README.md
+
+[33mcommit 27b68a78137905958d2e47f991180bb4115c7ef5[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun May 26 23:20:26 2019 +0200
+
+    log: add unreleased stub
+
+[33mcommit 177854ca04bd1d1154789017313737821445148d[m[33m ([m[1;33mtag: [m[1;33mv19.05.1[m[33m)[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun May 26 23:19:51 2019 +0200
+
+    Push version number to v19.05.1
+
+[33mcommit 3b4af0f1e584241865fde9fd65f9d33e06dc800e[m
+Merge: 9be0111 b956f46
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun May 26 23:18:38 2019 +0200
+
+    Merge branch 'update_date_library'
+
+[33mcommit b956f46ebbe30e99e723db918088767f8c2374cb[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun May 26 23:18:05 2019 +0200
+
+    log: update date library
+
+[33mcommit 10b0184888d88dfbebbef6387d40abed9f4deb95[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Apr 24 22:56:36 2019 +0200
+
+    external: update date library to latest upstream master
+    
+    based on commit: Update date.h (#451) 7817ebf45ad062753f969a1b41e7402900ebfcb6
+    
+    additional patches:
+    - update CXX_STANDARD setting https://github.com/HowardHinnant/date/pull/379
+    - add compile definitions as PUBLIC https://github.com/HowardHinnant/date/pull/372
+
+[33mcommit 9be01118e44b26c59c9aecbe9405fd9317fd06d8[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Fri May 17 09:30:04 2019 +0200
+
+    log: add BSD, date and dat changes
+
+[33mcommit ba8a71da015f4852b321d411bcd8ab636528c4ab[m
+Merge: bb729a6 538896d
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Fri May 17 09:26:52 2019 +0200
+
+    Merge pull request #105 from ViewTouch/ci_add_install_target
+    
+    handle missing dat folder and add install target
+
+[33mcommit 538896d545dd3011f6fee1773dd4d014e6571f1d[m
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Fri May 17 08:59:11 2019 +0200
+
+    cmake: handle missing 'dat' folder
+    
+    add 'dat' folder to install target only if it exists
+    
+    fixes: https://github.com/ViewTouch/viewtouch/issues/101
+
+[33mcommit ffa98d1d5a1ca7cc526e2af2e75bb93396541cf3[m
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Fri May 17 08:32:22 2019 +0200
+
+    CI: add install target
+    
+    test install target because `dat` folder is missing in source, which breaks the install target
+    https://github.com/ViewTouch/viewtouch/issues/101
+
+[33mcommit bb729a6aa8eb9a0bedca3786db53814d10b60d7f[m
+Merge: 382a709 245be43
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Fri May 17 08:33:25 2019 +0200
+
+    Merge pull request #104 from ViewTouch/no_install_date_header
+    
+    Don't install date header files
+
+[33mcommit 245be435eacc0ba0b442e253d5d6e999d97b0ff6[m
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Fri May 17 08:17:47 2019 +0200
+
+    Don't install date header files
+    
+    fixes https://github.com/ViewTouch/viewtouch/issues/103
+
+[33mcommit 382a7099d26f5184bb0aa9fefdf81a039e43e6bb[m
+Merge: 58345f1 24664b0
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu May 16 21:59:46 2019 -0700
+
+    Merge pull request #102 from yurivict/master
+    
+    Fix build on FreeBSD
+
+[33mcommit 24664b02b09c2be97615312f91416a7cb319ae1e[m
+Author: Yuri <yuri@rawbw.com>
+Date:   Thu May 16 21:38:18 2019 -0700
+
+    Fix build on FreeBSD.
+
+[33mcommit 58345f1be2f9962fe2396cf4af27eb6609e17e17[m
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Wed May 8 03:46:11 2019 -0700
+
+    Update README.md
+
+[33mcommit ef64000dfced88b8b566a5a008390203ff2c2646[m
+Merge: e5748b8 b34d8c6
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Apr 24 22:24:49 2019 +0200
+
+    Merge branch 'fix_clear_highlighted_entries_button'
+
+[33mcommit b34d8c6619e148c7116d09efd9ab0dddec082478[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Apr 24 22:20:57 2019 +0200
+
+    log: fix clear highlted entries button
+
+[33mcommit 005eb17a0836b6cbfd910c4348b2ca6064baa311[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Apr 24 22:19:53 2019 +0200
+
+    zone: fix "Clear Highlighted Entries" button
+
+[33mcommit e5748b8cb5646ab3d02e428a77734be2a1404256[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 15:07:32 2019 +0200
+
+    log: add Unreleased stub
+
+[33mcommit fd3e44c2f652b65eec76d8250845a20df0b864ea[m[33m ([m[1;33mtag: [m[1;33mv19.04.1[m[33m)[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 15:06:48 2019 +0200
+
+    Push version number to v19.04.1
+
+[33mcommit 404d0ade8196248c46a80f5a1a597dfcc550e6bf[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 14:37:41 2019 +0200
+
+    version: make it 19.03 instead of 19.3
+
+[33mcommit f1a6b68ff6d40e5de427de6ccba255d864b51179[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 13:38:05 2019 +0200
+
+    tests: data_file: add check for TimeInfo with seconds
+
+[33mcommit 2d88f2fc7e833d9eccbf6d8059fb0224e466112b[m
+Merge: c1e3a41 5b3de07
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 15:01:16 2019 +0200
+
+    Merge branch 'add_SecondsInYear'
+
+[33mcommit 5b3de072ecb11bf571b626cf545a48857eafe56d[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 15:00:20 2019 +0200
+
+    log: fix TimeInfo writing, add SecondsInYear
+
+[33mcommit cd224693b0932ea27b2c086faa46b839d686100a[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 13:36:52 2019 +0200
+
+    tests: time_info: add check for SecondsInYear
+
+[33mcommit 5a1cac52aad49c736659af4d4bb9d1b057a67453[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 13:35:17 2019 +0200
+
+    data_file: fix writing of TimeInfo struct
+    
+    use new function TimeInfo::SecondsInYear instead of just approximately
+    converting the year/month/day/minute/seconds fiels
+
+[33mcommit 97d1f9761663c40f0864b07e2509bb0be7aedaa0[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 13:33:45 2019 +0200
+
+    time_info: add SecondsInYear function
+    
+    Returns the number of seconds in the current year. The same value as
+     used by the Set(seconds,year) function
+
+[33mcommit c1e3a418bd62fd0dc1456688f1c64a01c836a00f[m
+Merge: e4ae1af 79753f5
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 14:55:59 2019 +0200
+
+    Merge branch 'fix_regression_SecondsElapsed'
+
+[33mcommit 79753f5e6f79b875ab0ca96ef50f71313fdf0219[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 14:46:46 2019 +0200
+
+    log: fix regression in SecondsElapsed
+
+[33mcommit 85f46c8c02db1fb963b25722b34a61ea19b9355d[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 14:54:07 2019 +0200
+
+    tests: time_info: add test for SecondsElapsed behavior
+
+[33mcommit 620d6d2dfcc2e740b181d5d9cb44ed905b0d990e[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 08:46:29 2019 +0200
+
+    time_info: fix regression: SecondsElapsed always returns positive value
+
+[33mcommit e4ae1af55e39903f2538c316d0d579ac818f6dd6[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Apr 6 14:38:51 2019 +0200
+
+    remote_link: use uint8_t instead of UChar
+
+[33mcommit 9d6b69a84d0c3987737b84083ca432556eb55603[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Fri Apr 5 15:09:27 2019 +0200
+
+    main: terminal: std::string for WStr, RenderText
+    
+    - add WStr(const Str &s)
+    - add WStr(const Str *s)
+    - add WStr(const std::string &s, int len)
+
+[33mcommit 04812769d89966a08fba4bc8075d395d0f8b229c[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Fri Apr 5 15:11:39 2019 +0200
+
+    remote_link: std::string for PutString
+
+[33mcommit cf0de148d74080c74fe7bd4226a0767c7226d96d[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Mar 18 22:15:31 2019 +0100
+
+    log: add unreleased stub
+
+[33mcommit 8aa97ca0f03b036dad16ca9a737422053536ff35[m[33m ([m[1;33mtag: [m[1;33mv19.03.2[m[33m)[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Mar 18 22:14:29 2019 +0100
+
+    Push and release version v19.03.2
+
+[33mcommit 2db0aa4be1c3cf94ebbc3d6bb761167f348befb7[m
+Merge: 7c080d5 342b9b3
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Mar 12 07:37:03 2019 +0100
+
+    Merge branch 'remove_unused'
+
+[33mcommit 342b9b34c79cd336752530a8aaeba1dcda08e25a[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Mar 11 20:55:48 2019 +0100
+
+    loader: remove unused import of "generic_char.hh"
+
+[33mcommit 88f7e562479097a6ca23e831dc12a13f615f0b75[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Mar 11 20:25:41 2019 +0100
+
+    cmake: no need to create build_number.h anymore
+    
+    - don't create build_number
+    - remove unused last-release files
+
+[33mcommit 7c080d5f43d6fb3612581cedb3d40c664a124ec9[m
+Merge: 5ab4241 526fad1
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Mar 10 23:57:01 2019 +0100
+
+    Merge branch 'StringCompare_len_parameter'
+
+[33mcommit 526fad1c9d169ee7225239c66615ca08cdd64939[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Mar 10 23:49:55 2019 +0100
+
+    log: StringCompare len parameter
+
+[33mcommit c1971880c7849ad63784e21bac9792654562a06f[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Mar 10 23:47:50 2019 +0100
+
+    main+zone: use StringCompare len parameter again
+
+[33mcommit fb192cff4b03796a6d3416c8af658547a1de14b8[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Mar 10 23:46:41 2019 +0100
+
+    utility: fix StringCompare
+    
+    Add the len argument back like in the original behavior
+
+[33mcommit 5ab424191739adc143097033c9557425c9de1f1a[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Fri Mar 8 07:13:47 2019 +0100
+
+    log: add Unreleased entry
+
+[33mcommit 5066046ac9d16388d38f7ff5722a3074779cd0d4[m[33m ([m[1;33mtag: [m[1;33mv19.03.1[m[33m)[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Fri Mar 8 07:13:05 2019 +0100
+
+    Push and release version v19.03.1
+
+[33mcommit 6d491e0bd38b044f78cc06c9261fe14d75339365[m
+Merge: f4ff34c c824566
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu Mar 7 14:57:51 2019 -0800
+
+    Merge pull request #96 from NeroBurner/fix_StringCompare
+    
+    Fix StringCompare
+
+[33mcommit f4ff34c4ebd401fd8dee70acea31c462009ccaf1[m
+Merge: a1f7473 b24ad8b
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu Mar 7 14:57:33 2019 -0800
+
+    Merge pull request #97 from ViewTouch/print_receipt_in_training_mode
+    
+    Print receipt in training mode
+
+[33mcommit b24ad8b2c146bdb8d221fab8aa1521730f7c6886[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Thu Mar 7 23:50:38 2019 +0100
+
+    log: finalized receipe printing in training mode
+
+[33mcommit c824566e9fcebdf79460ff6015515b0ed647d571[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Thu Mar 7 23:50:59 2019 +0100
+
+    lgo: fix of StringCompare regression
+
+[33mcommit 4db40f413cc2b0ae87184016479a51134caa688a[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Thu Mar 7 23:47:03 2019 +0100
+
+    utility: restore original behavior of StringCompare
+    
+    the original utility::StringCompare function compared only the same
+    length part of the string. I did not reimplement the functionality
+    right and compared the full strings
+    
+    old behavior:
+    StringCompare("print subcheck", "print") == 0 (it compares equals)
+    
+    my wrongly implemented behavor:
+    std::string("print subcheck") .compare(std::string("print")) == 1
+    (not comparing equal)
+
+[33mcommit f137939b89299bfe4c294aacd7e8922b07aad7b4[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Thu Mar 7 22:55:16 2019 +0100
+
+    zone: print finalized receipt also in training mode
+
+[33mcommit a1f7473b2d290b96606a1444fd46d894d1f7eb2e[m
+Merge: 4e9e0e8 16eff47
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Tue Feb 26 14:04:30 2019 -0800
+
+    Merge pull request #95 from NeroBurner/disable_auto_update
+    
+    main: manager: disable autoupdate
+
+[33mcommit 16eff477895809c188b36156acf3c2c12232c49d[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Feb 26 00:51:55 2019 +0100
+
+    main: manager: disable autoupdate
+    
+    disable auto update as there is no file provided to download. Disabling
+    the updater gets rid of another unneeded warning during startup
+
+[33mcommit 4e9e0e8d340c2156e904de84b1a07b889ba4a651[m
+Merge: 903fbd4 415002c
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Tue Feb 26 02:35:33 2019 -0800
+
+    Merge pull request #93 from NeroBurner/fix_loader_css_loading
+    
+    Fix loader css loading
+
+[33mcommit 415002c2d5ee11f297d45af38531bcbb2d44b4ea[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Feb 26 06:52:01 2019 +0100
+
+    log: loader fixes
+
+[33mcommit be7b9a99d8526f3a8745ed280945874af7263f66[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Feb 26 00:11:21 2019 +0100
+
+    loader: don't load vtpos.css, fix Gtk warnings, fix logo path
+    
+    - load CSS from hard coded string instead of vtpos.css file
+    - fix Gtk deprecation warnings regarding the font selection
+    - fix logofile path to work in different install targets
+
+[33mcommit 903fbd4633c698ecbeb3fa4caaafeb296ab497d4[m
+Merge: d456012 7a119ea
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Feb 25 18:16:36 2019 -0800
+
+    Merge pull request #92 from NeroBurner/fix_failed_report_render
+    
+    Fix failed report render
+
+[33mcommit 7a119ea12ca36ad020e0392cea5996f7dbcfa9a2[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Feb 26 00:53:48 2019 +0100
+
+    log: don't render failed reports
+
+[33mcommit 363805161537878cd66fe30bacfc27b1edbfd13e[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Feb 26 00:50:58 2019 +0100
+
+    zone: don't render fail-loaded reports
+
+[33mcommit 5e946dfed7e46adc77c19f727ea8e5cf68cdd06a[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Feb 26 00:50:29 2019 +0100
+
+    main: report: don't render reports with empty body
+
+[33mcommit d456012297e3fd46d24c3656e5054fbcaf048af7[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Feb 26 00:09:48 2019 +0100
+
+    main: manager: always print error message with multiple closings
+
+[33mcommit 5f1c9a0c324d9d21c3406d6982ea124d40f0d54d[m
+Merge: a055e33 310469c
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Feb 25 15:00:29 2019 -0800
+
+    Merge pull request #91 from NeroBurner/handle_conf_file_exception
+    
+    Handle conf file exception
+
+[33mcommit 310469ce76c732b3c8cc785461526df64ff99029[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Feb 25 23:31:30 2019 +0100
+
+    log: fix unhandled conf_file load exception
+
+[33mcommit 7c4a4e5fc53cd278444ab5335a28750e54927321[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Feb 25 23:12:08 2019 +0100
+
+    main: settings: check if conf file exists before opening
+    
+    fixes regression introduced in 7e4abf784c9a8e5f72a903284f7215fd4362dc9b
+    
+    This commit introduced a std::runtime_error if the conf_file does not
+    exist. This error was not cought. Check for existence before opening
+    file.
+
+[33mcommit a055e3323f374c45dcb97209da16b7d2a6ae8a06[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Feb 25 23:22:32 2019 +0100
+
+    data_file: different error message if file is missing
+
+[33mcommit 02da8566d9d616b0b195d439e30dd8bce74b4590[m
+Merge: 03adc91 e325201
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sun Feb 24 20:30:43 2019 -0800
+
+    Merge pull request #90 from NeroBurner/fix_input_fn
+    
+    Fix input_fn type
+
+[33mcommit e3252019263fe05249972f4b235e4d6849db8b52[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Feb 24 22:19:58 2019 +0100
+
+    log: fix input_id narrowing conversion
+
+[33mcommit 2bcdf66b6b87015c999948ddaa7ff7cf81852d5c[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Feb 24 22:09:38 2019 +0100
+
+    main: fix input_id type
+    
+    input_id was an int, XtInputId is an unsigned long. If an input_id with
+    values bigger than int-max is returned the XtRemoveInput segfaults.
+
+[33mcommit 03adc91f4c956e815b134c48a36b2b1ee543d664[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Feb 17 21:14:15 2019 +0100
+
+    main: salesmix: add forgotten initialized flag
+
+[33mcommit 3a7a179a0c48b79d5d0a5b183f91ba0ce7af38ac[m
+Merge: 721ac11 ddf7905
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sat Feb 16 12:58:23 2019 -0800
+
+    Merge pull request #88 from NeroBurner/salesmix_dlist_removal
+    
+    Salesmix dlist removal
+
+[33mcommit ddf7905168f3cd251f4af2fd1e319e860602453c[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Feb 13 18:47:47 2019 +0100
+
+    main: system_salesmix: updates and restructure
+    
+    - const TimeInfo parameter if possible
+    - ItemCount::name is a std::string
+    - ItemCount::SearchBranch takes a std::string for name
+    - ItemCount::Find takes a std::string
+    - ItemCount(List) restructure
+      - ItemCountList wrapper around std::map for ordered entries (simplifies AddCount)
+      - ItemCount::family can be an uint8_t
+      - ItemCount restructure
+      - ItemCount::AddCount: use std::find_if to truncate leading '.'
+    - replace NULL with nullptr on code I've at least looked at
+    - FamilyItemReport: introduce and use FamilyItem struct
+    - System::SalesMixReport: use vector of FamilyItem
+
+[33mcommit 9f10c00e461f6b86c8f9c2f9c058698df228efc7[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Feb 12 00:27:04 2019 +0100
+
+    main: report: remove custom DList, updates
+    
+    remove of custom DList, replace with std::vector
+    - use std::vector for Report header_list and body_list
+    - remove ReportEntry DList members
+    - remove Report DList functions
+    
+    Constructor and member variables
+    - declare and initialize member variables for ReportEntry
+    - use std::string ReportEntry.text
+    - use std::string Report.title
+    
+    general improvements:
+    - use std::accumulate where possible to sum up vectors
+    - more const, more std::string
+    
+    update functions:
+    - Report::Print function
+    - Report::PrintEntry function
+    - Report::PrintFormal
+    - Report::Text: to use std::string
+    - Report::Line
+    - Report::Underline
+    - Report::NewLine
+    - Report::Text2Col: use string.size()
+
+[33mcommit 721ac119b4d66f82fd60415128fdee185d58b4c7[m
+Merge: 06d3b2e de1e610
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sat Feb 16 11:44:00 2019 -0800
+
+    Merge pull request #87 from NeroBurner/more_const_and_std_string
+    
+    More const and std string
+
+[33mcommit de1e61071550732e840eb0a30ae40002f409a5fd[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Feb 13 18:47:07 2019 +0100
+
+    main: system: FindByTime takes const TimeInfo
+
+[33mcommit 3822cf1d72771e751907fa4a301e4672cd7c5868[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Feb 13 18:46:16 2019 +0100
+
+    main: terminal: more const for TimeDate
+
+[33mcommit 9acdb1119c0e5d62e257f16341b8304cb0f03a22[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Feb 11 23:57:46 2019 +0100
+
+    main: printer: have_title is bool, page_title is std::string
+
+[33mcommit 06d3b2ebb2880efac144e119eabf6a83b569c8d4[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Feb 16 18:08:12 2019 +0100
+
+    log: add Unreleased entry
+
+[33mcommit 9cd4209a9ceabbf8e25e249f89a54ae7948c34e0[m[33m ([m[1;33mtag: [m[1;33mv19.02.1[m[33m)[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Feb 16 18:07:21 2019 +0100
+
+    Push and release version v19.02.1
+
+[33mcommit e5e9175cfe8ab94cebba3338a8709a8af84d3d66[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Feb 13 19:53:58 2019 +0100
+
+    utility: use std::string::compare in StringCompare
+
+[33mcommit f6fd0e7e406657a4d9a7bcc79468edc742731684[m
+Merge: 9baf798 e02d7b8
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sat Feb 16 04:31:58 2019 -0800
+
+    Merge pull request #86 from NeroBurner/clang_cxx17_support
+    
+    Clang cxx17 support
+
+[33mcommit e02d7b85cf77a57577533972d492c528b6fc87d8[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Feb 16 12:03:34 2019 +0100
+
+    log: clang support
+
+[33mcommit c370ba0244cfa69a9d0b3b6bc9c0a69d4ee66828[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Feb 16 12:18:01 2019 +0100
+
+    cmake: different warnings for GCC and Clang
+
+[33mcommit 2f4d3bc53e04ec3f2c0f390f39243f47412249ac[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Sep 3 23:52:00 2018 +0200
+
+    ci: add clang toolchains, build clang c++17
+    
+    - add clang C++11 toolchain
+    - add clang C++17 toolchain
+    - add clang-tidy toolchain
+    - build with clang C++17 on latest debian buster
+
+[33mcommit ced9b6d1af538249ce538b4c2fce531cce63e48b[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Feb 11 22:41:36 2019 +0100
+
+    main: check: pass c_str to fix clang compile
+
+[33mcommit 635c52c9f6f0019342b06f3e8dedf138ef8f354a[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Feb 11 22:29:23 2019 +0100
+
+    main: manager: remove sprintf usage
+
+[33mcommit 9baf798f283c3f383ea926748fbcf19164ee412b[m
+Merge: 226b11f bf1cb48
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Fri Feb 15 12:35:33 2019 -0800
+
+    Merge pull request #85 from ViewTouch/add_changelog
+    
+    log: add a basic changelog file
+
+[33mcommit bf1cb48901d46b1e50f1fdc8541350fa3d3ce9ce[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Fri Feb 15 19:39:10 2019 +0100
+
+    log: add a basic changelog file
+
+[33mcommit 226b11f3df028b2da7b161171eec08dcdb722907[m
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu Feb 14 14:03:01 2019 -0800
+
+    Update README.md
+
+[33mcommit 3688c2b25ed9f3bd82398ee0dc20d351045845ce[m
+Merge: 34bf2b8 5720243
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu Feb 14 07:50:24 2019 -0800
+
+    Merge pull request #83 from NeroBurner/fix_shutdown_crash
+    
+    main: manager: fix shutdown crash
+
+[33mcommit 34bf2b81ba8d4fffdbd2da09b8efd8af9c317307[m
+Merge: d7ad749 ae0dc02
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu Feb 14 07:49:21 2019 -0800
+
+    Merge pull request #84 from NeroBurner/fix_print_work_order_segfault
+    
+    main: check: don't access printer when it is a nullptr
+
+[33mcommit ae0dc022d9961ae3ebcac8076b9d976e23f78372[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Thu Feb 14 00:03:03 2019 +0100
+
+    main: check: don't access printer when it is a nullptr
+    
+    fix segfault on finishing an order if no printer is present
+
+[33mcommit 572024307031a8683ea8fdf3a7bf308646bb8994[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Feb 13 23:55:15 2019 +0100
+
+    main: manager: fix shutdown crash
+    
+    UpdateID was an int, Xt timer is an unsigned long. If a timer with
+    values bigger than int-max is returned the XtRemoveTimeOut segfaults
+    during shutdown.
+
+[33mcommit d7ad7491c101472a2af562916f6672df5226d981[m
+Merge: 05cd21a 3e6736e
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Jan 28 17:32:00 2019 -0800
+
+    Merge pull request #82 from ViewTouch/data_file_strong_byte_lengths
+    
+    data_file strongly typed byte lengths
+
+[33mcommit 3e6736e68bc60edec1051cf376076a3411c581f2[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Jan 27 23:23:31 2019 +0100
+
+    test: data_file: add test for -1 integer
+
+[33mcommit 07cc141c2123485b03c7b2b2f6aa49743902a73f[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Jan 27 23:25:21 2019 +0100
+
+    data_file: use exact uintXX_t types for read/write
+
+[33mcommit 748ff27e5a9428304d866f805038ba92f7766cb3[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Jan 27 23:14:55 2019 +0100
+
+    main: credit: use explicit size instead of long long
+
+[33mcommit 05cd21af618abccfabae448eb89201c479185139[m[33m ([m[1;33mtag: [m[1;33mv19.01.1[m[33m)[m
+Merge: 6d73768 c378597
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sun Jan 27 13:10:14 2019 -0800
+
+    Merge pull request #81 from NeroBurner/versioning_overhaul
+    
+    Versioning overhaul
+
+[33mcommit c3785970c1d8c13bfb5833b48fe9d28ed7dafa45[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Jan 23 23:41:57 2019 +0100
+
+    cmake: remove BUILD_NUMBER generation (replaced by version files)
+
+[33mcommit f942ad7ca2523f269201226074632fa997ffb89d[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Nov 5 19:56:51 2018 +0100
+
+    main: use vt_version instead of BUILD_VERSION
+    
+    - use VERSION_EXT and date of timestamp for version
+    - use for manager and terminal
+
+[33mcommit 8a56dc3df2fe1021bc46a17c5dda23224b1c77be[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Nov 5 19:55:05 2018 +0100
+
+    loader: replace BUILD_NUMBER with vt_version
+
+[33mcommit cc42af1ba337551fa1f0f214c324bb3c59991468[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 21:41:07 2018 +0200
+
+    cmake: add vt_version, add to core and vtpos
+    
+    - add library vt_version and exe vt_print_version
+    - link vt_version to core and vtpos
+
+[33mcommit 01be824c8a421b85893382d9f8d2209b85f2b7cc[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 21:39:56 2018 +0200
+
+    version: add version files for 19.1.0 and cmake helper
+    
+    - set initial version to 19.1.0, for the first release in January 2019
+    - provide functions to access version, verion_ext, version_full, timestamp
+    - add cmake helper scripts to get git variables and build information
+
+[33mcommit 6d73768d4c60ea6149d12c7212a86e608e399af9[m
+Merge: 630bfb1 7c0288b
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Wed Jan 23 21:03:17 2019 -0800
+
+    Merge pull request #79 from NeroBurner/string_passings
+    
+    String passings
+
+[33mcommit 7c0288bad66defd7b160e2cb35022957fd0c9149[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Jan 23 23:51:32 2019 +0100
+
+    loader: fix socket filename passing
+
+[33mcommit e381abdf1143bdb5b56f92c4a741cb76adc1004d[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Nov 5 19:57:13 2018 +0100
+
+    main: manager: fix string passing for card number
+
+[33mcommit 630bfb19a58b75d2ad6cdee036e1ed7caef460ad[m
+Merge: c16265c 8450b7c
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Wed Jan 23 14:47:19 2019 -0800
+
+    Merge pull request #78 from NeroBurner/missing_functions_and_data_file_tests
+    
+    Missing functions and data file tests
+
+[33mcommit 8450b7ce9c31e6706e3764efdad0289d749d6780[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Thu Jan 17 00:29:27 2019 +0100
+
+    cmake: add data_file test
+
+[33mcommit 252a16b639dd2b44f37c52f7d9b4c0a9860761fa[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Thu Jan 17 00:27:35 2019 +0100
+
+    data_file: add ReportError implementation for unittest
+
+[33mcommit 60adde05651d3cd3dcc045925339c6e3e057045d[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Thu Jan 17 00:23:40 2019 +0100
+
+    data_file: add Read(size_t)
+
+[33mcommit 3188e828c35243753f2d1b512cd8bbb33494781e[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Jan 6 23:58:06 2019 +0100
+
+    Str: add == for std::string
+
+[33mcommit 756b9a1f02d93ca8ad6c5b7a1fc8e67bcfedb5e7[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Fri Jan 4 17:25:48 2019 +0100
+
+    utility: remove unused definitions
+
+[33mcommit c16265cccd0b064c58e2c05ec56d224a9d326eeb[m
+Merge: e54680c faf9655
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Tue Jan 22 21:22:57 2019 -0800
+
+    Merge pull request #77 from NeroBurner/fix_Str_Clear
+    
+    Str: fix Clear() to actually clear string data
+
+[33mcommit faf9655c09b750ee0396e4a078262e5504a75e64[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jan 22 23:49:45 2019 +0100
+
+    Str: fix Clear() to actually clear string data
+    
+    Fixes https://github.com/ViewTouch/viewtouch/issues/75
+    
+    The "Saving ..." message was tried to be cleared, but the implementation
+    of Str::Clear() was empty, therefore nothing happened and the old
+    message stayed
+
+[33mcommit e54680cc9ba2737ef26c9b24013e3bea337ed1e6[m
+Merge: d81b054 2a100d8
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sun Jan 6 16:14:57 2019 -0800
+
+    Merge pull request #76 from ViewTouch/fix_menu_button_name_duplication
+    
+    main: fix duplication of new menu item names
+
+[33mcommit 2a100d83d4ab184ac2148936bd76067f0fdd1bb5[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Jan 6 23:56:10 2019 +0100
+
+    main: fix duplication of new menu item names
+    
+    FilterName did make a copy of the original string before adding the new
+    string with reduced whitespaces
+
+[33mcommit d81b0541f0210cd7c7b9ac2ced04961c9c67a092[m
+Merge: 0abeb7c f6065f1
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu Nov 29 06:12:11 2018 -0800
+
+    Merge pull request #74 from ViewTouch/catch2
+    
+    replace GTest with Catch2 for tests
+
+[33mcommit f6065f1bd24d4ac07a9132419faeb6542205a5f1[m
+Author: Norbert Wenzel <norbert.wenzel@gmail.com>
+Date:   Sun Nov 25 12:47:34 2018 +0100
+
+    Remove Google Test external code
+    
+    All tests using GTest are now using the more lightweight Catch2
+    header-only test framework.
+
+[33mcommit 1444c6f11420a2dc301fd7a17dc9e35829029cbc[m
+Author: Norbert Wenzel <norbert.wenzel@gmail.com>
+Date:   Fri Nov 16 19:08:45 2018 +0100
+
+    test: replace GoogleTest with Catch2
+    
+    Add single-header Catch2 2.4.2 testing framework
+    
+    Replace GTest with Catch2
+    - for conf test
+    - for image tests
+    - time_info tests
+    
+    Improve test cases:
+    - Test both quiet and signalling NaN
+    - Make read-only variables const explicitely
+    - Remove unused includes
+
+[33mcommit 0abeb7cd0e43fd5ff5d29d49f14e77e3b1423615[m
+Merge: 88d7fbd 57ad6d7
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Wed Nov 14 13:20:33 2018 -0800
+
+    Merge pull request #73 from ViewTouch/fix_freetype_linking
+    
+    fix Freetype linking on older distributions
+
+[33mcommit 57ad6d7eb2bf95d8276137b835e30beadf93e11c[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Nov 14 20:46:37 2018 +0100
+
+    cmake: fix Freetype linking on older distributions
+    
+    fixes https://github.com/ViewTouch/viewtouch/issues/72
+
+[33mcommit 88d7fbd455f3943ab643a69c860b4e376f00ae4c[m
+Merge: c13ad9d d71359d
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu Nov 8 00:17:58 2018 -0800
+
+    Merge pull request #71 from ViewTouch/check_x11_dependencies
+    
+    Check x11 dependencies in CMake
+
+[33mcommit d71359dbe196a69b894aa5bcbb92d43fbee3223b[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Nov 6 22:28:28 2018 +0100
+
+    less verbose X11 linking output
+
+[33mcommit efb7767a8c56aa36cbb4e268312cee2deb90e55d[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Nov 6 21:37:27 2018 +0100
+
+    Fix launching, Xm (Motif) must be linked before Xmu
+
+[33mcommit 82d0555de7f8b483f088680658289fcbd2bc6ce9[m
+Author: Norbert Wenzel <norbert.wenzel@gmail.com>
+Date:   Sun Nov 4 14:38:07 2018 +0100
+
+    Add debug output for X11 library includes
+    
+    Since we searched for X11 libraries in CMake we also use all results
+    available from the search, ie. possible explicit path names.
+    This prints all the library include directories mainly for debugging
+    purposes.
+
+[33mcommit bd7b5ddbd911f7a012987de98b566cd961bf6eee[m
+Author: Norbert Wenzel <norbert.wenzel@gmail.com>
+Date:   Sun Nov 4 14:34:40 2018 +0100
+
+    Use X library dependency includes
+    
+    Since we search for X library dependencies in CMake we now also use the
+    include paths found by CMake instead of relying on them being found
+    automatically.
+
+[33mcommit 831ce2fd7f9675a7dd2a3a7bd88bae8637b6c7b2[m
+Author: Norbert Wenzel <norbert.wenzel@gmail.com>
+Date:   Sun Nov 4 14:29:19 2018 +0100
+
+    Add debug output for X11 libraries used
+    
+    Since we searched for X11 libraries in CMake we also use all results
+    available from the search, ie. possible explicit path names.
+    This prints all the libraries linked mainly for debugging / comparison
+    with the previously fixed list.
+
+[33mcommit 3f648902fb3febea5d5c2dd08ba94f9d1f43b400[m
+Author: Norbert Wenzel <norbert.wenzel@gmail.com>
+Date:   Sun Nov 4 14:24:56 2018 +0100
+
+    Check X library dependencies in CMake configure
+    
+    Instead of relying on the existence of these X libraries and failing at
+    build time, explicitely check library availability in CMake configure
+    step and give better error messages (ie. library missing instead of
+    unresolved include at compile time).
+
+[33mcommit c13ad9dac38bc1ef4fc83ed6b47eac02297808b6[m
+Merge: eca6338 21b1834
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Oct 22 14:51:57 2018 -0700
+
+    Merge pull request #69 from ViewTouch/std_string_wrapper_and_warnings
+    
+    Std string wrapper and warnings
+
+[33mcommit 21b183457bb989567a9729f4d0d774b0b2bb4dde[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Oct 16 23:43:20 2018 +0200
+
+    core: socket: update Add and AddFrom
+
+[33mcommit 7e27cc1896c5a52eacb2bd2e9b31fcf865a42d5d[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Oct 16 23:47:07 2018 +0200
+
+    main: account: replace DList with std::vector
+
+[33mcommit 12dbb76034aa68ac9846a7a51706e0edc2303faf[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Oct 16 23:34:20 2018 +0200
+
+    make Str a wrapper around std::string
+    
+    utility:
+    - modernize Str
+    - modernize some string functions
+      - changeAtoB
+      - StringCompare
+      - StringToUpper
+      - StringToLower
+      - StringAdjustSpacing
+      - AdjustCase
+      - add AdjustCaseAndSpacing
+    
+    update using modules
+    - main
+    - term
+    - zone
+
+[33mcommit 88aed793995fd9fb1add5180b32f43fcf49c02bc[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Oct 16 23:28:13 2018 +0200
+
+    data_file: add Write(size_t)
+
+[33mcommit 9f2872ad81b3ef0b4b27eb880ab4377021df781c[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Oct 16 23:28:42 2018 +0200
+
+    list_utility: make Count() const
+
+[33mcommit 538b5e760f20fd9a47a9f7f54a122c76b19fc89d[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Oct 8 22:48:25 2018 +0200
+
+    main: manager: fix NULL warning and conversion warning
+
+[33mcommit d91d56f4d1c76ad3c7db012da087e3d85e40ff14[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Oct 8 20:42:20 2018 +0200
+
+    main: locale: more const
+
+[33mcommit b90bb288dca7427e1f688c94524edb7dfe8bacda[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Thu Jul 19 17:59:21 2018 +0200
+
+    term: term_main: use std::string for filename
+
+[33mcommit 83a0fe27af970babeb701976f8a241c03fca3d27[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 22:36:56 2018 +0200
+
+    main: system_report: fix unused variable warnings
+
+[33mcommit eca633848b00763ca4c3d89a91bbaa1ea58a90db[m
+Merge: f1af287 3755935
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Fri Oct 19 12:02:35 2018 -0700
+
+    Merge pull request #66 from ViewTouch/fix_button_segfault
+    
+    main: manager: fix segmenationfault on quick button press
+
+[33mcommit f1af2870efa4030c6c54cb8a581483a6245ac909[m
+Merge: 4cbf195 68cb5ba
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Fri Oct 19 12:02:19 2018 -0700
+
+    Merge pull request #65 from ViewTouch/fix_system_report_crash
+    
+    fix system report for exceptional transactions
+
+[33mcommit 4cbf19557ff942fb64c9f4e67a5dfbb2413bde44[m
+Merge: 8a7b47a f7ed3e8
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Fri Oct 19 12:01:31 2018 -0700
+
+    Merge pull request #67 from ViewTouch/fix_shortname_month
+    
+    main: manager: fix double mention of short month
+
+[33mcommit f7ed3e86d8536802d5ff96596d5699da75ec6b17[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Oct 8 20:40:49 2018 +0200
+
+    main: manager: fix double mention of short month
+    
+    The month June was two times in the list of month shortnames
+
+[33mcommit 68cb5baeab9b49641aac5697a6954e1d92a46497[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Oct 7 12:26:32 2018 +0200
+
+    fix system report for exceptional transactions
+    
+    also check for validity of time_was before equal comparison
+
+[33mcommit 3755935f7269cd253709389dfa705de2f72c7631[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Oct 7 12:28:20 2018 +0200
+
+    main: manager: fix segmenationfault on quick button press
+    
+    segmentation fault because of unsigned long to int conversion
+
+[33mcommit 8a7b47a8e73ec08f89a8414e35378d690d44e7ae[m
+Merge: 878fa9a 407e235
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Sep 24 15:18:37 2018 -0700
+
+    Merge pull request #64 from ViewTouch/overlap_check_start
+    
+    main: check start variable in Overlap calculation
+
+[33mcommit 407e23544d8c2ded9b61d9f0d8fb782916b454fd[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Sep 25 00:13:32 2018 +0200
+
+    main: check start variable in Overlap calculation
+    
+    apply the same check for start variable as for end variable
+
+[33mcommit 878fa9a957487cf26c115a8f318b73b2aff01992[m
+Merge: 7b6db7e 03e2ef2
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Sep 24 15:02:43 2018 -0700
+
+    Merge pull request #62 from ViewTouch/mutex_for_timeout_release
+    
+    main: add mutex for redraw_id
+
+[33mcommit 03e2ef20a32c05f7665714ec48fe91427b0fc561[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Sep 24 23:36:32 2018 +0200
+
+    main: add mutex for redraw_id
+    
+    fix a rare segfault for `RemoveTimeOutFn` call when repeatedly clicking
+    buttons
+
+[33mcommit 7b6db7ea17d8998ae2228ad33dd64af9f183d2e1[m
+Merge: f72b113 143f690
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Sep 24 14:58:54 2018 -0700
+
+    Merge pull request #63 from ViewTouch/fix_revenue_report_cycle
+    
+    zone: fix revenue report period cycling
+
+[33mcommit 143f690c1cc4756287463f6ba9efe167d44a7a03[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Sep 24 23:52:36 2018 +0200
+
+    zone: fix revenue report period cycling
+    
+    for revenue report a period of SP_NONE is not handled, but is returned
+    after SP_YTD. Fixing it by cycling around to SP_DAY
+
+[33mcommit f72b1137d61a1f624eb8c181ebbbf52da67de303[m
+Merge: 7388956 c5636e5
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Sep 3 15:12:40 2018 -0700
+
+    Merge pull request #59 from ViewTouch/fix_time_info_ci
+    
+    Fix time info ci
+
+[33mcommit c5636e53a76029b2129adfa7c27590666365d47a[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Sep 3 23:46:52 2018 +0200
+
+    ci: install tzdata needed by tz from date.h
+
+[33mcommit 20f732a8280ed3b806b06646b44cf5a9ae0602c9[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Sep 3 23:43:44 2018 +0200
+
+    ci: merge ubuntu and debian templates
+
+[33mcommit 3d516d24592ce7b1fd031dc57d29c78793a1bda9[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Sep 3 23:41:59 2018 +0200
+
+    ci: right name for docker image
+
+[33mcommit 5a4acc52dff6bbf24f96bc9dc4b83aa751b5c50c[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Sep 3 07:18:33 2018 +0200
+
+    date: respect user CMAKE_CXX_STANDARD
+
+[33mcommit 7388956b989191c35f76dba0eff2c24760cc76f7[m
+Merge: 9b0a0cb 6b9211a
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sun Sep 2 19:50:54 2018 -0700
+
+    Merge pull request #57 from ViewTouch/time_unit_fix_weekday
+    
+    Time unit fix weekday
+
+[33mcommit 6b9211ad0b0ca7f2c25a749847ee12b2e6b7438c[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Sep 2 23:15:18 2018 +0200
+
+    test: time_unit: cleanups
+
+[33mcommit 0f8ca3f1fdd7c94ce2daf7fa3fc574a14f28be25[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Sep 2 23:08:57 2018 +0200
+
+    tests: time_info: check additions with wrapping
+
+[33mcommit 4071db4fa47da9a427d2c88abf94ff545b75018b[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Sep 2 22:54:18 2018 +0200
+
+    test: time_info: add weekday tests
+
+[33mcommit f42cef2ad55709557cb83a257d72990bbb8a6fde[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Sep 2 22:52:57 2018 +0200
+
+    time_info: fix weekday calculation
+
+[33mcommit 26f1b9505e8f33c0bd8759445fb7ba73a7bb232e[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Sep 2 22:50:49 2018 +0200
+
+    date: update README
+    
+    updstream commit message: Add ViewTouch to list of project using this library
+
+[33mcommit 9b0a0cbbc538219f80055ad9e5741dcc4de16f95[m
+Merge: 50eabef f9e7a5e
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Aug 27 15:03:07 2018 -0700
+
+    Merge pull request #56 from ViewTouch/rework_time_info
+    
+    Rework time info
+
+[33mcommit f9e7a5e7c67bf5cdf913239e63020e6be723163f[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Aug 13 23:13:05 2018 +0200
+
+    zone: update for new TimeInfo
+    
+    - use TimeInfo::half_month_jump
+    - use TimeInfo::Floor()
+    - replace TimeInfo::Adjust* with += operator
+    - rework TimeDayField::Get
+
+[33mcommit de7ed42421f40027712bdc8c2da3fa52b1f3d5ed[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Aug 13 23:07:29 2018 +0200
+
+    main: update to new TimeInfo
+    
+    - replace TimeInfo::Adjust* with += operator
+    
+    manager:
+    - use TimeInfo::to_string()
+    - check clock for year
+    - use TimeInfo::Floor
+    
+    labor:
+    - update to TimeInfo
+    - fix floor 0 seconds
+    - remove TimeInfo release from system.hh
+    
+    settings:
+    - use more TimeInfo::Floor
+    - remove unused functions MonthPeriod and SalesPeriod headers
+    - fix LaborPeriod
+    - update SetPeriod
+    - use operator+ for years
+    - update overtime_week, mark ref in Overtime Week constant
+    
+    system_report:
+    - update for TimeInfo::DebugPrint
+
+[33mcommit 3d977d658f068f2f1ac99a86622b0c61b92ecd92[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Aug 25 09:54:04 2018 +0200
+
+    cmake: add time_info tests
+
+[33mcommit 73500409c743ac92ed96ff2b15f73ffd10e77250[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Thu Aug 23 23:48:19 2018 +0200
+
+    tests: add time_info tests
+
+[33mcommit d2f4d2fb6898b9389e350f8b6a93c92a4a033643[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Aug 26 23:03:42 2018 +0200
+
+    cmake: add fntrace and time_info files
+
+[33mcommit 3f531d568831c38286c9354ce872f585c6d5eafb[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Aug 13 22:55:00 2018 +0200
+
+    utility: rework TimeInfo using tz.h, split off
+    
+    utility: split off TimeInfo and fntrace from utility
+    
+    rework TimeInfo:
+    - use tz.h date::local_time<seconds> to store time
+    - add function half_month_jump
+    - add + and += operators for time durations
+    - mark getters constant
+    - rework DebugPrint, Date, Time
+    - remove legacy
+
+[33mcommit 362fef657daa7f906cd0ea51f370380d14bd2e23[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Aug 13 22:31:23 2018 +0200
+
+    data_file: use TimeInfo.Set(s,y)
+
+[33mcommit b429bc23c856129d0eb95e738cc546a7f876f385[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Aug 8 07:04:40 2018 +0200
+
+    cmake: use timezone library, link tz to vtcore, and to vt_zone
+    
+    - add subdirectory for timezone linbrary
+    - link tz to vtcore
+    - link vtcore to vt_zone
+
+[33mcommit cc430c617643728075ece6a0dc1f72b6fb30c5a7[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Aug 13 22:32:18 2018 +0200
+
+    date: public compile definitions
+
+[33mcommit 4ee7ea7ac52bde9e52672d14500bfd3b13b4f059[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Wed Aug 8 07:04:11 2018 +0200
+
+    external: add timezone library
+
+[33mcommit 50eabef400612ffb040d31df9a329c43e78dbddf[m
+Merge: 299ac04 732f157
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Mon Aug 6 16:48:24 2018 -0700
+
+    Merge pull request #54 from ViewTouch/set_default_install_to_usr
+    
+    cmake: fix setting of install prefix
+
+[33mcommit 732f15764744b21f805c46f78f6e496dc332386c[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Aug 6 20:15:30 2018 +0200
+
+    cmake: fix setting of install prefix
+    
+    force the public cache variable CMAKE_INSTALL_PREFIX to be set if user
+    did not set it
+
+[33mcommit 299ac044c88d5b3aa44d92be65da65a96817b6a4[m
+Merge: f318faa 65a8ba1
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sat Aug 4 07:44:33 2018 -0700
+
+    Merge pull request #53 from ViewTouch/conf_file_rework
+    
+    Conf file rework
+
+[33mcommit 65a8ba17e0dda929429946d501d2f5876fb8901d[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Aug 4 08:00:40 2018 +0200
+
+    main: manager: use conf_file for early config.ini
+    
+    - gracefully handle error on read early config
+
+[33mcommit c951ea0c2dd2d6e54fc462d4d8e08c7846770f8f[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Fri Aug 3 12:40:01 2018 +0200
+
+    main: settings: remove usage of SetFileName
+    
+    - rely on getter not changing target
+
+[33mcommit 989c303d068072e1a814e8edcb1e8222e6f18113[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Fri Aug 3 12:35:15 2018 +0200
+
+    tests: conf_file: add additional tests
+    
+    - test for default section to not be removed
+    - test if key is really removed, a second deletion of the same key needs
+      to fail
+    - empty keys cannot be deleted
+    - test set_dirty true/false
+    - keys function
+    - getter does no modification on missing key
+
+[33mcommit 7e4abf784c9a8e5f72a903284f7215fd4362dc9b[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Fri Aug 3 11:15:34 2018 +0200
+
+    conf_file: rework, add section listing functions
+    
+    - remove dependency on basic.hh
+    - header guard should not contain underscores
+    - make filename const (remove setFileName)
+    - rework internal data structure
+    - add function set_dirty to disable creation of files
+    - set dirty flag for delete functions
+    - add implement keys function (list of keys of specified section)
+    - throw exception on construction with load failure
+
+[33mcommit f318faa98271ed792dbd7440579768ad3560ccc6[m
+Merge: 594c9eb 14e2aa0
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sun Jul 22 06:00:53 2018 -0700
+
+    Merge pull request #51 from ViewTouch/squash_warnings
+    
+    Squash warnings
+
+[33mcommit 14e2aa0fd33a6576ca92163494fd29076f2608bf[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 23:27:53 2018 +0200
+
+    term: touch_screen: modernize
+    
+    - use string for error messages
+    - print with std::cerr
+
+[33mcommit a8347e3f0fd094cd4219a4ac74ae21a765fd5cb9[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 23:21:33 2018 +0200
+
+    term: touch_screen: compare to INADDR_NONE
+
+[33mcommit ea18d094b7358d73125e131ba0ad4c06f1881aab[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 23:14:54 2018 +0200
+
+    zone: dialog_zone: fix variable length char array warning
+
+[33mcommit c83429ed610e77354b1f044b6403eb311328dcf8[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 22:55:18 2018 +0200
+
+    zone: payment_zone: fix fallthrough warnings
+
+[33mcommit 6808230f6728a855bc9454ebff008fa9991ee1a0[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 22:51:39 2018 +0200
+
+    term: term_view: remove unused warning producing functions
+    
+    term/term_view.cc:155: warning: type qualifiers ignored on function return type [-Wignored-qualifiers]
+         const int   VertResI() { return atoi(vertres); }
+         ^~~~~
+
+[33mcommit adcaddb9c981ff5155a9b2123ff708623e857e1b[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 22:37:29 2018 +0200
+
+    main: terminal: fix fallthrough warnings
+
+[33mcommit dbf620838d4ad0708c146bc76ab4978cb71d0d92[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 22:36:05 2018 +0200
+
+    main: inventory: fix empty if bracket warning
+
+[33mcommit d7bf33ce0ae9b8d9f8bb8ba5f62aa3ef4ef1d2d4[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 22:35:33 2018 +0200
+
+    main: drawer: fix unused variable warning
+
+[33mcommit a75e297084f177a65f3e84b51ffe69f89412f4fc[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 22:23:47 2018 +0200
+
+    main: system_salesmix: fix unused variable warning
+
+[33mcommit f13e8a5f193e002e66782ef7c438ea3103f5a931[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 22:21:01 2018 +0200
+
+    main: report: fix warning variable size arrays are forbidden
+
+[33mcommit 8625b4a52e6591d24d01ae0b351f13e8f3669273[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 21:50:19 2018 +0200
+
+    license_hash: fix unused variable warning
+
+[33mcommit 814d13912bf0d9b360740539f02b386b1fe219ed[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Jul 16 23:32:48 2018 +0200
+
+    main: addmission: don't include sha1.hh in header
+
+[33mcommit 9f0031bed04786aff7ea061457d856899e57c275[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Jul 16 23:31:53 2018 +0200
+
+    main: terminal: more constexpr
+
+[33mcommit 594c9eb8860590f71422984b8c1980f403eb0a66[m
+Merge: e0edd87 8d33ce0
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sat Jul 21 16:01:55 2018 -0700
+
+    Merge pull request #50 from ViewTouch/ci_set_language
+    
+    ci: set language to cpp
+
+[33mcommit e0edd87e5cc7b026730181bef729169192ca6d3b[m
+Merge: ca27a54 e9535af
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sat Jul 21 16:01:27 2018 -0700
+
+    Merge pull request #49 from ViewTouch/vtpos_write_arg_list
+    
+    vtpos: modernize WriteArgList
+
+[33mcommit 8d33ce08b0de7cf5aac4203e11d411bc36292ea5[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Jul 21 07:37:12 2018 +0200
+
+    ci: set language to cpp
+
+[33mcommit e9535afa1ae907ade2dfe0f3f3e460bfc96edcbe[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sun Jul 15 10:25:53 2018 +0200
+
+    vtpos: modernize WriteArgList
+    
+    - use std::string for global strings
+    - setupConnection: more std::string
+    - WriteArgList:
+      - rewrite with std::ofstream
+      - more verbose error messages
+
+[33mcommit ca27a543b325fdcd57c0a66a3f31995d5e7cf2fa[m
+Merge: e005fe5 4832004
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu Jul 19 14:31:07 2018 -0700
+
+    Merge pull request #48 from ViewTouch/modernize_error_msg
+    
+    Modernize error msg
+
+[33mcommit 48320044af5c122365ec60b63187e29220683271[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Jul 16 23:41:18 2018 +0200
+
+    loader: build number as std::string
+
+[33mcommit bfc28566cb1faedf4dfe9f1f6dde03c583361771[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Jul 16 23:40:19 2018 +0200
+
+    term_view: ReportError accept std::string
+
+[33mcommit 9a8e37069f3d6786246354d8865d5effd24c9d09[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Jul 16 23:39:23 2018 +0200
+
+    zone: create some ReportError msg as std::string
+
+[33mcommit f674c4d114c7f7ac71701a4da5e19c42774ec406[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Jul 16 23:38:02 2018 +0200
+
+    data_file: modernize
+    
+    - use std::string
+    - more const parameter declarations
+    - use default initializer
+
+[33mcommit 630ffd4a87e902feb2e7fbe8b1d71899a4ef7dd7[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Jul 16 23:33:46 2018 +0200
+
+    main: manager: modernize
+    
+    - more std::string
+    - BUILD_NUMBER as std::string
+    - update ReportError to use std::string
+    - update ReportError to use std::chrono and date::date
+    
+    utility: ReportError accepts std::string
+
+[33mcommit dbd07f98187bfa4dadc5b8c2882b825f2ccb6be4[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Mon Jul 16 23:07:09 2018 +0200
+
+    external: add date library (chronos helper)
+
+[33mcommit e005fe5711e71ff2bfca5165f17263decbb1e1d6[m
+Merge: 1a81c26 60d9f25
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu Jul 19 10:34:54 2018 -0700
+
+    Merge pull request #47 from ViewTouch/cmake_headers
+    
+    cmake: explicitly add header files to target
+
+[33mcommit 1a81c26868b5792014f7a867d5bb6effbd4aebd8[m
+Merge: 43f97c6 3b51988
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Thu Jul 19 10:34:15 2018 -0700
+
+    Merge pull request #46 from ViewTouch/test_image_data
+    
+    tests: add image_data public function tests
+
+[33mcommit 60d9f255135c8fcc4b22cfa47e3c74ef391b76f3[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Jul 14 22:54:21 2018 +0200
+
+    cmake: explicitly add header files to target
+    
+    This does not change the compiled binaries. The only difference is, that
+    the header files are listed with the respective targets in the IDE.
+    
+    - add zone headers to target
+    - add vt_main headers to target
+    - add vtcore headers to target
+
+[33mcommit 3b51988dcdf2fd252d2ed3e5bd596822d1007fe6[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Sat Jul 14 22:36:07 2018 +0200
+
+    tests: add image_data public function tests
+
+[33mcommit 43f97c65e46e6ff851d6fc10279a9c5335f0e6ae[m
+Merge: d4d8f6d b086240
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Wed Jul 18 23:36:24 2018 -0700
+
+    Merge pull request #45 from ViewTouch/remove_autorize_main
+    
+    Delete authorize_main.cc
+
+[33mcommit d4d8f6d1b139020ea0e9f3b399b1df685f1025b5[m
+Merge: 44fa298 288f29e
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Wed Jul 18 23:36:04 2018 -0700
+
+    Merge pull request #43 from ViewTouch/fix_image_data_mapping
+    
+    image_data: fix enum and array positions
+
+[33mcommit b0862405cc01a78fe9e48b16064bc92609b5a326[m
+Author: NeroBurner <pyro4hell@gmail.com>
+Date:   Wed Jul 18 00:20:39 2018 +0200
+
+    Delete authorize_main.cc
+
+[33mcommit 288f29e4e60ef35689d7749f8e0e505cd1df2e06[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Tue Jul 17 23:12:03 2018 +0200
+
+    image_data: fix enum and array positions
+
+[33mcommit 44fa2989bff24e3f3e1f18c10f8aede05cc9a5cc[m
+Merge: d3a1c42 e537a6c
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sat Jul 14 08:11:10 2018 -0700
+
+    Merge pull request #41 from ViewTouch/cmake_cxx_flags
+    
+    cmake: fix CXX flag setting
+
+[33mcommit d3a1c422cbab599a19c60be127dba8781305ea43[m
+Merge: c508038 9417a63
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sat Jul 14 08:10:53 2018 -0700
+
+    Merge pull request #40 from ViewTouch/print_main_modernize
+    
+    print_main: modernize
+
+[33mcommit c508038711ad98bec374355f667cf89339aecfe6[m
+Merge: a7fd953 4f736be
+Author: Gene Mosher <gene@viewtouch.com>
+Date:   Sat Jul 14 08:10:38 2018 -0700
+
+    Merge pull request #39 from ViewTouch/term_view_modernize
+    
+    Term view modernize
+
+[33mcommit e537a6c58da8feb03611cb1e6114c74870bbb79b[m
+Author: NeroBurner-tux <pyro4hell@gmail.com>
+Date:   Fri Jul 13 22:30:59 2018 +0200
+
+    cmake: fix CXX flag setting
+    
+    - don't overwrite CXX flags, instead append new flags
+    - add shadowing and conversion warnings

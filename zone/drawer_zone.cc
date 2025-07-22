@@ -94,12 +94,12 @@ int DrawerObj::Render(Terminal *term)
         case DRAWER_BALANCED:
             if (drawer->total_difference > 0)
             {
-                snprintf(str, STRLENGTH, "+ %s", term->FormatPrice(drawer->total_difference));
+                sprintf(str, "+ %s", term->FormatPrice(drawer->total_difference));
                 c = COLOR_BLUE;
             }
             else if (drawer->total_difference < 0)
             {
-                snprintf(str, STRLENGTH, "- %s", term->FormatPrice(-drawer->total_difference));
+                sprintf(str, "- %s", term->FormatPrice(-drawer->total_difference));
                 c = COLOR_RED;
             }
             else
@@ -126,15 +126,15 @@ int DrawerObj::Render(Terminal *term)
     }
     else if (drawer->serial_number == ALL_DRAWERS)
     {
-        snprintf(str, STRLENGTH, "All Drawers");
+        sprintf(str, "All Drawers");
     }
     else if (drawer->term)
     {
-        snprintf(str, STRLENGTH, "%s", drawer->term->name.Value());
+        sprintf(str, drawer->term->name.Value());
     }
     else
     {
-        snprintf(str, STRLENGTH, "%s %d", term->Translate("Drawer"), drawer->number);
+        sprintf(str, "%s %d", term->Translate("Drawer"), drawer->number);
     }
     
     c = COLOR_WHITE;
@@ -173,10 +173,10 @@ ServerDrawerObj::ServerDrawerObj(Terminal *term, Employee *employee)
     user = employee;
 
     Drawer *d = term->system_data->FirstDrawer();
-    while (d != nullptr)
+    while (d != NULL)
     {
-        if (((employee == nullptr && d->owner_id == 0) ||
-             (employee != nullptr && d->owner_id == employee->id)) &&
+        if (((employee == NULL && d->owner_id == 0) ||
+             (employee != NULL && d->owner_id == employee->id)) &&
             d->Status() == DRAWER_OPEN && !d->IsServerBank())
             drawers.Add(new DrawerObj(d));
         d = d->next;
@@ -199,7 +199,7 @@ int ServerDrawerObj::Layout(Terminal *term, int lx, int ly, int lw, int lh)
         height = height_left;
 
     // lay drawer out left to right, top to bottom
-    for (ZoneObject *zo = drawers.List(); zo != nullptr; zo = zo->next)
+    for (ZoneObject *zo = drawers.List(); zo != NULL; zo = zo->next)
     {
         if (width > width_left)
         {
@@ -252,13 +252,13 @@ int ServerDrawerObj::Render(Terminal *term)
 RenderResult DrawerAssignZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("DrawerAssignZone::Render()");
-    RenderZone(term, nullptr, update_flag);
+    RenderZone(term, NULL, update_flag);
     System *sys = term->system_data;
     Settings *s = &(sys->settings);
     if (update_flag)
     {
         servers.Purge();
-        for (Employee *employee = sys->user_db.UserList(); employee != nullptr; employee = employee->next)
+        for (Employee *employee = sys->user_db.UserList(); employee != NULL; employee = employee->next)
         {
             if ((employee->CanSettle(s) && sys->labor_db.IsUserOnClock(employee)) ||
                 sys->CountDrawersOwned(employee->id) > 0)
@@ -268,7 +268,7 @@ RenderResult DrawerAssignZone::Render(Terminal *term, int update_flag)
         }
 
         // Create unassigned drawer area
-        servers.Add(new ServerDrawerObj(term, nullptr));
+        servers.Add(new ServerDrawerObj(term, NULL));
     }
 
     servers.LayoutGrid(term, x + border, y + border,
@@ -305,7 +305,7 @@ int DrawerAssignZone::MoveDrawers(Terminal *term, Employee *user)
     FnTrace("DrawerAssignZone::MoveDrawers()");
     int count = 0;
     ZoneObject *list = servers.List();
-    while (list != nullptr)
+    while (list != NULL)
     {
         count += ((ServerDrawerObj *)list)->drawers.CountSelected();
         list = list->next;
@@ -318,13 +318,13 @@ int DrawerAssignZone::MoveDrawers(Terminal *term, Employee *user)
     while (list)
     {
         ZoneObject *zo = ((ServerDrawerObj *)list)->drawers.List();
-        for (; zo != nullptr; zo = zo->next)
+        for (; zo != NULL; zo = zo->next)
         {
             if (zo->selected)
             {
                 zo->selected = 0;
                 Drawer *d = ((DrawerObj *)zo)->drawer;
-                if (user == nullptr)
+                if (user == NULL)
                     d->ChangeOwner(0);
                 else
                     d->ChangeOwner(user->id);
@@ -345,13 +345,13 @@ int DrawerAssignZone::MoveDrawers(Terminal *term, Employee *user)
 
 DrawerManageZone::DrawerManageZone()
 {
-    current          = nullptr;
-    report           = nullptr;
+    current          = NULL;
+    report           = NULL;
     mode             = DRAWER_OPEN;
     left_margin      = 128;
     view             = DRAWER_OPEN;
-    drawer_list      = nullptr;
-    check_list       = nullptr;
+    drawer_list      = NULL;
+    check_list       = NULL;
     page             = 0;
     max_pages        = 0;
     media            = 0;
@@ -376,11 +376,11 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
     System *sys = term->system_data;
     Settings *s = &(sys->settings);
     Archive *archive = term->archive;
-    Check *check_list_save = nullptr;
+    Check *check_list_save = NULL;
     int idx;
 
     if (drawer_zone_type == DRAWER_ZONE_SELECT)
-        archive = nullptr;
+        archive = NULL;
     LayoutZone::Render(term, update_flag);
 
     if (update_flag)
@@ -410,7 +410,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
         if (report)
         {
             delete report;
-            report = nullptr;
+            report = NULL;
         }
         CreateDrawers(term);
         group = 0;
@@ -460,7 +460,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
     }
 
     // Render the right side report for the currently selected Drawer object
-    Drawer *d = nullptr;
+    Drawer *d = NULL;
     if (current)
         d = ((DrawerObj *)current)->drawer;
 
@@ -470,17 +470,17 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
         // first copy all of the checks over
         int all = term->user->IsSupervisor(s);
         int dstat;
-        Drawer *scdrawer = nullptr;
+        Drawer *scdrawer = NULL;
         Check *currcheck = check_list;
-        while (drawer_list != nullptr && currcheck != nullptr)
+        while (drawer_list != NULL && currcheck != NULL)
         {
             Check *newcheck = currcheck->Copy(s);
             // set all SubChecks to our virtual drawer
             SubCheck *scheck = newcheck->SubList();
-            while (scheck != nullptr)
+            while (scheck != NULL)
             {
                 scdrawer = drawer_list->FindBySerial(scheck->drawer_id);
-                if (scdrawer != nullptr)
+                if (scdrawer != NULL)
                     dstat = scdrawer->Status();
                 else
                     dstat = 0;
@@ -504,7 +504,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
     }
 
     for (idx = 0; idx < MAX_BALANCES; idx++)
-        balance_list[idx] = nullptr;
+        balance_list[idx] = NULL;
     
     // set up balance list
     if (d)
@@ -616,12 +616,12 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
     }
 
     genericChar str[256];
-    if (d == nullptr)
+    if (d == NULL)
     {
         if (report)
         {
             delete report;
-            report = nullptr;
+            report = NULL;
         }
 
         report = new Report;
@@ -630,7 +630,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
         else
             report->TextC(term->Translate("There Are No Balanced Drawers For"));
         report->NewLine();
-        if (archive == nullptr)
+        if (archive == NULL)
             strcpy(str, term->Translate("Today"));
         else
         {
@@ -640,7 +640,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
             else
                 strcpy(tm1, term->Translate("System Start"));
             term->TimeDate(tm2, archive->end_time, TD4);
-            snprintf(str, STRLENGTH, "%s  -  %s", tm1, tm2);
+            sprintf(str, "%s  -  %s", tm1, tm2);
         }
         report->TextC(str);
 
@@ -654,7 +654,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
         switch (mode)
         {
         default:
-            if (report == nullptr)
+            if (report == NULL)
             {
                 report = new Report;
                 d->MakeReport(term, check_list, report);
@@ -674,7 +674,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
             if (report)
             {
                 delete report;
-                report = nullptr;
+                report = NULL;
             }
 
             int pcolor;
@@ -687,7 +687,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
             {
                 DrawerBalance *db = balance_list[balance_count];
                 int p = balance_count / per_page;
-                if (p != page || db == nullptr)
+                if (p != page || db == NULL)
                 {
                     balance_count += 1;
                     continue;
@@ -716,18 +716,18 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
             if (mp > 0)
                 TextL(term, size_y - 1, term->PageNo(page + 1, mp + 1), color[0]);
 
-            TextC(term, 0, "Please Enter These Amounts", color[0]);
+            TextC(term, 0, term->Translate("Please Enter These Amounts"), color[0]);
             // Add the terminal name
-            if (d != nullptr)
+            if (d != NULL)
             {
                 Terminal *termlist = term->parent->TermList();
-                while (termlist != nullptr)
+                while (termlist != NULL)
                 {
                     if (termlist->host == d->host)
                     {
                         snprintf(str, 256, "%s", termlist->name.Value());
                         TextC(term, 1, str, color[0]);
-                        termlist = nullptr;
+                        termlist = NULL;
                     }
                     else
                     {
@@ -738,17 +738,17 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
             Line(term, 2, color[0]);
             if (d->total_difference < 0)
             {
-                strcpy(str, "Short");
+                strcpy(str, GlobalTranslate("Short"));
                 pcolor = COLOR_RED;
             }
             else if (d->total_difference > 0)
             {
-                strcpy(str, "Over");
+                strcpy(str, GlobalTranslate("Over"));
                 pcolor = COLOR_BLUE;
             }
             else
             {
-                strcpy(str, "Balanced");
+                strcpy(str, GlobalTranslate("Balanced"));
                 pcolor = COLOR_BLACK;
             }
 
@@ -758,7 +758,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
         }
     }
 
-    if (check_list_save != nullptr)
+    if (check_list_save != NULL)
         check_list = check_list_save;
 
     return RENDER_OKAY;
@@ -770,21 +770,21 @@ SignalResult DrawerManageZone::Signal(Terminal *term, const genericChar* message
     static const genericChar* commands[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "00", "-",
         "backspace", "clear", "enter", "pull", "save", "change view",
-        "localprint", "reportprint", "merge", "mergeterm", "mergeall", nullptr};
+        "localprint", "reportprint", "merge", "mergeterm", "mergeall", NULL};
     Employee *employee;
     Drawer *drawer;
     DrawerBalance *db;
     int drawer_print = term->GetSettings()->drawer_print;
 
     employee = term->user;
-    if (employee == nullptr)
+    if (employee == NULL)
         return SIGNAL_IGNORED;
 
-    drawer = nullptr;
+    drawer = NULL;
     if (current)
         drawer = ((DrawerObj *)current)->drawer;
 
-    db = nullptr;
+    db = NULL;
     if (media >= 0 && media < balances)
         db = balance_list[media];
     
@@ -921,7 +921,7 @@ SignalResult DrawerManageZone::Signal(Terminal *term, const genericChar* message
             if (report)
             {
                 delete report;
-                report = nullptr;
+                report = NULL;
             }
             Draw(term, 0);
             return SIGNAL_OKAY;
@@ -945,7 +945,7 @@ SignalResult DrawerManageZone::Signal(Terminal *term, const genericChar* message
             if (report)
             {
                 delete report;
-                report = nullptr;
+                report = NULL;
             }
             Draw(term, 0);
             return SIGNAL_OKAY;
@@ -988,7 +988,7 @@ SignalResult DrawerManageZone::Touch(Terminal *term, int tx, int ty)
             if (report)
             {
                 delete report;
-                report = nullptr;
+                report = NULL;
             }
             media = TENDER_CASH;
             Draw(term, 0);
@@ -1061,7 +1061,7 @@ SignalResult DrawerManageZone::Keyboard(Terminal *term, int my_key, int state)
         break;
     }
 
-    if (report == nullptr)
+    if (report == NULL)
         return SIGNAL_IGNORED;
 
     int max_page = report->max_pages;
@@ -1089,7 +1089,7 @@ int DrawerManageZone::Update(Terminal *term, int update_message, const genericCh
         if (report)
         {
             delete report;
-            report = nullptr;
+            report = NULL;
         }
         return Draw(term, 0);
     }
@@ -1106,12 +1106,12 @@ int DrawerManageZone::CreateDrawers(Terminal *term)
     int all = employee->IsSupervisor(s);
     int count = 0;
 
-    for (Drawer *drawer = drawer_list; drawer != nullptr; drawer = drawer->next)
+    for (Drawer *drawer = drawer_list; drawer != NULL; drawer = drawer->next)
     {
         if (all || drawer->owner_id == employee->id)
         {
             // Server Bank drawers will not have term set, but we need it
-            if (drawer->term == nullptr)
+            if (drawer->term == NULL)
                 drawer->term = term;
             drawer->Total(check_list);
             if ((drawer_zone_type == DRAWER_ZONE_SELECT) || (drawer->IsEmpty() == 0))
@@ -1145,12 +1145,12 @@ int DrawerManageZone::Print(Terminal *term, int print_mode)
         return 0;
 
     Employee *employee = term->user;
-    if (employee == nullptr || current == nullptr || report == nullptr)
+    if (employee == NULL || current == NULL || report == NULL)
         return 1;
 
     Printer *p1 = term->FindPrinter(PRINTER_RECEIPT);
     Printer *p2 = term->FindPrinter(PRINTER_REPORT);
-    if (p1 == nullptr && p2 == nullptr)
+    if (p1 == NULL && p2 == NULL)
         return 1;
 
     if (print_mode == RP_ASK)
@@ -1162,10 +1162,10 @@ int DrawerManageZone::Print(Terminal *term, int print_mode)
     }
 
     Printer *p = p1;
-    if ((print_mode == RP_PRINT_REPORT && p2) || p1 == nullptr)
+    if ((print_mode == RP_PRINT_REPORT && p2) || p1 == NULL)
         p = p2;
 
-    if (p == nullptr)
+    if (p == NULL)
         return 1;
 
     report->CreateHeader(term, p, employee);

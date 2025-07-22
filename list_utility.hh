@@ -16,7 +16,8 @@
  *			This needs to be fixed.
  */
 
-#pragma once
+#ifndef VT_LIST_UTILITY_HH
+#define VT_LIST_UTILITY_HH
 
 #include "basic.hh"
 #include "fntrace.hh"
@@ -30,7 +31,7 @@ class SList
 
 public:
     // Constructors
-    SList()           { list_head = nullptr; list_tail = nullptr; }
+    SList()           { list_head = NULL; list_tail = NULL; }
     SList(type *item) { list_head = item; list_tail = item; }
 
     // Destructor
@@ -42,18 +43,18 @@ public:
 
     int IsEmpty()
     {
-        return (list_head == nullptr);
+        return (list_head == NULL);
     }
 
     int AddToHead(type *item)
     {
         FnTrace("SList::AddToHead()");
-        if (item == nullptr)
+        if (item == NULL)
             return 1;
 
         item->next = list_head;
 
-        if (list_tail == nullptr)
+        if (list_tail == NULL)
             list_tail = item;
 
         list_head = item;
@@ -63,10 +64,10 @@ public:
     int AddToTail(type *item)
     {
         FnTrace("SList::AddToTail()");
-        if (item == nullptr)
+        if (item == NULL)
             return 1;
 
-        item->next = nullptr;
+        item->next = NULL;
 
         if (list_tail)
             list_tail->next = item;
@@ -79,7 +80,7 @@ public:
     int AddAfterNode(type *node, type *item)
     {
         FnTrace("SList::AddAfterNode()");
-        if (node == nullptr)
+        if (node == NULL)
             return AddToHead(item);
         if (node == list_tail)
             return AddToTail(item);
@@ -98,15 +99,15 @@ public:
             list_head = list_head->next;
             delete tmp;
         }
-        list_tail = nullptr;
+        list_tail = NULL;
     }
 
     int Remove(type *node)
     {
         FnTrace("SList::Remove()");
-        if (node == nullptr)
+        if (node == NULL)
             return 1;
-        for (type *n = list_head, *p = nullptr; n != nullptr; p = n, n = n->next)
+        for (type *n = list_head, *p = NULL; n != NULL; p = n, n = n->next)
             if (node == n)
             {
                 if (p)
@@ -115,7 +116,7 @@ public:
                     list_head = node->next;
                 if (list_tail == node)
                     list_tail = p;
-                node->next = nullptr;
+                node->next = NULL;
                 return 0;
             }
         return 1;
@@ -125,7 +126,7 @@ public:
     {
         FnTrace("SList::Count()");
         int count = 0;
-        for (type *n = list_head; n != nullptr; n = n->next)
+        for (type *n = list_head; n != NULL; n = n->next)
             ++count;
         return count;
     }
@@ -134,10 +135,10 @@ public:
     {
         FnTrace("SList::Index()");
         if (i < 0)
-            return nullptr;
+            return NULL;
 
         type *n = list_head;
-        while (n != nullptr && i > 0)
+        while (n != NULL && i > 0)
             --i, n = n->next;
         return n;
     }
@@ -156,16 +157,16 @@ class DList
         type *p, *q, *e, *tail;
         int insize, nmerges, psize, qsize, i;
         
-        if (list == nullptr)
-            return nullptr;
+        if (list == NULL)
+            return NULL;
 
         insize = 1;
         
         while (1)
         {
             p = list;
-            list = nullptr;
-            tail = nullptr;
+            list = NULL;
+            tail = NULL;
             
             nmerges = 0;  /* count number of merges we do in this pass */
             
@@ -225,7 +226,7 @@ class DList
                 /* now p has stepped `insize' places along, and q has too */
                 p = q;
             }
-            tail->next = nullptr;
+            tail->next = NULL;
             
             /* If we have done only one merge, we're finished. */
             if (nmerges <= 1)   /* allow for nmerges==0, the empty list case */
@@ -238,7 +239,7 @@ class DList
     
 public:
     // Constructors
-    DList()           { list_head = nullptr; list_tail = nullptr; }
+    DList()           { list_head = NULL; list_tail = NULL; }
     DList(type *item) { list_head = item; list_tail = item; }
 
     // Destructor
@@ -254,16 +255,16 @@ public:
 
     int IsEmpty()
     {
-        return (list_head == nullptr);
+        return (list_head == NULL);
     }
 
     int AddToHead(type *item)
     {
         FnTrace("DList::AddToHead()");
-        if (item == nullptr)
+        if (item == NULL)
             return 1;
 
-        item->fore = nullptr;
+        item->fore = NULL;
         item->next = list_head;
         if (list_head)
             list_head->fore = item;
@@ -276,11 +277,11 @@ public:
     int AddToTail(type *item)
     {
         FnTrace("DList::AddToTail()");
-        if (item == nullptr)
+        if (item == NULL)
             return 1;
 
         item->fore = list_tail;
-        item->next = nullptr;
+        item->next = NULL;
         if (list_tail)
             list_tail->next = item;
         else
@@ -292,7 +293,7 @@ public:
     int AddAfterNode(type *node, type *item)
     {
         FnTrace("DList::AddAfterNode()");
-        if (node == nullptr)
+        if (node == NULL)
             return AddToHead(item);
         if (node == list_tail)
             return AddToTail(item);
@@ -307,7 +308,7 @@ public:
     int AddBeforeNode(type *node, type *item)
     {
         FnTrace("DList::AddBeforeNode()");
-        if (node == nullptr)
+        if (node == NULL)
             return AddToTail(item);
         if (node == list_head)
             return AddToHead(item);
@@ -322,13 +323,13 @@ public:
     int Exists(type *item, int (*cmp)(type *, type*))
     {
         FnTrace("DList::Exists()");
-        if (item == nullptr)
+        if (item == NULL)
             return 1;
 
         type *curr = list_head;
         int found = 0;
 
-        while (curr != nullptr && found == 0)
+        while (curr != NULL && found == 0)
         {
             if (cmp(item, curr) == 0)
                 found = 1;
@@ -342,7 +343,7 @@ public:
     int Remove(type *item)
     {
         FnTrace("DList::Remove()");
-        if (item == nullptr)
+        if (item == NULL)
             return 1;
 
         if (list_head == item)
@@ -353,17 +354,17 @@ public:
             item->next->fore = item->fore;
         if (item->fore)
             item->fore->next = item->next;
-        item->fore = nullptr;
-        item->next = nullptr;
+        item->fore = NULL;
+        item->next = NULL;
         return 0;
     }
 
     int RemoveSafe(type *node)
     {
         FnTrace("DList::RemoveSafe()");
-        if (node == nullptr)
+        if (node == NULL)
             return 1;
-        for (type *n = list_head; n != nullptr; n = n->next)
+        for (type *n = list_head; n != NULL; n = n->next)
             if (n == node)
                 return Remove(node);
         return 1;
@@ -379,14 +380,14 @@ public:
             list_head = list_head->next;
             delete tmp;
         }
-        list_tail = nullptr;
+        list_tail = NULL;
     }
 
     int Count() const
     {
         FnTrace("DList::Count()");
         int count = 0;
-        for (type *n = list_head; n != nullptr; n = n->next)
+        for (type *n = list_head; n != NULL; n = n->next)
             ++count;
         return count;
     }
@@ -395,10 +396,10 @@ public:
     {
         FnTrace("DList::Index()");
         if (i < 0)
-            return nullptr;
+            return NULL;
 
         type *n = list_head;
-        while (n != nullptr && i > 0)
+        while (n != NULL && i > 0)
         {
             --i;
             n = n->next;
@@ -411,9 +412,9 @@ public:
         FnTrace("DList::Sort()");
         list_head = InternalSort(list_head, cmp);
         list_tail = list_head;
-        if (list_tail != nullptr)
+        if (list_tail != NULL)
         {
-            while (list_tail->next != nullptr)
+            while (list_tail->next != NULL)
                 list_tail = list_tail->next;
         }
         return 0;
@@ -422,3 +423,5 @@ public:
     // Operators
     type *operator[](int i) { return Index(i); }
 };
+
+#endif

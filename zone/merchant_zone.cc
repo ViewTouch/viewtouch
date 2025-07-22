@@ -30,12 +30,12 @@
 
 /**** Module Data ****/
 static const genericChar* TimeZoneName[] = {
-    "Eastern", "Central", "Mountain", "Pacific", nullptr};
+    "Eastern", "Central", "Mountain", "Pacific", NULL};
 static int TimeZoneValue[] = {
     705, 706, 707, 708, -1};
 
 static const genericChar* LanguageName[] = {
-    "U.S. English", "Spanish", "Portuguese", nullptr};
+    "U.S. English", "Spanish", "Portuguese", NULL};
 static int LanguageValue[] = {
     0, 1, 2, -1};
 
@@ -43,16 +43,15 @@ static int LanguageValue[] = {
 // Constructor
 MerchantZone::MerchantZone()
 {
-    font = FONT_GARAMOND_14B;  // Use global default button font
-    AddTextField("Acquirer BIN", 6);
-    AddTextField("Merchant Number", 12);
-    AddTextField("Store Number", 4);
-    AddTextField("Terminal Number", 4);
-    AddTextField("Currency Code", 3);
-    AddTextField("Country Code", 3);
-    AddTextField("City Code (Zip)", 9);
-    AddListField("Language", LanguageName, LanguageValue);
-    AddListField("Time Zone", TimeZoneName, TimeZoneValue);
+    AddTextField(GlobalTranslate("Acquirer BIN"), 6);
+    AddTextField(GlobalTranslate("Merchant Number"), 12);
+    AddTextField(GlobalTranslate("Store Number"), 4);
+    AddTextField(GlobalTranslate("Terminal Number"), 4);
+    AddTextField(GlobalTranslate("Currency Code"), 3);
+    AddTextField(GlobalTranslate("Country Code"), 3);
+    AddTextField(GlobalTranslate("City Code (Zip)"), 9);
+    AddListField(GlobalTranslate("Language"), LanguageName, LanguageValue);
+    AddListField(GlobalTranslate("Time Zone"), TimeZoneName, TimeZoneValue);
 }
 
 // Member Functions

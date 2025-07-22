@@ -18,7 +18,8 @@
  * Table page & table control zone objects
  */
 
-#pragma once
+#ifndef _TABLE_ZONE_HH
+#define _TABLE_ZONE_HH
 
 #include "check.hh"
 #include "customer.hh"
@@ -100,7 +101,6 @@ public:
     int          Update(Terminal *t, int update_message, const genericChar* value);
     int         *CustomerType() { return &customer_type; }
     Check       *GetCheck()     { return check; }
-    void         SetCheck(Check *c) { check = c; }
 };
 
 class GuestCountZone : public LayoutZone
@@ -135,3 +135,5 @@ public:
 
     int MoveTables(Terminal *t, ServerTableObj *sto);
 };
+
+#endif

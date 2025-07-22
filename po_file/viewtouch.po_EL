@@ -1,0 +1,1799 @@
+# ViewTouch POS System - Greek Translation File
+# This file contains all translatable strings for the ViewTouch POS system
+
+# Dialog Messages
+Confirm: Επιβεβαίωση
+Select A Printer: Επιλογή εκτυπωτή
+Print: Εκτύπωση
+Cancel: Ακύρωση
+Receipt Printer: Εκτυπωτής αποδείξεων
+Full Page Printer: Εκτυπωτής πλήρους σελίδας
+Enter: Εισαγωγή
+Back Space: Πίσω
+Clear: Καθαρισμός
+Space: Διάστημα
+Change Password: Αλλαγή κωδικού
+Enter Amount of Tip: Εισαγωγή ποσού φιλοδωρήματος
+Enter Amount: Εισαγωγή ποσού
+Enter Quantity: Εισαγωγή ποσότητας
+Enter Item Count: Εισαγωγή αριθμού αντικειμένων
+Enter a Room Number: Εισαγωγή αριθμού δωματίου
+Enter batch number: Εισαγωγή αριθμού παρτίδας
+Enter Amount of Refund: Εισαγωγή ποσού επιστροφής
+Enter the Amount: Εισαγωγή του ποσού
+Enter TTID: Εισαγωγή TTID
+Enter Batch Number (leave empty to settle last batch): Εισαγωγή αριθμού παρτίδας (αφήστε κενό για διακανονισμό τελευταίας παρτίδας)
+Enter TTID Number: Εισαγωγή αριθμού TTID
+Enter Authorization Code: Εισαγωγή κωδικού εξουσιοδότησης
+Tax Exempt Qualification: Προσόν αφορολόγητου
+Enter Amount to Move: Εισαγωγή ποσού προς μετακίνηση
+No drawer available for payments: Δεν υπάρχει διαθέσιμη συρτοφυλακίδα για πληρωμές
+Okay: Εντάξει
+Continue: Συνέχεια
+End Without Settlement: Τέλος χωρίς διακανονισμό
+End the Day Now: Τέλος της ημέρας τώρα
+Confirm end of business day: Επιβεβαίωση τέλους εργάσιμης ημέρας
+End of Day Credit Card Processing Failed: Αποτυχία επεξεργασίας πιστωτικής κάρτας στο τέλος της ημέρας
+You cannot cancel with an authorized card.: Δεν μπορείτε να ακυρώσετε με εξουσιοδοτημένη κάρτα.
+You cannot clear an authorized card.: Δεν μπορείτε να καθαρίσετε εξουσιοδοτημένη κάρτα.
+You cannot clear all entries with authorized cards.: Δεν μπορείτε να καθαρίσετε όλες τις καταχωρήσεις με εξουσιοδοτημένες κάρτες.
+The check still has a balance which should be paid in full prior to leaving this page.: Ο λογαριασμός εξακολουθεί να έχει υπόλοιπο που πρέπει να πληρωθεί πλήρως πριν από την έξοδο από αυτή τη σελίδα.
+There are one or more Pre-Authorizations which should be processed prior to leaving this page.: Υπάρχουν μία ή περισσότερες προ-εξουσιοδοτήσεις που πρέπει να επεξεργαστούν πριν από την έξοδο από αυτή τη σελίδα.
+You cannot add a charge card to a closed check.: Δεν μπορείτε να προσθέσετε κάρτα χρέωσης σε κλειστό λογαριασμό.
+Please select a card to process.: Παρακαλώ επιλέξτε κάρτα για επεξεργασία.
+You will lose your changes if you go to the next check now.\\Are you sure you want to do this?: Θα χάσετε τις αλλαγές σας αν πάτε στον επόμενο λογαριασμό τώρα.\\Είστε σίγουροι ότι θέλετε να το κάνετε αυτό;
+Select An Employee Meal: Επιλογή γεύματος υπαλλήλου
+Select A Credit Card: Επιλογή πιστωτικής κάρτας
+Select A Discount: Επιλογή έκπτωσης
+Select A Coupon: Επιλογή κουπονιού
+Select A Meal Comp: Επιλογή δωρεάν γεύματος
+Only managers can void credit cards.: Μόνο οι διαχειριστές μπορούν να ακυρώσουν πιστωτικές κάρτες.
+Confirm Your Choice: Επιβεβαίωση επιλογής σας
+Reason for comping this item: Λόγος για δωρεάν αυτού του αντικειμένου
+Reason for voiding this item: Λόγος για ακύρωση αυτού του αντικειμένου
+What do you want to do with this Item?: Τι θέλετε να κάνετε με αυτό το αντικείμενο;
+Table already has a check.\\Merge all orders from both tables?: Η τράπεζα έχει ήδη λογαριασμό.\\Συγχώνευση όλων των παραγγελιών από και τις δύο τράπεζες;
+Do You Have More Than 9 Guests?: Έχετε περισσότερους από 9 επισκέπτες;
+This category is in use. Are you sure you want to disable it?: Αυτή η κατηγορία χρησιμοποιείται. Είστε σίγουροι ότι θέλετε να την απενεργοποιήσετε;
+Also clear labor data?: Επίσης καθαρισμός δεδομένων εργασίας;
+Select a Bar Tab: Επιλογή καρτέλας μπαρ
+Someone else is already in Edit Mode: Κάποιος άλλος είναι ήδη σε λειτουργία επεξεργασίας
+Enter Your Password: Εισαγωγή κωδικού σας
+Enter Your Old Password: Εισαγωγή παλιού κωδικού σας
+You Must Change Your Password To Continue: Πρέπει να αλλάξετε τον κωδικό σας για να συνεχίσετε
+Enter Your New Password: Εισαγωγή νέου κωδικού σας
+Enter Your New Password Again: Εισαγωγή νέου κωδικού σας ξανά
+Minimum Password Length Is: Η ελάχιστη διάρκεια κωδικού είναι
+Enter Final Amount: Εισαγωγή τελικού ποσού
+
+# Form Field Labels
+Start: Έναρξη
+End: Τέλος
+Clock Out: Έξοδος ρολογιού
+Start Break: Έναρξη διαλείμματος
+Job: Εργασία
+Pay: Πληρωμή
+Rate: Τιμή
+Tips: Φιλοδωρήματα
+Acquirer BIN: BIN Εκδότη
+Merchant Number: Αριθμός Εμπόρου
+Store Number: Αριθμός Καταστήματος
+Terminal Number: Αριθμός Τερματικού
+Currency Code: Κωδικός Νομίσματος
+Country Code: Κωδικός Χώρας
+City Code (Zip): Κωδικός Πόλης (ΤΚ)
+Language: Γλώσσα
+Time Zone: Ζώνη Ώρας
+Name: Όνομα
+Amount: Ποσό
+Cost: Κόστος
+Servings in Invoice Unit: Μερίδες σε Μονάδα Τιμολογίου
+Serving Cost: Κόστος Μερίδας
+Minutes to Prepare: Λεπτά Προετοιμασίας
+Address: Διεύθυνση
+Contact: Επικοινωνία
+Item Name: Όνομα Αντικειμένου
+Button Name (if different): Όνομα Κουμπιού (αν διαφέρει)
+Printed Name (if different): Εκτυπωμένο Όνομα (αν διαφέρει)
+Call Center Name: Όνομα Κέντρου Κλήσεων
+Item Code: Κωδικός Αντικειμένου
+Price: Τιμή
+Substitute Price: Εναλλακτική Τιμή
+Employee Price: Τιμή Υπαλλήλου
+Takeout Price: Τιμή Παραλαβής
+Delivery Price: Τιμή Παράδοσης
+ID: ID
+Expense ID: ID Εξόδου
+Expense Amount: Ποσό Εξόδου
+Tax Amount: Ποσό Φόρου
+Document: Έγγραφο
+Explanation: Εξήγηση
+User ID: ID Χρήστη
+Nickname: Ψευδώνυμο
+Last Name: Επώνυμο
+First Name: Όνομα
+City: Πόλη
+State: Πολιτεία
+Job Info: Πληροφορίες Εργασίας
+Employee #: Αριθμός Υπαλλήλου #
+Department: Τμήμα
+Account Name: Όνομα Λογαριασμού
+Account No: Αριθμός Λογαριασμού
+Balance: Υπόλοιπο
+Company: Εταιρεία
+Zip: ΤΚ
+Phone: Τηλέφωνο
+Driver's License: Άδεια Οδήγησης
+License Plate: Πινακίδα
+Credit Card #: Πιστωτική Κάρτα #
+Guest Count: Αριθμός Επισκεπτών
+Comment: Σχόλιο
+Line 1: Γραμμή 1
+Line 2: Γραμμή 2
+
+# System Configuration
+This Display's Name is: Το Όνομα αυτής της Οθόνης είναι
+This Display's IP Address is: Η Διεύθυνση IP αυτής της Οθόνης είναι
+This Display's Receipt Printer Queue Name is: Το Όνομα Ουράς Εκτυπωτή Αποδείξεων αυτής της Οθόνης είναι
+If This Is A Customer Display Then Its Customer Display Device Path is: Αν αυτή είναι Οθόνη Πελάτη τότε η Διαδρομή Συσκευής Οθόνης Πελάτη είναι
+Credit Terminal ID: ID Τερματικού Πίστωσης
+Debit Terminal ID: ID Τερματικού Χρέωσης
+This Printer Is Identified As: Αυτός ο Εκτυπωτής Ταυτοποιείται ως
+This Printer's Queue Name Is: Το Όνομα Ουράς αυτού του Εκτυπωτή είναι
+Requisition Ticket Header Margin: Περιθώριο Κεφαλίδας Εισιτηρίου Απαίτησης
+Test This Receipt Printer: Δοκιμή αυτού του Εκτυπωτή Αποδείξεων
+Test Drawer 1: Δοκιμή Συρτοφυλακίδας 1
+Test Drawer 2: Δοκιμή Συρτοφυλακίδας 2
+Remove This Job: Αφαίρεση αυτής της Εργασίας
+* Add Another Job *: * Προσθήκη Άλλης Εργασίας *
+Your Business Name: Το Όνομα της Επιχείρησής σας
+City State Zip Code: Πόλη Πολιτεία ΤΚ
+Location Code: Κωδικός Τοποθεσίας
+Screen Saver: Προφύλαξη Οθόνης
+On the Table Page: Στη Σελίδα Τραπέζης
+After Settlement: Μετά τον Διακανονισμό
+On Page One: Στη Σελίδα Ένα
+Lowest Account Number: Χαμηλότερος Αριθμός Λογαριασμού
+Highest Account Number: Υψηλότερος Αριθμός Λογαριασμού
+Default Tab Amount: Προεπιλεγμένο Ποσό Καρτέλας
+SMTP Server for Sending: SMTP Διακομιστής για Αποστολή
+SMTP Reply To Address: SMTP Διεύθυνση Απάντησης
+Minimum Day Length (hours): Ελάχιστη Διάρκεια Ημέρας (ώρες)
+Header Length: Μήκος Κεφαλίδας
+Food Sales Tax %: Φόρος Πωλήσεων Τροφίμων %
+Alcohol Sales Tax %: Φόρος Πωλήσεων Αλκοόλ %
+Room Sales Tax %: Φόρος Πωλήσεων Δωματίου %
+Merchandise Sales Tax %: Φόρος Πωλήσεων Εμπορευμάτων %
+GST %: GST %
+PST %: PST %
+HST %: HST %
+QST %: QST %
+VAT %: ΦΠΑ %
+Royalty Rate %: Ποσοστό Δικαιωμάτων %
+Advertising Fund %: Ταμείο Διαφημίσεων %
+Processing Server: Διακομιστής Επεξεργασίας
+Processing Port: Θύρα Επεξεργασίας
+Merchant ID: ID Εμπόρου
+User name: Όνομα χρήστη
+Password: Κωδικός
+Connect Timeout: Χρονικό Όριο Σύνδεσης
+Amount to Add for PreAuth: Ποσό προς Προσθήκη για Προ-εξουσιοδότηση
+Editor's Password: Κωδικός Επεξεργαστή
+Minimum Password Length: Ελάχιστο Μήκος Κωδικού
+Multiply: Πολλαπλασιασμός
+Add or Subtract: Προσθήκη ή Αφαίρεση
+Customer Discount Name: Όνομα Έκπτωσης Πελάτη
+Coupon Name: Όνομα Κουπονιού
+WholeComp Description: Περιγραφή Ολόκληρου Δωρεάν
+Employee Discount Name: Όνομα Έκπτωσης Υπαλλήλου
+Set the Number of Customer Activity Time Slices to Analyze: Ορίστε τον Αριθμό Χρονικών Διαστήμαων Δραστηριότητας Πελατών προς Ανάλυση
+Recipe Unit: Μονάδα Συνταγής
+Invoice Unit: Μονάδα Τιμολογίου
+Portion Unit: Μονάδα Μερίδας
+Item Type: Τύπος Αντικειμένου
+Price Type: Τύπος Τιμής
+Family: Οικογένεια
+Tax/Discount Class: Κλάση Φόρου/Έκπτωσης
+Printer Target: Στόχος Εκτυπωτή
+Call Order: Παραγγελία Κλήσης
+Is Item Stocked?: Είναι το Αντικείμενο σε Απόθεμα;
+Allow Increase Button?: Επιτρέψτε Κουμπί Αύξησης;
+Ignore Split Kitchen?: Παράβλεψη Διαχωρισμένης Κουζίνας;
+Vendor: Προμηθευτής
+Payer: Πληρωτής
+Expense Drawer: Συρτοφυλακίδα Εξόδων
+Account: Λογαριασμός
+Destination Account: Λογαριασμός Προορισμού
+
+# Additional UI Strings
+Yes: Ναι
+No: Όχι
+Active: Ενεργός
+Inactive: Ανενεργός
+Open: Ανοιχτό
+Closed: Κλειστό
+Voided: Ακυρωμένο
+PENDING: ΕΚΚΡΕΜΕΙ
+ToGo: Παραλαβή
+am: πμ
+pm: μμ
+Sunday: Κυριακή
+Monday: Δευτέρα
+Tuesday: Τρίτη
+Wednesday: Τετάρτη
+Thursday: Πέμπτη
+Friday: Παρασκευή
+Saturday: Σάββατο
+Sun: Κυρ
+Mon: Δευ
+Tue: Τρί
+Wed: Τετ
+Thu: Πέμ
+Fri: Παρ
+Sat: Σάβ
+January: Ιανουάριος
+February: Φεβρουάριος
+March: Μάρτιος
+April: Απρίλιος
+May: Μάιος
+June: Ιούνιος
+July: Ιούλιος
+August: Αύγουστος
+September: Σεπτέμβριος
+October: Οκτώβριος
+November: Νοέμβριος
+December: Δεκέμβριος
+Jan: Ιαν
+Feb: Φεβ
+Mar: Μαρ
+Apr: Απρ
+Jun: Ιουν
+Jul: Ιουλ
+Aug: Αυγ
+Sep: Σεπ
+Oct: Οκτ
+Nov: Νοε
+Dec: Δεκ
+On: Ενεργό
+Off: Ανενεργό
+Page: Σελίδα
+Table: Τράπεζα
+Guests: Επισκέπτες
+Take Out: Παραλαβή
+TO GO: ΠΑΡΑΛΑΒΗ
+Catering: Εξυπηρέτηση
+Cater: Εξυπηρέτηση
+Delivery: Παράδοση
+Deliver: Παράδοση
+Welcome: Καλώς ήρθατε
+Hello: Γεια σας
+Starting Time Is: Η ώρα έναρξης είναι
+Ending Time Is: Η ώρα λήξης είναι
+Pick A Job For This Shift: Επιλέξτε εργασία για αυτή τη βάρδια
+Please Enter Your User ID: Παρακαλώ εισάγετε το ID χρήστη σας
+Press START To Enter: Πατήστε START για εισαγωγή
+Please Try Again: Παρακαλώ δοκιμάστε ξανά
+Contact a manager to be reactivated: Επικοινωνήστε με διαχειριστή για επανενεργοποίηση
+Password Incorrect: Λάθος κωδικός
+Unknown User ID: Άγνωστο ID χρήστη
+You're Using Another Terminal: Χρησιμοποιείτε άλλο τερματικό
+You're Not On The Clock: Δεν είστε στο ρολόι
+You're Already On The Clock: Είστε ήδη στο ρολόι
+You Don't Use The Clock: Δεν χρησιμοποιείτε το ρολόι
+You Still Have Open Checks: Εξακολουθείτε να έχετε ανοιχτούς λογαριασμούς
+You Still Have An Assigned Drawer: Εξακολουθείτε να έχετε ανάθεση συρτοφυλακίδας
+Your Record Is Inactive: Η εγγραφή σας είναι ανενεργή
+General: Γενικό
+Breakfast: Πρωινό
+Brunch: Μπραντς
+Lunch: Μεσημεριανό
+Early Dinner: Πρώινο δείπνο
+Dinner: Δείπνο
+Late Night: Νύχτα
+Bar: Μπαρ
+Wine: Κρασί
+Cafe: Καφέ
+No Job: Χωρίς εργασία
+Dishwasher: Πλύστης πιάτων
+Busperson: Βοηθός σερβιτόρου
+Line Cook: Μάγειρας γραμμής
+Prep Cook: Μάγειρας προετοιμασίας
+Chef: Σεφ
+Cashier: Ταμίας
+Server: Σερβιτόρος
+Bartender: Μπάρμαν
+Bookkeeper: Λογιστής
+Supervisor: Επόπτης
+Assistant Manager: Βοηθός διαχειριστή
+Manager: Διαχειριστής
+Authorize: Εξουσιοδότηση
+Void: Ακύρωση
+Refund: Επιστροφή
+Add Tip: Προσθήκη φιλοδωρήματος
+Undo Refund: Αναίρεση επιστροφής
+Manual Entry: Χειροκίνητη εισαγωγή
+Other: Άλλο
+SunWest: SunWest
+Weekly: Εβδομαδιαία
+2 Weeks: 2 Εβδομάδες
+4 Weeks: 4 Εβδομάδες
+Semi Monthly: Ημιανά
+Semi Monthly 11/26: Ημιανά 11/26
+Monthly: Μηνιαία
+Normal: Κανονικό
+Assigned: Ανάθεση
+First Server: Πρώτος σερβιτόρος
+Last Server: Τελευταίος σερβιτόρος
+None: Κανένα
+1 Week: 1 Εβδομάδα
+2 Weeks: 2 Εβδομάδες
+4 Weeks: 4 Εβδομάδες
+Month: Μήνας
+11/26: 11/26
+On Send: Στην αποστολή
+On Finalize: Στην ολοκλήρωση
+On Both: Και στα δύο
+Never: Ποτέ
+On Pull: Στην ανάληψη
+On Balance: Στην ισοζύγιο
+Drop Pennies: Απόρριψη λεπτών
+Round Up Gratuity: Στρογγυλοποίηση φιλοδωρήματος
+Kitchen1: Kitchen1
+Kitchen2: Kitchen2
+Bar1: Bar1
+Bar2: Bar2
+Expediter: Expediter
+Kitchen1 notify2: Kitchen1 notify2
+Kitchen2 notify1: Kitchen2 notify1
+Remote Order: Remote Order
+Default: Default
+Standard U.S.: Standard U.S.
+Metric: Metric
+MainStreet: MainStreet
+CreditCheq: CreditCheq
+X: X
+GST: GST
+PST: PST
+HST: HST
+QST: QST
+royalty_rate: royalty_rate
+advertise_fund: advertise_fund
+Sales Tax Canada: Sales Tax Canada
+Miscellany: Miscellany
+Electronic Transactions: Electronic Transactions
+unknown: unknown
+at: at
+Cash Received: Εισπραχθέν μετρητά
+Check: Λογαριασμός
+Gift Certificate: Δωροεπιταγή
+House Account: Λογαριασμός οίκου
+Overage: Υπέρβαση
+Change: Ρέστα
+Tip: Φιλοδώρημα
+Payout: Πληρωμή
+Money Lost: Χαμένα χρήματα
+Gratuity: Φιλοδώρημα
+Tips Paid: Πληρωμένα φιλοδωρήματα
+ATM/Debit Card: ATM/Χρεωστική κάρτα
+Credit Card Tip: Φιλοδώρημα πιστωτικής κάρτας
+Expenses: Έξοδα
+Cash: Μετρητά
+Room Charge: Χρέωση δωματίου
+Unknown Credit Card: Άγνωστη πιστωτική κάρτα
+Unknown Discount: Άγνωστη έκπτωση
+Unknown Coupon: Άγνωστο κουπόνι
+Unknown Comp: Άγνωστο δωρεάν
+Unknown Employee Meal: Άγνωστο γεύμα υπαλλήλου
+No Discount Definitions: Δεν υπάρχουν ορισμοί εκπτώσεων
+No Coupon Definitions: Δεν υπάρχουν ορισμοί κουπονιών
+No Card Definitions: Δεν υπάρχουν ορισμοί καρτών
+No Whole Meal Comp Definitions: Δεν υπάρχουν ορισμοί δωρεάν γεύματος
+No Employee Discount Definitions: Δεν υπάρχουν ορισμοί εκπτώσεων υπαλλήλων
+No Terminal Definitions: Δεν υπάρχουν ορισμοί τερματικών
+Active: Ενεργός
+Activating: Ενεργοποίηση
+Inactive: Ανενεργός
+Unexpected end of terminals in settings: Απροσδόκητο τέλος τερματικών στις ρυθμίσεις
+Unexpected end of printers in settings: Απροσδόκητο τέλος εκτυπωτών στις ρυθμίσεις
+Unexpected end of discounts in settings: Απροσδόκητο τέλος εκπτώσεων στις ρυθμίσεις
+Unexpected end of coupons in settings: Απροσδόκητο τέλος κουπονιών στις ρυθμίσεις
+Unexpected end of credit cards in settings: Απροσδόκητο τέλος πιστωτικών καρτών στις ρυθμίσεις
+Unexpected end of comps in settings: Απροσδόκητο τέλος δωρεάν στις ρυθμίσεις
+Unexpected end of employee meals in settings: Απροσδόκητο τέλος γευμάτων υπαλλήλων στις ρυθμίσεις
+Unexpected end of tax definitions in settings: Απροσδόκητο τέλος ορισμών φόρων στις ρυθμίσεις
+Unexpected end of money definitions in settings: Απροσδόκητο τέλος ορισμών χρημάτων στις ρυθμίσεις
+Unexpected end of discounts in media file: Απροσδόκητο τέλος εκπτώσεων στο αρχείο μέσων
+Unexpected end of coupons in media file: Απροσδόκητο τέλος κουπονιών στο αρχείο μέσων
+Unexpected end of credit cards in media file: Απροσδόκητο τέλος πιστωτικών καρτών στο αρχείο μέσων
+Unexpected end of comps in media file: Απροσδόκητο τέλος δωρεάν στο αρχείο μέσων
+Unexpected end of meals in media file: Απροσδόκητο τέλος γευμάτων στο αρχείο μέσων
+Error in recording payment: Σφάλμα στην καταγραφή πληρωμής
+captured tips held: συλλεγμένα φιλοδωρήματα που κρατούνται
+zero captured tips: μηδενικά συλλεγμένα φιλοδωρήματα
+
+# Payment and Receipt Terms
+Sale Total: Συνολική πώληση
+Alcohol Tax: Φόρος αλκοόλ
+Sales Tax: Φόρος πωλήσεων
+Tax Exempt: Αφορολόγητο
+Amount Tendered: Προσφερθέν ποσό
+Amount Preauthed: Προ-εξουσιοδοτημένο ποσό
+Tab Remaining: Υπόλοιπο καρτέλας
+Balance Due: Οφειλόμενο υπόλοιπο
+Check Voided: Ακυρωμένος λογαριασμός
+Transaction Voided: Ακυρωμένη συναλλαγή
+Check Closed: Κλειστός λογαριασμός
+To Rebuild: Για αναδημιουργία
+Check Blank: Κενός λογαριασμός
+Balance Covered: Καλυμμένο υπόλοιπο
+Acct No: Αρ. Λογαριασμού
+Auth: Εξουσιοδότηση
+PreAuth: Προ-εξουσιοδότηση
+Auth No: Αρ. Εξουσιοδότησης
+Message: Μήνυμα
+Credit Card: Πιστωτική κάρτα
+SubCheck: Υπολογαριασμός
+Hold Anyway: Κράτηση ούτως ή άλλως
+Finalize Anyway: Ολοκλήρωση ούτως ή άλλως
+New Card: Νέα κάρτα
+Discard my changes\\Go to the next check: Απόρριψη αλλαγών μου\\Μετάβαση στον επόμενο λογαριασμό
+Comp this Item: Δωρεάν αυτό το αντικείμενο
+Void this Item: Ακύρωση αυτού του αντικειμένου
+Yes: Ναι
+No, just add the order: Όχι, απλά προσθέστε την παραγγελία
+Skip it: Παράλειψη
+
+# Order and Table Terms
+Tbl: Τραπ
+Seat: Θέση
+Room: Δωμάτιο
+Part: Μέρος
+Take Out: Παραλαβή
+Fast Food: Γρήγορο φαγητό
+Delivery: Παράδοση
+Retail: Λιανική
+To Go: Παραλαβή
+Here: Εδώ
+CLOSED: ΚΛΕΙΣΤΟ
+VOID: ΑΚΥΡΩΜΕΝΟ
+COMP: ΔΩΡΕΑΝ
+Order Entry: Εισαγωγή παραγγελίας
+Index: Ευρετήριο
+Continue Ordering: Συνέχεια παραγγελίας
+Comp or Void Item: Δωρεάν ή ακύρωση αντικειμένου
+Comp or Void Modifier: Δωρεάν ή ακύρωση τροποποιητή
+Employee: Υπάλληλος
+No Guests: Χωρίς επισκέπτες
+
+# Labor and Time Clock
+Time Clock Summary: Περίληψη ρολογιού
+Business Day Time Clock View: Προβολή ρολογιού εργάσιμης ημέρας
+Labor Period Time Clock View: Προβολή ρολογιού περιόδου εργασίας
+System Start: Έναρξη συστήματος
+Date: Ημερομηνία
+Elapsed: Παρελθόν
+Wages: Μισθός
+Open: Ανοιχτό
+Pulled: Ανάληψη
+Balanced: Ισοζύγιο
+Server Bank: Τράπεζα σερβιτόρου
+All Drawers: Όλες οι συρτοφυλακίδες
+UNASSIGNED: ΜΗ ΑΝΑΘΕΘΕΙΣΑ
+There Are No Open Drawers For: Δεν υπάρχουν ανοιχτές συρτοφυλακίδες για
+Press any button to continue: Πατήστε οποιοδήποτε κουμπί για συνέχεια
+Employee: Υπάλληλος
+Amount Paid: Πληρωμένο ποσό
+Amount Owed: Οφειλόμενο ποσό
+Now: Τώρα
+This is the first business day: Αυτή είναι η πρώτη εργάσιμη ημέρα
+This business day started: Αυτή η εργάσιμη ημέρα ξεκίνησε
+You may end the day when ready: Μπορείτε να τελειώσετε την ημέρα όταν είστε έτοιμοι
+Page List: Λίστα σελίδων
+Error adding page to ZoneDB: Σφάλμα προσθήκης σελίδας στο ZoneDB
+J back: J πίσω
+J home: J αρχική
+J continue: J συνέχεια
+J index: J ευρετήριο
+Edit ToolBar: Εργαλειοθήκη επεξεργασίας
+User: Χρήστης
+Unknown: Άγνωστο
+No Verbiage Set: Δεν έχει οριστεί κείμενο
+find: εύρεση
+all: όλα
+Touch: Αφή
+Mouse: Ποντίκι
+Key: Πλήκτρο
+Error loading account: Σφάλμα φόρτωσης λογαριασμού
+Error loading customer: Σφάλμα φόρτωσης πελάτη
+Error loading expense: Σφάλμα φόρτωσης εξόδου
+Error in loading check: Σφάλμα φόρτωσης λογαριασμού
+Error in loading drawer: Σφάλμα φόρτωσης συρτοφυλακίδας
+Error in adding check to archive: Σφάλμα προσθήκης λογαριασμού στο αρχείο
+Error in reading general check data: Σφάλμα ανάγνωσης γενικών δεδομένων λογαριασμού
+Unexpected end of SubChecks in Check: Απροσδόκητο τέλος υπολογαριασμών στον λογαριασμό
+Error in deleting check: Σφάλμα διαγραφής λογαριασμού
+No Printer Available For Work Order and No Report: Δεν υπάρχει διαθέσιμος εκτυπωτής για παραγγελία εργασίας και αναφορά
+WorkOrder: Παραγγελία εργασίας
+Do NOT Prepare This Order: ΜΗΝ ετοιμάσετε αυτή την παραγγελία
+Here: Εδώ
+To Go: Παραλαβή
+Pick Up: Παραλαβή
+REPRINT : ΕΠΑΝΑΕΚΤΥΠΩΣΗ 
+Restored : Επαναφέρθηκε 
+Call Center: Κέντρο κλήσεων
+DeliveryOrder: Παραγγελία παράδοσης
+Qty  Description: Ποσ  Περιγραφή
+There are no products definied: Δεν έχουν οριστεί προϊόντα
+No Invoice: Χωρίς τιμολόγιο
+No Vendor Set: Δεν έχει οριστεί προμηθευτής
+Amt: Ποσό
+Unit: Μονάδα
+Unit Cost: Κόστος μονάδας
+Extension: Επέκταση
+Invoice Total: Συνολικό τιμολόγιο
+Item Sales By Family: Πωλήσεις αντικειμένων ανά οικογένεια
+Total For Period: Σύνολο για περίοδο
+Touch Here To See More: Αγγίξτε εδώ για περισσότερα
+Touch To Print: Αγγίξτε για εκτύπωση
+Author: Συγγραφέας
+Dram: Δράχμη
+Cup: Φλιτζάνι
+Pint: Πίντα
+g: γρ
+kg: κγ
+ml: ml
+l: λ
+No : Όχι 
+Lite : Ελαφρύ 
+Only : Μόνο 
+Extra : Επιπλέον 
+Double : Διπλό 
+Dry : Ξηρό 
+Plain : Απλό 
+Toast : Ψημένο 
+Untoast : Μη ψημένο 
+Crisp : Τραγανό 
+Soft : Μαλακό 
+Hard : Σκληρό 
+Grill : Ψητό 
+Unused: Μη χρησιμοποιημένο
+Food: Τρόφιμα
+Beverage: Ποτό
+Beer: Μπύρα
+Wine: Κρασί
+Alcohol: Αλκοόλ
+Merchandise: Εμπόρευμα
+Room: Δωμάτιο
+Bev: Bev
+Merchan: Merchan
+Adult: Adult
+
+# Additional Important UI Strings
+Quit ViewTouch and Return To The Desktop: Έξοδος από ViewTouch και επιστροφή στην επιφάνεια εργασίας
+Refresh ViewTouch: Ανανέωση ViewTouch
+Welcome to POS: Καλώς ήρθατε στο POS
+All cash drawers and server banks must be: Όλες οι συρτοφυλακίδες και οι τράπεζες σερβιτόρων πρέπει να είναι
+pulled or turned in before day can be ended: ανάληψη ή παράδοση πριν τελειώσει η ημέρα
+All open checks must be closed for end of day: Όλοι οι ανοιχτοί λογαριασμοί πρέπει να κλείσουν για τέλος ημέρας
+All credit card exceptions must be handled: Όλες οι εξαιρέσεις πιστωτικών καρτών πρέπει να αντιμετωπιστούν
+Other terminals must be free for end of day: Άλλα τερματικά πρέπει να είναι ελεύθερα για τέλος ημέρας
+Please Create Some Time Slices: Παρακαλώ δημιουργήστε κάποια χρονικά διαστήματα
+All Day: Όλη η ημέρα
+Everyone: Όλοι
+Dining: Εστιατόριο
+Takeout: Παραλαβή
+Fast Food: Γρήγορο φαγητό
+Total: Σύνολο
+Checks Opened: Ανοιχτοί λογαριασμοί
+Checks Closed: Κλειστοί λογαριασμοί
+Guests Served: Εξυπηρετημένοι επισκέπτες
+Average Guest: Μέσος επισκέπτης
+Takeout Orders: Παραγγελίες παραλαβής
+Average Takeout: Μέση παραλαβή
+FastFood Orders: Παραγγελίες γρήγορου φαγητού
+Average FastFood: Μέσο γρήγορο φαγητό
+Captured Tips: Συλλεγμένα φιλοδωρήματα
+Tips Unpaid: Απλήρωτα φιλοδωρήματα
+No Check Selected: Δεν έχει επιλεγεί λογαριασμός
+Attendance Receipt: Απόδειξη παρουσίας
+Work Summary Report: Αναφορά σύνοψης εργασίας
+No work entries found: Δεν βρέθηκαν καταχωρήσεις εργασίας
+Tips Declared: Δηλωμένα φιλοδωρήματα
+Batch Settle Failed: Αποτυχία διακανονισμού παρτίδας
+CreditCardReceipt: Απόδειξη πιστωτικής κάρτας
+Purchase: Αγορά
+Refund Cancel: Ακύρωση επιστροφής
+Purchase Correction: Διόρθωση αγοράς
+Void Cancel: Ακύρωση ακύρωσης
+Unknown Transaction: Άγνωστη συναλλαγή
+Transaction Type: Τύπος συναλλαγής
+Customer Name: Όνομα πελάτη
+Card Owner: Ιδιοκτήτης κάρτας
+Debit Card Number: Αριθμός χρεωστικής κάρτας
+Card Number: Αριθμός κάρτας
+Account Type: Τύπος λογαριασμού
+Reference Number: Αριθμός αναφοράς
+Authorization Number: Αριθμός εξουσιοδότησης
+Cardholder Signature: Υπογραφή κατόχου κάρτας
+Host: Κεντρικός υπολογιστής
+TRS: TRS
+VT: VT
+Count: Αριθμός
+Number of Records: Αριθμός εγγραφών
+Last Processed Record: Τελευταία επεξεργασμένη εγγραφή
+New Records: Νέες εγγραφές
+Completed Records: Ολοκληρωμένες εγγραφές
+Declined Records: Απορριφθείσες εγγραφές
+Error Records: Εγγραφές σφάλματος
+Voided Records: Ακυρωμένες εγγραφές
+Expired Records: Ληγμένες εγγραφές
+Terminal: Τερματικό
+Batch: Παρτίδα
+SAF Number: Αριθμός SAF
+Merchant ID: ID εμπόρου
+Invalid Card Number: Άκυρος αριθμός κάρτας
+Gift Card: Κάρτα δώρου
+PENDING: ΕΚΚΡΕΜΕΙ
+No Connection: Χωρίς σύνδεση
+Connect error: Σφάλμα σύνδεσης
+TTID: TTID
+Type: Τύπος
+Card: Κάρτα
+Account: Λογαριασμός
+Exp: Λήξη
+Amt: Ποσό
+Time Stamp: Χρονική σφραγίδα
+Auth: Εξουσιοδότηση
+Item: Αντικείμενο
+Comments: Σχόλια
+Acct: Λογαριασμός
+Batnum: Αρ. Παρτίδας
+Visa: Visa
+MasterCard: MasterCard
+American Express: American Express
+Discover: Discover
+Diners: Diners
+JCB: JCB
+Discover Card: Κάρτα Discover
+JCB Card: Κάρτα JCB
+Checking: Τρεχούμενος λογαριασμός
+Savings: Αποταμιευτικός λογαριασμός
+Pre-Authorized: Προ-εξουσιοδοτημένο
+Authorized: Εξουσιοδοτημένο
+Pre-Auth Completed: Προ-εξουσιοδότηση ολοκληρώθηκε
+Refunded: Επιστράφηκε
+Refund Cancelled: Επιστροφή ακυρώθηκε
+Pre-Auth Adviced: Προ-εξουσιοδότηση συμβουλεύθηκε
+AUTHORIZED: ΕΞΟΥΣΙΟΔΟΤΗΜΕΝΟ
+Credit Card: Πιστωτική κάρτα
+Debit Card: Χρεωστική κάρτα
+Gift Card: Κάρτα δώρου
+Credit: Πίστωση
+Debit: Χρέωση
+Gift: Δώρο
+MC: MC
+AMEX: AMEX
+SALE: ΠΩΛΗΣΗ
+RETURN: ΕΠΙΣΤΡΟΦΗ
+SETTLE: ΔΙΑΚΑΝΟΝΙΣΜΟΣ
+VISA: VISA
+NOCONN: ΧΩΡΙΣ ΣΥΝΔΕΣΗ
+Eastern: Ανατολική
+Central: Κεντρική
+Mountain: Βουνό
+Pacific: Ειρηνικός
+U.S. English: Αγγλικά ΗΠΑ
+Spanish: Ισπανικά
+Portuguese: Πορτογαλικά
+Training: Εκπαίδευση
+Primary Job: Κύρια εργασία
+Filtered Active Employees: Φιλτραρισμένοι ενεργοί υπάλληλοι
+Filtered Inactive Employees: Φιλτραρισμένοι ανενεργοί υπάλληλοι
+All Active Employees: Όλοι οι ενεργοί υπάλληλοι
+All Inactive Employees: Όλοι οι ανενεργοί υπάλληλοι
+Employee Name: Όνομα υπαλλήλου
+Job Title: Τίτλος εργασίας
+Phone Number: Αριθμός τηλεφώνου
+Employee Record: Εγγραφή υπαλλήλου
+Reactivate this employee: Επανενεργοποίηση αυτού του υπαλλήλου
+Completely remove employee: Πλήρης αφαίρεση υπαλλήλου
+Check List Page: Σελίδα λίστας λογαριασμών
+Job: Εργασία
+Active: Ενεργός
+Enter: Εισαγωγή
+System: Σύστημα
+Order: Παραγγελία
+Settle: Διακανονισμός
+Move: Μετακίνηση
+Table: Τράπεζα
+Rebuild: Αναδημιουργία
+Edit: Επεξεργασία
+Comp: Δωρεάν
+Supervisor: Επόπτης
+Functions: Λειτουργίες
+Manager: Διαχειριστής
+Records: Εγγραφές
+
+# Additional Missing UI Strings
+Account for expenses paid from drawers: Λογαριασμός για έξοδα που πληρώθηκαν από συρτοφυλακίδες
+Accrued Tax Receipts: Συγκεντρωμένες αποδείξεις φόρου
+Ad Check Total: Συνολικό διαφημιστικού λογαριασμού
+Adjustments To Receipts: Προσαρμογές σε αποδείξεις
+All items in family: Όλα τα αντικείμενα στην οικογένεια
+Allow Multiple Coupons: Επιτρέψτε πολλαπλά κουπόνια
+Ask User: Ρωτήστε χρήστη
+Assigned To: Ανάθεση σε
+Auditing Report: Αναφορά ελέγχου
+Auto Print Drawer Report: Αυτόματη εκτύπωση αναφοράς συρτοφυλακίδας
+Balance Automatic Coupons: Ισοζύγιο αυτόματων κουπονιών
+Batch Close Report: Αναφορά κλεισίματος παρτίδας
+Behavior of All Buttons: Συμπεριφορά όλων των κουμπιών
+Blank Check: Κενός λογαριασμός
+Blue Parchment: Μπλε περγαμηνή
+Bottled Beer: Μπουκάλι μπύρα
+Breakdown of Adjustments: Ανάλυση προσαρμογών
+Breakdown of Comps: Ανάλυση δωρεάν
+Breakdown of Coupons: Ανάλυση κουπονιών
+Breakdown of Discounts: Ανάλυση εκπτώσεων
+Breakdown of Employee Meals: Ανάλυση γευμάτων υπαλλήλων
+Breakfast Entree: Πρωινό κύριο πιάτο
+Broken Pipe: Σπασμένος σωλήνας
+Brown Gradient: Καφέ κλίση
+Bus error: Σφάλμα διαύλου
+Button Properties Dialog: Διάλογος ιδιοτήτων κουμπιού
+Button Translation: Μετάφραση κουμπιού
+Call In: Κλήση εντός
+Canadian Tax Settings: Ρυθμίσεις φόρου Καναδά
+Cancelling Refund: Ακύρωση επιστροφής
+Cannot create lock directory: Δεν μπορεί να δημιουργηθεί κατάλογος κλειδώματος
+Cannot write to CDU: Δεν μπορεί να γράψει στο CDU
+Captured Tips Held: Συλλεγμένα φιλοδωρήματα που κρατούνται
+Captured Tips Paid: Πληρωμένα συλλεγμένα φιλοδωρήματα
+Card Expressions 2: Εκφράσεις κάρτας 2
+Carried Over: Μεταφέρθηκε
+Cash Before Tip Payout: Μετρητά πριν από πληρωμή φιλοδωρήματος
+Cashier Balance Report: Αναφορά ισοζυγίου ταμία
+Cash Sales: Πωλήσεις μετρητών
+CDU Messages: Μηνύματα CDU
+Certificates Accepted: Αποδεκτά πιστοποιητικά
+Certificates Issued: Εκδοθέντα πιστοποιητικά
+Charge Amount: Ποσό χρέωσης
+Charged on Account: Χρεωμένο στον λογαριασμό
+Charged to Room: Χρεωμένο στο δωμάτιο
+Check Edit: Επεξεργασία λογαριασμού
+Check In: Check In
+Check List: Λίστα λογαριασμών
+Check Out: Check Out
+Checkout Guest: Checkout επισκέπτη
+Check Rebuild Exception: Εξαίρεση αναδημιουργίας λογαριασμού
+Check to Display: Λογαριασμός προς εμφάνιση
+Child Menu: Παιδικό μενού
+Closed Check Edits: Επεξεργασίες κλειστών λογαριασμών
+Closed Drawers: Κλειστές συρτοφυλακίδες
+Closing Printer: Κλείσιμο εκτυπωτή
+Closing socket: Κλείσιμο socket
+Command Window: Παράθυρο εντολών
+Completing PreAuth: Ολοκλήρωση προ-εξουσιοδότησης
+Confirmation Message: Μήνυμα επιβεβαίωσης
+Contact a manager: Επικοινωνήστε με διαχειριστή
+Create Invoice: Δημιουργία τιμολογίου
+Creation of PosPage object failed: Η δημιουργία αντικειμένου PosPage απέτυχε
+Credit Authorization Method: Μέθοδος εξουσιοδότησης πίστωσης
+Credit Card Details: Λεπτομέρειες πιστωτικής κάρτας
+Credit Card Messages: Μηνύματα πιστωτικής κάρτας
+CreditCard Name: Όνομα πιστωτικής κάρτας
+Credit Card No Connection Messages: Μηνύματα χωρίς σύνδεση πιστωτικής κάρτας
+Credit Card Number: Αριθμός πιστωτικής κάρτας
+Credit Card Refunds: Επιστροφές πιστωτικής κάρτας
+Credit Card Report: Αναφορά πιστωτικής κάρτας
+Credit Cards: Πιστωτικές κάρτες
+Credit Card Settings: Ρυθμίσεις πιστωτικής κάρτας
+Credit Card Totals: Σύνολα πιστωτικής κάρτας
+Credit Card Voice Authorization Messages: Μηνύματα φωνητικής εξουσιοδότησης πιστωτικής κάρτας
+Credit Card Voids: Ακυρώσεις πιστωτικής κάρτας
+Credit For Sale: Πίστωση για πώληση
+Current Checks: Τρέχοντες λογαριασμοί
+Current Index: Τρέχον ευρετήριο
+Current Slice: Τρέχον κομμάτι
+Current Time: Τρέχουσα ώρα
+Current Training Checks: Τρέχοντες εκπαιδευτικοί λογαριασμοί
+Current User: Τρέχων χρήστης
+Customer Discounts: Εκπτώσεις πελατών
+Customer Display Unit Messages: Μηνύματα μονάδας εμφάνισης πελατών
+Customer Type: Τύπος πελάτη
+Cut/4: Κόψιμο/4
+Dark Green: Σκούρο πράσινο
+Dark Sand: Σκούρη άμμος
+Dark Sea Green: Σκούρο θαλασσινό πράσινο
+Dark Wood: Σκούρο ξύλο
+Date Not Set: Ημερομηνία δεν έχει οριστεί
+Days of the Week: Ημέρες της εβδομάδας
+DejaVu Serif: DejaVu Serif
+Deposit/Book Balance: Ισοζύγιο καταθέσεων/βιβλίου
+Device On Server: Συσκευή στον διακομιστή
+Diners Club: Diners Club
+Double Raised Edge: Διπλή ανυψωμένη άκρη
+Double Touch: Διπλή αφή
+Drawer Assignment: Ανάθεση συρτοφυλακίδας
+Drawer Balance: Ισοζύγιο συρτοφυλακίδας
+Drawer Button Type: Τύπος κουμπιού συρτοφυλακίδας
+Drawer Selecter: Επιλογέας συρτοφυλακίδας
+Drawer Settings: Ρυθμίσεις συρτοφυλακίδας
+Drawer Summary Report: Αναφορά σύνοψης συρτοφυλακίδας
+Edit Comp: Επεξεργασία δωρεάν
+Edit Coupon: Επεξεργασία κουπονιού
+Edit Credit Card: Επεξεργασία πιστωτικής κάρτας
+Edit Customer Discount: Επεξεργασία έκπτωσης πελάτη
+Edit Employee Discount: Επεξεργασία έκπτωσης υπαλλήλου
+Editor Settings: Ρυθμίσεις επεξεργαστή
+Employee Discounts: Εκπτώσεις υπαλλήλων
+End Date: Ημερομηνία λήξης
+End Day: Τέλος ημέρας
+End Time: Ώρα λήξης
+Enter Declared Tips Total: Εισάγετε συνολικό δηλωμένων φιλοδωρημάτων
+Enter Voice Authorization Number: Εισάγετε αριθμό φωνητικής εξουσιοδότησης
+Error in adding order: Σφάλμα προσθήκης παραγγελίας
+Error in adding payment: Σφάλμα προσθήκης πληρωμής
+Error In Deleting Drawer: Σφάλμα διαγραφής συρτοφυλακίδας
+Error in reading subcheck: Σφάλμα ανάγνωσης υπολογαριασμού
+Error reading employee record: Σφάλμα ανάγνωσης εγγραφής υπαλλήλου
+Error saving archive exception data: Σφάλμα αποθήκευσης δεδομένων εξαίρεσης αρχείου
+Error saving archive expense data: Σφάλμα αποθήκευσης δεδομένων εξόδων αρχείου
+European Tax Settings: Ευρωπαϊκές ρυθμίσεις φόρου
+Event Admission: Εισιτήριο εκδήλωσης
+Event Location: Τοποθεσία εκδήλωσης
+Event Time: Ώρα εκδήλωσης
+Expense Report: Αναφορά εξόδων
+Expenses Paid From Cash: Έξοδα που πληρώθηκαν από μετρητά
+Expiration Date: Ημερομηνία λήξης
+Expire Header: Κεφαλίδα λήξης
+Expire Messages: Μηνύματα λήξης
+Explora Serial: Explora Serial
+Failed to get response: Αποτυχία λήψης απάντησης
+Failed to read: Αποτυχία ανάγνωσης
+Failed to send email: Αποτυχία αποστολής email
+Failed to start main module: Αποτυχία εκκίνησης κύριου module
+Failed to write: Αποτυχία εγγραφής
+Families 2: Οικογένειες 2
+Fast Food Order Selected: Επιλέχθηκε παραγγελία γρήγορου φαγητού
+File Name: Όνομα αρχείου
+Final Balance Report: Τελική αναφορά ισοζυγίου
+First Line: Πρώτη γραμμή
+Floating point exception: Εξαίρεση κινητής υποδιαστολής
+F Lock: F Κλείδωμα
+Folio No: Αρ. Φύλλου
+Follow The Script: Ακολουθήστε το σενάριο
+Font for All Buttons: Γραμματοσειρά για όλα τα κουμπιά
+force end: εξαναγκασμένο τέλος
+For Here: Για εδώ
+General Rate Settings: Γενικές ρυθμίσεις τιμής
+Global Background Texture: Παγκόσμια υφή φόντου
+Global Button Font: Παγκόσμια γραμματοσειρά κουμπιού
+Global Button Shadow Intensity: Ένταση σκιάς παγκόσμιου κουμπιού
+Global Button Text Color: Χρώμα κειμένου παγκόσμιου κουμπιού
+Global Button Text Color When Selected: Χρώμα κειμένου παγκόσμιου κουμπιού όταν επιλεγεί
+Global Line Spacing: Παγκόσμια απόσταση γραμμών
+Global Page Property Defaults: Προεπιλογές ιδιοτήτων παγκόσμιας σελίδας
+Global Page Size: Παγκόσμιο μέγεθος σελίδας
+Global Title Bar Color: Χρώμα παγκόσμιας μπάρας τίτλου
+Goodwill Adjustments: Προσαρμογές καλής θέλησης
+Gray Marble: Γκρι μάρμαρο
+Gray Parchment: Γκρι περγαμηνή
+Gray Sand: Γκρι άμμος
+Green Marble: Πράσινο μάρμαρο
+Gross Receipts: Ακαθάριστες αποδείξεις
+Gross Sales: Ακαθάριστες πωλήσεις
+Group ID: ID ομάδας
+GST Due: Οφειλόμενο GST
+Guest Check Page: Σελίδα λογαριασμού επισκέπτη
+Head Office: Κεντρικό γραφείο
+Host/Hostess: Οικοδεσπότης/Οικοδέσποινα
+House Accounts: Λογαριασμοί οίκου
+How to apply coupon to items: Πώς να εφαρμόσετε κουπόνι σε αντικείμενα
+If This Display is a Kitchen Video Then It Sorts By: Αν αυτή η οθόνη είναι βίντεο κουζίνας τότε ταξινομεί κατά
+If This Is A Customer Display Then Its Type Is: Αν αυτή είναι οθόνη πελάτη τότε ο τύπος της είναι
+Illegal instruction: Παράνομη εντολή
+Increase Item Quantity: Αύξηση ποσότητας αντικειμένου
+Initialization Results: Αποτελέσματα αρχικοποίησης
+Invoice Date: Ημερομηνία τιμολογίου
+Invoice Product: Προϊόν τιμολογίου
+IP Address: Διεύθυνση IP
+Item Comps: Δωρεάν αντικείμενα
+Item Family: Οικογένεια αντικειμένου
+Item Targeting: Στόχευση αντικειμένου
+Item Void Exception: Εξαίρεση ακύρωσης αντικειμένου
+Job Security Settings: Ρυθμίσεις ασφαλείας εργασίας
+Jump Options: Επιλογές άλματος
+
+# Additional Important Missing Strings
+Jump To Page Number: Άλμα σε αριθμό σελίδας
+Keyboard Shortcut: Συντομεύσεις πληκτρολογίου
+Kill System: Τερματισμός συστήματος
+Kitchen Print Mode: Λειτουργία εκτύπωσης κουζίνας
+Kitchen Video2: Βίντεο κουζίνας2
+Kitchen Video Print Method: Μέθοδος εκτύπωσης βίντεο κουζίνας
+Kitchen Video Show User: Βίντεο κουζίνας εμφάνιση χρήστη
+Labor Period: Περίοδος εργασίας
+Language/Locale: Γλώσσα/Τοπικότητα
+Last Count: Τελευταία μέτρηση
+Ledger Accounts: Λογιστικοί λογαριασμοί
+Level Now: Επίπεδο τώρα
+Light Dinner: Ελαφρύ δείπνο
+Line Item Comps: Δωρεάν στοιχεία γραμμής
+Line Item Exceptions: Εξαιρέσεις στοιχείων γραμμής
+Line Item Voids: Ακυρώσεις στοιχείων γραμμής
+Line Spacing: Απόσταση γραμμών
+Lit Double Border: Φωτισμένο διπλό περίγραμμα
+Lite Wood: Ελαφρύ ξύλο
+Lit Sand: Φωτισμένη άμμος
+Loading Accounts: Φόρτωση λογαριασμών
+Loading Application Data: Φόρτωση δεδομένων εφαρμογής
+Loading Credit Card Information: Φόρτωση πληροφοριών πιστωτικής κάρτας
+Loading Customers: Φόρτωση πελατών
+Loading Employees: Φόρτωση υπαλλήλων
+Loading Exception Records: Φόρτωση εγγραφών εξαιρέσεων
+Loading Expenses: Φόρτωση εξόδων
+Loading General Settings: Φόρτωση γενικών ρυθμίσεων
+Loading Inventory: Φόρτωση αποθεμάτων
+Loading Locale Settings: Φόρτωση ρυθμίσεων τοπικότητας
+Loading Menu: Φόρτωση μενού
+Local Receipt: Τοπική απόδειξη
+Make Change For Checks: Κάντε ρέστα για επιταγές
+Make Change For Gift Certificates: Κάντε ρέστα για δωροεπιταγές
+Medium Wood: Μέσο ξύλο
+Memory segmentation violation: Παραβίαση τμηματοποίησης μνήμης
+Menu Board Page: Σελίδα πίνακα μενού
+Menu Item: Στοιχείο μενού
+Menu Item Page: Σελίδα στοιχείου μενού
+Menu Type: Τύπος μενού
+Merchant Info: Πληροφορίες εμπόρου
+Minus Home Office Vouchers: Μείον κουπόνια κεντρικού γραφείου
+Miscellaneous Settings: Διάφορες ρυθμίσεις
+Modifier A Page: Σελίδα τροποποιητή Α
+Modifier Page without Continue: Σελίδα τροποποιητή χωρίς συνέχεια
+Modifier Script Page Numbers: Αριθμοί σελίδων σενάριου τροποποιητή
+Modifier Separation: Διαχώριση τροποποιητή
+Monetary Symbol: Νομισματικό σύμβολο
+Move To A Menu Item Page: Μετακίνηση σε σελίδα στοιχείου μενού
+NCD Explora: NCD Explora
+Net Sales: Καθαρές πωλήσεις
+Newest to Oldest: Νεότερο προς παλαιότερο
+No Accounts: Χωρίς λογαριασμούς
+No Accounts Defined: Δεν έχουν οριστεί λογαριασμοί
+No Card Information Entered: Δεν εισήχθησαν πληροφορίες κάρτας
+No checks of any kind: Χωρίς λογαριασμούς κάποιου είδους
+No customer available: Δεν υπάρχει διαθέσιμος πελάτης
+No Employee Logged In: Δεν έχει συνδεθεί υπάλληλος
+No Expenses Entered: Δεν εισήχθησαν έξοδα
+No hours for this period: Χωρίς ώρες για αυτή την περίοδο
+No Invoices for this period: Χωρίς τιμολόγια για αυτή την περίοδο
+No items in family: Χωρίς αντικείμενα στην οικογένεια
+No Menu Items Defined: Δεν έχουν οριστεί στοιχεία μενού
+No Messages Entered: Δεν εισήχθησαν μηνύματα
+No Orders: Χωρίς παραγγελίες
+No path name given: Δεν δόθηκε όνομα διαδρομής
+No Printer Definitions: Δεν υπάρχουν ορισμοί εκτυπωτή
+No printer to print receipt: Δεν υπάρχει εκτυπωτής για εκτύπωση αποδείξεως
+No Recipes Defined: Δεν έχουν οριστεί συνταγές
+No ReplyTo address specified for emails: Δεν έχει καθοριστεί διεύθυνση ReplyTo για emails
+No terminals could be opened: Δεν μπορούσαν να ανοίξουν τερματικά
+Not Set: Δεν έχει οριστεί
+No Vendors Defined: Δεν έχουν οριστεί προμηθευτές
+Number of checks: Αριθμός λογαριασμών
+Open Customer Tab: Ανοιχτή καρτέλα πελάτη
+Open Drawers: Ανοιχτές συρτοφυλακίδες
+Opening Local Terminal: Άνοιγμα τοπικού τερματικού
+Order Delete: Διαγραφή παραγγελίας
+Order Number Style: Στυλ αριθμού παραγγελίας
+Order Page: Σελίδα παραγγελίας
+Original Owner: Αρχικός ιδιοκτήτης
+Original Text: Αρχικό κείμενο
+Other Debit Cards: Άλλες χρεωστικές κάρτες
+Overtime Cost: Κόστος υπερωρίας
+Overtime Hours: Ώρες υπερωρίας
+
+# Remaining Important UI Strings
+Page Resolution: Ανάλυση σελίδας
+Page Type: Τύπος σελίδας
+Parchment Border: Περίγραμμα περγαμηνής
+Pay Expenses: Πληρωμή εξόδων
+Pay Rate: Τιμή πληρωμής
+Phrase Translation: Μετάφραση φράσης
+Please Enter These Amounts: Παρακαλώ εισάγετε αυτά τα ποσά
+Please Swipe Card: Παρακαλώ περάστε την κάρτα
+Please swipe the card: Παρακαλώ περάστε την κάρτα
+Please Wait: Παρακαλώ περιμένετε
+PreAuth Advice: Συμβουλή προ-εξουσιοδότησης
+Price Class: Κλάση τιμής
+print credit: εκτύπωση πίστωσης
+Printer Test: Δοκιμή εκτυπωτή
+Printing Targets: Στόχοι εκτύπωσης
+Print On Report Printer: Εκτύπωση σε εκτυπωτή αναφορών
+print subcheck: εκτύπωση υπολογαριασμού
+ProcessConnection select: Επιλογή ProcessConnection
+Product Name: Όνομα προϊόντος
+Protocol Error: Σφάλμα πρωτοκόλλου
+Protocol Reply: Απάντηση πρωτοκόλλου
+Query Password Then Jump: Ερώτηση κωδικού μετά άλμα
+ReadCheq read: Ανάγνωση ReadCheq
+ReadCheq select: Επιλογή ReadCheq
+ReadCmd Error: Σφάλμα ReadCmd
+ReadSocketRequest select: Επιλογή ReadSocketRequest
+Receipt Footer: Υποσέλιδο αποδείξεως
+Receipt Header: Κεφαλίδα αποδείξεως
+Receipts Accounted For: Αποδείξεις που λογίζονται
+Receipts To Account For: Αποδείξεις προς λογισμό
+Receipt Text: Κείμενο αποδείξεως
+Received on Account: Ληφθέν στον λογαριασμό
+Recipe Name: Όνομα συνταγής
+Red-Orange: Κόκκινο-πορτοκαλί
+Refund Successful: Επιτυχής επιστροφή
+Regular Cost: Κανονικό κόστος
+Regular Hours: Κανονικές ώρες
+Report Printer: Εκτυπωτής αναφορών
+Report Text: Κείμενο αναφοράς
+Report Type: Τύπος αναφοράς
+Results of PreAuth Finish: Αποτελέσματα ολοκλήρωσης προ-εξουσιοδότησης
+Return to Index: Επιστροφή στο ευρετήριο
+Return To The Starting Page: Επιστροφή στην αρχική σελίδα
+Revenue and Productivity: Έσοδα και παραγωγικότητα
+Room Charges: Χρεώσεις δωματίου
+Royalty Check Total: Συνολικό ελέγχου δικαιωμάτων
+Royalty Due: Οφειλόμενα δικαιώματα
+Royalty Report: Αναφορά δικαιωμάτων
+Sale Price: Τιμή πώλησης
+Sales Group Receipts: Αποδείξεις ομάδας πωλήσεων
+Sales Item List: Λίστα στοιχείων πωλήσεων
+Sales Period: Περίοδος πωλήσεων
+Sales Price Rounding: Στρογγυλοποίηση τιμής πώλησης
+Sand Border: Περίγραμμα άμμου
+Scanning Archives: Σάρωση αρχείων
+Seats Remaining: Εναπομείναντες καρέκλες
+Second Line: Δεύτερη γραμμή
+Selected Qualifier: Επιλεγμένος προσδιοριστής
+Select Language: Επιλογή Γλώσσας
+Select Target Room: Επιλογή δωματίου στόχου
+Select Target Table: Επιλογή τραπέζης στόχου
+Selling Price: Τιμή πώλησης
+Selling Price When Qualified as a Substitute: Τιμή πώλησης όταν προσδιορίζεται ως υποκατάστατο
+Server Bank Report: Αναφορά τράπεζας σερβιτόρου
+setlanguage_english: setlanguage_english
+setlanguage_french: setlanguage_french
+English: Αγγλικά
+Français: Γαλλικά
+Español: Ισπανικά
+Ελληνικά: Ελληνικά
+Setting Switch: Εναλλαγή ρύθμισης
+Set Your Preferred Report Time Frame: Ορίστε το προτιμώμενο χρονικό πλαίσιο αναφοράς σας
+Shadow Intensity of All Buttons: Ένταση σκιάς όλων των κουμπιών
+Shape of All Buttons: Σχήμα όλων των κουμπιών
+Shift Work Summary: Σύνοψη εργασίας βάρδιας
+Show Family Groupings: Εμφάνιση ομαδοποιήσεων οικογένειας
+SIGNATURE X: ΥΠΟΓΡΑΦΗ X
+SMTP Settings: Ρυθμίσεις SMTP
+Sold Since: Πωλήθηκε από
+Special Price for Employees: Ειδική τιμή για υπαλλήλους
+Specialty Entree: Ειδικότητα κύριο πιάτο
+Split Check View: Προβολή διαχωρισμένου λογαριασμού
+Split Kitchen: Διαχωρισμένη κουζίνα
+Standard Target: Τυπικός στόχος
+Start Date: Ημερομηνία έναρξης
+Starting Balance: Αρχικό υπόλοιπο
+Start Of Week For Overtime Calculation: Αρχή εβδομάδας για υπολογισμό υπερωρίας
+Start Page: Σελίδα έναρξης
+Start Time: Ώρα έναρξης
+State Toggle: Εναλλαγή κατάστασης
+Store and Forward Details: Λεπτομέρειες αποθήκευσης και προώθησης
+Super User: Υπερχρήστης
+Suppress Zero Values: Καταστολή μηδενικών τιμών
+swipe newcard: περάστε νέα κάρτα
+Switch Type: Τύπος διακόπτη
+System start: Έναρξη συστήματος
+Table Number Style: Στυλ αριθμού τραπέζης
+Table Page Showing Guest Check: Σελίδα τραπέζης που δείχνει λογαριασμό επισκέπτη
+Takeout Order Selected: Επιλέχθηκε παραγγελία παραλαβής
+Tan Parchment: Καφέ περγαμηνή
+Tax Account: Λογαριασμός φόρου
+Taxes Due: Οφειλόμενοι φόροι
+Tax Settings: Ρυθμίσεις φόρου
+Tender Amount: Ποσό προσφοράς
+Tender Settings: Ρυθμίσεις προσφοράς
+Tender Type: Τύπος προσφοράς
+Terminal Hardware Testing: Δοκιμή υλικού τερματικού
+Text Color of All Buttons: Χρώμα κειμένου όλων των κουμπιών
+Text Color of All Buttons When Selected: Χρώμα κειμένου όλων των κουμπιών όταν επιλεγούν
+The Drawer Opens On: Η συρτοφυλακίδα ανοίγει σε
+The Page Number: Ο αριθμός σελίδας
+There Are No Active Employees: Δεν υπάρχουν ενεργοί υπάλληλοι
+There Are No Balanced Drawers For: Δεν υπάρχουν ισοζυγισμένες συρτοφυλακίδες για
+There are no expenses for this period: Δεν υπάρχουν έξοδα για αυτή την περίοδο
+There Are No Inactive Employees: Δεν υπάρχουν ανενεργοί υπάλληλοι
+There are no menu items defined: Δεν έχουν οριστεί στοιχεία μενού
+There are no recipes defined: Δεν έχουν οριστεί συνταγές
+There are no vendors defined: Δεν έχουν οριστεί προμηθευτές
+The Requisition Ticket Heading is: Η κεφαλίδα εισιτηρίου απαίτησης είναι
+Time Settings: Ρυθμίσεις ώρας
+Time Settled: Ώρα διακανονισμού
+Tip Amount: Ποσό φιλοδωρήματος
+Tip Payout Receipt: Απόδειξη πληρωμής φιλοδωρήματος
+Tips Paid out: Πληρωμένα φιλοδωρήματα
+Tips Paid Report: Αναφορά πληρωμένων φιλοδωρημάτων
+Total Accounts Active: Συνολικοί ενεργοί λογαριασμοί
+Total Adjustments: Συνολικές προσαρμογές
+Total Cash Payments: Συνολικές πληρωμές μετρητών
+Total Check Payments: Συνολικές πληρωμές επιταγών
+Total Comp: Συνολικό δωρεάν
+Total Cost: Συνολικό κόστος
+Total Coupon: Συνολικό κουπόνι
+Total Deposit: Συνολική κατάθεση
+Total Dine In Guests: Συνολικοί επισκέπτες εστιατορίου
+Total Dine In Sales: Συνολικές πωλήσεις εστιατορίου
+Total Discount: Συνολική έκπτωση
+Total Discounts: Συνολικές εκπτώσεις
+Total Employee Meal: Συνολικό γεύμα υπαλλήλου
+Total Gift Certificates: Συνολικές δωροεπιταγές
+Total Hours: Συνολικές ώρες
+Total Item Sales: Συνολικές πωλήσεις αντικειμένων
+Total Royalty and Taxes: Συνολικά δικαιώματα και φόροι
+Total Sales: Συνολικές πωλήσεις
+Total Seats: Συνολικές θέσεις
+Total Tips: Συνολικά φιλοδωρήματα
+Total Tips Paid: Συνολικά πληρωμένα φιλοδωρήματα
+Total Unadjusted Receipts: Συνολικές μη προσαρμοσμένες αποδείξεις
+Touches Pass Through: Οι αφές περνούν
+Touch Print: Αφή εκτύπωσης
+Training Check: Εκπαιδευτικός λογαριασμός
+Transfered Checks: Μεταφερθέντες λογαριασμοί
+Turned Off: Απενεργοποιημένο
+Unexpected end of Check data: Απροσδόκητο τέλος δεδομένων λογαριασμού
+Unexpected end of Job data in Employee record: Απροσδόκητο τέλος δεδομένων εργασίας στην εγγραφή υπαλλήλου
+Unexpected end of LaborPeriod file: Απροσδόκητο τέλος αρχείου LaborPeriod
+Unexpected end of orders in SubCheck: Απροσδόκητο τέλος παραγγελιών σε SubCheck
+Unexpected end of payments in SubCheck: Απροσδόκητο τέλος πληρωμών σε SubCheck
+Unexpected end of TipDB: Απροσδόκητο τέλος TipDB
+Unexpected end of UserDB file: Απροσδόκητο τέλος αρχείου UserDB
+United States Tax Settings: Ρυθμίσεις φόρου Ηνωμένων Πολιτειών
+Unknown Type: Άγνωστος τύπος
+Unknown Vendor: Άγνωστος προμηθευτής
+Unsupported version of system data: Μη υποστηριζόμενη έκδοση δεδομένων συστήματος
+Updating zone information: Ενημέρωση πληροφοριών ζώνης
+User is not allowed into the system: Ο χρήστης δεν επιτρέπεται στο σύστημα
+User Login: Σύνδεση χρήστη
+Value Added Tax: Φόρος Προστιθέμενης Αξίας
+Vendor Name: Όνομα προμηθευτή
+Video Target: Βίντεο στόχος
+Video Targets: Βίντεο στόχοι
+View Invoice: Προβολή τιμολογίου
+Voice Auth: Φωνητική εξουσιοδότηση
+void-1: ακύρωση-1
+Void Successful: Επιτυχής ακύρωση
+Wage Group Filter: Φίλτρο ομάδας μισθού
+White Mesh: Λευκό πλέγμα
+Whole Check Comps: Ολόκληρα δωρεάν λογαριασμού
+Wide & Tall: Πλατύ & Ψηλό
+Year to Date: Έτος μέχρι σήμερα
+You Have No Captured Tips: Δεν έχετε συλλεγμένα φιλοδωρήματα
+You May Settle Here: Μπορείτε να διακανονίσετε εδώ
+You Need to Balance Your Drawer: Χρειάζεται να ισοζυγίσετε τη συρτοφυλακίδα σας
+
+# Additional Found Strings
+Abrv. Months: Συντομ. Μήνες
+comp-1: δωρεάν-1
+jsz_no: jsz_όχι
+jsz_yes: jsz_ναι
+M transaction failed: Αποτυχία συναλλαγής M
+
+# Missing Translatable Strings from Code
+Actual: Πραγματικό
+addjob: προσθήκη_εργασίας
++/- Adjustments: +/- Προσαρμογές
+All Cash & Checks: Όλα τα Μετρητά & Επιταγές
+APPROVED - THANK YOU: ΕΓΚΡΙΘΗΚΕ - ΕΥΧΑΡΙΣΤΟΥΜΕ
+Average: Μέσος όρος
+backspace: πίσω
+break: διάλειμμα
+cancel: ακύρωση
+Card Num.: Αρ. Κάρτας
+CATR: CATR
+ccfinish2: ccfinish2
+ccfinish3: ccfinish3
+ccqterminate: ccqterminate
+ccrefundamount: ccrefundamount
+cctotals: cctotals
+ccvoidttid: ccvoidttid
+Checks: Λογαριασμοί
+Checks:: Λογαριασμοί:
+clockout: έξοδος_ρολογιού
+Close: Κλείσιμο
+Configure Your Host Computer and Your Display Terminals, Then Assign Receipt Printer Queues To Them: Ρυθμίστε τον Κεντρικό Υπολογιστή και τα Τερματικά Οθόνης σας, μετά Αναθέστε Ουρές Εκτυπωτών Αποδείξεων σε αυτά
+Configure Your Requisition Printers in Kitchens, Bars, Expediting Areas & Your Office Printer: Ρυθμίστε τους Εκτυπωτές Απαιτήσεων στις Κουζίνες, Μπαρ, Περιοχές Εξυπηρέτησης & τον Εκτυπωτή Γραφείου σας
+Confirm:: Επιβεβαίωση:
+Confirm end of business day:: Επιβεβαίωση τέλους εργάσιμης ημέρας:
+Confirm Your Choice:: Επιβεβαίωση επιλογής σας:
+Coupons: Κουπόνια
+Credit/Charge Cards: Πιστωτικές/Χρεωστικές Κάρτες
+Date/Time: Ημερομηνία/Ώρα
+Day: Ημέρα
+Description: Περιγραφή
+Dest: Προορισμός
+Display's Name: Όνομα Οθόνης
+DLVR: DLVR
+Drawer: Συρτοφυλακίδα
+Drawer Hasn't Been Assigned: Η Συρτοφυλακίδα Δεν Έχει Ανατεθεί
+Due: Οφειλόμενο
+enter: εισαγωγή
+Exceptions: Εξαιρέσεις
+Expires: Λήγει
+Expiry: Λήξη
+Fast: Γρήγορο
+Format: Μορφή
+(Gross Sales & Tax Collected): (Ακαθάριστες Πωλήσεις & Συλλεγμένος Φόρος)
+Guest Check Summary: Σύνοψη Λογαριασμού Επισκέπτη
+Holder: Κατόχος
+killjob1: killjob1
+killjob2: killjob2
+killjob3: killjob3
+
+# Additional Important Translatable Strings
+Reason for voiding this item:: Λόγος για ακύρωση αυτού του αντικειμένου:
+Refunds: Επιστροφές
+reportprint: εκτύπωση_αναφοράς
+Sales: Πωλήσεις
+Search For...: Αναζήτηση για...
+Select A Printer:: Επιλογή Εκτυπωτή:
+Select 'Clear All Entries': Επιλέξτε 'Καθαρισμός Όλων των Καταχωρήσεων'
+settaxexempt: ορισμός_αφορολόγητου
+Source: Πηγή
+Status: Κατάσταση
+Strange, No Work Info For You...: Παράξενο, Δεν Υπάρχουν Πληροφορίες Εργασίας Για Εσάς...
+Subtotal: Υποσύνολο
+SubTotal: Υποσύνολο
+Tax: Φόρος
+TO: ΠΑΡΑΛΑΒΗ
+Today: Σήμερα
+Total C.Cards: Συνολικές Πιστωτικές Κάρτες
+Total Sales for Royalty Calc.: Συνολικές Πωλήσεις για Υπολογισμό Δικαιωμάτων
+Total To Go/Carry Out Count: Συνολικός Αριθμός Παραλαβής/Αποστολής
+Total To Go/Carry Out Sales: Συνολικές Πωλήσεις Παραλαβής/Αποστολής
+==== TRANSACTION RECORD ====: ==== ΕΓΓΡΑΦΗ ΣΥΝΑΛΛΑΓΗΣ ====
+Unpaid: Απλήρωτο
+Voids: Ακυρώσεις
+Vouchers: Κουπόνια
+Working...: Εργάζεται...
+You May Now Edit This Display Terminal's Configuration: Μπορείτε Τώρα να Επεξεργαστείτε τη Διαμόρφωση αυτού του Τερματικού Οθόνης
+You May Now Edit This Printer's Configuration: Μπορείτε Τώρα να Επεξεργαστείτε τη Διαμόρφωση αυτού του Εκτυπωτή
+
+# Button Labels
+Clear: Καθαρισμός
+Space: Διάστημα
+End Without Settlement: Τέλος χωρίς διακανονισμό
+End the Day Now: Τέλος της ημέρας τώρα
+Cancel,\\Don't end the Day: Ακύρωση,\\Μην τελειώσετε την ημέρα
+
+# Printer Configuration
+Standard Target: Τυπικός στόχος
+Receipt Header: Κεφαλίδα αποδείξεως
+Receipt Footer: Υποσέλιδο αποδείξεως
+Local Receipt: Τοπική απόδειξη
+
+# Check List
+All: Όλα
+Table: Τράπεζα
+Time: Ώρα
+Type: Τύπος
+Comment: Σχόλιο
+
+# Account Management
+Account Name: Όνομα λογαριασμού
+Account No: Αριθμός λογαριασμού
+Balance: Υπόλοιπο
+Name: Όνομα
+No Accounts: Χωρίς λογαριασμούς
+No Accounts Defined: Δεν έχουν οριστεί λογαριασμοί
+
+# Expense Management
+Expense ID: ID εξόδου
+Payer: Πληρωτής
+Expense Amount: Ποσό εξόδου
+Expense Drawer: Συρτοφυλακίδα εξόδων
+Account: Λογαριασμός
+Destination Account: Λογαριασμός προορισμού
+Tax Amount: Ποσό φόρου
+Tax Account: Λογαριασμός φόρου
+Document: Έγγραφο
+Explanation: Εξήγηση
+Submit: Υποβολή
+Not Set: Δεν έχει οριστεί
+
+# Dialog Strings
+Change Password: Αλλαγή κωδικού
+Enter Amount of Tip: Εισάγετε ποσό φιλοδωρήματος
+Enter Voice Authorization Number: Εισάγετε αριθμό φωνητικής εξουσιοδότησης
+
+# Report Titles
+Tips Paid Report: Αναφορά πληρωμένων φιλοδωρημάτων
+Total Tips Paid: Συνολικά πληρωμένα φιλοδωρήματα
+Tip Payout Receipt: Απόδειξη πληρωμής φιλοδωρήματος
+You Have No Captured Tips: Δεν έχετε συλλεγμένα φιλοδωρήματα
+None: Κανένα
+
+# Credit Card Types
+Visa: Visa
+MasterCard: MasterCard
+American Express: American Express
+Diners: Diners
+Debit: Χρέωση
+Discover: Discover
+JCB: JCB
+Purchase: Αγορά
+Refund: Επιστροφή
+Corrections: Διορθώσεις
+
+# Credit Card Transaction Types
+SALE: ΠΩΛΗΣΗ
+RETURN: ΕΠΙΣΤΡΟΦΗ
+SETTLE: ΔΙΑΚΑΝΟΝΙΣΜΟΣ
+No Connection: Χωρίς σύνδεση
+NOCONN: ΧΩΡΙΣ ΣΥΝΔΕΣΗ
+Unknown: Άγνωστο
+Connect error: Σφάλμα σύνδεσης
+
+# Credit Card Headers
+TTID: TTID
+Type: Τύπος
+Card: Κάρτα
+Account: Λογαριασμός
+Exp: Λήξη
+Amt: Ποσό
+Time Stamp: Χρονική σφραγίδα
+Auth: Εξουσιοδότηση
+Batch: Παρτίδα
+Acct: Λογαριασμός
+Item: Αντικείμενο
+
+# Sales Categories
+Unused: Μη χρησιμοποιημένο
+Food: Τρόφιμα
+Beverage: Ποτό
+Beer: Μπύρα
+Wine: Κρασί
+Alcohol: Αλκοόλ
+Merchandise: Εμπόρευμα
+Room: Δωμάτιο
+Bev: Bev
+Merchan: Merchan
+Adult: Adult
+
+# Settings Options
+Other: Άλλο
+SunWest: SunWest
+Weekly: Εβδομαδιαία
+2 Weeks: 2 Εβδομάδες
+4 Weeks: 4 Εβδομάδες
+Semi Monthly: Ημιανά
+Semi Monthly 11/26: Ημιανά 11/26
+Monthly: Μηνιαία
+Breakfast: Πρωινό
+Brunch: Μπραντς
+Lunch: Μεσημεριανό
+Early Dinner: Πρώινο δείπνο
+Dinner: Δείπνο
+Late Night: Νύχτα
+Normal: Κανονικό
+Assigned: Ανάθεση
+Server Bank: Τράπεζα σερβιτόρου
+First Server: Πρώτος σερβιτόρος
+Last Server: Τελευταίος σερβιτόρος
+1 Week: 1 Εβδομάδα
+Month: Μήνας
+11/26: 11/26
+On Send: Στην αποστολή
+On Finalize: Στην ολοκλήρωση
+On Both: Και στα δύο
+Never: Ποτέ
+On Pull: Στην ανάληψη
+On Balance: Στην ισοζύγιο
+Drop Pennies: Απόρριψη λεπτών
+Round Up Gratuity: Στρογγυλοποίηση φιλοδωρήματος
+Kitchen1: Kitchen1
+Kitchen2: Kitchen2
+Bar1: Bar1
+Bar2: Bar2
+Expediter: Expediter
+Kitchen1 notify2: Kitchen1 notify2
+Kitchen2 notify1: Kitchen2 notify1
+Remote Order: Remote Order
+Default: Default
+Standard U.S.: Standard U.S.
+Metric: Metric
+MainStreet: MainStreet
+CreditCheq: CreditCheq
+GST: GST
+PST: PST
+HST: HST
+QST: QST
+royalty_rate: royalty_rate
+advertise_fund: advertise_fund
+Sales Tax Canada: Sales Tax Canada
+Miscellany: Miscellany
+Electronic Transactions: Electronic Transactions
+unknown: unknown
+at: at
+
+# Settings Configuration
+Normal: Κανονικό
+Assigned: Ανάθεση
+Server Bank: Τράπεζα σερβιτόρου
+First Server: Πρώτος σερβιτόρος
+Last Server: Τελευταίος σερβιτόρος
+None: Κανένα
+1 Week: 1 Εβδομάδα
+2 Weeks: 2 Εβδομάδες
+4 Weeks: 4 Εβδομάδες
+Month: Μήνας
+11/26: 11/26
+On Send: Στην αποστολή
+On Finalize: Στην ολοκλήρωση
+On Both: Και στα δύο
+Never: Ποτέ
+On Pull: Στην ανάληψη
+On Balance: Στην ισοζύγιο
+Drop Pennies: Απόρριψη λεπτών
+Round Up Gratuity: Στρογγυλοποίηση φιλοδωρήματος
+Kitchen1: Kitchen1
+Kitchen2: Kitchen2
+Bar1: Bar1
+Bar2: Bar2
+Expediter: Expediter
+Kitchen1 notify2: Kitchen1 notify2
+Kitchen2 notify1: Kitchen2 notify1
+Remote Order: Remote Order
+Default: Default
+Standard U.S.: Standard U.S.
+Metric: Metric
+MM/DD/YY: MM/DD/YY
+DD/MM/YY: DD/MM/YY
+1,000,000.00: 1,000,000.00
+1.000.000,00: 1.000.000,00
+12 hour: 12 ώρα
+24 hour: 24 ώρα
+MainStreet: MainStreet
+CreditCheq: CreditCheq
+X: X
+12am: 12πμ
+12pm: 12μμ
+GST: GST
+PST: PST
+HST: HST
+QST: QST
+royalty_rate: royalty_rate
+advertise_fund: advertise_fund
+daily_cert_fee: daily_cert_fee
+debit_cost: debit_cost
+credit_rate: credit_rate
+credit_cost: credit_cost
+line_item_cost: line_item_cost
+tax_takeout_food: tax_takeout_food
+personalize_fast_food: personalize_fast_food
+food_inclusive: food_inclusive
+alcohol_inclusive: alcohol_inclusive
+merchandise_inclusive: merchandise_inclusive
+room_inclusive: room_inclusive
+merchandise_tax: merchandise_tax
+Sales Tax Canada: Sales Tax Canada
+Miscellany: Miscellany
+Electronic Transactions: Electronic Transactions
+
+# System Report Strings
+Everyone: Όλοι
+System Start: Έναρξη συστήματος
+Dining: Εστιατόριο
+Takeout: Παραλαβή
+Fast Food: Γρήγορο φαγητό
+Total: Σύνολο
+Checks Opened: Ανοιχτοί λογαριασμοί
+Checks Closed: Κλειστοί λογαριασμοί
+Guests Served: Εξυπηρετημένοι επισκέπτες
+Average Guest: Μέσος επισκέπτης
+Takeout Orders: Παραγγελίες παραλαβής
+Average Takeout: Μέση παραλαβή
+FastFood Orders: Παραγγελίες γρήγορου φαγητού
+Average FastFood: Μέσο γρήγορο φαγητό
+Captured Tips: Συλλεγμένα φιλοδωρήματα
+Tips Paid: Πληρωμένα φιλοδωρήματα
+Tips Unpaid: Απλήρωτα φιλοδωρήματα
+Please Create Some Time Slices: Παρακαλώ δημιουργήστε κάποια χρονικά διαστήματα
+All Day: Όλη η ημέρα
+Total Sales: Συνολικές πωλήσεις
+Goodwill Adjustments: Προσαρμογές καλής θέλησης
+Whole Check Comps: Ολόκληρα δωρεάν λογαριασμού
+Line Item Comps: Δωρεάν στοιχεία γραμμής
+Employee Discounts: Εκπτώσεις υπαλλήλων
+Customer Discounts: Εκπτώσεις πελατών
+Coupons: Κουπόνια
+Total Adjustments: Συνολικές προσαρμογές
+Cash Sales: Πωλήσεις μετρητών
+Guest Count: Αριθμός επισκεπτών
+Regular Hours: Κανονικές ώρες
+Regular Cost: Κανονικό κόστος
+Overtime Hours: Ώρες υπερωρίας
+Overtime Cost: Κόστος υπερωρίας
+Overtime: Υπερωρία
+Total Hours: Συνολικές ώρες
+Total Cost: Συνολικό κόστος
+Revenue and Productivity: Έσοδα και παραγωγικότητα
+Final Balance Report: Τελική αναφορά ισοζυγίου
+Sales Group Receipts: Αποδείξεις ομάδας πωλήσεων
+Total Unadjusted Receipts: Συνολικές μη προσαρμοσμένες αποδείξεις
+Value Added Tax: Φόρος Προστιθέμενης Αξίας
+Accrued Tax Receipts: Συγκεντρωμένες αποδείξεις φόρου
+Gross Receipts: Ακαθάριστες αποδείξεις
+Adjustments To Receipts: Προσαρμογές σε αποδείξεις
+Captured Tips Held: Συλλεγμένα φιλοδωρήματα που κρατούνται
+Charged on Account: Χρεωμένο στον λογαριασμό
+Charged to Room: Χρεωμένο στο δωμάτιο
+Received on Account: Ληφθέν στον λογαριασμό
+Certificates Accepted: Αποδεκτά πιστοποιητικά
+Certificates Issued: Εκδοθέντα πιστοποιητικά
+Expenses Paid From Cash: Έξοδα που πληρώθηκαν από μετρητά
+Overage: Υπέρβαση
+Subtotal: Υποσύνολο
+Receipts To Account For: Αποδείξεις προς λογισμό
+Receipts Accounted For: Αποδείξεις που λογίζονται
+Cash: Μετρητά
+Expenses: Έξοδα
+Checks: Λογαριασμοί
+Visa: Visa
+MasterCard: MasterCard
+American Express: American Express
+Diners Club: Diners Club
+Other Debit Cards: Άλλες χρεωστικές κάρτες
+Captured Tips Paid: Πληρωμένα συλλεγμένα φιλοδωρήματα
+
+# Additional System Report Strings
+Sales/Wage Hour: Πωλήσεις/Μισθός Ώρα
+Sales/Wage Dollar: Πωλήσεις/Μισθός Δολάριο
+Labor Cost %: Ποσοστό Κόστους Εργασίας %
+TERM.O: TERM.O
+FF: FF
+Check#: Λογαριασμός#
+Tbl: Τραπ
+Gst: Gst
+Payment: Πληρωμή
+Time: Ώρα
+By: Από
+Item: Αντικείμενο
+Sales Tax: Food & Beverage: Φόρος Πωλήσεων: Τρόφιμα & Ποτά
+Sales Tax: Alcohol: Φόρος Πωλήσεων: Αλκοόλ
+Sales Tax: Room: Φόρος Πωλήσεων: Δωμάτιο
+Sales Tax: Merchandise: Φόρος Πωλήσεων: Εμπόρευμα
+Sales Tax: GST: Φόρος Πωλήσεων: GST
+Sales Tax: PST: Φόρος Πωλήσεων: PST
+Sales Tax: HST: Φόρος Πωλήσεων: HST
+Sales Tax: QST: Φόρος Πωλήσεων: QST
+Non-Cash Receipts: Μη-μετρητές αποδείξεις
+Combined Drawers Shortage: Συνολική έλλειψη συρτοφυλακίδων
+Combined Drawers Overage: Συνολική υπέρβαση συρτοφυλακίδων
+Open Drawers: Ανοιχτές συρτοφυλακίδες
+Closed Drawers: Κλειστές συρτοφυλακίδες
+Room: Δωμάτιο
+Breakdown of Adjustments: Ανάλυση προσαρμογών
+
+# Additional Missing System Report Strings
+Combined Drawers Are Balanced.: Οι συνολικές συρτοφυλακίδες είναι ισοζυγισμένες.
+Drawer Summary Report: Αναφορά σύνοψης συρτοφυλακίδας
+There are no expenses for this period: Δεν υπάρχουν έξοδα για αυτή την περίοδο
+Total Non-Cash Receipts: Συνολικές μη-μετρητές αποδείξεις
+Total Debit & Credit Cards: Συνολικές χρεωστικές & πιστωτικές κάρτες
+Total Cash, Checks, Cards: Συνολικά μετρητά, επιταγές, κάρτες
+Total Deposit: Cash, Checks, Cards: Συνολική κατάθεση: Μετρητά, Επιταγές, Κάρτες
+Total Deposit: Cash, Checks: Συνολική κατάθεση: Μετρητά, Επιταγές
+Total Deposit: Debit/Credit: Συνολική κατάθεση: Χρέωση/Πίστωση
+Table: Τράπεζα
+From: Από
+To: Σε
+Check: Λογαριασμός
+Name: Όνομα
+Phone: Τηλέφωνο
+QST Due:: Οφειλόμενο QST:
+Taxes Due: Οφειλόμενοι φόροι
+
+# Form Zone Strings
+Time/Date Not Set: Ώρα/Ημερομηνία δεν έχει οριστεί
+Date Not Set: Ημερομηνία δεν έχει οριστεί
+am: πμ
+pm: μμ
+
+# Additional Missing Zone Strings
+TO : ΠΑΡΑΛΑΒΗ 
+COMP: ΔΩΡΕΑΝ
+Next\\Seat: Επόμενη\\Θέση
+Prior\\Seat: Προηγούμενη\\Θέση
+Next\\Check: Επόμενος\\Λογαριασμός
+Prior\\Check: Προηγούμενος\\Λογαριασμός
+Order Entry: Εισαγωγή παραγγελίας
+Index: Ευρετήριο
+Continue Ordering: Συνέχεια παραγγελίας
+This order will reduce the tab remaining below 0.\\: Αυτή η παραγγελία θα μειώσει την υπόλοιπη καρτέλα κάτω από 0.\\
+Would you like to extend the tab?: Θα θέλατε να επεκτείνετε την καρτέλα;
+Takeout Order Selected: Επιλέχθηκε παραγγελία παραλαβής
+Fast Food Order Selected: Επιλέχθηκε παραγγελία γρήγορου φαγητού
+You May Settle Here: Μπορείτε να διακανονίσετε εδώ
+Invoice Product: Προϊόν τιμολογίου
+No Recipes Defined: Δεν έχουν οριστεί συνταγές
+Recipe: Συνταγή
+No Vendors Defined: Δεν έχουν οριστεί προμηθευτές
+Vendor: Προμηθευτής
+No Menu Items Defined: Δεν έχουν οριστεί στοιχεία μενού
+Menu Item: Στοιχείο μενού
+Filtered Active Employees: Φιλτραρισμένοι ενεργοί υπάλληλοι
+Filtered Inactive Employees: Φιλτραρισμένοι ανενεργοί υπάλληλοι
+All Active Employees: Όλοι οι ενεργοί υπάλληλοι
+All Inactive Employees: Όλοι οι ανενεργοί υπάλληλοι
+Employee Record: Εγγραφή υπαλλήλου
+No Guests: Χωρίς επισκέπτες
+All Captured Tips Have Been Paid.: Όλα τα συλλεγμένα φιλοδωρήματα έχουν πληρωθεί.
+Line Item Comps: Δωρεάν στοιχεία γραμμής
+Line Item Voids: Ακυρώσεις στοιχείων γραμμής
+Line Item Exceptions: Εξαιρέσεις στοιχείων γραμμής
+Room Charge: Χρέωση δωματίου
+Unknown Credit Card: Άγνωστη πιστωτική κάρτα
+Unknown Discount: Άγνωστη έκπτωση
+Unknown Coupon: Άγνωστο κουπόνι
+Unknown Comp: Άγνωστο δωρεάν
+Unknown Employee Meal: Άγνωστο γεύμα υπαλλήλου
+Short: Λίγο
+Over: Πάνω
+Balanced: Ισοζύγιο
+All: Όλα
+Current Training Checks: Τρέχοντες εκπαιδευτικοί λογαριασμοί
+Current Checks: Τρέχοντες λογαριασμοί
+No checks of any kind: Χωρίς λογαριασμούς κάποιου είδους
+Bar: Μπαρ
+J back: J πίσω
+J home: J αρχική
+J continue: J συνέχεια
+J index: J ευρετήριο
+Blank Check: Κενός λογαριασμός
+
+# Additional Missing Strings - Batch 1
+Welcome to POS: Καλώς ήρθατε στο POS
+Time Clock Summary: Περίληψη ρολογιού
+Enter Amount to Move: Εισάγετε ποσό προς μετακίνηση
+Local Receipt: Τοπική απόδειξη
+Enter Quantity: Εισάγετε ποσότητα
+Enter Item Count: Εισάγετε αριθμό αντικειμένων
+Comp or Void Item: Δωρεάν ή ακύρωση αντικειμένου
+Comp or Void Modifier: Δωρεάν ή ακύρωση τροποποιητή
+Comp this Item: Δωρεάν αυτό το αντικείμενο
+Void this Item: Ακύρωση αυτού του αντικειμένου
+Cancel: Ακύρωση
+Yes: Ναι
+No, just add the order: Όχι, απλά προσθέστε την παραγγελία
+
+# Additional Missing Strings - Batch 2
+To Go: Παραλαβή
+Here: Εδώ
+Comment: Σχόλιο
+Yes, Merge Tables: Ναι, συγχώνευση τραπεζών
+Product Name: Όνομα προϊόντος
+Actual: Πραγματικό
+Count: Μέτρηση
+Estimated: Εκτιμώμενο
+Level: Επίπεδο
+Variance: Διακύμανση
+Carried Over: Μεταφέρθηκε
+Sold Since: Πωλήθηκε από
+Last Count: Τελευταία μέτρηση
+Level Now: Επίπεδο τώρα
+Enter Amount: Εισάγετε ποσό
+Recipe Name: Όνομα συνταγής
+Vendor Name: Όνομα προμηθευτή
+Phone Number: Αριθμός τηλεφώνου
+Item Name: Όνομα αντικειμένου
+Call Center Name: Όνομα κέντρου κλήσεων
+Item Code: Κωδικός αντικειμένου
+Sale Price: Τιμή πώλησης
+Invoice Date: Ημερομηνία τιμολογίου
+Reference: Αναφορά
+Create Invoice: Δημιουργία τιμολογίου
+Product: Προϊόν
+Amount: Ποσό
+Unit Cost: Κόστος μονάδας
+Total Cost: Συνολικό κόστος
+View Invoice: Προβολή τιμολογίου
+None: Κανένα
+Name: Όνομα
+Recipe Unit: Μονάδα συνταγής
+Amount: Ποσό
+Invoice Unit: Μονάδα τιμολογίου
+Cost: Κόστος
+Servings in Invoice Unit: Μερίδες σε μονάδα τιμολογίου
+Serving Cost: Κόστος μερίδας
+Minutes to Prepare: Λεπτά προετοιμασίας
+Portion Unit: Μονάδα μερίδας
+Address: Διεύθυνση
+Contact: Επικοινωνία
+Phone: Τηλέφωνο
+Fax: Φαξ
+Price: Τιμή
+Substitute Price: Εναλλακτική τιμή
+Employee Price: Τιμή υπαλλήλου
+Takeout Price: Τιμή παραλαβής
+Delivery Price: Τιμή παράδοσης
+Price Type: Τύπος τιμής
+Family: Οικογένεια
+Printer Target: Στόχος εκτυπωτή
+Call Order: Παραγγελία κλήσης
+ID: ID
+Date: Ημερομηνία
+
+# Additional Missing Strings - Batch 3 (from check.cc)
+Do NOT Prepare This Order: ΜΗΝ ετοιμάσετε αυτή την παραγγελία
+** TRAINING **: ** ΕΚΠΑΙΔΕΥΣΗ **
+Here: Εδώ
+To Go: Παραλαβή
+Pick Up: Παραλαβή
+REPRINT : ΕΠΑΝΑΕΚΤΥΠΩΣΗ 
+Restored : Επαναφέρθηκε 
+Call Center: Κέντρο κλήσεων
+Phone: Τηλέφωνο
+Ext: Επέκταση
+Name: Όνομα
+Store: Κατάστημα
+Op: Λειτουργία
+Date: Ημερομηνία
+Order #: Παραγγελία #
+Order Created: Δημιουργήθηκε παραγγελία
+Qty  Description: Ποσ  Περιγραφή
+Price: Τιμή
+SubTotal: Υποσύνολο
+Delivery: Παράδοση
+Total Including Taxes: Σύνολο συμπεριλαμβανομένων φόρων
+Last Name: Επώνυμο
+Street: Οδός
+Address 2: Διεύθυνση 2
+Cross Street: Διασταύρωση
+City and State: Πόλη και Πολιτεία
+City: Πόλη
+State: Πολιτεία
+Training Check: Εκπαιδευτικός λογαριασμός
+COMP: ΔΩΡΕΑΝ
+Tax: Φόρος
+Tax Exempt: Αφορολόγητο
+Tax ID: ID φόρου
+Total: Σύνολο
+Amount Tendered: Προσφερθέν ποσό
+Error reading order: Σφάλμα ανάγνωσης παραγγελίας
+Error in adding order: Σφάλμα προσθήκης παραγγελίας
+Unexpected end of orders in SubCheck: Απροσδόκητο τέλος παραγγελιών σε SubCheck
+Error in adding payment: Σφάλμα προσθήκης πληρωμής
+Unexpected end of payments in SubCheck: Απροσδόκητο τέλος πληρωμών σε SubCheck
+Error in reading subcheck: Σφάλμα ανάγνωσης υπολογαριασμού
+This Is NOT A Valid Receipt: Αυτή ΔΕΝ είναι έγκυρη απόδειξη
+No printer to print receipt: Δεν υπάρχει εκτυπωτής για εκτύπωση αποδείξεως
+Sales Total: Συνολική πώληση
+GST: GST
+QST: QST
+PST: PST
+HST: HST
+VAT: ΦΠΑ
+Total Tax: Συνολικός φόρος
+Tax Exempt: Αφορολόγητο
+Account: Λογαριασμός
+Card Holder: Κατόχος κάρτας
+Card Expires: Η κάρτα λήγει
+Authorization: Εξουσιοδότηση
+Amount Tendered: Προσφερθέν ποσό
+Balance Due: Οφειλόμενο υπόλοιπο
+Change: Ρέστα
+Total Comp: Συνολικό δωρεάν
+TIP: ΦΙΛΟΔΩΡΗΜΑ
+TOTAL: ΣΥΝΟΛΟ
+SIGNATURE: ΥΠΟΓΡΑΦΗ
+Error in reading version: Σφάλμα ανάγνωσης έκδοσης
+ToGo: Παραλαβή
+LEFT: ΑΡΙΣΤΕΡΑ
+RIGHT: ΔΕΞΙΑ
+WHOLE: ΟΛΟΚΛΗΡΟ
+Can't copy payment: Δεν μπορεί να αντιγράψει την πληρωμή
