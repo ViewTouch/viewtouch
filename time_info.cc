@@ -31,6 +31,11 @@
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sstream>
+#include <chrono>
+#include <stdexcept>
+#include <cassert>
+#include <limits>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
