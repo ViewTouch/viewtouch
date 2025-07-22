@@ -105,13 +105,15 @@ int TimeInfo::Set(const std::string &date_string)
     sys_time<std::chrono::seconds> t;
     
     // Try parsing with 2-digit year format first
-    ss >> date::parse("%d/%m/%y,%H:%M", t);
+    std::string abbrev;
+    std::chrono::minutes offset{0};
+    date::from_stream(ss, "%d/%m/%y,%H:%M", t, &abbrev, &offset);
     if (ss.fail())
     {
         // Reset stream and try 4-digit year format
         ss.clear();
         ss.str(date_string);
-        ss >> date::parse("%d/%m/%Y,%H:%M", t);
+        date::from_stream(ss, "%d/%m/%Y,%H:%M", t, &abbrev, &offset);
         if (ss.fail())
         {
             Clear();
