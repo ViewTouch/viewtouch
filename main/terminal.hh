@@ -587,6 +587,11 @@ public:
     int SetMessage(const char* string);
     int ClearMessage();
     int SetIconify(int iconify);
+    int SetEmbossedText(int embossed);
+    int SetTextAntialiasing(int antialiased);
+    int SetDropShadow(int drop_shadow);
+    int SetShadowOffset(int offset_x, int offset_y);
+    int SetShadowBlur(int blur_radius);
     int KeyboardInput(char key, int code, int state);
     int MouseInput(int action, int x, int y);
     int MouseToolbar(int action, int x, int y);

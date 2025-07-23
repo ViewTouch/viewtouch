@@ -25,6 +25,14 @@
 
 #include "version/vt_version_info.hh"
 
+// Text enhancement settings (defaults for loader)
+static int use_embossed_text = 1;
+static int use_text_antialiasing = 1;
+static int use_drop_shadows = 0;
+static int shadow_offset_x = 2;
+static int shadow_offset_y = 2;
+static int shadow_blur_radius = 1;
+
 // system libraries
 #include <X11/Intrinsic.h>
 #include <X11/keysym.h>
@@ -68,6 +76,93 @@ XftDraw     *xftdraw = nullptr;
 XftColor     xftBlack, xftWhite;
 int          screen_no        = 0;
 int          ColorBlack       = 0;
+
+// Enhanced text rendering functions for loader
+void LoaderDrawStringEnhanced(XftDraw *draw, XftFont *xftfont, XftColor *color, 
+                             int x, int y, const char* str, int length)
+{
+    if (!draw || !xftfont || !color || !str) return;
+    
+    if (use_embossed_text) {
+        // Create frosted embossed effect
+        XRenderColor shadow_color, frosted_color;
+        XftColor xft_shadow, xft_frosted;
+        
+        // Shadow color (40% darker)
+        shadow_color.red = (color->color.red * 2) / 5;
+        shadow_color.green = (color->color.green * 2) / 5;
+        shadow_color.blue = (color->color.blue * 2) / 5;
+        shadow_color.alpha = color->color.alpha;
+        
+        // Frosted color (75% lighter with transparency)
+        frosted_color.red = color->color.red + ((65535 - color->color.red) * 3) / 4;
+        frosted_color.green = color->color.green + ((65535 - color->color.green) * 3) / 4;
+        frosted_color.blue = color->color.blue + ((65535 - color->color.blue) * 3) / 4;
+        frosted_color.alpha = (color->color.alpha * 9) / 10;
+        
+        XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &shadow_color, &xft_shadow);
+        XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &frosted_color, &xft_frosted);
+        
+        // Draw shadow
+        XftDrawStringUtf8(draw, &xft_shadow, xftfont, x + 1, y + 1, (const FcChar8*)str, length);
+        XftDrawStringUtf8(draw, &xft_shadow, xftfont, x + 2, y + 1, (const FcChar8*)str, length);
+        XftDrawStringUtf8(draw, &xft_shadow, xftfont, x + 1, y + 2, (const FcChar8*)str, length);
+        
+        // Draw frosted highlight
+        XftDrawStringUtf8(draw, &xft_frosted, xftfont, x - 1, y - 1, (const FcChar8*)str, length);
+        XftDrawStringUtf8(draw, &xft_frosted, xftfont, x - 2, y - 1, (const FcChar8*)str, length);
+        XftDrawStringUtf8(draw, &xft_frosted, xftfont, x - 1, y - 2, (const FcChar8*)str, length);
+        
+        // Draw main text
+        XftDrawStringUtf8(draw, color, xftfont, x, y, (const FcChar8*)str, length);
+        
+        XftColorFree(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xft_shadow);
+        XftColorFree(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xft_frosted);
+    } else if (use_drop_shadows) {
+        // Create drop shadow effect
+        XRenderColor shadow_color;
+        XftColor xft_shadow;
+        
+        shadow_color.red = (color->color.red * 1) / 4;
+        shadow_color.green = (color->color.green * 1) / 4;
+        shadow_color.blue = (color->color.blue * 1) / 4;
+        shadow_color.alpha = color->color.alpha;
+        
+        XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &shadow_color, &xft_shadow);
+        
+        // Draw shadow with blur
+        for (int blur = 0; blur <= shadow_blur_radius; blur++) {
+            int blur_offset = blur * 2;
+            XftDrawStringUtf8(draw, &xft_shadow, xftfont, 
+                             x + shadow_offset_x - blur_offset, y + shadow_offset_y - blur_offset, 
+                             (const FcChar8*)str, length);
+            XftDrawStringUtf8(draw, &xft_shadow, xftfont, 
+                             x + shadow_offset_x + blur_offset, y + shadow_offset_y + blur_offset, 
+                             (const FcChar8*)str, length);
+        }
+        
+        // Draw main text
+        XftDrawStringUtf8(draw, color, xftfont, x, y, (const FcChar8*)str, length);
+        
+        XftColorFree(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xft_shadow);
+    } else if (use_text_antialiasing) {
+        // Enhanced anti-aliased text
+        XRenderColor enhanced_color;
+        XftColor xft_enhanced;
+        
+        enhanced_color.red = (color->color.red * 95) / 100;
+        enhanced_color.green = (color->color.green * 95) / 100;
+        enhanced_color.blue = (color->color.blue * 95) / 100;
+        enhanced_color.alpha = color->color.alpha;
+        
+        XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &enhanced_color, &xft_enhanced);
+        XftDrawStringUtf8(draw, &xft_enhanced, xftfont, x, y, (const FcChar8*)str, length);
+        XftColorFree(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xft_enhanced);
+    } else {
+        // Standard rendering
+        XftDrawStringUtf8(draw, color, xftfont, x, y, (const FcChar8*)str, length);
+    }
+}
 int          ColorWhite       = 1;
 
 char Message[1024] = "";
@@ -140,8 +235,8 @@ int UpdateWindow(const char* str = NULL)
             msg[msgidx] = '\0';
             XftTextExtentsUtf8(Dis, loaderFont, (unsigned const char* )msg, msgidx, &extents);
             ww = (WIN_WIDTH - extents.width) / 2;
-            XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont, ww, hh,
-                (unsigned const char* )msg, msgidx);
+            LoaderDrawStringEnhanced(xftdraw, loaderFont, &xftBlack, ww, hh,
+                msg, msgidx);
             hh += loaderFont->height;
         }
     }
@@ -165,17 +260,17 @@ int UpdateKeyboard(const char* str = nullptr)
 
     len = strlen(prompt);
     XftTextExtents8(Dis, loaderFont, (unsigned const char* )prompt, len, &extents);
-    XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont,
+    LoaderDrawStringEnhanced(xftdraw, loaderFont, &xftBlack,
         (WIN_WIDTH - extents.width) / 2,
         WIN_HEIGHT - 2 * loaderFont->height,
-        (unsigned const char* )prompt, len);
+        prompt, len);
 
     len = strlen(KBInput);
     XftTextExtents8(Dis, loaderFont, (unsigned const char* )KBInput, len, &extents);
-    XftDrawStringUtf8(xftdraw, &xftBlack, loaderFont,
+    LoaderDrawStringEnhanced(xftdraw, loaderFont, &xftBlack,
         (WIN_WIDTH - extents.width) / 2,
         WIN_HEIGHT - loaderFont->height,
-        (unsigned const char* )KBInput, len);
+        KBInput, len);
 
     XFlush(Dis);
     return 0;

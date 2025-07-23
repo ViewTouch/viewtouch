@@ -407,6 +407,13 @@ SettingsZone::SettingsZone()
     AddListField("Modifier Separation", ModSeparatorName, ModSeparatorValue);
     AddListField("Start reports at Midnight?", YesNoName, YesNoValue);
     AddListField("Allow Background Icon?", YesNoName, YesNoValue);
+    AddNewLine();
+    AddListField("Use Embossed Text Effects?", YesNoName, YesNoValue);
+    AddListField("Use Text Anti-aliasing?", YesNoName, YesNoValue);
+    AddListField("Use Drop Shadows?", YesNoName, YesNoValue);
+    AddTextField("Shadow Offset X (pixels)", 5); SetFlag(FF_ONLYDIGITS);
+    AddTextField("Shadow Offset Y (pixels)", 5); SetFlag(FF_ONLYDIGITS);
+    AddTextField("Shadow Blur Radius (0-10)", 5); SetFlag(FF_ONLYDIGITS);
 }
 
 RenderResult SettingsZone::Render(Terminal *term, int update_flag)
@@ -470,6 +477,12 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
     f->Set(settings->mod_separator); f = f->next;
     f->Set(settings->report_start_midnight); f = f->next;
     f->Set(settings->allow_iconify); f = f->next;
+    f->Set(settings->use_embossed_text); f = f->next;
+    f->Set(settings->use_text_antialiasing); f = f->next;
+    f->Set(settings->use_drop_shadows); f = f->next;
+    f->Set(settings->shadow_offset_x); f = f->next;
+    f->Set(settings->shadow_offset_y); f = f->next;
+    f->Set(settings->shadow_blur_radius); f = f->next;
 
     return 0;
 }
@@ -516,6 +529,12 @@ int SettingsZone::SaveRecord(Terminal *term, int record, int write_file)
     f->Get(settings->mod_separator); f = f->next;
     f->Get(settings->report_start_midnight); f = f->next;
     f->Get(settings->allow_iconify); f = f->next;
+    f->Get(settings->use_embossed_text); f = f->next;
+    f->Get(settings->use_text_antialiasing); f = f->next;
+    f->Get(settings->use_drop_shadows); f = f->next;
+    f->Get(settings->shadow_offset_x); f = f->next;
+    f->Get(settings->shadow_offset_y); f = f->next;
+    f->Get(settings->shadow_blur_radius); f = f->next;
 
     settings->min_day_length = day_length_hrs * 60 * 60;  // convert from hours to seconds
 

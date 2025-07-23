@@ -539,6 +539,12 @@ CCard *creditcard = NULL;
 int ConnectionTimeOut = 30;
 
 int allow_iconify = 1;
+int use_embossed_text = 1;  // Default to enabled for better readability
+int use_text_antialiasing = 1;  // Default to enabled for better text quality
+int use_drop_shadows = 0;  // Default to disabled (can be enabled per preference)
+int shadow_offset_x = 2;  // Default shadow offset
+int shadow_offset_y = 2;  // Default shadow offset
+int shadow_blur_radius = 1;  // Default blur radius
 int silent_mode   = 0;
 
 
@@ -1376,7 +1382,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n3 = RInt8();
             n4 = RInt8();
             n5 = RInt16();
-            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_LEFT, n5);
+            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_LEFT, n5, use_embossed_text);
             break;
         case TERM_TEXTC:
             RStr(s);
@@ -1385,7 +1391,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n3 = RInt8();
             n4 = RInt8();
             n5 = RInt16();
-            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_CENTER, n5);
+            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_CENTER, n5, use_embossed_text);
             break;
         case TERM_TEXTR:
             RStr(s);
@@ -1394,7 +1400,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n3 = RInt8();
             n4 = RInt8();
             n5 = RInt16();
-            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_RIGHT, n5);
+            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_RIGHT, n5, use_embossed_text);
             break;
         case TERM_ZONETEXTL:
             RStr(s);
@@ -1404,7 +1410,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n4 = RInt16();
             n5 = RInt8();
             n6 = RInt8();
-            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_LEFT);
+            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_LEFT, use_embossed_text);
             break;
         case TERM_ZONETEXTC:
             RStr(s);
@@ -1414,7 +1420,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n4 = RInt16();
             n5 = RInt8();
             n6 = RInt8();
-            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_CENTER);
+            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_CENTER, use_embossed_text);
             break;
         case TERM_ZONETEXTR:
             RStr(s);
@@ -1424,7 +1430,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n4 = RInt16();
             n5 = RInt8();
             n6 = RInt8();
-            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_RIGHT);
+            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_RIGHT, use_embossed_text);
             break;
         case TERM_ZONE:
             n1 = RInt16();
@@ -1828,6 +1834,22 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             break;
         case TERM_SET_ICONIFY:
             allow_iconify = RInt8();
+            break;
+        case TERM_SET_EMBOSSED:
+            use_embossed_text = RInt8();
+            break;
+        case TERM_SET_ANTIALIAS:
+            use_text_antialiasing = RInt8();
+            break;
+        case TERM_SET_DROP_SHADOW:
+            use_drop_shadows = RInt8();
+            break;
+        case TERM_SET_SHADOW_OFFSET:
+            shadow_offset_x = RInt16();
+            shadow_offset_y = RInt16();
+            break;
+        case TERM_SET_SHADOW_BLUR:
+            shadow_blur_radius = RInt8();
             break;
         case TERM_RELOAD_FONTS:
             TerminalReloadFonts();
@@ -2640,7 +2662,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         l->id = 1;
         l->SolidRectangle(0, 0, WinWidth, WinHeight, ColorBlack);
         l->ZoneText("Please Wait", 0, 0, WinWidth, WinHeight,
-                    COLOR_WHITE, FONT_TIMES_34, ALIGN_CENTER);
+                    COLOR_WHITE, FONT_TIMES_34, ALIGN_CENTER, use_embossed_text);
 
         genericChar tmp[256];
         if (term_hardware == 1)
@@ -2650,7 +2672,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         else
             strcpy(tmp, "Server");
         l->ZoneText(tmp, 0, WinHeight - 30, WinWidth - 20, 30,
-                    COLOR_WHITE, FONT_TIMES_20, ALIGN_RIGHT);
+                    COLOR_WHITE, FONT_TIMES_20, ALIGN_RIGHT, use_embossed_text);
         Layers.Add(l);
     }
     MainLayer = l;

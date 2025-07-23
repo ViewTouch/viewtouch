@@ -191,6 +191,11 @@ public:
 #define TERM_CONNTIMEOUT      163
 
 #define TERM_SET_ICONIFY      180
+#define TERM_SET_EMBOSSED     181  // <I1> - set embossed text mode (0=off, 1=on)
+#define TERM_SET_ANTIALIAS    182  // <I1> - set text anti-aliasing mode (0=off, 1=on)
+#define TERM_SET_DROP_SHADOW  183  // <I1> - set drop shadow mode (0=off, 1=on)
+#define TERM_SET_SHADOW_OFFSET 184 // <I2> - set shadow offset (x, y)
+#define TERM_SET_SHADOW_BLUR  185  // <I1> - set shadow blur radius (0-10)
 
 
 /**** Server Protocols ****/

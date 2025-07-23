@@ -50,6 +50,12 @@ extern short new_zone_translations;
 extern int   ConnectionTimeOut;  // for credit cards
 
 extern int   allow_iconify;
+extern int   use_embossed_text;  // whether to use embossed text effects
+extern int   use_text_antialiasing;  // whether to use text anti-aliasing
+extern int   use_drop_shadows;  // whether to use drop shadows on text
+extern int   shadow_offset_x;  // shadow offset in X direction
+extern int   shadow_offset_y;  // shadow offset in Y direction
+extern int   shadow_blur_radius;  // shadow blur radius
 extern int   silent_mode;        // to disable clone input
 
 

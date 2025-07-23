@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Comprehensive Text Enhancement System**
+  - Implemented system-wide enhanced text rendering with three configurable effects
+  - **Embossed Text Effect**: Creates 3D frosted glass appearance with highlights and shadows (enabled by default)
+  - **Anti-aliasing**: Smooths text edges for improved readability across all font sizes
+  - **Drop Shadows**: Configurable shadow effects for better text contrast and depth
+  - Complete coverage across all ViewTouch UI elements including:
+    - Main terminal interface (buttons, menus, dialogs, forms)
+    - Zone text rendering (names, labels, content, prices)
+    - Status bars and information displays
+    - Dialog and form text (titles, labels, messages)
+    - All specialized zones (TableZone, OrderZone, PaymentZone, etc.)
+    - All font families (Times, Courier, DejaVu, EB Garamond, etc.)
+  - Configurable settings with UI controls for all effects
+  - Performance-optimized rendering with minimal overhead
+  - Graceful fallback to standard rendering when enhanced features unavailable
+  - Comprehensive documentation in `TEXT_ENHANCEMENT_FEATURES.md`
+  - All text elements now use enhanced rendering for consistent, professional appearance
 - **Unified Video and Printer Targeting System**
   - Successfully implemented unified targeting system that combines Video and Printer targeting functionality
   - Created new `UnifiedTargetZone` class (Zone Type 96) with toggle button for mode switching

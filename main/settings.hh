@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-constexpr int SETTINGS_VERSION = 95;  // READ ABOVE
+constexpr int SETTINGS_VERSION = 97;  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -557,6 +557,12 @@ public:
     Str email_send_server;       // what SMTP server to use for sending email
     Str email_replyto;           // Reply To address for outgoing emails
     int allow_iconify;           // Whether user can iconify window
+    int use_embossed_text;       // Whether to use embossed text effects
+    int use_text_antialiasing;   // Whether to use text anti-aliasing
+    int use_drop_shadows;        // Whether to use drop shadows on text
+    int shadow_offset_x;         // Shadow offset in X direction (pixels)
+    int shadow_offset_y;         // Shadow offset in Y direction (pixels)
+    int shadow_blur_radius;      // Shadow blur radius (0-10)
 
     // General Settings
     Str store_name;              // printed on title bar
