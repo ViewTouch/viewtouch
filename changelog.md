@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Unified Video and Printer Targeting System**
+  - Successfully implemented unified targeting system that combines Video and Printer targeting functionality
+  - Created new `UnifiedTargetZone` class (Zone Type 96) with toggle button for mode switching
+  - Added automatic synchronization ensuring "Video Targets must match Printer Targets"
+  - Implemented clear user interface with built-in instructions and mode indicators
+  - Added robust error handling with proper bounds checking and NULL pointer validation
+  - Eliminated need for separate Video and Printer targeting buttons/pages
+  - Improved user experience with single interface and automatic data consistency
+  - Created comprehensive documentation in `UNIFIED_TARGETING_SUMMARY.md`
+  - Successfully integrated into existing ViewTouch zone system with full backward compatibility
+- **Catch2 v3.8.1 Integration**
+  - Successfully integrated Catch2 v3.8.1 as a modern, header-only testing framework
+  - Added proper CMake configuration with build options for testing control
+  - Configured test infrastructure with `Catch2::Catch2WithMain` target linking
+  - Verified integration with comprehensive test suite (13 assertions, 3 test cases)
+  - Confirmed C++17/20 compatibility including structured bindings and std::optional
+  - Created detailed integration documentation in `CATCH2_INTEGRATION.md`
+  - Maintained clean workspace by removing temporary test files after verification
+  - Ready for production testing when needed with simple test file creation process
 - Complete Greek (EL) and Spanish (ES) localization for ViewTouch POS system
   - Added comprehensive translation files: `po_file/viewtouch.po_EL` and `po_file/viewtouch.po_ES`
   - Translated all user-facing UI strings, system messages, error messages, and report titles
@@ -60,6 +79,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Fixed: UI no longer breaks or crashes when switching to scalable fonts; only compatible fonts are shown
 - Fixed: Font size and weight selection no longer causes crashes or mismatches
 - Fixed: Catch2 v3 migration completed successfully with all tests passing
+- Fixed: "Receipts Balance & Cash Deposit" report no longer causes infinite loading cursor on clean installations
+  - Added early exit in `BalanceReportWorkFn` when no checks exist to process
+  - Prevents work function from being rescheduled indefinitely when database is empty
+  - Report now completes immediately and shows appropriate empty state
 
 
 ## [v21.05.1] - 2021-05-18

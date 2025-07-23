@@ -45,6 +45,7 @@
 #include "employee.hh"
 #include "chart_zone.hh"
 #include "video_zone.hh"
+#include "unified_target_zone.hh"
 #include "expense_zone.hh"
 #include "cdu_zone.hh"
 
@@ -336,6 +337,9 @@ Zone *NewPosZone(int type)
         break;
     case ZONE_VIDEO_TARGET:
         pNewZone = new VideoTargetZone;
+        break;
+    case ZONE_UNIFIED_TARGET:
+        pNewZone = new UnifiedTargetZone;
         break;
     default:
         if (debug_mode)

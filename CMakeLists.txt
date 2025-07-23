@@ -73,6 +73,13 @@ set(USE_SYSTEM_TZ_DB ON CACHE BOOL "Use the operating system's timezone database
 set(ENABLE_DATE_TESTING OFF CACHE BOOL "Enable unit tests" FORCE)
 set(DISABLE_STRING_VIEW ON CACHE BOOL "Disable string view" FORCE)
 
+# Catch2 v3 integration
+option(BUILD_TESTING "Build tests" OFF)
+option(CATCH_DEVELOPMENT_BUILD "Build Catch2 tests and examples" OFF)
+option(CATCH_BUILD_TESTING "Build Catch2 self-tests" OFF)
+option(CATCH_BUILD_EXAMPLES "Build Catch2 examples" OFF)
+option(CATCH_BUILD_EXTRA_TESTS "Build Catch2 extra tests" OFF)
+
 # Ensure external libraries use the same C++ standard
 if(CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD ${CMAKE_CXX_STANDARD} CACHE STRING "C++ standard for external libraries" FORCE)
@@ -90,6 +97,12 @@ set(CURLPP_BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
 add_subdirectory(external/curlpp EXCLUDE_FROM_ALL)
 if(NOT TARGET curlpp_static)
     message(FATAL_ERROR "missing 'curlpp_static' target")
+endif()
+
+# Add Catch2 v3
+add_subdirectory(external/catch2 EXCLUDE_FROM_ALL)
+if(NOT TARGET Catch2::Catch2)
+    message(FATAL_ERROR "missing 'Catch2::Catch2' target")
 endif()
 
 include_directories(main)
@@ -233,6 +246,7 @@ add_library(zone
     zone/search_zone.cc          zone/search_zone.hh
     zone/chart_zone.cc           zone/chart_zone.hh
     zone/video_zone.cc           zone/video_zone.hh
+    zone/unified_target_zone.cc  zone/unified_target_zone.hh
     zone/expense_zone.cc         zone/expense_zone.hh
     zone/cdu_zone.cc             zone/cdu_zone.hh
     zone/creditcard_list_zone.cc zone/creditcard_list_zone.hh
@@ -302,6 +316,18 @@ add_executable(vt_print print/print_main.cc)
 target_link_libraries(vt_print vtcore)
 add_executable(vt_cdu cdu/cdu_main.cc main/cdu_att.cc)
 target_link_libraries(vt_cdu vtcore)
+
+# Test executable to verify Catch2 integration
+# Note: Test files are created temporarily for verification and then removed
+# To add tests, create a tests/ directory and add test files there
+if(BUILD_TESTING)
+    # Example test executable (uncomment and modify as needed):
+    # add_executable(vt_tests tests/main_test.cc)
+    # target_link_libraries(vt_tests Catch2::Catch2WithMain vtcore)
+    # target_include_directories(vt_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    message(STATUS "Catch2 v3 integration ready - create tests/ directory and test files to enable testing")
+endif()
+
 #add_executable(vt_authorize authorize_main.cc utility.cc)
 #add_executable(vt_ccq_pipe vt_ccq_pipe.cc socket.cc utility.cc conf_file.cc)
 
@@ -311,6 +337,14 @@ install(TARGETS vtpos vt_cdu vt_print vt_term vt_main
 	RUNTIME DESTINATION viewtouch/bin
         LIBRARY DESTINATION viewtouch/lib
 	ARCHIVE DESTINATION viewtouch/lib/static)
+
+# Install test executable if built
+if(BUILD_TESTING)
+    # Uncomment when test executable is created:
+    # install(TARGETS vt_tests
+    #     RUNTIME DESTINATION viewtouch/bin
+    # )
+endif()
 
 install(PROGRAMS 	scripts/vtrestart 
 			scripts/vtrun

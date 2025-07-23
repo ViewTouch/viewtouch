@@ -744,10 +744,10 @@ int TaxSettingsZone::LoadRecord(Terminal *term, int record)
     f->Set(settings->merchandise_inclusive); f = f->next;
 
     f = f->next;  // skip Canadian Tax label
-	f->Set(settings->tax_GST * 100.0); f = f->next;
-	f->Set(settings->tax_PST * 100.0); f = f->next;
-	f->Set(settings->tax_HST * 100.0); f = f->next;
-	f->Set(settings->tax_QST * 100.0); f = f->next;
+    f->Set(settings->tax_GST * 100.0); f = f->next;
+    f->Set(settings->tax_PST * 100.0); f = f->next;
+    f->Set(settings->tax_HST * 100.0); f = f->next;
+    f->Set(settings->tax_QST * 100.0); f = f->next;
 
     f = f->next;  // skip Euro Tax label
     f->Set(settings->tax_VAT * 100.0); f = f->next;
@@ -787,7 +787,7 @@ int TaxSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
     f->Get(settings->royalty_rate); f = f->next;    settings->royalty_rate *= 0.01;
     f->Get(settings->advertise_fund); f = f->next;  settings->advertise_fund *= 0.01;
 
-    // argument checking
+    // argument checking and validation
     int fixed = 0;
     if (settings->tax_food < 0)
         settings->tax_food = 0, fixed = 1;
@@ -809,6 +809,8 @@ int TaxSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
         settings->tax_VAT = 0, fixed = 1;
     if (settings->royalty_rate < 0)
         settings->royalty_rate = 0, fixed = 1;
+    if (settings->advertise_fund < 0)
+        settings->advertise_fund = 0, fixed = 1;
 
     if (fixed)
         Draw(term, 1);

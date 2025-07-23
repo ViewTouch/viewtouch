@@ -46,10 +46,12 @@ int VideoTargetZone::AddFields()
 
     int i = 0;
 
-    for (i = 0; FamilyName[i] != NULL; i++)
+    // Ensure we don't go beyond the array bounds and handle NULL entries
+    while (i < MAX_FAMILIES && FamilyName[i] != NULL)
     {
         AddListField(MasterLocale->Translate(FamilyName[i]),
                      PrinterIDName, PrinterIDValue);
+        i++;
     }
 
     return 0;
@@ -77,7 +79,9 @@ int VideoTargetZone::LoadRecord(Terminal *term, int record)
     Settings *settings = term->GetSettings();
     FormField *form = FieldList();
     int idx = 0;
-    while (FamilyName[idx])
+    
+    // Ensure we don't go beyond the array bounds and handle NULL entries
+    while (idx < MAX_FAMILIES && FamilyName[idx] && form)
     {
         form->active = (settings->family_group[FamilyValue[idx]] != SALESGROUP_NONE);
         form->Set(settings->video_target[idx]);

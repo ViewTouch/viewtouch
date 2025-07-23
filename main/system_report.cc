@@ -1397,6 +1397,14 @@ int BalanceReportWorkFn(BRData *brdata)
     while (c && c->IsTraining())
         c = c->next;
 
+    // Early exit if there are no checks to process
+    if (c == NULL) {
+        thisReport->is_complete = 1;
+        brdata->term->Update(UPDATE_REPORT, NULL);
+        delete brdata;
+        return 1; // end work fn
+    }
+
     // Process Media entries if both archive and lastArchive are null, in which
     // case we just process the media entries in settings, or once for each
     // archive.
@@ -1943,8 +1951,31 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     if (report == NULL)
         return 1;
 
-//    report->SetTitle(DEPOSIT_TITLE);              Let the Button's Name Field provide the Title for this report
-    report->update_flag = UPDATE_ARCHIVE | UPDATE_CHECKS | UPDATE_SERVER;
+    // Validate input parameters
+    if (term == NULL)
+    {
+        ReportError("DepositReport: Invalid terminal parameter");
+        return 1;
+    }
+
+    // Ensure time range is valid
+    if (!start_time.IsSet() || !end_time.IsSet())
+    {
+        ReportError("DepositReport: Invalid time range");
+        return 1;
+    }
+
+    if (start_time > end_time)
+    {
+        ReportError("DepositReport: Start time is after end time");
+        return 1;
+    }
+
+    // Initialize report
+    report->Clear();
+    report->SetTitle(DEPOSIT_TITLE);
+    report->is_complete = 0;
+
     term->SetCursor(CURSOR_WAIT);
     Settings *s = &settings;
     TimeInfo end;
@@ -1960,6 +1991,15 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
         start_a = archive;
     else
         start_a = FindByTime(start_time);
+
+    // Validate archive
+    if (start_a == NULL)
+    {
+        ReportError("DepositReport: Could not find archive for time range");
+        report->TextC("Error: Could not find archive for specified time range");
+        report->is_complete = 1;
+        return 1;
+    }
 
     MediaList couponlist;
     MediaList discountlist;
@@ -2013,6 +2053,10 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
             // Scan checks
             for (Check *c = firstcheck; c != NULL; c = c->next)
             {
+                // Validate check pointer
+                if (c == NULL)
+                    continue;
+                    
                 if (c->IsTraining() > 0)
                     continue;
                 if (c->Status() != CHECK_CLOSED && c->CustomerType() != CHECK_HOTEL)
@@ -2030,6 +2074,10 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                          subcheck != NULL;
                          subcheck = subcheck->next)
                     {
+                        // Validate subcheck pointer
+                        if (subcheck == NULL)
+                            continue;
+                            
                         if (subcheck->settle_time.IsSet() &&
                             subcheck->settle_time > start_time &&
                             subcheck->settle_time < end_time)
@@ -2058,6 +2106,10 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
             // Scan drawers
             Drawer *drawer = FirstDrawer(a);
             do {
+                // Validate drawer pointer
+                if (drawer == NULL)
+                    break;
+                    
                 // the drawer must exist and it either must be today's drawer while today is
                 // being processed (incomplete != 0) or it must fit into the date range
                 // of the report.
@@ -2593,6 +2645,15 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     }
     term->SetCursor(CURSOR_POINTER);
     report->is_complete = 1;
+
+    // Final validation
+    if (report->is_complete == 0)
+    {
+        ReportError("DepositReport: Report generation failed");
+        report->TextC("Error: Report generation failed");
+        report->is_complete = 1;
+        return 1;
+    }
 
     return 0;
 }
