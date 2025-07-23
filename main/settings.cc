@@ -1206,6 +1206,12 @@ void PrinterInfo::DebugPrint(int printall)
 Settings::Settings()
 {
     allow_iconify      = 1;
+    use_embossed_text  = 1;  // Default to enabled for better readability
+    use_text_antialiasing = 1;  // Default to enabled for better text quality
+    use_drop_shadows   = 0;  // Default to disabled (can be enabled per preference)
+    shadow_offset_x    = 2;  // Default shadow offset
+    shadow_offset_y    = 2;  // Default shadow offset
+    shadow_blur_radius = 1;  // Default blur radius
     email_send_server.Set("");
     changed            = 0;
     screen_blank_time  = 60;
@@ -2016,6 +2022,16 @@ int Settings::Load(const char* file)
         df.Read(allow_multi_coupons);
     if (version >= 82)
         df.Read(allow_iconify);
+    if (version >= 96)
+        df.Read(use_embossed_text);
+    if (version >= 97)
+    {
+        df.Read(use_text_antialiasing);
+        df.Read(use_drop_shadows);
+        df.Read(shadow_offset_x);
+        df.Read(shadow_offset_y);
+        df.Read(shadow_blur_radius);
+    }
     if (version >= 83)
         df.Read(receipt_all_modifiers);
     if (version >= 84)
@@ -2372,6 +2388,12 @@ int Settings::Save()
     df.Write(report_start_midnight);
     df.Write(allow_multi_coupons);
     df.Write(allow_iconify);
+    df.Write(use_embossed_text);
+    df.Write(use_text_antialiasing);
+    df.Write(use_drop_shadows);
+    df.Write(shadow_offset_x);
+    df.Write(shadow_offset_y);
+    df.Write(shadow_blur_radius);
     df.Write(receipt_all_modifiers);
     df.Write(receipt_header_length);
     df.Write(order_num_style);

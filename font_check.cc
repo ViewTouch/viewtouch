@@ -114,6 +114,109 @@ const char* GetScalableFontName(int font_id) {
     }
 }
 
+// Text enhancement settings (defaults for font checker)
+static int use_embossed_text = 1;
+static int use_text_antialiasing = 1;
+static int use_drop_shadows = 0;
+static int shadow_offset_x = 2;
+static int shadow_offset_y = 2;
+static int shadow_blur_radius = 1;
+
+// Enhanced text rendering function for font checker
+void FontCheckDrawStringEnhanced(Display *display, XftDraw *xftdraw, XftFont *xftfont, XftColor *color, 
+                                int x, int y, const char* str, int length)
+{
+    if (!xftdraw || !xftfont || !color || !str) return;
+    
+    if (use_embossed_text) {
+        // Create frosted embossed effect
+        XRenderColor shadow_color, frosted_color;
+        XftColor xft_shadow, xft_frosted;
+        
+        // Shadow color (40% darker)
+        shadow_color.red = (color->color.red * 2) / 5;
+        shadow_color.green = (color->color.green * 2) / 5;
+        shadow_color.blue = (color->color.blue * 2) / 5;
+        shadow_color.alpha = color->color.alpha;
+        
+        // Frosted color (75% lighter with transparency)
+        frosted_color.red = color->color.red + ((65535 - color->color.red) * 3) / 4;
+        frosted_color.green = color->color.green + ((65535 - color->color.green) * 3) / 4;
+        frosted_color.blue = color->color.blue + ((65535 - color->color.blue) * 3) / 4;
+        frosted_color.alpha = (color->color.alpha * 9) / 10;
+        
+        XftColorAllocValue(display, DefaultVisual(display, DefaultScreen(display)), 
+                          DefaultColormap(display, DefaultScreen(display)), &shadow_color, &xft_shadow);
+        XftColorAllocValue(display, DefaultVisual(display, DefaultScreen(display)), 
+                          DefaultColormap(display, DefaultScreen(display)), &frosted_color, &xft_frosted);
+        
+        // Draw shadow
+        XftDrawStringUtf8(xftdraw, &xft_shadow, xftfont, x + 1, y + 1, (const FcChar8*)str, length);
+        XftDrawStringUtf8(xftdraw, &xft_shadow, xftfont, x + 2, y + 1, (const FcChar8*)str, length);
+        XftDrawStringUtf8(xftdraw, &xft_shadow, xftfont, x + 1, y + 2, (const FcChar8*)str, length);
+        
+        // Draw frosted highlight
+        XftDrawStringUtf8(xftdraw, &xft_frosted, xftfont, x - 1, y - 1, (const FcChar8*)str, length);
+        XftDrawStringUtf8(xftdraw, &xft_frosted, xftfont, x - 2, y - 1, (const FcChar8*)str, length);
+        XftDrawStringUtf8(xftdraw, &xft_frosted, xftfont, x - 1, y - 2, (const FcChar8*)str, length);
+        
+        // Draw main text
+        XftDrawStringUtf8(xftdraw, color, xftfont, x, y, (const FcChar8*)str, length);
+        
+        XftColorFree(display, DefaultVisual(display, DefaultScreen(display)), 
+                    DefaultColormap(display, DefaultScreen(display)), &xft_shadow);
+        XftColorFree(display, DefaultVisual(display, DefaultScreen(display)), 
+                    DefaultColormap(display, DefaultScreen(display)), &xft_frosted);
+    } else if (use_drop_shadows) {
+        // Create drop shadow effect
+        XRenderColor shadow_color;
+        XftColor xft_shadow;
+        
+        shadow_color.red = (color->color.red * 1) / 4;
+        shadow_color.green = (color->color.green * 1) / 4;
+        shadow_color.blue = (color->color.blue * 1) / 4;
+        shadow_color.alpha = color->color.alpha;
+        
+        XftColorAllocValue(display, DefaultVisual(display, DefaultScreen(display)), 
+                          DefaultColormap(display, DefaultScreen(display)), &shadow_color, &xft_shadow);
+        
+        // Draw shadow with blur
+        for (int blur = 0; blur <= shadow_blur_radius; blur++) {
+            int blur_offset = blur * 2;
+            XftDrawStringUtf8(xftdraw, &xft_shadow, xftfont, 
+                             x + shadow_offset_x - blur_offset, y + shadow_offset_y - blur_offset, 
+                             (const FcChar8*)str, length);
+            XftDrawStringUtf8(xftdraw, &xft_shadow, xftfont, 
+                             x + shadow_offset_x + blur_offset, y + shadow_offset_y + blur_offset, 
+                             (const FcChar8*)str, length);
+        }
+        
+        // Draw main text
+        XftDrawStringUtf8(xftdraw, color, xftfont, x, y, (const FcChar8*)str, length);
+        
+        XftColorFree(display, DefaultVisual(display, DefaultScreen(display)), 
+                    DefaultColormap(display, DefaultScreen(display)), &xft_shadow);
+    } else if (use_text_antialiasing) {
+        // Enhanced anti-aliased text
+        XRenderColor enhanced_color;
+        XftColor xft_enhanced;
+        
+        enhanced_color.red = (color->color.red * 95) / 100;
+        enhanced_color.green = (color->color.green * 95) / 100;
+        enhanced_color.blue = (color->color.blue * 95) / 100;
+        enhanced_color.alpha = color->color.alpha;
+        
+        XftColorAllocValue(display, DefaultVisual(display, DefaultScreen(display)), 
+                          DefaultColormap(display, DefaultScreen(display)), &enhanced_color, &xft_enhanced);
+        XftDrawStringUtf8(xftdraw, &xft_enhanced, xftfont, x, y, (const FcChar8*)str, length);
+        XftColorFree(display, DefaultVisual(display, DefaultScreen(display)), 
+                    DefaultColormap(display, DefaultScreen(display)), &xft_enhanced);
+    } else {
+        // Standard rendering
+        XftDrawStringUtf8(xftdraw, color, xftfont, x, y, (const FcChar8*)str, length);
+    }
+}
+
 int main() {
     Display *display = XOpenDisplay(nullptr);
     if (!display) {
@@ -142,18 +245,18 @@ int main() {
             // Show error visually
             XClearWindow(display, win);
             if (!draw) draw = XftDrawCreate(display, win, DefaultVisual(display, screen), DefaultColormap(display, screen));
-            XftDrawStringUtf8(draw, &xft_color, font, 20, 80, (XftChar8*)"FAILED TO LOAD FONT", 19);
-            XftDrawStringUtf8(draw, &xft_color, font, 20, 120, (XftChar8*)font_xft, strlen(font_xft));
+            FontCheckDrawStringEnhanced(display, draw, font, &xft_color, 20, 80, "FAILED TO LOAD FONT", 19);
+            FontCheckDrawStringEnhanced(display, draw, font, &xft_color, 20, 120, font_xft, strlen(font_xft));
             XFlush(display);
         } else {
             XClearWindow(display, win);
             if (!draw) draw = XftDrawCreate(display, win, DefaultVisual(display, screen), DefaultColormap(display, screen));
             // Draw font label and Xft string
             std::string label = std::string(font_label) + " (" + font_xft + ")";
-            XftDrawStringUtf8(draw, &xft_color, font, 20, 40, (XftChar8*)label.c_str(), label.length());
+            FontCheckDrawStringEnhanced(display, draw, font, &xft_color, 20, 40, label.c_str(), label.length());
             // Draw sample text
             const char* sample = "The quick brown fox jumps over 1234567890";
-            XftDrawStringUtf8(draw, &xft_color, font, 20, 100, (XftChar8*)sample, strlen(sample));
+            FontCheckDrawStringEnhanced(display, draw, font, &xft_color, 20, 100, sample, strlen(sample));
             XFlush(display);
             XftFontClose(display, font);
             success = true;

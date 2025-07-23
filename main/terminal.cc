@@ -629,6 +629,11 @@ int Terminal::Initialize()
     SendTranslations(FamilyName);
     SetCCTimeout(settings->cc_connect_timeout);
     SetIconify(settings->allow_iconify);
+    SetEmbossedText(settings->use_embossed_text);
+    SetTextAntialiasing(settings->use_text_antialiasing);
+    SetDropShadow(settings->use_drop_shadows);
+    SetShadowOffset(settings->shadow_offset_x, settings->shadow_offset_y);
+    SetShadowBlur(settings->shadow_blur_radius);
 
     return retval;
 }
@@ -3761,6 +3766,47 @@ int Terminal::SetIconify(int iconify)
     FnTrace("Terminal::SetIconify()");
     WInt8(TERM_SET_ICONIFY);
     WInt8(iconify);
+    return 0;
+}
+
+int Terminal::SetEmbossedText(int embossed)
+{
+    FnTrace("Terminal::SetEmbossedText()");
+    WInt8(TERM_SET_EMBOSSED);
+    WInt8(embossed);
+    return 0;
+}
+
+int Terminal::SetTextAntialiasing(int antialiased)
+{
+    FnTrace("Terminal::SetTextAntialiasing()");
+    WInt8(TERM_SET_ANTIALIAS);
+    WInt8(antialiased);
+    return 0;
+}
+
+int Terminal::SetDropShadow(int drop_shadow)
+{
+    FnTrace("Terminal::SetDropShadow()");
+    WInt8(TERM_SET_DROP_SHADOW);
+    WInt8(drop_shadow);
+    return 0;
+}
+
+int Terminal::SetShadowOffset(int offset_x, int offset_y)
+{
+    FnTrace("Terminal::SetShadowOffset()");
+    WInt8(TERM_SET_SHADOW_OFFSET);
+    WInt16(offset_x);
+    WInt16(offset_y);
+    return 0;
+}
+
+int Terminal::SetShadowBlur(int blur_radius)
+{
+    FnTrace("Terminal::SetShadowBlur()");
+    WInt8(TERM_SET_SHADOW_BLUR);
+    WInt8(blur_radius);
     return 0;
 }
 

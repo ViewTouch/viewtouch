@@ -71,7 +71,7 @@ RenderResult PrintTargetZone::Render(Terminal *t, int update_flag)
     }
 
     FormZone::Render(t, update_flag);
-    TextC(t, 0, name.Value(), color[0]);
+    TextC(t, 0, "Video & Printer Targets by Family", color[0]);
     return RENDER_OKAY;
 }
 
@@ -100,7 +100,13 @@ int PrintTargetZone::SaveRecord(Terminal *t, int record, int write_file)
     // Ensure we don't go beyond the array bounds and handle NULL entries
     while (z < MAX_FAMILIES && FamilyName[z] && f)
     {
-        f->Get(s->family_printer[z]);
+        int value;
+        f->Get(value);
+        
+        // Save to both arrays to ensure they match
+        s->family_printer[z] = value;
+        s->video_target[z] = value;
+        
         f = f->next; ++z;
     }
     if (write_file)

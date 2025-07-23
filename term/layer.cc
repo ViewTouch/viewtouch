@@ -379,7 +379,7 @@ int Layer::TitleBar()
 }
 
 int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
-                int align, int max_pixel_width)
+                int align, int max_pixel_width, int embossed)
 {
     FnTrace("Layer::Text()");
 
@@ -431,13 +431,20 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
     render_color.blue  = xcolor.blue;
     render_color.alpha = 0xFFFF;
 
-    // Draw text with Xft
-    GenericDrawStringXft(dis, pix, xftdraw, xftfont, &render_color, tx, ty, string, len, DefaultScreen(dis));
+    // Draw text with Xft using enhanced rendering options
+    if (embossed)
+        GenericDrawStringXftEmbossed(dis, pix, xftdraw, xftfont, &render_color, tx, ty, string, len, DefaultScreen(dis));
+    else if (use_drop_shadows)
+        GenericDrawStringXftWithShadow(dis, pix, xftdraw, xftfont, &render_color, tx, ty, string, len, DefaultScreen(dis), shadow_offset_x, shadow_offset_y, shadow_blur_radius);
+    else if (use_text_antialiasing)
+        GenericDrawStringXftAntialiased(dis, pix, xftdraw, xftfont, &render_color, tx, ty, string, len, DefaultScreen(dis));
+    else
+        GenericDrawStringXft(dis, pix, xftdraw, xftfont, &render_color, tx, ty, string, len, DefaultScreen(dis));
     return 0;
 }
 
 int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
-                    int color, int font, int align)
+                    int color, int font, int align, int embossed)
 {
     FnTrace("Layer::ZoneText()");
 
@@ -565,11 +572,11 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
     for (i = 0; i < line; ++i)
     {
         if (sub_length[i] > 0)
-            Text(sub_string[i], sub_length[i], sx, sy, color, font, align);
+            Text(sub_string[i], sub_length[i], sx, sy, color, font, align, 0, embossed);
         sy += font_h;
     }
     if (*c && line >= max_lines && title_mode == MODE_EDIT)
-        Text("!", 1, tx, ty, COLOR_RED, FONT_TIMES_24, ALIGN_LEFT);
+        Text("!", 1, tx, ty, COLOR_RED, FONT_TIMES_24, ALIGN_LEFT, 0, embossed);
     return 0;
 }
 
@@ -894,7 +901,7 @@ int Layer::StatusBar(int sx, int sy, int sw, int sh, int bar_color,
     int len = strlen(text);
     if (len > 0)
         Text(text, len, x + sx + (sw / 2), y + sy + ((sh - GetFontHeight(font) + 1) / 2),
-             text_color, font, ALIGN_CENTER);
+             text_color, font, ALIGN_CENTER, 0, use_embossed_text);
     return 0;
 }
 
@@ -1238,7 +1245,7 @@ int Layer::MouseEnter(LayerList *ll)
     if (window_frame)
     {
         FramedWindow(0, 0, w, h, ll->active_frame_color);
-        ZoneText(window_title.Value(), 5, 6, w - 10, 20, COLOR_BLACK, FONT_TIMES_18);
+        ZoneText(window_title.Value(), 5, 6, w - 10, 20, COLOR_BLACK, FONT_TIMES_18, ALIGN_CENTER, use_embossed_text);
         update = 1;
         ll->UpdateAll(0);
     }
@@ -1252,7 +1259,7 @@ int Layer::MouseExit(LayerList *ll)
     if (window_frame)
     {
         FramedWindow(0, 0, w, h, ll->inactive_frame_color);
-        ZoneText(window_title.Value(), 5, 6, w - 10, 20, COLOR_BLACK, FONT_TIMES_18);
+        ZoneText(window_title.Value(), 5, 6, w - 10, 20, COLOR_BLACK, FONT_TIMES_18, ALIGN_CENTER, use_embossed_text);
         update = 1;
         ll->UpdateAll(0);
     }
@@ -2018,7 +2025,7 @@ int LO_PushButton::Render(Layer *l)
 
     int c = color[hilight];
     int fw = l->frame_width;
-    l->ZoneText(text.Value(), x+fw, y+fw, w-(fw*2), h-(fw*2), c, font);
+    l->ZoneText(text.Value(), x+fw, y+fw, w-(fw*2), h-(fw*2), c, font, ALIGN_CENTER, use_embossed_text);
     return 0;
 }
 

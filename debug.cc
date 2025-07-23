@@ -198,6 +198,12 @@ const char* term_codes[] = {
     "",
     "",
     "",
+    "TERM_SET_ICONIFY",
+    "TERM_SET_EMBOSSED",
+    "TERM_SET_ANTIALIAS",
+    "TERM_SET_DROP_SHADOW",
+    "TERM_SET_SHADOW_OFFSET",
+    "TERM_SET_SHADOW_BLUR",
     "TERM_DIE"
 };
 int num_term_codes = sizeof( term_codes ) / sizeof( const genericChar*  );

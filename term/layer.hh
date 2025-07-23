@@ -122,9 +122,9 @@ public:
     int Background(int x, int y, int w, int h);
     int TitleBar();
     int Text(const char* string, int len, int tx, int ty, int color, int font,
-             int align, int max_pixel_width = 0);
+             int align, int max_pixel_width = 0, int embossed = 0);
     int ZoneText(const char* str, int x, int y, int w, int h,
-                 int color, int font, int align = ALIGN_CENTER);
+                 int color, int font, int align = ALIGN_CENTER, int embossed = 0);
     int Rectangle(int rx, int ry, int rw, int rh, int image);
     int SolidRectangle(int rx, int ry, int rw, int rh, int pixel_id);
     int Circle(int cx, int cy, int cw, int ch, int image);
