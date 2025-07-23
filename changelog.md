@@ -24,15 +24,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Comprehensive documentation in `TEXT_ENHANCEMENT_FEATURES.md`
   - All text elements now use enhanced rendering for consistent, professional appearance
 - **Unified Video and Printer Targeting System**
-  - Successfully implemented unified targeting system that combines Video and Printer targeting functionality
-  - Created new `UnifiedTargetZone` class (Zone Type 96) with toggle button for mode switching
-  - Added automatic synchronization ensuring "Video Targets must match Printer Targets"
-  - Implemented clear user interface with built-in instructions and mode indicators
-  - Added robust error handling with proper bounds checking and NULL pointer validation
-  - Eliminated need for separate Video and Printer targeting buttons/pages
-  - Improved user experience with single interface and automatic data consistency
-  - Created comprehensive documentation in `UNIFIED_TARGETING_SUMMARY.md`
-  - Successfully integrated into existing ViewTouch zone system with full backward compatibility
+  - Modified existing VideoTargetZone and PrintTargetZone to automatically synchronize both video and printer targets
+  - When either zone is used, both `video_target` and `family_printer` arrays are updated simultaneously
+  - Updated zone titles to "Video & Printer Targets by Family" for clarity
+  - Ensures "Video Targets must match Printer Targets" requirement is always met
+  - No changes required to existing page configurations - backward compatible
+  - Eliminates the need for separate configuration of video and printer targets
 - **Catch2 v3.8.1 Integration**
   - Successfully integrated Catch2 v3.8.1 as a modern, header-only testing framework
   - Added proper CMake configuration with build options for testing control

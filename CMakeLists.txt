@@ -246,7 +246,6 @@ add_library(zone
     zone/search_zone.cc          zone/search_zone.hh
     zone/chart_zone.cc           zone/chart_zone.hh
     zone/video_zone.cc           zone/video_zone.hh
-    zone/unified_target_zone.cc  zone/unified_target_zone.hh
     zone/expense_zone.cc         zone/expense_zone.hh
     zone/cdu_zone.cc             zone/cdu_zone.hh
     zone/creditcard_list_zone.cc zone/creditcard_list_zone.hh
