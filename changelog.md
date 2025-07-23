@@ -79,6 +79,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Fixed: UI no longer breaks or crashes when switching to scalable fonts; only compatible fonts are shown
 - Fixed: Font size and weight selection no longer causes crashes or mismatches
 - Fixed: Catch2 v3 migration completed successfully with all tests passing
+- Fixed: "Receipts Balance & Cash Deposit" report no longer causes infinite loading cursor on clean installations
+  - Added early exit in `BalanceReportWorkFn` when no checks exist to process
+  - Prevents work function from being rescheduled indefinitely when database is empty
+  - Report now completes immediately and shows appropriate empty state
 
 
 ## [v21.05.1] - 2021-05-18

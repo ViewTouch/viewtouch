@@ -1397,6 +1397,14 @@ int BalanceReportWorkFn(BRData *brdata)
     while (c && c->IsTraining())
         c = c->next;
 
+    // Early exit if there are no checks to process
+    if (c == NULL) {
+        thisReport->is_complete = 1;
+        brdata->term->Update(UPDATE_REPORT, NULL);
+        delete brdata;
+        return 1; // end work fn
+    }
+
     // Process Media entries if both archive and lastArchive are null, in which
     // case we just process the media entries in settings, or once for each
     // archive.
