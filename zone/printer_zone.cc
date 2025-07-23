@@ -50,7 +50,9 @@ int PrintTargetZone::AddFields()
     FnTrace("PrintTargetZone::AddFields()");
 
     int z = 0;
-    while (FamilyName[z])
+    
+    // Ensure we don't go beyond the array bounds and handle NULL entries
+    while (z < MAX_FAMILIES && FamilyName[z])
     {
         AddListField(MasterLocale->Translate(FamilyName[z++]),
                      PrinterName, PrinterValue);
@@ -78,7 +80,9 @@ int PrintTargetZone::LoadRecord(Terminal *t, int record)
     Settings *s = t->GetSettings();
     FormField *f = FieldList();
     int z = 0;
-    while (FamilyName[z])
+    
+    // Ensure we don't go beyond the array bounds and handle NULL entries
+    while (z < MAX_FAMILIES && FamilyName[z] && f)
     {
         f->active = (s->family_group[FamilyValue[z]] != SALESGROUP_NONE);
         f->Set(s->family_printer[z]);
@@ -92,7 +96,9 @@ int PrintTargetZone::SaveRecord(Terminal *t, int record, int write_file)
     Settings *s = t->GetSettings();
     FormField *f = FieldList();
     int z = 0;
-    while (FamilyName[z])
+    
+    // Ensure we don't go beyond the array bounds and handle NULL entries
+    while (z < MAX_FAMILIES && FamilyName[z] && f)
     {
         f->Get(s->family_printer[z]);
         f = f->next; ++z;

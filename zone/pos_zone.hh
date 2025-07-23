@@ -63,6 +63,7 @@
 #define ZONE_REPORT          50  // super report zone
 #define ZONE_SCHEDULE        52  // employee scheduling
 #define ZONE_PRINT_TARGET    53  // family printer destinations
+#define ZONE_UNIFIED_TARGET  96  // unified video and printer targeting
 #define ZONE_SPLIT_CHECK     54  // check splitting zone
 #define ZONE_DRAWER_MANAGE   55  // Drawer pulling/balancing
 #define ZONE_HARDWARE        56  // terminal & printer setup/settings/status

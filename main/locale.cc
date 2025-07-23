@@ -985,6 +985,12 @@ char* Locale::Page(int current, int page_max, int lang, genericChar* str)
     if (str == NULL)
         str = buffer;
 
+    // Ensure current and page_max are valid
+    if (current < 1)
+        current = 1;
+    if (page_max < 0)
+        page_max = 0;
+
     if (page_max <= 0)
         sprintf(str, "%s %d", Translate("Page", lang), current);
     else
