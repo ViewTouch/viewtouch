@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Added
 - **Comprehensive Text Enhancement System**
   - Implemented system-wide enhanced text rendering with three configurable effects
-  - **Embossed Text Effect**: Creates 3D frosted glass appearance with highlights and shadows (enabled by default)
+  - **Embossed Text Effect**: Creates 3D frosted glass appearance with highlights and shadows (disabled by default; enable in Settings)
   - **Anti-aliasing**: Smooths text edges for improved readability across all font sizes
   - **Drop Shadows**: Configurable shadow effects for better text contrast and depth
   - Complete coverage across all ViewTouch UI elements including:

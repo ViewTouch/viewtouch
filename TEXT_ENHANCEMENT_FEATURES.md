@@ -14,7 +14,7 @@ ViewTouch now features enhanced text rendering with three configurable effects t
 
 ### 1. Embossed Text Effect
 - **Description**: Creates a frosted glass effect with highlights on top/left edges and shadows on bottom/right edges
-- **Default**: Enabled (`use_embossed_text = 1`)
+- **Default**: Disabled (`use_embossed_text = 0`)
 - **Visual Effect**: Text appears to be raised from the surface with a subtle 3D appearance
 - **Implementation**: Uses Xft rendering with carefully calculated highlight and shadow colors
 

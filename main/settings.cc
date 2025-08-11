@@ -1206,7 +1206,7 @@ void PrinterInfo::DebugPrint(int printall)
 Settings::Settings()
 {
     allow_iconify      = 1;
-    use_embossed_text  = 1;  // Default to enabled for better readability
+    use_embossed_text  = 0;  // Default to disabled; users can enable in Settings
     use_text_antialiasing = 1;  // Default to enabled for better text quality
     use_drop_shadows   = 0;  // Default to disabled (can be enabled per preference)
     shadow_offset_x    = 2;  // Default shadow offset
