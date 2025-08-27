@@ -373,5 +373,5 @@ install(PROGRAMS scripts/vtcommands.pl DESTINATION viewtouch/bin/vtcommands)
 #install(CODE "MESSAGE(\"Sample install message.\")")
 
 # Install bundled fonts
-install(DIRECTORY fonts/ttf/ DESTINATION share/viewtouch/fonts FILES_MATCHING PATTERN "*.ttf" PATTERN "*.otf")
+install(DIRECTORY fonts/ DESTINATION share/viewtouch/fonts FILES_MATCHING PATTERN "*.ttf" PATTERN "*.otf")
 
