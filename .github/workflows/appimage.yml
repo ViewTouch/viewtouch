@@ -24,7 +24,7 @@ jobs:
             libfreetype6-dev libfontconfig1-dev zlib1g-dev \
             libmotif-dev patchelf file desktop-file-utils libglib2.0-bin \
             libfuse2 squashfs-tools \
-            pkg-config libstdc++-dev
+            pkg-config
 
       - name: Build
         run: |
