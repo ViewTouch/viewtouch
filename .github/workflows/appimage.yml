@@ -1,3 +1,24 @@
+  appimage-aarch64:
+    name: AppImage (aarch64)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake git \
+            libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev \
+            libfreetype6-dev libfontconfig1-dev zlib1g-dev \
+            libmotif-dev patchelf file desktop-file-utils libglib2.0-bin \
+            libfuse2 squashfs-tools
+
+      - name: Build (aarch64 via cross toolchain)
+        run: |
+          echo "Cross-building aarch64 AppImage is non-trivial; skipping for now."
+          exit 1
 name: Build AppImages
 
 on:
@@ -8,18 +29,8 @@ on:
 
 jobs:
   appimage:
-    name: AppImage (${{ matrix.arch }})
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: x86_64
-            runner: ubuntu-22.04
-            linuxdeploy_url: https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-          - arch: aarch64
-            runner: ubuntu-22.04
-            linuxdeploy_url: https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+    name: AppImage (x86_64)
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -65,10 +76,10 @@ jobs:
           cp AppDir/viewtouch.png AppDir/usr/share/icons/hicolor/256x256/apps/viewtouch.png
           echo "AppDir layout:" && find AppDir -maxdepth 3 -type f | sort | sed 's#^#  #'
 
-      - name: Download linuxdeploy
+      - name: Download appimagetool (x86_64)
         run: |
-          curl -L "${{ matrix.linuxdeploy_url }}" -o linuxdeploy.AppImage
-          chmod +x linuxdeploy.AppImage
+          curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool.AppImage
+          chmod +x appimagetool.AppImage
 
       - name: Build AppImage
         env:
@@ -76,28 +87,13 @@ jobs:
         run: |
           set -e
           cd build
-          chmod +x ../linuxdeploy.AppImage || true
-          set -x
-          if ! ../linuxdeploy.AppImage --appdir AppDir \
-              --executable AppDir/usr/viewtouch/bin/vtpos \
-              --desktop-file AppDir/usr/share/applications/viewtouch.desktop \
-              --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/viewtouch.png \
-              --output appimage; then
-            set +x
-            echo "linuxdeploy failed; attempting appimagetool fallback (x86_64 only)"
-            if [ "${{ matrix.arch }}" = "x86_64" ]; then
-              curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o ../appimagetool.AppImage
-              chmod +x ../appimagetool.AppImage
-              APPIMAGE_EXTRACT_AND_RUN=1 ../appimagetool.AppImage -n AppDir || exit 1
-            else
-              exit 1
-            fi
-          fi
+          chmod +x AppDir/AppRun
+          ../appimagetool.AppImage -n AppDir
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: viewtouch-AppImage-${{ matrix.arch }}
+          name: viewtouch-AppImage-x86_64
           path: build/*.AppImage
 
       - name: Create Release (tag push only)
