@@ -32,7 +32,8 @@ jobs:
             build-essential cmake git \
             libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev \
             libfreetype6-dev libfontconfig1-dev zlib1g-dev \
-            libmotif-dev patchelf file desktop-file-utils libglib2.0-bin
+            libmotif-dev patchelf file desktop-file-utils libglib2.0-bin \
+            libfuse2 squashfs-tools
 
       - name: Enable QEMU (for aarch64)
         if: matrix.arch == 'aarch64'
@@ -62,16 +63,12 @@ jobs:
           chmod +x linuxdeploy.AppImage
 
       - name: Build AppImage
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: "1"
         run: |
           cd build
-          # Try to avoid FUSE/AppImage exec issues by extracting
-          set -e
-          if ../linuxdeploy.AppImage --appimage-extract >/dev/null 2>&1; then \
-            LINUXDEPLOY=./squashfs-root/AppRun; \
-          else \
-            LINUXDEPLOY=../linuxdeploy.AppImage; \
-          fi
-          "$LINUXDEPLOY" --appdir AppDir \
+          chmod +x ../linuxdeploy.AppImage || true
+          ../linuxdeploy.AppImage --appdir AppDir \
             --executable AppDir/usr/viewtouch/bin/vtpos \
             --desktop-file AppDir/viewtouch.desktop \
             --icon-file AppDir/viewtouch.png \
