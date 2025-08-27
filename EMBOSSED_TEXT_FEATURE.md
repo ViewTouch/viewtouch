@@ -19,7 +19,7 @@ The feature is integrated into the existing settings system:
 
 - **Setting Name**: `use_embossed_text`
 - **Location**: Settings page (General Settings section)
-- **Default Value**: Enabled (1) for better readability
+- **Default Value**: Disabled (0) by default; users may enable for higher contrast
 - **Settings Version**: 96 (new version for this feature)
 
 ### 2. Text Rendering Pipeline

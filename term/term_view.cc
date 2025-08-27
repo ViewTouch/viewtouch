@@ -539,7 +539,7 @@ CCard *creditcard = NULL;
 int ConnectionTimeOut = 30;
 
 int allow_iconify = 1;
-int use_embossed_text = 1;  // Default to enabled for better readability
+int use_embossed_text = 0;  // Default to disabled; users can enable in Settings
 int use_text_antialiasing = 1;  // Default to enabled for better text quality
 int use_drop_shadows = 0;  // Default to disabled (can be enabled per preference)
 int shadow_offset_x = 2;  // Default shadow offset

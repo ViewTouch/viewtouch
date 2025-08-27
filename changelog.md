@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Added
 - **Comprehensive Text Enhancement System**
   - Implemented system-wide enhanced text rendering with three configurable effects
-  - **Embossed Text Effect**: Creates 3D frosted glass appearance with highlights and shadows (enabled by default)
+  - **Embossed Text Effect**: Creates 3D frosted glass appearance with highlights and shadows (disabled by default; enable in Settings)
   - **Anti-aliasing**: Smooths text edges for improved readability across all font sizes
   - **Drop Shadows**: Configurable shadow effects for better text contrast and depth
   - Complete coverage across all ViewTouch UI elements including:
@@ -87,6 +87,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
 
 ### Fixed
+- Allow settlement after reset for users with Settle permission
+  - Removed terminal-type restriction in `Terminal::CanSettleCheck()` that blocked settling on `ORDER_ONLY` terminals after reset
+  - Settlement still requires a valid drawer and respects ownership/supervisor checks
 - fix configure step by searching for `PkgConfig` before using `pkg_check_module` #128
 - update embedded `catch.hpp` to `v2.13.10` to fix compilation on Ubuntu 20.04 and newer #131
 - Fixed: Changing font now updates all UI elements, including toolbar and dialog buttons, not just some zones

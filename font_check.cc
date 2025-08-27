@@ -115,7 +115,7 @@ const char* GetScalableFontName(int font_id) {
 }
 
 // Text enhancement settings (defaults for font checker)
-static int use_embossed_text = 1;
+static int use_embossed_text = 0;
 static int use_text_antialiasing = 1;
 static int use_drop_shadows = 0;
 static int shadow_offset_x = 2;

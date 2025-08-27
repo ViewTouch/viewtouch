@@ -26,7 +26,7 @@
 #include "version/vt_version_info.hh"
 
 // Text enhancement settings (defaults for loader)
-static int use_embossed_text = 1;
+static int use_embossed_text = 0;
 static int use_text_antialiasing = 1;
 static int use_drop_shadows = 0;
 static int shadow_offset_x = 2;
