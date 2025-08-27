@@ -2208,8 +2208,6 @@ int Terminal::CanSettleCheck()
         return 0;  // no
     else if (user->training)
         return 1;  // yes
-    else if (type == TERMINAL_ORDER_ONLY)
-        return 0;  // no
 
     if (user->IsSupervisor(s))
         return 1;
