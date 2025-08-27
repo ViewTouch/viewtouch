@@ -56,6 +56,8 @@ jobs:
           else \
             cp ../xpm/demo.png AppDir/viewtouch.png; \
           fi
+          # ensure desktop file references executable in AppDir
+          sed -i 's#Exec=vtpos#Exec=usr/viewtouch/bin/vtpos#' AppDir/viewtouch.desktop || true
 
       - name: Download linuxdeploy
         run: |
