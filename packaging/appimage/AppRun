@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APPDIR="${APPDIR:-$(dirname "$0")}" 
+# Get AppImage directory
+APPDIR="${APPDIR:-$(dirname "$0")}"
+
+# Add bundled libraries to library path for better distro compatibility
+if [ -d "$APPDIR/usr/lib" ]; then
+    export LD_LIBRARY_PATH="$APPDIR/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
+
+# Launch ViewTouch
 exec "$APPDIR/usr/viewtouch/bin/vtpos" "$@"
 
 
