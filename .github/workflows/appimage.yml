@@ -27,8 +27,10 @@ jobs:
 
       - name: Build
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build -j$(nproc)
+          echo "=== CMake Configure ==="
+          cmake -B build -DCMAKE_BUILD_TYPE=Release 2>&1
+          echo "=== CMake Build ==="
+          cmake --build build -j$(nproc) 2>&1
 
       - name: Stage AppDir
         run: |
