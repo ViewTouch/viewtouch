@@ -1,0 +1,87 @@
+name: Build AppImages
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  appimage:
+    name: AppImage (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-22.04
+            linuxdeploy_url: https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          - arch: aarch64
+            runner: ubuntu-22.04
+            linuxdeploy_url: https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-aarch64.AppImage
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake git \
+            libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev \
+            libfreetype6-dev libfontconfig1-dev zlib1g-dev \
+            libmotif-dev
+
+      - name: Enable QEMU (for aarch64)
+        if: matrix.arch == 'aarch64'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Build
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j$(nproc)
+
+      - name: Stage AppDir
+        run: |
+          cd build
+          rm -rf AppDir
+          DESTDIR=AppDir cmake --install .
+          install -Dm755 ../packaging/appimage/AppRun AppDir/AppRun
+          install -Dm644 ../packaging/appimage/viewtouch.desktop AppDir/viewtouch.desktop
+          if [ -f ../packaging/appimage/viewtouch.png ]; then \
+            install -Dm644 ../packaging/appimage/viewtouch.png AppDir/viewtouch.png; \
+          else \
+            cp ../xpm/demo.png AppDir/viewtouch.png; \
+          fi
+
+      - name: Download linuxdeploy
+        run: |
+          curl -L "${{ matrix.linuxdeploy_url }}" -o linuxdeploy.AppImage
+          chmod +x linuxdeploy.AppImage
+
+      - name: Build AppImage
+        run: |
+          cd build
+          ../linuxdeploy.AppImage --appdir AppDir \
+            --executable AppDir/usr/viewtouch/bin/vtpos \
+            --desktop-file AppDir/viewtouch.desktop \
+            --icon-file AppDir/viewtouch.png \
+            --output appimage
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: viewtouch-AppImage-${{ matrix.arch }}
+          path: build/*.AppImage
+
+      - name: Create Release (tag push only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
