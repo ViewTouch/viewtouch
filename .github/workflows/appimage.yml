@@ -58,6 +58,12 @@ jobs:
           fi
           # ensure desktop file references executable in AppDir
           sed -i 's#Exec=vtpos#Exec=usr/viewtouch/bin/vtpos#' AppDir/viewtouch.desktop || true
+          # place desktop/icon where linuxdeploy expects them
+          mkdir -p AppDir/usr/share/applications
+          cp AppDir/viewtouch.desktop AppDir/usr/share/applications/viewtouch.desktop
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          cp AppDir/viewtouch.png AppDir/usr/share/icons/hicolor/256x256/apps/viewtouch.png
+          echo "AppDir layout:" && find AppDir -maxdepth 3 -type f | sort | sed 's#^#  #'
 
       - name: Download linuxdeploy
         run: |
@@ -68,13 +74,25 @@ jobs:
         env:
           APPIMAGE_EXTRACT_AND_RUN: "1"
         run: |
+          set -e
           cd build
           chmod +x ../linuxdeploy.AppImage || true
-          ../linuxdeploy.AppImage --appdir AppDir \
-            --executable AppDir/usr/viewtouch/bin/vtpos \
-            --desktop-file AppDir/viewtouch.desktop \
-            --icon-file AppDir/viewtouch.png \
-            --output appimage
+          set -x
+          if ! ../linuxdeploy.AppImage --appdir AppDir \
+              --executable AppDir/usr/viewtouch/bin/vtpos \
+              --desktop-file AppDir/usr/share/applications/viewtouch.desktop \
+              --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/viewtouch.png \
+              --output appimage; then
+            set +x
+            echo "linuxdeploy failed; attempting appimagetool fallback (x86_64 only)"
+            if [ "${{ matrix.arch }}" = "x86_64" ]; then
+              curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o ../appimagetool.AppImage
+              chmod +x ../appimagetool.AppImage
+              APPIMAGE_EXTRACT_AND_RUN=1 ../appimagetool.AppImage -n AppDir || exit 1
+            else
+              exit 1
+            fi
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
