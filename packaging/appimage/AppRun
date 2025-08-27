@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APPDIR="${APPDIR:-$(dirname "$0")}" 
+exec "$APPDIR/usr/viewtouch/bin/vtpos" "$@"
+
+

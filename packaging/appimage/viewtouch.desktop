@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=ViewTouch POS
+Exec=vtpos
+Icon=viewtouch
+Categories=Office;Utility;PointOfSale;
+Terminal=false
+
+

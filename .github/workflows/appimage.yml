@@ -19,7 +19,7 @@ jobs:
             linuxdeploy_url: https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           - arch: aarch64
             runner: ubuntu-22.04
-            linuxdeploy_url: https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-aarch64.AppImage
+            linuxdeploy_url: https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
 
     steps:
       - name: Checkout
@@ -32,7 +32,7 @@ jobs:
             build-essential cmake git \
             libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev \
             libfreetype6-dev libfontconfig1-dev zlib1g-dev \
-            libmotif-dev
+            libmotif-dev patchelf file desktop-file-utils libglib2.0-bin
 
       - name: Enable QEMU (for aarch64)
         if: matrix.arch == 'aarch64'
@@ -64,7 +64,14 @@ jobs:
       - name: Build AppImage
         run: |
           cd build
-          ../linuxdeploy.AppImage --appdir AppDir \
+          # Try to avoid FUSE/AppImage exec issues by extracting
+          set -e
+          if ../linuxdeploy.AppImage --appimage-extract >/dev/null 2>&1; then \
+            LINUXDEPLOY=./squashfs-root/AppRun; \
+          else \
+            LINUXDEPLOY=../linuxdeploy.AppImage; \
+          fi
+          "$LINUXDEPLOY" --appdir AppDir \
             --executable AppDir/usr/viewtouch/bin/vtpos \
             --desktop-file AppDir/viewtouch.desktop \
             --icon-file AppDir/viewtouch.png \
