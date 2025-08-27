@@ -3,7 +3,7 @@ Type=Application
 Name=ViewTouch POS
 Exec=usr/viewtouch/bin/vtpos
 Icon=viewtouch
-Categories=Office;Utility;PointOfSale;
+Categories=Office;
 Terminal=false
 
 
