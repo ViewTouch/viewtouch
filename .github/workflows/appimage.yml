@@ -22,7 +22,8 @@ jobs:
             build-essential cmake git \
             libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev \
             libfreetype6-dev libfontconfig1-dev zlib1g-dev \
-            libmotif-dev patchelf file desktop-file-utils libglib2.0-bin \
+            libmotif-dev libcurl4-openssl-dev \
+            patchelf file desktop-file-utils libglib2.0-bin \
             libfuse2 squashfs-tools \
             pkg-config
 
