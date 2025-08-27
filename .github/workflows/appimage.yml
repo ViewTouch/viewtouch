@@ -17,19 +17,15 @@ jobs:
           - arch: x86_64
             runner: ubuntu-22.04
             cmake_arch: x86_64
-          - arch: aarch64
-            runner: ubuntu-22.04
-            cmake_arch: aarch64
+          # Temporarily disable aarch64 until we can set up proper cross-compilation
+          # or use ARM runners - the cross-compilation setup is complex with X11 dependencies
+          # - arch: aarch64
+          #   runner: ubuntu-22.04  
+          #   cmake_arch: aarch64
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup QEMU for cross-compilation
-        if: matrix.arch != 'x86_64'
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: ${{ matrix.arch }}
 
       - name: Install deps
         run: |
@@ -42,26 +38,11 @@ jobs:
             patchelf file desktop-file-utils libglib2.0-bin \
             libfuse2 squashfs-tools \
             pkg-config
-          # Add cross-compilation tools for ARM64
-          if [ "${{ matrix.arch }}" = "aarch64" ]; then
-            sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
-              libc6-dev-arm64-cross
-          fi
 
       - name: Build
         run: |
           echo "=== CMake Configure ==="
-          if [ "${{ matrix.arch }}" = "aarch64" ]; then
-            # Cross-compile for ARM64
-            cmake -B build -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
-              -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
-              -DCMAKE_SYSTEM_NAME=Linux \
-              -DCMAKE_SYSTEM_PROCESSOR=aarch64 2>&1
-          else
-            # Native x86_64 build
-            cmake -B build -DCMAKE_BUILD_TYPE=Release 2>&1
-          fi
+          cmake -B build -DCMAKE_BUILD_TYPE=Release 2>&1
           echo "=== CMake Build ==="
           cmake --build build -j$(nproc) 2>&1
 
@@ -88,11 +69,7 @@ jobs:
 
       - name: Download appimagetool
         run: |
-          if [ "${{ matrix.arch }}" = "aarch64" ]; then
-            curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -o appimagetool.AppImage
-          else
-            curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool.AppImage
-          fi
+          curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool.AppImage
           chmod +x appimagetool.AppImage
 
       - name: Build AppImage
@@ -107,12 +84,8 @@ jobs:
           echo "=== Bundling libraries ==="
           mkdir -p AppDir/usr/lib
           
-          # Copy essential libraries that might vary between distros
-          if [ "${{ matrix.arch }}" = "aarch64" ]; then
-            LIB_ARCH="aarch64-linux-gnu"
-          else
-            LIB_ARCH="x86_64-linux-gnu"
-          fi
+          # Copy essential libraries that might vary between distros  
+          LIB_ARCH="x86_64-linux-gnu"
           
           # Bundle key libraries (but skip system-critical ones)
           for lib in libXft.so.2 libXmu.so.6 libXpm.so.4 libXrender.so.1 \

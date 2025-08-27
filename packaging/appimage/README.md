@@ -5,16 +5,16 @@ This folder contains the AppImage packaging system for ViewTouch POS, designed t
 ## 🌍 Universal Compatibility
 
 The AppImage works on:
-- **x86_64 systems**: Intel/AMD 64-bit processors
-- **aarch64 systems**: ARM 64-bit processors (Raspberry Pi 4/5, ARM servers)
+- **x86_64 systems**: Intel/AMD 64-bit processors (automated builds available)
+- **aarch64 systems**: ARM 64-bit processors (build locally on ARM64 - see [ARM64_SUPPORT.md](../../docs/ARM64_SUPPORT.md))
 - **All distributions**: Ubuntu, Debian, Fedora, CentOS, openSUSE, Arch, Raspberry Pi OS, etc.
 - **Old and new**: No specific glibc/library version requirements
 
 ## 📦 Download & Run
 
-1. Download the appropriate AppImage:
-   - `ViewTouch-x86_64.AppImage` for Intel/AMD systems
-   - `ViewTouch-aarch64.AppImage` for ARM systems (Raspberry Pi, etc.)
+1. Download the AppImage:
+   - `ViewTouch-x86_64.AppImage` for Intel/AMD systems (from GitHub Releases)
+   - For ARM systems: Build locally (see [ARM64 Support Guide](../../docs/ARM64_SUPPORT.md))
 
 2. Make executable and run:
    ```bash
