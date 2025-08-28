@@ -1,63 +1,36 @@
-# ViewTouch AppImage - Universal Linux Package
+# ViewTouch AppImage Packaging
 
-This folder contains the AppImage packaging system for ViewTouch POS, designed to work on **all Linux distributions**.
+This directory contains the files needed to create a ViewTouch AppImage - a portable, single-file installer for Linux.
 
-## 🌍 Universal Compatibility
+## Files
 
-The AppImage works on:
-- **x86_64 systems**: Intel/AMD 64-bit processors (automated builds available)
-- **aarch64 systems**: ARM 64-bit processors (build locally on ARM64 - see [ARM64_SUPPORT.md](../../docs/ARM64_SUPPORT.md))
-- **All distributions**: Ubuntu, Debian, Fedora, CentOS, openSUSE, Arch, Raspberry Pi OS, etc.
-- **Old and new**: No specific glibc/library version requirements
+- **AppRun**: The main launcher script that handles ViewTouch's hardcoded paths
+- **viewtouch.desktop**: Desktop entry file for the application
+- **README.md**: This documentation file
 
-## 📦 Download & Run
+## Creating the AppImage
 
-1. Download the AppImage:
-   - `ViewTouch-x86_64.AppImage` for Intel/AMD systems (from GitHub Releases)
-   - For ARM systems: Build locally (see [ARM64 Support Guide](../../docs/ARM64_SUPPORT.md))
-
-2. Make executable and run:
+1. Build ViewTouch normally to create `build/AppDir/`
+2. Use AppImageTool to package it:
    ```bash
-   chmod +x ViewTouch-*.AppImage
-   ./ViewTouch-*.AppImage
+   ./appimagetool-aarch64.AppImage build/AppDir/ ViewTouch-$(date +%Y%m%d)-aarch64.AppImage
    ```
 
-3. Or double-click in file manager!
+## How it Works
 
-## 🔧 How It Works
+ViewTouch has hardcoded paths to `/usr/viewtouch` compiled into the binary. The AppRun script solves this by:
 
-The AppImage bundles:
-- ViewTouch binaries (`vtpos`, `vt_main`, `vt_term`, etc.)
-- Required fonts (DejaVu, EB Garamond, Liberation, etc.)
-- Essential X11/graphics libraries
-- Language packs
-- Configuration files
+1. Creating a temporary writable copy of ViewTouch data
+2. Using sudo to create system symlinks when available  
+3. Falling back to user namespaces if sudo isn't available
+4. Automatic cleanup on exit
 
-## 🏗️ Building Locally
+## Usage
 
-```bash
-# Build ViewTouch
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j
+Users can simply:
+1. Download the `.AppImage` file
+2. Make it executable: `chmod +x ViewTouch-*.AppImage`
+3. Run it: `./ViewTouch-*.AppImage`
+4. Provide sudo password when prompted (for system symlink creation)
 
-# Stage AppDir
-rm -rf build/AppDir && DESTDIR=build/AppDir cmake --install build
-install -Dm755 packaging/appimage/AppRun build/AppDir/AppRun
-install -Dm644 packaging/appimage/viewtouch.desktop build/AppDir/viewtouch.desktop
-cp xpm/demo.png build/AppDir/viewtouch.png
-
-# Create AppImage (requires appimagetool)
-wget -O appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$(uname -m).AppImage
-chmod +x appimagetool
-APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool build/AppDir
-```
-
-## 🚀 Features
-
-- **Self-contained**: No installation required
-- **Portable**: Run from USB drive or any location  
-- **Sandboxed**: Doesn't interfere with system
-- **Universal**: Single file works everywhere
-- **Cross-architecture**: x86_64 and ARM64 support
-
-Perfect for restaurants, retail stores, and POS deployments across diverse Linux environments!
+The AppImage is self-contained and works on any modern Linux distribution.

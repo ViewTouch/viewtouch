@@ -9,7 +9,47 @@ if [ -d "$APPDIR/usr/lib" ]; then
     export LD_LIBRARY_PATH="$APPDIR/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 fi
 
-# Launch ViewTouch
-exec "$APPDIR/usr/viewtouch/bin/vtpos" "$@"
+# ViewTouch has hardcoded paths to /usr/viewtouch
+# We need to create this directory structure for the application to work
+TEMP_DIR="/tmp/viewtouch-run-$$"
+mkdir -p "$TEMP_DIR"
+
+# Create a writable copy of the ViewTouch data in /tmp
+mkdir -p "$TEMP_DIR/usr/viewtouch"
+cp -r "$APPDIR/usr/viewtouch"/* "$TEMP_DIR/usr/viewtouch/"
+chmod -R u+w "$TEMP_DIR/usr/viewtouch"
+
+# Cleanup function
+cleanup() {
+    rm -rf "$TEMP_DIR"
+    # Clean up any /usr/viewtouch if we created it
+    if [ -L "/usr/viewtouch" ] && [ "$(readlink "/usr/viewtouch")" = "$TEMP_DIR/usr/viewtouch" ]; then
+        sudo rm -f /usr/viewtouch 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT
+
+# Try to create the hardcoded path the application expects
+# Method 1: Try with sudo if available
+if command -v sudo >/dev/null 2>&1; then
+    if sudo mkdir -p /usr 2>/dev/null && sudo ln -sf "$TEMP_DIR/usr/viewtouch" /usr/viewtouch 2>/dev/null; then
+        echo "Created system symlink for ViewTouch"
+    fi
+fi
+
+# Method 2: Use user namespaces if available (unshare)
+if command -v unshare >/dev/null 2>&1 && [ ! -L "/usr/viewtouch" ]; then
+    # Try to use user namespace to map the paths
+    exec unshare --user --map-root-user --mount bash -c "
+        mount --bind '$TEMP_DIR' /tmp/vt-bind-$$ 2>/dev/null || true
+        mkdir -p /usr/viewtouch 2>/dev/null || true
+        mount --bind '$TEMP_DIR/usr/viewtouch' /usr/viewtouch 2>/dev/null || true
+        exec '$APPDIR/usr/viewtouch/bin/vtpos' \"\$@\"
+    " -- "$@"
+fi
+
+# Method 3: Fallback - just run from temp directory and hope it works
+cd "$TEMP_DIR"
+exec "$TEMP_DIR/usr/viewtouch/bin/vtpos" "$@"
 
 
