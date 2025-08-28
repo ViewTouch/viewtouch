@@ -160,13 +160,29 @@ extract_source() {
     mkdir -p "$TEMP_DIR"
     cd "$TEMP_DIR"
     
-    # Find the archive marker
-    ARCHIVE_LINE=$(grep -n "^__SOURCE_ARCHIVE__$" "$INSTALLER_SCRIPT" | cut -d: -f1)
+    # Find the archive marker (force text mode with -a to handle binary content)
+    ARCHIVE_LINE=$(grep -a -n "^__SOURCE_ARCHIVE__$" "$INSTALLER_SCRIPT" | cut -d: -f1)
     if [ -z "$ARCHIVE_LINE" ]; then
         log_error "Cannot find source archive marker in installer"
         log_error "Checked file: $INSTALLER_SCRIPT"
         log_error "File size: $(wc -c < "$INSTALLER_SCRIPT") bytes"
-        exit 1
+        
+        # Debug: show what grep actually finds
+        log_info "Attempting to find marker with different methods..."
+        if grep -a "__SOURCE_ARCHIVE__" "$INSTALLER_SCRIPT" >/dev/null; then
+            log_info "Marker exists but line number detection failed"
+            # Try alternative method using awk
+            ARCHIVE_LINE=$(awk '/^__SOURCE_ARCHIVE__$/{print NR; exit}' "$INSTALLER_SCRIPT")
+            if [ -n "$ARCHIVE_LINE" ]; then
+                log_info "Found marker at line $ARCHIVE_LINE using awk"
+            fi
+        else
+            log_error "Marker '__SOURCE_ARCHIVE__' not found in file at all"
+        fi
+        
+        if [ -z "$ARCHIVE_LINE" ]; then
+            exit 1
+        fi
     fi
     
     SOURCE_LINE=$((ARCHIVE_LINE + 1))
