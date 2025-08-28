@@ -17,13 +17,21 @@ jobs:
           - arch: x86_64
             runner: ubuntu-22.04
             cmake_arch: x86_64
+            cross_compile: false
           - arch: aarch64
-            runner: ubuntu-22.04-arm64
+            runner: ubuntu-22.04
             cmake_arch: aarch64
+            cross_compile: true
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up QEMU for ARM64 emulation
+        if: matrix.cross_compile == true
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
 
       - name: Install deps
         run: |
@@ -37,14 +45,63 @@ jobs:
             libfuse2 squashfs-tools \
             pkg-config
 
-      - name: Build
+      - name: Build with Docker (ARM64)
+        if: matrix.cross_compile == true
+        run: |
+          # Use ARM64 Ubuntu container for native ARM64 build
+          docker run --rm --platform=linux/arm64 \
+            -v $PWD:/workspace \
+            -w /workspace \
+            arm64v8/ubuntu:22.04 bash -c "
+              apt-get update && apt-get install -y --no-install-recommends \
+                build-essential cmake git \
+                libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev \
+                libfreetype6-dev libfontconfig1-dev zlib1g-dev \
+                libmotif-dev libcurl4-openssl-dev \
+                pkg-config && \
+              echo '=== CMake Configure ===' && \
+              cmake -B build -DCMAKE_BUILD_TYPE=Release && \
+              echo '=== CMake Build ===' && \
+              cmake --build build -j\$(nproc)
+            "
+
+      - name: Build (x86_64)
+        if: matrix.cross_compile == false
         run: |
           echo "=== CMake Configure ==="
           cmake -B build -DCMAKE_BUILD_TYPE=Release 2>&1
           echo "=== CMake Build ==="
           cmake --build build -j$(nproc) 2>&1
 
-      - name: Stage AppDir
+      - name: Stage AppDir with Docker (ARM64)
+        if: matrix.cross_compile == true
+        run: |
+          # Stage AppDir inside the same ARM64 container
+          docker run --rm --platform=linux/arm64 \
+            -v $PWD:/workspace \
+            -w /workspace \
+            arm64v8/ubuntu:22.04 bash -c "
+              apt-get update && apt-get install -y cmake file && \
+              cd build && \
+              rm -rf AppDir && \
+              DESTDIR=AppDir cmake --install . && \
+              install -Dm755 ../packaging/appimage/AppRun AppDir/AppRun && \
+              install -Dm644 ../packaging/appimage/viewtouch.desktop AppDir/viewtouch.desktop && \
+              if [ -f ../packaging/appimage/viewtouch.png ]; then \
+                install -Dm644 ../packaging/appimage/viewtouch.png AppDir/viewtouch.png; \
+              else \
+                cp ../xpm/demo.png AppDir/viewtouch.png; \
+              fi && \
+              sed -i 's#Exec=vtpos#Exec=usr/viewtouch/bin/vtpos#' AppDir/viewtouch.desktop || true && \
+              mkdir -p AppDir/usr/share/applications && \
+              cp AppDir/viewtouch.desktop AppDir/usr/share/applications/viewtouch.desktop && \
+              mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps && \
+              cp AppDir/viewtouch.png AppDir/usr/share/icons/hicolor/256x256/apps/viewtouch.png && \
+              echo 'AppDir layout:' && find AppDir -maxdepth 3 -type f | sort | sed 's#^#  #'
+            "
+
+      - name: Stage AppDir (x86_64)
+        if: matrix.cross_compile == false
         run: |
           cd build
           rm -rf AppDir
