@@ -147,8 +147,28 @@ extract_source() {
     mkdir -p "$TEMP_DIR"
     cd "$TEMP_DIR"
     
+    # Get the full path to this script
+    SCRIPT_PATH="$(readlink -f "$0")"
+    log_info "Installer path: $SCRIPT_PATH"
+    
+    # Find the archive marker
+    ARCHIVE_LINE=$(grep -n "^__SOURCE_ARCHIVE__$" "$SCRIPT_PATH" | cut -d: -f1)
+    if [ -z "$ARCHIVE_LINE" ]; then
+        log_error "Cannot find source archive marker in installer"
+        exit 1
+    fi
+    
+    SOURCE_LINE=$((ARCHIVE_LINE + 1))
+    log_info "Extracting from line $SOURCE_LINE..."
+    
     # Extract the embedded source archive
-    tail -n +__SOURCE_LINE__ "$0" | tar xz
+    if ! tail -n +"$SOURCE_LINE" "$SCRIPT_PATH" | tar xz; then
+        log_error "Failed to extract source archive"
+        log_info "Installer file: $SCRIPT_PATH"
+        log_info "Archive starts at line: $SOURCE_LINE"
+        log_info "File size: $(wc -c < "$SCRIPT_PATH") bytes"
+        exit 1
+    fi
     
     log_success "Source code extracted to $TEMP_DIR"
 }
@@ -297,18 +317,13 @@ trap cleanup EXIT
 # Run main installation
 main "$@"
 
-# This marker indicates where the source archive begins
-__SOURCE_LINE__=$(( $(grep -n "^__SOURCE_ARCHIVE__$" "$0" | cut -d: -f1) + 1 ))
-
+# Exit here - the source archive follows
 exit 0
 
 __SOURCE_ARCHIVE__
 INSTALLER_EOF
 
-# Replace the placeholder with actual line number
-TOTAL_LINES=$(wc -l < "$BUILD_DIR/installer-main.sh")
-SOURCE_LINE=$((TOTAL_LINES + 1))
-sed -i "s/__SOURCE_LINE__/$SOURCE_LINE/" "$BUILD_DIR/installer-main.sh"
+# No need to replace line numbers - the script will find the marker dynamically
 
 # Combine installer script and source archive
 cat "$BUILD_DIR/installer-main.sh" "$BUILD_DIR/viewtouch-source.tar.gz" > "$BUILD_DIR/$INSTALLER_NAME"
