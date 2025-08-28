@@ -127,7 +127,35 @@ jobs:
           curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${{ matrix.arch }}.AppImage -o appimagetool.AppImage
           chmod +x appimagetool.AppImage
 
-      - name: Build AppImage
+      - name: Build AppImage with Docker (ARM64)
+        if: matrix.cross_compile == true
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+        run: |
+          # Complete AppImage creation inside Docker to avoid permission issues
+          docker run --rm --platform=linux/arm64 \
+            -v $PWD:/workspace \
+            -w /workspace \
+            -e APPIMAGE_EXTRACT_AND_RUN=1 \
+            arm64v8/ubuntu:22.04 bash -c "
+              apt-get update && apt-get install -y curl file && \
+              cd build && \
+              chmod +x AppDir/AppRun && \
+              echo '=== Bundling libraries ===' && \
+              mkdir -p AppDir/usr/lib && \
+              LIB_ARCH='aarch64-linux-gnu' && \
+              for lib in libXft.so.2 libXmu.so.6 libXpm.so.4 libXrender.so.1 \
+                         libfontconfig.so.1 libfreetype.so.6 libXm.so.4; do
+                if [ -f \"/usr/lib/\$LIB_ARCH/\$lib\" ]; then
+                  cp \"/usr/lib/\$LIB_ARCH/\$lib\" AppDir/usr/lib/ || true
+                fi
+              done && \
+              echo '=== Creating AppImage ===' && \
+              ../appimagetool.AppImage -n AppDir
+            "
+
+      - name: Build AppImage (x86_64)
+        if: matrix.cross_compile == false
         env:
           APPIMAGE_EXTRACT_AND_RUN: "1"
         run: |
@@ -140,11 +168,7 @@ jobs:
           mkdir -p AppDir/usr/lib
           
           # Copy essential libraries that might vary between distros
-          if [ "${{ matrix.arch }}" = "x86_64" ]; then
-            LIB_ARCH="x86_64-linux-gnu"
-          else
-            LIB_ARCH="aarch64-linux-gnu"
-          fi
+          LIB_ARCH="x86_64-linux-gnu"
           
           # Bundle key libraries (but skip system-critical ones)
           for lib in libXft.so.2 libXmu.so.6 libXpm.so.4 libXrender.so.1 \
