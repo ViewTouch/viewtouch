@@ -8,30 +8,12 @@ on:
 
 jobs:
   appimage:
-    name: AppImage (${{ matrix.arch }})
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: x86_64
-            runner: ubuntu-22.04
-            cmake_arch: x86_64
-            cross_compile: false
-          - arch: aarch64
-            runner: ubuntu-22.04
-            cmake_arch: aarch64
-            cross_compile: true
+    name: AppImage for Debian-based Systems (x86_64)
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up QEMU for ARM64 emulation
-        if: matrix.cross_compile == true
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
 
       - name: Install deps
         run: |
@@ -45,63 +27,14 @@ jobs:
             libfuse2 squashfs-tools \
             pkg-config
 
-      - name: Build with Docker (ARM64)
-        if: matrix.cross_compile == true
-        run: |
-          # Use ARM64 Ubuntu container for native ARM64 build
-          docker run --rm --platform=linux/arm64 \
-            -v $PWD:/workspace \
-            -w /workspace \
-            arm64v8/ubuntu:22.04 bash -c "
-              apt-get update && apt-get install -y --no-install-recommends \
-                build-essential cmake git \
-                libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev \
-                libfreetype6-dev libfontconfig1-dev zlib1g-dev \
-                libmotif-dev libcurl4-openssl-dev \
-                pkg-config && \
-              echo '=== CMake Configure ===' && \
-              cmake -B build -DCMAKE_BUILD_TYPE=Release && \
-              echo '=== CMake Build ===' && \
-              cmake --build build -j\$(nproc)
-            "
-
-      - name: Build (x86_64)
-        if: matrix.cross_compile == false
+      - name: Build
         run: |
           echo "=== CMake Configure ==="
           cmake -B build -DCMAKE_BUILD_TYPE=Release 2>&1
           echo "=== CMake Build ==="
           cmake --build build -j$(nproc) 2>&1
 
-      - name: Stage AppDir with Docker (ARM64)
-        if: matrix.cross_compile == true
-        run: |
-          # Stage AppDir inside the same ARM64 container
-          docker run --rm --platform=linux/arm64 \
-            -v $PWD:/workspace \
-            -w /workspace \
-            arm64v8/ubuntu:22.04 bash -c "
-              apt-get update && apt-get install -y cmake file && \
-              cd build && \
-              rm -rf AppDir && \
-              DESTDIR=AppDir cmake --install . && \
-              install -Dm755 ../packaging/appimage/AppRun AppDir/AppRun && \
-              install -Dm644 ../packaging/appimage/viewtouch.desktop AppDir/viewtouch.desktop && \
-              if [ -f ../packaging/appimage/viewtouch.png ]; then \
-                install -Dm644 ../packaging/appimage/viewtouch.png AppDir/viewtouch.png; \
-              else \
-                cp ../xpm/demo.png AppDir/viewtouch.png; \
-              fi && \
-              sed -i 's#Exec=vtpos#Exec=usr/viewtouch/bin/vtpos#' AppDir/viewtouch.desktop || true && \
-              mkdir -p AppDir/usr/share/applications && \
-              cp AppDir/viewtouch.desktop AppDir/usr/share/applications/viewtouch.desktop && \
-              mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps && \
-              cp AppDir/viewtouch.png AppDir/usr/share/icons/hicolor/256x256/apps/viewtouch.png && \
-              echo 'AppDir layout:' && find AppDir -maxdepth 3 -type f | sort | sed 's#^#  #'
-            "
-
-      - name: Stage AppDir (x86_64)
-        if: matrix.cross_compile == false
+      - name: Stage AppDir
         run: |
           cd build
           rm -rf AppDir
@@ -122,43 +55,12 @@ jobs:
           cp AppDir/viewtouch.png AppDir/usr/share/icons/hicolor/256x256/apps/viewtouch.png
           echo "AppDir layout:" && find AppDir -maxdepth 3 -type f | sort | sed 's#^#  #'
 
-      - name: Download appimagetool (x86_64)
-        if: matrix.cross_compile == false
+      - name: Download appimagetool
         run: |
           curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool.AppImage
           chmod +x appimagetool.AppImage
 
-      - name: Build AppImage with Docker (ARM64)
-        if: matrix.cross_compile == true
-        run: |
-          # Complete AppImage creation inside Docker to avoid permission issues
-          docker run --rm --platform=linux/arm64 \
-            -v $PWD:/workspace \
-            -w /workspace \
-            arm64v8/ubuntu:22.04 bash -c "
-              apt-get update && apt-get install -y curl file libfuse2 && \
-              echo '=== Downloading ARM64 AppImageTool ===' && \
-              curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -o appimagetool.AppImage && \
-              chmod +x appimagetool.AppImage && \
-              echo '=== Extracting AppImageTool (avoiding FUSE issues) ===' && \
-              ./appimagetool.AppImage --appimage-extract > /dev/null 2>&1 && \
-              cd build && \
-              chmod +x AppDir/AppRun && \
-              echo '=== Bundling libraries ===' && \
-              mkdir -p AppDir/usr/lib && \
-              LIB_ARCH='aarch64-linux-gnu' && \
-              for lib in libXft.so.2 libXmu.so.6 libXpm.so.4 libXrender.so.1 \
-                         libfontconfig.so.1 libfreetype.so.6 libXm.so.4; do
-                if [ -f \"/usr/lib/\$LIB_ARCH/\$lib\" ]; then
-                  cp \"/usr/lib/\$LIB_ARCH/\$lib\" AppDir/usr/lib/ || true
-                fi
-              done && \
-              echo '=== Creating AppImage ===' && \
-              ../squashfs-root/AppRun -n AppDir
-            "
-
-      - name: Build AppImage (x86_64)
-        if: matrix.cross_compile == false
+      - name: Build AppImage
         env:
           APPIMAGE_EXTRACT_AND_RUN: "1"
         run: |
@@ -166,18 +68,28 @@ jobs:
           cd build
           chmod +x AppDir/AppRun
           
-          # Bundle additional libraries for better distro compatibility
-          echo "=== Bundling libraries ==="
+          # Bundle additional libraries for Debian-based distributions
+          echo "=== Bundling libraries for Debian family ==="
           mkdir -p AppDir/usr/lib
           
-          # Copy essential libraries that might vary between distros
+          # Copy essential libraries that vary between Debian-based distros
           LIB_ARCH="x86_64-linux-gnu"
           
-          # Bundle key libraries (but skip system-critical ones)
+          # Bundle X11 and rendering libraries common across Debian family
           for lib in libXft.so.2 libXmu.so.6 libXpm.so.4 libXrender.so.1 \
-                     libfontconfig.so.1 libfreetype.so.6 libXm.so.4; do
+                     libfontconfig.so.1 libfreetype.so.6 libXm.so.4 \
+                     libXt.so.6 libX11.so.6; do
             if [ -f "/usr/lib/$LIB_ARCH/$lib" ]; then
               cp "/usr/lib/$LIB_ARCH/$lib" AppDir/usr/lib/ || true
+              echo "  Bundled: $lib"
+            fi
+          done
+          
+          # Bundle additional Debian-specific libraries that may vary
+          for lib in libcurl.so.4 libssl.so.3 libcrypto.so.3; do
+            if [ -f "/usr/lib/$LIB_ARCH/$lib" ]; then
+              cp "/usr/lib/$LIB_ARCH/$lib" AppDir/usr/lib/ || true
+              echo "  Bundled: $lib"
             fi
           done
           
@@ -187,7 +99,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: viewtouch-AppImage-${{ matrix.arch }}
+          name: viewtouch-AppImage-debian-x86_64
           path: build/*.AppImage
 
       - name: Create Release (tag push only)

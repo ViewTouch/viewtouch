@@ -1,6 +1,16 @@
 # ViewTouch AppImage Packaging
 
-This directory contains the files needed to create a ViewTouch AppImage - a portable, single-file installer for Linux.
+This directory contains the files needed to create a ViewTouch AppImage - a portable, single-file installer optimized for Debian-based Linux distributions.
+
+## Target Systems
+
+**Optimized for Debian-based distributions:**
+- Debian (10, 11, 12+)
+- Ubuntu (18.04, 20.04, 22.04, 24.04+)
+- Linux Mint
+- Pop!_OS
+- Elementary OS
+- Other Debian derivatives
 
 ## Files
 
@@ -13,7 +23,7 @@ This directory contains the files needed to create a ViewTouch AppImage - a port
 1. Build ViewTouch normally to create `build/AppDir/`
 2. Use AppImageTool to package it:
    ```bash
-   ./appimagetool-aarch64.AppImage build/AppDir/ ViewTouch-$(date +%Y%m%d)-aarch64.AppImage
+   ./appimagetool-x86_64.AppImage build/AppDir/ ViewTouch-$(date +%Y%m%d)-debian-x86_64.AppImage
    ```
 
 ## How it Works
@@ -25,12 +35,21 @@ ViewTouch has hardcoded paths to `/usr/viewtouch` compiled into the binary. The 
 3. Falling back to user namespaces if sudo isn't available
 4. Automatic cleanup on exit
 
+## Debian Optimization
+
+The AppImage includes optimized library bundling for Debian systems:
+
+- **X11 Libraries**: libXft, libXmu, libXpm, libXrender, libXt, libX11
+- **Font Rendering**: libfontconfig, libfreetype
+- **Motif UI**: libXm for proper GUI rendering
+- **Network**: libcurl, libssl, libcrypto for secure connections
+
 ## Usage
 
 Users can simply:
-1. Download the `.AppImage` file
-2. Make it executable: `chmod +x ViewTouch-*.AppImage`
-3. Run it: `./ViewTouch-*.AppImage`
+1. Download the `ViewTouch-*-debian-x86_64.AppImage` file
+2. Make it executable: `chmod +x ViewTouch-*-debian-x86_64.AppImage`
+3. Run it: `./ViewTouch-*-debian-x86_64.AppImage`
 4. Provide sudo password when prompted (for system symlink creation)
 
-The AppImage is self-contained and works on any modern Linux distribution.
+The AppImage is self-contained and works across all Debian-based distributions without additional dependencies.
