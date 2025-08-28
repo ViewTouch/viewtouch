@@ -130,19 +130,18 @@ jobs:
 
       - name: Build AppImage with Docker (ARM64)
         if: matrix.cross_compile == true
-        env:
-          APPIMAGE_EXTRACT_AND_RUN: "1"
         run: |
           # Complete AppImage creation inside Docker to avoid permission issues
           docker run --rm --platform=linux/arm64 \
             -v $PWD:/workspace \
             -w /workspace \
-            -e APPIMAGE_EXTRACT_AND_RUN=1 \
             arm64v8/ubuntu:22.04 bash -c "
-              apt-get update && apt-get install -y curl file && \
+              apt-get update && apt-get install -y curl file libfuse2 && \
               echo '=== Downloading ARM64 AppImageTool ===' && \
               curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -o appimagetool.AppImage && \
               chmod +x appimagetool.AppImage && \
+              echo '=== Extracting AppImageTool (avoiding FUSE issues) ===' && \
+              ./appimagetool.AppImage --appimage-extract > /dev/null 2>&1 && \
               cd build && \
               chmod +x AppDir/AppRun && \
               echo '=== Bundling libraries ===' && \
@@ -155,7 +154,7 @@ jobs:
                 fi
               done && \
               echo '=== Creating AppImage ===' && \
-              ../appimagetool.AppImage -n AppDir
+              ../squashfs-root/AppRun -n AppDir
             "
 
       - name: Build AppImage (x86_64)
