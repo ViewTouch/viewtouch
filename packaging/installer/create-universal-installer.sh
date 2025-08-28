@@ -46,6 +46,9 @@ VIEWTOUCH_VERSION="21.05.1"
 INSTALL_PREFIX="/usr/viewtouch"
 TEMP_DIR="/tmp/viewtouch-install-$$"
 
+# Save the installer script path before any directory changes
+INSTALLER_SCRIPT="$(readlink -f "$0")"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -144,29 +147,37 @@ install_dependencies() {
 # Extract source code
 extract_source() {
     log_info "Extracting ViewTouch source code..."
+    log_info "Original installer location: $INSTALLER_SCRIPT"
+    
+    # Verify the installer file exists
+    if [ ! -f "$INSTALLER_SCRIPT" ]; then
+        log_error "Cannot find installer script at: $INSTALLER_SCRIPT"
+        log_error "Current working directory: $(pwd)"
+        log_error "Script argument was: $0"
+        exit 1
+    fi
+    
     mkdir -p "$TEMP_DIR"
     cd "$TEMP_DIR"
     
-    # Get the full path to this script
-    SCRIPT_PATH="$(readlink -f "$0")"
-    log_info "Installer path: $SCRIPT_PATH"
-    
     # Find the archive marker
-    ARCHIVE_LINE=$(grep -n "^__SOURCE_ARCHIVE__$" "$SCRIPT_PATH" | cut -d: -f1)
+    ARCHIVE_LINE=$(grep -n "^__SOURCE_ARCHIVE__$" "$INSTALLER_SCRIPT" | cut -d: -f1)
     if [ -z "$ARCHIVE_LINE" ]; then
         log_error "Cannot find source archive marker in installer"
+        log_error "Checked file: $INSTALLER_SCRIPT"
+        log_error "File size: $(wc -c < "$INSTALLER_SCRIPT") bytes"
         exit 1
     fi
     
     SOURCE_LINE=$((ARCHIVE_LINE + 1))
-    log_info "Extracting from line $SOURCE_LINE..."
+    log_info "Archive starts at line $SOURCE_LINE"
     
     # Extract the embedded source archive
-    if ! tail -n +"$SOURCE_LINE" "$SCRIPT_PATH" | tar xz; then
+    if ! tail -n +"$SOURCE_LINE" "$INSTALLER_SCRIPT" | tar xz; then
         log_error "Failed to extract source archive"
-        log_info "Installer file: $SCRIPT_PATH"
+        log_info "Installer file: $INSTALLER_SCRIPT"
         log_info "Archive starts at line: $SOURCE_LINE"
-        log_info "File size: $(wc -c < "$SCRIPT_PATH") bytes"
+        log_info "File size: $(wc -c < "$INSTALLER_SCRIPT") bytes"
         exit 1
     fi
     
