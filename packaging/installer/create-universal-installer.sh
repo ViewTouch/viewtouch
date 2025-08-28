@@ -211,7 +211,7 @@ build_viewtouch() {
     
     # Configure with CMake
     log_info "Configuring build..."
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" ..
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr" ..
     
     # Build
     log_info "Compiling... (this may take a few minutes)"
@@ -234,7 +234,14 @@ install_viewtouch() {
     # Set proper permissions
     chown -R root:root "$INSTALL_PREFIX"
     chmod -R 755 "$INSTALL_PREFIX"
-    chmod +x "$INSTALL_PREFIX/bin/"*
+    
+    # Make binaries executable (if they exist)
+    if [ -d "$INSTALL_PREFIX/bin" ] && [ "$(ls -A "$INSTALL_PREFIX/bin" 2>/dev/null)" ]; then
+        chmod +x "$INSTALL_PREFIX/bin/"*
+        log_info "Set executable permissions for binaries"
+    else
+        log_warning "No binaries found in $INSTALL_PREFIX/bin"
+    fi
     
     # Create desktop entry
     create_desktop_entry
@@ -368,8 +375,7 @@ echo "=================================================="
 echo "File: $BUILD_DIR/$INSTALLER_NAME"
 echo "Size: $INSTALLER_SIZE"
 echo ""
-echo "This installer will work on:"
-echo "  ✓ Debian/Ubuntu (apt)"
+echo "This installer will work on:"y
 echo "  ✓ Fedora/RHEL/CentOS (dnf/yum)"
 echo "  ✓ Arch Linux (pacman)"
 echo "  ✓ openSUSE (zypper)"
