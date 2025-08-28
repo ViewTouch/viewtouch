@@ -122,9 +122,10 @@ jobs:
           cp AppDir/viewtouch.png AppDir/usr/share/icons/hicolor/256x256/apps/viewtouch.png
           echo "AppDir layout:" && find AppDir -maxdepth 3 -type f | sort | sed 's#^#  #'
 
-      - name: Download appimagetool
+      - name: Download appimagetool (x86_64)
+        if: matrix.cross_compile == false
         run: |
-          curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${{ matrix.arch }}.AppImage -o appimagetool.AppImage
+          curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool.AppImage
           chmod +x appimagetool.AppImage
 
       - name: Build AppImage with Docker (ARM64)
@@ -139,6 +140,9 @@ jobs:
             -e APPIMAGE_EXTRACT_AND_RUN=1 \
             arm64v8/ubuntu:22.04 bash -c "
               apt-get update && apt-get install -y curl file && \
+              echo '=== Downloading ARM64 AppImageTool ===' && \
+              curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -o appimagetool.AppImage && \
+              chmod +x appimagetool.AppImage && \
               cd build && \
               chmod +x AppDir/AppRun && \
               echo '=== Bundling libraries ===' && \
