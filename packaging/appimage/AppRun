@@ -19,8 +19,12 @@ mkdir -p "$TEMP_DIR/usr/viewtouch"
 cp -r "$APPDIR/usr/viewtouch"/* "$TEMP_DIR/usr/viewtouch/"
 chmod -R u+w "$TEMP_DIR/usr/viewtouch"
 
+echo "ViewTouch AppImage starting..."
+echo "Creating temporary ViewTouch environment in: $TEMP_DIR"
+
 # Cleanup function
 cleanup() {
+    echo "Cleaning up ViewTouch AppImage..."
     rm -rf "$TEMP_DIR"
     # Clean up any /usr/viewtouch if we created it
     if [ -L "/usr/viewtouch" ] && [ "$(readlink "/usr/viewtouch")" = "$TEMP_DIR/usr/viewtouch" ]; then
@@ -29,27 +33,63 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Try to create the hardcoded path the application expects
-# Method 1: Try with sudo if available
+# Method 1: Try with sudo if available (most reliable)
 if command -v sudo >/dev/null 2>&1; then
+    echo "Attempting to create system symlink with sudo..."
     if sudo mkdir -p /usr 2>/dev/null && sudo ln -sf "$TEMP_DIR/usr/viewtouch" /usr/viewtouch 2>/dev/null; then
-        echo "Created system symlink for ViewTouch"
+        echo "✓ Created system symlink: /usr/viewtouch -> $TEMP_DIR/usr/viewtouch"
+        exec "$APPDIR/usr/viewtouch/bin/vtpos" "$@"
+    else
+        echo "✗ Failed to create system symlink with sudo"
     fi
 fi
 
-# Method 2: Use user namespaces if available (unshare)
-if command -v unshare >/dev/null 2>&1 && [ ! -L "/usr/viewtouch" ]; then
-    # Try to use user namespace to map the paths
-    exec unshare --user --map-root-user --mount bash -c "
-        mount --bind '$TEMP_DIR' /tmp/vt-bind-$$ 2>/dev/null || true
-        mkdir -p /usr/viewtouch 2>/dev/null || true
-        mount --bind '$TEMP_DIR/usr/viewtouch' /usr/viewtouch 2>/dev/null || true
+# Method 2: Use user namespaces if available (Debian/Ubuntu often support this)
+if command -v unshare >/dev/null 2>&1; then
+    echo "Attempting to use user namespaces..."
+    if unshare --user --map-root-user --mount bash -c "
+        mkdir -p /usr/viewtouch 2>/dev/null || exit 1
+        mount --bind '$TEMP_DIR/usr/viewtouch' /usr/viewtouch 2>/dev/null || exit 1
+        echo '✓ Created namespace mount: /usr/viewtouch'
         exec '$APPDIR/usr/viewtouch/bin/vtpos' \"\$@\"
-    " -- "$@"
+    " -- "$@" 2>/dev/null; then
+        # This will only reach here if unshare fails
+        echo "✓ User namespace method succeeded"
+        exit 0
+    else
+        echo "✗ User namespace method failed"
+    fi
 fi
 
-# Method 3: Fallback - just run from temp directory and hope it works
+# Method 3: Try creating actual directory (if we have permissions)
+if [ -w /usr ] 2>/dev/null || sudo test -w /usr 2>/dev/null; then
+    echo "Attempting to create real directory..."
+    if sudo mkdir -p /usr/viewtouch 2>/dev/null && sudo cp -r "$TEMP_DIR/usr/viewtouch"/* /usr/viewtouch/ 2>/dev/null; then
+        sudo chmod -R u+w /usr/viewtouch
+        echo "✓ Created real directory: /usr/viewtouch"
+        # Update cleanup to remove real directory
+        cleanup() {
+            echo "Cleaning up ViewTouch AppImage..."
+            rm -rf "$TEMP_DIR"
+            sudo rm -rf /usr/viewtouch 2>/dev/null || true
+        }
+        trap cleanup EXIT
+        exec "$APPDIR/usr/viewtouch/bin/vtpos" "$@"
+    else
+        echo "✗ Failed to create real directory"
+    fi
+fi
+
+# Method 4: Final fallback with environment variable override (may not work)
+echo "⚠  All path redirection methods failed!"
+echo "⚠  Trying fallback method (limited functionality expected)..."
+echo ""
+echo "ViewTouch requires system-level directory access that couldn't be established."
+echo "You may see errors about missing files in /usr/viewtouch/"
+echo ""
+
 cd "$TEMP_DIR"
+export VIEWTOUCH_PATH="$TEMP_DIR/usr/viewtouch"
 exec "$TEMP_DIR/usr/viewtouch/bin/vtpos" "$@"
 
 

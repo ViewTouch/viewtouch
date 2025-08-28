@@ -8,8 +8,18 @@ on:
 
 jobs:
   appimage:
-    name: AppImage for Debian-based Systems (x86_64)
-    runs-on: ubuntu-22.04
+    name: AppImage for Debian-based Systems (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-22.04
+            target_name: intel-amd
+          - arch: aarch64  
+            runner: ubuntu-24.04-arm64
+            target_name: arm64-rpi
 
     steps:
       - name: Checkout
@@ -57,7 +67,7 @@ jobs:
 
       - name: Download appimagetool
         run: |
-          curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool.AppImage
+          curl -L https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${{ matrix.arch }}.AppImage -o appimagetool.AppImage
           chmod +x appimagetool.AppImage
 
       - name: Build AppImage
@@ -73,7 +83,11 @@ jobs:
           mkdir -p AppDir/usr/lib
           
           # Copy essential libraries that vary between Debian-based distros
-          LIB_ARCH="x86_64-linux-gnu"
+          if [ "${{ matrix.arch }}" = "x86_64" ]; then
+            LIB_ARCH="x86_64-linux-gnu"
+          else
+            LIB_ARCH="aarch64-linux-gnu"
+          fi
           
           # Bundle X11 and rendering libraries common across Debian family
           for lib in libXft.so.2 libXmu.so.6 libXpm.so.4 libXrender.so.1 \
@@ -99,7 +113,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: viewtouch-AppImage-debian-x86_64
+          name: viewtouch-AppImage-debian-${{ matrix.target_name }}
           path: build/*.AppImage
 
       - name: Create Release (tag push only)
