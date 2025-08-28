@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=ViewTouch POS
-Exec=usr/viewtouch/bin/vtpos
-Icon=viewtouch
-Categories=Office;
-Terminal=false
-
-

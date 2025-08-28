@@ -2,7 +2,7 @@
 
 ## Current Status
 
-ViewTouch **fully supports ARM64 architecture** but the GitHub Actions AppImage build for ARM64 is temporarily disabled due to cross-compilation complexity with X11 dependencies.
+ViewTouch **fully supports ARM64 architecture** with our **Universal Linux Installer** that works seamlessly on ARM64 systems including Raspberry Pi.
 
 ## Running on ARM64 Systems
 
@@ -39,47 +39,51 @@ sudo cmake --install build
 sudo /usr/viewtouch/bin/vtpos
 ```
 
-## Creating ARM64 AppImage
+## Universal Installer for ARM64
 
-On an ARM64 system, you can create a portable AppImage:
+The easiest way to install ViewTouch on ARM64 systems is using our Universal Linux Installer:
 
 ```bash
-# After building (see above), stage AppDir
-rm -rf build/AppDir && DESTDIR=build/AppDir cmake --install build
-install -Dm755 packaging/appimage/AppRun build/AppDir/AppRun
-install -Dm644 packaging/appimage/viewtouch.desktop build/AppDir/viewtouch.desktop
-cp xpm/demo.png build/AppDir/viewtouch.png
+# Download the universal installer
+wget https://github.com/No0ne558/viewtouchFork/releases/latest/download/ViewTouch-Universal-Installer.run
 
-# Download ARM64 appimagetool
-wget -O appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage
-chmod +x appimagetool
-
-# Create AppImage
-APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool build/AppDir
+# Make it executable and install
+chmod +x ViewTouch-Universal-Installer.run
+sudo ./ViewTouch-Universal-Installer.run
 ```
 
-## Future Plans
+The universal installer will:
+- Auto-detect ARM64 architecture
+- Install dependencies using the system package manager
+- Compile ViewTouch optimized for your specific ARM64 system
+- Create desktop entries and system integration
 
-We plan to add ARM64 AppImage builds using:
-1. **Self-hosted ARM runners** on GitHub Actions
-2. **Docker-based cross-compilation** with proper X11 library mapping
-3. **Native ARM64 CI/CD** environments
+## Distribution
 
-## Native Package Support
+The universal installer is automatically built by GitHub Actions and works on:
+- **Raspberry Pi OS** (64-bit)
+- **Ubuntu** (ARM64)
+- **Debian** (ARM64) 
+- **Fedora** (ARM64)
+- **Arch Linux** (ARM64)
+- Any other ARM64 Linux distribution
+## Technical Details
 
-ViewTouch supports native ARM64 packages:
+The universal installer approach provides several advantages for ARM64:
+
+- **Native compilation**: Builds are optimized for the specific ARM64 system
+- **Automatic dependencies**: System package manager handles ARM64 X11 libraries  
+- **Better integration**: Proper desktop entries and system-wide installation
+- **No special requirements**: Works on containers and restricted environments
+
+This approach ensures maximum compatibility and performance on ARM64 systems.
+
+## Package Support
+
+For manual package creation, ViewTouch supports:
 
 - **DEB packages**: `cpack -G DEB` (on ARM64 system)
-- **RPM packages**: `cpack -G RPM` (on ARM64 system)
+- **RPM packages**: `cpack -G RPM` (on ARM64 system) 
 - **Direct installation**: Works on all ARM64 Linux distributions
 
 The codebase is fully ARM64-compatible and has been tested on Raspberry Pi systems.
-
-## Why Not Cross-Compile?
-
-Cross-compiling ViewTouch for ARM64 from x86_64 is complex because:
-- **X11 dependencies**: Requires ARM64 versions of libX11, libXft, Motif, etc.
-- **Library linking**: CMake's find_package struggles with cross-compiled X11 libraries
-- **Testing limitations**: Cannot test ARM64 AppImages on x86_64 runners
-
-Native compilation on ARM64 systems is the most reliable approach.
