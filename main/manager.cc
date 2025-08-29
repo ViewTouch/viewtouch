@@ -38,6 +38,7 @@
 #include "debug.hh"
 #include "socket.hh"
 #include "version/vt_version_info.hh"
+#include "zone/dialog_zone.hh"
 
 #include "conf_file.hh"
 #include "date/date.h"      // helper library to output date strings with std::chrono
@@ -197,6 +198,12 @@ static int LastMin  = -1;
 static int LastHour = -1;
 static int LastMeal = -1;
 static int LastDay  = -1;
+
+// Scheduled restart variables
+int restart_dialog_shown = 0;      // Flag to prevent multiple dialogs
+int restart_postponed_until = 0;   // Time when postponed restart should happen
+static TimeInfo last_restart_check;       // Last time we checked for restart
+unsigned long restart_timeout_id = 0; // Timeout for auto restart
 
 /*************************************************************
  * Definitions
@@ -559,6 +566,26 @@ int main(int argc, genericChar* argv[])
 	chmod(VIEWTOUCH_UPDATE_COMMAND, 0755);	// set executable
 	// try to run it, giving build-time base path
 	system(VIEWTOUCH_UPDATE_COMMAND " " VIEWTOUCH_PATH);
+    }
+    
+    // Always download latest vt_data from ViewTouch update servers
+    ReportError("Downloading latest vt_data from update servers...");
+    bool vt_data_updated = false;
+    
+    // Try first URL: http://www.viewtouch.com/vt_updates/vt-update  
+    ReportError("Attempting to download vt_data from http://www.viewtouch.com/vt_updates/vt-update");
+    if (DownloadFileWithFallback("www.viewtouch.com/vt_updates/vt-update", SYSTEM_DATA_FILE)) {
+        ReportError("Successfully downloaded vt_data from http update server");
+        vt_data_updated = true;
+    } else {
+        // Try second URL: https://www.viewtouch.com/vt_updates/vt-update
+        ReportError("First URL failed, attempting https://www.viewtouch.com/vt_updates/vt-update");
+        if (DownloadFileWithFallback("https://www.viewtouch.com/vt_updates/vt-update", SYSTEM_DATA_FILE)) {
+            ReportError("Successfully downloaded vt_data from https update server");
+            vt_data_updated = true;
+        } else {
+            ReportError("Warning: Could not download latest vt_data from update servers, using local copy");
+        }
     }
     // Now process any locally available updates (updates
     // from the previous step will be installed and ready for
@@ -2739,7 +2766,19 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
         {
             LastHour = hour;
             update |= UPDATE_HOUR;
+            
+            // Reset daily restart postpone count at start of new day
+            if (hour == 0 && LastDay != SystemTime.Day())
+            {
+                LastDay = SystemTime.Day();
+                Settings *settingsPtr = &(MasterSystem->settings);
+                settingsPtr->restart_postpone_count = 0;
+                settingsPtr->Save();
+            }
         }
+        
+        // Check for scheduled restart every minute
+        CheckScheduledRestart();
     }
 
     // Update Terminals
@@ -3111,6 +3150,102 @@ Printer *SetPrinter(const genericChar* printer_description)
 
     retPrinter = NewPrinterFromString(printer_description);
     return retPrinter;
+}
+
+/****
+ * CheckScheduledRestart: Check if it's time for scheduled restart
+ ****/
+void CheckScheduledRestart()
+{
+    FnTrace("CheckScheduledRestart()");
+    
+    Settings *settings = &(MasterSystem->settings);
+    if (settings->scheduled_restart_hour < 0 || settings->scheduled_restart_hour > 23)
+        return;  // Scheduled restart disabled
+        
+    int current_hour = SystemTime.Hour();
+    int current_min = SystemTime.Min();
+    int current_time_minutes = current_hour * 60 + current_min;
+    int restart_time_minutes = settings->scheduled_restart_hour * 60 + settings->scheduled_restart_min;
+    
+    // Check if we're at restart time
+    if (current_time_minutes == restart_time_minutes && !restart_dialog_shown)
+    {
+        ShowRestartDialog();
+    }
+    
+    // Check for postponed restart
+    if (restart_postponed_until > 0 && current_time_minutes >= restart_postponed_until && !restart_dialog_shown)
+    {
+        restart_postponed_until = 0;  // Reset postpone
+        ShowRestartDialog();
+    }
+}
+
+/****
+ * ShowRestartDialog: Show user dialog for restart/postpone
+ ****/
+void ShowRestartDialog()
+{
+    FnTrace("ShowRestartDialog()");
+    
+    if (restart_dialog_shown)
+        return;  // Already showing dialog
+        
+    restart_dialog_shown = 1;
+    
+    Terminal *term = MasterControl->TermList();
+    if (!term) return;
+    
+    SimpleDialog *sd = new SimpleDialog("Scheduled Restart Time\\System needs to restart now.\\Choose an option:", 1);
+    sd->Button("Restart Now", "restart_now");
+    sd->Button("Postpone 1 Hour", "restart_postpone");
+    
+    // Set 5-minute auto-restart timeout
+    restart_timeout_id = XtAppAddTimeOut(App, 5 * 60 * 1000, 
+                                       (XtTimerCallbackProc) AutoRestartTimeoutCB, NULL);
+    
+    term->OpenDialog(sd);
+}
+
+/****
+ * AutoRestartTimeoutCB: Callback for auto-restart timeout (5 minutes)
+ ****/
+void AutoRestartTimeoutCB(void *client_data, unsigned long *timer_id)
+{
+    FnTrace("AutoRestartTimeoutCB()");
+    
+    restart_timeout_id = 0;
+    restart_dialog_shown = 0;
+    
+    // Force restart after 5 minutes of no response
+    ReportError("Auto-restart timeout: Restarting ViewTouch after 5 minutes of no user response");
+    ExecuteRestart();
+}
+
+/****
+ * ExecuteRestart: Actually restart ViewTouch
+ ****/
+void ExecuteRestart()
+{
+    FnTrace("ExecuteRestart()");
+    
+    ReportError("Executing scheduled restart of ViewTouch");
+    
+    // Close all dialogs and save state
+    Terminal *term = MasterControl->TermList();
+    while (term)
+    {
+        if (term->dialog)
+            term->KillDialog();
+        term = term->next;
+    }
+    
+    // Save settings
+    MasterSystem->settings.Save();
+    
+    // Execute restart command
+    system(VIEWTOUCH_RESTART);
 }
 
 

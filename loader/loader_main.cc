@@ -88,16 +88,16 @@ void LoaderDrawStringEnhanced(XftDraw *draw, XftFont *xftfont, XftColor *color,
         XRenderColor shadow_color, frosted_color;
         XftColor xft_shadow, xft_frosted;
         
-        // Shadow color (40% darker)
-        shadow_color.red = (color->color.red * 2) / 5;
-        shadow_color.green = (color->color.green * 2) / 5;
-        shadow_color.blue = (color->color.blue * 2) / 5;
+        // Shadow color (darker version maintaining color balance)
+        shadow_color.red = (color->color.red * 3) / 5;     // 60% intensity - darker but balanced
+        shadow_color.green = (color->color.green * 3) / 5; // 60% intensity - maintains color balance
+        shadow_color.blue = (color->color.blue * 3) / 5;   // 60% intensity - maintains color balance
         shadow_color.alpha = color->color.alpha;
         
-        // Frosted color (75% lighter with transparency)
-        frosted_color.red = color->color.red + ((65535 - color->color.red) * 3) / 4;
-        frosted_color.green = color->color.green + ((65535 - color->color.green) * 3) / 4;
-        frosted_color.blue = color->color.blue + ((65535 - color->color.blue) * 3) / 4;
+        // Frosted color (lighter version with subtle enhancement)
+        frosted_color.red = color->color.red + ((65535 - color->color.red) * 2) / 5;     // Add 40% brightness
+        frosted_color.green = color->color.green + ((65535 - color->color.green) * 2) / 5; // Add 40% brightness
+        frosted_color.blue = color->color.blue + ((65535 - color->color.blue) * 2) / 5;   // Add 40% brightness
         frosted_color.alpha = (color->color.alpha * 9) / 10;
         
         XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &shadow_color, &xft_shadow);

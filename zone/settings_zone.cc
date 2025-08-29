@@ -414,6 +414,13 @@ SettingsZone::SettingsZone()
     AddTextField("Shadow Offset X (pixels)", 5); SetFlag(FF_ONLYDIGITS);
     AddTextField("Shadow Offset Y (pixels)", 5); SetFlag(FF_ONLYDIGITS);
     AddTextField("Shadow Blur Radius (0-10)", 5); SetFlag(FF_ONLYDIGITS);
+    AddNewLine();
+    Center();
+    AddLabel("Scheduled Restart Settings");
+    AddNewLine();
+    LeftAlign();
+    AddTextField("Restart Hour (0-23, -1=disabled)", 5); SetFlag(FF_ONLYDIGITS);
+    AddTextField("Restart Minute (0-59)", 5); SetFlag(FF_ONLYDIGITS);
 }
 
 RenderResult SettingsZone::Render(Terminal *term, int update_flag)
@@ -483,6 +490,10 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
     f->Set(settings->shadow_offset_x); f = f->next;
     f->Set(settings->shadow_offset_y); f = f->next;
     f->Set(settings->shadow_blur_radius); f = f->next;
+    
+    f = f->next;  // skip past label  
+    f->Set(settings->scheduled_restart_hour); f = f->next;
+    f->Set(settings->scheduled_restart_min); f = f->next;
 
     return 0;
 }
@@ -535,6 +546,10 @@ int SettingsZone::SaveRecord(Terminal *term, int record, int write_file)
     f->Get(settings->shadow_offset_x); f = f->next;
     f->Get(settings->shadow_offset_y); f = f->next;
     f->Get(settings->shadow_blur_radius); f = f->next;
+    
+    f = f->next;  // skip past label
+    f->Get(settings->scheduled_restart_hour); f = f->next;
+    f->Get(settings->scheduled_restart_min); f = f->next;
 
     settings->min_day_length = day_length_hrs * 60 * 60;  // convert from hours to seconds
 

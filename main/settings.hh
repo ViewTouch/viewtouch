@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-constexpr int SETTINGS_VERSION = 97;  // READ ABOVE
+constexpr int SETTINGS_VERSION = 98;  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -563,6 +563,11 @@ public:
     int shadow_offset_x;         // Shadow offset in X direction (pixels)
     int shadow_offset_y;         // Shadow offset in Y direction (pixels)
     int shadow_blur_radius;      // Shadow blur radius (0-10)
+    
+    // Scheduled restart settings
+    int scheduled_restart_hour;  // Hour (0-23) for scheduled restart (-1 = disabled)
+    int scheduled_restart_min;   // Minute (0-59) for scheduled restart
+    int restart_postpone_count;  // Number of times restart has been postponed today
 
     // General Settings
     Str store_name;              // printed on title bar

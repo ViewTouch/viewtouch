@@ -1212,6 +1212,11 @@ Settings::Settings()
     shadow_offset_x    = 2;  // Default shadow offset
     shadow_offset_y    = 2;  // Default shadow offset
     shadow_blur_radius = 1;  // Default blur radius
+    
+    // Scheduled restart settings - default disabled
+    scheduled_restart_hour = -1;  // -1 = disabled
+    scheduled_restart_min  = 0;   // Default to top of hour
+    restart_postpone_count = 0;   // Reset daily
     email_send_server.Set("");
     changed            = 0;
     screen_blank_time  = 60;
@@ -2032,6 +2037,12 @@ int Settings::Load(const char* file)
         df.Read(shadow_offset_y);
         df.Read(shadow_blur_radius);
     }
+    if (version >= 98)
+    {
+        df.Read(scheduled_restart_hour);
+        df.Read(scheduled_restart_min);
+        df.Read(restart_postpone_count);
+    }
     if (version >= 83)
         df.Read(receipt_all_modifiers);
     if (version >= 84)
@@ -2394,6 +2405,9 @@ int Settings::Save()
     df.Write(shadow_offset_x);
     df.Write(shadow_offset_y);
     df.Write(shadow_blur_radius);
+    df.Write(scheduled_restart_hour);
+    df.Write(scheduled_restart_min);
+    df.Write(restart_postpone_count);
     df.Write(receipt_all_modifiers);
     df.Write(receipt_header_length);
     df.Write(order_num_style);

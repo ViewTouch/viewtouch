@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Scheduled Restart Feature with User Prompts**
+  - Added configurable scheduled restart functionality to System Variables
+  - Users can set restart time (hour and minute) with -1 to disable
+  - Smart user prompt system appears at scheduled restart time with options:
+    - "Restart Now" for immediate graceful restart
+    - "Postpone 1 Hour" to delay restart by exactly 60 minutes
+    - Auto-restart after 5 minutes if no user response (safety mechanism)
+  - Daily reset of postpone counters at midnight
+  - Complete state persistence across ViewTouch sessions
+  - Tracks postponement count for monitoring purposes
+  - Integrated with existing settings system and UI workflow
+- **Automatic vt_data Download on Startup**
+  - ViewTouch now automatically downloads latest vt_data from update servers on startup
+  - Dual URL support with automatic fallback:
+    - Primary: `http://www.viewtouch.com/vt_updates/vt-update`
+    - Fallback: `https://www.viewtouch.com/vt_updates/vt-update`
+  - Always downloads fresh vt_data on every startup (not just when missing)
+  - Comprehensive error handling and logging for troubleshooting
+  - Uses existing robust download infrastructure with timeout handling
 - **Comprehensive Text Enhancement System**
   - Implemented system-wide enhanced text rendering with three configurable effects
   - **Embossed Text Effect**: Creates 3D frosted glass appearance with highlights and shadows (disabled by default; enable in Settings)
@@ -79,6 +98,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Test infrastructure ready for future ViewTouch-specific unit tests
 
 ### Changed
+- **Improved Embossed Text Rendering for Better Readability**
+  - Enhanced embossed text frosting effects to use proportional brightness adjustments
+  - Replaced color-distorting red tinting with balanced luminance-based highlighting
+  - Shadow effects now use 60% intensity while highlights use 40% brightness boost
+  - Maintains original color hue and saturation for improved readability
+  - Applied consistently across all embossed text rendering (main interface, loader, font checker)
 - Font selection now updates all zones and all toolbar/dialog buttons for consistent UI appearance
 - Font compatibility is enforced: only fonts with compatible metrics are available for selection, preventing UI breakage
 - Font size and weight selection logic improved and consolidated for reliability
