@@ -3244,8 +3244,8 @@ void ExecuteRestart()
     // Save settings
     MasterSystem->settings.Save();
     
-    // Execute restart command
-    system(VIEWTOUCH_RESTART);
+    // Use the existing proven restart mechanism
+    RestartSystem();
 }
 
 
