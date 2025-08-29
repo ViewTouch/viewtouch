@@ -27,6 +27,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cctype>
+#include <cstdio>
 
 namespace vt_string {
 
