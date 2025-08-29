@@ -287,9 +287,10 @@ add_executable(vt_main
 target_include_directories(vt_main PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
 target_link_libraries(vt_main zone vtcore ${VT_XLIBS})
 target_link_libraries(vt_main tz curlpp_static)
-# on gcc 8 need to link against std++fs for std::filesystem support
-# https://stackoverflow.com/questions/54290254/problem-adding-stdfilesystem-to-cmake-project
-target_link_libraries(vt_main stdc++fs)
+# Link filesystem library if needed (GCC < 9)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(vt_main stdc++fs)
+endif()
 
 add_executable(vt_term
     term/term_main.cc
@@ -307,9 +308,10 @@ target_include_directories(vt_term PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
 target_link_libraries(vt_term
     vtcore conf_file image_data
     ${VT_XLIBS} ${TERM_CREDIT_LIBS})
-# on gcc 8 need to link against std++fs for std::filesystem support
-# https://stackoverflow.com/questions/54290254/problem-adding-stdfilesystem-to-cmake-project
-target_link_libraries(vt_term stdc++fs)
+# Link filesystem library if needed (GCC < 9)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")
+    target_link_libraries(vt_term stdc++fs)
+endif()
 
 add_executable(vt_print print/print_main.cc)
 target_link_libraries(vt_print vtcore)
@@ -373,5 +375,5 @@ install(PROGRAMS scripts/vtcommands.pl DESTINATION viewtouch/bin/vtcommands)
 #install(CODE "MESSAGE(\"Sample install message.\")")
 
 # Install bundled fonts
-install(DIRECTORY fonts/ttf/ DESTINATION share/viewtouch/fonts FILES_MATCHING PATTERN "*.ttf" PATTERN "*.otf")
+install(DIRECTORY fonts/ DESTINATION share/viewtouch/fonts FILES_MATCHING PATTERN "*.ttf" PATTERN "*.otf")
 

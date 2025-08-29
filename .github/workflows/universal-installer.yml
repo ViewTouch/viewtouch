@@ -1,0 +1,36 @@
+name: Build Universal Linux Installer
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  universal-installer:
+    name: Universal Linux Installer (.run)
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create Universal Installer
+        run: |
+          cd packaging/installer
+          chmod +x create-universal-installer.sh
+          ./create-universal-installer.sh
+
+      - name: Upload Universal Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: viewtouch-universal-installer
+          path: installer-build/*.run
+
+      - name: Create Release (tag push only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installer-build/*.run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
