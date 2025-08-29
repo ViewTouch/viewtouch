@@ -32,7 +32,7 @@
 namespace vt_error {
 
     enum class Severity {
-        DEBUG = 0,
+        VT_DEBUG = 0,
         INFO = 1,
         WARNING = 2,
         ERROR = 3,

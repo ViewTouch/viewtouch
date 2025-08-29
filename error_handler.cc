@@ -113,7 +113,7 @@ namespace vt_error {
     void ErrorHandler::debug(const std::string& message, Category category,
                             const std::string& context, const std::string& file,
                             int line, const std::string& function) {
-        reportError(message, Severity::DEBUG, category, 0, context, file, line, function);
+        reportError(message, Severity::VT_DEBUG, category, 0, context, file, line, function);
     }
 
     void ErrorHandler::info(const std::string& message, Category category,
@@ -197,7 +197,7 @@ namespace vt_error {
 
     std::string ErrorHandler::severityToString(Severity severity) {
         switch (severity) {
-            case Severity::DEBUG: return "DEBUG";
+            case Severity::VT_DEBUG: return "DEBUG";
             case Severity::INFO: return "INFO";
             case Severity::WARNING: return "WARNING";
             case Severity::ERROR: return "ERROR";
@@ -223,7 +223,7 @@ namespace vt_error {
 
     Severity ErrorHandler::stringToSeverity(const std::string& str) {
         std::string upper = vt_string::to_upper(str);
-        if (upper == "DEBUG") return Severity::DEBUG;
+        if (upper == "DEBUG") return Severity::VT_DEBUG;
         if (upper == "INFO") return Severity::INFO;
         if (upper == "WARNING") return Severity::WARNING;
         if (upper == "ERROR") return Severity::ERROR;
