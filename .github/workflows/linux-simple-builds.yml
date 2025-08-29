@@ -17,7 +17,7 @@ jobs:
           - clang++-17
           - clang++-18
         build_type: [Debug] #, Release]
-        std: [17]
+        std: [20]
         include:
         # cannot be installed on ubuntu-24.04 be default?
           - cxx: g++-12
@@ -38,18 +38,6 @@ jobs:
           - cxx: clang++-18
             cc: clang-18
             other_pkgs: clang-18
-          # GCC 14 + C++20
-          - cxx: g++-14
-            cc: gcc-14
-            other_pkgs: g++-14
-            std: 20
-            build_type: Debug
-          # Clang 18 + C++20
-          - cxx: clang++-18
-            cc: clang-18
-            other_pkgs: clang-18
-            std: 20
-            build_type: Debug
 
     steps:
     - uses: actions/checkout@v2
