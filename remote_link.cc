@@ -24,6 +24,8 @@
 #include <unistd.h>
 #include <string.h>
 #include "fntrace.hh"
+#include <memory>
+#include <vector>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -49,10 +51,7 @@ CharQueue::CharQueue(int max_size)
         
     size = 0;
 
-    buffer = new Uchar[buffer_size];
-
-    if (buffer == NULL)
-        buffer_size = 0;
+    buffer.resize(buffer_size);
 
     Clear();
     code = 0;
@@ -60,15 +59,14 @@ CharQueue::CharQueue(int max_size)
 
 CharQueue::~CharQueue()
 {
-    if (buffer)
-        delete [] buffer;
+    // std::vector handles its own memory management
 }
 
 void CharQueue::ReadError(int wanted, int got)
 {
     FnTrace("CharQueue::ReadError()");
     fprintf(stderr, "For %s code %d, wanted type %d, got %d\n",
-            name, code, wanted, got);
+            name.c_str(), code, wanted, got);
     FnPrintTrace();
 }
 
@@ -322,7 +320,7 @@ int CharQueue::Read(int device_no)
     int todo = s;
     while (todo > 0)
     {
-        val = read(device_no, &buffer[end], s);
+        val = read(device_no, buffer.data() + end, s);
         if (val > 0)
         {
             size += val;
@@ -365,7 +363,7 @@ int CharQueue::Write(int device_no, int do_clear)
     }
     else
     {
-        val = write(device_no, &buffer[start], size);
+        val = write(device_no, buffer.data() + start, size);
     }
 
     if (do_clear)

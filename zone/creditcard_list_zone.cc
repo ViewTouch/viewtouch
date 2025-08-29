@@ -46,7 +46,7 @@ CreditCardListZone::CreditCardListZone()
     credit      = NULL;
     mode        = MODE_EXCEPTIONS;
     no_line     = 1;
-    creditdb    = MasterSystem->cc_exception_db;
+    creditdb    = MasterSystem->cc_exception_db.get();
     archive     = NULL;
     lines_shown = 0;
     list_footer = 1;
@@ -72,7 +72,7 @@ RenderResult CreditCardListZone::Render(Terminal *term, int update_flag)
         credit = NULL;
         archive = NULL;
         mode = MODE_EXCEPTIONS;
-        creditdb = MasterSystem->cc_exception_db;
+        creditdb = MasterSystem->cc_exception_db.get();
     }
 
     FormZone::Render(term, update_flag);
@@ -140,7 +140,7 @@ SignalResult CreditCardListZone::Signal(Terminal *term, const genericChar* messa
             credit = NULL;
             archive = NULL;
             record_no = -1;
-            creditdb = term->system_data->cc_exception_db;
+            creditdb = term->system_data->cc_exception_db.get();
             mode = MODE_EXCEPTIONS;
         }
         break;
@@ -150,7 +150,7 @@ SignalResult CreditCardListZone::Signal(Terminal *term, const genericChar* messa
             credit = NULL;
             archive = NULL;
             record_no = -1;
-            creditdb = term->system_data->cc_refund_db;
+            creditdb = term->system_data->cc_refund_db.get();
             mode = MODE_REFUNDS;
         }
         break;
@@ -160,7 +160,7 @@ SignalResult CreditCardListZone::Signal(Terminal *term, const genericChar* messa
             credit = NULL;
             archive = NULL;
             record_no = -1;
-            creditdb = term->system_data->cc_void_db;
+            creditdb = term->system_data->cc_void_db.get();
             mode = MODE_VOIDS;
         }
         break;
@@ -343,13 +343,13 @@ CreditDB *CreditCardListZone::GetDB(int in_system)
         switch (mode)
         {
         case MODE_EXCEPTIONS:
-            retval = MasterSystem->cc_exception_db;
+            retval = MasterSystem->cc_exception_db.get();
             break;
         case MODE_REFUNDS:
-            retval = MasterSystem->cc_refund_db;
+            retval = MasterSystem->cc_refund_db.get();
             break;
         case MODE_VOIDS:
-            retval = MasterSystem->cc_void_db;
+            retval = MasterSystem->cc_void_db.get();
             break;
         }
     }

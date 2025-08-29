@@ -35,20 +35,20 @@ void GenericDrawStringXftEmbossed(Display *display, Drawable d, XftDraw *xftdraw
 {
     if (!xftdraw || !xftfont || !color || !str) return;
     
-    // Create shadow color (darker version for bottom/right edges)
+    // Create shadow color (darker version maintaining color balance)
     XRenderColor shadow_color;
-    shadow_color.red = (color->red * 2) / 5;   // 40% of original red - darker shadow
-    shadow_color.green = (color->green * 2) / 5; // 40% of original green
-    shadow_color.blue = (color->blue * 2) / 5;   // 40% of original blue
+    shadow_color.red = (color->red * 3) / 5;     // 60% intensity - darker but balanced
+    shadow_color.green = (color->green * 3) / 5; // 60% intensity - maintains color balance
+    shadow_color.blue = (color->blue * 3) / 5;   // 60% intensity - maintains color balance
     shadow_color.alpha = color->alpha;
     
-    // Create frosted highlight color (lighter, more translucent effect for top/left edges)
+    // Create frosted highlight color (lighter version with subtle enhancement)
     XRenderColor frosted_color;
-    // Create a frosted effect by adding more white and reducing opacity slightly
-    frosted_color.red = color->red + ((65535 - color->red) * 3) / 4;   // Add 75% of remaining white
-    frosted_color.green = color->green + ((65535 - color->green) * 3) / 4; // Add 75% of remaining white
-    frosted_color.blue = color->blue + ((65535 - color->blue) * 3) / 4;   // Add 75% of remaining white
-    frosted_color.alpha = (color->alpha * 9) / 10; // Slightly more translucent for frosted effect
+    // Create highlight by lightening the original color proportionally
+    frosted_color.red = color->red + ((65535 - color->red) * 2) / 5;     // Add 40% brightness
+    frosted_color.green = color->green + ((65535 - color->green) * 2) / 5; // Add 40% brightness  
+    frosted_color.blue = color->blue + ((65535 - color->blue) * 2) / 5;   // Add 40% brightness
+    frosted_color.alpha = (color->alpha * 9) / 10; // Slightly more translucent for subtle effect
     
     // Allocate Xft colors
     XftColor xft_shadow, xft_frosted, xft_main;

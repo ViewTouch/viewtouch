@@ -123,11 +123,25 @@ void ViewTouchError(const char* message, int do_sleep = 1);  // reports an error
 
 int EndSystem();                     // Closes down the application & saves states
 int RestartSystem();                 // Sets up a system where ViewTouch will be nicely shut down and restarted.
+
+// Forward declarations
+class SimpleDialog;
+
+// Scheduled restart global variables
+extern int restart_dialog_shown;
+extern int restart_postponed_until;
+extern unsigned long restart_timeout_id;
+
+// Scheduled restart functions
+void CheckScheduledRestart();        // Check if it's time for scheduled restart
+void ShowRestartDialog();            // Show restart/postpone dialog to user  
+void AutoRestartTimeoutCB(void *client_data, unsigned long *timer_id); // 5-minute timeout callback
+void ExecuteRestart();               // Actually execute the restart
 int KillTask(const char* name);            // kills all tasks matching name
 int ReportError(const std::string &message); // error logging & reporting function
 int ReportLoader(const char* message);     // gives a message to the loader program if it is still active
 
-char* PriceFormat(Settings *s, int price, int use_sign, int use_comma,
+char* PriceFormat(const Settings* s, int price, int use_sign, int use_comma,
                   genericChar* buffer = NULL); // formats price into string
 int ParsePrice(const char* source, int *val = NULL); // returns price value from given string
 

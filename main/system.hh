@@ -32,6 +32,9 @@
 #include "list_utility.hh"
 #include "archive.hh"
 #include "expense.hh"
+#include <string>
+#include <array>
+#include <memory>
 
 #define CC_REPORT_NORMAL  1
 #define CC_REPORT_INIT    2
@@ -69,15 +72,15 @@ class MediaList
 {
 public:
     MediaList *next;
-    genericChar name[STRLONG];
+    std::string name;
     int total;
-    int shift_total[MAX_SHIFTS];
+    std::array<int, MAX_SHIFTS> shift_total{};
 
     MediaList();
-    MediaList(const genericChar* namestr, int value);
-    MediaList(const genericChar* namestr, int value, int shift);
+    MediaList(const std::string& namestr, int value);
+    MediaList(const std::string& namestr, int value, int shift);
     ~MediaList();
-    int Add(const genericChar* namestr, int value, int shift = -1);
+    int Add(const std::string& namestr, int value, int shift = -1);
     int Total(int shift = -1);
     int Print();
 } ;
@@ -127,14 +130,14 @@ public:
     CDUStrings       cdustrings;
 
     // Credit Card Stuff
-    CreditDB        *cc_void_db;
-    CreditDB        *cc_exception_db;
-    CreditDB        *cc_refund_db;
-    CCInit          *cc_init_results;
-    CCDetails       *cc_details_results;
-    CCDetails       *cc_totals_results;
-    CCSAFDetails    *cc_saf_details_results;
-    CCSettle        *cc_settle_results;
+    std::unique_ptr<CreditDB>        cc_void_db;
+    std::unique_ptr<CreditDB>        cc_exception_db;
+    std::unique_ptr<CreditDB>        cc_refund_db;
+    std::unique_ptr<CCInit>          cc_init_results;
+    std::unique_ptr<CCDetails>       cc_details_results;
+    std::unique_ptr<CCDetails>       cc_totals_results;
+    std::unique_ptr<CCSAFDetails>    cc_saf_details_results;
+    std::unique_ptr<CCSettle>        cc_settle_results;
     int              cc_report_type;
     int              cc_processing;  // flag to prevent multiple transactions simultaneously
     Credit          *cc_finish;

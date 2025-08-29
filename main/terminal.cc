@@ -1243,7 +1243,8 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         "faststartlogin", "opentab", "opentabcancel", "opentabamount",
         "opentabcard ", "opentabpay ", "continuetab", "continuetab2 ",
         "closetab", "closetab2 ", "forcereturn", "setlanguage_english",
-        "setlanguage_french", "setlanguage_spanish", "setlanguage_greek", NULL};
+        "setlanguage_french", "setlanguage_spanish", "setlanguage_greek",
+        "restart_now", "restart_postpone", NULL};
 	//for handy reference to the indices in the signal handler
 	enum comms  { LOGOUT, NEXT_ARCHIVE, PRIOR_ARCHIVE, OPEN_DRAWER,
                   SHUTDOWN, SYSTEM_RESTART, CALIBRATE, WAGE_FILTER_DIALOG,
@@ -1253,7 +1254,8 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
                   FASTSTARTLOGIN, OPENTAB, OPENTABCANCEL, OPENTABAMOUNT,
                   OPENTABCARD, OPENTABPAY, CONTINUETAB, CONTINUETAB2,
                   CLOSETAB, CLOSETAB2, FORCERETURN, SETLANGUAGE_ENGLISH,
-                  SETLANGUAGE_FRENCH, SETLANGUAGE_SPANISH, SETLANGUAGE_GREEK};
+                  SETLANGUAGE_FRENCH, SETLANGUAGE_SPANISH, SETLANGUAGE_GREEK,
+                  RESTART_NOW, RESTART_POSTPONE};
 
     if (dialog)
     {
@@ -1446,6 +1448,41 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         return SIGNAL_OKAY;
     case SETLANGUAGE_GREEK:
         SetLanguage(LANG_GREEK);
+        return SIGNAL_OKAY;
+    case RESTART_NOW:
+        // Handle immediate restart
+        KillDialog();  // Close the restart dialog
+        extern int restart_dialog_shown;
+        extern XtIntervalId restart_timeout_id;
+        restart_dialog_shown = 0;
+        if (restart_timeout_id != 0) {
+            XtRemoveTimeOut(restart_timeout_id);
+            restart_timeout_id = 0;
+        }
+        ExecuteRestart();
+        return SIGNAL_OKAY;
+    case RESTART_POSTPONE:
+        // Handle postpone for 1 hour
+        KillDialog();  // Close the restart dialog
+        extern int restart_dialog_shown;
+        extern XtIntervalId restart_timeout_id;
+        extern int restart_postponed_until;
+        restart_dialog_shown = 0;
+        if (restart_timeout_id != 0) {
+            XtRemoveTimeOut(restart_timeout_id);
+            restart_timeout_id = 0;
+        }
+        // Set postpone time to current time + 1 hour
+        int current_time_minutes = SystemTime.Hour() * 60 + SystemTime.Min();
+        restart_postponed_until = current_time_minutes + 60;  // Add 1 hour
+        if (restart_postponed_until >= 24 * 60) {
+            restart_postponed_until -= 24 * 60;  // Handle day overflow
+        }
+        // Increment postpone count
+        Settings *settings = GetSettings();
+        settings->restart_postpone_count++;
+        settings->Save();
+        ReportError("Scheduled restart postponed for 1 hour");
         return SIGNAL_OKAY;
 	}
 

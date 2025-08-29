@@ -28,6 +28,7 @@
 #include "zone.hh"
 #include "drawer.hh"
 #include "check.hh"
+#include <memory>
 #include "archive.hh"
 #include "customer.hh"
 #include "utility.hh"
@@ -59,15 +60,15 @@ System::System()
     non_eod_settle         = 0;
     eod_term               = NULL;
 
-    cc_void_db             = new CreditDB(CC_DBTYPE_VOID);
-    cc_exception_db        = new CreditDB(CC_DBTYPE_EXCEPT);
-    cc_refund_db           = new CreditDB(CC_DBTYPE_REFUND);
+    cc_void_db             = std::make_unique<CreditDB>(CC_DBTYPE_VOID);
+    cc_exception_db        = std::make_unique<CreditDB>(CC_DBTYPE_EXCEPT);
+    cc_refund_db           = std::make_unique<CreditDB>(CC_DBTYPE_REFUND);
 
-    cc_init_results        = new CCInit();
-    cc_totals_results      = new CCDetails();
-    cc_details_results     = new CCDetails();
-    cc_saf_details_results = new CCSAFDetails();
-    cc_settle_results      = new CCSettle();
+    cc_init_results        = std::make_unique<CCInit>();
+    cc_totals_results      = std::make_unique<CCDetails>();
+    cc_details_results     = std::make_unique<CCDetails>();
+    cc_saf_details_results = std::make_unique<CCSAFDetails>();
+    cc_settle_results      = std::make_unique<CCSettle>();
     cc_finish              = NULL;
 
     cc_report_type         = CC_REPORT_BATCH;
@@ -75,23 +76,7 @@ System::System()
 
 System::~System()
 {
-    if (cc_init_results != NULL)
-        delete cc_init_results;
-    if (cc_totals_results != NULL)
-        delete cc_totals_results;
-    if (cc_details_results != NULL)
-        delete cc_details_results;
-    if (cc_saf_details_results != NULL)
-        delete cc_saf_details_results;
-    if (cc_settle_results != NULL)
-        delete cc_settle_results;
-
-    if (cc_void_db != NULL)
-        delete cc_void_db;
-    if (cc_exception_db != NULL)
-        delete cc_exception_db;
-    if (cc_refund_db != NULL)
-        delete cc_refund_db;
+    // Smart pointers automatically clean up all credit card objects
 }
 
 // Member Functions
@@ -511,20 +496,20 @@ int System::EndDay()
     archive->cc_void_db = cc_void_db->Copy();
     cc_void_db->Purge();
 
-    archive->cc_init_results = cc_init_results;
-    cc_init_results = new CCInit();
+    archive->cc_init_results = cc_init_results.release();
+    cc_init_results = std::make_unique<CCInit>();
 
     // For SAF Details and Settlement, we run those actions and then
     // move them into an archive.  If a user then goes directly to the
     // credit card reports, he or she should see these reports.  AKA,
     // we need to set archive and current in each.
-    archive->cc_saf_details_results = cc_saf_details_results;
-    cc_saf_details_results          = new CCSAFDetails();
+    archive->cc_saf_details_results = cc_saf_details_results.release();
+    cc_saf_details_results          = std::make_unique<CCSAFDetails>();
     cc_saf_details_results->archive = archive;
     cc_saf_details_results->current = archive->cc_saf_details_results->Last();
 
-    archive->cc_settle_results      = cc_settle_results;
-    cc_settle_results               = new CCSettle();
+    archive->cc_settle_results      = cc_settle_results.release();
+    cc_settle_results               = std::make_unique<CCSettle>();
     cc_settle_results->archive      = archive;
     cc_settle_results->current      = archive->cc_settle_results->Last();
 

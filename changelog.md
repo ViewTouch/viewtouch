@@ -5,7 +5,71 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Code Modernization
+- **Upgraded to C++20 Standard**
+  - Enhanced build system to use C++20 features and modern compiler capabilities
+  - Enabled additional compiler warnings: `-Wextra`, `-Wconversion`, `-Wnull-dereference`, `-Wdouble-promotion`, `-Wformat=2`
+  - Improved code safety and error detection during compilation
+
+- **Memory Safety Improvements**
+  - **RemotePrinter Class**: Converted from raw `new`/`delete` to `std::unique_ptr` and `std::make_unique`
+  - **System Class**: Modernized all credit card database pointers to use `std::unique_ptr`
+  - **CharQueue Class**: Replaced raw arrays with `std::vector` for automatic memory management
+  - Eliminated manual memory cleanup in destructors - smart pointers handle this automatically
+  - Removed 280+ instances of unsafe raw pointer usage
+
+- **String Safety and Modern STL Usage**
+  - Replaced all `sprintf` calls with `snprintf` using proper bounds checking
+  - Converted C-style arrays to `std::array` and `std::vector` throughout codebase
+  - **MediaList Class**: Modernized to use `std::string` instead of raw character arrays
+  - Enhanced string handling with proper size validation and bounds checking
+  - Replaced 50+ unsafe string functions with safe alternatives
+
+- **New Infrastructure and Utilities**
+  - **`string_utils.hh/cc`**: Comprehensive modern string processing utilities
+    - Unicode-aware string operations with UTF-8 support
+    - Safe string formatting, case conversion, and validation
+    - File path manipulation and sanitization functions
+    - Template-based type-safe formatting system
+  - **`error_handler.hh/cc`**: Unified error handling framework
+    - Centralized error reporting with severity levels and categories
+    - Thread-safe error logging with configurable output destinations
+    - Error callback system for custom error handling
+    - Comprehensive error history and filtering capabilities
+
+- **Performance and Safety Enhancements**
+  - Added `const` references to function parameters to improve performance
+  - Enhanced null pointer safety with smart pointer usage
+  - Improved type safety with modern C++ features
+  - Better bounds checking and array access validation
+  - Optimized memory usage patterns throughout the codebase
+
+- **Build System Modernization**
+  - Integrated new utility modules into CMake build system
+  - Enhanced dependency management for new components
+  - Improved compiler warning coverage for better code quality
+  - All changes maintain full backward compatibility with existing functionality
+
 ### Added
+- **Scheduled Restart Feature with User Prompts**
+  - Added configurable scheduled restart functionality to System Variables
+  - Users can set restart time (hour and minute) with -1 to disable
+  - Smart user prompt system appears at scheduled restart time with options:
+    - "Restart Now" for immediate graceful restart
+    - "Postpone 1 Hour" to delay restart by exactly 60 minutes
+    - Auto-restart after 5 minutes if no user response (safety mechanism)
+  - Daily reset of postpone counters at midnight
+  - Complete state persistence across ViewTouch sessions
+  - Tracks postponement count for monitoring purposes
+  - Integrated with existing settings system and UI workflow
+- **Automatic vt_data Download on Startup**
+  - ViewTouch now automatically downloads latest vt_data from update servers on startup
+  - Dual URL support with automatic fallback:
+    - Primary: `http://www.viewtouch.com/vt_updates/vt-update`
+    - Fallback: `https://www.viewtouch.com/vt_updates/vt-update`
+  - Always downloads fresh vt_data on every startup (not just when missing)
+  - Comprehensive error handling and logging for troubleshooting
+  - Uses existing robust download infrastructure with timeout handling
 - **Comprehensive Text Enhancement System**
   - Implemented system-wide enhanced text rendering with three configurable effects
   - **Embossed Text Effect**: Creates 3D frosted glass appearance with highlights and shadows (disabled by default; enable in Settings)
@@ -79,6 +143,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Test infrastructure ready for future ViewTouch-specific unit tests
 
 ### Changed
+- **Improved Embossed Text Rendering for Better Readability**
+  - Enhanced embossed text frosting effects to use proportional brightness adjustments
+  - Replaced color-distorting red tinting with balanced luminance-based highlighting
+  - Shadow effects now use 60% intensity while highlights use 40% brightness boost
+  - Maintains original color hue and saturation for improved readability
+  - Applied consistently across all embossed text rendering (main interface, loader, font checker)
 - Font selection now updates all zones and all toolbar/dialog buttons for consistent UI appearance
 - Font compatibility is enforced: only fonts with compatible metrics are available for selection, preventing UI breakage
 - Font size and weight selection logic improved and consolidated for reliability
