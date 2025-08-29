@@ -1269,12 +1269,12 @@ int KillTask(const char* name)
     return 0;
 }
 
-char* PriceFormat(Settings *settings, int price, int use_sign, int use_comma, genericChar* str)
+char* PriceFormat(const Settings* settings, int price, int use_sign, int use_comma, genericChar* str)
 {
     FnTrace("PriceFormat()");
-    static genericChar buffer[32];
+    static std::array<char, 32> buffer{};
     if (str == NULL)
-        str = buffer;
+        str = buffer.data();
 
     genericChar point = '.';
     genericChar comma = ',';
@@ -1287,35 +1287,35 @@ char* PriceFormat(Settings *settings, int price, int use_sign, int use_comma, ge
     int change  = Abs(price) % 100;
     int dollars = Abs(price) / 100;
 
-    genericChar dollar_str[32];
+    std::array<char, 32> dollar_str{};
     if (use_comma && dollars > 999999){
-        sprintf(dollar_str, "%d%c%03d%c%03d",
+        snprintf(dollar_str.data(), dollar_str.size(), "%d%c%03d%c%03d",
                 dollars / 1000000, comma,
                 (dollars / 1000) % 1000, comma,
                 dollars % 1000);
 	}
     else if (use_comma && dollars > 999)
-        sprintf(dollar_str, "%d%c%03d", dollars / 1000, comma, dollars % 1000);
+        snprintf(dollar_str.data(), dollar_str.size(), "%d%c%03d", dollars / 1000, comma, dollars % 1000);
     else if (dollars > 0)
-        sprintf(dollar_str, "%d", dollars);
+        snprintf(dollar_str.data(), dollar_str.size(), "%d", dollars);
     else
         dollar_str[0] = '\0';
 
     if (use_sign)
     {
         if (price < 0)
-            sprintf(str, "%s-%s%c%02d", settings->money_symbol.Value(),
-                    dollar_str, point, change);
+            snprintf(str, 32, "%s-%s%c%02d", settings->money_symbol.Value(),
+                    dollar_str.data(), point, change);
         else
-            sprintf(str, "%s%s%c%02d", settings->money_symbol.Value(),
-                    dollar_str, point, change);
+            snprintf(str, 32, "%s%s%c%02d", settings->money_symbol.Value(),
+                    dollar_str.data(), point, change);
     }
     else
     {
         if (price < 0)
-            sprintf(str, "-%s%c%02d", dollar_str, point, change);
+            snprintf(str, 32, "-%s%c%02d", dollar_str.data(), point, change);
         else
-            sprintf(str, "%s%c%02d", dollar_str, point, change);
+            snprintf(str, 32, "%s%c%02d", dollar_str.data(), point, change);
     }
     return str;
 }

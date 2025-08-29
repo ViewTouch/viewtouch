@@ -63,11 +63,11 @@ MediaList::MediaList()
     }
 }
 
-MediaList::MediaList(const genericChar* namestr, int value)
+MediaList::MediaList(const std::string& namestr, int value)
 {
     FnTrace("MediaList::MediaList(const char* , int)");
     next = NULL;
-    strncpy(name, namestr, STRLONG);
+    name = namestr;
     total = value;
     int i;
     for (i = 0; i < MAX_SHIFTS; i++)
@@ -76,12 +76,12 @@ MediaList::MediaList(const genericChar* namestr, int value)
     }
 }
 
-MediaList::MediaList(const genericChar* namestr, int value, int shift)
+MediaList::MediaList(const std::string& namestr, int value, int shift)
 {
     FnTrace("MediaList::MediaList(const char* , int, int)");
 
     next = NULL;
-    strncpy(name, namestr, STRLONG);
+    name = namestr;
     total = value;
     int i;
     for (i = 0; i < MAX_SHIFTS; i++)
@@ -99,19 +99,19 @@ MediaList::~MediaList()
         delete next;
 }
 
-int MediaList::Add(const genericChar* namestr, int value, int shift)
+int MediaList::Add(const std::string& namestr, int value, int shift)
 {
     FnTrace("MediaList::Add()");
     int retval = 0;
 
-    if (name[0] == '\0')
+    if (name.empty())
     {  // this entry is empty, just store the data here
-        strncpy(name, namestr, STRLONG);
+        name = namestr;
         total = value;
         if (shift >= 0 && shift < MAX_SHIFTS)
             shift_total[shift] = value;
     }
-    else if (strcmp(name, namestr) == 0)
+    else if (name == namestr)
     {  // match; add value to our total
         total += value;
         if (shift >= 0 && shift < MAX_SHIFTS)
@@ -145,7 +145,7 @@ int MediaList::Total(int shift)
 int MediaList::Print()
 {
     FnTrace("MediaList::Print()");
-    printf("%s:  $%d\n", name, total);
+    printf("%s:  $%d\n", name.c_str(), total);
     if (next != NULL)
         next->Print();
     return 0;
@@ -4716,7 +4716,7 @@ int AuditingReportWorkFn(AuditingData *adata)
         {
             if ((term->hide_zeros == 0) || (creditcard->total > 0))
             {
-                report->TextL(term->Translate(creditcard->name), color);
+                report->TextL(term->Translate(creditcard->name.c_str()), color);
                 report->TextR(term->FormatPrice(creditcard->total), color);
                 report->NewLine();
                 total_payments += creditcard->total;
@@ -4764,7 +4764,7 @@ int AuditingReportWorkFn(AuditingData *adata)
         report->NewLine();
         while (coupon != NULL)
         {
-            report->TextPosL(indent, term->Translate(coupon->name), color);
+            report->TextPosL(indent, term->Translate(coupon->name.c_str()), color);
             report->TextR(term->FormatPrice(coupon->total), color);
             report->NewLine();
             coupon = coupon->next;
@@ -4778,7 +4778,7 @@ int AuditingReportWorkFn(AuditingData *adata)
         report->NewLine();
         while (discount != NULL)
         {
-            report->TextPosL(indent, term->Translate(discount->name), color);
+            report->TextPosL(indent, term->Translate(discount->name.c_str()), color);
             report->TextR(term->FormatPrice(discount->total), color);
             report->NewLine();
             discount = discount->next;
@@ -4792,7 +4792,7 @@ int AuditingReportWorkFn(AuditingData *adata)
         report->NewLine();
         while (comp != NULL)
         {
-            report->TextPosL(indent, term->Translate(comp->name), color);
+            report->TextPosL(indent, term->Translate(comp->name.c_str()), color);
             report->TextR(term->FormatPrice(comp->total), color);
             report->NewLine();
             comp = comp->next;
@@ -4806,7 +4806,7 @@ int AuditingReportWorkFn(AuditingData *adata)
         report->NewLine();
         while (meal != NULL)
         {
-            report->TextPosL(indent, term->Translate(meal->name), color);
+            report->TextPosL(indent, term->Translate(meal->name.c_str()), color);
             report->TextR(term->FormatPrice(meal->total), color);
             report->NewLine();
             meal = meal->next;

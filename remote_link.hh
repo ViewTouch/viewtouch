@@ -25,17 +25,19 @@
 #include "basic.hh"
 
 #include <string>
+#include <vector>
+#include <array>
 
 #define QUEUE_SIZE 2097152
 
 /**** Types ****/
 class CharQueue
 {
-    Uchar* buffer;
+    std::vector<Uchar> buffer;
     int  start;
     int  end;
     int  code;
-    char name[256];
+    std::string name;
 
     void ReadError(int wanted, int got);
     int Send8(int val);
@@ -51,7 +53,7 @@ public:
 
     void SetCode(const char* new_name, int new_code)
     {
-        strncpy(name, new_name, 256);
+        name = new_name;
         code = new_code;
     }
     void Clear() { size = 0, start = 0; end = 0; }

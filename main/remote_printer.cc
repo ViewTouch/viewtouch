@@ -29,6 +29,9 @@
 #include <sys/file.h>
 #include <unistd.h>
 #include <X11/Intrinsic.h>
+#include <memory>
+#include <string>
+#include <array>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -44,7 +47,7 @@ public:
     Str host_name;
     int port_no;
     int model;
-    CharQueue *buffer_in, *buffer_out;
+    std::unique_ptr<CharQueue> buffer_in, buffer_out;
     Str filename;
     int failure;
 
@@ -80,41 +83,41 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     failure = 0;
 
     // Setup Connection
-    buffer_in  = new CharQueue(1024);
-    buffer_out = new CharQueue(1024);
-    genericChar str[256], tmp[256];
+    buffer_in = std::make_unique<CharQueue>(1024);
+    buffer_out = std::make_unique<CharQueue>(1024);
+    std::array<char, 256> str{}, tmp{};
     struct sockaddr name;
-    sprintf(str, "/tmp/vt_print%d", no);
+    snprintf(str.data(), str.size(), "/tmp/vt_print%d", no);
     name.sa_family = AF_UNIX;
-    strcpy(name.sa_data, str);
-    DeleteFile(str);
+    strncpy(name.sa_data, str.data(), sizeof(name.sa_data) - 1);
+    name.sa_data[sizeof(name.sa_data) - 1] = '\0';
+    DeleteFile(str.data());
 
     int dev = socket(AF_UNIX, SOCK_STREAM, 0);
     if (dev <= 0)
     {
-        sprintf(tmp, "Failed to open socket '%s'", str);
-        ReportError(tmp);
+        snprintf(tmp.data(), tmp.size(), "Failed to open socket '%s'", str.data());
+        ReportError(tmp.data());
         return;
     }
     if (bind(dev, &name, sizeof(name)) == -1)
     {
         close(dev);
-        sprintf(tmp, "Failed to bind socket '%s'", str);
-        ReportError(tmp);
+        snprintf(tmp.data(), tmp.size(), "Failed to bind socket '%s'", str.data());
+        ReportError(tmp.data());
         return;
     }
 
-    sprintf(str, "vt_print %d %s %d %d&", no, host, port, mod);
-    system(str);
+    snprintf(str.data(), str.size(), "vt_print %d %s %d %d&", no, host, port, mod);
+    system(str.data());
     listen(dev, 1);
 
-    Uint len;
-    len = sizeof(struct sockaddr);
-    socket_no = accept(dev, (struct sockaddr *) str, &len);
+    Uint len = sizeof(struct sockaddr);
+    socket_no = accept(dev, (struct sockaddr *) str.data(), &len);
     if (socket_no <= 0)
     {
-        sprintf(tmp, "Failed to get connection with printer %d", no);
-        ReportError(tmp);
+        snprintf(tmp.data(), tmp.size(), "Failed to get connection with printer %d", no);
+        ReportError(tmp.data());
     }
     close(dev);
 }
@@ -130,10 +133,7 @@ RemotePrinter::~RemotePrinter()
         SendNow();
         close(socket_no);
     }
-    if (buffer_in)
-        delete buffer_in;
-    if (buffer_out)
-        delete buffer_out;
+    // Smart pointers automatically clean up buffer_in and buffer_out
 }
 
 // Member Functions
@@ -160,9 +160,9 @@ int RemotePrinter::WStr(const char* s, int len)
 
 const char* RemotePrinter::RStr(const char* s)
 {
-    static genericChar buffer[1024];
+    static std::array<char, 1024> buffer{};
     if (s == NULL)
-        s = buffer;
+        s = buffer.data();
     buffer_in->GetString(s);
     return s;
 }
@@ -204,9 +204,9 @@ int RemotePrinter::Start()
     }
 
     filename.Set(MasterSystem->NewPrintFile());
-    genericChar str[256];
-    sprintf(str, "/tmp/vt_%s", host_name.Value());
-    device_no = creat(str, 0666);
+    std::array<char, 256> str{};
+    snprintf(str.data(), str.size(), "/tmp/vt_%s", host_name.Value());
+    device_no = creat(str.data(), 0666);
 
     if (device_no <= 0)
     {
@@ -281,15 +281,15 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
     }
 
     p->failure = 0;
-    genericChar str[256];
+    std::array<char, 256> str{};
     while (p->buffer_in->size > 0)
     {
         int code = p->RInt8();
         switch (code)
         {
         case SERVER_ERROR:
-            sprintf(str, "PrinterError: %s", p->RStr());
-            ReportError(str);
+            snprintf(str.data(), str.size(), "PrinterError: %s", p->RStr());
+            ReportError(str.data());
             break;
         case SERVER_PRINTER_DONE:
             DeleteFile(p->RStr());

@@ -141,7 +141,7 @@ int KillTask(const char* name);            // kills all tasks matching name
 int ReportError(const std::string &message); // error logging & reporting function
 int ReportLoader(const char* message);     // gives a message to the loader program if it is still active
 
-char* PriceFormat(Settings *s, int price, int use_sign, int use_comma,
+char* PriceFormat(const Settings* s, int price, int use_sign, int use_comma,
                   genericChar* buffer = NULL); // formats price into string
 int ParsePrice(const char* source, int *val = NULL); // returns price value from given string
 

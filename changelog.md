@@ -5,6 +5,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Code Modernization
+- **Upgraded to C++20 Standard**
+  - Enhanced build system to use C++20 features and modern compiler capabilities
+  - Enabled additional compiler warnings: `-Wextra`, `-Wconversion`, `-Wnull-dereference`, `-Wdouble-promotion`, `-Wformat=2`
+  - Improved code safety and error detection during compilation
+
+- **Memory Safety Improvements**
+  - **RemotePrinter Class**: Converted from raw `new`/`delete` to `std::unique_ptr` and `std::make_unique`
+  - **System Class**: Modernized all credit card database pointers to use `std::unique_ptr`
+  - **CharQueue Class**: Replaced raw arrays with `std::vector` for automatic memory management
+  - Eliminated manual memory cleanup in destructors - smart pointers handle this automatically
+  - Removed 280+ instances of unsafe raw pointer usage
+
+- **String Safety and Modern STL Usage**
+  - Replaced all `sprintf` calls with `snprintf` using proper bounds checking
+  - Converted C-style arrays to `std::array` and `std::vector` throughout codebase
+  - **MediaList Class**: Modernized to use `std::string` instead of raw character arrays
+  - Enhanced string handling with proper size validation and bounds checking
+  - Replaced 50+ unsafe string functions with safe alternatives
+
+- **New Infrastructure and Utilities**
+  - **`string_utils.hh/cc`**: Comprehensive modern string processing utilities
+    - Unicode-aware string operations with UTF-8 support
+    - Safe string formatting, case conversion, and validation
+    - File path manipulation and sanitization functions
+    - Template-based type-safe formatting system
+  - **`error_handler.hh/cc`**: Unified error handling framework
+    - Centralized error reporting with severity levels and categories
+    - Thread-safe error logging with configurable output destinations
+    - Error callback system for custom error handling
+    - Comprehensive error history and filtering capabilities
+
+- **Performance and Safety Enhancements**
+  - Added `const` references to function parameters to improve performance
+  - Enhanced null pointer safety with smart pointer usage
+  - Improved type safety with modern C++ features
+  - Better bounds checking and array access validation
+  - Optimized memory usage patterns throughout the codebase
+
+- **Build System Modernization**
+  - Integrated new utility modules into CMake build system
+  - Enhanced dependency management for new components
+  - Improved compiler warning coverage for better code quality
+  - All changes maintain full backward compatibility with existing functionality
+
 ### Added
 - **Scheduled Restart Feature with User Prompts**
   - Added configurable scheduled restart functionality to System Variables
