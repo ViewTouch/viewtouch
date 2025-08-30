@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Enhanced Texture System with New Materials**
+  - **Carbon Fiber Texture**: Added high-quality carbon fiber material (128x128, 6 colors)
+  - **Color Textures**: Added 6 new color-based textures (128x128, 32 colors each):
+    - White Texture, Dark Orange Texture, Yellow Texture, Green Texture, Orange Texture, Blue Texture
+  - **High-Detail Textures**: Added 6 new detailed materials (256x256, 64 colors each):
+    - Pool Table, Test Pattern, Diamond Leather, Bread, Lava, Dark Marble
+  - **Unified Resolution**: Standardized all new textures to optimal 256x256 resolution for consistency
+  - **Performance Optimized**: Reduced file sizes from ~1.5MB to ~45KB while maintaining visual quality
+  - **Full Integration**: All textures properly integrated into ViewTouch enum system, image data arrays, and UI labels
+  - **Build System**: Successfully integrated into CMake build system with no compilation errors
+
 - **F3/F4 Recording Control Feature**
   - Added user-configurable control over F3/F4 recording and replay functionality
   - New setting `enable_f3_f4_recording` in Soft Switches page
