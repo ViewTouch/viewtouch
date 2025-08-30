@@ -302,9 +302,11 @@ void ViewTouchError(const char* message, int do_sleep)
 
 bool DownloadFile(const std::string &url, const std::string &destination)
 {
-    std::ofstream fout(destination, std::ios::binary);
+    // Create a temporary file to avoid overwriting the original until download is complete
+    std::string temp_file = destination + ".tmp";
+    std::ofstream fout(temp_file, std::ios::binary);
     if (!fout.is_open()) {
-        std::cerr << "Error: Cannot open destination file '" << destination << "' for writing" << std::endl;
+        std::cerr << "Error: Cannot open temporary file '" << temp_file << "' for writing" << std::endl;
         return false;
     }
 
@@ -331,22 +333,29 @@ bool DownloadFile(const std::string &url, const std::string &destination)
         
         // Check if file was written successfully by checking file size
         fout.close();
-        std::ifstream check_file(destination, std::ios::binary | std::ios::ate);
+        std::ifstream check_file(temp_file, std::ios::binary | std::ios::ate);
         if (check_file.is_open()) {
             std::streamsize file_size = check_file.tellg();
             check_file.close();
             
             if (file_size > 0) {
-                std::cerr << "Successfully downloaded file '" << destination << "' from '" << url << "' (size: " << file_size << " bytes)" << std::endl;
-                return true;
+                // Download successful, move temp file to final destination
+                if (std::rename(temp_file.c_str(), destination.c_str()) == 0) {
+                    std::cerr << "Successfully downloaded file '" << destination << "' from '" << url << "' (size: " << file_size << " bytes)" << std::endl;
+                    return true;
+                } else {
+                    std::cerr << "Error: Could not move temporary file to final destination" << std::endl;
+                    std::remove(temp_file.c_str());  // Clean up temp file
+                    return false;
+                }
             } else {
                 std::cerr << "Downloaded file is empty from '" << url << "'" << std::endl;
-                std::remove(destination.c_str());  // Remove empty file
+                std::remove(temp_file.c_str());  // Remove empty temp file
                 return false;
             }
         } else {
             std::cerr << "Cannot verify downloaded file from '" << url << "'" << std::endl;
-            std::remove(destination.c_str());  // Remove file if we can't verify it
+            std::remove(temp_file.c_str());  // Remove temp file if we can't verify it
             return false;
         }
     }
@@ -354,21 +363,21 @@ bool DownloadFile(const std::string &url, const std::string &destination)
     {
         std::cerr << "Logic error downloading file from '" << url << "': " << e.what() << std::endl;
         fout.close();
-        std::remove(destination.c_str());  // Remove partial file
+        std::remove(temp_file.c_str());  // Remove partial temp file
         return false;
     }
     catch (const curlpp::RuntimeError &e)
     {
         std::cerr << "Runtime error downloading file from '" << url << "': " << e.what() << std::endl;
         fout.close();
-        std::remove(destination.c_str());  // Remove partial file
+        std::remove(temp_file.c_str());  // Remove partial temp file
         return false;
     }
     catch (const std::exception &e)
     {
         std::cerr << "Unexpected error downloading file from '" << url << "': " << e.what() << std::endl;
         fout.close();
-        std::remove(destination.c_str());  // Remove partial file
+        std::remove(temp_file.c_str());  // Remove partial temp file
         return false;
     }
 }
@@ -568,25 +577,77 @@ int main(int argc, genericChar* argv[])
 	system(VIEWTOUCH_UPDATE_COMMAND " " VIEWTOUCH_PATH);
     }
     
-    // Always download latest vt_data from ViewTouch update servers
-    ReportError("Downloading latest vt_data from update servers...");
+    // Check if vt_data exists locally first
     bool vt_data_updated = false;
     
-    // Try first URL: http://www.viewtouch.com/vt_updates/vt-update  
-    ReportError("Attempting to download vt_data from http://www.viewtouch.com/vt_updates/vt-update");
-    if (DownloadFileWithFallback("www.viewtouch.com/vt_updates/vt-update", SYSTEM_DATA_FILE)) {
-        ReportError("Successfully downloaded vt_data from http update server");
-        vt_data_updated = true;
-    } else {
-        // Try second URL: https://www.viewtouch.com/vt_updates/vt-update
-        ReportError("First URL failed, attempting https://www.viewtouch.com/vt_updates/vt-update");
-        if (DownloadFileWithFallback("https://www.viewtouch.com/vt_updates/vt-update", SYSTEM_DATA_FILE)) {
-            ReportError("Successfully downloaded vt_data from https update server");
+    if (!fs::exists(SYSTEM_DATA_FILE)) {
+        ReportError("Local vt_data not found, attempting to download from update servers...");
+        
+        // Try first URL: http://www.viewtouch.com/vt_data  
+        ReportError("Attempting to download vt_data from http://www.viewtouch.com/vt_data");
+        if (DownloadFileWithFallback("www.viewtouch.com/vt_data", SYSTEM_DATA_FILE)) {
+            ReportError("Successfully downloaded vt_data from http update server");
             vt_data_updated = true;
         } else {
-            ReportError("Warning: Could not download latest vt_data from update servers, using local copy");
+            // Try second URL: https://www.viewtouch.com/vt_data
+            ReportError("First URL failed, attempting https://www.viewtouch.com/vt_data");
+            if (DownloadFileWithFallback("https://www.viewtouch.com/vt_data", SYSTEM_DATA_FILE)) {
+                ReportError("Successfully downloaded vt_data from https update server");
+                vt_data_updated = true;
+            } else {
+                ReportError("Error: Could not download vt_data from update servers and no local copy exists");
+                ReportError("ViewTouch cannot start without vt_data file");
+                exit(1);
+            }
+        }
+    } else {
+        ReportError("Local vt_data found, attempting to download latest version...");
+        
+        // Try first URL: http://www.viewtouch.com/vt_data  
+        ReportError("Attempting to download latest vt_data from http://www.viewtouch.com/vt_data");
+        if (DownloadFileWithFallback("www.viewtouch.com/vt_data", SYSTEM_DATA_FILE)) {
+            ReportError("Successfully downloaded latest vt_data from http update server");
+            vt_data_updated = true;
+        } else {
+            // Try second URL: https://www.viewtouch.com/vt_data
+            ReportError("First URL failed, attempting https://www.viewtouch.com/vt_data");
+            if (DownloadFileWithFallback("https://www.viewtouch.com/vt_data", SYSTEM_DATA_FILE)) {
+                ReportError("Successfully downloaded latest vt_data from https update server");
+                vt_data_updated = true;
+            } else {
+                ReportError("Warning: Could not download latest vt_data from update servers, using local copy");
+            }
         }
     }
+    
+    // Clean up old vt_data backup files if download was successful
+    if (vt_data_updated) {
+        ReportError("Cleaning up old vt_data backup files...");
+        std::string backup_file = std::string(SYSTEM_DATA_FILE) + ".bak";
+        std::string backup_file2 = std::string(SYSTEM_DATA_FILE) + ".bak2";
+        
+        if (std::remove(backup_file.c_str()) == 0) {
+            ReportError("Removed old vt_data.bak file");
+        }
+        if (std::remove(backup_file2.c_str()) == 0) {
+            ReportError("Removed old vt_data.bak2 file");
+        }
+    }
+    
+    // Clean up old vt_data backup files if download was successful
+    if (vt_data_updated) {
+        ReportError("Cleaning up old vt_data backup files...");
+        std::string backup_file = std::string(SYSTEM_DATA_FILE) + ".bak";
+        std::string backup_file2 = std::string(SYSTEM_DATA_FILE) + ".bak2";
+        
+        if (std::remove(backup_file.c_str()) == 0) {
+            ReportError("Removed old vt_data.bak file");
+        }
+        if (std::remove(backup_file2.c_str()) == 0) {
+            ReportError("Removed old vt_data.bak2 file");
+        }
+    }
+    
     // Now process any locally available updates (updates
     // from the previous step will be installed and ready for
     // this step).
@@ -1379,13 +1440,19 @@ int FindVTData(InputDataFile *infile)
     if (infile->Open(vt_data_path, version) == 0)
         return version;
 
-    // download to official location and then try to read again
-    // Try both HTTPS and HTTP for reliable downloads on Raspberry Pi
-    const std::string vtdata_url = "www.viewtouch.com/vt_data";
-    fprintf(stderr, "Trying download VT_DATA: %s from '%s'\n", SYSTEM_DATA_FILE, vtdata_url.c_str());
-    if (DownloadFileWithFallback(vtdata_url, SYSTEM_DATA_FILE)) {
-        if (infile->Open(SYSTEM_DATA_FILE, version) == 0)
-            return version;
+    // Only download if we don't have any vt_data file anywhere
+    // This prevents overwriting existing files when offline
+    if (!fs::exists(SYSTEM_DATA_FILE) && !fs::exists(vt_data_path)) {
+        // download to official location and then try to read again
+        // Try both HTTPS and HTTP for reliable downloads on Raspberry Pi
+        const std::string vtdata_url = "www.viewtouch.com/vt_data";
+        fprintf(stderr, "No local vt_data found, attempting download from '%s'\n", vtdata_url.c_str());
+        if (DownloadFileWithFallback(vtdata_url, SYSTEM_DATA_FILE)) {
+            if (infile->Open(SYSTEM_DATA_FILE, version) == 0)
+                return version;
+        }
+    } else {
+        fprintf(stderr, "Local vt_data exists, skipping download in FindVTData\n");
     }
 
     return -1;
