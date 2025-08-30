@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-constexpr int SETTINGS_VERSION = 98;  // READ ABOVE
+constexpr int SETTINGS_VERSION = 99;  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -158,6 +158,7 @@ constexpr int SETTINGS_VERSION = 98;  // READ ABOVE
 #define SWITCH_RECEIPT_ALL_MODS  29 // whether to print all modifiers on the receipt
 #define SWITCH_DRAWER_PRINT      30 // whether and when to auto print drawer reports
 #define SWITCH_BALANCE_AUTO_CPNS 31 // whether to list auto-coupons in drawer balance
+#define SWITCH_F3_F4_RECORDING   32 // whether to enable F3/F4 recording/replay feature
 
 #define MOD_SEPARATE_NL           1 // New line
 #define MOD_SEPARATE_CM           2 // Comma
@@ -563,6 +564,7 @@ public:
     int shadow_offset_x;         // Shadow offset in X direction (pixels)
     int shadow_offset_y;         // Shadow offset in Y direction (pixels)
     int shadow_blur_radius;      // Shadow blur radius (0-10)
+    int enable_f3_f4_recording;  // Whether to enable F3/F4 recording/replay feature
     
     // Scheduled restart settings
     int scheduled_restart_hour;  // Hour (0-23) for scheduled restart (-1 = disabled)

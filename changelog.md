@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Added
+- **F3/F4 Recording Control Feature**
+  - Added user-configurable control over F3/F4 recording and replay functionality
+  - New setting `enable_f3_f4_recording` in Soft Switches page
+  - Default disabled (0) for safety in production environments
+  - Requires only the Soft Switch to be enabled (no debug mode required)
+  - Prevents accidental triggering of long replay sequences
+  - Integrated with existing Soft Switches system for consistent user experience
+  - Comprehensive documentation in `F3_F4_RECORDING_CONTROL.md`
+
 ### Code Modernization
 - **Upgraded to C++20 Standard**
   - Enhanced build system to use C++20 features and modern compiler capabilities
@@ -55,6 +65,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - White text: Changed from pure black `{0,0,0}` to medium gray `{64,64,64}` shadows
     - Yellow text: Changed from pure black `{0,0,0}` to warm dark olive `{96,64,0}` shadows  
     - Gray text: Changed from pure black `{0,0,0}` to dark gray `{32,32,32}` shadows
+  - **F3/F4 Recording Button UI Improvements**: Enhanced the F3/F4 Recording button in Settings to match the professional appearance of other settings buttons
+    - Changed button text from verbose "Enable F3/F4 Recording/Replay" to clean "F3/F4" for better fit
+    - Implemented proper On/Off status display at bottom (red "Off", green "On") matching Seat Based Ordering button style
+    - Fixed button toggle functionality to properly switch between OFF and ON states
+    - Removed debug text and improved text positioning to prevent overlap
+    - Enhanced user experience with immediate visual feedback and consistent styling
   - Enhanced consistency with frost and embossed text effects
   - All changes maintain full backward compatibility with existing functionality
 

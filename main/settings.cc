@@ -1212,6 +1212,7 @@ Settings::Settings()
     shadow_offset_x    = 2;  // Default shadow offset
     shadow_offset_y    = 2;  // Default shadow offset
     shadow_blur_radius = 1;  // Default blur radius
+    enable_f3_f4_recording = 0;  // Default to disabled for safety; users can enable in Settings
     
     // Scheduled restart settings - default disabled
     scheduled_restart_hour = -1;  // -1 = disabled
@@ -1488,6 +1489,7 @@ int Settings::Load(const char* file)
     // 93 (07/13/15) added workorder_heading
     // 94 (05/30/16) added per-terminal tax inclusive
     // 95 (07/12/18) removed license_key
+    // 99 (current)  added enable_f3_f4_recording
 
     genericChar str[256];
     if (version < 25 || version > SETTINGS_VERSION)
@@ -2038,6 +2040,8 @@ int Settings::Load(const char* file)
         df.Read(shadow_blur_radius);
     }
     if (version >= 98)
+        df.Read(enable_f3_f4_recording);
+    if (version >= 99)
     {
         df.Read(scheduled_restart_hour);
         df.Read(scheduled_restart_min);
@@ -2405,6 +2409,7 @@ int Settings::Save()
     df.Write(shadow_offset_x);
     df.Write(shadow_offset_y);
     df.Write(shadow_blur_radius);
+    df.Write(enable_f3_f4_recording);
     df.Write(scheduled_restart_hour);
     df.Write(scheduled_restart_min);
     df.Write(restart_postpone_count);

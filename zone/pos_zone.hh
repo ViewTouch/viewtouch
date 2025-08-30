@@ -39,6 +39,7 @@
 #define ZONE_TOGGLE          8   // button with toggleing text/message
 #define ZONE_SIMPLE          9   // button with only jump
 #define ZONE_SWITCH          10  // settings selection button
+
 #define ZONE_LOGIN           20  // takes user id for login
 #define ZONE_COMMAND         21  // system command/status
 #define ZONE_GUEST_COUNT     23  // enter the number of guests

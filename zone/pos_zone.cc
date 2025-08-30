@@ -308,6 +308,7 @@ Zone *NewPosZone(int type)
     case ZONE_SWITCH:
         pNewZone = new SwitchZone;
         break;
+
     case ZONE_TABLE_ASSIGN:
         pNewZone = new TableAssignZone;
         break;

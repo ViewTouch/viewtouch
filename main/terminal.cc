@@ -4102,7 +4102,7 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
     case XK_F2:  // translate term
         return TranslateTerm();
     case XK_F3:  // record activity
-        if (debug_mode)
+        if (system_data->settings.enable_f3_f4_recording)
         {
             if (record_activity)
             {
@@ -4122,7 +4122,7 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
         }
         return 0;
     case XK_F4:
-        if (debug_mode)
+        if (system_data->settings.enable_f3_f4_recording)
             ReadRecordFile();
         return 0;
     case XK_F6:
