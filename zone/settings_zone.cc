@@ -185,23 +185,78 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
     case SWITCH_BALANCE_AUTO_CPNS:
         onoff = settings->balance_auto_coupons;
         break;
+    case SWITCH_F3_F4_RECORDING:
+        onoff = settings->enable_f3_f4_recording;
+        // Set the main button text for F3/F4 recording (very short version)
+        str = term->Translate("F3/F4");
+        break;
     default:
         return RENDER_OKAY;
 	}
 
-	if (onoff == 0)
+	// For switches that don't have custom text, set On/Off text
+	if (onoff >= 0 && str == NULL)
 	{
-		str = term->Translate("Off");
-		col = COLOR_RED;
+		if (onoff == 0)
+		{
+			str = term->Translate("Off");
+			col = COLOR_RED;
+		}
+		else if (onoff == 1)
+		{
+			str = term->Translate("On");
+			col = COLOR_GREEN;
+		}
 	}
-	else if (onoff == 1)
+	
+	// Special handling for F3/F4 recording switch - ensure onoff is valid
+	if (type == SWITCH_F3_F4_RECORDING)
 	{
-		str = term->Translate("On");
-		col = COLOR_GREEN;
+		// Always get the current setting value to ensure it's up to date
+		onoff = settings->enable_f3_f4_recording;
+		if (onoff < 0)
+		{
+			onoff = 0; // Default to Off if setting is invalid
+		}
 	}
+	
+	// Debug: Log the values for F3/F4 recording switch (commented out for cleaner UI)
+	/*
+	if (type == SWITCH_F3_F4_RECORDING)
+	{
+		char debug_str[256];
+		snprintf(debug_str, sizeof(debug_str), "F3F4: onoff=%d, setting=%d", 
+		         onoff, settings->enable_f3_f4_recording);
+		term->RenderText(debug_str, x + 5, y + 5, COLOR_BLUE, FONT_TIMES_14, ALIGN_LEFT);
+	}
+	*/
 
+	// Render the button text
 	if (str)
-		term->RenderText(str, x + (w / 2), y + h - border - 18, col, FONT_TIMES_20B, ALIGN_CENTER);
+	{
+		// For F3/F4 recording switch, render main text centered and On/Off at bottom
+		if (type == SWITCH_F3_F4_RECORDING)
+		{
+			// Render main text centered (higher up to avoid overlap)
+			term->RenderText(str, x + (w / 2), y + (h / 2) - 15, COLOR_BLACK, FONT_TIMES_20B, ALIGN_CENTER);
+			
+			// Render On/Off status at bottom (lower to avoid overlap)
+			if (onoff == 0)
+			{
+				term->RenderText(term->Translate("Off"), x + (w / 2), y + h - border - 25, COLOR_RED, FONT_TIMES_20B, ALIGN_CENTER);
+			}
+			else
+			{
+				// Any non-zero value means "On"
+				term->RenderText(term->Translate("On"), x + (w / 2), y + h - border - 25, COLOR_GREEN, FONT_TIMES_20B, ALIGN_CENTER);
+			}
+		}
+		else
+		{
+			// For other switches, render text at bottom with appropriate color
+			term->RenderText(str, x + (w / 2), y + h - border - 18, col, FONT_TIMES_20B, ALIGN_CENTER);
+		}
+	}
 
 	return RENDER_OKAY;
 }
@@ -303,6 +358,26 @@ SignalResult SwitchZone::Touch(Terminal *term, int tx, int ty)
         break;
     case SWITCH_BALANCE_AUTO_CPNS:
         settings->balance_auto_coupons ^= 1;
+        break;
+    case SWITCH_F3_F4_RECORDING:
+        {
+            // Debug: Log the setting value before and after toggle
+            int old_value = settings->enable_f3_f4_recording;
+            
+            // Ensure the setting only toggles between 0 and 1
+            if (old_value == 0)
+                settings->enable_f3_f4_recording = 1;
+            else
+                settings->enable_f3_f4_recording = 0;
+                
+            int new_value = settings->enable_f3_f4_recording;
+            
+            // Force immediate save of the setting
+            settings->changed = 1;
+            
+            // Debug: Print to console (this will show in terminal output)
+            printf("F3/F4 Recording: %d -> %d (fixed toggle)\n", old_value, new_value);
+        }
         break;
     default:
         return SIGNAL_IGNORED;
@@ -2816,3 +2891,6 @@ int ExpireSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
         settings->Save();
     return 0;
 }
+
+
+

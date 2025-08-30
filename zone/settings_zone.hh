@@ -47,6 +47,8 @@ public:
     int         *SwitchType() { return &type; }
 };
 
+
+
 // General Settings
 class SettingsZone : public FormZone
 {
