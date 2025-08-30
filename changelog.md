@@ -100,9 +100,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - **Automatic vt_data Download on Startup**
   - ViewTouch now automatically downloads latest vt_data from update servers on startup
   - Dual URL support with automatic fallback:
-    - Primary: `http://www.viewtouch.com/vt_updates/vt-update`
-    - Fallback: `https://www.viewtouch.com/vt_updates/vt-update`
-  - Always downloads fresh vt_data on every startup (not just when missing)
+    - Primary: `http://www.viewtouch.com/vt_data`
+    - Fallback: `https://www.viewtouch.com/vt_data`
+  - Smart offline handling: Only downloads when local vt_data is missing
+  - **Enhanced Safety**: Downloads to temporary files first, only replaces original on success
+  - **Automatic Backup Cleanup**: Removes old .bak and .bak2 files after successful updates
+  - **Offline Resilience**: System starts normally with existing vt_data when offline
   - Comprehensive error handling and logging for troubleshooting
   - Uses existing robust download infrastructure with timeout handling
 - **Comprehensive Text Enhancement System**
