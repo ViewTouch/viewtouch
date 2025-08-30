@@ -150,6 +150,19 @@ const genericChar* TextureName[] = {
         "Black",
         "Gray Sand",
         "White Mesh",
+        "Carbon Fiber",
+        "White Texture",
+        "Dark Orange Texture",
+        "Yellow Texture",
+        "Green Texture",
+        "Orange Texture",
+        "Blue Texture",
+        "Pool Table",
+        "Test",
+        "Diamond Leather",
+        "Bread",
+        "Lava",
+        "Dark Marble",
 	NULL
 };
 
@@ -177,6 +190,19 @@ int TextureValue[] = {
 	IMAGE_BLACK,
 	IMAGE_GREYSAND,
 	IMAGE_WHITEMESH,
+	IMAGE_CARBON_FIBER,
+	IMAGE_WHITE_TEXTURE,
+	IMAGE_DARK_ORANGE_TEXTURE,
+	IMAGE_YELLOW_TEXTURE,
+	IMAGE_GREEN_TEXTURE,
+	IMAGE_ORANGE_TEXTURE,
+	IMAGE_BLUE_TEXTURE,
+	IMAGE_POOL_TABLE,
+	IMAGE_TEST,
+	IMAGE_DIAMOND_LEATHER,
+	IMAGE_BREAD,
+	IMAGE_LAVA,
+	IMAGE_DARK_MARBLE,
 	-1
 };
 

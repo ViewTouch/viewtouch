@@ -50,6 +50,19 @@
 #include "xpm/blueparchment.xpm"
 #include "xpm/greySand.xpm"
 #include "xpm/whiteMesh.xpm"
+#include "xpm/carbonfiber-128-6.xpm"
+#include "xpm/whitetexture-128-32.xpm"
+#include "xpm/darkorangetexture-128-32.xpm"
+#include "xpm/yellowtexture-128-32.xpm"
+#include "xpm/greentexture-128-32.xpm"
+#include "xpm/orangetexture-128-32.xpm"
+#include "xpm/bluetexture-128-32.xpm"
+#include "xpm/pooltable-256.xpm"
+#include "xpm/test-256.xpm"
+#include "xpm/diamondleather-256.xpm"
+#include "xpm/bread-256.xpm"
+#include "xpm/lava-256.xpm"
+#include "xpm/darkmarble-256.xpm"
 
 
 /**** Image Values ****/
@@ -75,7 +88,20 @@ constexpr std::array<const char**, IMAGE_COUNT> ImageData = {
     gradient_brown_xpm,
     black_xpm,
     greySand,
-    whiteMesh
+    whiteMesh,
+    CarbonFiberData,
+    WhiteTextureData,
+    DarkOrangeTextureData,
+    YellowTextureData,
+    GreenTextureData,
+    OrangeTextureData,
+    BlueTextureData,
+    PoolTableData,
+    TestData,
+    DiamondLeatherData,
+    BreadData,
+    LavaData,
+    DarkMarbleData
 };
 
 /**** Functions ****/
