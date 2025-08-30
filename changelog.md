@@ -48,6 +48,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Integrated new utility modules into CMake build system
   - Enhanced dependency management for new components
   - Improved compiler warning coverage for better code quality
+  - **Fixed CMake installation directory creation**: Added proper directory structure creation for all installation paths (`/usr/viewtouch/bin`, `/usr/viewtouch/lib`, `/usr/share/viewtouch/fonts`, etc.) to prevent installation failures
+
+- **UI and Visual Enhancements**
+  - **Improved text shadow colors**: Fixed harsh pure black shadows for white, yellow, and gray text colors to provide better readability and visual appeal
+    - White text: Changed from pure black `{0,0,0}` to medium gray `{64,64,64}` shadows
+    - Yellow text: Changed from pure black `{0,0,0}` to warm dark olive `{96,64,0}` shadows  
+    - Gray text: Changed from pure black `{0,0,0}` to dark gray `{32,32,32}` shadows
+  - Enhanced consistency with frost and embossed text effects
   - All changes maintain full backward compatibility with existing functionality
 
 ### Added
