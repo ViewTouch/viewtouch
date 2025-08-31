@@ -812,8 +812,9 @@ int StartSystem(int my_use_net)
         // Now that we have the settings, we need to do some initialization
         sys->account_db.low_acct_num = settings->low_acct_num;
         sys->account_db.high_acct_num = settings->high_acct_num;
+        // Only save if we successfully loaded settings
+        settings->Save();
     }
-    settings->Save();
     // Create alternate media file for old archives if it does not already exist
     sys->FullPath(MASTER_DISCOUNT_SAVE, altmedia);
     settings->SaveAltMedia(altmedia);

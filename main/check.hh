@@ -52,6 +52,10 @@
 #define CF_REPRINT           2   // Has been reprinted (in full) at least once
 #define CF_TRAINING          4   // Check is training check (doesn't save)
 #define CF_SHOWN             8   // Has been shown and double-clicked on Kitchen Video
+#define CF_KITCHEN_MADE      16  // Kitchen has marked their portion as made/ready
+#define CF_BAR_MADE          32  // Bar has marked their portion as made/ready
+#define CF_KITCHEN_SERVED    64  // Kitchen has marked their portion as served
+#define CF_BAR_SERVED        128 // Bar has marked their portion as served
 
 // Tender Types
 #define TENDER_CASH          0   // cash

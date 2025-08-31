@@ -84,7 +84,7 @@ int VideoTargetZone::LoadRecord(Terminal *term, int record)
     while (idx < MAX_FAMILIES && FamilyName[idx] && form)
     {
         form->active = (settings->family_group[FamilyValue[idx]] != SALESGROUP_NONE);
-        form->Set(settings->video_target[idx]);
+        form->Set(settings->video_target[FamilyValue[idx]]);  // Fixed: use FamilyValue[idx] for correct indexing
         form = form->next;
         ++idx;
     }
@@ -105,8 +105,8 @@ int VideoTargetZone::SaveRecord(Terminal *term, int record, int write_file)
         form->Get(value);
         
         // Save to both arrays to ensure they match
-        settings->video_target[idx] = value;
-        settings->family_printer[idx] = value;
+        settings->video_target[FamilyValue[idx]] = value;      // Fixed: use FamilyValue[idx] for correct indexing
+        settings->family_printer[FamilyValue[idx]] = value;    // Fixed: use FamilyValue[idx] for correct indexing
         
         form = form->next;
         ++idx;

@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Complete Kitchen and Bar Video Display Separation**
+  - **Independent Status Tracking**: Implemented separate check flags for kitchen and bar video displays
+    - `CF_KITCHEN_MADE` (16): Kitchen marks their portion as made/ready
+    - `CF_BAR_MADE` (32): Bar marks their portion as made/ready  
+    - `CF_KITCHEN_SERVED` (64): Kitchen marks their portion as served
+    - `CF_BAR_SERVED` (128): Bar marks their portion as served
+  - **Independent Highlighting**: First tap on a check only affects the current video target (kitchen or bar)
+  - **Independent Serving**: Second tap on a check only removes it from the current video target
+  - **Complete Workflow Independence**: Kitchen and bar can work without interfering with each other
+  - **No Cross-Interference**: Actions on one video target never affect the other
+  - Enhanced `ToggleCheckReport` method to use target-specific flags for both highlighting and serving
+  - Updated `DisplayCheckReport` method to check appropriate flags for each video target
+  - Comprehensive documentation in `VIEWTOUCH_IMPROVEMENTS_SUMMARY.md`
+
+- **Fixed Video Target Routing System**
+  - **Corrected Array Indexing**: Fixed `Order::VideoTarget()` method to use direct family ID indexing
+  - **Proper Item Routing**: Items now route to correct video displays based on their family settings
+  - **Family-Based Targeting**: Food items (burgers, appetizers) go to kitchen video, drinks (cocktails, wine) go to bar video
+  - **Eliminated Misrouting**: No more items appearing on wrong video displays regardless of family settings
+
+- **Enhanced Settings Persistence and Loading**
+  - **Fixed Video Target Loading**: Corrected array indexing in `VideoTargetZone` and `PrintTargetZone`
+  - **Settings Persistence**: Video and printer target settings by family now properly save and load
+  - **Improved Default Values**: Changed from problematic `PRINTER_NONE` to sensible `PRINTER_DEFAULT`
+  - **Version Compatibility**: Enhanced loading logic for older settings files (version < 34)
+  - **Fixed Manager Settings Save**: Prevented premature settings save that could overwrite loaded values
+  - **Automatic Synchronization**: Video and printer targets automatically stay synchronized
+
 - **Enhanced Texture System with New Materials**
   - **Carbon Fiber Texture**: Added high-quality carbon fiber material (128x128, 6 colors)
   - **Color Textures**: Added 6 new color-based textures (128x128, 32 colors each):
