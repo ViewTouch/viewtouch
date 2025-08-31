@@ -350,9 +350,14 @@ RenderResult ReportZone::DisplayCheckReport(Terminal *term, Report *disp_report)
                 // Bar video - check if bar portion made
                 made_for_target = (disp_check->flags & CF_BAR_MADE);
             }
-            else
+            else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
             {
                 // Kitchen video - check if kitchen portion made
+                made_for_target = (disp_check->flags & CF_KITCHEN_MADE);
+            }
+            else
+            {
+                // Default/other video targets - check if kitchen portion made
                 made_for_target = (disp_check->flags & CF_KITCHEN_MADE);
             }
             
@@ -420,9 +425,15 @@ int ReportZone::IsKitchenCheck(Terminal *term, Check *check)
             if (check->flags & CF_BAR_SERVED)
                 retval = 0;
         }
-        else
+        else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
         {
             // Kitchen video - don't show if kitchen portion already served
+            if (check->flags & CF_KITCHEN_SERVED)
+                retval = 0;
+        }
+        else
+        {
+            // Default/other video targets - don't show if kitchen portion already served
             if (check->flags & CF_KITCHEN_SERVED)
                 retval = 0;
         }
@@ -564,22 +575,63 @@ int ReportZone::UndoRecentCheck(Terminal *term)
         TimeInfo lasttime = term->system_data->start;
         lasttime.AdjustYears(-1);
         
+        // Look for the most recent check that was served by THIS video target
         while (currcheck != NULL)
         {
-            if (currcheck->check_state == ORDER_SERVED &&
-                currcheck->made_time > lasttime)
+            // Check if this check was served by the current video target
+            int served_by_this_target = 0;
+            if (video_target == PRINTER_BAR1 || video_target == PRINTER_BAR2)
+            {
+                // Bar video - check if bar portion was served
+                served_by_this_target = (currcheck->flags & CF_BAR_SERVED);
+            }
+            else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
+            {
+                // Kitchen video - check if kitchen portion was served
+                served_by_this_target = (currcheck->flags & CF_KITCHEN_SERVED);
+            }
+            else
+            {
+                // Default/other video targets - check if kitchen portion was served
+                served_by_this_target = (currcheck->flags & CF_KITCHEN_SERVED);
+            }
+            
+            if (served_by_this_target && currcheck->made_time > lasttime)
             {
                 lastcheck = currcheck;
                 lasttime = currcheck->made_time;
             }
             currcheck = currcheck->fore;
         }
+        
         if (lastcheck != NULL)
         {
-            lastcheck->check_state = ORDER_SENT;
-            lastcheck->undo = 1;
+            // Recall the order for THIS video target only
+            if (video_target == PRINTER_BAR1 || video_target == PRINTER_BAR2)
+            {
+                // Bar video - recall bar portion by clearing served flag
+                lastcheck->flags &= ~CF_BAR_SERVED;
+            }
+            else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
+            {
+                // Kitchen video - recall kitchen portion by clearing served flag
+                lastcheck->flags &= ~CF_KITCHEN_SERVED;
+            }
+            else
+            {
+                // Default/other video targets - recall kitchen portion by clearing served flag
+                lastcheck->flags &= ~CF_KITCHEN_SERVED;
+            }
+            
+            // Clear the SHOWN flag since we're bringing it back to display
+            lastcheck->flags &= ~CF_SHOWN;
+            // Clear the ORDER_SHOWN status to bring it back to video display
             lastcheck->ClearOrderStatus(NULL, ORDER_SHOWN);
-            term->Draw(1);
+            
+            // Save the changes
+            lastcheck->Save();
+            // Update the display
+            term->Draw(UPDATE_CHECKS | UPDATE_ORDERS | UPDATE_ORDER_SELECT | UPDATE_PAYMENTS);
         }
     }
     return retval;
@@ -1105,9 +1157,14 @@ SignalResult ReportZone::ToggleCheckReport(Terminal *term)
             // Bar video - check if bar portion already made
             already_made = (reportcheck->flags & CF_BAR_MADE);
         }
-        else
+        else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
         {
             // Kitchen video - check if kitchen portion already made
+            already_made = (reportcheck->flags & CF_KITCHEN_MADE);
+        }
+        else
+        {
+            // Default/other video targets - check if kitchen portion already made
             already_made = (reportcheck->flags & CF_KITCHEN_MADE);
         }
         
@@ -1119,9 +1176,14 @@ SignalResult ReportZone::ToggleCheckReport(Terminal *term)
                 // Bar video - mark bar portion as made
                 reportcheck->flags |= CF_BAR_MADE;
             }
-            else
+            else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
             {
                 // Kitchen video - mark kitchen portion as made
+                reportcheck->flags |= CF_KITCHEN_MADE;
+            }
+            else
+            {
+                // Default/other video targets - mark kitchen portion as made
                 reportcheck->flags |= CF_KITCHEN_MADE;
             }
             reportcheck->made_time.Set();
@@ -1134,9 +1196,14 @@ SignalResult ReportZone::ToggleCheckReport(Terminal *term)
                 // Bar video - mark bar portion as served
                 reportcheck->flags |= CF_BAR_SERVED;
             }
-            else
+            else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
             {
                 // Kitchen video - mark kitchen portion as served
+                reportcheck->flags |= CF_KITCHEN_SERVED;
+            }
+            else
+            {
+                // Default/other video targets - mark kitchen portion as served
                 reportcheck->flags |= CF_KITCHEN_SERVED;
             }
             reportcheck->flags |= CF_SHOWN;

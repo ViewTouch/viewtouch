@@ -6,18 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
-- **Complete Kitchen and Bar Video Display Separation**
+- **Complete Kitchen and Bar Video Display Separation with Order Recall**
   - **Independent Status Tracking**: Implemented separate check flags for kitchen and bar video displays
     - `CF_KITCHEN_MADE` (16): Kitchen marks their portion as made/ready
     - `CF_BAR_MADE` (32): Bar marks their portion as made/ready  
     - `CF_KITCHEN_SERVED` (64): Kitchen marks their portion as served
     - `CF_BAR_SERVED` (128): Bar marks their portion as served
-  - **Independent Highlighting**: First tap on a check only affects the current video target (kitchen or bar)
-  - **Independent Serving**: Second tap on a check only removes it from the current video target
+  - **Three-Tap Workflow**: Complete order lifecycle management for each video target
+    - **First Tap**: Marks order as "made" for that video target only
+    - **Second Tap**: Marks order as "served" for that video target only  
+    - **Third Tap**: Recalls the order back to the video display for that target only
+  - **Enhanced Undo Button**: Provides granular control to recall served orders
+    - Finds most recent check served by current video target
+    - Recalls order by clearing target-specific served flag
+    - Only affects current video target, not others
+    - Brings order back to video display for verification
+  - **Complete Video Target Coverage**: Supports all kitchen and bar video displays
+    - Kitchen 1, Kitchen 2, Bar 1, Bar 2 all work independently
+    - Each target maintains separate order status tracking
+    - No cross-interference between any video targets
   - **Complete Workflow Independence**: Kitchen and bar can work without interfering with each other
   - **No Cross-Interference**: Actions on one video target never affect the other
   - Enhanced `ToggleCheckReport` method to use target-specific flags for both highlighting and serving
   - Updated `DisplayCheckReport` method to check appropriate flags for each video target
+  - Modified `UndoRecentCheck` method to provide target-specific order recall
   - Comprehensive documentation in `VIEWTOUCH_IMPROVEMENTS_SUMMARY.md`
 
 - **Fixed Video Target Routing System**
