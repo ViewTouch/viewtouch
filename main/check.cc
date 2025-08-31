@@ -5588,8 +5588,9 @@ int Order::IsReduced(int set)
 int Order::VideoTarget(Settings *settings)
 {
     FnTrace("Order::VideoTarget()");
-    int fvalue = FindIndexOfValue(item_family, FamilyValue);
-    return settings->video_target[fvalue];
+    // Fixed: use item_family directly to index the video_target array
+    // The video_target array is indexed by family ID values, not by position in FamilyValue array
+    return settings->video_target[item_family];
 }
 
 int Order::AddQualifier(const char* qualifier_str)

@@ -85,7 +85,7 @@ int PrintTargetZone::LoadRecord(Terminal *t, int record)
     while (z < MAX_FAMILIES && FamilyName[z] && f)
     {
         f->active = (s->family_group[FamilyValue[z]] != SALESGROUP_NONE);
-        f->Set(s->family_printer[z]);
+        f->Set(s->family_printer[FamilyValue[z]]);  // Fixed: use FamilyValue[z] for correct indexing
         f = f->next; ++z;
     }
     return 0;
@@ -104,8 +104,8 @@ int PrintTargetZone::SaveRecord(Terminal *t, int record, int write_file)
         f->Get(value);
         
         // Save to both arrays to ensure they match
-        s->family_printer[z] = value;
-        s->video_target[z] = value;
+        s->family_printer[FamilyValue[z]] = value;    // Fixed: use FamilyValue[z] for correct indexing
+        s->video_target[FamilyValue[z]] = value;      // Fixed: use FamilyValue[z] for correct indexing
         
         f = f->next; ++z;
     }

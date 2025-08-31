@@ -1309,7 +1309,7 @@ Settings::Settings()
 
     for (i = 0; i < MAX_FAMILIES; ++i)
     {
-        family_printer[i] = PRINTER_NONE;
+        family_printer[i] = PRINTER_DEFAULT;  // Changed from PRINTER_NONE to PRINTER_DEFAULT
         family_group[i]   = SALESGROUP_FOOD;
         video_target[i]   = PRINTER_DEFAULT;
     }
@@ -1672,6 +1672,20 @@ int Settings::Load(const char* file)
         if ( version >= 34 )
         {
             df.Read(video_target[i]);
+        }
+        else
+        {
+            // For older version files, set video_target to match family_printer
+            // This ensures compatibility and prevents resetting to defaults
+            video_target[i] = family_printer[i];
+        }
+        
+        // Ensure family_printer doesn't get reset to PRINTER_NONE
+        // If it was loaded as PRINTER_NONE, change it to PRINTER_DEFAULT
+        if (family_printer[i] == PRINTER_NONE)
+        {
+            family_printer[i] = PRINTER_DEFAULT;
+            video_target[i] = PRINTER_DEFAULT;
         }
     }
 

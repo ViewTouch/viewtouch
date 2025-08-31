@@ -343,9 +343,22 @@ RenderResult ReportZone::DisplayCheckReport(Terminal *term, Report *disp_report)
         Check *disp_check = GetDisplayCheck(term);
         if (disp_check != NULL)
         {
-            if (disp_check->check_state & ORDER_MADE)
+            // Check if this specific video target has marked their portion as made
+            int made_for_target = 0;
+            if (video_target == PRINTER_BAR1 || video_target == PRINTER_BAR2)
+            {
+                // Bar video - check if bar portion made
+                made_for_target = (disp_check->flags & CF_BAR_MADE);
+            }
+            else
+            {
+                // Kitchen video - check if kitchen portion made
+                made_for_target = (disp_check->flags & CF_KITCHEN_MADE);
+            }
+            
+            if (made_for_target)
                 rzstate = 1;
-            else if (disp_check->check_state & ORDER_SENT && disp_check->made_time.IsSet())
+            else if (disp_check->made_time.IsSet() && (disp_check->check_state & ORDER_SENT))
                 rzstate = 2;
             int display_flags = CHECK_DISPLAY_ALL;
             if (video_target != PRINTER_DEFAULT)
@@ -381,7 +394,7 @@ RenderResult ReportZone::DisplayCheckReport(Terminal *term, Report *disp_report)
 
 /****
  * IsKitchenCheck:  For Kitchen Video, we only want to display checks that have
- *   been closed, but have not yet been served.
+ *   been closed, but have not yet been served by the specific video target.
  ****/
 int ReportZone::IsKitchenCheck(Terminal *term, Check *check)
 {
@@ -394,10 +407,26 @@ int ReportZone::IsKitchenCheck(Terminal *term, Check *check)
         retval = 0;
     else if (check->Status() == CHECK_VOIDED)
         retval = 0;
-    else if (check->check_state < ORDER_FINAL || check->check_state >= ORDER_SERVED)
+    else if (check->check_state < ORDER_FINAL)
         retval = 0;
     else if (!ShowCheck(term, check))
         retval = 0;
+    else
+    {
+        // Check if this specific video target has already served their portion
+        if (video_target == PRINTER_BAR1 || video_target == PRINTER_BAR2)
+        {
+            // Bar video - don't show if bar portion already served
+            if (check->flags & CF_BAR_SERVED)
+                retval = 0;
+        }
+        else
+        {
+            // Kitchen video - don't show if kitchen portion already served
+            if (check->flags & CF_KITCHEN_SERVED)
+                retval = 0;
+        }
+    }
 
     return retval;
 }
@@ -1065,21 +1094,51 @@ SignalResult ReportZone::Mouse(Terminal *term, int action, int mx, int my)
 SignalResult ReportZone::ToggleCheckReport(Terminal *term)
 {
     FnTrace("ReportZone::ToggleCheckReport()");
-    //toggle a check done, reusing ORDER_yada states because they have exactly
-    // what we want.
+    //toggle a check done, using separate flags for kitchen and bar video displays
     Check *reportcheck = GetDisplayCheck(term);
     if ( reportcheck )
     {
-        if ( reportcheck->check_state < ORDER_MADE )
+        // Check if this specific video target has already marked their portion as made
+        int already_made = 0;
+        if (video_target == PRINTER_BAR1 || video_target == PRINTER_BAR2)
         {
-            // first toggle cooked
-            reportcheck->check_state = ORDER_MADE;
-            reportcheck->made_time.Set();  //FIX BAK-->should be current time
+            // Bar video - check if bar portion already made
+            already_made = (reportcheck->flags & CF_BAR_MADE);
         }
         else
         {
-            // then toggle served to remove from Kitchen Video
-            reportcheck->check_state = ORDER_SERVED;
+            // Kitchen video - check if kitchen portion already made
+            already_made = (reportcheck->flags & CF_KITCHEN_MADE);
+        }
+        
+        if (!already_made)
+        {
+            // first toggle - mark as made/ready for this video target
+            if (video_target == PRINTER_BAR1 || video_target == PRINTER_BAR2)
+            {
+                // Bar video - mark bar portion as made
+                reportcheck->flags |= CF_BAR_MADE;
+            }
+            else
+            {
+                // Kitchen video - mark kitchen portion as made
+                reportcheck->flags |= CF_KITCHEN_MADE;
+            }
+            reportcheck->made_time.Set();
+        }
+        else
+        {
+            // then toggle served based on video target
+            if (video_target == PRINTER_BAR1 || video_target == PRINTER_BAR2)
+            {
+                // Bar video - mark bar portion as served
+                reportcheck->flags |= CF_BAR_SERVED;
+            }
+            else
+            {
+                // Kitchen video - mark kitchen portion as served
+                reportcheck->flags |= CF_KITCHEN_SERVED;
+            }
             reportcheck->flags |= CF_SHOWN;
             reportcheck->SetOrderStatus(NULL, ORDER_SHOWN);
         }
