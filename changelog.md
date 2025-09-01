@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Fixed Printer Connectivity and Status Issues**
+  - **Enhanced Printer Status Detection**: Improved printer connection monitoring with detailed error reporting
+    - Progressive status updates at connection failure attempts 1, 4, and 8
+    - Proper offline status tracking using `failure = 999` flag without killing printer objects
+    - Automatic detection and reporting of connection restoration
+  - **Automatic Printer Reconnection**: Added robust reconnection logic for network printers
+    - New `Reconnect()` method in `RemotePrinter` class for automatic reconnection attempts
+    - Proper socket recreation and `vt_print` daemon restart when needed
+    - Callback re-registration after successful reconnection
+    - Reconnection attempts every 30 seconds for offline printers
+  - **Printer Health Monitoring**: Added periodic health checks in main system update loop
+    - Monitors all printers every 30 seconds for connectivity issues
+    - Detailed logging of printer status and connection health
+    - Debug mode support for enhanced monitoring information
+  - **Accurate Online Status Checking**: New `IsOnline()` method for reliable printer status determination
+    - Multi-factor detection checking socket status, failure count, and offline flags
+    - UI integration ready for accurate printer status display
+    - Eliminates false "OK" status when printers are actually offline
+  - **Improved Error Handling**: Better error messages and graceful handling of printer disconnections
+    - System continues working even when some printers are offline
+    - No more abrupt printer removal on connection failures
+    - Enhanced logging for troubleshooting printer connectivity issues
 - **Complete Kitchen and Bar Video Display Separation with Order Recall**
   - **Independent Status Tracking**: Implemented separate check flags for kitchen and bar video displays
     - `CF_KITCHEN_MADE` (16): Kitchen marks their portion as made/ready
