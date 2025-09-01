@@ -24,6 +24,7 @@
 #include "data_file.hh"
 #include "utility.hh"
 #include "list_utility.hh"
+#include <memory>
 
 #define LANG_NONE                -1  // uninitialized POFile class
 #define LANG_PHRASE               0  // for old defaults; do not search POFile classes
@@ -161,7 +162,7 @@ public:
 /*********************************************************************
  * Global Data
  ********************************************************************/
-extern Locale *MasterLocale;
+extern std::unique_ptr<Locale> MasterLocale;
 
 struct PhraseEntry
 {

@@ -273,6 +273,6 @@ public:
 
 
 /**** Globals ****/
-extern System *MasterSystem;
+extern std::unique_ptr<System> MasterSystem;
 
 #endif

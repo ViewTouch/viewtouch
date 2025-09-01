@@ -70,7 +70,7 @@ int GetGlobalLanguage()
 
 
 /**** Global Data ****/
-Locale *MasterLocale = NULL;
+std::unique_ptr<Locale> MasterLocale = nullptr;
 
 
 /**** Phrase Data (default U.S. English) ****/
@@ -774,8 +774,12 @@ const char* Locale::Translate(const char* str, int lang, int clear)
         PhraseInfo *ph = Find(str);
         if (ph == NULL)
         {
-            //if (clear)
-                //str[0] = '\0';	#TODO
+            // If clear flag is set and phrase not found, return empty string
+            if (clear)
+            {
+                static char empty_str[] = "";
+                return empty_str;
+            }
             return str;
         }
         else

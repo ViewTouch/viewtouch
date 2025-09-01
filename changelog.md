@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Critical Crash Fixes and Stability Improvements**
+  - **SIGPIPE Crash Resolution**: Fixed critical crash when ViewTouch loses connection to vtpos daemon
+    - Added graceful handling of broken pipe errors in `CharQueue::Write()` method
+    - Prevents application crash when server connection is lost unexpectedly
+    - Returns -1 instead of crashing on `EPIPE` errors during socket writes
+    - Handles connection loss scenarios gracefully without data corruption
+  - **Employee Record Management Crashes**: Fixed multiple crash scenarios in employee management
+    - **Null Pointer Protection**: Added comprehensive null checks in `UserEditZone::SaveRecord()`
+      - Prevents crashes when no employee record is found during save operations
+      - Added null checks for `FormField` objects during field iteration
+      - Safe handling of empty or corrupted employee data structures
+    - **Memory Allocation Safety**: Enhanced error handling in `UserDB::NewUser()`
+      - Added null checks for `new Employee` and `new JobInfo` allocations
+      - Proper cleanup and error logging when memory allocation fails
+      - Prevents crashes from memory allocation failures
+    - **Form Field Iteration Safety**: Fixed null pointer access during field processing
+      - Added null checks before accessing `FormField` objects in loops
+      - Prevents crashes when field list is shorter than expected
+      - Safe iteration through employee form fields
+  - **Expense Zone Crash Prevention**: Fixed null pointer access in expense management
+    - Added null checks for `term->user` before accessing user properties
+    - Prevents crashes when no user is logged in during expense operations
+    - Safe handling of user authentication state in expense zones
+  - **Enhanced Error Handling**: Improved overall application stability
+    - Replaced unsafe string functions (`sprintf`, `strcat`) with `snprintf` for buffer safety
+    - Added exception handling around `std::stoi` calls for string-to-integer conversion
+    - Improved array bounds checking in database operations
+    - Better error logging and graceful degradation on failures
 - **Fixed Printer Connectivity and Status Issues**
   - **Enhanced Printer Status Detection**: Improved printer connection monitoring with detailed error reporting
     - Progressive status updates at connection failure attempts 1, 4, and 8

@@ -172,13 +172,16 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
     switch (idx)
     {
     case 2:  // clear password
-        user->password.Clear();
-        SaveRecord(term, record_no, 0);
-        Draw(term, 1);
+        if (user != NULL)
+        {
+            user->password.Clear();
+            SaveRecord(term, record_no, 0);
+            Draw(term, 1);
+        }
         return SIGNAL_OKAY;
 
     case 3:  // remove
-        if (user->active)
+        if (user != NULL && user->active)
         {
             if (user->last_job == 0)
             {
@@ -192,20 +195,20 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
             }
             else
             {
-                char str[STRLENGTH] = "";
-                strcat(str, "This employee is clocked in.  You cannot\\");
-                strcat(str, "change the employee's status until he or\\");
-                strcat(str, "she is clocked out of the system.");
+                char str[STRLENGTH];
+                snprintf(str, STRLENGTH, "This employee is clocked in.  You cannot\\"
+                                        "change the employee's status until he or\\"
+                                        "she is clocked out of the system.");
                 SimpleDialog *d = new SimpleDialog(str);
                 d->force_width = 600;
                 d->Button("Okay");
                 term->OpenDialog(d);
             }
         }
-        else
+        else if (user != NULL)
         {
             char str[STRLENGTH];
-            sprintf(str, "Employee '%s' is inactive.  What do you want to do?",
+            snprintf(str, STRLENGTH, "Employee '%s' is inactive.  What do you want to do?",
                     user->system_name.Value());
             SimpleDialog *d = new SimpleDialog(str);
             d->Button("Reactivate this employee", "activate");
@@ -395,38 +398,53 @@ int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
     if (e)
     {
         FormField *f = FieldList();
-        f->Get(e->key); f = f->next;
-        f->Get(e->system_name); f = f->next;
-        e->system_name = AdjustCase(e->system_name.str());
-        f->Get(e->training); f = f->next;
-        f->Get(e->last_name); f = f->next;
-        e->last_name = AdjustCase(e->last_name.str());
-        f->Get(e->first_name); f = f->next;
-        e->first_name = AdjustCase(e->first_name.str());
-        f->Get(e->address); f = f->next;
-        e->address = AdjustCase(e->address.str());
-        f->Get(e->city); f = f->next;
-        e->city = AdjustCase(e->city.str());
-        f->Get(e->state); f = f->next;
-        e->state = StringToUpper(e->state.str());
-        f->Get(e->phone); f = f->next;
-        f->Get(e->ssn); f = f->next;
-        f->Get(e->description); f = f->next;
-        f->Get(e->employee_no); f = f->next;
+        
+        // Critical fix: Add null checks for field iteration to prevent crashes
+        if (f) { f->Get(e->key); f = f->next; }
+        if (f) { f->Get(e->system_name); f = f->next; }
+        if (e->system_name.size() > 0) {
+            e->system_name = AdjustCase(e->system_name.str());
+        }
+        if (f) { f->Get(e->training); f = f->next; }
+        if (f) { f->Get(e->last_name); f = f->next; }
+        if (e->last_name.size() > 0) {
+            e->last_name = AdjustCase(e->last_name.str());
+        }
+        if (f) { f->Get(e->first_name); f = f->next; }
+        if (e->first_name.size() > 0) {
+            e->first_name = AdjustCase(e->first_name.str());
+        }
+        if (f) { f->Get(e->address); f = f->next; }
+        if (e->address.size() > 0) {
+            e->address = AdjustCase(e->address.str());
+        }
+        if (f) { f->Get(e->city); f = f->next; }
+        if (e->city.size() > 0) {
+            e->city = AdjustCase(e->city.str());
+        }
+        if (f) { f->Get(e->state); f = f->next; }
+        if (e->state.size() > 0) {
+            e->state = StringToUpper(e->state.str());
+        }
+        if (f) { f->Get(e->phone); f = f->next; }
+        if (f) { f->Get(e->ssn); f = f->next; }
+        if (f) { f->Get(e->description); f = f->next; }
+        if (f) { f->Get(e->employee_no); f = f->next; }
 
-        for (JobInfo *j = e->JobList(); j != NULL; j = j->next)
+        for (JobInfo *j = e->JobList(); j != NULL && f != NULL; j = j->next)
         {
             f = f->next;
-            f->Get(j->job); f = f->next;
-            f->Get(j->pay_rate); f = f->next;
-            f->GetPrice(j->pay_amount); f = f->next;
-            f->Get(j->starting_page); f = f->next;
-            f->Get(j->dept_code); f = f->next;
-            f = f->next;
+            if (f) { f->Get(j->job); f = f->next; }
+            if (f) { f->Get(j->pay_rate); f = f->next; }
+            if (f) { f->GetPrice(j->pay_amount); f = f->next; }
+            if (f) { f->Get(j->starting_page); f = f->next; }
+            if (f) { f->Get(j->dept_code); f = f->next; }
+            if (f) { f = f->next; }
         }
     }
 
-    if ((e->system_name.empty()) &&
+    // Critical fix: Check if employee exists before accessing its fields
+    if (e && (e->system_name.empty()) &&
         ((e->first_name.size() > 0) && (e->last_name.size() > 0)))
     {
         char tempname[STRLONG];
@@ -435,7 +453,8 @@ int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
     }
     
 
-    if (write_file)
+    // Critical fix: Only save if we have a valid employee record
+    if (write_file && e != NULL)
         term->system_data->user_db.Save();
     return 0;
 }
@@ -445,6 +464,14 @@ int UserEditZone::NewRecord(Terminal *term)
     FnTrace("UserEditZone::NewRecord()");
     term->job_filter = 0; // make sure new user is shown on list
     user = term->system_data->user_db.NewUser();
+    
+    // Critical fix: Check if NewUser() succeeded
+    if (user == NULL)
+    {
+        fprintf(stderr, "ERROR: Failed to create new user record\n");
+        return 1; // Return error instead of continuing with NULL user
+    }
+    
     record_no = 0;
     view_active = 1;
     return 0;

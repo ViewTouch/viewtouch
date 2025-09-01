@@ -47,6 +47,7 @@
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
 #include <curlpp/Exception.hpp>
+#include <memory>
 
                             // Standard C++ libraries
 #include <errno.h>          // system error numbers
@@ -556,8 +557,8 @@ int main(int argc, genericChar* argv[])
     SystemTime.Set();
 
     // Start application
-    MasterSystem = new System;
-    if (MasterSystem == NULL)
+    MasterSystem = std::make_unique<System>();
+    if (MasterSystem == nullptr)
     {
         ReportError("Couldn't create main system object");
         EndSystem();
@@ -729,7 +730,7 @@ void Terminate(int my_signal)
     default:
     {
         genericChar str[256];
-        sprintf(str, "Unknown my_signal %d received (ignored)", my_signal);
+        snprintf(str, sizeof(str), "Unknown my_signal %d received (ignored)", my_signal);
         ReportError(str);
         return;
     }
@@ -759,7 +760,7 @@ int StartSystem(int my_use_net)
     genericChar altmedia[STRLONG];
     genericChar altsettings[STRLONG];
 
-    System *sys = MasterSystem;
+    System *sys = MasterSystem.get();
 
     sys->FullPath(RESTART_FLAG, restart_flag_str);
     unlink(restart_flag_str);
@@ -779,7 +780,7 @@ int StartSystem(int my_use_net)
     EnsureFileExists(sys->data_path.Value());
     if (DoesFileExist(sys->data_path.Value()) == 0)
     {
-        sprintf(str, "Can't find path '%s'", sys->data_path.Value());
+        snprintf(str, sizeof(str), "Can't find path '%s'", sys->data_path.Value());
         ReportError(str);
         ReportLoader("POS cannot be started.");
         sleep(1);
@@ -793,7 +794,7 @@ int StartSystem(int my_use_net)
     // Load Phrase Translation
     ReportLoader("Loading Locale Settings");
     sys->FullPath(MASTER_LOCALE, str);
-    MasterLocale = new Locale;
+    MasterLocale = std::make_unique<Locale>();
     if (MasterLocale->Load(str))
     {
         RestoreBackup(str);
@@ -890,7 +891,7 @@ int StartSystem(int my_use_net)
     }
 
     // Terminal & Printer Setup
-    MasterControl = new Control;
+    MasterControl = new Control();
     KillTask("vt_term");
     KillTask("vt_print");
 
@@ -1276,8 +1277,7 @@ int EndSystem()
     }
     if (MasterSystem)
     {
-        delete MasterSystem;
-        MasterSystem = NULL;
+        MasterSystem.reset();
     }
     ReportError("EndSystem:  Normal shutdown.");
 
@@ -1485,7 +1485,7 @@ int LoadSystemData()
     // VERSION NOTES
     // 1 (future) initial version of unified system.dat
 
-    System  *sys = MasterSystem;
+    System  *sys = MasterSystem.get();
     Control *con = MasterControl;
     if (con->zone_db)
     {
@@ -1590,7 +1590,7 @@ int SaveSystemData()
     FnTrace("SaveSystemData()");
 
     // Save version 1
-    System  *sys = MasterSystem;
+    System  *sys = MasterSystem.get();
     Control *con = MasterControl;
     if (con->zone_db == NULL)
         return 1;
@@ -1658,7 +1658,7 @@ int Control::Add(Terminal *term)
     if (term == NULL)
         return 1;
 
-    term->system_data = MasterSystem;
+    term->system_data = MasterSystem.get();
     term_list.AddToTail(term);
     term->UpdateZoneDB(this);
     return 0;
@@ -2019,7 +2019,7 @@ ZoneDB *Control::NewZoneDB()
 int Control::SaveMenuPages()
 {
     FnTrace("Control::SaveMenuPages()");
-    System  *sys = MasterSystem;
+    System  *sys = MasterSystem.get();
     if (zone_db == NULL || sys == NULL)
         return 1;
 
@@ -2032,7 +2032,7 @@ int Control::SaveMenuPages()
 int Control::SaveTablePages()
 {
     FnTrace("Control::SaveTablePages()");
-    System  *sys = MasterSystem;
+    System  *sys = MasterSystem.get();
     if (zone_db == NULL || sys == NULL)
         return 1;
 
@@ -2814,7 +2814,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
     SystemTime.Set();
     int update = 0;
 
-    System *sys = MasterSystem;
+    System *sys = MasterSystem.get();
     Settings *settings = &(sys->settings);
     int day = SystemTime.Day();
     int minute = SystemTime.Min();
@@ -2822,11 +2822,18 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
     {
         if (LastDay != -1)
         {
-            // TODO: what to do in this case?
-            // old code:
-            //ReportError("UpdateSystemCB checking license");
-            //CheckLicense(settings);
-            //settings->Save();
+            // Day change detected - perform daily maintenance tasks
+            ReportError("UpdateSystemCB: Day change detected, performing daily maintenance");
+            
+            // Save any pending settings changes
+            if (settings->changed)
+            {
+                settings->Save();
+                ReportError("UpdateSystemCB: Settings saved after day change");
+            }
+            
+            // Reset daily counters and perform cleanup
+            settings->restart_postpone_count = 0; // Reset restart postponement counter
         }
         LastDay = day;
     }
@@ -3119,7 +3126,7 @@ int RunEndDay()
 {
     FnTrace("RunEndDay()");
     Terminal *term = MasterControl->TermList();
-    System *sys    = MasterSystem;
+    System *sys    = MasterSystem.get();
 
     // verify nobody is logged in, then run EndDay
     if (term->TermsInUse() == 0)

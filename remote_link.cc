@@ -390,11 +390,35 @@ int CharQueue::Write(int device_no, int do_clear)
     Uchar buf3 = (Uchar) ((size >> 16) & 255);
     Uchar buf4 = (Uchar) ((size >> 24) & 255);
     
-    // Write size header with error checking
-    if (write(device_no, &buf1, 1) != 1) return -1;
-    if (write(device_no, &buf2, 1) != 1) return -1;
-    if (write(device_no, &buf3, 1) != 1) return -1;
-    if (write(device_no, &buf4, 1) != 1) return -1;
+    // Write size header with error checking and SIGPIPE handling
+    if (write(device_no, &buf1, 1) != 1) {
+        if (errno == EPIPE) {
+            // Connection lost - handle gracefully
+            return -1;
+        }
+        return -1;
+    }
+    if (write(device_no, &buf2, 1) != 1) {
+        if (errno == EPIPE) {
+            // Connection lost - handle gracefully
+            return -1;
+        }
+        return -1;
+    }
+    if (write(device_no, &buf3, 1) != 1) {
+        if (errno == EPIPE) {
+            // Connection lost - handle gracefully
+            return -1;
+        }
+        return -1;
+    }
+    if (write(device_no, &buf4, 1) != 1) {
+        if (errno == EPIPE) {
+            // Connection lost - handle gracefully
+            return -1;
+        }
+        return -1;
+    }
 
     if (start > end)
     {
@@ -415,10 +439,18 @@ int CharQueue::Write(int device_no, int do_clear)
         }
         
         val = write(device_no, temp_buffer.data(), s);
+        if (val == -1 && errno == EPIPE) {
+            // Connection lost - handle gracefully
+            return -1;
+        }
     }
     else
     {
         val = write(device_no, buffer.data() + start, size);
+        if (val == -1 && errno == EPIPE) {
+            // Connection lost - handle gracefully
+            return -1;
+        }
     }
 
     if (do_clear)

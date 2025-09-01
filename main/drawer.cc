@@ -1366,7 +1366,7 @@ int Drawer::MergeServerBanks()
     if (!IsServerBank() || Status() != DRAWER_BALANCED)
         return 1;
 
-    System *sys = MasterSystem;
+    System *sys = MasterSystem.get();
     Check *check_list;
     Drawer *drawer_list;
     if (archive)
@@ -1460,7 +1460,7 @@ int Drawer::MergeSystems(int mergeall)
 {
     FnTrace("Drawer::MergeSystems()");
 
-    System *sys = MasterSystem;
+    System *sys = MasterSystem.get();
     Check *check_list;
     Drawer *drawer_list;
     if (archive)

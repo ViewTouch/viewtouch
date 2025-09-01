@@ -438,14 +438,32 @@ Employee *UserDB::NameSearch(const std::string &name, Employee *user)
 int UserDB::FindRecordByWord(Terminal *t, const std::string &word, int active, int start)
 {
     FnTrace("UserDB::FindRecordByWord()");
-    int val = std::stoi(word);
+    int val = -1;
+    try {
+        val = std::stoi(word);
+    } catch (const std::exception&) {
+        // If conversion fails, val remains -1
+    }
     int len = static_cast<int>(word.size());
 
     Employee **array = NameArray();
+    if (array == NULL)
+        return -1;
+    
     int record = 0, loop = 0;
     int idx = 0;
     while (loop < 2)
     {
+        // Critical fix: Check array bounds before accessing
+        if (idx >= UserCount())
+        {
+            ++loop;
+            record = 0;
+            idx  = 0;
+            start  = -1;
+            continue;
+        }
+        
         Employee *e = array[idx];
         if (active < 0 || e->active == active)
         {
@@ -473,13 +491,6 @@ int UserDB::FindRecordByWord(Terminal *t, const std::string &word, int active, i
             ++record;
         }
         ++idx;
-        if (idx >= UserCount())
-        {
-            ++loop;
-            record = 0;
-            idx  = 0;
-            start  = -1;
-        }
     }
 
     // search failed
@@ -493,6 +504,9 @@ Employee *UserDB::FindByRecord(Terminal *t, int record, int active)
         return NULL;
 
     Employee **array = NameArray();
+    if (array == NULL)
+        return NULL;
+        
     for (int i = 0; i < UserCount(); ++i)
     {
         Employee *e = array[i];
@@ -698,8 +712,23 @@ Employee *UserDB::NewUser()
     if (e)
     {
         JobInfo *j = new JobInfo;
-        e->Add(j);
-        Add(e);
+        if (j)
+        {
+            e->Add(j);
+            Add(e);
+        }
+        else
+        {
+            // Memory allocation failed for JobInfo
+            delete e;
+            e = NULL;
+            fprintf(stderr, "ERROR: Failed to allocate JobInfo in NewUser()\n");
+        }
+    }
+    else
+    {
+        // Memory allocation failed for Employee
+        fprintf(stderr, "ERROR: Failed to allocate Employee in NewUser()\n");
     }
     return e;
 }
