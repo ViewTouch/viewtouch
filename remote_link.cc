@@ -308,24 +308,60 @@ int CharQueue::Read(int device_no)
     FnTrace("CharQueue::Read()");
     Clear();
 
-    Uchar buf[5];
+    Uchar buf[4];
     int val = read(device_no, &buf[0], 1);
     if (val != 1)
         return -1;
     val = read(device_no, &buf[1], 1);
+    if (val != 1)
+        return -1;
     val = read(device_no, &buf[2], 1);
+    if (val != 1)
+        return -1;
     val = read(device_no, &buf[3], 1);
+    if (val != 1)
+        return -1;
+    
     int s = (Uint) buf[0] + ((Uint) buf[1] << 8) + ((Uint) buf[2] << 16) + ((Uint) buf[3] << 24);
+    
+    // Critical fix: Validate size to prevent buffer overflow
+    if (s <= 0 || s > buffer_size)
+    {
+        fprintf(stderr, "CharQueue::Read() - Invalid size: %d (max: %d)\n", s, buffer_size);
+        return -1;
+    }
 
     int todo = s;
     while (todo > 0)
     {
-        val = read(device_no, buffer.data() + end, s);
+        // Critical fix: Use todo instead of s, and ensure we don't exceed buffer bounds
+        int read_size = (todo > buffer_size - end) ? (buffer_size - end) : todo;
+        if (read_size <= 0)
+        {
+            fprintf(stderr, "CharQueue::Read() - Buffer overflow prevented\n");
+            return -1;
+        }
+        
+        val = read(device_no, buffer.data() + end, read_size);
         if (val > 0)
         {
             size += val;
             end  += val;
             todo -= val;
+            
+            // Handle circular buffer wrap-around
+            if (end >= buffer_size)
+                end = 0;
+        }
+        else if (val == 0)
+        {
+            // Connection closed
+            return -1;
+        }
+        else
+        {
+            // Error reading
+            return -1;
         }
     }
     return s;
@@ -341,29 +377,80 @@ int CharQueue::Write(int device_no, int do_clear)
     if (size <= 0)
         return 1;
 
+    // Validate size before writing
+    if (size > buffer_size)
+    {
+        fprintf(stderr, "CharQueue::Write() - Invalid size: %d (max: %d)\n", size, buffer_size);
+        return -1;
+    }
+
     int val;
     Uchar buf1 = (Uchar) (size & 255);
     Uchar buf2 = (Uchar) ((size >> 8) & 255);
     Uchar buf3 = (Uchar) ((size >> 16) & 255);
     Uchar buf4 = (Uchar) ((size >> 24) & 255);
-    write(device_no, &buf1, 1);
-    write(device_no, &buf2, 1);
-    write(device_no, &buf3, 1);
-    write(device_no, &buf4, 1);
+    
+    // Write size header with error checking and SIGPIPE handling
+    if (write(device_no, &buf1, 1) != 1) {
+        if (errno == EPIPE) {
+            // Connection lost - handle gracefully
+            return -1;
+        }
+        return -1;
+    }
+    if (write(device_no, &buf2, 1) != 1) {
+        if (errno == EPIPE) {
+            // Connection lost - handle gracefully
+            return -1;
+        }
+        return -1;
+    }
+    if (write(device_no, &buf3, 1) != 1) {
+        if (errno == EPIPE) {
+            // Connection lost - handle gracefully
+            return -1;
+        }
+        return -1;
+    }
+    if (write(device_no, &buf4, 1) != 1) {
+        if (errno == EPIPE) {
+            // Connection lost - handle gracefully
+            return -1;
+        }
+        return -1;
+    }
 
     if (start > end)
     {
+        // Handle circular buffer case - copy to temporary buffer
         int s = size;
-        Uchar str[1024];
-        Uchar* c = str;
-        while (size > 0)
-            *c++ = (Uchar) Get8();
-        *c = '\0';
-        val = write(device_no, str, s);
+        std::vector<Uchar> temp_buffer(s);
+        Uchar* c = temp_buffer.data();
+        int temp_size = size;
+        int temp_start = start;
+        
+        while (temp_size > 0)
+        {
+            *c++ = buffer[temp_start];
+            temp_start++;
+            temp_size--;
+            if (temp_start >= buffer_size)
+                temp_start = 0;
+        }
+        
+        val = write(device_no, temp_buffer.data(), s);
+        if (val == -1 && errno == EPIPE) {
+            // Connection lost - handle gracefully
+            return -1;
+        }
     }
     else
     {
         val = write(device_no, buffer.data() + start, size);
+        if (val == -1 && errno == EPIPE) {
+            // Connection lost - handle gracefully
+            return -1;
+        }
     }
 
     if (do_clear)

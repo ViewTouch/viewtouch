@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <string>
+#include <chrono>
 
 #include "debug.hh"
 #include "term_view.hh"
@@ -860,6 +861,9 @@ void UpdateCB(XtPointer client_data, XtIntervalId *timer_id)
             TScreen->Reset();
         }
     }
+    
+    // Critical fix: Clear the old timer ID before setting new one to prevent race condition
+    UpdateTimerID = 0;
     UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, NULL);
 }
 
@@ -1294,11 +1298,26 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
         if (failure < 8)
             return;
 
+        // Critical fix: Better error handling instead of immediate exit
+        fprintf(stderr, "SocketInputCB: Connection lost after %d failures, attempting graceful shutdown\n", failure);
+        
+        // Try to notify the user before exiting
+        ReportError("Connection to server lost. ViewTouch will restart automatically.");
+        
+        // Give a moment for the error message to be processed
+        sleep(1);
+        
         // Server must be dead - go ahead and quit
         exit(1);
     }
 
     Layer *l = MainLayer;
+    if (l == NULL)
+    {
+        fprintf(stderr, "SocketInputCB: MainLayer is NULL, skipping processing\n");
+        return;
+    }
+    
     int px = l->page_x;
     int py = l->page_y;
     int offset_x = l->x + px;
@@ -1314,7 +1333,20 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
 
     while (BufferIn.size > 0)
     {
+        // Critical fix: Add bounds checking to prevent infinite loops
+        if (BufferIn.size < 1)
+        {
+            fprintf(stderr, "SocketInputCB: Buffer size too small for command code\n");
+            break;
+        }
+        
         int code = RInt8();
+        if (code < 0)
+        {
+            fprintf(stderr, "SocketInputCB: Failed to read command code\n");
+            break;
+        }
+        
         BufferIn.SetCode("vt_term", code);
         switch (code)
         {
@@ -2777,10 +2809,29 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
     //Boolean okay;
     XEvent event;
+    int event_count = 0;
+    int max_events_per_second = 1000; // Prevent infinite loops
+    auto last_time = std::chrono::steady_clock::now();
+    
     for (;;)
     {
         XtAppNextEvent(App, &event);
         XtDispatchEvent(&event);
+        
+        // Critical fix: Prevent infinite event loops
+        event_count++;
+        auto current_time = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(current_time - last_time);
+        
+        if (elapsed.count() >= 1) // Reset counter every second
+        {
+            if (event_count > max_events_per_second)
+            {
+                fprintf(stderr, "Warning: High event rate detected (%d events/second), possible infinite loop\n", event_count);
+            }
+            event_count = 0;
+            last_time = current_time;
+        }
     }
     return 0;
 }

@@ -63,6 +63,8 @@ public:
     const genericChar* RStr(const char* str = NULL);
     int   Send();
     int   SendNow();
+    int   Reconnect();  // Critical fix: Add reconnection method
+    int   IsOnline();   // Critical fix: Add online status check
 
     int   StopPrint();
     int   OpenDrawer(int drawer);
@@ -183,6 +185,94 @@ int RemotePrinter::SendNow()
     return 0;
 }
 
+// Critical fix: Add printer reconnection logic
+int RemotePrinter::Reconnect()
+{
+    FnTrace("RemotePrinter::Reconnect()");
+    
+    // Only attempt reconnection if printer is marked as offline
+    if (failure != 999)
+        return 0;
+    
+    std::array<char, 256> str{}, tmp{};
+    struct sockaddr name;
+    snprintf(str.data(), str.size(), "/tmp/vt_print%d", number);
+    name.sa_family = AF_UNIX;
+    strncpy(name.sa_data, str.data(), sizeof(name.sa_data) - 1);
+    name.sa_data[sizeof(name.sa_data) - 1] = '\0';
+    DeleteFile(str.data());
+
+    int dev = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (dev <= 0)
+    {
+        snprintf(tmp.data(), tmp.size(), "Reconnect failed: Cannot open socket '%s'", str.data());
+        ReportError(tmp.data());
+        return 1;
+    }
+    
+    if (bind(dev, &name, sizeof(name)) == -1)
+    {
+        close(dev);
+        snprintf(tmp.data(), tmp.size(), "Reconnect failed: Cannot bind socket '%s'", str.data());
+        ReportError(tmp.data());
+        return 1;
+    }
+
+    // Attempt to restart the vt_print process
+    snprintf(str.data(), str.size(), "vt_print %d %s %d %d&", number, host_name.Value(), port_no, model);
+    system(str.data());
+    listen(dev, 1);
+
+    Uint len = sizeof(struct sockaddr);
+    int new_socket = accept(dev, (struct sockaddr *) str.data(), &len);
+    if (new_socket <= 0)
+    {
+        close(dev);
+        snprintf(tmp.data(), tmp.size(), "Reconnect failed: Cannot connect to printer %d", number);
+        ReportError(tmp.data());
+        return 1;
+    }
+    
+    // Successfully reconnected
+    socket_no = new_socket;
+    failure = 0;
+    close(dev);
+    
+    // Re-register the input callback
+    if (input_id)
+        RemoveInputFn(input_id);
+    input_id = AddInputFn((InputFn) PrinterCB, socket_no, this);
+    
+    snprintf(tmp.data(), tmp.size(), "Printer %s:%d successfully reconnected", host_name.Value(), port_no);
+    ReportError(tmp.data());
+    
+    // Update UI to show printer as online
+    if (parent)
+        parent->UpdateAll(UPDATE_PRINTERS, NULL);
+    
+    return 0;
+}
+
+// Critical fix: Add method to check if printer is online
+int RemotePrinter::IsOnline()
+{
+    FnTrace("RemotePrinter::IsOnline()");
+    
+    // If failure is 999, printer is marked as offline
+    if (failure == 999)
+        return 0;
+    
+    // If socket is closed, printer is offline
+    if (socket_no <= 0)
+        return 0;
+    
+    // If we have too many failures, consider offline
+    if (failure >= 8)
+        return 0;
+    
+    return 1; // Online
+}
+
 int RemotePrinter::StopPrint()
 {
     WInt8(PRINTER_CANCEL);
@@ -264,8 +354,29 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
     if (val <= 0)
     {
         ++p->failure;
+        
+        // Critical fix: Provide better error reporting and status updates
+        std::array<char, 256> errmsg{};
+        if (p->failure == 1)
+        {
+            snprintf(errmsg.data(), errmsg.size(), "Printer %s:%d connection lost (attempt %d/8)", 
+                     p->host_name.Value(), p->port_no, p->failure);
+            ReportError(errmsg.data());
+        }
+        else if (p->failure == 4)
+        {
+            snprintf(errmsg.data(), errmsg.size(), "Printer %s:%d still offline (attempt %d/8) - checking connection", 
+                     p->host_name.Value(), p->port_no, p->failure);
+            ReportError(errmsg.data());
+        }
+        
         if (p->failure < 8)
             return;
+
+        // After 8 failures, mark printer as offline and attempt reconnection
+        snprintf(errmsg.data(), errmsg.size(), "Printer %s:%d marked as OFFLINE after %d connection failures", 
+                 p->host_name.Value(), p->port_no, p->failure);
+        ReportError(errmsg.data());
 
         if (p->socket_no > 0)
         {
@@ -275,12 +386,31 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
             p->socket_no = 0;
         }
 
+        // Critical fix: Don't kill the printer immediately, mark it for reconnection
         if (db)
-            db->KillPrinter(p, 1);
+        {
+            // Mark printer as offline but keep it in the list for reconnection attempts
+            p->failure = 999; // Special value to indicate offline status
+            // Update UI to show printer as offline
+            db->UpdateAll(UPDATE_PRINTERS, NULL);
+        }
         return;
     }
 
-    p->failure = 0;
+    // Connection successful - reset failure count and update status
+    if (p->failure > 0)
+    {
+        std::array<char, 256> msg{};
+        snprintf(msg.data(), msg.size(), "Printer %s:%d connection restored", 
+                 p->host_name.Value(), p->port_no);
+        ReportError(msg.data());
+        p->failure = 0;
+        
+        // Update UI to show printer as online
+        if (db)
+            db->UpdateAll(UPDATE_PRINTERS, NULL);
+    }
+
     std::array<char, 256> str{};
     while (p->buffer_in->size > 0)
     {

@@ -44,7 +44,7 @@
 
 
 /**** Globals ****/
-System *MasterSystem = NULL;
+std::unique_ptr<System> MasterSystem = nullptr;
 
 
 /**** System Class ****/

@@ -61,7 +61,7 @@ RenderResult PhraseZone::Render(Terminal *t, int update_flag)
 int PhraseZone::LoadRecord(Terminal *t, int record)
 {
     FnTrace("PhraseZone::LoadRecord()");
-    Locale *l = MasterLocale;
+    Locale *l = MasterLocale.get();
     FormField *f = FieldList();
     int idx = 0;
 
@@ -95,7 +95,7 @@ int PhraseZone::SaveRecord(Terminal *t, int record, int write_file)
 {
     FnTrace("PhraseZone::SaveRecord()");
     Str tmp;
-    Locale *l = MasterLocale;
+    Locale *l = MasterLocale.get();
     FormField *f = FieldList();
     int idx = 0;
     while (f)

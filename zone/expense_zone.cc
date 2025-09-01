@@ -576,12 +576,25 @@ int ExpenseZone::NewRecord(Terminal *term)
 {
     FnTrace("ExpenseZone::NewRecord()");
     expense = term->system_data->expense_db.NewExpense();
-    if (term->GetSettings()->allow_user_select == 0)
+    
+    // Critical fix: Check if term->user exists before accessing it
+    if (term->user != NULL)
+    {
+        if (term->GetSettings()->allow_user_select == 0)
+            expense->employee_id = term->user->id;
+        
+        if (term->user->training)
+            expense->SetFlag(EF_TRAINING);
         expense->employee_id = term->user->id;
+    }
+    else
+    {
+        // No user logged in - set default values
+        expense->employee_id = 0;
+        fprintf(stderr, "WARNING: ExpenseZone::NewRecord() called with no user logged in\n");
+    }
+    
     show_expense = 1;
-    if (term->user->training)
-        expense->SetFlag(EF_TRAINING);
-    expense->employee_id = term->user->id;
     records = RecordCount(term);
     record_no = records;
     return 0;

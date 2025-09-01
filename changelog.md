@@ -6,6 +6,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Critical Crash Fixes and Stability Improvements**
+  - **SIGPIPE Crash Resolution**: Fixed critical crash when ViewTouch loses connection to vtpos daemon
+    - Added graceful handling of broken pipe errors in `CharQueue::Write()` method
+    - Prevents application crash when server connection is lost unexpectedly
+    - Returns -1 instead of crashing on `EPIPE` errors during socket writes
+    - Handles connection loss scenarios gracefully without data corruption
+  - **Employee Record Management Crashes**: Fixed multiple crash scenarios in employee management
+    - **Null Pointer Protection**: Added comprehensive null checks in `UserEditZone::SaveRecord()`
+      - Prevents crashes when no employee record is found during save operations
+      - Added null checks for `FormField` objects during field iteration
+      - Safe handling of empty or corrupted employee data structures
+    - **Memory Allocation Safety**: Enhanced error handling in `UserDB::NewUser()`
+      - Added null checks for `new Employee` and `new JobInfo` allocations
+      - Proper cleanup and error logging when memory allocation fails
+      - Prevents crashes from memory allocation failures
+    - **Form Field Iteration Safety**: Fixed null pointer access during field processing
+      - Added null checks before accessing `FormField` objects in loops
+      - Prevents crashes when field list is shorter than expected
+      - Safe iteration through employee form fields
+  - **Expense Zone Crash Prevention**: Fixed null pointer access in expense management
+    - Added null checks for `term->user` before accessing user properties
+    - Prevents crashes when no user is logged in during expense operations
+    - Safe handling of user authentication state in expense zones
+  - **Enhanced Error Handling**: Improved overall application stability
+    - Replaced unsafe string functions (`sprintf`, `strcat`) with `snprintf` for buffer safety
+    - Added exception handling around `std::stoi` calls for string-to-integer conversion
+    - Improved array bounds checking in database operations
+    - Better error logging and graceful degradation on failures
+- **Fixed Printer Connectivity and Status Issues**
+  - **Enhanced Printer Status Detection**: Improved printer connection monitoring with detailed error reporting
+    - Progressive status updates at connection failure attempts 1, 4, and 8
+    - Proper offline status tracking using `failure = 999` flag without killing printer objects
+    - Automatic detection and reporting of connection restoration
+  - **Automatic Printer Reconnection**: Added robust reconnection logic for network printers
+    - New `Reconnect()` method in `RemotePrinter` class for automatic reconnection attempts
+    - Proper socket recreation and `vt_print` daemon restart when needed
+    - Callback re-registration after successful reconnection
+    - Reconnection attempts every 30 seconds for offline printers
+  - **Printer Health Monitoring**: Added periodic health checks in main system update loop
+    - Monitors all printers every 30 seconds for connectivity issues
+    - Detailed logging of printer status and connection health
+    - Debug mode support for enhanced monitoring information
+  - **Accurate Online Status Checking**: New `IsOnline()` method for reliable printer status determination
+    - Multi-factor detection checking socket status, failure count, and offline flags
+    - UI integration ready for accurate printer status display
+    - Eliminates false "OK" status when printers are actually offline
+  - **Improved Error Handling**: Better error messages and graceful handling of printer disconnections
+    - System continues working even when some printers are offline
+    - No more abrupt printer removal on connection failures
+    - Enhanced logging for troubleshooting printer connectivity issues
 - **Complete Kitchen and Bar Video Display Separation with Order Recall**
   - **Independent Status Tracking**: Implemented separate check flags for kitchen and bar video displays
     - `CF_KITCHEN_MADE` (16): Kitchen marks their portion as made/ready
