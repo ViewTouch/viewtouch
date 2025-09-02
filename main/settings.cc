@@ -1396,6 +1396,7 @@ Settings::Settings()
     drawer_account = 0;
     split_check_view = SPLIT_CHECK_ITEM;
     mod_separator = MOD_SEPARATE_NL;
+    auto_update_vt_data = 1;        // Default to enabled (current behavior)
     expire_message1.Set("Please contact Support.");
     expire_message2.Set("at");
     expire_message3.Set("541-515-5913");
@@ -1924,6 +1925,19 @@ int Settings::Load(const char* file)
         df.Read(update_user);
         df.Read(update_password);
     }
+    if (version >= 30)
+    {
+        // Check if auto_update_vt_data exists in this version
+        // For backward compatibility, default to enabled if not present
+        if (version >= 100)  // New version number for this setting
+        {
+            df.Read(auto_update_vt_data);
+        }
+        else
+        {
+            auto_update_vt_data = 1;  // Default to enabled for older versions
+        }
+    }
 
     if (version >= 35)
     {
@@ -2359,6 +2373,7 @@ int Settings::Save()
     df.Write(update_address);
     df.Write(update_user);
     df.Write(update_password);
+    df.Write(auto_update_vt_data);
 
     df.Write(low_acct_num);
     df.Write(high_acct_num);

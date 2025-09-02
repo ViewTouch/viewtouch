@@ -545,6 +545,9 @@ int OrderEntryZone::SetSize(Terminal *t, int width, int height)
     int size = page->size - 1;
     Settings *s = t->GetSettings();
     s->oewindow[size].SetRegion(x, y, w, h);
+    
+    // Save the changes to vt_data so they persist across restarts
+    SaveSystemData();
     return 0;
 }
 
@@ -561,6 +564,9 @@ int OrderEntryZone::SetPosition(Terminal *t, int pos_x, int pos_y)
     int size = page->size - 1;
     Settings *s = t->GetSettings();
     s->oewindow[size].SetRegion(x, y, w, h);
+    
+    // Save the changes to vt_data so they persist across restarts
+    SaveSystemData();
     return 0;
 }
 

@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-constexpr int SETTINGS_VERSION = 99;  // READ ABOVE
+constexpr int SETTINGS_VERSION = 100;  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -159,6 +159,7 @@ constexpr int SETTINGS_VERSION = 99;  // READ ABOVE
 #define SWITCH_DRAWER_PRINT      30 // whether and when to auto print drawer reports
 #define SWITCH_BALANCE_AUTO_CPNS 31 // whether to list auto-coupons in drawer balance
 #define SWITCH_F3_F4_RECORDING   32 // whether to enable F3/F4 recording/replay feature
+#define SWITCH_AUTO_UPDATE_VT_DATA 33 // whether to automatically download vt_data on startup
 
 #define MOD_SEPARATE_NL           1 // New line
 #define MOD_SEPARATE_CM           2 // Comma
@@ -761,6 +762,7 @@ public:
     Str update_address;
     Str update_user;
     Str update_password;
+    int auto_update_vt_data;        // boolean - automatically download vt_data on startup?
 
     Str expire_message1;
     Str expire_message2;

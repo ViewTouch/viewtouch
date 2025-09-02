@@ -397,7 +397,7 @@ int PosZone::CanEdit(Terminal *t)
     if (e == NULL)
         return 0;
 
-    if (page->id < 0 && !e->CanEditSystem())
+    if (page->id < 0 && !e->CanEditSystem() && Type() != ZONE_ORDER_ENTRY)
         return 0;
     return e->CanEdit();
 }
@@ -408,7 +408,7 @@ int PosZone::CanCopy(Terminal *t)
     if (e == NULL)
         return 0;
 
-    if (page->id < 0 && !e->CanEditSystem())
+    if (page->id < 0 && !e->CanEditSystem() && Type() != ZONE_ORDER_ENTRY)
         return 0;
     return e->CanEdit();
 }
