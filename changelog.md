@@ -122,6 +122,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Enabled additional compiler warnings: `-Wextra`, `-Wconversion`, `-Wnull-dereference`, `-Wdouble-promotion`, `-Wformat=2`
   - Improved code safety and error detection during compilation
 
+- **Modernized vt_print Daemon (print_main.cc)**
+  - **Critical Bug Fix**: Removed debug `exit(2)` statement that prevented the program from running
+  - **Modern C++ Improvements**: Updated includes from C-style to C++ headers (`<cstring>`, `<csignal>`, `<vector>`)
+  - **Enhanced Buffer Management**: Replaced raw `char buffer[STRLENGTH]` with `std::vector<char>` for automatic memory management
+  - **Graceful Shutdown**: Added signal handlers for SIGINT/SIGTERM with proper cleanup and resource management
+  - **Improved Error Handling**: Enhanced error reporting with proper validation and resource cleanup
+  - **Const Correctness**: Improved parameter passing with `const char* const argv[]` and better variable initialization
+  - **Input Validation**: Added port number range checking (1-65535) and better argument parsing
+  - **Resource Safety**: Proper file descriptor management and cleanup on exit to prevent resource leaks
+  - **Better Data Flow**: Enhanced handling of partial writes, connection states, and shutdown scenarios
+  - All improvements maintain full backward compatibility with existing functionality
+
 - **Memory Safety Improvements**
   - **RemotePrinter Class**: Converted from raw `new`/`delete` to `std::unique_ptr` and `std::make_unique`
   - **System Class**: Modernized all credit card database pointers to use `std::unique_ptr`
