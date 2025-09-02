@@ -581,43 +581,76 @@ int main(int argc, genericChar* argv[])
     // Check if vt_data exists locally first
     bool vt_data_updated = false;
     
-    if (!fs::exists(SYSTEM_DATA_FILE)) {
-        ReportError("Local vt_data not found, attempting to download from update servers...");
-        
-        // Try first URL: http://www.viewtouch.com/vt_data  
-        ReportError("Attempting to download vt_data from http://www.viewtouch.com/vt_data");
-        if (DownloadFileWithFallback("www.viewtouch.com/vt_data", SYSTEM_DATA_FILE)) {
-            ReportError("Successfully downloaded vt_data from http update server");
-            vt_data_updated = true;
-        } else {
-            // Try second URL: https://www.viewtouch.com/vt_data
-            ReportError("First URL failed, attempting https://www.viewtouch.com/vt_data");
-            if (DownloadFileWithFallback("https://www.viewtouch.com/vt_data", SYSTEM_DATA_FILE)) {
-                ReportError("Successfully downloaded vt_data from https update server");
-                vt_data_updated = true;
+    // Check if auto-update is enabled by loading settings
+    bool auto_update_enabled = true;  // Default to enabled for backward compatibility
+    
+    // Load settings from the master settings file using the same method as StartSystem
+    char settings_path[STRLONG];
+    MasterSystem->FullPath(MASTER_SETTINGS, settings_path);
+    
+    if (fs::exists(settings_path)) {
+        Settings temp_settings;
+        if (temp_settings.Load(settings_path) == 0) {
+            auto_update_enabled = temp_settings.auto_update_vt_data;
+            if (!auto_update_enabled) {
+                ReportError("Auto-update of vt_data is disabled in settings");
             } else {
-                ReportError("Error: Could not download vt_data from update servers and no local copy exists");
-                ReportError("ViewTouch cannot start without vt_data file");
-                exit(1);
+                ReportError("Auto-update of vt_data is enabled in settings");
             }
+        } else {
+            ReportError("Warning: Could not load settings file, defaulting to auto-update enabled");
         }
     } else {
-        ReportError("Local vt_data found, attempting to download latest version...");
-        
-        // Try first URL: http://www.viewtouch.com/vt_data  
-        ReportError("Attempting to download latest vt_data from http://www.viewtouch.com/vt_data");
-        if (DownloadFileWithFallback("www.viewtouch.com/vt_data", SYSTEM_DATA_FILE)) {
-            ReportError("Successfully downloaded latest vt_data from http update server");
-            vt_data_updated = true;
-        } else {
-            // Try second URL: https://www.viewtouch.com/vt_data
-            ReportError("First URL failed, attempting https://www.viewtouch.com/vt_data");
-            if (DownloadFileWithFallback("https://www.viewtouch.com/vt_data", SYSTEM_DATA_FILE)) {
-                ReportError("Successfully downloaded latest vt_data from https update server");
+        ReportError("Warning: Settings file not found, defaulting to auto-update enabled");
+    }
+    
+    if (!fs::exists(SYSTEM_DATA_FILE)) {
+        if (auto_update_enabled) {
+            ReportError("Local vt_data not found, attempting to download from update servers...");
+            
+            // Try first URL: http://www.viewtouch.com/vt_data  
+            ReportError("Attempting to download vt_data from http://www.viewtouch.com/vt_data");
+            if (DownloadFileWithFallback("www.viewtouch.com/vt_data", SYSTEM_DATA_FILE)) {
+                ReportError("Successfully downloaded vt_data from http update server");
                 vt_data_updated = true;
             } else {
-                ReportError("Warning: Could not download latest vt_data from update servers, using local copy");
+                // Try second URL: https://www.viewtouch.com/vt_data
+                ReportError("First URL failed, attempting https://www.viewtouch.com/vt_data");
+                if (DownloadFileWithFallback("https://www.viewtouch.com/vt_data", SYSTEM_DATA_FILE)) {
+                    ReportError("Successfully downloaded vt_data from https update server");
+                    vt_data_updated = true;
+                } else {
+                    ReportError("Error: Could not download vt_data from update servers and no local copy exists");
+                    ReportError("ViewTouch cannot start without vt_data file");
+                    exit(1);
+                }
             }
+        } else {
+            ReportError("Error: Local vt_data not found and auto-update is disabled");
+            ReportError("ViewTouch cannot start without vt_data file");
+            exit(1);
+        }
+    } else {
+        if (auto_update_enabled) {
+            ReportError("Local vt_data found, attempting to download latest version...");
+            
+            // Try first URL: http://www.viewtouch.com/vt_data  
+            ReportError("Attempting to download latest vt_data from http://www.viewtouch.com/vt_data");
+            if (DownloadFileWithFallback("www.viewtouch.com/vt_data", SYSTEM_DATA_FILE)) {
+                ReportError("Successfully downloaded latest vt_data from http update server");
+                vt_data_updated = true;
+            } else {
+                // Try second URL: https://www.viewtouch.com/vt_data
+                ReportError("First URL failed, attempting https://www.viewtouch.com/vt_data");
+                if (DownloadFileWithFallback("https://www.viewtouch.com/vt_data", SYSTEM_DATA_FILE)) {
+                    ReportError("Successfully downloaded latest vt_data from https update server");
+                    vt_data_updated = true;
+                } else {
+                    ReportError("Warning: Could not download latest vt_data from update servers, using local copy");
+                }
+            }
+        } else {
+            ReportError("Local vt_data found, auto-update disabled - using existing file");
         }
     }
     

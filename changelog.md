@@ -270,6 +270,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - All tests pass successfully on GCC 12-14 and Clang 16-18 with C++17/C++20 standards
   - Test infrastructure ready for future ViewTouch-specific unit tests
 
+- **Editor Access to Order Entry Button Customization with Persistent Storage**
+  - **Extended Editor Permissions**: Editor users (id == 2) can now edit the size and position of the Order Entry Button
+    - Modified `PosZone::CanEdit()` and `PosZone::CanCopy()` to allow Editor access to `ZONE_ORDER_ENTRY` zones
+    - Editors can now customize the Order Entry Button size and position like Superusers
+    - Maintains security by restricting access only to the Order Entry Button, not other system zones
+  - **Persistent Custom Size Storage**: Order Entry Button size changes are now automatically saved to `vt_data`
+    - Added `SaveSystemData()` calls in `OrderEntryZone::SetSize()` and `OrderEntryZone::SetPosition()` methods
+    - Custom sizes persist across program restarts and are stored in the system data file
+    - Changes are immediately written to `vt_data` when made by any authorized user
+  - **Auto-Update Control with Visual Feedback**: Added user-configurable control over automatic `vt_data` updates
+    - New soft switch "Auto-Update vt_data on Startup" with clear ON/OFF visual feedback
+    - Green "ON" and Red "OFF" status display matching other soft switch buttons
+    - When disabled, prevents automatic `vt_data` downloads that would overwrite custom settings
+    - Integrated with existing Soft Switches system for consistent user experience
+    - Default enabled for backward compatibility, but users can disable to preserve customizations
+  - **Complete Workflow**: Editors can now customize Order Entry Button size, save changes permanently, and control when system updates occur
+
 ### Changed
 - **Improved Embossed Text Rendering for Better Readability**
   - Enhanced embossed text frosting effects to use proportional brightness adjustments

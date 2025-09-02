@@ -190,6 +190,9 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         // Set the main button text for F3/F4 recording (very short version)
         str = term->Translate("F3/F4");
         break;
+    case SWITCH_AUTO_UPDATE_VT_DATA:
+        onoff = settings->auto_update_vt_data;
+        break;
     default:
         return RENDER_OKAY;
 	}
@@ -378,6 +381,9 @@ SignalResult SwitchZone::Touch(Terminal *term, int tx, int ty)
             // Debug: Print to console (this will show in terminal output)
             printf("F3/F4 Recording: %d -> %d (fixed toggle)\n", old_value, new_value);
         }
+        break;
+    case SWITCH_AUTO_UPDATE_VT_DATA:
+        settings->auto_update_vt_data ^= 1;
         break;
     default:
         return SIGNAL_IGNORED;
@@ -1259,7 +1265,7 @@ int DeveloperZone::AddFields()
     AddTextField("Minimum Password Length", 2); SetFlag(FF_ONLYDIGITS);
     AddTextField("Multiply", 2);
     AddTextField("Add or Subtract", 5);
-    AddNewLine(2);
+    AddNewLine();
 
     int i = 0;
     for (i = 0; FamilyName[i] != NULL; i++)
