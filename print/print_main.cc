@@ -18,12 +18,14 @@
  * Startup for printing process 'vt_print'
  */
 
-#include <string.h>
+#include <cstring>
 #include <sys/file.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <csignal>
+#include <memory>
 
 #include "socket.hh"
 #include "utility.hh"
@@ -31,6 +33,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -44,6 +47,9 @@
 
 constexpr int default_port_number = 65530; // the default socket on which to listen
 
+// Global flag for graceful shutdown
+static volatile sig_atomic_t g_shutdown_requested = 0;
+
 struct Parameter
 {
     std::string PrinterDevName = DEVPORT;  // the parallel device file
@@ -55,8 +61,9 @@ struct Parameter
  * PROTOTYPES
  ********************************************************************/
 int  PrintFromRemote(const int my_socket, const int printer);
-Parameter ParseArguments(const int argc, const char* argv[]);
+Parameter ParseArguments(const int argc, const char* const argv[]);
 void ShowHelp(const std::string &progname);
+void SignalHandler(int signal);
 
 
 /*********************************************************************
@@ -64,10 +71,14 @@ void ShowHelp(const std::string &progname);
  ********************************************************************/
 int main(int argc, const char* argv[])
 {
-    int my_socket;
-    int lock;
-    int printer;
-    int connection;
+    // Set up signal handlers for graceful shutdown
+    signal(SIGINT, SignalHandler);
+    signal(SIGTERM, SignalHandler);
+
+    int my_socket = -1;
+    int lock = -1;
+    int printer = -1;
+    int connection = -1;
 
     // parse the arguments for printer device
     Parameter param = ParseArguments(argc, argv);
@@ -76,11 +87,16 @@ int main(int argc, const char* argv[])
         std::cout << "Listening on port " << param.InetPortNumber << std::endl;
         std::cout << "Writing to printer at " << param.PrinterDevName << std::endl;
     }
-    exit(2);
 
     // listen for connections
     my_socket = Listen(param.InetPortNumber);
-    while (my_socket > -1)
+    if (my_socket < 0)
+    {
+        std::cerr << "Failed to create listening socket on port " << param.InetPortNumber << std::endl;
+        return 1;
+    }
+
+    while (my_socket > -1 && !g_shutdown_requested)
     {
         if (param.verbose)
             std::cout << "Waiting to accept connection..." << std::endl;
@@ -97,6 +113,7 @@ int main(int argc, const char* argv[])
                     if (param.verbose)
                         std::cout << "Closing Printer" << std::endl;
                     close(printer);
+                    printer = -1;
                 }
                 else
                 {
@@ -105,11 +122,23 @@ int main(int argc, const char* argv[])
                     perror(msg.c_str());
                 }
                 UnlockDevice(lock);
+                lock = -1;
             }
             if (param.verbose)
                 std::cout << "Closing socket" << std::endl;
             close(connection);
+            connection = -1;
         }
+    }
+
+    // Cleanup on exit
+    if (my_socket > -1)
+    {
+        close(my_socket);
+    }
+    if (param.verbose && g_shutdown_requested)
+    {
+        std::cout << "Shutdown requested, exiting gracefully..." << std::endl;
     }
 
     return 0;
@@ -126,22 +155,39 @@ int main(int argc, const char* argv[])
  ****/
 int PrintFromRemote(const int my_socket, const int printer)
 {
-    char buffer[STRLENGTH];
-    int active = 1;
+    std::vector<char> buffer(STRLENGTH);
+    ssize_t bytes_read = 0;
+    ssize_t bytes_written = 0;
 
-    while (active > 0)
+    while (!g_shutdown_requested)
     {  // read from socket, print to printer until we get an error
-        active = recv(my_socket, buffer, STRLENGTH, 0);
-        if (active > 0)
+        bytes_read = recv(my_socket, buffer.data(), STRLENGTH, 0);
+        if (bytes_read > 0)
         {
-            active = write(printer, buffer, active);  // active contains bytes read
-            if (active < 0)
-                perror("Failed to write");
+            bytes_written = write(printer, buffer.data(), bytes_read);
+            if (bytes_written < 0)
+            {
+                perror("Failed to write to printer");
+                return -1;
+            }
+            else if (bytes_written != bytes_read)
+            {
+                std::cerr << "Warning: Partial write to printer (" << bytes_written 
+                         << " of " << bytes_read << " bytes)" << std::endl;
+            }
         }
-        else if (active < 0)
-            perror("Failed to read");
+        else if (bytes_read == 0)
+        {
+            // Connection closed by client
+            break;
+        }
+        else if (bytes_read < 0)
+        {
+            perror("Failed to read from socket");
+            return -1;
+        }
     }
-    return active;
+    return g_shutdown_requested ? -1 : 0;
 }
 
 /****
@@ -166,15 +212,22 @@ void ShowHelp(const std::string &progname)
  * ParseArguments: Walk through the arguments setting global
  *   variables as necessary.
  ****/
-Parameter ParseArguments(const int argc, const char* argv[])
+Parameter ParseArguments(const int argc, const char* const argv[])
 {
     Parameter param;
     // start at 1, first command line argument past binary name
     for (int idx = 1; idx < argc; idx++)
     {
-        std::string arg = argv[idx];
-        std::string prefix = arg.substr(0,2);
-        std::string val = arg.substr(2);
+        const std::string arg = argv[idx];
+        if (arg.length() < 2)
+        {
+            std::cout << "Invalid argument format: '" << arg << "'" << std::endl;
+            ShowHelp(argv[0]);
+        }
+        
+        const std::string prefix = arg.substr(0, 2);
+        const std::string val = arg.substr(2);
+        
         if (prefix == "-d")
         {
             if (val.empty())
@@ -184,10 +237,12 @@ Parameter ParseArguments(const int argc, const char* argv[])
                 ShowHelp(argv[0]);
             }
             param.PrinterDevName = val;
-        } else if (prefix == "-h")
+        } 
+        else if (prefix == "-h")
         {
             ShowHelp(argv[0]);
-        } else if (prefix == "-p")
+        } 
+        else if (prefix == "-p")
         {
             if (val.empty())
             {
@@ -197,19 +252,33 @@ Parameter ParseArguments(const int argc, const char* argv[])
             }
             std::istringstream ss(val);
             ss >> param.InetPortNumber;
-            if (ss.fail())
+            if (ss.fail() || param.InetPortNumber <= 0 || param.InetPortNumber > 65535)
             {
-                std::cout << "Can't parse port number: " << val << std::endl;
+                std::cout << "Invalid port number: " << val 
+                         << " (must be between 1 and 65535)" << std::endl;
                 ShowHelp(argv[0]);
             }
-        } else if (prefix == "-v")
+        } 
+        else if (prefix == "-v")
         {
             param.verbose = true;
-        } else
+        } 
+        else
         {
             std::cout << "Unrecognized parameter '" << arg << "'" << std::endl;
             ShowHelp(argv[0]);
         }
     }
     return param;
+}
+
+/****
+ * SignalHandler: Handle shutdown signals gracefully
+ ****/
+void SignalHandler(int signal)
+{
+    if (signal == SIGINT || signal == SIGTERM)
+    {
+        g_shutdown_requested = 1;
+    }
 }
