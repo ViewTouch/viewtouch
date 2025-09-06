@@ -6,7 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
-- **High-Risk Crash and Freeze Prevention (Latest)**
+- **Editor Settings Save Fix (Latest)**
+  - **Fixed "Editor Settings" Button Save Issue**: Resolved critical bug where Editor Settings button wasn't saving when using "save" + "Return To A Jump" sequence
+    - Added proper save completion handling in `MessageButtonZone::SendandJump()`
+    - Ensured settings are written to disk before jumping to prevent data loss
+    - Added timing delays to guarantee file write completion
+    - Enhanced save operation to include both Settings and System data persistence
+    - Fixed race condition between save signal and page jump operations
+- **High-Risk Crash and Freeze Prevention**
   - **SIGPIPE Handling Enhancement**: Implemented robust network reconnection system
     - Added `ReconnectToServer()` function for automatic socket reconnection (up to 20 attempts)
     - Added `RestartTerminal()` function for graceful terminal restart on connection loss
@@ -38,6 +45,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Fixed declaration conflicts and unused variable warnings
     - Ensured clean compilation with zero errors and improved code quality
     - Enhanced maintainability and development workflow
+  - **Null Pointer Protection**: Comprehensive null pointer dereference prevention
+    - **Event Handler Protection**: Added null checks for all X11 event handlers
+      - `TouchScreenCB`: Added null check for `TScreen` before accessing touch screen methods
+      - `CalibrateCB`: Added null check for `TScreen` before calling `ReadStatus()`
+      - `MouseClickCB`, `MouseReleaseCB`, `MouseMoveCB`: Added null checks for `event` parameter
+      - `KeyPressCB`, `ExposeCB`: Added null checks for `event` parameter before processing
+    - **System Management Protection**: Enhanced null pointer safety in critical system functions
+      - `EndSystem()`: Added comprehensive null checks for all database pointers before calling `Save()`
+      - `LoadSystemData()`: Added null checks for `MasterSystem` and `MasterControl` before accessing
+      - `FindVTData()`: Added null check for `MasterSystem` before calling `FullPath()`
+    - **Touch Screen Protection**: Enhanced null checking in touch screen operations
+      - `UpdateCB()`: Added double null check for `TScreen` after `EndCalibrate()` call
+      - `TouchScreenCB()`: Enhanced null checking with proper error logging
+    - **Database Access Protection**: Secured all database save operations
+      - Added null checks for `cc_exception_db`, `cc_refund_db`, `cc_void_db`
+      - Added null checks for `cc_settle_results`, `cc_init_results`, `cc_saf_details_results`
+      - Prevented crashes during system shutdown with corrupted data structures
 - **Critical Crash Fixes and Stability Improvements**
   - **SIGPIPE Crash Resolution**: Fixed critical crash when ViewTouch loses connection to vtpos daemon
     - Added graceful handling of broken pipe errors in `CharQueue::Write()` method

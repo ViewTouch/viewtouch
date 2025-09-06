@@ -1304,20 +1304,31 @@ int EndSystem()
     }
 
     // Save Archive/Settings Changes
-    Settings *settings = &MasterSystem->settings;
-    if (settings->changed)
-    {
-        settings->Save();
-        settings->SaveMedia();
-    }
     if (MasterSystem)
+    {
+        Settings *settings = &MasterSystem->settings;
+        if (settings && settings->changed)
+        {
+            settings->Save();
+            settings->SaveMedia();
+        }
         MasterSystem->SaveChanged();
-    MasterSystem->cc_exception_db->Save();
-    MasterSystem->cc_refund_db->Save();
-    MasterSystem->cc_void_db->Save();
-    MasterSystem->cc_settle_results->Save();
-    MasterSystem->cc_init_results->Save();
-    MasterSystem->cc_saf_details_results->Save();
+        
+        // Critical fix: Add null checks for database pointers
+        if (MasterSystem->cc_exception_db)
+            MasterSystem->cc_exception_db->Save();
+        if (MasterSystem->cc_refund_db)
+            MasterSystem->cc_refund_db->Save();
+        // Critical fix: Add null checks for remaining database pointers
+        if (MasterSystem->cc_void_db)
+            MasterSystem->cc_void_db->Save();
+        if (MasterSystem->cc_settle_results)
+            MasterSystem->cc_settle_results->Save();
+        if (MasterSystem->cc_init_results)
+            MasterSystem->cc_init_results->Save();
+        if (MasterSystem->cc_saf_details_results)
+            MasterSystem->cc_saf_details_results->Save();
+    }
 
     // Delete databases
     if (MasterControl != NULL)
@@ -1526,6 +1537,12 @@ int FindVTData(InputDataFile *infile)
         return version;
 
     // fallback, try current data path
+    if (MasterSystem == NULL)
+    {
+        fprintf(stderr, "MasterSystem is NULL, cannot get data path\n");
+        return -1;
+    }
+    
     const char *vt_data_path = MasterSystem->FullPath("vt_data");
     fprintf(stderr, "Trying VT_DATA: %s\n", vt_data_path);
     if (infile->Open(vt_data_path, version) == 0)
@@ -1558,6 +1575,20 @@ int LoadSystemData()
 
     System  *sys = MasterSystem.get();
     Control *con = MasterControl;
+    
+    // Critical fix: Add null checks for MasterSystem and MasterControl
+    if (sys == NULL)
+    {
+        ReportError("MasterSystem is NULL, cannot load system data");
+        return 1;
+    }
+    
+    if (con == NULL)
+    {
+        ReportError("MasterControl is NULL, cannot load system data");
+        return 1;
+    }
+    
     if (con->zone_db)
     {
         ReportError("system data already loaded");

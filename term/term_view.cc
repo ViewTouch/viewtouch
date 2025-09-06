@@ -818,6 +818,12 @@ void ExposeCB(Widget widget, XtPointer client_data, XEvent *event,
 {
     FnTrace("ExposeCB()");
 
+    if (event == NULL)
+    {
+        fprintf(stderr, "ExposeCB: event is NULL, skipping expose processing\n");
+        return;
+    }
+
     static RegionInfo area;
 
     XExposeEvent *e = (XExposeEvent *) event;
@@ -860,7 +866,8 @@ void UpdateCB(XtPointer client_data, XtIntervalId *timer_id)
         if (sec > ResetTime)
         {
             EndCalibrate();
-            TScreen->Reset();
+            if (TScreen) // Critical fix: Check TScreen again after EndCalibrate
+                TScreen->Reset();
         }
     }
     
@@ -874,8 +881,13 @@ void TouchScreenCB(XtPointer client_data, int *fid, XtInputId *id)
     FnTrace("TouchScreenCB()");
 
     TouchScreen *ts = TScreen;
-    if (ts == NULL && silent_mode > 0)
+    if (ts == NULL)
+    {
+        if (silent_mode > 0)
+            return;
+        fprintf(stderr, "TouchScreenCB: TScreen is NULL, skipping touch processing\n");
         return;
+    }
 
     int tx = -1;
     int ty = -1;
@@ -943,6 +955,12 @@ void KeyPressCB(Widget widget, XtPointer client_data,
                 XEvent *event, Boolean *okay)
 {
     FnTrace("KeyPressCB()");
+
+    if (event == NULL)
+    {
+        fprintf(stderr, "KeyPressCB: event is NULL, skipping key press processing\n");
+        return;
+    }
 
     static char swipe_buffer[1024];
     static char last_char    = '\0';
@@ -1175,6 +1193,12 @@ void MouseClickCB(Widget widget, XtPointer client_data, XEvent *event,
 {
     FnTrace("MouseClickCB()");
 
+    if (event == NULL)
+    {
+        fprintf(stderr, "MouseClickCB: event is NULL, skipping mouse click processing\n");
+        return;
+    }
+
     if (CalibrateStage)
         return;
     if (UserInput())
@@ -1215,6 +1239,12 @@ void MouseReleaseCB(Widget widget, XtPointer client_data, XEvent *event,
 {
     FnTrace("MouseReleaseCB()");
 
+    if (event == NULL)
+    {
+        fprintf(stderr, "MouseReleaseCB: event is NULL, skipping mouse release processing\n");
+        return;
+    }
+
     if (UserInput())
         return;
     if (silent_mode > 0)
@@ -1240,6 +1270,12 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
                  Boolean *okay)
 {
     FnTrace("MouseMoveCB()");
+
+    if (event == NULL)
+    {
+        fprintf(stderr, "MouseMoveCB: event is NULL, skipping mouse move processing\n");
+        return;
+    }
 
     XPointerMovedEvent *e = (XPointerMovedEvent *) event;
     if (UserInput())
@@ -1282,6 +1318,12 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
 void CalibrateCB(XtPointer client_data, int *fid, XtInputId *id)
 {
     FnTrace("CalibrateCB()");
+
+    if (TScreen == NULL)
+    {
+        fprintf(stderr, "CalibrateCB: TScreen is NULL, skipping calibration\n");
+        return;
+    }
 
     int status = TScreen->ReadStatus();
     if (status >= 0)
