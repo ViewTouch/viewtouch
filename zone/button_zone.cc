@@ -249,7 +249,16 @@ char* MessageButtonZone::ValidateCommand(char* source)
             (item >= 'A' && item <= 'Z') ||
             (item >= 'a' && item <= 'z') ||
             item == ' ' || item == '-' || item == '_' ||
-            item == '.' || item == '/')
+            item == '.' || item == '/' || item == ':' ||
+            item == '$' || item == '|' || item == '&' ||
+            item == '>' || item == '<' || item == ';' ||
+            item == '(' || item == ')' || item == '[' ||
+            item == ']' || item == '{' || item == '}' ||
+            item == '"' || item == '\'' || item == '`' ||
+            item == '!' || item == '?' || item == '*' ||
+            item == '+' || item == '=' || item == '~' ||
+            item == '@' || item == '#' || item == '%' ||
+            item == '^' || item == '\\')
         {
             dest[didx] = source[sidx];
             didx += 1;
