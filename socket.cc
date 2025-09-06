@@ -317,15 +317,71 @@ int Connect(const char* host, const char* service)
             for (; *pptr != NULL; pptr++)
             {
                 sockfd = socket(AF_INET, SOCK_STREAM, 0);
+                if (sockfd < 0)
+                {
+                    perror("socket");
+                    continue;
+                }
+                
+                // Critical fix: Add timeout to connect operation
+                struct timeval timeout;
+                timeout.tv_sec = 10;  // 10 second timeout
+                timeout.tv_usec = 0;
+                
+                if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
+                {
+                    perror("setsockopt SO_RCVTIMEO");
+                }
+                if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
+                {
+                    perror("setsockopt SO_SNDTIMEO");
+                }
+                
                 bzero(&servaddr, sizeof(servaddr));
                 servaddr.sin_family = AF_INET;
                 servaddr.sin_port = sp->s_port;
                 memcpy(&servaddr.sin_addr, *pptr, sizeof(struct in_addr));
-                if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) == 0)
+                
+                // Use non-blocking connect with timeout
+                int flags = fcntl(sockfd, F_GETFL, 0);
+                if (flags < 0 || fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) < 0)
                 {
+                    perror("fcntl");
+                    close(sockfd);
+                    continue;
+                }
+                
+                int connect_result = connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+                if (connect_result == 0)
+                {
+                    // Connected immediately
+                    fcntl(sockfd, F_SETFL, flags); // Restore blocking mode
                     retval = sockfd;
                     break;
                 }
+                else if (errno == EINPROGRESS)
+                {
+                    // Connection in progress, wait for completion
+                    fd_set write_fds;
+                    FD_ZERO(&write_fds);
+                    FD_SET(sockfd, &write_fds);
+                    
+                    int select_result = select(sockfd + 1, NULL, &write_fds, NULL, &timeout);
+                    if (select_result > 0)
+                    {
+                        int error = 0;
+                        socklen_t len = sizeof(error);
+                        if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len) == 0 && error == 0)
+                        {
+                            // Connection successful
+                            fcntl(sockfd, F_SETFL, flags); // Restore blocking mode
+                            retval = sockfd;
+                            break;
+                        }
+                    }
+                }
+                
+                close(sockfd);
             }
         }
         else
@@ -359,17 +415,71 @@ int Connect(const char* host, int port)
         for (; *pptr != NULL; pptr++)
         {
             sockfd = socket(AF_INET, SOCK_STREAM, 0);
+            if (sockfd < 0)
+            {
+                perror("socket");
+                continue;
+            }
+            
+            // Critical fix: Add timeout to connect operation
+            struct timeval timeout;
+            timeout.tv_sec = 10;  // 10 second timeout
+            timeout.tv_usec = 0;
+            
+            if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
+            {
+                perror("setsockopt SO_RCVTIMEO");
+            }
+            if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
+            {
+                perror("setsockopt SO_SNDTIMEO");
+            }
+            
             bzero(&servaddr, sizeof(servaddr));
             servaddr.sin_family = AF_INET;
             servaddr.sin_port = htons(port);
             memcpy(&servaddr.sin_addr, *pptr, sizeof(struct in_addr));
-            if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) == 0)
+            
+            // Use non-blocking connect with timeout
+            int flags = fcntl(sockfd, F_GETFL, 0);
+            if (flags < 0 || fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) < 0)
             {
+                perror("fcntl");
+                close(sockfd);
+                continue;
+            }
+            
+            int connect_result = connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+            if (connect_result == 0)
+            {
+                // Connected immediately
+                fcntl(sockfd, F_SETFL, flags); // Restore blocking mode
                 retval = sockfd;
                 break;
             }
-            else
-                perror("connect");
+            else if (errno == EINPROGRESS)
+            {
+                // Connection in progress, wait for completion
+                fd_set write_fds;
+                FD_ZERO(&write_fds);
+                FD_SET(sockfd, &write_fds);
+                
+                int select_result = select(sockfd + 1, NULL, &write_fds, NULL, &timeout);
+                if (select_result > 0)
+                {
+                    int error = 0;
+                    socklen_t len = sizeof(error);
+                    if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len) == 0 && error == 0)
+                    {
+                        // Connection successful
+                        fcntl(sockfd, F_SETFL, flags); // Restore blocking mode
+                        retval = sockfd;
+                        break;
+                    }
+                }
+            }
+            
+            close(sockfd);
         }
     }
     else

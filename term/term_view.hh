@@ -305,5 +305,9 @@ extern int   SendNow();
 extern int   ReloadTermFonts();  // Reload fonts when global defaults change
 void TerminalReloadFonts();
 
+// Reconnection functions
+extern int   ReconnectToServer();
+extern void  RestartTerminal();
+
 #endif
 

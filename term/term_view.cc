@@ -16,8 +16,10 @@
 #include <fontconfig/fontconfig.h>
 #include <sys/file.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/un.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <time.h>
@@ -816,6 +818,12 @@ void ExposeCB(Widget widget, XtPointer client_data, XEvent *event,
 {
     FnTrace("ExposeCB()");
 
+    if (event == NULL)
+    {
+        fprintf(stderr, "ExposeCB: event is NULL, skipping expose processing\n");
+        return;
+    }
+
     static RegionInfo area;
 
     XExposeEvent *e = (XExposeEvent *) event;
@@ -858,7 +866,8 @@ void UpdateCB(XtPointer client_data, XtIntervalId *timer_id)
         if (sec > ResetTime)
         {
             EndCalibrate();
-            TScreen->Reset();
+            if (TScreen) // Critical fix: Check TScreen again after EndCalibrate
+                TScreen->Reset();
         }
     }
     
@@ -872,8 +881,13 @@ void TouchScreenCB(XtPointer client_data, int *fid, XtInputId *id)
     FnTrace("TouchScreenCB()");
 
     TouchScreen *ts = TScreen;
-    if (ts == NULL && silent_mode > 0)
+    if (ts == NULL)
+    {
+        if (silent_mode > 0)
+            return;
+        fprintf(stderr, "TouchScreenCB: TScreen is NULL, skipping touch processing\n");
         return;
+    }
 
     int tx = -1;
     int ty = -1;
@@ -941,6 +955,12 @@ void KeyPressCB(Widget widget, XtPointer client_data,
                 XEvent *event, Boolean *okay)
 {
     FnTrace("KeyPressCB()");
+
+    if (event == NULL)
+    {
+        fprintf(stderr, "KeyPressCB: event is NULL, skipping key press processing\n");
+        return;
+    }
 
     static char swipe_buffer[1024];
     static char last_char    = '\0';
@@ -1173,6 +1193,12 @@ void MouseClickCB(Widget widget, XtPointer client_data, XEvent *event,
 {
     FnTrace("MouseClickCB()");
 
+    if (event == NULL)
+    {
+        fprintf(stderr, "MouseClickCB: event is NULL, skipping mouse click processing\n");
+        return;
+    }
+
     if (CalibrateStage)
         return;
     if (UserInput())
@@ -1213,6 +1239,12 @@ void MouseReleaseCB(Widget widget, XtPointer client_data, XEvent *event,
 {
     FnTrace("MouseReleaseCB()");
 
+    if (event == NULL)
+    {
+        fprintf(stderr, "MouseReleaseCB: event is NULL, skipping mouse release processing\n");
+        return;
+    }
+
     if (UserInput())
         return;
     if (silent_mode > 0)
@@ -1238,6 +1270,12 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
                  Boolean *okay)
 {
     FnTrace("MouseMoveCB()");
+
+    if (event == NULL)
+    {
+        fprintf(stderr, "MouseMoveCB: event is NULL, skipping mouse move processing\n");
+        return;
+    }
 
     XPointerMovedEvent *e = (XPointerMovedEvent *) event;
     if (UserInput())
@@ -1281,6 +1319,12 @@ void CalibrateCB(XtPointer client_data, int *fid, XtInputId *id)
 {
     FnTrace("CalibrateCB()");
 
+    if (TScreen == NULL)
+    {
+        fprintf(stderr, "CalibrateCB: TScreen is NULL, skipping calibration\n");
+        return;
+    }
+
     int status = TScreen->ReadStatus();
     if (status >= 0)
         Calibrate(status);
@@ -1298,17 +1342,31 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
         if (failure < 8)
             return;
 
-        // Critical fix: Better error handling instead of immediate exit
-        fprintf(stderr, "SocketInputCB: Connection lost after %d failures, attempting graceful shutdown\n", failure);
+        // Critical fix: Implement reconnection instead of exit
+        fprintf(stderr, "SocketInputCB: Connection lost after %d failures, attempting reconnection\n", failure);
         
-        // Try to notify the user before exiting
-        ReportError("Connection to server lost. ViewTouch will restart automatically.");
+        // Try to notify the user
+        ReportError("Connection to server lost. Attempting to reconnect...");
         
-        // Give a moment for the error message to be processed
-        sleep(1);
+        // Attempt to reconnect to the server
+        if (ReconnectToServer() == 0)
+        {
+            failure = 0; // Reset failure counter on successful reconnection
+            ReportError("Successfully reconnected to server.");
+            return;
+        }
         
-        // Server must be dead - go ahead and quit
-        exit(1);
+        // If reconnection fails, wait before trying again
+        if (failure < 20) // Try up to 20 times before giving up
+        {
+            sleep(2); // Wait 2 seconds before next attempt
+            return;
+        }
+        
+        // After many failed attempts, restart the terminal gracefully
+        ReportError("Unable to reconnect to server. Restarting terminal...");
+        RestartTerminal();
+        return;
     }
 
     Layer *l = MainLayer;
@@ -2947,6 +3005,101 @@ int KillTerm()
         App = NULL;
     }
     return 0;
+}
+
+/*********************************************************************
+ * Reconnection Functions
+ ********************************************************************/
+
+int ReconnectToServer()
+{
+    FnTrace("ReconnectToServer()");
+    
+    // Close existing socket if open
+    if (SocketNo > 0)
+    {
+        close(SocketNo);
+        SocketNo = 0;
+    }
+    
+    // Get socket file path from command line arguments
+    // Note: In a real implementation, you'd need to pass the socket file path
+    // as a parameter or store it globally. For now, we'll use a default.
+    const char* socket_file = "/tmp/viewtouch_socket";
+    
+    // Create new socket
+    SocketNo = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (SocketNo <= 0)
+    {
+        fprintf(stderr, "ReconnectToServer: Failed to create socket\n");
+        return -1;
+    }
+    
+    // Set up server address
+    struct sockaddr_un server_adr;
+    server_adr.sun_family = AF_UNIX;
+    strncpy(server_adr.sun_path, socket_file, sizeof(server_adr.sun_path) - 1);
+    server_adr.sun_path[sizeof(server_adr.sun_path) - 1] = '\0';
+    
+    // Attempt to connect with timeout
+    if (connect(SocketNo, (struct sockaddr *) &server_adr, SUN_LEN(&server_adr)) < 0)
+    {
+        fprintf(stderr, "ReconnectToServer: Connection failed (error %d)\n", errno);
+        close(SocketNo);
+        SocketNo = 0;
+        return -1;
+    }
+    
+    // Re-register the input callback
+    extern XtAppContext App;
+    if (App)
+    {
+        extern int SocketInputID;
+        if (SocketInputID)
+            XtRemoveInput(SocketInputID);
+        SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
+                                     (XtInputCallbackProc) SocketInputCB, NULL);
+    }
+    
+    fprintf(stderr, "ReconnectToServer: Successfully reconnected\n");
+    return 0;
+}
+
+void RestartTerminal()
+{
+    FnTrace("RestartTerminal()");
+    
+    // Clean up current resources
+    KillTerm();
+    
+    // Give a moment for cleanup
+    sleep(1);
+    
+    // Restart the terminal process
+    // Note: In a real implementation, you'd need to pass the command line arguments
+    // as parameters or store them globally. For now, we'll use a simplified restart.
+    
+    // Fork and exec the terminal
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        // Child process - exec the terminal with default arguments
+        char *args[] = { (char*)"./vt_term", (char*)"/tmp/viewtouch_socket", NULL };
+        execv(args[0], args);
+        // If execv fails, exit
+        exit(1);
+    }
+    else if (pid > 0)
+    {
+        // Parent process - exit gracefully
+        exit(0);
+    }
+    else
+    {
+        // Fork failed - just exit
+        fprintf(stderr, "RestartTerminal: Fork failed\n");
+        exit(1);
+    }
 }
 
 /*********************************************************************

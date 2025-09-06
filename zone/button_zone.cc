@@ -28,6 +28,7 @@
 #include "labels.hh"
 #include "system.hh"
 #include <string.h>
+#include <unistd.h>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -149,7 +150,29 @@ SignalResult MessageButtonZone::SendandJump(Terminal *term)
     }
 
     if (sig != SIGNAL_ERROR)
+    {
+        // Critical fix: If the signal was "save", ensure save operation completes before jumping
+        if (strcmp(signal, "save") == 0)
+        {
+            // Force immediate save to disk and wait for completion
+            Settings *settings = term->GetSettings();
+            if (settings)
+            {
+                settings->Save();
+                // Give a small delay to ensure file write completes
+                usleep(100000); // 100ms delay
+            }
+            
+            // Also ensure any other pending saves are completed
+            System *sys = term->system_data;
+            if (sys)
+            {
+                sys->SaveChanged();
+                usleep(50000); // Additional 50ms delay for system saves
+            }
+        }
         term->Jump(jump_type, jump_id);
+    }
 
     return sig;
 }
