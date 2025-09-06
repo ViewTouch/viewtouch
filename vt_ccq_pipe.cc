@@ -123,30 +123,64 @@ int SocketToSerial(int listen_port, const char* pinpad_device)
     char     server_ip[STRLENGTH];
     int      errval;
 
-    /* now loop forever */
+    /* now loop with proper error handling and exit conditions */
+    int consecutive_failures = 0;
+    const int max_failures = 100; // Maximum consecutive failures before giving up
+    time_t last_success = time(NULL);
+    const int max_idle_time = 300; // 5 minutes of no activity before checking health
+    
     while (1)
     {
         if (pinpad_fd <= 0)
         {
             pinpad_fd = OpenSerial(pinpad_device);
-            tcflush(pinpad_fd, TCIOFLUSH);
-            tcsendbreak(pinpad_fd, 0);
-            if (diagnostics && pinpad_fd > 0)
-                printf("Opened Device %s, File Descriptor %d\n", pinpad_device, pinpad_fd);
-            else if (pinpad_fd <= 0)
+            if (pinpad_fd > 0)
+            {
+                tcflush(pinpad_fd, TCIOFLUSH);
+                tcsendbreak(pinpad_fd, 0);
+                if (diagnostics)
+                    printf("Opened Device %s, File Descriptor %d\n", pinpad_device, pinpad_fd);
+                consecutive_failures = 0; // Reset failure counter on success
+                last_success = time(NULL);
+            }
+            else
+            {
+                consecutive_failures++;
+                if (consecutive_failures >= max_failures)
+                {
+                    fprintf(stderr, "SocketToSerial: Too many consecutive failures (%d), exiting\n", consecutive_failures);
+                    return -1;
+                }
                 sleep(1);
+            }
         }
         else if (listen_fd <= 0)
         {
             listen_fd = Listen(listen_port);
-            if (diagnostics && listen_fd > 0)
-                printf("Listening on Port:  %d\n", listen_port);
-            else if (listen_fd <= 0)
+            if (listen_fd > 0)
+            {
+                if (diagnostics)
+                    printf("Listening on Port:  %d\n", listen_port);
+                consecutive_failures = 0; // Reset failure counter on success
+                last_success = time(NULL);
+            }
+            else
             {
                 if (errno == EADDRINUSE)
-                    exit(1);
+                {
+                    fprintf(stderr, "SocketToSerial: Port %d already in use\n", listen_port);
+                    return -1;
+                }
                 else
+                {
+                    consecutive_failures++;
+                    if (consecutive_failures >= max_failures)
+                    {
+                        fprintf(stderr, "SocketToSerial: Too many consecutive failures (%d), exiting\n", consecutive_failures);
+                        return -1;
+                    }
                     sleep(1);
+                }
             }
         }
         else
@@ -162,6 +196,9 @@ int SocketToSerial(int listen_port, const char* pinpad_device)
             reads = select(nfds, &in_fds, NULL, NULL, &timeout);
             if (reads > 0)
             {
+                last_success = time(NULL); // Update last success time
+                consecutive_failures = 0; // Reset failure counter on activity
+                
                 if (FD_ISSET(pinpad_fd, &in_fds))
                 {
                     // out here we probably have an ENQ, need to respond with ACK
@@ -192,6 +229,27 @@ int SocketToSerial(int listen_port, const char* pinpad_device)
                             printf("Timed out, resetting connection...\n");
                         }
                     }
+                }
+            }
+            else if (reads < 0)
+            {
+                // Error in select
+                consecutive_failures++;
+                if (consecutive_failures >= max_failures)
+                {
+                    fprintf(stderr, "SocketToSerial: Select error, too many failures (%d), exiting\n", consecutive_failures);
+                    return -1;
+                }
+            }
+            else
+            {
+                // Timeout - check if we've been idle too long
+                time_t now = time(NULL);
+                if (now - last_success > max_idle_time)
+                {
+                    if (diagnostics)
+                        printf("SocketToSerial: No activity for %ld seconds, checking health...\n", now - last_success);
+                    // Could add health checks here if needed
                 }
             }
         }

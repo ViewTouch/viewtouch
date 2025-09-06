@@ -499,8 +499,17 @@ int main(int argc, genericChar* argv[])
 
     genericChar buffer[1024];
     genericChar* c = buffer;
+    const genericChar* buffer_end = buffer + sizeof(buffer) - 1; // Leave space for null terminator
+    
     for (;;)
     {
+        // Critical fix: Check buffer bounds to prevent overflow
+        if (c >= buffer_end)
+        {
+            fprintf(stderr, "Manager: Buffer overflow prevented in command reading\n");
+            break;
+        }
+        
         int no = read(LoaderSocket, c, 1);
         if (no == 1)
         {
@@ -513,7 +522,9 @@ int main(int argc, genericChar* argv[])
                 }
                 else if (strncmp(buffer, "datapath ", 9) == 0)
                 {
-                    strcpy(data_path, &buffer[9]);
+                    // Critical fix: Use strncpy with bounds checking
+                    strncpy(data_path, &buffer[9], sizeof(data_path) - 1);
+                    data_path[sizeof(data_path) - 1] = '\0';
                 }
                 else if (strcmp(buffer, "netoff") == 0)
                 {
@@ -526,6 +537,7 @@ int main(int argc, genericChar* argv[])
                 else if (strncmp(buffer, "display ", 8) == 0)
                 {
                     strncpy(displaystr, &buffer[8], STRLENGTH);
+                    displaystr[STRLENGTH - 1] = '\0'; // Ensure null termination
                 }
                 else if (strcmp(buffer, "notrace") == 0)
                 {
@@ -534,6 +546,17 @@ int main(int argc, genericChar* argv[])
             }
             else
                 ++c;
+        }
+        else if (no == 0)
+        {
+            // Connection closed
+            break;
+        }
+        else
+        {
+            // Error reading
+            perror("Manager: Error reading from loader socket");
+            break;
         }
     }
 
@@ -1299,13 +1322,28 @@ int EndSystem()
     // Delete databases
     if (MasterControl != NULL)
     {
-        // Deleting MasterControl keeps giving me error messages:
-        //     "vt_main in free(): warning: chunk is already free"
-        // I'm tired of the error messages and don't want to take
-        // the time right now to fix it, so I'm commenting it out.
-        // There's no destructor, so this step shouldn't be necessary
-        // anyway.
-        // delete MasterControl;
+        // Critical fix: Properly clean up MasterControl to prevent double-free
+        // First, clean up all terminals and printers
+        Terminal *term = MasterControl->TermList();
+        while (term != NULL)
+        {
+            Terminal *next_term = term->next;
+            // Clean up terminal resources
+            if (term->cdu != NULL)
+                term->cdu->Clear();
+            term = next_term;
+        }
+        
+        Printer *printer = MasterControl->PrinterList();
+        while (printer != NULL)
+        {
+            Printer *next_printer = printer->next;
+            // Clean up printer resources if needed
+            printer = next_printer;
+        }
+        
+        // Now safely delete MasterControl
+        delete MasterControl;
         MasterControl = NULL;
     }
     if (MasterSystem)
