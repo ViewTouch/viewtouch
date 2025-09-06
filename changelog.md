@@ -299,6 +299,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Default enabled for backward compatibility, but users can disable to preserve customizations
   - **Complete Workflow**: Editors can now customize Order Entry Button size, save changes permanently, and control when system updates occur
 
+- **Enhanced RUNCMD: Terminal Command Execution**
+  - **Expanded Command Support**: Enhanced the existing RUNCMD: functionality in Standard buttons to support more shell command characters
+    - Now supports colons (`:`), dollar signs (`$`), pipes (`|`), ampersands (`&`), redirection (`>`, `<`), and other common shell operators
+    - Allows complex shell commands like `RUNCMD:sudo /usr/viewtouch/bin/pull.sh` to execute properly
+    - Maintains security by still validating commands while being more permissive for legitimate shell operations
+  - **Improved Command Validation**: Updated `ValidateCommand` function to allow essential shell command characters
+    - Supports command substitution, pipes, redirection, and other shell features
+    - Prevents execution of commands starting with dots (`.`) for security
+    - Maintains protection against potentially dangerous command patterns
+  - **Seamless Integration**: Works with existing Standard button Message section without requiring new button types
+    - Commands execute using `system()` and output is logged to `/usr/viewtouch/dat/text/command.log`
+    - No changes required to existing button configurations - backward compatible
+    - Users can now run complex terminal commands directly from ViewTouch interface
+
 ### Changed
 - **Improved Embossed Text Rendering for Better Readability**
   - Enhanced embossed text frosting effects to use proportional brightness adjustments
