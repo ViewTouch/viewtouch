@@ -269,9 +269,9 @@ StartupNotify=true
 EOF
     
     # Copy icon if it exists
-    if [ -f "$TEMP_DIR/xpm/demo.png" ]; then
+    if [ -f "$TEMP_DIR/xpm/Icon.png" ]; then
         mkdir -p "$INSTALL_PREFIX/share/pixmaps"
-        cp "$TEMP_DIR/xpm/demo.png" "$INSTALL_PREFIX/share/pixmaps/viewtouch.png"
+        cp "$TEMP_DIR/xpm/Icon.png" "$INSTALL_PREFIX/share/pixmaps/viewtouch.png"
     fi
     
     log_info "Desktop entry created"

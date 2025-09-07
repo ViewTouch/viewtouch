@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Universal Installer Icon Update**
+  - Updated universal installer to use `Icon.png` instead of `demo.png` for desktop entry icon
+  - The installer now properly displays the ViewTouch logo in applications menu and desktop environment
+  - Enhanced visual branding consistency across the installation experience
 - **Editor Order Entry Save Fix (Latest)**
   - **Fixed Editor Order Entry Changes Not Saving**: Resolved critical issue where editor changes to Order Entry button size/position were not being saved on program exit or Kill System
     - **Root Cause**: `EditTerm()` function only called `SaveSystemData()` for Super Users, not Editors
