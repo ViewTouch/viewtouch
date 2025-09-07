@@ -2520,8 +2520,9 @@ int Terminal::EditTerm(int save_data, int edit_mode)
             parent->UpdateAll(UPDATE_MENU, NULL);
             if (zone_db != NULL)
                 zone_db->ClearEdit(this);
-            if (edit_mode>1 && CanEditSystem())	// F9 at start and end
-                SaveSystemData();
+            // Always save system data when exiting edit mode to ensure Order Entry changes are saved
+            // This applies to both Super Users and Editors
+            SaveSystemData();
             parent->SaveMenuPages();
             parent->SaveTablePages();
             if (system_data->user_db.changed)

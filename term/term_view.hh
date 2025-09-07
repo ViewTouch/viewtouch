@@ -280,6 +280,8 @@ extern int KillTerm();
 extern int ShowCursor(int type);
 extern int BlankScreen();
 extern int DrawScreenSaver();
+extern int ReconnectToServer();
+extern void RestartTerminal();
 
 extern XFontStruct *GetFontInfo(int font_id);
 extern XftFont *GetXftFontInfo(int font_id);

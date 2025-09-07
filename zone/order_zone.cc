@@ -546,7 +546,8 @@ int OrderEntryZone::SetSize(Terminal *t, int width, int height)
     Settings *s = t->GetSettings();
     s->oewindow[size].SetRegion(x, y, w, h);
     
-    // Save the changes to vt_data so they persist across restarts
+    // Allow both Super Users and Editors to save Order Entry changes immediately
+    // Order Entry is a special case where editors should be able to save changes
     SaveSystemData();
     return 0;
 }
@@ -565,7 +566,8 @@ int OrderEntryZone::SetPosition(Terminal *t, int pos_x, int pos_y)
     Settings *s = t->GetSettings();
     s->oewindow[size].SetRegion(x, y, w, h);
     
-    // Save the changes to vt_data so they persist across restarts
+    // Allow both Super Users and Editors to save Order Entry changes immediately
+    // Order Entry is a special case where editors should be able to save changes
     SaveSystemData();
     return 0;
 }

@@ -1342,8 +1342,22 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
         if (failure < 8)
             return;
 
-        // Critical fix: Implement reconnection instead of exit
-        fprintf(stderr, "SocketInputCB: Connection lost after %d failures, attempting reconnection\n", failure);
+        // Critical fix: Remove invalid input handler to prevent infinite ppoll loop
+        fprintf(stderr, "SocketInputCB: Connection lost after %d failures, removing input handler\n", failure);
+        
+        // Remove the invalid input handler immediately to prevent hang
+        if (SocketInputID != 0)
+        {
+            XtRemoveInput(SocketInputID);
+            SocketInputID = 0;
+        }
+        
+        // Close the invalid socket
+        if (SocketNo > 0)
+        {
+            close(SocketNo);
+            SocketNo = -1;
+        }
         
         // Try to notify the user
         ReportError("Connection to server lost. Attempting to reconnect...");
@@ -2870,11 +2884,45 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     int event_count = 0;
     int max_events_per_second = 1000; // Prevent infinite loops
     auto last_time = std::chrono::steady_clock::now();
+    int consecutive_errors = 0;
+    const int max_consecutive_errors = 10;
     
     for (;;)
     {
-        XtAppNextEvent(App, &event);
-        XtDispatchEvent(&event);
+        // Critical fix: Add error handling for XtAppNextEvent
+        if (XtAppPending(App) == 0)
+        {
+            // No events pending, check if we should exit
+            if (SocketNo <= 0 && SocketInputID == 0)
+            {
+                fprintf(stderr, "No socket connection and no input handler, exiting gracefully\n");
+                break;
+            }
+            usleep(10000); // Sleep 10ms to prevent busy waiting
+            continue;
+        }
+        
+        try
+        {
+            XtAppNextEvent(App, &event);
+            XtDispatchEvent(&event);
+            consecutive_errors = 0; // Reset error counter on success
+        }
+        catch (...)
+        {
+            consecutive_errors++;
+            fprintf(stderr, "Error in event processing (attempt %d/%d)\n", consecutive_errors, max_consecutive_errors);
+            
+            if (consecutive_errors >= max_consecutive_errors)
+            {
+                fprintf(stderr, "Too many consecutive errors, exiting gracefully\n");
+                break;
+            }
+            
+            // Small delay before retrying
+            usleep(100000); // 100ms
+            continue;
+        }
         
         // Critical fix: Prevent infinite event loops
         event_count++;
@@ -2892,6 +2940,62 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         }
     }
     return 0;
+}
+
+// Critical fix: Add reconnection and restart functions
+int ReconnectToServer()
+{
+    FnTrace("ReconnectToServer()");
+    
+    // Try to reconnect to the server
+    struct sockaddr_un server_adr;
+    server_adr.sun_family = AF_UNIX;
+    strcpy(server_adr.sun_path, "/tmp/vt_term"); // Default socket path
+    
+    SocketNo = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (SocketNo <= 0)
+    {
+        fprintf(stderr, "ReconnectToServer: Failed to create socket\n");
+        return 1;
+    }
+    
+    if (connect(SocketNo, (struct sockaddr *) &server_adr, SUN_LEN(&server_adr)) < 0)
+    {
+        fprintf(stderr, "ReconnectToServer: Can't connect to server (error %d)\n", errno);
+        close(SocketNo);
+        SocketNo = -1;
+        return 1;
+    }
+    
+    // Re-add the input handler
+    SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
+                                  (XtInputCallbackProc) SocketInputCB, NULL);
+    
+    return 0;
+}
+
+void RestartTerminal()
+{
+    FnTrace("RestartTerminal()");
+    
+    // Clean up resources
+    StopTouches();
+    StopUpdates();
+    
+    if (SocketInputID != 0)
+    {
+        XtRemoveInput(SocketInputID);
+        SocketInputID = 0;
+    }
+    
+    if (SocketNo > 0)
+    {
+        close(SocketNo);
+        SocketNo = -1;
+    }
+    
+    // Exit the terminal gracefully
+    exit(0);
 }
 
 int KillTerm()
@@ -3007,100 +3111,6 @@ int KillTerm()
     return 0;
 }
 
-/*********************************************************************
- * Reconnection Functions
- ********************************************************************/
-
-int ReconnectToServer()
-{
-    FnTrace("ReconnectToServer()");
-    
-    // Close existing socket if open
-    if (SocketNo > 0)
-    {
-        close(SocketNo);
-        SocketNo = 0;
-    }
-    
-    // Get socket file path from command line arguments
-    // Note: In a real implementation, you'd need to pass the socket file path
-    // as a parameter or store it globally. For now, we'll use a default.
-    const char* socket_file = "/tmp/viewtouch_socket";
-    
-    // Create new socket
-    SocketNo = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (SocketNo <= 0)
-    {
-        fprintf(stderr, "ReconnectToServer: Failed to create socket\n");
-        return -1;
-    }
-    
-    // Set up server address
-    struct sockaddr_un server_adr;
-    server_adr.sun_family = AF_UNIX;
-    strncpy(server_adr.sun_path, socket_file, sizeof(server_adr.sun_path) - 1);
-    server_adr.sun_path[sizeof(server_adr.sun_path) - 1] = '\0';
-    
-    // Attempt to connect with timeout
-    if (connect(SocketNo, (struct sockaddr *) &server_adr, SUN_LEN(&server_adr)) < 0)
-    {
-        fprintf(stderr, "ReconnectToServer: Connection failed (error %d)\n", errno);
-        close(SocketNo);
-        SocketNo = 0;
-        return -1;
-    }
-    
-    // Re-register the input callback
-    extern XtAppContext App;
-    if (App)
-    {
-        extern int SocketInputID;
-        if (SocketInputID)
-            XtRemoveInput(SocketInputID);
-        SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
-                                     (XtInputCallbackProc) SocketInputCB, NULL);
-    }
-    
-    fprintf(stderr, "ReconnectToServer: Successfully reconnected\n");
-    return 0;
-}
-
-void RestartTerminal()
-{
-    FnTrace("RestartTerminal()");
-    
-    // Clean up current resources
-    KillTerm();
-    
-    // Give a moment for cleanup
-    sleep(1);
-    
-    // Restart the terminal process
-    // Note: In a real implementation, you'd need to pass the command line arguments
-    // as parameters or store them globally. For now, we'll use a simplified restart.
-    
-    // Fork and exec the terminal
-    pid_t pid = fork();
-    if (pid == 0)
-    {
-        // Child process - exec the terminal with default arguments
-        char *args[] = { (char*)"./vt_term", (char*)"/tmp/viewtouch_socket", NULL };
-        execv(args[0], args);
-        // If execv fails, exit
-        exit(1);
-    }
-    else if (pid > 0)
-    {
-        // Parent process - exit gracefully
-        exit(0);
-    }
-    else
-    {
-        // Fork failed - just exit
-        fprintf(stderr, "RestartTerminal: Fork failed\n");
-        exit(1);
-    }
-}
 
 /*********************************************************************
  * External Data Functions
