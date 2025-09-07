@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
-- **Editor Settings Save Fix (Latest)**
+- **Editor Order Entry Save Fix (Latest)**
+  - **Fixed Editor Order Entry Changes Not Saving**: Resolved critical issue where editor changes to Order Entry button size/position were not being saved on program exit or Kill System
+    - **Root Cause**: `EditTerm()` function only called `SaveSystemData()` for Super Users, not Editors
+    - **Solution**: Modified `EditTerm()` to always call `SaveSystemData()` when exiting edit mode, regardless of user type
+    - **Order Entry Changes**: Now properly saved to `vt_data` for both Super Users and Editors
+    - **Kill System Integration**: Enhanced `EndSystem()` and `ExecuteRestart()` to call `EditTerm(1)` for all terminals before shutdown
+    - **Data Persistence**: All Order Entry window changes (`oewindow[4]`) now persist across program restarts
+    - **Comprehensive Coverage**: Fixes apply to F1 edit mode, F9 system edit mode, normal program exit, and Kill System button
+- **Editor Settings Save Fix**
   - **Fixed "Editor Settings" Button Save Issue**: Resolved critical bug where Editor Settings button wasn't saving when using "save" + "Return To A Jump" sequence
     - Added proper save completion handling in `MessageButtonZone::SendandJump()`
     - Ensured settings are written to disk before jumping to prevent data loss

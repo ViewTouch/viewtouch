@@ -1276,9 +1276,16 @@ int EndSystem()
     // The begining of the end
     if (MasterControl)
     {
+        // Critical fix: Save all pending changes before shutdown
+        // This ensures that editor changes marked as pending are saved to vt_data
         Terminal *term = MasterControl->TermList();
         while (term != NULL)
         {
+            // Save any pending changes from editors and super users
+            if (term->edit > 0)
+            {
+                term->EditTerm(1); // Save changes and exit edit mode
+            }
             if (term->cdu != NULL)
                 term->cdu->Clear();
             term = term->next;
@@ -3461,6 +3468,11 @@ void ExecuteRestart()
     Terminal *term = MasterControl->TermList();
     while (term)
     {
+        // Critical fix: Save any pending changes from editors and super users
+        if (term->edit > 0)
+        {
+            term->EditTerm(1); // Save changes and exit edit mode
+        }
         if (term->dialog)
             term->KillDialog();
         term = term->next;
