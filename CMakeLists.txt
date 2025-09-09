@@ -205,6 +205,7 @@ add_library(vtcore
     fntrace.cc         fntrace.hh
     time_info.cc       time_info.hh
     utility.cc         utility.hh
+    data_persistence_manager.cc data_persistence_manager.hh
     string_utils.cc    string_utils.hh
     error_handler.cc   error_handler.hh
     remote_link.cc     remote_link.hh

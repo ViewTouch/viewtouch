@@ -28,6 +28,7 @@
 #include "zone.hh"
 #include "drawer.hh"
 #include "check.hh"
+#include "data_persistence_manager.hh"
 #include <memory>
 #include "archive.hh"
 #include "customer.hh"
@@ -1120,11 +1121,30 @@ int System::SaveCheck(Check *check)
         check->filename.Set(str);
     }
 
+    // Validate check data before saving
+    if (check->serial_number <= 0) {
+        ReportError("Invalid check serial number during save");
+        return 1;
+    }
+    
+    if (check->filename.empty()) {
+        ReportError("Invalid check filename during save");
+        return 1;
+    }
+
     OutputDataFile df;
     if (df.Open(check->filename.Value(), CHECK_VERSION))
+    {
+        ReportError("Failed to open check file for writing: " + std::string(check->filename.Value()));
         return 1;
-    else
-        return check->Write(df, CHECK_VERSION);
+    }
+    
+    int write_result = check->Write(df, CHECK_VERSION);
+    if (write_result != 0) {
+        ReportError("Failed to write check data to file: " + std::string(check->filename.Value()));
+    }
+    
+    return write_result;
 }
 
 int System::DestroyCheck(Check *check)

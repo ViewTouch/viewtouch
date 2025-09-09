@@ -6,6 +6,57 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Comprehensive Data Persistence System**
+  - **DataPersistenceManager Class**: Implemented robust data persistence and validation system to prevent data loss during long-running sessions
+    - **Automatic Periodic Saving**: Auto-saves all critical data every 30 seconds (configurable)
+    - **Data Integrity Validation**: Comprehensive validation before shutdown/restart to ensure all data is properly saved
+    - **CUPS Communication Monitoring**: Automatic detection and recovery from CUPS printer communication failures
+    - **Real-time Data Tracking**: Tracks dirty/clean state of all critical data components
+    - **Emergency Save Procedures**: Handles critical failures with emergency data saving
+    - **Comprehensive Logging**: Detailed logging of all save operations, errors, and warnings
+    - **Backup Creation**: Automatic backup creation before shutdown with timestamped directories
+    - **Thread-Safe Operations**: Full mutex protection for concurrent access
+    - **Configurable Intervals**: Adjustable auto-save and CUPS monitoring intervals
+  - **System Integration**: Fully integrated into ViewTouch core system
+    - **Startup Initialization**: DataPersistenceManager initialized during system startup
+    - **Periodic Updates**: Integrated into main event loop for continuous monitoring
+    - **Shutdown Preparation**: Enhanced shutdown process with comprehensive data validation
+    - **Check Saving Hooks**: Real-time tracking of check data modifications
+  - **Data Types Monitored**:
+    - **Checks**: All open and closed checks with validation and error handling
+    - **Settings**: System configuration and settings with integrity checks
+    - **Archives**: Historical data archives with proper validation
+    - **Terminals**: Terminal state and configuration monitoring
+    - **CUPS Communication**: Printer communication health with automatic recovery
+  - **Error Handling and Recovery**:
+    - **Validation Results**: Success, Warning, Error, Critical levels
+    - **Save Results**: Success, Partial, Failed, Critical Failure tracking
+    - **CUPS Recovery**: Automatic CUPS service restart on communication failure
+    - **Emergency Procedures**: Fallback mechanisms for critical system failures
+  - **Benefits**:
+    - **Data Loss Prevention**: Ensures all critical data is saved before shutdown
+    - **CUPS Recovery**: Automatic detection and recovery from printer communication failures
+    - **Proactive Monitoring**: Continuous monitoring of data integrity
+    - **Detailed Logging**: Complete audit trail of all operations
+    - **Emergency Procedures**: Robust handling of critical failures
+    - **Configurable**: Flexible configuration for different environments
+    - **Non-Intrusive**: Minimal impact on existing system performance
+  - **Files Added**:
+    - `data_persistence_manager.hh` - Header file with class definition
+    - `data_persistence_manager.cc` - Implementation file with full functionality
+    - `DATA_PERSISTENCE_SYSTEM.md` - Comprehensive documentation
+  - **Files Modified**:
+    - `CMakeLists.txt` - Added new source files to build system
+    - `main/manager.cc` - Integrated persistence manager into system lifecycle
+    - `main/check.cc` - Added data tracking hooks for check operations
+    - `main/system.cc` - Enhanced error handling in check saving process
+  - **⚠️ Field Testing Required**: This implementation requires comprehensive field testing to verify:
+    - Long-running session stability (24+ hours)
+    - CUPS communication failure recovery
+    - Data integrity during unexpected shutdowns
+    - Performance impact under high load
+    - Backup and recovery procedures
+    - Error handling under various failure scenarios
 - **Universal Installer Icon Update**
   - Updated universal installer to use `Icon.png` instead of `demo.png` for desktop entry icon
   - The installer now properly displays the ViewTouch logo in applications menu and desktop environment
