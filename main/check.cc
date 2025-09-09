@@ -28,6 +28,7 @@
 #include "data_file.hh"
 #include "system.hh"
 #include "settings.hh"
+#include "data_persistence_manager.hh"
 #include "inventory.hh"
 #include "labels.hh"
 #include "credit.hh"
@@ -288,13 +289,24 @@ int Check::Load(Settings *settings, const genericChar* file)
 int Check::Save()
 {
     FnTrace("Check::Save()");
+    
+    // Mark check data as dirty for persistence tracking
+    GetDataPersistenceManager().MarkDataDirty("checks");
+    
     if (archive)
     {
         archive->changed = 1;
         return 0;
     }
     else if (copy == 0)
-        return MasterSystem->SaveCheck(this);
+    {
+        int result = MasterSystem->SaveCheck(this);
+        if (result == 0) {
+            // Mark as clean after successful save
+            GetDataPersistenceManager().MarkDataClean("checks");
+        }
+        return result;
+    }
     else
         return 0;
 }

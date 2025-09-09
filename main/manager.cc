@@ -28,6 +28,7 @@
 #include "printer.hh"
 #include "drawer.hh"
 #include "data_file.hh"
+#include "data_persistence_manager.hh"
 #include "inventory.hh"
 #include "employee.hh"
 #include "labels.hh"
@@ -586,6 +587,9 @@ int main(int argc, genericChar* argv[])
         ReportError("Couldn't create main system object");
         EndSystem();
     }
+    
+    // Initialize data persistence manager
+    InitializeDataPersistence(MasterSystem.get());
     if (strlen(data_path) > 0)
         MasterSystem->SetDataPath(data_path);
     else
@@ -1276,6 +1280,12 @@ int EndSystem()
     // The begining of the end
     if (MasterControl)
     {
+        // Use data persistence manager for comprehensive shutdown preparation
+        DataPersistenceManager::SaveResult save_result = GetDataPersistenceManager().PrepareForShutdown();
+        if (save_result != DataPersistenceManager::SAVE_SUCCESS) {
+            ReportError("Warning: Data save issues detected during shutdown preparation");
+        }
+        
         // Critical fix: Save all pending changes before shutdown
         // This ensures that editor changes marked as pending are saved to vt_data
         Terminal *term = MasterControl->TermList();
@@ -1366,6 +1376,8 @@ int EndSystem()
     }
     if (MasterSystem)
     {
+        // Shutdown data persistence manager before system cleanup
+        ShutdownDataPersistence();
         MasterSystem.reset();
     }
     ReportError("EndSystem:  Normal shutdown.");
@@ -3064,6 +3076,9 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
 
     if (UserCommand != 0)
         RunUserCommand();
+
+    // Update data persistence manager
+    GetDataPersistenceManager().Update();
 
     // restart system timer
     UpdateID = XtAppAddTimeOut(App, UPDATE_TIME,
