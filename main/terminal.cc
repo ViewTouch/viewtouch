@@ -210,15 +210,21 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             if (term->zone_db == NULL)
                 printf("ACK!!!! no zone_db\n");
 
-	    // for KDS terminals, default to kitchen page
-    	    else if (term->type == TERMINAL_KITCHEN_VIDEO || term->type == TERMINAL_KITCHEN_VIDEO2)
-	    	term->page = term->zone_db->FindByTerminal(term->type, -1, term->size);
+	    // for KDS terminals, default to kitchen page using page variant configuration
+	    else if (term->type == TERMINAL_KITCHEN_VIDEO || term->type == TERMINAL_KITCHEN_VIDEO2)
+	    {
+	        term->page = term->zone_db->FindByTerminalWithVariant(term->type, term->page_variant, -1, term->size);
+	        if (term->page == NULL)
+	            term->page = term->zone_db->FindByTerminal(term->type, -1, term->size);
+	    }
 
             if (term->page)
                 term->Jump(JUMP_STEALTH, term->page->id);  // Get new best size for page
             else
             {
-                term->Jump(JUMP_STEALTH, PAGEID_LOGIN); // Show Login Page
+                // Use page variant setting to determine default page
+                int default_page = (term->page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+                term->Jump(JUMP_STEALTH, default_page);
                 term->UpdateAllTerms(UPDATE_TERMINALS, NULL);
             }
             break;
@@ -446,6 +452,7 @@ Terminal::Terminal()
     record_fd       = -1;
     credit          = NULL;
     allow_blanking  = 1;
+    page_variant    = 0;        // Default to Page -1
     for (int i=0; i<4; i++)
     	tax_inclusive[i] = -1;
 
@@ -967,7 +974,7 @@ int Terminal::PopPage()
 {
 	FnTrace("Terminal::PopPage()");
 	if (page_stack_size <= 0)
-		return PAGEID_LOGIN;
+		return (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
 	else
 		return page_stack[--page_stack_size];
 }
@@ -1874,7 +1881,9 @@ int Terminal::LogoutUser(int update)
 		}
 	}
 
-    Jump(JUMP_STEALTH, PAGEID_LOGIN);  // Jump to login page
+    // Use page variant setting to determine logout page
+    int logout_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+    Jump(JUMP_STEALTH, logout_page);
     ClearPageStack();
     return 0;
 }
@@ -2385,18 +2394,20 @@ int Terminal::HomePage()
         sd = new SimpleDialog(not_allowed);
         sd->Button("Okay");
         OpenDialog(sd);
-        return PAGEID_LOGIN;
+        return (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
     }
 
-    // First look for a page associated with Terminal Type.  This is deprecated.
-    // In the future, use the employee's job starting page to determine the
-    // appropriate action (the "expedite" argument of LoginZone::Start() will
-    // be deprecated as well).
-    if (type == TERMINAL_KITCHEN_VIDEO || type == TERMINAL_KITCHEN_VIDEO2 ||
-        type == TERMINAL_BAR || type == TERMINAL_BAR2)
+    // First look for a page associated with Terminal Type using page variant configuration.
+    // This allows each terminal to be configured to use either Page -1 or Page -2.
+    if ((currPage = zone_db->FindByTerminalWithVariant(type, page_variant, -1, size)) == NULL)
     {
-        if ((currPage = zone_db->FindByTerminal(type, -1, size)) == NULL)
-            fprintf(stderr, "Could not find page for terminal %s\n", name.Value());
+        // Fallback to original method if page variant method fails
+        if (type == TERMINAL_KITCHEN_VIDEO || type == TERMINAL_KITCHEN_VIDEO2 ||
+            type == TERMINAL_BAR || type == TERMINAL_BAR2)
+        {
+            if ((currPage = zone_db->FindByTerminal(type, -1, size)) == NULL)
+                fprintf(stderr, "Could not find page for terminal %s\n", name.Value());
+        }
     }
 
     // If we didn't get a page from Terminal Type, get one normally.
@@ -2436,7 +2447,7 @@ int Terminal::HomePage()
     if (currPage)
         return currPage->id;
     else
-        return PAGEID_LOGIN;
+        return (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
 }
 
 int Terminal::UpdateAllTerms(int update_message, const genericChar* value)
@@ -2734,12 +2745,16 @@ int Terminal::UpdateZoneDB(Control *con)
         if (org_page_id)
             page = zone_db->FindByID(org_page_id, size);
         if (page == NULL)
-            page = zone_db->FindByID(PAGEID_LOGIN, size);
+        {
+            int fallback_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+            page = zone_db->FindByID(fallback_page, size);
+        }
         if (page == NULL)
         {
+            int fallback_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
             genericChar buffer[STRLONG];
-            snprintf(buffer, STRLONG, "Can't Find Login Page (%d) for %s",
-                     PAGEID_LOGIN, name.Value());
+            snprintf(buffer, STRLONG, "Can't Find Page %d for %s",
+                     fallback_page, name.Value());
             ReportError(buffer);
             page = NULL;
         }
@@ -3094,8 +3109,11 @@ int Terminal::FinalizeOrders()
         case TERMINAL_BAR:
             /** fall through **/
         case TERMINAL_BAR2:
-            if (Jump(JUMP_NORMAL, PAGEID_LOGIN))
-                ReportError("Couldn't jump to Login page");
+            {
+                int bar_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+                if (Jump(JUMP_NORMAL, bar_page))
+                    ReportError("Couldn't jump to default page");
+            }
             break;
         case TERMINAL_FASTFOOD:
             if (FindDrawer() == NULL &&

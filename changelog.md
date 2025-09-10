@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Page Variant Configuration System**
+  - **Hardware Configuration UI**: Added page variant selection (Page -1/Page -2) to terminal hardware configuration
+  - **Terminal-Specific Page Defaults**: Each terminal can now be configured to default to either Page -1 or Page -2
+  - **Backend Support**: Full backend implementation with data persistence and serialization
+  - **Conditional Default Logic**: System respects individual terminal page variant settings for all fallback scenarios
+  - **Page Mapping**: Correct mapping to ViewTouch page IDs (PAGEID_LOGIN = -1, PAGEID_LOGIN2 = -2)
+  - **Comprehensive Integration**: Page variant setting affects startup, logout, error recovery, and page navigation
 - **Comprehensive Data Persistence System**
   - **DataPersistenceManager Class**: Implemented robust data persistence and validation system to prevent data loss during long-running sessions
     - **Automatic Periodic Saving**: Auto-saves all critical data every 30 seconds (configurable)

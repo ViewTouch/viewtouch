@@ -902,6 +902,7 @@ TermInfo::TermInfo()
     isserver      = 0;
     print_workorder = 1;
     workorder_heading = 0;
+    page_variant = 0;        // Default to Page -1
 
     for (int i=0; i<4; i++)
     	tax_inclusive[i] = -1;
@@ -948,10 +949,12 @@ int TermInfo::Read(InputDataFile &df, int version)
     	error += df.Read(print_workorder);
     if (version >= 93)
     	error += df.Read(workorder_heading);
+    if (version >= 95)
+    	error += df.Read(page_variant);
     if (version >= 94)
     {
 	for (int i=0; i<4; i++)
-    		error += df.Read(tax_inclusive[i]);
+    	error += df.Read(tax_inclusive[i]);
     }
 
     // dpulse is used when there are two drawers attached to one
@@ -991,6 +994,7 @@ int TermInfo::Write(OutputDataFile &df, int version)
     error += df.Write(cc_debit_termid);
     error += df.Write(print_workorder);
     error += df.Write(workorder_heading);
+    error += df.Write(page_variant);
     for (int i=0; i<4; i++)
     	error += df.Write(tax_inclusive[i]);
 
@@ -1018,6 +1022,7 @@ int TermInfo::OpenTerm(Control *control_db, int update)
     term->cc_debit_termid.Set(cc_debit_termid);
     term->print_workorder = print_workorder;
     term->workorder_heading = workorder_heading;
+    term->page_variant = page_variant;
     for (int i=0; i<4; i++)
     	term->tax_inclusive[i] = tax_inclusive[i];
 

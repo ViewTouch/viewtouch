@@ -376,6 +376,7 @@ public:
     Page *FindByID(int id, int max_size = SIZE_1280x1024);
     Page *FindByType(int type, int period = -1, int max_size = SIZE_1280x1024);
     Page *FindByTerminal(int term_type, int period = -1, int max_size = SIZE_1280x1024);
+    Page *FindByTerminalWithVariant(int term_type, int page_variant, int period = -1, int max_size = SIZE_1280x1024);
     Page *FirstTablePage(int max_size = SIZE_1280x1024);
 
     int References(Page *p, int *list, int max, int &count);

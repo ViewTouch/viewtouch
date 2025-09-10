@@ -487,6 +487,7 @@ public:
     int workorder_heading;	// 0=standard, 1=simple
     Str cc_credit_termid;
     Str cc_debit_termid;
+    int page_variant;        // 0=Page -1, 1=Page -2
 
     // Tax settings override
     //  0=prices don't include tax

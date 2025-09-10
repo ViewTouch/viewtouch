@@ -1431,6 +1431,35 @@ Page *ZoneDB::FindByTerminal(int term_type, int period, int max_size)
         return NULL;
 }
 
+Page *ZoneDB::FindByTerminalWithVariant(int term_type, int page_variant, int period, int max_size)
+{
+    FnTrace("ZoneDB::FindByTerminalWithVariant()");
+    int type = 0;
+    switch (term_type)
+    {
+        case TERMINAL_BAR: 
+        case TERMINAL_BAR2: 
+            type = (page_variant == 1) ? PAGE_BAR2 : PAGE_BAR1; 
+            break;
+        case TERMINAL_KITCHEN_VIDEO: 
+        case TERMINAL_KITCHEN_VIDEO2: 
+            type = (page_variant == 1) ? PAGE_KITCHEN_VID2 : PAGE_KITCHEN_VID; 
+            break;
+        case TERMINAL_NORMAL:
+        case TERMINAL_FASTFOOD:
+            // For normal terminals, choose between PAGE_TABLE and page -2
+            if (page_variant == 1)
+                return FindByID(-2, max_size); // Page -2
+            else
+                type = PAGE_TABLE; // Page -1
+            break;
+    }
+    if (type != 0)
+        return FindByType(type, period, max_size);
+    else
+        return NULL;
+}
+
 Page *ZoneDB::FirstTablePage(int max_size)
 {
     FnTrace("ZoneDB::FirstTablePage()");
