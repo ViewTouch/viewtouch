@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - **Thread-Safe Operations**: Full mutex protection for concurrent access
     - **Configurable Intervals**: Adjustable auto-save and CUPS monitoring intervals
   - **System Integration**: Fully integrated into ViewTouch core system
+
+### Fixed
+- **Edit Mode Auto-Exit Bug**: Fixed issue where DataPersistenceManager was causing edit mode to auto-exit during periodic saves
+  - **Smart Auto-Save Logic**: Auto-save now skips when terminals are in edit mode to avoid interrupting user workflow
+  - **Edit Mode Detection**: Added `IsAnyTerminalInEditMode()` method to detect active edit sessions
+  - **Preserved Shutdown Behavior**: Edit mode is still properly exited during system shutdown to ensure data is saved
+  - **User Experience**: Users can now work in edit mode without being interrupted by periodic auto-save operations
     - **Startup Initialization**: DataPersistenceManager initialized during system startup
     - **Periodic Updates**: Integrated into main event loop for continuous monitoring
     - **Shutdown Preparation**: Enhanced shutdown process with comprehensive data validation

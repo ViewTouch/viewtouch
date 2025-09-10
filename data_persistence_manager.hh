@@ -164,6 +164,7 @@ public:
     std::vector<std::string> GetErrorLog() const;
     std::vector<std::string> GetWarningLog() const;
     void ClearLogs();
+    bool IsAnyTerminalInEditMode() const;
     
     // Data integrity reports
     std::string GenerateIntegrityReport() const;

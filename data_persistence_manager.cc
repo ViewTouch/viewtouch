@@ -283,13 +283,18 @@ void DataPersistenceManager::ProcessPeriodicTasks()
     if (auto_save_enabled) {
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - last_auto_save);
         if (elapsed >= auto_save_interval) {
-            LogInfo("Performing periodic auto-save");
-            SaveResult result = SaveCriticalData();
-            if (result == SAVE_SUCCESS) {
-                last_auto_save = now;
-                LogInfo("Auto-save completed successfully");
+            // Skip auto-save if any terminal is in edit mode to avoid interrupting user workflow
+            if (IsAnyTerminalInEditMode()) {
+                LogInfo("Skipping auto-save - terminal in edit mode");
             } else {
-                LogError("Auto-save failed with result: " + std::to_string(result));
+                LogInfo("Performing periodic auto-save");
+                SaveResult result = SaveCriticalData();
+                if (result == SAVE_SUCCESS) {
+                    last_auto_save = now;
+                    LogInfo("Auto-save completed successfully");
+                } else {
+                    LogError("Auto-save failed with result: " + std::to_string(result));
+                }
             }
         }
     }
@@ -322,6 +327,18 @@ DataPersistenceManager::SaveResult DataPersistenceManager::PrepareForShutdown()
         if (validation_result == VALIDATION_CRITICAL) {
             LogError("Critical data validation failure - forcing emergency save");
             EmergencySave();
+        }
+    }
+    
+    // Force exit from edit mode during shutdown to ensure all changes are saved
+    if (MasterControl) {
+        Terminal* term = MasterControl->TermList();
+        while (term != nullptr) {
+            if (term->edit > 0) {
+                LogInfo("Forcing exit from edit mode during shutdown for terminal");
+                term->EditTerm(1); // Save changes and exit edit mode
+            }
+            term = term->next;
         }
     }
     
@@ -387,6 +404,25 @@ void DataPersistenceManager::ClearLogs()
     std::lock_guard<std::mutex> lock(log_mutex);
     error_log.clear();
     warning_log.clear();
+}
+
+bool DataPersistenceManager::IsAnyTerminalInEditMode() const
+{
+    FnTrace("DataPersistenceManager::IsAnyTerminalInEditMode()");
+    
+    if (!MasterControl) {
+        return false;
+    }
+    
+    Terminal* term = MasterControl->TermList();
+    while (term != nullptr) {
+        if (term->edit > 0) {
+            return true;
+        }
+        term = term->next;
+    }
+    
+    return false;
 }
 
 std::string DataPersistenceManager::GenerateIntegrityReport() const
@@ -708,12 +744,16 @@ DataPersistenceManager::SaveResult DataPersistenceManager::SaveAllTerminals()
         return SAVE_FAILED;
     }
     
-    // Save any pending terminal changes
+    // Don't force exit from edit mode during periodic saves
+    // Only save terminal data if not in edit mode to avoid interrupting user workflow
     Terminal* term = MasterControl->TermList();
     while (term != nullptr) {
-        if (term->edit > 0) {
-            term->EditTerm(1); // Save changes and exit edit mode
+        // Only save if not in edit mode - let users complete their edits
+        if (term->edit == 0) {
+            // Terminal is not in edit mode, safe to save any pending changes
+            // This would be where we'd save terminal-specific data if needed
         }
+        // If term->edit > 0, skip saving to avoid interrupting edit mode
         term = term->next;
     }
     
