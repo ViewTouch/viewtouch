@@ -90,6 +90,9 @@ HardwareZone::HardwareZone()
     AddListField("Do Alcohol prices include tax?", NoYesGlobalName, NoYesGlobalValue);
     AddListField("Do Room prices include tax?", NoYesGlobalName, NoYesGlobalValue);
     AddListField("Do Merchandise prices include tax?", NoYesGlobalName, NoYesGlobalValue);
+    
+    AddNewLine();
+    AddListField("Default Page Variant", PageVariantName, PageVariantValue);
 
     Center();
     AddNewLine();
@@ -318,6 +321,7 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
     	thisForm->Set(ti->tax_inclusive[2]); thisForm->active = 1; thisForm = thisForm->next;
     	thisForm->Set(ti->tax_inclusive[1]); thisForm->active = 1; thisForm = thisForm->next;
     	thisForm->Set(ti->tax_inclusive[3]); thisForm->active = 1; thisForm = thisForm->next;
+    	thisForm->Set(ti->page_variant); thisForm->active = 1; thisForm = thisForm->next;
 
         if (MasterSystem->settings.authorize_method == CCAUTH_CREDITCHEQ)
         {
@@ -379,6 +383,7 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
 			field->Get(ti->tax_inclusive[2]); field = field->next;
 			field->Get(ti->tax_inclusive[1]); field = field->next;
 			field->Get(ti->tax_inclusive[3]); field = field->next;
+			field->Get(ti->page_variant); field = field->next;
 
             if (MasterSystem->settings.authorize_method == CCAUTH_CREDITCHEQ)
             {

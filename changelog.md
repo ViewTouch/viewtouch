@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Page Variant Configuration System**
+  - **Hardware Configuration UI**: Added page variant selection (Page -1/Page -2) to terminal hardware configuration
+  - **Terminal-Specific Page Defaults**: Each terminal can now be configured to default to either Page -1 or Page -2
+  - **Backend Support**: Full backend implementation with data persistence and serialization
+  - **Conditional Default Logic**: System respects individual terminal page variant settings for all fallback scenarios
+  - **Page Mapping**: Correct mapping to ViewTouch page IDs (PAGEID_LOGIN = -1, PAGEID_LOGIN2 = -2)
+  - **Comprehensive Integration**: Page variant setting affects startup, logout, error recovery, and page navigation
 - **Comprehensive Data Persistence System**
   - **DataPersistenceManager Class**: Implemented robust data persistence and validation system to prevent data loss during long-running sessions
     - **Automatic Periodic Saving**: Auto-saves all critical data every 30 seconds (configurable)
@@ -18,6 +25,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - **Thread-Safe Operations**: Full mutex protection for concurrent access
     - **Configurable Intervals**: Adjustable auto-save and CUPS monitoring intervals
   - **System Integration**: Fully integrated into ViewTouch core system
+
+### Fixed
+- **Edit Mode Auto-Exit Bug**: Fixed issue where DataPersistenceManager was causing edit mode to auto-exit during periodic saves
+  - **Smart Auto-Save Logic**: Auto-save now skips when terminals are in edit mode to avoid interrupting user workflow
+  - **Edit Mode Detection**: Added `IsAnyTerminalInEditMode()` method to detect active edit sessions
+  - **Preserved Shutdown Behavior**: Edit mode is still properly exited during system shutdown to ensure data is saved
+  - **User Experience**: Users can now work in edit mode without being interrupted by periodic auto-save operations
     - **Startup Initialization**: DataPersistenceManager initialized during system startup
     - **Periodic Updates**: Integrated into main event loop for continuous monitoring
     - **Shutdown Preparation**: Enhanced shutdown process with comprehensive data validation
