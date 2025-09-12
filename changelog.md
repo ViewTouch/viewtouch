@@ -27,6 +27,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **System Integration**: Fully integrated into ViewTouch core system
 
 ### Fixed
+- **Hardware Settings Duplication Bug**: Fixed critical issue where printer and display settings were being duplicated in Hardware configuration
+  - **Root Cause**: Hardware zone was automatically clearing `printer_host` when it matched `display_host`, creating a circular dependency
+  - **Problematic Logic**: `StringCompare(ti->display_host.Value(), ti->printer_host.Value()) == 0` would clear `printer_host`
+  - **Fallback Conflict**: Settings fallback logic would then set `printer_host` back to `display_host`, creating duplication
+  - **User Impact**: Users couldn't configure independent display and printer hosts, settings appeared to "duplicate"
+  - **Solution**: Removed automatic clearing logic, allowing independent configuration of display and printer settings
+  - **Result**: Hardware button type now respects user choices without forced synchronization
 - **Edit Mode Auto-Exit Bug**: Fixed issue where DataPersistenceManager was causing edit mode to auto-exit during periodic saves
   - **Smart Auto-Save Logic**: Auto-save now skips when terminals are in edit mode to avoid interrupting user workflow
   - **Edit Mode Detection**: Added `IsAnyTerminalInEditMode()` method to detect active edit sessions
