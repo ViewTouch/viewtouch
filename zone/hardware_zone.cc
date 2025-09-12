@@ -391,11 +391,8 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
                 field->Get(ti->cc_credit_termid); field = field->next;
                 field->Get(ti->cc_debit_termid); field = field->next;
             }
-            if (StringCompare(ti->display_host.Value(),
-                              ti->printer_host.Value()) == 0)
-            {
-                ti->printer_host.Clear();
-            }
+            // Removed automatic printer_host clearing logic that was causing duplication
+            // Users can now have independent display and printer host settings
         }
         break;
     case 1:  // remote printer
