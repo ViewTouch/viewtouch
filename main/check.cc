@@ -2550,6 +2550,13 @@ int Check::IsFastFood()
             ct == CHECK_TAKEOUT);
 }
 
+int Check::IsSelfOrder()
+{
+    FnTrace("Check::IsSelfOrder()");
+    int ct = CustomerType();
+    return (ct == CHECK_SELFORDER);
+}
+
 int Check::IsToGo()
 {
    FnTrace("Check::IsToGo()");

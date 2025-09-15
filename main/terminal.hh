@@ -88,6 +88,7 @@ enum term_types {
 	TERMINAL_BAR,           // alternate menu index, pay & settle at once
 	TERMINAL_BAR2,          // bar with all local work orders
 	TERMINAL_FASTFOOD,      // no table view, pay & settle at once
+	TERMINAL_SELFORDER,     // customer self-service ordering, no login required
     TERMINAL_KITCHEN_VIDEO, // display of several checks on one page for cooks
     TERMINAL_KITCHEN_VIDEO2 // secondary check display page (e.g. one for pizza, one for other)
 };
@@ -498,6 +499,7 @@ public:
     int GetCheck(const char* label, int customer_type); // Gets check (or creates new one)
     int NewTakeOut(int customer_type); // Creates new take out order
     int NewFastFood(int customer_type); // Creates new fastfood order
+    int NewSelfOrder(int customer_type); // Creates new self-service order (no login required)
     int QuickMode(int customer_type); // Creates new fastfood or takeout order
     int SetCheck(Check *c, int update_local = 1); // Makes 'c' current check
     int StoreCheck(int update = 1); // Save check to disk & clears current check

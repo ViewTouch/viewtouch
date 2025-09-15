@@ -217,6 +217,50 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
 	        if (term->page == NULL)
 	            term->page = term->zone_db->FindByTerminal(term->type, -1, term->size);
 	    }
+	    // for SelfOrder terminals, bypass login and go directly to ordering
+	    else if (term->type == TERMINAL_SELFORDER)
+	    {
+	        // SelfOrder terminals don't require login - go directly to ordering
+	        // Create or get Customer user for SelfOrder
+	        Employee *customer_user = term->system_data->user_db.FindByName("Customer");
+	        if (customer_user == NULL)
+	        {
+	            // Create Customer user if it doesn't exist
+	            customer_user = new Employee;
+	            if (customer_user != NULL)
+	            {
+	                customer_user->system_name.Set("Customer");
+	                customer_user->id = 999;  // Special ID for Customer
+	                customer_user->key = 999;
+	                customer_user->training = 0;
+	                customer_user->active = 1;
+	                
+	                // Add basic job for Customer
+	                JobInfo *j = new JobInfo;
+	                if (j)
+	                {
+	                    j->job = JOB_SERVER;  // Basic server job
+	                    customer_user->Add(j);
+	                }
+	                
+	                // Set job flags for Customer user to allow system access
+	                Settings *settings = term->GetSettings();
+	                settings->job_active[JOB_SERVER] = 1;  // Activate server job
+	                settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER;  // Allow tables and ordering
+	                
+	                term->system_data->user_db.Add(customer_user);
+	            }
+	        }
+	        
+	        // Login as Customer user
+	        if (customer_user != NULL)
+	            term->LoginUser(customer_user);
+	        
+	        term->QuickMode(CHECK_SELFORDER);
+	        term->page = term->zone_db->FindByTerminalWithVariant(term->type, term->page_variant, -1, term->size);
+	        if (term->page == NULL)
+	            term->page = term->zone_db->FindByTerminal(term->type, -1, term->size);
+	    }
 
             if (term->page)
                 term->Jump(JUMP_STEALTH, term->page->id);  // Get new best size for page
@@ -1883,7 +1927,27 @@ int Terminal::LogoutUser(int update)
 
     // Use page variant setting to determine logout page
     int logout_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
-    Jump(JUMP_STEALTH, logout_page);
+    
+    // For SelfOrder terminals, go back to SelfOrder page instead of login
+    if (original_type == TERMINAL_SELFORDER)
+    {
+        // Re-login as Customer and go to SelfOrder page
+        Employee *customer_user = system_data->user_db.FindByName("Customer");
+        if (customer_user != NULL)
+        {
+            LoginUser(customer_user);
+            QuickMode(CHECK_SELFORDER);
+        }
+        else
+        {
+            Jump(JUMP_STEALTH, logout_page);
+        }
+    }
+    else
+    {
+        Jump(JUMP_STEALTH, logout_page);
+    }
+    
     ClearPageStack();
     return 0;
 }
@@ -1956,6 +2020,56 @@ int Terminal::NewFastFood(int customer_type)
     return SetCheck(thisCheck);
 }
 
+int Terminal::NewSelfOrder(int customer_type)
+{
+    FnTrace("Terminal::NewSelfOrder()");
+    // SelfOrder doesn't require user authentication - customer places their own order
+    if (customer_type != CHECK_SELFORDER)
+        return 1;
+
+    Settings *settings = GetSettings();
+    
+    // Create or get Customer user for SelfOrder
+    Employee *customer_user = system_data->user_db.FindByName("Customer");
+    if (customer_user == NULL)
+    {
+        // Create Customer user if it doesn't exist
+        customer_user = new Employee;
+        if (customer_user == NULL)
+            return 1;
+        
+        customer_user->system_name.Set("Customer");
+        customer_user->id = 999;  // Special ID for Customer
+        customer_user->key = 999;
+        customer_user->training = 0;
+        customer_user->active = 1;
+        
+        // Add basic job for Customer
+        JobInfo *j = new JobInfo;
+        if (j)
+        {
+            j->job = JOB_SERVER;  // Basic server job
+            customer_user->Add(j);
+        }
+        
+        // Set job flags for Customer user to allow system access
+        Settings *settings = GetSettings();
+        settings->job_active[JOB_SERVER] = 1;  // Activate server job
+        settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER;  // Allow tables and ordering
+        
+        system_data->user_db.Add(customer_user);
+    }
+    
+    // Create check with Customer user
+    Check *thisCheck = new Check(settings, customer_type, customer_user);
+    if (thisCheck == NULL)
+        return 1;
+
+    thisCheck->Guests(0);  // No guest
+    system_data->Add(thisCheck);
+    return SetCheck(thisCheck);
+}
+
 /****
  * QuickMode:  this method is intended to replace methods ::NewTakeOut() and
  *   ::NewFastFood().
@@ -1963,6 +2077,53 @@ int Terminal::NewFastFood(int customer_type)
 int Terminal::QuickMode(int customer_type)
 {
     FnTrace("Terminal::QuickMode()");
+    // SelfOrder doesn't require user authentication
+    if (customer_type == CHECK_SELFORDER)
+    {
+        // Handle SelfOrder case - use Customer user
+        Settings *settings = GetSettings();
+        
+        // Create or get Customer user for SelfOrder
+        Employee *customer_user = system_data->user_db.FindByName("Customer");
+        if (customer_user == NULL)
+        {
+            // Create Customer user if it doesn't exist
+            customer_user = new Employee;
+            if (customer_user == NULL)
+                return 1;
+            
+            customer_user->system_name.Set("Customer");
+            customer_user->id = 999;  // Special ID for Customer
+            customer_user->key = 999;
+            customer_user->training = 0;
+            customer_user->active = 1;
+            
+            // Add basic job for Customer
+            JobInfo *j = new JobInfo;
+            if (j)
+            {
+                j->job = JOB_SERVER;  // Basic server job
+                customer_user->Add(j);
+            }
+            
+            // Set job flags for Customer user to allow system access
+            settings->job_active[JOB_SERVER] = 1;  // Activate server job
+            settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER;  // Allow tables and ordering
+            
+            system_data->user_db.Add(customer_user);
+        }
+        
+        Check *thisCheck = new Check(settings, customer_type, customer_user);
+        if (thisCheck == NULL)
+            return 1;
+
+        thisCheck->Guests(0);  // No guest
+        thisCheck->date.Set();
+        system_data->Add(thisCheck);
+        type = TERMINAL_SELFORDER;
+        return SetCheck(thisCheck);
+    }
+    
     if (user == NULL || 
         ((customer_type != CHECK_FASTFOOD) && 
          (customer_type != CHECK_RETAIL) &&
@@ -1992,6 +2153,7 @@ int Terminal::QuickMode(int customer_type)
         customer = NULL;
 
     if (customer_type == CHECK_FASTFOOD ||
+        customer_type == CHECK_SELFORDER ||
         customer_type == CHECK_BAR ||
         (settings->fast_takeouts &&
          (customer_type == CHECK_TAKEOUT  ||
@@ -2001,7 +2163,10 @@ int Terminal::QuickMode(int customer_type)
           customer_type == CHECK_TOGO     ||
           customer_type == CHECK_CATERING)))
     {
-        type = TERMINAL_FASTFOOD;
+        if (customer_type == CHECK_SELFORDER)
+            type = TERMINAL_SELFORDER;
+        else
+            type = TERMINAL_FASTFOOD;
     }
 
     if (thisCheck == NULL)

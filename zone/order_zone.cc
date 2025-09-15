@@ -1007,9 +1007,17 @@ int OrderFlowZone::RenderInit(Terminal *t, int update_flag)
     {
         Employee *e = t->user;
         Check    *c = t->check;
-        active = !(c == NULL || (t->guests <= 0 && !( c->IsTakeOut() || c->IsFastFood())) ||
-                   e == NULL || !e->CanOrder(s) ||
-                   (!e->IsSupervisor(s) && c->user_owner != e->id));
+        // SelfOrder terminals don't require user authentication
+        if (t->type == TERMINAL_SELFORDER)
+        {
+            active = !(c == NULL || (t->guests <= 0 && !( c->IsTakeOut() || c->IsFastFood() || c->IsSelfOrder())));
+        }
+        else
+        {
+            active = !(c == NULL || (t->guests <= 0 && !( c->IsTakeOut() || c->IsFastFood())) ||
+                       e == NULL || !e->CanOrder(s) ||
+                       (!e->IsSupervisor(s) && c->user_owner != e->id));
+        }
     }
     else
         active = 1;
@@ -1030,6 +1038,12 @@ RenderResult OrderFlowZone::Render(Terminal *term, int update_flag)
 		else if(term->type == TERMINAL_FASTFOOD)
 		{
 			// find the appropriate index page for the current shift
+			int nMealIndex = settings->MealPeriod(SystemTime);
+			meal = IndexValue[nMealIndex];  // IndexValue[] defined in main/labels.cc
+		}
+		else if(term->type == TERMINAL_SELFORDER)
+		{
+			// SelfOrder terminals use same meal period logic as FastFood
 			int nMealIndex = settings->MealPeriod(SystemTime);
 			meal = IndexValue[nMealIndex];  // IndexValue[] defined in main/labels.cc
 		}
