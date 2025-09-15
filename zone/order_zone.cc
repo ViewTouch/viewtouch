@@ -587,6 +587,20 @@ int OrderEntryZone::CancelOrders(Terminal *t)
     t->order = NULL;
     t->Update(UPDATE_ORDERS, NULL);
     t->UpdateOtherTerms(UPDATE_CHECKS, NULL);
+    
+    // For SelfOrder terminals, navigate back to SelfOrder starting page after canceling
+    if (t->type == TERMINAL_SELFORDER)
+    {
+        // Clear the check and go back to SelfOrder main page
+        t->check = NULL;
+        t->order = NULL;
+        t->seat = 0;
+        t->guests = 0;
+        
+        // Jump to the customer page (-2) which is the SelfOrder main page
+        t->Jump(JUMP_STEALTH, -2);
+    }
+    
     return 0;
 }
 

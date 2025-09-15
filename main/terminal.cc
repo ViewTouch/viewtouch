@@ -2234,7 +2234,18 @@ int Terminal::StoreCheck(int update)
     check->Update(GetSettings());
     if (check->IsEmpty() && (check->Guests() <= 0 || check->IsTakeOut() || check->IsFastFood()))
     {
-        system_data->DestroyCheck(check);
+        // For SelfOrder terminals, don't destroy empty checks - just clear them
+        if (type == TERMINAL_SELFORDER)
+        {
+            // Keep the check but clear it for SelfOrder
+            check->current_sub  = NULL;
+            check->user_current = 0;
+            check->Save();
+        }
+        else
+        {
+            system_data->DestroyCheck(check);
+        }
     }
     else
     {
@@ -3284,6 +3295,14 @@ int Terminal::FinalizeOrders()
             if (FindDrawer() == NULL &&
                 (user == NULL || user->training == 0))
                 jump_target = -1;        
+            if (Jump(JUMP_NORMAL, jump_target))
+            {
+                snprintf(str, STRLENGTH, "Couldn't jump to page %d", PAGE_ID_SETTLEMENT);
+                ReportError(str);
+            }
+            break;
+        case TERMINAL_SELFORDER:
+            // For SelfOrder terminals, go to settlement page after finalizing
             if (Jump(JUMP_NORMAL, jump_target))
             {
                 snprintf(str, STRLENGTH, "Couldn't jump to page %d", PAGE_ID_SETTLEMENT);

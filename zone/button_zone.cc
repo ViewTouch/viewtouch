@@ -171,7 +171,16 @@ SignalResult MessageButtonZone::SendandJump(Terminal *term)
                 usleep(50000); // Additional 50ms delay for system saves
             }
         }
-        term->Jump(jump_type, jump_id);
+        
+        // For SelfOrder terminals with "cancel" message, don't jump - let custom cancel logic handle navigation
+        if (term->type == TERMINAL_SELFORDER && strcmp(signal, "cancel") == 0)
+        {
+            // Skip the jump - our custom cancel logic in OrderEntryZone will handle navigation
+        }
+        else
+        {
+            term->Jump(jump_type, jump_id);
+        }
     }
 
     return sig;
