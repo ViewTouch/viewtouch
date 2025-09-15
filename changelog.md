@@ -481,6 +481,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Added early exit in `BalanceReportWorkFn` when no checks exist to process
   - Prevents work function from being rescheduled indefinitely when database is empty
   - Report now completes immediately and shows appropriate empty state
+- **Fixed: "Refresh ViewTouch" Hanging Issue**
+  - **Root Cause**: Segmentation fault in `XtRemoveInput()` during X11 resource cleanup
+  - **Problem**: ViewTouch would hang on "Shutting Down" when trying to remove X11 input handlers with invalid context
+  - **Solution**: Added proper validation and error handling for all `XtRemoveInput()` calls
+    - Added `App != NULL` check in `RemoveInputFn()` before calling `XtRemoveInput()`
+    - Wrapped `XtRemoveInput()` calls in try-catch blocks in `term_view.cc`
+    - Added error logging for invalid Xt context scenarios
+    - Ensured input IDs are properly reset to 0 after removal
+  - **Files Modified**:
+    - `main/manager.cc` - Enhanced `RemoveInputFn()` with context validation
+    - `term/term_view.cc` - Added exception handling in `SocketInputCB()`, `StopTouches()`, and cleanup functions
+  - **Result**: "Refresh ViewTouch" button now works correctly without hanging
+  - **Impact**: System restart (`sudo shutdown -r now`) also works properly from within ViewTouch
+  - **Testing**: Verified restart functionality with signal testing - old process terminates cleanly, new process starts successfully
 
 
 ## [v21.05.1] - 2021-05-18

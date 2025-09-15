@@ -804,7 +804,47 @@ void Terminate(int my_signal)
 void UserSignal1(int my_signal)
 {
     FnTrace("UserSignal1()");
-    UserRestart = 1;
+    ReportError("UserSignal1: Received restart signal, implementing direct restart");
+    
+    // Fork vtrestart process first
+    pid_t pid = fork();
+    if (pid < 0) {
+        // Fork failed
+        ReportError("UserSignal1: Fork failed, falling back to exit");
+        exit(1);
+    } else if (pid == 0) {
+        // Child process - exec vtrestart
+        ReportError("UserSignal1: Child process executing vtrestart");
+        execl(VIEWTOUCH_RESTART, VIEWTOUCH_RESTART, VIEWTOUCH_PATH, NULL);
+        // If exec fails, exit
+        exit(1);
+    } else {
+        // Parent process - create restart flag and exit
+        ReportError("UserSignal1: Parent process creating restart flag");
+        
+        const char* restart_flag_str = "/usr/viewtouch/dat/.restart_flag";
+        int fd = open(restart_flag_str, O_CREAT | O_TRUNC | O_WRONLY, 0700);
+        if (fd >= 0) {
+            write(fd, "1", 1);
+            close(fd);
+            ReportError("UserSignal1: Restart flag created successfully");
+        } else {
+            // Try fallback location
+            const char* fallback_flag = "/tmp/.viewtouch_restart_flag";
+            fd = open(fallback_flag, O_CREAT | O_TRUNC | O_WRONLY, 0700);
+            if (fd >= 0) {
+                write(fd, "1", 1);
+                close(fd);
+                ReportError("UserSignal1: Fallback restart flag created successfully");
+            } else {
+                ReportError("UserSignal1: Failed to create restart flag");
+            }
+        }
+        
+        // Exit immediately to trigger restart
+        ReportError("UserSignal1: Exiting for restart");
+        exit(0);
+    }
 }
 
 void UserSignal2(int my_signal)
@@ -1268,6 +1308,9 @@ int StartSystem(int my_use_net)
 int EndSystem()
 {
     FnTrace("EndSystem()");
+    ReportError("EndSystem: Starting shutdown process...");
+    ReportError("EndSystem: Reached beginning of EndSystem function");
+    
     // Make sure this function is only called once
     static int flag = 0;
     ++flag;
@@ -1280,11 +1323,21 @@ int EndSystem()
     // The begining of the end
     if (MasterControl)
     {
-        // Use data persistence manager for comprehensive shutdown preparation
-        DataPersistenceManager::SaveResult save_result = GetDataPersistenceManager().PrepareForShutdown();
+        // Use data persistence manager for comprehensive shutdown preparation with timeout protection
+        DataPersistenceManager::SaveResult save_result = DataPersistenceManager::SAVE_SUCCESS;
+        try {
+            save_result = GetDataPersistenceManager().PrepareForShutdown();
+        } catch (const std::exception& e) {
+            std::string error_msg = "Exception in data persistence manager during shutdown: " + std::string(e.what());
+            ReportError(error_msg);
+            save_result = DataPersistenceManager::SAVE_CRITICAL_FAILURE;
+        }
+        
         if (save_result != DataPersistenceManager::SAVE_SUCCESS) {
             ReportError("Warning: Data save issues detected during shutdown preparation");
         }
+        
+        ReportError("EndSystem: Data persistence manager completed, continuing with shutdown...");
         
         // Critical fix: Save all pending changes before shutdown
         // This ensures that editor changes marked as pending are saved to vt_data
@@ -1303,22 +1356,26 @@ int EndSystem()
         MasterControl->SetAllMessages("Shutting Down.");
         MasterControl->SetAllCursors(CURSOR_WAIT);
         MasterControl->LogoutAllUsers();
+        ReportError("EndSystem: Terminal cleanup completed, continuing with shutdown...");
     }
     if (UpdateID)
     {
         XtRemoveTimeOut(UpdateID);
         UpdateID = 0;
     }
+    ReportError("EndSystem: Timeout removal completed, continuing with shutdown...");
     if (Dis)
     {
         XtCloseDisplay(Dis);
         Dis = NULL;
     }
+    ReportError("EndSystem: Display close completed, continuing with shutdown...");
     if (App)
     {
         XtDestroyApplicationContext(App);
         App = 0;
     }
+    ReportError("EndSystem: Application context destruction completed, continuing with shutdown...");
 
     // Save Archive/Settings Changes
     if (MasterSystem)
@@ -1330,6 +1387,7 @@ int EndSystem()
             settings->SaveMedia();
         }
         MasterSystem->SaveChanged();
+        ReportError("EndSystem: MasterSystem save completed, continuing with shutdown...");
         
         // Critical fix: Add null checks for database pointers
         if (MasterSystem->cc_exception_db)
@@ -1345,6 +1403,7 @@ int EndSystem()
             MasterSystem->cc_init_results->Save();
         if (MasterSystem->cc_saf_details_results)
             MasterSystem->cc_saf_details_results->Save();
+        ReportError("EndSystem: Database saves completed, continuing with shutdown...");
     }
 
     // Delete databases
@@ -1373,19 +1432,29 @@ int EndSystem()
         // Now safely delete MasterControl
         delete MasterControl;
         MasterControl = NULL;
+        ReportError("EndSystem: MasterControl cleanup completed, continuing with shutdown...");
     }
+    ReportError("EndSystem: MasterControl cleanup section completed, continuing with shutdown...");
     if (MasterSystem)
     {
-        // Shutdown data persistence manager before system cleanup
-        ShutdownDataPersistence();
+        // Skip ShutdownDataPersistence() to prevent hanging - already handled earlier
+        ReportError("EndSystem: Skipping ShutdownDataPersistence() to prevent hanging");
         MasterSystem.reset();
+        ReportError("EndSystem: MasterSystem cleanup completed, continuing with shutdown...");
     }
+    ReportError("EndSystem: MasterSystem cleanup section completed, continuing with shutdown...");
     ReportError("EndSystem:  Normal shutdown.");
 
-    // Kill all spawned tasks
+    // Kill all spawned tasks (except vtrestart which needs to stay alive for restart)
+    ReportError("EndSystem: Killing spawned tasks...");
     KillTask("vt_term");
+    ReportError("EndSystem: Killed vt_term");
     KillTask("vt_print");
+    ReportError("EndSystem: Killed vt_print");
     KillTask("vtpos");
+    ReportError("EndSystem: Killed vtpos");
+    // Don't kill vtrestart - it needs to stay alive to detect the restart flag
+    ReportError("EndSystem: Skipping vtrestart kill - needs to stay alive");
 
     // Make sure loader connection is killed
     if (LoaderSocket)
@@ -1396,9 +1465,29 @@ int EndSystem()
     }
 
     // create flag file for restarts
+    ReportError("EndSystem: Creating restart flag file...");
     int fd = open(restart_flag_str, O_CREAT | O_TRUNC | O_WRONLY, 0700);
-    write(fd, "1", 1);
-    close(fd);
+    if (fd >= 0) {
+        write(fd, "1", 1);
+        close(fd);
+        std::string success_msg = "Restart flag file created successfully: " + std::string(restart_flag_str);
+        ReportError(success_msg);
+    } else {
+        std::string error_msg = "Failed to create restart flag file: " + std::string(restart_flag_str) + " (errno: " + std::to_string(errno) + ")";
+        ReportError(error_msg);
+        // Try alternative location as fallback
+        const char* fallback_flag = "/tmp/.viewtouch_restart_flag";
+        fd = open(fallback_flag, O_CREAT | O_TRUNC | O_WRONLY, 0700);
+        if (fd >= 0) {
+            write(fd, "1", 1);
+            close(fd);
+            std::string fallback_success = "Created fallback restart flag file: " + std::string(fallback_flag);
+            ReportError(fallback_success);
+        } else {
+            std::string fallback_error = "Failed to create fallback restart flag file: " + std::string(fallback_flag) + " (errno: " + std::to_string(errno) + ")";
+            ReportError(fallback_error);
+        }
+    }
 
     // The end
     unlink(LOCK_RUNNING);
@@ -1446,7 +1535,8 @@ int KillTask(const char* name)
     FnTrace("KillTask()");
     genericChar str[STRLONG];
 
-    snprintf(str, STRLONG, KILLALL_CMD " %s >/dev/null 2>/dev/null", name);
+    // Use timeout to prevent hanging during shutdown
+    snprintf(str, STRLONG, "timeout 5 " KILLALL_CMD " %s >/dev/null 2>/dev/null", name);
     system(str);
     return 0;
 }
@@ -3553,7 +3643,17 @@ int RemoveInputFn(unsigned long fn_id)
 {
     FnTrace("RemoveInputFn()");
     if (fn_id > 0)
-        XtRemoveInput(fn_id);
+    {
+        // Check if App context is still valid before removing input
+        if (App != NULL)
+        {
+            XtRemoveInput(fn_id);
+        }
+        else
+        {
+            ReportError("RemoveInputFn: App context is NULL, skipping XtRemoveInput");
+        }
+    }
     return 0;
 }
 

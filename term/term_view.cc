@@ -1348,7 +1348,12 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
         // Remove the invalid input handler immediately to prevent hang
         if (SocketInputID != 0)
         {
-            XtRemoveInput(SocketInputID);
+            // Try to remove the input handler, but don't crash if Xt context is invalid
+            try {
+                XtRemoveInput(SocketInputID);
+            } catch (...) {
+                fprintf(stderr, "SocketInputCB: Exception during XtRemoveInput, continuing\n");
+            }
             SocketInputID = 0;
         }
         
@@ -2559,7 +2564,12 @@ int StopTouches()
 
     if (TouchInputID)
     {
-        XtRemoveInput(TouchInputID);
+        // Try to remove the input handler, but don't crash if Xt context is invalid
+        try {
+            XtRemoveInput(TouchInputID);
+        } catch (...) {
+            fprintf(stderr, "StopTouches: Exception during XtRemoveInput, continuing\n");
+        }
         TouchInputID = 0;
     }
     return 0;
@@ -2984,7 +2994,12 @@ void RestartTerminal()
     
     if (SocketInputID != 0)
     {
-        XtRemoveInput(SocketInputID);
+        // Try to remove the input handler, but don't crash if Xt context is invalid
+        try {
+            XtRemoveInput(SocketInputID);
+        } catch (...) {
+            fprintf(stderr, "Cleanup: Exception during XtRemoveInput, continuing\n");
+        }
         SocketInputID = 0;
     }
     
