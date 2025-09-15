@@ -43,9 +43,10 @@
 #define CHECK_HOTEL          7
 #define CHECK_RETAIL         8
 #define CHECK_FASTFOOD       9
-#define CHECK_DINEIN        10
-#define CHECK_TOGO          11
-#define CHECK_CALLIN        12
+#define CHECK_SELFORDER     10   // customer self-service order - no login required
+#define CHECK_DINEIN        11
+#define CHECK_TOGO          12
+#define CHECK_CALLIN        13
 
 // Check Flags
 #define CF_PRINTED           1   // Has been sent to the kitcen at least once
@@ -453,6 +454,7 @@ public:
     // CustomerInfo stuff
     int       IsTakeOut();  // FIX - bad name now  // true if there is no room/table for check
     int       IsFastFood();
+    int       IsSelfOrder();
     int       IsToGo();
     int       IsForHere();
     int       CustomerType(int set = -1);

@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **SelfOrder Display Type (Work in Progress)**
+  - **New Terminal Type**: Added `TERMINAL_SELFORDER` terminal type for customer self-service ordering
+  - **Customer User System**: Implemented automatic "Customer" user creation and management for SelfOrder terminals
+  - **Check Type Support**: Added `CHECK_SELFORDER` check type with proper identification methods
+  - **Button Integration**: Added `quickselforder` button command and `selforder` expression keyword support
+  - **Conditional Buttons**: SelfOrder terminals support conditional DineIn/TakeOut buttons with expressions
+  - **No Login Required**: SelfOrder terminals bypass user authentication and automatically log in "Customer" user
+  - **Job Security Configuration**: "Customer" user gets appropriate server job permissions for ordering
+  - **Cancel Order Handling**: Implemented proper order cancellation that returns to SelfOrder main page
+  - **Page Navigation**: SelfOrder terminals navigate to page -2 (customer page) for main interface
+  - **Button Override Logic**: Cancel buttons skip default jump behavior to allow custom SelfOrder navigation
+  - **Files Modified**:
+    - `main/terminal.hh` - Added `TERMINAL_SELFORDER` enum and `NewSelfOrder()` method declaration
+    - `main/check.hh` - Added `CHECK_SELFORDER` constant and `IsSelfOrder()` method declaration
+    - `main/manager.cc` - Added SelfOrder to terminal type names and values arrays
+    - `main/labels.cc` - Added SelfOrder to customer type names and values arrays
+    - `main/terminal.cc` - Implemented SelfOrder terminal initialization, user management, and check creation
+    - `main/check.cc` - Implemented `IsSelfOrder()` method for check type identification
+    - `zone/button_zone.cc` - Added SelfOrder button command and expression support
+    - `zone/order_zone.cc` - Added SelfOrder support to order flow and cancel handling
+  - **⚠️ Work in Progress**: This feature is still under development and requires additional testing
+    - Basic SelfOrder functionality implemented and working
+    - Order creation, user management, and page navigation functional
+    - Cancel order handling implemented with proper page navigation
+    - Additional features and refinements may be added in future updates
 - **Page Variant Configuration System**
   - **Hardware Configuration UI**: Added page variant selection (Page -1/Page -2) to terminal hardware configuration
   - **Terminal-Specific Page Defaults**: Each terminal can now be configured to default to either Page -1 or Page -2
