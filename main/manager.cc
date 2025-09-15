@@ -121,11 +121,11 @@ const char* ShortMonthName[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
  * Terminal Type values
  *************************************************************/
 const char* TermTypeName[] = { 	"Normal", "Order Only", "Bar", "Bar2", 
-                            "Fast Food", "Kitchen Video", "Kitchen Video2", NULL};
+                            "Fast Food", "Self Order", "Kitchen Video", "Kitchen Video2", NULL};
 
 int TermTypeValue[] = { TERMINAL_NORMAL, TERMINAL_ORDER_ONLY,
                         TERMINAL_BAR, TERMINAL_BAR2,
-                        TERMINAL_FASTFOOD, TERMINAL_KITCHEN_VIDEO,
+                        TERMINAL_FASTFOOD, TERMINAL_SELFORDER, TERMINAL_KITCHEN_VIDEO,
                         TERMINAL_KITCHEN_VIDEO2, -1};
 
 /*************************************************************

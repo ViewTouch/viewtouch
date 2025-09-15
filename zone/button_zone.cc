@@ -171,7 +171,16 @@ SignalResult MessageButtonZone::SendandJump(Terminal *term)
                 usleep(50000); // Additional 50ms delay for system saves
             }
         }
-        term->Jump(jump_type, jump_id);
+        
+        // For SelfOrder terminals with "cancel" message, don't jump - let custom cancel logic handle navigation
+        if (term->type == TERMINAL_SELFORDER && strcmp(signal, "cancel") == 0)
+        {
+            // Skip the jump - our custom cancel logic in OrderEntryZone will handle navigation
+        }
+        else
+        {
+            term->Jump(jump_type, jump_id);
+        }
     }
 
     return sig;
@@ -205,7 +214,7 @@ SignalResult MessageButtonZone::Signal(Terminal *term, const char* signal_msg)
     SignalResult sig = SIGNAL_OKAY;
     const char* command_list[] = {
         "sendandjump",
-	"starttakeout", "pickup", "quicktogo", "quickdinein", NULL};
+	"starttakeout", "pickup", "quicktogo", "quickdinein", "quickselforder", NULL};
 
     Settings *settings = term->GetSettings();
     int idx = CompareListN(command_list, signal_msg);
@@ -232,6 +241,11 @@ SignalResult MessageButtonZone::Signal(Terminal *term, const char* signal_msg)
         break;
     case 4:  // quick dine-in
     	if (term->QuickMode(CHECK_DINEIN))
+	    return SIGNAL_IGNORED;
+	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
+        break;
+    case 5:  // quick self-order
+    	if (term->QuickMode(CHECK_SELFORDER))
 	    return SIGNAL_IGNORED;
 	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
         break;
@@ -312,14 +326,14 @@ static const genericChar* KeyWords[] = {
     "drawercount", "orderbyseat", "developer", "flow", "assigned",
     "local", "supervisor", "manager", "editusers", "merchandise",
     "movetable", "tablepages", "passwords", "superuser",
-    "payexpenses", "fastfood", "lastendday",
+    "payexpenses", "fastfood", "selforder", "lastendday",
     "checkbalanced", "haspayments", "training", "selectedorder", NULL};
 enum comms {
     CHECK, GUESTS, SUBCHECKS, SETTLE, ORDER, DRAWER,
     DRAWERCOUNT, ORDERBYSEAT, DEVELOPER, FLOW, ASSIGNED,
     LOCAL, SUPERVISOR, MANAGER, EDITUSERS, MERCHANDISE,
     MOVETABLE, TABLEPAGES, PASSWORDS, SUPERUSER,
-    PAYEXPENSES, FASTFOOD, LASTENDDAY,
+    PAYEXPENSES, FASTFOOD, SELFORDER, LASTENDDAY,
     CHECKBALANCED, HASPAYMENTS, TRAINING, SELECTORDER};
 
 static const genericChar* OperatorWords[] = {
@@ -501,6 +515,9 @@ int ConditionalZone::EvalExp(Terminal *term)
         break;
     case FASTFOOD: // fastfood
         n = (term->type == TERMINAL_FASTFOOD);
+        break;
+    case SELFORDER: // selforder
+        n = (term->type == TERMINAL_SELFORDER);
         break;
     case LASTENDDAY: // lastendday
         if (term && term->system_data && term->system_data->CheckEndDay(term) > 0)

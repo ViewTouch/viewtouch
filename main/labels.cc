@@ -495,9 +495,9 @@ int PrinterIDValue[] = {
     PRINTER_REMOTEORDER, PRINTER_NONE, -1};
 
 const genericChar* CustomerTypeName[] = {
-    "Restaurant", "Take Out", "Delivery", "Hotel", "Retail", "Fast Food", "For Here", "To Go", "Call In", NULL};
+    "Restaurant", "Take Out", "Delivery", "Hotel", "Retail", "Fast Food", "Self Order", "For Here", "To Go", "Call In", NULL};
 int CustomerTypeValue[] = {
-    CHECK_RESTAURANT, CHECK_TAKEOUT, CHECK_DELIVERY, CHECK_HOTEL, CHECK_RETAIL, CHECK_FASTFOOD, CHECK_DINEIN, CHECK_TOGO, CHECK_CALLIN, -1};
+    CHECK_RESTAURANT, CHECK_TAKEOUT, CHECK_DELIVERY, CHECK_HOTEL, CHECK_RETAIL, CHECK_FASTFOOD, CHECK_SELFORDER, CHECK_DINEIN, CHECK_TOGO, CHECK_CALLIN, -1};
 
 const genericChar* PriceTypeName[] = {
     "Price/Item", "Price/Hour", "Price/Day", NULL };
