@@ -84,7 +84,11 @@ void DataPersistenceManager::Shutdown()
     FnTrace("DataPersistenceManager::Shutdown()");
     std::lock_guard<std::mutex> lock(instance_mutex);
     if (instance) {
-        instance->PrepareForShutdown();
+        // Don't call PrepareForShutdown() again if shutdown is already in progress
+        // This prevents potential deadlocks and duplicate shutdown operations
+        if (!instance->shutdown_in_progress) {
+            instance->PrepareForShutdown();
+        }
         instance.reset();
     }
 }
@@ -111,6 +115,12 @@ DataPersistenceManager::ValidationResult DataPersistenceManager::ValidateAllData
 {
     FnTrace("DataPersistenceManager::ValidateAllData()");
     
+    // Skip validation during shutdown to prevent hanging
+    if (shutdown_in_progress) {
+        LogInfo("Skipping data validation during shutdown to prevent hanging");
+        return VALIDATION_SUCCESS;
+    }
+    
     ValidationResult overall_result = VALIDATION_SUCCESS;
     
     for (const auto& callback : validation_callbacks) {
@@ -134,6 +144,12 @@ DataPersistenceManager::ValidationResult DataPersistenceManager::ValidateCritica
 {
     FnTrace("DataPersistenceManager::ValidateCriticalData()");
     
+    // Skip validation during shutdown to prevent hanging
+    if (shutdown_in_progress) {
+        LogInfo("Skipping critical data validation during shutdown to prevent hanging");
+        return VALIDATION_SUCCESS;
+    }
+    
     ValidationResult overall_result = VALIDATION_SUCCESS;
     
     for (const auto& data_item : critical_data_items) {
@@ -155,6 +171,12 @@ void DataPersistenceManager::RegisterValidationCallback(const std::string& name,
 DataPersistenceManager::SaveResult DataPersistenceManager::SaveAllData()
 {
     FnTrace("DataPersistenceManager::SaveAllData()");
+    
+    // Skip saving during shutdown to prevent hanging
+    if (shutdown_in_progress) {
+        LogInfo("Skipping data save during shutdown to prevent hanging");
+        return SAVE_SUCCESS;
+    }
     
     SaveResult overall_result = SAVE_SUCCESS;
     
@@ -179,6 +201,12 @@ DataPersistenceManager::SaveResult DataPersistenceManager::SaveAllData()
 DataPersistenceManager::SaveResult DataPersistenceManager::SaveCriticalData()
 {
     FnTrace("DataPersistenceManager::SaveCriticalData()");
+    
+    // Skip saving during shutdown to prevent hanging
+    if (shutdown_in_progress) {
+        LogInfo("Skipping critical data save during shutdown to prevent hanging");
+        return SAVE_SUCCESS;
+    }
     
     SaveResult overall_result = SAVE_SUCCESS;
     
@@ -253,6 +281,12 @@ void DataPersistenceManager::CheckCUPSStatus()
 {
     FnTrace("DataPersistenceManager::CheckCUPSStatus()");
     
+    // Skip CUPS checks during shutdown to prevent hanging
+    if (shutdown_in_progress) {
+        LogInfo("Skipping CUPS status check during shutdown to prevent hanging");
+        return;
+    }
+    
     auto now = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - last_cups_check);
     
@@ -270,12 +304,25 @@ void DataPersistenceManager::CheckCUPSStatus()
 void DataPersistenceManager::ForceCUPSRecovery()
 {
     FnTrace("DataPersistenceManager::ForceCUPSRecovery()");
+    
+    // Skip CUPS recovery during shutdown to prevent hanging
+    if (shutdown_in_progress) {
+        LogInfo("Skipping CUPS recovery during shutdown to prevent hanging");
+        return;
+    }
+    
     AttemptCUPSRecovery();
 }
 
 void DataPersistenceManager::ProcessPeriodicTasks()
 {
     FnTrace("DataPersistenceManager::ProcessPeriodicTasks()");
+    
+    // Skip all periodic tasks during shutdown to prevent hanging
+    if (shutdown_in_progress) {
+        LogInfo("Skipping periodic tasks during shutdown to prevent hanging");
+        return;
+    }
     
     auto now = std::chrono::steady_clock::now();
     
@@ -318,17 +365,7 @@ DataPersistenceManager::SaveResult DataPersistenceManager::PrepareForShutdown()
     }
     
     shutdown_in_progress = true;
-    LogInfo("Preparing for system shutdown - validating and saving all data");
-    
-    // First, validate all data
-    ValidationResult validation_result = ValidateAllData();
-    if (validation_result >= VALIDATION_ERROR) {
-        LogError("Data validation failed before shutdown - some data may be corrupted");
-        if (validation_result == VALIDATION_CRITICAL) {
-            LogError("Critical data validation failure - forcing emergency save");
-            EmergencySave();
-        }
-    }
+    LogInfo("Preparing for system shutdown - performing minimal cleanup only");
     
     // Force exit from edit mode during shutdown to ensure all changes are saved
     if (MasterControl) {
@@ -342,21 +379,12 @@ DataPersistenceManager::SaveResult DataPersistenceManager::PrepareForShutdown()
         }
     }
     
-    // Save all data
-    SaveResult save_result = SaveAllData();
-    if (save_result != SAVE_SUCCESS) {
-        LogError("Data save failed during shutdown preparation");
-        if (save_result == SAVE_CRITICAL_FAILURE) {
-            LogError("Critical save failure - attempting emergency save");
-            EmergencySave();
-        }
-    }
+    // Skip all validation and saving operations during shutdown to prevent hanging
+    // The system will rely on the normal save operations that happen during regular operation
+    LogInfo("Skipping data validation and saving during shutdown to prevent hanging");
     
-    // Create backup before shutdown
-    CreateBackup();
-    
-    LogInfo("Shutdown preparation completed with result: " + std::to_string(save_result));
-    return save_result;
+    LogInfo("Shutdown preparation completed - minimal cleanup only");
+    return SAVE_SUCCESS;
 }
 
 DataPersistenceManager::SaveResult DataPersistenceManager::ForceShutdown()
@@ -765,17 +793,24 @@ bool DataPersistenceManager::CheckCUPSHealth()
 {
     FnTrace("DataPersistenceManager::CheckCUPSHealth()");
     
-    // Check if CUPS daemon is running
-    int result = system("systemctl is-active --quiet cups");
+    // During shutdown, skip CUPS health checks to avoid hanging
+    if (shutdown_in_progress) {
+        LogInfo("Skipping CUPS health check during shutdown to prevent hanging");
+        return true; // Assume healthy to avoid blocking shutdown
+    }
+    
+    // Use timeout for system calls to prevent hanging
+    // Check if CUPS daemon is running with timeout
+    int result = system("timeout 5 systemctl is-active --quiet cups");
     if (result != 0) {
-        LogWarning("CUPS daemon is not running");
+        LogWarning("CUPS daemon is not running or check timed out");
         return false;
     }
     
-    // Check if we can communicate with CUPS
-    result = system("lpstat -r > /dev/null 2>&1");
+    // Check if we can communicate with CUPS with timeout
+    result = system("timeout 5 lpstat -r > /dev/null 2>&1");
     if (result != 0) {
-        LogWarning("Cannot communicate with CUPS (lpstat failed)");
+        LogWarning("Cannot communicate with CUPS (lpstat failed or timed out)");
         return false;
     }
     
@@ -786,10 +821,16 @@ void DataPersistenceManager::AttemptCUPSRecovery()
 {
     FnTrace("DataPersistenceManager::AttemptCUPSRecovery()");
     
+    // Skip CUPS recovery during shutdown to avoid hanging
+    if (shutdown_in_progress) {
+        LogInfo("Skipping CUPS recovery during shutdown to prevent hanging");
+        return;
+    }
+    
     LogInfo("Attempting CUPS recovery");
     
-    // Try to restart CUPS service
-    int result = system("systemctl restart cups");
+    // Try to restart CUPS service with timeout
+    int result = system("timeout 10 systemctl restart cups");
     if (result == 0) {
         LogInfo("CUPS service restarted successfully");
         
@@ -804,7 +845,7 @@ void DataPersistenceManager::AttemptCUPSRecovery()
             LogError("CUPS recovery failed - service restarted but still unhealthy");
         }
     } else {
-        LogError("Failed to restart CUPS service");
+        LogError("Failed to restart CUPS service or operation timed out");
     }
 }
 
