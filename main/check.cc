@@ -2538,7 +2538,8 @@ int Check::IsTakeOut()
             ct == CHECK_DELIVERY || 
             ct == CHECK_RETAIL   ||
             ct == CHECK_CATERING ||
-            ct == CHECK_TOGO); 
+            ct == CHECK_TOGO ||
+            ct == CHECK_SELFTAKEOUT); 
 }
 
 int Check::IsFastFood()
@@ -2554,7 +2555,21 @@ int Check::IsSelfOrder()
 {
     FnTrace("Check::IsSelfOrder()");
     int ct = CustomerType();
-    return (ct == CHECK_SELFORDER);
+    return (ct == CHECK_SELFORDER || ct == CHECK_SELFDINEIN || ct == CHECK_SELFTAKEOUT);
+}
+
+int Check::IsSelfDineIn()
+{
+    FnTrace("Check::IsSelfDineIn()");
+    int ct = CustomerType();
+    return (ct == CHECK_SELFDINEIN);
+}
+
+int Check::IsSelfTakeOut()
+{
+    FnTrace("Check::IsSelfTakeOut()");
+    int ct = CustomerType();
+    return (ct == CHECK_SELFTAKEOUT);
 }
 
 int Check::IsToGo()
@@ -2562,14 +2577,15 @@ int Check::IsToGo()
    FnTrace("Check::IsToGo()");
    int ct = CustomerType();
    return ct == CHECK_TOGO || 
-          ct == CHECK_TAKEOUT;
+          ct == CHECK_TAKEOUT ||
+          ct == CHECK_SELFTAKEOUT;
 }
 
 int Check::IsForHere()
 {
    FnTrace("Check::IsForHere()");
    int ct = CustomerType();
-   return ct == CHECK_DINEIN;
+   return ct == CHECK_DINEIN || ct == CHECK_SELFDINEIN;
 }
 
 const genericChar* Check::Table(const genericChar* set)
