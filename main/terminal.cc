@@ -243,10 +243,10 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
 	                    customer_user->Add(j);
 	                }
 	                
-	                // Set job flags for Customer user to allow system access
-	                Settings *settings = term->GetSettings();
-	                settings->job_active[JOB_SERVER] = 1;  // Activate server job
-	                settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER;  // Allow tables and ordering
+                // Set job flags for Customer user to allow system access
+                Settings *settings = term->GetSettings();
+                settings->job_active[JOB_SERVER] = 1;  // Activate server job
+                settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE;  // Allow tables, ordering, and settling
 	                
 	                term->system_data->user_db.Add(customer_user);
 	            }
@@ -2055,7 +2055,7 @@ int Terminal::NewSelfOrder(int customer_type)
         // Set job flags for Customer user to allow system access
         Settings *settings = GetSettings();
         settings->job_active[JOB_SERVER] = 1;  // Activate server job
-        settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER;  // Allow tables and ordering
+        settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE;  // Allow tables, ordering, and settling
         
         system_data->user_db.Add(customer_user);
     }
@@ -2078,7 +2078,7 @@ int Terminal::QuickMode(int customer_type)
 {
     FnTrace("Terminal::QuickMode()");
     // SelfOrder doesn't require user authentication
-    if (customer_type == CHECK_SELFORDER)
+    if (customer_type == CHECK_SELFORDER || customer_type == CHECK_SELFDINEIN || customer_type == CHECK_SELFTAKEOUT)
     {
         // Handle SelfOrder case - use Customer user
         Settings *settings = GetSettings();
@@ -2108,7 +2108,7 @@ int Terminal::QuickMode(int customer_type)
             
             // Set job flags for Customer user to allow system access
             settings->job_active[JOB_SERVER] = 1;  // Activate server job
-            settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER;  // Allow tables and ordering
+            settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE;  // Allow tables, ordering, and settling
             
             system_data->user_db.Add(customer_user);
         }
@@ -2154,6 +2154,8 @@ int Terminal::QuickMode(int customer_type)
 
     if (customer_type == CHECK_FASTFOOD ||
         customer_type == CHECK_SELFORDER ||
+        customer_type == CHECK_SELFDINEIN ||
+        customer_type == CHECK_SELFTAKEOUT ||
         customer_type == CHECK_BAR ||
         (settings->fast_takeouts &&
          (customer_type == CHECK_TAKEOUT  ||
@@ -2163,7 +2165,7 @@ int Terminal::QuickMode(int customer_type)
           customer_type == CHECK_TOGO     ||
           customer_type == CHECK_CATERING)))
     {
-        if (customer_type == CHECK_SELFORDER)
+        if (customer_type == CHECK_SELFORDER || customer_type == CHECK_SELFDINEIN || customer_type == CHECK_SELFTAKEOUT)
             type = TERMINAL_SELFORDER;
         else
             type = TERMINAL_FASTFOOD;

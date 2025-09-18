@@ -493,6 +493,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
 
 ### Fixed
+- **Version Number and Date Update**: Updated version number to reflect current year and fixed version date display in Page 1 lower left corner
+  - **Version Number**: Updated from "21.05.1" to "25.01.1" to reflect current year 2025
+  - **Version Date**: Fixed version date display to show current build date (2025-09-18) instead of cached 2021 date
+  - **Root Cause**: Version timestamp was correctly generated but cached version_generated.hh file contained old date
+  - **Solution**: Updated version.cmake with new major/minor version numbers and regenerated version files with `make clean` and `make`
+  - **Result**: Version display now correctly shows "POS 25.01.1-74 2025-09-18" with current year and build date
+- **SelfOrder Mode Differentiation**: Added support for SelfDineIn and SelfTakeOut check types in SelfOrder mode
+  - **New Check Types**: Added `CHECK_SELFDINEIN` (11) and `CHECK_SELFTAKEOUT` (12) to distinguish between dine-in and take-out orders
+  - **Enhanced Methods**: Added `IsSelfDineIn()` and `IsSelfTakeOut()` methods to Check class for proper type identification
+  - **Updated Logic**: Modified `IsSelfOrder()`, `IsTakeOut()`, and `IsForHere()` methods to include new SelfOrder variants
+  - **Terminal Support**: Updated `QuickMode()` method to handle new SelfOrder check types with proper validation
+  - **Files Modified**: `main/check.hh`, `main/check.cc`, `main/terminal.cc`
+- **SelfOrder Drawer Access Issue**: Fixed "No Drawer Available" message when drawer is configured for SelfOrder terminals
+  - **Root Cause**: Customer user (ID 999) created for SelfOrder terminals lacked `SECURITY_SETTLE` permission needed for drawer access
+  - **Solution**: Updated Customer user setup to include `SECURITY_SETTLE` permission in addition to existing `SECURITY_TABLES` and `SECURITY_ORDER`
+  - **Implementation**: Modified all three Customer user creation locations in `main/terminal.cc` to grant proper permissions
+  - **Result**: SelfOrder terminals can now properly access drawers for payment processing without errors
 - Allow settlement after reset for users with Settle permission
   - Removed terminal-type restriction in `Terminal::CanSettleCheck()` that blocked settling on `ORDER_ONLY` terminals after reset
   - Settlement still requires a valid drawer and respects ownership/supervisor checks
