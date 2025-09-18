@@ -2577,7 +2577,8 @@ int Check::IsToGo()
    FnTrace("Check::IsToGo()");
    int ct = CustomerType();
    return ct == CHECK_TOGO || 
-          ct == CHECK_TAKEOUT;
+          ct == CHECK_TAKEOUT ||
+          ct == CHECK_SELFTAKEOUT;
 }
 
 int Check::IsForHere()

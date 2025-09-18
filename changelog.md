@@ -510,6 +510,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Solution**: Updated Customer user setup to include `SECURITY_SETTLE` permission in addition to existing `SECURITY_TABLES` and `SECURITY_ORDER`
   - **Implementation**: Modified all three Customer user creation locations in `main/terminal.cc` to grant proper permissions
   - **Result**: SelfOrder terminals can now properly access drawers for payment processing without errors
+- **Check Type Constants Backward Compatibility**: Fixed data corruption issue caused by renumbering existing check type constants
+  - **Problem**: Renumbering `CHECK_DINEIN`, `CHECK_TOGO`, and `CHECK_CALLIN` from values 11-13 to 13-15 broke backward compatibility
+  - **Impact**: Saved checks with old type values (11 for `CHECK_DINEIN`) were misinterpreted as new types like `CHECK_SELFDINEIN`, causing incorrect behavior and data corruption
+  - **Solution**: Restored original values for existing constants and reassigned new values to `CHECK_SELFDINEIN` and `CHECK_SELFTAKEOUT`
+  - **New Values**: `CHECK_DINEIN`=11, `CHECK_TOGO`=12, `CHECK_CALLIN`=13, `CHECK_SELFDINEIN`=14, `CHECK_SELFTAKEOUT`=15
+  - **Result**: Existing saved checks with old type values now work correctly without data corruption
+- **IsToGo() Method Consistency**: Fixed inconsistency in `IsToGo()` method to include `CHECK_SELFTAKEOUT`
+  - **Problem**: `IsToGo()` method didn't account for `CHECK_SELFTAKEOUT`, creating inconsistency with other related methods
+  - **Impact**: Self-service takeout orders (`CHECK_SELFTAKEOUT`) were not properly identified as "to go" orders
+  - **Solution**: Updated `IsToGo()` method to include `CHECK_SELFTAKEOUT` check type
+  - **Consistency**: Now matches pattern used in `IsTakeOut()` and `IsForHere()` methods which include their corresponding self-service types
+  - **Result**: Self-service takeout orders are now correctly identified as "to go" orders
 - Allow settlement after reset for users with Settle permission
   - Removed terminal-type restriction in `Terminal::CanSettleCheck()` that blocked settling on `ORDER_ONLY` terminals after reset
   - Settlement still requires a valid drawer and respects ownership/supervisor checks

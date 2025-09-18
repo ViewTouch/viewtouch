@@ -44,11 +44,11 @@
 #define CHECK_RETAIL         8
 #define CHECK_FASTFOOD       9
 #define CHECK_SELFORDER     10   // customer self-service order - no login required
-#define CHECK_SELFDINEIN    11   // customer self-service dine-in order
-#define CHECK_SELFTAKEOUT   12   // customer self-service take-out order
-#define CHECK_DINEIN        13
-#define CHECK_TOGO          14
-#define CHECK_CALLIN        15
+#define CHECK_DINEIN        11   // dine-in order (restored original value for backward compatibility)
+#define CHECK_TOGO          12   // take-out order (restored original value for backward compatibility)
+#define CHECK_CALLIN        13   // call-in order (restored original value for backward compatibility)
+#define CHECK_SELFDINEIN    14   // customer self-service dine-in order
+#define CHECK_SELFTAKEOUT   15   // customer self-service take-out order
 
 // Check Flags
 #define CF_PRINTED           1   // Has been sent to the kitcen at least once
