@@ -493,10 +493,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
 
 ### Fixed
-- **Version Date Display Issue**: Fixed version date display in Page 1 lower left corner to show current build date (2025-09-15) instead of cached 2021 date
+- **Version Number and Date Update**: Updated version number to reflect current year and fixed version date display in Page 1 lower left corner
+  - **Version Number**: Updated from "21.05.1" to "25.01.1" to reflect current year 2025
+  - **Version Date**: Fixed version date display to show current build date (2025-09-18) instead of cached 2021 date
   - **Root Cause**: Version timestamp was correctly generated but cached version_generated.hh file contained old date
-  - **Solution**: Regenerated version files with `make clean` and `make` to update timestamp
-  - **Result**: Version display now correctly shows "POS 21.05.1-68 2025-09-15" with current build date
+  - **Solution**: Updated version.cmake with new major/minor version numbers and regenerated version files with `make clean` and `make`
+  - **Result**: Version display now correctly shows "POS 25.01.1-74 2025-09-18" with current year and build date
 - **SelfOrder Mode Differentiation**: Added support for SelfDineIn and SelfTakeOut check types in SelfOrder mode
   - **New Check Types**: Added `CHECK_SELFDINEIN` (11) and `CHECK_SELFTAKEOUT` (12) to distinguish between dine-in and take-out orders
   - **Enhanced Methods**: Added `IsSelfDineIn()` and `IsSelfTakeOut()` methods to Check class for proper type identification
