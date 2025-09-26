@@ -85,6 +85,7 @@ public:
     int          Page(int new_page)  { int old_page = page; page = new_page; return old_page; }
 
     int Print(Terminal *t, int print_mode);
+    SignalResult QuickBooksExport(Terminal *term);
 
 private:
     int last_page_touch = -1;

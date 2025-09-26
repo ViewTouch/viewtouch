@@ -48,6 +48,7 @@
 #define TARGET_TYPE_SOCKET    "socket"
 #define TARGET_TYPE_FILE      "file"
 #define TARGET_TYPE_EMAIL     "email"
+#define TARGET_TYPE_QUICKBOOKS_CSV "quickbooks_csv"
 
 enum targettype {
     TARGET_NONE,
@@ -55,7 +56,8 @@ enum targettype {
     TARGET_LPD,
     TARGET_FILE,
     TARGET_EMAIL,
-    TARGET_SOCKET
+    TARGET_SOCKET,
+    TARGET_QUICKBOOKS_CSV
 };
 
 enum printer_models {
@@ -69,7 +71,8 @@ enum printer_models {
     MODEL_POSTSCRIPT,
     MODEL_PDF,
     MODEL_RECEIPT_TEXT,
-    MODEL_REPORT_TEXT
+    MODEL_REPORT_TEXT,
+    MODEL_QUICKBOOKS_CSV
 };
 
 // obsolete port types
@@ -343,6 +346,32 @@ public:
     virtual int Model() { return MODEL_REPORT_TEXT; }
     virtual int MaxWidth() { return 80; }
     virtual int Width(int flags = 0) { return 80; }
+};
+
+class PrinterQuickBooksCSV : public Printer
+{
+    virtual int WriteFlags(int flags) { return 0; }
+public:
+    PrinterQuickBooksCSV(const genericChar* host, int port, const genericChar* targetstr, int type);
+    virtual int Model() { return MODEL_QUICKBOOKS_CSV; }
+    virtual int Start();
+    virtual int End();
+    virtual int Init();
+    virtual int LineFeed(int lines = 1);
+    virtual int NewLine() { return LineFeed(1); }
+    virtual int FormFeed() { return 0; }
+    virtual int MaxWidth() { return 80; }
+    virtual int MaxLines() { return -1; }
+    virtual int Width(int flags = 0) { return 80; }
+    virtual int StopPrint() { return 1; }
+    virtual int OpenDrawer(int drawer) { return 1; }
+    virtual int CutPaper(int partial_only = 0) { return 1; }
+    
+    // QuickBooks CSV specific methods
+    int WriteCSVHeader();
+    int WriteCSVLine(const char* date, const char* type, 
+                     const char* account, const char* description, 
+                     int amount, int tax);
 };
 
 

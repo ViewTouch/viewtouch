@@ -814,6 +814,9 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
     case 4:  // reportprint
         Print(t, RP_PRINT_REPORT);
         return SIGNAL_OKAY;
+    case 37: // quickbooks export
+        QuickBooksExport(t);
+        return SIGNAL_OKAY;
     case 5:  // day period
       	printf("report_zone : day_period: \n");
         period_view = SP_DAY;

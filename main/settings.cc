@@ -1223,6 +1223,12 @@ Settings::Settings()
     scheduled_restart_hour = -1;  // -1 = disabled
     scheduled_restart_min  = 0;   // Default to top of hour
     restart_postpone_count = 0;   // Reset daily
+    
+    // QuickBooks Export Settings
+    quickbooks_export_path.Set("/usr/viewtouch/exports/quickbooks");
+    quickbooks_auto_export = 0;   // Default disabled
+    quickbooks_export_format = 0; // Default to daily format
+    
     email_send_server.Set("");
     changed            = 0;
     screen_blank_time  = 60;
@@ -1978,6 +1984,12 @@ int Settings::Load(const char* file)
         df.Read(email_send_server);
     if (version >= 49)
         df.Read(email_replyto);
+    if (version >= 100)  // QuickBooks export settings (new version)
+    {
+        df.Read(quickbooks_export_path);
+        df.Read(quickbooks_auto_export);
+        df.Read(quickbooks_export_format);
+    }
     if (version >= 51)
         df.Read(fast_takeouts);
     if (version >= 53)
@@ -2395,6 +2407,9 @@ int Settings::Save()
     df.Write(drawer_night_start);
     df.Write(email_send_server);
     df.Write(email_replyto);
+    df.Write(quickbooks_export_path);
+    df.Write(quickbooks_auto_export);
+    df.Write(quickbooks_export_format);
     df.Write(fast_takeouts);
     df.Write(money_symbol);
     df.Write(require_drawer_balance);
