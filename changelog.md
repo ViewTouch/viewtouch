@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Added proper bounds checking in `DialogMenu::Set()` and `DialogDoubleMenu::Set()` methods
   - Changed `CompareList()` unknown parameter from 0 to -1 for clearer invalid index detection
   - Prevents `std::vector::operator[]` assertion failures when accessing empty or undersized vectors
+- **Thread Safety**: Improved thread safety in function tracing system
+  - Fixed race conditions in atomic operations in `fntrace.cc`
+  - Added proper bounds checking for stack depth to prevent overflow
+- **Buffer Safety**: Replaced unsafe string functions with safer alternatives
+  - Replaced `sprintf` with `snprintf` in `login_zone.cc` to prevent buffer overflows
+  - Added proper buffer size checking for string operations
 
 ### Changed
 - **Drawer Mode Terminology**: Changed "Normal" Drawer Mode to "Trusted" Drawer Mode for better clarity
