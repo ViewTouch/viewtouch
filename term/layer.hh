@@ -46,10 +46,10 @@ public:
     // Member Functions
     int UpdateAll(LayerList *ll, Layer *l);
     virtual int Render(Layer *l) = 0;
-    virtual int Layout(Layer *l) { return 0; }
+    virtual int Layout(Layer *l) noexcept { return 0; }
     virtual int MouseEnter(LayerList *ll, Layer *l);
     virtual int MouseExit(LayerList *ll, Layer *);
-    virtual int MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code) { return 0; }
+    virtual int MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code) noexcept { return 0; }
 };
 
 class LayerObjectList
@@ -69,7 +69,7 @@ public:
 
     int Render(Layer *l);
     int Layout(Layer *l);
-    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code);
+    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code) noexcept;
     
     // Access to internal list for font updates
     LayerObject *Head() { return list.Head(); }
@@ -113,6 +113,14 @@ public:
     Layer(Display *d, GC g, Window dw, int lw, int lh);
     // Destructor
     virtual ~Layer();
+    
+    // Move constructor and assignment operator
+    Layer(Layer&& other) noexcept;
+    Layer& operator=(Layer&& other) noexcept;
+    
+    // Delete copy constructor and assignment operator
+    Layer(const Layer&) = delete;
+    Layer& operator=(const Layer&) = delete;
 
     // Member Functions
     int DrawArea(int dx, int dy, int dw, int dh);
@@ -230,7 +238,7 @@ public:
 
     // Member Functions
     int Render(Layer *l);
-    int MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code);
+    int MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code) noexcept;
 
     virtual int Command(Layer *l);
 };
@@ -246,7 +254,7 @@ public:
 
     // Member Functions
     int Render(Layer *l);
-    int MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code);
+    int MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code) noexcept;
 };
 
 class LO_ItemList : public LayerObject
@@ -257,7 +265,7 @@ public:
 
     // Member Functions
     int Render(Layer *l);
-    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code);
+    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code) noexcept;
 };
 
 class LO_ItemMenu : public LayerObject
@@ -268,7 +276,7 @@ public:
 
     // Member Functions
     int Render(Layer *l);
-    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code);
+    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code) noexcept;
 };
 
 class LO_TextEntry : public LayerObject
@@ -279,7 +287,7 @@ public:
 
     // Member Functions
     int Render(Layer *l);
-    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code);
+    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code) noexcept;
 };
 
 #endif

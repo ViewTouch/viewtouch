@@ -154,7 +154,7 @@ int DialogEntry::Init(Widget parent, const char* label)
                                     XmNrightAttachment,  XmATTACH_FORM,
                                     XmNbottomAttachment, XmATTACH_FORM, NULL);
 
-    XmTextSetString(entry, (char*)"");
+    XmTextSetString(entry, const_cast<char*>(""));
     XtManageChild(container);
     return 0;
 }
@@ -176,23 +176,23 @@ int DialogEntry::Show(int flag)
 
 int DialogEntry::Set(const char* val)
 {
-    XmTextSetString(entry, (char*)val);
+    XmTextSetString(entry, const_cast<char*>(val));
     return 0;
 }
 
 int DialogEntry::Set(int val)
 {
-    char str[32];
-    sprintf(str, "%d", val);
-    XmTextSetString(entry, str);
+    std::array<char, 32> str;
+    sprintf(str.data(), "%d", val);
+    XmTextSetString(entry, str.data());
     return 0;
 }
 
 int DialogEntry::Set(Flt val)
 {
-    char str[32];
-    sprintf(str, "%g", val);
-    XmTextSetString(entry, str);
+    std::array<char, 32> str;
+    sprintf(str.data(), "%g", val);
+    XmTextSetString(entry, str.data());
     return 0;
 }
 
@@ -281,14 +281,14 @@ int DialogMenu::Init(Widget parent, const char* label, const char* *option_name,
                                      XmNrightPosition,    MARGIN,
                                      NULL);
 
-    Arg args[5];
-    menu = XmCreatePulldownMenu(container, (char*)"menu", args, 0);
+    std::array<Arg, 5> args;
+    menu = XmCreatePulldownMenu(container, const_cast<char*>("menu"), args.data(), 0);
     XtSetArg(args[0], XmNsubMenuId,        menu);
     XtSetArg(args[1], XmNtopAttachment,    XmATTACH_FORM);
     XtSetArg(args[2], XmNbottomAttachment, XmATTACH_FORM);
     XtSetArg(args[3], XmNleftAttachment,   XmATTACH_POSITION);
     XtSetArg(args[4], XmNleftPosition,     MARGIN);
-    option = XmCreateOptionMenu(container, (char*)"option", args, 5);
+    option = XmCreateOptionMenu(container, const_cast<char*>("option"), args.data(), 5);
 
     int count = 0;
     while (option_name[count])
@@ -352,7 +352,7 @@ int DialogMenu::SetLabel(const char* label)
 {
     XmString label_string;
 
-    label_string = XmStringCreateLtoR((char*)label, XmFONTLIST_DEFAULT_TAG);
+    label_string = XmStringCreateLtoR(const_cast<char*>(label), XmFONTLIST_DEFAULT_TAG);
     XtVaSetValues(mlabel, XmNlabelString, label_string, NULL);
     XmStringFree(label_string);
 
@@ -417,21 +417,21 @@ int DialogDoubleMenu::Init(Widget parent, const char* label,
                             NULL);
 
     Arg args[5];
-    Widget menu1 = XmCreatePulldownMenu(container, (char*)"menu1", args, 0);
+    Widget menu1 = XmCreatePulldownMenu(container, const_cast<char*>("menu1"), args, 0);
     XtSetArg(args[0], XmNsubMenuId,        menu1);
     XtSetArg(args[1], XmNtopAttachment,    XmATTACH_FORM);
     XtSetArg(args[2], XmNbottomAttachment, XmATTACH_FORM);
     XtSetArg(args[3], XmNleftAttachment,   XmATTACH_POSITION);
     XtSetArg(args[4], XmNleftPosition,     MARGIN);
-    option1 = XmCreateOptionMenu(container, (char*)"option1", args, 5);
+    option1 = XmCreateOptionMenu(container, const_cast<char*>("option1"), args, 5);
 
-    Widget menu2 = XmCreatePulldownMenu(container, (char*)"menu2", args, 0);
+    Widget menu2 = XmCreatePulldownMenu(container, const_cast<char*>("menu2"), args, 0);
     XtSetArg(args[0], XmNsubMenuId,        menu2);
     XtSetArg(args[1], XmNtopAttachment,    XmATTACH_FORM);
     XtSetArg(args[2], XmNbottomAttachment, XmATTACH_FORM);
     XtSetArg(args[3], XmNleftAttachment,   XmATTACH_WIDGET);
     XtSetArg(args[4], XmNleftWidget,       option1);
-    option2 = XmCreateOptionMenu(container, (char*)"option2", args, 5);
+    option2 = XmCreateOptionMenu(container, const_cast<char*>("option2"), args, 5);
 
     int count = 0;
     while (op1_name[count])
@@ -551,14 +551,14 @@ int DialogDoubleMenu::Value(int &v1, int &v2)
 // Callback Functions
 void EP_OkayCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    PageDialog *d = (PageDialog *) client_data;
+    PageDialog *d = static_cast<PageDialog*>(client_data);
     d->Close();
     d->Send();
 }
 
 void EP_DeleteCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    PageDialog *d = (PageDialog *) client_data;
+    PageDialog *d = static_cast<PageDialog*>(client_data);
     d->Close();
     WInt8(SERVER_KILLPAGE);
     SendNow();
@@ -566,13 +566,13 @@ void EP_DeleteCB(Widget widget, XtPointer client_data, XtPointer call_data)
 
 void EP_CancelCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    PageDialog *d = (PageDialog *) client_data;
+    PageDialog *d = static_cast<PageDialog*>(client_data);
     d->Close();
 }
 
 void EP_TypeCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    PageDialog *d = (PageDialog *) client_data;
+    PageDialog *d = static_cast<PageDialog*>(client_data);
     int new_type = 0;
     if (d->full_edit)
         new_type = d->type.Value();
@@ -599,7 +599,7 @@ PageDialog::PageDialog(Widget parent)
     XtSetArg(args[0], XmNtitle, "Page & Button Property Defaults Dialog");
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
-    dialog = XmCreateFormDialog(parent, (char*)"page dialog", args, 3);
+    dialog = XmCreateFormDialog(parent, const_cast<char*>("page dialog"), args, 3);
 
     XtSetArg(args[0], XmNorientation,      XmVERTICAL);
     XtSetArg(args[1], XmNtopAttachment,    XmATTACH_POSITION);
@@ -610,13 +610,13 @@ PageDialog::PageDialog(Widget parent)
     XtSetArg(args[6], XmNleftPosition,     1);
     XtSetArg(args[7], XmNrightAttachment,  XmATTACH_POSITION);
     XtSetArg(args[8], XmNrightPosition,    99);
-    Widget w = XmCreateRowColumn(dialog, (char*)"", args, 9);
+    Widget w = XmCreateRowColumn(dialog, const_cast<char*>(""), args, 9);
 
     size.Init(w, "Page Resolution", PageSizeName, PageSizeValue);
     type.Init(w, "Page Type", PageTypeName, PageTypeValue,
-              (void *) EP_TypeCB, this);
+              reinterpret_cast<void*>(EP_TypeCB), this);
     type2.Init(w, "Page Type", PageType2Name, PageType2Value,
-               (void *) EP_TypeCB, this);
+               reinterpret_cast<void*>(EP_TypeCB), this);
     AddLine(w);
 
     name.Init(w, "This Page's Name");
@@ -755,14 +755,14 @@ int PageDialog::Send()
 // Callback Functions
 void DP_OkayCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    DefaultDialog *d = (DefaultDialog *) client_data;
+    DefaultDialog *d = static_cast<DefaultDialog*>(client_data);
     d->Close();
     d->Send();
 }
 
 void DP_CancelCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    DefaultDialog *d = (DefaultDialog *) client_data;
+    DefaultDialog *d = static_cast<DefaultDialog*>(client_data);
     d->Close();
 }
 
@@ -776,7 +776,7 @@ DefaultDialog::DefaultDialog(Widget parent)
     XtSetArg(args[0], XmNtitle, "Global Page Property Defaults");
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
-    dialog = XmCreateFormDialog(parent, (char*)"Global Page & Button Properties Dialog", args, 3);
+    dialog = XmCreateFormDialog(parent, const_cast<char*>("Global Page & Button Properties Dialog"), args, 3);
 
     XtSetArg(args[0], XmNorientation,      XmVERTICAL);
     XtSetArg(args[1], XmNtopAttachment,    XmATTACH_POSITION);
@@ -787,7 +787,7 @@ DefaultDialog::DefaultDialog(Widget parent)
     XtSetArg(args[6], XmNleftPosition,     1);
     XtSetArg(args[7], XmNrightAttachment,  XmATTACH_POSITION);
     XtSetArg(args[8], XmNrightPosition,    99);
-    Widget w = XmCreateRowColumn(dialog, (char*)"", args, 9);
+    Widget w = XmCreateRowColumn(dialog, const_cast<char*>(""), args, 9);
 
     // skip first slot = Default
     //size.Init(w, "Page Size", PageSizeName+1, PageSizeValue+1);
@@ -890,14 +890,14 @@ int DefaultDialog::Send()
 
 void EZ_OkayCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ZoneDialog *d = (ZoneDialog *) client_data;
+    ZoneDialog *d = static_cast<ZoneDialog*>(client_data);
     d->Close();
     d->Send();
 }
 
 void EZ_DeleteCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ZoneDialog *d = (ZoneDialog *) client_data;
+    ZoneDialog *d = static_cast<ZoneDialog*>(client_data);
     d->Close();
     WInt8(SERVER_KILLZONE);
     SendNow();
@@ -905,13 +905,13 @@ void EZ_DeleteCB(Widget widget, XtPointer client_data, XtPointer call_data)
 
 void EZ_CancelCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ZoneDialog *d = (ZoneDialog *) client_data;
+    ZoneDialog *d = static_cast<ZoneDialog*>(client_data);
     d->Close();
 }
 
 void EZ_TypeCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ZoneDialog *d = (ZoneDialog *) client_data;
+    ZoneDialog *d = static_cast<ZoneDialog*>(client_data);
     int ztype = 0, itype = 0;
     if (d->full_edit)
         ztype = d->type.Value();
@@ -931,7 +931,7 @@ void EZ_TypeCB(Widget widget, XtPointer client_data, XtPointer call_data)
 
 void EZ_JumpCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ZoneDialog *d = (ZoneDialog *) client_data;
+    ZoneDialog *d = static_cast<ZoneDialog*>(client_data);
     int jtype = 0;
     if (d->full_edit)
         jtype = d->jump_type.Value();
@@ -952,7 +952,7 @@ void EZ_JumpCB(Widget widget, XtPointer client_data, XtPointer call_data)
 
 void EZ_CorrectCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ZoneDialog *d = (ZoneDialog *) client_data;
+    ZoneDialog *d = static_cast<ZoneDialog*>(client_data);
     d->Correct();
 }
 
@@ -970,7 +970,7 @@ ZoneDialog::ZoneDialog(Widget parent)
     XtSetArg(args[0], XmNtitle, "Button Properties Dialog");
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
-    dialog = XmCreateFormDialog(parent, (char*)"singlezone dialog", args, 3);
+    dialog = XmCreateFormDialog(parent, const_cast<char*>("singlezone dialog"), args, 3);
 
     XtSetArg(args[0], XmNorientation,      XmVERTICAL);
     XtSetArg(args[1], XmNtopAttachment,    XmATTACH_FORM);
@@ -978,12 +978,12 @@ ZoneDialog::ZoneDialog(Widget parent)
     XtSetArg(args[3], XmNleftAttachment,   XmATTACH_FORM);
     XtSetArg(args[4], XmNrightAttachment,  XmATTACH_FORM);
     XtSetArg(args[5], XmNpacking,          XmPACK_TIGHT);
-    container = XmCreateRowColumn(dialog, (char*)"", args, 6);
+    container = XmCreateRowColumn(dialog, const_cast<char*>(""), args, 6);
 
     type.Init(container, "Button's Type", FullZoneTypeName, FullZoneTypeValue,
-              (void *) EZ_TypeCB, this);
+              reinterpret_cast<void*>(EZ_TypeCB), this);
     type2.Init(container, "Button's Type", ZoneTypeName, ZoneTypeValue,
-               (void *) EZ_TypeCB, this);
+               reinterpret_cast<void*>(EZ_TypeCB), this);
     name.Init(container, "Button's Name");
     page.Init(container, "Button's Page Location");
     group.Init(container, "Group ID");
@@ -1015,7 +1015,7 @@ ZoneDialog::ZoneDialog(Widget parent)
     item_zone_name.Init(container, "This Button's On-Screen Name, if Different than its True Name");
     item_print_name.Init(container, "This Button's Abbreviation for Remote Printing if Different than its True Name");
     item_type.Init(container, "Menu Type", ItemTypeName, ItemTypeValue,
-                   (void *) EZ_TypeCB, this);
+                   reinterpret_cast<void*>(EZ_TypeCB), this);
     item_location.Init(container,"Event Location");
     item_event_time.Init(container, "Event Time");
     item_total_tickets.Init(container,"Total Seats");
@@ -1033,7 +1033,7 @@ ZoneDialog::ZoneDialog(Widget parent)
     tender_type.Init(container, "Tender Type", TenderName, TenderValue);
     tender_amount.Init(container, "Tender Amount");
     report_type.Init(container, "Report Type", ReportTypeName, ReportTypeValue,
-                     (void *) EZ_CorrectCB, this);
+                     reinterpret_cast<void*>(EZ_CorrectCB), this);
     check_disp_num.Init(container, "Check to Display");
     video_target.Init(container, "Video Target", PrinterIDName, PrinterIDValue);
     report_print.Init(container, "Touch Print", ReportPrintName, ReportPrintValue);
@@ -1043,9 +1043,9 @@ ZoneDialog::ZoneDialog(Widget parent)
     amount.Init(container, "Amount");
     switch_type.Init(container, "Switch Type", SwitchName, SwitchValue);
     jump_type.Init(container, "Jump Options", FullJumpTypeName, FullJumpTypeValue,
-                   (void *) EZ_JumpCB, this);
+                   reinterpret_cast<void*>(EZ_JumpCB), this);
     jump_type2.Init(container, "Jump Options", JumpTypeName, JumpTypeValue,
-                    (void *) EZ_JumpCB, this);
+                    reinterpret_cast<void*>(EZ_JumpCB), this);
     jump_id.Init(container, "Jump To Page Number");
     customer_type.Init(container, "Customer Type", CustomerTypeName, CustomerTypeValue);
 
@@ -1352,14 +1352,14 @@ int ZoneDialog::Send()
 
 void MZ_OkayCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    MultiZoneDialog *d = (MultiZoneDialog *) client_data;
+    MultiZoneDialog *d = static_cast<MultiZoneDialog*>(client_data);
     d->Close();
     d->Send();
 }
 
 void MZ_CancelCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    MultiZoneDialog *d = (MultiZoneDialog *) client_data;
+    MultiZoneDialog *d = static_cast<MultiZoneDialog*>(client_data);
     d->Close();
 }
 
@@ -1371,7 +1371,7 @@ MultiZoneDialog::MultiZoneDialog(Widget parent)
     XtSetArg(args[0], XmNtitle, "Multi-Button Property Dialog");
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
-    dialog = XmCreateFormDialog(parent, (char*)"multizone dialog", args, 3);
+    dialog = XmCreateFormDialog(parent, const_cast<char*>("multizone dialog"), args, 3);
 
     XtSetArg(args[0], XmNorientation,      XmVERTICAL);
     XtSetArg(args[1], XmNtopAttachment,    XmATTACH_FORM);
@@ -1379,7 +1379,7 @@ MultiZoneDialog::MultiZoneDialog(Widget parent)
     XtSetArg(args[3], XmNleftAttachment,   XmATTACH_FORM);
     XtSetArg(args[4], XmNrightAttachment,  XmATTACH_FORM);
     XtSetArg(args[5], XmNpacking,          XmPACK_TIGHT);
-    Widget w = XmCreateRowColumn(dialog, (char*)"", args, 6);
+    Widget w = XmCreateRowColumn(dialog, const_cast<char*>(""), args, 6);
 
     behave.no_change_value = -1;
     behave.Init(w, "Behavior of All Buttons", ZoneBehaveName, ZoneBehaveValue);
@@ -1469,14 +1469,14 @@ int MultiZoneDialog::Send()
 
 void TD_OkayCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    TranslateDialog *d = (TranslateDialog *) client_data;
+    TranslateDialog *d = static_cast<TranslateDialog*>(client_data);
     d->Close();
     d->Send();
 }
 
 void TD_CancelCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    TranslateDialog *d = (TranslateDialog *) client_data;
+    TranslateDialog *d = static_cast<TranslateDialog*>(client_data);
     d->Close();
 }
 
@@ -1490,7 +1490,7 @@ TranslateDialog::TranslateDialog(Widget parent)
     XtSetArg(args[0], XmNtitle, "Button Translation");
     XtSetArg(args[1], XmNmwmDecorations, MWM_DECOR_ALL | MWM_DECOR_MENU);
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
-    dialog = XmCreateFormDialog(parent, (char*)"translate dialog", args, 3);
+    dialog = XmCreateFormDialog(parent, const_cast<char*>("translate dialog"), args, 3);
 
     XtSetArg(args[0], XmNorientation,      XmVERTICAL);
     XtSetArg(args[1], XmNtopAttachment,    XmATTACH_FORM);
@@ -1498,7 +1498,7 @@ TranslateDialog::TranslateDialog(Widget parent)
     XtSetArg(args[3], XmNleftAttachment,   XmATTACH_FORM);
     XtSetArg(args[4], XmNrightAttachment,  XmATTACH_FORM);
     XtSetArg(args[5], XmNpacking,          XmPACK_TIGHT);
-    Widget w = XmCreateRowColumn(dialog, (char*)"", args, 6);
+    Widget w = XmCreateRowColumn(dialog, const_cast<char*>(""), args, 6);
 
     original.Init(w, "Original Text");
     translation.Init(w, "Translation");
@@ -1548,8 +1548,8 @@ int TranslateDialog::Send()
 
 void ListSelectCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    XmListCallbackStruct *data = (XmListCallbackStruct *) call_data;
-    ListDialog *d = (ListDialog *) client_data;
+    XmListCallbackStruct *data = static_cast<XmListCallbackStruct*>(call_data);
+    ListDialog *d = static_cast<ListDialog*>(client_data);
 
     int new_pos = data->item_position;
     if (new_pos != d->selected)
@@ -1569,7 +1569,7 @@ void ListPrintCB(Widget widget, XtPointer client_data, XtPointer call_data)
 
 void ListCloseCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ListDialog *d = (ListDialog *) client_data;
+    ListDialog *d = static_cast<ListDialog*>(client_data);
     d->Close();
 }
 
@@ -1582,7 +1582,7 @@ ListDialog::ListDialog(Widget parent)
 
     Arg args[11];
     XtSetArg(args[0], XmNtitle, "List of Pages; Select Any Page to View and Visit it");
-    dialog = XmCreateFormDialog(parent, (char*)"pagelist dialog", args, 1);
+    dialog = XmCreateFormDialog(parent, const_cast<char*>("pagelist dialog"), args, 1);
 
     Widget w, buttons;
     buttons = XtVaCreateWidget("form", xmFormWidgetClass, dialog,
@@ -1620,7 +1620,7 @@ ListDialog::ListDialog(Widget parent)
     XtSetArg(args[9], XmNbottomWidget,           buttons);
     XtSetArg(args[10], XmNvisibleItemCount,      32);
 
-    list = XmCreateScrolledList(dialog, (char*)"list", args, 11);
+    list = XmCreateScrolledList(dialog, const_cast<char*>("list"), args, 11);
     XtAddCallback(list, XmNsingleSelectionCallback,
                   (XtCallbackProc) ListSelectCB, (XtPointer) this);
     XtManageChild(list);

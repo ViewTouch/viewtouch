@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <Xm/Xm.h>
+#include <memory>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -48,8 +49,8 @@ int main(int argc, const genericChar* *argv)
     int val;
     int is_local = 0;
     int term_hardware = 0;
-    genericChar display[256] = "";
-    TouchScreen *ts = NULL;
+    std::array<genericChar, 256> display = {};
+    std::unique_ptr<TouchScreen> ts = nullptr;
     int set_width = -1;
     int set_height = -1;
 
@@ -80,7 +81,7 @@ int main(int argc, const genericChar* *argv)
     server_adr.sun_family = AF_UNIX;
     strcpy(server_adr.sun_path, socket_file.c_str());
 
-    if (connect(SocketNo, (struct sockaddr *) &server_adr,
+    if (connect(SocketNo, reinterpret_cast<struct sockaddr*>(&server_adr),
                 SUN_LEN(&server_adr)) < 0)
     {
         fprintf(stderr, "Term: Can't connect to server (error %d)\n", errno);
@@ -99,20 +100,20 @@ int main(int argc, const genericChar* *argv)
 #ifdef USE_TOUCHSCREEN
     if (argc >= 4)
     {
-        sprintf(display, "%s", argv[3]);
-        ts = new TouchScreen(argv[3], 87); // explora serial port
+        sprintf(display.data(), "%s", argv[3]);
+        ts = std::make_unique<TouchScreen>(argv[3], 87); // explora serial port
     }
     else
     {
         //FIX should do a port scan here to find out which serial
         //port to use
-        ts = new TouchScreen(TS_PORT);
+        ts = std::make_unique<TouchScreen>(TS_PORT);
         is_local = 1;  // deprecated method
     }
 #else
     if (argc >= 4)
     {
-        sprintf(display, "%s", argv[3]);
+        sprintf(display.data(), "%s", argv[3]);
     }
     else
     {
@@ -127,12 +128,17 @@ int main(int argc, const genericChar* *argv)
     if (argc >= 7)
         set_height = atoi(argv[6]);
 
-    if (strchr(display, ':') == NULL)
-        strcat(display, ":0");
+    if (strchr(display.data(), ':') == NULL)
+        strcat(display.data(), ":0");
 
     // if OpenTerm() returns there must be an error
-    if (OpenTerm(display, ts, is_local, 0, set_width, set_height))
+    try {
+        if (OpenTerm(display.data(), ts.get(), is_local, 0, set_width, set_height))
+            return 1;
+    } catch (const std::exception& e) {
+        fprintf(stderr, "Error in OpenTerm: %s\n", e.what());
         return 1;
+    }
 
     // After loading fonts and before entering the event loop, call ReloadFonts to ensure all Xft fonts are up to date
     TerminalReloadFonts();
@@ -141,9 +147,6 @@ int main(int argc, const genericChar* *argv)
     {
         close(SocketNo);
     }
-    if (ts)
-    {
-        delete ts;
-    }
+    ts.reset();
     return KillTerm();
 }

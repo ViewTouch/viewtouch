@@ -1155,7 +1155,7 @@ int CCard::Connect()
         servaddr.sin_family = AF_INET;
         servaddr.sin_port   = htons(atoi(port));
         inet_pton(AF_INET, server, &servaddr.sin_addr);
-        addr = (struct sockaddr *)&servaddr;
+        addr = static_cast<struct sockaddr*>(&servaddr);
         if (my_connect(sockfd, addr, sizeof(servaddr), ConnectionTimeOut) == 0)
         {
             ipconn = sockfd;

@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Changed
 - **Drawer Mode Terminology**: Changed "Normal" Drawer Mode to "Trusted" Drawer Mode for better clarity
 - **Server Bank Payment Navigation**: Fixed Server Bank payment completion flow to return to Page -2 (PAGEID_LOGIN2) specifically for Customer users on SelfOrder terminals, while maintaining normal navigation for all other users
+- **Modern C++ Refactoring**: Comprehensive modernization of C++ codebase for better performance, safety, and maintainability
+  - **Smart Pointers**: Replaced raw pointers with `std::unique_ptr` for automatic memory management
+  - **Modern Containers**: Replaced C-style arrays with `std::array` for type safety and better API
+  - **Move Semantics**: Added move constructors and move assignment operators to `Layer` class for better performance
+  - **Exception Safety**: Added `noexcept` specifications to functions that cannot throw exceptions
+  - **Compile-time Optimization**: Added `constexpr` to simple functions and template functions
+  - **Type Deduction**: Used `auto` keyword for cleaner and more maintainable code
+  - **RAII Patterns**: Enhanced resource management with custom `FileDescriptor` wrapper and improved exception hierarchy
+  - **Modern Casting**: Replaced C-style casts with `static_cast`, `const_cast`, and `reinterpret_cast`
+  - **String Handling**: Improved string management with `std::string` and proper move semantics
 
 ### Added
 - **QuickBooks CSV Export Feature**

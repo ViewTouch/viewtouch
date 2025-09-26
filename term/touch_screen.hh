@@ -22,6 +22,7 @@
 #define _TOUCH_SCREEN_HH
 
 #include <string>
+#include <array>
 #include "utility.hh"
 
 
@@ -33,20 +34,20 @@
 /**** Types ****/
 class TouchScreen
 {
-    genericChar buffer[64];  // input buffer
+    std::array<genericChar, 64> buffer;  // input buffer
     int  size;        // current size of input buffer
 
 	//macros for the microtouch command codes
-	char INIT[20];
-	char PING[20];
-	char RESET[20];
-	char PARAM_LOCK[20];
-	char FORMAT_HEX[20];
-	char FORMAT_DEC[20];
-	char MODE_POINT[20];
-	char MODE_STREAM[20];
-	char MODE_CALIBRATE[20];
-	char AUTOBAUD_DISABLE[20];
+	std::string INIT;
+	std::string PING;
+	std::string RESET;
+	std::string PARAM_LOCK;
+	std::string FORMAT_HEX;
+	std::string FORMAT_DEC;
+	std::string MODE_POINT;
+	std::string MODE_STREAM;
+	std::string MODE_CALIBRATE;
+	std::string AUTOBAUD_DISABLE;
 
 public:
     int device_no;    // internal device id number
@@ -61,6 +62,10 @@ public:
     // Constructors
     TouchScreen(const char* device);          // local device
     TouchScreen(const char* host, int port);  // remote device
+    TouchScreen(const TouchScreen& other) = delete;  // Disable copy constructor
+    TouchScreen(TouchScreen&& other) noexcept;       // Move constructor
+    TouchScreen& operator=(const TouchScreen& other) = delete;  // Disable copy assignment
+    TouchScreen& operator=(TouchScreen&& other) noexcept;       // Move assignment
     // Destructor
     ~TouchScreen();
 
@@ -72,10 +77,10 @@ public:
     int Connect(int boot);
     int ReadStatus();   // Reads result of a command (0, 1, -1 none)
     int Init(int boot); // Sets init codes to touchscreen
-    int Calibrate();    // Sets device into calibration mode
-    int Reset();        // Resets touch screen device
-    int Flush();        // Clears device buffer
-	int SetMode(const char* mode);
+    int Calibrate() noexcept;    // Sets device into calibration mode
+    int Reset() noexcept;        // Resets touch screen device
+    int Flush() noexcept;        // Clears device buffer
+	int SetMode(const char* mode) noexcept;
 };
 
 #endif

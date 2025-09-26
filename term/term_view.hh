@@ -13,7 +13,11 @@
 #include "utility.hh"
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
+#include <array>
+#include <string>
 
+// Constants
+#define TEXT_COLORS 21
 
 /**** Globals ****/
 extern int SocketNo;
@@ -22,9 +26,9 @@ extern int IsTermLocal;
 extern int WinWidth;
 extern int WinHeight;
 
-extern int ColorTextT[];
-extern int ColorTextH[];
-extern int ColorTextS[];
+extern std::array<int, TEXT_COLORS> ColorTextT;
+extern std::array<int, TEXT_COLORS> ColorTextH;
+extern std::array<int, TEXT_COLORS> ColorTextS;
 extern int ColorBE;    // Bottom edge
 extern int ColorLE;    // Left edge
 extern int ColorRE;    // Right edge
@@ -65,14 +69,19 @@ extern int   silent_mode;        // to disable clone input
 
 class Translation
 {
-    char key[STRLONG];
-    char value[STRLONG];
+    std::string key;
+    std::string value;
 public:
     Translation *next;
     Translation *fore;
 
     Translation();
     Translation(const char* new_key, const char* new_value);
+    Translation(const Translation& other) = default;
+    Translation(Translation&& other) noexcept = default;
+    Translation& operator=(const Translation& other) = default;
+    Translation& operator=(Translation&& other) noexcept = default;
+    
     int Match(const char* check_key);
     int GetKey(char* store, int maxlen);
     int GetValue(char* store, int maxlen);
@@ -254,9 +263,9 @@ public:
     Xpm();
     Xpm(Pixmap pm);
     Xpm(Pixmap pm, int w, int h);
-    int Width() { return width; }
-    int Height() { return height; }
-    int PixmapID() { return pixmap; }
+    constexpr int Width() const noexcept { return width; }
+    constexpr int Height() const noexcept { return height; }
+    constexpr int PixmapID() const noexcept { return pixmap; }
 };
 
 class Pixmaps {
@@ -267,7 +276,7 @@ public:
     int Add(Xpm *pixmap);
     Xpm *Get(int idx);
     Xpm *GetRandom();
-    int Count() { return count; }
+    constexpr int Count() const noexcept { return count; }
 };
 
 extern Pixmaps PixmapList;
@@ -283,27 +292,27 @@ extern int DrawScreenSaver();
 extern int ReconnectToServer();
 extern void RestartTerminal();
 
-extern XFontStruct *GetFontInfo(int font_id);
-extern XftFont *GetXftFontInfo(int font_id);
-extern int          GetFontBaseline(int font_id);
-extern int          GetFontHeight(int font_id);
-extern Pixmap       GetTexture(int texture);
+extern XFontStruct *GetFontInfo(int font_id) noexcept;
+extern XftFont *GetXftFontInfo(int font_id) noexcept;
+extern int          GetFontBaseline(int font_id) noexcept;
+extern int          GetFontHeight(int font_id) noexcept;
+extern Pixmap       GetTexture(int texture) noexcept;
 
-extern int   WInt8(int val);
-extern int   RInt8();
-extern int   WInt16(int val);
-extern int   RInt16();
-extern int   WInt32(int val);
-extern int   RInt32();
-extern long  WLong(long val);
-extern long  RLong();
-extern long long WLLong(long long val);
-extern long long RLLong();
-extern int   WFlt(Flt val);
-extern Flt   RFlt();
+extern int   WInt8(int val) noexcept;
+extern int   RInt8() noexcept;
+extern int   WInt16(int val) noexcept;
+extern int   RInt16() noexcept;
+extern int   WInt32(int val) noexcept;
+extern int   RInt32() noexcept;
+extern long  WLong(long val) noexcept;
+extern long  RLong() noexcept;
+extern long long WLLong(long long val) noexcept;
+extern long long RLLong() noexcept;
+extern int   WFlt(Flt val) noexcept;
+extern Flt   RFlt() noexcept;
 extern int   WStr(const char* s, int len = 0);
 extern genericChar* RStr(genericChar* s = NULL);
-extern int   SendNow();
+extern int   SendNow() noexcept;
 extern int   ReloadTermFonts();  // Reload fonts when global defaults change
 void TerminalReloadFonts();
 

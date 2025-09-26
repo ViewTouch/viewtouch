@@ -27,6 +27,12 @@
 #include <iostream>
 #include <string>
 #include <chrono>
+#include <vector>
+#include <array>
+#include <memory>
+#include <stdexcept>
+#include <system_error>
+#include <cstring>
 
 #include "debug.hh"
 #include "term_view.hh"
@@ -55,12 +61,106 @@ namespace fs = std::filesystem;
 /*********************************************************************
  * Definitions
  ********************************************************************/
-#define UPDATE_TIME 500
-#define XWD         "/usr/X11R6/bin/xwd"          /* screen capture utility */
-#define SCREEN_DIR  "/usr/viewtouch/screenshots"  /* where to save screenshots */
-// Font directory will be detected at runtime
+namespace Constants {
+    constexpr int UPDATE_TIME = 500;
+    constexpr const char* XWD = "/usr/X11R6/bin/xwd";          /* screen capture utility */
+    constexpr const char* SCREEN_DIR = "/usr/viewtouch/screenshots";  /* where to save screenshots */
+    constexpr int TERM_RELOAD_FONTS = 0xA5;
+    constexpr int MAX_TRIES = 8;
+    constexpr int MAX_XPM_SIZE = 4194304;
+    constexpr const char* SCREENSAVER_DIR = VIEWTOUCH_PATH "/dat/screensaver";
+    constexpr int EXTRA_ICON_WIDTH = 35;
+    constexpr int MAX_EVENTS_PER_SECOND = 1000;
+    constexpr int MAX_CONSECUTIVE_ERRORS = 10;
+    constexpr int SLEEP_TIME_MS = 10000;  // 10ms
+    constexpr int RETRY_DELAY_MS = 100000;  // 100ms
+    constexpr int RECONNECT_ATTEMPTS = 20;
+    constexpr int RECONNECT_DELAY_SEC = 2;
+}
 
-#define TERM_RELOAD_FONTS 0xA5
+// Custom exception classes for better error handling
+class ViewTouchException : public std::runtime_error {
+public:
+    explicit ViewTouchException(const std::string& message) : std::runtime_error(message) {}
+};
+
+class DisplayException : public ViewTouchException {
+public:
+    explicit DisplayException(const std::string& message) : ViewTouchException("Display Error: " + message) {}
+};
+
+class FontException : public ViewTouchException {
+public:
+    explicit FontException(const std::string& message) : ViewTouchException("Font Error: " + message) {}
+};
+
+class SocketException : public ViewTouchException {
+public:
+    explicit SocketException(const std::string& message) : ViewTouchException("Socket Error: " + message) {}
+};
+
+// RAII wrapper for file descriptors
+class FileDescriptor {
+private:
+    int fd_;
+    
+public:
+    explicit FileDescriptor(int fd = -1) noexcept : fd_(fd) {}
+    
+    // Move constructor
+    FileDescriptor(FileDescriptor&& other) noexcept : fd_(other.fd_) {
+        other.fd_ = -1;
+    }
+    
+    // Move assignment operator
+    FileDescriptor& operator=(FileDescriptor&& other) noexcept {
+        if (this != &other) {
+            if (fd_ > 0) close(fd_);
+            fd_ = other.fd_;
+            other.fd_ = -1;
+        }
+        return *this;
+    }
+    
+    // Delete copy constructor and assignment operator
+    FileDescriptor(const FileDescriptor&) = delete;
+    FileDescriptor& operator=(const FileDescriptor&) = delete;
+    
+    // Destructor
+    ~FileDescriptor() noexcept {
+        if (fd_ > 0) close(fd_);
+    }
+    
+    // Accessors
+    int get() const noexcept { return fd_; }
+    bool is_valid() const noexcept { return fd_ > 0; }
+    
+    // Release ownership
+    int release() noexcept {
+        int temp = fd_;
+        fd_ = -1;
+        return temp;
+    }
+    
+    // Reset with new fd
+    void reset(int new_fd = -1) noexcept {
+        if (fd_ > 0) close(fd_);
+        fd_ = new_fd;
+    }
+    
+    // Implicit conversion to int for compatibility
+    operator int() const noexcept { return fd_; }
+};
+
+// RAII wrapper for X11 resources
+class X11ResourceManager {
+public:
+    static void cleanup();
+    
+    ~X11ResourceManager() {
+        cleanup();
+    }
+};
 
 /*********************************************************************
  * Data
@@ -123,76 +223,79 @@ static PenDataType PenData[] =
 
 #define FONTS         (int)(sizeof(FontData)/sizeof(FontDataType))
 #define FONT_SPACE    (FONTS+4)
-#define TEXT_COLORS   (int)(sizeof(PenData)/sizeof(PenDataType))
 
 class FontNameClass
 {
 private:
-    char foundry[STRSHORT];
-    char family[STRSHORT];
-    char weight[STRSHORT];
-    char slant[STRSHORT];
-    char width[STRSHORT];
-    char adstyl[STRSHORT];  // for future reference
-    char pixels[STRSHORT];
-    char points[STRSHORT];
-    char horres[STRSHORT];
-    char vertres[STRSHORT];
-    char spacing[STRSHORT];
-    char avgwidth[STRSHORT];
-    char charset[STRSHORT];
+    std::string foundry;
+    std::string family;
+    std::string weight;
+    std::string slant;
+    std::string width;
+    std::string adstyl;  // for future reference
+    std::string pixels;
+    std::string points;
+    std::string horres;
+    std::string vertres;
+    std::string spacing;
+    std::string avgwidth;
+    std::string charset;
 
     int parsed;
 
     void  MakeGeneric();
-    int   SetItem(const char* word);
+    int   SetItem(const std::string& word);
 
 public:
     FontNameClass();
     FontNameClass(const char* fontname);
+    FontNameClass(const FontNameClass& other) = default;
+    FontNameClass(FontNameClass&& other) noexcept = default;
+    FontNameClass& operator=(const FontNameClass& other) = default;
+    FontNameClass& operator=(FontNameClass&& other) noexcept = default;
 
     void Clear();
     int  Parse(const char* fontname);
     const char* ToString();
 
-    const char* Foundry() { return foundry; }
-    const char* Family() { return family; }
-    const char* Weight() { return weight; }
-    const char* Slant() { return slant; }
-    const char* Width() { return width; }
-    const char* Pixels() { return pixels; }
-    const char* Points() { return points; }
-    const char* HorRes() { return horres; }
-    const char* VertRes() { return vertres; }
-    const char* Spacing() { return spacing; }
-    const char* AvgWidth() { return avgwidth; }
-    const char* CharSet() { return charset; }
+    const char* Foundry() const { return foundry.c_str(); }
+    const char* Family() const { return family.c_str(); }
+    const char* Weight() const { return weight.c_str(); }
+    const char* Slant() const { return slant.c_str(); }
+    const char* Width() const { return width.c_str(); }
+    const char* Pixels() const { return pixels.c_str(); }
+    const char* Points() const { return points.c_str(); }
+    const char* HorRes() const { return horres.c_str(); }
+    const char* VertRes() const { return vertres.c_str(); }
+    const char* Spacing() const { return spacing.c_str(); }
+    const char* AvgWidth() const { return avgwidth.c_str(); }
+    const char* CharSet() const { return charset.c_str(); }
 
-    void ClearFoundry() { strcpy(foundry, "*"); }
-    void ClearFamily() { strcpy(family, "*"); }
-    void ClearWeight() { strcpy(weight, "*"); }
-    void ClearSlant() { strcpy(slant, "*"); }
-    void ClearWidth() { strcpy(width, "*"); }
-    void ClearPixels() { strcpy(pixels, "*"); }
-    void ClearPoints() { strcpy(points, "*"); }
-    void ClearHorRes() { strcpy(horres, "*"); }
-    void ClearVertRes() { strcpy(vertres, "*"); }
-    void ClearSpacing() { strcpy(spacing, "*"); }
-    void ClearAvgWidth() { strcpy(avgwidth, "*"); }
-    void ClearCharSet() { strcpy(charset, "*"); }
+    void ClearFoundry() { foundry = "*"; }
+    void ClearFamily() { family = "*"; }
+    void ClearWeight() { weight = "*"; }
+    void ClearSlant() { slant = "*"; }
+    void ClearWidth() { width = "*"; }
+    void ClearPixels() { pixels = "*"; }
+    void ClearPoints() { points = "*"; }
+    void ClearHorRes() { horres = "*"; }
+    void ClearVertRes() { vertres = "*"; }
+    void ClearSpacing() { spacing = "*"; }
+    void ClearAvgWidth() { avgwidth = "*"; }
+    void ClearCharSet() { charset = "*"; }
 
-    void SetFoundry(const char* set) { strcpy(foundry, set); }
-    void SetFamily(const char* set) { strcpy(family, set); }
-    void SetWeight(const char* set) { strcpy(weight, set); }
-    void SetSlant(const char* set) { strcpy(slant, set); }
-    void SetWidth(const char* set) { strcpy(width, set); }
-    void SetPixels(const char* set) { strcpy(pixels, set); }
-    void SetPoints(const char* set) { strcpy(points, set); }
-    void SetHorRes(const char* set) { strcpy(horres, set); }
-    void SetVertRes(const char* set) { strcpy(vertres, set); }
-    void SetSpacing(const char* set) { strcpy(spacing, set); }
-    void SetAvgWidth(const char* set) { strcpy(avgwidth, set); }
-    void SetCharSet(const char* set) { strcpy(charset, set); }
+    void SetFoundry(const char* set) { foundry = set; }
+    void SetFamily(const char* set) { family = set; }
+    void SetWeight(const char* set) { weight = set; }
+    void SetSlant(const char* set) { slant = set; }
+    void SetWidth(const char* set) { width = set; }
+    void SetPixels(const char* set) { pixels = set; }
+    void SetPoints(const char* set) { points = set; }
+    void SetHorRes(const char* set) { horres = set; }
+    void SetVertRes(const char* set) { vertres = set; }
+    void SetSpacing(const char* set) { spacing = set; }
+    void SetAvgWidth(const char* set) { avgwidth = set; }
+    void SetCharSet(const char* set) { charset = set; }
 };
 
 FontNameClass::FontNameClass()
@@ -211,56 +314,56 @@ void FontNameClass::Clear()
 {
     FnTrace("FontNameClass::Clear()");
 
-    foundry[0] = '\0';
-    family[0] = '\0';
-    weight[0] = '\0';
-    slant[0] = '\0';
-    width[0] = '\0';
-    adstyl[0] = '\0';
-    pixels[0] = '\0';
-    points[0] = '\0';
-    horres[0] = '\0';
-    vertres[0] = '\0';
-    spacing[0] = '\0';
-    avgwidth[0] = '\0';
-    charset[0] = '\0';
+    foundry.clear();
+    family.clear();
+    weight.clear();
+    slant.clear();
+    width.clear();
+    adstyl.clear();
+    pixels.clear();
+    points.clear();
+    horres.clear();
+    vertres.clear();
+    spacing.clear();
+    avgwidth.clear();
+    charset.clear();
 
     parsed = 0;
 }
 
-int FontNameClass::SetItem(const char* word)
+int FontNameClass::SetItem(const std::string& word)
 {
     FnTrace("FontNameClass::SetItem()");
     int retval = 0;
 
-    if (foundry[0] == '\0')
-        strcpy(foundry, word);
-    else if (family[0] == '\0')
-        strcpy(family, word);
-    else if (weight[0] == '\0')
-        strcpy(weight, word);
-    else if (slant[0] == '\0')
-        strcpy(slant, word);
-    else if (width[0] == '\0')
-        strcpy(width, word);
-    else if (pixels[0] == '\0')
-        strcpy(pixels, word);
-    else if (points[0] == '\0')
-        strcpy(points, word);
-    else if (horres[0] == '\0')
-        strcpy(horres, word);
-    else if (vertres[0] == '\0')
-        strcpy(vertres, word);
-    else if (spacing[0] == '\0')
-        strcpy(spacing, word);
-    else if (avgwidth[0] == '\0')
-        strcpy(avgwidth, word);
-    else if (charset[0] == '\0')
-        strcpy(charset, word);
+    if (foundry.empty())
+        foundry = word;
+    else if (family.empty())
+        family = word;
+    else if (weight.empty())
+        weight = word;
+    else if (slant.empty())
+        slant = word;
+    else if (width.empty())
+        width = word;
+    else if (pixels.empty())
+        pixels = word;
+    else if (points.empty())
+        points = word;
+    else if (horres.empty())
+        horres = word;
+    else if (vertres.empty())
+        vertres = word;
+    else if (spacing.empty())
+        spacing = word;
+    else if (avgwidth.empty())
+        avgwidth = word;
+    else if (charset.empty())
+        charset = word;
     else
     {
-        strcat(charset, "-");
-        strcat(charset, word);
+        charset += "-";
+        charset += word;
     }
     
     return retval;
@@ -270,10 +373,9 @@ int FontNameClass::Parse(const char* fontname)
 {
     FnTrace("FontNameClass::Parse()");
     int retval = 0;
-    int len = strlen(fontname);
+    auto len = strlen(fontname);
     int idx = 0;
-    char word[STRLENGTH];
-    int widx = 0;
+    std::string word;
 
     Clear();
 
@@ -282,27 +384,22 @@ int FontNameClass::Parse(const char* fontname)
         return 1;
 
     idx += 1;  // skip past the first dash
-    word[0] = '\0';
-    widx = 0;
+    word.clear();
     while (idx < len)
     {
         if (fontname[idx] == '-' || fontname[idx] == '\0')
         {
-            word[widx] = '\0';
             SetItem(word);
-            word[0] = '\0';
-            widx = 0;
+            word.clear();
         }
         else
         {
-            word[widx] = fontname[idx];
-            widx += 1;
+            word += fontname[idx];
         }
         idx += 1;
     }
-    if (word[0] != '\0')
+    if (!word.empty())
     {
-        word[widx] = '\0';
         SetItem(word);
     }
 
@@ -316,18 +413,18 @@ void FontNameClass::MakeGeneric()
 {
     FnTrace("FontNameClass::MakeGeneric()");
 
-    strcpy(foundry, "*");
-    strcpy(family, "*");
-    strcpy(weight, "*");
-    strcpy(slant, "*");
-    strcpy(width, "*");
-    strcpy(pixels, "*");
-    strcpy(points, "*");
-    strcpy(horres, "*");
-    strcpy(vertres, "*");
-    strcpy(spacing, "*");
-    strcpy(avgwidth, "*");
-    strcpy(charset, "*");
+    foundry = "*";
+    family = "*";
+    weight = "*";
+    slant = "*";
+    width = "*";
+    pixels = "*";
+    points = "*";
+    horres = "*";
+    vertres = "*";
+    spacing = "*";
+    avgwidth = "*";
+    charset = "*";
 
     parsed = 1;  // close enough
 }
@@ -335,16 +432,16 @@ void FontNameClass::MakeGeneric()
 const char* FontNameClass::ToString()
 {
     FnTrace("FontNameClass::ToString()");
-    static char namestring[STRLONG];
+    static std::string namestring;
 
-    if (foundry[0] == '\0')
+    if (foundry.empty())
         MakeGeneric();
 
-    snprintf(namestring, STRLONG, "-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s",
-             foundry, family, weight, slant, width, adstyl, pixels,
-             points, horres, vertres, spacing, avgwidth, charset);
+    namestring = "-" + foundry + "-" + family + "-" + weight + "-" + slant + "-" + width + 
+                 "-" + adstyl + "-" + pixels + "-" + points + "-" + horres + "-" + vertres + 
+                 "-" + spacing + "-" + avgwidth + "-" + charset;
 
-    return namestring;
+    return namestring.c_str();
 }
 
 
@@ -459,14 +556,15 @@ int      WinHeight = 0;
 int      IsTermLocal = 0;
 int      Connection = 0;
 
-XFontStruct *FontInfo[FONT_SPACE];
-XftFont *XftFontsArr[FONT_SPACE];
-int FontBaseline[FONT_SPACE];
-int FontHeight[FONT_SPACE];
+std::array<XFontStruct*, FONT_SPACE> FontInfo{};
+std::array<XftFont*, FONT_SPACE> XftFontsArr{};
+std::array<int, FONT_SPACE> FontBaseline{};
+std::array<int, FONT_SPACE> FontHeight{};
 
-int ColorTextT[TEXT_COLORS];
-int ColorTextH[TEXT_COLORS];
-int ColorTextS[TEXT_COLORS];
+
+std::array<int, TEXT_COLORS> ColorTextT{};
+std::array<int, TEXT_COLORS> ColorTextH{};
+std::array<int, TEXT_COLORS> ColorTextS{};
 int ColorBE;    // Bottom edge
 int ColorLE;    // Left edge
 int ColorRE;    // Right edge
@@ -487,6 +585,46 @@ Str TermStoreName;
 Str Message;
 
 static XtAppContext App;
+
+// Implementation of X11ResourceManager::cleanup
+void X11ResourceManager::cleanup() {
+    extern GC Gfx;
+    extern Display* Dis;
+    extern Colormap ScrCol;
+    
+    if (Gfx) {
+        XFreeGC(Dis, Gfx);
+        Gfx = nullptr;
+    }
+    
+    // Clean up fonts
+    for (int i = 0; i < FONT_SPACE; ++i) {
+        if (FontInfo[i]) {
+            XFreeFont(Dis, FontInfo[i]);
+            FontInfo[i] = nullptr;
+        }
+        if (XftFontsArr[i]) {
+            XftFontClose(Dis, XftFontsArr[i]);
+            XftFontsArr[i] = nullptr;
+        }
+    }
+    
+    if (ScrCol) {
+        XFreeColormap(Dis, ScrCol);
+        ScrCol = 0;
+    }
+    
+    if (Dis) {
+        XtCloseDisplay(Dis);
+        Dis = nullptr;
+    }
+    
+    if (App) {
+        XtDestroyApplicationContext(App);
+        App = nullptr;
+    }
+}
+
 static Widget       MainShell = NULL;
 static int          ScrNo     = 0;
 static Screen      *ScrPtr    = NULL;
@@ -495,11 +633,11 @@ static int          ScrWidth  = 0;
 static Window       RootWin;
 static int          Colors    = 0;
 static int          MaxColors = 0;
-static Ulong        Palette[256];
+static std::array<Ulong, 256> Palette{};
 static int          ScreenBlankTime = 60;
 static int          UpdateTimerID = 0;
 static int          TouchInputID  = 0;
-static TouchScreen *TScreen = NULL;
+static std::unique_ptr<TouchScreen> TScreen = nullptr;
 static int          ResetTime = 20;
 static TimeInfo     TimeOut, LastInput;
 static int          CalibrateStage = 0;
@@ -509,12 +647,12 @@ static Cursor       CursorBlank = 0;
 static Cursor       CursorWait = 0;
 
 #ifndef NO_MOTIF
-static PageDialog      *PDialog = NULL;
-static ZoneDialog      *ZDialog = NULL;
-static MultiZoneDialog *MDialog = NULL;
-static TranslateDialog *TDialog = NULL;
-static ListDialog      *LDialog = NULL;
-static DefaultDialog   *DDialog = NULL;
+static std::unique_ptr<PageDialog>      PDialog = nullptr;
+static std::unique_ptr<ZoneDialog>      ZDialog = nullptr;
+static std::unique_ptr<MultiZoneDialog> MDialog = nullptr;
+static std::unique_ptr<TranslateDialog> TDialog = nullptr;
+static std::unique_ptr<ListDialog>      LDialog = nullptr;
+static std::unique_ptr<DefaultDialog>   DDialog = nullptr;
 #endif
 
 // So that translations aren't done every time a dialog is opened, we'll
@@ -538,7 +676,7 @@ struct timeval last_mouse_time;
 int last_x_pos = 0;
 int last_y_pos = 0;
 
-CCard *creditcard = NULL;
+std::unique_ptr<CCard> creditcard = nullptr;
 int ConnectionTimeOut = 30;
 
 int allow_iconify = 1;
@@ -558,19 +696,19 @@ int silent_mode   = 0;
 CharQueue BufferOut(QUEUE_SIZE);  // 1 meg buffers
 CharQueue BufferIn(QUEUE_SIZE);
 
-int  SendNow() { return BufferOut.Write(SocketNo); }
-int  WInt8(int val)  { return BufferOut.Put8(val); }
-int  RInt8()         { return BufferIn.Get8(); }
-int  WInt16(int val) { return BufferOut.Put16(val); }
-int  RInt16()        { return BufferIn.Get16(); }
-int  WInt32(int val) { return BufferOut.Put32(val); }
-int  RInt32()        { return BufferIn.Get32(); }
-long WLong(long val) { return BufferOut.PutLong(val); }
-long RLong()         { return BufferIn.GetLong(); }
-long long WLLong(long long val) { return BufferOut.PutLLong(val); }
-long long RLLong()   { return BufferIn.GetLLong(); }
-int  WFlt(Flt val)   { return BufferOut.Put32((int) (val * 100.0)); }
-Flt  RFlt()          { return (Flt) BufferIn.Get32() / 100.0; }
+int  SendNow() noexcept { return BufferOut.Write(SocketNo); }
+int  WInt8(int val) noexcept  { return BufferOut.Put8(val); }
+int  RInt8() noexcept         { return BufferIn.Get8(); }
+int  WInt16(int val) noexcept { return BufferOut.Put16(val); }
+int  RInt16() noexcept        { return BufferIn.Get16(); }
+int  WInt32(int val) noexcept { return BufferOut.Put32(val); }
+int  RInt32() noexcept        { return BufferIn.Get32(); }
+long WLong(long val) noexcept { return BufferOut.PutLong(val); }
+long RLong() noexcept         { return BufferIn.GetLong(); }
+long long WLLong(long long val) noexcept { return BufferOut.PutLLong(val); }
+long long RLLong() noexcept   { return BufferIn.GetLLong(); }
+int  WFlt(Flt val) noexcept   { return BufferOut.Put32((int) (val * 100.0)); }
+Flt  RFlt() noexcept          { return (Flt) BufferIn.Get32() / 100.0; }
 
 int WStr(const char* s, int len)
 {
@@ -610,52 +748,41 @@ Translation::Translation()
 {
     FnTrace("Translation::Translation()");
 
-    next = NULL;
-    fore = NULL;
-    key[0] = '\0';
-    value[0] = '\0';
+    next = nullptr;
+    fore = nullptr;
 }
 
 Translation::Translation(const char* new_key, const char* new_value)
 {
     FnTrace("Translation::Translation()");
 
-    next = NULL;
-    fore = NULL;
-    key[0] = '\0';
-    strncpy(key, new_key, STRLONG);
-    value[0] = '\0';
-    strncpy(value, new_value, STRLONG);
+    next = nullptr;
+    fore = nullptr;
+    key = new_key;
+    value = new_value;
 }
 
 int Translation::Match(const char* check_key)
 {
     FnTrace("Translation::Match()");
 
-    int retval = 0;
-
-    if (strncmp(key, check_key, STRLONG) == 0)
-        retval = 1;
-
-    return retval;
+    return (key == check_key) ? 1 : 0;
 }
 
 int Translation::GetKey(char* store, int maxlen)
 {
     FnTrace("Translation::GetKey()");
 
-    int retval = 1;
-    strncpy(store, key, maxlen);
-    return retval;
+    strncpy(store, key.c_str(), maxlen);
+    return 1;
 }
 
 int Translation::GetValue(char* store, int maxlen)
 {
     FnTrace("Translation::GetValue()");
 
-    int retval = 1;
-    strncpy(store, value, maxlen);
-    return retval;
+    strncpy(store, value.c_str(), maxlen);
+    return 1;
 }
 
 /*********************************************************************
@@ -826,7 +953,7 @@ void ExposeCB(Widget widget, XtPointer client_data, XEvent *event,
 
     static RegionInfo area;
 
-    XExposeEvent *e = (XExposeEvent *) event;
+    XExposeEvent *e = reinterpret_cast<XExposeEvent*>(event);
     if (CalibrateStage)
         return;
 
@@ -846,7 +973,7 @@ void ExposeCB(Widget widget, XtPointer client_data, XEvent *event,
 void UpdateCB(XtPointer client_data, XtIntervalId *timer_id)
 {
     FnTrace("UpdateCB()");
-    int update_time = UPDATE_TIME;
+    int update_time = Constants::UPDATE_TIME;
 
     SystemTime.Set();
     if (Layers.screen_blanked == 0)
@@ -880,8 +1007,7 @@ void TouchScreenCB(XtPointer client_data, int *fid, XtInputId *id)
 {
     FnTrace("TouchScreenCB()");
 
-    TouchScreen *ts = TScreen;
-    if (ts == NULL)
+    if (TScreen == nullptr)
     {
         if (silent_mode > 0)
             return;
@@ -894,11 +1020,11 @@ void TouchScreenCB(XtPointer client_data, int *fid, XtInputId *id)
     int mode = 0;
     int status = 0;
 
-    status = ts->ReadTouch(tx, ty, mode);
+    status = TScreen->ReadTouch(tx, ty, mode);
     if (status == 1 && mode == TOUCH_DOWN && UserInput() == 0)
     {
-        int x = (tx * ScrWidth)  / ts->x_res;
-        int y = ((ts->y_res - 1 - ty) * ScrHeight) / ts->y_res;
+        int x = (tx * ScrWidth)  / TScreen->x_res;
+        int y = ((TScreen->y_res - 1 - ty) * ScrHeight) / TScreen->y_res;
         if (IsTermLocal)
         {
             // XTranslateCoordinates() is a bit slow - only used for local terminal
@@ -962,7 +1088,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
         return;
     }
 
-    static char swipe_buffer[1024];
+    static std::array<char, 1024> swipe_buffer;
     static char last_char    = '\0';
     static int  swipe_char   = 0;
     static int  swipe_stage  = 0;
@@ -972,11 +1098,11 @@ void KeyPressCB(Widget widget, XtPointer client_data,
     if (UserInput())
         return;
 
-    XKeyEvent *e = (XKeyEvent *) event;
+    XKeyEvent *e = reinterpret_cast<XKeyEvent*>(event);
     KeySym key = 0;
-    genericChar buffer[32];
+    std::array<genericChar, 32> buffer;
 
-    int len = XLookupString(e, buffer, 31, &key, NULL);
+    int len = XLookupString(e, buffer.data(), 31, &key, NULL);
     if (len < 0)
         len = 0;
     buffer[len] = '\0';
@@ -1084,7 +1210,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
                 swipe_char = 0;
                 swipe_track2 = 0;
                 WInt8(SERVER_SWIPE);
-                WStr(swipe_buffer);
+                WStr(swipe_buffer.data());
                 SendNow();
             }
             else
@@ -1112,58 +1238,58 @@ void KeyPressCB(Widget widget, XtPointer client_data,
             swipe_buffer[0] = '\0';
             if (randcc == 0)
             {
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS^;??");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS^;??");
             }
             else if (randcc == 1 || randcc == 3 || randcc == 5)
             {  // correct data, tracks 1 and 2
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
-                strcat(swipe_buffer, ";5186900000000121=");
-                strcat(swipe_buffer, "08051015877400050041?");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "^08051011234567890131674486261606288842611?");
+                strcat(swipe_buffer.data(), ";5186900000000121=");
+                strcat(swipe_buffer.data(), "08051015877400050041?");
             }
             else if (randcc == 2)
             {
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "^08051011234567890131674486261606288842611?");
             }
             else if (randcc == 4)
             {
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
-                strcat(swipe_buffer, ";5186900000000121=");
-                strcat(swipe_buffer, "08051015877400050041?");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "^08051011234567890131674486261606288842611?");
+                strcat(swipe_buffer.data(), ";5186900000000121=");
+                strcat(swipe_buffer.data(), "08051015877400050041?");
             }
             else if (randcc == 6)
             {
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "08051015877400050041?");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "08051015877400050041?");
             }
             else if (randcc == 7)
             {
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer, "^08051011234567890131674486261606288842611?");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "^08051011234567890131674486261606288842611?");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "^08051011234567890131674486261606288842611?");
             }
             else if (randcc == 8)
             {
-                strcat(swipe_buffer, "%B5186900000000121^TEST CARD/MONERIS");
+                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
             }
             else if (randcc == 9)
             {
-                strcat(swipe_buffer, "%B\n\n");
+                strcat(swipe_buffer.data(), "%B\n\n");
             }
             fake_cc = 0;
-            printf("Sending Fake Credit Card:  '%s'\n", swipe_buffer);
+            printf("Sending Fake Credit Card:  '%s'\n", swipe_buffer.data());
             WInt8(SERVER_SWIPE);
-            WStr(swipe_buffer);
+            WStr(swipe_buffer.data());
             SendNow();
         }
     }
@@ -1206,7 +1332,7 @@ void MouseClickCB(Widget widget, XtPointer client_data, XEvent *event,
     if (silent_mode > 0)
         return;
 
-    XButtonEvent *btnevent = (XButtonEvent *) event;
+    XButtonEvent *btnevent = reinterpret_cast<XButtonEvent*>(event);
     int code = MOUSE_PRESS;
     int touch = 0;
 
@@ -1250,7 +1376,7 @@ void MouseReleaseCB(Widget widget, XtPointer client_data, XEvent *event,
     if (silent_mode > 0)
         return;
 
-    XButtonEvent *b = (XButtonEvent *) event;
+    XButtonEvent *b = reinterpret_cast<XButtonEvent*>(event);
     Layers.RubberBandOff();
 
     int code = MOUSE_RELEASE;
@@ -1277,7 +1403,7 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
         return;
     }
 
-    XPointerMovedEvent *e = (XPointerMovedEvent *) event;
+    XPointerMovedEvent *e = reinterpret_cast<XPointerMovedEvent*>(event);
     if (UserInput())
         return;
     if (silent_mode > 0)
@@ -1319,7 +1445,7 @@ void CalibrateCB(XtPointer client_data, int *fid, XtInputId *id)
 {
     FnTrace("CalibrateCB()");
 
-    if (TScreen == NULL)
+    if (TScreen == nullptr)
     {
         fprintf(stderr, "CalibrateCB: TScreen is NULL, skipping calibration\n");
         return;
@@ -1376,9 +1502,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
         }
         
         // If reconnection fails, wait before trying again
-        if (failure < 20) // Try up to 20 times before giving up
+        if (failure < Constants::RECONNECT_ATTEMPTS) // Try up to 20 times before giving up
         {
-            sleep(2); // Wait 2 seconds before next attempt
+            sleep(Constants::RECONNECT_DELAY_SEC); // Wait 2 seconds before next attempt
             return;
         }
         
@@ -1796,9 +1922,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             new_zone_translations = 1;
             break;
         case TERM_CC_AUTH:
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->Sale();
@@ -1809,9 +1935,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_PREAUTH:
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->PreAuth();
@@ -1822,9 +1948,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_FINALAUTH:
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->FinishAuth();
@@ -1835,9 +1961,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_VOID:
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->Void();
@@ -1848,9 +1974,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_VOID_CANCEL:
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->VoidCancel();
@@ -1861,9 +1987,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_REFUND:
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->Refund();
@@ -1874,9 +2000,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             }
             break;
         case TERM_CC_REFUND_CANCEL:
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->Read();
                 creditcard->RefundCancel();
@@ -1888,54 +2014,54 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             break;
         case TERM_CC_SETTLE:
             // BatchSettle() should also write the response to vt_main
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->BatchSettle();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_INIT:
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->CCInit();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_TOTALS:
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->Totals();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_DETAILS:
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->Details();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_CLEARSAF:
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->ClearSAF();
                 creditcard->Clear();
             }
             break;
         case TERM_CC_SAFDETAILS:
-            if (creditcard == NULL)
-                creditcard = new CCard;
-            if (creditcard != NULL)
+            if (creditcard == nullptr)
+                creditcard = std::make_unique<CCard>();
+            if (creditcard != nullptr)
             {
                 creditcard->SAFDetails();
                 creditcard->Clear();
@@ -1960,7 +2086,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
         case TERM_SET_SHADOW_BLUR:
             shadow_blur_radius = RInt8();
             break;
-        case TERM_RELOAD_FONTS:
+        case Constants::TERM_RELOAD_FONTS:
             TerminalReloadFonts();
             break;
         }
@@ -2209,33 +2335,33 @@ int SaveToPPM()
 {
     FnTrace("SaveToPPM()");
 
-    genericChar filename[256];
+    std::array<genericChar, 256> filename;
     int no = 0;
 
     // Verify directory exists
-    if (!DoesFileExist(SCREEN_DIR))
+    if (!DoesFileExist(Constants::SCREEN_DIR))
     {
-        mkdir(SCREEN_DIR, 0);
-        chmod(SCREEN_DIR, 0777);
+        mkdir(Constants::SCREEN_DIR, 0);
+        chmod(Constants::SCREEN_DIR, 0777);
     }
     
     // Find first unused filename (starting with 0)
     while (1)
     {
-        sprintf(filename, "%s/vtscreen%d.wd", SCREEN_DIR, no++);
-        if (!DoesFileExist(filename))
+        sprintf(filename.data(), "%s/vtscreen%d.wd", Constants::SCREEN_DIR, no++);
+        if (!DoesFileExist(filename.data()))
             break;
     }
 
     // Log the action
-    genericChar str[256];
-    sprintf(str, "Saving screen image to file '%s'", filename);
-    ReportError(str);
+    std::array<genericChar, 256> str;
+    sprintf(str.data(), "Saving screen image to file '%s'", filename.data());
+    ReportError(str.data());
 
     // Generate the screenshot
     char command[STRLONG];
     snprintf(command, STRLONG, "%s -root -display %s >%s",
-             XWD, DisplayString(Dis), filename);
+             Constants::XWD, DisplayString(Dis), filename.data());
     system(command);
 
     return 0;
@@ -2255,7 +2381,7 @@ int ResetView()
     return 0;
 }
 
-int AddColor(XColor &c)
+int AddColor(XColor &c) noexcept
 {
     FnTrace("AddColor()");
 
@@ -2273,13 +2399,13 @@ int AddColor(XColor &c)
     return c.pixel;
 }
 
-int AddColor(int red, int green, int blue)
+int AddColor(const int red, const int green, const int blue) noexcept
 {
     FnTrace("AddColor()");
 
-    int r = red   % 256;
-    int g = green % 256;
-    int b = blue  % 256;
+    const auto r = red   % 256;
+    const auto g = green % 256;
+    const auto b = blue  % 256;
 
     XColor c;
     c.flags = DoRed | DoGreen | DoBlue;
@@ -2296,7 +2422,7 @@ Pixmap LoadPixmap(const char**image_data)
     Pixmap retxpm = 0;
     int status;
     
-    status = XpmCreatePixmapFromData(Dis, MainWin, (char**)image_data, &retxpm, NULL, NULL);
+    status = XpmCreatePixmapFromData(Dis, MainWin, const_cast<char**>(image_data), &retxpm, NULL, NULL);
     if (status != XpmSuccess)
         fprintf(stderr, "XpmError:  %s\n", XpmGetErrorString(status));
     
@@ -2542,7 +2668,7 @@ int StartTimers()
 
     if (UpdateTimerID == 0)
 	{
-        UpdateTimerID = XtAppAddTimeOut(App, UPDATE_TIME,
+        UpdateTimerID = XtAppAddTimeOut(App, Constants::UPDATE_TIME,
                                         (XtTimerCallbackProc) UpdateCB, NULL);
 	}
 
@@ -2600,22 +2726,20 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     App = XtCreateApplicationContext();
 
     // Clear Structures
-    for (i = 0; i < IMAGE_COUNT; ++i)
-        Texture[i] = 0;
-    for (i = 0; i < FONT_SPACE; ++i)
-        FontInfo[i] = NULL;
+    Texture.fill(0);
+    FontInfo.fill(nullptr);
 
     // Start Display
     genericChar str[STRLENGTH];
     int argc = 1;
     const genericChar* argv[] = {"vt_term"};
     IsTermLocal = is_term_local;
-    Dis = XtOpenDisplay(App, display, NULL, NULL, NULL, 0, &argc,(char**) argv);
-    if (Dis == NULL)
+    Dis = XtOpenDisplay(App, display, NULL, NULL, NULL, 0, &argc, const_cast<char**>(argv));
+    if (Dis == nullptr)
     {
-        sprintf(str, "Can't open display '%s'", display);
-        ReportError(str);
-        return 1;
+        std::string error_msg = "Can't open display '" + std::string(display) + "'";
+        ReportError(error_msg);
+        throw DisplayException(error_msg);
     }
 
     Connection = ConnectionNumber(Dis);
@@ -2635,28 +2759,28 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     WinWidth   = Min(MAX_SCREEN_WIDTH, ScrWidth);
     WinHeight  = Min(MAX_SCREEN_HEIGHT, ScrHeight);
     MaxColors  = 13 + (TEXT_COLORS * 3) + ImageColorsUsed();
-    TScreen    = ts;
+    TScreen.reset(ts);
     RootWin    = RootWindow(Dis, ScrNo);
 
     // Load Fonts
-    for (i = 0; i < FONTS; ++i)
+    for (const auto& fontData : FontData)
     {
-        int f = FontData[i].id;
+        int f = fontData.id;
 
         
-        FontInfo[f] = GetFont(Dis, display, FontData[i].font);
-        if (FontInfo[f] == NULL)
-            return 1;
+        FontInfo[f] = GetFont(Dis, display, fontData.font);
+        if (FontInfo[f] == nullptr)
+            throw FontException("Failed to load font: " + std::string(fontData.font));
         
         // Load Xft font using the correct specification
-        const char* xft_font_name = FontData[i].font;
+        const char* xft_font_name = fontData.font;
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
         
         // If Xft font loading failed, try a simple fallback
-        if (XftFontsArr[f] == NULL) {
+        if (XftFontsArr[f] == nullptr) {
             printf("Failed to load Xft font: %s, trying fallback\n", xft_font_name);
             XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book");
-            if (XftFontsArr[f] == NULL) {
+            if (XftFontsArr[f] == nullptr) {
                 printf("Failed to load fallback font too!\n");
             }
         }
@@ -2680,7 +2804,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
     // Create Window
     int n = 0;
-    Arg args[16];
+    std::array<Arg, 16> args;
     XtSetArg(args[n], "visual",       ScrVis); ++n;
     XtSetArg(args[n], XtNdepth,       ScrDepth); ++n;
     //XtSetArg(args[n], "mappedWhenManaged", False); ++n;
@@ -2696,24 +2820,24 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     XtSetArg(args[n], "mwmDecorations", 0); ++n;
 
     MainShell = XtAppCreateShell("POS", "viewtouch",
-                                 applicationShellWidgetClass, Dis, args, n);
+                                 applicationShellWidgetClass, Dis, args.data(), n);
 
     XtRealizeWidget(MainShell);
     MainWin = XtWindow(MainShell);
 
-    if (ScrDepth <= 8)
-    {
-        if (IsTermLocal ||
-            XAllocColorCells(Dis, ScrCol, False, (Ulong *) NULL, 0,
-                             Palette, MaxColors) == 0)
+        if (ScrDepth <= 8)
         {
-            // Private colormap
-            ScrCol = XCreateColormap(Dis, MainWin, ScrVis, AllocNone);
-            XAllocColorCells(Dis, ScrCol, False, (Ulong *) NULL, 0,
-                             Palette, MaxColors);
-            XSetWindowColormap(Dis, MainWin, ScrCol);
+            if (IsTermLocal ||
+                XAllocColorCells(Dis, ScrCol, False, static_cast<Ulong*>(nullptr), 0,
+                                 Palette.data(), MaxColors) == 0)
+            {
+                // Private colormap
+                ScrCol = XCreateColormap(Dis, MainWin, ScrVis, AllocNone);
+                XAllocColorCells(Dis, ScrCol, False, static_cast<Ulong*>(nullptr), 0,
+                                 Palette.data(), MaxColors);
+                XSetWindowColormap(Dis, MainWin, ScrCol);
+            }
         }
-    }
 
     // General Colors
     ColorTE  = AddColor(240, 225, 205);  // Top Edge
@@ -2778,14 +2902,14 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         l->ZoneText("Please Wait", 0, 0, WinWidth, WinHeight,
                     COLOR_WHITE, FONT_TIMES_34, ALIGN_CENTER, use_embossed_text);
 
-        genericChar tmp[256];
+        std::array<genericChar, 256> tmp;
         if (term_hardware == 1)
-            strcpy(tmp, "NCD Explora");
+            strcpy(tmp.data(), "NCD Explora");
         else if (term_hardware == 2)
-            strcpy(tmp, "NeoStation");
+            strcpy(tmp.data(), "NeoStation");
         else
-            strcpy(tmp, "Server");
-        l->ZoneText(tmp, 0, WinHeight - 30, WinWidth - 20, 30,
+            strcpy(tmp.data(), "Server");
+        l->ZoneText(tmp.data(), 0, WinHeight - 30, WinWidth - 20, 30,
                     COLOR_WHITE, FONT_TIMES_20, ALIGN_RIGHT, use_embossed_text);
         Layers.Add(l);
     }
@@ -2822,12 +2946,12 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
 #ifndef NO_MOTIF
     // Setup Dialogs (obsolete)
-    PDialog = new PageDialog(MainShell);
-    DDialog = new DefaultDialog(MainShell);
-    ZDialog = new ZoneDialog(MainShell);
-    MDialog = new MultiZoneDialog(MainShell);
-    TDialog = new TranslateDialog(MainShell);
-    LDialog = new ListDialog(MainShell);
+    PDialog = std::make_unique<PageDialog>(MainShell);
+    DDialog = std::make_unique<DefaultDialog>(MainShell);
+    ZDialog = std::make_unique<ZoneDialog>(MainShell);
+    MDialog = std::make_unique<MultiZoneDialog>(MainShell);
+    TDialog = std::make_unique<TranslateDialog>(MainShell);
+    LDialog = std::make_unique<ListDialog>(MainShell);
 #endif
 
     // Start terminal
@@ -2892,10 +3016,10 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     //Boolean okay;
     XEvent event;
     int event_count = 0;
-    int max_events_per_second = 1000; // Prevent infinite loops
+    int max_events_per_second = Constants::MAX_EVENTS_PER_SECOND; // Prevent infinite loops
     auto last_time = std::chrono::steady_clock::now();
     int consecutive_errors = 0;
-    const int max_consecutive_errors = 10;
+    const int max_consecutive_errors = Constants::MAX_CONSECUTIVE_ERRORS;
     
     for (;;)
     {
@@ -2908,7 +3032,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
                 fprintf(stderr, "No socket connection and no input handler, exiting gracefully\n");
                 break;
             }
-            usleep(10000); // Sleep 10ms to prevent busy waiting
+            usleep(Constants::SLEEP_TIME_MS); // Sleep 10ms to prevent busy waiting
             continue;
         }
         
@@ -2930,7 +3054,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
             }
             
             // Small delay before retrying
-            usleep(100000); // 100ms
+            usleep(Constants::RETRY_DELAY_MS); // 100ms
             continue;
         }
         
@@ -2969,7 +3093,7 @@ int ReconnectToServer()
         return 1;
     }
     
-    if (connect(SocketNo, (struct sockaddr *) &server_adr, SUN_LEN(&server_adr)) < 0)
+    if (connect(SocketNo, reinterpret_cast<struct sockaddr*>(&server_adr), SUN_LEN(&server_adr)) < 0)
     {
         fprintf(stderr, "ReconnectToServer: Can't connect to server (error %d)\n", errno);
         close(SocketNo);
@@ -3029,33 +3153,12 @@ int KillTerm()
         XtDestroyWidget(MainShell);
     }
 #ifndef NO_MOTIF
-    if (ZDialog)
-    {
-        delete ZDialog;
-        ZDialog = NULL;
-    }
-    if (MDialog)
-    {
-        delete MDialog;
-        MDialog = NULL;
-    }
-    if (PDialog)
-    {
-        delete PDialog;
-        PDialog = NULL;
-    }
-    if (TDialog)
-    {
-        delete TDialog;
-        TDialog = NULL;
-    }
-    if (LDialog)
-    {
-        delete LDialog;
-        LDialog = NULL;
-    }
-    delete DDialog;
-    DDialog = NULL;
+    ZDialog.reset();
+    MDialog.reset();
+    PDialog.reset();
+    TDialog.reset();
+    LDialog.reset();
+    DDialog.reset();
 #endif
     if (ShadowPix)
     {
@@ -3064,11 +3167,11 @@ int KillTerm()
     }
     Layers.Purge();
 
-    for (i = 0; i < IMAGE_COUNT; ++i)
-        if (Texture[i])
+    for (auto& texture : Texture)
+        if (texture)
         {
-            XFreePixmap(Dis, Texture[i]);
-            Texture[i] = 0;
+            XFreePixmap(Dis, texture);
+            texture = 0;
         }
 
     if (CursorPointer)
@@ -3093,19 +3196,19 @@ int KillTerm()
         Gfx = NULL;
     }
 
-    for (i = 1; i < FONT_SPACE; ++i)
-        if (FontInfo[i])
+    for (auto& font : FontInfo)
+        if (font)
         {
-            XFreeFont(Dis, FontInfo[i]);
-            FontInfo[i] = NULL;
+            XFreeFont(Dis, font);
+            font = nullptr;
         }
 
     // Clean up Xft fonts
-    for (i = 1; i < FONT_SPACE; ++i)
-        if (XftFontsArr[i])
+    for (auto& xftFont : XftFontsArr)
+        if (xftFont)
         {
-            XftFontClose(Dis, XftFontsArr[i]);
-            XftFontsArr[i] = NULL;
+            XftFontClose(Dis, xftFont);
+            xftFont = nullptr;
         }
 
     if (ScrCol)
@@ -3131,7 +3234,7 @@ int KillTerm()
  * External Data Functions
  ********************************************************************/
 
-XFontStruct *GetFontInfo(int font_id)
+XFontStruct *GetFontInfo(const int font_id) noexcept
 {
     FnTrace("GetFontInfo()");
 
@@ -3141,7 +3244,7 @@ XFontStruct *GetFontInfo(int font_id)
         return FontInfo[FONT_DEFAULT];
 }
 
-int GetFontBaseline(int font_id)
+int GetFontBaseline(const int font_id) noexcept
 {
     FnTrace("GetFontBaseline()");
 
@@ -3153,7 +3256,7 @@ int GetFontBaseline(int font_id)
         return FontBaseline[FONT_DEFAULT];
 }
 
-int GetFontHeight(int font_id)
+int GetFontHeight(const int font_id) noexcept
 {
     FnTrace("GetFontHeight()");
 
@@ -3168,7 +3271,7 @@ int GetFontHeight(int font_id)
     return retval;
 }
 
-Pixmap GetTexture(int texture)
+Pixmap GetTexture(const int texture) noexcept
 {
     FnTrace("GetTexture()");
 
@@ -3178,7 +3281,7 @@ Pixmap GetTexture(int texture)
         return Texture[0]; // default texture
 }
 
-XftFont *GetXftFontInfo(int font_id)
+XftFont *GetXftFontInfo(const int font_id) noexcept
 {
     FnTrace("GetXftFontInfo()");
 
@@ -3192,17 +3295,17 @@ XftFont *GetXftFontInfo(int font_id)
 void TerminalReloadFonts()
 {
     // Free existing Xft fonts
-    for (int i = 0; i < FONTS; ++i) {
-        int f = FontData[i].id;
+    for (const auto& fontData : FontData) {
+        int f = fontData.id;
         if (XftFontsArr[f]) {
             XftFontClose(Dis, XftFontsArr[f]);
-            XftFontsArr[f] = NULL;
+            XftFontsArr[f] = nullptr;
         }
     }
     // Reload fonts
-    for (int i = 0; i < FONTS; ++i) {
-        int f = FontData[i].id;
-        const char* xft_font_name = FontData[i].font;
+    for (const auto& fontData : FontData) {
+        int f = fontData.id;
+        const char* xft_font_name = fontData.font;
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
         if (XftFontsArr[f]) {
             FontHeight[f] = XftFontsArr[f]->ascent + XftFontsArr[f]->descent;
@@ -3216,12 +3319,12 @@ void TerminalReloadFonts()
     // Update all layer objects (buttons) to use the new fonts
     // This ensures toolbar buttons and other layer objects get updated fonts
     Layer *layer = Layers.Head();
-    while (layer != NULL) {
+    while (layer != nullptr) {
         LayerObject *obj = layer->buttons.Head();
-        while (obj != NULL) {
+        while (obj != nullptr) {
             // Try to cast to LO_PushButton to check if it's a button
             LO_PushButton *button = dynamic_cast<LO_PushButton*>(obj);
-            if (button != NULL) {
+            if (button != nullptr) {
                 // Update button font to use the current font family
                 // The font family will change while keeping the same size
                 // Force redraw of this button
