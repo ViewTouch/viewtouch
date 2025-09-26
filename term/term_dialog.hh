@@ -23,6 +23,7 @@
 
 #include <Xm/Xm.h>
 #include "basic.hh"
+#include <vector>
 
 
 /**** Types ****/
@@ -54,15 +55,17 @@ public:
     Widget  option;
     Widget  mlabel; 
     Widget  menu;
-    Widget *choice_list;
+    std::vector<Widget> choices;
     int     choice_count;
-    int    *value_list;
+    std::vector<int> value_list;
     Widget  no_change_widget;
     int     no_change_value;
 
-    // Constructor
     DialogMenu();
-    // Destructor
+    DialogMenu(const DialogMenu&) = delete;
+    DialogMenu& operator=(const DialogMenu&) = delete;
+    DialogMenu(DialogMenu&&) noexcept = default;
+    DialogMenu& operator=(DialogMenu&&) noexcept = default;
     ~DialogMenu();
 
     // Member Functions
@@ -81,19 +84,21 @@ public:
     Widget  container;
     Widget  option1;
     Widget  option2;
-    Widget *choice1_list;
-    Widget *choice2_list;
+    std::vector<Widget> choices1;
+    std::vector<Widget> choices2;
     int     choice1_count;
     int     choice2_count;
-    int    *value1_list;
-    int    *value2_list;
+    std::vector<int> value1_list;
+    std::vector<int> value2_list;
     Widget  no_change_widget1;
     Widget  no_change_widget2;
     int     no_change_value;
 
-    // Constructor
     DialogDoubleMenu();
-    // Destructor
+    DialogDoubleMenu(const DialogDoubleMenu&) = delete;
+    DialogDoubleMenu& operator=(const DialogDoubleMenu&) = delete;
+    DialogDoubleMenu(DialogDoubleMenu&&) noexcept = default;
+    DialogDoubleMenu& operator=(DialogDoubleMenu&&) noexcept = default;
     ~DialogDoubleMenu();
 
     int Init(Widget parget, const genericChar* label, const genericChar* *option1_name, int *option1_value,

@@ -24,6 +24,7 @@
 #include "term_view.hh"
 #include "list_utility.hh"
 #include <X11/Xft/Xft.h>
+#include <functional>
 
 
 /**** Types ****/
@@ -59,6 +60,10 @@ class LayerObjectList
 public:
     // Constructor
     LayerObjectList();
+    LayerObjectList(const LayerObjectList&) = delete;
+    LayerObjectList& operator=(const LayerObjectList&) = delete;
+    LayerObjectList(LayerObjectList&&) noexcept = default;
+    LayerObjectList& operator=(LayerObjectList&&) noexcept = default;
 
     // Member Functions
     int Add(LayerObject *lo);
@@ -66,6 +71,10 @@ public:
     int Purge();
     LayerObject *FindByID(int id);
     LayerObject *FindByPoint(int x, int y);
+    
+    // Modern versions using std::optional
+    std::optional<std::reference_wrapper<LayerObject>> FindByIDOptional(int id) noexcept;
+    std::optional<std::reference_wrapper<LayerObject>> FindByPointOptional(int x, int y) noexcept;
 
     int Render(Layer *l);
     int Layout(Layer *l);
@@ -193,6 +202,10 @@ public:
 
     // Constructor
     LayerList();
+    LayerList(const LayerList&) = delete;
+    LayerList& operator=(const LayerList&) = delete;
+    LayerList(LayerList&&) noexcept = default;
+    LayerList& operator=(LayerList&&) noexcept = default;
     // Destructor
     ~LayerList() { Purge(); }
 
@@ -204,6 +217,10 @@ public:
     int Purge();
     Layer *FindByPoint(int x, int y);
     Layer *FindByID(int id);
+    
+    // Modern versions using std::optional
+    std::optional<std::reference_wrapper<Layer>> FindByPointOptional(int x, int y) noexcept;
+    std::optional<std::reference_wrapper<Layer>> FindByIDOptional(int id) noexcept;
 
     int SetScreenBlanker(int set);
     int SetScreenImage(int set);

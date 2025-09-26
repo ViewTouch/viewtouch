@@ -34,6 +34,8 @@
 #include <Xm/Text.h>
 #include <Xm/ToggleB.h>
 #include <X11/keysym.h>
+#include <vector>
+#include <memory>
 #include "labels.hh"
 #include "image_data.hh"
 #include "sales.hh"
@@ -223,19 +225,19 @@ int DialogEntry::Get(Flt &result)
  ********************************************************************/
 
 DialogMenu::DialogMenu()
+    : container(nullptr)
+    , option(nullptr)
+    , mlabel(nullptr)
+    , menu(nullptr)
+    , choice_count(0)
+    , no_change_widget(nullptr)
+    , no_change_value(0)
 {
-    choice_list  = NULL;
-    choice_count = 0;
-    value_list   = NULL;
-    no_change_widget = 0;
-    no_change_value  = 0;
-    container = NULL;
 }
 
 DialogMenu::~DialogMenu()
 {
-    if (choice_list)
-        delete [] choice_list;
+    container = NULL;
 }
 
 // Member Functions
@@ -249,11 +251,9 @@ int DialogMenu::Clear()
     XtDestroyWidget(mlabel);
     XtDestroyWidget(menu);
     XtDestroyWidget(option);
-    if (choice_list)
-    {
-        delete [] choice_list;
-        choice_list = NULL;
-    }
+    choices.clear();
+    value_list.clear();
+    choice_count = 0;
     return 0;
 }
 
@@ -294,9 +294,9 @@ int DialogMenu::Init(Widget parent, const char* label, const char* *option_name,
     while (option_name[count])
         ++count;
 
+    choices.assign(count, nullptr);
+    value_list.assign(option_value, option_value + count);
     choice_count = count;
-    choice_list  = new Widget[count];
-    value_list   = option_value;
 
     if (no_change_value)
     {
@@ -310,9 +310,9 @@ int DialogMenu::Init(Widget parent, const char* label, const char* *option_name,
     for (int i = 0; i < count; ++i)
     {
         name = MasterTranslations.GetTranslation(option_name[i]);
-        choice_list[i] = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, menu, NULL);
+        choices[i] = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, menu, NULL);
         if (option_cb)
-            XtAddCallback(choice_list[i], XmNactivateCallback,
+            XtAddCallback(choices[i], XmNactivateCallback,
                           (XtCallbackProc) option_cb, (XtPointer) client_data);
     }
 
@@ -342,8 +342,8 @@ int DialogMenu::Set(int value)
         XtVaSetValues(option, XmNmenuHistory, no_change_widget, NULL);
     else
     {
-        int idx = CompareList(value, value_list, 0);
-        XtVaSetValues(option, XmNmenuHistory, choice_list[idx], NULL);
+        int idx = CompareList(value, value_list.data(), 0);
+        XtVaSetValues(option, XmNmenuHistory, choices[idx], NULL);
     }
     return 0;
 }
@@ -367,7 +367,7 @@ int DialogMenu::Value()
         return no_change_value;
 
     for (int i = 0; i < choice_count; ++i)
-        if (choice == choice_list[i])
+        if (choice == choices[i])
             return value_list[i];
     return -1;
 }
@@ -376,24 +376,19 @@ int DialogMenu::Value()
  * DialogDoubleMenu Class
  ********************************************************************/
 DialogDoubleMenu::DialogDoubleMenu()
+    : container(nullptr)
+    , option1(nullptr)
+    , option2(nullptr)
+    , choice1_count(0)
+    , choice2_count(0)
+    , no_change_widget1(nullptr)
+    , no_change_widget2(nullptr)
+    , no_change_value(0)
 {
-    choice1_list      = NULL;
-    choice1_count     = 0;
-    choice2_list      = NULL;
-    choice2_count     = 0;
-    value1_list       = NULL;
-    value2_list       = NULL;
-    no_change_widget1 = 0;
-    no_change_widget2 = 0;
-    no_change_value   = 0;
 }
 
 DialogDoubleMenu::~DialogDoubleMenu()
 {
-    if (choice1_list)
-        delete [] choice1_list;
-    if (choice2_list)
-        delete [] choice2_list;
 }
 
 // Member Functions
@@ -436,16 +431,16 @@ int DialogDoubleMenu::Init(Widget parent, const char* label,
     int count = 0;
     while (op1_name[count])
         ++count;
+    choices1.assign(count, nullptr);
+    value1_list.assign(op1_value, op1_value + count);
     choice1_count = count;
-    choice1_list  = new Widget[count];
-    value1_list   = op1_value;
 
     count = 0;
     while (op2_name[count])
         ++count;
+    choices2.assign(count, nullptr);
+    value2_list.assign(op2_value, op2_value + count);
     choice2_count = count;
-    choice2_list  = new Widget[count];
-    value2_list   = op2_value;
 
     if (no_change_value)
     {
@@ -456,10 +451,10 @@ int DialogDoubleMenu::Init(Widget parent, const char* label,
     }
 
     for (i = 0; i < choice1_count; ++i)
-        choice1_list[i] = XtVaCreateManagedWidget(op1_name[i],
+        choices1[i] = XtVaCreateManagedWidget(op1_name[i],
                                                   xmPushButtonWidgetClass, menu1, NULL);
     for (i = 0; i < choice2_count; ++i)
-        choice2_list[i] = XtVaCreateManagedWidget(op2_name[i],
+        choices2[i] = XtVaCreateManagedWidget(op2_name[i],
                                                   xmPushButtonWidgetClass, menu2, NULL);
 
     XtManageChild(option1);
@@ -490,16 +485,16 @@ int DialogDoubleMenu::Set(int v1, int v2)
         XtVaSetValues(option1, XmNmenuHistory, no_change_widget1, NULL);
     else
     {
-        idx = CompareList(v1, value1_list, 0);
-        XtVaSetValues(option1, XmNmenuHistory, choice1_list[idx], NULL);
+        idx = CompareList(v1, value1_list.data(), 0);
+        XtVaSetValues(option1, XmNmenuHistory, choices1[idx], NULL);
     }
 
     if (no_change_widget2 && v2 == no_change_value)
         XtVaSetValues(option2, XmNmenuHistory, no_change_widget2, NULL);
     else
     {
-        idx = CompareList(v2, value2_list, 0);
-        XtVaSetValues(option2, XmNmenuHistory, choice2_list[idx], NULL);
+        idx = CompareList(v2, value2_list.data(), 0);
+        XtVaSetValues(option2, XmNmenuHistory, choices2[idx], NULL);
     }
     return 0;
 }
@@ -520,7 +515,7 @@ int DialogDoubleMenu::Value(int &v1, int &v2)
     else
     {
         for (int i = 0; i < choice1_count; ++i)
-            if (choice == choice1_list[i])
+            if (choice == choices1[i])
             {
                 v1 = value1_list[i];
                 break;
@@ -535,7 +530,7 @@ int DialogDoubleMenu::Value(int &v1, int &v2)
     else
     {
         for (int i = 0; i < choice2_count; ++i)
-            if (choice == choice2_list[i])
+            if (choice == choices2[i])
             {
                 v2 = value2_list[i];
                 break;

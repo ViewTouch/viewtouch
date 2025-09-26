@@ -15,6 +15,7 @@
 #include <X11/Xft/Xft.h>
 #include <array>
 #include <string>
+#include <optional>
 
 // Constants
 #define TEXT_COLORS 21

@@ -1515,11 +1515,8 @@ Layer *LayerList::FindByPoint(int x, int y)
 {
     FnTrace("LayerList::FindByPoint()");
 
-    for (Layer *l = list.Tail(); l != NULL; l = l->fore)
-    {
-        if (l->IsPointIn(x, y))
-            return l;
-    }
+    if (auto result = FindByPointOptional(x, y))
+        return &result->get();
 
     return NULL;
 }
@@ -1528,16 +1525,39 @@ Layer *LayerList::FindByID(int id)
 {
     FnTrace("LayerList::FindByID()");
 
-    Layer *l;
+    if (auto result = FindByIDOptional(id))
+        return &result->get();
 
-    for (l = list.Head(); l != NULL; l = l->next)
-        if (l->id == id)
-            return l;
-
-    for (l = inactive.Head(); l != NULL; l = l->next)
-        if (l->id == id)
-            return l;
     return NULL;
+}
+
+// Modern versions using std::optional
+std::optional<std::reference_wrapper<Layer>> LayerList::FindByPointOptional(int x, int y) noexcept
+{
+    FnTrace("LayerList::FindByPointOptional()");
+
+    for (Layer *l = list.Tail(); l != NULL; l = l->fore)
+    {
+        if (l->IsPointIn(x, y))
+            return *l;
+    }
+
+    return std::nullopt;
+}
+
+std::optional<std::reference_wrapper<Layer>> LayerList::FindByIDOptional(int id) noexcept
+{
+    FnTrace("LayerList::FindByIDOptional()");
+
+    for (Layer *l = list.Head(); l != NULL; l = l->next)
+        if (l->id == id)
+            return *l;
+
+    for (Layer *l = inactive.Head(); l != NULL; l = l->next)
+        if (l->id == id)
+            return *l;
+            
+    return std::nullopt;
 }
 
 int LayerList::SetScreenBlanker(int set)
@@ -2047,14 +2067,36 @@ LayerObject *LayerObjectList::FindByPoint(int x, int y)
 {
     FnTrace("LayerObjectList::FindByPoint()");
 
+    if (auto result = FindByPointOptional(x, y))
+        return &result->get();
+    return NULL;
+}
+
+// Modern versions using std::optional
+std::optional<std::reference_wrapper<LayerObject>> LayerObjectList::FindByIDOptional(int id) noexcept
+{
+    FnTrace("LayerObjectList::FindByIDOptional()");
+
+    for (LayerObject *l = list.Tail(); l != NULL; l = l->fore)
+        if (l->id == id)
+            return *l;
+            
+    return std::nullopt;
+}
+
+std::optional<std::reference_wrapper<LayerObject>> LayerObjectList::FindByPointOptional(int x, int y) noexcept
+{
+    FnTrace("LayerObjectList::FindByPointOptional()");
+
     for (LayerObject *l = list.Tail(); l != NULL; l = l->fore)
     {
         if (l->IsPointIn(x, y))
         {
-            return l;
+            return *l;
         }
     }
-    return NULL;
+    
+    return std::nullopt;
 }
 
 int LayerObjectList::Render(Layer *l)

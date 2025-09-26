@@ -18,6 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **RAII Patterns**: Enhanced resource management with custom `FileDescriptor` wrapper and improved exception hierarchy
   - **Modern Casting**: Replaced C-style casts with `static_cast`, `const_cast`, and `reinterpret_cast`
   - **String Handling**: Improved string management with `std::string` and proper move semantics
+  - **Optional Ownership**: Replaced raw pointer lookups in `LayerList`/`LayerObjectList` with `std::optional<std::reference_wrapper<...>>` helpers while keeping legacy APIs intact
+  - **Dialog Menu Containers**: Eliminated manual `new[]/delete[]` for dialog menu widgets by using `std::vector`, defaulted move semantics, and blocked accidental copying
+  - **Intrusive Lists**: Tightened `DList` semantics by deleting copy constructors/assignments and enabling move support to prevent misuse
 
 ### Added
 - **QuickBooks CSV Export Feature**
