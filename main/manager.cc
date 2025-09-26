@@ -89,7 +89,7 @@ int ReleaseYear  = 1998;
 int ReleaseMonth = 10;
 int ReleaseDay   = 20;
 
-Control     *MasterControl = NULL;
+Control     *MasterControl = nullptr;
 int          MachineID = 0;
 
 constexpr int CALLCTR_ERROR_NONE        = 0;
@@ -106,22 +106,22 @@ constexpr int CALLCTR_STATUS_FAILED     = 2;
  * Calendar Values
  *************************************************************/
 const char* DayName[] = { "Sunday", "Monday", "Tuesday", "Wednesday", 
-                    "Thursday", "Friday", "Saturday", NULL};
+                    "Thursday", "Friday", "Saturday", nullptr};
 
-const char* ShortDayName[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", NULL};
+const char* ShortDayName[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", nullptr};
 
 const char* MonthName[] = { "January", "February", "March", "April", 
                       "May", "June", "July", "August", "September", 
-                      "October", "November", "December", NULL};
+                      "October", "November", "December", nullptr};
 
 const char* ShortMonthName[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", NULL};
+                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", nullptr};
 
 /*************************************************************
  * Terminal Type values
  *************************************************************/
 const char* TermTypeName[] = { 	"Normal", "Order Only", "Bar", "Bar2", 
-                            "Fast Food", "Self Order", "Kitchen Video", "Kitchen Video2", NULL};
+                            "Fast Food", "Self Order", "Kitchen Video", "Kitchen Video2", nullptr};
 
 int TermTypeValue[] = { TERMINAL_NORMAL, TERMINAL_ORDER_ONLY,
                         TERMINAL_BAR, TERMINAL_BAR2,
@@ -133,7 +133,7 @@ int TermTypeValue[] = { TERMINAL_NORMAL, TERMINAL_ORDER_ONLY,
  *************************************************************/
 const char* PrinterTypeName[] = { "Kitchen 1", "Kitchen 2", "Kitchen 3", "Kitchen 4",
                             "Bar 1", "Bar 2", "Expediter", "Report",
-                            "Credit Receipt", "Remote Order", NULL};
+                            "Credit Receipt", "Remote Order", nullptr};
 
 int PrinterTypeValue[] = { PRINTER_KITCHEN1, PRINTER_KITCHEN2,
                            PRINTER_KITCHEN3, PRINTER_KITCHEN4,
@@ -146,13 +146,13 @@ int PrinterTypeValue[] = { PRINTER_KITCHEN1, PRINTER_KITCHEN2,
  * Module Globals
  *************************************************************/
 static XtAppContext App = 0;
-static Display     *Dis = NULL;
+static Display     *Dis = nullptr;
 static int          ScrNo = 0;
-static XFontStruct *FontInfo[32];
+static XFontStruct *FontInfo[32] = {nullptr};
 static int          FontWidth[32];
 static int          FontHeight[32];
 static int          FontBaseline[32];
-static XftFont      *XftFontsArr[32];
+static XftFont      *XftFontsArr[32] = {nullptr};
 int                 LoaderSocket = 0;
 int                 OpenTermPort = 10001;
 int                 OpenTermSocket = -1;
@@ -262,36 +262,46 @@ Printer *SetPrinter(const genericChar* printer_description);
 int      ReadViewTouchConfig();
 int      ReloadFonts();  // Function to reload fonts when global defaults change
 
-genericChar* GetMachineName(genericChar* str = NULL, int len = STRLENGTH)
+genericChar* GetMachineName(genericChar* str = nullptr, int len = STRLENGTH)
 {
     FnTrace("GetMachineName()");
+    if (len <= 0) {
+        return nullptr; // invalid parameter
+    }
+    
     struct utsname uts;
     static genericChar buffer[STRLENGTH];
-    if (str == NULL)
+    if (str == nullptr)
         str = buffer;
 
-    if (uname(&uts) == 0)
-        strncpy(str, uts.nodename, STRLENGTH);
-    else
+    if (uname(&uts) == 0) {
+        strncpy(str, uts.nodename, len - 1);
+        str[len - 1] = '\0'; // ensure null termination
+    } else {
         str[0] = '\0';
+    }
     return str;
 }
 
 void ViewTouchError(const char* message, int do_sleep)
 {
     FnTrace("ViewTouchError()");
+    if (!message) {
+        return; // invalid parameter
+    }
+    
     genericChar errormsg[STRLONG];
     int sleeplen = (debug_mode ? 1 : 5);
     Settings *settings = &(MasterSystem->settings);
 
     if (settings->expire_message1.empty())
     {
-        snprintf(errormsg, STRLONG, "%s\\%s\\%s", message,
+        snprintf(errormsg, sizeof(errormsg), "%s\\%s\\%s", message,
              "Please contact support.", " 541-515-5913");
     }
     else
     {
-        snprintf(errormsg, STRLONG, "%s\\%s\\%s\\%s\\%s", message,
+        snprintf(errormsg, sizeof(errormsg), "%s\\%s\\%s\\%s\\%s", message,
                  settings->expire_message1.Value(),
                  settings->expire_message2.Value(),
                  settings->expire_message3.Value(),
@@ -470,7 +480,8 @@ int main(int argc, genericChar* argv[])
             printf("1\n");
             return 0;
         }
-        strcpy(socket_file, argv[1]);
+        strncpy(socket_file, argv[1], sizeof(socket_file) - 1);
+        socket_file[sizeof(socket_file) - 1] = '\0'; // ensure null termination
     }
 
     LoaderSocket = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -482,7 +493,8 @@ int main(int argc, genericChar* argv[])
 
     struct sockaddr_un server_adr;
     server_adr.sun_family = AF_UNIX;
-    strcpy(server_adr.sun_path, socket_file);
+    strncpy(server_adr.sun_path, socket_file, sizeof(server_adr.sun_path) - 1);
+    server_adr.sun_path[sizeof(server_adr.sun_path) - 1] = '\0'; // ensure null termination
     sleep(1);
     if (connect(LoaderSocket, (struct sockaddr *) &server_adr,
                 SUN_LEN(&server_adr)) < 0)
@@ -498,9 +510,9 @@ int main(int argc, genericChar* argv[])
     int notrace = 0;
     genericChar data_path[256] = "\0";
 
-    genericChar buffer[1024];
-    genericChar* c = buffer;
-    const genericChar* buffer_end = buffer + sizeof(buffer) - 1; // Leave space for null terminator
+    std::array<genericChar, 1024> buffer{};
+    genericChar* c = buffer.data();
+    const genericChar* buffer_end = buffer.data() + buffer.size() - 1; // Leave space for null terminator
     
     for (;;)
     {
@@ -516,31 +528,31 @@ int main(int argc, genericChar* argv[])
         {
             if (*c == '\0')
             {
-                c = buffer;
-                if (strcmp(buffer, "done") == 0)
+                c = buffer.data();
+                if (strcmp(buffer.data(), "done") == 0)
                 {
                     break;
                 }
-                else if (strncmp(buffer, "datapath ", 9) == 0)
+                else if (strncmp(buffer.data(), "datapath ", 9) == 0)
                 {
                     // Critical fix: Use strncpy with bounds checking
                     strncpy(data_path, &buffer[9], sizeof(data_path) - 1);
                     data_path[sizeof(data_path) - 1] = '\0';
                 }
-                else if (strcmp(buffer, "netoff") == 0)
+                else if (strcmp(buffer.data(), "netoff") == 0)
                 {
                     use_net = 0;
                 }
-                else if (strcmp(buffer, "purge") == 0)
+                else if (strcmp(buffer.data(), "purge") == 0)
                 {
                     purge = 1;
                 }
-                else if (strncmp(buffer, "display ", 8) == 0)
+                else if (strncmp(buffer.data(), "display ", 8) == 0)
                 {
                     strncpy(displaystr, &buffer[8], STRLENGTH);
                     displaystr[STRLENGTH - 1] = '\0'; // Ensure null termination
                 }
-                else if (strcmp(buffer, "notrace") == 0)
+                else if (strcmp(buffer.data(), "notrace") == 0)
                 {
                     notrace = 1;
                 }
@@ -1544,8 +1556,12 @@ int KillTask(const char* name)
 char* PriceFormat(const Settings* settings, int price, int use_sign, int use_comma, genericChar* str)
 {
     FnTrace("PriceFormat()");
+    if (!settings) {
+        return nullptr; // invalid parameter
+    }
+    
     static std::array<char, 32> buffer{};
-    if (str == NULL)
+    if (str == nullptr)
         str = buffer.data();
 
     genericChar point = '.';
@@ -1595,8 +1611,12 @@ char* PriceFormat(const Settings* settings, int price, int use_sign, int use_com
 int ParsePrice(const char* source, int *value)
 {
     FnTrace("ParsePrice()");
-    genericChar str[256];
-    genericChar* c = str;
+    if (!source) {
+        return 1; // invalid parameter
+    }
+    
+    std::array<genericChar, 256> str{};
+    genericChar* c = str.data();
     int numformat = MasterSystem->settings.number_format;
 
     if (*source == '-')
@@ -1604,7 +1624,7 @@ int ParsePrice(const char* source, int *value)
         *c++ = *source;
         ++source;
     }
-    while (*source)
+    while (*source && (c - str.data()) < static_cast<int>(str.size() - 1))
     {
         if (*source >= '0' && *source <= '9')
             *c++ = *source;
@@ -1617,7 +1637,7 @@ int ParsePrice(const char* source, int *value)
     *c = '\0';
 
     Flt val;
-    if (sscanf(str, "%lf", &val) != 1)
+    if (sscanf(str.data(), "%lf", &val) != 1)
         return 1;
     int v = FltToPrice(val);
     if (value)
@@ -1866,7 +1886,7 @@ Control::Control()
 int Control::Add(Terminal *term)
 {
     FnTrace("Control::Add(Terminal)");
-    if (term == NULL)
+    if (term == nullptr)
         return 1;
 
     term->system_data = MasterSystem.get();
@@ -1879,7 +1899,7 @@ int Control::Add(Printer *p)
 {
     FnTrace("Control::Add(Printer)");
 
-    if (p == NULL)
+    if (p == nullptr)
         return 1;
 
     p->parent = this;
@@ -1890,10 +1910,10 @@ int Control::Add(Printer *p)
 int Control::Remove(Terminal *term)
 {
     FnTrace("Control::Remove(Terminal)");
-    if (term == NULL)
+    if (term == nullptr)
         return 1;
 
-    term->parent = NULL;
+    term->parent = nullptr;
     term_list.Remove(term);
 
     if (zone_db == term->zone_db)
@@ -1909,8 +1929,8 @@ int Control::Remove(Terminal *term)
             }
             ptr = ptr->next;
         }
-        if (ptr == NULL)
-            zone_db = NULL;
+        if (ptr == nullptr)
+            zone_db = nullptr;
     }
     return 0;
 }
@@ -1918,10 +1938,10 @@ int Control::Remove(Terminal *term)
 int Control::Remove(Printer *p)
 {
     FnTrace("Control::Remove(Printer)");
-    if (p == NULL)
+    if (p == nullptr)
         return 1;
 
-    p->parent = NULL;
+    p->parent = nullptr;
     printer_list.Remove(p);
     return 0;
 }
@@ -1929,14 +1949,17 @@ int Control::Remove(Printer *p)
 Terminal *Control::FindTermByHost(const char* host)
 {
     FnTrace("Control::FindTermByHost()");
+    if (!host) {
+        return nullptr; // invalid parameter
+    }
 
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
     {
         if (strcmp(term->host.Value(), host) == 0)
             return term;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 int Control::SetAllMessages(const char* message)
@@ -1947,61 +1970,61 @@ int Control::SetAllMessages(const char* message)
     return 0;
 }
 
-int Control::SetAllTimeouts(int timeout)
+int Control::SetAllTimeouts(int timeout) noexcept
 {
     FnTrace("Control::SetAllTimeouts()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->SetCCTimeout(timeout);
     return 0;
 }
 
-int Control::SetAllCursors(int cursor)
+int Control::SetAllCursors(int cursor) noexcept
 {
     FnTrace("Control::SetAllCursors()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->SetCursor(cursor);
     return 0;
 }
 
-int Control::SetAllIconify(int iconify)
+int Control::SetAllIconify(int iconify) noexcept
 {
     FnTrace("Control::SetAllIconify()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->SetIconify(iconify);
     return 0;
 }
 
-int Control::ClearAllMessages()
+int Control::ClearAllMessages() noexcept
 {
     FnTrace("Control::ClearAllMessages()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->ClearMessage();
     return 0;
 }
 
-int Control::ClearAllFocus()
+int Control::ClearAllFocus() noexcept
 {
     FnTrace("Control::ClearAllFocus()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
-        term->previous_zone = NULL;
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
+        term->previous_zone = nullptr;
     return 0;
 }
 
-int Control::LogoutAllUsers()
+int Control::LogoutAllUsers() noexcept
 {
     FnTrace("Control::LogoutAllUsers()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->LogoutUser();
     return 0;
 }
 
-int Control::LogoutKitchenUsers()
+int Control::LogoutKitchenUsers() noexcept
 {
     FnTrace("Control::LogoutKitchenUsers()");
     Terminal *term = TermList();
     int count = 0;
 
-    while (term != NULL)
+    while (term != nullptr)
     {
         if ((term->type == TERMINAL_KITCHEN_VIDEO ||
              term->type == TERMINAL_KITCHEN_VIDEO2) &&
@@ -2038,13 +2061,13 @@ int Control::UpdateOther(Terminal *local, int update_message, const genericChar*
     return 0;
 }
 
-int Control::IsUserOnline(Employee *e)
+int Control::IsUserOnline(Employee *e) noexcept
 {
     FnTrace("Control::IsUserOnline()");
-    if (e == NULL)
+    if (e == nullptr)
         return 0;
 
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
     {
         if (term->user == e)
             return 1;
@@ -2079,10 +2102,10 @@ int Control::OpenDialog(const char* message)
     return 0;
 }
 
-int Control::KillAllDialogs()
+int Control::KillAllDialogs() noexcept
 {
     FnTrace("Control::KillAllDialogs()");
-    for (Terminal *term = TermList(); term != NULL; term = term->next)
+    for (Terminal *term = TermList(); term != nullptr; term = term->next)
         term->KillDialog();
     return 0;
 }
