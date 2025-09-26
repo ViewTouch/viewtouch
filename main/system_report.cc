@@ -5119,3 +5119,160 @@ int System::CreditCardReport(Terminal *term, TimeInfo &start_time, TimeInfo &end
 
     return retval;
 }
+
+/*********************************************************************
+ * QuickBooksCSVExport:  Generate CSV data for QuickBooks import
+ ********************************************************************/
+int System::QuickBooksCSVExport(Terminal *term, TimeInfo start_time, TimeInfo end_time, 
+                                 PrinterQuickBooksCSV *printer)
+{
+    FnTrace("System::QuickBooksCSVExport()");
+    if (printer == NULL)
+        return 1;
+    
+    printer->Start();
+    printer->WriteCSVHeader();
+    
+    char date_str[32];
+    char description[STRLONG];
+    Settings *settings = &this->settings;
+    
+    // Format date for CSV (YYYY-MM-DD format)
+    snprintf(date_str, 32, "%04d-%02d-%02d", 
+             start_time.Year(), start_time.Month(), start_time.Day());
+    
+    // Sales data collection
+    int total_sales = 0;
+    int total_tax = 0;
+    int total_discounts = 0;
+    int total_tips = 0;
+    int total_cash = 0;
+    int total_credit = 0;
+    int total_gift = 0;
+    int total_refunds = 0;
+    
+    // Process all checks in the date range
+    Archive *archive = FindByTime(start_time);
+    for (;;)
+    {
+        for (Check *check = FirstCheck(archive); check != NULL; check = check->next)
+        {
+            if (check->IsTraining())
+                continue;
+                
+            TimeInfo *close_time = check->TimeClosed();
+            if (close_time && *close_time >= start_time && *close_time < end_time)
+            {
+                for (SubCheck *subcheck = check->SubList(); subcheck != NULL; subcheck = subcheck->next)
+                {
+                    if (subcheck->status == CHECK_CLOSED)
+                    {
+                        // Sales by category
+                        for (int sg = SALESGROUP_FOOD; sg <= SALESGROUP_ROOM; ++sg)
+                        {
+                            int sales_amount = subcheck->GrossSales(check, settings, sg);
+                            if (sales_amount > 0)
+                            {
+                                snprintf(description, STRLONG, "%s Sales", SalesGroupName[sg]);
+                                printer->WriteCSVLine(date_str, "Income", 
+                                                    SalesGroupName[sg], description, 
+                                                    sales_amount, 0);
+                                total_sales += sales_amount;
+                            }
+                        }
+                        
+                                // Process payments
+                                for (Payment *payment = subcheck->PaymentList(); payment != NULL; payment = payment->next)
+                                {
+                                    switch (payment->tender_type)
+                                    {
+                                    case TENDER_CASH:
+                                        total_cash += payment->value;
+                                        break;
+                                    case TENDER_CHECK:
+                                        snprintf(description, STRLONG, "Check Payment");
+                                        printer->WriteCSVLine(date_str, "Payment",
+                                                            "Bank Account", description,
+                                                            payment->value, 0);
+                                        break;
+                                    case TENDER_CHARGED_TIP:
+                                    case TENDER_CAPTURED_TIP:
+                                        total_tips += payment->value;
+                                        snprintf(description, STRLONG, "Tips/Gratuity");
+                                        printer->WriteCSVLine(date_str, "Expense",
+                                                            "Tips", description,
+                                                            payment->value, 0);
+                                        break;
+                                    case TENDER_GIFT:
+                                        total_gift += payment->value;
+                                        snprintf(description, STRLONG, "Gift Certificate Payment");
+                                        printer->WriteCSVLine(date_str, "Payment",
+                                                            "Gift Certificates", description,
+                                                            payment->value, 0);
+                                        break;
+                                    case TENDER_CREDIT_CARD:
+                                    case TENDER_DEBIT_CARD:
+                                        total_credit += payment->value;
+                                        snprintf(description, STRLONG, "Credit Card Payment");
+                                        printer->WriteCSVLine(date_str, "Payment",
+                                                            "Credit Card", description,
+                                                            payment->value, 0);
+                                        break;
+                                    case TENDER_CHANGE:
+                                        total_cash -= payment->value;
+                                        break;
+                                    case TENDER_DISCOUNT:
+                                    case TENDER_COUPON:
+                                        total_discounts += payment->value;
+                                        snprintf(description, STRLONG, "Discounts");
+                                        printer->WriteCSVLine(date_str, "Discount",
+                                                            "Discounts", description,
+                                                            payment->value, 0);
+                                        break;
+                                    case TENDER_COMP:
+                                        snprintf(description, STRLONG, "Comps");
+                                        printer->WriteCSVLine(date_str, "Discount",
+                                                            "Comps", description,
+                                                            payment->value, 0);
+                                        break;
+                                    }
+                                }
+                        
+                        if (subcheck->item_comps > 0)
+                        {
+                            snprintf(description, STRLONG, "Comps");
+                            printer->WriteCSVLine(date_str, "Discount", 
+                                                "Comps", description, 
+                                                subcheck->item_comps, 0);
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (archive == NULL || archive->end_time > end_time)
+            break;
+        archive = archive->next;
+    }
+    
+    // Add tax entries
+    if (total_tax > 0)
+    {
+        snprintf(description, STRLONG, "Sales Tax Collected");
+        printer->WriteCSVLine(date_str, "Liability", 
+                            "Sales Tax Payable", description, 
+                            total_tax, 0);
+    }
+    
+    // Add cash deposit entry
+    if (total_cash > 0)
+    {
+        snprintf(description, STRLONG, "Cash Sales");
+        printer->WriteCSVLine(date_str, "Deposit", 
+                            "Cash Account", description, 
+                            total_cash, 0);
+    }
+    
+    printer->End();
+    return 0;
+}

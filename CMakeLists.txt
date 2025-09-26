@@ -240,6 +240,7 @@ add_library(zone
     zone/check_list_zone.cc      zone/check_list_zone.hh
     zone/settings_zone.cc        zone/settings_zone.hh
     zone/report_zone.cc          zone/report_zone.hh
+    zone/report_zone_quickbooks.cc
     zone/table_zone.cc           zone/table_zone.hh
     zone/split_check_zone.cc     zone/split_check_zone.hh
     zone/drawer_zone.cc          zone/drawer_zone.hh

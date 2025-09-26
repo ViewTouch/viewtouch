@@ -59,11 +59,11 @@
 const genericChar* PrinterModelName[] = {
     "No Printer", "Epson", "Star", "HP", "Toshiba", "Ithaca",
     "HTML", "PostScript", "PDF", "Receipt Text",
-    "Report Text", NULL};
+    "Report Text", "QuickBooks CSV", NULL};
 int          PrinterModelValue[] = {
     MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_HP, MODEL_TOSHIBA, MODEL_ITHACA,
     MODEL_HTML, MODEL_POSTSCRIPT, MODEL_PDF, MODEL_RECEIPT_TEXT,
-    MODEL_REPORT_TEXT, -1};
+    MODEL_REPORT_TEXT, MODEL_QUICKBOOKS_CSV, -1};
 
 // const genericChar* ReceiptPrinterModelName[] = {
     // "No Printer", "Epson", "Star", "Ithaca", "Text", NULL};
@@ -73,18 +73,18 @@ int          PrinterModelValue[] = {
 const genericChar* ReceiptPrinterModelName[] = {
     "No Printer", "Epson", "Star", "HP", "Toshiba", "Ithaca",
     "HTML", "PostScript", "PDF", "Receipt Text",
-    "Report Text", NULL};
+    "Report Text", "QuickBooks CSV", NULL};
 int          ReceiptPrinterModelValue[] = {
     MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_HP, MODEL_TOSHIBA, MODEL_ITHACA,
     MODEL_HTML, MODEL_POSTSCRIPT, MODEL_PDF, MODEL_RECEIPT_TEXT,
-    MODEL_REPORT_TEXT, -1};
+    MODEL_REPORT_TEXT, MODEL_QUICKBOOKS_CSV, -1};
 
 const genericChar* ReportPrinterModelName[] = {
     "No Printer", "HP", "Toshiba", "HTML", "PostScript",
-    "PDF", "Text", NULL};
+    "PDF", "Text", "QuickBooks CSV", NULL};
 int          ReportPrinterModelValue[] = {
     MODEL_NONE, MODEL_HP, MODEL_TOSHIBA, MODEL_HTML, MODEL_POSTSCRIPT,
-    MODEL_PDF, MODEL_REPORT_TEXT, -1};
+    MODEL_PDF, MODEL_REPORT_TEXT, MODEL_QUICKBOOKS_CSV, -1};
 
 #define GENERIC_TITLE   "ViewTouch POS Report"  // page title when not otherwise specified
 
@@ -515,6 +515,9 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
             case MODEL_RECEIPT_TEXT:
             case MODEL_REPORT_TEXT:
                 strcat(buffer, ".txt");
+                break;
+            case MODEL_QUICKBOOKS_CSV:
+                strcat(buffer, ".csv");
                 break;
             default:
                 strcat(buffer, ".prn");
@@ -2507,6 +2510,9 @@ Printer *NewPrinterObj(const genericChar* destination, int port, int model, int 
         case MODEL_REPORT_TEXT:
             retPrinter = new PrinterReportText(destination, port, target, target_type);
             break;
+        case MODEL_QUICKBOOKS_CSV:
+            retPrinter = new PrinterQuickBooksCSV(destination, port, target, target_type);
+            break;
         default:
             retPrinter = NULL;
             break;
@@ -2560,8 +2566,99 @@ Printer *NewPrinterFromString(const genericChar* specification)
         model = MODEL_PDF;
     else if (strcmp(modelstr, "rtext") == 0)
         model = MODEL_RECEIPT_TEXT;
+    else if (strcmp(modelstr, "quickbooks_csv") == 0)
+        model = MODEL_QUICKBOOKS_CSV;
 
     retPrinter = NewPrinterObj(destination, 0, model, 0);
 
     return retPrinter;
+}
+
+/*********************************************************************
+ * QuickBooksCSV
+ *
+ *  exports reports to CSV format for QuickBooks import
+ ********************************************************************/
+PrinterQuickBooksCSV::PrinterQuickBooksCSV(const genericChar* host, int port, const genericChar* targetstr, int type)
+{
+    next         = NULL;
+    fore         = NULL;
+    parent       = NULL;
+    last_mode    = 0;
+    last_color   = 0;
+    last_uni     = 0;
+    last_uline   = 0;
+    last_large   = 0;
+    last_narrow  = 0;
+    last_bold    = 0;
+    port_no      = 0;
+    active_flags = 0;
+    temp_fd      = -1;
+    temp_name.Set("");
+    target.Set(targetstr);
+    target_type  = type;
+    host_name.Set(host);
+    port_no      = port;
+    pulse        = -1;
+    term_name.Set("");
+}
+
+int PrinterQuickBooksCSV::Start()
+{
+    FnTrace("PrinterQuickBooksCSV::Start()");
+    return Printer::Open();
+}
+
+int PrinterQuickBooksCSV::End()
+{
+    FnTrace("PrinterQuickBooksCSV::End()");
+    return Printer::Close();
+}
+
+int PrinterQuickBooksCSV::Init()
+{
+    FnTrace("PrinterQuickBooksCSV::Init()");
+    return 0;
+}
+
+int PrinterQuickBooksCSV::LineFeed(int lines)
+{
+    FnTrace("PrinterQuickBooksCSV::LineFeed()");
+    if (temp_fd > 0)
+    {
+        for (int i = 0; i < lines; ++i)
+        {
+            write(temp_fd, "\n", 1);
+        }
+    }
+    return 0;
+}
+
+int PrinterQuickBooksCSV::WriteCSVHeader()
+{
+    FnTrace("PrinterQuickBooksCSV::WriteCSVHeader()");
+    if (temp_fd > 0)
+    {
+        const char* header = "Date,Type,Account,Description,Amount,Tax\n";
+        write(temp_fd, header, strlen(header));
+    }
+    return 0;
+}
+
+int PrinterQuickBooksCSV::WriteCSVLine(const char* date, const char* type, 
+                                       const char* account, const char* description, 
+                                       int amount, int tax)
+{
+    FnTrace("PrinterQuickBooksCSV::WriteCSVLine()");
+    if (temp_fd > 0)
+    {
+        char line[STRLONG];
+        float amount_f = (float)amount / 100.0;
+        float tax_f = (float)tax / 100.0;
+        
+        snprintf(line, STRLONG, "%s,%s,%s,%s,%.2f,%.2f\n",
+                 date, type, account, description, amount_f, tax_f);
+        write(temp_fd, line, strlen(line));
+    }
+    return 0;
 }

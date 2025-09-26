@@ -572,6 +572,11 @@ public:
     int scheduled_restart_hour;  // Hour (0-23) for scheduled restart (-1 = disabled)
     int scheduled_restart_min;   // Minute (0-59) for scheduled restart
     int restart_postpone_count;  // Number of times restart has been postponed today
+    
+    // QuickBooks Export Settings
+    Str quickbooks_export_path;   // Path for QuickBooks CSV exports
+    int quickbooks_auto_export;   // Enable automatic daily export
+    int quickbooks_export_format; // Export format (0=daily, 1=monthly, 2=custom)
 
     // General Settings
     Str store_name;              // printed on title bar

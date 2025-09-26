@@ -5,7 +5,55 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Changed
+- **Drawer Mode Terminology**: Changed "Normal" Drawer Mode to "Trusted" Drawer Mode for better clarity
+- **Server Bank Payment Navigation**: Fixed Server Bank payment completion flow to return to Page -2 (PAGEID_LOGIN2) specifically for Customer users on SelfOrder terminals, while maintaining normal navigation for all other users
+
 ### Added
+- **QuickBooks CSV Export Feature**
+  - **New Export Target**: Added `TARGET_QUICKBOOKS_CSV` target type and `MODEL_QUICKBOOKS_CSV` printer model for QuickBooks integration
+  - **CSV Printer Implementation**: Created `PrinterQuickBooksCSV` class extending the base `Printer` class with specialized CSV formatting
+    - `WriteCSVHeader()` method for CSV column headers (Date, Type, Account, Description, Amount, Tax)
+    - `WriteCSVLine()` method for formatted CSV data rows with proper decimal formatting
+    - File naming convention: `quickbooks_{YYYYMMDD}.csv` for daily exports
+  - **Report Generation System**: Implemented `QuickBooksCSVExport()` method in System class
+    - Aggregates sales data by category (food, alcohol, room, merchandise) using existing report functions
+    - Processes payments by type (cash, credit card, checks, gift certificates, discounts, comps)
+    - Handles tips, gratuity, and service charges with proper accounting categorization
+    - Calculates and includes tax information for comprehensive financial reporting
+  - **UI Integration**: Added QuickBooks export option to Admin panel under Reports
+    - New `QuickBooksExport()` method in `ReportZone` class with case 37 signal handler
+    - Users can access via Admin panel → Reports → "Export for QuickBooks (CSV)"
+    - Supports daily, monthly, and custom date range exports
+  - **Configuration Settings**: Added comprehensive QuickBooks export configuration
+    - `quickbooks_export_path`: Configurable export directory (default: `/usr/viewtouch/exports/quickbooks`)
+    - `quickbooks_auto_export`: Toggle for automatic daily export functionality
+    - `quickbooks_export_format`: Export format selection (daily/monthly/custom)
+    - Settings persist across sessions and integrate with existing settings system
+  - **CSV Format Compatibility**: Optimized for QuickBooks Online and Desktop import
+    - Standard CSV format with proper comma separation and decimal formatting
+    - Financial transaction categorization (Income, Payment, Discount, Expense, Liability, Deposit)
+    - Account mapping for common QuickBooks chart of accounts
+    - Tax information included for accurate financial reporting
+  - **Files Added**:
+    - `zone/report_zone_quickbooks.cc` - UI implementation for QuickBooks export functionality
+    - `QUICKBOOKS_EXPORT.md` - Comprehensive documentation and usage guide
+  - **Files Modified**:
+    - `main/printer.hh` - Added printer class declaration and target type definitions
+    - `main/printer.cc` - Implemented QuickBooks CSV printer functionality
+    - `main/system.hh` - Added export method declaration
+    - `main/system_report.cc` - Implemented comprehensive export logic with data aggregation
+    - `main/settings.hh` - Added configuration settings declarations
+    - `main/settings.cc` - Implemented settings loading/saving with version compatibility
+    - `zone/report_zone.hh` - Added UI method declaration
+    - `zone/report_zone.cc` - Added signal handler for QuickBooks export
+    - `CMakeLists.txt` - Updated build configuration for new source files
+  - **Integration Benefits**:
+    - Seamless integration with existing ViewTouch printer/export system
+    - Uses established report aggregation functions for data consistency
+    - Follows ViewTouch coding patterns and architecture
+    - Maintains backward compatibility with existing functionality
+    - Ready for production use with comprehensive error handling
 - **SelfOrder Display Type (Work in Progress)**
   - **New Terminal Type**: Added `TERMINAL_SELFORDER` terminal type for customer self-service ordering
   - **Customer User System**: Implemented automatic "Customer" user creation and management for SelfOrder terminals

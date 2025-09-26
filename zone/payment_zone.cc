@@ -1117,6 +1117,18 @@ int PaymentZone::DoneWithCheck(Terminal *term, int store_check)
 		term->UpdateOtherTerms(UPDATE_CHECKS, NULL);
 	}
 
+	// Check if payment was made through Server Bank drawer by Customer user on SelfOrder terminal
+	Drawer *drawer = term->FindDrawer();
+	if (drawer && drawer->IsServerBank() && 
+	    term->type == TERMINAL_SELFORDER && 
+	    term->user && term->user->id == 999) // Customer user has ID 999
+	{
+		// Server Bank payments by Customer user on SelfOrder should return to Page -2 (PAGEID_LOGIN2)
+		term->timeout = settings->delay_time2;
+		term->Jump(JUMP_STEALTH, -2); // jump to page -2
+		return 0;
+	}
+
 	switch (term->type)
 	{
     case TERMINAL_BAR:
