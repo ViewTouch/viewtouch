@@ -94,13 +94,13 @@ public:
     void  ChangeAtoB(const char a, const char b);  // character replace
     int   IntValue() const;
     Flt   FltValue() const;
-    const char *Value() const;
-    const char *c_str() const;
-    std::string str() const;
+    const char *Value() const noexcept;
+    const char *c_str() const noexcept;
+    std::string str() const noexcept;
     const char* ValueSet(const char* set = nullptr);
 
-    bool   empty() const;
-    size_t size() const;
+    bool   empty() const noexcept;
+    size_t size() const noexcept;
 
     Str & operator =  (const char* s) { Set(s); return *this; }
     Str & operator =  (const Str  &s) { Set(s); return *this; }
@@ -145,13 +145,13 @@ public:
     int GetRegion(int &rx, int &ry, int &rw, int &rh) {
         rx = x; ry = y; rw = w; rh = h; return 0; }
 
-    int IsSet() {
+    int IsSet() const noexcept {
         return (w > 0) && (h > 0); }
-    virtual int IsPointIn(int px, int py) {
+    virtual int IsPointIn(int px, int py) const noexcept {
         return px >= x && py >= y && px < (x + w) && py < (y + h); }
-    int Overlap(int rx, int ry, int rw, int rh) {
+    int Overlap(int rx, int ry, int rw, int rh) const noexcept {
         return rx < (x + w) && ry < (y + h) && (rx + rw) > x && (ry + rh) > y; }
-    int IsValid() {
+    int IsValid() const noexcept {
         return (w >= 0) && (h >= 0); }
 
     int Fit(int rx, int ry, int rw, int rh);
@@ -166,12 +166,12 @@ public:
     int Intersect(RegionInfo *r) {
         return Intersect(r->x, r->y, r->w, r->h); }
 
-    int Left()   { return x; }
-    int Top()    { return y; }
-    int Right()  { return x + w - 1; }
-    int Bottom() { return y + h - 1; }
-    int Width()  { return w; }
-    int Height() { return h; }
+    int Left() const noexcept   { return x; }
+    int Top() const noexcept    { return y; }
+    int Right() const noexcept  { return x + w - 1; }
+    int Bottom() const noexcept { return y + h - 1; }
+    int Width() const noexcept  { return w; }
+    int Height() const noexcept { return h; }
 };
 
 class Price

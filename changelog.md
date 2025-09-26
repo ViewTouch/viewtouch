@@ -335,6 +335,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Enabled additional compiler warnings: `-Wextra`, `-Wconversion`, `-Wnull-dereference`, `-Wdouble-promotion`, `-Wformat=2`
   - Improved code safety and error detection during compilation
 
+- **Core Utility Functions Refactoring (debug.cc, debug.hh, socket.cc, socket.hh, utility.cc, utility.hh)**
+  - **Memory Safety Enhancements**: Replaced C-style arrays with `std::array` for compile-time bounds checking
+    - `debug.cc`: Converted `event_names`, `term_codes`, and `server_codes` arrays to `constexpr std::array`
+    - Enhanced buffer operations with proper null termination guarantees
+    - Added comprehensive parameter validation for all functions
+  - **Modern C++ Features**: Applied C++17/20 features throughout the codebase
+    - Replaced `NULL` with `nullptr` for better type safety
+    - Used `auto` for type deduction and `constexpr` for compile-time constants
+    - Added `noexcept` specifiers where appropriate for better performance
+    - Implemented pre-increment operators (`++idx`) for better performance
+  - **String Operations Safety**: Enhanced string handling with bounds checking
+    - Replaced `sprintf` with `snprintf` for safe string formatting
+    - Added null termination guarantees for all string operations
+    - Improved buffer overflow protection in socket and utility functions
+  - **Error Handling Improvements**: Added comprehensive error handling and validation
+    - Enhanced input validation for all socket operations (port ranges, file descriptors)
+    - Added exception handling for string conversion operations (`std::stoi`, `std::stod`)
+    - Improved bounds checking for array and buffer operations
+  - **Const Correctness**: Enhanced const correctness throughout the codebase
+    - Added `const` qualifiers to appropriate methods and parameters
+    - Improved function signatures for better API design
+    - Enhanced type safety with explicit parameter validation
+  - **Code Quality Improvements**: Modernized code patterns and eliminated legacy issues
+    - Fixed unused parameter warnings with proper parameter naming
+    - Enhanced loop constructs with modern C++ patterns
+    - Improved code readability and maintainability
+  - **Files Modified**:
+    - `debug.cc` - Modernized debug functions with std::array and enhanced error handling
+    - `debug.hh` - Added noexcept specifiers and improved function declarations
+    - `socket.cc` - Enhanced socket operations with parameter validation and modern C++ features
+    - `socket.hh` - Improved const correctness and function signatures
+    - `utility.cc` - Modernized utility functions with bounds checking and exception handling
+    - `utility.hh` - Enhanced const correctness and added noexcept specifiers
+  - **Benefits**:
+    - **Memory Safety**: Eliminated potential buffer overflows and null pointer dereferences
+    - **Robustness**: Enhanced error handling and input validation
+    - **Performance**: Better compiler optimizations with constexpr and noexcept
+    - **Maintainability**: Cleaner, more modern C++ code with better structure
+    - **Compatibility**: All changes maintain existing API and behavior
+
 - **Modernized vt_print Daemon (print_main.cc)**
   - **Critical Bug Fix**: Removed debug `exit(2)` statement that prevented the program from running
   - **Modern C++ Improvements**: Updated includes from C-style to C++ headers (`<cstring>`, `<csignal>`, `<vector>`)

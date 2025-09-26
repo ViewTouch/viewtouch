@@ -23,6 +23,7 @@
 #include "debug.hh"
 #include "labels.hh"
 #include <string.h>
+#include <array>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -36,7 +37,7 @@
 
 const genericChar* pos_data_filename = VIEWTOUCH_PATH "/dat/tmp/posdata.txt";
 
-const genericChar* event_names[] = {
+constexpr std::array<const genericChar*, 36> event_names = {
     "Protocol Error",
     "Protocol Reply",
     "KeyPress",
@@ -74,20 +75,20 @@ const genericChar* event_names[] = {
     "MappingNotify",
     "LASTEvent"
 };
-int num_events = sizeof(event_names) / sizeof(const char* );
+constexpr int num_events = static_cast<int>(event_names.size());
 /****
  *  GetXEventName:  a simple routine to pull the message name out of event_name
  *  and return it.
  ****/
-const genericChar* GetXEventName( XEvent event )
+const genericChar* GetXEventName( XEvent event ) noexcept
 {
     if ( event.type < num_events )
     {
-        return( event_names[event.type] );
+        return event_names[event.type];
     }
     else
     {
-        return( "" );
+        return "";
     }
 }
 
@@ -95,9 +96,9 @@ const genericChar* GetXEventName( XEvent event )
  * PrintXEventName:  print the names of all events other than a few that we
  *  don't want (it's boring to read a bunch of mouse movements).
  ****/
-void PrintXEventName( XEvent event, const genericChar* function, FILE *stream )
+void PrintXEventName( XEvent event, const genericChar* function, FILE *stream ) noexcept
 {
-    const genericChar* name = GetXEventName( event );
+    const auto* name = GetXEventName( event );
     if ( ( strcmp( name, "MotionNotify" ) == 0 ) ||
          ( strcmp( name, "NoExpose" ) == 0 ) )
     {
@@ -109,7 +110,7 @@ void PrintXEventName( XEvent event, const genericChar* function, FILE *stream )
     }
 }
 
-const char* term_codes[] = {
+constexpr std::array<const char*, 95> term_codes = {
     "TERM_UPDATEALL",
     "TERM_UPDATEAREA",
     "TERM_SETCLIP",
@@ -206,16 +207,16 @@ const char* term_codes[] = {
     "TERM_SET_SHADOW_BLUR",
     "TERM_DIE"
 };
-int num_term_codes = sizeof( term_codes ) / sizeof( const genericChar*  );
-void PrintTermCode( int code )
+constexpr int num_term_codes = static_cast<int>(term_codes.size());
+void PrintTermCode( int code ) noexcept
 {
-    if ( code < num_term_codes )
+    if ( code >= 0 && code < num_term_codes )
     {
         printf( "Term Code:  %s\n", term_codes[code] );
     }
 }
 
-const char* server_codes[] = {
+constexpr std::array<const char*, 24> server_codes = {
     "",
     "SERVER_ERROR",
     "SERVER_TERMINFO",
@@ -240,16 +241,16 @@ const char* server_codes[] = {
     "SERVER_BADFILE",
     "SERVER_DEFPAGE"
 };
-int num_server_codes = sizeof( server_codes ) / sizeof( const genericChar*  );
-void PrintServerCode( int code )
+constexpr int num_server_codes = static_cast<int>(server_codes.size());
+void PrintServerCode( int code ) noexcept
 {
-    if ( code < num_server_codes )
+    if ( code >= 0 && code < num_server_codes )
     {
         printf( "Server Code:  %d %s\n", code, server_codes[code] );
     }
 }
 
-void PrintFamilyCode( int code )
+void PrintFamilyCode( int code ) noexcept
 {
     int idx = 0;
     int famvalue = FamilyValue[idx];
@@ -258,35 +259,32 @@ void PrintFamilyCode( int code )
         if (famvalue == code)
         {
             printf( "Family Name for %d is %s\n", code, FamilyName[idx] );
-            famvalue = -1;  // End the while loop
+            return;  // Found and printed, exit function
         }
-        else
-        {
-            idx += 1;
-            famvalue = FamilyValue[idx];
-        }
+        ++idx;
+        famvalue = FamilyValue[idx];
     }
 }
 
 //FIX BAK --> Should get the zone type names out of labels.cc or otherwise
 //prevent the need to link everything with labels.o.  This solution, and really
 //the entire labels.cc file, just seems kludgy.
-const genericChar* GetZoneTypeName( int type )
+const genericChar* GetZoneTypeName( int type ) noexcept
 {
     int idx = 0;
     int val = FullZoneTypeValue[idx];
     while ( ( val > -1 ) && ( val != type ) )
     {
-        idx += 1;
+        ++idx;
         val = FullZoneTypeValue[idx];
     }
     if ( val != -1 )
     {
-        return( FullZoneTypeName[idx] );
+        return FullZoneTypeName[idx];
     }
     else
     {
-        return( "" );
+        return "";
     }
 }
 

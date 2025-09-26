@@ -49,7 +49,7 @@ public:
 
     // Member Functions
     int Open(const std::string &filename, int &version);
-    int Close();
+    int Close() noexcept;
 
     int   GetToken(char* buffer, int max_len = 0);
     uint64_t GetValue();
@@ -101,7 +101,7 @@ public:
 
     // Member Functions
     int Open(const std::string &filename, int version, int use_compression = 0);
-    int Close();
+    int Close() noexcept;
 
     int PutValue(uint64_t val, int bk);
 
@@ -157,7 +157,7 @@ public:
     KeyValueInputFile(const std::string &filename);
     bool Open();
     bool Open(const std::string &filename);
-    bool IsOpen();
+    bool IsOpen() const noexcept;
     int Set(const int fd);
     int Set(const std::string &filename);
     char SetDelim(const char delim);
@@ -183,7 +183,7 @@ public:
     KeyValueOutputFile(const std::string &filename);
     int Open();
     int Open(const std::string &filename);
-    int IsOpen();
+    int IsOpen() const noexcept;
     char SetDelim(const char delim);
     int Close();
     int Reset();

@@ -38,31 +38,26 @@
 #include <dmalloc.h>
 #endif
 
-char* progname = NULL;
+char* progname = nullptr;
 int   progname_maxlen = 0;
 
 void vt_init_setproctitle(int argc, char* argv[])
 {
 #ifdef BSD
-    progname = NULL;
+    progname = nullptr;
     progname_maxlen = 0;
 #else
     // This is mostly for Linux, maybe others.
     // clear out the arguments (1..N) so we get a nice process list
-    int idx = 1;
-    int idx2 = 0;
-    while (idx < argc)
+    for (int idx = 1; idx < argc; ++idx)
     {
-        idx2 = 0;
-        while (argv[idx][idx2] != '\0')
+        for (int idx2 = 0; argv[idx][idx2] != '\0'; ++idx2)
         {
             argv[idx][idx2] = '\0';
-            idx2 += 1;
         }
-        idx += 1;
     }
     progname = argv[0];
-    progname_maxlen = strlen(progname) - 1;
+    progname_maxlen = static_cast<int>(strlen(progname)) - 1;
 #endif
 }
 
@@ -72,13 +67,17 @@ void vt_init_setproctitle(int argc, char* argv[])
 int vt_setproctitle(const char* title)
 {
     FnTrace("setproctitle()");
+    if (!title) {
+        return 1; // invalid parameter
+    }
+    
     int retval = 1;
 
 #ifdef BSD
     setproctitle("%s", title);
     retval = 0;
 #else
-    if (progname != NULL)
+    if (progname != nullptr)
     {
         // This isn't intended to set an arbitrary length title.  It's
         // intended to set a short title after a long title (AKA,
@@ -131,7 +130,11 @@ int Str::Clear()
 bool Str::Set(const char *str)
 {
     FnTrace("Str::Set(const char *)");
-    data = str;
+    if (str) {
+        data = str;
+    } else {
+        data.clear();
+    }
     return true;
 }
 
@@ -165,34 +168,42 @@ void Str::ChangeAtoB(const char a, const char b)
 int Str::IntValue() const
 {
     FnTrace("Str::IntValue()");
-    if (!data.empty())
-        return std::stoi(data);
-    else
-        return 0;
+    if (!data.empty()) {
+        try {
+            return std::stoi(data);
+        } catch (const std::exception&) {
+            return 0;
+        }
+    }
+    return 0;
 }
 
 Flt Str::FltValue() const
 {
     FnTrace("Str::FltValue()");
-    if (!data.empty())
-        return std::stod(data);
-    else
-        return 0.0;
+    if (!data.empty()) {
+        try {
+            return static_cast<Flt>(std::stod(data));
+        } catch (const std::exception&) {
+            return 0.0;
+        }
+    }
+    return 0.0;
 }
 
-const char* Str::Value() const
+const char* Str::Value() const noexcept
 {
     FnTrace("Str::Value()");
     return data.c_str();
 }
 
-const char* Str::c_str() const
+const char* Str::c_str() const noexcept
 {
     FnTrace("Str::c_str()");
     return data.c_str();
 }
 
-std::string Str::str() const
+std::string Str::str() const noexcept
 {
     FnTrace("Str::Value()");
     return data;
@@ -210,12 +221,12 @@ const char* Str::ValueSet(const char* set)
     return Value();
 }
 
-bool   Str::empty() const
+bool   Str::empty() const noexcept
 {
     return data.empty();
 }
 
-size_t Str::size() const
+size_t Str::size() const noexcept
 {
     return data.size();
 }
@@ -400,31 +411,35 @@ std::string StringToUpper(const std::string &str)
 int StripWhiteSpace(genericChar* longstr)
 {
     FnTrace("StripWhiteSpace()");
+    if (!longstr) {
+        return 0; // invalid parameter
+    }
+    
     int idx = 0;
     int storeidx = 0;  // where to move characters to
-    int len = strlen(longstr);
+    const int len = static_cast<int>(strlen(longstr));
     int count = 0;
 
     // strip from the beginning
-    while (isspace(longstr[idx]))
-        idx += 1;
-    count += 0;
-    while (idx > 0 && idx < len)
+    while (idx < len && isspace(longstr[idx]))
+        ++idx;
+    
+    while (idx < len)
     {
         longstr[storeidx] = longstr[idx];
-        storeidx += 1;
-        idx += 1;
+        ++storeidx;
+        ++idx;
     }
     if (storeidx > 0)
         longstr[storeidx] = '\0';
 
     // strip from the end
-    len = strlen(longstr) - 1;
-    while (len > 0 && isspace(longstr[len]))
+    int end_len = static_cast<int>(strlen(longstr)) - 1;
+    while (end_len > 0 && isspace(longstr[end_len]))
     {
-        longstr[len] = '\0';
-        len -= 1;
-        count += 1;
+        longstr[end_len] = '\0';
+        --end_len;
+        ++count;
     }
     return count;
 }
@@ -491,17 +506,21 @@ std::string AdjustCaseAndSpacing(const std::string &str)
 const genericChar* NextName(const genericChar* name, const genericChar* *list)
 {
     FnTrace("NextName()");
+    if (!name || !list) {
+        return nullptr; // invalid parameters
+    }
+    
     int idx = 0;
 
     // find the current string
-    while (list[idx] != NULL && (strcmp(name, list[idx]) != 0))
-        idx += 1;
+    while (list[idx] != nullptr && (strcmp(name, list[idx]) != 0))
+        ++idx;
 
     // advance to next
-    if (list[idx] != NULL)
-        idx += 1;
+    if (list[idx] != nullptr)
+        ++idx;
     // wrap to beginning if necessary
-    if (list[idx] == NULL)
+    if (list[idx] == nullptr)
         idx = 0;
 
     return list[idx];
@@ -510,6 +529,10 @@ const genericChar* NextName(const genericChar* name, const genericChar* *list)
 int NextValue(int val, int *val_array)
 {
     FnTrace("NextValue()");
+    if (!val_array) {
+        return -1; // invalid parameter
+    }
+    
     int idx = CompareList(val, val_array);
     ++idx;
     if (val_array[idx] < 0)
@@ -520,6 +543,10 @@ int NextValue(int val, int *val_array)
 int ForeValue(int val, int *val_array)
 {
     FnTrace("ForeValue()");
+    if (!val_array) {
+        return -1; // invalid parameter
+    }
+    
     int idx = CompareList(val, val_array);
     --idx;
     if (idx < 0)
@@ -542,6 +569,10 @@ int ForeValue(int val, int *val_array)
 int NextToken(genericChar* dest, const genericChar* src, genericChar sep, int *idx)
 {
     FnTrace("NextToken()");
+    if (!dest || !src || !idx) {
+        return 0; // invalid parameters
+    }
+    
     int destidx = 0;
     int retval = 0;
 
@@ -550,13 +581,13 @@ int NextToken(genericChar* dest, const genericChar* src, genericChar sep, int *i
         while (src[*idx] != '\0' && src[*idx] != sep)
         {
             dest[destidx] = src[*idx];
-            destidx += 1;
-            *idx += 1;
+            ++destidx;
+            ++(*idx);
         }
         dest[destidx] = '\0';
         // gobble up the token and any extra tokens
         while (src[*idx] == sep && src[*idx] != '\0')
-            *idx += 1;
+            ++(*idx);
         retval = 1;
     }
     return retval;
@@ -569,6 +600,10 @@ int NextToken(genericChar* dest, const genericChar* src, genericChar sep, int *i
 int NextInteger(int *dest, const genericChar* src, genericChar sep, int *idx)
 {
     FnTrace("NextInteger()");
+    if (!dest) {
+        return 0; // invalid parameter
+    }
+    
     genericChar buffer[STRLONG];
     int retval = 0;
 
@@ -583,16 +618,20 @@ int NextInteger(int *dest, const genericChar* src, genericChar sep, int *idx)
 int BackupFile(const genericChar* filename)
 {
     FnTrace("BackupFile()");
+    if (!filename) {
+        return 1; // invalid parameter
+    }
+    
     if (DoesFileExist(filename) == 0)
         return 1;  // No file to backup
 
     genericChar bak[256];
-    sprintf(bak,  "%s.bak", filename);
+    snprintf(bak, sizeof(bak), "%s.bak", filename);
 
     if (DoesFileExist(bak))
     {
         genericChar bak2[256];
-        sprintf(bak2, "%s.bak2", filename);
+        snprintf(bak2, sizeof(bak2), "%s.bak2", filename);
 
         // delete *.bak2
         unlink(bak2);
@@ -610,13 +649,17 @@ int BackupFile(const genericChar* filename)
 int RestoreBackup(const genericChar* filename)
 {
     FnTrace("RestoreBackup()");
+    if (!filename) {
+        return 1; // invalid parameter
+    }
+    
     genericChar str[256];
-    sprintf(str, "%s.bak", filename);
+    snprintf(str, sizeof(str), "%s.bak", filename);
 
     if (DoesFileExist(str) == 0)
         return 1;  // No backup to restore
 
-    sprintf(str, "/bin/cp %s.bak %s", filename, filename);
+    snprintf(str, sizeof(str), "/bin/cp %s.bak %s", filename, filename);
     return system(str);
 }
 
@@ -655,8 +698,11 @@ Flt PercentToFlt(int percent)
 const char* FindStringByValue(int val, int val_list[], const genericChar* str_list[], const genericChar* unknown)
 {
     FnTrace("FindStringByValue()");
+    if (!val_list || !str_list) {
+        return unknown; // invalid parameters
+    }
 
-    for (int i = 0; str_list[i] != NULL; ++i)
+    for (int i = 0; str_list[i] != nullptr; ++i)
     {
         if (val == val_list[i]) 
 			return str_list[i];
@@ -668,6 +714,10 @@ const char* FindStringByValue(int val, int val_list[], const genericChar* str_li
 int FindValueByString(const genericChar* val, int val_list[], const genericChar* str_list[], int unknown)
 {
     FnTrace("FindValueByString()");
+    if (!val || !val_list || !str_list) {
+        return unknown; // invalid parameters
+    }
+    
     int retval = unknown;
     int idx = 0;
 
@@ -675,7 +725,7 @@ int FindValueByString(const genericChar* val, int val_list[], const genericChar*
     {
         if (strcmp(val, str_list[idx]) == 0)
             retval = val_list[idx];
-        idx += 1;
+        ++idx;
     }
 
     return retval;
@@ -694,6 +744,10 @@ int FindValueByString(const genericChar* val, int val_list[], const genericChar*
 int FindIndexOfValue(int value, int val_list[], int unknown)
 {
     FnTrace("FindIndexOfValue()");
+    if (!val_list) {
+        return unknown; // invalid parameter
+    }
+    
     int retval = unknown;
     int idx = 0;
     int fvalue = val_list[idx];
@@ -706,7 +760,7 @@ int FindIndexOfValue(int value, int val_list[], int unknown)
         }
         else
         {
-            idx += 1;
+            ++idx;
             fvalue = val_list[idx];
         }
     }
@@ -718,7 +772,7 @@ int FindIndexOfValue(int value, int val_list[], int unknown)
 int DoesFileExist(const genericChar* filename)
 {
     FnTrace("DoesFileExist()");
-    if (filename == NULL)
+    if (filename == nullptr)
         return 0;
     int status = access(filename, F_OK);
     return (status == 0);  // Return true if file exists
@@ -734,7 +788,7 @@ int EnsureFileExists(const genericChar* filename)
     FnTrace("EnsureFileExists()");
     int retval = 1;
 
-    if (filename == NULL)
+    if (filename == nullptr)
         return retval;
 
     if (DoesFileExist(filename) == 0)
@@ -754,7 +808,7 @@ int EnsureFileExists(const genericChar* filename)
 int DeleteFile(const genericChar* filename)
 {
     FnTrace("DeleteFile()");
-    if (filename == NULL || strlen(filename) <= 0 || access(filename, F_OK))
+    if (filename == nullptr || strlen(filename) <= 0 || access(filename, F_OK))
         return 1;
     unlink(filename);
     return 0;
@@ -784,9 +838,13 @@ int StringCompare(const std::string &str1, const std::string &str2, int len)
  ****/
 int StringInString(const genericChar* haystack, const genericChar* needle)
 {
-    const genericChar* c1 = (const genericChar* )haystack;
-    const genericChar* l1 = (const genericChar* )haystack;
-    const genericChar* c2 = (const genericChar* )needle;
+    if (!haystack || !needle) {
+        return 0; // invalid parameters
+    }
+    
+    const genericChar* c1 = haystack;
+    const genericChar* l1 = haystack;
+    const genericChar* c2 = needle;
     int match = 0;
 
     while (*c1 && *c2)
@@ -795,19 +853,19 @@ int StringInString(const genericChar* haystack, const genericChar* needle)
         {
             if (match == 0)
                 l1 = c1;
-            c1++;
-            c2++;
+            ++c1;
+            ++c2;
             match = 1;
         }
         else
         {
             if (match)
             {
-                c2 = (const genericChar* )needle;
+                c2 = needle;
                 c1 = l1;
             }
             match = 0;
-            c1++;
+            ++c1;
         }
     }
 
@@ -821,7 +879,11 @@ int StringInString(const genericChar* haystack, const genericChar* needle)
 int CompareList(const genericChar* str, const genericChar* list[], int unknown)
 {
     FnTrace("CompareList(char)");
-    for (int i = 0; list[i] != NULL; ++i)
+    if (!str || !list) {
+        return unknown; // invalid parameters
+    }
+    
+    for (int i = 0; list[i] != nullptr; ++i)
     {
         if (StringCompare(str, list[i]) == 0)
             return i;
@@ -832,6 +894,10 @@ int CompareList(const genericChar* str, const genericChar* list[], int unknown)
 int CompareList(int val, int list[], int unknown)
 {
     FnTrace("CompareList(int)");
+    if (!list) {
+        return unknown; // invalid parameter
+    }
+    
     for (int i = 0; list[i] >= 0; ++i)
     {
         if (val == list[i])
@@ -847,16 +913,19 @@ int CompareList(int val, int list[], int unknown)
 int HasSpace(const genericChar* word)
 {
     FnTrace("HasSpace()");
-    int len = strlen(word);
-    int idx;
+    if (!word) {
+        return 0; // invalid parameter
+    }
+    
+    const int len = static_cast<int>(strlen(word));
     int has_space = 0;
     
-    for (idx = 0; idx < len; idx++)
+    for (int idx = 0; idx < len; ++idx)
     {
         if (isspace(word[idx]))
         {
             has_space = 1;
-            idx = len;
+            break;
         }
     }
     return has_space;
@@ -883,15 +952,19 @@ int HasSpace(const genericChar* word)
 int CompareListN(const genericChar* list[], const genericChar* word, int unknown)
 {
     FnTrace("CompareListN()");
-    int wordlen = strlen(word);
+    if (!list || !word) {
+        return unknown; // invalid parameters
+    }
+    
+    const int wordlen = static_cast<int>(strlen(word));
     int idx = 0;
     int itemlen;
     int search = -1;
 
-    while (list[idx] != NULL)
+    while (list[idx] != nullptr)
     {
         search = -1;
-        itemlen = strlen(list[idx]);
+        itemlen = static_cast<int>(strlen(list[idx]));
 
         if (list[idx][itemlen - 1] == ' ')
             search = StringCompare(word, list[idx], itemlen);
@@ -900,9 +973,9 @@ int CompareListN(const genericChar* list[], const genericChar* word, int unknown
 
         if (search == 0)
             return idx;
-        idx += 1;
+        ++idx;
     }
-    return -1;
+    return unknown;
 }
 
 /*********************************************************************
@@ -918,6 +991,10 @@ int CompareListN(const genericChar* list[], const genericChar* word, int unknown
 int LockDevice(const genericChar* devpath)
 {
     FnTrace("LockDevice()");
+    if (!devpath) {
+        return -1; // invalid parameter
+    }
+    
     int retval = 0;
     genericChar lockpath[STRLONG];
     genericChar buffer[STRLONG];
@@ -938,7 +1015,7 @@ int LockDevice(const genericChar* devpath)
     {
         if (buffer[idx] == '/')
             buffer[idx] = '.';
-        idx += 1;
+        ++idx;
     }
     snprintf(lockpath, STRLONG, "%s/%s", LOCK_DIR, buffer);
 

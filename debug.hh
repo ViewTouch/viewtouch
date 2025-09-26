@@ -32,12 +32,12 @@
 
 extern const genericChar* pos_data_filename;
 
-const genericChar* GetXEventName( XEvent );
-void PrintXEventName( XEvent, const genericChar* , FILE * );
-void PrintTermCode( int );
-void PrintServerCode( int );
-void PrintFamilyCode( int );
-const genericChar* GetZoneTypeName( int );
+const genericChar* GetXEventName( XEvent ) noexcept;
+void PrintXEventName( XEvent, const genericChar* , FILE * ) noexcept;
+void PrintTermCode( int ) noexcept;
+void PrintServerCode( int ) noexcept;
+void PrintFamilyCode( int ) noexcept;
+const genericChar* GetZoneTypeName( int ) noexcept;
 
 #else
 
