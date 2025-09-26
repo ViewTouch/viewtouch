@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Fixed
+- **Vector Bounds Error**: Fixed crash when editing buttons due to vector bounds checking in dialog containers
+  - Added proper bounds checking in `DialogMenu::Set()` and `DialogDoubleMenu::Set()` methods
+  - Changed `CompareList()` unknown parameter from 0 to -1 for clearer invalid index detection
+  - Prevents `std::vector::operator[]` assertion failures when accessing empty or undersized vectors
+
 ### Changed
 - **Drawer Mode Terminology**: Changed "Normal" Drawer Mode to "Trusted" Drawer Mode for better clarity
 - **Server Bank Payment Navigation**: Fixed Server Bank payment completion flow to return to Page -2 (PAGEID_LOGIN2) specifically for Customer users on SelfOrder terminals, while maintaining normal navigation for all other users

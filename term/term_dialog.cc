@@ -342,8 +342,9 @@ int DialogMenu::Set(int value)
         XtVaSetValues(option, XmNmenuHistory, no_change_widget, NULL);
     else
     {
-        int idx = CompareList(value, value_list.data(), 0);
-        XtVaSetValues(option, XmNmenuHistory, choices[idx], NULL);
+        int idx = CompareList(value, value_list.data(), -1);
+        if (idx >= 0 && idx < static_cast<int>(choices.size()))
+            XtVaSetValues(option, XmNmenuHistory, choices[idx], NULL);
     }
     return 0;
 }
@@ -485,16 +486,18 @@ int DialogDoubleMenu::Set(int v1, int v2)
         XtVaSetValues(option1, XmNmenuHistory, no_change_widget1, NULL);
     else
     {
-        idx = CompareList(v1, value1_list.data(), 0);
-        XtVaSetValues(option1, XmNmenuHistory, choices1[idx], NULL);
+        idx = CompareList(v1, value1_list.data(), -1);
+        if (idx >= 0 && idx < static_cast<int>(choices1.size()))
+            XtVaSetValues(option1, XmNmenuHistory, choices1[idx], NULL);
     }
 
     if (no_change_widget2 && v2 == no_change_value)
         XtVaSetValues(option2, XmNmenuHistory, no_change_widget2, NULL);
     else
     {
-        idx = CompareList(v2, value2_list.data(), 0);
-        XtVaSetValues(option2, XmNmenuHistory, choices2[idx], NULL);
+        idx = CompareList(v2, value2_list.data(), -1);
+        if (idx >= 0 && idx < static_cast<int>(choices2.size()))
+            XtVaSetValues(option2, XmNmenuHistory, choices2[idx], NULL);
     }
     return 0;
 }
