@@ -7,6 +7,7 @@
 #include <cstring>
 #include <cctype>
 #include <iostream>
+#include <cstdio>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -23,7 +24,7 @@ std::atomic<int> BT_Depth(0);
 std::atomic<int> BT_Track(0);
 std::mutex BT_Mutex;
 
-size_t BackTraceFunction::get_current_memory_usage() {
+size_t BackTraceFunction::get_current_memory_usage() noexcept {
     struct rusage usage;
     if (getrusage(RUSAGE_SELF, &usage) == 0) {
         return usage.ru_maxrss * 1024; // Convert to bytes
@@ -35,15 +36,15 @@ void FnPrintTrace(bool include_timing, bool include_memory)
 {
     std::lock_guard<std::mutex> lock(BT_Mutex);
     fprintf(stdout, "Stack Trace (%d):\n", BT_Depth.load());
-    
-    for (int i = 0; i < BT_Depth; ++i) {
+    const int depth_snapshot = BT_Depth.load();
+    for (int i = 0; i < depth_snapshot; ++i) {
         const auto& entry = BT_Stack[i];
         fprintf(stdout, "    (%d) %s (%s:%d)", i + 1, entry.function, entry.file, entry.line);
         
         if (include_timing) {
-            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+            long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now() - entry.timestamp).count();
-            fprintf(stdout, " [%ld ms]", duration);
+            fprintf(stdout, " [%lld ms]", duration);
         }
         
         if (include_memory) {
@@ -58,20 +59,21 @@ void FnPrintTrace(bool include_timing, bool include_memory)
 void FnPrintLast(int depth, bool include_timing, bool include_memory)
 {
     std::lock_guard<std::mutex> lock(BT_Mutex);
-    depth = BT_Depth - depth - 1;
+    const int current_depth = BT_Depth.load();
+    depth = current_depth - depth - 1;
     if (depth < 0)
         depth = 0;
         
-    fprintf(stderr, "Stack Trace (%d of %d):\n", BT_Depth.load() - depth, BT_Depth.load());
+    fprintf(stderr, "Stack Trace (%d of %d):\n", current_depth - depth, current_depth);
     
-    for (int i = depth; i < BT_Depth; ++i) {
+    for (int i = depth; i < current_depth; ++i) {
         const auto& entry = BT_Stack[i];
         fprintf(stderr, "    (%d) %s (%s:%d)", i + 1, entry.function, entry.file, entry.line);
         
         if (include_timing) {
-            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+            long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now() - entry.timestamp).count();
-            fprintf(stderr, " [%ld ms]", duration);
+            fprintf(stderr, " [%lld ms]", duration);
         }
         
         if (include_memory) {
@@ -89,10 +91,12 @@ const char* FnReturnLast()
     static char last[STRLENGTH];
 
     last[0] = '\0';
-    if (BT_Depth == 1)
-        strcpy(last, BT_Stack[0].function);
-    else if (BT_Depth > 1)
-        strcpy(last, BT_Stack[BT_Depth - 2].function);
+    const int depth_snapshot = BT_Depth.load();
+    if (depth_snapshot == 1) {
+        std::snprintf(last, STRLENGTH, "%s", BT_Stack[0].function);
+    } else if (depth_snapshot > 1) {
+        std::snprintf(last, STRLENGTH, "%s", BT_Stack[depth_snapshot - 2].function);
+    }
 
     return last;
 }
