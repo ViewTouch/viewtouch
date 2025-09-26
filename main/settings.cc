@@ -78,7 +78,7 @@ int MealStartValue[] = {
     INDEX_EARLY_DINNER, INDEX_DINNER, INDEX_LATE_NIGHT, -1};
 
 const char* DrawerModeName[] = {
-    GlobalTranslate("Normal"), GlobalTranslate("Assigned"), GlobalTranslate("Server Bank"), NULL};
+    GlobalTranslate("Trusted"), GlobalTranslate("Assigned"), GlobalTranslate("Server Bank"), NULL};
 int   DrawerModeValue[] = {
     DRAWER_NORMAL, DRAWER_ASSIGNED, DRAWER_SERVER, -1};
 

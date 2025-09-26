@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Changed
+- **Drawer Mode Terminology**: Changed "Normal" Drawer Mode to "Trusted" Drawer Mode for better clarity
+- **Server Bank Payment Navigation**: Fixed Server Bank payment completion flow to return to Page -2 (PAGEID_LOGIN2) specifically for Customer users on SelfOrder terminals, while maintaining normal navigation for all other users
+
 ### Added
 - **QuickBooks CSV Export Feature**
   - **New Export Target**: Added `TARGET_QUICKBOOKS_CSV` target type and `MODEL_QUICKBOOKS_CSV` printer model for QuickBooks integration
