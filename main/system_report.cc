@@ -37,6 +37,7 @@
 
 #include <cstring>
 #include <iostream>
+#include <algorithm>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -53,41 +54,29 @@
 MediaList::MediaList()
 {
     FnTrace("MediaList::MediaList()");
-    next = NULL;
+    next = nullptr;
     name[0] = '\0';
     total = 0;
-    int i;
-    for (i = 0; i < MAX_SHIFTS; i++)
-    {
-        shift_total[i] = 0;
-    }
+    std::fill(std::begin(shift_total), std::end(shift_total), 0);
 }
 
 MediaList::MediaList(const std::string& namestr, int value)
 {
     FnTrace("MediaList::MediaList(const char* , int)");
-    next = NULL;
+    next = nullptr;
     name = namestr;
     total = value;
-    int i;
-    for (i = 0; i < MAX_SHIFTS; i++)
-    {
-        shift_total[i] = 0;
-    }
+    std::fill(std::begin(shift_total), std::end(shift_total), 0);
 }
 
 MediaList::MediaList(const std::string& namestr, int value, int shift)
 {
     FnTrace("MediaList::MediaList(const char* , int, int)");
 
-    next = NULL;
+    next = nullptr;
     name = namestr;
     total = value;
-    int i;
-    for (i = 0; i < MAX_SHIFTS; i++)
-    {
-        shift_total[i] = 0;
-    }
+    std::fill(std::begin(shift_total), std::end(shift_total), 0);
     if (shift >= 0 && shift < MAX_SHIFTS)
         shift_total[shift] = value;
 }
@@ -95,7 +84,7 @@ MediaList::MediaList(const std::string& namestr, int value, int shift)
 MediaList::~MediaList()
 {
     FnTrace("MediaList::~MediaList()");
-    if (next != NULL)
+    if (next != nullptr)
         delete next;
 }
 
@@ -117,7 +106,7 @@ int MediaList::Add(const std::string& namestr, int value, int shift)
         if (shift >= 0 && shift < MAX_SHIFTS)
             shift_total[shift] += value;
     }
-    else if (next != NULL)
+    else if (next != nullptr)
     {  // try the next entry
         next->Add(namestr, value, shift);
     }
@@ -137,7 +126,7 @@ int MediaList::Total(int shift)
         retval = shift_total[shift];
     else
         retval = total;
-    if (next != NULL)
+    if (next != nullptr)
         retval += next->Total(shift);
     return retval;
 }
@@ -146,7 +135,7 @@ int MediaList::Print()
 {
     FnTrace("MediaList::Print()");
     printf("%s:  $%d\n", name.c_str(), total);
-    if (next != NULL)
+    if (next != nullptr)
         next->Print();
     return 0;
 }
@@ -160,7 +149,7 @@ int System::ServerReport(Terminal *term, TimeInfo &time_start,
                          TimeInfo &end_time, Employee *thisEmployee, Report *ptrReport)
 {
     FnTrace("System::ServerReport()");
-    if (ptrReport == NULL)
+    if (ptrReport == nullptr || term == nullptr)
         return 1;
 
     ptrReport->update_flag = UPDATE_ARCHIVE | UPDATE_CHECKS | UPDATE_SERVER;
@@ -193,7 +182,7 @@ int System::ServerReport(Terminal *term, TimeInfo &time_start,
     Archive *thisArchive = FindByTime(time_start);
     for (;;)
     {
-        if (thisArchive == NULL)
+        if (thisArchive == nullptr)
             ptrReport->update_flag |= UPDATE_MINUTE;
 
         Check *thisCheck = FirstCheck(thisArchive);
@@ -223,7 +212,7 @@ int System::ServerReport(Terminal *term, TimeInfo &time_start,
                     ++closed;
                 }
 
-                for (SubCheck *sc = thisCheck->SubList(); sc != NULL; sc = sc->next)
+                for (SubCheck *sc = thisCheck->SubList(); sc != nullptr; sc = sc->next)
                 {
                     if (thisCheck->IsTakeOut())
                         takeout_sales += sc->total_sales;
@@ -237,7 +226,7 @@ int System::ServerReport(Terminal *term, TimeInfo &time_start,
             }
             thisCheck = thisCheck->next;
         }
-        if (thisArchive == NULL || thisArchive->end_time > end)
+        if (thisArchive == nullptr || thisArchive->end_time > end)
             break; // kill loop
         thisArchive = thisArchive->next;
     }
@@ -356,7 +345,7 @@ int System::ServerReport(Terminal *term, TimeInfo &time_start,
 int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
 {
     FnTrace("System::ShiftBalanceReport()");
-    if (ptrReport == NULL)
+    if (ptrReport == nullptr || term == nullptr)
         return 1;
 
 //    ptrReport->SetTitle(SHIFT_BALANCE_TITLE);           Let the Button's Name Field provide the Title for this report
@@ -455,54 +444,48 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
     MediaList complist;
     MediaList meallist;
 
+    std::fill(std::begin(takeout), std::end(takeout), 0);
+    std::fill(std::begin(fastfood), std::end(fastfood), 0);
+    std::fill(std::begin(takeout_sales), std::end(takeout_sales), 0);
+    std::fill(std::begin(fastfood_sales), std::end(fastfood_sales), 0);
+    std::fill(std::begin(guests), std::end(guests), 0);
+    std::fill(std::begin(net_sales), std::end(net_sales), 0);
+    std::fill(std::begin(labor_mins), std::end(labor_mins), 0);
+    std::fill(std::begin(labor_cost), std::end(labor_cost), 0);
+    std::fill(std::begin(labor_otmins), std::end(labor_otmins), 0);
+    std::fill(std::begin(labor_otcost), std::end(labor_otcost), 0);
+    std::fill(std::begin(labor_percent), std::end(labor_percent), 0.0);
+    std::fill(std::begin(item_comp), std::end(item_comp), 0);
+    std::fill(std::begin(adjust), std::end(adjust), 0);
+    std::fill(std::begin(sales), std::end(sales), 0);
+    
     for (i = 0; i < MAX_SHIFTS; ++i)
     {
-        takeout[i]       = 0;
-		fastfood[i]      = 0;
-        takeout_sales[i] = 0;
-		fastfood_sales[i]= 0;
-        guests[i]        = 0;
-        net_sales[i]     = 0;
-        labor_mins[i]    = 0;
-        labor_cost[i]    = 0;
-        labor_otmins[i]  = 0;
-        labor_otcost[i]  = 0;
-        labor_percent[i] = 0.0;
-        item_comp[i]     = 0;
-        adjust[i]        = 0;
-        sales[i]         = 0;
-        for (j = 0; j < 8; ++j)
-            group_sales[i][j] = 0;
-        for (j = 0; j < 16; ++j)
-        {
-            job_mins[i][j] = 0;
-            job_cost[i][j] = 0;
-            job_otmins[i][j] = 0;
-            job_otcost[i][j] = 0;
-        }
+        std::fill(std::begin(group_sales[i]), std::end(group_sales[i]), 0);
+        std::fill(std::begin(job_mins[i]), std::end(job_mins[i]), 0);
+        std::fill(std::begin(job_cost[i]), std::end(job_cost[i]), 0);
+        std::fill(std::begin(job_otmins[i]), std::end(job_otmins[i]), 0);
+        std::fill(std::begin(job_otcost[i]), std::end(job_otcost[i]), 0);
     }
 
-    for (i = 0; i < 16; ++i)
-    {
-        total_job_mins[i] = 0;
-        total_job_cost[i] = 0;
-        total_job_otmins[i] = 0;
-        total_job_otcost[i] = 0;
-    }
+    std::fill(std::begin(total_job_mins), std::end(total_job_mins), 0);
+    std::fill(std::begin(total_job_cost), std::end(total_job_cost), 0);
+    std::fill(std::begin(total_job_otmins), std::end(total_job_otmins), 0);
+    std::fill(std::begin(total_job_otcost), std::end(total_job_otcost), 0);
 
     // Calculate sales
     Archive *a = FindByTime(time_start);
     for (;;)
     {
-        for (Check *thisCheck = FirstCheck(a); thisCheck != NULL; thisCheck = thisCheck->next)
+        for (Check *thisCheck = FirstCheck(a); thisCheck != nullptr; thisCheck = thisCheck->next)
 		{
             if (thisCheck->IsTraining() > 0)
                 continue;
 
             TimeInfo *timevar = thisCheck->TimeClosed();
-            if (timevar == NULL && thisCheck->CustomerType() == CHECK_HOTEL)
+            if (timevar == nullptr && thisCheck->CustomerType() == CHECK_HOTEL)
                 timevar = &thisCheck->time_open;
-            if (timevar == NULL || *timevar < time_start || *timevar >= end)
+            if (timevar == nullptr || *timevar < time_start || *timevar >= end)
                 continue;
 
             int sn = currSettings->ShiftNumber(*timevar);
@@ -515,25 +498,25 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
 
             // Add all of the media
             CompInfo *compinfo = a ? a->CompList() : settings.CompList();
-            while (compinfo != NULL)
+            while (compinfo != nullptr)
             {
                 complist.Add(compinfo->name.Value(), 0);
                 compinfo = compinfo->next;
             }
             MealInfo *mealinfo = a ? a->MealList() : settings.MealList();
-            while (mealinfo != NULL)
+            while (mealinfo != nullptr)
             {
                 meallist.Add(mealinfo->name.Value(), 0);
                 mealinfo = mealinfo->next;
             }
             DiscountInfo *discinfo = a ? a->DiscountList() : settings.DiscountList();
-            while (discinfo != NULL)
+            while (discinfo != nullptr)
             {
                 discountlist.Add(discinfo->name.Value(), 0);
                 discinfo = discinfo->next;
             }
             CouponInfo *coupinfo = a ? a->CouponList() : settings.CouponList();
-            while (coupinfo != NULL)
+            while (coupinfo != nullptr)
             {
                 couponlist.Add(coupinfo->name.Value(), 0);
                 coupinfo = coupinfo->next;
@@ -714,7 +697,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
     }
 
     // Main header
-    sprintf(str, "%s --  %s", term->TimeDate(str2, time_start, TD0),
+    snprintf(str, sizeof(str), "%s --  %s", term->TimeDate(str2, time_start, TD0),
             term->TimeDate(end, TD0));
     ptrReport->TextC(str, COLOR_DK_BLUE);
     ptrReport->NewLine(2);
@@ -747,7 +730,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         {
             if (term->hide_zeros == 0 || total_group_sales[g] != 0)
             {
-                sprintf(str, "%s Sales", SalesGroupName[g]);
+                snprintf(str, sizeof(str), "%s Sales", SalesGroupName[g]);
                 ptrReport->TextL(str);
                 if (max_shifts > 1)
                 {
@@ -761,7 +744,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
                 per = 0;
                 if (total_sales > 0)
                     per = 100.0 * ((Flt) total_group_sales[g] / (Flt) total_sales);
-                sprintf(str, "%.2f%%", per);
+                snprintf(str, sizeof(str), "%.2f%%", per);
                 ptrReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
                 ptrReport->NewLine();
             }
@@ -973,7 +956,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
     }
 
     ptrReport->TextPosR(last_pos, term->FormatPrice(total_adjust), last_color);
-    sprintf(str, "%.2f%%", per);
+    snprintf(str, sizeof(str), "%.2f%%", per);
     ptrReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
     ptrReport->NewLine();
 
@@ -990,7 +973,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
             }
         }
         ptrReport->TextPosR(last_pos, term->FormatPrice(total_net_sales, 1), last_color);
-        sprintf(str, "%.2f%%", 100.0 - per);
+        snprintf(str, sizeof(str), "%.2f%%", 100.0 - per);
         ptrReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
         ptrReport->NewLine(2);
     }
@@ -1101,12 +1084,12 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         {
             for (i = 0; i < shifts; ++i)
             {
-                sprintf(str, "%.1f", (Flt) labor_mins[shift[i]] / 60.0);
+                snprintf(str, sizeof(str), "%.1f", (Flt) labor_mins[shift[i]] / 60.0);
                 ptrReport->TextPosR(cr[i + 1], str, color[i]);
             }
         }
 
-        sprintf(str, "%.1f", (Flt) total_labor_mins / 60.0);
+        snprintf(str, sizeof(str), "%.1f", (Flt) total_labor_mins / 60.0);
         ptrReport->TextPosR(last_pos, str, last_color);
         ptrReport->NewLine();
 
@@ -1129,12 +1112,12 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         {
             for (i = 0; i < shifts; ++i)
             {
-                sprintf(str, "%.1f", (Flt) labor_otmins[shift[i]] / 60.0);
+                snprintf(str, sizeof(str), "%.1f", (Flt) labor_otmins[shift[i]] / 60.0);
                 ptrReport->TextPosR(cr[i + 1], str, color[i]);
             }
         }
 
-        sprintf(str, "%.1f", (Flt) total_labor_otmins / 60.0);
+        snprintf(str, sizeof(str), "%.1f", (Flt) total_labor_otmins / 60.0);
         ptrReport->TextPosR(last_pos, str, last_color);
         ptrReport->NewLine();
 
@@ -1157,17 +1140,17 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         {
             if (currSettings->job_active[JobValue[j]] && (term->hide_zeros == 0 || total_job_mins[j] != 0))
             {
-                sprintf(str, "%s Hours", JobName[j]);
+                snprintf(str, sizeof(str), "%s Hours", JobName[j]);
                 ptrReport->TextL(str);
 				if (max_shifts > 1)
 				{
 					for (i = 0; i < shifts; ++i)
 					{
-						sprintf(str, "%.1f", (Flt) job_mins[shift[i]][j] / 60.0);
+						snprintf(str, sizeof(str), "%.1f", (Flt) job_mins[shift[i]][j] / 60.0);
 						ptrReport->TextPosR(cr[i + 1], str, color[i]);
 					}
 				}
-				sprintf(str, "%.1f", (Flt) total_job_mins[j] / 60.0);
+				snprintf(str, sizeof(str), "%.1f", (Flt) total_job_mins[j] / 60.0);
 				ptrReport->TextPosR(last_pos, str, last_color);
 				ptrReport->NewLine();
 				if (total_job_otmins[j] > 0)
@@ -1177,11 +1160,11 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
                     {
 						for (i = 0; i < shifts; ++i)
 						{
-							sprintf(str, "%.1f", (Flt) job_otmins[shift[i]][j] / 60.0);
+							snprintf(str, sizeof(str), "%.1f", (Flt) job_otmins[shift[i]][j] / 60.0);
 							ptrReport->TextPosR(cr[i + 1], str, color[i]);
 						}
                     }
-					sprintf(str, "%.1f", (Flt) total_job_otmins[j] / 60.0);
+					snprintf(str, sizeof(str), "%.1f", (Flt) total_job_otmins[j] / 60.0);
 					ptrReport->TextPosR(last_pos, str, last_color);
 					ptrReport->NewLine();
 				}
@@ -1199,12 +1182,12 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
 	{
         for (i = 0; i < shifts; ++i)
         {
-            sprintf(str, "%.1f", (Flt) (labor_mins[shift[i]] + labor_otmins[shift[i]]) / 60.0);
+            snprintf(str, sizeof(str), "%.1f", (Flt) (labor_mins[shift[i]] + labor_otmins[shift[i]]) / 60.0);
             ptrReport->TextPosR(cr[i + 1], str, color[i]);
         }
 	}
 
-    sprintf(str, "%.1f", (Flt) (total_labor_mins + total_labor_otmins) / 60.0);
+    snprintf(str, sizeof(str), "%.1f", (Flt) (total_labor_mins + total_labor_otmins) / 60.0);
     ptrReport->TextPosR(last_pos, str, last_color);
     ptrReport->NewLine();
 
@@ -1215,7 +1198,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
         {
             if (currSettings->job_active[JobValue[j]] && (term->hide_zeros == 0 || total_job_cost[j] != 0))
             {
-                sprintf(str, "%s Cost", JobName[j]);
+                snprintf(str, sizeof(str), "%s Cost", JobName[j]);
                 ptrReport->TextL(str);
                 if (max_shifts > 1)
                 {
@@ -1316,7 +1299,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
             else
 				f = 0;
 
-            sprintf(str, "%.2f%%", f);
+            snprintf(str, sizeof(str), "%.2f%%", f);
             ptrReport->TextPosR(cr[i + 1] + 1, str, color[i]);
         }
 	}
@@ -1326,7 +1309,7 @@ int System::ShiftBalanceReport(Terminal *term, TimeInfo &ref, Report *ptrReport)
     else
         f = 0;
 
-    sprintf(str, "%.2f%%", f);
+    snprintf(str, sizeof(str), "%.2f%%", f);
     ptrReport->TextPosR(last_pos, str, last_color);
     term->SetCursor(CURSOR_POINTER);
     return 0;
@@ -1361,12 +1344,12 @@ public:
     // Constructor
     BRData()
     {
-        system = NULL;
-        report = NULL;
-        term = NULL;
-        archive = NULL;
-        lastArchive = NULL;
-        check = NULL;
+        system = nullptr;
+        report = nullptr;
+        term = nullptr;
+        archive = nullptr;
+        lastArchive = nullptr;
+        check = nullptr;
         guests = 0;
         sales = 0;
 		takeout_sales = 0;
@@ -1374,10 +1357,7 @@ public:
 		fastfood_sales = 0;
         fastfood = 0;
         item_comp = 0;
-        for (int i = 0; i < 8; ++i)
-        {
-            group_sales[i] = 0;
-        }
+        std::fill(std::begin(group_sales), std::end(group_sales), 0);
     }
 };
 
@@ -1391,14 +1371,14 @@ int BalanceReportWorkFn(BRData *brdata)
 
     // Calculate sales
     Check *c = brdata->check;
-    if (c == NULL)
+    if (c == nullptr)
         c = sys->FirstCheck(brdata->archive);
 
     while (c && c->IsTraining())
         c = c->next;
 
     // Early exit if there are no checks to process
-    if (c == NULL) {
+    if (c == nullptr) {
         thisReport->is_complete = 1;
         brdata->term->Update(UPDATE_REPORT, NULL);
         delete brdata;
@@ -1592,7 +1572,7 @@ int BalanceReportWorkFn(BRData *brdata)
         {
             if (term->hide_zeros == 0 || brdata->group_sales[g] != 0)
             {
-                sprintf(str, "%s Sales", SalesGroupName[g]);
+                snprintf(str, sizeof(str), "%s Sales", SalesGroupName[g]);
                 thisReport->TextL(str);
                 thisReport->TextPosR(last_pos, term->FormatPrice(brdata->group_sales[g]), color);
 
@@ -1600,7 +1580,7 @@ int BalanceReportWorkFn(BRData *brdata)
                 if (brdata->sales > 0)
                     per = 100.0 * ((Flt) brdata->group_sales[g] / (Flt) brdata->sales);
 
-                sprintf(str, "%.2f%%", per);
+                snprintf(str, sizeof(str), "%.2f%%", per);
 
                 thisReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
                 thisReport->NewLine();
@@ -1809,7 +1789,7 @@ int BalanceReportWorkFn(BRData *brdata)
         {
             if (currSettings->job_active[JobValue[j]] && (term->hide_zeros == 0 || job_mins[j] != 0))
             {
-                sprintf(str, "%s Hours", JobName[j]);
+                snprintf(str, sizeof(str), "%s Hours", JobName[j]);
                 thisReport->TextL(str);
                 sprintf(str, "%.1f", (Flt) job_mins[j] / 60.0);
                 thisReport->TextPosR(last_pos, str, color);
@@ -1840,7 +1820,7 @@ int BalanceReportWorkFn(BRData *brdata)
         {
             if (currSettings->job_active[JobValue[j]] && (term->hide_zeros == 0 || job_mins[j] != 0))
             {
-                sprintf(str, "%s Cost", JobName[j]);
+                snprintf(str, sizeof(str), "%s Cost", JobName[j]);
                 thisReport->TextL(str);
                 thisReport->TextPosR(last_pos, term->FormatPrice(job_cost[j], 1), color);
                 thisReport->NewLine();
@@ -1885,7 +1865,7 @@ int BalanceReportWorkFn(BRData *brdata)
     Flt f = 0;
     if (brdata->sales > 0)
         f = (Flt) ((labor_cost + labor_otcost) * 100) / (Flt) brdata->sales;
-    sprintf(str, "%.2f%%", f);
+    snprintf(str, sizeof(str), "%.2f%%", f);
     thisReport->TextPosR(last_pos, str, color);
 
     thisReport->is_complete = 1;
@@ -2054,7 +2034,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
             for (Check *c = firstcheck; c != NULL; c = c->next)
             {
                 // Validate check pointer
-                if (c == NULL)
+                if (c == nullptr)
                     continue;
                     
                 if (c->IsTraining() > 0)
@@ -2130,7 +2110,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                     }
 
                     DiscountInfo *discinfo = a ? a->DiscountList() : s->DiscountList();
-                    while (discinfo != NULL)
+                    while (discinfo != nullptr)
                     {
                         int balance = 0;
                         if (drawer)
@@ -2140,7 +2120,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                     }
 
                     CouponInfo *coupinfo = a ? a->CouponList() : s->CouponList();
-                    while (coupinfo != NULL)
+                    while (coupinfo != nullptr)
                     {
                         int balance = 0;
                         if (drawer)
@@ -2150,7 +2130,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                     }
 
                     CompInfo *compinfo = a ? a->CompList() : s->CompList();
-                    while (compinfo != NULL)
+                    while (compinfo != nullptr)
                     {
                         int balance = 0;
                         if (drawer)
@@ -2160,7 +2140,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                     }
 
                     MealInfo *mealinfo = a ? a->MealList() : s->MealList();
-                    while (mealinfo != NULL)
+                    while (mealinfo != nullptr)
                     {
                         int balance = 0;
                         if (drawer)
@@ -3183,19 +3163,19 @@ int System::CustomerDetailReport(Terminal *term, Employee *e, Report *report)
         }
 
 		int balance = 0;
-		for (SubCheck *sc = c->SubList(); sc != NULL; sc = sc->next)
+		for (SubCheck *sc = c->SubList(); sc != nullptr; sc = sc->next)
 			balance += sc->balance;
 
 		TimeInfo *timevar = c->CheckOut();
 		if (strlen(c->LastName()) <= 0)
 		{
 			if (strlen(c->FirstName()) <= 0)
-				strcpy(name, "--");
+				snprintf(name, sizeof(name), "--");
 			else
-				strcpy(name, c->FirstName());
+				snprintf(name, sizeof(name), "%s", c->FirstName());
 		}
 		else
-			sprintf(name, "%s, %s", c->LastName(), c->FirstName());
+			snprintf(name, sizeof(name), "%s, %s", c->LastName(), c->FirstName());
 
 		name[24] = '\0';
 
@@ -3305,7 +3285,7 @@ public:
 
 Expenses::Expenses()
 {
-    next = NULL;
+    next = nullptr;
     payer_id = 0;
     payer_name[0] = '\0';
     date.Set();
@@ -3334,7 +3314,7 @@ Expenses::Expenses(Expense *expense, Terminal *term, Archive *archive)
     Account *tax_account = acctdb->FindByNumber(expense->tax_account_id);
     Account *dest_account = acctdb->FindByNumber(expense->dest_account_id);
 
-    next = NULL;
+    next = nullptr;
 
     date = expense->exp_date;
 
@@ -3372,14 +3352,14 @@ Expenses::Expenses(Expense *expense, Terminal *term, Archive *archive)
 
 Expenses::~Expenses()
 {
-    if (next != NULL)
+    if (next != nullptr)
         delete next;
 }
 
 int Expenses::Copy(Expenses *exp2)
 {
     FnTrace("Expenses::Copy()");
-    next = NULL;
+    next = nullptr;
     payer_id = exp2->payer_id;
     strncpy(payer_name, exp2->payer_name, STRLENGTH);
     date.Set(exp2->date);
@@ -3799,7 +3779,7 @@ public:
 
 Vouchers::Vouchers()
 {
-    next = NULL;
+    next = nullptr;
     fore = NULL;
     type = -1;
     id   = -1;
@@ -3807,7 +3787,7 @@ Vouchers::Vouchers()
 
 Vouchers::Vouchers(int vtype, int vid)
 {
-    next = NULL;
+    next = nullptr;
     fore = NULL;
     type = vtype;
     id   = vid;
@@ -3866,16 +3846,21 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
             currCoupon = currCoupon->next;
         }
 
-        while (currCheck != NULL)
+        // Check if there are no checks to process
+        if (currCheck == NULL)
         {
-            if ((currCheck->IsTraining() == 0) &&
-                (currCheck->time_open >= rdata->start_time) &&
-                (currCheck->time_open < rdata->end_time))
+            // No checks to process, mark as done and continue to archive processing
+            rdata->done = 1;
+        }
+        else
+        {
+            while (currCheck != NULL)
             {
-                guests_counted = 0;
-                day = currCheck->time_open.Day() - 1;  // day is an index, start at 0
-                if (day < rdata->maxdays)
+                if ((currCheck->IsTraining() == 0) &&
+                    (currCheck->time_open >= rdata->start_time) &&
+                    (currCheck->time_open < rdata->end_time))
                 {
+                    guests_counted = 0;
                     currSubcheck = currCheck->SubList();
                     while (currSubcheck != NULL)
                     {
@@ -3886,45 +3871,46 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
                              (currSubcheck->settle_time >= archive->start_time &&
                               currSubcheck->settle_time <= archive->end_time)))
                         {
-                            currSubcheck->FigureTotals(rdata->settings);
-                            if (guests_counted == 0)
+                            // Calculate day index from settlement time, not opening time
+                            day = currSubcheck->settle_time.Day() - 1;  // day is an index, start at 0
+                            if (day < rdata->maxdays)
                             {
-                                if (currCheck->IsTakeOut() || currCheck->IsFastFood())
+                                currSubcheck->FigureTotals(rdata->settings);
+                                if (guests_counted == 0)
                                 {
-                                    rdata->customers[day] += 1;
-                                    rdata->total_guests += 1;
+                                    if (currCheck->IsTakeOut() || currCheck->IsFastFood())
+                                    {
+                                        rdata->customers[day] += 1;
+                                        rdata->total_guests += 1;
+                                    }
+                                    else
+                                    {
+                                        rdata->customers[day] += currCheck->Guests();
+                                        rdata->total_guests += currCheck->Guests();
+                                    }
+                                    guests_counted = 1;
                                 }
-                                else
+                                rdata->sales[day] += currSubcheck->total_sales;
+                                rdata->total_sales += currSubcheck->total_sales;
+                                // now check vouchers
+                                currVoucher = voucher_list.Head();
+                                while (currVoucher != NULL)
                                 {
-                                    rdata->customers[day] += currCheck->Guests();
-                                    rdata->total_guests += currCheck->Guests();
+                                    vouchers = currSubcheck->TotalPayment(currVoucher->type, currVoucher->id);
+                                    if (vouchers)
+                                    {
+                                        rdata->total_vouchers += 1;
+                                        rdata->total_voucher_amt += vouchers;
+                                    }
+                                    currVoucher = currVoucher->next;
                                 }
-                                guests_counted = 1;
-                            }
-                            rdata->sales[day] += currSubcheck->total_sales;
-                            rdata->total_sales += currSubcheck->total_sales;
-                            // now check vouchers
-                            currVoucher = voucher_list.Head();
-                            while (currVoucher != NULL)
-                            {
-                                vouchers = currSubcheck->TotalPayment(currVoucher->type, currVoucher->id);
-                                if (vouchers)
-                                {
-                                    rdata->total_vouchers += 1;
-                                    rdata->total_voucher_amt += vouchers;
-                                }
-                                currVoucher = currVoucher->next;
                             }
                         }
                         currSubcheck = currSubcheck->next;
                     }
                 }
-                else if (debug_mode)
-                {
-                    printf("Too many days:  %d\n", day);
-                }
+                currCheck = currCheck->next;
             }
-            currCheck = currCheck->next;
         }
         voucher_list.Purge();  // always clean the voucher list
 

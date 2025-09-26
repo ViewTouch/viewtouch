@@ -22,6 +22,7 @@
 #include "basic.hh"
 #include "fntrace.hh"
 #include "utility.hh"
+#include <utility>
 
 /**** Types ****/
 template <class type>
@@ -241,6 +242,25 @@ public:
     // Constructors
     DList()           { list_head = NULL; list_tail = NULL; }
     DList(type *item) { list_head = item; list_tail = item; }
+    DList(const DList&) = delete;
+    DList& operator=(const DList&) = delete;
+    DList(DList&& other) noexcept : list_head(other.list_head), list_tail(other.list_tail)
+    {
+        other.list_head = NULL;
+        other.list_tail = NULL;
+    }
+    DList& operator=(DList&& other) noexcept
+    {
+        if (this != &other)
+        {
+            Purge();
+            list_head = other.list_head;
+            list_tail = other.list_tail;
+            other.list_head = NULL;
+            other.list_tail = NULL;
+        }
+        return *this;
+    }
 
     // Destructor
     ~DList()

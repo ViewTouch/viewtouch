@@ -36,15 +36,15 @@ typedef double         Flt;
 
 /**** Inlined Functions ****/
 template <class type>
-inline type Max(type a, type b) { return (a > b) ?  (a) : (b); }
+constexpr inline type Max(type a, type b) { return (a > b) ?  (a) : (b); }
 // Returns the higher of both arguments
 
 template <class type>
-inline type Min(type a, type b) { return (a > b) ?  (b) : (a); }
+constexpr inline type Min(type a, type b) { return (a > b) ?  (b) : (a); }
 // Returns the lower of both arguments
 
 template <class type>
-inline type Abs(type a)         { return (a < 0) ? (-a) : (a); }
+constexpr inline type Abs(type a)         { return (a < 0) ? (-a) : (a); }
 // Returns the absolute value of the given argument
 
 #endif

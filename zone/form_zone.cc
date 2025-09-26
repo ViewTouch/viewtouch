@@ -27,6 +27,8 @@
 
 #include <cctype>
 #include <cstring>
+#include <cstdio>
+#include <algorithm>
 #include <Xm/Xm.h>
 
 #ifdef DMALLOC
@@ -45,8 +47,8 @@ public:
     LabelField(const genericChar* lbl, Flt width);
 
     // Member Functions
-    int          Init(Terminal *term, FormZone *fzone);
-    RenderResult Render(Terminal *term, FormZone *fzone);
+    int          Init(Terminal *term, FormZone *fzone) override;
+    RenderResult Render(Terminal *term, FormZone *fzone) override;
 };
 
 class SubmitField : public FormField
@@ -56,10 +58,10 @@ public:
 
     SubmitField(const genericChar* lbl, Flt width);
     // Member Functions
-    int          Init(Terminal *term, FormZone *fzone);
-    RenderResult Render(Terminal *term, FormZone *fzone);
-    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state);
-    SignalResult Mouse(Terminal *term, FormZone *fzone, int action, Flt mx, Flt my);
+    int          Init(Terminal *term, FormZone *fzone) override;
+    RenderResult Render(Terminal *term, FormZone *fzone) override;
+    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state) override;
+    SignalResult Mouse(Terminal *term, FormZone *fzone, int action, Flt mx, Flt my) override;
 };
 
 class TextField : public FormField
@@ -76,34 +78,34 @@ public:
     TextField(const genericChar* lbl, int max_entry, int mod, Flt min_label);
 
     // Member Functions
-    int          Init(Terminal *term, FormZone *fzone);
-    RenderResult Render(Terminal *term, FormZone *fzone);
-    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state);
+    int          Init(Terminal *term, FormZone *fzone) override;
+    RenderResult Render(Terminal *term, FormZone *fzone) override;
+    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state) override;
 
-    int Set(const genericChar* v);
-    int Set(Str  &v);
-    int Set(int   v);
-    int Set(Flt   v);
-    int SetNumRange(int lo, int hi);
+    int Set(const genericChar* v) override;
+    int Set(Str  &v) override;
+    int Set(int   v) override;
+    int Set(Flt   v) override;
+    int SetNumRange(int lo, int hi) override;
 
     int InsertStringAtCursor(genericChar* my_string); // does the append/insert for strings
     int InsertDigits(int digits, int num = 1);  // does append for digits
     int Append(genericChar* my_string);  // these functions determine what to append
-    int Append(Str &my_string);   // and whether the append should take place
-    int Append(int val);       // they append after cursor, not at the end
-    int Append(Flt val);       // of the string (using InsertStringAtCursor()
-    int Append(genericChar key); // or InsertDigits())
+    int Append(Str &my_string) override;   // and whether the append should take place
+    int Append(int val) override;       // they append after cursor, not at the end
+    int Append(Flt val) override;       // of the string (using InsertStringAtCursor()
+    int Append(genericChar key) override; // or InsertDigits())
 
-    int Remove(int num = 1);   // removes the last genericChar (backspace) or num chars
-    int Clear();  // sets buffer back to empty string
+    int Remove(int num = 1) override;   // removes the last genericChar (backspace) or num chars
+    int Clear() override;  // sets buffer back to empty string
 
-    int Get(genericChar* v, int len);
-    int Get(genericChar* v);
-    int Get(Str &v);
-    int Get(int &v);
-    int Get(Flt &v);
+    int Get(genericChar* v, int len) override;
+    int Get(genericChar* v) override;
+    int Get(Str &v) override;
+    int Get(int &v) override;
+    int Get(Flt &v) override;
     int GetPrice(int &v)      { v = ParsePrice(buffer.Value()); return 0;}
-    void Print(void);         // debug function to print the value to the screen
+    void Print(void) override;         // debug function to print the value to the screen
 };
 
 class TimeDateField : public FormField
@@ -120,15 +122,15 @@ public:
     TimeDateField(const genericChar* lbl, int mod, int can_unset);
 
     // Member Functions
-    int          Init(Terminal *term, FormZone *fzone);
-    RenderResult Render(Terminal *term, FormZone *fzone);
-    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state);
-    SignalResult Mouse(Terminal *term, FormZone *fzone, int action, Flt mx, Flt my);
+    int          Init(Terminal *term, FormZone *fzone) override;
+    RenderResult Render(Terminal *term, FormZone *fzone) override;
+    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state) override;
+    SignalResult Mouse(Terminal *term, FormZone *fzone, int action, Flt mx, Flt my) override;
 
-    int Set(TimeInfo *tinfo);
-    int Set(TimeInfo &tinfo) { buffer = tinfo; return 0; }
-    int Get(TimeInfo &tinfo) { tinfo = buffer; return 0; }
-    int IsSet() { return buffer.IsSet(); }
+    int Set(TimeInfo *tinfo) override;
+    int Set(TimeInfo &tinfo) override { buffer = tinfo; return 0; }
+    int Get(TimeInfo &tinfo) override { tinfo = buffer; return 0; }
+    int IsSet() override { return buffer.IsSet(); }
 };
 
 class TimeDayField : public FormField
@@ -146,16 +148,16 @@ public:
     TimeDayField(const genericChar* lbl, int mod, int can_unset);
 
     // Member Functions
-    int          Init(Terminal *term, FormZone *fzone);
-    RenderResult Render(Terminal *term, FormZone *fzone);
-    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state);
-    SignalResult Mouse(Terminal *term, FormZone *fzone, int action, Flt mx, Flt my);
+    int          Init(Terminal *term, FormZone *fzone) override;
+    RenderResult Render(Terminal *term, FormZone *fzone) override;
+    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state) override;
+    SignalResult Mouse(Terminal *term, FormZone *fzone, int action, Flt mx, Flt my) override;
 
-    int Set(TimeInfo &tinfo);
-    int Set(TimeInfo *tinfo);
-    int Set(int minutes);
-    int Get(TimeInfo &tinfo);
-    int Get(int &minutes);
+    int Set(TimeInfo &tinfo) override;
+    int Set(TimeInfo *tinfo) override;
+    int Set(int minutes) override;
+    int Get(TimeInfo &tinfo) override;
+    int Get(int &minutes) override;
 };
 
 class WeekDayField : public FormField
@@ -165,13 +167,13 @@ public:
     int current;
 
     WeekDayField(const char* lbl, int mod = 1);
-    int          Init(Terminal *term, FormZone *fzone);
-    RenderResult Render(Terminal *term, FormZone *fzone);
-    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state);
-    SignalResult Mouse(Terminal *term, FormZone *fzone, int action, Flt mx, Flt my);
+    int          Init(Terminal *term, FormZone *fzone) override;
+    RenderResult Render(Terminal *term, FormZone *fzone) override;
+    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state) override;
+    SignalResult Mouse(Terminal *term, FormZone *fzone, int action, Flt mx, Flt my) override;
 
-    int Set(int d);
-    int Get(int &d);
+    int Set(int d) override;
+    int Get(int &d) override;
 };
 
 class ListFieldEntry
@@ -209,27 +211,27 @@ public:
     ListFieldEntry *EntryListEnd() { return entry_list.Tail(); }
     int             EntryCount()   { return entry_list.Count(); }
 
-    int          Init(Terminal *term, FormZone *fzone);
-    RenderResult Render(Terminal *term, FormZone *fzone);
-    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state);
-    SignalResult Touch(Terminal *term, FormZone *fzone, Flt tx, Flt ty);
-    SignalResult Mouse(Terminal *term, FormZone *fzone, int action, Flt mx, Flt my);
+    int          Init(Terminal *term, FormZone *fzone) override;
+    RenderResult Render(Terminal *term, FormZone *fzone) override;
+    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state) override;
+    SignalResult Touch(Terminal *term, FormZone *fzone, Flt tx, Flt ty) override;
+    SignalResult Mouse(Terminal *term, FormZone *fzone, int action, Flt mx, Flt my) override;
 
     int NextEntry(int loop = 0);
     int ForeEntry(int loop = 0);
 
-    int Set(int  v);
-    int Get(int &v);
-    int SetName(Str &set_name);
-    int GetName(Str &get_name);
-    int SetList(const genericChar** option_list, int* value_list );
-    int SetActiveList(int *list);
+    int Set(int  v) override;
+    int Get(int &v) override;
+    int SetName(Str &set_name) override;
+    int GetName(Str &get_name) override;
+    int SetList(const genericChar** option_list, int* value_list ) override;
+    int SetActiveList(int *list) override;
     int Add(ListFieldEntry *lfe);
-    int ClearEntries();
+    int ClearEntries() override;
 
     int AddEntry(const genericChar* name, int val) {
         return Add(new ListFieldEntry(name, val)); }
-    void Print(void);
+    void Print(void) override;
 };
 
 class ButtonField : public FormField
@@ -243,10 +245,10 @@ public:
     ButtonField(const genericChar* lbl, const genericChar* msg);
 
     // Member Functions
-    int          Init(Terminal *term, FormZone *fzone);
-    RenderResult Render(Terminal *term, FormZone *fzone);
-    SignalResult Touch(Terminal *term, FormZone *fzone, Flt tx, Flt ty);
-    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state);
+    int          Init(Terminal *term, FormZone *fzone) override;
+    RenderResult Render(Terminal *term, FormZone *fzone) override;
+    SignalResult Touch(Terminal *term, FormZone *fzone, Flt tx, Flt ty) override;
+    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state) override;
 };
 
 class TemplateField : public FormField
@@ -262,14 +264,14 @@ public:
     TemplateField(const genericChar* lbl, const genericChar* tem, Flt min_label);
 
     // Member Functions
-    int          Init(Terminal *term, FormZone *fzone);
-    RenderResult Render(Terminal *term, FormZone *fzone);
-    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state);
+    int          Init(Terminal *term, FormZone *fzone) override;
+    RenderResult Render(Terminal *term, FormZone *fzone) override;
+    SignalResult Keyboard(Terminal *term, FormZone *fzone, int key, int state) override;
 
-    int Set(const genericChar* v) { return buffer.Set(v); }
-    int Set(Str  &v)        { return buffer.Set(v); }
-    int Get(Str &v)         { v.Set(buffer); return 0; }
-    int Get(genericChar* v) { strcpy(v, buffer.Value()); return 0; }
+    int Set(const genericChar* v) override { return buffer.Set(v); }
+    int Set(Str  &v)        override { return buffer.Set(v); }
+    int Get(Str &v)         override { v.Set(buffer); return 0; }
+    int Get(genericChar* v) override { strcpy(v, buffer.Value()); return 0; }
 };
 
 
@@ -1904,8 +1906,8 @@ void TextField::Print(void)
 
 
 /**** TimeDateField Class ****/
-static Flt TDF_Seg[] = {5, 9, 12, 17, 20};
-static Flt TDF_Len[] = {3, 2, 4, 2, 2};
+static const Flt TDF_Seg[] = {5, 9, 12, 17, 20};
+static const Flt TDF_Len[] = {3, 2, 4, 2, 2};
 
 // Constructor
 TimeDateField::TimeDateField(const genericChar* lbl, int mod, int cu)
@@ -1969,22 +1971,22 @@ RenderResult TimeDateField::Render(Terminal *term, FormZone *fzone)
 
     val = buffer.WeekDay();
     if (!buffer.IsSet() || val < 0 || val > 6)
-        sprintf(str, "---");
+        snprintf(str, STRLENGTH, "---");
     else
-        sprintf(str, "%s",term->Translate(ShortDayName[val]));
+        snprintf(str, STRLENGTH, "%s",term->Translate(ShortDayName[val]));
     fzone->TextPosL(term, xx,        y, str, COLOR_WHITE);
 
     val = buffer.Month() - 1;
     if (!buffer.IsSet() || val < 0 || val > 11)
-        sprintf(str, "---");
+        snprintf(str, STRLENGTH, "---");
     else
-        sprintf(str, "%s",term->Translate(ShortMonthName[val]));
+        snprintf(str, STRLENGTH, "%s",term->Translate(ShortMonthName[val]));
     fzone->TextPosC(term, xx + 6.5,  y, str, COLOR_WHITE);
 
-    sprintf(str, "%d", buffer.Day());
+    snprintf(str, STRLENGTH, "%d", buffer.Day());
     fzone->TextPosC(term, xx + 10,   y, str, COLOR_WHITE);
     fzone->TextPosC(term, xx + 11.5, y, ",", COLOR_WHITE);
-    sprintf(str, "%d", buffer.Year());
+    snprintf(str, STRLENGTH, "%d", buffer.Year());
     fzone->TextPosC(term, xx + 14,   y, str, COLOR_WHITE);
 
     if (show_time)
@@ -1992,15 +1994,15 @@ RenderResult TimeDateField::Render(Terminal *term, FormZone *fzone)
         int hour = buffer.Hour() % 12;
         if (hour == 0)
             hour = 12;
-        sprintf(str, "%d", hour);
+        snprintf(str, STRLENGTH, "%d", hour);
         fzone->TextPosC(term, xx + 18,   y, str, COLOR_WHITE);
         fzone->TextPosC(term, xx + 19.5, y, ":", COLOR_WHITE);
-        sprintf(str, "%02d", buffer.Min());
+        snprintf(str, STRLENGTH, "%02d", buffer.Min());
         fzone->TextPosC(term, xx + 21,   y, str, COLOR_WHITE);
         if (buffer.Hour() >= 12)
-            strcpy(str, GlobalTranslate("pm"));
+            snprintf(str, STRLENGTH, "%s", GlobalTranslate("pm"));
         else
-            strcpy(str, GlobalTranslate("am"));
+            snprintf(str, STRLENGTH, "%s", GlobalTranslate("am"));
         fzone->TextPosL(term, xx + 22.3, y, str, COLOR_WHITE);
     }
     return RENDER_OKAY;
@@ -2213,22 +2215,22 @@ RenderResult TimeDayField::Render(Terminal *term, FormZone *fzone)
     if (my_hour == 0)
         my_hour = 12;
     if (is_unset)
-        strcpy(str, "--");
+        snprintf(str, STRLENGTH, "--");
     else
-        sprintf(str, "%d", my_hour);
+        snprintf(str, STRLENGTH, "%d", my_hour);
     fzone->TextPosC(term, xx + 6,   y, str, COLOR_WHITE);
     fzone->TextPosC(term, xx + 7.5, y, ":", COLOR_WHITE);
     if (is_unset)
-        strcpy(str, "--");
+        snprintf(str, STRLENGTH, "--");
     else
-        sprintf(str, "%02d", min);
+        snprintf(str, STRLENGTH, "%02d", min);
     fzone->TextPosC(term, xx + 9,   y, str, COLOR_WHITE);
     if (!is_unset)
     {
         if (hour >= 12)
-            strcpy(str, GlobalTranslate("pm"));
+            snprintf(str, STRLENGTH, "%s", GlobalTranslate("pm"));
         else
-            strcpy(str, GlobalTranslate("am"));
+            snprintf(str, STRLENGTH, "%s", GlobalTranslate("am"));
         fzone->TextPosL(term, xx + 10.3, y, str, COLOR_WHITE);
     }
     return RENDER_OKAY;

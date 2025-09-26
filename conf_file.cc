@@ -30,13 +30,21 @@ namespace
 // algorithm from g++ manual
 void Trim(std::string& str)
 {
-    const std::string trimChars = WhiteSpace + EqualIndicators;
+    static const std::string trimChars = WhiteSpace + EqualIndicators;
 
     // trim left
-    str.erase(0, str.find_first_not_of(trimChars));
+    const auto first = str.find_first_not_of(trimChars);
+    if (first == std::string::npos) {
+        str.clear();
+        return;
+    }
+    str.erase(0, first);
 
     // trim right
-    str.erase(1 + str.find_last_not_of(trimChars));
+    const auto last = str.find_last_not_of(trimChars);
+    if (last != std::string::npos) {
+        str.erase(last + 1);
+    }
 }
 } // end utility namespace
 
@@ -63,7 +71,7 @@ ConfFile::~ConfFile()
     dirty = false;
 }
 
-void ConfFile::set_dirty(const bool value)
+void ConfFile::set_dirty(const bool value) noexcept
 {
     dirty = value;
 }
@@ -89,17 +97,11 @@ bool ConfFile::Load()
     data.push_back({});
     
     std::string line;
-    char buffer[MAX_BUFFER_LEN]; 
     std::string section_name = "";
 
-    while (!done) {
-        memset(buffer, 0, MAX_BUFFER_LEN);
-        File.getline(buffer, MAX_BUFFER_LEN);
-
-        line = buffer;
+    while (std::getline(File, line)) {
         Trim(line);
-
-        done = (File.eof() || File.bad() || File.fail());
+        done = false; // Reset done flag since we're using getline differently
 
         // throw out comments
         if (line.find_first_of(CommentIndicators) ==
@@ -107,34 +109,41 @@ bool ConfFile::Load()
             continue;
         }
 
-        if (line[0] == '[') {
+        if (!line.empty() && line[0] == '[') {
             line.erase(0, 1);
-            // erase to eol
-            line.erase(line.find_first_of(']'));
-
-            section_name = line;
-            CreateSection(section_name);
-        } else if (line.size() > 0) {
+            // erase to eol - check for valid closing bracket
+            const auto closing_bracket = line.find_first_of(']');
+            if (closing_bracket != std::string::npos) {
+                line.erase(closing_bracket);
+                section_name = line;
+                CreateSection(section_name);
+            }
+        } else if (!line.empty()) {
             std::string value;
-            int split = line.find_first_of(EqualIndicators);
+            const auto split = line.find_first_of(EqualIndicators);
 
-            if (split > 0) {
+            if (split != std::string::npos && split > 0) {
                 // copy, erase identifier
                 value = line;
-                value.erase(0, split);
+                value.erase(0, split + 1); // +1 to skip the equal sign
 
-                // erase value
-                line.erase(split + 1);
+                // erase value part from line
+                line.erase(split);
 
                 Trim(value);
             }
             // trim "identifier" portion; no value associated
             Trim(line);
 
-            if (line.size() > 0) {
+            if (!line.empty()) {
                 SetValue(value, line, section_name);
             }
         }
+    }
+
+    // Check for any stream errors after the loop
+    if (File.bad()) {
+        return false;
     }
 
     File.close();
@@ -159,21 +168,21 @@ bool ConfFile::Save()
     }
 
     assert(section_names.size() == data.size());
-    for (size_t i=0; i<section_names.size(); i++)
+    for (size_t i = 0; i < section_names.size(); ++i)
     {
         assert(i < data.size());
-        const std::string &section_name = section_names[i];
-        const ConfFile::SectionEntries &entries = data[i];
+        const auto& section_name = section_names[i];
+        const auto& entries = data[i];
 
         if (!section_name.empty())
         {
             File << "\n[" << section_name << "]" << std::endl;
         }
 
-        for (const ConfFile::SectionEntry &elem : entries)
+        for (const auto& elem : entries)
         {
-            const std::string &key = elem.first;
-            const std::string &value = elem.second;
+            const auto& key = elem.first;
+            const auto& value = elem.second;
 
             assert(!key.empty());
 
@@ -213,10 +222,10 @@ bool ConfFile::SetValue(const std::string &value, const std::string &keyName, co
         // get section, throws out_of_range if no section is available
         SectionEntries &section = this->at(sectName);
 
-        for (SectionEntry &entry : section)
+        for (auto& entry : section)
         {
-            const std::string &entry_key = entry.first;
-            std::string &entry_value = entry.second;
+            const auto& entry_key = entry.first;
+            auto& entry_value = entry.second;
             if (entry_key == keyName)
             {
                 entry_value = value;
@@ -263,10 +272,10 @@ bool ConfFile::GetValue(std::string &value, const std::string &keyName, const st
         // get section, throws out_of_range if no section is available
         const SectionEntries &section = this->at(sectName);
 
-        for (const SectionEntry &entry : section)
+        for (const auto& entry : section)
         {
-            const std::string &entry_key = entry.first;
-            const std::string &entry_value = entry.second;
+            const auto& entry_key = entry.first;
+            const auto& entry_value = entry.second;
             if (entry_key == keyName)
             {
                 value = entry_value;
@@ -336,15 +345,15 @@ bool ConfFile::DeleteSection(const std::string &section)
         // don't delete the default section
         return false;
     }
-    for (size_t i=0; i<section_names.size(); i++)
+    for (size_t i = 0; i < section_names.size(); ++i)
     {
-        const std::string &section_name = section_names[i];
+        const auto& section_name = section_names[i];
         // compare case insensitive
         if (strcasecmp(section_name.c_str(), section.c_str()) == 0)
         {
             assert(i < data.size());
-            auto data_it = std::next(data.begin(), static_cast<int>(i));
-            auto sect_it = std::next(section_names.begin(), static_cast<int>(i));
+            auto data_it = std::next(data.begin(), static_cast<ptrdiff_t>(i));
+            auto sect_it = std::next(section_names.begin(), static_cast<ptrdiff_t>(i));
             data.erase(data_it);
             section_names.erase(sect_it);
             dirty = true;
@@ -366,11 +375,11 @@ bool ConfFile::DeleteKey(const std::string &key, const std::string &sectName)
         // get section, throws out_of_range if no section is available
         SectionEntries &section = this->at(sectName);
 
-        auto is_elem = [key](const std::pair<std::string, std::string> &elem)->bool
+        const auto is_elem = [&key](const auto& elem) -> bool
         {
             return (strcasecmp(elem.first.c_str(), key.c_str()) == 0);
         };
-        for (auto it = section.begin(); it != section.end(); std::advance(it, 1))
+        for (auto it = section.begin(); it != section.end(); ++it)
         {
             if (is_elem(*it))
             {
@@ -405,17 +414,17 @@ bool ConfFile::CreateSection(const std::string &sectName)
 }
 
 // number of sections in list
-size_t ConfFile::SectionCount() const
+size_t ConfFile::SectionCount() const noexcept
 { 
     return section_names.size();
 }
 
 // number of keys in all sections
-size_t ConfFile::KeyCount() const
+size_t ConfFile::KeyCount() const noexcept
 {
     size_t count = 0;
 
-    for (const SectionEntries &section : data)
+    for (const auto& section : data)
     {
         count += section.size();
     }
@@ -430,7 +439,7 @@ size_t ConfFile::KeyCount() const
 // search for a section object by name
 const ConfFile::SectionEntries &ConfFile::at(const std::string &sectName) const
 {
-    for (size_t i=0; i<section_names.size(); i++)
+    for (size_t i = 0; i < section_names.size(); ++i)
     {
         if (section_names[i] == sectName)
         {
@@ -443,7 +452,7 @@ const ConfFile::SectionEntries &ConfFile::at(const std::string &sectName) const
 }
 ConfFile::SectionEntries &ConfFile::at(const std::string &sectName)
 {
-    for (size_t i=0; i<section_names.size(); i++)
+    for (size_t i = 0; i < section_names.size(); ++i)
     {
         if (section_names[i] == sectName)
         {
@@ -469,10 +478,9 @@ std::vector<std::string> ConfFile::keys(const std::string &sectName) const
     std::vector<std::string> key_names;
     key_names.reserve(section.size());
 
-    for (const SectionEntry &entry : section)
+    for (const auto& entry : section)
     {
-        const std::string &entry_key = entry.first;
-        //const std::string &entry_value = entry.second;
+        const auto& entry_key = entry.first;
         key_names.push_back(entry_key);
     }
 
@@ -487,7 +495,7 @@ bool ConfFile::contains(const std::string &section) const
         return true;
     }
     // check each section name
-    for (const std::string &sec : section_names)
+    for (const auto& sec : section_names)
     {
         if (sec == section)
         {

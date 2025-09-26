@@ -36,7 +36,7 @@ public:
                 ~ConfFile();
 
     // set dirty flag, when dirty is set the config file will be written
-    void        set_dirty(const bool value=true);
+    void        set_dirty(const bool value=true) noexcept;
 
     bool        Load();
     bool        Save();
@@ -60,9 +60,9 @@ public:
     bool        CreateSection(const std::string &section);
 
                 // returns number of sections in file
-    size_t      SectionCount() const;
+    size_t      SectionCount() const noexcept;
                 // returns number of keys across all sections
-    size_t      KeyCount() const;
+    size_t      KeyCount() const noexcept;
 
     // get a list of section names
     const std::vector<std::string> &getSectionNames() const;

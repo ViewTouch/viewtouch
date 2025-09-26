@@ -37,9 +37,9 @@ public:
     Line *next;
     Line *fore;
     std::string line;
-    void Set(const char* lineval) { line = lineval; }
-    const genericChar* Value() { return line.c_str(); }
-    size_t Length() {return line.size();}
+    void Set(const char* lineval) { if (lineval) line = lineval; }
+    const genericChar* Value() const noexcept { return line.c_str(); }
+    size_t Length() const noexcept { return line.size(); }
 };
 
 class Email
@@ -53,18 +53,18 @@ public:
     Email();
     ~Email();
     void AddFrom(const char* address);
-    int From(char* buffer, int maxlen);
+    int From(char* buffer, int maxlen) const;
     int AddTo(const char* address);
     int NextTo(char* buffer, int maxlen);
     void AddSubject(const char* subjectstr);
-    int Subject(char* buffer, int maxlen);
+    int Subject(char* buffer, int maxlen) const;
     int AddBody(const char* line);
     int NextBody(char* buffer, int maxlen);
     int PrintEmail();
 };
 
 int  Listen(int port, int nonblocking = 0);
-int  Accept(int socknum, char* remote_address = NULL);
+int  Accept(int socknum, char* remote_address = nullptr);
 int  Connect(const char* host, const char* service);
 int  Connect(const char* host, int port);
 int  SelectIn(int fd, int u_sec);

@@ -35,6 +35,7 @@
 #include <vector>
 #include <map>
 #include <string.h>
+#include <cstdio>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -131,11 +132,11 @@ RenderResult LoginZone::Render(Terminal *term, int update_flag)
         break;
 
     case STATE_USER_ONLINE:
-        sprintf(str, "%s %s", term->Translate("Hello"), employee->system_name.Value());
+        snprintf(str, sizeof(str), "%s %s", term->Translate("Hello"), employee->system_name.Value());
         TextC(term, .5, str, col);
         if (time.IsSet())
         {
-            sprintf(str, "%s %s", term->Translate("Starting Time Is"),
+            snprintf(str, sizeof(str), "%s %s", term->Translate("Starting Time Is"),
                     term->TimeDate(time, TD_TIME));
             TextC(term, 1.5, str, col);
         }
@@ -202,7 +203,7 @@ RenderResult LoginZone::Render(Terminal *term, int update_flag)
 SignalResult LoginZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("LoginZone::Signal()");
-    const genericChar* commands[] = {
+    static const genericChar* commands[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
         "start", "clear", "backspace", "clockin", "clockout",
         "job0", "job1", "job2", "passwordgood", "passwordfailed",
@@ -431,14 +432,14 @@ int LoginZone::ClockOn(Terminal *term, int job_no)
 
         // Ask user for job to work
         genericChar str[256];
-        sprintf(str, "%s %s \\%s", term->Translate("Hello"), employee->system_name.Value(),
+        snprintf(str, sizeof(str), "%s %s \\%s", term->Translate("Hello"), employee->system_name.Value(),
                 term->Translate("Pick A Job For This Shift"));
         SimpleDialog *d = new SimpleDialog(str);
 
         int n = 0;
         for (JobInfo *j = employee->JobList(); j != NULL; j = j->next)
         {
-            sprintf(str, "job%d", n++);
+            snprintf(str, sizeof(str), "job%d", n++);
             d->Button(j->Title(term), str);
         }
 
@@ -779,33 +780,33 @@ RenderResult LogoutZone::Render(Terminal *term, int update_flag)
     end.Floor<std::chrono::minutes>();
 
     genericChar str[256];
-    sprintf(str, "     Shift Start: %s", term->TimeDate(start, TD0));
+    snprintf(str, sizeof(str), "     Shift Start: %s", term->TimeDate(start, TD0));
     TextL(term, 5, str, color[0]);
 
-    sprintf(str, "    Current Time: %s", term->TimeDate(end, TD0));
+    snprintf(str, sizeof(str), "    Current Time: %s", term->TimeDate(end, TD0));
     TextL(term, 6, str, color[0]);
 
     genericChar hstr[32], mstr[32];
     int hour = (shift_min / 60), m = (shift_min % 60);
     if (hour == 1)
-        strcpy(hstr, "1 hour");
+        snprintf(hstr, sizeof(hstr), "1 hour");
     else
-        sprintf(hstr, "%d hours", hour);
+        snprintf(hstr, sizeof(hstr), "%d hours", hour);
 
     if (m == 1)
-        strcpy(mstr, "1 minute");
+        snprintf(mstr, sizeof(mstr), "1 minute");
     else
-        sprintf(mstr, "%d minutes", m);
+        snprintf(mstr, sizeof(mstr), "%d minutes", m);
 
     genericChar str2[256];
     if (hour > 0 && m > 0)
-        sprintf(str2, "%s, %s", hstr, mstr);
+        snprintf(str2, sizeof(str2), "%s, %s", hstr, mstr);
     else if (hour > 0)
-        strcpy(str2, hstr);
+        snprintf(str2, sizeof(str2), "%s", hstr);
     else
-        strcpy(str2, mstr);
+        snprintf(str2, sizeof(str2), "%s", mstr);
 
-    sprintf(str, " Total Work Time: %s", str2);
+    snprintf(str, sizeof(str), " Total Work Time: %s", str2);
     TextL(term, 7, str, color[0]);
 
     if (!employee->CanOrder(settings))
@@ -819,7 +820,7 @@ RenderResult LogoutZone::Render(Terminal *term, int update_flag)
 SignalResult LogoutZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("LogoutZone::Signal()");
-    const genericChar* commands[] = {
+    static const genericChar* commands[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "00",
             "cancel", "clockoff", "backspace", "clear", "save", "break", NULL};
 	int idx = CompareList(message, commands);

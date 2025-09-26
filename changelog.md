@@ -5,9 +5,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Added
+- **Tax Display in Order Entry**: Enhanced Order Entry button type to show tax information when adding items
+  - Added `CalculateTax()` method to Order class for individual order tax calculation
+  - Modified OrderEntryZone to display tax amount and total with tax in footer
+  - Tax is shown as separate line item above total for transparency
+  - Users can now see exact tax amount being added without sending order first
+  - Quality of life improvement for better order visibility and customer service
+
+### Fixed
+- **Vector Bounds Error**: Fixed crash when editing buttons due to vector bounds checking in dialog containers
+  - Added proper bounds checking in `DialogMenu::Set()` and `DialogDoubleMenu::Set()` methods
+  - Changed `CompareList()` unknown parameter from 0 to -1 for clearer invalid index detection
+  - Prevents `std::vector::operator[]` assertion failures when accessing empty or undersized vectors
+- **Thread Safety**: Improved thread safety in function tracing system
+  - Fixed race conditions in atomic operations in `fntrace.cc`
+  - Added proper bounds checking for stack depth to prevent overflow
+- **Buffer Safety**: Replaced unsafe string functions with safer alternatives
+  - Replaced `sprintf` with `snprintf` in `login_zone.cc` to prevent buffer overflows
+  - Added proper buffer size checking for string operations
+
 ### Changed
 - **Drawer Mode Terminology**: Changed "Normal" Drawer Mode to "Trusted" Drawer Mode for better clarity
 - **Server Bank Payment Navigation**: Fixed Server Bank payment completion flow to return to Page -2 (PAGEID_LOGIN2) specifically for Customer users on SelfOrder terminals, while maintaining normal navigation for all other users
+- **Modern C++ Refactoring**: Comprehensive modernization of C++ codebase for better performance, safety, and maintainability
+  - **Smart Pointers**: Replaced raw pointers with `std::unique_ptr` for automatic memory management
+  - **Modern Containers**: Replaced C-style arrays with `std::array` for type safety and better API
+  - **Move Semantics**: Added move constructors and move assignment operators to `Layer` class for better performance
+  - **Exception Safety**: Added `noexcept` specifications to functions that cannot throw exceptions
+  - **Compile-time Optimization**: Added `constexpr` to simple functions and template functions
+  - **Type Deduction**: Used `auto` keyword for cleaner and more maintainable code
+  - **RAII Patterns**: Enhanced resource management with custom `FileDescriptor` wrapper and improved exception hierarchy
+  - **Modern Casting**: Replaced C-style casts with `static_cast`, `const_cast`, and `reinterpret_cast`
+  - **String Handling**: Improved string management with `std::string` and proper move semantics
+  - **Optional Ownership**: Replaced raw pointer lookups in `LayerList`/`LayerObjectList` with `std::optional<std::reference_wrapper<...>>` helpers while keeping legacy APIs intact
+  - **Dialog Menu Containers**: Eliminated manual `new[]/delete[]` for dialog menu widgets by using `std::vector`, defaulted move semantics, and blocked accidental copying
+  - **Intrusive Lists**: Tightened `DList` semantics by deleting copy constructors/assignments and enabling move support to prevent misuse
 
 ### Added
 - **QuickBooks CSV Export Feature**
@@ -334,6 +367,90 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Enhanced build system to use C++20 features and modern compiler capabilities
   - Enabled additional compiler warnings: `-Wextra`, `-Wconversion`, `-Wnull-dereference`, `-Wdouble-promotion`, `-Wformat=2`
   - Improved code safety and error detection during compilation
+
+- **Core Utility Functions Refactoring (debug.cc, debug.hh, socket.cc, socket.hh, utility.cc, utility.hh, manager.cc, manager.hh)**
+  - **Memory Safety Enhancements**: Replaced C-style arrays with `std::array` for compile-time bounds checking
+    - `debug.cc`: Converted `event_names`, `term_codes`, and `server_codes` arrays to `constexpr std::array`
+    - Enhanced buffer operations with proper null termination guarantees
+    - Added comprehensive parameter validation for all functions
+    - `manager.cc`: Fixed critical buffer overflow vulnerabilities in main command reading loop
+    - `manager.cc`: Enhanced `GetMachineName()` with proper bounds checking and null termination
+    - `manager.cc`: Improved `PriceFormat()` with modern C++ string handling and `std::array`
+    - `manager.cc`: Fixed `ParsePrice()` with modern C++ string handling and error checking
+    - `manager.cc`: Enhanced `ViewTouchError()` with parameter validation and safer string operations
+    - `manager.cc`: Improved `Control` class methods with comprehensive input validation
+  - **Modern C++ Features**: Applied C++17/20 features throughout the codebase
+    - Replaced `NULL` with `nullptr` for better type safety
+    - Used `auto` for type deduction and `constexpr` for compile-time constants
+    - Added `noexcept` specifiers where appropriate for better performance
+    - Implemented pre-increment operators (`++idx`) for better performance
+  - **String Operations Safety**: Enhanced string handling with bounds checking
+    - Replaced `sprintf` with `snprintf` for safe string formatting
+    - Added null termination guarantees for all string operations
+    - Improved buffer overflow protection in socket and utility functions
+  - **Error Handling Improvements**: Added comprehensive error handling and validation
+    - Enhanced input validation for all socket operations (port ranges, file descriptors)
+    - Added exception handling for string conversion operations (`std::stoi`, `std::stod`)
+    - Improved bounds checking for array and buffer operations
+  - **Const Correctness**: Enhanced const correctness throughout the codebase
+    - Added `const` qualifiers to appropriate methods and parameters
+    - Improved function signatures for better API design
+    - Enhanced type safety with explicit parameter validation
+  - **Code Quality Improvements**: Modernized code patterns and eliminated legacy issues
+    - Fixed unused parameter warnings with proper parameter naming
+    - Enhanced loop constructs with modern C++ patterns
+    - Improved code readability and maintainability
+  - **Files Modified**:
+    - `debug.cc` - Modernized debug functions with std::array and enhanced error handling
+    - `debug.hh` - Added noexcept specifiers and improved function declarations
+    - `socket.cc` - Enhanced socket operations with parameter validation and modern C++ features
+    - `socket.hh` - Improved const correctness and function signatures
+    - `utility.cc` - Modernized utility functions with bounds checking and exception handling
+    - `utility.hh` - Enhanced const correctness and added noexcept specifiers
+    - `manager.cc` - Fixed critical buffer overflow vulnerabilities and enhanced error handling
+    - `manager.hh` - Improved const correctness and added noexcept specifiers
+    - `system_report.cc` - Fixed royalty report infinite loop and day attribution issues, modernized with C++17/20 features
+  - **Benefits**:
+    - **Memory Safety**: Eliminated potential buffer overflows and null pointer dereferences
+    - **Robustness**: Enhanced error handling and input validation
+    - **Performance**: Better compiler optimizations with constexpr and noexcept
+    - **Maintainability**: Cleaner, more modern C++ code with better structure
+    - **Compatibility**: All changes maintain existing API and behavior
+
+- **Fixed Royalty Report Critical Issues (system_report.cc)**
+  - **Infinite Loop Fix**: Fixed royalty report getting stuck on "working..." when no checks to process
+    - Added proper null check for `currCheck` to prevent infinite cycling
+    - Fixed work function to properly exit when no data available
+    - Fixed syntax error with missing braces in conditional logic
+  - **Day Attribution Fix**: Fixed sales data being attributed to wrong days
+    - Changed day index calculation from check opening time to settlement time
+    - Ensures cross-day transactions are properly attributed to settlement day
+    - Fixed daily sales totals accuracy in royalty calculations
+  - **Impact**: Royalty reports now complete successfully and show accurate daily sales data
+
+- **Modernized System Report Generation (system_report.cc)**
+  - **Memory Safety Improvements**: Replaced all `sprintf` calls with `snprintf` for buffer safety
+    - Added proper bounds checking to prevent buffer overflows
+    - Enhanced string formatting with size validation
+  - **Modern C++ Features**: Replaced `NULL` with `nullptr` throughout the codebase
+    - Improved type safety and null pointer handling
+    - Better compiler optimization opportunities
+  - **Array Initialization Optimization**: Modernized C-style loops with `std::fill`
+    - Replaced manual loops with STL algorithms for array initialization
+    - More efficient and readable code for large array operations
+    - Added `#include <algorithm>` for STL support
+  - **Enhanced Parameter Validation**: Added null pointer checks to critical functions
+    - `System::ServerReport()` now validates both `term` and `ptrReport` parameters
+    - `System::ShiftBalanceReport()` includes comprehensive parameter validation
+    - Improved error handling and early return patterns
+  - **String Handling Improvements**: Enhanced C-style string operations
+    - Replaced `strcpy` with `snprintf` for safer string copying
+    - Added proper buffer size validation in string operations
+    - Maintained backward compatibility while improving safety
+  - **Code Quality**: Improved overall code structure and maintainability
+    - More consistent error handling patterns
+    - Better separation of concerns in large functions
+    - Enhanced readability and maintainability
 
 - **Modernized vt_print Daemon (print_main.cc)**
   - **Critical Bug Fix**: Removed debug `exit(2)` statement that prevented the program from running

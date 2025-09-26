@@ -23,6 +23,7 @@
 #include <cctype>
 #include <string>
 #include <iostream>
+#include <array>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -42,22 +43,24 @@
 
 
 /**** Definitions ****/
-#define MAX_TRIES 8
+namespace Constants {
+    constexpr int MAX_TRIES = 8;
+}
 
 /**** TouchScreen Class ****/
 // Constructors
 TouchScreen::TouchScreen(const char* device)
 {
-	strcpy(INIT, "\001PN819600\n");
-	strcpy(PING, "\001Z\n");
-	strcpy(RESET, "\001R\n");  // "destructive" command
-    strcpy(PARAM_LOCK, "\001PL\n"); // PL = "Parameter Lock"
-	strcpy(FORMAT_HEX, "\001FH\n");
-	strcpy(FORMAT_DEC, "\001FD\n");
-	strcpy(MODE_POINT, "\001MP\n");
-    strcpy(MODE_STREAM, "\001MS\n");
-    strcpy(MODE_CALIBRATE, "\001CI\n"); // CI = "Calibrate Interactive"
-    strcpy(AUTOBAUD_DISABLE, "\001AD\n");
+	INIT = "\001PN819600\n";
+	PING = "\001Z\n";
+	RESET = "\001R\n";  // "destructive" command
+    PARAM_LOCK = "\001PL\n"; // PL = "Parameter Lock"
+	FORMAT_HEX = "\001FH\n";
+	FORMAT_DEC = "\001FD\n";
+	MODE_POINT = "\001MP\n";
+    MODE_STREAM = "\001MS\n";
+    MODE_CALIBRATE = "\001CI\n"; // CI = "Calibrate Interactive"
+    AUTOBAUD_DISABLE = "\001AD\n";
 
     x_res = 1024;
     y_res = 1024; 
@@ -72,16 +75,16 @@ TouchScreen::TouchScreen(const char* device)
 
 TouchScreen::TouchScreen(const char* h, int p)
 {
-	strcpy(INIT, "\001PN819600\n");
-	strcpy(PING, "\001Z\n");
-	strcpy(RESET, "\001R\n");  // "destructive" command
-    strcpy(PARAM_LOCK, "\001PL\n"); // PL = "Parameter Lock"
-	strcpy(FORMAT_HEX, "\001FH\n");
-	strcpy(FORMAT_DEC, "\001FD\n");
-	strcpy(MODE_POINT, "\001MP\n");
-    strcpy(MODE_STREAM, "\001MS\n");
-    strcpy(MODE_CALIBRATE, "\001CI\n"); // CI = "Calibrate Interactive"
-    strcpy(AUTOBAUD_DISABLE, "\001AD\n");
+	INIT = "\001PN819600\n";
+	PING = "\001Z\n";
+	RESET = "\001R\n";  // "destructive" command
+    PARAM_LOCK = "\001PL\n"; // PL = "Parameter Lock"
+	FORMAT_HEX = "\001FH\n";
+	FORMAT_DEC = "\001FD\n";
+	MODE_POINT = "\001MP\n";
+    MODE_STREAM = "\001MS\n";
+    MODE_CALIBRATE = "\001CI\n"; // CI = "Calibrate Interactive"
+    AUTOBAUD_DISABLE = "\001AD\n";
 
     x_res = 1024;
     y_res = 1024; 
@@ -92,6 +95,73 @@ TouchScreen::TouchScreen(const char* h, int p)
     port = p;
     host.Set(h);
     failed = Connect(1);
+}
+
+// Move constructor
+TouchScreen::TouchScreen(TouchScreen&& other) noexcept
+    : buffer(std::move(other.buffer))
+    , size(other.size)
+    , INIT(std::move(other.INIT))
+    , PING(std::move(other.PING))
+    , RESET(std::move(other.RESET))
+    , PARAM_LOCK(std::move(other.PARAM_LOCK))
+    , FORMAT_HEX(std::move(other.FORMAT_HEX))
+    , FORMAT_DEC(std::move(other.FORMAT_DEC))
+    , MODE_POINT(std::move(other.MODE_POINT))
+    , MODE_STREAM(std::move(other.MODE_STREAM))
+    , MODE_CALIBRATE(std::move(other.MODE_CALIBRATE))
+    , AUTOBAUD_DISABLE(std::move(other.AUTOBAUD_DISABLE))
+    , device_no(other.device_no)
+    , failed(other.failed)
+    , x_res(other.x_res)
+    , y_res(other.y_res)
+    , last_x(other.last_x)
+    , last_y(other.last_y)
+    , host(std::move(other.host))
+    , port(other.port)
+    , last_reset(std::move(other.last_reset))
+    , error(std::move(other.error))
+{
+    other.device_no = 0;
+    other.failed = 0;
+    other.size = 0;
+}
+
+// Move assignment operator
+TouchScreen& TouchScreen::operator=(TouchScreen&& other) noexcept
+{
+    if (this != &other) {
+        if (device_no > 0)
+            close(device_no);
+            
+        buffer = std::move(other.buffer);
+        size = other.size;
+        INIT = std::move(other.INIT);
+        PING = std::move(other.PING);
+        RESET = std::move(other.RESET);
+        PARAM_LOCK = std::move(other.PARAM_LOCK);
+        FORMAT_HEX = std::move(other.FORMAT_HEX);
+        FORMAT_DEC = std::move(other.FORMAT_DEC);
+        MODE_POINT = std::move(other.MODE_POINT);
+        MODE_STREAM = std::move(other.MODE_STREAM);
+        MODE_CALIBRATE = std::move(other.MODE_CALIBRATE);
+        AUTOBAUD_DISABLE = std::move(other.AUTOBAUD_DISABLE);
+        device_no = other.device_no;
+        failed = other.failed;
+        x_res = other.x_res;
+        y_res = other.y_res;
+        last_x = other.last_x;
+        last_y = other.last_y;
+        host = std::move(other.host);
+        port = other.port;
+        last_reset = std::move(other.last_reset);
+        error = std::move(other.error);
+        
+        other.device_no = 0;
+        other.failed = 0;
+        other.size = 0;
+    }
+    return *this;
 }
 
 // Destructor
@@ -152,7 +222,7 @@ int TouchScreen::Connect(int boot)
             return 1;
         }
 
-        if (connect(device_no, (const sockaddr *) &inaddr, sizeof(inaddr)) < 0)
+        if (connect(device_no, reinterpret_cast<const sockaddr*>(&inaddr), sizeof(inaddr)) < 0)
         {
             std::string str = std::string("Connection refused with '")
                     + host.Value() + "'";
@@ -164,20 +234,20 @@ int TouchScreen::Connect(int boot)
         }
 
         int flag = 1;
-        setsockopt(device_no, IPPROTO_TCP, TCP_NODELAY, (void *)&flag, sizeof(flag));
+        setsockopt(device_no, IPPROTO_TCP, TCP_NODELAY, static_cast<void*>(&flag), sizeof(flag));
         fcntl(device_no, F_SETFL, O_NDELAY);
     }
     return Init(boot);
 }
 
-int TouchScreen::SetMode(const char* mode)
+int TouchScreen::SetMode(const char* mode) noexcept
 {
 	if( (strcmp("POINT", mode) == 0) && device_no > 0)
 	{
-		const char* modeList[] = { FORMAT_HEX, MODE_POINT, AUTOBAUD_DISABLE, PARAM_LOCK };
-		for (int i = 0; i < 4; i++)
+		const std::array<std::string, 4> modeList = { FORMAT_HEX, MODE_POINT, AUTOBAUD_DISABLE, PARAM_LOCK };
+		for (const auto& modeStr : modeList)
         {
-			write(device_no, modeList[i], strlen(modeList[i]));
+			write(device_no, modeStr.c_str(), modeStr.length());
 		}
 
 	}
@@ -203,10 +273,10 @@ int TouchScreen::Init(int boot)
 
 	//setup array of pointers and step through the desired mode
 	//list, writing the values out to the device, in order.
-	const char* modeList[] = { INIT, AUTOBAUD_DISABLE, FORMAT_HEX, MODE_POINT, PARAM_LOCK };
-	for(int i=0; i<5; i++)
+	const std::array<std::string, 5> modeList = { INIT, AUTOBAUD_DISABLE, FORMAT_HEX, MODE_POINT, PARAM_LOCK };
+	for(const auto& modeStr : modeList)
 	{
-		write(device_no, modeList[i], strlen(modeList[i]));
+		write(device_no, modeStr.c_str(), modeStr.length());
 	}
     return 0;
 }
@@ -233,7 +303,7 @@ int TouchScreen::ReadTouch(int &x, int &y, int &mode)
         if (isprint(c))
             buffer[size++] = c;
     }
-    while (c != '\n' && c != '\r' && size < (int) sizeof(buffer));
+    while (c != '\n' && c != '\r' && size < static_cast<int>(buffer.size()));
 
     if (size != 7 || buffer[3] != 0x2C)
     {
@@ -269,7 +339,7 @@ int TouchScreen::ReadStatus()
         if (isprint(c))
             buffer[size++] = c;
     }
-    while (c != '\n' && c != '\r' && size < (int)sizeof(buffer));
+    while (c != '\n' && c != '\r' && size < static_cast<int>(buffer.size()));
   
     if (size != 1)
     {
@@ -286,7 +356,7 @@ int TouchScreen::ReadStatus()
         return -1;
 }
 
-int TouchScreen::Calibrate()
+int TouchScreen::Calibrate() noexcept
 {
     if (device_no <= 0)
     {
@@ -294,11 +364,11 @@ int TouchScreen::Calibrate()
     }
 
     Flush();
-    write(device_no, MODE_CALIBRATE, strlen(MODE_CALIBRATE));  // enter calibrate mode
+    write(device_no, MODE_CALIBRATE.c_str(), MODE_CALIBRATE.length());  // enter calibrate mode
     return 0;
 }
 
-int TouchScreen::Reset()
+int TouchScreen::Reset() noexcept
 {
     if (device_no <= 0)
     {
@@ -306,7 +376,7 @@ int TouchScreen::Reset()
     }
 
     Flush();
-    write(device_no, RESET, strlen(RESET));  // reset touch screen
+    write(device_no, RESET.c_str(), RESET.length());  // reset touch screen
 
     last_reset.Set();
 
@@ -340,7 +410,7 @@ int TouchScreen::Reset()
     return 0;
 }
 
-int TouchScreen::Flush()
+int TouchScreen::Flush() noexcept
 {
     if (device_no <= 0)
     {
@@ -350,7 +420,7 @@ int TouchScreen::Flush()
     int result;
     do
     {
-        result = read(device_no, buffer, 1);
+        result = read(device_no, buffer.data(), 1);
     } while (result > 0);
 
     size = 0;

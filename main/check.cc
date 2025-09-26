@@ -5647,6 +5647,55 @@ int Order::AddQualifier(const char* qualifier_str)
     return retval;
 }
 
+int Order::CalculateTax(Settings *settings, Terminal *term)
+{
+    FnTrace("Order::CalculateTax()");
+    
+    // Don't calculate tax for untaxed items
+    if (sales_type & SALES_UNTAXED)
+        return 0;
+    
+    // Don't calculate tax for comped items
+    if (status & ORDER_COMP)
+        return 0;
+    
+    // Use the cost for tax calculation
+    int taxable_amount = cost;
+    if (taxable_amount <= 0)
+        return 0;
+    
+    int tax = 0;
+    TimeInfo current_time = SystemTime;
+    
+    // Calculate tax based on sales type
+    if (sales_type & SALES_ALCOHOL)
+    {
+        tax = settings->FigureAlcoholTax(taxable_amount, current_time);
+    }
+    else if (sales_type & SALES_MERCHANDISE)
+    {
+        tax = settings->FigureMerchandiseTax(taxable_amount, current_time);
+    }
+    else if (sales_type & SALES_ROOM)
+    {
+        tax = settings->FigureRoomTax(taxable_amount, current_time);
+    }
+    else
+    {
+        // Default to food tax
+        tax = settings->FigureFoodTax(taxable_amount, current_time);
+    }
+    
+    // Add additional taxes if applicable
+    tax += settings->FigureGST(taxable_amount, current_time);
+    tax += settings->FigurePST(taxable_amount, current_time, false);
+    tax += settings->FigureHST(taxable_amount, current_time);
+    tax += settings->FigureQST(taxable_amount, 0, current_time, false);
+    tax += settings->FigureVAT(taxable_amount, current_time);
+    
+    return tax;
+}
+
 /**** Payment Class ****/
 // Constructors
 Payment::Payment()

@@ -79,30 +79,30 @@ public:
 
     Control();
 
-    Terminal *TermList()       { return term_list.Head(); }
-    Terminal *TermListEnd()    { return term_list.Tail(); }
-    Printer  *PrinterList()    { return printer_list.Head(); }
-    Printer  *PrinterListEnd() { return printer_list.Tail(); }
+    Terminal *TermList() noexcept       { return term_list.Head(); }
+    Terminal *TermListEnd() noexcept    { return term_list.Tail(); }
+    Printer  *PrinterList() noexcept    { return printer_list.Head(); }
+    Printer  *PrinterListEnd() noexcept { return printer_list.Tail(); }
 
     int Add(Terminal *t);
     int Add(Printer *p);
     int Remove(Terminal *t);
     int Remove(Printer *p);
     Terminal *FindTermByHost(const char* host);
-    int SetAllCursors(int cursor);
+    int SetAllCursors(int cursor) noexcept;
     int SetAllMessages(const char* message);
-    int SetAllTimeouts(int timeout);
-    int SetAllIconify(int iconify);
-    int ClearAllMessages();
-    int ClearAllFocus();
-    int LogoutAllUsers();
-    int LogoutKitchenUsers();
+    int SetAllTimeouts(int timeout) noexcept;
+    int SetAllIconify(int iconify) noexcept;
+    int ClearAllMessages() noexcept;
+    int ClearAllFocus() noexcept;
+    int LogoutAllUsers() noexcept;
+    int LogoutKitchenUsers() noexcept;
     int UpdateAll(int update_message, const genericChar* value);
     int UpdateOther(Terminal *local, int update_message, const genericChar* value);
-    int IsUserOnline(Employee *e);
+    int IsUserOnline(Employee *e) noexcept;
     int KillTerm(Terminal *t);
     int OpenDialog(const char* message);
-    int KillAllDialogs();
+    int KillAllDialogs() noexcept;
     Printer *FindPrinter(const char* host, int port);
     Printer *FindPrinter(const char* term_name);
     Printer *FindPrinter(int printer_type);

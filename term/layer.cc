@@ -66,6 +66,101 @@ Layer::~Layer()
     if (xftdraw) XftDrawDestroy(xftdraw);
 }
 
+// Move constructor
+Layer::Layer(Layer&& other) noexcept
+    : RegionInfo(other)
+    , next(other.next)
+    , fore(other.fore)
+    , id(other.id)
+    , offset_x(other.offset_x)
+    , offset_y(other.offset_y)
+    , window_frame(other.window_frame)
+    , window_title(std::move(other.window_title))
+    , pix(other.pix)
+    , dis(other.dis)
+    , win(other.win)
+    , gfx(other.gfx)
+    , update(other.update)
+    , cursor(other.cursor)
+    , page_x(other.page_x)
+    , page_y(other.page_y)
+    , page_w(other.page_w)
+    , page_h(other.page_h)
+    , page_split(other.page_split)
+    , split_opt(other.split_opt)
+    , bg_texture(other.bg_texture)
+    , frame_width(other.frame_width)
+    , title_color(other.title_color)
+    , title_height(other.title_height)
+    , title_mode(other.title_mode)
+    , max(other.max)
+    , clip(other.clip)
+    , use_clip(other.use_clip)
+    , page_title(std::move(other.page_title))
+    , buttons(std::move(other.buttons))
+    , xftdraw(other.xftdraw)
+{
+    // Transfer ownership of resources
+    other.pix = 0;
+    other.xftdraw = nullptr;
+    other.next = nullptr;
+    other.fore = nullptr;
+}
+
+// Move assignment operator
+Layer& Layer::operator=(Layer&& other) noexcept
+{
+    if (this != &other) {
+        // Clean up existing resources
+        if (pix)
+            XFreePixmap(dis, pix);
+        if (xftdraw) 
+            XftDrawDestroy(xftdraw);
+        
+        // Copy assign base class (RegionInfo doesn't have move semantics)
+        RegionInfo::operator=(other);
+        
+        // Transfer resources
+        next = other.next;
+        fore = other.fore;
+        id = other.id;
+        offset_x = other.offset_x;
+        offset_y = other.offset_y;
+        window_frame = other.window_frame;
+        window_title = std::move(other.window_title);
+        pix = other.pix;
+        dis = other.dis;
+        win = other.win;
+        gfx = other.gfx;
+        update = other.update;
+        cursor = other.cursor;
+        page_x = other.page_x;
+        page_y = other.page_y;
+        page_w = other.page_w;
+        page_h = other.page_h;
+        page_split = other.page_split;
+        split_opt = other.split_opt;
+        bg_texture = other.bg_texture;
+        frame_width = other.frame_width;
+        title_color = other.title_color;
+        title_height = other.title_height;
+        title_mode = other.title_mode;
+        max = other.max;
+        clip = other.clip;
+        use_clip = other.use_clip;
+        page_title = std::move(other.page_title);
+        buttons = std::move(other.buttons);
+        xftdraw = other.xftdraw;
+        
+        // Transfer ownership of resources
+        other.pix = 0;
+        other.xftdraw = nullptr;
+        other.next = nullptr;
+        other.fore = nullptr;
+    }
+    return *this;
+}
+
 // Member Functions
 int Layer::DrawArea(int dx, int dy, int dw, int dh)
 {
@@ -406,7 +501,7 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
     int tw = 0;
     if (xftfont) {
         XGlyphInfo extents;
-        XftTextExtentsUtf8(dis, xftfont, (const FcChar8*)string, len, &extents);
+        XftTextExtentsUtf8(dis, xftfont, reinterpret_cast<const FcChar8*>(string), len, &extents);
         tw = extents.xOff;
     }
     if (align == ALIGN_CENTER)
@@ -486,7 +581,7 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
             int text_width = 0;
             if (xftfont) {
                 XGlyphInfo extents;
-                XftTextExtentsUtf8(dis, xftfont, (const FcChar8*)c, len, &extents);
+                XftTextExtentsUtf8(dis, xftfont, reinterpret_cast<const FcChar8*>(c), len, &extents);
                 text_width = extents.xOff;
             } else {
                 // Fallback to old method
@@ -514,7 +609,7 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
                 int lw_width = 0;
                 if (xftfont) {
                     XGlyphInfo extents;
-                    XftTextExtentsUtf8(dis, xftfont, (const FcChar8*)c, lw, &extents);
+                    XftTextExtentsUtf8(dis, xftfont, reinterpret_cast<const FcChar8*>(c), lw, &extents);
                     lw_width = extents.xOff;
                 } else {
                     XFontStruct *font_info = GetFontInfo(f);
@@ -534,7 +629,7 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
                     int lw_width = 0;
                     if (xftfont) {
                         XGlyphInfo extents;
-                        XftTextExtentsUtf8(dis, xftfont, (const FcChar8*)c, lw, &extents);
+                        XftTextExtentsUtf8(dis, xftfont, reinterpret_cast<const FcChar8*>(c), lw, &extents);
                         lw_width = extents.xOff;
                     } else {
                         XFontStruct *font_info = GetFontInfo(f);
@@ -898,7 +993,7 @@ int Layer::StatusBar(int sx, int sy, int sw, int sh, int bar_color,
     XSetForeground(dis, gfx, ColorTextT[bar_color]);
     XFillRectangle(dis, pix, gfx, page_x + sx + 2,
                    page_y + sy + 2, sw - 4, sh - 4);
-    int len = strlen(text);
+    auto len = strlen(text);
     if (len > 0)
         Text(text, len, x + sx + (sw / 2), y + sy + ((sh - GetFontHeight(font) + 1) / 2),
              text_color, font, ALIGN_CENTER, 0, use_embossed_text);
@@ -1420,11 +1515,8 @@ Layer *LayerList::FindByPoint(int x, int y)
 {
     FnTrace("LayerList::FindByPoint()");
 
-    for (Layer *l = list.Tail(); l != NULL; l = l->fore)
-    {
-        if (l->IsPointIn(x, y))
-            return l;
-    }
+    if (auto result = FindByPointOptional(x, y))
+        return &result->get();
 
     return NULL;
 }
@@ -1433,16 +1525,39 @@ Layer *LayerList::FindByID(int id)
 {
     FnTrace("LayerList::FindByID()");
 
-    Layer *l;
+    if (auto result = FindByIDOptional(id))
+        return &result->get();
 
-    for (l = list.Head(); l != NULL; l = l->next)
-        if (l->id == id)
-            return l;
-
-    for (l = inactive.Head(); l != NULL; l = l->next)
-        if (l->id == id)
-            return l;
     return NULL;
+}
+
+// Modern versions using std::optional
+std::optional<std::reference_wrapper<Layer>> LayerList::FindByPointOptional(int x, int y) noexcept
+{
+    FnTrace("LayerList::FindByPointOptional()");
+
+    for (Layer *l = list.Tail(); l != NULL; l = l->fore)
+    {
+        if (l->IsPointIn(x, y))
+            return *l;
+    }
+
+    return std::nullopt;
+}
+
+std::optional<std::reference_wrapper<Layer>> LayerList::FindByIDOptional(int id) noexcept
+{
+    FnTrace("LayerList::FindByIDOptional()");
+
+    for (Layer *l = list.Head(); l != NULL; l = l->next)
+        if (l->id == id)
+            return *l;
+
+    for (Layer *l = inactive.Head(); l != NULL; l = l->next)
+        if (l->id == id)
+            return *l;
+            
+    return std::nullopt;
 }
 
 int LayerList::SetScreenBlanker(int set)
@@ -1952,14 +2067,36 @@ LayerObject *LayerObjectList::FindByPoint(int x, int y)
 {
     FnTrace("LayerObjectList::FindByPoint()");
 
+    if (auto result = FindByPointOptional(x, y))
+        return &result->get();
+    return NULL;
+}
+
+// Modern versions using std::optional
+std::optional<std::reference_wrapper<LayerObject>> LayerObjectList::FindByIDOptional(int id) noexcept
+{
+    FnTrace("LayerObjectList::FindByIDOptional()");
+
+    for (LayerObject *l = list.Tail(); l != NULL; l = l->fore)
+        if (l->id == id)
+            return *l;
+            
+    return std::nullopt;
+}
+
+std::optional<std::reference_wrapper<LayerObject>> LayerObjectList::FindByPointOptional(int x, int y) noexcept
+{
+    FnTrace("LayerObjectList::FindByPointOptional()");
+
     for (LayerObject *l = list.Tail(); l != NULL; l = l->fore)
     {
         if (l->IsPointIn(x, y))
         {
-            return l;
+            return *l;
         }
     }
-    return NULL;
+    
+    return std::nullopt;
 }
 
 int LayerObjectList::Render(Layer *l)
@@ -1981,7 +2118,7 @@ int LayerObjectList::Layout(Layer *l)
 }
 
 int LayerObjectList::MouseAction(LayerList *ll, Layer *l,
-                                 int x, int y, int code)
+                                 int x, int y, int code) noexcept
 {
     FnTrace("LayerObjectList::MouseAction()");
 
@@ -2029,7 +2166,7 @@ int LO_PushButton::Render(Layer *l)
     return 0;
 }
 
-int LO_PushButton::MouseAction(LayerList *ll, Layer *l, int mx, int my, int code)
+int LO_PushButton::MouseAction(LayerList *ll, Layer *l, int mx, int my, int code) noexcept
 {
     FnTrace("LO_PushButton::MouseAction()");
 
@@ -2103,7 +2240,7 @@ int LO_ScrollBar::Render(Layer *l)
     return 0;
 }
 
-int LO_ScrollBar::MouseAction(LayerList *ll, Layer *l, int mx, int my, int code)
+int LO_ScrollBar::MouseAction(LayerList *ll, Layer *l, int mx, int my, int code) noexcept
 {
     FnTrace("LO_ScrollBar::MouseAction()");
 
@@ -2174,7 +2311,7 @@ int LO_ItemList::Render(Layer *l)
     return 0;
 }
 
-int LO_ItemList::MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code)
+int LO_ItemList::MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code) noexcept
 {
     FnTrace("LO_ItemList::MouseAction()");
 
@@ -2196,7 +2333,7 @@ int LO_ItemMenu::Render(Layer *l)
     return 0;
 }
 
-int LO_ItemMenu::MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code)
+int LO_ItemMenu::MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code) noexcept
 {
     FnTrace("LO_ItemMenu::MouseAction()");
 
@@ -2218,7 +2355,7 @@ int LO_TextEntry::Render(Layer *l)
     return 0;
 }
 
-int LO_TextEntry::MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code)
+int LO_TextEntry::MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code) noexcept
 {
     FnTrace("LO_TextEntry::MouseAction()");
 

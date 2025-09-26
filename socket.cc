@@ -69,13 +69,21 @@ void Email::AddFrom(const char* address)
 /****
  * From:  Puts the from address into buffer.
  ****/
-int Email::From(char* buffer, int maxlen)
+int Email::From(char* buffer, int maxlen) const
 {
     FnTrace("Email::From()");
-    int retval = 0;
-
-    strncpy(buffer, from.Value(), maxlen);
-    return retval;
+    if (!buffer || maxlen <= 0) {
+        return 1; // invalid parameters
+    }
+    
+    const auto* value = from.Value();
+    if (value) {
+        strncpy(buffer, value, maxlen - 1);
+        buffer[maxlen - 1] = '\0'; // ensure null termination
+    } else {
+        buffer[0] = '\0';
+    }
+    return 0;
 }
 
 /****
@@ -84,13 +92,14 @@ int Email::From(char* buffer, int maxlen)
 int Email::AddTo(const char* address)
 {
     FnTrace("Email::AddTo()");
-    int retval = 0;
-    Line *newadd = NULL;
-
-    newadd = new Line;
+    if (!address) {
+        return 1; // invalid parameter
+    }
+    
+    auto* newadd = new Line;
     newadd->Set(address);
     tos.AddToTail(newadd);
-    return retval;
+    return 0;
 }
 
 /****
@@ -99,20 +108,29 @@ int Email::AddTo(const char* address)
 int Email::NextTo(char* buffer, int maxlen)
 {
     FnTrace("Email::NextTo()");
-    int retval = 1;
-    static Line *currLine = NULL;
+    if (!buffer || maxlen <= 0) {
+        return 1; // invalid parameters
+    }
+    
+    static Line *currLine = nullptr;
 
-    if (currLine == NULL)
+    if (currLine == nullptr)
         currLine = tos.Head();
     else
         currLine = currLine->next;
-    if (currLine != NULL && currLine->Length() > 0)
+    if (currLine != nullptr && currLine->Length() > 0)
     {
-        strncpy(buffer, currLine->Value(), maxlen);
-        retval = 0;
+        const auto* value = currLine->Value();
+        if (value) {
+            strncpy(buffer, value, maxlen - 1);
+            buffer[maxlen - 1] = '\0'; // ensure null termination
+        } else {
+            buffer[0] = '\0';
+        }
+        return 0;
     }
 
-    return retval;
+    return 1;
 }
 
 /****
@@ -120,18 +138,28 @@ int Email::NextTo(char* buffer, int maxlen)
  ****/
 void Email::AddSubject(const char* subjectstr)
 {
-    subject = subjectstr;
+    if (subjectstr) {
+        subject = subjectstr;
+    }
 }
 
 /****
  * Subject:
  ****/
-int Email::Subject(char* buffer, int maxlen)
+int Email::Subject(char* buffer, int maxlen) const
 {
-    int retval = 0;
-
-    strncpy(buffer, subject.Value(), maxlen);
-    return retval;
+    if (!buffer || maxlen <= 0) {
+        return 1; // invalid parameters
+    }
+    
+    const auto* value = subject.Value();
+    if (value) {
+        strncpy(buffer, value, maxlen - 1);
+        buffer[maxlen - 1] = '\0'; // ensure null termination
+    } else {
+        buffer[0] = '\0';
+    }
+    return 0;
 }
 
 /****
@@ -140,13 +168,14 @@ int Email::Subject(char* buffer, int maxlen)
 int Email::AddBody(const char* line)
 {
     FnTrace("Email::AddBody()");
-    int retval = 0;
-    Line *newbody = NULL;
-
-    newbody = new Line;
+    if (!line) {
+        return 1; // invalid parameter
+    }
+    
+    auto* newbody = new Line;
     newbody->Set(line);
     body.AddToTail(newbody);
-    return retval;
+    return 0;
 }
 
 /****
@@ -155,20 +184,29 @@ int Email::AddBody(const char* line)
 int Email::NextBody(char* buffer, int maxlen)
 {
     FnTrace("Email::NextBody()");
-    int retval = 1;
-    static Line *currBody = NULL;
+    if (!buffer || maxlen <= 0) {
+        return 1; // invalid parameters
+    }
+    
+    static Line *currBody = nullptr;
 
-    if (currBody == NULL)
+    if (currBody == nullptr)
         currBody = body.Head();
     else
         currBody = currBody->next;
-    if (currBody != NULL && currBody->Length() > 0)
+    if (currBody != nullptr && currBody->Length() > 0)
     {
-        strncpy(buffer, currBody->Value(), maxlen);
-        retval = 0;
+        const auto* value = currBody->Value();
+        if (value) {
+            strncpy(buffer, value, maxlen - 1);
+            buffer[maxlen - 1] = '\0'; // ensure null termination
+        } else {
+            buffer[0] = '\0';
+        }
+        return 0;
     }
 
-    return retval;
+    return 1;
 }
 
 /****
@@ -198,17 +236,25 @@ int Email::PrintEmail()
 /****
  * Sock_ntop
  ****/
-const char* Sock_ntop(const struct sockaddr_in *sa, socklen_t addrlen)
+const char* Sock_ntop(const struct sockaddr_in *sa, socklen_t /*addrlen*/)
 {
+    if (!sa) {
+        return nullptr;
+    }
+    
     char portstr[STRLENGTH];
     static char str[STRLENGTH];
 
-    if (inet_ntop(AF_INET, &sa->sin_addr, str, sizeof(str)) == NULL)
-        return NULL;
+    if (inet_ntop(AF_INET, &sa->sin_addr, str, sizeof(str)) == nullptr)
+        return nullptr;
     if (ntohs(sa->sin_port) != 0)
     {
         snprintf(portstr, sizeof(portstr), ":%d", ntohs(sa->sin_port));
-        strcat(str, portstr);
+        const auto str_len = strlen(str);
+        const auto port_len = strlen(portstr);
+        if (str_len + port_len < sizeof(str)) {
+            strcat(str, portstr);
+        }
     }
 
     return str;
@@ -219,6 +265,10 @@ const char* Sock_ntop(const struct sockaddr_in *sa, socklen_t addrlen)
  ****/
 int Listen(int port, int nonblocking)
 {
+    if (port <= 0 || port > 65535) {
+        return -1; // invalid port
+    }
+    
     int sockfd;                    // listen on sock_fd
     struct sockaddr_in my_addr;    // my address information
     int yes = 1;
@@ -275,6 +325,10 @@ int Listen(int port, int nonblocking)
  ****/
 int Accept(int socknum, char* remote_address)
 {
+    if (socknum < 0) {
+        return -1; // invalid socket
+    }
+    
     int connect_fd;
     socklen_t sin_size;
     struct sockaddr_in their_addr;
@@ -286,9 +340,15 @@ int Accept(int socknum, char* remote_address)
         if (errno != EWOULDBLOCK)
             perror("accept");
     }
-    else if (remote_address != NULL)
+    else if (remote_address != nullptr)
     {
-        strcpy(remote_address, Sock_ntop(&their_addr, sin_size));
+        const auto* addr_str = Sock_ntop(&their_addr, sin_size);
+        if (addr_str) {
+            strncpy(remote_address, addr_str, STRLENGTH - 1);
+            remote_address[STRLENGTH - 1] = '\0'; // ensure null termination
+        } else {
+            remote_address[0] = '\0';
+        }
     }
 
     return connect_fd;
@@ -300,6 +360,10 @@ int Accept(int socknum, char* remote_address)
  *******/
 int Connect(const char* host, const char* service)
 {
+    if (!host || !service) {
+        return 0; // invalid parameters
+    }
+    
     int retval = 0;
     int sockfd;
     struct sockaddr_in servaddr;
@@ -308,13 +372,13 @@ int Connect(const char* host, const char* service)
     struct servent *sp;
 
     hp = gethostbyname(host);
-    if (hp != NULL)
+    if (hp != nullptr)
     {
         sp = getservbyname(service, "tcp");
-        if (sp != NULL)
+        if (sp != nullptr)
         {
             pptr = (struct in_addr **)hp->h_addr_list;
-            for (; *pptr != NULL; pptr++)
+            for (; *pptr != nullptr; ++pptr)
             {
                 sockfd = socket(AF_INET, SOCK_STREAM, 0);
                 if (sockfd < 0)
@@ -402,6 +466,10 @@ int Connect(const char* host, const char* service)
  *******/
 int Connect(const char* host, int port)
 {
+    if (!host || port <= 0 || port > 65535) {
+        return 0; // invalid parameters
+    }
+    
     int retval = 0;
     int sockfd;
     struct sockaddr_in servaddr;
@@ -409,10 +477,10 @@ int Connect(const char* host, int port)
     struct hostent *hp;
 
     hp = gethostbyname(host);
-    if (hp != NULL)
+    if (hp != nullptr)
     {
         pptr = (struct in_addr **)hp->h_addr_list;
-        for (; *pptr != NULL; pptr++)
+        for (; *pptr != nullptr; ++pptr)
         {
             sockfd = socket(AF_INET, SOCK_STREAM, 0);
             if (sockfd < 0)
@@ -491,6 +559,10 @@ int Connect(const char* host, int port)
 
 int SelectIn(int fd, int u_sec)
 {
+    if (fd < 0 || u_sec < 0) {
+        return -1; // invalid parameters
+    }
+    
     fd_set infds;
     struct timeval timeout;
     int retval = 0;
@@ -507,12 +579,16 @@ int SelectIn(int fd, int u_sec)
     timeout.tv_sec = seconds;
     timeout.tv_usec = milliseconds;
 
-    retval = select(fd + 1, &infds, NULL, NULL, &timeout);
+    retval = select(fd + 1, &infds, nullptr, nullptr, &timeout);
     return retval;
 }
 
 int SelectOut(int fd, int u_sec)
 {
+    if (fd < 0 || u_sec < 0) {
+        return -1; // invalid parameters
+    }
+    
     fd_set outfds;
     struct timeval timeout;
     int retval = 0;
@@ -522,12 +598,16 @@ int SelectOut(int fd, int u_sec)
     timeout.tv_sec = 0;
     timeout.tv_usec = u_sec;
 
-    retval = select(fd + 1, NULL, &outfds, NULL, &timeout);
+    retval = select(fd + 1, nullptr, &outfds, nullptr, &timeout);
     return retval;
 }
 
 int GetResponse(int fd, char* bufferstr, int maxlen)
 {
+    if (fd < 0 || !bufferstr || maxlen <= 0) {
+        return -1; // invalid parameters
+    }
+    
     int retval = 0;
     int bytesread = 0;
     char buffer[STRLONG];
@@ -535,7 +615,8 @@ int GetResponse(int fd, char* bufferstr, int maxlen)
     bytesread = read(fd, buffer, STRLONG);
     if (bytesread > 0)
     {
-        strncpy(bufferstr, buffer, maxlen);
+        strncpy(bufferstr, buffer, maxlen - 1);
+        bufferstr[maxlen - 1] = '\0'; // ensure null termination
         buffer[3] = '\0';
         retval = atoi(buffer);
     }
@@ -547,6 +628,10 @@ int GetResponse(int fd, char* bufferstr, int maxlen)
  ****/
 int SMTP(int fd, Email *email)
 {
+    if (fd < 0 || !email) {
+        return -1; // invalid parameters
+    }
+    
     int   retval = 0;
     char  buffer[STRLONG];
     char  outgoing[STRLONG];

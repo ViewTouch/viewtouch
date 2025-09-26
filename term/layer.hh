@@ -24,6 +24,7 @@
 #include "term_view.hh"
 #include "list_utility.hh"
 #include <X11/Xft/Xft.h>
+#include <functional>
 
 
 /**** Types ****/
@@ -46,10 +47,10 @@ public:
     // Member Functions
     int UpdateAll(LayerList *ll, Layer *l);
     virtual int Render(Layer *l) = 0;
-    virtual int Layout(Layer *l) { return 0; }
+    virtual int Layout(Layer *l) noexcept { return 0; }
     virtual int MouseEnter(LayerList *ll, Layer *l);
     virtual int MouseExit(LayerList *ll, Layer *);
-    virtual int MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code) { return 0; }
+    virtual int MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code) noexcept { return 0; }
 };
 
 class LayerObjectList
@@ -59,6 +60,10 @@ class LayerObjectList
 public:
     // Constructor
     LayerObjectList();
+    LayerObjectList(const LayerObjectList&) = delete;
+    LayerObjectList& operator=(const LayerObjectList&) = delete;
+    LayerObjectList(LayerObjectList&&) noexcept = default;
+    LayerObjectList& operator=(LayerObjectList&&) noexcept = default;
 
     // Member Functions
     int Add(LayerObject *lo);
@@ -66,10 +71,14 @@ public:
     int Purge();
     LayerObject *FindByID(int id);
     LayerObject *FindByPoint(int x, int y);
+    
+    // Modern versions using std::optional
+    std::optional<std::reference_wrapper<LayerObject>> FindByIDOptional(int id) noexcept;
+    std::optional<std::reference_wrapper<LayerObject>> FindByPointOptional(int x, int y) noexcept;
 
     int Render(Layer *l);
     int Layout(Layer *l);
-    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code);
+    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code) noexcept;
     
     // Access to internal list for font updates
     LayerObject *Head() { return list.Head(); }
@@ -113,6 +122,14 @@ public:
     Layer(Display *d, GC g, Window dw, int lw, int lh);
     // Destructor
     virtual ~Layer();
+    
+    // Move constructor and assignment operator
+    Layer(Layer&& other) noexcept;
+    Layer& operator=(Layer&& other) noexcept;
+    
+    // Delete copy constructor and assignment operator
+    Layer(const Layer&) = delete;
+    Layer& operator=(const Layer&) = delete;
 
     // Member Functions
     int DrawArea(int dx, int dy, int dw, int dh);
@@ -185,6 +202,10 @@ public:
 
     // Constructor
     LayerList();
+    LayerList(const LayerList&) = delete;
+    LayerList& operator=(const LayerList&) = delete;
+    LayerList(LayerList&&) noexcept = default;
+    LayerList& operator=(LayerList&&) noexcept = default;
     // Destructor
     ~LayerList() { Purge(); }
 
@@ -196,6 +217,10 @@ public:
     int Purge();
     Layer *FindByPoint(int x, int y);
     Layer *FindByID(int id);
+    
+    // Modern versions using std::optional
+    std::optional<std::reference_wrapper<Layer>> FindByPointOptional(int x, int y) noexcept;
+    std::optional<std::reference_wrapper<Layer>> FindByIDOptional(int id) noexcept;
 
     int SetScreenBlanker(int set);
     int SetScreenImage(int set);
@@ -230,7 +255,7 @@ public:
 
     // Member Functions
     int Render(Layer *l);
-    int MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code);
+    int MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code) noexcept;
 
     virtual int Command(Layer *l);
 };
@@ -246,7 +271,7 @@ public:
 
     // Member Functions
     int Render(Layer *l);
-    int MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code);
+    int MouseAction(LayerList *ll, Layer *l, int mouse_x, int mouse_y, int code) noexcept;
 };
 
 class LO_ItemList : public LayerObject
@@ -257,7 +282,7 @@ public:
 
     // Member Functions
     int Render(Layer *l);
-    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code);
+    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code) noexcept;
 };
 
 class LO_ItemMenu : public LayerObject
@@ -268,7 +293,7 @@ public:
 
     // Member Functions
     int Render(Layer *l);
-    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code);
+    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code) noexcept;
 };
 
 class LO_TextEntry : public LayerObject
@@ -279,7 +304,7 @@ public:
 
     // Member Functions
     int Render(Layer *l);
-    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code);
+    int MouseAction(LayerList *ll, Layer *l, int x, int y, int code) noexcept;
 };
 
 #endif
