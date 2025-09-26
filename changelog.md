@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Added
+- **Tax Display in Order Entry**: Enhanced Order Entry button type to show tax information when adding items
+  - Added `CalculateTax()` method to Order class for individual order tax calculation
+  - Modified OrderEntryZone to display tax amount and total with tax in footer
+  - Tax is shown as separate line item above total for transparency
+  - Users can now see exact tax amount being added without sending order first
+  - Quality of life improvement for better order visibility and customer service
+
 ### Fixed
 - **Vector Bounds Error**: Fixed crash when editing buttons due to vector bounds checking in dialog containers
   - Added proper bounds checking in `DialogMenu::Set()` and `DialogDoubleMenu::Set()` methods

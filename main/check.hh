@@ -191,6 +191,7 @@ public:
     int        IsReduced(int set = -1);
     int        VideoTarget(Settings *settings); // returns the video target for this order
     int        AddQualifier(const char* qualifier_str);
+    int        CalculateTax(Settings *settings, Terminal *term = NULL); // Calculate tax for this order
 };
 
 class Payment

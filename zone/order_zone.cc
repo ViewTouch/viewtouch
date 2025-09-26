@@ -240,8 +240,32 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
 	}
 
     // Draw Footer
+    // Calculate total with tax
+    int base_total = sc->raw_sales - sc->item_comps;
+    int total_tax = 0;
+    
+    // Calculate tax for all orders in the subcheck
+    Order *order = sc->OrderList();
+    while (order)
+    {
+        if (!(order->status & ORDER_COMP))
+        {
+            total_tax += order->CalculateTax(s, t);
+        }
+        order = order->next;
+    }
+    
+    int total_with_tax = base_total + total_tax;
+    
+    // Display tax and total on separate lines
+    if (total_tax > 0)
+    {
+        TextPosR(t, size_x - 8, size_y - 3, t->Translate("Tax"), col);
+        TextR(t, size_y - 3, t->FormatPrice(total_tax), col);
+    }
+    
     TextPosR(t, size_x - 8, size_y - 2, t->Translate("Total"), col);
-    TextR(t, size_y - 2, t->FormatPrice(sc->raw_sales - sc->item_comps), col);
+    TextR(t, size_y - 2, t->FormatPrice(total_with_tax), col);
     if (max_pages > 1)
         TextL(t, size_y - 1, t->PageNo(page_no + 1, max_pages), COLOR_DK_RED);
 
@@ -314,7 +338,10 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
             if (o->status & ORDER_COMP)
                 strcpy(str2, GlobalTranslate("COMP"));
             else
+            {
+                // Show regular price (tax will be shown separately)
                 t->FormatPrice(str2, o->cost);
+            }
             TextLR(t, line, str, tc, str2, tc);
         }
         else
@@ -323,6 +350,7 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
         line += my_spacing;
     }
 
+
     if (t->qualifier)
     {
         PrintItem(str, t->qualifier, "--");
@@ -330,7 +358,7 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
     }
 
     Line(t, HEADER_SIZE - 1, col);
-    Line(t, size_y - FOOTER_SIZE, col);
+    Line(t, size_y - FOOTER_SIZE - 1, col);
     return RENDER_OKAY;
 }
 
