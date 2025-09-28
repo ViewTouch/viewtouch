@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Dynamic Scaling System**: Implemented universal dynamic scaling for all display resolutions
+  - Added comprehensive scaling system with 1920x1080 as universal reference resolution
+  - Implemented `CalculateScaleFactors()`, `ScaleX()`, `ScaleY()`, `ScaleW()`, `ScaleH()`, and `ScaleFontSize()` functions
+  - All UI elements now scale proportionally to fit any screen resolution (ultra-wide, 4K, portrait displays)
+  - Universal page template system uses PAGE_SIZE_1920x1080 for all displays with dynamic scaling
+  - Server always receives consistent 1920x1080 dimensions regardless of actual screen size
+  - Removed hardcoded MAX_SCREEN_WIDTH and MAX_SCREEN_HEIGHT limits for better compatibility
+  - Added X11 compatibility limits (4096x4096 max) for XServer XSDL and remote display support
+  - Fonts, buttons, zones, and all UI elements scale smoothly across different resolutions
+  - Maintains aspect ratios while utilizing full screen real estate on all display types
+
 - **Tax Display in Order Entry**: Enhanced Order Entry button type to show tax information when adding items
   - Added `CalculateTax()` method to Order class for individual order tax calculation
   - Modified OrderEntryZone to display tax amount and total with tax in footer
@@ -14,6 +25,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Quality of life improvement for better order visibility and customer service
 
 ### Fixed
+- **Manager Table Transfer Regression**: Fixed an issue where managers or supervisors could not transfer guest checks to other employees
+  - Clear the previous server’s `user_current` flag during transfer so the new owner can immediately access the check
+  - Reset table selection state and broadcast `UPDATE_CHECKS` to keep all terminals in sync after the reassignment
 - **Vector Bounds Error**: Fixed crash when editing buttons due to vector bounds checking in dialog containers
   - Added proper bounds checking in `DialogMenu::Set()` and `DialogDoubleMenu::Set()` methods
   - Changed `CompareList()` unknown parameter from 0 to -1 for clearer invalid index detection
@@ -26,6 +40,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Added proper buffer size checking for string operations
 
 ### Changed
+- **CDU Utility Modernization**: Refactored `cdu_main.cc` to embrace RAII and safer parsing while preserving behavior
+  - Added scoped wrappers for file descriptors and device locks to guarantee cleanup
+  - Replaced global C-style state with `std::string` and strongly-typed device metadata
+  - Improved command-line parsing with `std::from_chars` and whitespace-tolerant helpers
+  - Retained legacy logging output while swapping to `std::printf`
 - **Drawer Mode Terminology**: Changed "Normal" Drawer Mode to "Trusted" Drawer Mode for better clarity
 - **Server Bank Payment Navigation**: Fixed Server Bank payment completion flow to return to Page -2 (PAGEID_LOGIN2) specifically for Customer users on SelfOrder terminals, while maintaining normal navigation for all other users
 - **Modern C++ Refactoring**: Comprehensive modernization of C++ codebase for better performance, safety, and maintainability

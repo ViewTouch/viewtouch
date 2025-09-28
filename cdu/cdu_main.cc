@@ -18,41 +18,163 @@
  *  and print them to the local device.
  */
 
+#include <array>
+#include <cctype>
+#include <charconv>
+#include <cstdio>
+#include <cstdlib>
 #include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <system_error>
+#include <utility>
 #include <unistd.h>
-#include "utility.hh"
+
 #include "cdu_att.hh"
 #include "socket.hh"
+#include "utility.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
 
+namespace
+{
 #ifdef BSD
-#define DEVPORT  "/dev/ttyd0"
+constexpr std::string_view kDefaultDevicePath{"/dev/ttyd0"};
 #else
-#define DEVPORT  "/dev/ttyS0"
+constexpr std::string_view kDefaultDevicePath{"/dev/ttyS0"};
 #endif
 
-// the supported types of devices
-#define CDU_EPSON        1
-#define CDU_BA63         2
+inline constexpr int kCduEpson = 1;
+inline constexpr int kCduBa63 = 2;
 
-char CDUDevName[STRLENGTH]     = DEVPORT;  // the serial device file
-int  CDUDevType                = CDU_BA63; // default to wincor CDU
-int  InetPortNumber            = CDU_PORT; // the socket on which to listen
-int  Verbose                   = 0;        // verbose mode
+std::string g_deviceName{std::string(kDefaultDevicePath)};
+int g_deviceTypeValue{kCduBa63};
+int g_inetPortNumber{CDU_PORT};
+bool g_verbose{false};
+
+class FileDescriptor
+{
+public:
+    FileDescriptor() = default;
+    explicit FileDescriptor(int fd) noexcept : fd_(fd) {}
+    FileDescriptor(const FileDescriptor&) = delete;
+    FileDescriptor& operator=(const FileDescriptor&) = delete;
+    FileDescriptor(FileDescriptor&& other) noexcept
+        : fd_(std::exchange(other.fd_, -1))
+    {
+    }
+    FileDescriptor& operator=(FileDescriptor&& other) noexcept
+    {
+        if (this != &other)
+        {
+            reset();
+            fd_ = std::exchange(other.fd_, -1);
+        }
+        return *this;
+    }
+    ~FileDescriptor()
+    {
+        reset();
+    }
+
+    void reset(int newFd = -1) noexcept
+    {
+        if (fd_ >= 0)
+            close(fd_);
+        fd_ = newFd;
+    }
+
+    [[nodiscard]] int get() const noexcept { return fd_; }
+    [[nodiscard]] explicit operator bool() const noexcept { return fd_ >= 0; }
+
+private:
+    int fd_{-1};
+};
+
+class DeviceLock
+{
+public:
+    explicit DeviceLock(const char* path)
+    {
+        if (path != nullptr)
+            handle_ = LockDevice(path);
+    }
+
+    DeviceLock(const DeviceLock&) = delete;
+    DeviceLock& operator=(const DeviceLock&) = delete;
+
+    DeviceLock(DeviceLock&& other) noexcept
+        : handle_(std::exchange(other.handle_, -1))
+    {
+    }
+
+    DeviceLock& operator=(DeviceLock&& other) noexcept
+    {
+        if (this != &other)
+        {
+            release();
+            handle_ = std::exchange(other.handle_, -1);
+        }
+        return *this;
+    }
+
+    ~DeviceLock()
+    {
+        release();
+    }
+
+    [[nodiscard]] bool acquired() const noexcept { return handle_ > 0; }
+
+    void release() noexcept
+    {
+        if (handle_ > 0)
+        {
+            UnlockDevice(handle_);
+            handle_ = -1;
+        }
+    }
+
+private:
+    int handle_{-1};
+};
+
+[[nodiscard]] std::string_view TrimLeadingWhitespace(std::string_view value) noexcept
+{
+    while (!value.empty() && std::isspace(static_cast<unsigned char>(value.front())))
+        value.remove_prefix(1);
+    return value;
+}
+
+[[nodiscard]] std::optional<int> ParseInteger(std::string_view value) noexcept
+{
+    value = TrimLeadingWhitespace(value);
+    if (value.empty())
+        return std::nullopt;
+
+    int result = 0;
+    const char* const first = value.data();
+    const char* const last = first + value.size();
+    const auto [ptr, ec] = std::from_chars(first, last, result);
+    if (ec == std::errc::invalid_argument || ptr == first)
+        return std::nullopt;
+    if (ec == std::errc::result_out_of_range)
+        return std::nullopt;
+    return result;
+}
+
+} // namespace
 
 
 /*********************************************************************
  * PROTOTYPES
  ********************************************************************/
-int  ParseArguments(int argc, const char* argv[]);
-int  SetAttributes(int fd);
+int ParseArguments(int argc, const char* argv[]);
+int SetAttributes(int fd);
 void ShowHelp(const char* progname);
-int  PrintFromRemote(int my_socket, int serial_port);
+int PrintFromRemote(int my_socket, int serial_port);
 
 
 /*********************************************************************
@@ -60,55 +182,52 @@ int  PrintFromRemote(int my_socket, int serial_port);
  ********************************************************************/
 int main(int argc, const char* argv[])
 {
-    int my_socket;
-    int lock;
-    int connection;
-    int ser_fd;  // file descriptor for the serial port
-    char buffer[STRLENGTH];
-
-    // parse the arguments for printer device
     ParseArguments(argc, argv);
-    if (Verbose)
+    if (g_verbose)
     {
-        printf("Listening on port %d\n", InetPortNumber);
-        printf("Writing to CDU at %s\n", CDUDevName);
+        std::printf("Listening on port %d\n", g_inetPortNumber);
+        std::printf("Writing to CDU at %s\n", g_deviceName.c_str());
     }
 
-    // listen for connections
-    my_socket = Listen(InetPortNumber);
-    while (my_socket > -1)
+    FileDescriptor listen_socket{Listen(g_inetPortNumber)};
+    if (!listen_socket)
+        return 1;
+
+    while (listen_socket.get() > -1)
     {
-        if (Verbose)
-            printf("Waiting to accept connection...\n");
-        connection = Accept(my_socket);
-        if (connection > -1)
+        if (g_verbose)
+            std::printf("Waiting to accept connection...\n");
+
+        FileDescriptor connection{Accept(listen_socket.get())};
+        if (!connection)
+            continue;
+
+        if (g_verbose)
+            std::printf("Got connection...\n");
+
+        DeviceLock device_lock{g_deviceName.c_str()};
+        if (device_lock.acquired())
         {
-            if (Verbose)
-                printf("Got connection...\n");
-            lock = LockDevice(CDUDevName);
-            if (lock > 0)
+            FileDescriptor serial_port{open(g_deviceName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY)};
+            if (serial_port)
             {
-                ser_fd = open(CDUDevName, O_RDWR | O_NOCTTY | O_NDELAY);
-                if (ser_fd > -1)
-                {
-                    if (Verbose)
-                        printf("Locked and opened device\n");
-                    SetAttributes(ser_fd);
-                    PrintFromRemote(connection, ser_fd);
-                    close(ser_fd);
-                }
-                else
-                {
-                    snprintf(buffer, STRLENGTH, "Could not write %s", CDUDevName);
-                    perror(buffer);
-                }
-                UnlockDevice(lock);
+                if (g_verbose)
+                    std::printf("Locked and opened device\n");
+                SetAttributes(serial_port.get());
+                PrintFromRemote(connection.get(), serial_port.get());
             }
-            if (Verbose)
-                printf("Closing socket\n");
-            close(connection);
+            else
+            {
+                std::array<char, STRLENGTH> error_message{};
+                std::snprintf(error_message.data(), error_message.size(), "Could not write %s", g_deviceName.c_str());
+                perror(error_message.data());
+            }
         }
+
+        if (g_verbose)
+            std::printf("Closing socket\n");
     }
+
     return 0;
 }
 
@@ -122,21 +241,21 @@ int main(int argc, const char* argv[])
  ****/
 void ShowHelp(const char* progname)
 {
-    printf("\n");
-    printf("Usage:  %s [OPTIONS]\n", progname);
-    printf("  -d<device>  Serial device (default %s)\n", CDUDevName);
-    printf("  -h          Show this help screen\n");
-    printf("  -p<port>    Set the listening port (default %d)\n", InetPortNumber);
-    printf("  -t<type>    Set the device type (default %d)\n", CDUDevType);
-    printf("  -v          Verbose mode\n");
-    printf("\n");
-    printf("Note:  there can be no spaces between an option and the associated\n");
-    printf("argument.  AKA, it's \"-p6555\" not \"-p 6555\".\n");
-    printf("\n");
-    printf("The supported CDU devices are:\n");
-    printf("Epson protocol = %d\n", CDU_EPSON);
-    printf("BA63 (Wincor)  = %d\n", CDU_BA63);
-    printf("\n");
+    std::printf("\n");
+    std::printf("Usage:  %s [OPTIONS]\n", progname);
+    std::printf("  -d<device>  Serial device (default %s)\n", g_deviceName.c_str());
+    std::printf("  -h          Show this help screen\n");
+    std::printf("  -p<port>    Set the listening port (default %d)\n", g_inetPortNumber);
+    std::printf("  -t<type>    Set the device type (default %d)\n", g_deviceTypeValue);
+    std::printf("  -v          Verbose mode\n");
+    std::printf("\n");
+    std::printf("Note:  there can be no spaces between an option and the associated\n");
+    std::printf("argument.  AKA, it's \"-p6555\" not \"-p 6555\".\n");
+    std::printf("\n");
+    std::printf("The supported CDU devices are:\n");
+    std::printf("Epson protocol = %d\n", kCduEpson);
+    std::printf("BA63 (Wincor)  = %d\n", kCduBa63);
+    std::printf("\n");
     exit(1);
 }
 
@@ -145,37 +264,34 @@ void ShowHelp(const char* progname)
  ****/
 int ParseArguments(int argc, const char* argv[])
 {
-    const char* arg;
-    int idx = 1;  // first command line argument past binary name
-    int retval = 0;
-
-    while (idx < argc)
+    for (int idx = 1; idx < argc; ++idx)
     {
-        arg = argv[idx];
+        const char* arg = argv[idx];
         if (arg[0] == '-')
         {
             switch (arg[1])
             {
             case 'd':
-                strncpy(CDUDevName, &arg[2], STRLENGTH);
+                g_deviceName.assign(&arg[2]);
                 break;
             case 'h':
                 ShowHelp(argv[0]);
                 break;
             case 'p':
-                InetPortNumber = atoi(&arg[2]);
+                if (auto parsed = ParseInteger(&arg[2]))
+                    g_inetPortNumber = *parsed;
                 break;
             case 't':
-                CDUDevType = atoi(&arg[2]);
+                if (auto parsed = ParseInteger(&arg[2]))
+                    g_deviceTypeValue = *parsed;
                 break;
             case 'v':
-                Verbose = 1;
+                g_verbose = true;
                 break;
             }
         }
-        idx += 1;
     }
-    return retval;
+    return 0;
 }
 
 /****
@@ -184,17 +300,17 @@ int ParseArguments(int argc, const char* argv[])
 int SetAttributes(int fd)
 {
     int retval = 1;
-    switch (CDUDevType)
+    switch (g_deviceTypeValue)
     {
-    case CDU_EPSON:
+    case kCduEpson:
         retval = EpsonSetAttributes(fd);
         break;
-    case CDU_BA63:
+    case kCduBa63:
         retval = BA63SetAttributes(fd);
         break;
     default:
-        fprintf(stderr, "Unknown device type:  %d\n", CDUDevType);
-        fprintf(stderr, "Did not initialize serial port!\n");
+        std::fprintf(stderr, "Unknown device type:  %d\n", g_deviceTypeValue);
+        std::fprintf(stderr, "Did not initialize serial port!\n");
         break;
     }
     return retval;

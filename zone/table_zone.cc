@@ -1734,14 +1734,21 @@ int TableAssignZone::MoveTables(Terminal *term, ServerTableObj *sto)
                 Check *check = ((TableObj *)zoneObj)->check;
                 int id = sto->user->id;
                 term->system_data->exception_db.AddTableException(term, check, id);
-                check->user_owner = id;
-                check->Save();
+                if (check)
+                {
+                    // Release the check from the previous user so the target owner
+                    // can access it immediately, then persist the ownership change.
+                    check->user_owner = id;
+                    check->user_current = 0;
+                    zoneObj->selected = 0;
+                    check->Save();
+                }
             }
             zoneObj = zoneObj->next;
         }
     }
 
     Draw(term, 1);
-    term->UpdateOtherTerms(UPDATE_ALL_TABLES, NULL);
+    term->UpdateOtherTerms(UPDATE_ALL_TABLES | UPDATE_CHECKS, NULL);
     return 0;
 }
