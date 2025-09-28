@@ -14,6 +14,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Quality of life improvement for better order visibility and customer service
 
 ### Fixed
+- **Manager Table Transfer Regression**: Fixed an issue where managers or supervisors could not transfer guest checks to other employees
+  - Clear the previous server’s `user_current` flag during transfer so the new owner can immediately access the check
+  - Reset table selection state and broadcast `UPDATE_CHECKS` to keep all terminals in sync after the reassignment
 - **Vector Bounds Error**: Fixed crash when editing buttons due to vector bounds checking in dialog containers
   - Added proper bounds checking in `DialogMenu::Set()` and `DialogDoubleMenu::Set()` methods
   - Changed `CompareList()` unknown parameter from 0 to -1 for clearer invalid index detection
