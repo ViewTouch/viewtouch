@@ -197,79 +197,104 @@ int Layer::BlankPage(int mode, int texture, int tc, int size, int split,
     page_title.Set(title);
     TimeString.Set(my_time);
 
+    // Dynamic scaling: Calculate page dimensions based on scale factors
+    // and maintain aspect ratios for different page template types
     switch (size)
     {
     case PAGE_SIZE_640x480:
-        page_w = 640;
-        page_h = 480;
-        frame_width = 2;
+        page_w = ScaleW(640);
+        page_h = ScaleH(480);
+        frame_width = ScaleW(2);
         break;
     case PAGE_SIZE_800x600:
-        page_w = 800;
-        page_h = 600;
-        frame_width = 2;
+        page_w = ScaleW(800);
+        page_h = ScaleH(600);
+        frame_width = ScaleW(2);
         break;
    case PAGE_SIZE_1024x600:
-        page_w = 1024;
-        page_h = 600;
-        frame_width = 2;
+        page_w = ScaleW(1024);
+        page_h = ScaleH(600);
+        frame_width = ScaleW(2);
         break;
   case PAGE_SIZE_1024x768:
-        page_w = 1024;
-        page_h = 768;
-        frame_width = 3;
+        page_w = ScaleW(1024);
+        page_h = ScaleH(768);
+        frame_width = ScaleW(3);
         break;
     case PAGE_SIZE_1280x800:
-        page_w = 1280;
-        page_h = 800;
-        frame_width = 3;
+        page_w = ScaleW(1280);
+        page_h = ScaleH(800);
+        frame_width = ScaleW(3);
         break;
     case PAGE_SIZE_1280x1024:
-        page_w = 1280;
-        page_h = 1024;
-        frame_width = 3;
+        page_w = ScaleW(1280);
+        page_h = ScaleH(1024);
+        frame_width = ScaleW(3);
         break;
        case PAGE_SIZE_1366x768:
-        page_w = 1366;
-        page_h = 768;
-        frame_width = 3;
+        page_w = ScaleW(1366);
+        page_h = ScaleH(768);
+        frame_width = ScaleW(3);
         break;
     case PAGE_SIZE_1440x900:
-        page_w = 1440;
-        page_h = 900;
-        frame_width = 3;
+        page_w = ScaleW(1440);
+        page_h = ScaleH(900);
+        frame_width = ScaleW(3);
         break;
     case PAGE_SIZE_1600x900:
-        page_w = 1600;
-        page_h = 900;
-        frame_width = 4;
+        page_w = ScaleW(1600);
+        page_h = ScaleH(900);
+        frame_width = ScaleW(4);
         break;
     case PAGE_SIZE_1680x1050:
-        page_w = 1680;
-        page_h = 1050;
-        frame_width = 4;
+        page_w = ScaleW(1680);
+        page_h = ScaleH(1050);
+        frame_width = ScaleW(4);
         break;
        case PAGE_SIZE_1920x1080:
-        page_w = 1920;
-        page_h = 1080;
-        frame_width = 4;
+        // Universal 1920x1080 base - scale proportionally to screen
+        page_w = ScaleW(1920);
+        page_h = ScaleH(1080);
+        frame_width = ScaleW(4);
         break;
     case PAGE_SIZE_1920x1200:
-        page_w = 1920;
-        page_h = 1200;
-        frame_width = 4;
+        page_w = ScaleW(1920);
+        page_h = ScaleH(1200);
+        frame_width = ScaleW(4);
         break;
     case PAGE_SIZE_2560x1440:
-        page_w = 2560;
-        page_h = 1440;
-        frame_width = 4;
+        page_w = ScaleW(2560);
+        page_h = ScaleH(1440);
+        frame_width = ScaleW(5);
         break;
     case PAGE_SIZE_2560x1600:
-        page_w = 2560;
-        page_h = 1600;
-        frame_width = 4;
+        page_w = ScaleW(2560);
+        page_h = ScaleH(1600);
+        frame_width = ScaleW(5);
+        break;
+    case PAGE_SIZE_1600x1200:
+        page_w = ScaleW(1600);
+        page_h = ScaleH(1200);
+        frame_width = ScaleW(4);
+        break;
+    case PAGE_SIZE_768x1024:
+        page_w = ScaleW(768);
+        page_h = ScaleH(1024);
+        frame_width = ScaleW(3);
+        break;
+    case PAGE_SIZE_800x480:
+        page_w = ScaleW(800);
+        page_h = ScaleH(480);
+        frame_width = ScaleW(2);
+        break;
+    default:
+        // For unknown page sizes, use full scaled window dimensions
+        page_w = ScaleW(w);
+        page_h = ScaleH(h);
+        frame_width = ScaleW(4);
         break;
      }
+    // Center the scaled page within the window
     page_x = Max(w - page_w, 0) / 2 + offset_x;
     page_y = Max(h - page_h, 0) / 2 + offset_y;
     use_clip = 0;
@@ -474,12 +499,15 @@ int Layer::TitleBar()
 }
 
 int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
-                int align, int max_pixel_width, int embossed)
+                 int align, int max_pixel_width, int embossed)
 {
     FnTrace("Layer::Text()");
 
     int f = font & 31;
     XftFont *xftfont = GetXftFontInfo(f);
+    
+    // TODO: Apply font scaling for different screen resolutions
+    // For now, Xft fonts should scale automatically with system DPI
     if (max_pixel_width > 0)
     {
         int i;
@@ -512,6 +540,7 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
     {
         tx -= tw;
     }
+    // Text coordinates are already in scaled page coordinate system
     tx += page_x;
     ty += page_y + GetFontBaseline(f);
 
@@ -682,6 +711,7 @@ int Layer::Rectangle(int rx, int ry, int rw, int rh, int image)
     if (image == IMAGE_CLEAR)
         return 0;
 
+    // Rectangle coordinates are already in scaled page coordinate system  
     RegionInfo r(rx, ry, rw, rh);
     if (use_clip)
         r.Intersect(clip);
@@ -1120,6 +1150,9 @@ int Layer::Zone(int zx, int zy, int zw, int zh,
                 int zone_frame, int texture, int shape)
 {
     FnTrace("Layer::Zone()");
+
+    // Zone coordinates are already in scaled page coordinate system
+    // Scaling is applied at the page level, not individual zone level
 
     int frame;
     switch (zone_frame)

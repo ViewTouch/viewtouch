@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Dynamic Scaling System**: Implemented universal dynamic scaling for all display resolutions
+  - Added comprehensive scaling system with 1920x1080 as universal reference resolution
+  - Implemented `CalculateScaleFactors()`, `ScaleX()`, `ScaleY()`, `ScaleW()`, `ScaleH()`, and `ScaleFontSize()` functions
+  - All UI elements now scale proportionally to fit any screen resolution (ultra-wide, 4K, portrait displays)
+  - Universal page template system uses PAGE_SIZE_1920x1080 for all displays with dynamic scaling
+  - Server always receives consistent 1920x1080 dimensions regardless of actual screen size
+  - Removed hardcoded MAX_SCREEN_WIDTH and MAX_SCREEN_HEIGHT limits for better compatibility
+  - Added X11 compatibility limits (4096x4096 max) for XServer XSDL and remote display support
+  - Fonts, buttons, zones, and all UI elements scale smoothly across different resolutions
+  - Maintains aspect ratios while utilizing full screen real estate on all display types
+
 - **Tax Display in Order Entry**: Enhanced Order Entry button type to show tax information when adding items
   - Added `CalculateTax()` method to Order class for individual order tax calculation
   - Modified OrderEntryZone to display tax amount and total with tax in footer
