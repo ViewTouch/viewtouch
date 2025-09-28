@@ -29,6 +29,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Added proper buffer size checking for string operations
 
 ### Changed
+- **CDU Utility Modernization**: Refactored `cdu_main.cc` to embrace RAII and safer parsing while preserving behavior
+  - Added scoped wrappers for file descriptors and device locks to guarantee cleanup
+  - Replaced global C-style state with `std::string` and strongly-typed device metadata
+  - Improved command-line parsing with `std::from_chars` and whitespace-tolerant helpers
+  - Retained legacy logging output while swapping to `std::printf`
 - **Drawer Mode Terminology**: Changed "Normal" Drawer Mode to "Trusted" Drawer Mode for better clarity
 - **Server Bank Payment Navigation**: Fixed Server Bank payment completion flow to return to Page -2 (PAGEID_LOGIN2) specifically for Customer users on SelfOrder terminals, while maintaining normal navigation for all other users
 - **Modern C++ Refactoring**: Comprehensive modernization of C++ codebase for better performance, safety, and maintainability
