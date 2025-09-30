@@ -22,7 +22,7 @@ else()
 endif()
 
 # define version number with build time, compiler tag, architecture
-include(config/version.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/config/version.cmake)
 
 set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
 
