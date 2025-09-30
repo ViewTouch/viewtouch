@@ -1,3 +1,52 @@
-build
-dat
+# Build artifacts
+build/
 installer-build/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+!cmake/*.cmake
+
+# Generated version files
+version_generated.hh
+build_number.h
+
+# Data directory (contains runtime data, not source)
+dat/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.vcxproj
+*.vcxproj.filters
+*.sln
+
+# Test artifacts
+test_results/
+coverage/
+
+# Package files
+*.tar.gz
+*.zip
+*.deb
+*.rpm
