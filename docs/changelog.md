@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Changed
+- **Generic Character and Text Rendering Modernization**: Comprehensive refactoring of text rendering functions with modern C++ features
+  - **generic_char.hh/cc**: Modernized text drawing API with C++20 `std::span` for safer buffer handling
+    - Replaced raw pointer + length parameters with type-safe `std::span<const genericChar>` for all draw functions
+    - Added `MakeGenericCharSpan()` helper for seamless conversion from legacy pointer/length API
+    - Provided backward-compatible inline overloads to maintain existing call sites
+    - Enhanced null pointer safety with proper validation in all drawing functions
+    - Added `[[maybe_unused]]` and `[[nodiscard]]` attributes for better compile-time safety
+    - Modernized internal helpers with `constexpr` and `noexcept` specifications
+    - Replaced global variable `is_wide_char` with scoped `g_isWideChar` in anonymous namespace
+    - Improved function parameter names for better code documentation
+    - Used `#pragma once` for modern header guard style
+  - **data_file.cc**: Fixed character literal handling for cross-compiler compatibility
+    - Replaced problematic backslash character literal `'\\'` with safe `constexpr` definition
+    - Prevents potential issues with different compiler interpretations of escape sequences
+    - Ensures consistent behavior across GCC, Clang, and other C++ compilers
+  - **Benefits**:
+    - **Memory Safety**: `std::span` provides bounds checking and prevents buffer overruns
+    - **Type Safety**: Compile-time enforcement of buffer boundaries and null checks
+    - **Performance**: Zero-overhead abstractions with inline overloads and constexpr helpers
+    - **Maintainability**: Clearer API with modern C++ idioms while maintaining backward compatibility
+    - **Compiler Portability**: Fixed character literal issues for consistent cross-platform behavior
+
 - **Core File I/O Modernization**: Comprehensive refactoring of core data and configuration file classes
   - **ConfFile Class (conf_file.hh/cc)**: Modernized INI file I/O library with C++17/20 features
     - Replaced C-style constants with `constexpr std::string_view` for compile-time evaluation

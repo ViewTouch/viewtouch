@@ -835,6 +835,7 @@ int KeyValueInputFile::Read(char* key, char* value, int maxlen)
     int retval = 0;
     char last = '\0';
 
+    constexpr char backslash = static_cast<char>(0x5C);
     while (bytesread > 0 && retval == 0)
     {
         while (buffidx < bytesread && retval == 0)
@@ -855,11 +856,11 @@ int KeyValueInputFile::Read(char* key, char* value, int maxlen)
                 getvalue = false;
                 retval = 1;
             }
-            else if (ch == '#' && last != '\\')
+            else if (ch == '#' && last != backslash)
             {
                 comment = true;
             }
-            else if (comment || ch == '\\')
+            else if (comment || ch == backslash)
             {
                 // skip comment content and escaped characters
             }
