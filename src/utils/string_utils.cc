@@ -214,16 +214,16 @@ namespace vt_string {
         std::string cleaned = trim(str);
         if (cleaned.empty()) return false;
         
-        // Remove $ sign if present
-        if (cleaned[0] == '$') {
-            cleaned = cleaned.substr(1);
-        }
-        
-        // Handle negative values
+        // Extract sign information regardless of whether the currency symbol
+        // appears before or after it (e.g. "$-12.34" or "-$12.34").
         bool negative = false;
-        if (!cleaned.empty() && cleaned[0] == '-') {
-            negative = true;
-            cleaned = cleaned.substr(1);
+
+        cleaned.erase(std::remove(cleaned.begin(), cleaned.end(), '$'), cleaned.end());
+        cleaned = trim(cleaned);
+
+        if (!cleaned.empty() && (cleaned[0] == '+' || cleaned[0] == '-')) {
+            negative = cleaned[0] == '-';
+            cleaned = trim(cleaned.substr(1));
         }
         
         // Remove commas
