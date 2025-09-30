@@ -1,6 +1,6 @@
 # Build artifacts
-build/
-installer-build/
+/build/
+/installer-build/
 *.o
 *.a
 *.so
