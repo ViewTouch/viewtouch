@@ -43,13 +43,21 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Verify directory structure
-      working-directory: ${{runner.workspace}}
       run: |
         echo "Verifying new directory structure..."
         echo "Current working directory: $(pwd)"
         echo "Contents of root directory:"
         ls -la
         echo ""
+        echo "Checking if we need to cd into viewtouchFork subdirectory..."
+        if [ -d "viewtouchFork" ]; then
+          echo "Found viewtouchFork subdirectory, changing into it..."
+          cd viewtouchFork
+          echo "Now in: $(pwd)"
+          echo "Contents after cd:"
+          ls -la
+          echo ""
+        fi
         echo "Checking main directories:"
         if [ -d "src" ]; then
           echo "✓ src/ exists"
@@ -136,15 +144,20 @@ jobs:
           libcurl4-gnutls-dev
 
     - name: Configure build
-      working-directory: ${{runner.workspace}}
       env:
         CC: ${{matrix.cc}}
         CXX: ${{matrix.cxx}}
         CXXFLAGS: ${{matrix.cxxflags}}
-      # Note: $GITHUB_WORKSPACE is distinct from ${{runner.workspace}}.
-      #       This is important
+      # Note: $GITHUB_WORKSPACE is the actual repository root
       run: |
-        cmake -S $GITHUB_WORKSPACE -B _build_${{matrix.cxx}}_${{matrix.std}} \
+        echo "Current directory: $(pwd)"
+        echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+        if [ -d "viewtouchFork" ]; then
+          echo "Found viewtouchFork subdirectory, changing into it..."
+          cd viewtouchFork
+        fi
+        echo "Now in: $(pwd)"
+        cmake -S . -B _build_${{matrix.cxx}}_${{matrix.std}} \
           -DCMAKE_INSTALL_PREFIX="${PWD}/_install_${{matrix.cxx}}_${{matrix.std}}" \
           -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" \
           -DCMAKE_CXX_STANDARD=${{matrix.std}} \
@@ -152,7 +165,12 @@ jobs:
           -DCMAKE_VERBOSE_MAKEFILE=ON
 
     - name: Build + install
-      working-directory: ${{runner.workspace}}
       run: |
+        echo "Current directory: $(pwd)"
+        if [ -d "viewtouchFork" ]; then
+          echo "Found viewtouchFork subdirectory, changing into it..."
+          cd viewtouchFork
+        fi
+        echo "Now in: $(pwd)"
         cmake --build _build_${{matrix.cxx}}_${{matrix.std}} -j2
         cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target install
