@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo exitsystem >VIEWTOUCH_PATH/bin/.viewtouch_command_file
+killall -USR2 vt_main

@@ -22,7 +22,7 @@ else()
 endif()
 
 # define version number with build time, compiler tag, architecture
-include(version.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/config/version.cmake)
 
 set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
 
@@ -111,7 +111,14 @@ if(NOT TARGET Catch2::Catch2)
 endif()
 
 include_directories(main)
+include_directories(main/business)
+include_directories(main/hardware)
+include_directories(main/ui)
+include_directories(main/data)
 include_directories(zone)
+include_directories(src/core)
+include_directories(src/utils)
+include_directories(src/network)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(external)
 include_directories(/usr/include/freetype2)
@@ -135,7 +142,7 @@ endif(${TERM_CREDIT} MATCHES "credit_mcve")
 
 
 add_library(vt_version STATIC
-    version_generated.hh.in
+    config/version_generated.hh.in
     version/vt_version_info.hh
     version/vt_version_info.cc
     )
@@ -149,10 +156,10 @@ target_link_libraries(vt_print_version vt_version)
 
 # read and write ini-config files
 add_library(conf_file STATIC
-    conf_file.cc conf_file.hh)
+    src/core/conf_file.cc src/core/conf_file.hh)
 # provide xdb image data, only vt_term needs to link, as it accesses 'ImageData'
 add_library(image_data STATIC
-    image_data.cc image_data.hh)
+    src/core/image_data.cc src/core/image_data.hh)
 
 find_package(ZLIB REQUIRED)
 target_link_libraries(conf_file PRIVATE ZLIB::ZLIB)
@@ -200,20 +207,20 @@ message(STATUS "Linking X11 libraries: ${_vt_xlibs_spaced}")
 list(REMOVE_DUPLICATES VT_XLIBS_INCLUDE_DIRS)
 
 add_library(vtcore
-    main/admission.cc  main/admission.hh
-    external/sha1.cc   external/sha1.hh
-    fntrace.cc         fntrace.hh
-    time_info.cc       time_info.hh
-    utility.cc         utility.hh
-    data_persistence_manager.cc data_persistence_manager.hh
-    string_utils.cc    string_utils.hh
-    error_handler.cc   error_handler.hh
-    remote_link.cc     remote_link.hh
-    debug.cc           debug.hh
-    generic_char.cc    generic_char.hh
-    logger.cc          logger.hh
-    socket.cc          socket.hh
-    main/labels.cc     main/labels.hh
+    main/data/admission.cc  main/data/admission.hh
+    external/core/sha1.cc   external/core/sha1.hh
+    src/utils/fntrace.cc         src/utils/fntrace.hh
+    src/core/time_info.cc       src/core/time_info.hh
+    src/utils/utility.cc         src/utils/utility.hh
+    src/core/data_persistence_manager.cc src/core/data_persistence_manager.hh
+    src/utils/string_utils.cc    src/utils/string_utils.hh
+    src/core/error_handler.cc   src/core/error_handler.hh
+    src/network/remote_link.cc     src/network/remote_link.hh
+    src/core/debug.cc           src/core/debug.hh
+    src/core/generic_char.cc    src/core/generic_char.hh
+    src/core/logger.cc          src/core/logger.hh
+    src/network/socket.cc          src/network/socket.hh
+    main/ui/labels.cc     main/ui/labels.hh
     )
 
 target_include_directories(vtcore PUBLIC
@@ -263,35 +270,35 @@ add_library(zone
 target_link_libraries(zone conf_file vtcore)
 
 add_executable(vt_main
-    data_file.cc
-    data_file.hh
-    main/license_hash.cc    main/license_hash.hh
-    main/manager.cc         main/manager.hh
-    main/printer.cc         main/printer.hh
-    main/terminal.cc        main/terminal.hh
-    main/settings.cc        main/settings.hh
-    main/labels.cc          main/labels.hh
-    main/locale.cc          main/locale.hh
-    main/credit.cc          main/credit.hh
-    main/sales.cc           main/sales.hh
-    main/check.cc           main/check.hh
-    main/account.cc         main/account.hh
-    main/system.cc          main/system.hh
-    main/archive.cc         main/archive.hh
-    main/drawer.cc          main/drawer.hh
-    main/inventory.cc       main/inventory.hh
-    main/employee.cc        main/employee.hh
-    main/labor.cc           main/labor.hh
-    main/tips.cc            main/tips.hh
-    main/exception.cc       main/exception.hh
-    main/customer.cc        main/customer.hh
-    main/report.cc          main/report.hh
-    main/system_report.cc
-    main/system_salesmix.cc
-    main/chart.cc           main/chart.hh
-    main/expense.cc         main/expense.hh
-    main/cdu.cc             main/cdu.hh
-    main/cdu_att.cc         main/cdu_att.hh
+    src/core/data_file.cc
+    src/core/data_file.hh
+    main/data/license_hash.cc    main/data/license_hash.hh
+    main/data/manager.cc         main/data/manager.hh
+    main/hardware/printer.cc         main/hardware/printer.hh
+    main/hardware/terminal.cc        main/hardware/terminal.hh
+    main/data/settings.cc        main/data/settings.hh
+    main/ui/labels.cc          main/ui/labels.hh
+    main/data/locale.cc          main/data/locale.hh
+    main/data/credit.cc          main/data/credit.hh
+    main/business/sales.cc           main/business/sales.hh
+    main/business/check.cc           main/business/check.hh
+    main/business/account.cc         main/business/account.hh
+    main/data/system.cc          main/data/system.hh
+    main/data/archive.cc         main/data/archive.hh
+    main/hardware/drawer.cc          main/hardware/drawer.hh
+    main/business/inventory.cc       main/business/inventory.hh
+    main/business/employee.cc        main/business/employee.hh
+    main/business/labor.cc           main/business/labor.hh
+    main/business/tips.cc            main/business/tips.hh
+    main/data/exception.cc       main/data/exception.hh
+    main/business/customer.cc        main/business/customer.hh
+    main/ui/report.cc          main/ui/report.hh
+    main/ui/system_report.cc
+    main/ui/system_salesmix.cc
+    main/ui/chart.cc           main/ui/chart.hh
+    main/data/expense.cc         main/data/expense.hh
+    main/hardware/cdu.cc             main/hardware/cdu.hh
+    main/hardware/cdu_att.cc         main/hardware/cdu_att.hh
     )
 target_include_directories(vt_main PRIVATE ${VT_XLIBS_INCLUDE_DIRS})
 target_link_libraries(vt_main zone vtcore ${VT_XLIBS})
@@ -324,7 +331,7 @@ endif()
 
 add_executable(vt_print print/print_main.cc)
 target_link_libraries(vt_print vtcore)
-add_executable(vt_cdu cdu/cdu_main.cc main/cdu_att.cc)
+add_executable(vt_cdu cdu/cdu_main.cc main/hardware/cdu_att.cc)
 target_link_libraries(vt_cdu vtcore)
 
 # Test executable to verify Catch2 integration
@@ -369,14 +376,14 @@ if(BUILD_TESTING)
     # )
 endif()
 
-install(PROGRAMS 	scripts/vtrestart 
-			scripts/vtrun
-			scripts/keeprunning 
-			scripts/keeprunningcron 
-			scripts/vt_ping 
-			scripts/lpd-restart
-			scripts/vt_openterm
-			scripts/runonce
+install(PROGRAMS 	scripts/system/vtrestart 
+			scripts/system/vtrun
+			scripts/system/keeprunning 
+			scripts/system/keeprunningcron 
+			scripts/maintenance/vt_ping 
+			scripts/system/lpd-restart
+			scripts/tools/vt_openterm
+			scripts/system/runonce
 	DESTINATION viewtouch/bin
 )
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dat" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dat")
@@ -386,13 +393,13 @@ else()
 endif()
 
 # Install language files (PO files)
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/po_file" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/po_file")
-    install(DIRECTORY po_file/ DESTINATION viewtouch/dat/languages FILES_MATCHING PATTERN "*.po_*")
-    message(STATUS "Installing language files from po_file/ to viewtouch/dat/languages/")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/data/po_file" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/assets/data/po_file")
+    install(DIRECTORY assets/data/po_file/ DESTINATION viewtouch/dat/languages FILES_MATCHING PATTERN "*.po_*")
+    message(STATUS "Installing language files from assets/data/po_file/ to viewtouch/dat/languages/")
 else()
-    message(STATUS "'po_file' folder is missing in source directory, excluding language files from install target.")
+    message(STATUS "'assets/data/po_file' folder is missing in source directory, excluding language files from install target.")
 endif()
-install(PROGRAMS scripts/vtcommands.pl DESTINATION viewtouch/bin/vtcommands)
+install(PROGRAMS scripts/tools/vtcommands.pl DESTINATION viewtouch/bin/vtcommands)
 
 #install(CODE "MESSAGE(\"Sample install message.\")")
 

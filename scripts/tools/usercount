@@ -1,0 +1,13 @@
+#!/bin/sh
+
+VTBIN=VIEWTOUCH_PATH/bin
+VTMAIN=`ps ax | grep vt_main | grep -v grep`
+if [ -n "$VTMAIN" ]; then
+    cd $VTBIN
+    echo usercount >.viewtouch_command_file
+    killall -USR2 vt_main
+    sleep 1
+    grep UserCount ../dat/error_log.txt | tail -1
+else
+    echo "ViewTouch does not appear to be running."
+fi

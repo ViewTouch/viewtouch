@@ -1,0 +1,45 @@
+#!/bin/sh
+
+# simple script to install test data sent from Doug
+# data should be stored in .tar.gz file with the root
+# being dat and bin.  For instance, to archive /usr/viewtouch/dat
+# and /usr/viewtouch/bin for a site called 'groovy' run
+#
+# cd /usr/viewtouch
+# tar czf loopy-Oct-2-2002.tar.gz bin dat
+
+USAGE='vtinst [real] <archive filename>'
+ROOTDIR=$HOME/tmp/viewtouch
+
+if [ "$1" = "real" ] ; then
+   ROOTDIR=/usr/viewtouch
+   if [ -n "$2" ] ; then
+      ARCHIVE=$2
+      if [ -n "$3" ] ; then
+          SAVE=yes
+      fi
+   else
+      echo $USAGE
+      exit 1
+   fi
+elif [ -n "$1" ] ; then
+   ARCHIVE=$1
+   if [ -n "$2" ] ; then
+      SAVE=yes
+   fi
+else
+   echo $USAGE
+   exit 1
+fi
+
+echo Installing $ARCHIVE
+echo "  " in $ROOTDIR
+
+rm -rf $ROOTDIR/dat/*
+tar xzfC $ARCHIVE $ROOTDIR/
+
+if [ -n "$SAVE" ] ; then
+   NAME=`echo $ARCHIVE | sed -e 's/-.*$//'`
+   echo Saving as $NAME
+   vtsave $NAME
+fi

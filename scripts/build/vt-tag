@@ -1,0 +1,204 @@
+#!/usr/bin/perl -w
+
+# --------------------------------------------------------------------
+# Module:  vt-tag
+# Description:  determine whether any changes have been made since the
+#   last time this script was run and update the CVS tags with the
+#   latest version if so.
+# Author:  Bruce Alon King
+# Created:  Fri Sep 13 16:41:48 2002
+# --------------------------------------------------------------------
+
+# ####################################################################
+# INITIALIZATION AND GLOBAL VARIABLES
+# ####################################################################
+use vars qw/$hostname $status_command $last_tag_file $last_rev_file
+  $commit_tag_command $commit_rev_command $tag_files_command/;
+BEGIN {
+    $hostname = `hostname`;
+    chomp( $hostname );
+    $last_tag_file      = "last-release-tag";
+    $last_rev_file      = "last-release-rev";
+    if ( $hostname =~ /arachne/ ) {
+        $status_command = "/bin/cat /home/brking/cvsstat.txt";
+        $commit_tag_command = "/bin/true";
+        $commit_rev_command = "/bin/true";
+        $tag_files_command  = "/bin/true";
+    } else {
+        $status_command = "cvs status 2>/dev/null";
+        $commit_tag_command = "cvs commit -m 'new release' $last_tag_file 2>/dev/null";
+        $commit_rev_command = "cvs commit -m 'new release' $last_rev_file 2>/dev/null";
+        $tag_files_command  = "cvs tag TAGNAME 2>/dev/null";
+    }
+};
+use strict;
+
+my $default_build  = "4.2.0";
+my $branch_build   = 0;
+my %month          = ( 'Jan' => 0, 'Feb' => 1, 'Mar' => 2, 'Apr' => 3, 'May' => 4, 'Jun' => 5,
+                       'Jul' => 6, 'Aug' => 7, 'Sep' => 8, 'Oct' => 9, 'Nov' => 10, 'Dec' => 11 );
+my %backmonth      = ( 0 => 'Jan', 1 => 'Feb', 2 => 'Mar', 3 => 'Apr', 4 => 'May', 5 => 'Jun',
+                       6 => 'Jul', 7 => 'Aug', 8 => 'Sep', 9 => 'Oct', 10 => 'Nov', 11 => 'Dec' );
+
+
+# ####################################################################
+# MAIN LOOP
+# ####################################################################
+my $latest = getlatest() || die "Cannot read cvs status information\n";
+my $last = readlast() || "";
+
+# determine if we have a branch build.  1.1.1.1 indicates a file that has never been
+# modified from the original import.  If we otherwise have 4 numbers, then we have
+# a branch build.
+my @revnum = split( /\./, $$latest{'num'} );
+$branch_build = 1 if ( ( @revnum > 3 ) && ( $$latest{'num'} ne "1.1.1.1" ) );
+# return the latest date in string format
+$latest = datestring( $latest );
+
+if ( $latest ne $last ) {
+    print "Repository changed, tagging build.\n";
+    print "$latest != $last\n";
+    writelast( $latest );
+    tagbuild( $latest );
+    system( $commit_tag_command );
+    system( $commit_rev_command );
+} else {
+    print "No changes to repository, not tagging.\n";
+}
+
+# ####################################################################
+# SUBROUTINES
+# ####################################################################
+
+# --------------------------------------------------------------------
+# datesort:
+# --------------------------------------------------------------------
+sub datesort {
+    my $retval = ( $$a{'year'} <=> $$b{'year'} );
+    if ( $retval == 0 ) {
+        $retval = ( $$a{'mon'} <=> $$b{'mon'} );
+        if ( $retval == 0 ) {
+            $retval = ( $$a{'day'} <=> $$b{'day'} );
+            if ( $retval == 0 ) {
+                $retval = ( $$a{'time'} cmp $$b{'time'} );
+            }
+        }
+    }
+    $retval;
+}
+
+# --------------------------------------------------------------------
+# datestring:
+# --------------------------------------------------------------------
+sub datestring {
+    my ( $dateref ) = @_;
+    my $date = "";
+    if ( $dateref ) {
+        $$dateref{'mon'} = $backmonth{$$dateref{'mon'}};
+        $date = "$$dateref{'mon'} $$dateref{'day'}, $$dateref{'year'}";
+        $date .= " at $$dateref{'time'}";
+    }
+    return( $date );
+}
+
+# --------------------------------------------------------------------
+# getlatest:
+# --------------------------------------------------------------------
+sub getlatest {
+    my $status = `$status_command`;
+    my @dates;
+    while ( $status =~ /(=======.*?\n\n.*?\n\n)/gs ) {
+        my $block = $1;
+        my ( $filename ) = $block =~ /File:\s+(\S+)/;
+        next if ( $filename =~ /last-release/ );
+        print "Processing $filename\n";  #DEBUG
+        my ( $revnum, $revdate ) = $block =~ /Working revision:\s+(\S+)\s+([^\n]+)/s;
+        next unless ( $revnum && $revdate );
+        my ( $mon, $day, $time, $year ) = $revdate =~ /\S+\s+(\S+)\s+(\d+)\s+([\d:]+)\s+(\d+)/;
+        $mon = $month{$mon};
+        my %date = ( mon => $mon, day => $day, year => $year, time => $time, num => $revnum );
+        push( @dates, \%date );
+    }
+    @dates = sort datesort @dates;
+    return( pop( @dates ) );
+}
+
+# --------------------------------------------------------------------
+# readlast:
+# --------------------------------------------------------------------
+sub readlast {
+    my $retval = "";
+    if ( open( FILE, $last_tag_file ) ) {
+        $retval = <FILE>;
+        close( FILE );
+    }
+    return( $retval );
+}
+
+# --------------------------------------------------------------------
+# writelast:
+# --------------------------------------------------------------------
+sub writelast {
+    my ( $date ) = @_;
+    if ( open( FILE, ">".$last_tag_file ) ) {
+        print FILE $date;
+        close( FILE );
+    } else {
+        print STDERR "Cannot write $last_tag_file:  $!\n";
+    }
+}
+
+# --------------------------------------------------------------------
+# tagbuild:
+# --------------------------------------------------------------------
+sub tagbuild {
+    my $build = readrevision();
+    $build = incrementrevision( $build );
+    writerevision( $build );
+    my $tag = "Release_$build";
+    $tag =~ s/\./_/g;
+    $tag_files_command =~ s/TAGNAME/$tag/;
+    system( $tag_files_command );
+}
+
+# --------------------------------------------------------------------
+# readrevision:
+# --------------------------------------------------------------------
+sub readrevision {
+    my $build = "";
+    if ( open( FILE, $last_rev_file ) ) {
+        $build = <FILE>;
+        close( FILE );
+    }
+    $build = $default_build unless ( $build );
+    return( $build );
+}
+
+# --------------------------------------------------------------------
+# incrementrevision:
+# --------------------------------------------------------------------
+sub incrementrevision {
+    my ( $build ) = @_;
+    my @build = split( /\./, $build );
+    if ( $branch_build ) {
+        push( @build, "0" ) if ( @build < 3 );
+        $build[3] += 1;
+    } else {
+        $build[2] += 1;
+    }
+    $build = join( ".", @build );
+    return( $build );
+}
+
+# --------------------------------------------------------------------
+# writerevision:
+# --------------------------------------------------------------------
+sub writerevision {
+    my ( $build ) = @_;
+    if ( open( FILE, ">".$last_rev_file ) ) {
+        print FILE $build;
+        close( FILE );
+    } else {
+        print STDERR "Cannot write $last_rev_file:  $!\n";
+    }
+}

@@ -15,6 +15,73 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Verify directory structure
+        run: |
+          echo "Verifying new directory structure for installer..."
+          echo "Current working directory: $(pwd)"
+          echo "Contents of root directory:"
+          ls -la
+          echo ""
+          echo "Checking main directories:"
+          if [ -d "src" ]; then
+            echo "✓ src/ exists"
+            if [ -d "src/core" ] && [ -d "src/utils" ] && [ -d "src/network" ]; then
+              echo "✓ src/ subdirectories exist"
+            else
+              echo "✗ Missing src/ subdirectories"
+              exit 1
+            fi
+          else
+            echo "✗ src/ directory missing"
+            exit 1
+          fi
+          
+          if [ -d "main" ]; then
+            echo "✓ main/ exists"
+            if [ -d "main/business" ] && [ -d "main/hardware" ] && [ -d "main/ui" ] && [ -d "main/data" ]; then
+              echo "✓ main/ subdirectories exist"
+            else
+              echo "✗ Missing main/ subdirectories"
+              exit 1
+            fi
+          else
+            echo "✗ main/ directory missing"
+            exit 1
+          fi
+          
+          if [ -d "scripts" ]; then
+            echo "✓ scripts/ exists"
+            if [ -d "scripts/build" ] && [ -d "scripts/install" ] && [ -d "scripts/system" ] && [ -d "scripts/maintenance" ] && [ -d "scripts/tools" ]; then
+              echo "✓ scripts/ subdirectories exist"
+            else
+              echo "✗ Missing scripts/ subdirectories"
+              exit 1
+            fi
+          else
+            echo "✗ scripts/ directory missing"
+            exit 1
+          fi
+          
+          if [ -d "assets" ]; then
+            echo "✓ assets/ exists"
+            if [ -d "assets/data" ] && [ -d "assets/images" ]; then
+              echo "✓ assets/ subdirectories exist"
+            else
+              echo "✗ Missing assets/ subdirectories"
+              exit 1
+            fi
+          else
+            echo "✗ assets/ directory missing"
+            exit 1
+          fi
+          
+          echo "Checking other required directories:"
+          [ -d "config" ] && echo "✓ config/ exists" || echo "✗ config/ missing"
+          [ -d "docs" ] && echo "✓ docs/ exists" || echo "✗ docs/ missing"
+          [ -d "fonts" ] && echo "✓ fonts/ exists" || echo "✗ fonts/ missing"
+          [ -d "external/core" ] && echo "✓ external/core/ exists" || echo "✗ external/core/ missing"
+          [ -d "packaging/installer" ] && echo "✓ packaging/installer/ exists" || echo "✗ packaging/installer/ missing"
+
       - name: Create Universal Installer
         run: |
           cd packaging/installer

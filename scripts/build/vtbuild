@@ -1,0 +1,58 @@
+#!/bin/sh
+
+HOSTNAME=`hostname -s`
+
+if [ $HOSTNAME = "arachne" ]; then
+    echo arachne
+    OLDROOT=$HOME/src-work/releases
+    OLDBINARIES=$OLDROOT/`uname`/
+    OLDDATA=$OLDROOT/data/
+    RELEASEDIR=$HOME/src-work/release
+    PACKAGEDIR=$HOME/tmp
+    CVSROOT=":ext:brking@mainbox.viewtouch.com:/usr/local/cvsroot"
+elif [ $HOSTNAME = "bluebox" ]; then
+    echo bluebox
+    OLDROOT=$HOME/data/viewtouch/releases
+    OLDBINARIES=$OLDROOT/`uname`/
+    OLDDATA=$OLDROOT/data/
+    RELEASEDIR=$HOME/src/release
+    PACKAGEDIR=$HOME/tmp
+    CVSROOT=":ext:brking@mainbox.viewtouch.com:/usr/local/cvsroot"
+else
+    OLDROOT=$HOME/data/viewtouch/releases
+    OLDBINARIES=$OLDROOT/`uname`/
+    OLDDATA=$OLDROOT/data/
+    RELEASEDIR=$HOME/src/release
+    PACKAGEDIR=$HOME/tmp
+    CVSROOT="/usr/local/cvsroot"
+fi
+
+echo Building in $RELEASEDIR
+
+for directory in $OLDBINARIES $OLDDATA $RELEASEDIR
+do
+    if [ ! -d $directory ]; then
+        install -d $directory
+    fi
+done
+
+cd $PACKAGEDIR
+echo Moving existing packages to $OLDBINARIES
+mv -f viewtouch-`uname`* $OLDBINARIES
+mv -f viewtouch-data* $OLDDATA
+mv -f viewtouch-install* $OLDBINARIES
+
+cd $RELEASEDIR
+rm -fr viewtouch
+cvs -d "$CVSROOT" checkout viewtouch
+cd viewtouch
+if [ "$1" = "tag" ]; then
+    scripts/vt-tag
+fi
+
+if [ ! -d /usr/viewtouch/release/usr/viewtouch ]; then
+    install -d /usr/viewtouch/release/usr/viewtouch
+fi
+
+vtreset /usr/viewtouch/release/usr/viewtouch
+./configure release && make && make package

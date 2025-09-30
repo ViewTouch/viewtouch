@@ -1,0 +1,17 @@
+/* XPM */
+static const char *plastic_xpm[] = {
+"8 8 5 1",
+" 	c #E8E8E8",
+".	c #D8D8D8", 
+"X	c #C8C8C8",
+"o	c #B8B8B8",
+"@	c #A8A8A8",
+" .Xo@oX.",
+".Xo@oXo@",
+"Xo@oXo@o",
+"o@oXo@oX",
+"@oXo@oXo",
+"o@oXo@oX",
+"Xo@oXo@o",
+".Xo@oXo@"
+};

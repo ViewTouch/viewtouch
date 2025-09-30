@@ -1,0 +1,147 @@
+#!/bin/sh
+
+ROOTDIR=$HOME/tmp/viewtouch
+REALROOT=/usr/viewtouch
+RELEASEROOT=/usr/viewtouch/release/usr/viewtouch
+BAKDIR=$HOME/data/viewtouch/backups
+BAKSAVE=clean-data
+VTARGS=
+
+function RemDir () {
+    DIR=$1 ; shift
+    if [ -d $DIR ] ; then
+        rm -f $DIR/* >/dev/null 2>/dev/null
+        if [ $? ] ; then
+            SAVEDIR=`pwd`
+            cd $DIR
+            find . -type f | xargs rm -f
+            cd $SAVEDIR
+        fi
+    fi
+}
+
+for argument in $* ; do
+    if [ "$argument" = "-h" -o "$argument" = "-help" -o "$argument" = "--help" ] ; then
+        echo "Usage:  " `basename $0` '[-l|-h] [all] [real] [release] [onlymedia] [run] [macro] [<savedir>]'
+        echo "  -l lists available saves"
+        echo "  -h shows this help screen"
+        echo "  'all' restores binaries as well as data files"
+        echo "  'real' restores to /usr/viewtouch instead of ${HOME}/viewtouch"
+        echo "  'release' restores to /usr/viewtouch/release/usr/viewtouch"
+        echo "  'data' only restores vt_data"
+        echo "  'onlymedia' only restores media.dat"
+        echo "  'run' or 'macro' will enable macros"
+        echo "  If savedir is not specified, 'clean-data' is used."
+        echo "  A test is done on all arguments to determine if they are directories."
+        echo "  In the event that they are, that argument will be used as the destination"
+        echo "  directory."
+        echo
+        exit
+    elif [ "$argument" = "-l" -o "$argument" = "-list" -o "$argument" = "--list" ] ; then
+        echo Available saves:
+        for file in `ls $BAKDIR` ; do
+            echo "  " $file
+        done
+        echo
+        exit
+    elif [ -d "$argument" ] ; then
+        ROOTDIR=$argument
+    elif [ "$argument" = "real" ] ; then
+        ROOTDIR=$REALROOT
+    elif [ "$argument" = "release" ] ; then
+        ROOTDIR=$RELEASEROOT
+    elif [ "$argument" = "all" ] ; then
+        RESTOREALL=yes
+    elif [ "$argument" = "data" ] ; then
+        RESTOREDATA=yes
+    elif [ "$argument" = "onlymedia" ] ; then
+        RESTOREMEDIA=yes
+    elif [ "$argument" = "run" -o "$argument" = "macro" ] ; then
+        RUNVTPOS=yes
+    elif [ "${argument%[a-z]}" = "-" ] ; then
+        VTARGS="$VTARGS $argument"
+    elif [ -n "$argument" ] ; then
+        BAKSAVE=$argument
+    fi
+done
+
+BAKDIR=$BAKDIR/$BAKSAVE
+
+if [ -f $BAKDIR/dat/vt_data ]; then
+    VT_DATA=$BAKDIR/dat/vt_data
+elif [ -f $BAKDIR/bin/vt_data ]; then
+    VT_DATA=$BAKDIR/bin/vt_data
+else
+    VT_DATA=$HOME/data/viewtouch/backups/clean-data/dat/vt_data
+fi
+
+rm -f $ROOTDIR/bin/*.bak
+rm -f $ROOTDIR/bin/*.bak2
+rm -f $ROOTDIR/bin/*.core
+rm -f $ROOTDIR/bin/.vtpos_command
+rm -f $ROOTDIR/bin/.isexpired
+rm -f $ROOTDIR/bin/.nograceleft
+rm -f $ROOTDIR/bin/.forcelicensecheck
+rm -f $ROOTDIR/bin/.nolicensecheck
+rm -f $ROOTDIR/bin/.nowipe
+rm -f $ROOTDIR/bin/.isvalid
+rm -f $ROOTDIR/bin/.viewtouch_command_file
+rm -f $ROOTDIR/bin/.viewtouch_license
+rm -f $ROOTDIR/bin/.viewtouch_temp_license
+rm -f $ROOTDIR/bin/.record_*
+rm -f $ROOTDIR/dat/.viewtouch_command_file
+rm -f $ROOTDIR/dat/.viewtouch_config
+rm -f $ROOTDIR/dat/.viewtouch_license
+rm -f $ROOTDIR/dat/.viewtouch_temp_license
+
+rm -f $ROOTDIR/dat/.restart_flag
+find $ROOTDIR -name '*.fmt' | xargs rm -f
+
+PROGNAME=`basename $0`
+if [ "$PROGNAME" = "vtclean" ]; then
+    rm -f $ROOTDIR/dat/media-archive.dat
+    rm -f $ROOTDIR/dat/*.bak
+    rm -f $ROOTDIR/dat/*.bak2
+    rm -f $ROOTDIR/dat/*.txt
+    rm -f $ROOTDIR/dat/debuglog
+    rm -f $ROOTDIR/dat/runlog
+    rm -f $ROOTDIR/dat/vt_data.200*
+    rm -f $ROOTDIR/dat/.viewtouch_license
+    RemDir $ROOTDIR/dat/accounts
+    RemDir $ROOTDIR/dat/archive
+    RemDir $ROOTDIR/dat/backups
+    RemDir $ROOTDIR/dat/current
+    RemDir $ROOTDIR/dat/customers
+    RemDir $ROOTDIR/dat/expenses
+    RemDir $ROOTDIR/dat/html
+    RemDir $ROOTDIR/dat/labor
+elif [ "$PROGNAME" = "vtreset" ]; then
+    if [ ! -d $BAKDIR ] ; then
+        echo There is no such backup as $BAKDIR
+        exit 1
+    elif [ -n "$RESTOREDATA" ] ; then
+        cp $VT_DATA $ROOTDIR/dat/
+        exit
+    elif [ -n "$RESTOREMEDIA" ] ; then
+        cp $BAKDIR/dat/media.dat $ROOTDIR/dat/
+        exit
+    else
+        rm -r $ROOTDIR/dat/*
+        cp $VT_DATA $ROOTDIR/dat/
+        if [ -n "$RESTOREALL" ] ; then
+            cp $BAKDIR/bin/* $ROOTDIR/bin/
+            if [ -f $ROOTDIR/bin/vt_data ] ; then
+                mv $ROOTDIR/bin/vt_data $ROOTDIR/dat/vt_data
+            fi
+        fi
+        cp -r $BAKDIR/dat/* $ROOTDIR/dat/
+        if [ -f $BAKDIR/bin/.viewtouch_command_file ] ; then
+            cp $BAKDIR/bin/.viewtouch_command_file $ROOTDIR/bin/
+        fi
+        cp -f $BAKDIR/bin/.record_* $ROOTDIR/bin/ 2>/dev/null
+    fi
+fi
+
+if [ -n "$RUNVTPOS" ] ; then
+    exec $ROOTDIR/bin/vtpos $VTARGS
+fi

@@ -1,0 +1,90 @@
+#!/usr/bin/perl -w
+
+# --------------------------------------------------------------------
+# Module:  backup-viewtouch-dat
+# Description:  A simple script to act as a cronjob, backing up the
+#   real and testing versions of the ViewTouch data files.
+# Author:  Bruce Alon King
+# Created:  Wed May 29 15:41:49 2002
+# --------------------------------------------------------------------
+
+# ####################################################################
+# INITIALIZATION AND GLOBAL VARIABLES
+# ####################################################################
+use strict;
+
+my $max_rotate = 9;
+my $archive_dir = $ENV{'HOME'} . "/data/archives/viewtouch-dat/";
+
+my @archive_dirs = (
+            { dir => "/usr/viewtouch/", arc => "vt_data.tgz" },
+            { dir => $ENV{'HOME'} . "/tmp/viewtouch/", arc => "vt_my_data.tgz" },
+           );
+
+
+# ####################################################################
+# MAIN LOOP
+# ####################################################################
+$archive_dir .= "/" unless ( $archive_dir =~ m|/$| );
+backupFiles($archive_dir);
+archiveData();
+
+
+# ####################################################################
+# SUBROUTINES
+# ####################################################################
+
+# --------------------------------------------------------------------
+# backupFiles:  Process through the list of archives, calling
+#   backupFile() for each one.
+# --------------------------------------------------------------------
+sub backupFiles {
+    my ( $dir ) = @_;
+    $dir .= "/" unless ($dir =~ m|/$|);
+    foreach ( @archive_dirs ) {
+        my $archash = $_;
+        my $arc = $dir . $$archash{'arc'};
+        next unless ( -f $arc );
+        backupFile( $arc );
+    }
+}
+
+# --------------------------------------------------------------------
+# backupFile:  The real backer upper.  Recursively backs up files up
+#   to $max_rotate.  So file becomes file.1, file.1 becomes file.2,
+#   file.2 becomes file.3, etc.  The recursive part makes this happen
+#   in reverse order so nothing is lost.
+# --------------------------------------------------------------------
+sub backupFile {
+    my ( $file ) = @_;
+    my $newfile = "";
+    my $new_ext = 1;
+    if ( $file =~ /\.([0-9]+)$/ ) {
+        $new_ext = $1 + 1;
+        $newfile = $file;
+        $newfile =~ s/\.([0-9]+)$/\.$new_ext/;
+    } else {
+        $newfile = $file . "." . $new_ext;
+    }
+    if ( -f $newfile && ( $new_ext < $max_rotate ) ) {
+        backupFile( $newfile );
+    }
+    if ( -f $file ) {
+        system( "mv", $file, $newfile );
+    }
+}
+
+# --------------------------------------------------------------------
+# archiveData:  Process through the list of archive targets, tarring
+#   everything up.
+# --------------------------------------------------------------------
+sub archiveData {
+    foreach ( @archive_dirs ) {
+        my $archash = $_;
+        my $dir = $$archash{'dir'};
+        $dir =~ s|/$||;
+        next unless ( -d $dir );
+        my $arc = $archive_dir . $$archash{'arc'};
+        system( "tar czfP $arc $dir/bin/vt_data $dir/dat" );
+    }
+}
