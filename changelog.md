@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Memory Safety Improvements**: Enhanced string handling and memory management throughout the codebase
+  - Fixed unsafe `strcat()` operations in credit card test data generation (`term_view.cc`)
+  - Replaced dangerous string concatenation with safe `std::string` operations and bounds checking
+  - Added buffer overflow protection for credit card swipe buffer operations
+  - Modernized C-style arrays to `std::array` for better type safety in `main/terminal.cc`
+  - Replaced all `NULL` usage with `nullptr` for better type safety in `main/terminal.cc` and `zone/zone.cc`
+  - Added missing `#include <array>` header for modern C++ array support
+  - Improved parameter validation and error handling consistency
 - **Dynamic Scaling System**: Implemented universal dynamic scaling for all display resolutions
   - Added comprehensive scaling system with 1920x1080 as universal reference resolution
   - Implemented `CalculateScaleFactors()`, `ScaleX()`, `ScaleY()`, `ScaleW()`, `ScaleH()`, and `ScaleFontSize()` functions
