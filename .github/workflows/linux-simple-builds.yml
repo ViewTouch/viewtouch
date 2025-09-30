@@ -42,45 +42,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Prepare environment
-      env:
-        TZ: "America/Los_Angeles"
-      run: |
-        sudo ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime
-        echo ${TZ} | sudo tee /etc/timezone
-        sudo apt-get update -q
-        sudo apt-get install -y -y --no-install-recommends \
-          ${{matrix.other_pkgs}} \
-          build-essential \
-          xorg-dev \
-          libmotif-dev \
-          libfreetype6-dev \
-          cmake \
-          git \
-          xwit \
-          xfonts-base \
-          xfonts-75dpi \
-          xfonts-100dpi \
-          tzdata \
-          libcurl4-gnutls-dev
-
-    - name: Configure build
-      working-directory: ${{runner.workspace}}
-      env:
-        CC: ${{matrix.cc}}
-        CXX: ${{matrix.cxx}}
-        CXXFLAGS: ${{matrix.cxxflags}}
-      # Note: $GITHUB_WORKSPACE is distinct from ${{runner.workspace}}.
-      #       This is important
-      run: |
-        cmake -S $GITHUB_WORKSPACE -B _build_${{matrix.cxx}}_${{matrix.std}} \
-          -DCMAKE_INSTALL_PREFIX="${PWD}/_install_${{matrix.cxx}}_${{matrix.std}}" \
-          -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" \
-          -DCMAKE_CXX_STANDARD=${{matrix.std}} \
-          -DCMAKE_CXX_EXTENSIONS=OFF \
-          -DCMAKE_VERBOSE_MAKEFILE=ON
-
     - name: Verify directory structure
+      working-directory: ${{runner.workspace}}
       run: |
         echo "Verifying new directory structure..."
         echo "Current working directory: $(pwd)"
@@ -149,6 +112,44 @@ jobs:
         [ -d "docs" ] && echo "✓ docs/ exists" || echo "✗ docs/ missing"
         [ -d "fonts" ] && echo "✓ fonts/ exists" || echo "✗ fonts/ missing"
         [ -d "external/core" ] && echo "✓ external/core/ exists" || echo "✗ external/core/ missing"
+
+    - name: Prepare environment
+      env:
+        TZ: "America/Los_Angeles"
+      run: |
+        sudo ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime
+        echo ${TZ} | sudo tee /etc/timezone
+        sudo apt-get update -q
+        sudo apt-get install -y -y --no-install-recommends \
+          ${{matrix.other_pkgs}} \
+          build-essential \
+          xorg-dev \
+          libmotif-dev \
+          libfreetype6-dev \
+          cmake \
+          git \
+          xwit \
+          xfonts-base \
+          xfonts-75dpi \
+          xfonts-100dpi \
+          tzdata \
+          libcurl4-gnutls-dev
+
+    - name: Configure build
+      working-directory: ${{runner.workspace}}
+      env:
+        CC: ${{matrix.cc}}
+        CXX: ${{matrix.cxx}}
+        CXXFLAGS: ${{matrix.cxxflags}}
+      # Note: $GITHUB_WORKSPACE is distinct from ${{runner.workspace}}.
+      #       This is important
+      run: |
+        cmake -S $GITHUB_WORKSPACE -B _build_${{matrix.cxx}}_${{matrix.std}} \
+          -DCMAKE_INSTALL_PREFIX="${PWD}/_install_${{matrix.cxx}}_${{matrix.std}}" \
+          -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" \
+          -DCMAKE_CXX_STANDARD=${{matrix.std}} \
+          -DCMAKE_CXX_EXTENSIONS=OFF \
+          -DCMAKE_VERBOSE_MAKEFILE=ON
 
     - name: Build + install
       working-directory: ${{runner.workspace}}
