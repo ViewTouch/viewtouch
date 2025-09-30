@@ -78,6 +78,17 @@ jobs:
           -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" \
           -DCMAKE_CXX_STANDARD=${{matrix.std}} \
           -DCMAKE_CXX_EXTENSIONS=OFF \
+          -DCMAKE_VERBOSE_MAKEFILE=ON
+
+    - name: Verify directory structure
+      run: |
+        echo "Verifying new directory structure..."
+        ls -la src/
+        ls -la src/core/ src/utils/ src/network/
+        ls -la main/business/ main/hardware/ main/ui/ main/data/
+        ls -la scripts/build/ scripts/install/ scripts/system/ scripts/maintenance/ scripts/tools/
+        ls -la assets/images/xpm/ assets/data/po_file/
+        ls -la config/ docs/ fonts/
 
     - name: Build + install
       working-directory: ${{runner.workspace}}

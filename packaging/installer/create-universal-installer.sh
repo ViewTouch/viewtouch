@@ -268,10 +268,18 @@ Terminal=false
 StartupNotify=true
 EOF
     
-    # Copy icon if it exists
-    if [ -f "$TEMP_DIR/xpm/Icon.png" ]; then
+    # Copy icon if it exists (check both old and new locations)
+    ICON_FILE=""
+    if [ -f "$TEMP_DIR/assets/images/Icon.png" ]; then
+        ICON_FILE="$TEMP_DIR/assets/images/Icon.png"
+    elif [ -f "$TEMP_DIR/xpm/Icon.png" ]; then
+        ICON_FILE="$TEMP_DIR/xpm/Icon.png"
+    fi
+    
+    if [ -n "$ICON_FILE" ]; then
         mkdir -p "$INSTALL_PREFIX/share/pixmaps"
-        cp "$TEMP_DIR/xpm/Icon.png" "$INSTALL_PREFIX/share/pixmaps/viewtouch.png"
+        cp "$ICON_FILE" "$INSTALL_PREFIX/share/pixmaps/viewtouch.png"
+        log_info "Desktop icon copied"
     fi
     
     log_info "Desktop entry created"

@@ -15,6 +15,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Verify directory structure
+        run: |
+          echo "Verifying new directory structure for installer..."
+          ls -la src/ main/ scripts/ assets/ config/ docs/ fonts/
+          ls -la packaging/installer/
+
       - name: Create Universal Installer
         run: |
           cd packaging/installer
