@@ -18,8 +18,19 @@ jobs:
       - name: Verify directory structure
         run: |
           echo "Verifying new directory structure for installer..."
-          ls -la src/ main/ scripts/ assets/ config/ docs/ fonts/
-          ls -la packaging/installer/
+          echo "Current working directory: $(pwd)"
+          echo "Contents of root directory:"
+          ls -la
+          echo ""
+          echo "Checking required directories:"
+          [ -d "src" ] && echo "✓ src/ exists" || echo "✗ src/ missing"
+          [ -d "main" ] && echo "✓ main/ exists" || echo "✗ main/ missing"
+          [ -d "scripts" ] && echo "✓ scripts/ exists" || echo "✗ scripts/ missing"
+          [ -d "assets" ] && echo "✓ assets/ exists" || echo "✗ assets/ missing"
+          [ -d "config" ] && echo "✓ config/ exists" || echo "✗ config/ missing"
+          [ -d "docs" ] && echo "✓ docs/ exists" || echo "✗ docs/ missing"
+          [ -d "fonts" ] && echo "✓ fonts/ exists" || echo "✗ fonts/ missing"
+          [ -d "packaging/installer" ] && echo "✓ packaging/installer/ exists" || echo "✗ packaging/installer/ missing"
 
       - name: Create Universal Installer
         run: |

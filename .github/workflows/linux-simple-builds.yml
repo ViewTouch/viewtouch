@@ -83,12 +83,45 @@ jobs:
     - name: Verify directory structure
       run: |
         echo "Verifying new directory structure..."
-        ls -la src/
-        ls -la src/core/ src/utils/ src/network/
-        ls -la main/business/ main/hardware/ main/ui/ main/data/
-        ls -la scripts/build/ scripts/install/ scripts/system/ scripts/maintenance/ scripts/tools/
-        ls -la assets/images/xpm/ assets/data/po_file/
-        ls -la config/ docs/ fonts/
+        echo "Current working directory: $(pwd)"
+        echo "Contents of root directory:"
+        ls -la
+        echo ""
+        echo "Checking main directories:"
+        if [ -d "src" ]; then
+          echo "✓ src/ exists"
+          ls -la src/
+          if [ -d "src/core" ] && [ -d "src/utils" ] && [ -d "src/network" ]; then
+            echo "✓ src/ subdirectories exist"
+          else
+            echo "✗ Missing src/ subdirectories"
+            exit 1
+          fi
+        else
+          echo "✗ src/ directory missing"
+          exit 1
+        fi
+        
+        if [ -d "main" ]; then
+          echo "✓ main/ exists"
+          ls -la main/
+          if [ -d "main/business" ] && [ -d "main/hardware" ] && [ -d "main/ui" ] && [ -d "main/data" ]; then
+            echo "✓ main/ subdirectories exist"
+          else
+            echo "✗ Missing main/ subdirectories"
+            exit 1
+          fi
+        else
+          echo "✗ main/ directory missing"
+          exit 1
+        fi
+        
+        echo "Checking other directories:"
+        [ -d "scripts" ] && echo "✓ scripts/ exists" || echo "✗ scripts/ missing"
+        [ -d "assets" ] && echo "✓ assets/ exists" || echo "✗ assets/ missing"
+        [ -d "config" ] && echo "✓ config/ exists" || echo "✗ config/ missing"
+        [ -d "docs" ] && echo "✓ docs/ exists" || echo "✗ docs/ missing"
+        [ -d "fonts" ] && echo "✓ fonts/ exists" || echo "✗ fonts/ missing"
 
     - name: Build + install
       working-directory: ${{runner.workspace}}
