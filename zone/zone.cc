@@ -33,9 +33,9 @@
  ***********************************************************************/
 Zone::Zone()
 {
-    next       = NULL;
-    fore       = NULL;
-    page       = NULL;
+    next       = nullptr;
+    fore       = nullptr;
+    page       = nullptr;
     group_id   = 0;
     w          = 140;
     h          = 100;
@@ -68,7 +68,7 @@ Zone::Zone()
 
 int Zone::CopyZone(Zone *target)
 {
-    if (target == NULL)
+    if (target == nullptr)
         return 1;
 
     target->SetRegion(this);

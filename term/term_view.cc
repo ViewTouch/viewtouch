@@ -1299,53 +1299,97 @@ void KeyPressCB(Widget widget, XtPointer client_data,
             swipe_buffer[0] = '\0';
             if (randcc == 0)
             {
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS^;??");
+                // Use safe string concatenation with bounds checking
+                std::string test_card_data = "%B5186900000000121^TEST CARD/MONERIS^;??";
+                if (test_card_data.length() < swipe_buffer.size()) {
+                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                }
             }
             else if (randcc == 1 || randcc == 3 || randcc == 5)
             {  // correct data, tracks 1 and 2
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "^08051011234567890131674486261606288842611?");
-                strcat(swipe_buffer.data(), ";5186900000000121=");
-                strcat(swipe_buffer.data(), "08051015877400050041?");
+                // Use safe string concatenation with bounds checking
+                std::string test_card_data = "%B5186900000000121^TEST CARD/MONERIS";
+                test_card_data += "^08051011234567890131674486261606288842611?";
+                test_card_data += ";5186900000000121=";
+                test_card_data += "08051015877400050041?";
+                
+                // Copy to buffer with bounds checking
+                if (test_card_data.length() < swipe_buffer.size()) {
+                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                }
             }
             else if (randcc == 2)
             {
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "^08051011234567890131674486261606288842611?");
+                // Use safe string concatenation with bounds checking
+                std::string test_card_data = "%B5186900000000121^TEST CARD/MONERIS";
+                test_card_data += "%B5186900000000121^TEST CARD/MONERIS";
+                test_card_data += "%B5186900000000121^TEST CARD/MONERIS";
+                test_card_data += "%B5186900000000121^TEST CARD/MONERIS";
+                test_card_data += "%B5186900000000121^TEST CARD/MONERIS";
+                test_card_data += "%B5186900000000121^TEST CARD/MONERIS";
+                test_card_data += "%B5186900000000121^TEST CARD/MONERIS";
+                
+                // Copy to buffer with bounds checking
+                if (test_card_data.length() < swipe_buffer.size()) {
+                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                }
             }
             else if (randcc == 4)
             {
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "^08051011234567890131674486261606288842611?");
-                strcat(swipe_buffer.data(), ";5186900000000121=");
-                strcat(swipe_buffer.data(), "08051015877400050041?");
+                // Use safe string concatenation with bounds checking
+                std::string test_card_data = "%B5186900000000121^TEST CARD/MONERIS";
+                test_card_data += "^08051011234567890131674486261606288842611?";
+                test_card_data += ";5186900000000121=";
+                test_card_data += "08051015877400050041?";
+                
+                // Copy to buffer with bounds checking
+                if (test_card_data.length() < swipe_buffer.size()) {
+                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                }
             }
             else if (randcc == 6)
             {
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "08051015877400050041?");
+                // Use safe string concatenation with bounds checking
+                std::string test_card_data = "%B5186900000000121^TEST CARD/MONERIS";
+                test_card_data += "08051015877400050041?";
+                
+                // Copy to buffer with bounds checking
+                if (test_card_data.length() < swipe_buffer.size()) {
+                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                }
             }
             else if (randcc == 7)
             {
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "^08051011234567890131674486261606288842611?");
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
-                strcat(swipe_buffer.data(), "^08051011234567890131674486261606288842611?");
+                // Use safe string concatenation with bounds checking
+                std::string test_card_data = "%B5186900000000121^TEST CARD/MONERIS";
+                test_card_data += "^08051011234567890131674486261606288842611?";
+                test_card_data += "%B5186900000000121^TEST CARD/MONERIS";
+                test_card_data += "^08051011234567890131674486261606288842611?";
+                
+                // Copy to buffer with bounds checking
+                if (test_card_data.length() < swipe_buffer.size()) {
+                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                }
             }
             else if (randcc == 8)
             {
-                strcat(swipe_buffer.data(), "%B5186900000000121^TEST CARD/MONERIS");
+                // Use safe string concatenation with bounds checking
+                std::string test_card_data = "%B5186900000000121^TEST CARD/MONERIS";
+                
+                // Copy to buffer with bounds checking
+                if (test_card_data.length() < swipe_buffer.size()) {
+                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                }
             }
             else if (randcc == 9)
             {
-                strcat(swipe_buffer.data(), "%B\n\n");
+                // Use safe string concatenation with bounds checking
+                std::string test_card_data = "%B\n\n";
+                
+                // Copy to buffer with bounds checking
+                if (test_card_data.length() < swipe_buffer.size()) {
+                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                }
             }
             fake_cc = 0;
             printf("Sending Fake Credit Card:  '%s'\n", swipe_buffer.data());
