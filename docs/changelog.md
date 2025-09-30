@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 ### Added
 - **Comprehensive Directory Structure Cleanup**: Reorganized entire codebase for better maintainability and development workflow
+- **CI/CD Workflow Updates**: Updated GitHub Actions workflows to work with new directory structure
+  - **Linux Build Workflow**: Added directory structure verification and verbose makefile output
+  - **Universal Installer Workflow**: Added directory verification step for installer builds
+  - **Installer Script Compatibility**: Updated to handle both old and new asset locations
   - **Source Code Organization**: Moved scattered source files into logical `src/` structure:
     - `src/core/` - Core functionality (data management, configuration, logging, debugging)
     - `src/utils/` - Utility functions and helpers (string processing, font tracing, utilities)
