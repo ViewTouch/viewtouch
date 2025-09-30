@@ -165,7 +165,7 @@ public:
     int UsePassword(Settings *s);
     // does user use passwords?
 
-    int IsTraining(Settings *s = NULL) { return training; }
+    int IsTraining([[maybe_unused]] Settings *s = nullptr) { return training; }
     int CanEnterSystem(Settings *s) { return Security(s) & SECURITY_TABLES; }
     int CanOrder(Settings *s)       { return Security(s) & SECURITY_ORDER; }
     int CanSettle(Settings *s)      { return Security(s) & SECURITY_SETTLE; }

@@ -1,6 +1,7 @@
+
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
+
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
  *   the Free Software Foundation, either version 3 of the License, or 
@@ -19,33 +20,114 @@
  */
 
 #include "data_file.hh"
-#include "utility.hh"
-#include <iostream>
-#include <zlib.h>
+
+#include <algorithm>
+#include <array>
+#include <cassert>
 #include <cctype>
+#include <cerrno>
+#include <charconv>
+#include <climits>
+#include <cstdlib>
 #include <cstring>
-#include <errno.h>
 #include <fcntl.h>
+#include <fstream>
+#include <iostream>
+#include <limits>
+#include <optional>
+#include <string_view>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
 
-#include <fstream>
-
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
 
-/**** Module Data ****/
-static int  OldDecodeDigit[256];
-static char OldEncodeDigit[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*(),./;'[]-=\\<>?:\"{}_+|";
-#define BASE (sizeof(OldEncodeDigit)-1)
+namespace
+{
+constexpr std::string_view kOldEncodeDigits = R"(abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*(),./;'[]-=\<>?:"{}_+|)";
+constexpr std::string_view kNewEncodeDigits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+constexpr std::size_t kOldBase = kOldEncodeDigits.size();
 
-// BASE64 encoding (RFC 1521)
-static int  IsDecodeReady = 0;
-static int  NewDecodeDigit[256];
-static char NewEncodeDigit[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+using DecodeTable = std::array<uint8_t, 256>;
+
+[[nodiscard]] DecodeTable build_decode_table(std::string_view alphabet)
+{
+    DecodeTable table{};
+    for (std::size_t idx = 0; idx < alphabet.size(); ++idx)
+    {
+        table[static_cast<unsigned char>(alphabet[idx])] = static_cast<uint8_t>(idx);
+    }
+    return table;
+}
+
+[[nodiscard]] const DecodeTable& old_decode_table()
+{
+    static const DecodeTable table = build_decode_table(kOldEncodeDigits);
+    return table;
+}
+
+[[nodiscard]] const DecodeTable& new_decode_table()
+{
+    static const DecodeTable table = build_decode_table(kNewEncodeDigits);
+    return table;
+}
+
+[[nodiscard]] std::optional<int> parse_int(const char* text)
+{
+    if (text == nullptr)
+    {
+        return std::nullopt;
+    }
+
+    char* end = nullptr;
+    errno = 0;
+    const long parsed = std::strtol(text, &end, 10);
+    if (text == end || *end != '\0' || errno == ERANGE ||
+        parsed < std::numeric_limits<int>::min() || parsed > std::numeric_limits<int>::max())
+    {
+        return std::nullopt;
+    }
+    return static_cast<int>(parsed);
+}
+
+inline void write_raw(gzFile gz_fp, std::FILE* file_fp, bool compress, const char* data, std::size_t length)
+{
+    if (length == 0 || data == nullptr)
+    {
+        return;
+    }
+
+    if (compress)
+    {
+        gzwrite(gz_fp, data, static_cast<unsigned int>(length));
+    }
+    else
+    {
+        std::fwrite(data, 1, length, file_fp);
+    }
+}
+
+inline void put_character(gzFile gz_fp, std::FILE* file_fp, bool compress, char ch)
+{
+    if (compress)
+    {
+        gzputc(gz_fp, static_cast<unsigned char>(ch));
+    }
+    else
+    {
+        std::fputc(static_cast<unsigned char>(ch), file_fp);
+    }
+}
+
+inline bool is_space(int ch) noexcept
+{
+    return std::isspace(static_cast<unsigned char>(ch)) != 0;
+}
+
+} // namespace
 
 #ifdef VT_TESTING
 int ReportError(const std::string &message)
@@ -55,214 +137,240 @@ int ReportError(const std::string &message)
     return 0;
 }
 #endif
-/**** InputDataFile Class ****/
-// Constructor
-InputDataFile::InputDataFile()
+
+/*********************************************************************
+ * InputDataFile
+ ********************************************************************/
+
+InputDataFile::~InputDataFile()
 {
-    fp          = NULL;
-    end_of_file = 0;
-    old_format  = 0;
-    filename[0] = '\0';
+    Close();
 }
 
-// Member Functions
 int InputDataFile::Open(const std::string &name, int &version)
 {
-	FnTrace("InputDataFile::Open()");
+    FnTrace("InputDataFile::Open()");
     if (name.empty())
     {
-        const std::string errmsg = "InputDataFile::Open: empty filename";
-        ReportError(errmsg);
+        ReportError("InputDataFile::Open: empty filename");
         return 1;
     }
 
     if (!std::ifstream(name).good())
     {
-        const std::string errmsg = "Unable to read non existing file: '" + name
-                + "'";
-        ReportError(errmsg);
+        ReportError("Unable to read non existing file: '" + name + "'");
         return 1;
     }
-    if (IsDecodeReady == 0)
-	{
-		// Initialize OldDecodeDigit[] first time a file is opened
-		IsDecodeReady = 1;
-		for (int i = 0; i < 256; ++i)
-		{
-			OldDecodeDigit[i] = 0;
-			NewDecodeDigit[i] = 0;
-		}
-		for (int i = 0; i < static_cast<int>(BASE); ++i)
-			OldDecodeDigit[static_cast<int>(OldEncodeDigit[i])] = i;
-		for (int i = 0; i < 64; ++i)
-			NewDecodeDigit[static_cast<int>(NewEncodeDigit[i])] = i;
-	}
 
-	if (fp)
-		gzclose((gzFile)fp);
+    Close();
+    version = 0;
+    end_of_file = false;
+    old_format = false;
 
-	version = 0;
     fp = gzopen(name.c_str(), "r");
-	if (fp == nullptr)
+    if (fp == nullptr)
     {
-        const std::string errmsg = "Unable to read file: '" + name
-                + "' errno: " + std::to_string(errno);
-        ReportError(errmsg);
-		return 1;
+        ReportError("Unable to read file: '" + name + "' errno: " + std::to_string(errno));
+        return 1;
     }
 
-	// Read version string
-	char str[256];
-	GetToken(str, sizeof(str));
-	if (strncmp(str, "version_", 8) == 0)
-	{
-		// old file version
-		version = atoi(str+8);
-		old_format = 1;
-	}
-	else if (strncmp(str, "vtpos", 5) == 0)
-	{
-		GetToken(str, sizeof(str));  // file type - ignored for now
-		GetToken(str, sizeof(str));  // version
-		version = atoi(str);
-		old_format = 0;
-	}
-	else
-	{
-		gzclose((gzFile)fp);
-        fp = NULL;
-        std::string errmsg = "Unknown file format for file: '" + name + "'";
-        ReportError(errmsg);
-		return 1;
-	}
-    filename = name;
+    std::array<char, 256> token{};
+    if (GetToken(token.data(), static_cast<int>(token.size())) != 0)
+    {
+        Close();
+        ReportError("Unknown file format for file: '" + name + "'");
+        return 1;
+    }
 
-	return 0;
+    if (std::strncmp(token.data(), "version_", 8) == 0)
+    {
+        const auto parsed_version = parse_int(token.data() + 8);
+        if (!parsed_version)
+        {
+            Close();
+            ReportError("Invalid version token in file: '" + name + "'");
+            return 1;
+        }
+        version = *parsed_version;
+        old_format = true;
+    }
+    else if (std::strncmp(token.data(), "vtpos", 5) == 0)
+    {
+        if (GetToken(token.data(), static_cast<int>(token.size())) != 0)
+        {
+            Close();
+            ReportError("Incomplete file header for file: '" + name + "'");
+            return 1;
+        }
+        if (GetToken(token.data(), static_cast<int>(token.size())) != 0)
+        {
+            Close();
+            ReportError("Missing version header for file: '" + name + "'");
+            return 1;
+        }
+        const auto parsed_version = parse_int(token.data());
+        if (!parsed_version)
+        {
+            Close();
+            ReportError("Invalid version token in file: '" + name + "'");
+            return 1;
+        }
+        version = *parsed_version;
+        old_format = false;
+    }
+    else
+    {
+        Close();
+        ReportError("Unknown file format for file: '" + name + "'");
+        return 1;
+    }
+
+    filename = name;
+    return 0;
 }
 
 int InputDataFile::Close() noexcept
 {
     FnTrace("InputDataFile::Close()");
-    if (fp)
+    if (fp != nullptr)
     {
-        gzclose((gzFile)fp);
+        gzclose(fp);
         fp = nullptr;
     }
+    old_format = false;
+    end_of_file = false;
     return 0;
 }
 
 int InputDataFile::GetToken(char* buffer, int max_len)
 {
     FnTrace("InputDataFile::GetToken()");
-    if (!buffer || max_len <= 0) {
-        return 1; // invalid parameters
-    }
-    
-    int c;
-    int idx = 0;
-
-    c = gzgetc((gzFile)fp);
-    while (c >= 0 && isspace(c))
-        c = gzgetc((gzFile)fp);
-
-    for (;;)
+    if (fp == nullptr || buffer == nullptr || max_len <= 0)
     {
-        if (c < 0)
-        {
-            end_of_file = 1;
-            buffer[0] = '\0'; // ensure null termination
-            return (idx == 0);  // error if we haven't read anything
-        }
-        else if (isspace(c))
-        {
-            buffer[idx] = '\0';
-            return 0;  // we've read an entire token
-        }
-        else
-        {
-            if (idx >= max_len - 1) // leave room for null terminator
-            {
-                buffer[max_len - 1] = '\0';
-                return 1; // buffer overflow
-            }
-            buffer[idx] = static_cast<char>(c);
-            ++idx;
-        }
-        c = gzgetc((gzFile)fp);
+        return 1;
     }
- 
-    return 1;  // should never get this far
+
+    const std::size_t capacity = static_cast<std::size_t>(max_len);
+    std::size_t index = 0;
+
+    int ch = gzgetc(fp);
+    while (ch >= 0 && is_space(ch))
+    {
+        ch = gzgetc(fp);
+    }
+
+    while (ch >= 0)
+    {
+        if (is_space(ch))
+        {
+            buffer[index] = '\0';
+            return 0;
+        }
+
+        if (index + 1 >= capacity)
+        {
+            buffer[capacity - 1] = '\0';
+            return 1;
+        }
+
+        buffer[index] = static_cast<char>(ch);
+        ++index;
+        ch = gzgetc(fp);
+    }
+
+    end_of_file = true;
+    buffer[index] = '\0';
+    return (index == 0) ? 1 : 0;
 }
 
 uint64_t InputDataFile::GetValue()
 {
     FnTrace("InputDataFile::GetValue()");
-    uint64_t val = 0;
-    int c;
+    uint64_t value = 0;
+
+    if (fp == nullptr)
+    {
+        end_of_file = true;
+        return 0;
+    }
+
     if (old_format)
     {
+        const auto& decode = old_decode_table();
         for (;;)
         {
-            c = gzgetc((gzFile)fp);
-            if (c < 0)
+            const int ch = gzgetc(fp);
+            if (ch < 0)
             {
-                end_of_file = 1;
+                end_of_file = true;
                 return 0;
             }
-            else if (isspace(c))
-                return val;
-            else
-                val = (val * BASE) + OldDecodeDigit[c];
+            if (is_space(ch))
+            {
+                return value;
+            }
+            value = (value * kOldBase) + decode[static_cast<unsigned char>(ch)];
         }
     }
-    else
+
+    int ch = gzgetc(fp);
+    while (ch >= 0 && is_space(ch))
     {
-        c = gzgetc((gzFile)fp);
-        while (isspace(c))
-            c = gzgetc((gzFile)fp);
-        for (;;)
-        {
-            if (c < 0)
-            {
-                end_of_file = 1;
-                return 0;
-            }
-            else if (isspace(c))
-                return val;
-            else
-                val = (val << 6) + NewDecodeDigit[c];
-            c = gzgetc((gzFile)fp);
-        }
+        ch = gzgetc(fp);
     }
+
+    const auto& decode = new_decode_table();
+    while (ch >= 0)
+    {
+        if (is_space(ch))
+        {
+            return value;
+        }
+        value = (value << 6) + decode[static_cast<unsigned char>(ch)];
+        ch = gzgetc(fp);
+    }
+
+    end_of_file = true;
+    return value;
 }
 
 int InputDataFile::Read(Flt &val)
 {
     FnTrace("InputDataFile::Read(Flt &)");
-    char str[256];
-    if (GetToken(str, sizeof(str)))
+    std::array<char, 256> token{};
+    if (GetToken(token.data(), static_cast<int>(token.size())) != 0)
+    {
         return 1;
+    }
 
-    Flt v = 0.0;
-    if (sscanf(str, "%lf", &v) != 1)
+    char* end = nullptr;
+    errno = 0;
+    const double parsed = std::strtod(token.data(), &end);
+    if (token.data() == end || errno == ERANGE)
+    {
         return 1;
+    }
 
-    val = v;
+    val = static_cast<Flt>(parsed);
     return 0;
 }
 
 int InputDataFile::Read(Str &s)
 {
     FnTrace("InputDataFile::Read(Str &)");
-    char str[1024];
-    if (GetToken(str, sizeof(str)))
+    std::array<char, STRLONG> token{};
+    if (GetToken(token.data(), static_cast<int>(token.size())) != 0)
+    {
         return 1;
+    }
 
-    if (strlen(str) == 0 || strcmp(str, "~") == 0)
+    if (token[0] == '\0' || std::strcmp(token.data(), "~") == 0)
+    {
         s.Clear();
+    }
     else
     {
-        s.Set(str);
+        s.Set(token.data());
         s.ChangeAtoB('_', ' ');
     }
     return 0;
@@ -271,16 +379,16 @@ int InputDataFile::Read(Str &s)
 int InputDataFile::Read(TimeInfo &timevar)
 {
     FnTrace("InputDataFile::Read(TimeInfo &)");
-    const auto s = static_cast<int>(GetValue());
-    const auto y = static_cast<int>(GetValue());
-    if (s == 0 && y == 0) // year of 0 is treated as not set
+    const auto seconds = static_cast<int>(GetValue());
+    const auto year = static_cast<int>(GetValue());
+    if (seconds == 0 && year == 0)
     {
         timevar.Clear();
-        return 0;
     }
-    // otherwise set the read time
-    timevar.Set(s, y);
-
+    else
+    {
+        timevar.Set(seconds, year);
+    }
     return 0;
 }
 
@@ -288,7 +396,9 @@ int InputDataFile::Read(int *val)
 {
     FnTrace("InputDataFile::Read(int *)");
     if (val == nullptr)
+    {
         return 0;
+    }
     return Read(*val);
 }
 
@@ -296,7 +406,9 @@ int InputDataFile::Read(Flt *val)
 {
     FnTrace("InputDataFile::Read(Flt *)");
     if (val == nullptr)
+    {
         return 0;
+    }
     return Read(*val);
 }
 
@@ -304,186 +416,196 @@ int InputDataFile::Read(Str *val)
 {
     FnTrace("InputDataFile::Read(Str *)");
     if (val == nullptr)
+    {
         return 0;
+    }
     return Read(*val);
 }
 
-/****
- * PeekTokens:  This function peeks ahead into the file counting the number
- *  of tokens until the next newline.
- ****/
 int InputDataFile::PeekTokens()
 {
     FnTrace("InputDataFile::PeekTokens()");
-    const auto savepos = gzseek((gzFile)fp, 0L, SEEK_CUR);
-    int count = 0;
-    int havenl = 0;
-    int started = 0;  // make sure we pass any preceding whitespace
-    char peekchar = '\0';
-
-    // count the tokens until newline
-    while (havenl == 0 && end_of_file == 0)
+    if (fp == nullptr)
     {
-        peekchar = gzgetc((gzFile)fp);
-        if (peekchar < 0)
-            end_of_file = 1;
-        else if (isspace(peekchar))
+        return 0;
+    }
+
+    const auto savepos = gzseek(fp, 0L, SEEK_CUR);
+    if (savepos < 0)
+    {
+        return 0;
+    }
+
+    int count = 0;
+    bool newline_found = false;
+    bool started = false;
+
+    while (!newline_found && !end_of_file)
+    {
+        const int ch = gzgetc(fp);
+        if (ch < 0)
+        {
+            end_of_file = true;
+            break;
+        }
+
+        if (is_space(ch))
         {
             if (started)
             {
                 ++count;
-                if (peekchar == '\n')
-                    havenl = 1;
+                if (ch == '\n')
+                {
+                    newline_found = true;
+                }
             }
-            started = 1;
+            started = true;
         }
     }
-    // restore the original position
-    gzseek((gzFile)fp, savepos, SEEK_SET);
+
+    gzseek(fp, savepos, SEEK_SET);
     return count;
 }
 
-/****
- * ShowTokens:  Another debug method.  Just peeks ahead to gather the remaining tokens
- *  on the current line and returns a string containing those tokens.
- ****/
 const char* InputDataFile::ShowTokens(char* buffer, int lines)
 {
     FnTrace("InputDataFile::ShowTokens()");
-    const auto savepos = gzseek((gzFile)fp, 0L, SEEK_CUR);
-    static char buff2[STRLONG];
-    int   buffidx = 0;
-    char  peekchar = '\0';
-
-    if (buffer == nullptr)
-        buffer = buff2;
-
-    while (lines > 0)
+    if (fp == nullptr || lines <= 0)
     {
-        peekchar = gzgetc((gzFile)fp);
-        while (peekchar != '\n' && end_of_file == 0)
-        {
-            if (buffidx < STRLONG - 1) // prevent buffer overflow
-            {
-                buffer[buffidx] = peekchar;
-                ++buffidx;
-            }
-            peekchar = gzgetc((gzFile)fp);
-        }
-        if (lines > 1 && buffidx < STRLONG - 1)
-            buffer[buffidx] = '\n';
-        --lines;
+        static std::array<char, STRLONG> empty_buffer{};
+        empty_buffer[0] = '\0';
+        return empty_buffer.data();
     }
-    buffer[buffidx] = '\0';
 
-    gzseek((gzFile)fp, savepos, SEEK_SET);
+    static std::array<char, STRLONG> fallback{};
+    char* out = (buffer != nullptr) ? buffer : fallback.data();
 
-    return buffer;
+    const auto savepos = gzseek(fp, 0L, SEEK_CUR);
+    if (savepos < 0)
+    {
+        out[0] = '\0';
+        return out;
+    }
+
+    std::size_t index = 0;
+    while (lines-- > 0 && !end_of_file)
+    {
+        int ch = gzgetc(fp);
+        while (ch >= 0 && ch != '\n')
+        {
+            if (index + 1 < STRLONG)
+            {
+                out[index++] = static_cast<char>(ch);
+            }
+            ch = gzgetc(fp);
+        }
+        if (ch < 0)
+        {
+            end_of_file = true;
+        }
+        if (lines > 0 && index + 1 < STRLONG)
+        {
+            out[index++] = '\n';
+        }
+    }
+
+    out[index] = '\0';
+    gzseek(fp, savepos, SEEK_SET);
+    return out;
 }
 
-/**** OutputDataFile Class ****/
-// Constructor
-OutputDataFile::OutputDataFile()
+/*********************************************************************
+ * OutputDataFile
+ ********************************************************************/
+
+OutputDataFile::~OutputDataFile()
 {
-    FnTrace("OutputDataFile::OutputDataFile()");
+    Close();
 }
 
-// Member Functions
 int OutputDataFile::Open(const std::string &filepath, int version, int use_compression)
 {
     FnTrace("OutputDataFile::Open()");
 
     if (filepath.empty())
     {
-        const std::string errmsg = "OutputDataFile::Open: empty filepath";
-        ReportError(errmsg);
+        ReportError("OutputDataFile::Open: empty filepath");
         return 1;
     }
+
+    Close();
 
     filename = filepath;
-    compress = use_compression;
+    compress = (use_compression != 0);
 
     if (compress)
-        fp = static_cast<void*>(gzopen(filepath.c_str(), "w"));
-    else
-        fp = fopen(filepath.c_str(), "w");
-    if (fp == nullptr)
     {
-        const std::string errmsg = std::string("OutputDataFile::Open error '")
-                + std::to_string(errno) + "' for '" + filepath + "'";
-        ReportError(errmsg);
+        gz_fp = gzopen(filepath.c_str(), "w");
+    }
+    else
+    {
+        file_fp = std::fopen(filepath.c_str(), "w");
+    }
+
+    const bool open_failed = (compress && gz_fp == nullptr) || (!compress && file_fp == nullptr);
+    if (open_failed)
+    {
+        ReportError("OutputDataFile::Open error '" + std::to_string(errno) + "' for '" + filepath + "'");
+        Close();
         return 1;
     }
 
-    // write version string
-    const std::string str = "vtpos 0 " + std::to_string(version) + "\n";
-    if (compress)
-        gzwrite((gzFile)fp, str.c_str(), str.size());
-    else
-        fwrite(str.c_str(), 1, str.size(), static_cast<FILE*>(fp));
+    const std::string header = "vtpos 0 " + std::to_string(version) + "\n";
+    write_raw(gz_fp, file_fp, compress, header.c_str(), header.size());
     return 0;
 }
 
 int OutputDataFile::Close() noexcept
 {
     FnTrace("OutputDataFile::Close()");
-    if (fp)
+    if (gz_fp != nullptr)
     {
-        if (compress)
-        {
-            gzclose((gzFile)fp);
-        }
-        else
-        {
-            fclose(static_cast<FILE*>(fp));
-        }
-        fp = nullptr;
+        gzclose(gz_fp);
+        gz_fp = nullptr;
+    }
+    if (file_fp != nullptr)
+    {
+        std::fclose(file_fp);
+        file_fp = nullptr;
     }
     return 0;
 }
 
-int OutputDataFile::PutValue(uint64_t val, int bk = 0)
+int OutputDataFile::PutValue(uint64_t val, int bk)
 {
     FnTrace("OutputDataFile::PutValue()");
-    char  str[32];
-    char* c = &str[31];
-    *c = '\0';
-    --c;
-    if (bk)
-        *c = '\n';
-    else
-        *c = ' ';
+    std::array<char, 32> buffer{};
+    std::size_t cursor = buffer.size();
 
+    buffer[--cursor] = static_cast<char>(bk ? '\n' : ' ');
     do
     {
-        --c;
-        *c = NewEncodeDigit[static_cast<int>(val & 63)];
-        val >>= 6;
+        buffer[--cursor] = kNewEncodeDigits[static_cast<std::size_t>(val & 0x3F)];
+        val >>= 6U;
     }
-    while (val > 0);
+    while (val > 0 && cursor > 0);
 
-    const auto len = strlen(c);
-    if (compress)
-        gzwrite((gzFile)fp, c, len);
-    else
-        fwrite(c, 1, len, static_cast<FILE*>(fp));
+    const char* start = buffer.data() + cursor;
+    const std::size_t length = buffer.size() - cursor;
+    write_raw(gz_fp, file_fp, compress, start, length);
     return 0;
 }
 
 int OutputDataFile::Write(Flt val, int bk)
 {
     FnTrace("OutputDataFile::Write(Flt)");
-    if (compress)
+    std::array<char, 64> buffer{};
+    const char* format = bk ? "%g\n" : "%g ";
+    const int written = std::snprintf(buffer.data(), buffer.size(), format, static_cast<double>(val));
+    if (written > 0)
     {
-        if (bk)
-            gzprintf((gzFile)fp, "%g\n", val);
-        else
-            gzprintf((gzFile)fp, "%g ", val);
+        write_raw(gz_fp, file_fp, compress, buffer.data(), static_cast<std::size_t>(written));
     }
-    else if (bk)
-        fprintf(static_cast<FILE*>(fp), "%g\n", val);
-    else
-        fprintf(static_cast<FILE*>(fp), "%g ", val);
     return 0;
 }
 
@@ -491,81 +613,53 @@ int OutputDataFile::Write(const char* val, int bk)
 {
     FnTrace("OutputDataFile::Write(const char* )");
     if (val == nullptr)
+    {
         return 1;
+    }
 
-    const auto length = strlen(val);
-    if (length == 0)
+    const std::string_view view(val);
+    if (view.empty())
     {
-        if (compress)
-        {
-            if (bk)
-                gzwrite((gzFile)fp, static_cast<const void*>("~\n"), 2);
-            else
-                gzwrite((gzFile)fp, static_cast<const void*>("~ "), 2);
-        }
-        else if (bk)
-            fwrite("~\n", 1, 2, static_cast<FILE*>(fp));
-        else
-            fwrite("~ ", 1, 2, static_cast<FILE*>(fp));
+        const char* token = bk ? "~\n" : "~ ";
+        write_raw(gz_fp, file_fp, compress, token, 2);
+        return 0;
     }
-    else
+
+    for (char ch : view)
     {
-        int out;
-        const char* c = val;
-        while (*c)
+        char out = ch;
+        if (out == '~' || out == ' ')
         {
-            out = *c;
-            if (out == '~' || out == ' ')
-                out = '_';
-            if (compress)
-                gzputc((gzFile)fp, out);
-            else
-                fputc(out, static_cast<FILE*>(fp));
-            ++c;
+            out = '_';
         }
-        if (bk)
-            out = '\n';
-        else
-            out = ' ';
-        if (compress)
-            gzputc((gzFile)fp, out);
-        else
-            fputc(out, static_cast<FILE*>(fp));
+        put_character(gz_fp, file_fp, compress, out);
     }
+    put_character(gz_fp, file_fp, compress, static_cast<char>(bk ? '\n' : ' '));
     return 0;
 }
 
-/****
- * Write TimeInfo:  For "self-documentation" in debug mode, we'll break
- *  the format into timevar(int int), except we won't prevent Write(int) from
- *  writing it's space, which leaves us with timevar(int, int ).  Then we'll
- *  write a newline if specified.
- ****/
 int OutputDataFile::Write(TimeInfo &timevar, int bk)
 {
     FnTrace("OutputDataFile::Write(TimeInfo &)");
     int error = 0;
     if (!timevar.IsSet())
     {
-        const int s = 0;
+        const int seconds = 0;
         const int year = 0;
-        error += Write(s);
+        error += Write(seconds);
         error += Write(year);
     }
     else
     {
-        const int s = timevar.SecondsInYear();
+        const int seconds = timevar.SecondsInYear();
         const int year = timevar.Year();
-        error += Write(s);
+        error += Write(seconds);
         error += Write(year);
     }
 
     if (bk)
     {
-        if (compress)
-            gzputc((gzFile)fp, '\n');
-        else
-            fputc('\n', static_cast<FILE*>(fp));
+        put_character(gz_fp, file_fp, compress, '\n');
     }
     return error;
 }
@@ -574,7 +668,9 @@ int OutputDataFile::Write(int *val, int bk)
 {
     FnTrace("OutputDataFile::Write(int *)");
     if (val == nullptr)
+    {
         return 0;
+    }
     return Write(*val, bk);
 }
 
@@ -582,7 +678,9 @@ int OutputDataFile::Write(Flt *val, int bk)
 {
     FnTrace("OutputDataFile::Write(Flt *)");
     if (val == nullptr)
+    {
         return 0;
+    }
     return Write(*val, bk);
 }
 
@@ -590,46 +688,29 @@ int OutputDataFile::Write(Str *val, int bk)
 {
     FnTrace("OutputDataFile::Write(Str *)");
     if (val == nullptr)
+    {
         return 0;
+    }
     return Write(*val, bk);
 }
 
 /*********************************************************************
- * KeyValueInputFile:  A text file containing key/value pairs.  There
- *  can be comments on any line, starting with # and continuing to the
- *  end of the line. Key/value pairs are separated by :.  As
-# this is the comment line
-key1:  value1  # this is the first key/value pair
-key2:  value2 has multiple words separated by whitespace
-keyn:  valuen  # this is the last key/value pair
- *  There can be any amount of whitespace at the beginning of the line,
- *  at the end of the line, and after the colon and it will all be
- *  stripped.  The value is all characters starting with the first
- *  non-whitespace character after the colon through the last
- *  non-whitespace character before the end of the line.  There can
- *  be any amount of whitespace between the two non-whitespace
- *  characters (as value2 above, the value of which is
- *  "value2 has multiple words separated by whitespace").
+ * KeyValueInputFile
  ********************************************************************/
 
-KeyValueInputFile::KeyValueInputFile()
-{
-    FnTrace("KeyValueInputFile::KeyValueInputFile()");
-}
-
-KeyValueInputFile::KeyValueInputFile(const int fd) :
+KeyValueInputFile::KeyValueInputFile(int fd) :
     filedes(fd)
 {
-    FnTrace("KeyValueInputFile::KeyValueInputFile(const int)");
+    FnTrace("KeyValueInputFile::KeyValueInputFile(int)");
 }
 
 KeyValueInputFile::KeyValueInputFile(const std::string &filename) :
     inputfile(filename)
 {
-    FnTrace("KeyValueInputFile::KeyValueInputFile(const std::string &)");
+    FnTrace("KeyValueInputFile::KeyValueInputFile(const std::string&)");
 }
 
-bool KeyValueInputFile::Open(void)
+bool KeyValueInputFile::Open()
 {
     FnTrace("KeyValueInputFile::Open()");
     bool retval = false;
@@ -638,12 +719,18 @@ bool KeyValueInputFile::Open(void)
     {
         filedes = open(inputfile.c_str(), O_RDONLY);
         if (filedes > 0)
+        {
             retval = true;
+            bytesread = 0;
+            keyidx = 0;
+            validx = 0;
+            buffidx = 0;
+            comment = false;
+            getvalue = false;
+        }
         else if (filedes < 0)
         {
-            const std::string errmsg = "KeyValueInputFile::Open error '"
-                    + std::to_string(errno) + "' for '" + inputfile + ";";
-            ReportError(errmsg);
+            ReportError("KeyValueInputFile::Open error '" + std::to_string(errno) + "' for '" + inputfile + "'");
         }
     }
 
@@ -652,7 +739,7 @@ bool KeyValueInputFile::Open(void)
 
 bool KeyValueInputFile::Open(const std::string &filename)
 {
-    FnTrace("KeyValueInputFile::Open(const char* )");
+    FnTrace("KeyValueInputFile::Open(const std::string&)");
 
     inputfile = filename;
     return Open();
@@ -664,47 +751,40 @@ bool KeyValueInputFile::IsOpen() const noexcept
     return (filedes > 0);
 }
 
-int KeyValueInputFile::Set(const int fd)
+int KeyValueInputFile::Set(int fd)
 {
     FnTrace("KeyValueInputFile::Set(int)");
     filedes = fd;
-
     return 0;
 }
 
 int KeyValueInputFile::Set(const std::string &filename)
 {
-    FnTrace("KeyValueInputFile::Set(const char* )");
-
+    FnTrace("KeyValueInputFile::Set(const std::string&)");
     inputfile = filename;
     return 0;
 }
 
-char KeyValueInputFile::SetDelim(const char delim)
+char KeyValueInputFile::SetDelim(char delim)
 {
     FnTrace("KeyValueInputFile::SetDelim()");
-    char retval = delimiter;
-    
+    const char previous = delimiter;
     delimiter = delim;
-    return retval;
+    return previous;
 }
 
 int KeyValueInputFile::Close()
 {
     FnTrace("KeyValueInputFile::Close()");
-    int retval = close(filedes);
+    if (filedes < 0)
+    {
+        return 0;
+    }
+    const int retval = close(filedes);
     filedes = -1;
-
     return retval;
 }
 
-/****
- * Reset:  Close the file, if it's open, and reset everything back
- *  to zero.  This allows one object to be reused for different
- *  files, for example.
- *  Returns 1 if a file was closed, 0 otherwise (arbitrary, semi-useless
- *  return value).
- ****/
 int KeyValueInputFile::Reset()
 {
     FnTrace("KeyValueInputFile::Reset()");
@@ -720,46 +800,47 @@ int KeyValueInputFile::Reset()
     keyidx = 0;
     validx = 0;
     buffidx = 0;
-    comment = 0;
-    getvalue = 0;
-    buffer[0] = '\0';
-    inputfile = "";
+    comment = false;
+    getvalue = false;
+    buffer.fill('\0');
+    inputfile.clear();
 
     return retval;
 }
 
-/****
- * Read:  For an open file, reads lines such as:
- *   # comment
- *   key:  value
- *
- *   key2:  value2
- *  The maxlen parameter should be the maximum string length. It is applied to
- *  both key and value, so if one is shorter than the other, maxlen should
- *  specify the shortest length.
- *  Returns 1 if a key/value pair was read (even if they're both 0 bytes;
- *  it simply means there may be more lines to read), 0 otherwise.
- ****/
 int KeyValueInputFile::Read(char* key, char* value, int maxlen)
 {
     FnTrace("KeyValueInputFile::Read()");
-    if (!key || !value || maxlen <= 0) {
-        return 0; // invalid parameters
+    if (filedes < 0 || key == nullptr || value == nullptr || maxlen <= 0)
+    {
+        return 0;
     }
-    
-    int retval = 0;
-    char last  = '\0';
 
-    key[0]     = '\0';
-    value[0]   = '\0';
+    const std::size_t limit = static_cast<std::size_t>(maxlen);
+    key[0] = '\0';
+    value[0] = '\0';
 
     if (bytesread == 0)
-        bytesread = read(filedes, buffer, BLOCKSIZE);
+    {
+        const auto read_bytes = ::read(filedes, buffer.data(), buffer.size());
+        if (read_bytes <= 0)
+        {
+            bytesread = 0;
+            return 0;
+        }
+        bytesread = static_cast<std::size_t>(read_bytes);
+        buffidx = 0;
+    }
+
+    int retval = 0;
+    char last = '\0';
+
     while (bytesread > 0 && retval == 0)
     {
         while (buffidx < bytesread && retval == 0)
         {
-            if (buffer[buffidx] == '\n')
+            const char ch = buffer[buffidx];
+            if (ch == '\n')
             {
                 if (keyidx)
                 {
@@ -770,64 +851,64 @@ int KeyValueInputFile::Read(char* key, char* value, int maxlen)
                 }
                 keyidx = 0;
                 validx = 0;
-                comment = 0;
-                getvalue = 0;
+                comment = false;
+                getvalue = false;
                 retval = 1;
             }
-            else if (buffer[buffidx] == '#' && last != '\\')
-            {  // start a comment
-                comment = 1;
-            }
-            else if (comment || buffer[buffidx] == '\\')
-            {  // NULL block: skip comments
-            }
-            else if (getvalue && (validx < maxlen - 1))
+            else if (ch == '#' && last != '\\')
             {
-                value[validx] = buffer[buffidx];
-                ++validx;
+                comment = true;
             }
-            else if (buffer[buffidx] == ':')
-            {  // end of key, get value
-                getvalue = 1;
-            }
-            else if (keyidx < maxlen - 1)
+            else if (comment || ch == '\\')
             {
-                key[keyidx] = buffer[buffidx];
-                ++keyidx;
+                // skip comment content and escaped characters
             }
-            last = buffer[buffidx];
+            else if (getvalue && validx + 1 < limit)
+            {
+                value[validx++] = ch;
+            }
+            else if (ch == delimiter)
+            {
+                getvalue = true;
+            }
+            else if (keyidx + 1 < limit)
+            {
+                key[keyidx++] = ch;
+            }
+
+            last = ch;
             ++buffidx;
         }
+
         if (retval == 0)
         {
-            bytesread = read(filedes, buffer, BLOCKSIZE);
-            buffidx = 0;
+            const auto read_bytes = ::read(filedes, buffer.data(), buffer.size());
+            if (read_bytes <= 0)
+            {
+                bytesread = 0;
+            }
+            else
+            {
+                bytesread = static_cast<std::size_t>(read_bytes);
+                buffidx = 0;
+            }
         }
     }
-    if (retval == 0 && keyidx > 0)
+
+    if (retval == 1)
     {
         key[keyidx] = '\0';
         value[validx] = '\0';
-        StripWhiteSpace(key);
-        StripWhiteSpace(value);
-        keyidx = 0;
-        validx = 0;
-        retval = 1;
     }
+
     return retval;
 }
 
-
 /*********************************************************************
- * KeyValueOutputFile class
+ * KeyValueOutputFile
  ********************************************************************/
 
-KeyValueOutputFile::KeyValueOutputFile()
-{
-    FnTrace("KeyValueOutputFile::KeyValueOutputFile()");
-}
-
-KeyValueOutputFile::KeyValueOutputFile(const int fd) :
+KeyValueOutputFile::KeyValueOutputFile(int fd) :
     filedes(fd)
 {
     FnTrace("KeyValueOutputFile::KeyValueOutputFile(int)");
@@ -836,9 +917,9 @@ KeyValueOutputFile::KeyValueOutputFile(const int fd) :
 KeyValueOutputFile::KeyValueOutputFile(const std::string &filename) :
     outputfile(filename)
 {
-    FnTrace("KeyValueOutputFile::KeyValueOutputFile(const char* )");
+    FnTrace("KeyValueOutputFile::KeyValueOutputFile(const std::string&)");
 }
-   
+
 int KeyValueOutputFile::Open()
 {
     FnTrace("KeyValueOutputFile::Open()");
@@ -846,7 +927,7 @@ int KeyValueOutputFile::Open()
 
     if (!outputfile.empty())
     {
-        int mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
+        const int mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
         filedes = open(outputfile.c_str(), O_WRONLY | O_CREAT | O_TRUNC, mode);
         if (filedes > 0)
         {
@@ -854,9 +935,7 @@ int KeyValueOutputFile::Open()
         }
         else if (filedes < 0)
         {
-            std::string errmsg = std::string("KeyValueOutputFile::Open error '")
-                    + std::to_string(errno) + "' for '" + outputfile + "'";
-            ReportError(errmsg);
+            ReportError("KeyValueOutputFile::Open error '" + std::to_string(errno) + "' for '" + outputfile + "'");
         }
     }
 
@@ -865,37 +944,34 @@ int KeyValueOutputFile::Open()
 
 int KeyValueOutputFile::Open(const std::string &filename)
 {
-    FnTrace("KeyValueOutputFile::Open(const char* )");
-    int retval = 1;
-
+    FnTrace("KeyValueOutputFile::Open(const std::string&)");
     outputfile = filename;
-    retval = Open();
-
-    return retval;
+    return Open();
 }
 
-int KeyValueOutputFile::IsOpen() const noexcept
+bool KeyValueOutputFile::IsOpen() const noexcept
 {
     FnTrace("KeyValueOutputFile::IsOpen()");
     return (filedes > 0);
 }
 
-char KeyValueOutputFile::SetDelim(const char delim)
+char KeyValueOutputFile::SetDelim(char delim)
 {
     FnTrace("KeyValueOutputFile::SetDelim()");
-    char retval = delimiter;
-
+    const char previous = delimiter;
     delimiter = delim;
-
-    return retval;
+    return previous;
 }
 
 int KeyValueOutputFile::Close()
 {
     FnTrace("KeyValueOutputFile::Close()");
-    int retval = close(filedes);
+    if (filedes < 0)
+    {
+        return 0;
+    }
+    const int retval = close(filedes);
     filedes = -1;
-
     return retval;
 }
 
@@ -910,7 +986,7 @@ int KeyValueOutputFile::Reset()
     }
 
     filedes = -1;
-    outputfile = "";
+    outputfile.clear();
 
     return retval;
 }
@@ -918,10 +994,16 @@ int KeyValueOutputFile::Reset()
 int KeyValueOutputFile::Write(const std::string &key, const std::string &value)
 {
     FnTrace("KeyValueOutputFile::Write()");
-    int retval = 1;
+    if (filedes < 0)
+    {
+        return 0;
+    }
 
-    std::string buffer = key + ": " + value + "\n";
-    retval = write(filedes, buffer.c_str(), buffer.size());
+    std::string buffer = key;
+    buffer += delimiter;
+    buffer += ' ';
+    buffer += value;
+    buffer += '\n';
 
-    return retval;
+    return static_cast<int>(::write(filedes, buffer.c_str(), buffer.size()));
 }

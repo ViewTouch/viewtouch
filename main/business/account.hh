@@ -50,8 +50,8 @@ public:
     bool operator==(const AccountEntry &other) const;
 
     // Member Functions
-    int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    int Read(InputDataFile &df, [[maybe_unused]] int version);
+    int Write(OutputDataFile &df, [[maybe_unused]] int version);
     int Search(const std::string &word) const;
 };
 

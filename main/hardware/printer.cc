@@ -1987,7 +1987,7 @@ int PrinterPostScript::MaxLines()
     return 60;
 }
 
-int PrinterPostScript::Width(int flags)
+int PrinterPostScript::Width([[maybe_unused]] int flags)
 {
     FnTrace("PrinterPostScript::Width()");
     return 80;
@@ -1999,13 +1999,13 @@ int PrinterPostScript::StopPrint()
     return 1;
 }
 
-int PrinterPostScript::OpenDrawer(int drawer)
+int PrinterPostScript::OpenDrawer([[maybe_unused]] int drawer)
 {
     FnTrace("PrinterPostScript::OpenDrawer()");
     return 1;
 }
 
-int PrinterPostScript::CutPaper(int partial_only)
+int PrinterPostScript::CutPaper([[maybe_unused]] int partial_only)
 {
     FnTrace("PrinterPostScript::CutPaper()");
     return 1;

@@ -1,6 +1,7 @@
+
 /*
  * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
-  
+
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
  *   the Free Software Foundation, either version 3 of the License, or 
@@ -22,37 +23,39 @@
 #define _DATA_FILE_HH
 
 #include "utility.hh"
+
 #include <zlib.h>
+
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
 #include <string>
-#include <cstdint> // intXX_t and uintXX_t types
 
-#define BLOCKSIZE   16384
-
-/**** Types ****/
+inline constexpr std::size_t DataFileBlockSize = 16384;
 
 /*********************************************************************
- * InputDataFile:
+ * InputDataFile
  ********************************************************************/
 class InputDataFile
 {
-    gzFile fp;
-    int old_format;
+    gzFile fp{nullptr};
+    bool old_format{false};
     std::string filename;
 
 public:
-    int end_of_file;
+    bool end_of_file{false};
 
-    // Constructor
-    InputDataFile();
-    // Destructor
-    ~InputDataFile() { Close(); }
+    InputDataFile() = default;
+    ~InputDataFile();
 
-    // Member Functions
+    [[nodiscard]] bool is_open() const noexcept { return fp != nullptr; }
+
     int Open(const std::string &filename, int &version);
     int Close() noexcept;
 
-    int   GetToken(char* buffer, int max_len = 0);
-    uint64_t GetValue();
+    int GetToken(char* buffer, int max_len);
+    [[nodiscard]] uint64_t GetValue();
 
     // using the following conversions
     // char      ... 1 byte
@@ -79,27 +82,24 @@ public:
     int Read(Str *val);
 
     int PeekTokens();
-    const char* ShowTokens(char* buffer = NULL, int lines = 1);
-    const std::string &FileName() { return filename; }
+    const char* ShowTokens(char* buffer = nullptr, int lines = 1);
+    [[nodiscard]] const std::string &FileName() const noexcept { return filename; }
 };
-
 
 /*********************************************************************
  * OutputDataFile
  ********************************************************************/
 class OutputDataFile
 {
-    void *fp = nullptr;
-    int compress = 0;
+    gzFile gz_fp{nullptr};
+    std::FILE* file_fp{nullptr};
+    bool compress{false};
     std::string filename;
 
 public:
-    // Constructor
-    OutputDataFile();
-    // Destructor
-    ~OutputDataFile() { Close(); }
+    OutputDataFile() = default;
+    ~OutputDataFile();
 
-    // Member Functions
     int Open(const std::string &filename, int version, int use_compression = 0);
     int Close() noexcept;
 
@@ -130,61 +130,59 @@ public:
     int Write(const char* val, int bk = 0);
     int Write(Flt  *val, int bk = 0);
     int Write(Str  *val, int bk = 0);
-    std::string FileName() { return filename; }
+    [[nodiscard]] const std::string &FileName() const noexcept { return filename; }
 };
 
-
 /*********************************************************************
- * KeyValueInputFile:
+ * KeyValueInputFile
  ********************************************************************/
 class KeyValueInputFile
 {
 private:
-    int filedes = -1;
-    int bytesread = 0;
-    int keyidx = 0;
-    int validx = 0;
-    int buffidx = 0;
-    int comment = 0;
-    int getvalue = 0;
-    char delimiter = ':';
-    char buffer[BLOCKSIZE] = {'\0'};
+    int filedes{-1};
+    std::size_t bytesread{0};
+    std::size_t keyidx{0};
+    std::size_t validx{0};
+    std::size_t buffidx{0};
+    bool comment{false};
+    bool getvalue{false};
+    char delimiter{':'};
+    std::array<char, DataFileBlockSize> buffer{};
     std::string inputfile;
 
 public:
-    KeyValueInputFile();
-    KeyValueInputFile(const int fd);
-    KeyValueInputFile(const std::string &filename);
+    KeyValueInputFile() = default;
+    explicit KeyValueInputFile(int fd);
+    explicit KeyValueInputFile(const std::string &filename);
     bool Open();
     bool Open(const std::string &filename);
-    bool IsOpen() const noexcept;
-    int Set(const int fd);
+    [[nodiscard]] bool IsOpen() const noexcept;
+    int Set(int fd);
     int Set(const std::string &filename);
-    char SetDelim(const char delim);
+    char SetDelim(char delim);
     int Close();
     int Reset();
     int Read(char* key, char* value, int maxlen);
-    
 };
 
 /*********************************************************************
- * KeyValueOutputFile:
+ * KeyValueOutputFile
  ********************************************************************/
 class KeyValueOutputFile
 {
 private:
-    int filedes = -1;
-    char delimiter = ':';
+    int filedes{-1};
+    char delimiter{':'};
     std::string outputfile;
 
 public:
-    KeyValueOutputFile();
-    KeyValueOutputFile(const int fd);
-    KeyValueOutputFile(const std::string &filename);
+    KeyValueOutputFile() = default;
+    explicit KeyValueOutputFile(int fd);
+    explicit KeyValueOutputFile(const std::string &filename);
     int Open();
     int Open(const std::string &filename);
-    int IsOpen() const noexcept;
-    char SetDelim(const char delim);
+    [[nodiscard]] bool IsOpen() const noexcept;
+    char SetDelim(char delim);
     int Close();
     int Reset();
     int Write(const std::string &key, const std::string &value);

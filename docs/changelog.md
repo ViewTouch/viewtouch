@@ -5,6 +5,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Changed
+- **Core File I/O Modernization**: Comprehensive refactoring of core data and configuration file classes
+  - **ConfFile Class (conf_file.hh/cc)**: Modernized INI file I/O library with C++17/20 features
+    - Replaced C-style constants with `constexpr std::string_view` for compile-time evaluation
+    - Enhanced API with `std::optional<std::string>` return type for safer value retrieval (`TryGetValue()`)
+    - Added `[[nodiscard]]` attributes to prevent ignoring important return values
+    - Improved const correctness with `noexcept` specifications
+    - Replaced old naming convention (`CommentIndicators`) with modern style (`comment_indicators`)
+    - Enhanced function parameters with `std::string_view` for better performance
+    - Used default member initialization for cleaner code
+    - Added `= default` for special member functions where appropriate
+  - **DataFile Classes (data_file.hh/cc)**: Modernized binary data file I/O system
+    - Replaced C macro `BLOCKSIZE` with `constexpr std::size_t DataFileBlockSize`
+    - Converted to default member initialization (`fp{nullptr}`, `old_format{false}`)
+    - Enhanced type safety by using `bool` instead of `int` for boolean flags
+    - Added `[[nodiscard]]` attributes to critical query functions
+    - Improved const correctness with `noexcept` specifications
+    - Replaced `NULL` with `nullptr` throughout
+    - Used `std::array` for fixed-size buffers instead of C-style arrays
+    - Separated file pointer types (`gzFile gz_fp`, `std::FILE* file_fp`) for clarity
+    - Added `is_open()` const noexcept member function for better API
+    - Enhanced destructors with proper resource management
+  - **Printer Classes (printer.hh)**: Enhanced virtual function declarations
+    - Replaced `virtual` keyword with `override` for better compile-time checking
+    - Added `[[maybe_unused]]` attribute to intentionally unused parameters
+    - Improved code clarity and prevented accidental virtual function hiding
+  - **Business and Hardware Classes**: Consistent modernization across multiple modules
+    - `account.hh/cc`: Enhanced const correctness and modern C++ usage
+    - `employee.hh`: Improved type safety with modern features
+    - `drawer.hh/cc`: Modernized with override keywords and better parameter handling
+    - `report.hh`: Enhanced with modern C++ patterns
+  - **Benefits**:
+    - **Type Safety**: Better compile-time error detection with modern C++ features
+    - **Performance**: Compile-time evaluation with constexpr and string_view reduces runtime overhead
+    - **Maintainability**: Cleaner, more readable code with modern C++ idioms
+    - **Safety**: [[nodiscard]] and noexcept help prevent bugs and improve optimization
+    - **API Improvement**: std::optional provides safer value retrieval without exceptions
+    - **Code Quality**: Consistent modern C++ style throughout core infrastructure
+
 ### Added
 - **Comprehensive Directory Structure Cleanup**: Reorganized entire codebase for better maintainability and development workflow
 - **CI/CD Workflow Updates**: Updated GitHub Actions workflows to work with new directory structure
