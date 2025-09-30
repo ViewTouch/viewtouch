@@ -116,12 +116,39 @@ jobs:
           exit 1
         fi
         
+        if [ -d "scripts" ]; then
+          echo "✓ scripts/ exists"
+          ls -la scripts/
+          if [ -d "scripts/build" ] && [ -d "scripts/install" ] && [ -d "scripts/system" ] && [ -d "scripts/maintenance" ] && [ -d "scripts/tools" ]; then
+            echo "✓ scripts/ subdirectories exist"
+          else
+            echo "✗ Missing scripts/ subdirectories"
+            exit 1
+          fi
+        else
+          echo "✗ scripts/ directory missing"
+          exit 1
+        fi
+        
+        if [ -d "assets" ]; then
+          echo "✓ assets/ exists"
+          ls -la assets/
+          if [ -d "assets/data" ] && [ -d "assets/images" ]; then
+            echo "✓ assets/ subdirectories exist"
+          else
+            echo "✗ Missing assets/ subdirectories"
+            exit 1
+          fi
+        else
+          echo "✗ assets/ directory missing"
+          exit 1
+        fi
+        
         echo "Checking other directories:"
-        [ -d "scripts" ] && echo "✓ scripts/ exists" || echo "✗ scripts/ missing"
-        [ -d "assets" ] && echo "✓ assets/ exists" || echo "✗ assets/ missing"
         [ -d "config" ] && echo "✓ config/ exists" || echo "✗ config/ missing"
         [ -d "docs" ] && echo "✓ docs/ exists" || echo "✗ docs/ missing"
         [ -d "fonts" ] && echo "✓ fonts/ exists" || echo "✗ fonts/ missing"
+        [ -d "external/core" ] && echo "✓ external/core/ exists" || echo "✗ external/core/ missing"
 
     - name: Build + install
       working-directory: ${{runner.workspace}}
