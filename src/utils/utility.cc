@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -263,37 +263,22 @@ int Str::operator != (const Str &s) const
 
 
 /**** Region Class ****/
-// Constructors
-RegionInfo::RegionInfo()
-{
-    x = 0;
-    y = 0;
-    w = 0;
-    h = 0;
-}
+// Constructors (default constructor and copy constructor are defaulted in header)
 
-RegionInfo::RegionInfo(RegionInfo &r)
+RegionInfo::RegionInfo(const RegionInfo *r)
+    : x(r ? r->x : 0)
+    , y(r ? r->y : 0)
+    , w(r ? r->w : 0)
+    , h(r ? r->h : 0)
 {
-    x = r.x;
-    y = r.y;
-    w = r.w;
-    h = r.h;
-}
-
-RegionInfo::RegionInfo(RegionInfo *r)
-{
-    x = r->x;
-    y = r->y;
-    w = r->w;
-    h = r->h;
 }
 
 RegionInfo::RegionInfo(int rx, int ry, int rw, int rh)
+    : x(static_cast<short>(rx))
+    , y(static_cast<short>(ry))
+    , w(static_cast<short>(rw))
+    , h(static_cast<short>(rh))
 {
-    x = rx;
-    y = ry;
-    w = rw;
-    h = rh;
 }
 
 //Destructor

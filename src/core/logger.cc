@@ -2,83 +2,81 @@
  * logging utilities
  */
 
-#include <stdarg.h>
-#include <stdio.h>  /* vsnprintf */
-#include <string.h> /* memset */
-
 #include "logger.hh"
 
+#include <array>
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
 
-#define BUFSIZE 1024
-static char buf[BUFSIZE + 1];
-static int init = 0;
-
-void initlogger();
-
-void
-initlogger()
+namespace
 {
-    if (init != 0)
-        return;
+    constexpr size_t BUFSIZE = 1024;
+    std::array<char, BUFSIZE + 1> g_log_buffer{};
+    bool g_logger_initialized{false};
 
-// FIXME
-// this is lame; make new build system and fix this.
-// should be using -DDEBUG=0 or -DDEBUG=1 and then use
-//   if ()  or #if   instead of  #ifdef
+    void initlogger() noexcept
+    {
+        if (g_logger_initialized)
+            return;
+
 #if !(DEBUG)
-    // not debug build ==> no debug messages
-    setlogmask(LOG_UPTO(LOG_INFO));
+        // not debug build ==> no debug messages
+        setlogmask(LOG_UPTO(LOG_INFO));
 #endif
 
-    openlog("ViewTouch ", LOG_PERROR | LOG_PID, LOG_USER);
-    init = 1;
-}
+        openlog("ViewTouch ", LOG_PERROR | LOG_PID, LOG_USER);
+        g_logger_initialized = true;
+    }
+} // anonymous namespace
 
-void
-setident(const char* ident)
+void setident(const char* ident) noexcept
 {
     closelog();
-    if (init == 0)
+    if (!g_logger_initialized)
         initlogger();
-    openlog(ident ? "VT" : ident, LOG_PERROR | LOG_PID, LOG_USER);
+    openlog(ident ? ident : "VT", LOG_PERROR | LOG_PID, LOG_USER);
 }
 
 /*
- * return:  0 : success
- *         -1 : message truncated (didn't fit into buffer)
- *         -2 : error returned by vsnprintf(3)
+ * logmsg: Sends a formatted message to syslog
+ * 
+ * Returns:  0 : success
+ *          -1 : message truncated (didn't fit into buffer)
+ *          -2 : error returned by vsnprintf(3)
  */
-int
-logmsg(int priority, const char* fmt, ...)
+int logmsg(int priority, const char* fmt, ...)
 {
-    va_list ap;
-    int retval = 0;
-
-    if (init == 0)
+    if (!g_logger_initialized)
         initlogger();
 
-    memset(buf, 0, sizeof(buf));
+    g_log_buffer.fill(0);
+    
+    va_list ap;
     va_start(ap, fmt);
-    retval = vsnprintf(buf, BUFSIZE, fmt, ap);
+    const int retval_raw = std::vsnprintf(g_log_buffer.data(), BUFSIZE, fmt, ap);
     va_end(ap);
-    // ensure termination
-    buf[BUFSIZE] = '\0';
+    
+    // Ensure null termination
+    g_log_buffer[BUFSIZE] = '\0';
 
-    if (retval >= BUFSIZE) {
+    int retval = 0;
+    if (retval_raw >= static_cast<int>(BUFSIZE))
+    {
         retval = -1;
-        // ellipsis at the end because we truncated
-        buf[BUFSIZE - 1] = buf[BUFSIZE - 2] = buf[BUFSIZE - 3] = '.';
-    } else if (retval < 0)
+        // Add ellipsis at the end because message was truncated
+        g_log_buffer[BUFSIZE - 1] = '.';
+        g_log_buffer[BUFSIZE - 2] = '.';
+        g_log_buffer[BUFSIZE - 3] = '.';
+    }
+    else if (retval_raw < 0)
+    {
         retval = -2;
-    else
-        retval = 0;
+    }
 
-    // made the string -- log it
-    //   (even if it was truncated)
+    // Log the string (even if it was truncated)
     if (retval >= -1)
-        syslog(priority, "%s",buf);
+        syslog(priority, "%s", g_log_buffer.data());
 
     return retval;
 }
-
-/* done */

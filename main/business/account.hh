@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -50,8 +50,8 @@ public:
     bool operator==(const AccountEntry &other) const;
 
     // Member Functions
-    int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    int Read(InputDataFile &df, [[maybe_unused]] int version);
+    int Write(OutputDataFile &df, [[maybe_unused]] int version);
     int Search(const std::string &word) const;
 };
 

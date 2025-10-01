@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -205,24 +205,24 @@ public:
     { return Number(n, c, ALIGN_RIGHT, 0); }
 
     int TextPosL(int pos, const std::string &t, int c = COLOR_DEFAULT)
-    { return Text(t, c, ALIGN_LEFT, pos); }
+    { return Text(t, c, ALIGN_LEFT, static_cast<float>(pos)); }
     int TextPosR(int pos, const std::string &t, int c = COLOR_DEFAULT)
-    { return Text(t, c, ALIGN_RIGHT, pos); }
+    { return Text(t, c, ALIGN_RIGHT, static_cast<float>(pos)); }
 
     int TextPosL2Col(int pos, const std::string &t, int c = COLOR_DEFAULT)
-    { return Text2Col(t, c, ALIGN_LEFT, pos); }
+    { return Text2Col(t, c, ALIGN_LEFT, static_cast<float>(pos)); }
     int TextPosR2Col(int pos, const std::string &t, int c = COLOR_DEFAULT)
-    { return Text2Col(t, c, ALIGN_RIGHT, pos); }
+    { return Text2Col(t, c, ALIGN_RIGHT, static_cast<float>(pos)); }
 
     int NumberPosL(int pos, int n, int c = COLOR_DEFAULT)
-    { return Number(n, c, ALIGN_LEFT, pos); }
+    { return Number(n, c, ALIGN_LEFT, static_cast<float>(pos)); }
     int NumberPosR(int pos, int n, int c = COLOR_DEFAULT)
-    { return Number(n, c, ALIGN_RIGHT, pos); }
+    { return Number(n, c, ALIGN_RIGHT, static_cast<float>(pos)); }
 
     int UnderlinePosL(int pos, int len = 0, int c = COLOR_DEFAULT)
-    { return Underline(len, c, ALIGN_LEFT, pos); }
+    { return Underline(len, c, ALIGN_LEFT, static_cast<float>(pos)); }
     int UnderlinePosR(int pos, int len = 0, int c = COLOR_DEFAULT)
-    { return Underline(len, c, ALIGN_RIGHT, pos); }
+    { return Underline(len, c, ALIGN_RIGHT, static_cast<float>(pos)); }
 
 };
 

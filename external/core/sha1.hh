@@ -17,16 +17,13 @@
 #ifndef _SHA1_H_
 #define _SHA1_H_
 
-#ifdef BSD
-#include "inttypes.h"
-typedef unsigned short int_least16_t;
-#else
-#include <stdint.h>
-#endif
+#include <cstdint>
+#include <array>
+#include <cstring>
 
 #ifndef _SHA_enum_
 #define _SHA_enum_
-enum
+enum SHA1ErrorCode : int
 {
     shaSuccess = 0,
     shaNull,            /* Null pointer parameter */
@@ -34,37 +31,54 @@ enum
     shaStateError       /* called Input after Result */
 };
 #endif
-#define SHA1HashSize 20
+
+constexpr size_t SHA1HashSize = 20;
+constexpr size_t SHA1HashWords = SHA1HashSize / 4;
+constexpr size_t SHA1MessageBlockSize = 64;
 
 /*
- *  This structure will hold context information for the SHA-1
- *  hashing operation
+ *  Modern C++ class for SHA-1 hashing operations
  */
-typedef struct SHA1Context
+class SHA1Context
 {
-    uint32_t Intermediate_Hash[SHA1HashSize/4]; /* Message Digest  */
+public:
+    // Constructor
+    SHA1Context() noexcept;
+    
+    // Deleted copy operations for safety
+    SHA1Context(const SHA1Context&) = delete;
+    SHA1Context& operator=(const SHA1Context&) = delete;
+    
+    // Move operations
+    SHA1Context(SHA1Context&&) noexcept = default;
+    SHA1Context& operator=(SHA1Context&&) noexcept = default;
+    
+    // Core operations
+    [[nodiscard]] int Reset() noexcept;
+    [[nodiscard]] int Input(const uint8_t* message_array, unsigned int length) noexcept;
+    [[nodiscard]] int Result(uint8_t* Message_Digest) noexcept;
 
-    uint32_t Length_Low;            /* Message length in bits      */
-    uint32_t Length_High;           /* Message length in bits      */
-
-                               /* Index into message block array   */
-    int_least16_t Message_Block_Index;
-    uint8_t Message_Block[64];      /* 512-bit message blocks      */
-
-    int Computed;               /* Is the digest computed?         */
-    int Corrupted;             /* Is the message digest corrupted? */
-} SHA1Context;
+private:
+    std::array<uint32_t, SHA1HashWords> Intermediate_Hash;
+    uint32_t Length_Low{0};
+    uint32_t Length_High{0};
+    int16_t Message_Block_Index{0};
+    std::array<uint8_t, SHA1MessageBlockSize> Message_Block;
+    bool Computed{false};
+    int Corrupted{0};
+    
+    void PadMessage() noexcept;
+    void ProcessMessageBlock() noexcept;
+};
 
 /*
- *  Function Prototypes
+ *  C-style wrapper functions for backward compatibility
  */
-
-int SHA1Reset(  SHA1Context *);
-int SHA1Input(  SHA1Context *,
-                const uint8_t *,
-                unsigned int);
-int SHA1Result( SHA1Context *,
-                uint8_t Message_Digest[SHA1HashSize]);
+extern "C" {
+    int SHA1Reset(SHA1Context* context) noexcept;
+    int SHA1Input(SHA1Context* context, const uint8_t* message_array, unsigned int length) noexcept;
+    int SHA1Result(SHA1Context* context, uint8_t Message_Digest[SHA1HashSize]) noexcept;
+}
 
 #endif
 

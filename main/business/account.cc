@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -57,7 +57,7 @@ bool AccountEntry::operator==(const AccountEntry &other) const
 }
 
 // Member Functions
-int AccountEntry::Read(InputDataFile &df, int version)
+int AccountEntry::Read(InputDataFile &df, [[maybe_unused]] int version)
 {
     FnTrace("AccountEntry::Read()");
     int error = 0;
@@ -68,7 +68,7 @@ int AccountEntry::Read(InputDataFile &df, int version)
     return error;
 }
 
-int AccountEntry::Write(OutputDataFile &df, int version)
+int AccountEntry::Write(OutputDataFile &df, [[maybe_unused]] int version)
 {
     FnTrace("AccountEntry::Write()");
     int error = 0;

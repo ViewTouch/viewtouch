@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -26,23 +26,17 @@
 #include "time_info.hh"
 
 #include <string>
+#include <sys/stat.h>  // for mode_t
 
 extern int debug_mode;
 
-#define LOCK_RUNNING VIEWTOUCH_PATH "/bin/.vt_is_running"
-#define DIR_PERMISSIONS  0777
+// Modern C++ constants instead of macros
+inline constexpr const char* LOCK_RUNNING = VIEWTOUCH_PATH "/bin/.vt_is_running";
+inline constexpr mode_t DIR_PERMISSIONS = 0777;
 
-#ifndef MAX
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#endif
-
-#ifndef ISDIGIT
-#define ISDIGIT(x) (((x) >= '0') && ((x) <= '9'))
-#endif
-
-#define STRSHORT    64
-#define STRLENGTH   512   // constant to set the length of a string
-#define STRLONG     2048  // 2K string
+// Note: Use Max() from basic.hh or std::max from <algorithm> instead of MAX macro
+// Note: Use std::isdigit() from <cctype> instead of ISDIGIT macro
+// Note: STRSHORT, STRLENGTH, and STRLONG are now defined in basic.hh
 
 void vt_init_setproctitle(int argc, char* argv[]);
 int  vt_setproctitle(const char* title);
@@ -117,61 +111,69 @@ public:
 class RegionInfo
 {
 public:
-    short x;
-    short y;
-    short w;
-    short h;
+    short x{0};
+    short y{0};
+    short w{0};
+    short h{0};
 
     // Constructors
-    RegionInfo();
-    RegionInfo(RegionInfo &r);
-    RegionInfo(RegionInfo *r);
+    RegionInfo() = default;
+    RegionInfo(const RegionInfo &r) = default;
+    RegionInfo(const RegionInfo *r);
     RegionInfo(int rx, int ry, int rw, int rh);
+    
+    // Assignment operator
+    RegionInfo& operator=(const RegionInfo&) = default;
     
     // Destructor
     virtual ~RegionInfo();
 
     // Member Functions
-    int SetRegion(RegionInfo &r) {
+    [[nodiscard]] constexpr int SetRegion(const RegionInfo &r) noexcept {
         return SetRegion(r.x, r.y, r.w, r.h); }
-    int SetRegion(RegionInfo *r) {
+    [[nodiscard]] int SetRegion(const RegionInfo *r) noexcept {
         return SetRegion(r->x, r->y, r->w, r->h); }
-    int SetRegion(int rx, int ry, int rw, int rh) {
-        x = rx; y = ry; w = rw; h = rh; return 0; }
-    int GetRegion(RegionInfo &r) {
+    [[nodiscard]] constexpr int SetRegion(int rx, int ry, int rw, int rh) noexcept {
+        x = static_cast<short>(rx); 
+        y = static_cast<short>(ry); 
+        w = static_cast<short>(rw); 
+        h = static_cast<short>(rh); 
+        return 0; }
+    
+    [[nodiscard]] constexpr int GetRegion(RegionInfo &r) const noexcept {
         r.x = x; r.y = y; r.w = w; r.h = h; return 0; }
-    int GetRegion(RegionInfo *r) {
+    [[nodiscard]] int GetRegion(RegionInfo *r) const noexcept {
         r->x = x; r->y = y; r->w = w; r->h = h; return 0; }
-    int GetRegion(int &rx, int &ry, int &rw, int &rh) {
+    [[nodiscard]] constexpr int GetRegion(int &rx, int &ry, int &rw, int &rh) const noexcept {
         rx = x; ry = y; rw = w; rh = h; return 0; }
 
-    int IsSet() const noexcept {
+    [[nodiscard]] constexpr bool IsSet() const noexcept {
         return (w > 0) && (h > 0); }
-    virtual int IsPointIn(int px, int py) const noexcept {
+    [[nodiscard]] virtual constexpr bool IsPointIn(int px, int py) const noexcept {
         return px >= x && py >= y && px < (x + w) && py < (y + h); }
-    int Overlap(int rx, int ry, int rw, int rh) const noexcept {
+    [[nodiscard]] constexpr bool Overlap(int rx, int ry, int rw, int rh) const noexcept {
         return rx < (x + w) && ry < (y + h) && (rx + rw) > x && (ry + rh) > y; }
-    int IsValid() const noexcept {
+    [[nodiscard]] constexpr bool IsValid() const noexcept {
         return (w >= 0) && (h >= 0); }
 
     int Fit(int rx, int ry, int rw, int rh);
-    int Fit(RegionInfo &r) {
+    int Fit(const RegionInfo &r) {
         return Fit(r.x, r.y, r.w, r.h); }
-    int Fit(RegionInfo *r) {
+    int Fit(const RegionInfo *r) {
         return Fit(r->x, r->y, r->w, r->h); }
 
     int Intersect(int rx, int ry, int rw, int rh);
-    int Intersect(RegionInfo &r) {
+    int Intersect(const RegionInfo &r) {
         return Intersect(r.x, r.y, r.w, r.h); }
-    int Intersect(RegionInfo *r) {
+    int Intersect(const RegionInfo *r) {
         return Intersect(r->x, r->y, r->w, r->h); }
 
-    int Left() const noexcept   { return x; }
-    int Top() const noexcept    { return y; }
-    int Right() const noexcept  { return x + w - 1; }
-    int Bottom() const noexcept { return y + h - 1; }
-    int Width() const noexcept  { return w; }
-    int Height() const noexcept { return h; }
+    [[nodiscard]] constexpr int Left() const noexcept   { return x; }
+    [[nodiscard]] constexpr int Top() const noexcept    { return y; }
+    [[nodiscard]] constexpr int Right() const noexcept  { return x + w - 1; }
+    [[nodiscard]] constexpr int Bottom() const noexcept { return y + h - 1; }
+    [[nodiscard]] constexpr int Width() const noexcept  { return w; }
+    [[nodiscard]] constexpr int Height() const noexcept { return h; }
 };
 
 class Price

@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -65,7 +65,7 @@ public:
 
     // Member Functions
     int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    int Write(OutputDataFile &df, [[maybe_unused]] int version);
 };
 
 class DrawerBalance
@@ -84,8 +84,8 @@ public:
     DrawerBalance(int type, int id);
 
     // Member Functions
-    int   Read(InputDataFile &df, int version);
-    int   Write(OutputDataFile &df, int version);
+    int   Read(InputDataFile &df, [[maybe_unused]] int version);
+    int   Write(OutputDataFile &df, [[maybe_unused]] int version);
     genericChar* Description(Settings *s, genericChar* str = NULL);
 };
 
@@ -171,7 +171,7 @@ public:
     Drawer *FindByNumber(int no, int status = DRAWER_OPEN);
     // returns drawer with matching physical position number
 
-    int Balance(int user_id);
+    int Balance([[maybe_unused]] int user_id);
     // mark drawer as balanced
     int Pull(int user_id);
     // mark open drawer as pulled (also creates new empty open drawer)

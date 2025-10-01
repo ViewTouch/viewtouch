@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
 
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -163,14 +163,15 @@ void LoaderDrawStringEnhanced(XftDraw *draw, XftFont *xftfont, XftColor *color,
         XftDrawStringUtf8(draw, color, xftfont, x, y, (const FcChar8*)str, length);
     }
 }
-int          ColorWhite       = 1;
+int ColorWhite = 1;
 
-char Message[1024] = "";
-char KBInput[1024] = "";
+// Modern C++ globals with safer types
+std::array<char, 1024> Message{};
+std::array<char, 1024> KBInput{};
 bool GetInput = false;
 
-int             SocketNo         = 0;
-int             SocketNum        = 0;
+int SocketNo  = 0;
+int SocketNum = 0;
 
 /**** Functions ****/
 void ExitLoader()
@@ -197,24 +198,29 @@ void ExitLoader()
     exit(0);
 }
 
-int UpdateWindow(const char* str = NULL)
+int UpdateWindow(const char* str = nullptr)
 {
     if (str)
-        strcpy(Message, str);
+    {
+        strncpy(Message.data(), str, Message.size() - 1);
+        Message[Message.size() - 1] = '\0';  // Ensure null termination
+    }
 
     XftDrawRect(xftdraw, &xftWhite, 0, 0, WIN_WIDTH, WIN_HEIGHT);
 
-    int len = strlen(Message);
+    const int len = static_cast<int>(strlen(Message.data()));
     if (len > 0)
     {
         int lines = 1;
-        char msg[4096];
+        std::array<char, 4096> msg{};
         int msgidx = 0;
         int idx = 0;
         int ww;
         int hh = 0;
         XGlyphInfo extents;
-        for (idx = 0; idx < len; idx++)
+        
+        // Count lines
+        for (idx = 0; idx < len; ++idx)
         {
             if (Message[idx] == '\\')
                 lines += 1;
@@ -222,21 +228,21 @@ int UpdateWindow(const char* str = NULL)
         idx = 0;
 
         hh = (WIN_HEIGHT - (lines * loaderFont->height)) / 2;
-        while (idx < len && msgidx < 4096)
+        while (idx < len && msgidx < static_cast<int>(msg.size()))
         {
             msgidx = 0;
             while (Message[idx] != '\\' && Message[idx] != '\0' && idx < len)
             {
                 msg[msgidx] = Message[idx];
-                idx += 1;
-                msgidx += 1;
+                ++idx;
+                ++msgidx;
             }
-            idx += 1;
+            ++idx;
             msg[msgidx] = '\0';
-            XftTextExtentsUtf8(Dis, loaderFont, (unsigned const char* )msg, msgidx, &extents);
+            XftTextExtentsUtf8(Dis, loaderFont, reinterpret_cast<const unsigned char*>(msg.data()), msgidx, &extents);
             ww = (WIN_WIDTH - extents.width) / 2;
             LoaderDrawStringEnhanced(xftdraw, loaderFont, &xftBlack, ww, hh,
-                msg, msgidx);
+                msg.data(), msgidx);
             hh += loaderFont->height;
         }
     }
@@ -247,30 +253,31 @@ int UpdateWindow(const char* str = NULL)
 
 int UpdateKeyboard(const char* str = nullptr)
 {
-    genericChar prompt[256] = "Temporary Key:";
+    constexpr const char* prompt = "Temporary Key:";
     XGlyphInfo extents;
-    int len;
 
     if (str)
-        snprintf(KBInput, sizeof(KBInput), "%s_", str);
+    {
+        snprintf(KBInput.data(), KBInput.size(), "%s_", str);
+    }
 
-    // erase first
+    // Erase first
     XftDrawRect(xftdraw, &xftWhite, 1, WIN_HEIGHT - (3 * loaderFont->height),
         WIN_WIDTH - 2, 3 * loaderFont->height);
 
-    len = strlen(prompt);
-    XftTextExtents8(Dis, loaderFont, (unsigned const char* )prompt, len, &extents);
+    int len = static_cast<int>(strlen(prompt));
+    XftTextExtents8(Dis, loaderFont, reinterpret_cast<const unsigned char*>(prompt), len, &extents);
     LoaderDrawStringEnhanced(xftdraw, loaderFont, &xftBlack,
         (WIN_WIDTH - extents.width) / 2,
         WIN_HEIGHT - 2 * loaderFont->height,
         prompt, len);
 
-    len = strlen(KBInput);
-    XftTextExtents8(Dis, loaderFont, (unsigned const char* )KBInput, len, &extents);
+    len = static_cast<int>(strlen(KBInput.data()));
+    XftTextExtents8(Dis, loaderFont, reinterpret_cast<const unsigned char*>(KBInput.data()), len, &extents);
     LoaderDrawStringEnhanced(xftdraw, loaderFont, &xftBlack,
         (WIN_WIDTH - extents.width) / 2,
         WIN_HEIGHT - loaderFont->height,
-        KBInput, len);
+        KBInput.data(), len);
 
     XFlush(Dis);
     return 0;
@@ -290,16 +297,16 @@ void ExposeCB(Widget widget, XtPointer client_data, XEvent *event,
 
 void KeyPressCB(Widget widget, XtPointer client_data, XEvent *event, Boolean *okay)
 {
-    static genericChar buffer[256] = "";
-    static genericChar keybuff[32] = "";
+    static std::array<char, 256> buffer{};
+    static std::array<char, 32> keybuff{};
 
     if (GetInput)
     {
         XKeyEvent *e = (XKeyEvent *) event;
         KeySym key = 0;
-        int bufflen = strlen(buffer);
+        const size_t bufflen = strlen(buffer.data());
 
-        int len = XLookupString(e, keybuff, 31, &key, NULL);
+        int len = XLookupString(e, keybuff.data(), 31, &key, nullptr);
         if (len < 0)
             len = 0;
         keybuff[len] = '\0';
@@ -311,11 +318,11 @@ void KeyPressCB(Widget widget, XtPointer client_data, XEvent *event, Boolean *ok
             if (bufflen < 1)
                 write(SocketNo, "quit", 4);
             else
-                write(SocketNo, buffer, strlen(buffer));
+                write(SocketNo, buffer.data(), strlen(buffer.data()));
             // clear the string for another run
             GetInput = false;
-            memset(buffer, '\0', 256);
-            memset(keybuff, '\0', 32);
+            buffer.fill('\0');
+            keybuff.fill('\0');
             break;
         case XK_BackSpace:
             if (bufflen > 0)
@@ -326,32 +333,32 @@ void KeyPressCB(Widget widget, XtPointer client_data, XEvent *event, Boolean *ok
                 (keybuff[0] >= 'A' && keybuff[0] <= 'F')  ||
                 (keybuff[0] >= 'a' && keybuff[0] <= 'f')) &&
                 // temp key len is actually only 20
-                (strlen(buffer) <= 32))
+                (strlen(buffer.data()) <= 32))
             {
-                keybuff[0] = toupper(keybuff[0]);
-                strcat(buffer, keybuff);
+                keybuff[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(keybuff[0])));
+                strncat(buffer.data(), keybuff.data(), buffer.size() - strlen(buffer.data()) - 1);
             }
             break;
         }
-        UpdateKeyboard(buffer);
+        UpdateKeyboard(buffer.data());
     }
 }
 
 void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
 {
-    static genericChar buffer[256];
-    static genericChar* c = buffer;
+    static std::array<char, 256> buffer{};
+    static char* c = buffer.data();
 
-    int no = read(SocketNo, c, 1);
+    const ssize_t no = read(SocketNo, c, 1);
     if (no == 1)
     {
         if (*c == '\0')
         {
-            c = buffer;
-            if (strcmp(buffer, "done") == 0)
+            c = buffer.data();
+            if (strcmp(buffer.data(), "done") == 0)
                 ExitLoader();
             else
-                UpdateWindow(buffer);
+                UpdateWindow(buffer.data());
         }
         else if (*c == '\r')
         {
@@ -366,40 +373,40 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
 
 int SetupConnection(const std::string &socket_file)
 {
-    struct sockaddr_un server_adr, client_adr;
+    struct sockaddr_un server_adr{}, client_adr{};
     server_adr.sun_family = AF_UNIX;
-    strcpy(server_adr.sun_path, socket_file.c_str());
+    strncpy(server_adr.sun_path, socket_file.c_str(), sizeof(server_adr.sun_path) - 1);
+    server_adr.sun_path[sizeof(server_adr.sun_path) - 1] = '\0';
     unlink(socket_file.c_str());
 
-    std::string str;
-    str.resize(256);
-    int dev = socket(AF_UNIX, SOCK_STREAM, 0);
+    const int dev = socket(AF_UNIX, SOCK_STREAM, 0);
 
     if (dev <= 0)
     {
         logmsg(LOG_ERR, "Failed to open socket '%s'", SOCKET_FILE.c_str());
     }
-    else if (bind(dev, (struct sockaddr *) &server_adr, SUN_LEN(&server_adr)) < 0)
+    else if (bind(dev, reinterpret_cast<struct sockaddr*>(&server_adr), SUN_LEN(&server_adr)) < 0)
     {
         logmsg(LOG_ERR, "Failed to bind socket '%s'", SOCKET_FILE.c_str());
     }
     else
     {
-        unsigned int len;
-
-        str = std::string(VIEWTOUCH_PATH) + "/bin/vt_main " + socket_file + "&";
-        system(str.c_str());
+        const std::string cmd = std::string(VIEWTOUCH_PATH) + "/bin/vt_main " + socket_file + "&";
+        system(cmd.c_str());
         listen(dev, 1);
-        len = sizeof(client_adr);
-        SocketNo = accept(dev, (struct sockaddr *) &client_adr, &len);
+        
+        socklen_t len = sizeof(client_adr);
+        SocketNo = accept(dev, reinterpret_cast<struct sockaddr*>(&client_adr), &len);
         if (SocketNo <= 0)
         {
             logmsg(LOG_ERR, "Failed to start main module");
+            if (dev > 0)
+                close(dev);
             return 0;
         }
     }
 
-    if (dev)
+    if (dev > 0)
         close(dev);
     unlink(SOCKET_FILE.c_str());
 

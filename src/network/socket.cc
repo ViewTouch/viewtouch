@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -44,13 +44,6 @@ int select_timeout = 1;   // in milliseconds
  ********************************************************************/
 
 /****
- * Constructor:
- ****/
-Email::Email()
-{
-}
-
-/****
  * Destructor:
  ****/
 Email::~Email()
@@ -60,16 +53,17 @@ Email::~Email()
 /****
  * AddFrom:
  ****/
-void Email::AddFrom(const char* address)
+void Email::AddFrom(const char* address) noexcept
 {
     FnTrace("Email::AddFrom()");
-    from.Set(address);
+    if (address)
+        from.Set(address);
 }
 
 /****
  * From:  Puts the from address into buffer.
  ****/
-int Email::From(char* buffer, int maxlen) const
+int Email::From(char* buffer, int maxlen) const noexcept
 {
     FnTrace("Email::From()");
     if (!buffer || maxlen <= 0) {
@@ -136,7 +130,7 @@ int Email::NextTo(char* buffer, int maxlen)
 /****
  * AddSubject:
  ****/
-void Email::AddSubject(const char* subjectstr)
+void Email::AddSubject(const char* subjectstr) noexcept
 {
     if (subjectstr) {
         subject = subjectstr;
@@ -146,7 +140,7 @@ void Email::AddSubject(const char* subjectstr)
 /****
  * Subject:
  ****/
-int Email::Subject(char* buffer, int maxlen) const
+int Email::Subject(char* buffer, int maxlen) const noexcept
 {
     if (!buffer || maxlen <= 0) {
         return 1; // invalid parameters

@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 2025
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -23,28 +23,44 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <cstddef>  // for size_t
 
-/**** Types ****/
-typedef char           genericChar;
-typedef unsigned char  Uchar;
-typedef signed char    Schar;
-typedef unsigned short Ushort;
-typedef unsigned int   Uint;
-typedef unsigned long  Ulong;
-typedef double         Flt;
+/**** String Length Constants ****/
+inline constexpr size_t STRSHORT  = 64;
+inline constexpr size_t STRLENGTH = 512;   // constant to set the length of a string
+inline constexpr size_t STRLONG   = 2048;  // 2K string
+
+/**** Type Aliases (Modern C++ using syntax) ****/
+using genericChar = char;
+using Uchar = unsigned char;
+using Schar = signed char;
+using Ushort = unsigned short;
+using Uint = unsigned int;
+using Ulong = unsigned long;
+using Flt = double;
 
 
-/**** Inlined Functions ****/
-template <class type>
-constexpr inline type Max(type a, type b) { return (a > b) ?  (a) : (b); }
+/**** Modern Inline Template Functions ****/
+
 // Returns the higher of both arguments
+template <typename T>
+[[nodiscard]] constexpr inline T Max(T a, T b) noexcept
+{
+    return (a > b) ? a : b;
+}
 
-template <class type>
-constexpr inline type Min(type a, type b) { return (a > b) ?  (b) : (a); }
 // Returns the lower of both arguments
+template <typename T>
+[[nodiscard]] constexpr inline T Min(T a, T b) noexcept
+{
+    return (a > b) ? b : a;
+}
 
-template <class type>
-constexpr inline type Abs(type a)         { return (a < 0) ? (-a) : (a); }
 // Returns the absolute value of the given argument
+template <typename T>
+[[nodiscard]] constexpr inline T Abs(T a) noexcept
+{
+    return (a < 0) ? -a : a;
+}
 
 #endif

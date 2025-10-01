@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -79,7 +79,7 @@ int DrawerPayment::Read(InputDataFile &df, int version)
     return error;
 }
 
-int DrawerPayment::Write(OutputDataFile &df, int version)
+int DrawerPayment::Write(OutputDataFile &df, [[maybe_unused]] int version)
 {
     int error = 0;
     error += df.Write(tender_type);
@@ -116,7 +116,7 @@ DrawerBalance::DrawerBalance(int type, int id)
 }
 
 // Member Functions
-int DrawerBalance::Read(InputDataFile &df, int version)
+int DrawerBalance::Read(InputDataFile &df, [[maybe_unused]] int version)
 {
     int error = 0;
     error += df.Read(tender_type);
@@ -125,7 +125,7 @@ int DrawerBalance::Read(InputDataFile &df, int version)
     return error;
 }
 
-int DrawerBalance::Write(OutputDataFile &df, int version)
+int DrawerBalance::Write(OutputDataFile &df, [[maybe_unused]] int version)
 {
     int error = 0;
     error += df.Write(tender_type);
@@ -1321,7 +1321,7 @@ Drawer *Drawer::FindByOwner(Employee *e, int status)
     return NULL;
 }
 
-int Drawer::Balance(int user_id)
+int Drawer::Balance([[maybe_unused]] int user_id)
 {
     FnTrace("Drawer::Balance(int)");
     if (Status() != DRAWER_PULLED)

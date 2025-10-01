@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -165,7 +165,7 @@ public:
     int UsePassword(Settings *s);
     // does user use passwords?
 
-    int IsTraining(Settings *s = NULL) { return training; }
+    int IsTraining([[maybe_unused]] Settings *s = nullptr) { return training; }
     int CanEnterSystem(Settings *s) { return Security(s) & SECURITY_TABLES; }
     int CanOrder(Settings *s)       { return Security(s) & SECURITY_ORDER; }
     int CanSettle(Settings *s)      { return Security(s) & SECURITY_SETTLE; }

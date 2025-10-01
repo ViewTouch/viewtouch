@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998  
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -264,49 +264,49 @@ public:
 
 class PrinterHTML : public Printer
 {
-    virtual int WriteFlags(int flags);
+    int WriteFlags(int flags) override;
 public:
     PrinterHTML(const genericChar* host, int port, const genericChar* targetstr, int type);
-    virtual int Model() { return MODEL_HTML; }
-    virtual int Start();
-    virtual int End();
-    virtual int Init();
-    virtual int LineFeed(int lines = 1);
-    virtual int NewLine() { return LineFeed(1); }
-    virtual int FormFeed() { return 0; }
-    virtual int MaxWidth() { return 80; }
-    virtual int MaxLines() { return -1; }
-    virtual int Width(int flags = 0) { return 80; }
-    virtual int StopPrint() { return 1; }
-    virtual int OpenDrawer(int drawer) { return 1; }
-    virtual int CutPaper(int partial_only = 0) { return 1; }
+    int Model() override { return MODEL_HTML; }
+    int Start() override;
+    int End() override;
+    int Init() override;
+    int LineFeed(int lines = 1) override;
+    int NewLine() override { return LineFeed(1); }
+    int FormFeed() override { return 0; }
+    int MaxWidth() override { return 80; }
+    int MaxLines() override { return -1; }
+    int Width([[maybe_unused]] int flags = 0) override { return 80; }
+    int StopPrint() override { return 1; }
+    int OpenDrawer([[maybe_unused]] int drawer) override { return 1; }
+    int CutPaper([[maybe_unused]] int partial_only = 0) override { return 1; }
 };
 
 class PrinterPostScript : public Printer
 {
-    virtual int WriteFlags(int flags);
+    int WriteFlags(int flags) override;
     genericChar putbuffer[STRLONG];
     int putbuffidx;
 public:
     PrinterPostScript();
     PrinterPostScript(const genericChar* host, int port, const genericChar* targetstr, int type);
-    virtual int Model() { return MODEL_POSTSCRIPT; }
-    virtual int Start();
-    virtual int End();
-    virtual int Init();
-    virtual int NewLine();
-    virtual int LineFeed(int lines = 1);
-    virtual int FormFeed();
-    virtual int MaxWidth();
-    virtual int MaxLines();
-    virtual int Width(int flags = 0);
-    virtual int StopPrint();
-    virtual int OpenDrawer(int drawer);
-    virtual int CutPaper(int partial_only = 0);
-    virtual int WriteLR(const genericChar* left, const genericChar* right, int flags = 0);
-    virtual int Write(const genericChar* string, int flags);
-    virtual int Put(const genericChar* string, int flags);
-    virtual int Put(genericChar c, int flags);
+    int Model() override { return MODEL_POSTSCRIPT; }
+    int Start() override;
+    int End() override;
+    int Init() override;
+    int NewLine() override;
+    int LineFeed(int lines = 1) override;
+    int FormFeed() override;
+    int MaxWidth() override;
+    int MaxLines() override;
+    int Width(int flags = 0) override;
+    int StopPrint() override;
+    int OpenDrawer(int drawer) override;
+    int CutPaper(int partial_only = 0) override;
+    int WriteLR(const genericChar* left, const genericChar* right, int flags = 0) override;
+    int Write(const genericChar* string, int flags) override;
+    int Put(const genericChar* string, int flags) override;
+    int Put(genericChar c, int flags) override;
 };
 
 class PrinterPDF : public PrinterPostScript
@@ -314,58 +314,58 @@ class PrinterPDF : public PrinterPostScript
 public:
     PrinterPDF();
     PrinterPDF(const genericChar* host, int port, const genericChar* targetstr, int type);
-    virtual int Model() { return MODEL_PDF; }
-    virtual int Close();
+    int Model() override { return MODEL_PDF; }
+    int Close() override;
 };
 
 class PrinterReceiptText : public Printer
 {
-    virtual int WriteFlags(int flags) { return 0; }
+    int WriteFlags([[maybe_unused]] int flags) override { return 0; }
 public:
     PrinterReceiptText();
     PrinterReceiptText(const genericChar* host, int port, const genericChar* targetstr, int type);
-    virtual int Model() { return MODEL_RECEIPT_TEXT; }
-    virtual int Start();
-    virtual int End();
-    virtual int Init();
-    virtual int LineFeed(int lines = 1);
-    virtual int NewLine() { return LineFeed(1); }
-    virtual int FormFeed() { return 0; }
-    virtual int MaxWidth() { return 40; }
-    virtual int MaxLines() { return -1; }
-    virtual int Width(int flags = 0) { return 40; }
-    virtual int StopPrint() { return 1; }
-    virtual int OpenDrawer(int drawer) { return 1; }
-    virtual int CutPaper(int partial_only = 0) { return 1; }
+    int Model() override { return MODEL_RECEIPT_TEXT; }
+    int Start() override;
+    int End() override;
+    int Init() override;
+    int LineFeed(int lines = 1) override;
+    int NewLine() override { return LineFeed(1); }
+    int FormFeed() override { return 0; }
+    int MaxWidth() override { return 40; }
+    int MaxLines() override { return -1; }
+    int Width([[maybe_unused]] int flags = 0) override { return 40; }
+    int StopPrint() override { return 1; }
+    int OpenDrawer([[maybe_unused]] int drawer) override { return 1; }
+    int CutPaper([[maybe_unused]] int partial_only = 0) override { return 1; }
 };
 
 class PrinterReportText : public PrinterReceiptText
 {
 public:
     PrinterReportText(const genericChar* host, int port, const genericChar* targetstr, int type);
-    virtual int Model() { return MODEL_REPORT_TEXT; }
-    virtual int MaxWidth() { return 80; }
-    virtual int Width(int flags = 0) { return 80; }
+    int Model() override { return MODEL_REPORT_TEXT; }
+    int MaxWidth() override { return 80; }
+    int Width([[maybe_unused]] int flags = 0) override { return 80; }
 };
 
 class PrinterQuickBooksCSV : public Printer
 {
-    virtual int WriteFlags(int flags) { return 0; }
+    int WriteFlags([[maybe_unused]] int flags) override { return 0; }
 public:
     PrinterQuickBooksCSV(const genericChar* host, int port, const genericChar* targetstr, int type);
-    virtual int Model() { return MODEL_QUICKBOOKS_CSV; }
-    virtual int Start();
-    virtual int End();
-    virtual int Init();
-    virtual int LineFeed(int lines = 1);
-    virtual int NewLine() { return LineFeed(1); }
-    virtual int FormFeed() { return 0; }
-    virtual int MaxWidth() { return 80; }
-    virtual int MaxLines() { return -1; }
-    virtual int Width(int flags = 0) { return 80; }
-    virtual int StopPrint() { return 1; }
-    virtual int OpenDrawer(int drawer) { return 1; }
-    virtual int CutPaper(int partial_only = 0) { return 1; }
+    int Model() override { return MODEL_QUICKBOOKS_CSV; }
+    int Start() override;
+    int End() override;
+    int Init() override;
+    int LineFeed(int lines = 1) override;
+    int NewLine() override { return LineFeed(1); }
+    int FormFeed() override { return 0; }
+    int MaxWidth() override { return 80; }
+    int MaxLines() override { return -1; }
+    int Width([[maybe_unused]] int flags = 0) override { return 80; }
+    int StopPrint() override { return 1; }
+    int OpenDrawer([[maybe_unused]] int drawer) override { return 1; }
+    int CutPaper([[maybe_unused]] int partial_only = 0) override { return 1; }
     
     // QuickBooks CSV specific methods
     int WriteCSVHeader();
