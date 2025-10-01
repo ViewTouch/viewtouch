@@ -1,75 +1,230 @@
+<div align="center">
+
 # ViewTouch©
 
+**The Original Graphical Touchscreen Restaurant Point of Sale Interface**
+
 [![Build Status](https://img.shields.io/travis/ViewTouch/viewtouch/master.svg?label=Travis)](https://travis-ci.org/ViewTouch/viewtouch/builds)
-
+[![Discord](https://img.shields.io/discord/YOUR_SERVER_ID?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.com/invite/ySmH2U2Mzb)
 [![Join the chat at https://gitter.im/ViewTouch/viewtouch](https://badges.gitter.im/ViewTouch/viewtouch.svg)](https://gitter.im/ViewTouch/viewtouch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-ViewTouch is a registered trademark in the USA.
+*ViewTouch is a registered trademark in the USA*
 
-## History
+[Website](http://www.viewtouch.com) • [Wiki & Documentation](../../wiki) • [Download Image](http://www.viewtouch.com/nc.html)
 
-ViewTouch© is the ORIGINAL Graphical Touchscreen Restaurant Point of Sale Interface, first created by restaurateur Gene Mosher and C programmer, Nick Colley, in 1986. Initial funding of code development beginning in 1986 was due to the financial support of Ed Ramsay. Barbara Mosher has been a financial supporter since 1986 and continuing into present day. ViewTouch was first demonstrated to the public at ComDex, Las Vegas, in November, 1986. https://commons.wikimedia.org/wiki/File:Comdex_1986.png Early funding was due, in part, by the generosity of John King, M.D., Chicago. The current version of ViewTouch was first created in 1995-98 by Gene Mosher and C Programmer, Richard Bradley. Major funding of the development of the code during the '95-'98 period is due to the courageous and very much appreciated efforts of Billy Foster. Extensive enhancement of the code was carried out from 2000-04 by Bruce King. Major funding of the development of the code during the '00-'04 period is due to the efforts of Doug DeLeeuw. Since the arrival of ViewTouch under the GNU Public License in 2014 ViewTouch code has been available at GitHub and a great deal of refinement and modernization of the code has taken place. Special thanks to Jack Morrison for amazing debugging skills, to NeroBurner (Reinhold Gschweicher) for major refactoring and standardization, and to NoOne558 (Ariel Brambila Pelayo) for upgrading the ViewTouch point of sale window manager's reliance upon X core fonts to Xft scalble fonts. Gene and Barbara Mosher have provided lifetime support and funding for ViewTouch from its inception. Gene owns the ViewTouch copyright. Gene began writing Point of Sale Code on an Apple ][ in 1979; his passion and vision has overseen the development, management and maintainance of the code on a wide array of computers and point of sale equipment across six decades.
+</div>
 
-## Contact
+---
 
-With the availability of ViewTouch source code under the GPL and the arrival of the Raspberry Pi Foundation's computers a restaurateur can automate one's own restaurant. ViewTouch makes available all-in-one Point of Sale computers with a 15.8" touchscreen and Raspberry Pi 5 Compute Module, made by Chipsee, in Beijing, China. Thanks to the efforts of Pelya (Sergii Pylypenko) and Ariel Brambila Pelayo it is possible for hospitality staff to use mobile Android devices as wireless tableside order entry devices.
+## Table of Contents
 
-The availability of ViewTouch source code and documentation at GitHub benefits the clients, customers and associates of Gene Mosher, facilitating the enhancement and extention of ViewTouch source code.
+- [About](#about)
+- [Quick Start](#quick-start)
+- [Hardware](#hardware)
+- [Screenshots](#screenshots)
+- [History](#history)
+- [Contact & Support](#contact--support)
+- [License](#license)
 
-_An important link at the top of this page is the Wiki link. It contains a page with build instructions and an 'Announcements' page with the latest news._
+---
 
-## License
+## About
 
-ViewTouch is released under the GNU Public License, version 3.
+ViewTouch is a powerful, open-source Point of Sale system designed specifically for the restaurant and hospitality industry. With over four decades of development, it combines the reliability of Linux with the flexibility of the X Window System to deliver a robust, network-transparent POS solution.
 
-## The ViewTouch Point of Sale Computer, Commercial Support and Enquiries
+### Key Features
+
+- **Lightning-fast performance** - Entire transaction history kept in RAM for instant reporting
+- **Network transparency** - Remote display capability via X Window System
+- **Comprehensive reporting** - Real-time drill-down analytics and decision support
+- **Labor management** - Interactive time clock with overtime alerts and cost control
+- **Cross-platform** - Runs on Raspberry Pi 4/5, x86, and ARM architectures
+- **Mobile integration** - Android tableside order entry support
+- **Multilingual support** - Built-in language pack system
+
+> **Note:** For build instructions and the latest announcements, visit the [Wiki](../../wiki).
+
+---
+
+## Quick Start
+
+### Download Pre-built Image
+
+[Download the latest ViewTouch image](http://www.viewtouch.com/nc.html) for Raspberry Pi (4 or 5). Write the image to a 32GB or larger microSD card, and boot directly to the ViewTouch desktop with full POS functionality.
+
+### Build from Source
+
+See the [Wiki](../../wiki) for detailed build instructions and development setup.
+
+---
+
+## Hardware
+
+### Official ViewTouch Point of Sale Computer
+
+<div align="center">
 
 ![ViewTouch Point of Sale Computer with 15.8" Display](https://www.viewtouch.com/poscomputer.avif)
 
-The ViewTouch website and contact point is http://www.viewtouch.com Email: gene@viewtouch.com Phone: 541-515-5913.
+**15.8" All-in-One Touchscreen POS Computer**  
+Powered by Raspberry Pi Compute Module 5  
+Manufactured by Chipsee, Beijing, China
 
-Shown here and on the ViewTouch home page, the ViewTouch all-in-one touchscreen PoS computer powered by the Raspberry Pi Compute Module 5, manufactured by Chipsee, Bejing, China.
+</div>
 
-## ViewTouch microSD image
+ViewTouch offers all-in-one Point of Sale computers featuring:
+- 15.8" capacitive touchscreen display (1920×1080 default resolution)
+- Raspberry Pi 5 Compute Module
+- Pre-installed ViewTouch software
+- Network-ready for multi-terminal setups
 
-[The latest ViewTouch image for the Raspberry Pi](http://www.viewtouch.com/nc.html) can be downloaded, decompressed and copied to a 32Gb or larger microSD card. The image boots to the ViewTouch desktop, offers desktop support features for ViewTouch Point of Sale, and runs on Raspberry Pi computers 4 and 5.
+With open-source code and Raspberry Pi hardware, restaurateurs can now fully automate their operations with complete control over their POS system.
+
+### Mobile Support
+
+Thanks to the efforts of Pelya (Sergii Pylypenko) and Ariel Brambila Pelayo, ViewTouch supports mobile Android devices as wireless tableside order entry terminals.
+
+---
 
 ## Screenshots
 
-These screenshots are in 1280 x 1024 resolution, however, default graphical resolution is 1920 x 1080.
+> *Screenshots shown in 1280×1024 resolution. Default resolution is 1920×1080.*
 
 ### Time Clock and Secure Log On
 
 ![Touchscreen Password, Log On and Timeclock](http://www.viewtouch.com/vtscrn1.png)
 
-### Order Breakfast, then Display and/or Print in Kitchen
-A Lightning Fast, High Resolution Interface
+---
+
+### Order Entry - Lightning Fast Interface
+
+**Order Breakfast, then Display and/or Print in Kitchen**
 
 ![Order Breakfast, then Display and/or Print in Kitchen](http://www.viewtouch.com/vtscrn6.png)
 
-### Time Clock Review and Edit - Control Labor Expense
-Back Office, Comprehensive Labor Costing, Overtime Alerts
-Interactive Time Clock Review and Editing
+---
+
+### Labor Management
+
+**Time Clock Review and Edit - Control Labor Expense**  
+Back Office, Comprehensive Labor Costing, Overtime Alerts, Interactive Time Clock Review and Editing
 
 ![Time Clock Review and Edit - Control Labor Expense](http://www.viewtouch.com/vtscrn3.png)
 
-### Decision Support: Fly-Over, Drill-Down in Real Time
+---
+
+### Real-time Analytics
+
+**Decision Support: Fly-Over, Drill-Down in Real Time**  
 Touch 'n' View Any Day or Any Period Updated Every Minute
 
 ![Decision Support: Fly-Over, Drill-Down in Real Time](http://www.viewtouch.com/vtscrn5.png)
 
-ViewTouch doesn't just store all of your data for you - it keeps your entire transaction history in RAM. Rely on ViewTouch for the report data you need with perfect accuracy and lightning speed. Auditors can see compliance across every period. Control NON CASH revenue adjustments and labor costs, including non-intuitive details, Shift By Shift, Weekly, Monthly, Quarterly and Yearly.
+ViewTouch doesn't just store your data—it keeps your entire transaction history in RAM for perfect accuracy and lightning speed. Auditors can see compliance across every period. Control non-cash revenue adjustments and labor costs, including non-intuitive details, shift by shift, weekly, monthly, quarterly, and yearly.
 
-## More Viewtouch POS (Point of Sale) History
+---
 
-ViewTouch first ran as a C program on the Atari ST computers in 1986. The Atari ST was a very exciting platform under Jack Tramiel from 1985 until 1993/4. In 1995 development of ViewTouch under UNIX (AIX) was initiated. MIT's X Window System was chosen to build the ViewTouch network transparent graphical interface. This decision which was made for ViewTouch in early 1995.
+## History
 
-In 1997 a decision was made to move from AIX on the Motorola PowerPC to Linux on the Intel X86. In 2000 a transition from C to C++ took place. ViewTouch remains on Debian as the default distribution and features the XFCE desktop.
+### Origins (1979-1986)
 
-Since 2016 the default hardware platform for Viewtouch is the family of Raspberry Pi computers. ViewTouch production POS computers provide a desktop icon which compiles and installs the latest version of the code from GitHub.
+Gene Mosher began writing Point of Sale code on an Apple ][ in 1979. ViewTouch© as we know it today was first created by restaurateur Gene Mosher and C programmer Nick Colley in **1986**, making it the **ORIGINAL Graphical Touchscreen Restaurant Point of Sale Interface**.
 
-ViewTouch Point of Sale isn't just about the advantage of the power of Linux; it's also about the advantages of the remote display capability of The X Window System. Just add the IP address of remote displays to the ViewTouch page 'View & Manage Displays & Printers'.
+**First Public Demonstration:** ComDex, Las Vegas, November 1986  
+[See historical photo](https://commons.wikimedia.org/wiki/File:Comdex_1986.png)
 
-## Payment gateway/processors
+**Early Platform:** Atari ST computers (1986-1993/4 under Jack Tramiel)
+
+**Initial Funding & Support:**
+- Ed Ramsay (1986 - code development funding)
+- Barbara Mosher (1986 - present, ongoing financial support)
+- John King, M.D., Chicago (early funding)
+
+### Modern Era (1995-1998)
+
+The current version of ViewTouch was created by Gene Mosher and C programmer Richard Bradley, transitioning to:
+- **UNIX (AIX)** on Motorola PowerPC (1995)
+- **MIT's X Window System** for network-transparent graphical interface (1995)
+- **Linux on Intel x86** (1997)
+
+**Major Funding:** Billy Foster (1995-1998)
+
+### Enhancement Period (2000-2004)
+
+- **C to C++ transition** (2000)
+- Extensive code enhancement by Bruce King
+- **Major Funding:** Doug DeLeeuw
+
+### Open Source Era (2014-Present)
+
+ViewTouch released under GNU Public License (GPL v3) with code hosted on GitHub. Significant modernization and refinement by the open-source community:
+
+**Key Contributors:**
+- **Jack Morrison** - Amazing debugging skills
+- **NeroBurner (Reinhold Gschweicher)** - Major refactoring and standardization
+- **NoOne558 (Ariel Brambila Pelayo)** - Upgraded to Xft scalable fonts, mobile integration
+- **Gene and Barbara Mosher** - Lifetime support and funding
+
+### Platform Evolution
+
+| Year | Platform | Key Technology |
+|------|----------|----------------|
+| 1979 | Apple ][ | Initial POS code |
+| 1986 | Atari ST | First GUI touchscreen POS |
+| 1995 | AIX/PowerPC | UNIX + X Window System |
+| 1997 | Linux/x86 | Intel architecture |
+| 2000 | Linux/x86 | C++ transition |
+| 2016+ | Raspberry Pi | Default platform (Pi 4/5) |
+
+**Current Stack:**
+- **OS:** Debian Linux with XFCE desktop
+- **Display:** X Window System (network-transparent)
+- **Default Hardware:** Raspberry Pi family
+- **Auto-update:** Desktop icon compiles and installs latest code from GitHub
+
+Gene Mosher's passion and vision has overseen the development, management, and maintenance of ViewTouch code across six decades, spanning a wide array of computers and point of sale equipment. Gene owns the ViewTouch copyright.
+
+---
+
+## Contact & Support
+
+### Commercial Support
+
+**ViewTouch Official**
+- **Website:** [www.viewtouch.com](http://www.viewtouch.com)
+- **Email:** gene@viewtouch.com
+- **Phone:** 541-515-5913
+
+### Community
+
+- **Discord:** [Join our server](https://discord.com/invite/ySmH2U2Mzb)
+- **GitHub Issues:** Bug reports and feature requests
+- **Gitter Chat:** [Join the conversation](https://gitter.im/ViewTouch/viewtouch)
+- **Wiki:** Documentation and guides
+
+The availability of ViewTouch source code and documentation at GitHub benefits clients, customers, and associates of Gene Mosher, facilitating the enhancement and extension of ViewTouch source code.
+
+---
+
+## License
+
+ViewTouch is released under the **GNU General Public License, version 3 (GPL v3)**.
+
+See [LICENSE](LICENSE) for full details.
+
+---
+
+## Payment Processing
 
 ViewTouch does not manage electronic payment processing. Please make your own decisions with regard to Electronic Funds Transfer functionality.
+
+---
+
+<div align="center">
+
+**ViewTouch** - *Six decades of innovation in restaurant technology*
+
+Made with ❤️ by the ViewTouch community
+
+</div>
