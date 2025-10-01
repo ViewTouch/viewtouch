@@ -1,120 +1,66 @@
 #include "version/vt_version_info.hh"
 #include "version_generated.hh"
 
-// load versions from header files
-//#include <boost/version.hpp>
-//#include <suitesparse/SuiteSparse_config.h>
-//#include <ceres/version.h>
-//#include <Eigen/Core>
-
 #include <sstream>
+#include <string_view>
 
 using namespace viewtouch;
 
 namespace
 {
-
-std::string get_library_string()
-{
-    return std::string(PROJECT);
-}
-
-std::string get_version_string()
-{
-    std::ostringstream msg;
-    msg << VERSION_FULL
-        << " (";
-    if (std::string(REVISION) != "")
+    // Build version string at compile-time initialization
+    std::string build_version_string() noexcept
     {
-        msg << REVISION << ", ";
+        std::ostringstream msg;
+        msg << VERSION_FULL << " (";
+        
+        if (std::string_view(REVISION).empty() == false)
+        {
+            msg << REVISION << ", ";
+        }
+        
+        msg << COMPILER_TAG << ", " << CMAKE_TIMESTAMP << ")";
+        return msg.str();
     }
-    msg << COMPILER_TAG << ", "
-        << CMAKE_TIMESTAMP
-        << ")";
 
-    return msg.str();
-}
+} // anonymous namespace
 
-//std::string get_boost_version()
-//{
-//    std::ostringstream msg;
-//    msg << "Built with Boost "
-//        << BOOST_VERSION / 100000 << "."     //major version
-//        << BOOST_VERSION / 100 % 1000 << "." //minor version
-//        << BOOST_VERSION % 100 << ".";       //patch level
-//    return msg.str();
-//}
-//
-//std::string get_suitesparse_version()
-//{
-//    std::ostringstream msg;
-//    msg << "Built with SuiteSparse "
-//        << SUITESPARSE_MAIN_VERSION << "."
-//        << SUITESPARSE_SUB_VERSION << "."
-//        << SUITESPARSE_SUBSUB_VERSION << ".";
-//    return msg.str();
-//}
-//
-//std::string get_ceres_version()
-//{
-//    std::ostringstream msg;
-//    msg << "Built with Ceres "
-//        << CERES_VERSION_STRING << ".";
-//    return msg.str();
-//}
-//
-//std::string get_eigen_version()
-//{
-//    std::ostringstream msg;
-//    msg << "Built with Eigen " <<
-//           EIGEN_WORLD_VERSION << "." <<
-//           EIGEN_MAJOR_VERSION << "." <<
-//           EIGEN_MINOR_VERSION << ". ";
-//    msg << "Eigen uses "
-//#ifndef EIGEN_VECTORIZE
-//        << "no vectorization.";
-//#else
-//        << Eigen::SimdInstructionSetsInUse() << ".";
-//#endif //EIGEN_VECTORIZE
-//    return msg.str();
-//}
-
-} // loacl namespace
-
-
-std::string viewtouch::get_project_name()
+namespace viewtouch
 {
-    static const std::string library_name = get_library_string();
-    return library_name;
-}
+    const std::string& get_project_name() noexcept
+    {
+        static const std::string library_name{PROJECT};
+        return library_name;
+    }
 
-std::string viewtouch::get_version_short()
-{
-    return viewtouch::VERSION;
-}
-std::string viewtouch::get_version_extended()
-{
-    return viewtouch::VERSION_EXT;
-}
-std::string viewtouch::get_version_long()
-{
-    return viewtouch::VERSION_FULL;
-}
+    const std::string& get_version_short() noexcept
+    {
+        static const std::string version{VERSION};
+        return version;
+    }
 
-std::string viewtouch::get_version_info()
-{
-    static const std::string version_info = get_version_string() + "\n"
-            //"- " + get_boost_version() + "\n"
-            //"- " + get_suitesparse_version() + "\n"
-            //"- " + get_ceres_version() + "\n"
-            //"- " + get_eigen_version()
-            ;
+    const std::string& get_version_extended() noexcept
+    {
+        static const std::string version_ext{VERSION_EXT};
+        return version_ext;
+    }
 
-    return version_info;
-}
+    const std::string& get_version_long() noexcept
+    {
+        static const std::string version_full{VERSION_FULL};
+        return version_full;
+    }
 
-std::string viewtouch::get_version_timestamp()
-{
-    static const std::string version_ts = CMAKE_TIMESTAMP;
-    return version_ts;
-}
+    const std::string& get_version_info() noexcept
+    {
+        static const std::string version_info = build_version_string() + "\n";
+        return version_info;
+    }
+
+    const std::string& get_version_timestamp() noexcept
+    {
+        static const std::string timestamp{CMAKE_TIMESTAMP};
+        return timestamp;
+    }
+
+} // namespace viewtouch

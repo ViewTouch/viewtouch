@@ -25,50 +25,79 @@
 #include <utility>
 
 /**** Types ****/
-template <class type>
+template <typename T>
 class SList
 {
-    type *list_head, *list_tail;
+    T *list_head{nullptr};
+    T *list_tail{nullptr};
 
 public:
     // Constructors
-    SList()           { list_head = NULL; list_tail = NULL; }
-    SList(type *item) { list_head = item; list_tail = item; }
+    SList() = default;
+    explicit SList(T *item) : list_head(item), list_tail(item) {}
+    
+    // Delete copy operations (use move instead)
+    SList(const SList&) = delete;
+    SList& operator=(const SList&) = delete;
+    
+    // Move operations
+    SList(SList&& other) noexcept 
+        : list_head(other.list_head)
+        , list_tail(other.list_tail)
+    {
+        other.list_head = nullptr;
+        other.list_tail = nullptr;
+    }
+    
+    SList& operator=(SList&& other) noexcept
+    {
+        if (this != &other)
+        {
+            Purge();
+            list_head = other.list_head;
+            list_tail = other.list_tail;
+            other.list_head = nullptr;
+            other.list_tail = nullptr;
+        }
+        return *this;
+    }
 
     // Destructor
     ~SList() { Purge(); }
 
     // Member Functions
-    type *Head() { return list_head; }
-    type *Tail() { return list_tail; }
+    [[nodiscard]] T *Head() noexcept { return list_head; }
+    [[nodiscard]] T *Tail() noexcept { return list_tail; }
+    [[nodiscard]] const T *Head() const noexcept { return list_head; }
+    [[nodiscard]] const T *Tail() const noexcept { return list_tail; }
 
-    int IsEmpty()
+    [[nodiscard]] bool IsEmpty() const noexcept
     {
-        return (list_head == NULL);
+        return (list_head == nullptr);
     }
 
-    int AddToHead(type *item)
+    int AddToHead(T *item) noexcept
     {
         FnTrace("SList::AddToHead()");
-        if (item == NULL)
+        if (item == nullptr)
             return 1;
 
         item->next = list_head;
 
-        if (list_tail == NULL)
+        if (list_tail == nullptr)
             list_tail = item;
 
         list_head = item;
         return 0;
     }
 
-    int AddToTail(type *item)
+    int AddToTail(T *item) noexcept
     {
         FnTrace("SList::AddToTail()");
-        if (item == NULL)
+        if (item == nullptr)
             return 1;
 
-        item->next = NULL;
+        item->next = nullptr;
 
         if (list_tail)
             list_tail->next = item;
@@ -78,10 +107,10 @@ public:
         return 0;
     }
 
-    int AddAfterNode(type *node, type *item)
+    int AddAfterNode(T *node, T *item) noexcept
     {
         FnTrace("SList::AddAfterNode()");
-        if (node == NULL)
+        if (node == nullptr)
             return AddToHead(item);
         if (node == list_tail)
             return AddToTail(item);
@@ -91,24 +120,24 @@ public:
         return 0;
     }
 
-    void Purge()
+    void Purge() noexcept
     {
         FnTrace("SList::Purge()");
         while (list_head)
         {
-            type *tmp = list_head;
+            T *tmp = list_head;
             list_head = list_head->next;
             delete tmp;
         }
-        list_tail = NULL;
+        list_tail = nullptr;
     }
 
-    int Remove(type *node)
+    int Remove(T *node) noexcept
     {
         FnTrace("SList::Remove()");
-        if (node == NULL)
+        if (node == nullptr)
             return 1;
-        for (type *n = list_head, *p = NULL; n != NULL; p = n, n = n->next)
+        for (T *n = list_head, *p = nullptr; n != nullptr; p = n, n = n->next)
             if (node == n)
             {
                 if (p)
@@ -117,57 +146,59 @@ public:
                     list_head = node->next;
                 if (list_tail == node)
                     list_tail = p;
-                node->next = NULL;
+                node->next = nullptr;
                 return 0;
             }
         return 1;
     }
 
-    int Count()
+    [[nodiscard]] int Count() const noexcept
     {
         FnTrace("SList::Count()");
         int count = 0;
-        for (type *n = list_head; n != NULL; n = n->next)
+        for (T *n = list_head; n != nullptr; n = n->next)
             ++count;
         return count;
     }
 
-    type *Index(int i)
+    [[nodiscard]] T *Index(int i) noexcept
     {
         FnTrace("SList::Index()");
         if (i < 0)
-            return NULL;
+            return nullptr;
 
-        type *n = list_head;
-        while (n != NULL && i > 0)
+        T *n = list_head;
+        while (n != nullptr && i > 0)
             --i, n = n->next;
         return n;
     }
 
     // Operators
-    type *operator[](int i) { return Index(i); }
+    [[nodiscard]] T *operator[](int i) noexcept { return Index(i); }
 };
 
-template <class type>
+template <typename T>
 class DList
 {
-    type *list_head, *list_tail;
-    type *InternalSort(type *list, int (*cmp)(type *, type *))
+    T *list_head{nullptr};
+    T *list_tail{nullptr};
+    
+    T *InternalSort(T *list, int (*cmp)(T *, T *)) noexcept
     {
         FnTrace("DList::InternalSort()");
-        type *p, *q, *e, *tail;
+        T *p, *q, *e, *tail;
         int insize, nmerges, psize, qsize, i;
         
-        if (list == NULL)
-            return NULL;
+        if (list == nullptr)
+            return nullptr;
 
         insize = 1;
         
-        while (1)
+        while (true)
         {
             p = list;
-            list = NULL;
-            tail = NULL;
+            list = nullptr;
+            tail = nullptr;
             
             nmerges = 0;  /* count number of merges we do in this pass */
             
@@ -181,7 +212,7 @@ class DList
                 {
                     psize++;
                     q = q->next;
-                    if (!q)
+                    if (q == nullptr)
                         break;
                 }
                 
@@ -197,7 +228,7 @@ class DList
                         /* p is empty; e must come from q. */
                         e = q; q = q->next; qsize--;
                     }
-                    else if (qsize == 0 || !q)
+                    else if (qsize == 0 || q == nullptr)
                     {
                         /* q is empty; e must come from p. */
                         e = p; p = p->next; psize--;
@@ -227,7 +258,7 @@ class DList
                 /* now p has stepped `insize' places along, and q has too */
                 p = q;
             }
-            tail->next = NULL;
+            tail->next = nullptr;
             
             /* If we have done only one merge, we're finished. */
             if (nmerges <= 1)   /* allow for nmerges==0, the empty list case */
@@ -240,15 +271,22 @@ class DList
     
 public:
     // Constructors
-    DList()           { list_head = NULL; list_tail = NULL; }
-    DList(type *item) { list_head = item; list_tail = item; }
+    DList() = default;
+    explicit DList(T *item) : list_head(item), list_tail(item) {}
+    
+    // Delete copy operations
     DList(const DList&) = delete;
     DList& operator=(const DList&) = delete;
-    DList(DList&& other) noexcept : list_head(other.list_head), list_tail(other.list_tail)
+    
+    // Move operations
+    DList(DList&& other) noexcept 
+        : list_head(other.list_head)
+        , list_tail(other.list_tail)
     {
-        other.list_head = NULL;
-        other.list_tail = NULL;
+        other.list_head = nullptr;
+        other.list_tail = nullptr;
     }
+    
     DList& operator=(DList&& other) noexcept
     {
         if (this != &other)
@@ -256,8 +294,8 @@ public:
             Purge();
             list_head = other.list_head;
             list_tail = other.list_tail;
-            other.list_head = NULL;
-            other.list_tail = NULL;
+            other.list_head = nullptr;
+            other.list_tail = nullptr;
         }
         return *this;
     }
@@ -270,21 +308,23 @@ public:
     }
 
     // Member Functions
-    type *Head() { return list_head; }
-    type *Tail() { return list_tail; }
+    [[nodiscard]] T *Head() noexcept { return list_head; }
+    [[nodiscard]] T *Tail() noexcept { return list_tail; }
+    [[nodiscard]] const T *Head() const noexcept { return list_head; }
+    [[nodiscard]] const T *Tail() const noexcept { return list_tail; }
 
-    int IsEmpty()
+    [[nodiscard]] bool IsEmpty() const noexcept
     {
-        return (list_head == NULL);
+        return (list_head == nullptr);
     }
 
-    int AddToHead(type *item)
+    int AddToHead(T *item) noexcept
     {
         FnTrace("DList::AddToHead()");
-        if (item == NULL)
+        if (item == nullptr)
             return 1;
 
-        item->fore = NULL;
+        item->fore = nullptr;
         item->next = list_head;
         if (list_head)
             list_head->fore = item;
@@ -294,14 +334,14 @@ public:
         return 0;
     }
 
-    int AddToTail(type *item)
+    int AddToTail(T *item) noexcept
     {
         FnTrace("DList::AddToTail()");
-        if (item == NULL)
+        if (item == nullptr)
             return 1;
 
         item->fore = list_tail;
-        item->next = NULL;
+        item->next = nullptr;
         if (list_tail)
             list_tail->next = item;
         else
@@ -310,10 +350,10 @@ public:
         return 0;
     }
 
-    int AddAfterNode(type *node, type *item)
+    int AddAfterNode(T *node, T *item) noexcept
     {
         FnTrace("DList::AddAfterNode()");
-        if (node == NULL)
+        if (node == nullptr)
             return AddToHead(item);
         if (node == list_tail)
             return AddToTail(item);
@@ -325,10 +365,10 @@ public:
         return 0;
     }
 
-    int AddBeforeNode(type *node, type *item)
+    int AddBeforeNode(T *node, T *item) noexcept
     {
         FnTrace("DList::AddBeforeNode()");
-        if (node == NULL)
+        if (node == nullptr)
             return AddToTail(item);
         if (node == list_head)
             return AddToHead(item);
@@ -340,30 +380,28 @@ public:
         return 0;
     }
 
-    int Exists(type *item, int (*cmp)(type *, type*))
+    [[nodiscard]] bool Exists(T *item, int (*cmp)(T *, T*)) noexcept
     {
         FnTrace("DList::Exists()");
-        if (item == NULL)
-            return 1;
+        if (item == nullptr)
+            return false;
 
-        type *curr = list_head;
-        int found = 0;
+        T *curr = list_head;
 
-        while (curr != NULL && found == 0)
+        while (curr != nullptr)
         {
             if (cmp(item, curr) == 0)
-                found = 1;
-            else
-                curr = curr->next;
+                return true;
+            curr = curr->next;
         }
 
-        return found;
+        return false;
     }
 
-    int Remove(type *item)
+    int Remove(T *item) noexcept
     {
         FnTrace("DList::Remove()");
-        if (item == NULL)
+        if (item == nullptr)
             return 1;
 
         if (list_head == item)
@@ -374,52 +412,52 @@ public:
             item->next->fore = item->fore;
         if (item->fore)
             item->fore->next = item->next;
-        item->fore = NULL;
-        item->next = NULL;
+        item->fore = nullptr;
+        item->next = nullptr;
         return 0;
     }
 
-    int RemoveSafe(type *node)
+    int RemoveSafe(T *node) noexcept
     {
         FnTrace("DList::RemoveSafe()");
-        if (node == NULL)
+        if (node == nullptr)
             return 1;
-        for (type *n = list_head; n != NULL; n = n->next)
+        for (T *n = list_head; n != nullptr; n = n->next)
             if (n == node)
                 return Remove(node);
         return 1;
     }
 
-    void Purge()
+    void Purge() noexcept
     {
         FnTrace("DList::Purge()");
 
         while (list_head)
         {
-            type *tmp = list_head;
+            T *tmp = list_head;
             list_head = list_head->next;
             delete tmp;
         }
-        list_tail = NULL;
+        list_tail = nullptr;
     }
 
-    int Count() const
+    [[nodiscard]] int Count() const noexcept
     {
         FnTrace("DList::Count()");
         int count = 0;
-        for (type *n = list_head; n != NULL; n = n->next)
+        for (T *n = list_head; n != nullptr; n = n->next)
             ++count;
         return count;
     }
 
-    type *Index(int i)
+    [[nodiscard]] T *Index(int i) noexcept
     {
         FnTrace("DList::Index()");
         if (i < 0)
-            return NULL;
+            return nullptr;
 
-        type *n = list_head;
-        while (n != NULL && i > 0)
+        T *n = list_head;
+        while (n != nullptr && i > 0)
         {
             --i;
             n = n->next;
@@ -427,21 +465,21 @@ public:
         return n;
     }
 
-    int Sort(int (*cmp)(type *, type *))
+    int Sort(int (*cmp)(T *, T *)) noexcept
     {
         FnTrace("DList::Sort()");
         list_head = InternalSort(list_head, cmp);
         list_tail = list_head;
-        if (list_tail != NULL)
+        if (list_tail != nullptr)
         {
-            while (list_tail->next != NULL)
+            while (list_tail->next != nullptr)
                 list_tail = list_tail->next;
         }
         return 0;
     }
 
     // Operators
-    type *operator[](int i) { return Index(i); }
+    [[nodiscard]] T *operator[](int i) noexcept { return Index(i); }
 };
 
 #endif

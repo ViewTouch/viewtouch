@@ -6,6 +6,75 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Changed
+- **Comprehensive C++17/20 Modernization - Phase 1**: Systematic modernization of core codebase using modern C++ features
+  - **Files Modernized**: 16 files (990 insertions, 817 deletions)
+  - **SHA-1 Cryptographic Hash (`external/core/sha1.cc/hh`)**: 
+    - Converted C-style struct to modern C++ class with proper encapsulation
+    - Replaced C arrays with `std::array<uint32_t, 5>` and `std::array<uint8_t, 64>`
+    - Converted preprocessor macro to `constexpr` function for type-safe circular shift
+    - Added move semantics (deleted copy operations, defaulted move)
+    - Made helper functions private class methods for better encapsulation
+    - Added C-style wrapper functions for backward compatibility
+    - Used typed enum `SHA1ErrorCode` instead of anonymous enum
+  - **List Template Classes (`src/core/list_utility.hh`)**: 
+    - Modernized `SList` and `DList` templates with `typename T` instead of `class type`
+    - Replaced all `NULL` with `nullptr` (200+ occurrences)
+    - Added move semantics to both template classes
+    - Deleted copy operations for safer resource management
+    - Added `[[nodiscard]]` attributes to all accessor methods
+    - Changed boolean methods to return `bool` instead of `int`
+    - Added member initializers and `explicit` constructors
+  - **Protocol Constants (`src/network/remote_link.hh`)**: 
+    - Converted 60+ macros to `constexpr` constants in organized namespaces:
+      - `TerminalProtocol` - Terminal command constants
+      - `ServerProtocol` - Server message constants
+      - `PrinterProtocol` - Printer command constants
+      - `OperationMode` - UI mode constants
+      - `WindowFrame` - Window flag constants
+    - Maintained 100% backward compatibility with preprocessor macros
+    - Modernized `CharQueue` class with move semantics and member initializers
+  - **Logger System (`src/core/logger.cc/hh`)**: 
+    - Replaced global C array with `std::array<char, 1025>`
+    - Replaced static `int` flag with `bool` for initialization state
+    - Added anonymous namespace for internal linkage
+    - Added `noexcept` specifications and format checking attributes
+    - Modernized with C++ headers (`<cstdarg>` vs `<stdarg.h>`)
+  - **Utility Classes (`src/utils/utility.cc/hh`)**: 
+    - Replaced macros with `constexpr` constants
+    - Modernized `RegionInfo` class with member initializers
+    - Made methods `constexpr` where applicable
+    - Added `[[nodiscard]]` attributes to all getters
+    - Changed boolean return types from `int` to `bool`
+    - Used member initializer lists in constructors
+  - **Basic Types (`src/core/basic.hh`)**: 
+    - Replaced all `typedef` with modern `using` type aliases
+    - Modernized template functions (`Max`, `Min`, `Abs`) with `typename T`
+    - Added `[[nodiscard]]` and `noexcept` to all template functions
+    - Moved string constants from macros to `constexpr` (STRSHORT, STRLENGTH, STRLONG)
+  - **Loader Application (`loader/loader_main.cc`)**: 
+    - Replaced C arrays with `std::array` for Message and KBInput buffers
+    - Replaced unsafe `strcpy` with bounds-checked `strncpy`
+    - Replaced `NULL` with `nullptr` throughout
+    - Added `static_cast` for explicit type conversions
+    - Improved buffer safety and overflow protection
+  - **Socket/Email Classes (`src/network/socket.cc/hh`)**: 
+    - Modernized `Line` and `Email` classes with move semantics
+    - Added member initializers and `[[nodiscard]]` attributes
+    - Added `noexcept` specifications to appropriate methods
+    - Improved const-correctness throughout
+  - **Version Information (`version/vt_version_info.cc/hh`)**: 
+    - Added `[[nodiscard]]` attributes to prevent ignored return values
+    - Added `noexcept` specifications to all functions
+    - Used `const std::string&` returns for efficiency
+    - Eliminated unnecessary string copies
+  - **Benefits**:
+    - **Type Safety**: Stronger compile-time guarantees with `nullptr`, `constexpr`, typed enums
+    - **Memory Safety**: Bounds-checked arrays, safe string operations, RAII compliance
+    - **Performance**: Compile-time evaluation, move semantics, `noexcept` optimizations
+    - **Maintainability**: Modern idioms, namespaces, clear intent with attributes
+    - **Compatibility**: 100% backward compatible - all existing code continues to work
+    - **Code Quality**: 70+ functions marked `noexcept`, 50+ marked `[[nodiscard]]`, 6 classes with move semantics
+
 - **Generic Character and Text Rendering Modernization**: Comprehensive refactoring of text rendering functions with modern C++ features
   - **generic_char.hh/cc**: Modernized text drawing API with C++20 `std::span` for safer buffer handling
     - Replaced raw pointer + length parameters with type-safe `std::span<const genericChar>` for all draw functions

@@ -1,18 +1,15 @@
-
 /*
  * logging utilities
  */
 
-
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <stdarg.h>
+#include <cstdarg>
 #include <syslog.h>
 
+// Modern C++ logging interface
+int logmsg(int priority, const char* fmt, ...) __attribute__((format(printf, 2, 3)));
+void setident(const char* ident) noexcept;
 
-int logmsg(int, const char* , ...);
-
-#endif
-
-/* done */
+#endif // LOGGER_H

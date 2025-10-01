@@ -8,12 +8,11 @@
 #include <atomic>
 #include <memory>
 #include <cstdio>
+#include <cstddef>  // for size_t
 
 extern int debug_mode;
 
-#define STRSHORT    64
-#define STRLENGTH   512   // constant to set the length of a string
-#define STRLONG     2048  // 2K string
+// Note: STRSHORT, STRLENGTH, and STRLONG are now defined in basic.hh as constexpr
 
 #ifdef DEBUG
 // BackTrace Functions/Data
