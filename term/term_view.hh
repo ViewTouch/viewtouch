@@ -131,29 +131,9 @@ extern Translations MasterTranslations;
 #define PAGE_BAR1         15
 #define PAGE_BAR2         16
 
-// Dynamic scaling: No longer limit screen dimensions
-// #define MAX_SCREEN_WIDTH 1920
+#define MAX_SCREEN_WIDTH 1920
 // #define MAX_SCREEN_WIDTH 1600
-// #define MAX_SCREEN_HEIGHT 1200
-
-// Dynamic scaling system - reference resolution for proportional scaling  
-// Using 1920x1080 as universal reference for all displays (16:9)
-#define REFERENCE_WIDTH 1920
-#define REFERENCE_HEIGHT 1080
-
-// Global scaling variables
-extern float ScaleFactorX;
-extern float ScaleFactorY;
-extern float ScaleFactor;  // Uniform scale factor (min of X and Y)
-
-// Scaling functions
-void CalculateScaleFactors(int screen_width, int screen_height);
-int ScaleX(int x);
-int ScaleY(int y);
-int ScaleW(int w);
-int ScaleH(int h);
-int ScaleFontSize(int original_size);
-float GetScaleFactor();
+#define MAX_SCREEN_HEIGHT 1200
 
 // Page Sizes (resolutions)
 enum page_sizes {

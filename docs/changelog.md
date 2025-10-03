@@ -5,7 +5,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Reverted
+- **Dynamic Scaling System**: Reverted universal dynamic scaling system for better UI stability
+  - Removed dynamic scaling functions (`CalculateScaleFactors()`, `ScaleX()`, `ScaleY()`, `ScaleW()`, `ScaleH()`, `ScaleFontSize()`)
+  - Restored original hardcoded page dimensions in `Layer::BlankPage()` for consistent rendering
+  - Reverted `MAX_SCREEN_WIDTH` and `MAX_SCREEN_HEIGHT` limits for better compatibility
+  - Fixed conditional button rendering bugs caused by coordinate system mismatches
+  - Improved UI stability and alignment across different display resolutions
+  - Files reverted: `term/layer.cc`, `term/term_view.hh`, `term/term_view.cc`
+
 ### Changed
+- **Error Handler Modernization**: Comprehensive refactoring of unified error handling framework with modern C++17/20 features
+  - **Modern C++ Features Applied**:
+    - **String Handling**: Replaced `const std::string&` with `std::string_view` for better performance and zero-copy operations
+    - **Thread Safety**: Upgraded from `std::mutex` to `std::shared_mutex` for better read performance with concurrent access
+    - **Singleton Pattern**: Modernized with `std::once_flag` and `std::call_once` for thread-safe initialization
+    - **Smart Pointers**: Used `std::make_unique` instead of raw `new` for automatic memory management
+    - **Move Semantics**: Added `std::move` for efficient object transfers and proper RAII
+    - **Constexpr Functions**: Made utility functions `constexpr` where possible for compile-time evaluation
+    - **Noexcept Specifications**: Added `noexcept` to appropriate methods for better optimization
+    - **Enum Improvements**: Used `std::uint8_t` as underlying type for better memory efficiency
+    - **Rule of Five**: Explicitly defined copy/move semantics with deleted copy operations
+  - **API Enhancements**:
+    - **Modern Constructor**: Updated `ErrorInfo` constructor to use `string_view` parameters with default values
+    - **Enhanced Methods**: All error reporting methods now use `string_view` for better performance
+    - **Memory Optimization**: Added `reserve()` calls to prevent unnecessary reallocations
+    - **Shared Mutex**: Used `std::shared_lock` for read operations, `std::unique_lock` for writes
+  - **Benefits**:
+    - **Performance**: `string_view` eliminates unnecessary string copies, `shared_mutex` allows concurrent reads
+    - **Memory Safety**: Smart pointers and RAII prevent memory leaks
+    - **Thread Safety**: Modern synchronization primitives are more efficient than manual mutex locking
+    - **Compile-time Optimization**: `constexpr` functions can be evaluated at compile time
+    - **API Compatibility**: All existing code using the error handler continues to work unchanged
+  - **Files Modernized**:
+    - `src/core/error_handler.hh` - Header file with modern C++ features and improved API
+    - `src/core/error_handler.cc` - Implementation with modern patterns and thread-safe singleton
+  - **Backward Compatibility**: 100% maintained - all existing error handling code continues to work without changes
+
 - **Comprehensive C++17/20 Modernization - Phase 1**: Systematic modernization of core codebase using modern C++ features
   - **Files Modernized**: 16 files (990 insertions, 817 deletions)
   - **SHA-1 Cryptographic Hash (`external/core/sha1.cc/hh`)**: 

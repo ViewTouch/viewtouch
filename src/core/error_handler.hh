@@ -22,16 +22,21 @@
 #define VT_ERROR_HANDLER_HH
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include <memory>
 #include <functional>
 #include <mutex>
+#include <shared_mutex>
 #include <fstream>
 #include <chrono>
+#include <optional>
+#include <span>
+#include <cstdint>
 
 namespace vt_error {
 
-    enum class Severity {
+    enum class Severity : std::uint8_t {
         VT_DEBUG = 0,
         INFO = 1,
         WARNING = 2,
@@ -39,7 +44,7 @@ namespace vt_error {
         CRITICAL = 4
     };
 
-    enum class Category {
+    enum class Category : std::uint8_t {
         GENERAL = 0,
         SYSTEM = 1,
         NETWORK = 2,
@@ -62,19 +67,26 @@ namespace vt_error {
         int error_code;
         std::string context;
         
-        ErrorInfo(const std::string& msg, Severity sev, Category cat, 
-                 const std::string& file_name, int line_num, 
-                 const std::string& func_name, int code = 0, 
-                 const std::string& ctx = "");
+        // Modern constructor with string_view and default parameters
+        ErrorInfo(std::string_view msg, Severity sev, Category cat, 
+                 std::string_view file_name = "", int line_num = 0, 
+                 std::string_view func_name = "", int code = 0, 
+                 std::string_view ctx = "");
+        
+        // Copy and move constructors
+        ErrorInfo(const ErrorInfo&) = default;
+        ErrorInfo(ErrorInfo&&) = default;
+        ErrorInfo& operator=(const ErrorInfo&) = default;
+        ErrorInfo& operator=(ErrorInfo&&) = default;
     };
 
     class ErrorHandler {
     private:
         static std::unique_ptr<ErrorHandler> instance_;
-        static std::mutex instance_mutex_;
+        static std::once_flag instance_flag_;
         
         std::vector<ErrorInfo> error_history_;
-        mutable std::mutex history_mutex_;
+        mutable std::shared_mutex history_mutex_;
         
         std::ofstream log_file_;
         std::string log_file_path_;
@@ -83,61 +95,70 @@ namespace vt_error {
         
         // Error notification callbacks
         std::vector<std::function<void(const ErrorInfo&)>> callbacks_;
-        mutable std::mutex callbacks_mutex_;
-        
-        ErrorHandler();
+        mutable std::shared_mutex callbacks_mutex_;
         
     public:
-        static ErrorHandler& getInstance();
-        ~ErrorHandler();
+        // Default constructor (needed for make_unique)
+        ErrorHandler() = default;
+        
+        // Singleton with modern thread-safe implementation
+        static ErrorHandler& getInstance() noexcept;
+        
+        // Rule of five - disable copy, enable move
+        ErrorHandler(const ErrorHandler&) = delete;
+        ErrorHandler& operator=(const ErrorHandler&) = delete;
+        ErrorHandler(ErrorHandler&&) = delete;
+        ErrorHandler& operator=(ErrorHandler&&) = delete;
+        
+        ~ErrorHandler() = default;
         
         // Configuration
-        void setLogFile(const std::string& path);
-        void setConsoleOutput(bool enabled);
-        void setMinLogLevel(Severity level);
+        void setLogFile(std::string_view path);
+        void setConsoleOutput(bool enabled) noexcept;
+        void setMinLogLevel(Severity level) noexcept;
         
         // Error reporting
-        void reportError(const std::string& message, Severity severity = Severity::ERROR,
+        void reportError(std::string_view message, Severity severity = Severity::ERROR,
                         Category category = Category::GENERAL, int error_code = 0,
-                        const std::string& context = "", const std::string& file = "",
-                        int line = 0, const std::string& function = "");
+                        std::string_view context = "", std::string_view file = "",
+                        int line = 0, std::string_view function = "");
         
         // Convenience methods
-        void debug(const std::string& message, Category category = Category::GENERAL,
-                  const std::string& context = "", const std::string& file = "",
-                  int line = 0, const std::string& function = "");
+        void debug(std::string_view message, Category category = Category::GENERAL,
+                  std::string_view context = "", std::string_view file = "",
+                  int line = 0, std::string_view function = "");
         
-        void info(const std::string& message, Category category = Category::GENERAL,
-                 const std::string& context = "", const std::string& file = "",
-                 int line = 0, const std::string& function = "");
+        void info(std::string_view message, Category category = Category::GENERAL,
+                 std::string_view context = "", std::string_view file = "",
+                 int line = 0, std::string_view function = "");
         
-        void warning(const std::string& message, Category category = Category::GENERAL,
-                    const std::string& context = "", const std::string& file = "",
-                    int line = 0, const std::string& function = "");
+        void warning(std::string_view message, Category category = Category::GENERAL,
+                    std::string_view context = "", std::string_view file = "",
+                    int line = 0, std::string_view function = "");
         
-        void error(const std::string& message, Category category = Category::GENERAL,
-                  int error_code = 0, const std::string& context = "",
-                  const std::string& file = "", int line = 0, const std::string& function = "");
+        void error(std::string_view message, Category category = Category::GENERAL,
+                  int error_code = 0, std::string_view context = "",
+                  std::string_view file = "", int line = 0, std::string_view function = "");
         
-        void critical(const std::string& message, Category category = Category::GENERAL,
-                     int error_code = 0, const std::string& context = "",
-                     const std::string& file = "", int line = 0, const std::string& function = "");
+        void critical(std::string_view message, Category category = Category::GENERAL,
+                     int error_code = 0, std::string_view context = "",
+                     std::string_view file = "", int line = 0, std::string_view function = "");
         
         // Error history and retrieval
         std::vector<ErrorInfo> getErrorHistory(size_t max_entries = 100) const;
         std::vector<ErrorInfo> getErrorsByCategory(Category category, size_t max_entries = 100) const;
         std::vector<ErrorInfo> getErrorsBySeverity(Severity severity, size_t max_entries = 100) const;
-        void clearErrorHistory();
+        void clearErrorHistory() noexcept;
         
         // Callback registration for error notifications
         void registerCallback(std::function<void(const ErrorInfo&)> callback);
-        void clearCallbacks();
+        void clearCallbacks() noexcept;
         
-        // Utility functions
-        static std::string severityToString(Severity severity);
-        static std::string categoryToString(Category category);
-        static Severity stringToSeverity(const std::string& str);
-        static Category stringToCategory(const std::string& str);
+        // Utility functions - constexpr where possible
+        static constexpr std::string_view severityToString(Severity severity) noexcept;
+        static constexpr std::string_view categoryToString(Category category) noexcept;
+        static Severity stringToSeverity(std::string_view str) noexcept;
+        static Category stringToCategory(std::string_view str) noexcept;
         
     private:
         void logToFile(const ErrorInfo& error);
@@ -146,7 +167,7 @@ namespace vt_error {
         std::string formatLogEntry(const ErrorInfo& error) const;
     };
 
-    // Convenience macros for easier error reporting
+    // Convenience macros for easier error reporting - modernized
     #define VT_ERROR(message, category, ...) \
         vt_error::ErrorHandler::getInstance().error(message, category, ##__VA_ARGS__, __FILE__, __LINE__, __FUNCTION__)
     
@@ -162,8 +183,8 @@ namespace vt_error {
     #define VT_CRITICAL(message, category, ...) \
         vt_error::ErrorHandler::getInstance().critical(message, category, ##__VA_ARGS__, __FILE__, __LINE__, __FUNCTION__)
 
-    // Legacy compatibility function
-    int ReportError(const std::string& message);
+    // Legacy compatibility function - modernized
+    int ReportError(std::string_view message) noexcept;
 
 } // namespace vt_error
 
