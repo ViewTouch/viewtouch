@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Reverted
+- **Dynamic Scaling System**: Reverted universal dynamic scaling system for better UI stability
+  - Removed dynamic scaling functions (`CalculateScaleFactors()`, `ScaleX()`, `ScaleY()`, `ScaleW()`, `ScaleH()`, `ScaleFontSize()`)
+  - Restored original hardcoded page dimensions in `Layer::BlankPage()` for consistent rendering
+  - Reverted `MAX_SCREEN_WIDTH` and `MAX_SCREEN_HEIGHT` limits for better compatibility
+  - Fixed conditional button rendering bugs caused by coordinate system mismatches
+  - Improved UI stability and alignment across different display resolutions
+  - Files reverted: `term/layer.cc`, `term/term_view.hh`, `term/term_view.cc`
+
 ### Changed
 - **Comprehensive C++17/20 Modernization - Phase 1**: Systematic modernization of core codebase using modern C++ features
   - **Files Modernized**: 16 files (990 insertions, 817 deletions)

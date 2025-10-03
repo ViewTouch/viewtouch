@@ -78,67 +78,6 @@ namespace Constants {
     constexpr int RECONNECT_DELAY_SEC = 2;
 }
 
-// Dynamic scaling system global variables
-float ScaleFactorX = 1.0f;
-float ScaleFactorY = 1.0f;
-float ScaleFactor = 1.0f;
-
-/*********************************************************************
- * Dynamic Scaling Functions
- ********************************************************************/
-
-void CalculateScaleFactors(int screen_width, int screen_height)
-{
-    // Universal 1920x1080 reference for all displays
-    ScaleFactorX = static_cast<float>(screen_width) / static_cast<float>(REFERENCE_WIDTH);
-    ScaleFactorY = static_cast<float>(screen_height) / static_cast<float>(REFERENCE_HEIGHT);
-    
-    // Use uniform scaling to maintain aspect ratios
-    ScaleFactor = std::min(ScaleFactorX, ScaleFactorY);
-    
-    // For exact 1920x1080 displays, use 1.0 scale factor
-    if (screen_width == REFERENCE_WIDTH && screen_height == REFERENCE_HEIGHT) {
-        ScaleFactor = 1.0f;
-    }
-    
-    // Ensure reasonable scale factor bounds for usability
-    ScaleFactor = std::max(0.75f, std::min(3.0f, ScaleFactor));
-    ScaleFactorX = ScaleFactor;
-    ScaleFactorY = ScaleFactor;
-}
-
-int ScaleX(int x)
-{
-    return static_cast<int>(x * ScaleFactorX + 0.5f);  // Round to nearest pixel
-}
-
-int ScaleY(int y)
-{
-    return static_cast<int>(y * ScaleFactorY + 0.5f);  // Round to nearest pixel
-}
-
-int ScaleW(int w)
-{
-    return static_cast<int>(w * ScaleFactorX + 0.5f);  // Round to nearest pixel
-}
-
-int ScaleH(int h)
-{
-    return static_cast<int>(h * ScaleFactorY + 0.5f);  // Round to nearest pixel
-}
-
-int ScaleFontSize(int original_size)
-{
-    // Scale font size but ensure it's at least 8 pixels for readability
-    int scaled_size = static_cast<int>(original_size * ScaleFactor + 0.5f);
-    return std::max(8, scaled_size);
-}
-
-float GetScaleFactor()
-{
-    return ScaleFactor;
-}
-
 // Custom exception classes for better error handling
 class ViewTouchException : public std::runtime_error {
 public:
@@ -2861,14 +2800,8 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         ScrHeight = set_height;
     else
         ScrHeight  = DisplayHeight(Dis, ScrNo);
-    // Dynamic scaling: Use full screen dimensions with reasonable limits for X11 compatibility
-    // This ensures XServer XSDL and other remote displays work properly
-    WinWidth   = std::min(ScrWidth, 4096);   // Max 4K width for X11 compatibility
-    WinHeight  = std::min(ScrHeight, 4096);  // Max 4K height for X11 compatibility
-    
-    // Initialize dynamic scaling system based on actual screen dimensions
-    CalculateScaleFactors(WinWidth, WinHeight);
-    
+    WinWidth   = Min(MAX_SCREEN_WIDTH, ScrWidth);
+    WinHeight  = Min(MAX_SCREEN_HEIGHT, ScrHeight);
     MaxColors  = 13 + (TEXT_COLORS * 3) + ImageColorsUsed();
     TScreen.reset(ts);
     RootWin    = RootWindow(Dis, ScrNo);
@@ -3073,12 +3006,46 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
                                   (XtInputCallbackProc) SocketInputCB, NULL);
 
-    // Universal 1920x1080 template for ALL displays with dynamic scaling
-    int screen_size = PAGE_SIZE_1920x1080;  // Universal base template
+    // Send server term size
+    int screen_size = PAGE_SIZE_640x480;
+
+    if (WinWidth >= 2560) 		// 16:10
+        screen_size = PAGE_SIZE_2560x1600;
+    else if (WinWidth >= 2560 && WinHeight < 1600) 		// 16:9
+        screen_size = PAGE_SIZE_2560x1440;
+    else if (WinWidth >= 1920 && WinHeight >= 1200) 		// 16:10
+        screen_size = PAGE_SIZE_1920x1200;
+    else if (WinWidth >= 1920 && WinHeight >= 1080) 		// 16:9
+        screen_size = PAGE_SIZE_1920x1080;
+    else if (WinWidth >= 1680 && WinHeight >= 1050)		// 16:10
+        screen_size = PAGE_SIZE_1680x1050;
+    else if (WinWidth >= 1600 && WinHeight >= 1200)
+      screen_size = PAGE_SIZE_1600x1200;
+    else if (WinWidth >= 1600 && WinHeight >= 900)		// 16:9
+        screen_size = PAGE_SIZE_1600x900;
+    else if (WinWidth >= 1440 && WinHeight >= 900)		// 16:10
+        screen_size = PAGE_SIZE_1440x900; 
+    else if (WinWidth >= 1366 && WinHeight >= 768)		// 16:9
+        screen_size = PAGE_SIZE_1366x768;
+    else if (WinWidth >= 1280 && WinHeight >= 1024) 		// 5:4
+        screen_size = PAGE_SIZE_1280x1024;
+    else if  (WinWidth >= 1280 && WinHeight >= 800) 		// 16:10
+        screen_size = PAGE_SIZE_1280x800;
+    else if (WinWidth >= 1024 && WinHeight >= 768)		// 4:3
+        screen_size = PAGE_SIZE_1024x768;
+    else if (WinWidth >= 1024 && WinHeight >= 600)		// 128:75
+        screen_size = PAGE_SIZE_1024x600;
+    else if (WinWidth >= 800 && WinHeight >= 600)			// 4:3
+      screen_size = PAGE_SIZE_800x600;
+    else if (WinWidth >= 800 && WinHeight >= 480)
+        screen_size = PAGE_SIZE_800x480;
+    else if (WinWidth >= 768 && WinHeight >= 1024)
+        screen_size = PAGE_SIZE_768x1024;
+
     WInt8(SERVER_TERMINFO);
     WInt8(screen_size);
-    WInt16(1920);  // Always report 1920x1080 to server
-    WInt16(1080);
+    WInt16(WinWidth);
+    WInt16(WinHeight);
     WInt16(ScrDepth);
     SendNow();
     if (TScreen)
