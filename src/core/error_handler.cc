@@ -23,44 +23,37 @@
 #include <iomanip>
 #include <algorithm>
 #include <cstdlib>
+#include <sstream>
+#include <shared_mutex>
 
 namespace vt_error {
 
     std::unique_ptr<ErrorHandler> ErrorHandler::instance_ = nullptr;
-    std::mutex ErrorHandler::instance_mutex_;
+    std::once_flag ErrorHandler::instance_flag_;
 
-    ErrorInfo::ErrorInfo(const std::string& msg, Severity sev, Category cat,
-                        const std::string& file_name, int line_num,
-                        const std::string& func_name, int code,
-                        const std::string& ctx)
+    ErrorInfo::ErrorInfo(std::string_view msg, Severity sev, Category cat,
+                        std::string_view file_name, int line_num,
+                        std::string_view func_name, int code,
+                        std::string_view ctx)
         : message(msg), severity(sev), category(cat), file(file_name),
           line(line_num), function(func_name), 
           timestamp(std::chrono::system_clock::now()),
           error_code(code), context(ctx) {
     }
 
-    ErrorHandler::ErrorHandler()
-        : console_output_(true), min_log_level_(Severity::INFO) {
-        // Set default log file path
-        log_file_path_ = "/tmp/viewtouch_errors.log";
-    }
-
-    ErrorHandler& ErrorHandler::getInstance() {
-        std::lock_guard<std::mutex> lock(instance_mutex_);
-        if (!instance_) {
-            instance_ = std::unique_ptr<ErrorHandler>(new ErrorHandler());
-        }
+    ErrorHandler& ErrorHandler::getInstance() noexcept {
+        std::call_once(instance_flag_, []() {
+            instance_ = std::make_unique<ErrorHandler>();
+            // Set default log file path
+            instance_->log_file_path_ = "/tmp/viewtouch_errors.log";
+            instance_->console_output_ = true;
+            instance_->min_log_level_ = Severity::INFO;
+        });
         return *instance_;
     }
 
-    ErrorHandler::~ErrorHandler() {
-        if (log_file_.is_open()) {
-            log_file_.close();
-        }
-    }
-
-    void ErrorHandler::setLogFile(const std::string& path) {
-        std::lock_guard<std::mutex> lock(history_mutex_);
+    void ErrorHandler::setLogFile(std::string_view path) {
+        std::unique_lock<std::shared_mutex> lock(history_mutex_);
         
         if (log_file_.is_open()) {
             log_file_.close();
@@ -74,18 +67,18 @@ namespace vt_error {
         }
     }
 
-    void ErrorHandler::setConsoleOutput(bool enabled) {
+    void ErrorHandler::setConsoleOutput(bool enabled) noexcept {
         console_output_ = enabled;
     }
 
-    void ErrorHandler::setMinLogLevel(Severity level) {
+    void ErrorHandler::setMinLogLevel(Severity level) noexcept {
         min_log_level_ = level;
     }
 
-    void ErrorHandler::reportError(const std::string& message, Severity severity,
+    void ErrorHandler::reportError(std::string_view message, Severity severity,
                                   Category category, int error_code,
-                                  const std::string& context, const std::string& file,
-                                  int line, const std::string& function) {
+                                  std::string_view context, std::string_view file,
+                                  int line, std::string_view function) {
         if (severity < min_log_level_) {
             return;
         }
@@ -93,8 +86,8 @@ namespace vt_error {
         ErrorInfo error(message, severity, category, file, line, function, error_code, context);
         
         {
-            std::lock_guard<std::mutex> lock(history_mutex_);
-            error_history_.push_back(error);
+            std::unique_lock<std::shared_mutex> lock(history_mutex_);
+            error_history_.push_back(std::move(error));
             
             // Keep only the last 10000 errors to prevent memory bloat
             if (error_history_.size() > 10000) {
@@ -110,38 +103,38 @@ namespace vt_error {
         notifyCallbacks(error);
     }
 
-    void ErrorHandler::debug(const std::string& message, Category category,
-                            const std::string& context, const std::string& file,
-                            int line, const std::string& function) {
+    void ErrorHandler::debug(std::string_view message, Category category,
+                            std::string_view context, std::string_view file,
+                            int line, std::string_view function) {
         reportError(message, Severity::VT_DEBUG, category, 0, context, file, line, function);
     }
 
-    void ErrorHandler::info(const std::string& message, Category category,
-                           const std::string& context, const std::string& file,
-                           int line, const std::string& function) {
+    void ErrorHandler::info(std::string_view message, Category category,
+                           std::string_view context, std::string_view file,
+                           int line, std::string_view function) {
         reportError(message, Severity::INFO, category, 0, context, file, line, function);
     }
 
-    void ErrorHandler::warning(const std::string& message, Category category,
-                              const std::string& context, const std::string& file,
-                              int line, const std::string& function) {
+    void ErrorHandler::warning(std::string_view message, Category category,
+                              std::string_view context, std::string_view file,
+                              int line, std::string_view function) {
         reportError(message, Severity::WARNING, category, 0, context, file, line, function);
     }
 
-    void ErrorHandler::error(const std::string& message, Category category,
-                            int error_code, const std::string& context,
-                            const std::string& file, int line, const std::string& function) {
+    void ErrorHandler::error(std::string_view message, Category category,
+                            int error_code, std::string_view context,
+                            std::string_view file, int line, std::string_view function) {
         reportError(message, Severity::ERROR, category, error_code, context, file, line, function);
     }
 
-    void ErrorHandler::critical(const std::string& message, Category category,
-                               int error_code, const std::string& context,
-                               const std::string& file, int line, const std::string& function) {
+    void ErrorHandler::critical(std::string_view message, Category category,
+                               int error_code, std::string_view context,
+                               std::string_view file, int line, std::string_view function) {
         reportError(message, Severity::CRITICAL, category, error_code, context, file, line, function);
     }
 
     std::vector<ErrorInfo> ErrorHandler::getErrorHistory(size_t max_entries) const {
-        std::lock_guard<std::mutex> lock(history_mutex_);
+        std::shared_lock<std::shared_mutex> lock(history_mutex_);
         
         size_t start_idx = error_history_.size() > max_entries ? 
                           error_history_.size() - max_entries : 0;
@@ -151,9 +144,11 @@ namespace vt_error {
     }
 
     std::vector<ErrorInfo> ErrorHandler::getErrorsByCategory(Category category, size_t max_entries) const {
-        std::lock_guard<std::mutex> lock(history_mutex_);
+        std::shared_lock<std::shared_mutex> lock(history_mutex_);
         
         std::vector<ErrorInfo> filtered;
+        filtered.reserve(max_entries);
+        
         for (auto it = error_history_.rbegin(); 
              it != error_history_.rend() && filtered.size() < max_entries; ++it) {
             if (it->category == category) {
@@ -166,9 +161,11 @@ namespace vt_error {
     }
 
     std::vector<ErrorInfo> ErrorHandler::getErrorsBySeverity(Severity severity, size_t max_entries) const {
-        std::lock_guard<std::mutex> lock(history_mutex_);
+        std::shared_lock<std::shared_mutex> lock(history_mutex_);
         
         std::vector<ErrorInfo> filtered;
+        filtered.reserve(max_entries);
+        
         for (auto it = error_history_.rbegin(); 
              it != error_history_.rend() && filtered.size() < max_entries; ++it) {
             if (it->severity == severity) {
@@ -180,22 +177,22 @@ namespace vt_error {
         return filtered;
     }
 
-    void ErrorHandler::clearErrorHistory() {
-        std::lock_guard<std::mutex> lock(history_mutex_);
+    void ErrorHandler::clearErrorHistory() noexcept {
+        std::unique_lock<std::shared_mutex> lock(history_mutex_);
         error_history_.clear();
     }
 
     void ErrorHandler::registerCallback(std::function<void(const ErrorInfo&)> callback) {
-        std::lock_guard<std::mutex> lock(callbacks_mutex_);
-        callbacks_.push_back(callback);
+        std::unique_lock<std::shared_mutex> lock(callbacks_mutex_);
+        callbacks_.push_back(std::move(callback));
     }
 
-    void ErrorHandler::clearCallbacks() {
-        std::lock_guard<std::mutex> lock(callbacks_mutex_);
+    void ErrorHandler::clearCallbacks() noexcept {
+        std::unique_lock<std::shared_mutex> lock(callbacks_mutex_);
         callbacks_.clear();
     }
 
-    std::string ErrorHandler::severityToString(Severity severity) {
+    constexpr std::string_view ErrorHandler::severityToString(Severity severity) noexcept {
         switch (severity) {
             case Severity::VT_DEBUG: return "DEBUG";
             case Severity::INFO: return "INFO";
@@ -206,7 +203,7 @@ namespace vt_error {
         }
     }
 
-    std::string ErrorHandler::categoryToString(Category category) {
+    constexpr std::string_view ErrorHandler::categoryToString(Category category) noexcept {
         switch (category) {
             case Category::GENERAL: return "GENERAL";
             case Category::SYSTEM: return "SYSTEM";
@@ -221,8 +218,8 @@ namespace vt_error {
         }
     }
 
-    Severity ErrorHandler::stringToSeverity(const std::string& str) {
-        std::string upper = vt_string::to_upper(str);
+    Severity ErrorHandler::stringToSeverity(std::string_view str) noexcept {
+        std::string upper = vt_string::to_upper(std::string(str));
         if (upper == "DEBUG") return Severity::VT_DEBUG;
         if (upper == "INFO") return Severity::INFO;
         if (upper == "WARNING") return Severity::WARNING;
@@ -231,8 +228,8 @@ namespace vt_error {
         return Severity::INFO; // Default
     }
 
-    Category ErrorHandler::stringToCategory(const std::string& str) {
-        std::string upper = vt_string::to_upper(str);
+    Category ErrorHandler::stringToCategory(std::string_view str) noexcept {
+        std::string upper = vt_string::to_upper(std::string(str));
         if (upper == "GENERAL") return Category::GENERAL;
         if (upper == "SYSTEM") return Category::SYSTEM;
         if (upper == "NETWORK") return Category::NETWORK;
@@ -262,7 +259,7 @@ namespace vt_error {
     }
 
     void ErrorHandler::notifyCallbacks(const ErrorInfo& error) {
-        std::lock_guard<std::mutex> lock(callbacks_mutex_);
+        std::shared_lock<std::shared_mutex> lock(callbacks_mutex_);
         for (const auto& callback : callbacks_) {
             try {
                 callback(error);
@@ -307,7 +304,7 @@ namespace vt_error {
     }
 
     // Legacy compatibility function
-    int ReportError(const std::string& message) {
+    int ReportError(std::string_view message) noexcept {
         ErrorHandler::getInstance().error(message, Category::GENERAL);
         return 0; // Return success for compatibility
     }
