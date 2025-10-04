@@ -902,6 +902,7 @@ int BlankScreen();
 int Calibrate(int status);
 int EndCalibrate();
 int StartTimers();
+int InitializeTouchScreen();
 int StopTouches();
 int StopUpdates();
 int ResetView();
@@ -1015,30 +1016,62 @@ void TouchScreenCB(XtPointer client_data, int *fid, XtInputId *id)
         return;
     }
 
-    int tx = -1;
-    int ty = -1;
-    int mode = 0;
-    int status = 0;
-
-    status = TScreen->ReadTouch(tx, ty, mode);
-    if (status == 1 && mode == TOUCH_DOWN && UserInput() == 0)
+    // Enhanced touch event handling
+    TouchEvent event;
+    int status = TScreen->ReadTouchEvent(event);
+    
+    if (status == 1 && UserInput() == 0)
     {
-        int x = (tx * ScrWidth)  / TScreen->x_res;
-        int y = ((TScreen->y_res - 1 - ty) * ScrHeight) / TScreen->y_res;
-        if (IsTermLocal)
+        // Process touch events for gestures
+        TScreen->ProcessTouchEvents();
+        
+        // Handle different touch modes
+        switch (event.mode)
         {
-            // XTranslateCoordinates() is a bit slow - only used for local terminal
-            Window w;
-            int new_x, new_y;
-            XTranslateCoordinates(Dis, 
-                                  RootWin, 
-                                  MainWin, 
-                                  x, y, 
-                                  &new_x, &new_y, &w);
-            Layers.Touch(new_x, new_y);
+            case TOUCH_DOWN:
+            {
+                int x = (event.x * ScrWidth) / TScreen->x_res;
+                int y = ((TScreen->y_res - 1 - event.y) * ScrHeight) / TScreen->y_res;
+                
+                if (IsTermLocal)
+                {
+                    // XTranslateCoordinates() is a bit slow - only used for local terminal
+                    Window w;
+                    int new_x, new_y;
+                    XTranslateCoordinates(Dis, 
+                                          RootWin, 
+                                          MainWin, 
+                                          x, y, 
+                                          &new_x, &new_y, &w);
+                    Layers.Touch(new_x, new_y);
+                }
+                else
+                {
+                    Layers.Touch(x, y);
+                }
+                break;
+            }
+            
+            case TOUCH_UP:
+                // Handle touch release if needed
+                break;
+                
+            case TOUCH_MOVE:
+                // Handle touch movement if needed
+                break;
+                
+            default:
+                // Handle other touch modes
+                break;
         }
-        else
-            Layers.Touch(x, y);
+    }
+    else if (status == -1)
+    {
+        // Handle touch errors - could implement recovery strategies
+        if (silent_mode == 0)
+        {
+            fprintf(stderr, "TouchScreenCB: Touch read error, status: %d\n", status);
+        }
     }
 }
 
@@ -2718,6 +2751,9 @@ int StartTimers()
 
     if (TouchInputID == 0 && TScreen && TScreen->device_no > 0)
 	{
+        // Initialize enhanced touchscreen features
+        InitializeTouchScreen();
+        
         TouchInputID = XtAppAddInput(App, 
                                      TScreen->device_no, 
                                      (XtPointer) XtInputReadMask, 
@@ -2725,6 +2761,31 @@ int StartTimers()
                                      NULL);
 	}
 
+    return 0;
+}
+
+int InitializeTouchScreen()
+{
+    FnTrace("InitializeTouchScreen()");
+    
+    if (TScreen == nullptr)
+        return -1;
+    
+    // Load calibration data if available
+    TScreen->LoadCalibration("/tmp/viewtouch_touch_calibration.dat");
+    
+    // Enable enhanced features
+    TScreen->SetGesturesEnabled(true);
+    TScreen->SetTouchTimeout(500); // 500ms timeout for touch events
+    
+    // Try to auto-calibrate if no calibration exists
+    TouchCalibration cal;
+    TScreen->GetCalibration(cal);
+    if (!cal.calibrated)
+    {
+        TScreen->AutoCalibrate();
+    }
+    
     return 0;
 }
 
