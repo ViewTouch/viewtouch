@@ -5,6 +5,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Added
+- **Enhanced Touchscreen Input System**: Comprehensive improvements to ViewTouch's touchscreen input handling
+  - **Enhanced Touch Event Structure**: Added `TouchEvent` struct with timestamp, pressure, and touch ID support for better touch tracking
+  - **Advanced Calibration System**: Implemented `TouchCalibration` structure with offset, scale, and rotation support for improved accuracy
+  - **Gesture Recognition**: Added support for touch gestures (tap, double-tap, long-press, swipe) with configurable sensitivity
+  - **Multi-touch Support**: Enhanced touchscreen to handle multiple simultaneous touches with proper event tracking
+  - **Touch Event History**: Added event buffering and history tracking for gesture recognition and improved responsiveness
+  - **Performance Optimizations**: Implemented asynchronous I/O operations and touch event buffering to prevent UI blocking
+  - **Touch Feedback**: Added visual and haptic feedback options for better user experience
+  - **Enhanced Error Handling**: Improved error recovery and validation with comprehensive logging
+  - **Configuration Options**: Added touchscreen settings for gestures, multi-touch, pressure sensitivity, and timeout controls
+  - **Files Enhanced**:
+    - `term/touch_screen.hh` - Added new touch event structures and enhanced API methods
+    - `term/touch_screen.cc` - Implemented comprehensive touchscreen improvements and new functionality
+    - `term/term_view.cc` - Enhanced touch event processing with improved callback handling
+  - **Benefits**:
+    - **Better Accuracy**: Advanced calibration system provides more precise touch detection
+    - **Improved Responsiveness**: Event buffering and async I/O prevent UI lag during touch operations
+    - **Enhanced UX**: Gesture support and touch feedback create more intuitive interactions
+    - **Robust Operation**: Better error handling and recovery mechanisms improve system stability
+    - **Future-Ready**: Modern touch event system supports advanced touchscreen features and hardware
+
 ### Reverted
 - **Dynamic Scaling System**: Reverted universal dynamic scaling system for better UI stability
   - Removed dynamic scaling functions (`CalculateScaleFactors()`, `ScaleX()`, `ScaleY()`, `ScaleW()`, `ScaleH()`, `ScaleFontSize()`)

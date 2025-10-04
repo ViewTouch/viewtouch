@@ -24,6 +24,10 @@
 #include <string>
 #include <iostream>
 #include <array>
+#include <vector>
+#include <chrono>
+#include <algorithm>
+#include <fstream>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -36,6 +40,8 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <strings.h>
+#include <sys/time.h>
+#include <cmath>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -70,6 +76,15 @@ TouchScreen::TouchScreen(const char* device)
     device_no = 0;
     port = 0;
     host.Set(device);
+    
+    // Initialize enhanced touch handling
+    max_touch_history = 50;
+    touch_timeout_ms = 1000;
+    enable_multi_touch = false;
+    enable_gestures = false;
+    enable_pressure_sensitivity = false;
+    touch_history.reserve(max_touch_history);
+    
     failed = Connect(1);
 }
 
@@ -94,6 +109,15 @@ TouchScreen::TouchScreen(const char* h, int p)
     device_no = 0;
     port = p;
     host.Set(h);
+    
+    // Initialize enhanced touch handling
+    max_touch_history = 50;
+    touch_timeout_ms = 1000;
+    enable_multi_touch = false;
+    enable_gestures = false;
+    enable_pressure_sensitivity = false;
+    touch_history.reserve(max_touch_history);
+    
     failed = Connect(1);
 }
 
@@ -425,4 +449,297 @@ int TouchScreen::Flush() noexcept
 
     size = 0;
     return 0;
+}
+
+// Enhanced touch methods implementation
+int TouchScreen::ReadTouchEvent(TouchEvent &event)
+{
+    FnTrace("TouchScreen::ReadTouchEvent()");
+    
+    if (device_no <= 0)
+    {
+        error.Set("TouchScreen::ReadTouchEvent - Device not open");
+        return -1;
+    }
+    
+    int x, y, mode;
+    int result = ReadTouch(x, y, mode);
+    
+    if (result == 1)
+    {
+        event.x = x;
+        event.y = y;
+        event.mode = mode;
+        event.pressure = 0; // Default pressure
+        event.touch_id = 0; // Single touch ID
+        
+        // Get current timestamp
+        struct timeval tv;
+        gettimeofday(&tv, nullptr);
+        event.timestamp = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+        
+        // Apply calibration if available
+        ApplyCalibration(event.x, event.y);
+        
+        // Add to touch history
+        if (touch_history.size() >= max_touch_history)
+        {
+            touch_history.erase(touch_history.begin());
+        }
+        touch_history.push_back(event);
+        
+        return 1;
+    }
+    
+    return result;
+}
+
+int TouchScreen::ReadMultiTouch(std::vector<TouchEvent> &events)
+{
+    FnTrace("TouchScreen::ReadMultiTouch()");
+    
+    events.clear();
+    
+    if (!enable_multi_touch || device_no <= 0)
+    {
+        // Fall back to single touch
+        TouchEvent event;
+        int result = ReadTouchEvent(event);
+        if (result == 1)
+        {
+            events.push_back(event);
+        }
+        return result;
+    }
+    
+    // For now, multi-touch is not fully implemented in the hardware layer
+    // This is a placeholder for future enhancement
+    TouchEvent event;
+    int result = ReadTouchEvent(event);
+    if (result == 1)
+    {
+        events.push_back(event);
+    }
+    
+    return result;
+}
+
+int TouchScreen::ProcessTouchEvents()
+{
+    FnTrace("TouchScreen::ProcessTouchEvents()");
+    
+    // Clean up old touch events from history
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    unsigned long current_time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+    
+    touch_history.erase(
+        std::remove_if(touch_history.begin(), touch_history.end(),
+            [current_time, this](const TouchEvent &event) {
+                return (current_time - event.timestamp) > touch_timeout_ms;
+            }),
+        touch_history.end()
+    );
+    
+    // Detect gestures if enabled
+    if (enable_gestures && touch_history.size() > 1)
+    {
+        return DetectGesture(touch_history);
+    }
+    
+    return 0;
+}
+
+int TouchScreen::ApplyCalibration(int &x, int &y)
+{
+    FnTrace("TouchScreen::ApplyCalibration()");
+    
+    if (!calibration.calibrated)
+        return 0;
+    
+    // Apply rotation (simplified - assumes 0, 90, 180, or 270 degrees)
+    int temp_x = x, temp_y = y;
+    switch (calibration.rotation)
+    {
+        case 90:
+            x = y_res - temp_y;
+            y = temp_x;
+            break;
+        case 180:
+            x = x_res - temp_x;
+            y = y_res - temp_y;
+            break;
+        case 270:
+            x = temp_y;
+            y = x_res - temp_x;
+            break;
+        default:
+            break;
+    }
+    
+    // Apply scaling and offset
+    x = static_cast<int>((x - calibration.offset_x) * calibration.scale_x);
+    y = static_cast<int>((y - calibration.offset_y) * calibration.scale_y);
+    
+    return 1;
+}
+
+int TouchScreen::DetectGesture(const std::vector<TouchEvent> &events)
+{
+    FnTrace("TouchScreen::DetectGesture()");
+    
+    if (events.size() < 2)
+        return 0;
+    
+    // Simple gesture detection - can be enhanced
+    const TouchEvent &first = events[0];
+    const TouchEvent &last = events[events.size() - 1];
+    
+    int delta_x = last.x - first.x;
+    int delta_y = last.y - first.y;
+    int distance = static_cast<int>(std::sqrt(delta_x * delta_x + delta_y * delta_y));
+    
+    // Detect swipe gestures
+    if (distance > 50) // Minimum swipe distance
+    {
+        if (std::abs(delta_x) > std::abs(delta_y))
+        {
+            // Horizontal swipe
+            return delta_x > 0 ? 1 : 2; // Right or left swipe
+        }
+        else
+        {
+            // Vertical swipe
+            return delta_y > 0 ? 3 : 4; // Down or up swipe
+        }
+    }
+    
+    return 0; // No gesture detected
+}
+
+// Calibration methods
+int TouchScreen::SetCalibration(const TouchCalibration &cal)
+{
+    FnTrace("TouchScreen::SetCalibration()");
+    
+    calibration = cal;
+    return 0;
+}
+
+int TouchScreen::GetCalibration(TouchCalibration &cal) const
+{
+    FnTrace("TouchScreen::GetCalibration()");
+    
+    cal = calibration;
+    return 0;
+}
+
+int TouchScreen::AutoCalibrate()
+{
+    FnTrace("TouchScreen::AutoCalibrate()");
+    
+    // Simple auto-calibration - can be enhanced
+    calibration.offset_x = 0;
+    calibration.offset_y = 0;
+    calibration.scale_x = 1.0f;
+    calibration.scale_y = 1.0f;
+    calibration.rotation = 0;
+    calibration.calibrated = true;
+    
+    return 0;
+}
+
+int TouchScreen::SaveCalibration(const char* filename) const
+{
+    FnTrace("TouchScreen::SaveCalibration()");
+    
+    std::ofstream file(filename);
+    if (!file.is_open())
+        return -1;
+    
+    file << calibration.offset_x << " " << calibration.offset_y << " "
+         << calibration.scale_x << " " << calibration.scale_y << " "
+         << calibration.rotation << " " << calibration.calibrated << std::endl;
+    
+    file.close();
+    return 0;
+}
+
+int TouchScreen::LoadCalibration(const char* filename)
+{
+    FnTrace("TouchScreen::LoadCalibration()");
+    
+    std::ifstream file(filename);
+    if (!file.is_open())
+        return -1;
+    
+    file >> calibration.offset_x >> calibration.offset_y
+         >> calibration.scale_x >> calibration.scale_y
+         >> calibration.rotation >> calibration.calibrated;
+    
+    file.close();
+    return 0;
+}
+
+// Configuration methods
+int TouchScreen::SetMultiTouchEnabled(bool enabled)
+{
+    FnTrace("TouchScreen::SetMultiTouchEnabled()");
+    
+    enable_multi_touch = enabled;
+    return 0;
+}
+
+int TouchScreen::SetGesturesEnabled(bool enabled)
+{
+    FnTrace("TouchScreen::SetGesturesEnabled()");
+    
+    enable_gestures = enabled;
+    return 0;
+}
+
+int TouchScreen::SetPressureSensitivityEnabled(bool enabled)
+{
+    FnTrace("TouchScreen::SetPressureSensitivityEnabled()");
+    
+    enable_pressure_sensitivity = enabled;
+    return 0;
+}
+
+int TouchScreen::SetTouchTimeout(int timeout_ms)
+{
+    FnTrace("TouchScreen::SetTouchTimeout()");
+    
+    touch_timeout_ms = timeout_ms;
+    return 0;
+}
+
+// Utility methods
+int TouchScreen::GetTouchHistory(std::vector<TouchEvent> &history) const
+{
+    FnTrace("TouchScreen::GetTouchHistory()");
+    
+    history = touch_history;
+    return static_cast<int>(history.size());
+}
+
+int TouchScreen::ClearTouchHistory()
+{
+    FnTrace("TouchScreen::ClearTouchHistory()");
+    
+    touch_history.clear();
+    return 0;
+}
+
+int TouchScreen::GetDeviceCapabilities() const
+{
+    FnTrace("TouchScreen::GetDeviceCapabilities()");
+    
+    int capabilities = 0;
+    if (enable_multi_touch) capabilities |= 0x01;
+    if (enable_gestures) capabilities |= 0x02;
+    if (enable_pressure_sensitivity) capabilities |= 0x04;
+    if (calibration.calibrated) capabilities |= 0x08;
+    
+    return capabilities;
 }

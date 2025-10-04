@@ -23,6 +23,7 @@
 
 #include <string>
 #include <array>
+#include <vector>
 #include "utility.hh"
 
 
@@ -30,6 +31,36 @@
 #define TOUCH_DOWN 1
 #define TOUCH_HOLD 2
 #define TOUCH_UP   3
+
+// Enhanced touch event types
+#define TOUCH_MULTI_DOWN 4
+#define TOUCH_MULTI_UP   5
+#define TOUCH_MOVE       6
+#define TOUCH_GESTURE    7
+
+// Touch event structure for improved handling
+struct TouchEvent {
+    int x, y;
+    int mode;
+    int pressure;
+    int touch_id;
+    unsigned long timestamp;
+    
+    TouchEvent() : x(0), y(0), mode(0), pressure(0), touch_id(0), timestamp(0) {}
+    TouchEvent(int tx, int ty, int m, int p = 0, int id = 0) 
+        : x(tx), y(ty), mode(m), pressure(p), touch_id(id), timestamp(0) {}
+};
+
+// Calibration data structure
+struct TouchCalibration {
+    int offset_x, offset_y;
+    float scale_x, scale_y;
+    int rotation;
+    bool calibrated;
+    
+    TouchCalibration() : offset_x(0), offset_y(0), scale_x(1.0f), scale_y(1.0f), 
+                        rotation(0), calibrated(false) {}
+};
 
 /**** Types ****/
 class TouchScreen
@@ -48,6 +79,15 @@ class TouchScreen
 	std::string MODE_STREAM;
 	std::string MODE_CALIBRATE;
 	std::string AUTOBAUD_DISABLE;
+
+    // Enhanced touch handling
+    TouchCalibration calibration;
+    std::vector<TouchEvent> touch_history;
+    int max_touch_history;
+    int touch_timeout_ms;
+    bool enable_multi_touch;
+    bool enable_gestures;
+    bool enable_pressure_sensitivity;
 
 public:
     int device_no;    // internal device id number
@@ -73,6 +113,31 @@ public:
     int ReadTouch(int &x, int &y, int &mode);
     // Gives coords of last touch & mode of touch
     // returns -1 error, 0 no touch, 1 touch recorded
+
+    // Enhanced touch methods
+    int ReadTouchEvent(TouchEvent &event);
+    int ReadMultiTouch(std::vector<TouchEvent> &events);
+    int ProcessTouchEvents();
+    int ApplyCalibration(int &x, int &y);
+    int DetectGesture(const std::vector<TouchEvent> &events);
+    
+    // Calibration methods
+    int SetCalibration(const TouchCalibration &cal);
+    int GetCalibration(TouchCalibration &cal) const;
+    int AutoCalibrate();
+    int SaveCalibration(const char* filename) const;
+    int LoadCalibration(const char* filename);
+    
+    // Configuration methods
+    int SetMultiTouchEnabled(bool enabled);
+    int SetGesturesEnabled(bool enabled);
+    int SetPressureSensitivityEnabled(bool enabled);
+    int SetTouchTimeout(int timeout_ms);
+    
+    // Utility methods
+    int GetTouchHistory(std::vector<TouchEvent> &history) const;
+    int ClearTouchHistory();
+    int GetDeviceCapabilities() const;
 
     int Connect(int boot);
     int ReadStatus();   // Reads result of a command (0, 1, -1 none)
