@@ -1214,16 +1214,26 @@ int StartSystem(int my_use_net)
     // Defaults:  print to HTML, file:/<dat dir>/html/
     if (have_report < 1)
     {
-        genericChar prtstr[STRLONG];
-        PrinterInfo *report_printer = new PrinterInfo;
-        report_printer->name.Set("Report Printer");
-        sys->FullPath("html", str);
-        snprintf(prtstr, STRLONG, "file:%s/", str);
-        report_printer->host.Set(prtstr);
-        report_printer->model = MODEL_HTML;
-        report_printer->type = PRINTER_REPORT;
-        settings->Add(report_printer);
-        report_printer->OpenPrinter(MasterControl);
+        // Check if a report printer already exists in settings before creating a new one
+        PrinterInfo *existing_report = settings->FindPrinterByType(PRINTER_REPORT);
+        if (existing_report == NULL)
+        {
+            genericChar prtstr[STRLONG];
+            PrinterInfo *report_printer = new PrinterInfo;
+            report_printer->name.Set("Report Printer");
+            sys->FullPath("html", str);
+            snprintf(prtstr, STRLONG, "file:%s/", str);
+            report_printer->host.Set(prtstr);
+            report_printer->model = MODEL_HTML;
+            report_printer->type = PRINTER_REPORT;
+            settings->Add(report_printer);
+            report_printer->OpenPrinter(MasterControl);
+        }
+        else
+        {
+            // If a report printer exists but wasn't opened (e.g., network issue), try to open it
+            existing_report->OpenPrinter(MasterControl);
+        }
     }
 
     // Add local terminal
