@@ -921,6 +921,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - remove GTK+3 dependency, only used in loader, where we revert to use X11 directly #127
 
 ### Fixed
+- **Printer Duplication Bug**: Fixed critical issue where printers were being duplicated after ViewTouch restart
+  - **Root Cause**: System was creating new "Report Printer" entries on every startup without checking if one already existed
+  - **Problem**: Each restart would add another report printer to settings, causing multiple duplicate entries
+  - **Solution**: Added duplicate check using `settings->FindPrinterByType(PRINTER_REPORT)` before creating new report printers
+  - **Implementation**: Modified report printer creation logic in `StartSystem()` function to reuse existing printers
+  - **Result**: Only one report printer is created and maintained across multiple restarts
+  - **Files Modified**: `main/data/manager.cc` - Enhanced printer initialization with duplicate prevention
+  - **Impact**: Eliminates printer duplication in settings, maintains clean configuration files
 - **Version Number and Date Update**: Updated version number to reflect current year and fixed version date display in Page 1 lower left corner
   - **Version Number**: Updated from "21.05.1" to "25.01.1" to reflect current year 2025
   - **Version Date**: Fixed version date display to show current build date (2025-09-18) instead of cached 2021 date
