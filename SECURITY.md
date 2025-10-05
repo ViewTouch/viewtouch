@@ -6,10 +6,10 @@ The following versions of ViewTouch are currently supported with security update
 
 | Version | Supported          | Notes |
 | ------- | ------------------ | ----- |
-| 21.05.x | :white_check_mark: | Current stable release |
-| 21.04.x | :white_check_mark: | Previous stable release |
-| 21.03.x | :white_check_mark: | Legacy support |
-| < 21.03 | :x:                | End of life |
+| 25.01.x | :white_check_mark: | Current stable release |
+| 25.00.x | :white_check_mark: | Previous stable release |
+| 24.xx.x | :white_check_mark: | Legacy support |
+| < 24.xx | :x:                | End of life |
 
 **Note**: Version support policy is based on the current development cycle. We strive to maintain backward compatibility for all versions where possible. For specific version support status, please contact the maintainers.
 
