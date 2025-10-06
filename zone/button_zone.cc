@@ -235,12 +235,12 @@ SignalResult MessageButtonZone::Signal(Terminal *term, const char* signal_msg)
 	term->Jump(JUMP_STEALTH, -8);
         break;
     case 3:  // quick to-go
-    	if (term->QuickMode(CHECK_TOGO))
+    	if (term->QuickMode(CHECK_SELFTAKEOUT))
 	    return SIGNAL_IGNORED;
 	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
         break;
     case 4:  // quick dine-in
-    	if (term->QuickMode(CHECK_DINEIN))
+    	if (term->QuickMode(CHECK_SELFDINEIN))
 	    return SIGNAL_IGNORED;
 	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
         break;
