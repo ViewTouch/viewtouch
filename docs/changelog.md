@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Fixed
+- **Self-Order Button Differentiation**: Fixed issue where `quickdinein` and `quicktogo` buttons on self-order page didn't work correctly
+  - **Problem**: Buttons were calling wrong check types (`CHECK_DINEIN`, `CHECK_TOGO`) instead of self-order variants
+  - **Solution**: Updated message handling to use correct self-order check types (`CHECK_SELFDINEIN`, `CHECK_SELFTAKEOUT`)
+  - **Impact**: Self-order buttons now properly differentiate between dine-in and take-out orders as intended
+  - **Files Modified**: `zone/button_zone.cc` - Fixed message handling in `MessageButtonZone::Signal()` method
+
 ### Added
 - **Enhanced Touchscreen Input System**: Comprehensive improvements to ViewTouch's touchscreen input handling
   - **Enhanced Touch Event Structure**: Added `TouchEvent` struct with timestamp, pressure, and touch ID support for better touch tracking
