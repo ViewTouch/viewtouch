@@ -5,6 +5,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Added
+- **Modern C++17/20 Improvements to Check Management System**: Comprehensive modernization of the core check handling classes
+  - **Memory Management**: Replaced raw `new`/`delete` with `std::make_unique<>()` and smart pointers for better memory safety
+  - **Constructor Modernization**: Converted all constructors to use member initializer lists for improved performance and initialization order
+  - **Null Safety**: Replaced all `NULL` with `nullptr` for better type safety and function overloading support
+  - **Const Correctness**: Added const qualifiers to member functions that don't modify object state, with both const and non-const overloads for API compatibility
+  - **Modern Headers**: Added `#include <memory>` for smart pointer support
+  - **Files Enhanced**:
+    - `main/business/check.cc` - Comprehensive modernization of Check, SubCheck, Order, and Payment classes
+    - `main/business/check.hh` - Updated class definitions with modern C++ features and const correctness
+  - **Benefits**:
+    - **Memory Safety**: Smart pointers prevent memory leaks and provide automatic cleanup
+    - **Performance**: Member initializer lists are more efficient than constructor body assignments
+    - **Type Safety**: `nullptr` prevents function overloading ambiguities and provides clearer intent
+    - **Maintainability**: Const correctness makes code intent clearer and prevents accidental modifications
+    - **Modern Compliance**: Code now follows C++17/20 best practices while maintaining 100% backward compatibility
+    - **Robustness**: Improved error handling and memory management increase system stability
+
 ### Fixed
 - **Self-Order Button Differentiation**: Fixed issue where `quickdinein` and `quicktogo` buttons on self-order page didn't work correctly
   - **Problem**: Buttons were calling wrong check types (`CHECK_DINEIN`, `CHECK_TOGO`) instead of self-order variants
