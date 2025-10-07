@@ -132,6 +132,7 @@ public:
 class ItemListZone : public ListFormZone
 {
     unsigned long phrases_changed;
+    int filter_type;  // -1 = show all, or specific ITEM_* type to filter
 public:
     int name_change;
 
@@ -142,6 +143,8 @@ public:
     int          Type() { return ZONE_ITEM_LIST; }
     int          AddFields();
     RenderResult Render(Terminal *t, int update_flag);
+    SignalResult Signal(Terminal *t, const genericChar* message);
+    SignalResult Mouse(Terminal *t, int action, int mx, int my);
     Flt         *Spacing() { return &list_spacing; }
 
     int LoadRecord(Terminal *t, int record);
@@ -149,6 +152,10 @@ public:
     int Search(Terminal *t, int record, const genericChar* word);
     int ListReport(Terminal *t, Report *r);
     int RecordCount(Terminal *t);
+    
+    // Helper functions for filtering
+    int GetItemTypeColor(int item_type);
+    const genericChar* GetItemTypeName(int item_type);
 };
 
 class InvoiceZone : public ListFormZone
