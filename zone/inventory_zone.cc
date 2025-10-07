@@ -1132,6 +1132,7 @@ ItemListZone::ItemListZone()
 {
     phrases_changed = 0;
     name_change = 0;
+    filter_type = -1;  // Show all by default
     list_header = 2;
     AddFields();
 }
@@ -1182,27 +1183,178 @@ RenderResult ItemListZone::Render(Terminal *t, int update_flag)
     ListFormZone::Render(t, update_flag);
 
     int c = color[0];
-    genericChar str[64];
+    genericChar str[256];
+    
+    // Display filter status and record count
     if (records <= 0)
-        strcpy(str, GlobalTranslate("No Menu Items Defined"));
+    {
+        if (filter_type == -1)
+            strcpy(str, GlobalTranslate("No Menu Items Defined"));
+        else
+            sprintf(str, "No %s Defined", GetItemTypeName(filter_type));
+    }
     else if (records == 1)
-        strcpy(str, GlobalTranslate("Menu Item"));
+    {
+        if (filter_type == -1)
+            strcpy(str, GlobalTranslate("Menu Item"));
+        else
+            sprintf(str, "%s", GetItemTypeName(filter_type));
+    }
     else
-        sprintf(str, "Menu Item %d of %d", record_no + 1, records);
+    {
+        if (filter_type == -1)
+            sprintf(str, "Menu Item %d of %d", record_no + 1, records);
+        else
+            sprintf(str, "%s %d of %d", GetItemTypeName(filter_type), record_no + 1, records);
+    }
     TextC(t, 0, str, c);
+
+    // Display filter buttons on line 1
+    Flt button_y = 1.0;
+    Flt button_x_start = 0.5;
+    Flt button_width = 11.0;  // Width in characters
+    Flt button_spacing = 12.0;  // Spacing in characters
+    
+    const genericChar* filter_labels[] = {
+        "All", "Items", "Modifiers", "Non-Track", "Item+Sub", "By Weight", "Admission"
+    };
+    int filter_values[] = {
+        -1, ITEM_NORMAL, ITEM_MODIFIER, ITEM_METHOD, ITEM_SUBSTITUTE, ITEM_POUND, ITEM_ADMISSION
+    };
+    int filter_colors[] = {
+        COLOR_BLACK, COLOR_DEFAULT, COLOR_DK_BLUE, COLOR_DK_GREEN, 
+        COLOR_DK_RED, COLOR_PURPLE, COLOR_ORANGE
+    };
+    
+    Flt button_x = button_x_start;
+    for (int i = 0; i < 7; ++i)
+    {
+        int btn_color = filter_colors[i];
+        int is_active = (filter_type == filter_values[i]);
+        
+        // Highlight the active filter button
+        if (is_active)
+        {
+            Button(t, button_x, button_y, button_width, 1);  // lit = 1
+        }
+        else
+        {
+            Button(t, button_x, button_y, button_width, 0);  // lit = 0
+        }
+        
+        // Draw button text
+        TextPosC(t, button_x + button_width/2, button_y, filter_labels[i], btn_color);
+        button_x += button_spacing;
+    }
 
     if (show_list)
     {
-        TextL(t, 1.4, "Item Name", c);
-        TextR(t, 1.4, "Sale Price", c);
+        TextL(t, 1.8, "Item Name", c);
+        TextR(t, 1.8, "Sale Price", c);
     }
     return RENDER_OKAY;
+}
+
+SignalResult ItemListZone::Signal(Terminal *t, const genericChar* message)
+{
+    FnTrace("ItemListZone::Signal()");
+    
+    // Handle filter button signals
+    if (strncmp(message, "filter:", 7) == 0)
+    {
+        int new_filter = atoi(&message[7]);
+        if (new_filter != filter_type)
+        {
+            filter_type = new_filter;
+            record_no = 0;  // Reset to first record when filter changes
+            Draw(t, RENDER_NEW);
+            return SIGNAL_OKAY;
+        }
+        return SIGNAL_OKAY;
+    }
+    
+    // Pass other signals to parent class
+    return ListFormZone::Signal(t, message);
+}
+
+SignalResult ItemListZone::Mouse(Terminal *t, int action, int mx, int my)
+{
+    FnTrace("ItemListZone::Mouse()");
+    
+    if (action & MOUSE_PRESS)
+    {
+        // Calculate font metrics for position calculations
+        t->FontSize(font, font_width, font_height);
+        
+        // Check if click is in the filter button row area (line 1.0 to line 1.8)
+        int button_y_start = y + border + header + (int)(1.0 * font_height);
+        int button_y_end = button_y_start + font_height + 8;  // button height
+        
+        if (my >= button_y_start && my <= button_y_end)
+        {
+            // Determine which button was clicked
+            Flt button_x_start = 0.5;
+            Flt button_width = 11.0;
+            Flt button_spacing = 12.0;
+            
+            int filter_values[] = {
+                -1, ITEM_NORMAL, ITEM_MODIFIER, ITEM_METHOD, 
+                ITEM_SUBSTITUTE, ITEM_POUND, ITEM_ADMISSION
+            };
+            
+            Flt button_x = button_x_start;
+            for (int i = 0; i < 7; ++i)
+            {
+                int btn_x_start = x + border + left_margin + (int)(button_x * font_width);
+                int btn_x_end = btn_x_start + (int)(button_width * font_width);
+                
+                if (mx >= btn_x_start && mx <= btn_x_end)
+                {
+                    // Button clicked!
+                    if (filter_type != filter_values[i])
+                    {
+                        filter_type = filter_values[i];
+                        record_no = 0;  // Reset to first record when filter changes
+                        Draw(t, RENDER_NEW);
+                    }
+                    return SIGNAL_OKAY;
+                }
+                button_x += button_spacing;
+            }
+        }
+    }
+    
+    // Pass to parent class for normal form handling
+    return ListFormZone::Mouse(t, action, mx, my);
 }
 
 int ItemListZone::LoadRecord(Terminal *t, int record)
 {
     FnTrace("ItemListZone::LoadRecord()");
-    SalesItem *si = t->system_data->menu.FindByRecord(record);
+    
+    SalesItem *si = nullptr;
+    if (filter_type == -1)
+    {
+        // Show all items - use existing function
+        si = t->system_data->menu.FindByRecord(record);
+    }
+    else
+    {
+        // Find the nth record of the filtered type
+        int count = 0;
+        si = t->system_data->menu.ItemList();
+        while (si)
+        {
+            if (si->type == filter_type)
+            {
+                if (count == record)
+                    break;
+                ++count;
+            }
+            si = si->next;
+        }
+    }
+    
     if (si == NULL)
         return 1;
 
@@ -1336,15 +1488,18 @@ int ItemListZone::ListReport(Terminal *t, Report *r)
 
     while (si)
     {
-        int my_color = COLOR_DEFAULT;
-        if (si->type == ITEM_MODIFIER)
-            my_color = COLOR_DK_BLUE;
-        else if (si->type == ITEM_METHOD)
-            my_color = COLOR_DK_GREEN;
-        else if (si->type == ITEM_SUBSTITUTE)
-            my_color = COLOR_DK_RED;
-	Str iname;
-	admission_parse_hash_name(iname,si->item_name);
+        // Apply filter if active
+        if (filter_type != -1 && si->type != filter_type)
+        {
+            si = si->next;
+            continue;
+        }
+        
+        // Get color for this item type
+        int my_color = GetItemTypeColor(si->type);
+        
+        Str iname;
+        admission_parse_hash_name(iname, si->item_name);
         r->TextL(iname.Value(), my_color);
         r->TextR(t->FormatPrice(si->cost), my_color);
         r->NewLine();
@@ -1356,7 +1511,54 @@ int ItemListZone::ListReport(Terminal *t, Report *r)
 int ItemListZone::RecordCount(Terminal *t)
 {
     FnTrace("ItemListZone::RecordCount()");
-    return t->system_data->menu.ItemCount();
+    if (filter_type == -1)
+    {
+        // Show all items
+        return t->system_data->menu.ItemCount();
+    }
+    else
+    {
+        // Count only items of the filtered type
+        int count = 0;
+        SalesItem *si = t->system_data->menu.ItemList();
+        while (si)
+        {
+            if (si->type == filter_type)
+                ++count;
+            si = si->next;
+        }
+        return count;
+    }
+}
+
+int ItemListZone::GetItemTypeColor(int item_type)
+{
+    FnTrace("ItemListZone::GetItemTypeColor()");
+    switch (item_type)
+    {
+        case ITEM_NORMAL:      return COLOR_DEFAULT;     // Regular menu items - black/default
+        case ITEM_MODIFIER:    return COLOR_DK_BLUE;     // Modifiers - dark blue
+        case ITEM_METHOD:      return COLOR_DK_GREEN;    // Non-tracking modifiers - dark green
+        case ITEM_SUBSTITUTE:  return COLOR_DK_RED;      // Items + Substitute - dark red
+        case ITEM_POUND:       return COLOR_PURPLE;      // Priced by weight - purple
+        case ITEM_ADMISSION:   return COLOR_ORANGE;      // Event admission - orange
+        default:               return COLOR_DEFAULT;
+    }
+}
+
+const genericChar* ItemListZone::GetItemTypeName(int item_type)
+{
+    FnTrace("ItemListZone::GetItemTypeName()");
+    switch (item_type)
+    {
+        case ITEM_NORMAL:      return "Menu Items";
+        case ITEM_MODIFIER:    return "Modifiers";
+        case ITEM_METHOD:      return "Non-Tracking Modifiers";
+        case ITEM_SUBSTITUTE:  return "Items + Substitute";
+        case ITEM_POUND:       return "Priced By Weight";
+        case ITEM_ADMISSION:   return "Event Admission";
+        default:               return "Unknown Type";
+    }
 }
 
 

@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Menu Item Type Filtering in Review & Edit Menu Item Properties**: Enhanced the ItemListZone to allow filtering by specific menu item types
+  - **Filter Buttons**: Added 7 clickable filter buttons at the top of the page (All, Items, Modifiers, Non-Track, Item+Sub, By Weight, Admission)
+  - **Color-Coded Display**: Each of the 6 menu item types now has a unique color for easy visual differentiation:
+    - Regular Items: Default/Black
+    - Modifiers: Dark Blue
+    - Non-Tracking Modifiers: Dark Green
+    - Items + Substitute: Dark Red
+    - Priced By Weight: Purple
+    - Event Admission: Orange
+  - **Smart Filtering**: When a filter is active, only items of that type are displayed, record count updates accordingly, and navigation works within the filtered set
+  - **Visual Indicators**: Active filter button is highlighted, providing clear feedback on current filter state
+  - **Files Modified**:
+    - `zone/inventory_zone.hh` - Added filter_type member, Signal/Mouse method overrides, and helper methods for color/name mapping
+    - `zone/inventory_zone.cc` - Implemented filtering logic in Render, RecordCount, LoadRecord, ListReport, and mouse click detection
+  - **Benefits**:
+    - **Reduced Clutter**: Users can focus on one type of menu item at a time without distraction from other types
+    - **Faster Workflow**: No need to scroll through all items to find specific types; filtering shows only relevant items
+    - **Better Organization**: Useful for viewing and editing specific categories like only modifiers or only admission tickets
+    - **Maintains Compatibility**: All existing functionality works as before when "All" filter is active (default)
+
 - **Modern C++17/20 Improvements to Check Management System**: Comprehensive modernization of the core check handling classes
   - **Memory Management**: Replaced raw `new`/`delete` with `std::make_unique<>()` and smart pointers for better memory safety
   - **Constructor Modernization**: Converted all constructors to use member initializer lists for improved performance and initialization order
