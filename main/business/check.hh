@@ -277,12 +277,19 @@ public:
     SubCheck();
 
     // Member Functions
-    Order   *OrderList()      { return order_list.Head(); }
-    Order   *OrderListEnd()   { return order_list.Tail(); }
+    Order   *OrderList()       { return order_list.Head(); }
+    Order   *OrderListEnd()    { return order_list.Tail(); }
 
-    Payment *PaymentList()    { return payment_list.Head(); }
-    Payment *PaymentListEnd() { return payment_list.Tail(); }
-    int      PaymentCount()   { return payment_list.Count(); }
+    Payment *PaymentList()     { return payment_list.Head(); }
+    Payment *PaymentListEnd()  { return payment_list.Tail(); }
+    int      PaymentCount()    { return payment_list.Count(); }
+
+    const Order   *OrderList() const      { return order_list.Head(); }
+    const Order   *OrderListEnd() const   { return order_list.Tail(); }
+
+    const Payment *PaymentList() const    { return payment_list.Head(); }
+    const Payment *PaymentListEnd() const { return payment_list.Tail(); }
+    int            PaymentCount() const   { return payment_list.Count(); }
 
     int TotalTax()
     {
@@ -399,9 +406,12 @@ public:
     ~Check();
 
     // Member Functions
-    SubCheck *SubList()    { return sub_list.Head(); }
-    SubCheck *SubListEnd() { return sub_list.Tail(); }
-    int       SubCount()   { return sub_list.Count(); }
+    SubCheck *SubList()       { return sub_list.Head(); }
+    SubCheck *SubListEnd()    { return sub_list.Tail(); }
+    int       SubCount()      { return sub_list.Count(); }
+    const SubCheck *SubList() const    { return sub_list.Head(); }
+    const SubCheck *SubListEnd() const { return sub_list.Tail(); }
+    int             SubCount() const   { return sub_list.Count(); }
 
     Check    *Copy(Settings *settings);
     int       Load(Settings *settings, const genericChar* filename); // Loads check from file
@@ -440,8 +450,8 @@ public:
     int       MakeReport(Terminal *t, Report *r, int show_what = CHECK_DISPLAY_ALL,
                          int video_target = PRINTER_DEFAULT, ReportZone *rzone = NULL);  // makes report showing all subchecks
     int       HasOpenTab();
-    int       IsEmpty();  // boolean - is check blank?
-    int       IsTraining();  // boolean - is this a training check?
+    int       IsEmpty() const;  // boolean - is check blank?
+    int       IsTraining() const;  // boolean - is this a training check?
     int       EntreeCount(int seat);  // counts total entrees at seat
     SubCheck *FirstOpenSubCheck(int seat = -1);  // returns 1st open subcheck (by seat if needed) - sets current_sub
     SubCheck *NextOpenSubCheck(SubCheck *sc = NULL);  // returns next open subcheck in check - sets current_sub
