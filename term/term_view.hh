@@ -290,6 +290,7 @@ extern int KillTerm();
 extern int ShowCursor(int type);
 extern int BlankScreen();
 extern int DrawScreenSaver();
+extern void ResetScreenSaver();
 extern int ReconnectToServer();
 extern void RestartTerminal();
 

@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Bouncing DVD-Style Screensaver**: Updated screensaver with animated "ViewTouch 35 Years In Point Of Sales" text
+  - **DVD Logo Animation**: Text bounces around the screen like the classic DVD logo screensaver
+  - **Edge Detection**: Text reverses direction when it hits screen edges for continuous smooth animation
+  - **Message Display**: Large white text (34-point Times Bold) rendered with antialiasing over black background
+  - **Position Tracking**: Uses floating-point coordinates for smooth sub-pixel movement
+  - **Auto-Reset**: Position resets to center when screensaver deactivates and user returns
+  - **High Quality Rendering**: Uses Xft font rendering for smooth, professional appearance
+  - **Files Modified**:
+    - `term/term_view.cc` - Implemented bouncing animation in DrawScreenSaver() with position/velocity tracking
+    - `term/term_view.hh` - Added ResetScreenSaver() function declaration
+  - **Benefits**:
+    - **Brand Recognition**: Celebrates 35 years of ViewTouch in point of sales
+    - **Engaging Animation**: Eye-catching bouncing effect keeps screen interesting during idle periods
+    - **Nostalgia Factor**: Classic DVD screensaver style familiar to users
+    - **Professional Appearance**: Clean, elegant screensaver with smooth motion
+
 - **Menu Item Type Filtering in Review & Edit Menu Item Properties**: Enhanced the ItemListZone to allow filtering by specific menu item types
   - **Filter Buttons**: Added 7 clickable filter buttons at the top of the page (All, Items, Modifiers, Non-Track, Item+Sub, By Weight, Admission)
   - **Color-Coded Display**: Each of the 6 menu item types now has a unique color for easy visual differentiation:

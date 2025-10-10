@@ -41,6 +41,7 @@
 #include "image_data.hh"
 #include "touch_screen.hh"
 #include "layer.hh"
+#include "generic_char.hh"
 
 #ifdef CREDITMCVE
 #include "term_credit_mcve.hh"
@@ -985,6 +986,11 @@ void UpdateCB(XtPointer client_data, XtIntervalId *timer_id)
         {
             BlankScreen();
         }
+    }
+    else
+    {
+        // Screen is blanked - continuously update screensaver for animation
+        Layers.UpdateAll();
     }
 
     if (TScreen)
@@ -2615,37 +2621,115 @@ int BlankScreen()
     return 0;
 }
 
+// Global flag to reset screensaver position
+bool g_reset_screensaver = false;
+
 int DrawScreenSaver()
 {
     FnTrace("DrawScreenSaver()");
-    static Xpm *lastimage = NULL;
+    
+    // Static variables for DVD-style bouncing animation
+    static float text_x = -1.0f;  // Current X position (-1 = uninitialized)
+    static float text_y = -1.0f;  // Current Y position
+    static float vel_x = 4.0f;    // X velocity (pixels per frame)
+    static float vel_y = 3.0f;    // Y velocity (pixels per frame)
+    
+    // Check if reset was requested
+    if (g_reset_screensaver)
+    {
+        text_x = -1.0f;  // Mark for re-initialization
+        text_y = -1.0f;
+        g_reset_screensaver = false;
+    }
 
     ShowCursor(CURSOR_BLANK);
     Layers.SetScreenBlanker(1);
+    Layers.SetScreenImage(1);  // Enable continuous animation
     XSetTSOrigin(Dis, Gfx, 0, 0);
     XSetForeground(Dis, Gfx, ColorBlack);
     XSetFillStyle(Dis, Gfx, FillSolid);
     XFillRectangle(Dis, MainWin, Gfx, 0, 0, WinWidth, WinHeight);
     
-    Xpm *image = PixmapList.GetRandom(); 
-    if (image != NULL && image != lastimage)
+    // Draw "ViewTouch 35 Years In Point Of Sales" bouncing around screen
+    const char* text = "ViewTouch 35 Years In Point Of Sales";
+    int text_len = strlen(text);
+    
+    // Use a large, elegant font for the screensaver text
+    XftFont *font = GetXftFontInfo(FONT_TIMES_34B);
+    if (font)
     {
-        Layers.SetScreenImage(1);
-        XSetClipMask(Dis, Gfx, None);
-        int img_width = image->Width();
-        int img_height = image->Height();
-        int x = (ScrWidth - img_width) / 2;
-        int y = (ScrHeight - img_height) / 2;
-        XSetTSOrigin(Dis, Gfx, x, y);
-        XSetTile(Dis, Gfx, image->PixmapID());
-        XSetFillStyle(Dis, Gfx, FillTiled);
-        XFillRectangle(Dis, MainWin, Gfx, x, y, img_width, img_height);
-        XSetTSOrigin(Dis, Gfx, 0, 0);
-        XSetFillStyle(Dis, Gfx, FillSolid);
-        lastimage = image;
+        // Get text extents for collision detection
+        XGlyphInfo extents;
+        XftTextExtentsUtf8(Dis, font, reinterpret_cast<const FcChar8*>(text), text_len, &extents);
+        
+        int text_width = extents.width;
+        int text_height = font->ascent + font->descent;
+        
+        // Initialize position on first call (center of screen)
+        if (text_x < 0)
+        {
+            text_x = (WinWidth - text_width) / 2.0f;
+            text_y = (WinHeight - text_height) / 2.0f;
+        }
+        
+        // Update position
+        text_x += vel_x;
+        text_y += vel_y;
+        
+        // Bounce off edges (like DVD logo)
+        if (text_x <= 0 || text_x + text_width >= WinWidth)
+        {
+            vel_x = -vel_x;
+            // Clamp position to stay within bounds
+            if (text_x < 0) text_x = 0;
+            if (text_x + text_width > WinWidth) text_x = WinWidth - text_width;
+        }
+        
+        if (text_y <= 0 || text_y + text_height >= WinHeight)
+        {
+            vel_y = -vel_y;
+            // Clamp position to stay within bounds
+            if (text_y < 0) text_y = 0;
+            if (text_y + text_height > WinHeight) text_y = WinHeight - text_height;
+        }
+        
+        // Create XftDraw context for MainWin
+        XftDraw *xftdraw = XftDrawCreate(Dis, MainWin, 
+                                          DefaultVisual(Dis, ScrNo), 
+                                          DefaultColormap(Dis, ScrNo));
+        if (xftdraw)
+        {
+            // Set up white color for text
+            XRenderColor render_color;
+            render_color.red   = 0xFFFF;
+            render_color.green = 0xFFFF;
+            render_color.blue  = 0xFFFF;
+            render_color.alpha = 0xFFFF;
+            
+            // Draw the text at current bouncing position
+            int draw_x = static_cast<int>(text_x);
+            int draw_y = static_cast<int>(text_y) + font->ascent;
+            
+            GenericDrawStringXftAntialiased(Dis, MainWin, xftdraw, font, &render_color, 
+                                           draw_x, draw_y, text, text_len, ScrNo);
+            
+            XftDrawDestroy(xftdraw);
+        }
     }
     
     return 0;
+}
+
+/****
+ *  ResetScreenSaver: Reset bouncing text position to center of screen
+ ****/
+void ResetScreenSaver()
+{
+    FnTrace("ResetScreenSaver()");
+    // Access the static variables in DrawScreenSaver by calling it with a special flag
+    // Actually, we'll just use a global variable to signal reset
+    extern bool g_reset_screensaver;
+    g_reset_screensaver = true;
 }
 
 /****
@@ -2668,6 +2752,7 @@ int UserInput()
     {
         Layers.SetScreenBlanker(0);
         Layers.SetScreenImage(0);
+        ResetScreenSaver();  // Reset position for next time
         return 1;  // ignore input
     }
     return 0;    // accept input
