@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Screensaver Anniversary Message**: Updated screensaver to display "ViewTouch 35 Years In Point Of Sales" centered on screen
+  - **Message Display**: Large white text (34-point Times Bold) rendered with antialiasing over black background
+  - **Centered Layout**: Text is perfectly centered both horizontally and vertically on the screen
+  - **High Quality Rendering**: Uses Xft font rendering for smooth, professional appearance
+  - **Files Modified**:
+    - `term/term_view.cc` - Updated DrawScreenSaver() function to render anniversary message
+  - **Benefits**:
+    - **Brand Recognition**: Celebrates 35 years of ViewTouch in point of sales
+    - **Professional Appearance**: Clean, elegant screensaver message
+    - **Informative**: Displays company milestone during idle periods
+
 - **Menu Item Type Filtering in Review & Edit Menu Item Properties**: Enhanced the ItemListZone to allow filtering by specific menu item types
   - **Filter Buttons**: Added 7 clickable filter buttons at the top of the page (All, Items, Modifiers, Non-Track, Item+Sub, By Weight, Admission)
   - **Color-Coded Display**: Each of the 6 menu item types now has a unique color for easy visual differentiation:

@@ -41,6 +41,7 @@
 #include "image_data.hh"
 #include "touch_screen.hh"
 #include "layer.hh"
+#include "generic_char.hh"
 
 #ifdef CREDITMCVE
 #include "term_credit_mcve.hh"
@@ -2626,6 +2627,43 @@ int DrawScreenSaver()
     XSetForeground(Dis, Gfx, ColorBlack);
     XSetFillStyle(Dis, Gfx, FillSolid);
     XFillRectangle(Dis, MainWin, Gfx, 0, 0, WinWidth, WinHeight);
+    
+    // Draw "ViewTouch 35 Years In Point Of Sales" centered on screen
+    const char* text = "ViewTouch 35 Years In Point Of Sales";
+    int text_len = strlen(text);
+    
+    // Use a large, elegant font for the screensaver text
+    XftFont *font = GetXftFontInfo(FONT_TIMES_34B);
+    if (font)
+    {
+        // Create XftDraw context for MainWin
+        XftDraw *xftdraw = XftDrawCreate(Dis, MainWin, 
+                                          DefaultVisual(Dis, ScrNo), 
+                                          DefaultColormap(Dis, ScrNo));
+        if (xftdraw)
+        {
+            // Get text extents to center it
+            XGlyphInfo extents;
+            XftTextExtentsUtf8(Dis, font, reinterpret_cast<const FcChar8*>(text), text_len, &extents);
+            
+            // Calculate centered position
+            int text_x = (WinWidth - extents.width) / 2;
+            int text_y = (WinHeight / 2) + (font->ascent / 2);
+            
+            // Set up white color for text
+            XRenderColor render_color;
+            render_color.red   = 0xFFFF;
+            render_color.green = 0xFFFF;
+            render_color.blue  = 0xFFFF;
+            render_color.alpha = 0xFFFF;
+            
+            // Draw the text with antialiasing for smooth appearance
+            GenericDrawStringXftAntialiased(Dis, MainWin, xftdraw, font, &render_color, 
+                                           text_x, text_y, text, text_len, ScrNo);
+            
+            XftDrawDestroy(xftdraw);
+        }
+    }
     
     Xpm *image = PixmapList.GetRandom(); 
     if (image != NULL && image != lastimage)
