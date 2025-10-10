@@ -2631,8 +2631,8 @@ int DrawScreenSaver()
     // Static variables for DVD-style bouncing animation
     static float text_x = -1.0f;  // Current X position (-1 = uninitialized)
     static float text_y = -1.0f;  // Current Y position
-    static float vel_x = 2.0f;    // X velocity (pixels per frame)
-    static float vel_y = 1.5f;    // Y velocity (pixels per frame)
+    static float vel_x = 4.0f;    // X velocity (pixels per frame)
+    static float vel_y = 3.0f;    // Y velocity (pixels per frame)
     
     // Check if reset was requested
     if (g_reset_screensaver)
