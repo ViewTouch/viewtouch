@@ -987,6 +987,11 @@ void UpdateCB(XtPointer client_data, XtIntervalId *timer_id)
             BlankScreen();
         }
     }
+    else
+    {
+        // Screen is blanked - continuously update screensaver for animation
+        Layers.UpdateAll();
+    }
 
     if (TScreen)
     {
@@ -2639,6 +2644,7 @@ int DrawScreenSaver()
 
     ShowCursor(CURSOR_BLANK);
     Layers.SetScreenBlanker(1);
+    Layers.SetScreenImage(1);  // Enable continuous animation
     XSetTSOrigin(Dis, Gfx, 0, 0);
     XSetForeground(Dis, Gfx, ColorBlack);
     XSetFillStyle(Dis, Gfx, FillSolid);
