@@ -1142,7 +1142,7 @@ int ItemListZone::AddFields()
 {
     FnTrace("ItemListZone::AddFields()");
 
-    AddTextField("Item Name", 32);
+    AddTextField("Item Name", 100);
     AddTextField("Button Name (if different)", 36);
     AddTextField("Printed Name (if different)", 36);
     AddTextField("Call Center Name", 10);

@@ -98,6 +98,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files reverted: `term/layer.cc`, `term/term_view.hh`, `term/term_view.cc`
 
 ### Changed
+- **Item Name Character Limit Increase**: Increased the character limit for item names from 32 to 100 characters
+  - **Enhanced Item Name Flexibility**: Users can now create longer, more descriptive item names up to 100 characters
+  - **UI Field Update**: Modified `ItemListZone::AddFields()` in `zone/inventory_zone.cc` to support longer names
+  - **Backward Compatibility**: Existing item names continue to work unchanged, only new items benefit from the extended limit
+  - **Benefits**:
+    - **Better Item Descriptions**: Restaurants can use more detailed, descriptive names for menu items
+    - **Improved Clarity**: Longer names reduce ambiguity and improve customer understanding
+    - **Future-Proofing**: Supports longer item names as menu complexity grows over time
+    - **No Breaking Changes**: Existing shorter item names work exactly as before
 - **Error Handler Modernization**: Comprehensive refactoring of unified error handling framework with modern C++17/20 features
   - **Modern C++ Features Applied**:
     - **String Handling**: Replaced `const std::string&` with `std::string_view` for better performance and zero-copy operations
