@@ -6,6 +6,61 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **Modern C++ Libraries Integration**: Added three professional C++ libraries to improve code quality and developer experience
+  - **spdlog (v1.13.0)**: High-performance async logging library with multiple sinks (file, console, syslog)
+    - Automatic log rotation (10MB files, keeps 5 files)
+    - Thread-safe operations with zero overhead when disabled
+    - Format string support with type-safe arguments
+    - Replaces mix of `logmsg()`, `ReportError()`, and custom logging
+    - New wrapper: `src/utils/vt_logger.hh` and `vt_logger.cc`
+    - Usage: `vt::Logger::info("Check #{} - Total: ${:.2f}", id, total)`
+    - Logs stored in `/var/log/viewtouch/viewtouch.log`
+  - **nlohmann/json (v3.11.3)**: Modern JSON library for configuration files
+    - STL-like interface with intuitive syntax
+    - Type-safe conversions and nested value access
+    - Automatic backups before saving configs
+    - New helper: `src/utils/vt_json_config.hh` and `vt_json_config.cc`
+    - Usage: `cfg.Get<double>("tax.food", 0.07)` with nested keys
+    - Replaces custom INI parsers for new configuration files
+  - **magic_enum (v0.9.5)**: Compile-time enum reflection without macros
+    - Automatic enum-to-string conversions: `vt::EnumToString(PaymentType::CreditCard)` → "CreditCard"
+    - String-to-enum parsing with optional return type
+    - Get all enum values, names, and counts at compile-time
+    - Zero runtime overhead (header-only, compile-time reflection)
+    - New utilities: `src/utils/vt_enum_utils.hh`
+    - Backwards compatible C-style array generation
+  - **CMake Integration**: All libraries fetched automatically via FetchContent
+  - **Comprehensive Documentation**: Added `docs/MODERN_CPP_LIBRARIES.md` with examples and best practices
+  - **Demo Application**: Created `src/utils/modern_cpp_example.cc` demonstrating all three libraries
+  - **Benefits**:
+    - **Better Logging**: Async performance, automatic rotation, structured output
+    - **Modern Configs**: JSON format easier to read/edit than custom binary formats
+    - **Cleaner Enums**: No more manual `const char* names[]` arrays to maintain
+    - **C++17/20 Alignment**: Supports modern development practices
+    - **Professional Tools**: Battle-tested libraries used by thousands of projects
+  - **Active Production Integrations**:
+    - **vtpos** (`loader/loader_main.cc`) - Startup logging with version info
+    - **vt_main** (`main/data/manager.cc`) - System initialization, socket connections, data path logging
+    - **vt_term** (`term/term_main.cc`) - Terminal startup, display connection logging  
+    - **Check Processing** (`main/business/check.cc`) - Check save/close operations with details
+    - **Credit Cards** (`main/data/credit.cc`) - Payment transactions, authorizations, voids, refunds
+  - **Files Created**:
+    - `src/utils/vt_logger.{hh,cc}` - Logging wrapper around spdlog
+    - `src/utils/vt_json_config.{hh,cc}` - JSON configuration helper
+    - `src/utils/vt_enum_utils.hh` - Enum reflection utilities (header-only)
+    - `src/utils/modern_cpp_example.cc` - Comprehensive usage examples
+    - `main/data/settings_enums.hh` - Modernized enums (DrawerMode, ReceiptPrint, TimeFormat, etc.)
+    - `main/data/terminal_config_example.cc` - Working JSON config example (can generate templates)
+    - `docs/MODERN_CPP.md` - **Complete guide** (API reference, examples, integration guide, all in one file)
+  - **Files Modified**:
+    - `CMakeLists.txt` - Added FetchContent declarations and library linking for zone and vtcore
+    - `loader/loader_main.cc` - Integrated spdlog logging at startup
+    - `main/data/manager.cc` - Full logging integration (startup, sockets, system init, shutdown)
+    - `term/term_main.cc` - Terminal logging (startup, connections, errors)
+    - `main/business/check.cc` - Check operation logging (save, close with user/table info)
+    - `main/data/credit.cc` - Payment logging (auth, void, refund with amounts/approvals)
+    - `zone/settings_zone.cc` - Active magic_enum integration (5 settings using modern enums)
+
 - **Bouncing DVD-Style Screensaver**: Updated screensaver with animated "ViewTouch 35 Years In Point Of Sales" text
   - **DVD Logo Animation**: Text bounces around the screen like the classic DVD logo screensaver
   - **Edge Detection**: Text reverses direction when it hits screen edges for continuous smooth animation
@@ -98,6 +153,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files reverted: `term/layer.cc`, `term/term_view.hh`, `term/term_view.cc`
 
 ### Changed
+- **Item Name Character Limit Increase**: Increased the character limit for item names from 32 to 100 characters
+  - **Enhanced Item Name Flexibility**: Users can now create longer, more descriptive item names up to 100 characters
+  - **UI Field Update**: Modified `ItemListZone::AddFields()` in `zone/inventory_zone.cc` to support longer names
+  - **Backward Compatibility**: Existing item names continue to work unchanged, only new items benefit from the extended limit
+  - **Benefits**:
+    - **Better Item Descriptions**: Restaurants can use more detailed, descriptive names for menu items
+    - **Improved Clarity**: Longer names reduce ambiguity and improve customer understanding
+    - **Future-Proofing**: Supports longer item names as menu complexity grows over time
+    - **No Breaking Changes**: Existing shorter item names work exactly as before
 - **Error Handler Modernization**: Comprehensive refactoring of unified error handling framework with modern C++17/20 features
   - **Modern C++ Features Applied**:
     - **String Handling**: Replaced `const std::string&` with `std::string_view` for better performance and zero-copy operations

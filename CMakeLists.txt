@@ -110,6 +110,44 @@ if(NOT TARGET Catch2::Catch2)
     message(FATAL_ERROR "missing 'Catch2::Catch2' target")
 endif()
 
+# Modern C++ dependencies for improved code quality and maintainability
+include(FetchContent)
+
+# spdlog - Fast C++ logging library
+message(STATUS "Fetching spdlog...")
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.13.0
+    GIT_SHALLOW TRUE
+)
+set(SPDLOG_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+set(SPDLOG_BUILD_EXAMPLE OFF CACHE BOOL "" FORCE)
+set(SPDLOG_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(spdlog)
+
+# nlohmann/json - JSON for Modern C++
+message(STATUS "Fetching nlohmann/json...")
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+    GIT_SHALLOW TRUE
+)
+set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
+set(JSON_Install OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(json)
+
+# magic_enum - Static reflection for enums
+message(STATUS "Fetching magic_enum...")
+FetchContent_Declare(
+    magic_enum
+    GIT_REPOSITORY https://github.com/Neargye/magic_enum.git
+    GIT_TAG v0.9.5
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(magic_enum)
+
 include_directories(main)
 include_directories(main/business)
 include_directories(main/hardware)
@@ -219,13 +257,16 @@ add_library(vtcore
     src/core/debug.cc           src/core/debug.hh
     src/core/generic_char.cc    src/core/generic_char.hh
     src/core/logger.cc          src/core/logger.hh
+    src/utils/vt_logger.cc      src/utils/vt_logger.hh
+    src/utils/vt_json_config.cc src/utils/vt_json_config.hh
     src/network/socket.cc          src/network/socket.hh
     main/ui/labels.cc     main/ui/labels.hh
     )
 
 target_include_directories(vtcore PUBLIC
-    ${CMAKE_CURRENT_BINARY_DIR}) # include generated files like build_number.h
-target_link_libraries(vtcore vt_version tz)
+    ${CMAKE_CURRENT_BINARY_DIR}  # include generated files like build_number.h
+    $<TARGET_PROPERTY:magic_enum::magic_enum,INTERFACE_INCLUDE_DIRECTORIES>)
+target_link_libraries(vtcore PUBLIC vt_version tz spdlog::spdlog nlohmann_json::nlohmann_json magic_enum::magic_enum)
 
 add_executable(vtpos 
 		loader/loader_main.cc )
@@ -267,7 +308,14 @@ add_library(zone
     zone/creditcard_list_zone.cc zone/creditcard_list_zone.hh
     )
 
-target_link_libraries(zone conf_file vtcore)
+target_include_directories(zone PUBLIC
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/main/data
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/_deps/magic_enum-src/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/_deps/spdlog-src/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/_deps/json-src/include>)
+target_link_libraries(zone PUBLIC conf_file vtcore spdlog::spdlog nlohmann_json::nlohmann_json magic_enum::magic_enum)
 
 add_executable(vt_main
     src/core/data_file.cc

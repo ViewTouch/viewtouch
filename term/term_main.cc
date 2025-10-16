@@ -22,6 +22,8 @@
 #include "term_view.hh"
 #include "remote_link.hh"
 #include "touch_screen.hh"
+#include "src/utils/vt_logger.hh"
+#include "version/vt_version_info.hh"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/file.h>
@@ -44,6 +46,15 @@
 /**** Main ****/
 int main(int argc, const genericChar* *argv)
 {
+    // Initialize modern logging
+#ifdef DEBUG
+    vt::Logger::Initialize("/var/log/viewtouch", "debug", true, true);
+#else
+    vt::Logger::Initialize("/var/log/viewtouch", "info", false, true);
+#endif
+    vt::Logger::info("ViewTouch Terminal (vt_term) starting - Version {}", 
+                     viewtouch::get_version_short());
+
     std::string socket_file = "";
     struct sockaddr_un server_adr;
     int val;
@@ -59,18 +70,23 @@ int main(int argc, const genericChar* *argv)
         if (strcmp(argv[1], "version") == 0)
         {
             // return version for vt_update
+            vt::Logger::info("Version check requested");
             printf("1\n");
+            vt::Logger::Shutdown();
             return 0;
         }
         socket_file = argv[1];
+        vt::Logger::debug("Using socket file: {}", socket_file);
     }
 
     SocketNo = socket(AF_UNIX, SOCK_STREAM, 0);
     if (SocketNo <= 0)
     {
+        vt::Logger::critical("Failed to open socket - errno: {}", errno);
         fprintf(stderr, "Term: Failed to open socket");
         exit(1);
     }
+    vt::Logger::debug("Socket opened: {}", SocketNo);
 
     XtToolkitInitialize();
     //FIX:  this should be some sort of polling loop; give up if we've waited too
@@ -81,13 +97,16 @@ int main(int argc, const genericChar* *argv)
     server_adr.sun_family = AF_UNIX;
     strcpy(server_adr.sun_path, socket_file.c_str());
 
+    vt::Logger::debug("Connecting to server socket: {}", socket_file);
     if (connect(SocketNo, reinterpret_cast<struct sockaddr*>(&server_adr),
                 SUN_LEN(&server_adr)) < 0)
     {
+        vt::Logger::critical("Can't connect to server - errno: {} ({})", errno, socket_file);
         fprintf(stderr, "Term: Can't connect to server (error %d)\n", errno);
         close(SocketNo);
         exit(1);
     }
+    vt::Logger::info("Connected to server successfully");
 
     val = 16384;
     setsockopt(SocketNo, SOL_SOCKET, SO_SNDBUF, &val, sizeof(val));
@@ -132,11 +151,17 @@ int main(int argc, const genericChar* *argv)
         strcat(display.data(), ":0");
 
     // if OpenTerm() returns there must be an error
+    vt::Logger::info("Opening terminal - Display: {}, Hardware: {}", display.data(), term_hardware);
     try {
-        if (OpenTerm(display.data(), ts.get(), is_local, 0, set_width, set_height))
+        if (OpenTerm(display.data(), ts.get(), is_local, 0, set_width, set_height)) {
+            vt::Logger::error("OpenTerm failed");
+            vt::Logger::Shutdown();
             return 1;
+        }
     } catch (const std::exception& e) {
+        vt::Logger::critical("Exception in OpenTerm: {}", e.what());
         fprintf(stderr, "Error in OpenTerm: %s\n", e.what());
+        vt::Logger::Shutdown();
         return 1;
     }
 

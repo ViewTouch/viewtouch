@@ -37,6 +37,7 @@
 #include "report_zone.hh"
 #include "manager.hh"
 #include "admission.hh"
+#include "src/utils/vt_logger.hh"
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -315,12 +316,16 @@ int Check::Save()
 {
     FnTrace("Check::Save()");
     
+    vt::Logger::debug("Saving check #{} - Serial: {}, Table: {}", 
+                      checknum, serial_number, Table());
+    
     // Mark check data as dirty for persistence tracking
     GetDataPersistenceManager().MarkDataDirty("checks");
     
     if (archive)
     {
         archive->changed = 1;
+        vt::Logger::debug("Check #{} marked in archive", checknum);
         return 0;
     }
     else if (copy == 0)
@@ -329,6 +334,9 @@ int Check::Save()
         if (result == 0) {
             // Mark as clean after successful save
             GetDataPersistenceManager().MarkDataClean("checks");
+            vt::Logger::info("Check #{} saved successfully", checknum);
+        } else {
+            vt::Logger::error("Failed to save check #{}", checknum);
         }
         return result;
     }
@@ -906,16 +914,23 @@ int Check::Settle(Terminal *term)
 int Check::Close(Terminal *term)
 {
     FnTrace("Check::Close()");
+    vt::Logger::info("Closing check #{} - User: {}", checknum, 
+                     term->user ? term->user->system_name.Value() : "Unknown");
+    
     Employee *employee = term->user;
-    if (employee == nullptr)
+    if (employee == nullptr) {
+        vt::Logger::warn("Check #{} close failed - no user", checknum);
         return 1;
+    }
 
     Drawer *d = NULL;
     if (!IsTraining())
     {
         d = term->FindDrawer();
-        if (d == nullptr)
+        if (d == nullptr) {
+            vt::Logger::warn("Check #{} close failed - no drawer", checknum);
             return 1;
+        }
     }
 
     int closed = 0;
@@ -929,8 +944,10 @@ int Check::Close(Terminal *term)
         }
     }
 
-    if (closed == 0)
+    if (closed == 0) {
+        vt::Logger::warn("Check #{} close failed - no subchecks closed", checknum);
         return 1;
+    }
 
     if (!IsTraining())
     {
@@ -939,6 +956,8 @@ int Check::Close(Terminal *term)
     }
     if (!chef_time.IsSet())
         chef_time.Set();  //check is sent to kitchen on close
+    
+    vt::Logger::info("Check #{} closed successfully - {} subchecks", checknum, closed);
     return 0;
 }
 

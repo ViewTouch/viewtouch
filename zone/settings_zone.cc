@@ -31,6 +31,9 @@
 #include "manager.hh"
 #include "image_data.hh"
 #include "locale.hh"
+#include "main/data/settings_enums.hh"
+#include "src/utils/vt_enum_utils.hh"
+#include "src/utils/vt_logger.hh"
 
 #include <iostream>
 
@@ -102,7 +105,13 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         onoff = settings->use_seats;
         break;
     case SWITCH_DRAWER_MODE:
-        str = FindStringByValue(settings->drawer_mode, DrawerModeValue, DrawerModeName);
+        // Modern enum-based approach
+        if (auto mode = vt::IntToEnum<DrawerModeType>(settings->drawer_mode)) {
+            str = vt::GetDrawerModeDisplayName(*mode);
+            vt::Logger::debug("Drawer mode: {}", str);
+        } else {
+            str = FindStringByValue(settings->drawer_mode, DrawerModeValue, DrawerModeName);
+        }
         break;
     case SWITCH_PASSWORDS:
         str = FindStringByValue(settings->password_mode, PasswordValue, PasswordName);
@@ -132,19 +141,39 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         str = FindStringByValue(settings->price_rounding, RoundingValue, RoundingName);
         break;
     case SWITCH_RECEIPT_PRINT:
-        str = FindStringByValue(settings->receipt_print, ReceiptPrintValue, ReceiptPrintName);
+        // Modern enum-based approach
+        if (auto type = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {
+            str = vt::GetReceiptPrintDisplayName(*type);
+        } else {
+            str = FindStringByValue(settings->receipt_print, ReceiptPrintValue, ReceiptPrintName);
+        }
         break;
     case SWITCH_DATE_FORMAT:
-        str = FindStringByValue(settings->date_format, DateFormatValue, DateFormatName);
+        // Modern enum-based approach
+        if (auto format = vt::IntToEnum<DateFormatType>(settings->date_format)) {
+            str = vt::GetDateFormatDisplayName(*format);
+        } else {
+            str = FindStringByValue(settings->date_format, DateFormatValue, DateFormatName);
+        }
         break;
     case SWITCH_NUMBER_FORMAT:
-        str = FindStringByValue(settings->number_format, NumberFormatValue, NumberFormatName);
+        // Modern enum-based approach
+        if (auto format = vt::IntToEnum<NumberFormatType>(settings->number_format)) {
+            str = vt::GetNumberFormatDisplayName(*format);
+        } else {
+            str = FindStringByValue(settings->number_format, NumberFormatValue, NumberFormatName);
+        }
         break;
     case SWITCH_MEASUREMENTS:
         str = FindStringByValue(settings->measure_system, MeasureSystemValue, MeasureSystemName);
         break;
     case SWITCH_TIME_FORMAT:
-        str = FindStringByValue(settings->time_format, TimeFormatValue, TimeFormatName);
+        // Modern enum-based approach  
+        if (auto format = vt::IntToEnum<TimeFormatType>(settings->time_format)) {
+            str = vt::GetTimeFormatDisplayName(*format);
+        } else {
+            str = FindStringByValue(settings->time_format, TimeFormatValue, TimeFormatName);
+        }
         break;
     case SWITCH_AUTHORIZE_METHOD:
         str = FindStringByValue(settings->authorize_method, AuthorizeValue, AuthorizeName);
