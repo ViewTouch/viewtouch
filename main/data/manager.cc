@@ -42,6 +42,7 @@
 #include "zone/dialog_zone.hh"
 
 #include "conf_file.hh"
+#include "src/utils/vt_logger.hh"  // Modern C++ logging
 #include "date/date.h"      // helper library to output date strings with std::chrono
 
 #include <curlpp/cURLpp.hpp>
@@ -471,6 +472,15 @@ int main(int argc, genericChar* argv[])
     StartupLocalization();
     ReadViewTouchConfig();
 
+    // Initialize modern logging system
+#ifdef DEBUG
+    vt::Logger::Initialize("/var/log/viewtouch", "debug", true, true);
+#else
+    vt::Logger::Initialize("/var/log/viewtouch", "info", false, true);
+#endif
+    vt::Logger::info("ViewTouch Main (vt_main) starting - Version {}", 
+                     viewtouch::get_version_short());
+
     genericChar socket_file[256] = "";
     if (argc >= 2)
     {
@@ -478,6 +488,7 @@ int main(int argc, genericChar* argv[])
         {
             // return version for vt_update
             printf("1\n");
+            vt::Logger::Shutdown();  // Clean shutdown
             return 0;
         }
         strncpy(socket_file, argv[1], sizeof(socket_file) - 1);
@@ -487,22 +498,28 @@ int main(int argc, genericChar* argv[])
     LoaderSocket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (LoaderSocket <= 0)
     {
+        vt::Logger::critical("Can't open initial loader socket - errno: {}", errno);
         ReportError("Can't open initial loader socket");
         exit(1);
     }
+    vt::Logger::debug("Loader socket opened successfully: {}", LoaderSocket);
 
     struct sockaddr_un server_adr;
     server_adr.sun_family = AF_UNIX;
     strncpy(server_adr.sun_path, socket_file, sizeof(server_adr.sun_path) - 1);
     server_adr.sun_path[sizeof(server_adr.sun_path) - 1] = '\0'; // ensure null termination
     sleep(1);
+    
+    vt::Logger::debug("Connecting to loader socket: {}", socket_file);
     if (connect(LoaderSocket, (struct sockaddr *) &server_adr,
                 SUN_LEN(&server_adr)) < 0)
     {
+        vt::Logger::critical("Can't connect to loader socket '{}' - errno: {}", socket_file, errno);
         ReportError("Can't connect to loader");
         close(LoaderSocket);
         exit(1);
     }
+    vt::Logger::info("Connected to loader successfully");
 
     // Read starting commands
     use_net = 1;
@@ -593,19 +610,27 @@ int main(int argc, genericChar* argv[])
     SystemTime.Set();
 
     // Start application
+    vt::Logger::info("Initializing ViewTouch system...");
     MasterSystem = std::make_unique<System>();
     if (MasterSystem == nullptr)
     {
+        vt::Logger::critical("Failed to create main system object");
         ReportError("Couldn't create main system object");
         EndSystem();
     }
+    vt::Logger::debug("System object created successfully");
     
     // Initialize data persistence manager
+    vt::Logger::info("Initializing data persistence manager...");
     InitializeDataPersistence(MasterSystem.get());
-    if (strlen(data_path) > 0)
+    
+    if (strlen(data_path) > 0) {
+        vt::Logger::info("Using custom data path: {}", data_path);
         MasterSystem->SetDataPath(data_path);
-    else
+    } else {
+        vt::Logger::info("Using default data path: {}", VIEWTOUCH_PATH "/dat");
         MasterSystem->SetDataPath(VIEWTOUCH_PATH "/dat");
+    }
     // Check for updates from server if not disabled
     if (autoupdate)
     {
@@ -731,8 +756,12 @@ int main(int argc, genericChar* argv[])
     vt_init_setproctitle(argc, argv);
     vt_setproctitle("vt_main pri");
 
+    vt::Logger::info("Starting ViewTouch system (network: {})", use_net ? "enabled" : "disabled");
     StartSystem(use_net);
+    
+    vt::Logger::info("ViewTouch system shutting down...");
     EndSystem();
+    vt::Logger::Shutdown();  // Clean shutdown of logging
     return 0;
 }
 

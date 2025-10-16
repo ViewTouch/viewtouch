@@ -22,6 +22,7 @@
 #include "logger.hh"
 #include "utility.hh"
 #include "locale.hh"
+#include "src/utils/vt_logger.hh"
 
 #include "version/vt_version_info.hh"
 
@@ -524,6 +525,14 @@ void SetPerms()
 int main(int argc, genericChar* argv[])
 {
     SetPerms();
+
+    // Initialize modern logging system
+#ifdef DEBUG
+    vt::Logger::Initialize("/var/log/viewtouch", "debug", true, true);
+#else
+    vt::Logger::Initialize("/var/log/viewtouch", "info", false, true);
+#endif
+    vt::Logger::info("ViewTouch Loader (vtpos) starting - Version {}", viewtouch::get_version_short());
 
     // Set up signal interrupts
     signal(SIGINT,  SignalFn);

@@ -30,6 +30,7 @@
 #include "terminal.hh"
 #include "credit.hh"
 #include "utility.hh"
+#include "src/utils/vt_logger.hh"
 #include <unistd.h>
 #include <cctype>
 #include <time.h>
@@ -1529,6 +1530,9 @@ int Credit::ClearAuth()
 int Credit::Finalize(Terminal *term)
 {
     FnTrace("Credit::Finalize()");
+    
+    vt::Logger::debug("Finalizing credit transaction - Amount: ${:.2f}, Card: ****{}",
+                      amount / 100.0, number.Value() + (number.size() > 4 ? number.size() - 4 : 0));
 
     batch_term_id.Set(term->cc_debit_termid.Value());
     if (IsPreauthed() && !preauth_time.IsSet())
@@ -1536,6 +1540,8 @@ int Credit::Finalize(Terminal *term)
         preauth_amount = FullAmount();
         preauth_time.Set();
         approval.Set(auth.Value());
+        vt::Logger::info("Credit preauth finalized - Approval: {}, Amount: ${:.2f}",
+                        auth.Value(), preauth_amount / 100.0);
     }
     else if (IsAuthed() && !auth_time.IsSet())
     {
@@ -1545,6 +1551,8 @@ int Credit::Finalize(Terminal *term)
         refund_amount = 0;
         auth_time.Set();
         approval.Set(auth.Value());
+        vt::Logger::info("Credit auth finalized - Approval: {}, Amount: ${:.2f}",
+                        auth.Value(), auth_amount / 100.0);
     }
     else if (IsVoided(1) && !void_time.IsSet())
     {
@@ -1552,11 +1560,13 @@ int Credit::Finalize(Terminal *term)
         void_time.Set();
         MasterSystem->cc_void_db->Add(term, Copy());
         approval.Set(auth.Value());
+        vt::Logger::info("Credit void finalized - Amount: ${:.2f}", void_amount / 100.0);
     }
     else if (IsRefunded(1) && !refund_time.IsSet())
     {
         refund_amount = amount;
         refund_time.Set();
+        vt::Logger::info("Credit refund finalized - Amount: ${:.2f}", refund_amount / 100.0);
         MasterSystem->cc_refund_db->Add(term, Copy());
         approval.Set(auth.Value());
     }
