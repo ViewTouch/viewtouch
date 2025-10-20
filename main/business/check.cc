@@ -1830,6 +1830,31 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
     return retval;
 }
 
+// Helper function to get modifier color based on main order color
+static int GetModifierColor(int order_color)
+{
+    switch (order_color) {
+        case COLOR_YELLOW:   return COLOR_ORANGE;     // Darker yellow variant
+        case COLOR_RED:      return COLOR_DK_RED;     // Dark red
+        case COLOR_GREEN:    return COLOR_DK_GREEN;   // Dark green
+        case COLOR_BLUE:     return COLOR_DK_BLUE;    // Dark blue
+        case COLOR_PURPLE:   return COLOR_DK_MAGENTA; // Dark purple variant
+        case COLOR_TEAL:     return COLOR_DK_TEAL;    // Dark teal
+        case COLOR_MAGENTA:  return COLOR_DK_MAGENTA; // Dark magenta
+        case COLOR_BROWN:    return COLOR_DK_RED;     // Darker brown
+        case COLOR_ORANGE:   return COLOR_REDORANGE;  // Darker orange
+        case COLOR_REDORANGE:return COLOR_BROWN;      // Even darker
+        case COLOR_SEAGREEN: return COLOR_DK_TEAL;    // Darker sea green
+        case COLOR_LT_BLUE:  return COLOR_BLUE;       // Darker light blue
+        case COLOR_DK_RED:   return COLOR_BLACK;      // Very dark for already dark red
+        case COLOR_DK_GREEN: return COLOR_BLACK;      // Very dark for already dark green
+        case COLOR_DK_BLUE:  return COLOR_BLACK;      // Very dark for already dark blue
+        case COLOR_DK_TEAL:  return COLOR_BLACK;      // Very dark for already dark teal
+        case COLOR_DK_MAGENTA: return COLOR_BLACK;    // Very dark for already dark magenta
+        default:             return COLOR_GRAY;       // Fallback for unknown colors
+    }
+}
+
 int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_target,
                       ReportZone *rzone)
 {
@@ -2099,6 +2124,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
 
                 // Calculate order age and determine color for video displays
                 int order_color = COLOR_DEFAULT;
+                int modifier_color = COLOR_DEFAULT;
                 bool should_flash = false;
                 if (video_target != PRINTER_DEFAULT && chef_time.IsSet() && settings)
                 {
@@ -2116,16 +2142,35 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                         }
                         else if (elapsed_minutes >= settings->kv_order_alert_time &&
                                  settings->kv_order_alert_time > 0)
+                        {
                             order_color = (settings->kv_alert_color >= 0) ? settings->kv_alert_color : COLOR_RED;
+                        }
                         else if (elapsed_minutes >= settings->kv_order_warn_time &&
                                  settings->kv_order_warn_time > 0)
+                        {
                             order_color = (settings->kv_warn_color >= 0) ? settings->kv_warn_color : COLOR_YELLOW;
+                        }
                     }
+                }
+
+                // Always set modifier color to be different from order color for visual distinction
+                if (order_color == COLOR_DEFAULT)
+                {
+                    // For normal orders, use red for modifiers
+                    modifier_color = COLOR_RED;
+                }
+                else
+                {
+                    // For alerting orders, use the mapped modifier color
+                    modifier_color = GetModifierColor(order_color);
                 }
 
                 // If order should flash and we're in blink on state, hide it
                 if (should_flash && rzone && rzone->BlinkState() == 1)
+                {
                     order_color = COLOR_CLEAR;
+                    modifier_color = COLOR_CLEAR;
+                }
 
                 report->TextL(str, order_color);
 
@@ -2168,19 +2213,19 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                                 Flt swidth = rzone->TextWidth(term, str);
                                 if ((pos + swidth) >= (rzone->Width(term) - 3))
                                 {
-                                    report->Text(",", order_color, ALIGN_LEFT, pos);
+                                    report->Text(",", modifier_color, ALIGN_LEFT, pos);
                                     report->NewLine();
                                     pos = 0.0;
                                     sprintf(str, "    %s", tmpstr);
                                 }
                             }
-                            report->Text(str, order_color, ALIGN_LEFT, pos);
+                            report->Text(str, modifier_color, ALIGN_LEFT, pos);
                             pos += ((Flt) term->TextWidth(str) / (Flt) term->curr_font_width);
                         }
                         else
                         {
                             sprintf(str, "    %s", mod->Description(term));
-                            report->Text(str, order_color, ALIGN_LEFT, pos);
+                            report->Text(str, modifier_color, ALIGN_LEFT, pos);
                         }
                         if (show_what & CHECK_DISPLAY_CASH)
                         {

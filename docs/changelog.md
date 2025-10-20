@@ -49,7 +49,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - **Warning State (Yellow)**: Orders waiting 10+ minutes (configurable)
     - **Alert State (Red)**: Orders waiting 20+ minutes (configurable)
     - **Critical State (Flashing)**: Orders waiting 30+ minutes (configurable)
-  - **Modifier Inheritance**: Order modifiers (extra cheese, no onions, etc.) inherit parent order colors
+  - **Modifier Inheritance**: Order modifiers (extra cheese, no onions, etc.) always use distinct colors from main items
+    - **Consistent Differentiation**: Modifiers display in red for normal orders, darker shades for alerts (yellow→orange, red→dark red)
+    - **Enhanced Readability**: Clear visual separation between menu items and modifications at all times
   - **Configurable Settings**: Restaurant managers can customize timing thresholds and colors
     - **Settings Panel**: Added "Kitchen Video Order Alert Settings" in system configuration
     - **Color Customization**: Choose from 21 different colors for each alert state
