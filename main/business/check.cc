@@ -2042,9 +2042,9 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
         if (video_target == PRINTER_DEFAULT)
         {
             Drawer *d = NULL;
-            if (archive)
+            if (archive && archive->DrawerList())
                 d = archive->DrawerList()->FindBySerial(sc->drawer_id);
-            else
+            else if (sys && sys->DrawerList())
                 d = sys->DrawerList()->FindBySerial(sc->drawer_id);
             
             if (d)
@@ -2096,7 +2096,38 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                 }
                 else
                     sprintf(str, "%s%-2d %s", str2, order->count, order->Description(term));
-                report->TextL(str);
+
+                // Calculate order age and determine color for video displays
+                int order_color = COLOR_DEFAULT;
+                bool should_flash = false;
+                if (video_target != PRINTER_DEFAULT && chef_time.IsSet() && settings)
+                {
+                    TimeInfo current_time;
+                    current_time.Set();
+                    long elapsed_seconds = (current_time - chef_time).count();
+                    if (elapsed_seconds >= 0) {  // Prevent negative time
+                        int elapsed_minutes = static_cast<int>(elapsed_seconds / 60); // convert seconds to minutes
+
+                        if (elapsed_minutes >= settings->kv_order_flash_time &&
+                            settings->kv_order_flash_time > 0)
+                        {
+                            order_color = (settings->kv_flash_color >= 0) ? settings->kv_flash_color : COLOR_RED;
+                            should_flash = true;
+                        }
+                        else if (elapsed_minutes >= settings->kv_order_alert_time &&
+                                 settings->kv_order_alert_time > 0)
+                            order_color = (settings->kv_alert_color >= 0) ? settings->kv_alert_color : COLOR_RED;
+                        else if (elapsed_minutes >= settings->kv_order_warn_time &&
+                                 settings->kv_order_warn_time > 0)
+                            order_color = (settings->kv_warn_color >= 0) ? settings->kv_warn_color : COLOR_YELLOW;
+                    }
+                }
+
+                // If order should flash and we're in blink on state, hide it
+                if (should_flash && rzone && rzone->BlinkState() == 1)
+                    order_color = COLOR_CLEAR;
+
+                report->TextL(str, order_color);
 
                 // BAK->I'm not going to worry about fitting this in with the
                 // "use comma" stuff because the use comma stuff is only for
@@ -2137,19 +2168,19 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                                 Flt swidth = rzone->TextWidth(term, str);
                                 if ((pos + swidth) >= (rzone->Width(term) - 3))
                                 {
-                                    report->Text(",", COLOR_DEFAULT, ALIGN_LEFT, pos);
+                                    report->Text(",", order_color, ALIGN_LEFT, pos);
                                     report->NewLine();
                                     pos = 0.0;
                                     sprintf(str, "    %s", tmpstr);
                                 }
                             }
-                            report->Text(str, COLOR_DEFAULT, ALIGN_LEFT, pos);
+                            report->Text(str, order_color, ALIGN_LEFT, pos);
                             pos += ((Flt) term->TextWidth(str) / (Flt) term->curr_font_width);
                         }
                         else
                         {
                             sprintf(str, "    %s", mod->Description(term));
-                            report->Text(str, COLOR_DEFAULT, ALIGN_LEFT, pos);
+                            report->Text(str, order_color, ALIGN_LEFT, pos);
                         }
                         if (show_what & CHECK_DISPLAY_CASH)
                         {
@@ -4214,9 +4245,9 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 
     if (drawer == nullptr)
     {
-        if (check->archive)
+        if (check->archive && check->archive->DrawerList())
             drawer = check->archive->DrawerList()->FindBySerial(drawer_id);
-        else
+        else if (sys && sys->DrawerList())
             drawer = sys->DrawerList()->FindBySerial(drawer_id);
     }
 

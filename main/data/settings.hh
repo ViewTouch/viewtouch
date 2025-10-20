@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-constexpr int SETTINGS_VERSION = 100;  // READ ABOVE
+constexpr int SETTINGS_VERSION = 101;  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -694,6 +694,12 @@ public:
     int      report_start_midnight;
     int      kv_print_method;  // whether to print matched or unmatched
     int      kv_show_user;     // whether to put the user data on kitchen video
+    int      kv_order_warn_time;    // minutes before order shows warning color (yellow)
+    int      kv_order_alert_time;   // minutes before order shows alert color (red)
+    int      kv_order_flash_time;   // minutes before order starts flashing
+    int      kv_warn_color;         // color for warning state (default yellow)
+    int      kv_alert_color;        // color for alert state (default red)
+    int      kv_flash_color;        // color for flashing state (default red)
 
     // Job/Security/Overtime Settings
     int job_active[MAX_JOBS];

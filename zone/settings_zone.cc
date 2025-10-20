@@ -54,6 +54,7 @@ static int PasswordValue[] = {PW_NONE, PW_MANAGERS, PW_ALL, -1};
 // " "  = no symbol
 static const genericChar* MoneySymbolName[] = { "$", "\244", "\243", " ", NULL };
 
+
 SwitchZone::SwitchZone()
 {
     FnTrace("SwitchZone::SwitchZone()");
@@ -531,6 +532,18 @@ SettingsZone::SettingsZone()
     LeftAlign();
     AddTextField("Restart Hour (0-23, -1=disabled)", 5); SetFlag(FF_ONLYDIGITS);
     AddTextField("Restart Minute (0-59)", 5); SetFlag(FF_ONLYDIGITS);
+    AddNewLine();
+    Center();
+    AddLabel("Kitchen Video Order Alert Settings");
+    AddNewLine();
+    LeftAlign();
+    AddTextField("Warning Time (minutes)", 5); SetFlag(FF_ONLYDIGITS);
+    AddTextField("Alert Time (minutes)", 5); SetFlag(FF_ONLYDIGITS);
+    AddTextField("Flash Time (minutes)", 5); SetFlag(FF_ONLYDIGITS);
+    AddNewLine();
+    AddListField("Warning Color", ColorName, ColorValue);
+    AddListField("Alert Color", ColorName, ColorValue);
+    AddListField("Flash Color", ColorName, ColorValue);
 }
 
 RenderResult SettingsZone::Render(Terminal *term, int update_flag)
@@ -601,9 +614,17 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
     f->Set(settings->shadow_offset_y); f = f->next;
     f->Set(settings->shadow_blur_radius); f = f->next;
     
-    f = f->next;  // skip past label  
+    f = f->next;  // skip past label
     f->Set(settings->scheduled_restart_hour); f = f->next;
     f->Set(settings->scheduled_restart_min); f = f->next;
+
+    f = f->next;  // skip past label
+    f->Set(settings->kv_order_warn_time); f = f->next;
+    f->Set(settings->kv_order_alert_time); f = f->next;
+    f->Set(settings->kv_order_flash_time); f = f->next;
+    f->Set(settings->kv_warn_color); f = f->next;
+    f->Set(settings->kv_alert_color); f = f->next;
+    f->Set(settings->kv_flash_color); f = f->next;
 
     return 0;
 }
@@ -660,6 +681,14 @@ int SettingsZone::SaveRecord(Terminal *term, int record, int write_file)
     f = f->next;  // skip past label
     f->Get(settings->scheduled_restart_hour); f = f->next;
     f->Get(settings->scheduled_restart_min); f = f->next;
+
+    f = f->next;  // skip past label
+    f->Get(settings->kv_order_warn_time); f = f->next;
+    f->Get(settings->kv_order_alert_time); f = f->next;
+    f->Get(settings->kv_order_flash_time); f = f->next;
+    f->Get(settings->kv_warn_color); f = f->next;
+    f->Get(settings->kv_alert_color); f = f->next;
+    f->Get(settings->kv_flash_color); f = f->next;
 
     settings->min_day_length = day_length_hrs * 60 * 60;  // convert from hours to seconds
 

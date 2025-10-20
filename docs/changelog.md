@@ -38,12 +38,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - **Cleaner Enums**: No more manual `const char* names[]` arrays to maintain
     - **C++17/20 Alignment**: Supports modern development practices
     - **Professional Tools**: Battle-tested libraries used by thousands of projects
-  - **Active Production Integrations**:
-    - **vtpos** (`loader/loader_main.cc`) - Startup logging with version info
-    - **vt_main** (`main/data/manager.cc`) - System initialization, socket connections, data path logging
-    - **vt_term** (`term/term_main.cc`) - Terminal startup, display connection logging  
-    - **Check Processing** (`main/business/check.cc`) - Check save/close operations with details
-    - **Credit Cards** (`main/data/credit.cc`) - Payment transactions, authorizations, voids, refunds
+- **Active Production Integrations**:
+  - **vtpos** (`loader/loader_main.cc`) - Startup logging with version info
+  - **vt_main** (`main/data/manager.cc`) - System initialization, socket connections, data path logging
+  - **vt_term** (`term/term_main.cc`) - Terminal startup, display connection logging
+  - **Check Processing** (`main/business/check.cc`) - Check save/close operations with details
+  - **Credit Cards** (`main/data/credit.cc`) - Payment transactions, authorizations, voids, refunds
+- **Video Display Timing System** 🚧 **UNDER DEVELOPMENT**: Enhanced kitchen/bar video displays with intelligent color coding and alerts
+  - **Progressive Color Alerts**: Orders automatically change color based on preparation time
+    - **Warning State (Yellow)**: Orders waiting 10+ minutes (configurable)
+    - **Alert State (Red)**: Orders waiting 20+ minutes (configurable)
+    - **Critical State (Flashing)**: Orders waiting 30+ minutes (configurable)
+  - **Modifier Inheritance**: Order modifiers (extra cheese, no onions, etc.) inherit parent order colors
+  - **Configurable Settings**: Restaurant managers can customize timing thresholds and colors
+    - **Settings Panel**: Added "Kitchen Video Order Alert Settings" in system configuration
+    - **Color Customization**: Choose from 21 different colors for each alert state
+    - **Time Thresholds**: Adjustable warning/alert/flash intervals in minutes
+  - **Real-time Updates**: Visual effects update dynamically as orders age
+  - **Kitchen Efficiency**: Prevents orders from being forgotten with visual urgency indicators
+  - **Crash Prevention**: Added robust NULL pointer checks and safety validation
+  - **Files Modified**:
+    - `main/data/settings.{hh,cc}` - Added timing and color configuration settings
+    - `zone/settings_zone.cc` - Added configuration UI for video timing settings
+    - `zone/report_zone.{hh,cc}` - Added blinking state management for flashing alerts
+    - `main/business/check.cc` - Implemented color logic and modifier inheritance
   - **Files Created**:
     - `src/utils/vt_logger.{hh,cc}` - Logging wrapper around spdlog
     - `src/utils/vt_json_config.{hh,cc}` - JSON configuration helper

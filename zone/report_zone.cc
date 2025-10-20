@@ -61,6 +61,7 @@ ReportZone::ReportZone()
     video_target     = PRINTER_DEFAULT;
     rzstate          = 0;
     printing_to_printer = 0;
+    blink_state      = 0;
 }
 
 // Destructor
@@ -1278,6 +1279,11 @@ int ReportZone::Update(Terminal *t, int update_message, const genericChar* value
     }
     else if ((update_message & UPDATE_BLINK) && report_type == REPORT_CHECK)
     {
+        // Toggle blink state for flashing long-waiting orders on video displays
+        if (check_disp_num && video_target != PRINTER_DEFAULT)
+        {
+            blink_state ^= 1;
+        }
         Draw(t, 1);
         return 0;
     }

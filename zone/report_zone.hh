@@ -51,6 +51,7 @@ class ReportZone : public LayoutZone
     TimeInfo  *period_fiscal;
     int       rzstate;
     int       printing_to_printer;
+    int       blink_state;  // for flashing long-waiting orders
 
 public:
     // Constructor
@@ -83,6 +84,7 @@ public:
     Flt         *Spacing()           { return &spacing; }
     int         *Columns()           { return &columns; }
     int          Page(int new_page)  { int old_page = page; page = new_page; return old_page; }
+    int          BlinkState()       { return blink_state; }
 
     int Print(Terminal *t, int print_mode);
     SignalResult QuickBooksExport(Terminal *term);
