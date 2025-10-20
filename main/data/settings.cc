@@ -1379,6 +1379,12 @@ Settings::Settings()
     report_start_midnight = 1;
     kv_print_method       = KV_PRINT_UNMATCHED;
     kv_show_user          = 0;
+    kv_order_warn_time    = 10;   // 10 minutes for warning (yellow)
+    kv_order_alert_time   = 20;   // 20 minutes for alert (red)
+    kv_order_flash_time   = 30;   // 30 minutes for flashing
+    kv_warn_color         = COLOR_YELLOW;
+    kv_alert_color        = COLOR_RED;
+    kv_flash_color        = COLOR_RED;
 
     // Media
     last_discount_id   = 0;
@@ -2114,6 +2120,14 @@ int Settings::Load(const char* file)
         df.Read(cc_print_custinfo);
     if (version >= 91)
         df.Read(kv_show_user);
+    if (version >= 101) {
+        df.Read(kv_order_warn_time);
+        df.Read(kv_order_alert_time);
+        df.Read(kv_order_flash_time);
+        df.Read(kv_warn_color);
+        df.Read(kv_alert_color);
+        df.Read(kv_flash_color);
+    }
 
     if (store == STORE_SUNWEST)
         media_balanced |=
@@ -2473,6 +2487,12 @@ int Settings::Save()
     df.Write(advertise_fund);
     df.Write(cc_print_custinfo);
     df.Write(kv_show_user);
+    df.Write(kv_order_warn_time);
+    df.Write(kv_order_alert_time);
+    df.Write(kv_order_flash_time);
+    df.Write(kv_warn_color);
+    df.Write(kv_alert_color);
+    df.Write(kv_flash_color);
 
     df.Close();
 
