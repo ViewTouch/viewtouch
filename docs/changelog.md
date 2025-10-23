@@ -146,6 +146,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - **Robustness**: Improved error handling and memory management increase system stability
 
 ### Fixed
+- **Kitchen Video Print Method "Matched" Empty Report Error**: Fixed issue where setting "Kitchen Video Print Method" to "Matched" caused video targets to break with "ReportRender: can't render report with empty body" error
+  - **Root Cause**: `PrintWorkOrder()` method was designed for printer output and would return early when no orders needed printing, but for video display it should always show check information
+  - **Solution**: Modified `PrintWorkOrder()` to continue execution for video display mode (`rzone != nullptr`) even when no orders match the video target
+  - **Impact**: Video targets now display properly with "Matched" setting, showing check headers even when no orders are assigned to specific video targets
+  - **Files Modified**: `main/business/check.cc` - Enhanced `PrintWorkOrder()` method with video display handling
 - **Self-Order Button Differentiation**: Fixed issue where `quickdinein` and `quicktogo` buttons on self-order page didn't work correctly
   - **Problem**: Buttons were calling wrong check types (`CHECK_DINEIN`, `CHECK_TOGO`) instead of self-order variants
   - **Solution**: Updated message handling to use correct self-order check types (`CHECK_SELFDINEIN`, `CHECK_SELFTAKEOUT`)
