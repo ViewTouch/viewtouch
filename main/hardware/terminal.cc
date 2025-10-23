@@ -208,7 +208,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             term->WInt8(TERM_STORENAME);
             term->WStr(settings->store_name);
 
-            if (term->zone_db == nullptr)
+            if (!term->zone_db)
                 printf("ACK!!!! no zone_db\n");
 
 	    // for KDS terminals, default to kitchen page using page variant configuration
@@ -766,7 +766,7 @@ int Terminal::Draw(int update_flag, int x, int y, int w, int h)
 int Terminal::Jump(int jump_type, int jump_id)
 {
     FnTrace("Terminal::Jump()");
-    if (zone_db == nullptr)
+    if (!zone_db)
         return 1;
 
     check_balanced = 0;
@@ -860,7 +860,7 @@ int Terminal::Jump(int jump_type, int jump_id)
 int Terminal::JumpToIndex(int idx)
 {
     FnTrace("Terminal::JumpToIndex()");
-    if (zone_db == nullptr)
+    if (!zone_db)
         return 1;
 
     Settings *settings = GetSettings();
@@ -1035,7 +1035,7 @@ int Terminal::NextTablePage()
 {
     FnTrace("Terminal::NextTablePage()");
     Page *p = page;
-    if (p == nullptr || zone_db == nullptr)
+    if (p == nullptr || !zone_db)
         return 1;
 
     for (int l = 0; l < 2; ++l)
@@ -1071,7 +1071,7 @@ int Terminal::PriorTablePage()
 {
     FnTrace("Terminal::PriorTablePage()");
     Page *p = page;
-    if (p == nullptr || zone_db == nullptr)
+    if (p == nullptr || !zone_db)
         return 1;
 
     for (int l = 0; l < 2; ++l)
@@ -2701,7 +2701,6 @@ int Terminal::EditTerm(int save_data, int edit_mode)
         if (save_data)
         {
             parent->SetAllMessages("Saving...");
-            delete parent->zone_db;
             parent->zone_db = zone_db->Copy();
             system_data->menu.DeleteUnusedItems(zone_db);
             system_data->menu.Save();
@@ -2909,12 +2908,12 @@ int Terminal::UpdateZoneDB(Control *con)
         LogoutUser(0);
     KillDialog();
 
-    if (zone_db)
-        delete zone_db;
+    delete zone_db;
+    zone_db = nullptr;
 
     reload_zone_db = 0;
     zone_db = con->NewZoneDB();
-    if (zone_db == nullptr)
+    if (!zone_db)
         return 1;
 
     if (page)
@@ -5509,7 +5508,7 @@ int Terminal::JumpList(int selected)
 int Terminal::EditDefaults()
 {
 	FnTrace("Terminal::EditDefaults()");
-    	if (zone_db == nullptr)
+    	if (!zone_db)
         	return 1;
 
 	WInt8(TERM_DEFPAGE);
@@ -5532,7 +5531,7 @@ int Terminal::EditDefaults()
 int Terminal::ReadDefaults()
 {
     FnTrace("Terminal::ReadDefaults()");
-    if (zone_db == nullptr)
+    if (!zone_db)
         return 1;
 
     zone_db->default_font = RInt8();

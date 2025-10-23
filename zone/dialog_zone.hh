@@ -93,10 +93,10 @@ public:
 
     DialogZone();
 
-    Zone        *Copy()
+    std::unique_ptr<Zone> Copy()
     {
         printf("Error:  No DialogZone::Copy() method defined for subclass!\n");
-        return NULL;
+        return nullptr;
     }
     int Type() { return ZONE_DLG_UNKNOWN; }
     RenderResult Render(Terminal *term, int update_flag);

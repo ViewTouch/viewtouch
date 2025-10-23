@@ -1082,11 +1082,11 @@ TableZone::TableZone()
 }
 
 // Member Functions
-Zone *TableZone::Copy()
+std::unique_ptr<Zone> TableZone::Copy()
 {
     int i;
 
-    TableZone *z = new TableZone;
+    auto z = std::make_unique<TableZone>();
     z->SetRegion(this);
     z->name.Set(name);
     z->key      = key;

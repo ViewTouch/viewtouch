@@ -1484,10 +1484,10 @@ ItemZone::ItemZone()
     addanyway = 0;
 }
 
-Zone *ItemZone::Copy()
+std::unique_ptr<Zone> ItemZone::Copy()
 {
     FnTrace("ItemZone::Copy()");
-    ItemZone *z = new ItemZone;
+    auto z = std::make_unique<ItemZone>();
     z->SetRegion(this);
     z->item_name.Set(item_name);
     z->modifier_script.Set(modifier_script);

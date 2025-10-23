@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Fixed
+- **Memory Management Modernization**: Comprehensive modernization of zone management classes using C++17/20 smart pointers
+  - Replaced raw `new`/`delete` with `std::unique_ptr` for automatic memory management in `ZoneDB`, `Page`, and `Zone` classes
+  - Updated `ZoneDB::Copy()`, `Page::Copy()`, and `Zone::Copy()` methods to return `std::unique_ptr` instead of raw pointers
+  - Modernized `Control::zone_db` and `Terminal::zone_db` with smart pointer ownership semantics
+  - Eliminated potential memory leaks and crashes from manual memory management
+  - Enhanced exception safety with RAII patterns throughout the zone system
+  - Fixed compilation errors related to ownership transfer and pointer management
+  - Maintained full backward compatibility while improving code safety and maintainability
+  - Files modernized: `zone/zone.{hh,cc}`, `zone/pos_zone.{hh,cc}`, `zone/button_zone.{hh,cc}`, `zone/order_zone.{hh,cc}`, `zone/chart_zone.{hh,cc}`, `zone/dialog_zone.{hh,cc}`, `zone/table_zone.{hh,cc}`, `zone/settings_zone.{hh,cc}`, `main/data/manager.{hh,cc}`, `main/hardware/terminal.{hh,cc}`
+
 ### Added
 - **Modern C++ Libraries Integration**: Added three professional C++ libraries to improve code quality and developer experience
   - **spdlog (v1.13.0)**: High-performance async logging library with multiple sinks (file, console, syslog)
@@ -135,6 +146,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - **Robustness**: Improved error handling and memory management increase system stability
 
 ### Fixed
+- **Kitchen Video Print Method "Matched" Empty Report Error**: Fixed issue where setting "Kitchen Video Print Method" to "Matched" caused video targets to break with "ReportRender: can't render report with empty body" error
+  - **Root Cause**: `PrintWorkOrder()` method was designed for printer output and would return early when no orders needed printing, but for video display it should always show check information
+  - **Solution**: Modified `PrintWorkOrder()` to continue execution for video display mode (`rzone != nullptr`) even when no orders match the video target
+  - **Impact**: Video targets now display properly with "Matched" setting, showing check headers even when no orders are assigned to specific video targets
+  - **Files Modified**: `main/business/check.cc` - Enhanced `PrintWorkOrder()` method with video display handling
 - **Self-Order Button Differentiation**: Fixed issue where `quickdinein` and `quicktogo` buttons on self-order page didn't work correctly
   - **Problem**: Buttons were calling wrong check types (`CHECK_DINEIN`, `CHECK_TOGO`) instead of self-order variants
   - **Solution**: Updated message handling to use correct self-order check types (`CHECK_SELFDINEIN`, `CHECK_SELFTAKEOUT`)

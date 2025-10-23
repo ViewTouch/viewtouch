@@ -37,7 +37,7 @@ public:
     // Member Functions
     virtual int          Type() { return ZONE_SIMPLE; }
     virtual int          AcceptSignals() { return 0; }
-    virtual Zone        *Copy();
+    virtual std::unique_ptr<Zone> Copy();
     virtual SignalResult Touch(Terminal *term, int tx, int ty);
     virtual int          GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 
@@ -58,7 +58,7 @@ public:
     MessageButtonZone();
     virtual int          Type() { return ZONE_STANDARD; }
     virtual int          AcceptSignals() { return 1; }
-    virtual Zone        *Copy();
+    virtual std::unique_ptr<Zone> Copy();
     virtual SignalResult Touch(Terminal *term, int tx, int ty);
     virtual SignalResult Signal(Terminal *term, const char* signal_msg);
     virtual char* ValidateCommand(char* command);
@@ -79,7 +79,7 @@ public:
 
     // Member Functions
     int          Type() { return ZONE_CONDITIONAL; }
-    Zone        *Copy();
+    std::unique_ptr<Zone> Copy();
     int          RenderInit(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
     int          Update(Terminal *term, int update_message, const genericChar* value);

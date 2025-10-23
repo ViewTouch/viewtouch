@@ -25,6 +25,7 @@
 #include "utility.hh"
 #include "list_utility.hh"
 #include <string>
+#include <memory>
 
 #define MASTER_USER_DB       "employee.dat"
 #define MASTER_MENU_DB       "menu.dat"
@@ -74,7 +75,7 @@ class Control
     DList<Printer>  printer_list;
 
 public:
-    ZoneDB *zone_db;          // pointer to most current zone_db
+    std::unique_ptr<ZoneDB> zone_db; // pointer to most current zone_db
     int     master_copy;      // boolean - is zone_db only pointer to object?
 
     Control();

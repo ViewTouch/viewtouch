@@ -199,6 +199,35 @@ const char** GetEnumNamesArray() {
 
 } // namespace vt
 
+// Sales group type definition (moved from sales.hh for utilities)
+enum SalesGroupType {
+    SalesGroupUnused = 0,      // Don't use family
+    SalesGroupFood = 1,
+    SalesGroupBeverage = 2,
+    SalesGroupBeer = 3,
+    SalesGroupWine = 4,
+    SalesGroupAlcohol = 5,
+    SalesGroupMerchandise = 6,
+    SalesGroupRoom = 7
+};
+
+// Sales group specific utilities (for backward compatibility)
+namespace vt {
+    /**
+     * @brief Get display name for sales group type
+     * @param group Sales group enum value
+     * @return Translated display name
+     */
+    std::string GetSalesGroupDisplayName(SalesGroupType group);
+
+    /**
+     * @brief Get short name for sales group type
+     * @param group Sales group enum value
+     * @return Short display name
+     */
+    std::string GetSalesGroupShortName(SalesGroupType group);
+}
+
 // Convenience macros for common operations
 #define VT_ENUM_TO_STRING(e) vt::EnumToString(e)
 #define VT_STRING_TO_ENUM(T, s) vt::StringToEnum<T>(s)

@@ -367,10 +367,12 @@ Page *NewPosPage()
 
 /**** PosZone Class ****/
 // Member Functions
-Zone *PosZone::Copy()
+std::unique_ptr<Zone> PosZone::Copy()
 {
-    Zone *z = NewPosZone(Type());
-    CopyZone(z);
+    std::unique_ptr<Zone> z(NewPosZone(Type()));
+    if (z) {
+        CopyZone(z.get());
+    }
     return z;
 }
 
@@ -571,13 +573,13 @@ int PosZone::Write(OutputDataFile &df, int version)
 
 /**** PosPage Class ****/
 // Member Functions
-Page *PosPage::Copy()
+std::unique_ptr<Page> PosPage::Copy()
 {
-    PosPage *p = new PosPage;
-    if (p == NULL)
+    auto p = std::make_unique<PosPage>();
+    if (!p)
     {
         ReportError("Can't create copy of page");
-        return NULL;
+        return nullptr;
     }
 
     p->name            = name;
@@ -599,7 +601,10 @@ Page *PosPage::Copy()
     }
 
     for (Zone *z = ZoneList(); z != NULL; z = z->next)
-        p->Add(z->Copy());
+    {
+        auto zone_copy = std::unique_ptr<Zone>(z->Copy());
+        p->Add(zone_copy.release());
+    }
 
     return p;
 }

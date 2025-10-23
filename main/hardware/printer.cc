@@ -23,6 +23,7 @@
 #include "socket.hh"
 #include "settings.hh"
 #include "terminal.hh"
+#include "src/utils/vt_logger.hh"
 
 #include <errno.h>
 #include <iostream>
@@ -235,12 +236,14 @@ int Printer::Open()
     if (filename[0] != '\0')
     {
         temp_name.Set(filename);
+        vt::Logger::debug("Printer opened successfully - temp file: {}", filename);
     }
     else
     {
         temp_name.Set("");
         temp_fd = -1;
         retval = 1;
+        vt::Logger::error("Failed to create temporary file for printer");
     }
     return retval;
 }
@@ -384,6 +387,8 @@ int Printer::LPDPrint()
 int Printer::SocketPrint()
 {
     FnTrace("Printer::SocketPrint()");
+    vt::Logger::debug("Starting socket print to {}:{}", target.Value(), port_no);
+
     int bytesread;
     int byteswritten = 1; // set it to one to ensure one while loop
     genericChar buffer[STRLENGTH];
@@ -394,6 +399,7 @@ int Printer::SocketPrint()
     he = gethostbyname(target.Value());  // get the host info
     if (he == NULL)
     {
+        vt::Logger::error("SocketPrint: Failed to resolve host '{}'", target.Value());
         perror("gethostbyname");
         return 1;
     }
@@ -401,17 +407,19 @@ int Printer::SocketPrint()
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1)
     {
+        vt::Logger::error("SocketPrint: Failed to create socket");
         perror("socket");
         return 1;
     }
-    
+
     their_addr.sin_family = AF_INET;    // host byte order
     their_addr.sin_port = htons(port_no);  // short, network byte order
     their_addr.sin_addr = *((struct in_addr *)he->h_addr);
     memset(&(their_addr.sin_zero), '\0', 8);  // zero the rest of the struct
-    
+
     if (connect(sockfd, (struct sockaddr *)&their_addr, sizeof(struct sockaddr)) == -1)
     {
+        vt::Logger::error("SocketPrint: Failed to connect to {}:{}", target.Value(), port_no);
         perror("connect");
         fprintf(stderr, "Is vt_print running?\n");
         return 1;
@@ -421,19 +429,28 @@ int Printer::SocketPrint()
     if (temp_fd <= 0)
     {
         close(sockfd);
+        vt::Logger::error("SocketPrint: Failed to open temp file '{}' (errno: {})", temp_name.Value(), errno);
         snprintf(buffer, STRLENGTH, "SocketPrint Error %d opening %s",
                  errno, temp_name.Value());
         ReportError(buffer);
         return 1;
     }
-    
+
+    vt::Logger::debug("SocketPrint: Sending data to printer");
     bytesread = read(temp_fd, buffer, STRLENGTH);
     while (bytesread > 0 && byteswritten > 0)
     {
         byteswritten = write(sockfd, buffer, bytesread);
         bytesread = read(temp_fd, buffer, STRLENGTH);
     }
+
     close(sockfd);
+    if (byteswritten <= 0) {
+        vt::Logger::error("SocketPrint: Failed to write all data to printer");
+        return 1;
+    }
+
+    vt::Logger::info("SocketPrint: Successfully printed to {}:{}", target.Value(), port_no);
     return 0;
 }
 

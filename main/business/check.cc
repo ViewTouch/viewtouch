@@ -1153,8 +1153,11 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
         return 1;
     }
 
-    if (PrintCount(term, printer_id, reprint, flag_sent) <= 0)
-        return 1;
+    if (PrintCount(term, printer_id, reprint, flag_sent) <= 0) {
+        // For video display mode, don't return early - show check header even with no orders
+        if (rzone == nullptr)
+            return 1;
+    }
 
     report->Clear();
     report->SetTitle("WorkOrder");

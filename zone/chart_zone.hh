@@ -40,7 +40,7 @@ public:
 
     // Member Functions
     int   Type() { return ZONE_CHART; }
-    Zone *Copy();
+    std::unique_ptr<Zone> Copy();
 
     int          RenderInit(Terminal *t, int update_flag);
     RenderResult Render(Terminal *t, int update_flag);

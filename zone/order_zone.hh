@@ -183,7 +183,7 @@ public:
 
     // Member Functions
     int          Type() { return ZONE_ITEM; }
-    Zone        *Copy();
+    std::unique_ptr<Zone> Copy();
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Signal(Terminal *term, const char* message);
     SignalResult Touch(Terminal *term, int tx, int ty);
