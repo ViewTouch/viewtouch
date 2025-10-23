@@ -62,10 +62,10 @@ SwitchZone::SwitchZone()
     footer = 16;
 }
 
-Zone *SwitchZone::Copy()
+std::unique_ptr<Zone> SwitchZone::Copy()
 {
     FnTrace("SwitchZone::Copy()");
-    SwitchZone *swZone = new SwitchZone;
+    auto swZone = std::make_unique<SwitchZone>();
     swZone->SetRegion(this);
     swZone->name.Set(name);
     swZone->key      = key;

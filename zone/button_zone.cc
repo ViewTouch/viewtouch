@@ -46,10 +46,10 @@ ButtonZone::ButtonZone()
 }
 
 // Member Functions
-Zone *ButtonZone::Copy()
+std::unique_ptr<Zone> ButtonZone::Copy()
 {
     FnTrace("ButtonZone::Copy()");
-    ButtonZone *z = new ButtonZone;
+    auto z = std::make_unique<ButtonZone>();
     z->SetRegion(this);
     z->name.Set(name);
     z->key       = key;
@@ -88,10 +88,10 @@ MessageButtonZone::MessageButtonZone()
     confirm_msg.Set("");
 }
 
-Zone *MessageButtonZone::Copy()
+std::unique_ptr<Zone> MessageButtonZone::Copy()
 {
     FnTrace("MessageButtonZone::Copy()");
-    MessageButtonZone *z = new MessageButtonZone;
+    auto z = std::make_unique<MessageButtonZone>();
     z->SetRegion(this);
     z->message.Set(message);
     z->name.Set(name);
@@ -351,10 +351,10 @@ ConditionalZone::ConditionalZone()
 }
 
 // Member Functions
-Zone *ConditionalZone::Copy()
+std::unique_ptr<Zone> ConditionalZone::Copy()
 {
     FnTrace("ConditionalZone::Copy()");
-    ConditionalZone *z = new ConditionalZone;
+    auto z = std::make_unique<ConditionalZone>();
     z->SetRegion(this);
     z->expression.Set(expression);
     z->message.Set(message);

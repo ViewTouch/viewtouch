@@ -39,7 +39,7 @@ public:
 
     // Member Functions
     int          Type() { return ZONE_SWITCH; }
-    Zone        *Copy();
+    std::unique_ptr<Zone> Copy();
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
     int          Update(Terminal *term, int update_message, const genericChar* value);

@@ -1781,7 +1781,7 @@ int LoadSystemData()
     // Read System Page Data
     Page *p = NULL;
     int zone_version = 0, count = 0;
-    ZoneDB *zone_db = new ZoneDB;
+    auto zone_db = std::make_unique<ZoneDB>();
     df.Read(zone_version);
     df.Read(count);
     for (i = 0; i < count; ++i)
@@ -1842,10 +1842,10 @@ int LoadSystemData()
     }
 
     con->master_copy = 0;
-    con->zone_db = zone_db;
+    con->zone_db = std::move(zone_db);
 
     // Load any new imports
-    if (zone_db->ImportPages() > 0)
+    if (con->zone_db->ImportPages() > 0)
     {
         // SaveSystemData(); // disabled, only save on edit now
         con->SaveMenuPages();
@@ -1955,7 +1955,7 @@ int Control::Remove(Terminal *term)
     term->parent = nullptr;
     term_list.Remove(term);
 
-    if (zone_db == term->zone_db)
+    if (zone_db.get() == term->zone_db)
     {
         // Find new master zone_db for coping
         Terminal *ptr = TermList();
@@ -1963,13 +1963,13 @@ int Control::Remove(Terminal *term)
         {
             if (ptr->reload_zone_db == 0)
             {
-				zone_db = ptr->zone_db;
+				// Since terminals now have raw pointers, we don't need to reassign ownership
+				// The control keeps owning the zone_db
 				break;
             }
             ptr = ptr->next;
         }
-        if (ptr == nullptr)
-            zone_db = nullptr;
+        // No need to set zone_db to nullptr since control always owns it
     }
     return 0;
 }
@@ -2273,17 +2273,17 @@ int Control::TestPrinters(Terminal *term, int report)
 ZoneDB *Control::NewZoneDB()
 {
     FnTrace("Control::NewZoneDB()");
-    if (zone_db == NULL)
-        return NULL;
+    if (!zone_db)
+        return nullptr;
 
     ZoneDB *db;
     if (master_copy)
     {
-        db = zone_db;
+        db = zone_db.get();
         master_copy = 0;
     }
     else
-        db = zone_db->Copy();
+        db = zone_db->Copy().release();
 
     db->Init();
     return db;
@@ -2293,7 +2293,7 @@ int Control::SaveMenuPages()
 {
     FnTrace("Control::SaveMenuPages()");
     System  *sys = MasterSystem.get();
-    if (zone_db == NULL || sys == NULL)
+    if (!zone_db || sys == NULL)
         return 1;
 
     genericChar str[256];
@@ -2306,7 +2306,7 @@ int Control::SaveTablePages()
 {
     FnTrace("Control::SaveTablePages()");
     System  *sys = MasterSystem.get();
-    if (zone_db == NULL || sys == NULL)
+    if (!zone_db || sys == NULL)
         return 1;
 
     genericChar str[256];

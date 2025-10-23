@@ -11,6 +11,7 @@
 
 #include "utility.hh"
 #include "list_utility.hh"
+#include <memory>
 
 
 /**** Definitions ****/
@@ -162,7 +163,7 @@ public:
 
     virtual int          State(Terminal *t);
     virtual int          Type() = 0;
-    virtual Zone        *Copy() = 0;
+    virtual std::unique_ptr<Zone> Copy() = 0;
     virtual int          AcceptSignals() { return 1; }
     virtual int          RenderInit(Terminal *t, int update_flag);
     virtual RenderResult Render(Terminal *t, int update_flag);
@@ -305,7 +306,7 @@ public:
     int IsBar();
 
 	// Virtual Functions
-	virtual Page *Copy() = 0;
+	virtual std::unique_ptr<Page> Copy() = 0;
 	// Returns copy of page and all its zones
 	virtual int Read(InputDataFile &df, int version) { return 1; }
 	// Reads page data from file
@@ -339,7 +340,7 @@ public:
     Page *PageListEnd() { return page_list.Tail(); }
     int   PageCount()   { return page_list.Count(); }
 
-    ZoneDB *Copy();
+    std::unique_ptr<ZoneDB> Copy();
     // Returns copy of ZoneDB with all pages
     int Init();
     int Load(const char* filename);

@@ -106,7 +106,7 @@ class PosZone : public Zone
 {
     // Member Functions
     virtual int   Type() { return ZONE_UNDEFINED; }
-    virtual Zone *Copy();
+    virtual std::unique_ptr<Zone> Copy();
     
     virtual int CanSelect(Terminal *t);
     virtual int CanEdit(Terminal *t);
@@ -121,7 +121,7 @@ class PosPage : public Page
 {
 public:
     // Member Functions
-    virtual Page *Copy();
+    virtual std::unique_ptr<Page> Copy();
     virtual int   Read(InputDataFile &df, int version);
     virtual int   Write(OutputDataFile &df, int version);
 };

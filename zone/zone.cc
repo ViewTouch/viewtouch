@@ -1638,9 +1638,11 @@ int ZoneDB::CopyEdit(Terminal *t, int modify_x, int modify_y)
             if (z->edit && z->CanEdit(t))
             {
                 z->edit = 0;
-                Zone *ptr = z->Copy();
+                auto zone_copy = z->Copy();
+                Zone *ptr = zone_copy.get();
                 if (ptr)
                 {
+                    zone_copy.release(); // Transfer ownership to the linked list
                     ptr->edit = 1;
                     int s = ptr->ShadowVal(t);
                     r.Fit(ptr->x, ptr->y, ptr->w + s, ptr->h + s);
@@ -1813,20 +1815,21 @@ int ZoneDB::ToggleEdit(Terminal *t, int toggle, int rx, int ry, int rw, int rh)
     return 0;
 }
 
-ZoneDB *ZoneDB::Copy()
+std::unique_ptr<ZoneDB> ZoneDB::Copy()
 {
     FnTrace("ZoneDB::Copy()");
-    ZoneDB *new_db = new ZoneDB;
-    if (new_db == NULL)
+    auto new_db = std::make_unique<ZoneDB>();
+    if (!new_db)
     {
         ReportError("Couldn't create copy of ZoneDB");
-        return NULL;
+        return nullptr;
     }
 
     Page *p = page_list.Head();
     while (p)
     {
-        new_db->Add(p->Copy());
+        auto page_copy = std::unique_ptr<Page>(p->Copy());
+        new_db->Add(page_copy.release());
         p = p->next;
     }
 

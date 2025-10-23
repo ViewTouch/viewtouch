@@ -28,6 +28,7 @@
 #include "labels.hh"
 #include "manager.hh"
 #include "admission.hh"
+#include "src/utils/vt_logger.hh"
 
 #include <cctype>
 #include <string.h>
@@ -409,17 +410,23 @@ ItemDB::ItemDB()
 int ItemDB::Load(const char* file)
 {
     FnTrace("ItemDB::Load()");
+    vt::Logger::debug("Loading item database from '{}'", file ? file : filename.Value());
+
     if (file)
         filename.Set(file);
 
     int version = 0;
     InputDataFile df;
     if (df.Open(filename.Value(), version))
+    {
+        vt::Logger::error("Failed to open item database file '{}'", filename.Value());
         return 1;
+    }
 
     char str[256];
     if (version < 8 || version > SALES_ITEM_VERSION)
     {
+        vt::Logger::error("Unknown ItemDB version {} (expected 8-{})", version, SALES_ITEM_VERSION);
         sprintf(str, "Unknown ItemDB version %d", version);
         ReportError(str);
         return 1;
@@ -427,6 +434,7 @@ int ItemDB::Load(const char* file)
 
     int items = 0;
     df.Read(items);
+    vt::Logger::debug("Loading {} sales items from database", items);
 
     for (int i = 0; i < items; ++i)
     {
@@ -434,6 +442,8 @@ int ItemDB::Load(const char* file)
         si->Read(df, version);
         Add(si);
     }
+
+    vt::Logger::info("Successfully loaded {} sales items from database", items);
     return 0;
 }
 
@@ -441,13 +451,20 @@ int ItemDB::Save()
 {
     FnTrace("ItemDB::Save()");
     if (filename.empty())
+    {
+        vt::Logger::error("Cannot save item database: no filename specified");
         return 1;
+    }
 
+    vt::Logger::debug("Saving {} sales items to database '{}'", ItemCount(), filename.Value());
     BackupFile(filename.Value());
 
     OutputDataFile df;
     if (df.Open(filename.Value(), SALES_ITEM_VERSION))
+    {
+        vt::Logger::error("Failed to open item database file '{}' for writing", filename.Value());
         return 1;
+    }
 
     int error = 0;
     error += df.Write(ItemCount());
@@ -458,6 +475,13 @@ int ItemDB::Save()
         si->changed = 0;
     }
     changed = 0;
+
+    if (error == 0) {
+        vt::Logger::info("Successfully saved {} sales items to database", ItemCount());
+    } else {
+        vt::Logger::error("Errors occurred while saving item database (error code: {})", error);
+    }
+
     return error;
 }
 

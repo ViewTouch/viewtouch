@@ -110,6 +110,9 @@
 #define SALES_TAKE_OUT    128  // for takeout orders attached to tables
 
 // Sales Group (for families)
+// Sales group types - defined in vt_enum_utils.hh for utilities
+
+// Legacy defines for backward compatibility
 #define SALESGROUP_NONE        0  // Don't use family
 #define SALESGROUP_FOOD        1
 #define SALESGROUP_BEVERAGE    2

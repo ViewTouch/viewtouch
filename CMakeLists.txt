@@ -259,13 +259,14 @@ add_library(vtcore
     src/core/logger.cc          src/core/logger.hh
     src/utils/vt_logger.cc      src/utils/vt_logger.hh
     src/utils/vt_json_config.cc src/utils/vt_json_config.hh
+    src/utils/vt_enum_utils.cc  src/utils/vt_enum_utils.hh
     src/network/socket.cc          src/network/socket.hh
     main/ui/labels.cc     main/ui/labels.hh
     )
 
 target_include_directories(vtcore PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}  # include generated files like build_number.h
-    $<TARGET_PROPERTY:magic_enum::magic_enum,INTERFACE_INCLUDE_DIRECTORIES>)
+    ${CMAKE_CURRENT_BINARY_DIR}/_deps/magic_enum-src/include)
 target_link_libraries(vtcore PUBLIC vt_version tz spdlog::spdlog nlohmann_json::nlohmann_json magic_enum::magic_enum)
 
 add_executable(vtpos 
