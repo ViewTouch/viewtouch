@@ -1461,17 +1461,9 @@ int EndSystem()
     if (MasterControl != NULL)
     {
         // Critical fix: Properly clean up MasterControl to prevent double-free
-        // First, clean up all terminals and printers
-        Terminal *term = MasterControl->TermList();
-        while (term != NULL)
-        {
-            Terminal *next_term = term->next;
-            // Clean up terminal resources
-            if (term->cdu != NULL)
-                term->cdu->Clear();
-            term = next_term;
-        }
-        
+        // First, gracefully terminate all terminals by sending TERM_DIE
+        MasterControl->KillAllTerms();
+
         Printer *printer = MasterControl->PrinterList();
         while (printer != NULL)
         {
@@ -1479,8 +1471,8 @@ int EndSystem()
             // Clean up printer resources if needed
             printer = next_printer;
         }
-        
-        // Now safely delete MasterControl
+
+        // Now safely delete MasterControl (terminals already deleted by KillAllTerms)
         delete MasterControl;
         MasterControl = NULL;
         ReportError("EndSystem: MasterControl cleanup completed, continuing with shutdown...");
@@ -2131,6 +2123,31 @@ int Control::KillTerm(Terminal *term)
         ptr = ptr->next;
     }
     return 1;  // invalid pointer given
+}
+
+int Control::KillAllTerms()
+{
+    FnTrace("Control::KillAllTerms()");
+    ReportError("Control::KillAllTerms: Sending TERM_DIE to all remote terminals...");
+
+    Terminal *term = TermList();
+    while (term != NULL)
+    {
+        Terminal *next_term = term->next;
+        // Send TERM_DIE to the terminal by deleting it
+        // The destructor will send TERM_DIE and close the connection
+        term->StoreCheck(0);
+        Remove(term);
+        delete term;
+        term = next_term;
+    }
+
+    // Give terminals a moment to exit gracefully before killing processes
+    ReportError("Control::KillAllTerms: Waiting for terminals to exit gracefully...");
+    sleep(2);  // Wait 2 seconds for graceful shutdown
+
+    ReportError("Control::KillAllTerms: All terminals terminated gracefully");
+    return 0;
 }
 
 int Control::OpenDialog(const char* message)

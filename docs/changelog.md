@@ -146,6 +146,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - **Robustness**: Improved error handling and memory management increase system stability
 
 ### Fixed
+- **Remote Display Graceful Shutdown**: Fixed issue where remote displays don't know when the ViewTouch client application exits
+  - Added `Control::KillAllTerms()` function that sends `TERM_DIE` commands to all remote terminals before shutdown
+  - Modified `EndSystem()` to use graceful termination instead of immediate process killing
+  - Remote displays now receive shutdown notification and exit cleanly instead of attempting reconnection
+  - Eliminates the 2-minute delay where remote displays try to reconnect after server shutdown
+  - Files modified: `main/data/manager.{hh,cc}` - Added graceful terminal termination system
 - **Kitchen Video Print Method "Matched" Empty Report Error**: Fixed issue where setting "Kitchen Video Print Method" to "Matched" caused video targets to break with "ReportRender: can't render report with empty body" error
   - **Root Cause**: `PrintWorkOrder()` method was designed for printer output and would return early when no orders needed printing, but for video display it should always show check information
   - **Solution**: Modified `PrintWorkOrder()` to continue execution for video display mode (`rzone != nullptr`) even when no orders match the video target
