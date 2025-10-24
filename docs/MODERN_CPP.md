@@ -252,6 +252,7 @@ if (cfg.Save(true, true)) {  // pretty print + backup
 
 ### Direct JSON Usage
 
+{% raw %}
 ```cpp
 // Create JSON object
 vt::json data = {
@@ -282,6 +283,7 @@ std::string json_str = data.dump(4);  // Pretty print, 4-space indent
 // Parse from string
 auto j = vt::json::parse(R"({"key": "value"})");
 ```
+{% endraw %}
 
 ### Convenience Functions
 
