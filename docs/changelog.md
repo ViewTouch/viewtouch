@@ -15,6 +15,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Fixed compilation errors related to ownership transfer and pointer management
   - Maintained full backward compatibility while improving code safety and maintainability
   - Files modernized: `zone/zone.{hh,cc}`, `zone/pos_zone.{hh,cc}`, `zone/button_zone.{hh,cc}`, `zone/order_zone.{hh,cc}`, `zone/chart_zone.{hh,cc}`, `zone/dialog_zone.{hh,cc}`, `zone/table_zone.{hh,cc}`, `zone/settings_zone.{hh,cc}`, `main/data/manager.{hh,cc}`, `main/hardware/terminal.{hh,cc}`
+- **Credit Card Fee Percentage Calculation**: Fixed percentage-based credit card fees to properly calculate amounts
+  - Credit Card Fee (Percent) tender type now correctly calculates fees as percentage of raw sales
+  - Added percentage calculation logic in payment processing loop using `raw_sales * percentage_amount`
+  - Maintains consistency with how gratuity percentages are calculated in the system
+  - Files modified: `main/business/check.cc`
 
 ### Added
 - **Modern C++ Libraries Integration**: Added three professional C++ libraries to improve code quality and developer experience
@@ -146,6 +151,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - **Robustness**: Improved error handling and memory management increase system stability
 
 ### Fixed
+- **Auto Receipt Printing "Never" Setting**: Fixed issue where auto receipt printing always occurred even when set to "Never"
+  - Root cause: ReceiptPrintType enum values were incorrectly mapped, causing RECEIPT_NONE (0) to display as "On Send" instead of "Never"
+  - Fixed enum ordering: Never = 0, OnSend = 1, OnFinalize = 2, OnBoth = 3 to match RECEIPT_* constants
+  - Updated ReceiptPrintValue/ReceiptPrintName arrays to match new enum order
+  - Files modified: `main/data/settings_enums.hh`, `main/data/settings.cc`
+- **Remote Display Graceful Shutdown**: Fixed issue where remote displays don't know when the ViewTouch client application exits
+  - Added `Control::KillAllTerms()` function that sends `TERM_DIE` commands to all remote terminals before shutdown
+  - Modified `EndSystem()` to use graceful termination instead of immediate process killing
+  - Remote displays now receive shutdown notification and exit cleanly instead of attempting reconnection
+  - Eliminates the 2-minute delay where remote displays try to reconnect after server shutdown
+  - Files modified: `main/data/manager.{hh,cc}` - Added graceful terminal termination system
 - **Kitchen Video Print Method "Matched" Empty Report Error**: Fixed issue where setting "Kitchen Video Print Method" to "Matched" caused video targets to break with "ReportRender: can't render report with empty body" error
   - **Root Cause**: `PrintWorkOrder()` method was designed for printer output and would return early when no orders needed printing, but for video display it should always show check information
   - **Solution**: Modified `PrintWorkOrder()` to continue execution for video display mode (`rzone != nullptr`) even when no orders match the video target
@@ -355,6 +371,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - **Code Quality**: Consistent modern C++ style throughout core infrastructure
 
 ### Added
+- **Credit Card Fee Tender Types**: Two new tender button types for processing credit card fees
+  - Added `TENDER_CREDIT_CARD_FEE_DOLLAR` (25) for fixed dollar amounts that add to transaction total
+  - Added `TENDER_CREDIT_CARD_FEE_PERCENT` (26) for percentage amounts that add to transaction total
+  - **Both add to transaction total** instead of being treated as payment received (unlike regular tenders)
+  - Dollar amounts: cents precision (e.g., 35 = $0.35, 100 = $1.00)
+  - Percentage amounts: supports decimal percentages (e.g., 199 = 1.99%, 250 = 2.5%)
+  - Clear separation between dollar and percentage fee types for user clarity
+  - Integrated with existing tender system and payment processing
+  - Added to UI tender type selection dropdown as "Credit Card Fee (Dollar)" and "Credit Card Fee (Percent)"
+  - Files modified: `main/business/check.{hh,cc}`, `main/data/settings.cc`, `main/ui/labels.cc`, `zone/payment_zone.cc`
 - **Comprehensive Directory Structure Cleanup**: Reorganized entire codebase for better maintainability and development workflow
 - **CI/CD Workflow Updates**: Updated GitHub Actions workflows to work with new directory structure
   - **Linux Build Workflow**: Added directory structure verification and verbose makefile output

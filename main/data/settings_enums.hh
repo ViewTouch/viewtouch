@@ -31,12 +31,12 @@ enum class DrawerModeType {
     ServerBank = 2  // DRAWER_SERVER
 };
 
-// Example: Receipt printing options
+// Receipt printing options - values must match RECEIPT_* constants
 enum class ReceiptPrintType {
-    OnSend = 0,      // RECEIPT_SEND
-    OnFinalize = 1,  // RECEIPT_FINALIZE
-    OnBoth = 2,      // RECEIPT_BOTH
-    Never = 3        // RECEIPT_NONE
+    Never = 0,       // RECEIPT_NONE
+    OnSend = 1,      // RECEIPT_SEND
+    OnFinalize = 2,  // RECEIPT_FINALIZE
+    OnBoth = 3       // RECEIPT_BOTH
 };
 
 // Example: Price rounding options

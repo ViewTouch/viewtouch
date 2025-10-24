@@ -102,6 +102,7 @@ public:
     int UpdateOther(Terminal *local, int update_message, const genericChar* value);
     int IsUserOnline(Employee *e) noexcept;
     int KillTerm(Terminal *t);
+    int KillAllTerms();
     int OpenDialog(const char* message);
     int KillAllDialogs() noexcept;
     Printer *FindPrinter(const char* host, int port);
