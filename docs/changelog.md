@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+
+## [v25.02.0] - 2025-10-24
 ### Fixed
 - **Memory Management Modernization**: Comprehensive modernization of zone management classes using C++17/20 smart pointers
   - Replaced raw `new`/`delete` with `std::unique_ptr` for automatic memory management in `ZoneDB`, `Page`, and `Zone` classes
