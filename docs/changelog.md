@@ -371,7 +371,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Allows restaurants to charge credit card processing fees as either fixed dollar amounts or percentage of transaction
   - Supports precise fee calculation including cents for both dollar and percentage amounts
   - Integrated with existing tender system and payment processing
-  - Files modified: `main/business/check.hh`, `main/business/check.cc`, `main/data/settings.cc`
+  - Added to UI tender type selection dropdown for easy configuration
+  - Files modified: `main/business/check.hh`, `main/business/check.cc`, `main/data/settings.cc`, `main/ui/labels.cc`
 - **Comprehensive Directory Structure Cleanup**: Reorganized entire codebase for better maintainability and development workflow
 - **CI/CD Workflow Updates**: Updated GitHub Actions workflows to work with new directory structure
   - **Linux Build Workflow**: Added directory structure verification and verbose makefile output
