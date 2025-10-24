@@ -146,6 +146,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - **Robustness**: Improved error handling and memory management increase system stability
 
 ### Fixed
+- **Auto Receipt Printing "Never" Setting**: Fixed issue where auto receipt printing always occurred even when set to "Never"
+  - Root cause: ReceiptPrintType enum values were incorrectly mapped, causing RECEIPT_NONE (0) to display as "On Send" instead of "Never"
+  - Fixed enum ordering: Never = 0, OnSend = 1, OnFinalize = 2, OnBoth = 3 to match RECEIPT_* constants
+  - Updated ReceiptPrintValue/ReceiptPrintName arrays to match new enum order
+  - Files modified: `main/data/settings_enums.hh`, `main/data/settings.cc`
 - **Remote Display Graceful Shutdown**: Fixed issue where remote displays don't know when the ViewTouch client application exits
   - Added `Control::KillAllTerms()` function that sends `TERM_DIE` commands to all remote terminals before shutdown
   - Modified `EndSystem()` to use graceful termination instead of immediate process killing

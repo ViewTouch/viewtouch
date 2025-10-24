@@ -93,9 +93,9 @@ int SalesPeriodValue[] = {
     SP_NONE, SP_WEEK, SP_2WEEKS, SP_4WEEKS, SP_MONTH, SP_HM_11, -1};
 
 const char* ReceiptPrintName[] = {
-    GlobalTranslate("On Send"), GlobalTranslate("On Finalize"), GlobalTranslate("On Both"), GlobalTranslate("Never"), NULL};
+    GlobalTranslate("Never"), GlobalTranslate("On Send"), GlobalTranslate("On Finalize"), GlobalTranslate("On Both"), NULL};
 int ReceiptPrintValue[] = {
-    RECEIPT_SEND, RECEIPT_FINALIZE, RECEIPT_BOTH, RECEIPT_NONE, -1};
+    RECEIPT_NONE, RECEIPT_SEND, RECEIPT_FINALIZE, RECEIPT_BOTH, -1};
 
 const char* DrawerPrintName[] = {
     GlobalTranslate("On Pull"), GlobalTranslate("On Balance"), GlobalTranslate("On Both"), GlobalTranslate("Never"), NULL};
