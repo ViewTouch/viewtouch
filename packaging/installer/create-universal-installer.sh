@@ -42,7 +42,7 @@ cat > "$BUILD_DIR/installer-main.sh" << 'INSTALLER_EOF'
 set -euo pipefail
 
 # Installer configuration
-VIEWTOUCH_VERSION="21.05.1"
+VIEWTOUCH_VERSION="25.02.0"
 INSTALL_PREFIX="/usr/viewtouch"
 TEMP_DIR="/tmp/viewtouch-install-$$"
 
