@@ -15,6 +15,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Fixed compilation errors related to ownership transfer and pointer management
   - Maintained full backward compatibility while improving code safety and maintainability
   - Files modernized: `zone/zone.{hh,cc}`, `zone/pos_zone.{hh,cc}`, `zone/button_zone.{hh,cc}`, `zone/order_zone.{hh,cc}`, `zone/chart_zone.{hh,cc}`, `zone/dialog_zone.{hh,cc}`, `zone/table_zone.{hh,cc}`, `zone/settings_zone.{hh,cc}`, `main/data/manager.{hh,cc}`, `main/hardware/terminal.{hh,cc}`
+- **Credit Card Fee Percentage Calculation**: Fixed percentage-based credit card fees to properly calculate amounts
+  - Credit Card Fee (Percent) tender type now correctly calculates fees as percentage of raw sales
+  - Added percentage calculation logic in payment processing loop using `raw_sales * percentage_amount`
+  - Maintains consistency with how gratuity percentages are calculated in the system
+  - Files modified: `main/business/check.cc`
 
 ### Added
 - **Modern C++ Libraries Integration**: Added three professional C++ libraries to improve code quality and developer experience

@@ -3499,7 +3499,16 @@ int SubCheck::FigureTotals(Settings *settings)
         Payment *ptr = payptr->next;
         Credit *cr = payptr->credit;
 
-        if (!(payptr->flags & TF_IS_PERCENT))
+        if (payptr->flags & TF_IS_PERCENT)
+        {
+            // Calculate percentage value based on raw sales
+            if (payptr->tender_type == TENDER_CREDIT_CARD_FEE_PERCENT)
+            {
+                Flt f = PriceToFlt(raw_sales) * PercentToFlt(payptr->amount);
+                payptr->value = FltToPrice(f);
+            }
+        }
+        else
             payptr->value = payptr->amount;
         if (payptr->flags & TF_IS_TAB)
             tab_total += payptr->TabRemain();
@@ -3971,7 +3980,8 @@ int SubCheck::FigureTotals(Settings *settings)
                        total_tax_PST + total_tax_HST + total_tax_QST +
                        total_tax_VAT) - item_comps;
     }
-        
+
+
     if (gratuity)
         total_cost += -gratuity->value;
     balance += total_cost;
