@@ -86,7 +86,8 @@ int tender_order[] = {
     TENDER_GRATUITY,
     TENDER_ITEM_COMP,
     TENDER_EXPENSE,
-    TENDER_CREDIT_CARD_FEE,
+    TENDER_CREDIT_CARD_FEE_DOLLAR,
+    TENDER_CREDIT_CARD_FEE_PERCENT,
     -1
 };
 
@@ -3583,8 +3584,11 @@ int SubCheck::FigureTotals(Settings *settings)
         case TENDER_CHARGED_TIP:
             balance += payptr->value;
             break;
-        case TENDER_CREDIT_CARD_FEE:
-            balance += payptr->value;  // Add fee to total instead of subtracting payment
+        case TENDER_CREDIT_CARD_FEE_DOLLAR:
+            balance += payptr->value;  // Add dollar fee to total instead of subtracting payment
+            break;
+        case TENDER_CREDIT_CARD_FEE_PERCENT:
+            balance += payptr->value;  // Add percentage fee to total instead of subtracting payment
             break;
         default:
             payment += payptr->value;

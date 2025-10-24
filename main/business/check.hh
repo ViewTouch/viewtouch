@@ -84,9 +84,10 @@
 #define TENDER_ITEM_COMP     22  // single item comps
 #define TENDER_EXPENSE       23  // expense payouts
 #define TENDER_CASH_AVAIL    24  // cash - expense, for balancing only
-#define TENDER_CREDIT_CARD_FEE 25  // credit card processing fee
+#define TENDER_CREDIT_CARD_FEE_DOLLAR 25  // credit card processing fee (dollar amount)
+#define TENDER_CREDIT_CARD_FEE_PERCENT 26  // credit card processing fee (percentage)
 
-#define NUMBER_OF_TENDERS    26  // true number + 1 for no known reason
+#define NUMBER_OF_TENDERS    27  // true number + 1 for no known reason
 extern int tender_order[];
 
 // Order States
