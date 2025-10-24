@@ -1677,6 +1677,13 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
         int flags = 0;
         if (tender_type == TENDER_GRATUITY)
             flags |= TF_IS_PERCENT;
+        else if (tender_type == TENDER_CREDIT_CARD_FEE)
+        {
+            // For Credit Card Fee: if amount >= 100, treat as percentage (e.g., 250 = 2.5%)
+            // if amount < 100, treat as dollar cents (e.g., 35 = $0.35)
+            if (amount >= 100)
+                flags |= TF_IS_PERCENT;
+        }
         sprintf(str, "tender %d 0 %d %d", tender_type, flags, amount);
         retval = term->Signal(str, group_id);
     }

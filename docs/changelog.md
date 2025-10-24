@@ -367,12 +367,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 - **Credit Card Fee Tender Type**: New tender button type for processing credit card fees
-  - Added `TENDER_CREDIT_CARD_FEE` (25) tender type supporting both percentage and dollar amounts
-  - Allows restaurants to charge credit card processing fees as either fixed dollar amounts or percentage of transaction
-  - Supports precise fee calculation including cents for both dollar and percentage amounts
+  - Added `TENDER_CREDIT_CARD_FEE` (25) tender type that adds to transaction total
+  - **Adds to transaction total** instead of being treated as payment received (unlike regular tenders)
+  - Supports both percentage and dollar amounts with cents precision:
+    - Dollar amounts: amount < 100 (e.g., 35 = $0.35, 100 = $1.00)
+    - Percentage amounts: amount ≥ 100 (e.g., 199 = 1.99%, 399 = 3.99%)
   - Integrated with existing tender system and payment processing
   - Added to UI tender type selection dropdown for easy configuration
-  - Files modified: `main/business/check.hh`, `main/business/check.cc`, `main/data/settings.cc`, `main/ui/labels.cc`
+  - Files modified: `main/business/check.{hh,cc}`, `main/data/settings.cc`, `main/ui/labels.cc`, `zone/payment_zone.cc`
 - **Comprehensive Directory Structure Cleanup**: Reorganized entire codebase for better maintainability and development workflow
 - **CI/CD Workflow Updates**: Updated GitHub Actions workflows to work with new directory structure
   - **Linux Build Workflow**: Added directory structure verification and verbose makefile output

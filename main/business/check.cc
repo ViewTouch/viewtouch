@@ -3583,6 +3583,9 @@ int SubCheck::FigureTotals(Settings *settings)
         case TENDER_CHARGED_TIP:
             balance += payptr->value;
             break;
+        case TENDER_CREDIT_CARD_FEE:
+            balance += payptr->value;  // Add fee to total instead of subtracting payment
+            break;
         default:
             payment += payptr->value;
             balance -= payptr->value;
