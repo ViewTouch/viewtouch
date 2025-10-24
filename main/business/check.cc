@@ -86,6 +86,7 @@ int tender_order[] = {
     TENDER_GRATUITY,
     TENDER_ITEM_COMP,
     TENDER_EXPENSE,
+    TENDER_CREDIT_CARD_FEE,
     -1
 };
 

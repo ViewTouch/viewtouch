@@ -3561,12 +3561,12 @@ char* Settings::TenderName(int tender_type, int tender_id, genericChar* str)
     static const genericChar* name[] = {
         "Cash Received", "Check", "Gift Certificate", "House Account", "Overage",
         "Change", "Tip", "Payout", "Money Lost", "Gratuity", "Tips Paid",
-        "ATM/Debit Card", "Credit Card Tip", "Expenses", "Cash", NULL};
+        "ATM/Debit Card", "Credit Card Tip", "Expenses", "Cash", "Credit Card Fee", NULL};
     static int value[] = {
         TENDER_CASH, TENDER_CHECK, TENDER_GIFT, TENDER_ACCOUNT, TENDER_OVERAGE,
         TENDER_CHANGE, TENDER_CAPTURED_TIP, TENDER_PAYOUT, TENDER_MONEY_LOST,
         TENDER_GRATUITY, TENDER_PAID_TIP, TENDER_DEBIT_CARD,
-        TENDER_CHARGED_TIP, TENDER_EXPENSE, TENDER_CASH_AVAIL, -1};
+        TENDER_CHARGED_TIP, TENDER_EXPENSE, TENDER_CASH_AVAIL, TENDER_CREDIT_CARD_FEE, -1};
     const char* temp;
     static char buffer[STRLENGTH];
 
