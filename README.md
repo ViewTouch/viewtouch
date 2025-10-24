@@ -79,11 +79,11 @@ ViewTouch offers all-in-one Point of Sale computers featuring:
 - Pre-installed ViewTouch software
 - Network-ready for multi-terminal setups
 
-With open-source code and Raspberry Pi hardware, restaurateurs can now fully automate their operations with complete control over their POS system.
+With open-source code and Raspberry Pi hardware, restaurateurs can now fully automate their operations with complete control over their POS system, including source code access.
 
 ### Mobile Support
 
-Thanks to the efforts of Pelya (Sergii Pylypenko) and Ariel Brambila Pelayo, ViewTouch supports mobile Android devices as wireless tableside order entry terminals.
+Thanks to Pelya (Sergii Pylypenko) and Ariel Brambila Pelayo for ensuring that with [Xsdl](https://apkpure.com/xserver-xsdl/x.org.server) mobile Android devices as wireless ViewTouch tableside order entry displays.
 
 ---
 
@@ -152,8 +152,8 @@ The current version of ViewTouch was created by Gene Mosher and C programmer Ric
 
 ### Enhancement Period (2000-2004)
 
-- **C to C++ transition** (2000)
-- Extensive code enhancement by Bruce King
+- **C to C++ transition** (2000-present day)
+- Extensive code enhancement by Bruce King (2000-2004) Ariel Brambila Pelayo (2025)
 - **Major Funding:** Doug DeLeeuw
 
 ### Open Source Era (2014-Present)
@@ -163,8 +163,9 @@ ViewTouch released under GNU Public License (GPL v3) with code hosted on GitHub.
 **Key Contributors:**
 - **Jack Morrison** - Amazing debugging skills
 - **NeroBurner (Reinhold Gschweicher)** - Major refactoring and standardization
-- **NoOne558 (Ariel Brambila Pelayo)** - Upgraded to Xft scalable fonts, mobile integration
+- **NoOne558 (Ariel Brambila Pelayo)** - Upgraded to Xft scalable fonts, mobile integration, AI-empowered refactoring of the entire ViewTouch code base.
 - **Gene and Barbara Mosher** - Lifetime support and funding
+- **Ariel Brambila Pelayo** - awarded co-ownership status of ViewTouch code and documentation at GitHub
 
 ### Platform Evolution
 
@@ -183,7 +184,7 @@ ViewTouch released under GNU Public License (GPL v3) with code hosted on GitHub.
 - **Default Hardware:** Raspberry Pi family
 - **Auto-update:** Desktop icon compiles and installs latest code from GitHub
 
-Gene Mosher's passion and vision has overseen the development, management, and maintenance of ViewTouch code across six decades, spanning a wide array of computers and point of sale equipment. Gene owns the ViewTouch copyright.
+Gene Mosher's passion and vision has overseen the development, management, and maintenance of ViewTouch code across six decades, spanning a wide array of computers and point of sale equipment. Gene owns the ViewTouch copyright and remains active in ViewTouch in 2025.  A personal note to everyone from Gene: I am getting on in years and everyone has always wanted me to tell them what will happen to ViewTouch if/when something happens to me. In 2025 I can reassure that I will be participating in the development of ViewTouch until my last breath, which could easily be 2050 (I'll be 101 then), and with Ariel, who is about half a century younger than I am, being awarded co-ownership of the ViewTouch code and documentation at ViewTouch/GitHub, nothing bad can happen, is going to happen, to ViewTouch.  I myself used to wonder about the future of ViewTouch, but I no longer do wonder about the future of ViewTouch.  It's going to be alive, healthy, vibrant and dynamic for a long, long time.  A new chapter has been opened for ViewTouch in 2025 and I could not be happier about it.  Anyone can be a part of the future of ViewTouch - I welcome all who will join us.
 
 ---
 
