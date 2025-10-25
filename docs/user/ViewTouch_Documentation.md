@@ -1305,3 +1305,80 @@ The system now provides a robust, efficient, and user-friendly experience for ma
 
 ---
 
+## XServer XSDL Configuration for Android Displays
+
+### Overview
+
+ViewTouch supports running on Android devices using XServer XSDL as an external display. This allows you to use Android tablets or phones as additional touchscreen displays for your POS system.
+
+### Prerequisites
+
+- Android device with XServer XSDL installed
+- ViewTouch compiled with X11 support
+- Both devices on the same network
+
+### XServer XSDL Setup
+
+1. **Install XServer XSDL** on your Android device from the Google Play Store
+2. **Configure Network Settings**:
+   - Open XServer XSDL on Android
+   - Go to **Settings** → **Network**
+   - Ensure **"Allow connections from network"** is **enabled**
+   - **Important**: Turn **Random MAC** **OFF**
+   - Configure **Metered Connection** appropriately for your network
+
+3. **Start XServer XSDL** and note the IP address displayed in the app
+
+### Connecting ViewTouch to XServer XSDL
+
+Once XServer XSDL is running on your Android device:
+
+```bash
+# Set the DISPLAY environment variable to your Android device's IP
+export DISPLAY=192.168.1.XXX:0
+
+# Test the connection
+xdpyinfo
+
+# If successful, launch ViewTouch
+sudo /usr/viewtouch/bin/vtpos
+```
+
+Replace `192.168.1.XXX` with your Android device's actual IP address.
+
+### Troubleshooting
+
+#### Network Connectivity Issues
+- **Ping test**: `ping 192.168.1.XXX`
+- **Port check**: `telnet 192.168.1.XXX 6000`
+- **Firewall**: Ensure no firewall blocks are preventing X11 connections (port 6000)
+
+#### XServer XSDL Settings
+- **Random MAC**: Must be **OFF** for stable connections
+- **Metered Connection**: Configure based on your network type
+- **Display Resolution**: XServer XSDL is optimized for 1920x1080 resolution
+
+#### Common DISPLAY Values
+```bash
+# Standard connection
+export DISPLAY=192.168.1.244:0
+
+# With explicit screen number
+export DISPLAY=192.168.1.244:0.0
+
+# If using different port/display number
+export DISPLAY=192.168.1.244:1
+```
+
+### Display Resolution
+
+ViewTouch is optimized for 1920x1080 resolution when using XServer XSDL. The Android-specific patches ensure proper font rendering and touchscreen compatibility.
+
+### Security Notes
+
+- XServer XSDL allows network connections by default
+- Consider firewall rules if running in a public network environment
+- The connection is unencrypted - use trusted networks only
+
+---
+
