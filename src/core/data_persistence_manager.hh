@@ -7,6 +7,8 @@
 #include <vector>
 #include <functional>
 #include <mutex>
+#include <string>
+#include <atomic>
 
 // Forward declarations
 class System;
@@ -17,9 +19,19 @@ class Terminal;
 
 /**
  * DataPersistenceManager - Comprehensive data persistence and validation system
- * 
+ *
  * This class ensures that all critical data is properly saved before system
  * shutdown/restart and provides monitoring for data integrity issues.
+ *
+ * Features:
+ * - Singleton pattern for global access
+ * - Configurable auto-save intervals
+ * - Critical data validation and saving
+ * - CUPS communication monitoring and recovery
+ * - Comprehensive error handling and recovery
+ * - Thread-safe operations
+ * - Data integrity monitoring
+ * - Backup and restore capabilities
  */
 class DataPersistenceManager
 {
@@ -46,6 +58,46 @@ public:
     // Data save callback function type
     using SaveCallback = std::function<SaveResult()>;
 
+    // Configuration structure
+    struct Configuration {
+        std::chrono::seconds auto_save_interval = std::chrono::seconds(30);
+        std::chrono::seconds cups_check_interval = std::chrono::seconds(60);
+        std::chrono::seconds system_call_timeout = std::chrono::seconds(5);
+        int max_error_log_size = 1000;
+        int max_warning_log_size = 1000;
+        bool enable_cups_monitoring = true;
+        bool enable_auto_save = true;
+        bool enable_backup_on_shutdown = false;
+        std::string backup_directory = "/tmp/viewtouch_backups";
+    };
+
+    // Error information structure
+    struct ErrorInfo {
+        std::string message;
+        std::chrono::system_clock::time_point timestamp;
+        std::string component;
+        int severity; // 0=info, 1=warning, 2=error, 3=critical
+
+        ErrorInfo(const std::string& msg, const std::string& comp, int sev = 2)
+            : message(msg), timestamp(std::chrono::system_clock::now()),
+              component(comp), severity(sev) {}
+    };
+
+    // Data operation result with detailed information
+    struct OperationResult {
+        SaveResult result;
+        std::string details;
+        int items_processed;
+        int items_failed;
+        std::chrono::milliseconds duration;
+
+        OperationResult(SaveResult res = SAVE_SUCCESS, std::string det = "",
+                       int processed = 0, int failed = 0,
+                       std::chrono::milliseconds dur = std::chrono::milliseconds(0))
+            : result(res), details(std::move(det)), items_processed(processed),
+              items_failed(failed), duration(dur) {}
+    };
+
 private:
     // Singleton instance
     static std::unique_ptr<DataPersistenceManager> instance;
@@ -53,18 +105,19 @@ private:
 
     // System reference
     System* system_ref;
-    
-    // Auto-save configuration
-    std::chrono::seconds auto_save_interval;
+
+    // Configuration
+    Configuration config;
+
+    // Auto-save state
     std::chrono::steady_clock::time_point last_auto_save;
-    bool auto_save_enabled;
-    
+
     // Data validation callbacks
     std::vector<ValidationCallback> validation_callbacks;
-    
+
     // Data save callbacks
     std::vector<SaveCallback> save_callbacks;
-    
+
     // Critical data tracking
     struct CriticalData {
         std::string name;
@@ -72,22 +125,47 @@ private:
         std::chrono::steady_clock::time_point last_modified;
         ValidationCallback validator;
         SaveCallback saver;
+        int consecutive_failures;
+        std::chrono::steady_clock::time_point last_failure;
+
+        CriticalData() : is_dirty(false), consecutive_failures(0) {}
     };
     std::vector<CriticalData> critical_data_items;
-    
+
     // CUPS communication monitoring
-    bool cups_communication_healthy;
+    std::atomic<bool> cups_communication_healthy;
     std::chrono::steady_clock::time_point last_cups_check;
-    std::chrono::seconds cups_check_interval;
-    
-    // Logging and error tracking
-    std::vector<std::string> error_log;
-    std::vector<std::string> warning_log;
+    std::atomic<int> cups_consecutive_failures;
+
+    // Enhanced logging and error tracking
+    std::vector<ErrorInfo> error_log;
+    std::vector<ErrorInfo> warning_log;
     mutable std::mutex log_mutex;
+
+    // Configuration access mutex
+    mutable std::mutex config_mutex;
+
+    // Shutdown state - atomic for thread safety
+    std::atomic<bool> shutdown_in_progress;
+    std::atomic<bool> force_shutdown;
+
+    // Performance metrics
+    struct PerformanceMetrics {
+        int total_validations;
+        int total_saves;
+        int failed_validations;
+        int failed_saves;
+        std::chrono::milliseconds total_validation_time;
+        std::chrono::milliseconds total_save_time;
+        std::chrono::steady_clock::time_point last_reset;
+
+        PerformanceMetrics() : total_validations(0), total_saves(0),
+                              failed_validations(0), failed_saves(0),
+                              total_validation_time(0), total_save_time(0),
+                              last_reset(std::chrono::steady_clock::now()) {}
+    };
+    PerformanceMetrics metrics;
     
-    // Shutdown state tracking
-    bool shutdown_in_progress;
-    bool force_shutdown;
     
     // Constructor (private for singleton)
     DataPersistenceManager();
@@ -111,7 +189,9 @@ private:
     
     // Logging methods
     void LogError(const std::string& message);
+    void LogError(const std::string& message, const std::string& component);
     void LogWarning(const std::string& message);
+    void LogWarning(const std::string& message, const std::string& component);
     void LogInfo(const std::string& message);
 
 public:
@@ -127,6 +207,8 @@ public:
     void SetAutoSaveInterval(std::chrono::seconds interval);
     void EnableAutoSave(bool enable);
     void SetCUPSCheckInterval(std::chrono::seconds interval);
+    void SetConfiguration(const Configuration& new_config);
+    const Configuration& GetConfiguration() const;
     
     // Data validation
     ValidationResult ValidateAllData();
@@ -136,6 +218,8 @@ public:
     // Data saving
     SaveResult SaveAllData();
     SaveResult SaveCriticalData();
+    OperationResult SaveAllDataDetailed();
+    OperationResult SaveCriticalDataDetailed();
     void RegisterSaveCallback(const std::string& name, SaveCallback callback);
     
     // Critical data management
@@ -163,17 +247,34 @@ public:
     // Status and diagnostics
     std::vector<std::string> GetErrorLog() const;
     std::vector<std::string> GetWarningLog() const;
+    std::vector<ErrorInfo> GetDetailedErrorLog() const;
+    std::vector<ErrorInfo> GetDetailedWarningLog() const;
     void ClearLogs();
     bool IsAnyTerminalInEditMode() const;
+
+    // Error recovery
+    bool AttemptRecovery(const std::string& component);
+    void ResetFailureCounters();
     
     // Data integrity reports
     std::string GenerateIntegrityReport() const;
     bool HasDataIntegrityIssues() const;
+
+    // Data integrity verification
+    bool VerifyFileIntegrity(const std::string& file_path) const;
+    bool VerifyDataConsistency() const;
+    std::string GenerateDataChecksum(const std::string& data_type) const;
     
     // Emergency procedures
     void EmergencySave();
     void CreateBackup();
     bool RestoreFromBackup(const std::string& backup_path);
+
+    // Performance monitoring
+    std::string GeneratePerformanceReport() const;
+    void ResetPerformanceMetrics();
+    double GetSaveSuccessRate() const;
+    double GetValidationSuccessRate() const;
 };
 
 // Global convenience functions
