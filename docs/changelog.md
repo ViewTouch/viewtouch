@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Added
+- **DataPersistenceManager System**: Comprehensive data persistence and integrity management system
+  - **Singleton-based Data Persistence Manager** with thread-safe operations and configurable settings
+  - **Critical Data Monitoring**: Tracks and validates checks, settings, archives, terminals, and CUPS communication
+  - **Intelligent Auto-Save**: Only saves when data is actually dirty, respects user workflow by skipping during edit mode
+  - **Error Recovery Mechanisms**: Automatic CUPS service restart, consecutive failure tracking, component-specific recovery
+  - **Performance Metrics**: Detailed operation timing, success rate tracking, and comprehensive performance reports
+  - **Data Integrity Verification**: File integrity checks, data consistency validation, checksum generation
+  - **Training Check Filtering**: Completely excludes training checks from all persistence operations (save, validate, backup)
+  - **Enhanced Logging**: Component-based error categorization, log size management, detailed operation reporting
+  - **Configuration Management**: Runtime configuration updates with validation and limits
+  - **Safe System Operations**: Timeout-protected command execution, proper file operations, memory safety improvements
+  - New files: `src/core/data_persistence_manager.{hh,cc}`
+  - Integration points: Check save operations, system initialization, periodic tasks, shutdown procedures
+
 - **Editor Settings Separation**: Split the "Editor Settings" functionality into two distinct buttons for better organization
   - **Editor Settings** button now contains only developer authentication and calculation settings:
     - Editor's Password (9-digit numeric field)
