@@ -144,6 +144,23 @@ public:
     int          SaveRecord(Terminal *term, int record, int write_file);
 };
 
+/* Revenue Groups Settings */
+class RevenueGroupsZone : public FormZone
+{
+    unsigned long phrases_changed;
+
+public:
+    // Constructor
+    RevenueGroupsZone();
+
+    // Member Functions
+    int          Type() { return ZONE_REVENUE_GROUPS; }
+    int          AddFields();
+    RenderResult Render(Terminal *term, int update_flag);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
+};
+
 // Tender Specification & Settings
 class TenderSetZone : public ListFormZone
 {

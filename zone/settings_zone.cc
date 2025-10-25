@@ -1323,14 +1323,6 @@ int DeveloperZone::AddFields()
     AddTextField("Minimum Password Length", 2); SetFlag(FF_ONLYDIGITS);
     AddTextField("Multiply", 2);
     AddTextField("Add or Subtract", 5);
-    AddNewLine();
-
-    int i = 0;
-    for (i = 0; FamilyName[i] != NULL; i++)
-    {
-        AddListField(MasterLocale->Translate(FamilyName[i]),
-                     SalesGroupName, SalesGroupValue);
-    }
 
     return 0;
 }
@@ -1370,12 +1362,6 @@ int DeveloperZone::LoadRecord(Terminal *term, int record)
     f->Set(settings->double_mult); f = f->next;
     f->Set(term->SimpleFormatPrice(settings->double_add)); f = f->next;
 
-    int i = 0;
-    while (FamilyName[i])
-    {
-        f->Set(settings->family_group[FamilyValue[i]]);
-        f = f->next; ++i;
-    }
     return 0;
 }
 
@@ -1389,13 +1375,6 @@ int DeveloperZone::SaveRecord(Terminal *term, int record, int write_file)
     f->Get(settings->min_pw_len); f = f->next;
     f->Get(settings->double_mult); f = f->next;
     f->GetPrice(settings->double_add); f = f->next;
-
-    int i = 0;
-    while (FamilyName[i])
-    {
-        f->Get(settings->family_group[FamilyValue[i]]);
-        f = f->next; ++i;
-    }
 
     int fixed = 0;
     if (settings->shifts_used < 1)
@@ -1448,6 +1427,85 @@ SignalResult DeveloperZone::Signal(Terminal *term, const genericChar* message)
     }
 }
 
+/* RevenueGroupsZone Class */
+RevenueGroupsZone::RevenueGroupsZone()
+{
+    FnTrace("RevenueGroupsZone::RevenueGroupsZone()");
+
+    phrases_changed = 0;
+    AddFields();
+}
+
+// Member Functions
+int RevenueGroupsZone::AddFields()
+{
+    FnTrace("RevenueGroupsZone::AddFields()");
+
+    int i = 0;
+    for (i = 0; FamilyName[i] != NULL; i++)
+    {
+        AddListField(MasterLocale->Translate(FamilyName[i]),
+                     SalesGroupName, SalesGroupValue);
+    }
+
+    return 0;
+}
+
+RenderResult RevenueGroupsZone::Render(Terminal *term, int update_flag)
+{
+    FnTrace("RevenueGroupsZone::Render()");
+
+    if (phrases_changed < term->system_data->phrases_changed)
+    {
+        Purge();
+        AddFields();
+        phrases_changed = term->system_data->phrases_changed;
+    }
+
+    if (update_flag)
+        ; // No clear_flag equivalent needed for this zone
+
+    form_header = 0;
+    if (name.size() > 0)
+        form_header = 1;
+
+    FormZone::Render(term, update_flag);
+    return RENDER_OKAY;
+}
+
+int RevenueGroupsZone::LoadRecord(Terminal *term, int record)
+{
+    FnTrace("RevenueGroupsZone::LoadRecord()");
+    Settings *settings = term->GetSettings();
+    FormField *f = FieldList();
+
+    int i = 0;
+    while (FamilyName[i])
+    {
+        f->Set(settings->family_group[FamilyValue[i]]);
+        f = f->next; ++i;
+    }
+    return 0;
+}
+
+int RevenueGroupsZone::SaveRecord(Terminal *term, int record, int write_file)
+{
+    FnTrace("RevenueGroupsZone::SaveRecord()");
+    Settings *settings = term->GetSettings();
+    FormField *f = FieldList();
+
+    int i = 0;
+    while (FamilyName[i])
+    {
+        f->Get(settings->family_group[FamilyValue[i]]);
+        f = f->next; ++i;
+    }
+
+    if (write_file)
+        settings->Save();
+
+    return 0;
+}
 
 /*********************************************************************
  * TenderSetZone Class

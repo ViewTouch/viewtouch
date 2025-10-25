@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+### Added
+- **Editor Settings Separation**: Split the "Editor Settings" functionality into two distinct buttons for better organization
+  - **Editor Settings** button now contains only developer authentication and calculation settings:
+    - Editor's Password (9-digit numeric field)
+    - Minimum Password Length (2-digit field)
+    - Multiply (2-digit field)
+    - Add or Subtract (5-digit field for price calculations)
+  - **Revenue Groups** button contains all food category revenue group settings:
+    - All menu family groups (Appetizer, Burger, Lunch Entree, etc.) with sales group dropdowns
+    - Each category can be assigned to different sales groups for reporting purposes
+  - New zone type: `ZONE_REVENUE_GROUPS` (96) with corresponding `RevenueGroupsZone` class
+  - Updated all translation files with "Revenue Groups" localizations
+  - Files modified: `zone/pos_zone.{hh,cc}`, `zone/settings_zone.{hh,cc}`, `main/ui/labels.cc`, and all translation files
 
 ## [v25.02.0] - 2025-10-24
 ### Fixed
@@ -77,6 +90,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Real-time Updates**: Visual effects update dynamically as orders age
   - **Kitchen Efficiency**: Prevents orders from being forgotten with visual urgency indicators
   - **Crash Prevention**: Added robust NULL pointer checks and safety validation
+  - **Improved Readability**: Changed flashing behavior from hiding text to alternating colors for better visibility during order preparation
   - **Files Modified**:
     - `main/data/settings.{hh,cc}` - Added timing and color configuration settings
     - `zone/settings_zone.cc` - Added configuration UI for video timing settings

@@ -191,6 +191,9 @@ Zone *NewPosZone(int type)
     case ZONE_DEVELOPER:
         pNewZone = new DeveloperZone;
         break;
+    case ZONE_REVENUE_GROUPS:
+        pNewZone = new RevenueGroupsZone;
+        break;
     case ZONE_DRAWER_ASSIGN:
         pNewZone = new DrawerAssignZone;
         break;

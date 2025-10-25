@@ -2170,11 +2170,12 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                     modifier_color = GetModifierColor(order_color);
                 }
 
-                // If order should flash and we're in blink on state, hide it
+                // If order should flash and we're in blink on state, make it flash with high contrast
                 if (should_flash && rzone && rzone->BlinkState() == 1)
                 {
-                    order_color = COLOR_CLEAR;
-                    modifier_color = COLOR_CLEAR;
+                    // Instead of hiding text, flash between normal color and white for high visibility
+                    order_color = COLOR_WHITE;
+                    modifier_color = COLOR_WHITE;
                 }
 
                 report->TextL(str, order_color);
