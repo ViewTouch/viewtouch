@@ -100,6 +100,7 @@
 #define ZONE_CHECK_EDIT      93  // For editing check info like Delivery Date.
 #define ZONE_CREDITCARD_LIST 94  // For managing exceptions, refunds, and voids
 #define ZONE_EXPIRE_MSG      95  // For setting the expiration message
+#define ZONE_REVENUE_GROUPS  96  // Revenue group settings for menu families
 
 /**** Types ****/
 class PosZone : public Zone
