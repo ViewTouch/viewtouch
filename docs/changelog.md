@@ -77,6 +77,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Real-time Updates**: Visual effects update dynamically as orders age
   - **Kitchen Efficiency**: Prevents orders from being forgotten with visual urgency indicators
   - **Crash Prevention**: Added robust NULL pointer checks and safety validation
+  - **Improved Readability**: Changed flashing behavior from hiding text to alternating colors for better visibility during order preparation
   - **Files Modified**:
     - `main/data/settings.{hh,cc}` - Added timing and color configuration settings
     - `zone/settings_zone.cc` - Added configuration UI for video timing settings
