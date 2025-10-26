@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
+
+## [v25.03.0] - 2025-10-25
 ### Added
 - **DataPersistenceManager System**: Comprehensive data persistence and integrity management system
   - **Singleton-based Data Persistence Manager** with thread-safe operations and configurable settings
