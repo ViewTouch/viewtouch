@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Changed
+- **Security Policy Update**: Updated SECURITY.md to only support the latest version (25.03.x) instead of multiple versions
+  - Removed support for older versions (25.02.x, 25.01.x, 25.00.x)
+  - Updated version support policy to only maintain security updates for the current stable release
+  - Changed end-of-life policy to anything below 25.03.x
+
+### Removed
+- **Debug Script Cleanup**: Removed debug_viewtouch.sh debugging script from the workspace
+
 ## [v25.03.0] - 2025-10-25
 ### Added
 - **DataPersistenceManager System**: Comprehensive data persistence and integrity management system
