@@ -347,7 +347,7 @@ public:
     int            PrintAuth();
     int            ClearAuth();
     int            Finalize(Terminal *term);
-    int            Status();
+    int            GetStatus();
     const char* Code() { return code.Value(); }
     const char* Approval();
     const char* Auth() { return auth.Value(); }

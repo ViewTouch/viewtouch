@@ -1589,9 +1589,9 @@ int Credit::Finalize(Terminal *term)
  *   you want to know (regardless of what processor we're using as well
  *   as what method).
  ****/
-int Credit::Status()
+int Credit::GetStatus()
 {
-    FnTrace("Credit::Status()");
+    FnTrace("Credit::GetStatus()");
 
     return intcode;
 }
@@ -2648,7 +2648,7 @@ int CreditDB::HaveOpenCards()
 
     while (curr != NULL && retval == 0)
     {
-        if (curr->Status() != CCAUTH_VOID && curr->Status() != CCAUTH_REFUND)
+        if (curr->GetStatus() != CCAUTH_VOID && curr->GetStatus() != CCAUTH_REFUND)
             retval = 1;
         else
             curr = curr->next;

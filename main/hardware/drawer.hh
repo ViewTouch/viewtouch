@@ -122,7 +122,7 @@ public:
     DrawerPayment *PaymentList() { return payment_list.Head(); }
     DrawerBalance *BalanceList() { return balance_list.Head(); }
 
-    int Status();
+    int GetStatus();
     // returns current drawer status
     int Load(const char* file);
     // Loads file containing drawer data

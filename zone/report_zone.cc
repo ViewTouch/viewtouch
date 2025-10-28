@@ -411,7 +411,7 @@ int ReportZone::IsKitchenCheck(Terminal *term, Check *check)
     // so I'm going to break it out into an if-elsif block instead.
     if (check == NULL)
         retval = 0;
-    else if (check->Status() == CHECK_VOIDED)
+    else if (check->GetStatus() == CHECK_VOIDED)
         retval = 0;
     else if (check->check_state < ORDER_FINAL)
         retval = 0;

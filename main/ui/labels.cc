@@ -15,13 +15,13 @@
 #include "labels.hh"
 #include "pos_zone.hh"
 #include "terminal.hh"
+#include "term/term_view.hh"
 #include "settings.hh"
 #include "sales.hh"
 #include "check.hh"
 #include "credit.hh"
 #include "report.hh"
 #include "image_data.hh"
-#include "check.hh"
 #include "video_zone.hh"
 #include "drawer_zone.hh"
 #include "cdu.hh"
@@ -335,10 +335,10 @@ int IndexValue[] = {
     INDEX_ROOM, INDEX_RETAIL, -1 };
 
 const genericChar* ShapeName[] = {
-    "Rectangle", "Diamond", "Circle", NULL };
+    "Rectangle", "Diamond", "Circle", "Hexagon", "Octagon", "Triangle", NULL };
 
 int ShapeValue[] = {
-    SHAPE_RECTANGLE, SHAPE_DIAMOND, SHAPE_CIRCLE, -1 };
+    SHAPE_RECTANGLE, SHAPE_DIAMOND, SHAPE_CIRCLE, SHAPE_HEXAGON, SHAPE_OCTAGON, SHAPE_TRIANGLE, -1 };
 
 const genericChar* ItemTypeName[] = {
     "Menu Item", "Modifier", "Non-Tracking Modifier", "Menu Item + Substitute", "Priced By Weight", "Event Admission", NULL };

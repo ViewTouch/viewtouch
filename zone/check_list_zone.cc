@@ -97,7 +97,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 			Check *c = term->check;
 			if (c)
 			{
-				switch (c->Status())
+				switch (c->GetStatus())
 				{
                 case CHECK_OPEN:
                     if (c->IsTakeOut())
@@ -286,7 +286,7 @@ SignalResult CheckListZone::Signal(Terminal *term, const genericChar* message)
         status = NextValue(status, CLValue);
         break;
     case 1:  // resend
-        if (c && c->Status() == CHECK_OPEN)
+        if (c && c->GetStatus() == CHECK_OPEN)
             c->FinalizeOrders(term, 1);
         break;
     default:
@@ -387,16 +387,16 @@ int CheckListZone::MakeList(Terminal *term)
                 okay = 1; 
                 break;
             case CL_OPEN:
-                okay = (c->Status() == CHECK_OPEN);
+                okay = (c->GetStatus() == CHECK_OPEN);
                 break;
             case CL_TAKEOUT:
-                okay = (c->Status() == CHECK_OPEN) && c->IsTakeOut(); 
+                okay = (c->GetStatus() == CHECK_OPEN) && c->IsTakeOut(); 
                 break;
             case CL_FASTFOOD:
-                okay = (c->Status() == CHECK_OPEN) && c->IsFastFood(); 
+                okay = (c->GetStatus() == CHECK_OPEN) && c->IsFastFood(); 
                 break;
             case CL_CLOSED:
-                okay = (c->Status() == CHECK_CLOSED); 
+                okay = (c->GetStatus() == CHECK_CLOSED); 
                 break;
             default:
                 break;
@@ -504,7 +504,7 @@ SignalResult CheckEditZone::Keyboard(Terminal *term, int my_key, int state)
     FnTrace("CheckEditZone::Keyboard()");
     SignalResult retval = SIGNAL_OKAY;
 
-    if ((check != NULL) && (check->Status() == CHECK_OPEN))
+    if ((check != NULL) && (check->GetStatus() == CHECK_OPEN))
         retval = FormZone::Keyboard(term, my_key, state);
     else
         retval = SIGNAL_IGNORED;
@@ -517,7 +517,7 @@ SignalResult CheckEditZone::Touch(Terminal *term, int tx, int ty)
     FnTrace("CheckEditZone::Touch()");
     SignalResult retval = SIGNAL_OKAY;
 
-    if ((check != NULL) && (check->Status() == CHECK_OPEN))
+    if ((check != NULL) && (check->GetStatus() == CHECK_OPEN))
         retval = FormZone::Touch(term, tx, ty);
     else
         retval = SIGNAL_IGNORED;
@@ -530,7 +530,7 @@ SignalResult CheckEditZone::Mouse(Terminal *term, int action, int mx, int my)
     FnTrace("CheckEditZone::Mouse()");
     SignalResult retval = SIGNAL_OKAY;
 
-    if ((check != NULL) && (check->Status() == CHECK_OPEN))
+    if ((check != NULL) && (check->GetStatus() == CHECK_OPEN))
         retval = FormZone::Mouse(term, action, mx, my);
     else
         retval = SIGNAL_IGNORED;
@@ -554,8 +554,8 @@ Check *GetNextCheck(Check *current)
     while (current != NULL && retval == NULL)
     {
     	// Don't want to limit this to only takeouts
-        // if (current->Status() == CHECK_OPEN && current->IsTakeOut())
-        if (current->Status() == CHECK_OPEN)
+        // if (current->GetStatus() == CHECK_OPEN && current->IsTakeOut())
+        if (current->GetStatus() == CHECK_OPEN)
             retval = current;
         current = current->next;
     }
@@ -579,8 +579,8 @@ Check *GetPriorCheck(Check *current)
     while (current != NULL && retval == NULL)
     {
     	// Don't want to limit this to only takeouts
-        // if (current->Status() == CHECK_OPEN && current->IsTakeOut())
-        if (current->Status() == CHECK_OPEN)
+        // if (current->GetStatus() == CHECK_OPEN && current->IsTakeOut())
+        if (current->GetStatus() == CHECK_OPEN)
             retval = current;
         current = current->fore;
     }
@@ -678,8 +678,8 @@ int CheckEditZone::LoadRecord(Terminal *term, int record)
 
     // this prevented the user being able to add customer information to a check that was not
     // a takeout order. Some customers want to do name/number all the time.
-    // if (check != NULL && check->Status() == CHECK_OPEN && check->IsTakeOut())
-    if (check != NULL && check->Status() == CHECK_OPEN)
+    // if (check != NULL && check->GetStatus() == CHECK_OPEN && check->IsTakeOut())
+    if (check != NULL && check->GetStatus() == CHECK_OPEN)
     {
         fields->Set(check->Date());
         fields = fields->next;
@@ -713,7 +713,7 @@ int CheckEditZone::SaveRecord(Terminal *term, int record, int write_file)
     genericChar buffer[STRLONG];
 
     // Verify we only save open takeout checks (no tables)
-    if ((check != NULL) && (check->Status() == CHECK_OPEN) && check->IsTakeOut())
+    if ((check != NULL) && (check->GetStatus() == CHECK_OPEN) && check->IsTakeOut())
     {
         if (term->customer != NULL)
             term->customer->Save();

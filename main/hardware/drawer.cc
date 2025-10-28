@@ -310,9 +310,9 @@ int Drawer::Write(OutputDataFile &df, int version)
     return error;
 }
 
-int Drawer::Status()
+int Drawer::GetStatus()
 {
-    FnTrace("Drawer::Status()");
+    FnTrace("Drawer::GetStatus()");
     if (balance_time.IsSet())
         return DRAWER_BALANCED;
     else if (pull_time.IsSet())
@@ -428,7 +428,7 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
     Total(check_list);
     genericChar str[256];
     //r->max_width = 40;
-    int status = Status();
+    int status = GetStatus();
     int balanced = (status == DRAWER_BALANCED);
     if (IsServerBank())
         strcpy(str, term->Translate("Server Bank Report"));
@@ -1304,7 +1304,7 @@ Drawer *Drawer::FindByNumber(int no, int status)
 {
     FnTrace("Drawer::FindByNumber()");
     for (Drawer *d = this; d != NULL; d = d->next)
-        if (d->number == no && d->Status() == status)
+        if (d->number == no && d->GetStatus() == status)
             return d;
     return NULL;
 }
@@ -1316,7 +1316,7 @@ Drawer *Drawer::FindByOwner(Employee *e, int status)
         return NULL;
 
     for (Drawer *d = this; d != NULL; d = d->next)
-        if (d->owner_id == e->id && d->Status() == status)
+        if (d->owner_id == e->id && d->GetStatus() == status)
             return d;
     return NULL;
 }
@@ -1324,7 +1324,7 @@ Drawer *Drawer::FindByOwner(Employee *e, int status)
 int Drawer::Balance([[maybe_unused]] int user_id)
 {
     FnTrace("Drawer::Balance(int)");
-    if (Status() != DRAWER_PULLED)
+    if (GetStatus() != DRAWER_PULLED)
         return 1;
 
     balance_time = SystemTime;
@@ -1335,7 +1335,7 @@ int Drawer::Balance([[maybe_unused]] int user_id)
 int Drawer::Pull(int user_id)
 {
     FnTrace("Drawer::Pull()");
-    if (Status() != DRAWER_OPEN || IsEmpty() || archive)
+    if (GetStatus() != DRAWER_OPEN || IsEmpty() || archive)
         return 1;
 
     puller_id = user_id;
@@ -1363,7 +1363,7 @@ int Drawer::Pull(int user_id)
 int Drawer::MergeServerBanks()
 {
     FnTrace("Drawer::MergeServerBanks()");
-    if (!IsServerBank() || Status() != DRAWER_BALANCED)
+    if (!IsServerBank() || GetStatus() != DRAWER_BALANCED)
         return 1;
 
     System *sys = MasterSystem.get();
@@ -1387,7 +1387,7 @@ int Drawer::MergeServerBanks()
     {
         Drawer *d_next = d->next;
         if (d->owner_id == owner_id && d->IsServerBank() &&
-            d->Status() == DRAWER_BALANCED && d != this)
+            d->GetStatus() == DRAWER_BALANCED && d != this)
         {
             drawer_change = 1;
             // Reassign drawer_id in checks

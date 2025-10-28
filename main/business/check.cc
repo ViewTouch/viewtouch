@@ -994,9 +994,9 @@ int Check::Update(Settings *settings)
     return 0;
 }
 
-int Check::Status()
+int Check::GetStatus()
 {
-    FnTrace("Check::Status()");
+    FnTrace("Check::GetStatus()");
     int total_open = 0;
     int total_closed = 0;
     int total_voided = 0;
@@ -1031,7 +1031,7 @@ const genericChar* Check::StatusString(Terminal *term)
 {
     FnTrace("Check::StatusString()");
     const genericChar* s =
-        FindStringByValue(Status(), CheckStatusValue, CheckStatusName, UnknownStr);
+        FindStringByValue(GetStatus(), CheckStatusValue, CheckStatusName, UnknownStr);
     return term->Translate(s);
 }
 
@@ -1362,7 +1362,7 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
 	strcat(str, str1);
     report->Mode(kitchen_mode);
     // green if paid
-    report->TextL(str, Status() == CHECK_CLOSED ? COLOR_DK_GREEN : color);
+    report->TextL(str, GetStatus() == CHECK_CLOSED ? COLOR_DK_GREEN : color);
 
     // Show when it was made or the elapsed time that it's been in the kitchen
     if (rzone != nullptr)
@@ -2524,7 +2524,7 @@ const genericChar* Check::PaymentSummary(Terminal *term)
     Settings *settings = term->GetSettings();
 
     genericChar tmp[32]; 
-    int status = Status();
+    int status = GetStatus();
     if (status == CHECK_VOIDED)
         strcpy(str, term->Translate("Voided"));
     else if (status == CHECK_OPEN)

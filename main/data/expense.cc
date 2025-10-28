@@ -411,7 +411,7 @@ int ExpenseDB::ExpenseCount(Terminal *term, int status)
             drawer = dlist->FindBySerial(currExpense->drawer_id);
             if (drawer)
             {
-                dstat = drawer->Status();
+                dstat = drawer->GetStatus();
                 if (StatusMatch(status, dstat))
                     count += 1;
             }
@@ -760,7 +760,7 @@ int ExpenseDB::MoveTo(ExpenseDB *exp_db, Drawer *DrawerList)
         if (currExpense->drawer_id > -1)
         {
             currDrawer = DrawerList->FindBySerial(currExpense->drawer_id);
-            if (currDrawer != NULL && currDrawer->Status() == DRAWER_BALANCED)
+            if (currDrawer != NULL && currDrawer->GetStatus() == DRAWER_BALANCED)
             {
                 move = 1;
             }
@@ -827,7 +827,7 @@ Expense *ExpenseDB::FindByRecord(Terminal *term, int no, int drawer_type)
     {
         if (dlist != NULL)
             drawer = dlist->FindBySerial(thisexp->drawer_id);
-        if ((drawer == NULL) || (StatusMatch(drawer_type, drawer->Status())))
+        if ((drawer == NULL) || (StatusMatch(drawer_type, drawer->GetStatus())))
         {
             if (count == no)
             {
@@ -886,7 +886,7 @@ int ExpenseDB::FindRecordByWord(Terminal *term, const genericChar* word, int sta
     {
         if (dlist != NULL)
             drawer = dlist->FindBySerial(thisexp->drawer_id);
-        if ((drawer == NULL) || (StatusMatch(DRAWER_OPEN, drawer->Status())))
+        if ((drawer == NULL) || (StatusMatch(DRAWER_OPEN, drawer->GetStatus())))
         {
             if ((count > start) && thisexp->WordMatch(term, word))
             {

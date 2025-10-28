@@ -434,7 +434,7 @@ public:
     int       Settle(Terminal *t);
     int       Close(Terminal *t);  // Tries to close check (fails if not settled)
     int       Update(Settings *settings);  // updates check & all subchecks
-    int       Status();  // returns status of check
+    int       GetStatus();  // returns status of check
     const genericChar* StatusString(Terminal *t);  // Returns status string
     int       MoveOrdersBySeat(SubCheck *sb1, SubCheck *sb2, int seat);
     int       MergeOpenChecks(Settings *settings);

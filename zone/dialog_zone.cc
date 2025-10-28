@@ -2040,7 +2040,7 @@ void CreditCardDialog::Init(Terminal *term, SubCheck *subch, const char* swipe_v
             }
         } else if (term->credit != NULL &&
             term->auth_voice.size() > 0 &&
-            term->credit->Status() == CC_STATUS_NONE)
+            term->credit->GetStatus() == CC_STATUS_NONE)
         {
             term->credit->SetAuth(term->auth_voice.Value());
             term->credit->SetStatus(CC_STATUS_VOICE);
@@ -2197,7 +2197,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
     // Render the top information (cc#, expiry, name)
     if (term->credit != NULL && term->credit->IsValid())
     {
-        status = term->credit->Status();
+        status = term->credit->GetStatus();
 
         font = FONT_TIMES_24;
         snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Card Number"),
@@ -2944,7 +2944,7 @@ SignalResult CreditCardDialog::ProcessCreditCard(Terminal *term)
     {
         declined = 0;
 
-        if (term->credit->Status() != CC_STATUS_ERROR && term->credit->IsValid())
+        if (term->credit->GetStatus() != CC_STATUS_ERROR && term->credit->IsValid())
         {
             if (settings->use_entire_cc_num == 0)
             {
@@ -2971,8 +2971,8 @@ SignalResult CreditCardDialog::ProcessCreditCard(Terminal *term)
             }
         }
 
-        if (term->credit->Status() == CC_STATUS_ERROR ||
-            term->credit->Status() == CC_STATUS_DENY)
+        if (term->credit->GetStatus() == CC_STATUS_ERROR ||
+            term->credit->GetStatus() == CC_STATUS_DENY)
         {
             declined = 1;
             if (saved_credit != NULL)

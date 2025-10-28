@@ -55,7 +55,7 @@ public:
 DrawerObj::DrawerObj(Drawer *d)
 {
     drawer = d;
-    status = d->Status();
+    status = d->GetStatus();
     w      = 120;
     h      = 80;
 }
@@ -75,7 +75,7 @@ int DrawerObj::Render(Terminal *term)
         zt = IMAGE_WOOD;
     term->RenderButton(x, y, w, h, ZF_RAISED, zt);
 
-    status = drawer->Status();
+    status = drawer->GetStatus();
     char str[STRLENGTH];
     int c;
     if (h >= 32 && drawer->serial_number != ALL_DRAWERS)
@@ -177,7 +177,7 @@ ServerDrawerObj::ServerDrawerObj(Terminal *term, Employee *employee)
     {
         if (((employee == NULL && d->owner_id == 0) ||
              (employee != NULL && d->owner_id == employee->id)) &&
-            d->Status() == DRAWER_OPEN && !d->IsServerBank())
+            d->GetStatus() == DRAWER_OPEN && !d->IsServerBank())
             drawers.Add(new DrawerObj(d));
         d = d->next;
     }
@@ -481,7 +481,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
             {
                 scdrawer = drawer_list->FindBySerial(scheck->drawer_id);
                 if (scdrawer != NULL)
-                    dstat = scdrawer->Status();
+                    dstat = scdrawer->GetStatus();
                 else
                     dstat = 0;
                 if ((all == 1) ||
@@ -509,7 +509,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
     // set up balance list
     if (d)
     {
-        if (d->Status() == DRAWER_PULLED)
+        if (d->GetStatus() == DRAWER_PULLED)
             d->media_balanced = s->media_balanced;
 
         balances = 0;
@@ -650,7 +650,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
     }
     else
     {
-        mode = d->Status();
+        mode = d->GetStatus();
         switch (mode)
         {
         default:
@@ -1116,7 +1116,7 @@ int DrawerManageZone::CreateDrawers(Terminal *term)
             drawer->Total(check_list);
             if ((drawer_zone_type == DRAWER_ZONE_SELECT) || (drawer->IsEmpty() == 0))
             {
-                int dstat = drawer->Status();
+                int dstat = drawer->GetStatus();
                 if ((all == 1) ||
                     (view == DRAWER_OPEN && (dstat == DRAWER_OPEN || dstat == DRAWER_PULLED)) ||
                     (view == DRAWER_BALANCED && dstat == DRAWER_BALANCED))

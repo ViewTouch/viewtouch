@@ -681,7 +681,7 @@ int ExpenseZone::ListReport(Terminal *term, Report *my_report)
     while (currExpense != NULL)
     {
         drawer = dlist->FindBySerial(currExpense->drawer_id);
-        if ((drawer == NULL) || (drawer->Status() == DRAWER_OPEN))
+        if ((drawer == NULL) || (drawer->GetStatus() == DRAWER_OPEN))
         {
             if (currExpense->IsTraining())
                 my_color = COLOR_BLUE;
