@@ -146,6 +146,9 @@ public:
     int SolidRectangle(int rx, int ry, int rw, int rh, int pixel_id);
     int Circle(int cx, int cy, int cw, int ch, int image);
     int Diamond(int dx, int dy, int dw, int dh, int image);
+    int Hexagon(int hx, int hy, int hw, int hh, int image);
+    int Octagon(int ox, int oy, int ow, int oh, int image);
+    int Triangle(int tx, int ty, int tw, int th, int image);
     int Zone(int x, int y, int w, int h, int frame, int texture,
              int shape = SHAPE_RECTANGLE);
     int Shadow(int x, int y, int w, int h, int s, int shape = SHAPE_RECTANGLE);

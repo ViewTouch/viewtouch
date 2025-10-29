@@ -7,6 +7,7 @@
  */
 
 #include <cctype>
+#include <cmath>
 #include <iostream>
 #include <string.h>
 
@@ -753,6 +754,103 @@ int Layer::Diamond(int dx, int dy, int dw, int dh, int image)
     return 0;
 }
 
+int Layer::Hexagon(int hx, int hy, int hw, int hh, int image)
+{
+    FnTrace("Layer::Hexagon()");
+
+    if (image == IMAGE_CLEAR)
+        return 0;
+
+    hx += page_x;
+    hy += page_y;
+    short mid_x = hx + (hw/2), far_x = hx + (hw-1);
+    short mid_y = hy + (hh/2), far_y = hy + (hh-1);
+    short quarter_x1 = hx + (hw/4), quarter_x2 = hx + (3*hw/4);
+    short quarter_y1 = hy + (hh/4), quarter_y2 = hy + (3*hh/4);
+
+    XPoint pts[] = {
+        {mid_x,   (short)hy},        // Top
+        {quarter_x2, quarter_y1},    // Top-right
+        {far_x,   mid_y},            // Right
+        {quarter_x2, quarter_y2},    // Bottom-right
+        {mid_x,   far_y},            // Bottom
+        {quarter_x1, quarter_y2},    // Bottom-left
+        {(short)hx, mid_y},          // Left
+        {quarter_x1, quarter_y1}     // Top-left
+    };
+
+    XSetTSOrigin(dis, gfx, page_x, page_y);
+    XSetTile(dis, gfx, GetTexture(image));
+    XSetFillStyle(dis, gfx, FillTiled);
+    XFillPolygon(dis, pix, gfx, pts, 8, Convex, CoordModeOrigin);
+    XSetFillStyle(dis, gfx, FillSolid);
+    return 0;
+}
+
+int Layer::Octagon(int ox, int oy, int ow, int oh, int image)
+{
+    FnTrace("Layer::Octagon()");
+
+    if (image == IMAGE_CLEAR)
+        return 0;
+
+    ox += page_x;
+    oy += page_y;
+
+    // Create a regular octagon inscribed in the rectangle
+    // Inset the octagon slightly from the rectangle bounds
+    short inset_x = ow / 6;  // Smaller inset for more octagon-like appearance
+    short inset_y = oh / 6;
+
+    short center_x = ox + ow / 2;
+    short center_y = oy + oh / 2;
+    short radius_x = (ow - 2 * inset_x) / 2;
+    short radius_y = (oh - 2 * inset_y) / 2;
+
+    // Create 8 points for a regular octagon
+    XPoint pts[8];
+
+    // Calculate octagon vertices using trigonometry
+    for (int i = 0; i < 8; i++) {
+        double angle = (i * 45.0 - 22.5) * M_PI / 180.0; // Start at -22.5 degrees for flat top
+        pts[i].x = center_x + (short)(radius_x * cos(angle));
+        pts[i].y = center_y + (short)(radius_y * sin(angle));
+    }
+
+    XSetTSOrigin(dis, gfx, page_x, page_y);
+    XSetTile(dis, gfx, GetTexture(image));
+    XSetFillStyle(dis, gfx, FillTiled);
+    XFillPolygon(dis, pix, gfx, pts, 8, Convex, CoordModeOrigin);
+    XSetFillStyle(dis, gfx, FillSolid);
+    return 0;
+}
+
+int Layer::Triangle(int tx, int ty, int tw, int th, int image)
+{
+    FnTrace("Layer::Triangle()");
+
+    if (image == IMAGE_CLEAR)
+        return 0;
+
+    tx += page_x;
+    ty += page_y;
+    short mid_x = tx + (tw / 2), far_x = tx + (tw - 1);
+    short far_y = ty + (th - 1);
+
+    XPoint pts[] = {
+        {mid_x, ty},        // Top
+        {tx,    far_y},     // Bottom-left
+        {far_x, far_y}      // Bottom-right
+    };
+
+    XSetTSOrigin(dis, gfx, page_x, page_y);
+    XSetTile(dis, gfx, GetTexture(image));
+    XSetFillStyle(dis, gfx, FillTiled);
+    XFillPolygon(dis, pix, gfx, pts, 3, Convex, CoordModeOrigin);
+    XSetFillStyle(dis, gfx, FillSolid);
+    return 0;
+}
+
 int Layer::Shape(int sx, int sy, int sw, int sh, int image, int shape)
 {
     FnTrace("Layer::Shape()");
@@ -763,6 +861,12 @@ int Layer::Shape(int sx, int sy, int sw, int sh, int image, int shape)
         return Circle(sx-1, sy-1, sw+2, sh+2, image);
     else if (shape == SHAPE_DIAMOND)
         return Diamond(sx, sy, sw, sh, image);
+    else if (shape == SHAPE_HEXAGON)
+        return Hexagon(sx, sy, sw, sh, image);
+    else if (shape == SHAPE_OCTAGON)
+        return Octagon(sx, sy, sw, sh, image);
+    else if (shape == SHAPE_TRIANGLE)
+        return Triangle(sx, sy, sw, sh, image);
     else
         return Rectangle(sx, sy, sw, sh, image);
 }
@@ -819,6 +923,12 @@ int Layer::Edge(int ex, int ey, int ew, int eh, int thick, int image, int shape)
         return Diamond(ex, ey, ew, eh, image);
     else if (shape == SHAPE_CIRCLE)
         return Circle(ex, ey, ew, eh, image);
+    else if (shape == SHAPE_HEXAGON)
+        return Hexagon(ex, ey, ew, eh, image);
+    else if (shape == SHAPE_OCTAGON)
+        return Octagon(ex, ey, ew, eh, image);
+    else if (shape == SHAPE_TRIANGLE)
+        return Triangle(ex, ey, ew, eh, image);
     else
         return Edge(ex, ey, ew, eh, thick, image);
 }
@@ -931,6 +1041,84 @@ int Layer::Frame(int fx, int fy, int fw, int fh, int thick, int flags)
         pts[3].y = mid_y;
         XSetForeground(dis, gfx, b);
         XFillPolygon(dis, pix, gfx, pts, 4, Convex, CoordModeOrigin);
+    }
+    else if (shape == SHAPE_TRIANGLE)
+    {
+        // For now, use rectangle frames for triangle
+        // TODO: Implement proper triangular frame borders
+        RegionInfo rg;
+        rg.SetRegion(fx, fy, thick, fh);
+        if (rg.w > 0 && rg.h > 0)
+        {
+            XSetForeground(dis, gfx, l);
+            XFillRectangle(dis, pix, gfx, rg.x, rg.y, rg.w, rg.h);
+        }
+
+        rg.SetRegion(fx + fw - thick, fy, thick, fh);
+        if (rg.w > 0 && rg.h > 0)
+        {
+            XSetForeground(dis, gfx, r);
+            XFillRectangle(dis, pix, gfx, rg.x, rg.y, rg.w, rg.h);
+        }
+
+        XSetForeground(dis, gfx, t);
+        for (i = 0; i < thick; ++i)
+        {
+            int yy = fy + i;
+            int x1 = fx + i;
+            int x2 = fx + fw - i - 2;
+            if (x2 >= x1)
+                XDrawLine(dis, pix, gfx, x1, yy, x2, yy);
+        }
+
+        XSetForeground(dis, gfx, b);
+        for (i = 0; i < thick; ++i)
+        {
+            int yy = fy + fh - i - 1;
+            int x1 = fx + i;
+            int x2 = fx + fw - i - 2;
+            if (x2 >= x1)
+                XDrawLine(dis, pix, gfx, x1, yy, x2, yy);
+        }
+    }
+    else if (shape == SHAPE_HEXAGON || shape == SHAPE_OCTAGON)
+    {
+        // For now, use rectangle frames for hexagon and octagon
+        // TODO: Implement proper hexagonal/octagonal frame borders
+        RegionInfo rg;
+        rg.SetRegion(fx, fy, thick, fh);
+        if (rg.w > 0 && rg.h > 0)
+        {
+            XSetForeground(dis, gfx, l);
+            XFillRectangle(dis, pix, gfx, rg.x, rg.y, rg.w, rg.h);
+        }
+
+        rg.SetRegion(fx + fw - thick, fy, thick, fh);
+        if (rg.w > 0 && rg.h > 0)
+        {
+            XSetForeground(dis, gfx, r);
+            XFillRectangle(dis, pix, gfx, rg.x, rg.y, rg.w, rg.h);
+        }
+
+        XSetForeground(dis, gfx, t);
+        for (i = 0; i < thick; ++i)
+        {
+            int yy = fy + i;
+            int x1 = fx + i;
+            int x2 = fx + fw - i - 2;
+            if (x2 >= x1)
+                XDrawLine(dis, pix, gfx, x1, yy, x2, yy);
+        }
+
+        XSetForeground(dis, gfx, b);
+        for (i = 0; i < thick; ++i)
+        {
+            int yy = fy + fh - i - 1;
+            int x1 = fx + i;
+            int x2 = fx + fw - i - 2;
+            if (x2 >= x1)
+                XDrawLine(dis, pix, gfx, x1, yy, x2, yy);
+        }
     }
     else
     {
@@ -1080,6 +1268,68 @@ int Layer::Shadow(int sx, int sy, int sw, int sh, int size, int shape)
                  page_y + sy + size, sw, sh, 0, 360 * 64);
         XSetFillStyle(dis, gfx, FillSolid);
         break;
+    case SHAPE_HEXAGON:
+    {
+        short dx = page_x + sx + size, dy = page_y + sy + size;
+        short mid_x = dx + (sw / 2), far_x = dx + (sw - 1);
+        short mid_y = dy + (sh / 2), far_y = dy + (sh - 1);
+        short quarter_x1 = dx + (sw/4), quarter_x2 = dx + (3*sw/4);
+        short quarter_y1 = dy + (sh/4), quarter_y2 = dy + (3*sh/4);
+        XPoint pts[] = {
+            {mid_x,   dy},        // Top
+            {quarter_x2, quarter_y1},    // Top-right
+            {far_x,   mid_y},            // Right
+            {quarter_x2, quarter_y2},    // Bottom-right
+            {mid_x,   far_y},            // Bottom
+            {quarter_x1, quarter_y2},    // Bottom-left
+            {dx,      mid_y},            // Left
+            {quarter_x1, quarter_y1}     // Top-left
+        };
+        XFillPolygon(dis, pix, gfx, pts, 8, Convex, CoordModeOrigin);
+        XSetFillStyle(dis, gfx, FillSolid);
+    }
+    break;
+    case SHAPE_OCTAGON:
+    {
+        short dx = page_x + sx + size, dy = page_y + sy + size;
+
+        // Create a regular octagon inscribed in the rectangle (matching main octagon shape)
+        short inset_x = sw / 6;  // Smaller inset for more octagon-like appearance
+        short inset_y = sh / 6;
+
+        short center_x = dx + sw / 2;
+        short center_y = dy + sh / 2;
+        short radius_x = (sw - 2 * inset_x) / 2;
+        short radius_y = (sh - 2 * inset_y) / 2;
+
+        // Create 8 points for a regular octagon
+        XPoint pts[8];
+
+        // Calculate octagon vertices using trigonometry
+        for (int i = 0; i < 8; i++) {
+            double angle = (i * 45.0 - 22.5) * M_PI / 180.0; // Start at -22.5 degrees for flat top
+            pts[i].x = center_x + (short)(radius_x * cos(angle));
+            pts[i].y = center_y + (short)(radius_y * sin(angle));
+        }
+
+        XFillPolygon(dis, pix, gfx, pts, 8, Convex, CoordModeOrigin);
+        XSetFillStyle(dis, gfx, FillSolid);
+    }
+    break;
+    case SHAPE_TRIANGLE:
+    {
+        short dx = page_x + sx + size, dy = page_y + sy + size;
+        short mid_x = dx + (sw / 2), far_x = dx + (sw - 1);
+        short far_y = dy + (sh - 1);
+        XPoint pts[] = {
+            {mid_x, dy},        // Top
+            {dx,    far_y},     // Bottom-left
+            {far_x, far_y}      // Bottom-right
+        };
+        XFillPolygon(dis, pix, gfx, pts, 3, Convex, CoordModeOrigin);
+        XSetFillStyle(dis, gfx, FillSolid);
+    }
+    break;
     default:
         r.SetRegion(sx + sw, sy + size, size, sh);
         if (use_clip)

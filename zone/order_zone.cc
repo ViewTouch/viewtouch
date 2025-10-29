@@ -807,7 +807,7 @@ int OrderEntryZone::NextCheck(Terminal *t)
 
     if (sc->next)
         c->current_sub = sc->next;
-    else if (sc->OrderList() == NULL || c->Status() != CHECK_OPEN)
+    else if (sc->OrderList() == NULL || c->GetStatus() != CHECK_OPEN)
     {
         c->Update(t->GetSettings());
         c->current_sub = c->SubList();
@@ -839,7 +839,7 @@ int OrderEntryZone::PriorCheck(Terminal *t)
         c->current_sub = sc->fore;
         c->Update(t->GetSettings());
     }
-    else if (c->Status() == CHECK_OPEN)
+    else if (c->GetStatus() == CHECK_OPEN)
         c->NewSubCheck();
     else
         c->current_sub = c->SubListEnd();

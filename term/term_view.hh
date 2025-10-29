@@ -194,6 +194,7 @@ enum page_sizes {
 #define SHAPE_CIRCLE    3
 #define SHAPE_HEXAGON   4
 #define SHAPE_OCTAGON   5
+#define SHAPE_TRIANGLE  6
 #define FRAME_LIT       8   // alternate palette for frame
 #define FRAME_DARK      16  // (use 1)
 #define FRAME_INSET     32  // top-bottom, left-right colors switched

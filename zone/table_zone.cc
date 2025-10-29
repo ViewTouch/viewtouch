@@ -1579,7 +1579,7 @@ ServerTableObj::ServerTableObj(Terminal *term, Employee *e)
     Check *check = term->system_data->CheckList();
     while (check)
     {
-        if (check->IsTraining() == e->training && check->Status() == CHECK_OPEN &&
+        if (check->IsTraining() == e->training && check->GetStatus() == CHECK_OPEN &&
             check->user_owner == e->id)
             tables.Add(new TableObj(check));
         check = check->next;

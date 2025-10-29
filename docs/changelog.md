@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+- **Advanced Button Shapes**: Expanded button shape options with three new geometric shapes
+  - **Hexagon** (`SHAPE_HEXAGON = 4`) - 6-sided regular polygon rendering
+  - **Octagon** (`SHAPE_OCTAGON = 5`) - 8-sided regular polygon with trigonometric vertex calculation
+  - **Triangle** (`SHAPE_TRIANGLE = 6`) - 3-sided upward-pointing triangle
+  - All shapes support textures, shadows, frame borders, and all existing button properties
+  - Updated UI configuration dialogs to include new shape options
+  - Files modified: `term/layer.{hh,cc}`, `term/term_view.hh`, `main/ui/labels.cc`
+
+### Fixed
+- **Status Function Conflicts**: Resolved compilation errors caused by STATUS macro conflicts
+  - Renamed `Check::Status()` → `Check::GetStatus()` for method naming consistency
+  - Renamed `Drawer::Status()` → `Drawer::GetStatus()` to avoid preprocessor conflicts
+  - Renamed `Credit::Status()` → `Credit::GetStatus()` for uniform API design
+  - Updated all function calls throughout codebase (60+ locations across multiple files)
+  - Fixed variable scoping issue in Frame function (`r.h` → `rg.h`)
+  - Files modified: `main/business/check.{hh,cc}`, `main/hardware/drawer.{hh,cc}`, `main/data/credit.{hh,cc}`, and related calling files
+
 ### Changed
 - **Security Policy Update**: Updated SECURITY.md to only support the latest version (25.03.x) instead of multiple versions
   - Removed support for older versions (25.02.x, 25.01.x, 25.00.x)

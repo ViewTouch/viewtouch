@@ -816,7 +816,7 @@ int Archive::Unload()
 int Archive::Add(Check *c)
 {
     FnTrace("Archive::Add(Check)");
-    if (loaded == 0 || c == NULL || c->Status() == CHECK_OPEN)
+    if (loaded == 0 || c == NULL || c->GetStatus() == CHECK_OPEN)
         return 1; // can't archive open check
 
     c->archive = this;

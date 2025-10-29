@@ -2039,7 +2039,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
                     
                 if (c->IsTraining() > 0)
                     continue;
-                if (c->Status() != CHECK_CLOSED && c->CustomerType() != CHECK_HOTEL)
+                if (c->GetStatus() != CHECK_CLOSED && c->CustomerType() != CHECK_HOTEL)
 					continue;
 
                 TimeInfo *timevar = c->TimeClosed();
@@ -3112,7 +3112,7 @@ int System::DrawerSummaryReport(Terminal *term, Drawer *my_drawer_list,
     for (Drawer *drawer = my_drawer_list; drawer != NULL; drawer = drawer->next)
 	{
 		drawer->Total(my_check_list);
-		int status = drawer->Status();
+		int status = drawer->GetStatus();
 		if (status == DRAWER_OPEN)
 		{
 			if (!drawer->IsEmpty())
@@ -3157,7 +3157,7 @@ int System::CustomerDetailReport(Terminal *term, Employee *e, Report *report)
 	{
 		if (c->CustomerType() != CHECK_HOTEL ||
             c->IsTraining() != training ||
-            c->Status() != CHECK_OPEN)
+            c->GetStatus() != CHECK_OPEN)
         {
 			continue;
         }
@@ -4311,7 +4311,7 @@ int GatherAuditChecks(AuditingData *adata)
         {
             guests_counted = 0;
             is_dinein = 0;
-            if (check->Status() == CHECK_VOIDED)
+            if (check->GetStatus() == CHECK_VOIDED)
             {
                 // haven't found any voided checks yet, so I'm not
                 // exactly sure what to do with them.

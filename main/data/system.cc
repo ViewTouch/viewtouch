@@ -979,7 +979,7 @@ int System::CountOpenChecks(Employee *e)
             continue;
         if (id > 0 && check->user_owner != id)
             continue;
-        if (check->Status() != CHECK_OPEN)
+        if (check->GetStatus() != CHECK_OPEN)
             continue;
         
         ctype = check->CustomerType();
@@ -1010,7 +1010,7 @@ int System::NumberStacked(const char* table, Employee *e)
 
     int count = 0;
     for (Check *check = CheckList(); check != NULL; check = check->next)
-        if (check->IsTraining() == e->training && check->Status() == CHECK_OPEN &&
+        if (check->IsTraining() == e->training && check->GetStatus() == CHECK_OPEN &&
             strcmp(check->Table(), table) == 0)
             ++count;
     return count;
@@ -1025,7 +1025,7 @@ Check *System::FindOpenCheck(const char* table, Employee *e)
     for (Check *check = CheckListEnd(); check != NULL; check = check->fore)
     {
         if (check->IsTraining() == e->training && strcmp(check->Table(), table) == 0 &&
-            check->Status() == CHECK_OPEN)
+            check->GetStatus() == CHECK_OPEN)
         {
             return check;
         }
@@ -1241,7 +1241,7 @@ int System::CountDrawersOwned(int user_id)
     FnTrace("System::CoundDrawersOwned()");
     int count = 0;
     for (Drawer *drawer = DrawerList(); drawer != NULL; drawer = drawer->next)
-        if (drawer->owner_id == user_id && drawer->Status() == DRAWER_OPEN)
+        if (drawer->owner_id == user_id && drawer->GetStatus() == DRAWER_OPEN)
             ++count;
     return count;
 }
@@ -1250,7 +1250,7 @@ int System::AllDrawersPulled()
 {
     FnTrace("System::AllDrawersPulled()");
     for (Drawer *drawer = DrawerList(); drawer != NULL; drawer = drawer->next)
-        if (drawer->Status() == DRAWER_OPEN && !drawer->IsEmpty())
+        if (drawer->GetStatus() == DRAWER_OPEN && !drawer->IsEmpty())
             return 0; // false
     return 1;     // true
 }

@@ -1058,7 +1058,7 @@ int PaymentZone::CloseCheck(Terminal *term, int force)
         term->system_data->exception_db.AddRebuildException(term, currCheck);
     }
 
-    if (currCheck->Status() == CHECK_OPEN)
+    if (currCheck->GetStatus() == CHECK_OPEN)
     {
         if (currCheck->SubCount() <= 1)
         {
@@ -1531,7 +1531,7 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
         if (term->check && term->check->current_sub)
         {
             Credit *cr = term->check->current_sub->CurrentCredit();
-            if (cr && cr->Status() == 1)
+            if (cr && cr->GetStatus() == 1)
             {
                 tt = TENDER_CHARGED_TIP;
                 cr->Tip(amount);
