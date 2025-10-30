@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `term/layer.{hh,cc}`, `term/term_view.hh`, `main/ui/labels.cc`
 
 ### Fixed
+- **Thermal Printer Receipt Centering**: Fixed receipt content alignment on thermal printers
+  - Changed Epson printer width from 33 to 40 characters for proper centering
+  - Resolves issue where receipt content appeared left-aligned instead of centered
+  - Files modified: `main/hardware/printer.cc`
 - **Status Function Conflicts**: Resolved compilation errors caused by STATUS macro conflicts
   - Renamed `Check::Status()` → `Check::GetStatus()` for method naming consistency
   - Renamed `Drawer::Status()` → `Drawer::GetStatus()` to avoid preprocessor conflicts
