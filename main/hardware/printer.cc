@@ -1394,7 +1394,7 @@ int PrinterEpson::Width(int flags)
     if (flags & PRINT_WIDE)
         return 16;
     else
-        return 33;
+        return 40;  // Changed from 33 to 40 for better centering on thermal printers
 
     return 0;
 }
