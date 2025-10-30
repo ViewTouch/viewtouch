@@ -692,12 +692,10 @@ int Check::CancelOrders(Settings *settings)
 int Check::SendWorkOrder(Terminal *term, int printer_target, int reprint)
 {
     FnTrace("Check::SendWorkOrder()");
-    Report *report = new Report();
-    if (report == nullptr)
-    	return 1;
+    auto report = std::make_unique<Report>();
 
     Printer *printer = term->FindPrinter(printer_target);
-    int retval = PrintWorkOrder(term, report, printer_target, reprint, NULL, printer);
+    int retval = PrintWorkOrder(term, report.get(), printer_target, reprint, NULL, printer);
     if (report->is_complete && printer != nullptr && retval == 0)
         retval = report->FormalPrint(printer);
 
@@ -711,7 +709,7 @@ int Check::SendWorkOrder(Terminal *term, int printer_target, int reprint)
 	    Printer *altprinter = pi->FindPrinter(term->parent);
 	    if (altprinter && altprinter != printer)
 	    {
-    		retval = PrintWorkOrder(term, report, printer_target, reprint, 
+    		retval = PrintWorkOrder(term, report.get(), printer_target, reprint,
 				NULL, altprinter);
     		if (report->is_complete && retval == 0)
         		retval = report->FormalPrint(altprinter);
@@ -5305,7 +5303,7 @@ Order *Order::Copy()
     FnTrace("Order::Copy()");
     Order *order = new Order;
     if (order == nullptr)
-        return NULL;
+        return nullptr;
 
     order->item_name       = item_name;
     order->item_cost       = item_cost;
@@ -5326,6 +5324,43 @@ Order *Order::Copy()
     order->printer_id      = printer_id;
     order->seat            = seat;
     order->checknum        = checknum;
+    order->employee_meal   = employee_meal;
+    order->is_reduced      = is_reduced;
+    order->reduced_cost    = reduced_cost;
+    order->auto_coupon_id  = auto_coupon_id;
+
+    Order *list = modifier_list;
+    while (list)
+    {
+        order->Add(list->Copy());
+        list = list->next;
+    }
+
+    return order;
+}
+
+// Modern C++ version returning unique_ptr
+std::unique_ptr<Order> Order::CopyUnique()
+{
+    FnTrace("Order::CopyUnique()");
+    auto order = std::make_unique<Order>();
+    if (!order)
+        return nullptr;
+
+    order->item_name       = item_name;
+    order->item_cost       = item_cost;
+    order->item_type       = item_type;
+    order->item_family     = item_family;
+    order->sales_type      = sales_type;
+    order->call_order      = call_order;
+    order->count           = count;
+    order->status          = status;
+    order->cost            = cost;
+    order->user_id         = user_id;
+    order->page_id         = page_id;
+    order->script          = script;
+    order->qualifier       = qualifier;
+    order->seat            = seat;
     order->employee_meal   = employee_meal;
     order->is_reduced      = is_reduced;
     order->reduced_cost    = reduced_cost;
@@ -5439,6 +5474,18 @@ int Order::Add(Order *order)
     if (order->next)
         order->next->fore = order;
     return FigureCost();
+}
+
+// Modern C++ version that accepts unique_ptr
+int Order::Add(std::unique_ptr<Order> order)
+{
+    FnTrace("Order::Add(unique_ptr)");
+    if (!order)
+        return 1;  // Add failed
+
+    // Transfer ownership and call the raw pointer version
+    Order* raw_order = order.release();
+    return Add(raw_order);
 }
 
 int Order::Remove(Order *order)

@@ -29,21 +29,94 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <unordered_map>
+#include <variant>
+#include <optional>
+#include <chrono>
+#include <nlohmann/json.hpp>
 
 namespace vt {
 
+// Forward declarations
+struct BusinessContext;
+struct LogEvent;
+
 /**
- * @brief Modern logging facade for ViewTouch
- * 
- * Provides high-performance, async logging with multiple sinks:
+ * @brief Business context for structured logging
+ */
+struct BusinessContext {
+    std::optional<int> user_id;
+    std::optional<int> employee_id;
+    std::optional<int> check_id;
+    std::optional<int> table_number;
+    std::optional<std::string> session_id;
+    std::optional<std::string> terminal_id;
+    std::optional<std::chrono::system_clock::time_point> start_time;
+
+    // Convert to JSON for structured logging
+    nlohmann::json to_json() const;
+};
+
+/**
+ * @brief Structured log event
+ */
+struct LogEvent {
+    std::string event_type;
+    std::string message;
+    spdlog::level::level_enum level;
+    std::unordered_map<std::string, std::variant<std::string, int, double, bool>> metadata;
+    std::optional<BusinessContext> business_context;
+    std::chrono::system_clock::time_point timestamp;
+
+    LogEvent(std::string_view type, std::string_view msg,
+             spdlog::level::level_enum lvl = spdlog::level::info);
+
+    // Add metadata
+    LogEvent& add(std::string_view key, std::string_view value);
+    LogEvent& add(std::string_view key, int value);
+    LogEvent& add(std::string_view key, double value);
+    LogEvent& add(std::string_view key, bool value);
+
+    // Set business context
+    LogEvent& with_context(const BusinessContext& ctx);
+
+    // Convert to JSON
+    nlohmann::json to_json() const;
+};
+
+/**
+ * @brief Performance monitoring utilities
+ */
+class PerformanceMonitor {
+public:
+    static void start_timer(std::string_view operation);
+    static void end_timer(std::string_view operation);
+    static void record_metric(std::string_view name, double value);
+    static void record_counter(std::string_view name, int increment = 1);
+};
+
+/**
+ * @brief Enhanced logging facade for ViewTouch
+ *
+ * Provides high-performance, async logging with multiple sinks and structured data:
  * - Rotating file logs (automatic cleanup)
  * - Console output (colored)
  * - Syslog integration (for existing workflows)
- * 
+ * - Structured logging with JSON support
+ * - Business context tracking (users, transactions, sessions)
+ * - Performance monitoring and metrics
+ *
  * Usage:
  *   vt::Logger::info("Starting ViewTouch v{}", version);
  *   vt::Logger::error("Printer error: {}", error_msg);
  *   vt::Logger::debug("Check #{} total: ${:.2f}", check_id, total);
+ *
+ * Structured logging:
+ *   vt::Logger::business_event("check_created", {
+ *       {"check_id", check_id},
+ *       {"table_number", table_num},
+ *       {"employee_id", emp_id}
+ *   });
  */
 class Logger {
 public:
@@ -112,9 +185,46 @@ public:
      */
     static std::shared_ptr<spdlog::logger> GetLogger();
 
+    // Structured logging methods
+    static void log_event(const LogEvent& event);
+
+    // Business event with key-value pairs
+    static void business_event(std::string_view event_type, std::initializer_list<std::pair<std::string_view, std::variant<std::string, int, double, bool>>> metadata) {
+        LogEvent event(event_type, "");
+        for (const auto& [key, value] : metadata) {
+            std::visit([&](const auto& v) {
+                using T = std::decay_t<decltype(v)>;
+                if constexpr (std::is_same_v<T, std::string>) {
+                    event.add(key, std::string_view(v));
+                } else {
+                    event.add(key, v);
+                }
+            }, value);
+        }
+        log_event(event);
+    }
+
+    // Business context management
+    static void set_business_context(const BusinessContext& context);
+    static void clear_business_context();
+    static std::optional<BusinessContext> get_business_context();
+
+    // User session tracking
+    static void start_user_session(int user_id, std::string_view session_id = "");
+    static void end_user_session();
+    static void update_session_context(int check_id = 0, int table_number = 0, int employee_id = 0);
+
+    // Performance monitoring integration
+    static void performance_event(std::string_view operation, std::chrono::microseconds duration,
+                                 const std::unordered_map<std::string, std::string>& metadata = {});
+
+    // Legacy compatibility - bridge to old error handler
+    static void log_legacy_error(int priority, const char* fmt, ...);
+
 private:
     static std::shared_ptr<spdlog::logger> logger_;
     static bool initialized_;
+    static thread_local std::optional<BusinessContext> current_business_context_;
 };
 
 } // namespace vt
@@ -126,6 +236,25 @@ private:
 #define VT_LOG_WARN(...)     vt::Logger::warn(__VA_ARGS__)
 #define VT_LOG_ERROR(...)    vt::Logger::error(__VA_ARGS__)
 #define VT_LOG_CRITICAL(...) vt::Logger::critical(__VA_ARGS__)
+
+// Structured logging macros
+#define VT_BUSINESS_EVENT(event_type, ...) \
+    vt::Logger::business_event(event_type, ##__VA_ARGS__)
+
+#define VT_PERFORMANCE_START(operation) \
+    vt::PerformanceMonitor::start_timer(operation)
+
+#define VT_PERFORMANCE_END(operation) \
+    vt::PerformanceMonitor::end_timer(operation)
+
+#define VT_SESSION_START(user_id, session_id) \
+    vt::Logger::start_user_session(user_id, session_id)
+
+#define VT_SESSION_END() \
+    vt::Logger::end_user_session()
+
+#define VT_SESSION_UPDATE(check_id, table_num, emp_id) \
+    vt::Logger::update_session_context(check_id, table_num, emp_id)
 
 #endif // VT_LOGGER_HH
 

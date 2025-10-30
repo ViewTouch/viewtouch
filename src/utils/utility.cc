@@ -21,6 +21,7 @@
 #include "manager.hh"
 #include "utility.hh"
 #include "fntrace.hh"
+#include "safe_string_utils.hh"
 
 #include <unistd.h>
 #include <ctime>
@@ -86,7 +87,7 @@ int vt_setproctitle(const char* title)
         // pri" or "vt_main dns").  If you need to set a title longer
         // than the starting title, you'll need to rewrite this (save
         // off the environment, etc.).
-        strncpy(progname, title, progname_maxlen);
+        vt_safe_string::safe_copy(progname, progname_maxlen + 1, title);
         progname[progname_maxlen] = '\0';
         retval = 0;
     }
@@ -995,7 +996,7 @@ int LockDevice(const genericChar* devpath)
     }
     
     // convert the file name from /dev/lpt0 to .dev.lpt0
-    strcpy(buffer, devpath);
+    vt_safe_string::safe_copy(buffer, sizeof(buffer), devpath);
     while (buffer[idx] != '\0')
     {
         if (buffer[idx] == '/')

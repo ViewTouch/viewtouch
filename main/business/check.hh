@@ -25,6 +25,8 @@
 #include "list_utility.hh"
 #include "terminal.hh"
 
+#include <memory>
+
 /**** Module Definitions & Global Data ****/
 #define CHECK_VERSION        25
 
@@ -173,9 +175,11 @@ public:
 
     // Member Functions
     Order     *Copy();  // Returns copy of order (with modifiers)
+    std::unique_ptr<Order> CopyUnique();  // Modern C++ version returning unique_ptr
     int        Read(InputDataFile &df, int version);  // Reads order from a file
     int        Write(OutputDataFile &df, int version);  // Write order to a file
     int        Add(Order *o);  // Add a modifier order
+    int        Add(std::unique_ptr<Order> o);  // Modern C++ version
     int        Remove(Order *o);  // Removes a modifier order
     int        FigureCost();  // Totals up order
     genericChar* Description(Terminal *t, genericChar* buffer = NULL);  // Returns string with order description
