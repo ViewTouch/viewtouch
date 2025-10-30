@@ -20,6 +20,7 @@
 #include "socket.hh"
 #include "fntrace.hh"
 #include "utility.hh"
+#include "safe_string_utils.hh"
 
 #include <sys/types.h>
 #include <errno.h>
@@ -338,8 +339,7 @@ int Accept(int socknum, char* remote_address)
     {
         const auto* addr_str = Sock_ntop(&their_addr, sin_size);
         if (addr_str) {
-            strncpy(remote_address, addr_str, STRLENGTH - 1);
-            remote_address[STRLENGTH - 1] = '\0'; // ensure null termination
+            vt_safe_string::safe_copy(remote_address, STRLENGTH, addr_str);
         } else {
             remote_address[0] = '\0';
         }

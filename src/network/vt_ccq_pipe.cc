@@ -34,6 +34,7 @@
 #include "vt_ccq_pipe.hh"
 #include "socket.hh"
 #include "utility.hh"
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -433,8 +434,7 @@ int ParseArguments(int argc, const char* argv[])
                 check_interval = atoi(&arg[2]);
                 break;
             case 'd':
-                if (strlen(arg) < STRLENGTH)
-                    strncpy(serial_device, &arg[2], STRLENGTH);
+                vt_safe_string::safe_copy(serial_device, sizeof(serial_device), &arg[2]);
                 break;
             case 'D':
                 diagnostics += 1;

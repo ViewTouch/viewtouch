@@ -257,9 +257,12 @@ add_library(vtcore
     src/core/debug.cc           src/core/debug.hh
     src/core/generic_char.cc    src/core/generic_char.hh
     src/core/logger.cc          src/core/logger.hh
-    src/utils/vt_logger.cc      src/utils/vt_logger.hh
-    src/utils/vt_json_config.cc src/utils/vt_json_config.hh
-    src/utils/vt_enum_utils.cc  src/utils/vt_enum_utils.hh
+    src/utils/vt_logger.cc         src/utils/vt_logger.hh
+    src/utils/vt_json_config.cc    src/utils/vt_json_config.hh
+    src/utils/vt_enum_utils.cc     src/utils/vt_enum_utils.hh
+    src/utils/memory_utils.cc      src/utils/memory_utils.hh
+    src/utils/safe_string_utils.cc src/utils/safe_string_utils.hh
+    src/utils/input_validation.cc  src/utils/input_validation.hh
     src/network/socket.cc          src/network/socket.hh
     main/ui/labels.cc     main/ui/labels.hh
     )
@@ -384,14 +387,16 @@ add_executable(vt_cdu cdu/cdu_main.cc main/hardware/cdu_att.cc)
 target_link_libraries(vt_cdu vtcore)
 
 # Test executable to verify Catch2 integration
-# Note: Test files are created temporarily for verification and then removed
-# To add tests, create a tests/ directory and add test files there
 if(BUILD_TESTING)
-    # Example test executable (uncomment and modify as needed):
-    # add_executable(vt_tests tests/main_test.cc)
-    # target_link_libraries(vt_tests Catch2::Catch2WithMain vtcore)
-    # target_include_directories(vt_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    message(STATUS "Catch2 v3 integration ready - create tests/ directory and test files to enable testing")
+    # Enable testing with CMake
+    enable_testing()
+
+    # Add tests subdirectory
+    add_subdirectory(tests)
+
+    message(STATUS "Building ViewTouch with unit tests enabled")
+else()
+    message(STATUS "Building ViewTouch without tests - use -DBUILD_TESTING=ON to enable")
 endif()
 
 #add_executable(vt_authorize authorize_main.cc utility.cc)
