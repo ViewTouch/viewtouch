@@ -189,6 +189,7 @@ public:
     DialogEntry expression;
     DialogEntry message;
     DialogEntry filename;
+    DialogMenu image_filename;
     DialogEntry item_name;
     DialogEntry item_print_name;
     DialogEntry item_zone_name;

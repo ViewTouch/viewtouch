@@ -342,6 +342,9 @@ Zone *NewPosZone(int type)
     case ZONE_VIDEO_TARGET:
         pNewZone = new VideoTargetZone;
         break;
+    case ZONE_IMAGE_BUTTON:
+        pNewZone = new ImageButtonZone;
+        break;
     default:
         if (debug_mode)
             printf("Unknown zone type:  %d\n", type);

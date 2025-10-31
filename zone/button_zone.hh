@@ -145,4 +145,27 @@ public:
     virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 };
 
+class ImageButtonZone : public ButtonZone
+{
+    Str image_path;  // Path to user-selected image file
+    int image_loaded; // Flag indicating if image is loaded
+    // Note: We'll use the existing image[] array for state-based images,
+    // but add image_path for custom user images
+
+public:
+    // Constructor
+    ImageButtonZone();
+
+    // Member Functions
+    int          Type() { return ZONE_IMAGE_BUTTON; }
+    virtual int  AcceptSignals() { return 0; }
+    int          CanSelect(Terminal *t);
+    std::unique_ptr<Zone> Copy();
+    int          RenderInit(Terminal *term, int update_flag);
+    RenderResult Render(Terminal *term, int update_flag);
+    virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
+
+    Str *ImagePath() { return &image_path; }
+};
+
 #endif

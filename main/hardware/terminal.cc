@@ -27,6 +27,7 @@
 #include "dialog_zone.hh"
 #include "drawer.hh"
 #include "drawer_zone.hh"
+#include "button_zone.hh"
 #include "employee.hh"
 #include "image_data.hh"
 #include "inventory.hh"
@@ -4966,6 +4967,23 @@ int Terminal::EditZone(Zone *currZone)
 		WStr(currZone->Expression());
 		WStr(currZone->Message());
 		WStr(currZone->FileName());
+		// Send image filename for ImageButtonZone
+		if (currZone->Type() == ZONE_IMAGE_BUTTON)
+		{
+			ImageButtonZone *imgZone = dynamic_cast<ImageButtonZone*>(currZone);
+			if (imgZone && imgZone->ImagePath())
+			{
+				WStr(imgZone->ImagePath()->Value());
+			}
+			else
+			{
+				WStr("");
+			}
+		}
+		else
+		{
+			WStr(""); // send empty string for non-image zones
+		}
 		WInt8(currZone->TenderType());
 		int tmp = 0;
 		if (currZone->TenderAmount())
@@ -5011,6 +5029,7 @@ int Terminal::EditZone(Zone *currZone)
 		WStr("");                       // Expression
 		WStr("");                       // Message
 		WStr("");                       // Filename
+		WStr("");                       // Image Filename
 		WInt8(0);                       // Tender Type
 		WStr(SimpleFormatPrice(0));     // Tender Amount
 		WInt8(0);                       // Report Type
@@ -5152,6 +5171,23 @@ int Terminal::ReadZone()
     RStr(newZone->Expression());
     RStr(newZone->Message());
     RStr(newZone->FileName());
+    // Read image filename for ImageButtonZone
+    if (newZone->Type() == ZONE_IMAGE_BUTTON)
+    {
+        ImageButtonZone *imgZone = dynamic_cast<ImageButtonZone*>(newZone);
+        if (imgZone && imgZone->ImagePath())
+        {
+            RStr(imgZone->ImagePath());
+        }
+        else
+        {
+            RStr(); // consume the string
+        }
+    }
+    else
+    {
+        RStr(); // consume the string even if not used
+    }
     RInt8(newZone->TenderType());
     ParsePrice(RStr(), newZone->TenderAmount());
     RInt8(newZone->ReportType());

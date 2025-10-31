@@ -60,11 +60,11 @@ const genericChar* FullZoneTypeName[] = {
 	"Labor", "Tender Settings",
 	"Invoice", "Phrase Translation",
 	"Item Printer Target", "Merchant Info",
-	"Chart Of Accounts", "Video Targets", "Unified Target",
+	"Chart Of Accounts", "Video Targets",
     "Expense", "Status", "CDU Messages",
     "Customer Information", "Check Edit",
     "Credit Card List", "Credit Card Messages",
-    "Expire Messages", NULL
+    "Expire Messages", "Image Button", NULL
 };
 
 int FullZoneTypeValue[] = {
@@ -98,13 +98,13 @@ int FullZoneTypeValue[] = {
     ZONE_EXPENSE, ZONE_STATUS_BUTTON, ZONE_CDU,
     ZONE_CUSTOMER_INFO, ZONE_CHECK_EDIT,
     ZONE_CREDITCARD_LIST, ZONE_CC_MSG_SETTINGS,
-    ZONE_EXPIRE_MSG, -1
+    ZONE_EXPIRE_MSG, ZONE_IMAGE_BUTTON, -1
 };
 
 const genericChar* ZoneTypeName[] = {
-    "Standard", "Menu", "Qualifier", "Table", NULL};
+    "Standard", "Menu", "Qualifier", "Table", "Image Button", NULL};
 int ZoneTypeValue[] = {
-    ZONE_SIMPLE, ZONE_ITEM, ZONE_QUALIFIER, ZONE_TABLE, -1};
+    ZONE_SIMPLE, ZONE_ITEM, ZONE_QUALIFIER, ZONE_TABLE, ZONE_IMAGE_BUTTON, -1};
 
 const genericChar* ZoneBehaveName[] = {
     "No Response", "Blink", "Toggle", "Turn On", "Double Touch",

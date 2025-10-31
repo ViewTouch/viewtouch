@@ -415,6 +415,7 @@ install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/lib/static)
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/dat)")
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/dat/languages)")
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/bin/vtcommands)")
+install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/imgs)")
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/share/viewtouch/fonts)")
 
 install(TARGETS vtpos vt_cdu vt_print vt_term vt_main
@@ -459,4 +460,12 @@ install(PROGRAMS scripts/tools/vtcommands.pl DESTINATION viewtouch/bin/vtcommand
 
 # Install bundled fonts
 install(DIRECTORY fonts/ DESTINATION share/viewtouch/fonts FILES_MATCHING PATTERN "*.ttf" PATTERN "*.otf")
+
+# Install default images for Image Button zones
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/default_images" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/assets/default_images")
+    install(DIRECTORY assets/default_images/ DESTINATION viewtouch/imgs FILES_MATCHING PATTERN "*.xpm")
+    message(STATUS "Installing default images from assets/default_images/ to viewtouch/imgs/")
+else()
+    message(STATUS "'assets/default_images' folder is missing in source directory")
+endif()
 

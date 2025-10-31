@@ -42,6 +42,9 @@
 #include "pos_zone.hh"
 
 #include <iostream>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <vector>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -882,6 +885,60 @@ int DefaultDialog::Send()
 }
 
 
+/**** Image File Management ****/
+// Global variables for image file selection
+static std::vector<std::string> image_file_names;
+static std::vector<const char*> image_file_name_array;
+static std::vector<int> image_file_values;
+
+// Function to scan images directory and populate arrays
+void ScanImageFiles()
+{
+    image_file_names.clear();
+    image_file_name_array.clear();
+    image_file_values.clear();
+
+    // Add "None" option first
+    image_file_names.push_back("None");
+    image_file_name_array.push_back("None");
+    image_file_values.push_back(0);
+
+    // Scan /usr/viewtouch/imgs directory
+    DIR *dir;
+    struct dirent *ent;
+    struct stat st;
+
+    if ((dir = opendir("/usr/viewtouch/imgs")) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+            std::string filename = ent->d_name;
+
+            // Skip hidden files and directories
+            if (filename[0] == '.') continue;
+
+            // Check if it's a regular file
+            std::string fullpath = "/usr/viewtouch/imgs/" + filename;
+            if (stat(fullpath.c_str(), &st) == 0 && S_ISREG(st.st_mode)) {
+                // Check for common image extensions
+                if (filename.find(".xpm") != std::string::npos ||
+                    filename.find(".png") != std::string::npos ||
+                    filename.find(".jpg") != std::string::npos ||
+                    filename.find(".jpeg") != std::string::npos ||
+                    filename.find(".gif") != std::string::npos) {
+
+                    image_file_names.push_back(filename);
+                    image_file_name_array.push_back(image_file_names.back().c_str());
+                    image_file_values.push_back(image_file_names.size() - 1);
+                }
+            }
+        }
+        closedir(dir);
+    }
+
+    // Add null terminator
+    image_file_name_array.push_back(NULL);
+    image_file_values.push_back(-1);
+}
+
 /*********************************************************************
  * ZoneDialog Class
  ********************************************************************/
@@ -970,6 +1027,9 @@ ZoneDialog::ZoneDialog(Widget parent)
     XtSetArg(args[2], XmNmwmFunctions, MWM_FUNC_ALL | MWM_FUNC_CLOSE);
     dialog = XmCreateFormDialog(parent, const_cast<char*>("singlezone dialog"), args, 3);
 
+    // Scan available image files
+    ScanImageFiles();
+
     XtSetArg(args[0], XmNorientation,      XmVERTICAL);
     XtSetArg(args[1], XmNtopAttachment,    XmATTACH_FORM);
     XtSetArg(args[2], XmNbottomAttachment, XmATTACH_FORM);
@@ -1009,6 +1069,7 @@ ZoneDialog::ZoneDialog(Widget parent)
     expression.Init(container, "Expression");
     message.Init(container, "Message");
     filename.Init(container, "File Name");
+    image_filename.Init(container, "Image File", image_file_name_array.data(), image_file_values.data());
     item_name.Init(container, "This Button's True Name");
     item_zone_name.Init(container, "This Button's On-Screen Name, if Different than its True Name");
     item_print_name.Init(container, "This Button's Abbreviation for Remote Printing if Different than its True Name");
@@ -1103,6 +1164,16 @@ int ZoneDialog::Open()
     expression.Set(RStr());
     message.Set(RStr());
     filename.Set(RStr());
+    // Read image filename and find corresponding index
+    std::string img_filename = RStr();
+    int img_index = 0;  // Default to "None"
+    for (size_t i = 1; i < image_file_names.size(); ++i) {
+        if (image_file_names[i] == img_filename) {
+            img_index = i;
+            break;
+        }
+    }
+    image_filename.Set(img_index);
     tender_type.Set(RInt8());
     tender_amount.Set(RStr());
     report_type.Set(RInt8());
@@ -1184,6 +1255,7 @@ int ZoneDialog::Correct()
     expression.Show(t == ZONE_CONDITIONAL);
     message.Show(t == ZONE_STANDARD || t == ZONE_CONDITIONAL || t == ZONE_TOGGLE);
     filename.Show(t == ZONE_READ);
+    image_filename.Show(t == ZONE_IMAGE_BUTTON);
     item_name.Show(t == ZONE_ITEM);
     item_zone_name.Show(t == ZONE_ITEM);
     item_print_name.Show(t == ZONE_ITEM);
@@ -1294,6 +1366,13 @@ int ZoneDialog::Send()
     WStr(expression.Value());
     WStr(message.Value());
     WStr(filename.Value());
+    // Send selected image filename
+    int img_idx = image_filename.Value();
+    if (img_idx > 0 && img_idx < static_cast<int>(image_file_names.size())) {
+        WStr(image_file_names[img_idx].c_str());
+    } else {
+        WStr("");  // No image selected
+    }
     WInt8(tender_type.Value());
     WStr(tender_amount.Value());
     WInt8(report_type.Value());

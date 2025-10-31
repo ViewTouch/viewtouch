@@ -101,6 +101,7 @@
 #define ZONE_CREDITCARD_LIST 94  // For managing exceptions, refunds, and voids
 #define ZONE_EXPIRE_MSG      95  // For setting the expiration message
 #define ZONE_REVENUE_GROUPS  96  // Revenue group settings for menu families
+#define ZONE_IMAGE_BUTTON    97  // button with user-selectable image
 
 /**** Types ****/
 class PosZone : public Zone
