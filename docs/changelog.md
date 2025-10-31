@@ -90,11 +90,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `main/business/check.{hh,cc}`, `main/hardware/drawer.{hh,cc}`, `main/data/credit.{hh,cc}`, and related calling files
 
 ### Changed
-- **Embossed Text Rendering**: Enhanced embossed text effect with larger white outline behind main text
-  - **Enhancement**: Modified `GenericDrawStringXftEmbossed` to create 1-pixel larger white outlines
-  - **Visual Effect**: Embossed text now appears with complete white outline around all text edges
-  - **Implementation**: Draws white copies at all 8 surrounding positions (top-left, top, top-right, left, right, bottom-left, bottom, bottom-right)
-  - **Impact**: More prominent and professional embossed text appearance with consistent white coloring
+- **Embossed Text Rendering**: Made embossed text effect more subtle and less overwhelming
+  - **Refinement**: Modified `GenericDrawStringXftEmbossed` to use minimal white outline for better text readability
+  - **Visual Effect**: Embossed text now appears with barely visible white outline above main text only
+  - **Implementation**: Draws single white copy at top position with full opacity for subtle 3D effect
+  - **Impact**: Less intrusive embossed appearance that preserves text color visibility while maintaining professional look
   - Files modified: `src/core/generic_char.cc`
 - **Security Policy Update**: Updated SECURITY.md to only support the latest version (25.03.x) instead of multiple versions
   - Removed support for older versions (25.02.x, 25.01.x, 25.00.x)
