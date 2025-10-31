@@ -802,7 +802,7 @@ SignalResult Page::Signal(Terminal *t, const genericChar* message, int group_id)
         {
             if (z->AcceptSignals() &&
                 z->active &&
-                z->group_id == group_id)
+                (group_id == 0 || z->group_id == group_id))
             {
                 res = z->Signal(t, message);
                 switch (res)

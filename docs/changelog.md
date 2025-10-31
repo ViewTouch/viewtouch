@@ -65,6 +65,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `term/layer.{hh,cc}`, `term/term_view.hh`, `main/ui/labels.cc`
 
 ### Fixed
+- **Hardware Button Display Sending**: Fixed broken signal routing for "Hardware" button types that send to display terminals
+  - **Root Cause**: Commit 4d990d86 (2016) introduced strict `z->group_id == group_id` matching that broke broadcast signals
+  - **Issue**: Buttons configured to send to all hardware terminals (group_id = 0) could only reach zones with group_id = 0
+  - **Fix**: Restored proper broadcast logic with `(group_id == 0 || z->group_id == group_id)`
+  - **Impact**: Hardware buttons now correctly send to customer displays, kitchen terminals, and other devices
+  - Files modified: `zone/zone.cc`
 - **Thermal Printer Receipt Centering**: Fixed receipt content alignment on thermal printers
   - Changed Epson printer width from 33 to 40 characters for proper centering
   - Resolves issue where receipt content appeared left-aligned instead of centered
