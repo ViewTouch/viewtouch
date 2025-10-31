@@ -15,6 +15,7 @@
 #include "settings.hh"   // INDEX definitions
 #include "system.hh"
 #include "pos_zone.hh"   // NewPosPage()
+#include "logger.hh"     // logmsg()
 
 #include <cstring>
 #include <errno.h>
@@ -2026,5 +2027,48 @@ int ZoneDB::PrintZoneDB(const char* dest, int brief)
     if (outfd != STDOUT_FILENO)
         close(outfd);
     return retval;
+}
+
+/*
+ * ValidateSystemPages - Check for System Pages with invalid parent_id values
+ * System Pages (type PAGE_SYSTEM = 0) should never have parent_id > 0
+ * This can happen if data files are corrupted or saved incorrectly
+ *
+ * Returns: Number of invalid System Pages found (0 = all valid)
+ * Logs details about any invalid pages found
+ */
+int ZoneDB::ValidateSystemPages()
+{
+    FnTrace("ZoneDB::ValidateSystemPages()");
+    int invalid_count = 0;
+
+    Page *currPage = page_list.Head();
+    while (currPage != NULL)
+    {
+        if (currPage->type == PAGE_SYSTEM && currPage->parent_id > 0)
+        {
+            invalid_count++;
+            char buffer[STRLONG];
+            snprintf(buffer, STRLONG,
+                     "INVALID: System Page id=%d name='%s' has parent_id=%d (should be 0)",
+                     currPage->id, currPage->name.Value(), currPage->parent_id);
+            ReportError(buffer);
+            logmsg(LOG_DEBUG, buffer);
+        }
+        currPage = currPage->next;
+    }
+
+    if (invalid_count > 0)
+    {
+        char buffer[STRLONG];
+        snprintf(buffer, STRLONG,
+                 "Found %d System Page(s) with invalid parent_id > 0. "
+                 "This can occur due to corrupted data files or incorrect saving.",
+                 invalid_count);
+        ReportError(buffer);
+        logmsg(LOG_WARNING, buffer);
+    }
+
+    return invalid_count;
 }
 
