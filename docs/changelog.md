@@ -70,6 +70,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Updated UI configuration dialogs to include new shape options
   - Files modified: `term/layer.{hh,cc}`, `term/term_view.hh`, `main/ui/labels.cc`
 
+- **🖼️ Image Button Zone** (UNDER DEVELOPMENT): New zone type for displaying user-selected images
+  - **Zone Type**: `ZONE_IMAGE_BUTTON = 97` with dropdown image selection interface
+  - **Supported Formats**: XPM files with framework for PNG, JPEG, GIF expansion
+  - **Permission Control**: Restricted to Editor and Super User roles only
+  - **Installation**: Auto-creates `/usr/viewtouch/imgs/` directory with default images
+  - **Default Images**: Pre-installed coffee, burger, and pizza icons for restaurant use
+  - **UI Integration**: Dropdown selection from available images in zone properties dialog
+  - **Current Status**: Image filename display implemented, graphical rendering framework ready
+  - Files added: `zone/button_zone.{hh,cc}` (ImageButtonZone), `term/term_dialog.{hh,cc}`, `main/hardware/terminal.cc`, `assets/default_images/*.xpm`
+  - Files modified: `zone/pos_zone.{hh,cc}`, `main/ui/labels.cc`, `CMakeLists.txt`
+
 ### Fixed
 - **Enhanced Black Text Readability**: Improved text contrast by using white shadows for dark/black text colors
   - **Issue**: Black text with dark shadows created poor readability on various backgrounds

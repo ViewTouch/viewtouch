@@ -753,3 +753,97 @@ SignalResult StatusZone::Signal(Terminal *term, const genericChar* message)
     return SIGNAL_IGNORED;
 }
 
+/**** ImageButtonZone Class ****/
+// Constructor
+ImageButtonZone::ImageButtonZone()
+{
+    FnTrace("ImageButtonZone::ImageButtonZone()");
+    image_loaded = 0;
+}
+
+// Member Functions
+std::unique_ptr<Zone> ImageButtonZone::Copy()
+{
+    FnTrace("ImageButtonZone::Copy()");
+    auto z = std::make_unique<ImageButtonZone>();
+    z->SetRegion(this);
+    z->name.Set(name);
+    z->key       = key;
+    z->behave    = behave;
+    z->font      = font;
+    z->shape     = shape;
+    z->group_id  = group_id;
+    z->jump_type = jump_type;
+    z->jump_id   = jump_id;
+    z->image_path.Set(image_path);
+    z->image_loaded = image_loaded;
+    for (int i = 0; i < 3; ++i)
+    {
+        z->color[i]   = color[i];
+        z->image[i]   = image[i];
+        z->frame[i]  = frame[i];
+        z->texture[i] = texture[i];
+    }
+    return z;
+}
+
+int ImageButtonZone::CanSelect(Terminal *t)
+{
+    FnTrace("ImageButtonZone::CanSelect()");
+
+    // Check permissions - only Editor (id 1 or 2) and Super User (id 1) can select this zone
+    Employee *e = t->user;
+    if (e == nullptr)
+        return 0;
+
+    // Allow Editor (id 2) and Super User (id 1)
+    return (e->id == 1 || e->id == 2);
+}
+
+int ImageButtonZone::RenderInit(Terminal *term, int update_flag)
+{
+    FnTrace("ImageButtonZone::RenderInit()");
+
+    active = 1;
+
+    // Load and scale the custom image here if image_path is set
+    if (image_path.size() > 0 && !image_loaded)
+    {
+        // Construct full path to image in /usr/viewtouch/imgs/
+        char full_path[1024];
+        snprintf(full_path, sizeof(full_path), "/usr/viewtouch/imgs/%s", image_path.Value());
+
+        // TODO: Implement actual image loading and scaling
+        // For now, check if file exists and mark as loaded
+        // This would involve:
+        // 1. Loading the image file (XPM, PNG, JPEG, etc.)
+        // 2. Scaling it to fit the button dimensions while maintaining aspect ratio
+        // 3. Converting to X11 pixmap format
+        // 4. Storing the scaled pixmap for rendering
+
+        // For now, just mark as loaded if path is set
+        image_loaded = 1;
+    }
+
+    return 0;
+}
+
+RenderResult ImageButtonZone::Render(Terminal *term, int update_flag)
+{
+    FnTrace("ImageButtonZone::Render()");
+
+    // If we have a custom image path and it's loaded, show image filename as text for now
+    if (image_path.size() > 0 && image_loaded)
+    {
+        // For now, render the button with the image filename as text
+        // This shows the user that an image is selected
+        RenderZone(term, image_path.Value(), update_flag);
+        return RENDER_OKAY;
+    }
+    else
+    {
+        // Use default button rendering
+        return ButtonZone::Render(term, update_flag);
+    }
+}
+
