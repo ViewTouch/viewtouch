@@ -384,6 +384,7 @@ public:
     int PageListReport(Terminal *t, int show_system, Report *r);
     int ChangeItemName(const char* old_name, const genericChar* new_name);
 
+    int ValidateSystemPages();  // Check for System Pages with invalid parent_id values
     int PrintZoneDB(const char* dest = NULL, int brief = 0);  // for debugging only
 };
 

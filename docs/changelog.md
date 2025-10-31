@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **System Page Validation Function**: Added `ZoneDB::ValidateSystemPages()` to detect data integrity issues
+  - **Purpose**: Checks for System Pages (PAGE_SYSTEM = 0) with invalid parent_id values (> 0)
+  - **Detection**: Identifies corrupted data files where System Pages incorrectly have parent relationships
+  - **Reporting**: Logs detailed error messages and returns count of invalid pages found
+  - **Usage**: Can be called during startup or maintenance to verify data integrity
+  - Files added: `zone/zone.{hh,cc}` function `ValidateSystemPages()`
 - **🧪 Comprehensive Testing Infrastructure**: Complete unit testing framework with Catch2
   - Added 38 test cases covering core business logic, memory safety, string operations, input validation, and logging
   - Mock objects for Terminal, Settings, and other dependencies to enable isolated testing
@@ -65,12 +71,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `term/layer.{hh,cc}`, `term/term_view.hh`, `main/ui/labels.cc`
 
 ### Fixed
+- **Enhanced Black Text Readability**: Improved text contrast by using white shadows for dark/black text colors
+  - **Issue**: Black text with dark shadows created poor readability on various backgrounds
+  - **Fix**: Modified `GenericDrawStringXftEmbossed` and `GenericDrawStringXftWithShadow` to use white shadows for dark colors (RGB < 1000)
+  - **Impact**: Black and dark text now has much better readability with white outline/shadow effects
+  - Files modified: `src/core/generic_char.cc`
 - **Hardware Button Display Sending**: Fixed broken signal routing for "Hardware" button types that send to display terminals
-  - **Root Cause**: Commit 4d990d86 (2016) introduced strict `z->group_id == group_id` matching that broke broadcast signals
-  - **Issue**: Buttons configured to send to all hardware terminals (group_id = 0) could only reach zones with group_id = 0
-  - **Fix**: Restored proper broadcast logic with `(group_id == 0 || z->group_id == group_id)`
-  - **Impact**: Hardware buttons now correctly send to customer displays, kitchen terminals, and other devices
-  - Files modified: `zone/zone.cc`
 - **Thermal Printer Receipt Centering**: Fixed receipt content alignment on thermal printers
   - Changed Epson printer width from 33 to 40 characters for proper centering
   - Resolves issue where receipt content appeared left-aligned instead of centered
@@ -84,6 +90,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `main/business/check.{hh,cc}`, `main/hardware/drawer.{hh,cc}`, `main/data/credit.{hh,cc}`, and related calling files
 
 ### Changed
+- **Embossed Text Rendering**: Enhanced embossed text effect with larger white outline behind main text
+  - **Enhancement**: Modified `GenericDrawStringXftEmbossed` to create 1-pixel larger white outlines
+  - **Visual Effect**: Embossed text now appears with complete white outline around all text edges
+  - **Implementation**: Draws white copies at all 8 surrounding positions (top-left, top, top-right, left, right, bottom-left, bottom, bottom-right)
+  - **Impact**: More prominent and professional embossed text appearance with consistent white coloring
+  - Files modified: `src/core/generic_char.cc`
 - **Security Policy Update**: Updated SECURITY.md to only support the latest version (25.03.x) instead of multiple versions
   - Removed support for older versions (25.02.x, 25.01.x, 25.00.x)
   - Updated version support policy to only maintain security updates for the current stable release

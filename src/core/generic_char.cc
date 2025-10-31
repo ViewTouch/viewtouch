@@ -97,37 +97,33 @@ void GenericDrawStringXftEmbossed(Display* display,
         return result;
     };
 
-    const XRenderColor shadow_color = make_color(*color, 0.6f);
-    const XRenderColor frosted_color = {
-        static_cast<unsigned short>(color->red + ((65535 - color->red) * 2) / 5),
-        static_cast<unsigned short>(color->green + ((65535 - color->green) * 2) / 5),
-        static_cast<unsigned short>(color->blue + ((65535 - color->blue) * 2) / 5),
-        static_cast<unsigned short>((color->alpha * 9) / 10)
-    };
+    // Embossed text is always white and 1 pixel bigger (drawn behind main text)
+    const XRenderColor embossed_color{65535, 65535, 65535, color->alpha}; // Always white
 
-    XftColor xft_shadow{};
-    XftColor xft_frosted{};
+    XftColor xft_embossed{};
     XftColor xft_main{};
 
-    XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &shadow_color, &xft_shadow);
-    XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &frosted_color, &xft_frosted);
+    XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &embossed_color, &xft_embossed);
     XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), color, &xft_main);
 
     const FcChar8* fc_text = ToFcUtf8(text);
     const int text_length = ToInt(text);
 
-    XftDrawStringUtf8(draw, &xft_shadow, font, x + 1, y + 1, fc_text, text_length);
-    XftDrawStringUtf8(draw, &xft_shadow, font, x + 2, y + 1, fc_text, text_length);
-    XftDrawStringUtf8(draw, &xft_shadow, font, x + 1, y + 2, fc_text, text_length);
+    // Draw embossed (white) text behind main text - 1 pixel bigger outline
+    // Draw at all positions around the text to create a complete outline
+    XftDrawStringUtf8(draw, &xft_embossed, font, x - 1, y - 1, fc_text, text_length); // top-left
+    XftDrawStringUtf8(draw, &xft_embossed, font, x, y - 1, fc_text, text_length);     // top
+    XftDrawStringUtf8(draw, &xft_embossed, font, x + 1, y - 1, fc_text, text_length); // top-right
+    XftDrawStringUtf8(draw, &xft_embossed, font, x - 1, y, fc_text, text_length);     // left
+    XftDrawStringUtf8(draw, &xft_embossed, font, x + 1, y, fc_text, text_length);     // right
+    XftDrawStringUtf8(draw, &xft_embossed, font, x - 1, y + 1, fc_text, text_length); // bottom-left
+    XftDrawStringUtf8(draw, &xft_embossed, font, x, y + 1, fc_text, text_length);     // bottom
+    XftDrawStringUtf8(draw, &xft_embossed, font, x + 1, y + 1, fc_text, text_length); // bottom-right
 
-    XftDrawStringUtf8(draw, &xft_frosted, font, x - 1, y - 1, fc_text, text_length);
-    XftDrawStringUtf8(draw, &xft_frosted, font, x - 2, y - 1, fc_text, text_length);
-    XftDrawStringUtf8(draw, &xft_frosted, font, x - 1, y - 2, fc_text, text_length);
-
+    // Draw main text on top
     XftDrawStringUtf8(draw, &xft_main, font, x, y, fc_text, text_length);
 
-    XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_shadow);
-    XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_frosted);
+    XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_embossed);
     XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_main);
 }
 
@@ -149,12 +145,14 @@ void GenericDrawStringXftWithShadow(Display* display,
         return;
     }
 
-    const XRenderColor shadow_color{
-        static_cast<unsigned short>((color->red * 1) / 4),
-        static_cast<unsigned short>((color->green * 1) / 4),
-        static_cast<unsigned short>((color->blue * 1) / 4),
-        color->alpha
-    };
+    // For very dark colors (like black), use white shadows for better readability
+    const bool is_dark_color = (color->red < 1000 && color->green < 1000 && color->blue < 1000);
+    const XRenderColor shadow_color = is_dark_color ?
+        XRenderColor{65535, 65535, 65535, color->alpha} : // White shadow for dark text
+        XRenderColor{static_cast<unsigned short>((color->red * 1) / 4),
+                     static_cast<unsigned short>((color->green * 1) / 4),
+                     static_cast<unsigned short>((color->blue * 1) / 4),
+                     color->alpha}; // Darker shadow for light text
 
     XftColor xft_shadow{};
     XftColor xft_main{};
