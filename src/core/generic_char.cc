@@ -2,6 +2,7 @@
 #include "generic_char.hh"
 
 #include <algorithm>
+#include <cmath>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -97,8 +98,8 @@ void GenericDrawStringXftEmbossed(Display* display,
         return result;
     };
 
-    // Embossed text is always white and 1 pixel bigger (drawn behind main text)
-    const XRenderColor embossed_color{65535, 65535, 65535, color->alpha}; // Always white
+    // Embossed text uses white color barely visible around the edges (drawn behind main text)
+    const XRenderColor embossed_color{65535, 65535, 65535, color->alpha}; // White with full opacity
 
     XftColor xft_embossed{};
     XftColor xft_main{};
@@ -109,16 +110,9 @@ void GenericDrawStringXftEmbossed(Display* display,
     const FcChar8* fc_text = ToFcUtf8(text);
     const int text_length = ToInt(text);
 
-    // Draw embossed (white) text behind main text - 1 pixel bigger outline
-    // Draw at all positions around the text to create a complete outline
-    XftDrawStringUtf8(draw, &xft_embossed, font, x - 1, y - 1, fc_text, text_length); // top-left
+    // Draw embossed text behind main text - minimal single pixel outline
+    // Draw at only one position for barely visible effect
     XftDrawStringUtf8(draw, &xft_embossed, font, x, y - 1, fc_text, text_length);     // top
-    XftDrawStringUtf8(draw, &xft_embossed, font, x + 1, y - 1, fc_text, text_length); // top-right
-    XftDrawStringUtf8(draw, &xft_embossed, font, x - 1, y, fc_text, text_length);     // left
-    XftDrawStringUtf8(draw, &xft_embossed, font, x + 1, y, fc_text, text_length);     // right
-    XftDrawStringUtf8(draw, &xft_embossed, font, x - 1, y + 1, fc_text, text_length); // bottom-left
-    XftDrawStringUtf8(draw, &xft_embossed, font, x, y + 1, fc_text, text_length);     // bottom
-    XftDrawStringUtf8(draw, &xft_embossed, font, x + 1, y + 1, fc_text, text_length); // bottom-right
 
     // Draw main text on top
     XftDrawStringUtf8(draw, &xft_main, font, x, y, fc_text, text_length);
