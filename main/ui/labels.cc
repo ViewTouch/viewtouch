@@ -64,7 +64,9 @@ const genericChar* FullZoneTypeName[] = {
     "Expense", "Status", "CDU Messages",
     "Customer Information", "Check Edit",
     "Credit Card List", "Credit Card Messages",
-    "Expire Messages", "Image Button", NULL
+    "Expire Messages", "Image Button",
+    "Menu Item", "Modifier", "Non-Tracking Modifier",
+    "Menu Item + Substitute", "Priced By Weight", "Event Admission", NULL
 };
 
 int FullZoneTypeValue[] = {
@@ -98,13 +100,15 @@ int FullZoneTypeValue[] = {
     ZONE_EXPENSE, ZONE_STATUS_BUTTON, ZONE_CDU,
     ZONE_CUSTOMER_INFO, ZONE_CHECK_EDIT,
     ZONE_CREDITCARD_LIST, ZONE_CC_MSG_SETTINGS,
-    ZONE_EXPIRE_MSG, ZONE_IMAGE_BUTTON, -1
+    ZONE_EXPIRE_MSG, ZONE_IMAGE_BUTTON,
+    ZONE_ITEM_NORMAL, ZONE_ITEM_MODIFIER, ZONE_ITEM_METHOD,
+    ZONE_ITEM_SUBSTITUTE, ZONE_ITEM_POUND, ZONE_ITEM_ADMISSION, -1
 };
 
 const genericChar* ZoneTypeName[] = {
-    "Standard", "Menu", "Qualifier", "Table", "Image Button", NULL};
+    "Menu Item", "Modifier", "Non-Tracking Modifier", "Menu Item + Substitute", "Priced By Weight", "Event Admission", "Table", "Qualifier", "Image", "Simple", NULL};
 int ZoneTypeValue[] = {
-    ZONE_SIMPLE, ZONE_ITEM, ZONE_QUALIFIER, ZONE_TABLE, ZONE_IMAGE_BUTTON, -1};
+    ZONE_ITEM_NORMAL, ZONE_ITEM_MODIFIER, ZONE_ITEM_METHOD, ZONE_ITEM_SUBSTITUTE, ZONE_ITEM_POUND, ZONE_ITEM_ADMISSION, ZONE_TABLE, ZONE_QUALIFIER, ZONE_IMAGE_BUTTON, ZONE_SIMPLE, -1};
 
 const genericChar* ZoneBehaveName[] = {
     "No Response", "Blink", "Toggle", "Turn On", "Double Touch",

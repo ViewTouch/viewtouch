@@ -92,6 +92,14 @@ int Zone::CopyZone(Zone *target)
         *target->Amount() = *Amount();
     if (Expression() && target->Expression())
         *target->Expression() = *Expression();
+
+    // Copy PosZone-specific fields if both are PosZones
+    PosZone *srcPos = dynamic_cast<PosZone*>(this);
+    PosZone *dstPos = dynamic_cast<PosZone*>(target);
+    if (srcPos && dstPos) {
+        *dstPos->ImagePath() = *srcPos->ImagePath();
+    }
+
     if (FileName() && target->FileName())
         *target->FileName() = *FileName();
     if (ItemName() && target->ItemName())

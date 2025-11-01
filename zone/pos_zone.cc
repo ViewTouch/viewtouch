@@ -141,6 +141,24 @@ Zone *NewPosZone(int type)
     case ZONE_ITEM:
         pNewZone = new ItemZone;
         break;
+    case ZONE_ITEM_NORMAL:
+        pNewZone = new ItemZone;
+        break;
+    case ZONE_ITEM_MODIFIER:
+        pNewZone = new ItemZone;
+        break;
+    case ZONE_ITEM_METHOD:
+        pNewZone = new ItemZone;
+        break;
+    case ZONE_ITEM_SUBSTITUTE:
+        pNewZone = new ItemZone;
+        break;
+    case ZONE_ITEM_POUND:
+        pNewZone = new ItemZone;
+        break;
+    case ZONE_ITEM_ADMISSION:
+        pNewZone = new ItemZone;
+        break;
     case ZONE_QUALIFIER:
         pNewZone = new QualifierZone;
         break;
