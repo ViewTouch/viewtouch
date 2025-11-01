@@ -143,6 +143,7 @@ public:
     int ZoneText(const char* str, int x, int y, int w, int h,
                  int color, int font, int align = ALIGN_CENTER, int embossed = 0);
     int Rectangle(int rx, int ry, int rw, int rh, int image);
+    int DrawPixmap(int rx, int ry, int rw, int rh, const char* filename);
     int SolidRectangle(int rx, int ry, int rw, int rh, int pixel_id);
     int Circle(int cx, int cy, int cw, int ch, int image);
     int Diamond(int dx, int dy, int dw, int dh, int image);

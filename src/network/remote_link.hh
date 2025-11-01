@@ -148,7 +148,8 @@ namespace TerminalProtocol {
     inline constexpr int EDITCURSOR      = 21;  // <x, y, w, h>
     inline constexpr int CURSOR          = 22;  // <I2> - sets displayed cursor
     inline constexpr int SOLID_RECTANGLE = 23;  // <x, y, w, h, color>
-    inline constexpr int FLUSH           = 24;  // flush commands to X server
+    inline constexpr int PIXMAP          = 25;  // <x, y, w, h, s> - draw pixmap from file path
+    inline constexpr int FLUSH           = 26;  // flush commands to X server
     
     inline constexpr int FLUSH_TS        = 30;  // no args
     inline constexpr int CALIBRATE_TS    = 31;  // no args
@@ -235,6 +236,7 @@ namespace TerminalProtocol {
 #define TERM_EDITCURSOR       TerminalProtocol::EDITCURSOR
 #define TERM_CURSOR           TerminalProtocol::CURSOR
 #define TERM_SOLID_RECTANGLE  TerminalProtocol::SOLID_RECTANGLE
+#define TERM_PIXMAP           TerminalProtocol::PIXMAP
 #define TERM_FLUSH            TerminalProtocol::FLUSH
 #define TERM_FLUSH_TS         TerminalProtocol::FLUSH_TS
 #define TERM_CALIBRATE_TS     TerminalProtocol::CALIBRATE_TS

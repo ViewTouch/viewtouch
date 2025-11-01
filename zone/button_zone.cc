@@ -806,24 +806,8 @@ int ImageButtonZone::RenderInit(Terminal *term, int update_flag)
 
     active = 1;
 
-    // Load and scale the custom image here if image_path is set
-    if (image_path.size() > 0 && !image_loaded)
-    {
-        // Construct full path to image in /usr/viewtouch/imgs/
-        char full_path[1024];
-        snprintf(full_path, sizeof(full_path), "/usr/viewtouch/imgs/%s", image_path.Value());
-
-        // TODO: Implement actual image loading and scaling
-        // For now, check if file exists and mark as loaded
-        // This would involve:
-        // 1. Loading the image file (XPM, PNG, JPEG, etc.)
-        // 2. Scaling it to fit the button dimensions while maintaining aspect ratio
-        // 3. Converting to X11 pixmap format
-        // 4. Storing the scaled pixmap for rendering
-
-        // For now, just mark as loaded if path is set
-        image_loaded = 1;
-    }
+    // Image loading is now handled in Render() method on the X server side
+    // This keeps the terminal side lightweight
 
     return 0;
 }
@@ -832,12 +816,12 @@ RenderResult ImageButtonZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("ImageButtonZone::Render()");
 
-    // If we have a custom image path and it's loaded, show image filename as text for now
-    if (image_path.size() > 0 && image_loaded)
+    // If we have a custom image path, try to render the image
+    if (image_path.size() > 0)
     {
-        // For now, render the button with the image filename as text
-        // This shows the user that an image is selected
-        RenderZone(term, image_path.Value(), update_flag);
+        // Send pixmap rendering command to X server
+        // The image will be loaded and displayed within the button bounds
+        term->RenderPixmap(x, y, w, h, image_path.Value());
         return RENDER_OKAY;
     }
     else

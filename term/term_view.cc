@@ -14,6 +14,18 @@
 #include <X11/xpm.h>
 #include <X11/Xft/Xft.h>
 #include <fontconfig/fontconfig.h>
+
+#ifdef HAVE_PNG
+#include <png.h>
+#endif
+
+#ifdef HAVE_JPEG
+#include <jpeglib.h>
+#endif
+
+#ifdef HAVE_GIF
+#include <gif_lib.h>
+#endif
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -1792,6 +1804,14 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n5 = RInt16();
             l->SolidRectangle(n1, n2, n3, n4, n5);
             break;
+        case TERM_PIXMAP:
+            n1 = RInt16();  // x
+            n2 = RInt16();  // y
+            n3 = RInt16();  // w
+            n4 = RInt16();  // h
+            s1 = RStr();    // filename
+            l->DrawPixmap(n1, n2, n3, n4, s1);
+            break;
         case TERM_HLINE:
             n1 = RInt16();
             n2 = RInt16();
@@ -2556,6 +2576,356 @@ Xpm *LoadPixmapFile(char* file_name)
 
     return retxpm;
 }
+
+#ifdef HAVE_PNG
+/****
+ * LoadPNGFile: Load a PNG file and convert it to an Xpm object
+ ****/
+Xpm *LoadPNGFile(const char* file_name)
+{
+    FnTrace("LoadPNGFile()");
+
+    if (!file_name) {
+        fprintf(stderr, "LoadPNGFile: No filename provided\n");
+        return nullptr;
+    }
+
+    FILE *fp = fopen(file_name, "rb");
+    if (!fp) {
+        fprintf(stderr, "LoadPNGFile: Cannot open file %s\n", file_name);
+        return nullptr;
+    }
+
+    // Read PNG header to verify format
+    png_byte header[8];
+    if (fread(header, 1, 8, fp) != 8) {
+        fprintf(stderr, "LoadPNGFile: Cannot read PNG header from %s\n", file_name);
+        fclose(fp);
+        return nullptr;
+    }
+
+    if (png_sig_cmp(header, 0, 8)) {
+        fprintf(stderr, "LoadPNGFile: File %s is not a valid PNG\n", file_name);
+        fclose(fp);
+        return nullptr;
+    }
+
+    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr) {
+        fprintf(stderr, "LoadPNGFile: Cannot create PNG read struct\n");
+        fclose(fp);
+        return nullptr;
+    }
+
+    png_infop info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr) {
+        fprintf(stderr, "LoadPNGFile: Cannot create PNG info struct\n");
+        png_destroy_read_struct(&png_ptr, NULL, NULL);
+        fclose(fp);
+        return nullptr;
+    }
+
+    if (setjmp(png_jmpbuf(png_ptr))) {
+        fprintf(stderr, "LoadPNGFile: PNG read error in %s\n", file_name);
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        fclose(fp);
+        return nullptr;
+    }
+
+    png_init_io(png_ptr, fp);
+    png_set_sig_bytes(png_ptr, 8);
+    png_read_info(png_ptr, info_ptr);
+
+    int width = png_get_image_width(png_ptr, info_ptr);
+    int height = png_get_image_height(png_ptr, info_ptr);
+    png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+    png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+
+    fprintf(stderr, "LoadPNGFile: Loading %s - %dx%d, color_type=%d, bit_depth=%d\n",
+            file_name, width, height, color_type, bit_depth);
+
+    // Convert palette images to RGB
+    if (color_type == PNG_COLOR_TYPE_PALETTE)
+        png_set_palette_to_rgb(png_ptr);
+
+    // Ensure we have at least 8 bits per channel
+    if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+        png_set_expand_gray_1_2_4_to_8(png_ptr);
+
+    // Convert grayscale to RGB
+    if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+        png_set_gray_to_rgb(png_ptr);
+
+    // Add alpha channel if missing for consistency
+    if (color_type != PNG_COLOR_TYPE_RGBA && png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+        png_set_tRNS_to_alpha(png_ptr);
+
+    // Ensure 8-bit depth
+    if (bit_depth == 16)
+        png_set_strip_16(png_ptr);
+
+    png_read_update_info(png_ptr, info_ptr);
+
+    int rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+    int channels = png_get_channels(png_ptr, info_ptr);
+    fprintf(stderr, "LoadPNGFile: Row bytes = %d, channels = %d\n", rowbytes, channels);
+
+    // Allocate image data
+    png_bytep* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+    if (!row_pointers) {
+        fprintf(stderr, "LoadPNGFile: Cannot allocate row pointers\n");
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        fclose(fp);
+        return nullptr;
+    }
+
+    for (int y = 0; y < height; y++) {
+        row_pointers[y] = (png_byte*)malloc(rowbytes);
+        if (!row_pointers[y]) {
+            fprintf(stderr, "LoadPNGFile: Cannot allocate row data\n");
+            for (int i = 0; i < y; i++) free(row_pointers[i]);
+            free(row_pointers);
+            png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+            fclose(fp);
+            return nullptr;
+        }
+    }
+
+    png_read_image(png_ptr, row_pointers);
+
+    // Convert to X11 Pixmap
+    Pixmap pixmap = 0;
+    if (width <= WinWidth && height <= WinHeight) {
+        Visual *visual = DefaultVisual(Dis, DefaultScreen(Dis));
+        int depth = DefaultDepth(Dis, DefaultScreen(Dis));
+
+        fprintf(stderr, "LoadPNGFile: Creating pixmap %dx%d, depth=%d\n", width, height, depth);
+
+        pixmap = XCreatePixmap(Dis, MainWin, width, height, depth);
+        if (!pixmap) {
+            fprintf(stderr, "LoadPNGFile: Cannot create pixmap\n");
+        } else {
+            // Create XImage with proper format for the visual
+            XImage *ximage = XCreateImage(Dis, visual, depth, ZPixmap, 0,
+                                         (char*)malloc(width * height * 4), width, height, 32, 0);
+            if (!ximage) {
+                fprintf(stderr, "LoadPNGFile: Cannot create XImage\n");
+                XFreePixmap(Dis, pixmap);
+                pixmap = 0;
+            } else {
+                // Copy PNG data to XImage pixels with alpha handling
+                for (int y = 0; y < height; y++) {
+                    png_bytep row = row_pointers[y];
+                    for (int x = 0; x < width; x++) {
+                        unsigned long pixel;
+                        if (channels >= 3) {
+                            // RGB or RGBA format
+                            unsigned char r = row[x*channels + 0];
+                            unsigned char g = row[x*channels + 1];
+                            unsigned char b = row[x*channels + 2];
+
+                            if (channels == 4) {
+                                // RGBA format - handle alpha transparency
+                                unsigned char a = row[x*channels + 3];
+                                if (a < 128) {
+                                    // Fully transparent or very transparent - use a neutral gray
+                                    // In a real implementation, you'd blend with background
+                                    pixel = (192 << 16) | (192 << 8) | 192; // Light gray for transparency
+                                } else {
+                                    pixel = (r << 16) | (g << 8) | b;
+                                }
+                            } else {
+                                // RGB format
+                                pixel = (r << 16) | (g << 8) | b;
+                            }
+                        } else if (channels == 1) {
+                            // Grayscale
+                            unsigned char gray = row[x];
+                            pixel = (gray << 16) | (gray << 8) | gray;
+                        } else {
+                            // Unknown format, use black
+                            pixel = 0;
+                        }
+                        XPutPixel(ximage, x, y, pixel);
+                    }
+                }
+
+                // Put image to pixmap
+                XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
+                XDestroyImage(ximage);
+                fprintf(stderr, "LoadPNGFile: Successfully loaded PNG to pixmap\n");
+            }
+        }
+    } else {
+        fprintf(stderr, "LoadPNGFile: Image too large (%dx%d > %dx%d)\n",
+                width, height, WinWidth, WinHeight);
+    }
+
+    // Cleanup
+    for (int y = 0; y < height; y++) {
+        free(row_pointers[y]);
+    }
+    free(row_pointers);
+    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+    fclose(fp);
+
+    if (pixmap) {
+        return new Xpm(pixmap, width, height);
+    }
+
+    fprintf(stderr, "LoadPNGFile: Failed to load PNG %s\n", file_name);
+    return nullptr;
+}
+#endif
+
+#ifdef HAVE_JPEG
+/****
+ * LoadJPEGFile: Load a JPEG file and convert it to an Xpm object
+ ****/
+Xpm *LoadJPEGFile(const char* file_name)
+{
+    FnTrace("LoadJPEGFile()");
+
+    if (!file_name)
+        return nullptr;
+
+    FILE *fp = fopen(file_name, "rb");
+    if (!fp)
+        return nullptr;
+
+    struct jpeg_decompress_struct cinfo;
+    struct jpeg_error_mgr jerr;
+
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_decompress(&cinfo);
+    jpeg_stdio_src(&cinfo, fp);
+    jpeg_read_header(&cinfo, TRUE);
+    jpeg_start_decompress(&cinfo);
+
+    int width = cinfo.output_width;
+    int height = cinfo.output_height;
+    int num_components = cinfo.output_components;
+
+    // Allocate image data
+    JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)
+        ((j_common_ptr) &cinfo, JPOOL_IMAGE, width * num_components, 1);
+
+    Pixmap pixmap = 0;
+    if (width <= WinWidth && height <= WinHeight) {
+        pixmap = XCreatePixmap(Dis, MainWin, width, height, DefaultDepth(Dis, DefaultScreen(Dis)));
+
+        XImage *ximage = XCreateImage(Dis, DefaultVisual(Dis, DefaultScreen(Dis)),
+                                     DefaultDepth(Dis, DefaultScreen(Dis)), ZPixmap, 0,
+                                     (char*)malloc(width * height * 4), width, height, 32, 0);
+
+        // Read and convert JPEG data
+        while (cinfo.output_scanline < height) {
+            jpeg_read_scanlines(&cinfo, buffer, 1);
+            int y = cinfo.output_scanline - 1;
+
+            for (int x = 0; x < width; x++) {
+                unsigned long pixel = 0;
+                if (num_components >= 3) {
+                    pixel = (buffer[0][x*num_components+0] << 16) |
+                           (buffer[0][x*num_components+1] << 8) |
+                           buffer[0][x*num_components+2];
+                }
+                XPutPixel(ximage, x, y, pixel);
+            }
+        }
+
+        XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
+        XDestroyImage(ximage);
+    }
+
+    jpeg_finish_decompress(&cinfo);
+    jpeg_destroy_decompress(&cinfo);
+    fclose(fp);
+
+    if (pixmap) {
+        return new Xpm(pixmap, width, height);
+    }
+
+    return nullptr;
+}
+#endif
+
+#ifdef HAVE_GIF
+/****
+ * LoadGIFFile: Load a GIF file and convert it to an Xpm object
+ ****/
+Xpm *LoadGIFFile(const char* file_name)
+{
+    FnTrace("LoadGIFFile()");
+
+    if (!file_name)
+        return nullptr;
+
+    // For simplicity, we'll use libgif to load the first frame
+    GifFileType *gif = DGifOpenFileName(file_name, NULL);
+    if (!gif) {
+        return nullptr;
+    }
+
+    if (DGifSlurp(gif) != GIF_OK) {
+        DGifCloseFile(gif, NULL);
+        return nullptr;
+    }
+
+    if (gif->ImageCount == 0) {
+        DGifCloseFile(gif, NULL);
+        return nullptr;
+    }
+
+    SavedImage *image = &gif->SavedImages[0];
+    GifImageDesc *desc = &image->ImageDesc;
+    ColorMapObject *color_map = image->ImageDesc.ColorMap ?
+                               image->ImageDesc.ColorMap : gif->SColorMap;
+
+    if (!color_map) {
+        DGifCloseFile(gif, NULL);
+        return nullptr;
+    }
+
+    int width = desc->Width;
+    int height = desc->Height;
+
+    Pixmap pixmap = 0;
+    if (width <= WinWidth && height <= WinHeight) {
+        pixmap = XCreatePixmap(Dis, MainWin, width, height, DefaultDepth(Dis, DefaultScreen(Dis)));
+
+        XImage *ximage = XCreateImage(Dis, DefaultVisual(Dis, DefaultScreen(Dis)),
+                                     DefaultDepth(Dis, DefaultScreen(Dis)), ZPixmap, 0,
+                                     (char*)malloc(width * height * 4), width, height, 32, 0);
+
+        // Convert GIF pixels to X11 pixels
+        GifPixelType *gif_pixels = image->RasterBits;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel_index = y * width + x;
+                GifPixelType color_index = gif_pixels[pixel_index];
+
+                if (color_index < color_map->ColorCount) {
+                    GifColorType *color = &color_map->Colors[color_index];
+                    unsigned long pixel = (color->Red << 16) | (color->Green << 8) | color->Blue;
+                    XPutPixel(ximage, x, y, pixel);
+                }
+            }
+        }
+
+        XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
+        XDestroyImage(ximage);
+    }
+
+    DGifCloseFile(gif, NULL);
+
+    if (pixmap) {
+        return new Xpm(pixmap, width, height);
+    }
+
+    return nullptr;
+}
+#endif
 
 int ReadScreenSaverPix()
 {
