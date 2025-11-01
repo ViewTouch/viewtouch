@@ -106,10 +106,14 @@
 /**** Types ****/
 class PosZone : public Zone
 {
+    // Optional image for zone background (used by button-like zones)
+    Str image_path;
+
+public:
     // Member Functions
     virtual int   Type() { return ZONE_UNDEFINED; }
     virtual std::unique_ptr<Zone> Copy();
-    
+
     virtual int CanSelect(Terminal *t);
     virtual int CanEdit(Terminal *t);
     virtual int CanCopy(Terminal *t);
@@ -117,6 +121,8 @@ class PosZone : public Zone
     virtual int SetPosition(Terminal *t, int pos_x, int pos_y);
     virtual int Read(InputDataFile &df, int version);
     virtual int Write(OutputDataFile &df, int version);
+
+    Str *ImagePath() { return &image_path; }
 };
 
 class PosPage : public Page

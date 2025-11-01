@@ -70,18 +70,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Updated UI configuration dialogs to include new shape options
   - Files modified: `term/layer.{hh,cc}`, `term/term_view.hh`, `main/ui/labels.cc`
 
-- **🖼️ Image Button Zone** (UNDER DEVELOPMENT): New zone type for displaying user-selected images with full multi-format graphical rendering and scaling
-  - **Zone Type**: `ZONE_IMAGE_BUTTON = 97` with dropdown image selection interface
+- **🖼️ Universal Image Support for All Button Types**: Extended image functionality to all button zone types (Simple, Item, Qualifier, Table buttons) with full multi-format graphical rendering and scaling
+  - **PosZone Inheritance**: Any zone inheriting from PosZone can now optionally display background images
+  - **Zone Types**: `ZONE_SIMPLE`, `ZONE_ITEM`, `ZONE_QUALIFIER`, `ZONE_TABLE`, and `ZONE_IMAGE_BUTTON` all support images
   - **Supported Formats**: XPM, PNG, JPEG, GIF with automatic format detection and loading
   - **Permission Control**: Restricted to Editor and Super User roles only
   - **Installation**: Auto-creates `/usr/viewtouch/imgs/` directory with default images and proper permissions (1777) for user image uploads
   - **Default Images**: Pre-installed coffee, burger, and pizza icons for restaurant use (currently 1 PNG test image available)
   - **UI Integration**: Dropdown selection from available images in zone properties dialog
-  - **Image Rendering**: Full multi-format image loading and display with automatic scaling and centering, proper button state handling with consistent image colors (prevents selection tinting), forced redraw on touch to maintain image appearance
+  - **Image Rendering**: Full multi-format image loading and display with automatic scaling and centering, proper button state handling with consistent image colors (prevents selection tinting), forced redraw on touch to maintain image appearance, simplified layering (image → text overlay) for clean visual presentation on menu items, qualifiers, and tables
   - **Intelligent Scaling**: Images automatically stretch to fill button dimensions, adjusting aspect ratio to match button width and height; small images scale up to fill available space
   - **Transparency Support**: PNG alpha channels handled with background color blending (simplified approach)
   - **Dependencies**: Optional libpng, libjpeg, libgif support with graceful fallback
   - **Protocol Enhancement**: Added `TERM_PIXMAP` command for client-server image rendering
+  - **Architecture**: Moved image_path field to base ButtonZone class for universal inheritance
   - Files added: `zone/button_zone.{hh,cc}` (ImageButtonZone), `term/term_dialog.{hh,cc}`, `term/layer.{hh,cc}`, `main/hardware/terminal.{hh,cc}`, `assets/default_images/*.xpm`, `assets/default_images/*.png`
   - Files modified: `zone/pos_zone.{hh,cc}`, `main/ui/labels.cc`, `CMakeLists.txt`, `src/network/remote_link.hh`, `term/term_view.{hh,cc}`, `term/layer.cc`
 

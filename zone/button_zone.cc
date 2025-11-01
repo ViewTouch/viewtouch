@@ -45,6 +45,23 @@ ButtonZone::ButtonZone()
     jump_id   = 0;
 }
 
+RenderResult ButtonZone::Render(Terminal *term, int update_flag)
+{
+    FnTrace("ButtonZone::Render()");
+
+    // For buttons with images, render the image as background
+    if (image_path.size() > 0)
+    {
+        // Send pixmap rendering command to X server
+        // The image will be loaded and displayed within the button bounds
+        term->RenderPixmap(x, y, w, h, image_path.Value());
+        return RENDER_OKAY;
+    }
+
+    // Default: call parent Zone render for normal button appearance
+    return Zone::Render(term, update_flag);
+}
+
 // Member Functions
 std::unique_ptr<Zone> ButtonZone::Copy()
 {
@@ -59,6 +76,7 @@ std::unique_ptr<Zone> ButtonZone::Copy()
     z->group_id  = group_id;
     z->jump_type = jump_type;
     z->jump_id   = jump_id;
+    z->image_path.Set(image_path);
     for (int i = 0; i < 3; ++i)
     {
         z->color[i]   = color[i];
@@ -761,6 +779,7 @@ ImageButtonZone::ImageButtonZone()
     image_loaded = 0;
     // Image buttons should not participate in selection system
     // Override ZoneStates to return 1 so selection logic is skipped
+    // image_path is now inherited from ButtonZone
 }
 
 // Member Functions
@@ -777,8 +796,8 @@ std::unique_ptr<Zone> ImageButtonZone::Copy()
     z->group_id  = group_id;
     z->jump_type = jump_type;
     z->jump_id   = jump_id;
-    z->image_path.Set(image_path);
     z->image_loaded = image_loaded;
+    // image_path is now handled by ButtonZone::Copy()
     for (int i = 0; i < 3; ++i)
     {
         z->color[i]   = color[i];
@@ -814,21 +833,8 @@ int ImageButtonZone::RenderInit(Terminal *term, int update_flag)
     return 0;
 }
 
-RenderResult ImageButtonZone::Render(Terminal *term, int update_flag)
-{
-    FnTrace("ImageButtonZone::Render()");
-
-    // For image buttons, render ONLY the image - no background at all
-    if (image_path.size() > 0)
-    {
-        // Just render the image directly
-        term->RenderPixmap(x, y, w, h, image_path.Value());
-        return RENDER_OKAY;
-    }
-
-    // No custom image, fall back to normal rendering
-    return Zone::Render(term, update_flag);
-}
+// ImageButtonZone inherits image rendering from ButtonZone
+// No need to override Render() anymore
 
 int ImageButtonZone::ZoneStates()
 {

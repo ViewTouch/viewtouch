@@ -1513,6 +1513,7 @@ std::unique_ptr<Zone> ItemZone::Copy()
 RenderResult ItemZone::Render(Terminal *t, int update_flag)
 {
     FnTrace("ItemZone::Render()");
+
     if (update_flag)
     {
         item = Item(&(t->system_data->menu));
@@ -1532,18 +1533,57 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
         RenderZone(t, "<Unknown>", update_flag);
         return RENDER_OKAY;
     }
-    const char* zn= item->type == ITEM_ADMISSION ? "" : item->ZoneName();
-    RenderZone(t, zn, update_flag);
+
+    const char* zn = item->type == ITEM_ADMISSION ? "" : item->ZoneName();
+
+    // Check for custom image
+    if (ImagePath() && ImagePath()->size() > 0)
+    {
+        // Render image as the main visual element
+        t->RenderPixmap(x, y, w, h, ImagePath()->Value());
+
+        // Render text on top of image
+        int state = State(t);
+        if (frame[state] != ZF_HIDDEN)
+        {
+            int bx = Max(border - 2, 0);
+            int by = Max(border - 4, 0);
+            const genericChar* b = t->ReplaceSymbols(zn);
+            if (b)
+            {
+                genericChar str[256];
+                if (behave == BEHAVE_DOUBLE)
+                {
+                    sprintf(str, "%s\\( 2X )", b);
+                    b = str;
+                }
+                int c = color[state];
+                if (c == COLOR_PAGE_DEFAULT || c == COLOR_DEFAULT)
+                    c = t->page->default_color[state];
+                if (c != COLOR_CLEAR)
+                    t->RenderZoneText(b, x + bx, y + by + header, w - (bx*2),
+                                     h - (by*2) - header - footer, c, font);
+            }
+        }
+        return RENDER_OKAY;
+    }
+    else
+    {
+        // Normal rendering without image
+        RenderZone(t, zn, update_flag);
+    }
+
+    // Continue with normal ItemZone rendering logic for pricing, etc.
     Settings *s = t->GetSettings();
     int sub = (item->type == ITEM_SUBSTITUTE && (t->qualifier & QUALIFIER_SUB));
     int cost = item->Price(s, t->qualifier);
-    
+
     int col = color[State(t)];
     if (col == COLOR_PAGE_DEFAULT || col == COLOR_DEFAULT)
     {
 	col =  t->TextureTextColor(texture[State(t)]);
-    } 
-    
+    }
+
     int font_height, font_width;
     t->FontSize(font, font_width, font_height);
 
@@ -1836,20 +1876,52 @@ QualifierZone::QualifierZone()
 RenderResult QualifierZone::Render(Terminal *t, int update_flag)
 {
     FnTrace("QualifierZone::Render()");
+
     behave = BEHAVE_NONE;
     if (update_flag)
         index = CompareList(qualifier_type, QualifierValue);
 
-    if (t->qualifier & qualifier_type)
-        stay_lit = 1;
-    else
-        stay_lit = 0;
+    // Check for custom image
+    if (ImagePath() && ImagePath()->size() > 0)
+    {
+        // Render image as the main visual element
+        t->RenderPixmap(x, y, w, h, ImagePath()->Value());
 
-    if (index < 0)
-        RenderZone(t, t->Translate(UnknownStr), update_flag);
+        // Render text on top of image
+        if (t->qualifier & qualifier_type)
+            stay_lit = 1;
+        else
+            stay_lit = 0;
+
+        int state = State(t);
+        if (frame[state] != ZF_HIDDEN)
+        {
+            int bx = Max(border - 2, 0);
+            int by = Max(border - 4, 0);
+            const genericChar* text = (index < 0) ? t->Translate(UnknownStr) : QualifierName[index];
+            int c = color[state];
+            if (c == COLOR_PAGE_DEFAULT || c == COLOR_DEFAULT)
+                c = t->page->default_color[state];
+            if (c != COLOR_CLEAR)
+                t->RenderZoneText(text, x + bx, y + by + header, w - (bx*2),
+                                 h - (by*2) - header - footer, c, font);
+        }
+        return RENDER_OKAY;
+    }
     else
-        RenderZone(t, QualifierName[index], update_flag);
-    return RENDER_OKAY;
+    {
+        // Normal rendering without image
+        if (t->qualifier & qualifier_type)
+            stay_lit = 1;
+        else
+            stay_lit = 0;
+
+        if (index < 0)
+            RenderZone(t, t->Translate(UnknownStr), update_flag);
+        else
+            RenderZone(t, QualifierName[index], update_flag);
+        return RENDER_OKAY;
+    }
 }
 
 SignalResult QualifierZone::Touch(Terminal *t, int tx, int ty)

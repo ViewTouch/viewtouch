@@ -1108,7 +1108,40 @@ std::unique_ptr<Zone> TableZone::Copy()
 RenderResult TableZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("TableZone::Render()");
-    RenderZone(term, name.Value(), update_flag);
+
+    // Check for custom image
+    if (ImagePath() && ImagePath()->size() > 0)
+    {
+        // Render image as the main visual element
+        term->RenderPixmap(x, y, w, h, ImagePath()->Value());
+
+        // Render text on top of image
+        int state = State(term);
+        if (frame[state] != ZF_HIDDEN)
+        {
+            int bx = Max(border - 2, 0);
+            int by = Max(border - 4, 0);
+            const genericChar* text = name.Value();
+            const genericChar* b = term->ReplaceSymbols(text);
+            if (b)
+            {
+                int c = color[state];
+                if (c == COLOR_PAGE_DEFAULT || c == COLOR_DEFAULT)
+                    c = term->page->default_color[state];
+                if (c != COLOR_CLEAR)
+                    term->RenderZoneText(b, x + bx, y + by + header, w - (bx*2),
+                                         h - (by*2) - header - footer, c, font);
+            }
+        }
+        return RENDER_OKAY;
+    }
+    else
+    {
+        // Normal rendering without image
+        RenderZone(term, name.Value(), update_flag);
+    }
+
+    // Continue with normal TableZone rendering logic
     Employee *employee = term->user;
 
     if (employee == NULL)

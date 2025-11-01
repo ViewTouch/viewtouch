@@ -4982,13 +4982,15 @@ int Terminal::EditZone(Zone *currZone)
 		WStr(currZone->Expression());
 		WStr(currZone->Message());
 		WStr(currZone->FileName());
-		// Send image filename for ImageButtonZone
-		if (currZone->Type() == ZONE_IMAGE_BUTTON)
+		// Send image filename for zones that support images
+		if (currZone->Type() == ZONE_SIMPLE || currZone->Type() == ZONE_ITEM ||
+		    currZone->Type() == ZONE_QUALIFIER || currZone->Type() == ZONE_TABLE ||
+		    currZone->Type() == ZONE_IMAGE_BUTTON)
 		{
-			ImageButtonZone *imgZone = dynamic_cast<ImageButtonZone*>(currZone);
-			if (imgZone && imgZone->ImagePath())
+			PosZone *posZone = dynamic_cast<PosZone*>(currZone);
+			if (posZone && posZone->ImagePath() && posZone->ImagePath()->size() > 0)
 			{
-				WStr(imgZone->ImagePath()->Value());
+				WStr(posZone->ImagePath()->Value());
 			}
 			else
 			{
@@ -4997,7 +4999,7 @@ int Terminal::EditZone(Zone *currZone)
 		}
 		else
 		{
-			WStr(""); // send empty string for non-image zones
+			WStr(""); // send empty string for zones that don't support images
 		}
 		WInt8(currZone->TenderType());
 		int tmp = 0;
@@ -5186,13 +5188,15 @@ int Terminal::ReadZone()
     RStr(newZone->Expression());
     RStr(newZone->Message());
     RStr(newZone->FileName());
-    // Read image filename for ImageButtonZone
-    if (newZone->Type() == ZONE_IMAGE_BUTTON)
+    // Read image filename for zones that support images
+    if (newZone->Type() == ZONE_SIMPLE || newZone->Type() == ZONE_ITEM ||
+        newZone->Type() == ZONE_QUALIFIER || newZone->Type() == ZONE_TABLE ||
+        newZone->Type() == ZONE_IMAGE_BUTTON)
     {
-        ImageButtonZone *imgZone = dynamic_cast<ImageButtonZone*>(newZone);
-        if (imgZone && imgZone->ImagePath())
+        PosZone *posZone = dynamic_cast<PosZone*>(newZone);
+        if (posZone && posZone->ImagePath())
         {
-            RStr(imgZone->ImagePath());
+            RStr(posZone->ImagePath());
         }
         else
         {

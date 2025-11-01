@@ -1255,7 +1255,9 @@ int ZoneDialog::Correct()
     expression.Show(t == ZONE_CONDITIONAL);
     message.Show(t == ZONE_STANDARD || t == ZONE_CONDITIONAL || t == ZONE_TOGGLE);
     filename.Show(t == ZONE_READ);
-    image_filename.Show(t == ZONE_IMAGE_BUTTON);
+    // Show image selection for all button types
+    image_filename.Show(t == ZONE_SIMPLE || t == ZONE_ITEM || t == ZONE_QUALIFIER ||
+                       t == ZONE_TABLE || t == ZONE_IMAGE_BUTTON);
     item_name.Show(t == ZONE_ITEM);
     item_zone_name.Show(t == ZONE_ITEM);
     item_print_name.Show(t == ZONE_ITEM);

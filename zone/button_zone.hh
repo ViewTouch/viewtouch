@@ -30,6 +30,7 @@ class ButtonZone : public PosZone
 {
 public:
     int jump_type, jump_id;
+    Str image_path;  // Optional image for button background
 
     // Constructor
     ButtonZone();
@@ -38,11 +39,13 @@ public:
     virtual int          Type() { return ZONE_SIMPLE; }
     virtual int          AcceptSignals() { return 0; }
     virtual std::unique_ptr<Zone> Copy();
+    virtual RenderResult Render(Terminal *term, int update_flag);
     virtual SignalResult Touch(Terminal *term, int tx, int ty);
     virtual int          GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 
     int *JumpType() { return &jump_type; }
     int *JumpID()   { return &jump_id;   }
+    Str *ImagePath() { return &image_path; }
 };
 
 class MessageButtonZone : public ButtonZone
@@ -147,10 +150,8 @@ public:
 
 class ImageButtonZone : public ButtonZone
 {
-    Str image_path;  // Path to user-selected image file
     int image_loaded; // Flag indicating if image is loaded
-    // Note: We'll use the existing image[] array for state-based images,
-    // but add image_path for custom user images
+    // Note: image_path is now inherited from ButtonZone
 
 public:
     // Constructor
@@ -164,11 +165,8 @@ public:
     int          ZoneStates();       // Override to return 1 (no selection states) to skip selection logic
     std::unique_ptr<Zone> Copy();
     int          RenderInit(Terminal *term, int update_flag);
-    RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
     virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
-
-    Str *ImagePath() { return &image_path; }
 };
 
 #endif
