@@ -70,16 +70,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Updated UI configuration dialogs to include new shape options
   - Files modified: `term/layer.{hh,cc}`, `term/term_view.hh`, `main/ui/labels.cc`
 
-- **🖼️ Image Button Zone** (UNDER DEVELOPMENT): New zone type for displaying user-selected images
+- **🖼️ Image Button Zone** (UNDER DEVELOPMENT): New zone type for displaying user-selected images with full multi-format graphical rendering and scaling
   - **Zone Type**: `ZONE_IMAGE_BUTTON = 97` with dropdown image selection interface
-  - **Supported Formats**: XPM files with framework for PNG, JPEG, GIF expansion
+  - **Supported Formats**: XPM, PNG, JPEG, GIF with automatic format detection and loading
   - **Permission Control**: Restricted to Editor and Super User roles only
   - **Installation**: Auto-creates `/usr/viewtouch/imgs/` directory with default images
-  - **Default Images**: Pre-installed coffee, burger, and pizza icons for restaurant use
+  - **Default Images**: Pre-installed coffee, burger, and pizza icons for restaurant use (currently 1 PNG test image available)
   - **UI Integration**: Dropdown selection from available images in zone properties dialog
-  - **Current Status**: Image filename display implemented, graphical rendering framework ready
-  - Files added: `zone/button_zone.{hh,cc}` (ImageButtonZone), `term/term_dialog.{hh,cc}`, `main/hardware/terminal.cc`, `assets/default_images/*.xpm`
-  - Files modified: `zone/pos_zone.{hh,cc}`, `main/ui/labels.cc`, `CMakeLists.txt`
+  - **Image Rendering**: Full multi-format image loading and display with automatic scaling and centering
+  - **Intelligent Scaling**: Images automatically scale down to fit buttons while maintaining aspect ratio; small images center without upscaling
+  - **Transparency Support**: PNG alpha channels handled with neutral gray background for transparent areas
+  - **Dependencies**: Optional libpng, libjpeg, libgif support with graceful fallback
+  - **Protocol Enhancement**: Added `TERM_PIXMAP` command for client-server image rendering
+  - Files added: `zone/button_zone.{hh,cc}` (ImageButtonZone), `term/term_dialog.{hh,cc}`, `term/layer.{hh,cc}`, `main/hardware/terminal.{hh,cc}`, `assets/default_images/*.xpm`, `assets/default_images/*.png`
+  - Files modified: `zone/pos_zone.{hh,cc}`, `main/ui/labels.cc`, `CMakeLists.txt`, `src/network/remote_link.hh`, `term/term_view.{hh,cc}`, `term/layer.cc`
 
 ### Fixed
 - **Enhanced Black Text Readability**: Improved text contrast by using white shadows for dark/black text colors

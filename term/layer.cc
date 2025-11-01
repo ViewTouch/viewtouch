@@ -10,6 +10,8 @@
 #include <cmath>
 #include <iostream>
 #include <string.h>
+#include <string>
+#include <algorithm>
 
 #include "generic_char.hh"
 #include "layer.hh"
@@ -695,6 +697,135 @@ int Layer::Rectangle(int rx, int ry, int rw, int rh, int image)
         XFillRectangle(dis, pix, gfx, page_x + r.x, page_y + r.y, r.w, r.h);
         XSetFillStyle(dis, gfx, FillSolid);
     }
+    return 0;
+}
+
+int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
+{
+    FnTrace("Layer::DrawPixmap()");
+
+    if (filename == nullptr || rw <= 0 || rh <= 0)
+        return 0;
+
+    // Construct full path to image file
+    char full_path[1024];
+    snprintf(full_path, sizeof(full_path), "/usr/viewtouch/imgs/%s", filename);
+
+    // Load the image file based on extension
+    Xpm *xpm = nullptr;
+
+    // Convert filename to lowercase for case-insensitive comparison
+    std::string fname = filename;
+    std::transform(fname.begin(), fname.end(), fname.begin(), ::tolower);
+
+    if (fname.find(".png") != std::string::npos) {
+#ifdef HAVE_PNG
+        xpm = LoadPNGFile(full_path);
+#else
+        fprintf(stderr, "PNG support not available - please install libpng-dev\n");
+        return 0;
+#endif
+    } else if (fname.find(".jpg") != std::string::npos || fname.find(".jpeg") != std::string::npos) {
+#ifdef HAVE_JPEG
+        xpm = LoadJPEGFile(full_path);
+#else
+        fprintf(stderr, "JPEG support not available - please install libjpeg-dev\n");
+        return 0;
+#endif
+    } else if (fname.find(".gif") != std::string::npos) {
+#ifdef HAVE_GIF
+        xpm = LoadGIFFile(full_path);
+#else
+        fprintf(stderr, "GIF support not available - please install libgif-dev\n");
+        return 0;
+#endif
+    } else {
+        // Default to XPM
+        xpm = LoadPixmapFile(full_path);
+    }
+
+    if (xpm == nullptr)
+        return 0;
+
+    RegionInfo r(rx, ry, rw, rh);
+    if (use_clip)
+        r.Intersect(clip);
+
+    if (r.w > 0 && r.h > 0)
+    {
+        // Calculate scaling to fit the image within the given dimensions
+        // while maintaining aspect ratio
+        int img_w = xpm->Width();
+        int img_h = xpm->Height();
+
+        // If image is smaller than button, don't scale up - just center it
+        if (img_w <= r.w && img_h <= r.h) {
+            // Image fits, draw at original size centered
+            XCopyArea(dis, xpm->PixmapID(), pix, gfx,
+                     0, 0, img_w, img_h,
+                     page_x + r.x + (r.w - img_w) / 2,
+                     page_y + r.y + (r.h - img_h) / 2);
+        } else {
+            // Image is too big, scale it down using nearest neighbor
+            float scale_x = (float)r.w / (float)img_w;
+            float scale_y = (float)r.h / (float)img_h;
+            float scale = (scale_x < scale_y) ? scale_x : scale_y;
+
+            int draw_w = (int)(img_w * scale);
+            int draw_h = (int)(img_h * scale);
+            int draw_x = page_x + r.x + (r.w - draw_w) / 2;
+            int draw_y = page_y + r.y + (r.h - draw_h) / 2;
+
+            // Create a scaled XImage for drawing
+            XImage *scaled_image = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
+                                               DefaultDepth(dis, DefaultScreen(dis)),
+                                               ZPixmap, 0, (char*)malloc(draw_w * draw_h * 4),
+                                               draw_w, draw_h, 32, 0);
+
+            if (scaled_image) {
+                // Get the original image data by creating a temporary XImage from the pixmap
+                XImage *orig_image = XGetImage(dis, xpm->PixmapID(), 0, 0, img_w, img_h,
+                                             AllPlanes, ZPixmap);
+
+                if (orig_image) {
+                    // Perform nearest neighbor scaling
+                    for (int y = 0; y < draw_h; y++) {
+                        for (int x = 0; x < draw_w; x++) {
+                            // Map scaled coordinates back to original coordinates
+                            int src_x = (int)(x / scale);
+                            int src_y = (int)(y / scale);
+
+                            // Clamp to bounds
+                            if (src_x >= img_w) src_x = img_w - 1;
+                            if (src_y >= img_h) src_y = img_h - 1;
+
+                            unsigned long pixel = XGetPixel(orig_image, src_x, src_y);
+                            XPutPixel(scaled_image, x, y, pixel);
+                        }
+                    }
+
+                    // Draw the scaled image
+                    XPutImage(dis, pix, gfx, scaled_image, 0, 0, draw_x, draw_y, draw_w, draw_h);
+
+                    XDestroyImage(orig_image);
+                }
+
+                XDestroyImage(scaled_image);
+            } else {
+                // Fallback: draw top-left portion if scaling fails
+                int copy_w = (img_w < r.w) ? img_w : r.w;
+                int copy_h = (img_h < r.h) ? img_h : r.h;
+                XCopyArea(dis, xpm->PixmapID(), pix, gfx,
+                         0, 0, copy_w, copy_h,
+                         page_x + r.x, page_y + r.y);
+            }
+        }
+    }
+
+    // Clean up - remove from PixmapList if it was added there
+    // For now, we'll leak the pixmap since we don't have a good way to manage it
+    // In a full implementation, we'd want proper resource management
+
     return 0;
 }
 

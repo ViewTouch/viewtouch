@@ -3769,6 +3769,21 @@ int Terminal::RenderRectangle(int x, int y, int w, int h, int image)
     return Send();
 }
 
+int Terminal::RenderPixmap(int x, int y, int w, int h, const genericChar* filename)
+{
+    FnTrace("Terminal::RenderPixmap()");
+    if (w <= 0 || h <= 0 || filename == nullptr)
+        return 0;
+
+    WInt8(TERM_PIXMAP);
+    WInt16(x);
+    WInt16(y);
+    WInt16(w);
+    WInt16(h);
+    WStr(filename);
+    return Send();
+}
+
 int Terminal::RenderFrame(int x, int y, int w, int h, int fw, int flags)
 {
     FnTrace("Terminal::RenderFrame()");

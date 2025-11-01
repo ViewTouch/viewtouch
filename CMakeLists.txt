@@ -239,6 +239,38 @@ pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
 list(APPEND VT_XLIBS ${FONTCONFIG_LIBRARIES})
 list(APPEND VT_XLIBS_INCLUDE_DIRS ${FONTCONFIG_INCLUDE_DIRS})
 
+# Image loading libraries for Image Button Zone
+pkg_check_modules(PNG libpng)
+pkg_check_modules(JPEG libjpeg)
+pkg_check_modules(GIF libgif)
+
+if(PNG_FOUND)
+    message(STATUS "PNG library found: ${PNG_LIBRARIES}")
+    list(APPEND VT_XLIBS ${PNG_LIBRARIES})
+    list(APPEND VT_XLIBS_INCLUDE_DIRS ${PNG_INCLUDE_DIRS})
+    add_definitions(-DHAVE_PNG)
+else()
+    message(WARNING "PNG library not found - PNG support disabled")
+endif()
+
+if(JPEG_FOUND)
+    message(STATUS "JPEG library found: ${JPEG_LIBRARIES}")
+    list(APPEND VT_XLIBS ${JPEG_LIBRARIES})
+    list(APPEND VT_XLIBS_INCLUDE_DIRS ${JPEG_INCLUDE_DIRS})
+    add_definitions(-DHAVE_JPEG)
+else()
+    message(WARNING "JPEG library not found - JPEG support disabled")
+endif()
+
+if(GIF_FOUND)
+    message(STATUS "GIF library found: ${GIF_LIBRARIES}")
+    list(APPEND VT_XLIBS ${GIF_LIBRARIES})
+    list(APPEND VT_XLIBS_INCLUDE_DIRS ${GIF_INCLUDE_DIRS})
+    add_definitions(-DHAVE_GIF)
+else()
+    message(WARNING "GIF library not found - GIF support disabled")
+endif()
+
 string(REPLACE ";" " " _vt_xlibs_spaced "${VT_XLIBS}")
 message(STATUS "Linking X11 libraries: ${_vt_xlibs_spaced}")
 
@@ -463,7 +495,12 @@ install(DIRECTORY fonts/ DESTINATION share/viewtouch/fonts FILES_MATCHING PATTER
 
 # Install default images for Image Button zones
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/default_images" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/assets/default_images")
-    install(DIRECTORY assets/default_images/ DESTINATION viewtouch/imgs FILES_MATCHING PATTERN "*.xpm")
+    install(DIRECTORY assets/default_images/ DESTINATION viewtouch/imgs FILES_MATCHING
+        PATTERN "*.xpm"
+        PATTERN "*.png"
+        PATTERN "*.jpg"
+        PATTERN "*.jpeg"
+        PATTERN "*.gif")
     message(STATUS "Installing default images from assets/default_images/ to viewtouch/imgs/")
 else()
     message(STATUS "'assets/default_images' folder is missing in source directory")

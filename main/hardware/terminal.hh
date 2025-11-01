@@ -572,6 +572,7 @@ public:
     int RenderHLine(int x, int y, int len, int color, int lw = 1);
     int RenderVLine(int x, int y, int len, int color, int lw = 1);
     int RenderRectangle(int x, int y, int w, int h, int image);
+    int RenderPixmap(int x, int y, int w, int h, const genericChar* filename);
     int RenderFrame(int x, int y, int w, int h, int thickness, int flags);
     int RenderFilledFrame(int x, int y, int w, int h, int thick, int texture, int flags = 0);
     int RenderStatusBar(Zone *z, int bar_color, const genericChar* text, int text_color);

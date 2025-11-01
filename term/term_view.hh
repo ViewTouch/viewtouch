@@ -301,6 +301,22 @@ extern int          GetFontBaseline(int font_id) noexcept;
 extern int          GetFontHeight(int font_id) noexcept;
 extern Pixmap       GetTexture(int texture) noexcept;
 
+// Image loading functions
+extern Pixmap LoadPixmap(const char** image_data);
+extern Xpm *LoadPixmapFile(char* file_name);
+
+#ifdef HAVE_PNG
+extern Xpm *LoadPNGFile(const char* file_name);
+#endif
+
+#ifdef HAVE_JPEG
+extern Xpm *LoadJPEGFile(const char* file_name);
+#endif
+
+#ifdef HAVE_GIF
+extern Xpm *LoadGIFFile(const char* file_name);
+#endif
+
 extern int   WInt8(int val) noexcept;
 extern int   RInt8() noexcept;
 extern int   WInt16(int val) noexcept;
