@@ -160,9 +160,12 @@ public:
     int          Type() { return ZONE_IMAGE_BUTTON; }
     virtual int  AcceptSignals() { return 0; }
     int          CanSelect(Terminal *t);
+    int          State(Terminal *t);  // Override to always use normal state for consistent image colors
+    int          ZoneStates();       // Override to return 1 (no selection states) to skip selection logic
     std::unique_ptr<Zone> Copy();
     int          RenderInit(Terminal *term, int update_flag);
     RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
     virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 
     Str *ImagePath() { return &image_path; }

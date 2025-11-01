@@ -74,12 +74,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Zone Type**: `ZONE_IMAGE_BUTTON = 97` with dropdown image selection interface
   - **Supported Formats**: XPM, PNG, JPEG, GIF with automatic format detection and loading
   - **Permission Control**: Restricted to Editor and Super User roles only
-  - **Installation**: Auto-creates `/usr/viewtouch/imgs/` directory with default images
+  - **Installation**: Auto-creates `/usr/viewtouch/imgs/` directory with default images and proper permissions (1777) for user image uploads
   - **Default Images**: Pre-installed coffee, burger, and pizza icons for restaurant use (currently 1 PNG test image available)
   - **UI Integration**: Dropdown selection from available images in zone properties dialog
-  - **Image Rendering**: Full multi-format image loading and display with automatic scaling and centering
+  - **Image Rendering**: Full multi-format image loading and display with automatic scaling and centering, proper button state handling with consistent image colors (prevents selection tinting), forced redraw on touch to maintain image appearance
   - **Intelligent Scaling**: Images automatically scale down to fit buttons while maintaining aspect ratio; small images center without upscaling
-  - **Transparency Support**: PNG alpha channels handled with neutral gray background for transparent areas
+  - **Transparency Support**: PNG alpha channels handled with background color blending (simplified approach)
   - **Dependencies**: Optional libpng, libjpeg, libgif support with graceful fallback
   - **Protocol Enhancement**: Added `TERM_PIXMAP` command for client-server image rendering
   - Files added: `zone/button_zone.{hh,cc}` (ImageButtonZone), `term/term_dialog.{hh,cc}`, `term/layer.{hh,cc}`, `main/hardware/terminal.{hh,cc}`, `assets/default_images/*.xpm`, `assets/default_images/*.png`

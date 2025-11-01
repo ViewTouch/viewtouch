@@ -766,15 +766,15 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
                      page_x + r.x + (r.w - img_w) / 2,
                      page_y + r.y + (r.h - img_h) / 2);
         } else {
-            // Image is too big, scale it down using nearest neighbor
+            // Image needs scaling - stretch to fill button dimensions
             float scale_x = (float)r.w / (float)img_w;
             float scale_y = (float)r.h / (float)img_h;
-            float scale = (scale_x < scale_y) ? scale_x : scale_y;
 
-            int draw_w = (int)(img_w * scale);
-            int draw_h = (int)(img_h * scale);
-            int draw_x = page_x + r.x + (r.w - draw_w) / 2;
-            int draw_y = page_y + r.y + (r.h - draw_h) / 2;
+            // For image buttons, stretch to fill the entire button area
+            int draw_w = r.w;  // Fill entire button width
+            int draw_h = r.h;  // Fill entire button height
+            int draw_x = page_x + r.x;  // Start at button origin
+            int draw_y = page_y + r.y;  // Start at button origin
 
             // Create a scaled XImage for drawing
             XImage *scaled_image = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
@@ -788,12 +788,13 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
                                              AllPlanes, ZPixmap);
 
                 if (orig_image) {
-                    // Perform nearest neighbor scaling
+                    // Perform nearest neighbor scaling with independent x/y scaling
                     for (int y = 0; y < draw_h; y++) {
                         for (int x = 0; x < draw_w; x++) {
                             // Map scaled coordinates back to original coordinates
-                            int src_x = (int)(x / scale);
-                            int src_y = (int)(y / scale);
+                            // Use separate scaling for x and y to stretch image
+                            int src_x = (int)(x / scale_x);
+                            int src_y = (int)(y / scale_y);
 
                             // Clamp to bounds
                             if (src_x >= img_w) src_x = img_w - 1;
@@ -811,14 +812,13 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
                 }
 
                 XDestroyImage(scaled_image);
-            } else {
-                // Fallback: draw top-left portion if scaling fails
-                int copy_w = (img_w < r.w) ? img_w : r.w;
-                int copy_h = (img_h < r.h) ? img_h : r.h;
-                XCopyArea(dis, xpm->PixmapID(), pix, gfx,
-                         0, 0, copy_w, copy_h,
-                         page_x + r.x, page_y + r.y);
-            }
+                } else {
+                    // Fallback: draw stretched image if scaling fails
+                    // For now, draw the full image area (will be clipped to button bounds)
+                    XCopyArea(dis, xpm->PixmapID(), pix, gfx,
+                             0, 0, img_w, img_h,
+                             page_x + r.x, page_y + r.y);
+                }
         }
     }
 

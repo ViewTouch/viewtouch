@@ -447,7 +447,6 @@ install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/lib/static)
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/dat)")
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/dat/languages)")
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/bin/vtcommands)")
-install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/imgs)")
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/share/viewtouch/fonts)")
 
 install(TARGETS vtpos vt_cdu vt_print vt_term vt_main
@@ -505,4 +504,8 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/default_images" AND IS_DIRECTORY "
 else()
     message(STATUS "'assets/default_images' folder is missing in source directory")
 endif()
+
+# Set permissions for images directory to allow all users to add images
+install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/imgs)")
+install(CODE "execute_process(COMMAND chmod 1777 \${CMAKE_INSTALL_PREFIX}/viewtouch/imgs)")
 

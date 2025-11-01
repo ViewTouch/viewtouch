@@ -759,6 +759,8 @@ ImageButtonZone::ImageButtonZone()
 {
     FnTrace("ImageButtonZone::ImageButtonZone()");
     image_loaded = 0;
+    // Image buttons should not participate in selection system
+    // Override ZoneStates to return 1 so selection logic is skipped
 }
 
 // Member Functions
@@ -816,18 +818,47 @@ RenderResult ImageButtonZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("ImageButtonZone::Render()");
 
-    // If we have a custom image path, try to render the image
+    // For image buttons, render ONLY the image - no background at all
     if (image_path.size() > 0)
     {
-        // Send pixmap rendering command to X server
-        // The image will be loaded and displayed within the button bounds
+        // Just render the image directly
         term->RenderPixmap(x, y, w, h, image_path.Value());
         return RENDER_OKAY;
     }
-    else
-    {
-        // Use default button rendering
-        return ButtonZone::Render(term, update_flag);
-    }
+
+    // No custom image, fall back to normal rendering
+    return Zone::Render(term, update_flag);
+}
+
+int ImageButtonZone::ZoneStates()
+{
+    FnTrace("ImageButtonZone::ZoneStates()");
+    // Return 1 to indicate only 1 state (normal), so selection logic is skipped
+    // This prevents the button from participating in the selection system
+    return 1;
+}
+
+int ImageButtonZone::State(Terminal *t)
+{
+    FnTrace("ImageButtonZone::State()");
+    // Always return normal state (0) for image buttons to prevent
+    // selection colors from tinting the image
+    return 0;
+}
+
+SignalResult ImageButtonZone::Touch(Terminal *term, int tx, int ty)
+{
+    FnTrace("ImageButtonZone::Touch()");
+
+    // Handle the button touch (this might trigger jump actions, etc.)
+    // Clear the selection so the button doesn't stay highlighted
+    term->ClearSelectedZone();
+
+    // Force a complete screen redraw to ensure image renders correctly
+    term->Draw(0);
+
+    // Return ignored since image buttons don't have specific actions yet
+    // In the future, this could trigger custom actions based on the image
+    return SIGNAL_IGNORED;
 }
 

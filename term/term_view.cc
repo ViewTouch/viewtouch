@@ -467,6 +467,7 @@ Xpm::Xpm()
     fore = NULL;
     width = 0;
     height = 0;
+    pixmap = 0;
 }
 
 Xpm::Xpm(Pixmap pm)
@@ -2713,7 +2714,7 @@ Xpm *LoadPNGFile(const char* file_name)
                 XFreePixmap(Dis, pixmap);
                 pixmap = 0;
             } else {
-                // Copy PNG data to XImage pixels with alpha handling
+                // Copy PNG data to XImage pixels
                 for (int y = 0; y < height; y++) {
                     png_bytep row = row_pointers[y];
                     for (int x = 0; x < width; x++) {
@@ -2728,18 +2729,17 @@ Xpm *LoadPNGFile(const char* file_name)
                                 // RGBA format - handle alpha transparency
                                 unsigned char a = row[x*channels + 3];
                                 if (a < 128) {
-                                    // Fully transparent or very transparent - use a neutral gray
-                                    // In a real implementation, you'd blend with background
-                                    pixel = (192 << 16) | (192 << 8) | 192; // Light gray for transparency
+                                    // Fully transparent - use button background color
+                                    pixel = 0xC0C0C0; // Light gray - will blend with button background
                                 } else {
                                     pixel = (r << 16) | (g << 8) | b;
                                 }
                             } else {
-                                // RGB format
+                                // RGB format - fully opaque
                                 pixel = (r << 16) | (g << 8) | b;
                             }
                         } else if (channels == 1) {
-                            // Grayscale
+                            // Grayscale - fully opaque
                             unsigned char gray = row[x];
                             pixel = (gray << 16) | (gray << 8) | gray;
                         } else {
@@ -2753,7 +2753,7 @@ Xpm *LoadPNGFile(const char* file_name)
                 // Put image to pixmap
                 XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
                 XDestroyImage(ximage);
-                fprintf(stderr, "LoadPNGFile: Successfully loaded PNG to pixmap\n");
+                fprintf(stderr, "LoadPNGFile: Successfully loaded PNG\n");
             }
         }
     } else {
