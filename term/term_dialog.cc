@@ -64,6 +64,18 @@
 // Other Definitions
 #define MARGIN 43
 
+/**** Helper Functions ****/
+static bool IsItemZoneType(int zone_type)
+{
+    return (zone_type == ZONE_ITEM ||
+            zone_type == ZONE_ITEM_NORMAL ||
+            zone_type == ZONE_ITEM_MODIFIER ||
+            zone_type == ZONE_ITEM_METHOD ||
+            zone_type == ZONE_ITEM_SUBSTITUTE ||
+            zone_type == ZONE_ITEM_POUND ||
+            zone_type == ZONE_ITEM_ADMISSION);
+}
+
 //const char* *translations = NULL;
 
 /*********************************************************************
@@ -972,7 +984,15 @@ void EZ_TypeCB(Widget widget, XtPointer client_data, XtPointer call_data)
         ztype = d->type.Value();
     else
         ztype = d->type2.Value();
-    itype = d->item_type.Value();
+
+    // For specific item zone types, derive itype from zone type
+    if (ztype == ZONE_ITEM_NORMAL) itype = ITEM_NORMAL;
+    else if (ztype == ZONE_ITEM_MODIFIER) itype = ITEM_MODIFIER;
+    else if (ztype == ZONE_ITEM_METHOD) itype = ITEM_METHOD;
+    else if (ztype == ZONE_ITEM_SUBSTITUTE) itype = ITEM_SUBSTITUTE;
+    else if (ztype == ZONE_ITEM_POUND) itype = ITEM_POUND;
+    else if (ztype == ZONE_ITEM_ADMISSION) itype = ITEM_ADMISSION;
+    else itype = d->item_type.Value(); // For ZONE_ITEM, get from selector
 
     if (ztype == d->ztype && itype == d->itype)
         return;
@@ -1243,7 +1263,7 @@ int ZoneDialog::Correct()
               t != ZONE_LOGOUT && t != ZONE_ORDER_ENTRY && t != ZONE_ORDER_PAGE &&
               t != ZONE_ORDER_FLOW && t != ZONE_PAYMENT_ENTRY && t != ZONE_SWITCH &&
               t != ZONE_JOB_SECURITY && t != ZONE_TENDER_SET && t != ZONE_HARDWARE &&
-              t != ZONE_ITEM && t != ZONE_ORDER_ADD && t != ZONE_ORDER_DELETE);
+              !IsItemZoneType(t) && t != ZONE_ORDER_ADD && t != ZONE_ORDER_DELETE);
     behave.Show(full_edit && t != ZONE_COMMENT);
     confirm.Show(t == ZONE_STANDARD);
     confirm_msg.Show(t == ZONE_STANDARD);
@@ -1256,28 +1276,37 @@ int ZoneDialog::Correct()
     message.Show(t == ZONE_STANDARD || t == ZONE_CONDITIONAL || t == ZONE_TOGGLE);
     filename.Show(t == ZONE_READ);
     // Show image selection for all button types
-    image_filename.Show(t == ZONE_SIMPLE || t == ZONE_ITEM || t == ZONE_QUALIFIER ||
+    image_filename.Show(t == ZONE_SIMPLE || IsItemZoneType(t) || t == ZONE_QUALIFIER ||
                        t == ZONE_TABLE || t == ZONE_IMAGE_BUTTON);
-    item_name.Show(t == ZONE_ITEM);
-    item_zone_name.Show(t == ZONE_ITEM);
-    item_print_name.Show(t == ZONE_ITEM);
-    item_type.Show(t == ZONE_ITEM);
-    item_location.Show(t == ZONE_ITEM && itype == ITEM_ADMISSION);
-    item_event_time.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
-    item_total_tickets.Show(t == ZONE_ITEM && itype==ITEM_ADMISSION);
-    item_available_tickets.Show(false && t == ZONE_ITEM && itype==ITEM_ADMISSION); //don't show the available tickets ever
-    item_price_label.Show(t==ZONE_ITEM && itype==ITEM_ADMISSION);
-    item_price.Show(t == ZONE_ITEM);
-    item_subprice.Show(t == ZONE_ITEM && itype == ITEM_SUBSTITUTE);
-    item_employee_price.Show(t == ZONE_ITEM);
-    item_family.Show(t == ZONE_ITEM && itype != ITEM_ADMISSION);
-    item_sales.Show(t == ZONE_ITEM && itype != ITEM_ADMISSION);
-    item_printer.Show(t == ZONE_ITEM &&
+    item_name.Show(IsItemZoneType(t));
+    item_zone_name.Show(IsItemZoneType(t));
+    item_print_name.Show(IsItemZoneType(t));
+    item_type.Show(t == ZONE_ITEM); // Only show item type selector for generic ZONE_ITEM
+    // For new specific item zone types, derive itype from zone type
+    if (t == ZONE_ITEM_NORMAL) itype = ITEM_NORMAL;
+    else if (t == ZONE_ITEM_MODIFIER) itype = ITEM_MODIFIER;
+    else if (t == ZONE_ITEM_METHOD) itype = ITEM_METHOD;
+    else if (t == ZONE_ITEM_SUBSTITUTE) itype = ITEM_SUBSTITUTE;
+    else if (t == ZONE_ITEM_POUND) itype = ITEM_POUND;
+    else if (t == ZONE_ITEM_ADMISSION) itype = ITEM_ADMISSION;
+    // For ZONE_ITEM, itype comes from the selector
+
+    item_location.Show(IsItemZoneType(t) && itype == ITEM_ADMISSION);
+    item_event_time.Show(IsItemZoneType(t) && itype==ITEM_ADMISSION);
+    item_total_tickets.Show(IsItemZoneType(t) && itype==ITEM_ADMISSION);
+    item_available_tickets.Show(false && IsItemZoneType(t) && itype==ITEM_ADMISSION); //don't show the available tickets ever
+    item_price_label.Show(IsItemZoneType(t) && itype==ITEM_ADMISSION);
+    item_price.Show(IsItemZoneType(t));
+    item_subprice.Show(IsItemZoneType(t) && itype == ITEM_SUBSTITUTE);
+    item_employee_price.Show(IsItemZoneType(t));
+    item_family.Show(IsItemZoneType(t) && itype != ITEM_ADMISSION);
+    item_sales.Show(IsItemZoneType(t) && itype != ITEM_ADMISSION);
+    item_printer.Show(IsItemZoneType(t) &&
                       (itype == ITEM_NORMAL ||
                        itype == ITEM_SUBSTITUTE ||
                        itype == ITEM_POUND ||
 		       itype == ITEM_ADMISSION));
-    item_order.Show(t == ZONE_ITEM &&
+    item_order.Show(IsItemZoneType(t) &&
                     (itype != ITEM_NORMAL ||
                      itype != ITEM_POUND));
     tender_type.Show(t == ZONE_TENDER);
@@ -1289,7 +1318,7 @@ int ZoneDialog::Correct()
     check_disp_num.Show(t == ZONE_REPORT && rt == REPORT_CHECK);
     video_target.Show(t == ZONE_REPORT && rt == REPORT_CHECK);
     report_print.Show(t == ZONE_REPORT);
-    page_list.Show(t == ZONE_ITEM);
+    page_list.Show(IsItemZoneType(t));
     spacing.Show(t == ZONE_CHECK_LIST || t == ZONE_DRAWER_MANAGE ||
                  t == ZONE_USER_EDIT || t == ZONE_INVENTORY || t == ZONE_RECIPE ||
                  t == ZONE_VENDOR || t == ZONE_ITEM_LIST || t == ZONE_INVOICE ||
@@ -1301,7 +1330,7 @@ int ZoneDialog::Correct()
     switch_type.Show(t == ZONE_SWITCH);
     customer_type.Show(t == ZONE_TABLE);
 
-    tmp = (t == ZONE_ITEM || t == ZONE_SIMPLE ||
+    tmp = (IsItemZoneType(t) || t == ZONE_SIMPLE ||
            t == ZONE_STANDARD || t == ZONE_CONDITIONAL || t == ZONE_QUALIFIER);
     if (full_edit)
     {

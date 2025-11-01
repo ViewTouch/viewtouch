@@ -117,6 +117,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Removed support for older versions (25.02.x, 25.01.x, 25.00.x)
   - Updated version support policy to only maintain security updates for the current stable release
   - Changed end-of-life policy to anything below 25.03.x
+- **Button Type Editor Reorganization**: Flattened button type hierarchy by promoting menu item subtypes to top-level options
+  - **UI Simplification**: Replaced "Menu" → "Menu Type" submenu with direct selection of "Menu Item", "Modifier", "Non-Tracking Modifier", "Menu Item + Substitute", "Priced By Weight", "Event Admission"
+  - **New Zone Types**: Added ZONE_ITEM_NORMAL, ZONE_ITEM_MODIFIER, ZONE_ITEM_METHOD, ZONE_ITEM_SUBSTITUTE, ZONE_ITEM_POUND, ZONE_ITEM_ADMISSION constants
+  - **Dialog Enhancement**: Automatic itype assignment based on selected button type, removed submenu navigation for better UX
+  - **Backward Compatibility**: Maintains existing ZONE_ITEM functionality while providing streamlined editor interface
+  - Files modified: `zone/pos_zone.{hh,cc}`, `main/ui/labels.cc`, `term/term_dialog.cc`
 
 ### Removed
 - **Debug Script Cleanup**: Removed debug_viewtouch.sh debugging script from the workspace
