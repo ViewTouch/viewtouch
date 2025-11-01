@@ -78,7 +78,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Default Images**: Pre-installed coffee, burger, and pizza icons for restaurant use (currently 1 PNG test image available)
   - **UI Integration**: Dropdown selection from available images in zone properties dialog
   - **Image Rendering**: Full multi-format image loading and display with automatic scaling and centering, proper button state handling with consistent image colors (prevents selection tinting), forced redraw on touch to maintain image appearance
-  - **Intelligent Scaling**: Images automatically scale down to fit buttons while maintaining aspect ratio; small images center without upscaling
+  - **Intelligent Scaling**: Images automatically stretch to fill button dimensions, adjusting aspect ratio to match button width and height; small images scale up to fill available space
   - **Transparency Support**: PNG alpha channels handled with background color blending (simplified approach)
   - **Dependencies**: Optional libpng, libjpeg, libgif support with graceful fallback
   - **Protocol Enhancement**: Added `TERM_PIXMAP` command for client-server image rendering
