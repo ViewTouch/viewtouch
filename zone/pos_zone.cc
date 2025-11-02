@@ -69,6 +69,7 @@
 // 26 (11/21/2003) added CCMessageSettings zone
 // 27 ???
 // 28 (1/20/2015)  added global page defaults for zonedb
+// 29 (11/02/2025) persisted image_path for button-like zones
 
 /**** Functions ****/
 // Zone Graphic Appearence (obsolete)
@@ -512,6 +513,10 @@ int PosZone::Read(InputDataFile &df, int version)
 	df.Read(Amount());
 	df.Read(Expression());
 	df.Read(FileName());
+	if (version >= 29)
+		df.Read(ImagePath());
+	else if (ImagePath())
+		ImagePath()->Clear();
 	df.Read(JumpType());
 	df.Read(JumpID());
 	df.Read(Message());
@@ -572,6 +577,8 @@ int PosZone::Write(OutputDataFile &df, int version)
     error += df.Write(Amount());
     error += df.Write(Expression());
     error += df.Write(FileName());
+    if (version >= 29)
+        error += df.Write(ImagePath());
     error += df.Write(JumpType());
     error += df.Write(JumpID());
     error += df.Write(Message());

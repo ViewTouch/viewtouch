@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **🖼️ Image Button Rendering Refresh (2025-11-02)**
+  - Button zones now paint selected images behind the frame using the interior content area.
+  - Image filenames persist via updated `PosZone` serialization (`ZONE_VERSION 29`) so saves and copies keep selections.
+  - Copying any button-like zone (Message, Conditional, Image button, etc.) retains its associated image.
+  - Files touched: `zone/button_zone.{hh,cc}`, `zone/pos_zone.{hh,cc}`.
+  - Result: Selecting a PNG/JPG/GIF in Button Properties immediately shows on-screen and survives page reloads.
 - **System Page Validation Function**: Added `ZoneDB::ValidateSystemPages()` to detect data integrity issues
   - **Purpose**: Checks for System Pages (PAGE_SYSTEM = 0) with invalid parent_id values (> 0)
   - **Detection**: Identifies corrupted data files where System Pages incorrectly have parent relationships
