@@ -912,8 +912,6 @@ void ScanImageFiles()
 
     // Add "None" option first
     image_file_names.push_back("None");
-    image_file_name_array.push_back("None");
-    image_file_values.push_back(0);
 
     // Scan /usr/viewtouch/imgs directory
     DIR *dir;
@@ -938,16 +936,23 @@ void ScanImageFiles()
                     filename.find(".gif") != std::string::npos) {
 
                     image_file_names.push_back(filename);
-                    image_file_name_array.push_back(image_file_names.back().c_str());
-                    image_file_values.push_back(image_file_names.size() - 1);
                 }
             }
         }
         closedir(dir);
     }
 
-    // Add null terminator
-    image_file_name_array.push_back(NULL);
+    // Populate arrays with stable pointers and values
+    image_file_name_array.reserve(image_file_names.size() + 1);
+    image_file_values.reserve(image_file_names.size() + 1);
+
+    for (size_t idx = 0; idx < image_file_names.size(); ++idx)
+    {
+        image_file_name_array.push_back(image_file_names[idx].c_str());
+        image_file_values.push_back(static_cast<int>(idx));
+    }
+
+    image_file_name_array.push_back(nullptr);
     image_file_values.push_back(-1);
 }
 
