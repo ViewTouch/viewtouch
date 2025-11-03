@@ -616,7 +616,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 - **Manager Table Transfer Regression**: Fixed an issue where managers or supervisors could not transfer guest checks to other employees
-  - Clear the previous server’s `user_current` flag during transfer so the new owner can immediately access the check
+  - Clear the previous server's `user_current` flag during transfer so the new owner can immediately access the check
   - Reset table selection state and broadcast `UPDATE_CHECKS` to keep all terminals in sync after the reassignment
 - **Vector Bounds Error**: Fixed crash when editing buttons due to vector bounds checking in dialog containers
   - Added proper bounds checking in `DialogMenu::Set()` and `DialogDoubleMenu::Set()` methods
@@ -1342,7 +1342,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - `viewouch/dat/zone_db.dat` from http://www.viewtouch.com/zone_db.dat
   - download functionality require a package providing `libcurl-dev`, for example `libcurl4-gntuls-dev` on Debian/Ubuntu
 - create `viewtouch/dat/conf` directory if missing #119
-- create `viewouch/dat/screensaver` directory if missing #119
+- create `viewtouch/dat/screensaver` directory if missing #119
 - require at least gcc-8 and C++17 for `std::filesystem` support #119
 
 ### Changed

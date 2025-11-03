@@ -28,7 +28,7 @@
 
 /**** Definitions ****/
 
-#define SALES_ITEM_VERSION       15
+#define SALES_ITEM_VERSION       16
 
 // Family Difinitions
 #define FAMILY_APPETIZERS        0
@@ -166,6 +166,7 @@ public:
     Str   item_code;      // exclusively for call center usage
     Str   item_name;      // name of product
     Str   zone_name;      // name shown on zone
+    Str   image_path;     // custom image associated with this item
     Str   print_name;     // name printer on customer check
     Str   call_center_name;  // name for call centers (remote, automated order entry)
     Str   location;

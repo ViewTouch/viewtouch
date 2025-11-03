@@ -112,6 +112,7 @@ int SalesItem::Copy(SalesItem *target)
     {
         target->item_name.Set(item_name);
         target->zone_name.Set(zone_name);
+        target->image_path.Set(image_path);
         target->print_name.Set(print_name);
         target->call_center_name.Set(call_center_name);
         target->id = id;
@@ -180,6 +181,7 @@ int SalesItem::Read(InputDataFile &df, int version)
     // 13 (09/14/05) added item_code
     // 14 (04/30/15) added all properties relating to cinema mode.
     // 15 (11/06/15) added ignore split kitchen
+    // 16 (11/03/25) added image_path persistence
 
     if (version < 8)
         return 1;
@@ -238,6 +240,11 @@ int SalesItem::Read(InputDataFile &df, int version)
         df.Read(item_code);
     if (version >= 15)
         df.Read(ignore_split);
+
+    if (version >= 16)
+        df.Read(image_path);
+    else
+        image_path.Clear();
 
     // Item property checks
     if (call_order < 0)
@@ -306,6 +313,8 @@ int SalesItem::Write(OutputDataFile &df, int version)
     error += df.Write(item_code);
     if (version >= 15)
         error += df.Write(ignore_split);
+    if (version >= 16)
+        error += df.Write(image_path);
 
     return error;
 }

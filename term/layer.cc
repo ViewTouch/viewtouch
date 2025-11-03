@@ -12,6 +12,8 @@
 #include <string.h>
 #include <string>
 #include <algorithm>
+#include <vector>
+#include <unistd.h>
 
 #include "generic_char.hh"
 #include "layer.hh"
@@ -704,44 +706,74 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
 {
     FnTrace("Layer::DrawPixmap()");
 
-    if (filename == nullptr || rw <= 0 || rh <= 0)
+    if (filename == nullptr || filename[0] == '\0' || rw <= 0 || rh <= 0)
         return 0;
 
-    // Construct full path to image file
-    char full_path[1024];
-    snprintf(full_path, sizeof(full_path), "/usr/viewtouch/imgs/%s", filename);
+    auto load_image = [&](const std::string& path) -> Xpm*
+    {
+        std::string lowered = path;
+        std::transform(lowered.begin(), lowered.end(), lowered.begin(), ::tolower);
 
-    // Load the image file based on extension
+        if (lowered.find(".png") != std::string::npos)
+        {
+#ifdef HAVE_PNG
+            return LoadPNGFile(path.c_str());
+#else
+            fprintf(stderr, "PNG support not available - please install libpng-dev\n");
+            return nullptr;
+#endif
+        }
+        else if (lowered.find(".jpg") != std::string::npos || lowered.find(".jpeg") != std::string::npos)
+        {
+#ifdef HAVE_JPEG
+            return LoadJPEGFile(path.c_str());
+#else
+            fprintf(stderr, "JPEG support not available - please install libjpeg-dev\n");
+            return nullptr;
+#endif
+        }
+        else if (lowered.find(".gif") != std::string::npos)
+        {
+#ifdef HAVE_GIF
+            return LoadGIFFile(path.c_str());
+#else
+            fprintf(stderr, "GIF support not available - please install libgif-dev\n");
+            return nullptr;
+#endif
+        }
+        else
+        {
+            std::vector<char> mutable_path(path.begin(), path.end());
+            mutable_path.push_back('\0');
+            return LoadPixmapFile(mutable_path.data());
+        }
+    };
+
+    std::string resolved_path;
     Xpm *xpm = nullptr;
 
-    // Convert filename to lowercase for case-insensitive comparison
-    std::string fname = filename;
-    std::transform(fname.begin(), fname.end(), fname.begin(), ::tolower);
+    if (filename[0] == '/')
+    {
+        resolved_path = filename;
+        xpm = load_image(resolved_path);
+    }
+    else
+    {
+        resolved_path = std::string(VIEWTOUCH_PATH "/imgs/") + filename;
+        xpm = load_image(resolved_path);
 
-    if (fname.find(".png") != std::string::npos) {
-#ifdef HAVE_PNG
-        xpm = LoadPNGFile(full_path);
-#else
-        fprintf(stderr, "PNG support not available - please install libpng-dev\n");
-        return 0;
-#endif
-    } else if (fname.find(".jpg") != std::string::npos || fname.find(".jpeg") != std::string::npos) {
-#ifdef HAVE_JPEG
-        xpm = LoadJPEGFile(full_path);
-#else
-        fprintf(stderr, "JPEG support not available - please install libjpeg-dev\n");
-        return 0;
-#endif
-    } else if (fname.find(".gif") != std::string::npos) {
-#ifdef HAVE_GIF
-        xpm = LoadGIFFile(full_path);
-#else
-        fprintf(stderr, "GIF support not available - please install libgif-dev\n");
-        return 0;
-#endif
-    } else {
-        // Default to XPM
-        xpm = LoadPixmapFile(full_path);
+        if (xpm == nullptr)
+        {
+            std::string viewtouch_relative = std::string(VIEWTOUCH_PATH "/") + filename;
+            resolved_path = viewtouch_relative;
+            xpm = load_image(resolved_path);
+        }
+
+        if (xpm == nullptr)
+        {
+            resolved_path = filename;
+            xpm = load_image(resolved_path);
+        }
     }
 
     if (xpm == nullptr)
@@ -754,71 +786,78 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
     if (r.w > 0 && r.h > 0)
     {
         // Calculate scaling to fit the image within the given dimensions
-        // while maintaining aspect ratio
         int img_w = xpm->Width();
         int img_h = xpm->Height();
 
-        // If image is smaller than button, don't scale up - just center it
-        if (img_w <= r.w && img_h <= r.h) {
-            // Image fits, draw at original size centered
+        if (img_w <= 0 || img_h <= 0)
+            return 0;
+
+        const int draw_w = r.w;
+        const int draw_h = r.h;
+        const int draw_x = page_x + r.x;
+        const int draw_y = page_y + r.y;
+
+        const double inv_scale_x = static_cast<double>(img_w) / static_cast<double>(draw_w);
+        const double inv_scale_y = static_cast<double>(img_h) / static_cast<double>(draw_h);
+
+        XImage *orig_image = XGetImage(dis, xpm->PixmapID(), 0, 0, img_w, img_h,
+                                      AllPlanes, ZPixmap);
+
+        if (orig_image)
+        {
+            const int bits_per_pixel = orig_image->bits_per_pixel;
+            const int bitmap_pad = orig_image->bitmap_pad;
+            const int bytes_per_line =
+                ((draw_w * bits_per_pixel + (bitmap_pad - 1)) / bitmap_pad) * (bitmap_pad / 8);
+
+            XImage *scaled_image = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
+                                               orig_image->depth, ZPixmap, 0,
+                                               static_cast<char*>(malloc(static_cast<size_t>(bytes_per_line) * static_cast<size_t>(draw_h))),
+                                               draw_w, draw_h, bitmap_pad, bytes_per_line);
+
+            if (scaled_image && scaled_image->data)
+            {
+                for (int y = 0; y < draw_h; ++y)
+                {
+                    for (int x = 0; x < draw_w; ++x)
+                    {
+                        int src_x = static_cast<int>(x * inv_scale_x);
+                        int src_y = static_cast<int>(y * inv_scale_y);
+
+                        if (src_x >= img_w)
+                            src_x = img_w - 1;
+                        if (src_y >= img_h)
+                            src_y = img_h - 1;
+
+                        const unsigned long pixel = XGetPixel(orig_image, src_x, src_y);
+                        XPutPixel(scaled_image, x, y, pixel);
+                    }
+                }
+
+                XPutImage(dis, pix, gfx, scaled_image, 0, 0, draw_x, draw_y, draw_w, draw_h);
+            }
+            else
+            {
+                XCopyArea(dis, xpm->PixmapID(), pix, gfx,
+                         0, 0, img_w, img_h,
+                         draw_x, draw_y);
+            }
+
+            if (scaled_image)
+            {
+                if (scaled_image->data)
+                    free(scaled_image->data);
+                scaled_image->data = nullptr;
+                XDestroyImage(scaled_image);
+            }
+
+            XDestroyImage(orig_image);
+        }
+        else
+        {
             XCopyArea(dis, xpm->PixmapID(), pix, gfx,
                      0, 0, img_w, img_h,
-                     page_x + r.x + (r.w - img_w) / 2,
-                     page_y + r.y + (r.h - img_h) / 2);
-        } else {
-            // Image needs scaling - stretch to fill button dimensions
-            float scale_x = (float)r.w / (float)img_w;
-            float scale_y = (float)r.h / (float)img_h;
-
-            // For image buttons, stretch to fill the entire button area
-            int draw_w = r.w;  // Fill entire button width
-            int draw_h = r.h;  // Fill entire button height
-            int draw_x = page_x + r.x;  // Start at button origin
-            int draw_y = page_y + r.y;  // Start at button origin
-
-            // Create a scaled XImage for drawing
-            XImage *scaled_image = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
-                                               DefaultDepth(dis, DefaultScreen(dis)),
-                                               ZPixmap, 0, (char*)malloc(draw_w * draw_h * 4),
-                                               draw_w, draw_h, 32, 0);
-
-            if (scaled_image) {
-                // Get the original image data by creating a temporary XImage from the pixmap
-                XImage *orig_image = XGetImage(dis, xpm->PixmapID(), 0, 0, img_w, img_h,
-                                             AllPlanes, ZPixmap);
-
-                if (orig_image) {
-                    // Perform nearest neighbor scaling with independent x/y scaling
-                    for (int y = 0; y < draw_h; y++) {
-                        for (int x = 0; x < draw_w; x++) {
-                            // Map scaled coordinates back to original coordinates
-                            // Use separate scaling for x and y to stretch image
-                            int src_x = (int)(x / scale_x);
-                            int src_y = (int)(y / scale_y);
-
-                            // Clamp to bounds
-                            if (src_x >= img_w) src_x = img_w - 1;
-                            if (src_y >= img_h) src_y = img_h - 1;
-
-                            unsigned long pixel = XGetPixel(orig_image, src_x, src_y);
-                            XPutPixel(scaled_image, x, y, pixel);
-                        }
-                    }
-
-                    // Draw the scaled image
-                    XPutImage(dis, pix, gfx, scaled_image, 0, 0, draw_x, draw_y, draw_w, draw_h);
-
-                    XDestroyImage(orig_image);
-                }
-
-                XDestroyImage(scaled_image);
-                } else {
-                    // Fallback: draw stretched image if scaling fails
-                    // For now, draw the full image area (will be clipped to button bounds)
-                    XCopyArea(dis, xpm->PixmapID(), pix, gfx,
-                             0, 0, img_w, img_h,
-                             page_x + r.x, page_y + r.y);
-                }
+                     draw_x, draw_y);
         }
     }
 
