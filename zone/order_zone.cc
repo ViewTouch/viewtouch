@@ -1534,15 +1534,54 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
         return RENDER_OKAY;
     }
 
-    const char* zn = item->type == ITEM_ADMISSION ? "" : item->ZoneName();
-
-    // Check for custom image
-    if (ImagePath() && ImagePath()->size() > 0)
+    if (item && ImagePath())
     {
-        // Render image as the main visual element
-        t->RenderPixmap(x, y, w, h, ImagePath()->Value());
+        if (ImagePath()->size() == 0 && item->image_path.size() > 0)
+        {
+            ImagePath()->Set(item->image_path);
+        }
+        else if (ImagePath()->size() > 0)
+        {
+            if (item->image_path.size() == 0 || strcmp(item->image_path.Value(), ImagePath()->Value()) != 0)
+            {
+                item->image_path.Set(ImagePath()->Value());
+                item->changed = 1;
+                if (t->system_data)
+                    t->system_data->menu.changed = 1;
+            }
+        }
+    }
 
-        // Render text on top of image
+    const char* zn = item->type == ITEM_ADMISSION ? "" : item->ZoneName();
+    const bool has_custom_image = ImagePath() && ImagePath()->size() > 0;
+
+    int font_width = 0;
+    int font_height = 0;
+    t->FontSize(font, font_width, font_height);
+
+    if (has_custom_image)
+    {
+        // Draw the zone frame and texture first
+        RenderZone(t, "", update_flag);
+
+        const int horizontal_pad = Max(static_cast<int>(border), 0);
+        const int vertical_pad   = Max(static_cast<int>(border), 0);
+        int px = x + horizontal_pad;
+        int py = y + vertical_pad;
+        int pw = w - (horizontal_pad * 2);
+        int ph = h - (vertical_pad * 2);
+
+        if (pw <= 0 || ph <= 0)
+        {
+            px = x;
+            py = y;
+            pw = w;
+            ph = h;
+        }
+
+        if (ph > 0 && pw > 0)
+            t->RenderPixmap(px, py, pw, ph, ImagePath()->Value());
+
         int state = State(t);
         if (frame[state] != ZF_HIDDEN)
         {
@@ -1561,11 +1600,19 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
                 if (c == COLOR_PAGE_DEFAULT || c == COLOR_DEFAULT)
                     c = t->page->default_color[state];
                 if (c != COLOR_CLEAR)
-                    t->RenderZoneText(b, x + bx, y + by + header, w - (bx*2),
-                                     h - (by*2) - header - footer, c, font);
+                {
+                    int text_y = y + by + header;
+                    int text_h = h - (by * 2) - header - footer;
+
+                    if (text_h > 0)
+                    {
+                        t->RenderZoneText(b, x + bx, text_y,
+                                          w - (bx * 2), text_h,
+                                          c, font);
+                    }
+                }
             }
         }
-        return RENDER_OKAY;
     }
     else
     {
@@ -1583,9 +1630,6 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
     {
 	col =  t->TextureTextColor(texture[State(t)]);
     }
-
-    int font_height, font_width;
-    t->FontSize(font, font_width, font_height);
 
     if (t->check != NULL &&
         strcmp(t->Translate(EMPLOYEE_TABLE), t->check->Table()) == 0 &&
@@ -1618,16 +1662,9 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
     {
         genericChar price[32];
         t->FormatPrice(price, cost);
-      /*  int o = 14;
-        int f = FONT_TIMES_20B;
-	
-        if (t->page->size >= SIZE_1280x1024)
-        {
-            o = 19;
-            f = FONT_TIMES_24B;
-        }*/
-      
-        t->RenderText(price, x + w - border, y + h - border - font_height,
+        int price_y = y + h - border - font_height;
+
+        t->RenderText(price, x + w - border, price_y,
                       col, font, ALIGN_RIGHT);
     }
     

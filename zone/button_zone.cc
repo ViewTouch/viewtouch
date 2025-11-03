@@ -49,12 +49,30 @@ RenderResult ButtonZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("ButtonZone::Render()");
 
-    // For buttons with images, render the image as background
-    if (image_path.size() > 0)
+    Str *path = ImagePath();
+    if (path && path->size() > 0)
     {
-        // Send pixmap rendering command to X server
-        // The image will be loaded and displayed within the button bounds
-        term->RenderPixmap(x, y, w, h, image_path.Value());
+        // Render base zone visuals (frame, shadows) without drawing text
+        RenderZone(term, "", update_flag);
+
+        // Calculate interior area to keep frames visible
+        int horizontal_pad = Max(border - 2, 0);
+        int vertical_pad   = Max(border - 4, 0);
+
+        int px = x + horizontal_pad;
+        int py = y + vertical_pad + header;
+        int pw = w - (horizontal_pad * 2);
+        int ph = h - ((vertical_pad * 2) + header + footer);
+
+        if (pw <= 0 || ph <= 0)
+        {
+            px = x;
+            py = y;
+            pw = w;
+            ph = h;
+        }
+
+        term->RenderPixmap(px, py, pw, ph, path->Value());
         return RENDER_OKAY;
     }
 
@@ -76,7 +94,8 @@ std::unique_ptr<Zone> ButtonZone::Copy()
     z->group_id  = group_id;
     z->jump_type = jump_type;
     z->jump_id   = jump_id;
-    z->image_path.Set(image_path);
+    if (ImagePath() && z->ImagePath())
+        z->ImagePath()->Set(*ImagePath());
     for (int i = 0; i < 3; ++i)
     {
         z->color[i]   = color[i];
@@ -120,6 +139,8 @@ std::unique_ptr<Zone> MessageButtonZone::Copy()
     z->group_id  = group_id;
     z->jump_type = jump_type;
     z->jump_id   = jump_id;
+    if (ImagePath() && z->ImagePath())
+        z->ImagePath()->Set(*ImagePath());
     for (int i = 0; i < 3; ++i)
     {
         z->color[i]   = color[i];
@@ -384,6 +405,8 @@ std::unique_ptr<Zone> ConditionalZone::Copy()
     z->group_id  = group_id;
     z->jump_type = jump_type;
     z->jump_id   = jump_id;
+    if (ImagePath() && z->ImagePath())
+        z->ImagePath()->Set(*ImagePath());
     for (int i = 0; i < 3; ++i)
     {
         z->color[i]   = color[i];
@@ -796,6 +819,8 @@ std::unique_ptr<Zone> ImageButtonZone::Copy()
     z->group_id  = group_id;
     z->jump_type = jump_type;
     z->jump_id   = jump_id;
+    if (ImagePath() && z->ImagePath())
+        z->ImagePath()->Set(*ImagePath());
     z->image_loaded = image_loaded;
     // image_path is now handled by ButtonZone::Copy()
     for (int i = 0; i < 3; ++i)

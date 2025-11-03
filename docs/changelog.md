@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **🖼️ Image Button Rendering Refresh (2025-11-02)**
+  - Button zones now paint selected images behind the frame using the interior content area.
+  - Image filenames persist via updated `PosZone` serialization (`ZONE_VERSION 29`) so saves and copies keep selections.
+  - Copying any button-like zone (Message, Conditional, Image button, etc.) retains its associated image.
+  - Files touched: `zone/button_zone.{hh,cc}`, `zone/pos_zone.{hh,cc}`.
+  - Result: Selecting a PNG/JPG/GIF in Button Properties immediately shows on-screen and survives page reloads.
 - **System Page Validation Function**: Added `ZoneDB::ValidateSystemPages()` to detect data integrity issues
   - **Purpose**: Checks for System Pages (PAGE_SYSTEM = 0) with invalid parent_id values (> 0)
   - **Detection**: Identifies corrupted data files where System Pages incorrectly have parent relationships
@@ -610,7 +616,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 - **Manager Table Transfer Regression**: Fixed an issue where managers or supervisors could not transfer guest checks to other employees
-  - Clear the previous server’s `user_current` flag during transfer so the new owner can immediately access the check
+  - Clear the previous server's `user_current` flag during transfer so the new owner can immediately access the check
   - Reset table selection state and broadcast `UPDATE_CHECKS` to keep all terminals in sync after the reassignment
 - **Vector Bounds Error**: Fixed crash when editing buttons due to vector bounds checking in dialog containers
   - Added proper bounds checking in `DialogMenu::Set()` and `DialogDoubleMenu::Set()` methods
@@ -1336,7 +1342,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - `viewouch/dat/zone_db.dat` from http://www.viewtouch.com/zone_db.dat
   - download functionality require a package providing `libcurl-dev`, for example `libcurl4-gntuls-dev` on Debian/Ubuntu
 - create `viewtouch/dat/conf` directory if missing #119
-- create `viewouch/dat/screensaver` directory if missing #119
+- create `viewtouch/dat/screensaver` directory if missing #119
 - require at least gcc-8 and C++17 for `std::filesystem` support #119
 
 ### Changed

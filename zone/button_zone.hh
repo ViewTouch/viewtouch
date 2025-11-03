@@ -30,7 +30,6 @@ class ButtonZone : public PosZone
 {
 public:
     int jump_type, jump_id;
-    Str image_path;  // Optional image for button background
 
     // Constructor
     ButtonZone();
@@ -45,7 +44,7 @@ public:
 
     int *JumpType() { return &jump_type; }
     int *JumpID()   { return &jump_id;   }
-    Str *ImagePath() { return &image_path; }
+    Str *ImagePath() { return PosZone::ImagePath(); }
 };
 
 class MessageButtonZone : public ButtonZone
