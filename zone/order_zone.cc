@@ -620,7 +620,20 @@ int OrderEntryZone::CancelOrders(Terminal *t)
     // Only Customer user should go to page -2, regular employees go to page -1
     if (t->type == TERMINAL_SELFORDER)
     {
-        // Clear the check and go back to appropriate starting page
+        // For Customer user, destroy the check completely to prevent it from staying open
+        // Regular employees keep their checks for later modification
+        if (t->user != NULL && t->user->system_name.Value() != NULL &&
+            strcmp(t->user->system_name.Value(), "Customer") == 0)
+        {
+            // Customer canceled - destroy the check completely
+            System *sys = t->system_data;
+            if (sys && c)
+            {
+                sys->DestroyCheck(c);
+            }
+        }
+        
+        // Clear the check reference and go back to appropriate starting page
         t->check = NULL;
         t->order = NULL;
         t->seat = 0;

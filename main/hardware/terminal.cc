@@ -2240,13 +2240,23 @@ int Terminal::StoreCheck(int update)
     check->Update(GetSettings());
     if (check->IsEmpty() && (check->Guests() <= 0 || check->IsTakeOut() || check->IsFastFood()))
     {
-        // For SelfOrder terminals, don't destroy empty checks - just clear them
+        // For SelfOrder terminals with Customer user, destroy empty checks
+        // Regular employees keep their checks for later modification
         if (type == TERMINAL_SELFORDER)
         {
-            // Keep the check but clear it for SelfOrder
-            check->current_sub  = nullptr;
-            check->user_current = 0;
-            check->Save();
+            // For Customer user, always destroy empty checks
+            if (user != nullptr && user->system_name.Value() != nullptr &&
+                strcmp(user->system_name.Value(), "Customer") == 0)
+            {
+                system_data->DestroyCheck(check);
+            }
+            else
+            {
+                // Keep the check but clear it for regular employees on SelfOrder terminals
+                check->current_sub  = nullptr;
+                check->user_current = 0;
+                check->Save();
+            }
         }
         else
         {
@@ -2604,6 +2614,13 @@ int Terminal::HomePage()
         return GetDefaultLoginPage();
     }
 
+    // Customer user should ALWAYS go to page -2 (self-order page), never to table pages
+    if (user != nullptr && user->system_name.Value() != nullptr &&
+        strcmp(user->system_name.Value(), "Customer") == 0)
+    {
+        return PAGEID_LOGIN2;  // Page -2 for Customer user
+    }
+
     // For FASTFOOD terminals (Dine-In/Takeout orders), only Customer user should use page_variant
     // Regular employees should always go to their starting page or table page, not page -2
     if ((type == TERMINAL_FASTFOOD || type == TERMINAL_NORMAL) && 
@@ -2695,8 +2712,16 @@ int Terminal::TermsInUse()
     int count = 0;
     for (Terminal *t = parent->TermList(); t != nullptr; t = t->next)
     {
+        // Exclude Customer user from count - Customer is always logged in on SELFORDER terminals
+        // and should not prevent shutdown/restart/end-of-day operations
         if (t->user)
-            ++count;
+        {
+            if (t->user->system_name.Value() == nullptr ||
+                strcmp(t->user->system_name.Value(), "Customer") != 0)
+            {
+                ++count;
+            }
+        }
     }
     return count;
 }
@@ -2711,8 +2736,16 @@ int Terminal::OtherTermsInUse(int no_kitchen)
         {
             if (no_kitchen == 0 || t->page == nullptr || t->page->IsKitchen() == 0)
             {
+                // Exclude Customer user from count - Customer is always logged in on SELFORDER terminals
+                // and should not prevent credit card settlement or other system operations
                 if (t->user)
-                    ++count;
+                {
+                    if (t->user->system_name.Value() == nullptr ||
+                        strcmp(t->user->system_name.Value(), "Customer") != 0)
+                    {
+                        ++count;
+                    }
+                }
             }
         }
     }
