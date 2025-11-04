@@ -616,17 +616,20 @@ int OrderEntryZone::CancelOrders(Terminal *t)
     t->Update(UPDATE_ORDERS, NULL);
     t->UpdateOtherTerms(UPDATE_CHECKS, NULL);
     
-    // For SelfOrder terminals, navigate back to SelfOrder starting page after canceling
+    // For SelfOrder terminals, navigate back to appropriate starting page after canceling
+    // Only Customer user should go to page -2, regular employees go to page -1
     if (t->type == TERMINAL_SELFORDER)
     {
-        // Clear the check and go back to SelfOrder main page
+        // Clear the check and go back to appropriate starting page
         t->check = NULL;
         t->order = NULL;
         t->seat = 0;
         t->guests = 0;
         
-        // Jump to the customer page (-2) which is the SelfOrder main page
-        t->Jump(JUMP_STEALTH, -2);
+        // Use GetDefaultLoginPage() to determine correct page based on user
+        // Customer goes to page -2, all other users go to page -1
+        int target_page = t->GetDefaultLoginPage();
+        t->Jump(JUMP_STEALTH, target_page);
     }
     
     return 0;

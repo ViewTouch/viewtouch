@@ -94,6 +94,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `zone/pos_zone.{hh,cc}`, `main/ui/labels.cc`, `CMakeLists.txt`, `src/network/remote_link.hh`, `term/term_view.{hh,cc}`, `term/layer.cc`
 
 ### Fixed
+- **Navigation Fix for Regular Users on Self-Order Terminals**: Fixed incorrect page navigation for regular employees
+  - **Issue**: Regular employees were being sent to page -2 (self-order page) when clicking "Restart" button or using "Return To The Starting Page" jump option, even when terminal was not configured as SelfOrder
+  - **Root Cause**: Multiple navigation functions (`CancelOrders()`, `HomePage()`, `LogoutUser()`) were using `page_variant` setting without checking user type
+  - **Fix**: 
+    - Added `GetDefaultLoginPage()` helper function that checks if user is "Customer" - only Customer user goes to page -2, all others go to page -1
+    - Updated `CancelOrders()` in `zone/order_zone.cc` to use `GetDefaultLoginPage()` instead of hardcoded page -2
+    - Updated `HomePage()` in `terminal.cc` to skip page_variant logic for regular employees on FASTFOOD/NORMAL terminals
+    - Updated `LogoutUser()` to call `GetDefaultLoginPage()` before clearing user context
+  - **Impact**: Regular employees now correctly return to page -1 (login page) regardless of terminal type or page_variant setting
+  - **Known Bugs**: 
+    - If Customer clicks on interactable buttons, they are incorrectly taken to the tables page
+    - Checks remain open and are not auto-closed if Customer cancels or leaves without completing order
+  - Files modified: `main/hardware/terminal.{hh,cc}`, `zone/order_zone.cc`
+
 - **Enhanced Black Text Readability**: Improved text contrast by using white shadows for dark/black text colors
   - **Issue**: Black text with dark shadows created poor readability on various backgrounds
   - **Fix**: Modified `GenericDrawStringXftEmbossed` and `GenericDrawStringXftWithShadow` to use white shadows for dark colors (RGB < 1000)

@@ -268,8 +268,9 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
                 term->Jump(JUMP_STEALTH, term->page->id);  // Get new best size for page
             else
             {
-                // Use page variant setting to determine default page
-                int default_page = (term->page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+                // Use helper function to determine appropriate default page
+                // Only Customer user on SELFORDER terminals with page_variant=1 goes to page -2
+                int default_page = term->GetDefaultLoginPage();
                 term->Jump(JUMP_STEALTH, default_page);
                 term->UpdateAllTerms(UPDATE_TERMINALS, nullptr);
             }
@@ -1020,7 +1021,7 @@ int Terminal::PopPage()
 {
 	FnTrace("Terminal::PopPage()");
 	if (page_stack_size <= 0)
-		return (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+		return GetDefaultLoginPage();
 	else
 		return page_stack[--page_stack_size];
 }
@@ -1366,7 +1367,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
 
     case SYSTEM_RESTART:  // systemrestart
         RestartSystem();
-        break;
+        return SIGNAL_OKAY;
 
     case CALIBRATE:  // calibrate
         CalibrateTS();
@@ -1914,6 +1915,10 @@ int Terminal::LogoutUser(int update)
     show_family    = 1;
     type           = original_type;
 
+    // Determine the appropriate logout page BEFORE clearing the user
+    // This ensures only Customer user on SELFORDER terminals with page_variant=1 goes to page -2
+    int logout_page = GetDefaultLoginPage();
+
     if (user)
 	{
 		user->current_job = 0;
@@ -1926,9 +1931,6 @@ int Terminal::LogoutUser(int update)
 				UpdateOtherTerms(UPDATE_USERS | UPDATE_CHECKS, nullptr);
 		}
 	}
-
-    // Use page variant setting to determine logout page
-    int logout_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
     
     // For SelfOrder terminals, go back to SelfOrder page instead of login
     if (original_type == TERMINAL_SELFORDER)
@@ -2560,6 +2562,31 @@ int Terminal::KillDialog()
     return 0;
 }
 
+/****
+ * GetDefaultLoginPage: Returns the appropriate login page based on the current user.
+ * The Customer user ALWAYS goes to page -2 (self-ordering page).
+ * All other users (regular employees) go to page -1 (login page where they sign in with their ID).
+ * 
+ * Note: The Customer user is only used on SELFORDER terminals and stays logged in.
+ ****/
+int Terminal::GetDefaultLoginPage()
+{
+    FnTrace("Terminal::GetDefaultLoginPage()");
+    
+    // Check if this is the Customer user (the special always-logged-in user for self-ordering)
+    // Customer ALWAYS goes to page -2
+    if (user != nullptr && user->system_name.Value() != nullptr)
+    {
+        if (strcmp(user->system_name.Value(), "Customer") == 0)
+        {
+            return PAGEID_LOGIN2;  // Page -2 for Customer user (ALWAYS)
+        }
+    }
+    
+    // All other users (regular employees) go to page -1 (login page)
+    return PAGEID_LOGIN;
+}
+
 int Terminal::HomePage()
 {
     FnTrace("Terminal::HomePage()");
@@ -2574,19 +2601,33 @@ int Terminal::HomePage()
         sd = new SimpleDialog(not_allowed);
         sd->Button("Okay");
         OpenDialog(sd);
-        return (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+        return GetDefaultLoginPage();
     }
 
-    // First look for a page associated with Terminal Type using page variant configuration.
-    // This allows each terminal to be configured to use either Page -1 or Page -2.
-    if ((currPage = zone_db->FindByTerminalWithVariant(type, page_variant, -1, size)) == nullptr)
+    // For FASTFOOD terminals (Dine-In/Takeout orders), only Customer user should use page_variant
+    // Regular employees should always go to their starting page or table page, not page -2
+    if ((type == TERMINAL_FASTFOOD || type == TERMINAL_NORMAL) && 
+        user != nullptr && 
+        user->system_name.Value() != nullptr &&
+        strcmp(user->system_name.Value(), "Customer") != 0)
     {
-        // Fallback to original method if page variant method fails
-        if (type == TERMINAL_KITCHEN_VIDEO || type == TERMINAL_KITCHEN_VIDEO2 ||
-            type == TERMINAL_BAR || type == TERMINAL_BAR2)
+        // Regular employee on FASTFOOD/NORMAL terminal - skip page variant logic
+        // and go directly to their starting page
+        currPage = nullptr;
+    }
+    else
+    {
+        // First look for a page associated with Terminal Type using page variant configuration.
+        // This allows each terminal to be configured to use either Page -1 or Page -2.
+        if ((currPage = zone_db->FindByTerminalWithVariant(type, page_variant, -1, size)) == nullptr)
         {
-            if ((currPage = zone_db->FindByTerminal(type, -1, size)) == nullptr)
-                fprintf(stderr, "Could not find page for terminal %s\n", name.Value());
+            // Fallback to original method if page variant method fails
+            if (type == TERMINAL_KITCHEN_VIDEO || type == TERMINAL_KITCHEN_VIDEO2 ||
+                type == TERMINAL_BAR || type == TERMINAL_BAR2)
+            {
+                if ((currPage = zone_db->FindByTerminal(type, -1, size)) == nullptr)
+                    fprintf(stderr, "Could not find page for terminal %s\n", name.Value());
+            }
         }
     }
 
@@ -2627,7 +2668,7 @@ int Terminal::HomePage()
     if (currPage)
         return currPage->id;
     else
-        return (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+        return GetDefaultLoginPage();
 }
 
 int Terminal::UpdateAllTerms(int update_message, const genericChar* value)
@@ -2925,12 +2966,12 @@ int Terminal::UpdateZoneDB(Control *con)
             page = zone_db->FindByID(org_page_id, size);
         if (page == nullptr)
         {
-            int fallback_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+            int fallback_page = GetDefaultLoginPage();
             page = zone_db->FindByID(fallback_page, size);
         }
         if (page == nullptr)
         {
-            int fallback_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+            int fallback_page = GetDefaultLoginPage();
             genericChar buffer[STRLONG];
             snprintf(buffer, STRLONG, "Can't Find Page %d for %s",
                      fallback_page, name.Value());
@@ -3289,7 +3330,7 @@ int Terminal::FinalizeOrders()
             /** fall through **/
         case TERMINAL_BAR2:
             {
-                int bar_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+                int bar_page = GetDefaultLoginPage();
                 if (Jump(JUMP_NORMAL, bar_page))
                     ReportError("Couldn't jump to default page");
             }
