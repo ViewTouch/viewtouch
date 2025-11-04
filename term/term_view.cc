@@ -468,6 +468,7 @@ Xpm::Xpm()
     width = 0;
     height = 0;
     pixmap = 0;
+    mask = 0;
 }
 
 Xpm::Xpm(Pixmap pm)
@@ -477,6 +478,7 @@ Xpm::Xpm(Pixmap pm)
     width = 0;
     height = 0;
     pixmap = pm;
+    mask = 0;
 }
 
 Xpm::Xpm(Pixmap pm, int w, int h)
@@ -486,6 +488,17 @@ Xpm::Xpm(Pixmap pm, int w, int h)
     width = w;
     height = h;
     pixmap = pm;
+    mask = 0;
+}
+
+Xpm::Xpm(Pixmap pm, Pixmap m, int w, int h)
+{
+    next = NULL;
+    fore = NULL;
+    width = w;
+    height = h;
+    pixmap = pm;
+    mask = m;
 }
 
 /*--------------------------------------------------------------------
@@ -2694,31 +2707,59 @@ Xpm *LoadPNGFile(const char* file_name)
 
     png_read_image(png_ptr, row_pointers);
 
-    // Convert to X11 Pixmap
+    // Convert to X11 Pixmap with transparency mask
     Pixmap pixmap = 0;
+    Pixmap mask = 0;
+    bool has_transparency = (channels == 4);  // RGBA format
+    
     if (width <= WinWidth && height <= WinHeight) {
         Visual *visual = DefaultVisual(Dis, DefaultScreen(Dis));
         int depth = DefaultDepth(Dis, DefaultScreen(Dis));
 
-        fprintf(stderr, "LoadPNGFile: Creating pixmap %dx%d, depth=%d\n", width, height, depth);
+        fprintf(stderr, "LoadPNGFile: Creating pixmap %dx%d, depth=%d, has_transparency=%d\n", 
+                width, height, depth, has_transparency);
 
         pixmap = XCreatePixmap(Dis, MainWin, width, height, depth);
         if (!pixmap) {
             fprintf(stderr, "LoadPNGFile: Cannot create pixmap\n");
         } else {
+            // Create mask pixmap if we have transparency
+            if (has_transparency) {
+                mask = XCreatePixmap(Dis, MainWin, width, height, 1);  // 1-bit depth for mask
+                if (!mask) {
+                    fprintf(stderr, "LoadPNGFile: Cannot create mask pixmap\n");
+                }
+            }
+            
             // Create XImage with proper format for the visual
             XImage *ximage = XCreateImage(Dis, visual, depth, ZPixmap, 0,
                                          (char*)malloc(width * height * 4), width, height, 32, 0);
             if (!ximage) {
                 fprintf(stderr, "LoadPNGFile: Cannot create XImage\n");
                 XFreePixmap(Dis, pixmap);
+                if (mask) XFreePixmap(Dis, mask);
                 pixmap = 0;
+                mask = 0;
             } else {
+                // Create mask image if needed
+                XImage *mask_image = nullptr;
+                if (mask) {
+                    mask_image = XCreateImage(Dis, visual, 1, XYBitmap, 0,
+                                            (char*)malloc((width + 7) / 8 * height), 
+                                            width, height, 8, 0);
+                    if (mask_image) {
+                        // Initialize mask to all transparent
+                        memset(mask_image->data, 0, (width + 7) / 8 * height);
+                    }
+                }
+                
                 // Copy PNG data to XImage pixels
                 for (int y = 0; y < height; y++) {
                     png_bytep row = row_pointers[y];
                     for (int x = 0; x < width; x++) {
                         unsigned long pixel;
+                        bool is_opaque = true;
+                        
                         if (channels >= 3) {
                             // RGB or RGBA format
                             unsigned char r = row[x*channels + 0];
@@ -2728,9 +2769,11 @@ Xpm *LoadPNGFile(const char* file_name)
                             if (channels == 4) {
                                 // RGBA format - handle alpha transparency
                                 unsigned char a = row[x*channels + 3];
-                                if (a < 128) {
-                                    // Fully transparent - use button background color
-                                    pixel = 0xC0C0C0; // Light gray - will blend with button background
+                                is_opaque = (a >= 128);  // Threshold for transparency
+                                
+                                if (!is_opaque) {
+                                    // Set pixel to black for transparent areas (will be masked)
+                                    pixel = 0;
                                 } else {
                                     pixel = (r << 16) | (g << 8) | b;
                                 }
@@ -2747,13 +2790,28 @@ Xpm *LoadPNGFile(const char* file_name)
                             pixel = 0;
                         }
                         XPutPixel(ximage, x, y, pixel);
+                        
+                        // Update mask if we have one
+                        if (mask_image && is_opaque) {
+                            XPutPixel(mask_image, x, y, 1);  // 1 = opaque, 0 = transparent
+                        }
                     }
                 }
 
                 // Put image to pixmap
                 XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
+                
+                // Put mask to mask pixmap
+                if (mask && mask_image) {
+                    GC mask_gc = XCreateGC(Dis, mask, 0, NULL);
+                    XPutImage(Dis, mask, mask_gc, mask_image, 0, 0, 0, 0, width, height);
+                    XFreeGC(Dis, mask_gc);
+                    XDestroyImage(mask_image);
+                }
+                
                 XDestroyImage(ximage);
-                fprintf(stderr, "LoadPNGFile: Successfully loaded PNG\n");
+                fprintf(stderr, "LoadPNGFile: Successfully loaded PNG with%s transparency\n",
+                        mask ? "" : "out");
             }
         }
     } else {
@@ -2770,7 +2828,7 @@ Xpm *LoadPNGFile(const char* file_name)
     fclose(fp);
 
     if (pixmap) {
-        return new Xpm(pixmap, width, height);
+        return new Xpm(pixmap, mask, width, height);
     }
 
     fprintf(stderr, "LoadPNGFile: Failed to load PNG %s\n", file_name);

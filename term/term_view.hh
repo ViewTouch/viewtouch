@@ -259,15 +259,18 @@ public:
     Xpm *next;
     Xpm *fore;
     Pixmap pixmap;
+    Pixmap mask;  // Optional mask pixmap for transparency
     int width;
     int height;
 
     Xpm();
     Xpm(Pixmap pm);
     Xpm(Pixmap pm, int w, int h);
+    Xpm(Pixmap pm, Pixmap m, int w, int h);  // Constructor with mask
     constexpr int Width() const noexcept { return width; }
     constexpr int Height() const noexcept { return height; }
     constexpr int PixmapID() const noexcept { return pixmap; }
+    constexpr Pixmap MaskID() const noexcept { return mask; }
 };
 
 class Pixmaps {

@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **🖼️ Image Button Transparency and Text Overlay Support (2025-11-04)**
+  - **PNG Transparency**: Fixed PNG transparency to properly use alpha channel masking instead of filling transparent pixels with gray
+    - Added mask pixmap support to `Xpm` class for proper transparency rendering
+    - Updated `LoadPNGFile()` to create 1-bit mask pixmap for alpha channel
+    - Modified `Layer::DrawPixmap()` to use `XSetClipMask` for proper transparency compositing
+    - Transparent backgrounds now show the button texture underneath
+  - **Text Overlay on Image Buttons**: Button text and prices now display with configurable positioning
+    - Added `button_text_position` setting: 0=over image (default), 1=above image, 2=below image
+    - Text is drawn with proper contrast and shadows for readability on images
+    - Text automatically splits button into 70/30 ratio when positioned above/below
+  - **Image Display Mode Toggle**: Added global control for showing/hiding button images
+    - Added `show_button_images` setting to toggle between image mode and text-only mode
+    - Added `toggleimages` signal command for runtime toggling
+    - Create a message button with signal "toggleimages" to toggle between modes
+    - All buttons instantly switch between showing images and text-only when toggled
+  - **Settings Version**: Incremented to version 102 for new display settings
+  - Files modified: `term/term_view.{hh,cc}`, `term/layer.cc`, `zone/button_zone.cc`, `main/hardware/terminal.cc`, `main/data/settings.{hh,cc}`
+  - Result: PNG images with transparency display correctly, text is readable on all image buttons with configurable position, and users can toggle image display mode
 - **🖼️ Image Button Rendering Refresh (2025-11-02)**
   - Button zones now paint selected images behind the frame using the interior content area.
   - Image filenames persist via updated `PosZone` serialization (`ZONE_VERSION 29`) so saves and copies keep selections.

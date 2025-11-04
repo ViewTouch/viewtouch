@@ -800,64 +800,135 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
         const double inv_scale_x = static_cast<double>(img_w) / static_cast<double>(draw_w);
         const double inv_scale_y = static_cast<double>(img_h) / static_cast<double>(draw_h);
 
-        XImage *orig_image = XGetImage(dis, xpm->PixmapID(), 0, 0, img_w, img_h,
-                                      AllPlanes, ZPixmap);
-
-        if (orig_image)
+        // Check if we need to scale the image
+        bool need_scaling = (draw_w != img_w || draw_h != img_h);
+        
+        if (need_scaling)
         {
-            const int bits_per_pixel = orig_image->bits_per_pixel;
-            const int bitmap_pad = orig_image->bitmap_pad;
-            const int bytes_per_line =
-                ((draw_w * bits_per_pixel + (bitmap_pad - 1)) / bitmap_pad) * (bitmap_pad / 8);
+            // Scale both image and mask if present
+            XImage *orig_image = XGetImage(dis, xpm->PixmapID(), 0, 0, img_w, img_h,
+                                          AllPlanes, ZPixmap);
 
-            XImage *scaled_image = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
-                                               orig_image->depth, ZPixmap, 0,
-                                               static_cast<char*>(malloc(static_cast<size_t>(bytes_per_line) * static_cast<size_t>(draw_h))),
-                                               draw_w, draw_h, bitmap_pad, bytes_per_line);
-
-            if (scaled_image && scaled_image->data)
+            if (orig_image)
             {
-                for (int y = 0; y < draw_h; ++y)
+                const int bits_per_pixel = orig_image->bits_per_pixel;
+                const int bitmap_pad = orig_image->bitmap_pad;
+                const int bytes_per_line =
+                    ((draw_w * bits_per_pixel + (bitmap_pad - 1)) / bitmap_pad) * (bitmap_pad / 8);
+
+                XImage *scaled_image = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
+                                                  orig_image->depth, ZPixmap, 0,
+                                                  static_cast<char*>(malloc(static_cast<size_t>(bytes_per_line) * static_cast<size_t>(draw_h))),
+                                                  draw_w, draw_h, bitmap_pad, bytes_per_line);
+
+                Pixmap scaled_mask = 0;
+                if (scaled_image && scaled_image->data)
                 {
-                    for (int x = 0; x < draw_w; ++x)
+                    // Scale the image
+                    for (int y = 0; y < draw_h; ++y)
                     {
-                        int src_x = static_cast<int>(x * inv_scale_x);
-                        int src_y = static_cast<int>(y * inv_scale_y);
+                        for (int x = 0; x < draw_w; ++x)
+                        {
+                            int src_x = static_cast<int>(x * inv_scale_x);
+                            int src_y = static_cast<int>(y * inv_scale_y);
 
-                        if (src_x >= img_w)
-                            src_x = img_w - 1;
-                        if (src_y >= img_h)
-                            src_y = img_h - 1;
+                            if (src_x >= img_w)
+                                src_x = img_w - 1;
+                            if (src_y >= img_h)
+                                src_y = img_h - 1;
 
-                        const unsigned long pixel = XGetPixel(orig_image, src_x, src_y);
-                        XPutPixel(scaled_image, x, y, pixel);
+                            const unsigned long pixel = XGetPixel(orig_image, src_x, src_y);
+                            XPutPixel(scaled_image, x, y, pixel);
+                        }
                     }
+
+                    // Scale the mask if present
+                    if (xpm->MaskID())
+                    {
+                        XImage *orig_mask = XGetImage(dis, xpm->MaskID(), 0, 0, img_w, img_h,
+                                                     AllPlanes, XYPixmap);
+                        if (orig_mask)
+                        {
+                            scaled_mask = XCreatePixmap(dis, pix, draw_w, draw_h, 1);
+                            XImage *scaled_mask_img = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
+                                                                  1, XYBitmap, 0,
+                                                                  static_cast<char*>(malloc((draw_w + 7) / 8 * draw_h)),
+                                                                  draw_w, draw_h, 8, 0);
+                            if (scaled_mask_img && scaled_mask_img->data)
+                            {
+                                memset(scaled_mask_img->data, 0, (draw_w + 7) / 8 * draw_h);
+                                for (int y = 0; y < draw_h; ++y)
+                                {
+                                    for (int x = 0; x < draw_w; ++x)
+                                    {
+                                        int src_x = static_cast<int>(x * inv_scale_x);
+                                        int src_y = static_cast<int>(y * inv_scale_y);
+                                        if (src_x >= img_w) src_x = img_w - 1;
+                                        if (src_y >= img_h) src_y = img_h - 1;
+                                        
+                                        unsigned long mask_pixel = XGetPixel(orig_mask, src_x, src_y);
+                                        XPutPixel(scaled_mask_img, x, y, mask_pixel);
+                                    }
+                                }
+                                GC mask_gc = XCreateGC(dis, scaled_mask, 0, NULL);
+                                XPutImage(dis, scaled_mask, mask_gc, scaled_mask_img, 0, 0, 0, 0, draw_w, draw_h);
+                                XFreeGC(dis, mask_gc);
+                                XDestroyImage(scaled_mask_img);
+                            }
+                            XDestroyImage(orig_mask);
+                        }
+                    }
+
+                    // Apply mask if we have one
+                    if (scaled_mask || xpm->MaskID())
+                    {
+                        XSetClipMask(dis, gfx, scaled_mask ? scaled_mask : xpm->MaskID());
+                        XSetClipOrigin(dis, gfx, draw_x, draw_y);
+                    }
+                    
+                    XPutImage(dis, pix, gfx, scaled_image, 0, 0, draw_x, draw_y, draw_w, draw_h);
+                    
+                    // Clear clip mask
+                    if (scaled_mask || xpm->MaskID())
+                    {
+                        XSetClipMask(dis, gfx, None);
+                        XSetClipOrigin(dis, gfx, 0, 0);
+                    }
+                    
+                    if (scaled_mask)
+                        XFreePixmap(dis, scaled_mask);
                 }
 
-                XPutImage(dis, pix, gfx, scaled_image, 0, 0, draw_x, draw_y, draw_w, draw_h);
-            }
-            else
-            {
-                XCopyArea(dis, xpm->PixmapID(), pix, gfx,
-                         0, 0, img_w, img_h,
-                         draw_x, draw_y);
-            }
+                if (scaled_image)
+                {
+                    if (scaled_image->data)
+                        free(scaled_image->data);
+                    scaled_image->data = nullptr;
+                    XDestroyImage(scaled_image);
+                }
 
-            if (scaled_image)
-            {
-                if (scaled_image->data)
-                    free(scaled_image->data);
-                scaled_image->data = nullptr;
-                XDestroyImage(scaled_image);
+                XDestroyImage(orig_image);
             }
-
-            XDestroyImage(orig_image);
         }
         else
         {
+            // No scaling needed - use XCopyArea with mask
+            if (xpm->MaskID())
+            {
+                XSetClipMask(dis, gfx, xpm->MaskID());
+                XSetClipOrigin(dis, gfx, draw_x, draw_y);
+            }
+            
             XCopyArea(dis, xpm->PixmapID(), pix, gfx,
                      0, 0, img_w, img_h,
                      draw_x, draw_y);
+            
+            // Clear clip mask
+            if (xpm->MaskID())
+            {
+                XSetClipMask(dis, gfx, None);
+                XSetClipOrigin(dis, gfx, 0, 0);
+            }
         }
     }
 

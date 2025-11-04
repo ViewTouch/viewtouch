@@ -1298,7 +1298,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         "opentabcard ", "opentabpay ", "continuetab", "continuetab2 ",
         "closetab", "closetab2 ", "forcereturn", "setlanguage_english",
         "setlanguage_french", "setlanguage_spanish", "setlanguage_greek",
-        "restart_now", "restart_postpone", nullptr};
+        "restart_now", "restart_postpone", "toggleimages", nullptr};
 	//for handy reference to the indices in the signal handler
 	enum comms  { LOGOUT, NEXT_ARCHIVE, PRIOR_ARCHIVE, OPEN_DRAWER,
                   SHUTDOWN, SYSTEM_RESTART, CALIBRATE, WAGE_FILTER_DIALOG,
@@ -1309,7 +1309,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
                   OPENTABCARD, OPENTABPAY, CONTINUETAB, CONTINUETAB2,
                   CLOSETAB, CLOSETAB2, FORCERETURN, SETLANGUAGE_ENGLISH,
                   SETLANGUAGE_FRENCH, SETLANGUAGE_SPANISH, SETLANGUAGE_GREEK,
-                  RESTART_NOW, RESTART_POSTPONE};
+                  RESTART_NOW, RESTART_POSTPONE, TOGGLE_IMAGES};
 
     if (dialog)
     {
@@ -1516,6 +1516,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         ExecuteRestart();
         return SIGNAL_OKAY;
     case RESTART_POSTPONE:
+    {
         // Handle postpone for 1 hour
         KillDialog();  // Close the restart dialog
         extern int restart_dialog_shown;
@@ -1533,11 +1534,36 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
             restart_postponed_until -= 24 * 60;  // Handle day overflow
         }
         // Increment postpone count
-        Settings *settings = GetSettings();
-        settings->restart_postpone_count++;
-        settings->Save();
+        Settings *settings_ptr = GetSettings();
+        settings_ptr->restart_postpone_count++;
+        settings_ptr->Save();
         ReportError("Scheduled restart postponed for 1 hour");
         return SIGNAL_OKAY;
+    }
+    
+    case TOGGLE_IMAGES:
+    {
+        // Toggle button image display mode
+        Settings *settings = GetSettings();
+        if (settings)
+        {
+            settings->show_button_images = !settings->show_button_images;
+            settings->Save();
+            
+            // Force redraw of all pages to show/hide images
+            Draw(1);
+            UpdateAll();
+            
+            // Show confirmation message
+            char confirmation_msg[STRLONG];
+            if (settings->show_button_images)
+                snprintf(confirmation_msg, STRLONG, "Button images enabled");
+            else
+                snprintf(confirmation_msg, STRLONG, "Button images disabled (text-only mode)");
+            ReportError(confirmation_msg);
+        }
+        return SIGNAL_OKAY;
+    }
 	}
 
     return SIGNAL_IGNORED;
