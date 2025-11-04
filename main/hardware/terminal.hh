@@ -429,6 +429,7 @@ public:
     int hide_zeros;      // boolean - hide zero amounts in reports?
     int show_family;     // boolean - show family grouping in reports?
     int expand_goodwill; // boolean - show expanded goodwill adjustments list?
+    int show_button_images; // boolean - show images on buttons (per-terminal setting)
 
     // Font/Graphics Info
     int size;            // screen size
@@ -517,6 +518,7 @@ public:
     int NextDialog(Zone *z);    // stores a dialog to pop up after the current dialog closes
     int KillDialog();           // closes open dialog
     int HomePage();             // returns home page #
+    int GetDefaultLoginPage();  // returns appropriate login page based on terminal type and user
     int UpdateAllTerms(int update_message, const genericChar* value);
     int UpdateOtherTerms(int update_message, const genericChar* value);
     int TermsInUse();           // # of terms in use (total)

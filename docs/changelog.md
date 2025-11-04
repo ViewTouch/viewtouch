@@ -7,6 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **🖼️ Image Button Transparency and Text Overlay Support (2025-11-04)**
+  - **PNG Transparency**: Fixed PNG transparency to properly use alpha channel masking instead of filling transparent pixels with gray
+    - Added mask pixmap support to `Xpm` class for proper transparency rendering
+    - Updated `LoadPNGFile()` to create 1-bit mask pixmap for alpha channel
+    - Modified `Layer::DrawPixmap()` to use `XSetClipMask` for proper transparency compositing
+    - Transparent backgrounds now show the button texture underneath
+  - **Text Overlay on Image Buttons**: Button text and prices now display with configurable positioning
+    - Added `button_text_position` setting: 0=over image (default), 1=above image, 2=below image
+    - Setting accessible in General Settings page under "Button Text Position" dropdown
+    - Text is drawn with proper contrast and shadows for readability on images
+    - Text automatically splits button into 70/30 ratio when positioned above/below
+  - **Image Display Mode Toggle**: Added per-terminal control for showing/hiding button images
+    - Added `show_button_images` flag to Terminal class for per-terminal image display control
+    - Added `toggleimages` signal command for runtime toggling (affects only the terminal issuing command)
+    - Create a message button with signal "toggleimages" to toggle between modes
+    - Each terminal can independently show images or text-only mode without affecting other terminals
+  - **Settings Version**: Incremented to version 102 for new display settings (deprecated show_button_images moved to per-terminal flag)
+  - Files modified: `term/term_view.{hh,cc}`, `term/layer.cc`, `zone/button_zone.cc`, `main/hardware/terminal.{hh,cc}`, `main/data/settings.{hh,cc}`
+  - Result: PNG images with transparency display correctly, text is readable on all image buttons with configurable position, and users can toggle image display mode
 - **🖼️ Image Button Rendering Refresh (2025-11-02)**
   - Button zones now paint selected images behind the frame using the interior content area.
   - Image filenames persist via updated `PosZone` serialization (`ZONE_VERSION 29`) so saves and copies keep selections.
@@ -94,6 +113,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `zone/pos_zone.{hh,cc}`, `main/ui/labels.cc`, `CMakeLists.txt`, `src/network/remote_link.hh`, `term/term_view.{hh,cc}`, `term/layer.cc`
 
 ### Fixed
+- **Image Display Toggle Changed to Per-Terminal**: Changed `toggleimages` command from global to per-terminal setting
+  - Moved `show_button_images` from Settings (global) to Terminal class (per-terminal)
+  - Each terminal now independently controls its image display mode
+  - Toggle only affects the terminal where the button is pressed, not all terminals
+  - Affects all button types: ButtonZone, ItemZone (menu items), QualifierZone (modifiers), and TableZone
+  - Zones check `term->show_button_images` flag before rendering images
+  - Mark all zones as needing update when toggle is triggered for immediate visual feedback
+  - Preserves backward compatibility by reading deprecated setting from Settings file
+  - Files modified: `main/hardware/terminal.{hh,cc}`, `zone/button_zone.cc`, `zone/order_zone.cc`, `zone/table_zone.cc`, `main/data/settings.{hh,cc}`
+- **Self-Order Terminal Navigation and System Operations**: Comprehensive fixes for Customer user navigation, check management, and system operations
+  - **Issue 1 - Regular Employee Navigation**: Regular employees were being sent to page -2 (self-order page) when clicking "Restart" button or using "Return To The Starting Page" jump option
+    - **Root Cause**: Navigation functions were using `page_variant` setting without checking user type
+    - **Fix**: 
+      - Added `GetDefaultLoginPage()` helper function that checks if user is "Customer" - only Customer user goes to page -2, all others go to page -1
+      - Updated `CancelOrders()` to use `GetDefaultLoginPage()` instead of hardcoded page -2
+      - Updated `HomePage()` to skip page_variant logic for regular employees on FASTFOOD/NORMAL terminals
+      - Updated `LogoutUser()` to call `GetDefaultLoginPage()` before clearing user context
+  - **Issue 2 - Customer Navigation to Tables**: Customer user was incorrectly navigated to table pages when clicking interactable buttons
+    - **Root Cause**: `HomePage()` was falling back to `FirstTablePage()` when page -2 wasn't found
+    - **Fix**: Added early return in `HomePage()` to always send Customer user directly to page -2
+  - **Issue 3 - Unclosed Checks**: Checks remained open when Customer canceled or left without completing order
+    - **Root Cause**: `CancelOrders()` and `StoreCheck()` were keeping checks for SELFORDER terminals
+    - **Fix**: 
+      - Updated `CancelOrders()` to destroy checks for Customer user when canceling
+      - Updated `StoreCheck()` to destroy empty checks for Customer user
+      - Regular employees' checks are still preserved
+  - **Issue 4 - Blocked System Operations**: Customer being always logged in prevented shutdown/restart/end-of-day operations
+    - **Root Cause**: `TermsInUse()` and `OtherTermsInUse()` counted Customer user, preventing operations when count > 0
+    - **Fix**: 
+      - Updated `TermsInUse()` to exclude Customer user from count
+      - Updated `OtherTermsInUse()` to exclude Customer user from count
+      - Customer user no longer blocks shutdown, restart, end-of-day, or credit card settlement operations
+  - **Impact**: 
+    - Regular employees correctly return to page -1 (login page)
+    - Customer user stays on page -2 (self-order page) and never navigates to table pages
+    - Incomplete orders are automatically cleaned up when Customer cancels or leaves
+    - System operations (shutdown/restart/end-of-day/CC settlement) work correctly even with Customer logged in
+  - Files modified: `main/hardware/terminal.{hh,cc}`, `zone/order_zone.cc`
+
 - **Enhanced Black Text Readability**: Improved text contrast by using white shadows for dark/black text colors
   - **Issue**: Black text with dark shadows created poor readability on various backgrounds
   - **Fix**: Modified `GenericDrawStringXftEmbossed` and `GenericDrawStringXftWithShadow` to use white shadows for dark colors (RGB < 1000)

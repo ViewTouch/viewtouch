@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-constexpr int SETTINGS_VERSION = 101;  // READ ABOVE
+constexpr int SETTINGS_VERSION = 102;  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -567,6 +567,7 @@ public:
     int shadow_offset_y;         // Shadow offset in Y direction (pixels)
     int shadow_blur_radius;      // Shadow blur radius (0-10)
     int enable_f3_f4_recording;  // Whether to enable F3/F4 recording/replay feature
+    int button_text_position;    // Text position: 0=over image, 1=above image, 2=below image
     
     // Scheduled restart settings
     int scheduled_restart_hour;  // Hour (0-23) for scheduled restart (-1 = disabled)

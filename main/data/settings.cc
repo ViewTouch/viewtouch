@@ -1218,6 +1218,7 @@ Settings::Settings()
     shadow_offset_y    = 2;  // Default shadow offset
     shadow_blur_radius = 1;  // Default blur radius
     enable_f3_f4_recording = 0;  // Default to disabled for safety; users can enable in Settings
+    button_text_position = 0;  // Default to text over image
     
     // Scheduled restart settings - default disabled
     scheduled_restart_hour = -1;  // -1 = disabled
@@ -2098,6 +2099,12 @@ int Settings::Load(const char* file)
         df.Read(scheduled_restart_min);
         df.Read(restart_postpone_count);
     }
+    if (version >= 102)
+    {
+        int deprecated_show_button_images;  // Now per-terminal setting
+        df.Read(deprecated_show_button_images);
+        df.Read(button_text_position);
+    }
     if (version >= 83)
         df.Read(receipt_all_modifiers);
     if (version >= 84)
@@ -2476,6 +2483,8 @@ int Settings::Save()
     df.Write(scheduled_restart_hour);
     df.Write(scheduled_restart_min);
     df.Write(restart_postpone_count);
+    df.Write(1);  // Placeholder for deprecated show_button_images (now per-terminal)
+    df.Write(button_text_position);
     df.Write(receipt_all_modifiers);
     df.Write(receipt_header_length);
     df.Write(order_num_style);

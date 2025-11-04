@@ -49,34 +49,131 @@ RenderResult ButtonZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("ButtonZone::Render()");
 
+    int show_images = term->show_button_images;
+    Settings *settings = term->GetSettings();
+    int text_position = settings ? settings->button_text_position : 0;
+    
     Str *path = ImagePath();
-    if (path && path->size() > 0)
+    if (path && path->size() > 0 && show_images)
     {
-        // Render base zone visuals (frame, shadows) without drawing text
-        RenderZone(term, "", update_flag);
-
-        // Calculate interior area to keep frames visible
-        int horizontal_pad = Max(border - 2, 0);
-        int vertical_pad   = Max(border - 4, 0);
-
-        int px = x + horizontal_pad;
-        int py = y + vertical_pad + header;
-        int pw = w - (horizontal_pad * 2);
-        int ph = h - ((vertical_pad * 2) + header + footer);
-
-        if (pw <= 0 || ph <= 0)
+        // Render base zone visuals (frame, shadows)
+        if (text_position == 0)
         {
-            px = x;
-            py = y;
-            pw = w;
-            ph = h;
+            // Text over image - render frame without text, then image, then text
+            RenderZone(term, "", update_flag);
+            
+            // Calculate interior area to keep frames visible
+            int horizontal_pad = Max(border - 2, 0);
+            int vertical_pad   = Max(border - 4, 0);
+            
+            int px = x + horizontal_pad;
+            int py = y + vertical_pad + header;
+            int pw = w - (horizontal_pad * 2);
+            int ph = h - ((vertical_pad * 2) + header + footer);
+            
+            if (pw <= 0 || ph <= 0)
+            {
+                px = x;
+                py = y;
+                pw = w;
+                ph = h;
+            }
+            
+            // Draw the image
+            term->RenderPixmap(px, py, pw, ph, path->Value());
+            
+            // Draw text overlay
+            const genericChar* text = term->ReplaceSymbols(name.Value());
+            if (text)
+            {
+                int state = State(term);
+                int c = color[state];
+                if (c == COLOR_PAGE_DEFAULT || c == COLOR_DEFAULT)
+                    c = term->page->default_color[state];
+                if (c != COLOR_CLEAR)
+                {
+                    int bx = Max(border - 2, 0);
+                    int by = Max(border - 4, 0);
+                    term->RenderZoneText(text, x + bx, y + by + header, w - (bx*2),
+                                        h - (by*2) - header - footer, c, font);
+                }
+            }
+            
+            return RENDER_OKAY;
         }
-
-        term->RenderPixmap(px, py, pw, ph, path->Value());
-        return RENDER_OKAY;
+        else if (text_position == 1)
+        {
+            // Text above image - split button vertically
+            RenderZone(term, "", update_flag);
+            
+            // Text area is top 30% of button
+            const genericChar* text = term->ReplaceSymbols(name.Value());
+            if (text)
+            {
+                int state = State(term);
+                int c = color[state];
+                if (c == COLOR_PAGE_DEFAULT || c == COLOR_DEFAULT)
+                    c = term->page->default_color[state];
+                if (c != COLOR_CLEAR)
+                {
+                    int bx = Max(border - 2, 0);
+                    int text_height = (h * 30) / 100;  // Top 30%
+                    term->RenderZoneText(text, x + bx, y + bx + header, w - (bx*2),
+                                        text_height, c, font);
+                }
+            }
+            
+            // Image area is bottom 70% of button
+            int horizontal_pad = Max(border - 2, 0);
+            int text_height = (h * 30) / 100;
+            int px = x + horizontal_pad;
+            int py = y + text_height + header;
+            int pw = w - (horizontal_pad * 2);
+            int ph = h - text_height - horizontal_pad - header - footer;
+            
+            if (pw > 0 && ph > 0)
+                term->RenderPixmap(px, py, pw, ph, path->Value());
+            
+            return RENDER_OKAY;
+        }
+        else if (text_position == 2)
+        {
+            // Text below image - split button vertically
+            RenderZone(term, "", update_flag);
+            
+            // Image area is top 70% of button
+            int horizontal_pad = Max(border - 2, 0);
+            int text_height = (h * 30) / 100;
+            int px = x + horizontal_pad;
+            int py = y + horizontal_pad + header;
+            int pw = w - (horizontal_pad * 2);
+            int ph = h - text_height - horizontal_pad - header - footer;
+            
+            if (pw > 0 && ph > 0)
+                term->RenderPixmap(px, py, pw, ph, path->Value());
+            
+            // Text area is bottom 30% of button
+            const genericChar* text = term->ReplaceSymbols(name.Value());
+            if (text)
+            {
+                int state = State(term);
+                int c = color[state];
+                if (c == COLOR_PAGE_DEFAULT || c == COLOR_DEFAULT)
+                    c = term->page->default_color[state];
+                if (c != COLOR_CLEAR)
+                {
+                    int bx = Max(border - 2, 0);
+                    int image_bottom = y + ph + horizontal_pad + header;
+                    term->RenderZoneText(text, x + bx, image_bottom, w - (bx*2),
+                                        text_height, c, font);
+                }
+            }
+            
+            return RENDER_OKAY;
+        }
     }
 
-    // Default: call parent Zone render for normal button appearance
+    // Default: call parent Zone render for normal button appearance (no image or images disabled)
     return Zone::Render(term, update_flag);
 }
 

@@ -1110,7 +1110,7 @@ RenderResult TableZone::Render(Terminal *term, int update_flag)
     FnTrace("TableZone::Render()");
 
     // Check for custom image
-    if (ImagePath() && ImagePath()->size() > 0)
+    if (ImagePath() && ImagePath()->size() > 0 && term->show_button_images)
     {
         // Render image as the main visual element
         term->RenderPixmap(x, y, w, h, ImagePath()->Value());

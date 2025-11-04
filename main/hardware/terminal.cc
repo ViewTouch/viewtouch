@@ -268,8 +268,9 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
                 term->Jump(JUMP_STEALTH, term->page->id);  // Get new best size for page
             else
             {
-                // Use page variant setting to determine default page
-                int default_page = (term->page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+                // Use helper function to determine appropriate default page
+                // Only Customer user on SELFORDER terminals with page_variant=1 goes to page -2
+                int default_page = term->GetDefaultLoginPage();
                 term->Jump(JUMP_STEALTH, default_page);
                 term->UpdateAllTerms(UPDATE_TERMINALS, nullptr);
             }
@@ -563,6 +564,7 @@ Terminal::Terminal()
     hide_zeros      = 0;
     show_family     = 1;
     expand_goodwill = 0;
+    show_button_images = 1;  // Default to showing images
 
     cc_credit_termid.Set("");
     cc_debit_termid.Set("");
@@ -1020,7 +1022,7 @@ int Terminal::PopPage()
 {
 	FnTrace("Terminal::PopPage()");
 	if (page_stack_size <= 0)
-		return (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+		return GetDefaultLoginPage();
 	else
 		return page_stack[--page_stack_size];
 }
@@ -1297,7 +1299,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         "opentabcard ", "opentabpay ", "continuetab", "continuetab2 ",
         "closetab", "closetab2 ", "forcereturn", "setlanguage_english",
         "setlanguage_french", "setlanguage_spanish", "setlanguage_greek",
-        "restart_now", "restart_postpone", nullptr};
+        "restart_now", "restart_postpone", "toggleimages", nullptr};
 	//for handy reference to the indices in the signal handler
 	enum comms  { LOGOUT, NEXT_ARCHIVE, PRIOR_ARCHIVE, OPEN_DRAWER,
                   SHUTDOWN, SYSTEM_RESTART, CALIBRATE, WAGE_FILTER_DIALOG,
@@ -1308,7 +1310,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
                   OPENTABCARD, OPENTABPAY, CONTINUETAB, CONTINUETAB2,
                   CLOSETAB, CLOSETAB2, FORCERETURN, SETLANGUAGE_ENGLISH,
                   SETLANGUAGE_FRENCH, SETLANGUAGE_SPANISH, SETLANGUAGE_GREEK,
-                  RESTART_NOW, RESTART_POSTPONE};
+                  RESTART_NOW, RESTART_POSTPONE, TOGGLE_IMAGES};
 
     if (dialog)
     {
@@ -1366,7 +1368,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
 
     case SYSTEM_RESTART:  // systemrestart
         RestartSystem();
-        break;
+        return SIGNAL_OKAY;
 
     case CALIBRATE:  // calibrate
         CalibrateTS();
@@ -1515,6 +1517,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         ExecuteRestart();
         return SIGNAL_OKAY;
     case RESTART_POSTPONE:
+    {
         // Handle postpone for 1 hour
         KillDialog();  // Close the restart dialog
         extern int restart_dialog_shown;
@@ -1532,11 +1535,37 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
             restart_postponed_until -= 24 * 60;  // Handle day overflow
         }
         // Increment postpone count
-        Settings *settings = GetSettings();
-        settings->restart_postpone_count++;
-        settings->Save();
+        Settings *settings_ptr = GetSettings();
+        settings_ptr->restart_postpone_count++;
+        settings_ptr->Save();
         ReportError("Scheduled restart postponed for 1 hour");
         return SIGNAL_OKAY;
+    }
+    
+    case TOGGLE_IMAGES:
+    {
+        // Toggle button image display mode for this terminal only
+        show_button_images = !show_button_images;
+        
+        // Force complete redraw of all zones
+        if (page)
+        {
+            page->changed = 1;  // Mark page as changed
+            // Mark all zones as needing update
+            for (Zone *z = page->ZoneList(); z != nullptr; z = z->next)
+            {
+                z->update = 1;
+            }
+        }
+        Draw(RENDER_NEW);  // Force complete redraw with initialization
+        
+        // Show confirmation message
+        char confirmation_msg[STRLONG];
+        snprintf(confirmation_msg, STRLONG, "Button images %s on this terminal", show_button_images ? "ENABLED" : "DISABLED");
+        ReportError(confirmation_msg);
+        
+        return SIGNAL_OKAY;
+    }
 	}
 
     return SIGNAL_IGNORED;
@@ -1914,6 +1943,10 @@ int Terminal::LogoutUser(int update)
     show_family    = 1;
     type           = original_type;
 
+    // Determine the appropriate logout page BEFORE clearing the user
+    // This ensures only Customer user on SELFORDER terminals with page_variant=1 goes to page -2
+    int logout_page = GetDefaultLoginPage();
+
     if (user)
 	{
 		user->current_job = 0;
@@ -1926,9 +1959,6 @@ int Terminal::LogoutUser(int update)
 				UpdateOtherTerms(UPDATE_USERS | UPDATE_CHECKS, nullptr);
 		}
 	}
-
-    // Use page variant setting to determine logout page
-    int logout_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
     
     // For SelfOrder terminals, go back to SelfOrder page instead of login
     if (original_type == TERMINAL_SELFORDER)
@@ -2238,13 +2268,23 @@ int Terminal::StoreCheck(int update)
     check->Update(GetSettings());
     if (check->IsEmpty() && (check->Guests() <= 0 || check->IsTakeOut() || check->IsFastFood()))
     {
-        // For SelfOrder terminals, don't destroy empty checks - just clear them
+        // For SelfOrder terminals with Customer user, destroy empty checks
+        // Regular employees keep their checks for later modification
         if (type == TERMINAL_SELFORDER)
         {
-            // Keep the check but clear it for SelfOrder
-            check->current_sub  = nullptr;
-            check->user_current = 0;
-            check->Save();
+            // For Customer user, always destroy empty checks
+            if (user != nullptr && user->system_name.Value() != nullptr &&
+                strcmp(user->system_name.Value(), "Customer") == 0)
+            {
+                system_data->DestroyCheck(check);
+            }
+            else
+            {
+                // Keep the check but clear it for regular employees on SelfOrder terminals
+                check->current_sub  = nullptr;
+                check->user_current = 0;
+                check->Save();
+            }
         }
         else
         {
@@ -2333,6 +2373,13 @@ int Terminal::Update(int update_message, const genericChar* value)
 
     if (update_message & UPDATE_MINUTE)
         DrawTitleBar();
+    
+    if (update_message & UPDATE_SETTINGS)
+    {
+        // Force a full redraw when settings change (e.g., image display toggle)
+        Draw(1);
+    }
+    
     return page->Update(this, update_message, value);
 }
 
@@ -2560,6 +2607,31 @@ int Terminal::KillDialog()
     return 0;
 }
 
+/****
+ * GetDefaultLoginPage: Returns the appropriate login page based on the current user.
+ * The Customer user ALWAYS goes to page -2 (self-ordering page).
+ * All other users (regular employees) go to page -1 (login page where they sign in with their ID).
+ * 
+ * Note: The Customer user is only used on SELFORDER terminals and stays logged in.
+ ****/
+int Terminal::GetDefaultLoginPage()
+{
+    FnTrace("Terminal::GetDefaultLoginPage()");
+    
+    // Check if this is the Customer user (the special always-logged-in user for self-ordering)
+    // Customer ALWAYS goes to page -2
+    if (user != nullptr && user->system_name.Value() != nullptr)
+    {
+        if (strcmp(user->system_name.Value(), "Customer") == 0)
+        {
+            return PAGEID_LOGIN2;  // Page -2 for Customer user (ALWAYS)
+        }
+    }
+    
+    // All other users (regular employees) go to page -1 (login page)
+    return PAGEID_LOGIN;
+}
+
 int Terminal::HomePage()
 {
     FnTrace("Terminal::HomePage()");
@@ -2574,19 +2646,40 @@ int Terminal::HomePage()
         sd = new SimpleDialog(not_allowed);
         sd->Button("Okay");
         OpenDialog(sd);
-        return (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+        return GetDefaultLoginPage();
     }
 
-    // First look for a page associated with Terminal Type using page variant configuration.
-    // This allows each terminal to be configured to use either Page -1 or Page -2.
-    if ((currPage = zone_db->FindByTerminalWithVariant(type, page_variant, -1, size)) == nullptr)
+    // Customer user should ALWAYS go to page -2 (self-order page), never to table pages
+    if (user != nullptr && user->system_name.Value() != nullptr &&
+        strcmp(user->system_name.Value(), "Customer") == 0)
     {
-        // Fallback to original method if page variant method fails
-        if (type == TERMINAL_KITCHEN_VIDEO || type == TERMINAL_KITCHEN_VIDEO2 ||
-            type == TERMINAL_BAR || type == TERMINAL_BAR2)
+        return PAGEID_LOGIN2;  // Page -2 for Customer user
+    }
+
+    // For FASTFOOD terminals (Dine-In/Takeout orders), only Customer user should use page_variant
+    // Regular employees should always go to their starting page or table page, not page -2
+    if ((type == TERMINAL_FASTFOOD || type == TERMINAL_NORMAL) && 
+        user != nullptr && 
+        user->system_name.Value() != nullptr &&
+        strcmp(user->system_name.Value(), "Customer") != 0)
+    {
+        // Regular employee on FASTFOOD/NORMAL terminal - skip page variant logic
+        // and go directly to their starting page
+        currPage = nullptr;
+    }
+    else
+    {
+        // First look for a page associated with Terminal Type using page variant configuration.
+        // This allows each terminal to be configured to use either Page -1 or Page -2.
+        if ((currPage = zone_db->FindByTerminalWithVariant(type, page_variant, -1, size)) == nullptr)
         {
-            if ((currPage = zone_db->FindByTerminal(type, -1, size)) == nullptr)
-                fprintf(stderr, "Could not find page for terminal %s\n", name.Value());
+            // Fallback to original method if page variant method fails
+            if (type == TERMINAL_KITCHEN_VIDEO || type == TERMINAL_KITCHEN_VIDEO2 ||
+                type == TERMINAL_BAR || type == TERMINAL_BAR2)
+            {
+                if ((currPage = zone_db->FindByTerminal(type, -1, size)) == nullptr)
+                    fprintf(stderr, "Could not find page for terminal %s\n", name.Value());
+            }
         }
     }
 
@@ -2627,7 +2720,7 @@ int Terminal::HomePage()
     if (currPage)
         return currPage->id;
     else
-        return (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+        return GetDefaultLoginPage();
 }
 
 int Terminal::UpdateAllTerms(int update_message, const genericChar* value)
@@ -2654,8 +2747,16 @@ int Terminal::TermsInUse()
     int count = 0;
     for (Terminal *t = parent->TermList(); t != nullptr; t = t->next)
     {
+        // Exclude Customer user from count - Customer is always logged in on SELFORDER terminals
+        // and should not prevent shutdown/restart/end-of-day operations
         if (t->user)
-            ++count;
+        {
+            if (t->user->system_name.Value() == nullptr ||
+                strcmp(t->user->system_name.Value(), "Customer") != 0)
+            {
+                ++count;
+            }
+        }
     }
     return count;
 }
@@ -2670,8 +2771,16 @@ int Terminal::OtherTermsInUse(int no_kitchen)
         {
             if (no_kitchen == 0 || t->page == nullptr || t->page->IsKitchen() == 0)
             {
+                // Exclude Customer user from count - Customer is always logged in on SELFORDER terminals
+                // and should not prevent credit card settlement or other system operations
                 if (t->user)
-                    ++count;
+                {
+                    if (t->user->system_name.Value() == nullptr ||
+                        strcmp(t->user->system_name.Value(), "Customer") != 0)
+                    {
+                        ++count;
+                    }
+                }
             }
         }
     }
@@ -2925,12 +3034,12 @@ int Terminal::UpdateZoneDB(Control *con)
             page = zone_db->FindByID(org_page_id, size);
         if (page == nullptr)
         {
-            int fallback_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+            int fallback_page = GetDefaultLoginPage();
             page = zone_db->FindByID(fallback_page, size);
         }
         if (page == nullptr)
         {
-            int fallback_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+            int fallback_page = GetDefaultLoginPage();
             genericChar buffer[STRLONG];
             snprintf(buffer, STRLONG, "Can't Find Page %d for %s",
                      fallback_page, name.Value());
@@ -3289,7 +3398,7 @@ int Terminal::FinalizeOrders()
             /** fall through **/
         case TERMINAL_BAR2:
             {
-                int bar_page = (page_variant == 1) ? PAGEID_LOGIN2 : PAGEID_LOGIN;
+                int bar_page = GetDefaultLoginPage();
                 if (Jump(JUMP_NORMAL, bar_page))
                     ReportError("Couldn't jump to default page");
             }
