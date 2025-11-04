@@ -2145,6 +2145,23 @@ int Terminal::QuickMode(int customer_type)
             system_data->user_db.Add(customer_user);
         }
         
+        // Clean up any existing empty checks for Customer user before creating a new one
+        // This prevents accumulation of open checks when customers leave without ordering
+        if (customer_user != nullptr)
+        {
+            Check *c = system_data->CheckList();
+            while (c != nullptr)
+            {
+                Check *check_next = c->next;  // Save next pointer before potential deletion
+                // If this is an empty check owned by Customer user, destroy it
+                if (c->serial_number > 0 && c->user_owner == customer_user->id && c->IsEmpty())
+                {
+                    system_data->DestroyCheck(c);
+                }
+                c = check_next;
+            }
+        }
+        
         Check *thisCheck = new Check(settings, customer_type, customer_user);
         if (thisCheck == nullptr)
             return 1;

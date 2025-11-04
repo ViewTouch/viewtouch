@@ -296,18 +296,30 @@ int DialogMenu::Init(Widget parent, const char* label, const char* *option_name,
                                      XmNrightPosition,    MARGIN,
                                      NULL);
 
-    std::array<Arg, 5> args;
-    menu = XmCreatePulldownMenu(container, const_cast<char*>("menu"), args.data(), 0);
+    std::array<Arg, 10> args;
+    // Count options first to determine if multi-column layout is needed
+    int count = 0;
+    while (option_name[count])
+        ++count;
+    
+    // Configure menu - for long lists, use multiple columns to keep it on screen
+    int n = 0;
+    XtSetArg(args[n], XmNtearOffModel, XmTEAR_OFF_DISABLED); n++;
+    if (count > 8) {
+        // For menus with more than 8 items, use multi-column layout
+        int num_cols = (count + 7) / 8;  // 8 rows max per column
+        XtSetArg(args[n], XmNpacking, XmPACK_COLUMN); n++;
+        XtSetArg(args[n], XmNnumColumns, num_cols); n++;
+        XtSetArg(args[n], XmNorientation, XmVERTICAL); n++;
+    }
+    menu = XmCreatePulldownMenu(container, const_cast<char*>("menu"), args.data(), n);
+    
     XtSetArg(args[0], XmNsubMenuId,        menu);
     XtSetArg(args[1], XmNtopAttachment,    XmATTACH_FORM);
     XtSetArg(args[2], XmNbottomAttachment, XmATTACH_FORM);
     XtSetArg(args[3], XmNleftAttachment,   XmATTACH_POSITION);
     XtSetArg(args[4], XmNleftPosition,     MARGIN);
     option = XmCreateOptionMenu(container, const_cast<char*>("option"), args.data(), 5);
-
-    int count = 0;
-    while (option_name[count])
-        ++count;
 
     choices.assign(count, nullptr);
     value_list.assign(option_value, option_value + count);
