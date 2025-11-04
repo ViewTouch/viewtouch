@@ -54,6 +54,9 @@ static int PasswordValue[] = {PW_NONE, PW_MANAGERS, PW_ALL, -1};
 // " "  = no symbol
 static const genericChar* MoneySymbolName[] = { "$", "\244", "\243", " ", NULL };
 
+static const genericChar* ButtonTextPosName[] = { "Over Image", "Above Image", "Below Image", NULL };
+static int ButtonTextPosValue[] = { 0, 1, 2, -1 };
+
 
 SwitchZone::SwitchZone()
 {
@@ -526,6 +529,8 @@ SettingsZone::SettingsZone()
     AddTextField("Shadow Offset Y (pixels)", 5); SetFlag(FF_ONLYDIGITS);
     AddTextField("Shadow Blur Radius (0-10)", 5); SetFlag(FF_ONLYDIGITS);
     AddNewLine();
+    AddListField("Button Text Position", ButtonTextPosName, ButtonTextPosValue);
+    AddNewLine();
     Center();
     AddLabel("Scheduled Restart Settings");
     AddNewLine();
@@ -613,6 +618,7 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
     f->Set(settings->shadow_offset_x); f = f->next;
     f->Set(settings->shadow_offset_y); f = f->next;
     f->Set(settings->shadow_blur_radius); f = f->next;
+    f->Set(settings->button_text_position); f = f->next;
     
     f = f->next;  // skip past label
     f->Set(settings->scheduled_restart_hour); f = f->next;
@@ -677,6 +683,7 @@ int SettingsZone::SaveRecord(Terminal *term, int record, int write_file)
     f->Get(settings->shadow_offset_x); f = f->next;
     f->Get(settings->shadow_offset_y); f = f->next;
     f->Get(settings->shadow_blur_radius); f = f->next;
+    f->Get(settings->button_text_position); f = f->next;
     
     f = f->next;  // skip past label
     f->Get(settings->scheduled_restart_hour); f = f->next;

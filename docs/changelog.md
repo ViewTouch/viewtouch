@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Transparent backgrounds now show the button texture underneath
   - **Text Overlay on Image Buttons**: Button text and prices now display with configurable positioning
     - Added `button_text_position` setting: 0=over image (default), 1=above image, 2=below image
+    - Setting accessible in General Settings page under "Button Text Position" dropdown
     - Text is drawn with proper contrast and shadows for readability on images
     - Text automatically splits button into 70/30 ratio when positioned above/below
   - **Image Display Mode Toggle**: Added per-terminal control for showing/hiding button images
