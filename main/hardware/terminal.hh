@@ -429,6 +429,7 @@ public:
     int hide_zeros;      // boolean - hide zero amounts in reports?
     int show_family;     // boolean - show family grouping in reports?
     int expand_goodwill; // boolean - show expanded goodwill adjustments list?
+    int show_button_images; // boolean - show images on buttons (per-terminal setting)
 
     // Font/Graphics Info
     int size;            // screen size

@@ -17,13 +17,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Added `button_text_position` setting: 0=over image (default), 1=above image, 2=below image
     - Text is drawn with proper contrast and shadows for readability on images
     - Text automatically splits button into 70/30 ratio when positioned above/below
-  - **Image Display Mode Toggle**: Added global control for showing/hiding button images
-    - Added `show_button_images` setting to toggle between image mode and text-only mode
-    - Added `toggleimages` signal command for runtime toggling
+  - **Image Display Mode Toggle**: Added per-terminal control for showing/hiding button images
+    - Added `show_button_images` flag to Terminal class for per-terminal image display control
+    - Added `toggleimages` signal command for runtime toggling (affects only the terminal issuing command)
     - Create a message button with signal "toggleimages" to toggle between modes
-    - All buttons instantly switch between showing images and text-only when toggled
-  - **Settings Version**: Incremented to version 102 for new display settings
-  - Files modified: `term/term_view.{hh,cc}`, `term/layer.cc`, `zone/button_zone.cc`, `main/hardware/terminal.cc`, `main/data/settings.{hh,cc}`
+    - Each terminal can independently show images or text-only mode without affecting other terminals
+  - **Settings Version**: Incremented to version 102 for new display settings (deprecated show_button_images moved to per-terminal flag)
+  - Files modified: `term/term_view.{hh,cc}`, `term/layer.cc`, `zone/button_zone.cc`, `main/hardware/terminal.{hh,cc}`, `main/data/settings.{hh,cc}`
   - Result: PNG images with transparency display correctly, text is readable on all image buttons with configurable position, and users can toggle image display mode
 - **🖼️ Image Button Rendering Refresh (2025-11-02)**
   - Button zones now paint selected images behind the frame using the interior content area.
@@ -112,11 +112,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `zone/pos_zone.{hh,cc}`, `main/ui/labels.cc`, `CMakeLists.txt`, `src/network/remote_link.hh`, `term/term_view.{hh,cc}`, `term/layer.cc`
 
 ### Fixed
-- **Image Display Toggle Not Broadcasting**: Fixed `toggleimages` command to properly notify all terminals
-  - Added `UpdateAllTerms()` call with `UPDATE_SETTINGS` flag to broadcast changes to all connected terminals
-  - Added `UPDATE_SETTINGS` handler in `Terminal::Update()` to force complete redraw when settings change
-  - All terminals now instantly toggle between image and text-only mode when command is triggered
-  - Files modified: `main/hardware/terminal.cc`
+- **Image Display Toggle Changed to Per-Terminal**: Changed `toggleimages` command from global to per-terminal setting
+  - Moved `show_button_images` from Settings (global) to Terminal class (per-terminal)
+  - Each terminal now independently controls its image display mode
+  - Toggle only affects the terminal where the button is pressed, not all terminals
+  - Preserves backward compatibility by reading deprecated setting from Settings file
+  - Files modified: `main/hardware/terminal.{hh,cc}`, `zone/button_zone.cc`, `main/data/settings.{hh,cc}`
 - **Self-Order Terminal Navigation and System Operations**: Comprehensive fixes for Customer user navigation, check management, and system operations
   - **Issue 1 - Regular Employee Navigation**: Regular employees were being sent to page -2 (self-order page) when clicking "Restart" button or using "Return To The Starting Page" jump option
     - **Root Cause**: Navigation functions were using `page_variant` setting without checking user type

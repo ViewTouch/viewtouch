@@ -564,6 +564,7 @@ Terminal::Terminal()
     hide_zeros      = 0;
     show_family     = 1;
     expand_goodwill = 0;
+    show_button_images = 1;  // Default to showing images
 
     cc_credit_termid.Set("");
     cc_debit_termid.Set("");
@@ -1543,24 +1544,20 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
     
     case TOGGLE_IMAGES:
     {
-        // Toggle button image display mode
-        Settings *settings = GetSettings();
-        if (settings)
-        {
-            settings->show_button_images = !settings->show_button_images;
-            settings->Save();
-            
-            // Broadcast to all terminals to redraw with new setting
-            UpdateAllTerms(UPDATE_SETTINGS, nullptr);
-            
-            // Show confirmation message
-            char confirmation_msg[STRLONG];
-            if (settings->show_button_images)
-                snprintf(confirmation_msg, STRLONG, "Button images enabled");
-            else
-                snprintf(confirmation_msg, STRLONG, "Button images disabled (text-only mode)");
-            ReportError(confirmation_msg);
-        }
+        // Toggle button image display mode for this terminal only
+        show_button_images = !show_button_images;
+        
+        // Force a full redraw of this terminal
+        Draw(1);
+        
+        // Show confirmation message
+        char confirmation_msg[STRLONG];
+        if (show_button_images)
+            snprintf(confirmation_msg, STRLONG, "Button images enabled on this terminal");
+        else
+            snprintf(confirmation_msg, STRLONG, "Button images disabled (text-only mode) on this terminal");
+        ReportError(confirmation_msg);
+        
         return SIGNAL_OKAY;
     }
 	}

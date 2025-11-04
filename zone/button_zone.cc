@@ -49,8 +49,8 @@ RenderResult ButtonZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("ButtonZone::Render()");
 
+    int show_images = term->show_button_images;
     Settings *settings = term->GetSettings();
-    int show_images = settings ? settings->show_button_images : 1;
     int text_position = settings ? settings->button_text_position : 0;
     
     Str *path = ImagePath();

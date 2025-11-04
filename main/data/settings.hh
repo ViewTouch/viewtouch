@@ -567,7 +567,6 @@ public:
     int shadow_offset_y;         // Shadow offset in Y direction (pixels)
     int shadow_blur_radius;      // Shadow blur radius (0-10)
     int enable_f3_f4_recording;  // Whether to enable F3/F4 recording/replay feature
-    int show_button_images;      // Whether to show images on buttons (1) or text-only mode (0)
     int button_text_position;    // Text position: 0=over image, 1=above image, 2=below image
     
     // Scheduled restart settings
