@@ -1550,9 +1550,8 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
             settings->show_button_images = !settings->show_button_images;
             settings->Save();
             
-            // Force redraw of all pages to show/hide images
-            Draw(1);
-            UpdateAll();
+            // Broadcast to all terminals to redraw with new setting
+            UpdateAllTerms(UPDATE_SETTINGS, nullptr);
             
             // Show confirmation message
             char confirmation_msg[STRLONG];
@@ -2371,6 +2370,13 @@ int Terminal::Update(int update_message, const genericChar* value)
 
     if (update_message & UPDATE_MINUTE)
         DrawTitleBar();
+    
+    if (update_message & UPDATE_SETTINGS)
+    {
+        // Force a full redraw when settings change (e.g., image display toggle)
+        Draw(1);
+    }
+    
     return page->Update(this, update_message, value);
 }
 
