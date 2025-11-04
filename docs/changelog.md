@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **📋 Dialog Menu Multi-Column Layout for Long Lists (2025-11-04)**
+  - **Multi-Column Display**: Button properties dialogs with more than 8 options now automatically display in multiple columns instead of going off-screen
+    - Modified `DialogMenu::Init()` in `term/term_dialog.cc` to detect long option lists
+    - When > 8 items are present, menu uses `XmPACK_COLUMN` with automatic column calculation (8 rows per column)
+    - Each additional 8 items creates a new column, keeping menus fully visible on screen
+    - Applies to all dropdown fields in button/zone properties dialogs (type, behavior, colors, fonts, etc.)
+  - Files modified: `term/term_dialog.cc`
+  - Result: Long dropdown menus in properties dialogs now stay on screen with multi-column layout instead of requiring scrolling off-screen
 - **🖼️ Image Button Transparency and Text Overlay Support (2025-11-04)**
   - **PNG Transparency**: Fixed PNG transparency to properly use alpha channel masking instead of filling transparent pixels with gray
     - Added mask pixmap support to `Xpm` class for proper transparency rendering
