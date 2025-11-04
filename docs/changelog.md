@@ -112,6 +112,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `zone/pos_zone.{hh,cc}`, `main/ui/labels.cc`, `CMakeLists.txt`, `src/network/remote_link.hh`, `term/term_view.{hh,cc}`, `term/layer.cc`
 
 ### Fixed
+- **Image Display Toggle Not Broadcasting**: Fixed `toggleimages` command to properly notify all terminals
+  - Added `UpdateAllTerms()` call with `UPDATE_SETTINGS` flag to broadcast changes to all connected terminals
+  - Added `UPDATE_SETTINGS` handler in `Terminal::Update()` to force complete redraw when settings change
+  - All terminals now instantly toggle between image and text-only mode when command is triggered
+  - Files modified: `main/hardware/terminal.cc`
 - **Self-Order Terminal Navigation and System Operations**: Comprehensive fixes for Customer user navigation, check management, and system operations
   - **Issue 1 - Regular Employee Navigation**: Regular employees were being sent to page -2 (self-order page) when clicking "Restart" button or using "Return To The Starting Page" jump option
     - **Root Cause**: Navigation functions were using `page_variant` setting without checking user type
