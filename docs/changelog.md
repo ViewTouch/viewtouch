@@ -116,8 +116,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Moved `show_button_images` from Settings (global) to Terminal class (per-terminal)
   - Each terminal now independently controls its image display mode
   - Toggle only affects the terminal where the button is pressed, not all terminals
+  - Affects all button types: ButtonZone, ItemZone (menu items), QualifierZone (modifiers), and TableZone
+  - Zones check `term->show_button_images` flag before rendering images
+  - Mark all zones as needing update when toggle is triggered for immediate visual feedback
   - Preserves backward compatibility by reading deprecated setting from Settings file
-  - Files modified: `main/hardware/terminal.{hh,cc}`, `zone/button_zone.cc`, `main/data/settings.{hh,cc}`
+  - Files modified: `main/hardware/terminal.{hh,cc}`, `zone/button_zone.cc`, `zone/order_zone.cc`, `zone/table_zone.cc`, `main/data/settings.{hh,cc}`
 - **Self-Order Terminal Navigation and System Operations**: Comprehensive fixes for Customer user navigation, check management, and system operations
   - **Issue 1 - Regular Employee Navigation**: Regular employees were being sent to page -2 (self-order page) when clicking "Restart" button or using "Return To The Starting Page" jump option
     - **Root Cause**: Navigation functions were using `page_variant` setting without checking user type

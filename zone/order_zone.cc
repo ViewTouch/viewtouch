@@ -1575,7 +1575,7 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
     int font_height = 0;
     t->FontSize(font, font_width, font_height);
 
-    if (has_custom_image)
+    if (has_custom_image && t->show_button_images)
     {
         // Draw the zone frame and texture first
         RenderZone(t, "", update_flag);
@@ -1935,7 +1935,7 @@ RenderResult QualifierZone::Render(Terminal *t, int update_flag)
         index = CompareList(qualifier_type, QualifierValue);
 
     // Check for custom image
-    if (ImagePath() && ImagePath()->size() > 0)
+    if (ImagePath() && ImagePath()->size() > 0 && t->show_button_images)
     {
         // Render image as the main visual element
         t->RenderPixmap(x, y, w, h, ImagePath()->Value());

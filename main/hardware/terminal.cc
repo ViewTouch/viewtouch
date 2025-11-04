@@ -1547,15 +1547,21 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         // Toggle button image display mode for this terminal only
         show_button_images = !show_button_images;
         
-        // Force a full redraw of this terminal
-        Draw(1);
+        // Force complete redraw of all zones
+        if (page)
+        {
+            page->changed = 1;  // Mark page as changed
+            // Mark all zones as needing update
+            for (Zone *z = page->ZoneList(); z != nullptr; z = z->next)
+            {
+                z->update = 1;
+            }
+        }
+        Draw(RENDER_NEW);  // Force complete redraw with initialization
         
         // Show confirmation message
         char confirmation_msg[STRLONG];
-        if (show_button_images)
-            snprintf(confirmation_msg, STRLONG, "Button images enabled on this terminal");
-        else
-            snprintf(confirmation_msg, STRLONG, "Button images disabled (text-only mode) on this terminal");
+        snprintf(confirmation_msg, STRLONG, "Button images %s on this terminal", show_button_images ? "ENABLED" : "DISABLED");
         ReportError(confirmation_msg);
         
         return SIGNAL_OKAY;
