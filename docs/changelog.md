@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Self-Order Check Accumulation (2025-11-04)**
+  - **Issue**: Multiple open checks were being created when customers made orders or left without placing orders on self-order terminals
+  - **Root Cause**: `QuickMode()` was creating a new check every time without cleaning up previous empty checks for the Customer user
+  - **Fix**: Added cleanup logic to destroy any existing empty checks for Customer user before creating a new one
+    - Checks for empty checks owned by Customer user (ID 999) before creating new check
+    - Only destroys checks with `serial_number > 0` to avoid issues with newly created checks
+    - Prevents accumulation of abandoned checks when customers browse menu without ordering
+  - **Impact**: Self-order terminals now maintain only one check per customer session instead of accumulating multiple open checks
+  - Files modified: `main/hardware/terminal.cc`
+
 ### Added
 - **📋 Dialog Menu Multi-Column Layout for Long Lists (2025-11-04)**
   - **Multi-Column Display**: Button properties dialogs with more than 8 options now automatically display in multiple columns instead of going off-screen
