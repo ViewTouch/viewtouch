@@ -5851,8 +5851,8 @@ int Order::CalculateTax(Settings *settings, Terminal *term)
     if (status & ORDER_COMP)
         return 0;
     
-    // Use the cost for tax calculation
-    int taxable_amount = cost;
+    // Use the total cost for tax calculation (includes modifiers)
+    int taxable_amount = total_cost;
     if (taxable_amount <= 0)
         return 0;
     

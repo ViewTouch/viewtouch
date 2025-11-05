@@ -1552,11 +1552,9 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
 
     if (item && ImagePath())
     {
-        if (ImagePath()->size() == 0 && item->image_path.size() > 0)
-        {
-            ImagePath()->Set(item->image_path);
-        }
-        else if (ImagePath()->size() > 0)
+        // Sync zone's image to item's image (one-way: zone -> item)
+        // Don't auto-restore from item to zone to allow explicit "None" selection
+        if (ImagePath()->size() > 0)
         {
             if (item->image_path.size() == 0 || strcmp(item->image_path.Value(), ImagePath()->Value()) != 0)
             {
@@ -1565,6 +1563,14 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
                 if (t->system_data)
                     t->system_data->menu.changed = 1;
             }
+        }
+        else if (item->image_path.size() > 0)
+        {
+            // Clear item's image if zone explicitly has none
+            item->image_path.Clear();
+            item->changed = 1;
+            if (t->system_data)
+                t->system_data->menu.changed = 1;
         }
     }
 
