@@ -7,6 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Tax Calculation Including Modifiers (2025-11-05)**
+  - **Issue**: Tax calculation was inconsistent between main checkout system and per-order display
+  - **Root Cause**: `Order::CalculateTax()` used `cost` (excluding modifiers) while main system used `total_cost` (including modifiers)
+  - **Fix**: Updated `Order::CalculateTax()` to use `total_cost` instead of `cost` for consistent tax calculation
+    - Changed taxable amount calculation on line 5855 of `main/business/check.cc`
+    - Tax now properly includes modifier costs across all calculation methods
+  - **Impact**: Tax is now consistently calculated on order total including modifiers throughout the system
+  - Files modified: `main/business/check.cc`
+
+- **Image Selection "None" Not Persisting (2025-11-05)**
+  - **Issue**: Setting an image to "None" in button properties would not save - previous image would reappear after save
+  - **Root Cause**: Auto-restoration logic in `order_zone.cc` was restoring images from item data whenever zone's ImagePath was empty
+  - **Fix**: Changed image sync logic to be one-way (zone → item) instead of bi-directional
+    - Removed auto-restore from item to zone (lines 1555-1558)
+    - Added explicit clearing of item's image when zone is set to "None"
+    - Zone's image selection (including "None") now properly persists
+  - **Impact**: Users can now set images to "None" and the selection properly saves and persists
+  - Files modified: `zone/order_zone.cc`
+
 - **Self-Order Check Accumulation (2025-11-04)**
   - **Issue**: Multiple open checks were being created when customers made orders or left without placing orders on self-order terminals
   - **Root Cause**: `QuickMode()` was creating a new check every time without cleaning up previous empty checks for the Customer user
