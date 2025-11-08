@@ -1219,6 +1219,7 @@ Settings::Settings()
     shadow_blur_radius = 1;  // Default blur radius
     enable_f3_f4_recording = 0;  // Default to disabled for safety; users can enable in Settings
     button_text_position = 0;  // Default to text over image
+    show_button_images_default = 1; // Default to showing button images globally
     
     // Scheduled restart settings - default disabled
     scheduled_restart_hour = -1;  // -1 = disabled
@@ -1508,7 +1509,9 @@ int Settings::Load(const char* file)
     // 93 (07/13/15) added workorder_heading
     // 94 (05/30/16) added per-terminal tax inclusive
     // 95 (07/12/18) removed license_key
-    // 99 (current)  added enable_f3_f4_recording
+    // 99            added enable_f3_f4_recording
+    // 102           added button text position and per-terminal image toggle (placeholder field retained)
+    // 103 (current) added global button image toggle
 
     genericChar str[256];
     if (version < 25 || version > SETTINGS_VERSION)
@@ -2101,8 +2104,10 @@ int Settings::Load(const char* file)
     }
     if (version >= 102)
     {
-        int deprecated_show_button_images;  // Now per-terminal setting
-        df.Read(deprecated_show_button_images);
+        int stored_show_button_images = 1;
+        df.Read(stored_show_button_images);
+        if (version >= 103)
+            show_button_images_default = stored_show_button_images != 0;
         df.Read(button_text_position);
     }
     if (version >= 83)
@@ -2483,7 +2488,7 @@ int Settings::Save()
     df.Write(scheduled_restart_hour);
     df.Write(scheduled_restart_min);
     df.Write(restart_postpone_count);
-    df.Write(1);  // Placeholder for deprecated show_button_images (now per-terminal)
+    df.Write(show_button_images_default);
     df.Write(button_text_position);
     df.Write(receipt_all_modifiers);
     df.Write(receipt_header_length);

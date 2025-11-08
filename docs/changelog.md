@@ -37,6 +37,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `main/hardware/terminal.cc`
 
 ### Added
+- **🖼️ Global Button Image Toggle (2025-11-08)**
+  - **Settings Switch**: Added "Show Button Images" toggle to Settings switches so users can enable/disable images globally
+    - New switch constant `SWITCH_BUTTON_IMAGES` toggles the global default
+    - Updated `SwitchZone` to render and handle the new toggle
+  - **Terminal Sync**: Terminals now adopt the global default on setting changes while still allowing per-terminal overrides via the existing `toggleimages` signal
+    - Terminals mark active pages dirty so UI refreshes immediately after toggles
+  - **Persistence**: Stored global preference in settings data (`show_button_images_default`) with `SETTINGS_VERSION` bumped to 103
+    - Load/Save logic reads and writes the persisted flag
+  - Files modified: `main/data/settings.{hh,cc}`, `zone/settings_zone.cc`, `main/ui/labels.cc`, `main/hardware/terminal.cc`
+
 - **📋 Dialog Menu Multi-Column Layout for Long Lists (2025-11-04)**
   - **Multi-Column Display**: Button properties dialogs with more than 8 options now automatically display in multiple columns instead of going off-screen
     - Modified `DialogMenu::Init()` in `term/term_dialog.cc` to detect long option lists

@@ -438,7 +438,8 @@ const genericChar* SwitchName[] = {
     "Expand Goodwill Adjustments", "Monetary Symbol",
     "Show Modifiers", "Allow Multiple Coupons",
     "Print All Modifiers on Receipt", "Auto Print Drawer Report",
-    "Balance Automatic Coupons", "Enable F3/F4 Recording/Replay", "Auto-Update vt_data on Startup", NULL};
+    "Balance Automatic Coupons", "Enable F3/F4 Recording/Replay", "Auto-Update vt_data on Startup",
+    "Show Button Images", NULL};
 int SwitchValue[] = {
     SWITCH_SEATS, SWITCH_DRAWER_MODE, SWITCH_PASSWORDS, SWITCH_SALE_CREDIT,
     SWITCH_DISCOUNT_ALCOHOL, SWITCH_CHANGE_FOR_CHECKS,
@@ -451,7 +452,8 @@ int SwitchValue[] = {
     SWITCH_ITEM_TARGET, SWITCH_GOODWILL, SWITCH_MONEY_SYMBOL,
     SWITCH_SHOW_MODIFIERS, SWITCH_ALLOW_MULT_COUPON,
     SWITCH_RECEIPT_ALL_MODS, SWITCH_DRAWER_PRINT,
-    SWITCH_BALANCE_AUTO_CPNS, SWITCH_F3_F4_RECORDING, SWITCH_AUTO_UPDATE_VT_DATA, -1};
+    SWITCH_BALANCE_AUTO_CPNS, SWITCH_F3_F4_RECORDING, SWITCH_AUTO_UPDATE_VT_DATA,
+    SWITCH_BUTTON_IMAGES, -1};
 
 const genericChar* ReportTypeName[] = {
     "Server", "Closed Check", "Drawer",

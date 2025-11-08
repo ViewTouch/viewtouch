@@ -226,6 +226,9 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
     case SWITCH_AUTO_UPDATE_VT_DATA:
         onoff = settings->auto_update_vt_data;
         break;
+    case SWITCH_BUTTON_IMAGES:
+        onoff = settings->show_button_images_default;
+        break;
     default:
         return RENDER_OKAY;
 	}
@@ -417,6 +420,9 @@ SignalResult SwitchZone::Touch(Terminal *term, int tx, int ty)
         break;
     case SWITCH_AUTO_UPDATE_VT_DATA:
         settings->auto_update_vt_data ^= 1;
+        break;
+    case SWITCH_BUTTON_IMAGES:
+        settings->show_button_images_default ^= 1;
         break;
     default:
         return SIGNAL_IGNORED;

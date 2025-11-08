@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-constexpr int SETTINGS_VERSION = 102;  // READ ABOVE
+constexpr int SETTINGS_VERSION = 103;  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -160,6 +160,7 @@ constexpr int SETTINGS_VERSION = 102;  // READ ABOVE
 #define SWITCH_BALANCE_AUTO_CPNS 31 // whether to list auto-coupons in drawer balance
 #define SWITCH_F3_F4_RECORDING   32 // whether to enable F3/F4 recording/replay feature
 #define SWITCH_AUTO_UPDATE_VT_DATA 33 // whether to automatically download vt_data on startup
+#define SWITCH_BUTTON_IMAGES       34 // toggle showing images on buttons
 
 #define MOD_SEPARATE_NL           1 // New line
 #define MOD_SEPARATE_CM           2 // Comma
@@ -568,6 +569,7 @@ public:
     int shadow_blur_radius;      // Shadow blur radius (0-10)
     int enable_f3_f4_recording;  // Whether to enable F3/F4 recording/replay feature
     int button_text_position;    // Text position: 0=over image, 1=above image, 2=below image
+    int show_button_images_default; // Global default for showing images on buttons
     
     // Scheduled restart settings
     int scheduled_restart_hour;  // Hour (0-23) for scheduled restart (-1 = disabled)
