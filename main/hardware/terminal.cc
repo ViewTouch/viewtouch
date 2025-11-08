@@ -689,6 +689,7 @@ int Terminal::Initialize()
     SetDropShadow(settings->use_drop_shadows);
     SetShadowOffset(settings->shadow_offset_x, settings->shadow_offset_y);
     SetShadowBlur(settings->shadow_blur_radius);
+    show_button_images = settings ? settings->show_button_images_default : 1;
 
     return retval;
 }
@@ -2393,6 +2394,22 @@ int Terminal::Update(int update_message, const genericChar* value)
     
     if (update_message & UPDATE_SETTINGS)
     {
+        if (value != nullptr)
+        {
+            int switch_type = atoi(value);
+            if (switch_type == SWITCH_BUTTON_IMAGES)
+            {
+                Settings *settings = GetSettings();
+                if (settings != nullptr)
+                    show_button_images = settings->show_button_images_default;
+                if (page != nullptr)
+                {
+                    page->changed = 1;
+                    for (Zone *z = page->ZoneList(); z != nullptr; z = z->next)
+                        z->update = 1;
+                }
+            }
+        }
         // Force a full redraw when settings change (e.g., image display toggle)
         Draw(1);
     }
