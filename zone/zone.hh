@@ -363,6 +363,7 @@ public:
     // changes size of marked zones
     // position is adjusted accordingly if move_x or move_y are non-zero
     int PositionEdit(Terminal *t, int xchange, int ychange);
+    int GetEditRegion(Terminal *t, RegionInfo &region, int include_shadow = 1);
     // changes position of marged zones
     int CopyEdit(Terminal *t, int modify_x = 0, int modify_y = 0);
     // copies all marked zones to page

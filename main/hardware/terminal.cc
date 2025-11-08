@@ -525,6 +525,11 @@ Terminal::Terminal()
     select_y1 = 0;
     select_x2 = 0;
     select_y2 = 0;
+    edit_drag_active = false;
+    edit_drag_total_dx = 0;
+    edit_drag_total_dy = 0;
+    edit_drag_initial_region.SetRegion(0, 0, 0, 0);
+    edit_drag_current_region.SetRegion(0, 0, 0, 0);
     last_x    = 0;
     last_y    = 0;
     zone_modify = 0;
@@ -4031,6 +4036,97 @@ int Terminal::RenderEditCursor(int x, int y, int w, int h)
     return Send();
 }
 
+void Terminal::DrawZoneDragPreview(const RegionInfo &region)
+{
+    FnTrace("Terminal::DrawZoneDragPreview()");
+    int left = region.x;
+    int top = region.y;
+    int right = region.x + region.w;
+    int bottom = region.y + region.h;
+
+    WInt8(TERM_SELECTOFF);
+    WInt8(TERM_SELECTUPDATE);
+    WInt16(static_cast<short>(left));
+    WInt16(static_cast<short>(top));
+    WInt8(TERM_SELECTUPDATE);
+    WInt16(static_cast<short>(right));
+    WInt16(static_cast<short>(bottom));
+    SendNow();
+}
+
+bool Terminal::BeginZoneDragPreview()
+{
+    FnTrace("Terminal::BeginZoneDragPreview()");
+    if (edit_drag_active)
+        return true;
+    if (zone_db == nullptr)
+        return false;
+
+    RegionInfo region;
+    if (zone_db->GetEditRegion(this, region, 1) == 0)
+        return false;
+
+    edit_drag_active = true;
+    edit_drag_total_dx = 0;
+    edit_drag_total_dy = 0;
+    edit_drag_initial_region = region;
+    edit_drag_current_region = region;
+    DrawZoneDragPreview(region);
+    return true;
+}
+
+bool Terminal::AddZoneDragDelta(int dx, int dy)
+{
+    FnTrace("Terminal::AddZoneDragDelta()");
+    if (dx == 0 && dy == 0)
+        return edit_drag_active;
+
+    if (!BeginZoneDragPreview())
+        return false;
+
+    edit_drag_total_dx += dx;
+    edit_drag_total_dy += dy;
+
+    RegionInfo region = edit_drag_initial_region;
+    region.x = static_cast<short>(region.x + edit_drag_total_dx);
+    region.y = static_cast<short>(region.y + edit_drag_total_dy);
+
+    if (region.x == edit_drag_current_region.x &&
+        region.y == edit_drag_current_region.y &&
+        region.w == edit_drag_current_region.w &&
+        region.h == edit_drag_current_region.h)
+    {
+        return true;
+    }
+
+    edit_drag_current_region = region;
+    DrawZoneDragPreview(region);
+    return true;
+}
+
+void Terminal::EndZoneDragPreview(bool apply_move)
+{
+    FnTrace("Terminal::EndZoneDragPreview()");
+    if (!edit_drag_active)
+        return;
+
+    WInt8(TERM_SELECTOFF);
+    SendNow();
+
+    edit_drag_active = false;
+
+    if (apply_move && zone_db &&
+        (edit_drag_total_dx != 0 || edit_drag_total_dy != 0))
+    {
+        zone_db->PositionEdit(this, edit_drag_total_dx, edit_drag_total_dy);
+    }
+
+    edit_drag_total_dx = 0;
+    edit_drag_total_dy = 0;
+    edit_drag_initial_region.SetRegion(0, 0, 0, 0);
+    edit_drag_current_region.SetRegion(0, 0, 0, 0);
+}
+
 int Terminal::RenderButton(int x, int y, int w, int h,
                            int frame, int texture, int shape)
 {
@@ -4686,6 +4782,7 @@ int Terminal::MouseInput(int action, int x, int y)
 
     if ((action & MOUSE_PRESS) && user)
     {
+        EndZoneDragPreview(false);
         zone = page->FindEditZone(this, x, y);
         last_x = x - (x % grid_x);
         last_y = y - (y % grid_y);
@@ -4760,7 +4857,7 @@ int Terminal::MouseInput(int action, int x, int y)
     }
     else if (action & MOUSE_DRAG)
     {
-        if (select_on)
+        if (select_on && !edit_drag_active)
         {
             WInt8(TERM_SELECTUPDATE);
             WInt16(x); WInt16(y);
@@ -4770,7 +4867,10 @@ int Terminal::MouseInput(int action, int x, int y)
         }
 
         if (zone_modify == 0)
+        {
+            EndZoneDragPreview(false);
             return 0;
+        }
 
         int current_x = x - (x % grid_x);
         int current_y = y - (y % grid_y);
@@ -4779,10 +4879,21 @@ int Terminal::MouseInput(int action, int x, int y)
         last_x = current_x;
         last_y = current_y;
 
-        if (zone_modify & MODIFY_MOVE)
-            zone_db->PositionEdit(this, dir_x, dir_y);
+        if (dir_x == 0 && dir_y == 0)
+            return 0;
+
+        if (zone_modify == MODIFY_MOVE)
+        {
+            if (!AddZoneDragDelta(dir_x, dir_y))
+            {
+                EndZoneDragPreview(false);
+                zone_db->PositionEdit(this, dir_x, dir_y);
+            }
+        }
         else
         {
+            EndZoneDragPreview(false);
+
             int dw = 0, dh = 0, move_x = 0, move_y = 0;
             if (zone_modify & MODIFY_RESIZE_BE)
                 dh = dir_y;
@@ -4804,6 +4915,12 @@ int Terminal::MouseInput(int action, int x, int y)
     }
     else if (action & MOUSE_RELEASE)
     {
+        if (HasActiveZoneDrag())
+        {
+            EndZoneDragPreview(true);
+            zone_modify = 0;
+        }
+
         int rx = Min(select_x1, select_x2);
         int ry = Min(select_y1, select_y2);
         int rw = Abs(select_x1 - select_x2);
@@ -4814,6 +4931,7 @@ int Terminal::MouseInput(int action, int x, int y)
         select_y1 = 0;
         select_x2 = 0;
         select_y2 = 0;
+        zone_modify = 0;
     }
     return 0;
 }

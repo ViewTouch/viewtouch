@@ -415,6 +415,11 @@ public:
     int   select_y1;
     int   select_x2;
     int   select_y2;
+    bool  edit_drag_active;
+    int   edit_drag_total_dx;
+    int   edit_drag_total_dy;
+    RegionInfo edit_drag_initial_region;
+    RegionInfo edit_drag_current_region;
 
     // Language settings
     int   current_language;  // current UI language (LANG_ENGLISH, LANG_FRENCH, etc.)
@@ -581,6 +586,7 @@ public:
     int RenderZone(Zone *z);
     int RedrawZone(Zone *z, int time);
     int RenderEditCursor(int x, int y, int w, int h);
+    void DrawZoneDragPreview(const RegionInfo &region);
     int RenderButton(int x, int y, int w, int h,
                      int frame, int texture, int shape = SHAPE_RECTANGLE);
     int RenderShadow(int x, int y, int w, int h, int s, int shape);
@@ -603,6 +609,11 @@ public:
     int MouseInput(int action, int x, int y);
     int MouseToolbar(int action, int x, int y);
     int SizeToMouse();
+
+    bool BeginZoneDragPreview();
+    bool AddZoneDragDelta(int dx, int dy);
+    void EndZoneDragPreview(bool apply_move);
+    bool HasActiveZoneDrag() const noexcept { return edit_drag_active; }
 
     int ButtonCommand(int command);
     int EditZone(Zone *z);
