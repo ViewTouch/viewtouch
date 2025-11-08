@@ -1599,6 +1599,34 @@ int ZoneDB::SizeEdit(Terminal *t, int wchange, int hchange,
     return 0;
 }
 
+int ZoneDB::GetEditRegion(Terminal *t, RegionInfo &region, int include_shadow)
+{
+    FnTrace("ZoneDB::GetEditRegion()");
+    RegionInfo r;
+    int count = 0;
+
+    Page *p = t ? t->page : nullptr;
+    while (p)
+    {
+        for (Zone *z = p->ZoneList(); z != nullptr; z = z->next)
+        {
+            if (z->edit)
+            {
+                int shadow = include_shadow ? z->ShadowVal(t) : 0;
+                r.Fit(z->x, z->y, z->w + shadow, z->h + shadow);
+                ++count;
+            }
+        }
+        p = p->parent_page;
+    }
+
+    if (count == 0)
+        return 0;
+
+    region = r;
+    return 1;
+}
+
 int ZoneDB::PositionEdit(Terminal *t, int xchange, int ychange)
 {
     FnTrace("ZoneDB::PositionEdit()");

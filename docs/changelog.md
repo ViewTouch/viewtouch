@@ -46,6 +46,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Persistence**: Stored global preference in settings data (`show_button_images_default`) with `SETTINGS_VERSION` bumped to 103
     - Load/Save logic reads and writes the persisted flag
   - Files modified: `main/data/settings.{hh,cc}`, `zone/settings_zone.cc`, `main/ui/labels.cc`, `main/hardware/terminal.cc`
+- **🚀 Edit Mode Drag Performance (2025-11-08)**
+  - **Deferred Rendering**: Suspending full page redraws while dragging zones now relies on a lightweight overlay preview for immediate feedback
+  - **Preview Overlay**: The editor draws a dynamic drag rectangle so button moves stay responsive even while the cursor is in motion, even for multi-zone selections
+  - **Minimal Repaint Path**: Continuous drag updates now mutate an off-screen region accumulator instead of forcing zone re-rendering and pixmap uploads each mouse move
+  - **Final Commit**: Zone positions only redraw once at drop time, keeping X11 smooth and eliminating freeze-like behavior when moving image-heavy buttons
+  - **Shadow Awareness**: Drag preview and final redraw take zone shadows into account so what you see during the move precisely matches the drop result
+  - Files modified: `main/hardware/terminal.{hh,cc}`, `zone/zone.{hh,cc}`
 
 - **📋 Dialog Menu Multi-Column Layout for Long Lists (2025-11-04)**
   - **Multi-Column Display**: Button properties dialogs with more than 8 options now automatically display in multiple columns instead of going off-screen
