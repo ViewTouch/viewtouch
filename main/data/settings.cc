@@ -1256,7 +1256,7 @@ Settings::Settings()
     store              = 0;
     developer_key      = 123456789; // silly default
     price_rounding     = ROUNDING_NONE;
-    double_mult        = 2;
+    double_mult        = 2.0;
     double_add         = 0;
     combine_accounts   = 1;
     discount_alcohol   = 1;
@@ -1592,7 +1592,19 @@ int Settings::Load(const char* file)
             Add(pi);
         }
     }
-    df.Read(double_mult);
+    if (version >= 104)
+    {
+        if (df.Read(double_mult) != 0)
+            double_mult = 2.0;
+    }
+    else
+    {
+        int legacy_double_mult = 0;
+        if (df.Read(legacy_double_mult) == 0)
+            double_mult = static_cast<Flt>(legacy_double_mult);
+        else
+            double_mult = 2.0;
+    }
     df.Read(double_add);
     df.Read(combine_accounts);
     df.Read(change_for_checks);

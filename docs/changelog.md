@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Double Modifier Decimal Multiplier (2025-11-11)**
+  - **Issue**: Developer settings rejected fractional double multipliers, causing charges to ignore decimal values when combining multiply and add/subtract adjustments
+  - **Fix**: `double_mult` now stores a floating-point multiplier with proper rounding, allowing values like 1.5 or 0.75 to work alongside `double_add`
+    - Updated `Settings` serialization to version 104 with backward compatibility for legacy integer values
+    - Adjusted `SalesItem::Price()` to compute the final price using floating-point math with cent rounding
+    - Developer settings UI accepts and displays decimal multipliers without truncation
+  - **Impact**: Fractional double pricing now calculates correctly for decimal multipliers and additive/subtractive adjustments
+  - Files modified: `main/business/sales.cc`, `main/data/settings.{hh,cc}`, `zone/settings_zone.cc`, `docs/changelog.md`
 - **Tax Calculation Including Modifiers (2025-11-05)**
   - **Issue**: Tax calculation was inconsistent between main checkout system and per-order display
   - **Root Cause**: `Order::CalculateTax()` used `cost` (excluding modifiers) while main system used `total_cost` (including modifiers)

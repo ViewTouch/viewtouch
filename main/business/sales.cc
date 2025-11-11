@@ -31,6 +31,7 @@
 #include "src/utils/vt_logger.hh"
 
 #include <cctype>
+#include <cmath>
 #include <string.h>
 
 #ifdef DMALLOC
@@ -345,8 +346,11 @@ int SalesItem::Price(Settings *s, int qualifier)
 
     if (qualifier & QUALIFIER_DOUBLE)
     {
-        c *= s->double_mult;
-        c += s->double_add;
+        const double base = static_cast<double>(c);
+        const double multiplier = static_cast<double>(s->double_mult);
+        const double additive = static_cast<double>(s->double_add);
+        const double adjusted = base * multiplier + additive;
+        c = static_cast<int>(std::lround(adjusted));
     }
 
     if (c < 0)

@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-constexpr int SETTINGS_VERSION = 103;  // READ ABOVE
+constexpr int SETTINGS_VERSION = 104;  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -605,7 +605,7 @@ public:
     int store;                   // store code - for company specific features
     int developer_key;           // key code for developer
     int price_rounding;          // cost rounding setting
-    int double_mult;
+    Flt double_mult;
     int double_add;              // how double qualifier effects price
     int combine_accounts;        // boolean - combine tax & revenus accounts?
     int always_open;             // is store 24 hours?

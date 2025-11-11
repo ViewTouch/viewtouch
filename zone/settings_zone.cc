@@ -36,6 +36,10 @@
 #include "src/utils/vt_logger.hh"
 
 #include <iostream>
+#include <iomanip>
+#include <locale>
+#include <sstream>
+#include <string>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -56,6 +60,39 @@ static const genericChar* MoneySymbolName[] = { "$", "\244", "\243", " ", NULL }
 
 static const genericChar* ButtonTextPosName[] = { "Over Image", "Above Image", "Below Image", NULL };
 static int ButtonTextPosValue[] = { 0, 1, 2, -1 };
+
+namespace {
+
+std::string FormatMultiplierDisplay(Flt value)
+{
+    std::ostringstream oss;
+    oss.imbue(std::locale::classic());
+    oss << std::fixed << std::setprecision(3) << value;
+    std::string text = oss.str();
+
+    const auto last_significant = text.find_last_not_of('0');
+    if (last_significant != std::string::npos)
+    {
+        text.erase(last_significant + 1);
+        if (!text.empty() && text.back() == '.')
+        {
+            text.pop_back();
+        }
+    }
+    else
+    {
+        text = "0";
+    }
+
+    if (text.empty())
+    {
+        text = "0";
+    }
+
+    return text;
+}
+
+} // namespace
 
 
 SwitchZone::SwitchZone()
@@ -1334,7 +1371,7 @@ int DeveloperZone::AddFields()
 
     AddTextField("Editor's Password", 9); SetFlag(FF_ONLYDIGITS);
     AddTextField("Minimum Password Length", 2); SetFlag(FF_ONLYDIGITS);
-    AddTextField("Multiply", 2);
+    AddTextField("Multiply", 8);
     AddTextField("Add or Subtract", 5);
 
     return 0;
@@ -1372,7 +1409,8 @@ int DeveloperZone::LoadRecord(Terminal *term, int record)
 
     f->Set(settings->developer_key); f = f->next;
     f->Set(settings->min_pw_len); f = f->next;
-    f->Set(settings->double_mult); f = f->next;
+    const std::string multiplier_text = FormatMultiplierDisplay(settings->double_mult);
+    f->Set(multiplier_text.c_str()); f = f->next;
     f->Set(term->SimpleFormatPrice(settings->double_add)); f = f->next;
 
     return 0;
@@ -1394,8 +1432,8 @@ int DeveloperZone::SaveRecord(Terminal *term, int record, int write_file)
         settings->shifts_used = 1, fixed = 1;
     if (settings->shifts_used > MAX_SHIFTS)
         settings->shifts_used = MAX_SHIFTS, fixed = 1;
-    if (settings->double_mult < 1)
-        settings->double_mult = 1, fixed = 1;
+    if (settings->double_mult <= 0.0)
+        settings->double_mult = 1.0, fixed = 1;
 
     if (fixed)
         Draw(term, 1);
