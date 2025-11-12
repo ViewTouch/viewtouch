@@ -134,3 +134,11 @@ The project uses modern C++17/20 features including:
 - Exception safety
 
 Avoid raw pointers and manual memory management where possible.
+
+## Related Documentation
+
+- **Payment Processor Integration**: `PAYMENT_PROCESSOR_INTEGRATION.md` - Future planning/idea documentation for potential Stripe Terminal integration with Android devices and thermal printers (not a confirmed implementation plan)
+- **Modern C++**: `MODERN_CPP.md` - Guidelines for modern C++ practices
+- **Memory Modernization**: `MEMORY_MODERNIZATION.md` - Memory management improvements
+- **String Safety**: `STRING_SAFETY.md` - String handling best practices
+- **Testing**: `TESTING.md` - Testing guidelines and practices
