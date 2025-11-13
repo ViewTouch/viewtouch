@@ -445,6 +445,8 @@ int Printer::SocketPrint()
     }
 
     close(sockfd);
+    close(temp_fd);  // Critical fix: Always close temp_fd before returning
+    
     if (byteswritten <= 0) {
         vt::Logger::error("SocketPrint: Failed to write all data to printer");
         return 1;

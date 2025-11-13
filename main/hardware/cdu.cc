@@ -479,6 +479,7 @@ int CustDispUnit::SocketOpen()
     if (connect(sockfd, (struct sockaddr *)&their_addr, sizeof(struct sockaddr)) == -1) {
         perror("connect");
         fprintf(stderr, "Is vt_cdu running?\n");
+        close(sockfd);  // Critical fix: Close socket on connect failure
         return -1;
     }
     

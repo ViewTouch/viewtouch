@@ -73,6 +73,69 @@
 #endif
 
 
+/**** Helper Functions ****/
+/**
+ * @brief Get or create the special "Customer" Employee for SelfOrder terminals
+ * 
+ * This function centralizes the logic for creating the Customer user that's used
+ * in SelfOrder terminals. The Customer user is a special system user with ID 999
+ * that allows self-service ordering without authentication.
+ * 
+ * @param user_db The user database to search/add to
+ * @param settings The settings object to configure job flags
+ * @return Pointer to the Customer Employee, or nullptr on allocation failure
+ */
+static Employee* GetOrCreateCustomerUser(UserDB& user_db, Settings* settings)
+{
+    FnTrace("GetOrCreateCustomerUser()");
+    
+    // Try to find existing Customer user
+    Employee *customer_user = user_db.FindByName("Customer");
+    if (customer_user != nullptr)
+        return customer_user;  // Already exists
+    
+    // Create new Customer user
+    customer_user = new Employee;
+    if (customer_user == nullptr)
+    {
+        fprintf(stderr, "ERROR: Failed to allocate Employee for Customer user\n");
+        return nullptr;
+    }
+    
+    // Initialize Customer user properties
+    customer_user->system_name.Set("Customer");
+    customer_user->id = 999;  // Special ID for Customer
+    customer_user->key = 999;
+    customer_user->training = 0;
+    customer_user->active = 1;
+    
+    // Create and add basic job for Customer
+    JobInfo *j = new JobInfo;
+    if (j == nullptr)
+    {
+        // JobInfo allocation failed - clean up and return error
+        delete customer_user;
+        fprintf(stderr, "ERROR: Failed to allocate JobInfo for Customer user\n");
+        return nullptr;
+    }
+    
+    j->job = JOB_SERVER;  // Basic server job
+    customer_user->Add(j);
+    
+    // Set job flags for Customer user to allow system access
+    if (settings)
+    {
+        settings->job_active[JOB_SERVER] = 1;  // Activate server job
+        settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE;
+    }
+    
+    // Add to user database
+    user_db.Add(customer_user);
+    
+    return customer_user;
+}
+
+
 /**** Definitions ****/
 // System windows
 enum windows {
@@ -223,36 +286,8 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
 	    else if (term->type == TERMINAL_SELFORDER)
 	    {
 	        // SelfOrder terminals don't require login - go directly to ordering
-	        // Create or get Customer user for SelfOrder
-	        Employee *customer_user = term->system_data->user_db.FindByName("Customer");
-	        if (customer_user == nullptr)
-	        {
-	            // Create Customer user if it doesn't exist
-	            customer_user = new Employee;
-	            if (customer_user != nullptr)
-	            {
-	                customer_user->system_name.Set("Customer");
-	                customer_user->id = 999;  // Special ID for Customer
-	                customer_user->key = 999;
-	                customer_user->training = 0;
-	                customer_user->active = 1;
-	                
-	                // Add basic job for Customer
-	                JobInfo *j = new JobInfo;
-	                if (j)
-	                {
-	                    j->job = JOB_SERVER;  // Basic server job
-	                    customer_user->Add(j);
-	                }
-	                
-                // Set job flags for Customer user to allow system access
-                Settings *settings = term->GetSettings();
-                settings->job_active[JOB_SERVER] = 1;  // Activate server job
-                settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE;  // Allow tables, ordering, and settling
-	                
-	                term->system_data->user_db.Add(customer_user);
-	            }
-	        }
+	        // Get or create Customer user for SelfOrder using centralized helper
+	        Employee *customer_user = GetOrCreateCustomerUser(term->system_data->user_db, term->GetSettings());
 	        
 	        // Login as Customer user
 	        if (customer_user != nullptr)
@@ -2067,36 +2102,10 @@ int Terminal::NewSelfOrder(int customer_type)
 
     Settings *settings = GetSettings();
     
-    // Create or get Customer user for SelfOrder
-    Employee *customer_user = system_data->user_db.FindByName("Customer");
+    // Get or create Customer user for SelfOrder using centralized helper
+    Employee *customer_user = GetOrCreateCustomerUser(system_data->user_db, settings);
     if (customer_user == nullptr)
-    {
-        // Create Customer user if it doesn't exist
-        customer_user = new Employee;
-        if (customer_user == nullptr)
-            return 1;
-        
-        customer_user->system_name.Set("Customer");
-        customer_user->id = 999;  // Special ID for Customer
-        customer_user->key = 999;
-        customer_user->training = 0;
-        customer_user->active = 1;
-        
-        // Add basic job for Customer
-        JobInfo *j = new JobInfo;
-        if (j)
-        {
-            j->job = JOB_SERVER;  // Basic server job
-            customer_user->Add(j);
-        }
-        
-        // Set job flags for Customer user to allow system access
-        Settings *settings = GetSettings();
-        settings->job_active[JOB_SERVER] = 1;  // Activate server job
-        settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE;  // Allow tables, ordering, and settling
-        
-        system_data->user_db.Add(customer_user);
-    }
+        return 1;  // Failed to create Customer user
     
     // Create check with Customer user
     Check *thisCheck = new Check(settings, customer_type, customer_user);
@@ -2121,35 +2130,10 @@ int Terminal::QuickMode(int customer_type)
         // Handle SelfOrder case - use Customer user
         Settings *settings = GetSettings();
         
-        // Create or get Customer user for SelfOrder
-        Employee *customer_user = system_data->user_db.FindByName("Customer");
+        // Get or create Customer user for SelfOrder using centralized helper
+        Employee *customer_user = GetOrCreateCustomerUser(system_data->user_db, settings);
         if (customer_user == nullptr)
-        {
-            // Create Customer user if it doesn't exist
-            customer_user = new Employee;
-            if (customer_user == nullptr)
-                return 1;
-            
-            customer_user->system_name.Set("Customer");
-            customer_user->id = 999;  // Special ID for Customer
-            customer_user->key = 999;
-            customer_user->training = 0;
-            customer_user->active = 1;
-            
-            // Add basic job for Customer
-            JobInfo *j = new JobInfo;
-            if (j)
-            {
-                j->job = JOB_SERVER;  // Basic server job
-                customer_user->Add(j);
-            }
-            
-            // Set job flags for Customer user to allow system access
-            settings->job_active[JOB_SERVER] = 1;  // Activate server job
-            settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE;  // Allow tables, ordering, and settling
-            
-            system_data->user_db.Add(customer_user);
-        }
+            return 1;  // Failed to create Customer user
         
         // Clean up any existing empty checks for Customer user before creating a new one
         // This prevents accumulation of open checks when customers leave without ordering
@@ -6876,31 +6860,37 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
     struct sockaddr_un server_adr;
     struct sockaddr_un client_adr;
     server_adr.sun_family = AF_UNIX;
-    strcpy(server_adr.sun_path, SOCKET_FILE);
+    // Critical fix: Use strncpy instead of strcpy for buffer safety
+    strncpy(server_adr.sun_path, SOCKET_FILE, sizeof(server_adr.sun_path) - 1);
+    server_adr.sun_path[sizeof(server_adr.sun_path) - 1] = '\0';
     unlink(SOCKET_FILE);
 
     genericChar str[256];
     dev = socket(AF_UNIX, SOCK_STREAM, 0);
     if (dev <= 0)
     {
-        sprintf(str, "Failed to open socket '%s'", SOCKET_FILE);
+        // Critical fix: Use snprintf instead of sprintf for buffer safety
+        snprintf(str, sizeof(str), "Failed to open socket '%s'", SOCKET_FILE);
         ReportError(str);
     }
     else if (bind(dev, (struct sockaddr *) &server_adr, SUN_LEN(&server_adr)) < 0)
     {
-        sprintf(str, "Failed to bind socket '%s'", SOCKET_FILE);
+        // Critical fix: Use snprintf instead of sprintf for buffer safety
+        snprintf(str, sizeof(str), "Failed to bind socket '%s'", SOCKET_FILE);
         ReportError(str);
     }
     else
     {
         if (width > -1 && height > -1)
         {
-            sprintf(str, VIEWTOUCH_PATH "/bin/vt_term %s %d %s %d %d %d &",
+            // Critical fix: Use snprintf instead of sprintf for buffer safety
+            snprintf(str, sizeof(str), VIEWTOUCH_PATH "/bin/vt_term %s %d %s %d %d %d &",
                     SOCKET_FILE, hardware_type, hostname, isserver, width, height);
         }
         else
         {
-            sprintf(str, VIEWTOUCH_PATH "/bin/vt_term %s %d %s %d&",
+            // Critical fix: Use snprintf instead of sprintf for buffer safety
+            snprintf(str, sizeof(str), VIEWTOUCH_PATH "/bin/vt_term %s %d %s %d&",
                     SOCKET_FILE, hardware_type, hostname, isserver);
         }
         system(str);
@@ -6916,7 +6906,8 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
         socket_no = accept(dev, (struct sockaddr *) &client_adr, &len);
         if (socket_no <= 0)
         {
-            sprintf(str, "Failed to open term on host '%s'", hostname);
+            // Critical fix: Use snprintf instead of sprintf for buffer safety
+            snprintf(str, sizeof(str), "Failed to open term on host '%s'", hostname);
             ReportError(str);
         }
     }
