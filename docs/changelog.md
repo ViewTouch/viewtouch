@@ -1359,6 +1359,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Default enabled for backward compatibility, but users can disable to preserve customizations
   - **Complete Workflow**: Editors can now customize Order Entry Button size, save changes permanently, and control when system updates occur
 
+- **Editor Access to Tender Button Configuration (Surcharge and Gratuity)**
+  - **Extended Editor Permissions**: Editor users (id == 2) can now configure the percentage and amount for Surcharge buttons and Gratuity buttons
+    - Modified `PosZone::CanSelect()`, `PosZone::CanEdit()`, and `PosZone::CanCopy()` to allow Editor access to `ZONE_TENDER` zones on system pages
+    - Updated `Terminal::EditZone()` to grant Editors `full_edit` access when editing tender zones
+    - Editors can now set the percentage and amount for:
+      - Surcharge buttons: `TENDER_CREDIT_CARD_FEE_DOLLAR` (fixed dollar amount) and `TENDER_CREDIT_CARD_FEE_PERCENT` (percentage-based)
+      - Gratuity button: `TENDER_GRATUITY` (percentage-based)
+    - Maintains security by restricting access only to tender zones, not other system zones
+  - **Complete Workflow**: Editors can now select tender buttons, open the zone editor dialog, and modify both the Tender Type and Tender Amount fields
+  - Files modified: `zone/pos_zone.cc`, `main/hardware/terminal.cc`
+
 - **Enhanced RUNCMD: Terminal Command Execution**
   - **Expanded Command Support**: Enhanced the existing RUNCMD: functionality in Standard buttons to support more shell command characters
     - Now supports colons (`:`), dollar signs (`$`), pipes (`|`), ampersands (`&`), redirection (`>`, `<`), and other common shell operators

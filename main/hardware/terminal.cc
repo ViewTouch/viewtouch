@@ -5215,7 +5215,12 @@ int Terminal::EditZone(Zone *currZone)
 	SalesItem *currItem = nullptr;
 
 	WInt8(TERM_EDITZONE);
-	WInt8(user->CanEditSystem());
+	// Allow Editors to have full_edit access when editing tender zones (ZONE_TENDER)
+	// This enables Editors to set percentage and amount for Surcharge and Gratuity buttons
+	int full_edit_flag = user->CanEditSystem();
+	if (!full_edit_flag && currZone && currZone->Type() == ZONE_TENDER && user->CanEdit())
+		full_edit_flag = 1;
+	WInt8(full_edit_flag);
 	if (currZone)
 	{
 		WInt8(currZone->Type());
