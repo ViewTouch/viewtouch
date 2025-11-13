@@ -26,6 +26,7 @@
 #include <sys/utsname.h> // uname()
 #include <net/if.h> // ifreq, ifconf
 #include <netinet/in.h> // IPPROTO_IP
+#include <unistd.h> // close()
 
 #include <cstring> // strcat, memset
 #include <cstdio> // snprintf
@@ -253,6 +254,7 @@ int ListAddresses( )
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[5]
                );
         
+        close(sock);  // Critical fix: Close socket before returning
         return 0;
 }
 

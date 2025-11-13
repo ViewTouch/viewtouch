@@ -3006,6 +3006,34 @@ SubCheck *SubCheck::Copy(Settings *settings)
     return sc;
 }
 
+// Modern C++ version returning unique_ptr
+std::unique_ptr<SubCheck> SubCheck::CopyUnique(Settings *settings)
+{
+    FnTrace("SubCheck::CopyUnique(Settings)");
+    auto sc = std::make_unique<SubCheck>();
+    if (!sc)
+        return nullptr;
+
+    sc->status         = status;
+    sc->number         = number;
+    sc->settle_user    = settle_user;
+    sc->drawer_id      = drawer_id;
+    sc->tax_exempt.Set(tax_exempt);
+    sc->new_QST_method = new_QST_method;
+    sc->tab_total      = tab_total;
+    sc->delivery_charge = delivery_charge;
+    sc->check_type     = check_type;
+
+    for (Order *order = OrderList(); order != nullptr; order = order->next)
+        sc->Add(order->Copy(), 0);
+
+    for (Payment *payptr = PaymentList(); payptr != nullptr; payptr = payptr->next)
+        sc->Add(payptr->Copy(), 0);
+        
+    sc->FigureTotals(settings);
+    return sc;
+}
+
 int SubCheck::Copy(SubCheck *sc, Settings *settings, int restore)
 {
     FnTrace("SubCheck::Copy(SubCheck,Settings)");

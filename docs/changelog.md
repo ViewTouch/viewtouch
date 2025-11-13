@@ -7,6 +7,53 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Critical Bug Fixes - Memory Leaks and Security Issues (2025-11-13)**
+  - **Issues**: Multiple critical bugs causing file descriptor leaks, memory leaks, and buffer overflow vulnerabilities
+  - **Fixes**:
+    1. **File Descriptor Leaks**:
+       - Fixed `temp_fd` leak in `Printer::SocketPrint()` - file descriptor now properly closed on all return paths
+       - Fixed socket leak in `CustDispUnit::SocketOpen()` - socket now closed on connect failure
+       - Fixed socket leak in `ListAddresses()` - socket properly closed before function return
+    2. **Memory Leaks**:
+       - Fixed JobInfo allocation failure handling in 3 locations (NewSelfOrder, QuickMode, Terminal setup)
+       - Added proper cleanup: delete Employee object if JobInfo allocation fails
+       - Prevents memory leak when allocation fails during Customer user creation
+    3. **Buffer Overflow Vulnerabilities**:
+       - Replaced unsafe `strcpy()` with `strncpy()` with proper null termination in `OpenTerminalSocket()`
+       - Replaced all `sprintf()` calls with `snprintf()` with buffer size checks (4 locations)
+       - Eliminates potential buffer overflow attack vectors
+    4. **Code Quality Improvements**:
+       - Extracted duplicated Customer Employee creation logic into centralized helper function `GetOrCreateCustomerUser()`
+       - Eliminated ~100 lines of code duplication across 4 locations
+       - Improved maintainability and consistency
+    5. **Build Fix**:
+       - Added missing `#include <unistd.h>` for `close()` function in license_hash.cc
+  - **Impact**: 
+    - Prevents file descriptor exhaustion and system instability
+    - Eliminates memory leaks in error paths
+    - Closes security vulnerabilities from buffer overflows
+    - Improves code maintainability and reduces bug introduction risk
+  - Files modified: `main/hardware/printer.cc`, `main/hardware/cdu.cc`, `main/data/license_hash.cc`, `main/hardware/terminal.cc`, `docs/BUG_ANALYSIS.md`
+
+- **Medium Priority Bug Fixes - Memory Safety Improvements (2025-11-13)**
+  - **Issues**: Potential infinite loop in order deletion and unclear ownership semantics in Copy methods
+  - **Fixes**:
+    1. **Order Deletion Safety** (`zone/order_zone.cc`):
+       - Added safety counter (max 1000 modifiers) to prevent infinite loops if list corruption occurs
+       - Added corruption detection to verify `Remove()` properly unlinked items
+       - Added error logging to help debug any list corruption issues
+       - Protects against crashes from use-after-free or double-free scenarios
+    2. **Smart Pointer Copy Methods**:
+       - Added `SubCheck::CopyUnique()` returning `std::unique_ptr<SubCheck>` for safe memory management
+       - Complements existing `Order::CopyUnique()` for consistent modern C++ patterns
+       - Eliminates ambiguity about ownership of copied objects
+       - Prevents memory leaks when callers forget to delete copied objects
+  - **Impact**:
+    - Prevents potential infinite loops and crashes from list corruption
+    - Improves code safety with clear ownership semantics
+    - Modernizes codebase with C++11/14/17 best practices
+  - Files modified: `zone/order_zone.cc`, `main/business/check.hh`, `main/business/check.cc`
+
 - **Double Modifier Decimal Multiplier (2025-11-11)**
   - **Issue**: Developer settings rejected fractional double multipliers, causing charges to ignore decimal values when combining multiply and add/subtract adjustments
   - **Fix**: `double_mult` now stores a floating-point multiplier with proper rounding, allowing values like 1.5 or 0.75 to work alongside `double_add`

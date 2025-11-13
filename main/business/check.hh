@@ -315,6 +315,7 @@ public:
     }
 
     SubCheck *Copy(Settings *settings);  // Creates a subcheck copy
+    std::unique_ptr<SubCheck> CopyUnique(Settings *settings);  // Modern C++ version returning unique_ptr
     int       Copy(SubCheck *sc, Settings *settings = NULL, int restore = 0);  // Copies the contents of a subcheck
     int       Read(Settings *settings, InputDataFile &df, int version);  // Reads subcheck from file
     int       Write(OutputDataFile &df, int version);  // Writes subcheck to file
