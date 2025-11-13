@@ -687,12 +687,33 @@ int OrderEntryZone::DeleteOrder(Terminal *term, int is_void)
     }
     else if (term->order->modifier_list)
 	{
-		// Delete all modifiers - start modifier script  
-		while (term->order->modifier_list)
+		// Delete all modifiers - start modifier script
+		// Critical fix: Add safety counter to prevent infinite loop in case of list corruption
+		int safety_counter = 0;
+		const int MAX_MODIFIERS = 1000;  // Safety limit
+		
+		while (term->order->modifier_list && safety_counter < MAX_MODIFIERS)
 		{
 			Order *o = term->order->modifier_list;
+			Order *next_modifier = o->next;  // Save next before removal
+			
 			sc->Remove(o);
-			delete o; // deleting member from order obj? If so, this should be handled elswhere (like within the class)
+			delete o;
+			
+			// Verify the list was properly updated
+			if (term->order->modifier_list == o)
+			{
+				// Remove() failed to unlink - force break to prevent infinite loop
+				fprintf(stderr, "ERROR: Remove() failed to unlink modifier, breaking loop\n");
+				term->order->modifier_list = next_modifier;
+			}
+			
+			++safety_counter;
+		}
+		
+		if (safety_counter >= MAX_MODIFIERS)
+		{
+			fprintf(stderr, "ERROR: Modifier deletion safety limit reached (%d), possible infinite loop prevented\n", MAX_MODIFIERS);
 		}
 
 		term->Update(UPDATE_ORDERS, NULL);

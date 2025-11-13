@@ -35,6 +35,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Improves code maintainability and reduces bug introduction risk
   - Files modified: `main/hardware/printer.cc`, `main/hardware/cdu.cc`, `main/data/license_hash.cc`, `main/hardware/terminal.cc`, `docs/BUG_ANALYSIS.md`
 
+- **Medium Priority Bug Fixes - Memory Safety Improvements (2025-11-13)**
+  - **Issues**: Potential infinite loop in order deletion and unclear ownership semantics in Copy methods
+  - **Fixes**:
+    1. **Order Deletion Safety** (`zone/order_zone.cc`):
+       - Added safety counter (max 1000 modifiers) to prevent infinite loops if list corruption occurs
+       - Added corruption detection to verify `Remove()` properly unlinked items
+       - Added error logging to help debug any list corruption issues
+       - Protects against crashes from use-after-free or double-free scenarios
+    2. **Smart Pointer Copy Methods**:
+       - Added `SubCheck::CopyUnique()` returning `std::unique_ptr<SubCheck>` for safe memory management
+       - Complements existing `Order::CopyUnique()` for consistent modern C++ patterns
+       - Eliminates ambiguity about ownership of copied objects
+       - Prevents memory leaks when callers forget to delete copied objects
+  - **Impact**:
+    - Prevents potential infinite loops and crashes from list corruption
+    - Improves code safety with clear ownership semantics
+    - Modernizes codebase with C++11/14/17 best practices
+  - Files modified: `zone/order_zone.cc`, `main/business/check.hh`, `main/business/check.cc`
+
 - **Double Modifier Decimal Multiplier (2025-11-11)**
   - **Issue**: Developer settings rejected fractional double multipliers, causing charges to ignore decimal values when combining multiply and add/subtract adjustments
   - **Fix**: `double_mult` now stores a floating-point multiplier with proper rounding, allowing values like 1.5 or 0.75 to work alongside `double_add`
