@@ -45,6 +45,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `main/hardware/terminal.cc`
 
 ### Added
+- **📝 48-Point Font Support (2025-11-13)**
+  - **New Fonts**: Added 48-point font size (larger than existing 34-point maximum)
+    - `FONT_TIMES_48` (ID 1) - DejaVu Serif 48pt regular
+    - `FONT_TIMES_48B` (ID 2) - DejaVu Serif 48pt bold
+    - Xft specification: `size=28` renders at 51 pixels height (vs 33 pixels for 34pt)
+  - **Font ID Management**: Fixed enum conflicts by using explicit font ID values
+    - Removed auto-assignment from `font_info` enum to prevent ID conflicts
+    - Font IDs 1 and 2 assigned to new 48pt fonts
+    - Added legacy `FONT_FIXED_*` mappings for backward compatibility
+  - **UI Integration**: Added font options to UI selection menus
+    - "DejaVu Serif 48pt" and "DejaVu Serif 48pt Bold" now available in font dropdowns
+    - Bold/regular toggle works correctly with 48pt fonts
+  - **Impact**: Users can now use much larger fonts for better visibility on high-resolution displays or accessibility needs
+  - Files modified: `config/font_ids.hh`, `main/data/manager.cc`, `term/term_view.cc`, `term/term_view.hh`, `main/ui/labels.cc`, `main/hardware/terminal.hh`, `main/hardware/terminal.cc`, `src/utils/font_check.cc`
+
 - **🖼️ Global Button Image Toggle (2025-11-08)**
   - **Settings Switch**: Added "Show Button Images" toggle to Settings switches so users can enable/disable images globally
     - New switch constant `SWITCH_BUTTON_IMAGES` toggles the global default
@@ -1358,6 +1373,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Integrated with existing Soft Switches system for consistent user experience
     - Default enabled for backward compatibility, but users can disable to preserve customizations
   - **Complete Workflow**: Editors can now customize Order Entry Button size, save changes permanently, and control when system updates occur
+
+- **Editor Access to Tender Button Configuration (Surcharge and Gratuity)**
+  - **Extended Editor Permissions**: Editor users (id == 2) can now configure the percentage and amount for Surcharge buttons and Gratuity buttons
+    - Modified `PosZone::CanSelect()`, `PosZone::CanEdit()`, and `PosZone::CanCopy()` to allow Editor access to `ZONE_TENDER` zones on system pages
+    - Updated `Terminal::EditZone()` to grant Editors `full_edit` access when editing tender zones
+    - Editors can now set the percentage and amount for:
+      - Surcharge buttons: `TENDER_CREDIT_CARD_FEE_DOLLAR` (fixed dollar amount) and `TENDER_CREDIT_CARD_FEE_PERCENT` (percentage-based)
+      - Gratuity button: `TENDER_GRATUITY` (percentage-based)
+    - Maintains security by restricting access only to tender zones, not other system zones
+  - **Complete Workflow**: Editors can now select tender buttons, open the zone editor dialog, and modify both the Tender Type and Tender Amount fields
+  - Files modified: `zone/pos_zone.cc`, `main/hardware/terminal.cc`
 
 - **Enhanced RUNCMD: Terminal Command Execution**
   - **Expanded Command Support**: Enhanced the existing RUNCMD: functionality in Standard buttons to support more shell command characters
