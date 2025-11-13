@@ -202,6 +202,8 @@ enum page_sizes {
 
 // Fonts
 #define FONT_DEFAULT     0
+#define FONT_TIMES_48    1
+#define FONT_TIMES_48B   2
 #define FONT_TIMES_20    4
 #define FONT_TIMES_24    5
 #define FONT_TIMES_34    6

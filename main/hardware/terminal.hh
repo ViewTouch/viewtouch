@@ -185,25 +185,29 @@ constexpr int FRAME_2COLOR  = 64;  // 2 colors used instead of 4
 
 // Fonts
 enum font_info {
-	FONT_DEFAULT     ,
-	FONT_FIXED_14    ,
-	FONT_FIXED_20    ,
-	FONT_FIXED_24    ,
-	FONT_TIMES_20    ,
-	FONT_TIMES_24    ,
-	FONT_TIMES_34    ,
-	FONT_TIMES_20B   ,
-	FONT_TIMES_24B   ,
-	FONT_TIMES_34B   ,
-	FONT_TIMES_14    ,
-	FONT_TIMES_14B   ,
-	FONT_TIMES_18    ,
-	FONT_TIMES_18B   ,
-    FONT_COURIER_18  ,
-    FONT_COURIER_18B ,
-    FONT_COURIER_20  ,
-    FONT_COURIER_20B
+	FONT_DEFAULT     = 0,
+	FONT_TIMES_48    = 1,
+	FONT_TIMES_48B   = 2,
+	FONT_TIMES_20    = 4,
+	FONT_TIMES_24    = 5,
+	FONT_TIMES_34    = 6,
+	FONT_TIMES_20B   = 7,
+	FONT_TIMES_24B   = 8,
+	FONT_TIMES_34B   = 9,
+	FONT_TIMES_14    = 10,
+	FONT_TIMES_14B   = 11,
+	FONT_TIMES_18    = 12,
+	FONT_TIMES_18B   = 13,
+    FONT_COURIER_18  = 14,
+    FONT_COURIER_18B = 15,
+    FONT_COURIER_20  = 16,
+    FONT_COURIER_20B = 17
 };
+
+// Legacy font mappings (not actually loaded, just for compatibility)
+#define FONT_FIXED_14    FONT_TIMES_14
+#define FONT_FIXED_20    FONT_TIMES_20
+#define FONT_FIXED_24    FONT_TIMES_24
 
 #define FONT_UNDERLINE  128
 

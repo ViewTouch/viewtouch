@@ -297,11 +297,13 @@ const genericChar* FontName[] = {
     "DejaVu Serif 20pt",
     "DejaVu Serif 24pt",
     "DejaVu Serif 34pt",
+    "DejaVu Serif 48pt",
     "DejaVu Serif 14pt Bold",
     "DejaVu Serif 18pt Bold",
     "DejaVu Serif 20pt Bold", 
     "DejaVu Serif 24pt Bold",
     "DejaVu Serif 34pt Bold",
+    "DejaVu Serif 48pt Bold",
     "Liberation Serif 18pt",
     "Liberation Serif 20pt",
     "Liberation Serif 18pt Bold",
@@ -315,11 +317,13 @@ int FontValue[] = {
     FONT_TIMES_20, // DejaVu Serif 20pt
     FONT_TIMES_24, // DejaVu Serif 24pt
     FONT_TIMES_34, // DejaVu Serif 34pt
+    FONT_TIMES_48, // DejaVu Serif 48pt
     FONT_TIMES_14B, // DejaVu Serif 14pt Bold
     FONT_TIMES_18B, // DejaVu Serif 18pt Bold
     FONT_TIMES_20B, // DejaVu Serif 20pt Bold
     FONT_TIMES_24B, // DejaVu Serif 24pt Bold
     FONT_TIMES_34B, // DejaVu Serif 34pt Bold
+    FONT_TIMES_48B, // DejaVu Serif 48pt Bold
     FONT_COURIER_18, // Liberation Serif 18pt
     FONT_COURIER_20, // Liberation Serif 20pt
     FONT_COURIER_18B, // Liberation Serif 18pt Bold

@@ -3763,11 +3763,13 @@ int Terminal::RenderText(const std::string &str, int x, int y, int color, int fo
         case FONT_TIMES_20:  font = FONT_TIMES_20B; break;
         case FONT_TIMES_24:  font = FONT_TIMES_24B; break;
         case FONT_TIMES_34:  font = FONT_TIMES_34B; break;
+        case FONT_TIMES_48:  font = FONT_TIMES_48B; break;
         case FONT_TIMES_14B: font = FONT_TIMES_14;  break;
         case FONT_TIMES_18B: font = FONT_TIMES_18;  break;
         case FONT_TIMES_20B: font = FONT_TIMES_20;  break;
         case FONT_TIMES_24B: font = FONT_TIMES_24;  break;
         case FONT_TIMES_34B: font = FONT_TIMES_34;  break;
+        case FONT_TIMES_48B: font = FONT_TIMES_48;  break;
         case FONT_COURIER_18: font = FONT_COURIER_18B; break;
         case FONT_COURIER_20: font = FONT_COURIER_20B; break;
         case FONT_COURIER_18B: font = FONT_COURIER_18; break;
@@ -3814,11 +3816,13 @@ int Terminal::RenderTextLen(const genericChar* str, int len, int x, int y, int c
         case FONT_TIMES_20:  font = FONT_TIMES_20B; break;
         case FONT_TIMES_24:  font = FONT_TIMES_24B; break;
         case FONT_TIMES_34:  font = FONT_TIMES_34B; break;
+        case FONT_TIMES_48:  font = FONT_TIMES_48B; break;
         case FONT_TIMES_14B: font = FONT_TIMES_14;  break;
         case FONT_TIMES_18B: font = FONT_TIMES_18;  break;
         case FONT_TIMES_20B: font = FONT_TIMES_20;  break;
         case FONT_TIMES_24B: font = FONT_TIMES_24;  break;
         case FONT_TIMES_34B: font = FONT_TIMES_34;  break;
+        case FONT_TIMES_48B: font = FONT_TIMES_48;  break;
         case FONT_COURIER_18:  font = FONT_COURIER_18B; break;
         case FONT_COURIER_20:  font = FONT_COURIER_20B; break;
         case FONT_COURIER_18B: font = FONT_COURIER_18;  break;

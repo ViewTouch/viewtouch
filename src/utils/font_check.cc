@@ -42,6 +42,8 @@ const char* GetScalableFontName(int font_id) {
     case 12:  return "Times New Roman-18:style=Regular";
     case 4:   return "Times New Roman-20:style=Regular";
     case 5:   return "Times New Roman-24:style=Regular";
+    case 1:   return "Times New Roman-48:style=Regular";
+    case 2:   return "Times New Roman-48:style=Bold";
     case 6:   return "Times New Roman-34:style=Regular";
     case 11:  return "Times New Roman-14:style=Bold";
     case 13:  return "Times New Roman-18:style=Bold";
