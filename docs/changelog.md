@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+- **New Clear System Button Zone Type (2025-11-14)**
+  - **Feature**: Added dedicated `ClearSystemZone` button type with countdown safety mechanism
+  - **Functionality**:
+    - Button displays "Clear System (10)" and counts down with each tap
+    - Visual countdown provides clear feedback: 10→9→8...→1→0
+    - At countdown 0, presents dialog with options:
+      - "Yes" - Clear all system data including labor records
+      - "No" - Clear system data but preserve labor records
+      - "Cancel" - Reset countdown to 10 without clearing
+    - Calls `System::ClearSystem(all)` to remove all archived data, current data, and stock data
+  - **Safety**: Requires 10 intentional taps before activation, prevents accidental data loss
+  - **Zone Type**: `ZONE_CLEAR_SYSTEM` (ID: 107)
+  - **Usage**: Available in zone editor dropdown as "Clear System" - place on Developer Settings or admin pages
+  - Files modified: `zone/button_zone.hh`, `zone/button_zone.cc`, `zone/pos_zone.hh`, `zone/pos_zone.cc`, `main/ui/labels.cc`
+
 ### Fixed
 - **Critical Bug Fixes - Memory Leaks and Security Issues (2025-11-13)**
   - **Issues**: Multiple critical bugs causing file descriptor leaks, memory leaks, and buffer overflow vulnerabilities

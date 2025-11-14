@@ -135,6 +135,23 @@ public:
     int          Update(Terminal *term, int update_message, const genericChar* value);
 };
 
+class ClearSystemZone : public PosZone
+{
+    int countdown;
+
+public:
+    // Constructor
+    ClearSystemZone();
+
+    // Member Functions
+    int          Type() { return ZONE_CLEAR_SYSTEM; }
+    virtual int  AcceptSignals() { return 1; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
+};
+
 class StatusZone : public LayoutZone
 {
     Str status;

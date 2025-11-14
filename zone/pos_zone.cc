@@ -252,6 +252,9 @@ Zone *NewPosZone(int type)
     case ZONE_KILL_SYSTEM:
         pNewZone = new KillSystemZone;
         break;
+    case ZONE_CLEAR_SYSTEM:
+        pNewZone = new ClearSystemZone;
+        break;
     case ZONE_LABOR:
         pNewZone = new LaborZone;
         break;
