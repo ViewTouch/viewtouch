@@ -852,6 +852,76 @@ int KillSystemZone::Update(Terminal *term, int update_message, const genericChar
     return 0;
 }
 
+/**** ClearSystemZone Class ****/
+// Member Functions
+ClearSystemZone::ClearSystemZone()
+{
+    FnTrace("ClearSystemZone::ClearSystemZone()");
+    countdown = 10;
+}
+
+RenderResult ClearSystemZone::Render(Terminal *term, int update_flag)
+{
+    FnTrace("ClearSystemZone::Render()");
+    genericChar str[64];
+    if (countdown > 0)
+        snprintf(str, sizeof(str), "Clear System (%d)", countdown);
+    else
+        snprintf(str, sizeof(str), "Clear System");
+    
+    RenderZone(term, str, update_flag);
+    return RENDER_OKAY;
+}
+
+SignalResult ClearSystemZone::Touch(Terminal *term, int tx, int ty)
+{
+    FnTrace("ClearSystemZone::Touch()");
+    
+    if (countdown > 0)
+    {
+        countdown--;
+        Draw(term, 1);  // Redraw to show new countdown
+        
+        if (countdown == 0)
+        {
+            // Show the dialog to choose whether to clear labor data
+            SimpleDialog *sd = new SimpleDialog(term->Translate("Also clear labor data?"));
+            sd->Button("Yes", "clearsystemall");
+            sd->Button("No", "clearsystemsome");
+            sd->Button("Cancel", "clearsystemcancel");
+            sd->target_zone = this;
+            term->OpenDialog(sd);
+        }
+        return SIGNAL_OKAY;
+    }
+    
+    return SIGNAL_IGNORED;
+}
+
+SignalResult ClearSystemZone::Signal(Terminal *term, const genericChar* message)
+{
+    FnTrace("ClearSystemZone::Signal()");
+    
+    const genericChar* commands[] = {"clearsystemall", "clearsystemsome", "clearsystemcancel", NULL};
+    int idx = CompareList(message, commands);
+    
+    switch (idx)
+    {
+    case 0:  // clearsystemall - clear everything including labor
+        term->system_data->ClearSystem(1);
+        return SIGNAL_OKAY;
+    case 1:  // clearsystemsome - clear everything except labor
+        term->system_data->ClearSystem(0);
+        return SIGNAL_OKAY;
+    case 2:  // clearsystemcancel - reset countdown
+        countdown = 10;
+        Draw(term, 1);
+        return SIGNAL_OKAY;
+    }
+    
+    return SIGNAL_IGNORED;
+}
+
 /**** StatusZone class ****/
 //Member Function
 
