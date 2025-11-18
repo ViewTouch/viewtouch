@@ -16,9 +16,11 @@ function(gen_compiler_tag BUILD_TAG_OUT)
 	string(COMPARE EQUAL "${CMAKE_CXX_COMPILER_ID}" "GNU" is_GNU)
 	if(is_GNU)
 		# using GCC
-		exec_program(${CMAKE_CXX_COMPILER}
-			ARGS ${CMAKE_CXX_COMPILER_ARG1} -dumpversion
+		execute_process(
+			COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -dumpversion
 			OUTPUT_VARIABLE GPLUSPLUS_COMPILER_VERSION_NUMBER
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			ERROR_QUIET
 		)
 
 		if(MINGW) # MinGW

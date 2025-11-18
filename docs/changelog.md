@@ -23,6 +23,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `zone/button_zone.hh`, `zone/button_zone.cc`, `zone/pos_zone.hh`, `zone/pos_zone.cc`, `main/ui/labels.cc`
 
 ### Fixed
+- **CMake Deprecation Warnings (2025-11-17)**
+  - **Issue**: CMake deprecation warnings when building the project
+    - CMake minimum_required version 3.5.1 compatibility warning with CMake 3.31.6
+    - Policy CMP0153 warning about deprecated `exec_program` command
+  - **Fix**:
+    - Updated `cmake_minimum_required` from `VERSION 3.5.1` to `VERSION 3.10` in `CMakeLists.txt`
+    - Replaced deprecated `exec_program()` with modern `execute_process()` in `cmake/gen_compiler_tag.cmake`
+    - Added `OUTPUT_STRIP_TRAILING_WHITESPACE` and `ERROR_QUIET` options to `execute_process()` for better output handling
+  - **Impact**: Eliminates CMake deprecation warnings during build configuration
+  - Files modified: `CMakeLists.txt`, `cmake/gen_compiler_tag.cmake`
+
 - **Credit Card Fee Tax Calculation (2025-11-17)**
   - **Issue**: Credit card fees (both dollar and percentage amounts) were not being included in tax calculations
   - **Root Cause**: Credit card fees were added to the transaction balance but not included in the taxable revenue bases used for tax calculations
