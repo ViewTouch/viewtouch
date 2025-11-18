@@ -23,6 +23,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `zone/button_zone.hh`, `zone/button_zone.cc`, `zone/pos_zone.hh`, `zone/pos_zone.cc`, `main/ui/labels.cc`
 
 ### Fixed
+- **Credit Card Fee Tax Calculation (2025-11-17)**
+  - **Issue**: Credit card fees (both dollar and percentage amounts) were not being included in tax calculations
+  - **Root Cause**: Credit card fees were added to the transaction balance but not included in the taxable revenue bases used for tax calculations
+  - **Fix**: 
+    - Credit card fees are now collected and added to taxable revenue after orders are processed
+    - Percentage-based fees are recalculated after `raw_sales` is known to ensure accurate amounts
+    - Fees are distributed proportionally across all tax revenue bases (food, alcohol, room, merchandise) to ensure they're included in all applicable tax calculations
+    - Fees are added after the takeout check to prevent them from being zeroed out when takeout food isn't taxed
+    - Food tax is recalculated after fees are added to include tax on the fees
+  - **Impact**: Credit card fees are now properly taxed according to the applicable tax rates (food tax, alcohol tax, GST, PST, HST, QST, room tax, merchandise tax, VAT)
+  - Files modified: `main/business/check.cc`
+
 - **Critical Bug Fixes - Memory Leaks and Security Issues (2025-11-13)**
   - **Issues**: Multiple critical bugs causing file descriptor leaks, memory leaks, and buffer overflow vulnerabilities
   - **Fixes**:
