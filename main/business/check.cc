@@ -3519,6 +3519,7 @@ int SubCheck::FigureTotals(Settings *settings)
     }
 
     // Check Payments
+    // Note: Percentage-based credit card fees will be recalculated after raw_sales is known
     Payment *payptr = PaymentList();
     while (payptr)
     {
@@ -3529,6 +3530,7 @@ int SubCheck::FigureTotals(Settings *settings)
         if (payptr->flags & TF_IS_PERCENT)
         {
             // Calculate percentage value based on raw sales
+            // Note: raw_sales may be from previous calculation; will recalculate after orders are processed
             if (payptr->tender_type == TENDER_CREDIT_CARD_FEE_PERCENT)
             {
                 Flt f = PriceToFlt(raw_sales) * PercentToFlt(payptr->amount);
@@ -3868,11 +3870,38 @@ int SubCheck::FigureTotals(Settings *settings)
         merchandise_sales += merchandise_discount;
     }
 
+    // Recalculate percentage-based credit card fees now that raw_sales is known
+    payptr = PaymentList();
+    while (payptr)
+    {
+        if (payptr->flags & TF_IS_PERCENT && 
+            payptr->tender_type == TENDER_CREDIT_CARD_FEE_PERCENT)
+        {
+            Flt f = PriceToFlt(raw_sales) * PercentToFlt(payptr->amount);
+            payptr->value = FltToPrice(f);
+        }
+        payptr = payptr->next;
+    }
+    
+    // Calculate total credit card fees to include in taxable revenue
+    int credit_card_fee_total = 0;
+    payptr = PaymentList();
+    while (payptr)
+    {
+        if (payptr->tender_type == TENDER_CREDIT_CARD_FEE_DOLLAR ||
+            payptr->tender_type == TENDER_CREDIT_CARD_FEE_PERCENT)
+        {
+            credit_card_fee_total += payptr->value;
+        }
+        payptr = payptr->next;
+    }
+    
     // Calculate amount to base taxes on
     int food_tax_revenue = (food_sales - food_comp);
     int alcohol_tax_revenue = (alcohol_sales - alcohol_comp);
     int room_tax_revenue = (room_sales - room_comp);
     int merchandise_tax_revenue = (merchandise_sales - merchandise_comp);
+    
     int total_tax_revenue = food_tax_revenue + alcohol_tax_revenue +
         room_tax_revenue + merchandise_tax_revenue;
 
@@ -3907,6 +3936,55 @@ int SubCheck::FigureTotals(Settings *settings)
     } else {
        total_tax_food    = settings->FigureFoodTax(food_tax_revenue, SystemTime, food_tax);
     }
+    
+    // Add credit card fees to taxable revenue AFTER takeout check
+    // Distribute fees proportionally to all tax revenue bases so they're included in all tax calculations
+    // Credit card fees are taxable service charges and should be taxed even if takeout food isn't
+    // Recalculate total_tax_revenue after takeout check to get accurate distribution
+    int current_tax_revenue = food_tax_revenue + alcohol_tax_revenue +
+        room_tax_revenue + merchandise_tax_revenue;
+    
+    if (credit_card_fee_total > 0)
+    {
+        if (current_tax_revenue > 0)
+        {
+            // Distribute fees proportionally across all revenue bases
+            int fee_to_food = (int)((Flt)credit_card_fee_total * (Flt)food_tax_revenue / (Flt)current_tax_revenue + 0.5);
+            int fee_to_alcohol = (int)((Flt)credit_card_fee_total * (Flt)alcohol_tax_revenue / (Flt)current_tax_revenue + 0.5);
+            int fee_to_room = (int)((Flt)credit_card_fee_total * (Flt)room_tax_revenue / (Flt)current_tax_revenue + 0.5);
+            int fee_to_merchandise = credit_card_fee_total - fee_to_food - fee_to_alcohol - fee_to_room;
+            
+            food_tax_revenue += fee_to_food;
+            alcohol_tax_revenue += fee_to_alcohol;
+            room_tax_revenue += fee_to_room;
+            merchandise_tax_revenue += fee_to_merchandise;
+        }
+        else
+        {
+            // If no taxable revenue (e.g., all takeout with no other items), 
+            // distribute fees evenly to ensure they're taxed by at least some tax types
+            // This ensures fees are always included in tax calculations
+            int fee_per_base = credit_card_fee_total / 4;
+            int fee_remainder = credit_card_fee_total % 4;
+            
+            food_tax_revenue += fee_per_base + (fee_remainder > 0 ? 1 : 0);
+            alcohol_tax_revenue += fee_per_base + (fee_remainder > 1 ? 1 : 0);
+            room_tax_revenue += fee_per_base + (fee_remainder > 2 ? 1 : 0);
+            merchandise_tax_revenue += fee_per_base;
+        }
+    }
+    
+    // Recalculate total_tax_revenue with fees included
+    total_tax_revenue = food_tax_revenue + alcohol_tax_revenue +
+        room_tax_revenue + merchandise_tax_revenue;
+    
+    // Recalculate food tax if fees were added to food_tax_revenue
+    // (only if food tax wasn't already zeroed out for takeout)
+    if (!((settings->tax_takeout_food == 0) && ((check_type == CHECK_TAKEOUT) || (check_type == CHECK_TOGO))))
+    {
+        total_tax_food = settings->FigureFoodTax(food_tax_revenue, SystemTime, food_tax);
+    }
+    
     total_tax_alcohol = settings->FigureAlcoholTax(alcohol_tax_revenue, SystemTime, alcohol_tax);
 
     total_tax_GST = settings->FigureGST((food_tax_revenue + alcohol_tax_revenue), SystemTime, GST_tax);
