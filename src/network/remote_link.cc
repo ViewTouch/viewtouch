@@ -309,21 +309,49 @@ int CharQueue::Read(int device_no)
     Clear();
 
     Uchar buf[4];
-    int val = read(device_no, &buf[0], 1);
-    if (val != 1)
+    int val = 0;  // Declare val at function scope
+    struct timeval timeout;
+    fd_set read_fds;
+
+    // Set socket to non-blocking mode for the header read
+    int flags = fcntl(device_no, F_GETFL, 0);
+    if (flags < 0) {
+        fprintf(stderr, "CharQueue::Read() - Failed to get socket flags\n");
         return -1;
-    val = read(device_no, &buf[1], 1);
-    if (val != 1)
+    }
+    int original_flags = flags;
+    if (fcntl(device_no, F_SETFL, flags | O_NONBLOCK) < 0) {
+        fprintf(stderr, "CharQueue::Read() - Failed to set non-blocking mode\n");
         return -1;
-    val = read(device_no, &buf[2], 1);
-    if (val != 1)
-        return -1;
-    val = read(device_no, &buf[3], 1);
-    if (val != 1)
-        return -1;
-    
+    }
+
+    // Read header with timeout (4 bytes for size)
+    for (int i = 0; i < 4; ++i) {
+        FD_ZERO(&read_fds);
+        FD_SET(device_no, &read_fds);
+        timeout.tv_sec = 5;  // 5 second timeout for header
+        timeout.tv_usec = 0;
+
+        int select_result = select(device_no + 1, &read_fds, NULL, NULL, &timeout);
+        if (select_result <= 0) {
+            fprintf(stderr, "CharQueue::Read() - Timeout/header read failed\n");
+            fcntl(device_no, F_SETFL, original_flags); // Restore original flags
+            return -1;
+        }
+
+        val = read(device_no, &buf[i], 1);
+        if (val != 1) {
+            fprintf(stderr, "CharQueue::Read() - Header read failed at byte %d\n", i);
+            fcntl(device_no, F_SETFL, original_flags); // Restore original flags
+            return -1;
+        }
+    }
+
+    // Restore original blocking mode
+    fcntl(device_no, F_SETFL, original_flags);
+
     int s = (Uint) buf[0] + ((Uint) buf[1] << 8) + ((Uint) buf[2] << 16) + ((Uint) buf[3] << 24);
-    
+
     // Critical fix: Validate size to prevent buffer overflow
     if (s <= 0 || s > buffer_size)
     {
@@ -341,14 +369,14 @@ int CharQueue::Read(int device_no)
             fprintf(stderr, "CharQueue::Read() - Buffer overflow prevented\n");
             return -1;
         }
-        
+
         val = read(device_no, buffer.data() + end, read_size);
         if (val > 0)
         {
             size += val;
             end  += val;
             todo -= val;
-            
+
             // Handle circular buffer wrap-around
             if (end >= buffer_size)
                 end = 0;
