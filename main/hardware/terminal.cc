@@ -2412,6 +2412,12 @@ Drawer *Terminal::FindDrawer()
     if (user == nullptr || user->training)
         return nullptr;
 
+    // Special case: Customer user on Self Order terminals always gets their own drawer
+    if (user->id == 999 && type == TERMINAL_SELFORDER)
+    {
+        return system_data->GetServerBank(user);
+    }
+
     Settings *settings = GetSettings();
     int dm = settings->drawer_mode;
 

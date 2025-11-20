@@ -50,6 +50,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Impact**: Eliminates CMake deprecation warnings during build configuration
   - Files modified: `CMakeLists.txt`, `cmake/gen_compiler_tag.cmake`
 
+- **Self Order Drawer Access Issue (2025-11-20)**
+  - **Issue**: "No Drawer is Available for Payment" error inappropriately appeared in Self Order mode during payment settlement
+  - **Root Cause**: Customer user (ID 999) on Self Order terminals did not have guaranteed drawer access, causing payment processing to fail even when payment was supposedly "immediate"
+  - **Fix**: Modified `FindDrawer()` method to ensure Customer user on Self Order terminals always gets their own dedicated drawer using server bank logic, bypassing normal drawer mode restrictions
+  - **Impact**: Self Order terminals can now properly process payments without drawer availability errors, maintaining the "immediate payment" functionality
+  - Files modified: `main/hardware/terminal.cc`
+
 - **Credit Card Fee Tax Calculation (2025-11-17)**
   - **Issue**: Credit card fees (both dollar and percentage amounts) were not being included in tax calculations
   - **Root Cause**: Credit card fees were added to the transaction balance but not included in the taxable revenue bases used for tax calculations
