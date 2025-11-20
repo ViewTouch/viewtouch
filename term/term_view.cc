@@ -112,6 +112,92 @@ public:
     explicit SocketException(const std::string& message) : ViewTouchException("Socket Error: " + message) {}
 };
 
+// Connection state management
+enum ConnectionState {
+    CONNECTION_CONNECTED,
+    CONNECTION_DISCONNECTED,
+    CONNECTION_RECONNECTING,
+    CONNECTION_FAILED
+};
+
+class ConnectionMonitor {
+private:
+    ConnectionState state_;
+    time_t last_heartbeat_;
+    time_t last_reconnect_attempt_;
+    int reconnect_attempts_;
+    int max_reconnect_attempts_;
+    int reconnect_delay_;
+    bool keep_alive_enabled_;
+
+public:
+    ConnectionMonitor() :
+        state_(CONNECTION_DISCONNECTED),
+        last_heartbeat_(0),
+        last_reconnect_attempt_(0),
+        reconnect_attempts_(0),
+        max_reconnect_attempts_(10),
+        reconnect_delay_(2),
+        keep_alive_enabled_(true) {}
+
+    void set_connected() {
+        state_ = CONNECTION_CONNECTED;
+        last_heartbeat_ = time(NULL);
+        reconnect_attempts_ = 0;
+        ReportError("Connection established");
+    }
+
+    void set_disconnected() {
+        if (state_ != CONNECTION_DISCONNECTED) {
+            state_ = CONNECTION_DISCONNECTED;
+            ReportError("Connection lost - attempting to reconnect");
+        }
+    }
+
+    void set_reconnecting() {
+        state_ = CONNECTION_RECONNECTING;
+        last_reconnect_attempt_ = time(NULL);
+        reconnect_attempts_++;
+    }
+
+    void set_failed() {
+        state_ = CONNECTION_FAILED;
+        ReportError("Connection failed permanently");
+    }
+
+    ConnectionState get_state() const { return state_; }
+
+    bool should_attempt_reconnect() {
+        if (state_ != CONNECTION_DISCONNECTED) return false;
+        if (reconnect_attempts_ >= max_reconnect_attempts_) return false;
+
+        time_t now = time(NULL);
+        int delay = reconnect_delay_ * (1 << (reconnect_attempts_ - 1)); // Exponential backoff
+        if (delay > 60) delay = 60; // Cap at 60 seconds
+
+        return (now - last_reconnect_attempt_) >= delay;
+    }
+
+    bool is_healthy() const {
+        if (state_ != CONNECTION_CONNECTED) return false;
+        if (!keep_alive_enabled_) return true;
+
+        time_t now = time(NULL);
+        return (now - last_heartbeat_) < 30; // 30 second timeout
+    }
+
+    void send_heartbeat() {
+        last_heartbeat_ = time(NULL);
+    }
+
+    void reset_reconnect_attempts() {
+        reconnect_attempts_ = 0;
+    }
+
+    int get_reconnect_attempts() const { return reconnect_attempts_; }
+    int get_max_reconnect_attempts() const { return max_reconnect_attempts_; }
+};
+
 // RAII wrapper for file descriptors
 class FileDescriptor {
 private:
@@ -614,6 +700,44 @@ Str TermStoreName;
 Str Message;
 
 static XtAppContext App;
+
+// Global connection monitor for robust connection handling
+static ConnectionMonitor connection_monitor;
+
+// Forward declarations for reconnection UI functions
+void ShowReconnectingMessage();
+void HideReconnectingMessage();
+
+// UI State preservation for disconnections
+struct SavedUIState {
+    int current_page;
+    int cursor_x, cursor_y;
+    bool input_active;
+    std::string last_message;
+
+    SavedUIState() : current_page(0), cursor_x(0), cursor_y(0), input_active(false) {}
+
+    void save() {
+        if (MainLayer != NULL) {
+            current_page = MainLayer->page_x;  // Use page_x instead of page
+            cursor_x = MainLayer->cursor;       // Use cursor instead of cursor_x
+            cursor_y = 0;                       // No cursor_y, set to 0
+        }
+        input_active = false;                    // TODO: Check touchscreen status when available
+        last_message = Message.Value();
+    }
+
+    void restore() {
+        if (MainLayer != NULL) {
+            // Request the server to switch to the saved page
+            // This will be sent when connection is restored
+            fprintf(stderr, "UI State: Requesting page %d restore\n", current_page);
+        }
+        Message.Set(last_message.c_str());
+    }
+};
+
+static SavedUIState saved_ui_state;
 
 // Implementation of X11ResourceManager::cleanup
 void X11ResourceManager::cleanup() {
@@ -1571,59 +1695,92 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
 {
     FnTrace("SocketInputCB()");
 
-    static int failure = 0;
+    static int consecutive_failures = 0;
     int val = BufferIn.Read(SocketNo);
+
     if (val <= 0)
     {
-        ++failure;
-        if (failure < 8)
-            return;
+        consecutive_failures++;
 
-        // Critical fix: Remove invalid input handler to prevent infinite ppoll loop
-        fprintf(stderr, "SocketInputCB: Connection lost after %d failures, removing input handler\n", failure);
-        
-        // Remove the invalid input handler immediately to prevent hang
-        if (SocketInputID != 0)
-        {
-            // Try to remove the input handler, but don't crash if Xt context is invalid
-            try {
-                XtRemoveInput(SocketInputID);
-            } catch (...) {
-                fprintf(stderr, "SocketInputCB: Exception during XtRemoveInput, continuing\n");
+        // Update connection monitor state
+        if (consecutive_failures >= 3) {  // More aggressive failure detection
+            connection_monitor.set_disconnected();
+
+            // Save UI state before showing reconnecting message
+            saved_ui_state.save();
+
+            // Show "Reconnecting..." message on screen instead of just logging
+            if (MainLayer != NULL) {
+                ShowReconnectingMessage();
             }
-            SocketInputID = 0;
         }
-        
-        // Close the invalid socket
-        if (SocketNo > 0)
-        {
-            close(SocketNo);
-            SocketNo = -1;
+
+        // Check if we should attempt reconnection
+        if (connection_monitor.should_attempt_reconnect()) {
+            connection_monitor.set_reconnecting();
+
+            fprintf(stderr, "SocketInputCB: Attempting reconnection (attempt %d/%d)\n",
+                    connection_monitor.get_reconnect_attempts(),
+                    connection_monitor.get_max_reconnect_attempts());
+
+            // Remove the invalid input handler
+            if (SocketInputID != 0) {
+                try {
+                    XtRemoveInput(SocketInputID);
+                } catch (...) {
+                    fprintf(stderr, "SocketInputCB: Exception during XtRemoveInput, continuing\n");
+                }
+                SocketInputID = 0;
+            }
+
+            // Close the invalid socket
+            if (SocketNo > 0) {
+                close(SocketNo);
+                SocketNo = -1;
+            }
+
+            // Attempt to reconnect
+            if (ReconnectToServer() == 0) {
+                connection_monitor.set_connected();
+                consecutive_failures = 0;
+
+                // Hide reconnecting message and restore normal operation
+                if (MainLayer != NULL) {
+                    HideReconnectingMessage();
+                }
+
+                ReportError("Successfully reconnected to server.");
+                return;
+            } else {
+                // Reconnection failed, will try again later
+                fprintf(stderr, "SocketInputCB: Reconnection attempt failed\n");
+            }
         }
-        
-        // Try to notify the user
-        ReportError("Connection to server lost. Attempting to reconnect...");
-        
-        // Attempt to reconnect to the server
-        if (ReconnectToServer() == 0)
-        {
-            failure = 0; // Reset failure counter on successful reconnection
-            ReportError("Successfully reconnected to server.");
+
+        // If we've exceeded max reconnection attempts, fail permanently
+        if (connection_monitor.get_reconnect_attempts() >= connection_monitor.get_max_reconnect_attempts()) {
+            connection_monitor.set_failed();
+            ReportError("Unable to reconnect to server after maximum attempts. Terminal will continue in offline mode.");
+            consecutive_failures = 0;
+
+            // Keep the terminal running in offline mode instead of restarting
             return;
         }
-        
-        // If reconnection fails, wait before trying again
-        if (failure < Constants::RECONNECT_ATTEMPTS) // Try up to 20 times before giving up
-        {
-            sleep(Constants::RECONNECT_DELAY_SEC); // Wait 2 seconds before next attempt
-            return;
-        }
-        
-        // After many failed attempts, restart the terminal gracefully
-        ReportError("Unable to reconnect to server. Restarting terminal...");
-        RestartTerminal();
+
         return;
     }
+
+    // Successful read - update connection health
+    consecutive_failures = 0;
+    if (connection_monitor.get_state() != CONNECTION_CONNECTED) {
+        connection_monitor.set_connected();
+        if (MainLayer != NULL) {
+            HideReconnectingMessage();
+            // Restore UI state after reconnection
+            saved_ui_state.restore();
+        }
+    }
+    connection_monitor.send_heartbeat();
 
     Layer *l = MainLayer;
     if (l == NULL)
@@ -1640,7 +1797,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
     int n1, n2, n3, n4, n5, n6, n7, n8;
     const genericChar* s1, *s2;
 
-    failure = 0;
+    int failure = 0;
     genericChar s[STRLONG];
     genericChar key[STRLENGTH];
     genericChar value[STRLENGTH];
@@ -3696,35 +3853,161 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     return 0;
 }
 
+// Graceful degradation UI functions
+static bool reconnect_message_visible = false;
+static Window reconnect_window = 0;
+
+void ShowReconnectingMessage()
+{
+    FnTrace("ShowReconnectingMessage()");
+
+    if (reconnect_message_visible || Dis == NULL) {
+        return;
+    }
+
+    // Create a semi-transparent overlay window
+    XSetWindowAttributes attrs;
+    attrs.override_redirect = True;
+    attrs.background_pixel = BlackPixel(Dis, ScrNo);
+    attrs.border_pixel = BlackPixel(Dis, ScrNo);
+
+    reconnect_window = XCreateWindow(Dis, RootWin,
+                                   0, 0, WinWidth, WinHeight, 0,
+                                   ScrDepth, InputOutput, ScrVis,
+                                   CWOverrideRedirect | CWBackPixel | CWBorderPixel,
+                                   &attrs);
+
+    // Make it semi-transparent if possible
+    if (ScrVis->c_class == TrueColor) {  // Use c_class instead of class (C++ keyword)
+        // Create a semi-transparent background
+        XSetForeground(Dis, Gfx, BlackPixel(Dis, ScrNo));
+        XFillRectangle(Dis, reconnect_window, Gfx, 0, 0, WinWidth, WinHeight);
+    }
+
+    // Draw reconnecting message
+    const char* message = "RECONNECTING TO SERVER...";
+    int message_len = strlen(message);
+
+    // Calculate text width using XftTextExtentsUtf8
+    XGlyphInfo extents;
+    XftTextExtentsUtf8(Dis, XftFontsArr[FONT_TIMES_24], reinterpret_cast<const FcChar8*>(message), message_len, &extents);
+    int text_width = extents.width;
+    int text_height = FontHeight[FONT_TIMES_24];
+
+    int x = (WinWidth - text_width) / 2;
+    int y = (WinHeight - text_height) / 2;
+
+    XftColor color;
+    color.color.red = 65535;   // Full red
+    color.color.green = 65535; // Full green
+    color.color.blue = 65535;  // Full blue
+    color.color.alpha = 65535; // Opaque
+
+    XftDraw* draw = XftDrawCreate(Dis, reconnect_window, ScrVis, ScrCol);
+    if (draw) {
+        XftDrawStringUtf8(draw, &color, XftFontsArr[FONT_TIMES_24], x, y + FontBaseline[FONT_TIMES_24],
+                         reinterpret_cast<const FcChar8*>(message), message_len);
+        XftDrawDestroy(draw);
+    }
+
+    XMapRaised(Dis, reconnect_window);
+    XFlush(Dis);
+
+    reconnect_message_visible = true;
+}
+
+void HideReconnectingMessage()
+{
+    FnTrace("HideReconnectingMessage()");
+
+    if (!reconnect_message_visible || Dis == NULL) {
+        return;
+    }
+
+    if (reconnect_window != 0) {
+        XDestroyWindow(Dis, reconnect_window);
+        reconnect_window = 0;
+    }
+
+    // Force a redraw of the main window to restore normal display
+    if (MainLayer != NULL) {
+        MainLayer->DrawAll();
+        XFlush(Dis);
+    }
+
+    reconnect_message_visible = false;
+}
+
+// Connection state checking functions
+bool IsConnectionHealthy()
+{
+    return connection_monitor.is_healthy();
+}
+
+bool IsOfflineMode()
+{
+    return connection_monitor.get_state() == CONNECTION_FAILED;
+}
+
 // Critical fix: Add reconnection and restart functions
 int ReconnectToServer()
 {
     FnTrace("ReconnectToServer()");
-    
+
+    // Check if we're already trying to reconnect
+    if (connection_monitor.get_state() == CONNECTION_RECONNECTING) {
+        fprintf(stderr, "ReconnectToServer: Already attempting reconnection\n");
+        return 1;
+    }
+
     // Try to reconnect to the server
     struct sockaddr_un server_adr;
     server_adr.sun_family = AF_UNIX;
     strcpy(server_adr.sun_path, "/tmp/vt_term"); // Default socket path
-    
-    SocketNo = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (SocketNo <= 0)
+
+    int new_socket = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (new_socket <= 0)
     {
         fprintf(stderr, "ReconnectToServer: Failed to create socket\n");
         return 1;
     }
-    
-    if (connect(SocketNo, reinterpret_cast<struct sockaddr*>(&server_adr), SUN_LEN(&server_adr)) < 0)
-    {
-        fprintf(stderr, "ReconnectToServer: Can't connect to server (error %d)\n", errno);
-        close(SocketNo);
-        SocketNo = -1;
+
+    // Set a timeout on the connection attempt
+    struct timeval timeout;
+    timeout.tv_sec = 10;  // 10 second timeout
+    timeout.tv_usec = 0;
+
+    if (setsockopt(new_socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0 ||
+        setsockopt(new_socket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0) {
+        fprintf(stderr, "ReconnectToServer: Failed to set socket timeouts\n");
+        close(new_socket);
         return 1;
     }
-    
+
+    if (connect(new_socket, reinterpret_cast<struct sockaddr*>(&server_adr), SUN_LEN(&server_adr)) < 0)
+    {
+        fprintf(stderr, "ReconnectToServer: Can't connect to server (error %d)\n", errno);
+        close(new_socket);
+        return 1;
+    }
+
+    // Close the old socket if it exists
+    if (SocketNo > 0) {
+        close(SocketNo);
+    }
+
+    // Update the global socket
+    SocketNo = new_socket;
+
+    // Clear and reset buffers
+    BufferIn.Clear();
+    BufferOut.Clear();
+
     // Re-add the input handler
     SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
                                   (XtInputCallbackProc) SocketInputCB, NULL);
-    
+
+    fprintf(stderr, "ReconnectToServer: Successfully reconnected\n");
     return 0;
 }
 

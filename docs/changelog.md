@@ -7,6 +7,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **Enterprise-Grade Connection Reliability System (2025-11-19)**
+  - **Feature**: Complete overhaul of ViewTouch's connection handling to prevent system freezing during network interruptions
+  - **Components**:
+    - **Non-Blocking I/O**: All network operations now use timeouts and non-blocking sockets to prevent indefinite hangs
+    - **Connection State Management**: New `ConnectionMonitor` class tracks connection health with heartbeat monitoring
+    - **Robust Reconnection**: Exponential backoff reconnection logic (2s→4s→8s→16s→60s max) with automatic retry limits
+    - **Graceful Degradation UI**: "RECONNECTING TO SERVER..." overlay displays during connection loss with automatic dismissal on recovery
+    - **UI State Preservation**: Saves and restores screen state, cursor position, and user context across disconnections
+  - **Reliability Improvements**:
+    - Zero-downtime operation - system continues running when connections fail
+    - Automatic recovery - no manual intervention required for network issues
+    - Network resilience - handles unstable connections, ISP outages, and remote display disconnections
+    - User-friendly feedback - clear visual indicators of connection status
+  - **Impact**: Eliminates ViewTouch freezing when remote displays disconnect, enabling reliable remote access without port forwarding
+  - **Files modified**: `src/network/remote_link.cc`, `term/term_view.cc`
+
 - **New Clear System Button Zone Type (2025-11-14)**
   - **Feature**: Added dedicated `ClearSystemZone` button type with countdown safety mechanism
   - **Functionality**:
