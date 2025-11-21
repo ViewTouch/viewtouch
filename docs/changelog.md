@@ -39,6 +39,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `zone/button_zone.hh`, `zone/button_zone.cc`, `zone/pos_zone.hh`, `zone/pos_zone.cc`, `main/ui/labels.cc`
 
 ### Fixed
+- **Build Failure - Buffer Size Mismatch and Const-Correctness Issues (2025-11-21)**
+  - **Issues**: Build failed with array bounds errors and const-correctness compilation errors
+    - Buffer size mismatch in `safe_format` calls - using `STRLONG` (2048 bytes) for `STRLENGTH` (512 byte) buffers
+    - Const-correctness issue with Motif `XmTextSetString` function expecting `char*` but receiving `const char*`
+  - **Fixes**:
+    - Fixed buffer size parameters in `safe_format` and `safe_concat` calls in `PrintWorkOrder()` method
+    - Changed all `STRLONG` parameters to `STRLENGTH` to match actual buffer sizes (512 bytes)
+    - Added `const_cast<char*>()` to resolve Motif API const-correctness requirements
+  - **Impact**: Build now completes successfully, eliminating array bounds warnings and compilation errors
+  - Files modified: `main/business/check.cc`, `term/term_dialog.cc`
+
 - **CMake Deprecation Warnings (2025-11-17)**
   - **Issue**: CMake deprecation warnings when building the project
     - CMake minimum_required version 3.5.1 compatibility warning with CMake 3.31.6

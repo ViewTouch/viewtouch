@@ -29,6 +29,7 @@
 #include "manager.hh"
 #include "admission.hh"
 #include "src/utils/vt_logger.hh"
+#include "safe_string_utils.hh"
 
 #include <cctype>
 #include <cmath>
@@ -440,7 +441,7 @@ int ItemDB::Load(const char* file)
     if (version < 8 || version > SALES_ITEM_VERSION)
     {
         vt::Logger::error("Unknown ItemDB version {} (expected 8-{})", version, SALES_ITEM_VERSION);
-        sprintf(str, "Unknown ItemDB version %d", version);
+        vt_safe_string::safe_format(str, 256, "Unknown ItemDB version %d", version);
         ReportError(str);
         return 1;
     }
@@ -827,31 +828,31 @@ int PrintItem(char* buffer, int qualifier, const char* item)
     char pre[64]  = "";
     char post[64] = "";
     if ((qualifier & QUALIFIER_SIDE))
-        sprintf(post, " (on side)");
+        vt_safe_string::safe_format(post, 64, " (on side)");
 
-    if      ((qualifier & QUALIFIER_NO))        sprintf(pre, "No ");
-    else if ((qualifier & QUALIFIER_LITE))      sprintf(pre, "Lite ");
-    else if ((qualifier & QUALIFIER_ONLY))      sprintf(pre, "Only ");
-    else if ((qualifier & QUALIFIER_EXTRA))     sprintf(pre, "Extra ");
-    else if ((qualifier & QUALIFIER_DOUBLE))    sprintf(pre, "Double ");
-    else if ((qualifier & QUALIFIER_DRY))       sprintf(pre, "Dry ");
-    else if ((qualifier & QUALIFIER_PLAIN))     sprintf(pre, "Plain ");
-    else if ((qualifier & QUALIFIER_TOASTED))   sprintf(pre, "Toast ");
-    else if ((qualifier & QUALIFIER_UNTOASTED)) sprintf(pre, "Untoast ");
-    else if ((qualifier & QUALIFIER_CRISPY))    sprintf(pre, "Crisp ");
-    else if ((qualifier & QUALIFIER_SOFT))      sprintf(pre, "Soft ");
-    else if ((qualifier & QUALIFIER_HARD))      sprintf(pre, "Hard ");
-    else if ((qualifier & QUALIFIER_GRILLED))   sprintf(pre, "Grill ");
-    else if ((qualifier & QUALIFIER_LEFT))      sprintf(pre, "Left: ");
-    else if ((qualifier & QUALIFIER_RIGHT))     sprintf(pre, "Right: ");
-    else if ((qualifier & QUALIFIER_WHOLE))     sprintf(pre, "Whole: ");
-    else if ((qualifier & QUALIFIER_CUT2))      sprintf(pre, "Cut/2 ");
-    else if ((qualifier & QUALIFIER_CUT3))      sprintf(pre, "Cut/3 ");
-    else if ((qualifier & QUALIFIER_CUT4))      sprintf(pre, "Cut/4 ");
+    if      ((qualifier & QUALIFIER_NO))        vt_safe_string::safe_format(pre, 64, "No ");
+    else if ((qualifier & QUALIFIER_LITE))      vt_safe_string::safe_format(pre, 64, "Lite ");
+    else if ((qualifier & QUALIFIER_ONLY))      vt_safe_string::safe_format(pre, 64, "Only ");
+    else if ((qualifier & QUALIFIER_EXTRA))     vt_safe_string::safe_format(pre, 64, "Extra ");
+    else if ((qualifier & QUALIFIER_DOUBLE))    vt_safe_string::safe_format(pre, 64, "Double ");
+    else if ((qualifier & QUALIFIER_DRY))       vt_safe_string::safe_format(pre, 64, "Dry ");
+    else if ((qualifier & QUALIFIER_PLAIN))     vt_safe_string::safe_format(pre, 64, "Plain ");
+    else if ((qualifier & QUALIFIER_TOASTED))   vt_safe_string::safe_format(pre, 64, "Toast ");
+    else if ((qualifier & QUALIFIER_UNTOASTED)) vt_safe_string::safe_format(pre, 64, "Untoast ");
+    else if ((qualifier & QUALIFIER_CRISPY))    vt_safe_string::safe_format(pre, 64, "Crisp ");
+    else if ((qualifier & QUALIFIER_SOFT))      vt_safe_string::safe_format(pre, 64, "Soft ");
+    else if ((qualifier & QUALIFIER_HARD))      vt_safe_string::safe_format(pre, 64, "Hard ");
+    else if ((qualifier & QUALIFIER_GRILLED))   vt_safe_string::safe_format(pre, 64, "Grill ");
+    else if ((qualifier & QUALIFIER_LEFT))      vt_safe_string::safe_format(pre, 64, "Left: ");
+    else if ((qualifier & QUALIFIER_RIGHT))     vt_safe_string::safe_format(pre, 64, "Right: ");
+    else if ((qualifier & QUALIFIER_WHOLE))     vt_safe_string::safe_format(pre, 64, "Whole: ");
+    else if ((qualifier & QUALIFIER_CUT2))      vt_safe_string::safe_format(pre, 64, "Cut/2 ");
+    else if ((qualifier & QUALIFIER_CUT3))      vt_safe_string::safe_format(pre, 64, "Cut/3 ");
+    else if ((qualifier & QUALIFIER_CUT4))      vt_safe_string::safe_format(pre, 64, "Cut/4 ");
     if ((qualifier & QUALIFIER_SUB))
-        sprintf(buffer, "SUB: %s%s%s", pre, item, post);
+        vt_safe_string::safe_format(buffer, STRLENGTH, "SUB: %s%s%s", pre, item, post);
     else
-        sprintf(buffer, "%s%s%s", pre, item, post);
+        vt_safe_string::safe_format(buffer, STRLENGTH, "%s%s%s", pre, item, post);
     return 0;
 }
 

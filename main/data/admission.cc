@@ -2,6 +2,7 @@
 #include <external/core/sha1.hh>
 #include <string.h>
 #include <stdlib.h>
+#include "safe_string_utils.hh"
 
 
 void admission_itemname_hash(Str& ih,const Str& name,const Str& location,const Str& time, const Str& price_class)
@@ -30,7 +31,7 @@ void admission_itemname_hash(Str& ih,const Str& name,const Str& location,const S
 void admission_parse_hash_name(Str& name,const Str& ih)
 {
 	static genericChar buffer[256];
-	strcpy(buffer,ih.Value());
+	vt_safe_string::safe_copy(buffer, 256, ih.Value());
 	char* zloc=strchr(buffer,'@');
 	if(zloc)
 	{
@@ -45,7 +46,7 @@ void admission_parse_hash_name(Str& name,const Str& ih)
 void admission_parse_hash_ltime_hash(Str& hashout,const Str& ih)
 {
 	static genericChar buffer[256];
-	strcpy(buffer,ih.Value());
+	vt_safe_string::safe_copy(buffer, 256, ih.Value());
 	char* zloc=strchr(buffer,'@');
 	uint32_t val=0;
 	if(zloc)
@@ -74,7 +75,7 @@ const char* admission_filteredname(const Str& item_name)
 void PrintItemAdmissionFiltered(char* buf,int qual,const char* item)
 {
 	static genericChar buffer[256];
-	strcpy(buffer,item);
+	vt_safe_string::safe_copy(buffer, 256, item);
 	char* zloc=strstr(buffer,"~@");
 	if(zloc)
 	{

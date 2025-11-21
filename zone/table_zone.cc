@@ -32,6 +32,7 @@
 #include "customer.hh"
 #include "zone_object.hh"
 #include "form_zone.hh"
+#include "safe_string_utils.hh"
 #include <string.h>
 
 #include <cctype>
@@ -141,18 +142,18 @@ RenderResult RoomDialog::Render(Terminal *term, int update_flag)
             total   += sc->total_cost + sc->payment;
             balance += sc->balance;
         }
-        sprintf(str, "%s %s", term->Translate("Room"), check->Table());
+        vt_safe_string::safe_format(str, 256, "%s %s", term->Translate("Room"), check->Table());
         no = check->serial_number;
     }
     else
-        sprintf(str, "%s ???", term->Translate("Room"));
+        vt_safe_string::safe_format(str, 256, "%s ???", term->Translate("Room"));
 
     if (no <= 0)
         TextC(term, 0, str);
     else
     {
         TextL(term, 0, str);
-        sprintf(str, "%s %06d", term->Translate("Folio No"), no);
+        vt_safe_string::safe_format(str, 256, "%s %06d", term->Translate("Folio No"), no);
         TextR(term, 0, str);
     }
 
@@ -166,10 +167,10 @@ RenderResult RoomDialog::Render(Terminal *term, int update_flag)
     if (total > 0)
     {
         if (balance == 0)
-            sprintf(str, "Account Total:  %s      Account Paid",
+            vt_safe_string::safe_format(str, 256, "Account Total:  %s      Account Paid",
                     term->FormatPrice(total, 1));
         else
-            sprintf(str, "Account Total:  %s      Unpaid Balance:  %s",
+            vt_safe_string::safe_format(str, 256, "Account Total:  %s      Unpaid Balance:  %s",
                     term->FormatPrice(total, 1), term->FormatPrice(balance, 1));
         TextC(term, max_size_y - 4.5, str);
     }
@@ -326,7 +327,7 @@ int RoomDialog::ParseSwipe(Terminal *term, const genericChar* value)
     *d = '\0';
 
     genericChar number[256];
-    strcpy(number, tmp);
+    vt_safe_string::safe_copy(number, 256, tmp);
 
     if (*s == '\0')
         return 1;
@@ -372,7 +373,7 @@ int RoomDialog::ParseSwipe(Terminal *term, const genericChar* value)
     tmp[4] = '\0';
 
     genericChar expire[256];
-    strcpy(expire, tmp);
+    vt_safe_string::safe_copy(expire, 256, tmp);
   
     tmp[0] = expire[0];
     tmp[1] = expire[1];
@@ -390,7 +391,7 @@ int RoomDialog::ParseSwipe(Terminal *term, const genericChar* value)
     tmp[2] = '\0';
     int month = atoi(tmp);
 
-    sprintf(expire, "%02d%04d", month, year);
+    vt_safe_string::safe_format(expire, 256, "%02d%04d", month, year);
 
     //sprintf(tmp, "expire: '%s'", expire);
     //ReportError(tmp);
@@ -801,23 +802,23 @@ RenderResult CommandZone::Render(Terminal *term, int update_flag)
     }
     else
     {
-        sprintf(str, "%s %s", term->Translate("Hello"), employee->system_name.Value());
+        vt_safe_string::safe_format(str, 256, "%s %s", term->Translate("Hello"), employee->system_name.Value());
         TextC(term, .3, str, col);
     }
 
     if (buffer[0])
     {
-        sprintf(str, "%s_", buffer);
+        vt_safe_string::safe_format(str, 256, "%s_", buffer);
         TextC(term, 1.3, str);
     }
     else if (check)
     {
         if (check->IsTakeOut())
-            strcpy(str, GlobalTranslate("Takeout Order Selected"));
+            vt_safe_string::safe_copy(str, 256, GlobalTranslate("Takeout Order Selected"));
         else if (check->IsFastFood())
-            strcpy(str, GlobalTranslate("Fast Food Order Selected"));
+            vt_safe_string::safe_copy(str, 256, GlobalTranslate("Fast Food Order Selected"));
 		else
-            sprintf(str, "Table Selected: %s", check->Table());
+            vt_safe_string::safe_format(str, 256, "Table Selected: %s", check->Table());
 
         TextC(term, 1.3, str);
     }
@@ -825,9 +826,9 @@ RenderResult CommandZone::Render(Terminal *term, int update_flag)
     if (!term->move_check && drawer && check)
     {
         if (drawer->IsServerBank())
-            strcpy(str, GlobalTranslate("You May Settle Here"));
+            vt_safe_string::safe_copy(str, 256, GlobalTranslate("You May Settle Here"));
         else
-            sprintf(str, "Drawer Available: #%d", drawer->number);
+            vt_safe_string::safe_format(str, 256, "Drawer Available: #%d", drawer->number);
         TextC(term, 2.3, str, col);
     }
     else if (employee->IsSupervisor(settings))
@@ -1165,9 +1166,9 @@ RenderResult TableZone::Render(Terminal *term, int update_flag)
         genericChar str[32];
         int subs = check->SubCount();
         if (subs > 1)
-            sprintf(str, "%d/%d", check->Guests(), subs);
+            vt_safe_string::safe_format(str, 32, "%d/%d", check->Guests(), subs);
         else
-            sprintf(str, "%d", check->Guests());
+            vt_safe_string::safe_format(str, 32, "%d", check->Guests());
 
         int bar_color, text_color, off = 0;
         if (check->user_current > 0 && check->user_current != employee->id)
@@ -1397,13 +1398,13 @@ RenderResult GuestCountZone::Render(Terminal *term, int update_flag)
     }
 
     genericChar str[256];
-    sprintf(str, "Guest Count for Table %s", check->Table());
+    vt_safe_string::safe_format(str, 256, "Guest Count for Table %s", check->Table());
     TextC(term, 0, str, color[0]);
     Entry(term, 3, 2, size_x - 6);
     if (term->guests <= 0)
-        sprintf(str, "_");
+        vt_safe_string::safe_format(str, 256, "_");
     else
-        sprintf(str, "%d_", term->guests);
+        vt_safe_string::safe_format(str, 256, "%d_", term->guests);
 
     TextC(term, 2, str, COLOR_WHITE);
     return RENDER_OKAY;

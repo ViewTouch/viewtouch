@@ -27,6 +27,7 @@
 #include "dialog_zone.hh"
 #include "labels.hh"
 #include "system.hh"
+#include "safe_string_utils.hh"
 #include <string.h>
 #include <unistd.h>
 
@@ -261,9 +262,9 @@ SignalResult MessageButtonZone::SendandJump(Terminal *term)
     int idx = 0;
 
     if (message.size() > 0)
-        strcpy(signal, message.Value());
+        vt_safe_string::safe_copy(signal, STRLONG, message.Value());
     else if (name.size() > 0)
-        strcpy(signal, name.Value());
+        vt_safe_string::safe_copy(signal, STRLONG, name.Value());
 
     len = strlen(signal);
     if (len > 0)
@@ -449,7 +450,7 @@ char* MessageButtonZone::ValidateCommand(char* source)
     else
     {
         dest[didx] = '\0';
-        strcpy(source, dest);
+        vt_safe_string::safe_copy(source, STRLONG, dest);
         retval = source;
     }
     return retval;
@@ -522,7 +523,8 @@ int ConditionalZone::RenderInit(Terminal *term, int update_flag)
         genericChar str1[256] = "", str2[256] = "";
 
         // FIX - really lame expression parser
-        sscanf(expression.Value(), "%s %s %d", str1, str2, &val);
+        // Use safer scanf with field width limits to prevent buffer overflow
+        sscanf(expression.Value(), "%255s %255s %d", str1, str2, &val);
         keyword = CompareList(str1, KeyWords);
         op      = CompareList(str2, OperatorWords);
     }
@@ -815,7 +817,7 @@ RenderResult KillSystemZone::Render(Terminal *term, int update_flag)
     else
     {
         genericChar str[32];
-        sprintf(str, "%d Terminals Busy", users);
+        vt_safe_string::safe_format(str, 32, "%d Terminals Busy", users);
         RenderZone(term, str, update_flag);
     }
     return RENDER_OKAY;

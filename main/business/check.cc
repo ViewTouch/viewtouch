@@ -38,6 +38,7 @@
 #include "manager.hh"
 #include "admission.hh"
 #include "src/utils/vt_logger.hh"
+#include "safe_string_utils.hh"
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -118,11 +119,11 @@ genericChar* SeatName(int seat, genericChar* str, int guests)
 
     if (seat == -1)
     {
-        strcpy(str, "ToGo");
+        vt_safe_string::safe_copy(str, 16, "ToGo");
     }
     else if (seat < -1)
     {
-        sprintf(str, "%d", seat);
+        vt_safe_string::safe_format(str, 16, "%d", seat);
     }
     else if (seat < 26)
     {
@@ -369,7 +370,7 @@ int Check::Read(Settings *settings, InputDataFile &infile, int version)
     if (version < 7 || version > CHECK_VERSION)
     {
         genericChar str[32];
-        sprintf(str, "Unknown check version '%d'", version);
+        vt_safe_string::safe_format(str, 32, "Unknown check version '%d'", version);
         ReportError(str);
         return 1;
     }
@@ -541,7 +542,7 @@ int Check::Write(OutputDataFile &datFile, int version)
     if (version < 7)
     {
         genericChar str[64];
-        sprintf(str, "Invalid check version '%d' for saving", version);
+        vt_safe_string::safe_format(str, 64, "Invalid check version '%d' for saving", version);
         ReportError(str);
         return 1;
     }
@@ -1237,50 +1238,50 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
         case CHECK_TAKEOUT:
             if (!date.IsSet() || (date <= now))
             {
-                strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
+                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
+                vt_safe_string::safe_concat(str, STRLENGTH, " ");
             }
-            strcat(str, term->Translate("Take Out"));
+            vt_safe_string::safe_concat(str, STRLENGTH, term->Translate("Take Out"));
             break;
         case CHECK_DELIVERY:
             if (!date.IsSet() || (date <= now))
             {
-                strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
+                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
+                vt_safe_string::safe_concat(str, STRLENGTH, " ");
             }
-            strcat(str, term->Translate("Delivery"));
+            vt_safe_string::safe_concat(str, STRLENGTH, term->Translate("Delivery"));
             break;
         case CHECK_CATERING:
             if (!date.IsSet() || (date <= now))
             {
-                strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
+                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
+                vt_safe_string::safe_concat(str, STRLENGTH, " ");
             }
-            strcat(str, term->Translate("Catering"));
+            vt_safe_string::safe_concat(str, STRLENGTH, term->Translate("Catering"));
             break;
         case CHECK_DINEIN:
             if (!date.IsSet() || (date <= now))
             {
-                strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
+                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
+                vt_safe_string::safe_concat(str, STRLENGTH, " ");
             }
-            strcat(str, GlobalTranslate("Here"));
+            vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("Here"));
             break;
         case CHECK_TOGO:
             if (!date.IsSet() || (date <= now))
             {
-                strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
+                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
+                vt_safe_string::safe_concat(str, STRLENGTH, " ");
             }
-            strcat(str, GlobalTranslate("To Go"));
+            vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("To Go"));
             break;
         case CHECK_CALLIN:
             if (!date.IsSet() || (date <= now))
             {
-                strcpy(str, term->Translate(WAITSTR));
-                strcat(str, " ");
+                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
+                vt_safe_string::safe_concat(str, STRLENGTH, " ");
             }
-            strcat(str, GlobalTranslate("Pick Up"));
+            vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("Pick Up"));
             break;
         }
         snprintf(str1, pwidth, "%s", str);
@@ -1299,39 +1300,39 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     switch (CustomerType())
 	{
     case CHECK_RESTAURANT:
-        sprintf(str1, "%s %s-%d", term->Translate("Table"), Table(), Guests());
+        vt_safe_string::safe_format(str1, STRLENGTH, "%s %s-%d", term->Translate("Table"), Table(), Guests());
         break;
 
     case CHECK_HOTEL:
-        sprintf(str1, "%s %s", term->Translate("Room"), Table());
+        vt_safe_string::safe_format(str1, STRLENGTH, "%s %s", term->Translate("Room"), Table());
         break;
 
     case CHECK_TAKEOUT:
-        strcpy(str1, term->Translate("TO GO"));
+        vt_safe_string::safe_copy(str1, STRLENGTH, term->Translate("TO GO"));
         break;
 
     case CHECK_FASTFOOD:
-        strcpy(str1, term->Translate("Fast"));
+        vt_safe_string::safe_copy(str1, STRLENGTH, term->Translate("Fast"));
         break;
 
     case CHECK_DELIVERY:
-        strcpy(str1, term->Translate("Deliver"));
+        vt_safe_string::safe_copy(str1, STRLENGTH, term->Translate("Deliver"));
         break;
 
     case CHECK_RETAIL:
-        strcpy(str1, term->Translate("Retail"));
+        vt_safe_string::safe_copy(str1, STRLENGTH, term->Translate("Retail"));
         break;
 
     case CHECK_DINEIN:
-        strcpy(str1, GlobalTranslate("Here"));
+        vt_safe_string::safe_copy(str1, STRLENGTH, GlobalTranslate("Here"));
         break;
 
     case CHECK_TOGO:
-        strcpy(str1, GlobalTranslate("To Go"));
+        vt_safe_string::safe_copy(str1, STRLENGTH, GlobalTranslate("To Go"));
         break;
 
     case CHECK_CALLIN:
-        strcpy(str1, GlobalTranslate("Pick Up"));
+        vt_safe_string::safe_copy(str1, STRLENGTH, GlobalTranslate("Pick Up"));
         break;
 
     default:
@@ -1347,17 +1348,17 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     // flags, order number, type, elapsed time
     if (reprint)
     {
-        strcpy(str, GlobalTranslate("REPRINT "));
+        vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("REPRINT "));
         flags |= CF_REPRINT & CF_PRINTED;
     }
     else if (flags & flag_printed)
-        strcpy(str, GlobalTranslate("Restored "));
+        vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Restored "));
     else
     	str[0] = 0;
-    sprintf(str2, "#%d ", serial_number % 10000);	// max 4 digits
-    strcat(str, str2);
+    vt_safe_string::safe_format(str2, STRLENGTH, "#%d ", serial_number % 10000);	// max 4 digits
+    vt_safe_string::safe_concat(str, STRLENGTH, str2);
     if (!full_hdr && str1[0])	// combine order type on this line
-	strcat(str, str1);
+	vt_safe_string::safe_concat(str, STRLENGTH, str1);
     report->Mode(kitchen_mode);
     // green if paid
     report->TextL(str, GetStatus() == CHECK_CLOSED ? COLOR_DK_GREEN : color);
@@ -1377,14 +1378,14 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
 
     // order source and creation timestamp
     term->TimeDate(str, time_open, TD_NO_YEAR | TD_SHORT_MONTH | TD_NO_DAY | TD_SHORT_TIME);
-    sprintf(str1, "%*s", pwidth, str);	// pad to right justify, with space for underline
+    vt_safe_string::safe_format(str1, STRLENGTH, "%*s", pwidth, str);	// pad to right justify, with space for underline
 
     if (employee)
-        strcpy(str, employee->system_name.Value());
+        vt_safe_string::safe_copy(str, STRLENGTH, employee->system_name.Value());
     else if (call_center_id > 0)
-        strcpy(str, GlobalTranslate("Call Center"));
+        vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Call Center"));
     else
-        strcpy(str, UnknownStr);
+        vt_safe_string::safe_copy(str, STRLENGTH, UnknownStr);
 
     if (rzone)		// video
     {
@@ -1421,19 +1422,19 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                 else
                     cststr[0] = '\0';
                 if (settings->mod_separator == MOD_SEPARATE_CM)
-                    sprintf(ordstr, "%s  ", cststr);
+                    vt_safe_string::safe_format(ordstr, STRLENGTH, "%s  ", cststr);
 
                 // get the description 
                 order->PrintDescription(str2);
                 if (pval > 1)
                     strcat(ordstr, "->");
                 if (order->item_type == ITEM_POUND)
-                    sprintf(str1, "%.2f %s", ((Flt) order->count / 100.0), str2);
+                    vt_safe_string::safe_format(str1, STRLENGTH, "%.2f %s", ((Flt) order->count / 100.0), str2);
                 else if (order->count >= 1)
-                    sprintf(str1, "%d %s", order->count, str2);
+                    vt_safe_string::safe_format(str1, STRLENGTH, "%d %s", order->count, str2);
                 else
-                    sprintf(str1, "%s", str2);
-                strcat(ordstr, str1);
+                    vt_safe_string::safe_format(str1, STRLENGTH, "%s", str2);
+                vt_safe_string::safe_concat(ordstr, STRLENGTH, str1);
                 report->Mode(kitchen_mode);
                 report->TextL(ordstr, COLOR_DEFAULT);
                 report->TextR(cststr, COLOR_DEFAULT);
@@ -1449,9 +1450,9 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                     {
                         mod->PrintDescription(str1);
                         if (pval > 1)
-                            sprintf(str2, "-> %s", str1);
+                            vt_safe_string::safe_format(str2, STRLENGTH, "-> %s", str1);
                         else
-                            sprintf(str2, "  %s", str1);
+                            vt_safe_string::safe_format(str2, STRLENGTH, "  %s", str1);
                         if (settings->mod_separator == MOD_SEPARATE_NL)
                         {
                             // write out the line for newline mode
@@ -1463,7 +1464,7 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                         }
                         else
                         {
-                            strcpy(tmpstr, ordstr);  // save a backup copy
+                            vt_safe_string::safe_copy(tmpstr, STRLONG, ordstr);  // save a backup copy
                             if (firstmod == 0)
                                 strcat(ordstr, ",");
                             firstmod = 0;
@@ -1510,6 +1511,7 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
     Order    *order = NULL;
     Employee *employee = NULL;
     char      ordstr[STRLONG] = "";
+    char      tmpstr[STRLONG] = "";
     char      str1[STRLONG] = "";
     char      str2[STRLONG] = "";
     int       firstmod = 0;
@@ -1534,7 +1536,7 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
         {
             sidx = 0;
             didx = 0;
-            strcpy(str1, settings->receipt_footer[idx].Value());
+            vt_safe_string::safe_copy(str1, STRLONG, settings->receipt_footer[idx].Value());
             while (str1[sidx] == ' ')
                 sidx += 1;
             while (str1[sidx] != '\0')
@@ -1599,7 +1601,7 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
     if (employee != nullptr)
         snprintf(str1, STRLONG, "%s:  %s", GlobalTranslate("Op"), employee->system_name.Value());
     else
-        strcpy(str1, GlobalTranslate("Op:  callcenter"));
+        vt_safe_string::safe_copy(str1, STRLONG, GlobalTranslate("Op:  callcenter"));
     report->TextPosL2Col(20, str1);
     report->NewLine();
     snprintf(str1, STRLONG, "%s:  %s", GlobalTranslate("Date"), time_open.Date().c_str());
@@ -1613,7 +1615,7 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
     report->Divider2Col();
 
     // Now list the orders
-    strcpy(str1, GlobalTranslate("Qty  Description"));
+    vt_safe_string::safe_copy(str1, STRLONG, GlobalTranslate("Qty  Description"));
     report->TextL2Col(str1);
     report->TextR2Col(GlobalTranslate("Price"));
     report->NewLine();
@@ -1628,12 +1630,12 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
             // get the description 
             order->PrintDescription(str2, 1);
             if (order->item_type == ITEM_POUND)
-                sprintf(str1, "%.2f    %s", ((Flt) order->count / 100.0), str2);
+                vt_safe_string::safe_format(str1, STRLONG, "%.2f    %s", ((Flt) order->count / 100.0), str2);
             else if (order->count >= 1)
-                sprintf(str1, "%d    %s", order->count, str2);
+                vt_safe_string::safe_format(str1, STRLONG, "%d    %s", order->count, str2);
             else
-                sprintf(str1, "%s", str2);
-            strcat(ordstr, str1);
+                vt_safe_string::safe_format(str1, STRLONG, "%s", str2);
+            vt_safe_string::safe_concat(ordstr, STRLONG, str1);
             report->TextL2Col(ordstr);
             if (order->cost > 0)
             {
@@ -1690,9 +1692,9 @@ int Check::PrintCustomerInfo(Printer *printer, int mode)
         // name
         str[0] = '\0';
         if (strlen(FirstName()) > 0)
-            sprintf(str, "%s %s", FirstName(), LastName());
+            vt_safe_string::safe_format(str, STRLONG, "%s %s", FirstName(), LastName());
         else if (strlen(LastName()) > 0)
-            sprintf(str, "%s", LastName());
+            vt_safe_string::safe_format(str, STRLONG, "%s", LastName());
         if (str[0] != '\0')
         {
             custinfo = 1;
@@ -1725,9 +1727,9 @@ int Check::PrintCustomerInfo(Printer *printer, int mode)
         // city, state
         str[0] = '\0';
         if (strlen(City()) > 0)
-            sprintf(str, "%s  %s", City(), State());
+            vt_safe_string::safe_format(str, STRLONG, "%s  %s", City(), State());
         else if (strlen(State()) > 0)
-            strcpy(str, State());
+            vt_safe_string::safe_copy(str, STRLONG, State());
         if (str[0] != '\0')
         {
             custinfo = 1;
@@ -1755,11 +1757,11 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
         // name
         str[0] = '\0';
         if (strlen(FirstName()) > 0)
-            sprintf(str, "%s:  %s %s", GlobalTranslate("Name"), FirstName(), LastName());
+            vt_safe_string::safe_format(str, STRLONG, "%s:  %s %s", GlobalTranslate("Name"), FirstName(), LastName());
         else if (strlen(LastName()) > 0)
-            sprintf(str, "%s:  %s", GlobalTranslate("Last Name"), LastName());
+            vt_safe_string::safe_format(str, STRLONG, "%s:  %s", GlobalTranslate("Last Name"), LastName());
         else if (strlen(FullName()) > 0)
-            sprintf(str, "%s:  %s", GlobalTranslate("Name"), FullName());
+            vt_safe_string::safe_format(str, STRLONG, "%s:  %s", GlobalTranslate("Name"), FullName());
         if (str[0] != '\0')
         {
             custinfo = 1;
@@ -1772,7 +1774,7 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
         if (strlen(PhoneNumber()) > 0)
         {
             custinfo = 1;
-            sprintf(str, "%s:  %s", GlobalTranslate("Phone"), PhoneNumber());
+            vt_safe_string::safe_format(str, STRLONG, "%s:  %s", GlobalTranslate("Phone"), PhoneNumber());
             report->TextPosL(column1, str, COLOR_DEFAULT);
             if (columns > 1)
                 report->TextPosL(column2, str, COLOR_DEFAULT);
@@ -1782,7 +1784,7 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
         if (strlen(Address()) > 0)
         {
             custinfo = 1;
-            sprintf(str, "%s:  %s", GlobalTranslate("Street"), Address());
+            vt_safe_string::safe_format(str, STRLONG, "%s:  %s", GlobalTranslate("Street"), Address());
             report->TextPosL(column1, str, COLOR_DEFAULT);
             if (columns > 1)
                 report->TextPosL(column2, str, COLOR_DEFAULT);
@@ -1792,7 +1794,7 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
         if (strlen(Address2()) > 0)
         {
             custinfo = 1;
-            sprintf(str, "%s:  %s", GlobalTranslate("Address 2"), Address2());
+            vt_safe_string::safe_format(str, STRLONG, "%s:  %s", GlobalTranslate("Address 2"), Address2());
             report->TextPosL(column1, str, COLOR_DEFAULT);
             if (columns > 1)
                 report->TextPosL(column2, str, COLOR_DEFAULT);
@@ -1802,7 +1804,7 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
         if (strlen(CrossStreet()) > 0)
         {
             custinfo = 1;
-            sprintf(str, "%s:  %s", GlobalTranslate("Cross Street"), CrossStreet());
+            vt_safe_string::safe_format(str, STRLONG, "%s:  %s", GlobalTranslate("Cross Street"), CrossStreet());
             report->TextPosL(column1, str, COLOR_DEFAULT);
             if (columns > 1)
                 report->TextPosL(column2, str, COLOR_DEFAULT);
@@ -1811,11 +1813,11 @@ int Check::PrintCustomerInfoReport(Report *report, int mode, int columns, int pw
         // city, state
         str[0] = '\0';
         if (strlen(City()) > 0 && strlen(State()) > 0)
-            sprintf(str, "%s:  %s  %s", GlobalTranslate("City and State"), City(), State());
+            vt_safe_string::safe_format(str, STRLONG, "%s:  %s  %s", GlobalTranslate("City and State"), City(), State());
         else if (strlen(City()) > 0)
-            sprintf(str, "%s:  %s", GlobalTranslate("City"), City());
+            vt_safe_string::safe_format(str, STRLONG, "%s:  %s", GlobalTranslate("City"), City());
         else if (strlen(State()) > 0)
-            sprintf(str, "%s:  %s", GlobalTranslate("State"), State());
+            vt_safe_string::safe_format(str, STRLONG, "%s:  %s", GlobalTranslate("State"), State());
         if (str[0] != '\0')
         {
             custinfo = 1;
@@ -1955,30 +1957,30 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
     report->TextL(str);
 
     if (IsTraining())
-        strcpy(str, term->Translate("Training Check"));
+        vt_safe_string::safe_copy(str, STRLONG, term->Translate("Training Check"));
     else if (video_target == PRINTER_DEFAULT)
-        sprintf(str, "#%09d", serial_number);
+        vt_safe_string::safe_format(str, STRLONG, "#%09d", serial_number);
     else
-        sprintf(str, "#%d", serial_number);
+        vt_safe_string::safe_format(str, STRLONG, "#%d", serial_number);
 
     report->TextR(str);
     report->NewLine();
     if (video_target == PRINTER_DEFAULT)
     {
-        sprintf(str, "%s: %s", term->Translate("Opened"),
+        vt_safe_string::safe_format(str, STRLONG, "%s: %s", term->Translate("Opened"),
                 term->TimeDate(time_open, TD_SHORT_DATE | TD_NO_DAY));
         report->TextL(str);
         report->NewLine();
         if (date.IsSet())
         {
-            sprintf(str, "%s: %s", term->Translate("Due"),
+            vt_safe_string::safe_format(str, STRLONG, "%s: %s", term->Translate("Due"),
                     term->TimeDate(date, TD_SHORT_DATE | TD_NO_DAY));
             report->TextL(str);
             report->NewLine();
         }
         if (user_open != user_owner)
         {
-            sprintf(str, "%s: %s", term->Translate("Original Owner"),
+            vt_safe_string::safe_format(str, STRLONG, "%s: %s", term->Translate("Original Owner"),
                     term->UserName(user_open));
             report->TextL(str);
             report->NewLine();
@@ -1987,7 +1989,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
     }
     else
     {
-        sprintf(str, "%s: %s", term->Translate("Table"), Table());
+        vt_safe_string::safe_format(str, STRLONG, "%s: %s", term->Translate("Table"), Table());
         report->TextL(str);
         report->NewLine();
     }
@@ -1999,9 +2001,9 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
         // print customer name
         str[0] = '\0';
         if (strlen(customer->FirstName()) > 0)
-            sprintf(str, "%s %s", customer->FirstName(), customer->LastName());
+            vt_safe_string::safe_format(str, STRLONG, "%s %s", customer->FirstName(), customer->LastName());
         else if (strlen(customer->LastName()) > 0)
-            sprintf(str, "%s", customer->LastName());
+            vt_safe_string::safe_format(str, STRLONG, "%s", customer->LastName());
         if (strlen(str) > 0)
         {
             custinfo = 1;
@@ -2022,14 +2024,14 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
         if (strlen(customer->City()) > 0)
         {
             if (strlen(customer->State()) > 0)
-                sprintf(str, "%s %s  %s", customer->City(), customer->State(), customer->Postal());
+                vt_safe_string::safe_format(str, STRLONG, "%s %s  %s", customer->City(), customer->State(), customer->Postal());
             else
-                sprintf(str, "%s  %s", customer->City(), customer->Postal());
+                vt_safe_string::safe_format(str, STRLONG, "%s  %s", customer->City(), customer->Postal());
         }
         else if (strlen(customer->State()) > 0)
-            sprintf(str, "%s  %s", customer->State(), customer->Postal());
+            vt_safe_string::safe_format(str, STRLONG, "%s  %s", customer->State(), customer->Postal());
         else if (strlen(customer->Postal()) > 0)
-            sprintf(str, "%s", customer->Postal());
+            vt_safe_string::safe_format(str, STRLONG, "%s", customer->Postal());
         if (strlen(str) > 0)
         {
             report->TextL(str);
@@ -2059,7 +2061,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
     {
         if (subs > 1)
         {
-            sprintf(str, "%s #%d - %s", term->Translate("Check"),
+            vt_safe_string::safe_format(str, STRLONG, "%s #%d - %s", term->Translate("Check"),
                     i, sc->StatusString(term));
             report->Mode(PRINT_UNDERLINE);
             report->TextC(str);
@@ -2078,26 +2080,26 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
             if (d)
             {
                 if (d->IsServerBank())
-                    strcpy(str, term->Translate("Server Bank"));
+                    vt_safe_string::safe_copy(str, STRLONG, term->Translate("Server Bank"));
                 else
-                    sprintf(str, "%s %d", term->Translate("Drawer"), d->number);
+                    vt_safe_string::safe_format(str, STRLONG, "%s %d", term->Translate("Drawer"), d->number);
                 report->TextL(str);
                 
-                sprintf(str, "%s: %s", term->Translate("Cashier"),
+                vt_safe_string::safe_format(str, STRLONG, "%s: %s", term->Translate("Cashier"),
                         term->UserName(sc->settle_user));
                 report->TextR(str);
                 report->NewLine();
             }
             else if (sc->drawer_id)
             {
-                sprintf(str, "%s #%09d", term->Translate("Drawer"), sc->drawer_id);
+                vt_safe_string::safe_format(str, STRLONG, "%s #%09d", term->Translate("Drawer"), sc->drawer_id);
                 report->TextC(str);
                 report->NewLine();
             }
             
             if (sc->settle_time.IsSet())
             {
-                sprintf(str, "%s: %s", term->Translate("Time Settled"),
+                vt_safe_string::safe_format(str, STRLONG, "%s: %s", term->Translate("Time Settled"),
                         term->TimeDate(sc->settle_time, TD_SHORT_DATE | TD_NO_DAY));
                 report->TextL(str);
                 report->NewLine();
@@ -2112,7 +2114,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
             first = 1;
             int order_target = order->VideoTarget(settings);
             if (order->sales_type & SALES_TAKE_OUT)
-                sprintf(str2, "%s ", term->Translate("TO"));
+                vt_safe_string::safe_format(str2, STRLONG, "%s ", term->Translate("TO"));
             else
                 str2[0] = '\0';
             if ((video_target == PRINTER_DEFAULT) ||
@@ -2120,10 +2122,10 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
             {
                 if (video_target != PRINTER_DEFAULT)
                 {
-                    sprintf(str, "%s%-2d %s", str2, order->count, order->PrintDescription());
+                    vt_safe_string::safe_format(str, STRLONG, "%s%-2d %s", str2, order->count, order->PrintDescription());
                 }
                 else
-                    sprintf(str, "%s%-2d %s", str2, order->count, order->Description(term));
+                    vt_safe_string::safe_format(str, STRLONG, "%s%-2d %s", str2, order->count, order->Description(term));
 
                 // Calculate order age and determine color for video displays
                 int order_color = COLOR_DEFAULT;
@@ -2207,20 +2209,20 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                         {
                             if (first)
                             {
-                                sprintf(str, "    %s", mod->PrintDescription());
+                                vt_safe_string::safe_format(str, STRLONG, "    %s", mod->PrintDescription());
                             }
                             else
                             {
                                 char tmpstr[STRLENGTH];
-                                strcpy(tmpstr, mod->PrintDescription());
-                                sprintf(str, ", %s", tmpstr);
+                                vt_safe_string::safe_copy(tmpstr, STRLENGTH, mod->PrintDescription());
+                                vt_safe_string::safe_format(str, STRLONG, ", %s", tmpstr);
                                 Flt swidth = rzone->TextWidth(term, str);
                                 if ((pos + swidth) >= (rzone->Width(term) - 3))
                                 {
                                     report->Text(",", modifier_color, ALIGN_LEFT, pos);
                                     report->NewLine();
                                     pos = 0.0;
-                                    sprintf(str, "    %s", tmpstr);
+                                    vt_safe_string::safe_format(str, STRLONG, "    %s", tmpstr);
                                 }
                             }
                             report->Text(str, modifier_color, ALIGN_LEFT, pos);
@@ -2228,7 +2230,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                         }
                         else
                         {
-                            sprintf(str, "    %s", mod->Description(term));
+                            vt_safe_string::safe_format(str, STRLONG, "    %s", mod->Description(term));
                             report->Text(str, modifier_color, ALIGN_LEFT, pos);
                         }
                         if (show_what & CHECK_DISPLAY_CASH)
@@ -2265,7 +2267,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                     report->TextPosR(-8, GlobalTranslate("Tax Exempt"));
                     report->TextR(term->FormatPrice(-tax));
                     report->NewLine();
-                    sprintf(str, "%s:  %s", GlobalTranslate("Tax ID"), sc->tax_exempt.Value());
+                    vt_safe_string::safe_format(str, STRLONG, "%s:  %s", GlobalTranslate("Tax ID"), sc->tax_exempt.Value());
                     report->Mode(PRINT_BOLD);
                     report->TextL(str);
                     report->NewLine();
@@ -2524,9 +2526,9 @@ const genericChar* Check::PaymentSummary(Terminal *term)
     genericChar tmp[32]; 
     int status = GetStatus();
     if (status == CHECK_VOIDED)
-        strcpy(str, term->Translate("Voided"));
+        vt_safe_string::safe_copy(str, 256, term->Translate("Voided"));
     else if (status == CHECK_OPEN)
-        strcpy(str, term->Translate("Unpaid"));
+        vt_safe_string::safe_copy(str, 256, term->Translate("Unpaid"));
     else
     {
         int check = 0, comp = 0, cash = 0, gift = 0, room = 0;
@@ -2566,7 +2568,7 @@ const genericChar* Check::PaymentSummary(Terminal *term)
         if (account)  strcat(str, "A,");
         if (room)
         {
-            sprintf(tmp, "R#%d,", room);
+            vt_safe_string::safe_format(tmp, 32, "R#%d,", room);
             strcat(str, tmp);
         }
         if (cash)
@@ -3091,7 +3093,7 @@ int SubCheck::Read(Settings *settings, InputDataFile &infile, int version)
             if (error)
             {
                 genericChar str[64];
-                sprintf(str, "%s %d of %d", GlobalTranslate("Error reading order"), i+1, count);
+                vt_safe_string::safe_format(str, 64, "%s %d of %d", GlobalTranslate("Error reading order"), i+1, count);
                 ReportError(str);
                 return error;
             }
@@ -4407,11 +4409,11 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 	}
 
     if (e)
-        sprintf(str2, "%s: %s", term->Translate("Server"), e->system_name.Value());
+        vt_safe_string::safe_format(str2, 64, "%s: %s", term->Translate("Server"), e->system_name.Value());
     else
-        sprintf(str2, "%s: %s", term->Translate("Server"), term->Translate(UnknownStr));
+        vt_safe_string::safe_format(str2, 64, "%s: %s", term->Translate("Server"), term->Translate(UnknownStr));
 
-    sprintf(str, "%-14s%19s", str1, str2);
+    vt_safe_string::safe_format(str, 256, "%-14s%19s", str1, str2);
     printer->Write(str, settings->table_num_style);
 
     if (drawer == nullptr)
@@ -4425,9 +4427,9 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     if (drawer)
 	{
 		if (drawer->IsServerBank())
-			strcpy(str1, term->Translate("Server Bank"));
+			vt_safe_string::safe_copy(str1, 64, term->Translate("Server Bank"));
 		else
-			sprintf(str1, "%s %d", term->Translate("Drawer"), drawer->number);
+			vt_safe_string::safe_format(str1, 64, "%s %d", term->Translate("Drawer"), drawer->number);
 
 		Employee *cashier = NULL;
 		if (settle_user > 0)
@@ -4436,13 +4438,13 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 			cashier = sys->user_db.FindByID(drawer->owner_id);
 
 		if (cashier)
-			sprintf(str2, "%s: %s", term->Translate("Cashier"),
+			vt_safe_string::safe_format(str2, 64, "%s: %s", term->Translate("Cashier"),
 					cashier->system_name.Value());
 		else
-			sprintf(str2, "%s: %s", term->Translate("Cashier"),
+			vt_safe_string::safe_format(str2, 64, "%s: %s", term->Translate("Cashier"),
 					term->Translate(UnknownStr));
 
-		sprintf(str, "%-14s%19s", str1, str2);
+		vt_safe_string::safe_format(str, 256, "%-14s%19s", str1, str2);
 		printer->Write(str);
 	}
 
@@ -4451,12 +4453,12 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
         check->CustomerType() == CHECK_DELIVERY ||
         check->CustomerType() == CHECK_CATERING)
     {
-        sprintf(str, "Due:  %s", term->TimeDate(check->date, TD_DATETIME));
+        vt_safe_string::safe_format(str, 256, "Due:  %s", term->TimeDate(check->date, TD_DATETIME));
         printer->Write(str, PRINT_BOLD);
     }
     if (check->serial_number > 0)
     {
-        sprintf(str, "#%04d", check->serial_number % 10000);
+        vt_safe_string::safe_format(str, 256, "#%04d", check->serial_number % 10000);
         printer->Write(str, settings->order_num_style);
     }
     printer->NewLine();
@@ -4473,20 +4475,20 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 	}
         if (order->item_type == ITEM_POUND)
         {
-            sprintf(str1, "%.2f %s                              ",
+            vt_safe_string::safe_format(str1, 64, "%.2f %s                              ",
                     ((Flt)order->count / 100), order->Description(term));
         }
         else
         {
-            sprintf(str1, "%d %s                              ",
+            vt_safe_string::safe_format(str1, 64, "%d %s                              ",
                     order->count, order->Description(term));
         }
         if (order->status & ORDER_COMP)
-            strcpy(str2, "COMP");
+            vt_safe_string::safe_copy(str2, 64, "COMP");
         else
             term->FormatPrice(str2, order->cost);
         str1[32 - strlen(str2)] = '\0';
-        sprintf(str, "%s %s", str1, str2);
+        vt_safe_string::safe_format(str, 256, "%s %s", str1, str2);
         printer->Write(str);
 
         for (Order *mod = order->modifier_list; mod != nullptr; mod = mod->next)
@@ -4496,11 +4498,11 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
                 if (settings->receipt_all_modifiers > 0 && mod->cost == 0)
                     str2[0] = '\0';
                 else if (mod->status & ORDER_COMP)
-                    strcpy(str2, GlobalTranslate("COMP"));
+                    vt_safe_string::safe_copy(str2, 64, GlobalTranslate("COMP"));
                 else
                     term->FormatPrice(str2, mod->cost);
                 str2[23] = '\0';
-                sprintf(str, "   %-23s %6s", mod->Description(term), str2);
+                vt_safe_string::safe_format(str, 256, "   %-23s %6s", mod->Description(term), str2);
                 printer->Write(str);
             }
 		}
@@ -4512,7 +4514,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     Credit *cr = CurrentCredit();
 
     printer->Write("                           ------");
-    sprintf(str, "              Sales Total %7s", term->FormatPrice(raw_sales - item_comps));
+    vt_safe_string::safe_format(str, 256, "              Sales Total %7s", term->FormatPrice(raw_sales - item_comps));
     printer->Write(str);
 
     int tc = raw_sales - item_comps;
@@ -4533,7 +4535,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
                     pay->tender_type == TENDER_DISCOUNT ||
                     pay->tender_type == TENDER_COMP)
                 {
-                    sprintf(str, "%25.25s %7s", pay->Description(settings),
+                    vt_safe_string::safe_format(str, 256, "%25.25s %7s", pay->Description(settings),
                             term->FormatPrice(-pay->value));
                     printer->Write(str);
                     tc -= pay->value;
@@ -4548,47 +4550,47 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     {
         if (settings->tax_GST > 0)
         {
-            sprintf(str, "                     GST: %7s", term->FormatPrice(total_tax_GST));
+            vt_safe_string::safe_format(str, 256, "                     GST: %7s", term->FormatPrice(total_tax_GST));
             printer->Write(str);
         }
 
         str[0] = '\0';
         if (settings->tax_QST > 0)
-			sprintf(str, "                     QST: %7s", term->FormatPrice(total_tax_QST));
+			vt_safe_string::safe_format(str, 256, "                     QST: %7s", term->FormatPrice(total_tax_QST));
         else if (settings->tax_PST > 0)
-			sprintf(str, "                     PST: %7s", term->FormatPrice(total_tax_PST));
+			vt_safe_string::safe_format(str, 256, "                     PST: %7s", term->FormatPrice(total_tax_PST));
         if (str[0] != '\0')
             printer->Write(str);
 	}
 	else
 	{
-		sprintf(str, "                      HST: %7s", term->FormatPrice(total_tax_HST));
+		vt_safe_string::safe_format(str, 256, "                      HST: %7s", term->FormatPrice(total_tax_HST));
 		printer->Write(str);
 	}
     if (settings->tax_VAT > 0)
-        sprintf(str, "                      VAT: %7s", term->FormatPrice(total_tax_VAT));
-		
-    sprintf(str, "                Total Tax %7s", term->FormatPrice(TotalTax()));
+        vt_safe_string::safe_format(str, 256, "                      VAT: %7s", term->FormatPrice(total_tax_VAT));
+
+    vt_safe_string::safe_format(str, 256, "                Total Tax %7s", term->FormatPrice(TotalTax()));
     printer->Write(str);
 
     if (IsTaxExempt())
     {
-        sprintf(str, "               Tax Exempt %7s", term->FormatPrice(-TotalTax()));
+        vt_safe_string::safe_format(str, 256, "               Tax Exempt %7s", term->FormatPrice(-TotalTax()));
         printer->Write(str);
-        sprintf(str, "Tax ID:  %s\n", tax_exempt.Value());
+        vt_safe_string::safe_format(str, 256, "Tax ID:  %s\n", tax_exempt.Value());
         printer->Write(str, PRINT_BOLD);
     }
 
 
     if (gratuity)
     {
-        sprintf(str, "%25.25s %7s", gratuity->Description(settings),
+        vt_safe_string::safe_format(str, 256, "%25.25s %7s", gratuity->Description(settings),
                 term->FormatPrice(-gratuity->value));
         printer->Write(str);
     }
 
     printer->Write("                           ------");
-    sprintf(str, "                    Total %7s", term->FormatPrice(tc, 1));
+    vt_safe_string::safe_format(str, 256, "                    Total %7s", term->FormatPrice(tc, 1));
     printer->Write(str);
 
     if (PaymentList())
@@ -4606,25 +4608,25 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
                     str[0] = '\0';
                     if (tmp && settings->authorize_method == CCAUTH_NONE)
                     {
-                        sprintf(str, "%25.25s %7s",
+                        vt_safe_string::safe_format(str, 256, "%25.25s %7s",
                                 tmp->CreditTypeName(), term->FormatPrice(pay->value));
                     }
                     else
                     {
-                        sprintf(str, "%25.25s %7s", pay->Description(settings),
+                        vt_safe_string::safe_format(str, 256, "%25.25s %7s", pay->Description(settings),
                                 term->FormatPrice(pay->value));
                     }
                     printer->Write(str);
                     if (tmp && settings->authorize_method == CCAUTH_NONE)
                     {
                         printer->LineFeed(1);
-                        sprintf(str, "  Account       %s", tmp->PAN(settings->show_entire_cc_num));
+                        vt_safe_string::safe_format(str, 256, "  Account       %s", tmp->PAN(settings->show_entire_cc_num));
                         printer->Write(str);
-                        sprintf(str, "  Card Holder   %s", tmp->Name());
+                        vt_safe_string::safe_format(str, 256, "  Card Holder   %s", tmp->Name());
                         printer->Write(str);
-                        sprintf(str, "  Card Expires  %s", tmp->ExpireDate());
+                        vt_safe_string::safe_format(str, 256, "  Card Expires  %s", tmp->ExpireDate());
                         printer->Write(str);
-                        sprintf(str, "  Authorization %s", tmp->Approval());
+                        vt_safe_string::safe_format(str, 256, "  Authorization %s", tmp->Approval());
                     }
                 }
             }
@@ -4633,24 +4635,24 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
         printer->LineFeed(1);
         if (payment > 0)
         {
-            sprintf(str, "          Amount Tendered %7s", term->FormatPrice(payment, 1));
+            vt_safe_string::safe_format(str, 256, "          Amount Tendered %7s", term->FormatPrice(payment, 1));
             printer->Write(str);
         }
         if (balance > 0)
         {
-            sprintf(str, "              Balance Due %7s", term->FormatPrice(balance, 1));
+            vt_safe_string::safe_format(str, 256, "              Balance Due %7s", term->FormatPrice(balance, 1));
             printer->Write(str);
         }
         else
         {
-            sprintf(str, "                   Change %7s", term->FormatPrice(change_value, 1));
+            vt_safe_string::safe_format(str, 256, "                   Change %7s", term->FormatPrice(change_value, 1));
             printer->Write(str);
         }
 
         if (item_comps > 0)
         {
             printer->LineFeed(1);
-            sprintf(str, "               Total Comp %7s", term->FormatPrice(item_comps, 1));
+            vt_safe_string::safe_format(str, 256, "               Total Comp %7s", term->FormatPrice(item_comps, 1));
             printer->Write(str);
         }
     }
@@ -5515,7 +5517,7 @@ int Order::Read(InputDataFile &infile, int version)
     if (error)
     {
         genericChar str[256];
-        sprintf(str, "Error in reading version %d order data", version);
+        vt_safe_string::safe_format(str, 256, "Error in reading version %d order data", version);
         ReportError(str);
     }
     return error;
@@ -5791,7 +5793,7 @@ genericChar* Order::Seat(Settings *settings, genericChar* str)
         str = buffer;
 
     if (sales_type & SALES_TAKE_OUT)
-        strcpy(str, "ToGo");
+        vt_safe_string::safe_copy(str, 32, "ToGo");
     else if (settings->use_seats)
         SeatName(seat, str);
     else
@@ -6115,7 +6117,7 @@ genericChar* Payment::Description(Settings *settings, genericChar* str)
 
     if (tender_type == TENDER_CREDIT_CARD && credit != nullptr)
     {
-        sprintf(str, "Credit Card (%s)", credit->CreditTypeName(NULL, 1));
+        vt_safe_string::safe_format(str, 128, "Credit Card (%s)", credit->CreditTypeName(NULL, 1));
         return str;
     }
 
@@ -6123,7 +6125,7 @@ genericChar* Payment::Description(Settings *settings, genericChar* str)
     if (flags & TF_IS_PERCENT)
     {
         genericChar tmp[32];
-        sprintf(tmp, " %g%%", (Flt) amount / 100.0);
+        vt_safe_string::safe_format(tmp, 32, " %g%%", (Flt) amount / 100.0);
         strcat(str, tmp);
     }
     return str;

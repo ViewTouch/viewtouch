@@ -25,6 +25,7 @@
 #include "settings.hh"
 #include "system.hh"
 #include "archive.hh"
+#include "safe_string_utils.hh"
 
 #include <dirent.h>
 #include <sys/types.h>
@@ -441,7 +442,7 @@ int LaborPeriod::Scan(const char* filename)
     char str[256];
     if (version < 3 || version > 4)
     {
-        sprintf(str, "Unknown labor file version %d", version);
+        vt_safe_string::safe_format(str, 256, "Unknown labor file version %d", version);
         ReportError(str);
         return 1;
     }
@@ -464,7 +465,7 @@ int LaborPeriod::Load()
     char str[256];
     if (version < 2 || version > 4)
     {
-        sprintf(str, "Unknown labor file version %d", version);
+        vt_safe_string::safe_format(str, 256, "Unknown labor file version %d", version);
         ReportError(str);
         return 1;
     }
@@ -630,7 +631,7 @@ int LaborPeriod::WorkReport(Terminal *t, Employee *user, TimeInfo &tm_s,
                 work = 0;
 
             total_work += work;
-            sprintf(str, "%d:%02d", work / 60, work % 60);
+            vt_safe_string::safe_format(str, 256, "%d:%02d", work / 60, work % 60);
             r->TextPosR(-16, str);
 
             c = COLOR_DEFAULT;
@@ -663,7 +664,7 @@ int LaborPeriod::WorkReport(Terminal *t, Employee *user, TimeInfo &tm_s,
                 r->Mode(PRINT_BOLD);
                 r->TextPosR(-25, "Overtime", COLOR_DK_RED);
                 r->Mode(0);
-                sprintf(str, "%d:%02d", ot / 60, ot % 60);
+                vt_safe_string::safe_format(str, 256, "%d:%02d", ot / 60, ot % 60);
                 r->TextPosR(-16, str, COLOR_DK_RED);
                 int ot_wage = FltToPrice(PriceToFlt(ot * work_entry->pay_amount) / 120.0);
                 r->TextPosR(-7, t->FormatPrice(ot_wage, 1), COLOR_DK_RED);
@@ -679,10 +680,10 @@ int LaborPeriod::WorkReport(Terminal *t, Employee *user, TimeInfo &tm_s,
 //            r->TextPosR(-25, "Total", COLOR_DK_GREEN);
             r->TextPosR(-35, "Total", COLOR_DK_GREEN);
             r->Mode(0);
-            sprintf(str, "%.2f", (Flt) total_work / 60.0);
+            vt_safe_string::safe_format(str, 256, "%.2f", (Flt) total_work / 60.0);
 //            r->TextPosR(-16, str, COLOR_DK_GREEN);
             r->TextPosR(-26, str, COLOR_DK_GREEN);
-            sprintf(str, "(%d:%02d)", total_work / 60, total_work % 60);
+            vt_safe_string::safe_format(str, 256, "(%d:%02d)", total_work / 60, total_work % 60);
             r->TextPosR(-16, str, COLOR_DK_RED);
             r->TextPosR(-7, t->FormatPrice(total_wages, 1), COLOR_DK_GREEN);
             r->TextR(t->FormatPrice(total_tips, 1), COLOR_DK_GREEN);
@@ -820,7 +821,7 @@ int LaborDB::Load(const char* path)
                 continue;
 			if (strncmp(name, "labor_", 6) == 0)
 			{
-				sprintf(str, "%s/%s", pathname.Value(), name);
+				vt_safe_string::safe_format(str, 256, "%s/%s", pathname.Value(), name);
 				LaborPeriod *lp = new LaborPeriod;
 				if (lp->Scan(str))
 				{
@@ -904,7 +905,7 @@ int LaborDB::NewLaborPeriod()
 
     Add(lp);
     char str[256];
-    sprintf(str, "%s/labor_%09d", pathname.Value(), lp->serial_number);
+    vt_safe_string::safe_format(str, 256, "%s/labor_%09d", pathname.Value(), lp->serial_number);
     lp->file_name.Set(str);
     lp->loaded = 1;
     lp->Save();
@@ -1065,12 +1066,12 @@ int LaborDB::ServerLaborReport(Terminal *t, Employee *e, TimeInfo &start,
     if (start.IsSet())
         t->TimeDate(tm1, start, TD5);
     else
-        strcpy(tm1, t->Translate("System Start"));
+        vt_safe_string::safe_copy(tm1, 32, t->Translate("System Start"));
     if (end.IsSet())
         t->TimeDate(tm2, end, TD5);
     else
-        strcpy(tm2, "Now");
-    sprintf(str, "(%s to %s)", tm1, tm2);
+        vt_safe_string::safe_copy(tm2, 32, "Now");
+    vt_safe_string::safe_format(str, 256, "(%s to %s)", tm1, tm2);
     r->TextC(str, COLOR_DK_BLUE);
     r->NewLine(2);
 
@@ -1121,7 +1122,7 @@ int LaborDB::ServerLaborReport(Terminal *t, Employee *e, TimeInfo &start,
                         work = 0;
 
                     total_work += work;
-                    sprintf(str, "%d:%02d", work / 60, work % 60);
+                    vt_safe_string::safe_format(str, 256, "%d:%02d", work / 60, work % 60);
                     r->TextPosL(24, str);
 
                     int wage = 0;
@@ -1145,7 +1146,7 @@ int LaborDB::ServerLaborReport(Terminal *t, Employee *e, TimeInfo &start,
     r->NewLine();
     r->Mode(PRINT_BOLD);
     r->TextPosL(8, "Total");
-    sprintf(str, "%d:%02d", total_work / 60, total_work % 60);
+    vt_safe_string::safe_format(str, 256, "%d:%02d", total_work / 60, total_work % 60);
     r->TextPosL(24, str);
     r->TextPosR(38, t->FormatPrice(total_wages));
     r->TextPosR(45, t->FormatPrice(total_tips));
@@ -1221,7 +1222,7 @@ int LaborDB::WorkReceipt(Terminal *t, Employee *e, Report *r)
     if (header->size() > 0)
     {
         // ugly hack: get rid of any initial spaces so we can center it properly
-        strcpy(buff2, header->Value());
+        vt_safe_string::safe_copy(buff2, STRLONG, header->Value());
         while (buff2[idx] == ' ' || buff2[idx] == '\t')
             idx += 1;
         while (buff2[idx] != ' ' && buff2[idx] != '\n' && buff2[idx] != '\t')
@@ -1239,7 +1240,7 @@ int LaborDB::WorkReceipt(Terminal *t, Employee *e, Report *r)
     r->NewLine();
     r->Mode(0);
 
-    sprintf(str, "      User: %s", e->system_name.Value());
+    vt_safe_string::safe_format(str, 256, "      User: %s", e->system_name.Value());
     r->TextL(str);
     r->NewLine();
 
@@ -1251,11 +1252,11 @@ int LaborDB::WorkReceipt(Terminal *t, Employee *e, Report *r)
     {
         if (bs.IsSet())
         {
-            sprintf(str, " Off Break: %s", t->TimeDate(we->start, TD2));
+            vt_safe_string::safe_format(str, 256, " Off Break: %s", t->TimeDate(we->start, TD2));
             break_min += MinutesElapsed(we->start, bs);
         }
         else
-            sprintf(str, "   Time On: %s", t->TimeDate(we->start, TD2));
+            vt_safe_string::safe_format(str, 256, "   Time On: %s", t->TimeDate(we->start, TD2));
 
         r->TextL(str);
         r->NewLine();
@@ -1265,10 +1266,10 @@ int LaborDB::WorkReceipt(Terminal *t, Employee *e, Report *r)
         else
         {
             if (we->end_shift)
-                sprintf(str, "  Time Off: %s", t->TimeDate(we->end, TD2));
+                vt_safe_string::safe_format(str, 256, "  Time Off: %s", t->TimeDate(we->end, TD2));
             else
             {
-                sprintf(str, "  On Break: %s", t->TimeDate(we->end, TD2));
+                vt_safe_string::safe_format(str, 256, "  On Break: %s", t->TimeDate(we->end, TD2));
                 bs = we->end;
             }
             r->TextL(str);
@@ -1285,17 +1286,17 @@ int LaborDB::WorkReceipt(Terminal *t, Employee *e, Report *r)
     }
 
     r->NewLine();
-    sprintf(str, "  Time Worked: %.2f hours", (Flt) minute / 60);
+    vt_safe_string::safe_format(str, 256, "  Time Worked: %.2f hours", (Flt) minute / 60);
     r->TextL(str);
     if (break_min > 0)
     {
         r->NewLine();
-        sprintf(str, "Time on Break: %.2f hours", (Flt) break_min / 80);
+        vt_safe_string::safe_format(str, 256, "Time on Break: %.2f hours", (Flt) break_min / 80);
         r->TextL(str);
     }
 
     r->NewLine(2);
-    sprintf(str, "%s: %s", t->Translate("Tips Declared"), t->FormatPrice(tips));
+    vt_safe_string::safe_format(str, 256, "%s: %s", t->Translate("Tips Declared"), t->FormatPrice(tips));
     r->TextL(str);
     r->NewLine();
 

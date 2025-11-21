@@ -47,6 +47,7 @@
 #include <cstring>
 
 #include "debug.hh"
+#include "safe_string_utils.hh"
 #include "term_view.hh"
 #include "term_dialog.hh"
 #include "remote_link.hh"
@@ -1431,9 +1432,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
             {
                 // Use safe string concatenation with bounds checking
                 std::string test_card_data = "%B5186900000000121^TEST CARD/MONERIS^;??";
-                if (test_card_data.length() < swipe_buffer.size()) {
-                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
-                }
+                vt_safe_string::safe_copy(swipe_buffer.data(), swipe_buffer.size(), test_card_data);
             }
             else if (randcc == 1 || randcc == 3 || randcc == 5)
             {  // correct data, tracks 1 and 2
@@ -1445,7 +1444,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
                 
                 // Copy to buffer with bounds checking
                 if (test_card_data.length() < swipe_buffer.size()) {
-                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                    vt_safe_string::safe_copy(swipe_buffer.data(), swipe_buffer.size(), test_card_data);
                 }
             }
             else if (randcc == 2)
@@ -1461,7 +1460,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
                 
                 // Copy to buffer with bounds checking
                 if (test_card_data.length() < swipe_buffer.size()) {
-                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                    vt_safe_string::safe_copy(swipe_buffer.data(), swipe_buffer.size(), test_card_data);
                 }
             }
             else if (randcc == 4)
@@ -1474,7 +1473,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
                 
                 // Copy to buffer with bounds checking
                 if (test_card_data.length() < swipe_buffer.size()) {
-                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                    vt_safe_string::safe_copy(swipe_buffer.data(), swipe_buffer.size(), test_card_data);
                 }
             }
             else if (randcc == 6)
@@ -1485,7 +1484,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
                 
                 // Copy to buffer with bounds checking
                 if (test_card_data.length() < swipe_buffer.size()) {
-                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                    vt_safe_string::safe_copy(swipe_buffer.data(), swipe_buffer.size(), test_card_data);
                 }
             }
             else if (randcc == 7)
@@ -1498,7 +1497,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
                 
                 // Copy to buffer with bounds checking
                 if (test_card_data.length() < swipe_buffer.size()) {
-                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                    vt_safe_string::safe_copy(swipe_buffer.data(), swipe_buffer.size(), test_card_data);
                 }
             }
             else if (randcc == 8)
@@ -1508,7 +1507,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
                 
                 // Copy to buffer with bounds checking
                 if (test_card_data.length() < swipe_buffer.size()) {
-                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                    vt_safe_string::safe_copy(swipe_buffer.data(), swipe_buffer.size(), test_card_data);
                 }
             }
             else if (randcc == 9)
@@ -1518,7 +1517,7 @@ void KeyPressCB(Widget widget, XtPointer client_data,
                 
                 // Copy to buffer with bounds checking
                 if (test_card_data.length() < swipe_buffer.size()) {
-                    std::strcpy(swipe_buffer.data(), test_card_data.c_str());
+                    vt_safe_string::safe_copy(swipe_buffer.data(), swipe_buffer.size(), test_card_data);
                 }
             }
             fake_cc = 0;
@@ -2624,14 +2623,14 @@ int SaveToPPM()
     // Find first unused filename (starting with 0)
     while (1)
     {
-        sprintf(filename.data(), "%s/vtscreen%d.wd", Constants::SCREEN_DIR, no++);
+        vt_safe_string::safe_format(filename.data(), filename.size(), "%s/vtscreen%d.wd", Constants::SCREEN_DIR, no++);
         if (!DoesFileExist(filename.data()))
             break;
     }
 
     // Log the action
     std::array<genericChar, 256> str;
-    sprintf(str.data(), "Saving screen image to file '%s'", filename.data());
+    vt_safe_string::safe_format(str.data(), str.size(), "Saving screen image to file '%s'", filename.data());
     ReportError(str.data());
 
     // Generate the screenshot
@@ -3681,11 +3680,11 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
         std::array<genericChar, 256> tmp;
         if (term_hardware == 1)
-            strcpy(tmp.data(), "NCD Explora");
+            vt_safe_string::safe_copy(tmp.data(), tmp.size(), "NCD Explora");
         else if (term_hardware == 2)
-            strcpy(tmp.data(), "NeoStation");
+            vt_safe_string::safe_copy(tmp.data(), tmp.size(), "NeoStation");
         else
-            strcpy(tmp.data(), "Server");
+            vt_safe_string::safe_copy(tmp.data(), tmp.size(), "Server");
         l->ZoneText(tmp.data(), 0, WinHeight - 30, WinWidth - 20, 30,
                     COLOR_WHITE, FONT_TIMES_20, ALIGN_RIGHT, use_embossed_text);
         Layers.Add(l);
@@ -3701,7 +3700,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
             Texture[image] = pixmap;
         else
         {
-            sprintf(str, "Can't Create Pixmap #%d On Display '%s'",
+            vt_safe_string::safe_format(str, STRLENGTH, "Can't Create Pixmap #%d On Display '%s'",
                     image, display);
             ReportError(str);
             return 1;
@@ -3963,7 +3962,7 @@ int ReconnectToServer()
     // Try to reconnect to the server
     struct sockaddr_un server_adr;
     server_adr.sun_family = AF_UNIX;
-    strcpy(server_adr.sun_path, "/tmp/vt_term"); // Default socket path
+    vt_safe_string::safe_copy(server_adr.sun_path, sizeof(server_adr.sun_path), "/tmp/vt_term"); // Default socket path
 
     int new_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     if (new_socket <= 0)

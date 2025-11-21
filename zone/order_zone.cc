@@ -31,6 +31,7 @@
 #include "exception.hh"
 #include "manager.hh"
 #include "customer.hh"
+#include "safe_string_utils.hh"
 #include <string.h>
 
 #ifdef DMALLOC
@@ -180,61 +181,61 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
     switch (c->CustomerType())
 	{
     case CHECK_RESTAURANT:
-        sprintf(str, "%s %s", t->Translate("Tbl"), c->Table());
+        vt_safe_string::safe_format(str, 256, "%s %s", t->Translate("Tbl"), c->Table());
         TextL(t, 1, str, col);
         if (use_seats)
         {
-            sprintf(str, "%s %s", t->Translate("Seat"),
+            vt_safe_string::safe_format(str, 256, "%s %s", t->Translate("Seat"),
                     SeatName(t->seat, NULL, c->Guests()));
             TextC(t, 1, str, col);
         }
         else if (subs > 1)
         {
-            sprintf(str, "(%d of %d)", sc->number, subs);
+            vt_safe_string::safe_format(str, 256, "(%d of %d)", sc->number, subs);
             TextC(t, 1, str, COLOR_DK_RED);
         }
-        sprintf(str, "%s %2d", t->Translate("Guests"), c->Guests());
+        vt_safe_string::safe_format(str, 256, "%s %2d", t->Translate("Guests"), c->Guests());
         TextR(t, 1, str, col);
         break;
     case CHECK_HOTEL:
-        sprintf(str, "%s %s", t->Translate("Room"), c->Table());
+        vt_safe_string::safe_format(str, 256, "%s %s", t->Translate("Room"), c->Table());
         TextL(t, 1, str, col);
         if (subs > 1)
         {
-            sprintf(str, "(%d of %d)", sc->number, subs);
+            vt_safe_string::safe_format(str, 256, "(%d of %d)", sc->number, subs);
             TextC(t, 1, str, COLOR_DK_RED);
         }
-        sprintf(str, "%s %2d", t->Translate("Guests"), c->Guests());
+        vt_safe_string::safe_format(str, 256, "%s %2d", t->Translate("Guests"), c->Guests());
         TextR(t, 1, str, col);
         break;
     case CHECK_TAKEOUT:
         TextL(t, 1, t->Translate("Take Out"), col);
-        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        vt_safe_string::safe_format(str, 256, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_FASTFOOD:
         TextL(t, 1, t->Translate("Fast Food"), col);
-        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        vt_safe_string::safe_format(str, 256, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_DELIVERY:
         TextL(t, 1, t->Translate("Delivery"), col);
-        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        vt_safe_string::safe_format(str, 256, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_RETAIL:
         TextL(t, 1, t->Translate("Retail"), col);
-        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        vt_safe_string::safe_format(str, 256, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_TOGO:
         TextL(t, 1, GlobalTranslate("To Go"), col);
-        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        vt_safe_string::safe_format(str, 256, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
     case CHECK_DINEIN:
         TextL(t, 1, GlobalTranslate("Here"), col);
-        sprintf(str, "%s %d of %d", t->Translate("Part"), sc->number, subs);
+        vt_safe_string::safe_format(str, 256, "%s %d of %d", t->Translate("Part"), sc->number, subs);
         TextR(t, 1, str, col);
         break;
 	}
@@ -322,21 +323,21 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
         }
 
         if (o->sales_type == SALES_TAKE_OUT)
-            strcpy(str3, GlobalTranslate("TO "));
+            vt_safe_string::safe_copy(str3, 256, GlobalTranslate("TO "));
         else
             str3[0] = '\0';
         o->Description(t, str2);
         if (o->IsModifier())
-            sprintf(str, "    %s", str2);
+            vt_safe_string::safe_format(str, 256, "    %s", str2);
         else if (o->item_type == ITEM_POUND)
-            sprintf(str, "%s%.2f %s", str3, ((Flt)o->count / 100), str2);
+            vt_safe_string::safe_format(str, 256, "%s%.2f %s", str3, ((Flt)o->count / 100), str2);
         else
-            sprintf(str, "%s%d %s", str3, o->count, str2);
+            vt_safe_string::safe_format(str, 256, "%s%d %s", str3, o->count, str2);
 
         if (o->cost != 0.0 || (o->status & ORDER_COMP))
         {
             if (o->status & ORDER_COMP)
-                strcpy(str2, GlobalTranslate("COMP"));
+                vt_safe_string::safe_copy(str2, 256, GlobalTranslate("COMP"));
             else
             {
                 // Show regular price (tax will be shown separately)
@@ -773,7 +774,7 @@ int OrderEntryZone::CompOrder(Terminal *term, int reason)
         CompInfo *compInfo = currSettings->CompList();
         while (compInfo)
         {
-            sprintf(str, "comp %d", compInfo->id);
+            vt_safe_string::safe_format(str, 32, "comp %d", compInfo->id);
             d->Button(compInfo->name.Value(), str);
             compInfo = compInfo->next;
         }
@@ -812,7 +813,7 @@ int OrderEntryZone::VoidOrder(Terminal *term, int reason)
         CompInfo *compInfo = currSettings->CompList();
         while (compInfo)
         {
-            sprintf(str, "void %d", compInfo->id);
+            vt_safe_string::safe_format(str, 32, "void %d", compInfo->id);
             d->Button(compInfo->name.Value(), str);
             compInfo = compInfo->next;
         }
@@ -1058,14 +1059,14 @@ const char* OrderPageZone::TranslateString(Terminal *t)
     if (s->use_seats && (c == NULL || c->CustomerType() == CHECK_RESTAURANT))
     {
         if (amount > 0)
-            strcpy(str, GlobalTranslate("Next\\Seat"));
+            vt_safe_string::safe_copy(str, 256, GlobalTranslate("Next\\Seat"));
         else
-            strcpy(str, GlobalTranslate("Prior\\Seat"));
+            vt_safe_string::safe_copy(str, 256, GlobalTranslate("Prior\\Seat"));
     }
     else if (amount > 0)
-        strcpy(str, GlobalTranslate("Next\\Check"));
+        vt_safe_string::safe_copy(str, 256, GlobalTranslate("Next\\Check"));
     else
-        strcpy(str, GlobalTranslate("Prior\\Check"));
+        vt_safe_string::safe_copy(str, 256, GlobalTranslate("Prior\\Check"));
     return str;
 }
 
@@ -1141,33 +1142,33 @@ RenderResult OrderFlowZone::Render(Terminal *term, int update_flag)
     {
         // Start Order
         if (meal == INDEX_GENERAL || customer_type == CHECK_HOTEL || customer_type == CHECK_RETAIL)
-            strcpy(str, GlobalTranslate("Order Entry"));
+            vt_safe_string::safe_copy(str, 64, GlobalTranslate("Order Entry"));
         else
         {
             int cl = CompareList(meal, IndexValue, 0);
-            sprintf(str, "Order %s", IndexName[cl]);
+            vt_safe_string::safe_format(str, 64, "Order %s", IndexName[cl]);
         }
     }
     else if (pt == PAGE_ITEM)
     {
         // Order Index
         if (idx == INDEX_GENERAL)
-            strcpy(str, GlobalTranslate("Index"));
+            vt_safe_string::safe_copy(str, 64, GlobalTranslate("Index"));
         else
         {
             int cl = CompareList(idx, IndexValue, 0);
-            sprintf(str, "%s Index", IndexName[cl]);
+            vt_safe_string::safe_format(str, 64, "%s Index", IndexName[cl]);
         }
     }
     else if (pt == PAGE_SCRIPTED || pt == PAGE_SCRIPTED2)
     {
         // Continue Order Script
         if (idx == INDEX_GENERAL)
-            strcpy(str, GlobalTranslate("Continue Ordering"));
+            vt_safe_string::safe_copy(str, 64, GlobalTranslate("Continue Ordering"));
         else
         {
             int cl = CompareList(idx, IndexValue, 0);
-            sprintf(str, "Continue Ordering %s", IndexName[cl]);
+            vt_safe_string::safe_format(str, 64, "Continue Ordering %s", IndexName[cl]);
         }
     }
 
@@ -1636,7 +1637,7 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
                 genericChar str[256];
                 if (behave == BEHAVE_DOUBLE)
                 {
-                    sprintf(str, "%s\\( 2X )", b);
+                    vt_safe_string::safe_format(str, 256, "%s\\( 2X )", b);
                     b = str;
                 }
                 int c = color[state];
@@ -1855,8 +1856,8 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
         if ((sc->TabRemain() - o->total_cost) < 0)
         {
             char str[STRLENGTH] = "";
-            strcpy(str, GlobalTranslate("This order will reduce the tab remaining below 0.\\"));
-            strcpy(str, GlobalTranslate("Would you like to extend the tab?"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("This order will reduce the tab remaining below 0.\\"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Would you like to extend the tab?"));
             SimpleDialog *sd = new SimpleDialog(str);
             sd->Button(GlobalTranslate("Yes"), "addandopentab");
             sd->Button(GlobalTranslate("No, just add the order"), "addanyway");
@@ -1917,7 +1918,7 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
         width = t->cdu->Width();
         snprintf(buffer, width + 1, "%s",item->PrintName());
         t->cdu->Write(buffer);
-        strcpy(buffer, t->FormatPrice(item->cost));
+        vt_safe_string::safe_copy(buffer, STRLONG, t->FormatPrice(item->cost));
         buflen = strlen(buffer);
         t->cdu->ToPos(-(buflen-1), 2);
         t->cdu->Write(buffer);

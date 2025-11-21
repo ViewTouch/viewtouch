@@ -47,6 +47,7 @@
 #include "touch_screen.hh"
 #endif
 #include "utility.hh"
+#include "safe_string_utils.hh"
 #include "zone.hh"
 #include "version/vt_version_info.hh"
 #include "../term/term_view.hh"
@@ -312,7 +313,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             break;
 
         case SERVER_ERROR:
-            sprintf(str, "TermError: %s", term->RStr());
+            vt_safe_string::safe_format(str, STRLENGTH, "TermError: %s", term->RStr());
             ReportError(str);
             break;
 
@@ -413,7 +414,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             const char* s1 = term->RStr();
             if (strlen(s1) < STRLENGTH)
             {
-                sprintf(str, "swipe %s", s1);
+                vt_safe_string::safe_format(str, STRLENGTH, "swipe %s", s1);
                 term->Signal(str, 0);
             }
         }
@@ -932,7 +933,7 @@ int Terminal::JumpToIndex(int idx)
         else
         {
             genericChar str[64];
-            sprintf(str, "'%s' Index doesn't exist - can't jump", IndexName[cl]);
+            vt_safe_string::safe_format(str, 64, "'%s' Index doesn't exist - can't jump", IndexName[cl]);
             ReportError(str);
         }
         return 1;
@@ -1290,7 +1291,7 @@ int Terminal::OpenTabList(const char* message)
         {
             count += 1;
             four[0] = '\0';
-            strcpy(fname, currcheck->customer->FirstName());
+            vt_safe_string::safe_copy(fname, STRLENGTH, currcheck->customer->FirstName());
             subcheck = currcheck->SubList();
             while (subcheck != nullptr)
             {
@@ -1443,7 +1444,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         Update(UPDATE_SERVER, nullptr);
         return SIGNAL_OKAY;
     case CCQ_TERMINATE:
-        strcpy(msg, "killall vt_ccq_pipe");
+        vt_safe_string::safe_copy(msg, STRLONG, "killall vt_ccq_pipe");
         system(msg);
         msg[0] = '\0';
         strcat(msg, "Connection reset.\\");
@@ -2611,7 +2612,7 @@ int Terminal::KillDialog()
         selected_zone = nullptr;
 
     jump_index = ((DialogZone *)dialog)->target_index;
-    strcpy(next_signal, ((DialogZone *)dialog)->target_signal);
+    vt_safe_string::safe_copy(next_signal, STRLENGTH, ((DialogZone *)dialog)->target_signal);
     RegionInfo r(dialog);
     r.w += dialog->shadow;
     r.h += dialog->shadow;
@@ -3131,7 +3132,7 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
 				switch (idx)
 				{
                 case 0:  // release
-                    sprintf(tmp, "POS %s %s - \xa9 Gene Mosher 1986",
+                    vt_safe_string::safe_format(tmp, STRLENGTH, "POS %s %s - \xa9 Gene Mosher 1986",
                             viewtouch::get_version_extended().c_str(),
                             viewtouch::get_version_timestamp().substr(0, 10).c_str());
                     break;
@@ -3143,12 +3144,12 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
                     break;
                 case 3:  // name
                     if (user)
-                        strcpy(tmp, user->system_name.Value());
+                        vt_safe_string::safe_copy(tmp, STRLENGTH, user->system_name.Value());
                     else
-                        strcpy(tmp, "User");
+                        vt_safe_string::safe_copy(tmp, STRLENGTH, "User");
                     break;
                 case 4:  // termname
-                    strcpy(tmp, name.Value());
+                    vt_safe_string::safe_copy(tmp, STRLENGTH, name.Value());
                     break;
                 case 5:  // machineid
                     GetMacAddress(tmp, STRLENGTH);
@@ -3158,16 +3159,16 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
                     tmp[20] = '\0';
                     break;
                 case 7:  // licensedays
-                    sprintf(tmp, "%d", 999);
+                    vt_safe_string::safe_format(tmp, STRLENGTH, "%d", 999);
                     break;
                 case 8:  // creditid
-                    strcpy(tmp, cc_credit_termid.Value());
+                    vt_safe_string::safe_copy(tmp, STRLENGTH, cc_credit_termid.Value());
                     break;
                 case 9:  // debitid
-                    strcpy(tmp, cc_debit_termid.Value());
+                    vt_safe_string::safe_copy(tmp, STRLENGTH, cc_debit_termid.Value());
                     break;
                 case 10:  // merchantid
-                    strcpy(tmp, GetSettings()->cc_merchant_id.Value());
+                    vt_safe_string::safe_copy(tmp, STRLENGTH, GetSettings()->cc_merchant_id.Value());
                     break;
                 default:
                     tmp[0] = '\0';
@@ -3482,7 +3483,7 @@ const genericChar* Terminal::UserName(int user_id)
 genericChar* Terminal::UserName(genericChar* str, int user_id)
 {
     FnTrace("Terminal::UserName(str, int)");
-    strcpy(str, UserName(user_id));
+    vt_safe_string::safe_copy(str, STRLENGTH, UserName(user_id));
     return str;
 }
 
@@ -3678,9 +3679,9 @@ int Terminal::RenderBlankPage()
                 while (i < 6 && i < ref)
                 {
                     if (i == 0)
-                        sprintf(str, ": %d", list[i]);
+                        vt_safe_string::safe_format(str, STRLENGTH, ": %d", list[i]);
                     else
-                        sprintf(str, ",%d", list[i]);
+                        vt_safe_string::safe_format(str, STRLENGTH, ",%d", list[i]);
                     strcat(ref_list, str);
                     ++i;
                 }
@@ -3688,7 +3689,7 @@ int Terminal::RenderBlankPage()
                     strcat(ref_list, "...");
             }
 
-            sprintf(str, "%d %s (refs %d%s)", page->id, pn, count, ref_list);
+            vt_safe_string::safe_format(str, STRLENGTH, "%d %s (refs %d%s)", page->id, pn, count, ref_list);
             WStr(str);
 
             count = 0;
@@ -3704,10 +3705,10 @@ int Terminal::RenderBlankPage()
             }
 
             if ( pt == PAGE_INDEX )
-                sprintf(str, "%-13s  %-14s  %2d", PageTypeName[s1],
+                vt_safe_string::safe_format(str, STRLENGTH, "%-13s  %-14s  %2d", PageTypeName[s1],
                         IndexName[s2], count);
             else
-                sprintf(str, "%s  %2d", PageTypeName[s1], count);
+                vt_safe_string::safe_format(str, STRLENGTH, "%s  %2d", PageTypeName[s1], count);
             WStr(str);
         }
         else
@@ -5787,7 +5788,7 @@ int Terminal::ShowPageList()
 		{
 			last_id = p->id;
 			WInt8(TERM_LISTITEM);
-			sprintf(str, "%4d %s", p->id, Translate(p->name.Value()));
+			vt_safe_string::safe_format(str, 256, "%4d %s", p->id, Translate(p->name.Value()));
 			WStr(str);
 			Send();
 		}
@@ -6337,7 +6338,7 @@ int Terminal::CC_NextTermID(int *cc_state, char* termid)
 
         if (next_id != nullptr)
         {
-            strcpy(termid, next_id->Value());
+            vt_safe_string::safe_copy(termid, STRLENGTH, next_id->Value());
             next_id = next_id->next;
             retval = 1;
         }
@@ -6395,9 +6396,9 @@ int Terminal::CC_Settle(const char* batch, int reset)
             if (state == CC_SYS_STATE_START)
             {
                 if (batch != nullptr)
-                    strcpy(batchstr, batch);
+                    vt_safe_string::safe_copy(batchstr, STRLENGTH, batch);
                 else
-                    strcpy(batchstr, "find");
+                    vt_safe_string::safe_copy(batchstr, STRLENGTH, "find");
                 state = CC_SYS_STATE_DONE;
                 retval = -1;
             }
@@ -6481,9 +6482,9 @@ int Terminal::CC_Totals(const char* batch)
         if (auth_method == CCAUTH_MAINSTREET)
         {
             if (batch != nullptr)
-                strcpy(batchnum, batch);
+                vt_safe_string::safe_copy(batchnum, STRLENGTH, batch);
             else
-                strcpy(batchnum, "all");
+                vt_safe_string::safe_copy(batchnum, STRLENGTH, "all");
             state = CC_SYS_STATE_CREDIT;
         }
         else if (auth_method == CCAUTH_CREDITCHEQ)
@@ -6535,7 +6536,7 @@ int Terminal::CC_Details()
     {
         if (auth_method == CCAUTH_MAINSTREET)
         {
-            strcpy(batchnum, "all");
+            vt_safe_string::safe_copy(batchnum, STRLENGTH, "all");
         }
         else if (auth_method == CCAUTH_CREDITCHEQ)
         {

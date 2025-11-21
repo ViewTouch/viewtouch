@@ -41,6 +41,7 @@
 #include "system.hh"
 #include "terminal.hh"
 #include "utility.hh"
+#include "safe_string_utils.hh"
 #include "video_zone.hh"
 
 
@@ -1516,7 +1517,7 @@ int Settings::Load(const char* file)
     genericChar str[256];
     if (version < 25 || version > SETTINGS_VERSION)
     {
-        sprintf(str, "Unknown Settings file version %d", version);
+        vt_safe_string::safe_format(str, 256, "Unknown Settings file version %d", version);
         ReportError(str);
         return 1;
     }
@@ -1758,7 +1759,7 @@ int Settings::Load(const char* file)
             if (thost.size() > 0)
             {
                 TermInfo *ti = new TermInfo;
-                sprintf(str, "Term %d", i + 1);
+                vt_safe_string::safe_format(str, 256, "Term %d", i + 1);
                 ti->name.Set(str);
                 ti->type = ttype;
                 ti->display_host.Set(thost);
@@ -3269,17 +3270,17 @@ int Settings::ShiftText(char* str, int shift)
             h = 12;
 
         if (m)
-            sprintf(buffer[i], "%d:%02d", h, m);
+            vt_safe_string::safe_format(buffer[i], 256, "%d:%02d", h, m);
         else
-            sprintf(buffer[i], "%d", h);
+            vt_safe_string::safe_format(buffer[i], 256, "%d", h);
 
         if (pm)
-            strcat(buffer[i], "pm");
+            vt_safe_string::safe_concat(buffer[i], 256, "pm");
         else
-            strcat(buffer[i], "am");
+            vt_safe_string::safe_concat(buffer[i], 256, "am");
     }
 
-    sprintf(str, "%s-%s", buffer[0], buffer[1]);
+    vt_safe_string::safe_format(str, 256, "%s-%s", buffer[0], buffer[1]);
     return 0;
 }
 
@@ -3523,7 +3524,7 @@ char* Settings::StoreNum(char* dest)
     if (dest == NULL)
         dest = buffer;
 
-    sprintf(dest, "%d", store_code);
+    vt_safe_string::safe_format(dest, STRLONG, "%d", store_code);
 
     return dest;
 }
@@ -3610,67 +3611,67 @@ char* Settings::TenderName(int tender_type, int tender_id, genericChar* str)
     if (tender_type == TENDER_CHARGE_ROOM)
     {
         if (tender_id <= 0)
-            strcpy(str, GlobalTranslate("Room Charge"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Room Charge"));
         else
-            sprintf(str, "Charge Room #%d", tender_id);
+            vt_safe_string::safe_format(str, STRLENGTH, "Charge Room #%d", tender_id);
     }
     else if (tender_type == TENDER_CHARGE_CARD)
     {
         CreditCardInfo *cc = FindCreditCardByID(tender_id);
         if (cc)
-            strcpy(str, cc->name.Value());
+            vt_safe_string::safe_copy(str, STRLENGTH, cc->name.Value());
         else
-            strcpy(str, GlobalTranslate("Unknown Credit Card"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Unknown Credit Card"));
     }
     else if (tender_type == TENDER_CREDIT_CARD)
     {
         temp = FindStringByValue(tender_id, CreditCardValue, CreditCardShortName);
-        strcpy(str, temp);
+        vt_safe_string::safe_copy(str, STRLENGTH, temp);
     }
     else if (tender_type == TENDER_DEBIT_CARD)
     {
         temp = FindStringByValue(CARD_TYPE_DEBIT, CardTypeValue, CardTypeName);
-        strcpy(str, temp);
+        vt_safe_string::safe_copy(str, STRLENGTH, temp);
     }
     else if (tender_type == TENDER_DISCOUNT)
     {
         DiscountInfo *ds = FindDiscountByID(tender_id);
         if (ds)
-            strcpy(str, ds->name.Value());
+            vt_safe_string::safe_copy(str, STRLENGTH, ds->name.Value());
         else
-            strcpy(str, GlobalTranslate("Unknown Discount"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Unknown Discount"));
     }
     else if (tender_type == TENDER_COUPON)
     {
         CouponInfo *cp = FindCouponByID(tender_id);
         if (cp)
-            strcpy(str, cp->name.Value());
+            vt_safe_string::safe_copy(str, STRLENGTH, cp->name.Value());
         else
-            strcpy(str, GlobalTranslate("Unknown Coupon"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Unknown Coupon"));
     }
     else if (tender_type == TENDER_COMP)
     {
         CompInfo *cm = FindCompByID(tender_id);
         if (cm)
-            strcpy(str, cm->name.Value());
+            vt_safe_string::safe_copy(str, STRLENGTH, cm->name.Value());
         else
-            strcpy(str, GlobalTranslate("Unknown Comp"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Unknown Comp"));
     }
     else if (tender_type == TENDER_EMPLOYEE_MEAL)
     {
         MealInfo *mi = FindMealByID(tender_id);
         if (mi)
-            strcpy(str, mi->name.Value());
+            vt_safe_string::safe_copy(str, STRLENGTH, mi->name.Value());
         else
-            strcpy(str, GlobalTranslate("Unknown Employee Meal"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Unknown Employee Meal"));
     }
     else
-        strcpy(str, FindStringByValue(tender_type, value, name, UnknownStr));
+        vt_safe_string::safe_copy(str, STRLENGTH, FindStringByValue(tender_type, value, name, UnknownStr));
 
     if (term != NULL)
     {
-        strcpy(str2, term->Translate(str));
-        strcpy(str, str2);
+        vt_safe_string::safe_copy(str2, STRLENGTH, term->Translate(str));
+        vt_safe_string::safe_copy(str, STRLENGTH, str2);
     }
 
     return str;
@@ -3955,7 +3956,7 @@ int Settings::DiscountReport(Terminal *t, Report *r)
                 r->TextC(str, COLOR_RED);
             }
             if (ds->flags & TF_IS_PERCENT)
-                sprintf(str, "%g%%", (Flt) ds->amount / 100.0);
+                vt_safe_string::safe_format(str, STRLENGTH, "%g%%", (Flt) ds->amount / 100.0);
             else
                 t->FormatPrice(str, ds->amount, 1);
             r->TextR(str, color);
@@ -3996,7 +3997,7 @@ int Settings::CouponReport(Terminal *t, Report *r)
                 r->TextC(str, COLOR_RED);
             }
             if (cp->flags & TF_IS_PERCENT)
-                sprintf(str, "%g%%", (Flt) cp->amount / 100.0);
+                vt_safe_string::safe_format(str, STRLENGTH, "%g%%", (Flt) cp->amount / 100.0);
             else
                 t->FormatPrice(str, cp->amount, 1);
             r->TextR(str, color);
@@ -4099,7 +4100,7 @@ int Settings::MealReport(Terminal *t, Report *r)
         {
             r->TextL(mi->name.Value());
             if (mi->flags & TF_IS_PERCENT)
-                sprintf(str, "%g%%", (Flt) mi->amount / 100.0);
+                vt_safe_string::safe_format(str, STRLENGTH, "%g%%", (Flt) mi->amount / 100.0);
             else
                 t->FormatPrice(str, mi->amount, 1);
             if (debug_mode)

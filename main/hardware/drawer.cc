@@ -27,6 +27,7 @@
 #include "settings.hh"
 #include "manager.hh"
 #include "archive.hh"
+#include "safe_string_utils.hh"
 #include <sys/types.h>
 #include <sys/file.h>
 #include <dirent.h>
@@ -73,7 +74,7 @@ int DrawerPayment::Read(InputDataFile &df, int version)
     if (error)
     {
         genericChar str[256];
-        sprintf(str, "Error in reading drawer payment version %d data", version);
+        vt_safe_string::safe_format(str, 256, "Error in reading drawer payment version %d data", version);
         ReportError(str);
     }
     return error;
@@ -188,7 +189,7 @@ int Drawer::Read(InputDataFile &df, int version)
     genericChar str[256];
     if (version < 5 || version > 5)
     {
-        sprintf(str, "Unknown drawer version %d", version);
+        vt_safe_string::safe_format(str, 256, "Unknown drawer version %d", version);
         ReportError(str);
         return 1;
     }
@@ -208,14 +209,14 @@ int Drawer::Read(InputDataFile &df, int version)
     error += df.Read(n);
     if (n > 100)
     {
-        sprintf(str, "Unusually high DrawerBalance count (%d)", n);
+        vt_safe_string::safe_format(str, 256, "Unusually high DrawerBalance count (%d)", n);
         ReportError(str);
     }
     for (i = 0; i < n; ++i)
     {
         if (df.end_of_file)
         {
-            sprintf(str, "Unexpected end of DrawerBalances (%d of %d so far)",
+            vt_safe_string::safe_format(str, 256, "Unexpected end of DrawerBalances (%d of %d so far)",
                     i+1, n);
             ReportError(str);
             return 1;
@@ -226,7 +227,7 @@ int Drawer::Read(InputDataFile &df, int version)
         if (error)
         {
             delete db;
-            sprintf(str, "Error reading DrawerBalance %d of %d", i+1, n);
+            vt_safe_string::safe_format(str, 256, "Error reading DrawerBalance %d of %d", i+1, n);
             ReportError(str);
             return 1;
         }
@@ -239,7 +240,7 @@ int Drawer::Read(InputDataFile &df, int version)
     {
         if (df.end_of_file)
         {
-            sprintf(str, "Unexpected end of DrawerPayments (%d of %d so far)",
+            vt_safe_string::safe_format(str, 256, "Unexpected end of DrawerPayments (%d of %d so far)",
                     i+1, n);
             ReportError(str);
             return 1;
@@ -250,7 +251,7 @@ int Drawer::Read(InputDataFile &df, int version)
         if (error)
         {
             delete dp;
-            sprintf(str, "Error reading DrawerPayment %d of %d", i+1, n);
+            vt_safe_string::safe_format(str, 256, "Error reading DrawerPayment %d of %d", i+1, n);
             ReportError(str);
             return 1;
         }
@@ -266,7 +267,7 @@ int Drawer::Write(OutputDataFile &df, int version)
     if (version < 5 || version > 5)
     {
         genericChar str[256];
-        sprintf(str, "Invalid drawer version '%d' for writing", version);
+        vt_safe_string::safe_format(str, 256, "Invalid drawer version '%d' for writing", version);
         ReportError(str);
         return 1;
     }
@@ -431,11 +432,11 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
     int status = GetStatus();
     int balanced = (status == DRAWER_BALANCED);
     if (IsServerBank())
-        strcpy(str, term->Translate("Server Bank Report"));
+        vt_safe_string::safe_copy(str, 256, term->Translate("Server Bank Report"));
     else if (number > 0)
-        sprintf(str, "Drawer #%d Balance Report", number);
+        vt_safe_string::safe_format(str, 256, "Drawer #%d Balance Report", number);
     else
-        strcpy(str, term->Translate("Cashier Balance Report"));
+        vt_safe_string::safe_copy(str, 256, term->Translate("Cashier Balance Report"));
 
     r->SetTitle(str);
     r->TextC(str);
@@ -465,9 +466,9 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
     {
         Employee *e = sys->user_db.FindByID(owner_id);
         if (e)
-            sprintf(str, "%s: %s", term->Translate("Drawer Assignment"), e->system_name.Value());
+            vt_safe_string::safe_format(str, 256, "%s: %s", term->Translate("Drawer Assignment"), e->system_name.Value());
         else
-            sprintf(str,"%s", term->Translate("Drawer Hasn't Been Assigned"));
+            vt_safe_string::safe_format(str, 256, "%s", term->Translate("Drawer Hasn't Been Assigned"));
         r->TextL(str);
         r->NewLine();
         

@@ -27,6 +27,7 @@
 #include "manager.hh"
 #include "system.hh"
 #include "dialog_zone.hh"
+#include "safe_string_utils.hh"
 #include <string.h>
 
 #ifdef DMALLOC
@@ -116,7 +117,7 @@ int ItemObj::Render(Terminal *t)
         {
             snprintf(str2, STRLENGTH, "%s %.2f %s", str,
                      order->count / 100.0, t->Translate("Lb."));
-            strcpy(str, str2);
+            vt_safe_string::safe_copy(str, STRLENGTH, str2);
         }
 
         t->RenderText(str, x + 8, ty, col, FONT_TIMES_20, ALIGN_LEFT, w - 12);
@@ -261,9 +262,9 @@ int CheckObj::Render(Terminal *t)
 
     genericChar str[256];
     if (sub)
-        sprintf(str, "%s %d", t->Translate("Check"), sub->number);
+        vt_safe_string::safe_format(str, 256, "%s %d", t->Translate("Check"), sub->number);
     else
-        strcpy(str, GlobalTranslate("Blank Check"));
+        vt_safe_string::safe_copy(str, 256, GlobalTranslate("Blank Check"));
 
     t->RenderText(str, x + (w/2), y + 16, COLOR_BLACK,
                   FONT_TIMES_20B, ALIGN_CENTER);

@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <Xm/Xm.h>
 #include <memory>
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -95,7 +96,7 @@ int main(int argc, const genericChar* *argv)
     sleep(1);  // give server time to setup connection
 
     server_adr.sun_family = AF_UNIX;
-    strcpy(server_adr.sun_path, socket_file.c_str());
+    vt_safe_string::safe_copy(server_adr.sun_path, sizeof(server_adr.sun_path), socket_file.c_str());
 
     vt::Logger::debug("Connecting to server socket: {}", socket_file);
     if (connect(SocketNo, reinterpret_cast<struct sockaddr*>(&server_adr),
@@ -119,7 +120,7 @@ int main(int argc, const genericChar* *argv)
 #ifdef USE_TOUCHSCREEN
     if (argc >= 4)
     {
-        sprintf(display.data(), "%s", argv[3]);
+        vt_safe_string::safe_format(display.data(), display.size(), "%s", argv[3]);
         ts = std::make_unique<TouchScreen>(argv[3], 87); // explora serial port
     }
     else
@@ -132,7 +133,7 @@ int main(int argc, const genericChar* *argv)
 #else
     if (argc >= 4)
     {
-        sprintf(display.data(), "%s", argv[3]);
+        vt_safe_string::safe_format(display.data(), display.size(), "%s", argv[3]);
     }
     else
     {

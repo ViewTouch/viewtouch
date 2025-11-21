@@ -30,6 +30,7 @@
 #include "term_credit_mcve.hh"
 #include "term_view.hh"
 #include "utility.hh"
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -127,7 +128,7 @@ CCInfo::CCInfo(const char* newname)
 {
     FnTrace("CCInfo::CCInfo(const char* )");
 
-    strcpy(name, newname);
+    vt_safe_string::safe_copy(name, STRLENGTH, newname);
     Clear();
 }
 
@@ -135,7 +136,7 @@ void CCInfo::SetName(const char* newname)
 {
     FnTrace("CCInfo::SetName()");
 
-    strcpy(name, newname);
+    vt_safe_string::safe_copy(name, STRLENGTH, newname);
 }
 
 void CCInfo::Clear()
@@ -430,7 +431,7 @@ int BatchInfo::GetAmt(char* dest, const char* value)
     FnTrace("BatchInfo::GetAmt()");
     int retval = 0;
 
-    sprintf(dest, "%d", GetNum(value));
+    vt_safe_string::safe_format(dest, STRLENGTH, "%d", GetNum(value));
 
     return retval;
 }
@@ -583,7 +584,7 @@ int CCard::Connect()
             }
             else
             {
-                strcpy(verb, GlobalTranslate("No Connection"));
+                vt_safe_string::safe_copy(verb, STRLENGTH, GlobalTranslate("No Connection"));
                 intcode = CC_STATUS_NOCONNECT;
                 MCVE_DestroyConn(conn);
                 MCVE_DestroyEngine();
@@ -602,7 +603,7 @@ int CCard::Close()
 
     if (conn != NULL)
     {
-                    strcpy(code, GlobalTranslate("NOCONN"));
+                    vt_safe_string::safe_copy(code, STRLENGTH, GlobalTranslate("NOCONN"));
         intcode = CC_STATUS_NOCONNECT;
         MCVE_DestroyConn(conn);
         MCVE_DestroyEngine();
@@ -620,7 +621,7 @@ int CCard::SetValue(char* dest, const char* source)
 
     dest[0] = '\0';
     if (source != NULL)
-        strcpy(dest, source);
+        vt_safe_string::safe_copy(dest, STRLENGTH, source);
 
     return retval;
 }
@@ -635,10 +636,10 @@ int CCard::TransSend(long identifier)
     intcode = MCVE_ReturnCode(conn, identifier);
     SetValue(buffer, MCVE_TEXT_Code(intcode));
     if (strlen(buffer) > 0)
-        strcpy(code, buffer);
+        vt_safe_string::safe_copy(code, STRLENGTH, buffer);
     SetValue(buffer, MCVE_TransactionText(conn, identifier));
     if (strlen(buffer) > 0)
-        strcpy(verb, buffer);
+        vt_safe_string::safe_copy(verb, STRLENGTH, buffer);
     if (intcode == MCVE_SUCCESS || intcode == MCVE_AUTH)
     {
         SetValue(auth, MCVE_TransactionAuth(conn, identifier));
@@ -701,7 +702,7 @@ int CCard::SetFields(int gut, long identifier)
                 columns = MCVE_NumColumns(conn, identifier);
                 for (column = 0; column < columns; column += 1)
                 {
-                    strcpy(header, MCVE_GetHeader(conn, identifier, column));
+                    vt_safe_string::safe_copy(header, STRLENGTH, MCVE_GetHeader(conn, identifier, column));
                     if (strcmp(header, "ttid") == 0)
                         GUTFIELDS[GUT_TTID] = column;
                     else if (strcmp(header, "type") == 0)
@@ -739,7 +740,7 @@ int CCard::SetFields(int gut, long identifier)
                     columns = MCVE_NumColumns(conn, identifier);
                     for (column = 0; column < columns; column += 1)
                     {
-                        strcpy(header, MCVE_GetHeader(conn, identifier, column));
+                        vt_safe_string::safe_copy(header, STRLENGTH, MCVE_GetHeader(conn, identifier, column));
                         if (strcmp(header, "ttid") == 0)
                             GLFIELDS[GL_TTID] = column;
                         else if (strcmp(header, "type") == 0)
@@ -819,7 +820,7 @@ int CCard::GetBatchNumber(char* dest)
         {
         }
     }
-    sprintf(dest, "%d", batchnum);
+    vt_safe_string::safe_format(dest, STRLENGTH, "%d", batchnum);
 
     return retval;
 }
@@ -1019,10 +1020,10 @@ int CCard::BatchSettle()
         {
             SetValue(msgbuff, MCVE_TransactionText(conn, identifier));
             if (strlen(msgbuff) < 1)
-                strcpy(msgbuff, GlobalTranslate("Unknown"));
+                vt_safe_string::safe_copy(msgbuff, STRLENGTH, GlobalTranslate("Unknown"));
         }
         else
-            strcpy(msgbuff, GlobalTranslate("Connect error"));
+            vt_safe_string::safe_copy(msgbuff, STRLENGTH, GlobalTranslate("Connect error"));
         WStr(msgbuff);
         snprintf(errbuff, STRLENGTH, "Failed to close batch '%s'", batchnum);
         ReportError(errbuff);
@@ -1090,7 +1091,7 @@ int CCard::Totals()
                 WStr(buffer);
                 for (row = 0; row < rows; row++)
                 {
-                    strcpy(ttype, MCVE_GetCellByNum(conn, identifier, GLFIELDS[GL_TYPE], row));
+                    vt_safe_string::safe_copy(ttype, STRLENGTH, MCVE_GetCellByNum(conn, identifier, GLFIELDS[GL_TYPE], row));
                     buffer[0] = '\0';
                     if (strcmp(ttype, "SETTLE") == 0)
                     {
@@ -1104,7 +1105,7 @@ int CCard::Totals()
                         // This is just an effort to clean the the report visually.  The
                         // VOID_PREAUTHVISA and VOID_PREAUTHMC values can mess up the columns.
                         if (strncmp(ttype, "VOID_PREAUTH", 12) == 0)
-                            strcpy(ttype, "VOID_PRE");
+                            vt_safe_string::safe_copy(ttype, STRLENGTH, "VOID_PRE");
                         AppendString(buffer, 8, MCVE_GetCellByNum(conn, identifier, GLFIELDS[GL_TTID], row));
                         AppendString(buffer, 10, ttype);
                         AppendString(buffer, 7, MCVE_GetCellByNum(conn, identifier, GLFIELDS[GL_CARD], row));
@@ -1184,7 +1185,7 @@ int CCard::Details()
                     AppendString(buffer, 8, MCVE_GetCellByNum(conn, identifier, GUTFIELDS[GUT_TTID], row));
                     AppendString(buffer, 10, MCVE_GetCellByNum(conn, identifier, GUTFIELDS[GUT_TYPE], row));
                     AppendString(buffer, 7, MCVE_GetCellByNum(conn, identifier, GUTFIELDS[GUT_CARD], row));
-                    strcpy(buff2, MCVE_GetCellByNum(conn, identifier, GUTFIELDS[GUT_ACCOUNT], row));
+                    vt_safe_string::safe_copy(buff2, STRLENGTH, MCVE_GetCellByNum(conn, identifier, GUTFIELDS[GUT_ACCOUNT], row));
                     len = strlen(buff2);
                     AppendString(buffer, 7, &buff2[len - 4]);
                     AppendString(buffer, 7, MCVE_GetCellByNum(conn, identifier, GUTFIELDS[GUT_EXPDATE], row));

@@ -109,7 +109,10 @@ bool safe_format(char* buffer, size_t buffer_size, const char* format, Args... a
         return false;
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
     int result = std::snprintf(buffer, buffer_size, format, args...);
+#pragma GCC diagnostic pop
     if (result < 0) {
         buffer[0] = '\0'; // Ensure null termination on error
         return false;

@@ -22,6 +22,7 @@
 #include "license_hash.hh"
 
 #include "basic.hh" // genericChar
+#include "safe_string_utils.hh"
 
 #include <sys/utsname.h> // uname()
 #include <net/if.h> // ifreq, ifconf
@@ -158,7 +159,7 @@ int MacFromName(unsigned char* mac, const char* name, int sockfd)
 	struct ifreq ifr;
 
 	memset(&ifr,0,sizeof(struct ifreq));
-	strcpy(ifr.ifr_name, name);
+	vt_safe_string::safe_copy(ifr.ifr_name, IFNAMSIZ, name);
 	if (ioctl(sockfd, SIOCGIFHWADDR, &ifr) == 0)
     {
         // I think there's supposed to be an sa_len field indicating
@@ -188,7 +189,7 @@ int ListAddresses( )
         char buffer[1024];
         struct ifreq ifr;
  
-        sprintf(ifr.ifr_name, "eth0");
+        vt_safe_string::safe_format(ifr.ifr_name, IFNAMSIZ, "eth0");
   
         sockfd = socket(AF_INET, SOCK_STREAM, 0);
         if(sockfd < 0){
@@ -229,7 +230,7 @@ int ListAddresses( )
     const struct ifreq* const end = it + (ifc.ifc_len / sizeof(struct ifreq));
 
     for (; it != end; ++it) {
-        strcpy(ifr.ifr_name, it->ifr_name);
+        vt_safe_string::safe_copy(ifr.ifr_name, IFNAMSIZ, it->ifr_name);
         if (ioctl(sock, SIOCGIFFLAGS, &ifr) == 0) {
             if (! (ifr.ifr_flags & IFF_LOOPBACK)) { // don't count loopback
                 if (ioctl(sock, SIOCGIFHWADDR, &ifr) == 0) {
@@ -376,7 +377,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
     char buffer[1024];
     struct ifreq ifr;
  
-    sprintf(ifr.ifr_name, "eth0");
+    vt_safe_string::safe_format(ifr.ifr_name, IFNAMSIZ, "eth0");
   
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sockfd < 0){
@@ -391,7 +392,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
     }
     
     printf("fetched HW address with ioctl on sockfd.\n");
-    sprintf(stringbuf,"%02X:%02X:%02X:%02X:%02X:%02X",
+    vt_safe_string::safe_format(stringbuf, stringlen, "%02X:%02X:%02X:%02X:%02X:%02X",
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[0],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[1],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[2],
@@ -419,7 +420,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
     const struct ifreq* const end = it + (ifc.ifc_len / sizeof(struct ifreq));
 
     for (; it != end; ++it) {
-        strcpy(ifr.ifr_name, it->ifr_name);
+        vt_safe_string::safe_copy(ifr.ifr_name, IFNAMSIZ, it->ifr_name);
         if (ioctl(sock, SIOCGIFFLAGS, &ifr) == 0) {
             if (! (ifr.ifr_flags & IFF_LOOPBACK)) { // don't count loopback
                 if (ioctl(sock, SIOCGIFHWADDR, &ifr) == 0) {
@@ -433,7 +434,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
         }
     }
         
-    sprintf(stringbuf,"%02X:%02X:%02X:%02X:%02X:%02X",
+    vt_safe_string::safe_format(stringbuf, stringlen, "%02X:%02X:%02X:%02X:%02X:%02X",
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[0],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[1],
                 (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[2],

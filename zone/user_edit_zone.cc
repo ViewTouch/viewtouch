@@ -26,6 +26,7 @@
 #include "dialog_zone.hh"
 #include "system.hh"
 #include "manager.hh"
+#include "safe_string_utils.hh"
 #include <string.h>
 
 #ifdef DMALLOC
@@ -111,16 +112,16 @@ RenderResult UserEditZone::Render(Terminal *term, int update_flag)
         if (term->job_filter)
         {
             if (view_active)
-                strcpy(str, GlobalTranslate("Filtered Active Employees"));
+                vt_safe_string::safe_copy(str, 256, GlobalTranslate("Filtered Active Employees"));
             else
-                strcpy(str, GlobalTranslate("Filtered Inactive Employees"));
+                vt_safe_string::safe_copy(str, 256, GlobalTranslate("Filtered Inactive Employees"));
         }
         else
         {
             if (view_active)
-                strcpy(str, GlobalTranslate("All Active Employees"));
+                vt_safe_string::safe_copy(str, 256, GlobalTranslate("All Active Employees"));
             else
-                strcpy(str, GlobalTranslate("All Inactive Employees"));
+                vt_safe_string::safe_copy(str, 256, GlobalTranslate("All Inactive Employees"));
         }
 
         TextC(term, 0, term->Translate(str), col);
@@ -131,9 +132,9 @@ RenderResult UserEditZone::Render(Terminal *term, int update_flag)
     else
     {
         if (records == 1)
-            strcpy(str, GlobalTranslate("Employee Record"));
+            vt_safe_string::safe_copy(str, 256, GlobalTranslate("Employee Record"));
         else
-            sprintf(str, "Employee Record %d of %d", record_no + 1, records);
+            vt_safe_string::safe_format(str, 256, "Employee Record %d of %d", record_no + 1, records);
         TextC(term, 0, str, col);
     }
     return RENDER_OKAY;

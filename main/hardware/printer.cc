@@ -24,6 +24,7 @@
 #include "settings.hh"
 #include "terminal.hh"
 #include "src/utils/vt_logger.hh"
+#include "safe_string_utils.hh"
 
 #include <errno.h>
 #include <iostream>
@@ -690,9 +691,9 @@ int Printer::TestPrint(Terminal *t)
 
     genericChar str[256];
     NewLine();
-    sprintf(str, "\r** %s **\r", t->Translate("Printer Test"));
+    vt_safe_string::safe_format(str, 256, "\r** %s **\r", t->Translate("Printer Test"));
     Write(str, PRINT_RED | PRINT_BOLD | PRINT_UNDERLINE | PRINT_LARGE | PRINT_NARROW);
-    sprintf(str, "Host: %s\r", target.Value());
+    vt_safe_string::safe_format(str, 256, "Host: %s\r", target.Value());
     Write(str);
     t->TimeDate(str, SystemTime, TD0);
     Write(str);
@@ -730,7 +731,7 @@ int Printer::WriteLR(const genericChar* left, const genericChar* right, int flag
         str[i] = ' ';
     if (pos < llen)
         strncpy(str, &left[pos], llen - pos);
-    strcpy(&str[width - rlen], right);
+    vt_safe_string::safe_copy(&str[width - rlen], 256 - (width - rlen), right);
 
     write(temp_fd, str, width);
     NewLine();
@@ -2061,7 +2062,7 @@ int PrinterPostScript::WriteLR(const genericChar* left, const genericChar* right
         str[i] = ' ';
     if (pos < llen)
         strncpy(str, &left[pos], llen - pos);
-    strcpy(&str[width - rlen], right);
+    vt_safe_string::safe_copy(&str[width - rlen], 256 - (width - rlen), right);
 
     write(temp_fd, str, width);
     NewLine();

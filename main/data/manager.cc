@@ -43,6 +43,7 @@
 
 #include "conf_file.hh"
 #include "src/utils/vt_logger.hh"  // Modern C++ logging
+#include "safe_string_utils.hh"     // Safe string operations
 #include "date/date.h"      // helper library to output date strings with std::chrono
 
 #include <curlpp/cURLpp.hpp>
@@ -930,7 +931,7 @@ int StartSystem(int my_use_net)
         EndSystem();
     }
 
-    sprintf(str, "Starting System on %s", GetMachineName());
+    vt_safe_string::safe_format(str, 256, "Starting System on %s", GetMachineName());
     printf("Starting system:  %s\n", GetMachineName());
     ReportLoader(str);
 
@@ -1091,7 +1092,7 @@ int StartSystem(int my_use_net)
             {
                 if (count < allowed)
                 {
-                    sprintf(str, "Opening Remote Display '%s'", ti->name.Value());
+                    vt_safe_string::safe_format(str, 256, "Opening Remote Display '%s'", ti->name.Value());
                     ReportLoader(str);
                     ReportError(str);
                     ti->OpenTerm(MasterControl);
@@ -1123,7 +1124,7 @@ int StartSystem(int my_use_net)
         ReportError("Can't scan archives");
 
     // Load Employees
-	sprintf(msg, "Attempting to load file %s...", MASTER_USER_DB);
+	vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_USER_DB);
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Employees");
     sys->FullPath(MASTER_USER_DB, str);
@@ -1135,18 +1136,18 @@ int StartSystem(int my_use_net)
     }
     // set developer key (this should be done somewhere else)
     sys->user_db.developer->key = settings->developer_key;
-	sprintf(msg, "%s OK", MASTER_USER_DB);
+	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_USER_DB);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Labor
-    sprintf(msg, "Attempting to load labor info...");
+    vt_safe_string::safe_format(msg, 256, "Attempting to load labor info...");
     ReportLoader(msg);
     sys->FullPath(LABOR_DATA_DIR, str);
     if (sys->labor_db.Load(str))
         ReportError("Can't find labor directory");
 
     // Load Menu
-	sprintf(msg, "Attempting to load file %s...", MASTER_MENU_DB);
+	vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_MENU_DB);
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Menu");
     sys->FullPath(MASTER_MENU_DB, str);
@@ -1161,11 +1162,11 @@ int StartSystem(int my_use_net)
         sys->menu.Purge();
         sys->menu.Load(str);
     }
-	sprintf(msg, "%s OK", MASTER_MENU_DB);
+	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_MENU_DB);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Exceptions
-	sprintf(msg, "Attempting to load file %s...", MASTER_EXCEPTION);
+	vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_EXCEPTION);
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Exception Records");
     sys->FullPath(MASTER_EXCEPTION, str);
@@ -1175,11 +1176,11 @@ int StartSystem(int my_use_net)
         sys->exception_db.Purge();
         sys->exception_db.Load(str);
     }
-	sprintf(msg, "%s OK", MASTER_EXCEPTION);
+	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_EXCEPTION);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Inventory
-	sprintf(msg, "Attempting to load file %s...", MASTER_INVENTORY);
+	vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_INVENTORY);
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Inventory");
     sys->FullPath(MASTER_INVENTORY, str);
@@ -1192,7 +1193,7 @@ int StartSystem(int my_use_net)
     sys->inventory.ScanItems(&sys->menu);
     sys->FullPath(STOCK_DATA_DIR, str);
     sys->inventory.LoadStock(str);
-	sprintf(msg, "%s OK", MASTER_INVENTORY);
+	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_INVENTORY);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Customers
@@ -2316,7 +2317,7 @@ int Control::SaveMenuPages()
         return 1;
 
     genericChar str[256];
-    sprintf(str, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB2);
+    vt_safe_string::safe_format(str, 256, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB2);
     BackupFile(str);
     return zone_db->Save(str, PAGECLASS_MENU);
 }
@@ -2329,7 +2330,7 @@ int Control::SaveTablePages()
         return 1;
 
     genericChar str[256];
-    sprintf(str, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB1);
+    vt_safe_string::safe_format(str, 256, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB1);
     BackupFile(str);
     return zone_db->Save(str, PAGECLASS_TABLE);
 }
@@ -2898,7 +2899,7 @@ Check* FindCCData(const char* cardnum, int value)
                     if (payment->credit != NULL)
                     {
                         credit = payment->credit;
-                        strcpy(cn, credit->PAN(2));
+                        vt_safe_string::safe_copy(cn, STRLENGTH, credit->PAN(2));
                         if (CompareCardNumbers(cn, cardnum) &&
                             credit->FullAmount() == value) {
                             ret_check = curr_check;

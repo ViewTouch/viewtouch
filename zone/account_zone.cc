@@ -24,6 +24,7 @@
 #include "report.hh"
 
 #include <iostream>
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -68,7 +69,7 @@ RenderResult AccountZone::Render(Terminal *term, int update_flag)
         indent += num_spaces;
         TextPosL(term, indent, 1.3, GlobalTranslate("Balance"));
 
-        sprintf(str, "%s: %d", term->Translate("Total Accounts Active"),
+        vt_safe_string::safe_format(str, STRLENGTH, "%s: %d", term->Translate("Total Accounts Active"),
                 term->system_data->account_db.AccountCount());
         TextC(term, size_y - 1, str);
     }

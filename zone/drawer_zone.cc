@@ -30,6 +30,7 @@
 #include "image_data.hh"
 #include "archive.hh"
 #include "manager.hh"
+#include "safe_string_utils.hh"
 #include <string.h>
 
 #ifdef DMALLOC
@@ -85,26 +86,26 @@ int DrawerObj::Render(Terminal *term)
         default:
         case DRAWER_OPEN:
             c = COLOR_GREEN;
-            strcpy(str, term->Translate("Open"));
+            vt_safe_string::safe_copy(str, STRLENGTH, term->Translate("Open"));
             break;
         case DRAWER_PULLED:
-            strcpy(str, term->Translate("Pulled"));
+            vt_safe_string::safe_copy(str, STRLENGTH, term->Translate("Pulled"));
             c = COLOR_RED;
             break;
         case DRAWER_BALANCED:
             if (drawer->total_difference > 0)
             {
-                sprintf(str, "+ %s", term->FormatPrice(drawer->total_difference));
+                vt_safe_string::safe_format(str, STRLENGTH, "+ %s", term->FormatPrice(drawer->total_difference));
                 c = COLOR_BLUE;
             }
             else if (drawer->total_difference < 0)
             {
-                sprintf(str, "- %s", term->FormatPrice(-drawer->total_difference));
+                vt_safe_string::safe_format(str, STRLENGTH, "- %s", term->FormatPrice(-drawer->total_difference));
                 c = COLOR_RED;
             }
             else
             {
-                strcpy(str, term->Translate("Balanced"));
+                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate("Balanced"));
                 c = COLOR_MAGENTA;
             }
             break;
@@ -120,21 +121,21 @@ int DrawerObj::Render(Terminal *term)
         // personal balance - not a physical drawer
         Employee *employee = term->system_data->user_db.FindByID(drawer->owner_id);
         if (employee)
-            strcpy(str, employee->system_name.Value());
+            vt_safe_string::safe_copy(str, STRLENGTH, employee->system_name.Value());
         else
-            strcpy(str, term->Translate("Server Bank"));
+            vt_safe_string::safe_copy(str, STRLENGTH, term->Translate("Server Bank"));
     }
     else if (drawer->serial_number == ALL_DRAWERS)
     {
-        sprintf(str, "All Drawers");
+        vt_safe_string::safe_format(str, STRLENGTH, "All Drawers");
     }
     else if (drawer->term)
     {
-        sprintf(str, drawer->term->name.Value());
+        vt_safe_string::safe_format(str, STRLENGTH, drawer->term->name.Value());
     }
     else
     {
-        sprintf(str, "%s %d", term->Translate("Drawer"), drawer->number);
+        vt_safe_string::safe_format(str, STRLENGTH, "%s %d", term->Translate("Drawer"), drawer->number);
     }
     
     c = COLOR_WHITE;
@@ -631,16 +632,16 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
             report->TextC(term->Translate("There Are No Balanced Drawers For"));
         report->NewLine();
         if (archive == NULL)
-            strcpy(str, term->Translate("Today"));
+            vt_safe_string::safe_copy(str, 256, term->Translate("Today"));
         else
         {
             genericChar tm1[64], tm2[64];
             if (archive->fore)
                 term->TimeDate(tm1, archive->fore->end_time, TD4);
             else
-                strcpy(tm1, term->Translate("System Start"));
+                vt_safe_string::safe_copy(tm1, 64, term->Translate("System Start"));
             term->TimeDate(tm2, archive->end_time, TD4);
-            sprintf(str, "%s  -  %s", tm1, tm2);
+            vt_safe_string::safe_format(str, 256, "%s  -  %s", tm1, tm2);
         }
         report->TextC(str);
 
@@ -738,17 +739,17 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
             Line(term, 2, color[0]);
             if (d->total_difference < 0)
             {
-                strcpy(str, GlobalTranslate("Short"));
+                vt_safe_string::safe_copy(str, 256, GlobalTranslate("Short"));
                 pcolor = COLOR_RED;
             }
             else if (d->total_difference > 0)
             {
-                strcpy(str, GlobalTranslate("Over"));
+                vt_safe_string::safe_copy(str, 256, GlobalTranslate("Over"));
                 pcolor = COLOR_BLUE;
             }
             else
             {
-                strcpy(str, GlobalTranslate("Balanced"));
+                vt_safe_string::safe_copy(str, 256, GlobalTranslate("Balanced"));
                 pcolor = COLOR_BLACK;
             }
 

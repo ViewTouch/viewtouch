@@ -43,6 +43,7 @@
 #include "data_file.hh"
 #include "image_data.hh"
 #include "employee.hh"
+#include "safe_string_utils.hh"
 #include "chart_zone.hh"
 #include "video_zone.hh"
 
@@ -376,7 +377,7 @@ Zone *NewPosZone(int type)
 	if (pNewZone == NULL)
 	{
 		char str[64];
-		sprintf(str, "Creation of PosZone object type %d failed", type);
+		vt_safe_string::safe_format(str, 64, "Creation of PosZone object type %d failed", type);
 		ReportError(str);
 	}
 
@@ -770,13 +771,13 @@ int PosPage::Read(InputDataFile &infile, int version)
         Zone *z = NewPosZone(z_type);
         if (z == NULL)
         {
-            sprintf(str, "Error in creating touch zone type %d", type);
+            vt_safe_string::safe_format(str, 256, "Error in creating touch zone type %d", type);
             ReportError(str);
             return 1;
         }
         if (z->Read(infile, version))
         {
-            sprintf(str, "Error in reading touch zone type %d", type);
+            vt_safe_string::safe_format(str, 256, "Error in reading touch zone type %d", type);
             ReportError(str);
             delete z;
             return 1;

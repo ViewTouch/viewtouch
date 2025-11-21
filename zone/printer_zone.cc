@@ -29,6 +29,7 @@
 #include "image_data.hh"
 #include "locale.hh"
 #include <string.h>
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -235,12 +236,12 @@ int KitchenObj::Render(Terminal *t)
 
     if (number <= 0)
     {
-        strcpy(str, GlobalTranslate("Standard Target"));
+        vt_safe_string::safe_copy(str, 256, GlobalTranslate("Standard Target"));
         color = COLOR_RED;
     }
     else
     {
-        sprintf(str, "Kitchen #%d", number);
+        vt_safe_string::safe_format(str, 256, "Kitchen #%d", number);
         color = COLOR_BLACK;
     }
 

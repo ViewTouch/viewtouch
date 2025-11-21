@@ -19,6 +19,7 @@
 
 #include "search_zone.hh"
 #include "terminal.hh"
+#include "safe_string_utils.hh"
 #include <string.h>
 #include <cctype>
 
@@ -48,7 +49,7 @@ RenderResult SearchZone::Render(Terminal *term, int update_flag)
         TextC(term, 0, term->Translate("Search For..."), color[0]);
         Entry(term, 2, 1.5, size_x - 4);
         genericChar str[STRLENGTH];
-        sprintf(str, "%s_", buffer);
+        vt_safe_string::safe_format(str, STRLENGTH, "%s_", buffer);
         TextC(term, 1.5, str, COLOR_WHITE);
     }
     else
@@ -72,7 +73,7 @@ SignalResult SearchZone::Signal(Terminal *term, const genericChar* message)
     case 0:
         if (bufflen > 0)
         {
-            sprintf(tbuff, "nextsearch %s", buffer);
+            vt_safe_string::safe_format(tbuff, STRLENGTH, "nextsearch %s", buffer);
             term->Signal(tbuff, group_id);
             retval =  SIGNAL_OKAY;
         }
@@ -136,7 +137,7 @@ SignalResult SearchZone::Keyboard(Terminal *term, int my_key, int state)
         buffer[len - 1] = '\0';
         break;
     case 9:  // tab
-        sprintf(str, "nextsearch %s", buffer);
+        vt_safe_string::safe_format(str, STRLENGTH, "nextsearch %s", buffer);
         term->Signal(str, group_id);
         return SIGNAL_END;
     case 13: // return
@@ -159,7 +160,7 @@ SignalResult SearchZone::Keyboard(Terminal *term, int my_key, int state)
     }
 
     Draw(term, 0);
-    sprintf(str, "search %s", buffer);
+    vt_safe_string::safe_format(str, STRLENGTH, "search %s", buffer);
     term->Signal(str, group_id);
     return SIGNAL_END;
 }

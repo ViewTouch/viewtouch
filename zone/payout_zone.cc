@@ -29,6 +29,7 @@
 #include "check.hh"
 #include "drawer.hh"
 #include "archive.hh"
+#include "safe_string_utils.hh"
 #include <string.h>
 
 #ifdef DMALLOC
@@ -110,9 +111,9 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
         Employee *e = sys->user_db.FindByID(user_id);
         term->FormatPrice(price, amount, 1);
         if (e)
-            sprintf(str, "Pay out %s to %s", price, e->system_name.Value());
+            vt_safe_string::safe_format(str, 256, "Pay out %s to %s", price, e->system_name.Value());
         else
-            sprintf(str, "Pay out %s", price);
+            vt_safe_string::safe_format(str, 256, "Pay out %s", price);
 
         TextC(term, ++line, str);
         TextC(term, ++line, term->Translate("Press any button to continue"));
@@ -142,7 +143,7 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
         term->TimeDate(t1, timevar, TD0);
     }
     else
-        strcpy(t1, term->Translate("System start"));
+        vt_safe_string::safe_copy(t1, 32, term->Translate("System start"));
 
     if (archive)
     {
@@ -150,9 +151,9 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
         term->TimeDate(t2, timevar, TD0);
     }
     else
-        strcpy(t2, term->Translate("Now"));
+        vt_safe_string::safe_copy(t2, 32, term->Translate("Now"));
 
-    sprintf(str, "%s - %s", t1, t2);
+    vt_safe_string::safe_format(str, 256, "%s - %s", t1, t2);
     TextC(term, 1, str, COLOR_BLUE);
     return RENDER_OKAY;
 }

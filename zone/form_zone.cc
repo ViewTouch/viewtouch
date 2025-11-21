@@ -24,6 +24,7 @@
 #include "manager.hh"
 #include "settings.hh"
 #include "admission.hh"
+#include "safe_string_utils.hh"
 
 #include <cctype>
 #include <cstring>
@@ -271,7 +272,7 @@ public:
     int Set(const genericChar* v) override { return buffer.Set(v); }
     int Set(Str  &v)        override { return buffer.Set(v); }
     int Get(Str &v)         override { v.Set(buffer); return 0; }
-    int Get(genericChar* v) override { strcpy(v, buffer.Value()); return 0; }
+    int Get(genericChar* v) override { vt_safe_string::safe_copy(v, STRLENGTH, buffer.Value()); return 0; }
 };
 
 
@@ -1507,7 +1508,7 @@ int TextField::Get(genericChar* v)
     if ((flag & FF_MONEY) || (flag & FF_ONLYDIGITS))
         buffer.Set(buffint);
 
-    strcpy(v, buffer.Value());
+    vt_safe_string::safe_copy(v, STRLENGTH, buffer.Value());
     return 0;
 }
 
@@ -1762,7 +1763,7 @@ int TextField::Remove(int num)
     if (buffer.size() < 1)
         return 1;
 
-    strcpy(bbuff, buffer.Value());
+    vt_safe_string::safe_copy(bbuff, STRLENGTH, buffer.Value());
     bufflen = strlen(bbuff);
 
     if (cursor == bufflen)
@@ -2202,9 +2203,9 @@ RenderResult TimeDayField::Render(Terminal *term, FormZone *fzone)
     if (show_day)
     {
         if (is_unset)
-            strcpy(str, "---");
+            vt_safe_string::safe_copy(str, STRLENGTH, "---");
         else
-            strcpy(str, term->Translate(ShortDayName[day]));
+            vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(ShortDayName[day]));
         fzone->TextPosC(term, xx + 2.1,  y, str, COLOR_WHITE);
     }
 
@@ -2554,9 +2555,9 @@ RenderResult WeekDayField::Render(Terminal *term, FormZone *fzone)
     while (day <= WEEKDAY_SATURDAY)
     {
         if (days & day)
-            strcpy(buffer, term->Translate(daystr[didx]));
+            vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate(daystr[didx]));
         else
-            strcpy(buffer, "---");
+            vt_safe_string::safe_copy(buffer, STRLENGTH, "---");
         fzone->TextPosL(term, xx + daypos[didx], y, buffer, COLOR_WHITE);
         if (current & day)
         {
@@ -3071,7 +3072,7 @@ SignalResult TemplateField::Keyboard(Terminal *term, FormZone *fzone, int key, i
         {
             --cursor;
             strncpy(str, b, cursor);
-            strcpy(&str[cursor], &b[cursor+1]);
+            vt_safe_string::safe_copy(&str[cursor], STRLENGTH - cursor, &b[cursor+1]);
             buffer.Set(str);
             return SIGNAL_OKAY;
         }
@@ -3088,7 +3089,7 @@ SignalResult TemplateField::Keyboard(Terminal *term, FormZone *fzone, int key, i
     {
         strncpy(str, b, cursor);
         str[cursor] = k;
-        strcpy(&str[cursor+1], &b[cursor]);
+        vt_safe_string::safe_copy(&str[cursor+1], STRLENGTH - cursor - 1, &b[cursor]);
         buffer.Set(str);
         ++cursor;
         return SIGNAL_OKAY;

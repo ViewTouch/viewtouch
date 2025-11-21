@@ -39,6 +39,7 @@
 #include "cdu.hh"
 #include "cdu_att.hh"
 #include "utility.hh"
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -89,7 +90,7 @@ int CDUString::GetLine(genericChar* dest, int line)
     else if (line >= MAX_CDU_LINES)
         line = MAX_CDU_LINES - 1;
 
-    strcpy(dest, lines[line].Value());
+    vt_safe_string::safe_copy(dest, STRLENGTH, lines[line].Value());
     return 0;
 }
 
@@ -942,7 +943,7 @@ int BA63DispUnit::Clear()
     genericChar buffer[STRLENGTH];
 
     // We're going to set country code here
-    strcpy(buffer, (const char*)BA63_COUNTRY);
+    vt_safe_string::safe_copy(buffer, STRLENGTH, (const char*)BA63_COUNTRY);
     buffer[BA63_COUNTRY_LOC] = 0x00;
     Write(buffer, 3);
     // Now clear the screen and home the cursor

@@ -77,6 +77,7 @@
 #include "report.hh"
 #include "dialog_zone.hh"
 #include "settings.hh"
+#include "safe_string_utils.hh"
 #include "labels.hh"
 #include "system.hh"
 #include "image_data.hh"
@@ -133,16 +134,16 @@ RenderResult ProductZone::Render(Terminal *t, int update_flag)
         if (t->stock && t->stock->fore)
             t->TimeDate(tm1, t->stock->fore->end_time, TD4);
         else
-            strcpy(tm1, "System Start");
+            vt_safe_string::safe_copy(tm1, 32, "System Start");
         if (t->stock && t->stock->end_time.IsSet())
             t->TimeDate(tm2, t->stock->end_time, TD4);
         else
-            strcpy(tm2, "Now");
+            vt_safe_string::safe_copy(tm2, 32, "Now");
 
         if (t->stock && final)
-            sprintf(str, "Actual Count #%d (%s - %s)", t->stock->id, tm1, tm2);
+            vt_safe_string::safe_format(str, 256, "Actual Count #%d (%s - %s)", t->stock->id, tm1, tm2);
         else
-            sprintf(str, "Current Inventory (%s - %s)", tm1, tm2);
+            vt_safe_string::safe_format(str, 256, "Current Inventory (%s - %s)", tm1, tm2);
         TextC(t, 0, str, col);
 
         TextL(t, 2.4, "Product Name", col);
@@ -167,9 +168,9 @@ RenderResult ProductZone::Render(Terminal *t, int update_flag)
     else
     {
         if (records == 1)
-            strcpy(str, GlobalTranslate("Invoice Product"));
+            vt_safe_string::safe_copy(str, 256, GlobalTranslate("Invoice Product"));
         else
-            sprintf(str, "Invoice Product %d of %d", record_no + 1, records);
+            vt_safe_string::safe_format(str, 256, "Invoice Product %d of %d", record_no + 1, records);
         TextC(t, 0, str, col);
     }
     return RENDER_OKAY;
@@ -537,7 +538,7 @@ int RC_Part::Render(Terminal *t)
     if (rp)
     {
         genericChar str[256];
-        sprintf(str, "%s %s", rp->amount.Description(), n);
+        vt_safe_string::safe_format(str, 256, "%s %s", rp->amount.Description(), n);
         t->RenderText(str, x + 6, yy, color, font, ALIGN_LEFT, w - 10);
     }
     else
@@ -558,13 +559,13 @@ const char* RC_Part::Name(Terminal *t)
     FnTrace("RC_Part::Name()");
     static genericChar str[256];
     if (rc)
-        strcpy(str, rc->name.Value());
+        vt_safe_string::safe_copy(str, 256, rc->name.Value());
     else if (pr)
-        strcpy(str, pr->name.Value());
+        vt_safe_string::safe_copy(str, 256, pr->name.Value());
     else if (rp)
-        sprintf(str, "%s (%d)", t->Translate(UnknownStr), rp->part_id);
+        vt_safe_string::safe_format(str, 256, "%s (%d)", t->Translate(UnknownStr), rp->part_id);
     else
-        strcpy(str, t->Translate(UnknownStr));
+        vt_safe_string::safe_copy(str, 256, t->Translate(UnknownStr));
     return str;
 }
 
@@ -688,11 +689,11 @@ RenderResult RecipeZone::Render(Terminal *t, int update_flag)
 
     genericChar str[64];
     if (records <= 0)
-        strcpy(str, GlobalTranslate("No Recipes Defined"));
+        vt_safe_string::safe_copy(str, 64, GlobalTranslate("No Recipes Defined"));
     else if (records == 1)
-        strcpy(str, GlobalTranslate("Recipe"));
+        vt_safe_string::safe_copy(str, 64, GlobalTranslate("Recipe"));
     else
-        sprintf(str, "Recipe %d of %d", record_no + 1, records);
+        vt_safe_string::safe_format(str, 64, "Recipe %d of %d", record_no + 1, records);
 
     TextC(t, 0, str, color[0]);
     return RENDER_OKAY;
@@ -991,11 +992,11 @@ RenderResult VendorZone::Render(Terminal *t, int update_flag)
     int c = color[0];
     genericChar str[64];
     if (records <= 0)
-        strcpy(str, GlobalTranslate("No Vendors Defined"));
+        vt_safe_string::safe_copy(str, 64, GlobalTranslate("No Vendors Defined"));
     else if (records == 1)
-        strcpy(str, GlobalTranslate("Vendor"));
+        vt_safe_string::safe_copy(str, 64, GlobalTranslate("Vendor"));
     else
-        sprintf(str, "Vendor %d of %d", record_no + 1, records);
+        vt_safe_string::safe_format(str, 64, "Vendor %d of %d", record_no + 1, records);
     TextC(t, 0, str, c);
 
     if (show_list)
@@ -1189,23 +1190,23 @@ RenderResult ItemListZone::Render(Terminal *t, int update_flag)
     if (records <= 0)
     {
         if (filter_type == -1)
-            strcpy(str, GlobalTranslate("No Menu Items Defined"));
+            vt_safe_string::safe_copy(str, 256, GlobalTranslate("No Menu Items Defined"));
         else
-            sprintf(str, "No %s Defined", GetItemTypeName(filter_type));
+            vt_safe_string::safe_format(str, 256, "No %s Defined", GetItemTypeName(filter_type));
     }
     else if (records == 1)
     {
         if (filter_type == -1)
-            strcpy(str, GlobalTranslate("Menu Item"));
+            vt_safe_string::safe_copy(str, 256, GlobalTranslate("Menu Item"));
         else
-            sprintf(str, "%s", GetItemTypeName(filter_type));
+            vt_safe_string::safe_format(str, 256, "%s", GetItemTypeName(filter_type));
     }
     else
     {
         if (filter_type == -1)
-            sprintf(str, "Menu Item %d of %d", record_no + 1, records);
+            vt_safe_string::safe_format(str, 256, "Menu Item %d of %d", record_no + 1, records);
         else
-            sprintf(str, "%s %d of %d", GetItemTypeName(filter_type), record_no + 1, records);
+            vt_safe_string::safe_format(str, 256, "%s %d of %d", GetItemTypeName(filter_type), record_no + 1, records);
     }
     TextC(t, 0, str, c);
 
@@ -1626,15 +1627,15 @@ RenderResult InvoiceZone::Render(Terminal *t, int update_flag)
         if (t->stock->fore)
             t->TimeDate(tm1, t->stock->fore->end_time, TD4);
         else
-            strcpy(tm1, "System Start");
+            vt_safe_string::safe_copy(tm1, 32, "System Start");
         if (t->stock->end_time.IsSet())
             t->TimeDate(tm2, t->stock->end_time, TD4);
         else
-            strcpy(tm2, "Now");
+            vt_safe_string::safe_copy(tm2, 32, "Now");
 
         edit = 0;
         genericChar str[256];
-        sprintf(str, "List of Invoices (%s - %s)", tm1, tm2);
+        vt_safe_string::safe_format(str, 256, "List of Invoices (%s - %s)", tm1, tm2);
         TextC(t, 0, str, col);
         TextL(t, 2.3, "Invoice Date", col);
         TextC(t, 2.3, "Vendor", col);
@@ -1944,7 +1945,7 @@ int InvoiceZone::ListReport(Terminal *t, Report *r)
             r->TextC(v->name.Value());
         else
             r->TextC("Unknown Vendor");
-        sprintf(str, "%d", in->id);
+        vt_safe_string::safe_format(str, 256, "%d", in->id);
         r->TextR(str);
         r->NewLine();
         in = in->next;
