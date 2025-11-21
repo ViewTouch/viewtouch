@@ -2264,13 +2264,14 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
         }
         if (settings->authorize_method == CCAUTH_CREDITCHEQ)
         {
-            snprintf(buffer, STRLENGTH, "%s: %s %s",
-                     term->Translate("Reference Number", lang),
-                     term_id.Value(), sequence.Value());
             if (read_manual || b24code.empty())
-                strcat(buffer, " M");
+                vt_safe_string::safe_format(buffer, STRLENGTH, "%s: %s %s M",
+                         term->Translate("Reference Number", lang),
+                         term_id.Value(), sequence.Value());
             else
-                strcat(buffer, " S");
+                vt_safe_string::safe_format(buffer, STRLENGTH, "%s: %s %s S",
+                         term->Translate("Reference Number", lang),
+                         term_id.Value(), sequence.Value());
             printer->Write(buffer);
         }
         if (auth.size() > 0)
@@ -3394,15 +3395,18 @@ int CCSettle::GenerateReport(Terminal *term, Report *report, ReportZone *rzone, 
 
     if (IsSettled() || errormsg.size() > 0)
     {
-        snprintf(str, STRLENGTH, "%s: ", term->Translate("Merchant ID"));
+        // Cache translated strings to avoid repeated translation calls
+        const char* merchant_label = term->Translate("Merchant ID");
+        const char* terminal_label = term->Translate("Terminal");
+
         if (merchid.size() > 0)
-            strcat(str, merchid.Value());
+            vt_safe_string::safe_format(str, STRLENGTH, "%s: %s", merchant_label, merchid.Value());
         else
-            strcat(str, settings->cc_merchant_id.Value());
+            vt_safe_string::safe_format(str, STRLENGTH, "%s: %s", merchant_label, settings->cc_merchant_id.Value());
         report->TextL(str);
         if (termid.size() > 0)
         {
-            snprintf(str, STRLENGTH, "%s: %s", term->Translate("Terminal"), termid.Value());
+            vt_safe_string::safe_format(str, STRLENGTH, "%s: %s", terminal_label, termid.Value());
             report->TextR(str);
         }
         report->NewLine();

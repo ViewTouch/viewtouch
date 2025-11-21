@@ -39,6 +39,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `zone/button_zone.hh`, `zone/button_zone.cc`, `zone/pos_zone.hh`, `zone/pos_zone.cc`, `main/ui/labels.cc`
 
 ### Fixed
+- **Printer Target Safety and Reliability Improvements (2025-11-21)**
+  - **Issues**: Multiple safety and reliability issues in printer operations
+    - String truncation warnings in `MakeFileName()` and PostScript output functions
+    - Missing error checking for `write()` system calls
+    - Type conversion warnings (ssize_t to int, int to genericChar)
+    - Unsafe string operations throughout printer and hardware modules
+  - **Fixes**:
+    - Replaced unsafe `strncpy()` and `sprintf()` calls with `vt_safe_string::safe_copy()` and `vt_safe_string::safe_format()`
+    - Added comprehensive error checking for all write operations with proper error logging
+    - Fixed type conversions using `static_cast<>()` and proper ssize_t handling
+    - Eliminated 90+ compiler warnings in printer.cc
+  - **Impact**: Significantly improved printer reliability, eliminated buffer overflows, and enhanced error reporting
+  - **Files modified**: `main/hardware/printer.cc`, `main/hardware/cdu.cc`, `main/business/customer.cc`, `main/business/employee.cc`, `main/data/credit.cc`
+
 - **Build Failure - Buffer Size Mismatch and Const-Correctness Issues (2025-11-21)**
   - **Issues**: Build failed with array bounds errors and const-correctness compilation errors
     - Buffer size mismatch in `safe_format` calls - using `STRLONG` (2048 bytes) for `STRLENGTH` (512 byte) buffers
@@ -369,6 +383,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `main/business/check.{hh,cc}`, `main/hardware/drawer.{hh,cc}`, `main/data/credit.{hh,cc}`, and related calling files
 
 ### Changed
+- **String Performance Optimizations and Modernization (2025-11-21)**
+  - **Performance Improvements**: Comprehensive string operation optimizations across the codebase
+    - **MakeFileName optimization**: Eliminated unnecessary string copies by filtering characters directly into output buffer
+    - **WriteLR optimization**: Replaced inefficient space-filling loops with `memset()` and direct buffer operations
+    - **Reference list building**: Replaced multiple `safe_format()` + `strcat()` calls with direct `snprintf()` buffer operations
+    - **Translation caching**: Cached repeated `Translate()` calls in credit processing to avoid redundant lookups
+  - **String Safety Modernization**:
+    - Replaced all unsafe `strncpy()`, `sprintf()`, and `strcat()` operations with safe alternatives
+    - Implemented bounds-checked string operations throughout hardware and business modules
+    - Enhanced error checking for all string formatting operations
+  - **Memory Efficiency**: Reduced allocations and improved memory access patterns for string operations
+  - **Impact**: Significant performance improvements in printing, UI rendering, and data processing with enhanced safety
+  - **Files modified**: `main/hardware/printer.cc`, `main/hardware/terminal.cc`, `main/hardware/cdu.cc`, `main/data/credit.cc`, `main/business/customer.cc`, `main/business/employee.cc`
+
 - **Embossed Text Rendering**: Made embossed text effect more subtle and less overwhelming
   - **Refinement**: Modified `GenericDrawStringXftEmbossed` to use minimal white outline for better text readability
   - **Visual Effect**: Embossed text now appears with barely visible white outline above main text only

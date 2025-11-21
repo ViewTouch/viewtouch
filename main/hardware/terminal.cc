@@ -3675,18 +3675,20 @@ int Terminal::RenderBlankPage()
             genericChar ref_list[STRLENGTH] = "";
             if (ref > 0)
             {
-                int i = 0;
-                while (i < 6 && i < ref)
+                int ref_pos = 0;
+                ref_list[ref_pos++] = ':';
+                for (int i = 0; i < 6 && i < ref; ++i)
                 {
-                    if (i == 0)
-                        vt_safe_string::safe_format(str, STRLENGTH, ": %d", list[i]);
-                    else
-                        vt_safe_string::safe_format(str, STRLENGTH, ",%d", list[i]);
-                    strcat(ref_list, str);
-                    ++i;
+                    if (i > 0)
+                        ref_list[ref_pos++] = ',';
+                    ref_pos += snprintf(ref_list + ref_pos, STRLENGTH - ref_pos, "%d", list[i]);
                 }
                 if (ref > 6)
-                    strcat(ref_list, "...");
+                {
+                    strcpy(ref_list + ref_pos, "...");
+                    ref_pos += 3;
+                }
+                ref_list[ref_pos] = '\0';
             }
 
             vt_safe_string::safe_format(str, STRLENGTH, "%d %s (refs %d%s)", page->id, pn, count, ref_list);

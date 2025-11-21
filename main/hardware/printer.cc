@@ -303,7 +303,7 @@ int Printer::ParallelPrint()
     int lockfd;
     int infd;
     int outfd;
-    int bytes;
+    ssize_t bytes;
     unsigned char buff[STRLENGTH];
     struct timeval timeout;
 
@@ -390,8 +390,8 @@ int Printer::SocketPrint()
     FnTrace("Printer::SocketPrint()");
     vt::Logger::debug("Starting socket print to {}:{}", target.Value(), port_no);
 
-    int bytesread;
-    int byteswritten = 1; // set it to one to ensure one while loop
+    ssize_t bytesread;
+    ssize_t byteswritten = 1; // set it to one to ensure one while loop
     genericChar buffer[STRLENGTH];
     int sockfd;
     struct hostent *he;
@@ -485,26 +485,25 @@ int Printer::ValidChar(genericChar c)
 int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const genericChar* ext, int max_len)
 {
     FnTrace("Printer::MakeFileName()");
-    int len;
     int idx = 0;
     int buffidx = 0;
     TimeInfo now;
-    genericChar timestr[STRLENGTH];
-    genericChar title[STRLENGTH];
+    const genericChar* title_source;
 
+    // Select the source string without copying
     if (source != NULL)
-        strncpy(title, source, STRLENGTH);
+        title_source = source;
     else if (have_title)
-        strncpy(title, page_title.c_str(), STRLENGTH);
+        title_source = page_title.c_str();
     else
-        strncpy(title, GENERIC_TITLE, STRLENGTH);
-    len = strlen(title);
+        title_source = GENERIC_TITLE;
 
-    while (idx < len)
+    // Filter characters directly into buffer
+    while (title_source[idx] != '\0' && buffidx < max_len - 20) // Leave room for date and extension
     {
-        if (ValidChar(title[idx]))
+        if (ValidChar(title_source[idx]))
         {
-            buffer[buffidx] = title[idx];
+            buffer[buffidx] = title_source[idx];
             buffidx += 1;
         }
         idx += 1;
@@ -513,10 +512,10 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
 
     if (buffidx < max_len)
     {
-        // append the date
+        // append the date directly to buffer
         now.Set();
-        snprintf(timestr, STRLENGTH, "-%02d-%02d-%d", now.Day(), now.Month(), now.Year());
-        strcat(buffer, timestr);
+        buffidx += snprintf(buffer + buffidx, max_len - buffidx, "-%02d-%02d-%d",
+                           now.Day(), now.Month(), now.Year());
 
         if (ext == NULL)
         {
@@ -597,7 +596,7 @@ int Printer::GetFilePath(char* dest)
     if (IsDirectory(target.Value()))
     {
         MakeFileName(filename, NULL, NULL, STRLENGTH);
-        snprintf(dest, STRLENGTH, "%s/%s", target.Value(), filename);
+        vt_safe_string::safe_format(dest, STRLENGTH, "%s/%s", target.Value(), filename);
     }
     else
     {
@@ -615,7 +614,7 @@ int Printer::EmailPrint()
     FnTrace("Printer::EmailPrint()");
     genericChar buffer[STRLONG];
     int buffidx;
-    int bytesread;
+    ssize_t bytesread;
     genericChar line[STRLONG];
     int lineidx;
     Email email;
@@ -713,25 +712,44 @@ int Printer::WriteLR(const genericChar* left, const genericChar* right, int flag
 
     // FIX - stupid truncate-word wrap for now
     int pos = 0;
-    while ((llen + rlen + 1 - pos) > width)
+    // Handle text that doesn't fit on one line
+    while ((llen + rlen + 1 - pos) > width && pos < llen)
     {
-        strncpy(str, &left[pos], width);
-        if (write(temp_fd, str, width) < 0)
+        ssize_t write_len = (pos + width > llen) ? (llen - pos) : width;
+        if (write(temp_fd, &left[pos], write_len) < 0)
         {
-            genericChar errmsg[STRLONG];
-            snprintf(errmsg, STRLONG, "Printer::WriteLR failed while loop printing Left '%s' and Right '%s'", left, right);
-            ReportError(errmsg);
-            break;
+            vt::Logger::error("Printer::WriteLR failed to write truncated left text");
+            return 1;
+        }
+        // Pad with spaces if needed
+        if (write_len < width)
+        {
+            memset(str, ' ', width - write_len);
+            if (write(temp_fd, str, width - write_len) < 0)
+            {
+                vt::Logger::error("Printer::WriteLR failed to write padding spaces");
+                return 1;
+            }
         }
         NewLine();
         pos += width;
     }
 
-    for (int i = 0; i <= width; ++i)
-        str[i] = ' ';
+    // Fill the final line with spaces
+    memset(str, ' ', width);
+
+    // Copy remaining left text
     if (pos < llen)
-        strncpy(str, &left[pos], llen - pos);
-    vt_safe_string::safe_copy(&str[width - rlen], 256 - (width - rlen), right);
+    {
+        ssize_t left_len = (llen - pos > width - rlen - 1) ? (width - rlen - 1) : (llen - pos);
+        memcpy(str, &left[pos], left_len);
+    }
+
+    // Copy right text
+    if (rlen > 0)
+    {
+        vt_safe_string::safe_copy(&str[width - rlen], 256 - (width - rlen), right);
+    }
 
     write(temp_fd, str, width);
     NewLine();
@@ -745,7 +763,10 @@ int Printer::Write(const genericChar* my_string, int flags)
         return 1;
 
     WriteFlags(flags);
-    write(temp_fd, my_string, strlen(my_string));
+    if (write(temp_fd, my_string, strlen(my_string)) < 0) {
+        vt::Logger::error("Printer::Write failed to write string");
+        return 1;
+    }
     NewLine();
     return 0;
 }
@@ -756,7 +777,10 @@ int Printer::Put(const genericChar* my_string, int flags)
     if (WriteFlags(flags))
         return 1;
 
-    write(temp_fd, my_string, strlen(my_string));
+    if (write(temp_fd, my_string, strlen(my_string)) < 0) {
+        vt::Logger::error("Printer::Put failed to write string");
+        return 1;
+    }
     return 0;
 }
 
@@ -767,7 +791,10 @@ int Printer::Put(genericChar c, int flags)
         return 1;
 
     genericChar str[] = {c};
-    write(temp_fd, str, sizeof(str));
+    if (write(temp_fd, str, sizeof(str)) < 0) {
+        vt::Logger::error("Printer::Put failed to write character");
+        return 1;
+    }
     return 0;
 }
 
@@ -1422,9 +1449,9 @@ int PrinterEpson::OpenDrawer(int drawer)
 
     genericChar d = 0;
     if (pulse >= 0)
-        d = (pulse % 2);
+        d = static_cast<genericChar>(pulse % 2);
     else
-        d = (drawer % 2);
+        d = static_cast<genericChar>(drawer % 2);
     unsigned char str[] = { 0x1b, 0x70, (unsigned char)d, 100, 255 };
     write(temp_fd, str, sizeof(str));
     if (close_when_done)
@@ -2042,27 +2069,45 @@ int PrinterPostScript::WriteLR(const genericChar* left, const genericChar* right
     int  width = Width(flags);
     genericChar str[256];
 
-    // FIX - stupid truncate-word wrap for now
+    // Handle text that doesn't fit on one line
     int pos = 0;
-    while ((llen + rlen + 1 - pos) > width)
+    while ((llen + rlen + 1 - pos) > width && pos < llen)
     {
-        strncpy(str, &left[pos], width);
-        if (write(temp_fd, str, width) < 0)
+        ssize_t write_len = (pos + width > llen) ? (llen - pos) : width;
+        if (write(temp_fd, &left[pos], write_len) < 0)
         {
-            genericChar errmsg[STRLONG];
-            snprintf(errmsg, STRLONG, "PrinterPostScript::WriteLR failed while loop printing Left '%s' and Right '%s'\n", left, right);
-            ReportError(errmsg);
-            break;
+            vt::Logger::error("PrinterPostScript::WriteLR failed to write truncated left text");
+            return 1;
+        }
+        // Pad with spaces if needed
+        if (write_len < width)
+        {
+            memset(str, ' ', width - write_len);
+            if (write(temp_fd, str, width - write_len) < 0)
+            {
+                vt::Logger::error("PrinterPostScript::WriteLR failed to write padding spaces");
+                return 1;
+            }
         }
         NewLine();
         pos += width;
     }
 
-    for (int i = 0; i <= width; ++i)
-        str[i] = ' ';
+    // Fill the final line with spaces
+    memset(str, ' ', width);
+
+    // Copy remaining left text
     if (pos < llen)
-        strncpy(str, &left[pos], llen - pos);
-    vt_safe_string::safe_copy(&str[width - rlen], 256 - (width - rlen), right);
+    {
+        ssize_t left_len = (llen - pos > width - rlen - 1) ? (width - rlen - 1) : (llen - pos);
+        memcpy(str, &left[pos], left_len);
+    }
+
+    // Copy right text
+    if (rlen > 0)
+    {
+        vt_safe_string::safe_copy(&str[width - rlen], 256 - (width - rlen), right);
+    }
 
     write(temp_fd, str, width);
     NewLine();
@@ -2092,8 +2137,11 @@ int PrinterPostScript::Write(const genericChar* my_string, int flags)
         buffidx += 1;
     }
     WriteFlags(flags);
-    snprintf(outstr, STRLONG, "(%s) ShowText", buffer);
-    write(temp_fd, outstr, strlen(outstr));
+    vt_safe_string::safe_format(outstr, STRLONG, "(%s) ShowText", buffer);
+    if (write(temp_fd, outstr, strlen(outstr)) < 0) {
+        vt::Logger::error("PrinterPostScript::Write failed to write PostScript text");
+        return 1;
+    }
     NewLine();
     return 0;
 }
@@ -2122,8 +2170,11 @@ int PrinterPostScript::Put(const genericChar* my_string, int flags)
     }
     buffer[buffidx] = '\0';
     WriteFlags(flags);
-    snprintf(outstr, STRLONG, "(%s) ShowText", buffer);
-    write(temp_fd, outstr, strlen(outstr));
+    vt_safe_string::safe_format(outstr, STRLONG, "(%s) ShowText", buffer);
+    if (write(temp_fd, outstr, strlen(outstr)) < 0) {
+        vt::Logger::error("PrinterPostScript::Put failed to write PostScript text");
+        return 1;
+    }
     return 0;
 }
 
@@ -2217,8 +2268,8 @@ int PrinterPDF::Close()
 
     // create the PDF filename and convert the temp file
     MakeFileName(filename, NULL, ".pdf", STRLONG);
-    snprintf(pdffullpath, STRLONG, "/tmp/%s", filename);
-    snprintf(command, STRLONG, "ps2pdf %s %s", temp_name.Value(), pdffullpath);
+    vt_safe_string::safe_format(pdffullpath, STRLONG, "/tmp/%s", filename);
+    vt_safe_string::safe_format(command, STRLONG, "ps2pdf %s %s", temp_name.Value(), pdffullpath);
     system(command);
 
     // now get rid of the temp file set the temp_name to the PDF file

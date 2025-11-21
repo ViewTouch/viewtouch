@@ -588,7 +588,7 @@ int UserDB::ListReport(Terminal *t, int active, Report *r)
             if (conflict)
             {
                 vt_safe_string::safe_format(str2, 256, " (ID Conflict with %s)", conflict->system_name.Value());
-                strcat(str, str2);
+                vt_safe_string::safe_concat(str, 256, str2);
             }
 
             r->TextL(str, col);
