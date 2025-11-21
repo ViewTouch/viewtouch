@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-constexpr int SETTINGS_VERSION = 104;  // READ ABOVE
+constexpr int SETTINGS_VERSION = 105;  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -580,6 +580,18 @@ public:
     Str quickbooks_export_path;   // Path for QuickBooks CSV exports
     int quickbooks_auto_export;   // Enable automatic daily export
     int quickbooks_export_format; // Export format (0=daily, 1=monthly, 2=custom)
+
+    // Reverse SSH Tunnel Settings
+    int reverse_ssh_enabled;      // Enable reverse SSH tunnel for remote access
+    Str reverse_ssh_server;      // Management server hostname/IP
+    int reverse_ssh_port;         // Management server SSH port (default: 22)
+    Str reverse_ssh_user;         // Remote SSH username on management server
+    int reverse_ssh_local_port;   // Local port to expose (default: 22 for SSH)
+    int reverse_ssh_remote_port;  // Remote port on management server (0 = auto-assign)
+    Str reverse_ssh_key_path;     // Path to SSH private key file
+    int reverse_ssh_reconnect_interval; // Seconds between reconnection attempts
+    int reverse_ssh_health_check_interval; // Seconds between health checks
+    int reverse_ssh_max_retries;  // Maximum reconnection attempts before giving up
 
     // General Settings
     Str store_name;              // printed on title bar

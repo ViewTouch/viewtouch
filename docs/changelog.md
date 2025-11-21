@@ -23,6 +23,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Impact**: Eliminates ViewTouch freezing when remote displays disconnect, enabling reliable remote access without port forwarding
   - **Files modified**: `src/network/remote_link.cc`, `term/term_view.cc`
 
+- **Reverse SSH Tunnel System (2025-11-21)**
+  - **🚨 DEVELOPMENT STATUS**: This feature is currently under development and requires further testing before production use
+  - **Feature**: Complete reverse SSH tunneling system for secure remote access to ViewTouch POS systems
+  - **Components**:
+    - **Integrated Service**: Built into ViewTouch main application, always enabled when ViewTouch runs
+    - **Standalone Daemon**: Independent reverse SSH daemon for advanced deployments
+    - **Multi-Location Support**: Separate tunnels and configurations for multiple restaurant/store locations
+    - **Automated Setup**: `vt_reverse_ssh_setup` script for easy tunnel configuration without dedicated servers
+    - **Management Tools**: `vt_reverse_ssh` and `vt_ssh_security` scripts for tunnel management and security
+  - **Functionality**:
+    - **Reverse Tunnels**: ViewTouch systems initiate outbound SSH connections to management servers
+    - **Always-On**: Service automatically starts with ViewTouch and maintains persistent tunnels
+    - **Location Identification**: Each location gets unique ports and configuration files for easy identification
+    - **No Public IPs Required**: Works through NAT/firewalls without port forwarding
+    - **Multiple Methods**: Support for dedicated servers, personal computers, ngrok, and serveo
+  - **Security Features**:
+    - SSH key-based authentication (password authentication disabled)
+    - Encrypted tunnels using standard SSH protocols
+    - Configurable reconnect intervals and health checks
+    - Automated key management and rotation tools
+  - **Management Interface**:
+    - `vt_reverse_ssh_setup ngrok [location]` - Automated ngrok tunnel setup
+    - `vt_reverse_ssh_setup personal [location]` - Use personal computer as server
+    - `vt_reverse_ssh_setup status` - Monitor all location tunnels
+    - `vt_reverse_ssh stop [location]` - Stop specific or all tunnels
+  - **Configuration Files**:
+    - `/etc/viewtouch/reverse_ssh.conf` - Main configuration
+    - `/etc/viewtouch/reverse_ssh_[location].conf` - Location-specific configs
+    - Systemd service integration for daemon management
+  - **Files Added**: `src/network/reverse_ssh_service.*`, `src/network/reverse_ssh_daemon.cc`, `scripts/tools/vt_reverse_ssh*`, `config/reverse_ssh_daemon.conf`, `scripts/system/reverse-ssh-daemon.service`, `docs/REVERSE_SSH.md`
+  - **Impact**: Enables secure remote access and support for ViewTouch systems without requiring public IP addresses or complex firewall configurations
+  - **⚠️ Testing Required**: Feature needs extensive real-world testing across different network environments before production deployment
+
 - **New Clear System Button Zone Type (2025-11-14)**
   - **Feature**: Added dedicated `ClearSystemZone` button type with countdown safety mechanism
   - **Functionality**:

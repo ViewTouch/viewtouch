@@ -1231,7 +1231,19 @@ Settings::Settings()
     quickbooks_export_path.Set("/usr/viewtouch/exports/quickbooks");
     quickbooks_auto_export = 0;   // Default disabled
     quickbooks_export_format = 0; // Default to daily format
-    
+
+    // Reverse SSH Tunnel Settings
+    reverse_ssh_enabled = 0;      // Default disabled
+    reverse_ssh_server.Set("");
+    reverse_ssh_port = 22;        // Default SSH port
+    reverse_ssh_user.Set("");
+    reverse_ssh_local_port = 22;  // Default local SSH port
+    reverse_ssh_remote_port = 0;  // Auto-assign remote port
+    reverse_ssh_key_path.Set("/usr/viewtouch/ssh/reverse_ssh_key");
+    reverse_ssh_reconnect_interval = 30; // 30 seconds
+    reverse_ssh_health_check_interval = 60; // 60 seconds
+    reverse_ssh_max_retries = 10; // Maximum 10 retries
+
     email_send_server.Set("");
     changed            = 0;
     screen_blank_time  = 60;
@@ -2013,6 +2025,19 @@ int Settings::Load(const char* file)
         df.Read(quickbooks_auto_export);
         df.Read(quickbooks_export_format);
     }
+    if (version >= 105)  // Reverse SSH tunnel settings
+    {
+        df.Read(reverse_ssh_enabled);
+        df.Read(reverse_ssh_server);
+        df.Read(reverse_ssh_port);
+        df.Read(reverse_ssh_user);
+        df.Read(reverse_ssh_local_port);
+        df.Read(reverse_ssh_remote_port);
+        df.Read(reverse_ssh_key_path);
+        df.Read(reverse_ssh_reconnect_interval);
+        df.Read(reverse_ssh_health_check_interval);
+        df.Read(reverse_ssh_max_retries);
+    }
     if (version >= 51)
         df.Read(fast_takeouts);
     if (version >= 53)
@@ -2449,6 +2474,16 @@ int Settings::Save()
     df.Write(quickbooks_export_path);
     df.Write(quickbooks_auto_export);
     df.Write(quickbooks_export_format);
+    df.Write(reverse_ssh_enabled);
+    df.Write(reverse_ssh_server);
+    df.Write(reverse_ssh_port);
+    df.Write(reverse_ssh_user);
+    df.Write(reverse_ssh_local_port);
+    df.Write(reverse_ssh_remote_port);
+    df.Write(reverse_ssh_key_path);
+    df.Write(reverse_ssh_reconnect_interval);
+    df.Write(reverse_ssh_health_check_interval);
+    df.Write(reverse_ssh_max_retries);
     df.Write(fast_takeouts);
     df.Write(money_symbol);
     df.Write(require_drawer_balance);

@@ -45,6 +45,7 @@
 #include "src/utils/vt_logger.hh"  // Modern C++ logging
 #include "safe_string_utils.hh"     // Safe string operations
 #include "date/date.h"      // helper library to output date strings with std::chrono
+#include "src/network/reverse_ssh_service.hh"  // Reverse SSH tunnel service
 
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
@@ -1043,6 +1044,45 @@ int StartSystem(int my_use_net)
     ReportLoader("Loading Application Data");
     LoadSystemData();
 
+    // Initialize Reverse SSH Service (Always Enabled)
+    ReportLoader("Initializing Reverse SSH Service");
+    try {
+        vt::ReverseSSHService::Configuration ssh_config;
+        ssh_config.enabled = true;  // Always enable reverse SSH service
+        ssh_config.management_server = sys->settings.reverse_ssh_server.str();
+        ssh_config.management_port = sys->settings.reverse_ssh_port;
+        ssh_config.remote_user = sys->settings.reverse_ssh_user.str();
+        ssh_config.local_port = sys->settings.reverse_ssh_local_port;
+        ssh_config.remote_port = sys->settings.reverse_ssh_remote_port;
+        ssh_config.ssh_key_path = sys->settings.reverse_ssh_key_path.str();
+        ssh_config.reconnect_interval = std::chrono::seconds(sys->settings.reverse_ssh_reconnect_interval);
+        ssh_config.health_check_interval = std::chrono::seconds(sys->settings.reverse_ssh_health_check_interval);
+        ssh_config.max_retry_attempts = sys->settings.reverse_ssh_max_retries;
+
+        // Set default values if settings are not configured
+        if (ssh_config.management_server.empty()) {
+            ssh_config.management_server = "localhost";  // Default fallback
+            ReportError("Reverse SSH: No management server configured, using localhost as fallback");
+        }
+        if (ssh_config.remote_user.empty()) {
+            ssh_config.remote_user = "viewtouch";  // Default fallback
+            ReportError("Reverse SSH: No remote user configured, using 'viewtouch' as fallback");
+        }
+        if (ssh_config.ssh_key_path.empty()) {
+            ssh_config.ssh_key_path = "/usr/viewtouch/ssh/reverse_ssh_key";  // Default path
+        }
+
+        vt::GlobalReverseSSHService = std::make_unique<vt::ReverseSSHService>();
+        vt::GlobalReverseSSHService->Initialize(ssh_config);
+
+        // Always start the service
+        vt::GlobalReverseSSHService->Start();
+        ReportLoader("Reverse SSH service started (always enabled)");
+    } catch (const std::exception& e) {
+        ReportError(std::string("Failed to initialize reverse SSH service: ") + e.what());
+        ReportLoader("Reverse SSH service initialization failed");
+    }
+
     // Add Remote terminals
     int num_terms = 16384; // old value of license DEFAULT_TERMINALS
     if (my_use_net)
@@ -1490,6 +1530,18 @@ int EndSystem()
     }
     ReportError("EndSystem: MasterSystem cleanup section completed, continuing with shutdown...");
     ReportError("EndSystem:  Normal shutdown.");
+
+    // Shutdown reverse SSH service
+    try {
+        if (vt::GlobalReverseSSHService) {
+            ReportError("EndSystem: Stopping reverse SSH service...");
+            vt::GlobalReverseSSHService->Stop();
+            vt::GlobalReverseSSHService.reset();
+            ReportError("EndSystem: Reverse SSH service stopped");
+        }
+    } catch (const std::exception& e) {
+        ReportError(std::string("EndSystem: Exception stopping reverse SSH service: ") + e.what());
+    }
 
     // Kill all spawned tasks (except vtrestart which needs to stay alive for restart)
     ReportError("EndSystem: Killing spawned tasks...");
