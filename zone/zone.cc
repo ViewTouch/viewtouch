@@ -16,6 +16,7 @@
 #include "system.hh"
 #include "pos_zone.hh"   // NewPosPage()
 #include "logger.hh"     // logmsg()
+#include "safe_string_utils.hh"
 
 #include <cstring>
 #include <errno.h>
@@ -260,7 +261,7 @@ int Zone::RenderZone(Terminal *term, const genericChar* text, int update_flag)
         {
             if (behave == BEHAVE_DOUBLE)
             {
-                sprintf(str, "%s\\( 2X )", b);
+                vt_safe_string::safe_format(str, 256, "%s\\( 2X )", b);
                 b = str;
             }
             int c = color[state];
@@ -285,7 +286,7 @@ int Zone::RenderInfo(Terminal *term)
     genericChar str[32];
     if (group_id != 0)
     {
-        sprintf(str, "ID %d", group_id);
+        vt_safe_string::safe_format(str, 32, "ID %d", group_id);
         term->RenderText(str, x + border, y + 16, COLOR_BLACK, FONT_TIMES_14);
     }
 
@@ -294,22 +295,22 @@ int Zone::RenderInfo(Terminal *term)
         switch (*JumpType())
 		{
         case JUMP_NORMAL:
-            sprintf(str, "J %d", *JumpID());
+            vt_safe_string::safe_format(str, 32, "J %d", *JumpID());
             break;
         case JUMP_STEALTH:
-            sprintf(str, "J %d*", *JumpID());
+            vt_safe_string::safe_format(str, 32, "J %d*", *JumpID());
             break;
         case JUMP_RETURN:
-            strcpy(str, GlobalTranslate("J back"));
+            vt_safe_string::safe_copy(str, 32, GlobalTranslate("J back"));
             break;
         case JUMP_HOME:
-            strcpy(str, GlobalTranslate("J home"));
+            vt_safe_string::safe_copy(str, 32, GlobalTranslate("J home"));
             break;
         case JUMP_SCRIPT:
-            strcpy(str, GlobalTranslate("J continue"));
+            vt_safe_string::safe_copy(str, 32, GlobalTranslate("J continue"));
             break;
         case JUMP_INDEX:
-            strcpy(str, GlobalTranslate("J index"));
+            vt_safe_string::safe_copy(str, 32, GlobalTranslate("J index"));
             break;
         default:
             return 0;
@@ -464,9 +465,9 @@ int Zone::ChangeJumpID(int old_id, int new_id)
                 {
                     genericChar num[16];
                     if (i == 0)
-                        sprintf(num, "%d", j[0]);
+                        vt_safe_string::safe_format(num, 16, "%d", j[0]);
                     else
-                        sprintf(num, " %d", j[i]);
+                        vt_safe_string::safe_format(num, 16, " %d", j[i]);
                     strcat(str, num);
                 }
                 Script()->Set(str);
@@ -1062,7 +1063,7 @@ int ZoneDB::Load(const char* filename)
     genericChar str[STRLENGTH];
     if (version < 17 || version > ZONE_VERSION)
     {
-        sprintf(str, "Unknown ZoneDB file version %d", version);
+        vt_safe_string::safe_format(str, STRLENGTH, "Unknown ZoneDB file version %d", version);
         ReportError(str);
         return 1;  // Error
     }
@@ -1084,7 +1085,7 @@ int ZoneDB::Load(const char* filename)
 		{
 			if (currPage->Read(infile, version))
 			{
-				sprintf(str, "Error in page %d '%s' of file '%s'",
+				vt_safe_string::safe_format(str, STRLENGTH, "Error in page %d '%s' of file '%s'",
 						currPage->id, currPage->name.Value(), filename);
 
 				ReportError(str);
@@ -1212,7 +1213,7 @@ int ZoneDB::ImportPage(const char* filename)
         return retval;
     if (version < 17 || version > ZONE_VERSION)
     {
-        sprintf(str, "Unknown ZoneDB file version %d", version);
+        vt_safe_string::safe_format(str, STRLENGTH, "Unknown ZoneDB file version %d", version);
         ReportError(str);
         return 1;  // Error
     }
@@ -1353,7 +1354,7 @@ int ZoneDB::AddUnique(Page *page)
     {
         if (Remove(oldpage))
         {
-            sprintf(str, "Error removing page %d", pagenum);
+            vt_safe_string::safe_format(str, STRLENGTH, "Error removing page %d", pagenum);
             ReportError(str);
             return 1;  // Error
         }   
@@ -1362,7 +1363,7 @@ int ZoneDB::AddUnique(Page *page)
     // add the new page in
     if (Add(page))
     {
-        sprintf(str, "Error adding page %d", pagenum);
+        vt_safe_string::safe_format(str, STRLENGTH, "Error adding page %d", pagenum);
         ReportError(str);
         return 1;  // Error
     }
@@ -1982,7 +1983,7 @@ int ZoneDB::PageListReport(Terminal *t, int show_system, Report *r)
 
     r->NewLine();
     genericChar str[32];
-    sprintf(str, "Total Pages: %d", count);
+    vt_safe_string::safe_format(str, 32, "Total Pages: %d", count);
     r->TextC(str);
     return 0;
 }

@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <iomanip> // setw, setfill
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -155,7 +156,7 @@ int Account::Load(const char* path)
     pathname.Set(path);
 
     genericChar filename[STRLENGTH];
-    sprintf(filename, "%s/%04d", path, number);
+    vt_safe_string::safe_format(filename, STRLENGTH, "%s/%04d", path, number);
     if (df.Open(filename, version))
         return 1;
     
@@ -167,7 +168,7 @@ int Account::Load(const char* path)
     if (ReadEntries(df))
     {
         genericChar str[STRLENGTH];
-        sprintf(str, "Error in reading Account #%d Entries", number);
+        vt_safe_string::safe_format(str, STRLENGTH, "Error in reading Account #%d Entries", number);
         ReportError(str);
         return 1;  // df destructor will close the file
     }
@@ -181,7 +182,7 @@ int Account::Save()
     genericChar filename[STRLENGTH];
     OutputDataFile df;
 
-    sprintf(filename, "%s/%04d", pathname.Value(), number);
+    vt_safe_string::safe_format(filename, STRLENGTH, "%s/%04d", pathname.Value(), number);
     if (df.Open(filename, ACCOUNT_VERSION))
         return 1;
     df.Write(name);

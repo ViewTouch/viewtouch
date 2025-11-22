@@ -39,6 +39,7 @@
 #include "cdu.hh"
 #include "cdu_att.hh"
 #include "utility.hh"
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -89,7 +90,7 @@ int CDUString::GetLine(genericChar* dest, int line)
     else if (line >= MAX_CDU_LINES)
         line = MAX_CDU_LINES - 1;
 
-    strcpy(dest, lines[line].Value());
+    vt_safe_string::safe_copy(dest, STRLENGTH, lines[line].Value());
     return 0;
 }
 
@@ -198,7 +199,7 @@ int CDUStrings::Load(const char* path)
     int result = 0;
 
     if (path != NULL)
-        strncpy(filename, path, STRLONG);
+        vt_safe_string::safe_copy(filename, STRLONG, path);
 
     result = infile.Open(filename, version);
     if (result == 0)
@@ -214,7 +215,7 @@ int CDUStrings::Save(const char* path)
     int result = 0;
 
     if (path != NULL)
-        strncpy(filename, path, STRLONG);
+        vt_safe_string::safe_copy(filename, STRLONG, path);
     RemoveBlank();
 
     result = outfile.Open(filename, CDU_VERSION, 0);
@@ -353,7 +354,7 @@ CustDispUnit::CustDispUnit()
 CustDispUnit::CustDispUnit(const char* filename)
 {
     FnTrace("CustDispUnit::CustDispUnit(const char* )");
-    strncpy(filepath, filename, 256);
+    vt_safe_string::safe_copy(filepath, 256, filename);
     port_open   = 0;
     filedes     = -1;
     report      = 0;
@@ -370,7 +371,7 @@ CustDispUnit::CustDispUnit(const char* filename)
 CustDispUnit::CustDispUnit(const char* filename, int verbose)
 {
     FnTrace("CustDispUnit::CustDispUnit(const char* , int)");
-    strncpy(filepath, filename, 256);
+    vt_safe_string::safe_copy(filepath, 256, filename);
     port_open   = 0;
     filedes     = -1;
     report      = verbose;
@@ -387,7 +388,7 @@ CustDispUnit::CustDispUnit(const char* filename, int verbose)
 CustDispUnit::CustDispUnit(const char* filename, int verbose, int allow_delay)
 {
     FnTrace("CustDispUnit::CustDispUnit(const char* , int, int)");
-    strncpy(filepath, filename, 256);
+    vt_safe_string::safe_copy(filepath, 256, filename);
     port_open   = 0;
     filedes     = -1;
     report      = verbose;
@@ -444,7 +445,7 @@ int CustDispUnit::ParseFileName()
     }
     else
     { // serial port
-        strncpy(target, filepath, 256);
+        vt_safe_string::safe_copy(target, 256, filepath);
         filetype = CDU_DEV_SERIAL;
         port     = 0;
     }
@@ -502,7 +503,7 @@ int CustDispUnit::Open()
         filedes = open(target, O_RDWR | O_NOCTTY | O_NDELAY);
     if (filedes < 0)
     {
-        snprintf(status, 256, "open_port Error %d opening %s", errno, target);
+        vt_safe_string::safe_format(status, 256, "open_port Error %d opening %s", errno, target);
         ReportError(status);
         port_open = 0;
     }
@@ -561,7 +562,7 @@ int CustDispUnit::Read(char* buffer, int len)
         retval = read(filedes, buffer, len);
         if (retval < 0)
         {
-            snprintf(status, 256, "Only read %d bytes", retval);
+            vt_safe_string::safe_format(status, 256, "Only read %d bytes", retval);
             perror(status);
         }
         else if (report)
@@ -725,7 +726,7 @@ const unsigned char BRIGHTNESS[] = { 0x1F, 0x58, 0xFF, 0x00 };
 EpsonDispUnit::EpsonDispUnit(const char* filename)
 {
     FnTrace("EpsonDispUnit::EpsonDispUnit()");
-    strncpy(filepath, filename, 256);
+    vt_safe_string::safe_copy(filepath, 256, filename);
     port_open = 0;
     filedes = -1;
     report = 0;
@@ -735,7 +736,7 @@ EpsonDispUnit::EpsonDispUnit(const char* filename)
 EpsonDispUnit::EpsonDispUnit(const char* filename, int verbose)
 {
     FnTrace("EpsonDispUnit::EpsonDispUnit(const char* , int)");
-    strncpy(filepath, filename, 256);
+    vt_safe_string::safe_copy(filepath, 256, filename);
     port_open = 0;
     filedes = -1;
     report = verbose;
@@ -745,7 +746,7 @@ EpsonDispUnit::EpsonDispUnit(const char* filename, int verbose)
 EpsonDispUnit::EpsonDispUnit(const char* filename, int verbose, int allow_delay)
 {
     FnTrace("EpsonDispUnit::EpsonDispUnit(const char* , int, int)");
-    strncpy(filepath, filename, 256);
+    vt_safe_string::safe_copy(filepath, 256, filename);
     port_open = 0;
     filedes = -1;
     report = verbose;
@@ -869,7 +870,7 @@ const unsigned char BA63_PLACE0[]   = { 0x1B, 0x5B, 0x48, 0x00 };
 BA63DispUnit::BA63DispUnit(const char* filename)
 {
     FnTrace("BA63DispUnit::BA63DispUnit()");
-    strncpy(filepath, filename, 256);
+    vt_safe_string::safe_copy(filepath, 256, filename);
     port_open = 0;
     filedes = -1;
     report = 0;
@@ -879,7 +880,7 @@ BA63DispUnit::BA63DispUnit(const char* filename)
 BA63DispUnit::BA63DispUnit(const char* filename, int verbose)
 {
     FnTrace("BA63DispUnit::BA63DispUnit(const char* , int)");
-    strncpy(filepath, filename, 256);
+    vt_safe_string::safe_copy(filepath, 256, filename);
     port_open = 0;
     filedes = -1;
     report = verbose;
@@ -889,7 +890,7 @@ BA63DispUnit::BA63DispUnit(const char* filename, int verbose)
 BA63DispUnit::BA63DispUnit(const char* filename, int verbose, int allow_delay)
 {
     FnTrace("BA63DispUnit::BA63DispUnit(const char* , int, int)");
-    strncpy(filepath, filename, 256);
+    vt_safe_string::safe_copy(filepath, 256, filename);
     port_open = 0;
     filedes = -1;
     report = verbose;
@@ -930,9 +931,9 @@ int BA63DispUnit::ToPos(int x, int y)
         x = width + x;
 
     if (x < 2 && y < 2)
-        strncpy(cursorstr,(const char*) BA63_PLACE0, 256);
+        vt_safe_string::safe_copy(cursorstr, 256, (const char*) BA63_PLACE0);
     else
-        snprintf(cursorstr, 256, "%c[%d;%dH", 0x1B, y, x);  // ESC[Py;PxH
+        vt_safe_string::safe_format(cursorstr, 256, "%c[%d;%dH", 0x1B, y, x);  // ESC[Py;PxH
     return Write(cursorstr);
 }
 
@@ -942,7 +943,7 @@ int BA63DispUnit::Clear()
     genericChar buffer[STRLENGTH];
 
     // We're going to set country code here
-    strcpy(buffer, (const char*)BA63_COUNTRY);
+    vt_safe_string::safe_copy(buffer, STRLENGTH, (const char*)BA63_COUNTRY);
     buffer[BA63_COUNTRY_LOC] = 0x00;
     Write(buffer, 3);
     // Now clear the screen and home the cursor

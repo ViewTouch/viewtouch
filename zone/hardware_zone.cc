@@ -361,7 +361,13 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
             Str tmp;
             field = term_start;
             field->Get(ti->name); field = field->next;
+            int old_type = ti->type;
             field->Get(ti->type); field = field->next;
+            // Automatically set page_variant to 1 (Page -2) when Self Order Mode is selected
+            if (ti->type == TERMINAL_SELFORDER && old_type != TERMINAL_SELFORDER)
+            {
+                ti->page_variant = 1;  // Page -2 for Self Order Mode
+            }
             field->Get(ti->sortorder); field = field->next;
             field->Get(ti->workorder_heading); field = field->next;
             field->Get(ti->print_workorder); field = field->next;

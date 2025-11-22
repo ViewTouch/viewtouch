@@ -24,6 +24,7 @@
 #include "customer.hh"
 #include "data_file.hh"
 #include "system.hh"
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -584,9 +585,7 @@ int CustomerInfoDB::Load(const genericChar* filepath)
             const genericChar* name = record->d_name;
             if (strncmp("customer_", name, 9) == 0)
             {
-                strcpy(buffer, pathname.Value());
-                strcat(buffer, "/");
-                strcat(buffer, name);
+                vt_safe_string::safe_format(buffer, STRLONG, "%s/%s", pathname.Value(), name);
                 CustomerInfo *custinfo = new CustomerInfo();
                 if (custinfo->Load(buffer))
                     ReportError("Error loading customer");

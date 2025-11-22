@@ -35,6 +35,7 @@
 #include "term_credit_cheq.hh"
 #include "term_view.hh"
 #include "utility.hh"
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -207,37 +208,37 @@ int SAFClear::ParseSAF(const char* results)
     {
         idx = CCQ_GetKeyValue(key, value, results, idx);
         if (strncmp(key, "TRM", 3) == 0)
-            strcpy(terminal, value);
+            vt_safe_string::safe_copy(terminal, STRLENGTH, value);
         else if (strncmp(key, "OPR", 3) == 0)
-            strcpy(op, value);
+            vt_safe_string::safe_copy(op, STRLENGTH, value);
         else if (strncmp(key, "MRC", 3) == 0)
-            strcpy(merchid, value);
+            vt_safe_string::safe_copy(merchid, STRLENGTH, value);
         else if (strncmp(key, "BTC", 3) == 0)
-            strcpy(batch, value);
+            vt_safe_string::safe_copy(batch, STRLENGTH, value);
         else if (strncmp(key, "DAT", 3) == 0)
-            strcpy(safdate, value);
+            vt_safe_string::safe_copy(safdate, STRLENGTH, value);
         else if (strncmp(key, "TIM", 3) == 0)
-            strcpy(saftime, value);
+            vt_safe_string::safe_copy(saftime, STRLENGTH, value);
         else if (strncmp(key, "DSP", 3) == 0)
-            strcpy(display, value);
+            vt_safe_string::safe_copy(display, STRLENGTH, value);
         else if (strncmp(key, "SFN", 3) == 0)
-            strcpy(safnum, value);
+            vt_safe_string::safe_copy(safnum, STRLENGTH, value);
         else if (strncmp(key, "NOR", 3) == 0)
-            strcpy(numrecords, value);
+            vt_safe_string::safe_copy(numrecords, STRLENGTH, value);
         else if (strncmp(key, "NEW", 3) == 0)
-            strcpy(notproc, value);
+            vt_safe_string::safe_copy(notproc, STRLENGTH, value);
         else if (strncmp(key, "CMP", 3) == 0)
-            strcpy(completed, value);
+            vt_safe_string::safe_copy(completed, STRLENGTH, value);
         else if (strncmp(key, "DEC", 3) == 0)
-            strcpy(declined, value);
+            vt_safe_string::safe_copy(declined, STRLENGTH, value);
         else if (strncmp(key, "ERR", 3) == 0)
-            strcpy(errors, value);
+            vt_safe_string::safe_copy(errors, STRLENGTH, value);
         else if (strncmp(key, "VOI", 3) == 0)
-            strcpy(voided, value);
+            vt_safe_string::safe_copy(voided, STRLENGTH, value);
         else if (strncmp(key, "OLD", 3) == 0)
-            strcpy(expired, value);
+            vt_safe_string::safe_copy(expired, STRLENGTH, value);
         else if (strncmp(key, "LST", 3) == 0)
-            strcpy(last, value);
+            vt_safe_string::safe_copy(last, STRLENGTH, value);
     }
 
     if (idx >= len)
@@ -306,7 +307,7 @@ CCInfo::CCInfo(const char* newname)
 {
     FnTrace("CCInfo::CCInfo(const char* )");
 
-    strcpy(name, newname);
+    vt_safe_string::safe_copy(name, STRLENGTH, newname);
     Clear();
 }
 
@@ -314,7 +315,7 @@ void CCInfo::SetName(const char* newname)
 {
     FnTrace("CCInfo::SetName()");
 
-    strcpy(name, newname);
+    vt_safe_string::safe_copy(name, STRLENGTH, newname);
 }
 
 void CCInfo::Clear()
@@ -443,33 +444,33 @@ int BatchInfo::ParseResults(const char* results)
     {
         idx = CCQ_GetKeyValue(key, value, results, idx);
         if (strncmp(key, "RES", 3) == 0)
-            strcpy(result, value);
+            vt_safe_string::safe_copy(result, STRLENGTH, value);
         else if (strncmp(key, "STL", 3) == 0)
-            strcpy(settle, value);
+            vt_safe_string::safe_copy(settle, STRLENGTH, value);
         else if (strncmp(key, "TRM", 3) == 0)
-            strcpy(termid, value);
+            vt_safe_string::safe_copy(termid, STRLENGTH, value);
         else if (strncmp(key, "OPR", 3) == 0)
-            strcpy(op, value);
+            vt_safe_string::safe_copy(op, STRLENGTH, value);
         else if (strncmp(key, "MRC", 3) == 0)
-            strcpy(merchid, value);
+            vt_safe_string::safe_copy(merchid, STRLENGTH, value);
         else if (strncmp(key, "SEQ", 3) == 0)
-            strcpy(seqnum, value);
+            vt_safe_string::safe_copy(seqnum, STRLENGTH, value);
         else if (strncmp(key, "SHF", 3) == 0)
-            strcpy(shift, value);
+            vt_safe_string::safe_copy(shift, STRLENGTH, value);
         else if (strncmp(key, "BTC", 3) == 0)
-            strcpy(batch, value);
+            vt_safe_string::safe_copy(batch, STRLENGTH, value);
         else if (strncmp(key, "DAT", 3) == 0)
-            strcpy(bdate, value);
+            vt_safe_string::safe_copy(bdate, STRLENGTH, value);
         else if (strncmp(key, "TIM", 3) == 0)
-            strcpy(btime, value);
+            vt_safe_string::safe_copy(btime, STRLENGTH, value);
         else if (strncmp(key, "RCP", 3) == 0)
-            strcpy(receipt, value);
+            vt_safe_string::safe_copy(receipt, STRLENGTH, value);
         else if (strncmp(key, "DSP", 3) == 0)
-            strcpy(display, value);
+            vt_safe_string::safe_copy(display, STRLENGTH, value);
         else if (strncmp(key, "ISO", 3) == 0)
-            strcpy(iso, value);
+            vt_safe_string::safe_copy(iso, STRLENGTH, value);
         else if (strncmp(key, "B24", 3) == 0)
-            strcpy(b24, value);
+            vt_safe_string::safe_copy(b24, STRLENGTH, value);
         else if (strncmp(key, "C01OUR", 6) == 0)
             visa.numtr = GetNum(value);
         else if (strncmp(key, "A01OUR", 6) == 0)
@@ -647,7 +648,7 @@ int BatchInfo::GetAmt(const char* dest, const char* value)
     FnTrace("BatchInfo::GetAmt()");
     int retval = 0;
 
-    sprintf(dest, "%d", GetNum(value));
+    vt_safe_string::safe_format(dest, STRLENGTH, "%d", GetNum(value));
 
     return retval;
 }
@@ -707,11 +708,11 @@ CCard::CCard(const char* serv, const char* prt, const char* id)
     trans_success = 0;
     intcode = CC_STATUS_NONE;
 
-    strcpy(server, serv);
-    strcpy(port, prt);
+    vt_safe_string::safe_copy(server, STRLENGTH, serv);
+    vt_safe_string::safe_copy(port, STRLENGTH, prt);
     user[0] = '\0';
     password[0] = '\0';
-    strcpy(termid, id);
+    vt_safe_string::safe_copy(termid, STRLENGTH, id);
     approval[0] = '\0';
     number[0] = '\0';
     expire[0] = '\0';
@@ -902,7 +903,7 @@ int CCard::ParseResponse(const char* response)
     else
     {
         intcode = CC_STATUS_ERROR;
-        strcpy(verb, &response[1]);
+        vt_safe_string::safe_copy(verb, STRLENGTH, &response[1]);
     }
 
     return retval;
@@ -920,29 +921,29 @@ int CCard::ParseReceipt()
     {
         idx = CCQ_GetKeyValue(key, value, receipt, idx);
         if (strncmp(key, "CRN", 3) == 0 && number[0] == 0)
-            strcpy(number, value);
+            vt_safe_string::safe_copy(number, STRLENGTH, value);
         else if (strncmp(key, "EXP", 3) == 0 && expire[0] == 0)
-            strcpy(expire, value);
+            vt_safe_string::safe_copy(expire, STRLENGTH, value);
         else if (strncmp(key, "AUT", 3) == 0)
-            strcpy(auth, value);
+            vt_safe_string::safe_copy(auth, STRLENGTH, value);
         else if (strncmp(key, "REF", 3) == 0)
-            strcpy(reference, value);
+            vt_safe_string::safe_copy(reference, STRLENGTH, value);
         else if (strncmp(key, "SEQ", 3) == 0)
-            strcpy(sequence, value);
+            vt_safe_string::safe_copy(sequence, STRLENGTH, value);
         else if (strncmp(key, "DAT", 3)  == 0)
-            strcpy(server_date, value);
+            vt_safe_string::safe_copy(server_date, STRLENGTH, value);
         else if (strncmp(key, "TIM", 3) == 0)
-            strcpy(server_time, value);
+            vt_safe_string::safe_copy(server_time, STRLENGTH, value);
         else if (strncmp(key, "RCP", 3) == 0)
-            strcpy(receipt_line, value);
+            vt_safe_string::safe_copy(receipt_line, STRLENGTH, value);
         else if (strncmp(key, "DSP", 3) == 0)
-            strcpy(verb, value);
+            vt_safe_string::safe_copy(verb, STRLENGTH, value);
         else if (strncmp(key, "LNG", 3) == 0)
-            strcpy(country, value);
+            vt_safe_string::safe_copy(country, STRLENGTH, value);
         else if (strncmp(key, "TRM", 3) == 0)
-            strcpy(termid, value);
+            vt_safe_string::safe_copy(termid, STRLENGTH, value);
         else if (strncmp(key, "B24", 3) == 0)
-            strcpy(b24code, value);
+            vt_safe_string::safe_copy(b24code, STRLENGTH, value);
         else if (strncmp(key, "DBA", 3) == 0)
             debit_acct = CCQ_GetDebitAccount(value);
         else if (strncmp(key, "SWP", 3) == 0)
@@ -982,7 +983,7 @@ int CCard::Command(const char* trans_type, const char* sub_type)
         }
         else
         {
-            sprintf(code, "NOCONN");
+            vt_safe_string::safe_format(code, STRLENGTH, "NOCONN");
             intcode = CC_STATUS_NOCONNECT;
         }
     }
@@ -1117,7 +1118,7 @@ int CCard::ReadCheq(const char* buffer, int buffsize)
                     }
                     else
                     {
-                        strcpy(verb, "Failed to get response");
+                        vt_safe_string::safe_copy(verb, STRLENGTH, "Failed to get response");
                         done = 1;
                     }
                 }
@@ -1164,7 +1165,7 @@ int CCard::Connect()
         else
         {
             perror("Connect");
-            strcpy(verb, "No Connection");
+            vt_safe_string::safe_copy(verb, STRLENGTH, "No Connection");
             intcode = CC_STATUS_NOCONNECT;
         }
     }

@@ -28,6 +28,7 @@
 #include "system.hh"
 #include "manager.hh"
 #include "utility.hh"
+#include "safe_string_utils.hh"
 #include <cstring>
 #include <errno.h>
 #include <vector>
@@ -241,7 +242,7 @@ int Report::CreateHeader(Terminal *term, Printer *p, const Employee *e)
     Header();
 
     genericChar str[256];
-    sprintf(str, "%s: %s", term->Translate("Author"), e->system_name.Value());
+    vt_safe_string::safe_format(str, 256, "%s: %s", term->Translate("Author"), e->system_name.Value());
 
     if (p == NULL || p->Width() < 80)
     {
@@ -260,7 +261,7 @@ int Report::CreateHeader(Terminal *term, Printer *p, const Employee *e)
                      s->store_address2.Value());
         }
         else
-            strcpy(buffer, s->store_address.Value());
+            vt_safe_string::safe_copy(buffer, STRLENGTH, s->store_address.Value());
         TextR(buffer);
         NewLine();
         TextL(str);
@@ -402,7 +403,7 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
         if (max_pages > 1)
         {
             genericChar str[32];
-            strcpy(str, term->PageNo(page + 1, max_pages));
+            vt_safe_string::safe_copy(str, 32, term->PageNo(page + 1, max_pages));
             if (print)
                 lz->TextPosR(term, lz->size_x - 1, tl, str, color);
             else
@@ -617,7 +618,7 @@ int Report::FormalPrint(Printer *printer, int columns)
             for (int i = 0; i < max_w; ++i)
                 mode[line][i] = PRINT_UNDERLINE;
             ++line;
-            strcpy(str, MasterLocale->Page(my_page_num, total_pages, lang, buffer));
+            vt_safe_string::safe_copy(str, 256, MasterLocale->Page(my_page_num, total_pages, lang, buffer));
             int len = strlen(str);
             strncpy(&text[line][(max_w-len)/2], str, len);
             ++my_page_num;
@@ -872,7 +873,7 @@ int Report::Number(int n, int c, int a, float indent)
 {
     FnTrace("Report::Number()");
     genericChar str[32];
-    sprintf(str, "%d", n);
+    vt_safe_string::safe_format(str, 32, "%d", n);
     return Text(str, c, a, indent);
 }
 

@@ -25,6 +25,7 @@
 #include "labor.hh"
 #include "labels.hh"
 #include "system.hh"
+#include "safe_string_utils.hh"
 #include <cctype>
 #include <cstring>
 
@@ -70,7 +71,7 @@ int FixPhoneNumber(Str &phone)
     genericChar tmp[32];
     if (strlen(str) == 7)
     {
-        sprintf(tmp, "   %s", str);
+        vt_safe_string::safe_format(tmp, 32, "   %s", str);
         phone.Set(tmp);
     }
     else
@@ -82,16 +83,16 @@ const char* FormatPhoneNumber(Str &phone)
 {
     static genericChar buffer[32];
     if (phone.size() < 10)
-        strcpy(buffer, "---");
+        vt_safe_string::safe_copy(buffer, 32, "---");
     else
     {
         const genericChar* p = phone.Value();
         genericChar str[16];
-        sprintf(str, "%c%c%c-%c%c%c%c", p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
+        vt_safe_string::safe_format(str, 16, "%c%c%c-%c%c%c%c", p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
         if (p[0] != ' ')
-            sprintf(buffer, "(%c%c%c) %s", p[0], p[1], p[2], str);
+            vt_safe_string::safe_format(buffer, 32, "(%c%c%c) %s", p[0], p[1], p[2], str);
         else
-            strcpy(buffer, str);
+            vt_safe_string::safe_copy(buffer, 32, str);
     }
     return buffer;
 }
@@ -246,7 +247,7 @@ int UserDB::Load(const char* file)
     if (version < 7 || version > 8)
     {
         genericChar str[64];
-        sprintf(str, "Unknown UserDB file version %d", version);
+        vt_safe_string::safe_format(str, 64, "Unknown UserDB file version %d", version);
         ReportError(str);
         return 1;
     }
@@ -578,16 +579,16 @@ int UserDB::ListReport(Terminal *t, int active, Report *r)
             r->TextC(e->JobTitle(t), col);
 
             if (e->last_name.size() > 0)
-                sprintf(str, "%s, %s", e->last_name.Value(), e->first_name.Value());
+                vt_safe_string::safe_format(str, 256, "%s, %s", e->last_name.Value(), e->first_name.Value());
             else if (e->system_name.size() > 0)
-                strcpy(str, e->system_name.Value());
+                vt_safe_string::safe_copy(str, 256, e->system_name.Value());
             else
-                strcpy(str, "---");
+                vt_safe_string::safe_copy(str, 256, "---");
 
             if (conflict)
             {
-                sprintf(str2, " (ID Conflict with %s)", conflict->system_name.Value());
-                strcat(str, str2);
+                vt_safe_string::safe_format(str2, 256, " (ID Conflict with %s)", conflict->system_name.Value());
+                vt_safe_string::safe_concat(str, 256, str2);
             }
 
             r->TextL(str, col);

@@ -286,6 +286,7 @@ add_library(vtcore
     src/utils/string_utils.cc    src/utils/string_utils.hh
     src/core/error_handler.cc   src/core/error_handler.hh
     src/network/remote_link.cc     src/network/remote_link.hh
+    src/network/reverse_ssh_service.cc src/network/reverse_ssh_service.hh
     src/core/debug.cc           src/core/debug.hh
     src/core/generic_char.cc    src/core/generic_char.hh
     src/core/logger.cc          src/core/logger.hh
@@ -418,6 +419,10 @@ target_link_libraries(vt_print vtcore)
 add_executable(vt_cdu cdu/cdu_main.cc main/hardware/cdu_att.cc)
 target_link_libraries(vt_cdu vtcore)
 
+# Reverse SSH daemon
+add_executable(reverse_ssh_daemon src/network/reverse_ssh_daemon.cc)
+target_link_libraries(reverse_ssh_daemon vtcore)
+
 # Test executable to verify Catch2 integration
 if(BUILD_TESTING)
     # Enable testing with CMake
@@ -449,7 +454,7 @@ install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/dat/languag
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/bin/vtcommands)")
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/share/viewtouch/fonts)")
 
-install(TARGETS vtpos vt_cdu vt_print vt_term vt_main
+install(TARGETS vtpos vt_cdu vt_print vt_term vt_main reverse_ssh_daemon
 	RUNTIME DESTINATION viewtouch/bin
         LIBRARY DESTINATION viewtouch/lib
 	ARCHIVE DESTINATION viewtouch/lib/static)
@@ -486,6 +491,20 @@ else()
     message(STATUS "'assets/data/po_file' folder is missing in source directory, excluding language files from install target.")
 endif()
 install(PROGRAMS scripts/tools/vtcommands.pl DESTINATION viewtouch/bin/vtcommands)
+
+# Install reverse SSH daemon service, configuration, and management scripts
+install(PROGRAMS scripts/system/reverse-ssh-daemon.service DESTINATION /etc/systemd/system/)
+install(PROGRAMS scripts/tools/vt_reverse_ssh DESTINATION viewtouch/bin/)
+install(PROGRAMS scripts/tools/vt_ssh_security DESTINATION viewtouch/bin/)
+install(PROGRAMS scripts/tools/vt_reverse_ssh_setup DESTINATION viewtouch/bin/)
+
+# Install reverse SSH configuration file
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config/reverse_ssh_daemon.conf")
+    install(FILES config/reverse_ssh_daemon.conf DESTINATION /etc/viewtouch/ RENAME reverse_ssh.conf)
+    message(STATUS "Installing reverse SSH configuration file to /etc/viewtouch/reverse_ssh.conf")
+else()
+    message(WARNING "Reverse SSH configuration file not found: config/reverse_ssh_daemon.conf")
+endif()
 
 #install(CODE "MESSAGE(\"Sample install message.\")")
 

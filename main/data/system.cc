@@ -33,6 +33,7 @@
 #include "archive.hh"
 #include "customer.hh"
 #include "utility.hh"
+#include "safe_string_utils.hh"
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/file.h>
@@ -120,7 +121,7 @@ int System::LoadCurrentData(const char* path)
                 continue;
 			if (strncmp(name, "check_", 6) == 0)
 			{
-				sprintf(str, "%s/%s", path, name);
+				vt_safe_string::safe_format(str, 256, "%s/%s", path, name);
 				Check *check = new Check;
 				if (check == NULL)
 					ReportError("Couldn't create check");
@@ -137,7 +138,7 @@ int System::LoadCurrentData(const char* path)
 			}
 			else if (strncmp(name, "drawer_", 7) == 0)
 			{
-				sprintf(str, "%s/%s", path, name);
+				vt_safe_string::safe_format(str, 256, "%s/%s", path, name);
 				Drawer *drawer = new Drawer;
 				if (drawer == NULL)
 					ReportError("Couldn't Create Drawer");
@@ -154,17 +155,17 @@ int System::LoadCurrentData(const char* path)
 			}
             else if (strcmp(name, "ccvoiddb") == 0)
             {
-                sprintf(str, "%s/%s", path, name);
+                vt_safe_string::safe_format(str, 256, "%s/%s", path, name);
                 cc_void_db->Load(str);
             }
             else if (strcmp(name, "ccrefunddb") == 0)
             {
-                sprintf(str, "%s/%s", path, name);
+                vt_safe_string::safe_format(str, 256, "%s/%s", path, name);
                 cc_refund_db->Load(str);
             }
             else if (strcmp(name, "ccexceptiondb") == 0)
             {
-                sprintf(str, "%s/%s", path, name);
+                vt_safe_string::safe_format(str, 256, "%s/%s", path, name);
                 cc_exception_db->Load(str);
             }
 		}
@@ -233,7 +234,7 @@ int System::ScanArchives(const char* path, const char* altmedia)
                     continue;
 
                 genericChar str[256];
-                sprintf(str, "%s/%s", archive_path.Value(), name);
+                vt_safe_string::safe_format(str, 256, "%s/%s", archive_path.Value(), name);
                 Archive *archive = new Archive(&settings, str);
                 archive->altmedia.Set(altmedia);
                 if (archive == NULL)
@@ -319,7 +320,7 @@ Archive *System::NewArchive()
 
     genericChar str[256];
     archive->id = ++last_archive_id;
-    sprintf(str, "%s/archive_%06d", archive_path.Value(), archive->id);
+    vt_safe_string::safe_format(str, 256, "%s/archive_%06d", archive_path.Value(), archive->id);
     archive->filename.Set(str);
 
     if (ArchiveListEnd())
@@ -700,7 +701,7 @@ int System::SetDataPath(const char* path)
     genericChar tmp[256] = "";
     if (DoesFileExist(path) == 0)
     {
-        sprintf(str, "Can't find path '%s'", path);
+        vt_safe_string::safe_format(str, 256, "Can't find path '%s'", path);
         ReportError(str);
         return 1;
     }
@@ -722,67 +723,67 @@ int System::SetDataPath(const char* path)
 
     // Make sure all data directories in path are set up
     chmod(path, DIR_PERMISSIONS);
-    sprintf(str, "%s/current", path);
+    vt_safe_string::safe_format(str, 256, "%s/current", path);
     EnsureFileExists(str);
 
     // consolidate checks & drawers
-    sprintf(tmp, "%s/checks", path);
+    vt_safe_string::safe_format(tmp, 256, "%s/checks", path);
     if (DoesFileExist(tmp))
     {
         genericChar cmd[256];
-        sprintf(cmd, "/bin/mv %s/* %s", tmp, str);
+        vt_safe_string::safe_format(cmd, 256, "/bin/mv %s/* %s", tmp, str);
         system(cmd);
-        sprintf(cmd, "/bin/rmdir %s", tmp);
+        vt_safe_string::safe_format(cmd, 256, "/bin/rmdir %s", tmp);
         system(cmd);
     }
 
-    sprintf(tmp, "%s/drawers", path);
+    vt_safe_string::safe_format(tmp, 256, "%s/drawers", path);
     if (DoesFileExist(tmp))
     {
         genericChar cmd[256];
-        sprintf(cmd, "/bin/mv %s/* %s", tmp, str);
+        vt_safe_string::safe_format(cmd, 256, "/bin/mv %s/* %s", tmp, str);
         system(cmd);
-        sprintf(cmd, "/bin/rmdir %s", tmp);
+        vt_safe_string::safe_format(cmd, 256, "/bin/rmdir %s", tmp);
         system(cmd);
     }
 
-    sprintf(str, "%s/%s", path, ARCHIVE_DATA_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, ARCHIVE_DATA_DIR);
     EnsureFileExists(str);
 
-    sprintf(str, "%s/%s", path, LABOR_DATA_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, LABOR_DATA_DIR);
     EnsureFileExists(str);
 
-    sprintf(str, "%s/%s", path, STOCK_DATA_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, STOCK_DATA_DIR);
     EnsureFileExists(str);
 
-    sprintf(str, "%s/%s", path, LANGUAGE_DATA_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, LANGUAGE_DATA_DIR);
     EnsureFileExists(str);
 
-    sprintf(str, "%s/%s", path, ACCOUNTS_DATA_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, ACCOUNTS_DATA_DIR);
     EnsureFileExists(str);
 
-    sprintf(str, "%s/%s", path, EXPENSE_DATA_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, EXPENSE_DATA_DIR);
     EnsureFileExists(str);
 
-    sprintf(str, "%s/%s", path, CUSTOMER_DATA_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, CUSTOMER_DATA_DIR);
     EnsureFileExists(str);
 
-    sprintf(str, "%s/%s", path, HTML_DATA_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, HTML_DATA_DIR);
     EnsureFileExists(str);
 
-    sprintf(str, "%s/%s", path, TEXT_DATA_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, TEXT_DATA_DIR);
     EnsureFileExists(str);
 
-    sprintf(str, "%s/%s", path, PAGEEXPORTS_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, PAGEEXPORTS_DIR);
     EnsureFileExists(str);
 
-    sprintf(str, "%s/%s", path, PAGEIMPORTS_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, PAGEIMPORTS_DIR);
     EnsureFileExists(str);
 
-    sprintf(str, "%s/%s", path, UPDATES_DATA_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, UPDATES_DATA_DIR);
     EnsureFileExists(str);
 
-    sprintf(str, "%s/%s", path, BACKUP_DATA_DIR);
+    vt_safe_string::safe_format(str, 256, "%s/%s", path, BACKUP_DATA_DIR);
     backup_path.Set(str);
     EnsureFileExists(str);
 
@@ -849,7 +850,7 @@ char* System::FullPath(const char* filename, genericChar* buffer)
     if (buffer == NULL)
         buffer = str;
 
-    sprintf(buffer, "%s/%s", data_path.Value(), filename);
+    vt_safe_string::safe_format(buffer, 256, "%s/%s", data_path.Value(), filename);
     return buffer;
 }
 
@@ -859,9 +860,9 @@ int System::ClearSystem(int all)
     // Ouch! this kills all recorded data & takes down system
     genericChar  str[STRLONG];
     const genericChar* p = data_path.Value();
-    sprintf(str, "%s/error_log.txt", p);
+    vt_safe_string::safe_format(str, STRLONG, "%s/error_log.txt", p);
     DeleteFile(str);
-    sprintf(str, "%s/exception.dat", p);
+    vt_safe_string::safe_format(str, STRLONG, "%s/exception.dat", p);
     DeleteFile(str);
     snprintf(str, STRLONG, "/bin/rm -r %s/%s %s/%s %s/%s",
             p, ARCHIVE_DATA_DIR, p, CURRENT_DATA_DIR,
@@ -891,7 +892,7 @@ char* System::NewPrintFile(char* str)
         str = buffer;
 
     ++counter;
-    sprintf(str, "%s/printqueue/%06d", data_path.Value(), counter);
+    vt_safe_string::safe_format(str, 256, "%s/printqueue/%06d", data_path.Value(), counter);
     return str;
 }
 
@@ -1117,7 +1118,7 @@ int System::SaveCheck(Check *check)
     if (check->filename.empty())
     {
         genericChar str[256];
-        sprintf(str, "%s/check_%d", current_path.Value(), check->serial_number);
+        vt_safe_string::safe_format(str, 256, "%s/check_%d", current_path.Value(), check->serial_number);
         check->filename.Set(str);
     }
 
@@ -1225,7 +1226,7 @@ int System::SaveDrawer(Drawer *drawer)
     if (drawer->filename.empty())
     {
         genericChar str[256];
-        sprintf(str, "%s/drawer_%d", current_path.Value(), drawer->serial_number);
+        vt_safe_string::safe_format(str, 256, "%s/drawer_%d", current_path.Value(), drawer->serial_number);
         drawer->filename.Set(str);
     }
 

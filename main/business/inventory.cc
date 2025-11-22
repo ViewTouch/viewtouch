@@ -24,6 +24,7 @@
 #include "sales.hh"
 #include "check.hh"
 #include "employee.hh"
+#include "safe_string_utils.hh"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/file.h>
@@ -213,29 +214,29 @@ char* UnitAmount::Description(char* str)
     str[0] = '\0';
     switch (type)
     {
-    case UNIT_NONE:     strcpy(str, "---"); break;
-    case COUNT_SINGLE:  sprintf(str, "%g", amount); break;
-    case COUNT_DOZEN:   sprintf(str, "%g Dzn.", amount); break;
-    case COUNT_GROSS:   sprintf(str, "%g Grs.", amount); break;
+    case UNIT_NONE:     vt_safe_string::safe_copy(str, 256, "---"); break;
+    case COUNT_SINGLE:  vt_safe_string::safe_format(str, 256, "%g", amount); break;
+    case COUNT_DOZEN:   vt_safe_string::safe_format(str, 256, "%g Dzn.", amount); break;
+    case COUNT_GROSS:   vt_safe_string::safe_format(str, 256, "%g Grs.", amount); break;
 
         // Standard Units
-    case WEIGHT_DASH:   sprintf(str, "%g", amount); break;
-    case WEIGHT_OUNCE:  sprintf(str, "%g Ou.", amount); break;
-    case WEIGHT_POUND:  sprintf(str, "%g Lbs.", amount); break;
-    case VOLUME_DRAM:   sprintf(str, "%g Dram", amount); break;
-    case VOLUME_TSP:    sprintf(str, "%g Tsp.", amount); break;
-    case VOLUME_TBS:    sprintf(str, "%g Tbs.", amount); break;
-    case VOLUME_OUNCE:  sprintf(str, "%g Oz.", amount); break;
-    case VOLUME_CUP:    sprintf(str, "%g Cup", amount); break;
-    case VOLUME_PINT:   sprintf(str, "%g Pint", amount); break;
-    case VOLUME_QUART:  sprintf(str, "%g Qt.", amount); break;
-    case VOLUME_GALLON: sprintf(str, "%g Gal.", amount); break;
+    case WEIGHT_DASH:   vt_safe_string::safe_format(str, 256, "%g", amount); break;
+    case WEIGHT_OUNCE:  vt_safe_string::safe_format(str, 256, "%g Ou.", amount); break;
+    case WEIGHT_POUND:  vt_safe_string::safe_format(str, 256, "%g Lbs.", amount); break;
+    case VOLUME_DRAM:   vt_safe_string::safe_format(str, 256, "%g Dram", amount); break;
+    case VOLUME_TSP:    vt_safe_string::safe_format(str, 256, "%g Tsp.", amount); break;
+    case VOLUME_TBS:    vt_safe_string::safe_format(str, 256, "%g Tbs.", amount); break;
+    case VOLUME_OUNCE:  vt_safe_string::safe_format(str, 256, "%g Oz.", amount); break;
+    case VOLUME_CUP:    vt_safe_string::safe_format(str, 256, "%g Cup", amount); break;
+    case VOLUME_PINT:   vt_safe_string::safe_format(str, 256, "%g Pint", amount); break;
+    case VOLUME_QUART:  vt_safe_string::safe_format(str, 256, "%g Qt.", amount); break;
+    case VOLUME_GALLON: vt_safe_string::safe_format(str, 256, "%g Gal.", amount); break;
 
         // Metric Units
-    case WEIGHT_G:  sprintf(str, "%g g", amount); break;
-    case WEIGHT_KG: sprintf(str, "%g kg", amount); break;
-    case VOLUME_ML: sprintf(str, "%g ml", amount); break;
-    case VOLUME_L:  sprintf(str, "%g l", amount); break;
+    case WEIGHT_G:  vt_safe_string::safe_format(str, 256, "%g g", amount); break;
+    case WEIGHT_KG: vt_safe_string::safe_format(str, 256, "%g kg", amount); break;
+    case VOLUME_ML: vt_safe_string::safe_format(str, 256, "%g ml", amount); break;
+    case VOLUME_L:  vt_safe_string::safe_format(str, 256, "%g l", amount); break;
     }
     return str;
 }
@@ -250,27 +251,27 @@ char* UnitAmount::Measurement( char* str)
     str[0] = '\0';
     switch (type)
     {
-    case UNIT_NONE:     strcpy(str, "---"); break;
-    case COUNT_DOZEN:   strcpy(str, "Dzn."); break;
-    case COUNT_GROSS:   strcpy(str, "Grs."); break;
+    case UNIT_NONE:     vt_safe_string::safe_copy(str, 16, "---"); break;
+    case COUNT_DOZEN:   vt_safe_string::safe_copy(str, 16, "Dzn."); break;
+    case COUNT_GROSS:   vt_safe_string::safe_copy(str, 16, "Grs."); break;
 
         // Standard Units
-    case WEIGHT_OUNCE:  strcpy(str, "Ou."); break;
-    case WEIGHT_POUND:  strcpy(str, "Lbs."); break;
-    case VOLUME_DRAM:   strcpy(str, "Dram"); break;
-    case VOLUME_TSP:    strcpy(str, "Tsp."); break;
-    case VOLUME_TBS:    strcpy(str, "Tbs."); break;
-    case VOLUME_OUNCE:  strcpy(str, "Oz."); break;
-    case VOLUME_CUP:    strcpy(str, "Cup"); break;
-    case VOLUME_PINT:   strcpy(str, "Pint"); break;
-    case VOLUME_QUART:  strcpy(str, "Qt."); break;
-    case VOLUME_GALLON: strcpy(str, "Gal."); break;
+    case WEIGHT_OUNCE:  vt_safe_string::safe_copy(str, 16, "Ou."); break;
+    case WEIGHT_POUND:  vt_safe_string::safe_copy(str, 16, "Lbs."); break;
+    case VOLUME_DRAM:   vt_safe_string::safe_copy(str, 16, "Dram"); break;
+    case VOLUME_TSP:    vt_safe_string::safe_copy(str, 16, "Tsp."); break;
+    case VOLUME_TBS:    vt_safe_string::safe_copy(str, 16, "Tbs."); break;
+    case VOLUME_OUNCE:  vt_safe_string::safe_copy(str, 16, "Oz."); break;
+    case VOLUME_CUP:    vt_safe_string::safe_copy(str, 16, "Cup"); break;
+    case VOLUME_PINT:   vt_safe_string::safe_copy(str, 16, "Pint"); break;
+    case VOLUME_QUART:  vt_safe_string::safe_copy(str, 16, "Qt."); break;
+    case VOLUME_GALLON: vt_safe_string::safe_copy(str, 16, "Gal."); break;
 
         // Metric Units
-    case WEIGHT_G:      strcpy(str, "g"); break;
-    case WEIGHT_KG:     strcpy(str, "kg"); break;
-    case VOLUME_ML:     strcpy(str, "ml"); break;
-    case VOLUME_L:      strcpy(str, "l"); break;
+    case WEIGHT_G:      vt_safe_string::safe_copy(str, 16, "g"); break;
+    case WEIGHT_KG:     vt_safe_string::safe_copy(str, 16, "kg"); break;
+    case VOLUME_ML:     vt_safe_string::safe_copy(str, 16, "ml"); break;
+    case VOLUME_L:      vt_safe_string::safe_copy(str, 16, "l"); break;
     }
     return str;
 }
@@ -587,7 +588,7 @@ int Inventory::Load(const char* file)
     if (version < 3)
     {
         genericChar str[256];
-        sprintf(str, "Unknown Inventory version %d", version);
+        vt_safe_string::safe_format(str, 256, "Unknown Inventory version %d", version);
         ReportError(str);
         return 1;
     }
@@ -812,7 +813,7 @@ int Inventory::LoadStock(const char* path)
             if (strncmp(name, "stock_", 6) == 0)
             {
                 genericChar str[256];
-                sprintf(str, "%s/%s", stock_path.Value(), name);
+                vt_safe_string::safe_format(str, 256, "%s/%s", stock_path.Value(), name);
                 Stock *s = new Stock;
                 if (s == NULL)
                     ReportError("Couldn't create stock");
@@ -1006,20 +1007,20 @@ int Inventory::ProductListReport(Terminal *t, Stock *s, Report *r)
         r->TextPosL(-35, ua1.Measurement());
         if (s->end_time.IsSet())
         {
-            sprintf(str, "%g", ua3.amount);
+            vt_safe_string::safe_format(str, 256, "%g", ua3.amount);
             r->TextPosR(-22, str);
-            sprintf(str, "%g", ua2.amount);
+            vt_safe_string::safe_format(str, 256, "%g", ua2.amount);
             r->TextPosR(-11, str);
-            sprintf(str, "%g", ua4.amount);
+            vt_safe_string::safe_format(str, 256, "%g", ua4.amount);
             r->TextR(str);
         }
         else
         {
-            sprintf(str, "%g", ua1.amount);
+            vt_safe_string::safe_format(str, 256, "%g", ua1.amount);
             r->TextPosR(-22, str);
-            sprintf(str, "%g", used.amount);
+            vt_safe_string::safe_format(str, 256, "%g", used.amount);
             r->TextPosR(-11, str);
-            sprintf(str, "%g", ua2.amount);
+            vt_safe_string::safe_format(str, 256, "%g", ua2.amount);
             r->TextR(str);
         }
 
@@ -1056,7 +1057,7 @@ int Inventory::ProductListReport(Terminal *t, Invoice *in, Report *r)
             ua.Clear();
 
         ua.Convert(pr->purchase.type);
-        sprintf(str, "%g", ua.amount);
+        vt_safe_string::safe_format(str, 256, "%g", ua.amount);
         r->TextPosR(-20, str);
         r->TextPosR(-10, t->FormatPrice((int) ((Flt)pr->cost / pr->purchase.amount)));
 
@@ -1159,7 +1160,7 @@ Stock *Inventory::CurrentStock()
         Add(s);
 
         genericChar str[256];
-        sprintf(str, "%s/stock_%09d", stock_path.Value(), s->id);
+        vt_safe_string::safe_format(str, 256, "%s/stock_%09d", stock_path.Value(), s->id);
         s->file_name.Set(str);
     }
     return end;
@@ -1217,12 +1218,12 @@ int Inventory::InvoiceReport(Terminal *t, Invoice *in, Report *r)
     else
         r->TextL("No Vendor Set");
 
-    sprintf(str, "Invoice Date %s", t->TimeDate(in->time, TD_DATE));
+    vt_safe_string::safe_format(str, 256, "Invoice Date %s", t->TimeDate(in->time, TD_DATE));
     r->Mode(PRINT_UNDERLINE);
     r->TextC(str);
     r->Mode(0);
 
-    sprintf(str, "REF: %d", in->id);
+    vt_safe_string::safe_format(str, 256, "REF: %d", in->id);
     r->TextR(str);
     r->NewLine(2);
 
@@ -1239,7 +1240,7 @@ int Inventory::InvoiceReport(Terminal *t, Invoice *in, Report *r)
     InvoiceEntry *ie = in->EntryList();
     while (ie)
     {
-        sprintf(str, "%g", ie->amount.amount);
+        vt_safe_string::safe_format(str, 256, "%g", ie->amount.amount);
         r->TextL(str);
         r->TextPosL(5, ie->amount.Measurement());
         Product *pr = FindProductByID(ie->product_id);
@@ -1249,7 +1250,7 @@ int Inventory::InvoiceReport(Terminal *t, Invoice *in, Report *r)
             UnitAmount ua;
             ua = ie->amount;
             ua.Convert(pr->purchase.type);
-            sprintf(str, "%g", ua.amount);
+            vt_safe_string::safe_format(str, 256, "%g", ua.amount);
             r->TextPosR(-20, str);
             r->TextPosR(-10, t->FormatPrice((int) ((Flt)pr->cost / pr->purchase.amount)));
             int cost = (int) ((ua.amount /= pr->purchase.amount) * (Flt) pr->cost);

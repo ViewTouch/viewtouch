@@ -47,6 +47,7 @@
 #include "touch_screen.hh"
 #endif
 #include "utility.hh"
+#include "safe_string_utils.hh"
 #include "zone.hh"
 #include "version/vt_version_info.hh"
 #include "../term/term_view.hh"
@@ -312,7 +313,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             break;
 
         case SERVER_ERROR:
-            sprintf(str, "TermError: %s", term->RStr());
+            vt_safe_string::safe_format(str, STRLENGTH, "TermError: %s", term->RStr());
             ReportError(str);
             break;
 
@@ -413,7 +414,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             const char* s1 = term->RStr();
             if (strlen(s1) < STRLENGTH)
             {
-                sprintf(str, "swipe %s", s1);
+                vt_safe_string::safe_format(str, STRLENGTH, "swipe %s", s1);
                 term->Signal(str, 0);
             }
         }
@@ -932,7 +933,7 @@ int Terminal::JumpToIndex(int idx)
         else
         {
             genericChar str[64];
-            sprintf(str, "'%s' Index doesn't exist - can't jump", IndexName[cl]);
+            vt_safe_string::safe_format(str, 64, "'%s' Index doesn't exist - can't jump", IndexName[cl]);
             ReportError(str);
         }
         return 1;
@@ -1153,7 +1154,87 @@ int Terminal::FastStartLogin()
     Drawer *drawer = FindDrawer();
     if (drawer == nullptr)
     {
-        DialogZone *diag = new SimpleDialog(Translate("No drawer available for payments"));
+        // Get descriptive reason for drawer unavailability
+        const char* reason = nullptr;
+        if (user && user->CanSettle(settings))
+        {
+            int dm = settings->drawer_mode;
+            Drawer *d = system_data->FirstDrawer();
+            
+            switch (dm)
+            {
+            case DRAWER_NORMAL:
+            {
+                bool found_terminal_drawer = false;
+                while (d)
+                {
+                    if (d->IsOpen() && d->term == this)
+                    {
+                        found_terminal_drawer = true;
+                        break;
+                    }
+                    d = d->next;
+                }
+                if (!found_terminal_drawer)
+                    reason = "No drawer available: No drawer is attached to this terminal in Trusted mode";
+                break;
+            }
+            case DRAWER_SERVER:
+            {
+                bool any_drawers = false;
+                d = system_data->FirstDrawer();
+                while (d)
+                {
+                    if (d->IsOpen())
+                    {
+                        any_drawers = true;
+                        break;
+                    }
+                    d = d->next;
+                }
+                if (!any_drawers)
+                    reason = "No drawer available: No drawers are configured in Server Bank mode";
+                else
+                    reason = "No drawer available: Unable to create Server Bank drawer for this user";
+                break;
+            }
+            case DRAWER_ASSIGNED:
+            {
+                bool found_assigned = false;
+                bool found_available = false;
+                d = system_data->FirstDrawer();
+                while (d)
+                {
+                    if (d->IsOpen())
+                    {
+                        if (d->owner_id == user->id)
+                        {
+                            found_assigned = true;
+                            break;
+                        }
+                        if (d->term == this && d->owner_id == 0 && d->IsEmpty())
+                            found_available = true;
+                    }
+                    d = d->next;
+                }
+                if (!found_assigned && !found_available)
+                {
+                    if (drawer_count == 0)
+                        reason = "No drawer available: No drawers are attached to this terminal in Assigned mode";
+                    else
+                        reason = "No drawer available: No drawers are assigned to this user or available for assignment";
+                }
+                break;
+            }
+            default:
+                reason = "No drawer available: Unknown drawer mode";
+            }
+        }
+        
+        if (reason == nullptr)
+            reason = "No drawer available for payments";
+        
+        DialogZone *diag = new SimpleDialog(Translate(reason));
         diag->Button(Translate("Okay"));
         return OpenDialog(diag);
     }
@@ -1290,7 +1371,7 @@ int Terminal::OpenTabList(const char* message)
         {
             count += 1;
             four[0] = '\0';
-            strcpy(fname, currcheck->customer->FirstName());
+            vt_safe_string::safe_copy(fname, STRLENGTH, currcheck->customer->FirstName());
             subcheck = currcheck->SubList();
             while (subcheck != nullptr)
             {
@@ -1443,7 +1524,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         Update(UPDATE_SERVER, nullptr);
         return SIGNAL_OKAY;
     case CCQ_TERMINATE:
-        strcpy(msg, "killall vt_ccq_pipe");
+        vt_safe_string::safe_copy(msg, STRLONG, "killall vt_ccq_pipe");
         system(msg);
         msg[0] = '\0';
         strcat(msg, "Connection reset.\\");
@@ -2502,6 +2583,105 @@ int Terminal::NeedDrawerBalanced(Employee *e)
     return retval;
 }
 
+/**
+ * @brief Get descriptive message explaining why drawer is not available
+ * 
+ * @param term The terminal
+ * @param settings The settings object
+ * @return Descriptive error message, or nullptr if drawer should be available
+ */
+static const char* GetDrawerUnavailableReason(Terminal *term, Settings *settings)
+{
+    FnTrace("GetDrawerUnavailableReason()");
+    if (term->user == nullptr || term->user->training)
+        return nullptr;  // Training mode doesn't need drawer
+    
+    if (!term->user->CanSettle(settings))
+        return nullptr;  // User can't settle, so drawer message not relevant
+    
+    int dm = settings->drawer_mode;
+    Drawer *d = term->system_data->FirstDrawer();
+    
+    switch (dm)
+    {
+    case DRAWER_NORMAL:
+    {
+        // Trusted mode: drawer must be attached to this terminal
+        bool found_terminal_drawer = false;
+        while (d)
+        {
+            if (d->IsOpen() && d->term == term)
+            {
+                found_terminal_drawer = true;
+                break;
+            }
+            d = d->next;
+        }
+        if (!found_terminal_drawer)
+            return "No drawer available: No drawer is attached to this terminal in Trusted mode";
+        break;
+    }
+    case DRAWER_SERVER:
+    {
+        // Server Bank mode: drawer should be created automatically, but check if user has one
+        Drawer *user_drawer = term->FindDrawer();
+        if (user_drawer == nullptr)
+        {
+            // Check if there are any drawers at all
+            bool any_drawers = false;
+            d = term->system_data->FirstDrawer();
+            while (d)
+            {
+                if (d->IsOpen())
+                {
+                    any_drawers = true;
+                    break;
+                }
+                d = d->next;
+            }
+            if (!any_drawers)
+                return "No drawer available: No drawers are configured in Server Bank mode";
+            else
+                return "No drawer available: Unable to create Server Bank drawer for this user";
+        }
+        break;
+    }
+    case DRAWER_ASSIGNED:
+    {
+        // Assigned mode: drawer must be assigned to this user or available for assignment
+        bool found_assigned = false;
+        bool found_available = false;
+        d = term->system_data->FirstDrawer();
+        while (d)
+        {
+            if (d->IsOpen())
+            {
+                if (d->owner_id == term->user->id)
+                {
+                    found_assigned = true;
+                    break;
+                }
+                if (d->term == term && d->owner_id == 0 && d->IsEmpty())
+                    found_available = true;
+            }
+            d = d->next;
+        }
+        if (!found_assigned && !found_available)
+        {
+            if (term->drawer_count == 0)
+                return "No drawer available: No drawers are attached to this terminal in Assigned mode";
+            else
+                return "No drawer available: No drawers are assigned to this user or available for assignment";
+        }
+        break;
+    }
+    default:
+        return "No drawer available: Unknown drawer mode";
+    }
+    
+    return nullptr;  // Drawer should be available
+}
+
 int Terminal::CanSettleCheck()
 {
     FnTrace("Terminal::CanSettleCheck()");
@@ -2611,7 +2791,7 @@ int Terminal::KillDialog()
         selected_zone = nullptr;
 
     jump_index = ((DialogZone *)dialog)->target_index;
-    strcpy(next_signal, ((DialogZone *)dialog)->target_signal);
+    vt_safe_string::safe_copy(next_signal, STRLENGTH, ((DialogZone *)dialog)->target_signal);
     RegionInfo r(dialog);
     r.w += dialog->shadow;
     r.h += dialog->shadow;
@@ -3131,7 +3311,7 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
 				switch (idx)
 				{
                 case 0:  // release
-                    sprintf(tmp, "POS %s %s - \xa9 Gene Mosher 1986",
+                    vt_safe_string::safe_format(tmp, STRLENGTH, "POS %s %s - \xa9 Gene Mosher 1986",
                             viewtouch::get_version_extended().c_str(),
                             viewtouch::get_version_timestamp().substr(0, 10).c_str());
                     break;
@@ -3143,12 +3323,12 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
                     break;
                 case 3:  // name
                     if (user)
-                        strcpy(tmp, user->system_name.Value());
+                        vt_safe_string::safe_copy(tmp, STRLENGTH, user->system_name.Value());
                     else
-                        strcpy(tmp, "User");
+                        vt_safe_string::safe_copy(tmp, STRLENGTH, "User");
                     break;
                 case 4:  // termname
-                    strcpy(tmp, name.Value());
+                    vt_safe_string::safe_copy(tmp, STRLENGTH, name.Value());
                     break;
                 case 5:  // machineid
                     GetMacAddress(tmp, STRLENGTH);
@@ -3158,16 +3338,16 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
                     tmp[20] = '\0';
                     break;
                 case 7:  // licensedays
-                    sprintf(tmp, "%d", 999);
+                    vt_safe_string::safe_format(tmp, STRLENGTH, "%d", 999);
                     break;
                 case 8:  // creditid
-                    strcpy(tmp, cc_credit_termid.Value());
+                    vt_safe_string::safe_copy(tmp, STRLENGTH, cc_credit_termid.Value());
                     break;
                 case 9:  // debitid
-                    strcpy(tmp, cc_debit_termid.Value());
+                    vt_safe_string::safe_copy(tmp, STRLENGTH, cc_debit_termid.Value());
                     break;
                 case 10:  // merchantid
-                    strcpy(tmp, GetSettings()->cc_merchant_id.Value());
+                    vt_safe_string::safe_copy(tmp, STRLENGTH, GetSettings()->cc_merchant_id.Value());
                     break;
                 default:
                     tmp[0] = '\0';
@@ -3482,7 +3662,7 @@ const genericChar* Terminal::UserName(int user_id)
 genericChar* Terminal::UserName(genericChar* str, int user_id)
 {
     FnTrace("Terminal::UserName(str, int)");
-    strcpy(str, UserName(user_id));
+    vt_safe_string::safe_copy(str, STRLENGTH, UserName(user_id));
     return str;
 }
 
@@ -3674,21 +3854,23 @@ int Terminal::RenderBlankPage()
             genericChar ref_list[STRLENGTH] = "";
             if (ref > 0)
             {
-                int i = 0;
-                while (i < 6 && i < ref)
+                int ref_pos = 0;
+                ref_list[ref_pos++] = ':';
+                for (int i = 0; i < 6 && i < ref; ++i)
                 {
-                    if (i == 0)
-                        sprintf(str, ": %d", list[i]);
-                    else
-                        sprintf(str, ",%d", list[i]);
-                    strcat(ref_list, str);
-                    ++i;
+                    if (i > 0)
+                        ref_list[ref_pos++] = ',';
+                    ref_pos += snprintf(ref_list + ref_pos, STRLENGTH - ref_pos, "%d", list[i]);
                 }
                 if (ref > 6)
-                    strcat(ref_list, "...");
+                {
+                    strcpy(ref_list + ref_pos, "...");
+                    ref_pos += 3;
+                }
+                ref_list[ref_pos] = '\0';
             }
 
-            sprintf(str, "%d %s (refs %d%s)", page->id, pn, count, ref_list);
+            vt_safe_string::safe_format(str, STRLENGTH, "%d %s (refs %d%s)", page->id, pn, count, ref_list);
             WStr(str);
 
             count = 0;
@@ -3704,10 +3886,10 @@ int Terminal::RenderBlankPage()
             }
 
             if ( pt == PAGE_INDEX )
-                sprintf(str, "%-13s  %-14s  %2d", PageTypeName[s1],
+                vt_safe_string::safe_format(str, STRLENGTH, "%-13s  %-14s  %2d", PageTypeName[s1],
                         IndexName[s2], count);
             else
-                sprintf(str, "%s  %2d", PageTypeName[s1], count);
+                vt_safe_string::safe_format(str, STRLENGTH, "%s  %2d", PageTypeName[s1], count);
             WStr(str);
         }
         else
@@ -5787,7 +5969,7 @@ int Terminal::ShowPageList()
 		{
 			last_id = p->id;
 			WInt8(TERM_LISTITEM);
-			sprintf(str, "%4d %s", p->id, Translate(p->name.Value()));
+			vt_safe_string::safe_format(str, 256, "%4d %s", p->id, Translate(p->name.Value()));
 			WStr(str);
 			Send();
 		}
@@ -6337,7 +6519,7 @@ int Terminal::CC_NextTermID(int *cc_state, char* termid)
 
         if (next_id != nullptr)
         {
-            strcpy(termid, next_id->Value());
+            vt_safe_string::safe_copy(termid, STRLENGTH, next_id->Value());
             next_id = next_id->next;
             retval = 1;
         }
@@ -6395,9 +6577,9 @@ int Terminal::CC_Settle(const char* batch, int reset)
             if (state == CC_SYS_STATE_START)
             {
                 if (batch != nullptr)
-                    strcpy(batchstr, batch);
+                    vt_safe_string::safe_copy(batchstr, STRLENGTH, batch);
                 else
-                    strcpy(batchstr, "find");
+                    vt_safe_string::safe_copy(batchstr, STRLENGTH, "find");
                 state = CC_SYS_STATE_DONE;
                 retval = -1;
             }
@@ -6481,9 +6663,9 @@ int Terminal::CC_Totals(const char* batch)
         if (auth_method == CCAUTH_MAINSTREET)
         {
             if (batch != nullptr)
-                strcpy(batchnum, batch);
+                vt_safe_string::safe_copy(batchnum, STRLENGTH, batch);
             else
-                strcpy(batchnum, "all");
+                vt_safe_string::safe_copy(batchnum, STRLENGTH, "all");
             state = CC_SYS_STATE_CREDIT;
         }
         else if (auth_method == CCAUTH_CREDITCHEQ)
@@ -6535,7 +6717,7 @@ int Terminal::CC_Details()
     {
         if (auth_method == CCAUTH_MAINSTREET)
         {
-            strcpy(batchnum, "all");
+            vt_safe_string::safe_copy(batchnum, STRLENGTH, "all");
         }
         else if (auth_method == CCAUTH_CREDITCHEQ)
         {

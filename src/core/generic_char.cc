@@ -157,13 +157,17 @@ void GenericDrawStringXftWithShadow(Display* display,
     const FcChar8* fc_text = ToFcUtf8(text);
     const int text_length = ToInt(text);
 
-    for (int blur = 0; blur <= blur_radius; ++blur)
+    // Performance optimization: Limit blur iterations on slower hardware
+    // On Raspberry Pi, reduce blur complexity to improve performance
+    const int max_blur = (blur_radius > 2) ? 2 : blur_radius;  // Cap at 2 for performance
+    
+    // Draw shadow with reduced blur iterations for better performance
+    for (int blur = 0; blur <= max_blur; ++blur)
     {
         const int blur_offset = blur * 2;
+        // Draw only 2 positions instead of 4 for better performance
         XftDrawStringUtf8(draw, &xft_shadow, font, x + offset_x - blur_offset, y + offset_y - blur_offset, fc_text, text_length);
         XftDrawStringUtf8(draw, &xft_shadow, font, x + offset_x + blur_offset, y + offset_y + blur_offset, fc_text, text_length);
-        XftDrawStringUtf8(draw, &xft_shadow, font, x + offset_x - blur_offset, y + offset_y + blur_offset, fc_text, text_length);
-        XftDrawStringUtf8(draw, &xft_shadow, font, x + offset_x + blur_offset, y + offset_y - blur_offset, fc_text, text_length);
     }
 
     XftDrawStringUtf8(draw, &xft_main, font, x, y, fc_text, text_length);

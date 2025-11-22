@@ -41,6 +41,7 @@
 #include "system.hh"
 #include "terminal.hh"
 #include "utility.hh"
+#include "safe_string_utils.hh"
 #include "video_zone.hh"
 
 
@@ -1014,6 +1015,18 @@ int TermInfo::OpenTerm(Control *control_db, int update)
     int flag = UPDATE_TERMINALS;
     term->is_server = IsServer();
     term->name.Set(name);
+    
+    // Set Server Display defaults: Fast Food, One Cash Drawer
+    // This applies when a Server Display terminal is first created
+    if (IsServer() && type == TERMINAL_NORMAL)
+    {
+        type = TERMINAL_FASTFOOD;
+    }
+    if (IsServer() && drawers == 0)
+    {
+        drawers = 1;  // One Cash Drawer
+    }
+    
     term->type = type;
     term->original_type = type;
     term->sortorder = sortorder;
@@ -1230,7 +1243,19 @@ Settings::Settings()
     quickbooks_export_path.Set("/usr/viewtouch/exports/quickbooks");
     quickbooks_auto_export = 0;   // Default disabled
     quickbooks_export_format = 0; // Default to daily format
-    
+
+    // Reverse SSH Tunnel Settings
+    reverse_ssh_enabled = 0;      // Default disabled
+    reverse_ssh_server.Set("");
+    reverse_ssh_port = 22;        // Default SSH port
+    reverse_ssh_user.Set("");
+    reverse_ssh_local_port = 22;  // Default local SSH port
+    reverse_ssh_remote_port = 0;  // Auto-assign remote port
+    reverse_ssh_key_path.Set("/usr/viewtouch/ssh/reverse_ssh_key");
+    reverse_ssh_reconnect_interval = 30; // 30 seconds
+    reverse_ssh_health_check_interval = 60; // 60 seconds
+    reverse_ssh_max_retries = 10; // Maximum 10 retries
+
     email_send_server.Set("");
     changed            = 0;
     screen_blank_time  = 60;
@@ -1323,9 +1348,18 @@ Settings::Settings()
     for (i = 0; i < MAX_FAMILIES; ++i)
     {
         family_printer[i] = PRINTER_DEFAULT;  // Changed from PRINTER_NONE to PRINTER_DEFAULT
-        family_group[i]   = SALESGROUP_FOOD;
+        family_group[i]   = SALESGROUP_FOOD;  // Default to Food
         video_target[i]   = PRINTER_DEFAULT;
     }
+    
+    // Set default revenue groups for specific families
+    family_group[FAMILY_BEVERAGES]      = SALESGROUP_BEVERAGE;
+    family_group[FAMILY_BEER]            = SALESGROUP_BEER;
+    family_group[FAMILY_BOTTLED_BEER]    = SALESGROUP_BEER;
+    family_group[FAMILY_WINE]            = SALESGROUP_WINE;
+    family_group[FAMILY_BOTTLED_WINE]    = SALESGROUP_WINE;
+    family_group[FAMILY_COCKTAIL]        = SALESGROUP_ALCOHOL;
+    family_group[FAMILY_BOTTLED_COCKTAIL] = SALESGROUP_ALCOHOL;  // Malt Beverage
 
     for (i = 0; i < MAX_JOBS; ++i)
     {
@@ -1516,7 +1550,7 @@ int Settings::Load(const char* file)
     genericChar str[256];
     if (version < 25 || version > SETTINGS_VERSION)
     {
-        sprintf(str, "Unknown Settings file version %d", version);
+        vt_safe_string::safe_format(str, 256, "Unknown Settings file version %d", version);
         ReportError(str);
         return 1;
     }
@@ -1714,13 +1748,11 @@ int Settings::Load(const char* file)
             video_target[i] = family_printer[i];
         }
         
-        // Ensure family_printer doesn't get reset to PRINTER_NONE
-        // If it was loaded as PRINTER_NONE, change it to PRINTER_DEFAULT
-        if (family_printer[i] == PRINTER_NONE)
-        {
-            family_printer[i] = PRINTER_DEFAULT;
-            video_target[i] = PRINTER_DEFAULT;
-        }
+        // Note: PRINTER_NONE (99) is a valid value that users can set
+        // We should preserve it for both family_printer and video_target
+        // Only convert to PRINTER_DEFAULT if it's an invalid value (not in valid range)
+        // Valid printer IDs are 0-98 (PRINTER_DEFAULT to PRINTER_REMOTEORDER) and 99 (PRINTER_NONE)
+        // So we don't need to convert anything - just preserve what was saved
     }
 
     if (version <= 26)
@@ -1758,7 +1790,7 @@ int Settings::Load(const char* file)
             if (thost.size() > 0)
             {
                 TermInfo *ti = new TermInfo;
-                sprintf(str, "Term %d", i + 1);
+                vt_safe_string::safe_format(str, 256, "Term %d", i + 1);
                 ti->name.Set(str);
                 ti->type = ttype;
                 ti->display_host.Set(thost);
@@ -2011,6 +2043,19 @@ int Settings::Load(const char* file)
         df.Read(quickbooks_export_path);
         df.Read(quickbooks_auto_export);
         df.Read(quickbooks_export_format);
+    }
+    if (version >= 105)  // Reverse SSH tunnel settings
+    {
+        df.Read(reverse_ssh_enabled);
+        df.Read(reverse_ssh_server);
+        df.Read(reverse_ssh_port);
+        df.Read(reverse_ssh_user);
+        df.Read(reverse_ssh_local_port);
+        df.Read(reverse_ssh_remote_port);
+        df.Read(reverse_ssh_key_path);
+        df.Read(reverse_ssh_reconnect_interval);
+        df.Read(reverse_ssh_health_check_interval);
+        df.Read(reverse_ssh_max_retries);
     }
     if (version >= 51)
         df.Read(fast_takeouts);
@@ -2448,6 +2493,16 @@ int Settings::Save()
     df.Write(quickbooks_export_path);
     df.Write(quickbooks_auto_export);
     df.Write(quickbooks_export_format);
+    df.Write(reverse_ssh_enabled);
+    df.Write(reverse_ssh_server);
+    df.Write(reverse_ssh_port);
+    df.Write(reverse_ssh_user);
+    df.Write(reverse_ssh_local_port);
+    df.Write(reverse_ssh_remote_port);
+    df.Write(reverse_ssh_key_path);
+    df.Write(reverse_ssh_reconnect_interval);
+    df.Write(reverse_ssh_health_check_interval);
+    df.Write(reverse_ssh_max_retries);
     df.Write(fast_takeouts);
     df.Write(money_symbol);
     df.Write(require_drawer_balance);
@@ -3269,17 +3324,17 @@ int Settings::ShiftText(char* str, int shift)
             h = 12;
 
         if (m)
-            sprintf(buffer[i], "%d:%02d", h, m);
+            vt_safe_string::safe_format(buffer[i], 256, "%d:%02d", h, m);
         else
-            sprintf(buffer[i], "%d", h);
+            vt_safe_string::safe_format(buffer[i], 256, "%d", h);
 
         if (pm)
-            strcat(buffer[i], "pm");
+            vt_safe_string::safe_concat(buffer[i], 256, "pm");
         else
-            strcat(buffer[i], "am");
+            vt_safe_string::safe_concat(buffer[i], 256, "am");
     }
 
-    sprintf(str, "%s-%s", buffer[0], buffer[1]);
+    vt_safe_string::safe_format(str, 256, "%s-%s", buffer[0], buffer[1]);
     return 0;
 }
 
@@ -3523,7 +3578,7 @@ char* Settings::StoreNum(char* dest)
     if (dest == NULL)
         dest = buffer;
 
-    sprintf(dest, "%d", store_code);
+    vt_safe_string::safe_format(dest, STRLONG, "%d", store_code);
 
     return dest;
 }
@@ -3610,67 +3665,67 @@ char* Settings::TenderName(int tender_type, int tender_id, genericChar* str)
     if (tender_type == TENDER_CHARGE_ROOM)
     {
         if (tender_id <= 0)
-            strcpy(str, GlobalTranslate("Room Charge"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Room Charge"));
         else
-            sprintf(str, "Charge Room #%d", tender_id);
+            vt_safe_string::safe_format(str, STRLENGTH, "Charge Room #%d", tender_id);
     }
     else if (tender_type == TENDER_CHARGE_CARD)
     {
         CreditCardInfo *cc = FindCreditCardByID(tender_id);
         if (cc)
-            strcpy(str, cc->name.Value());
+            vt_safe_string::safe_copy(str, STRLENGTH, cc->name.Value());
         else
-            strcpy(str, GlobalTranslate("Unknown Credit Card"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Unknown Credit Card"));
     }
     else if (tender_type == TENDER_CREDIT_CARD)
     {
         temp = FindStringByValue(tender_id, CreditCardValue, CreditCardShortName);
-        strcpy(str, temp);
+        vt_safe_string::safe_copy(str, STRLENGTH, temp);
     }
     else if (tender_type == TENDER_DEBIT_CARD)
     {
         temp = FindStringByValue(CARD_TYPE_DEBIT, CardTypeValue, CardTypeName);
-        strcpy(str, temp);
+        vt_safe_string::safe_copy(str, STRLENGTH, temp);
     }
     else if (tender_type == TENDER_DISCOUNT)
     {
         DiscountInfo *ds = FindDiscountByID(tender_id);
         if (ds)
-            strcpy(str, ds->name.Value());
+            vt_safe_string::safe_copy(str, STRLENGTH, ds->name.Value());
         else
-            strcpy(str, GlobalTranslate("Unknown Discount"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Unknown Discount"));
     }
     else if (tender_type == TENDER_COUPON)
     {
         CouponInfo *cp = FindCouponByID(tender_id);
         if (cp)
-            strcpy(str, cp->name.Value());
+            vt_safe_string::safe_copy(str, STRLENGTH, cp->name.Value());
         else
-            strcpy(str, GlobalTranslate("Unknown Coupon"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Unknown Coupon"));
     }
     else if (tender_type == TENDER_COMP)
     {
         CompInfo *cm = FindCompByID(tender_id);
         if (cm)
-            strcpy(str, cm->name.Value());
+            vt_safe_string::safe_copy(str, STRLENGTH, cm->name.Value());
         else
-            strcpy(str, GlobalTranslate("Unknown Comp"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Unknown Comp"));
     }
     else if (tender_type == TENDER_EMPLOYEE_MEAL)
     {
         MealInfo *mi = FindMealByID(tender_id);
         if (mi)
-            strcpy(str, mi->name.Value());
+            vt_safe_string::safe_copy(str, STRLENGTH, mi->name.Value());
         else
-            strcpy(str, GlobalTranslate("Unknown Employee Meal"));
+            vt_safe_string::safe_copy(str, STRLENGTH, GlobalTranslate("Unknown Employee Meal"));
     }
     else
-        strcpy(str, FindStringByValue(tender_type, value, name, UnknownStr));
+        vt_safe_string::safe_copy(str, STRLENGTH, FindStringByValue(tender_type, value, name, UnknownStr));
 
     if (term != NULL)
     {
-        strcpy(str2, term->Translate(str));
-        strcpy(str, str2);
+        vt_safe_string::safe_copy(str2, STRLENGTH, term->Translate(str));
+        vt_safe_string::safe_copy(str, STRLENGTH, str2);
     }
 
     return str;
@@ -3955,7 +4010,7 @@ int Settings::DiscountReport(Terminal *t, Report *r)
                 r->TextC(str, COLOR_RED);
             }
             if (ds->flags & TF_IS_PERCENT)
-                sprintf(str, "%g%%", (Flt) ds->amount / 100.0);
+                vt_safe_string::safe_format(str, STRLENGTH, "%g%%", (Flt) ds->amount / 100.0);
             else
                 t->FormatPrice(str, ds->amount, 1);
             r->TextR(str, color);
@@ -3996,7 +4051,7 @@ int Settings::CouponReport(Terminal *t, Report *r)
                 r->TextC(str, COLOR_RED);
             }
             if (cp->flags & TF_IS_PERCENT)
-                sprintf(str, "%g%%", (Flt) cp->amount / 100.0);
+                vt_safe_string::safe_format(str, STRLENGTH, "%g%%", (Flt) cp->amount / 100.0);
             else
                 t->FormatPrice(str, cp->amount, 1);
             r->TextR(str, color);
@@ -4099,7 +4154,7 @@ int Settings::MealReport(Terminal *t, Report *r)
         {
             r->TextL(mi->name.Value());
             if (mi->flags & TF_IS_PERCENT)
-                sprintf(str, "%g%%", (Flt) mi->amount / 100.0);
+                vt_safe_string::safe_format(str, STRLENGTH, "%g%%", (Flt) mi->amount / 100.0);
             else
                 t->FormatPrice(str, mi->amount, 1);
             if (debug_mode)

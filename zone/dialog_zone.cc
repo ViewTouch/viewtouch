@@ -25,6 +25,7 @@
 #include "inventory.hh"
 #include "system.hh"
 #include "image_data.hh"
+#include "safe_string_utils.hh"
 #include <assert.h>
 #include <cstring>
 #include <cctype>
@@ -254,7 +255,7 @@ int DialogZone::PrepareForClose(int action_type)
         action = &cancel_action;
 
     if (action->type == ACTION_SIGNAL)
-        strcpy(target_signal, action->msg);
+        vt_safe_string::safe_copy(target_signal, STRLENGTH, action->msg);
     else if (action->type == ACTION_JUMPINDEX)
         target_index = action->arg;
 
@@ -451,14 +452,14 @@ UnitAmountDialog::UnitAmountDialog(const char* title, UnitAmount &u)
     name.Set(title);
     buffer[0] = '\0';
     if (u.amount != 0.0)
-        sprintf(buffer, "%g", u.amount);
+        vt_safe_string::safe_format(buffer, STRLENGTH + 2, "%g", u.amount);
     unit_type = u.type;
 
     genericChar str[256];
 
     for (i = 0; i < 10; ++i)
     {
-        sprintf(str, "%d", i);
+        vt_safe_string::safe_format(str, 256, "%d", i);
         key[i] = Button(str, str);
     }
 
@@ -659,7 +660,7 @@ SignalResult UnitAmountDialog::Signal(Terminal *term, const genericChar* message
     case 11:  // enter
     {
         genericChar str[256];
-        sprintf(str, "amount %d %s", unit_type, buffer);
+        vt_safe_string::safe_format(str, 256, "amount %d %s", unit_type, buffer);
         if (target_zone)
             target_zone->Signal(term, str);
         else
@@ -705,9 +706,9 @@ int UnitAmountDialog::RenderEntry(Terminal *term)
     ua.type = unit_type;
     genericChar str[256];
     if (buffer[0] == '\0')
-        sprintf(str, "0 %s", ua.Measurement());
+        vt_safe_string::safe_format(str, 256, "0 %s", ua.Measurement());
     else
-        sprintf(str, "%s %s", buffer, ua.Measurement());
+        vt_safe_string::safe_format(str, 256, "%s %s", buffer, ua.Measurement());
     TextC(term, 1.5, str, COLOR_WHITE);
     return 0;
 }
@@ -730,7 +731,7 @@ TenKeyDialog::TenKeyDialog()
     genericChar str[256];
     for (i = 0; i < 10; ++i)
     {
-        sprintf(str, "%d", i);
+        vt_safe_string::safe_format(str, 256, "%d", i);
         key[i] = Button(str, str);
     }
 
@@ -758,7 +759,7 @@ TenKeyDialog::TenKeyDialog(const char* title, int amount, int cancel, int dp)
     genericChar str[256];
     for (i = 0; i < 10; ++i)
     {
-        sprintf(str, "%d", i);
+        vt_safe_string::safe_format(str, 256, "%d", i);
         key[i] = Button(str, str);
     }
 
@@ -792,7 +793,7 @@ TenKeyDialog::TenKeyDialog(const char* title, const char* retmsg, int amount, in
     genericChar str[256];
     for (i = 0; i < 10; ++i)
     {
-        sprintf(str, "%d", i);
+        vt_safe_string::safe_format(str, 256, "%d", i);
         key[i] = Button(str, str);
     }
 
@@ -905,7 +906,7 @@ SignalResult TenKeyDialog::Signal(Terminal *term, const genericChar* message)
     switch (idx)
     {
     case 10:  // enter
-        sprintf(str, "%s %d", return_message, buffer);
+        vt_safe_string::safe_format(str, 256, "%s %d", return_message, buffer);
         if (target_zone)
             target_zone->Signal(term, str);
         else
@@ -955,7 +956,7 @@ int TenKeyDialog::RenderEntry(Terminal *term)
         Flt amount = 0;
         if (buffer > 0)
             amount = (Flt)buffer / 100;
-        sprintf(str, "%.2f", amount);
+        vt_safe_string::safe_format(str, 16, "%.2f", amount);
     }
     else if (buffer == 0)
     {
@@ -963,7 +964,7 @@ int TenKeyDialog::RenderEntry(Terminal *term)
     }
     else
     {
-        sprintf(str, "%d", buffer);
+        vt_safe_string::safe_format(str, 16, "%d", buffer);
     }
     TextC(term, 1.5, str, COLOR_WHITE);
     return 0;
@@ -985,7 +986,7 @@ GetTextDialog::GetTextDialog()
     hh  = 90;
     buffer[0] = '\0';
     display_string[0] = '\0';
-    strcpy(return_message, "gettext");
+    vt_safe_string::safe_copy(return_message, STRLENGTH, "gettext");
     buffidx = 0;
     max_len = 20;
     first_row = 200;
@@ -1018,8 +1019,8 @@ GetTextDialog::GetTextDialog(const char* msg, const char* retmsg, int mlen)
     h   = 680;
     hh  = 90;
     buffer[0] = '\0';
-    strcpy(display_string, msg);
-    strcpy(return_message, retmsg);
+    vt_safe_string::safe_copy(display_string, STRLENGTH, msg);
+    vt_safe_string::safe_copy(return_message, STRLENGTH, retmsg);
     buffidx = 0;
     max_len = mlen > STRLENGTH ? STRLENGTH : mlen;
     first_row = 200;
@@ -1288,7 +1289,7 @@ PasswordDialog::PasswordDialog(const char* pw)
 {
     FnTrace("PasswordDialog::PasswordDialog(const char* )");
 
-    strcpy(password, pw);
+    vt_safe_string::safe_copy(password, 32, pw);
     force_change = 0;
     stage = 0;
     new_password[0] = '\0';
@@ -1332,7 +1333,7 @@ RenderResult PasswordDialog::Render(Terminal *term, int update_flag)
         TextC(term, 1, term->Translate("Enter Your Old Password"), col);
         if (force_change)
         {
-            sprintf(str, "(%s)", term->Translate("You Must Change Your Password To Continue"));
+            vt_safe_string::safe_format(str, 256, "(%s)", term->Translate("You Must Change Your Password To Continue"));
             TextC(term, 4.5, str);
         }
         break;
@@ -1347,7 +1348,7 @@ RenderResult PasswordDialog::Render(Terminal *term, int update_flag)
     min_len = s->min_pw_len;
     if (min_len > 0 && (stage == 2 || stage == 3))
     {
-        sprintf(str, "(%s %d)",
+        vt_safe_string::safe_format(str, 256, "(%s %d)",
                 term->Translate("Minimum Password Length Is"), min_len);
         TextC(term, 4.5, str);
     }
@@ -1395,7 +1396,7 @@ SignalResult PasswordDialog::Signal(Terminal *term, const genericChar* message)
                 return SIGNAL_TERMINATE;
             }
             ++stage;
-            strcpy(new_password, buffer);
+            vt_safe_string::safe_copy(new_password, 32, buffer);
             buffer[0] = '\0';
             buffidx = 0;
             Draw(term, 0);
@@ -1587,7 +1588,7 @@ int CreditCardEntryDialog::FormatCCInfo(char* dest, const char* number, const ch
     int idx;
     int didx = 0;
 
-    strcpy(dest, "manual ");
+    vt_safe_string::safe_copy(dest, STRLENGTH, "manual ");
     didx = strlen(dest);
 
     idx = 0;
@@ -1827,7 +1828,7 @@ CreditCardVoiceDialog::CreditCardVoiceDialog()
 {
     FnTrace("CreditCardVoiceDialog::CreditCardVoiceDialog()");
 
-    strcpy(display_string, CCVD_DISPLAY);
+    vt_safe_string::safe_copy(display_string, STRLENGTH, CCVD_DISPLAY);
     return_message[0] = '\0';
     max_len = 20;
     hh = 80;
@@ -1838,14 +1839,14 @@ CreditCardVoiceDialog::CreditCardVoiceDialog(const char* msg, const char* retmsg
     FnTrace("CreditCardVoiceDialog::CreditCardVoiceDialog(const char* , const char* , int)");
 
     if (msg != NULL)
-        strcpy(display_string, msg);
+        vt_safe_string::safe_copy(display_string, STRLENGTH, msg);
     else
-        strcpy(display_string, CCVD_DISPLAY);
+        vt_safe_string::safe_copy(display_string, STRLENGTH, CCVD_DISPLAY);
 
     if (retmsg != NULL)
-        strcpy(return_message, retmsg);
+        vt_safe_string::safe_copy(return_message, STRLENGTH, retmsg);
     else
-        strcpy(return_message, CCVD_RETURN);
+        vt_safe_string::safe_copy(return_message, STRLENGTH, CCVD_RETURN);
 
     max_len = mlen;
     hh = 80;
@@ -2250,11 +2251,11 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
     if (term->credit != NULL && authorizing == 0)
     {
         if (term->credit->IsVoided())
-            strcpy(str, term->Translate("Void Successful"));
+            vt_safe_string::safe_copy(str, STRLENGTH, term->Translate("Void Successful"));
         else if (term->credit->IsRefunded())
-            strcpy(str, term->Translate("Refund Successful"));
+            vt_safe_string::safe_copy(str, STRLENGTH, term->Translate("Refund Successful"));
         else
-            strcpy(str, term->credit->Verb());
+            vt_safe_string::safe_copy(str, STRLENGTH, term->credit->Verb());
         if (str[0] == '\0')
             snprintf(str, STRLENGTH, "%s %s", term->credit->Code(), term->credit->Auth());
         if (strlen(str) > 0)
@@ -2440,7 +2441,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
     if (message_str[0] != '\0' && strcmp(last_message, message_str) != 0)
     {
         TextC(term, message_line, message_str, color_text);
-        strcpy(last_message, message_str);
+        vt_safe_string::safe_copy(last_message, STRLENGTH, message_str);
     }
 
     // This must come after all drawing commands to make sure we
@@ -3033,7 +3034,7 @@ JobFilterDialog::JobFilterDialog()
     int i = 1;
     while (JobName[i])
     {
-        sprintf(str, "%d", i);
+        vt_safe_string::safe_format(str, 256, "%d", i);
         job[jobs] = Button(JobName[i], str);
         ++jobs; ++i;
     }
@@ -3289,7 +3290,7 @@ SignalResult OpenTabDialog::Signal(Terminal *term, const genericChar* message)
             term->check->Save();
             // check->Save() also saves the customer, but let's make sure
             customer->Save();
-            strcpy(target_signal, "opentabamount");
+            vt_safe_string::safe_copy(target_signal, STRLENGTH, "opentabamount");
             retval = SIGNAL_TERMINATE;
         }
         else

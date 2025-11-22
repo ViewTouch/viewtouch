@@ -6,7 +6,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Kitchen Video Alert System (2025-12-XX)**
+  - **Issue**: Alerts (warn/alert/flash color changes) were not working on kitchen video displays
+  - **Root Causes**:
+    - Alert logic was only implemented in `MakeReport()` but not in `PrintWorkOrder()`, which is used when `kv_print_method != KV_PRINT_UNMATCHED`
+    - `chef_time` was not being set when checks were displayed on kitchen video via `PrintWorkOrder()`, preventing elapsed time calculation
+  - **Fix**:
+    - Added alert logic to `PrintWorkOrder()` to match the implementation in `MakeReport()`
+    - Added `chef_time` initialization in `PrintWorkOrder()` when displaying kitchen video (similar to `MakeReport()`)
+    - Alert condition ensures alerts only work for:
+      - Report buttons with Button Type "Report" and Report Type "Check"
+      - Report zones with a specific Video Target (not PRINTER_DEFAULT)
+      - Orders that have a matching video target (not PRINTER_DEFAULT or PRINTER_NONE)
+      - Checks with `chef_time` set (for elapsed time calculation)
+  - **Impact**: Kitchen video alerts now work correctly for both `MakeReport()` and `PrintWorkOrder()` code paths, providing visual feedback (warn → alert → flash) based on order age
+  - **Files modified**: `main/business/check.cc`
+
 ### Added
+- **Default Configuration Improvements (2025-12-XX)**
+  - **Default Revenue Groups**: Set intelligent defaults for family-to-revenue-group mappings
+    - Beverage → Beverage
+    - Beer and Bottled Beer → Beer
+    - Wine and Bottled Wine → Wine
+    - Alcohol and Cocktail → Alcohol
+    - Malt Beverage (Bottled Cocktail) → Alcohol
+    - All other families default to Food
+  - **Default Users**: Automatically create three default users when settings file is first created
+    - Manager (ID 5) with all authorizations
+    - Server/Cashier with all authorizations except Supervisor, Manager, and Employee records
+    - Server without Settlement authority
+  - **Server Display Defaults**: New Server Display terminals automatically configured with Fast Food type and One Cash Drawer
+  - **Self Order Mode Auto-Configuration**: Page variant automatically set to -2 (Page -2) when Self Order Mode is selected
+  - **Enhanced Drawer Availability Messages**: Improved error messages that specify the exact reason why a drawer is unavailable
+    - Trusted mode: "No drawer is attached to this terminal"
+    - Server Bank mode: "No drawers are configured" or "Unable to create Server Bank drawer"
+    - Assigned mode: "No drawers are assigned to this user or available for assignment"
+  - **Impact**: Faster system setup with sensible defaults, better user experience with clear error messages
+  - **Files modified**: `main/data/settings.cc`, `main/data/manager.cc`, `zone/hardware_zone.cc`, `zone/payment_zone.cc`, `main/hardware/terminal.cc`
+
 - **Enterprise-Grade Connection Reliability System (2025-11-19)**
   - **Feature**: Complete overhaul of ViewTouch's connection handling to prevent system freezing during network interruptions
   - **Components**:
@@ -22,6 +60,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - User-friendly feedback - clear visual indicators of connection status
   - **Impact**: Eliminates ViewTouch freezing when remote displays disconnect, enabling reliable remote access without port forwarding
   - **Files modified**: `src/network/remote_link.cc`, `term/term_view.cc`
+
+- **Reverse SSH Tunnel System (2025-11-21)**
+  - **🚨 DEVELOPMENT STATUS**: This feature is currently under development and requires further testing before production use
+  - **Feature**: Complete reverse SSH tunneling system for secure remote access to ViewTouch POS systems
+  - **Components**:
+    - **Integrated Service**: Built into ViewTouch main application, always enabled when ViewTouch runs
+    - **Standalone Daemon**: Independent reverse SSH daemon for advanced deployments
+    - **Multi-Location Support**: Separate tunnels and configurations for multiple restaurant/store locations
+    - **Automated Setup**: `vt_reverse_ssh_setup` script for easy tunnel configuration without dedicated servers
+    - **Management Tools**: `vt_reverse_ssh` and `vt_ssh_security` scripts for tunnel management and security
+  - **Functionality**:
+    - **Reverse Tunnels**: ViewTouch systems initiate outbound SSH connections to management servers
+    - **Always-On**: Service automatically starts with ViewTouch and maintains persistent tunnels
+    - **Location Identification**: Each location gets unique ports and configuration files for easy identification
+    - **No Public IPs Required**: Works through NAT/firewalls without port forwarding
+    - **Multiple Methods**: Support for dedicated servers, personal computers, ngrok, and serveo
+  - **Security Features**:
+    - SSH key-based authentication (password authentication disabled)
+    - Encrypted tunnels using standard SSH protocols
+    - Configurable reconnect intervals and health checks
+    - Automated key management and rotation tools
+  - **Management Interface**:
+    - `vt_reverse_ssh_setup ngrok [location]` - Automated ngrok tunnel setup
+    - `vt_reverse_ssh_setup personal [location]` - Use personal computer as server
+    - `vt_reverse_ssh_setup status` - Monitor all location tunnels
+    - `vt_reverse_ssh stop [location]` - Stop specific or all tunnels
+  - **Configuration Files**:
+    - `/etc/viewtouch/reverse_ssh.conf` - Main configuration
+    - `/etc/viewtouch/reverse_ssh_[location].conf` - Location-specific configs
+    - Systemd service integration for daemon management
+  - **Files Added**: `src/network/reverse_ssh_service.*`, `src/network/reverse_ssh_daemon.cc`, `scripts/tools/vt_reverse_ssh*`, `config/reverse_ssh_daemon.conf`, `scripts/system/reverse-ssh-daemon.service`, `docs/REVERSE_SSH.md`
+  - **Impact**: Enables secure remote access and support for ViewTouch systems without requiring public IP addresses or complex firewall configurations
+  - **⚠️ Testing Required**: Feature needs extensive real-world testing across different network environments before production deployment
 
 - **New Clear System Button Zone Type (2025-11-14)**
   - **Feature**: Added dedicated `ClearSystemZone` button type with countdown safety mechanism
@@ -39,6 +110,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `zone/button_zone.hh`, `zone/button_zone.cc`, `zone/pos_zone.hh`, `zone/pos_zone.cc`, `main/ui/labels.cc`
 
 ### Fixed
+- **Fixed DPI for Consistent Font Rendering Across All Displays (2025-12-XX)**
+  - **Issue**: With scalable fonts (Xft), each display device required different DPI settings, causing inconsistent font sizes across different displays
+  - **Solution**: Implemented fixed DPI (96) for all font loading operations
+    - All font specifications now automatically include `:dpi=96` parameter
+    - Ensures fonts render at the same size regardless of display DPI
+    - Works consistently across Raspberry Pi, desktop monitors, and other displays
+  - **Impact**: Fonts now render consistently across all displays, similar to the old bitmap fonts behavior
+  - **Files modified**: `term/term_view.cc`, `main/data/manager.cc`
+
+- **Raspberry Pi Performance Optimizations (2025-12-XX)**
+  - **Issue**: Significant UI delay on Raspberry Pi Compute Module 5
+  - **Optimizations**:
+    - **Color Caching**: Implemented `ColorCache` to cache `XRenderColor` values, eliminating expensive `XQueryColor()` calls
+    - **Drop Shadow Optimization**: Reduced drop shadow rendering from multiple draw calls to optimized single-pass rendering
+    - **Raspberry Pi Auto-Detection**: Automatically detects Raspberry Pi/ARM hardware and disables expensive rendering effects (drop shadows, embossed text, blur)
+    - **Reduced XFlush Calls**: Removed unnecessary `XFlush()` calls in layer operations to reduce blocking operations
+  - **Impact**: Significantly improved UI responsiveness on Raspberry Pi hardware
+  - **Files modified**: `term/term_view.hh`, `term/term_view.cc`, `term/layer.cc`, `src/core/generic_char.cc`
+
+- **Printer Target Safety and Reliability Improvements (2025-11-21)**
+  - **Issues**: Multiple safety and reliability issues in printer operations
+    - String truncation warnings in `MakeFileName()` and PostScript output functions
+    - Missing error checking for `write()` system calls
+    - Type conversion warnings (ssize_t to int, int to genericChar)
+    - Unsafe string operations throughout printer and hardware modules
+  - **Fixes**:
+    - Replaced unsafe `strncpy()` and `sprintf()` calls with `vt_safe_string::safe_copy()` and `vt_safe_string::safe_format()`
+    - Added comprehensive error checking for all write operations with proper error logging
+    - Fixed type conversions using `static_cast<>()` and proper ssize_t handling
+    - Eliminated 90+ compiler warnings in printer.cc
+  - **Impact**: Significantly improved printer reliability, eliminated buffer overflows, and enhanced error reporting
+  - **Files modified**: `main/hardware/printer.cc`, `main/hardware/cdu.cc`, `main/business/customer.cc`, `main/business/employee.cc`, `main/data/credit.cc`
+
+- **Build Failure - Buffer Size Mismatch and Const-Correctness Issues (2025-11-21)**
+  - **Issues**: Build failed with array bounds errors and const-correctness compilation errors
+    - Buffer size mismatch in `safe_format` calls - using `STRLONG` (2048 bytes) for `STRLENGTH` (512 byte) buffers
+    - Const-correctness issue with Motif `XmTextSetString` function expecting `char*` but receiving `const char*`
+  - **Fixes**:
+    - Fixed buffer size parameters in `safe_format` and `safe_concat` calls in `PrintWorkOrder()` method
+    - Changed all `STRLONG` parameters to `STRLENGTH` to match actual buffer sizes (512 bytes)
+    - Added `const_cast<char*>()` to resolve Motif API const-correctness requirements
+  - **Impact**: Build now completes successfully, eliminating array bounds warnings and compilation errors
+  - Files modified: `main/business/check.cc`, `term/term_dialog.cc`
+
 - **CMake Deprecation Warnings (2025-11-17)**
   - **Issue**: CMake deprecation warnings when building the project
     - CMake minimum_required version 3.5.1 compatibility warning with CMake 3.31.6
@@ -358,6 +473,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `main/business/check.{hh,cc}`, `main/hardware/drawer.{hh,cc}`, `main/data/credit.{hh,cc}`, and related calling files
 
 ### Changed
+- **String Performance Optimizations and Modernization (2025-11-21)**
+  - **Performance Improvements**: Comprehensive string operation optimizations across the codebase
+    - **MakeFileName optimization**: Eliminated unnecessary string copies by filtering characters directly into output buffer
+    - **WriteLR optimization**: Replaced inefficient space-filling loops with `memset()` and direct buffer operations
+    - **Reference list building**: Replaced multiple `safe_format()` + `strcat()` calls with direct `snprintf()` buffer operations
+    - **Translation caching**: Cached repeated `Translate()` calls in credit processing to avoid redundant lookups
+  - **String Safety Modernization**:
+    - Replaced all unsafe `strncpy()`, `sprintf()`, and `strcat()` operations with safe alternatives
+    - Implemented bounds-checked string operations throughout hardware and business modules
+    - Enhanced error checking for all string formatting operations
+  - **Memory Efficiency**: Reduced allocations and improved memory access patterns for string operations
+  - **Impact**: Significant performance improvements in printing, UI rendering, and data processing with enhanced safety
+  - **Files modified**: `main/hardware/printer.cc`, `main/hardware/terminal.cc`, `main/hardware/cdu.cc`, `main/data/credit.cc`, `main/business/customer.cc`, `main/business/employee.cc`
+
 - **Embossed Text Rendering**: Made embossed text effect more subtle and less overwhelming
   - **Refinement**: Modified `GenericDrawStringXftEmbossed` to use minimal white outline for better text readability
   - **Visual Effect**: Embossed text now appears with barely visible white outline above main text only

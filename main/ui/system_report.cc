@@ -34,6 +34,7 @@
 #include "expense.hh"
 #include "report_zone.hh"
 #include "utility.hh"
+#include "safe_string_utils.hh"
 
 #include <cstring>
 #include <iostream>
@@ -1700,13 +1701,13 @@ int BalanceReportWorkFn(BRData *brdata)
         per = (Flt) adjust / (Flt) brdata->sales;
 
     thisReport->TextPosR(last_pos, term->FormatPrice(adjust), color);
-    sprintf(str, "%.2f%%", per * 100.0);
+    vt_safe_string::safe_format(str, 256, "%.2f%%", per * 100.0);
     thisReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
     thisReport->NewLine(2);
 
             thisReport->TextL(GlobalTranslate("Cash Sales"));
     thisReport->TextPosR(last_pos, term->FormatPrice(brdata->sales - adjust, 1), color);
-    sprintf(str, "%.2f%%", (1 - per) * 100.0);
+    vt_safe_string::safe_format(str, 256, "%.2f%%", (1 - per) * 100.0);
     thisReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
     thisReport->NewLine(2);
 
@@ -1763,7 +1764,7 @@ int BalanceReportWorkFn(BRData *brdata)
     if (term->hide_zeros == 0 || labor_cost != 0)
     {
         thisReport->TextL(GlobalTranslate("Regular Hours"));
-        sprintf(str, "%.1f", (Flt) labor_mins / 60.0);
+        vt_safe_string::safe_format(str, 256, "%.1f", (Flt) labor_mins / 60.0);
         thisReport->TextPosR(last_pos, str, color);
         thisReport->NewLine();
         thisReport->TextL(GlobalTranslate("Regular Cost"));
@@ -1774,7 +1775,7 @@ int BalanceReportWorkFn(BRData *brdata)
     if (term->hide_zeros == 0 || labor_otcost != 0)
     {
         thisReport->TextL(GlobalTranslate("Overtime Hours"));
-        sprintf(str, "%.1f", (Flt) labor_otmins / 60.0);
+        vt_safe_string::safe_format(str, 256, "%.1f", (Flt) labor_otmins / 60.0);
         thisReport->TextPosR(last_pos, str, color);
         thisReport->NewLine();
         thisReport->TextL(GlobalTranslate("Overtime Cost"));
@@ -1789,16 +1790,16 @@ int BalanceReportWorkFn(BRData *brdata)
         {
             if (currSettings->job_active[JobValue[j]] && (term->hide_zeros == 0 || job_mins[j] != 0))
             {
-                snprintf(str, sizeof(str), "%s Hours", JobName[j]);
+                vt_safe_string::safe_format(str, 256, "%s Hours", JobName[j]);
                 thisReport->TextL(str);
-                sprintf(str, "%.1f", (Flt) job_mins[j] / 60.0);
+                vt_safe_string::safe_format(str, 256, "%.1f", (Flt) job_mins[j] / 60.0);
                 thisReport->TextPosR(last_pos, str, color);
                 thisReport->NewLine();
 
                 if (job_otmins[j] > 0)
                 {
                     thisReport->TextL(GlobalTranslate("Overtime"));
-                    sprintf(str, "%.1f", (Flt) job_otmins[j] / 60.0);
+                    vt_safe_string::safe_format(str, 256, "%.1f", (Flt) job_otmins[j] / 60.0);
                     thisReport->TextPosR(last_pos, str, color);
                     thisReport->NewLine();
                 }
@@ -1809,7 +1810,7 @@ int BalanceReportWorkFn(BRData *brdata)
     }
     else
         thisReport->TextL(GlobalTranslate("Total Hours"));
-    sprintf(str, "%.1f", (Flt) (labor_mins + labor_otmins) / 60.0);
+    vt_safe_string::safe_format(str, 256, "%.1f", (Flt) (labor_mins + labor_otmins) / 60.0);
     thisReport->TextPosR(last_pos, str, color);
     thisReport->NewLine();
 
@@ -1910,7 +1911,7 @@ int System::BalanceReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_ti
     genericChar str[256];
     genericChar str2[32];
     report->is_complete = 0;
-    sprintf(str, "%s  --  %s", term->TimeDate(str2, brdata->start, TD0),
+    vt_safe_string::safe_format(str, 256, "%s  --  %s", term->TimeDate(str2, brdata->start, TD0),
             term->TimeDate(brdata->end, TD0));
     report->TextC(str, COLOR_DK_BLUE);
     report->NewLine(3);
@@ -2233,7 +2234,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
         term->TimeDate(str, start_time, TD3);
     }
     else
-        strcpy(str, GlobalTranslate("System Start"));
+        vt_safe_string::safe_copy(str, 256, GlobalTranslate("System Start"));
 
     report->TextPosL(7, str, col);
     report->NewLine();
@@ -2572,11 +2573,11 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine(2);
 
     if (tips_held > 0)
-        sprintf(str, "Set Aside %s Tips Captured on Cards", term->FormatPrice(tips_held, 1));
+        vt_safe_string::safe_format(str, 256, "Set Aside %s Tips Captured on Cards", term->FormatPrice(tips_held, 1));
     else if (tips_held < 0)
-        sprintf(str, "Tips Overpaid By %s.", term->FormatPrice(-tips_held, 1));
+        vt_safe_string::safe_format(str, 256, "Tips Overpaid By %s.", term->FormatPrice(-tips_held, 1));
     else
-        strcpy(str, GlobalTranslate("All Captured Tips Have Been Paid."));
+        vt_safe_string::safe_copy(str, 256, GlobalTranslate("All Captured Tips Have Been Paid."));
 
     report->Mode(PRINT_UNDERLINE);
     report->TextPosL(0, str, col);
@@ -2702,7 +2703,7 @@ int ClosedCheckReportWorkFn(CCRData *ccrdata)
 
             if (flag)
             {
-                sprintf(str, "%06d", thisCheck->serial_number);
+                vt_safe_string::safe_format(str, 256, "%06d", thisCheck->serial_number);
                 thisReport->TextPosL(0, str);
                 ccrdata->none = 0;
                 ccrdata->total_amount += amount;
@@ -2786,7 +2787,7 @@ int System::ClosedCheckReport(Terminal *term, TimeInfo &start_time, TimeInfo &en
     thisReport->is_complete = 0;
 //    thisReport->TextC(term->Translate("Guest Check Summary"), COLOR_DK_BLUE);      Let the Button's Name Field provide the Title for this report
 //    thisReport->NewLine();
-    sprintf(str, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
+    vt_safe_string::safe_format(str, 256, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
             term->TimeDate(end, TD5));
     thisReport->TextC(str, COLOR_DK_BLUE);
     thisReport->NewLine(2);
@@ -2836,11 +2837,11 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
     genericChar str2[32];
 
     if (type == EXCEPTION_COMP)
-        strcpy(str, GlobalTranslate("Line Item Comps"));
+        vt_safe_string::safe_copy(str, 256, GlobalTranslate("Line Item Comps"));
     else if (type == EXCEPTION_VOID)
-        strcpy(str, GlobalTranslate("Line Item Voids"));
+        vt_safe_string::safe_copy(str, 256, GlobalTranslate("Line Item Voids"));
     else
-        strcpy(str, GlobalTranslate("Line Item Exceptions"));
+        vt_safe_string::safe_copy(str, 256, GlobalTranslate("Line Item Exceptions"));
 
     thisReport->SetTitle(str);
     thisReport->TextC(term->Translate(str), COLOR_DK_RED);
@@ -2852,7 +2853,7 @@ int System::ItemExceptionReport(Terminal *term, TimeInfo &start_time,
         thisReport->NewLine();
     }
 
-    sprintf(str, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
+    vt_safe_string::safe_format(str, 256, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
             term->TimeDate(end, TD5));
 
     thisReport->TextC(str, COLOR_DK_BLUE);
@@ -2985,7 +2986,7 @@ int System::TableExceptionReport(Terminal *term, TimeInfo &start_time,
         report->NewLine();
     }
 
-    sprintf(str, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
+    vt_safe_string::safe_format(str, 256, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
             term->TimeDate(end, TD5));
     report->TextC(str, COLOR_DK_BLUE);
     report->NewLine(2);
@@ -3057,7 +3058,7 @@ int System::RebuildExceptionReport(Terminal *term, TimeInfo &start_time,
         report->NewLine();
     }
 
-    sprintf(str, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
+    vt_safe_string::safe_format(str, 256, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
             term->TimeDate(end, TD5));
     report->TextC(str, COLOR_DK_BLUE);
     report->NewLine(2);
@@ -3080,7 +3081,7 @@ int System::RebuildExceptionReport(Terminal *term, TimeInfo &start_time,
             {
                 report->TextL(term->TimeDate(re->time, TD5));
                 report->TextPosL(15, term->UserName(re->user_id));
-                sprintf(str, "%06d", re->check_serial);
+                vt_safe_string::safe_format(str, 256, "%06d", re->check_serial);
                 report->TextPosL(27, str);
                 report->NewLine();
             }
@@ -4975,25 +4976,25 @@ int System::CreditCardReport(Terminal *term, TimeInfo &start_time, TimeInfo &end
     //////
     report->Mode(PRINT_BOLD | PRINT_LARGE);
     if (cc_report_type == CC_REPORT_BATCH)
-        strcpy(str, term->Translate("Batch Close Report"));
+        vt_safe_string::safe_copy(str, STRLONG, term->Translate("Batch Close Report"));
     else if (cc_report_type == CC_REPORT_INIT)
-        strcpy(str, term->Translate("Initialization Results"));
+        vt_safe_string::safe_copy(str, STRLONG, term->Translate("Initialization Results"));
     else if (cc_report_type == CC_REPORT_TOTALS)
-        strcpy(str, term->Translate("Credit Card Totals"));
+        vt_safe_string::safe_copy(str, STRLONG, term->Translate("Credit Card Totals"));
     else if (cc_report_type == CC_REPORT_DETAILS)
-        strcpy(str, term->Translate("Credit Card Details"));
+        vt_safe_string::safe_copy(str, STRLONG, term->Translate("Credit Card Details"));
     else if (cc_report_type == CC_REPORT_SAF)
-        strcpy(str, term->Translate("Store and Forward Details"));
+        vt_safe_string::safe_copy(str, STRLONG, term->Translate("Store and Forward Details"));
     else if (cc_report_type == CC_REPORT_VOIDS)
-        strcpy(str, term->Translate("Credit Card Voids"));
+        vt_safe_string::safe_copy(str, STRLONG, term->Translate("Credit Card Voids"));
     else if (cc_report_type == CC_REPORT_REFUNDS)
-        strcpy(str, term->Translate("Credit Card Refunds"));
+        vt_safe_string::safe_copy(str, STRLONG, term->Translate("Credit Card Refunds"));
     else if (cc_report_type == CC_REPORT_EXCEPTS)
-        strcpy(str, term->Translate("Credit Card Voids"));
+        vt_safe_string::safe_copy(str, STRLONG, term->Translate("Credit Card Voids"));
     else if (cc_report_type == CC_REPORT_FINISH)
-        strcpy(str, term->Translate("Results of PreAuth Finish"));
+        vt_safe_string::safe_copy(str, STRLONG, term->Translate("Results of PreAuth Finish"));
     else
-        strcpy(str, CREDITCARD_REPORT_TITLE);
+        vt_safe_string::safe_copy(str, STRLONG, CREDITCARD_REPORT_TITLE);
     report->SetTitle(str);
     report->TextC(str);
     report->NewLine(2);
@@ -5005,7 +5006,7 @@ int System::CreditCardReport(Terminal *term, TimeInfo &start_time, TimeInfo &end
         start_time.Month() == end_time.Month() &&
         start_time.Day() == (end_time.Day() - 1))
     {
-        strcpy(str, term->TimeDate(start_time, date_format));
+        vt_safe_string::safe_copy(str, STRLONG, term->TimeDate(start_time, date_format));
     }
     else
     {

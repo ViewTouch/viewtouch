@@ -388,7 +388,8 @@ RenderResult ReportZone::DisplayCheckReport(Terminal *term, Report *disp_report)
     else if (term->check)
     {
         // This is the non-Kitchen Video report when we have a check.
-        term->check->MakeReport(term, disp_report, CHECK_DISPLAY_ALL, video_target);
+        // Pass 'this' (ReportZone) so alerts can work
+        term->check->MakeReport(term, disp_report, CHECK_DISPLAY_ALL, video_target, this);
     }
     else
     {

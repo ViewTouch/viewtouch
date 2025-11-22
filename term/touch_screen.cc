@@ -42,6 +42,7 @@
 #include <strings.h>
 #include <sys/time.h>
 #include <cmath>
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -422,7 +423,7 @@ int TouchScreen::Reset() noexcept
     {
 		//output a status message
         genericChar str[256];
-        sprintf(str, "TouchScreen Reset failed for host '%s'", host.Value());
+        vt_safe_string::safe_format(str, 256, "TouchScreen Reset failed for host '%s'", host.Value());
 
         error.Set(str);
 

@@ -26,6 +26,7 @@
 #include "image_data.hh"
 #include "archive.hh"
 #include "customer.hh"
+#include "safe_string_utils.hh"
 
 #include <cstring>
 
@@ -138,31 +139,31 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 		char str2[128];
 
 	if (term->server)
-		sprintf(str2, "%s's", term->server->system_name.Value());
+		vt_safe_string::safe_format(str2, 128, "%s's", term->server->system_name.Value());
 	else
-		    strcpy(str2, GlobalTranslate("All"));
+		    vt_safe_string::safe_copy(str2, 128, GlobalTranslate("All"));
 
 	if (status != CL_ALL)
-		sprintf(str, "%s %s Checks", str2, term->Translate(CLName[status]));
+		vt_safe_string::safe_format(str, 128, "%s %s Checks", str2, term->Translate(CLName[status]));
 	else
-		sprintf(str, "%s Checks", str2);
+		vt_safe_string::safe_format(str, 128, "%s Checks", str2);
 	TextC(term, 1, str, col);
 
 	if (term->archive == NULL)
 	{
 		if ((term->server == NULL && e->training) ||
             (term->server && term->server->training))
-			strcpy(str, term->Translate("Current Training Checks"));
+			vt_safe_string::safe_copy(str, 128, term->Translate("Current Training Checks"));
 		else
-			strcpy(str, term->Translate("Current Checks"));
+			vt_safe_string::safe_copy(str, 128, term->Translate("Current Checks"));
 	}
 	else
 	{
 		if (term->archive->fore)
 			term->TimeDate(str2, term->archive->fore->end_time, TD5);
 		else
-			strcpy(str2, term->Translate("System Start"));
-		sprintf(str, "%s  to  %s", str2, term->TimeDate(term->archive->end_time, TD5));
+			vt_safe_string::safe_copy(str2, 128, term->Translate("System Start"));
+		vt_safe_string::safe_format(str, 128, "%s  to  %s", str2, term->TimeDate(term->archive->end_time, TD5));
 	}
 	TextC(term, 0, str, COLOR_BLUE);
 
@@ -176,7 +177,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 	// Footer
 	if (possible_size > 0)
 	{
-		sprintf(str, "%s: %d", term->Translate("Number of checks"), possible_size);
+		vt_safe_string::safe_format(str, 128, "%s: %d", term->Translate("Number of checks"), possible_size);
 		TextC(term, size_y - 3, str, col);
 	}
 	if (max_pages > 1)
@@ -186,9 +187,9 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 	if (array_size <= 0)
 	{
 		if (status == CL_ALL)
-			        strcpy(str, GlobalTranslate("No checks of any kind"));
+			        vt_safe_string::safe_copy(str, 128, GlobalTranslate("No checks of any kind"));
 		else
-			sprintf(str, "No %s checks", term->Translate(CLName[status]));
+			vt_safe_string::safe_format(str, 128, "No %s checks", term->Translate(CLName[status]));
 		TextC(term, line, str, COLOR_RED);
 	}
 
@@ -210,21 +211,21 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
         switch (c->CustomerType())
         {
         case CHECK_CATERING:
-            strcpy(str, term->Translate("CATR"));
+            vt_safe_string::safe_copy(str, 128, term->Translate("CATR"));
             break;
         case CHECK_DELIVERY:
-            strcpy(str, term->Translate("DLVR"));
+            vt_safe_string::safe_copy(str, 128, term->Translate("DLVR"));
             break;
         case CHECK_TAKEOUT:
-            strcpy(str, term->Translate("Take Out"));
+            vt_safe_string::safe_copy(str, 128, term->Translate("Take Out"));
             break;
         default:
             if (c->IsFastFood())
-                strcpy(str, term->Translate("Fast Food"));
+                vt_safe_string::safe_copy(str, 128, term->Translate("Fast Food"));
             else if (c->CustomerType() == CHECK_BAR)
-                strcpy(str, GlobalTranslate("Bar"));
+                vt_safe_string::safe_copy(str, 128, GlobalTranslate("Bar"));
             else
-                sprintf(str, "%.4s", c->Table());
+                vt_safe_string::safe_format(str, 128, "%.4s", c->Table());
             break;
         }
 
@@ -243,7 +244,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 //			str[1] = '\0';
 		}
 		else
-			sprintf(str, "%d", c->Guests());
+			vt_safe_string::safe_format(str, 128, "%d", c->Guests());
 		TextPosL(term, x1, line, str, tc);
 
 		if (status == CL_OPEN || status == CL_TAKEOUT || status == CL_FASTFOOD)
@@ -253,7 +254,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 			TimeInfo time_close;
 			time_close.Set(c->TimeClosed());
 			if (time_close.IsSet())
-				sprintf(str, "%s %s", term->TimeDate(str2, c->time_open, TD_TIME),
+				vt_safe_string::safe_format(str, 128, "%s %s", term->TimeDate(str2, c->time_open, TD_TIME),
 						term->TimeDate(time_close, TD_TIME));
 			else
 				term->TimeDate(str, c->time_open, TD_TIME);

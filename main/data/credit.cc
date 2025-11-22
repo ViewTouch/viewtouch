@@ -31,6 +31,7 @@
 #include "credit.hh"
 #include "utility.hh"
 #include "src/utils/vt_logger.hh"
+#include "safe_string_utils.hh"
 #include <unistd.h>
 #include <cctype>
 #include <time.h>
@@ -352,9 +353,9 @@ int Credit::Write(OutputDataFile &df, int version)
         SetCreditType();
 
     if (IsPreauthed())
-        strcpy(tmpnumber, number.Value());
+        vt_safe_string::safe_copy(tmpnumber, STRLENGTH, number.Value());
     else
-        strcpy(tmpnumber, PAN(MasterSystem->settings.save_entire_cc_num));
+        vt_safe_string::safe_copy(tmpnumber, STRLENGTH, PAN(MasterSystem->settings.save_entire_cc_num));
     error += df.Write(tmpnumber);
     error += df.Write(expire);
     error += df.Write(name);
@@ -1287,7 +1288,7 @@ char* Credit::CreditTypeName(char* str, int shortname)
     if (str == NULL)
         str = buffer;
 
-    strcpy(str, UnknownStr);
+    vt_safe_string::safe_copy(str, 32, UnknownStr);
 
     if (card_type == CARD_TYPE_DEBIT)
     {
@@ -1295,7 +1296,7 @@ char* Credit::CreditTypeName(char* str, int shortname)
     }
     else if (card_type == CARD_TYPE_GIFT)
     {
-        strcpy(str, "Gift Card");
+        vt_safe_string::safe_copy(str, 32, "Gift Card");
     }
     else
     {
@@ -1312,7 +1313,7 @@ char* Credit::CreditTypeName(char* str, int shortname)
     }
 
     if (hold != NULL)
-        strcpy(str, hold);
+        vt_safe_string::safe_copy(str, 32, hold);
 
     return str;
 }
@@ -1606,11 +1607,11 @@ const char* Credit::Approval()
 
     str[0] = '\0';
     if (processor == CCAUTH_CREDITCHEQ)
-        sprintf(str, "%s", code.Value());
+        vt_safe_string::safe_format(str, 256, "%s", code.Value());
     else if (approval.empty())
-        sprintf(str, "PENDING");
+        vt_safe_string::safe_format(str, 256, "PENDING");
     else if (approval.size() > 0)
-        strcpy(str, approval.Value());
+        vt_safe_string::safe_copy(str, 256, approval.Value());
 
     return str;
 }
@@ -1638,7 +1639,7 @@ const char* Credit::PAN(int all)
     str[0] = '\0';
     if (number.size() > 0)
     {
-        strcpy(str, number.Value());
+        vt_safe_string::safe_copy(str, STRSHORT, number.Value());
         
         if (all == 0)
         {
@@ -1664,7 +1665,7 @@ const char* Credit::PAN(int all)
         }
         else if (all == 2) // remove spaces
         {
-            strcpy(str2, str);
+            vt_safe_string::safe_copy(str2, STRSHORT, str);
             int didx = 0;
             idx = 0;
             while (idx < STRSHORT && str2[idx] != '\0')
@@ -1697,7 +1698,7 @@ char* Credit::LastFour(char* dest)
     if (number.size() > 0)
     {
         memset(dest, '\0', 10);
-        strcpy(buffer, number.Value());
+        vt_safe_string::safe_copy(buffer, STRLENGTH, number.Value());
         len = strlen(buffer);
         sidx = len - 4;
         while (sidx < len)
@@ -1721,9 +1722,9 @@ const char* Credit::ExpireDate()
     {
         const char* s = expire.Value();
         if (expire.size() < 4)
-            sprintf(str, "%s/%s", "??", "??");  // to get rid of compiler warnings
+            vt_safe_string::safe_format(str, 16, "%s/%s", "??", "??");  // to get rid of compiler warnings
         else
-            sprintf(str, "%c%c/%c%c", s[0], s[1], s[2], s[3]);
+            vt_safe_string::safe_format(str, 16, "%c%c/%c%c", s[0], s[1], s[2], s[3]);
     }
 
     return str;
@@ -1740,7 +1741,7 @@ const char* Credit::Name()
     int bidx;
     int idx;
 
-    strcpy(buffer, name.Value());
+    vt_safe_string::safe_copy(buffer, STRLENGTH, name.Value());
     if (strlen(buffer) > 0 && strcmp(buffer, " /"))
     {
         bidx = 0;
@@ -1802,7 +1803,7 @@ const char* Credit::Name()
     else if (first[0] != '\0')
         snprintf(str, STRLENGTH, "%s %s", first, last);
     else if (last[0] != '\0')
-        strcpy(str, last);
+        vt_safe_string::safe_copy(str, STRLENGTH, last);
 
     return str;
 }
@@ -2139,7 +2140,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
             printer->SetTitle("CreditCardReceipt");
         }
         printer->Start();
-        strcpy(buffer, term->Translate("==== TRANSACTION RECORD ====", lang));
+        vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("==== TRANSACTION RECORD ====", lang));
         len = strlen(buffer);
         width = ((pwidth - len) / 2) + len;
         snprintf(buffer2, STRLENGTH, "%*s", width, buffer);
@@ -2156,23 +2157,23 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
         if (settings->authorize_method == CCAUTH_CREDITCHEQ)
         {
             if (last_action == CCAUTH_AUTHORIZE)
-                strcpy(buffer, term->Translate("Purchase", lang));
+                vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("Purchase", lang));
             else if (last_action == CCAUTH_PREAUTH)
-                strcpy(buffer, term->Translate("Pre-Authorization", lang));
+                vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("Pre-Authorization", lang));
             else if (last_action == CCAUTH_COMPLETE && auth.size() > 0)
-                strcpy(buffer, term->Translate("Pre-Auth Completion", lang));
+                vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("Pre-Auth Completion", lang));
             else if (last_action == CCAUTH_COMPLETE)
-                strcpy(buffer, term->Translate("Pre-Auth Advice", lang));
+                vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("Pre-Auth Advice", lang));
             else if (last_action == CCAUTH_REFUND)
-                strcpy(buffer, term->Translate("Refund", lang));
+                vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("Refund", lang));
             else if (last_action == CCAUTH_REFUND_CANCEL)
-                strcpy(buffer, term->Translate("Refund Cancel", lang));
+                vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("Refund Cancel", lang));
             else if (last_action == CCAUTH_VOID)
-                strcpy(buffer, term->Translate("Purchase Correction", lang));
+                vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("Purchase Correction", lang));
             else if (last_action == CCAUTH_VOID_CANCEL)
-                strcpy(buffer, term->Translate("Void Cancel", lang));
+                vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("Void Cancel", lang));
             else
-                strcpy(buffer, term->Translate("Unknown Transaction", lang));
+                vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("Unknown Transaction", lang));
             snprintf(buffer2, STRLENGTH, "%s: %s", term->Translate("Transaction Type", lang), buffer);
             printer->Write(buffer2);
             printer->LineFeed();
@@ -2205,7 +2206,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
             if (parent != NULL)
             {
                 int did_print = 0;
-                strcpy(buffer2, parent->FullName());
+                vt_safe_string::safe_copy(buffer2, STRLENGTH, parent->FullName());
                 if (strlen(buffer2) > 0)
                 {
                     snprintf(buffer, STRLENGTH, "%s: %s",
@@ -2213,7 +2214,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
                     printer->Write(buffer);
                     did_print = 1;
                 }
-                strcpy(buffer2, parent->Table());
+                vt_safe_string::safe_copy(buffer2, STRLENGTH, parent->Table());
                 if (strlen(buffer2) > 0)
                 {
                     snprintf(buffer, STRLENGTH, "%s: %s",
@@ -2244,7 +2245,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
                      PAN(settings->show_entire_cc_num));
         }
         printer->Write(buffer);
-        strcpy(buffer3, term->Translate(CreditTypeName(buffer2), lang));
+        vt_safe_string::safe_copy(buffer3, STRLENGTH, term->Translate(CreditTypeName(buffer2), lang));
         snprintf(buffer, STRLENGTH, "%s: %s", term->Translate("Account Type", lang),
                  buffer3);
         printer->Write(buffer);
@@ -2263,13 +2264,14 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
         }
         if (settings->authorize_method == CCAUTH_CREDITCHEQ)
         {
-            snprintf(buffer, STRLENGTH, "%s: %s %s",
-                     term->Translate("Reference Number", lang),
-                     term_id.Value(), sequence.Value());
             if (read_manual || b24code.empty())
-                strcat(buffer, " M");
+                vt_safe_string::safe_format(buffer, STRLENGTH, "%s: %s %s M",
+                         term->Translate("Reference Number", lang),
+                         term_id.Value(), sequence.Value());
             else
-                strcat(buffer, " S");
+                vt_safe_string::safe_format(buffer, STRLENGTH, "%s: %s %s S",
+                         term->Translate("Reference Number", lang),
+                         term_id.Value(), sequence.Value());
             printer->Write(buffer);
         }
         if (auth.size() > 0)
@@ -2317,7 +2319,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
             for (idx = 1; idx < 5; idx += 1)
             {
                 snprintf(buffer, STRLENGTH, "Customer Agreement %d", idx);
-                strcpy(buffer2, term->Translate(buffer, lang, 1));
+                vt_safe_string::safe_copy(buffer2, STRLENGTH, term->Translate(buffer, lang, 1));
                 len = strlen(buffer2);
                 if (len > 0)
                 {
@@ -2387,7 +2389,7 @@ CreditDB *CreditDB::Copy()
     newdb = new CreditDB(db_type);
     if (newdb != NULL)
     {
-        strcpy(newdb->fullpath, fullpath);
+        vt_safe_string::safe_copy(newdb->fullpath, STRLONG, fullpath);
         newdb->last_card_id = last_card_id;
 
         while (credit != NULL)
@@ -2453,11 +2455,11 @@ int CreditDB::Save()
     if (fullpath[0] == '\0')
     {
         if (db_type == CC_DBTYPE_VOID)
-            strcpy(fullpath, MASTER_CC_VOID);
+            vt_safe_string::safe_copy(fullpath, STRLONG, MASTER_CC_VOID);
         else if (db_type == CC_DBTYPE_REFUND)
-            strcpy(fullpath, MASTER_CC_REFUND);
+            vt_safe_string::safe_copy(fullpath, STRLONG, MASTER_CC_REFUND);
         else
-            strcpy(fullpath, MASTER_CC_EXCEPT);
+            vt_safe_string::safe_copy(fullpath, STRLONG, MASTER_CC_EXCEPT);
     }
 
     if (fullpath[0] != '\0' &&
@@ -2478,7 +2480,7 @@ int CreditDB::Load(const char* path)
                   // Read() and Write() don't have to wonder.
 
     if (path != NULL)
-        strcpy(fullpath, path);
+        vt_safe_string::safe_copy(fullpath, STRLONG, path);
 
     if (fullpath[0] != '\0')
     {
@@ -2877,7 +2879,7 @@ CCSettle::CCSettle(const char* fullpath)
 
     next = NULL;
     fore = NULL;
-    strcpy(filepath, fullpath);
+    vt_safe_string::safe_copy(filepath, STRLONG, fullpath);
     current = NULL;
     archive = NULL;
     Clear();
@@ -3301,7 +3303,7 @@ int CCSettle::Load(const char* filename)
 
     if (filename != NULL && strlen(filename) > 0)
     {
-        strcpy(filepath, filename);
+        vt_safe_string::safe_copy(filepath, STRLONG, filename);
         
         if (infile.Open(filepath, version) == 0)
             Read(infile);
@@ -3318,7 +3320,7 @@ int CCSettle::Save()
     int version = CREDIT_CARD_VERSION;
 
     if (filepath[0] == '\0')
-        strcpy(filepath, MASTER_CC_SETTLE);
+        vt_safe_string::safe_copy(filepath, STRLONG, MASTER_CC_SETTLE);
 
     if (filepath[0] != '\0')
     {
@@ -3393,15 +3395,18 @@ int CCSettle::GenerateReport(Terminal *term, Report *report, ReportZone *rzone, 
 
     if (IsSettled() || errormsg.size() > 0)
     {
-        snprintf(str, STRLENGTH, "%s: ", term->Translate("Merchant ID"));
+        // Cache translated strings to avoid repeated translation calls
+        const char* merchant_label = term->Translate("Merchant ID");
+        const char* terminal_label = term->Translate("Terminal");
+
         if (merchid.size() > 0)
-            strcat(str, merchid.Value());
+            vt_safe_string::safe_format(str, STRLENGTH, "%s: %s", merchant_label, merchid.Value());
         else
-            strcat(str, settings->cc_merchant_id.Value());
+            vt_safe_string::safe_format(str, STRLENGTH, "%s: %s", merchant_label, settings->cc_merchant_id.Value());
         report->TextL(str);
         if (termid.size() > 0)
         {
-            snprintf(str, STRLENGTH, "%s: %s", term->Translate("Terminal"), termid.Value());
+            vt_safe_string::safe_format(str, STRLENGTH, "%s: %s", terminal_label, termid.Value());
             report->TextR(str);
         }
         report->NewLine();
@@ -3548,7 +3553,7 @@ CCInit::CCInit(const char* fullpath)
 {
     FnTrace("CCInit::CCInit()");
 
-    strcpy(filepath, fullpath);
+    vt_safe_string::safe_copy(filepath, STRLONG, fullpath);
     next = NULL;
     fore = NULL;
     current = NULL;
@@ -3717,7 +3722,7 @@ int CCInit::Load(const char* filename)
 
     if (filename != NULL)
     {
-        strcpy(filepath, filename);
+        vt_safe_string::safe_copy(filepath, STRLONG, filename);
         if (infile.Open(filepath, version) == 0)
             Read(infile);
     }
@@ -3733,7 +3738,7 @@ int CCInit::Save()
     int version = CREDIT_CARD_VERSION;
 
     if (filepath[0] == '\0')
-        strcpy(filepath, MASTER_CC_INIT);
+        vt_safe_string::safe_copy(filepath, STRLONG, MASTER_CC_INIT);
 
     if (filepath[0] != '\0')
     {
@@ -3910,7 +3915,7 @@ CCSAFDetails::CCSAFDetails(const char* fullpath)
 {
     FnTrace("CCSAFDetails::CCSAFDetails()");
 
-    strcpy(filepath, fullpath);
+    vt_safe_string::safe_copy(filepath, STRLONG, fullpath);
     next = NULL;
     fore = NULL;
     current = NULL;
@@ -4167,7 +4172,7 @@ int CCSAFDetails::Load(const char* filename)
 
     if (filename != NULL)
     {
-        strcpy(filepath, filename);
+        vt_safe_string::safe_copy(filepath, STRLONG, filename);
         if (infile.Open(filepath, version) == 0)
             Read(infile);
     }
@@ -4183,7 +4188,7 @@ int CCSAFDetails::Save()
     int version = CREDIT_CARD_VERSION;
 
     if (filepath[0] == '\0')
-        strcpy(filepath, MASTER_CC_SAF);
+        vt_safe_string::safe_copy(filepath, STRLONG, MASTER_CC_SAF);
 
     if (filepath[0] != '\0')
     {

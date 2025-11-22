@@ -26,6 +26,7 @@
 #include "system.hh"
 #include "terminal.hh"
 #include "manager.hh"
+#include "safe_string_utils.hh"
 #include <cstdio>
 #include <cstring>
 #include <cctype>
@@ -362,8 +363,8 @@ POEntry::POEntry(const char* newkey, const char* newvalue)
 {
     if (strlen(newkey) < STRLONG && strlen(newvalue) < STRLONG)
     {
-        strcpy(key, newkey);
-        strcpy(value, newvalue);
+        vt_safe_string::safe_copy(key, STRLONG, newkey);
+        vt_safe_string::safe_copy(value, STRLONG, newvalue);
     }
     else
     {
@@ -505,7 +506,7 @@ int POFile::Find(char* dest, const char* str, int po_lang)
         {
             if (strcmp(str, po_entry->Key()) == 0)
             {
-                strcpy(dest, po_entry->Value());
+                vt_safe_string::safe_copy(dest, STRLONG, po_entry->Value());
                 po_entry = NULL;  // exit condition
                 retval = 1; 
             }
@@ -555,7 +556,7 @@ const char* POFileList::FindPOString(const char* str, int lang, int clear)
     if (clear)
         retstr[0] = '\0';
     else
-        strcpy(retstr, str);
+        vt_safe_string::safe_copy(retstr, STRLONG, str);
 
     po_file = FindPOFile(lang);
     if (po_file == NULL)
@@ -568,7 +569,7 @@ const char* POFileList::FindPOString(const char* str, int lang, int clear)
     if (po_file != NULL)
     {
         if (po_file->Find(buffer, str, lang))
-            strcpy(retstr, buffer);
+            vt_safe_string::safe_copy(retstr, STRLONG, buffer);
     }
 
     return retstr;
@@ -604,7 +605,7 @@ int Locale::Load(const char* file)
     genericChar str[256];
     if (version < 1 || version > 1)
     {
-        sprintf(str, "Unknown locale file version %d", version);
+        vt_safe_string::safe_format(str, 256, "Unknown locale file version %d", version);
         ReportError(str);
         return 1;
     }
@@ -787,7 +788,7 @@ const char* Locale::Translate(const char* str, int lang, int clear)
     }
     else
     {
-        strcpy(buffer, str);
+        vt_safe_string::safe_copy(buffer, STRLONG, str);
         return pofile_list.FindPOString(buffer, lang, clear);
     }
 
@@ -847,7 +848,7 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
 
     if (!timevar.IsSet())
     {
-        sprintf(str, "<NOT SET>");
+        vt_safe_string::safe_format(str, 256, "<NOT SET>");
         return str;
     }
 
@@ -859,9 +860,9 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
         // Show Day of Week
         int wd = timevar.WeekDay();
         if (format & TD_SHORT_DAY)
-            sprintf(str, "%s", Translate(ShortDayName[wd], lang));
+            vt_safe_string::safe_format(str, 256, "%s", Translate(ShortDayName[wd], lang));
         else
-            sprintf(str, "%s", Translate(DayName[wd], lang));
+            vt_safe_string::safe_format(str, 256, "%s", Translate(DayName[wd], lang));
 
         if (!(format & TD_NO_TIME) || !(format & TD_NO_DATE))
             strcat(str, ", ");
@@ -883,14 +884,14 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             }
 	
             if (format & TD_PAD)
-                sprintf(tempstr, "%2d/%2d", m, d);
+                vt_safe_string::safe_format(tempstr, 256, "%2d/%2d", m, d);
             else
-                sprintf(tempstr, "%d/%d", m, d);
-            strcat(str, tempstr);
+                vt_safe_string::safe_format(tempstr, 256, "%d/%d", m, d);
+            vt_safe_string::safe_concat(str, 256, tempstr);
             if (!(format & TD_NO_YEAR))
             {
-                sprintf(tempstr, "/%02d", y % 100);
-                strcat(str, tempstr);
+                vt_safe_string::safe_format(tempstr, 256, "/%02d", y % 100);
+                vt_safe_string::safe_concat(str, 256, tempstr);
             }
         }
         else
@@ -898,27 +899,27 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             if (format & TD_SHORT_MONTH)
             {
                 if (format & TD_MONTH_ONLY)
-                    sprintf(tempstr, "%s", Translate(ShortMonthName[m - 1], lang));
+                    vt_safe_string::safe_format(tempstr, 256, "%s", Translate(ShortMonthName[m - 1], lang));
                 else if (format & TD_PAD)
-                    sprintf(tempstr, "%s %2d", Translate(ShortMonthName[m - 1], lang), d);
+                    vt_safe_string::safe_format(tempstr, 256, "%s %2d", Translate(ShortMonthName[m - 1], lang), d);
                 else
-                    sprintf(tempstr, "%s %d", Translate(ShortMonthName[m - 1], lang), d);
+                    vt_safe_string::safe_format(tempstr, 256, "%s %d", Translate(ShortMonthName[m - 1], lang), d);
             }
             else
             {
                 if (format & TD_MONTH_ONLY)
-                    sprintf(tempstr, "%s", Translate(MonthName[m - 1], lang));
+                    vt_safe_string::safe_format(tempstr, 256, "%s", Translate(MonthName[m - 1], lang));
                 else if (format & TD_PAD)
-                    sprintf(tempstr, "%s %2d", Translate(MonthName[m - 1], lang), d);
+                    vt_safe_string::safe_format(tempstr, 256, "%s %2d", Translate(MonthName[m - 1], lang), d);
                 else
-                    sprintf(tempstr, "%s %d", Translate(MonthName[m - 1], lang), d);
+                    vt_safe_string::safe_format(tempstr, 256, "%s %d", Translate(MonthName[m - 1], lang), d);
             }
-            strcat(str, tempstr);
+            vt_safe_string::safe_concat(str, 256, tempstr);
 
             if (!(format & TD_NO_YEAR))
             {
-                sprintf(tempstr, ", %d", y);
-                strcat(str, tempstr);
+                vt_safe_string::safe_format(tempstr, 256, ", %d", y);
+                vt_safe_string::safe_concat(str, 256, tempstr);
             }
         }
 
@@ -944,16 +945,16 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             if (format & TD_SHORT_TIME)
 			{
 				if(format & TD_SECONDS)
-					sprintf(tempstr, "%2d:%02d:%2d%c", hr, minute, sec, AMorPM[pm][0]);
+					vt_safe_string::safe_format(tempstr, 256, "%2d:%02d:%2d%c", hr, minute, sec, AMorPM[pm][0]);
 				else
-					sprintf(tempstr, "%2d:%02d%c", hr, minute, AMorPM[pm][0]);
+					vt_safe_string::safe_format(tempstr, 256, "%2d:%02d%c", hr, minute, AMorPM[pm][0]);
 			}
             else
 			{
 				if(format & TD_SECONDS)
-					sprintf(tempstr, "%2d:%02d:%2d %s", hr, minute, sec, AMorPM[pm]);
+					vt_safe_string::safe_format(tempstr, 256, "%2d:%02d:%2d %s", hr, minute, sec, AMorPM[pm]);
 				else
-					sprintf(tempstr, "%2d:%02d %s", hr, minute, AMorPM[pm]);
+					vt_safe_string::safe_format(tempstr, 256, "%2d:%02d %s", hr, minute, AMorPM[pm]);
 			}
         }
         else
@@ -961,19 +962,19 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             if (format & TD_SHORT_TIME)
 			{
 				if(format & TD_SECONDS)
-					sprintf(tempstr, "%2d:%02d:%2d%c", hr, minute, sec, AMorPM[pm][0]);
+					vt_safe_string::safe_format(tempstr, 256, "%2d:%02d:%2d%c", hr, minute, sec, AMorPM[pm][0]);
 				else
-					sprintf(tempstr, "%d:%02d%c", hr, minute, AMorPM[pm][0]);
+					vt_safe_string::safe_format(tempstr, 256, "%d:%02d%c", hr, minute, AMorPM[pm][0]);
 			}
             else
 			{
 				if(format & TD_SECONDS)
-					sprintf(tempstr, "%2d:%02d:%2d %s", hr, minute, sec, AMorPM[pm]);
+					vt_safe_string::safe_format(tempstr, 256, "%2d:%02d:%2d %s", hr, minute, sec, AMorPM[pm]);
 				else
-					sprintf(tempstr, "%d:%02d %s", hr, minute, AMorPM[pm]);
+					vt_safe_string::safe_format(tempstr, 256, "%d:%02d %s", hr, minute, AMorPM[pm]);
 			}
         }
-        strcat(str, tempstr);
+        vt_safe_string::safe_concat(str, 256, tempstr);
     }
 
     return str;
@@ -996,9 +997,9 @@ char* Locale::Page(int current, int page_max, int lang, genericChar* str)
         page_max = 0;
 
     if (page_max <= 0)
-        sprintf(str, "%s %d", Translate("Page", lang), current);
+        vt_safe_string::safe_format(str, 32, "%s %d", Translate("Page", lang), current);
     else
-        sprintf(str, "%s %d %s %d", Translate("Page", lang), current,
+        vt_safe_string::safe_format(str, 32, "%s %d %s %d", Translate("Page", lang), current,
                 Translate("of", lang), page_max);
     return str;
 }

@@ -45,6 +45,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <vector>
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -200,7 +201,7 @@ int DialogEntry::Set(const char* val)
 int DialogEntry::Set(int val)
 {
     std::array<char, 32> str;
-    sprintf(str.data(), "%d", val);
+    vt_safe_string::safe_format(str.data(), str.size(), "%d", val);
     XmTextSetString(entry, str.data());
     return 0;
 }
@@ -208,7 +209,7 @@ int DialogEntry::Set(int val)
 int DialogEntry::Set(Flt val)
 {
     std::array<char, 32> str;
-    sprintf(str.data(), "%g", val);
+    vt_safe_string::safe_format(str.data(), str.size(), "%g", val);
     XmTextSetString(entry, str.data());
     return 0;
 }
@@ -220,7 +221,7 @@ const char* DialogEntry::Value()
 
 int DialogEntry::Get(const char* str)
 {
-    strcpy(XmTextGetString(entry), str);
+    XmTextSetString(entry, const_cast<char*>(str));
     return 0;
 }
 

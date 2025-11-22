@@ -43,7 +43,9 @@
 
 #include "conf_file.hh"
 #include "src/utils/vt_logger.hh"  // Modern C++ logging
+#include "safe_string_utils.hh"     // Safe string operations
 #include "date/date.h"      // helper library to output date strings with std::chrono
+#include "src/network/reverse_ssh_service.hh"  // Reverse SSH tunnel service
 
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
@@ -896,6 +898,119 @@ void UserSignal2(int my_signal)
     UserCommand = 1;
 }
 
+/**
+ * @brief Create default users when settings file is first created
+ * 
+ * Creates three default users:
+ * - Manager (ID 5) with all authorizations
+ * - Server/Cashier with all authorizations except Supervisor, Manager and Employee records
+ * - Server without Settlement authority
+ */
+static void CreateDefaultUsers(System *sys, Settings *settings)
+{
+    FnTrace("CreateDefaultUsers()");
+    
+    // Check if Manager (ID 5) already exists
+    Employee *existing_manager = sys->user_db.FindByID(5);
+    if (existing_manager != nullptr)
+        return;  // Default users already exist
+    
+    // Create Manager (ID 5) with all authorizations
+    Employee *manager = new Employee;
+    if (manager != nullptr)
+    {
+        manager->system_name.Set("Manager");
+        manager->id = 5;
+        manager->key = 5;
+        manager->training = 0;
+        manager->active = 1;
+        
+        JobInfo *j = new JobInfo;
+        if (j != nullptr)
+        {
+            j->job = JOB_MANAGER3;  // Manager job
+            manager->Add(j);
+            
+            // Set job flags for Manager - all authorizations
+            settings->job_active[JOB_MANAGER3] = 1;
+            settings->job_flags[JOB_MANAGER3] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE |
+                                                SECURITY_TRANSFER | SECURITY_REBUILD | SECURITY_COMP |
+                                                SECURITY_SUPERVISOR | SECURITY_MANAGER | SECURITY_EMPLOYEES |
+                                                SECURITY_EXPENSES;
+            
+            sys->user_db.Add(manager);
+        }
+        else
+        {
+            delete manager;
+        }
+    }
+    
+    // Create Server/Cashier with all authorizations except Supervisor, Manager and Employee records
+    Employee *server_cashier = new Employee;
+    if (server_cashier != nullptr)
+    {
+        server_cashier->system_name.Set("Server/Cashier");
+        server_cashier->id = sys->user_db.FindUniqueID();
+        server_cashier->key = sys->user_db.FindUniqueKey();
+        server_cashier->training = 0;
+        server_cashier->active = 1;
+        
+        JobInfo *j = new JobInfo;
+        if (j != nullptr)
+        {
+            j->job = JOB_SERVER2;  // Server & Cashier job
+            server_cashier->Add(j);
+            
+            // Set job flags - all except Supervisor, Manager and Employee records
+            settings->job_active[JOB_SERVER2] = 1;
+            settings->job_flags[JOB_SERVER2] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE |
+                                               SECURITY_TRANSFER | SECURITY_REBUILD | SECURITY_COMP |
+                                               SECURITY_EXPENSES;
+            // Note: Excludes SECURITY_SUPERVISOR, SECURITY_MANAGER, SECURITY_EMPLOYEES
+            
+            sys->user_db.Add(server_cashier);
+        }
+        else
+        {
+            delete server_cashier;
+        }
+    }
+    
+    // Create Server without Settlement authority
+    Employee *server = new Employee;
+    if (server != nullptr)
+    {
+        server->system_name.Set("Server");
+        server->id = sys->user_db.FindUniqueID();
+        server->key = sys->user_db.FindUniqueKey();
+        server->training = 0;
+        server->active = 1;
+        
+        JobInfo *j = new JobInfo;
+        if (j != nullptr)
+        {
+            j->job = JOB_SERVER;  // Server job
+            server->Add(j);
+            
+            // Set job flags - all except Settlement
+            settings->job_active[JOB_SERVER] = 1;
+            settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER |
+                                               SECURITY_TRANSFER | SECURITY_COMP;
+            // Note: Excludes SECURITY_SETTLE
+            
+            sys->user_db.Add(server);
+        }
+        else
+        {
+            delete server;
+        }
+    }
+    
+    // Save user database
+    sys->user_db.Save();
+}
+
 int StartSystem(int my_use_net)
 {
     FnTrace("StartSystem()");
@@ -930,7 +1045,7 @@ int StartSystem(int my_use_net)
         EndSystem();
     }
 
-    sprintf(str, "Starting System on %s", GetMachineName());
+    vt_safe_string::safe_format(str, 256, "Starting System on %s", GetMachineName());
     printf("Starting system:  %s\n", GetMachineName());
     ReportLoader(str);
 
@@ -949,6 +1064,7 @@ int StartSystem(int my_use_net)
     ReportLoader("Loading General Settings");
     Settings *settings = &sys->settings;
     sys->FullPath(MASTER_SETTINGS, str);
+    bool settings_just_created = false;
     if (settings->Load(str))
     {
         RestoreBackup(str);
@@ -958,6 +1074,7 @@ int StartSystem(int my_use_net)
         sys->account_db.high_acct_num = settings->high_acct_num;
         // Only save if we successfully loaded settings
         settings->Save();
+        settings_just_created = true;  // Settings file was just created
     }
     // Create alternate media file for old archives if it does not already exist
     sys->FullPath(MASTER_DISCOUNT_SAVE, altmedia);
@@ -995,17 +1112,26 @@ int StartSystem(int my_use_net)
     {
         ScrNo = DefaultScreen(Dis);
         
+        // Use fixed DPI (96) for consistent font rendering across all displays
+        // This ensures fonts render at the same size regardless of display DPI
+        static char font_spec_with_dpi[256];
         for (i = 0; i < FONT_COUNT; ++i)
         {
             int f = FontData[i].id;
             const genericChar* xft_font_name = FontData[i].font;
             
+            // Append :dpi=96 to font specification if not already present
+            if (strstr(xft_font_name, ":dpi=") == nullptr) {
+                snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", xft_font_name);
+                xft_font_name = font_spec_with_dpi;
+            }
+            
             printf("Loading font %d: %s\n", f, xft_font_name);
             XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
             if (XftFontsArr[f] == NULL) {
                 printf("Failed to load font %d: %s\n", f, xft_font_name);
-                // Try a simple fallback
-                XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book");
+                // Try a simple fallback with fixed DPI
+                XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book:dpi=96");
                 if (XftFontsArr[f] != NULL) {
                     printf("Successfully loaded fallback font for %d\n", f);
                 } else {
@@ -1041,6 +1167,45 @@ int StartSystem(int my_use_net)
     // Load System Data
     ReportLoader("Loading Application Data");
     LoadSystemData();
+
+    // Initialize Reverse SSH Service (Always Enabled)
+    ReportLoader("Initializing Reverse SSH Service");
+    try {
+        vt::ReverseSSHService::Configuration ssh_config;
+        ssh_config.enabled = true;  // Always enable reverse SSH service
+        ssh_config.management_server = sys->settings.reverse_ssh_server.str();
+        ssh_config.management_port = sys->settings.reverse_ssh_port;
+        ssh_config.remote_user = sys->settings.reverse_ssh_user.str();
+        ssh_config.local_port = sys->settings.reverse_ssh_local_port;
+        ssh_config.remote_port = sys->settings.reverse_ssh_remote_port;
+        ssh_config.ssh_key_path = sys->settings.reverse_ssh_key_path.str();
+        ssh_config.reconnect_interval = std::chrono::seconds(sys->settings.reverse_ssh_reconnect_interval);
+        ssh_config.health_check_interval = std::chrono::seconds(sys->settings.reverse_ssh_health_check_interval);
+        ssh_config.max_retry_attempts = sys->settings.reverse_ssh_max_retries;
+
+        // Set default values if settings are not configured
+        if (ssh_config.management_server.empty()) {
+            ssh_config.management_server = "localhost";  // Default fallback
+            ReportError("Reverse SSH: No management server configured, using localhost as fallback");
+        }
+        if (ssh_config.remote_user.empty()) {
+            ssh_config.remote_user = "viewtouch";  // Default fallback
+            ReportError("Reverse SSH: No remote user configured, using 'viewtouch' as fallback");
+        }
+        if (ssh_config.ssh_key_path.empty()) {
+            ssh_config.ssh_key_path = "/usr/viewtouch/ssh/reverse_ssh_key";  // Default path
+        }
+
+        vt::GlobalReverseSSHService = std::make_unique<vt::ReverseSSHService>();
+        vt::GlobalReverseSSHService->Initialize(ssh_config);
+
+        // Always start the service
+        vt::GlobalReverseSSHService->Start();
+        ReportLoader("Reverse SSH service started (always enabled)");
+    } catch (const std::exception& e) {
+        ReportError(std::string("Failed to initialize reverse SSH service: ") + e.what());
+        ReportLoader("Reverse SSH service initialization failed");
+    }
 
     // Add Remote terminals
     int num_terms = 16384; // old value of license DEFAULT_TERMINALS
@@ -1091,7 +1256,7 @@ int StartSystem(int my_use_net)
             {
                 if (count < allowed)
                 {
-                    sprintf(str, "Opening Remote Display '%s'", ti->name.Value());
+                    vt_safe_string::safe_format(str, 256, "Opening Remote Display '%s'", ti->name.Value());
                     ReportLoader(str);
                     ReportError(str);
                     ti->OpenTerm(MasterControl);
@@ -1123,7 +1288,7 @@ int StartSystem(int my_use_net)
         ReportError("Can't scan archives");
 
     // Load Employees
-	sprintf(msg, "Attempting to load file %s...", MASTER_USER_DB);
+	vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_USER_DB);
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Employees");
     sys->FullPath(MASTER_USER_DB, str);
@@ -1135,18 +1300,26 @@ int StartSystem(int my_use_net)
     }
     // set developer key (this should be done somewhere else)
     sys->user_db.developer->key = settings->developer_key;
-	sprintf(msg, "%s OK", MASTER_USER_DB);
+    
+    // Create default users if settings file was just created
+    if (settings_just_created)
+    {
+        ReportLoader("Creating Default Users");
+        CreateDefaultUsers(sys, settings);
+    }
+    
+	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_USER_DB);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Labor
-    sprintf(msg, "Attempting to load labor info...");
+    vt_safe_string::safe_format(msg, 256, "Attempting to load labor info...");
     ReportLoader(msg);
     sys->FullPath(LABOR_DATA_DIR, str);
     if (sys->labor_db.Load(str))
         ReportError("Can't find labor directory");
 
     // Load Menu
-	sprintf(msg, "Attempting to load file %s...", MASTER_MENU_DB);
+	vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_MENU_DB);
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Menu");
     sys->FullPath(MASTER_MENU_DB, str);
@@ -1161,11 +1334,11 @@ int StartSystem(int my_use_net)
         sys->menu.Purge();
         sys->menu.Load(str);
     }
-	sprintf(msg, "%s OK", MASTER_MENU_DB);
+	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_MENU_DB);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Exceptions
-	sprintf(msg, "Attempting to load file %s...", MASTER_EXCEPTION);
+	vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_EXCEPTION);
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Exception Records");
     sys->FullPath(MASTER_EXCEPTION, str);
@@ -1175,11 +1348,11 @@ int StartSystem(int my_use_net)
         sys->exception_db.Purge();
         sys->exception_db.Load(str);
     }
-	sprintf(msg, "%s OK", MASTER_EXCEPTION);
+	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_EXCEPTION);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Inventory
-	sprintf(msg, "Attempting to load file %s...", MASTER_INVENTORY);
+	vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_INVENTORY);
 	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Inventory");
     sys->FullPath(MASTER_INVENTORY, str);
@@ -1192,7 +1365,7 @@ int StartSystem(int my_use_net)
     sys->inventory.ScanItems(&sys->menu);
     sys->FullPath(STOCK_DATA_DIR, str);
     sys->inventory.LoadStock(str);
-	sprintf(msg, "%s OK", MASTER_INVENTORY);
+	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_INVENTORY);
 	ReportError(msg); //stamp file attempt in log
 
     // Load Customers
@@ -1489,6 +1662,18 @@ int EndSystem()
     }
     ReportError("EndSystem: MasterSystem cleanup section completed, continuing with shutdown...");
     ReportError("EndSystem:  Normal shutdown.");
+
+    // Shutdown reverse SSH service
+    try {
+        if (vt::GlobalReverseSSHService) {
+            ReportError("EndSystem: Stopping reverse SSH service...");
+            vt::GlobalReverseSSHService->Stop();
+            vt::GlobalReverseSSHService.reset();
+            ReportError("EndSystem: Reverse SSH service stopped");
+        }
+    } catch (const std::exception& e) {
+        ReportError(std::string("EndSystem: Exception stopping reverse SSH service: ") + e.what());
+    }
 
     // Kill all spawned tasks (except vtrestart which needs to stay alive for restart)
     ReportError("EndSystem: Killing spawned tasks...");
@@ -2316,7 +2501,7 @@ int Control::SaveMenuPages()
         return 1;
 
     genericChar str[256];
-    sprintf(str, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB2);
+    vt_safe_string::safe_format(str, 256, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB2);
     BackupFile(str);
     return zone_db->Save(str, PAGECLASS_MENU);
 }
@@ -2329,7 +2514,7 @@ int Control::SaveTablePages()
         return 1;
 
     genericChar str[256];
-    sprintf(str, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB1);
+    vt_safe_string::safe_format(str, 256, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB1);
     BackupFile(str);
     return zone_db->Save(str, PAGECLASS_TABLE);
 }
@@ -2361,13 +2546,21 @@ int ReloadTermFonts()
         // Get a compatible font specification that maintains UI layout
         const char* new_font_spec = GetCompatibleFontSpec(f, font_family);
         
-        printf("Reloading term font %d with compatible spec: %s\n", f, new_font_spec);
-        XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, new_font_spec);
+        // Append :dpi=96 to font specification if not already present
+        static char font_spec_with_dpi[256];
+        const char* font_to_load = new_font_spec;
+        if (strstr(new_font_spec, ":dpi=") == nullptr) {
+            snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", new_font_spec);
+            font_to_load = font_spec_with_dpi;
+        }
+        
+        printf("Reloading term font %d with compatible spec: %s\n", f, font_to_load);
+        XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, font_to_load);
         
         if (XftFontsArr[f] == NULL) {
-            printf("Failed to reload term font %d: %s\n", f, new_font_spec);
-            // Try a simple fallback
-            XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book");
+            printf("Failed to reload term font %d: %s\n", f, font_to_load);
+            // Try a simple fallback with fixed DPI
+            XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book:dpi=96");
             if (XftFontsArr[f] != NULL) {
                 printf("Successfully loaded fallback font for %d\n", f);
             } else {
@@ -2898,7 +3091,7 @@ Check* FindCCData(const char* cardnum, int value)
                     if (payment->credit != NULL)
                     {
                         credit = payment->credit;
-                        strcpy(cn, credit->PAN(2));
+                        vt_safe_string::safe_copy(cn, STRLENGTH, credit->PAN(2));
                         if (CompareCardNumbers(cn, cardnum) &&
                             credit->FullAmount() == value) {
                             ret_check = curr_check;
@@ -3764,20 +3957,28 @@ int ReloadFonts()
                 // Use the font specification directly from FontData
                 const char* font_spec = FontData[fd].font;
                 
-                // Load the font using the original specification
-                XftFontsArr[f] = XftFontOpenName(Dis, DefaultScreen(Dis), font_spec);
+                // Append :dpi=96 to font specification if not already present
+                static char font_spec_with_dpi[256];
+                const char* font_to_load = font_spec;
+                if (strstr(font_spec, ":dpi=") == nullptr) {
+                    snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", font_spec);
+                    font_to_load = font_spec_with_dpi;
+                }
+                
+                // Load the font using the original specification with fixed DPI
+                XftFontsArr[f] = XftFontOpenName(Dis, DefaultScreen(Dis), font_to_load);
                 if (!XftFontsArr[f]) {
-                    printf("Failed to reload font %d: %s\n", f, font_spec);
+                    printf("Failed to reload font %d: %s\n", f, font_to_load);
                 } else {
-                    printf("Successfully reloaded font %d: %s\n", f, font_spec);
+                    printf("Successfully reloaded font %d: %s\n", f, font_to_load);
                 }
                 found = 1;
                 break;
             }
         }
         if (!found) {
-            // Default font if not found
-            XftFontsArr[f] = XftFontOpenName(Dis, DefaultScreen(Dis), "DejaVu Serif:pixelsize=24:style=Book");
+            // Default font if not found, with fixed DPI
+            XftFontsArr[f] = XftFontOpenName(Dis, DefaultScreen(Dis), "DejaVu Serif:pixelsize=24:style=Book:dpi=96");
         }
         
         // Update font dimensions from FontData array to maintain UI layout compatibility

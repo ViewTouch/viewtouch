@@ -29,6 +29,7 @@
 #include "labels.hh"
 #include "archive.hh"
 #include "manager.hh"
+#include "safe_string_utils.hh"
 #include <string.h>
 extern int AdjustPeriod(TimeInfo &ref, int period, int adjust);
 
@@ -128,22 +129,22 @@ RenderResult LaborZone::Render(Terminal *term, int update_flag)
     genericChar str[256], str2[256];
     int c = color[0];
     if (day_view)
-        strcpy(str2, term->Translate("Business Day Time Clock View"));
+        vt_safe_string::safe_copy(str2, 256, term->Translate("Business Day Time Clock View"));
     else
-        strcpy(str2, term->Translate("Labor Period Time Clock View"));
+        vt_safe_string::safe_copy(str2, 256, term->Translate("Labor Period Time Clock View"));
 
     if (term->server)
-        sprintf(str, "%s for %s", str2, term->server->system_name.Value());
+        vt_safe_string::safe_format(str, 256, "%s for %s", str2, term->server->system_name.Value());
     else
-        sprintf(str, "%s for Everyone", str2);
+        vt_safe_string::safe_format(str, 256, "%s for Everyone", str2);
     TextC(term, 0, str, c);
 
     genericChar tm1[32];
     if (start.IsSet())
         term->TimeDate(tm1, start, TD_SHORT_DAY | TD_SHORT_DATE | TD_SHORT_TIME);
     else
-        strcpy(tm1, term->Translate("System Start"));
-    sprintf(str, "%s  to  %s", tm1,
+        vt_safe_string::safe_copy(tm1, 32, term->Translate("System Start"));
+    vt_safe_string::safe_format(str, 256, "%s  to  %s", tm1,
             term->TimeDate(end, TD_SHORT_DAY | TD_SHORT_DATE | TD_SHORT_TIME));
     TextC(term, 1, str, c);
 

@@ -34,6 +34,7 @@
 #include "main/data/settings_enums.hh"
 #include "src/utils/vt_enum_utils.hh"
 #include "src/utils/vt_logger.hh"
+#include "safe_string_utils.hh"
 
 #include <iostream>
 #include <iomanip>
@@ -467,7 +468,7 @@ SignalResult SwitchZone::Touch(Terminal *term, int tx, int ty)
 
 	settings->changed = 1;
 	char str[16];
-	sprintf(str, "%d", type);
+	vt_safe_string::safe_format(str, 16, "%d", type);
 	if (no_update)
 		term->Update(UPDATE_SETTINGS, str);
 	else
@@ -2608,7 +2609,7 @@ TimeSettingsZone::TimeSettingsZone()
     genericChar str[256];
     for (i = 0; i < MAX_SHIFTS; ++i)
     {
-        sprintf(str, "Start Slice %d at", i+1);
+        vt_safe_string::safe_format(str, 256, "Start Slice %d at", i+1);
         AddTimeField(str, 1, 0);
     }
     AddNewLine(6);
@@ -2621,7 +2622,7 @@ TimeSettingsZone::TimeSettingsZone()
     m = 0;
     while (MealStartName[m])
     {
-        sprintf(str, "%s Start", MealStartName[m++]);
+        vt_safe_string::safe_format(str, 256, "%s Start", MealStartName[m++]);
         AddTimeField(str, 1, 0);
     }
 
@@ -2674,14 +2675,14 @@ RenderResult TimeSettingsZone::Render(Terminal *term, int update_flag)
         {
             lx = bx + 8 + (((bw - 16) * shift_start[i]) / 1440);
             term->RenderVLine(lx, by + 3, 31, COLOR_DK_BLUE, 3);
-            sprintf(str, "%d", i + 1);
+            vt_safe_string::safe_format(str, 256, "%d", i + 1);
             term->RenderText(str, lx, by + (bh / 2) - font_height,
                              COLOR_DK_BLUE, FONT_TIMES_34, ALIGN_CENTER);
         }
     int shift = settings->ShiftNumber(SystemTime);
     if (shift >= 0)
     {
-        sprintf(str, "%s: %d", term->Translate("Current Slice"), shift + 1);
+        vt_safe_string::safe_format(str, 256, "%s: %d", term->Translate("Current Slice"), shift + 1);
         TextPosL(term, 10, 8, str, COLOR_DK_BLUE);
     }
 
@@ -2705,7 +2706,7 @@ RenderResult TimeSettingsZone::Render(Terminal *term, int update_flag)
     if (meal >= 0)
     {
 		const char* strMealLabel = FindStringByValue(meal, IndexValue, IndexName, UnknownStr);
-        sprintf(str, "%s: %s", term->Translate("Current Index"), term->Translate(strMealLabel));
+        vt_safe_string::safe_format(str, 256, "%s: %s", term->Translate("Current Index"), term->Translate(strMealLabel));
         TextPosR(term, size_x-10, 8, str, COLOR_DK_GREEN);
     }
     return RENDER_OKAY;

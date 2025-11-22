@@ -31,6 +31,7 @@
 #include <string.h>
 #include <string>
 #include <map>
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -585,7 +586,7 @@ int System::SalesMixReport(Terminal *t, const TimeInfo &start_time, const TimeIn
                 r->NewLine();
                 r->Mode(PRINT_BOLD | PRINT_BLUE);
                 str2 = FindStringByValue(i, FamilyValue, FamilyName, UnknownStr);
-                sprintf(str, "%s Total", MasterLocale->Translate(str2));
+                vt_safe_string::safe_format(str, STRLENGTH, "%s Total", MasterLocale->Translate(str2));
                 r->TextPosL(0, str, COLOR_DK_BLUE);
                 if (fi.count)
                     r->NumberPosR(COUNT_POS, fi.count, COLOR_DK_BLUE);
@@ -596,7 +597,7 @@ int System::SalesMixReport(Terminal *t, const TimeInfo &start_time, const TimeIn
                 r->Mode(0);
                 if (total_cost > 0)
                 {
-                    sprintf(str, "(%.1f%%)", ((Flt) fi.cost / (Flt) total_cost) * 100.0);
+                    vt_safe_string::safe_format(str, STRLENGTH, "(%.1f%%)", ((Flt) fi.cost / (Flt) total_cost) * 100.0);
                     r->TextPosR(0, str);
                     r->NewLine();
                 }

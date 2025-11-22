@@ -36,6 +36,7 @@
 #include <map>
 #include <string.h>
 #include <cstdio>
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -929,9 +930,9 @@ int LogoutZone::RenderPaymentEntry(Terminal *term, int line)
 
     TextL(term, line, " Input Amount:", color[0]);
     if (dollars <= 0)
-        sprintf(str, ".%02d", cents);
+        vt_safe_string::safe_format(str, 128, ".%02d", cents);
     else
-        sprintf(str, "%d.%02d", dollars, cents);
+        vt_safe_string::safe_format(str, 128, "%d.%02d", dollars, cents);
 
     Entry(term, 16, line, 7);
     TextPosR(term, 23, line, str, COLOR_YELLOW);
