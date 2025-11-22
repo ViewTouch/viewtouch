@@ -1748,13 +1748,11 @@ int Settings::Load(const char* file)
             video_target[i] = family_printer[i];
         }
         
-        // Ensure family_printer doesn't get reset to PRINTER_NONE
-        // If it was loaded as PRINTER_NONE, change it to PRINTER_DEFAULT
-        if (family_printer[i] == PRINTER_NONE)
-        {
-            family_printer[i] = PRINTER_DEFAULT;
-            video_target[i] = PRINTER_DEFAULT;
-        }
+        // Note: PRINTER_NONE (99) is a valid value that users can set
+        // We should preserve it for both family_printer and video_target
+        // Only convert to PRINTER_DEFAULT if it's an invalid value (not in valid range)
+        // Valid printer IDs are 0-98 (PRINTER_DEFAULT to PRINTER_REMOTEORDER) and 99 (PRINTER_NONE)
+        // So we don't need to convert anything - just preserve what was saved
     }
 
     if (version <= 26)

@@ -5723,10 +5723,12 @@ int Order::FindPrinterID(Settings *settings)
         pid = mi->printer_id;
     else
     {
-        int idx = CompareList(mi->family, FamilyValue);
-        if (idx < 0)
+        // Fixed: use family ID directly to index family_printer array
+        // The family_printer array is indexed by family ID values, not by position in FamilyValue array
+        if (mi->family >= 0 && mi->family < MAX_FAMILIES)
+            pid = settings->family_printer[mi->family];
+        else
             return PRINTER_KITCHEN1;
-        pid = settings->family_printer[idx];
     }
 
     if (settings->use_item_target)
