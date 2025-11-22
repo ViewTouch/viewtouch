@@ -842,6 +842,9 @@ int shadow_offset_y = 2;  // Default shadow offset
 int shadow_blur_radius = 1;  // Default blur radius
 int silent_mode   = 0;
 
+// Performance optimization: Color cache to avoid expensive XQueryColor calls
+ColorCache g_color_cache;
+
 
 /*********************************************************************
  * Socket Communication Functions
@@ -3489,6 +3492,37 @@ int StopUpdates()
     return 0;
 }
 
+// Detect if running on Raspberry Pi or ARM architecture for performance optimizations
+static bool IsRaspberryPi()
+{
+    static bool checked = false;
+    static bool is_pi = false;
+    
+    if (!checked) {
+        // Check /proc/cpuinfo for Raspberry Pi
+        FILE* cpuinfo = fopen("/proc/cpuinfo", "r");
+        if (cpuinfo) {
+            char line[256];
+            while (fgets(line, sizeof(line), cpuinfo)) {
+                if (strstr(line, "Raspberry Pi") || strstr(line, "BCM") || strstr(line, "Model")) {
+                    is_pi = true;
+                    break;
+                }
+            }
+            fclose(cpuinfo);
+        }
+        
+        // Also check architecture
+        #if defined(__aarch64__) || defined(__arm__)
+        is_pi = true;  // Assume Pi for ARM architectures
+        #endif
+        
+        checked = true;
+    }
+    
+    return is_pi;
+}
+
 int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_hardware,
              int set_width, int set_height)
 {
@@ -3539,6 +3573,9 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     RootWin    = RootWindow(Dis, ScrNo);
 
     // Load Fonts
+    // Use fixed DPI (96) for consistent font rendering across all displays
+    // This ensures fonts render at the same size regardless of display DPI
+    static char font_spec_with_dpi[256];
     for (const auto& fontData : FontData)
     {
         int f = fontData.id;
@@ -3548,14 +3585,19 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         if (FontInfo[f] == nullptr)
             throw FontException("Failed to load font: " + std::string(fontData.font));
         
-        // Load Xft font using the correct specification
+        // Load Xft font with fixed DPI (96) for consistency across displays
+        // Append :dpi=96 to font specification if not already present
         const char* xft_font_name = fontData.font;
+        if (strstr(xft_font_name, ":dpi=") == nullptr) {
+            snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", xft_font_name);
+            xft_font_name = font_spec_with_dpi;
+        }
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
         
-        // If Xft font loading failed, try a simple fallback
+        // If Xft font loading failed, try a simple fallback with fixed DPI
         if (XftFontsArr[f] == nullptr) {
             printf("Failed to load Xft font: %s, trying fallback\n", xft_font_name);
-            XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book");
+            XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book:dpi=96");
             if (XftFontsArr[f] == nullptr) {
                 printf("Failed to load fallback font too!\n");
             }
@@ -3645,6 +3687,18 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
     ColorBlack = ColorTextT[0];
     ColorWhite = ColorTextT[1];
+    
+    // Initialize color cache for performance optimization
+    // This avoids expensive XQueryColor calls for every text render
+    g_color_cache.initialized = false;  // Will be initialized on first use
+    
+    // Performance optimization: Disable expensive rendering features on Raspberry Pi
+    if (IsRaspberryPi()) {
+        use_drop_shadows = 0;  // Disable drop shadows on Pi for better performance
+        use_embossed_text = 0;  // Disable embossed text on Pi
+        shadow_blur_radius = 0;  // Disable blur on Pi
+        fprintf(stderr, "Raspberry Pi detected: Disabling expensive rendering features for better performance\n");
+    }
 
     Gfx       = XCreateGC(Dis, MainWin, 0, NULL);
     ShadowPix = XmuCreateStippledPixmap(ScrPtr, 0, 1, 1);
@@ -4204,10 +4258,16 @@ void TerminalReloadFonts()
             XftFontsArr[f] = nullptr;
         }
     }
-    // Reload fonts
+    // Reload fonts with fixed DPI (96) for consistency
+    static char font_spec_with_dpi[256];
     for (const auto& fontData : FontData) {
         int f = fontData.id;
         const char* xft_font_name = fontData.font;
+        // Append :dpi=96 to font specification if not already present
+        if (strstr(xft_font_name, ":dpi=") == nullptr) {
+            snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", xft_font_name);
+            xft_font_name = font_spec_with_dpi;
+        }
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
         if (XftFontsArr[f]) {
             FontHeight[f] = XftFontsArr[f]->ascent + XftFontsArr[f]->descent;

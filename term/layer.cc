@@ -520,16 +520,9 @@ int Layer::Text(const char* string, int len, int tx, int ty, int c, int font,
     tx += page_x;
     ty += page_y + GetFontBaseline(f);
 
-    // Set up XRenderColor for text color
-    XRenderColor render_color = {0};
-    // Convert X11 pixel value to RGB values
-    XColor xcolor;
-    xcolor.pixel = ColorTextT[c];
-    XQueryColor(dis, DefaultColormap(dis, DefaultScreen(dis)), &xcolor);
-    render_color.red   = xcolor.red;
-    render_color.green = xcolor.green;
-    render_color.blue  = xcolor.blue;
-    render_color.alpha = 0xFFFF;
+    // Set up XRenderColor for text color - use cached version for performance
+    int screen_no = DefaultScreen(dis);
+    XRenderColor render_color = g_color_cache.GetColor(dis, screen_no, c);
 
     // Draw text with Xft using enhanced rendering options
     if (embossed)
@@ -2234,7 +2227,10 @@ int LayerList::RubberBandOff()
     UpdateArea(rx, ry, 1, rh + 1);
     UpdateArea(rx + rw, ry, 1, rh + 1);
     UpdateArea(rx, ry + rh, rw + 1, 1);
-    XFlush(dis);
+    // Performance optimization: Batch XFlush calls - only flush when necessary
+    // XFlush forces synchronization with X server which is expensive
+    // Commented out to reduce latency - X will auto-flush when buffer is full
+    // XFlush(dis);
     select_on = 0;
     return 0;
 }
@@ -2270,7 +2266,10 @@ int LayerList::RubberBandUpdate(int ux, int uy)
     rh = Abs(select_y1 - select_y2);
     XSetForeground(dis, gfx, ColorBlack);
     XDrawRectangle(dis, win, gfx, rx, ry, rw, rh);
-    XFlush(dis);
+    // Performance optimization: Batch XFlush calls - only flush when necessary
+    // XFlush forces synchronization with X server which is expensive
+    // Commented out to reduce latency - X will auto-flush when buffer is full
+    // XFlush(dis);
     return 0;
 }
 
@@ -2411,7 +2410,10 @@ int LayerList::DragLayer(int x, int y)
                 UpdateArea(r.x, r.y + r.h + dy, r.w, -dy);
         }
     }
-    XFlush(dis);
+    // Performance optimization: Batch XFlush calls - only flush when necessary
+    // XFlush forces synchronization with X server which is expensive
+    // Commented out to reduce latency - X will auto-flush when buffer is full
+    // XFlush(dis);
     drag_x = x;
     drag_y = y;
     return 0;

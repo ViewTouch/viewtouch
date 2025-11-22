@@ -63,6 +63,48 @@ extern int   shadow_offset_y;  // shadow offset in Y direction
 extern int   shadow_blur_radius;  // shadow blur radius
 extern int   silent_mode;        // to disable clone input
 
+// Performance optimization: Cache for XRenderColor lookups
+// Avoids expensive XQueryColor calls for every text render
+struct ColorCache {
+    std::array<XRenderColor, TEXT_COLORS> cached_colors;
+    bool initialized;
+    
+    ColorCache() : initialized(false) {
+        for (auto& c : cached_colors) {
+            c.red = c.green = c.blue = c.alpha = 0;
+        }
+    }
+    
+    XRenderColor GetColor(Display* dis, int screen_no, int color_index) {
+        if (!initialized || color_index < 0 || color_index >= TEXT_COLORS) {
+            // Initialize cache on first use
+            if (!initialized) {
+                XColor xcolor;
+                Colormap cmap = DefaultColormap(dis, screen_no);
+                for (int i = 0; i < TEXT_COLORS; ++i) {
+                    xcolor.pixel = ColorTextT[i];
+                    XQueryColor(dis, cmap, &xcolor);
+                    cached_colors[i].red = xcolor.red;
+                    cached_colors[i].green = xcolor.green;
+                    cached_colors[i].blue = xcolor.blue;
+                    cached_colors[i].alpha = 0xFFFF;
+                }
+                initialized = true;
+            }
+        }
+        
+        if (color_index >= 0 && color_index < TEXT_COLORS) {
+            return cached_colors[color_index];
+        }
+        
+        // Fallback for invalid index
+        XRenderColor fallback = {0, 0, 0, 0xFFFF};
+        return fallback;
+    }
+};
+
+extern ColorCache g_color_cache;
+
 
 /*********************************************************************
  * Translations Classes

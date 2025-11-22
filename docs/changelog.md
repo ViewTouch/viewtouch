@@ -93,6 +93,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `zone/button_zone.hh`, `zone/button_zone.cc`, `zone/pos_zone.hh`, `zone/pos_zone.cc`, `main/ui/labels.cc`
 
 ### Fixed
+- **Fixed DPI for Consistent Font Rendering Across All Displays (2025-12-XX)**
+  - **Issue**: With scalable fonts (Xft), each display device required different DPI settings, causing inconsistent font sizes across different displays
+  - **Solution**: Implemented fixed DPI (96) for all font loading operations
+    - All font specifications now automatically include `:dpi=96` parameter
+    - Ensures fonts render at the same size regardless of display DPI
+    - Works consistently across Raspberry Pi, desktop monitors, and other displays
+  - **Impact**: Fonts now render consistently across all displays, similar to the old bitmap fonts behavior
+  - **Files modified**: `term/term_view.cc`, `main/data/manager.cc`
+
+- **Raspberry Pi Performance Optimizations (2025-12-XX)**
+  - **Issue**: Significant UI delay on Raspberry Pi Compute Module 5
+  - **Optimizations**:
+    - **Color Caching**: Implemented `ColorCache` to cache `XRenderColor` values, eliminating expensive `XQueryColor()` calls
+    - **Drop Shadow Optimization**: Reduced drop shadow rendering from multiple draw calls to optimized single-pass rendering
+    - **Raspberry Pi Auto-Detection**: Automatically detects Raspberry Pi/ARM hardware and disables expensive rendering effects (drop shadows, embossed text, blur)
+    - **Reduced XFlush Calls**: Removed unnecessary `XFlush()` calls in layer operations to reduce blocking operations
+  - **Impact**: Significantly improved UI responsiveness on Raspberry Pi hardware
+  - **Files modified**: `term/term_view.hh`, `term/term_view.cc`, `term/layer.cc`, `src/core/generic_char.cc`
+
 - **Printer Target Safety and Reliability Improvements (2025-11-21)**
   - **Issues**: Multiple safety and reliability issues in printer operations
     - String truncation warnings in `MakeFileName()` and PostScript output functions

@@ -1112,17 +1112,26 @@ int StartSystem(int my_use_net)
     {
         ScrNo = DefaultScreen(Dis);
         
+        // Use fixed DPI (96) for consistent font rendering across all displays
+        // This ensures fonts render at the same size regardless of display DPI
+        static char font_spec_with_dpi[256];
         for (i = 0; i < FONT_COUNT; ++i)
         {
             int f = FontData[i].id;
             const genericChar* xft_font_name = FontData[i].font;
             
+            // Append :dpi=96 to font specification if not already present
+            if (strstr(xft_font_name, ":dpi=") == nullptr) {
+                snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", xft_font_name);
+                xft_font_name = font_spec_with_dpi;
+            }
+            
             printf("Loading font %d: %s\n", f, xft_font_name);
             XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
             if (XftFontsArr[f] == NULL) {
                 printf("Failed to load font %d: %s\n", f, xft_font_name);
-                // Try a simple fallback
-                XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book");
+                // Try a simple fallback with fixed DPI
+                XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book:dpi=96");
                 if (XftFontsArr[f] != NULL) {
                     printf("Successfully loaded fallback font for %d\n", f);
                 } else {
@@ -2537,13 +2546,21 @@ int ReloadTermFonts()
         // Get a compatible font specification that maintains UI layout
         const char* new_font_spec = GetCompatibleFontSpec(f, font_family);
         
-        printf("Reloading term font %d with compatible spec: %s\n", f, new_font_spec);
-        XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, new_font_spec);
+        // Append :dpi=96 to font specification if not already present
+        static char font_spec_with_dpi[256];
+        const char* font_to_load = new_font_spec;
+        if (strstr(new_font_spec, ":dpi=") == nullptr) {
+            snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", new_font_spec);
+            font_to_load = font_spec_with_dpi;
+        }
+        
+        printf("Reloading term font %d with compatible spec: %s\n", f, font_to_load);
+        XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, font_to_load);
         
         if (XftFontsArr[f] == NULL) {
-            printf("Failed to reload term font %d: %s\n", f, new_font_spec);
-            // Try a simple fallback
-            XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book");
+            printf("Failed to reload term font %d: %s\n", f, font_to_load);
+            // Try a simple fallback with fixed DPI
+            XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book:dpi=96");
             if (XftFontsArr[f] != NULL) {
                 printf("Successfully loaded fallback font for %d\n", f);
             } else {
@@ -3940,20 +3957,28 @@ int ReloadFonts()
                 // Use the font specification directly from FontData
                 const char* font_spec = FontData[fd].font;
                 
-                // Load the font using the original specification
-                XftFontsArr[f] = XftFontOpenName(Dis, DefaultScreen(Dis), font_spec);
+                // Append :dpi=96 to font specification if not already present
+                static char font_spec_with_dpi[256];
+                const char* font_to_load = font_spec;
+                if (strstr(font_spec, ":dpi=") == nullptr) {
+                    snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", font_spec);
+                    font_to_load = font_spec_with_dpi;
+                }
+                
+                // Load the font using the original specification with fixed DPI
+                XftFontsArr[f] = XftFontOpenName(Dis, DefaultScreen(Dis), font_to_load);
                 if (!XftFontsArr[f]) {
-                    printf("Failed to reload font %d: %s\n", f, font_spec);
+                    printf("Failed to reload font %d: %s\n", f, font_to_load);
                 } else {
-                    printf("Successfully reloaded font %d: %s\n", f, font_spec);
+                    printf("Successfully reloaded font %d: %s\n", f, font_to_load);
                 }
                 found = 1;
                 break;
             }
         }
         if (!found) {
-            // Default font if not found
-            XftFontsArr[f] = XftFontOpenName(Dis, DefaultScreen(Dis), "DejaVu Serif:pixelsize=24:style=Book");
+            // Default font if not found, with fixed DPI
+            XftFontsArr[f] = XftFontOpenName(Dis, DefaultScreen(Dis), "DejaVu Serif:pixelsize=24:style=Book:dpi=96");
         }
         
         // Update font dimensions from FontData array to maintain UI layout compatibility
