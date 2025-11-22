@@ -1154,7 +1154,87 @@ int Terminal::FastStartLogin()
     Drawer *drawer = FindDrawer();
     if (drawer == nullptr)
     {
-        DialogZone *diag = new SimpleDialog(Translate("No drawer available for payments"));
+        // Get descriptive reason for drawer unavailability
+        const char* reason = nullptr;
+        if (user && user->CanSettle(settings))
+        {
+            int dm = settings->drawer_mode;
+            Drawer *d = system_data->FirstDrawer();
+            
+            switch (dm)
+            {
+            case DRAWER_NORMAL:
+            {
+                bool found_terminal_drawer = false;
+                while (d)
+                {
+                    if (d->IsOpen() && d->term == this)
+                    {
+                        found_terminal_drawer = true;
+                        break;
+                    }
+                    d = d->next;
+                }
+                if (!found_terminal_drawer)
+                    reason = "No drawer available: No drawer is attached to this terminal in Trusted mode";
+                break;
+            }
+            case DRAWER_SERVER:
+            {
+                bool any_drawers = false;
+                d = system_data->FirstDrawer();
+                while (d)
+                {
+                    if (d->IsOpen())
+                    {
+                        any_drawers = true;
+                        break;
+                    }
+                    d = d->next;
+                }
+                if (!any_drawers)
+                    reason = "No drawer available: No drawers are configured in Server Bank mode";
+                else
+                    reason = "No drawer available: Unable to create Server Bank drawer for this user";
+                break;
+            }
+            case DRAWER_ASSIGNED:
+            {
+                bool found_assigned = false;
+                bool found_available = false;
+                d = system_data->FirstDrawer();
+                while (d)
+                {
+                    if (d->IsOpen())
+                    {
+                        if (d->owner_id == user->id)
+                        {
+                            found_assigned = true;
+                            break;
+                        }
+                        if (d->term == this && d->owner_id == 0 && d->IsEmpty())
+                            found_available = true;
+                    }
+                    d = d->next;
+                }
+                if (!found_assigned && !found_available)
+                {
+                    if (drawer_count == 0)
+                        reason = "No drawer available: No drawers are attached to this terminal in Assigned mode";
+                    else
+                        reason = "No drawer available: No drawers are assigned to this user or available for assignment";
+                }
+                break;
+            }
+            default:
+                reason = "No drawer available: Unknown drawer mode";
+            }
+        }
+        
+        if (reason == nullptr)
+            reason = "No drawer available for payments";
+        
+        DialogZone *diag = new SimpleDialog(Translate(reason));
         diag->Button(Translate("Okay"));
         return OpenDialog(diag);
     }
@@ -2501,6 +2581,105 @@ int Terminal::NeedDrawerBalanced(Employee *e)
     }
 
     return retval;
+}
+
+/**
+ * @brief Get descriptive message explaining why drawer is not available
+ * 
+ * @param term The terminal
+ * @param settings The settings object
+ * @return Descriptive error message, or nullptr if drawer should be available
+ */
+static const char* GetDrawerUnavailableReason(Terminal *term, Settings *settings)
+{
+    FnTrace("GetDrawerUnavailableReason()");
+    if (term->user == nullptr || term->user->training)
+        return nullptr;  // Training mode doesn't need drawer
+    
+    if (!term->user->CanSettle(settings))
+        return nullptr;  // User can't settle, so drawer message not relevant
+    
+    int dm = settings->drawer_mode;
+    Drawer *d = term->system_data->FirstDrawer();
+    
+    switch (dm)
+    {
+    case DRAWER_NORMAL:
+    {
+        // Trusted mode: drawer must be attached to this terminal
+        bool found_terminal_drawer = false;
+        while (d)
+        {
+            if (d->IsOpen() && d->term == term)
+            {
+                found_terminal_drawer = true;
+                break;
+            }
+            d = d->next;
+        }
+        if (!found_terminal_drawer)
+            return "No drawer available: No drawer is attached to this terminal in Trusted mode";
+        break;
+    }
+    case DRAWER_SERVER:
+    {
+        // Server Bank mode: drawer should be created automatically, but check if user has one
+        Drawer *user_drawer = term->FindDrawer();
+        if (user_drawer == nullptr)
+        {
+            // Check if there are any drawers at all
+            bool any_drawers = false;
+            d = term->system_data->FirstDrawer();
+            while (d)
+            {
+                if (d->IsOpen())
+                {
+                    any_drawers = true;
+                    break;
+                }
+                d = d->next;
+            }
+            if (!any_drawers)
+                return "No drawer available: No drawers are configured in Server Bank mode";
+            else
+                return "No drawer available: Unable to create Server Bank drawer for this user";
+        }
+        break;
+    }
+    case DRAWER_ASSIGNED:
+    {
+        // Assigned mode: drawer must be assigned to this user or available for assignment
+        bool found_assigned = false;
+        bool found_available = false;
+        d = term->system_data->FirstDrawer();
+        while (d)
+        {
+            if (d->IsOpen())
+            {
+                if (d->owner_id == term->user->id)
+                {
+                    found_assigned = true;
+                    break;
+                }
+                if (d->term == term && d->owner_id == 0 && d->IsEmpty())
+                    found_available = true;
+            }
+            d = d->next;
+        }
+        if (!found_assigned && !found_available)
+        {
+            if (term->drawer_count == 0)
+                return "No drawer available: No drawers are attached to this terminal in Assigned mode";
+            else
+                return "No drawer available: No drawers are assigned to this user or available for assignment";
+        }
+        break;
+    }
+    default:
+        return "No drawer available: Unknown drawer mode";
+    }
+    
+    return nullptr;  // Drawer should be available
 }
 
 int Terminal::CanSettleCheck()

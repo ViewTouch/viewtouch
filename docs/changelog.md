@@ -7,6 +7,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **Default Configuration Improvements (2025-12-XX)**
+  - **Default Revenue Groups**: Set intelligent defaults for family-to-revenue-group mappings
+    - Beverage → Beverage
+    - Beer and Bottled Beer → Beer
+    - Wine and Bottled Wine → Wine
+    - Alcohol and Cocktail → Alcohol
+    - Malt Beverage (Bottled Cocktail) → Alcohol
+    - All other families default to Food
+  - **Default Users**: Automatically create three default users when settings file is first created
+    - Manager (ID 5) with all authorizations
+    - Server/Cashier with all authorizations except Supervisor, Manager, and Employee records
+    - Server without Settlement authority
+  - **Server Display Defaults**: New Server Display terminals automatically configured with Fast Food type and One Cash Drawer
+  - **Self Order Mode Auto-Configuration**: Page variant automatically set to -2 (Page -2) when Self Order Mode is selected
+  - **Enhanced Drawer Availability Messages**: Improved error messages that specify the exact reason why a drawer is unavailable
+    - Trusted mode: "No drawer is attached to this terminal"
+    - Server Bank mode: "No drawers are configured" or "Unable to create Server Bank drawer"
+    - Assigned mode: "No drawers are assigned to this user or available for assignment"
+  - **Impact**: Faster system setup with sensible defaults, better user experience with clear error messages
+  - **Files modified**: `main/data/settings.cc`, `main/data/manager.cc`, `zone/hardware_zone.cc`, `zone/payment_zone.cc`, `main/hardware/terminal.cc`
+
 - **Enterprise-Grade Connection Reliability System (2025-11-19)**
   - **Feature**: Complete overhaul of ViewTouch's connection handling to prevent system freezing during network interruptions
   - **Components**:

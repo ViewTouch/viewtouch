@@ -1015,6 +1015,18 @@ int TermInfo::OpenTerm(Control *control_db, int update)
     int flag = UPDATE_TERMINALS;
     term->is_server = IsServer();
     term->name.Set(name);
+    
+    // Set Server Display defaults: Fast Food, One Cash Drawer
+    // This applies when a Server Display terminal is first created
+    if (IsServer() && type == TERMINAL_NORMAL)
+    {
+        type = TERMINAL_FASTFOOD;
+    }
+    if (IsServer() && drawers == 0)
+    {
+        drawers = 1;  // One Cash Drawer
+    }
+    
     term->type = type;
     term->original_type = type;
     term->sortorder = sortorder;
@@ -1336,9 +1348,18 @@ Settings::Settings()
     for (i = 0; i < MAX_FAMILIES; ++i)
     {
         family_printer[i] = PRINTER_DEFAULT;  // Changed from PRINTER_NONE to PRINTER_DEFAULT
-        family_group[i]   = SALESGROUP_FOOD;
+        family_group[i]   = SALESGROUP_FOOD;  // Default to Food
         video_target[i]   = PRINTER_DEFAULT;
     }
+    
+    // Set default revenue groups for specific families
+    family_group[FAMILY_BEVERAGES]      = SALESGROUP_BEVERAGE;
+    family_group[FAMILY_BEER]            = SALESGROUP_BEER;
+    family_group[FAMILY_BOTTLED_BEER]    = SALESGROUP_BEER;
+    family_group[FAMILY_WINE]            = SALESGROUP_WINE;
+    family_group[FAMILY_BOTTLED_WINE]    = SALESGROUP_WINE;
+    family_group[FAMILY_COCKTAIL]        = SALESGROUP_ALCOHOL;
+    family_group[FAMILY_BOTTLED_COCKTAIL] = SALESGROUP_ALCOHOL;  // Malt Beverage
 
     for (i = 0; i < MAX_JOBS; ++i)
     {

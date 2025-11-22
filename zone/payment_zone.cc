@@ -1025,7 +1025,88 @@ int PaymentZone::CloseCheck(Terminal *term, int force)
         if (drawer == NULL && !currCheck->IsTraining() &&
             !(subCheck->OnlyCredit() == 1 && term->is_bar_tab == 1))
         {
-            DialogZone *diag = new SimpleDialog(GlobalTranslate("No drawer available for payments"));
+            // Get descriptive reason for drawer unavailability
+            Settings *settings = term->GetSettings();
+            const char* reason = nullptr;
+            if (term->user && term->user->CanSettle(settings))
+            {
+                int dm = settings->drawer_mode;
+                Drawer *d = term->system_data->FirstDrawer();
+                
+                switch (dm)
+                {
+                case DRAWER_NORMAL:
+                {
+                    bool found_terminal_drawer = false;
+                    while (d)
+                    {
+                        if (d->IsOpen() && d->term == term)
+                        {
+                            found_terminal_drawer = true;
+                            break;
+                        }
+                        d = d->next;
+                    }
+                    if (!found_terminal_drawer)
+                        reason = "No drawer available: No drawer is attached to this terminal in Trusted mode";
+                    break;
+                }
+                case DRAWER_SERVER:
+                {
+                    bool any_drawers = false;
+                    d = term->system_data->FirstDrawer();
+                    while (d)
+                    {
+                        if (d->IsOpen())
+                        {
+                            any_drawers = true;
+                            break;
+                        }
+                        d = d->next;
+                    }
+                    if (!any_drawers)
+                        reason = "No drawer available: No drawers are configured in Server Bank mode";
+                    else
+                        reason = "No drawer available: Unable to create Server Bank drawer for this user";
+                    break;
+                }
+                case DRAWER_ASSIGNED:
+                {
+                    bool found_assigned = false;
+                    bool found_available = false;
+                    d = term->system_data->FirstDrawer();
+                    while (d)
+                    {
+                        if (d->IsOpen())
+                        {
+                            if (d->owner_id == term->user->id)
+                            {
+                                found_assigned = true;
+                                break;
+                            }
+                            if (d->term == term && d->owner_id == 0 && d->IsEmpty())
+                                found_available = true;
+                        }
+                        d = d->next;
+                    }
+                    if (!found_assigned && !found_available)
+                    {
+                        if (term->drawer_count == 0)
+                            reason = "No drawer available: No drawers are attached to this terminal in Assigned mode";
+                        else
+                            reason = "No drawer available: No drawers are assigned to this user or available for assignment";
+                    }
+                    break;
+                }
+                default:
+                    reason = "No drawer available: Unknown drawer mode";
+                }
+            }
+            
+            if (reason == nullptr)
+                reason = "No drawer available for payments";
+            
+            DialogZone *diag = new SimpleDialog(GlobalTranslate(reason));
             diag->Button(GlobalTranslate("Okay"));
             return term->OpenDialog(diag);
         }
@@ -1213,8 +1294,89 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, int pid, int pflags, int 
     if (drawer == NULL && !currCheck->IsTraining() &&
         !(subCheck->OnlyCredit() == 1 && term->is_bar_tab == 1))
     {
-        DialogZone *my_drawer = new SimpleDialog("No drawer available for payments");
-        my_drawer->Button("Okay");
+        // Get descriptive reason for drawer unavailability
+        Settings *settings = term->GetSettings();
+        const char* reason = nullptr;
+        if (term->user && term->user->CanSettle(settings))
+        {
+            int dm = settings->drawer_mode;
+            Drawer *d = term->system_data->FirstDrawer();
+            
+            switch (dm)
+            {
+            case DRAWER_NORMAL:
+            {
+                bool found_terminal_drawer = false;
+                while (d)
+                {
+                    if (d->IsOpen() && d->term == term)
+                    {
+                        found_terminal_drawer = true;
+                        break;
+                    }
+                    d = d->next;
+                }
+                if (!found_terminal_drawer)
+                    reason = "No drawer available: No drawer is attached to this terminal in Trusted mode";
+                break;
+            }
+            case DRAWER_SERVER:
+            {
+                bool any_drawers = false;
+                d = term->system_data->FirstDrawer();
+                while (d)
+                {
+                    if (d->IsOpen())
+                    {
+                        any_drawers = true;
+                        break;
+                    }
+                    d = d->next;
+                }
+                if (!any_drawers)
+                    reason = "No drawer available: No drawers are configured in Server Bank mode";
+                else
+                    reason = "No drawer available: Unable to create Server Bank drawer for this user";
+                break;
+            }
+            case DRAWER_ASSIGNED:
+            {
+                bool found_assigned = false;
+                bool found_available = false;
+                d = term->system_data->FirstDrawer();
+                while (d)
+                {
+                    if (d->IsOpen())
+                    {
+                        if (d->owner_id == term->user->id)
+                        {
+                            found_assigned = true;
+                            break;
+                        }
+                        if (d->term == term && d->owner_id == 0 && d->IsEmpty())
+                            found_available = true;
+                    }
+                    d = d->next;
+                }
+                if (!found_assigned && !found_available)
+                {
+                    if (term->drawer_count == 0)
+                        reason = "No drawer available: No drawers are attached to this terminal in Assigned mode";
+                    else
+                        reason = "No drawer available: No drawers are assigned to this user or available for assignment";
+                }
+                break;
+            }
+            default:
+                reason = "No drawer available: Unknown drawer mode";
+            }
+        }
+        
+        if (reason == nullptr)
+            reason = "No drawer available for payments";
+        
+        DialogZone *my_drawer = new SimpleDialog(GlobalTranslate(reason));
+        my_drawer->Button(GlobalTranslate("Okay"));
         return term->OpenDialog(my_drawer);
     }
 
@@ -1585,7 +1747,88 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
         drawer = term->FindDrawer();
         if (drawer == NULL && term->is_bar_tab == 0)
         {
-            DialogZone *diag = new SimpleDialog(GlobalTranslate("No drawer available for payments"));
+            // Get descriptive reason for drawer unavailability
+            Settings *settings = term->GetSettings();
+            const char* reason = nullptr;
+            if (term->user && term->user->CanSettle(settings))
+            {
+                int dm = settings->drawer_mode;
+                Drawer *d = term->system_data->FirstDrawer();
+                
+                switch (dm)
+                {
+                case DRAWER_NORMAL:
+                {
+                    bool found_terminal_drawer = false;
+                    while (d)
+                    {
+                        if (d->IsOpen() && d->term == term)
+                        {
+                            found_terminal_drawer = true;
+                            break;
+                        }
+                        d = d->next;
+                    }
+                    if (!found_terminal_drawer)
+                        reason = "No drawer available: No drawer is attached to this terminal in Trusted mode";
+                    break;
+                }
+                case DRAWER_SERVER:
+                {
+                    bool any_drawers = false;
+                    d = term->system_data->FirstDrawer();
+                    while (d)
+                    {
+                        if (d->IsOpen())
+                        {
+                            any_drawers = true;
+                            break;
+                        }
+                        d = d->next;
+                    }
+                    if (!any_drawers)
+                        reason = "No drawer available: No drawers are configured in Server Bank mode";
+                    else
+                        reason = "No drawer available: Unable to create Server Bank drawer for this user";
+                    break;
+                }
+                case DRAWER_ASSIGNED:
+                {
+                    bool found_assigned = false;
+                    bool found_available = false;
+                    d = term->system_data->FirstDrawer();
+                    while (d)
+                    {
+                        if (d->IsOpen())
+                        {
+                            if (d->owner_id == term->user->id)
+                            {
+                                found_assigned = true;
+                                break;
+                            }
+                            if (d->term == term && d->owner_id == 0 && d->IsEmpty())
+                                found_available = true;
+                        }
+                        d = d->next;
+                    }
+                    if (!found_assigned && !found_available)
+                    {
+                        if (term->drawer_count == 0)
+                            reason = "No drawer available: No drawers are attached to this terminal in Assigned mode";
+                        else
+                            reason = "No drawer available: No drawers are assigned to this user or available for assignment";
+                    }
+                    break;
+                }
+                default:
+                    reason = "No drawer available: Unknown drawer mode";
+                }
+            }
+            
+            if (reason == nullptr)
+                reason = "No drawer available for payments";
+            
+            DialogZone *diag = new SimpleDialog(GlobalTranslate(reason));
             diag->Button(GlobalTranslate("Okay"));
             term->OpenDialog(diag);
             return SIGNAL_OKAY;

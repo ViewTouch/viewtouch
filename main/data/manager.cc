@@ -898,6 +898,119 @@ void UserSignal2(int my_signal)
     UserCommand = 1;
 }
 
+/**
+ * @brief Create default users when settings file is first created
+ * 
+ * Creates three default users:
+ * - Manager (ID 5) with all authorizations
+ * - Server/Cashier with all authorizations except Supervisor, Manager and Employee records
+ * - Server without Settlement authority
+ */
+static void CreateDefaultUsers(System *sys, Settings *settings)
+{
+    FnTrace("CreateDefaultUsers()");
+    
+    // Check if Manager (ID 5) already exists
+    Employee *existing_manager = sys->user_db.FindByID(5);
+    if (existing_manager != nullptr)
+        return;  // Default users already exist
+    
+    // Create Manager (ID 5) with all authorizations
+    Employee *manager = new Employee;
+    if (manager != nullptr)
+    {
+        manager->system_name.Set("Manager");
+        manager->id = 5;
+        manager->key = 5;
+        manager->training = 0;
+        manager->active = 1;
+        
+        JobInfo *j = new JobInfo;
+        if (j != nullptr)
+        {
+            j->job = JOB_MANAGER3;  // Manager job
+            manager->Add(j);
+            
+            // Set job flags for Manager - all authorizations
+            settings->job_active[JOB_MANAGER3] = 1;
+            settings->job_flags[JOB_MANAGER3] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE |
+                                                SECURITY_TRANSFER | SECURITY_REBUILD | SECURITY_COMP |
+                                                SECURITY_SUPERVISOR | SECURITY_MANAGER | SECURITY_EMPLOYEES |
+                                                SECURITY_EXPENSES;
+            
+            sys->user_db.Add(manager);
+        }
+        else
+        {
+            delete manager;
+        }
+    }
+    
+    // Create Server/Cashier with all authorizations except Supervisor, Manager and Employee records
+    Employee *server_cashier = new Employee;
+    if (server_cashier != nullptr)
+    {
+        server_cashier->system_name.Set("Server/Cashier");
+        server_cashier->id = sys->user_db.FindUniqueID();
+        server_cashier->key = sys->user_db.FindUniqueKey();
+        server_cashier->training = 0;
+        server_cashier->active = 1;
+        
+        JobInfo *j = new JobInfo;
+        if (j != nullptr)
+        {
+            j->job = JOB_SERVER2;  // Server & Cashier job
+            server_cashier->Add(j);
+            
+            // Set job flags - all except Supervisor, Manager and Employee records
+            settings->job_active[JOB_SERVER2] = 1;
+            settings->job_flags[JOB_SERVER2] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE |
+                                               SECURITY_TRANSFER | SECURITY_REBUILD | SECURITY_COMP |
+                                               SECURITY_EXPENSES;
+            // Note: Excludes SECURITY_SUPERVISOR, SECURITY_MANAGER, SECURITY_EMPLOYEES
+            
+            sys->user_db.Add(server_cashier);
+        }
+        else
+        {
+            delete server_cashier;
+        }
+    }
+    
+    // Create Server without Settlement authority
+    Employee *server = new Employee;
+    if (server != nullptr)
+    {
+        server->system_name.Set("Server");
+        server->id = sys->user_db.FindUniqueID();
+        server->key = sys->user_db.FindUniqueKey();
+        server->training = 0;
+        server->active = 1;
+        
+        JobInfo *j = new JobInfo;
+        if (j != nullptr)
+        {
+            j->job = JOB_SERVER;  // Server job
+            server->Add(j);
+            
+            // Set job flags - all except Settlement
+            settings->job_active[JOB_SERVER] = 1;
+            settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER |
+                                               SECURITY_TRANSFER | SECURITY_COMP;
+            // Note: Excludes SECURITY_SETTLE
+            
+            sys->user_db.Add(server);
+        }
+        else
+        {
+            delete server;
+        }
+    }
+    
+    // Save user database
+    sys->user_db.Save();
+}
+
 int StartSystem(int my_use_net)
 {
     FnTrace("StartSystem()");
@@ -951,6 +1064,7 @@ int StartSystem(int my_use_net)
     ReportLoader("Loading General Settings");
     Settings *settings = &sys->settings;
     sys->FullPath(MASTER_SETTINGS, str);
+    bool settings_just_created = false;
     if (settings->Load(str))
     {
         RestoreBackup(str);
@@ -960,6 +1074,7 @@ int StartSystem(int my_use_net)
         sys->account_db.high_acct_num = settings->high_acct_num;
         // Only save if we successfully loaded settings
         settings->Save();
+        settings_just_created = true;  // Settings file was just created
     }
     // Create alternate media file for old archives if it does not already exist
     sys->FullPath(MASTER_DISCOUNT_SAVE, altmedia);
@@ -1176,6 +1291,14 @@ int StartSystem(int my_use_net)
     }
     // set developer key (this should be done somewhere else)
     sys->user_db.developer->key = settings->developer_key;
+    
+    // Create default users if settings file was just created
+    if (settings_just_created)
+    {
+        ReportLoader("Creating Default Users");
+        CreateDefaultUsers(sys, settings);
+    }
+    
 	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_USER_DB);
 	ReportError(msg); //stamp file attempt in log
 
