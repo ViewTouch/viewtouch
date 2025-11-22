@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Kitchen Video Alert System (2025-12-XX)**
+  - **Issue**: Alerts (warn/alert/flash color changes) were not working on kitchen video displays
+  - **Root Causes**:
+    - Alert logic was only implemented in `MakeReport()` but not in `PrintWorkOrder()`, which is used when `kv_print_method != KV_PRINT_UNMATCHED`
+    - `chef_time` was not being set when checks were displayed on kitchen video via `PrintWorkOrder()`, preventing elapsed time calculation
+  - **Fix**:
+    - Added alert logic to `PrintWorkOrder()` to match the implementation in `MakeReport()`
+    - Added `chef_time` initialization in `PrintWorkOrder()` when displaying kitchen video (similar to `MakeReport()`)
+    - Alert condition ensures alerts only work for:
+      - Report buttons with Button Type "Report" and Report Type "Check"
+      - Report zones with a specific Video Target (not PRINTER_DEFAULT)
+      - Orders that have a matching video target (not PRINTER_DEFAULT or PRINTER_NONE)
+      - Checks with `chef_time` set (for elapsed time calculation)
+  - **Impact**: Kitchen video alerts now work correctly for both `MakeReport()` and `PrintWorkOrder()` code paths, providing visual feedback (warn → alert → flash) based on order age
+  - **Files modified**: `main/business/check.cc`
+
 ### Added
 - **Default Configuration Improvements (2025-12-XX)**
   - **Default Revenue Groups**: Set intelligent defaults for family-to-revenue-group mappings

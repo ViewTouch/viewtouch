@@ -1164,6 +1164,16 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     report->SetTitle("WorkOrder");
     System *sys = term->system_data;
     Settings *settings = &(sys->settings);
+    
+    // For kitchen video displays, set chef_time when check is displayed
+    // This ensures alerts can work - chef_time tracks when check was sent to kitchen
+    if (rzone != nullptr && printer_id != PRINTER_DEFAULT && !chef_time.IsSet())
+    {
+        check_state |= ORDER_SENT;
+        chef_time.Set();
+        Save();
+    }
+    
     Employee *employee = sys->user_db.FindByID(user_owner);
     genericChar str[STRLENGTH];
     genericChar str1[STRLENGTH];
@@ -1435,8 +1445,61 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                 else
                     vt_safe_string::safe_format(str1, STRLENGTH, "%s", str2);
                 vt_safe_string::safe_concat(ordstr, STRLENGTH, str1);
+                
+                // Calculate order age and determine color for video displays (alerts)
+                int order_color = COLOR_DEFAULT;
+                bool should_flash = false;
+                int order_target = order->VideoTarget(settings);
+                // Alerts should only work for Report buttons with:
+                // 1. Button Type: "Report" (rzone is ReportZone with Type ZONE_REPORT)
+                // 2. Report Type: "Check" (REPORT_CHECK = 7)
+                // 3. Video Target: Set to a specific target (not PRINTER_DEFAULT)
+                // 4. Order has a video target (not PRINTER_DEFAULT or PRINTER_NONE)
+                // 5. Check has been sent to kitchen (chef_time must be set for time calculation)
+                if (rzone != nullptr && 
+                    rzone->Type() == ZONE_REPORT &&
+                    rzone->ReportType() != nullptr && 
+                    *(rzone->ReportType()) == REPORT_CHECK &&
+                    printer_id != PRINTER_DEFAULT &&
+                    order_target != PRINTER_DEFAULT && 
+                    order_target != PRINTER_NONE &&
+                    order_target == printer_id &&
+                    chef_time.IsSet() &&
+                    settings != nullptr)
+                {
+                    TimeInfo current_time;
+                    current_time.Set();
+                    long elapsed_seconds = (current_time - chef_time).count();
+                    if (elapsed_seconds >= 0) {  // Prevent negative time
+                        int elapsed_minutes = static_cast<int>(elapsed_seconds / 60); // convert seconds to minutes
+
+                        if (elapsed_minutes >= settings->kv_order_flash_time &&
+                            settings->kv_order_flash_time > 0)
+                        {
+                            order_color = (settings->kv_flash_color >= 0) ? settings->kv_flash_color : COLOR_RED;
+                            should_flash = true;
+                        }
+                        else if (elapsed_minutes >= settings->kv_order_alert_time &&
+                                 settings->kv_order_alert_time > 0)
+                        {
+                            order_color = (settings->kv_alert_color >= 0) ? settings->kv_alert_color : COLOR_RED;
+                        }
+                        else if (elapsed_minutes >= settings->kv_order_warn_time &&
+                                 settings->kv_order_warn_time > 0)
+                        {
+                            order_color = (settings->kv_warn_color >= 0) ? settings->kv_warn_color : COLOR_YELLOW;
+                        }
+                    }
+                }
+                
+                // If order should flash and we're in blink on state, make it flash with high contrast
+                if (should_flash && rzone && rzone->BlinkState() == 1)
+                {
+                    order_color = COLOR_WHITE;
+                }
+                
                 report->Mode(kitchen_mode);
-                report->TextL(ordstr, COLOR_DEFAULT);
+                report->TextL(ordstr, order_color);
                 report->TextR(cststr, COLOR_DEFAULT);
                 report->Mode(0);
                 report->NewLine();
@@ -1890,8 +1953,9 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
     }
     else
     {
-        if ((check_state & ORDER_FINAL || check_state & ORDER_SENT) &&
-            !chef_time.IsSet())
+        // For kitchen video displays, set chef_time when check is displayed
+        // This ensures alerts can work - chef_time tracks when check was sent to kitchen
+        if (!chef_time.IsSet())
         {
             check_state |= ORDER_SENT;
             chef_time.Set();
@@ -2131,7 +2195,23 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                 int order_color = COLOR_DEFAULT;
                 int modifier_color = COLOR_DEFAULT;
                 bool should_flash = false;
-                if (video_target != PRINTER_DEFAULT && chef_time.IsSet() && settings)
+                // Alerts should only work for Report buttons with:
+                // 1. Button Type: "Report" (rzone is ReportZone with Type ZONE_REPORT)
+                // 2. Report Type: "Check" (REPORT_CHECK = 7)
+                // 3. Video Target: Set to a specific target (not PRINTER_DEFAULT)
+                // 4. Order has a video target (not PRINTER_DEFAULT or PRINTER_NONE)
+                // 5. Check has been sent to kitchen (chef_time must be set for time calculation)
+                // Note: We're already inside a condition that filters orders by video_target match,
+                // so order_target == video_target is already guaranteed here
+                if (rzone != nullptr && 
+                    rzone->Type() == ZONE_REPORT &&
+                    rzone->ReportType() != nullptr && 
+                    *(rzone->ReportType()) == REPORT_CHECK &&
+                    video_target != PRINTER_DEFAULT &&
+                    order_target != PRINTER_DEFAULT && 
+                    order_target != PRINTER_NONE &&
+                    chef_time.IsSet() &&
+                    settings != nullptr)
                 {
                     TimeInfo current_time;
                     current_time.Set();
