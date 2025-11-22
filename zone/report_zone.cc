@@ -421,23 +421,74 @@ int ReportZone::IsKitchenCheck(Terminal *term, Check *check)
     else
     {
         // Check if this specific video target has already served their portion
+        int served_for_target = 0;
         if (video_target == PRINTER_BAR1 || video_target == PRINTER_BAR2)
         {
-            // Bar video - don't show if bar portion already served
-            if (check->flags & CF_BAR_SERVED)
-                retval = 0;
+            // Bar video - check if bar portion already served
+            served_for_target = (check->flags & CF_BAR_SERVED);
         }
         else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
         {
-            // Kitchen video - don't show if kitchen portion already served
-            if (check->flags & CF_KITCHEN_SERVED)
-                retval = 0;
+            // Kitchen video - check if kitchen portion already served
+            served_for_target = (check->flags & CF_KITCHEN_SERVED);
         }
         else
         {
-            // Default/other video targets - don't show if kitchen portion already served
-            if (check->flags & CF_KITCHEN_SERVED)
+            // Default/other video targets - check if kitchen portion already served
+            served_for_target = (check->flags & CF_KITCHEN_SERVED);
+        }
+        
+        // If served, check if there are new items (orders without ORDER_SHOWN that match this video target)
+        // If so, clear the served flag so the check appears again with new items
+        if (served_for_target)
+        {
+            Settings *settings = term->GetSettings();
+            int has_new_items = 0;
+            
+            // Check if there are orders matching this video target that haven't been shown yet
+            for (SubCheck *sc = check->SubList(); sc != nullptr && !has_new_items; sc = sc->next)
+            {
+                for (Order *order = sc->OrderList(); order != nullptr && !has_new_items; order = order->next)
+                {
+                    int order_target = order->VideoTarget(settings);
+                    // Check if order matches this video target and hasn't been shown (and not already made)
+                    if (order_target == video_target && 
+                        !(order->status & ORDER_SHOWN) && 
+                        !(order->status & ORDER_MADE))
+                    {
+                        has_new_items = 1;
+                    }
+                }
+            }
+            
+            // If there are new items, clear the served flag so the check appears again
+            if (has_new_items)
+            {
+                if (video_target == PRINTER_BAR1 || video_target == PRINTER_BAR2)
+                {
+                    // Bar video - clear bar served flag
+                    check->flags &= ~CF_BAR_SERVED;
+                }
+                else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
+                {
+                    // Kitchen video - clear kitchen served flag
+                    check->flags &= ~CF_KITCHEN_SERVED;
+                }
+                else
+                {
+                    // Default/other video targets - clear kitchen served flag
+                    check->flags &= ~CF_KITCHEN_SERVED;
+                }
+                // Also clear CF_SHOWN so the check can be displayed again
+                check->flags &= ~CF_SHOWN;
+                check->Save();
+                // Don't set retval = 0, allow the check to be shown
+            }
+            else
+            {
+                // No new items, don't show the check
                 retval = 0;
+            }
         }
     }
 

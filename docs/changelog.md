@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **New Items Not Appearing on Video Targets After Check Served (2025-12-XX)**
+  - **Issue**: When a check was sent to a video target, tapped twice (marked as served), and then new items were added to the same check, the new items did not appear on the video target
+  - **Root Cause**: When a check was marked as served (`CF_KITCHEN_SERVED` or `CF_BAR_SERVED`), `IsKitchenCheck()` would return 0, hiding the check entirely. Even though new items were added, the check remained hidden because the served flag was still set
+  - **Fix**:
+    - Modified `IsKitchenCheck()` in `ReportZone` to detect new items (orders without `ORDER_SHOWN` and without `ORDER_MADE` that match the video target)
+    - When new items are detected, automatically clear the served flag (`CF_KITCHEN_SERVED` or `CF_BAR_SERVED`) and `CF_SHOWN` so the check appears again
+    - Modified `PrintWorkOrder()` and `MakeReport()` to only clear `ORDER_SHOWN` from new items (not already-made items), ensuring already-made items remain hidden
+    - Logic ensures that only new items are displayed, while items that were already made and served remain hidden
+  - **Impact**: New items added to a served check now correctly appear on their respective video targets, while already-made items remain hidden. This allows kitchen/bar staff to see only the new work that needs to be done
+  - **Files modified**: `zone/report_zone.cc`, `main/business/check.cc`
+
 - **Kitchen Video Alert System (2025-12-XX)**
   - **Issue**: Alerts (warn/alert/flash color changes) were not working on kitchen video displays
   - **Root Causes**:
