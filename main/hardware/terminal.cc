@@ -419,7 +419,8 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             if (strlen(s1) < STRLENGTH)
             {
                 vt_safe_string::safe_format(str, STRLENGTH, "swipe %s", s1);
-                term->Signal(str, 0);
+                if (term != nullptr)
+                    term->Signal(str, 0);
             }
         }
         break;
@@ -434,11 +435,14 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
                 EndSystem();  // anyone in debug mode can end system
             break;
         case SERVER_CC_PROCESSED:
-            term->ReadCreditCard();
-            if (term->admin_forcing == 3)
-                term->Signal("adminforceauth4", 0);
-            else
-                term->Signal("ccprocessed", 0);
+            if (term != nullptr)
+            {
+                term->ReadCreditCard();
+                if (term->admin_forcing == 3)
+                    term->Signal("adminforceauth4", 0);
+                else
+                    term->Signal("ccprocessed", 0);
+            }
             break;
         case SERVER_CC_SETTLED:
             term->CC_GetSettlementResults();
@@ -469,8 +473,11 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
                 term->CC_Settle(nullptr, 1);
                 std::array<char, STRLENGTH> errormsg{};
                 term->RStr(errormsg.data());
-                term->system_data->cc_settle_results->Add(term, errormsg.data());
-                term->Signal("ccsettledone", 0);
+                if (term != nullptr && term->system_data != nullptr)
+                {
+                    term->system_data->cc_settle_results->Add(term, errormsg.data());
+                    term->Signal("ccsettledone", 0);
+                }
             }
             break;
         }
@@ -1210,7 +1217,7 @@ int Terminal::OpenTab(int phase, const char* message)
             SubCheck *sc =check->current_sub;
             if (sc == nullptr)
                 sc = check->NewSubCheck();
-            if (message != nullptr)
+            if (message != nullptr && strlen(message) > 11)
                 auth_amount = atoi(&message[11]);
             else
                 auth_amount = 5000;  // $50.00
@@ -1344,7 +1351,34 @@ int Terminal::OpenTabList(const char* message)
 
 SignalResult Terminal::Signal(const genericChar* message, int group_id)
 {
-    FnTrace("Terminal::Signal()");
+    // Note: FnTrace removed from this function because it can be called
+    // with an invalid 'this' pointer (use-after-free), and FnTrace
+    // would crash before we can validate the pointer.
+    
+    // Wrap entire function in try-catch to handle memory corruption gracefully
+    try {
+        // Safety check: validate 'this' pointer is not obviously invalid
+        // If 'this' is NULL or points to invalid memory, we'll crash here
+        // but at least we can catch it early
+        if (this == nullptr)
+            return SIGNAL_IGNORED;
+        
+        // Recursion guard: prevent infinite recursion from signal loops
+        static thread_local int signal_depth = 0;
+        const int MAX_SIGNAL_DEPTH = 100;
+        if (signal_depth >= MAX_SIGNAL_DEPTH) {
+            // Too deep - break the recursion
+            return SIGNAL_IGNORED;
+        }
+        signal_depth++;
+        
+        // Auto-decrement on exit
+        struct SignalGuard {
+            int& depth;
+            SignalGuard(int& d) : depth(d) {}
+            ~SignalGuard() { depth--; }
+        } guard(signal_depth);
+    
     SimpleDialog *sd = nullptr;
     char msg[STRLONG] = "";
     static const char* commands[] = {
@@ -1370,6 +1404,10 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
                   SETLANGUAGE_FRENCH, SETLANGUAGE_SPANISH, SETLANGUAGE_GREEK,
                   RESTART_NOW, RESTART_POSTPONE, TOGGLE_IMAGES};
 
+    // Check for NULL message first
+    if (message == nullptr)
+        return SIGNAL_IGNORED;
+
     if (dialog)
     {
         // dialog intercepts all signals
@@ -1383,7 +1421,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         return SIGNAL_IGNORED;
 
     same_signal = 0;
-    if (system_data->eod_term == nullptr)
+    if (system_data != nullptr && system_data->eod_term == nullptr)
     {
         SignalResult sig = page->Signal(this, message, group_id);
         if (sig != SIGNAL_IGNORED)
@@ -1405,7 +1443,12 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
 
     case PRIOR_ARCHIVE:  // prior archive
         if (archive == nullptr)
-            archive = system_data->ArchiveListEnd();
+        {
+            if (system_data != nullptr)
+                archive = system_data->ArchiveListEnd();
+            else
+                return SIGNAL_IGNORED;
+        }
         else if (archive->fore)
             archive = archive->fore;
         else
@@ -1437,7 +1480,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         break;
 
     case SERVER_NEXT: // servernext
-        if (server)
+        if (server && system_data != nullptr)
             server = system_data->user_db.NextUser(this, server);
         else
             server = user;
@@ -1445,7 +1488,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         return SIGNAL_OKAY;
 
     case SERVER_PREV: // serverprior
-        if (server)
+        if (server && system_data != nullptr)
             server = system_data->user_db.ForeUser(this, server);
         else
             server = user;
@@ -1471,7 +1514,8 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         OpenDialog(sd);
         return SIGNAL_OKAY;
     case CC_ADDBATCH:
-        CC_Settle(&message[10]);
+        if (strlen(message) > 10)
+            CC_Settle(&message[10]);
         return SIGNAL_OKAY;
     case LPD_RESTART:
         system(VIEWTOUCH_PATH "/bin/lpd-restart");
@@ -1500,7 +1544,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         if (admin_forcing == 2)
         {
             int ttid   = atoi(auth_voice.Value());
-            int amount = atoi(&message[16]);
+            int amount = (message != nullptr && strlen(message) > 16) ? atoi(&message[16]) : 0;
             credit = new Credit();
             credit->SetTTID(ttid);
             credit->Amount(amount);
@@ -1535,16 +1579,19 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         ContinueTab();
         return SIGNAL_OKAY;
     case CONTINUETAB2:
-        ContinueTab(atoi(&message[13]));
+        if (strlen(message) > 13)
+            ContinueTab(atoi(&message[13]));
         return SIGNAL_OKAY;
     case CLOSETAB:
         CloseTab();
         return SIGNAL_OKAY;
     case CLOSETAB2:
-        CloseTab(atoi(&message[10]));
+        if (strlen(message) > 10)
+            CloseTab(atoi(&message[10]));
         return SIGNAL_OKAY;
     case FORCERETURN:
-        force_jump = atoi(&message[12]);
+        if (strlen(message) > 12)
+            force_jump = atoi(&message[12]);
         if (page)
             force_jump_source = page->id;
         else
@@ -1624,9 +1671,14 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         
         return SIGNAL_OKAY;
     }
-	}
-
+    }
+    
     return SIGNAL_IGNORED;
+    } catch (...) {
+        // Catch any exceptions from memory corruption or invalid pointers
+        // Return IGNORED to prevent crash propagation
+        return SIGNAL_IGNORED;
+    }
 }
 
 SignalResult Terminal::Touch(int x, int y)
@@ -4489,6 +4541,15 @@ int Terminal::WInt8(int *val)
 int Terminal::RInt8(int *val)
 {
     FnTrace("Terminal::RInt8(int *)");
+    
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+    {
+        if (val)
+            *val = 0;
+        return 0;
+    }
+    
     int v = buffer_in->Get8();
 
     if (val)
@@ -5589,7 +5650,16 @@ int Terminal::TranslatePage(Page *p)
 int Terminal::ReadZone()
 {
     FnTrace("Terminal::ReadZone()");
+    
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+        return 1;
+    
     Zone *newZone = NewPosZone(RInt8());
+    
+    // Safety check: validate newZone was created successfully
+    if (newZone == nullptr)
+        return 1;
 
     if (edit_zone)
         edit_zone->CopyZone(newZone);

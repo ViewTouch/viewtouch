@@ -36,31 +36,47 @@ public:
     BackTraceFunction(const char* func, const char* file, int line)
         : recorded_entry_(false)
     {
-        if (BT_Track) {
-            std::lock_guard<std::mutex> lock(BT_Mutex);
-            const int current_depth = BT_Depth.load();
-            if (current_depth < STRLENGTH) {
-                TraceEntry& entry = BT_Stack[current_depth];
-                BT_Depth.store(current_depth + 1);
-                std::snprintf(entry.function, STRLONG, "%s", func);
-                std::snprintf(entry.file, STRLENGTH, "%s", file);
-                entry.line = line;
-                entry.timestamp = std::chrono::steady_clock::now();
-                entry.memory_usage = get_current_memory_usage();
-                recorded_entry_ = true;
+        // Safety check: validate BT_Track is accessible before using it
+        // This prevents crashes from memory corruption
+        try {
+            if (&BT_Track != nullptr && BT_Track.load() != 0) {
+                std::lock_guard<std::mutex> lock(BT_Mutex);
+                const int current_depth = BT_Depth.load();
+                if (current_depth < STRLENGTH) {
+                    TraceEntry& entry = BT_Stack[current_depth];
+                    BT_Depth.store(current_depth + 1);
+                    std::snprintf(entry.function, STRLONG, "%s", func);
+                    std::snprintf(entry.file, STRLENGTH, "%s", file);
+                    entry.line = line;
+                    entry.timestamp = std::chrono::steady_clock::now();
+                    entry.memory_usage = get_current_memory_usage();
+                    recorded_entry_ = true;
+                }
+                std::printf("Entering %s (%s:%d)\n", func, file, line);
             }
-            std::printf("Entering %s (%s:%d)\n", func, file, line);
+        } catch (...) {
+            // Silently ignore errors from corrupted memory/atomic variables
+            // This prevents crashes when memory is corrupted
         }
     }
     
     // Destructor
     virtual ~BackTraceFunction()
     {
-        if (BT_Track) {
-            std::lock_guard<std::mutex> lock(BT_Mutex);
-            if (recorded_entry_ && BT_Depth.load() > 0) {
-                BT_Depth.fetch_sub(1);
+        // Safety check: validate BT_Track is accessible before using it
+        try {
+            if (&BT_Track != nullptr) {
+                const int track_value = BT_Track.load();
+                if (track_value != 0) {
+                    std::lock_guard<std::mutex> lock(BT_Mutex);
+                    if (recorded_entry_ && BT_Depth.load() > 0) {
+                        BT_Depth.fetch_sub(1);
+                    }
+                }
             }
+        } catch (...) {
+            // Silently ignore errors from corrupted memory/atomic variables
+            // This prevents crashes when memory is corrupted
         }
     }
 

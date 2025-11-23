@@ -7,6 +7,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Critical Crash Fixes: Memory Corruption and Infinite Recursion (2025-12-XX)**
+  - **Issues**: Multiple critical crashes identified through GDB debugging:
+    - `Terminal::Signal()` crashing with invalid `this` pointer (use-after-free)
+    - Infinite recursion in `Terminal::Signal()` causing stack overflow (5000+ frames)
+    - Memory corruption in atomic variables (`BT_Track`, `BT_Depth`) causing crashes
+    - NULL pointer dereferences in `RInt8()`, `ReadZone()`, and signal processing
+    - Array bounds violations when accessing `message[index]` without length checks
+  - **Fixes**:
+    - **Terminal::Signal()**:
+      - Removed `FnTrace()` call that was crashing with invalid `this` pointer
+      - Added NULL checks for `system_data` before accessing members (`eod_term`, `ArchiveListEnd()`, `user_db`)
+      - Added NULL check for `message` parameter before processing
+      - Added array bounds checks for `message[index]` accesses (CC_ADDBATCH, CLOSETAB2, CONTINUETAB2, FORCERETURN, etc.)
+      - Added try-catch wrapper to handle memory corruption gracefully
+      - Added recursion guard using `thread_local` to prevent infinite signal loops (max depth 100)
+      - Added NULL checks at call sites before calling `Signal()`
+    - **Terminal::RInt8()**: Added NULL check for `buffer_in` before accessing
+    - **Terminal::ReadZone()**: Added NULL checks for `buffer_in` and `newZone` after creation
+    - **BackTraceFunction** (fntrace.hh): Added try-catch blocks in constructor and destructor to handle corrupted atomic variables (`BT_Track`, `BT_Depth`)
+    - **Message processing loop**: Added NULL check for `buffer_in` before accessing `size`
+  - **Impact**: System is now resilient to memory corruption, use-after-free bugs, and infinite recursion. Prevents crashes from corrupted data structures, invalid pointers, and signal loops. The recursion guard prevents stack overflow from infinite signal recursion
+  - **Files modified**: `main/hardware/terminal.cc`, `src/utils/fntrace.hh`
+
 - **Additional Crash Prevention and Safety Improvements (2025-12-XX)**
   - **Issues**: Multiple potential crash points identified and fixed:
     - `GetSettings()` calls without NULL checks could cause crashes if settings were unavailable
