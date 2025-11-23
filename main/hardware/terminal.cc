@@ -75,6 +75,9 @@
 
 
 /**** Helper Functions ****/
+// Forward declaration
+static const char* GetDrawerUnavailableReason(Terminal *term, Settings *settings);
+
 /**
  * @brief Get or create the special "Customer" Employee for SelfOrder terminals
  * 
@@ -457,9 +460,11 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             term->CC_GetSAFDetails();
             break;
         case SERVER_CC_SETTLEFAILED:
+        {
             term->cc_processing = 0;
             term->eod_failed = 1;
-            if (term->GetSettings()->authorize_method == CCAUTH_MAINSTREET)
+            Settings *settings = term->GetSettings();
+            if (settings != nullptr && settings->authorize_method == CCAUTH_MAINSTREET)
             {
                 term->CC_Settle(nullptr, 1);
                 std::array<char, STRLENGTH> errormsg{};
@@ -468,6 +473,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
                 term->Signal("ccsettledone", 0);
             }
             break;
+        }
         case SERVER_CC_SAFCLEARFAILED:
             term->cc_processing = 0;
             term->eod_failed = 1;
@@ -722,6 +728,8 @@ int Terminal::Initialize()
     FnTrace("Terminal::Initialize()");
     int retval = 0;
     Settings *settings = GetSettings();
+    if (settings == nullptr)
+        return retval;  // Can't initialize without settings
 
     SendTranslations(FamilyName);
     SetCCTimeout(settings->cc_connect_timeout);
@@ -731,7 +739,7 @@ int Terminal::Initialize()
     SetDropShadow(settings->use_drop_shadows);
     SetShadowOffset(settings->shadow_offset_x, settings->shadow_offset_y);
     SetShadowBlur(settings->shadow_blur_radius);
-    show_button_images = settings ? settings->show_button_images_default : 1;
+    show_button_images = settings->show_button_images_default;
 
     return retval;
 }
@@ -742,7 +750,8 @@ int Terminal::AllowBlanking(int allow)
     int retval = 0;
     static int last_allow = -1;
     int blank_time = 0;
-    int settings_blank_time = GetSettings()->screen_blank_time;
+    Settings *settings = GetSettings();
+    int settings_blank_time = (settings != nullptr) ? settings->screen_blank_time : 0;
 
     if (allow != last_allow)
     {
@@ -1156,81 +1165,7 @@ int Terminal::FastStartLogin()
     if (drawer == nullptr)
     {
         // Get descriptive reason for drawer unavailability
-        const char* reason = nullptr;
-        if (user && user->CanSettle(settings))
-        {
-            int dm = settings->drawer_mode;
-            Drawer *d = system_data->FirstDrawer();
-            
-            switch (dm)
-            {
-            case DRAWER_NORMAL:
-            {
-                bool found_terminal_drawer = false;
-                while (d)
-                {
-                    if (d->IsOpen() && d->term == this)
-                    {
-                        found_terminal_drawer = true;
-                        break;
-                    }
-                    d = d->next;
-                }
-                if (!found_terminal_drawer)
-                    reason = "No drawer available: No drawer is attached to this terminal in Trusted mode";
-                break;
-            }
-            case DRAWER_SERVER:
-            {
-                bool any_drawers = false;
-                d = system_data->FirstDrawer();
-                while (d)
-                {
-                    if (d->IsOpen())
-                    {
-                        any_drawers = true;
-                        break;
-                    }
-                    d = d->next;
-                }
-                if (!any_drawers)
-                    reason = "No drawer available: No drawers are configured in Server Bank mode";
-                else
-                    reason = "No drawer available: Unable to create Server Bank drawer for this user";
-                break;
-            }
-            case DRAWER_ASSIGNED:
-            {
-                bool found_assigned = false;
-                bool found_available = false;
-                d = system_data->FirstDrawer();
-                while (d)
-                {
-                    if (d->IsOpen())
-                    {
-                        if (d->owner_id == user->id)
-                        {
-                            found_assigned = true;
-                            break;
-                        }
-                        if (d->term == this && d->owner_id == 0 && d->IsEmpty())
-                            found_available = true;
-                    }
-                    d = d->next;
-                }
-                if (!found_assigned && !found_available)
-                {
-                    if (drawer_count == 0)
-                        reason = "No drawer available: No drawers are attached to this terminal in Assigned mode";
-                    else
-                        reason = "No drawer available: No drawers are assigned to this user or available for assignment";
-                }
-                break;
-            }
-            default:
-                reason = "No drawer available: Unknown drawer mode";
-            }
-        }
+        const char* reason = GetDrawerUnavailableReason(this, settings);
         
         if (reason == nullptr)
             reason = "No drawer available for payments";

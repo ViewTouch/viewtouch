@@ -7,6 +7,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Additional Crash Prevention and Safety Improvements (2025-12-XX)**
+  - **Issues**: Multiple potential crash points identified and fixed:
+    - `GetSettings()` calls without NULL checks could cause crashes if settings were unavailable
+    - Loops iterating through linked lists without iteration limits could cause infinite loops from corrupted data
+    - Switch case variable scope issues causing compilation errors
+  - **Fixes**:
+    - Added NULL checks for `GetSettings()` in `Terminal::Init()` before accessing settings members
+    - Added NULL check for `GetSettings()` in credit card settlement error handling
+    - Added NULL check for `GetSettings()` in screen blanking timeout handling
+    - Added iteration limits (10,000) to `LaborPeriod::Write()` and `WorkDB::Write()` loops to prevent infinite loops from corrupted WorkEntry lists
+    - Added iteration limit (100,000) to `SaveAllChecks()` loop in DataPersistenceManager to prevent infinite loops from corrupted Check lists
+    - Fixed switch case variable scope issue by wrapping case block in braces
+    - Replaced duplicate drawer availability code with call to `GetDrawerUnavailableReason()` helper function
+  - **Impact**: System is now more resilient to corrupted data and NULL pointer issues. Prevents crashes from infinite loops in corrupted linked lists and NULL pointer dereferences when settings are unavailable
+  - **Files modified**: `main/hardware/terminal.cc`, `main/business/labor.cc`, `src/core/data_persistence_manager.cc`
+
 - **System Crash During EndDay (2025-12-XX)**
   - **Issue**: System crashed when ending the day
   - **Root Causes**:

@@ -522,10 +522,18 @@ int LaborPeriod::Save()
     error += df.Write(serial_number);
     error += df.Write(end_time);
     error += df.Write(WorkCount());
-    for (WorkEntry *work_entry = WorkList(); work_entry != NULL; work_entry = work_entry->next)
+    // Add safety limit to prevent infinite loops from corrupted linked lists
+    int max_iterations = 10000;
+    int iterations = 0;
+    for (WorkEntry *work_entry = WorkList(); work_entry != NULL && iterations < max_iterations; work_entry = work_entry->next)
     {
         work_entry->Update(this);
         error += work_entry->Write(df, LABOR_VERSION);
+        iterations++;
+    }
+    if (iterations >= max_iterations)
+    {
+        fprintf(stderr, "ERROR: LaborPeriod::Write() hit iteration limit, possible infinite loop prevented\n");
     }
     return error;
 }
@@ -1450,7 +1458,17 @@ int WorkDB::Write(OutputDataFile &df, int version)
 {
     FnTrace("WorkDB::Write()");
     df.Write(WorkCount());
-    for (WorkEntry *we = WorkList(); we != NULL; we = we->next)
+    // Add safety limit to prevent infinite loops from corrupted linked lists
+    int max_iterations = 10000;
+    int iterations = 0;
+    for (WorkEntry *we = WorkList(); we != NULL && iterations < max_iterations; we = we->next)
+    {
         we->Write(df, version);
+        iterations++;
+    }
+    if (iterations >= max_iterations)
+    {
+        fprintf(stderr, "ERROR: WorkDB::Write() hit iteration limit, possible infinite loop prevented\n");
+    }
     return 0;
 }
