@@ -522,10 +522,18 @@ int LaborPeriod::Save()
     error += df.Write(serial_number);
     error += df.Write(end_time);
     error += df.Write(WorkCount());
-    for (WorkEntry *work_entry = WorkList(); work_entry != NULL; work_entry = work_entry->next)
+    // Add safety limit to prevent infinite loops from corrupted linked lists
+    int max_iterations = 10000;
+    int iterations = 0;
+    for (WorkEntry *work_entry = WorkList(); work_entry != NULL && iterations < max_iterations; work_entry = work_entry->next)
     {
         work_entry->Update(this);
         error += work_entry->Write(df, LABOR_VERSION);
+        iterations++;
+    }
+    if (iterations >= max_iterations)
+    {
+        fprintf(stderr, "ERROR: LaborPeriod::Write() hit iteration limit, possible infinite loop prevented\n");
     }
     return error;
 }
@@ -939,12 +947,23 @@ WorkEntry *LaborDB::CurrentWorkEntry(Employee *e)
         return NULL;
 
     WorkEntry *work_entry = lp->WorkListEnd();
-    while (work_entry)
+    // Add safety check to prevent infinite loops from corrupted linked lists
+    int max_iterations = 10000;  // Reasonable upper limit
+    int iterations = 0;
+    
+    while (work_entry && iterations < max_iterations)
     {
+        // Validate work_entry structure before accessing members
         if (work_entry->user_id == e->id && !work_entry->end.IsSet())
             return work_entry;
         work_entry = work_entry->fore;
+        iterations++;
     }
+    
+    // If we hit max iterations, the list might be corrupted - return NULL to be safe
+    if (iterations >= max_iterations)
+        return NULL;
+    
     return NULL;
 }
 
@@ -1003,7 +1022,14 @@ int LaborDB::CurrentJob(Employee *e)
 
     WorkEntry *we = CurrentWorkEntry(e);
     if (we)
-        return we->job;
+    {
+        // Validate job value is reasonable to prevent crashes from corrupted data
+        int job = we->job;
+        if (job >= 0 && job < 1000)
+            return job;
+        else
+            return 0;  // Invalid job value - return 0 to be safe
+    }
     else
         return 0;
 }
@@ -1432,7 +1458,17 @@ int WorkDB::Write(OutputDataFile &df, int version)
 {
     FnTrace("WorkDB::Write()");
     df.Write(WorkCount());
-    for (WorkEntry *we = WorkList(); we != NULL; we = we->next)
+    // Add safety limit to prevent infinite loops from corrupted linked lists
+    int max_iterations = 10000;
+    int iterations = 0;
+    for (WorkEntry *we = WorkList(); we != NULL && iterations < max_iterations; we = we->next)
+    {
         we->Write(df, version);
+        iterations++;
+    }
+    if (iterations >= max_iterations)
+    {
+        fprintf(stderr, "ERROR: WorkDB::Write() hit iteration limit, possible infinite loop prevented\n");
+    }
     return 0;
 }

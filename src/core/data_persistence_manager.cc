@@ -1018,8 +1018,10 @@ DataPersistenceManager::SaveResult DataPersistenceManager::SaveAllChecks()
     int failed_count = 0;
 
     // Single pass through the linked list for efficiency
+    // Add safety limit to prevent infinite loops from corrupted linked lists
+    const int MAX_CHECKS = 100000;  // Reasonable upper limit
     Check* check = system_ref->CheckList();
-    while (check != nullptr) {
+    while (check != nullptr && total_count < MAX_CHECKS) {
         total_count++;
 
         // Skip training checks - we don't want to backup/save training data
@@ -1050,6 +1052,12 @@ DataPersistenceManager::SaveResult DataPersistenceManager::SaveAllChecks()
         }
 
         check = check->next;
+    }
+
+    // Check if we hit the iteration limit (possible corrupted linked list)
+    if (total_count >= MAX_CHECKS) {
+        LogError("SaveAllChecks() hit iteration limit (" + std::to_string(MAX_CHECKS) + 
+                 "), possible infinite loop prevented. Check list may be corrupted.", "save");
     }
 
     // Handle empty check list

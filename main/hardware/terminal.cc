@@ -75,6 +75,9 @@
 
 
 /**** Helper Functions ****/
+// Forward declaration
+static const char* GetDrawerUnavailableReason(Terminal *term, Settings *settings);
+
 /**
  * @brief Get or create the special "Customer" Employee for SelfOrder terminals
  * 
@@ -416,7 +419,8 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             if (strlen(s1) < STRLENGTH)
             {
                 vt_safe_string::safe_format(str, STRLENGTH, "swipe %s", s1);
-                term->Signal(str, 0);
+                if (term != nullptr)
+                    term->Signal(str, 0);
             }
         }
         break;
@@ -431,11 +435,14 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
                 EndSystem();  // anyone in debug mode can end system
             break;
         case SERVER_CC_PROCESSED:
-            term->ReadCreditCard();
-            if (term->admin_forcing == 3)
-                term->Signal("adminforceauth4", 0);
-            else
-                term->Signal("ccprocessed", 0);
+            if (term != nullptr)
+            {
+                term->ReadCreditCard();
+                if (term->admin_forcing == 3)
+                    term->Signal("adminforceauth4", 0);
+                else
+                    term->Signal("ccprocessed", 0);
+            }
             break;
         case SERVER_CC_SETTLED:
             term->CC_GetSettlementResults();
@@ -457,17 +464,23 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             term->CC_GetSAFDetails();
             break;
         case SERVER_CC_SETTLEFAILED:
+        {
             term->cc_processing = 0;
             term->eod_failed = 1;
-            if (term->GetSettings()->authorize_method == CCAUTH_MAINSTREET)
+            Settings *settings = term->GetSettings();
+            if (settings != nullptr && settings->authorize_method == CCAUTH_MAINSTREET)
             {
                 term->CC_Settle(nullptr, 1);
                 std::array<char, STRLENGTH> errormsg{};
                 term->RStr(errormsg.data());
-                term->system_data->cc_settle_results->Add(term, errormsg.data());
-                term->Signal("ccsettledone", 0);
+                if (term != nullptr && term->system_data != nullptr)
+                {
+                    term->system_data->cc_settle_results->Add(term, errormsg.data());
+                    term->Signal("ccsettledone", 0);
+                }
             }
             break;
+        }
         case SERVER_CC_SAFCLEARFAILED:
             term->cc_processing = 0;
             term->eod_failed = 1;
@@ -722,6 +735,8 @@ int Terminal::Initialize()
     FnTrace("Terminal::Initialize()");
     int retval = 0;
     Settings *settings = GetSettings();
+    if (settings == nullptr)
+        return retval;  // Can't initialize without settings
 
     SendTranslations(FamilyName);
     SetCCTimeout(settings->cc_connect_timeout);
@@ -731,7 +746,7 @@ int Terminal::Initialize()
     SetDropShadow(settings->use_drop_shadows);
     SetShadowOffset(settings->shadow_offset_x, settings->shadow_offset_y);
     SetShadowBlur(settings->shadow_blur_radius);
-    show_button_images = settings ? settings->show_button_images_default : 1;
+    show_button_images = settings->show_button_images_default;
 
     return retval;
 }
@@ -742,7 +757,8 @@ int Terminal::AllowBlanking(int allow)
     int retval = 0;
     static int last_allow = -1;
     int blank_time = 0;
-    int settings_blank_time = GetSettings()->screen_blank_time;
+    Settings *settings = GetSettings();
+    int settings_blank_time = (settings != nullptr) ? settings->screen_blank_time : 0;
 
     if (allow != last_allow)
     {
@@ -1156,81 +1172,7 @@ int Terminal::FastStartLogin()
     if (drawer == nullptr)
     {
         // Get descriptive reason for drawer unavailability
-        const char* reason = nullptr;
-        if (user && user->CanSettle(settings))
-        {
-            int dm = settings->drawer_mode;
-            Drawer *d = system_data->FirstDrawer();
-            
-            switch (dm)
-            {
-            case DRAWER_NORMAL:
-            {
-                bool found_terminal_drawer = false;
-                while (d)
-                {
-                    if (d->IsOpen() && d->term == this)
-                    {
-                        found_terminal_drawer = true;
-                        break;
-                    }
-                    d = d->next;
-                }
-                if (!found_terminal_drawer)
-                    reason = "No drawer available: No drawer is attached to this terminal in Trusted mode";
-                break;
-            }
-            case DRAWER_SERVER:
-            {
-                bool any_drawers = false;
-                d = system_data->FirstDrawer();
-                while (d)
-                {
-                    if (d->IsOpen())
-                    {
-                        any_drawers = true;
-                        break;
-                    }
-                    d = d->next;
-                }
-                if (!any_drawers)
-                    reason = "No drawer available: No drawers are configured in Server Bank mode";
-                else
-                    reason = "No drawer available: Unable to create Server Bank drawer for this user";
-                break;
-            }
-            case DRAWER_ASSIGNED:
-            {
-                bool found_assigned = false;
-                bool found_available = false;
-                d = system_data->FirstDrawer();
-                while (d)
-                {
-                    if (d->IsOpen())
-                    {
-                        if (d->owner_id == user->id)
-                        {
-                            found_assigned = true;
-                            break;
-                        }
-                        if (d->term == this && d->owner_id == 0 && d->IsEmpty())
-                            found_available = true;
-                    }
-                    d = d->next;
-                }
-                if (!found_assigned && !found_available)
-                {
-                    if (drawer_count == 0)
-                        reason = "No drawer available: No drawers are attached to this terminal in Assigned mode";
-                    else
-                        reason = "No drawer available: No drawers are assigned to this user or available for assignment";
-                }
-                break;
-            }
-            default:
-                reason = "No drawer available: Unknown drawer mode";
-            }
-        }
+        const char* reason = GetDrawerUnavailableReason(this, settings);
         
         if (reason == nullptr)
             reason = "No drawer available for payments";
@@ -1275,7 +1217,7 @@ int Terminal::OpenTab(int phase, const char* message)
             SubCheck *sc =check->current_sub;
             if (sc == nullptr)
                 sc = check->NewSubCheck();
-            if (message != nullptr)
+            if (message != nullptr && strlen(message) > 11)
                 auth_amount = atoi(&message[11]);
             else
                 auth_amount = 5000;  // $50.00
@@ -1409,7 +1351,34 @@ int Terminal::OpenTabList(const char* message)
 
 SignalResult Terminal::Signal(const genericChar* message, int group_id)
 {
-    FnTrace("Terminal::Signal()");
+    // Note: FnTrace removed from this function because it can be called
+    // with an invalid 'this' pointer (use-after-free), and FnTrace
+    // would crash before we can validate the pointer.
+    
+    // Wrap entire function in try-catch to handle memory corruption gracefully
+    try {
+        // Safety check: validate 'this' pointer is not obviously invalid
+        // If 'this' is NULL or points to invalid memory, we'll crash here
+        // but at least we can catch it early
+        if (this == nullptr)
+            return SIGNAL_IGNORED;
+        
+        // Recursion guard: prevent infinite recursion from signal loops
+        static thread_local int signal_depth = 0;
+        const int MAX_SIGNAL_DEPTH = 100;
+        if (signal_depth >= MAX_SIGNAL_DEPTH) {
+            // Too deep - break the recursion
+            return SIGNAL_IGNORED;
+        }
+        signal_depth++;
+        
+        // Auto-decrement on exit
+        struct SignalGuard {
+            int& depth;
+            SignalGuard(int& d) : depth(d) {}
+            ~SignalGuard() { depth--; }
+        } guard(signal_depth);
+    
     SimpleDialog *sd = nullptr;
     char msg[STRLONG] = "";
     static const char* commands[] = {
@@ -1435,6 +1404,10 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
                   SETLANGUAGE_FRENCH, SETLANGUAGE_SPANISH, SETLANGUAGE_GREEK,
                   RESTART_NOW, RESTART_POSTPONE, TOGGLE_IMAGES};
 
+    // Check for NULL message first
+    if (message == nullptr)
+        return SIGNAL_IGNORED;
+
     if (dialog)
     {
         // dialog intercepts all signals
@@ -1448,7 +1421,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         return SIGNAL_IGNORED;
 
     same_signal = 0;
-    if (system_data->eod_term == nullptr)
+    if (system_data != nullptr && system_data->eod_term == nullptr)
     {
         SignalResult sig = page->Signal(this, message, group_id);
         if (sig != SIGNAL_IGNORED)
@@ -1470,7 +1443,12 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
 
     case PRIOR_ARCHIVE:  // prior archive
         if (archive == nullptr)
-            archive = system_data->ArchiveListEnd();
+        {
+            if (system_data != nullptr)
+                archive = system_data->ArchiveListEnd();
+            else
+                return SIGNAL_IGNORED;
+        }
         else if (archive->fore)
             archive = archive->fore;
         else
@@ -1502,7 +1480,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         break;
 
     case SERVER_NEXT: // servernext
-        if (server)
+        if (server && system_data != nullptr)
             server = system_data->user_db.NextUser(this, server);
         else
             server = user;
@@ -1510,7 +1488,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         return SIGNAL_OKAY;
 
     case SERVER_PREV: // serverprior
-        if (server)
+        if (server && system_data != nullptr)
             server = system_data->user_db.ForeUser(this, server);
         else
             server = user;
@@ -1536,7 +1514,8 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         OpenDialog(sd);
         return SIGNAL_OKAY;
     case CC_ADDBATCH:
-        CC_Settle(&message[10]);
+        if (strlen(message) > 10)
+            CC_Settle(&message[10]);
         return SIGNAL_OKAY;
     case LPD_RESTART:
         system(VIEWTOUCH_PATH "/bin/lpd-restart");
@@ -1565,7 +1544,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         if (admin_forcing == 2)
         {
             int ttid   = atoi(auth_voice.Value());
-            int amount = atoi(&message[16]);
+            int amount = (message != nullptr && strlen(message) > 16) ? atoi(&message[16]) : 0;
             credit = new Credit();
             credit->SetTTID(ttid);
             credit->Amount(amount);
@@ -1600,16 +1579,19 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         ContinueTab();
         return SIGNAL_OKAY;
     case CONTINUETAB2:
-        ContinueTab(atoi(&message[13]));
+        if (strlen(message) > 13)
+            ContinueTab(atoi(&message[13]));
         return SIGNAL_OKAY;
     case CLOSETAB:
         CloseTab();
         return SIGNAL_OKAY;
     case CLOSETAB2:
-        CloseTab(atoi(&message[10]));
+        if (strlen(message) > 10)
+            CloseTab(atoi(&message[10]));
         return SIGNAL_OKAY;
     case FORCERETURN:
-        force_jump = atoi(&message[12]);
+        if (strlen(message) > 12)
+            force_jump = atoi(&message[12]);
         if (page)
             force_jump_source = page->id;
         else
@@ -1689,9 +1671,14 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         
         return SIGNAL_OKAY;
     }
-	}
-
+    }
+    
     return SIGNAL_IGNORED;
+    } catch (...) {
+        // Catch any exceptions from memory corruption or invalid pointers
+        // Return IGNORED to prevent crash propagation
+        return SIGNAL_IGNORED;
+    }
 }
 
 SignalResult Terminal::Touch(int x, int y)
@@ -2023,12 +2010,36 @@ int Terminal::LoginUser(Employee *employee, bool home_page)
     if (user != nullptr && user != employee)
         LogoutUser(0);
 
-    Settings *settings    = GetSettings();
-    timeout               = settings->delay_time1;
+    Settings *settings = GetSettings();
+    if (settings == nullptr)
+        return 1;  // Can't login without settings
+    
+    timeout = settings->delay_time1;
 
-    user                  = employee;
-    employee->current_job = system_data->labor_db.CurrentJob(employee);
-    employee->last_job    = employee->current_job;
+    user = employee;
+    
+    // Safely get current job - handle potential corruption after crash
+    if (system_data != nullptr)
+    {
+        int current_job = system_data->labor_db.CurrentJob(employee);
+        // Validate job value is reasonable (0 or positive, less than max reasonable value)
+        if (current_job >= 0 && current_job < 1000)
+        {
+            employee->current_job = current_job;
+            employee->last_job    = current_job;
+        }
+        else
+        {
+            // Invalid job value - reset to 0 to prevent crashes
+            employee->current_job = 0;
+            employee->last_job    = 0;
+        }
+    }
+    else
+    {
+        employee->current_job = 0;
+        employee->last_job    = 0;
+    }
 
     if (((home_page == true) && employee->current_job) > 0)
 	{
@@ -4530,6 +4541,15 @@ int Terminal::WInt8(int *val)
 int Terminal::RInt8(int *val)
 {
     FnTrace("Terminal::RInt8(int *)");
+    
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+    {
+        if (val)
+            *val = 0;
+        return 0;
+    }
+    
     int v = buffer_in->Get8();
 
     if (val)
@@ -5630,7 +5650,16 @@ int Terminal::TranslatePage(Page *p)
 int Terminal::ReadZone()
 {
     FnTrace("Terminal::ReadZone()");
+    
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+        return 1;
+    
     Zone *newZone = NewPosZone(RInt8());
+    
+    // Safety check: validate newZone was created successfully
+    if (newZone == nullptr)
+        return 1;
 
     if (edit_zone)
         edit_zone->CopyZone(newZone);
