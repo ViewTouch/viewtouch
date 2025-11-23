@@ -2023,12 +2023,36 @@ int Terminal::LoginUser(Employee *employee, bool home_page)
     if (user != nullptr && user != employee)
         LogoutUser(0);
 
-    Settings *settings    = GetSettings();
-    timeout               = settings->delay_time1;
+    Settings *settings = GetSettings();
+    if (settings == nullptr)
+        return 1;  // Can't login without settings
+    
+    timeout = settings->delay_time1;
 
-    user                  = employee;
-    employee->current_job = system_data->labor_db.CurrentJob(employee);
-    employee->last_job    = employee->current_job;
+    user = employee;
+    
+    // Safely get current job - handle potential corruption after crash
+    if (system_data != nullptr)
+    {
+        int current_job = system_data->labor_db.CurrentJob(employee);
+        // Validate job value is reasonable (0 or positive, less than max reasonable value)
+        if (current_job >= 0 && current_job < 1000)
+        {
+            employee->current_job = current_job;
+            employee->last_job    = current_job;
+        }
+        else
+        {
+            // Invalid job value - reset to 0 to prevent crashes
+            employee->current_job = 0;
+            employee->last_job    = 0;
+        }
+    }
+    else
+    {
+        employee->current_job = 0;
+        employee->last_job    = 0;
+    }
 
     if (((home_page == true) && employee->current_job) > 0)
 	{

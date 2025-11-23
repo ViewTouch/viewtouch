@@ -470,15 +470,28 @@ int System::EndDay()
     UnloadArchives();
     BackupCurrentData();
 
-    // delete training checks
+    // delete training checks and empty Customer user checks
     Check *check_next;
     Check *check = CheckList();
+    Employee *customer_user = user_db.FindByName("Customer");
+    int customer_user_id = (customer_user != nullptr) ? customer_user->id : 0;
+    
     while (check)
     {
         check_next = check->next;
         if (check->IsTraining())
         {
             Remove(check);
+            delete check;
+        }
+        // Also delete empty checks owned by Customer user (self-order checks that were never used)
+        else if (customer_user_id > 0 && 
+                 check->user_owner == customer_user_id && 
+                 check->IsEmpty() && 
+                 check->GetStatus() == CHECK_OPEN)
+        {
+            Remove(check);
+            DestroyCheck(check);
             delete check;
         }
         check = check_next;
@@ -543,7 +556,9 @@ int System::EndDay()
         tmp = ExtractOpenCheck(check);
         check = check_next;
 
-        tmp_list.AddToTail(tmp);
+        // Only add to list if ExtractOpenCheck returned a valid check
+        if (tmp != NULL)
+            tmp_list.AddToTail(tmp);
     }
 
     // Archive all remaining closed checks

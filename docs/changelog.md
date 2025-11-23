@@ -7,6 +7,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **System Crash During EndDay (2025-12-XX)**
+  - **Issue**: System crashed when ending the day
+  - **Root Causes**:
+    - `ExtractOpenCheck()` could return NULL when there were no open subchecks, but the code was adding it to a list without checking, causing a NULL pointer crash
+    - Empty Customer user checks (from self-order functionality) weren't being cleaned up before EndDay, potentially causing issues during archiving
+  - **Fix**:
+    - Added NULL check before adding checks to temporary list in `EndDay()` - only adds valid checks returned from `ExtractOpenCheck()`
+    - Added cleanup logic to delete empty Customer user checks before EndDay, similar to how training checks are deleted
+    - Empty Customer checks are now properly destroyed before archiving process begins
+  - **Impact**: EndDay now completes successfully without crashing. Empty self-order checks are properly cleaned up, and NULL pointer crashes are prevented
+  - **Files modified**: `main/data/system.cc`
+
+- **System Crash When Clocked-In Users Log In After System Crash (2025-12-XX)**
+  - **Issue**: When the system crashed and a user who was already clocked in tried to log in, start a check, or login again, the system would crash
+  - **Root Causes**:
+    - `GetSettings()` could return NULL, and accessing `settings->delay_time1` would crash
+    - Corrupted labor database entries after a crash could return invalid job values that caused crashes when used
+    - Corrupted WorkEntry linked lists could cause infinite loops or crashes when iterating through work entries
+  - **Fix**:
+    - Added NULL check for `GetSettings()` in `LoginUser()` before accessing settings members
+    - Added validation for job values (0-999 range) in `LoginUser()` - invalid job values are reset to 0 to prevent crashes
+    - Added iteration limit (10,000) in `CurrentWorkEntry()` to prevent infinite loops from corrupted linked lists
+    - Added validation in `CurrentJob()` to ensure job values are reasonable before returning them
+  - **Impact**: System now handles corrupted labor data gracefully after crashes. Users can log in safely even if labor database is corrupted. Prevents infinite loops and NULL pointer crashes
+  - **Files modified**: `main/hardware/terminal.cc`, `main/business/labor.cc`
+
 - **Unintended Self-Order Check Creation (2025-12-XX)**
   - **Issue**: Self-order checks were being created automatically even when not using self-order functionality:
     - Checks were created on terminal startup for SelfOrder terminals
