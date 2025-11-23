@@ -7,6 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Unintended Self-Order Check Creation (2025-12-XX)**
+  - **Issue**: Self-order checks were being created automatically even when not using self-order functionality:
+    - Checks were created on terminal startup for SelfOrder terminals
+    - Checks were created when non-customer users logged out from SelfOrder terminals
+    - Checks were created when tapping buttons with "quickdinein" or "quicktogo" messages on regular terminals or non-self-order pages
+  - **Root Causes**:
+    - `QuickMode(CHECK_SELFORDER)` was called automatically on terminal startup
+    - `QuickMode(CHECK_SELFORDER)` was called automatically on logout for SelfOrder terminals
+    - `QuickMode()` had no validation to prevent self-order check creation outside of self-order mode
+  - **Fix**:
+    - Removed automatic `QuickMode()` call from terminal startup - checks are now only created when customers tap ordering buttons
+    - Removed automatic `QuickMode()` call from `LogoutUser()` - terminal re-logs in as Customer but doesn't create a check
+    - Added validation in `QuickMode()` to only allow self-order checks (`CHECK_SELFORDER`, `CHECK_SELFDINEIN`, `CHECK_SELFTAKEOUT`) when:
+      - Terminal type is `TERMINAL_SELFORDER`, OR
+      - Current page is page -2 (`PAGEID_LOGIN2`, the self-order page)
+    - Modified `QuickMode()` to reuse existing open checks instead of always creating new ones
+  - **Impact**: Self-order checks are now only created when customers actually start ordering via button presses, preventing accumulation of empty checks. Buttons like "quickdinein" and "quicktogo" no longer create checks on regular terminals or non-self-order pages
+  - **Files modified**: `main/hardware/terminal.cc`
+
 - **New Items Not Appearing on Video Targets After Check Served (2025-12-XX)**
   - **Issue**: When a check was sent to a video target, tapped twice (marked as served), and then new items were added to the same check, the new items did not appear on the video target
   - **Root Cause**: When a check was marked as served (`CF_KITCHEN_SERVED` or `CF_BAR_SERVED`), `IsKitchenCheck()` would return 0, hiding the check entirely. Even though new items were added, the check remained hidden because the served flag was still set

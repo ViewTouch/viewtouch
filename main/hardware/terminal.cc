@@ -283,10 +283,10 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
 	        if (term->page == nullptr)
 	            term->page = term->zone_db->FindByTerminal(term->type, -1, term->size);
 	    }
-	    // for SelfOrder terminals, bypass login and go directly to ordering
+	    // for SelfOrder terminals, bypass login and go directly to ordering page
 	    else if (term->type == TERMINAL_SELFORDER)
 	    {
-	        // SelfOrder terminals don't require login - go directly to ordering
+	        // SelfOrder terminals don't require login - go directly to ordering page
 	        // Get or create Customer user for SelfOrder using centralized helper
 	        Employee *customer_user = GetOrCreateCustomerUser(term->system_data->user_db, term->GetSettings());
 	        
@@ -294,7 +294,8 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
 	        if (customer_user != nullptr)
 	            term->LoginUser(customer_user);
 	        
-	        term->QuickMode(CHECK_SELFORDER);
+	        // Don't create a check here - it will be created when customer taps a button
+	        // (e.g., "quickselforder", "quickdinein", "quicktogo")
 	        term->page = term->zone_db->FindByTerminalWithVariant(term->type, term->page_variant, -1, term->size);
 	        if (term->page == nullptr)
 	            term->page = term->zone_db->FindByTerminal(term->type, -1, term->size);
@@ -2086,21 +2087,15 @@ int Terminal::LogoutUser(int update)
     if (original_type == TERMINAL_SELFORDER)
     {
         // Re-login as Customer and go to SelfOrder page
+        // Don't create a check here - it will be created when customer taps a button
+        // (e.g., "quickselforder", "quickdinein", "quicktogo")
         Employee *customer_user = system_data->user_db.FindByName("Customer");
         if (customer_user != nullptr)
-        {
             LoginUser(customer_user);
-            QuickMode(CHECK_SELFORDER);
-        }
-        else
-        {
-            Jump(JUMP_STEALTH, logout_page);
-        }
     }
-    else
-    {
-        Jump(JUMP_STEALTH, logout_page);
-    }
+    
+    // Navigate to appropriate page
+    Jump(JUMP_STEALTH, logout_page);
     
     ClearPageStack();
     return 0;
@@ -2208,6 +2203,21 @@ int Terminal::QuickMode(int customer_type)
     // SelfOrder doesn't require user authentication
     if (customer_type == CHECK_SELFORDER || customer_type == CHECK_SELFDINEIN || customer_type == CHECK_SELFTAKEOUT)
     {
+        // Only allow self-order checks to be created when:
+        // 1. Terminal is a SelfOrder terminal, OR
+        // 2. Current page is page -2 (self-order page)
+        // Note: We don't check for Customer user here because Customer is always logged in
+        // on SelfOrder terminals, but we want to prevent check creation on regular terminals
+        // even if Customer somehow gets logged in there
+        bool is_selforder_terminal = (original_type == TERMINAL_SELFORDER || type == TERMINAL_SELFORDER);
+        bool is_selforder_page = (page != nullptr && page->id == PAGEID_LOGIN2);
+        
+        if (!is_selforder_terminal && !is_selforder_page)
+        {
+            // Not in self-order mode - don't create self-order checks
+            return 1;
+        }
+        
         // Handle SelfOrder case - use Customer user
         Settings *settings = GetSettings();
         
@@ -2216,11 +2226,30 @@ int Terminal::QuickMode(int customer_type)
         if (customer_user == nullptr)
             return 1;  // Failed to create Customer user
         
-        // Clean up any existing empty checks for Customer user before creating a new one
-        // This prevents accumulation of open checks when customers leave without ordering
-        if (customer_user != nullptr)
+        // First, check if Customer user already has an open check of the matching type
+        // If so, reuse it instead of creating a new one
+        Check *thisCheck = nullptr;
+        Check *c = system_data->CheckList();
+        while (c != nullptr)
         {
-            Check *c = system_data->CheckList();
+            // Check if this is an open check owned by Customer user with exact matching type
+            if (c->user_owner == customer_user->id && 
+                c->GetStatus() == CHECK_OPEN &&
+                c->CustomerType() == customer_type)
+            {
+                // Found an existing open check - reuse it
+                thisCheck = c;
+                break;
+            }
+            c = c->next;
+        }
+        
+        // If no existing check found, clean up empty checks and create a new one
+        if (thisCheck == nullptr)
+        {
+            // Clean up any existing empty checks for Customer user before creating a new one
+            // This prevents accumulation of open checks when customers leave without ordering
+            c = system_data->CheckList();
             while (c != nullptr)
             {
                 Check *check_next = c->next;  // Save next pointer before potential deletion
@@ -2231,15 +2260,17 @@ int Terminal::QuickMode(int customer_type)
                 }
                 c = check_next;
             }
+            
+            // Create a new check
+            thisCheck = new Check(settings, customer_type, customer_user);
+            if (thisCheck == nullptr)
+                return 1;
+
+            thisCheck->Guests(0);  // No guest
+            thisCheck->date.Set();
+            system_data->Add(thisCheck);
         }
         
-        Check *thisCheck = new Check(settings, customer_type, customer_user);
-        if (thisCheck == nullptr)
-            return 1;
-
-        thisCheck->Guests(0);  // No guest
-        thisCheck->date.Set();
-        system_data->Add(thisCheck);
         type = TERMINAL_SELFORDER;
         return SetCheck(thisCheck);
     }
