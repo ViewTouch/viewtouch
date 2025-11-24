@@ -277,6 +277,9 @@ Zone *NewPosZone(int type)
     case ZONE_ORDER_DELETE:
         pNewZone = new OrderDeleteZone;
         break;
+    case ZONE_ORDER_COMMENT:
+        pNewZone = new OrderCommentZone;
+        break;
     case ZONE_ORDER_ENTRY:
         pNewZone = new OrderEntryZone;
         break;

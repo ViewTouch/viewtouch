@@ -151,6 +151,23 @@ public:
     int          ZoneStates() { return 3; }
 };
 
+// class OrderCommentZone
+//   add comment button on order entry pages
+class OrderCommentZone : public PosZone
+{
+public:
+    // Constructor
+    OrderCommentZone();
+
+    // Member Functions
+    int          Type() { return ZONE_ORDER_COMMENT; }
+    int          RenderInit(Terminal *term, int update_flag);
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
+    int          ZoneStates() { return 3; }
+};
+
 // class OrderDisplayZone
 //   kitchen work order display window
 class OrderDisplayZone : public PosZone
