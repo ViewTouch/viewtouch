@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **CI Build Failure: Systemd Service Installation Permission Denied (2025-01-XX)**
+  - **Issue**: CI builds were failing due to permission errors when attempting to install systemd service files to `/etc/systemd/system/` and configuration files to `/etc/viewtouch/`. GitHub Actions runners don't have root permissions to write to system directories.
+  - **Fix**: Updated `CMakeLists.txt` to conditionally skip systemd service and configuration file installations when running in CI environments. The build now detects the `CI` environment variable (automatically set by GitHub Actions) and skips these installations during CI builds.
+  - **Impact**: CI builds now complete successfully. Systemd service files will still be installed during local builds with `sudo make install`, but are skipped during CI builds to avoid permission errors.
+  - **Files modified**: `CMakeLists.txt`
 - **Critical Crash Fixes: Memory Corruption and Infinite Recursion (2025-12-XX)**
   - **Issues**: Multiple critical crashes identified through GDB debugging:
     - `Terminal::Signal()` crashing with invalid `this` pointer (use-after-free)
