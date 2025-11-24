@@ -51,6 +51,7 @@
 #define ZONE_ORDER_ADD       83  // increase order button on order entry page
 #define ZONE_ORDER_DELETE    84  // delete/rebuild button on order entry page
 #define ZONE_ORDER_DISPLAY   85  // kitchen work order display
+#define ZONE_ORDER_COMMENT   104 // add comment button on order entry page
 #define ZONE_PAYMENT_ENTRY   32  // show/allow payments for check
 #define ZONE_USER_EDIT       33  // show/edit users
 #define ZONE_SETTINGS        34  // edit general system variables

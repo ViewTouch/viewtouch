@@ -3428,3 +3428,230 @@ int OpenTabDialog::RenderEntry(Terminal *term)
 }
 
 
+/*********************************************************************
+ * OrderCommentDialog Class
+ ********************************************************************/
+
+OrderCommentDialog::OrderCommentDialog()
+{
+    FnTrace("OrderCommentDialog::OrderCommentDialog()");
+}
+
+OrderCommentDialog::OrderCommentDialog(const char* msg, const char* retmsg, int mlen)
+    : GetTextDialog(msg, retmsg, mlen)
+{
+    FnTrace("OrderCommentDialog::OrderCommentDialog(const char* )");
+    // Increase dialog height to accommodate all buttons
+    h = 780;  // Increased from 680 to make room for Done/Cancel buttons
+    // Change labels for Done and Cancel buttons
+    if (enterkey)
+    {
+        enterkey->SetLabel(GlobalTranslate("Done"));
+        enterkey->color = COLOR_GREEN;
+    }
+    if (cancelkey)
+    {
+        cancelkey->SetLabel(GlobalTranslate("Cancel"));
+        cancelkey->color = COLOR_RED;
+    }
+}
+
+RenderResult OrderCommentDialog::Render(Terminal *term, int update_flag)
+{
+    FnTrace("OrderCommentDialog::Render()");
+    RenderResult retval = RENDER_OKAY;
+
+    if (update_flag)
+        lit = NULL;
+    if (lit)
+    {
+        lit->Draw(term, 0);
+        lit = NULL;
+        return RENDER_OKAY;
+    }
+
+    // Call parent Render to set up keyboard layout
+    LayoutZone::Render(term, update_flag);
+    first_row_y = y + first_row;
+
+    // Layout buttons - reuse GetTextDialog layout code
+    int kx = 0;
+    int kw = 0;
+    int ww = w - (border * 2);
+    // Start keyboard higher to accommodate clear/space/backspace and done/cancel rows
+    int ky = y + h - (hh * 6) - border - 8;
+    int i;
+    int col = color[0];
+
+    // Layout QWERTY keyboard buttons (same as GetTextDialog)
+    for (i = 0; i < 10; ++i)
+    {
+        kx = (ww * i * 2) / 21;
+        kw = ((ww * (i * 2 + 2)) / 21) - kx;
+        key[i]->SetRegion(x + border + kx, ky, kw, hh);
+    }
+
+    ky += hh;
+    for (i = 10; i < 20; ++i)
+    {
+        kx = (ww * (i * 2 - 19)) / 21;
+        kw = ((ww * (i * 2 - 17)) / 21) - kx;
+        key[i]->SetRegion(x + border + kx, ky, kw, hh);
+    }
+
+    ky += hh;
+    for (i = 20; i < 29; ++i)
+    {
+        kx = (ww * (i * 2 - 38)) / 21;
+        kw = ((ww * (i * 2 - 36)) / 21) - kx;
+        key[i]->SetRegion(x + border + kx, ky, kw, hh);
+    }
+
+    ky += hh;
+    for (i = 29; i < 36; ++i)
+    {
+        kx = (ww * (i * 2 - 55)) / 21;
+        kw = ((ww * (i * 2 - 53)) / 21) - kx;
+        key[i]->SetRegion(x + border + kx, ky, kw, hh);
+    }
+
+    // Layout space, backspace, clear buttons (above keyboard, same as GetTextDialog)
+    ky += hh + 4;
+    kw = ((ww * 6) / 40);
+    clearkey->SetRegion(x + border, ky, kw, hh);
+
+    kx = (ww * 9) / 40;
+    kw = ((ww * 24) / 40) - kx;
+    spacekey->SetRegion(x + border + kx, ky, kw, hh);
+
+    kx = (ww * 27) / 40;
+    kw = ((ww * 33) / 40) - kx;
+    bskey->SetRegion(x + border + kx, ky, kw, hh);
+
+    // Layout Done and Cancel buttons at the very bottom (below clear/space/backspace)
+    ky += hh + 4;
+    kw = (ww * 18) / 40;
+    if (enterkey)
+        enterkey->SetRegion(x + border, ky, kw, hh);
+    
+    kx = (ww * 22) / 40;
+    kw = (ww * 18) / 40;
+    if (cancelkey)
+        cancelkey->SetRegion(x + border + kx, ky, kw, hh);
+
+    if (display_string[0] != '\0')
+        TextC(term, 1, term->Translate(display_string), col);
+    RenderEntry(term);
+    buttons.Render(term);
+
+    return retval;
+}
+
+SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* message)
+{
+    FnTrace("OrderCommentDialog::Signal()");
+    SignalResult retval = SIGNAL_OKAY;
+    static const genericChar* commands[] = {
+        "backspace", "clear", "enter", "cancel", NULL};
+    int idx = CompareList(message, commands);
+    genericChar msgbuf[STRLENGTH];
+
+    switch (idx)
+    {
+    case 0:  // backspace
+        Backspace(term);
+        break;
+    case 1:  // clear
+        buffer[0] = '\0';
+        buffidx = 0;
+        DrawEntry(term);
+        break;
+    case 2:  // enter (Done)
+        // Add comment as a modifier order under the currently selected order
+        if (term->check != NULL && term->order != NULL && buffidx > 0 && buffer[0] != '\0')
+        {
+            Order *parent_order = term->order;
+            // Make sure we're working with the parent order, not a modifier
+            if (parent_order->parent)
+                parent_order = parent_order->parent;
+            
+            // Create a new modifier order with the comment text
+            Order *comment_order = new Order(buffer, 0);  // Price is 0 for comments
+            if (comment_order != NULL)
+            {
+                comment_order->item_type = ITEM_MODIFIER;
+                comment_order->call_order = 4;  // Standard call order for modifiers
+                comment_order->user_id = (term->user ? term->user->id : 0);
+                comment_order->seat = parent_order->seat;
+                comment_order->page_id = parent_order->page_id;
+                
+                // Add the comment as a modifier to the parent order
+                if (parent_order->Add(comment_order) == 0)
+                {
+                    // Successfully added - update totals and display
+                    SubCheck *sc = term->check->current_sub;
+                    if (sc != NULL)
+                    {
+                        Settings *s = term->GetSettings();
+                        sc->FigureTotals(s);
+                    }
+                    term->Update(UPDATE_ORDERS, NULL);
+                }
+                else
+                {
+                    // Failed to add - clean up
+                    delete comment_order;
+                }
+            }
+        }
+        term->Draw(1);
+        retval = SIGNAL_TERMINATE;
+        break;
+    case 3:  // cancel
+        term->Draw(1);
+        retval = SIGNAL_TERMINATE;
+        break;
+    default:
+        if (message[1] == '\0')
+            AddChar(term, message[0]);
+        break;
+    }
+
+    return retval;
+}
+
+SignalResult OrderCommentDialog::Touch(Terminal *term, int tx, int ty)
+{
+    FnTrace("OrderCommentDialog::Touch()");
+    SignalResult retval = SIGNAL_IGNORED;
+    ZoneObject *zo = buttons.Find(tx, ty);
+
+    if (zo)
+    {
+        if (lit)
+            lit->Draw(term, 0);
+        ButtonObj *b = (ButtonObj *) zo;
+        lit = b;
+        b->Draw(term, 1);
+        term->RedrawZone(this, 100);
+        retval = Signal(term, b->message.Value());
+    }
+
+    return retval;
+}
+
+SignalResult OrderCommentDialog::Keyboard(Terminal *term, int kb_key, int state)
+{
+    FnTrace("OrderCommentDialog::Keyboard()");
+    return GetTextDialog::Keyboard(term, kb_key, state);
+}
+
+int OrderCommentDialog::RenderEntry(Terminal *term)
+{
+    FnTrace("OrderCommentDialog::RenderEntry()");
+    Entry(term, (size_x/2) - 15, 2.5, 30);
+    TextC(term, 2.5, buffer, COLOR_WHITE);
+    return 0;
+}
+
+

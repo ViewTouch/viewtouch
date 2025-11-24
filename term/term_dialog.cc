@@ -1281,7 +1281,8 @@ int ZoneDialog::Correct()
               t != ZONE_LOGOUT && t != ZONE_ORDER_ENTRY && t != ZONE_ORDER_PAGE &&
               t != ZONE_ORDER_FLOW && t != ZONE_PAYMENT_ENTRY && t != ZONE_SWITCH &&
               t != ZONE_JOB_SECURITY && t != ZONE_TENDER_SET && t != ZONE_HARDWARE &&
-              !IsItemZoneType(t) && t != ZONE_ORDER_ADD && t != ZONE_ORDER_DELETE);
+              !IsItemZoneType(t) && t != ZONE_ORDER_ADD && t != ZONE_ORDER_DELETE &&
+              t != ZONE_ORDER_COMMENT);
     behave.Show(full_edit && t != ZONE_COMMENT);
     confirm.Show(t == ZONE_STANDARD);
     confirm_msg.Show(t == ZONE_STANDARD);

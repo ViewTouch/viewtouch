@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+- **Order Comment Feature (2025-01-xx)**
+  - **Feature**: Added ability to add comments to orders as modifier items
+  - **Implementation**:
+    - Created new `OrderCommentZone` button that appears on order entry pages when there's an active open check
+    - Created `OrderCommentDialog` with QWERTY keyboard for text input
+    - Comments are added as modifier orders under the selected order item, displaying indented like other modifiers
+    - Dialog includes Done and Cancel buttons, with proper button layout to prevent overlap
+  - **Usage**: Users can click the "Add Comment" button, type a comment using the QWERTY keyboard, and click Done to add it as a modifier under the currently selected order
+  - **Impact**: Allows staff to add special instructions or notes to individual order items, which appear in the order list and on kitchen tickets
+  - **Files modified**: 
+    - `zone/order_zone.hh`, `zone/order_zone.cc` - Added OrderCommentZone class
+    - `zone/dialog_zone.hh`, `zone/dialog_zone.cc` - Added OrderCommentDialog class
+    - `zone/pos_zone.hh`, `zone/pos_zone.cc` - Added ZONE_ORDER_COMMENT type and wiring
+    - `main/ui/labels.cc` - Added "Order Comment" to zone type list
+    - `term/term_dialog.cc` - Updated zone editor to handle new zone type
+
 ### Fixed
 - **CI Build Failure: Systemd Service Installation Permission Denied (2025-01-XX)**
   - **Issue**: CI builds were failing due to permission errors when attempting to install systemd service files to `/etc/systemd/system/` and configuration files to `/etc/viewtouch/`. GitHub Actions runners don't have root permissions to write to system directories.

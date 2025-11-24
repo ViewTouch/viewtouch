@@ -399,6 +399,20 @@ public:
     int RenderEntry(Terminal *term);
 };
 
+class OrderCommentDialog : public GetTextDialog
+{
+public:
+    OrderCommentDialog();
+    OrderCommentDialog(const char* msg, const char* retmsg, int mlen = 100);
+
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Keyboard(Terminal *term, int kb_key, int state);
+
+    int RenderEntry(Terminal *term);
+};
+
 
 
 

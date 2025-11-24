@@ -1510,6 +1510,74 @@ int OrderDeleteZone::Update(Terminal *term, int update_message, const genericCha
 
 
 /***********************************************************************
+ * OrderCommentZone Class
+ ***********************************************************************/
+OrderCommentZone::OrderCommentZone()
+{
+}
+
+int OrderCommentZone::RenderInit(Terminal *term, int update_flag)
+{
+    FnTrace("OrderCommentZone::RenderInit()");
+    Check *c = term->check;
+    if (c == NULL)
+    {
+        active = 0;
+        return 0;
+    }
+    
+    SubCheck *sc = c->current_sub;
+    if (sc == NULL || sc->status != CHECK_OPEN)
+    {
+        active = 0;
+        return 0;
+    }
+    
+    active = 1;
+    return 0;
+}
+
+RenderResult OrderCommentZone::Render(Terminal *term, int update_flag)
+{
+    FnTrace("OrderCommentZone::Render()");
+    RenderInit(term, update_flag);
+    RenderZone(term, GlobalTranslate("Add\\Comment"), update_flag);
+    return RENDER_OKAY;
+}
+
+SignalResult OrderCommentZone::Touch(Terminal *term, int tx, int ty)
+{
+    FnTrace("OrderCommentZone::Touch()");
+    Check *c = term->check;
+    if (c == NULL)
+        return SIGNAL_IGNORED;
+
+    SubCheck *sc = c->current_sub;
+    if (sc == NULL || sc->status != CHECK_OPEN)
+        return SIGNAL_IGNORED;
+
+    // Create dialog for entering comment
+    OrderCommentDialog *d = new OrderCommentDialog(
+        GlobalTranslate("Enter Comment"), "ordercomment", 100);
+    term->OpenDialog(d);
+    return SIGNAL_OKAY;
+}
+
+int OrderCommentZone::Update(Terminal *term, int update_message, const genericChar* value)
+{
+    FnTrace("OrderCommentZone::Update()");
+    if (update_message & (UPDATE_CHECKS | UPDATE_ORDERS))
+    {
+        int old_active = active;
+        RenderInit(term, 1);
+        if (old_active != active)
+            Draw(term, 0);
+    }
+    return 0;
+}
+
+
+/***********************************************************************
  * ItemZone Class
  ***********************************************************************/
 ItemZone::ItemZone()
