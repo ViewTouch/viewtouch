@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **General Settings Section Navigation (11-24-2025)**
+  - **Feature**: Added section-based navigation to General Settings with tab buttons
+  - **Implementation**:
+    - Reorganized General Settings into 8 distinct sections: Business, Logon, Ledger, Drawer, SMTP, Misc, Restart, and Kitchen
+    - Added section buttons at the top of the settings page for easy navigation between sections
+    - Each section displays only its relevant fields, making the settings interface more organized and easier to navigate
+    - Section switching automatically saves the current section before loading the new one
+    - Active section is highlighted in blue for visual feedback
+  - **Usage**: Users can click section buttons at the top of the General Settings page to switch between different setting categories
+  - **Impact**: Improves usability by organizing settings into logical sections and reducing visual clutter
+  - **Recommendation**: Use 34pt Bold Font for section buttons for optimal readability
+  - **Files modified**: 
+    - `zone/settings_zone.hh` - Added section tracking and navigation support
+    - `zone/settings_zone.cc` - Implemented section-based field activation, section switching, and button rendering
 - **Order Comment Feature (2025-01-xx)**
   - **Feature**: Added ability to add comments to orders as modifier items
   - **Implementation**:
