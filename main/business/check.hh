@@ -470,6 +470,7 @@ public:
     int       Search(const genericChar* word);
     int       SetBatch(const char* termid, const char* batch);
     int       IsBatchSet();
+    int       HasVideoTargetOrders(Settings *settings);  // Returns true if check has orders going to video targets
 
     // CustomerInfo stuff
     int       IsTakeOut();  // FIX - bad name now  // true if there is no room/table for check
