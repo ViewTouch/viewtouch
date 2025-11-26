@@ -507,49 +507,68 @@ SettingsZone::SettingsZone()
 {
     FnTrace("SettingsZone::SettingsZone()");
 
+    section = 0;  // Start with Business section
     form_header = 0;
+    
+    // Section 0: Business Information
     AddNewLine();
     AddTextField("Your Business Name", 32);
+    business_start = FieldListEnd();  // Set after first field is added
     AddTextField("Address", 64);
     AddTextField("City State Zip Code", 64);
     AddTextField("Country Code", 8);
     AddTextField("Location Code", 8);
+    
+    // Section 1: Logon ID Life
     AddNewLine();
     Center();
     AddLabel("Set the Life of the Logon ID (Up to 999 seconds)");
+    logon_start = FieldListEnd();  // Point to the label field
     AddNewLine();
     LeftAlign();
     AddTextField("Screen Saver", 5); SetFlag(FF_ONLYDIGITS);
     AddTextField("On the Table Page", 5); SetFlag(FF_ONLYDIGITS);
     AddTextField("After Settlement", 5); SetFlag(FF_ONLYDIGITS);
     AddTextField("On Page One", 5); SetFlag(FF_ONLYDIGITS);
+    
+    // Section 2: Ledger Accounts
     AddNewLine();
     Center();
     AddLabel("Ledger Accounts");
+    ledger_start = FieldListEnd();  // Point to the label field
     AddNewLine();
     LeftAlign();
     AddTextField("Lowest Account Number", 10);  SetFlag(FF_ONLYDIGITS);
     AddTextField("Highest Account Number", 10);  SetFlag(FF_ONLYDIGITS);
     AddListField("Account for expenses paid from drawers", NULL);
+    
+    // Section 3: Drawer Settings
     AddNewLine();
     Center();
     AddLabel("Drawer Settings");
+    drawer_start = FieldListEnd();  // Point to the label field
     AddNewLine();
     LeftAlign();
     AddListField("Require user to balance drawer in ServerBank mode?", YesNoName, YesNoValue);
     AddNewLine();
     AddTextField("Default Tab Amount", 10);  SetFlag(FF_MONEY);
+    
+    // Section 4: SMTP Settings
     AddNewLine();
     Center();
     AddLabel("SMTP Settings");
+    smtp_start = FieldListEnd();  // Point to the label field
     AddNewLine();
     LeftAlign();
     AddTextField("SMTP Server for Sending", 50);
     AddNewLine();
     AddTextField("SMTP Reply To Address", 50);
+    
+    // Section 5: Miscellaneous Settings
     AddNewLine();
     Center();
     AddLabel("Miscellaneous Settings");
+    misc_start = FieldListEnd();  // Point to the label field
     AddNewLine();
     LeftAlign();
     AddListField("Can select user for expenses?", YesNoName, YesNoValue);
@@ -574,16 +593,22 @@ SettingsZone::SettingsZone()
     AddTextField("Shadow Blur Radius (0-10)", 5); SetFlag(FF_ONLYDIGITS);
     AddNewLine();
     AddListField("Button Text Position", ButtonTextPosName, ButtonTextPosValue);
+    
+    // Section 6: Scheduled Restart Settings
     AddNewLine();
     Center();
     AddLabel("Scheduled Restart Settings");
+    restart_start = FieldListEnd();  // Point to the label field
     AddNewLine();
     LeftAlign();
     AddTextField("Restart Hour (0-23, -1=disabled)", 5); SetFlag(FF_ONLYDIGITS);
     AddTextField("Restart Minute (0-59)", 5); SetFlag(FF_ONLYDIGITS);
+    
+    // Section 7: Kitchen Video Order Alert Settings
     AddNewLine();
     Center();
     AddLabel("Kitchen Video Order Alert Settings");
+    kitchen_start = FieldListEnd();  // Point to the label field
     AddNewLine();
     LeftAlign();
     AddTextField("Warning Time (minutes)", 5); SetFlag(FF_ONLYDIGITS);
@@ -595,14 +620,199 @@ SettingsZone::SettingsZone()
     AddListField("Flash Color", ColorName, ColorValue);
 }
 
+SignalResult SettingsZone::Signal(Terminal *term, const genericChar* message)
+{
+    FnTrace("SettingsZone::Signal()");
+    static const genericChar* commands[] = {"section0", "section1", "section2", "section3",
+                                      "section4", "section5", "section6", "section7", NULL};
+    SignalResult retval = SIGNAL_OKAY;
+    int draw = 1;
+    int new_section = -1;
+
+    int idx = CompareList(message, commands);
+    if (idx >= 0 && idx < 8)
+    {
+        new_section = idx;
+    }
+    else
+    {
+        retval = FormZone::Signal(term, message);
+        draw = 0;
+    }
+
+    if (new_section >= 0 && new_section != section)
+    {
+        SaveRecord(term, record_no, 0);  // Save current section before switching
+        section = new_section;
+        LoadRecord(term, 0);  // Load new section
+    }
+
+    if (draw)
+        Draw(term, 1);
+
+    return retval;
+}
+
+SignalResult SettingsZone::Touch(Terminal *term, int tx, int ty)
+{
+    FnTrace("SettingsZone::Touch()");
+    
+    // Check if touch is on section buttons
+    int button_y = y + border;
+    int button_h = font_height + 8;
+    int button_w = (w - border * 2) / 8;  // 8 sections
+    int button_x = x + border;
+    
+    if (ty >= button_y && ty <= button_y + button_h)
+    {
+        int clicked_section = (tx - button_x) / button_w;
+        if (clicked_section >= 0 && clicked_section < 8)
+        {
+            char section_cmd[16];
+            snprintf(section_cmd, sizeof(section_cmd), "section%d", clicked_section);
+            return Signal(term, section_cmd);
+        }
+    }
+    
+    // Otherwise, let FormZone handle the touch
+    return FormZone::Touch(term, tx, ty);
+}
+
 RenderResult SettingsZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("SettingsZone::Render()");
-    form_header = 0;
+    
+    // Calculate button area height
+    int button_h = font_height + 8;
+    int button_area = button_h + border * 2;
+    
+    // Set form header to account for section buttons
+    form_header = (button_area / (Flt) font_height) + 1;
     if (name.size() > 0)
-        form_header = 1;
+        form_header += 1;
 
-    FormZone::Render(term, update_flag);
+    // Deactivate all fields first
+    FormField *f = FieldList();
+    while (f)
+    {
+        f->active = 0;
+        f = f->next;
+    }
+
+    // Activate fields for current section
+    FormField *section_start = NULL;
+    FormField *section_end = NULL;
+    
+    switch (section)
+    {
+    case 0:  // Business Information
+        section_start = business_start;
+        section_end = logon_start;
+        break;
+    case 1:  // Logon ID Life
+        section_start = logon_start;
+        section_end = ledger_start;
+        break;
+    case 2:  // Ledger Accounts
+        section_start = ledger_start;
+        section_end = drawer_start;
+        break;
+    case 3:  // Drawer Settings
+        section_start = drawer_start;
+        section_end = smtp_start;
+        break;
+    case 4:  // SMTP Settings
+        section_start = smtp_start;
+        section_end = misc_start;
+        break;
+    case 5:  // Miscellaneous Settings
+        section_start = misc_start;
+        section_end = restart_start;
+        break;
+    case 6:  // Scheduled Restart Settings
+        section_start = restart_start;
+        section_end = kitchen_start;
+        break;
+    case 7:  // Kitchen Video Order Alert Settings
+        section_start = kitchen_start;
+        section_end = NULL;  // Last section
+        break;
+    }
+
+    // Activate fields in current section
+    if (section_start)
+    {
+        f = section_start;
+        while (f)
+        {
+            f->active = 1;
+            if (f == section_end)
+                break;  // Stop at section boundary
+            f = f->next;
+        }
+    }
+
+    // Call parent Render but prevent it from calling LoadRecord
+    // We handle LoadRecord ourselves after activating fields
+    records = RecordCount(term);
+    int was_new = (update_flag == RENDER_NEW);
+    if (was_new)
+    {
+        record_no = 0;
+        LoadRecord(term, 0);  // Load current section
+    }
+
+    if (update_flag || keep_focus == 0)
+        keyboard_focus = NULL;
+
+    LayoutZone::Render(term, update_flag);
+
+    if (!no_line)
+    {
+        Flt tl = form_header;
+        if (tl < 0)
+            tl += size_y;
+        if (tl > 0)
+            Line(term, tl + .1, color[0]);
+    }
+
+    if (records <= 0)
+    {
+        // Render buttons even if no records
+    }
+    else
+    {
+        LayoutForm(term);
+        for (FormField *f = FieldList(); f != NULL; f = f->next)
+        {
+            f->selected = (keyboard_focus == f);
+            if (f->active)
+                f->Render(term, this);
+        }
+    }
+    
+    // Render section buttons at the top
+    int button_y = y + border;
+    int button_w = (w - border * 2) / 8;  // 8 sections
+    int button_x = x + border;
+    
+    // Section button names
+    const char* section_names[] = {
+        "Business", "Logon", "Ledger", "Drawer",
+        "SMTP", "Misc", "Restart", "Kitchen"
+    };
+    
+    for (int i = 0; i < 8; ++i)
+    {
+        int btn_col = (i == section) ? COLOR_DK_BLUE : COLOR_DEFAULT;
+        term->RenderFilledFrame(button_x + i * button_w, button_y, button_w - 2, button_h,
+                               2, IMAGE_SAND, (i == section) ? FRAME_LIT : 0);
+        term->RenderText(term->Translate(section_names[i]), 
+                        button_x + i * button_w + button_w / 2, 
+                        button_y + button_h / 2,
+                        btn_col, FONT_TIMES_20B, ALIGN_CENTER);
+    }
+    
     TextC(term, 0, name.Value(), color[0]);
     return RENDER_OKAY;
 }
@@ -611,70 +821,101 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("SettingsZone::LoadRecord()");
     Settings *settings = term->GetSettings();
-    FormField *f = FieldList();
+    FormField *f = NULL;
     int day_length_hrs = settings->min_day_length / 60 / 60;
 
-    f->Set(settings->store_name); f = f->next;
-    f->Set(settings->store_address); f = f->next;
-    f->Set(settings->store_address2); f = f->next;
-    f->Set(settings->country_code); f = f->next;
-    f->Set(settings->store_code); f = f->next;
-
-    f = f->next;  // skip past label
-    f->Set(settings->screen_blank_time); f = f->next;
-    f->Set(settings->delay_time1); f = f->next;
-    f->Set(settings->delay_time2); f = f->next;
-    f->Set(settings->start_page_timeout); f = f->next;
-
-    f = f->next;  // skip past label
-    f->Set(settings->low_acct_num); f = f->next;
-    f->Set(settings->high_acct_num); f = f->next;
-    // need to get the list of accounts for this
-    Account *acct = term->system_data->account_db.AccountList();
-    while (acct != NULL)
+    // Find the start field for current section
+    switch (section)
     {
-        f->AddEntry(acct->name.Value(), acct->number);
-        acct = acct->next;
+    case 0:  // Business Information
+        f = business_start;
+        if (f) { f->Set(settings->store_name); f = f->next; }
+        if (f) { f->Set(settings->store_address); f = f->next; }
+        if (f) { f->Set(settings->store_address2); f = f->next; }
+        if (f) { f->Set(settings->country_code); f = f->next; }
+        if (f) { f->Set(settings->store_code); f = f->next; }
+        break;
+
+    case 1:  // Logon ID Life
+        f = logon_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Set(settings->screen_blank_time); f = f->next; }
+        if (f) { f->Set(settings->delay_time1); f = f->next; }
+        if (f) { f->Set(settings->delay_time2); f = f->next; }
+        if (f) { f->Set(settings->start_page_timeout); f = f->next; }
+        break;
+
+    case 2:  // Ledger Accounts
+        f = ledger_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Set(settings->low_acct_num); f = f->next; }
+        if (f) { f->Set(settings->high_acct_num); f = f->next; }
+        if (f)
+        {
+            // need to get the list of accounts for this
+            Account *acct = term->system_data->account_db.AccountList();
+            while (acct != NULL)
+            {
+                f->AddEntry(acct->name.Value(), acct->number);
+                acct = acct->next;
+            }
+            f->Set(settings->drawer_account); f = f->next;
+        }
+        break;
+
+    case 3:  // Drawer Settings
+        f = drawer_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Set(settings->require_drawer_balance); f = f->next; }
+        if (f) { f->Set(settings->default_tab_amount); f = f->next; }
+        break;
+
+    case 4:  // SMTP Settings
+        f = smtp_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Set(settings->email_send_server); f = f->next; }
+        if (f) { f->Set(settings->email_replyto); f = f->next; }
+        break;
+
+    case 5:  // Miscellaneous Settings
+        f = misc_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Set(settings->allow_user_select); f = f->next; }
+        if (f) { f->Set(day_length_hrs); f = f->next; }
+        if (f) { f->Set(settings->fast_takeouts); f = f->next; }
+        if (f) { f->Set(settings->default_report_period); f = f->next; }
+        if (f) { f->Set(settings->print_report_header); f = f->next; }
+        if (f) { f->Set(settings->split_check_view); f = f->next; }
+        if (f) { f->Set(settings->mod_separator); f = f->next; }
+        if (f) { f->Set(settings->report_start_midnight); f = f->next; }
+        if (f) { f->Set(settings->allow_iconify); f = f->next; }
+        if (f) { f->Set(settings->use_embossed_text); f = f->next; }
+        if (f) { f->Set(settings->use_text_antialiasing); f = f->next; }
+        if (f) { f->Set(settings->use_drop_shadows); f = f->next; }
+        if (f) { f->Set(settings->shadow_offset_x); f = f->next; }
+        if (f) { f->Set(settings->shadow_offset_y); f = f->next; }
+        if (f) { f->Set(settings->shadow_blur_radius); f = f->next; }
+        if (f) { f->Set(settings->button_text_position); f = f->next; }
+        break;
+
+    case 6:  // Scheduled Restart Settings
+        f = restart_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Set(settings->scheduled_restart_hour); f = f->next; }
+        if (f) { f->Set(settings->scheduled_restart_min); f = f->next; }
+        break;
+
+    case 7:  // Kitchen Video Order Alert Settings
+        f = kitchen_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Set(settings->kv_order_warn_time); f = f->next; }
+        if (f) { f->Set(settings->kv_order_alert_time); f = f->next; }
+        if (f) { f->Set(settings->kv_order_flash_time); f = f->next; }
+        if (f) { f->Set(settings->kv_warn_color); f = f->next; }
+        if (f) { f->Set(settings->kv_alert_color); f = f->next; }
+        if (f) { f->Set(settings->kv_flash_color); f = f->next; }
+        break;
     }
-    f->Set(settings->drawer_account); f = f->next;
-
-    f = f->next;  // skip past label
-    f->Set(settings->require_drawer_balance); f = f->next;
-    f->Set(settings->default_tab_amount); f = f->next;
-
-    f = f->next;  // skip past label
-    f->Set(settings->email_send_server); f = f->next;
-    f->Set(settings->email_replyto); f = f->next;
-
-    f = f->next;  // skip past label
-    f->Set(settings->allow_user_select); f = f->next;
-    f->Set(day_length_hrs); f = f->next;
-    f->Set(settings->fast_takeouts); f = f->next;
-    f->Set(settings->default_report_period); f = f->next;
-    f->Set(settings->print_report_header); f = f->next;
-    f->Set(settings->split_check_view); f = f->next;
-    f->Set(settings->mod_separator); f = f->next;
-    f->Set(settings->report_start_midnight); f = f->next;
-    f->Set(settings->allow_iconify); f = f->next;
-    f->Set(settings->use_embossed_text); f = f->next;
-    f->Set(settings->use_text_antialiasing); f = f->next;
-    f->Set(settings->use_drop_shadows); f = f->next;
-    f->Set(settings->shadow_offset_x); f = f->next;
-    f->Set(settings->shadow_offset_y); f = f->next;
-    f->Set(settings->shadow_blur_radius); f = f->next;
-    f->Set(settings->button_text_position); f = f->next;
-    
-    f = f->next;  // skip past label
-    f->Set(settings->scheduled_restart_hour); f = f->next;
-    f->Set(settings->scheduled_restart_min); f = f->next;
-
-    f = f->next;  // skip past label
-    f->Set(settings->kv_order_warn_time); f = f->next;
-    f->Set(settings->kv_order_alert_time); f = f->next;
-    f->Set(settings->kv_order_flash_time); f = f->next;
-    f->Set(settings->kv_warn_color); f = f->next;
-    f->Set(settings->kv_alert_color); f = f->next;
-    f->Set(settings->kv_flash_color); f = f->next;
 
     return 0;
 }
@@ -683,69 +924,95 @@ int SettingsZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("SettingsZone::SaveRecord()");
     Settings *settings = term->GetSettings();
-    FormField *f = FieldList();
+    FormField *f = NULL;
     int day_length_hrs = 0;
 
-    f->Get(settings->store_name); f = f->next;
-    f->Get(settings->store_address); f = f->next;
-    f->Get(settings->store_address2); f = f->next;
-    f->Get(settings->country_code);  f = f->next;
-    f->Get(settings->store_code);  f = f->next;
+    // Find the start field for current section
+    switch (section)
+    {
+    case 0:  // Business Information
+        f = business_start;
+        if (f) { f->Get(settings->store_name); f = f->next; }
+        if (f) { f->Get(settings->store_address); f = f->next; }
+        if (f) { f->Get(settings->store_address2); f = f->next; }
+        if (f) { f->Get(settings->country_code); f = f->next; }
+        if (f) { f->Get(settings->store_code); f = f->next; }
+        break;
 
-    f = f->next;  // skip past label
-    f->Get(settings->screen_blank_time); f = f->next;
-    f->Get(settings->delay_time1); f = f->next;
-    f->Get(settings->delay_time2); f = f->next;
-    f->Get(settings->start_page_timeout); f = f->next;
+    case 1:  // Logon ID Life
+        f = logon_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Get(settings->screen_blank_time); f = f->next; }
+        if (f) { f->Get(settings->delay_time1); f = f->next; }
+        if (f) { f->Get(settings->delay_time2); f = f->next; }
+        if (f) { f->Get(settings->start_page_timeout); f = f->next; }
+        break;
 
-    f = f->next;  // skip past label
-    f->Get(settings->low_acct_num);  f = f->next;
-    f->Get(settings->high_acct_num);  f = f->next;
-    f->Get(settings->drawer_account);  f = f->next;
+    case 2:  // Ledger Accounts
+        f = ledger_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Get(settings->low_acct_num); f = f->next; }
+        if (f) { f->Get(settings->high_acct_num); f = f->next; }
+        if (f) { f->Get(settings->drawer_account); f = f->next; }
+        // set the global settings here
+        term->system_data->account_db.low_acct_num = settings->low_acct_num;
+        term->system_data->account_db.high_acct_num = settings->high_acct_num;
+        break;
 
-    f = f->next;  // skip past label
-    f->Get(settings->require_drawer_balance);  f = f->next;
-    f->Get(settings->default_tab_amount);  f = f->next;
+    case 3:  // Drawer Settings
+        f = drawer_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Get(settings->require_drawer_balance); f = f->next; }
+        if (f) { f->Get(settings->default_tab_amount); f = f->next; }
+        break;
 
-    f = f->next;  // skip past label
-    f->Get(settings->email_send_server);  f = f->next;
-    f->Get(settings->email_replyto); f = f->next;
+    case 4:  // SMTP Settings
+        f = smtp_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Get(settings->email_send_server); f = f->next; }
+        if (f) { f->Get(settings->email_replyto); f = f->next; }
+        break;
 
-    f = f->next;  // skip past label
-    f->Get(settings->allow_user_select);  f = f->next;
-    f->Get(day_length_hrs);  f = f->next;
-    f->Get(settings->fast_takeouts); f = f->next;
-    f->Get(settings->default_report_period); f = f->next;
-    f->Get(settings->print_report_header); f = f->next;
-    f->Get(settings->split_check_view); f = f->next;
-    f->Get(settings->mod_separator); f = f->next;
-    f->Get(settings->report_start_midnight); f = f->next;
-    f->Get(settings->allow_iconify); f = f->next;
-    f->Get(settings->use_embossed_text); f = f->next;
-    f->Get(settings->use_text_antialiasing); f = f->next;
-    f->Get(settings->use_drop_shadows); f = f->next;
-    f->Get(settings->shadow_offset_x); f = f->next;
-    f->Get(settings->shadow_offset_y); f = f->next;
-    f->Get(settings->shadow_blur_radius); f = f->next;
-    f->Get(settings->button_text_position); f = f->next;
-    
-    f = f->next;  // skip past label
-    f->Get(settings->scheduled_restart_hour); f = f->next;
-    f->Get(settings->scheduled_restart_min); f = f->next;
+    case 5:  // Miscellaneous Settings
+        f = misc_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Get(settings->allow_user_select); f = f->next; }
+        if (f) { f->Get(day_length_hrs); f = f->next; }
+        if (f) { f->Get(settings->fast_takeouts); f = f->next; }
+        if (f) { f->Get(settings->default_report_period); f = f->next; }
+        if (f) { f->Get(settings->print_report_header); f = f->next; }
+        if (f) { f->Get(settings->split_check_view); f = f->next; }
+        if (f) { f->Get(settings->mod_separator); f = f->next; }
+        if (f) { f->Get(settings->report_start_midnight); f = f->next; }
+        if (f) { f->Get(settings->allow_iconify); f = f->next; }
+        if (f) { f->Get(settings->use_embossed_text); f = f->next; }
+        if (f) { f->Get(settings->use_text_antialiasing); f = f->next; }
+        if (f) { f->Get(settings->use_drop_shadows); f = f->next; }
+        if (f) { f->Get(settings->shadow_offset_x); f = f->next; }
+        if (f) { f->Get(settings->shadow_offset_y); f = f->next; }
+        if (f) { f->Get(settings->shadow_blur_radius); f = f->next; }
+        if (f) { f->Get(settings->button_text_position); f = f->next; }
+        settings->min_day_length = day_length_hrs * 60 * 60;  // convert from hours to seconds
+        break;
 
-    f = f->next;  // skip past label
-    f->Get(settings->kv_order_warn_time); f = f->next;
-    f->Get(settings->kv_order_alert_time); f = f->next;
-    f->Get(settings->kv_order_flash_time); f = f->next;
-    f->Get(settings->kv_warn_color); f = f->next;
-    f->Get(settings->kv_alert_color); f = f->next;
-    f->Get(settings->kv_flash_color); f = f->next;
+    case 6:  // Scheduled Restart Settings
+        f = restart_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Get(settings->scheduled_restart_hour); f = f->next; }
+        if (f) { f->Get(settings->scheduled_restart_min); f = f->next; }
+        break;
 
-    settings->min_day_length = day_length_hrs * 60 * 60;  // convert from hours to seconds
-
-    // set the global settings here
-    term->system_data->account_db.low_acct_num = settings->low_acct_num;
-    term->system_data->account_db.high_acct_num = settings->high_acct_num;
+    case 7:  // Kitchen Video Order Alert Settings
+        f = kitchen_start;
+        if (f) f = f->next;  // skip past label
+        if (f) { f->Get(settings->kv_order_warn_time); f = f->next; }
+        if (f) { f->Get(settings->kv_order_alert_time); f = f->next; }
+        if (f) { f->Get(settings->kv_order_flash_time); f = f->next; }
+        if (f) { f->Get(settings->kv_warn_color); f = f->next; }
+        if (f) { f->Get(settings->kv_alert_color); f = f->next; }
+        if (f) { f->Get(settings->kv_flash_color); f = f->next; }
+        break;
+    }
 
     // argument checking
     int fixed = 0;

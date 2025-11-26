@@ -873,7 +873,9 @@ int Check::FinalizeOrders(Terminal *term, int reprint)
     }
     check_state = ORDER_FINAL;
 
-    if (!chef_time.IsSet())
+    // Only set chef_time if there are orders going to video targets (kitchens/bars)
+    // This prevents the timer from starting when only non-video items (like retail) are sent
+    if (!chef_time.IsSet() && HasVideoTargetOrders(settings))
         chef_time.Set();  //check is sent to kitchen on close
 
     return 0;
@@ -955,7 +957,10 @@ int Check::Close(Terminal *term)
         term->system_data->inventory.MakeOrder(this);
         Save();
     }
-    if (!chef_time.IsSet())
+    // Only set chef_time if there are orders going to video targets (kitchens/bars)
+    // This prevents the timer from starting when only non-video items (like retail) are sent
+    Settings *settings = &MasterSystem->settings;
+    if (!chef_time.IsSet() && HasVideoTargetOrders(settings))
         chef_time.Set();  //check is sent to kitchen on close
     
     vt::Logger::info("Check #{} closed successfully - {} subchecks", checknum, closed);
@@ -2339,8 +2344,24 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                 vt_safe_string::safe_format(str2, STRLONG, "%s ", term->Translate("TO"));
             else
                 str2[0] = '\0';
-            if ((video_target == PRINTER_DEFAULT) ||
-                (order_target == video_target))
+            
+            // For video targets, skip orders that have already been shown (ORDER_SHOWN flag set)
+            // This prevents already-made items from reappearing
+            bool should_display = false;
+            if (video_target == PRINTER_DEFAULT)
+            {
+                should_display = true;  // Always show for default printer
+            }
+            else if (order_target == video_target)
+            {
+                // For video targets, only show if ORDER_SHOWN is not set
+                if (!(order->status & ORDER_SHOWN))
+                {
+                    should_display = true;
+                }
+            }
+            
+            if (should_display)
             {
                 if (video_target != PRINTER_DEFAULT)
                 {
@@ -2440,8 +2461,23 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                 for (Order *mod = order->modifier_list; mod != nullptr; mod = mod->next)
                 {
                     int mod_target = mod->VideoTarget(settings);
-                    if ((video_target == PRINTER_DEFAULT) ||
-                        (mod_target == video_target))
+                    
+                    // For video targets, skip modifiers that have already been shown
+                    bool should_display_mod = false;
+                    if (video_target == PRINTER_DEFAULT)
+                    {
+                        should_display_mod = true;
+                    }
+                    else if (mod_target == video_target)
+                    {
+                        // For video targets, only show if ORDER_SHOWN is not set
+                        if (!(mod->status & ORDER_SHOWN))
+                        {
+                            should_display_mod = true;
+                        }
+                    }
+                    
+                    if (should_display_mod)
                     {
                         if (use_comma && rzone)
                         {
@@ -2882,6 +2918,25 @@ int Check::IsBatchSet()
     }
 
     return retval;
+}
+
+int Check::HasVideoTargetOrders(Settings *settings)
+{
+    FnTrace("Check::HasVideoTargetOrders()");
+    // Check if this check has any orders that go to video targets
+    // (not PRINTER_DEFAULT or PRINTER_NONE)
+    for (SubCheck *sc = SubList(); sc != nullptr; sc = sc->next)
+    {
+        for (Order *order = sc->OrderList(); order != nullptr; order = order->next)
+        {
+            int video_target = order->VideoTarget(settings);
+            if (video_target != PRINTER_DEFAULT && video_target != PRINTER_NONE)
+            {
+                return 1;  // Has at least one order going to a video target
+            }
+        }
+    }
+    return 0;  // No orders going to video targets
 }
 
 int Check::CustomerType(int set)

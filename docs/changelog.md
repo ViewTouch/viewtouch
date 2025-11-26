@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **General Settings Section Navigation (11-24-2025)**
+  - **Feature**: Added section-based navigation to General Settings with tab buttons
+  - **Implementation**:
+    - Reorganized General Settings into 8 distinct sections: Business, Logon, Ledger, Drawer, SMTP, Misc, Restart, and Kitchen
+    - Added section buttons at the top of the settings page for easy navigation between sections
+    - Each section displays only its relevant fields, making the settings interface more organized and easier to navigate
+    - Section switching automatically saves the current section before loading the new one
+    - Active section is highlighted in blue for visual feedback
+  - **Usage**: Users can click section buttons at the top of the General Settings page to switch between different setting categories
+  - **Impact**: Improves usability by organizing settings into logical sections and reducing visual clutter
+  - **Recommendation**: Use 34pt Bold Font for section buttons for optimal readability
+  - **Files modified**: 
+    - `zone/settings_zone.hh` - Added section tracking and navigation support
+    - `zone/settings_zone.cc` - Implemented section-based field activation, section switching, and button rendering
 - **Order Comment Feature (2025-01-xx)**
   - **Feature**: Added ability to add comments to orders as modifier items
   - **Implementation**:
@@ -139,6 +153,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
       - Checks with `chef_time` set (for elapsed time calculation)
   - **Impact**: Kitchen video alerts now work correctly for both `MakeReport()` and `PrintWorkOrder()` code paths, providing visual feedback (warn → alert → flash) based on order age
   - **Files modified**: `main/business/check.cc`
+
+- **Video Target Timer and Display Issues (2025-11-26)**
+  - **Issue 1 - Timer Starting Incorrectly**: When users added items that don't go to video targets (kitchens/bars), the timer would start. Then when items going to video targets were added later, those displays would see incorrect elapsed time
+  - **Root Cause 1**: `chef_time` (the timer start time) was set whenever orders were finalized or the check was closed, regardless of whether any orders were actually destined for video targets
+  - **Fix 1**:
+    - Added `HasVideoTargetOrders()` method to check if a check has any orders going to video targets (not PRINTER_DEFAULT or PRINTER_NONE)
+    - Modified `FinalizeOrders()` and `Close()` to only set `chef_time` when there are orders that actually go to video targets
+    - This ensures the timer only starts when items destined for kitchens/bars are sent, not when non-video items (like retail) are sent
+  - **Issue 2 - Already-Made Items Reappearing**: When a check was tapped twice (marked as served) and then new items were added, ALL items (including already-made ones) would reappear
+  - **Root Cause 2**: In `MakeReport()`, the display logic didn't check the `ORDER_SHOWN` flag before displaying orders on video targets. The system uses `ORDER_SHOWN` to track which orders have been displayed and should not be shown again (unless they're new orders)
+  - **Fix 2**:
+    - Added `ORDER_SHOWN` flag checks in `MakeReport()` for both orders and modifiers
+    - When displaying on video targets, now skips orders/modifiers that have `ORDER_SHOWN` flag set
+    - This ensures only new items (without `ORDER_SHOWN`) are displayed when a check reappears
+    - Note: `PrintWorkOrder()` already had this logic via `PrintStatus()`, but `MakeReport()` was missing it
+  - **Impact**: Kitchen and bar displays now show accurate elapsed time for orders AND only display new items when checks reappear after being marked as served
+  - **Files modified**: `main/business/check.hh`, `main/business/check.cc`
+
 
 ### Added
 - **Default Configuration Improvements (2025-12-XX)**

@@ -52,6 +52,16 @@ public:
 // General Settings
 class SettingsZone : public FormZone
 {
+    int section;  // Current section being displayed
+    FormField *business_start;
+    FormField *logon_start;
+    FormField *ledger_start;
+    FormField *drawer_start;
+    FormField *smtp_start;
+    FormField *misc_start;
+    FormField *restart_start;
+    FormField *kitchen_start;
+
 public:
     // Constructor
     SettingsZone();
@@ -59,6 +69,8 @@ public:
     // Member Functions
     int          Type() { return ZONE_SETTINGS; }
     RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Touch(Terminal *term, int tx, int ty);
     int          LoadRecord(Terminal *term, int record);
     int          SaveRecord(Terminal *term, int record, int write_file);
 };
