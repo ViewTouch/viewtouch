@@ -17,7 +17,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Active section is highlighted in blue for visual feedback
   - **Usage**: Users can click section buttons at the top of the General Settings page to switch between different setting categories
   - **Impact**: Improves usability by organizing settings into logical sections and reducing visual clutter
-  - **Recommendation**: Use 34pt Bold Font for section buttons for optimal readability
   - **Files modified**: 
     - `zone/settings_zone.hh` - Added section tracking and navigation support
     - `zone/settings_zone.cc` - Implemented section-based field activation, section switching, and button rendering
@@ -36,6 +35,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/pos_zone.hh`, `zone/pos_zone.cc` - Added ZONE_ORDER_COMMENT type and wiring
     - `main/ui/labels.cc` - Added "Order Comment" to zone type list
     - `term/term_dialog.cc` - Updated zone editor to handle new zone type
+
+### Improved
+- **Settings Page UI Enhancements (11-27-2025)**
+  - **Feature**: Enhanced General Settings page layout and usability
+  - **Changes**:
+    - Section buttons now extend to the horizontal line for better visual hierarchy and easier touch targeting
+    - Business section is now properly selected and displayed when first visiting the Settings page
+    - Button text now follows the Dialog font size setting instead of using a hardcoded font
+    - Removed extraneous section label lines that were incorrectly appearing at the end of each section
+  - **Impact**: Improved ergonomics, better visual consistency with other pages, and cleaner section boundaries
+  - **Files modified**: 
+    - `zone/settings_zone.cc` - Updated button positioning, sizing, font handling, and field activation logic
 
 ### Fixed
 - **CI Build Failure: Systemd Service Installation Permission Denied (2025-01-XX)**
