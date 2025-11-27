@@ -657,9 +657,15 @@ SignalResult SettingsZone::Touch(Terminal *term, int tx, int ty)
 {
     FnTrace("SettingsZone::Touch()");
     
-    // Check if touch is on section buttons
-    int button_y = y + border;
-    int button_h = font_height + 8;
+    // Calculate button position at bottom of zone
+    // Position buttons just above the horizontal line
+    Flt tl = form_header;
+    if (tl < 0)
+        tl += size_y;
+    int line_y = y + border + header + (int) (tl * (Flt) font_height);
+    
+    int button_h = line_y - (y + border + header);  // Extend from content start to line
+    int button_y = y + border + header;
     int button_w = (w - border * 2) / 8;  // 8 sections
     int button_x = x + border;
     
@@ -682,12 +688,9 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("SettingsZone::Render()");
     
-    // Calculate button area height
-    int button_h = font_height + 8;
-    int button_area = button_h + border * 2;
-    
-    // Set form header to account for section buttons
-    form_header = (button_area / (Flt) font_height) + 1;
+    // Set form header to account for section buttons at bottom
+    // Buttons will be positioned just above the horizontal line
+    form_header = 3.0;  // Space for buttons
     if (name.size() > 0)
         form_header += 1;
 
@@ -739,24 +742,21 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
         break;
     }
 
-    // Activate fields in current section
+    // Activate fields in current section, but exclude the label of the next section
     if (section_start)
     {
         f = section_start;
-        while (f)
+        while (f && f != section_end)
         {
             f->active = 1;
-            if (f == section_end)
-                break;  // Stop at section boundary
             f = f->next;
         }
+        // Don't activate section_end (which is the next section's label)
     }
 
-    // Call parent Render but prevent it from calling LoadRecord
-    // We handle LoadRecord ourselves after activating fields
+    // Call parent Render and ensure first section is loaded
     records = RecordCount(term);
-    int was_new = (update_flag == RENDER_NEW);
-    if (was_new)
+    if (update_flag == RENDER_NEW)
     {
         record_no = 0;
         LoadRecord(term, 0);  // Load current section
@@ -776,11 +776,7 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
             Line(term, tl + .1, color[0]);
     }
 
-    if (records <= 0)
-    {
-        // Render buttons even if no records
-    }
-    else
+    if (records > 0)
     {
         LayoutForm(term);
         for (FormField *f = FieldList(); f != NULL; f = f->next)
@@ -791,8 +787,15 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
         }
     }
     
-    // Render section buttons at the top
-    int button_y = y + border;
+    // Render section buttons at the top, extending down to the horizontal line
+    // Calculate the line position
+    Flt tl = form_header;
+    if (tl < 0)
+        tl += size_y;
+    int line_y = y + border + header + (int) (tl * (Flt) font_height);
+    
+    int button_y = y + border + header;
+    int button_h = line_y - button_y;  // Extend from top to the horizontal line
     int button_w = (w - border * 2) / 8;  // 8 sections
     int button_x = x + border;
     
@@ -810,7 +813,7 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
         term->RenderText(term->Translate(section_names[i]), 
                         button_x + i * button_w + button_w / 2, 
                         button_y + button_h / 2,
-                        btn_col, FONT_TIMES_20B, ALIGN_CENTER);
+                        btn_col, font, ALIGN_CENTER);  // Use zone's font instead of hardcoded font
     }
     
     TextC(term, 0, name.Value(), color[0]);
