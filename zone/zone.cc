@@ -560,6 +560,8 @@ int Page::Init(ZoneDB *zone_db)
     case PAGE_TABLE:     parent_id = PAGEID_TABLE; break;
     case PAGE_TABLE2:    parent_id = PAGEID_TABLE2; break;
     case PAGE_LIBRARY:   parent_id = 0; break;
+    case PAGE_MODIFIER_KEYBOARD: parent_id = -96; break;
+    case PAGE_INDEX_WITH_TABS:   parent_id = -95; break;
 	}
 
 	if (zone_db)

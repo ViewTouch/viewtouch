@@ -87,6 +87,9 @@
 #define QUALIFIER_CUT2      (1<<18)
 #define QUALIFIER_CUT3      (1<<19)
 #define QUALIFIER_CUT4      (1<<20)
+#define QUALIFIER_EASY      (1<<21)
+#define QUALIFIER_ADD       (1<<22)
+#define QUALIFIER_SENIORSHARE (1<<23)
 
 // Item Definitions
 #define ITEM_NORMAL       0  // Regular menu item
