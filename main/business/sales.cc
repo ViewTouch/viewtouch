@@ -811,6 +811,9 @@ int MergeQualifier(int &flag, int qualifier)
 		case QUALIFIER_CUT2:     flag = QUALIFIER_CUT2;      break;
         case QUALIFIER_CUT3:     flag = QUALIFIER_CUT3;      break;
         case QUALIFIER_CUT4:     flag = QUALIFIER_CUT4;      break;
+        case QUALIFIER_EASY:     flag = QUALIFIER_EASY;      break;
+        case QUALIFIER_ADD:      flag = QUALIFIER_ADD;       break;
+        case QUALIFIER_SENIORSHARE: flag = QUALIFIER_SENIORSHARE; break;
         }
 
         if (side)
@@ -849,6 +852,9 @@ int PrintItem(char* buffer, int qualifier, const char* item)
     else if ((qualifier & QUALIFIER_CUT2))      vt_safe_string::safe_format(pre, 64, "Cut/2 ");
     else if ((qualifier & QUALIFIER_CUT3))      vt_safe_string::safe_format(pre, 64, "Cut/3 ");
     else if ((qualifier & QUALIFIER_CUT4))      vt_safe_string::safe_format(pre, 64, "Cut/4 ");
+    else if ((qualifier & QUALIFIER_EASY))      vt_safe_string::safe_format(pre, 64, "Easy ");
+    else if ((qualifier & QUALIFIER_ADD))       vt_safe_string::safe_format(pre, 64, "Add ");
+    else if ((qualifier & QUALIFIER_SENIORSHARE)) vt_safe_string::safe_format(pre, 64, "Senior Share ");
     if ((qualifier & QUALIFIER_SUB))
         vt_safe_string::safe_format(buffer, STRLENGTH, "SUB: %s%s%s", pre, item, post);
     else

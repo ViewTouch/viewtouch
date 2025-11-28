@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **New Page Types and Qualifiers (11-28-2025)**
+  - **Feature**: Added two new page types to support advanced modifier pages and enhanced navigation
+  - **New Page Types**:
+    - **Modifier Page with Keyboard** (Type 17, Parent -96): A modifier page with pre-positioned empty buttons and keyboard support for creating complex modifier pages with qualifiers (e.g., breakfast egg preparations: Soft Poach, Hard Scramble, Over Easy)
+    - **Index with Tabs** (Type 18, Parent -95): An index page with tab-based navigation that child menu item pages automatically inherit, enabling one-touch navigation between any pages in the system
+  - **New Qualifiers**:
+    - **Easy**: For items prepared with ease (e.g., "Over Easy" eggs)
+    - **Add**: For adding items or ingredients
+    - **Senior Share**: For senior portion sharing options
+  - **Note**: Pages -95 & -96 are currently under development as parent templates for these new page types
+  - **Impact**: Significantly reduces time for editors creating modifier pages with qualifiers and setting up navigation tabs that propagate to all child pages
+  - **Files modified**:
+    - `zone/zone.hh`, `term/term_view.hh` - Added PAGE_MODIFIER_KEYBOARD and PAGE_INDEX_WITH_TABS constants
+    - `main/ui/labels.cc` - Added page type names and qualifier names/values
+    - `zone/zone.cc` - Added parent page relationships for new page types
+    - `main/business/sales.hh` - Added QUALIFIER_EASY, QUALIFIER_ADD, QUALIFIER_SENIORSHARE constants
+    - `main/business/sales.cc` - Added MergeQualifier and PrintItem cases for new qualifiers
+
 - **General Settings Section Navigation (11-24-2025)**
   - **Feature**: Added section-based navigation to General Settings with tab buttons
   - **Implementation**:

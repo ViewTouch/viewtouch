@@ -218,6 +218,7 @@ const genericChar* PageTypeName[] = {
 	"System Page", "Guest Check Page",
     "Kitchen 1 Page", "Kitchen 2 Page",
     "Bar 1 Page", "Bar 2 Page",
+    "Modifier Page with Keyboard", "Index with Tabs",
     NULL};
 
 int PageTypeValue[] = {
@@ -228,6 +229,7 @@ int PageTypeValue[] = {
 	PAGE_SYSTEM, PAGE_CHECKS,
     PAGE_KITCHEN_VID, PAGE_KITCHEN_VID2,
     PAGE_BAR1, PAGE_BAR2,
+    PAGE_MODIFIER_KEYBOARD, PAGE_INDEX_WITH_TABS,
     -1};
 
 const genericChar* PageType2Name[] = {
@@ -419,15 +421,18 @@ int CallOrderValue[] = {
 const genericChar* QualifierName[] = {
     "No", "Sub", "On Side", "Lite", "Only", "Extra", "Double", "Dry",
     "Plain", "Toast", "UnToast", "Crisp", "Soft", "Hard", "Grill",
-    "< Left", "Right >", "Whole", "Cut/2", "Cut/3", "Cut/4", NULL};
+    "< Left", "Right >", "Whole", "Cut/2", "Cut/3", "Cut/4", 
+    "Easy", "Add", "Senior Share", NULL};
 const genericChar* QualifierShortName[] = {
     "no", "sub", "side", "lite", "only", "extra", "double", "dry",
     "plain", "toast", "untoast", "crisp", "soft", "hard", "grill",
-    "< left", "right >", "whole", "cut/2", "cut/3", "cut/4", NULL};
+    "< left", "right >", "whole", "cut/2", "cut/3", "cut/4",
+    "easy", "add", "senior share", NULL};
 int QualifierValue[] = {
     QUALIFIER_NO, QUALIFIER_SUB, QUALIFIER_SIDE, QUALIFIER_LITE, QUALIFIER_ONLY, QUALIFIER_EXTRA, QUALIFIER_DOUBLE, QUALIFIER_DRY,
     QUALIFIER_PLAIN, QUALIFIER_TOASTED, QUALIFIER_UNTOASTED, QUALIFIER_CRISPY, QUALIFIER_SOFT, QUALIFIER_HARD, QUALIFIER_GRILLED,
-    QUALIFIER_LEFT, QUALIFIER_RIGHT, QUALIFIER_WHOLE, QUALIFIER_CUT2, QUALIFIER_CUT3, QUALIFIER_CUT4, -1};
+    QUALIFIER_LEFT, QUALIFIER_RIGHT, QUALIFIER_WHOLE, QUALIFIER_CUT2, QUALIFIER_CUT3, QUALIFIER_CUT4,
+    QUALIFIER_EASY, QUALIFIER_ADD, QUALIFIER_SENIORSHARE, -1};
 
 const genericChar* SwitchName[] = {
     "Seat Based Ordering", "Drawer Mode", "Use Passwords", "Credit For Sale",
