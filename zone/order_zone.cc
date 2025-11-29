@@ -1605,6 +1605,15 @@ std::unique_ptr<Zone> ItemZone::Copy()
     z->group_id  = group_id;
     z->jump_type = jump_type;
     z->jump_id   = jump_id;
+    if (ImagePath() && z->ImagePath()) {
+        z->ImagePath()->Set(*ImagePath());
+        FILE *debugfile = fopen("/tmp/viewtouch_debug.log", "a");
+        if (debugfile) {
+            fprintf(debugfile, "ItemZone::Copy: Copied image path '%s' for zone '%s'\n",
+                    ImagePath()->Value(), name.Value());
+            fclose(debugfile);
+        }
+    }
     for (int i = 0; i < 3; ++i)
     {
         z->color[i]   = color[i];

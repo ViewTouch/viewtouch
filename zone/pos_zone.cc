@@ -521,9 +521,32 @@ int PosZone::Read(InputDataFile &df, int version)
 	df.Read(Expression());
 	df.Read(FileName());
 	if (version >= 29)
+	{
 		df.Read(ImagePath());
-	else if (ImagePath())
-		ImagePath()->Clear();
+		FILE *debugfile = fopen("/tmp/viewtouch_debug.log", "a");
+		if (debugfile) {
+			if (ImagePath() && ImagePath()->size() > 0) {
+				fprintf(debugfile, "PosZone::Read: Loaded image path '%s' for zone '%s' (type %d, version %d)\n",
+						ImagePath()->Value(), name.Value(), Type(), version);
+			} else {
+				fprintf(debugfile, "PosZone::Read: Image path is EMPTY for zone '%s' (type %d, version %d)\n",
+						name.Value(), Type(), version);
+			}
+			fclose(debugfile);
+		}
+		// Always log when we read an image path (even if empty) to verify the code path
+		if (ImagePath() && ImagePath()->size() > 0)
+		{
+			fprintf(stderr, "PosZone::Read: Loaded image path '%s' for zone '%s' (type %d, version %d)\n", 
+					ImagePath()->Value(), name.Value(), Type(), version);
+		}
+	}
+	else
+	{
+		// Old version - clear image path
+		if (ImagePath())
+			ImagePath()->Clear();
+	}
 	df.Read(JumpType());
 	df.Read(JumpID());
 	df.Read(Message());
@@ -585,7 +608,26 @@ int PosZone::Write(OutputDataFile &df, int version)
     error += df.Write(Expression());
     error += df.Write(FileName());
     if (version >= 29)
+    {
+        FILE *debugfile = fopen("/tmp/viewtouch_debug.log", "a");
+        if (debugfile) {
+            if (ImagePath() && ImagePath()->size() > 0) {
+                fprintf(debugfile, "PosZone::Write: Saving image path '%s' for zone '%s' (version %d)\n",
+                        ImagePath()->Value(), name.Value(), version);
+            } else {
+                fprintf(debugfile, "PosZone::Write: Image path is empty for zone '%s' (version %d)\n",
+                        name.Value(), version);
+            }
+            fclose(debugfile);
+        }
+        // Always write the image path (even if empty) - this ensures it's saved
+        if (ImagePath() && ImagePath()->size() > 0)
+        {
+            fprintf(stderr, "PosZone::Write: Saving image path '%s' for zone '%s' (type %d, version %d)\n", 
+                    ImagePath()->Value(), name.Value(), Type(), version);
+        }
         error += df.Write(ImagePath());
+    }
     error += df.Write(JumpType());
     error += df.Write(JumpID());
     error += df.Write(Message());
@@ -640,6 +682,15 @@ std::unique_ptr<Page> PosPage::Copy()
 
     for (Zone *z = ZoneList(); z != NULL; z = z->next)
     {
+        FILE *debugCopy = fopen("/tmp/viewtouch_debug.log", "a");
+        if (debugCopy) {
+            PosZone *pz = dynamic_cast<PosZone*>(z);
+            if (pz && pz->ImagePath() && pz->ImagePath()->size() > 0) {
+                fprintf(debugCopy, "PosPage::Copy: Copying zone '%s' (type %d) with image '%s' from page id=%d\n",
+                        z->name.Value(), z->Type(), pz->ImagePath()->Value(), id);
+            }
+            fclose(debugCopy);
+        }
         auto zone_copy = std::unique_ptr<Zone>(z->Copy());
         p->Add(zone_copy.release());
     }

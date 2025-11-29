@@ -1063,10 +1063,12 @@ int ZoneDB::Load(const char* filename)
         return 1;
 
     genericChar str[STRLENGTH];
+    fprintf(stderr, "ZoneDB::Load: File version=%d, ZONE_VERSION=%d\n", version, ZONE_VERSION);
     if (version < 17 || version > ZONE_VERSION)
     {
         vt_safe_string::safe_format(str, STRLENGTH, "Unknown ZoneDB file version %d", version);
         ReportError(str);
+        fprintf(stderr, "ZoneDB::Load: ERROR - Version mismatch, version=%d not supported\n", version);
         return 1;  // Error
     }
 
@@ -1146,8 +1148,13 @@ int ZoneDB::Save(const char* filename, int page_class)
 
     // see Zone::Read() (PosZone; pos_zone.cc) for version notes
     OutputDataFile df;
+    fprintf(stderr, "ZoneDB::Save: Saving to '%s' with ZONE_VERSION=%d, page_class=%d\n", 
+            filename, ZONE_VERSION, page_class);
     if (df.Open(filename, ZONE_VERSION, 1))
+    {
+        fprintf(stderr, "ZoneDB::Save: ERROR - Failed to open file '%s'\n", filename);
         return 1;
+    }
 
     int error = 0;
     error += df.Write(save_pages, 1);
