@@ -6,7 +6,54 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Button Text Position Setting for Image Buttons (11-29-2025)**
+  - **Feature**: Fixed "Button Text Position" setting to properly affect image buttons (ItemZone)
+  - **Root Cause**: `ItemZone::Render()` was not checking or applying the `button_text_position` setting, only `ButtonZone` had this functionality
+  - **Implementation**:
+    - Added `button_text_position` support to `ItemZone::Render()` method with all three modes:
+      - Mode 0: Text over image (default) - text renders on top of the image
+      - Mode 1: Text above image - text in top 30%, image in bottom 70%
+      - Mode 2: Text below image - image in top 70%, text in bottom 30%
+    - Reads setting from `Settings->button_text_position` 
+    - Applies proper text and image positioning based on selected mode
+    - Maintains all existing functionality for non-image buttons
+  - **Impact**: "Button Text Position" setting in General Settings now properly controls how text and images are positioned on menu item buttons with custom images
+  - **Files modified**:
+    - `zone/order_zone.cc` - Added button_text_position support to ItemZone::Render() with 3 positioning modes
+
 ### Added
+- **Transparent PNG Support with Checkered Background Removal (11-29-2025)**
+  - **Feature**: Automatic detection and removal of checkered backgrounds from transparent PNG images
+  - **Implementation**:
+    - Added `RemoveCheckeredBackground()` function in `term/term_view.cc` that detects and removes common checkered patterns (light gray/white alternating squares)
+    - Algorithm samples multiple points in the image to detect checkered patterns
+    - Automatically converts images to RGBA format if needed to support transparency
+    - Makes detected checkered pixels fully transparent by setting their alpha channel to 0
+    - Integrated into `LoadPNGFile()` to process images automatically during loading
+  - **Impact**: Vastly expands access to transparent PNG images from the internet by automatically cleaning checkered backgrounds that are commonly added by image editors and websites
+  - **Files modified**:
+    - `term/term_view.cc` - Added checkered background detection and removal algorithm
+    - `term/term_view.hh` - Updated Xpm constructor to support transparency masks
+
+- **Button Image Persistence Fix (11-29-2025)**
+  - **Feature**: Fixed critical bug where images added to buttons were not saving and persisting across program restarts, plus fixed black overlay when tapping buttons
+  - **Root Cause**: `ItemZone::Copy()` method was not copying the `ImagePath()` field when zones were copied from terminal zone_db to parent zone_db during editing
+  - **Implementation**:
+    - Added `ImagePath()` copying to `ItemZone::Copy()` in `zone/order_zone.cc`
+    - Added page redraw (`t->Draw(RENDER_NEW)`) after tapping buttons with images to immediately restore image display
+    - Added extensive debug logging throughout the zone read/write/copy pipeline
+    - Modified `Terminal::ReadZone()` to always read image paths for PosZone types
+    - Added automatic save calls to `SaveMenuPages()` and `SaveTablePages()` after zone edits
+  - **Impact**: Button images now correctly save to disk, persist across program restarts, and remain visible when tapped
+  - **Files modified**:
+    - `zone/order_zone.cc` - Added ImagePath copying in ItemZone::Copy() and page redraw in Touch()
+    - `main/hardware/terminal.cc` - Fixed ReadZone() to always read image paths and trigger saves
+    - `zone/pos_zone.cc` - Added debug logging to Read/Write methods
+    - `zone/button_zone.cc` - Added debug logging to Copy method
+    - `zone/zone.cc` - Added explicit ImagePath copying in CopyZone()
+    - `term/term_dialog.cc` - Added debug logging to Send method
+
 - **New Page Types and Qualifiers (11-28-2025)**
   - **Feature**: Added two new page types to support advanced modifier pages and enhanced navigation
   - **New Page Types**:

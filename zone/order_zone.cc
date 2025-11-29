@@ -1605,6 +1605,15 @@ std::unique_ptr<Zone> ItemZone::Copy()
     z->group_id  = group_id;
     z->jump_type = jump_type;
     z->jump_id   = jump_id;
+    if (ImagePath() && z->ImagePath()) {
+        z->ImagePath()->Set(*ImagePath());
+        FILE *debugfile = fopen("/tmp/viewtouch_debug.log", "a");
+        if (debugfile) {
+            fprintf(debugfile, "ItemZone::Copy: Copied image path '%s' for zone '%s'\n",
+                    ImagePath()->Value(), name.Value());
+            fclose(debugfile);
+        }
+    }
     for (int i = 0; i < 3; ++i)
     {
         z->color[i]   = color[i];
@@ -1673,41 +1682,48 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
 
     if (has_custom_image && t->show_button_images)
     {
+        Settings *settings = t->GetSettings();
+        int text_position = settings ? settings->button_text_position : 0;
+        
         // Draw the zone frame and texture first
         RenderZone(t, "", update_flag);
-
-        const int horizontal_pad = Max(static_cast<int>(border), 0);
-        const int vertical_pad   = Max(static_cast<int>(border), 0);
-        int px = x + horizontal_pad;
-        int py = y + vertical_pad;
-        int pw = w - (horizontal_pad * 2);
-        int ph = h - (vertical_pad * 2);
-
-        if (pw <= 0 || ph <= 0)
-        {
-            px = x;
-            py = y;
-            pw = w;
-            ph = h;
-        }
-
-        if (ph > 0 && pw > 0)
-            t->RenderPixmap(px, py, pw, ph, ImagePath()->Value());
-
+        
         int state = State(t);
-        if (frame[state] != ZF_HIDDEN)
+        int bx = Max(border - 2, 0);
+        int by = Max(border - 4, 0);
+        const genericChar* text = t->ReplaceSymbols(zn);
+        genericChar str[256];
+        
+        if (text && behave == BEHAVE_DOUBLE)
         {
-            int bx = Max(border - 2, 0);
-            int by = Max(border - 4, 0);
-            const genericChar* b = t->ReplaceSymbols(zn);
-            if (b)
+            vt_safe_string::safe_format(str, 256, "%s\\( 2X )", text);
+            text = str;
+        }
+        
+        if (text_position == 0)
+        {
+            // Text over image
+            const int horizontal_pad = Max(static_cast<int>(border), 0);
+            const int vertical_pad   = Max(static_cast<int>(border), 0);
+            int px = x + horizontal_pad;
+            int py = y + vertical_pad;
+            int pw = w - (horizontal_pad * 2);
+            int ph = h - (vertical_pad * 2);
+
+            if (pw <= 0 || ph <= 0)
             {
-                genericChar str[256];
-                if (behave == BEHAVE_DOUBLE)
-                {
-                    vt_safe_string::safe_format(str, 256, "%s\\( 2X )", b);
-                    b = str;
-                }
+                px = x;
+                py = y;
+                pw = w;
+                ph = h;
+            }
+
+            if (ph > 0 && pw > 0)
+                t->RenderPixmap(px, py, pw, ph, ImagePath()->Value());
+            
+            // Draw text overlay
+            if (text && frame[state] != ZF_HIDDEN)
+            {
                 int c = color[state];
                 if (c == COLOR_PAGE_DEFAULT || c == COLOR_DEFAULT)
                     c = t->page->default_color[state];
@@ -1715,13 +1731,67 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
                 {
                     int text_y = y + by + header;
                     int text_h = h - (by * 2) - header - footer;
-
                     if (text_h > 0)
                     {
-                        t->RenderZoneText(b, x + bx, text_y,
-                                          w - (bx * 2), text_h,
-                                          c, font);
+                        t->RenderZoneText(text, x + bx, text_y,
+                                          w - (bx * 2), text_h, c, font);
                     }
+                }
+            }
+        }
+        else if (text_position == 1)
+        {
+            // Text above image
+            // Text area is top 30% of button
+            if (text && frame[state] != ZF_HIDDEN)
+            {
+                int c = color[state];
+                if (c == COLOR_PAGE_DEFAULT || c == COLOR_DEFAULT)
+                    c = t->page->default_color[state];
+                if (c != COLOR_CLEAR)
+                {
+                    int text_height = (h * 30) / 100;  // Top 30%
+                    t->RenderZoneText(text, x + bx, y + bx + header, w - (bx*2),
+                                        text_height, c, font);
+                }
+            }
+            
+            // Image area is bottom 70% of button
+            int horizontal_pad = Max(static_cast<int>(border), 0);
+            int text_height = (h * 30) / 100;
+            int px = x + horizontal_pad;
+            int py = y + text_height + header;
+            int pw = w - (horizontal_pad * 2);
+            int ph = h - text_height - horizontal_pad - header - footer;
+            
+            if (pw > 0 && ph > 0)
+                t->RenderPixmap(px, py, pw, ph, ImagePath()->Value());
+        }
+        else if (text_position == 2)
+        {
+            // Text below image
+            // Image area is top 70% of button
+            int horizontal_pad = Max(static_cast<int>(border), 0);
+            int text_height = (h * 30) / 100;
+            int px = x + horizontal_pad;
+            int py = y + horizontal_pad + header;
+            int pw = w - (horizontal_pad * 2);
+            int ph = h - text_height - horizontal_pad - header - footer;
+            
+            if (pw > 0 && ph > 0)
+                t->RenderPixmap(px, py, pw, ph, ImagePath()->Value());
+            
+            // Text area is bottom 30% of button
+            if (text && frame[state] != ZF_HIDDEN)
+            {
+                int c = color[state];
+                if (c == COLOR_PAGE_DEFAULT || c == COLOR_DEFAULT)
+                    c = t->page->default_color[state];
+                if (c != COLOR_CLEAR)
+                {
+                    int image_bottom = y + ph + horizontal_pad + header;
+                    t->RenderZoneText(text, x + bx, image_bottom, w - (bx*2),
+                                        text_height, c, font);
                 }
             }
         }
@@ -1991,6 +2061,13 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
         t->cdu->ToPos(-(buflen-1), 2);
         t->cdu->Write(buffer);
     }
+    
+    // If this button has an image, redraw the entire page to fix black overlay
+    if (ImagePath() && ImagePath()->size() > 0 && t->show_button_images)
+    {
+        t->Draw(RENDER_NEW);
+    }
+    
     return SIGNAL_OKAY;
 }
 

@@ -369,7 +369,10 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
         break;
 
         case SERVER_ZONEDATA:
-            term->ReadZone(); break;
+            fprintf(stderr, "SERVER_ZONEDATA received, calling ReadZone()\n");
+            term->ReadZone(); 
+            fprintf(stderr, "SERVER_ZONEDATA: ReadZone() returned\n");
+            break;
 
         case SERVER_ZONECHANGES:
             term->ReadMultiZone(); break;
@@ -5650,12 +5653,23 @@ int Terminal::TranslatePage(Page *p)
 int Terminal::ReadZone()
 {
     FnTrace("Terminal::ReadZone()");
+    FILE *debugfile = fopen("/tmp/viewtouch_debug.log", "a");
+    if (debugfile) {
+        fprintf(debugfile, "=== ReadZone() called at %ld ===\n", time(NULL));
+        fclose(debugfile);
+    }
+    fprintf(stderr, "=== ReadZone() called ===\n");
     
     // Safety check: validate buffer_in exists
     if (buffer_in == nullptr)
+    {
+        fprintf(stderr, "ReadZone: ERROR - buffer_in is NULL\n");
         return 1;
+    }
     
-    Zone *newZone = NewPosZone(RInt8());
+    int zone_type = RInt8();
+    fprintf(stderr, "ReadZone: Creating zone type %d\n", zone_type);
+    Zone *newZone = NewPosZone(zone_type);
     
     // Safety check: validate newZone was created successfully
     if (newZone == nullptr)
@@ -5690,24 +5704,44 @@ int Terminal::ReadZone()
     RStr(newZone->Expression());
     RStr(newZone->Message());
     RStr(newZone->FileName());
-    // Read image filename for zones that support images
-    if (newZone->Type() == ZONE_SIMPLE || newZone->Type() == ZONE_ITEM ||
-        newZone->Type() == ZONE_QUALIFIER || newZone->Type() == ZONE_TABLE ||
-        newZone->Type() == ZONE_IMAGE_BUTTON)
+    // Read image filename - always sent by dialog, so always read it
+    // Try to set it for PosZone types that support images
+    fprintf(stderr, "ReadZone: Reading zone type %d, name '%s'\n", newZone->Type(), newZone->name.Value());
+    PosZone *posZone = dynamic_cast<PosZone*>(newZone);
+    if (posZone)
     {
-        PosZone *posZone = dynamic_cast<PosZone*>(newZone);
-        if (posZone && posZone->ImagePath())
+        fprintf(stderr, "ReadZone: Zone is a PosZone, ImagePath() = %p\n", (void*)posZone->ImagePath());
+        if (posZone->ImagePath())
         {
-            RStr(posZone->ImagePath());
+            // Always read the image path - it's always sent by the dialog
+            // RStr() reads a string and sets it to the Str object
+            genericChar* img_path_str = RStr(posZone->ImagePath());
+            // Verify it was set correctly
+            fprintf(stderr, "ReadZone: After RStr(), image path = '%s' (size=%zu), RStr returned '%s'\n", 
+                    posZone->ImagePath()->Value(), posZone->ImagePath()->size(), 
+                    img_path_str ? img_path_str : "(null)");
+            // Debug: verify image path was set correctly
+            if (posZone->ImagePath()->size() > 0)
+            {
+                fprintf(stderr, "ReadZone: Successfully set image path to '%s' for zone type %d\n", 
+                        posZone->ImagePath()->Value(), newZone->Type());
+            }
+            else
+            {
+                fprintf(stderr, "ReadZone: Image path is empty after reading\n");
+            }
         }
         else
         {
+            fprintf(stderr, "ReadZone: ImagePath() returned NULL, consuming string\n");
             RStr(); // consume the string
         }
     }
     else
     {
-        RStr(); // consume the string even if not used
+        fprintf(stderr, "ReadZone: Zone is NOT a PosZone (type %d), consuming string\n", newZone->Type());
+        // Consume the string even if this zone type doesn't support images
+        RStr();
     }
     RInt8(newZone->TenderType());
     ParsePrice(RStr(), newZone->TenderAmount());
@@ -5847,9 +5881,150 @@ int Terminal::ReadZone()
     else
         currPage->Add(newZone);
 
+    // Verify the zone was added to the page
+    FILE *debugVerify = fopen("/tmp/viewtouch_debug.log", "a");
+    if (debugVerify) {
+        fprintf(debugVerify, "ReadZone: Zone '%s' added to page id=%d\n", 
+                newZone->name.Value(), currPage->id);
+        // Count zones with images in this page
+        int img_count = 0;
+        Zone *z = currPage->ZoneList();
+        while (z) {
+            PosZone *pz = dynamic_cast<PosZone*>(z);
+            if (pz && pz->ImagePath() && pz->ImagePath()->size() > 0) {
+                fprintf(debugVerify, "ReadZone: After Add - zone '%s' has image '%s'\n",
+                        z->name.Value(), pz->ImagePath()->Value());
+                img_count++;
+            }
+            z = z->next;
+        }
+        fprintf(debugVerify, "ReadZone: Page has %d zones with images\n", img_count);
+        fclose(debugVerify);
+    }
+
+    // Final debug output
+    PosZone *finalPosZone = dynamic_cast<PosZone*>(newZone);
+    if (finalPosZone && finalPosZone->ImagePath())
+    {
+        FILE *debugfile4 = fopen("/tmp/viewtouch_debug.log", "a");
+        if (debugfile4) {
+            fprintf(debugfile4, "ReadZone: Final image path for zone '%s' (type %d) = '%s' (size=%zu)\n",
+                    newZone->name.Value(), newZone->Type(), 
+                    finalPosZone->ImagePath()->Value(), finalPosZone->ImagePath()->size());
+            fclose(debugfile4);
+        }
+        fprintf(stderr, "ReadZone: Final image path for zone '%s' (type %d) = '%s' (size=%zu)\n",
+                newZone->name.Value(), newZone->Type(), 
+                finalPosZone->ImagePath()->Value(), finalPosZone->ImagePath()->size());
+    }
+    else
+    {
+        FILE *debugfile4 = fopen("/tmp/viewtouch_debug.log", "a");
+        if (debugfile4) {
+            fprintf(debugfile4, "ReadZone: Final check - finalPosZone=%p, ImagePath()=%p\n",
+                    (void*)finalPosZone, finalPosZone ? (void*)finalPosZone->ImagePath() : nullptr);
+            fclose(debugfile4);
+        }
+    }
+
     Draw(RENDER_NEW);
     UserInput();
 
+    // BEFORE copying to parent - verify the image is still there
+    if (finalPosZone && finalPosZone->ImagePath())
+    {
+        FILE *debugfile5 = fopen("/tmp/viewtouch_debug.log", "a");
+        if (debugfile5) {
+            fprintf(debugfile5, "ReadZone: BEFORE COPY - image path still '%s'\n",
+                    finalPosZone->ImagePath()->Value());
+            fclose(debugfile5);
+        }
+    }
+
+    // Save zones to disk after editing to ensure changes persist
+    // The zone has already been added to the correct zone_db (either parent's or terminal's)
+    // If we're in edit mode, the zone is in the terminal's zone_db and needs to be copied to parent
+    // If we're NOT in edit mode, the zone is already in the parent's zone_db
+    if (currPage && parent)
+    {
+        FILE *debugfile2 = fopen("/tmp/viewtouch_debug.log", "a");
+        if (debugfile2) {
+            fprintf(debugfile2, "ReadZone: edit=%d, zone_db=%p, parent->zone_db.get()=%p\n",
+                    edit, (void*)zone_db, (void*)parent->zone_db.get());
+            
+            // Count pages in each zone_db
+            int term_page_count = 0;
+            Page *p = zone_db->PageList();
+            while (p) {
+                term_page_count++;
+                if (p->id == currPage->id) {
+                    fprintf(debugfile2, "ReadZone: Page id=%d IS in terminal's zone_db\n", currPage->id);
+                }
+                p = p->next;
+            }
+            
+            int parent_page_count = 0;
+            p = parent->zone_db->PageList();
+            while (p) {
+                parent_page_count++;
+                if (p->id == currPage->id) {
+                    fprintf(debugfile2, "ReadZone: Page id=%d IS in parent's zone_db\n", currPage->id);
+                }
+                p = p->next;
+            }
+            
+            fprintf(debugfile2, "ReadZone: terminal zone_db has %d pages, parent zone_db has %d pages\n",
+                    term_page_count, parent_page_count);
+            fclose(debugfile2);
+        }
+        
+        // Only copy zone_db if we're in edit mode and the zone_dbs are different
+        if (edit && zone_db != parent->zone_db.get())
+        {
+            FILE *debugfile3 = fopen("/tmp/viewtouch_debug.log", "a");
+            if (debugfile3) {
+                fprintf(debugfile3, "ReadZone: In edit mode, copying zone_db to parent\n");
+                fclose(debugfile3);
+            }
+            parent->zone_db = zone_db->Copy();
+        }
+        else
+        {
+            FILE *debugfile3 = fopen("/tmp/viewtouch_debug.log", "a");
+            if (debugfile3) {
+                fprintf(debugfile3, "ReadZone: NOT in edit mode or same zone_db, no copy needed\n");
+                fclose(debugfile3);
+            }
+        }
+        
+        if (currPage->Class() & PAGECLASS_MENU)
+        {
+            debugfile2 = fopen("/tmp/viewtouch_debug.log", "a");
+            if (debugfile2) {
+                fprintf(debugfile2, "ReadZone: Saving menu zones after edit\n");
+                fclose(debugfile2);
+            }
+            fprintf(stderr, "ReadZone: Saving menu zones after edit\n");
+            parent->SaveMenuPages();
+        }
+        else if (currPage->Class() & PAGECLASS_TABLE)
+        {
+            debugfile2 = fopen("/tmp/viewtouch_debug.log", "a");
+            if (debugfile2) {
+                fprintf(debugfile2, "ReadZone: Saving table zones after edit\n");
+                fclose(debugfile2);
+            }
+            fprintf(stderr, "ReadZone: Saving table zones after edit\n");
+            parent->SaveTablePages();
+        }
+    }
+
+    FILE *debugfile3 = fopen("/tmp/viewtouch_debug.log", "a");
+    if (debugfile3) {
+        fprintf(debugfile3, "=== ReadZone() completed ===\n\n");
+        fclose(debugfile3);
+    }
+    fprintf(stderr, "=== ReadZone() completed ===\n");
     return 0;
 }
 

@@ -45,6 +45,7 @@
 #include <stdexcept>
 #include <system_error>
 #include <cstring>
+#include <cstdlib>
 
 #include "debug.hh"
 #include "safe_string_utils.hh"
@@ -2754,6 +2755,232 @@ Xpm *LoadPixmapFile(char* file_name)
 
 #ifdef HAVE_PNG
 /****
+ * RemoveCheckeredBackground: Detect and remove checkered/checked backgrounds
+ * from PNG images. Common checkered patterns use alternating light gray (#C0C0C0)
+ * and white (#FFFFFF) squares, or similar light colors. This function detects
+ * these patterns and converts matching pixels to transparent.
+ * 
+ * Returns true if checkered background was detected and removed, false otherwise.
+ * If checkered background is detected, the image will be converted to RGBA format
+ * with alpha channel added.
+ ****/
+static bool RemoveCheckeredBackground(png_bytep** row_pointers_ptr, int width, int height, 
+                                       int& channels, int& rowbytes)
+{
+    FnTrace("RemoveCheckeredBackground()");
+    
+    fprintf(stderr, "RemoveCheckeredBackground: Processing image %dx%d, channels=%d\n", 
+            width, height, channels);
+    
+    // Common checkered background colors (light gray and white variations)
+    // Typical patterns: #C0C0C0/#FFFFFF, #D0D0D0/#FFFFFF, #E0E0E0/#FFFFFF
+    const int CHECKERED_COLOR_THRESHOLD = 40;  // Tolerance for color matching
+    const int MIN_LIGHTNESS = 180;  // Minimum RGB average for checkered colors (light colors only)
+    
+    // Checkered pattern typically uses 8x8 or 16x16 pixel squares
+    const int CHECKER_SIZE_MIN = 4;
+    const int CHECKER_SIZE_MAX = 32;
+    
+    png_bytep* row_pointers = *row_pointers_ptr;
+    
+    // We need RGB data to detect checkered patterns
+    if (channels < 3) {
+        return false;  // Can't detect checkered pattern in grayscale
+    }
+    
+    // First pass: detect if checkered pattern exists by sampling
+    int total_pixels = width * height;
+    int checkered_threshold = total_pixels / 50;  // At least 2% of pixels should match
+    
+    // Try different checker sizes to detect pattern
+    int detected_checker_size = 0;
+    int best_match_score = 0;
+    
+    for (int checker_size = CHECKER_SIZE_MIN; checker_size <= CHECKER_SIZE_MAX; checker_size *= 2) {
+        int pattern_matches = 0;
+        int samples = 0;
+        
+        // Sample the image to detect checkered pattern
+        // Check multiple positions to find the pattern
+        for (int offset_y = 0; offset_y < checker_size && offset_y < height; offset_y++) {
+            for (int offset_x = 0; offset_x < checker_size && offset_x < width; offset_x++) {
+                for (int y = offset_y; y < height - checker_size; y += checker_size * 2) {
+                    for (int x = offset_x; x < width - checker_size; x += checker_size * 2) {
+                        samples++;
+                        
+                        // Get colors from two adjacent squares in the checker pattern
+                        if (y + checker_size / 2 < height && x + checker_size / 2 < width) {
+                            png_bytep row1 = row_pointers[y];
+                            png_bytep row2 = row_pointers[y + checker_size / 2];
+                            
+                            unsigned char r1 = row1[x * channels + 0];
+                            unsigned char g1 = row1[x * channels + 1];
+                            unsigned char b1 = row1[x * channels + 2];
+                            
+                            unsigned char r2 = row2[(x + checker_size / 2) * channels + 0];
+                            unsigned char g2 = row2[(x + checker_size / 2) * channels + 1];
+                            unsigned char b2 = row2[(x + checker_size / 2) * channels + 2];
+                            
+                            // Check if colors are light (potential checkered background)
+                            int lightness1 = (r1 + g1 + b1) / 3;
+                            int lightness2 = (r2 + g2 + b2) / 3;
+                            
+                            if (lightness1 >= MIN_LIGHTNESS && lightness2 >= MIN_LIGHTNESS) {
+                                // Check if colors are different (alternating pattern)
+                                int diff_r = abs((int)r1 - (int)r2);
+                                int diff_g = abs((int)g1 - (int)g2);
+                                int diff_b = abs((int)b1 - (int)b2);
+                                
+                                if (diff_r + diff_g + diff_b > CHECKERED_COLOR_THRESHOLD) {
+                                    pattern_matches++;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Check if this offset gives us a good pattern match
+                if (samples > 0) {
+                    int match_score = pattern_matches * 100 / samples;
+                    if (match_score > best_match_score) {
+                        best_match_score = match_score;
+                        detected_checker_size = checker_size;
+                    }
+                }
+            }
+        }
+    }
+    
+    // Also try a simpler approach: just count light pixels that could be checkered
+    int light_pixel_count = 0;
+    for (int y = 0; y < height; y++) {
+        png_bytep row = row_pointers[y];
+        for (int x = 0; x < width; x++) {
+            unsigned char r = row[x * channels + 0];
+            unsigned char g = row[x * channels + 1];
+            unsigned char b = row[x * channels + 2];
+            int lightness = (r + g + b) / 3;
+            
+            // Count very light pixels (white or light gray)
+            if (lightness >= 240 || (lightness >= 190 && lightness <= 230)) {
+                int color_variance = abs((int)r - (int)g) + abs((int)g - (int)b) + abs((int)r - (int)b);
+                if (color_variance < 30) {  // Grayish or white
+                    light_pixel_count++;
+                }
+            }
+        }
+    }
+    
+    // If we have a lot of light pixels, likely has checkered background
+    bool has_many_light_pixels = (light_pixel_count * 100 / total_pixels) > 10;  // More than 10% light pixels
+    
+    if (detected_checker_size == 0 && !has_many_light_pixels) {
+        fprintf(stderr, "RemoveCheckeredBackground: No checkered pattern detected\n");
+        return false;  // No checkered pattern detected
+    }
+    
+    if (detected_checker_size > 0) {
+        fprintf(stderr, "RemoveCheckeredBackground: Detected checkered pattern (checker size ~%d, %d%% match)\n", 
+                detected_checker_size, best_match_score);
+    } else if (has_many_light_pixels) {
+        fprintf(stderr, "RemoveCheckeredBackground: Detected many light pixels (%.1f%%), treating as checkered background\n",
+                light_pixel_count * 100.0 / total_pixels);
+        // Use a default checker size for removal
+        detected_checker_size = 8;
+    }
+    
+    // Convert to RGBA if not already (needed to add transparency)
+    bool needs_alpha = (channels == 3);
+    png_bytep* new_row_pointers = nullptr;
+    
+    if (needs_alpha) {
+        // Allocate new row pointers with alpha channel
+        int new_rowbytes = width * 4;
+        new_row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+        if (!new_row_pointers) {
+            fprintf(stderr, "RemoveCheckeredBackground: Cannot allocate new row pointers\n");
+            return false;
+        }
+        
+        for (int y = 0; y < height; y++) {
+            new_row_pointers[y] = (png_byte*)malloc(new_rowbytes);
+            if (!new_row_pointers[y]) {
+                fprintf(stderr, "RemoveCheckeredBackground: Cannot allocate new row data\n");
+                for (int i = 0; i < y; i++) free(new_row_pointers[i]);
+                free(new_row_pointers);
+                return false;
+            }
+            
+            // Copy RGB data and add alpha channel (fully opaque initially)
+            for (int x = 0; x < width; x++) {
+                new_row_pointers[y][x * 4 + 0] = row_pointers[y][x * 3 + 0];
+                new_row_pointers[y][x * 4 + 1] = row_pointers[y][x * 3 + 1];
+                new_row_pointers[y][x * 4 + 2] = row_pointers[y][x * 3 + 2];
+                new_row_pointers[y][x * 4 + 3] = 255;  // Fully opaque initially
+            }
+        }
+        
+        // Update to use new row pointers
+        *row_pointers_ptr = new_row_pointers;
+        row_pointers = new_row_pointers;
+        channels = 4;
+        rowbytes = new_rowbytes;
+    } else if (channels == 4) {
+        // Image already has alpha channel - we'll modify it
+        // Make sure existing transparent pixels stay transparent
+        fprintf(stderr, "RemoveCheckeredBackground: Image already has alpha channel, will modify existing transparency\n");
+    }
+    
+    // Second pass: remove checkered background pixels
+    int checkered_pixel_count = 0;
+    for (int y = 0; y < height; y++) {
+        png_bytep row = row_pointers[y];
+        for (int x = 0; x < width; x++) {
+            unsigned char r = row[x * channels + 0];
+            unsigned char g = row[x * channels + 1];
+            unsigned char b = row[x * channels + 2];
+            
+            int lightness = (r + g + b) / 3;
+            int color_variance = abs((int)r - (int)g) + abs((int)g - (int)b) + abs((int)r - (int)b);
+            
+            bool should_remove = false;
+            
+            // Simple and aggressive: remove any pixel that looks like checkered background
+            // Check for white pixels (very common in checkered backgrounds: #FFFFFF, #FEFEFE, etc.)
+            if (r >= 240 && g >= 240 && b >= 240) {
+                should_remove = true;
+            }
+            // Check for light gray pixels - common checkered background colors:
+            // #C0C0C0 (192), #D0D0D0 (208), #E0E0E0 (224), #F0F0F0 (240)
+            else if (lightness >= 180 && lightness <= 245) {
+                // Check if it's a uniform grayish color (low color variance = gray, not colored)
+                if (color_variance < 45) {
+                    // This is a light grayish color - very likely checkered background
+                    should_remove = true;
+                }
+            }
+            
+            // Note: We don't require perfect pattern matching - if it's a light uniform color,
+            // it's likely a checkered background pixel, so remove it.
+            
+            if (should_remove) {
+                // Only remove if pixel isn't already transparent (preserve existing transparency)
+                unsigned char current_alpha = (channels == 4) ? row[x * channels + 3] : 255;
+                if (current_alpha > 0) {  // Not already transparent
+                    row[x * channels + 3] = 0;  // Make transparent
+                    checkered_pixel_count++;
+                }
+            }
+        }
+    }
+    
+    fprintf(stderr, "RemoveCheckeredBackground: Removed %d checkered background pixels (%.1f%%)\n", 
+            checkered_pixel_count, checkered_pixel_count * 100.0 / total_pixels);
+    
+    return checkered_pixel_count > checkered_threshold;
+}
+
+/****
  * LoadPNGFile: Load a PNG file and convert it to an Xpm object
  ****/
 Xpm *LoadPNGFile(const char* file_name)
@@ -2867,6 +3094,18 @@ Xpm *LoadPNGFile(const char* file_name)
     }
 
     png_read_image(png_ptr, row_pointers);
+
+    // Remove checkered backgrounds if detected
+    png_bytep* original_row_pointers = row_pointers;
+    bool checkered_removed = RemoveCheckeredBackground(&row_pointers, width, height, channels, rowbytes);
+    if (checkered_removed && row_pointers != original_row_pointers) {
+        // Free original row pointers if they were replaced
+        for (int y = 0; y < height; y++) {
+            free(original_row_pointers[y]);
+        }
+        free(original_row_pointers);
+        fprintf(stderr, "LoadPNGFile: Checkered background removed, image converted to RGBA\n");
+    }
 
     // Convert to X11 Pixmap with transparency mask
     Pixmap pixmap = 0;

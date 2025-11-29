@@ -1385,6 +1385,7 @@ int ZoneDialog::Send()
     int v1;
     int v2;
 
+    fprintf(stderr, "ZoneDialog::Send() called for zone type %d\n", ztype);
     WInt8(SERVER_ZONEDATA);
     WInt8(ztype);
     WStr(name.Value());
@@ -1419,8 +1420,11 @@ int ZoneDialog::Send()
     // Send selected image filename
     int img_idx = image_filename.Value();
     if (img_idx > 0 && img_idx < static_cast<int>(image_file_names.size())) {
+        fprintf(stderr, "ZoneDialog::Send() sending image filename '%s' (index %d)\n", 
+                image_file_names[img_idx].c_str(), img_idx);
         WStr(image_file_names[img_idx].c_str());
     } else {
+        fprintf(stderr, "ZoneDialog::Send() sending empty image filename (index %d)\n", img_idx);
         WStr("");  // No image selected
     }
     WInt8(tender_type.Value());
