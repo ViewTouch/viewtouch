@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Button Text Position Setting for Image Buttons (11-29-2025)**
+  - **Feature**: Fixed "Button Text Position" setting to properly affect image buttons (ItemZone)
+  - **Root Cause**: `ItemZone::Render()` was not checking or applying the `button_text_position` setting, only `ButtonZone` had this functionality
+  - **Implementation**:
+    - Added `button_text_position` support to `ItemZone::Render()` method with all three modes:
+      - Mode 0: Text over image (default) - text renders on top of the image
+      - Mode 1: Text above image - text in top 30%, image in bottom 70%
+      - Mode 2: Text below image - image in top 70%, text in bottom 30%
+    - Reads setting from `Settings->button_text_position` 
+    - Applies proper text and image positioning based on selected mode
+    - Maintains all existing functionality for non-image buttons
+  - **Impact**: "Button Text Position" setting in General Settings now properly controls how text and images are positioned on menu item buttons with custom images
+  - **Files modified**:
+    - `zone/order_zone.cc` - Added button_text_position support to ItemZone::Render() with 3 positioning modes
+
 ### Added
 - **Transparent PNG Support with Checkered Background Removal (11-29-2025)**
   - **Feature**: Automatic detection and removal of checkered backgrounds from transparent PNG images
