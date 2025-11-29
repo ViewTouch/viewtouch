@@ -21,17 +21,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `term/term_view.hh` - Updated Xpm constructor to support transparency masks
 
 - **Button Image Persistence Fix (11-29-2025)**
-  - **Feature**: Fixed critical bug where images added to buttons were not saving and persisting across program restarts
+  - **Feature**: Fixed critical bug where images added to buttons were not saving and persisting across program restarts, plus fixed black overlay when tapping buttons
   - **Root Cause**: `ItemZone::Copy()` method was not copying the `ImagePath()` field when zones were copied from terminal zone_db to parent zone_db during editing
   - **Implementation**:
     - Added `ImagePath()` copying to `ItemZone::Copy()` in `zone/order_zone.cc`
+    - Added page redraw (`t->Draw(RENDER_NEW)`) after tapping buttons with images to immediately restore image display
     - Added extensive debug logging throughout the zone read/write/copy pipeline
     - Modified `Terminal::ReadZone()` to always read image paths for PosZone types
     - Added automatic save calls to `SaveMenuPages()` and `SaveTablePages()` after zone edits
-  - **Impact**: Button images now correctly save to disk and persist across program restarts
-  - **Known Issue**: Tapping on a button with an image causes it to turn black (will be fixed soon)
+  - **Impact**: Button images now correctly save to disk, persist across program restarts, and remain visible when tapped
   - **Files modified**:
-    - `zone/order_zone.cc` - Added ImagePath copying in ItemZone::Copy()
+    - `zone/order_zone.cc` - Added ImagePath copying in ItemZone::Copy() and page redraw in Touch()
     - `main/hardware/terminal.cc` - Fixed ReadZone() to always read image paths and trigger saves
     - `zone/pos_zone.cc` - Added debug logging to Read/Write methods
     - `zone/button_zone.cc` - Added debug logging to Copy method

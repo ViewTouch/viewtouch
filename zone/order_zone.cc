@@ -2000,6 +2000,13 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
         t->cdu->ToPos(-(buflen-1), 2);
         t->cdu->Write(buffer);
     }
+    
+    // If this button has an image, redraw the entire page to fix black overlay
+    if (ImagePath() && ImagePath()->size() > 0 && t->show_button_images)
+    {
+        t->Draw(RENDER_NEW);
+    }
+    
     return SIGNAL_OKAY;
 }
 
