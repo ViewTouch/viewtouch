@@ -173,7 +173,7 @@ extern Translations MasterTranslations;
 #define PAGE_BAR1         15
 #define PAGE_BAR2         16
 #define PAGE_MODIFIER_KEYBOARD 17  // Modifier page with keyboard (parent -96)
-#define PAGE_INDEX_WITH_TABS   18  // Index with tabs for quick navigation (parent -95)
+#define PAGE_INDEX_WITH_TABS   18  // Index with tabs for quick navigation (parent -94)
 
 #define MAX_SCREEN_WIDTH 1920
 // #define MAX_SCREEN_WIDTH 1600

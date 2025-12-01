@@ -185,4 +185,19 @@ public:
     virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 };
 
+class IndexTabZone : public ButtonZone
+{
+public:
+    // Constructor
+    IndexTabZone();
+
+    // Member Functions
+    int          Type() { return ZONE_INDEX_TAB; }
+    virtual int  AcceptSignals() { return 0; }
+    int          CanSelect(Terminal *t);
+    int          CanEdit(Terminal *t);
+    std::unique_ptr<Zone> Copy();
+    virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
+};
+
 #endif

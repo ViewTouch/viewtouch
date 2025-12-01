@@ -167,6 +167,9 @@ Zone *NewPosZone(int type)
     case ZONE_SIMPLE:
         pNewZone = new ButtonZone;
         break;
+    case ZONE_INDEX_TAB:
+        pNewZone = new IndexTabZone;
+        break;
     case ZONE_TABLE:
         pNewZone = new TableZone;
         break;

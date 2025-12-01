@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+- **Index Tab Buttons for One-Touch Navigation (12-XX-2025)**
+  - **Feature**: New Index Tab button type that enables one-touch navigation from any menu page to any other menu page
+  - **Implementation**:
+    - Created new `ZONE_INDEX_TAB` zone type (108) and `IndexTabZone` class extending `ButtonZone`
+    - Index Tab buttons can only be created/edited on Index pages (PAGE_INDEX or PAGE_INDEX_WITH_TABS)
+    - Menu Item pages automatically inherit and display Index Tab buttons from their parent Index page
+    - Uses the existing `index` field relationship between Menu Item pages and Index pages (same mechanism as Order Flow button)
+    - Modified `Page::Render()` to render Index Tab buttons from the matching Index page when rendering Menu Item pages
+    - Updated `Page::FindZone()`, `Page::FindEditZone()`, and `Page::FindTranslateZone()` to handle Index Tab buttons on Menu Item pages
+    - Added validation in `Page::Add()` to prevent Index Tab buttons from being added to non-Index pages
+    - ViewTouch automatically ensures default Index page exists on page 60 for all screen sizes
+    - ViewTouch automatically ensures template page -94 exists for Index with Tabs
+  - **Impact**: Editors can now create Index Tab buttons on Index pages, and they will automatically appear on all Menu Item pages belonging to that Index, enabling users to navigate between any menu pages with a single touch
+  - **Note**: Still working on page -94 to auto-create an index page on page 60 as 1920x1080 if one isn't detected or created
+  - **Files modified**:
+    - `zone/pos_zone.hh` - Added ZONE_INDEX_TAB constant
+    - `zone/button_zone.hh` - Added IndexTabZone class definition
+    - `zone/button_zone.cc` - Implemented IndexTabZone class with CanSelect() and CanEdit() restrictions
+    - `zone/pos_zone.cc` - Added IndexTabZone to zone creation
+    - `zone/zone.cc` - Added Index Tab button rendering and zone finding for Menu Item pages, validation in Page::Add(), and auto-creation of pages 60 and -94
+    - `main/ui/labels.cc` - Added "Index Tab" to zone type labels
+
 ### Fixed
 - **Button Text Position Setting for Image Buttons (11-29-2025)**
   - **Feature**: Fixed "Button Text Position" setting to properly affect image buttons (ItemZone)
@@ -58,12 +81,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Feature**: Added two new page types to support advanced modifier pages and enhanced navigation
   - **New Page Types**:
     - **Modifier Page with Keyboard** (Type 17, Parent -96): A modifier page with pre-positioned empty buttons and keyboard support for creating complex modifier pages with qualifiers (e.g., breakfast egg preparations: Soft Poach, Hard Scramble, Over Easy)
-    - **Index with Tabs** (Type 18, Parent -95): An index page with tab-based navigation that child menu item pages automatically inherit, enabling one-touch navigation between any pages in the system
+    - **Index with Tabs** (Type 18, Parent -94): An index page with tab-based navigation that child menu item pages automatically inherit, enabling one-touch navigation between any pages in the system
   - **New Qualifiers**:
     - **Easy**: For items prepared with ease (e.g., "Over Easy" eggs)
     - **Add**: For adding items or ingredients
     - **Senior Share**: For senior portion sharing options
-  - **Note**: Pages -95 & -96 are currently under development as parent templates for these new page types
+  - **Note**: Pages -94 & -96 are currently under development as parent templates for these new page types
   - **Impact**: Significantly reduces time for editors creating modifier pages with qualifiers and setting up navigation tabs that propagate to all child pages
   - **Files modified**:
     - `zone/zone.hh`, `term/term_view.hh` - Added PAGE_MODIFIER_KEYBOARD and PAGE_INDEX_WITH_TABS constants
