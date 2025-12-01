@@ -17,10 +17,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Modified `Page::Render()` to render Index Tab buttons from the matching Index page when rendering Menu Item pages
     - Updated `Page::FindZone()`, `Page::FindEditZone()`, and `Page::FindTranslateZone()` to handle Index Tab buttons on Menu Item pages
     - Added validation in `Page::Add()` to prevent Index Tab buttons from being added to non-Index pages
-    - ViewTouch automatically ensures default Index page exists on page 60 for all screen sizes
-    - ViewTouch automatically ensures template page -94 exists for Index with Tabs
-  - **Impact**: Editors can now create Index Tab buttons on Index pages, and they will automatically appear on all Menu Item pages belonging to that Index, enabling users to navigate between any menu pages with a single touch
-  - **Note**: Still working on page -94 to auto-create an index page on page 60 as 1920x1080 if one isn't detected or created
+    - ViewTouch automatically ensures template page -94 exists for Index with Tabs (for all screen sizes)
+    - ViewTouch automatically creates page 60 at 1920x1080 if it doesn't exist, using page -94 as a template when available
+    - Uses exact size matching to ensure page 60 is only created at 1920x1080, not at smaller sizes
+  - **Impact**: Editors can now create Index Tab buttons on Index pages, and they will automatically appear on all Menu Item pages belonging to that Index, enabling users to navigate between any menu pages with a single touch. The system ensures a default Index page is always available at 1920x1080.
   - **Files modified**:
     - `zone/pos_zone.hh` - Added ZONE_INDEX_TAB constant
     - `zone/button_zone.hh` - Added IndexTabZone class definition

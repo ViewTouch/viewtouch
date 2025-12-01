@@ -1254,31 +1254,10 @@ int ZoneDB::Init()
         p = p->next;
     }
 
-    // Ensure default Index page (page 60) exists for all sizes
+    // Ensure template page -94 exists for Index with Tabs (create first so it can be used as template)
     int sizes[] = {SIZE_640x480, SIZE_800x600, SIZE_1024x600, SIZE_1024x768, 
                    SIZE_1280x800, SIZE_1280x1024, SIZE_1366x768, SIZE_1440x900,
                    SIZE_1600x900, SIZE_1680x1050, SIZE_1920x1080, SIZE_1920x1200, -1};
-    for (int i = 0; sizes[i] != -1; ++i)
-    {
-        Page *page60 = FindByID(60, sizes[i]);
-        if (page60 == NULL)
-        {
-            // Create default Index page on page 60
-            Page *newPage = NewPosPage();
-            if (newPage)
-            {
-                newPage->id = 60;
-                newPage->type = PAGE_INDEX;
-                newPage->size = sizes[i];
-                newPage->name.Set("Index");
-                newPage->index = INDEX_GENERAL;
-                newPage->Init(this);
-                Add(newPage);
-            }
-        }
-    }
-
-    // Ensure template page -94 exists for Index with Tabs
     for (int i = 0; sizes[i] != -1; ++i)
     {
         Page *page94 = FindByID(-94, sizes[i]);
@@ -1292,6 +1271,68 @@ int ZoneDB::Init()
                 newPage->type = PAGE_INDEX_WITH_TABS;
                 newPage->size = sizes[i];
                 newPage->name.Set("Index with Tabs Template");
+                newPage->index = INDEX_GENERAL;
+                newPage->Init(this);
+                Add(newPage);
+            }
+        }
+    }
+
+    // Ensure default Index page (page 60) exists for 1920x1080 only
+    // Use page -94 as template if available
+    // Check for exact size match, not just max_size
+    Page *page60 = NULL;
+    Page *currPage = page_list.Head();
+    while (currPage != NULL)
+    {
+        if (currPage->id == 60 && currPage->size == SIZE_1920x1080)
+        {
+            page60 = currPage;
+            break;
+        }
+        currPage = currPage->next;
+    }
+    
+    if (page60 == NULL)
+    {
+        // Try to use page -94 as template (check for exact size match)
+        Page *templatePage = NULL;
+        currPage = page_list.Head();
+        while (currPage != NULL)
+        {
+            if (currPage->id == -94 && currPage->size == SIZE_1920x1080)
+            {
+                templatePage = currPage;
+                break;
+            }
+            currPage = currPage->next;
+        }
+        
+        if (templatePage != NULL)
+        {
+            // Copy from template page -94
+            auto pageCopy = templatePage->Copy();
+            if (pageCopy)
+            {
+                pageCopy->id = 60;
+                pageCopy->type = PAGE_INDEX;  // Ensure it's PAGE_INDEX, not PAGE_INDEX_WITH_TABS
+                pageCopy->size = SIZE_1920x1080;  // Ensure exact size
+                pageCopy->name.Set("Index");
+                pageCopy->index = INDEX_GENERAL;
+                pageCopy->Init(this);
+                Add(pageCopy.release());
+            }
+        }
+        else
+        {
+            // Create default Index page on page 60 if no template exists
+            Page *newPage = NewPosPage();
+            if (newPage)
+            {
+                newPage->id = 60;
+                newPage->type = PAGE_INDEX;
+                newPage->size = SIZE_1920x1080;
+                newPage->name.Set("Index");
                 newPage->index = INDEX_GENERAL;
                 newPage->Init(this);
                 Add(newPage);
