@@ -280,7 +280,7 @@ genericChar* GetMachineName(genericChar* str = nullptr, int len = STRLENGTH)
         str = buffer;
 
     if (uname(&uts) == 0) {
-        strncpy(str, uts.nodename, len - 1);
+        strncpy(str, uts.nodename, static_cast<size_t>(len - 1));
         str[len - 1] = '\0'; // ensure null termination
     } else {
         str[0] = '\0';
@@ -314,7 +314,7 @@ void ViewTouchError(const char* message, int do_sleep)
     }
     ReportLoader(errormsg);
     if (do_sleep)
-        sleep(sleeplen);
+        sleep(static_cast<unsigned int>(sleeplen));
 }
 
 bool DownloadFile(const std::string &url, const std::string &destination)
@@ -450,9 +450,9 @@ int ReadViewTouchConfig()
                     std::string("ReadViewTouchConfig: ")
                     + "Read early config from config file: "
                     + VIEWTOUCH_CONFIG);
-        conf.GetValue(autoupdate, "autoupdate");
-        conf.GetValue(select_timeout, "selecttimeout");
-        conf.GetValue(debug_mode, "debugmode");
+        (void)conf.GetValue(autoupdate, "autoupdate");  // Suppress nodiscard warnings
+        (void)conf.GetValue(select_timeout, "selecttimeout");
+        (void)conf.GetValue(debug_mode, "debugmode");
     } catch (const std::runtime_error &e) {
         ReportError(
                     std::string("ReadViewTouchConfig: ")
@@ -544,7 +544,7 @@ int main(int argc, genericChar* argv[])
             break;
         }
         
-        int no = read(LoaderSocket, c, 1);
+        ssize_t no = read(LoaderSocket, c, 1);
         if (no == 1)
         {
             if (*c == '\0')
@@ -846,7 +846,7 @@ void Terminate(int my_signal)
     exit(1);
 }
 
-void UserSignal1(int my_signal)
+void UserSignal1(int /*my_signal*/)
 {
     FnTrace("UserSignal1()");
     ReportError("UserSignal1: Received restart signal, implementing direct restart");
@@ -892,7 +892,7 @@ void UserSignal1(int my_signal)
     }
 }
 
-void UserSignal2(int my_signal)
+void UserSignal2(int /*my_signal*/)
 {
     FnTrace("UserSignal2()");
     UserCommand = 1;
@@ -1319,8 +1319,8 @@ int StartSystem(int my_use_net)
         ReportError("Can't find labor directory");
 
     // Load Menu
-	vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_MENU_DB);
-	ReportError(msg); //stamp file attempt in log
+    vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_MENU_DB);
+    ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Menu");
     sys->FullPath(MASTER_MENU_DB, str);
     if (!fs::exists(str))
@@ -2763,7 +2763,7 @@ int CloneDynTerminal(const char* remote_terminal)
     TermInfo *ti = NULL;
 
     idx = GetTermWord(termhost, STRLENGTH, remote_terminal, idx);
-    idx = GetTermWord(clonedest, STRLENGTH, remote_terminal, idx);
+    /* idx = GetTermWord(clonedest, STRLENGTH, remote_terminal, idx); */  // idx is not used after this, dead store removed
     ti = MasterSystem->settings.FindTerminal(termhost);
     if (ti != NULL)
     {
@@ -2897,29 +2897,29 @@ int SendRemoteOrderResult(int socket, Check *check, int result_code, int status)
     if (result_code == CALLCTR_ERROR_NONE)
     {
         if (status == CALLCTR_STATUS_COMPLETE)
-            strcat(result_str, "COMPLETE");
+            vt_safe_string::safe_concat(result_str, STRLONG, "COMPLETE");
         else if (status == CALLCTR_STATUS_INCOMPLETE)
-            strcat(result_str, "INCOMPLETE");
+            vt_safe_string::safe_concat(result_str, STRLONG, "INCOMPLETE");
         else if (status == CALLCTR_STATUS_FAILED)
-            strcat(result_str, "FAILED");
+            vt_safe_string::safe_concat(result_str, STRLONG, "FAILED");
         else
-            strcat(result_str, "UNKNOWNSTAT");
+            vt_safe_string::safe_concat(result_str, STRLONG, "UNKNOWNSTAT");
     }
     else
     {
         if (result_code == CALLCTR_ERROR_BADITEM)
-            strcat(result_str, "BADITEM");
+            vt_safe_string::safe_concat(result_str, STRLONG, "BADITEM");
         else if (result_code == CALLCTR_ERROR_BADDETAIL)
-            strcat(result_str, "BADDETAIL");
+            vt_safe_string::safe_concat(result_str, STRLONG, "BADDETAIL");
         else
-            strcat(result_str, "UNKNOWNERR");
+            vt_safe_string::safe_concat(result_str, STRLONG, "UNKNOWNERR");
     }
 
-    strcat(result_str, ":");
+    vt_safe_string::safe_concat(result_str, STRLONG, ":");
     if (result_code == CALLCTR_ERROR_NONE)
-        strcat(result_str, "PRINTED");
+        vt_safe_string::safe_concat(result_str, STRLONG, "PRINTED");
     else
-        strcat(result_str, "NOTPRINTED");
+        vt_safe_string::safe_concat(result_str, STRLONG, "NOTPRINTED");
 
     write(socket, result_str, strlen(result_str));
 

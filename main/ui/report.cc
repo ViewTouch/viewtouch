@@ -43,20 +43,20 @@
 // Constructor
 ReportEntry::ReportEntry(const char *t, int c, int a, int m) :
     text(t ? t : ""),
-    color(c),
-    align(a),
-    edge(a),
-    mode(m),
+    color(static_cast<Uchar>(c)),
+    align(static_cast<Uchar>(a)),
+    edge(static_cast<Uchar>(a)),
+    mode(static_cast<Uchar>(m)),
     draw_a_line(t==nullptr)
 {
     FnTrace("ReportEntry::ReportEntry()");
 }
 ReportEntry::ReportEntry(const std::string &t, int c, int a, int m) :
     text(t),
-    color(c),
-    align(a),
-    edge(a),
-    mode(m),
+    color(static_cast<Uchar>(c)),
+    align(static_cast<Uchar>(a)),
+    edge(static_cast<Uchar>(a)),
+    mode(static_cast<Uchar>(m)),
     draw_a_line(false)
 {
     FnTrace("ReportEntry::ReportEntry()");
@@ -140,9 +140,10 @@ int Report::Load(const std::string &textfile, int color)
     genericChar str[256];
     for (;;)
     {
-        genericChar c = (char) fgetc(fp);
-        if (feof(fp))
+        int ch = fgetc(fp);
+        if (ch == EOF || feof(fp))
             break;
+        genericChar c = static_cast<genericChar>(ch);
 
         if (c != '\n')
         {
@@ -289,14 +290,14 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
     // last entry counts only as one line, don't know why, original code was like this
     int last_line = std::accumulate(body_list.cbegin(), std::prev(body_list.cend()), 1, get_line_count);
 
-    header = (header_size > 0) ? static_cast<float>(header_size + 1) : 0;
-    footer = (footer_size > 0) ? static_cast<float>(footer_size + 1) : 0;
+    header = (header_size > 0) ? static_cast<float>(header_size + 1.0) : 0.0f;
+    footer = (footer_size > 0) ? static_cast<Flt>(footer_size + 1) : 0.0;
 
-    lines_shown = (int) ((lz->size_y - (header + footer)) / spacing + .5);
-    if ((last_line > lines_shown || print) && footer < 2)
-        footer = 2;
+    lines_shown = static_cast<int>((lz->size_y - (header + footer)) / spacing + .5);
+    if ((last_line > lines_shown || print) && footer < 2.0)
+        footer = 2.0;
 
-    lines_shown = (int) ((lz->size_y - (header + footer)) / spacing + .5);
+    lines_shown = static_cast<int>((lz->size_y - (header + footer)) / spacing + .5);
     if (debug_mode && lines_shown < 1)
     {  //FIX BAK-->Why does lines_shown sometimes hit 0?
         fprintf(stderr, "Report::Render lines_shown = %d, fixing\n", lines_shown);
@@ -318,13 +319,13 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
         else
             p = 0;
     }
-    page = p;
+    page = static_cast<short>(p);
 
     int start_line = page * lines_shown;
     int end_line   = start_line + lines_shown - 1;
     if (selected_line >= start_line && selected_line <= end_line)
     {
-        Flt rline = header + (Flt) (selected_line - start_line) * spacing;
+        Flt rline = header + static_cast<Flt>(selected_line - start_line) * spacing;
         lz->Background(term, rline - ((spacing - 1)/2), spacing, IMAGE_LIT_SAND);
     }
 
@@ -337,7 +338,7 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
         }
         if (line >= start_line)
         {
-            Flt xx, rline = header + (Flt) (line - start_line) * spacing;
+            Flt xx, rline = static_cast<Flt>(header) + static_cast<Flt>(line - start_line) * spacing;
             switch (re.edge)
             {
             case ALIGN_CENTER:
@@ -390,8 +391,8 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
 
     if (footer > 0)
     {
-        lz->Line(term, lz->size_y -.1 - footer, color);
-        Flt tl = lz->size_y - footer + 1;
+        lz->Line(term, lz->size_y - 0.1 - static_cast<Flt>(footer), color);
+        Flt tl = lz->size_y - static_cast<Flt>(footer) + 1.0;
         if (print)
         {
             if (max_pages > 1)
@@ -485,7 +486,7 @@ int Report::Print(Printer *printer)
     return 0;
 }
 
-int Report::FormalPrint(Printer *printer, int columns)
+int Report::FormalPrint(Printer *printer, int /*columns*/)
 {
     FnTrace("Report::FormalPrint()");
     char buffer[STRLONG] = "";
@@ -748,7 +749,7 @@ int Report::Divider(char divc, int dwidth)
     char divider = (divc == '\0') ? div_char : divc;
 
     if (dwidth > 0)
-        width = dwidth;
+        width = dwidth;  // width is used below, dead store warning is false positive
     else
         width = (page_width > 0) ? page_width : max_width;
     memset(buffer, divider, width);

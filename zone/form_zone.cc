@@ -91,7 +91,7 @@ public:
 
     int InsertStringAtCursor(genericChar* my_string); // does the append/insert for strings
     int InsertDigits(int digits, int num = 1);  // does append for digits
-    int Append(genericChar* my_string);  // these functions determine what to append
+    int Append(const genericChar* my_string) override;  // these functions determine what to append
     int Append(Str &my_string) override;   // and whether the append should take place
     int Append(int val) override;       // they append after cursor, not at the end
     int Append(Flt val) override;       // of the string (using InsertStringAtCursor()
@@ -105,7 +105,7 @@ public:
     int Get(Str &v) override;
     int Get(int &v) override;
     int Get(Flt &v) override;
-    int GetPrice(int &v)      { v = ParsePrice(buffer.Value()); return 0;}
+    int GetPrice(int &v) override { v = ParsePrice(buffer.Value()); return 0;}
     void Print(void) override;         // debug function to print the value to the screen
 };
 
@@ -230,7 +230,7 @@ public:
     int Add(ListFieldEntry *lfe);
     int ClearEntries() override;
 
-    int AddEntry(const genericChar* name, int val) {
+    int AddEntry(const genericChar* name, int val) override {
         return Add(new ListFieldEntry(name, val)); }
     void Print(void) override;
 };
@@ -501,7 +501,8 @@ SignalResult FormZone::Signal(Terminal *term, const genericChar* message)
     default:
         if (strlen(message) == 1)
         {  // adding a letter
-            keyboard_focus->Append(message);
+            if (keyboard_focus != nullptr)
+                keyboard_focus->Append(message);
             idx = 0;  // Make sure focus doesn'term get lost
         }
         else
@@ -703,7 +704,7 @@ int FormZone::AddNewLine(int lines)
 int FormZone::Color(int c)
 {
     FnTrace("FormZone::Color()");
-    current_color = c;
+    current_color = static_cast<short>(c);
     return 0;
 }
 
@@ -1255,7 +1256,7 @@ SignalResult ListFormZone::Keyboard(Terminal *term, int my_key, int state)
     }
 }
 
-int ListFormZone::Update(Terminal *term, int update_message, const genericChar* value)
+int ListFormZone::Update(Terminal *term, int update_message, const genericChar* /*value*/)
 {
     FnTrace("ListFormZone::Update()");
     if (show_list && list_report.update_flag & update_message)
@@ -1284,13 +1285,13 @@ FormField::FormField()
 }
 
 // Member Functions
-SignalResult FormField::Touch(Terminal *term, FormZone *fzone, Flt tx, Flt ty)
+SignalResult FormField::Touch(Terminal * /*term*/, FormZone * /*fzone*/, Flt /*tx*/, Flt /*ty*/)
 {
     FnTrace("FormField::Touch()");
     return SIGNAL_IGNORED;
 }
 
-SignalResult FormField::Keyboard(Terminal *term, FormZone *fzone, int key, int state)
+SignalResult FormField::Keyboard(Terminal * /*term*/, FormZone * /*fzone*/, int /*key*/, int /*state*/)
 {
     FnTrace("FormField::Keyboard()");
     return SIGNAL_IGNORED;
@@ -1420,7 +1421,7 @@ SignalResult SubmitField::Keyboard(Terminal *term, FormZone *fzone, int key, int
     return retval;
 }
 
-SignalResult SubmitField::Mouse(Terminal *term, FormZone *fzone, int action, Flt mx, Flt my)
+SignalResult SubmitField::Mouse(Terminal *term, FormZone *fzone, int /*action*/, Flt /*mx*/, Flt /*my*/)
 {
     FnTrace("SubmitField::Mouse()");
     SignalResult retval = SIGNAL_OKAY;
@@ -1440,7 +1441,7 @@ TextField::TextField(const genericChar* lbl, int max_entry, int mod, Flt min_lab
     buffint = 0;
     max_buffer_len  = max_entry;
     min_label_width = min_label;
-    modify          = mod;
+    modify          = static_cast<short>(mod);
     cursor = 0;
     lo_value = 0;
     hi_value = 0;
@@ -1497,7 +1498,7 @@ int TextField::Get(genericChar* v, int len)
     if ((flag & FF_MONEY) || (flag & FF_ONLYDIGITS))
         buffer.Set(buffint);
 
-    strncpy(v, buffer.Value(), len);
+    strncpy(v, buffer.Value(), static_cast<size_t>(len));
     return 0;
 }
 
@@ -1570,7 +1571,7 @@ int TextField::InsertStringAtCursor(genericChar* my_string)
     while (my_string[stridx] != '\0')
     {
         if (flag & FF_ALLCAPS)
-            my_string[stridx] = toupper(my_string[stridx]);
+            my_string[stridx] = static_cast<genericChar>(toupper(static_cast<unsigned char>(my_string[stridx])));
         stridx += 1;
     }
 
@@ -1641,7 +1642,7 @@ int TextField::InsertDigits(int digits, int num)
  *     o  if the buffer is already full
  * Returns 0 for success.
  ****/
-int TextField::Append(genericChar* my_string)
+int TextField::Append(const genericChar* my_string)
 {
     FnTrace("TextField::Append()");
     int retval = 0;
@@ -1667,7 +1668,7 @@ int TextField::Append(genericChar* my_string)
             retval = 1;
     }
     else
-        retval = InsertStringAtCursor(my_string);
+        retval = InsertStringAtCursor(const_cast<genericChar*>(my_string));  // InsertStringAtCursor needs non-const, but we're only reading
     return retval;
 }
 

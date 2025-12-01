@@ -81,16 +81,16 @@ namespace Constants {
     constexpr const char* XWD = "/usr/X11R6/bin/xwd";          /* screen capture utility */
     constexpr const char* SCREEN_DIR = "/usr/viewtouch/screenshots";  /* where to save screenshots */
     constexpr int TERM_RELOAD_FONTS = 0xA5;
-    constexpr int MAX_TRIES = 8;
-    constexpr int MAX_XPM_SIZE = 4194304;
-    constexpr const char* SCREENSAVER_DIR = VIEWTOUCH_PATH "/dat/screensaver";
-    constexpr int EXTRA_ICON_WIDTH = 35;
+    [[maybe_unused]] constexpr int MAX_TRIES = 8;
+    [[maybe_unused]] constexpr int MAX_XPM_SIZE = 4194304;
+    [[maybe_unused]] constexpr const char* SCREENSAVER_DIR = VIEWTOUCH_PATH "/dat/screensaver";
+    // EXTRA_ICON_WIDTH is defined as macro below, not needed here
     constexpr int MAX_EVENTS_PER_SECOND = 1000;
     constexpr int MAX_CONSECUTIVE_ERRORS = 10;
     constexpr int SLEEP_TIME_MS = 10000;  // 10ms
     constexpr int RETRY_DELAY_MS = 100000;  // 100ms
-    constexpr int RECONNECT_ATTEMPTS = 20;
-    constexpr int RECONNECT_DELAY_SEC = 2;
+    [[maybe_unused]] constexpr int RECONNECT_ATTEMPTS = 20;
+    [[maybe_unused]] constexpr int RECONNECT_DELAY_SEC = 2;
 }
 
 // Custom exception classes for better error handling
@@ -476,8 +476,8 @@ int FontNameClass::Parse(const char* fontname)
 {
     FnTrace("FontNameClass::Parse()");
     int retval = 0;
-    auto len = strlen(fontname);
-    int idx = 0;
+    size_t len = strlen(fontname);
+    size_t idx = 0;
     std::string word;
 
     Clear();
@@ -753,7 +753,7 @@ void X11ResourceManager::cleanup() {
     }
     
     // Clean up fonts
-    for (int i = 0; i < FONT_SPACE; ++i) {
+    for (size_t i = 0; i < FONT_SPACE; ++i) {
         if (FontInfo[i]) {
             XFreeFont(Dis, FontInfo[i]);
             FontInfo[i] = nullptr;
@@ -931,7 +931,7 @@ int Translation::GetKey(char* store, int maxlen)
 {
     FnTrace("Translation::GetKey()");
 
-    strncpy(store, key.c_str(), maxlen);
+    strncpy(store, key.c_str(), static_cast<size_t>(maxlen));
     return 1;
 }
 
@@ -939,7 +939,7 @@ int Translation::GetValue(char* store, int maxlen)
 {
     FnTrace("Translation::GetValue()");
 
-    strncpy(store, value.c_str(), maxlen);
+    strncpy(store, value.c_str(), static_cast<size_t>(maxlen));
     return 1;
 }
 
@@ -1024,7 +1024,7 @@ public:
      *code accordingly.  In that case, you should also make the code
      *more dynamic, though it should still be quite fast.
      ****/
-    int IsPointIn(int px, int py)
+    bool IsPointIn(int px, int py)  // Overrides RegionInfo::IsPointIn but not marked virtual in intermediate classes
         {
             return (px >= (x - EXTRA_ICON_WIDTH)) &&
                 (py >= y) &&
@@ -1032,7 +1032,7 @@ public:
                 (py < (y + h + EXTRA_ICON_WIDTH));
         }
 
-    int Command(Layer *l)
+    int Command(Layer * /*l*/)
         {
             if (allow_iconify)
             {
@@ -1099,8 +1099,8 @@ inline int SetTitleBar(const char* my_time)
  * Callback Functions
  ********************************************************************/
 
-void ExposeCB(Widget widget, XtPointer client_data, XEvent *event,
-              Boolean *okay)
+void ExposeCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
+              Boolean * /*okay*/)
 {
     FnTrace("ExposeCB()");
 
@@ -1124,12 +1124,12 @@ void ExposeCB(Widget widget, XtPointer client_data, XEvent *event,
             Layers.UpdateArea(area.x, area.y, area.w, area.h);
             XFlush(Dis);
         }
-        area.SetRegion(0, 0, 0, 0);
+        (void)area.SetRegion(0, 0, 0, 0);  // SetRegion has nodiscard, but we only need side effect
     }
     // FIX - should redraw calibrate screen properly
 }
 
-void UpdateCB(XtPointer client_data, XtIntervalId *timer_id)
+void UpdateCB(XtPointer /*client_data*/, XtIntervalId * /*timer_id*/)
 {
     FnTrace("UpdateCB()");
     int update_time = Constants::UPDATE_TIME;
@@ -1167,7 +1167,7 @@ void UpdateCB(XtPointer client_data, XtIntervalId *timer_id)
     UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, NULL);
 }
 
-void TouchScreenCB(XtPointer client_data, int *fid, XtInputId *id)
+void TouchScreenCB(XtPointer /*client_data*/, int * /*fid*/, XtInputId * /*id*/)
 {
     FnTrace("TouchScreenCB()");
 
@@ -1273,8 +1273,8 @@ KeySym ChangeKey(KeySym key, unsigned int keycode)
     return retval;
 }
 
-void KeyPressCB(Widget widget, XtPointer client_data,
-                XEvent *event, Boolean *okay)
+void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
+                XEvent *event, Boolean * /*okay*/)
 {
     FnTrace("KeyPressCB()");
 
@@ -1552,8 +1552,8 @@ void KeyPressCB(Widget widget, XtPointer client_data,
     Layers.Keyboard(k, key, (int)e->state);
 }
 
-void MouseClickCB(Widget widget, XtPointer client_data, XEvent *event,
-                  Boolean *okay)
+void MouseClickCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
+                  Boolean * /*okay*/)
 {
     FnTrace("MouseClickCB()");
 

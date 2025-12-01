@@ -117,7 +117,7 @@ RoomDialog::~RoomDialog()
 }
 
 // Member Functions
-int RoomDialog::RenderInit(Terminal *term, int update_flag)
+int RoomDialog::RenderInit(Terminal */*term*/, int /*update_flag*/)
 {
     FnTrace("RoomDialog::RenderInit()");
     w = 800;
@@ -157,7 +157,7 @@ RenderResult RoomDialog::Render(Terminal *term, int update_flag)
         TextR(term, 0, str);
     }
 
-    checkout->SetRegion(x + w - border - 140, y + border + 46, 140, 110);
+    (void)checkout->SetRegion(x + w - border - 140, y + border + 46, 140, 110);  // Suppress nodiscard warning
 
     button_list.LayoutColumns(term, x + border, y + h - 80 - border,
                               w - (border * 2), 80, 4);
@@ -235,7 +235,7 @@ SignalResult RoomDialog::Signal(Terminal *term, const genericChar* message)
     return FormZone::Signal(term, message);
 }
 
-int RoomDialog::LoadRecord(Terminal *term, int record)
+int RoomDialog::LoadRecord(Terminal *term, int /*record*/)
 {
     FnTrace("RoomDialog::LoadRecord()");
     Check *check = term->check;
@@ -265,7 +265,7 @@ int RoomDialog::LoadRecord(Terminal *term, int record)
     return 0;
 }
 
-int RoomDialog::SaveRecord(Terminal *term, int record, int write_file)
+int RoomDialog::SaveRecord(Terminal *term, int /*record*/, int /*write_file*/)
 {
     FnTrace("RoomDialog::SaveRecord()");
     Check *check = term->check;
@@ -298,7 +298,7 @@ int RoomDialog::SaveRecord(Terminal *term, int record, int write_file)
     return 0;
 }
 
-int RoomDialog::UpdateForm(Terminal *term, int record)
+int RoomDialog::UpdateForm(Terminal */*term*/, int /*record*/)
 {
     TimeInfo start, end;
     check_in->Get(start);
@@ -314,7 +314,7 @@ int RoomDialog::UpdateForm(Terminal *term, int record)
     return status;
 }
 
-int RoomDialog::ParseSwipe(Terminal *term, const genericChar* value)
+int RoomDialog::ParseSwipe(Terminal */*term*/, const genericChar* value)
 {
     genericChar tmp[256];
     const genericChar* s = value;
@@ -483,7 +483,7 @@ RenderResult CustomerInfoZone::Render(Terminal *term, int update_flag)
     FormField *field = FieldList();
     while (field != NULL)
     {
-        field->active = fields_active;
+        field->active = static_cast<short>(fields_active);
         field = field->next;
     }
 
@@ -578,7 +578,7 @@ SignalResult CustomerInfoZone::Touch(Terminal *term, int tx, int ty)
     return retval;
 }
 
-int CustomerInfoZone::LoseFocus(Terminal *term, Zone *newfocus)
+int CustomerInfoZone::LoseFocus(Terminal *term, Zone */*newfocus*/)
 {
     FnTrace("CustomerInfoZone::LoseFocus()");
     int retval = 0;
@@ -589,7 +589,7 @@ int CustomerInfoZone::LoseFocus(Terminal *term, Zone *newfocus)
     return retval;
 }
 
-int CustomerInfoZone::LoadRecord(Terminal *term, int record)
+int CustomerInfoZone::LoadRecord(Terminal */*term*/, int /*record*/)
 {
     FnTrace("CustomerInfoZone::LoadRecord()");
     int retval = 0;
@@ -705,7 +705,7 @@ int CustomerInfoZone::SaveRecord(Terminal *term, int record, int write_file)
 
         fields->Get(buffer);
         customer->Comment(buffer);
-        fields = fields->next;
+        /* fields = fields->next; */  // fields is not used after this, dead store removed
 
         customer->Save();
     }
@@ -753,7 +753,7 @@ int CustomerInfoZone::Search(Terminal *term, int record, const genericChar* word
             record = -1;
     }
 
-    found = term->system_data->customer_db.FindByString(word, record);
+    found = (term != NULL && term->system_data != NULL) ? term->system_data->customer_db.FindByString(word, record) : NULL;
     if (found != NULL)
         term->customer = found;
     else

@@ -180,7 +180,7 @@ enum window_buttons {
 #define SOCKET_FILE "/tmp/vt_term"
 
 /**** Calback Functions ****/
-void TermCB(XtPointer client_data, int *fid, XtInputId *id)
+void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
 {
 
     FnTrace("TermCB()");
@@ -209,6 +209,8 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
             errterm = term;
 
         // Upgrade the failure count and return unless we've hit the threshold.
+        if (errterm == nullptr)
+            return;
         ++errterm->failure;
         if (errterm->failure < 8)
             return;
@@ -470,8 +472,8 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
         {
             term->cc_processing = 0;
             term->eod_failed = 1;
-            Settings *settings = term->GetSettings();
-            if (settings != nullptr && settings->authorize_method == CCAUTH_MAINSTREET)
+            Settings *sett = term->GetSettings();  // Renamed to avoid shadowing outer 'settings' variable
+            if (sett != nullptr && sett->authorize_method == CCAUTH_MAINSTREET)
             {
                 term->CC_Settle(nullptr, 1);
                 std::array<char, STRLENGTH> errormsg{};
@@ -501,7 +503,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId *id)
 	} //end while
 }
 
-void RedrawZoneCB(XtPointer client_data, XtIntervalId *timer_id)
+void RedrawZoneCB(XtPointer client_data, XtIntervalId * /*timer_id*/)
 {
     FnTrace("RedrawZoneCB()");
     Terminal *t = (Terminal *) client_data;
@@ -581,8 +583,8 @@ Terminal::Terminal()
     edit_drag_active = false;
     edit_drag_total_dx = 0;
     edit_drag_total_dy = 0;
-    edit_drag_initial_region.SetRegion(0, 0, 0, 0);
-    edit_drag_current_region.SetRegion(0, 0, 0, 0);
+    (void)edit_drag_initial_region.SetRegion(0, 0, 0, 0);  // SetRegion has nodiscard, but we only need side effect
+    (void)edit_drag_current_region.SetRegion(0, 0, 0, 0);  // SetRegion has nodiscard, but we only need side effect
     last_x    = 0;
     last_y    = 0;
     zone_modify = 0;
@@ -1205,7 +1207,7 @@ int Terminal::OpenTab(int phase, const char* message)
         if (check != nullptr && check->customer != nullptr)
         {
             OpenTabDialog *otd = new OpenTabDialog(check->customer);
-            OpenDialog(otd);
+            OpenDialog(otd);  // OpenDialog takes ownership and will delete 'otd' when done
         }
     }
     else if (phase == TABOPEN_AMOUNT)
@@ -1245,6 +1247,8 @@ int Terminal::ContinueTab(int serial_number)
 {
     FnTrace("Terminal::ContinueTab()");
     int retval = 0;
+    if (system_data == nullptr)
+        return 1;
     Check *currcheck = system_data->CheckList();
     
     if (serial_number > 0)
@@ -1272,6 +1276,8 @@ int Terminal::CloseTab(int serial_number)
 {
     FnTrace("Terminal::CloseTab()");
     int retval = 0;
+    if (system_data == nullptr)
+        return 1;
     Check *currcheck = system_data->CheckList();
     
     if (serial_number > 0)
@@ -1360,11 +1366,8 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
     
     // Wrap entire function in try-catch to handle memory corruption gracefully
     try {
-        // Safety check: validate 'this' pointer is not obviously invalid
-        // If 'this' is NULL or points to invalid memory, we'll crash here
-        // but at least we can catch it early
-        if (this == nullptr)
-            return SIGNAL_IGNORED;
+        // Note: 'this' can never be null in well-defined C++ code
+        // This check is removed as it's tautological and will always be false
         
         // Recursion guard: prevent infinite recursion from signal loops
         static thread_local int signal_depth = 0;
@@ -1509,9 +1512,9 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         vt_safe_string::safe_copy(msg, STRLONG, "killall vt_ccq_pipe");
         system(msg);
         msg[0] = '\0';
-        strcat(msg, "Connection reset.\\");
-        strcat(msg, "Please wait 60 seconds\\");
-        strcat(msg, "and try again.");
+        vt_safe_string::safe_concat(msg, STRLENGTH, "Connection reset.\\");
+        vt_safe_string::safe_concat(msg, STRLENGTH, "Please wait 60 seconds\\");
+        vt_safe_string::safe_concat(msg, STRLENGTH, "and try again.");
         sd = new SimpleDialog(msg);
         sd->Button(Translate("Okay"));
         OpenDialog(sd);
@@ -1527,7 +1530,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         if (admin_forcing == 0)
         {
             CreditCardVoiceDialog *ccvd = new CreditCardVoiceDialog("Enter TTID", "adminforceauth2");
-            OpenDialog(ccvd);
+            OpenDialog(ccvd);  // OpenDialog takes ownership and will delete 'ccvd' when done
             admin_forcing = 1;
         }
         return SIGNAL_OKAY;
@@ -1536,9 +1539,9 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         {
             TenKeyDialog *tkd = new TenKeyDialog("Enter Final Amount", "adminforceauth3", 0, 1);
             if (dialog != nullptr)
-                NextDialog(tkd);
+                NextDialog(tkd);  // NextDialog takes ownership and will delete 'tkd' when done
             else
-                OpenDialog(tkd);
+                OpenDialog(tkd);  // OpenDialog takes ownership and will delete 'tkd' when done
             admin_forcing = 2;
             return SIGNAL_OKAY;
         }
@@ -2341,6 +2344,8 @@ int Terminal::QuickMode(int customer_type)
 
     thisCheck->Guests(0);  // No guest
     thisCheck->date.Set();
+    if (system_data == nullptr)
+        return 1;
     system_data->Add(thisCheck);
 
     return SetCheck(thisCheck);
@@ -2808,7 +2813,7 @@ int Terminal::OpenDialog(Zone *currZone)
 int Terminal::OpenDialog(const genericChar* message)
 {
     FnTrace("Terminal::OpenDialog()");
-    return OpenDialog(new MessageDialog(message));
+    return OpenDialog(new MessageDialog(message));  // OpenDialog takes ownership and will delete the MessageDialog when done
 }
 
 int Terminal::NextDialog(Zone *currZone)
@@ -4344,8 +4349,8 @@ void Terminal::EndZoneDragPreview(bool apply_move)
 
     edit_drag_total_dx = 0;
     edit_drag_total_dy = 0;
-    edit_drag_initial_region.SetRegion(0, 0, 0, 0);
-    edit_drag_current_region.SetRegion(0, 0, 0, 0);
+    (void)edit_drag_initial_region.SetRegion(0, 0, 0, 0);  // SetRegion has nodiscard, but we only need side effect
+    (void)edit_drag_current_region.SetRegion(0, 0, 0, 0);  // SetRegion has nodiscard, but we only need side effect
 }
 
 int Terminal::RenderButton(int x, int y, int w, int h,

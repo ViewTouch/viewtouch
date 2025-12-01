@@ -30,7 +30,9 @@
 #include <netinet/in.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <cctype>
 #include "credit.hh"
+#include "locale.hh"
 #include "remote_link.hh"
 #include "term_credit_cheq.hh"
 #include "term_view.hh"
@@ -46,9 +48,9 @@
 #define NUMBER_MANUAL    1
 #define NUMBER_SWIPED    0
 
-int CCQ_AddString(const char* dest, const char* src, int length, char pad = ' ');
-int CCQ_GetStringDelim(const char* dest, const char* src, int start, char edelim, char sdelim = 0x00);
-int CCQ_GetStringCount(const char* dest, const char* src, int start, int count);
+int CCQ_AddString(char* dest, const char* src, int length, char pad = ' ');
+int CCQ_GetStringDelim(char* dest, const char* src, int start, char edelim, char sdelim = 0x00);
+int CCQ_GetStringCount(char* dest, const char* src, int start, int count);
 int CCQ_GetKeyValue(const char* destkey, const char* destval, const char* src, int start);
 int CCQ_GetDebitAccount(const char* account_string);
 int CCQ_GetSwiped(const char* swiped_string);
@@ -631,7 +633,7 @@ int BatchInfo::GetNum(const char* value)
     char dest[STRLENGTH];
     int  idx = 0;
 
-    while (ISDIGIT(value[idx]))
+    while (std::isdigit(static_cast<unsigned char>(value[idx])))
     {
         dest[idx] = value[idx];
         idx += 1;
@@ -647,8 +649,17 @@ int BatchInfo::GetAmt(const char* dest, const char* value)
 {
     FnTrace("BatchInfo::GetAmt()");
     int retval = 0;
+    char temp_buffer[STRLENGTH];
 
-    vt_safe_string::safe_format(dest, STRLENGTH, "%d", GetNum(value));
+    if (vt_safe_string::safe_format(temp_buffer, STRLENGTH, "%d", GetNum(value)))
+    {
+        strncpy(const_cast<char*>(dest), temp_buffer, STRLENGTH - 1);
+        const_cast<char*>(dest)[STRLENGTH - 1] = '\0';
+    }
+    else
+    {
+        retval = 1;
+    }
 
     return retval;
 }
@@ -1074,7 +1085,7 @@ int CCard::SendSAF(const char* trans_type, const char* sub_type)
 /****
  * ReadCheq:  Read what the server (Multi.exe or mlt_serv) has for us.
  ****/
-int CCard::ReadCheq(const char* buffer, int buffsize)
+int CCard::ReadCheq(const char* buffer_param, int buffsize)
 {
     FnTrace("CCard::ReadCheq()");
     int retval = 1;
@@ -1086,6 +1097,7 @@ int CCard::ReadCheq(const char* buffer, int buffsize)
     struct timeval timeout;
     int selresult;
     int counter = 0;
+    char* buffer = const_cast<char*>(buffer_param);  // Need non-const for read() and assignment
 
     if (ipconn > 0)
     {
@@ -1104,7 +1116,7 @@ int CCard::ReadCheq(const char* buffer, int buffsize)
             if (selresult > 0)
             {
                 counter = 0;
-                readlen = read(ipconn, &buffer[idx], buffsize - idx);
+                readlen = static_cast<int>(read(ipconn, &buffer[idx], static_cast<size_t>(buffsize - idx)));
                 if (readlen >= 0)
                 {
                     if (readlen > 0)
@@ -1156,7 +1168,7 @@ int CCard::Connect()
         servaddr.sin_family = AF_INET;
         servaddr.sin_port   = htons(atoi(port));
         inet_pton(AF_INET, server, &servaddr.sin_addr);
-        addr = static_cast<struct sockaddr*>(&servaddr);
+        addr = reinterpret_cast<struct sockaddr*>(&servaddr);  // sockaddr_in* to sockaddr* requires reinterpret_cast
         if (my_connect(sockfd, addr, sizeof(servaddr), ConnectionTimeOut) == 0)
         {
             ipconn = sockfd;
@@ -1453,7 +1465,7 @@ int CCard::SAFDetails()
 /****
  * CCQ_AddString:  
  ****/
-int CCQ_AddString(const char* dest, const char* src, int length, char pad)
+int CCQ_AddString(char* dest, const char* src, int length, char pad)
 {
     FnTrace("CCQ_AddString()");
     int retval = 0;
@@ -1478,7 +1490,7 @@ int CCQ_AddString(const char* dest, const char* src, int length, char pad)
     return retval;
 }
 
-int CCQ_GetStringDelim(const char* dest, const char* src, int start, char edelim, char sdelim)
+int CCQ_GetStringDelim(char* dest, const char* src, int start, char edelim, char sdelim)
 {
     FnTrace("CCQ_GetStringDelim()");
     int didx = 0;
@@ -1505,7 +1517,7 @@ int CCQ_GetStringDelim(const char* dest, const char* src, int start, char edelim
     return sidx;
 }
 
-int CCQ_GetStringCount(const char* dest, const char* src, int start, int count)
+int CCQ_GetStringCount(char* dest, const char* src, int start, int count)
 {
     FnTrace("CCQ_GetStringCount()");
     int didx = 0;
@@ -1523,7 +1535,7 @@ int CCQ_GetStringCount(const char* dest, const char* src, int start, int count)
     return sidx;
 }
 
-int CCQ_GetKeyValue(const char* destkey, const char* destval, const char* src, int start)
+int CCQ_GetKeyValue(char* destkey, char* destval, const char* src, int start)
 {
     FnTrace("CCQ_GetKeyValue()");
     int didx = 0;
