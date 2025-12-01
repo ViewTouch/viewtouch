@@ -28,6 +28,7 @@
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
+#include <algorithm>  // for std::max
 #include <sys/time.h>
 #include <sys/types.h>
 
@@ -76,7 +77,7 @@ void ShowHelp(const char* progname);
 int  ParseArguments(int argc, const char* argv[]);
 int  ProcessConnection(int sockfd, int serialfd);
 int  ReadCmd(int fd, const char* dest, int destlen);
-int  Read(int fd, const char* buffer, int bufflen);
+int  Read(int fd, char* buffer, int bufflen);
 int  Write(int fd, const char* buffer, int bufflen);
 void PrintRead(const char* label, const char* buffer, int bufflen);
 
@@ -186,8 +187,8 @@ int SocketToSerial(int listen_port, const char* pinpad_device)
         }
         else
         {
-            nfds = MAX(nfds, pinpad_fd);
-            nfds = MAX(nfds, listen_fd);
+            nfds = std::max(nfds, pinpad_fd);
+            nfds = std::max(nfds, listen_fd);
             nfds += 1;            
             FD_ZERO(&in_fds);
             FD_SET(pinpad_fd, &in_fds);
@@ -308,7 +309,7 @@ int SocketToSocket(int listen_port, const char* host, int port)
         {
             // the server always initiates the connection, so we'll
             // only select() on that descriptor
-            nfds = MAX(nfds, listen_fd);
+            nfds = std::max(nfds, listen_fd);
             nfds += 1;
             FD_ZERO(&in_fds);
             FD_SET(listen_fd, &in_fds);
@@ -487,7 +488,7 @@ int ProcessConnection(int serverfd, int pinpadfd)
     time_t now;
     struct timeval timeout;
 
-    nfds = MAX(serverfd, pinpadfd) + 1;
+    nfds = std::max(serverfd, pinpadfd) + 1;
 
     while (retval == 0 && readlen >= 0 && writelen >= 0 && readies >= 0)
     {
@@ -562,7 +563,7 @@ int ProcessConnection(int serverfd, int pinpadfd)
  *  (including STX) through the ETX (ASCII 0x03) and the following
  *  LRC.
  ****/
-int ReadCmd(int fd, const char* dest, int destlen)
+int ReadCmd(int fd, char* dest, int destlen)
 {
     int  readlen = 0;
     int  done = 0;
@@ -610,7 +611,7 @@ int ReadCmd(int fd, const char* dest, int destlen)
     return destidx;
 }
 
-int Read(int fd, const char* buffer, int bufflen)
+int Read(int fd, char* buffer, int bufflen)
 {
     int readlen = 0;
     char errbuff[STRLENGTH];
@@ -618,7 +619,7 @@ int Read(int fd, const char* buffer, int bufflen)
 
     while (!done)
     {
-        readlen = read(fd, buffer, bufflen);
+        readlen = static_cast<int>(read(fd, buffer, static_cast<size_t>(bufflen)));
         if (readlen < 0 && errno != EAGAIN)
         {
             snprintf(errbuff, STRLENGTH, "Read Error %d", errno);

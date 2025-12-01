@@ -73,7 +73,7 @@ int Zone::CopyZone(Zone *target)
     if (target == nullptr)
         return 1;
 
-    target->SetRegion(this);
+    (void)target->SetRegion(this);  // SetRegion has nodiscard, but we only need side effect
     target->name     = name;
     target->group_id = group_id;
     target->behave   = behave;
@@ -192,14 +192,14 @@ int Zone::Draw(Terminal *term, int update_flag)
     return 0;
 }
 
-SignalResult Zone::Touch(Terminal *t, int touch_x, int touch_y)
+SignalResult Zone::Touch(Terminal * /*t*/, int /*touch_x*/, int /*touch_y*/)
 {
     FnTrace("Zone::Touch()");
     // Don't respond to touches
     return SIGNAL_IGNORED;
 }
 
-SignalResult Zone::Signal(Terminal *t, const genericChar* message)
+SignalResult Zone::Signal(Terminal * /*t*/, const genericChar* /*message*/)
 {
     FnTrace("Zone::Signal()");
     // Don't respond to messages
@@ -233,17 +233,17 @@ int Zone::RenderZone(Terminal *term, const genericChar* text, int update_flag)
     FnTrace("Zone::RenderZone()");
     if (update_flag)
     {
-        border = term->FrameBorder(frame[0], shape);
+        border = static_cast<short>(term->FrameBorder(frame[0], shape));
         if (ZoneStates() > 1)
         {
             int b = term->FrameBorder(frame[1], shape);
             if (b > border)
-                border = b;
+                border = static_cast<short>(b);
             if (ZoneStates() > 2)
             {
                 b = term->FrameBorder(frame[2], shape);
                 if (b > border)
-                    border = b;
+                    border = static_cast<short>(b);
             }
         }
     }
@@ -322,7 +322,7 @@ int Zone::RenderInfo(Terminal *term)
     return 0;
 }
 
-int Zone::RenderInit(Terminal *t, int update_flag)
+int Zone::RenderInit(Terminal * /*t*/, int /*update_flag*/)
 {
     FnTrace("Zone::RenderInit()");
     return 0;
@@ -335,7 +335,7 @@ RenderResult Zone::Render(Terminal *t, int update_flag)
     return RENDER_OKAY;
 }
 
-int Zone::Update(Terminal *t, int update_message, const genericChar* value)
+int Zone::Update(Terminal * /*t*/, int /*update_message*/, const genericChar* /*value*/)
 {
     FnTrace("Zone::Update()");
     // No update by default
@@ -350,16 +350,18 @@ int Zone::ShadowVal(Terminal *t)
     int s = t->page->default_shadow;
     if (s != SHADOW_DEFAULT)
     	return s;
+    if (t->zone_db == nullptr)
+        return SHADOW_DEFAULT;  // Safe fallback if zone_db is null
     return t->zone_db->default_shadow;
 }
 
-const char* Zone::TranslateString(Terminal *t)
+const char* Zone::TranslateString(Terminal * /*t*/)
 {
     FnTrace("Zone::TranslateString()");
     return name.Value();
 }
 
-int Zone::SetSize(Terminal *t, int width, int height)
+int Zone::SetSize(Terminal * /*t*/, int width, int height)
 {
     FnTrace("Zone::SetSize()");
     w = width;
@@ -367,7 +369,7 @@ int Zone::SetSize(Terminal *t, int width, int height)
     return 0;
 }
 
-int Zone::SetPosition(Terminal *t, int pos_x, int pos_y)
+int Zone::SetPosition(Terminal * /*t*/, int pos_x, int pos_y)
 {
     FnTrace("Zone::SetPosition()");
     x = pos_x;
@@ -468,7 +470,7 @@ int Zone::ChangeJumpID(int old_id, int new_id)
                         vt_safe_string::safe_format(num, 16, "%d", j[0]);
                     else
                         vt_safe_string::safe_format(num, 16, " %d", j[i]);
-                    strcat(str, num);
+                    vt_safe_string::safe_concat(str, STRLENGTH, num);
                 }
                 Script()->Set(str);
             }
@@ -1595,7 +1597,7 @@ int ZoneDB::ExportPage(Page *page)
     MasterSystem->FullPath(PAGEEXPORTS_DIR, fullpath);
     EnsureFileExists(fullpath);
     snprintf(filepath, STRLONG, "/page_%d", page->id);
-    strcat(fullpath, filepath);
+    vt_safe_string::safe_concat(fullpath, STRLONG, filepath);
     if (outfile.Open(fullpath, ZONE_VERSION) == 0)
     {
         page->Write(outfile, ZONE_VERSION);
@@ -1618,7 +1620,7 @@ int ZoneDB::ExportPage(Page *page)
             }
             zone = zone->next;
         }
-        zone = page->ZoneList();
+        // zone assignment removed - was never used after assignment
         outfile.Close();
     }
 

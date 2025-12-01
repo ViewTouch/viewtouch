@@ -183,7 +183,7 @@ std::unique_ptr<Zone> ButtonZone::Copy()
 {
     FnTrace("ButtonZone::Copy()");
     auto z = std::make_unique<ButtonZone>();
-    z->SetRegion(this);
+    (void)z->SetRegion(this);  // SetRegion has nodiscard, but we only need side effect
     z->name.Set(name);
     z->key       = key;
     z->behave    = behave;
@@ -212,7 +212,7 @@ std::unique_ptr<Zone> ButtonZone::Copy()
     return z;
 }
 
-SignalResult ButtonZone::Touch(Terminal *term, int tx, int ty)
+SignalResult ButtonZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
 {
     FnTrace("ButtonZone::Touch()");
     if (term->Jump(jump_type, jump_id))
@@ -235,7 +235,7 @@ std::unique_ptr<Zone> MessageButtonZone::Copy()
 {
     FnTrace("MessageButtonZone::Copy()");
     auto z = std::make_unique<MessageButtonZone>();
-    z->SetRegion(this);
+    (void)z->SetRegion(this);  // SetRegion has nodiscard, but we only need side effect
     z->message.Set(message);
     z->name.Set(name);
     z->key       = key;
@@ -274,7 +274,7 @@ SignalResult MessageButtonZone::SendandJump(Terminal *term)
     else if (name.size() > 0)
         vt_safe_string::safe_copy(signal, STRLONG, name.Value());
 
-    len = strlen(signal);
+    len = static_cast<int>(strlen(signal));
     if (len > 0)
     {
         if (strncmp(signal, "RUNCMD:", 7) == 0)
@@ -331,7 +331,7 @@ SignalResult MessageButtonZone::SendandJump(Terminal *term)
     return sig;
 }
 
-SignalResult MessageButtonZone::Touch(Terminal *term, int tx, int ty)
+SignalResult MessageButtonZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
 {
     FnTrace("MessageButtonZone::Touch()");
     SignalResult sig = SIGNAL_OKAY;
@@ -414,10 +414,10 @@ char* MessageButtonZone::ValidateCommand(char* source)
 {
     FnTrace("MessageButtonZone::ValidCommand()");
     char* retval = NULL;
-    int len = strlen(source);
+    int len = static_cast<int>(strlen(source));
     int sidx = 0;
     char dest[STRLONG] = "";
-    int didx = strlen(dest);
+    int didx = static_cast<int>(strlen(dest));
     int badchar = 0;
 
     // do not allow the command to start with a dot.
@@ -500,7 +500,7 @@ std::unique_ptr<Zone> ConditionalZone::Copy()
 {
     FnTrace("ConditionalZone::Copy()");
     auto z = std::make_unique<ConditionalZone>();
-    z->SetRegion(this);
+    (void)z->SetRegion(this);  // SetRegion has nodiscard, but we only need side effect
     z->expression.Set(expression);
     z->message.Set(message);
     z->name.Set(name);
@@ -523,7 +523,7 @@ std::unique_ptr<Zone> ConditionalZone::Copy()
     return z;
 }
 
-int ConditionalZone::RenderInit(Terminal *term, int update_flag)
+int ConditionalZone::RenderInit(Terminal *term, int /*update_flag*/)
 {
     FnTrace("ConditionalZone::RenderInit()");
     if (keyword < 0)
@@ -536,11 +536,11 @@ int ConditionalZone::RenderInit(Terminal *term, int update_flag)
         keyword = CompareList(str1, KeyWords);
         op      = CompareList(str2, OperatorWords);
     }
-    active = EvalExp(term);
+    active = static_cast<Uchar>(EvalExp(term));
     return 0;
 }
 
-SignalResult ConditionalZone::Touch(Terminal *term, int tx, int ty)
+SignalResult ConditionalZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
 {
     FnTrace("ConditionalZone::Touch()");
     SignalResult sig = SIGNAL_OKAY;
@@ -561,7 +561,7 @@ SignalResult ConditionalZone::Touch(Terminal *term, int tx, int ty)
     return sig;
 }
 
-int ConditionalZone::Update(Terminal *term, int update_message, const genericChar* value)
+int ConditionalZone::Update(Terminal *term, int update_message, const genericChar* /*value*/)
 {
     FnTrace("ConditionalZone::Update()");
     if (update_message & (UPDATE_CHECKS))
@@ -569,7 +569,7 @@ int ConditionalZone::Update(Terminal *term, int update_message, const genericCha
         int eval = EvalExp(term);
         if (eval != active)
         {
-            active = eval;
+            active = static_cast<Uchar>(eval);
             return Draw(term, 0);
         }
     }
@@ -772,15 +772,19 @@ RenderResult ToggleZone::Render(Terminal *term, int update_flag)
 
     genericChar str[256];
     max_states = StrStates(name.Value());
+    if (max_states == 0)
+        max_states = 1;  // Prevent division by zero
     StrString(str, name.Value(), state % max_states);
     RenderZone(term, str, update_flag);
     return RENDER_OKAY;
 }
 
-SignalResult ToggleZone::Touch(Terminal *term, int tx, int ty)
+SignalResult ToggleZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
 {
     FnTrace("ToggleZone::Touch()");
     genericChar str[256];
+    if (max_states == 0)
+        max_states = 1;  // Prevent division by zero
     StrString(str, message.Value(), state % max_states);
     term->Signal(str, group_id);
 
@@ -791,17 +795,19 @@ SignalResult ToggleZone::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_OKAY;
 }
 
-const char* ToggleZone::TranslateString(Terminal *term)
+const char* ToggleZone::TranslateString(Terminal * /*term*/)
 {
     FnTrace("ToggleZone::TranslateString()");
     static genericChar str[256];
+    if (max_states == 0)
+        max_states = 1;  // Prevent division by zero
     StrString(str, name.Value(), state % max_states);
     return str;
 }
 
 /**** CommentZone Class ****/
 // Member Functions
-int CommentZone::RenderInit(Terminal *term, int update_flag)
+int CommentZone::RenderInit(Terminal *term, int /*update_flag*/)
 {
     FnTrace("CommentZone::RenderInit()");
     behave = BEHAVE_MISS;
@@ -831,7 +837,7 @@ RenderResult KillSystemZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult KillSystemZone::Touch(Terminal *term, int tx, int ty)
+SignalResult KillSystemZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
 {
     FnTrace("KillSystemZone::Touch()");
     Employee *e = term->user;
@@ -848,7 +854,7 @@ SignalResult KillSystemZone::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_OKAY;
 }
 
-int KillSystemZone::Update(Terminal *term, int update_message, const genericChar* value)
+int KillSystemZone::Update(Terminal *term, int update_message, const genericChar* /*value*/)
 {
     FnTrace("KillSystemZone::Update()");
     if (update_message & UPDATE_USERS)
@@ -883,7 +889,7 @@ RenderResult ClearSystemZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult ClearSystemZone::Touch(Terminal *term, int tx, int ty)
+SignalResult ClearSystemZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
 {
     FnTrace("ClearSystemZone::Touch()");
     
@@ -987,7 +993,7 @@ std::unique_ptr<Zone> ImageButtonZone::Copy()
 {
     FnTrace("ImageButtonZone::Copy()");
     auto z = std::make_unique<ImageButtonZone>();
-    z->SetRegion(this);
+    (void)z->SetRegion(this);  // SetRegion has nodiscard, but we only need side effect
     z->name.Set(name);
     z->key       = key;
     z->behave    = behave;
@@ -1023,7 +1029,7 @@ int ImageButtonZone::CanSelect(Terminal *t)
     return (e->id == 1 || e->id == 2);
 }
 
-int ImageButtonZone::RenderInit(Terminal *term, int update_flag)
+int ImageButtonZone::RenderInit(Terminal * /*term*/, int update_flag)
 {
     FnTrace("ImageButtonZone::RenderInit()");
 

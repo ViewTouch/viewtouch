@@ -61,7 +61,7 @@ OrderEntryZone::OrderEntryZone()
     orders_per_page = 0;
 }
 
-int OrderEntryZone::RenderInit(Terminal *term, int update_flag)
+int OrderEntryZone::RenderInit(Terminal *term, int /*update_flag*/)
 {
     FnTrace("OrderEntryZone::RenderInit()");
     Settings *currSettings = term->GetSettings();
@@ -302,8 +302,8 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
     {
         Order *o = orders_shown[i];
         int tc;
-        if (o == t->order ||
-            (t->order && o->parent == t->order))
+        if (o != nullptr && (o == t->order ||
+            (t->order && o->parent == t->order)))
         {
             if (o->status & ORDER_COMP)
                 tc = COLOR_RED;
@@ -461,7 +461,7 @@ SignalResult OrderEntryZone::Signal(Terminal *term, const genericChar* message)
             int count = atoi(&message[7]);
             if (count <= 0)
                 count = 1;
-            term->order->count = count;
+            term->order->count = static_cast<short>(count);
             subcheck->FigureTotals(settings);
             term->Update(UPDATE_ORDERS, NULL);
             return SIGNAL_OKAY;
@@ -483,7 +483,7 @@ SignalResult OrderEntryZone::Signal(Terminal *term, const genericChar* message)
         return SIGNAL_OKAY;
 }
 
-SignalResult OrderEntryZone::Keyboard(Terminal *t, int my_key, int state)
+SignalResult OrderEntryZone::Keyboard(Terminal *t, int my_key, int /*state*/)
 {
     FnTrace("OrderEntryZone::Keyboard()");
     int error = 1;
@@ -537,7 +537,7 @@ SignalResult OrderEntryZone::Touch(Terminal *t, int tx, int ty)
     return SIGNAL_IGNORED;
 }
 
-int OrderEntryZone::Update(Terminal *t, int update_message, const genericChar* value)
+int OrderEntryZone::Update(Terminal *t, int update_message, const genericChar* /*value*/)
 {
     FnTrace("OrderEntryZone::Update()");
     if (update_message & UPDATE_ORDERS)
@@ -568,12 +568,12 @@ int OrderEntryZone::SetSize(Terminal *t, int width, int height)
         width = 100;
     if (height < 100)
         height = 100;
-    w = width;
-    h = height;
+    w = static_cast<short>(width);
+    h = static_cast<short>(height);
 
     int size = page->size - 1;
     Settings *s = t->GetSettings();
-    s->oewindow[size].SetRegion(x, y, w, h);
+    (void)s->oewindow[size].SetRegion(x, y, w, h);  // SetRegion has nodiscard, but we only need side effect
     
     // Allow both Super Users and Editors to save Order Entry changes immediately
     // Order Entry is a special case where editors should be able to save changes
@@ -588,12 +588,12 @@ int OrderEntryZone::SetPosition(Terminal *t, int pos_x, int pos_y)
         pos_x = 0;
     if (pos_y < 32)
         pos_y = 32;
-    x = pos_x;
-    y = pos_y;
+    x = static_cast<short>(pos_x);
+    y = static_cast<short>(pos_y);
 
     int size = page->size - 1;
     Settings *s = t->GetSettings();
-    s->oewindow[size].SetRegion(x, y, w, h);
+    (void)s->oewindow[size].SetRegion(x, y, w, h);  // SetRegion has nodiscard, but we only need side effect
     
     // Allow both Super Users and Editors to save Order Entry changes immediately
     // Order Entry is a special case where editors should be able to save changes
@@ -1013,7 +1013,7 @@ OrderPageZone::OrderPageZone()
     amount = 0;
 }
 
-int OrderPageZone::RenderInit(Terminal *t, int update_flag)
+int OrderPageZone::RenderInit(Terminal *t, int /*update_flag*/)
 {
     FnTrace("OrderPageZone::RenderInit()");
     
@@ -1030,7 +1030,7 @@ RenderResult OrderPageZone::Render(Terminal *t, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult OrderPageZone::Touch(Terminal *t, int tx, int ty)
+SignalResult OrderPageZone::Touch(Terminal *t, int /*tx*/, int /*ty*/)
 {
     FnTrace("OrderPageZone::Touch()");
     Settings *s = t->GetSettings();
@@ -1074,7 +1074,7 @@ const char* OrderPageZone::TranslateString(Terminal *t)
 /***********************************************************************
  * OrderFlowZone Class
  ***********************************************************************/
-int OrderFlowZone::RenderInit(Terminal *t, int update_flag)
+int OrderFlowZone::RenderInit(Terminal *t, int /*update_flag*/)
 {
     FnTrace("OrderFlowZone::RenderInit()");
     Page *p = t->page;
@@ -1176,7 +1176,7 @@ RenderResult OrderFlowZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult OrderFlowZone::Touch(Terminal *t, int tx, int ty)
+SignalResult OrderFlowZone::Touch(Terminal *t, int /*tx*/, int /*ty*/)
 {
     FnTrace("OrderFlowZone::Touch()");
     Check *c = t->check;
@@ -1223,7 +1223,7 @@ SignalResult OrderFlowZone::Touch(Terminal *t, int tx, int ty)
         return SIGNAL_OKAY;
 }
 
-int OrderFlowZone::Update(Terminal *t, int update_message, const genericChar* value)
+int OrderFlowZone::Update(Terminal *t, int update_message, const genericChar* /*value*/)
 {
     FnTrace("OrderFlowZone::Update()");
     Page *p = t->page;
@@ -1246,7 +1246,7 @@ OrderAddZone::OrderAddZone()
     mode = 0;
 }
 
-int OrderAddZone::RenderInit(Terminal *t, int update_flag)
+int OrderAddZone::RenderInit(Terminal *t, int /*update_flag*/)
 {
     FnTrace("OrderAddZone::RenderInit()");
     Order *o = t->order;
@@ -1302,7 +1302,7 @@ RenderResult OrderAddZone::Render(Terminal *t, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult OrderAddZone::Touch(Terminal *term, int tx, int ty)
+SignalResult OrderAddZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
 {
     FnTrace("OrderAddZone::Touch()");
     Check *c = term->check;

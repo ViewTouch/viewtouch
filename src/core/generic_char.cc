@@ -89,15 +89,6 @@ void GenericDrawStringXftEmbossed(Display* display,
         return;
     }
 
-    const auto make_color = [](const XRenderColor& base, float multiplier, float offset = 0.0f) {
-        XRenderColor result{};
-        result.red = static_cast<unsigned short>(std::clamp(base.red * multiplier + offset, 0.0f, 65535.0f));
-        result.green = static_cast<unsigned short>(std::clamp(base.green * multiplier + offset, 0.0f, 65535.0f));
-        result.blue = static_cast<unsigned short>(std::clamp(base.blue * multiplier + offset, 0.0f, 65535.0f));
-        result.alpha = base.alpha;
-        return result;
-    };
-
     // Embossed text uses white color barely visible around the edges (drawn behind main text)
     const XRenderColor embossed_color{65535, 65535, 65535, color->alpha}; // White with full opacity
 

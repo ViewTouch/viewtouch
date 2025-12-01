@@ -1072,9 +1072,9 @@ int Layer::Triangle(int tx, int ty, int tw, int th, int image)
     short far_y = ty + (th - 1);
 
     XPoint pts[] = {
-        {mid_x, ty},        // Top
-        {tx,    far_y},     // Bottom-left
-        {far_x, far_y}      // Bottom-right
+        {static_cast<short>(mid_x), static_cast<short>(ty)},        // Top
+        {static_cast<short>(tx),    static_cast<short>(far_y)},     // Bottom-left
+        {static_cast<short>(far_x), static_cast<short>(far_y)}      // Bottom-right
     };
 
     XSetTSOrigin(dis, gfx, page_x, page_y);

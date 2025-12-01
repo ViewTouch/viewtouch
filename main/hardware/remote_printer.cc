@@ -21,6 +21,7 @@
 #include "remote_printer.hh"
 #include "printer.hh"
 #include "remote_link.hh"
+#include "../network/remote_link.hh"  // For PrinterProtocol constants
 #include "system.hh"
 #include "terminal.hh"
 #include "manager.hh"
@@ -38,6 +39,9 @@
 #endif
 
 
+/**** Forward Declaration ****/
+void PrinterCB(XtPointer client_data, int *fid, XtInputId *id);
+
 /**** RemotePrinter Class ****/
 class RemotePrinter : public Printer
 {
@@ -47,6 +51,8 @@ public:
     Str host_name;
     int port_no;
     int model;
+    int number;  // Printer number identifier
+    int device_no;  // File descriptor for device
     std::unique_ptr<CharQueue> buffer_in, buffer_out;
     Str filename;
     int failure;
@@ -60,7 +66,7 @@ public:
     int   WInt8(int val);
     int   RInt8(int *val = NULL);
     int   WStr(const char* str, int len = 0);
-    const genericChar* RStr(const char* str = NULL);
+    const genericChar* RStr(char* str = NULL);  // Changed to non-const for GetString
     int   Send();
     int   SendNow();
     int   Reconnect();  // Critical fix: Add reconnection method
@@ -70,6 +76,18 @@ public:
     int   OpenDrawer(int drawer);
     int   Start();
     int   End();
+    
+    // Required pure virtual functions from Printer base class
+    int WriteFlags(int flags) override;
+    int Model() override;
+    int Init() override;
+    int NewLine() override;
+    int LineFeed(int lines = 1) override;
+    int FormFeed() override;
+    int MaxWidth() override;
+    int MaxLines() override;
+    int Width(int flags = 0) override;
+    int CutPaper(int partial_only = 0) override;
 };
 
 
@@ -160,7 +178,7 @@ int RemotePrinter::WStr(const char* s, int len)
         return buffer_out->PutString(s, len);
 }
 
-const char* RemotePrinter::RStr(const char* s)
+const char* RemotePrinter::RStr(char* s)
 {
     static std::array<char, 1024> buffer{};
     if (s == NULL)
@@ -285,6 +303,74 @@ int RemotePrinter::OpenDrawer(int drawer)
     return SendNow();
 }
 
+int RemotePrinter::WriteFlags(int flags)
+{
+    // RemotePrinter doesn't directly handle flags - they're sent to remote process
+    // This is a required override from Printer base class
+    (void)flags;  // Unused for remote printer
+    return 0;
+}
+
+int RemotePrinter::Model()
+{
+    return model;
+}
+
+int RemotePrinter::Init()
+{
+    return 0;  // Remote printer initialization is handled in constructor
+}
+
+int RemotePrinter::NewLine()
+{
+    // Remote printer handles newlines via data stream, not protocol commands
+    // Send newline character directly
+    WStr("\n", 1);
+    return SendNow();
+}
+
+int RemotePrinter::LineFeed(int lines)
+{
+    // Send multiple newlines
+    for (int i = 0; i < lines; ++i)
+    {
+        WStr("\n", 1);
+    }
+    return SendNow();
+}
+
+int RemotePrinter::FormFeed()
+{
+    // Send form feed character
+    WStr("\f", 1);
+    return SendNow();
+}
+
+int RemotePrinter::MaxWidth()
+{
+    // Default to 80 columns for remote printer
+    return 80;
+}
+
+int RemotePrinter::MaxLines()
+{
+    return -1;  // Continuous feed
+}
+
+int RemotePrinter::Width(int flags)
+{
+    (void)flags;  // Remote printer doesn't change width based on flags
+    return MaxWidth();
+}
+
+int RemotePrinter::CutPaper(int partial_only)
+{
+    (void)partial_only;  // Remote printer doesn't support partial cuts
+    // Remote printer handles paper cutting via remote process
+    // This is a stub - actual cutting would be handled by the remote printer process
+    return 0;
+}
+
 int RemotePrinter::Start()
 {
     if (device_no)
@@ -293,7 +379,8 @@ int RemotePrinter::Start()
         close(device_no);
     }
 
-    filename.Set(MasterSystem->NewPrintFile());
+    char print_file_buffer[256];
+    filename.Set(MasterSystem->NewPrintFile(print_file_buffer));
     std::array<char, 256> str{};
     snprintf(str.data(), str.size(), "/tmp/vt_%s", host_name.Value());
     device_no = creat(str.data(), 0666);

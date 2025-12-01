@@ -110,7 +110,7 @@ int tender_order[] = {
 
 
 /**** General Functions ****/
-genericChar* SeatName(int seat, genericChar* str, int guests)
+genericChar* SeatName(int seat, genericChar* str, int /*guests*/)
 {
     FnTrace("SeatName()");
     static genericChar buffer[16];
@@ -127,20 +127,20 @@ genericChar* SeatName(int seat, genericChar* str, int guests)
     }
     else if (seat < 26)
     {
-        str[0] = 'A' + seat;
+        str[0] = static_cast<genericChar>('A' + seat);
         str[1] = '\0';
     }
     else if (seat < 702)
     {
-        str[0] = 'A' + (seat - 26) / 26;
-        str[1] = 'A' + (seat % 26);
+        str[0] = static_cast<genericChar>('A' + (seat - 26) / 26);
+        str[1] = static_cast<genericChar>('A' + (seat % 26));
         str[2] = '\0';
     }
     else
     {
-        str[0] = 'A' + ((seat - 702) / 676);
-        str[1] = 'A' + (((seat - 26) /  26) % 26);
-        str[2] = 'A' + (seat %  26);
+        str[0] = static_cast<genericChar>('A' + ((seat - 702) / 676));
+        str[1] = static_cast<genericChar>('A' + (((seat - 26) /  26) % 26));
+        str[2] = static_cast<genericChar>('A' + (seat %  26));
         str[3] = '\0';
     }
     return str;
@@ -192,7 +192,7 @@ Check::Check()
     undo          = 0;
 }
 
-Check::Check(Settings *settings, int customer_type, Employee *employee)
+Check::Check(Settings * /*settings*/, int customer_type, Employee *employee)
     : next(nullptr)
     , fore(nullptr)
     , archive(nullptr)
@@ -207,7 +207,7 @@ Check::Check(Settings *settings, int customer_type, Employee *employee)
     , user_open(0)
     , user_owner(0)
     , flags(0)
-    , type(customer_type)
+    , type(static_cast<short>(customer_type))
     , filename()
     , check_state(0)
     , chef_time()
@@ -510,7 +510,7 @@ int Check::Read(Settings *settings, InputDataFile &infile, int version)
  *  we have the new data style, so we'll just return 0 and let the
  *  parent function read it.
  ****/
-int Check::ReadFix(InputDataFile &datFile, int version)
+int Check::ReadFix(InputDataFile &datFile, int /*version*/)
 {
     FnTrace("Check::ReadFix()");
     int retval = 0;
@@ -1238,6 +1238,8 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
         }
     }
 
+    if (report == nullptr)
+        return 1;  // Error: no report available
     report->Clear();
     report->SetTitle("WorkOrder");
     System *sys = term->system_data;
@@ -1372,13 +1374,13 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
             vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("Pick Up"));
             break;
         }
-        snprintf(str1, pwidth, "%s", str);
+        snprintf(str1, static_cast<size_t>(pwidth), "%s", str);
         report->Mode(PRINT_LARGE);
         report->TextL(str1, color);
         report->NewLine();
 
 	// order due time
-        snprintf(str1, pwidth, "%s", term->TimeDate(date, TD_DATETIME));
+        snprintf(str1, static_cast<size_t>(pwidth), "%s", term->TimeDate(date, TD_DATETIME));
         report->TextL(str1, color);
         report->Mode(0);
         report->NewLine();
@@ -1424,9 +1426,9 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
         break;
 
     default:
-	str1[0] = 0;
+	str1[0] = '\0';
 	}
-    if (full_hdr && str1[0])	// order type on separate line
+    if (full_hdr && str1[0] != '\0')	// order type on separate line
     {
         report->Mode(kitchen_mode);
         report->TextL(str1, color);
@@ -1515,7 +1517,7 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                 // get the description 
                 order->PrintDescription(str2);
                 if (pval > 1)
-                    strcat(ordstr, "->");
+                    vt_safe_string::safe_concat(ordstr, STRLENGTH, "->");
                 if (order->item_type == ITEM_POUND)
                     vt_safe_string::safe_format(str1, STRLENGTH, "%.2f %s", ((Flt) order->count / 100.0), str2);
                 else if (order->count >= 1)
@@ -1607,20 +1609,20 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                         {
                             vt_safe_string::safe_copy(tmpstr, STRLONG, ordstr);  // save a backup copy
                             if (firstmod == 0)
-                                strcat(ordstr, ",");
+                                vt_safe_string::safe_concat(ordstr, STRLENGTH, ",");
                             firstmod = 0;
-                            strcat(ordstr, str2);
+                            vt_safe_string::safe_concat(ordstr, STRLENGTH, str2);
                             if (strlen(ordstr) >= ((unsigned int)(pwidth - 1)))
                             {
-                                strcat(tmpstr, ",");
+                                vt_safe_string::safe_concat(tmpstr, STRLONG, ",");
                                 report->Mode(kitchen_mode);
                                 report->TextL(tmpstr, COLOR_RED);
                                 report->TextR("", COLOR_RED);
                                 report->Mode(0);
                                 report->NewLine();
                                 ordstr[0] = '\0';
-                                strcat(ordstr, "  ");
-                                strcat(ordstr, str2);
+                                vt_safe_string::safe_concat(ordstr, STRLENGTH, "  ");
+                                vt_safe_string::safe_concat(ordstr, STRLENGTH, str2);
                             }
                         }
                     }
@@ -1652,7 +1654,7 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
     Order    *order = NULL;
     Employee *employee = NULL;
     char      ordstr[STRLONG] = "";
-    char      tmpstr[STRLONG] = "";
+    [[maybe_unused]] char      tmpstr[STRLONG] = "";  // Reserved for future use
     char      str1[STRLONG] = "";
     char      str2[STRLONG] = "";
     int       firstmod = 0;
@@ -2170,13 +2172,13 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
         snprintf(str, STRLONG,"%s", term->Translate("Retail"));
         break;
     case CHECK_DINEIN:
-        snprintf(str, STRLONG, GlobalTranslate("Here"));
+        vt_safe_string::safe_copy(str, STRLONG, GlobalTranslate("Here"));
         break;
     case CHECK_TOGO:
-        snprintf(str, STRLONG, GlobalTranslate("To Go"));
+        vt_safe_string::safe_copy(str, STRLONG, GlobalTranslate("To Go"));
         break;
     case CHECK_CALLIN:
-        snprintf(str, STRLONG, GlobalTranslate("Pick Up"));
+        vt_safe_string::safe_copy(str, STRLONG, GlobalTranslate("Pick Up"));
         break;
     default:
         break;
@@ -4459,7 +4461,7 @@ int SubCheck::TabRemain()
     return remain;
 }
 
-int SubCheck::SettleTab(Terminal *term, int payment_type, int payment_id, int payment_flags)
+int SubCheck::SettleTab(Terminal *term, int payment_type, int /*payment_id*/, int payment_flags)
 {
     FnTrace("SubCheck::SettleTab()");
     int retval = 0;

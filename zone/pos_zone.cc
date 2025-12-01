@@ -450,23 +450,23 @@ int PosZone::CanCopy(Terminal *t)
     return e->CanEdit();
 }
 
-int PosZone::SetSize(Terminal *t, int width, int height)
+int PosZone::SetSize(Terminal * /*t*/, int width, int height)
 {
     // FINISH! - Add user & page check
     if (width < 16)
         width = 16;
     if (height < 16)
         height = 16;
-    w = width;
-    h = height;
+    w = static_cast<short>(width);
+    h = static_cast<short>(height);
     return 0;
 }
 
-int PosZone::SetPosition(Terminal *t, int pos_x, int pos_y)
+int PosZone::SetPosition(Terminal * /*t*/, int pos_x, int pos_y)
 {
     // FINISH! - Add user & page check
-    x = pos_x;
-    y = pos_y;
+    x = static_cast<short>(pos_x);
+    y = static_cast<short>(pos_y);
     return 0;
 }
 
