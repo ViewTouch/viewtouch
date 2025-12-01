@@ -142,7 +142,7 @@ RenderResult DialogZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-SignalResult DialogZone::Touch(Terminal *term, int tx, int ty)
+SignalResult DialogZone::Touch(Terminal * /*term*/, int /*tx*/, int /*ty*/)
 {
     return SIGNAL_IGNORED;
 }
@@ -288,16 +288,16 @@ SimpleDialog::SimpleDialog(const char* title, int form)
     force_width = 0;
 }
 
-int SimpleDialog::RenderInit(Terminal *term, int update_flag)
+int SimpleDialog::RenderInit(Terminal * /*term*/, int /*update_flag*/)
 {
     FnTrace("SimpleDialog::RenderInit()");
     if (format == 0)
     {
         h = 400;
         if (force_width > 0)
-            w = force_width;
+            w = static_cast<short>(force_width);
         else
-            w = 400 + (buttons.Count() * 80);
+            w = static_cast<short>(400 + (buttons.Count() * 80));
     }
     else
     {
@@ -321,11 +321,11 @@ int SimpleDialog::RenderInit(Terminal *term, int update_flag)
             btn_height = 50;
         }
         if (format == 1)
-            h = head_height + ((buttons.Count() + 1) / 2) * (btn_height + gap);
+            h = static_cast<short>(head_height + ((buttons.Count() + 1) / 2) * (btn_height + gap));
         else
         {
             int rows = ((buttons.Count() + 2) / 3);
-            h = head_height + (rows * (btn_height + gap));
+            h = static_cast<short>(head_height + (rows * (btn_height + gap)));
         }
         w = 640;
     }
@@ -546,21 +546,21 @@ RenderResult UnitAmountDialog::Render(Terminal *term, int update_flag)
         row[i] = row[i-1] + bh + gap;
     }
 
-    key[0]->SetRegion(col[1], row[3], bw*2 + gap, bh);
-    key[1]->SetRegion(col[1], row[0], bw, bh);
-    key[2]->SetRegion(col[2], row[0], bw, bh);
-    key[3]->SetRegion(col[3], row[0], bw, bh);
-    key[4]->SetRegion(col[1], row[1], bw, bh);
-    key[5]->SetRegion(col[2], row[1], bw, bh);
-    key[6]->SetRegion(col[3], row[1], bw, bh);
-    key[7]->SetRegion(col[1], row[2], bw, bh);
-    key[8]->SetRegion(col[2], row[2], bw, bh);
-    key[9]->SetRegion(col[3], row[2], bw, bh);
+    (void)key[0]->SetRegion(col[1], row[3], bw*2 + gap, bh);  // SetRegion has nodiscard, but we only need side effect
+    (void)key[1]->SetRegion(col[1], row[0], bw, bh);
+    (void)key[2]->SetRegion(col[2], row[0], bw, bh);
+    (void)key[3]->SetRegion(col[3], row[0], bw, bh);
+    (void)key[4]->SetRegion(col[1], row[1], bw, bh);
+    (void)key[5]->SetRegion(col[2], row[1], bw, bh);
+    (void)key[6]->SetRegion(col[3], row[1], bw, bh);
+    (void)key[7]->SetRegion(col[1], row[2], bw, bh);
+    (void)key[8]->SetRegion(col[2], row[2], bw, bh);
+    (void)key[9]->SetRegion(col[3], row[2], bw, bh);
 
-    key[10]->SetRegion(col[3], row[3], bw, bh);
-    key[11]->SetRegion(col[4], row[2], bw, bh*2 + gap);
-    key[12]->SetRegion(col[4], row[0], bw, bh*2 + gap);
-    key[13]->SetRegion(col[1], row[4], bw*3 + gap*2, bh);
+    (void)key[10]->SetRegion(col[3], row[3], bw, bh);
+    (void)key[11]->SetRegion(col[4], row[2], bw, bh*2 + gap);
+    (void)key[12]->SetRegion(col[4], row[0], bw, bh*2 + gap);
+    (void)key[13]->SetRegion(col[1], row[4], bw*3 + gap*2, bh);
 
     if (units > 0)
     {
@@ -644,7 +644,7 @@ SignalResult UnitAmountDialog::Signal(Terminal *term, const genericChar* message
     {
     default:
         if (len < 10 && (len > 0 || idx != 0))
-            strcat(buffer, message);
+            vt_safe_string::safe_concat(buffer, STRLENGTH, message);
         break;
     case 10:  // .
     {
@@ -654,7 +654,7 @@ SignalResult UnitAmountDialog::Signal(Terminal *term, const genericChar* message
             if (*c++ == '.')
                 dp = 1;
         if (dp == 0)
-            strcat(buffer, ".");
+            vt_safe_string::safe_concat(buffer, STRLENGTH, ".");
         break;
     }
     case 11:  // enter
@@ -1022,7 +1022,7 @@ GetTextDialog::GetTextDialog(const char* msg, const char* retmsg, int mlen)
     vt_safe_string::safe_copy(display_string, STRLENGTH, msg);
     vt_safe_string::safe_copy(return_message, STRLENGTH, retmsg);
     buffidx = 0;
-    max_len = mlen > STRLENGTH ? STRLENGTH : mlen;
+    max_len = static_cast<int>(mlen > STRLENGTH ? STRLENGTH : mlen);
     first_row = 200;
 
     genericChar str[2];
@@ -1788,7 +1788,7 @@ int CreditCardEntryDialog::RenderEntry(Terminal *term)
     else
         strncpy(buff, cc_num, STRLENGTH);
     if (current == cc_num)
-        strcat(buff, "_");
+        vt_safe_string::safe_concat(buff, STRLENGTH, "_");
     TextPosL(term, 6, num_pos + 1.0, buff, COLOR_WHITE);
     term->UpdateArea(entry_pos[0].x, entry_pos[0].y, entry_pos[0].w, entry_pos[0].h);
 
@@ -1802,7 +1802,7 @@ int CreditCardEntryDialog::RenderEntry(Terminal *term)
     else
         strncpy(buff, cc_expire, STRLENGTH);
     if (current == cc_expire)
-        strcat(buff, "_");
+        vt_safe_string::safe_concat(buff, STRLENGTH, "_");
     TextPosL(term, 6, exp_pos + 1.0, buff, COLOR_WHITE);
     term->UpdateArea(entry_pos[1].x, entry_pos[1].y, entry_pos[1].w, entry_pos[1].h);
 
@@ -2021,7 +2021,7 @@ void CreditCardDialog::Init(Terminal *term, SubCheck *subch, const char* swipe_v
                 term->credit->ParseSwipe(swipe_value);
             else
                 ProcessSwipe(term, swipe_value);
-            if (term->credit->IsValid() &&
+            if (term->credit != NULL && term->credit->IsValid() &&
                 term->auth_action == 0 &&
                 !term->credit->IsAuthed() &&
                 !term->credit->IsPreauthed() &&
@@ -2098,13 +2098,13 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
     int  bypos;
     int  bxpos;
     int  font_old = font;
-    int  status = -1;
+    [[maybe_unused]] int  status = -1;  // Reserved for future use
     Flt  space = 0.7;
     Flt  line = 0.0;
     Settings *settings = term->GetSettings();
     SubCheck *sc = NULL;
     Employee *employee = term->user;
-    int  ismanager = 0;
+    [[maybe_unused]] int  ismanager = 0;  // Reserved for future use
     int  font_color;
     int  have_tip = 0;
     int  query_line = 3;
@@ -2250,6 +2250,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
     // Do we at least have an error message of some sort?
     if (term->credit != NULL && authorizing == 0)
     {
+        str[0] = '\0';  // Initialize to ensure it's not garbage
         if (term->credit->IsVoided())
             vt_safe_string::safe_copy(str, STRLENGTH, term->Translate("Void Successful"));
         else if (term->credit->IsRefunded())
@@ -2894,7 +2895,7 @@ int CreditCardDialog::FinishCreditCard(Terminal *term)
                 {
                     snprintf(str, STRLENGTH, "tender %d %d %d %d",
                              TENDER_CHARGED_TIP, 0, 0, term->credit->Tip());
-                    result = term->Signal(str, 0);
+                    (void)term->Signal(str, 0);  // Signal has nodiscard, but we only need side effect
                 }
 
                 cc_id = term->credit->CreditType();
@@ -2993,9 +2994,9 @@ SignalResult CreditCardDialog::ProcessCreditCard(Terminal *term)
             if (strcmp(term->credit->Verb(), "No Card Information Entered") == 0)
             {
                 char message[STRLONG] = "";
-                strcat(message, term->credit->Verb());
-                strcat(message, "\\This could indicate a bad connection.");
-                strcat(message, "\\Would you like to reset the connection?");
+                vt_safe_string::safe_concat(message, STRLONG, term->credit->Verb());
+                vt_safe_string::safe_concat(message, STRLONG, "\\This could indicate a bad connection.");
+                vt_safe_string::safe_concat(message, STRLONG, "\\Would you like to reset the connection?");
                 sd = new SimpleDialog(message);
                 sd->Button(term->Translate("Yes"), "ccqterminate");
                 sd->Button(term->Translate("No"));
@@ -3389,7 +3390,7 @@ int OpenTabDialog::RenderEntry(Terminal *term)
     else
         strncpy(buff, customer_name, STRLENGTH);
     if (current == customer_name)
-        strcat(buff, "_");
+        vt_safe_string::safe_concat(buff, STRLENGTH, "_");
     TextPosL(term, entry_x + 1, name_pos + 1.0, buff, COLOR_WHITE);
     term->UpdateArea(entry_pos[0].x, entry_pos[0].y, entry_pos[0].w, entry_pos[0].h);
 
@@ -3403,7 +3404,7 @@ int OpenTabDialog::RenderEntry(Terminal *term)
     else
         strncpy(buff, customer_phone, STRLENGTH);
     if (current == customer_phone)
-        strcat(buff, "_");
+        vt_safe_string::safe_concat(buff, STRLENGTH, "_");
     TextPosL(term, entry_x + 1, phone_pos + 1.0, buff, COLOR_WHITE);
     term->UpdateArea(entry_pos[1].x, entry_pos[1].y, entry_pos[1].w, entry_pos[1].h);
 
@@ -3417,7 +3418,7 @@ int OpenTabDialog::RenderEntry(Terminal *term)
     else
         strncpy(buff, customer_comment, STRLENGTH);
     if (current == customer_comment)
-        strcat(buff, "_");
+        vt_safe_string::safe_concat(buff, STRLENGTH, "_");
     TextPosL(term, entry_x + 1, comment_pos + 1.0, buff, COLOR_WHITE);
     term->UpdateArea(entry_pos[2].x, entry_pos[2].y, entry_pos[2].w, entry_pos[2].h);
 

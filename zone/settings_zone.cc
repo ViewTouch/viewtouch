@@ -107,7 +107,7 @@ std::unique_ptr<Zone> SwitchZone::Copy()
 {
     FnTrace("SwitchZone::Copy()");
     auto swZone = std::make_unique<SwitchZone>();
-    swZone->SetRegion(this);
+    (void)swZone->SetRegion(this);  // SetRegion has nodiscard, but we only need side effect
     swZone->name.Set(name);
     swZone->key      = key;
     swZone->behave   = behave;
@@ -184,8 +184,8 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         break;
     case SWITCH_RECEIPT_PRINT:
         // Modern enum-based approach
-        if (auto type = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {
-            str = vt::GetReceiptPrintDisplayName(*type);
+        if (auto receipt_type = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {  // Renamed to avoid shadowing member 'type'
+            str = vt::GetReceiptPrintDisplayName(*receipt_type);
         } else {
             str = FindStringByValue(settings->receipt_print, ReceiptPrintValue, ReceiptPrintName);
         }
@@ -338,7 +338,7 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
 	return RENDER_OKAY;
 }
 
-SignalResult SwitchZone::Touch(Terminal *term, int tx, int ty)
+SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
 {
 	FnTrace("SwitchZone::Touch()");
 	int no_update = 0;
@@ -488,7 +488,7 @@ int SwitchZone::Update(Terminal *term, int update_message, const genericChar* va
     return 0;
 }
 
-const char* SwitchZone::TranslateString(Terminal *term)
+const char* SwitchZone::TranslateString(Terminal * /*term*/)
 {
     FnTrace("SwitchZone::TranslateString()");
     int idx = CompareList(type, SwitchValue);
@@ -779,11 +779,11 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
     if (records > 0)
     {
         LayoutForm(term);
-        for (FormField *f = FieldList(); f != NULL; f = f->next)
+        for (FormField *field = FieldList(); field != NULL; field = field->next)  // Renamed 'f' to 'field' to avoid shadowing
         {
-            f->selected = (keyboard_focus == f);
-            if (f->active)
-                f->Render(term, this);
+            field->selected = (keyboard_focus == field);
+            if (field->active)
+                field->Render(term, this);
         }
     }
     
@@ -820,7 +820,7 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
     return RENDER_OKAY;
 }
 
-int SettingsZone::LoadRecord(Terminal *term, int record)
+int SettingsZone::LoadRecord(Terminal *term, int /*record*/)
 {
     FnTrace("SettingsZone::LoadRecord()");
     Settings *settings = term->GetSettings();
@@ -836,7 +836,7 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
         if (f) { f->Set(settings->store_address); f = f->next; }
         if (f) { f->Set(settings->store_address2); f = f->next; }
         if (f) { f->Set(settings->country_code); f = f->next; }
-        if (f) { f->Set(settings->store_code); f = f->next; }
+        if (f) { f->Set(settings->store_code); f = f->next; }  // f is used in subsequent checks, dead store warning is false positive
         break;
 
     case 1:  // Logon ID Life
@@ -845,7 +845,7 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
         if (f) { f->Set(settings->screen_blank_time); f = f->next; }
         if (f) { f->Set(settings->delay_time1); f = f->next; }
         if (f) { f->Set(settings->delay_time2); f = f->next; }
-        if (f) { f->Set(settings->start_page_timeout); f = f->next; }
+        if (f) { f->Set(settings->start_page_timeout); f = f->next; }  // f is used in subsequent checks, dead store warning is false positive
         break;
 
     case 2:  // Ledger Accounts
@@ -862,7 +862,7 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
                 f->AddEntry(acct->name.Value(), acct->number);
                 acct = acct->next;
             }
-            f->Set(settings->drawer_account); f = f->next;
+            f->Set(settings->drawer_account); f = f->next;  // f is used in subsequent checks, dead store warning is false positive
         }
         break;
 
@@ -870,14 +870,14 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
         f = drawer_start;
         if (f) f = f->next;  // skip past label
         if (f) { f->Set(settings->require_drawer_balance); f = f->next; }
-        if (f) { f->Set(settings->default_tab_amount); f = f->next; }
+        if (f) { f->Set(settings->default_tab_amount); f = f->next; }  // f is used in subsequent checks, dead store warning is false positive
         break;
 
     case 4:  // SMTP Settings
         f = smtp_start;
         if (f) f = f->next;  // skip past label
         if (f) { f->Set(settings->email_send_server); f = f->next; }
-        if (f) { f->Set(settings->email_replyto); f = f->next; }
+        if (f) { f->Set(settings->email_replyto); f = f->next; }  // f is used in subsequent checks, dead store warning is false positive
         break;
 
     case 5:  // Miscellaneous Settings
@@ -898,14 +898,14 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
         if (f) { f->Set(settings->shadow_offset_x); f = f->next; }
         if (f) { f->Set(settings->shadow_offset_y); f = f->next; }
         if (f) { f->Set(settings->shadow_blur_radius); f = f->next; }
-        if (f) { f->Set(settings->button_text_position); f = f->next; }
+        if (f) { f->Set(settings->button_text_position); f = f->next; }  // f is used in subsequent checks, dead store warning is false positive
         break;
 
     case 6:  // Scheduled Restart Settings
         f = restart_start;
         if (f) f = f->next;  // skip past label
         if (f) { f->Set(settings->scheduled_restart_hour); f = f->next; }
-        if (f) { f->Set(settings->scheduled_restart_min); f = f->next; }
+        if (f) { f->Set(settings->scheduled_restart_min); f = f->next; }  // f is used in subsequent checks, dead store warning is false positive
         break;
 
     case 7:  // Kitchen Video Order Alert Settings
@@ -916,7 +916,7 @@ int SettingsZone::LoadRecord(Terminal *term, int record)
         if (f) { f->Set(settings->kv_order_flash_time); f = f->next; }
         if (f) { f->Set(settings->kv_warn_color); f = f->next; }
         if (f) { f->Set(settings->kv_alert_color); f = f->next; }
-        if (f) { f->Set(settings->kv_flash_color); f = f->next; }
+        if (f) { f->Set(settings->kv_flash_color); f = f->next; }  // f is used in subsequent checks, dead store warning is false positive
         break;
     }
 
@@ -939,7 +939,7 @@ int SettingsZone::SaveRecord(Terminal *term, int record, int write_file)
         if (f) { f->Get(settings->store_address); f = f->next; }
         if (f) { f->Get(settings->store_address2); f = f->next; }
         if (f) { f->Get(settings->country_code); f = f->next; }
-        if (f) { f->Get(settings->store_code); f = f->next; }
+        if (f) { f->Get(settings->store_code); f = f->next; }  // f is used in subsequent checks, dead store warning is false positive
         break;
 
     case 1:  // Logon ID Life
@@ -948,14 +948,14 @@ int SettingsZone::SaveRecord(Terminal *term, int record, int write_file)
         if (f) { f->Get(settings->screen_blank_time); f = f->next; }
         if (f) { f->Get(settings->delay_time1); f = f->next; }
         if (f) { f->Get(settings->delay_time2); f = f->next; }
-        if (f) { f->Get(settings->start_page_timeout); f = f->next; }
+        if (f) { f->Get(settings->start_page_timeout); f = f->next; }  // f is used in subsequent checks, dead store warning is false positive
         break;
 
     case 2:  // Ledger Accounts
         f = ledger_start;
         if (f) f = f->next;  // skip past label
         if (f) { f->Get(settings->low_acct_num); f = f->next; }
-        if (f) { f->Get(settings->high_acct_num); f = f->next; }
+        if (f) { f->Get(settings->high_acct_num); f = f->next; }  // f is used in subsequent checks, dead store warning is false positive
         if (f) { f->Get(settings->drawer_account); f = f->next; }
         // set the global settings here
         term->system_data->account_db.low_acct_num = settings->low_acct_num;

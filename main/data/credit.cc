@@ -722,7 +722,7 @@ int Credit::GetTrack(char* dest, const char* source, int maxlen)
     FnTrace("Credit::GetTrack()");
     int retval = -1;
     int srcidx = 0;
-    int srclen = strlen(source);
+    int srclen = static_cast<int>(strlen(source));
     int dstidx = 0;
 
     while ((srcidx < srclen) && (source[srcidx] != '?') &&
@@ -752,7 +752,7 @@ int Credit::ParseTrack1(const char* swipe_value)
     int   cidx;
     int   len;
 
-    len = strlen(swipe_value);
+    len = static_cast<int>(strlen(swipe_value));
     cidx = 1;
     t1_fc = swipe_value[cidx];
     cidx++;
@@ -838,7 +838,7 @@ int Credit::ParseTrack2(const char* swipe_value)
     char  field_sep         = '=';
     int   idx;
     int   cidx = 0;
-    int   len = strlen(swipe_value);
+    int   len = static_cast<int>(strlen(swipe_value));
 
     cidx = 1;  // skip past start sentinel
     idx = 0;
@@ -1232,7 +1232,7 @@ int Credit::SetCreditType()
 {
     FnTrace("Credit::SetCreditType()");
     const char* num = number.Value();
-    int len = strlen(num);
+    int len = static_cast<int>(strlen(num));
     int v;
 
     if (len >= 13 && len <= 16)
@@ -1463,7 +1463,7 @@ int Credit::RequireSwipe()
 {
     FnTrace("Credit::RequireSwipe()");
     int retval = 0;
-    int len = number.size();
+    int len = static_cast<int>(number.size());
     const char* numval = number.Value();
 
     if (len < 1)
@@ -1487,9 +1487,9 @@ int Credit::PrintAuth()
     printf("    Auth:         %s\n", auth.Value());
     printf("    ISO:          %s\n", isocode.Value());
     printf("    B24:          %s\n", b24code.Value());
-    printf("    Batch:        %lld\n", batch);
-    printf("    Item:         %lld\n", item);
-    printf("    TTID:         %lld\n", ttid);
+    printf("    Batch:        %ld\n", static_cast<long>(batch));
+    printf("    Item:         %ld\n", static_cast<long>(item));
+    printf("    TTID:         %ld\n", static_cast<long>(ttid));
     printf("    AVS:          %s\n", AVS.Value());
     printf("    CV:           %s\n", CV.Value());
     printf("    Reference:    %s\n", reference.Value());
@@ -1645,7 +1645,7 @@ const char* Credit::PAN(int all)
         {
             if (card_type == CARD_TYPE_DEBIT && processor == CCAUTH_CREDITCHEQ)
             {
-                len = strlen(str);
+                len = static_cast<int>(strlen(str));
                 idx = len - 5;
                 while (idx < len)
                 {
@@ -1655,7 +1655,7 @@ const char* Credit::PAN(int all)
             }
             else
             {
-                idx = strlen(str) - 4;
+                idx = static_cast<int>(strlen(str)) - 4;
                 while (idx > 0)
                 {
                     idx -= 1;
@@ -1668,7 +1668,7 @@ const char* Credit::PAN(int all)
             vt_safe_string::safe_copy(str2, STRSHORT, str);
             int didx = 0;
             idx = 0;
-            while (idx < STRSHORT && str2[idx] != '\0')
+            while (idx < static_cast<int>(STRSHORT) && str2[idx] != '\0')
             {
                 if (str2[idx] != ' ')
                 {
@@ -1699,7 +1699,7 @@ char* Credit::LastFour(char* dest)
     {
         memset(dest, '\0', 10);
         vt_safe_string::safe_copy(buffer, STRLENGTH, number.Value());
-        len = strlen(buffer);
+        len = static_cast<int>(strlen(buffer));
         sidx = len - 4;
         while (sidx < len)
         {
@@ -1969,13 +1969,13 @@ int Credit::operator == (Credit *c)
     FnTrace("Credit::==()");
     int retval = 0;
 
-    if (read_t1 && (t1_pan == c->t1_pan) && (t1_expiry && c->t1_expiry))
+    if (read_t1 && (strcmp(t1_pan, c->t1_pan) == 0) && (strcmp(t1_expiry, c->t1_expiry) == 0))
         retval = 1;
-    else if (read_t2 && (t2_pan == c->t2_pan) && (t2_expiry && c->t2_expiry))
+    else if (read_t2 && (strcmp(t2_pan, c->t2_pan) == 0) && (strcmp(t2_expiry, c->t2_expiry) == 0))
         retval = 1;
-    else if (read_t3 && (t3_pan == c->t3_pan) && (t3_expiry && c->t3_expiry))
+    else if (read_t3 && (strcmp(t3_pan, c->t3_pan) == 0) && (strcmp(t3_expiry, c->t3_expiry) == 0))
         retval = 1;
-    else if (read_manual && (mn_pan == c->mn_pan) && (mn_expiry && c->mn_expiry))
+    else if (read_manual && (strcmp(mn_pan, c->mn_pan) == 0) && (strcmp(mn_expiry, c->mn_expiry) == 0))
         retval = 1;
 
     return retval;

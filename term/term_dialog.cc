@@ -305,13 +305,13 @@ int DialogMenu::Init(Widget parent, const char* label, const char* *option_name,
     
     // Configure menu - for long lists, use multiple columns to keep it on screen
     int n = 0;
-    XtSetArg(args[n], XmNtearOffModel, XmTEAR_OFF_DISABLED); n++;
+    XtSetArg(args[static_cast<size_t>(n)], XmNtearOffModel, XmTEAR_OFF_DISABLED); n++;
     if (count > 8) {
         // For menus with more than 8 items, use multi-column layout
         int num_cols = (count + 7) / 8;  // 8 rows max per column
-        XtSetArg(args[n], XmNpacking, XmPACK_COLUMN); n++;
-        XtSetArg(args[n], XmNnumColumns, num_cols); n++;
-        XtSetArg(args[n], XmNorientation, XmVERTICAL); n++;
+        XtSetArg(args[static_cast<size_t>(n)], XmNpacking, XmPACK_COLUMN); n++;
+        XtSetArg(args[static_cast<size_t>(n)], XmNnumColumns, static_cast<Cardinal>(num_cols)); n++;
+        XtSetArg(args[static_cast<size_t>(n)], XmNorientation, XmVERTICAL); n++;
     }
     menu = XmCreatePulldownMenu(container, const_cast<char*>("menu"), args.data(), n);
     
@@ -322,8 +322,8 @@ int DialogMenu::Init(Widget parent, const char* label, const char* *option_name,
     XtSetArg(args[4], XmNleftPosition,     MARGIN);
     option = XmCreateOptionMenu(container, const_cast<char*>("option"), args.data(), 5);
 
-    choices.assign(count, nullptr);
-    value_list.assign(option_value, option_value + count);
+    choices.assign(static_cast<size_t>(count), nullptr);
+    value_list.assign(option_value, option_value + static_cast<size_t>(count));
     choice_count = count;
 
     if (no_change_value)
@@ -338,9 +338,9 @@ int DialogMenu::Init(Widget parent, const char* label, const char* *option_name,
     for (int i = 0; i < count; ++i)
     {
         name = MasterTranslations.GetTranslation(option_name[i]);
-        choices[i] = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, menu, NULL);
+        choices[static_cast<size_t>(i)] = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, menu, NULL);
         if (option_cb)
-            XtAddCallback(choices[i], XmNactivateCallback,
+            XtAddCallback(choices[static_cast<size_t>(i)], XmNactivateCallback,
                           (XtCallbackProc) option_cb, (XtPointer) client_data);
     }
 
@@ -372,7 +372,7 @@ int DialogMenu::Set(int value)
     {
         int idx = CompareList(value, value_list.data(), -1);
         if (idx >= 0 && idx < static_cast<int>(choices.size()))
-            XtVaSetValues(option, XmNmenuHistory, choices[idx], NULL);
+            XtVaSetValues(option, XmNmenuHistory, choices[static_cast<size_t>(idx)], NULL);
     }
     return 0;
 }
@@ -396,8 +396,8 @@ int DialogMenu::Value()
         return no_change_value;
 
     for (int i = 0; i < choice_count; ++i)
-        if (choice == choices[i])
-            return value_list[i];
+        if (choice == choices[static_cast<size_t>(i)])
+            return value_list[static_cast<size_t>(i)];
     return -1;
 }
 
@@ -460,15 +460,15 @@ int DialogDoubleMenu::Init(Widget parent, const char* label,
     int count = 0;
     while (op1_name[count])
         ++count;
-    choices1.assign(count, nullptr);
-    value1_list.assign(op1_value, op1_value + count);
+    choices1.assign(static_cast<size_t>(count), nullptr);
+    value1_list.assign(op1_value, op1_value + static_cast<size_t>(count));
     choice1_count = count;
 
     count = 0;
     while (op2_name[count])
         ++count;
-    choices2.assign(count, nullptr);
-    value2_list.assign(op2_value, op2_value + count);
+    choices2.assign(static_cast<size_t>(count), nullptr);
+    value2_list.assign(op2_value, op2_value + static_cast<size_t>(count));
     choice2_count = count;
 
     if (no_change_value)
@@ -480,10 +480,10 @@ int DialogDoubleMenu::Init(Widget parent, const char* label,
     }
 
     for (i = 0; i < choice1_count; ++i)
-        choices1[i] = XtVaCreateManagedWidget(op1_name[i],
+        choices1[static_cast<size_t>(i)] = XtVaCreateManagedWidget(op1_name[i],
                                                   xmPushButtonWidgetClass, menu1, NULL);
     for (i = 0; i < choice2_count; ++i)
-        choices2[i] = XtVaCreateManagedWidget(op2_name[i],
+        choices2[static_cast<size_t>(i)] = XtVaCreateManagedWidget(op2_name[i],
                                                   xmPushButtonWidgetClass, menu2, NULL);
 
     XtManageChild(option1);
@@ -516,7 +516,7 @@ int DialogDoubleMenu::Set(int v1, int v2)
     {
         idx = CompareList(v1, value1_list.data(), -1);
         if (idx >= 0 && idx < static_cast<int>(choices1.size()))
-            XtVaSetValues(option1, XmNmenuHistory, choices1[idx], NULL);
+            XtVaSetValues(option1, XmNmenuHistory, choices1[static_cast<size_t>(idx)], NULL);
     }
 
     if (no_change_widget2 && v2 == no_change_value)
@@ -525,7 +525,7 @@ int DialogDoubleMenu::Set(int v1, int v2)
     {
         idx = CompareList(v2, value2_list.data(), -1);
         if (idx >= 0 && idx < static_cast<int>(choices2.size()))
-            XtVaSetValues(option2, XmNmenuHistory, choices2[idx], NULL);
+            XtVaSetValues(option2, XmNmenuHistory, choices2[static_cast<size_t>(idx)], NULL);
     }
     return 0;
 }
@@ -546,9 +546,9 @@ int DialogDoubleMenu::Value(int &v1, int &v2)
     else
     {
         for (int i = 0; i < choice1_count; ++i)
-            if (choice == choices1[i])
+            if (choice == choices1[static_cast<size_t>(i)])
             {
-                v1 = value1_list[i];
+                v1 = value1_list[static_cast<size_t>(i)];
                 break;
             }
     }
@@ -561,9 +561,9 @@ int DialogDoubleMenu::Value(int &v1, int &v2)
     else
     {
         for (int i = 0; i < choice2_count; ++i)
-            if (choice == choices2[i])
+            if (choice == choices2[static_cast<size_t>(i)])
             {
-                v2 = value2_list[i];
+                v2 = value2_list[static_cast<size_t>(i)];
                 break;
             }
     }
@@ -575,14 +575,14 @@ int DialogDoubleMenu::Value(int &v1, int &v2)
  ********************************************************************/
 
 // Callback Functions
-void EP_OkayCB(Widget widget, XtPointer client_data, XtPointer call_data)
+void EP_OkayCB(Widget /*widget*/, XtPointer client_data, XtPointer /*call_data*/)
 {
     PageDialog *d = static_cast<PageDialog*>(client_data);
     d->Close();
     d->Send();
 }
 
-void EP_DeleteCB(Widget widget, XtPointer client_data, XtPointer call_data)
+void EP_DeleteCB(Widget /*widget*/, XtPointer client_data, XtPointer /*call_data*/)
 {
     PageDialog *d = static_cast<PageDialog*>(client_data);
     d->Close();
@@ -590,13 +590,13 @@ void EP_DeleteCB(Widget widget, XtPointer client_data, XtPointer call_data)
     SendNow();
 }
 
-void EP_CancelCB(Widget widget, XtPointer client_data, XtPointer call_data)
+void EP_CancelCB(Widget /*widget*/, XtPointer client_data, XtPointer /*call_data*/)
 {
     PageDialog *d = static_cast<PageDialog*>(client_data);
     d->Close();
 }
 
-void EP_TypeCB(Widget widget, XtPointer client_data, XtPointer call_data)
+void EP_TypeCB(Widget /*widget*/, XtPointer client_data, XtPointer /*call_data*/)
 {
     PageDialog *d = static_cast<PageDialog*>(client_data);
     int new_type = 0;
@@ -779,7 +779,7 @@ int PageDialog::Send()
  ********************************************************************/
 
 // Callback Functions
-void DP_OkayCB(Widget widget, XtPointer client_data, XtPointer call_data)
+void DP_OkayCB(Widget /*widget*/, XtPointer client_data, XtPointer /*call_data*/)
 {
     DefaultDialog *d = static_cast<DefaultDialog*>(client_data);
     d->Close();

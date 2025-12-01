@@ -164,7 +164,7 @@ Printer::~Printer()
  *  ports.  But this should not happen as the new code allows for lpd, which will avoid
  *  the problem while also providing more versatility.
  ****/
-int Printer::MatchHost(const genericChar* host, int port)
+int Printer::MatchHost(const genericChar* host, int /*port*/)
 {
     FnTrace("Printer::MatchHost()");
     int retval = 1;
@@ -331,7 +331,7 @@ int Printer::ParallelPrint()
                 bytes = read(infd, buff, STRLENGTH);
                 while (bytes > 0)
                 {
-                    bytes = write(outfd, buff, bytes);
+                    bytes = write(outfd, buff, static_cast<size_t>(bytes));
                     select(0, NULL, NULL, NULL, &timeout);
                     if (bytes > 0)
                         bytes = read(infd, buff, STRLENGTH);
@@ -441,7 +441,7 @@ int Printer::SocketPrint()
     bytesread = read(temp_fd, buffer, STRLENGTH);
     while (bytesread > 0 && byteswritten > 0)
     {
-        byteswritten = write(sockfd, buffer, bytesread);
+        byteswritten = write(sockfd, buffer, static_cast<size_t>(bytesread));
         bytesread = read(temp_fd, buffer, STRLENGTH);
     }
 
@@ -523,29 +523,29 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
             switch (Model())
             {
             case MODEL_HTML:
-                strcat(buffer, ".html");
+                vt_safe_string::safe_concat(buffer, max_len, ".html");
                 break;
             case MODEL_POSTSCRIPT:
-                strcat(buffer, ".ps");
+                vt_safe_string::safe_concat(buffer, max_len, ".ps");
                 break;
             case MODEL_PDF:
-                strcat(buffer, ".pdf");
+                vt_safe_string::safe_concat(buffer, max_len, ".pdf");
                 break;
             case MODEL_RECEIPT_TEXT:
             case MODEL_REPORT_TEXT:
-                strcat(buffer, ".txt");
+                vt_safe_string::safe_concat(buffer, max_len, ".txt");
                 break;
             case MODEL_QUICKBOOKS_CSV:
-                strcat(buffer, ".csv");
+                vt_safe_string::safe_concat(buffer, max_len, ".csv");
                 break;
             default:
-                strcat(buffer, ".prn");
+                vt_safe_string::safe_concat(buffer, max_len, ".prn");
                 break;
             }
         }
         else
         {
-            strcat(buffer, ext);
+            vt_safe_string::safe_concat(buffer, max_len, ext);
         }
     }
     return 0;
@@ -559,7 +559,7 @@ int Printer::IsDirectory(const genericChar* path)
 
     if (lstat(path, &sb) >= 0)
     {
-        if (sb.st_mode && S_IFDIR)
+        if ((sb.st_mode & S_IFMT) == S_IFDIR)  // Fixed: use bitwise AND and comparison, not logical AND
             isdir = 1;
     }
     return isdir;
@@ -1696,37 +1696,37 @@ int PrinterHTML::WriteFlags(int flags)
     if (last_red != red)
     {
         if (red)
-            strcat(flagstr, "<font color=\"red\">");
+            vt_safe_string::safe_concat(flagstr, STRLENGTH, "<font color=\"red\">");
         else
-            strcat(flagstr, "</font>");
+            vt_safe_string::safe_concat(flagstr, STRLENGTH, "</font>");
     }
     if (last_blue != blue)
     {
         if (blue)
-            strcat(flagstr, "<font color=\"blue\">");
+            vt_safe_string::safe_concat(flagstr, STRLENGTH, "<font color=\"blue\">");
         else
-            strcat(flagstr, "</font>");
+            vt_safe_string::safe_concat(flagstr, STRLENGTH, "</font>");
     }
     if (last_bold != bold)
     {
         if (bold)
-            strcat(flagstr, "<b>");
+            vt_safe_string::safe_concat(flagstr, STRLENGTH, "<b>");
         else
-            strcat(flagstr, "</b>");
+            vt_safe_string::safe_concat(flagstr, STRLENGTH, "</b>");
     }
     if (last_underline != underline)
     {
         if (underline)
-            strcat(flagstr, "<u>");
+            vt_safe_string::safe_concat(flagstr, STRLENGTH, "<u>");
         else
-            strcat(flagstr, "</u>");
+            vt_safe_string::safe_concat(flagstr, STRLENGTH, "</u>");
     }
     if (last_large != large || last_wide != wide)
     {
         if (large || wide)
-            strcat(flagstr, "<font size=\"+2\">");
+            vt_safe_string::safe_concat(flagstr, STRLENGTH, "<font size=\"+2\">");
         else
-            strcat(flagstr, "</font>");
+            vt_safe_string::safe_concat(flagstr, STRLENGTH, "</font>");
     }
     if (flagstr[0] != '\0')
         write(temp_fd, flagstr, strlen(flagstr));

@@ -107,7 +107,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     Payment *gratuity = subCheck->FindPayment(TENDER_GRATUITY);
     Payment *pennies  = subCheck->FindPayment(TENDER_MONEY_LOST);
     int total_cost    = subCheck->total_cost;
-    mark = size_x * .62;
+    mark = static_cast<float>(size_x * 0.62);
     Flt min_spacing = 1.0;
     if (spacing < min_spacing)
         min_spacing = spacing;
@@ -347,7 +347,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
                 if (cr->IsVoiced())
                 {
                     TextPosL(term, 2, line, "Auth", c2);
-                    snprintf(str, STRLENGTH, "Voice (%s)", cr->Approval());
+                    snprintf(str, 256, "Voice (%s)", cr->Approval());  // str is 256 bytes, not STRLENGTH
                     TextPosL(term, 10, line, str, COLOR_GREEN);
                 }
                 else if (cr->IsVoided())
@@ -873,8 +873,8 @@ SignalResult PaymentZone::Touch(Terminal *term, int tx, int ty)
     if (current_payment != NULL && current_payment->credit != NULL)
     {
         char str[STRLENGTH] = "";
-        strcat(str, "Would you like to print the receipt for\\");
-        strcat(str, "the credit card or the subcheck?");
+        vt_safe_string::safe_concat(str, STRLENGTH, "Would you like to print the receipt for\\");
+        vt_safe_string::safe_concat(str, STRLENGTH, "the credit card or the subcheck?");
         SimpleDialog *sd = new SimpleDialog(str);
         sd->Button("Credit Card", "print credit");
         sd->Button("SubCheck", "print subcheck");
@@ -1026,11 +1026,11 @@ int PaymentZone::CloseCheck(Terminal *term, int force)
             !(subCheck->OnlyCredit() == 1 && term->is_bar_tab == 1))
         {
             // Get descriptive reason for drawer unavailability
-            Settings *settings = term->GetSettings();
+            Settings *sett = term->GetSettings();  // Renamed to avoid shadowing outer 'settings'
             const char* reason = nullptr;
-            if (term->user && term->user->CanSettle(settings))
+            if (term->user && term->user->CanSettle(sett))
             {
-                int dm = settings->drawer_mode;
+                int dm = sett->drawer_mode;
                 Drawer *d = term->system_data->FirstDrawer();
                 
                 switch (dm)
@@ -1295,11 +1295,11 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, int pid, int pflags, int 
         !(subCheck->OnlyCredit() == 1 && term->is_bar_tab == 1))
     {
         // Get descriptive reason for drawer unavailability
-        Settings *settings = term->GetSettings();
+        Settings *sett = term->GetSettings();  // Renamed to avoid shadowing outer 'settings'
         const char* reason = nullptr;
-        if (term->user && term->user->CanSettle(settings))
+        if (term->user && term->user->CanSettle(sett))
         {
-            int dm = settings->drawer_mode;
+            int dm = sett->drawer_mode;
             Drawer *d = term->system_data->FirstDrawer();
             
             switch (dm)
@@ -1451,7 +1451,7 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, const genericChar* swipe_
         if (term->credit != NULL)
             ReportError("Possibly losing a credit card in PaymentZone::AddPayment()");
         term->credit = NULL;
-        int len = strlen(swipe_value);
+        int len = (swipe_value != nullptr) ? static_cast<int>(strlen(swipe_value)) : 0;
         // Arbitrary.  We'll assume there will never be more than 99 credit
         // cards added to a ticket.  Really, len == 1 should be a valid
         // assumption, but we'll go higher than that (we're trying to
@@ -1524,7 +1524,7 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, const genericChar* swipe_
             {
                 term->auth_amount = term->check->current_sub->balance;
             }
-            else if (term->check->current_sub->TabRemain() > 0)
+            else if (term->check->current_sub != NULL && term->check->current_sub->TabRemain() > 0)
                 term->auth_amount = term->check->current_sub->balance;
             else
                 term->auth_amount = term->credit->Total(1);
@@ -1748,11 +1748,11 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
         if (drawer == NULL && term->is_bar_tab == 0)
         {
             // Get descriptive reason for drawer unavailability
-            Settings *settings = term->GetSettings();
+            Settings *sett = term->GetSettings();  // Renamed to avoid shadowing outer 'settings'
             const char* reason = nullptr;
-            if (term->user && term->user->CanSettle(settings))
+            if (term->user && term->user->CanSettle(sett))
             {
-                int dm = settings->drawer_mode;
+                int dm = sett->drawer_mode;
                 Drawer *d = term->system_data->FirstDrawer();
                 
                 switch (dm)
