@@ -282,7 +282,7 @@ int PageSizeValue[] = {
 const genericChar* ColorName[] = {
     "Default", "Black", "White", "Red", "Green", "Blue", "Yellow",
     "Brown", "Orange", "Purple", "Teal", "Gray", "Magenta", "Red-Orange",
-    "Sea Green", "Light Blue", "Dark Red", "Dark Green",
+    "Sea Green", "Dark Brown", "Dark Red", "Dark Green",
     "Dark Blue", "Dark Teal", "Dark Magenta", "Dark Sea Green",
     "Transparent", NULL};
 int ColorValue[] = {
