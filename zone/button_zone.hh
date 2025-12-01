@@ -193,7 +193,7 @@ public:
 
     // Member Functions
     int          Type() { return ZONE_INDEX_TAB; }
-    virtual int  AcceptSignals() { return 0; }
+    // Inherit AcceptSignals from ButtonZone (same as Simple buttons)
     int          CanSelect(Terminal *t);
     int          CanEdit(Terminal *t);
     std::unique_ptr<Zone> Copy();

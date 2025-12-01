@@ -7,15 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Changed
-- **Embossed Text Rendering for Black Text (12-XX-2025)**
-  - **Visual Enhancement**: Modified embossed text effect for black text to draw white highlight at bottom-right instead of top
+- **Enhanced Embossed Text Rendering for Dark Colors (12-XX-2025)**
+  - **Visual Enhancement**: Improved embossed text effect for black and dark brown text with widescreen-optimized positioning
   - **Implementation**: 
-    - Updated `GenericDrawStringXftEmbossed()` to detect black text (RGB < 1000)
-    - Black text now draws white embossed effect at position (x+1, y+1) for bottom-right highlight
+    - Updated `GenericDrawStringXftEmbossed()` to detect black text (RGB < 1000) and dark brown text (RGB ~{80, 45, 25})
+    - Black and dark brown text now draw white embossed effect at position (x+2, y+1) for bottom-right highlight
+    - Uses 2 pixels horizontal offset (instead of 1) to account for widescreen aspect ratios (almost 2:1 width to height)
     - Other colors maintain original top position (x, y-1) for consistency
-  - **Impact**: Black text with embossed effect now has better visual appearance with bottom-right highlight instead of top highlight
+  - **Impact**: Black and dark brown text with embossed effect now have better visual appearance with widescreen-optimized bottom-right highlight. Dark brown text (which was too dark) now has proper contrast with white embossing.
   - **Files modified**:
-    - `src/core/generic_char.cc` - Modified embossed text rendering logic for black text detection and positioning
+    - `src/core/generic_char.cc` - Modified embossed text rendering logic for black/dark brown detection and widescreen positioning
 
 - **Color System Update: Replaced Light Blue with Dark Brown (12-XX-2025)**
   - **Color Replacement**: Replaced `COLOR_LT_BLUE` (light blue) with dark brown throughout the system
@@ -43,10 +44,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - ViewTouch automatically ensures template page -94 exists for Index with Tabs (for all screen sizes)
     - ViewTouch automatically creates page 60 at 1920x1080 if it doesn't exist, using page -94 as a template when available
     - Uses exact size matching to ensure page 60 is only created at 1920x1080, not at smaller sizes
-  - **Impact**: Editors can now create Index Tab buttons on Index pages, and they will automatically appear on all Menu Item pages belonging to that Index, enabling users to navigate between any menu pages with a single touch. The system ensures a default Index page is always available at 1920x1080.
+    - IndexTabZone now inherits all ButtonZone functionality (jump, image, colors, textures, frames) - works exactly like Simple buttons
+    - Removed `AcceptSignals()` override so IndexTabZone uses same signal behavior as Simple buttons
+  - **Impact**: Editors can now create Index Tab buttons on Index pages, and they will automatically appear on all Menu Item pages belonging to that Index, enabling users to navigate between any menu pages with a single touch. The system ensures a default Index page is always available at 1920x1080. Index Tab buttons now have full feature parity with Simple buttons.
   - **Files modified**:
     - `zone/pos_zone.hh` - Added ZONE_INDEX_TAB constant
-    - `zone/button_zone.hh` - Added IndexTabZone class definition
+    - `zone/button_zone.hh` - Added IndexTabZone class definition (removed AcceptSignals override for full ButtonZone compatibility)
     - `zone/button_zone.cc` - Implemented IndexTabZone class with CanSelect() and CanEdit() restrictions
     - `zone/pos_zone.cc` - Added IndexTabZone to zone creation
     - `zone/zone.cc` - Added Index Tab button rendering and zone finding for Menu Item pages, validation in Page::Add(), and auto-creation of pages 60 and -94

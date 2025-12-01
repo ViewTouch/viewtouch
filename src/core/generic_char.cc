@@ -101,15 +101,20 @@ void GenericDrawStringXftEmbossed(Display* display,
     const FcChar8* fc_text = ToFcUtf8(text);
     const int text_length = ToInt(text);
 
-    // Check if text color is black (or very dark)
+    // Check if text color is black (or very dark) or dark brown
     // Black is considered when all RGB components are very low (< 1000 out of 65535)
+    // Dark brown RGB is {80, 45, 25} in 8-bit, which scales to {20480, 11520, 6400} in 16-bit
+    // Use a range check to account for slight variations
     bool is_black = (color->red < 1000 && color->green < 1000 && color->blue < 1000);
+    bool is_dark_brown = (color->red >= 20000 && color->red <= 21000 && 
+                          color->green >= 11000 && color->green <= 12000 && 
+                          color->blue >= 6000 && color->blue <= 7000);
 
     // Draw embossed text behind main text - minimal single pixel outline
-    if (is_black)
+    if (is_black || is_dark_brown)
     {
-        // For black text, draw white at bottom and right for embossed effect
-        XftDrawStringUtf8(draw, &xft_embossed, font, x + 1, y + 1, fc_text, text_length);  // bottom-right
+        // For black or dark brown text, draw white at bottom and right (2 pixels right for widescreen)
+        XftDrawStringUtf8(draw, &xft_embossed, font, x + 2, y + 1, fc_text, text_length);  // bottom-right, 2px right
     }
     else
     {
