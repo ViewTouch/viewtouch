@@ -33,7 +33,7 @@
 #define PAGE_BAR1         15  // Bar mode page.
 #define PAGE_BAR2         16  // Second bar mode page.
 #define PAGE_MODIFIER_KEYBOARD 17  // Modifier page with keyboard (parent -96)
-#define PAGE_INDEX_WITH_TABS   18  // Index with tabs for quick navigation (parent -95)
+#define PAGE_INDEX_WITH_TABS   18  // Index with tabs for quick navigation (parent -94)
 
 #define PAGE_ID_SETTLEMENT  -20  // Where the Settlement page is in the list.
 #define PAGE_ID_TABSETTLE   -85  // Where the Tab Settlement page is

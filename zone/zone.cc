@@ -561,7 +561,7 @@ int Page::Init(ZoneDB *zone_db)
     case PAGE_TABLE2:    parent_id = PAGEID_TABLE2; break;
     case PAGE_LIBRARY:   parent_id = 0; break;
     case PAGE_MODIFIER_KEYBOARD: parent_id = -96; break;
-    case PAGE_INDEX_WITH_TABS:   parent_id = -95; break;
+    case PAGE_INDEX_WITH_TABS:   parent_id = -94; break;
 	}
 
 	if (zone_db)
@@ -592,6 +592,13 @@ int Page::Add(Zone *z)
     FnTrace("Page::Add()");
     if (z == NULL)
         return 1;
+
+    // Index Tab buttons can only be added to Index pages
+    if (z->Type() == ZONE_INDEX_TAB && type != PAGE_INDEX && type != PAGE_INDEX_WITH_TABS)
+    {
+        ReportError("Index Tab buttons can only be added to Index pages");
+        return 1;
+    }
 
     z->page = this;
     zone_list.AddToTail(z);
@@ -696,6 +703,48 @@ RenderResult Page::Render(Terminal *term, int update_flag, int no_parent)
         currPage = currPage->parent_page;
     }
 
+    // For Menu Item pages, also render Index Tab buttons from the corresponding Index page
+    if ((type == PAGE_ITEM || type == PAGE_ITEM2) && term->zone_db && !no_parent)
+    {
+        Page *indexPage = term->zone_db->FindByType(PAGE_INDEX, index, term->size);
+        if (indexPage == NULL)
+        {
+            // Also try PAGE_INDEX_WITH_TABS
+            indexPage = term->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, term->size);
+        }
+        
+        if (indexPage)
+        {
+            // Render shadows for Index Tab buttons
+            currZone = indexPage->ZoneList();
+            while (currZone)
+            {
+                if (currZone->Type() == ZONE_INDEX_TAB)
+                {
+                    if (update_flag)
+                        currZone->RenderInit(term, update_flag);
+                    if (currZone->shadow > 0)
+                        currZone->RenderShadow(term);
+                }
+                currZone = currZone->next;
+            }
+            
+            // Render Index Tab buttons
+            currZone = indexPage->ZoneListEnd();
+            while (currZone)
+            {
+                if (currZone->Type() == ZONE_INDEX_TAB)
+                {
+                    if (currZone->update)
+                        currZone->Render(term, currZone->update);
+                    else
+                        currZone->Render(term, update_flag);
+                }
+                currZone = currZone->fore;
+            }
+        }
+    }
+
     // Render Edit Cursors
     currPage = this;
     while (currPage)
@@ -708,6 +757,27 @@ RenderResult Page::Render(Terminal *term, int update_flag, int no_parent)
             currZone = currZone->fore;
         }
         currPage = currPage->parent_page;
+    }
+
+    // Render Edit Cursors for Index Tab buttons on Menu Item pages
+    if ((type == PAGE_ITEM || type == PAGE_ITEM2) && term->zone_db && !no_parent)
+    {
+        Page *indexPage = term->zone_db->FindByType(PAGE_INDEX, index, term->size);
+        if (indexPage == NULL)
+        {
+            indexPage = term->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, term->size);
+        }
+        
+        if (indexPage)
+        {
+            currZone = indexPage->ZoneListEnd();
+            while (currZone)
+            {
+                if (currZone->Type() == ZONE_INDEX_TAB && currZone->edit)
+                    term->RenderEditCursor(currZone->x, currZone->y, currZone->w, currZone->h);
+                currZone = currZone->fore;
+            }
+        }
     }
 
     // Render Dialog
@@ -768,6 +838,52 @@ RenderResult Page::Render(Terminal *t, int update_flag,
         p = p->parent_page;
     }
 
+    // For Menu Item pages, also render Index Tab buttons from the corresponding Index page
+    if ((type == PAGE_ITEM || type == PAGE_ITEM2) && t->zone_db)
+    {
+        Page *indexPage = t->zone_db->FindByType(PAGE_INDEX, index, t->size);
+        if (indexPage == NULL)
+        {
+            indexPage = t->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, t->size);
+        }
+        
+        if (indexPage)
+        {
+            // Render shadows for Index Tab buttons
+            z = indexPage->ZoneList();
+            while (z)
+            {
+                if (z->Type() == ZONE_INDEX_TAB)
+                {
+                    if (update_flag)
+                        z->RenderInit(t, update_flag);
+                    int s = z->ShadowVal(t);
+                    if (s > 0)
+                    {
+                        RegionInfo sr(z->x + s, z->y + s, z->w, z->h);
+                        if (sr.Overlap(rx, ry, rw, rh))
+                            z->RenderShadow(t);
+                    }
+                }
+                z = z->next;
+            }
+            
+            // Render Index Tab buttons
+            z = indexPage->ZoneListEnd();
+            while (z)
+            {
+                if (z->Type() == ZONE_INDEX_TAB && z->Overlap(rx, ry, rw, rh))
+                {
+                    if (z->update)
+                        z->Render(t, z->update);
+                    else
+                        z->Render(t, update_flag);
+                }
+                z = z->fore;
+            }
+        }
+    }
+
     // Render Edit Cursors
     p = this;
     while (p)
@@ -780,6 +896,27 @@ RenderResult Page::Render(Terminal *t, int update_flag,
             z = z->fore;
         }
         p = p->parent_page;
+    }
+
+    // Render Edit Cursors for Index Tab buttons on Menu Item pages
+    if ((type == PAGE_ITEM || type == PAGE_ITEM2) && t->zone_db)
+    {
+        Page *indexPage = t->zone_db->FindByType(PAGE_INDEX, index, t->size);
+        if (indexPage == NULL)
+        {
+            indexPage = t->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, t->size);
+        }
+        
+        if (indexPage)
+        {
+            z = indexPage->ZoneListEnd();
+            while (z)
+            {
+                if (z->Type() == ZONE_INDEX_TAB && z->edit && z->Overlap(rx, ry, rw, rh))
+                    t->RenderEditCursor(z->x, z->y, z->w, z->h);
+                z = z->fore;
+            }
+        }
     }
 
     z = t->dialog;
@@ -887,6 +1024,28 @@ Zone *Page::FindZone(Terminal *t, int x, int y)
             return z;
         z = z->next;
     }
+
+    // For Menu Item pages, also check Index Tab buttons from the corresponding Index page
+    if ((type == PAGE_ITEM || type == PAGE_ITEM2) && t->zone_db)
+    {
+        Page *indexPage = t->zone_db->FindByType(PAGE_INDEX, index, t->size);
+        if (indexPage == NULL)
+        {
+            indexPage = t->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, t->size);
+        }
+        
+        if (indexPage)
+        {
+            z = indexPage->ZoneList();
+            while (z)
+            {
+                if (z->Type() == ZONE_INDEX_TAB && z->behave != BEHAVE_MISS && z->active && z->IsPointIn(x, y))
+                    return z;
+                z = z->next;
+            }
+        }
+    }
+
     return NULL;
 }
 
@@ -908,6 +1067,29 @@ Zone *Page::FindEditZone(Terminal *t, int x, int y)
             return z;
         z = z->next;
     }
+
+    // For Menu Item pages, also check Index Tab buttons from the corresponding Index page
+    // (but only allow selection, not editing, since they're inherited)
+    if ((type == PAGE_ITEM || type == PAGE_ITEM2) && t->zone_db)
+    {
+        Page *indexPage = t->zone_db->FindByType(PAGE_INDEX, index, t->size);
+        if (indexPage == NULL)
+        {
+            indexPage = t->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, t->size);
+        }
+        
+        if (indexPage)
+        {
+            z = indexPage->ZoneList();
+            while (z)
+            {
+                if (z->Type() == ZONE_INDEX_TAB && z->IsPointIn(x, y) && z->CanSelect(t))
+                    return z;
+                z = z->next;
+            }
+        }
+    }
+
     return NULL;
 }
 
@@ -929,6 +1111,28 @@ Zone *Page::FindTranslateZone(Terminal *t, int x, int y)
             return z;
         z = z->next;
     }
+
+    // For Menu Item pages, also check Index Tab buttons from the corresponding Index page
+    if ((type == PAGE_ITEM || type == PAGE_ITEM2) && t->zone_db)
+    {
+        Page *indexPage = t->zone_db->FindByType(PAGE_INDEX, index, t->size);
+        if (indexPage == NULL)
+        {
+            indexPage = t->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, t->size);
+        }
+        
+        if (indexPage)
+        {
+            z = indexPage->ZoneList();
+            while (z)
+            {
+                if (z->Type() == ZONE_INDEX_TAB && z->IsPointIn(x, y))
+                    return z;
+                z = z->next;
+            }
+        }
+    }
+
     return NULL;
 }
 
@@ -1049,6 +1253,93 @@ int ZoneDB::Init()
             return error;
         p = p->next;
     }
+
+    // Ensure template page -94 exists for Index with Tabs (create first so it can be used as template)
+    int sizes[] = {SIZE_640x480, SIZE_800x600, SIZE_1024x600, SIZE_1024x768, 
+                   SIZE_1280x800, SIZE_1280x1024, SIZE_1366x768, SIZE_1440x900,
+                   SIZE_1600x900, SIZE_1680x1050, SIZE_1920x1080, SIZE_1920x1200, -1};
+    for (int i = 0; sizes[i] != -1; ++i)
+    {
+        Page *page94 = FindByID(-94, sizes[i]);
+        if (page94 == NULL)
+        {
+            // Create template page -94 for Index with Tabs
+            Page *newPage = NewPosPage();
+            if (newPage)
+            {
+                newPage->id = -94;
+                newPage->type = PAGE_INDEX_WITH_TABS;
+                newPage->size = sizes[i];
+                newPage->name.Set("Index with Tabs Template");
+                newPage->index = INDEX_GENERAL;
+                newPage->Init(this);
+                Add(newPage);
+            }
+        }
+    }
+
+    // Ensure default Index page (page 60) exists for 1920x1080 only
+    // Use page -94 as template if available
+    // Check for exact size match, not just max_size
+    Page *page60 = NULL;
+    Page *currPage = page_list.Head();
+    while (currPage != NULL)
+    {
+        if (currPage->id == 60 && currPage->size == SIZE_1920x1080)
+        {
+            page60 = currPage;
+            break;
+        }
+        currPage = currPage->next;
+    }
+    
+    if (page60 == NULL)
+    {
+        // Try to use page -94 as template (check for exact size match)
+        Page *templatePage = NULL;
+        currPage = page_list.Head();
+        while (currPage != NULL)
+        {
+            if (currPage->id == -94 && currPage->size == SIZE_1920x1080)
+            {
+                templatePage = currPage;
+                break;
+            }
+            currPage = currPage->next;
+        }
+        
+        if (templatePage != NULL)
+        {
+            // Copy from template page -94
+            auto pageCopy = templatePage->Copy();
+            if (pageCopy)
+            {
+                pageCopy->id = 60;
+                pageCopy->type = PAGE_INDEX;  // Ensure it's PAGE_INDEX, not PAGE_INDEX_WITH_TABS
+                pageCopy->size = SIZE_1920x1080;  // Ensure exact size
+                pageCopy->name.Set("Index");
+                pageCopy->index = INDEX_GENERAL;
+                pageCopy->Init(this);
+                Add(pageCopy.release());
+            }
+        }
+        else
+        {
+            // Create default Index page on page 60 if no template exists
+            Page *newPage = NewPosPage();
+            if (newPage)
+            {
+                newPage->id = 60;
+                newPage->type = PAGE_INDEX;
+                newPage->size = SIZE_1920x1080;
+                newPage->name.Set("Index");
+                newPage->index = INDEX_GENERAL;
+                newPage->Init(this);
+                Add(newPage);
+            }
+        }
+    }
+
     return 0;
 }
 

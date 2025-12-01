@@ -1070,3 +1070,85 @@ SignalResult ImageButtonZone::Touch(Terminal *term, int tx, int ty)
     return SIGNAL_IGNORED;
 }
 
+/**** IndexTabZone Class ****/
+// Constructor
+IndexTabZone::IndexTabZone()
+{
+    jump_type = JUMP_NONE;
+    jump_id   = 0;
+}
+
+std::unique_ptr<Zone> IndexTabZone::Copy()
+{
+    FnTrace("IndexTabZone::Copy()");
+    auto z = std::make_unique<IndexTabZone>();
+    z->SetRegion(this);
+    z->name.Set(name);
+    z->key       = key;
+    z->behave    = behave;
+    z->font      = font;
+    z->shape     = shape;
+    z->group_id  = group_id;
+    z->jump_type = jump_type;
+    z->jump_id   = jump_id;
+    if (ImagePath() && z->ImagePath()) {
+        z->ImagePath()->Set(*ImagePath());
+    }
+    for (int i = 0; i < 3; ++i)
+    {
+        z->color[i]   = color[i];
+        z->image[i]   = image[i];
+        z->frame[i]  = frame[i];
+        z->texture[i] = texture[i];
+    }
+    return z;
+}
+
+int IndexTabZone::CanSelect(Terminal *t)
+{
+    FnTrace("IndexTabZone::CanSelect()");
+    if (page == NULL)
+        return 1;
+
+    // Index Tab buttons can only exist on Index pages or be inherited by Menu Item pages
+    // If we're on an Index page, allow selection
+    if (page->type == PAGE_INDEX || page->type == PAGE_INDEX_WITH_TABS)
+        return ButtonZone::CanSelect(t);
+    
+    // If we're on a Menu Item page, check if this zone is from the parent Index page
+    if (page->type == PAGE_ITEM || page->type == PAGE_ITEM2)
+    {
+        // Check if this zone belongs to the parent Index page
+        if (page->parent_page && page->parent_page->type == PAGE_INDEX)
+        {
+            // This is an inherited Index Tab from parent Index page
+            return ButtonZone::CanSelect(t);
+        }
+    }
+    
+    return 0; // Not allowed on other page types
+}
+
+int IndexTabZone::CanEdit(Terminal *t)
+{
+    FnTrace("IndexTabZone::CanEdit()");
+    if (page == NULL)
+        return 1;
+
+    Employee *e = t->user;
+    if (e == NULL)
+        return 0;
+
+    // Index Tab buttons can only be edited when on an Index page
+    // They cannot be edited when inherited on Menu Item pages
+    if (page->type == PAGE_INDEX || page->type == PAGE_INDEX_WITH_TABS)
+    {
+        if (page->id < 0 && !e->CanEditSystem())
+            return 0;
+        return e->CanEdit();
+    }
+    
+    // Cannot edit Index Tab buttons when they're inherited on Menu Item pages
+    return 0;
+}
+
