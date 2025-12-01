@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Changed
+- **Embossed Text Rendering for Black Text (12-XX-2025)**
+  - **Visual Enhancement**: Modified embossed text effect for black text to draw white highlight at bottom-right instead of top
+  - **Implementation**: 
+    - Updated `GenericDrawStringXftEmbossed()` to detect black text (RGB < 1000)
+    - Black text now draws white embossed effect at position (x+1, y+1) for bottom-right highlight
+    - Other colors maintain original top position (x, y-1) for consistency
+  - **Impact**: Black text with embossed effect now has better visual appearance with bottom-right highlight instead of top highlight
+  - **Files modified**:
+    - `src/core/generic_char.cc` - Modified embossed text rendering logic for black text detection and positioning
+
+- **Color System Update: Replaced Light Blue with Dark Brown (12-XX-2025)**
+  - **Color Replacement**: Replaced `COLOR_LT_BLUE` (light blue) with dark brown throughout the system
+  - **Implementation**:
+    - Updated `COLOR_LT_BLUE` RGB values from `{0, 120, 255}` to `{80, 45, 25}` (dark brown)
+    - Updated shadow color from `{0, 0, 47}` to `{20, 10, 5}` for dark brown
+    - Updated highlight color from `{218, 218, 240}` to `{180, 160, 140}` for dark brown
+    - Changed UI label from "Light Blue" to "Dark Brown" in color selection menus
+  - **Impact**: Light blue color option has been replaced with dark brown for better color palette consistency
+  - **Files modified**:
+    - `term/term_view.cc` - Updated COLOR_LT_BLUE color definitions in PenData array
+    - `main/ui/labels.cc` - Changed "Light Blue" label to "Dark Brown"
+
 ### Added
 - **Index Tab Buttons for One-Touch Navigation (12-XX-2025)**
   - **Feature**: New Index Tab button type that enables one-touch navigation from any menu page to any other menu page
