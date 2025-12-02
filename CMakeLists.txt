@@ -31,6 +31,18 @@ set(VIEWTOUCH_PATH ${CMAKE_INSTALL_PREFIX}/viewtouch)
 # add macro define 'DEBUG' to debug build
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
+# Option to enable sanitizers (AddressSanitizer + UndefinedBehaviorSanitizer) in debug builds
+# This catches runtime bugs like use-after-free, out-of-bounds access, double free,
+# integer overflow, invalid shifts, bad casts, etc.
+option(ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer in debug builds" ON)
+if(ENABLE_SANITIZERS)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined -fno-omit-frame-pointer")
+    # Also set linker flags to ensure sanitizers are linked
+    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address,undefined")
+    message(STATUS "Sanitizers enabled for Debug builds (AddressSanitizer + UndefinedBehaviorSanitizer)")
+    message(STATUS "  Disable with: cmake -DENABLE_SANITIZERS=OFF")
+endif()
+
 # enable various compiler warnings
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")

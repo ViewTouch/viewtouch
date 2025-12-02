@@ -77,6 +77,8 @@ XftDraw     *xftdraw = nullptr;
 XftColor     xftBlack, xftWhite;
 int          screen_no        = 0;
 int          ColorBlack       = 0;
+Widget       statusShell = nullptr;
+XtAppContext appContext = nullptr;
 
 // Enhanced text rendering functions for loader
 void LoaderDrawStringEnhanced(XftDraw *draw, XftFont *xftfont, XftColor *color, 
@@ -180,6 +182,13 @@ void ExitLoader()
     if (SocketNo)
         close(SocketNo);
 
+    // Destroy widget before other cleanup
+    if (statusShell) {
+        logmsg(LOG_DEBUG, "Destroying status window widget\n");
+        XtDestroyWidget(statusShell);
+        statusShell = nullptr;
+    }
+
     if (xftdraw) {
         logmsg(LOG_DEBUG, "Freeing 'black' XftColor\n");
         XftColorFree(Dis, DefaultVisual(Dis, screen_no),
@@ -189,12 +198,23 @@ void ExitLoader()
             DefaultColormap(Dis, screen_no), &xftWhite);
         logmsg(LOG_DEBUG, "Freeing XftDraw *\n");
         XftDrawDestroy(xftdraw);
+        xftdraw = nullptr;
         logmsg(LOG_DEBUG, "Closing Xft loader font\n");
         XftFontClose(Dis, loaderFont);
+        loaderFont = nullptr;
     }
+    
+    // Destroy Xt application context
+    if (appContext) {
+        logmsg(LOG_DEBUG, "Destroying Xt application context\n");
+        XtDestroyApplicationContext(appContext);
+        appContext = nullptr;
+    }
+    
     if (Dis) {
         logmsg(LOG_DEBUG, "Closing X display\n");
         XCloseDisplay(Dis);
+        Dis = nullptr;
     }
     exit(0);
 }
@@ -605,14 +625,14 @@ int main(int argc, genericChar* argv[])
     }
 
     // Xt toolkit init & window
-    XtAppContext app = InitializeDisplay(argc, argv);
-    Widget shell = OpenStatusBox(app);
+    appContext = InitializeDisplay(argc, argv);
+    statusShell = OpenStatusBox(appContext);
 
     // Setup Connection
     SocketNum = SetupConnection(SOCKET_FILE);
 
     // Show Window
-    XtMapWidget(shell);
+    XtMapWidget(statusShell);
     XFlush(Dis);
 
     // Send Commands
@@ -634,13 +654,13 @@ int main(int argc, genericChar* argv[])
     write(SocketNo, "done", 5);
 
     // Read Status Messages
-    XtAppAddInput(app, SocketNo, (XtPointer) XtInputReadMask,
+    XtAppAddInput(appContext, SocketNo, (XtPointer) XtInputReadMask,
                   (XtInputCallbackProc) SocketInputCB, NULL);
 
     XEvent event;
     for (;;)
     {
-        XtAppNextEvent(app, &event);
+        XtAppNextEvent(appContext, &event);
         switch (event.type)
         {
         case MappingNotify:

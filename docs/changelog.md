@@ -31,6 +31,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `main/ui/labels.cc` - Changed "Light Blue" label to "Dark Brown"
 
 ### Added
+- **AddressSanitizer and UndefinedBehaviorSanitizer Support (12-01-2025)**
+  - **Runtime Memory Safety**: Added AddressSanitizer (ASan) and UndefinedBehaviorSanitizer (UBSan) support for debug builds
+  - **Implementation**:
+    - Added CMake option `ENABLE_SANITIZERS` (enabled by default for Debug builds)
+    - Configured compiler flags: `-fsanitize=address,undefined -fno-omit-frame-pointer`
+    - Automatically enabled when building with `-DCMAKE_BUILD_TYPE=Debug`
+    - Can be disabled with `-DENABLE_SANITIZERS=OFF` if needed
+  - **Memory Leak Fixes**: Fixed memory leaks in loader initialization code
+    - Added proper cleanup for Xt widget (`XtDestroyWidget`) in `ExitLoader()`
+    - Added proper cleanup for Xt application context (`XtDestroyApplicationContext`)
+    - Ensured all Xft resources (draw, colors, fonts) are properly freed
+    - Set pointers to nullptr after cleanup for safety
+  - **Impact**: Debug builds now automatically catch runtime memory errors including:
+    - Use-after-free, out-of-bounds reads/writes, double free, memory leaks
+    - Integer overflow, invalid shifts, bad casts, undefined behavior
+    - ViewTouch code is now leak-free; remaining leaks are from third-party system libraries (X11/Fontconfig)
+  - **Files modified**:
+    - `CMakeLists.txt` - Added sanitizer flags for Debug builds
+    - `loader/loader_main.cc` - Fixed memory leaks in widget and application context cleanup
+
 - **Index Tab Buttons for One-Touch Navigation (12-XX-2025)**
   - **Feature**: New Index Tab button type that enables one-touch navigation from any menu page to any other menu page
   - **Implementation**:
