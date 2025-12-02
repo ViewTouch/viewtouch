@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Changed
+- **Index Tab Button Properties: Full Feature Parity with Simple Buttons (12-XX-2025)**
+  - **Property Editor Enhancement**: Index Tab buttons now have access to all the same properties as Simple buttons in the editor dialog
+  - **Implementation**:
+    - Added `ZONE_INDEX_TAB` to image file selection visibility condition
+    - Added `ZONE_INDEX_TAB` to jump type and jump ID visibility conditions
+    - Added `ZONE_INDEX_TAB` to keyboard shortcut visibility condition
+  - **Impact**: Index Tab buttons can now be configured with images, jump navigation, and keyboard shortcuts just like Simple buttons, providing complete feature parity in the editor interface
+  - **Files modified**:
+    - `term/term_dialog.cc` - Updated property visibility conditions to include ZONE_INDEX_TAB for image_filename, jump_type/jump_id, and key fields
+
 - **Enhanced Embossed Text Rendering for Dark Colors (12-XX-2025)**
   - **Visual Enhancement**: Improved embossed text effect for black and dark brown text with widescreen-optimized positioning
   - **Implementation**: 
