@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Changed
+- **Enhanced Embossed Text Rendering with Black Edges for Light Colors (12-XX-2025)**
+  - **Visual Enhancement**: Added black edges on bottom and right for white and yellow text to improve contrast and readability
+  - **Default Settings Update**: Changed embossed text default to enabled (Yes) for better text readability out of the box
+  - **Implementation**:
+    - Updated `GenericDrawStringXftEmbossed()` to detect white text (RGB >= 60000 for all components) and yellow text (RGB >= 60000 for red/green, blue < 1000)
+    - White and yellow text now draw black edges at position (x+1, y+1) for bottom-right contrast
+    - Black and dark brown text continue to use white embossed effect at (x+2, y+1)
+    - Other colors maintain original top position (x, y-1) for consistency
+  - **Impact**: White and yellow text now have better visibility with black edge contrast. Embossed text is enabled by default for improved readability across the interface.
+  - **Files modified**:
+    - `src/core/generic_char.cc` - Added black edge rendering for white/yellow text detection
+    - `main/data/settings.cc` - Changed `use_embossed_text` default from 0 to 1
+    - `term/term_view.cc` - Changed `use_embossed_text` default from 0 to 1
+
 - **Index Tab Button Properties: Full Feature Parity with Simple Buttons (12-XX-2025)**
   - **Property Editor Enhancement**: Index Tab buttons now have access to all the same properties as Simple buttons in the editor dialog
   - **Implementation**:
