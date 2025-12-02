@@ -91,11 +91,15 @@ void GenericDrawStringXftEmbossed(Display* display,
 
     // Embossed text uses white color barely visible around the edges (drawn behind main text)
     const XRenderColor embossed_color{65535, 65535, 65535, color->alpha}; // White with full opacity
+    // Black color for edges on White and Yellow text
+    const XRenderColor black_color{0, 0, 0, color->alpha}; // Black with full opacity
 
     XftColor xft_embossed{};
+    XftColor xft_black{};
     XftColor xft_main{};
 
     XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &embossed_color, &xft_embossed);
+    XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &black_color, &xft_black);
     XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), color, &xft_main);
 
     const FcChar8* fc_text = ToFcUtf8(text);
@@ -110,11 +114,22 @@ void GenericDrawStringXftEmbossed(Display* display,
                           color->green >= 11000 && color->green <= 12000 && 
                           color->blue >= 6000 && color->blue <= 7000);
 
+    // Check if text color is white or yellow
+    // White RGB is {255, 255, 255} in 8-bit, which scales to {65535, 65535, 65535} in 16-bit
+    // Yellow RGB is {255, 255, 0} in 8-bit, which scales to {65535, 65535, 0} in 16-bit
+    bool is_white = (color->red >= 60000 && color->green >= 60000 && color->blue >= 60000);
+    bool is_yellow = (color->red >= 60000 && color->green >= 60000 && color->blue < 1000);
+
     // Draw embossed text behind main text - minimal single pixel outline
     if (is_black || is_dark_brown)
     {
         // For black or dark brown text, draw white at bottom and right (2 pixels right for widescreen)
         XftDrawStringUtf8(draw, &xft_embossed, font, x + 2, y + 1, fc_text, text_length);  // bottom-right, 2px right
+    }
+    else if (is_white || is_yellow)
+    {
+        // For white or yellow text, draw black at bottom and right edges
+        XftDrawStringUtf8(draw, &xft_black, font, x + 1, y + 1, fc_text, text_length);  // bottom-right edge
     }
     else
     {
@@ -124,6 +139,8 @@ void GenericDrawStringXftEmbossed(Display* display,
 
     // Draw main text on top
     XftDrawStringUtf8(draw, &xft_main, font, x, y, fc_text, text_length);
+
+    XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_black);
 
     XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_embossed);
     XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_main);

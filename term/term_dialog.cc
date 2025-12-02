@@ -1295,7 +1295,7 @@ int ZoneDialog::Correct()
     message.Show(t == ZONE_STANDARD || t == ZONE_CONDITIONAL || t == ZONE_TOGGLE);
     filename.Show(t == ZONE_READ);
     // Show image selection for all button types
-    image_filename.Show(t == ZONE_SIMPLE || IsItemZoneType(t) || t == ZONE_QUALIFIER ||
+    image_filename.Show(t == ZONE_SIMPLE || t == ZONE_INDEX_TAB || IsItemZoneType(t) || t == ZONE_QUALIFIER ||
                        t == ZONE_TABLE || t == ZONE_IMAGE_BUTTON);
     item_name.Show(IsItemZoneType(t));
     item_zone_name.Show(IsItemZoneType(t));
@@ -1349,7 +1349,7 @@ int ZoneDialog::Correct()
     switch_type.Show(t == ZONE_SWITCH);
     customer_type.Show(t == ZONE_TABLE);
 
-    tmp = (IsItemZoneType(t) || t == ZONE_SIMPLE ||
+    tmp = (IsItemZoneType(t) || t == ZONE_SIMPLE || t == ZONE_INDEX_TAB ||
            t == ZONE_STANDARD || t == ZONE_CONDITIONAL || t == ZONE_QUALIFIER);
     if (full_edit)
     {
@@ -1365,7 +1365,7 @@ int ZoneDialog::Correct()
         tmp = 0;
     jump_id.Show(tmp);
     key.Show(full_edit &&
-             (t == ZONE_SIMPLE || t == ZONE_STANDARD || t == ZONE_TOGGLE ||
+             (t == ZONE_SIMPLE || t == ZONE_INDEX_TAB || t == ZONE_STANDARD || t == ZONE_TOGGLE ||
               t == ZONE_CONDITIONAL));
     return 0;
 }
