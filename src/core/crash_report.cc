@@ -327,6 +327,91 @@ namespace vt_crash {
         return std::string(mangled);
     }
 
+    /**
+     * Decode address to function name and line number using addr2line
+     * Returns "function_name (file:line)" or empty string on failure
+     */
+    static std::string DecodeAddress(void* addr, const std::string& executable_path) {
+        if (addr == nullptr || executable_path.empty()) {
+            return "";
+        }
+        
+        // Check if executable exists and is readable
+        if (access(executable_path.c_str(), R_OK) != 0) {
+            return "";
+        }
+        
+        // Build addr2line command - use absolute path to addr2line if possible
+        std::ostringstream cmd;
+        // Try to find addr2line in common locations, fall back to just "addr2line"
+        std::string addr2line_cmd = "addr2line";
+        if (access("/usr/bin/addr2line", X_OK) == 0) {
+            addr2line_cmd = "/usr/bin/addr2line";
+        } else if (access("/bin/addr2line", X_OK) == 0) {
+            addr2line_cmd = "/bin/addr2line";
+        }
+        
+        cmd << addr2line_cmd << " -e " << executable_path 
+            << " -f -C -p 0x" << std::hex << reinterpret_cast<uintptr_t>(addr) << std::dec
+            << " 2>/dev/null";
+        
+        FILE* pipe = popen(cmd.str().c_str(), "r");
+        if (!pipe) {
+            return "";
+        }
+        
+        char buffer[1024];
+        std::string result;
+        // Read first line (function name and file:line)
+        if (fgets(buffer, sizeof(buffer), pipe)) {
+            result = buffer;
+            // Remove trailing newline
+            while (!result.empty() && (result.back() == '\n' || result.back() == '\r')) {
+                result.pop_back();
+            }
+            // If result is "??" or empty, addr2line couldn't decode it
+            if (result == "??" || result.empty() || result.find("??") == 0) {
+                result.clear();
+            }
+        }
+        
+        int status = pclose(pipe);
+        // If addr2line failed (non-zero exit), return empty
+        if (status != 0) {
+            result.clear();
+        }
+        
+        return result;
+    }
+
+    /**
+     * Get executable path from /proc/self/exe
+     */
+    static std::string GetExecutablePath() {
+        char exe_path[4096];
+        ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+        if (len != -1) {
+            exe_path[len] = '\0';
+            return std::string(exe_path);
+        }
+        return "";
+    }
+
+    /**
+     * Try to get function info using dladdr
+     */
+    static std::string GetFunctionInfo(void* addr) {
+        Dl_info info;
+        if (dladdr(addr, &info) != 0 && info.dli_sname != nullptr) {
+            std::string func_name = Demangle(info.dli_sname);
+            if (info.dli_fname) {
+                return func_name + " (" + std::string(info.dli_fname) + ")";
+            }
+            return func_name;
+        }
+        return "";
+    }
+
     std::string GetStackTrace(int max_frames) {
         std::ostringstream oss;
         
@@ -346,29 +431,59 @@ namespace vt_crash {
             return oss.str();
         }
         
+        // Get executable path for addr2line
+        std::string exe_path = GetExecutablePath();
+        bool use_addr2line = !exe_path.empty() && access(exe_path.c_str(), R_OK) == 0;
+        
         oss << "Stack Trace (" << num_frames << " frames):\n";
         oss << "===========================================\n";
         
         for (int i = 0; i < num_frames; ++i) {
             oss << "  #" << std::setw(2) << i << " ";
             
-            // Try to parse and demangle the symbol
-            std::string symbol_str = symbols[i];
-            
-            // Look for function name in the symbol string
-            // Format is typically: ./program(function+offset) [address]
-            size_t func_start = symbol_str.find('(');
-            size_t func_end = symbol_str.find('+', func_start);
-            
-            if (func_start != std::string::npos && func_end != std::string::npos) {
-                std::string func_name = symbol_str.substr(func_start + 1, func_end - func_start - 1);
-                std::string demangled = Demangle(func_name.c_str());
-                
-                // Replace mangled name with demangled name
-                symbol_str.replace(func_start + 1, func_end - func_start - 1, demangled);
+            // Try to decode address using addr2line first (most detailed)
+            std::string decoded_info;
+            if (use_addr2line) {
+                decoded_info = DecodeAddress(buffer[i], exe_path);
             }
             
-            oss << symbol_str << "\n";
+            if (!decoded_info.empty()) {
+                // addr2line gave us function name and file:line
+                oss << decoded_info;
+            } else {
+                // Fall back to backtrace_symbols and dladdr
+                std::string symbol_str = symbols[i];
+                
+                // Try dladdr for better function info
+                std::string func_info = GetFunctionInfo(buffer[i]);
+                if (!func_info.empty()) {
+                    // Extract address from symbol_str and combine with function info
+                    size_t addr_start = symbol_str.find('[');
+                    if (addr_start != std::string::npos) {
+                        std::string addr_part = symbol_str.substr(addr_start);
+                        oss << func_info << " " << addr_part;
+                    } else {
+                        oss << func_info;
+                    }
+                } else {
+                    // Use backtrace_symbols output, but demangle function names
+                    // Format is typically: ./program(function+offset) [address]
+                    size_t func_start = symbol_str.find('(');
+                    size_t func_end = symbol_str.find('+', func_start);
+                    
+                    if (func_start != std::string::npos && func_end != std::string::npos) {
+                        std::string func_name = symbol_str.substr(func_start + 1, func_end - func_start - 1);
+                        std::string demangled = Demangle(func_name.c_str());
+                        
+                        // Replace mangled name with demangled name
+                        symbol_str.replace(func_start + 1, func_end - func_start - 1, demangled);
+                    }
+                    
+                    oss << symbol_str;
+                }
+            }
+            
+            oss << "\n";
         }
         
         free(symbols);
