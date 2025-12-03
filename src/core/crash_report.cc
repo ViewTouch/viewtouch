@@ -457,15 +457,24 @@ namespace vt_crash {
             
             while (fgets(line, sizeof(line), maps)) {
                 uintptr_t start, end;
-                char perms[5], offset[17], dev[6], inode[17], path[256];
+                char perms[5] = "";
+                char offset[17] = "";
+                char dev[6] = "";
+                char inode[17] = "";
+                char path[256] = "";
                 
-                if (sscanf(line, "%lx-%lx %4s %16s %5s %16s %255s", 
-                          &start, &end, perms, offset, dev, inode, path) >= 3) {
+                // Parse /proc/self/maps format: start-end perms offset dev inode [path]
+                // We need at least 6 fields (start, end, perms, offset, dev, inode)
+                // Path is optional (7th field) - anonymous mappings don't have paths
+                int fields_parsed = sscanf(line, "%lx-%lx %4s %16s %5s %16s %255s", 
+                                          &start, &end, perms, offset, dev, inode, path);
+                
+                if (fields_parsed >= 6) {
                     if (target_addr >= start && target_addr < end) {
                         oss << "  Memory Region: 0x" << std::hex << start << "-0x" << end << std::dec << "\n";
                         oss << "  Permissions: " << perms << "\n";
                         oss << "  Offset: " << offset << "\n";
-                        if (path[0] != '\0') {
+                        if (fields_parsed >= 7 && path[0] != '\0') {
                             oss << "  File/Path: " << path << "\n";
                         } else {
                             oss << "  Type: Anonymous mapping\n";
@@ -838,4 +847,3 @@ namespace vt_crash {
     }
 
 } // namespace vt_crash
-

@@ -71,7 +71,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Impact**: When ViewTouch crashes, detailed crash reports are automatically generated and saved, making it much easier to diagnose and fix issues. Reports now include comprehensive crash analysis explaining WHY the crash occurred, memory mapping information, recent error context, and detailed hardware/OS information to help identify environment-specific problems.
   - **Files modified**:
     - `src/core/crash_report.hh` - Crash reporting interface with siginfo support
-    - `src/core/crash_report.cc` - Enhanced crash report generation with detailed signal analysis, memory mapping, error log integration, and crash analysis explanations
+    - `src/core/crash_report.cc` - Enhanced crash report generation with detailed signal analysis, memory mapping, error log integration, and crash analysis explanations. Fixed buffer initialization issue in memory mapping parser to prevent uninitialized memory access.
     - `main/data/manager.cc` - Integrated crash reporting into signal handlers and added test crash command
     - `CMakeLists.txt` - Added crash_report files to build and created crashreports directory during installation
 
