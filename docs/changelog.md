@@ -99,6 +99,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/zone.cc` - Added Index Tab button rendering and zone finding for Menu Item pages, validation in Page::Add(), and auto-creation of pages 60 and -94
     - `main/ui/labels.cc` - Added "Index Tab" to zone type labels
 
+- **Closed Check Report: Server Column Display (12-XX-2025)**
+  - **Feature Enhancement**: Added Server column to Closed Check report to visually identify which server closed each check
+  - **Implementation**:
+    - Added "Server" column header at position 35 in the report header
+    - Display server name for each closed check using `Check::WhoGetsSale()` to determine the server who gets credit for the sale
+    - Server name is retrieved using `Terminal::UserName()` to display the employee's system name
+  - **Impact**: Users can now easily identify which server closed each check when viewing Closed Check reports, making it easier to track server performance and sales attribution. The report now displays: Check#, Table, Guests, Amount, Payment, and Server.
+  - **Files modified**:
+    - `main/ui/system_report.cc` - Added Server column header and server name display in `ClosedCheckReportWorkFn()` and `System::ClosedCheckReport()`
+
 ### Fixed
 - **Comprehensive Code Quality Improvements with clang-tidy (12-XX-2025)**
   - **Static Analysis Fixes**: Fixed 181 warnings and all critical errors across 10 major production files using clang-tidy
