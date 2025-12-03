@@ -55,6 +55,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `main/ui/labels.cc` - Changed "Light Blue" label to "Dark Brown"
 
 ### Added
+- **Automatic Crash Report Generation (12-02-2025)**
+  - **Feature**: Automatic GDB-like crash report generation when ViewTouch crashes
+  - **Implementation**:
+    - Created crash reporting system that automatically generates detailed crash reports on fatal signals (SIGSEGV, SIGABRT, SIGBUS, SIGFPE, SIGILL, SIGQUIT)
+    - Crash reports include: timestamp, signal information, full stack trace with demangled C++ function names, system information (OS, kernel, architecture), CPU information (model, frequency, cores), memory information (total/available), process information (PID, UID, working directory), environment variables, and build information
+    - Reports are automatically saved to `/usr/viewtouch/dat/crashreports/` with timestamped filenames
+    - Directory is automatically created during installation and at runtime if needed
+    - Works in both debug and release builds
+    - Includes test function to trigger crashes for testing: `vt_main testcrash [segfault|abort|fpe|bus|ill]`
+  - **Impact**: When ViewTouch crashes, detailed crash reports are automatically generated and saved, making it much easier to diagnose and fix issues. Reports include comprehensive hardware and OS information to help identify environment-specific problems.
+  - **Files modified**:
+    - `src/core/crash_report.hh` - Crash reporting interface
+    - `src/core/crash_report.cc` - Crash report generation with stack trace, system info, and hardware details
+    - `main/data/manager.cc` - Integrated crash reporting into signal handlers and added test crash command
+    - `CMakeLists.txt` - Added crash_report files to build and created crashreports directory during installation
+
 - **AddressSanitizer and UndefinedBehaviorSanitizer Support (12-01-2025)**
   - **Runtime Memory Safety**: Added AddressSanitizer (ASan) and UndefinedBehaviorSanitizer (UBSan) support for debug builds
   - **Implementation**:

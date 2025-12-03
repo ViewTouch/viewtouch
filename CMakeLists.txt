@@ -297,6 +297,7 @@ add_library(vtcore
     src/core/data_persistence_manager.cc src/core/data_persistence_manager.hh
     src/utils/string_utils.cc    src/utils/string_utils.hh
     src/core/error_handler.cc   src/core/error_handler.hh
+    src/core/crash_report.cc    src/core/crash_report.hh
     src/network/remote_link.cc     src/network/remote_link.hh
     src/network/reverse_ssh_service.cc src/network/reverse_ssh_service.hh
     src/core/debug.cc           src/core/debug.hh
@@ -463,6 +464,7 @@ install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/lib)")
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/lib/static)")
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/dat)")
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/dat/languages)")
+install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/dat/crashreports)")
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/bin/vtcommands)")
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/share/viewtouch/fonts)")
 

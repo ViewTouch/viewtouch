@@ -46,6 +46,7 @@
 #include "safe_string_utils.hh"     // Safe string operations
 #include "date/date.h"      // helper library to output date strings with std::chrono
 #include "src/network/reverse_ssh_service.hh"  // Reverse SSH tunnel service
+#include "src/core/crash_report.hh"  // Automatic crash reporting
 
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
@@ -495,6 +496,16 @@ int main(int argc, genericChar* argv[])
             vt::Logger::Shutdown();  // Clean shutdown
             return 0;
         }
+        else if (strcmp(argv[1], "testcrash") == 0)
+        {
+            // Test crash reporting system
+            std::string crash_type = (argc >= 3) ? argv[2] : "segfault";
+            vt::Logger::info("Test crash requested - type: {}", crash_type);
+            vt_crash::InitializeCrashReporting("/usr/viewtouch/dat/crashreports");
+            vt_crash::TriggerTestCrash(crash_type);
+            // Should never reach here, but just in case:
+            return 1;
+        }
         strncpy(socket_file, argv[1], sizeof(socket_file) - 1);
         socket_file[sizeof(socket_file) - 1] = '\0'; // ensure null termination
     }
@@ -594,7 +605,13 @@ int main(int argc, genericChar* argv[])
         }
     }
 
+    // Initialize crash reporting system (works in both debug and release)
+    // Use default directory initially, will be updated after MasterSystem is created
+    vt_crash::InitializeCrashReporting("/usr/viewtouch/dat/crashreports");
+    
     // set up signal handlers
+    // Note: Crash reporting is now always enabled, but we still use Terminate
+    // for additional logging and cleanup
     if (debug_mode == 1 && notrace == 0)
     {
         signal(SIGBUS,  Terminate);
@@ -603,6 +620,15 @@ int main(int argc, genericChar* argv[])
         signal(SIGINT,  Terminate);
         signal(SIGSEGV, Terminate);
         signal(SIGQUIT, Terminate);
+    } else {
+        // Even in release mode, set up signal handlers for crash reporting
+        signal(SIGBUS,  Terminate);
+        signal(SIGFPE,  Terminate);
+        signal(SIGILL,  Terminate);
+        signal(SIGSEGV, Terminate);
+        signal(SIGQUIT, Terminate);
+        // SIGINT is handled separately in Terminate() for graceful shutdown
+        signal(SIGINT,  Terminate);
     }
     signal(SIGUSR1, UserSignal1);
     signal(SIGUSR2, UserSignal2);
@@ -808,14 +834,45 @@ int ReportLoader(const char* message)
 void Terminate(int my_signal)
 {
     FnTrace("Terminate()");
-    switch (my_signal)
-    {
-    case SIGINT:
+    
+    // Handle SIGINT (Ctrl-C) separately - no crash report needed
+    if (my_signal == SIGINT) {
         fprintf(stderr, "\n** Control-C pressed - System Terminated **\n");
         FnPrintTrace();
         exit(0);
-        break;
-
+    }
+    
+    // For fatal signals, generate crash report
+    std::string crash_file;
+    try {
+        // Determine crash report directory
+        // Try to use data path if MasterSystem is available, otherwise use default
+        std::string crash_dir;
+        if (MasterSystem != nullptr) {
+            std::string data_path = MasterSystem->data_path.Value();
+            if (!data_path.empty()) {
+                crash_dir = data_path + "/crashreports";
+            }
+        }
+        // If crash_dir is still empty, use default
+        if (crash_dir.empty()) {
+            crash_dir = "/usr/viewtouch/dat/crashreports";
+        }
+        
+        // Generate crash report
+        crash_file = vt_crash::GenerateCrashReport(my_signal, crash_dir);
+        
+        if (!crash_file.empty()) {
+            ReportError(std::string("Crash report saved to: ") + crash_file);
+        }
+    } catch (...) {
+        // If crash report generation fails, at least log the error
+        ReportError("Failed to generate crash report");
+    }
+    
+    // Log the signal type
+    switch (my_signal)
+    {
     case SIGILL:
         ReportError("Illegal instruction");
         break;
@@ -835,9 +892,9 @@ void Terminate(int my_signal)
     default:
     {
         genericChar str[256];
-        snprintf(str, sizeof(str), "Unknown my_signal %d received (ignored)", my_signal);
+        snprintf(str, sizeof(str), "Unknown signal %d received", my_signal);
         ReportError(str);
-        return;
+        break;
     }
     }
 
