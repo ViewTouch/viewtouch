@@ -10,6 +10,7 @@ add_executable(vt_tests
     unit/test_safe_string_utils.cc
     unit/test_input_validation.cc
     unit/test_enhanced_logging.cc
+    unit/test_coupon_calculations.cc
     mocks/mock_terminal.cc
     mocks/mock_settings.cc
 )
