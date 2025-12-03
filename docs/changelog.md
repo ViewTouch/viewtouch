@@ -60,14 +60,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Implementation**:
     - Created crash reporting system that automatically generates detailed crash reports on fatal signals (SIGSEGV, SIGABRT, SIGBUS, SIGFPE, SIGILL, SIGQUIT)
     - Crash reports include: timestamp, signal information, full stack trace with demangled C++ function names, system information (OS, kernel, architecture), CPU information (model, frequency, cores), memory information (total/available), process information (PID, UID, working directory), environment variables, and build information
+    - **Enhanced Crash Analysis**: Detailed signal code descriptions (SEGV_MAPERR, SEGV_ACCERR, etc.) explain the specific reason for crashes
+    - **Memory Mapping Information**: Shows which memory region was accessed and its permissions for faulting addresses
+    - **Recent Error Log**: Includes last 20 error log entries before crash for context
+    - **Crash Analysis Section**: Explains what each signal type means and common causes (NULL pointer, use-after-free, buffer overflow, etc.)
     - Reports are automatically saved to `/usr/viewtouch/dat/crashreports/` with timestamped filenames
     - Directory is automatically created during installation and at runtime if needed
     - Works in both debug and release builds
     - Includes test function to trigger crashes for testing: `vt_main testcrash [segfault|abort|fpe|bus|ill]`
-  - **Impact**: When ViewTouch crashes, detailed crash reports are automatically generated and saved, making it much easier to diagnose and fix issues. Reports include comprehensive hardware and OS information to help identify environment-specific problems.
+  - **Impact**: When ViewTouch crashes, detailed crash reports are automatically generated and saved, making it much easier to diagnose and fix issues. Reports now include comprehensive crash analysis explaining WHY the crash occurred, memory mapping information, recent error context, and detailed hardware/OS information to help identify environment-specific problems.
   - **Files modified**:
-    - `src/core/crash_report.hh` - Crash reporting interface
-    - `src/core/crash_report.cc` - Crash report generation with stack trace, system info, and hardware details
+    - `src/core/crash_report.hh` - Crash reporting interface with siginfo support
+    - `src/core/crash_report.cc` - Enhanced crash report generation with detailed signal analysis, memory mapping, error log integration, and crash analysis explanations
     - `main/data/manager.cc` - Integrated crash reporting into signal handlers and added test crash command
     - `CMakeLists.txt` - Added crash_report files to build and created crashreports directory during installation
 

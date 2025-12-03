@@ -39,9 +39,10 @@ namespace vt_crash {
      * This function is called automatically by signal handlers
      * @param signal_num The signal number that caused the crash
      * @param crash_report_dir Directory where crash report will be saved
+     * @param siginfo Optional signal info structure with detailed crash context (si_code, si_addr, etc.)
      * @return Path to the generated crash report file, or empty string on failure
      */
-    std::string GenerateCrashReport(int signal_num, const std::string& crash_report_dir = "/usr/viewtouch/dat/crashreports");
+    std::string GenerateCrashReport(int signal_num, const std::string& crash_report_dir = "/usr/viewtouch/dat/crashreports", void* siginfo_ptr = nullptr);
 
     /**
      * Get signal name from signal number
