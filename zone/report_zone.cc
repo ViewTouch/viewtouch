@@ -578,7 +578,8 @@ Check *ReportZone::GetDisplayCheck(Terminal *term)
     if (disp_check)
     {
         disp_check->checknum = check_disp_num;
-        if (disp_check->check_state == 0)
+        Settings *settings = term->GetSettings();
+        if (disp_check->check_state == 0 && settings->enable_kitchen_bar_timers)
         {
             disp_check->chef_time.Set();
             disp_check->check_state = ORDER_SENT;

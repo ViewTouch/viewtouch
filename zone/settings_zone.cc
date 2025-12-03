@@ -611,6 +611,8 @@ SettingsZone::SettingsZone()
     kitchen_start = FieldListEnd();  // Point to the label field
     AddNewLine();
     LeftAlign();
+    AddListField("Kitchen/Bar Timers", YesNoName, YesNoValue);
+    AddNewLine();
     AddTextField("Warning Time (minutes)", 5); SetFlag(FF_ONLYDIGITS);
     AddTextField("Alert Time (minutes)", 5); SetFlag(FF_ONLYDIGITS);
     AddTextField("Flash Time (minutes)", 5); SetFlag(FF_ONLYDIGITS);
@@ -911,6 +913,7 @@ int SettingsZone::LoadRecord(Terminal *term, int /*record*/)
     case 7:  // Kitchen Video Order Alert Settings
         f = kitchen_start;
         if (f) f = f->next;  // skip past label
+        if (f) { f->Set(settings->enable_kitchen_bar_timers); f = f->next; }
         if (f) { f->Set(settings->kv_order_warn_time); f = f->next; }
         if (f) { f->Set(settings->kv_order_alert_time); f = f->next; }
         if (f) { f->Set(settings->kv_order_flash_time); f = f->next; }
@@ -1008,6 +1011,7 @@ int SettingsZone::SaveRecord(Terminal *term, int record, int write_file)
     case 7:  // Kitchen Video Order Alert Settings
         f = kitchen_start;
         if (f) f = f->next;  // skip past label
+        if (f) { f->Get(settings->enable_kitchen_bar_timers); f = f->next; }
         if (f) { f->Get(settings->kv_order_warn_time); f = f->next; }
         if (f) { f->Get(settings->kv_order_alert_time); f = f->next; }
         if (f) { f->Get(settings->kv_order_flash_time); f = f->next; }

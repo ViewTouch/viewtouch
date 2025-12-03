@@ -79,6 +79,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `main/ui/labels.cc` - Changed "Light Blue" label to "Dark Brown"
 
 ### Added
+- **Kitchen/Bar Timer Toggle Setting (12-03-2025)**
+  - **Feature**: Added ability to enable/disable kitchen/bar timers in Settings page under Kitchen section
+  - **Implementation**:
+    - Added `enable_kitchen_bar_timers` setting (default: enabled/On) to control kitchen/bar timer functionality
+    - Added "Kitchen/Bar Timers" On/Off toggle in Kitchen section of Settings page
+    - Updated all timer-related code to check this setting before setting `chef_time` or displaying elapsed time
+    - When disabled, timers will not start and elapsed time will not be displayed on kitchen video displays
+  - **Impact**: Users can now control whether kitchen/bar timers are active, providing flexibility for different operational needs. Timers default to enabled for backward compatibility.
+  - **Files modified**:
+    - `main/data/settings.hh` - Added `enable_kitchen_bar_timers` field, updated SETTINGS_VERSION to 106
+    - `main/data/settings.cc` - Added initialization, read/write logic for new setting
+    - `zone/settings_zone.cc` - Added UI control in Kitchen section, updated LoadRecord/SaveRecord
+    - `main/business/check.cc` - Updated FinalizeOrders(), Close(), PrintWorkOrder(), MakeReport() to check setting
+    - `zone/report_zone.cc` - Updated GetDisplayCheck() to check setting
+
 - **Automatic Crash Report Generation (12-02-2025)**
   - **Feature**: Automatic GDB-like crash report generation when ViewTouch crashes
   - **Implementation**:

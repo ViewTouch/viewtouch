@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-constexpr int SETTINGS_VERSION = 105;  // READ ABOVE
+constexpr int SETTINGS_VERSION = 106;  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -715,6 +715,7 @@ public:
     int      kv_warn_color;         // color for warning state (default yellow)
     int      kv_alert_color;        // color for alert state (default red)
     int      kv_flash_color;        // color for flashing state (default red)
+    int      enable_kitchen_bar_timers;  // enable/disable kitchen/bar timers (default on)
 
     // Job/Security/Overtime Settings
     int job_active[MAX_JOBS];
