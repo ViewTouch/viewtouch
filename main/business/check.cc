@@ -873,9 +873,9 @@ int Check::FinalizeOrders(Terminal *term, int reprint)
     }
     check_state = ORDER_FINAL;
 
-    // Only set chef_time if there are orders going to video targets (kitchens/bars)
+    // Only set chef_time if timers are enabled and there are orders going to video targets (kitchens/bars)
     // This prevents the timer from starting when only non-video items (like retail) are sent
-    if (!chef_time.IsSet() && HasVideoTargetOrders(settings))
+    if (settings->enable_kitchen_bar_timers && !chef_time.IsSet() && HasVideoTargetOrders(settings))
         chef_time.Set();  //check is sent to kitchen on close
 
     return 0;
@@ -957,10 +957,10 @@ int Check::Close(Terminal *term)
         term->system_data->inventory.MakeOrder(this);
         Save();
     }
-    // Only set chef_time if there are orders going to video targets (kitchens/bars)
+    // Only set chef_time if timers are enabled and there are orders going to video targets (kitchens/bars)
     // This prevents the timer from starting when only non-video items (like retail) are sent
     Settings *settings = &MasterSystem->settings;
-    if (!chef_time.IsSet() && HasVideoTargetOrders(settings))
+    if (settings->enable_kitchen_bar_timers && !chef_time.IsSet() && HasVideoTargetOrders(settings))
         chef_time.Set();  //check is sent to kitchen on close
     
     vt::Logger::info("Check #{} closed successfully - {} subchecks", checknum, closed);
@@ -1247,7 +1247,8 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     
     // For kitchen video displays, set chef_time when check is displayed
     // This ensures alerts can work - chef_time tracks when check was sent to kitchen
-    if (rzone != nullptr && printer_id != PRINTER_DEFAULT && !chef_time.IsSet())
+    // Only set if timers are enabled
+    if (settings->enable_kitchen_bar_timers && rzone != nullptr && printer_id != PRINTER_DEFAULT && !chef_time.IsSet())
     {
         check_state |= ORDER_SENT;
         chef_time.Set();
@@ -2119,13 +2120,14 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
     {
         // For kitchen video displays, set chef_time when check is displayed
         // This ensures alerts can work - chef_time tracks when check was sent to kitchen
-        if (!chef_time.IsSet())
+        // Only set if timers are enabled
+        if (settings->enable_kitchen_bar_timers && !chef_time.IsSet())
         {
             check_state |= ORDER_SENT;
             chef_time.Set();
             Save();
         }
-        if (undo == 0)
+        if (undo == 0 && settings->enable_kitchen_bar_timers && chef_time.IsSet())
         {
             StringElapsedToNow(str, 256, chef_time);
             report->TextL(str);

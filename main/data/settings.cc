@@ -1421,6 +1421,7 @@ Settings::Settings()
     kv_warn_color         = COLOR_YELLOW;
     kv_alert_color        = COLOR_RED;
     kv_flash_color        = COLOR_RED;
+    enable_kitchen_bar_timers = 1;  // Default to enabled
 
     // Media
     last_discount_id   = 0;
@@ -2197,6 +2198,9 @@ int Settings::Load(const char* file)
         df.Read(kv_alert_color);
         df.Read(kv_flash_color);
     }
+    if (version >= 106) {
+        df.Read(enable_kitchen_bar_timers);
+    }
 
     if (store == STORE_SUNWEST)
         media_balanced |=
@@ -2574,6 +2578,7 @@ int Settings::Save()
     df.Write(kv_warn_color);
     df.Write(kv_alert_color);
     df.Write(kv_flash_color);
+    df.Write(enable_kitchen_bar_timers);
 
     df.Close();
 
