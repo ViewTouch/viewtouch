@@ -6,6 +6,71 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Removed
+- **Page Variant System Removal (12-03-2025)**
+  - **Removal**: Completely removed page variant functionality from the system
+  - **Implementation**:
+    - Removed `page_variant` field from `TermInfo` and `Terminal` classes
+    - Removed "Default Page Variant" UI field from hardware configuration
+    - Removed `FindByTerminalWithVariant()` function and replaced all calls with `FindByTerminal()`
+    - Removed page variant read/write from settings file I/O
+    - Removed `PageVariantName` and `PageVariantValue` label definitions
+    - Simplified terminal initialization and page navigation code
+  - **Impact**: System now uses simpler, direct terminal-to-page mapping without variant configuration. All terminals use their default page types.
+  - **Files modified**:
+    - `main/data/settings.hh` - Removed page_variant field from TermInfo
+    - `main/data/settings.cc` - Removed page_variant initialization, read/write
+    - `main/hardware/terminal.hh` - Removed page_variant field from Terminal
+    - `main/hardware/terminal.cc` - Removed all page_variant logic, simplified page finding
+    - `zone/hardware_zone.cc` - Removed page variant UI field
+    - `zone/zone.cc` - Removed FindByTerminalWithVariant() function
+    - `zone/zone.hh` - Removed FindByTerminalWithVariant() declaration
+    - `main/ui/labels.cc` - Removed PageVariantName/PageVariantValue arrays
+    - `main/ui/labels.hh` - Removed PageVariantName/PageVariantValue declarations
+
+- **Company Sunwest Support Removal (12-03-2025)**
+  - **Removal**: Removed all Sunwest-specific code and company option
+  - **Implementation**:
+    - Removed `STORE_SUNWEST` from company/store selection options
+    - Removed Sunwest-specific media balance code
+    - Removed Sunwest-specific navigation hacks in terminal and order zones
+    - Removed Sunwest-specific entree count logic
+  - **Impact**: System no longer includes Sunwest-specific functionality. All stores use standard behavior.
+  - **Files modified**:
+    - `main/data/settings.hh` - Removed STORE_SUNWEST definition
+    - `main/data/settings.cc` - Removed STORE_SUNWEST from StoreName/StoreValue, removed Sunwest media balance code
+    - `main/hardware/terminal.cc` - Removed Sunwest navigation hacks
+    - `zone/order_zone.cc` - Removed Sunwest-specific entree logic
+    - `main/business/check.cc` - Removed Sunwest comment
+
+- **Kitchen/Bar Timer Toggle Removal (12-03-2025)**
+  - **Removal**: Removed user-configurable toggle for kitchen/bar timers
+  - **Implementation**:
+    - Removed "Kitchen/Bar Timers" On/Off toggle from Kitchen section in Settings
+    - Timer functionality remains enabled by default (setting still exists but is not user-configurable)
+  - **Impact**: Kitchen/bar timers are always enabled. Users can no longer disable this feature.
+  - **Files modified**:
+    - `zone/settings_zone.cc` - Removed timer toggle UI field and LoadRecord/SaveRecord code
+
+### Changed
+- **Edit Toolbar Size Enhancement (12-03-2025)**
+  - **UI Enhancement**: Made edit toolbar and buttons wider for better usability
+  - **Implementation**:
+    - Increased toolbar width from 120 to 180 pixels (50% wider)
+    - Increased button width from 60 to 90 pixels (50% wider)
+    - Adjusted button positions to accommodate wider buttons
+  - **Impact**: Edit toolbar is now more spacious and easier to use, with larger buttons that are easier to click.
+  - **Files modified**:
+    - `main/hardware/terminal.cc` - Updated toolbar and button dimensions
+
+- **Self Order Terminal Configuration Simplification (12-03-2025)**
+  - **UI Simplification**: Removed unnecessary "Default Page Variant" setting for Self Order terminals
+  - **Implementation**:
+    - Hidden page variant field when terminal type is Self Order (before complete removal)
+  - **Impact**: Self Order terminal configuration is now simpler with fewer unnecessary options.
+  - **Files modified**:
+    - `zone/hardware_zone.cc` - Conditionally hide page variant field for Self Order terminals
+
 ### Fixed
 - **Security and Code Quality Fixes from clang-tidy Analysis (12-02-2025)**
   - **Security Fixes**: Replaced insecure `strcat` calls with safe `vt_safe_string::safe_concat` functions

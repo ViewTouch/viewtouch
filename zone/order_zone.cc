@@ -925,13 +925,7 @@ int OrderEntryZone::ShowSeat(Terminal *t, int seat)
     t->order = NULL;
     t->Update(UPDATE_ORDERS, NULL);
 
-    if (s->store == STORE_SUNWEST)
-    {
-        if (c->EntreeCount(t->seat) <= 0 || c->IsTakeOut())
-            t->Jump(JUMP_NORMAL, 200);
-        else
-            t->Jump(JUMP_NORMAL, 206);
-    }
+    // Removed SunWest-specific code - no longer needed
     return 0;
 }
 
@@ -1342,9 +1336,10 @@ SignalResult OrderAddZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
     {
         return SIGNAL_IGNORED;
     }
-    else if (s->store == STORE_SUNWEST && order->IsEntree() && !(c->IsTakeOut() || c->IsFastFood()))
+    // Removed SunWest-specific code
+    else if (0 && order->IsEntree() && !(c->IsTakeOut() || c->IsFastFood()))
     {
-        // Can't increase 'entree' order (for SunWest)
+        // Can't increase 'entree' order
         return SIGNAL_IGNORED;
     }
     else if (order->status & ORDER_FINAL)

@@ -281,12 +281,10 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             if (!term->zone_db)
                 printf("ACK!!!! no zone_db\n");
 
-	    // for KDS terminals, default to kitchen page using page variant configuration
+	    // for KDS terminals, default to kitchen page
 	    else if (term->type == TERMINAL_KITCHEN_VIDEO || term->type == TERMINAL_KITCHEN_VIDEO2)
 	    {
-	        term->page = term->zone_db->FindByTerminalWithVariant(term->type, term->page_variant, -1, term->size);
-	        if (term->page == nullptr)
-	            term->page = term->zone_db->FindByTerminal(term->type, -1, term->size);
+	        term->page = term->zone_db->FindByTerminal(term->type, -1, term->size);
 	    }
 	    // for SelfOrder terminals, bypass login and go directly to ordering page
 	    else if (term->type == TERMINAL_SELFORDER)
@@ -301,9 +299,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
 	        
 	        // Don't create a check here - it will be created when customer taps a button
 	        // (e.g., "quickselforder", "quickdinein", "quicktogo")
-	        term->page = term->zone_db->FindByTerminalWithVariant(term->type, term->page_variant, -1, term->size);
-	        if (term->page == nullptr)
-	            term->page = term->zone_db->FindByTerminal(term->type, -1, term->size);
+	        term->page = term->zone_db->FindByTerminal(term->type, -1, term->size);
 	    }
 
             if (term->page)
@@ -311,7 +307,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             else
             {
                 // Use helper function to determine appropriate default page
-                // Only Customer user on SELFORDER terminals with page_variant=1 goes to page -2
+                // Customer user on SELFORDER terminals goes to page -2
                 int default_page = term->GetDefaultLoginPage();
                 term->Jump(JUMP_STEALTH, default_page);
                 term->UpdateAllTerms(UPDATE_TERMINALS, nullptr);
@@ -554,7 +550,6 @@ Terminal::Terminal()
     record_fd       = -1;
     credit          = nullptr;
     allow_blanking  = 1;
-    page_variant    = 0;        // Default to Page -1
     for (int i=0; i<4; i++)
     	tax_inclusive[i] = -1;
 
@@ -932,8 +927,6 @@ int Terminal::JumpToIndex(int idx)
 
     Settings *settings = GetSettings();
 
-	// hack for SunWest
-    if (settings->store == STORE_SUNWEST)
     {
         if (check == nullptr)
             return 1;
@@ -997,15 +990,6 @@ int Terminal::RunScript(const genericChar* script, int jump_type, int jump_id)
             PushPage(HomePage());
             break;
         case JUMP_INDEX:
-            if (s->store == STORE_SUNWEST)
-            {
-                // hack for SunWest
-                if (check->EntreeCount(seat) <= 0)
-                    PushPage(200);
-                else
-                    PushPage(206);
-            }
-            else
             {
                 Page *p = zone_db->FindByType(PAGE_INDEX, last_index, size);
                 if (p)
@@ -2084,7 +2068,7 @@ int Terminal::LogoutUser(int update)
     type           = original_type;
 
     // Determine the appropriate logout page BEFORE clearing the user
-    // This ensures only Customer user on SELFORDER terminals with page_variant=1 goes to page -2
+    // This ensures Customer user on SELFORDER terminals goes to page -2
     int logout_page = GetDefaultLoginPage();
 
     if (user)
@@ -2915,30 +2899,23 @@ int Terminal::HomePage()
         return PAGEID_LOGIN2;  // Page -2 for Customer user
     }
 
-    // For FASTFOOD terminals (Dine-In/Takeout orders), only Customer user should use page_variant
-    // Regular employees should always go to their starting page or table page, not page -2
+    // For FASTFOOD/NORMAL terminals, regular employees should go to their starting page
     if ((type == TERMINAL_FASTFOOD || type == TERMINAL_NORMAL) && 
         user != nullptr && 
         user->system_name.Value() != nullptr &&
         strcmp(user->system_name.Value(), "Customer") != 0)
     {
-        // Regular employee on FASTFOOD/NORMAL terminal - skip page variant logic
-        // and go directly to their starting page
+        // Regular employee on FASTFOOD/NORMAL terminal - go directly to their starting page
         currPage = nullptr;
     }
     else
     {
-        // First look for a page associated with Terminal Type using page variant configuration.
-        // This allows each terminal to be configured to use either Page -1 or Page -2.
-        if ((currPage = zone_db->FindByTerminalWithVariant(type, page_variant, -1, size)) == nullptr)
+        // Look for a page associated with Terminal Type
+        if (type == TERMINAL_KITCHEN_VIDEO || type == TERMINAL_KITCHEN_VIDEO2 ||
+            type == TERMINAL_BAR || type == TERMINAL_BAR2)
         {
-            // Fallback to original method if page variant method fails
-            if (type == TERMINAL_KITCHEN_VIDEO || type == TERMINAL_KITCHEN_VIDEO2 ||
-                type == TERMINAL_BAR || type == TERMINAL_BAR2)
-            {
-                if ((currPage = zone_db->FindByTerminal(type, -1, size)) == nullptr)
-                    fprintf(stderr, "Could not find page for terminal %s\n", name.Value());
-            }
+            if ((currPage = zone_db->FindByTerminal(type, -1, size)) == nullptr)
+                fprintf(stderr, "Could not find page for terminal %s\n", name.Value());
         }
     }
 
@@ -3143,80 +3120,80 @@ int Terminal::EditTerm(int save_data, int edit_mode)
     WInt16(WIN_TOOLBAR);
     WInt16(64);  // x
     WInt16(64);  // y
-    WInt16(120); // width
+    WInt16(180); // width (increased from 120)
     WInt16(360); // height
     WInt8(WINFRAME_BORDER | WINFRAME_TITLE | WINFRAME_MOVE);
     WStr("Edit ToolBar");
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_NEWZONE);
-    WInt16(0); WInt16(0); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(0); WInt16(90); WInt16(60);
     WStr("New\\Button");
     WInt8(FONT_TIMES_18); WInt8(COLOR_DK_BLUE); WInt8(COLOR_LT_BLUE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_NEWPAGE);
-    WInt16(60); WInt16(0); WInt16(60); WInt16(60);
+    WInt16(90); WInt16(0); WInt16(90); WInt16(60);
     WStr("New\\Page");
     WInt8(FONT_TIMES_18); WInt8(COLOR_DK_GREEN); WInt8(COLOR_GREEN);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_ALL);
-    WInt16(0); WInt16(60); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(60); WInt16(90); WInt16(60);
     WStr("Select\\All");
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_TEAL); WInt8(COLOR_TEAL);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_TOGGLE);
-    WInt16(60); WInt16(60); WInt16(60); WInt16(60);
+    WInt16(90); WInt16(60); WInt16(90); WInt16(60);
     WStr("Toggle\\Selected");
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_MAGENTA); WInt8(COLOR_MAGENTA);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_COPY);
-    WInt16(0); WInt16(120); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(120); WInt16(90); WInt16(60);
     WStr("Copy\\Selected");
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_GREEN); WInt8(COLOR_GREEN);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_MOVE);
-    WInt16(60); WInt16(120); WInt16(60); WInt16(60);
+    WInt16(90); WInt16(120); WInt16(90); WInt16(60);
     WStr("Move\\Selected");
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_BLUE); WInt8(COLOR_LT_BLUE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_DELETE);
-    WInt16(0); WInt16(180); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(180); WInt16(90); WInt16(60);
     WStr("Delete\\Button");
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_GLOBAL);
-    WInt16(60); WInt16(180); WInt16(60); WInt16(60);
+    WInt16(90); WInt16(180); WInt16(90); WInt16(60);
     WStr("Global\\Page\\Defaults");
     WInt8(FONT_TIMES_14); WInt8(COLOR_DK_MAGENTA); WInt8(COLOR_MAGENTA);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_INFO);
-    WInt16(0); WInt16(240); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(240); WInt16(90); WInt16(60);
     WStr("Show\\Button\\Info");
     WInt8(FONT_TIMES_14); WInt8(COLOR_GRAY); WInt8(COLOR_WHITE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_LIST);
-    WInt16(60); WInt16(240); WInt16(60); WInt16(60);
+    WInt16(90); WInt16(240); WInt16(90); WInt16(60);
     WStr("Show\\Page\\List");
     WInt8(FONT_TIMES_14); WInt8(COLOR_BROWN); WInt8(COLOR_ORANGE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_PRIOR);
-    WInt16(0); WInt16(300); WInt16(60); WInt16(60);
+    WInt16(0); WInt16(300); WInt16(90); WInt16(60);
     WStr("Prior\\Page");
     WInt8(FONT_TIMES_18); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_NEXT);
-    WInt16(60); WInt16(300); WInt16(60); WInt16(60);
+    WInt16(90); WInt16(300); WInt16(90); WInt16(60);
     WStr("Next\\Page");
     WInt8(FONT_TIMES_18); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
 

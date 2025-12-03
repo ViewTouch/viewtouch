@@ -61,9 +61,9 @@ namespace fs = std::filesystem;
  ********************************************************************/
 
 const char* StoreName[] = {
-    GlobalTranslate("Other"), GlobalTranslate("SunWest"), NULL};
+    GlobalTranslate("Other"), NULL};
 int StoreValue[] = {
-    STORE_OTHER, STORE_SUNWEST, -1};
+    STORE_OTHER, -1};
 
 const char* PayPeriodName[] = {
     GlobalTranslate("Weekly"), GlobalTranslate("2 Weeks"), GlobalTranslate("4 Weeks"), GlobalTranslate("Semi Monthly"), GlobalTranslate("Semi Monthly 11/26"), GlobalTranslate("Monthly"), NULL};
@@ -903,7 +903,6 @@ TermInfo::TermInfo()
     isserver      = 0;
     print_workorder = 1;
     workorder_heading = 0;
-    page_variant = 0;        // Default to Page -1
 
     for (int i=0; i<4; i++)
     	tax_inclusive[i] = -1;
@@ -950,8 +949,6 @@ int TermInfo::Read(InputDataFile &df, int version)
     	error += df.Read(print_workorder);
     if (version >= 93)
     	error += df.Read(workorder_heading);
-    if (version >= 95)
-    	error += df.Read(page_variant);
     if (version >= 94)
     {
 	for (int i=0; i<4; i++)
@@ -995,7 +992,6 @@ int TermInfo::Write(OutputDataFile &df, int version)
     error += df.Write(cc_debit_termid);
     error += df.Write(print_workorder);
     error += df.Write(workorder_heading);
-    error += df.Write(page_variant);
     for (int i=0; i<4; i++)
     	error += df.Write(tax_inclusive[i]);
 
@@ -1035,7 +1031,6 @@ int TermInfo::OpenTerm(Control *control_db, int update)
     term->cc_debit_termid.Set(cc_debit_termid);
     term->print_workorder = print_workorder;
     term->workorder_heading = workorder_heading;
-    term->page_variant = page_variant;
     for (int i=0; i<4; i++)
     	term->tax_inclusive[i] = tax_inclusive[i];
 
@@ -2202,10 +2197,6 @@ int Settings::Load(const char* file)
         df.Read(enable_kitchen_bar_timers);
     }
 
-    if (store == STORE_SUNWEST)
-        media_balanced |=
-            (1<<TENDER_COMP)|(1<<TENDER_DISCOUNT)|(1<<TENDER_EMPLOYEE_MEAL)|
-            (1<<TENDER_PAID_TIP);
 
     if (authorize_method == CCAUTH_MAINSTREET)
         card_types &= ~CARD_TYPE_DEBIT;

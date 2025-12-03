@@ -2596,7 +2596,6 @@ int Check::EntreeCount(int seat)
 {
     FnTrace("Check::EntreeCount()");
     int count = 0;
-    // FIX - entree count modified for SunWest
 
     for (SubCheck *sc = SubList(); sc != nullptr; sc = sc->next)
         for (Order *order = sc->OrderList(); order != nullptr; order = order->next)
