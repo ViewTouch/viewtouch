@@ -518,7 +518,8 @@ SignalResult CustomerInfoZone::Signal(Terminal *term, const genericChar* message
             if (customer != NULL)
                 SaveRecord(term, 0, 1);
             customer = customer->next;
-            term->customer = customer;
+            if (term != NULL)
+                term->customer = customer;
             draw = 1;
         }
         break;
@@ -528,7 +529,8 @@ SignalResult CustomerInfoZone::Signal(Terminal *term, const genericChar* message
             if (customer != NULL)
                 SaveRecord(term, 0, 1);
             customer = customer->fore;
-            term->customer = customer;
+            if (term != NULL)
+                term->customer = customer;
             draw = 1;
         }
         break;
@@ -547,9 +549,10 @@ SignalResult CustomerInfoZone::Signal(Terminal *term, const genericChar* message
     case 4:  // new
         if (customer != NULL)
             SaveRecord(term, 0, 1);
-        if (term->check != NULL)
+        if (term != NULL && term->check != NULL)
             customer_type = term->check->CustomerType();
-        term->customer = NewCustomerInfo(customer_type);
+        if (term != NULL)
+            term->customer = NewCustomerInfo(customer_type);
         keyboard_focus = FieldList();
         draw = 1;
         break;
@@ -558,7 +561,7 @@ SignalResult CustomerInfoZone::Signal(Terminal *term, const genericChar* message
         break;
     }
 
-    if (draw)
+    if (draw && term != NULL)
     {
         // Normally we'd only draw our own zone, but we changed the current customer
         // term knows about, so other zones may be affected.
@@ -754,9 +757,9 @@ int CustomerInfoZone::Search(Terminal *term, int record, const genericChar* word
     }
 
     found = (term != NULL && term->system_data != NULL) ? term->system_data->customer_db.FindByString(word, record) : NULL;
-    if (found != NULL)
+    if (found != NULL && term != NULL)
         term->customer = found;
-    else
+    else if (term != NULL && term->system_data != NULL)
         term->customer = term->system_data->customer_db.FindBlank();
 
     return retval;

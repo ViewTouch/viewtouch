@@ -140,9 +140,9 @@ int MacToString(char* macstr, int maxlen, unsigned const char* mac)
     for (idx = 0; idx < IFHWADDRLEN; idx++)
     {
         if (idx)
-            strcat(macstr, ":");
+            vt_safe_string::safe_concat(macstr, maxlen, ":");
         snprintf(buffer, LICENCE_HASH_STRLENGTH, "%02X", mac[idx]);
-        strncat(macstr, buffer, maxlen);
+        vt_safe_string::safe_concat(macstr, maxlen, buffer);
     }
 
     return retval;

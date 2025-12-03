@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Security and Code Quality Fixes from clang-tidy Analysis (12-02-2025)**
+  - **Security Fixes**: Replaced insecure `strcat` calls with safe `vt_safe_string::safe_concat` functions
+    - Fixed insecure string concatenation in `check.cc` (PaymentSummary and Description methods)
+    - Fixed insecure string concatenation in `license_hash.cc` (MacToString function)
+    - Fixed insecure string concatenation in `report_zone.cc` (ReadZone::Signal method)
+  - **Format Security Fixes**: Fixed format string security issues in logging
+    - Updated `logmsg` calls in `zone.cc` to use proper format strings (`"%s"`) instead of passing buffers directly
+  - **Null Pointer Safety**: Added null checks to prevent potential crashes
+    - Added null checks in `expense.cc` (Author method) for `term`, `term->system_data`, and `employee_name`
+    - Added null checks in `table_zone.cc` (CustomerInfoZone::Signal) for `term` and `term->system_data` before dereferencing
+  - **Dead Store Fixes**: Removed unused variable assignments and fixed return value bug
+    - Removed unused `firstmod` assignment in `check.cc`
+    - Fixed return value bug in `check.cc` (SubCheck::Write) - now properly returns error status instead of always returning 0
+    - Removed unused `payptr` assignment in `check.cc` (NewPayment automatically adds payment)
+  - **Impact**: Code is now more secure against buffer overflows, format string attacks, and null pointer dereferences. Dead code has been removed and a bug in error reporting has been fixed.
+  - **Files modified**:
+    - `main/business/check.cc` - Fixed insecure strcat calls, removed dead stores, fixed return value bug
+    - `main/data/license_hash.cc` - Fixed insecure strcat/strncat calls
+    - `zone/report_zone.cc` - Fixed insecure strcat call, added safe_string_utils include
+    - `zone/zone.cc` - Fixed format-security issues in logmsg calls
+    - `main/data/expense.cc` - Added null pointer checks
+    - `zone/table_zone.cc` - Added null pointer checks
+
 ### Changed
 - **Enhanced Embossed Text Rendering with Black Edges for Light Colors (12-XX-2025)**
   - **Visual Enhancement**: Added black edges on bottom and right for white and yellow text to improve contrast and readability

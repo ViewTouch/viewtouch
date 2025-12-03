@@ -189,6 +189,8 @@ int Expense::IsBlank()
 int Expense::Author( Terminal* term, genericChar* employee_name )
 {
     FnTrace("Expense::Author()");
+    if (term == NULL || term->system_data == NULL || employee_name == NULL)
+        return 1;
     UserDB *employee_db = &(term->system_data->user_db);
     Employee *employee;
 

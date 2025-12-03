@@ -2392,7 +2392,7 @@ int ZoneDB::ValidateSystemPages()
                      "INVALID: System Page id=%d name='%s' has parent_id=%d (should be 0)",
                      currPage->id, currPage->name.Value(), currPage->parent_id);
             ReportError(buffer);
-            logmsg(LOG_DEBUG, buffer);
+            logmsg(LOG_DEBUG, "%s", buffer);
         }
         currPage = currPage->next;
     }
@@ -2405,7 +2405,7 @@ int ZoneDB::ValidateSystemPages()
                  "This can occur due to corrupted data files or incorrect saving.",
                  invalid_count);
         ReportError(buffer);
-        logmsg(LOG_WARNING, buffer);
+        logmsg(LOG_WARNING, "%s", buffer);
     }
 
     return invalid_count;

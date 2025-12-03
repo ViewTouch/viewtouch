@@ -34,6 +34,7 @@
 #include "archive.hh"
 #include "manager.hh"
 #include "labels.hh"
+#include "safe_string_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -1491,7 +1492,7 @@ SignalResult ReadZone::Signal(Terminal *t, const char* message)
         if (message[9] != '/')
         {
             MasterSystem->FullPath("text/", newfile);
-            strcat(newfile, &message[9]);
+            vt_safe_string::safe_concat(newfile, STRLONG, &message[9]);
             filename.Set(newfile);
         }
         else
