@@ -2727,6 +2727,8 @@ int ClosedCheckReportWorkFn(CCRData *ccrdata)
                 }
                 thisReport->TextPosR(22, term->FormatPrice(amount));
                 thisReport->TextPosL(23, thisCheck->PaymentSummary(term));
+                int server_id = thisCheck->WhoGetsSale(s);
+                thisReport->TextPosL(35, term->UserName(server_id));
                 thisReport->NewLine();
             }
         }
@@ -2798,6 +2800,7 @@ int System::ClosedCheckReport(Terminal *term, TimeInfo &start_time, TimeInfo &en
             thisReport->TextPosL(13, GlobalTranslate("Gst"), COLOR_DK_BLUE);
     thisReport->TextPosR(25, "Amount", COLOR_DK_BLUE);
             thisReport->TextPosL(27, GlobalTranslate("Payment"), COLOR_DK_BLUE);
+            thisReport->TextPosL(35, GlobalTranslate("Server"), COLOR_DK_BLUE);
     thisReport->Mode(0);
     thisReport->NewLine();
 
