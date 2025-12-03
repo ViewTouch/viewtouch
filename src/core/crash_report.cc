@@ -21,6 +21,11 @@
 #include "fntrace.hh"
 #include "version/vt_version_info.hh"
 
+// VIEWTOUCH_PATH is defined in CMakeLists.txt, use default if not available
+#ifndef VIEWTOUCH_PATH
+#define VIEWTOUCH_PATH "/usr/viewtouch"
+#endif
+
 // execinfo.h is a GNU extension, available on Linux and some BSD systems
 #ifdef __linux__
 #include <execinfo.h>
@@ -44,6 +49,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <ucontext.h>
+#include <fcntl.h>
 
 namespace vt_crash {
 
@@ -179,7 +186,6 @@ namespace vt_crash {
         if (cpuinfo) {
             char line[512];
             bool found_model = false;
-            bool found_cores = false;
             int cpu_count = 0;
             std::string model_name;
             std::string cpu_freq;
@@ -374,7 +380,159 @@ namespace vt_crash {
         return oss.str();
     }
 
-    std::string GenerateCrashReport(int signal_num, const std::string& crash_report_dir) {
+    /**
+     * Get detailed signal code description
+     */
+    static std::string GetSignalCodeDescription(int signal_num, int si_code) {
+        std::ostringstream oss;
+        
+        switch (signal_num) {
+            case SIGSEGV:
+                switch (si_code) {
+                    case SEGV_MAPERR: oss << "Address not mapped to object (invalid address)"; break;
+                    case SEGV_ACCERR: oss << "Invalid permissions for mapped object (access violation)"; break;
+                    case SEGV_BNDERR: oss << "Failed address bound checks"; break;
+                    case SEGV_PKUERR: oss << "Access was denied by memory protection keys"; break;
+                    default: oss << "Unknown segmentation fault reason (code: " << si_code << ")"; break;
+                }
+                break;
+            case SIGBUS:
+                switch (si_code) {
+                    case BUS_ADRALN: oss << "Invalid address alignment"; break;
+                    case BUS_ADRERR: oss << "Non-existent physical address"; break;
+                    case BUS_OBJERR: oss << "Object specific hardware error"; break;
+                    case BUS_MCEERR_AR: oss << "Hardware memory error: action required"; break;
+                    case BUS_MCEERR_AO: oss << "Hardware memory error: action optional"; break;
+                    default: oss << "Unknown bus error reason (code: " << si_code << ")"; break;
+                }
+                break;
+            case SIGFPE:
+                switch (si_code) {
+                    case FPE_INTDIV: oss << "Integer divide by zero"; break;
+                    case FPE_INTOVF: oss << "Integer overflow"; break;
+                    case FPE_FLTDIV: oss << "Floating point divide by zero"; break;
+                    case FPE_FLTOVF: oss << "Floating point overflow"; break;
+                    case FPE_FLTUND: oss << "Floating point underflow"; break;
+                    case FPE_FLTRES: oss << "Floating point inexact result"; break;
+                    case FPE_FLTINV: oss << "Invalid floating point operation"; break;
+                    case FPE_FLTSUB: oss << "Subscript out of range"; break;
+                    default: oss << "Unknown floating point error (code: " << si_code << ")"; break;
+                }
+                break;
+            case SIGILL:
+                switch (si_code) {
+                    case ILL_ILLOPC: oss << "Illegal opcode"; break;
+                    case ILL_ILLOPN: oss << "Illegal operand"; break;
+                    case ILL_ILLADR: oss << "Illegal addressing mode"; break;
+                    case ILL_ILLTRP: oss << "Illegal trap"; break;
+                    case ILL_PRVOPC: oss << "Privileged opcode"; break;
+                    case ILL_PRVREG: oss << "Privileged register"; break;
+                    case ILL_COPROC: oss << "Coprocessor error"; break;
+                    case ILL_BADSTK: oss << "Internal stack error"; break;
+                    default: oss << "Unknown illegal instruction error (code: " << si_code << ")"; break;
+                }
+                break;
+            default:
+                oss << "Signal code: " << si_code;
+                break;
+        }
+        
+        return oss.str();
+    }
+
+    /**
+     * Get memory mapping information for an address
+     */
+    static std::string GetMemoryMappingInfo(void* addr) {
+        if (addr == nullptr) {
+            return "Address is NULL";
+        }
+        
+        std::ostringstream oss;
+        FILE* maps = fopen("/proc/self/maps", "r");
+        if (maps) {
+            char line[512];
+            uintptr_t target_addr = reinterpret_cast<uintptr_t>(addr);
+            bool found = false;
+            
+            while (fgets(line, sizeof(line), maps)) {
+                uintptr_t start, end;
+                char perms[5], offset[17], dev[6], inode[17], path[256];
+                
+                if (sscanf(line, "%lx-%lx %4s %16s %5s %16s %255s", 
+                          &start, &end, perms, offset, dev, inode, path) >= 3) {
+                    if (target_addr >= start && target_addr < end) {
+                        oss << "  Memory Region: 0x" << std::hex << start << "-0x" << end << std::dec << "\n";
+                        oss << "  Permissions: " << perms << "\n";
+                        oss << "  Offset: " << offset << "\n";
+                        if (path[0] != '\0') {
+                            oss << "  File/Path: " << path << "\n";
+                        } else {
+                            oss << "  Type: Anonymous mapping\n";
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            fclose(maps);
+            
+            if (!found) {
+                oss << "  Address 0x" << std::hex << target_addr << std::dec 
+                    << " not found in memory maps (invalid/unmapped address)\n";
+            }
+        } else {
+            oss << "  Could not read /proc/self/maps\n";
+        }
+        
+        return oss.str();
+    }
+
+    /**
+     * Get recent error log entries
+     */
+    static std::string GetRecentErrorLog() {
+        std::ostringstream oss;
+        
+        // Try to read from error_log.txt
+        // We try common locations since we can't access MasterSystem here
+        std::string error_log_path = VIEWTOUCH_PATH "/dat/error_log.txt";
+        
+        // Also try /usr/viewtouch/dat/error_log.txt as fallback
+        if (access(error_log_path.c_str(), R_OK) != 0) {
+            error_log_path = "/usr/viewtouch/dat/error_log.txt";
+        }
+        
+        FILE* err_log = fopen(error_log_path.c_str(), "r");
+        if (err_log) {
+            // Read last 20 lines
+            std::vector<std::string> lines;
+            char line[512];
+            
+            while (fgets(line, sizeof(line), err_log)) {
+                lines.push_back(line);
+                if (lines.size() > 20) {
+                    lines.erase(lines.begin());
+                }
+            }
+            fclose(err_log);
+            
+            if (!lines.empty()) {
+                oss << "Recent Error Log Entries (last " << lines.size() << "):\n";
+                for (const auto& log_line : lines) {
+                    oss << "  " << log_line;
+                }
+            } else {
+                oss << "Error log is empty\n";
+            }
+        } else {
+            oss << "Could not read error log: " << error_log_path << "\n";
+        }
+        
+        return oss.str();
+    }
+
+    std::string GenerateCrashReport(int signal_num, const std::string& crash_report_dir, void* siginfo_ptr) {
         // Use provided directory or fall back to global default
         std::string report_dir = crash_report_dir.empty() ? g_crash_report_dir : crash_report_dir;
         
@@ -391,7 +549,6 @@ namespace vt_crash {
             }
         }
         
-        struct stat st;
         std::ostringstream report;
         
         // Header
@@ -405,10 +562,116 @@ namespace vt_crash {
         std::strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S %Z", std::localtime(&now));
         report << "Crash Time: " << time_str << "\n\n";
         
-        // Signal information
+        // Signal information with detailed crash analysis
         report << "Signal Information:\n";
         report << "  Signal: " << GetSignalName(signal_num) << "\n";
-        report << "  Signal Number: " << signal_num << "\n\n";
+        report << "  Signal Number: " << signal_num << "\n";
+        
+        // Parse siginfo if available
+        if (siginfo_ptr != nullptr) {
+            siginfo_t* si = static_cast<siginfo_t*>(siginfo_ptr);
+            report << "  Signal Code: " << si->si_code << "\n";
+            report << "  Crash Reason: " << GetSignalCodeDescription(signal_num, si->si_code) << "\n";
+            
+            // For SIGSEGV and SIGBUS, show the faulting address
+            if (signal_num == SIGSEGV || signal_num == SIGBUS) {
+                void* fault_addr = si->si_addr;
+                report << "  Faulting Address: 0x" << std::hex << reinterpret_cast<uintptr_t>(fault_addr) << std::dec << "\n";
+                
+                // Get memory mapping information
+                report << "\nMemory Mapping Information:\n";
+                report << GetMemoryMappingInfo(fault_addr);
+                
+                // Additional analysis
+                if (fault_addr == nullptr) {
+                    report << "\n  Analysis: NULL pointer dereference - attempting to access memory at address 0x0\n";
+                } else if (reinterpret_cast<uintptr_t>(fault_addr) < 0x1000) {
+                    report << "\n  Analysis: Very low address (likely NULL pointer or uninitialized pointer)\n";
+                } else {
+                    report << "\n  Analysis: Invalid memory access - address may be:\n";
+                    report << "    - Freed memory (use-after-free)\n";
+                    report << "    - Uninitialized pointer\n";
+                    report << "    - Out of bounds array access\n";
+                    report << "    - Stack overflow\n";
+                }
+            }
+            
+            // For SIGFPE, show more details
+            if (signal_num == SIGFPE) {
+                report << "  Faulting Address: 0x" << std::hex << reinterpret_cast<uintptr_t>(si->si_addr) << std::dec << "\n";
+            }
+        } else {
+            report << "  (Detailed signal context not available)\n";
+        }
+        report << "\n";
+        
+        // Recent error log entries
+        report << "Recent Error Log:\n";
+        report << "===========================================\n";
+        report << GetRecentErrorLog() << "\n";
+        
+        // Crash Analysis Section
+        report << "Crash Analysis:\n";
+        report << "===========================================\n";
+        if (signal_num == SIGSEGV) {
+            report << "Segmentation Fault Analysis:\n";
+            report << "  A segmentation fault typically indicates:\n";
+            report << "  - NULL pointer dereference (accessing memory at address 0x0)\n";
+            report << "  - Use-after-free (accessing freed memory)\n";
+            report << "  - Buffer overflow (accessing memory outside allocated bounds)\n";
+            report << "  - Stack overflow (exceeding stack size limits)\n";
+            report << "  - Uninitialized pointer (pointer not set before use)\n";
+            if (siginfo_ptr != nullptr) {
+                siginfo_t* si = static_cast<siginfo_t*>(siginfo_ptr);
+                void* fault_addr = si->si_addr;
+                if (fault_addr == nullptr) {
+                    report << "\n  Most Likely Cause: NULL pointer dereference\n";
+                } else if (reinterpret_cast<uintptr_t>(fault_addr) < 0x1000) {
+                    report << "\n  Most Likely Cause: NULL or uninitialized pointer (very low address)\n";
+                } else {
+                    report << "\n  Faulting Address: 0x" << std::hex << reinterpret_cast<uintptr_t>(fault_addr) << std::dec << "\n";
+                    report << "  Check the stack trace above to identify the function causing the crash.\n";
+                }
+            } else {
+                report << "\n  Check the stack trace above to identify the function causing the crash.\n";
+                report << "  Look for functions that:\n";
+                report << "    - Dereference pointers without NULL checks\n";
+                report << "    - Access array elements without bounds checking\n";
+                report << "    - Use freed memory\n";
+            }
+        } else if (signal_num == SIGABRT) {
+            report << "Abort Signal Analysis:\n";
+            report << "  An abort signal typically indicates:\n";
+            report << "  - assert() failure (assertion failed)\n";
+            report << "  - abort() called explicitly\n";
+            report << "  - Memory corruption detected by runtime\n";
+            report << "  - Double free or invalid free() call\n";
+            report << "\n  Check the stack trace to find where abort() was called.\n";
+        } else if (signal_num == SIGFPE) {
+            report << "Floating Point Exception Analysis:\n";
+            report << "  A floating point exception typically indicates:\n";
+            report << "  - Division by zero (integer or floating point)\n";
+            report << "  - Floating point overflow or underflow\n";
+            report << "  - Invalid floating point operation\n";
+            report << "\n  Check the stack trace to find the division or math operation causing the crash.\n";
+        } else if (signal_num == SIGBUS) {
+            report << "Bus Error Analysis:\n";
+            report << "  A bus error typically indicates:\n";
+            report << "  - Invalid memory alignment (unaligned memory access)\n";
+            report << "  - Access to non-existent physical memory\n";
+            report << "  - Hardware memory error\n";
+            report << "\n  This often occurs with:\n";
+            report << "    - Misaligned pointer arithmetic\n";
+            report << "    - Corrupted memory structures\n";
+        } else if (signal_num == SIGILL) {
+            report << "Illegal Instruction Analysis:\n";
+            report << "  An illegal instruction error typically indicates:\n";
+            report << "  - Corrupted code or data\n";
+            report << "  - Attempting to execute data as code\n";
+            report << "  - CPU architecture mismatch\n";
+            report << "  - Memory corruption affecting code section\n";
+        }
+        report << "\n";
         
         // System information
         report << "System Information:\n";
@@ -483,9 +746,9 @@ namespace vt_crash {
             out.close();
             
             // Verify file was written
-            struct stat st;
-            if (stat(crash_file.c_str(), &st) == 0 && st.st_size > 0) {
-                std::cerr << "Crash report successfully written to: " << crash_file << " (" << st.st_size << " bytes)\n";
+            struct stat file_stat;
+            if (stat(crash_file.c_str(), &file_stat) == 0 && file_stat.st_size > 0) {
+                std::cerr << "Crash report successfully written to: " << crash_file << " (" << file_stat.st_size << " bytes)\n";
             } else {
                 std::cerr << "WARNING: Crash report file created but appears empty: " << crash_file << "\n";
             }
@@ -505,7 +768,8 @@ namespace vt_crash {
             std::cerr << report.str() << "\n";
             std::cerr << "ERROR: Could not write crash report to file: " << crash_file << "\n";
             std::cerr << "Error details: " << strerror(errno) << "\n";
-            std::cerr << "Directory exists: " << (stat(report_dir.c_str(), &st) == 0 ? "yes" : "no") << "\n";
+            struct stat dir_stat;
+            std::cerr << "Directory exists: " << (stat(report_dir.c_str(), &dir_stat) == 0 ? "yes" : "no") << "\n";
             std::cerr << "==========================================\n";
             std::cerr.flush();
             return "";
@@ -520,13 +784,15 @@ namespace vt_crash {
         std::cerr.flush();
         
         // Generate crash report first (before crashing)
+        // Note: siginfo_ptr is nullptr for test crashes since we're triggering manually
         std::string crash_file = GenerateCrashReport(
             signal_type == "abort" ? SIGABRT :
             signal_type == "fpe" ? SIGFPE :
             signal_type == "bus" ? SIGBUS :
             signal_type == "ill" ? SIGILL :
             SIGSEGV,  // default to segfault
-            g_crash_report_dir
+            g_crash_report_dir,
+            nullptr  // No siginfo for manual test crashes
         );
         
         if (!crash_file.empty()) {
@@ -542,8 +808,12 @@ namespace vt_crash {
         // Now trigger the actual crash
         if (signal_type == "segfault" || signal_type == "null") {
             // Trigger segmentation fault by dereferencing null pointer
+            // Note: This is intentional for testing crash reporting
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wnull-dereference"
             int* p = nullptr;
             *p = 42;  // This will cause SIGSEGV
+            #pragma GCC diagnostic pop
         } else if (signal_type == "abort") {
             // Trigger abort
             raise(SIGABRT);
@@ -558,8 +828,12 @@ namespace vt_crash {
             raise(SIGILL);
         } else {
             // Default to segfault
+            // Note: This is intentional for testing crash reporting
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wnull-dereference"
             int* p = nullptr;
             *p = 42;
+            #pragma GCC diagnostic pop
         }
     }
 
