@@ -110,7 +110,6 @@ constexpr int SETTINGS_VERSION = 106;  // READ ABOVE
 
 // Store/Company
 #define STORE_OTHER   0  // Other
-#define STORE_SUNWEST 1  // Jerry's, Keuken Dutch
 
 // Tender Flags
 #define TF_IS_PERCENT      1    // amount calculated by percent
@@ -488,7 +487,6 @@ public:
     int workorder_heading;	// 0=standard, 1=simple
     Str cc_credit_termid;
     Str cc_debit_termid;
-    int page_variant;        // 0=Page -1, 1=Page -2
 
     // Tax settings override
     //  0=prices don't include tax

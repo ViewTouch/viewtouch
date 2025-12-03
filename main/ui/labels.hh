@@ -129,9 +129,7 @@ extern int   YesNoValue[];
 extern const char* NoYesName[];
 extern int   NoYesValue[];
 extern const char* NoYesGlobalName[];
-extern const char* PageVariantName[];
 extern int   NoYesGlobalValue[];
-extern int   PageVariantValue[];
 
 extern const char* SplitCheckName[];
 extern int   SplitCheckValue[];

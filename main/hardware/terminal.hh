@@ -343,7 +343,6 @@ public:
     int       mouse_x;        // current mouse position
     int       mouse_y;
     int       allow_blanking;
-    int       page_variant;   // 0=Page -1, 1=Page -2
 
     // POS Data
     Archive      *archive;          // Current archive being viewed
