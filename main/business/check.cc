@@ -1789,7 +1789,6 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
 
             ordstr[0] = '\0';
             str2[0] = '\0';
-            firstmod = 1;
             for (Order *mod = order->modifier_list; mod != nullptr; mod = mod->next)
             {
                 mod->PrintDescription(str1);
@@ -2834,23 +2833,23 @@ const genericChar* Check::PaymentSummary(Terminal *term)
 		}// end for
 
         str[0] = '\0';
-        if (credit)   strcat(str, "CC,");
-        if (gift)     strcat(str, "G,");
-        if (coupon)   strcat(str, "Cp,");
-        if (comp)     strcat(str, "WC,");
-        if (discount) strcat(str, "D,");
-        if (emeal)    strcat(str, "E,");
-        if (check)    strcat(str, "Ck,");
-        if (account)  strcat(str, "A,");
+        if (credit)   vt_safe_string::safe_concat(str, 256, "CC,");
+        if (gift)     vt_safe_string::safe_concat(str, 256, "G,");
+        if (coupon)   vt_safe_string::safe_concat(str, 256, "Cp,");
+        if (comp)     vt_safe_string::safe_concat(str, 256, "WC,");
+        if (discount) vt_safe_string::safe_concat(str, 256, "D,");
+        if (emeal)    vt_safe_string::safe_concat(str, 256, "E,");
+        if (check)    vt_safe_string::safe_concat(str, 256, "Ck,");
+        if (account)  vt_safe_string::safe_concat(str, 256, "A,");
         if (room)
         {
             vt_safe_string::safe_format(tmp, 32, "R#%d,", room);
-            strcat(str, tmp);
+            vt_safe_string::safe_concat(str, 256, tmp);
         }
         if (cash)
         {
-            strcat(str, settings->money_symbol.Value());
-            strcat(str, ",");
+            vt_safe_string::safe_concat(str, 256, settings->money_symbol.Value());
+            vt_safe_string::safe_concat(str, 256, ",");
         }
 
         int len = strlen(str);
@@ -3477,7 +3476,7 @@ int SubCheck::Write(OutputDataFile &outfile, int version)
     error += outfile.Write(tab_total);
     error += outfile.Write(delivery_charge);
 
-    return 0;
+    return error;
 }
 
 int SubCheck::Add(Order *order, Settings *settings)
@@ -4399,7 +4398,7 @@ int SubCheck::FigureTotals(Settings *settings)
         // Calculate amount to round down by
         if (pennies > 0 && total_cost > 5)
         {
-            payptr = NewPayment(TENDER_MONEY_LOST, 0, pennies, 0);
+            NewPayment(TENDER_MONEY_LOST, 0, pennies, 0);
             balance -= pennies;
         }
     }
@@ -6423,7 +6422,7 @@ genericChar* Payment::Description(Settings *settings, genericChar* str)
     {
         genericChar tmp[32];
         vt_safe_string::safe_format(tmp, 32, " %g%%", (Flt) amount / 100.0);
-        strcat(str, tmp);
+        vt_safe_string::safe_concat(str, 128, tmp);
     }
     return str;
 }
