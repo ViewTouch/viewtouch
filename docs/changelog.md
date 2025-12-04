@@ -91,6 +91,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `src/core/time_info.cc`
     - `src/core/error_handler.cc`
     - `main/hardware/terminal.hh`
+- **End-of-day stability guard (12-04-2025)**
+  - **Issue**: End-of-day flow could dereference null terminals/system data, crashing the app when End Day was triggered.
+  - **Fix**: Added null checks in `RunEndDay` and `Terminal::EndDay` before accessing system/settings, logging and aborting gracefully if unavailable; propagate System::EndDay failures to logs.
+  - **Impact**: End-of-day requests no longer terminate the program if core pointers are missing; errors are logged instead.
+  - **Files modified**:
+    - `main/data/manager.cc`
+    - `main/hardware/terminal.cc`
 - **Index Page Lookup Bug (12-XX-2025)**
   - **Issue**: System was looking for Index page on hardcoded page 200 instead of using the proper Index page lookup mechanism
   - **Root Cause**: `Terminal::JumpToIndex()` function contained a problematic code block that jumped to hardcoded pages 200/206 based on check entree count, preventing the proper Index page lookup from executing

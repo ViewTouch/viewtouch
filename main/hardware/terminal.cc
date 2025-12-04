@@ -6297,6 +6297,12 @@ int Terminal::EndDay()
     int retval = 1;
     int auth;
 
+    if (system_data == nullptr) {
+        ReportError("Terminal::EndDay(): system_data is null; aborting End Day");
+        eod_processing = EOD_DONE;
+        return retval;
+    }
+
     if (eod_failed)
     {
         system_data->eod_term = nullptr;
@@ -6312,7 +6318,13 @@ int Terminal::EndDay()
     system_data->non_eod_settle = 0;
     if (eod_processing == EOD_BEGIN)
     {
-        auth = GetSettings()->authorize_method;
+        Settings* settings = GetSettings();
+        if (settings == nullptr) {
+            ReportError("Terminal::EndDay(): settings unavailable; aborting End Day");
+            eod_processing = EOD_DONE;
+            return retval;
+        }
+        auth = settings->authorize_method;
         if (auth == CCAUTH_MAINSTREET)
             eod_processing = EOD_SETTLE;
         else if (auth == CCAUTH_CREDITCHEQ)
@@ -6340,7 +6352,10 @@ int Terminal::EndDay()
     // final processing
     if (eod_processing == EOD_FINAL)
     {
-        system_data->EndDay();
+        const int end_result = system_data->EndDay();
+        if (end_result != 0) {
+            ReportError("Terminal::EndDay(): System::EndDay failed; see logs for details");
+        }
 
         system_data->eod_term = nullptr;
         system_data->non_eod_settle = 0;

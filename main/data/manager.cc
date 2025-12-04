@@ -3673,6 +3673,11 @@ int RunEndDay()
     Terminal *term = MasterControl->TermList();
     System *sys    = MasterSystem.get();
 
+    if (term == nullptr || sys == nullptr) {
+        ReportError("RunEndDay(): Missing terminal or system; aborting End Day");
+        return 1;
+    }
+
     // verify nobody is logged in, then run EndDay
     if (term->TermsInUse() == 0)
     {
