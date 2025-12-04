@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <shared_mutex>
+#include <cstddef>
 
 namespace vt_error {
 
@@ -139,8 +140,9 @@ namespace vt_error {
         size_t start_idx = error_history_.size() > max_entries ? 
                           error_history_.size() - max_entries : 0;
         
-        return std::vector<ErrorInfo>(error_history_.begin() + start_idx, 
-                                     error_history_.end());
+        return std::vector<ErrorInfo>(
+            error_history_.begin() + static_cast<std::ptrdiff_t>(start_idx),
+            error_history_.end());
     }
 
     std::vector<ErrorInfo> ErrorHandler::getErrorsByCategory(Category category, size_t max_entries) const {

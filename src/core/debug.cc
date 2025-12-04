@@ -82,9 +82,9 @@ constexpr int num_events = static_cast<int>(event_names.size());
  ****/
 const genericChar* GetXEventName( XEvent event ) noexcept
 {
-    if ( event.type < num_events )
+    if ( event.type >= 0 && event.type < num_events )
     {
-        return event_names[event.type];
+        return event_names[static_cast<std::size_t>(event.type)];
     }
     else
     {
@@ -212,7 +212,7 @@ void PrintTermCode( int code ) noexcept
 {
     if ( code >= 0 && code < num_term_codes )
     {
-        printf( "Term Code:  %s\n", term_codes[code] );
+        printf( "Term Code:  %s\n", term_codes[static_cast<std::size_t>(code)] );
     }
 }
 
@@ -246,7 +246,7 @@ void PrintServerCode( int code ) noexcept
 {
     if ( code >= 0 && code < num_server_codes )
     {
-        printf( "Server Code:  %d %s\n", code, server_codes[code] );
+        printf( "Server Code:  %d %s\n", code, server_codes[static_cast<std::size_t>(code)] );
     }
 }
 

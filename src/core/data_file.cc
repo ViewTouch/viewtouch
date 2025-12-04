@@ -600,8 +600,9 @@ int OutputDataFile::Write(Flt val, int bk)
 {
     FnTrace("OutputDataFile::Write(Flt)");
     std::array<char, 64> buffer{};
-    const char* format = bk ? "%g\n" : "%g ";
-    const int written = std::snprintf(buffer.data(), buffer.size(), format, static_cast<double>(val));
+    const int written = bk
+        ? std::snprintf(buffer.data(), buffer.size(), "%g\n", static_cast<double>(val))
+        : std::snprintf(buffer.data(), buffer.size(), "%g ", static_cast<double>(val));
     if (written > 0)
     {
         write_raw(gz_fp, file_fp, compress, buffer.data(), static_cast<std::size_t>(written));

@@ -72,6 +72,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/hardware_zone.cc` - Conditionally hide page variant field for Self Order terminals
 
 ### Fixed
+- **Clang-tidy correctness and safety cleanups (12-04-2025)**
+  - **Issue**: Sign conversions, unchecked indices, and C++ extensions triggered clang-tidy errors in core utilities and tracing.
+  - **Fixes**:
+    - Guarded X event/code lookups with signed bounds checks and size_t indexing.
+    - Replaced variable-length stack trace buffer with std::vector and corrected backtrace symbol calls.
+    - Hardened fntrace depth handling and string formatting utilities against signed/size mismatches.
+    - Fixed snprintf format selection and size conversions in data file and time helpers; removed unused lambda capture in persistence manager.
+    - Resolved forward declaration mismatch for `BatchItem` to avoid ABI warnings.
+  - **Impact**: Clang-tidy now runs clean on core sources; safer bounds and size handling reduce UB risk.
+  - **Files modified**:
+    - `src/core/debug.cc`
+    - `src/core/crash_report.cc`
+    - `src/utils/fntrace.hh`
+    - `src/utils/string_utils.hh`
+    - `src/core/data_file.cc`
+    - `src/core/data_persistence_manager.cc`
+    - `src/core/time_info.cc`
+    - `src/core/error_handler.cc`
+    - `main/hardware/terminal.hh`
 - **Index Page Lookup Bug (12-XX-2025)**
   - **Issue**: System was looking for Index page on hardcoded page 200 instead of using the proper Index page lookup mechanism
   - **Root Cause**: `Terminal::JumpToIndex()` function contained a problematic code block that jumped to hardcoded pages 200/206 based on check entree count, preventing the proper Index page lookup from executing

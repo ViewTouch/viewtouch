@@ -39,11 +39,13 @@ public:
         // Safety check: validate BT_Track is accessible before using it
         // This prevents crashes from memory corruption
         try {
-            if (&BT_Track != nullptr && BT_Track.load() != 0) {
+            const int track_value = BT_Track.load();
+            if (track_value != 0) {
                 std::lock_guard<std::mutex> lock(BT_Mutex);
                 const int current_depth = BT_Depth.load();
-                if (current_depth < STRLENGTH) {
-                    TraceEntry& entry = BT_Stack[current_depth];
+                if (current_depth >= 0 &&
+                    static_cast<std::size_t>(current_depth) < STRLENGTH) {
+                    TraceEntry& entry = BT_Stack[static_cast<std::size_t>(current_depth)];
                     BT_Depth.store(current_depth + 1);
                     std::snprintf(entry.function, STRLONG, "%s", func);
                     std::snprintf(entry.file, STRLENGTH, "%s", file);
@@ -65,13 +67,11 @@ public:
     {
         // Safety check: validate BT_Track is accessible before using it
         try {
-            if (&BT_Track != nullptr) {
-                const int track_value = BT_Track.load();
-                if (track_value != 0) {
-                    std::lock_guard<std::mutex> lock(BT_Mutex);
-                    if (recorded_entry_ && BT_Depth.load() > 0) {
-                        BT_Depth.fetch_sub(1);
-                    }
+            const int track_value = BT_Track.load();
+            if (track_value != 0) {
+                std::lock_guard<std::mutex> lock(BT_Mutex);
+                if (recorded_entry_ && BT_Depth.load() > 0) {
+                    BT_Depth.fetch_sub(1);
                 }
             }
         } catch (...) {

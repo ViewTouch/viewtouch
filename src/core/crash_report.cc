@@ -416,8 +416,9 @@ namespace vt_crash {
         std::ostringstream oss;
         
         #ifdef __linux__
-        void* buffer[max_frames];
-        int num_frames = backtrace(buffer, max_frames);
+        const int frame_capacity = std::max(max_frames, 1);
+        std::vector<void*> buffer(static_cast<std::size_t>(frame_capacity));
+        int num_frames = backtrace(buffer.data(), frame_capacity);
         
         if (num_frames == 0) {
             oss << "No stack trace available\n";
@@ -425,7 +426,7 @@ namespace vt_crash {
         }
         
         // Get symbols
-        char** symbols = backtrace_symbols(buffer, num_frames);
+        char** symbols = backtrace_symbols(buffer.data(), num_frames);
         if (symbols == nullptr) {
             oss << "Failed to get stack trace symbols\n";
             return oss.str();
@@ -444,7 +445,7 @@ namespace vt_crash {
             // Try to decode address using addr2line first (most detailed)
             std::string decoded_info;
             if (use_addr2line) {
-                decoded_info = DecodeAddress(buffer[i], exe_path);
+                decoded_info = DecodeAddress(buffer[static_cast<std::size_t>(i)], exe_path);
             }
             
             if (!decoded_info.empty()) {
@@ -455,7 +456,7 @@ namespace vt_crash {
                 std::string symbol_str = symbols[i];
                 
                 // Try dladdr for better function info
-                std::string func_info = GetFunctionInfo(buffer[i]);
+                std::string func_info = GetFunctionInfo(buffer[static_cast<std::size_t>(i)]);
                 if (!func_info.empty()) {
                     // Extract address from symbol_str and combine with function info
                     size_t addr_start = symbol_str.find('[');
