@@ -72,6 +72,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/hardware_zone.cc` - Conditionally hide page variant field for Self Order terminals
 
 ### Fixed
+- **CUPS/remote printer auto-recovery (12-04-2025)**
+  - **Issue**: After idle periods, printing could hang due to lost CUPS/remote printer connections, requiring full app restart.
+  - **Fix**: Added a reconnect hook to `Printer` and wired `RemotePrinter` to perform timed, non-blocking reconnection attempts when marked offline; the main loop now triggers reconnection during periodic printer health checks.
+  - **Impact**: Remote printers can recover automatically without restarting ViewTouch when CUPS/socket links drop.
+  - **Files modified**:
+    - `main/hardware/printer.hh`
+    - `main/hardware/remote_printer.cc`
+    - `main/data/manager.cc`
 - **End-of-day comment cleanup (12-04-2025)**
   - **Change**: Clarified `Terminal::EndDay` inline documentation to concisely describe the terminal-driven EOD loop and hand-off to `UpdateSystemCB()`.
   - **Impact**: Removes legacy note and keeps behavior description accurate for future maintainers.

@@ -3398,9 +3398,11 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
         
         for (Printer *p = MasterControl->PrinterList(); p != NULL; p = p->next)
         {
+            // Attempt to reconnect offline remote printers (failure == 999)
+            p->ReconnectIfOffline();
             total_count++;
             // For now, just log that we're monitoring printers
-            // The actual reconnection logic is handled in RemotePrinter::PrinterCB
+            // The actual reconnection logic is handled in RemotePrinter::ReconnectIfOffline()
             online_count++; // Assume online unless proven otherwise
         }
         

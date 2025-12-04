@@ -28,6 +28,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/file.h>
+#include <sys/select.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <X11/Intrinsic.h>
 #include <memory>
@@ -71,6 +73,7 @@ public:
     int   SendNow();
     int   Reconnect();  // Critical fix: Add reconnection method
     int   IsOnline();   // Critical fix: Add online status check
+    int   ReconnectIfOffline() override;
 
     int   StopPrint();
     int   OpenDrawer(int drawer);
@@ -227,6 +230,9 @@ int RemotePrinter::Reconnect()
         ReportError(tmp.data());
         return 1;
     }
+
+    // Ensure socket operations do not block the main loop
+    fcntl(dev, F_SETFL, O_NONBLOCK);
     
     if (bind(dev, &name, sizeof(name)) == -1)
     {
@@ -240,6 +246,21 @@ int RemotePrinter::Reconnect()
     snprintf(str.data(), str.size(), "vt_print %d %s %d %d&", number, host_name.Value(), port_no, model);
     system(str.data());
     listen(dev, 1);
+
+    // Wait briefly for vt_print to connect back; avoid blocking indefinitely
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(dev, &readfds);
+    struct timeval tv;
+    tv.tv_sec = 2;
+    tv.tv_usec = 0;
+    int sel = select(dev + 1, &readfds, nullptr, nullptr, &tv);
+    if (sel <= 0) {
+        close(dev);
+        snprintf(tmp.data(), tmp.size(), "Reconnect failed: Timed out waiting for vt_print on %s", str.data());
+        ReportError(tmp.data());
+        return 1;
+    }
 
     Uint len = sizeof(struct sockaddr);
     int new_socket = accept(dev, (struct sockaddr *) str.data(), &len);
@@ -269,6 +290,12 @@ int RemotePrinter::Reconnect()
         parent->UpdateAll(UPDATE_PRINTERS, NULL);
     
     return 0;
+}
+
+int RemotePrinter::ReconnectIfOffline()
+{
+    // Reuse existing reconnection logic when marked offline
+    return Reconnect();
 }
 
 // Critical fix: Add method to check if printer is online
