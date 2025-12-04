@@ -62,7 +62,7 @@ public:
     // Constructor
     RemotePrinter(const char* host, int port, int mod, int no);
     // Destructor
-    ~RemotePrinter();
+    ~RemotePrinter() override;
 
     // Member Functions
     int   WInt8(int val);
@@ -72,13 +72,13 @@ public:
     int   Send();
     int   SendNow();
     int   Reconnect();  // Critical fix: Add reconnection method
-    int   IsOnline();   // Critical fix: Add online status check
+    int   IsOnline() const;   // Critical fix: Add online status check
     int   ReconnectIfOffline() override;
 
-    int   StopPrint();
-    int   OpenDrawer(int drawer);
-    int   Start();
-    int   End();
+    int   StopPrint() override;
+    int   OpenDrawer(int drawer) override;
+    int   Start() override;
+    int   End() override;
     
     // Required pure virtual functions from Printer base class
     int WriteFlags(int flags) override;
@@ -299,7 +299,7 @@ int RemotePrinter::ReconnectIfOffline()
 }
 
 // Critical fix: Add method to check if printer is online
-int RemotePrinter::IsOnline()
+int RemotePrinter::IsOnline() const
 {
     FnTrace("RemotePrinter::IsOnline()");
     
