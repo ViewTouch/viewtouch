@@ -620,6 +620,7 @@ int main(int argc, genericChar* argv[])
         signal(SIGINT,  Terminate);
         signal(SIGSEGV, Terminate);
         signal(SIGQUIT, Terminate);
+        signal(SIGABRT, Terminate); // ASan uses SIGABRT for failures; include for crash reports
     } else {
         // Even in release mode, set up signal handlers for crash reporting
         signal(SIGBUS,  Terminate);
@@ -627,6 +628,7 @@ int main(int argc, genericChar* argv[])
         signal(SIGILL,  Terminate);
         signal(SIGSEGV, Terminate);
         signal(SIGQUIT, Terminate);
+        signal(SIGABRT, Terminate); // Ensure crash reports on aborts (e.g., ASan)
         // SIGINT is handled separately in Terminate() for graceful shutdown
         signal(SIGINT,  Terminate);
     }
