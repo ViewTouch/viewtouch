@@ -574,6 +574,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 - **Printer activation dialog crash**: Prevented heap-buffer-overflow in `Terminal::KillDialog()` when closing non-DialogZone dialogs (e.g., MessageDialog used during printer activation). The dialog cleanup now checks the concrete type before reading jump/signal metadata, eliminating crashes when toggling printers. (Files: `main/hardware/terminal.cc`)
+- **Crash reporting robustness**: Added SIGABRT handling so ASan-triggered aborts also generate reports, and tightened crash-report directory creation (keeps primary path `/usr/viewtouch/dat/crashreports`). (Files: `main/data/manager.cc`, `src/core/crash_report.cc`)
   - **Enhanced Drawer Availability Messages**: Improved error messages that specify the exact reason why a drawer is unavailable
     - Trusted mode: "No drawer is attached to this terminal"
     - Server Bank mode: "No drawers are configured" or "Unable to create Server Bank drawer"
