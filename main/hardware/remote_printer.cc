@@ -28,8 +28,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/file.h>
+#include <sys/select.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <X11/Intrinsic.h>
+#include <cctype>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <array>
@@ -41,6 +45,57 @@
 
 /**** Forward Declaration ****/
 void PrinterCB(XtPointer client_data, int *fid, XtInputId *id);
+
+namespace
+{
+// Basic validation to prevent shell metacharacters/whitespace in host names.
+bool ValidateHost(const Str& host)
+{
+    const char* h = host.Value();
+    if (h == nullptr || *h == '\0')
+        return false;
+
+    for (const char* p = h; *p; ++p)
+    {
+        unsigned char c = static_cast<unsigned char>(*p);
+        if (std::isspace(c) || c == ';' || c == '&' || c == '|' ||
+            c == '$' || c == '`' || c == '<' || c == '>')
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Launch vt_print without invoking a shell to avoid command injection.
+bool SpawnPrinterProcess(int number, const Str& host, int port, int model)
+{
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        std::string number_str = std::to_string(number);
+        std::string port_str   = std::to_string(port);
+        std::string model_str  = std::to_string(model);
+
+        execlp("vt_print", "vt_print",
+               number_str.c_str(),
+               host.Value(),
+               port_str.c_str(),
+               model_str.c_str(),
+               (char *) nullptr);
+        _exit(127); // Only reached on exec failure
+    }
+
+    if (pid < 0)
+    {
+        ReportError("Failed to fork vt_print process");
+        return false;
+    }
+
+    // Parent: child continues independently; no wait to keep behavior async.
+    return true;
+}
+}
 
 /**** RemotePrinter Class ****/
 class RemotePrinter : public Printer
@@ -60,7 +115,7 @@ public:
     // Constructor
     RemotePrinter(const char* host, int port, int mod, int no);
     // Destructor
-    ~RemotePrinter();
+    ~RemotePrinter() override;
 
     // Member Functions
     int   WInt8(int val);
@@ -70,12 +125,13 @@ public:
     int   Send();
     int   SendNow();
     int   Reconnect();  // Critical fix: Add reconnection method
-    int   IsOnline();   // Critical fix: Add online status check
+    int   IsOnline() const;   // Critical fix: Add online status check
+    int   ReconnectIfOffline() override;
 
-    int   StopPrint();
-    int   OpenDrawer(int drawer);
-    int   Start();
-    int   End();
+    int   StopPrint() override;
+    int   OpenDrawer(int drawer) override;
+    int   Start() override;
+    int   End() override;
     
     // Required pure virtual functions from Printer base class
     int WriteFlags(int flags) override;
@@ -128,8 +184,18 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
         return;
     }
 
-    snprintf(str.data(), str.size(), "vt_print %d %s %d %d&", no, host, port, mod);
-    system(str.data());
+    if (!ValidateHost(host_name))
+    {
+        ReportError("Invalid printer host name");
+        close(dev);
+        return;
+    }
+
+    if (!SpawnPrinterProcess(no, host_name, port, mod))
+    {
+        close(dev);
+        return;
+    }
     listen(dev, 1);
 
     Uint len = sizeof(struct sockaddr);
@@ -227,6 +293,9 @@ int RemotePrinter::Reconnect()
         ReportError(tmp.data());
         return 1;
     }
+
+    // Ensure socket operations do not block the main loop
+    fcntl(dev, F_SETFL, O_NONBLOCK);
     
     if (bind(dev, &name, sizeof(name)) == -1)
     {
@@ -236,10 +305,35 @@ int RemotePrinter::Reconnect()
         return 1;
     }
 
-    // Attempt to restart the vt_print process
-    snprintf(str.data(), str.size(), "vt_print %d %s %d %d&", number, host_name.Value(), port_no, model);
-    system(str.data());
+    if (!ValidateHost(host_name))
+    {
+        ReportError("Invalid printer host name during reconnect");
+        close(dev);
+        return 1;
+    }
+
+    // Attempt to restart the vt_print process without invoking a shell
+    if (!SpawnPrinterProcess(number, host_name, port_no, model))
+    {
+        close(dev);
+        return 1;
+    }
     listen(dev, 1);
+
+    // Wait briefly for vt_print to connect back; avoid blocking indefinitely
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(dev, &readfds);
+    struct timeval tv;
+    tv.tv_sec = 2;
+    tv.tv_usec = 0;
+    int sel = select(dev + 1, &readfds, nullptr, nullptr, &tv);
+    if (sel <= 0) {
+        close(dev);
+        snprintf(tmp.data(), tmp.size(), "Reconnect failed: Timed out waiting for vt_print on %s", str.data());
+        ReportError(tmp.data());
+        return 1;
+    }
 
     Uint len = sizeof(struct sockaddr);
     int new_socket = accept(dev, (struct sockaddr *) str.data(), &len);
@@ -271,8 +365,14 @@ int RemotePrinter::Reconnect()
     return 0;
 }
 
+int RemotePrinter::ReconnectIfOffline()
+{
+    // Reuse existing reconnection logic when marked offline
+    return Reconnect();
+}
+
 // Critical fix: Add method to check if printer is online
-int RemotePrinter::IsOnline()
+int RemotePrinter::IsOnline() const
 {
     FnTrace("RemotePrinter::IsOnline()");
     

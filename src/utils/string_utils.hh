@@ -37,19 +37,20 @@ namespace vt_string {
         constexpr size_t buffer_size = 1024;
         std::array<char, buffer_size> buffer{};
         
-        int result = std::snprintf(buffer.data(), buffer.size(), format.c_str(), args...);
+        const int result = std::snprintf(buffer.data(), buffer.size(), format.c_str(), args...);
         if (result < 0) {
             return {};
         }
-        
-        if (static_cast<size_t>(result) < buffer.size()) {
-            return std::string(buffer.data(), result);
+
+        const auto required = static_cast<std::size_t>(result);
+        if (required < buffer.size()) {
+            return std::string(buffer.data(), required);
         }
         
         // Buffer was too small, use dynamic allocation
-        std::vector<char> dynamic_buffer(result + 1);
+        std::vector<char> dynamic_buffer(required + 1);
         std::snprintf(dynamic_buffer.data(), dynamic_buffer.size(), format.c_str(), args...);
-        return std::string(dynamic_buffer.data(), result);
+        return std::string(dynamic_buffer.data(), required);
     }
 
     // String case conversion

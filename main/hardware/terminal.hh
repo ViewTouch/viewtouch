@@ -285,7 +285,7 @@ class Locale;
 class System;
 class CharQueue;
 class Settings;
-class BatchItem;
+struct BatchItem;
 
 class Terminal
 {

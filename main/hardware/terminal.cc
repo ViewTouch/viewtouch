@@ -2815,8 +2815,17 @@ int Terminal::KillDialog()
     if (selected_zone == dialog)
         selected_zone = nullptr;
 
-    jump_index = ((DialogZone *)dialog)->target_index;
-    vt_safe_string::safe_copy(next_signal, STRLENGTH, ((DialogZone *)dialog)->target_signal);
+    // Only DialogZone instances support jump/signal metadata
+    if (auto *dlg = dynamic_cast<DialogZone*>(dialog))
+    {
+        jump_index = dlg->target_index;
+        vt_safe_string::safe_copy(next_signal, STRLENGTH, dlg->target_signal);
+    }
+    else
+    {
+        next_signal[0] = '\0';
+    }
+
     RegionInfo r(dialog);
     r.w += dialog->shadow;
     r.h += dialog->shadow;
@@ -6277,25 +6286,20 @@ Settings *Terminal::GetSettings()
     return &(system_data->settings);
 }
 
-/****
- * EndDay: Originally, EndDay() was purely a System method.  But now
- * we have the potential for loops where we need to ClearSAF() and
- * Settle() for each terminal before finally running all of the EndDay
- * stuff.  Plus, we should probably be updating the EndDay dialog
- * periodically to let the user know the system hasn't stalled.  So,
- * to begin an EndDay, set system_data->term to the terminal that
- * should do the processing, then set that term's eod_processing
- * member to EOD_BEGIN.  manager.cc's UpdateSystemCB() will handle it
- * from there.
- *
- * This method returns 1 if we're still processing End of Day, 0 if
- * we're done.
- ****/
+/* EndDay: terminal-driven loop to clear SAF, settle cards, then run System::EndDay.
+ * Set the controlling terminal's eod_processing to EOD_BEGIN and UpdateSystemCB()
+ * will drive the loop until this returns 0 when finished. */
 int Terminal::EndDay()
 {
     FnTrace("Terminal::EndDay()");
     int retval = 1;
     int auth;
+
+    if (system_data == nullptr) {
+        ReportError("Terminal::EndDay(): system_data is null; aborting End Day");
+        eod_processing = EOD_DONE;
+        return retval;
+    }
 
     if (eod_failed)
     {
@@ -6312,7 +6316,13 @@ int Terminal::EndDay()
     system_data->non_eod_settle = 0;
     if (eod_processing == EOD_BEGIN)
     {
-        auth = GetSettings()->authorize_method;
+        Settings* settings = GetSettings();
+        if (settings == nullptr) {
+            ReportError("Terminal::EndDay(): settings unavailable; aborting End Day");
+            eod_processing = EOD_DONE;
+            return retval;
+        }
+        auth = settings->authorize_method;
         if (auth == CCAUTH_MAINSTREET)
             eod_processing = EOD_SETTLE;
         else if (auth == CCAUTH_CREDITCHEQ)
@@ -6340,7 +6350,10 @@ int Terminal::EndDay()
     // final processing
     if (eod_processing == EOD_FINAL)
     {
-        system_data->EndDay();
+        const int end_result = system_data->EndDay();
+        if (end_result != 0) {
+            ReportError("Terminal::EndDay(): System::EndDay failed; see logs for details");
+        }
 
         system_data->eod_term = nullptr;
         system_data->non_eod_settle = 0;

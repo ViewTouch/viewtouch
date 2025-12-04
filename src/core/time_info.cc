@@ -585,7 +585,7 @@ int TimeInfo::SecondsInYear() const
     auto ld = local_days{date::year(this->Year()) / January / 1};
     auto diff = t_ - ld;
     std::chrono::seconds s = std::chrono::duration_cast<std::chrono::seconds>(diff);
-    return s.count();
+    return static_cast<int>(s.count());
 }
 
 int TimeInfo::DaysInMonth() const
@@ -646,7 +646,9 @@ int DaysInMonth(int month, int year)
 int DayOfTheWeek(int mday, int month, int year)
 {
     FnTrace("DayOfTheWeek()");
-    date::year_month_day ymdl{date::year(year) / date::month(month) / date::day(mday)};
+    date::year_month_day ymdl{
+        date::year(year) / date::month(static_cast<unsigned>(month)) /
+        date::day(static_cast<unsigned>(mday))};
     if (!ymdl.ok())
     {
         return -1;
@@ -668,7 +670,7 @@ int StringElapsedToNow(char* dest, int maxlen, TimeInfo &t1)
     seconds = SecondsElapsed(t1, now);
     minutes = seconds / 60;
     seconds = seconds % 60;
-    snprintf(dest, maxlen, "%d:%02d", minutes, seconds);
+    snprintf(dest, static_cast<std::size_t>(maxlen), "%d:%02d", minutes, seconds);
     return 1;
 }
 
@@ -679,7 +681,7 @@ int SecondsToString(char* dest, int maxlen, int seconds)
 
     minutes = seconds / 60;
     seconds = seconds % 60;
-    snprintf(dest, maxlen, "%d:%02d", minutes, seconds);
+    snprintf(dest, static_cast<std::size_t>(maxlen), "%d:%02d", minutes, seconds);
     return 1;
 }
 

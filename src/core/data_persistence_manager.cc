@@ -100,8 +100,8 @@ DataPersistenceManager::DataPersistenceManager()
     config = Configuration();
 
     // Reserve space for logs to reduce reallocations
-    error_log.reserve(config.max_error_log_size);
-    warning_log.reserve(config.max_warning_log_size);
+    error_log.reserve(static_cast<std::size_t>(config.max_error_log_size));
+    warning_log.reserve(static_cast<std::size_t>(config.max_warning_log_size));
 }
 
 DataPersistenceManager::~DataPersistenceManager()
@@ -146,7 +146,7 @@ void DataPersistenceManager::Initialize(System* system)
     
     manager.RegisterCriticalData("cups_communication",
         [&manager]() { return manager.ValidateCUPSCommunication(); },
-        [&manager]() { return SaveResult::SAVE_SUCCESS; }); // CUPS doesn't need saving
+        []() { return SaveResult::SAVE_SUCCESS; }); // CUPS doesn't need saving
     
     manager.LogInfo("DataPersistenceManager initialized successfully");
 }
@@ -193,17 +193,22 @@ void DataPersistenceManager::SetConfiguration(const Configuration& new_config)
     // Resize log vectors if needed (requires log_mutex)
     {
         std::lock_guard<std::mutex> lock(log_mutex);
-        error_log.reserve(config.max_error_log_size);
-        warning_log.reserve(config.max_warning_log_size);
+        const auto max_error_size = static_cast<std::size_t>(config.max_error_log_size);
+        const auto max_warning_size = static_cast<std::size_t>(config.max_warning_log_size);
+
+        error_log.reserve(max_error_size);
+        warning_log.reserve(max_warning_size);
 
         // Trim existing logs if they exceed new limits
-        if (error_log.size() > config.max_error_log_size) {
+        if (error_log.size() > max_error_size) {
+            const auto excess = error_log.size() - max_error_size;
             error_log.erase(error_log.begin(),
-                           error_log.end() - config.max_error_log_size);
+                            error_log.begin() + static_cast<std::ptrdiff_t>(excess));
         }
-        if (warning_log.size() > config.max_warning_log_size) {
+        if (warning_log.size() > max_warning_size) {
+            const auto excess = warning_log.size() - max_warning_size;
             warning_log.erase(warning_log.begin(),
-                             warning_log.end() - config.max_warning_log_size);
+                              warning_log.begin() + static_cast<std::ptrdiff_t>(excess));
         }
     }
 
@@ -1371,10 +1376,12 @@ void DataPersistenceManager::LogError(const std::string& message)
 void DataPersistenceManager::LogError(const std::string& message, const std::string& component)
 {
     std::lock_guard<std::mutex> lock(log_mutex);
-    if (error_log.size() >= config.max_error_log_size) {
+    const auto max_error_size = static_cast<std::size_t>(config.max_error_log_size);
+    if (error_log.size() >= max_error_size) {
         // Remove oldest entries to make room
         error_log.erase(error_log.begin(),
-                       error_log.begin() + (error_log.size() - config.max_error_log_size + 1));
+                        error_log.begin() + static_cast<std::ptrdiff_t>(
+                            error_log.size() - max_error_size + 1));
     }
     error_log.emplace_back(message, component, 2);
     ReportError(message.c_str());
@@ -1388,10 +1395,12 @@ void DataPersistenceManager::LogWarning(const std::string& message)
 void DataPersistenceManager::LogWarning(const std::string& message, const std::string& component)
 {
     std::lock_guard<std::mutex> lock(log_mutex);
-    if (warning_log.size() >= config.max_warning_log_size) {
+    const auto max_warning_size = static_cast<std::size_t>(config.max_warning_log_size);
+    if (warning_log.size() >= max_warning_size) {
         // Remove oldest entries to make room
         warning_log.erase(warning_log.begin(),
-                         warning_log.begin() + (warning_log.size() - config.max_warning_log_size + 1));
+                          warning_log.begin() + static_cast<std::ptrdiff_t>(
+                              warning_log.size() - max_warning_size + 1));
     }
     warning_log.emplace_back(message, component, 1);
     ReportError(message.c_str());

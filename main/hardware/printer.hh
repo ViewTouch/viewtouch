@@ -165,6 +165,8 @@ public:
     virtual int Write(const genericChar* string, int flags = 0);      // Prints string & new line
     virtual int Put(const genericChar* string, int flags = 0);        // just prints string
     virtual int Put(genericChar c, int flags = 0);              // Single character print
+    // Optional reconnection hook for derived classes (no-op by default)
+    virtual int ReconnectIfOffline() { return 0; }
 
     virtual int Model() = 0;                             // returns integer specifying model number
     virtual int Init()  = 0;                             // Initializes printer

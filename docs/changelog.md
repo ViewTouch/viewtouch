@@ -72,6 +72,49 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/hardware_zone.cc` - Conditionally hide page variant field for Self Order terminals
 
 ### Fixed
+- **Event loop stall logging (12-04-2025)**
+  - **Issue**: ViewTouch could freeze/lock up after long runtimes with no clear trace.
+  - **Fix**: Added watchdog logging in `UpdateSystemCB` to report when the main loop stalls (>3s gap) to aid diagnosis of future lockups.
+  - **Impact**: Provides actionable logs to trace intermittent freezes without changing runtime behavior.
+  - **Files modified**: `main/data/manager.cc`
+- **CUPS/remote printer auto-recovery (12-04-2025)**
+  - **Issue**: After idle periods, printing could hang due to lost CUPS/remote printer connections, requiring full app restart.
+  - **Fix**: Added a reconnect hook to `Printer` and wired `RemotePrinter` to perform timed, non-blocking reconnection attempts when marked offline; the main loop now triggers reconnection during periodic printer health checks.
+  - **Impact**: Remote printers can recover automatically without restarting ViewTouch when CUPS/socket links drop.
+  - **Files modified**:
+    - `main/hardware/printer.hh`
+    - `main/hardware/remote_printer.cc`
+    - `main/data/manager.cc`
+- **End-of-day comment cleanup (12-04-2025)**
+  - **Change**: Clarified `Terminal::EndDay` inline documentation to concisely describe the terminal-driven EOD loop and hand-off to `UpdateSystemCB()`.
+  - **Impact**: Removes legacy note and keeps behavior description accurate for future maintainers.
+  - **Files modified**: `main/hardware/terminal.cc`
+- **Clang-tidy correctness and safety cleanups (12-04-2025)**
+  - **Issue**: Sign conversions, unchecked indices, and C++ extensions triggered clang-tidy errors in core utilities and tracing.
+  - **Fixes**:
+    - Guarded X event/code lookups with signed bounds checks and size_t indexing.
+    - Replaced variable-length stack trace buffer with std::vector and corrected backtrace symbol calls.
+    - Hardened fntrace depth handling and string formatting utilities against signed/size mismatches.
+    - Fixed snprintf format selection and size conversions in data file and time helpers; removed unused lambda capture in persistence manager.
+    - Resolved forward declaration mismatch for `BatchItem` to avoid ABI warnings.
+  - **Impact**: Clang-tidy now runs clean on core sources; safer bounds and size handling reduce UB risk.
+  - **Files modified**:
+    - `src/core/debug.cc`
+    - `src/core/crash_report.cc`
+    - `src/utils/fntrace.hh`
+    - `src/utils/string_utils.hh`
+    - `src/core/data_file.cc`
+    - `src/core/data_persistence_manager.cc`
+    - `src/core/time_info.cc`
+    - `src/core/error_handler.cc`
+    - `main/hardware/terminal.hh`
+- **End-of-day stability guard (12-04-2025)**
+  - **Issue**: End-of-day flow could dereference null terminals/system data, crashing the app when End Day was triggered.
+  - **Fix**: Added null checks in `RunEndDay` and `Terminal::EndDay` before accessing system/settings, logging and aborting gracefully if unavailable; propagate System::EndDay failures to logs.
+  - **Impact**: End-of-day requests no longer terminate the program if core pointers are missing; errors are logged instead.
+  - **Files modified**:
+    - `main/data/manager.cc`
+    - `main/hardware/terminal.cc`
 - **Index Page Lookup Bug (12-XX-2025)**
   - **Issue**: System was looking for Index page on hardcoded page 200 instead of using the proper Index page lookup mechanism
   - **Root Cause**: `Terminal::JumpToIndex()` function contained a problematic code block that jumped to hardcoded pages 200/206 based on check entree count, preventing the proper Index page lookup from executing
@@ -528,6 +571,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Server without Settlement authority
   - **Server Display Defaults**: New Server Display terminals automatically configured with Fast Food type and One Cash Drawer
   - **Self Order Mode Auto-Configuration**: Page variant automatically set to -2 (Page -2) when Self Order Mode is selected
+
+### Fixed
+- **Printer activation dialog crash**: Prevented heap-buffer-overflow in `Terminal::KillDialog()` when closing non-DialogZone dialogs (e.g., MessageDialog used during printer activation). The dialog cleanup now checks the concrete type before reading jump/signal metadata, eliminating crashes when toggling printers. (Files: `main/hardware/terminal.cc`)
   - **Enhanced Drawer Availability Messages**: Improved error messages that specify the exact reason why a drawer is unavailable
     - Trusted mode: "No drawer is attached to this terminal"
     - Server Bank mode: "No drawers are configured" or "Unable to create Server Bank drawer"

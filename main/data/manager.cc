@@ -1500,6 +1500,12 @@ int StartSystem(int my_use_net)
     // Add local terminal
     ReportLoader("Opening Local Terminal");
     TermInfo *ti = settings->FindServer(displaystr);
+    if (ti == NULL)
+    {
+        ReportError("No terminal configuration found for this display; aborting startup.");
+        ViewTouchError("No terminals configured for this display.");
+        return 1;
+    }
     ti->display_host.Set(displaystr);
 
     pi = settings->FindPrinterByType(PRINTER_RECEIPT);
@@ -3330,6 +3336,18 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
 {
     FnTrace("UpdateSystemCB()");
 
+    // Detect event-loop stalls to help diagnose rare freezes/lockups
+    static auto last_tick = std::chrono::steady_clock::now();
+    auto now_tick = std::chrono::steady_clock::now();
+    auto loop_gap = std::chrono::duration_cast<std::chrono::milliseconds>(now_tick - last_tick);
+    if (loop_gap > std::chrono::milliseconds(3000)) {
+        std::array<char, 256> msg{};
+        snprintf(msg.data(), msg.size(), "UpdateSystemCB lag detected: %lld ms since last tick",
+                 static_cast<long long>(loop_gap.count()));
+        ReportError(msg.data());
+    }
+    last_tick = now_tick;
+
     pid_t pid;
     int pstat;
     // First, let's clean up any children processes that may have been started
@@ -3398,9 +3416,11 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
         
         for (Printer *p = MasterControl->PrinterList(); p != NULL; p = p->next)
         {
+            // Attempt to reconnect offline remote printers (failure == 999)
+            p->ReconnectIfOffline();
             total_count++;
             // For now, just log that we're monitoring printers
-            // The actual reconnection logic is handled in RemotePrinter::PrinterCB
+            // The actual reconnection logic is handled in RemotePrinter::ReconnectIfOffline()
             online_count++; // Assume online unless proven otherwise
         }
         
@@ -3672,6 +3692,11 @@ int RunEndDay()
     FnTrace("RunEndDay()");
     Terminal *term = MasterControl->TermList();
     System *sys    = MasterSystem.get();
+
+    if (term == nullptr || sys == nullptr) {
+        ReportError("RunEndDay(): Missing terminal or system; aborting End Day");
+        return 1;
+    }
 
     // verify nobody is logged in, then run EndDay
     if (term->TermsInUse() == 0)
