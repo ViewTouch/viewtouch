@@ -927,15 +927,6 @@ int Terminal::JumpToIndex(int idx)
 
     Settings *settings = GetSettings();
 
-    {
-        if (check == nullptr)
-            return 1;
-        if (check->EntreeCount(seat) <= 0)
-            return Jump(JUMP_STEALTH, 200);
-        else
-            return Jump(JUMP_STEALTH, 206);
-    }
-
     Page *p = zone_db->FindByType(PAGE_INDEX, idx, size);
     if (p == nullptr)
     {
