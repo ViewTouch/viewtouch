@@ -1500,6 +1500,12 @@ int StartSystem(int my_use_net)
     // Add local terminal
     ReportLoader("Opening Local Terminal");
     TermInfo *ti = settings->FindServer(displaystr);
+    if (ti == NULL)
+    {
+        ReportError("No terminal configuration found for this display; aborting startup.");
+        ViewTouchError("No terminals configured for this display.");
+        return 1;
+    }
     ti->display_host.Set(displaystr);
 
     pi = settings->FindPrinterByType(PRINTER_RECEIPT);

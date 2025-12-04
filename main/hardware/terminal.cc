@@ -2815,8 +2815,17 @@ int Terminal::KillDialog()
     if (selected_zone == dialog)
         selected_zone = nullptr;
 
-    jump_index = ((DialogZone *)dialog)->target_index;
-    vt_safe_string::safe_copy(next_signal, STRLENGTH, ((DialogZone *)dialog)->target_signal);
+    // Only DialogZone instances support jump/signal metadata
+    if (auto *dlg = dynamic_cast<DialogZone*>(dialog))
+    {
+        jump_index = dlg->target_index;
+        vt_safe_string::safe_copy(next_signal, STRLENGTH, dlg->target_signal);
+    }
+    else
+    {
+        next_signal[0] = '\0';
+    }
+
     RegionInfo r(dialog);
     r.w += dialog->shadow;
     r.h += dialog->shadow;

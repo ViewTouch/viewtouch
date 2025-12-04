@@ -82,8 +82,8 @@ namespace vt_crash {
             }
         }
         
-        // Create the directory with permissions 0777
-        if (mkdir(dir.c_str(), 0777) == 0) {
+        // Create the directory with permissions 0750 (rely on umask for further restriction)
+        if (mkdir(dir.c_str(), 0750) == 0) {
             return true;
         } else if (errno == EEXIST) {
             // Directory was created by another process

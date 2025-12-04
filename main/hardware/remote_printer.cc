@@ -32,6 +32,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <X11/Intrinsic.h>
+#include <cctype>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <array>
@@ -43,6 +45,57 @@
 
 /**** Forward Declaration ****/
 void PrinterCB(XtPointer client_data, int *fid, XtInputId *id);
+
+namespace
+{
+// Basic validation to prevent shell metacharacters/whitespace in host names.
+bool ValidateHost(const Str& host)
+{
+    const char* h = host.Value();
+    if (h == nullptr || *h == '\0')
+        return false;
+
+    for (const char* p = h; *p; ++p)
+    {
+        unsigned char c = static_cast<unsigned char>(*p);
+        if (std::isspace(c) || c == ';' || c == '&' || c == '|' ||
+            c == '$' || c == '`' || c == '<' || c == '>')
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Launch vt_print without invoking a shell to avoid command injection.
+bool SpawnPrinterProcess(int number, const Str& host, int port, int model)
+{
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        std::string number_str = std::to_string(number);
+        std::string port_str   = std::to_string(port);
+        std::string model_str  = std::to_string(model);
+
+        execlp("vt_print", "vt_print",
+               number_str.c_str(),
+               host.Value(),
+               port_str.c_str(),
+               model_str.c_str(),
+               (char *) nullptr);
+        _exit(127); // Only reached on exec failure
+    }
+
+    if (pid < 0)
+    {
+        ReportError("Failed to fork vt_print process");
+        return false;
+    }
+
+    // Parent: child continues independently; no wait to keep behavior async.
+    return true;
+}
+}
 
 /**** RemotePrinter Class ****/
 class RemotePrinter : public Printer
@@ -131,8 +184,18 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
         return;
     }
 
-    snprintf(str.data(), str.size(), "vt_print %d %s %d %d&", no, host, port, mod);
-    system(str.data());
+    if (!ValidateHost(host_name))
+    {
+        ReportError("Invalid printer host name");
+        close(dev);
+        return;
+    }
+
+    if (!SpawnPrinterProcess(no, host_name, port, mod))
+    {
+        close(dev);
+        return;
+    }
     listen(dev, 1);
 
     Uint len = sizeof(struct sockaddr);
@@ -242,9 +305,19 @@ int RemotePrinter::Reconnect()
         return 1;
     }
 
-    // Attempt to restart the vt_print process
-    snprintf(str.data(), str.size(), "vt_print %d %s %d %d&", number, host_name.Value(), port_no, model);
-    system(str.data());
+    if (!ValidateHost(host_name))
+    {
+        ReportError("Invalid printer host name during reconnect");
+        close(dev);
+        return 1;
+    }
+
+    // Attempt to restart the vt_print process without invoking a shell
+    if (!SpawnPrinterProcess(number, host_name, port_no, model))
+    {
+        close(dev);
+        return 1;
+    }
     listen(dev, 1);
 
     // Wait briefly for vt_print to connect back; avoid blocking indefinitely

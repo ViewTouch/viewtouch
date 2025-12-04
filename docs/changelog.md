@@ -571,6 +571,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Server without Settlement authority
   - **Server Display Defaults**: New Server Display terminals automatically configured with Fast Food type and One Cash Drawer
   - **Self Order Mode Auto-Configuration**: Page variant automatically set to -2 (Page -2) when Self Order Mode is selected
+
+### Fixed
+- **Printer activation dialog crash**: Prevented heap-buffer-overflow in `Terminal::KillDialog()` when closing non-DialogZone dialogs (e.g., MessageDialog used during printer activation). The dialog cleanup now checks the concrete type before reading jump/signal metadata, eliminating crashes when toggling printers. (Files: `main/hardware/terminal.cc`)
   - **Enhanced Drawer Availability Messages**: Improved error messages that specify the exact reason why a drawer is unavailable
     - Trusted mode: "No drawer is attached to this terminal"
     - Server Bank mode: "No drawers are configured" or "Unable to create Server Bank drawer"
