@@ -72,6 +72,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/hardware_zone.cc` - Conditionally hide page variant field for Self Order terminals
 
 ### Fixed
+- **Event loop stall logging (12-04-2025)**
+  - **Issue**: ViewTouch could freeze/lock up after long runtimes with no clear trace.
+  - **Fix**: Added watchdog logging in `UpdateSystemCB` to report when the main loop stalls (>3s gap) to aid diagnosis of future lockups.
+  - **Impact**: Provides actionable logs to trace intermittent freezes without changing runtime behavior.
+  - **Files modified**: `main/data/manager.cc`
 - **CUPS/remote printer auto-recovery (12-04-2025)**
   - **Issue**: After idle periods, printing could hang due to lost CUPS/remote printer connections, requiring full app restart.
   - **Fix**: Added a reconnect hook to `Printer` and wired `RemotePrinter` to perform timed, non-blocking reconnection attempts when marked offline; the main loop now triggers reconnection during periodic printer health checks.

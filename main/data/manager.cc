@@ -3330,6 +3330,18 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
 {
     FnTrace("UpdateSystemCB()");
 
+    // Detect event-loop stalls to help diagnose rare freezes/lockups
+    static auto last_tick = std::chrono::steady_clock::now();
+    auto now_tick = std::chrono::steady_clock::now();
+    auto loop_gap = std::chrono::duration_cast<std::chrono::milliseconds>(now_tick - last_tick);
+    if (loop_gap > std::chrono::milliseconds(3000)) {
+        std::array<char, 256> msg{};
+        snprintf(msg.data(), msg.size(), "UpdateSystemCB lag detected: %lld ms since last tick",
+                 static_cast<long long>(loop_gap.count()));
+        ReportError(msg.data());
+    }
+    last_tick = now_tick;
+
     pid_t pid;
     int pstat;
     // First, let's clean up any children processes that may have been started
