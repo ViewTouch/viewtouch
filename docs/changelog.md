@@ -72,6 +72,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/hardware_zone.cc` - Conditionally hide page variant field for Self Order terminals
 
 ### Fixed
+- **Index Page Lookup Bug (12-XX-2025)**
+  - **Issue**: System was looking for Index page on hardcoded page 200 instead of using the proper Index page lookup mechanism
+  - **Root Cause**: `Terminal::JumpToIndex()` function contained a problematic code block that jumped to hardcoded pages 200/206 based on check entree count, preventing the proper Index page lookup from executing
+  - **Fix**: Removed the problematic code block that was jumping to hardcoded page numbers. The function now properly uses `FindByType(PAGE_INDEX, idx, size)` to find the correct Index page based on the index type parameter
+  - **Impact**: After logging on and ordering, the system now correctly finds the Index page (e.g., page 60) instead of looking for non-existent page 200. Index page navigation now works correctly for all meal periods and index types
+  - **Files modified**:
+    - `main/hardware/terminal.cc` - Removed hardcoded page jump logic from `JumpToIndex()` function
+
 - **Security and Code Quality Fixes from clang-tidy Analysis (12-02-2025)**
   - **Security Fixes**: Replaced insecure `strcat` calls with safe `vt_safe_string::safe_concat` functions
     - Fixed insecure string concatenation in `check.cc` (PaymentSummary and Description methods)
