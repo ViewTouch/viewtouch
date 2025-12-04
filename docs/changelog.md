@@ -72,6 +72,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/hardware_zone.cc` - Conditionally hide page variant field for Self Order terminals
 
 ### Fixed
+- **End-of-day comment cleanup (12-04-2025)**
+  - **Change**: Clarified `Terminal::EndDay` inline documentation to concisely describe the terminal-driven EOD loop and hand-off to `UpdateSystemCB()`.
+  - **Impact**: Removes legacy note and keeps behavior description accurate for future maintainers.
+  - **Files modified**: `main/hardware/terminal.cc`
 - **Clang-tidy correctness and safety cleanups (12-04-2025)**
   - **Issue**: Sign conversions, unchecked indices, and C++ extensions triggered clang-tidy errors in core utilities and tracing.
   - **Fixes**:

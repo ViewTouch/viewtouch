@@ -6277,20 +6277,9 @@ Settings *Terminal::GetSettings()
     return &(system_data->settings);
 }
 
-/****
- * EndDay: Originally, EndDay() was purely a System method.  But now
- * we have the potential for loops where we need to ClearSAF() and
- * Settle() for each terminal before finally running all of the EndDay
- * stuff.  Plus, we should probably be updating the EndDay dialog
- * periodically to let the user know the system hasn't stalled.  So,
- * to begin an EndDay, set system_data->term to the terminal that
- * should do the processing, then set that term's eod_processing
- * member to EOD_BEGIN.  manager.cc's UpdateSystemCB() will handle it
- * from there.
- *
- * This method returns 1 if we're still processing End of Day, 0 if
- * we're done.
- ****/
+/* EndDay: terminal-driven loop to clear SAF, settle cards, then run System::EndDay.
+ * Set the controlling terminal's eod_processing to EOD_BEGIN and UpdateSystemCB()
+ * will drive the loop until this returns 0 when finished. */
 int Terminal::EndDay()
 {
     FnTrace("Terminal::EndDay()");
