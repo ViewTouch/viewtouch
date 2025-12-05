@@ -53,6 +53,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/settings_zone.cc` - Removed timer toggle UI field and LoadRecord/SaveRecord code
 
 ### Changed
+- **Scalable Fonts Only + Toolbar Font Update (12-05-2025)**
+  - **Change**: Removed all bitmap/core font fallbacks in font loading; Xft scalable fonts are now required. Updated the Edit Toolbar to use DejaVu Serif 24 Bold.
+  - **Impact**: Consistent anti-aliased rendering across the UI; toolbar buttons render with larger, bold scalable text. Systems must have DejaVu Serif (or compatible) installed.
+  - **Files modified**:
+    - `term/term_view.cc`
+    - `main/hardware/terminal.cc`
 - **Edit Toolbar Size Enhancement (12-03-2025)**
   - **UI Enhancement**: Made edit toolbar and buttons wider for better usability
   - **Implementation**:

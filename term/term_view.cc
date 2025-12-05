@@ -2504,84 +2504,36 @@ int NewItemMenu(int id, int x, int y, int w, int h,
 XFontStruct *GetFont(Display *display, const char* displayname, const char* fontname)
 {
     FnTrace("GetFont()");
-    XFontStruct *retfont = NULL;
-    char str[STRLONG];
-    
-    // First try to load as scalable font using Xft
-    XftFont *xftfont = XftFontOpenName(Dis, ScrNo, fontname);
-    if (xftfont != NULL)
+    // Bitmap/core fonts have been deprecated. We rely solely on Xft scalable
+    // fonts and let callers use the XftFontsArr entries for rendering/metrics.
+    // This function is kept for API compatibility but no longer loads X11
+    // bitmap fonts.
+    XftFont *xftfont = XftFontOpenName(display, ScrNo, fontname);
+    if (xftfont == nullptr)
     {
-        // For now, we'll still need to return an XFontStruct for compatibility
-        // We'll store the XftFont separately and use it for rendering
-        retfont = XLoadQueryFont(Dis, "fixed"); // fallback font
-        if (retfont == NULL)
+        // Try a single scalable fallback; do not fall back to core/bitmap fonts.
+        xftfont = XftFontOpenName(display, ScrNo, "DejaVu Serif:size=24:style=Book:dpi=96");
+        if (xftfont == nullptr)
         {
-            // If even the fallback fails, try to get any available font
-            retfont = XLoadQueryFont(Dis, "*");
+            std::string err = "Unable to load scalable font '" + std::string(fontname) +
+                              "' on display '" + std::string(displayname) + "'";
+            ReportError(err);
         }
     }
-    else
-    {
-        // Try traditional X11 font loading
-        retfont = XLoadQueryFont(Dis, fontname);
-        if (retfont == NULL)
-        {
-            snprintf(str, STRLENGTH, "Can't load font '%s' on display '%s'",
-                     fontname, displayname);
-            ReportError(str);
-            retfont = GetAlternateFont(Dis, displayname, fontname);
-        }
-    }
-
-    return retfont;
+    // Legacy callers expect an XFontStruct*, but rendering now uses Xft only.
+    // Return nullptr to make it explicit that core fonts are no longer used.
+    return nullptr;
 }
 
 XFontStruct *GetAlternateFont(Display *display, const char* displayname, const char* fontname)
 {
     FnTrace("GetAlternateFont()");
-    XFontStruct *retfont = NULL;
-    FontNameClass font;
-    char str[STRLENGTH];
-
-    ReportError("  Looking for alternative font...");
-    font.Parse(fontname);
-
-    // see if we have the same font in a different foundry
-    font.ClearFoundry();
-    retfont = XLoadQueryFont(Dis, font.ToString());
-    if (retfont != NULL)
-        goto done;
-
-    // try switching families
-    if (strcmp(font.Family(), "courier") == 0)
-        font.SetFamily("fixed");
-    XLoadQueryFont(Dis, font.ToString());
-    if (retfont != NULL)
-        goto done;
-
-    font.ClearCharSet();
-    retfont = XLoadQueryFont(Dis, font.ToString());
-    if (retfont != NULL)
-        goto done;
-
-    font.ClearWeight();
-    retfont = XLoadQueryFont(Dis, font.ToString());
-    if (retfont != NULL)
-        goto done;
-
-    font.ClearPixels();
-    retfont = XLoadQueryFont(Dis, font.ToString());
-    
-done:
-    if (retfont == NULL)
-        ReportError("  Unable to find alternative!!");
-    else
-    {
-        snprintf(str, STRLENGTH, "  Got one:  %s", font.ToString());
-        ReportError(str);
-    }
-
-    return retfont;
+    // Legacy placeholder: bitmap/core font fallback is removed.
+    (void)display;
+    (void)displayname;
+    (void)fontname;
+    ReportError("Alternate bitmap fonts are disabled; ensure scalable fonts are installed.");
+    return nullptr;
 }
 
 int ShowCursor(int type)
@@ -3825,11 +3777,6 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     {
         int f = fontData.id;
 
-        
-        FontInfo[f] = GetFont(Dis, display, fontData.font);
-        if (FontInfo[f] == nullptr)
-            throw FontException("Failed to load font: " + std::string(fontData.font));
-        
         // Load Xft font with fixed DPI (96) for consistency across displays
         // Append :dpi=96 to font specification if not already present
         const char* xft_font_name = fontData.font;
