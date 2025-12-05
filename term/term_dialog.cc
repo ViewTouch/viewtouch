@@ -366,13 +366,18 @@ int DialogMenu::Show(int flag)
 
 int DialogMenu::Set(int value)
 {
-    if (no_change_widget && (value == no_change_value))
+    if (no_change_widget && (value == no_change_value)) {
         XtVaSetValues(option, XmNmenuHistory, no_change_widget, NULL);
-    else
-    {
-        int idx = CompareList(value, value_list.data(), -1);
-        if (idx >= 0 && idx < static_cast<int>(choices.size()))
-            XtVaSetValues(option, XmNmenuHistory, choices[static_cast<size_t>(idx)], NULL);
+        return 0;
+    }
+
+    // value_list is sized exactly to the number of choices (no sentinel),
+    // so walk it directly to avoid overrunning the buffer.
+    for (size_t i = 0; i < value_list.size(); ++i) {
+        if (value == value_list[i] && i < choices.size()) {
+            XtVaSetValues(option, XmNmenuHistory, choices[i], NULL);
+            break;
+        }
     }
     return 0;
 }

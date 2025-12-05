@@ -72,6 +72,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/hardware_zone.cc` - Conditionally hide page variant field for Self Order terminals
 
 ### Fixed
+- **Dialog menu buffer overflow and shutdown stability (12-05-2025)**
+  - **Issue**: Dialog menus used `CompareList(int)` with a non-sentinel list, overrunning the value buffer and crashing in `DialogMenu::Set`. Shutdown could segfault removing Xt timeouts after the app context was destroyed. Item name array used `calloc` but was freed with `delete[]`, triggering allocator mismatches under ASan.
+  - **Fix**: Bounded iteration over dialog value lists, guarded `XtRemoveTimeOut` when the Xt context is gone, and aligned ItemDB name array allocation/deallocation to `new[]`/`delete[]`.
+  - **Files modified**:
+    - `term/term_dialog.cc`
+    - `term/term_view.cc`
+    - `main/business/sales.cc`
 - **Event loop stall logging (12-04-2025)**
   - **Issue**: ViewTouch could freeze/lock up after long runtimes with no clear trace.
   - **Fix**: Added watchdog logging in `UpdateSystemCB` to report when the main loop stalls (>3s gap) to aid diagnosis of future lockups.

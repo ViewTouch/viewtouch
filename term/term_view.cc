@@ -3723,9 +3723,15 @@ int StopUpdates()
 {
     FnTrace("StopUpdates()");
 
-    if (UpdateTimerID)
+    // XtRemoveTimeOut can crash if the application context has already been
+    // destroyed. Guard against null context and wrap removal in a try block.
+    if (UpdateTimerID && App)
     {
-        XtRemoveTimeOut(UpdateTimerID);
+        try {
+            XtRemoveTimeOut(UpdateTimerID);
+        } catch (...) {
+            fprintf(stderr, "StopUpdates: Exception during XtRemoveTimeOut, continuing\n");
+        }
         UpdateTimerID = 0;
     }
     return 0;

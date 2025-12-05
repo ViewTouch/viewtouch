@@ -700,14 +700,14 @@ int ItemDB::BuildNameArray()
     FnTrace("ItemDB::BuildNameArray()");
     if (name_array != NULL)
     {
-	free(name_array);
+        delete [] name_array;
         name_array = NULL;
         array_size = 0;
     }
 
     // Build search array
     array_size = ItemCount();
-    name_array = (SalesItem **)calloc(sizeof(SalesItem *), (array_size + 1));
+    name_array = new(std::nothrow) SalesItem*[array_size + 1](); // zero-initialized
     if (name_array == NULL)
     {
         array_size = 0;
