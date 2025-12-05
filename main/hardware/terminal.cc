@@ -3129,73 +3129,73 @@ int Terminal::EditTerm(int save_data, int edit_mode)
     WInt16(WB_NEWZONE);
     WInt16(0); WInt16(0); WInt16(90); WInt16(60);
     WStr("New\\Button");
-    WInt8(FONT_TIMES_18); WInt8(COLOR_DK_BLUE); WInt8(COLOR_LT_BLUE);
+    WInt8(FONT_TIMES_24B); WInt8(COLOR_DK_BLUE); WInt8(COLOR_LT_BLUE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_NEWPAGE);
     WInt16(90); WInt16(0); WInt16(90); WInt16(60);
     WStr("New\\Page");
-    WInt8(FONT_TIMES_18); WInt8(COLOR_DK_GREEN); WInt8(COLOR_GREEN);
+    WInt8(FONT_TIMES_24B); WInt8(COLOR_DK_GREEN); WInt8(COLOR_GREEN);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_ALL);
     WInt16(0); WInt16(60); WInt16(90); WInt16(60);
     WStr("Select\\All");
-    WInt8(FONT_TIMES_14); WInt8(COLOR_DK_TEAL); WInt8(COLOR_TEAL);
+    WInt8(FONT_TIMES_24B); WInt8(COLOR_DK_TEAL); WInt8(COLOR_TEAL);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_TOGGLE);
     WInt16(90); WInt16(60); WInt16(90); WInt16(60);
     WStr("Toggle\\Selected");
-    WInt8(FONT_TIMES_14); WInt8(COLOR_DK_MAGENTA); WInt8(COLOR_MAGENTA);
+    WInt8(FONT_TIMES_24B); WInt8(COLOR_DK_MAGENTA); WInt8(COLOR_MAGENTA);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_COPY);
     WInt16(0); WInt16(120); WInt16(90); WInt16(60);
     WStr("Copy\\Selected");
-    WInt8(FONT_TIMES_14); WInt8(COLOR_DK_GREEN); WInt8(COLOR_GREEN);
+    WInt8(FONT_TIMES_24B); WInt8(COLOR_DK_GREEN); WInt8(COLOR_GREEN);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_MOVE);
     WInt16(90); WInt16(120); WInt16(90); WInt16(60);
     WStr("Move\\Selected");
-    WInt8(FONT_TIMES_14); WInt8(COLOR_DK_BLUE); WInt8(COLOR_LT_BLUE);
+    WInt8(FONT_TIMES_24B); WInt8(COLOR_DK_BLUE); WInt8(COLOR_LT_BLUE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_DELETE);
     WInt16(0); WInt16(180); WInt16(90); WInt16(60);
     WStr("Delete\\Button");
-    WInt8(FONT_TIMES_14); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
+    WInt8(FONT_TIMES_24B); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_GLOBAL);
     WInt16(90); WInt16(180); WInt16(90); WInt16(60);
     WStr("Global\\Page\\Defaults");
-    WInt8(FONT_TIMES_14); WInt8(COLOR_DK_MAGENTA); WInt8(COLOR_MAGENTA);
+    WInt8(FONT_TIMES_24B); WInt8(COLOR_DK_MAGENTA); WInt8(COLOR_MAGENTA);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_INFO);
     WInt16(0); WInt16(240); WInt16(90); WInt16(60);
     WStr("Show\\Button\\Info");
-    WInt8(FONT_TIMES_14); WInt8(COLOR_GRAY); WInt8(COLOR_WHITE);
+    WInt8(FONT_TIMES_24B); WInt8(COLOR_GRAY); WInt8(COLOR_WHITE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_LIST);
     WInt16(90); WInt16(240); WInt16(90); WInt16(60);
     WStr("Show\\Page\\List");
-    WInt8(FONT_TIMES_14); WInt8(COLOR_BROWN); WInt8(COLOR_ORANGE);
+    WInt8(FONT_TIMES_24B); WInt8(COLOR_BROWN); WInt8(COLOR_ORANGE);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_PRIOR);
     WInt16(0); WInt16(300); WInt16(90); WInt16(60);
     WStr("Prior\\Page");
-    WInt8(FONT_TIMES_18); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
+    WInt8(FONT_TIMES_24B); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
 
     WInt8(TERM_PUSHBUTTON);
     WInt16(WB_NEXT);
     WInt16(90); WInt16(300); WInt16(90); WInt16(60);
     WStr("Next\\Page");
-    WInt8(FONT_TIMES_18); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
+    WInt8(FONT_TIMES_24B); WInt8(COLOR_DK_RED); WInt8(COLOR_RED);
 
     // Show Edit Tool Bar
     WInt8(TERM_SHOWWINDOW);
