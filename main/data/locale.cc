@@ -486,6 +486,7 @@ int POFile::Add(const char* newkey, const char* newvalue)
             entry_tail->next = entry;
             entry_tail = entry;
         }
+        retval = 1; // signal success to callers
     }
 
     return retval;
