@@ -85,6 +85,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/hardware_zone.cc` - Conditionally hide page variant field for Self Order terminals
 
 ### Fixed
+- **SMTP child reaping and safer string handling (12-09-2025)**
+  - Ensured SMTP helper processes are waited on to prevent zombie accumulation and pulled in the proper waitpid header.
+  - Bounded `Terminal::ReplaceSymbols` output to the stack buffer size while preserving null termination to avoid overruns when expanding placeholders.
+  - `POFile::Add` now returns a success flag after inserting entries so callers can detect successful additions.
+  - **Files modified**:
+    - `src/network/socket.cc`
+    - `main/hardware/terminal.cc`
+    - `main/data/locale.cc`
 - **Safety and correctness fixes (12-09-2025)**
   - Hardened page reference rendering to prevent buffer overruns when many references are listed.
   - Restored accurate metric/imperial conversions for inventory units (grams/ml ↔ ounces) so changing units preserves amounts.

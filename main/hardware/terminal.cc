@@ -3312,12 +3312,14 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
 	if (edit || str == nullptr)
 		return (genericChar*)str;		//TODO: what to do in edit mode?  This is impossible to do correctly.  Can cause a stack overlflow
 
+	const size_t buffer_capacity = sizeof(buffer) / sizeof(genericChar);
 	genericChar* rawBuffer = buffer;
+	genericChar* bufferEnd = buffer + buffer_capacity - 1; // reserve space for null
 	if (str)
 	{
 		genericChar tmp[STRLENGTH];
         const genericChar* thisStr = str;
-		while (*thisStr)
+		while (*thisStr && rawBuffer < bufferEnd)
 		{
 			if (*thisStr != '{')
             {
@@ -3329,7 +3331,7 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
 				genericChar* t = tmp;
 
 				// fill tmp with chars from str until '}'
-				while (*thisStr && *thisStr != '}')
+				while (*thisStr && *thisStr != '}' && t < tmp + STRLENGTH - 1)
 					*t++ = *thisStr++;
 
 				// terminate the genericChar array
@@ -3384,7 +3386,7 @@ const genericChar* Terminal::ReplaceSymbols(const genericChar* str)
 
 				t = tmp;
 
-				while (*t)
+				while (*t && rawBuffer < bufferEnd)
 					*rawBuffer++ = *t++;
 
 				if (*thisStr)

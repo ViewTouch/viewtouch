@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <csignal>
 #include <netdb.h>
+#include <sys/wait.h>
 #include <utility>
 
 #ifdef DMALLOC
@@ -725,6 +726,14 @@ int SMTP(int fd, Email *email)
             exit(1);
         }
         exit(0);
+    }
+    else if (pid > 0)
+    {
+        int status = 0;
+        // Ensure the child is reaped to avoid zombies; retry if interrupted.
+        while (waitpid(pid, &status, 0) == -1 && errno == EINTR)
+        {
+        }
     }
 
     return retval;
