@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <csignal>
 #include <netdb.h>
+#include <utility>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -49,6 +50,30 @@ int select_timeout = 1;   // in milliseconds
  ****/
 Email::~Email()
 {
+}
+
+Email::Email(Email&& other) noexcept
+    : from(std::move(other.from)),
+      subject(std::move(other.subject)),
+      tos(std::move(other.tos)),
+      body(std::move(other.body)),
+      current_to(nullptr),
+      current_body(nullptr)
+{
+}
+
+Email& Email::operator=(Email&& other) noexcept
+{
+    if (this != &other)
+    {
+        from         = std::move(other.from);
+        subject      = std::move(other.subject);
+        tos          = std::move(other.tos);
+        body         = std::move(other.body);
+        current_to   = nullptr;
+        current_body = nullptr;
+    }
+    return *this;
 }
 
 /****
@@ -107,15 +132,10 @@ int Email::NextTo(char* buffer, int maxlen)
         return 1; // invalid parameters
     }
     
-    static Line *currLine = nullptr;
-
-    if (currLine == nullptr)
-        currLine = tos.Head();
-    else
-        currLine = currLine->next;
-    if (currLine != nullptr && currLine->Length() > 0)
+    current_to = (current_to == nullptr) ? tos.Head() : current_to->next;
+    if (current_to != nullptr && current_to->Length() > 0)
     {
-        const auto* value = currLine->Value();
+        const auto* value = current_to->Value();
         if (value) {
             strncpy(buffer, value, maxlen - 1);
             buffer[maxlen - 1] = '\0'; // ensure null termination
@@ -125,6 +145,7 @@ int Email::NextTo(char* buffer, int maxlen)
         return 0;
     }
 
+    current_to = nullptr; // reset so a new iteration starts from the head
     return 1;
 }
 
@@ -183,15 +204,10 @@ int Email::NextBody(char* buffer, int maxlen)
         return 1; // invalid parameters
     }
     
-    static Line *currBody = nullptr;
-
-    if (currBody == nullptr)
-        currBody = body.Head();
-    else
-        currBody = currBody->next;
-    if (currBody != nullptr && currBody->Length() > 0)
+    current_body = (current_body == nullptr) ? body.Head() : current_body->next;
+    if (current_body != nullptr && current_body->Length() > 0)
     {
-        const auto* value = currBody->Value();
+        const auto* value = current_body->Value();
         if (value) {
             strncpy(buffer, value, maxlen - 1);
             buffer[maxlen - 1] = '\0'; // ensure null termination
@@ -201,6 +217,7 @@ int Email::NextBody(char* buffer, int maxlen)
         return 0;
     }
 
+    current_body = nullptr; // reset so a new iteration starts from the head
     return 1;
 }
 

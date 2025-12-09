@@ -150,27 +150,36 @@ int UnitAmount::Convert(int new_type)
     type   = new_type;
     amount = 0.0;
 
+    constexpr double GRAMS_PER_OUNCE     = 28.349523125;
+    constexpr double ML_PER_FLUID_OUNCE  = 29.5735295625;
+
     if (metric)
     {
         if (type == VOLUME_DRAM || type == VOLUME_TSP || type == VOLUME_TBS ||
             type == VOLUME_OUNCE || type == VOLUME_CUP || type == VOLUME_PINT ||
             type == VOLUME_QUART || type == VOLUME_GALLON)
-            ; // FIX - do mililiter to fluid ounce conversion
+        {
+            // Convert milliliters to fluid ounces before mapping to target units
+            volume /= ML_PER_FLUID_OUNCE;
+        }
         else if (type == WEIGHT_DASH || type == WEIGHT_OUNCE ||
                  type == WEIGHT_POUND)
         {
-            // FIX - do gram to ounce conversion
+            // Convert grams to ounces before mapping to target units
+            weight /= GRAMS_PER_OUNCE;
         }
     }
     else
     {
         if (type == WEIGHT_G || type == WEIGHT_KG)
         {
-            // FIX - do ounce to gram conversion
+            // Convert ounces to grams before mapping to target units
+            weight *= GRAMS_PER_OUNCE;
         }
         else if (type == VOLUME_ML || type == VOLUME_L)
         {
-            // FIX - do fluid ounce to mililiter conversion
+            // Convert fluid ounces to milliliters before mapping to target units
+            volume *= ML_PER_FLUID_OUNCE;
         }
     }
 

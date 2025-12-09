@@ -59,6 +59,8 @@ private:
     Str subject;
     DList<Line> tos;
     DList<Line> body;
+    Line* current_to{nullptr};
+    Line* current_body{nullptr};
     
 public:
     Email() = default;
@@ -69,8 +71,8 @@ public:
     Email& operator=(const Email&) = delete;
     
     // Move operations
-    Email(Email&&) noexcept = default;
-    Email& operator=(Email&&) noexcept = default;
+    Email(Email&&) noexcept;
+    Email& operator=(Email&&) noexcept;
     
     void AddFrom(const char* address) noexcept;
     [[nodiscard]] int From(char* buffer, int maxlen) const noexcept;
