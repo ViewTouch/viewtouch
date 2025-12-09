@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Changed
+- **Build size and startup optimizations (12-09-2025)**
+  - Default CMake build type now `RelWithDebInfo` to favor optimized binaries by default.
+  - Added opt-in IPO/LTO and section GC flags to shrink binaries and speed load/link time; controllable via `-DVT_ENABLE_LTO` and `-DVT_GC_SECTIONS`.
+  - Files modified:
+    - `CMakeLists.txt`
+
 ### Removed
 - **Page Variant System Removal (12-03-2025)**
   - **Removal**: Completely removed page variant functionality from the system
@@ -78,6 +85,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/hardware_zone.cc` - Conditionally hide page variant field for Self Order terminals
 
 ### Fixed
+- **Safety and correctness fixes (12-09-2025)**
+  - Hardened page reference rendering to prevent buffer overruns when many references are listed.
+  - Restored accurate metric/imperial conversions for inventory units (grams/ml ↔ ounces) so changing units preserves amounts.
+  - Made email iteration state per-instance (no shared statics), preventing cross-email corruption and allowing clean restarts.
+  - **Files modified**:
+    - `main/hardware/terminal.cc`
+    - `main/business/inventory.cc`
+    - `src/network/socket.hh`
+    - `src/network/socket.cc`
 - **Dialog menu buffer overflow and shutdown stability (12-05-2025)**
   - **Issue**: Dialog menus used `CompareList(int)` with a non-sentinel list, overrunning the value buffer and crashing in `DialogMenu::Set`. Shutdown could segfault removing Xt timeouts after the app context was destroyed. Item name array used `calloc` but was freed with `delete[]`, triggering allocator mismatches under ASan.
   - **Fix**: Bounded iteration over dialog value lists, guarded `XtRemoveTimeOut` when the Xt context is gone, and aligned ItemDB name array allocation/deallocation to `new[]`/`delete[]`.

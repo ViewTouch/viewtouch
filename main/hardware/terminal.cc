@@ -68,6 +68,7 @@
 #include <string>
 #include <map>
 #include <array>
+#include <algorithm>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -3891,8 +3892,8 @@ int Terminal::RenderBlankPage()
                 }
                 if (ref > 6)
                 {
-                    strcpy(ref_list + ref_pos, "...");
-                    ref_pos += 3;
+                    vt_safe_string::safe_copy(ref_list + ref_pos, STRLENGTH - ref_pos, "...");
+                    ref_pos += std::min<int>(3, STRLENGTH - ref_pos - 1);
                 }
                 ref_list[ref_pos] = '\0';
             }
