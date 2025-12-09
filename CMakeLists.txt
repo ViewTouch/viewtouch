@@ -3,6 +3,38 @@ cmake_minimum_required(VERSION 3.10)
 project(ViewTouch)
 message(STATUS "CMake version ${CMAKE_VERSION}")
 
+# Default to an optimized build unless the user explicitly asks otherwise.
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+        "Choose the type of build." FORCE)
+    message(STATUS "Defaulting CMAKE_BUILD_TYPE to ${CMAKE_BUILD_TYPE}")
+endif()
+
+# Allow enabling LTO/IPO to shrink binaries and speed up load/link time.
+option(VT_ENABLE_LTO "Enable interprocedural optimization for optimized builds" ON)
+if(VT_ENABLE_LTO)
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT _vt_ipo_supported OUTPUT _vt_ipo_msg)
+    if(_vt_ipo_supported)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
+        message(STATUS "IPO/LTO enabled for Release/RelWithDebInfo")
+    else()
+        message(STATUS "IPO/LTO not supported by this toolchain: ${_vt_ipo_msg}")
+    endif()
+endif()
+
+# Trim unused code/data where possible to shrink binaries.
+option(VT_GC_SECTIONS "Enable section-level GC for optimized builds" ON)
+if(VT_GC_SECTIONS)
+    set(_vt_section_flags "-ffunction-sections -fdata-sections")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${_vt_section_flags}")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${_vt_section_flags}")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Wl,--gc-sections")
+    set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO} -Wl,--gc-sections")
+    message(STATUS "Section GC enabled for Release/RelWithDebInfo")
+endif()
+
 
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)

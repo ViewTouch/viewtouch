@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Changed
+- **Build size and startup optimizations (12-09-2025)**
+  - Default CMake build type now `RelWithDebInfo` to favor optimized binaries by default.
+  - Added opt-in IPO/LTO and section GC flags to shrink binaries and speed load/link time; controllable via `-DVT_ENABLE_LTO` and `-DVT_GC_SECTIONS`.
+  - Files modified:
+    - `CMakeLists.txt`
+
 ### Removed
 - **Page Variant System Removal (12-03-2025)**
   - **Removal**: Completely removed page variant functionality from the system
