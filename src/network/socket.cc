@@ -263,11 +263,7 @@ const char* Sock_ntop(const struct sockaddr_in *sa, socklen_t /*addrlen*/)
     if (ntohs(sa->sin_port) != 0)
     {
         snprintf(portstr, sizeof(portstr), ":%d", ntohs(sa->sin_port));
-        const auto str_len = strlen(str);
-        const auto port_len = strlen(portstr);
-        if (str_len + port_len < sizeof(str)) {
-            strcat(str, portstr);
-        }
+        vt_safe_string::safe_concat(str, sizeof(str), portstr);
     }
 
     return str;
@@ -713,9 +709,9 @@ int SMTP(int fd, Email *email)
         {
             outgoing[0] = '\0';
             if (buffer[0] == '.')
-                strcat(outgoing, ".");
-            strcat(outgoing, buffer);
-            strcat(outgoing, "\r\n");
+                vt_safe_string::safe_concat(outgoing, STRLONG, ".");
+            vt_safe_string::safe_concat(outgoing, STRLONG, buffer);
+            vt_safe_string::safe_concat(outgoing, STRLONG, "\r\n");
             write(fd, outgoing, strlen(outgoing));
         }
         write(fd, ".\r\n", 2);

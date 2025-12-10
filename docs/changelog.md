@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Bounded string concatenation cleanup (12-09-2025)**
+  - Replaced remaining `strcat`/manual appends with bounded `vt_safe_string::safe_concat` in socket address/SMTP assembly, terminal display suffix handling, credit report formatting, and locale date/time separators to prevent buffer overruns.
+  - **Files modified**:
+    - `src/network/socket.cc`
+    - `term/term_main.cc`
+    - `term/term_credit_mcve.cc`
+    - `main/data/locale.cc`
 - **Socket string safety and reliable writes (12-09-2025)**
   - Bounded all socket string reads with caller-provided buffer sizes to prevent overflows in terminal/server/printer links and truncate safely on oversized frames.
   - Propagated truncation errors from `GetString` to callers so terminal and printer string reads fail fast instead of returning partial data.

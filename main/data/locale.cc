@@ -866,7 +866,7 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
             vt_safe_string::safe_format(str, 256, "%s", Translate(DayName[wd], lang));
 
         if (!(format & TD_NO_TIME) || !(format & TD_NO_DATE))
-            strcat(str, ", ");
+            vt_safe_string::safe_concat(str, 256, ", ");
     }
 
     if (!(format & TD_NO_DATE))
@@ -925,7 +925,7 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
         }
 
         if (! (format & TD_NO_TIME))
-            strcat(str, " - ");
+            vt_safe_string::safe_concat(str, 256, " - ");
     }
 
     if (! (format & TD_NO_TIME))

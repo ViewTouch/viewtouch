@@ -157,6 +157,7 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     number = no;
     socket_no = -1;
     input_id = -1;
+    device_no = 0;
     failure = 0;
 
     // Setup Connection
@@ -362,7 +363,7 @@ int RemotePrinter::Reconnect()
     close(dev);
     
     // Re-register the input callback
-    if (input_id)
+    if (input_id >= 0)
         RemoveInputFn(input_id);
     input_id = AddInputFn((InputFn) PrinterCB, socket_no, this);
     
