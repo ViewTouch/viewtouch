@@ -3442,6 +3442,8 @@ OrderCommentDialog::OrderCommentDialog(const char* msg, const char* retmsg, int 
     : GetTextDialog(msg, retmsg, mlen)
 {
     FnTrace("OrderCommentDialog::OrderCommentDialog(const char* )");
+    // Make dialog almost full screen width for 1920x1080 displays
+    w = 1800;  // Increased from 950 to fit almost all screen width
     // Increase dialog height to accommodate larger keyboard buttons
     h = 850;  // Increased from 780 to make room for bigger buttons
     // Increase button height for larger keyboard
