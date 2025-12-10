@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Socket string safety and reliable writes (12-09-2025)**
+  - Bounded all socket string reads with caller-provided buffer sizes to prevent overflows in terminal/server/printer links and truncate safely on oversized frames.
+  - Hardened socket writes to retry partial writes (EINTR/EAGAIN) and fail cleanly on EPIPE, ensuring full headers/payloads are sent or the error is surfaced.
+  - Zero-initialized item-name buffers during zone load and forced null termination to avoid stale data corrupting menu lookups.
+  - **Files modified**:
+    - `src/network/remote_link.cc`
+    - `src/network/remote_link.hh`
+    - `term/term_view.cc`
+    - `main/hardware/terminal.cc`
+    - `main/hardware/remote_printer.cc`
 - **Terminal socket correctness and cloning safety (12-09-2025)**
   - Treat only negative `accept()` results as errors so fd 0 connections are accepted; close the listener fd even when it is 0 to avoid descriptor leaks on minimal environments.
   - Set the clone terminal’s hostname instead of overwriting the source terminal, preserving the original peer identity when cloning.

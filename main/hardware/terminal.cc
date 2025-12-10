@@ -4708,7 +4708,7 @@ genericChar* Terminal::RStr(genericChar* s)
     if (s == nullptr)
         s = buffer;
 
-    if (buffer_in->GetString(s))
+    if (buffer_in->GetString(s, sizeof(buffer)))
     {
         s[0] = '\0';
         s = nullptr;
@@ -5747,13 +5747,12 @@ int Terminal::ReadZone()
     if (newZone->ItemName())
     {
         Str tempstr;  // try to prevent buffer overflows
-        genericChar str[STRLENGTH];
+        genericChar str[STRLENGTH] = {};
         std::string iname;
         std::string n;
         tempstr.Set(RStr());  // get item name and copy it into str
         strncpy(str, tempstr.Value(), STRLENGTH - 1);
-        if (tempstr.size() >= STRLENGTH)  // make sure we don't get buffer overflow
-            str[STRLENGTH - 1] = '\0';
+        str[STRLENGTH - 1] = '\0';  // always enforce termination
         if (strlen(str) > 0)
         {
             n = FilterName(str);

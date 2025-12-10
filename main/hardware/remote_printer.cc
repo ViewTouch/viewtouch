@@ -249,7 +249,7 @@ const char* RemotePrinter::RStr(char* s)
     static std::array<char, 1024> buffer{};
     if (s == NULL)
         s = buffer.data();
-    buffer_in->GetString(s);
+    buffer_in->GetString(s, buffer.size());
     return s;
 }
 

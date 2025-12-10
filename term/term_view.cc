@@ -881,7 +881,7 @@ genericChar* RStr(genericChar* s)
     static genericChar buffer[1024] = "";
     if (s == NULL)
         s = buffer;
-    BufferIn.GetString(s);
+    BufferIn.GetString(s, sizeof(buffer));
     return s;
 }
 
