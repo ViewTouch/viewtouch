@@ -383,6 +383,21 @@ int CharQueue::Read(int device_no)
             return -1;
         }
 
+        // Prevent indefinite blocking on payload reads
+        FD_ZERO(&read_fds);
+        FD_SET(device_no, &read_fds);
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 0;
+
+        int select_result = select(device_no + 1, &read_fds, NULL, NULL, &timeout);
+        if (select_result == -1 && errno == EINTR)
+            continue;
+        if (select_result <= 0)
+        {
+            fprintf(stderr, "CharQueue::Read() - Payload read timed out\n");
+            return -1;
+        }
+
         val = read(device_no, buffer.data() + end, read_size);
         if (val > 0)
         {
@@ -399,7 +414,7 @@ int CharQueue::Read(int device_no)
             // Connection closed
             return -1;
         }
-        else
+        else if (errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK)
         {
             // Error reading
             return -1;

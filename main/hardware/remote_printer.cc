@@ -27,6 +27,7 @@
 #include "manager.hh"
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <sys/file.h>
 #include <sys/select.h>
 #include <fcntl.h>
@@ -162,11 +163,11 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     buffer_in = std::make_unique<CharQueue>(1024);
     buffer_out = std::make_unique<CharQueue>(1024);
     std::array<char, 256> str{}, tmp{};
-    struct sockaddr name;
+    struct sockaddr_un addr{};
     snprintf(str.data(), str.size(), "/tmp/vt_print%d", no);
-    name.sa_family = AF_UNIX;
-    strncpy(name.sa_data, str.data(), sizeof(name.sa_data) - 1);
-    name.sa_data[sizeof(name.sa_data) - 1] = '\0';
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, str.data(), sizeof(addr.sun_path) - 1);
+    addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
     DeleteFile(str.data());
 
     int dev = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -176,7 +177,7 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
         ReportError(tmp.data());
         return;
     }
-    if (bind(dev, &name, sizeof(name)) == -1)
+    if (bind(dev, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) == -1)
     {
         close(dev);
         snprintf(tmp.data(), tmp.size(), "Failed to bind socket '%s'", str.data());
@@ -198,8 +199,9 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     }
     listen(dev, 1);
 
-    Uint len = sizeof(struct sockaddr);
-    socket_no = accept(dev, (struct sockaddr *) str.data(), &len);
+    sockaddr_un peer{};
+    socklen_t len = sizeof(peer);
+    socket_no = accept(dev, reinterpret_cast<struct sockaddr*>(&peer), &len);
     if (socket_no <= 0)
     {
         snprintf(tmp.data(), tmp.size(), "Failed to get connection with printer %d", no);
@@ -249,7 +251,11 @@ const char* RemotePrinter::RStr(char* s)
     static std::array<char, 1024> buffer{};
     if (s == NULL)
         s = buffer.data();
-    buffer_in->GetString(s, buffer.size());
+    if (buffer_in->GetString(s, buffer.size()))
+    {
+        s[0] = '\0';
+        return nullptr;
+    }
     return s;
 }
 
@@ -264,7 +270,12 @@ int RemotePrinter::SendNow()
 {
     if (buffer_out->size <= 0)
         return 1;
-    buffer_out->Write(socket_no);
+    const int written = buffer_out->Write(socket_no, 0);
+    if (written < 0)
+    {
+        ++failure;  // track consecutive failures to trigger reconnection
+        return -1;
+    }
     buffer_out->Clear();
     return 0;
 }

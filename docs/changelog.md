@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Fixed
 - **Socket string safety and reliable writes (12-09-2025)**
   - Bounded all socket string reads with caller-provided buffer sizes to prevent overflows in terminal/server/printer links and truncate safely on oversized frames.
+  - Propagated truncation errors from `GetString` to callers so terminal and printer string reads fail fast instead of returning partial data.
   - Hardened socket writes to retry partial writes (EINTR/EAGAIN) and fail cleanly on EPIPE, ensuring full headers/payloads are sent or the error is surfaced.
   - Zero-initialized item-name buffers during zone load and forced null termination to avoid stale data corrupting menu lookups.
   - **Files modified**:
