@@ -99,8 +99,7 @@ int Email::From(char* buffer, int maxlen) const noexcept
     
     const auto* value = from.Value();
     if (value) {
-        strncpy(buffer, value, maxlen - 1);
-        buffer[maxlen - 1] = '\0'; // ensure null termination
+        vt_safe_string::safe_copy(buffer, maxlen, value);
     } else {
         buffer[0] = '\0';
     }
@@ -138,8 +137,7 @@ int Email::NextTo(char* buffer, int maxlen)
     {
         const auto* value = current_to->Value();
         if (value) {
-            strncpy(buffer, value, maxlen - 1);
-            buffer[maxlen - 1] = '\0'; // ensure null termination
+            vt_safe_string::safe_copy(buffer, maxlen, value);
         } else {
             buffer[0] = '\0';
         }
@@ -171,8 +169,7 @@ int Email::Subject(char* buffer, int maxlen) const noexcept
     
     const auto* value = subject.Value();
     if (value) {
-        strncpy(buffer, value, maxlen - 1);
-        buffer[maxlen - 1] = '\0'; // ensure null termination
+        vt_safe_string::safe_copy(buffer, maxlen, value);
     } else {
         buffer[0] = '\0';
     }
@@ -210,8 +207,7 @@ int Email::NextBody(char* buffer, int maxlen)
     {
         const auto* value = current_body->Value();
         if (value) {
-            strncpy(buffer, value, maxlen - 1);
-            buffer[maxlen - 1] = '\0'; // ensure null termination
+            vt_safe_string::safe_copy(buffer, maxlen, value);
         } else {
             buffer[0] = '\0';
         }
@@ -636,8 +632,7 @@ int GetResponse(int fd, char* bufferstr, int maxlen)
     bytesread = read(fd, buffer, STRLONG);
     if (bytesread > 0)
     {
-        strncpy(bufferstr, buffer, maxlen - 1);
-        bufferstr[maxlen - 1] = '\0'; // ensure null termination
+        vt_safe_string::safe_copy(bufferstr, maxlen, buffer);
         buffer[3] = '\0';
         retval = atoi(buffer);
     }

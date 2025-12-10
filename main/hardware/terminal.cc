@@ -5792,8 +5792,7 @@ int Terminal::ReadZone()
         std::string iname;
         std::string n;
         tempstr.Set(RStr());  // get item name and copy it into str
-        strncpy(str, tempstr.Value(), STRLENGTH - 1);
-        str[STRLENGTH - 1] = '\0';  // always enforce termination
+        vt_safe_string::safe_copy(str, STRLENGTH, tempstr.Value());
         if (strlen(str) > 0)
         {
             n = FilterName(str);

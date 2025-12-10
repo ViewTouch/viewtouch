@@ -7,7 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
-- **Terminal data reading null safety (12-09-2025)**
+- **String operation safety improvements (12-09-2025)**
+  - Replaced unsafe `strncpy` + manual null termination patterns with `vt_safe_string::safe_copy` throughout the codebase.
+  - Fixed Email class methods (`From`, `NextTo`, `Subject`, `NextBody`) and network response parsing to prevent buffer overflows.
+  - Eliminated terminal zone loading string vulnerabilities that could corrupt memory during item name processing.
+  - **Files modified**:
+    - `main/hardware/terminal.cc`
+    - `src/network/socket.cc`
   - Added null pointer safety checks to all `Terminal` data reading functions (`RInt16`, `RInt32`, `RLLong`, `RFlt`, `RStr`) to prevent crashes when input buffer is null.
   - Functions now return safe default values (0, 0.0, or empty string) instead of dereferencing null pointers during network errors or corrupted state.
   - **Files modified**:
