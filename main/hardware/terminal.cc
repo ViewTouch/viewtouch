@@ -7316,7 +7316,7 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
 
         len = sizeof(client_adr);
         socket_no = accept(dev, (struct sockaddr *) &client_adr, &len);
-        if (socket_no <= 0)
+        if (socket_no < 0)
         {
             // Critical fix: Use snprintf instead of sprintf for buffer safety
             snprintf(str, sizeof(str), "Failed to open term on host '%s'", hostname);
@@ -7324,7 +7324,7 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
         }
     }
 
-    if (dev)
+    if (dev >= 0)
         close(dev);
     unlink(SOCKET_FILE);
 
@@ -7365,7 +7365,7 @@ int CloneTerminal(Terminal *term, const char* dest, const char* name)
         new_term->socket_no = socket_no;
         new_term->buffer_in = nullptr;
         new_term->buffer_out = nullptr;
-        term->host.Set(name);
+        new_term->host.Set(name);
         new_term->input_id = AddInputFn((InputFn) TermCB, new_term->socket_no, term);
         term->AddClone(new_term);
     }

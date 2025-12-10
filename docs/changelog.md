@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Terminal socket correctness and cloning safety (12-09-2025)**
+  - Treat only negative `accept()` results as errors so fd 0 connections are accepted; close the listener fd even when it is 0 to avoid descriptor leaks on minimal environments.
+  - Set the clone terminal’s hostname instead of overwriting the source terminal, preserving the original peer identity when cloning.
+  - **Files modified**: `main/hardware/terminal.cc`
+
 ### Changed
 - **Build size and startup optimizations (12-09-2025)**
   - Default CMake build type now `RelWithDebInfo` to favor optimized binaries by default.
