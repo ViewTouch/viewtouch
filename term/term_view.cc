@@ -884,7 +884,6 @@ genericChar* RStr(genericChar* s)
     if (BufferIn.GetString(s, sizeof(buffer)))
     {
         s[0] = '\0';
-        s = nullptr;
     }
     return s;
 }

@@ -4711,7 +4711,6 @@ genericChar* Terminal::RStr(genericChar* s)
     if (buffer_in->GetString(s, sizeof(buffer)))
     {
         s[0] = '\0';
-        s = nullptr;
     }
 
     return s;

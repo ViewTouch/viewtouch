@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Propagated truncation errors from `GetString` to callers so terminal and printer string reads fail fast instead of returning partial data.
   - Hardened socket writes to retry partial writes (EINTR/EAGAIN) and fail cleanly on EPIPE, ensuring full headers/payloads are sent or the error is surfaced.
   - Zero-initialized item-name buffers during zone load and forced null termination to avoid stale data corrupting menu lookups.
+  - Remote printer sockets now treat fd 0 as valid, use `sockaddr_un` correctly for bind/accept, and clean up descriptors reliably.
   - **Files modified**:
     - `src/network/remote_link.cc`
     - `src/network/remote_link.hh`
