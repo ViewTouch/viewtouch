@@ -7,7 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
-- **Network connection safety and printer report bounds (12-09-2025)**
+- **Terminal data reading null safety (12-09-2025)**
+  - Added null pointer safety checks to all `Terminal` data reading functions (`RInt16`, `RInt32`, `RLLong`, `RFlt`, `RStr`) to prevent crashes when input buffer is null.
+  - Functions now return safe default values (0, 0.0, or empty string) instead of dereferencing null pointers during network errors or corrupted state.
+  - **Files modified**:
+    - `main/hardware/terminal.cc`
   - Fixed socket state corruption in `Connect` where `getsockopt` failures left sockets in non-blocking mode without cleanup.
   - Added socket resource leak prevention in `Listen` by closing descriptors when fcntl operations fail.
   - Replaced unsafe `strncpy`+`strcat` combinations in printer reports with bounded `vt_safe_string::safe_copy` to prevent buffer overflows.

@@ -4564,6 +4564,15 @@ int Terminal::WInt16(int *val)
 int Terminal::RInt16(int *val)
 {
     FnTrace("Terminal::RInt16(int *)");
+
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+    {
+        if (val)
+            *val = 0;
+        return 0;
+    }
+
     int v = buffer_in->Get16();
     if (val)
         *val = v;
@@ -4588,6 +4597,15 @@ int Terminal::WInt32(int *val)
 int Terminal::RInt32(int *val)
 {
     FnTrace("Terminal::RInt32(int *)");
+
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+    {
+        if (val)
+            *val = 0;
+        return 0;
+    }
+
     int v = buffer_in->Get32();
     if (val)
         *val = v;
@@ -4643,6 +4661,14 @@ long long Terminal::RLLong(long long *val)
 {
     FnTrace("Terminal::RLLong()");
 
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+    {
+        if (val)
+            *val = 0;
+        return 0;
+    }
+
     long v = buffer_in->GetLLong();
     if (val)
         *val = v;
@@ -4667,6 +4693,15 @@ int Terminal::WFlt(Flt *val)
 Flt Terminal::RFlt(Flt *val)
 {
     FnTrace("Terminal::RFlt()");
+
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+    {
+        if (val)
+            *val = 0.0;
+        return 0.0;
+    }
+
     int v = buffer_in->Get32();
     Flt f = (Flt) v / 100.0;
     if (val)
@@ -4707,6 +4742,13 @@ genericChar* Terminal::RStr(genericChar* s)
     static genericChar buffer[1024];
     if (s == nullptr)
         s = buffer;
+
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+    {
+        s[0] = '\0';
+        return s;
+    }
 
     if (buffer_in->GetString(s, sizeof(buffer)))
     {
