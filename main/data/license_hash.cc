@@ -53,14 +53,18 @@ constexpr size_t MAXTEMPLEN = 20;
 
 int GetUnameInfo(char* buffer, int bufflen)
 {
+    // Ensure buffer is always initialized
+    if (buffer && bufflen > 0)
+        buffer[0] = '\0';
+
     struct utsname utsbuff;
 
-    if (uname(&utsbuff) == 0)
-    {
-        snprintf(buffer, bufflen, "%s %s %s %s", utsbuff.sysname, utsbuff.nodename,
-                 utsbuff.release, utsbuff.machine);
-        printf("GetUnameInfo buffer(%s)\n",(char*)buffer);
-    }
+    if (uname(&utsbuff) != 0 || buffer == nullptr || bufflen <= 0)
+        return 1;
+
+    // Format system info without leaking it to stdout in production
+    snprintf(buffer, bufflen, "%s %s %s %s", utsbuff.sysname, utsbuff.nodename,
+             utsbuff.release, utsbuff.machine);
     return 0;
 }
 
@@ -101,8 +105,10 @@ int GetInterfaceInfo(char* stringbuff, int stringlen)
         return 1;
     if ((buffer = (char*)malloc(len)) == NULL)
         return 1;
-    if (sysctl(mib, 6, buffer, &len, NULL, 0) < 0)
+    if (sysctl(mib, 6, buffer, &len, NULL, 0) < 0) {
+        free(buffer);
         return 1;
+    }
 
     stringbuff[0] = '\0';
     limit = buffer + len;
@@ -122,6 +128,7 @@ int GetInterfaceInfo(char* stringbuff, int stringlen)
         }
         next += ifmsg->ifm_msglen;
     }
+    free(buffer);
     return retval;
 }
 #endif  /* BSD */

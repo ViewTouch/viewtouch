@@ -149,7 +149,7 @@ int main(int argc, const genericChar* *argv)
         set_height = atoi(argv[6]);
 
     if (strchr(display.data(), ':') == NULL)
-        strcat(display.data(), ":0");
+        vt_safe_string::safe_concat(display.data(), display.size(), ":0");
 
     // if OpenTerm() returns there must be an error
     vt::Logger::info("Opening terminal - Display: {}, Hardware: {}", display.data(), term_hardware);

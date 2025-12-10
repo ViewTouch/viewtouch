@@ -84,7 +84,7 @@ public:
     long long GetLLong();
 
     int PutString(const std::string &str, int len);
-    int GetString(char* str);
+    int GetString(char* str, size_t max_len);
 
     int Read(int device_no);
     int Write(int device_no, int do_clear = 1);

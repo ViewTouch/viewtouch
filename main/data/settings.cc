@@ -4304,19 +4304,17 @@ int Settings::PrinterReport(Terminal *t, Report *r)
 
     while (pi)
     {
-	strncpy(buffer, pi->name.Value(), 17);
+	vt_safe_string::safe_copy(buffer, STRLENGTH, pi->name.Value());
 	if (strlen(pi->name.Value()) > 17)
 	{
-	    buffer[17] = '\0';
-	    strcat(buffer, "...");
+	    vt_safe_string::safe_copy(buffer + 17, STRLENGTH - 17, "...");
 	}
 	r->TextL(buffer);
 
-        strncpy(buffer, pi->host.Value(), 19);
+        vt_safe_string::safe_copy(buffer, STRLENGTH, pi->host.Value());
         if (strlen(pi->host.Value()) > 19)
         {
-            buffer[19] = '\0';
-            strcat(buffer, "...");
+            vt_safe_string::safe_copy(buffer + 19, STRLENGTH - 19, "...");
         }
         r->TextPosL(18, buffer);
 

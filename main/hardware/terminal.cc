@@ -4564,6 +4564,15 @@ int Terminal::WInt16(int *val)
 int Terminal::RInt16(int *val)
 {
     FnTrace("Terminal::RInt16(int *)");
+
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+    {
+        if (val)
+            *val = 0;
+        return 0;
+    }
+
     int v = buffer_in->Get16();
     if (val)
         *val = v;
@@ -4588,6 +4597,15 @@ int Terminal::WInt32(int *val)
 int Terminal::RInt32(int *val)
 {
     FnTrace("Terminal::RInt32(int *)");
+
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+    {
+        if (val)
+            *val = 0;
+        return 0;
+    }
+
     int v = buffer_in->Get32();
     if (val)
         *val = v;
@@ -4643,6 +4661,14 @@ long long Terminal::RLLong(long long *val)
 {
     FnTrace("Terminal::RLLong()");
 
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+    {
+        if (val)
+            *val = 0;
+        return 0;
+    }
+
     long v = buffer_in->GetLLong();
     if (val)
         *val = v;
@@ -4667,6 +4693,15 @@ int Terminal::WFlt(Flt *val)
 Flt Terminal::RFlt(Flt *val)
 {
     FnTrace("Terminal::RFlt()");
+
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
+    {
+        if (val)
+            *val = 0.0;
+        return 0.0;
+    }
+
     int v = buffer_in->Get32();
     Flt f = (Flt) v / 100.0;
     if (val)
@@ -4708,10 +4743,16 @@ genericChar* Terminal::RStr(genericChar* s)
     if (s == nullptr)
         s = buffer;
 
-    if (buffer_in->GetString(s))
+    // Safety check: validate buffer_in exists
+    if (buffer_in == nullptr)
     {
         s[0] = '\0';
-        s = nullptr;
+        return s;
+    }
+
+    if (buffer_in->GetString(s, sizeof(buffer)))
+    {
+        s[0] = '\0';
     }
 
     return s;
@@ -5747,13 +5788,11 @@ int Terminal::ReadZone()
     if (newZone->ItemName())
     {
         Str tempstr;  // try to prevent buffer overflows
-        genericChar str[STRLENGTH];
+        genericChar str[STRLENGTH] = {};
         std::string iname;
         std::string n;
         tempstr.Set(RStr());  // get item name and copy it into str
-        strncpy(str, tempstr.Value(), STRLENGTH - 1);
-        if (tempstr.size() >= STRLENGTH)  // make sure we don't get buffer overflow
-            str[STRLENGTH - 1] = '\0';
+        vt_safe_string::safe_copy(str, STRLENGTH, tempstr.Value());
         if (strlen(str) > 0)
         {
             n = FilterName(str);
@@ -7316,7 +7355,7 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
 
         len = sizeof(client_adr);
         socket_no = accept(dev, (struct sockaddr *) &client_adr, &len);
-        if (socket_no <= 0)
+        if (socket_no < 0)
         {
             // Critical fix: Use snprintf instead of sprintf for buffer safety
             snprintf(str, sizeof(str), "Failed to open term on host '%s'", hostname);
@@ -7324,7 +7363,7 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
         }
     }
 
-    if (dev)
+    if (dev >= 0)
         close(dev);
     unlink(SOCKET_FILE);
 
@@ -7365,7 +7404,7 @@ int CloneTerminal(Terminal *term, const char* dest, const char* name)
         new_term->socket_no = socket_no;
         new_term->buffer_in = nullptr;
         new_term->buffer_out = nullptr;
-        term->host.Set(name);
+        new_term->host.Set(name);
         new_term->input_id = AddInputFn((InputFn) TermCB, new_term->socket_no, term);
         term->AddClone(new_term);
     }

@@ -99,8 +99,7 @@ int Email::From(char* buffer, int maxlen) const noexcept
     
     const auto* value = from.Value();
     if (value) {
-        strncpy(buffer, value, maxlen - 1);
-        buffer[maxlen - 1] = '\0'; // ensure null termination
+        vt_safe_string::safe_copy(buffer, maxlen, value);
     } else {
         buffer[0] = '\0';
     }
@@ -138,8 +137,7 @@ int Email::NextTo(char* buffer, int maxlen)
     {
         const auto* value = current_to->Value();
         if (value) {
-            strncpy(buffer, value, maxlen - 1);
-            buffer[maxlen - 1] = '\0'; // ensure null termination
+            vt_safe_string::safe_copy(buffer, maxlen, value);
         } else {
             buffer[0] = '\0';
         }
@@ -171,8 +169,7 @@ int Email::Subject(char* buffer, int maxlen) const noexcept
     
     const auto* value = subject.Value();
     if (value) {
-        strncpy(buffer, value, maxlen - 1);
-        buffer[maxlen - 1] = '\0'; // ensure null termination
+        vt_safe_string::safe_copy(buffer, maxlen, value);
     } else {
         buffer[0] = '\0';
     }
@@ -210,8 +207,7 @@ int Email::NextBody(char* buffer, int maxlen)
     {
         const auto* value = current_body->Value();
         if (value) {
-            strncpy(buffer, value, maxlen - 1);
-            buffer[maxlen - 1] = '\0'; // ensure null termination
+            vt_safe_string::safe_copy(buffer, maxlen, value);
         } else {
             buffer[0] = '\0';
         }
@@ -263,11 +259,7 @@ const char* Sock_ntop(const struct sockaddr_in *sa, socklen_t /*addrlen*/)
     if (ntohs(sa->sin_port) != 0)
     {
         snprintf(portstr, sizeof(portstr), ":%d", ntohs(sa->sin_port));
-        const auto str_len = strlen(str);
-        const auto port_len = strlen(portstr);
-        if (str_len + port_len < sizeof(str)) {
-            strcat(str, portstr);
-        }
+        vt_safe_string::safe_concat(str, sizeof(str), portstr);
     }
 
     return str;
@@ -299,10 +291,18 @@ int Listen(int port, int nonblocking)
     {
         flags = fcntl(sockfd, F_GETFL, 0);
         if (flags < 0)
+        {
             perror("fcntl F_GETFL");
+            close(sockfd);
+            return -1;
+        }
         flags |= O_NONBLOCK;
         if (fcntl(sockfd, F_SETFL, flags) < 0)
+        {
             perror("fcntl F_SETFL");
+            close(sockfd);
+            return -1;
+        }
     }
 
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
@@ -453,6 +453,11 @@ int Connect(const char* host, const char* service)
                             fcntl(sockfd, F_SETFL, flags); // Restore blocking mode
                             retval = sockfd;
                             break;
+                        }
+                        else if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len) < 0)
+                        {
+                            // getsockopt failed, restore blocking mode before closing
+                            fcntl(sockfd, F_SETFL, flags);
                         }
                     }
                 }
@@ -627,8 +632,7 @@ int GetResponse(int fd, char* bufferstr, int maxlen)
     bytesread = read(fd, buffer, STRLONG);
     if (bytesread > 0)
     {
-        strncpy(bufferstr, buffer, maxlen - 1);
-        bufferstr[maxlen - 1] = '\0'; // ensure null termination
+        vt_safe_string::safe_copy(bufferstr, maxlen, buffer);
         buffer[3] = '\0';
         retval = atoi(buffer);
     }
@@ -713,9 +717,9 @@ int SMTP(int fd, Email *email)
         {
             outgoing[0] = '\0';
             if (buffer[0] == '.')
-                strcat(outgoing, ".");
-            strcat(outgoing, buffer);
-            strcat(outgoing, "\r\n");
+                vt_safe_string::safe_concat(outgoing, STRLONG, ".");
+            vt_safe_string::safe_concat(outgoing, STRLONG, buffer);
+            vt_safe_string::safe_concat(outgoing, STRLONG, "\r\n");
             write(fd, outgoing, strlen(outgoing));
         }
         write(fd, ".\r\n", 2);

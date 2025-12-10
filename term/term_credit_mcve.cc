@@ -86,7 +86,7 @@ int AppendString(char* dest, int fwidth, const char* source)
     char buffer[STRLONG];
 
     snprintf(buffer, STRLONG, "%-*s", fwidth, source);
-    strcat(dest, buffer);
+    vt_safe_string::safe_concat(dest, STRLONG, buffer);
 
     return retval;
 }

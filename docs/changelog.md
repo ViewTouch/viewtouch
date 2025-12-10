@@ -6,6 +6,52 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **String operation safety improvements (12-09-2025)**
+  - Replaced unsafe `strncpy` + manual null termination patterns with `vt_safe_string::safe_copy` throughout the codebase.
+  - Fixed Email class methods (`From`, `NextTo`, `Subject`, `NextBody`) and network response parsing to prevent buffer overflows.
+  - Eliminated terminal zone loading string vulnerabilities that could corrupt memory during item name processing.
+  - **Files modified**:
+    - `main/hardware/terminal.cc`
+    - `src/network/socket.cc`
+  - Added null pointer safety checks to all `Terminal` data reading functions (`RInt16`, `RInt32`, `RLLong`, `RFlt`, `RStr`) to prevent crashes when input buffer is null.
+  - Functions now return safe default values (0, 0.0, or empty string) instead of dereferencing null pointers during network errors or corrupted state.
+  - **Files modified**:
+    - `main/hardware/terminal.cc`
+  - Fixed socket state corruption in `Connect` where `getsockopt` failures left sockets in non-blocking mode without cleanup.
+  - Added socket resource leak prevention in `Listen` by closing descriptors when fcntl operations fail.
+  - Replaced unsafe `strncpy`+`strcat` combinations in printer reports with bounded `vt_safe_string::safe_copy` to prevent buffer overflows.
+  - **Files modified**:
+    - `src/network/socket.cc`
+    - `main/data/settings.cc`
+  - Prevented `GetUnameInfo` from leaking host details to stdout and ensured it reports failure when `uname()` fails while always initializing the output buffer.
+  - Fixed `GetInterfaceInfo` sysctl buffer leak by freeing the allocation on all paths.
+  - **Files modified**:
+    - `main/data/license_hash.cc`
+- **Bounded string concatenation cleanup (12-09-2025)**
+  - Replaced remaining `strcat`/manual appends with bounded `vt_safe_string::safe_concat` in socket address/SMTP assembly, terminal display suffix handling, credit report formatting, and locale date/time separators to prevent buffer overruns.
+  - **Files modified**:
+    - `src/network/socket.cc`
+    - `term/term_main.cc`
+    - `term/term_credit_mcve.cc`
+    - `main/data/locale.cc`
+- **Socket string safety and reliable writes (12-09-2025)**
+  - Bounded all socket string reads with caller-provided buffer sizes to prevent overflows in terminal/server/printer links and truncate safely on oversized frames.
+  - Propagated truncation errors from `GetString` to callers so terminal and printer string reads fail fast instead of returning partial data.
+  - Hardened socket writes to retry partial writes (EINTR/EAGAIN) and fail cleanly on EPIPE, ensuring full headers/payloads are sent or the error is surfaced.
+  - Zero-initialized item-name buffers during zone load and forced null termination to avoid stale data corrupting menu lookups.
+  - Remote printer sockets now treat fd 0 as valid, use `sockaddr_un` correctly for bind/accept, and clean up descriptors reliably.
+  - **Files modified**:
+    - `src/network/remote_link.cc`
+    - `src/network/remote_link.hh`
+    - `term/term_view.cc`
+    - `main/hardware/terminal.cc`
+    - `main/hardware/remote_printer.cc`
+- **Terminal socket correctness and cloning safety (12-09-2025)**
+  - Treat only negative `accept()` results as errors so fd 0 connections are accepted; close the listener fd even when it is 0 to avoid descriptor leaks on minimal environments.
+  - Set the clone terminal’s hostname instead of overwriting the source terminal, preserving the original peer identity when cloning.
+  - **Files modified**: `main/hardware/terminal.cc`
+
 ### Changed
 - **Build size and startup optimizations (12-09-2025)**
   - Default CMake build type now `RelWithDebInfo` to favor optimized binaries by default.

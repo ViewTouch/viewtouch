@@ -23,6 +23,8 @@
 #include <sys/file.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
+#include <algorithm>
 #include "fntrace.hh"
 #include <memory>
 #include <vector>
@@ -282,13 +284,24 @@ int CharQueue::PutString(const std::string &str, int len)
     return 0;
 }
 
-int CharQueue::GetString(char* str)
+int CharQueue::GetString(char* str, size_t max_len)
 {
     FnTrace("CharQueue::GetString()");
+    if (str == nullptr || max_len == 0)
+        return 1;
+
     int type = Read8();
     if (type != TYPE_STRING)
         ReadError(TYPE_STRING, type);
     int len = Get16();
+    if (len < 0)
+    {
+        str[0] = '\0';
+        return 1;
+    }
+
+    const size_t safe_len = (max_len > 0) ? max_len - 1 : 0;
+    const size_t copy_len = std::min(static_cast<size_t>(len), safe_len);
     int onechar = 0;
 
     for (int i = 0; i < len; ++i)
@@ -296,11 +309,11 @@ int CharQueue::GetString(char* str)
         onechar = Read8();
         if (onechar < 0)
             return 1;
-        else
-            str[i] = (char) onechar;
+        if (static_cast<size_t>(i) < copy_len)
+            str[i] = static_cast<char>(onechar);
     }
-    str[len] = '\0';
-    return 0;
+    str[copy_len] = '\0';
+    return (static_cast<size_t>(len) >= max_len) ? 1 : 0;
 }
 
 int CharQueue::Read(int device_no)
@@ -370,6 +383,21 @@ int CharQueue::Read(int device_no)
             return -1;
         }
 
+        // Prevent indefinite blocking on payload reads
+        FD_ZERO(&read_fds);
+        FD_SET(device_no, &read_fds);
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 0;
+
+        int select_result = select(device_no + 1, &read_fds, NULL, NULL, &timeout);
+        if (select_result == -1 && errno == EINTR)
+            continue;
+        if (select_result <= 0)
+        {
+            fprintf(stderr, "CharQueue::Read() - Payload read timed out\n");
+            return -1;
+        }
+
         val = read(device_no, buffer.data() + end, read_size);
         if (val > 0)
         {
@@ -386,7 +414,7 @@ int CharQueue::Read(int device_no)
             // Connection closed
             return -1;
         }
-        else
+        else if (errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK)
         {
             // Error reading
             return -1;
@@ -413,45 +441,43 @@ int CharQueue::Write(int device_no, int do_clear)
     }
 
     int val;
-    Uchar buf1 = (Uchar) (size & 255);
-    Uchar buf2 = (Uchar) ((size >> 8) & 255);
-    Uchar buf3 = (Uchar) ((size >> 16) & 255);
-    Uchar buf4 = (Uchar) ((size >> 24) & 255);
+    const int payload_size = size;
+
+    auto write_all = [&](const Uchar* data, int bytes) -> int
+    {
+        int written = 0;
+        while (written < bytes)
+        {
+            ssize_t w = write(device_no, data + written, static_cast<size_t>(bytes - written));
+            if (w > 0)
+            {
+                written += static_cast<int>(w);
+                continue;
+            }
+            if (w == -1 && (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK))
+                continue;
+            if (w == -1 && errno == EPIPE)
+                return -1; // connection lost
+            return -1;
+        }
+        return written;
+    };
+
+    Uchar header[4] = {
+        static_cast<Uchar>(payload_size & 255),
+        static_cast<Uchar>((payload_size >> 8) & 255),
+        static_cast<Uchar>((payload_size >> 16) & 255),
+        static_cast<Uchar>((payload_size >> 24) & 255)
+    };
     
     // Write size header with error checking and SIGPIPE handling
-    if (write(device_no, &buf1, 1) != 1) {
-        if (errno == EPIPE) {
-            // Connection lost - handle gracefully
-            return -1;
-        }
+    if (write_all(header, static_cast<int>(sizeof(header))) != static_cast<int>(sizeof(header)))
         return -1;
-    }
-    if (write(device_no, &buf2, 1) != 1) {
-        if (errno == EPIPE) {
-            // Connection lost - handle gracefully
-            return -1;
-        }
-        return -1;
-    }
-    if (write(device_no, &buf3, 1) != 1) {
-        if (errno == EPIPE) {
-            // Connection lost - handle gracefully
-            return -1;
-        }
-        return -1;
-    }
-    if (write(device_no, &buf4, 1) != 1) {
-        if (errno == EPIPE) {
-            // Connection lost - handle gracefully
-            return -1;
-        }
-        return -1;
-    }
 
     if (start > end)
     {
         // Handle circular buffer case - copy to temporary buffer
-        int s = size;
+        int s = payload_size;
         std::vector<Uchar> temp_buffer(s);
         Uchar* c = temp_buffer.data();
         int temp_size = size;
@@ -466,23 +492,19 @@ int CharQueue::Write(int device_no, int do_clear)
                 temp_start = 0;
         }
         
-        val = write(device_no, temp_buffer.data(), s);
-        if (val == -1 && errno == EPIPE) {
-            // Connection lost - handle gracefully
+        val = write_all(temp_buffer.data(), s);
+        if (val != s)
             return -1;
-        }
     }
     else
     {
-        val = write(device_no, buffer.data() + start, size);
-        if (val == -1 && errno == EPIPE) {
-            // Connection lost - handle gracefully
+        val = write_all(buffer.data() + start, payload_size);
+        if (val != payload_size)
             return -1;
-        }
     }
 
     if (do_clear)
         Clear();
 
-    return val;
+    return payload_size;
 }

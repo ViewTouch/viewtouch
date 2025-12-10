@@ -27,6 +27,7 @@
 #include "manager.hh"
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <sys/file.h>
 #include <sys/select.h>
 #include <fcntl.h>
@@ -154,29 +155,30 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     port_no = port;
     model = mod;
     number = no;
-    socket_no = 0;
-    input_id = 0;
+    socket_no = -1;
+    input_id = -1;
+    device_no = 0;
     failure = 0;
 
     // Setup Connection
     buffer_in = std::make_unique<CharQueue>(1024);
     buffer_out = std::make_unique<CharQueue>(1024);
     std::array<char, 256> str{}, tmp{};
-    struct sockaddr name;
+    struct sockaddr_un addr{};
     snprintf(str.data(), str.size(), "/tmp/vt_print%d", no);
-    name.sa_family = AF_UNIX;
-    strncpy(name.sa_data, str.data(), sizeof(name.sa_data) - 1);
-    name.sa_data[sizeof(name.sa_data) - 1] = '\0';
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, str.data(), sizeof(addr.sun_path) - 1);
+    addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
     DeleteFile(str.data());
 
     int dev = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (dev <= 0)
+    if (dev < 0)
     {
         snprintf(tmp.data(), tmp.size(), "Failed to open socket '%s'", str.data());
         ReportError(tmp.data());
         return;
     }
-    if (bind(dev, &name, sizeof(name)) == -1)
+    if (bind(dev, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) == -1)
     {
         close(dev);
         snprintf(tmp.data(), tmp.size(), "Failed to bind socket '%s'", str.data());
@@ -198,9 +200,10 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     }
     listen(dev, 1);
 
-    Uint len = sizeof(struct sockaddr);
-    socket_no = accept(dev, (struct sockaddr *) str.data(), &len);
-    if (socket_no <= 0)
+    sockaddr_un peer{};
+    socklen_t len = sizeof(peer);
+    socket_no = accept(dev, reinterpret_cast<struct sockaddr*>(&peer), &len);
+    if (socket_no < 0)
     {
         snprintf(tmp.data(), tmp.size(), "Failed to get connection with printer %d", no);
         ReportError(tmp.data());
@@ -211,9 +214,9 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
 // Destructor
 RemotePrinter::~RemotePrinter()
 {
-    if (input_id)
+    if (input_id >= 0)
         RemoveInputFn(input_id);
-    if (socket_no)
+    if (socket_no >= 0)
     {
         WInt8(PRINTER_DIE);
         SendNow();
@@ -249,7 +252,10 @@ const char* RemotePrinter::RStr(char* s)
     static std::array<char, 1024> buffer{};
     if (s == NULL)
         s = buffer.data();
-    buffer_in->GetString(s);
+    if (buffer_in->GetString(s, buffer.size()))
+    {
+        s[0] = '\0';
+    }
     return s;
 }
 
@@ -264,7 +270,12 @@ int RemotePrinter::SendNow()
 {
     if (buffer_out->size <= 0)
         return 1;
-    buffer_out->Write(socket_no);
+    const int written = buffer_out->Write(socket_no, 0);
+    if (written < 0)
+    {
+        ++failure;  // track consecutive failures to trigger reconnection
+        return -1;
+    }
     buffer_out->Clear();
     return 0;
 }
@@ -279,15 +290,15 @@ int RemotePrinter::Reconnect()
         return 0;
     
     std::array<char, 256> str{}, tmp{};
-    struct sockaddr name;
+    struct sockaddr_un addr{};
     snprintf(str.data(), str.size(), "/tmp/vt_print%d", number);
-    name.sa_family = AF_UNIX;
-    strncpy(name.sa_data, str.data(), sizeof(name.sa_data) - 1);
-    name.sa_data[sizeof(name.sa_data) - 1] = '\0';
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, str.data(), sizeof(addr.sun_path) - 1);
+    addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
     DeleteFile(str.data());
 
     int dev = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (dev <= 0)
+    if (dev < 0)
     {
         snprintf(tmp.data(), tmp.size(), "Reconnect failed: Cannot open socket '%s'", str.data());
         ReportError(tmp.data());
@@ -297,7 +308,7 @@ int RemotePrinter::Reconnect()
     // Ensure socket operations do not block the main loop
     fcntl(dev, F_SETFL, O_NONBLOCK);
     
-    if (bind(dev, &name, sizeof(name)) == -1)
+    if (bind(dev, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) == -1)
     {
         close(dev);
         snprintf(tmp.data(), tmp.size(), "Reconnect failed: Cannot bind socket '%s'", str.data());
@@ -335,9 +346,10 @@ int RemotePrinter::Reconnect()
         return 1;
     }
 
-    Uint len = sizeof(struct sockaddr);
-    int new_socket = accept(dev, (struct sockaddr *) str.data(), &len);
-    if (new_socket <= 0)
+    sockaddr_un peer{};
+    socklen_t len = sizeof(peer);
+    int new_socket = accept(dev, reinterpret_cast<struct sockaddr*>(&peer), &len);
+    if (new_socket < 0)
     {
         close(dev);
         snprintf(tmp.data(), tmp.size(), "Reconnect failed: Cannot connect to printer %d", number);
@@ -351,7 +363,7 @@ int RemotePrinter::Reconnect()
     close(dev);
     
     // Re-register the input callback
-    if (input_id)
+    if (input_id >= 0)
         RemoveInputFn(input_id);
     input_id = AddInputFn((InputFn) PrinterCB, socket_no, this);
     
@@ -381,7 +393,7 @@ int RemotePrinter::IsOnline() const
         return 0;
     
     // If socket is closed, printer is offline
-    if (socket_no <= 0)
+    if (socket_no < 0)
         return 0;
     
     // If we have too many failures, consider offline
@@ -565,12 +577,12 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
                  p->host_name.Value(), p->port_no, p->failure);
         ReportError(errmsg.data());
 
-        if (p->socket_no > 0)
+        if (p->socket_no >= 0)
         {
             // close socket here instead of letting the destructor do it
             // (destructor tries to send kill message before closing)
             close(p->socket_no);
-            p->socket_no = 0;
+            p->socket_no = -1;
         }
 
         // Critical fix: Don't kill the printer immediately, mark it for reconnection
@@ -626,7 +638,7 @@ Printer *NewRemotePrinter(const char* host, int port, int model, int no)
     if (p == NULL)
         return NULL;
 
-    if (p->socket_no <= 0)
+    if (p->socket_no < 0)
     {
         delete p;
         return NULL;
