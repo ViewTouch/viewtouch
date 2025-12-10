@@ -295,10 +295,18 @@ int Listen(int port, int nonblocking)
     {
         flags = fcntl(sockfd, F_GETFL, 0);
         if (flags < 0)
+        {
             perror("fcntl F_GETFL");
+            close(sockfd);
+            return -1;
+        }
         flags |= O_NONBLOCK;
         if (fcntl(sockfd, F_SETFL, flags) < 0)
+        {
             perror("fcntl F_SETFL");
+            close(sockfd);
+            return -1;
+        }
     }
 
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
@@ -449,6 +457,11 @@ int Connect(const char* host, const char* service)
                             fcntl(sockfd, F_SETFL, flags); // Restore blocking mode
                             retval = sockfd;
                             break;
+                        }
+                        else if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len) < 0)
+                        {
+                            // getsockopt failed, restore blocking mode before closing
+                            fcntl(sockfd, F_SETFL, flags);
                         }
                     }
                 }

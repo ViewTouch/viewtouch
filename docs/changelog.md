@@ -7,7 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
-- **License info safety fixes (12-09-2025)**
+- **Network connection safety and printer report bounds (12-09-2025)**
+  - Fixed socket state corruption in `Connect` where `getsockopt` failures left sockets in non-blocking mode without cleanup.
+  - Added socket resource leak prevention in `Listen` by closing descriptors when fcntl operations fail.
+  - Replaced unsafe `strncpy`+`strcat` combinations in printer reports with bounded `vt_safe_string::safe_copy` to prevent buffer overflows.
+  - **Files modified**:
+    - `src/network/socket.cc`
+    - `main/data/settings.cc`
   - Prevented `GetUnameInfo` from leaking host details to stdout and ensured it reports failure when `uname()` fails while always initializing the output buffer.
   - Fixed `GetInterfaceInfo` sysctl buffer leak by freeing the allocation on all paths.
   - **Files modified**:
