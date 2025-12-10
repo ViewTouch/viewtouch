@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **License info safety fixes (12-09-2025)**
+  - Prevented `GetUnameInfo` from leaking host details to stdout and ensured it reports failure when `uname()` fails while always initializing the output buffer.
+  - Fixed `GetInterfaceInfo` sysctl buffer leak by freeing the allocation on all paths.
+  - **Files modified**:
+    - `main/data/license_hash.cc`
 - **Bounded string concatenation cleanup (12-09-2025)**
   - Replaced remaining `strcat`/manual appends with bounded `vt_safe_string::safe_concat` in socket address/SMTP assembly, terminal display suffix handling, credit report formatting, and locale date/time separators to prevent buffer overruns.
   - **Files modified**:
