@@ -3442,8 +3442,10 @@ OrderCommentDialog::OrderCommentDialog(const char* msg, const char* retmsg, int 
     : GetTextDialog(msg, retmsg, mlen)
 {
     FnTrace("OrderCommentDialog::OrderCommentDialog(const char* )");
-    // Increase dialog height to accommodate all buttons
-    h = 780;  // Increased from 680 to make room for Done/Cancel buttons
+    // Increase dialog height to accommodate larger keyboard buttons
+    h = 850;  // Increased from 780 to make room for bigger buttons
+    // Increase button height for larger keyboard
+    hh = 110;  // Increased from 90 to make buttons bigger
     // Change labels for Done and Cancel buttons
     if (enterkey)
     {
