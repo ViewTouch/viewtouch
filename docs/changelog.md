@@ -7,7 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
-- **String operation safety improvements (12-09-2025)**
+- **Add comment keyboard enlarged and widened (12-09-2025)**
+  - Increased OrderCommentDialog width from 950 to 1800 pixels (almost full screen on 1920x1080 displays), button height from 90 to 110 pixels, and dialog height from 780 to 850 pixels for maximum usability.
+  - **Files modified**:
+    - `zone/dialog_zone.cc`
   - Replaced unsafe `strncpy` + manual null termination patterns with `vt_safe_string::safe_copy` throughout the codebase.
   - Fixed Email class methods (`From`, `NextTo`, `Subject`, `NextBody`) and network response parsing to prevent buffer overflows.
   - Eliminated terminal zone loading string vulnerabilities that could corrupt memory during item name processing.
