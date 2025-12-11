@@ -42,6 +42,7 @@ ViewTouch is a powerful, open-source Point of Sale system designed specifically 
 - **Cross-platform** - Runs on Raspberry Pi 4/5, x86, and ARM architectures
 - **Mobile integration** - Android tableside order entry support
 - **Multilingual support** - Built-in language pack system
+- **Cross platform solution** - Can be used on a wide variaty of linux distros thanks to the universal installer
 
 > **Note:** For build instructions and the latest announcements, visit the [Wiki](../../wiki).
 
