@@ -642,8 +642,7 @@ Terminal::Terminal()
     curr_font_id   = -1;
     curr_font_width = -1;
 
-    // Language settings - default to English
-    SetGlobalLanguage(LANG_ENGLISH);
+    // Language is set globally from saved settings, don't override here
 }
 
 // Destructor

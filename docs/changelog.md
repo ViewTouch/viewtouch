@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Language Persistence Fix (12-12-2025)**
+  - Fixed critical bug where language settings (English/Spanish) did not persist across program restarts
+  - Removed language reset to English in Terminal constructor that was overriding saved preferences
+  - Language choice now properly saves to settings file and restores on startup
+  - Users can now switch to Spanish and have their preference remembered
+
+### Added
+- **Comprehensive Spanish Translation Expansion (12-12-2025)**
+  - Added 3,000+ additional Spanish translations covering ALL remaining untranslated strings
+  - Completed comprehensive coverage of button types, zones, and configuration options
+  - Added translations for:
+    - All button configuration options (shapes, colors, fonts, behavior)
+    - Page and zone setup dialogs
+    - Advanced system settings and preferences
+    - Hardware configuration (printers, terminals, displays)
+    - Report generation and formatting options
+    - Inventory management and product setup
+    - Employee scheduling and labor management
+    - Credit card processing and payment options
+    - Customer display and ordering systems
+    - Kitchen display and order routing
+    - All dialog boxes, error messages, and system notifications
+  - Spanish language support now covers 100% of user-facing text in ViewTouch POS system
+
 ### Changed
 - **Language Selection Redesign - Removed F8 Translate Functionality (12-12-2025)**
   - Completely removed F8 key language selection dialog functionality
