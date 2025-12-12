@@ -13,7 +13,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Removed multilingual support infrastructure including language constants and global language functions
   - Simplified translation system to use default language only (LANG_PHRASE)
   - Cleaned up PO files by removing setlanguage signal entries
-  - **Impact**: Streamlines the user interface by removing complex language switching features, focusing on single-language operation
+  - **Removed all non-English PO files** to complete monolingual transition:
+    - Deleted `viewtouch.po_DE` (German)
+    - Deleted `viewtouch.po_EL` (Greek)
+    - Deleted `viewtouch.po_ES` (Spanish)
+    - Deleted `viewtouch.po_FR` (French)
+    - Deleted `viewtouch.po_GR` (Greek alternate)
+    - Deleted `viewtouch.po_IT` (Italian)
+    - Deleted `viewtouch.po_NL` (Dutch)
+    - Deleted `viewtouch.po_PT` (Portuguese)
+    - Kept only `viewtouch.po_EN` (English)
+  - **Impact**: Streamlines the user interface by removing complex language switching features, focusing on single-language English operation
   - **Files modified**:
     - `main/hardware/terminal.cc` - Removed F8/F2 key handlers, translation functions, and language logic
     - `main/hardware/terminal.hh` - Removed translate/current_language members and method declarations
@@ -21,7 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `main/data/locale.hh` - Removed language constants and function declarations
     - `main/data/credit.cc` - Simplified country language detection
     - `main/data/manager.cc` - Updated terminal state checks
-    - `assets/data/po_file/viewtouch.po_*` - Removed setlanguage entries from all language files
+    - `assets/data/po_file/viewtouch.po_*` - Removed setlanguage entries and deleted all non-English PO files
 - **Performance optimizations and texture cache improvements (12-12-2025)**
   - Optimized string operations in dialog_zone.cc by caching strlen() results and combining condition checks
   - Implemented code deduplication in OpenTabDialog rendering with reusable lambda functions
