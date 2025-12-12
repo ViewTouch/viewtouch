@@ -64,8 +64,46 @@
 #include "assets/images/xpm/lava-256.xpm"
 #include "assets/images/xpm/darkmarble-256.xpm"
 
+/**** Texture File Paths ****/
 
-/**** Image Values ****/
+constexpr std::array<const char*, IMAGE_COUNT> TextureFiles = {
+    "assets/images/xpm/sand-8.xpm",           // IMAGE_SAND
+    "assets/images/xpm/litsand-6.xpm",        // IMAGE_LIT_SAND
+    "assets/images/xpm/darksand-6.xpm",       // IMAGE_DARK_SAND
+    "assets/images/xpm/litewood-8.xpm",       // IMAGE_LITE_WOOD
+    "assets/images/xpm/wood-10.xpm",          // IMAGE_WOOD
+    "assets/images/xpm/darkwood-10.xpm",      // IMAGE_DARK_WOOD
+    "assets/images/xpm/grayparchment-8.xpm",  // IMAGE_GRAY_PARCHMENT
+    "assets/images/xpm/graymarble-12.xpm",    // IMAGE_GRAY_MARBLE
+    "assets/images/xpm/greenmarble-12.xpm",   // IMAGE_GREEN_MARBLE
+    "assets/images/xpm/parchment-6.xpm",      // IMAGE_PARCHMENT
+    "assets/images/xpm/pearl-8.xpm",          // IMAGE_PEARL
+    "assets/images/xpm/canvas-8.xpm",         // IMAGE_CANVAS
+    "assets/images/xpm/tanparchment-8.xpm",   // IMAGE_TAN_PARCHMENT
+    "assets/images/xpm/smoke-4.xpm",          // IMAGE_SMOKE
+    "assets/images/xpm/leather-8.xpm",        // IMAGE_LEATHER
+    "assets/images/xpm/blueparchment.xpm",    // IMAGE_BLUE_PARCHMENT
+    "assets/images/xpm/gradient-8.xpm",       // IMAGE_GRADIENT
+    "assets/images/xpm/gradient-brown.xpm",   // IMAGE_GRADIENTBROWN
+    "assets/images/xpm/black.xpm",            // IMAGE_BLACK
+    "assets/images/xpm/greySand.xpm",         // IMAGE_GREYSAND
+    "assets/images/xpm/whiteMesh.xpm",        // IMAGE_WHITEMESH
+    "assets/images/xpm/carbonfiber-128-6.xpm", // IMAGE_CARBON_FIBER
+    "assets/images/xpm/whitetexture-128-32.xpm", // IMAGE_WHITE_TEXTURE
+    "assets/images/xpm/darkorangetexture-128-32.xpm", // IMAGE_DARK_ORANGE_TEXTURE
+    "assets/images/xpm/yellowtexture-128-32.xpm", // IMAGE_YELLOW_TEXTURE
+    "assets/images/xpm/greentexture-128-32.xpm", // IMAGE_GREEN_TEXTURE
+    "assets/images/xpm/orangetexture-128-32.xpm", // IMAGE_ORANGE_TEXTURE
+    "assets/images/xpm/bluetexture-128-32.xpm", // IMAGE_BLUE_TEXTURE
+    "assets/images/xpm/pooltable-256.xpm",     // IMAGE_POOL_TABLE
+    "assets/images/xpm/test-256.xpm",          // IMAGE_TEST
+    "assets/images/xpm/diamondleather-256.xpm", // IMAGE_DIAMOND_LEATHER
+    "assets/images/xpm/bread-256.xpm",         // IMAGE_BREAD
+    "assets/images/xpm/lava-256.xpm",          // IMAGE_LAVA
+    "assets/images/xpm/darkmarble-256.xpm"     // IMAGE_DARK_MARBLE
+};
+
+/**** Legacy Image Values (kept for fallback) ****/
 
 constexpr std::array<const char**, IMAGE_COUNT> ImageData = {
     SandData,

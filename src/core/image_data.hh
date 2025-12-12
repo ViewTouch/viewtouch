@@ -69,7 +69,8 @@ constexpr int IMAGE_CLEAR     = 253;
 constexpr int IMAGE_UNCHANGED = 254;
 constexpr int IMAGE_DEFAULT   = 255;
 
-extern const std::array<const char**, IMAGE_COUNT> ImageData;
+extern const std::array<const char*, IMAGE_COUNT> TextureFiles;
+extern const std::array<const char**, IMAGE_COUNT> ImageData; // Deprecated - for backward compatibility
 
 /**** Functions ****/
 int ImageColorsUsed();  // Returns total colors used in all xpm files

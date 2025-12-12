@@ -581,6 +581,15 @@ else()
     message(STATUS "'assets/default_images' folder is missing in source directory")
 endif()
 
+# Install texture files for runtime loading
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/images/xpm" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/assets/images/xpm")
+    install(DIRECTORY assets/images/xpm/ DESTINATION viewtouch/assets/images/xpm FILES_MATCHING
+        PATTERN "*.xpm")
+    message(STATUS "Installing texture files from assets/images/xpm/ to viewtouch/assets/images/xpm/")
+else()
+    message(STATUS "'assets/images/xpm' folder is missing in source directory")
+endif()
+
 # Set permissions for images directory to allow all users to add images
 install(CODE "file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/viewtouch/imgs)")
 install(CODE "execute_process(COMMAND chmod 1777 \${CMAKE_INSTALL_PREFIX}/viewtouch/imgs)")
