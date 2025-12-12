@@ -2019,20 +2019,6 @@ static const TranslationEntry settings_config_translations[] = {
     {"Room", "Habitación"},
     {"Retail", "Minorista"},
 
-    {nullptr, nullptr} // End of settings_config_translations
-};
-
-static const TranslationEntry business_config_translations[] = {
-    // Index names
-    {"Breakfast", "Desayuno"},
-    {"Brunch", "Brunch"},
-    {"Early Dinner", "Cena Temprana"},
-    {"Late Night", "Noche Tardía"},
-    {"Wine", "Vino"},
-    {"Cafe", "Café"},
-    {"Room", "Habitación"},
-    {"Retail", "Minorista"},
-
     // Shape names
     {"Rectangle", "Rectángulo"},
     {"Diamond", "Diamante"},
@@ -3016,13 +3002,10 @@ static const TranslationEntry business_config_translations[] = {
     {"Alternate bitmap fonts are disabled; ensure scalable fonts are installed.", "Las fuentes bitmap alternativas están deshabilitadas; asegúrese de que las fuentes escalables estén instaladas."},
     {"XpmError:  %s", "Error Xpm: %s"},
 
-    {nullptr, nullptr} // End of extended_translations_1a
+    {nullptr, nullptr} // End of settings_config_translations
 };
 
-static const TranslationEntry extended_translations_1b[] = {
-};
-
-static const TranslationEntry extended_translations_2[] = {
+static const TranslationEntry extended_translations[] = {
     {"RemoveCheckeredBackground: Processing image %dx%d, channels=%d", "RemoveCheckeredBackground: Procesando imagen %dx%d, canales=%d"},
     {"RemoveCheckeredBackground: No checkered pattern detected", "RemoveCheckeredBackground: No se detectó patrón de cuadros"},
     {"RemoveCheckeredBackground: Detected checkered pattern (checker size ~%d, %d%% match)", "RemoveCheckeredBackground: Patrón de cuadros detectado (tamaño de cuadro ~%d, %d%% coincidencia)"},
@@ -3752,11 +3735,6 @@ static const TranslationEntry extended_translations_2[] = {
     {"This Page's Spacing", "Espaciado de Esta Página"},
     {"This Page's Parent Page", "Página Padre de Esta Página"},
     {"Global Line Spacing", "Espaciado Global de Líneas"},
-
-    {nullptr, nullptr} // End of extended_translations_2
-};
-
-static const TranslationEntry extended_translations_3[] = {
     {"Button's Name", "Nombre del Botón"},
     {"Button's Page Location", "Ubicación de Página del Botón"},
     {"Group ID", "ID de Grupo"},
@@ -3871,10 +3849,7 @@ static const char* LookupHardcodedTranslation(const char* str, int lang) {
         error_translations,
         ui_config_translations,
         settings_config_translations,
-        business_config_translations,
-        extended_translations_1b,
-        extended_translations_2,
-        extended_translations_3,
+        extended_translations,
         nullptr // End marker
     };
 
