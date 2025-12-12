@@ -28,6 +28,7 @@
 #include "printer.hh"
 #include "drawer.hh"
 #include "data_file.hh"
+#include "term/term_view.hh"
 #include "data_persistence_manager.hh"
 #include "inventory.hh"
 #include "employee.hh"
@@ -483,7 +484,7 @@ int main(int argc, genericChar* argv[])
 #else
     vt::Logger::Initialize("/var/log/viewtouch", "info", false, true);
 #endif
-    vt::Logger::info("ViewTouch Main (vt_main) starting - Version {}", 
+    vt::Logger::info("ViewTouch Main (vt_main) starting - Version {}",
                      viewtouch::get_version_short());
 
     genericChar socket_file[256] = "";
