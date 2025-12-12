@@ -110,6 +110,7 @@
 #define ZONE_ITEM_POUND      102 // priced by weight button
 #define ZONE_ITEM_ADMISSION  103 // event admission button
 #define ZONE_INDEX_TAB       108 // index tab button (only on Index pages, inherited by Menu Item pages)
+#define ZONE_LANGUAGE_BUTTON 109 // language selection button
 #define ZONE_CLEAR_SYSTEM    107 // clear system with countdown
 
 /**** Types ****/

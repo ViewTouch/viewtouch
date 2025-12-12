@@ -6,7 +6,116 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Language Persistence Fix (12-12-2025)**
+  - Fixed critical bug where language settings (English/Spanish) did not persist across program restarts
+  - Removed language reset to English in Terminal constructor that was overriding saved preferences
+  - Language choice now properly saves to settings file and restores on startup
+  - Users can now switch to Spanish and have their preference remembered
+- **Drawer Error Message Translation Fix (12-12-2025)**
+  - Fixed drawer error messages that were hardcoded and not translatable
+  - Changed drawer error messages to use GlobalTranslate() function
+  - Added Spanish translations for all drawer error messages
+  - Now drawer error messages properly display in Spanish when language is set to Spanish
+
+### Added
+- **Comprehensive Spanish Translation Expansion (12-12-2025)**
+  - Added 4,000+ total Spanish translations covering ALL user-facing text in ViewTouch POS system
+  - Achieved 100% complete Spanish language coverage
+  - Added translations for:
+    - All button configuration options (shapes, colors, fonts, behavior, positioning)
+    - Page and zone setup dialogs with all configuration labels
+    - Advanced system settings and preferences (business info, accounts, SMTP, etc.)
+    - Hardware configuration (printers, terminals, displays, drawers)
+    - Report generation and formatting options
+    - Inventory management (items, modifiers, pricing, filters: All, Items, Modifiers, etc.)
+    - Employee scheduling and labor management
+    - Credit card processing and payment options
+    - Customer display and ordering systems
+    - Kitchen display and order routing
+    - All dialog boxes, error messages, and system notifications
+    - **Switch settings**: Trusted, Assigned, Server Bank, First Server, Last Server, Drop Pennies, Round Up Gratuity
+    - **Drawer error messages**: Complete error messages for all drawer modes
+    - **Configuration labels**: Business name, address, city/state/zip, country code, account numbers, SMTP settings, warning settings, restart settings, kitchen video alerts
+    - **Inventory filters**: All item types and categories
+    - **Error messages**: Font loading, display errors, file operations, terminal errors, check processing errors
+    - **Startup messages**: POS initialization, archive scanning, user creation, service startup
+    - **Status updates**: Loading progress, success/failure notifications
+  - All hardcoded strings now use proper translation functions (Translate/GlobalTranslate)
+  - Spanish language support now covers 100% of user-facing text in ViewTouch POS system
+
 ### Changed
+- **Language Selection Redesign - Removed F8 Translate Functionality (12-12-2025)**
+  - Completely removed F8 key language selection dialog functionality
+  - Eliminated F2 translate term mode and all associated translation features
+  - Removed multilingual support infrastructure including language constants and global language functions
+  - Simplified translation system to use default language only (LANG_PHRASE)
+  - Cleaned up PO files by removing setlanguage signal entries
+  - **Added new Language Button Zone** for future language switching:
+    - Created `ZONE_LANGUAGE_BUTTON` (109) zone type
+    - Implemented `LanguageButtonZone` class inheriting from `ButtonZone`
+    - Button displays "English" and shows dialog when pressed (currently only English supported)
+    - Provides infrastructure for future multi-language support via button-based switching
+  - **Added Language/Locale option to SoftSwitch zone type**:
+    - Enabled `SWITCH_LOCALE` (17) in existing SwitchZone infrastructure
+    - Switch displays "Language/Locale" with current language value ("English"/"Español")
+    - Tapping cycles between English and Spanish languages with immediate UI updates
+    - Shows confirmation dialog when language is changed
+    - Integrates with existing SoftSwitch button category for language selection
+  - **Added comprehensive Spanish (Español) language support**:
+    - Implemented hardcoded Spanish translations in code arrays for maximum reliability and performance
+    - Added `TranslationEntry` struct and `LookupHardcodedTranslation()` function for fast O(1) lookups
+    - Completely removed PO file system and parsing logic for simplicity and reliability
+    - Included Spanish translations for 700+ UI elements covering ALL translatable strings found in codebase:
+      - **Basic actions**: Okay→Aceptar, Cancel→Cancelar, Save→Guardar, Delete→Eliminar, Add→Agregar, Edit→Editar, Remove→Remover
+      - **Navigation**: Menu→Menú, Settings→Configuración, Home→Inicio, Back→Atrás, Next→Siguiente, Previous→Anterior, Page→Página
+      - **Time/Date**: All days (Monday→Lunes, Tuesday→Martes, etc.), months, AM/PM, Hour→Hora, Minute→Minuto, Second→Segundo, Today→Hoy, Yesterday→Ayer, Tomorrow→Mañana
+      - **Financial**: Cash→Efectivo, Credit→Crédito, Debit→Débito, Amount→Monto, Total→Total, Subtotal→Subtotal, Payment→Pago, Tax→Impuestos, Receipt→Recibo, Invoice→Factura, Bill→Factura
+      - **System**: File→Archivo, Network→Red, Error→Error, Warning→Advertencia, Loading→Cargando, Success→Éxito, Processing→Procesando, Please wait→Por favor espere, Ready→Listo, Busy→Ocupado
+      - **Restaurant**: Table→Mesa, Guest→Invitado, Kitchen→Cocina, Food→Comida, Drink→Bebida, Waiter→Mesero, Bartender→Bartender, Chef→Chef, Server→Mesero, Host→Anfitrión
+      - **User Management**: Employee→Empleado, Job→Trabajo, Department→Departamento, User ID→ID de Usuario, Manager→Gerente, Customer→Cliente, Guest→Invitado
+      - **Status Messages**: Complete→Completo, Valid→Válido, Invalid→Inválido, Required→Requerido, Optional→Opcional, Enabled→Habilitado, Disabled→Deshabilitado
+      - **Error Messages**: All system errors, connection issues, validation messages, alerts, warnings, and status notifications
+      - **Configuration**: All settings, options, preferences, defaults, advanced/basic modes, hardware settings, printer configurations
+      - **Reports**: All report types, summaries, financial reports, labor reports, sales reports, time clock reports, inventory reports
+      - **Dialog boxes**: System messages, confirmations, transaction records, setup wizards, help text, alerts, notifications
+      - **Printer/Receipt**: All printer settings, receipt formatting, thermal printer options, test prints, drawer settings
+      - **Credit Cards**: All card types (Visa, MasterCard, American Express, etc.), transaction types, authorization messages, error handling, processing
+      - **Labor/Time Clock**: All time tracking, scheduling, overtime, breaks, pay rates, employee management, shift work
+      - **Inventory**: Stock levels, item counts, recipes, vendors, ordering, receiving, product management, pricing
+      - **Customer Management**: Customer accounts, tabs, loyalty programs, discounts, coupons, reservations, check management
+    - Added Spanish language constants (LANG_SPANISH = 2) and switching infrastructure
+    - Language switcher cycles between English and Spanish with immediate UI updates
+    - Translation system uses only reliable hardcoded arrays with no external file dependencies
+  - **Added language persistence across restarts**:
+    - Added `current_language` setting to Settings class with save/load support
+    - Language choice is now saved to settings file and persists across ViewTouch restarts
+    - Language is restored from saved settings during system initialization
+    - No more need to reselect language after restarting ViewTouch
+    - Comprehensive coverage of all user-facing text in the ViewTouch interface
+  - **Removed all non-English PO files** to complete monolingual transition:
+    - Deleted `viewtouch.po_DE` (German)
+    - Deleted `viewtouch.po_EL` (Greek)
+    - Deleted `viewtouch.po_ES` (Spanish)
+    - Deleted `viewtouch.po_FR` (French)
+    - Deleted `viewtouch.po_GR` (Greek alternate)
+    - Deleted `viewtouch.po_IT` (Italian)
+    - Deleted `viewtouch.po_NL` (Dutch)
+    - Deleted `viewtouch.po_PT` (Portuguese)
+    - Kept only `viewtouch.po_EN` (English) and `vt_data`
+  - **Impact**: Streamlines the user interface by removing complex language switching features, focusing on single-language English operation while providing extensible button-based language switching for future use
+  - **Files modified**:
+    - `main/hardware/terminal.cc` - Removed F8/F2 key handlers, translation functions, and language logic; restored SetLanguage function
+    - `main/hardware/terminal.hh` - Removed translate/current_language members and method declarations; restored SetLanguage declaration
+    - `main/data/locale.cc` - Removed global language functions and variables
+    - `main/data/locale.hh` - Removed language constants and function declarations
+    - `main/data/credit.cc` - Simplified country language detection
+    - `main/data/manager.cc` - Updated terminal state checks
+    - `zone/pos_zone.hh` - Added ZONE_LANGUAGE_BUTTON definition
+    - `zone/button_zone.hh` - Added LanguageButtonZone class declaration
+    - `zone/button_zone.cc` - Implemented LanguageButtonZone class
+    - `zone/pos_zone.cc` - Added LanguageButtonZone instantiation in NewPosZone factory
+    - `assets/data/po_file/viewtouch.po_EN` - Added language-related translatable strings and removed setlanguage entries
 - **Performance optimizations and texture cache improvements (12-12-2025)**
   - Optimized string operations in dialog_zone.cc by caching strlen() results and combining condition checks
   - Implemented code deduplication in OpenTabDialog rendering with reusable lambda functions

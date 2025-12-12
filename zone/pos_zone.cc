@@ -170,6 +170,9 @@ Zone *NewPosZone(int type)
     case ZONE_INDEX_TAB:
         pNewZone = new IndexTabZone;
         break;
+    case ZONE_LANGUAGE_BUTTON:
+        pNewZone = new LanguageButtonZone;
+        break;
     case ZONE_TABLE:
         pNewZone = new TableZone;
         break;

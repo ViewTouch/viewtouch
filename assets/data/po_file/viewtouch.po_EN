@@ -1058,10 +1058,40 @@ Select Target Table: Select Target Table
 Selling Price: Selling Price
 Selling Price When Qualified as a Substitute: Selling Price When Qualified as a Substitute
 Server Bank Report: Server Bank Report
-setlanguage_english: setlanguage_english
-setlanguage_french: setlanguage_french
 Setting Switch: Setting Switch
 Set Your Preferred Report Time Frame: Set Your Preferred Report Time Frame
+Scheduled Restart Time\\System needs to restart now.\\Choose an option:: Scheduled Restart Time\\System needs to restart now.\\Choose an option:
+Restart Now: Restart Now
+Postpone 1 Hour: Postpone 1 Hour
+Connection reset.\\Please wait 60 seconds\\and try again.: Connection reset.\\Please wait 60 seconds\\and try again.
+Unknown index - can't jump: Unknown index - can't jump
+ALERT: Page stack size exceeded: ALERT: Page stack size exceeded
+Scheduled restart postponed for 1 hour: Scheduled restart postponed for 1 hour
+Button images %s on this terminal: Button images %s on this terminal
+ENABLED: ENABLED
+DISABLED: DISABLED
+Cannot process unknown code: %d: Cannot process unknown code: %d
+  Last code processed was %d:   Last code processed was %d
+Unable to find jump target (%d, %d) for %s: Unable to find jump target (%d, %d) for %s
+Couldn't jump to page %d: Couldn't jump to page %d
+Unknown signal %d received: Unknown signal %d received
+Can't find path '%s': Can't find path '%s'
+Your computer clock is in error.: Your computer clock is in error.
+Please correct your system time before starting again.: Please correct your system time before starting again.
+Can't open initial loader socket: Can't open initial loader socket
+Can't connect to loader: Can't connect to loader
+Couldn't create main system object: Couldn't create main system object
+Automatic check for updates...: Automatic check for updates...
+Auto-update of vt_data is disabled in settings: Auto-update of vt_data is disabled in settings
+Auto-update of vt_data is enabled in settings: Auto-update of vt_data is enabled in settings
+Warning: Could not load settings file, defaulting to auto-update enabled: Warning: Could not load settings file, defaulting to auto-update enabled
+Warning: Settings file not found, defaulting to auto-update enabled: Warning: Settings file not found, defaulting to auto-update enabled
+Local vt_data not found, attempting to download from update servers...: Local vt_data not found, attempting to download from update servers...
+Language: Language
+English: English
+Language switching is not currently available.\\Only English is supported.: Language switching is not currently available.\\Only English is supported.
+Current Language: English\\Language switching is not currently available.\\Only English is supported.: Current Language: English\\Language switching is not currently available.\\Only English is supported.
+Language changed to: %s: Language changed to: %s
 Shadow Intensity of All Buttons: Shadow Intensity of All Buttons
 Shape of All Buttons: Shape of All Buttons
 Shift Work Summary: Shift Work Summary

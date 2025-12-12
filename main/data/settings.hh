@@ -587,6 +587,9 @@ public:
     int reverse_ssh_local_port;   // Local port to expose (default: 22 for SSH)
     int reverse_ssh_remote_port;  // Remote port on management server (0 = auto-assign)
     Str reverse_ssh_key_path;     // Path to SSH private key file
+
+    // Language Settings
+    int current_language;         // Current language setting (LANG_ENGLISH, LANG_SPANISH, etc.)
     int reverse_ssh_reconnect_interval; // Seconds between reconnection attempts
     int reverse_ssh_health_check_interval; // Seconds between health checks
     int reverse_ssh_max_retries;  // Maximum reconnection attempts before giving up

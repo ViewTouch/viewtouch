@@ -405,11 +405,10 @@ public:
     int last_page_type;
     int last_page_size;
 
-    // Edit / translate mode
+    // Edit mode
     Page *edit_page;
     Zone *edit_zone;
     int   edit;          // 0=normal mode, 1=edit mode, 2=system edit mode
-    int   translate;     // boolean - terminal in translate mode?
     int   last_x;
     int   last_y;
     int   zone_modify;
@@ -423,9 +422,6 @@ public:
     int   edit_drag_total_dy;
     RegionInfo edit_drag_initial_region;
     RegionInfo edit_drag_current_region;
-
-    // Language settings
-    int   current_language;  // current UI language (LANG_ENGLISH, LANG_FRENCH, etc.)
 
     // Flags
     int failure;         // communications failure count
@@ -532,7 +528,6 @@ public:
     int TermsInUse();           // # of terms in use (total)
     int OtherTermsInUse(int no_kitchen = 0);     // # of terms in use (except current)
     int EditTerm(int save_data = 1, int mode = 1);  // toggles edit mode for terminal
-    int TranslateTerm();        // toggles translate mode for terminal
     int UpdateZoneDB(Control *con); // updates zone_db for terminal
     const genericChar* ReplaceSymbols(const char* str);
     Printer *FindPrinter(int printer_id); // returns printer object based on printer id
@@ -551,7 +546,7 @@ public:
     int TextureID(int texture, int state=0);
     int FrameID(int frame, int state=0);
 
-    const genericChar* Translate(const char* string, int lang = LANG_PHRASE, int clear = 0); // calls proper local object for text translation
+    const genericChar* Translate(const char* string, int lang = 0, int clear = 0); // calls proper local object for text translation (0 = use current global language)
     const genericChar* TimeDate(const TimeInfo &tm, int format, int lang = LANG_PHRASE);
     const genericChar* TimeDate(char* str, const TimeInfo &tm, int format, int lang = LANG_PHRASE); // returns time and date formated & translated
     const genericChar* PageNo(int current, int max, int lang = LANG_PHRASE); // returns nicely formated & translated page numbers
@@ -565,8 +560,6 @@ public:
 
     // Language management
     int SetLanguage(int lang);
-    int GetLanguage() { return current_language; }
-    int OpenLanguageDialog();
 
     int UserInput();
     int ClearSelectedZone();

@@ -1158,3 +1158,57 @@ int IndexTabZone::CanEdit(Terminal *t)
     return 0;
 }
 
+// LanguageButtonZone implementation
+
+LanguageButtonZone::LanguageButtonZone()
+{
+    FnTrace("LanguageButtonZone::LanguageButtonZone()");
+}
+
+std::unique_ptr<Zone> LanguageButtonZone::Copy()
+{
+    FnTrace("LanguageButtonZone::Copy()");
+
+    auto z = std::make_unique<LanguageButtonZone>();
+    (void)z->SetRegion(this);  // SetRegion has nodiscard, but we only need side effect
+    z->name.Set(name);
+    z->key       = key;
+    z->behave    = behave;
+    z->font      = font;
+    z->shape     = shape;
+    z->jump_type = jump_type;
+    z->jump_id   = jump_id;
+    return z;
+}
+
+RenderResult LanguageButtonZone::Render(Terminal *term, int update_flag)
+{
+    FnTrace("LanguageButtonZone::Render()");
+
+    // Render the button background first
+    RenderResult result = ButtonZone::Render(term, update_flag);
+
+    // Add "English" text to the button
+    int text_color = COLOR_DEFAULT;
+    if (term->selected_zone == this)
+        text_color = COLOR_WHITE;  // Use white for selected state
+
+    term->RenderText(term->Translate("Language"), x + 5, y + 2, text_color, FONT_DEFAULT, ALIGN_LEFT);
+
+    return result;
+}
+
+SignalResult LanguageButtonZone::Touch(Terminal *term, int tx, int ty)
+{
+    FnTrace("LanguageButtonZone::Touch()");
+
+    // For now, show a dialog indicating that only English is supported
+    // In the future, this could show a language selection menu
+
+    SimpleDialog *d = new SimpleDialog(term->Translate("Current Language: English\\Language switching is not currently available.\\Only English is supported."));
+    d->Button(term->Translate("Okay"));
+    term->OpenDialog(d);
+
+    return SIGNAL_OKAY;
+}
+

@@ -209,6 +209,17 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
     case SWITCH_MEASUREMENTS:
         str = FindStringByValue(settings->measure_system, MeasureSystemValue, MeasureSystemName);
         break;
+    case SWITCH_LOCALE:
+        // Show current language
+        {
+            int current_lang = GetGlobalLanguage();
+            if (current_lang == LANG_SPANISH) {
+                str = "Español";
+            } else {
+                str = "English";
+            }
+        }
+        break;
     case SWITCH_TIME_FORMAT:
         // Modern enum-based approach  
         if (auto format = vt::IntToEnum<TimeFormatType>(settings->time_format)) {
@@ -389,6 +400,32 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         break;
     case SWITCH_MEASUREMENTS:
         settings->measure_system = NextValue(settings->measure_system, MeasureSystemValue);
+        break;
+    case SWITCH_LOCALE:
+        // Language switching - cycle between English and Spanish
+        {
+            int current_lang = GetGlobalLanguage();
+            int next_lang;
+
+            if (current_lang == LANG_ENGLISH) {
+                next_lang = LANG_SPANISH;
+            } else {
+                next_lang = LANG_ENGLISH;
+            }
+
+            // Set the new language
+            term->SetLanguage(next_lang);
+
+            // Show confirmation dialog
+            const char* lang_name = (next_lang == LANG_ENGLISH) ? "English" : "Español";
+            char msg[256];
+            snprintf(msg, sizeof(msg), term->Translate("Language changed to: %s"), lang_name);
+
+            SimpleDialog *d = new SimpleDialog(msg);
+            d->Button(term->Translate("Okay"));
+            term->OpenDialog(d);
+        }
+        no_update = 1;  // Don't update settings since language is handled separately
         break;
     case SWITCH_TIME_FORMAT:
         settings->time_format = NextValue(settings->time_format, TimeFormatValue);
@@ -1731,8 +1768,8 @@ SignalResult DeveloperZone::Signal(Terminal *term, const genericChar* message)
         if (clear_flag >= 10)
         {
             sd = new SimpleDialog(term->Translate("Also clear labor data?"));
-            sd->Button("Yes", "clearsystemall");
-            sd->Button("No", "clearsystemsome");
+            sd->Button(term->Translate("Yes"), "clearsystemall");
+            sd->Button(term->Translate("No"), "clearsystemsome");
             sd->target_zone = this;
             term->OpenDialog(sd);
         }

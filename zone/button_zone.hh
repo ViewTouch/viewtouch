@@ -200,4 +200,18 @@ public:
     virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 };
 
+class LanguageButtonZone : public ButtonZone
+{
+public:
+    // Constructor
+    LanguageButtonZone();
+
+    // Member Functions
+    int          Type() { return ZONE_LANGUAGE_BUTTON; }
+    std::unique_ptr<Zone> Copy();
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
+};
+
 #endif

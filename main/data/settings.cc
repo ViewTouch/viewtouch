@@ -1251,6 +1251,9 @@ Settings::Settings()
     reverse_ssh_health_check_interval = 60; // 60 seconds
     reverse_ssh_max_retries = 10; // Maximum 10 retries
 
+    // Language Settings
+    current_language = LANG_ENGLISH; // Default to English
+
     email_send_server.Set("");
     changed            = 0;
     screen_blank_time  = 60;
@@ -2195,6 +2198,7 @@ int Settings::Load(const char* file)
     }
     if (version >= 106) {
         df.Read(enable_kitchen_bar_timers);
+        df.Read(current_language);
     }
 
 
@@ -2570,6 +2574,7 @@ int Settings::Save()
     df.Write(kv_alert_color);
     df.Write(kv_flash_color);
     df.Write(enable_kitchen_bar_timers);
+    df.Write(current_language);
 
     df.Close();
 

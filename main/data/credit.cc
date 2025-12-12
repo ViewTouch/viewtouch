@@ -676,7 +676,7 @@ int Credit::ValidateCardInfo()
             retval = 1;
         else
         {
-            ReportError("Got a bad card for validation.");
+            ReportError(term->Translate("Got a bad card for validation."));
             read_manual = 0;
             read_t1 = 0;
             read_t2 = 0;
@@ -1815,22 +1815,8 @@ const char* Credit::Name()
 int Credit::Country()
 {
     FnTrace("Credit::Country()");
-    int retval = LANG_ENGLISH;
-
-    if (strncmp("FR", country.Value(), COUNTRY_LEN) == -1)
-        retval = LANG_FRENCH;
-    else if (strncmp("FRENCH", country.Value(), 6) == 0)
-        retval = LANG_FRENCH;
-    else if (strncmp("ES", country.Value(), COUNTRY_LEN) == -1)
-        retval = LANG_SPANISH;
-    else if (strncmp("SPANISH", country.Value(), 7) == 0)
-        retval = LANG_SPANISH;
-    else if (strncmp("GR", country.Value(), COUNTRY_LEN) == -1)
-        retval = LANG_GREEK;
-    else if (strncmp("GREEK", country.Value(), 5) == 0)
-        retval = LANG_GREEK;
-
-    return retval;
+    // Language support removed - always return default language
+    return LANG_PHRASE;
 }
 
 int Credit::LastAction(int last)
@@ -2137,7 +2123,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
         }
         else
         {
-            printer->SetTitle("CreditCardReceipt");
+            printer->SetTitle(term->Translate("CreditCardReceipt"));
         }
         printer->Start();
         vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("==== TRANSACTION RECORD ====", lang));
@@ -2245,8 +2231,8 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
                      PAN(settings->show_entire_cc_num));
         }
         printer->Write(buffer);
-        vt_safe_string::safe_copy(buffer3, STRLENGTH, term->Translate(CreditTypeName(buffer2), lang));
-        snprintf(buffer, STRLENGTH, "%s: %s", term->Translate("Account Type", lang),
+        vt_safe_string::safe_copy(buffer3, STRLONG, term->Translate(CreditTypeName(buffer2), lang));
+        snprintf(buffer, STRLONG, "%s: %s", term->Translate("Account Type", lang),
                  buffer3);
         printer->Write(buffer);
         if (server_date.size() > 0 && server_time.size() > 0)

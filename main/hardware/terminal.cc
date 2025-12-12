@@ -488,9 +488,9 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             term->eod_failed = 1;
             break;
         default:
-            snprintf(str, STRLENGTH, "Cannot process unknown code:  %d", code);
+            snprintf(str, STRLENGTH, GlobalTranslate("Cannot process unknown code: %d"), code);
             ReportError(str);
-            snprintf(str, STRLENGTH, "  Last code processed was %d", last_code);
+            snprintf(str, STRLENGTH, GlobalTranslate("  Last code processed was %d"), last_code);
             ReportError(str);
             printf("Terminating due to unforseen error....\n");
             EndSystem();
@@ -605,7 +605,6 @@ Terminal::Terminal()
     timeout        = 15;
     reload_zone_db = 0;
     edit           = 0;
-    translate      = 0;
     is_server      = 0;
     kill_me        = 0;
     show_info      = 0;
@@ -643,9 +642,7 @@ Terminal::Terminal()
     curr_font_id   = -1;
     curr_font_width = -1;
 
-    // Language settings
-    current_language = LANG_ENGLISH;  // Default to English
-    SetGlobalLanguage(LANG_ENGLISH);  // Initialize global language
+    // Language is set globally from saved settings, don't override here
 }
 
 // Destructor
@@ -902,7 +899,7 @@ int Terminal::Jump(int jump_type, int jump_id)
     if (targetPage == nullptr)
 	{
         genericChar buffer[STRLENGTH];
-        snprintf(buffer, STRLENGTH, "Unable to find jump target (%d, %d) for %s",
+        snprintf(buffer, STRLENGTH, Translate("Unable to find jump target (%d, %d) for %s"),
                  jump_id, size, name.Value());
         TerminalError(buffer);
         return 1;
@@ -936,7 +933,7 @@ int Terminal::JumpToIndex(int idx)
 
         int cl = CompareList(idx, IndexValue);
         if (cl < 0)
-            ReportError("Unknown index - can't jump");
+            ReportError(Translate("Unknown index - can't jump"));
         else
         {
             genericChar str[64];
@@ -1047,7 +1044,7 @@ int Terminal::PushPage(int my_page_id)
 
     if (page_stack_size >= PAGE_STACK_SIZE)
     {
-        ReportError("ALERT: Page stack size exceeded");
+        ReportError(Translate("ALERT: Page stack size exceeded"));
         for (int i = 0; i < (PAGE_STACK_SIZE - 1); ++i)
             page_stack[i] = page_stack[i + 1];
         page_stack_size = PAGE_STACK_SIZE - 1;
@@ -1326,7 +1323,7 @@ int Terminal::OpenTabList(const char* message)
         sd->Button(GlobalTranslate("Cancel"));
     else
     {
-        sd->SetTitle("There are no open tabs.");
+        sd->SetTitle(Translate("There are no open tabs."));
         sd->Button(GlobalTranslate("Okay"));
     }
     OpenDialog(sd);
@@ -1371,8 +1368,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         "adminforceauth2", "adminforceauth3 ", "adminforceauth4",
         "faststartlogin", "opentab", "opentabcancel", "opentabamount",
         "opentabcard ", "opentabpay ", "continuetab", "continuetab2 ",
-        "closetab", "closetab2 ", "forcereturn", "setlanguage_english",
-        "setlanguage_french", "setlanguage_spanish", "setlanguage_greek",
+        "closetab", "closetab2 ", "forcereturn",
         "restart_now", "restart_postpone", "toggleimages", nullptr};
 	//for handy reference to the indices in the signal handler
 	enum comms  { LOGOUT, NEXT_ARCHIVE, PRIOR_ARCHIVE, OPEN_DRAWER,
@@ -1382,8 +1378,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
                   ADMINFORCE2, ADMINFORCE3, ADMINFORCE4,
                   FASTSTARTLOGIN, OPENTAB, OPENTABCANCEL, OPENTABAMOUNT,
                   OPENTABCARD, OPENTABPAY, CONTINUETAB, CONTINUETAB2,
-                  CLOSETAB, CLOSETAB2, FORCERETURN, SETLANGUAGE_ENGLISH,
-                  SETLANGUAGE_FRENCH, SETLANGUAGE_SPANISH, SETLANGUAGE_GREEK,
+                  CLOSETAB, CLOSETAB2, FORCERETURN,
                   RESTART_NOW, RESTART_POSTPONE, TOGGLE_IMAGES};
 
     // Check for NULL message first
@@ -1488,9 +1483,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         vt_safe_string::safe_copy(msg, STRLONG, "killall vt_ccq_pipe");
         system(msg);
         msg[0] = '\0';
-        vt_safe_string::safe_concat(msg, STRLENGTH, "Connection reset.\\");
-        vt_safe_string::safe_concat(msg, STRLENGTH, "Please wait 60 seconds\\");
-        vt_safe_string::safe_concat(msg, STRLENGTH, "and try again.");
+        vt_safe_string::safe_copy(msg, STRLONG, Translate("Connection reset.\\Please wait 60 seconds\\and try again."));
         sd = new SimpleDialog(msg);
         sd->Button(Translate("Okay"));
         OpenDialog(sd);
@@ -1505,7 +1498,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
     case ADMINFORCE1:
         if (admin_forcing == 0)
         {
-            CreditCardVoiceDialog *ccvd = new CreditCardVoiceDialog("Enter TTID", "adminforceauth2");
+            CreditCardVoiceDialog *ccvd = new CreditCardVoiceDialog(GlobalTranslate("Enter TTID"), "adminforceauth2");
             OpenDialog(ccvd);  // OpenDialog takes ownership and will delete 'ccvd' when done
             admin_forcing = 1;
         }
@@ -1513,7 +1506,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
     case ADMINFORCE2:
         if (admin_forcing == 1)
         {
-            TenKeyDialog *tkd = new TenKeyDialog("Enter Final Amount", "adminforceauth3", 0, 1);
+            TenKeyDialog *tkd = new TenKeyDialog(GlobalTranslate("Enter Final Amount"), "adminforceauth3", 0, 1);
             if (dialog != nullptr)
                 NextDialog(tkd);  // NextDialog takes ownership and will delete 'tkd' when done
             else
@@ -1579,18 +1572,6 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         else
             force_jump_source = 0;
         break;
-    case SETLANGUAGE_ENGLISH:
-        SetLanguage(LANG_ENGLISH);
-        return SIGNAL_OKAY;
-    case SETLANGUAGE_FRENCH:
-        SetLanguage(LANG_FRENCH);
-        return SIGNAL_OKAY;
-    case SETLANGUAGE_SPANISH:
-        SetLanguage(LANG_SPANISH);
-        return SIGNAL_OKAY;
-    case SETLANGUAGE_GREEK:
-        SetLanguage(LANG_GREEK);
-        return SIGNAL_OKAY;
     case RESTART_NOW:
         // Handle immediate restart
         KillDialog();  // Close the restart dialog
@@ -1625,7 +1606,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         Settings *settings_ptr = GetSettings();
         settings_ptr->restart_postpone_count++;
         settings_ptr->Save();
-        ReportError("Scheduled restart postponed for 1 hour");
+        ReportError(Translate("Scheduled restart postponed for 1 hour"));
         return SIGNAL_OKAY;
     }
     
@@ -1648,7 +1629,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         
         // Show confirmation message
         char confirmation_msg[STRLONG];
-        snprintf(confirmation_msg, STRLONG, "Button images %s on this terminal", show_button_images ? "ENABLED" : "DISABLED");
+        snprintf(confirmation_msg, STRLONG, Translate("Button images %s on this terminal"), show_button_images ? Translate("ENABLED") : Translate("DISABLED"));
         ReportError(confirmation_msg);
         
         return SIGNAL_OKAY;
@@ -2040,8 +2021,6 @@ int Terminal::LogoutUser(int update)
         return 1;
 
     int error = StoreCheck(0);
-    if (translate)
-        TranslateTerm();
     if (edit)
         EditTerm();
 
@@ -2437,7 +2416,7 @@ int Terminal::NextPage()
         return 1;
 
     // can't edit system pages?
-    int flag = !(CanEditSystem() || translate);
+    int flag = !CanEditSystem();
     do
         currPage = currPage->next;
     while (currPage && currPage->id < 0 && flag);
@@ -2462,7 +2441,7 @@ int Terminal::ForePage()
         return 1;
 
     // can't edit system pages?
-    int flag = !(CanEditSystem() || translate);
+    int flag = !CanEditSystem();
     do
         currPage = currPage->fore;
     while (currPage && currPage->id < 0 && flag);
@@ -2644,7 +2623,7 @@ static const char* GetDrawerUnavailableReason(Terminal *term, Settings *settings
             d = d->next;
         }
         if (!found_terminal_drawer)
-            return "No drawer available: No drawer is attached to this terminal in Trusted mode";
+            return GlobalTranslate("No drawer available: No drawer is attached to this terminal in Trusted mode");
         break;
     }
     case DRAWER_SERVER:
@@ -2666,9 +2645,9 @@ static const char* GetDrawerUnavailableReason(Terminal *term, Settings *settings
                 d = d->next;
             }
             if (!any_drawers)
-                return "No drawer available: No drawers are configured in Server Bank mode";
+                return GlobalTranslate("No drawer available: No drawers are configured in Server Bank mode");
             else
-                return "No drawer available: Unable to create Server Bank drawer for this user";
+                return GlobalTranslate("No drawer available: Unable to create Server Bank drawer for this user");
         }
         break;
     }
@@ -2695,14 +2674,14 @@ static const char* GetDrawerUnavailableReason(Terminal *term, Settings *settings
         if (!found_assigned && !found_available)
         {
             if (term->drawer_count == 0)
-                return "No drawer available: No drawers are attached to this terminal in Assigned mode";
+                return GlobalTranslate("No drawer available: No drawers are attached to this terminal in Assigned mode");
             else
-                return "No drawer available: No drawers are assigned to this user or available for assignment";
+                return GlobalTranslate("No drawer available: No drawers are assigned to this user or available for assignment");
         }
         break;
     }
     default:
-        return "No drawer available: Unknown drawer mode";
+        return GlobalTranslate("No drawer available: Unknown drawer mode");
     }
     
     return nullptr;  // Drawer should be available
@@ -3089,12 +3068,9 @@ int Terminal::EditTerm(int save_data, int edit_mode)
 
     // The Else block.  Here's what happens when we switch into
     // edit mode.
-    if (translate)
-        TranslateTerm();
-
     for (Terminal *t = parent->TermList(); t != nullptr; t = t->next)
     {
-        if (t->edit || t->translate)
+        if (t->edit)
         {
             SimpleDialog *d = new SimpleDialog(Translate("Someone else is already in Edit Mode"));
             d->Button(GlobalTranslate("Okay"));
@@ -3202,35 +3178,6 @@ int Terminal::EditTerm(int save_data, int edit_mode)
     WInt8(TERM_SHOWWINDOW);
     WInt16(WIN_TOOLBAR);
     SendNow();
-    return 0;
-}
-
-int Terminal::TranslateTerm()
-{
-    FnTrace("Terminal::TranslateTerm()");
-    if (parent == nullptr)
-        return 1;
-    if (user == nullptr || !user->CanEdit())
-        return 1;
-
-    if (translate)
-    {
-        translate = 0;
-        MasterLocale->Save();
-        Draw(RENDER_NEW);
-        return 0;
-    }
-
-    if (edit)
-        EditTerm();
-
-    for (Terminal *t = parent->TermList(); t != nullptr; t = t->next)
-        if (t->edit || t->translate)
-            return 1;  // another terminal already being edited
-
-    // Start editing term
-    translate = 1;
-    Draw(RENDER_NEW);
     return 0;
 }
 
@@ -3648,7 +3595,7 @@ int Terminal::FinalizeOrders()
                 jump_target = -1;        
             if (Jump(JUMP_NORMAL, jump_target))
             {
-                snprintf(str, STRLENGTH, "Couldn't jump to page %d", PAGE_ID_SETTLEMENT);
+                snprintf(str, STRLENGTH, Translate("Couldn't jump to page %d"), PAGE_ID_SETTLEMENT);
                 ReportError(str);
             }
             break;
@@ -3656,7 +3603,7 @@ int Terminal::FinalizeOrders()
             // For SelfOrder terminals, go to settlement page after finalizing
             if (Jump(JUMP_NORMAL, jump_target))
             {
-                snprintf(str, STRLENGTH, "Couldn't jump to page %d", PAGE_ID_SETTLEMENT);
+                snprintf(str, STRLENGTH, Translate("Couldn't jump to page %d"), PAGE_ID_SETTLEMENT);
                 ReportError(str);
             }
             break;
@@ -3672,11 +3619,9 @@ int Terminal::FinalizeOrders()
 const genericChar* Terminal::PageNo(int current, int page_max, int lang)
 {
     FnTrace("Terminal::PageNo()");
-    // If lang is LANG_PHRASE (default), use current language
-    if (lang == LANG_PHRASE)
-        lang = current_language;
+    // Language support removed - always use default language
     static genericChar buffer[32];
-    return MasterLocale->Page(current, page_max, lang, buffer);
+    return MasterLocale->Page(current, page_max, LANG_PHRASE, buffer);
 }
 
 const genericChar* Terminal::UserName(int user_id)
@@ -3745,27 +3690,33 @@ int Terminal::PriceToInteger(const genericChar* price)
 const genericChar* Terminal::Translate(const genericChar* str, int lang, int clear)
 {
     FnTrace("Terminal::Translate()");
-    // If lang is LANG_PHRASE (default), use current language
-    if (lang == LANG_PHRASE)
-        lang = current_language;
+    // If no language specified (lang == 0), use the current global language
+    if (lang == 0) {
+        lang = GetGlobalLanguage();
+    }
+    // Use the specified language for translation
     return MasterLocale->Translate(str, lang, clear);
 }
 
 const genericChar* Terminal::TimeDate(const TimeInfo &timevar, int format, int lang)
 {
     FnTrace("Terminal::TimeDate(timeinfo, int, int)");
-    // If lang is LANG_PHRASE (default), use current language
-    if (lang == LANG_PHRASE)
-        lang = current_language;
+    // If no language specified (lang == 0), use the current global language
+    if (lang == 0) {
+        lang = GetGlobalLanguage();
+    }
+    // Use the specified language for time/date formatting
     return MasterLocale->TimeDate(GetSettings(), timevar, format, lang);
 }
 
 const genericChar* Terminal::TimeDate(genericChar* buffer, const TimeInfo &timevar, int format, int lang)
 {
     FnTrace("Terminal::TimeDate(char, timeinfo, int, int)");
-    // If lang is LANG_PHRASE (default), use current language
-    if (lang == LANG_PHRASE)
-        lang = current_language;
+    // If no language specified (lang == 0), use the current global language
+    if (lang == 0) {
+        lang = GetGlobalLanguage();
+    }
+    // Use the specified language for time/date formatting
     return MasterLocale->TimeDate(GetSettings(), timevar, format, lang, buffer);
 }
 
@@ -3824,8 +3775,6 @@ int Terminal::RenderBlankPage()
         mode = MODE_MACRO;
     else if (edit)
         mode = MODE_EDIT;
-    else if (translate)
-        mode = MODE_TRANSLATE;
     else if (user && user->training)
         mode = MODE_TRAINING;
 
@@ -4815,8 +4764,6 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             return EditTerm(0);  // Exit edit without saving, if we're in edit mode
         else
             return EditTerm(1);  // EditTerm defaults to 1 anyway
-    case XK_F2:  // translate term
-        return TranslateTerm();
     case XK_F3:  // record activity
         if (system_data->settings.enable_f3_f4_recording)
         {
@@ -4860,8 +4807,6 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             OpenDialog(sd);
         }
         return 0;
-    case XK_F8:  // language selection dialog
-        return OpenLanguageDialog();
     case XK_F9:
         if (state & ShiftMask)
             return EditTerm(0);  // Exit edit without saving, if we're in edit mode
@@ -4870,7 +4815,7 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
         return EditTerm(0);
     }
 
-    if (edit || translate)
+    if (edit)
     {
         switch (my_code)
         {
@@ -5014,17 +4959,6 @@ int Terminal::MouseInput(int action, int x, int y)
     last_input = SystemTime;
 
     Zone *zone = nullptr;
-    if (translate)
-    {
-        zone = page->FindTranslateZone(this, x, y);
-        if ((action & MOUSE_RIGHT) && (action & MOUSE_PRESS))
-        {
-            if (zone == nullptr && y < 32)
-                return TranslatePage(page);
-            else
-                return TranslateZone(zone);
-        }
-    }
 
     if (edit == 0)
     {
@@ -6240,7 +6174,7 @@ int Terminal::ShowPageList()
 int Terminal::JumpList(int selected)
 {
     FnTrace("Terminal::JumpList()");
-    if (!edit && !translate)
+    if (!edit)
         return 1;
 
     int edit_system = CanEditSystem();
@@ -7422,35 +7356,30 @@ int Terminal::ReloadFonts()
     return 0;
 }
 
-// Language management methods
 int Terminal::SetLanguage(int lang)
 {
     FnTrace("Terminal::SetLanguage()");
-    if (lang != LANG_ENGLISH && lang != LANG_FRENCH && lang != LANG_SPANISH && lang != LANG_GREEK)
+    // Support English and Spanish
+    if (lang != LANG_PHRASE && lang != LANG_ENGLISH && lang != LANG_SPANISH)
         return 1;  // Invalid language
-    
-    current_language = lang;
-    SetGlobalLanguage(lang);  // Update global language for static functions
-    
+
+    // Set the global language for translation functions
+    SetGlobalLanguage(lang);
+
+    // Save the language setting to persistent storage
+    Settings *settings = GetSettings();
+    if (settings) {
+        settings->current_language = lang;
+        settings->Save();  // Save settings to persist the language choice
+    }
+
     // Update all terminals with the new language
     UpdateAllTerms(UPDATE_SETTINGS, nullptr);
-    
+
     // Redraw the current page to show translated text
     Draw(RENDER_NEW);
-    
+
     return 0;
 }
 
-int Terminal::OpenLanguageDialog()
-{
-    FnTrace("Terminal::OpenLanguageDialog()");
-    
-    SimpleDialog *d = new SimpleDialog(Translate("Select Language"));
-    d->Button(Translate("English"), "setlanguage_english");
-    d->Button(Translate("Français"), "setlanguage_french");
-    d->Button(Translate("Español"), "setlanguage_spanish");
-    d->Button(Translate("Ελληνικά"), "setlanguage_greek");
-    d->Button(Translate("Cancel"), "cancel");
-    
-    return OpenDialog(d);
-}
+// Language management methods
