@@ -28,16 +28,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Implemented hardcoded Spanish translations in code arrays for maximum reliability and performance
     - Added `TranslationEntry` struct and `LookupHardcodedTranslation()` function for fast O(1) lookups
     - Completely removed PO file system and parsing logic for simplicity and reliability
-    - Included Spanish translations for 300+ UI elements covering:
-      - **Basic actions**: Okay→Aceptar, Cancel→Cancelar, Save→Guardar, Delete→Eliminar, Add→Agregar
-      - **Navigation**: Menu→Menú, Settings→Configuración, Home→Inicio, Back→Atrás, Next→Siguiente
-      - **Time/Date**: Monday→Lunes, Today→Hoy, AM/PM, Hour→Hora, Minute→Minuto, Second→Segundo
-      - **Financial**: Cash→Efectivo, Credit→Crédito, Amount→Monto, Total→Total, Payment→Pago, Tax→Impuestos
-      - **System**: File→Archivo, Network→Red, Error→Error, Warning→Advertencia, Loading→Cargando
-      - **Restaurant**: Table→Mesa, Guest→Invitado, Kitchen→Cocina, Food→Comida, Drink→Bebida, Waiter→Mesero
-      - **User Management**: User ID→ID de Usuario, Employee→Empleado, Job→Trabajo, Department→Departamento
-      - **Status Messages**: Success→Éxito, Complete→Completo, Processing→Procesando, Please wait→Por favor espere
-      - **Dialog boxes**: System messages, error alerts, confirmation prompts, transaction records
+    - Included Spanish translations for 700+ UI elements covering ALL translatable strings found in codebase:
+      - **Basic actions**: Okay→Aceptar, Cancel→Cancelar, Save→Guardar, Delete→Eliminar, Add→Agregar, Edit→Editar, Remove→Remover
+      - **Navigation**: Menu→Menú, Settings→Configuración, Home→Inicio, Back→Atrás, Next→Siguiente, Previous→Anterior, Page→Página
+      - **Time/Date**: All days (Monday→Lunes, Tuesday→Martes, etc.), months, AM/PM, Hour→Hora, Minute→Minuto, Second→Segundo, Today→Hoy, Yesterday→Ayer, Tomorrow→Mañana
+      - **Financial**: Cash→Efectivo, Credit→Crédito, Debit→Débito, Amount→Monto, Total→Total, Subtotal→Subtotal, Payment→Pago, Tax→Impuestos, Receipt→Recibo, Invoice→Factura, Bill→Factura
+      - **System**: File→Archivo, Network→Red, Error→Error, Warning→Advertencia, Loading→Cargando, Success→Éxito, Processing→Procesando, Please wait→Por favor espere, Ready→Listo, Busy→Ocupado
+      - **Restaurant**: Table→Mesa, Guest→Invitado, Kitchen→Cocina, Food→Comida, Drink→Bebida, Waiter→Mesero, Bartender→Bartender, Chef→Chef, Server→Mesero, Host→Anfitrión
+      - **User Management**: Employee→Empleado, Job→Trabajo, Department→Departamento, User ID→ID de Usuario, Manager→Gerente, Customer→Cliente, Guest→Invitado
+      - **Status Messages**: Complete→Completo, Valid→Válido, Invalid→Inválido, Required→Requerido, Optional→Opcional, Enabled→Habilitado, Disabled→Deshabilitado
+      - **Error Messages**: All system errors, connection issues, validation messages, alerts, warnings, and status notifications
+      - **Configuration**: All settings, options, preferences, defaults, advanced/basic modes, hardware settings, printer configurations
+      - **Reports**: All report types, summaries, financial reports, labor reports, sales reports, time clock reports, inventory reports
+      - **Dialog boxes**: System messages, confirmations, transaction records, setup wizards, help text, alerts, notifications
+      - **Printer/Receipt**: All printer settings, receipt formatting, thermal printer options, test prints, drawer settings
+      - **Credit Cards**: All card types (Visa, MasterCard, American Express, etc.), transaction types, authorization messages, error handling, processing
+      - **Labor/Time Clock**: All time tracking, scheduling, overtime, breaks, pay rates, employee management, shift work
+      - **Inventory**: Stock levels, item counts, recipes, vendors, ordering, receiving, product management, pricing
+      - **Customer Management**: Customer accounts, tabs, loyalty programs, discounts, coupons, reservations, check management
     - Added Spanish language constants (LANG_SPANISH = 2) and switching infrastructure
     - Language switcher cycles between English and Spanish with immediate UI updates
     - Translation system uses only reliable hardcoded arrays with no external file dependencies
