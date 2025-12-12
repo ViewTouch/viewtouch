@@ -686,8 +686,24 @@ int Layer::Rectangle(int rx, int ry, int rw, int rh, int image)
 
     if (r.w > 0 && r.h > 0)
     {
-        XSetTSOrigin(dis, gfx, page_x, page_y);
-        XSetTile(dis, gfx, GetTexture(image));
+        // Optimize: cache current tile and tile origin to avoid redundant X11 calls
+        static Pixmap current_tile = 0;
+        static int current_origin_x = -1;
+        static int current_origin_y = -1;
+
+        Pixmap new_tile = GetTexture(image);
+
+        if (new_tile != current_tile) {
+            XSetTile(dis, gfx, new_tile);
+            current_tile = new_tile;
+        }
+
+        if (page_x != current_origin_x || page_y != current_origin_y) {
+            XSetTSOrigin(dis, gfx, page_x, page_y);
+            current_origin_x = page_x;
+            current_origin_y = page_y;
+        }
+
         XSetFillStyle(dis, gfx, FillTiled);
         XFillRectangle(dis, pix, gfx, page_x + r.x, page_y + r.y, r.w, r.h);
         XSetFillStyle(dis, gfx, FillSolid);

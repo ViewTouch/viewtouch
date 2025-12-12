@@ -70,6 +70,12 @@
 #endif
 
 #include <filesystem>       // generic filesystem functions available since C++17
+#include <unordered_map>
+#include <mutex>
+#include <chrono>
+#include <iostream>
+#include <vector>
+#include <numeric>
 
 namespace fs = std::filesystem;
 
@@ -199,6 +205,308 @@ public:
     int get_reconnect_attempts() const { return reconnect_attempts_; }
     int get_max_reconnect_attempts() const { return max_reconnect_attempts_; }
 };
+
+// Forward declarations for texture loading functions
+Pixmap LoadPixmapFromFile(const char* file_name);
+
+// Texture manager for lazy loading and memory management
+class TextureManager {
+private:
+    std::array<Pixmap, IMAGE_COUNT> textures_;
+    std::unordered_map<int, time_t> last_access_time_;
+    std::unordered_map<int, int> access_count_;
+    std::mutex mutex_;
+    time_t startup_time_;
+    Display* display_;
+
+    // Define commonly used textures that should be preloaded
+    static constexpr std::array<int, 3> PRELOAD_TEXTURES = {
+        IMAGE_DARK_SAND,
+        IMAGE_SAND,
+        IMAGE_LIT_SAND
+    };
+
+    // Context-specific texture sets for intelligent preloading
+    static constexpr std::array<int, 5> UI_COMMON_TEXTURES = {
+        IMAGE_DARK_SAND, IMAGE_SAND, IMAGE_LIT_SAND,
+        IMAGE_PARCHMENT, IMAGE_CANVAS
+    };
+
+    static constexpr std::array<int, 3> LOGIN_TEXTURES = {
+        IMAGE_DARK_SAND, IMAGE_PARCHMENT, IMAGE_LIT_SAND
+    };
+
+    static constexpr std::array<int, 4> ORDER_ENTRY_TEXTURES = {
+        IMAGE_SAND, IMAGE_LIT_SAND, IMAGE_DARK_SAND, IMAGE_CANVAS
+    };
+
+    static constexpr std::array<int, 3> REPORT_TEXTURES = {
+        IMAGE_PARCHMENT, IMAGE_GRAY_PARCHMENT, IMAGE_DARK_SAND
+    };
+
+    // Maximum number of textures to keep in memory
+    static constexpr size_t MAX_TEXTURES_IN_MEMORY = 10;
+
+public:
+    TextureManager() : startup_time_(time(NULL)), display_(nullptr) {
+        // Initialize all textures to 0 (not loaded)
+        textures_.fill(0);
+    }
+
+    ~TextureManager() {
+        // Clean up all loaded textures
+        unload_all();
+    }
+
+    // Load a texture on demand
+    Pixmap load_texture(int texture_id) {
+        std::lock_guard<std::mutex> lock(mutex_);
+
+        if (texture_id < 0 || texture_id >= IMAGE_COUNT) {
+            return 0;
+        }
+
+        // If already loaded, update access time and return
+        if (textures_[texture_id]) {
+            last_access_time_[texture_id] = time(NULL);
+            access_count_[texture_id]++;
+            return textures_[texture_id];
+        }
+
+        // Try multiple possible locations for texture files
+        std::vector<std::string> possible_paths = {
+            TextureFiles[texture_id],  // Original path
+            std::string(VIEWTOUCH_PATH) + "/" + TextureFiles[texture_id],  // VIEWTOUCH_PATH prefix
+            "/usr/viewtouch/" + std::string(TextureFiles[texture_id]),    // Absolute path
+            "./" + std::string(TextureFiles[texture_id]),                 // Current directory
+            "../share/viewtouch/" + std::string(TextureFiles[texture_id]) // Share directory
+        };
+
+        Pixmap pixmap = 0;
+        for (const auto& path : possible_paths) {
+            pixmap = LoadPixmapFromFile(path.c_str());
+            if (pixmap) {
+                break;  // Found a working path
+            }
+        }
+
+        if (!pixmap) {
+            // If all paths failed, fall back to compiled-in data
+            pixmap = LoadPixmap(ImageData[texture_id]);
+        }
+
+        if (pixmap) {
+            textures_[texture_id] = pixmap;
+            last_access_time_[texture_id] = time(NULL);
+            access_count_[texture_id] = 1;
+
+            // If we've exceeded the memory limit, unload least recently used
+            // Temporarily disabled to debug X errors
+            /*
+            if (loaded_texture_count() > MAX_TEXTURES_IN_MEMORY) {
+                unload_least_recently_used();
+            }
+            */
+        }
+
+        return pixmap;
+    }
+
+    // Get texture (loads if not already loaded)
+    Pixmap get_texture(int texture_id) {
+        if (texture_id < 0 || texture_id >= IMAGE_COUNT) {
+            return get_default_texture();
+        }
+        return load_texture(texture_id);
+    }
+
+    // Preload commonly used textures at startup
+    void preload_common_textures() {
+        for (int texture_id : PRELOAD_TEXTURES) {
+            load_texture(texture_id);
+        }
+    }
+
+    // Preload textures for specific UI contexts
+    void preload_context_textures(int context) {
+        std::lock_guard<std::mutex> lock(mutex_);
+
+        switch (context) {
+            case 0: // Login screen
+                for (int texture_id : LOGIN_TEXTURES) {
+                    if (!textures_[texture_id]) { // Only load if not already loaded
+                        load_texture(texture_id);
+                    }
+                }
+                break;
+            case 1: // Order entry
+                for (int texture_id : ORDER_ENTRY_TEXTURES) {
+                    if (!textures_[texture_id]) { // Only load if not already loaded
+                        load_texture(texture_id);
+                    }
+                }
+                break;
+            case 2: // Reports
+                for (int texture_id : REPORT_TEXTURES) {
+                    if (!textures_[texture_id]) { // Only load if not already loaded
+                        load_texture(texture_id);
+                    }
+                }
+                break;
+            default: // General UI
+                for (int texture_id : UI_COMMON_TEXTURES) {
+                    if (!textures_[texture_id]) { // Only load if not already loaded
+                        load_texture(texture_id);
+                    }
+                }
+                break;
+        }
+    }
+
+    // Get default texture (always keep DARK_SAND loaded)
+    Pixmap get_default_texture() {
+        return get_texture(IMAGE_DARK_SAND);
+    }
+
+    // Set the display for texture cleanup (call once after X11 initialization)
+    void set_display(Display* display) {
+        display_ = display;
+    }
+
+    // Unload a specific texture
+    void unload_texture(int texture_id) {
+        std::lock_guard<std::mutex> lock(mutex_);
+
+        if (texture_id >= 0 && texture_id < IMAGE_COUNT && textures_[texture_id] && display_) {
+            // Don't unload preload textures
+            bool is_preload = false;
+            for (int preload_id : PRELOAD_TEXTURES) {
+                if (texture_id == preload_id) {
+                    is_preload = true;
+                    break;
+                }
+            }
+            if (!is_preload) {
+                XFreePixmap(display_, textures_[texture_id]);
+                textures_[texture_id] = 0;
+                last_access_time_.erase(texture_id);
+                access_count_.erase(texture_id);
+            }
+        }
+    }
+
+    // Unload least recently used texture
+    void unload_least_recently_used() {
+        int oldest_texture = -1;
+        time_t oldest_time = time(NULL);
+
+        for (const auto& pair : last_access_time_) {
+            int texture_id = pair.first;
+            time_t access_time = pair.second;
+
+            // Don't unload preload textures
+            bool is_preload = false;
+            for (int preload_id : PRELOAD_TEXTURES) {
+                if (texture_id == preload_id) {
+                    is_preload = true;
+                    break;
+                }
+            }
+
+            if (!is_preload && access_time < oldest_time) {
+                oldest_time = access_time;
+                oldest_texture = texture_id;
+            }
+        }
+
+        if (oldest_texture != -1) {
+            unload_texture(oldest_texture);
+        }
+    }
+
+    // Get number of loaded textures
+    size_t loaded_texture_count() const {
+        size_t count = 0;
+        for (const auto& tex : textures_) {
+            if (tex != 0) count++;
+        }
+        return count;
+    }
+
+    // Unload all textures (except preload ones)
+    void unload_all() {
+        for (int i = 0; i < IMAGE_COUNT; ++i) {
+            unload_texture(i);
+        }
+    }
+
+    // Get memory usage statistics
+    void get_stats(size_t& loaded_count, size_t& total_accesses) const {
+        loaded_count = loaded_texture_count();
+        total_accesses = 0;
+        for (const auto& pair : access_count_) {
+            total_accesses += pair.second;
+        }
+    }
+
+    // Benchmark texture loading performance
+    void benchmark_texture_loading() {
+        std::lock_guard<std::mutex> lock(mutex_);
+
+        std::cout << "=== Texture Loading Benchmark ===\n";
+        std::cout << "Total textures available: " << IMAGE_COUNT << "\n";
+
+        // Measure preload performance
+        auto start_time = std::chrono::high_resolution_clock::now();
+        preload_common_textures();
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto preload_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+
+        size_t loaded_count, total_accesses;
+        get_stats(loaded_count, total_accesses);
+
+        std::cout << "Preloaded textures: " << loaded_count << "\n";
+        std::cout << "Preload time: " << preload_duration.count() << "ms\n";
+
+        // Measure individual texture access times
+        std::vector<long long> access_times;
+        for (size_t i = 0; i < static_cast<size_t>(IMAGE_COUNT); ++i) {
+            bool is_preload = false;
+            for (size_t j = 0; j < PRELOAD_TEXTURES.size(); ++j) {
+                if (i == static_cast<size_t>(PRELOAD_TEXTURES[j])) {
+                    is_preload = true;
+                    break;
+                }
+            }
+            if (!is_preload) {
+                auto access_start = std::chrono::high_resolution_clock::now();
+                get_texture(static_cast<int>(i));
+                auto access_end = std::chrono::high_resolution_clock::now();
+                auto access_duration = std::chrono::duration_cast<std::chrono::microseconds>(access_end - access_start);
+                access_times.push_back(access_duration.count());
+            }
+        }
+
+        if (!access_times.empty()) {
+            double avg_access = std::accumulate(access_times.begin(), access_times.end(), 0.0) / access_times.size();
+            auto max_access = *std::max_element(access_times.begin(), access_times.end());
+            auto min_access = *std::min_element(access_times.begin(), access_times.end());
+
+            std::cout << "Lazy load access times (microseconds):\n";
+            std::cout << "  Average: " << avg_access << "μs\n";
+            std::cout << "  Min: " << min_access << "μs\n";
+            std::cout << "  Max: " << max_access << "μs\n";
+        }
+
+        get_stats(loaded_count, total_accesses);
+        std::cout << "Total loaded textures: " << loaded_count << "\n";
+        std::cout << "Total texture accesses: " << total_accesses << "\n";
+        std::cout << "================================\n";
+    }
+};
+
+// Global texture manager instance
+TextureManager texture_manager;
 
 // RAII wrapper for file descriptors
 class FileDescriptor {
@@ -2652,14 +2960,51 @@ int AddColor(const int red, const int green, const int blue) noexcept
 Pixmap LoadPixmap(const char**image_data)
 {
     FnTrace("LoadPixmap()");
-    
+
     Pixmap retxpm = 0;
     int status;
-    
+
     status = XpmCreatePixmapFromData(Dis, MainWin, const_cast<char**>(image_data), &retxpm, NULL, NULL);
     if (status != XpmSuccess)
         fprintf(stderr, "XpmError:  %s\n", XpmGetErrorString(status));
-    
+
+    return retxpm;
+}
+
+/****
+ * LoadPixmapFromFile: Load a Pixmap directly from an XPM file
+ ****/
+Pixmap LoadPixmapFromFile(const char* file_name)
+{
+    FnTrace("LoadPixmapFromFile()");
+
+    Pixmap retxpm = 0;
+    XpmAttributes attributes;
+    int status;
+    struct stat sb;
+
+    if (stat(file_name, &sb) == 0)
+    {
+        if (sb.st_size <= MAX_XPM_SIZE)
+        {
+            attributes.valuemask = 0;
+            status = XpmReadFileToPixmap(Dis, MainWin, file_name, &retxpm, NULL, &attributes);
+            if (status != XpmSuccess)
+            {
+                // Silently fail - will fall back to compiled data
+            }
+            else if (attributes.width  > (unsigned int)WinWidth ||
+                     attributes.height > (unsigned int)WinHeight)
+            {
+                if (retxpm) {
+                    XFreePixmap(Dis, retxpm);
+                    retxpm = 0;
+                }
+            }
+            XpmFreeAttributes(&attributes);
+        }
+    }
+
     return retxpm;
 }
 
@@ -3550,7 +3895,7 @@ int Calibrate(int status)
 
     ResetView();
     XSetFillStyle(Dis, Gfx, FillTiled);
-    XSetTile(Dis, Gfx, Texture[IMAGE_DARK_SAND]);
+    XSetTile(Dis, Gfx, GetTexture(IMAGE_DARK_SAND));
     XFillRectangle(Dis, MainWin, Gfx, 0, 0, WinWidth, WinHeight);
     XFlush(Dis);
 
@@ -3565,11 +3910,11 @@ int Calibrate(int status)
                           (XtInputCallbackProc)CalibrateCB, NULL);
         break;
     case 1:   // 2nd stage - get lower left touch
-        XSetTile(Dis, Gfx, Texture[IMAGE_LIT_SAND]);
+        XSetTile(Dis, Gfx, GetTexture(IMAGE_LIT_SAND));
         XFillRectangle(Dis, MainWin, Gfx, 0, WinHeight - 40, 40, 40);
         break;
     case 2:   // 3rd stage - get upper right touch
-        XSetTile(Dis, Gfx, Texture[IMAGE_LIT_SAND]);
+        XSetTile(Dis, Gfx, GetTexture(IMAGE_LIT_SAND));
         XFillRectangle(Dis, MainWin, Gfx, WinWidth - 40, 0, 40, 40);
         break;
     }
@@ -3751,6 +4096,9 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         ReportError(error_msg);
         throw DisplayException(error_msg);
     }
+
+    // Set display for texture manager
+    texture_manager.set_display(Dis);
 
     Connection = ConnectionNumber(Dis);
     ScrNo      = DefaultScreen(Dis);
@@ -3941,20 +4289,13 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     MainLayer = l;
     ResetView();
 
-    // Set up textures
-    for (int image = 0; image < IMAGE_COUNT; image++)
-    {
-        Pixmap pixmap = LoadPixmap(ImageData[image]);
-        if (pixmap)
-            Texture[image] = pixmap;
-        else
-        {
-            vt_safe_string::safe_format(str, STRLENGTH, "Can't Create Pixmap #%d On Display '%s'",
-                    image, display);
-            ReportError(str);
-            return 1;
-        }
-    }
+    // Set up textures - preload commonly used ones
+    texture_manager.preload_common_textures();
+
+    // Run benchmark in debug mode
+#ifdef DEBUG
+    texture_manager.benchmark_texture_loading();
+#endif
     ReadScreenSaverPix();
 
     // Add Iconify Button
@@ -4426,10 +4767,7 @@ Pixmap GetTexture(const int texture) noexcept
 {
     FnTrace("GetTexture()");
 
-    if (texture >= 0 && texture < IMAGE_COUNT && Texture[texture])
-        return Texture[texture];
-    else
-        return Texture[0]; // default texture
+    return texture_manager.get_texture(texture);
 }
 
 XftFont *GetXftFontInfo(const int font_id) noexcept
