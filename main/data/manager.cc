@@ -174,6 +174,8 @@ genericChar displaystr[STRLENGTH];
 genericChar restart_flag_str[STRLENGTH];
 int         use_net = 1;
 
+#define FONT_COUNT (int)(sizeof(FontData)/sizeof(FontDataType))
+
 struct FontDataType
 {
     int id;
@@ -228,7 +230,6 @@ unsigned long restart_timeout_id = 0; // Timeout for auto restart
 #define MAX_CONN_TRIES 10
 #endif
 
-#define FONT_COUNT (int)(sizeof(FontData)/sizeof(FontDataType))
 
 #define RESTART_FLAG         ".restart_flag"
 
@@ -1155,7 +1156,7 @@ int StartSystem(int my_use_net)
     XtToolkitInitialize();
     App = XtCreateApplicationContext();
 
-    // Set up local fonts (only used for formating info)
+    // Initialize font arrays (fonts will be loaded lazily)
     for (i = 0; i < 32; ++i)
     {
         FontInfo[i]   = NULL;
@@ -1165,13 +1166,27 @@ int StartSystem(int my_use_net)
         XftFontsArr[i] = NULL;
     }
 
+    // Pre-populate font dimensions from FontData for immediate access
+    for (i = 0; i < FONT_COUNT; ++i)
+    {
+        int f = FontData[i].id;
+        FontWidth[f] = FontData[i].width;
+        FontHeight[f] = FontData[i].height;
+        FontBaseline[f] = FontHeight[f] * 3 / 4;  // Default baseline
+    }
+
+    // Set default font properties
+    FontWidth[FONT_DEFAULT]  = FontWidth[FONT_TIMES_24];
+    FontHeight[FONT_DEFAULT] = FontHeight[FONT_TIMES_24];
+    FontBaseline[FONT_DEFAULT] = FontBaseline[FONT_TIMES_24];
+
     int argc = 0;
     const genericChar* argv[] = {"vt_main"};
     Dis = XtOpenDisplay(App, displaystr, NULL, NULL, NULL, 0, &argc, (genericChar**)argv);
     if (Dis)
     {
         ScrNo = DefaultScreen(Dis);
-        
+
         // Use fixed DPI (96) for consistent font rendering across all displays
         // This ensures fonts render at the same size regardless of display DPI
         static char font_spec_with_dpi[256];
@@ -1179,13 +1194,13 @@ int StartSystem(int my_use_net)
         {
             int f = FontData[i].id;
             const genericChar* xft_font_name = FontData[i].font;
-            
+
             // Append :dpi=96 to font specification if not already present
             if (strstr(xft_font_name, ":dpi=") == nullptr) {
                 snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", xft_font_name);
                 xft_font_name = font_spec_with_dpi;
             }
-            
+
             printf("Loading font %d: %s\n", f, xft_font_name);
             XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
             if (XftFontsArr[f] == NULL) {
@@ -1200,11 +1215,11 @@ int StartSystem(int my_use_net)
             } else {
                 printf("Successfully loaded font %d: %s\n", f, xft_font_name);
             }
-            
+
             // Use font dimensions from FontData array to maintain UI layout compatibility
             FontWidth[f] = FontData[i].width;
             FontHeight[f] = FontData[i].height;
-            
+
             // Calculate baseline from Xft font if available, otherwise use 3/4 of height
             if (XftFontsArr[f]) {
                 FontBaseline[f] = XftFontsArr[f]->ascent;
@@ -4140,6 +4155,7 @@ static const char* CompatibleFontFamilies[] = {
     NULL
 };
 
+// Lazy font loading function for performance optimization
 // Function to get a compatible font specification
 const char* GetCompatibleFontSpec(int font_id, const char* desired_family) {
     static char font_spec[256];

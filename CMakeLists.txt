@@ -35,6 +35,20 @@ if(VT_GC_SECTIONS)
     message(STATUS "Section GC enabled for Release/RelWithDebInfo")
 endif()
 
+# Additional binary size optimizations
+option(VT_STRIP_BINARIES "Strip debug symbols from release binaries to reduce size" ON)
+if(VT_STRIP_BINARIES)
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Wl,--strip-all")
+    set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO} -Wl,--strip-debug")
+    message(STATUS "Binary stripping enabled for Release/RelWithDebInfo")
+endif()
+
+# Enable additional size optimizations
+set(_vt_size_flags "-Os -fmerge-all-constants -fomit-frame-pointer")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${_vt_size_flags}")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${_vt_size_flags}")
+message(STATUS "Size optimization flags enabled for Release builds")
+
 
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -84,6 +98,19 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wconversion")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnull-dereference")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdouble-promotion")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat=2")
+
+# Performance optimizations
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    # Enable fast math optimizations (safe for most applications)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math")
+    # Enable vectorization
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftree-vectorize")
+    # Enable loop optimizations
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -funroll-loops")
+    # Prefetch data
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprefetch-loop-arrays")
+    message(STATUS "Performance optimizations enabled")
+endif()
 
 # disable specific compiler warnings
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
