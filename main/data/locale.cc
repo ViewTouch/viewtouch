@@ -518,7 +518,7 @@ static const TranslationEntry error_translations[] = {
     {nullptr, nullptr} // End of error translations
 };
 
-static const TranslationEntry extended_translations_1[] = {
+static const TranslationEntry extended_translations_1a[] = {
     // Additional critical UI strings
     {"Account Name", "Nombre de Cuenta"},
     {"Account No", "No. de Cuenta"},
@@ -2998,7 +2998,10 @@ static const TranslationEntry extended_translations_1[] = {
     {"Alternate bitmap fonts are disabled; ensure scalable fonts are installed.", "Las fuentes bitmap alternativas están deshabilitadas; asegúrese de que las fuentes escalables estén instaladas."},
     {"XpmError:  %s", "Error Xpm: %s"},
 
-    {nullptr, nullptr} // End of extended_translations_1
+    {nullptr, nullptr} // End of extended_translations_1a
+};
+
+static const TranslationEntry extended_translations_1b[] = {
 };
 
 static const TranslationEntry extended_translations_2[] = {
@@ -3848,7 +3851,8 @@ static const char* LookupHardcodedTranslation(const char* str, int lang) {
         ui_translations,
         business_translations,
         error_translations,
-        extended_translations_1,
+        extended_translations_1a,
+        extended_translations_1b,
         extended_translations_2,
         extended_translations_3,
         nullptr // End marker
