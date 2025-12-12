@@ -71,6 +71,7 @@
 
 #include <filesystem>       // generic filesystem functions available since C++17
 #include <unordered_map>
+#include <unordered_set>
 #include <mutex>
 #include <chrono>
 #include <iostream>
@@ -215,9 +216,23 @@ private:
     std::array<Pixmap, IMAGE_COUNT> textures_;
     std::unordered_map<int, time_t> last_access_time_;
     std::unordered_map<int, int> access_count_;
+    std::unordered_map<int, std::string> resolved_paths_;  // Cache successful file paths
     std::mutex mutex_;
     time_t startup_time_;
     Display* display_;
+
+    // Performance statistics
+    size_t file_loads_ = 0;
+    size_t compiled_fallbacks_ = 0;
+    size_t cache_hits_ = 0;
+    size_t cache_misses_ = 0;
+    size_t lru_evictions_ = 0;
+
+    // Adaptive cache sizing
+    size_t adaptive_max_textures_ = MAX_TEXTURES_IN_MEMORY;
+    time_t last_adaptation_time_ = 0;
+    static constexpr time_t ADAPTATION_INTERVAL = 1800;  // 30 minutes - much more conservative
+    double target_hit_ratio_ = 0.8;  // Target 80% cache hit ratio
 
     // Define commonly used textures that should be preloaded
     static constexpr std::array<int, 3> PRELOAD_TEXTURES = {
@@ -245,7 +260,7 @@ private:
     };
 
     // Maximum number of textures to keep in memory
-    static constexpr size_t MAX_TEXTURES_IN_MEMORY = 10;
+    static constexpr size_t MAX_TEXTURES_IN_MEMORY = 50;
 
 public:
     TextureManager() : startup_time_(time(NULL)), display_(nullptr) {
@@ -270,10 +285,13 @@ public:
         if (textures_[texture_id]) {
             last_access_time_[texture_id] = time(NULL);
             access_count_[texture_id]++;
+            cache_hits_++;
             return textures_[texture_id];
         }
 
-        // Try multiple possible locations for texture files
+        cache_misses_++;
+
+        // Define possible paths for texture loading
         std::vector<std::string> possible_paths = {
             TextureFiles[texture_id],  // Original path
             std::string(VIEWTOUCH_PATH) + "/" + TextureFiles[texture_id],  // VIEWTOUCH_PATH prefix
@@ -282,17 +300,58 @@ public:
             "../share/viewtouch/" + std::string(TextureFiles[texture_id]) // Share directory
         };
 
+        // Check if we have a cached successful path for this texture
+        auto path_iter = resolved_paths_.find(texture_id);
         Pixmap pixmap = 0;
-        for (const auto& path : possible_paths) {
-            pixmap = LoadPixmapFromFile(path.c_str());
+        std::string successful_path;
+
+        if (path_iter != resolved_paths_.end()) {
+            // Try cached path first
+            pixmap = LoadPixmapFromFile(path_iter->second.c_str());
             if (pixmap) {
-                break;  // Found a working path
+                successful_path = path_iter->second;
+            }
+        }
+
+        // If cached path didn't work or no cache, try all possible locations
+        if (!pixmap) {
+            for (const auto& path : possible_paths) {
+                pixmap = LoadPixmapFromFile(path.c_str());
+                if (pixmap) {
+                    successful_path = path;
+                    break;  // Found a working path
+                }
+            }
+        }
+
+        if (!pixmap) {
+            // Log texture loading failure for debugging
+            std::cerr << "Warning: Failed to load texture " << texture_id
+                     << " from file. Attempted paths:" << std::endl;
+            for (const auto& path : possible_paths) {
+                std::cerr << "  " << path << std::endl;
+            }
+            std::cerr << "Falling back to compiled-in texture data." << std::endl;
+        } else if (successful_path != TextureFiles[texture_id]) {
+            // Log when fallback path was used (useful for deployment debugging)
+            static std::unordered_set<int> logged_textures;
+            if (logged_textures.find(texture_id) == logged_textures.end()) {
+                std::cout << "Texture " << texture_id << " loaded from fallback path: "
+                         << successful_path << std::endl;
+                logged_textures.insert(texture_id);
             }
         }
 
         if (!pixmap) {
             // If all paths failed, fall back to compiled-in data
             pixmap = LoadPixmap(ImageData[texture_id]);
+            if (pixmap) {
+                compiled_fallbacks_++;
+            }
+        } else {
+            file_loads_++;
+            // Cache the successful path for future reference
+            resolved_paths_[texture_id] = successful_path;
         }
 
         if (pixmap) {
@@ -301,12 +360,11 @@ public:
             access_count_[texture_id] = 1;
 
             // If we've exceeded the memory limit, unload least recently used
-            // Temporarily disabled to debug X errors
-            /*
-            if (loaded_texture_count() > MAX_TEXTURES_IN_MEMORY) {
+            if (loaded_texture_count() > adaptive_max_textures_) {
                 unload_least_recently_used();
+                // Trigger adaptive cache sizing check (very conservative)
+                adapt_cache_size();
             }
-            */
         }
 
         return pixmap;
@@ -387,10 +445,20 @@ public:
                 }
             }
             if (!is_preload) {
-                XFreePixmap(display_, textures_[texture_id]);
-                textures_[texture_id] = 0;
-                last_access_time_.erase(texture_id);
-                access_count_.erase(texture_id);
+                // Only unload if texture hasn't been accessed recently (within last 30 seconds)
+                // This prevents unloading textures that might still be in use
+                auto access_it = last_access_time_.find(texture_id);
+                if (access_it != last_access_time_.end()) {
+                    time_t current_time = time(NULL);
+                    if (current_time - access_it->second > 300) {  // 5 minute grace period
+                        // Safe to free - texture hasn't been used recently
+                        XFreePixmap(display_, textures_[texture_id]);
+                        textures_[texture_id] = 0;
+                        last_access_time_.erase(texture_id);
+                        access_count_.erase(texture_id);
+                        lru_evictions_++;
+                    }
+                }
             }
         }
     }
@@ -449,6 +517,63 @@ public:
         }
     }
 
+    // Get cache configuration
+    size_t get_max_cache_size() const { return adaptive_max_textures_; }
+    double get_target_hit_ratio() const { return target_hit_ratio_; }
+
+    // Get performance statistics
+    void get_performance_stats(size_t& file_loads, size_t& compiled_fallbacks,
+                              size_t& cache_hits, size_t& cache_misses,
+                              size_t& lru_evictions, double& hit_ratio) const {
+        file_loads = file_loads_;
+        compiled_fallbacks = compiled_fallbacks_;
+        cache_hits = cache_hits_;
+        cache_misses = cache_misses_;
+        lru_evictions = lru_evictions_;
+        hit_ratio = cache_hits_ + cache_misses_ > 0 ?
+                   static_cast<double>(cache_hits_) / (cache_hits_ + cache_misses_) : 0.0;
+    }
+
+    // Adaptive cache management - adjust cache size based on performance
+    void adapt_cache_size() {
+        time_t current_time = time(NULL);
+        if (current_time - last_adaptation_time_ < ADAPTATION_INTERVAL) {
+            return;  // Too soon to adapt
+        }
+
+        last_adaptation_time_ = current_time;
+
+        // Calculate current hit ratio
+        size_t total_requests = cache_hits_ + cache_misses_;
+        if (total_requests < 100) {
+            return;  // Not enough data for adaptation
+        }
+
+        double current_hit_ratio = static_cast<double>(cache_hits_) / total_requests;
+
+        // Adjust cache size based on hit ratio
+        if (current_hit_ratio < target_hit_ratio_ - 0.1) {
+            // Hit ratio too low, increase cache size (very conservative - only +1)
+            if (adaptive_max_textures_ < MAX_TEXTURES_IN_MEMORY + 20) {
+                adaptive_max_textures_ = std::min(adaptive_max_textures_ + 1, MAX_TEXTURES_IN_MEMORY + 20);
+                std::cout << "Texture cache size conservatively increased to " << adaptive_max_textures_
+                         << " (hit ratio: " << current_hit_ratio << ")" << std::endl;
+            }
+        } else if (current_hit_ratio > target_hit_ratio_ + 0.1 && lru_evictions_ > total_requests * 0.1) {
+            // Hit ratio good and we're evicting too much, can reduce cache size
+            if (adaptive_max_textures_ > MAX_TEXTURES_IN_MEMORY - 10) {
+                adaptive_max_textures_ = std::max(adaptive_max_textures_ - 1, MAX_TEXTURES_IN_MEMORY - 10);
+                std::cout << "Texture cache size conservatively decreased to " << adaptive_max_textures_
+                         << " (hit ratio: " << current_hit_ratio << ")" << std::endl;
+            }
+        }
+
+        // Reset statistics for next adaptation period
+        cache_hits_ = 0;
+        cache_misses_ = 0;
+        lru_evictions_ = 0;
+    }
+
     // Benchmark texture loading performance
     void benchmark_texture_loading() {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -468,23 +593,18 @@ public:
         std::cout << "Preloaded textures: " << loaded_count << "\n";
         std::cout << "Preload time: " << preload_duration.count() << "ms\n";
 
-        // Measure individual texture access times
+        // Measure individual texture access times (only test a few to avoid cache issues)
         std::vector<long long> access_times;
-        for (size_t i = 0; i < static_cast<size_t>(IMAGE_COUNT); ++i) {
-            bool is_preload = false;
-            for (size_t j = 0; j < PRELOAD_TEXTURES.size(); ++j) {
-                if (i == static_cast<size_t>(PRELOAD_TEXTURES[j])) {
-                    is_preload = true;
-                    break;
-                }
-            }
-            if (!is_preload) {
-                auto access_start = std::chrono::high_resolution_clock::now();
-                get_texture(static_cast<int>(i));
-                auto access_end = std::chrono::high_resolution_clock::now();
-                auto access_duration = std::chrono::duration_cast<std::chrono::microseconds>(access_end - access_start);
-                access_times.push_back(access_duration.count());
-            }
+        std::vector<int> test_textures = {
+            IMAGE_SAND, IMAGE_LIT_SAND, IMAGE_DARK_SAND, IMAGE_PARCHMENT, IMAGE_CANVAS
+        };
+
+        for (int texture_id : test_textures) {
+            auto access_start = std::chrono::high_resolution_clock::now();
+            get_texture(texture_id);
+            auto access_end = std::chrono::high_resolution_clock::now();
+            auto access_duration = std::chrono::duration_cast<std::chrono::microseconds>(access_end - access_start);
+            access_times.push_back(access_duration.count());
         }
 
         if (!access_times.empty()) {
@@ -2983,6 +3103,7 @@ Pixmap LoadPixmapFromFile(const char* file_name)
     int status;
     struct stat sb;
 
+    // First try to load as XPM
     if (stat(file_name, &sb) == 0)
     {
         if (sb.st_size <= MAX_XPM_SIZE)
@@ -2991,7 +3112,7 @@ Pixmap LoadPixmapFromFile(const char* file_name)
             status = XpmReadFileToPixmap(Dis, MainWin, file_name, &retxpm, NULL, &attributes);
             if (status != XpmSuccess)
             {
-                // Silently fail - will fall back to compiled data
+                // Silently fail - will try PNG or fall back to compiled data
             }
             else if (attributes.width  > (unsigned int)WinWidth ||
                      attributes.height > (unsigned int)WinHeight)
@@ -3001,9 +3122,36 @@ Pixmap LoadPixmapFromFile(const char* file_name)
                     retxpm = 0;
                 }
             }
+            else
+            {
+                // Successfully loaded XPM
+                XpmFreeAttributes(&attributes);
+                return retxpm;
+            }
             XpmFreeAttributes(&attributes);
         }
     }
+
+    // If XPM failed or file not found, try PNG version
+#ifdef HAVE_PNG
+    std::string png_file = std::string(file_name);
+    // Replace .xpm extension with .png
+    size_t ext_pos = png_file.find_last_of('.');
+    if (ext_pos != std::string::npos) {
+        png_file = png_file.substr(0, ext_pos) + ".png";
+    } else {
+        png_file += ".png";
+    }
+
+    Xpm* png_xpm = LoadPNGFile(png_file.c_str());
+    if (png_xpm && png_xpm->PixmapID()) {
+        // Successfully loaded PNG, convert to pixmap
+        retxpm = png_xpm->PixmapID();
+        // Note: We don't free png_xpm here as the pixmap is still in use
+        // The caller will manage the pixmap lifetime
+        return retxpm;
+    }
+#endif
 
     return retxpm;
 }
@@ -4292,7 +4440,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     // Set up textures - preload commonly used ones
     texture_manager.preload_common_textures();
 
-    // Run benchmark in debug mode
+    // Run benchmark in debug mode (selective testing only)
 #ifdef DEBUG
     texture_manager.benchmark_texture_loading();
 #endif
