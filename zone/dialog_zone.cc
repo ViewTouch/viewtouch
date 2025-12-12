@@ -3300,9 +3300,8 @@ SignalResult OpenTabDialog::Signal(Terminal *term, const genericChar* message)
         }
         break;
     case 1:  // backspace
-        if (current != NULL)
+        if (current != NULL && (len = strlen(current)) > 0)
         {
-            len = strlen(current);
             current[len - 1] = '\0';
         }
         break;
@@ -3380,47 +3379,26 @@ int OpenTabDialog::RenderEntry(Terminal *term)
 
     font = entry_font;
 
-    // Render the name entry
-    TextL(term, name_pos, term->Translate("First Name"), COLOR_BLACK);
-    Entry(term, entry_x, name_pos + 1.0, entry_width, &entry_pos[0]);
-    entry_pos[0].y -= 35;
-    entry_pos[0].h += 35;
-    if (customer_name[0] == '\0')
-        buff[0] = '\0';
-    else
-        strncpy(buff, customer_name, STRLENGTH);
-    if (current == customer_name)
-        vt_safe_string::safe_concat(buff, STRLENGTH, "_");
-    TextPosL(term, entry_x + 1, name_pos + 1.0, buff, COLOR_WHITE);
-    term->UpdateArea(entry_pos[0].x, entry_pos[0].y, entry_pos[0].w, entry_pos[0].h);
+    // Helper function to render a single entry field
+    auto render_entry_field = [&](const char* label, Flt pos, char* field, int entry_idx) {
+        TextL(term, pos, term->Translate(label), COLOR_BLACK);
+        Entry(term, entry_x, pos + 1.0, entry_width, &entry_pos[entry_idx]);
+        entry_pos[entry_idx].y -= 35;
+        entry_pos[entry_idx].h += 35;
+        if (field[0] == '\0')
+            buff[0] = '\0';
+        else
+            vt_safe_string::safe_copy(buff, STRLENGTH, field);
+        if (current == field)
+            vt_safe_string::safe_concat(buff, STRLENGTH, "_");
+        TextPosL(term, entry_x + 1, pos + 1.0, buff, COLOR_WHITE);
+        term->UpdateArea(entry_pos[entry_idx].x, entry_pos[entry_idx].y, entry_pos[entry_idx].w, entry_pos[entry_idx].h);
+    };
 
-    // Render the phone entry
-    TextL(term, phone_pos, term->Translate("Phone Number"), COLOR_BLACK);
-    Entry(term, entry_x, phone_pos + 1.0, entry_width, &entry_pos[1]);
-    entry_pos[1].y -= 35;
-    entry_pos[1].h += 35;
-    if (customer_phone[0] == '\0')
-        buff[0] = '\0';
-    else
-        strncpy(buff, customer_phone, STRLENGTH);
-    if (current == customer_phone)
-        vt_safe_string::safe_concat(buff, STRLENGTH, "_");
-    TextPosL(term, entry_x + 1, phone_pos + 1.0, buff, COLOR_WHITE);
-    term->UpdateArea(entry_pos[1].x, entry_pos[1].y, entry_pos[1].w, entry_pos[1].h);
-
-    // Render the Comment entry
-    TextL(term, comment_pos, term->Translate("Comment"), COLOR_BLACK);
-    Entry(term, entry_x, comment_pos + 1.0, entry_width, &entry_pos[2]);
-    entry_pos[2].y -= 35;
-    entry_pos[2].h += 35;
-    if (customer_comment[0] == '\0')
-        buff[0] = '\0';
-    else
-        strncpy(buff, customer_comment, STRLENGTH);
-    if (current == customer_comment)
-        vt_safe_string::safe_concat(buff, STRLENGTH, "_");
-    TextPosL(term, entry_x + 1, comment_pos + 1.0, buff, COLOR_WHITE);
-    term->UpdateArea(entry_pos[2].x, entry_pos[2].y, entry_pos[2].w, entry_pos[2].h);
+    // Render all entry fields using the helper
+    render_entry_field("First Name", name_pos, customer_name, 0);
+    render_entry_field("Phone Number", phone_pos, customer_phone, 1);
+    render_entry_field("Comment", comment_pos, customer_comment, 2);
 
     last_current = current;
     font = old_font;

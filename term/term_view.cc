@@ -228,6 +228,10 @@ private:
     size_t cache_misses_ = 0;
     size_t lru_evictions_ = 0;
 
+    // Performance timing
+    std::chrono::microseconds total_load_time_ = std::chrono::microseconds::zero();
+    size_t load_operations_ = 0;
+
     // Adaptive cache sizing
     size_t adaptive_max_textures_ = MAX_TEXTURES_IN_MEMORY;
     time_t last_adaptation_time_ = 0;
@@ -260,7 +264,7 @@ private:
     };
 
     // Maximum number of textures to keep in memory
-    static constexpr size_t MAX_TEXTURES_IN_MEMORY = 50;
+    static constexpr size_t MAX_TEXTURES_IN_MEMORY = 45;  // More conservative than 50 for better memory usage
 
 public:
     TextureManager() : startup_time_(time(NULL)), display_(nullptr) {
@@ -275,6 +279,7 @@ public:
 
     // Load a texture on demand
     Pixmap load_texture(int texture_id) {
+        auto start_time = std::chrono::high_resolution_clock::now();
         std::lock_guard<std::mutex> lock(mutex_);
 
         if (texture_id < 0 || texture_id >= IMAGE_COUNT) {
@@ -366,6 +371,11 @@ public:
                 adapt_cache_size();
             }
         }
+
+        // Record timing for performance profiling
+        auto end_time = std::chrono::high_resolution_clock::now();
+        total_load_time_ += std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+        load_operations_++;
 
         return pixmap;
     }
@@ -521,18 +531,6 @@ public:
     size_t get_max_cache_size() const { return adaptive_max_textures_; }
     double get_target_hit_ratio() const { return target_hit_ratio_; }
 
-    // Get performance statistics
-    void get_performance_stats(size_t& file_loads, size_t& compiled_fallbacks,
-                              size_t& cache_hits, size_t& cache_misses,
-                              size_t& lru_evictions, double& hit_ratio) const {
-        file_loads = file_loads_;
-        compiled_fallbacks = compiled_fallbacks_;
-        cache_hits = cache_hits_;
-        cache_misses = cache_misses_;
-        lru_evictions = lru_evictions_;
-        hit_ratio = cache_hits_ + cache_misses_ > 0 ?
-                   static_cast<double>(cache_hits_) / (cache_hits_ + cache_misses_) : 0.0;
-    }
 
     // Adaptive cache management - adjust cache size based on performance
     void adapt_cache_size() {
@@ -554,15 +552,15 @@ public:
         // Adjust cache size based on hit ratio
         if (current_hit_ratio < target_hit_ratio_ - 0.1) {
             // Hit ratio too low, increase cache size (very conservative - only +1)
-            if (adaptive_max_textures_ < MAX_TEXTURES_IN_MEMORY + 20) {
-                adaptive_max_textures_ = std::min(adaptive_max_textures_ + 1, MAX_TEXTURES_IN_MEMORY + 20);
+            if (adaptive_max_textures_ < MAX_TEXTURES_IN_MEMORY + 10) {  // Reduced from +20 to +10 for memory safety
+                adaptive_max_textures_ = std::min(adaptive_max_textures_ + 1, MAX_TEXTURES_IN_MEMORY + 10);
                 std::cout << "Texture cache size conservatively increased to " << adaptive_max_textures_
                          << " (hit ratio: " << current_hit_ratio << ")" << std::endl;
             }
         } else if (current_hit_ratio > target_hit_ratio_ + 0.1 && lru_evictions_ > total_requests * 0.1) {
             // Hit ratio good and we're evicting too much, can reduce cache size
-            if (adaptive_max_textures_ > MAX_TEXTURES_IN_MEMORY - 10) {
-                adaptive_max_textures_ = std::max(adaptive_max_textures_ - 1, MAX_TEXTURES_IN_MEMORY - 10);
+            if (adaptive_max_textures_ > MAX_TEXTURES_IN_MEMORY - 5) {  // Reduced from -10 to -5 for better cache retention
+                adaptive_max_textures_ = std::max(adaptive_max_textures_ - 1, MAX_TEXTURES_IN_MEMORY - 5);
                 std::cout << "Texture cache size conservatively decreased to " << adaptive_max_textures_
                          << " (hit ratio: " << current_hit_ratio << ")" << std::endl;
             }
@@ -574,55 +572,6 @@ public:
         lru_evictions_ = 0;
     }
 
-    // Benchmark texture loading performance
-    void benchmark_texture_loading() {
-        std::lock_guard<std::mutex> lock(mutex_);
-
-        std::cout << "=== Texture Loading Benchmark ===\n";
-        std::cout << "Total textures available: " << IMAGE_COUNT << "\n";
-
-        // Measure preload performance
-        auto start_time = std::chrono::high_resolution_clock::now();
-        preload_common_textures();
-        auto end_time = std::chrono::high_resolution_clock::now();
-        auto preload_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-
-        size_t loaded_count, total_accesses;
-        get_stats(loaded_count, total_accesses);
-
-        std::cout << "Preloaded textures: " << loaded_count << "\n";
-        std::cout << "Preload time: " << preload_duration.count() << "ms\n";
-
-        // Measure individual texture access times (only test a few to avoid cache issues)
-        std::vector<long long> access_times;
-        std::vector<int> test_textures = {
-            IMAGE_SAND, IMAGE_LIT_SAND, IMAGE_DARK_SAND, IMAGE_PARCHMENT, IMAGE_CANVAS
-        };
-
-        for (int texture_id : test_textures) {
-            auto access_start = std::chrono::high_resolution_clock::now();
-            get_texture(texture_id);
-            auto access_end = std::chrono::high_resolution_clock::now();
-            auto access_duration = std::chrono::duration_cast<std::chrono::microseconds>(access_end - access_start);
-            access_times.push_back(access_duration.count());
-        }
-
-        if (!access_times.empty()) {
-            double avg_access = std::accumulate(access_times.begin(), access_times.end(), 0.0) / access_times.size();
-            auto max_access = *std::max_element(access_times.begin(), access_times.end());
-            auto min_access = *std::min_element(access_times.begin(), access_times.end());
-
-            std::cout << "Lazy load access times (microseconds):\n";
-            std::cout << "  Average: " << avg_access << "μs\n";
-            std::cout << "  Min: " << min_access << "μs\n";
-            std::cout << "  Max: " << max_access << "μs\n";
-        }
-
-        get_stats(loaded_count, total_accesses);
-        std::cout << "Total loaded textures: " << loaded_count << "\n";
-        std::cout << "Total texture accesses: " << total_accesses << "\n";
-        std::cout << "================================\n";
-    }
 };
 
 // Global texture manager instance
