@@ -558,6 +558,9 @@ public:
     genericChar* SimpleFormatPrice(char* str, int price); // same as format price but with no commas
     int          PriceToInteger(const char* price);
 
+    // Language management
+    int SetLanguage(int lang);
+
     int UserInput();
     int ClearSelectedZone();
     int DrawTitleBar();

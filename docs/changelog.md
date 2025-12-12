@@ -13,6 +13,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Removed multilingual support infrastructure including language constants and global language functions
   - Simplified translation system to use default language only (LANG_PHRASE)
   - Cleaned up PO files by removing setlanguage signal entries
+  - **Added new Language Button Zone** for future language switching:
+    - Created `ZONE_LANGUAGE_BUTTON` (109) zone type
+    - Implemented `LanguageButtonZone` class inheriting from `ButtonZone`
+    - Button displays "English" and shows dialog when pressed (currently only English supported)
+    - Provides infrastructure for future multi-language support via button-based switching
   - **Removed all non-English PO files** to complete monolingual transition:
     - Deleted `viewtouch.po_DE` (German)
     - Deleted `viewtouch.po_EL` (Greek)
@@ -22,16 +27,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Deleted `viewtouch.po_IT` (Italian)
     - Deleted `viewtouch.po_NL` (Dutch)
     - Deleted `viewtouch.po_PT` (Portuguese)
-    - Kept only `viewtouch.po_EN` (English)
-  - **Impact**: Streamlines the user interface by removing complex language switching features, focusing on single-language English operation
+    - Kept only `viewtouch.po_EN` (English) and `vt_data`
+  - **Impact**: Streamlines the user interface by removing complex language switching features, focusing on single-language English operation while providing extensible button-based language switching for future use
   - **Files modified**:
-    - `main/hardware/terminal.cc` - Removed F8/F2 key handlers, translation functions, and language logic
-    - `main/hardware/terminal.hh` - Removed translate/current_language members and method declarations
+    - `main/hardware/terminal.cc` - Removed F8/F2 key handlers, translation functions, and language logic; restored SetLanguage function
+    - `main/hardware/terminal.hh` - Removed translate/current_language members and method declarations; restored SetLanguage declaration
     - `main/data/locale.cc` - Removed global language functions and variables
     - `main/data/locale.hh` - Removed language constants and function declarations
     - `main/data/credit.cc` - Simplified country language detection
     - `main/data/manager.cc` - Updated terminal state checks
-    - `assets/data/po_file/viewtouch.po_*` - Removed setlanguage entries and deleted all non-English PO files
+    - `zone/pos_zone.hh` - Added ZONE_LANGUAGE_BUTTON definition
+    - `zone/button_zone.hh` - Added LanguageButtonZone class declaration
+    - `zone/button_zone.cc` - Implemented LanguageButtonZone class
+    - `zone/pos_zone.cc` - Added LanguageButtonZone instantiation in NewPosZone factory
+    - `assets/data/po_file/viewtouch.po_EN` - Added language-related translatable strings and removed setlanguage entries
 - **Performance optimizations and texture cache improvements (12-12-2025)**
   - Optimized string operations in dialog_zone.cc by caching strlen() results and combining condition checks
   - Implemented code deduplication in OpenTabDialog rendering with reusable lambda functions

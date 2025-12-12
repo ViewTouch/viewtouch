@@ -488,9 +488,9 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             term->eod_failed = 1;
             break;
         default:
-            snprintf(str, STRLENGTH, "Cannot process unknown code:  %d", code);
+            snprintf(str, STRLENGTH, Translate("Cannot process unknown code: %d"), code);
             ReportError(str);
-            snprintf(str, STRLENGTH, "  Last code processed was %d", last_code);
+            snprintf(str, STRLENGTH, Translate("  Last code processed was %d"), last_code);
             ReportError(str);
             printf("Terminating due to unforseen error....\n");
             EndSystem();
@@ -897,7 +897,7 @@ int Terminal::Jump(int jump_type, int jump_id)
     if (targetPage == nullptr)
 	{
         genericChar buffer[STRLENGTH];
-        snprintf(buffer, STRLENGTH, "Unable to find jump target (%d, %d) for %s",
+        snprintf(buffer, STRLENGTH, Translate("Unable to find jump target (%d, %d) for %s"),
                  jump_id, size, name.Value());
         TerminalError(buffer);
         return 1;
@@ -931,7 +931,7 @@ int Terminal::JumpToIndex(int idx)
 
         int cl = CompareList(idx, IndexValue);
         if (cl < 0)
-            ReportError("Unknown index - can't jump");
+            ReportError(Translate("Unknown index - can't jump"));
         else
         {
             genericChar str[64];
@@ -1042,7 +1042,7 @@ int Terminal::PushPage(int my_page_id)
 
     if (page_stack_size >= PAGE_STACK_SIZE)
     {
-        ReportError("ALERT: Page stack size exceeded");
+        ReportError(Translate("ALERT: Page stack size exceeded"));
         for (int i = 0; i < (PAGE_STACK_SIZE - 1); ++i)
             page_stack[i] = page_stack[i + 1];
         page_stack_size = PAGE_STACK_SIZE - 1;
@@ -1481,9 +1481,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         vt_safe_string::safe_copy(msg, STRLONG, "killall vt_ccq_pipe");
         system(msg);
         msg[0] = '\0';
-        vt_safe_string::safe_concat(msg, STRLENGTH, "Connection reset.\\");
-        vt_safe_string::safe_concat(msg, STRLENGTH, "Please wait 60 seconds\\");
-        vt_safe_string::safe_concat(msg, STRLENGTH, "and try again.");
+        vt_safe_string::safe_copy(msg, STRLONG, Translate("Connection reset.\\Please wait 60 seconds\\and try again."));
         sd = new SimpleDialog(msg);
         sd->Button(Translate("Okay"));
         OpenDialog(sd);
@@ -1606,7 +1604,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         Settings *settings_ptr = GetSettings();
         settings_ptr->restart_postpone_count++;
         settings_ptr->Save();
-        ReportError("Scheduled restart postponed for 1 hour");
+        ReportError(Translate("Scheduled restart postponed for 1 hour"));
         return SIGNAL_OKAY;
     }
     
@@ -1629,7 +1627,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         
         // Show confirmation message
         char confirmation_msg[STRLONG];
-        snprintf(confirmation_msg, STRLONG, "Button images %s on this terminal", show_button_images ? "ENABLED" : "DISABLED");
+        snprintf(confirmation_msg, STRLONG, Translate("Button images %s on this terminal"), show_button_images ? Translate("ENABLED") : Translate("DISABLED"));
         ReportError(confirmation_msg);
         
         return SIGNAL_OKAY;
@@ -3595,7 +3593,7 @@ int Terminal::FinalizeOrders()
                 jump_target = -1;        
             if (Jump(JUMP_NORMAL, jump_target))
             {
-                snprintf(str, STRLENGTH, "Couldn't jump to page %d", PAGE_ID_SETTLEMENT);
+                snprintf(str, STRLENGTH, Translate("Couldn't jump to page %d"), PAGE_ID_SETTLEMENT);
                 ReportError(str);
             }
             break;
@@ -3603,7 +3601,7 @@ int Terminal::FinalizeOrders()
             // For SelfOrder terminals, go to settlement page after finalizing
             if (Jump(JUMP_NORMAL, jump_target))
             {
-                snprintf(str, STRLENGTH, "Couldn't jump to page %d", PAGE_ID_SETTLEMENT);
+                snprintf(str, STRLENGTH, Translate("Couldn't jump to page %d"), PAGE_ID_SETTLEMENT);
                 ReportError(str);
             }
             break;
@@ -7341,6 +7339,26 @@ int Terminal::ReloadFonts()
     // The actual font reloading is handled in manager.cc
     // We just need to trigger a redraw to show the changes
     Draw(RENDER_NEW);
+    return 0;
+}
+
+int Terminal::SetLanguage(int lang)
+{
+    FnTrace("Terminal::SetLanguage()");
+    // For now, only English is supported (LANG_PHRASE = 0)
+    // In the future, this can be extended to support multiple languages
+    if (lang != LANG_PHRASE && lang != 1)  // Allow both LANG_PHRASE (0) and English (1)
+        return 1;  // Invalid language
+
+    // Since we only support English currently, just ensure we're using LANG_PHRASE
+    // This function provides the infrastructure for future multi-language support
+
+    // Update all terminals with the new language (currently just a redraw)
+    UpdateAllTerms(UPDATE_SETTINGS, nullptr);
+
+    // Redraw the current page to show any translated text
+    Draw(RENDER_NEW);
+
     return 0;
 }
 

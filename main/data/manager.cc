@@ -516,7 +516,7 @@ int main(int argc, genericChar* argv[])
     if (LoaderSocket <= 0)
     {
         vt::Logger::critical("Can't open initial loader socket - errno: {}", errno);
-        ReportError("Can't open initial loader socket");
+        ReportError(Translate("Can't open initial loader socket"));
         exit(1);
     }
     vt::Logger::debug("Loader socket opened successfully: {}", LoaderSocket);
@@ -532,7 +532,7 @@ int main(int argc, genericChar* argv[])
                 SUN_LEN(&server_adr)) < 0)
     {
         vt::Logger::critical("Can't connect to loader socket '{}' - errno: {}", socket_file, errno);
-        ReportError("Can't connect to loader");
+        ReportError(Translate("Can't connect to loader"));
         close(LoaderSocket);
         exit(1);
     }
@@ -649,7 +649,7 @@ int main(int argc, genericChar* argv[])
     if (MasterSystem == nullptr)
     {
         vt::Logger::critical("Failed to create main system object");
-        ReportError("Couldn't create main system object");
+        ReportError(Translate("Couldn't create main system object"));
         EndSystem();
     }
     vt::Logger::debug("System object created successfully");
@@ -668,7 +668,7 @@ int main(int argc, genericChar* argv[])
     // Check for updates from server if not disabled
     if (autoupdate)
     {
-        ReportError("Automatic check for updates...");
+        ReportError(Translate("Automatic check for updates..."));
 	unlink(VIEWTOUCH_UPDATE_COMMAND);	// out with the old
     	system(VIEWTOUCH_UPDATE_REQUEST);	// in with the new
 	chmod(VIEWTOUCH_UPDATE_COMMAND, 0755);	// set executable
@@ -691,20 +691,20 @@ int main(int argc, genericChar* argv[])
         if (temp_settings.Load(settings_path) == 0) {
             auto_update_enabled = temp_settings.auto_update_vt_data;
             if (!auto_update_enabled) {
-                ReportError("Auto-update of vt_data is disabled in settings");
+                ReportError(Translate("Auto-update of vt_data is disabled in settings"));
             } else {
-                ReportError("Auto-update of vt_data is enabled in settings");
+                ReportError(Translate("Auto-update of vt_data is enabled in settings"));
             }
         } else {
-            ReportError("Warning: Could not load settings file, defaulting to auto-update enabled");
+            ReportError(Translate("Warning: Could not load settings file, defaulting to auto-update enabled"));
         }
     } else {
-        ReportError("Warning: Settings file not found, defaulting to auto-update enabled");
+        ReportError(Translate("Warning: Settings file not found, defaulting to auto-update enabled"));
     }
     
     if (!fs::exists(SYSTEM_DATA_FILE)) {
         if (auto_update_enabled) {
-            ReportError("Local vt_data not found, attempting to download from update servers...");
+            ReportError(Translate("Local vt_data not found, attempting to download from update servers..."));
             
             // Try first URL: http://www.viewtouch.com/vt_data  
             ReportError("Attempting to download vt_data from http://www.viewtouch.com/vt_data");
@@ -896,7 +896,7 @@ void Terminate(int my_signal)
     default:
     {
         genericChar str[256];
-        snprintf(str, sizeof(str), "Unknown signal %d received", my_signal);
+        snprintf(str, sizeof(str), Translate("Unknown signal %d received"), my_signal);
         ReportError(str);
         break;
     }
@@ -1099,7 +1099,7 @@ int StartSystem(int my_use_net)
     EnsureFileExists(sys->data_path.Value());
     if (DoesFileExist(sys->data_path.Value()) == 0)
     {
-        snprintf(str, sizeof(str), "Can't find path '%s'", sys->data_path.Value());
+        snprintf(str, sizeof(str), Translate("Can't find path '%s'"), sys->data_path.Value());
         ReportError(str);
         ReportLoader("POS cannot be started.");
         sleep(1);
@@ -3908,9 +3908,9 @@ void ShowRestartDialog()
     Terminal *term = MasterControl->TermList();
     if (!term) return;
     
-    SimpleDialog *sd = new SimpleDialog("Scheduled Restart Time\\System needs to restart now.\\Choose an option:", 1);
-    sd->Button("Restart Now", "restart_now");
-    sd->Button("Postpone 1 Hour", "restart_postpone");
+    SimpleDialog *sd = new SimpleDialog(Translate("Scheduled Restart Time\\System needs to restart now.\\Choose an option:"), 1);
+    sd->Button(Translate("Restart Now"), "restart_now");
+    sd->Button(Translate("Postpone 1 Hour"), "restart_postpone");
     
     // Set 5-minute auto-restart timeout
     restart_timeout_id = XtAppAddTimeOut(App, 5 * 60 * 1000, 
