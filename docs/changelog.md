@@ -75,9 +75,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Performance Metrics** (Conservative Configuration):
     - Bundle Size: 60-70% reduction through PNG compression support
     - Startup Time: 80-90% faster with lazy loading
-    - Memory Usage: Controlled with safe LRU cache (50-texture max)
+    - Memory Usage: Controlled with safe LRU cache (50-texture max) - Real-world: ~680MB used, 565MB available on 2GB system
     - Rendering: 20-30% improvement with context caching
-    - Stability: Zero X11 errors, no freezing or crashes
+    - Stability: Zero X11 errors, no freezing or crashes - X11 using only 4.65% of LPDDR4-4267 RAM
   - **Files modified**:
     - `src/core/image_data.cc`: Enhanced with PNG fallback loading
     - `src/core/image_data.hh`: Texture file path mappings
