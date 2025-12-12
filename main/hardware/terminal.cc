@@ -2623,7 +2623,7 @@ static const char* GetDrawerUnavailableReason(Terminal *term, Settings *settings
             d = d->next;
         }
         if (!found_terminal_drawer)
-            return "No drawer available: No drawer is attached to this terminal in Trusted mode";
+            return GlobalTranslate("No drawer available: No drawer is attached to this terminal in Trusted mode");
         break;
     }
     case DRAWER_SERVER:
@@ -2645,9 +2645,9 @@ static const char* GetDrawerUnavailableReason(Terminal *term, Settings *settings
                 d = d->next;
             }
             if (!any_drawers)
-                return "No drawer available: No drawers are configured in Server Bank mode";
+                return GlobalTranslate("No drawer available: No drawers are configured in Server Bank mode");
             else
-                return "No drawer available: Unable to create Server Bank drawer for this user";
+                return GlobalTranslate("No drawer available: Unable to create Server Bank drawer for this user");
         }
         break;
     }
@@ -2674,14 +2674,14 @@ static const char* GetDrawerUnavailableReason(Terminal *term, Settings *settings
         if (!found_assigned && !found_available)
         {
             if (term->drawer_count == 0)
-                return "No drawer available: No drawers are attached to this terminal in Assigned mode";
+                return GlobalTranslate("No drawer available: No drawers are attached to this terminal in Assigned mode");
             else
-                return "No drawer available: No drawers are assigned to this user or available for assignment";
+                return GlobalTranslate("No drawer available: No drawers are assigned to this user or available for assignment");
         }
         break;
     }
     default:
-        return "No drawer available: Unknown drawer mode";
+        return GlobalTranslate("No drawer available: Unknown drawer mode");
     }
     
     return nullptr;  // Drawer should be available

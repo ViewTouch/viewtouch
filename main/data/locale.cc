@@ -3731,6 +3731,8 @@ static const TranslationEntry common_translations[] = {
     {"No drawer available: No drawers are configured in Server Bank mode", "No hay caja disponible: No hay cajas configuradas en modo Banco de Meseros"},
     {"No drawer available: Unable to create Server Bank drawer for this user", "No hay caja disponible: No se puede crear caja de Banco de Meseros para este usuario"},
     {"No drawer available: No drawers are attached to this terminal in Assigned mode", "No hay caja disponible: No hay cajas adjuntas a esta terminal en modo Asignado"},
+    {"No drawer available: No drawers are assigned to this user or available for assignment", "No hay caja disponible: No hay cajas asignadas a este usuario o disponibles para asignación"},
+    {"No drawer available: Unknown drawer mode", "No hay caja disponible: Modo de caja desconocido"},
 
     {nullptr, nullptr} // End marker
 };
