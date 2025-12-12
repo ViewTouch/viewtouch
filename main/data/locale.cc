@@ -518,7 +518,7 @@ static const TranslationEntry error_translations[] = {
     {nullptr, nullptr} // End of error translations
 };
 
-static const TranslationEntry extended_translations_1a[] = {
+static const TranslationEntry ui_config_translations[] = {
     // Additional critical UI strings
     {"Account Name", "Nombre de Cuenta"},
     {"Account No", "No. de Cuenta"},
@@ -2005,6 +2005,10 @@ static const TranslationEntry extended_translations_1a[] = {
     {"Liberation Serif 18pt Bold", "Liberation Serif 18pt Negrita"},
     {"Liberation Serif 20pt Bold", "Liberation Serif 20pt Negrita"},
 
+    {nullptr, nullptr} // End of ui_config_translations
+};
+
+static const TranslationEntry business_config_translations[] = {
     // Index names
     {"Breakfast", "Desayuno"},
     {"Brunch", "Brunch"},
@@ -3851,7 +3855,8 @@ static const char* LookupHardcodedTranslation(const char* str, int lang) {
         ui_translations,
         business_translations,
         error_translations,
-        extended_translations_1a,
+        ui_config_translations,
+        business_config_translations,
         extended_translations_1b,
         extended_translations_2,
         extended_translations_3,
