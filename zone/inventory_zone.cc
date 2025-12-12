@@ -146,7 +146,7 @@ RenderResult ProductZone::Render(Terminal *t, int update_flag)
             vt_safe_string::safe_format(str, 256, "Current Inventory (%s - %s)", tm1, tm2);
         TextC(t, 0, str, col);
 
-        TextL(t, 2.4, "Product Name", col);
+        TextL(t, 2.4, GlobalTranslate("Product Name"), col);
         if (final)
         {
             TextPosR(t, size_x - 22, 1.4, "Actual", COLOR_RED);
@@ -242,7 +242,7 @@ SignalResult ProductZone::Signal(Terminal *term, const genericChar* message)
         {
             if (stock_entry->final.type == UNIT_NONE)
                 stock_entry->final.type = pr->purchase.type;
-            UnitAmountDialog *d = new UnitAmountDialog("Enter Amount", stock_entry->final);
+            UnitAmountDialog *d = new UnitAmountDialog(GlobalTranslate("Enter Amount"), stock_entry->final);
             d->target_zone = this;
             term->OpenDialog(d);
             return SIGNAL_OKAY;
@@ -672,7 +672,7 @@ RenderResult RecipeZone::Render(Terminal *t, int update_flag)
 
     if (show_list)
     {
-        TextL(t, 1.4, "Recipe Name", color[0]);
+        TextL(t, 1.4, GlobalTranslate("Recipe Name"), color[0]);
     }
     else
     {
@@ -1001,8 +1001,8 @@ RenderResult VendorZone::Render(Terminal *t, int update_flag)
 
     if (show_list)
     {
-        TextL(t, 1.4, "Vendor Name", c);
-        TextR(t, 1.4, "Phone Number", c);
+        TextL(t, 1.4, GlobalTranslate("Vendor Name"), c);
+        TextR(t, 1.4, GlobalTranslate("Phone Number"), c);
     }
     return RENDER_OKAY;
 }
@@ -1250,8 +1250,8 @@ RenderResult ItemListZone::Render(Terminal *t, int update_flag)
 
     if (show_list)
     {
-        TextL(t, 1.8, "Item Name", c);
-        TextR(t, 1.8, "Sale Price", c);
+        TextL(t, 1.8, GlobalTranslate("Item Name"), c);
+        TextR(t, 1.8, GlobalTranslate("Sale Price"), c);
     }
     return RENDER_OKAY;
 }
@@ -1552,13 +1552,13 @@ const genericChar* ItemListZone::GetItemTypeName(int item_type)
     FnTrace("ItemListZone::GetItemTypeName()");
     switch (item_type)
     {
-        case ITEM_NORMAL:      return "Menu Items";
-        case ITEM_MODIFIER:    return "Modifiers";
-        case ITEM_METHOD:      return "Non-Tracking Modifiers";
-        case ITEM_SUBSTITUTE:  return "Items + Substitute";
-        case ITEM_POUND:       return "Priced By Weight";
-        case ITEM_ADMISSION:   return "Event Admission";
-        default:               return "Unknown Type";
+        case ITEM_NORMAL:      return GlobalTranslate("Menu Items");
+        case ITEM_MODIFIER:    return GlobalTranslate("Modifiers");
+        case ITEM_METHOD:      return GlobalTranslate("Non-Tracking Modifiers");
+        case ITEM_SUBSTITUTE:  return GlobalTranslate("Items + Substitute");
+        case ITEM_POUND:       return GlobalTranslate("Priced By Weight");
+        case ITEM_ADMISSION:   return GlobalTranslate("Event Admission");
+        default:               return GlobalTranslate("Unknown Type");
     }
 }
 
@@ -1637,9 +1637,9 @@ RenderResult InvoiceZone::Render(Terminal *t, int update_flag)
         genericChar str[256];
         vt_safe_string::safe_format(str, 256, "List of Invoices (%s - %s)", tm1, tm2);
         TextC(t, 0, str, col);
-        TextL(t, 2.3, "Invoice Date", col);
-        TextC(t, 2.3, "Vendor", col);
-        TextR(t, 2.3, "Reference", col);
+        TextL(t, 2.3, GlobalTranslate("Invoice Date"), col);
+        TextC(t, 2.3, GlobalTranslate("Vendor"), col);
+        TextR(t, 2.3, GlobalTranslate("Reference"), col);
         if (invoice_report)
         {
             delete invoice_report;
@@ -1651,8 +1651,8 @@ RenderResult InvoiceZone::Render(Terminal *t, int update_flag)
         if (edit)
         {
             // edit invoice
-            TextC(t, 0, "Create Invoice", col);
-            TextL(t, 4, "Product", col);
+            TextC(t, 0, GlobalTranslate("Create Invoice"), col);
+            TextL(t, 4, GlobalTranslate("Product"), col);
             TextPosR(t, size_x - 20, 4, "Amount", COLOR_RED);
             TextPosR(t, size_x - 10, 4, "Unit Cost", col);
             TextPosR(t, size_x,      4, "Total Cost", col);
@@ -1670,7 +1670,7 @@ RenderResult InvoiceZone::Render(Terminal *t, int update_flag)
         else
         {
             // invoice view
-            TextC(t, 0, "View Invoice", col);
+            TextC(t, 0, GlobalTranslate("View Invoice"), col);
             if (invoice_report == NULL)
             {
                 invoice_report = new Report;
@@ -1738,7 +1738,7 @@ SignalResult InvoiceZone::Signal(Terminal *t, const genericChar* message)
                 {
                     if (ie->amount.type == UNIT_NONE)
                         ie->amount.type = pr->purchase.type;
-                    UnitAmountDialog *d = new UnitAmountDialog("Enter Amount", ie->amount);
+                    UnitAmountDialog *d = new UnitAmountDialog(GlobalTranslate("Enter Amount"), ie->amount);
                     d->target_zone = this;
                     t->OpenDialog(d);
                 }
@@ -1944,7 +1944,7 @@ int InvoiceZone::ListReport(Terminal *t, Report *r)
         if (v)
             r->TextC(v->name.Value());
         else
-            r->TextC("Unknown Vendor");
+            r->TextC(GlobalTranslate("Unknown Vendor"));
         vt_safe_string::safe_format(str, 256, "%d", in->id);
         r->TextR(str);
         r->NewLine();

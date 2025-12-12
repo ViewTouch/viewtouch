@@ -3734,6 +3734,83 @@ static const TranslationEntry common_translations[] = {
     {"No drawer available: No drawers are assigned to this user or available for assignment", "No hay caja disponible: No hay cajas asignadas a este usuario o disponibles para asignación"},
     {"No drawer available: Unknown drawer mode", "No hay caja disponible: Modo de caja desconocido"},
 
+    // Item type names for inventory management
+    {"Menu Items", "Artículos de Menú"},
+    {"Modifiers", "Modificadores"},
+    {"Non-Tracking Modifiers", "Modificadores Sin Seguimiento"},
+    {"Items + Substitute", "Artículos + Sustituto"},
+    {"Priced By Weight", "Precio por Peso"},
+    {"Event Admission", "Admisión de Evento"},
+
+    // Sales group names and abbreviations
+    {"Unused", "Sin Usar"},
+    {"Bev", "Beb"},
+    {"Merchan", "Mercan"},
+
+    // Inventory zone labels and headers
+    {"Sale Price", "Precio de Venta"},
+    {"Invoice Date", "Fecha de Factura"},
+    {"Reference", "Referencia"},
+
+    // Report titles and dialog messages
+    {"WorkOrder", "Orden de Trabajo"},
+    {"DeliveryOrder", "Orden de Entrega"},
+    {"CreditCardReceipt", "Recibo de Tarjeta de Crédito"},
+    {"There are no open tabs.", "No hay pestañas abiertas."},
+    {"Terminating due to unforseen error....", "Terminando debido a error imprevisto...."},
+    {"Customer Agreement", "Acuerdo del Cliente"},
+
+    // Error messages
+    {"Got a bad card for validation.", "Se obtuvo una tarjeta inválida para validación."},
+    {"Error in reading general check data", "Error al leer datos generales del cheque"},
+    {"Unexpected end of SubChecks in Check", "Fin inesperado de SubCheques en Cheque"},
+    {"Error in deleting check", "Error al eliminar cheque"},
+    {"Can't create subcheck", "No se puede crear subcheque"},
+    {"No Printer Available For Work Order and No Report", "No Hay Impresora Disponible Para Orden de Trabajo y Sin Reporte"},
+
+    // Startup and initialization messages
+    {"POS cannot be started.", "El POS no puede iniciarse."},
+    {"Scanning Archives", "Escaneando Archivos"},
+    {"Creating Default Users", "Creando Usuarios Predeterminados"},
+    {"Initializing Reverse SSH Service", "Inicializando Servicio Reverse SSH"},
+    {"Reverse SSH service started (always enabled)", "Servicio Reverse SSH iniciado (siempre habilitado)"},
+    {"Reverse SSH service initialization failed", "Falló la inicialización del servicio Reverse SSH"},
+    {"On the Table Page", "En la Página de Mesa"},
+
+    // Inventory filter options
+    {"All", "Todo"},
+    {"Items", "Artículos"},
+    {"Modifiers", "Modificadores"},
+    {"Non-Track", "Sin Seguimiento"},
+    {"Item+Sub", "Artículo+Sust"},
+    {"By Weight", "Por Peso"},
+    {"Admission", "Admisión"},
+
+    // Error messages
+    {"Error reading order", "Error al leer pedido"},
+    {"Unable to load scalable font", "No se puede cargar fuente escalable"},
+    {"Cannot allocate new row pointers", "No se pueden asignar punteros de fila nuevos"},
+    {"Unexpected end of file", "Fin inesperado del archivo"},
+    {"Can't open display", "No se puede abrir display"},
+    {"Scheduled Restart Settings", "Configuración de Reinicio Programado"},
+    {"Kitchen Video Order Alert Settings", "Configuración de Alertas de Pedidos de Video de Cocina"},
+    {"TermError", "Error de Terminal"},
+    {"SERVER_ZONEDATA received, calling ReadZone()", "Datos de zona del servidor recibidos, llamando ReadZone()"},
+    {"SERVER_ZONEDATA: ReadZone() returned", "Datos de zona del servidor: ReadZone() retornó"},
+    {"Unknown check version '%d'", "Versión de cheque desconocida '%d'"},
+    {"Warning Time (minutes)", "Tiempo de Advertencia (minutos)"},
+    {"Warning Color", "Color de Advertencia"},
+    {"City State Zip Code", "Ciudad Estado Código Postal"},
+    {"Country Code", "Código de País"},
+    {"Set the Life of the Logon ID (Up to 999 seconds)", "Establecer la Vida del ID de Inicio de Sesión (Hasta 999 segundos)"},
+    {"After Settlement", "Después de Liquidación"},
+    {"On Page One", "En la Página Uno"},
+    {"Highest Account Number", "Número de Cuenta Más Alto"},
+    {"Account for expenses paid from drawers", "Cuenta para gastos pagados desde cajas"},
+    {"Require user to balance drawer in ServerBank mode?", "¿Requerir que el usuario balancee la caja en modo Banco de Meseros?"},
+    {"Default Tab Amount", "Monto de Pestaña Predeterminado"},
+    {"SMTP Server for Sending", "Servidor SMTP para Envío"},
+
     {nullptr, nullptr} // End marker
 };
 

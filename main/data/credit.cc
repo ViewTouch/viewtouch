@@ -676,7 +676,7 @@ int Credit::ValidateCardInfo()
             retval = 1;
         else
         {
-            ReportError("Got a bad card for validation.");
+            ReportError(term->Translate("Got a bad card for validation."));
             read_manual = 0;
             read_t1 = 0;
             read_t2 = 0;
@@ -2123,7 +2123,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
         }
         else
         {
-            printer->SetTitle("CreditCardReceipt");
+            printer->SetTitle(term->Translate("CreditCardReceipt"));
         }
         printer->Start();
         vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("==== TRANSACTION RECORD ====", lang));

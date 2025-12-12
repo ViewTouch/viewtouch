@@ -1323,7 +1323,7 @@ int Terminal::OpenTabList(const char* message)
         sd->Button(GlobalTranslate("Cancel"));
     else
     {
-        sd->SetTitle("There are no open tabs.");
+        sd->SetTitle(Translate("There are no open tabs."));
         sd->Button(GlobalTranslate("Okay"));
     }
     OpenDialog(sd);
@@ -1498,7 +1498,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
     case ADMINFORCE1:
         if (admin_forcing == 0)
         {
-            CreditCardVoiceDialog *ccvd = new CreditCardVoiceDialog("Enter TTID", "adminforceauth2");
+            CreditCardVoiceDialog *ccvd = new CreditCardVoiceDialog(GlobalTranslate("Enter TTID"), "adminforceauth2");
             OpenDialog(ccvd);  // OpenDialog takes ownership and will delete 'ccvd' when done
             admin_forcing = 1;
         }
@@ -1506,7 +1506,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
     case ADMINFORCE2:
         if (admin_forcing == 1)
         {
-            TenKeyDialog *tkd = new TenKeyDialog("Enter Final Amount", "adminforceauth3", 0, 1);
+            TenKeyDialog *tkd = new TenKeyDialog(GlobalTranslate("Enter Final Amount"), "adminforceauth3", 0, 1);
             if (dialog != nullptr)
                 NextDialog(tkd);  // NextDialog takes ownership and will delete 'tkd' when done
             else

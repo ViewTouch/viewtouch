@@ -469,7 +469,7 @@ int Check::Read(Settings *settings, InputDataFile &infile, int version)
     error += infile.Read(numsubchecks);
     if (error)
     {
-        ReportError("Error in reading general check data");
+        ReportError(term->Translate("Error in reading general check data"));
         printf("Error in reading general check data");
         return error;
     }
@@ -481,7 +481,7 @@ int Check::Read(Settings *settings, InputDataFile &infile, int version)
         {
             if (infile.end_of_file)
             {
-                ReportError("Unexpected end of SubChecks in Check");
+                ReportError(term->Translate("Unexpected end of SubChecks in Check"));
                 return 1;
             }
             
@@ -660,7 +660,7 @@ int Check::DestroyFile()
 
     int result = DeleteFile(filename.Value());
     if (result)
-        ReportError("Error in deleting check");
+        ReportError(term->Translate("Error in deleting check"));
 
     filename.Clear();
     return result;
@@ -672,7 +672,7 @@ SubCheck *Check::NewSubCheck()
     auto sc = std::make_unique<SubCheck>();
     if (!sc)
     {
-        ReportError("Can't create subcheck");
+        ReportError(term->Translate("Can't create subcheck"));
         return nullptr;
     }
     
@@ -1155,7 +1155,7 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
 
     if (report == nullptr && printer == nullptr)
     {
-        ReportError("No Printer Available For Work Order and No Report");
+        ReportError(term->Translate("No Printer Available For Work Order and No Report"));
         return 1;
     }
 
@@ -1241,7 +1241,7 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     if (report == nullptr)
         return 1;  // Error: no report available
     report->Clear();
-    report->SetTitle("WorkOrder");
+    report->SetTitle(term->Translate("WorkOrder"));
     System *sys = term->system_data;
     Settings *settings = &(sys->settings);
     
@@ -1667,7 +1667,7 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
     int       total_cost = 0;
     
     report->Clear();
-    report->SetTitle("DeliveryOrder");
+    report->SetTitle(term->Translate("DeliveryOrder"));
     report->SetPageWidth(pwidth);
     report->SetDividerChar('-');
 

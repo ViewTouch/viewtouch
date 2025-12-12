@@ -1768,8 +1768,8 @@ SignalResult DeveloperZone::Signal(Terminal *term, const genericChar* message)
         if (clear_flag >= 10)
         {
             sd = new SimpleDialog(term->Translate("Also clear labor data?"));
-            sd->Button("Yes", "clearsystemall");
-            sd->Button("No", "clearsystemsome");
+            sd->Button(term->Translate("Yes"), "clearsystemall");
+            sd->Button(term->Translate("No"), "clearsystemsome");
             sd->target_zone = this;
             term->OpenDialog(sd);
         }
