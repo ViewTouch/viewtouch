@@ -1133,9 +1133,14 @@ int StartSystem(int my_use_net)
         // Now that we have the settings, we need to do some initialization
         sys->account_db.low_acct_num = settings->low_acct_num;
         sys->account_db.high_acct_num = settings->high_acct_num;
+        // Initialize the global language from saved settings
+        SetGlobalLanguage(settings->current_language);
         // Only save if we successfully loaded settings
         settings->Save();
         settings_just_created = true;  // Settings file was just created
+    } else {
+        // Settings loaded successfully, initialize the global language from saved settings
+        SetGlobalLanguage(settings->current_language);
     }
     // Create alternate media file for old archives if it does not already exist
     sys->FullPath(MASTER_DISCOUNT_SAVE, altmedia);

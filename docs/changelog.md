@@ -49,6 +49,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Added Spanish language constants (LANG_SPANISH = 2) and switching infrastructure
     - Language switcher cycles between English and Spanish with immediate UI updates
     - Translation system uses only reliable hardcoded arrays with no external file dependencies
+  - **Added language persistence across restarts**:
+    - Added `current_language` setting to Settings class with save/load support
+    - Language choice is now saved to settings file and persists across ViewTouch restarts
+    - Language is restored from saved settings during system initialization
+    - No more need to reselect language after restarting ViewTouch
     - Comprehensive coverage of all user-facing text in the ViewTouch interface
   - **Removed all non-English PO files** to complete monolingual transition:
     - Deleted `viewtouch.po_DE` (German)

@@ -7367,6 +7367,13 @@ int Terminal::SetLanguage(int lang)
     // Set the global language for translation functions
     SetGlobalLanguage(lang);
 
+    // Save the language setting to persistent storage
+    Settings *settings = GetSettings();
+    if (settings) {
+        settings->current_language = lang;
+        settings->Save();  // Save settings to persist the language choice
+    }
+
     // Update all terminals with the new language
     UpdateAllTerms(UPDATE_SETTINGS, nullptr);
 
