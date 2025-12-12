@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Changed
+- **Language Selection Redesign - Removed F8 Translate Functionality (12-12-2025)**
+  - Completely removed F8 key language selection dialog functionality
+  - Eliminated F2 translate term mode and all associated translation features
+  - Removed multilingual support infrastructure including language constants and global language functions
+  - Simplified translation system to use default language only (LANG_PHRASE)
+  - Cleaned up PO files by removing setlanguage signal entries
+  - **Impact**: Streamlines the user interface by removing complex language switching features, focusing on single-language operation
+  - **Files modified**:
+    - `main/hardware/terminal.cc` - Removed F8/F2 key handlers, translation functions, and language logic
+    - `main/hardware/terminal.hh` - Removed translate/current_language members and method declarations
+    - `main/data/locale.cc` - Removed global language functions and variables
+    - `main/data/locale.hh` - Removed language constants and function declarations
+    - `main/data/credit.cc` - Simplified country language detection
+    - `main/data/manager.cc` - Updated terminal state checks
+    - `assets/data/po_file/viewtouch.po_*` - Removed setlanguage entries from all language files
 - **Performance optimizations and texture cache improvements (12-12-2025)**
   - Optimized string operations in dialog_zone.cc by caching strlen() results and combining condition checks
   - Implemented code deduplication in OpenTabDialog rendering with reusable lambda functions

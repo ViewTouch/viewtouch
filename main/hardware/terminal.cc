@@ -605,7 +605,6 @@ Terminal::Terminal()
     timeout        = 15;
     reload_zone_db = 0;
     edit           = 0;
-    translate      = 0;
     is_server      = 0;
     kill_me        = 0;
     show_info      = 0;
@@ -642,10 +641,6 @@ Terminal::Terminal()
 
     curr_font_id   = -1;
     curr_font_width = -1;
-
-    // Language settings
-    current_language = LANG_ENGLISH;  // Default to English
-    SetGlobalLanguage(LANG_ENGLISH);  // Initialize global language
 }
 
 // Destructor
@@ -1371,8 +1366,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         "adminforceauth2", "adminforceauth3 ", "adminforceauth4",
         "faststartlogin", "opentab", "opentabcancel", "opentabamount",
         "opentabcard ", "opentabpay ", "continuetab", "continuetab2 ",
-        "closetab", "closetab2 ", "forcereturn", "setlanguage_english",
-        "setlanguage_french", "setlanguage_spanish", "setlanguage_greek",
+        "closetab", "closetab2 ", "forcereturn",
         "restart_now", "restart_postpone", "toggleimages", nullptr};
 	//for handy reference to the indices in the signal handler
 	enum comms  { LOGOUT, NEXT_ARCHIVE, PRIOR_ARCHIVE, OPEN_DRAWER,
@@ -1382,8 +1376,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
                   ADMINFORCE2, ADMINFORCE3, ADMINFORCE4,
                   FASTSTARTLOGIN, OPENTAB, OPENTABCANCEL, OPENTABAMOUNT,
                   OPENTABCARD, OPENTABPAY, CONTINUETAB, CONTINUETAB2,
-                  CLOSETAB, CLOSETAB2, FORCERETURN, SETLANGUAGE_ENGLISH,
-                  SETLANGUAGE_FRENCH, SETLANGUAGE_SPANISH, SETLANGUAGE_GREEK,
+                  CLOSETAB, CLOSETAB2, FORCERETURN,
                   RESTART_NOW, RESTART_POSTPONE, TOGGLE_IMAGES};
 
     // Check for NULL message first
@@ -1579,18 +1572,6 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         else
             force_jump_source = 0;
         break;
-    case SETLANGUAGE_ENGLISH:
-        SetLanguage(LANG_ENGLISH);
-        return SIGNAL_OKAY;
-    case SETLANGUAGE_FRENCH:
-        SetLanguage(LANG_FRENCH);
-        return SIGNAL_OKAY;
-    case SETLANGUAGE_SPANISH:
-        SetLanguage(LANG_SPANISH);
-        return SIGNAL_OKAY;
-    case SETLANGUAGE_GREEK:
-        SetLanguage(LANG_GREEK);
-        return SIGNAL_OKAY;
     case RESTART_NOW:
         // Handle immediate restart
         KillDialog();  // Close the restart dialog
@@ -2040,8 +2021,6 @@ int Terminal::LogoutUser(int update)
         return 1;
 
     int error = StoreCheck(0);
-    if (translate)
-        TranslateTerm();
     if (edit)
         EditTerm();
 
@@ -2437,7 +2416,7 @@ int Terminal::NextPage()
         return 1;
 
     // can't edit system pages?
-    int flag = !(CanEditSystem() || translate);
+    int flag = !CanEditSystem();
     do
         currPage = currPage->next;
     while (currPage && currPage->id < 0 && flag);
@@ -2462,7 +2441,7 @@ int Terminal::ForePage()
         return 1;
 
     // can't edit system pages?
-    int flag = !(CanEditSystem() || translate);
+    int flag = !CanEditSystem();
     do
         currPage = currPage->fore;
     while (currPage && currPage->id < 0 && flag);
@@ -3089,12 +3068,9 @@ int Terminal::EditTerm(int save_data, int edit_mode)
 
     // The Else block.  Here's what happens when we switch into
     // edit mode.
-    if (translate)
-        TranslateTerm();
-
     for (Terminal *t = parent->TermList(); t != nullptr; t = t->next)
     {
-        if (t->edit || t->translate)
+        if (t->edit)
         {
             SimpleDialog *d = new SimpleDialog(Translate("Someone else is already in Edit Mode"));
             d->Button(GlobalTranslate("Okay"));
@@ -3202,35 +3178,6 @@ int Terminal::EditTerm(int save_data, int edit_mode)
     WInt8(TERM_SHOWWINDOW);
     WInt16(WIN_TOOLBAR);
     SendNow();
-    return 0;
-}
-
-int Terminal::TranslateTerm()
-{
-    FnTrace("Terminal::TranslateTerm()");
-    if (parent == nullptr)
-        return 1;
-    if (user == nullptr || !user->CanEdit())
-        return 1;
-
-    if (translate)
-    {
-        translate = 0;
-        MasterLocale->Save();
-        Draw(RENDER_NEW);
-        return 0;
-    }
-
-    if (edit)
-        EditTerm();
-
-    for (Terminal *t = parent->TermList(); t != nullptr; t = t->next)
-        if (t->edit || t->translate)
-            return 1;  // another terminal already being edited
-
-    // Start editing term
-    translate = 1;
-    Draw(RENDER_NEW);
     return 0;
 }
 
@@ -3672,11 +3619,9 @@ int Terminal::FinalizeOrders()
 const genericChar* Terminal::PageNo(int current, int page_max, int lang)
 {
     FnTrace("Terminal::PageNo()");
-    // If lang is LANG_PHRASE (default), use current language
-    if (lang == LANG_PHRASE)
-        lang = current_language;
+    // Language support removed - always use default language
     static genericChar buffer[32];
-    return MasterLocale->Page(current, page_max, lang, buffer);
+    return MasterLocale->Page(current, page_max, LANG_PHRASE, buffer);
 }
 
 const genericChar* Terminal::UserName(int user_id)
@@ -3745,28 +3690,22 @@ int Terminal::PriceToInteger(const genericChar* price)
 const genericChar* Terminal::Translate(const genericChar* str, int lang, int clear)
 {
     FnTrace("Terminal::Translate()");
-    // If lang is LANG_PHRASE (default), use current language
-    if (lang == LANG_PHRASE)
-        lang = current_language;
-    return MasterLocale->Translate(str, lang, clear);
+    // Language support removed - always use default language
+    return MasterLocale->Translate(str, LANG_PHRASE, clear);
 }
 
 const genericChar* Terminal::TimeDate(const TimeInfo &timevar, int format, int lang)
 {
     FnTrace("Terminal::TimeDate(timeinfo, int, int)");
-    // If lang is LANG_PHRASE (default), use current language
-    if (lang == LANG_PHRASE)
-        lang = current_language;
-    return MasterLocale->TimeDate(GetSettings(), timevar, format, lang);
+    // Language support removed - always use default language
+    return MasterLocale->TimeDate(GetSettings(), timevar, format, LANG_PHRASE);
 }
 
 const genericChar* Terminal::TimeDate(genericChar* buffer, const TimeInfo &timevar, int format, int lang)
 {
     FnTrace("Terminal::TimeDate(char, timeinfo, int, int)");
-    // If lang is LANG_PHRASE (default), use current language
-    if (lang == LANG_PHRASE)
-        lang = current_language;
-    return MasterLocale->TimeDate(GetSettings(), timevar, format, lang, buffer);
+    // Language support removed - always use default language
+    return MasterLocale->TimeDate(GetSettings(), timevar, format, LANG_PHRASE, buffer);
 }
 
 int Terminal::UserInput()
@@ -3824,8 +3763,6 @@ int Terminal::RenderBlankPage()
         mode = MODE_MACRO;
     else if (edit)
         mode = MODE_EDIT;
-    else if (translate)
-        mode = MODE_TRANSLATE;
     else if (user && user->training)
         mode = MODE_TRAINING;
 
@@ -4815,8 +4752,6 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             return EditTerm(0);  // Exit edit without saving, if we're in edit mode
         else
             return EditTerm(1);  // EditTerm defaults to 1 anyway
-    case XK_F2:  // translate term
-        return TranslateTerm();
     case XK_F3:  // record activity
         if (system_data->settings.enable_f3_f4_recording)
         {
@@ -4860,8 +4795,6 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             OpenDialog(sd);
         }
         return 0;
-    case XK_F8:  // language selection dialog
-        return OpenLanguageDialog();
     case XK_F9:
         if (state & ShiftMask)
             return EditTerm(0);  // Exit edit without saving, if we're in edit mode
@@ -4870,7 +4803,7 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
         return EditTerm(0);
     }
 
-    if (edit || translate)
+    if (edit)
     {
         switch (my_code)
         {
@@ -5014,17 +4947,6 @@ int Terminal::MouseInput(int action, int x, int y)
     last_input = SystemTime;
 
     Zone *zone = nullptr;
-    if (translate)
-    {
-        zone = page->FindTranslateZone(this, x, y);
-        if ((action & MOUSE_RIGHT) && (action & MOUSE_PRESS))
-        {
-            if (zone == nullptr && y < 32)
-                return TranslatePage(page);
-            else
-                return TranslateZone(zone);
-        }
-    }
 
     if (edit == 0)
     {
@@ -6240,7 +6162,7 @@ int Terminal::ShowPageList()
 int Terminal::JumpList(int selected)
 {
     FnTrace("Terminal::JumpList()");
-    if (!edit && !translate)
+    if (!edit)
         return 1;
 
     int edit_system = CanEditSystem();
@@ -7423,34 +7345,3 @@ int Terminal::ReloadFonts()
 }
 
 // Language management methods
-int Terminal::SetLanguage(int lang)
-{
-    FnTrace("Terminal::SetLanguage()");
-    if (lang != LANG_ENGLISH && lang != LANG_FRENCH && lang != LANG_SPANISH && lang != LANG_GREEK)
-        return 1;  // Invalid language
-    
-    current_language = lang;
-    SetGlobalLanguage(lang);  // Update global language for static functions
-    
-    // Update all terminals with the new language
-    UpdateAllTerms(UPDATE_SETTINGS, nullptr);
-    
-    // Redraw the current page to show translated text
-    Draw(RENDER_NEW);
-    
-    return 0;
-}
-
-int Terminal::OpenLanguageDialog()
-{
-    FnTrace("Terminal::OpenLanguageDialog()");
-    
-    SimpleDialog *d = new SimpleDialog(Translate("Select Language"));
-    d->Button(Translate("English"), "setlanguage_english");
-    d->Button(Translate("Français"), "setlanguage_french");
-    d->Button(Translate("Español"), "setlanguage_spanish");
-    d->Button(Translate("Ελληνικά"), "setlanguage_greek");
-    d->Button(Translate("Cancel"), "cancel");
-    
-    return OpenDialog(d);
-}

@@ -3500,7 +3500,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
         }
 
         int u = update;
-        if (term->edit == 0 && term->translate == 0 && term->timeout > 0)
+        if (term->edit == 0 && term->timeout > 0)
         {
             // Check for general timeout
             int sec = SecondsElapsed(SystemTime, term->time_out);

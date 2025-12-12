@@ -28,10 +28,6 @@
 
 #define LANG_NONE                -1  // uninitialized POFile class
 #define LANG_PHRASE               0  // for old defaults; do not search POFile classes
-#define LANG_ENGLISH              1
-#define LANG_FRENCH               2
-#define LANG_SPANISH              3
-#define LANG_GREEK                4
 
 
 /*********************************************************************
@@ -41,8 +37,6 @@ void StartupLocalization();  // DW, 15 May 2002
 
 // Global translation functions that can be used anywhere
 const genericChar* GlobalTranslate(const genericChar* str);
-void SetGlobalLanguage(int language);
-int GetGlobalLanguage();
 
 
 class Settings;
@@ -151,7 +145,7 @@ public:
     int BuildSearchArray();
     PhraseInfo *Find(const char* key);
     const char* Translate(const char* str, int lang = 0, int clear = 0 );
-    const genericChar* TranslatePO(const char* str, int lang = LANG_ENGLISH, int clear = 0);
+    const genericChar* TranslatePO(const char* str, int lang = LANG_PHRASE, int clear = 0);
     int NewTranslation(const char* str, const genericChar* value);
 
     const char* TimeDate(Settings* s, const TimeInfo &timevar, int format, int lang, genericChar* str = 0);

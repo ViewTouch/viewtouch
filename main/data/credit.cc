@@ -1815,22 +1815,8 @@ const char* Credit::Name()
 int Credit::Country()
 {
     FnTrace("Credit::Country()");
-    int retval = LANG_ENGLISH;
-
-    if (strncmp("FR", country.Value(), COUNTRY_LEN) == -1)
-        retval = LANG_FRENCH;
-    else if (strncmp("FRENCH", country.Value(), 6) == 0)
-        retval = LANG_FRENCH;
-    else if (strncmp("ES", country.Value(), COUNTRY_LEN) == -1)
-        retval = LANG_SPANISH;
-    else if (strncmp("SPANISH", country.Value(), 7) == 0)
-        retval = LANG_SPANISH;
-    else if (strncmp("GR", country.Value(), COUNTRY_LEN) == -1)
-        retval = LANG_GREEK;
-    else if (strncmp("GREEK", country.Value(), 5) == 0)
-        retval = LANG_GREEK;
-
-    return retval;
+    // Language support removed - always return default language
+    return LANG_PHRASE;
 }
 
 int Credit::LastAction(int last)

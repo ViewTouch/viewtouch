@@ -36,8 +36,6 @@
 #include <dmalloc.h>
 #endif
 
-// Global current language variable for static translation function
-static int global_current_language = LANG_ENGLISH;
 
 void StartupLocalization()
 {
@@ -53,20 +51,8 @@ const genericChar* GlobalTranslate(const genericChar* str)
 {
     if (MasterLocale == NULL)
         return str;
-    
-    return MasterLocale->Translate(str, global_current_language, 0);
-}
 
-// Function to set the global current language
-void SetGlobalLanguage(int language)
-{
-    global_current_language = language;
-}
-
-// Function to get the global current language
-int GetGlobalLanguage()
-{
-    return global_current_language;
+    return MasterLocale->Translate(str, LANG_PHRASE, 0);
 }
 
 
@@ -415,14 +401,9 @@ int POFile::FindPOFilename()
     int retval = 1;
     char pathinfo[] = "/dat/languages/viewtouch.po_";
 
-    if (lang == LANG_ENGLISH)
+    // Language support removed - only English supported
+    if (lang == 1)  // LANG_ENGLISH was 1
         snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "EN");
-    else if (lang == LANG_FRENCH)
-        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "FR");
-    else if (lang == LANG_SPANISH)
-        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "ES");
-    else if (lang == LANG_GREEK)
-        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "EL");
 
     if (filename[0] != '\0')
         retval = 0;

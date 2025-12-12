@@ -405,11 +405,10 @@ public:
     int last_page_type;
     int last_page_size;
 
-    // Edit / translate mode
+    // Edit mode
     Page *edit_page;
     Zone *edit_zone;
     int   edit;          // 0=normal mode, 1=edit mode, 2=system edit mode
-    int   translate;     // boolean - terminal in translate mode?
     int   last_x;
     int   last_y;
     int   zone_modify;
@@ -423,9 +422,6 @@ public:
     int   edit_drag_total_dy;
     RegionInfo edit_drag_initial_region;
     RegionInfo edit_drag_current_region;
-
-    // Language settings
-    int   current_language;  // current UI language (LANG_ENGLISH, LANG_FRENCH, etc.)
 
     // Flags
     int failure;         // communications failure count
@@ -532,7 +528,6 @@ public:
     int TermsInUse();           // # of terms in use (total)
     int OtherTermsInUse(int no_kitchen = 0);     // # of terms in use (except current)
     int EditTerm(int save_data = 1, int mode = 1);  // toggles edit mode for terminal
-    int TranslateTerm();        // toggles translate mode for terminal
     int UpdateZoneDB(Control *con); // updates zone_db for terminal
     const genericChar* ReplaceSymbols(const char* str);
     Printer *FindPrinter(int printer_id); // returns printer object based on printer id
@@ -562,11 +557,6 @@ public:
     genericChar* SimpleFormatPrice(int price);
     genericChar* SimpleFormatPrice(char* str, int price); // same as format price but with no commas
     int          PriceToInteger(const char* price);
-
-    // Language management
-    int SetLanguage(int lang);
-    int GetLanguage() { return current_language; }
-    int OpenLanguageDialog();
 
     int UserInput();
     int ClearSelectedZone();
