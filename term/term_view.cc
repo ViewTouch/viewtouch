@@ -4389,10 +4389,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     // Set up textures - preload commonly used ones
     texture_manager.preload_common_textures();
 
-    // Run benchmark in debug mode (selective testing only)
-#ifdef DEBUG
-    texture_manager.benchmark_texture_loading();
-#endif
+    // Performance monitoring removed for production efficiency
     ReadScreenSaverPix();
 
     // Add Iconify Button
