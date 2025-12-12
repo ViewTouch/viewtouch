@@ -488,9 +488,9 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             term->eod_failed = 1;
             break;
         default:
-            snprintf(str, STRLENGTH, Translate("Cannot process unknown code: %d"), code);
+            snprintf(str, STRLENGTH, GlobalTranslate("Cannot process unknown code: %d"), code);
             ReportError(str);
-            snprintf(str, STRLENGTH, Translate("  Last code processed was %d"), last_code);
+            snprintf(str, STRLENGTH, GlobalTranslate("  Last code processed was %d"), last_code);
             ReportError(str);
             printf("Terminating due to unforseen error....\n");
             EndSystem();

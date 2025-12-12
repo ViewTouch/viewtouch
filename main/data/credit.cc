@@ -2231,8 +2231,8 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
                      PAN(settings->show_entire_cc_num));
         }
         printer->Write(buffer);
-        vt_safe_string::safe_copy(buffer3, STRLENGTH, term->Translate(CreditTypeName(buffer2), lang));
-        snprintf(buffer, STRLENGTH, "%s: %s", term->Translate("Account Type", lang),
+        vt_safe_string::safe_copy(buffer3, STRLONG, term->Translate(CreditTypeName(buffer2), lang));
+        snprintf(buffer, STRLONG, "%s: %s", term->Translate("Account Type", lang),
                  buffer3);
         printer->Write(buffer);
         if (server_date.size() > 0 && server_time.size() > 0)

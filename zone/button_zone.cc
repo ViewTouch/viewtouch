@@ -1170,7 +1170,14 @@ std::unique_ptr<Zone> LanguageButtonZone::Copy()
     FnTrace("LanguageButtonZone::Copy()");
 
     auto z = std::make_unique<LanguageButtonZone>();
-    z->CopyBase(this);
+    (void)z->SetRegion(this);  // SetRegion has nodiscard, but we only need side effect
+    z->name.Set(name);
+    z->key       = key;
+    z->behave    = behave;
+    z->font      = font;
+    z->shape     = shape;
+    z->jump_type = jump_type;
+    z->jump_id   = jump_id;
     return z;
 }
 
@@ -1182,11 +1189,11 @@ RenderResult LanguageButtonZone::Render(Terminal *term, int update_flag)
     RenderResult result = ButtonZone::Render(term, update_flag);
 
     // Add "English" text to the button
-    int color = COLOR_DEFAULT;
-    if (selected)
-        color = COLOR_BUTTON_SELECTED;
+    int text_color = COLOR_DEFAULT;
+    if (term->selected_zone == this)
+        text_color = COLOR_WHITE;  // Use white for selected state
 
-    term->RenderText(term->Translate("English"), x + 5, y + 2, color, FONT_DEFAULT, ALIGN_LEFT);
+    term->RenderText(term->Translate("English"), x + 5, y + 2, text_color, FONT_DEFAULT, ALIGN_LEFT);
 
     return result;
 }
