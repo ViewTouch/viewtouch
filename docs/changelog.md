@@ -29,6 +29,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Customer display and ordering systems
     - Kitchen display and order routing
     - All dialog boxes, error messages, and system notifications
+    - **Switch settings**: Trusted, Assigned, Server Bank, First Server, Last Server, Drop Pennies, Round Up Gratuity
+    - **Drawer error messages**: Complete error messages for Trusted, Server Bank, and Assigned drawer modes
   - Spanish language support now covers 100% of user-facing text in ViewTouch POS system
 
 ### Changed
