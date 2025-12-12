@@ -3719,6 +3719,19 @@ static const TranslationEntry common_translations[] = {
     {"Confirmation Message", "Mensaje de Confirmación"},
     {"Button's Text Color When Selected", "Color de Texto del Botón Cuando Seleccionado"},
 
+    // Missing switch names and drawer error messages
+    {"Trusted", "Confiable"},
+    {"Assigned", "Asignado"},
+    {"Server Bank", "Banco de Meseros"},
+    {"First Server", "Primer Mesero"},
+    {"Last Server", "Último Mesero"},
+    {"Drop Pennies", "Eliminar Centavos"},
+    {"Round Up Gratuity", "Redondear Gratificación"},
+    {"No drawer available: No drawer is attached to this terminal in Trusted mode", "No hay caja disponible: No hay caja adjunta a esta terminal en modo Confiable"},
+    {"No drawer available: No drawers are configured in Server Bank mode", "No hay caja disponible: No hay cajas configuradas en modo Banco de Meseros"},
+    {"No drawer available: Unable to create Server Bank drawer for this user", "No hay caja disponible: No se puede crear caja de Banco de Meseros para este usuario"},
+    {"No drawer available: No drawers are attached to this terminal in Assigned mode", "No hay caja disponible: No hay cajas adjuntas a esta terminal en modo Asignado"},
+
     {nullptr, nullptr} // End marker
 };
 
