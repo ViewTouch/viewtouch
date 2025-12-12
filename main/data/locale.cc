@@ -2008,6 +2008,20 @@ static const TranslationEntry ui_config_translations[] = {
     {nullptr, nullptr} // End of ui_config_translations
 };
 
+static const TranslationEntry settings_config_translations[] = {
+    // Index names
+    {"Breakfast", "Desayuno"},
+    {"Brunch", "Brunch"},
+    {"Early Dinner", "Cena Temprana"},
+    {"Late Night", "Noche Tardía"},
+    {"Wine", "Vino"},
+    {"Cafe", "Café"},
+    {"Room", "Habitación"},
+    {"Retail", "Minorista"},
+
+    {nullptr, nullptr} // End of settings_config_translations
+};
+
 static const TranslationEntry business_config_translations[] = {
     // Index names
     {"Breakfast", "Desayuno"},
@@ -3856,6 +3870,7 @@ static const char* LookupHardcodedTranslation(const char* str, int lang) {
         business_translations,
         error_translations,
         ui_config_translations,
+        settings_config_translations,
         business_config_translations,
         extended_translations_1b,
         extended_translations_2,
