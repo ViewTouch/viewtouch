@@ -17,6 +17,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Changed drawer error messages to use GlobalTranslate() function
   - Added Spanish translations for all drawer error messages
   - Now drawer error messages properly display in Spanish when language is set to Spanish
+- **CI Build Memory Issue Fix (12-12-2025)**
+  - Fixed GitHub Actions CI build failure (exit code 2) due to memory constraints
+  - Split large 4,500+ line translation array into 4 smaller chunks:
+    - `ui_translations`: Core UI elements (buttons, menus, navigation)
+    - `business_translations`: Time, financial, and restaurant terms
+    - `error_translations`: Error messages and system notifications
+    - `extended_translations`: All additional UI strings and configurations
+  - Updated `LookupHardcodedTranslation()` to search through all array chunks
+  - Reduces static memory usage during compilation while maintaining full functionality
+  - Resolves CI build failures in constrained environments
 
 ### Added
 - **Comprehensive Spanish Translation Expansion (12-12-2025)**
