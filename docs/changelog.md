@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
-- **Language Persistence Fix (12-12-2025)**
+- **CI Build Memory Optimization (12-12-2025)**
   - Fixed critical bug where language settings (English/Spanish) did not persist across program restarts
   - Removed language reset to English in Terminal constructor that was overriding saved preferences
   - Language choice now properly saves to settings file and restores on startup
@@ -17,6 +17,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Changed drawer error messages to use GlobalTranslate() function
   - Added Spanish translations for all drawer error messages
   - Now drawer error messages properly display in Spanish when language is set to Spanish
+- **CI Build Memory Issue Fix (12-12-2025)**
+  - Fixed GitHub Actions CI build failure (exit code 2) due to memory constraints
+  - Split large 4,500+ line translation array into smaller logical chunks
+  - Cleaned up duplicate/overlapping array structures
+  - Updated `LookupHardcodedTranslation()` to search through all array chunks
+- **CI Workflow Memory Optimization (12-12-2025)**
+  - Added memory-optimized compilation flags to GitHub Actions workflow
+  - Applied `-O1` optimization level to reduce memory usage during compilation
+  - Enabled function/data sections (`-ffunction-sections -fdata-sections`) for linker garbage collection
+  - Limited error output (`-fmax-errors=5`) to reduce memory consumption
+  - Tuned GCC garbage collector parameters for lower memory footprint
+  - Applied optimizations to all compiler versions (GCC 12-14, Clang 16-18)
+  - Maintains Debug build type while optimizing for memory-constrained CI environment
+  - Reduces static memory usage during compilation while maintaining full functionality
+  - Resolves CI build failures in constrained environments
 
 ### Added
 - **Comprehensive Spanish Translation Expansion (12-12-2025)**

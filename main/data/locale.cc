@@ -45,7 +45,8 @@ struct TranslationEntry {
     const char* spanish;
 };
 
-static const TranslationEntry common_translations[] = {
+// Split large translation array into smaller chunks to avoid CI memory limits
+static const TranslationEntry ui_translations[] = {
     // Common buttons and actions
     {"Okay", "Aceptar"},
     {"Cancel", "Cancelar"},
@@ -173,6 +174,10 @@ static const TranslationEntry common_translations[] = {
     {"Zoom", "Zoom"},
     {"Full Screen", "Pantalla Completa"},
 
+    {nullptr, nullptr} // End of UI translations
+};
+
+static const TranslationEntry business_translations[] = {
     // Time and date
     {"Time", "Hora"},
     {"Date", "Fecha"},
@@ -408,6 +413,10 @@ static const TranslationEntry common_translations[] = {
     {"Low stock", "Stock bajo"},
     {"High stock", "Stock alto"},
 
+    {nullptr, nullptr} // End of business translations
+};
+
+static const TranslationEntry error_translations[] = {
     // Error and system messages
     {"Cannot process unknown code: %d", "No se puede procesar código desconocido: %d"},
     {"Last code processed was %d", "Último código procesado fue %d"},
@@ -506,6 +515,10 @@ static const TranslationEntry common_translations[] = {
     {"Prior\\Check", "Anterior\\Cheque"},
     {"Order Entry", "Entrada de Pedido"},
 
+    {nullptr, nullptr} // End of error translations
+};
+
+static const TranslationEntry ui_config_translations[] = {
     // Additional critical UI strings
     {"Account Name", "Nombre de Cuenta"},
     {"Account No", "No. de Cuenta"},
@@ -1992,6 +2005,10 @@ static const TranslationEntry common_translations[] = {
     {"Liberation Serif 18pt Bold", "Liberation Serif 18pt Negrita"},
     {"Liberation Serif 20pt Bold", "Liberation Serif 20pt Negrita"},
 
+    {nullptr, nullptr} // End of ui_config_translations
+};
+
+static const TranslationEntry settings_config_translations[] = {
     // Index names
     {"Breakfast", "Desayuno"},
     {"Brunch", "Brunch"},
@@ -2984,6 +3001,11 @@ static const TranslationEntry common_translations[] = {
     {"Got an extra carriage return in card swipe...", "Se obtuvo un retorno de carro extra en el pase de tarjeta..."},
     {"Alternate bitmap fonts are disabled; ensure scalable fonts are installed.", "Las fuentes bitmap alternativas están deshabilitadas; asegúrese de que las fuentes escalables estén instaladas."},
     {"XpmError:  %s", "Error Xpm: %s"},
+
+    {nullptr, nullptr} // End of settings_config_translations
+};
+
+static const TranslationEntry extended_translations[] = {
     {"RemoveCheckeredBackground: Processing image %dx%d, channels=%d", "RemoveCheckeredBackground: Procesando imagen %dx%d, canales=%d"},
     {"RemoveCheckeredBackground: No checkered pattern detected", "RemoveCheckeredBackground: No se detectó patrón de cuadros"},
     {"RemoveCheckeredBackground: Detected checkered pattern (checker size ~%d, %d%% match)", "RemoveCheckeredBackground: Patrón de cuadros detectado (tamaño de cuadro ~%d, %d%% coincidencia)"},
@@ -3811,18 +3833,31 @@ static const TranslationEntry common_translations[] = {
     {"Default Tab Amount", "Monto de Pestaña Predeterminado"},
     {"SMTP Server for Sending", "Servidor SMTP para Envío"},
 
-    {nullptr, nullptr} // End marker
+    {nullptr, nullptr} // End of extended translations
 };
 
-// Function to lookup translation in the hardcoded array
+// Function to lookup translation in the hardcoded arrays
 static const char* LookupHardcodedTranslation(const char* str, int lang) {
     if (lang != LANG_SPANISH) {
-        return nullptr; // Only Spanish translations in the array
+        return nullptr; // Only Spanish translations in the arrays
     }
 
-    for (const TranslationEntry* entry = common_translations; entry->english != nullptr; ++entry) {
-        if (strcmp(str, entry->english) == 0) {
-            return entry->spanish;
+    // Search through all translation arrays
+    const TranslationEntry* arrays[] = {
+        ui_translations,
+        business_translations,
+        error_translations,
+        ui_config_translations,
+        settings_config_translations,
+        extended_translations,
+        nullptr // End marker
+    };
+
+    for (int i = 0; arrays[i] != nullptr; ++i) {
+        for (const TranslationEntry* entry = arrays[i]; entry->english != nullptr; ++entry) {
+            if (strcmp(str, entry->english) == 0) {
+                return entry->spanish;
+            }
         }
     }
 
