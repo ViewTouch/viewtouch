@@ -518,7 +518,7 @@ static const TranslationEntry error_translations[] = {
     {nullptr, nullptr} // End of error translations
 };
 
-static const TranslationEntry extended_translations[] = {
+static const TranslationEntry extended_translations_1[] = {
     // Additional critical UI strings
     {"Account Name", "Nombre de Cuenta"},
     {"Account No", "No. de Cuenta"},
@@ -2997,6 +2997,11 @@ static const TranslationEntry extended_translations[] = {
     {"Got an extra carriage return in card swipe...", "Se obtuvo un retorno de carro extra en el pase de tarjeta..."},
     {"Alternate bitmap fonts are disabled; ensure scalable fonts are installed.", "Las fuentes bitmap alternativas están deshabilitadas; asegúrese de que las fuentes escalables estén instaladas."},
     {"XpmError:  %s", "Error Xpm: %s"},
+
+    {nullptr, nullptr} // End of extended_translations_1
+};
+
+static const TranslationEntry extended_translations_2[] = {
     {"RemoveCheckeredBackground: Processing image %dx%d, channels=%d", "RemoveCheckeredBackground: Procesando imagen %dx%d, canales=%d"},
     {"RemoveCheckeredBackground: No checkered pattern detected", "RemoveCheckeredBackground: No se detectó patrón de cuadros"},
     {"RemoveCheckeredBackground: Detected checkered pattern (checker size ~%d, %d%% match)", "RemoveCheckeredBackground: Patrón de cuadros detectado (tamaño de cuadro ~%d, %d%% coincidencia)"},
@@ -3726,6 +3731,11 @@ static const TranslationEntry extended_translations[] = {
     {"This Page's Spacing", "Espaciado de Esta Página"},
     {"This Page's Parent Page", "Página Padre de Esta Página"},
     {"Global Line Spacing", "Espaciado Global de Líneas"},
+
+    {nullptr, nullptr} // End of extended_translations_2
+};
+
+static const TranslationEntry extended_translations_3[] = {
     {"Button's Name", "Nombre del Botón"},
     {"Button's Page Location", "Ubicación de Página del Botón"},
     {"Group ID", "ID de Grupo"},
@@ -3838,7 +3848,9 @@ static const char* LookupHardcodedTranslation(const char* str, int lang) {
         ui_translations,
         business_translations,
         error_translations,
-        extended_translations,
+        extended_translations_1,
+        extended_translations_2,
+        extended_translations_3,
         nullptr // End marker
     };
 
