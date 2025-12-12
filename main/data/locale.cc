@@ -36,6 +36,493 @@
 #include <dmalloc.h>
 #endif
 
+// Global current language variable for static translation function
+static int global_current_language = LANG_ENGLISH;
+
+// Translation arrays for common UI strings
+struct TranslationEntry {
+    const char* english;
+    const char* spanish;
+};
+
+static const TranslationEntry common_translations[] = {
+    // Common buttons and actions
+    {"Okay", "Aceptar"},
+    {"Cancel", "Cancelar"},
+    {"Yes", "Sí"},
+    {"No", "No"},
+    {"Continue", "Continuar"},
+    {"Start", "Iniciar"},
+    {"Stop", "Detener"},
+    {"Save", "Guardar"},
+    {"Delete", "Eliminar"},
+    {"Edit", "Editar"},
+    {"Add", "Agregar"},
+    {"Remove", "Remover"},
+    {"Enter", "Entrar"},
+    {"Backspace", "Retroceso"},
+    {"Clear", "Limpiar"},
+    {"Change", "Cambiar"},
+    {"Print", "Imprimir"},
+    {"Next", "Siguiente"},
+    {"Prior", "Anterior"},
+    {"Done", "Hecho"},
+    {"Quit", "Salir"},
+    {"Exit", "Salir"},
+    {"Logout", "Cerrar Sesión"},
+    {"Close", "Cerrar"},
+    {"Open", "Abrir"},
+    {"New", "Nuevo"},
+    {"Search", "Buscar"},
+    {"Find", "Encontrar"},
+    {"Replace", "Reemplazar"},
+    {"Copy", "Copiar"},
+    {"Paste", "Pegar"},
+    {"Cut", "Cortar"},
+    {"Undo", "Deshacer"},
+    {"Redo", "Rehacer"},
+    {"Refresh", "Actualizar"},
+    {"Reload", "Recargar"},
+    {"Reset", "Reiniciar"},
+    {"Apply", "Aplicar"},
+    {"Submit", "Enviar"},
+    {"Send", "Enviar"},
+    {"Receive", "Recibir"},
+    {"Accept", "Aceptar"},
+    {"Reject", "Rechazar"},
+    {"Approve", "Aprobar"},
+    {"Deny", "Denegar"},
+    {"Confirm", "Confirmar"},
+    {"Verify", "Verificar"},
+    {"Validate", "Validar"},
+    {"Check", "Verificar"},
+    {"Test", "Probar"},
+    {"Run", "Ejecutar"},
+    {"Execute", "Ejecutar"},
+    {"Process", "Procesar"},
+    {"Complete", "Completar"},
+    {"Finish", "Finalizar"},
+    {"End", "Terminar"},
+    {"Begin", "Comenzar"},
+    {"Start", "Iniciar"},
+
+    // Navigation and menus
+    {"Menu", "Menú"},
+    {"Settings", "Configuración"},
+    {"Reports", "Reportes"},
+    {"Orders", "Pedidos"},
+    {"Payments", "Pagos"},
+    {"Tables", "Mesas"},
+    {"Users", "Usuarios"},
+    {"System", "Sistema"},
+    {"Help", "Ayuda"},
+    {"Welcome", "Bienvenido"},
+    {"Hello", "Hola"},
+    {"Please", "Por favor"},
+    {"Select", "Seleccionar"},
+    {"Choose", "Elegir"},
+    {"Click", "Hacer clic"},
+    {"Press", "Presionar"},
+    {"Touch", "Tocar"},
+    {"Home", "Inicio"},
+    {"Back", "Atrás"},
+    {"Forward", "Adelante"},
+    {"Up", "Arriba"},
+    {"Down", "Abajo"},
+    {"Left", "Izquierda"},
+    {"Right", "Derecha"},
+    {"Top", "Superior"},
+    {"Bottom", "Inferior"},
+    {"First", "Primero"},
+    {"Last", "Último"},
+    {"Previous", "Anterior"},
+    {"Page", "Página"},
+    {"Screen", "Pantalla"},
+    {"Window", "Ventana"},
+    {"Dialog", "Diálogo"},
+    {"Message", "Mensaje"},
+    {"Alert", "Alerta"},
+    {"Warning", "Advertencia"},
+    {"Error", "Error"},
+    {"Info", "Información"},
+    {"Status", "Estado"},
+    {"Progress", "Progreso"},
+    {"Loading", "Cargando"},
+    {"Waiting", "Esperando"},
+    {"Processing", "Procesando"},
+    {"Connecting", "Conectando"},
+    {"Connected", "Conectado"},
+    {"Disconnected", "Desconectado"},
+    {"Online", "En línea"},
+    {"Offline", "Fuera de línea"},
+    {"Available", "Disponible"},
+    {"Unavailable", "No disponible"},
+    {"Enabled", "Habilitado"},
+    {"Disabled", "Deshabilitado"},
+    {"Active", "Activo"},
+    {"Inactive", "Inactivo"},
+    {"Visible", "Visible"},
+    {"Hidden", "Oculto"},
+    {"Show", "Mostrar"},
+    {"Hide", "Ocultar"},
+    {"Expand", "Expandir"},
+    {"Collapse", "Colapsar"},
+    {"Minimize", "Minimizar"},
+    {"Maximize", "Maximizar"},
+    {"Restore", "Restaurar"},
+    {"Zoom", "Zoom"},
+    {"Full Screen", "Pantalla Completa"},
+
+    // Time and date
+    {"Time", "Hora"},
+    {"Date", "Fecha"},
+    {"Today", "Hoy"},
+    {"Yesterday", "Ayer"},
+    {"Tomorrow", "Mañana"},
+    {"Now", "Ahora"},
+    {"Later", "Más tarde"},
+    {"Soon", "Pronto"},
+    {"Today", "Hoy"},
+    {"This Week", "Esta Semana"},
+    {"This Month", "Este Mes"},
+    {"This Year", "Este Año"},
+    {"Last Week", "Semana Pasada"},
+    {"Last Month", "Mes Pasado"},
+    {"Last Year", "Año Pasado"},
+    {"Next Week", "Próxima Semana"},
+    {"Next Month", "Próximo Mes"},
+    {"Next Year", "Próximo Año"},
+    {"AM", "AM"},
+    {"PM", "PM"},
+    {"Morning", "Mañana"},
+    {"Afternoon", "Tarde"},
+    {"Evening", "Noche"},
+    {"Night", "Noche"},
+    {"Hour", "Hora"},
+    {"Minute", "Minuto"},
+    {"Second", "Segundo"},
+    {"Day", "Día"},
+    {"Week", "Semana"},
+    {"Month", "Mes"},
+    {"Year", "Año"},
+    {"Monday", "Lunes"},
+    {"Tuesday", "Martes"},
+    {"Wednesday", "Miércoles"},
+    {"Thursday", "Jueves"},
+    {"Friday", "Viernes"},
+    {"Saturday", "Sábado"},
+    {"Sunday", "Domingo"},
+
+    // Financial and payment terms
+    {"Cash", "Efectivo"},
+    {"Credit", "Crédito"},
+    {"Debit", "Débito"},
+    {"Check", "Cheque"},
+    {"Money", "Dinero"},
+    {"Payment", "Pago"},
+    {"Amount", "Monto"},
+    {"Total", "Total"},
+    {"Subtotal", "Subtotal"},
+    {"Tax", "Impuestos"},
+    {"Price", "Precio"},
+    {"Cost", "Costo"},
+    {"Fee", "Tarifa"},
+    {"Charge", "Cargo"},
+    {"Discount", "Descuento"},
+    {"Tip", "Propina"},
+    {"Change", "Cambio"},
+    {"Balance", "Saldo"},
+    {"Due", "Adeudado"},
+    {"Owed", "Adeudado"},
+    {"Paid", "Pagado"},
+    {"Refund", "Reembolso"},
+    {"Receipt", "Recibo"},
+    {"Invoice", "Factura"},
+    {"Bill", "Factura"},
+    {"Account", "Cuenta"},
+    {"Customer", "Cliente"},
+    {"Vendor", "Proveedor"},
+    {"Supplier", "Proveedor"},
+    {"Purchase", "Compra"},
+    {"Sale", "Venta"},
+    {"Transaction", "Transacción"},
+    {"Order", "Pedido"},
+    {"Item", "Artículo"},
+    {"Product", "Producto"},
+    {"Service", "Servicio"},
+    {"Quantity", "Cantidad"},
+    {"Unit", "Unidad"},
+    {"Package", "Paquete"},
+    {"Bundle", "Paquete"},
+    {"Delivery", "Entrega"},
+    {"Shipping", "Envío"},
+    {"Address", "Dirección"},
+    {"Location", "Ubicación"},
+
+    // System and technical terms
+    {"System", "Sistema"},
+    {"Computer", "Computadora"},
+    {"Server", "Servidor"},
+    {"Client", "Cliente"},
+    {"Network", "Red"},
+    {"Internet", "Internet"},
+    {"Connection", "Conexión"},
+    {"Database", "Base de datos"},
+    {"File", "Archivo"},
+    {"Folder", "Carpeta"},
+    {"Directory", "Directorio"},
+    {"Drive", "Unidad"},
+    {"Memory", "Memoria"},
+    {"Storage", "Almacenamiento"},
+    {"Disk", "Disco"},
+    {"USB", "USB"},
+    {"Printer", "Impresora"},
+    {"Scanner", "Escáner"},
+    {"Keyboard", "Teclado"},
+    {"Mouse", "Ratón"},
+    {"Screen", "Pantalla"},
+    {"Monitor", "Monitor"},
+    {"Display", "Display"},
+    {"Terminal", "Terminal"},
+    {"Device", "Dispositivo"},
+    {"Hardware", "Hardware"},
+    {"Software", "Software"},
+    {"Program", "Programa"},
+    {"Application", "Aplicación"},
+    {"Version", "Versión"},
+    {"Update", "Actualización"},
+    {"Install", "Instalar"},
+    {"Setup", "Configuración"},
+    {"Configuration", "Configuración"},
+    {"Settings", "Configuración"},
+    {"Options", "Opciones"},
+    {"Preferences", "Preferencias"},
+    {"Default", "Predeterminado"},
+    {"Custom", "Personalizado"},
+    {"Advanced", "Avanzado"},
+    {"Basic", "Básico"},
+    {"Automatic", "Automático"},
+    {"Manual", "Manual"},
+    {"On", "Encendido"},
+    {"Off", "Apagado"},
+    {"True", "Verdadero"},
+    {"False", "Falso"},
+    {"Yes", "Sí"},
+    {"No", "No"},
+    {"Enable", "Habilitar"},
+    {"Disable", "Deshabilitar"},
+    {"Lock", "Bloquear"},
+    {"Unlock", "Desbloquear"},
+    {"Secure", "Seguro"},
+    {"Password", "Contraseña"},
+    {"Login", "Iniciar Sesión"},
+    {"Username", "Nombre de Usuario"},
+    {"User", "Usuario"},
+    {"Admin", "Administrador"},
+    {"Manager", "Gerente"},
+    {"Employee", "Empleado"},
+    {"Customer", "Cliente"},
+    {"Guest", "Invitado"},
+
+    // Restaurant/hospitality specific
+    {"Table", "Mesa"},
+    {"Seat", "Asiento"},
+    {"Guest", "Invitado"},
+    {"Party", "Grupo"},
+    {"Reservation", "Reservación"},
+    {"Wait", "Espera"},
+    {"Service", "Servicio"},
+    {"Waiter", "Mesero"},
+    {"Waitress", "Mesera"},
+    {"Server", "Mesero"},
+    {"Bartender", "Bartender"},
+    {"Cook", "Cocinero"},
+    {"Chef", "Chef"},
+    {"Manager", "Gerente"},
+    {"Host", "Anfitrión"},
+    {"Hostess", "Anfitriona"},
+    {"Kitchen", "Cocina"},
+    {"Bar", "Bar"},
+    {"Restaurant", "Restaurante"},
+    {"Dining", "Comedor"},
+    {"Takeout", "Para Llevar"},
+    {"Delivery", "Entrega"},
+    {"Catering", "Catering"},
+    {"Buffet", "Buffet"},
+    {"Breakfast", "Desayuno"},
+    {"Lunch", "Almuerzo"},
+    {"Dinner", "Cena"},
+    {"Brunch", "Brunch"},
+    {"Appetizer", "Entrada"},
+    {"Entree", "Plato Principal"},
+    {"Dessert", "Postre"},
+    {"Beverage", "Bebida"},
+    {"Drink", "Bebida"},
+    {"Wine", "Vino"},
+    {"Beer", "Cerveza"},
+    {"Cocktail", "Cóctel"},
+    {"Coffee", "Café"},
+    {"Tea", "Té"},
+    {"Juice", "Jugo"},
+    {"Water", "Agua"},
+    {"Soda", "Refresco"},
+    {"Food", "Comida"},
+    {"Meal", "Comida"},
+    {"Dish", "Plato"},
+    {"Plate", "Plato"},
+    {"Course", "Plato"},
+    {"Special", "Especial"},
+    {"Daily", "Diario"},
+    {"Weekly", "Semanal"},
+    {"Monthly", "Mensual"},
+
+    // Status and feedback messages
+    {"Success", "Éxito"},
+    {"Failure", "Fallo"},
+    {"Error", "Error"},
+    {"Warning", "Advertencia"},
+    {"Information", "Información"},
+    {"Notice", "Aviso"},
+    {"Loading", "Cargando"},
+    {"Saving", "Guardando"},
+    {"Deleting", "Eliminando"},
+    {"Processing", "Procesando"},
+    {"Please wait", "Por favor espere"},
+    {"Working", "Trabajando"},
+    {"Ready", "Listo"},
+    {"Busy", "Ocupado"},
+    {"Complete", "Completo"},
+    {"Incomplete", "Incompleto"},
+    {"Valid", "Válido"},
+    {"Invalid", "Inválido"},
+    {"Correct", "Correcto"},
+    {"Incorrect", "Incorrecto"},
+    {"Required", "Requerido"},
+    {"Optional", "Opcional"},
+    {"Empty", "Vacío"},
+    {"Full", "Lleno"},
+    {"Available", "Disponible"},
+    {"Unavailable", "No disponible"},
+    {"Out of stock", "Agotado"},
+    {"In stock", "En stock"},
+    {"Low stock", "Stock bajo"},
+    {"High stock", "Stock alto"},
+
+    // Error and system messages
+    {"Cannot process unknown code: %d", "No se puede procesar código desconocido: %d"},
+    {"Last code processed was %d", "Último código procesado fue %d"},
+    {"Unable to find jump target (%d, %d) for %s", "No se puede encontrar objetivo de salto (%d, %d) para %s"},
+    {"Unknown index - can't jump", "Índice desconocido - no se puede saltar"},
+    {"ALERT: Page stack size exceeded", "ALERTA: Tamaño de pila de página excedido"},
+    {"Select a Bar Tab", "Seleccionar una Pestaña de Bar"},
+    {"Connection reset.\\Please wait 60 seconds\\and try again.", "Conexión restablecida.\\Por favor espere 60 segundos\\e intente nuevamente."},
+    {"Scheduled restart postponed for 1 hour", "Reinicio programado pospuesto por 1 hora"},
+    {"Button images %s on this terminal", "Imágenes de botones %s en esta terminal"},
+    {"ENABLED", "HABILITADO"},
+    {"DISABLED", "DESHABILITADO"},
+    {"Someone else is already in Edit Mode", "Alguien más ya está en Modo de Edición"},
+    {"System Page - Can't Edit", "Página del Sistema - No se puede Editar"},
+    {"Couldn't jump to page %d", "No se pudo saltar a la página %d"},
+    {"Cannot export pages while in edit mode.", "No se pueden exportar páginas mientras está en modo de edición."},
+    {"Also clear labor data?", "¿También limpiar datos laborales?"},
+    {"F3/F4", "F3/F4"},
+    {"Language changed to: %s", "Idioma cambiado a: %s"},
+    {"Customer Discounts", "Descuentos de Cliente"},
+    {"Coupons", "Cupones"},
+
+    // Check.cc error messages
+    {"Unexpected end of orders in SubCheck", "Fin inesperado de pedidos en SubCheque"},
+    {"Error in adding order", "Error al agregar pedido"},
+    {"Unexpected end of payments in SubCheck", "Fin inesperado de pagos en SubCheque"},
+    {"Error in adding payment", "Error al agregar pago"},
+
+    // Manager.cc system messages
+    {"Can't open initial loader socket", "No se puede abrir socket inicial del cargador"},
+    {"Can't connect to loader", "No se puede conectar al cargador"},
+    {"Couldn't create main system object", "No se pudo crear objeto principal del sistema"},
+    {"Automatic check for updates...", "Verificación automática de actualizaciones..."},
+    {"Auto-update of vt_data is disabled in settings", "Actualización automática de vt_data está deshabilitada en configuración"},
+    {"Auto-update of vt_data is enabled in settings", "Actualización automática de vt_data está habilitada en configuración"},
+    {"Warning: Could not load settings file, defaulting to auto-update enabled", "Advertencia: No se pudo cargar archivo de configuración, por defecto actualización automática habilitada"},
+    {"Warning: Settings file not found, defaulting to auto-update enabled", "Advertencia: Archivo de configuración no encontrado, por defecto actualización automática habilitada"},
+    {"Local vt_data not found, attempting to download from update servers...", "vt_data local no encontrado, intentando descargar desde servidores de actualización..."},
+    {"Unknown signal %d received", "Señal desconocida %d recibida"},
+    {"Can't find path '%s'", "No se puede encontrar ruta '%s'"},
+    {"Scheduled Restart Time\\System needs to restart now.\\Choose an option:", "Tiempo de Reinicio Programado\\El sistema necesita reiniciarse ahora.\\Elija una opción:"},
+    {"Restart Now", "Reiniciar Ahora"},
+    {"Postpone 1 Hour", "Posponer 1 Hora"},
+
+    // Credit.cc transaction types
+    {"==== TRANSACTION RECORD ====", "==== REGISTRO DE TRANSACCIÓN ===="},
+    {"Purchase", "Compra"},
+    {"Pre-Authorization", "Pre-Autorización"},
+    {"Pre-Auth Completion", "Completación Pre-Aut"},
+    {"Pre-Auth Advice", "Aviso Pre-Aut"},
+    {"Refund", "Reembolso"},
+    {"Refund Cancel", "Cancelar Reembolso"},
+    {"Purchase Correction", "Corrección de Compra"},
+    {"Void Cancel", "Cancelar Anulación"},
+
+    // Labor zone terms
+    {"Start", "Inicio"},
+    {"End", "Fin"},
+    {"Clock Out", "Salir del Reloj"},
+    {"Start Break", "Iniciar Descanso"},
+    {"Job", "Trabajo"},
+    {"Pay", "Pagar"},
+    {"Rate", "Tarifa"},
+    {"Tips", "Propinas"},
+    {"Time Clock Summary", "Resumen de Reloj de Tiempo"},
+
+    // User edit zone terms
+    {"User ID", "ID de Usuario"},
+    {"Nickname", "Apodo"},
+    {"Last Name", "Apellido"},
+    {"First Name", "Nombre"},
+    {"Address", "Dirección"},
+    {"City", "Ciudad"},
+    {"State", "Estado"},
+    {"Job Info", "Información del Trabajo"},
+    {"Employee #", "Empleado #"},
+    {"Pay Rate", "Tarifa de Pago"},
+    {"Start Page", "Página de Inicio"},
+    {"Department", "Departamento"},
+    {"Remove This Job", "Remover Este Trabajo"},
+    {"* Add Another Job *", "* Agregar Otro Trabajo *"},
+    {"Filtered Active Employees", "Empleados Activos Filtrados"},
+    {"Filtered Inactive Employees", "Empleados Inactivos Filtrados"},
+    {"All Active Employees", "Todos los Empleados Activos"},
+    {"All Inactive Employees", "Todos los Empleados Inactivos"},
+    {"Employee Record", "Registro del Empleado"},
+
+    // Order zone terms
+    {"To Go", "Para Llevar"},
+    {"Here", "Aquí"},
+    {"TO ", "PARA "},
+    {"COMP", "COMP"},
+    {"Next\\Seat", "Siguiente\\Asiento"},
+    {"Prior\\Seat", "Anterior\\Asiento"},
+    {"Next\\Check", "Siguiente\\Cheque"},
+    {"Prior\\Check", "Anterior\\Cheque"},
+    {"Order Entry", "Entrada de Pedido"},
+
+    {nullptr, nullptr} // End marker
+};
+
+// Function to lookup translation in the hardcoded array
+static const char* LookupHardcodedTranslation(const char* str, int lang) {
+    if (lang != LANG_SPANISH) {
+        return nullptr; // Only Spanish translations in the array
+    }
+
+    for (const TranslationEntry* entry = common_translations; entry->english != nullptr; ++entry) {
+        if (strcmp(str, entry->english) == 0) {
+            return entry->spanish;
+        }
+    }
+
+    return nullptr; // Not found in hardcoded translations
+}
 
 void StartupLocalization()
 {
@@ -52,12 +539,22 @@ const genericChar* GlobalTranslate(const genericChar* str)
     if (MasterLocale == NULL)
         return str;
 
-    return MasterLocale->Translate(str, LANG_PHRASE, 0);
+    return MasterLocale->Translate(str, global_current_language, 0);
 }
 
 
 /**** Global Data ****/
 std::unique_ptr<Locale> MasterLocale = nullptr;
+
+void SetGlobalLanguage(int language)
+{
+    global_current_language = language;
+}
+
+int GetGlobalLanguage()
+{
+    return global_current_language;
+}
 
 
 /**** Phrase Data (default U.S. English) ****/
@@ -335,230 +832,6 @@ int PhraseInfo::Write(OutputDataFile &df, int version)
 
 
 /*********************************************************************
- * POEntry Class
- ********************************************************************/
-
-POEntry::POEntry()
-{
-    key[0] = '\0';
-    value[0] = '\0';
-    next = NULL;
-}
-
-POEntry::POEntry(const char* newkey, const char* newvalue)
-{
-    if (strlen(newkey) < STRLONG && strlen(newvalue) < STRLONG)
-    {
-        vt_safe_string::safe_copy(key, STRLONG, newkey);
-        vt_safe_string::safe_copy(value, STRLONG, newvalue);
-    }
-    else
-    {
-        key[0] = '\0';
-        value[0] = '\0';
-    }
-
-    next = NULL;
-}
-
-
-/*********************************************************************
- * POFile Class
- *  For now all searching will be done direct to harddrive, so it's
- *  very inefficient.  In the end, I want to cache everything, but
- *  right now I don't have time to do it properly.  Hopefully, at
- *  least the interface is right so no methods outside this class
- *  will need to be rewritten.
- ********************************************************************/
-
-POFile::POFile()
-{
-    FnTrace("POFile::POFile()");
-    lang        = LANG_NONE;
-    loaded      = 0;
-    filename[0] = '\0';
-    infile      = NULL;
-    entry_head  = NULL;
-    entry_tail  = NULL;
-}
-
-POFile::POFile(int po_lang)
-{
-    FnTrace("POFile::POFile(int)");
-    lang        = po_lang;
-    loaded      = 0;
-    filename[0] = '\0';
-    infile      = NULL;
-    entry_head  = NULL;
-    entry_tail  = NULL;
-
-    ReadPO();
-}
-
-int POFile::FindPOFilename()
-{
-    FnTrace("POFile::FindPOFilename()");
-    int retval = 1;
-    char pathinfo[] = "/dat/languages/viewtouch.po_";
-
-    // Language support removed - only English supported
-    if (lang == 1)  // LANG_ENGLISH was 1
-        snprintf(filename, STRLONG, "%s%s%s", VIEWTOUCH_PATH, pathinfo, "EN");
-
-    if (filename[0] != '\0')
-        retval = 0;
-
-    return retval;
-}
-
-/****
- * ReadPO:  Returns 1 if the file is successfully opened and read,
- *   0 otherwise.
- ****/
-int POFile::ReadPO()
-{
-    FnTrace("POFile::ReadPO()");
-    int retval = 0;
-    char keybuff[STRLONG];
-    char valbuff[STRLONG];
-
-    if (filename[0] == '\0')
-        FindPOFilename();
-
-    if (filename[0] != '\0')
-    {
-        infile = new KeyValueInputFile(filename);
-        if (infile->Open())
-        {
-            while(infile->Read(keybuff, valbuff, STRLONG))
-            {
-                if (strlen(keybuff) > 0)
-                    Add(keybuff, valbuff);
-            }
-
-            loaded = 1;
-            retval = 1;
-        }
-        
-    }
-
-    return retval;
-}
-
-/****
- * Add:  Returns 1 if the key/value pair is added, 0 otherwise.
- ****/
-int POFile::Add(const char* newkey, const char* newvalue)
-{
-    FnTrace("POFile::Add()");
-    int retval = 0;
-    POEntry *entry;
-    
-    entry = new POEntry(newkey, newvalue);
-    if (entry != NULL)
-    {
-        if (entry_head == NULL)
-        {
-            entry_head = entry;
-            entry_tail = entry;
-        }
-        else
-        {
-            entry_tail->next = entry;
-            entry_tail = entry;
-        }
-        retval = 1; // signal success to callers
-    }
-
-    return retval;
-}
-
-/****
- * Find:  Returns 0 on failure, 1 on success.
- ****/
-int POFile::Find(char* dest, const char* str, int po_lang)
-{
-    FnTrace("POFile::Find()");
-    int retval = 0;
-    POEntry *po_entry = entry_head;
-
-    if (po_lang == lang)
-    {
-        while (po_entry != NULL)
-        {
-            if (strcmp(str, po_entry->Key()) == 0)
-            {
-                vt_safe_string::safe_copy(dest, STRLONG, po_entry->Value());
-                po_entry = NULL;  // exit condition
-                retval = 1; 
-            }
-            else
-                po_entry = po_entry->next;
-        }
-    }
-
-    return retval;
-}
-
-
-/*********************************************************************
- * POFileList Class
- ********************************************************************/
-
-POFileList::POFileList()
-{
-    FnTrace("POFileList::POFileList()");
-    head = NULL;
-}
-
-POFile *POFileList::FindPOFile(int lang)
-{
-    FnTrace("POFileList::FindPOFile()");
-    POFile *po_file = head;
-    POFile *retval  = NULL;
-
-    while (po_file != NULL && retval == NULL)
-    {
-        if (po_file->IsLang(lang))
-            retval = po_file;
-        else
-            po_file = po_file->next;
-    }
-
-    return po_file;
-}
-
-const char* POFileList::FindPOString(const char* str, int lang, int clear)
-{
-    FnTrace("POFileList::FindPOString()");
-    char buffer[STRLONG];
-    static char retstr[STRLONG];
-    POFile *po_file = NULL;
-
-    if (clear)
-        retstr[0] = '\0';
-    else
-        vt_safe_string::safe_copy(retstr, STRLONG, str);
-
-    po_file = FindPOFile(lang);
-    if (po_file == NULL)
-    {
-        po_file = new POFile(lang);
-        po_file->next = head;
-        head = po_file;
-    }
-
-    if (po_file != NULL)
-    {
-        if (po_file->Find(buffer, str, lang))
-            vt_safe_string::safe_copy(retstr, STRLONG, buffer);
-    }
-
-    return retstr;
-}
-
-
-/*********************************************************************
  * Locale Class
  ********************************************************************/
 Locale::Locale()
@@ -770,8 +1043,14 @@ const char* Locale::Translate(const char* str, int lang, int clear)
     }
     else
     {
-        vt_safe_string::safe_copy(buffer, STRLONG, str);
-        return pofile_list.FindPOString(buffer, lang, clear);
+        // Check hardcoded translations
+        const char* hardcoded = LookupHardcodedTranslation(str, lang);
+        if (hardcoded != nullptr) {
+            return hardcoded;
+        }
+
+        // No translation found, return original string
+        return str;
     }
 
     return str;

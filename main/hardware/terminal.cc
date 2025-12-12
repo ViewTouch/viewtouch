@@ -641,6 +641,9 @@ Terminal::Terminal()
 
     curr_font_id   = -1;
     curr_font_width = -1;
+
+    // Language settings - default to English
+    SetGlobalLanguage(LANG_ENGLISH);
 }
 
 // Destructor
@@ -3688,22 +3691,34 @@ int Terminal::PriceToInteger(const genericChar* price)
 const genericChar* Terminal::Translate(const genericChar* str, int lang, int clear)
 {
     FnTrace("Terminal::Translate()");
-    // Language support removed - always use default language
-    return MasterLocale->Translate(str, LANG_PHRASE, clear);
+    // If no language specified (lang == 0), use the current global language
+    if (lang == 0) {
+        lang = GetGlobalLanguage();
+    }
+    // Use the specified language for translation
+    return MasterLocale->Translate(str, lang, clear);
 }
 
 const genericChar* Terminal::TimeDate(const TimeInfo &timevar, int format, int lang)
 {
     FnTrace("Terminal::TimeDate(timeinfo, int, int)");
-    // Language support removed - always use default language
-    return MasterLocale->TimeDate(GetSettings(), timevar, format, LANG_PHRASE);
+    // If no language specified (lang == 0), use the current global language
+    if (lang == 0) {
+        lang = GetGlobalLanguage();
+    }
+    // Use the specified language for time/date formatting
+    return MasterLocale->TimeDate(GetSettings(), timevar, format, lang);
 }
 
 const genericChar* Terminal::TimeDate(genericChar* buffer, const TimeInfo &timevar, int format, int lang)
 {
     FnTrace("Terminal::TimeDate(char, timeinfo, int, int)");
-    // Language support removed - always use default language
-    return MasterLocale->TimeDate(GetSettings(), timevar, format, LANG_PHRASE, buffer);
+    // If no language specified (lang == 0), use the current global language
+    if (lang == 0) {
+        lang = GetGlobalLanguage();
+    }
+    // Use the specified language for time/date formatting
+    return MasterLocale->TimeDate(GetSettings(), timevar, format, lang, buffer);
 }
 
 int Terminal::UserInput()
@@ -7345,18 +7360,17 @@ int Terminal::ReloadFonts()
 int Terminal::SetLanguage(int lang)
 {
     FnTrace("Terminal::SetLanguage()");
-    // For now, only English is supported (LANG_PHRASE = 0)
-    // In the future, this can be extended to support multiple languages
-    if (lang != LANG_PHRASE && lang != 1)  // Allow both LANG_PHRASE (0) and English (1)
+    // Support English and Spanish
+    if (lang != LANG_PHRASE && lang != LANG_ENGLISH && lang != LANG_SPANISH)
         return 1;  // Invalid language
 
-    // Since we only support English currently, just ensure we're using LANG_PHRASE
-    // This function provides the infrastructure for future multi-language support
+    // Set the global language for translation functions
+    SetGlobalLanguage(lang);
 
-    // Update all terminals with the new language (currently just a redraw)
+    // Update all terminals with the new language
     UpdateAllTerms(UPDATE_SETTINGS, nullptr);
 
-    // Redraw the current page to show any translated text
+    // Redraw the current page to show translated text
     Draw(RENDER_NEW);
 
     return 0;

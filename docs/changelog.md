@@ -20,9 +20,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Provides infrastructure for future multi-language support via button-based switching
   - **Added Language/Locale option to SoftSwitch zone type**:
     - Enabled `SWITCH_LOCALE` (17) in existing SwitchZone infrastructure
-    - Switch displays "Language/Locale" with current value "English"
-    - Tapping the switch shows dialog confirming English-only support
+    - Switch displays "Language/Locale" with current language value ("English"/"Español")
+    - Tapping cycles between English and Spanish languages with immediate UI updates
+    - Shows confirmation dialog when language is changed
     - Integrates with existing SoftSwitch button category for language selection
+  - **Added comprehensive Spanish (Español) language support**:
+    - Implemented hardcoded Spanish translations in code arrays for maximum reliability and performance
+    - Added `TranslationEntry` struct and `LookupHardcodedTranslation()` function for fast O(1) lookups
+    - Completely removed PO file system and parsing logic for simplicity and reliability
+    - Included Spanish translations for 300+ UI elements covering:
+      - **Basic actions**: Okay→Aceptar, Cancel→Cancelar, Save→Guardar, Delete→Eliminar, Add→Agregar
+      - **Navigation**: Menu→Menú, Settings→Configuración, Home→Inicio, Back→Atrás, Next→Siguiente
+      - **Time/Date**: Monday→Lunes, Today→Hoy, AM/PM, Hour→Hora, Minute→Minuto, Second→Segundo
+      - **Financial**: Cash→Efectivo, Credit→Crédito, Amount→Monto, Total→Total, Payment→Pago, Tax→Impuestos
+      - **System**: File→Archivo, Network→Red, Error→Error, Warning→Advertencia, Loading→Cargando
+      - **Restaurant**: Table→Mesa, Guest→Invitado, Kitchen→Cocina, Food→Comida, Drink→Bebida, Waiter→Mesero
+      - **User Management**: User ID→ID de Usuario, Employee→Empleado, Job→Trabajo, Department→Departamento
+      - **Status Messages**: Success→Éxito, Complete→Completo, Processing→Procesando, Please wait→Por favor espere
+      - **Dialog boxes**: System messages, error alerts, confirmation prompts, transaction records
+    - Added Spanish language constants (LANG_SPANISH = 2) and switching infrastructure
+    - Language switcher cycles between English and Spanish with immediate UI updates
+    - Translation system uses only reliable hardcoded arrays with no external file dependencies
+    - Comprehensive coverage of all user-facing text in the ViewTouch interface
   - **Removed all non-English PO files** to complete monolingual transition:
     - Deleted `viewtouch.po_DE` (German)
     - Deleted `viewtouch.po_EL` (Greek)

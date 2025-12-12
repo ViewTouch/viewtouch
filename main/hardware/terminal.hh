@@ -546,7 +546,7 @@ public:
     int TextureID(int texture, int state=0);
     int FrameID(int frame, int state=0);
 
-    const genericChar* Translate(const char* string, int lang = LANG_PHRASE, int clear = 0); // calls proper local object for text translation
+    const genericChar* Translate(const char* string, int lang = 0, int clear = 0); // calls proper local object for text translation (0 = use current global language)
     const genericChar* TimeDate(const TimeInfo &tm, int format, int lang = LANG_PHRASE);
     const genericChar* TimeDate(char* str, const TimeInfo &tm, int format, int lang = LANG_PHRASE); // returns time and date formated & translated
     const genericChar* PageNo(int current, int max, int lang = LANG_PHRASE); // returns nicely formated & translated page numbers

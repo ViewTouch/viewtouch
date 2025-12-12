@@ -1091,6 +1091,7 @@ Language: Language
 English: English
 Language switching is not currently available.\\Only English is supported.: Language switching is not currently available.\\Only English is supported.
 Current Language: English\\Language switching is not currently available.\\Only English is supported.: Current Language: English\\Language switching is not currently available.\\Only English is supported.
+Language changed to: %s: Language changed to: %s
 Shadow Intensity of All Buttons: Shadow Intensity of All Buttons
 Shape of All Buttons: Shape of All Buttons
 Shift Work Summary: Shift Work Summary

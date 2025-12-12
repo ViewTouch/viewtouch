@@ -28,6 +28,8 @@
 
 #define LANG_NONE                -1  // uninitialized POFile class
 #define LANG_PHRASE               0  // for old defaults; do not search POFile classes
+#define LANG_ENGLISH              1
+#define LANG_SPANISH              2
 
 
 /*********************************************************************
@@ -37,6 +39,8 @@ void StartupLocalization();  // DW, 15 May 2002
 
 // Global translation functions that can be used anywhere
 const genericChar* GlobalTranslate(const genericChar* str);
+void SetGlobalLanguage(int language);
+int GetGlobalLanguage();
 
 
 class Settings;
@@ -63,50 +67,6 @@ public:
     int Write(OutputDataFile &df, int version);
 };
 
-class POEntry
-{
-    char key[STRLONG];
-    char value[STRLONG];
-
-public:
-    POEntry *next;
-
-    POEntry();
-    POEntry(const char* newkey, const char* newvalue);
-    const char* Key() { return key; }
-    const char* Value() { return value; }
-};
-
-class POFile
-{
-    int lang;
-    int loaded;
-    char filename[STRLONG];
-    KeyValueInputFile *infile;
-    POEntry *entry_head;
-    POEntry *entry_tail;
-
-    int FindPOFilename();
-    int ReadPO();
-    int Add(const char* newkey, const char* newvalue);
-
-public:
-    POFile *next;
-    POFile();
-    POFile(int po_lang);
-    int IsLang(int language) { return (lang == language); }
-    int Find( char* dest, const char* str, int po_lang );
-};
-
-class POFileList
-{
-    POFile *head;
-
-public:
-    POFileList();
-    POFile *FindPOFile(int lang);
-    const char* FindPOString(const char* str, int lang, int clear = 0);
-};
 
 
 /*********************************************************************
@@ -116,7 +76,6 @@ public:
 class Locale
 {
     DList<PhraseInfo> phrase_list;
-    POFileList        pofile_list;
 
 public:
     Locale *next;

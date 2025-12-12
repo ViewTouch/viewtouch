@@ -5074,8 +5074,8 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 		printer->Put(charbuffer,leftflags);
 		printer->NewLine();
 		
-		snprintf(charbuffer,14,"%s",serialnumber);//Store name
-		spacefill(charbuffer,14);
+		snprintf(charbuffer, STRLENGTH, "%s", serialnumber);//Store name
+		spacefill(charbuffer, STRLENGTH);
 		printer->Put(charbuffer,leftflags);
 		printer->NewLine();
 		

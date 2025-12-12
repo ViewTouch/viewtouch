@@ -210,7 +210,15 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         str = FindStringByValue(settings->measure_system, MeasureSystemValue, MeasureSystemName);
         break;
     case SWITCH_LOCALE:
-        str = "English";  // Currently only English is supported
+        // Show current language
+        {
+            int current_lang = GetGlobalLanguage();
+            if (current_lang == LANG_SPANISH) {
+                str = "Español";
+            } else {
+                str = "English";
+            }
+        }
         break;
     case SWITCH_TIME_FORMAT:
         // Modern enum-based approach  
@@ -394,13 +402,30 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         settings->measure_system = NextValue(settings->measure_system, MeasureSystemValue);
         break;
     case SWITCH_LOCALE:
-        // Language switching - currently only English is supported
+        // Language switching - cycle between English and Spanish
         {
-            SimpleDialog *d = new SimpleDialog(term->Translate("Current Language: English\\Language switching is not currently available.\\Only English is supported."));
+            int current_lang = GetGlobalLanguage();
+            int next_lang;
+
+            if (current_lang == LANG_ENGLISH) {
+                next_lang = LANG_SPANISH;
+            } else {
+                next_lang = LANG_ENGLISH;
+            }
+
+            // Set the new language
+            term->SetLanguage(next_lang);
+
+            // Show confirmation dialog
+            const char* lang_name = (next_lang == LANG_ENGLISH) ? "English" : "Español";
+            char msg[256];
+            snprintf(msg, sizeof(msg), term->Translate("Language changed to: %s"), lang_name);
+
+            SimpleDialog *d = new SimpleDialog(msg);
             d->Button(term->Translate("Okay"));
             term->OpenDialog(d);
         }
-        no_update = 1;  // Don't update settings since we're not changing anything
+        no_update = 1;  // Don't update settings since language is handled separately
         break;
     case SWITCH_TIME_FORMAT:
         settings->time_format = NextValue(settings->time_format, TimeFormatValue);
