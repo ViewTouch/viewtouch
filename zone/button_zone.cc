@@ -1193,7 +1193,7 @@ RenderResult LanguageButtonZone::Render(Terminal *term, int update_flag)
     if (term->selected_zone == this)
         text_color = COLOR_WHITE;  // Use white for selected state
 
-    term->RenderText(term->Translate("English"), x + 5, y + 2, text_color, FONT_DEFAULT, ALIGN_LEFT);
+    term->RenderText(term->Translate("Language"), x + 5, y + 2, text_color, FONT_DEFAULT, ALIGN_LEFT);
 
     return result;
 }
@@ -1205,7 +1205,7 @@ SignalResult LanguageButtonZone::Touch(Terminal *term, int tx, int ty)
     // For now, show a dialog indicating that only English is supported
     // In the future, this could show a language selection menu
 
-    SimpleDialog *d = new SimpleDialog(term->Translate("Language switching is not currently available.\\Only English is supported."));
+    SimpleDialog *d = new SimpleDialog(term->Translate("Current Language: English\\Language switching is not currently available.\\Only English is supported."));
     d->Button(term->Translate("Okay"));
     term->OpenDialog(d);
 

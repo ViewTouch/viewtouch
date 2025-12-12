@@ -18,6 +18,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Implemented `LanguageButtonZone` class inheriting from `ButtonZone`
     - Button displays "English" and shows dialog when pressed (currently only English supported)
     - Provides infrastructure for future multi-language support via button-based switching
+  - **Added Language/Locale option to SoftSwitch zone type**:
+    - Enabled `SWITCH_LOCALE` (17) in existing SwitchZone infrastructure
+    - Switch displays "Language/Locale" with current value "English"
+    - Tapping the switch shows dialog confirming English-only support
+    - Integrates with existing SoftSwitch button category for language selection
   - **Removed all non-English PO files** to complete monolingual transition:
     - Deleted `viewtouch.po_DE` (German)
     - Deleted `viewtouch.po_EL` (Greek)

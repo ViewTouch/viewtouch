@@ -1090,6 +1090,7 @@ Local vt_data not found, attempting to download from update servers...: Local vt
 Language: Language
 English: English
 Language switching is not currently available.\\Only English is supported.: Language switching is not currently available.\\Only English is supported.
+Current Language: English\\Language switching is not currently available.\\Only English is supported.: Current Language: English\\Language switching is not currently available.\\Only English is supported.
 Shadow Intensity of All Buttons: Shadow Intensity of All Buttons
 Shape of All Buttons: Shape of All Buttons
 Shift Work Summary: Shift Work Summary

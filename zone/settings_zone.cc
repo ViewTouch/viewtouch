@@ -209,6 +209,9 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
     case SWITCH_MEASUREMENTS:
         str = FindStringByValue(settings->measure_system, MeasureSystemValue, MeasureSystemName);
         break;
+    case SWITCH_LOCALE:
+        str = "English";  // Currently only English is supported
+        break;
     case SWITCH_TIME_FORMAT:
         // Modern enum-based approach  
         if (auto format = vt::IntToEnum<TimeFormatType>(settings->time_format)) {
@@ -389,6 +392,15 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         break;
     case SWITCH_MEASUREMENTS:
         settings->measure_system = NextValue(settings->measure_system, MeasureSystemValue);
+        break;
+    case SWITCH_LOCALE:
+        // Language switching - currently only English is supported
+        {
+            SimpleDialog *d = new SimpleDialog(term->Translate("Current Language: English\\Language switching is not currently available.\\Only English is supported."));
+            d->Button(term->Translate("Okay"));
+            term->OpenDialog(d);
+        }
+        no_update = 1;  // Don't update settings since we're not changing anything
         break;
     case SWITCH_TIME_FORMAT:
         settings->time_format = NextValue(settings->time_format, TimeFormatValue);
