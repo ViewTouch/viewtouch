@@ -12,6 +12,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Removed language reset to English in Terminal constructor that was overriding saved preferences
   - Language choice now properly saves to settings file and restores on startup
   - Users can now switch to Spanish and have their preference remembered
+- **Drawer Error Message Translation Fix (12-12-2025)**
+  - Fixed drawer error messages that were hardcoded and not translatable
+  - Changed drawer error messages to use GlobalTranslate() function
+  - Added Spanish translations for all drawer error messages
+  - Now drawer error messages properly display in Spanish when language is set to Spanish
 
 ### Added
 - **Comprehensive Spanish Translation Expansion (12-12-2025)**
