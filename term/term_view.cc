@@ -80,6 +80,7 @@
 
 namespace fs = std::filesystem;
 
+
 /*********************************************************************
  * Definitions
  ********************************************************************/
@@ -702,6 +703,7 @@ static PenDataType PenData[] =
 };
 
 #define FONTS         (int)(sizeof(FontData)/sizeof(FontDataType))
+#define FONT_COUNT    FONTS  // Alias for compatibility
 #define FONT_SPACE    (FONTS+4)
 
 class FontNameClass
