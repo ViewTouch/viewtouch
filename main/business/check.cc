@@ -469,7 +469,7 @@ int Check::Read(Settings *settings, InputDataFile &infile, int version)
     error += infile.Read(numsubchecks);
     if (error)
     {
-        ReportError(term->Translate("Error in reading general check data"));
+        ReportError(GlobalTranslate("Error in reading general check data"));
         printf("Error in reading general check data");
         return error;
     }
@@ -481,7 +481,7 @@ int Check::Read(Settings *settings, InputDataFile &infile, int version)
         {
             if (infile.end_of_file)
             {
-                ReportError(term->Translate("Unexpected end of SubChecks in Check"));
+                ReportError(GlobalTranslate("Unexpected end of SubChecks in Check"));
                 return 1;
             }
             
@@ -660,7 +660,7 @@ int Check::DestroyFile()
 
     int result = DeleteFile(filename.Value());
     if (result)
-        ReportError(term->Translate("Error in deleting check"));
+        ReportError(GlobalTranslate("Error in deleting check"));
 
     filename.Clear();
     return result;
@@ -672,7 +672,7 @@ SubCheck *Check::NewSubCheck()
     auto sc = std::make_unique<SubCheck>();
     if (!sc)
     {
-        ReportError(term->Translate("Can't create subcheck"));
+        ReportError(GlobalTranslate("Can't create subcheck"));
         return nullptr;
     }
     
@@ -1667,7 +1667,7 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
     int       total_cost = 0;
     
     report->Clear();
-    report->SetTitle(term->Translate("DeliveryOrder"));
+    report->SetTitle(GlobalTranslate("DeliveryOrder"));
     report->SetPageWidth(pwidth);
     report->SetDividerChar('-');
 
