@@ -106,8 +106,24 @@ jobs:
         echo "Building with ${{matrix.cxx}}..."
         echo "Available CPU cores: $(nproc)"
         echo "Starting build at $(date)..."
-        timeout 600 cmake --build _build_${{matrix.cxx}}_${{matrix.std}} -j4 2>&1 | head -50
-        echo "Build command completed at $(date), checking if successful..."
+
+        # Run build and capture exit code
+        set +e
+        timeout 600 cmake --build _build_${{matrix.cxx}}_${{matrix.std}} -j4
+        BUILD_EXIT_CODE=$?
+        set -e
+
+        echo "Build command completed at $(date) with exit code $BUILD_EXIT_CODE"
+
+        if [ $BUILD_EXIT_CODE -ne 0 ]; then
+          echo "Build failed with exit code $BUILD_EXIT_CODE"
+          echo "Showing last 100 lines of CMake build output:"
+          tail -100 _build_${{matrix.cxx}}_${{matrix.std}}/CMakeFiles/CMakeOutput.log 2>/dev/null || echo "No CMakeOutput.log found"
+          echo "Showing last 100 lines of CMake error output:"
+          tail -100 _build_${{matrix.cxx}}_${{matrix.std}}/CMakeFiles/CMakeError.log 2>/dev/null || echo "No CMakeError.log found"
+          exit $BUILD_EXIT_CODE
+        fi
+
         if [ -f "_build_${{matrix.cxx}}_${{matrix.std}}/vt_main" ]; then
           echo "Build appears successful, proceeding with install..."
           timeout 120 cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target install
