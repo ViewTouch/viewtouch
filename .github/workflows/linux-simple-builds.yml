@@ -6,6 +6,7 @@ jobs:
   build:
     name: ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -46,86 +47,24 @@ jobs:
             cxxflags: "-O1 -ffunction-sections -fdata-sections -fmax-errors=5"
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Verify directory structure
       run: |
-        echo "Verifying new directory structure..."
-        echo "Current working directory: $(pwd)"
+        echo "Verifying directory structure..."
         echo "Contents of root directory:"
         ls -la
         echo ""
-        echo "Checking if we need to cd into viewtouchFork subdirectory..."
-        if [ -d "viewtouchFork" ]; then
-          echo "Found viewtouchFork subdirectory, changing into it..."
-          cd viewtouchFork
-          echo "Now in: $(pwd)"
-          echo "Contents after cd:"
-          ls -la
-          echo ""
-        fi
-        echo "Checking main directories:"
-        if [ -d "src" ]; then
-          echo "✓ src/ exists"
-          ls -la src/
-          if [ -d "src/core" ] && [ -d "src/utils" ] && [ -d "src/network" ]; then
-            echo "✓ src/ subdirectories exist"
+        echo "Checking essential directories:"
+        for dir in src main scripts assets config docs fonts external/core; do
+          if [ -d "$dir" ]; then
+            echo "✓ $dir/ exists"
           else
-            echo "✗ Missing src/ subdirectories"
+            echo "✗ $dir/ missing"
             exit 1
           fi
-        else
-          echo "✗ src/ directory missing"
-          exit 1
-        fi
-        
-        if [ -d "main" ]; then
-          echo "✓ main/ exists"
-          ls -la main/
-          if [ -d "main/business" ] && [ -d "main/hardware" ] && [ -d "main/ui" ] && [ -d "main/data" ]; then
-            echo "✓ main/ subdirectories exist"
-          else
-            echo "✗ Missing main/ subdirectories"
-            exit 1
-          fi
-        else
-          echo "✗ main/ directory missing"
-          exit 1
-        fi
-        
-        if [ -d "scripts" ]; then
-          echo "✓ scripts/ exists"
-          ls -la scripts/
-          if [ -d "scripts/build" ] && [ -d "scripts/install" ] && [ -d "scripts/system" ] && [ -d "scripts/maintenance" ] && [ -d "scripts/tools" ]; then
-            echo "✓ scripts/ subdirectories exist"
-          else
-            echo "✗ Missing scripts/ subdirectories"
-            exit 1
-          fi
-        else
-          echo "✗ scripts/ directory missing"
-          exit 1
-        fi
-        
-        if [ -d "assets" ]; then
-          echo "✓ assets/ exists"
-          ls -la assets/
-          if [ -d "assets/data" ] && [ -d "assets/images" ]; then
-            echo "✓ assets/ subdirectories exist"
-          else
-            echo "✗ Missing assets/ subdirectories"
-            exit 1
-          fi
-        else
-          echo "✗ assets/ directory missing"
-          exit 1
-        fi
-        
-        echo "Checking other directories:"
-        [ -d "config" ] && echo "✓ config/ exists" || echo "✗ config/ missing"
-        [ -d "docs" ] && echo "✓ docs/ exists" || echo "✗ docs/ missing"
-        [ -d "fonts" ] && echo "✓ fonts/ exists" || echo "✗ fonts/ missing"
-        [ -d "external/core" ] && echo "✓ external/core/ exists" || echo "✗ external/core/ missing"
+        done
+        echo "Directory verification complete."
 
     - name: Prepare environment
       env:
@@ -154,29 +93,16 @@ jobs:
         CC: ${{matrix.cc}}
         CXX: ${{matrix.cxx}}
         CXXFLAGS: ${{matrix.cxxflags}}
-      # Note: $GITHUB_WORKSPACE is the actual repository root
       run: |
-        echo "Current directory: $(pwd)"
-        echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-        if [ -d "viewtouchFork" ]; then
-          echo "Found viewtouchFork subdirectory, changing into it..."
-          cd viewtouchFork
-        fi
-        echo "Now in: $(pwd)"
+        echo "Configuring build for ${{matrix.cxx}}..."
         cmake -S . -B _build_${{matrix.cxx}}_${{matrix.std}} \
           -DCMAKE_INSTALL_PREFIX="${PWD}/_install_${{matrix.cxx}}_${{matrix.std}}" \
           -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" \
           -DCMAKE_CXX_STANDARD=${{matrix.std}} \
-          -DCMAKE_CXX_EXTENSIONS=OFF \
-          -DCMAKE_VERBOSE_MAKEFILE=ON
+          -DCMAKE_CXX_EXTENSIONS=OFF
 
     - name: Build + install
       run: |
-        echo "Current directory: $(pwd)"
-        if [ -d "viewtouchFork" ]; then
-          echo "Found viewtouchFork subdirectory, changing into it..."
-          cd viewtouchFork
-        fi
-        echo "Now in: $(pwd)"
-        cmake --build _build_${{matrix.cxx}}_${{matrix.std}} -j2
+        echo "Building with ${{matrix.cxx}}..."
+        cmake --build _build_${{matrix.cxx}}_${{matrix.std}} -j$(nproc)
         cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target install
