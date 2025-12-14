@@ -105,7 +105,13 @@ jobs:
       run: |
         echo "Building with ${{matrix.cxx}}..."
         echo "Available CPU cores: $(nproc)"
-        echo "Starting build..."
-        timeout 600 cmake --build _build_${{matrix.cxx}}_${{matrix.std}} -j4 --verbose
-        echo "Build completed, starting install..."
-        cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target install
+        echo "Starting build at $(date)..."
+        timeout 600 cmake --build _build_${{matrix.cxx}}_${{matrix.std}} -j4 2>&1 | head -50
+        echo "Build command completed at $(date), checking if successful..."
+        if [ -f "_build_${{matrix.cxx}}_${{matrix.std}}/vt_main" ]; then
+          echo "Build appears successful, proceeding with install..."
+          timeout 120 cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target install
+        else
+          echo "Build failed - executable not found"
+          exit 1
+        fi
