@@ -676,7 +676,7 @@ int Credit::ValidateCardInfo()
             retval = 1;
         else
         {
-            ReportError(term->Translate("Got a bad card for validation."));
+            ReportError(GlobalTranslate("Got a bad card for validation."));
             read_manual = 0;
             read_t1 = 0;
             read_t2 = 0;
