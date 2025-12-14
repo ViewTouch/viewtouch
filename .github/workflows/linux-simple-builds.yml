@@ -104,5 +104,8 @@ jobs:
     - name: Build + install
       run: |
         echo "Building with ${{matrix.cxx}}..."
-        cmake --build _build_${{matrix.cxx}}_${{matrix.std}} -j$(nproc)
+        echo "Available CPU cores: $(nproc)"
+        echo "Starting build..."
+        timeout 600 cmake --build _build_${{matrix.cxx}}_${{matrix.std}} -j4 --verbose
+        echo "Build completed, starting install..."
         cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target install
