@@ -77,6 +77,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Spanish language support now covers 100% of user-facing text in ViewTouch POS system
 
 ### Changed
+- **Enhanced Deposit/Book Balance Report for Accountants (12-15-2025)**
+  - Significantly improved the Deposit/Book Balance report with accountant-friendly features
+  - Added Executive Summary section with key financial metrics at a glance:
+    - Transaction counts (closed checks and settled transactions)
+    - Gross Sales (before adjustments)
+    - Total Adjustments (comps/discounts)
+    - Net Sales (after adjustments) - new calculation
+    - Total Tax Collected
+    - Net Receipts (Net Sales + Tax) - new calculation
+  - Enhanced report organization with clear section headers:
+    - EXECUTIVE SUMMARY
+    - DETAILED SALES BREAKDOWN
+    - TAX BREAKDOWN
+    - ADJUSTMENTS & NON-CASH RECEIPTS
+    - RECONCILIATION
+    - ACTUAL DEPOSITS
+    - RECONCILIATION SUMMARY
+    - FINAL DEPOSIT AMOUNTS
+    - DRAWER BALANCE STATUS
+  - Added comprehensive Reconciliation section:
+    - Book Balance calculation (Expected Receipts)
+    - Actual Deposit breakdown
+    - Variance calculation showing differences between expected and actual
+    - Clear visual indicators for balanced/unbalanced reconciliation
+  - Improved financial calculations:
+    - Net Sales = Gross Sales - Adjustments
+    - Net Receipts = Net Sales + Tax
+    - Book Balance = Gross Sales + Tax - Sales Adjustments + Other Adjustments
+    - All calculations verified for mathematical accuracy
+  - Enhanced formatting and clarity:
+    - Better section separation using dividers
+    - Underlined totals for emphasis
+    - Color coding for important financial figures
+    - Consistent indentation and alignment
+    - Removed special Unicode symbols for better compatibility
+  - Added detailed comments explaining all calculations for maintainability
+  - Verified all calculations are mathematically consistent and correct
+  - **Files modified**: `main/ui/system_report.cc`
 - **Language Selection Redesign - Removed F8 Translate Functionality (12-12-2025)**
   - Completely removed F8 key language selection dialog functionality
   - Eliminated F2 translate term mode and all associated translation features
