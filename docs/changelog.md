@@ -77,6 +77,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Spanish language support now covers 100% of user-facing text in ViewTouch POS system
 
 ### Changed
+- **Build System Optimization Level Change (12-15-2025)**
+  - Changed Release build optimization from `-Os` (optimize for size) to `-O2` (optimize for speed)
+  - This change enables `-fprefetch-loop-arrays` to work properly, as it may not function correctly with `-Os`
+  - Replaced CMake's default `-O3` with `-O2` in Release builds for better compatibility with prefetch optimizations
+  - Maintains other optimization flags: `-fmerge-all-constants` and `-fomit-frame-pointer`
+  - Verified that `-O2` is correctly applied in Release build configurations
+  - **Files modified**: `CMakeLists.txt`
 - **Enhanced Deposit/Book Balance Report for Accountants (12-15-2025)**
   - Significantly improved the Deposit/Book Balance report with accountant-friendly features
   - Added Executive Summary section with key financial metrics at a glance:

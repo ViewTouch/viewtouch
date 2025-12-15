@@ -43,11 +43,15 @@ if(VT_STRIP_BINARIES)
     message(STATUS "Binary stripping enabled for Release/RelWithDebInfo")
 endif()
 
-# Enable additional size optimizations
-set(_vt_size_flags "-Os -fmerge-all-constants -fomit-frame-pointer")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${_vt_size_flags}")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${_vt_size_flags}")
-message(STATUS "Size optimization flags enabled for Release builds")
+# Enable additional optimizations (replace -O3 with -O2 for better prefetch-loop-arrays support)
+set(_vt_optimization_flags "-fmerge-all-constants -fomit-frame-pointer")
+# Replace -O3 with -O2 in Release flags
+string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+string(REPLACE "-O3" "-O2" CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+# Append additional optimization flags
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${_vt_optimization_flags}")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${_vt_optimization_flags}")
+message(STATUS "Optimization flags enabled for Release builds (using -O2)")
 
 
 
