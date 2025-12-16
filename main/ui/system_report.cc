@@ -2222,48 +2222,47 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     int net_receipts = gross_receipts - total_adjust;  // Net receipts after adjustments
 
     // Make report
-    genericChar str[256];
+    genericChar str[256], str2[32];
     int  col = COLOR_DEFAULT;
-//    report->Mode(PRINT_BOLD | PRINT_LARGE);
-//    report->TextC(DEPOSIT_TITLE, COLOR_DK_BLUE);
-//    report->NewLine();
-    report->TextC(s->store_name.Value());
-    report->NewLine();
+    
+    // Store name header
+    report->Mode(PRINT_BOLD);
+    report->TextC(s->store_name.Value(), COLOR_DK_BLUE);
     report->Mode(0);
+    report->NewLine();
 
-    report->TextPosR(6, "Start:");
+    // Date range with better formatting (MM/DD/YY - MM/DD/YY)
+    report->Mode(PRINT_BOLD);
+    genericChar start_date[32], end_date[32];
     if (archive && archive->start_time.IsSet())
-        term->TimeDate(str, archive->start_time, TD3);
+    {
+        term->TimeDate(start_date, archive->start_time, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+        term->TimeDate(end_date, archive->end_time, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+    }
     else if (start_time.IsSet())
     {
         if (start_time > SystemTime)
             col = COLOR_DK_RED;
-        term->TimeDate(str, start_time, TD3);
+        term->TimeDate(start_date, start_time, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+        term->TimeDate(end_date, end, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
     }
     else
-        vt_safe_string::safe_copy(str, 256, GlobalTranslate("System Start"));
-
-    report->TextPosL(7, str, col);
+    {
+        vt_safe_string::safe_copy(start_date, 32, GlobalTranslate("System Start"));
+        term->TimeDate(end_date, end, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+    }
+    
+    vt_safe_string::safe_format(str, 256, "%s - %s", start_date, end_date);
+    report->TextC(str, COLOR_DK_BLUE);
+    report->Mode(0);
     report->NewLine();
-
-    report->TextPosR(6, "End:");
-    if (incomplete)
-        col = COLOR_DK_RED;
-
-    if (archive)
-        term->TimeDate(str, archive->end_time, TD3);
-    else
-        term->TimeDate(str, end, TD3);
-
-    report->TextPosL(7, str, col);
-    report->NewLine(2);
 
     // ===== EXECUTIVE SUMMARY SECTION (Accountant-Friendly) =====
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("EXECUTIVE SUMMARY"), COLOR_DK_BLUE);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("EXECUTIVE SUMMARY"), COLOR_DK_BLUE);
     report->Mode(0);
-    report->Divider('-');
+    report->NewLine();
 
     // Transaction counts
     if (check_count > 0 || transaction_count > 0)
@@ -2284,16 +2283,16 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine();
     report->Mode(0);
     
-    report->TextPosL(3, GlobalTranslate("Gross Sales (Before Adjustments)"));
+    report->TextPosL(3, GlobalTranslate("Gross Sales"));
     report->TextPosR(0, term->FormatPrice(total_sales), col);
     report->NewLine();
     
-    report->TextPosL(3, GlobalTranslate("Total Adjustments (Comps/Discounts)"));
+    report->TextPosL(3, GlobalTranslate("Adjustments"));
     report->TextPosR(0, term->FormatPrice(-total_adjust), COLOR_DK_RED);
     report->NewLine();
     
     report->Mode(PRINT_BOLD);
-    report->TextPosL(3, GlobalTranslate("Net Sales (After Adjustments)"));
+    report->TextPosL(3, GlobalTranslate("Net Sales"));
     report->TextPosR(0, term->FormatPrice(net_sales), COLOR_DK_GREEN);
     report->Mode(0);
     report->NewLine();
@@ -2303,18 +2302,18 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine();
     
     report->Mode(PRINT_BOLD);
-    report->TextPosL(3, GlobalTranslate("Net Receipts (Net Sales + Tax)"));
+    report->TextPosL(3, GlobalTranslate("Net Receipts"));
     report->TextPosR(0, term->FormatPrice(net_receipts), COLOR_DK_GREEN);
     report->Mode(0);
     report->UnderlinePosR(0, 7, COLOR_DK_GREEN);
     report->NewLine(2);
 
     // ===== DETAILED SALES BREAKDOWN =====
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("DETAILED SALES BREAKDOWN"), COLOR_DK_GREEN);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("DETAILED SALES BREAKDOWN"), COLOR_DK_GREEN);
     report->Mode(0);
-    report->Divider('-');
+    report->NewLine();
     report->TextL(GlobalTranslate("Sales by Category:"), COLOR_DK_GREEN);
     report->NewLine();
     for (int g = SALESGROUP_FOOD; g <= SALESGROUP_ROOM; ++g)
@@ -2334,9 +2333,9 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
 
     // Tax
     report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("TAX BREAKDOWN"), COLOR_DK_GREEN);
-    report->NewLine();
+    report->TextC(GlobalTranslate("TAX BREAKDOWN"), COLOR_DK_GREEN);
     report->Mode(0);
+    report->NewLine();
     if (term->hide_zeros == 0 || tax_food != 0)
     {
         report->TextL(GlobalTranslate("Sales Tax: Food & Beverage"));
@@ -2406,12 +2405,12 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine(2);
 
     // Adjustments
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("ADJUSTMENTS & NON-CASH RECEIPTS"), COLOR_DK_RED);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("ADJUSTMENTS"), COLOR_DK_RED);
     report->Mode(0);
-    report->Divider('-');
-    report->TextL(GlobalTranslate("Non-Cash Receipts (Reductions to Sales):"), COLOR_DK_RED);
+    report->NewLine();
+    report->TextL(GlobalTranslate("Non-Cash Adjustments:"), COLOR_DK_RED);
     report->NewLine();
 
     MediaList *mediacomp = &complist;
@@ -2536,13 +2535,13 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine(2);
 
     // ===== RECONCILIATION SECTION =====
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("RECONCILIATION"), COLOR_DK_BLUE);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("RECONCILIATION"), COLOR_DK_BLUE);
     report->Mode(0);
-    report->Divider('-');
+    report->NewLine();
     
-    report->TextL(GlobalTranslate("Book Balance (Expected Receipts):"));
+    report->TextL(GlobalTranslate("Expected Receipts Breakdown:"));
     report->NewLine();
     report->TextPosL(6, GlobalTranslate("Net Sales"));
     report->TextPosR(-6, term->FormatPrice(net_sales), col);
@@ -2557,16 +2556,17 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     // This represents what we should account for based on all transactions
     int calculated_book_balance = total_sales + total_tax - total_adjust + sub;
     report->Mode(PRINT_BOLD);
-    report->TextPosL(3, GlobalTranslate("Total Receipts To Account For"));
+    report->TextPosL(3, GlobalTranslate("Expected Receipts"));
     report->TextPosR(0, term->FormatPrice(calculated_book_balance), COLOR_DK_BLUE);
     report->Mode(0);
     report->UnderlinePosR(0, 7, COLOR_DK_BLUE);
     report->NewLine(2);
 
-    report->Mode(PRINT_BOLD);
-    report->TextL(term->Translate("ACTUAL DEPOSITS (Receipts Accounted For)"), COLOR_DK_BLUE);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(term->Translate("ACTUAL DEPOSITS"), COLOR_DK_BLUE);
     report->Mode(0);
+    report->NewLine();
 
     // Cash Deposit
     if (term->hide_zeros == 0 || cash != 0)
@@ -2680,13 +2680,13 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     // Zero = Perfect reconciliation
     int reconciliation_diff = book_balance - actual_deposit;
     
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("RECONCILIATION SUMMARY"), COLOR_DK_BLUE);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("RECONCILIATION"), COLOR_DK_BLUE);
     report->Mode(0);
-    report->Divider('-');
+    report->NewLine();
     
-    report->TextL(GlobalTranslate("Book Balance (Expected)"));
+    report->TextL(GlobalTranslate("Expected Balance"));
     report->TextPosR(0, term->FormatPrice(book_balance), COLOR_DK_BLUE);
     report->NewLine();
     
@@ -2699,12 +2699,12 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
         report->Mode(PRINT_BOLD);
         if (reconciliation_diff > 0)
         {
-            report->TextL(GlobalTranslate("Variance (Expected > Actual)"));
+            report->TextL(GlobalTranslate("Shortfall"));
             report->TextPosR(0, term->FormatPrice(reconciliation_diff), COLOR_DK_RED);
         }
         else
         {
-            report->TextL(GlobalTranslate("Variance (Actual > Expected)"));
+            report->TextL(GlobalTranslate("Overage"));
             report->TextPosR(0, term->FormatPrice(-reconciliation_diff), COLOR_DK_GREEN);
         }
         report->Mode(0);
@@ -2712,7 +2712,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     else
     {
         report->Mode(PRINT_BOLD);
-        report->TextL(GlobalTranslate("Reconciliation Balanced"));
+        report->TextL(GlobalTranslate("Balanced"));
         report->TextPosR(0, term->FormatPrice(0), COLOR_DK_GREEN);
         report->Mode(0);
     }
@@ -2738,14 +2738,15 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     }
 
     // ===== FINAL DEPOSIT AMOUNTS =====
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("FINAL DEPOSIT AMOUNTS"), COLOR_DK_BLUE);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("FINAL DEPOSIT"), COLOR_DK_BLUE);
     report->Mode(0);
+    report->NewLine();
     
     if (settings.authorize_method == CCAUTH_NONE)
     {
-        report->TextPosL(3, GlobalTranslate("Total Deposit: Cash, Checks, Cards"));
+        report->TextPosL(3, GlobalTranslate("Deposit Total"));
         report->TextPosR(0, term->FormatPrice(cash + check + total_credit - tips_held), COLOR_DK_BLUE);
         report->Mode(PRINT_BOLD);
         report->UnderlinePosR(0, 7, COLOR_DK_BLUE);
@@ -2770,10 +2771,12 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     }
 
     // ===== DRAWER BALANCE STATUS =====
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("DRAWER BALANCE STATUS"), COLOR_DK_BLUE);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("DRAWER BALANCE STATUS"), COLOR_DK_BLUE);
     report->Mode(0);
+    report->NewLine();
+    report->Divider('-');
     
     if (drawer_diff < 0)
     {
@@ -2878,32 +2881,51 @@ int ClosedCheckReportWorkFn(CCRData *ccrdata)
 
             if (flag)
             {
-                vt_safe_string::safe_format(str, 256, "%06d", thisCheck->serial_number);
-                thisReport->TextPosL(0, str);
                 ccrdata->none = 0;
                 ccrdata->total_amount += amount;
                 ccrdata->total_guests += thisCheck->Guests();
                 ++ccrdata->total_number;
 
+                // Check number (left-aligned, 6 digits)
+                vt_safe_string::safe_format(str, 256, "#%06d", thisCheck->serial_number);
+                thisReport->TextPosL(0, str);
+
+                // Table/Type and Guests (compact format)
                 if (thisCheck->IsTakeOut())
                 {
-                    thisReport->TextPosL(7, GlobalTranslate("TERM.O"));
-                    thisReport->TextPosL(11, "--");
+                    thisReport->TextPosL(8, "TO");
+                    thisReport->TextPosL(12, "--");
                 }
-				else if (thisCheck->IsFastFood())
-				{
-					        thisReport->TextPosL(7, GlobalTranslate("FF"));
-                    thisReport->TextPosL(11, "--");
-				}
+                else if (thisCheck->IsFastFood())
+                {
+                    thisReport->TextPosL(8, "FF");
+                    thisReport->TextPosL(12, "--");
+                }
                 else
                 {
-                    thisReport->TextPosL(7, thisCheck->Table());
-                    thisReport->NumberPosL(11, thisCheck->Guests());
+                    genericChar table_str[8];
+                    vt_safe_string::safe_copy(table_str, 8, thisCheck->Table());
+                    thisReport->TextPosL(8, table_str);
+                    thisReport->NumberPosL(12, thisCheck->Guests());
                 }
-                thisReport->TextPosR(22, term->FormatPrice(amount));
-                thisReport->TextPosL(23, thisCheck->PaymentSummary(term));
+
+                // Amount (right-aligned, moved further right for more spacing after Gst)
+                thisReport->TextPosR(23, term->FormatPrice(amount));
+
+                // Payment method (truncated to fit)
+                genericChar payment_str[12];
+                vt_safe_string::safe_copy(payment_str, 12, thisCheck->PaymentSummary(term));
+                if (strlen(payment_str) > 4)
+                    payment_str[4] = '\0';  // Limit to 4 chars to accommodate spacing
+                thisReport->TextPosL(25, payment_str);
+
+                // Server name (right-aligned to end of line, max 20 chars)
                 int server_id = thisCheck->WhoGetsSale(s);
-                thisReport->TextPosL(35, term->UserName(server_id));
+                genericChar server_name[32];
+                vt_safe_string::safe_copy(server_name, 32, term->UserName(server_id));
+                if (strlen(server_name) > 20)
+                    server_name[20] = '\0';  // Limit server name length
+                thisReport->TextPosR(0, server_name);
                 thisReport->NewLine();
             }
         }
@@ -2919,11 +2941,31 @@ int ClosedCheckReportWorkFn(CCRData *ccrdata)
         return 0; // continue work fn
     }
 
+    // Summary section with visual separators
     thisReport->NewLine();
-            thisReport->TextPosL(0, GlobalTranslate("Total"));
-    thisReport->NumberPosL(7, ccrdata->total_number);
-    thisReport->NumberPosL(11, ccrdata->total_guests);
-    thisReport->TextPosR(22, term->FormatPrice(ccrdata->total_amount));
+    thisReport->Divider('-');
+    thisReport->Mode(PRINT_BOLD);
+    thisReport->TextPosL(0, GlobalTranslate("SUMMARY"), COLOR_DK_BLUE);
+    thisReport->Mode(0);
+    thisReport->NewLine();
+    
+    // Total checks
+    thisReport->TextPosL(0, GlobalTranslate("Total Checks:"));
+    thisReport->NumberPosL(14, ccrdata->total_number);
+    thisReport->NewLine();
+    
+    // Total guests
+    thisReport->TextPosL(0, GlobalTranslate("Total Guests:"));
+    thisReport->NumberPosL(14, ccrdata->total_guests);
+    thisReport->NewLine();
+    
+    // Total amount with underline
+    thisReport->Mode(PRINT_BOLD | PRINT_UNDERLINE);
+    thisReport->TextPosL(0, GlobalTranslate("Total Amount:"));
+    thisReport->TextPosR(0, term->FormatPrice(ccrdata->total_amount), COLOR_DK_BLUE);
+    thisReport->Mode(0);
+    thisReport->NewLine();
+    thisReport->Divider('-');
 
     thisReport->is_complete = 1;
     ccrdata->term->Update(UPDATE_REPORT, NULL);
@@ -2962,22 +3004,29 @@ int System::ClosedCheckReport(Terminal *term, TimeInfo &start_time, TimeInfo &en
     genericChar str[256], str2[32];
 
     thisReport->is_complete = 0;
-//    thisReport->TextC(term->Translate("Guest Check Summary"), COLOR_DK_BLUE);      Let the Button's Name Field provide the Title for this report
-//    thisReport->NewLine();
-    vt_safe_string::safe_format(str, 256, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
+    
+    // Date range header
+    vt_safe_string::safe_format(str, 256, "%s  to  %s", 
+            term->TimeDate(str2, start_time, TD5),
             term->TimeDate(end, TD5));
+    thisReport->Mode(PRINT_BOLD);
     thisReport->TextC(str, COLOR_DK_BLUE);
-    thisReport->NewLine(2);
-
-    thisReport->Mode(PRINT_UNDERLINE);
-            thisReport->TextPosL(0,  GlobalTranslate("Check#"), COLOR_DK_BLUE);
-            thisReport->TextPosL(8,  GlobalTranslate("Tbl"), COLOR_DK_BLUE);
-            thisReport->TextPosL(13, GlobalTranslate("Gst"), COLOR_DK_BLUE);
-    thisReport->TextPosR(25, "Amount", COLOR_DK_BLUE);
-            thisReport->TextPosL(27, GlobalTranslate("Payment"), COLOR_DK_BLUE);
-            thisReport->TextPosL(35, GlobalTranslate("Server"), COLOR_DK_BLUE);
     thisReport->Mode(0);
     thisReport->NewLine();
+    thisReport->Divider('=');
+    thisReport->NewLine();
+
+    // Column headers with better spacing
+    thisReport->Mode(PRINT_BOLD | PRINT_UNDERLINE);
+    thisReport->TextPosL(0,  GlobalTranslate("Check#"), COLOR_DK_BLUE);
+    thisReport->TextPosL(8,  GlobalTranslate("Tbl"), COLOR_DK_BLUE);
+    thisReport->TextPosL(12, GlobalTranslate("Gst"), COLOR_DK_BLUE);
+    thisReport->TextPosR(23, GlobalTranslate("Amount"), COLOR_DK_BLUE);
+    thisReport->TextPosL(25, GlobalTranslate("Pay"), COLOR_DK_BLUE);
+    thisReport->TextPosR(0, GlobalTranslate("Server"), COLOR_DK_BLUE);
+    thisReport->Mode(0);
+    thisReport->NewLine();
+    thisReport->Divider('-');
 
     AddWorkFn((WorkFn) ClosedCheckReportWorkFn, ccrdata);
     return 0;
@@ -4138,38 +4187,52 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
     int month = rdata->start_time.Month();
     int year  = rdata->start_time.Year();
 
-//    report->SetTitle(ROYALTY_REPORT_TITLE);        Let the Button's Name Field provide the Title for this report
-//    report->Mode(PRINT_BOLD | PRINT_LARGE);
-//    report->TextC(ROYALTY_REPORT_TITLE);
-//    report->NewLine();
     report->Mode(0);
-
-    report->TextL(settings->store_name.Value(), COLOR_DEFAULT);
+    
+    // Store name header
+    report->Mode(PRINT_BOLD);
+    report->TextC(settings->store_name.Value(), COLOR_DK_BLUE);
+    report->Mode(0);
+    report->NewLine();
+    
+    // Date range with better formatting (MM/DD/YY - MM/DD/YY)
+    genericChar date_str[256], start_date[32], end_date[32];
+    term->TimeDate(start_date, rdata->start_time, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+    term->TimeDate(end_date, rdata->end_time, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+    vt_safe_string::safe_format(date_str, 256, "%s - %s", start_date, end_date);
+    
     if (rdata->incomplete)
-        report->TextR(term->TimeDate(rdata->start_time, TD_MONTH), COLOR_DK_RED);
-    else
-        report->TextR(term->TimeDate(rdata->start_time, TD_MONTH), color);
-    report->NewLine(2);
+        color = COLOR_DK_RED;
+    report->Mode(PRINT_BOLD);
+    report->TextC(date_str, color);
+    report->Mode(0);
+    report->NewLine();
+    report->NewLine();
 
+    // ===== DAILY BREAKDOWN =====
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("DAILY BREAKDOWN"), COLOR_DK_BLUE);
+    report->Mode(0);
+    report->NewLine();
+    
     // print the daily totals
     int y;
     column = 0;
     int dayspercol = 16;
     if (dcolumns == 1)
         dayspercol = 31;
-    report->UnderlinePosL(0, zone_width - 1, COLOR_BLUE);
+    report->Mode(PRINT_BOLD | PRINT_UNDERLINE);
     for (y = 0; y < dcolumns; y++)
     {
-        report->Mode(PRINT_BOLD);
-        report->TextPosL(column + column1, term->Translate("Day"), color);
-        report->TextPosL(column + column2, term->Translate("Guests"), color);
-        report->TextPosR(column + column3, term->Translate("Sales"), color);
-        report->TextPosR(column + column4, term->Translate("Average"), color);
+        report->TextPosL(column + column1, term->Translate("Day"), COLOR_DK_BLUE);
+        report->TextPosL(column + column2, term->Translate("Guests"), COLOR_DK_BLUE);
+        report->TextPosR(column + column3, term->Translate("Sales"), COLOR_DK_BLUE);
+        report->TextPosR(column + column4, term->Translate("Average"), COLOR_DK_BLUE);
         if (dcolumns > 1)
             column += column_width;
     }
-    report->NewLine();
     report->Mode(0);
+    report->NewLine();
     for (x = 0; x < dayspercol; x++)
     {
         // print left columns
@@ -4199,31 +4262,31 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
                 color = COLOR_DEFAULT;
             }
         }
-        if (x < dayspercol) // no underline on the last line
-        {
-            report->UnderlinePosL(0, zone_width - 1, color);
-            report->NewLine();
-        }
+        report->NewLine();
     }
     // totals on last line
-    report->Mode(PRINT_BOLD);
-    report->TextPosL(column + column1, term->Translate("Total"), color);
-    report->NumberPosL(column + column2, rdata->total_guests, color);
-    report->TextPosR(column + column3, term->FormatPrice(rdata->total_sales), color);
+    report->Mode(PRINT_BOLD | PRINT_UNDERLINE);
+    report->TextPosL(column + column1, term->Translate("Total"), COLOR_DK_BLUE);
+    report->NumberPosL(column + column2, rdata->total_guests, COLOR_DK_BLUE);
+    report->TextPosR(column + column3, term->FormatPrice(rdata->total_sales), COLOR_DK_BLUE);
     check_avg = 0;
     if (rdata->total_guests > 0)
         check_avg = rdata->total_sales / rdata->total_guests;
-    report->TextPosR(column + column4, term->FormatPrice(check_avg), color);
+    report->TextPosR(column + column4, term->FormatPrice(check_avg), COLOR_DK_BLUE);
     report->Mode(0);
-
-    report->UnderlinePosL(0, zone_width - 1, COLOR_BLUE);
     report->NewLine(2);
 
+    // ===== ROYALTY CALCULATION =====
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("ROYALTY CALCULATION"), COLOR_DK_GREEN);
+    report->Mode(0);
+    report->NewLine();
+    
     int far_column = column_width + column2;
     if (far_column > zone_width)
-        far_column = column_width - 2;
+        far_column = zone_width - 2;
+    
     // total sales
-    report->Mode(0);
     report->TextL(term->Translate("Total Sales"), color);
     report->TextPosR(far_column, term->FormatPrice(rdata->total_sales), color);
     report->NewLine();
@@ -4238,9 +4301,9 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
     report->Mode(PRINT_BOLD);
     report->TextL(term->Translate("Total Sales for Royalty Calc."), color);
     report->TextPosR(far_column, term->FormatPrice(total_for_royalty), color);
+    report->Mode(0);
     report->UnderlinePosR(far_column, 10, color);
     report->NewLine();
-    report->Mode(0);
 
     // royalty due
     royalty_due = (int) (total_for_royalty * settings->royalty_rate);
@@ -4251,26 +4314,26 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
     // GST
     if (settings->tax_GST > 0)
     {
-        report->NewLine();
         gst_due = settings->FigureGST(royalty_due, SystemTime);
         report->TextPosL(column1, term->Translate("GST Due"), color);
         report->TextPosR(far_column, term->FormatPrice(gst_due), color);
+        report->NewLine();
     }
 
     // QST
     if (settings->tax_QST > 0)
     {
-        report->NewLine();
         qst_due = settings->FigureQST(royalty_due, gst_due, SystemTime, 0);
         report->TextPosL(column1, GlobalTranslate("QST Due:"), color);
         report->TextPosR(far_column, term->FormatPrice(qst_due), color);
+        report->NewLine();
     }
 
     if (settings->tax_GST <= 0 && settings->tax_QST <= 0)
     {
-        report->NewLine();
         report->TextPosL(column1, GlobalTranslate("Taxes Due"), color);
         report->TextPosR(far_column, term->FormatPrice(0), color);
+        report->NewLine();
     }
 
     report->UnderlinePosR(far_column, 10, color);
@@ -4280,10 +4343,16 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
     int total_royalty = royalty_due + gst_due + qst_due;
     report->Mode(PRINT_BOLD);
     report->TextPosL(column1, term->Translate("Total Royalty and Taxes"), color);
-    report->TextPosR(far_column, term->FormatPrice(total_royalty), color);
-    report->NewLine(2);
+    report->TextPosR(far_column, term->FormatPrice(total_royalty), COLOR_DK_GREEN);
     report->Mode(0);
+    report->NewLine(2);
 
+    // ===== FINAL TOTALS =====
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("FINAL TOTALS"), COLOR_DK_BLUE);
+    report->Mode(0);
+    report->NewLine();
+    
     // subtract the vouchers (list them again)
     report->TextPosL(column1, term->Translate("Minus Home Office Vouchers"), color);
     report->TextPosR(far_column, term->FormatPrice(rdata->total_voucher_amt), color);
@@ -4297,20 +4366,20 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
 
     // Total Due
     total_due = total_royalty - rdata->total_voucher_amt - rdata->total_adjust_amt;
-    report->Mode(PRINT_BOLD);
-    report->TextPosL(column1, term->Translate("Royalty Check Total"), color);
-    report->TextPosR(far_column, term->FormatPrice(total_due), color);
-    report->NewLine(2);
+    report->Mode(PRINT_BOLD | PRINT_UNDERLINE);
+    report->TextPosL(column1, term->Translate("Royalty Check Total"), COLOR_DK_BLUE);
+    report->TextPosR(far_column, term->FormatPrice(total_due), COLOR_DK_BLUE);
     report->Mode(0);
+    report->NewLine(2);
 
     // Advertising Fund Due
     advertise_due = (int) (total_for_royalty * settings->advertise_fund);
     advertise_due = advertise_due + gst_due + qst_due;
-    report->Mode(PRINT_BOLD);
-    report->TextPosL(column1, term->Translate("Ad Check Total"), color);
-    report->TextPosR(far_column, term->FormatPrice(advertise_due), color);
-    report->NewLine();
+    report->Mode(PRINT_BOLD | PRINT_UNDERLINE);
+    report->TextPosL(column1, term->Translate("Ad Check Total"), COLOR_DK_BLUE);
+    report->TextPosR(far_column, term->FormatPrice(advertise_due), COLOR_DK_BLUE);
     report->Mode(0);
+    report->NewLine();
 
     report->is_complete = 1;
     term->Update(UPDATE_REPORT, NULL);

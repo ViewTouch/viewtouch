@@ -103,6 +103,7 @@
 #define ZONE_EXPIRE_MSG      95  // For setting the expiration message
 #define ZONE_REVENUE_GROUPS  96  // Revenue group settings for menu families
 #define ZONE_IMAGE_BUTTON    97  // button with user-selectable image
+#define ZONE_CALCULATION_SETTINGS 110  // calculation settings (multiply, add/subtract)
 #define ZONE_ITEM_NORMAL     98  // menu item button
 #define ZONE_ITEM_MODIFIER   99  // modifier button
 #define ZONE_ITEM_METHOD     100 // non-tracking modifier button

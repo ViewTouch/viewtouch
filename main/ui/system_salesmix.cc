@@ -377,9 +377,11 @@ int FamilyItemReport(Terminal *t, ItemCount *branch,
         {
             const genericChar* s = FindStringByValue(branch->family, FamilyValue, FamilyName, UnknownStr);
             str = std::string() + t->Translate("Family") + ": " + t->Translate(s);
-            r.Mode(PRINT_UNDERLINE | PRINT_BOLD);
-            r.TextL(std::string() + str);
+            r.NewLine();
+            r.Mode(PRINT_BOLD | PRINT_UNDERLINE);
+            r.Text(std::string() + str, COLOR_DK_RED, ALIGN_CENTER, 0);
             r.Mode(0);
+            r.NewLine();
             fi.initialized = true;
         }
         r.NewLine();
@@ -526,38 +528,47 @@ int System::SalesMixReport(Terminal *t, const TimeInfo &start_time, const TimeIn
     }
     
     // Make report header
-    r->Mode(PRINT_BOLD | PRINT_LARGE);
-    r->TextC(t->Translate(SALESMIX_TITLE));
     r->SetTitle(SALESMIX_TITLE);
-    r->NewLine();
-    r->TextC(t->GetSettings()->store_name.Value());
-    r->Mode(0);
     
+    // Store name header
+    r->Mode(PRINT_BOLD);
+    r->TextC(t->GetSettings()->store_name.Value(), COLOR_DK_BLUE);
+    r->Mode(0);
+    r->NewLine();
+    
+    // Employee name if specified
     if (e)
     {
-        r->NewLine();
         r->Mode(PRINT_BOLD);
-        r->TextC(e->system_name.Value());
+        r->TextC(e->system_name.Value(), COLOR_DK_BLUE);
         r->Mode(0);
+        r->NewLine();
     }
-    r->NewLine();
     
-    r->TextPosR(6, "Start:");
+    // Date range with better formatting (MM/DD/YY - MM/DD/YY)
+    genericChar date_str[256], start_date[32], end_date[32];
     if (start_time.IsSet())
-        r->TextPosL(7, t->TimeDate(start_time, TD3));
+        t->TimeDate(start_date, start_time, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
     else
-        r->TextPosL(7, "System Start");
-    r->NewLine();
+        vt_safe_string::safe_copy(start_date, 32, GlobalTranslate("System Start"));
+    t->TimeDate(end_date, et, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+    vt_safe_string::safe_format(date_str, 256, "%s - %s", start_date, end_date);
     
-    r->TextPosR(6, "End:");
-    r->TextPosL(7, t->TimeDate(end, TD3));
-    r->NewLine(2);
+    r->Mode(PRINT_BOLD);
+    r->TextC(date_str, COLOR_DK_BLUE);
+    r->Mode(0);
+    r->NewLine();
+    r->NewLine();
     
     int total_count = 0;
     int total_cost = 0;
     int total_weight = 0;
     if (show_family == 0)
     {
+        r->Mode(PRINT_BOLD);
+        r->TextC(GlobalTranslate("ITEM SALES"), COLOR_DK_GREEN);
+        r->Mode(0);
+        r->NewLine();
         NoFamilyItemReport(t, tree.head, r, total_count, total_cost, total_weight);
         r->NewLine();
     }
@@ -582,9 +593,8 @@ int System::SalesMixReport(Terminal *t, const TimeInfo &start_time, const TimeIn
             if (fi.initialized)
             {
                 r->Append(fi.fr);
-                r->UnderlinePosR(0, 12);
                 r->NewLine();
-                r->Mode(PRINT_BOLD | PRINT_BLUE);
+                r->Mode(PRINT_BOLD | PRINT_UNDERLINE);
                 str2 = FindStringByValue(i, FamilyValue, FamilyName, UnknownStr);
                 vt_safe_string::safe_format(str, STRLENGTH, "%s Total", MasterLocale->Translate(str2));
                 r->TextPosL(0, str, COLOR_DK_BLUE);
@@ -593,14 +603,15 @@ int System::SalesMixReport(Terminal *t, const TimeInfo &start_time, const TimeIn
                 else
                     r->TextPosR(WEIGHT_POS, t->FormatPrice(fi.weight), COLOR_DK_BLUE);
                 r->TextPosR(0, t->FormatPrice(fi.cost, 1), COLOR_DK_BLUE);
-                r->NewLine();
                 r->Mode(0);
+                r->NewLine();
                 if (total_cost > 0)
                 {
                     vt_safe_string::safe_format(str, STRLENGTH, "(%.1f%%)", ((Flt) fi.cost / (Flt) total_cost) * 100.0);
                     r->TextPosR(0, str);
                     r->NewLine();
                 }
+                r->NewLine();
             }
         }
     }
@@ -608,10 +619,14 @@ int System::SalesMixReport(Terminal *t, const TimeInfo &start_time, const TimeIn
     // Make report footer
     r->NewLine();
     r->Mode(PRINT_BOLD);
-    r->TextPosL(0, "Total For Period");
-    r->NumberPosR(COUNT_POS, total_count);
-    r->TextPosR(WEIGHT_POS, t->FormatPrice(total_weight));
-    r->TextPosR(0, t->FormatPrice(total_cost, 1));
+    r->TextC(GlobalTranslate("TOTAL FOR PERIOD"), COLOR_DK_BLUE);
+    r->Mode(0);
+    r->NewLine();
+    r->Mode(PRINT_BOLD | PRINT_UNDERLINE);
+    r->TextPosL(0, GlobalTranslate("Total"));
+    r->NumberPosR(COUNT_POS, total_count, COLOR_DK_BLUE);
+    r->TextPosR(WEIGHT_POS, t->FormatPrice(total_weight), COLOR_DK_BLUE);
+    r->TextPosR(0, t->FormatPrice(total_cost, 1), COLOR_DK_BLUE);
     r->Mode(0);
     t->SetCursor(CURSOR_POINTER);
     r->is_complete = 1;

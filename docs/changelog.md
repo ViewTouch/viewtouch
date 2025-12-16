@@ -6,6 +6,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Changed
+- **Editor Settings Button Split and Password Function Removal (2025-12-XX)**
+  - **Split Editor Settings**: Separated "Editor Settings" functionality into two distinct buttons for better organization
+    - **Editor Settings** button (`ZONE_DEVELOPER`) now contains only:
+      - Editor's Password (9-digit numeric field for developer authentication)
+    - **Calculation Settings** button (`ZONE_CALCULATION_SETTINGS`) contains:
+      - Multiply (decimal multiplier for double qualifier pricing)
+      - Add or Subtract (price adjustment amount for double qualifier)
+  - **Password Function Removal**: Removed "Minimum Password Length" field from Editor Settings
+    - Password requirements for all users are no longer configurable through Editor Settings
+    - Simplifies the interface by removing password management functionality
+  - **New Zone Type**: Created `ZONE_CALCULATION_SETTINGS` (110) with corresponding `CalculationSettingsZone` class
+  - **Translation Support**: Added "Calculation Settings" translations in English and Spanish
+  - **Impact**: Better organization of developer settings with clear separation between authentication and calculation configuration
+  - **Files modified**:
+    - `zone/pos_zone.hh` - Added ZONE_CALCULATION_SETTINGS definition
+    - `zone/settings_zone.hh` - Added CalculationSettingsZone class declaration
+    - `zone/settings_zone.cc` - Implemented CalculationSettingsZone class, modified DeveloperZone to remove Minimum Password Length
+    - `zone/pos_zone.cc` - Added CalculationSettingsZone instantiation in NewPosZone factory
+    - `main/ui/labels.cc` - Added "Calculation Settings" to zone type names
+    - `main/data/locale.cc` - Added Spanish translation for "Calculation Settings"
+    - `assets/data/po_file/viewtouch.po_EN` - Added "Calculation Settings" translation entry
+
+- **Sales Report Visual Redesign (12-15-2025)**
+  - Enhanced visual formatting of the Sales report (Item Sales By Family) for better readability and printing
+  - Improved header section with professional formatting:
+    - Bold store name header
+    - Employee name displayed if specified (bold, centered)
+    - Centered date range in MM/DD/YY - MM/DD/YY format (date only, no time)
+    - Clean, uncluttered header layout
+  - Enhanced section headers throughout the report:
+    - Added "ITEM SALES" header for non-family view (centered, bold, green)
+    - Family headers now centered, bold, underlined, and red for better visibility
+    - Better visual separation between families
+  - Improved family totals formatting:
+    - Bold, underlined family totals with better spacing
+    - Improved color coding (blue for totals)
+    - Better spacing between families
+  - Enhanced footer section:
+    - Added "TOTAL FOR PERIOD" header (centered, bold, blue)
+    - Bold, underlined total row with better color coding
+    - Clearer visual emphasis on final totals
+  - Better visual organization:
+    - Consistent use of centered section headers
+    - Better color coding throughout
+    - Cleaner layout without excessive formatting
+    - Professional appearance suitable for business documentation
+  - Maintains all existing functionality while significantly improving visual clarity
+  - **Files modified**: `main/ui/system_salesmix.cc`
+
 ### Fixed
 - **Build System Compilation Errors and Warnings (12-13-2025)**
   - Fixed critical build failures caused by compiler warnings being treated as errors
@@ -121,6 +171,64 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Removed special Unicode symbols for better compatibility
   - Added detailed comments explaining all calculations for maintainability
   - Verified all calculations are mathematically consistent and correct
+  - **Files modified**: `main/ui/system_report.cc`
+- **Closed Checks Report Redesign for Better Printing and Visual Clarity (12-15-2025)**
+  - Completely redesigned the Closed Checks report for improved readability and 80mm receipt printer compatibility
+  - Enhanced visual layout with professional formatting:
+    - Added divider lines (=== and ---) to separate sections clearly
+    - Improved header with bold, centered date range and double-line separator
+    - Bold and underlined column headers for better visibility
+    - Single-line separator under headers for clear column definition
+  - Optimized column spacing for better visual separation:
+    - Increased spacing between Table/Guests columns and Amount column
+    - Moved Amount column to position 23 (right-aligned) for better readability
+    - Adjusted Payment and Server columns to maintain proper alignment
+  - Enhanced data row formatting:
+    - Check numbers prefixed with "#" for clarity
+    - Compact table/type display (TO, FF, or table number)
+    - Right-aligned amounts for easier scanning
+    - Payment method truncated to 4 characters to fit layout
+    - Server names right-aligned with 20-character limit for full visibility
+  - Added professional summary section:
+    - Divider line before summary for visual separation
+    - Bold "SUMMARY" heading
+    - Clear labels for Total Checks, Total Guests, and Total Amount
+    - Bold and underlined total amount for emphasis
+    - Final divider line to close the report
+  - Improved printing compatibility:
+    - Layout optimized for 40-character width (80mm receipt paper)
+    - All columns properly aligned and visible on narrow paper
+    - Server names no longer truncated to 5 characters - now display up to 20 characters
+    - Payment summary properly truncated to prevent overlap
+  - Better use of formatting features:
+    - Strategic use of bold, underline, and color coding
+    - Consistent spacing and alignment throughout
+    - Professional appearance suitable for business documentation
+  - **Files modified**: `main/ui/system_report.cc`
+- **Deposit/Book Balance Report Visual Redesign (12-15-2025)**
+  - Enhanced visual formatting of the Deposit/Book Balance report for better readability and printing
+  - Improved header section with professional formatting:
+    - Bold store name header
+    - Centered date range in MM/DD/YY - MM/DD/YY format (date only, no time)
+    - Clean, uncluttered header layout
+  - Enhanced section headers throughout the report:
+    - All major section headers now centered and bold for better visibility
+    - EXECUTIVE SUMMARY, DETAILED SALES BREAKDOWN, TAX BREAKDOWN, ADJUSTMENTS, RECONCILIATION, ACTUAL DEPOSITS, FINAL DEPOSIT, and DRAWER BALANCE STATUS sections improved
+    - Removed excessive dividers to keep day-to-day items grouped together
+  - Better visual organization:
+    - Removed unnecessary dividers between related items for better grouping
+    - Day-to-day items (sales, taxes, adjustments) now grouped together without separators
+    - Removed all `===` dividers that extended beyond page edges
+    - Clean section separation using only centered headers
+  - Improved date display:
+    - Date range now shows as "MM/DD/YY - MM/DD/YY" format
+    - Date-only format (no time) for cleaner display
+    - Both start and end dates clearly visible
+  - Improved printing compatibility:
+    - Layout optimized for both screen display and receipt printers
+    - Better use of formatting features (bold, underline, colors)
+    - Professional appearance suitable for business documentation
+  - Maintains all existing functionality while significantly improving visual clarity
   - **Files modified**: `main/ui/system_report.cc`
 - **Language Selection Redesign - Removed F8 Translate Functionality (12-12-2025)**
   - Completely removed F8 key language selection dialog functionality
