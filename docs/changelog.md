@@ -7,6 +7,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Changed
+- **Editor Settings Button Split and Password Function Removal (2025-12-XX)**
+  - **Split Editor Settings**: Separated "Editor Settings" functionality into two distinct buttons for better organization
+    - **Editor Settings** button (`ZONE_DEVELOPER`) now contains only:
+      - Editor's Password (9-digit numeric field for developer authentication)
+    - **Calculation Settings** button (`ZONE_CALCULATION_SETTINGS`) contains:
+      - Multiply (decimal multiplier for double qualifier pricing)
+      - Add or Subtract (price adjustment amount for double qualifier)
+  - **Password Function Removal**: Removed "Minimum Password Length" field from Editor Settings
+    - Password requirements for all users are no longer configurable through Editor Settings
+    - Simplifies the interface by removing password management functionality
+  - **New Zone Type**: Created `ZONE_CALCULATION_SETTINGS` (110) with corresponding `CalculationSettingsZone` class
+  - **Translation Support**: Added "Calculation Settings" translations in English and Spanish
+  - **Impact**: Better organization of developer settings with clear separation between authentication and calculation configuration
+  - **Files modified**:
+    - `zone/pos_zone.hh` - Added ZONE_CALCULATION_SETTINGS definition
+    - `zone/settings_zone.hh` - Added CalculationSettingsZone class declaration
+    - `zone/settings_zone.cc` - Implemented CalculationSettingsZone class, modified DeveloperZone to remove Minimum Password Length
+    - `zone/pos_zone.cc` - Added CalculationSettingsZone instantiation in NewPosZone factory
+    - `main/ui/labels.cc` - Added "Calculation Settings" to zone type names
+    - `main/data/locale.cc` - Added Spanish translation for "Calculation Settings"
+    - `assets/data/po_file/viewtouch.po_EN` - Added "Calculation Settings" translation entry
+
 - **Sales Report Visual Redesign (12-15-2025)**
   - Enhanced visual formatting of the Sales report (Item Sales By Family) for better readability and printing
   - Improved header section with professional formatting:

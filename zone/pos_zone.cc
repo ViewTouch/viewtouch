@@ -217,6 +217,9 @@ Zone *NewPosZone(int type)
     case ZONE_DEVELOPER:
         pNewZone = new DeveloperZone;
         break;
+    case ZONE_CALCULATION_SETTINGS:
+        pNewZone = new CalculationSettingsZone;
+        break;
     case ZONE_REVENUE_GROUPS:
         pNewZone = new RevenueGroupsZone;
         break;

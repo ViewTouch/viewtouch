@@ -156,6 +156,23 @@ public:
     int          SaveRecord(Terminal *term, int record, int write_file);
 };
 
+// Calculation Settings (Multiply, Add/Subtract)
+class CalculationSettingsZone : public FormZone
+{
+    unsigned long phrases_changed;
+
+public:
+    // Constructor
+    CalculationSettingsZone();
+
+    // Member Functions
+    int          Type() { return ZONE_CALCULATION_SETTINGS; }
+    int          AddFields();
+    RenderResult Render(Terminal *term, int update_flag);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
+};
+
 /* Revenue Groups Settings */
 class RevenueGroupsZone : public FormZone
 {

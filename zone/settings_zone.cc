@@ -1678,9 +1678,6 @@ int DeveloperZone::AddFields()
     FnTrace("DeveloperZone::AddFields()");
 
     AddTextField("Editor's Password", 9); SetFlag(FF_ONLYDIGITS);
-    AddTextField("Minimum Password Length", 2); SetFlag(FF_ONLYDIGITS);
-    AddTextField("Multiply", 8);
-    AddTextField("Add or Subtract", 5);
 
     return 0;
 }
@@ -1716,10 +1713,6 @@ int DeveloperZone::LoadRecord(Terminal *term, int record)
     FormField *f = FieldList();
 
     f->Set(settings->developer_key); f = f->next;
-    f->Set(settings->min_pw_len); f = f->next;
-    const std::string multiplier_text = FormatMultiplierDisplay(settings->double_mult);
-    f->Set(multiplier_text.c_str()); f = f->next;
-    f->Set(term->SimpleFormatPrice(settings->double_add)); f = f->next;
 
     return 0;
 }
@@ -1731,20 +1724,7 @@ int DeveloperZone::SaveRecord(Terminal *term, int record, int write_file)
     FormField *f = FieldList();
 
     f->Get(settings->developer_key); f = f->next;
-    f->Get(settings->min_pw_len); f = f->next;
-    f->Get(settings->double_mult); f = f->next;
-    f->GetPrice(settings->double_add); f = f->next;
 
-    int fixed = 0;
-    if (settings->shifts_used < 1)
-        settings->shifts_used = 1, fixed = 1;
-    if (settings->shifts_used > MAX_SHIFTS)
-        settings->shifts_used = MAX_SHIFTS, fixed = 1;
-    if (settings->double_mult <= 0.0)
-        settings->double_mult = 1.0, fixed = 1;
-
-    if (fixed)
-        Draw(term, 1);
     if (write_file)
         settings->Save();
 
@@ -1784,6 +1764,83 @@ SignalResult DeveloperZone::Signal(Terminal *term, const genericChar* message)
         clear_flag = 0;
         return FormZone::Signal(term, message);
     }
+}
+
+/*********************************************************************
+ * CalculationSettingsZone Class
+ ********************************************************************/
+CalculationSettingsZone::CalculationSettingsZone()
+{
+    FnTrace("CalculationSettingsZone::CalculationSettingsZone()");
+
+    phrases_changed = 0;
+    AddFields();
+}
+
+// Member Functions
+int CalculationSettingsZone::AddFields()
+{
+    FnTrace("CalculationSettingsZone::AddFields()");
+
+    AddTextField("Multiply", 8);
+    AddTextField("Add or Subtract", 5);
+
+    return 0;
+}
+
+RenderResult CalculationSettingsZone::Render(Terminal *term, int update_flag)
+{
+    FnTrace("CalculationSettingsZone::Render()");
+
+    if (phrases_changed < term->system_data->phrases_changed)
+    {
+        Purge();
+        AddFields();
+        phrases_changed = term->system_data->phrases_changed;
+    }
+
+    form_header = 0;
+    if (name.size() > 0)
+        form_header = 1;
+
+    FormZone::Render(term, update_flag);
+    if (name.size() > 0)
+        TextC(term, 0, name.Value(), color[0]);
+    return RENDER_OKAY;
+}
+
+int CalculationSettingsZone::LoadRecord(Terminal *term, int record)
+{
+    FnTrace("CalculationSettingsZone::LoadRecord()");
+    Settings  *settings = term->GetSettings();
+    FormField *f = FieldList();
+
+    const std::string multiplier_text = FormatMultiplierDisplay(settings->double_mult);
+    f->Set(multiplier_text.c_str()); f = f->next;
+    f->Set(term->SimpleFormatPrice(settings->double_add)); f = f->next;
+
+    return 0;
+}
+
+int CalculationSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
+{
+    FnTrace("CalculationSettingsZone::SaveRecord()");
+    Settings *settings = term->GetSettings();
+    FormField *f = FieldList();
+
+    f->Get(settings->double_mult); f = f->next;
+    f->GetPrice(settings->double_add); f = f->next;
+
+    int fixed = 0;
+    if (settings->double_mult <= 0.0)
+        settings->double_mult = 1.0, fixed = 1;
+
+    if (fixed)
+        Draw(term, 1);
+    if (write_file)
+        settings->Save();
+
+    return 0;
 }
 
 /* RevenueGroupsZone Class */
