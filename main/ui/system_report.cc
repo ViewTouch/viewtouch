@@ -4187,38 +4187,52 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
     int month = rdata->start_time.Month();
     int year  = rdata->start_time.Year();
 
-//    report->SetTitle(ROYALTY_REPORT_TITLE);        Let the Button's Name Field provide the Title for this report
-//    report->Mode(PRINT_BOLD | PRINT_LARGE);
-//    report->TextC(ROYALTY_REPORT_TITLE);
-//    report->NewLine();
     report->Mode(0);
-
-    report->TextL(settings->store_name.Value(), COLOR_DEFAULT);
+    
+    // Store name header
+    report->Mode(PRINT_BOLD);
+    report->TextC(settings->store_name.Value(), COLOR_DK_BLUE);
+    report->Mode(0);
+    report->NewLine();
+    
+    // Date range with better formatting (MM/DD/YY - MM/DD/YY)
+    genericChar date_str[256], start_date[32], end_date[32];
+    term->TimeDate(start_date, rdata->start_time, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+    term->TimeDate(end_date, rdata->end_time, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+    vt_safe_string::safe_format(date_str, 256, "%s - %s", start_date, end_date);
+    
     if (rdata->incomplete)
-        report->TextR(term->TimeDate(rdata->start_time, TD_MONTH), COLOR_DK_RED);
-    else
-        report->TextR(term->TimeDate(rdata->start_time, TD_MONTH), color);
-    report->NewLine(2);
+        color = COLOR_DK_RED;
+    report->Mode(PRINT_BOLD);
+    report->TextC(date_str, color);
+    report->Mode(0);
+    report->NewLine();
+    report->NewLine();
 
+    // ===== DAILY BREAKDOWN =====
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("DAILY BREAKDOWN"), COLOR_DK_BLUE);
+    report->Mode(0);
+    report->NewLine();
+    
     // print the daily totals
     int y;
     column = 0;
     int dayspercol = 16;
     if (dcolumns == 1)
         dayspercol = 31;
-    report->UnderlinePosL(0, zone_width - 1, COLOR_BLUE);
+    report->Mode(PRINT_BOLD | PRINT_UNDERLINE);
     for (y = 0; y < dcolumns; y++)
     {
-        report->Mode(PRINT_BOLD);
-        report->TextPosL(column + column1, term->Translate("Day"), color);
-        report->TextPosL(column + column2, term->Translate("Guests"), color);
-        report->TextPosR(column + column3, term->Translate("Sales"), color);
-        report->TextPosR(column + column4, term->Translate("Average"), color);
+        report->TextPosL(column + column1, term->Translate("Day"), COLOR_DK_BLUE);
+        report->TextPosL(column + column2, term->Translate("Guests"), COLOR_DK_BLUE);
+        report->TextPosR(column + column3, term->Translate("Sales"), COLOR_DK_BLUE);
+        report->TextPosR(column + column4, term->Translate("Average"), COLOR_DK_BLUE);
         if (dcolumns > 1)
             column += column_width;
     }
-    report->NewLine();
     report->Mode(0);
+    report->NewLine();
     for (x = 0; x < dayspercol; x++)
     {
         // print left columns
@@ -4248,31 +4262,31 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
                 color = COLOR_DEFAULT;
             }
         }
-        if (x < dayspercol) // no underline on the last line
-        {
-            report->UnderlinePosL(0, zone_width - 1, color);
-            report->NewLine();
-        }
+        report->NewLine();
     }
     // totals on last line
-    report->Mode(PRINT_BOLD);
-    report->TextPosL(column + column1, term->Translate("Total"), color);
-    report->NumberPosL(column + column2, rdata->total_guests, color);
-    report->TextPosR(column + column3, term->FormatPrice(rdata->total_sales), color);
+    report->Mode(PRINT_BOLD | PRINT_UNDERLINE);
+    report->TextPosL(column + column1, term->Translate("Total"), COLOR_DK_BLUE);
+    report->NumberPosL(column + column2, rdata->total_guests, COLOR_DK_BLUE);
+    report->TextPosR(column + column3, term->FormatPrice(rdata->total_sales), COLOR_DK_BLUE);
     check_avg = 0;
     if (rdata->total_guests > 0)
         check_avg = rdata->total_sales / rdata->total_guests;
-    report->TextPosR(column + column4, term->FormatPrice(check_avg), color);
+    report->TextPosR(column + column4, term->FormatPrice(check_avg), COLOR_DK_BLUE);
     report->Mode(0);
-
-    report->UnderlinePosL(0, zone_width - 1, COLOR_BLUE);
     report->NewLine(2);
 
+    // ===== ROYALTY CALCULATION =====
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("ROYALTY CALCULATION"), COLOR_DK_GREEN);
+    report->Mode(0);
+    report->NewLine();
+    
     int far_column = column_width + column2;
     if (far_column > zone_width)
-        far_column = column_width - 2;
+        far_column = zone_width - 2;
+    
     // total sales
-    report->Mode(0);
     report->TextL(term->Translate("Total Sales"), color);
     report->TextPosR(far_column, term->FormatPrice(rdata->total_sales), color);
     report->NewLine();
@@ -4287,9 +4301,9 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
     report->Mode(PRINT_BOLD);
     report->TextL(term->Translate("Total Sales for Royalty Calc."), color);
     report->TextPosR(far_column, term->FormatPrice(total_for_royalty), color);
+    report->Mode(0);
     report->UnderlinePosR(far_column, 10, color);
     report->NewLine();
-    report->Mode(0);
 
     // royalty due
     royalty_due = (int) (total_for_royalty * settings->royalty_rate);
@@ -4300,26 +4314,26 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
     // GST
     if (settings->tax_GST > 0)
     {
-        report->NewLine();
         gst_due = settings->FigureGST(royalty_due, SystemTime);
         report->TextPosL(column1, term->Translate("GST Due"), color);
         report->TextPosR(far_column, term->FormatPrice(gst_due), color);
+        report->NewLine();
     }
 
     // QST
     if (settings->tax_QST > 0)
     {
-        report->NewLine();
         qst_due = settings->FigureQST(royalty_due, gst_due, SystemTime, 0);
         report->TextPosL(column1, GlobalTranslate("QST Due:"), color);
         report->TextPosR(far_column, term->FormatPrice(qst_due), color);
+        report->NewLine();
     }
 
     if (settings->tax_GST <= 0 && settings->tax_QST <= 0)
     {
-        report->NewLine();
         report->TextPosL(column1, GlobalTranslate("Taxes Due"), color);
         report->TextPosR(far_column, term->FormatPrice(0), color);
+        report->NewLine();
     }
 
     report->UnderlinePosR(far_column, 10, color);
@@ -4329,10 +4343,16 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
     int total_royalty = royalty_due + gst_due + qst_due;
     report->Mode(PRINT_BOLD);
     report->TextPosL(column1, term->Translate("Total Royalty and Taxes"), color);
-    report->TextPosR(far_column, term->FormatPrice(total_royalty), color);
-    report->NewLine(2);
+    report->TextPosR(far_column, term->FormatPrice(total_royalty), COLOR_DK_GREEN);
     report->Mode(0);
+    report->NewLine(2);
 
+    // ===== FINAL TOTALS =====
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("FINAL TOTALS"), COLOR_DK_BLUE);
+    report->Mode(0);
+    report->NewLine();
+    
     // subtract the vouchers (list them again)
     report->TextPosL(column1, term->Translate("Minus Home Office Vouchers"), color);
     report->TextPosR(far_column, term->FormatPrice(rdata->total_voucher_amt), color);
@@ -4346,20 +4366,20 @@ int RoyaltyReportWorkFn(RoyaltyData *rdata)
 
     // Total Due
     total_due = total_royalty - rdata->total_voucher_amt - rdata->total_adjust_amt;
-    report->Mode(PRINT_BOLD);
-    report->TextPosL(column1, term->Translate("Royalty Check Total"), color);
-    report->TextPosR(far_column, term->FormatPrice(total_due), color);
-    report->NewLine(2);
+    report->Mode(PRINT_BOLD | PRINT_UNDERLINE);
+    report->TextPosL(column1, term->Translate("Royalty Check Total"), COLOR_DK_BLUE);
+    report->TextPosR(far_column, term->FormatPrice(total_due), COLOR_DK_BLUE);
     report->Mode(0);
+    report->NewLine(2);
 
     // Advertising Fund Due
     advertise_due = (int) (total_for_royalty * settings->advertise_fund);
     advertise_due = advertise_due + gst_due + qst_due;
-    report->Mode(PRINT_BOLD);
-    report->TextPosL(column1, term->Translate("Ad Check Total"), color);
-    report->TextPosR(far_column, term->FormatPrice(advertise_due), color);
-    report->NewLine();
+    report->Mode(PRINT_BOLD | PRINT_UNDERLINE);
+    report->TextPosL(column1, term->Translate("Ad Check Total"), COLOR_DK_BLUE);
+    report->TextPosR(far_column, term->FormatPrice(advertise_due), COLOR_DK_BLUE);
     report->Mode(0);
+    report->NewLine();
 
     report->is_complete = 1;
     term->Update(UPDATE_REPORT, NULL);
