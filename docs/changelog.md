@@ -155,6 +155,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Consistent spacing and alignment throughout
     - Professional appearance suitable for business documentation
   - **Files modified**: `main/ui/system_report.cc`
+- **Deposit/Book Balance Report Visual Redesign (12-15-2025)**
+  - Enhanced visual formatting of the Deposit/Book Balance report for better readability and printing
+  - Improved header section with professional formatting:
+    - Bold store name header
+    - Centered date range in MM/DD/YY - MM/DD/YY format (date only, no time)
+    - Clean, uncluttered header layout
+  - Enhanced section headers throughout the report:
+    - All major section headers now centered and bold for better visibility
+    - EXECUTIVE SUMMARY, DETAILED SALES BREAKDOWN, TAX BREAKDOWN, ADJUSTMENTS, RECONCILIATION, ACTUAL DEPOSITS, FINAL DEPOSIT, and DRAWER BALANCE STATUS sections improved
+    - Removed excessive dividers to keep day-to-day items grouped together
+  - Better visual organization:
+    - Removed unnecessary dividers between related items for better grouping
+    - Day-to-day items (sales, taxes, adjustments) now grouped together without separators
+    - Removed all `===` dividers that extended beyond page edges
+    - Clean section separation using only centered headers
+  - Improved date display:
+    - Date range now shows as "MM/DD/YY - MM/DD/YY" format
+    - Date-only format (no time) for cleaner display
+    - Both start and end dates clearly visible
+  - Improved printing compatibility:
+    - Layout optimized for both screen display and receipt printers
+    - Better use of formatting features (bold, underline, colors)
+    - Professional appearance suitable for business documentation
+  - Maintains all existing functionality while significantly improving visual clarity
+  - **Files modified**: `main/ui/system_report.cc`
 - **Language Selection Redesign - Removed F8 Translate Functionality (12-12-2025)**
   - Completely removed F8 key language selection dialog functionality
   - Eliminated F2 translate term mode and all associated translation features

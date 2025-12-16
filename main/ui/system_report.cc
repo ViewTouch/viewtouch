@@ -2222,48 +2222,47 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     int net_receipts = gross_receipts - total_adjust;  // Net receipts after adjustments
 
     // Make report
-    genericChar str[256];
+    genericChar str[256], str2[32];
     int  col = COLOR_DEFAULT;
-//    report->Mode(PRINT_BOLD | PRINT_LARGE);
-//    report->TextC(DEPOSIT_TITLE, COLOR_DK_BLUE);
-//    report->NewLine();
-    report->TextC(s->store_name.Value());
-    report->NewLine();
+    
+    // Store name header
+    report->Mode(PRINT_BOLD);
+    report->TextC(s->store_name.Value(), COLOR_DK_BLUE);
     report->Mode(0);
+    report->NewLine();
 
-    report->TextPosR(6, "Start:");
+    // Date range with better formatting (MM/DD/YY - MM/DD/YY)
+    report->Mode(PRINT_BOLD);
+    genericChar start_date[32], end_date[32];
     if (archive && archive->start_time.IsSet())
-        term->TimeDate(str, archive->start_time, TD3);
+    {
+        term->TimeDate(start_date, archive->start_time, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+        term->TimeDate(end_date, archive->end_time, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+    }
     else if (start_time.IsSet())
     {
         if (start_time > SystemTime)
             col = COLOR_DK_RED;
-        term->TimeDate(str, start_time, TD3);
+        term->TimeDate(start_date, start_time, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+        term->TimeDate(end_date, end, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
     }
     else
-        vt_safe_string::safe_copy(str, 256, GlobalTranslate("System Start"));
-
-    report->TextPosL(7, str, col);
+    {
+        vt_safe_string::safe_copy(start_date, 32, GlobalTranslate("System Start"));
+        term->TimeDate(end_date, end, TD_SHORT_DATE | TD_NO_DAY | TD_NO_TIME);
+    }
+    
+    vt_safe_string::safe_format(str, 256, "%s - %s", start_date, end_date);
+    report->TextC(str, COLOR_DK_BLUE);
+    report->Mode(0);
     report->NewLine();
-
-    report->TextPosR(6, "End:");
-    if (incomplete)
-        col = COLOR_DK_RED;
-
-    if (archive)
-        term->TimeDate(str, archive->end_time, TD3);
-    else
-        term->TimeDate(str, end, TD3);
-
-    report->TextPosL(7, str, col);
-    report->NewLine(2);
 
     // ===== EXECUTIVE SUMMARY SECTION (Accountant-Friendly) =====
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("EXECUTIVE SUMMARY"), COLOR_DK_BLUE);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("EXECUTIVE SUMMARY"), COLOR_DK_BLUE);
     report->Mode(0);
-    report->Divider('-');
+    report->NewLine();
 
     // Transaction counts
     if (check_count > 0 || transaction_count > 0)
@@ -2310,11 +2309,11 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine(2);
 
     // ===== DETAILED SALES BREAKDOWN =====
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("DETAILED SALES BREAKDOWN"), COLOR_DK_GREEN);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("DETAILED SALES BREAKDOWN"), COLOR_DK_GREEN);
     report->Mode(0);
-    report->Divider('-');
+    report->NewLine();
     report->TextL(GlobalTranslate("Sales by Category:"), COLOR_DK_GREEN);
     report->NewLine();
     for (int g = SALESGROUP_FOOD; g <= SALESGROUP_ROOM; ++g)
@@ -2334,9 +2333,9 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
 
     // Tax
     report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("TAX BREAKDOWN"), COLOR_DK_GREEN);
-    report->NewLine();
+    report->TextC(GlobalTranslate("TAX BREAKDOWN"), COLOR_DK_GREEN);
     report->Mode(0);
+    report->NewLine();
     if (term->hide_zeros == 0 || tax_food != 0)
     {
         report->TextL(GlobalTranslate("Sales Tax: Food & Beverage"));
@@ -2406,11 +2405,11 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine(2);
 
     // Adjustments
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("ADJUSTMENTS"), COLOR_DK_RED);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("ADJUSTMENTS"), COLOR_DK_RED);
     report->Mode(0);
-    report->Divider('-');
+    report->NewLine();
     report->TextL(GlobalTranslate("Non-Cash Adjustments:"), COLOR_DK_RED);
     report->NewLine();
 
@@ -2536,11 +2535,11 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine(2);
 
     // ===== RECONCILIATION SECTION =====
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("RECONCILIATION"), COLOR_DK_BLUE);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("RECONCILIATION"), COLOR_DK_BLUE);
     report->Mode(0);
-    report->Divider('-');
+    report->NewLine();
     
     report->TextL(GlobalTranslate("Expected Receipts Breakdown:"));
     report->NewLine();
@@ -2563,10 +2562,11 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->UnderlinePosR(0, 7, COLOR_DK_BLUE);
     report->NewLine(2);
 
-    report->Mode(PRINT_BOLD);
-    report->TextL(term->Translate("ACTUAL DEPOSITS"), COLOR_DK_BLUE);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(term->Translate("ACTUAL DEPOSITS"), COLOR_DK_BLUE);
     report->Mode(0);
+    report->NewLine();
 
     // Cash Deposit
     if (term->hide_zeros == 0 || cash != 0)
@@ -2680,11 +2680,11 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     // Zero = Perfect reconciliation
     int reconciliation_diff = book_balance - actual_deposit;
     
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("RECONCILIATION"), COLOR_DK_BLUE);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("RECONCILIATION"), COLOR_DK_BLUE);
     report->Mode(0);
-    report->Divider('-');
+    report->NewLine();
     
     report->TextL(GlobalTranslate("Expected Balance"));
     report->TextPosR(0, term->FormatPrice(book_balance), COLOR_DK_BLUE);
@@ -2738,10 +2738,11 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     }
 
     // ===== FINAL DEPOSIT AMOUNTS =====
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("FINAL DEPOSIT"), COLOR_DK_BLUE);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("FINAL DEPOSIT"), COLOR_DK_BLUE);
     report->Mode(0);
+    report->NewLine();
     
     if (settings.authorize_method == CCAUTH_NONE)
     {
@@ -2770,10 +2771,12 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     }
 
     // ===== DRAWER BALANCE STATUS =====
-    report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("DRAWER BALANCE STATUS"), COLOR_DK_BLUE);
     report->NewLine();
+    report->Mode(PRINT_BOLD);
+    report->TextC(GlobalTranslate("DRAWER BALANCE STATUS"), COLOR_DK_BLUE);
     report->Mode(0);
+    report->NewLine();
+    report->Divider('-');
     
     if (drawer_diff < 0)
     {
