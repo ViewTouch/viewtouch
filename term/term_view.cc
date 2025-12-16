@@ -265,7 +265,8 @@ private:
     };
 
     // Maximum number of textures to keep in memory
-    static constexpr size_t MAX_TEXTURES_IN_MEMORY = 45;  // More conservative than 50 for better memory usage
+    // Set to IMAGE_COUNT to ensure all textures can stay loaded
+    static constexpr size_t MAX_TEXTURES_IN_MEMORY = IMAGE_COUNT;
 
 public:
     TextureManager() : startup_time_(time(NULL)), display_(nullptr) {
@@ -366,6 +367,7 @@ public:
             access_count_[texture_id] = 1;
 
             // If we've exceeded the memory limit, unload least recently used
+            // Note: With all textures preloaded, this should rarely trigger
             if (loaded_texture_count() > adaptive_max_textures_) {
                 unload_least_recently_used();
                 // Trigger adaptive cache sizing check (very conservative)
@@ -392,6 +394,14 @@ public:
     // Preload commonly used textures at startup
     void preload_common_textures() {
         for (int texture_id : PRELOAD_TEXTURES) {
+            load_texture(texture_id);
+        }
+    }
+
+    // Preload all textures at startup to prevent visual bugs
+    void preload_all_textures() {
+        // Note: load_texture() handles its own mutex locking
+        for (int texture_id = 0; texture_id < IMAGE_COUNT; ++texture_id) {
             load_texture(texture_id);
         }
     }
@@ -4388,8 +4398,8 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     MainLayer = l;
     ResetView();
 
-    // Set up textures - preload commonly used ones
-    texture_manager.preload_common_textures();
+    // Set up textures - preload all textures to prevent visual bugs
+    texture_manager.preload_all_textures();
 
     // Performance monitoring removed for production efficiency
     ReadScreenSaverPix();
