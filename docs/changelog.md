@@ -122,6 +122,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Added detailed comments explaining all calculations for maintainability
   - Verified all calculations are mathematically consistent and correct
   - **Files modified**: `main/ui/system_report.cc`
+- **Closed Checks Report Redesign for Better Printing and Visual Clarity (12-15-2025)**
+  - Completely redesigned the Closed Checks report for improved readability and 80mm receipt printer compatibility
+  - Enhanced visual layout with professional formatting:
+    - Added divider lines (=== and ---) to separate sections clearly
+    - Improved header with bold, centered date range and double-line separator
+    - Bold and underlined column headers for better visibility
+    - Single-line separator under headers for clear column definition
+  - Optimized column spacing for better visual separation:
+    - Increased spacing between Table/Guests columns and Amount column
+    - Moved Amount column to position 23 (right-aligned) for better readability
+    - Adjusted Payment and Server columns to maintain proper alignment
+  - Enhanced data row formatting:
+    - Check numbers prefixed with "#" for clarity
+    - Compact table/type display (TO, FF, or table number)
+    - Right-aligned amounts for easier scanning
+    - Payment method truncated to 4 characters to fit layout
+    - Server names right-aligned with 20-character limit for full visibility
+  - Added professional summary section:
+    - Divider line before summary for visual separation
+    - Bold "SUMMARY" heading
+    - Clear labels for Total Checks, Total Guests, and Total Amount
+    - Bold and underlined total amount for emphasis
+    - Final divider line to close the report
+  - Improved printing compatibility:
+    - Layout optimized for 40-character width (80mm receipt paper)
+    - All columns properly aligned and visible on narrow paper
+    - Server names no longer truncated to 5 characters - now display up to 20 characters
+    - Payment summary properly truncated to prevent overlap
+  - Better use of formatting features:
+    - Strategic use of bold, underline, and color coding
+    - Consistent spacing and alignment throughout
+    - Professional appearance suitable for business documentation
+  - **Files modified**: `main/ui/system_report.cc`
 - **Language Selection Redesign - Removed F8 Translate Functionality (12-12-2025)**
   - Completely removed F8 key language selection dialog functionality
   - Eliminated F2 translate term mode and all associated translation features

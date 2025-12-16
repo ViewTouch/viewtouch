@@ -2878,32 +2878,51 @@ int ClosedCheckReportWorkFn(CCRData *ccrdata)
 
             if (flag)
             {
-                vt_safe_string::safe_format(str, 256, "%06d", thisCheck->serial_number);
-                thisReport->TextPosL(0, str);
                 ccrdata->none = 0;
                 ccrdata->total_amount += amount;
                 ccrdata->total_guests += thisCheck->Guests();
                 ++ccrdata->total_number;
 
+                // Check number (left-aligned, 6 digits)
+                vt_safe_string::safe_format(str, 256, "#%06d", thisCheck->serial_number);
+                thisReport->TextPosL(0, str);
+
+                // Table/Type and Guests (compact format)
                 if (thisCheck->IsTakeOut())
                 {
-                    thisReport->TextPosL(7, GlobalTranslate("TERM.O"));
-                    thisReport->TextPosL(11, "--");
+                    thisReport->TextPosL(8, "TO");
+                    thisReport->TextPosL(12, "--");
                 }
-				else if (thisCheck->IsFastFood())
-				{
-					        thisReport->TextPosL(7, GlobalTranslate("FF"));
-                    thisReport->TextPosL(11, "--");
-				}
+                else if (thisCheck->IsFastFood())
+                {
+                    thisReport->TextPosL(8, "FF");
+                    thisReport->TextPosL(12, "--");
+                }
                 else
                 {
-                    thisReport->TextPosL(7, thisCheck->Table());
-                    thisReport->NumberPosL(11, thisCheck->Guests());
+                    genericChar table_str[8];
+                    vt_safe_string::safe_copy(table_str, 8, thisCheck->Table());
+                    thisReport->TextPosL(8, table_str);
+                    thisReport->NumberPosL(12, thisCheck->Guests());
                 }
-                thisReport->TextPosR(22, term->FormatPrice(amount));
-                thisReport->TextPosL(23, thisCheck->PaymentSummary(term));
+
+                // Amount (right-aligned, moved further right for more spacing after Gst)
+                thisReport->TextPosR(23, term->FormatPrice(amount));
+
+                // Payment method (truncated to fit)
+                genericChar payment_str[12];
+                vt_safe_string::safe_copy(payment_str, 12, thisCheck->PaymentSummary(term));
+                if (strlen(payment_str) > 4)
+                    payment_str[4] = '\0';  // Limit to 4 chars to accommodate spacing
+                thisReport->TextPosL(25, payment_str);
+
+                // Server name (right-aligned to end of line, max 20 chars)
                 int server_id = thisCheck->WhoGetsSale(s);
-                thisReport->TextPosL(35, term->UserName(server_id));
+                genericChar server_name[32];
+                vt_safe_string::safe_copy(server_name, 32, term->UserName(server_id));
+                if (strlen(server_name) > 20)
+                    server_name[20] = '\0';  // Limit server name length
+                thisReport->TextPosR(0, server_name);
                 thisReport->NewLine();
             }
         }
@@ -2919,11 +2938,31 @@ int ClosedCheckReportWorkFn(CCRData *ccrdata)
         return 0; // continue work fn
     }
 
+    // Summary section with visual separators
     thisReport->NewLine();
-            thisReport->TextPosL(0, GlobalTranslate("Total"));
-    thisReport->NumberPosL(7, ccrdata->total_number);
-    thisReport->NumberPosL(11, ccrdata->total_guests);
-    thisReport->TextPosR(22, term->FormatPrice(ccrdata->total_amount));
+    thisReport->Divider('-');
+    thisReport->Mode(PRINT_BOLD);
+    thisReport->TextPosL(0, GlobalTranslate("SUMMARY"), COLOR_DK_BLUE);
+    thisReport->Mode(0);
+    thisReport->NewLine();
+    
+    // Total checks
+    thisReport->TextPosL(0, GlobalTranslate("Total Checks:"));
+    thisReport->NumberPosL(14, ccrdata->total_number);
+    thisReport->NewLine();
+    
+    // Total guests
+    thisReport->TextPosL(0, GlobalTranslate("Total Guests:"));
+    thisReport->NumberPosL(14, ccrdata->total_guests);
+    thisReport->NewLine();
+    
+    // Total amount with underline
+    thisReport->Mode(PRINT_BOLD | PRINT_UNDERLINE);
+    thisReport->TextPosL(0, GlobalTranslate("Total Amount:"));
+    thisReport->TextPosR(0, term->FormatPrice(ccrdata->total_amount), COLOR_DK_BLUE);
+    thisReport->Mode(0);
+    thisReport->NewLine();
+    thisReport->Divider('-');
 
     thisReport->is_complete = 1;
     ccrdata->term->Update(UPDATE_REPORT, NULL);
@@ -2962,22 +3001,29 @@ int System::ClosedCheckReport(Terminal *term, TimeInfo &start_time, TimeInfo &en
     genericChar str[256], str2[32];
 
     thisReport->is_complete = 0;
-//    thisReport->TextC(term->Translate("Guest Check Summary"), COLOR_DK_BLUE);      Let the Button's Name Field provide the Title for this report
-//    thisReport->NewLine();
-    vt_safe_string::safe_format(str, 256, "(%s  to  %s)", term->TimeDate(str2, start_time, TD5),
+    
+    // Date range header
+    vt_safe_string::safe_format(str, 256, "%s  to  %s", 
+            term->TimeDate(str2, start_time, TD5),
             term->TimeDate(end, TD5));
+    thisReport->Mode(PRINT_BOLD);
     thisReport->TextC(str, COLOR_DK_BLUE);
-    thisReport->NewLine(2);
-
-    thisReport->Mode(PRINT_UNDERLINE);
-            thisReport->TextPosL(0,  GlobalTranslate("Check#"), COLOR_DK_BLUE);
-            thisReport->TextPosL(8,  GlobalTranslate("Tbl"), COLOR_DK_BLUE);
-            thisReport->TextPosL(13, GlobalTranslate("Gst"), COLOR_DK_BLUE);
-    thisReport->TextPosR(25, "Amount", COLOR_DK_BLUE);
-            thisReport->TextPosL(27, GlobalTranslate("Payment"), COLOR_DK_BLUE);
-            thisReport->TextPosL(35, GlobalTranslate("Server"), COLOR_DK_BLUE);
     thisReport->Mode(0);
     thisReport->NewLine();
+    thisReport->Divider('=');
+    thisReport->NewLine();
+
+    // Column headers with better spacing
+    thisReport->Mode(PRINT_BOLD | PRINT_UNDERLINE);
+    thisReport->TextPosL(0,  GlobalTranslate("Check#"), COLOR_DK_BLUE);
+    thisReport->TextPosL(8,  GlobalTranslate("Tbl"), COLOR_DK_BLUE);
+    thisReport->TextPosL(12, GlobalTranslate("Gst"), COLOR_DK_BLUE);
+    thisReport->TextPosR(23, GlobalTranslate("Amount"), COLOR_DK_BLUE);
+    thisReport->TextPosL(25, GlobalTranslate("Pay"), COLOR_DK_BLUE);
+    thisReport->TextPosR(0, GlobalTranslate("Server"), COLOR_DK_BLUE);
+    thisReport->Mode(0);
+    thisReport->NewLine();
+    thisReport->Divider('-');
 
     AddWorkFn((WorkFn) ClosedCheckReportWorkFn, ccrdata);
     return 0;
