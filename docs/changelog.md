@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Changed
+- **Sales Report Visual Redesign (12-15-2025)**
+  - Enhanced visual formatting of the Sales report (Item Sales By Family) for better readability and printing
+  - Improved header section with professional formatting:
+    - Bold store name header
+    - Employee name displayed if specified (bold, centered)
+    - Centered date range in MM/DD/YY - MM/DD/YY format (date only, no time)
+    - Clean, uncluttered header layout
+  - Enhanced section headers throughout the report:
+    - Added "ITEM SALES" header for non-family view (centered, bold, green)
+    - Family headers now centered, bold, underlined, and red for better visibility
+    - Better visual separation between families
+  - Improved family totals formatting:
+    - Bold, underlined family totals with better spacing
+    - Improved color coding (blue for totals)
+    - Better spacing between families
+  - Enhanced footer section:
+    - Added "TOTAL FOR PERIOD" header (centered, bold, blue)
+    - Bold, underlined total row with better color coding
+    - Clearer visual emphasis on final totals
+  - Better visual organization:
+    - Consistent use of centered section headers
+    - Better color coding throughout
+    - Cleaner layout without excessive formatting
+    - Professional appearance suitable for business documentation
+  - Maintains all existing functionality while significantly improving visual clarity
+  - **Files modified**: `main/ui/system_salesmix.cc`
+
 ### Fixed
 - **Build System Compilation Errors and Warnings (12-13-2025)**
   - Fixed critical build failures caused by compiler warnings being treated as errors
