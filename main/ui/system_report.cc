@@ -2284,16 +2284,16 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine();
     report->Mode(0);
     
-    report->TextPosL(3, GlobalTranslate("Gross Sales (Before Adjustments)"));
+    report->TextPosL(3, GlobalTranslate("Gross Sales"));
     report->TextPosR(0, term->FormatPrice(total_sales), col);
     report->NewLine();
     
-    report->TextPosL(3, GlobalTranslate("Total Adjustments (Comps/Discounts)"));
+    report->TextPosL(3, GlobalTranslate("Adjustments"));
     report->TextPosR(0, term->FormatPrice(-total_adjust), COLOR_DK_RED);
     report->NewLine();
     
     report->Mode(PRINT_BOLD);
-    report->TextPosL(3, GlobalTranslate("Net Sales (After Adjustments)"));
+    report->TextPosL(3, GlobalTranslate("Net Sales"));
     report->TextPosR(0, term->FormatPrice(net_sales), COLOR_DK_GREEN);
     report->Mode(0);
     report->NewLine();
@@ -2303,7 +2303,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->NewLine();
     
     report->Mode(PRINT_BOLD);
-    report->TextPosL(3, GlobalTranslate("Net Receipts (Net Sales + Tax)"));
+    report->TextPosL(3, GlobalTranslate("Net Receipts"));
     report->TextPosR(0, term->FormatPrice(net_receipts), COLOR_DK_GREEN);
     report->Mode(0);
     report->UnderlinePosR(0, 7, COLOR_DK_GREEN);
@@ -2407,11 +2407,11 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
 
     // Adjustments
     report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("ADJUSTMENTS & NON-CASH RECEIPTS"), COLOR_DK_RED);
+    report->TextL(GlobalTranslate("ADJUSTMENTS"), COLOR_DK_RED);
     report->NewLine();
     report->Mode(0);
     report->Divider('-');
-    report->TextL(GlobalTranslate("Non-Cash Receipts (Reductions to Sales):"), COLOR_DK_RED);
+    report->TextL(GlobalTranslate("Non-Cash Adjustments:"), COLOR_DK_RED);
     report->NewLine();
 
     MediaList *mediacomp = &complist;
@@ -2542,7 +2542,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->Mode(0);
     report->Divider('-');
     
-    report->TextL(GlobalTranslate("Book Balance (Expected Receipts):"));
+    report->TextL(GlobalTranslate("Expected Receipts Breakdown:"));
     report->NewLine();
     report->TextPosL(6, GlobalTranslate("Net Sales"));
     report->TextPosR(-6, term->FormatPrice(net_sales), col);
@@ -2557,14 +2557,14 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     // This represents what we should account for based on all transactions
     int calculated_book_balance = total_sales + total_tax - total_adjust + sub;
     report->Mode(PRINT_BOLD);
-    report->TextPosL(3, GlobalTranslate("Total Receipts To Account For"));
+    report->TextPosL(3, GlobalTranslate("Expected Receipts"));
     report->TextPosR(0, term->FormatPrice(calculated_book_balance), COLOR_DK_BLUE);
     report->Mode(0);
     report->UnderlinePosR(0, 7, COLOR_DK_BLUE);
     report->NewLine(2);
 
     report->Mode(PRINT_BOLD);
-    report->TextL(term->Translate("ACTUAL DEPOSITS (Receipts Accounted For)"), COLOR_DK_BLUE);
+    report->TextL(term->Translate("ACTUAL DEPOSITS"), COLOR_DK_BLUE);
     report->NewLine();
     report->Mode(0);
 
@@ -2681,12 +2681,12 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     int reconciliation_diff = book_balance - actual_deposit;
     
     report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("RECONCILIATION SUMMARY"), COLOR_DK_BLUE);
+    report->TextL(GlobalTranslate("RECONCILIATION"), COLOR_DK_BLUE);
     report->NewLine();
     report->Mode(0);
     report->Divider('-');
     
-    report->TextL(GlobalTranslate("Book Balance (Expected)"));
+    report->TextL(GlobalTranslate("Expected Balance"));
     report->TextPosR(0, term->FormatPrice(book_balance), COLOR_DK_BLUE);
     report->NewLine();
     
@@ -2699,12 +2699,12 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
         report->Mode(PRINT_BOLD);
         if (reconciliation_diff > 0)
         {
-            report->TextL(GlobalTranslate("Variance (Expected > Actual)"));
+            report->TextL(GlobalTranslate("Shortfall"));
             report->TextPosR(0, term->FormatPrice(reconciliation_diff), COLOR_DK_RED);
         }
         else
         {
-            report->TextL(GlobalTranslate("Variance (Actual > Expected)"));
+            report->TextL(GlobalTranslate("Overage"));
             report->TextPosR(0, term->FormatPrice(-reconciliation_diff), COLOR_DK_GREEN);
         }
         report->Mode(0);
@@ -2712,7 +2712,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     else
     {
         report->Mode(PRINT_BOLD);
-        report->TextL(GlobalTranslate("Reconciliation Balanced"));
+        report->TextL(GlobalTranslate("Balanced"));
         report->TextPosR(0, term->FormatPrice(0), COLOR_DK_GREEN);
         report->Mode(0);
     }
@@ -2739,13 +2739,13 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
 
     // ===== FINAL DEPOSIT AMOUNTS =====
     report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("FINAL DEPOSIT AMOUNTS"), COLOR_DK_BLUE);
+    report->TextL(GlobalTranslate("FINAL DEPOSIT"), COLOR_DK_BLUE);
     report->NewLine();
     report->Mode(0);
     
     if (settings.authorize_method == CCAUTH_NONE)
     {
-        report->TextPosL(3, GlobalTranslate("Total Deposit: Cash, Checks, Cards"));
+        report->TextPosL(3, GlobalTranslate("Deposit Total"));
         report->TextPosR(0, term->FormatPrice(cash + check + total_credit - tips_held), COLOR_DK_BLUE);
         report->Mode(PRINT_BOLD);
         report->UnderlinePosR(0, 7, COLOR_DK_BLUE);
