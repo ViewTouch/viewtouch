@@ -6,18 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
-### Fixed
-- **Texture Loading Visual Bugs Fix (2025-12-XX)**
-  - **Issue**: Visual bugs occurring due to textures not being loaded when needed
-  - **Solution**: Changed texture loading from lazy loading to preloading all textures at startup
-  - **Changes**:
-    - Added `preload_all_textures()` method to load all 34 textures at initialization
-    - Updated `MAX_TEXTURES_IN_MEMORY` to `IMAGE_COUNT` to ensure all textures can stay loaded
-    - Modified initialization to call `preload_all_textures()` instead of `preload_common_textures()`
-  - **Impact**: All textures are now available immediately, eliminating visual bugs from missing textures
-  - **Files modified**:
-    - `term/term_view.cc`: Added preload_all_textures() method and updated initialization
-
 ### Changed
 - **Editor Settings Button Split and Password Function Removal (2025-12-XX)**
   - **Split Editor Settings**: Separated "Editor Settings" functionality into two distinct buttons for better organization
@@ -439,6 +427,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `CMakeLists.txt`
 
 ### Removed
+- **Texture Loading System Removal (2025-12-XX)**
+  - **Removal**: Completely removed all texture loading and management systems
+  - **Implementation**:
+    - Removed `TextureManager` class with lazy loading, caching, LRU eviction, and adaptive cache sizing
+    - Removed `LoadPixmapFromFile()` function for file-based texture loading
+    - Removed global `texture_manager` instance and all preloading calls
+    - Removed texture file path resolution and fallback mechanisms
+    - Simplified `GetTexture()` to directly use `LoadPixmap()` with compiled-in `ImageData`
+  - **Impact**: Textures now load directly from compiled-in XPM data only. No file system access, caching, or management overhead. Simpler, more predictable texture loading behavior.
+  - **Files modified**:
+    - `term/term_view.cc`: Removed TextureManager class (~370 lines), LoadPixmapFromFile function, texture_manager instance, and all preloading logic. Simplified GetTexture() implementation.
+
 - **Page Variant System Removal (12-03-2025)**
   - **Removal**: Completely removed page variant functionality from the system
   - **Implementation**:
