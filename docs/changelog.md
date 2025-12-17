@@ -427,6 +427,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `CMakeLists.txt`
 
 ### Removed
+- **Texture Loading System Removal (2025-12-XX)**
+  - **Removal**: Completely removed all texture loading and management systems
+  - **Implementation**:
+    - Removed `TextureManager` class with lazy loading, caching, LRU eviction, and adaptive cache sizing
+    - Removed `LoadPixmapFromFile()` function for file-based texture loading
+    - Removed global `texture_manager` instance and all preloading calls
+    - Removed texture file path resolution and fallback mechanisms
+    - Simplified `GetTexture()` to directly use `LoadPixmap()` with compiled-in `ImageData`
+  - **Impact**: Textures now load directly from compiled-in XPM data only. No file system access, caching, or management overhead. Simpler, more predictable texture loading behavior.
+  - **Files modified**:
+    - `term/term_view.cc`: Removed TextureManager class (~370 lines), LoadPixmapFromFile function, texture_manager instance, and all preloading logic. Simplified GetTexture() implementation.
+
 - **Page Variant System Removal (12-03-2025)**
   - **Removal**: Completely removed page variant functionality from the system
   - **Implementation**:
