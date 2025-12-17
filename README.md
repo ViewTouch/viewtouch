@@ -56,6 +56,54 @@ ViewTouch is a powerful, open-source Point of Sale system designed specifically 
 
 ### Build from Source
 
+#### Installing Dependencies
+
+ViewTouch requires several system libraries and development tools. To check which dependencies are installed and get installation instructions, run:
+
+```bash
+# Using the wrapper script (recommended)
+./check_dependencies.sh
+
+# Or directly with CMake
+cmake -P cmake/install_dependencies.cmake
+```
+
+This script will:
+- Detect your Linux distribution
+- Check which dependencies are installed
+- Provide installation commands for missing packages
+
+**Quick install commands for common distributions:**
+
+**Debian/Ubuntu:**
+```bash
+sudo apt-get update && sudo apt-get install -y \
+    cmake build-essential git \
+    libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev \
+    libmotif-dev libfreetype6-dev libfontconfig1-dev zlib1g-dev \
+    libpng-dev libjpeg-dev libgif-dev pkg-config
+```
+
+**Fedora/RHEL/CentOS:**
+```bash
+sudo dnf install -y \
+    cmake gcc gcc-c++ make git \
+    libX11-devel libXft-devel libXmu-devel libXpm-devel libXrender-devel libXt-devel \
+    openmotif-devel freetype-devel fontconfig-devel zlib-devel \
+    libpng-devel libjpeg-devel giflib-devel pkgconfig
+```
+
+**Arch Linux:**
+```bash
+sudo pacman -S --noconfirm \
+    cmake base-devel git \
+    libx11 libxft libxmu libxpm libxrender libxt \
+    openmotif freetype2 fontconfig zlib \
+    libpng libjpeg-turbo giflib pkgconf
+```
+
+#### Building
+
 See the [Wiki](../../wiki) for detailed build instructions and development setup.
 
 ---
