@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.10)
 
 project(ViewTouch)
 message(STATUS "CMake version ${CMAKE_VERSION}")
+message(STATUS "")
+message(STATUS "ViewTouch Build Configuration")
+message(STATUS "==============================")
+message(STATUS "If you encounter missing dependency errors, run: ./check_dependencies.sh")
+message(STATUS "")
 
 # Default to an optimized build unless the user explicitly asks otherwise.
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -285,6 +290,15 @@ add_library(image_data STATIC
     src/core/image_data.cc src/core/image_data.hh)
 
 find_package(ZLIB REQUIRED)
+if(NOT ZLIB_FOUND)
+    message(FATAL_ERROR "\n"
+        "ZLIB library not found. Please install:\n"
+        "  Debian/Ubuntu: sudo apt-get install zlib1g-dev\n"
+        "  Fedora/RHEL:   sudo dnf install zlib-devel\n"
+        "  Arch Linux:    sudo pacman -S zlib\n"
+        "\n"
+        "Run './check_dependencies.sh' for a complete dependency check.\n")
+endif()
 target_link_libraries(conf_file PRIVATE ZLIB::ZLIB)
 
 set(VT_XLIBS X11)
@@ -292,6 +306,15 @@ find_package(${VT_XLIBS} REQUIRED)
 set(VT_XLIBS_INCLUDE_DIRS ${X11_INCLUDE_DIR})
 
 find_package(Motif REQUIRED) # Library Xm must be linked before Xmu
+if(NOT Motif_FOUND)
+    message(FATAL_ERROR "\n"
+        "Motif library not found. Please install:\n"
+        "  Debian/Ubuntu: sudo apt-get install libmotif-dev\n"
+        "  Fedora/RHEL:   sudo dnf install openmotif-devel\n"
+        "  Arch Linux:    sudo pacman -S openmotif\n"
+        "\n"
+        "Run './check_dependencies.sh' for a complete dependency check.\n")
+endif()
 list(APPEND VT_XLIBS ${MOTIF_LIBRARIES})
 list(APPEND VT_XLIBS_INCLUDE_DIRS ${MOTIF_INCLUDE_DIR})
 
@@ -307,11 +330,26 @@ if(DEFINED x11_missing_requirements)
     foreach(x11_lib_missing ${x11_missing_requirements})
         message(STATUS "X11: ${x11_lib_missing} library missing")
     endforeach()
-    message(FATAL_ERROR "Missing X library dependencies")
+    message(FATAL_ERROR "\n"
+        "Missing X library dependencies. Please install the required packages:\n"
+        "  Debian/Ubuntu: sudo apt-get install libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev\n"
+        "  Fedora/RHEL:   sudo dnf install libX11-devel libXft-devel libXmu-devel libXpm-devel libXrender-devel libXt-devel\n"
+        "  Arch Linux:    sudo pacman -S libx11 libxft libxmu libxpm libxrender libxt\n"
+        "\n"
+        "Run './check_dependencies.sh' for a complete dependency check and installation instructions.\n")
 endif()
 list(APPEND VT_XLIBS ${x11_required_libraries})
 
 find_package(Freetype REQUIRED)
+if(NOT Freetype_FOUND AND NOT TARGET Freetype::Freetype)
+    message(FATAL_ERROR "\n"
+        "Freetype library not found. Please install:\n"
+        "  Debian/Ubuntu: sudo apt-get install libfreetype6-dev\n"
+        "  Fedora/RHEL:   sudo dnf install freetype-devel\n"
+        "  Arch Linux:    sudo pacman -S freetype2\n"
+        "\n"
+        "Run './check_dependencies.sh' for a complete dependency check.\n")
+endif()
 if(TARGET Freetype::Freetype) # prefer target
 	list(APPEND VT_XLIBS Freetype::Freetype)
 else() # fall back to variables
@@ -321,6 +359,15 @@ endif()
 
 find_package(PkgConfig REQUIRED) # https://cmake.org/cmake/help/latest/module/FindPkgConfig.html
 pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
+if(NOT FONTCONFIG_FOUND)
+    message(FATAL_ERROR "\n"
+        "Fontconfig library not found. Please install:\n"
+        "  Debian/Ubuntu: sudo apt-get install libfontconfig1-dev\n"
+        "  Fedora/RHEL:   sudo dnf install fontconfig-devel\n"
+        "  Arch Linux:    sudo pacman -S fontconfig\n"
+        "\n"
+        "Run './check_dependencies.sh' for a complete dependency check.\n")
+endif()
 list(APPEND VT_XLIBS ${FONTCONFIG_LIBRARIES})
 list(APPEND VT_XLIBS_INCLUDE_DIRS ${FONTCONFIG_INCLUDE_DIRS})
 
