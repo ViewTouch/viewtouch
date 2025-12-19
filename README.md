@@ -226,6 +226,7 @@ ViewTouch does not manage electronic payment processing. Please make your own de
 <div align="center">
 
 **ViewTouch** - *Six decades of innovation in restaurant technology*
+## Be sure to reach out to our team for any questions, we are always happy to help.😊
 
 Made with ❤️ by the ViewTouch community
 
