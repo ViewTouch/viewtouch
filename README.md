@@ -35,6 +35,7 @@ ViewTouch is a powerful, open-source Point of Sale system designed specifically 
 
 ### Key Features
 
+- **Full High Definition Graphical Interface** - ViewTouch runs on (*requires*) displays with 1920 x 1080 resolution
 - **Lightning-fast performance** - Entire transaction history kept in RAM for instant reporting
 - **Network transparency** - Remote display capability via X Window System
 - **Comprehensive reporting** - Real-time drill-down analytics and decision support
@@ -56,7 +57,7 @@ ViewTouch is a powerful, open-source Point of Sale system designed specifically 
 
 #### Building
 
-See the [Wiki](../../wiki) for detailed build instructions and development setup.
+See the [Wiki](../../wiki) for detailed build instructions and development setup.  Make sure your display is 1920 x 1080.
 
 ---
 
@@ -75,7 +76,7 @@ Manufactured by Chipsee, Beijing, China
 </div>
 
 ViewTouch offers all-in-one Point of Sale computers featuring:
-- 15.8" capacitive touchscreen display (1920×1080 default resolution)
+- 15.8" capacitive touchscreen display (1920×1080 resolution, which is the required resolution for any display running ViewTouch)
 - Raspberry Pi 5 Compute Module
 - Pre-installed ViewTouch software
 - Network-ready for multi-terminal setups
@@ -90,7 +91,7 @@ Thanks to Pelya (Sergii Pylypenko) and Ariel Brambila Pelayo for ensuring that w
 
 ## Screenshots
 
-> *Screenshots shown in 1280×1024 resolution. Default resolution is 1920×1080.*
+> *Screenshots shown in 1280×1024 resolution, however, note that the Default (*required*) ViewTouch display resolution is 1920×1080 !*
 
 ### Time Clock and Secure Log On
 
