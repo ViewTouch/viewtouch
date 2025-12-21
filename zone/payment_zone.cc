@@ -662,6 +662,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
         // now, just prevent undoing with authed credit cards.  This should
         // also be the case for the cancel message, but I haven't figured out
         // how to do that yet.
+    /* fallthrough */
     case 22:  // undoconfirmed
         if (current_payment != NULL)
         {

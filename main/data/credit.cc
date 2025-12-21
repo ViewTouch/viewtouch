@@ -2673,7 +2673,7 @@ CCBInfo::CCBInfo(const char* newname, int settype)
     FnTrace("CCBInfo::CCBInfo(const char* )");
 
     name.Set(newname);
-    settype = type;
+    type = settype; // assign provided type to member
     Clear();
 }
 

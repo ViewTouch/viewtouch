@@ -1879,7 +1879,7 @@ RenderResult RevenueGroupsZone::Render(Terminal *term, int update_flag)
     }
 
     if (update_flag)
-        ; // No clear_flag equivalent needed for this zone
+        { /* No clear_flag equivalent needed for this zone */ } // No clear_flag equivalent needed for this zone
 
     form_header = 0;
     if (name.size() > 0)
