@@ -207,7 +207,7 @@ public:
     int          AddPayment(Terminal *term, int ptype, int pid, int pflags, int pamount);
     int          Update(Terminal *term, int update_message, const genericChar* value);
     SalesItem   *Item(ItemDB *db);
-    const genericChar* TranslateString(Terminal *term) { return NULL; }
+    const genericChar* TranslateString(Terminal *term) { return nullptr; }
 
     Str *ItemName() { return &item_name; }
     Str *Script()   { return &modifier_script; }
@@ -233,7 +233,7 @@ public:
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
     int          Update(Terminal *term, int update_message, const genericChar* value);
-    const genericChar* TranslateString(Terminal *term) { return NULL; }
+    const genericChar* TranslateString(Terminal *term) { return nullptr; }
 
     int *QualifierType() { return &qualifier_type; }
     int *JumpType()      { return &jump_type; }

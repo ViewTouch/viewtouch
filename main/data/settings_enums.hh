@@ -166,7 +166,7 @@ inline auto GetAllTimeFormats() {
  * ---------------------------------------
  * const char* DrawerModeName[] = {
  *     GlobalTranslate("Trusted"), GlobalTranslate("Assigned"), 
- *     GlobalTranslate("Server Bank"), NULL};
+ *     GlobalTranslate("Server Bank"), nullptr};
  * int DrawerModeValue[] = {
  *     DRAWER_NORMAL, DRAWER_ASSIGNED, DRAWER_SERVER, -1};
  *
@@ -184,7 +184,7 @@ inline auto GetAllTimeFormats() {
  * ✅ No manual array maintenance
  * ✅ Type-safe conversions
  * ✅ Compile-time validation
- * ✅ No NULL terminators to forget
+ * ✅ No nullptr terminators to forget
  * ✅ Automatic JSON serialization
  * ✅ Better logging with vt::Logger
  */

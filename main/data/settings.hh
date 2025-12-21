@@ -410,7 +410,7 @@ public:
 
     CouponInfo *Next() { return next; }
     CouponInfo *Fore() { return fore; }
-    int Apply(SubCheck *subcheck, Payment *payment = NULL);
+    int Apply(SubCheck *subcheck, Payment *payment = nullptr);
     int Applies(SubCheck *subcheck, int aut = 0);
     int Applies(SalesItem *item, int aut = 0);
     int AppliesTime();
@@ -829,7 +829,7 @@ public:
     char* TenderName( int tender_type, int tender_id, genericChar* str );
     // returns text name of tender
     int LaborPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end);
-    int SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end, int period_view, TimeInfo *fiscal = NULL);
+    int SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end, int period_view, TimeInfo *fiscal = nullptr);
     // Calculates start & end of periods given reference time
     int OvertimeWeek(const TimeInfo &ref, TimeInfo &start, TimeInfo &end);
     // Calculates wage overtime week for given time
@@ -903,7 +903,7 @@ public:
 
     // term functions
     TermInfo *TermList() { return term_list.Head(); }
-    TermInfo *FindServer(const genericChar* displaystr = NULL);
+    TermInfo *FindServer(const genericChar* displaystr = nullptr);
     TermInfo *FindTerminal(const char* displaystr);
     TermInfo *FindTermByRecord(int record);
     int TermCount()      { return term_list.Count(); }

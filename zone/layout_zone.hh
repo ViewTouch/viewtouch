@@ -75,7 +75,7 @@ public:
     int LinePos(Terminal *t, Flt row, Flt line, Flt len,
                 int color = COLOR_DEFAULT);
 
-    int Entry(Terminal *t, Flt px, Flt py, Flt len, RegionInfo *place = NULL);
+    int Entry(Terminal *t, Flt px, Flt py, Flt len, RegionInfo *place = nullptr);
     int Button(Terminal *t, Flt px, Flt py, Flt len, int lit = 0);
     int Background(Terminal *t, Flt line, Flt h, int texture);
     int Raised(Terminal *t, Flt line, Flt h);

@@ -86,7 +86,7 @@ public:
     int Remove(TipEntry *te);
     int Purge();
     TipEntry *FindByUser(int id);
-    TipEntry *FindByRecord(int record, Employee *e = NULL);
+    TipEntry *FindByRecord(int record, Employee *e = nullptr);
     int CaptureTip(int user_id, int amount);
     int TransferTip(int user_id, int amount);
     int PayoutTip(int user_id, int amount);

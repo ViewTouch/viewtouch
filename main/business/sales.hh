@@ -201,7 +201,7 @@ public:
     int   price_type;     // price type (see above)
 
     // Constructor
-    SalesItem(const char* name = NULL);
+    SalesItem(const char* name = nullptr);
 
     // Member Functions
     Component *ComponentList() { return component_list.Head(); }

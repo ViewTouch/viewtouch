@@ -76,7 +76,7 @@ public:
     int Read(Str &val);
     int Read(TimeInfo &val);
 
-    // conditional reads (won't read if pointer is NULL)
+    // conditional reads (won't read if pointer is nullptr)
     int Read(int *val);
     int Read(Flt *val);
     int Read(Str *val);
@@ -125,7 +125,7 @@ public:
     int Write(Flt       val, int bk = 0);
     int Write(TimeInfo &val, int bk = 0);
 
-    // conditional writes (won't write if pointer is NULL)
+    // conditional writes (won't write if pointer is nullptr)
     int Write(int  *val, int bk = 0);
     int Write(const char* val, int bk = 0);
     int Write(Flt  *val, int bk = 0);

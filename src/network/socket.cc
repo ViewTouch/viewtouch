@@ -413,7 +413,7 @@ int Connect(const char* host, const char* service)
                     perror("setsockopt SO_SNDTIMEO");
                 }
                 
-                bzero(&servaddr, sizeof(servaddr));
+                memset(&servaddr, 0, sizeof(servaddr));
                 servaddr.sin_family = AF_INET;
                 servaddr.sin_port = sp->s_port;
                 memcpy(&servaddr.sin_addr, *pptr, sizeof(struct in_addr));
@@ -442,7 +442,7 @@ int Connect(const char* host, const char* service)
                     FD_ZERO(&write_fds);
                     FD_SET(sockfd, &write_fds);
                     
-                    int select_result = select(sockfd + 1, NULL, &write_fds, NULL, &timeout);
+                    int select_result = select(sockfd + 1, nullptr, &write_fds, nullptr, &timeout);
                     if (select_result > 0)
                     {
                         int error = 0;
@@ -520,7 +520,7 @@ int Connect(const char* host, int port)
                 perror("setsockopt SO_SNDTIMEO");
             }
             
-            bzero(&servaddr, sizeof(servaddr));
+            memset(&servaddr, 0, sizeof(servaddr));
             servaddr.sin_family = AF_INET;
             servaddr.sin_port = htons(port);
             memcpy(&servaddr.sin_addr, *pptr, sizeof(struct in_addr));
@@ -549,7 +549,7 @@ int Connect(const char* host, int port)
                 FD_ZERO(&write_fds);
                 FD_SET(sockfd, &write_fds);
                 
-                int select_result = select(sockfd + 1, NULL, &write_fds, NULL, &timeout);
+                int select_result = select(sockfd + 1, nullptr, &write_fds, nullptr, &timeout);
                 if (select_result > 0)
                 {
                     int error = 0;

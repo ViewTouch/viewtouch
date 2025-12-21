@@ -97,22 +97,22 @@ public:
     virtual int          Type() { return type; }
     virtual int          CustomerID() { return id; }
     virtual int          Guests(int set = -1);
-    virtual const genericChar* LastName(const char* set = NULL);
-    virtual const genericChar* FirstName(const char* set = NULL);
-    virtual const genericChar* Company(const char* set = NULL);
-    virtual const genericChar* PhoneNumber(const char* set = NULL);
-    virtual const genericChar* Extension(const char* set = NULL);
-    virtual const genericChar* Address(const char* set = NULL);
-    virtual const genericChar* Address2(const char* set = NULL);
-    virtual const genericChar* CrossStreet(const char* set = NULL);
-    virtual const genericChar* City(const char* set = NULL);
-    virtual const genericChar* State(const char* set = NULL);
-    virtual const genericChar* Postal(const char* set = NULL);
-    virtual const genericChar* License(const char* set = NULL);
-    virtual const genericChar* CCNumber(const char* set = NULL);
-    virtual const genericChar* CCExpire(const char* set = NULL);
-    virtual const genericChar* Comment(const char* set = NULL);
-    virtual const genericChar* Vehicle(const char* set = NULL);
+    virtual const genericChar* LastName(const char* set = nullptr);
+    virtual const genericChar* FirstName(const char* set = nullptr);
+    virtual const genericChar* Company(const char* set = nullptr);
+    virtual const genericChar* PhoneNumber(const char* set = nullptr);
+    virtual const genericChar* Extension(const char* set = nullptr);
+    virtual const genericChar* Address(const char* set = nullptr);
+    virtual const genericChar* Address2(const char* set = nullptr);
+    virtual const genericChar* CrossStreet(const char* set = nullptr);
+    virtual const genericChar* City(const char* set = nullptr);
+    virtual const genericChar* State(const char* set = nullptr);
+    virtual const genericChar* Postal(const char* set = nullptr);
+    virtual const genericChar* License(const char* set = nullptr);
+    virtual const genericChar* CCNumber(const char* set = nullptr);
+    virtual const genericChar* CCExpire(const char* set = nullptr);
+    virtual const genericChar* Comment(const char* set = nullptr);
+    virtual const genericChar* Vehicle(const char* set = nullptr);
     virtual int          Search(const char* word);
 };
 
@@ -138,7 +138,7 @@ public:
     CustomerInfo *CustomerListEnd()               { return customers.Tail(); }
 
     int           Count();
-    int           Save(const genericChar* filepath = NULL);
+    int           Save(const genericChar* filepath = nullptr);
     int           Save(CustomerInfo *customer);
     int           Load(const genericChar* filepath);
     CustomerInfo *NewCustomer(int customer_type);

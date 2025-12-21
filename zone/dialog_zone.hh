@@ -67,7 +67,7 @@ public:
     Str message;
     int color;
 
-    ButtonObj(const char* text, const genericChar* message = NULL);
+    ButtonObj(const char* text, const genericChar* message = nullptr);
 
     int Render(Terminal *term);
     int SetLabel(const char* newlabel) { return label.Set(newlabel); }
@@ -103,7 +103,7 @@ public:
     SignalResult Touch(Terminal *term, int tx, int ty);
     SignalResult Mouse(Terminal *term, int action, int mx, int my);
 
-    ButtonObj *Button(const char* text, const genericChar* message = NULL);
+    ButtonObj *Button(const char* text, const genericChar* message = nullptr);
     int ClosingAction(int action_type, int action, int arg);
     int ClosingAction(int action_type, int action, const char* message);
     int SetAllActions(DialogZone *dest);
@@ -318,18 +318,18 @@ class CreditCardDialog : public DialogZone
     Credit    *saved_credit;
 
     void  Init(Terminal *term, SubCheck *subch, const char* swipe_value);
-    const char* SetMessage(Terminal *term, const char* msg1, const char* msg2 = NULL);
+    const char* SetMessage(Terminal *term, const char* msg1, const char* msg2 = nullptr);
 
 public:
     CreditCardDialog();
-    CreditCardDialog(Terminal *term, const char* swipe_value = NULL);
-    CreditCardDialog(Terminal *term, SubCheck *subch, const char* swipe_value = NULL);
+    CreditCardDialog(Terminal *term, const char* swipe_value = nullptr);
+    CreditCardDialog(Terminal *term, SubCheck *subch, const char* swipe_value = nullptr);
     CreditCardDialog(Terminal *term, int action, const char* message);
 
     int          Type() { return ZONE_DLG_CREDIT; }
     RenderResult Render(Terminal *term, int update_flag);
     SignalResult Touch(Terminal *term, int tx, int ty);
-    int          SetAction(Terminal *term, int action, const char* msg1, const char* msg2 = NULL);
+    int          SetAction(Terminal *term, int action, const char* msg1, const char* msg2 = nullptr);
     int          ClearAction(Terminal *term, int all = 0);
     SignalResult Signal(Terminal *term, const genericChar* message);
     SignalResult Keyboard(Terminal *term, int my_key, int state);

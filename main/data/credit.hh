@@ -292,7 +292,7 @@ class Credit
     char* ReverseExpiry( char* expiry );
     int     ValidateCardInfo();
     int     CanPrintSignature();
-    int     ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter = NULL,
+    int     ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter = nullptr,
                          int print_amount = -1);
 
 public:
@@ -332,7 +332,7 @@ public:
     int            GetRefund(Terminal *term);
     int            GetRefundCancel(Terminal *term);
     int            PrintReceipt(Terminal *term, int receipt_type = RECEIPT_PICK,
-                                Printer *pprinter = NULL, int print_amount = -1);
+                                Printer *pprinter = nullptr, int print_amount = -1);
     int            IsEmpty();
     int            IsValid();
     int            IsVoiced();
@@ -368,7 +368,7 @@ public:
     int            SetCode(const char* set) { code.Set(set); return 0; }
     int            SetVerb(const char* set) { verb.Set(set); return 0; }
     int            SetAuth(const char* set) { auth.Set(set); return 0; }
-    int            SetBatch(long long set, const char* btermid = NULL);
+    int            SetBatch(long long set, const char* btermid = nullptr);
     int            SetItem(long set) { item = set; return 0; }
     int            SetTTID(long set) { ttid = set; return 0; }
     int            SetAVS(const char* set) { AVS.Set(set); return 0; }
@@ -513,7 +513,7 @@ public:
     int       Next(Terminal *term);
     int       Fore(Terminal *term);
     CCSettle *Last();
-    int       Add(Terminal *term, const char* message = NULL);
+    int       Add(Terminal *term, const char* message = nullptr);
     int       Add(Check *check);
     CCSettle *Copy();
     void      Clear();

@@ -144,8 +144,8 @@ int ReportError(const std::string &message); // error logging & reporting functi
 int ReportLoader(const char* message);     // gives a message to the loader program if it is still active
 
 char* PriceFormat(const Settings* s, int price, int use_sign, int use_comma,
-                  genericChar* buffer = NULL); // formats price into string
-int ParsePrice(const char* source, int *val = NULL); // returns price value from given string
+                  genericChar* buffer = nullptr); // formats price into string
+int ParsePrice(const char* source, int *val = nullptr); // returns price value from given string
 
 // Load/Save system pages & default system data - 'vt_data' file
 // (i.e. information specific to all pos systems)
