@@ -1256,12 +1256,12 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     }
     
     Employee *employee = sys->user_db.FindByID(user_owner);
-    genericChar str[STRLENGTH];
-    genericChar str1[STRLENGTH];
-    genericChar str2[STRLENGTH];
-    genericChar cststr[STRLENGTH];
-    genericChar ordstr[STRLENGTH];
-    genericChar tmpstr[STRLENGTH];
+    genericChar str[STRLENGTH] = {'\0'};
+    genericChar str1[STRLENGTH] = {'\0'};
+    genericChar str2[STRLENGTH] = {'\0'};
+    genericChar cststr[STRLENGTH] = {'\0'};
+    genericChar ordstr[STRLENGTH] = {'\0'};
+    genericChar tmpstr[STRLENGTH] = {'\0'};
     int pwidth = 80;
     int kitchen_mode = 0;
     if (rzone != nullptr)
