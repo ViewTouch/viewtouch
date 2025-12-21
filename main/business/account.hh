@@ -18,8 +18,8 @@
  * Account handling class objects
  */
 
-#ifndef _ACCOUNT_HH
-#define _ACCOUNT_HH
+#ifndef ACCOUNT_HH
+#define ACCOUNT_HH
 
 #include "terminal.hh"
 #include "utility.hh"

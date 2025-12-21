@@ -18,8 +18,8 @@
  * layout & formating of report information
  */
 
-#ifndef _REPORT_HH
-#define _REPORT_HH
+#ifndef REPORT_HH
+#define REPORT_HH
 
 #include "utility.hh"
 #include "terminal.hh"

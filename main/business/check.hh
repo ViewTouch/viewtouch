@@ -18,8 +18,8 @@
  * Definition of check management classes
  */
 
-#ifndef _CHECK_HH
-#define _CHECK_HH
+#ifndef CHECK_HH
+#define CHECK_HH
 
 #include "utility.hh"
 #include "list_utility.hh"

@@ -18,8 +18,8 @@
  * General system settings
  */
 
-#ifndef _SETTINGS_HH
-#define _SETTINGS_HH
+#ifndef SETTINGS_HH
+#define SETTINGS_HH
 
 #include "utility.hh"
 #include "list_utility.hh"

@@ -18,8 +18,8 @@
  * Raw Product, Receipe & Vendor data bases
  */
 
-#ifndef _INVENTORY_HH
-#define _INVENTORY_HH
+#ifndef INVENTORY_HH
+#define INVENTORY_HH
 
 #include "utility.hh"
 #include "list_utility.hh"

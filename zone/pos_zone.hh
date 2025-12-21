@@ -18,8 +18,8 @@
  * Definition of zone types & other zone data
  */
 
-#ifndef _POS_ZONE_HH
-#define _POS_ZONE_HH
+#ifndef POS_ZONE_HH
+#define POS_ZONE_HH
 
 #include "zone.hh"
 

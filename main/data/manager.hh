@@ -19,8 +19,8 @@
  * Standard POS utility functions
  */
 
-#ifndef _MANAGER_HH
-#define _MANAGER_HH
+#ifndef MANAGER_HH
+#define MANAGER_HH
 
 #include "utility.hh"
 #include "list_utility.hh"

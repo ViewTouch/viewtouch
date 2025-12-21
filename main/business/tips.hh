@@ -18,8 +18,8 @@
  * Handeling of captured tips and tip payout
  */
 
-#ifndef _TIPS_HH
-#define _TIPS_HH
+#ifndef TIPS_HH
+#define TIPS_HH
 
 #include "utility.hh"
 #include "list_utility.hh"

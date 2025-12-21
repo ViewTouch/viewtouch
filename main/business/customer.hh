@@ -18,8 +18,8 @@
  * Implementation of customer infomation module
  */
 
-#ifndef _CUSTOMER_HH
-#define _CUSTOMER_HH
+#ifndef CUSTOMER_HH
+#define CUSTOMER_HH
 
 #include "list_utility.hh"
 #include "utility.hh"

@@ -18,8 +18,8 @@
  * Data storage & report generation for current/previous business days
  */
 
-#ifndef _SYSTEM_HH
-#define _SYSTEM_HH
+#ifndef SYSTEM_HH
+#define SYSTEM_HH
 
 #include "tips.hh"
 #include "labor.hh"
