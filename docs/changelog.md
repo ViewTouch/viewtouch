@@ -57,6 +57,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `main/ui/system_salesmix.cc`
 
 ### Fixed
+- **Clang-tidy & static analysis fixes (12-21-2025)**
+  - Fixed multiple functional and safety issues reported by clang-tidy and clang-analyzer; focused on bugprone and analyzer findings.
+  - Key fixes:
+    - **Header guards:** removed leading-underscore reserved identifiers in ~27 headers (e.g. `check.hh`, `account.hh`, `customer.hh`, `employee.hh`, `inventory.hh`, `zone/zone.hh`).
+    - **Null pointer modernisation:** replaced 140+ occurrences of `NULL` with `nullptr` across headers and sources for type safety.
+    - **Deprecated API removal:** replaced `bzero()` calls with `memset()` in `src/network/socket.cc`.
+    - **Uninitialized data:** initialized local character buffers in `Check::PrintWorkOrder()` (`main/business/check.cc`) to avoid potential undefined reads.
+    - **Rounding correctness:** replaced `(value + 0.5)` integer casts with `lround()` and added `#include <cmath>` for correct rounding semantics.
+    - **Tooling:** added a `.clang-tidy` configuration to focus analysis on functional bug checks (clang-analyzer, bugprone, performance).
+    - **Testing:** build verified clean and unit tests run: **39/40 passing** (one pre-existing logging test failure unrelated to these fixes).
+  - Representative files modified: `main/business/check.cc`, `src/network/socket.cc`, various headers under `main/`, `src/`, and `zone/`, and `.clang-tidy`.
+
+### Fixed
 - **Build System Compilation Errors and Warnings (12-13-2025)**
   - Fixed critical build failures caused by compiler warnings being treated as errors
   - Disabled problematic GCC warnings that were causing false-positive build failures:
