@@ -93,7 +93,7 @@ public:
     int             Read(InputDataFile &infile, int version);
     int             Write(OutputDataFile &outfile, int version);
     int             Load(const char* path);
-    int             Save(const char* path = NULL);
+    int             Save(const char* path = nullptr);
     int             RemoveBlank();
     int             Remove(CDUString *cdustr);
     CDUString      *GetString(int idx = -1);

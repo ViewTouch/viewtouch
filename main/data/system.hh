@@ -159,7 +159,7 @@ public:
     int SetDataPath(const char* path);
     // specify directory where system data is kept
     int CheckFileUpdates();
-    genericChar* FullPath(const char* filename, genericChar* buffer = NULL);
+    genericChar* FullPath(const char* filename, genericChar* buffer = nullptr);
     // returns string containing full filename for system datafile
     int LoadCurrentData(const char* path);
     // loads current day's data ('current' directory)
@@ -199,9 +199,9 @@ public:
     // adds check to current data
     int Remove(Check *check);
     // removes check from current check list (doesn't delete)
-    Check *FirstCheck(Archive *archive = NULL);
+    Check *FirstCheck(Archive *archive = nullptr);
     // returns first check of archive or current checks
-    int CountOpenChecks(Employee *e = NULL);
+    int CountOpenChecks(Employee *e = nullptr);
     // counts open checks owned by user (or by everyone)
     int NumberStacked(const char* table, Employee *e);
     // Returns number of open checks at tables
@@ -220,7 +220,7 @@ public:
     // adds drawer to current data
     int Remove(Drawer *drawer);
     // removes drawer from current drawer list (doesn't delete)
-    Drawer *FirstDrawer(Archive *archive = NULL);
+    Drawer *FirstDrawer(Archive *archive = nullptr);
     // returns first drawer of archive or current drawers
     Drawer *GetServerBank(Employee *e);
     // returns server bank for user (creates new one if needed)
@@ -234,11 +234,11 @@ public:
     // boolean - are all drawers pulled or balanced?
 
     // Exception functions
-    ItemException *FirstItemException(Archive *archive = NULL);
+    ItemException *FirstItemException(Archive *archive = nullptr);
     // returns first item exception of archive or current exceptions
-    TableException *FirstTableException(Archive *archive = NULL);
+    TableException *FirstTableException(Archive *archive = nullptr);
     // returns first table exception of archive or current exceptions
-    RebuildException *FirstRebuildException(Archive *archive = NULL);
+    RebuildException *FirstRebuildException(Archive *archive = nullptr);
     // returns first rebuild exception of archive or current exceptions
 
     // report functions (see system_report.cc)

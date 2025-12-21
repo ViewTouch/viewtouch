@@ -225,7 +225,7 @@ std::string AdjustCaseAndSpacing(const std::string &str);
 
 int CompareList(const genericChar* val, const genericChar* list[], int unknown = -1);
 int CompareList(int   val, int   list[], int unknown = -1);
-// compares val with each item in list (NULL terminated or -1 terminated)
+// compares val with each item in list (nullptr terminated or -1 terminated)
 // returns index of match or 'unknown' for no match.
 
 int CompareListN(const genericChar* list[], const genericChar* str, int unknown = -1);
@@ -233,7 +233,7 @@ int CompareListN(const genericChar* list[], const genericChar* str, int unknown 
 // str="hello" will match list[0]="hello world".
 
 const char* FindStringByValue(int val, int val_list[], const genericChar* str_list[],
-                        const genericChar* unknown = NULL);
+                        const genericChar* unknown = nullptr);
 int   FindValueByString(const genericChar* val, int val_list[], const genericChar* str_list[],
                         int unknown = -1);
 // finds string by finding val index

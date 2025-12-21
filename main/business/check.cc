@@ -60,7 +60,7 @@
 
 static const genericChar* EmptyStr = "";
 
-const genericChar* CheckStatusName[] = { "Open", "Closed", "Voided", NULL };
+const genericChar* CheckStatusName[] = { "Open", "Closed", "Voided", nullptr };
 int CheckStatusValue[] = { CHECK_OPEN, CHECK_CLOSED, CHECK_VOIDED, -1 };
 
 int tender_order[] = {
@@ -696,7 +696,7 @@ int Check::SendWorkOrder(Terminal *term, int printer_target, int reprint)
     auto report = std::make_unique<Report>();
 
     Printer *printer = term->FindPrinter(printer_target);
-    int retval = PrintWorkOrder(term, report.get(), printer_target, reprint, NULL, printer);
+    int retval = PrintWorkOrder(term, report.get(), printer_target, reprint, nullptr, printer);
     if (report->is_complete && printer != nullptr && retval == 0)
         retval = report->FormalPrint(printer);
 
@@ -711,7 +711,7 @@ int Check::SendWorkOrder(Terminal *term, int printer_target, int reprint)
 	    if (altprinter && altprinter != printer)
 	    {
     		retval = PrintWorkOrder(term, report.get(), printer_target, reprint,
-				NULL, altprinter);
+				nullptr, altprinter);
     		if (report->is_complete && retval == 0)
         		retval = report->FormalPrint(altprinter);
 	    }
@@ -764,7 +764,7 @@ int Check::SetOrderStatus(SubCheck *subCheck, int set_status)
         if (all_subchecks == 1)
             subCheck = subCheck->next;
         else
-            subCheck = NULL;
+            subCheck = nullptr;
     }
 
     return change;
@@ -813,7 +813,7 @@ int Check::ClearOrderStatus(SubCheck *subCheck, int clear_status)
         if (all_subchecks == 1)
             subCheck = subCheck->next;
         else
-            subCheck = NULL;
+            subCheck = nullptr;
     }
 
     return change;
@@ -824,7 +824,7 @@ int Check::FinalizeOrders(Terminal *term, int reprint)
     FnTrace("Check::FinalizeOrders()");
     Settings *settings = &MasterSystem->settings;
     SubCheck *subCheck = SubList();
-    Printer *printer = NULL;
+    Printer *printer = nullptr;
     int change = 0;
     int result = 0;
 
@@ -889,7 +889,7 @@ int Check::Settle(Terminal *term)
     if (e == nullptr)
         return 1;
 
-    Drawer *d = NULL;
+    Drawer *d = nullptr;
     if (! IsTraining())
     {
         d = term->FindDrawer();
@@ -926,7 +926,7 @@ int Check::Close(Terminal *term)
         return 1;
     }
 
-    Drawer *d = NULL;
+    Drawer *d = nullptr;
     if (!IsTraining())
     {
         d = term->FindDrawer();
@@ -1651,9 +1651,9 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
     FnTrace("Check::PrintDeliveryOrder()");
     int       retval = 0;
     Settings *settings = &MasterSystem->settings;
-    SubCheck *subcheck = NULL;
-    Order    *order = NULL;
-    Employee *employee = NULL;
+    SubCheck *subcheck = nullptr;
+    Order    *order = nullptr;
+    Employee *employee = nullptr;
     char      ordstr[STRLONG] = "";
     [[maybe_unused]] char      tmpstr[STRLONG] = "";  // Reserved for future use
     char      str1[STRLONG] = "";
@@ -2301,7 +2301,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
 
         if (video_target == PRINTER_DEFAULT)
         {
-            Drawer *d = NULL;
+            Drawer *d = nullptr;
             if (archive && archive->DrawerList())
                 d = archive->DrawerList()->FindBySerial(sc->drawer_id);
             else if (sys && sys->DrawerList())
@@ -2647,8 +2647,8 @@ SubCheck *Check::NextOpenSubCheck(SubCheck *sc)
         sc = current_sub;
     if (sc == nullptr || SubList() == nullptr)
     {
-        current_sub = NULL;
-        return NULL;
+        current_sub = nullptr;
+        return nullptr;
     }
 
     int loop = 0;
@@ -2661,8 +2661,8 @@ SubCheck *Check::NextOpenSubCheck(SubCheck *sc)
             // page.  If we just keep looping from check to check, always
             // returning to the beginning, then we'll never get back to
             // the table page.  So if we're at the last subcheck in the
-            // list, return NULL;
-            return NULL;
+            // list, return nullptr;
+            return nullptr;
         }
         else
         {
@@ -2681,24 +2681,24 @@ SubCheck *Check::NextOpenSubCheck(SubCheck *sc)
     }
     while (loop < 2);
 
-    current_sub = NULL;
-    return NULL;
+    current_sub = nullptr;
+    return nullptr;
 }
 
 TimeInfo *Check::TimeClosed()
 {
     FnTrace("Check::TimeClosed()");
-    SubCheck *best = NULL;
+    SubCheck *best = nullptr;
     for (SubCheck *sc = SubList(); sc != nullptr; sc = sc->next)
     {
         if (sc->status == CHECK_OPEN)
-            return NULL;
+            return nullptr;
         if (best == nullptr || best->settle_time < sc->settle_time)
             best = sc;
     }
 
     if (best == nullptr)
-        return NULL;
+        return nullptr;
     else
         return &best->settle_time;
 }
@@ -3281,7 +3281,7 @@ SubCheck *SubCheck::Copy(Settings *settings)
     FnTrace("SubCheck::Copy(Settings)");
     SubCheck *sc = new SubCheck();
     if (sc == nullptr)
-        return NULL;
+        return nullptr;
 
     sc->status         = status;
     sc->number         = number;
@@ -3483,7 +3483,7 @@ int SubCheck::Write(OutputDataFile &outfile, int version)
 int SubCheck::Add(Order *order, Settings *settings)
 {
     FnTrace("SubCheck::Add(Order, Settings)");
-    Order *ptr = NULL;
+    Order *ptr = nullptr;
     int added = 0;
 
     if (order == nullptr)
@@ -3645,7 +3645,7 @@ int SubCheck::Purge(int restore)
                     delete paymnt->credit;
                 else
                     MasterSystem->cc_exception_db->Add(paymnt->credit);
-                paymnt->credit = NULL;
+                paymnt->credit = nullptr;
             }
             paymnt = paymnt->next;
         }
@@ -3668,7 +3668,7 @@ Order *SubCheck::RemoveCount(Order *order, int count)
 	FnTrace("SubCheck::RemoveCount()");
 
 	if (order == nullptr)
-		return NULL;
+		return nullptr;
 
 	if (order->count > count)
 	{
@@ -3715,7 +3715,7 @@ int SubCheck::CancelPayments(Terminal *term)
     int change = 0;
     Payment *payptr = PaymentList();
     Settings *settings = term->GetSettings();
-    Credit *credit = NULL;  // just to save some typing
+    Credit *credit = nullptr;  // just to save some typing
 
     while (payptr)
     {
@@ -3777,8 +3777,8 @@ int SubCheck::FigureTotals(Settings *settings)
 {
     FnTrace("SubCheck::FigureTotals()");
     DList<Payment> coupons;
-    Payment *discount = NULL; // ptr to discount payment
-    Payment *gratuity = NULL; // ptr to auto gratuity amount
+    Payment *discount = nullptr; // ptr to discount payment
+    Payment *gratuity = nullptr; // ptr to auto gratuity amount
     Order *order;
     CouponInfo *coupon;
     int max_change = 0;
@@ -4465,7 +4465,7 @@ int SubCheck::SettleTab(Terminal *term, int payment_type, int /*payment_id*/, in
 {
     FnTrace("SubCheck::SettleTab()");
     int retval = 0;
-    Payment *paymnt = NULL;
+    Payment *paymnt = nullptr;
 
     if (payment_type == TENDER_CREDIT_CARD || payment_type == TENDER_DEBIT_CARD)
         return retval;
@@ -4726,7 +4726,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 		else
 			vt_safe_string::safe_format(str1, 64, "%s %d", term->Translate("Drawer"), drawer->number);
 
-		Employee *cashier = NULL;
+		Employee *cashier = nullptr;
 		if (settle_user > 0)
 			cashier = sys->user_db.FindByID(settle_user);
 		else
@@ -4818,7 +4818,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     if (pennies)
         tc += -pennies->amount;
 
-    Payment *pay = NULL;
+    Payment *pay = nullptr;
     // check for and print coupons, discounts, and comps
     if (PaymentList())
     {
@@ -5157,7 +5157,7 @@ Order *SubCheck::LastOrder(int seat)
             else
                 return order;
         }
-    return NULL;
+    return nullptr;
 }
 
 Order *SubCheck::LastParentOrder(int seat)
@@ -5169,7 +5169,7 @@ Order *SubCheck::LastParentOrder(int seat)
             // (parent) order found - no need to search for its last modifier
             return order;
         }
-    return NULL;
+    return nullptr;
 }
 
 int SubCheck::TotalTip()
@@ -5276,7 +5276,7 @@ Payment *SubCheck::FindPayment(int ptype, int pid)
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 int SubCheck::TotalPayment(int ptype, int pid)
@@ -5317,7 +5317,7 @@ Order *SubCheck::FindOrder(int order_num, int seat)
 			}
 		}
     }
-	return NULL;
+	return nullptr;
 }
 
 int SubCheck::CompOrder(Settings *settings, Order *ptrOrder, int comp)
@@ -5430,7 +5430,7 @@ Credit *SubCheck::CurrentCredit()
     for (Payment *payptr = PaymentList(); payptr != nullptr; payptr = payptr->next)
         if (payptr->credit)
             return payptr->credit;
-    return NULL;
+    return nullptr;
 }
 
 int SubCheck::IsEqual(SubCheck *sc)
@@ -5624,13 +5624,13 @@ Order::Order(Settings *settings, SalesItem *item, Terminal *term, int price)
     call_order      = item->call_order;
     allow_increase  = item->allow_increase;
     ignore_split    = item->ignore_split;
-    next            = NULL;
-    fore            = NULL;
-    parent          = NULL;
+    next            = nullptr;
+    fore            = nullptr;
+    parent          = nullptr;
     count           = 1;
     status          = 0;
     cost            = 0;
-    modifier_list   = NULL;
+    modifier_list   = nullptr;
     user_id         = 0;
     page_id         = 0;
     seat            = 0;
@@ -5667,13 +5667,13 @@ Order::Order(const genericChar* name, int price)
     call_order      = 4;
     allow_increase  = 1;
     ignore_split    = 0;
-    next            = NULL;
-    fore            = NULL;
-    parent          = NULL;
+    next            = nullptr;
+    fore            = nullptr;
+    parent          = nullptr;
     count           = 1;
     status          = 0;
     cost            = 0;
-    modifier_list   = NULL;
+    modifier_list   = nullptr;
     qualifier       = QUALIFIER_NONE;
     user_id         = 0;
     page_id         = 0;
@@ -5903,9 +5903,9 @@ int Order::Remove(Order *order)
         order->next->fore = order->fore;
     if (order->fore)
         order->fore->next = order->next;
-    order->next   = NULL;
-    order->fore   = NULL;
-    order->parent = NULL;
+    order->next   = nullptr;
+    order->fore   = nullptr;
+    order->parent = nullptr;
 
     FigureCost();
     return 0;
@@ -6344,7 +6344,7 @@ Payment *Payment::Copy()
     if (payptr == nullptr)
     {
         ReportError("Can't copy payment");
-        return NULL;
+        return nullptr;
     }
 
     payptr->value       = value;
@@ -6414,7 +6414,7 @@ genericChar* Payment::Description(Settings *settings, genericChar* str)
 
     if (tender_type == TENDER_CREDIT_CARD && credit != nullptr)
     {
-        vt_safe_string::safe_format(str, 128, "Credit Card (%s)", credit->CreditTypeName(NULL, 1));
+        vt_safe_string::safe_format(str, 128, "Credit Card (%s)", credit->CreditTypeName(nullptr, 1));
         return str;
     }
 
