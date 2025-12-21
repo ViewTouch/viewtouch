@@ -683,7 +683,7 @@ int SMTP(int fd, Email *email)
         }
         // add from address to message body
         snprintf(outgoing, STRLONG, "From: %s\n", buffer);
-        strncat(body, outgoing, STRLONG);
+        vt_safe_string::safe_concat(body, sizeof(body), outgoing);
         
         // write each of the to addresses
         while (email->NextTo(buffer, STRLONG) == 0)
@@ -693,7 +693,7 @@ int SMTP(int fd, Email *email)
             response = GetResponse(fd, responsestr, STRLONG);
             // add the to address to the message body
             snprintf(outgoing, STRLONG, "To: %s\n", buffer);
-            strncat(body, outgoing, STRLONG);
+            vt_safe_string::safe_concat(body, sizeof(body), outgoing);
         }
         
         // write the message

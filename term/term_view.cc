@@ -3829,7 +3829,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     // Create Window
     int n = 0;
     std::array<Arg, 16> args;
-    XtSetArg(args[n], "visual",       ScrVis); ++n;
+    XtSetArg(args[n], (String)"visual",       ScrVis); ++n;
     XtSetArg(args[n], XtNdepth,       ScrDepth); ++n;
     //XtSetArg(args[n], "mappedWhenManaged", False); ++n;
     XtSetArg(args[n], XtNx,           0); ++n;
@@ -3837,11 +3837,11 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     XtSetArg(args[n], XtNwidth,       WinWidth); ++n;
     XtSetArg(args[n], XtNheight,      WinHeight); ++n;
     XtSetArg(args[n], XtNborderWidth, 0); ++n;
-    XtSetArg(args[n], "minWidth",     WinWidth); ++n;
-    XtSetArg(args[n], "minHeight",    WinHeight); ++n;
-    XtSetArg(args[n], "maxWidth",     WinWidth); ++n;
-    XtSetArg(args[n], "maxHeight"   , WinHeight); ++n;
-    XtSetArg(args[n], "mwmDecorations", 0); ++n;
+    XtSetArg(args[n], (String)"minWidth",     WinWidth); ++n;
+    XtSetArg(args[n], (String)"minHeight",    WinHeight); ++n;
+    XtSetArg(args[n], (String)"maxWidth",     WinWidth); ++n;
+    XtSetArg(args[n], (String)"maxHeight"   , WinHeight); ++n;
+    XtSetArg(args[n], (String)"mwmDecorations", 0); ++n;
 
     MainShell = XtAppCreateShell("POS", "viewtouch",
                                  applicationShellWidgetClass, Dis, args.data(), n);

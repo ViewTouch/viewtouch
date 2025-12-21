@@ -153,6 +153,7 @@ int AccountZone::SaveRecord(Terminal *term, int my_record_no, int write_file)
     int acct_no = 0;
 
     FnTrace("AccountZone::SaveRecord()");
+    (void)my_record_no;
     if (account != NULL)
     {
         FormField *field = FieldList();
