@@ -44,6 +44,7 @@
 #include <dirent.h>
 #include <sys/file.h>
 #include <cstring>
+#include <cmath>
 #include <list>
 #include <ctime>
 #include <memory>
@@ -4097,16 +4098,16 @@ int SubCheck::FigureTotals(Settings *settings)
                 per = 10000;
 
             Flt f = (Flt) food_discount * (1.0 - PercentToFlt(per));
-            food_sales += (int) (f + .5);
+            food_sales += static_cast<int>(lround(f));
 
             f = (Flt) alcohol_discount * (1.0 - PercentToFlt(per));
-            alcohol_sales += (int) (f + .5);
+            alcohol_sales += static_cast<int>(lround(f));
 
             f = (Flt) room_discount * (1.0 - PercentToFlt(per));
-            room_sales += (int) (f + .5);
+            room_sales += static_cast<int>(lround(f));
 
             f = (Flt) merchandise_discount * (1.0 - PercentToFlt(per));
-            merchandise_sales += (int) (f + .5);
+            merchandise_sales += static_cast<int>(lround(f));
 
             discount->value =
 				((food_no_discount + food_discount) - food_sales) +
@@ -4246,9 +4247,9 @@ int SubCheck::FigureTotals(Settings *settings)
         if (current_tax_revenue > 0)
         {
             // Distribute fees proportionally across all revenue bases
-            int fee_to_food = (int)((Flt)credit_card_fee_total * (Flt)food_tax_revenue / (Flt)current_tax_revenue + 0.5);
-            int fee_to_alcohol = (int)((Flt)credit_card_fee_total * (Flt)alcohol_tax_revenue / (Flt)current_tax_revenue + 0.5);
-            int fee_to_room = (int)((Flt)credit_card_fee_total * (Flt)room_tax_revenue / (Flt)current_tax_revenue + 0.5);
+            int fee_to_food = static_cast<int>(lround((Flt)credit_card_fee_total * (Flt)food_tax_revenue / (Flt)current_tax_revenue));
+            int fee_to_alcohol = static_cast<int>(lround((Flt)credit_card_fee_total * (Flt)alcohol_tax_revenue / (Flt)current_tax_revenue));
+            int fee_to_room = static_cast<int>(lround((Flt)credit_card_fee_total * (Flt)room_tax_revenue / (Flt)current_tax_revenue));
             int fee_to_merchandise = credit_card_fee_total - fee_to_food - fee_to_alcohol - fee_to_room;
             
             food_tax_revenue += fee_to_food;
@@ -5601,7 +5602,7 @@ static int adjust_cost(int cost, Flt tax, int type, Settings *settings, Terminal
 		inclusive = settings->tax_inclusive[type]; 	// use global default
     if (inclusive)
         //return int(cost/(1.0+tax) + tax);			// for round-up
-        return int(cost/(1.0+tax) + 0.5);			// for rounding
+        return static_cast<int>(lround(cost/(1.0+tax)));	// for rounding
     return cost;
 }
 
