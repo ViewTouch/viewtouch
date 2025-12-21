@@ -427,6 +427,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `CMakeLists.txt`
 
 ### Removed
+- **Reverse SSH Tunnel Removal (2025-12-21)**
+  - **Removal**: Removed the Reverse SSH subsystem (service implementation, standalone daemon, management scripts, systemd unit, configuration files, and documentation).
+  - **Notes**: Also removed related settings fields and build/install rules; implementation relied on the system OpenSSH client and was removed to simplify the codebase.
 - **Texture Loading System Removal (2025-12-XX)**
   - **Removal**: Completely removed all texture loading and management systems
   - **Implementation**:
