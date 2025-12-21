@@ -18,8 +18,8 @@
  * Record of voids/comps and other system changes
  */
 
-#ifndef _EXCEPTION_HH
-#define _EXCEPTION_HH
+#ifndef EXCEPTION_HH
+#define EXCEPTION_HH
 
 #include "utility.hh"
 #include "list_utility.hh"

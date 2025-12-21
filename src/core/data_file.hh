@@ -19,8 +19,8 @@
  * Functions for the reading & writing of data files
  */
 
-#ifndef _DATA_FILE_HH
-#define _DATA_FILE_HH
+#ifndef DATA_FILE_HH
+#define DATA_FILE_HH
 
 #include "utility.hh"
 

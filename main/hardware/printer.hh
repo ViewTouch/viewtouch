@@ -18,8 +18,8 @@
  * Definition of printer device class
  */
 
-#ifndef _PRINTER_HH
-#define _PRINTER_HH
+#ifndef PRINTER_HH
+#define PRINTER_HH
 
 #include "utility.hh"
 

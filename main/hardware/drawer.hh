@@ -18,8 +18,8 @@
  * Drawer balance, report, use classes
  */
 
-#ifndef _DRAWER_HH
-#define _DRAWER_HH
+#ifndef DRAWER_HH
+#define DRAWER_HH
 
 #include "utility.hh"
 #include "list_utility.hh"

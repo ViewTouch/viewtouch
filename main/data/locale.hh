@@ -18,8 +18,8 @@
  * Phrase lookup/translation & local conventions module
  */
 
-#ifndef _LOCALE_HH
-#define _LOCALE_HH
+#ifndef LOCALE_HH
+#define LOCALE_HH
 
 #include "data_file.hh"
 #include "utility.hh"

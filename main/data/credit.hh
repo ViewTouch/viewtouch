@@ -18,8 +18,8 @@
  * Credit/charge card verification/authorization
  */
 
-#ifndef _CREDIT_HH
-#define _CREDIT_HH
+#ifndef CREDIT_HH
+#define CREDIT_HH
 
 #include "list_utility.hh"
 #include "printer.hh"

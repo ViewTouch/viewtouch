@@ -18,8 +18,8 @@
  * base class zone object for display layout
  */
 
-#ifndef _LAYOUT_ZONE_HH
-#define _LAYOUT_ZONE_HH
+#ifndef LAYOUT_ZONE_HH
+#define LAYOUT_ZONE_HH
 
 #include "pos_zone.hh"
 #include "terminal.hh"

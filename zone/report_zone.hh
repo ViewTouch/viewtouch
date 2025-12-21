@@ -18,8 +18,8 @@
  * Definition of report information display zone
  */
 
-#ifndef _REPORT_ZONE_HH
-#define _REPORT_ZONE_HH
+#ifndef REPORT_ZONE_HH
+#define REPORT_ZONE_HH
 
 #include "layout_zone.hh"
 #include "report.hh"

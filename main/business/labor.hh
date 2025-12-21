@@ -18,8 +18,8 @@
  * Work scheduling & time clock classes
  */
 
-#ifndef _LABOR_HH
-#define _LABOR_HH
+#ifndef LABOR_HH
+#define LABOR_HH
 
 #include "utility.hh"
 #include "list_utility.hh"

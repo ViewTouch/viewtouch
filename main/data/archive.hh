@@ -18,8 +18,8 @@
  * Data storage past business days
  */
 
-#ifndef _ARCHIVE_HH
-#define _ARCHIVE_HH
+#ifndef ARCHIVE_HH
+#define ARCHIVE_HH
 
 #include "tips.hh"
 #include "labor.hh"

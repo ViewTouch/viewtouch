@@ -18,8 +18,8 @@
  * Definitions of sale item classes
  */
 
-#ifndef _SALES_HH
-#define _SALES_HH
+#ifndef SALES_HH
+#define SALES_HH
 
 #include "utility.hh"
 #include "list_utility.hh"

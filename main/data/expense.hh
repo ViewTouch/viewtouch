@@ -28,8 +28,8 @@
 //  for one value per drawer.  Thus the current method which may, in
 //  the end, not work.
 
-#ifndef _EXPENSE_HH
-#define _EXPENSE_HH
+#ifndef EXPENSE_HH
+#define EXPENSE_HH
 
 #include "list_utility.hh"
 #include "utility.hh"

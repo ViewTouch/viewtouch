@@ -18,8 +18,8 @@
  * POS terminal state class
  */
 
-#ifndef _TERMINAL_HH
-#define _TERMINAL_HH
+#ifndef TERMINAL_HH
+#define TERMINAL_HH
 
 #include "cdu.hh"
 #include "credit.hh"
