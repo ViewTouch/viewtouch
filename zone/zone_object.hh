@@ -18,8 +18,8 @@
  * User Interfact componet objects
  */
 
-#ifndef _ZONE_OBJECT_HH
-#define _ZONE_OBJECT_HH
+#ifndef ZONE_OBJECT_HH
+#define ZONE_OBJECT_HH
 
 #include "utility.hh"
 #include "list_utility.hh"

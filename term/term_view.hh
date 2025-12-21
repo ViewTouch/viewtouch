@@ -6,8 +6,8 @@
  * Terminal Display module
  */
 
-#ifndef _TERM_VIEW_HH
-#define _TERM_VIEW_HH
+#ifndef TERM_VIEW_HH
+#define TERM_VIEW_HH
 
 #include "list_utility.hh"
 #include "utility.hh"
