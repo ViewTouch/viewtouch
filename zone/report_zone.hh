@@ -77,12 +77,12 @@ public:
     SignalResult Keyboard(Terminal *t, int key, int state) override;
     int          Update(Terminal *t, int update_message, const genericChar* value) override;
     int          State(Terminal *term) override;
-    int         *ReportType()        { return &report_type; }
-    int         *CheckDisplayNum()   { return &check_disp_num; }
-    int         *VideoTarget()       { return &video_target; }
-    int         *ReportPrint()       { return &print; }
-    Flt         *Spacing()           { return &spacing; }
-    int         *Columns()           { return &columns; }
+    int         *ReportType()        override { return &report_type; }
+    int         *CheckDisplayNum()   override { return &check_disp_num; }
+    int         *VideoTarget()       override { return &video_target; }
+    int         *ReportPrint()       override { return &print; }
+    Flt         *Spacing()           override { return &spacing; }
+    int         *Columns()           override { return &columns; }
     int          Page(int new_page)  { int old_page = page; page = new_page; return old_page; }
     int          BlinkState()       { return blink_state; }
 
@@ -113,7 +113,7 @@ public:
     SignalResult Touch(Terminal *t, int tx, int ty) override;
     SignalResult Keyboard(Terminal *t, int key, int state) override;
 
-    Str *FileName() { return &filename; }
+    Str *FileName() override { return &filename; }
 };
 
 #endif
