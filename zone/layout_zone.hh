@@ -47,10 +47,10 @@ public:
     LayoutZone();
 
     // Member Functions
-    virtual RenderResult Render(Terminal *t, int update_flag);
-    virtual SignalResult Touch(Terminal *t, int tx, int ty);
-    virtual int          SetSize(Terminal *t, int width, int height);
-    virtual int          ZoneStates() { return 1; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    int          SetSize(Terminal *t, int width, int height) override;
+    int          ZoneStates() override { return 1; }
 
     Flt TextWidth(Terminal *t, const genericChar* str, int len = 0);
     int SetMargins(int left, int right);
