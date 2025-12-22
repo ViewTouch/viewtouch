@@ -62,16 +62,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 - **Clang-tidy & static analysis fixes (12-21-2025)**
-  - Fixed multiple functional and safety issues reported by clang-tidy and clang-analyzer; focused on bugprone and analyzer findings.
-  - Key fixes:
-    - **Header guards:** removed leading-underscore reserved identifiers in ~27 headers (e.g. `check.hh`, `account.hh`, `customer.hh`, `employee.hh`, `inventory.hh`, `zone/zone.hh`).
-    - **Null pointer modernisation:** replaced 140+ occurrences of `NULL` with `nullptr` across headers and sources for type safety.
-    - **Deprecated API removal:** replaced `bzero()` calls with `memset()` in `src/network/socket.cc`.
-    - **Uninitialized data:** initialized local character buffers in `Check::PrintWorkOrder()` (`main/business/check.cc`) to avoid potential undefined reads.
-    - **Rounding correctness:** replaced `(value + 0.5)` integer casts with `lround()` and added `#include <cmath>` for correct rounding semantics.
-    - **Tooling:** added a `.clang-tidy` configuration to focus analysis on functional bug checks (clang-analyzer, bugprone, performance).
-    - **Testing:** build verified clean and unit tests run: **39/40 passing** (one pre-existing logging test failure unrelated to these fixes).
-  - Representative files modified: `main/business/check.cc`, `src/network/socket.cc`, various headers under `main/`, `src/`, and `zone/`, and `.clang-tidy`.
+  - Performed a focused `clang-tidy` and `clang-analyzer` triage and applied multiple correctness, safety, and style fixes across the codebase.
+  - Key actions:
+    - **Project config:** Added a project `.clang-tidy` file to scope checks to project headers and prioritize the most valuable diagnostics (clang-analyzer, bugprone, performance, modernize-use-override).
+    - **Override audit:** Applied `modernize-use-override` conservatively across many `zone/*.hh` headers and other types where safe; examples include `zone/printer.hh`, `zone/cdu_zone.hh`, `zone/report_zone.hh`, `zone/dialog_zone.hh`, `zone/button_zone.hh`, `zone/account_zone.hh`, `zone/chart_zone.hh`, `zone/drawer_zone.hh`, and `zone/creditcard_list_zone.hh`. Incorrect or non-matching `override` annotations were removed during iterative fixes.
+    - **Safety & style fixes:** Replaced common issues reported by clang-tidy (e.g., `NULL` → `nullptr`, removed reserved identifier header guards, `bzero` → `memset`, use `= default` for trivial destructors where appropriate) and fixed several small logic/warning cases found while making changes.
+    - **Incremental approach:** Changes were applied file-by-file in small commits; each change was followed by a build and unit test run to limit regressions.
+  - Status:
+    - Build and tests verified after edits: **39/40 tests passing**; one pre-existing logging test (`Log File Output`) still fails and is being investigated separately.
+    - Zone header audit and follow-up analyzer passes are ongoing. Representative files modified include `main/business/check.cc`, `src/network/socket.cc`, many headers under `main/`, `src/`, and `zone/`, plus the newly added `.clang-tidy`.
+
 
 ### Fixed
 - **Build System Compilation Errors and Warnings (12-13-2025)**
