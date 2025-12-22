@@ -57,12 +57,12 @@ public:
     // Constructor
     ReportZone();
     // Destructor
-    ~ReportZone();
+    ~ReportZone() override;
 
     // Member Functions
-    int          Type() { return ZONE_REPORT; }
-    RenderResult Render(Terminal *t, int update_flag);
-    int          ZoneStates() { return 2; }
+    int          Type() override { return ZONE_REPORT; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    int          ZoneStates() override { return 2; }
     RenderResult DisplayCheckReport(Terminal *term, Report *sel_report);
     int          IsKitchenCheck(Terminal *term, Check *check);
     int          ShowCheck(Terminal *term, Check *check);
@@ -70,13 +70,13 @@ public:
     Check       *NextCheck(Check *check, int sort_order);
     Check       *GetDisplayCheck(Terminal *term);
     Check       *GetCheckByNum(Terminal *term);
-    SignalResult Signal(Terminal *t, const genericChar* message);
-    SignalResult Touch(Terminal *t, int tx, int ty);
-    SignalResult Mouse(Terminal *t, int action, int mx, int my);
+    SignalResult Signal(Terminal *t, const genericChar* message) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    SignalResult Mouse(Terminal *t, int action, int mx, int my) override;
     SignalResult ToggleCheckReport(Terminal *term);
-    SignalResult Keyboard(Terminal *t, int key, int state);
-    int          Update(Terminal *t, int update_message, const genericChar* value);
-    int          State(Terminal *term);
+    SignalResult Keyboard(Terminal *t, int key, int state) override;
+    int          Update(Terminal *t, int update_message, const genericChar* value) override;
+    int          State(Terminal *term) override;
     int         *ReportType()        { return &report_type; }
     int         *CheckDisplayNum()   { return &check_disp_num; }
     int         *VideoTarget()       { return &video_target; }
@@ -107,11 +107,11 @@ public:
     ReadZone();
 
     // Member Functions
-    int          Type() { return ZONE_READ; }
-    RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar* message);
-    SignalResult Touch(Terminal *t, int tx, int ty);
-    SignalResult Keyboard(Terminal *t, int key, int state);
+    int          Type() override { return ZONE_READ; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Signal(Terminal *t, const genericChar* message) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    SignalResult Keyboard(Terminal *t, int key, int state) override;
 
     Str *FileName() { return &filename; }
 };

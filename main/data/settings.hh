@@ -351,12 +351,12 @@ public:
     ~DiscountInfo() {}
 
     // Member Functions
-    DiscountInfo *Copy();
-    int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    DiscountInfo *Copy() override;
+    int Read(InputDataFile &df, int version) override;
+    int Write(OutputDataFile &df, int version) override;
 
-    DiscountInfo *Next() { return next; }
-    DiscountInfo *Fore() { return fore; }
+    DiscountInfo *Next() override { return next; }
+    DiscountInfo *Fore() override { return fore; }
 };
 
 class CompInfo : public MediaInfo
@@ -372,12 +372,12 @@ public:
     ~CompInfo() {}
 
     // Member Functions
-    CompInfo *Copy();
-    int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    CompInfo *Copy() override;
+    int Read(InputDataFile &df, int version) override;
+    int Write(OutputDataFile &df, int version) override;
 
-    CompInfo *Next() { return next; }
-    CompInfo *Fore() { return fore; }
+    CompInfo *Next() override { return next; }
+    CompInfo *Fore() override { return fore; }
 };
 
 class CouponInfo : public MediaInfo
@@ -404,12 +404,12 @@ public:
     ~CouponInfo() {}
 
     // Member Functions
-    CouponInfo *Copy();
-    int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    CouponInfo *Copy() override;
+    int Read(InputDataFile &df, int version) override;
+    int Write(OutputDataFile &df, int version) override;
 
-    CouponInfo *Next() { return next; }
-    CouponInfo *Fore() { return fore; }
+    CouponInfo *Next() override { return next; }
+    CouponInfo *Fore() override { return fore; }
     int Apply(SubCheck *subcheck, Payment *payment = nullptr);
     int Applies(SubCheck *subcheck, int aut = 0);
     int Applies(SalesItem *item, int aut = 0);
@@ -433,12 +433,12 @@ public:
     CreditCardInfo();
 
     // Member Functions
-    CreditCardInfo *Copy();
-    int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    CreditCardInfo *Copy() override;
+    int Read(InputDataFile &df, int version) override;
+    int Write(OutputDataFile &df, int version) override;
 
-    CreditCardInfo *Next() { return next; }
-    CreditCardInfo *Fore() { return fore; }
+    CreditCardInfo *Next() override { return next; }
+    CreditCardInfo *Fore() override { return fore; }
 };
 
 class MealInfo : public MediaInfo
@@ -454,12 +454,12 @@ public:
     MealInfo();
 
     // Member Functions
-    MealInfo *Copy();
-    int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    MealInfo *Copy() override;
+    int Read(InputDataFile &df, int version) override;
+    int Write(OutputDataFile &df, int version) override;
 
-    MediaInfo *Next() { return next; }
-    MediaInfo *Fore() { return fore; }
+    MediaInfo *Next() override { return next; }
+    MediaInfo *Fore() override { return fore; }
 };
 
 class TermInfo
