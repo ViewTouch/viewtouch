@@ -122,16 +122,16 @@ class PosZone : public Zone
 
 public:
     // Member Functions
-    virtual int   Type() { return ZONE_UNDEFINED; }
-    virtual std::unique_ptr<Zone> Copy();
+    int   Type() override { return ZONE_UNDEFINED; }
+    std::unique_ptr<Zone> Copy() override;
 
-    virtual int CanSelect(Terminal *t);
-    virtual int CanEdit(Terminal *t);
-    virtual int CanCopy(Terminal *t);
-    virtual int SetSize(Terminal *t, int width, int height);
-    virtual int SetPosition(Terminal *t, int pos_x, int pos_y);
-    virtual int Read(InputDataFile &df, int version);
-    virtual int Write(OutputDataFile &df, int version);
+    int CanSelect(Terminal *t) override;
+    int CanEdit(Terminal *t) override;
+    int CanCopy(Terminal *t) override;
+    int SetSize(Terminal *t, int width, int height) override;
+    int SetPosition(Terminal *t, int pos_x, int pos_y) override;
+    int Read(InputDataFile &df, int version) override;
+    int Write(OutputDataFile &df, int version) override;
 
     Str *ImagePath() { return &image_path; }
 };
@@ -140,9 +140,9 @@ class PosPage : public Page
 {
 public:
     // Member Functions
-    virtual std::unique_ptr<Page> Copy();
-    virtual int   Read(InputDataFile &df, int version);
-    virtual int   Write(OutputDataFile &df, int version);
+    std::unique_ptr<Page> Copy() override;
+    int   Read(InputDataFile &df, int version) override;
+    int   Write(OutputDataFile &df, int version) override;
 };
 
 
