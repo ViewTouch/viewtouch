@@ -149,7 +149,7 @@ public:
     SignalResult Signal(Terminal *term, const genericChar* message) override;
     SignalResult Keyboard(Terminal *term, int key, int state) override;
 
-    int RenderEntry(Terminal *term) override;
+    int RenderEntry(Terminal *term);
 };
 
 class TenKeyDialog : public DialogZone
@@ -176,7 +176,7 @@ public:
     SignalResult Signal(Terminal *term, const genericChar* message) override;
     SignalResult Keyboard(Terminal *term, int key, int state) override;
 
-    int RenderEntry(Terminal *term) override;
+    int RenderEntry(Terminal *term);
 };
 
 class GetTextDialog : public DialogZone
@@ -208,10 +208,10 @@ public:
     SignalResult Signal(Terminal *term, const genericChar* message) override;
     SignalResult Keyboard(Terminal *term, int key, int state) override;
 
-    int RenderEntry(Terminal *term) override;
-    int DrawEntry(Terminal *term) override;
-    int AddChar(Terminal *term, genericChar val) override;
-    int Backspace(Terminal *term) override;
+    int RenderEntry(Terminal *term);
+    int DrawEntry(Terminal *term);
+    int AddChar(Terminal *term, genericChar val);
+    int Backspace(Terminal *term);
 };
 
 class PasswordDialog : public GetTextDialog
@@ -230,7 +230,7 @@ public:
     RenderResult Render(Terminal *term, int update_flag) override;
     SignalResult Signal(Terminal *term, const genericChar* message) override;
 
-    int RenderEntry(Terminal *term) override;
+    int RenderEntry(Terminal *term);
     int PasswordOkay(Terminal *term);
     int PasswordFailed(Terminal *term);
 };
@@ -272,7 +272,7 @@ public:
     SignalResult Signal(Terminal *term, const genericChar* message) override;
     SignalResult Keyboard(Terminal *term, int key, int state) override;
 
-    int RenderEntry(Terminal *term) override;
+    int RenderEntry(Terminal *term);
 };
 
 class CreditCardVoiceDialog : public GetTextDialog
@@ -396,7 +396,7 @@ public:
     SignalResult Signal(Terminal *term, const genericChar* message) override;
     SignalResult Keyboard(Terminal *term, int kb_key, int state) override;
 
-    int RenderEntry(Terminal *term) override;
+    int RenderEntry(Terminal *term);
 };
 
 class OrderCommentDialog : public GetTextDialog
@@ -410,7 +410,7 @@ public:
     SignalResult Signal(Terminal *term, const genericChar* message) override;
     SignalResult Keyboard(Terminal *term, int kb_key, int state) override;
 
-    int RenderEntry(Terminal *term) override;
+    int RenderEntry(Terminal *term);
 };
 
 
