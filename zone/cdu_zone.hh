@@ -41,15 +41,15 @@ class CDUZone : public FormZone
     CDUString *saved_cdustring;
 public:
     CDUZone();
-    ~CDUZone();
+    ~CDUZone() override;
 
-    int          Type() { return ZONE_CDU; }
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar* message);
-    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          Type() override { return ZONE_CDU; }
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
     int          Update(Terminal *term, int update_message, const genericChar* value)
                     { return FormZone::Update( term, update_message, value); }
-    int          UpdateForm(Terminal *term, int record);
+    int          UpdateForm(Terminal *term, int record) override;
     int          HideFields();
     int          ShowFields();
 
