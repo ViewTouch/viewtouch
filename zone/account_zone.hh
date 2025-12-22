@@ -38,21 +38,21 @@ public:
     AccountZone();
 
     // Member Functions
-    int          Type() { return ZONE_ACCOUNT; }
-    virtual RenderResult Render(Terminal *term, int update_flag);
-    virtual SignalResult Signal(Terminal *term, const genericChar* message);
-    virtual SignalResult Keyboard(Terminal *term, int key, int state);
-    virtual SignalResult Touch(Terminal *term, int tx, int ty);
-    virtual SignalResult Mouse(Terminal *term, int action, int mx, int my);
+    int          Type() override { return ZONE_ACCOUNT; }
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    SignalResult Keyboard(Terminal *term, int key, int state) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    SignalResult Mouse(Terminal *term, int action, int mx, int my) override;
 
-    int LoadRecord(Terminal *term, int record_no);
-    int SaveRecord(Terminal *term, int record_no, int write_file);
-    int NewRecord(Terminal *term);
-    int KillRecord(Terminal *term, int record);
-    int PrintRecord(Terminal *term, int record);
-    int Search(Terminal *term, int record, const char* word);
-    int ListReport(Terminal *term, Report *report);
-    int RecordCount(Terminal *term);
+    int LoadRecord(Terminal *term, int record_no) override;
+    int SaveRecord(Terminal *term, int record_no, int write_file) override;
+    int NewRecord(Terminal *term) override;
+    int KillRecord(Terminal *term, int record) override;
+    int PrintRecord(Terminal *term, int record) override;
+    int Search(Terminal *term, int record, const char* word) override;
+    int ListReport(Terminal *term, Report *report) override;
+    int RecordCount(Terminal *term) override;
     int CheckAccountNumber(Terminal *term, int sendmsg = 1);
 };
 
