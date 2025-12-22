@@ -205,7 +205,7 @@ public:
     // Constructor
     ListField( const genericChar* lbl, const genericChar** options, int* values, Flt min_label, Flt min_list );
     // Destructor
-    ~ListField();
+    ~ListField() override;
 
     // Member Functions
     ListFieldEntry *EntryList()    { return entry_list.Head(); }
