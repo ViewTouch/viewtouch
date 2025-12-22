@@ -35,12 +35,12 @@ public:
     ButtonZone();
 
     // Member Functions
-    virtual int          Type() { return ZONE_SIMPLE; }
-    virtual int          AcceptSignals() { return 0; }
+    virtual int          Type() override { return ZONE_SIMPLE; }
+    virtual int          AcceptSignals() override { return 0; }
     virtual std::unique_ptr<Zone> Copy();
-    virtual RenderResult Render(Terminal *term, int update_flag);
+    virtual RenderResult Render(Terminal *term, int update_flag) override;
     virtual SignalResult Touch(Terminal *term, int tx, int ty);
-    virtual int          GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
+    virtual int          GainFocus(Terminal *term, Zone *oldfocus) override { return 0; }
 
     int *JumpType() { return &jump_type; }
     int *JumpID()   { return &jump_id;   }
