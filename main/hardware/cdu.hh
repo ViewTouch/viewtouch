@@ -167,18 +167,18 @@ public:
     EpsonDispUnit(const char* filename, int verbose);
     EpsonDispUnit(const char* filename, int verbose, int allow_delay);
 
-    virtual ~EpsonDispUnit();
+    ~EpsonDispUnit() override;
     
-    virtual int Type() { return CDU_TYPE_EPSON; }
-    virtual int SetAttributes(int fd);
-    virtual int NewLine();
-    virtual int Home();
-    virtual int ToPos(int x, int y);
-    virtual int Clear();
-    virtual int Test();
-    virtual int SetTimer(int hour = -1, int minute = -1);
-    virtual int Timer();
-    virtual int Brightness(int level);
+    int Type() override { return CDU_TYPE_EPSON; }
+    int SetAttributes(int fd) override;
+    int NewLine() override;
+    int Home() override;
+    int ToPos(int x, int y) override;
+    int Clear() override;
+    int Test() override;
+    int SetTimer(int hour = -1, int minute = -1) override;
+    int Timer() override;
+    int Brightness(int level) override;
 };
 
 /*--------------------------------------------------------------------
@@ -190,18 +190,18 @@ public:
     BA63DispUnit(const char* filename);
     BA63DispUnit(const char* filename, int verbose);
     BA63DispUnit(const char* filename, int verbose, int allow_delay);
-    virtual ~BA63DispUnit();
+    ~BA63DispUnit() override;
 
-    virtual int Type() { return CDU_TYPE_EPSON; }
-    virtual int SetAttributes(int fd);
-    virtual int NewLine();
-    virtual int Home();
-    virtual int ToPos(int x, int y);
-    virtual int Clear();
-    virtual int Test();
-    virtual int SetTimer(int hour = -1, int minute = -1);
-    virtual int Timer();
-    virtual int Brightness(int level);
+    int Type() override { return CDU_TYPE_EPSON; }
+    int SetAttributes(int fd) override;
+    int NewLine() override;
+    int Home() override;
+    int ToPos(int x, int y) override;
+    int Clear() override;
+    int Test() override;
+    int SetTimer(int hour = -1, int minute = -1) override;
+    int Timer() override;
+    int Brightness(int level) override;
 };
 
 /*--------------------------------------------------------------------
