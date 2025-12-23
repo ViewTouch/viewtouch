@@ -97,7 +97,13 @@ public:
     [[nodiscard]] size_t size() const noexcept;
 
     Str & operator =  (const char* s) { Set(s); return *this; }
-    Str & operator =  (const Str  &s) { Set(s); return *this; }
+    Str & operator =  (const Str  &s) {
+        if (this == &s) {
+            return *this;
+        }
+        Set(s);
+        return *this;
+    }
     Str & operator =  (const int   s) { Set(s); return *this; }
     Str & operator =  (const Flt   s) { Set(s); return *this; }
     int   operator >  (const Str  &s) const;

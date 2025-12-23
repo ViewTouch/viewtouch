@@ -75,6 +75,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
 
 ### Fixed
+- **Static Analysis Cleanups (2025-12-23)**
+  - Addressed clang-tidy findings: removed branch-clone in DList merge, added self-assignment guard to `Str`, corrected rounding and narrowing in `test_check`, fixed archive header error handling, and cleaned crash reporting/tests for empty-catch/pointer warnings
+  - Suppressed analyzer padding noise for large `Settings`/`Terminal` classes and tightened enum underlying types in terminal hardware definitions
+  - Impact: No behavior change; builds/tests remain green (40/40)
 - **Duplicate Branch Cleanup in settings.cc (2025-12-23)**
   - Consolidated repeated branch bodies flagged by clang-tidy (bugprone-branch-clone)
   - **CouponInfo::Applies methods**: Merged duplicate `retval = 0` assignments by combining conditions with logical OR

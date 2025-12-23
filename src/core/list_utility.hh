@@ -223,20 +223,19 @@ class DList
                 while (psize > 0 || (qsize > 0 && q))
                 {
                     /* decide whether next element of merge comes from p or q */
-                    if (psize == 0)
+                    const bool take_from_q = (psize == 0)
+                                           ? true
+                                           : ! (qsize == 0 || q == nullptr || cmp(p, q) <= 0);
+
+                    if (take_from_q)
                     {
-                        /* p is empty; e must come from q. */
+                        /* take from q */
                         e = q; q = q->next; qsize--;
-                    }
-                    else if (qsize == 0 || q == nullptr || cmp(p,q) <= 0)
-                    {
-                        /* q is empty or p <= q; e must come from p. */
-                        e = p; p = p->next; psize--;
                     }
                     else
                     {
-                        /* First element of q is lower; e must come from q. */
-                        e = q; q = q->next; qsize--;
+                        /* take from p */
+                        e = p; p = p->next; psize--;
                     }
                     
                     /* add the next element to the merged list */
