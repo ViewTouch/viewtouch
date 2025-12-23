@@ -30,7 +30,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - **Enum Usage: ReceiptPrintType (2025-12-23)**
   - Updated receipt printing logic to use `ReceiptPrintType` via `vt::IntToEnum` instead of bitmask checks
   - Conditions now compare against `OnSend`/`OnFinalize`/`OnBoth` for clarity and type-safety
-  - **Files modified**: `main/business/check.cc`, `zone/payment_zone.cc`
+  - Replaced legacy arrays `ReceiptPrintName`/`ReceiptPrintValue` with enum-driven helpers and switching logic
+  - **Files modified**: `main/business/check.cc`, `zone/payment_zone.cc`, `zone/settings_zone.cc`, `main/data/settings.cc`, `main/data/settings.hh`
   - **Impact**: Behavior unchanged; tests remain 40/40 passing
 
 ### Fixed
