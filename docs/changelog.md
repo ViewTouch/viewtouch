@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
       - Unified `KillSystemZone::Render()` to a single `RenderZone` call
       - Grouped `MessageButtonZone::Signal` cases by behavior to avoid repeated bodies
       - Combined `FASTFOOD`/`SELFORDER` cases in `ConditionalZone::EvalExp`
+    - `zone/dialog_zone.cc`:
+      - Consolidated keyboard handling to map key codes to a single `Signal()` path (prevents repeated return branches)
+    - `zone/creditcard_list_zone.cc`:
+      - Replaced repeated switch branches in `GetDB()` with direct mapping
   - **Impact**: Clearer control flow, less chance of divergence and maintenance errors
 
 - **Missing Default Cases in Switch Statements (2025-12-22)**
