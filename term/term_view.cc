@@ -175,7 +175,7 @@ public:
         ReportError("Connection failed permanently");
     }
 
-    ConnectionState get_state() const { return state_; }
+    [[nodiscard]] ConnectionState get_state() const { return state_; }
 
     bool should_attempt_reconnect() {
         if (state_ != CONNECTION_DISCONNECTED) return false;
@@ -188,7 +188,7 @@ public:
         return (now - last_reconnect_attempt_) >= delay;
     }
 
-    bool is_healthy() const {
+    [[nodiscard]] bool is_healthy() const {
         if (state_ != CONNECTION_CONNECTED) return false;
         if (!keep_alive_enabled_) return true;
 
@@ -204,8 +204,8 @@ public:
         reconnect_attempts_ = 0;
     }
 
-    int get_reconnect_attempts() const { return reconnect_attempts_; }
-    int get_max_reconnect_attempts() const { return max_reconnect_attempts_; }
+    [[nodiscard]] int get_reconnect_attempts() const { return reconnect_attempts_; }
+    [[nodiscard]] int get_max_reconnect_attempts() const { return max_reconnect_attempts_; }
 };
 
 
@@ -242,8 +242,8 @@ public:
     }
     
     // Accessors
-    int get() const noexcept { return fd_; }
-    bool is_valid() const noexcept { return fd_ > 0; }
+    [[nodiscard]] int get() const noexcept { return fd_; }
+    [[nodiscard]] bool is_valid() const noexcept { return fd_ > 0; }
     
     // Release ownership
     int release() noexcept {
@@ -371,18 +371,18 @@ public:
     int  Parse(const char* fontname);
     const char* ToString();
 
-    const char* Foundry() const { return foundry.c_str(); }
-    const char* Family() const { return family.c_str(); }
-    const char* Weight() const { return weight.c_str(); }
-    const char* Slant() const { return slant.c_str(); }
-    const char* Width() const { return width.c_str(); }
-    const char* Pixels() const { return pixels.c_str(); }
-    const char* Points() const { return points.c_str(); }
-    const char* HorRes() const { return horres.c_str(); }
-    const char* VertRes() const { return vertres.c_str(); }
-    const char* Spacing() const { return spacing.c_str(); }
-    const char* AvgWidth() const { return avgwidth.c_str(); }
-    const char* CharSet() const { return charset.c_str(); }
+    [[nodiscard]] const char* Foundry() const { return foundry.c_str(); }
+    [[nodiscard]] const char* Family() const { return family.c_str(); }
+    [[nodiscard]] const char* Weight() const { return weight.c_str(); }
+    [[nodiscard]] const char* Slant() const { return slant.c_str(); }
+    [[nodiscard]] const char* Width() const { return width.c_str(); }
+    [[nodiscard]] const char* Pixels() const { return pixels.c_str(); }
+    [[nodiscard]] const char* Points() const { return points.c_str(); }
+    [[nodiscard]] const char* HorRes() const { return horres.c_str(); }
+    [[nodiscard]] const char* VertRes() const { return vertres.c_str(); }
+    [[nodiscard]] const char* Spacing() const { return spacing.c_str(); }
+    [[nodiscard]] const char* AvgWidth() const { return avgwidth.c_str(); }
+    [[nodiscard]] const char* CharSet() const { return charset.c_str(); }
 
     void ClearFoundry() { foundry = "*"; }
     void ClearFamily() { family = "*"; }

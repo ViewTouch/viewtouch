@@ -28,7 +28,7 @@
 
 /**** Definitions ****/
 
-#define SALES_ITEM_VERSION       16
+constexpr int SALES_ITEM_VERSION = 16;
 
 // Family Difinitions
 #define FAMILY_APPETIZERS        0

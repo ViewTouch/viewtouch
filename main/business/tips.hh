@@ -26,7 +26,7 @@
 
 
 /**** Definitions ****/
-#define TIP_VERSION 1
+constexpr int TIP_VERSION = 1;
 
 
 /**** Types ****/

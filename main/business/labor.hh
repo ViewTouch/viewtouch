@@ -169,7 +169,7 @@ public:
 
 
 // Will replace LaborPeriod & LaborDB
-#define WORK_VERSION 1
+constexpr int WORK_VERSION = 1;
 
 class WorkDB
 {

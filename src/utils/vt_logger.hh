@@ -54,7 +54,7 @@ struct BusinessContext {
     std::optional<std::chrono::system_clock::time_point> start_time;
 
     // Convert to JSON for structured logging
-    nlohmann::json to_json() const;
+    [[nodiscard]] nlohmann::json to_json() const;
 };
 
 /**

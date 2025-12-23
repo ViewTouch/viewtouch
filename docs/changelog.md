@@ -57,6 +57,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `main/ui/system_salesmix.cc`
 
 ### Fixed
+- **Additional C++ Modernizations (12-22-2025)**
+  - Applied targeted modernization fixes to improve code quality and C++ compliance
+  - **modernize-use-using**: Replaced 3 C-style typedef declarations with modern using aliases
+    - Converted function pointer typedefs in [main/data/manager.hh](main/data/manager.hh):
+      - `typedef void (* TimeOutFn)()` → `using TimeOutFn = void (*)()`
+      - `typedef void (* InputFn)()` → `using InputFn = void (*)()`
+      - `typedef int (* WorkFn)()` → `using WorkFn = int (*)()`
+    - Benefits: Clearer syntax, better readability, consistent with modern C++ style
+  - **modernize-macro-to-enum**: Converted 6 VERSION macros to constexpr constants
+    - `ACCOUNT_VERSION`, `ACCOUNT_ENTRY_VERSION` in [main/business/account.hh](main/business/account.hh)
+    - `CHECK_VERSION` in [main/business/check.hh](main/business/check.hh)
+    - `CUSTOMER_VERSION` in [main/business/customer.hh](main/business/customer.hh)
+    - `WORK_VERSION` in [main/business/labor.hh](main/business/labor.hh)
+    - `SALES_ITEM_VERSION` in [main/business/sales.hh](main/business/sales.hh)
+    - `TIP_VERSION` in [main/business/tips.hh](main/business/tips.hh)
+    - Benefits: Type safety, proper scoping, debugger-friendly, no preprocessor pollution
+  - **modernize-use-nodiscard**: Applied [[nodiscard]] attributes to functions with important return values
+    - Automatically applied using clang-tidy --fix across entire codebase
+    - Affected headers: [src/core/time_info.hh](src/core/time_info.hh), [src/utils/utility.hh](src/utils/utility.hh), [src/utils/vt_logger.hh](src/utils/vt_logger.hh), [main/hardware/terminal.hh](main/hardware/terminal.hh), and others
+    - Prevents accidental ignoring of return values (e.g., IsEmpty(), Count(), Search())
+    - Benefits: Compile-time warnings when important return values are discarded, fewer bugs
+  - **Verification**:
+    - Build: Successful with no errors
+    - Tests: 40/40 passing
+    - Impact: 15 files modified, 81 insertions(+), 81 deletions(-)
+  - **Remaining opportunities**: 2,065 trailing-return-type suggestions (stylistic), 794 macro-to-enum candidates (requires careful refactoring), 178 C-array suggestions
+
 - **Comprehensive nullptr Modernization (12-22-2025)**
   - **Complete C++ Modernization**: Replaced all `NULL` pointer literals with modern C++ `nullptr` across the entire codebase
   - **Scope**: 123 files modified with ~3,413 insertions and 3,427 deletions

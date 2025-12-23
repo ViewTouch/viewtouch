@@ -58,9 +58,9 @@
 
 
 /**** Types ****/
-typedef void (* TimeOutFn)();
-typedef void (* InputFn)();
-typedef int  (* WorkFn)();
+using TimeOutFn = void (*)();
+using InputFn = void (*)();
+using WorkFn = int (*)();
 
 class Settings;
 class Terminal;

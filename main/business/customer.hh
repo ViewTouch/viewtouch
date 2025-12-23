@@ -24,7 +24,7 @@
 #include "list_utility.hh"
 #include "utility.hh"
 
-#define CUSTOMER_VERSION         14
+constexpr int CUSTOMER_VERSION = 14;
 		
 
 /**** Types ****/
