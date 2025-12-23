@@ -180,7 +180,7 @@ extern Translations MasterTranslations;
 #define MAX_SCREEN_HEIGHT 1200
 
 // Page Sizes (resolutions)
-enum page_sizes {
+enum page_sizes : std::uint8_t {
   PAGE_SIZE_640x480 =  1,
   PAGE_SIZE_768x1024,
   PAGE_SIZE_800x480,

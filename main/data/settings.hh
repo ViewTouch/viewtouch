@@ -43,7 +43,7 @@ constexpr int SETTINGS_VERSION = 106;  // READ ABOVE
 #define MAX_JOBS         20
 
 // Receipt printing options (converted from macros to enum constants)
-enum ReceiptPrintMode {
+enum ReceiptPrintMode : std::uint8_t {
     RECEIPT_NONE     = 0,
     RECEIPT_SEND     = 1,
     RECEIPT_FINALIZE = 2,
@@ -51,7 +51,7 @@ enum ReceiptPrintMode {
 };
 
 // Drawer report options (converted from macros to enum constants)
-enum DrawerPrintMode {
+enum DrawerPrintMode : std::uint8_t {
     DRAWER_PRINT_NEVER   = 0,
     DRAWER_PRINT_PULL    = 1,
     DRAWER_PRINT_BALANCE = 2,
@@ -59,7 +59,7 @@ enum DrawerPrintMode {
 };
 
 // Cash Drawer options (converted from macros to enum constants)
-enum DrawerMode {
+enum DrawerMode : std::uint8_t {
     DRAWER_NORMAL   = 0, // unrestricted access to drawers for employees
     DRAWER_ASSIGNED = 1, // drawers must be assigned to be used
     DRAWER_SERVER   = 2  // each server has a drawer to maintain for shift

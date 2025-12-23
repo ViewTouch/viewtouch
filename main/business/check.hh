@@ -31,7 +31,7 @@
 constexpr int CHECK_VERSION = 25;
 
 // Check Status
-enum class CheckStatus : int {
+enum class CheckStatus : std::uint8_t {
     Open = 1,
     Closed = 2,
     Voided = 3
@@ -43,7 +43,7 @@ constexpr int CHECK_CLOSED = static_cast<int>(CheckStatus::Closed);
 constexpr int CHECK_VOIDED = static_cast<int>(CheckStatus::Voided);
 
 // Check Type
-enum class CheckType : int {
+enum class CheckType : std::uint8_t {
     Restaurant = 1,   // normal check - has table location
     Takeout = 2,      // take out order - has phone number
     Bar = 3,          // drink from bar - no guest count or table

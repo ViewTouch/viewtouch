@@ -39,7 +39,7 @@
 #define PAGE_ID_TABSETTLE   (-85)  // Where the Tab Settlement page is
 
 // Zone Selection Behaviors
-enum behaviors {
+enum behaviors : std::uint8_t {
 	BEHAVE_NONE    , // Zone doesn't change when selected
 	BEHAVE_TOGGLE  , // Zone toggles with each selection
 	BEHAVE_BLINK   , // Zone depresses then resets itself

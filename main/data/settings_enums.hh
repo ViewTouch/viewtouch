@@ -25,7 +25,7 @@
 #include <string_view>
 
 // Receipt printing options - values must match RECEIPT_* constants
-enum class ReceiptPrintType {
+enum class ReceiptPrintType : std::uint8_t {
     Never = 0,       // RECEIPT_NONE
     OnSend = 1,      // RECEIPT_SEND
     OnFinalize = 2,  // RECEIPT_FINALIZE
@@ -33,7 +33,7 @@ enum class ReceiptPrintType {
 };
 
 // Drawer print options - values must match DRAWER_PRINT_* constants
-enum class DrawerPrintType {
+enum class DrawerPrintType : std::uint8_t {
     Never = 0,     // DRAWER_PRINT_NEVER
     OnPull = 1,    // DRAWER_PRINT_PULL
     OnBalance = 2, // DRAWER_PRINT_BALANCE
@@ -41,39 +41,39 @@ enum class DrawerPrintType {
 };
 
 // Drawer mode options - values must match DRAWER_* constants
-enum class DrawerModeType {
+enum class DrawerModeType : std::uint8_t {
     Trusted = 0,    // DRAWER_NORMAL
     Assigned = 1,   // DRAWER_ASSIGNED
     ServerBank = 2  // DRAWER_SERVER
 };
 
 // Price rounding options - values must match ROUNDING_* constants
-enum class PriceRoundingType {
+enum class PriceRoundingType : std::uint8_t {
     None = 0,              // ROUNDING_NONE
     DropPennies = 1,       // ROUNDING_DROP_PENNIES
     RoundUpGratuity = 2    // ROUNDING_UP_GRATUITY
 };
 
 // Measurement system options - values must match MEASURE_* constants
-enum class MeasureSystemType {
+enum class MeasureSystemType : std::uint8_t {
     Standard = 1,  // MEASURE_STANDARD (U.S./Imperial)
     Metric = 2     // MEASURE_METRIC
 };
 
 // Time format options - values must match TIME_* constants
-enum class TimeFormatType {
+enum class TimeFormatType : std::uint8_t {
     Hour12 = 1,  // TIME_12HOUR
     Hour24 = 2   // TIME_24HOUR
 };
 
 // Date format options - values must match DATE_* constants
-enum class DateFormatType {
+enum class DateFormatType : std::uint8_t {
     MMDDYY = 1,  // DATE_MMDDYY
     DDMMYY = 2   // DATE_DDMMYY
 };
 
 // Number format options - values must match NUMBER_* constants
-enum class NumberFormatType {
+enum class NumberFormatType : std::uint8_t {
     Standard = 1,  // NUMBER_STANDARD (1,000,000.00)
     Euro = 2       // NUMBER_EURO (1.000.000,00)
 };

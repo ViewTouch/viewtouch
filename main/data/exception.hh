@@ -28,7 +28,7 @@
 /**** Definitions ****/
 #define EXCEPTION_VERSION  3
 
-enum exceptions {
+enum exceptions : std::uint8_t {
 	EXCEPTION_COMP = 1,
 	EXCEPTION_VOID,
 	EXCEPTION_UNCOMP
