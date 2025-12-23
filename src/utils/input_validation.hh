@@ -386,7 +386,7 @@ public:
 #define VT_SANITIZE_OR_RETURN(input, sanitizer_func) \
     { \
         auto sanitized = sanitizer_func(input); \
-        if (sanitized != input) { \
+        if (sanitized != (input)) { \
             return ValidationResult(true, "", sanitized); \
         } \
     }

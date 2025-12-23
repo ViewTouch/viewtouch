@@ -39,8 +39,8 @@ CustomerInfo::CustomerInfo(int new_type)
 {
     FnTrace("CustomerInfo::CustomerInfo()");
 
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
 
     // Don't worry about type.  See the explanation in the
     // NewCustomerInfo() comment.
@@ -67,8 +67,7 @@ CustomerInfo::CustomerInfo(int new_type)
 }
 
 CustomerInfo::~CustomerInfo()
-{
-}
+= default;
 
 int CustomerInfo::IsBlank()
 {
@@ -316,7 +315,7 @@ const genericChar* CustomerInfo::LastName(const char* set)
 {
     FnTrace("CustomerInfo::LastName()");
 
-    if (set != NULL)
+    if (set != nullptr)
         lastname.Set(set);
 
     return lastname.Value();
@@ -326,7 +325,7 @@ const genericChar* CustomerInfo::FirstName(const char* set)
 {
     FnTrace("CustomerInfo::FirstName()");
 
-    if (set != NULL)
+    if (set != nullptr)
         firstname.Set(set);
 
     return firstname.Value();
@@ -336,7 +335,7 @@ const genericChar* CustomerInfo::Company(const char* set)
 {
     FnTrace("CustomerInfo::Company()");
 
-    if (set != NULL)
+    if (set != nullptr)
         company.Set(set);
 
     return company.Value();
@@ -346,7 +345,7 @@ const genericChar* CustomerInfo::PhoneNumber(const char* set)
 {
     FnTrace("CustomerInfo::PhoneNumber()");
 
-    if (set != NULL)
+    if (set != nullptr)
         phone.Set(set);
 
     return phone.Value();
@@ -356,7 +355,7 @@ const genericChar* CustomerInfo::Extension(const char* set)
 {
     FnTrace("CustomerInfo::Extension()");
 
-    if (set != NULL)
+    if (set != nullptr)
         extension.Set(set);
 
     return extension.Value();
@@ -366,7 +365,7 @@ const genericChar* CustomerInfo::Address(const char* set)
 {
     FnTrace("CustomerInfo::Address()");
 
-    if (set != NULL)
+    if (set != nullptr)
         address.Set(set);
 
     return address.Value();
@@ -376,7 +375,7 @@ const genericChar* CustomerInfo::Address2(const char* set)
 {
     FnTrace("CustomerInfo::Address2()");
 
-    if (set != NULL)
+    if (set != nullptr)
         address2.Set(set);
 
     return address2.Value();
@@ -386,7 +385,7 @@ const genericChar* CustomerInfo::CrossStreet(const char* set)
 {
     FnTrace("CustomerInfo::CrossStreet()");
 
-    if (set != NULL)
+    if (set != nullptr)
         cross_street.Set(set);
 
     return cross_street.Value();
@@ -396,7 +395,7 @@ const genericChar* CustomerInfo::City(const char* set)
 {
     FnTrace("CustomerInfo::City()");
 
-    if (set != NULL)
+    if (set != nullptr)
         city.Set(set);
 
     return city.Value();
@@ -406,7 +405,7 @@ const genericChar* CustomerInfo::State(const char* set)
 {
     FnTrace("CustomerInfo::State()");
 
-    if (set != NULL)
+    if (set != nullptr)
         state.Set(set);
 
     return state.Value();
@@ -416,7 +415,7 @@ const genericChar* CustomerInfo::Postal(const char* set)
 {
     FnTrace("CustomerInfo::Postal()");
 
-    if (set != NULL)
+    if (set != nullptr)
         postal.Set(set);
 
     return postal.Value();
@@ -426,7 +425,7 @@ const genericChar* CustomerInfo::License(const char* set)
 {
     FnTrace("CustomerInfo::License()");
 
-    if (set != NULL)
+    if (set != nullptr)
         license.Set(set);
 
     return license.Value();
@@ -436,7 +435,7 @@ const genericChar* CustomerInfo::CCNumber(const char* set)
 {
     FnTrace("CustomerInfo::CCNumber()");
 
-    if (set != NULL)
+    if (set != nullptr)
         cc_number.Set(set);
 
     return cc_number.Value();
@@ -446,7 +445,7 @@ const genericChar* CustomerInfo::CCExpire(const char* set)
 {
     FnTrace("CustomerInfo::CCExpire()");
 
-    if (set != NULL)
+    if (set != nullptr)
         cc_expire.Set(set);
 
     return cc_expire.Value();
@@ -456,7 +455,7 @@ const genericChar* CustomerInfo::Comment(const char* set)
 {
     FnTrace("CustomerInfo::Comment()");
 
-    if (set != NULL)
+    if (set != nullptr)
         comment.Set(set);
 
     return comment.Value();
@@ -466,7 +465,7 @@ const genericChar* CustomerInfo::Vehicle(const char* set)
 {
     FnTrace("CustomerInfo::Vehicle()");
 
-    if (set != NULL)
+    if (set != nullptr)
         vehicle.Set(set);
 
     return vehicle.Value();
@@ -484,8 +483,7 @@ CustomerInfoDB::CustomerInfoDB()
 }
 
 CustomerInfoDB::~CustomerInfoDB()
-{
-}
+= default;
 
 int CustomerInfoDB::RemoveBlank()
 {
@@ -493,7 +491,7 @@ int CustomerInfoDB::RemoveBlank()
     int retval = 1;
     CustomerInfo *customer = customers.Head();
 
-    while (customer != NULL)
+    while (customer != nullptr)
     {
         if (customer->IsBlank())
         {
@@ -518,7 +516,7 @@ int CustomerInfoDB::Count()
     int count = 0;
     CustomerInfo *customer = customers.Head();
 
-    while (customer != NULL)
+    while (customer != nullptr)
     {
         count += 1;
         customer = customer->next;
@@ -533,10 +531,10 @@ int CustomerInfoDB::Save(const genericChar* filepath)
     int retval = 1;
     CustomerInfo *customer = customers.Head();
 
-    if (filepath != NULL)
+    if (filepath != nullptr)
         pathname.Set(filepath);
 
-    while (customer != NULL)
+    while (customer != nullptr)
     {
         if (customer->id < 0)
             customer->id = NextID();
@@ -564,7 +562,7 @@ int CustomerInfoDB::Load(const genericChar* filepath)
     FnTrace("CustomerInfoDB::Load()");
     int retval = 0;
     DIR *dp;
-    struct dirent *record = NULL;
+    struct dirent *record = nullptr;
     genericChar buffer[STRLONG];
 
     if (filepath)
@@ -574,7 +572,7 @@ int CustomerInfoDB::Load(const genericChar* filepath)
         return 1;
 
     dp = opendir(pathname.Value());
-    if (dp == NULL)
+    if (dp == nullptr)
         return 1;  // Error - can't find directory
 
     do
@@ -609,7 +607,7 @@ CustomerInfo *CustomerInfoDB::NewCustomer(int type)
     FnTrace("CustomerInfoDB::NewCustomer()");
 
     CustomerInfo *ci = new CustomerInfo(type);
-    if (ci != NULL)
+    if (ci != nullptr)
     {
         Add(ci);
         ci->SetFileName(pathname.Value());
@@ -644,18 +642,18 @@ int CustomerInfoDB::Remove(CustomerInfo *customer)
 CustomerInfo *CustomerInfoDB::FindByID(int customer_id)
 {
     FnTrace("CustomerInfoDB::FindByID()");
-    CustomerInfo *retval = NULL;
+    CustomerInfo *retval = nullptr;
     CustomerInfo *customer = customers.Head();
 
     if (customer_id < 0)
         return retval;
 
-    while (customer != NULL)
+    while (customer != nullptr)
     {
         if (customer_id == customer->id)
         {
             retval = customer;
-            customer = NULL;
+            customer = nullptr;
         }
         else
             customer = customer->next;
@@ -667,21 +665,21 @@ CustomerInfo *CustomerInfoDB::FindByID(int customer_id)
 CustomerInfo *CustomerInfoDB::FindByString(const genericChar* search_string, int start)
 {
     FnTrace("CustomerInfoDB::FindByString()");
-    CustomerInfo *retval = NULL;
+    CustomerInfo *retval = nullptr;
     CustomerInfo *customer = customers.Head();
-    CustomerInfo *first_customer = NULL;
+    CustomerInfo *first_customer = nullptr;
     int done = 0;
 
     if (start > -1)
     {
-        while (customer != NULL && customer->id <= start)
+        while (customer != nullptr && customer->id <= start)
             customer = customer->next;
-        if (customer == NULL)
+        if (customer == nullptr)
             customer = customers.Head();
     }
 
     first_customer = customer;
-    while (customer != NULL && done != 1)
+    while (customer != nullptr && done != 1)
     {
         if (customer->Search(search_string))
         {
@@ -691,7 +689,7 @@ CustomerInfo *CustomerInfoDB::FindByString(const genericChar* search_string, int
         else
         {
             customer = customer->next;
-            if (customer == NULL)
+            if (customer == nullptr)
                 customer = customers.Head();
             if (customer == first_customer)
                 done = 1;
@@ -704,15 +702,15 @@ CustomerInfo *CustomerInfoDB::FindByString(const genericChar* search_string, int
 CustomerInfo *CustomerInfoDB::FindBlank()
 {
     FnTrace("CustomerInfoDB::FindBlank()");
-    CustomerInfo *retval = NULL;
+    CustomerInfo *retval = nullptr;
     CustomerInfo *customer = customers.Tail();
     
-    while (customer != NULL)
+    while (customer != nullptr)
     {
         if (customer->IsBlank())
         {
             retval = customer;
-            customer = NULL;
+            customer = nullptr;
         }
         else
         {

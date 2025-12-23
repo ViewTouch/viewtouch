@@ -104,7 +104,7 @@ int vt_setproctitle(const char* title)
 //int Str::nAllocated = 0;
 
 Str::Str()
-{}
+= default;
 
 Str::Str(const std::string &str)
 {
@@ -118,7 +118,7 @@ Str::Str(const Str &s)
 
 // Destructor
 Str::~Str()
-{}
+= default;
 
 // Member Functions
 int Str::Clear()
@@ -284,8 +284,7 @@ RegionInfo::RegionInfo(int rx, int ry, int rw, int rh)
 
 //Destructor
 RegionInfo::~RegionInfo()
-{
-}
+= default;
 
 // Member Functions
 int RegionInfo::Fit(int rx, int ry, int rw, int rh)
@@ -348,22 +347,22 @@ int Price::Write(OutputDataFile &df, int version)
 
 const char* Price::Format(int sign)
 {
-    return NULL;
+    return nullptr;
 }
 
 const char* Price::Format(const char* buffer, int sign)
 {
-    return NULL;
+    return nullptr;
 }
 
 const char* Price::SimpleFormat()
 {
-    return NULL;
+    return nullptr;
 }
 
 const char* Price::SimpleFormat(const char* buffer)
 {
-    return NULL;
+    return nullptr;
 }
 
 

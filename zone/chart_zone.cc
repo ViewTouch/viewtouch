@@ -31,7 +31,7 @@
 // Constructor
 ChartZone::ChartZone()
 {
-    chart = NULL;
+    chart = nullptr;
 }
 
 // Destructor

@@ -570,7 +570,7 @@ int TimeInfo::WeekDay() const
         return 6;
     } else
     {
-        std::cout << wd << std::endl;
+        std::cout << wd << '\n';
         throw std::runtime_error("TimeInfo::Weekday(): Unknown Weekday value");
     }
     // function using unsigned operator as defined in C++20

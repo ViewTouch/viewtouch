@@ -19,7 +19,7 @@
  */
 
 #ifndef _LOGIN_ZONE_HH
-#define _LOGIN_ZONE_HH
+#define LOGIN_ZONE_HH
 
 #include "layout_zone.hh"
 
@@ -38,11 +38,11 @@ public:
     LoginZone();
 
     // Member Functions
-    int          Type() { return ZONE_LOGIN; }
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar* message);
-    SignalResult Keyboard(Terminal *term, int key, int state);
-    int          Update(Terminal *term, int update_message, const genericChar* value);
+    int          Type() override { return ZONE_LOGIN; }
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    SignalResult Keyboard(Terminal *term, int key, int state) override;
+    int          Update(Terminal *term, int update_message, const genericChar* value) override;
 
     int ClockOn(Terminal *term, int job = -1);
     int ClockOff(Terminal *term);
@@ -60,10 +60,10 @@ public:
     LogoutZone();
 
     // Member Functions
-    int          Type() { return ZONE_LOGOUT; }
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar* message);
-    SignalResult Keyboard(Terminal *term, int key, int state);
+    int          Type() override { return ZONE_LOGOUT; }
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    SignalResult Keyboard(Terminal *term, int key, int state) override;
 
     int RenderPaymentEntry(Terminal *term, int line);
     int DrawPaymentEntry(Terminal *term, int line);

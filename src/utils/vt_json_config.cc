@@ -42,10 +42,10 @@ bool JsonConfig::Load() {
         loaded_ = true;
         return true;
     } catch (const json::parse_error& e) {
-        std::cerr << "JSON parse error in " << filepath_ << ": " << e.what() << std::endl;
+        std::cerr << "JSON parse error in " << filepath_ << ": " << e.what() << '\n';
         return false;
     } catch (const std::exception& e) {
-        std::cerr << "Error loading JSON config " << filepath_ << ": " << e.what() << std::endl;
+        std::cerr << "Error loading JSON config " << filepath_ << ": " << e.what() << '\n';
         return false;
     }
 }
@@ -55,7 +55,7 @@ bool JsonConfig::Save(bool pretty_print, bool create_backup) {
         // Create backup if requested and file exists
         if (create_backup && std::filesystem::exists(filepath_)) {
             if (!CreateBackup()) {
-                std::cerr << "Warning: Could not create backup of " << filepath_ << std::endl;
+                std::cerr << "Warning: Could not create backup of " << filepath_ << '\n';
             }
         }
 
@@ -67,7 +67,7 @@ bool JsonConfig::Save(bool pretty_print, bool create_backup) {
 
         std::ofstream file(filepath_);
         if (!file.is_open()) {
-            std::cerr << "Error: Could not open " << filepath_ << " for writing" << std::endl;
+            std::cerr << "Error: Could not open " << filepath_ << " for writing" << '\n';
             return false;
         }
 
@@ -79,7 +79,7 @@ bool JsonConfig::Save(bool pretty_print, bool create_backup) {
 
         return true;
     } catch (const std::exception& e) {
-        std::cerr << "Error saving JSON config " << filepath_ << ": " << e.what() << std::endl;
+        std::cerr << "Error saving JSON config " << filepath_ << ": " << e.what() << '\n';
         return false;
     }
 }
@@ -162,7 +162,7 @@ bool JsonConfig::CreateExample(std::string_view filepath) {
         file << example.dump(4);
         return true;
     } catch (const std::exception& e) {
-        std::cerr << "Error creating example config: " << e.what() << std::endl;
+        std::cerr << "Error creating example config: " << e.what() << '\n';
         return false;
     }
 }
@@ -195,7 +195,7 @@ bool JsonConfig::CreateBackup() const {
         );
         return true;
     } catch (const std::exception& e) {
-        std::cerr << "Backup error: " << e.what() << std::endl;
+        std::cerr << "Backup error: " << e.what() << '\n';
         return false;
     }
 }

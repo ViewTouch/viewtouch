@@ -19,7 +19,7 @@
  */
 
 #ifndef _DIALOG_ZONE_HH
-#define _DIALOG_ZONE_HH
+#define DIALOG_ZONE_HH
 
 #include "check.hh"
 #include "layout_zone.hh"
@@ -244,7 +244,7 @@ public:
     CreditCardAmountDialog();
     CreditCardAmountDialog(Terminal *term, const char* title, int type);
 
-    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Signal(Terminal *term, const genericChar* message) override;
 };
 
 class CreditCardEntryDialog : public TenKeyDialog

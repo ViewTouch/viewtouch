@@ -152,7 +152,7 @@ public:
 
     void set_connected() {
         state_ = CONNECTION_CONNECTED;
-        last_heartbeat_ = time(NULL);
+        last_heartbeat_ = time(nullptr);
         reconnect_attempts_ = 0;
         ReportError("Connection established");
     }
@@ -166,7 +166,7 @@ public:
 
     void set_reconnecting() {
         state_ = CONNECTION_RECONNECTING;
-        last_reconnect_attempt_ = time(NULL);
+        last_reconnect_attempt_ = time(nullptr);
         reconnect_attempts_++;
     }
 
@@ -181,7 +181,7 @@ public:
         if (state_ != CONNECTION_DISCONNECTED) return false;
         if (reconnect_attempts_ >= max_reconnect_attempts_) return false;
 
-        time_t now = time(NULL);
+        time_t now = time(nullptr);
         int delay = reconnect_delay_ * (1 << (reconnect_attempts_ - 1)); // Exponential backoff
         if (delay > 60) delay = 60; // Cap at 60 seconds
 
@@ -192,12 +192,12 @@ public:
         if (state_ != CONNECTION_CONNECTED) return false;
         if (!keep_alive_enabled_) return true;
 
-        time_t now = time(NULL);
+        time_t now = time(nullptr);
         return (now - last_heartbeat_) < 30; // 30 second timeout
     }
 
     void send_heartbeat() {
-        last_heartbeat_ = time(NULL);
+        last_heartbeat_ = time(nullptr);
     }
 
     void reset_reconnect_attempts() {
@@ -563,8 +563,8 @@ const char* FontNameClass::ToString()
  *------------------------------------------------------------------*/
 Xpm::Xpm()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     width = 0;
     height = 0;
     pixmap = 0;
@@ -573,8 +573,8 @@ Xpm::Xpm()
 
 Xpm::Xpm(Pixmap pm)
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     width = 0;
     height = 0;
     pixmap = pm;
@@ -583,8 +583,8 @@ Xpm::Xpm(Pixmap pm)
 
 Xpm::Xpm(Pixmap pm, int w, int h)
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     width = w;
     height = h;
     pixmap = pm;
@@ -593,8 +593,8 @@ Xpm::Xpm(Pixmap pm, int w, int h)
 
 Xpm::Xpm(Pixmap pm, Pixmap m, int w, int h)
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     width = w;
     height = h;
     pixmap = pm;
@@ -621,17 +621,17 @@ Xpm *Pixmaps::Get(int idx)
 {
     int curridx = 0;
     Xpm *currXpm = pixmaps.Head();
-    Xpm *retval = NULL;
+    Xpm *retval = nullptr;
     
     if (pixmaps.Count() < 1)
         return retval;
 
-    while (currXpm != NULL && curridx < count)
+    while (currXpm != nullptr && curridx < count)
     {
         if (curridx == idx)
         {
             retval = currXpm;
-            currXpm = NULL;
+            currXpm = nullptr;
         }
         else
         {
@@ -645,7 +645,7 @@ Xpm *Pixmaps::Get(int idx)
 
 Xpm *Pixmaps::GetRandom()
 {
-    Xpm *retval = NULL;
+    Xpm *retval = nullptr;
 
     if (pixmaps.Count() < 2)
         return retval;
@@ -666,17 +666,17 @@ Pixmaps PixmapList;
  ********************************************************************/
 
 LayerList Layers;
-Layer *MainLayer = NULL;
+Layer *MainLayer = nullptr;
 
 int SocketNo = 0;
 
-Display *Dis = NULL;
-GC       Gfx = 0;
+Display *Dis = nullptr;
+GC       Gfx = nullptr;
 Window   MainWin;
 std::array<Pixmap, IMAGE_COUNT> Texture;
 Pixmap   ShadowPix;
 int      ScrDepth = 0;
-Visual  *ScrVis = NULL;
+Visual  *ScrVis = nullptr;
 Colormap ScrCol = 0;
 int      WinWidth  = 0;
 int      WinHeight = 0;
@@ -730,7 +730,7 @@ struct SavedUIState {
     SavedUIState() : current_page(0), cursor_x(0), cursor_y(0), input_active(false) {}
 
     void save() {
-        if (MainLayer != NULL) {
+        if (MainLayer != nullptr) {
             current_page = MainLayer->page_x;  // Use page_x instead of page
             cursor_x = MainLayer->cursor;       // Use cursor instead of cursor_x
             cursor_y = 0;                       // No cursor_y, set to 0
@@ -740,7 +740,7 @@ struct SavedUIState {
     }
 
     void restore() {
-        if (MainLayer != NULL) {
+        if (MainLayer != nullptr) {
             // Request the server to switch to the saved page
             // This will be sent when connection is restored
             fprintf(stderr, "UI State: Requesting page %d restore\n", current_page);
@@ -790,9 +790,9 @@ void X11ResourceManager::cleanup() {
     }
 }
 
-static Widget       MainShell = NULL;
+static Widget       MainShell = nullptr;
 static int          ScrNo     = 0;
-static Screen      *ScrPtr    = NULL;
+static Screen      *ScrPtr    = nullptr;
 static int          ScrHeight = 0;
 static int          ScrWidth  = 0;
 static Window       RootWin;
@@ -889,7 +889,7 @@ genericChar* RStr(genericChar* s)
     FnTrace("RStr()");
 
     static genericChar buffer[1024] = "";
-    if (s == NULL)
+    if (s == nullptr)
         s = buffer;
     if (BufferIn.GetString(s, sizeof(buffer)))
     {
@@ -981,7 +981,7 @@ const char* Translations::GetTranslation(const char* key)
     FnTrace("Translations::GetTranslation()");
 
     Translation *trans = trans_list.Head();
-    while (trans != NULL)
+    while (trans != nullptr)
     {
         if (trans->Match(key))
         {
@@ -1002,7 +1002,7 @@ void Translations::PrintTranslations()
     char key[STRLONG];
     char value[STRLONG];
 
-    while (trans != NULL)
+    while (trans != nullptr)
     {
         trans->GetKey(key, STRLONG);
         trans->GetValue(value, STRLONG);
@@ -1045,7 +1045,7 @@ public:
                 (py < (y + h + EXTRA_ICON_WIDTH));
         }
 
-    int Command(Layer * /*l*/)
+    int Command(Layer * /*l*/) override
         {
             if (allow_iconify)
             {
@@ -1054,7 +1054,7 @@ public:
             }
             return 0;
         }
-    int Render(Layer *l)
+    int Render(Layer *l) override
         {
             if (allow_iconify)
                 return LO_PushButton::Render(l);
@@ -1117,7 +1117,7 @@ void ExposeCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
 {
     FnTrace("ExposeCB()");
 
-    if (event == NULL)
+    if (event == nullptr)
     {
         fprintf(stderr, "ExposeCB: event is NULL, skipping expose processing\n");
         return;
@@ -1177,7 +1177,7 @@ void UpdateCB(XtPointer /*client_data*/, XtIntervalId * /*timer_id*/)
     
     // Critical fix: Clear the old timer ID before setting new one to prevent race condition
     UpdateTimerID = 0;
-    UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, NULL);
+    UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, nullptr);
 }
 
 void TouchScreenCB(XtPointer /*client_data*/, int * /*fid*/, XtInputId * /*id*/)
@@ -1291,7 +1291,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
 {
     FnTrace("KeyPressCB()");
 
-    if (event == NULL)
+    if (event == nullptr)
     {
         fprintf(stderr, "KeyPressCB: event is NULL, skipping key press processing\n");
         return;
@@ -1311,7 +1311,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
     KeySym key = 0;
     std::array<genericChar, 32> buffer;
 
-    int len = XLookupString(e, buffer.data(), 31, &key, NULL);
+    int len = XLookupString(e, buffer.data(), 31, &key, nullptr);
     if (len < 0)
         len = 0;
     buffer[len] = '\0';
@@ -1570,7 +1570,7 @@ void MouseClickCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
 {
     FnTrace("MouseClickCB()");
 
-    if (event == NULL)
+    if (event == nullptr)
     {
         fprintf(stderr, "MouseClickCB: event is NULL, skipping mouse click processing\n");
         return;
@@ -1616,7 +1616,7 @@ void MouseReleaseCB(Widget widget, XtPointer client_data, XEvent *event,
 {
     FnTrace("MouseReleaseCB()");
 
-    if (event == NULL)
+    if (event == nullptr)
     {
         fprintf(stderr, "MouseReleaseCB: event is NULL, skipping mouse release processing\n");
         return;
@@ -1648,7 +1648,7 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
 {
     FnTrace("MouseMoveCB()");
 
-    if (event == NULL)
+    if (event == nullptr)
     {
         fprintf(stderr, "MouseMoveCB: event is NULL, skipping mouse move processing\n");
         return;
@@ -1663,7 +1663,7 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
 
     // try to intelligently determine whether this might be
     // a touch
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
     if ((now.tv_sec - last_mouse_time.tv_sec) > 1 ||
         (now.tv_usec - last_mouse_time.tv_usec) > 100000)
     {
@@ -1726,7 +1726,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             saved_ui_state.save();
 
             // Show "Reconnecting..." message on screen instead of just logging
-            if (MainLayer != NULL) {
+            if (MainLayer != nullptr) {
                 ShowReconnectingMessage();
             }
         }
@@ -1761,7 +1761,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
                 consecutive_failures = 0;
 
                 // Hide reconnecting message and restore normal operation
-                if (MainLayer != NULL) {
+                if (MainLayer != nullptr) {
                     HideReconnectingMessage();
                 }
 
@@ -1790,7 +1790,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
     consecutive_failures = 0;
     if (connection_monitor.get_state() != CONNECTION_CONNECTED) {
         connection_monitor.set_connected();
-        if (MainLayer != NULL) {
+        if (MainLayer != nullptr) {
             HideReconnectingMessage();
             // Restore UI state after reconnection
             saved_ui_state.restore();
@@ -1799,7 +1799,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
     connection_monitor.send_heartbeat();
 
     Layer *l = MainLayer;
-    if (l == NULL)
+    if (l == nullptr)
     {
         fprintf(stderr, "SocketInputCB: MainLayer is NULL, skipping processing\n");
         return;
@@ -2389,8 +2389,8 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
  * General Functions
  ********************************************************************/
 
-Layer       *TargetLayer = NULL;
-LayerObject *TargetObject = NULL;
+Layer       *TargetLayer = nullptr;
+LayerObject *TargetObject = nullptr;
 
 int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericChar* title)
 {
@@ -2404,7 +2404,7 @@ int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericCh
 
     KillLayer(id);
     Layer *l = new Layer(Dis, Gfx, MainWin, w, h);
-    if (l == NULL)
+    if (l == nullptr)
         return 1;
 
     if (l->pix == 0)
@@ -2433,7 +2433,7 @@ int ShowLayer(int id)
     FnTrace("ShowLayer()");
 
     Layer *l = Layers.FindByID(id);
-    if (l == NULL)
+    if (l == nullptr)
         return 1;
 
     l->buttons.Render(l);
@@ -2466,7 +2466,7 @@ int SetTargetLayer(int id)
     FnTrace("SetTargetLayer()");
 
     Layer *l = Layers.FindByID(id);
-    if (l == NULL)
+    if (l == nullptr)
         return 1;
 
     TargetLayer = l;
@@ -2479,7 +2479,7 @@ int NewPushButton(int id, int x, int y, int w, int h, const genericChar* text,
     FnTrace("NewPushButton()");
 
     Layer *l = TargetLayer;
-    if (l == NULL)
+    if (l == nullptr)
         return 1;
     LO_PushButton *b = new LO_PushButton(text, c1, c2);
     b->SetRegion(x + l->offset_x, y + l->offset_y, w, h);
@@ -2666,7 +2666,7 @@ Pixmap LoadPixmap(const char**image_data)
     Pixmap retxpm = 0;
     int status;
 
-    status = XpmCreatePixmapFromData(Dis, MainWin, const_cast<char**>(image_data), &retxpm, NULL, NULL);
+    status = XpmCreatePixmapFromData(Dis, MainWin, const_cast<char**>(image_data), &retxpm, nullptr, nullptr);
     if (status != XpmSuccess)
         fprintf(stderr, "XpmError:  %s\n", XpmGetErrorString(status));
 
@@ -2683,7 +2683,7 @@ Xpm *LoadPixmapFile(char* file_name)
 {
     FnTrace("LoadPixmapFile()");
     
-    Xpm *retxpm = NULL;
+    Xpm *retxpm = nullptr;
     Pixmap xpm;
     XpmAttributes attributes;
     int status;
@@ -2694,7 +2694,7 @@ Xpm *LoadPixmapFile(char* file_name)
         if (sb.st_size <= MAX_XPM_SIZE)
         {
             attributes.valuemask = 0;
-            status = XpmReadFileToPixmap(Dis, MainWin, file_name, &xpm, NULL, &attributes);
+            status = XpmReadFileToPixmap(Dis, MainWin, file_name, &xpm, nullptr, &attributes);
             if (status != XpmSuccess)
             {
                 fprintf(stderr, "XpmError %s for %s\n", XpmGetErrorString(status), file_name);
@@ -2978,7 +2978,7 @@ Xpm *LoadPNGFile(const char* file_name)
         return nullptr;
     }
 
-    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     if (!png_ptr) {
         fprintf(stderr, "LoadPNGFile: Cannot create PNG read struct\n");
         fclose(fp);
@@ -2988,14 +2988,14 @@ Xpm *LoadPNGFile(const char* file_name)
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
         fprintf(stderr, "LoadPNGFile: Cannot create PNG info struct\n");
-        png_destroy_read_struct(&png_ptr, NULL, NULL);
+        png_destroy_read_struct(&png_ptr, nullptr, nullptr);
         fclose(fp);
         return nullptr;
     }
 
     if (setjmp(png_jmpbuf(png_ptr))) {
         fprintf(stderr, "LoadPNGFile: PNG read error in %s\n", file_name);
-        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
         fclose(fp);
         return nullptr;
     }
@@ -3042,7 +3042,7 @@ Xpm *LoadPNGFile(const char* file_name)
     png_bytep* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
     if (!row_pointers) {
         fprintf(stderr, "LoadPNGFile: Cannot allocate row pointers\n");
-        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
         fclose(fp);
         return nullptr;
     }
@@ -3053,7 +3053,7 @@ Xpm *LoadPNGFile(const char* file_name)
             fprintf(stderr, "LoadPNGFile: Cannot allocate row data\n");
             for (int i = 0; i < y; i++) free(row_pointers[i]);
             free(row_pointers);
-            png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+            png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
             fclose(fp);
             return nullptr;
         }
@@ -3169,7 +3169,7 @@ Xpm *LoadPNGFile(const char* file_name)
                 
                 // Put mask to mask pixmap
                 if (mask && mask_image) {
-                    GC mask_gc = XCreateGC(Dis, mask, 0, NULL);
+                    GC mask_gc = XCreateGC(Dis, mask, 0, nullptr);
                     XPutImage(Dis, mask, mask_gc, mask_image, 0, 0, 0, 0, width, height);
                     XFreeGC(Dis, mask_gc);
                     XDestroyImage(mask_image);
@@ -3190,7 +3190,7 @@ Xpm *LoadPNGFile(const char* file_name)
         free(row_pointers[y]);
     }
     free(row_pointers);
-    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+    png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
     fclose(fp);
 
     if (pixmap) {
@@ -3354,7 +3354,7 @@ Xpm *LoadGIFFile(const char* file_name)
 int ReadScreenSaverPix()
 {
     FnTrace("ReadScreenSaverPix()");
-    struct dirent *record = NULL;
+    struct dirent *record = nullptr;
     DIR *dp;
     Xpm *newpm;
     genericChar fullpath[STRLONG];
@@ -3362,12 +3362,12 @@ int ReadScreenSaverPix()
     if (!fs::is_directory(SCREENSAVER_DIR))
     {
         std::cerr << "Screen saver directory does not exist: '"
-            << SCREENSAVER_DIR << "' creating it" << std::endl;
+            << SCREENSAVER_DIR << "' creating it" << '\n';
         fs::create_directory(SCREENSAVER_DIR);
         fs::permissions(SCREENSAVER_DIR, fs::perms::all); // be sure read/write/execute flags are set
     }
     dp = opendir(SCREENSAVER_DIR);
-    if (dp == NULL)
+    if (dp == nullptr)
     {
         ReportError("Can't find screen saver directory");
         return 1;
@@ -3385,7 +3385,7 @@ int ReadScreenSaverPix()
             {
                 snprintf(fullpath, STRLONG, "%s/%s", SCREENSAVER_DIR, name);
                 newpm = LoadPixmapFile(fullpath);
-                if (newpm != NULL)
+                if (newpm != nullptr)
                     PixmapList.Add(newpm);
             }
         }
@@ -3556,7 +3556,7 @@ int Calibrate(int status)
 {
     FnTrace("Calibrate()");
 
-    if (TScreen == NULL)
+    if (TScreen == nullptr)
         return 1;
 
     ResetView();
@@ -3573,7 +3573,7 @@ int Calibrate(int status)
         TScreen->Calibrate();
         TouchInputID =
             XtAppAddInput(App, TScreen->device_no, (XtPointer)XtInputReadMask,
-                          (XtInputCallbackProc)CalibrateCB, NULL);
+                          (XtInputCallbackProc)CalibrateCB, nullptr);
         break;
     case 1:   // 2nd stage - get lower left touch
         XSetTile(Dis, Gfx, GetTexture(IMAGE_LIT_SAND));
@@ -3625,7 +3625,7 @@ int StartTimers()
     if (UpdateTimerID == 0)
 	{
         UpdateTimerID = XtAppAddTimeOut(App, Constants::UPDATE_TIME,
-                                        (XtTimerCallbackProc) UpdateCB, NULL);
+                                        (XtTimerCallbackProc) UpdateCB, nullptr);
 	}
 
     if (TouchInputID == 0 && TScreen && TScreen->device_no > 0)
@@ -3637,7 +3637,7 @@ int StartTimers()
                                      TScreen->device_no, 
                                      (XtPointer) XtInputReadMask, 
                                      (XtInputCallbackProc) TouchScreenCB, 
-                                     NULL);
+                                     nullptr);
 	}
 
     return 0;
@@ -3741,7 +3741,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
     int i;
 
-    srand(time(NULL));
+    srand(time(nullptr));
 
     // Init Xt & Create Application Context
     App = XtCreateApplicationContext();
@@ -3755,7 +3755,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     int argc = 1;
     const genericChar* argv[] = {"vt_term"};
     IsTermLocal = is_term_local;
-    Dis = XtOpenDisplay(App, display, NULL, NULL, NULL, 0, &argc, const_cast<char**>(argv));
+    Dis = XtOpenDisplay(App, display, nullptr, nullptr, nullptr, 0, &argc, const_cast<char**>(argv));
     if (Dis == nullptr)
     {
         std::string error_msg = "Can't open display '" + std::string(display) + "'";
@@ -3906,7 +3906,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         fprintf(stderr, "Raspberry Pi detected: Disabling expensive rendering features for better performance\n");
     }
 
-    Gfx       = XCreateGC(Dis, MainWin, 0, NULL);
+    Gfx       = XCreateGC(Dis, MainWin, 0, nullptr);
     ShadowPix = XmuCreateStippledPixmap(ScrPtr, 0, 1, 1);
     XSetStipple(Dis, Gfx, ShadowPix);
 
@@ -3915,7 +3915,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     CursorWait = XCreateFontCursor(Dis, XC_watch);
     // Setup Blank Cursor
     Pixmap p   = XCreatePixmap(Dis, MainWin, 16, 16, 1);
-    GC     pgc = XCreateGC(Dis, p, 0, NULL);
+    GC     pgc = XCreateGC(Dis, p, 0, nullptr);
     XSetForeground(Dis, pgc, BlackPixel(Dis, ScrNo));
     XSetFillStyle(Dis, pgc, FillSolid);
     XFillRectangle(Dis, p, pgc, 0, 0, 16, 16);
@@ -3984,7 +3984,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     LastInput = SystemTime;
 
     SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
-                                  (XtInputCallbackProc) SocketInputCB, NULL);
+                                  (XtInputCallbackProc) SocketInputCB, nullptr);
 
     // Send server term size
     int screen_size = PAGE_SIZE_640x480;
@@ -4031,11 +4031,11 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     if (TScreen)
         TScreen->Flush();
 
-    XtAddEventHandler(MainShell, KeyPressMask, FALSE, KeyPressCB, NULL);
-    XtAddEventHandler(MainShell, ExposureMask, FALSE, ExposeCB, NULL);
-    XtAddEventHandler(MainShell, ButtonPressMask, FALSE, MouseClickCB, NULL);
-    XtAddEventHandler(MainShell, ButtonReleaseMask, FALSE, MouseReleaseCB, NULL);
-    XtAddEventHandler(MainShell, PointerMotionMask, FALSE, MouseMoveCB, NULL);
+    XtAddEventHandler(MainShell, KeyPressMask, FALSE, KeyPressCB, nullptr);
+    XtAddEventHandler(MainShell, ExposureMask, FALSE, ExposeCB, nullptr);
+    XtAddEventHandler(MainShell, ButtonPressMask, FALSE, MouseClickCB, nullptr);
+    XtAddEventHandler(MainShell, ButtonReleaseMask, FALSE, MouseReleaseCB, nullptr);
+    XtAddEventHandler(MainShell, PointerMotionMask, FALSE, MouseMoveCB, nullptr);
 
     //Boolean okay;
     XEvent event;
@@ -4108,7 +4108,7 @@ void ShowReconnectingMessage()
 {
     FnTrace("ShowReconnectingMessage()");
 
-    if (reconnect_message_visible || Dis == NULL) {
+    if (reconnect_message_visible || Dis == nullptr) {
         return;
     }
 
@@ -4167,7 +4167,7 @@ void HideReconnectingMessage()
 {
     FnTrace("HideReconnectingMessage()");
 
-    if (!reconnect_message_visible || Dis == NULL) {
+    if (!reconnect_message_visible || Dis == nullptr) {
         return;
     }
 
@@ -4177,7 +4177,7 @@ void HideReconnectingMessage()
     }
 
     // Force a redraw of the main window to restore normal display
-    if (MainLayer != NULL) {
+    if (MainLayer != nullptr) {
         MainLayer->DrawAll();
         XFlush(Dis);
     }
@@ -4252,7 +4252,7 @@ int ReconnectToServer()
 
     // Re-add the input handler
     SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
-                                  (XtInputCallbackProc) SocketInputCB, NULL);
+                                  (XtInputCallbackProc) SocketInputCB, nullptr);
 
     fprintf(stderr, "ReconnectToServer: Successfully reconnected\n");
     return 0;
@@ -4343,7 +4343,7 @@ int KillTerm()
     if (Gfx)
     {
         XFreeGC(Dis, Gfx);
-        Gfx = NULL;
+        Gfx = nullptr;
     }
 
     for (auto& font : FontInfo)
@@ -4369,12 +4369,12 @@ int KillTerm()
     if (Dis)
     {
         XtCloseDisplay(Dis);
-        Dis = NULL;
+        Dis = nullptr;
     }
     if (App)
     {
         XtDestroyApplicationContext(App);
-        App = NULL;
+        App = nullptr;
     }
     return 0;
 }

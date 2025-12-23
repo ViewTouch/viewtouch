@@ -50,16 +50,16 @@
  * SwitchZone Class
  ********************************************************************/
 
-static const genericChar* PasswordName[] = {"No", "Managers Only", "Everyone", NULL};
+static const genericChar* PasswordName[] = {"No", "Managers Only", "Everyone", nullptr};
 static int PasswordValue[] = {PW_NONE, PW_MANAGERS, PW_ALL, -1};
 
 // octal values for ISO-8859-15:
 // \244	= Euro 			("€")
 // \243 = British pound ("£")
 // " "  = no symbol
-static const genericChar* MoneySymbolName[] = { "$", "\244", "\243", " ", NULL };
+static const genericChar* MoneySymbolName[] = { "$", "\244", "\243", " ", nullptr };
 
-static const genericChar* ButtonTextPosName[] = { "Over Image", "Above Image", "Below Image", NULL };
+static const genericChar* ButtonTextPosName[] = { "Over Image", "Above Image", "Below Image", nullptr };
 static int ButtonTextPosValue[] = { 0, 1, 2, -1 };
 
 namespace {
@@ -138,9 +138,9 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
 	RenderZone(term, SwitchName[idx], update_flag);
 	Settings *settings = term->GetSettings();
 
-	int   col = COLOR_BLUE;
+    int   col = COLOR_BLUE;
     int   onoff = -1;
-	const char* str = NULL;
+    const char* str = nullptr;
 	switch (type)
 	{
     case SWITCH_SEATS:
@@ -283,7 +283,7 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
 	}
 
 	// For switches that don't have custom text, set On/Off text
-	if (onoff >= 0 && str == NULL)
+    if (onoff >= 0 && str == nullptr)
 	{
 		if (onoff == 0)
 		{
@@ -530,7 +530,7 @@ const char* SwitchZone::TranslateString(Terminal * /*term*/)
     FnTrace("SwitchZone::TranslateString()");
     int idx = CompareList(type, SwitchValue);
     if (idx < 0)
-        return NULL;
+        return nullptr;
 
     return SwitchName[idx];
 }
@@ -577,7 +577,7 @@ SettingsZone::SettingsZone()
     LeftAlign();
     AddTextField("Lowest Account Number", 10);  SetFlag(FF_ONLYDIGITS);
     AddTextField("Highest Account Number", 10);  SetFlag(FF_ONLYDIGITS);
-    AddListField("Account for expenses paid from drawers", NULL);
+    AddListField("Account for expenses paid from drawers", nullptr);
     
     // Section 3: Drawer Settings
     AddNewLine();
@@ -661,7 +661,7 @@ SignalResult SettingsZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("SettingsZone::Signal()");
     static const genericChar* commands[] = {"section0", "section1", "section2", "section3",
-                                      "section4", "section5", "section6", "section7", NULL};
+                                      "section4", "section5", "section6", "section7", nullptr};
     SignalResult retval = SIGNAL_OKAY;
     int draw = 1;
     int new_section = -1;
@@ -740,8 +740,8 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
     }
 
     // Activate fields for current section
-    FormField *section_start = NULL;
-    FormField *section_end = NULL;
+    FormField *section_start = nullptr;
+    FormField *section_end = nullptr;
     
     switch (section)
     {
@@ -775,7 +775,7 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
         break;
     case 7:  // Kitchen Video Order Alert Settings
         section_start = kitchen_start;
-        section_end = NULL;  // Last section
+        section_end = nullptr;  // Last section
         break;
     }
 
@@ -800,9 +800,9 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
     }
 
     if (update_flag || keep_focus == 0)
-        keyboard_focus = NULL;
+        keyboard_focus = nullptr;
 
-    LayoutZone::Render(term, update_flag);
+    FormZone::Render(term, update_flag);
 
     if (!no_line)
     {
@@ -816,7 +816,7 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
     if (records > 0)
     {
         LayoutForm(term);
-        for (FormField *field = FieldList(); field != NULL; field = field->next)  // Renamed 'f' to 'field' to avoid shadowing
+        for (FormField *field = FieldList(); field != nullptr; field = field->next)  // Renamed 'f' to 'field' to avoid shadowing
         {
             field->selected = (keyboard_focus == field);
             if (field->active)
@@ -861,7 +861,7 @@ int SettingsZone::LoadRecord(Terminal *term, int /*record*/)
 {
     FnTrace("SettingsZone::LoadRecord()");
     Settings *settings = term->GetSettings();
-    FormField *f = NULL;
+    FormField *f = nullptr;
     int day_length_hrs = settings->min_day_length / 60 / 60;
 
     // Find the start field for current section
@@ -894,7 +894,7 @@ int SettingsZone::LoadRecord(Terminal *term, int /*record*/)
         {
             // need to get the list of accounts for this
             Account *acct = term->system_data->account_db.AccountList();
-            while (acct != NULL)
+            while (acct != nullptr)
             {
                 f->AddEntry(acct->name.Value(), acct->number);
                 acct = acct->next;
@@ -964,7 +964,7 @@ int SettingsZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("SettingsZone::SaveRecord()");
     Settings *settings = term->GetSettings();
-    FormField *f = NULL;
+    FormField *f = nullptr;
     int day_length_hrs = 0;
 
     // Find the start field for current section
@@ -1355,7 +1355,7 @@ int TaxSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
  * CCSettingsZone Class
  ********************************************************************/
 
-const genericChar* CCNumName[] = { "1234 5678 9012 3456", "xxxx xxxx xxxx 3456", NULL };
+const genericChar* CCNumName[] = { "1234 5678 9012 3456", "xxxx xxxx xxxx 3456", nullptr };
 
 CCSettingsZone::CCSettingsZone()
 {
@@ -1736,8 +1736,8 @@ SignalResult DeveloperZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("DeveloperZone::Signal()");
     static const genericChar* commands[] = {"clearsystem", "clear system", "clearsystemall",
-                                      "clearsystemsome", NULL};
-    SimpleDialog *sd = NULL;
+                                      "clearsystemsome", nullptr};
+    SimpleDialog *sd = nullptr;
 
     int idx = CompareList(message, commands);
     switch (idx)
@@ -1858,7 +1858,7 @@ int RevenueGroupsZone::AddFields()
     FnTrace("RevenueGroupsZone::AddFields()");
 
     int i = 0;
-    for (i = 0; FamilyName[i] != NULL; i++)
+    for (i = 0; FamilyName[i] != nullptr; i++)
     {
         AddListField(MasterLocale->Translate(FamilyName[i]),
                      SalesGroupName, SalesGroupValue);
@@ -1930,9 +1930,9 @@ int RevenueGroupsZone::SaveRecord(Terminal *term, int record, int write_file)
 #define CP_TYPE_PERCENT  1
 #define CP_TYPE_SUBST    2
 
-static const char* TS_TypeName[] = {"dollar value", "percent of price", NULL};
+static const char* TS_TypeName[] = {"dollar value", "percent of price", nullptr};
 static const char* CP_TypeName[] = {"dollar value", "percent of price",
-                              "substitute price", NULL};
+                              "substitute price", nullptr};
 static int CP_TypeValue[] = { CP_TYPE_DOLLAR, CP_TYPE_PERCENT,
                               CP_TYPE_SUBST, -1 };
 
@@ -2088,7 +2088,7 @@ SignalResult TenderSetZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("TenderSetZone::Signal()");
 	static const genericChar* commands[] = {"section", "clearstart",
-                                      "clearend", "clearweekday", NULL};
+                                      "clearend", "clearweekday", nullptr};
     SignalResult retval = SIGNAL_OKAY;
     int draw = 1;
 
@@ -2107,16 +2107,16 @@ SignalResult TenderSetZone::Signal(Terminal *term, const genericChar* message)
         records = RecordCount(term);
         break;
     case 1:  // clearstart
-        coupon_time_start->Set((TimeInfo *) NULL);
-        coupon_time_end->Set((TimeInfo *) NULL);
-        coupon_date_start->Set((TimeInfo *) NULL);
-        coupon_date_end->Set((TimeInfo *) NULL);
+        coupon_time_start->Set(static_cast<TimeInfo*>(nullptr));
+        coupon_time_end->Set(static_cast<TimeInfo*>(nullptr));
+        coupon_date_start->Set(static_cast<TimeInfo*>(nullptr));
+        coupon_date_end->Set(static_cast<TimeInfo*>(nullptr));
         break;
     case 2:  // clearend
-        coupon_time_start->Set((TimeInfo *) NULL);
-        coupon_time_end->Set((TimeInfo *) NULL);
-        coupon_date_start->Set((TimeInfo *) NULL);
-        coupon_date_end->Set((TimeInfo *) NULL);
+        coupon_time_start->Set(static_cast<TimeInfo*>(nullptr));
+        coupon_time_end->Set(static_cast<TimeInfo*>(nullptr));
+        coupon_date_start->Set(static_cast<TimeInfo*>(nullptr));
+        coupon_date_end->Set(static_cast<TimeInfo*>(nullptr));
         break;
     case 3:  // clearweekday
         coupon_weekdays->Set(0);
@@ -2164,7 +2164,7 @@ int TenderSetZone::LoadRecord(Terminal *term, int record)
         {
             record = 0;
             ds = settings->DiscountList();
-            while (ds != NULL)
+            while (ds != nullptr)
             {
                 if (display_id == ds->id)
                     break;
@@ -2209,7 +2209,7 @@ int TenderSetZone::LoadRecord(Terminal *term, int record)
         {
             record = 0;
             cp = settings->CouponList();
-            while (cp != NULL)
+            while (cp != nullptr)
             {
                 if (display_id == cp->id)
                     break;
@@ -2301,7 +2301,7 @@ int TenderSetZone::LoadRecord(Terminal *term, int record)
         {
             record = 0;
             cc = settings->CreditCardList();
-            while (cc != NULL)
+            while (cc != nullptr)
             {
                 if (display_id == cc->id)
                     break;
@@ -2332,7 +2332,7 @@ int TenderSetZone::LoadRecord(Terminal *term, int record)
         {
             record = 0;
             thisComp = settings->CompList();
-            while (thisComp != NULL)
+            while (thisComp != nullptr)
             {
                 if (display_id == thisComp->id)
                     break;
@@ -2386,7 +2386,7 @@ int TenderSetZone::LoadRecord(Terminal *term, int record)
         {
             record = 0;
             mi = settings->MealList();
-            while (mi != NULL)
+            while (mi != nullptr)
             {
                 if (display_id == mi->id)
                     break;
@@ -2476,7 +2476,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(ds);
                 dslist = settings->DiscountList();  // refresh
-                if (dslist != NULL)
+                if (dslist != nullptr)
                     ds->id = settings->MediaFirstID(dslist, 1);
                 else
                     ds->id = 1;
@@ -2489,7 +2489,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(ds);
                 dslist = settings->DiscountList();  // refresh
-                if (dslist != NULL)
+                if (dslist != nullptr)
                     ds->id = settings->MediaFirstID(dslist, GLOBAL_MEDIA_ID);
                 else
                     ds->id = GLOBAL_MEDIA_ID;
@@ -2550,7 +2550,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(cp);
                 cplist = settings->CouponList();  // refresh
-                if (cplist != NULL)
+                if (cplist != nullptr)
                     cp->id = settings->MediaFirstID(cplist, 1);
                 else
                     cp->id = 1;
@@ -2563,7 +2563,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(cp);
                 cplist = settings->CouponList();  // refresh
-                if (cplist != NULL)
+                if (cplist != nullptr)
                     cp->id = settings->MediaFirstID(cplist, GLOBAL_MEDIA_ID);
                 else
                     cp->id = 1;
@@ -2594,7 +2594,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(cc);
                 cclist = settings->CreditCardList();  // refresh
-                if (cclist != NULL)
+                if (cclist != nullptr)
                     cc->id = settings->MediaFirstID(cclist, 1);
                 else
                     cc->id = 1;
@@ -2607,7 +2607,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(cc);
                 cclist = settings->CreditCardList();  // refresh
-                if (cclist != NULL)
+                if (cclist != nullptr)
                     cc->id = settings->MediaFirstID(cclist, GLOBAL_MEDIA_ID);
                 else
                     cc->id = GLOBAL_MEDIA_ID;
@@ -2651,7 +2651,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(cm);
                 cmlist = settings->CompList();  // refresh
-                if (cmlist != NULL)
+                if (cmlist != nullptr)
                     cm->id = settings->MediaFirstID(cmlist, 1);
                 else
                     cm->id = 1;
@@ -2664,7 +2664,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(cm);
                 cmlist = settings->CompList();  // refresh
-                if (cmlist != NULL)
+                if (cmlist != nullptr)
                     cm->id = settings->MediaFirstID(cmlist, GLOBAL_MEDIA_ID);
                 else
                     cm->id = GLOBAL_MEDIA_ID;
@@ -2764,7 +2764,7 @@ int TenderSetZone::KillRecord(Terminal *term, int record)
     {
         DiscountInfo *ds = settings->FindDiscountByRecord(record);
         ds->active = 0;
-        if (ds->next != NULL)
+        if (ds->next != nullptr)
             display_id = ds->next->id;
         else
             record_no = -1;
@@ -2829,7 +2829,7 @@ int TenderSetZone::UpdateForm(Terminal *term, int record)
 {
     FnTrace("TenderSetZone::UpdateForm()");
     int retval = 0;
-    FormField *field = NULL;
+    FormField *field = nullptr;
     int is_item_specific = 0;
     int is_active = 0;
     static int last_family = -1;
@@ -2850,7 +2850,7 @@ int TenderSetZone::UpdateForm(Terminal *term, int record)
         field = field->next;
         if (is_item_specific)
             is_active = 1;
-        while (field != NULL && field != creditcard_start)
+        while (field != nullptr && field != creditcard_start)
         {
             field->active = is_active;
             field = field->next;
@@ -2931,7 +2931,7 @@ int TenderSetZone::ItemList(FormField *itemfield, int family, int item_id)
     if (items->ItemsInFamily(family) > 0)
     {
         itemfield->AddEntry(ALL_ITEMS_STRING, -1);
-        while (item != NULL)
+        while (item != nullptr)
         {
             if (item->family == family)
             {
@@ -3203,7 +3203,7 @@ int TimeSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
     f->Get(settings->wage_week_start);
     f = f->next;
 
-    term->UpdateOtherTerms(UPDATE_MEAL_PERIOD, NULL);
+    term->UpdateOtherTerms(UPDATE_MEAL_PERIOD, nullptr);
     if (write_file)
         settings->Save();
     return 0;

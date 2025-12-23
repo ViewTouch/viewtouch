@@ -7,12 +7,12 @@ int main(int, const char **)
 {
     std::cout << viewtouch::get_project_name() << " "
               << viewtouch::get_version_short()
-              << std::endl;
+              << '\n';
     std::cout << viewtouch::get_project_name() << " "
               << viewtouch::get_version_long()
-              << std::endl;
+              << '\n';
     std::cout << viewtouch::get_project_name() << " "
               << viewtouch::get_version_info()
-              << std::endl;
+              << '\n';
     return 0;
 }

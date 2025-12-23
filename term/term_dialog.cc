@@ -91,7 +91,7 @@ Widget AddLine(Widget parent)
 }
 
 int AddButtons(Widget parent, XtCallbackProc okay_cb, XtCallbackProc delete_cb,
-               XtCallbackProc cancel_cb, void *client_data = NULL)
+               XtCallbackProc cancel_cb, void *client_data = nullptr)
 {
     Widget f = XtVaCreateWidget("form", xmFormWidgetClass, parent,
                                 XmNleftAttachment,  XmATTACH_WIDGET,
@@ -141,8 +141,8 @@ int AddButtons(Widget parent, XtCallbackProc okay_cb, XtCallbackProc delete_cb,
 
 DialogEntry::DialogEntry()
 {
-    container = 0;
-    entry     = 0;
+    container = nullptr;
+    entry     = nullptr;
 }
 
 // Member Functions
@@ -253,7 +253,7 @@ DialogMenu::DialogMenu()
 
 DialogMenu::~DialogMenu()
 {
-    container = NULL;
+    container = nullptr;
 }
 
 // Member Functions
@@ -278,7 +278,7 @@ int DialogMenu::Init(Widget parent, const char* label, const char* *option_name,
 {
     const char* name;
 
-    if (container == NULL)
+    if (container == nullptr)
     {
         container = XtVaCreateWidget("form",
                                      xmFormWidgetClass,   parent,
@@ -422,8 +422,7 @@ DialogDoubleMenu::DialogDoubleMenu()
 }
 
 DialogDoubleMenu::~DialogDoubleMenu()
-{
-}
+= default;
 
 // Member Functions
 int DialogDoubleMenu::Init(Widget parent, const char* label,
@@ -838,7 +837,7 @@ DefaultDialog::DefaultDialog(Widget parent)
     default_shadow.Init(w, "Global Button Shadow Intensity", PageShadowName, PageShadowValue);
     AddLine(w);
 
-    AddButtons(w, DP_OkayCB, NULL, DP_CancelCB, this);
+    AddButtons(w, DP_OkayCB, nullptr, DP_CancelCB, this);
     XtManageChild(w);
 }
 
@@ -936,8 +935,8 @@ void ScanImageFiles()
     struct dirent *ent;
     struct stat st;
 
-    if ((dir = opendir("/usr/viewtouch/imgs")) != NULL) {
-        while ((ent = readdir(dir)) != NULL) {
+    if ((dir = opendir("/usr/viewtouch/imgs")) != nullptr) {
+        while ((ent = readdir(dir)) != nullptr) {
             std::string filename = ent->d_name;
 
             // Skip hidden files and directories
@@ -1537,7 +1536,7 @@ MultiZoneDialog::MultiZoneDialog(Widget parent)
     shadow.Init(w, "Shadow Intensity of All Buttons", ShadowName, ShadowValue);
 
     AddLine(w);
-    AddButtons(w, MZ_OkayCB, NULL, MZ_CancelCB, this);
+    AddButtons(w, MZ_OkayCB, nullptr, MZ_CancelCB, this);
     XtManageChild(w);
 }
 
@@ -1640,7 +1639,7 @@ TranslateDialog::TranslateDialog(Widget parent)
     translation.Init(w, "Translation");
 
     AddLine(w);
-    AddButtons(w, TD_OkayCB, NULL, TD_CancelCB, this);
+    AddButtons(w, TD_OkayCB, nullptr, TD_CancelCB, this);
     XtManageChild(w);
 }
 

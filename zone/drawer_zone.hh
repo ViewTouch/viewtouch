@@ -19,7 +19,7 @@
  */
 
 #ifndef _DRAWER_ZONE_HH
-#define _DRAWER_ZONE_HH
+#define DRAWER_ZONE_HH
 
 #include "layout_zone.hh"
 #include "zone_object.hh"

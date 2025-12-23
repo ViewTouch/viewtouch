@@ -3295,10 +3295,10 @@ SubCheck *SubCheck::Copy(Settings *settings)
     sc->check_type     = check_type;
 
     for (Order *order = OrderList(); order != nullptr; order = order->next)
-        sc->Add(order->Copy(), 0);
+        sc->Add(order->Copy(), nullptr);
 
     for (Payment *payptr = PaymentList(); payptr != nullptr; payptr = payptr->next)
-        sc->Add(payptr->Copy(), 0);
+        sc->Add(payptr->Copy(), nullptr);
         
     sc->FigureTotals(settings);
     return sc;
@@ -3323,10 +3323,10 @@ std::unique_ptr<SubCheck> SubCheck::CopyUnique(Settings *settings)
     sc->check_type     = check_type;
 
     for (Order *order = OrderList(); order != nullptr; order = order->next)
-        sc->Add(order->Copy(), 0);
+        sc->Add(order->Copy(), nullptr);
 
     for (Payment *payptr = PaymentList(); payptr != nullptr; payptr = payptr->next)
-        sc->Add(payptr->Copy(), 0);
+        sc->Add(payptr->Copy(), nullptr);
         
     sc->FigureTotals(settings);
     return sc;
@@ -3350,10 +3350,10 @@ int SubCheck::Copy(SubCheck *sc, Settings *settings, int restore)
     check_type     = sc->check_type;
 
     for (Order *order = sc->OrderList(); order != nullptr; order = order->next)
-        Add(order->Copy(), 0);
+        Add(order->Copy(), nullptr);
 
     for (Payment *payptr = sc->PaymentList(); payptr != nullptr; payptr = payptr->next)
-        Add(payptr->Copy(), 0);
+        Add(payptr->Copy(), nullptr);
 
     if (settings)
         FigureTotals(settings);
@@ -3393,7 +3393,7 @@ int SubCheck::Read(Settings *settings, InputDataFile &infile, int version)
                 ReportError(str);
                 return error;
             }
-            if (Add(order.release(), 0))
+            if (Add(order.release(), nullptr))
             {
                 ReportError(GlobalTranslate("Error in adding order"));
             }
@@ -3419,7 +3419,7 @@ int SubCheck::Read(Settings *settings, InputDataFile &infile, int version)
             {
                 return error;
             }
-            if (Add(pmnt.release(), 0))
+            if (Add(pmnt.release(), nullptr))
             {
                 ReportError(GlobalTranslate("Error in adding payment"));
             }
@@ -3558,7 +3558,7 @@ int SubCheck::Add(Payment *pmnt, Settings *settings)
             if (tt == TENDER_COMP || tt == TENDER_EMPLOYEE_MEAL ||
                 tt == TENDER_DISCOUNT)
             {
-                Remove(ptr, 0);
+                Remove(ptr, nullptr);
                 delete ptr;
             }
             else if (tt == TENDER_COUPON)
@@ -3566,7 +3566,7 @@ int SubCheck::Add(Payment *pmnt, Settings *settings)
                 if ((pmnt->flags & TF_APPLY_EACH) == 0 &&
                     (ptr->flags & TF_APPLY_EACH) == 0)
                 {
-                    Remove(ptr, 0);
+                    Remove(ptr, nullptr);
                     delete ptr;
                 }
             }
@@ -3580,7 +3580,7 @@ int SubCheck::Add(Payment *pmnt, Settings *settings)
         Payment *ptr = FindPayment(tt);
         if (ptr)
         {
-            Remove(ptr, 0);
+            Remove(ptr, nullptr);
             delete ptr;
         }
     }
@@ -3729,7 +3729,7 @@ int SubCheck::CancelPayments(Terminal *term)
                 if (credit->IsAuthed())
                     MasterSystem->cc_exception_db->Add(term, credit->Copy());
             }
-            Remove(payptr, 0);
+            Remove(payptr, nullptr);
             delete payptr;  // delete payptr also deletes credit
             change = 1;
         }
@@ -3845,7 +3845,7 @@ int SubCheck::FigureTotals(Settings *settings)
         case TENDER_CHANGE:
         case TENDER_OVERAGE:
         case TENDER_MONEY_LOST:
-            Remove(payptr, 0);
+            Remove(payptr, nullptr);
             delete payptr;
             break;
         case TENDER_GRATUITY:
@@ -4515,7 +4515,7 @@ int SubCheck::ConsolidateOrders(Settings *settings, int relaxed)
                 o2->modifier_list == nullptr &&
                 strcmp(thisOrder->item_name.Value(), o2->item_name.Value()) == 0)
             {
-                Remove(o2, 0);
+                Remove(o2, nullptr);
                 thisOrder->count += o2->count;
                 delete o2;
             }
@@ -4549,7 +4549,7 @@ int SubCheck::ConsolidatePayments(Settings *settings)
                 tt == p2->tender_type && payptr->flags == p2->flags &&
                 payptr->drawer_id == p2->drawer_id && payptr->user_id == p2->user_id)
             {
-                Remove(p2, 0);
+                Remove(p2, nullptr);
                 payptr->amount += p2->amount;
                 delete p2;
             }
@@ -5421,7 +5421,7 @@ Payment *SubCheck::NewPayment(int tender, int pid, int pflags, int pamount)
 {
     FnTrace("SubCheck::NewPayment()");
     Payment *payptr = new Payment(tender, pid, pflags, pamount);
-    Add(payptr, 0);
+    Add(payptr, nullptr);
     return payptr;
 }
 
@@ -6172,7 +6172,7 @@ int Order::IsEqual(Order *order)
         return 0;
     }
 
-    if (strcmp(item_name.Value(), order->item_name.Value()))
+    if (strcmp(item_name.Value(), order->item_name.Value()) != 0)
         return 0;
 
     // if this is a By the Pound order, then we don't want
@@ -6512,7 +6512,7 @@ int Payment::SetBatch(const char* termid, const char* batch)
     FnTrace("Payment::SetBatch()");
     int retval = 1;
 
-    if (credit != nullptr && strcmp(termid, credit->TermID()))
+    if (credit != nullptr && strcmp(termid, credit->TermID()) != 0)
         retval = credit->SetBatch(atol(batch), termid);
 
     return retval;

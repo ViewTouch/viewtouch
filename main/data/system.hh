@@ -269,7 +269,7 @@ public:
                        Archive *archive, Report *report, ReportZone *rzone);
     int CreditCardReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_time,
                          Archive *archive, Report *report, ReportZone *rzone);
-    int QuickBooksCSVExport(Terminal *term, TimeInfo start_time, TimeInfo end_time,
+    int QuickBooksCSVExport(Terminal *term, const TimeInfo& start_time, const TimeInfo& end_time,
                             PrinterQuickBooksCSV *printer);
     int AddBatch(long long batchnum);
 };

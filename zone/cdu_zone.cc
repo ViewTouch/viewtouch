@@ -41,17 +41,17 @@ CDUZone::CDUZone()
     AddSubmit("Submit", 10);
 
     record_no = -1;
-    report = NULL;
+    report = nullptr;
     page = 0;
     no_line = 1;
     lines_shown = 0;
     show_item = 0;
-    cdustring = NULL;
+    cdustring = nullptr;
 }
 
 CDUZone::~CDUZone()
 {
-    if (report != NULL)
+    if (report != nullptr)
         delete report;
 }
 
@@ -78,9 +78,9 @@ RenderResult CDUZone::Render(Terminal *term, int update_flag)
     TextL(term, header_line, term->Translate("First Line"), col);
     TextPosL(term, num_spaces, header_line, term->Translate("Second Line"), col);
 
-    if (update || update_flag || (report == NULL))
+    if (update || update_flag || (report == nullptr))
     {
-        if (report != NULL)
+        if (report != nullptr)
             delete report;
         report = new Report;
         ListReport(term, report);
@@ -108,7 +108,7 @@ SignalResult CDUZone::Signal(Terminal *term, const genericChar* message)
     FnTrace("CDUZone::Signal()");
     SignalResult signal = SIGNAL_IGNORED;
     static const genericChar* commands[] = {"next", "prior", "change view",
-                                      "restore", "new", NULL};
+                                      "restore", "new", nullptr};
     int idx = CompareListN(commands, message);
     int draw = 0;
 
@@ -183,7 +183,7 @@ SignalResult CDUZone::Touch(Terminal *term, int tx, int ty)
     FnTrace("CDUZone::Touch()");
     SignalResult retval = SIGNAL_IGNORED;
 
-    if (report != NULL)
+    if (report != nullptr)
     {
         FormZone::Touch(term, tx, ty);
         int yy = report->TouchLine(list_spacing, selected_y);
@@ -243,14 +243,14 @@ int CDUZone::UpdateForm(Terminal *term, int record)
     genericChar cduline[STRLENGTH];
     FormField *field = FieldList();
 
-    if (cdustring == NULL || show_item == 0)
+    if (cdustring == nullptr || show_item == 0)
         return 1;
 
     while (idx < MAX_CDU_LINES && changed == 0)
     {
         field->Get(formline);
         cdustring->GetLine(cduline, idx);
-        if (strcmp(formline.Value(), cduline))
+        if (strcmp(formline.Value(), cduline) != 0)
         {
             changed = 1;
             cdustring->SetLine(formline, idx);
@@ -260,10 +260,10 @@ int CDUZone::UpdateForm(Terminal *term, int record)
     }
     if (changed)
     {
-        if (report != NULL)
+        if (report != nullptr)
         {
             delete report;
-            report = NULL;
+            report = nullptr;
         }
         update = 1;
     }
@@ -275,7 +275,7 @@ int CDUZone::HideFields()
     FnTrace("CDUZone::HideFields()");
     FormField *field = FieldList();
 
-    while (field != NULL)
+    while (field != nullptr)
     {
         field->active = 0;
         field = field->next;
@@ -288,7 +288,7 @@ int CDUZone::ShowFields()
     FnTrace("CDUZone::ShowFields()");
     FormField *field = FieldList();
 
-    while (field != NULL)
+    while (field != nullptr)
     {
         field->active = 1;
         field = field->next;
@@ -305,13 +305,13 @@ int CDUZone::LoadRecord(Terminal *term, int record)
     if (show_item)
         cdustring = term->system_data->cdustrings.FindByRecord(record);
     else
-        cdustring = NULL;
+        cdustring = nullptr;
 
-    if (cdustring != NULL)
+    if (cdustring != nullptr)
     {
         record_no = record;
         // save off the cdustring for Undo
-        if (saved_cdustring == NULL)
+        if (saved_cdustring == nullptr)
             saved_cdustring = new CDUString;
         saved_cdustring->Copy(cdustring);
 
@@ -340,7 +340,7 @@ int CDUZone::SaveRecord(Terminal *term, int record, int write_file)
     FormField *field = FieldList();
     Str buffer;
 
-    if (cdustring != NULL)
+    if (cdustring != nullptr)
     {
         field->Get(buffer);
         cdustring->SetLine(buffer, 0);
@@ -353,10 +353,10 @@ int CDUZone::SaveRecord(Terminal *term, int record, int write_file)
     records = RecordCount(term);
     if (record_no >= records)
         record_no = records - 1;
-    if (report != NULL)
+    if (report != nullptr)
         delete report;
-    report = NULL;
-    cdustring = NULL;
+    report = nullptr;
+    cdustring = nullptr;
     show_item = 0;
     update = 1;
     return 0;
@@ -366,7 +366,7 @@ int CDUZone::RestoreRecord(Terminal *term)
 {
     FnTrace("CDUZone::RestoreRecord()");
 
-    if (cdustring != NULL && saved_cdustring != NULL)
+    if (cdustring != nullptr && saved_cdustring != nullptr)
     {
         cdustring->Copy(saved_cdustring);
         LoadRecord(term, record_no);
@@ -396,7 +396,7 @@ int CDUZone::KillRecord(Terminal *term, int record)
         {
             term->system_data->cdustrings.Remove(delstr);
             delete delstr;
-            cdustring = NULL;
+            cdustring = nullptr;
             records = RecordCount(term);
             if (record_no > records)
                 record_no = records - 1;
@@ -437,7 +437,7 @@ int CDUZone::Search(Terminal *term, int record, const genericChar* word)
         record_no = -1;
         show_item = 0;
         delete report;
-        report = NULL;
+        report = nullptr;
     }
     return 1;
 }
@@ -455,7 +455,7 @@ int CDUZone::ListReport(Terminal *term, Report *my_report)
     if (records < 1)
         my_report->TextC("No Messages Entered", col);
 
-    while (currString != NULL)
+    while (currString != nullptr)
     {
         for (idx = 0; idx < 2; idx++)
         {

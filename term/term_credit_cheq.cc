@@ -96,7 +96,7 @@ int my_connect(int sockfd, struct sockaddr *serv_addr, socklen_t addrlen, int ti
         writeset = readset;
         timev.tv_sec = timeout;
         timev.tv_usec = 0;
-        result = select(sockfd + 1, &readset, &writeset, NULL, &timev);
+        result = select(sockfd + 1, &readset, &writeset, nullptr, &timev);
         if (FD_ISSET(sockfd, &readset) || FD_ISSET(sockfd, &writeset))
             retval = 0;
         else
@@ -1112,7 +1112,7 @@ int CCard::ReadCheq(const char* buffer_param, int buffsize)
             FD_SET(ipconn, &readfd);
             timeout.tv_sec = 0;
             timeout.tv_usec = 50;
-            selresult = select(nfds, &readfd, NULL, NULL, &timeout);
+            selresult = select(nfds, &readfd, nullptr, nullptr, &timeout);
             if (selresult > 0)
             {
                 counter = 0;
