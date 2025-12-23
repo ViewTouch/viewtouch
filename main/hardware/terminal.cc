@@ -990,6 +990,8 @@ int Terminal::RunScript(const genericChar* script, int jump_type, int jump_id)
                     PushPage(p->id);
             }
             break;
+        default:
+            break;
         }
 
         for (int i = jump_count - 1; i >= 0; --i)
@@ -1639,6 +1641,8 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         
         return SIGNAL_OKAY;
     }
+    default:
+        break;
     }
     
     return SIGNAL_IGNORED;
@@ -3930,6 +3934,7 @@ int Terminal::RenderText(const std::string &str, int x, int y, int color, int fo
         case FONT_COURIER_20: font = FONT_COURIER_20B; break;
         case FONT_COURIER_18B: font = FONT_COURIER_18; break;
         case FONT_COURIER_20B: font = FONT_COURIER_20; break;
+        default: break;
         }
     }
     if (mode & PRINT_UNDERLINE)
@@ -3983,6 +3988,7 @@ int Terminal::RenderTextLen(const genericChar* str, int len, int x, int y, int c
         case FONT_COURIER_20:  font = FONT_COURIER_20B; break;
         case FONT_COURIER_18B: font = FONT_COURIER_18;  break;
         case FONT_COURIER_20B: font = FONT_COURIER_20;  break;
+        default: break;
         }
     }
     if (mode & PRINT_UNDERLINE)
@@ -4769,6 +4775,7 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             return EditTerm(0);  // Exit edit without saving, if we're in edit mode
         else
             return EditTerm(1);  // EditTerm defaults to 1 anyway
+        break;
     case XK_F3:  // record activity
         if (system_data->settings.enable_f3_f4_recording)
         {
@@ -4828,6 +4835,8 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             ForePage(); return 0;
         case XK_Page_Down:
             NextPage(); return 0;
+        default:
+            break;
         }
      }
     if (edit == 0)
@@ -4866,6 +4875,9 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             zone_db->CopyEdit(this, MOVE_RIGHT, 0);
         else
             zone_db->PositionEdit(this, grid_x, 0);
+        break;
+    default:
+        break;
         break;
     case XK_KP_3:
         if (state & ControlMask)
@@ -5162,6 +5174,8 @@ int Terminal::ButtonCommand(int command)
         WInt8(TERM_ICONIFY);
         SendNow();
         break;
+    default:
+        break;
 	}
 
 	if (edit == 0)
@@ -5189,6 +5203,8 @@ int Terminal::ButtonCommand(int command)
         break;
     case WB_PRIOR:
         ForePage();
+        break;
+    default:
         break;
     case WB_NEXT:
         NextPage();

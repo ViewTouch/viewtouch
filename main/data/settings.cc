@@ -1775,6 +1775,7 @@ int Settings::Load(const char* file)
                 case 1: break;
                 case 2: ti->drawers = 1; break;
                 case 3: ti->drawers = 2; break;
+                default: break;
                 }
                 ti->kitchen = tkitchen;
                 Add(ti);
@@ -3424,6 +3425,9 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
         case SP_QUARTER:
             end += date::months(3);
             break;
+        default:
+            break;
+            break;
         case SP_YTD:
             end += date::years(1);
             break;
@@ -3459,6 +3463,8 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
         break;
     case SP_YTD:
         start -= date::years(1);
+        break;
+    default:
         break;
     }
 //    printf("Settings::SetPeriod(): end ref=%d/%d/%d : start=%d/%d/%d : end=%d/%d/%d\n",
