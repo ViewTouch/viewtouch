@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Critical Bugprone Fixes (2025-12-23)**
+  - Fixed empty catch blocks that were hiding errors in BackTraceFunction (fntrace.hh)
+    - Added error logging with `std::fprintf(stderr, ...)` to track memory corruption issues
+    - Changed from silently ignoring to logging warnings while still preventing crashes
+  - Fixed narrowing conversion warnings that could cause data loss
+    - **Order count conversions** (manager.cc lines 2858, 2860): Fixed int→short narrowing when parsing ItemQTY/ProductQTY
+      - Added bounds checking: `static_cast<short>(std::min(atoi(value), 32767))`
+      - Prevents overflow when order quantities exceed short range
+    - **Socket read conversion** (manager.cc line 3264): Fixed ssize_t→int narrowing for read() return
+      - Changed to: `ssize_t read_result = read(...); bytes_read = static_cast<int>(std::min(read_result, static_cast<ssize_t>(INT_MAX)))`
+      - Prevents data loss when read returns values larger than INT_MAX
+  - **Files modified**: `src/utils/fntrace.hh`, `main/data/manager.cc`
+  - **Impact**: Improved error visibility and prevented potential data corruption from type conversions
+
 - **Logging System Test Failure (2025-12-23)**
   - Fixed persistent "Log File Output" test failure to achieve 40/40 passing tests
   - **Root cause**: Test directory `/tmp/viewtouch_test_logs` was shared across all tests, causing log accumulation and initialization conflicts
