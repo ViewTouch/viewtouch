@@ -41,6 +41,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `main/data/settings_enums.hh`, `main/data/settings.hh`, `main/data/settings.cc`, `zone/settings_zone.cc`, `zone/drawer_zone.cc`
   - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
 
+- **Enum Usage: DrawerModeType (2025-12-23)**
+  - Migrated drawer mode selection to `DrawerModeType` with enum display helpers
+  - Removed legacy `DrawerModeName`/`DrawerModeValue` arrays; settings UI now cycles via enum values using `vt::GetEnumValues`
+  - Preserved numeric values for compatibility with persisted settings and existing logic
+  - **Files modified**: `main/data/settings_enums.hh`, `main/data/settings.cc`, `zone/settings_zone.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
+- **Macro → Enum: Printer Protocol (2025-12-23)**
+  - Replaced `PRINTER_*` protocol macros with scoped `enum class PrinterProtocol` and an explicit `ToInt` helper
+  - Updated remote printer command writes to use enum values instead of macros
+  - **Files modified**: `src/network/remote_link.hh`, `main/hardware/remote_printer.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
+- **Macro → Enum: Server/Op/Window Protocols (2025-12-23)**
+  - Converted legacy `SERVER_*`, `MODE_*`, and `WINFRAME_*` macros into scoped enums: `ServerProtocol`, `OperationMode`, and `WindowFrame`
+  - Added `ToInt(...)` helpers and adjusted bitmask composition for window frame flags
+  - Resolved X11 macro collisions by prefixing enum values (e.g., `SrvButtonPress`, `OpNone`, `FrameMove`)
+  - Updated send/receive sites in terminal and term modules to use typed enums
+  - **Files modified**: `src/network/remote_link.hh`, `main/hardware/terminal.cc`, `term/layer.cc`, `term/term_view.cc`, `term/term_dialog.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
 ### Fixed
 - **Critical Bugprone Fixes (2025-12-23)**
   - Fixed empty catch blocks that were hiding errors in BackTraceFunction (fntrace.hh)

@@ -590,7 +590,7 @@ void EP_DeleteCB(Widget /*widget*/, XtPointer client_data, XtPointer /*call_data
 {
     auto *d = static_cast<PageDialog*>(client_data);
     d->Close();
-    WInt8(SERVER_KILLPAGE);
+    WInt8(ToInt(ServerProtocol::SrvKillPage));
     SendNow();
 }
 
@@ -749,7 +749,7 @@ int PageDialog::Close()
 int PageDialog::Send()
 {
     int tmp, v1, v2;
-    WInt8(SERVER_PAGEDATA);
+    WInt8(ToInt(ServerProtocol::SrvPageData));
     WInt8(size.Value());
     WInt8(page_type);
     WStr(name.Value());
@@ -890,7 +890,7 @@ int DefaultDialog::Close()
 int DefaultDialog::Send()
 {
     int tmp, v1, v2;
-    WInt8(SERVER_DEFPAGE);
+    WInt8(ToInt(ServerProtocol::SrvDefPage));
     WInt8(default_font.Value());
     WInt16(default_shadow.Value());
     default_spacing.Get(tmp); WInt8(tmp);
@@ -988,7 +988,7 @@ void EZ_DeleteCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
     auto *d = static_cast<ZoneDialog*>(client_data);
     d->Close();
-    WInt8(SERVER_KILLZONE);
+    WInt8(ToInt(ServerProtocol::SrvKillZone));
     SendNow();
 }
 
@@ -1390,7 +1390,7 @@ int ZoneDialog::Send()
     int v2;
 
     fprintf(stderr, "ZoneDialog::Send() called for zone type %d\n", ztype);
-    WInt8(SERVER_ZONEDATA);
+    WInt8(ToInt(ServerProtocol::SrvZoneData));
     WInt8(ztype);
     WStr(name.Value());
     page.Get(tmp); WInt32(tmp);
@@ -1584,7 +1584,7 @@ int MultiZoneDialog::Close()
 int MultiZoneDialog::Send()
 {
     int v1, v2;
-    WInt8(SERVER_ZONECHANGES);
+    WInt8(ToInt(ServerProtocol::SrvZoneChanges));
     WInt16(behave.Value());
     WInt16(font.Value());
     appear1.Value(v1, v2);
@@ -1667,7 +1667,7 @@ int TranslateDialog::Close()
 
 int TranslateDialog::Send()
 {
-    WInt8(SERVER_TRANSLATE);
+    WInt8(ToInt(ServerProtocol::SrvTranslate));
     WInt8(count);
     for (int i = 0; i < count; ++i)
     {
@@ -1696,7 +1696,7 @@ void ListSelectCB(Widget widget, XtPointer client_data, XtPointer call_data)
 
 void ListPrintCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    WInt8(SERVER_BUTTONPRESS);
+    WInt8(ToInt(ServerProtocol::SrvButtonPress));
     WInt16(1);  // Main Window
     WInt16(12); // PrintList Button
     SendNow();
@@ -1798,7 +1798,7 @@ int ListDialog::Close()
 
 int ListDialog::Send()
 {
-    WInt8(SERVER_LISTSELECT);
+    WInt8(ToInt(ServerProtocol::SrvListSelect));
     WInt32(selected);
     return SendNow();
 }

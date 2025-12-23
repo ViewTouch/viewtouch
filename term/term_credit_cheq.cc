@@ -1306,14 +1306,14 @@ int CCard::BatchSettle()
         {
             ParseResponse(buffer);
             binfo.ParseResults(receipt);
-            WInt8(SERVER_CC_SETTLED);
+            WInt8(ToInt(ServerProtocol::SrvCcSettled));
             binfo.Write();
             retval = 0;
         }
     }
 
     if (retval)
-        WInt8(SERVER_CC_SETTLEFAILED);
+        WInt8(ToInt(ServerProtocol::SrvCcSettleFailed));
     SendNow();
 
     return retval;
@@ -1334,7 +1334,7 @@ int CCard::CCInit()
         if (ReadCheq(buffer, STRHUGE) == 0)
         {
             ParseResponse(buffer);
-            WInt8(SERVER_CC_INIT);
+            WInt8(ToInt(ServerProtocol::SrvCcInit));
             WStr(termid);
             WStr(code);
             WInt8(intcode);
@@ -1363,7 +1363,7 @@ int CCard::Totals()
         {
             ParseResponse(buffer);
             binfo.ParseResults(receipt);
-            WInt8(SERVER_CC_TOTALS);
+            WInt8(ToInt(ServerProtocol::SrvCcTotals));
             binfo.Write();
             SendNow();
         }
@@ -1387,7 +1387,7 @@ int CCard::Details()
         if (ReadCheq(buffer, STRHUGE) == 0)
         {
             ParseResponse(buffer);
-            WInt8(SERVER_CC_DETAILS);
+            WInt8(ToInt(ServerProtocol::SrvCcDetails));
             WStr(termid);
             WStr(code);
             WInt8(intcode);
@@ -1415,7 +1415,7 @@ int CCard::ClearSAF()
         {
             if (safclear.ParseSAF(buffer) == 0)
             {
-                WInt8(SERVER_CC_SAFCLEARED);
+                WInt8(ToInt(ServerProtocol::SrvCcSafCleared));
                 safclear.Write();
                 retval = 0;
             }
@@ -1423,7 +1423,7 @@ int CCard::ClearSAF()
     }
 
     if (retval)
-        WInt8(SERVER_CC_SAFCLEARFAILED);
+        WInt8(ToInt(ServerProtocol::SrvCcSafClearFailed));
 
     SendNow();
 
@@ -1447,7 +1447,7 @@ int CCard::SAFDetails()
         {
             if (safclear.ParseSAF(buffer) == 0)
             {
-                WInt8(SERVER_CC_SAFDETAILS);
+                WInt8(ToInt(ServerProtocol::SrvCcSafDetails));
                 safclear.Write();
                 SendNow();
             }

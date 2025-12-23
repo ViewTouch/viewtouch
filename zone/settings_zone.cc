@@ -147,12 +147,10 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         onoff = settings->use_seats;
         break;
     case SWITCH_DRAWER_MODE:
-        // Modern enum-based approach
         if (auto mode = vt::IntToEnum<DrawerModeType>(settings->drawer_mode)) {
             str = vt::GetDrawerModeDisplayName(*mode);
-            vt::Logger::debug("Drawer mode: {}", str);
         } else {
-            str = FindStringByValue(settings->drawer_mode, DrawerModeValue, DrawerModeName);
+            str = "Unknown";
         }
         break;
     case SWITCH_PASSWORDS:
@@ -364,7 +362,21 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         settings->use_seats ^= 1;
         break;
     case SWITCH_DRAWER_MODE:
-        settings->drawer_mode = NextValue(settings->drawer_mode, DrawerModeValue);
+        {
+            auto values = vt::GetEnumValues<DrawerModeType>();
+            int next_val = settings->drawer_mode;
+            if (auto current = vt::IntToEnum<DrawerModeType>(settings->drawer_mode)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else if (!values.empty()) {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->drawer_mode = next_val;
+        }
         break;
     case SWITCH_PASSWORDS:
         settings->password_mode = NextValue(settings->password_mode, PasswordValue);

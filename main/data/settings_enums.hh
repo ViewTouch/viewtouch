@@ -24,13 +24,6 @@
 #include "src/utils/vt_enum_utils.hh"
 #include <string_view>
 
-// Example: Modernized drawer mode enum
-enum class DrawerModeType {
-    Trusted = 0,    // DRAWER_NORMAL
-    Assigned = 1,   // DRAWER_ASSIGNED  
-    ServerBank = 2  // DRAWER_SERVER
-};
-
 // Receipt printing options - values must match RECEIPT_* constants
 enum class ReceiptPrintType {
     Never = 0,       // RECEIPT_NONE
@@ -45,6 +38,13 @@ enum class DrawerPrintType {
     OnPull = 1,    // DRAWER_PRINT_PULL
     OnBalance = 2, // DRAWER_PRINT_BALANCE
     OnBoth = 3     // DRAWER_PRINT_BOTH
+};
+
+// Drawer mode options - values must match DRAWER_* constants
+enum class DrawerModeType {
+    Trusted = 0,    // DRAWER_NORMAL
+    Assigned = 1,   // DRAWER_ASSIGNED
+    ServerBank = 2  // DRAWER_SERVER
 };
 
 // Example: Price rounding options
@@ -101,21 +101,21 @@ namespace vt {
 // Helper functions to get display names (translated versions)
 // These can be used in UI dropdowns, reports, etc.
 
-inline const char* GetDrawerModeDisplayName(DrawerModeType mode) {
-    switch (mode) {
-        case DrawerModeType::Trusted: return "Trusted";
-        case DrawerModeType::Assigned: return "Assigned";
-        case DrawerModeType::ServerBank: return "Server Bank";
-        default: return "Unknown";
-    }
-}
-
 inline const char* GetReceiptPrintDisplayName(ReceiptPrintType type) {
     switch (type) {
         case ReceiptPrintType::OnSend: return "On Send";
         case ReceiptPrintType::OnFinalize: return "On Finalize";
         case ReceiptPrintType::OnBoth: return "On Both";
         case ReceiptPrintType::Never: return "Never";
+        default: return "Unknown";
+    }
+}
+
+inline const char* GetDrawerModeDisplayName(DrawerModeType type) {
+    switch (type) {
+        case DrawerModeType::Trusted: return "Trusted";
+        case DrawerModeType::Assigned: return "Assigned";
+        case DrawerModeType::ServerBank: return "Server Bank";
         default: return "Unknown";
     }
 }

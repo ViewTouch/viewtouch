@@ -38,6 +38,7 @@
 #include "manager.hh"
 #include "printer.hh"
 #include "remote_link.hh"
+#include "src/utils/vt_enum_utils.hh"
 #include "report.hh"
 #include "sales.hh"
 #include "settings.hh"
@@ -254,9 +255,21 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
 	{
 		int code = term->RInt8();
         term->buffer_in->SetCode("vt_main", code);
-		switch (code)
+
+        auto protocol = vt::IntToEnum<ServerProtocol>(code);
+        if (!protocol) {
+            snprintf(str, STRLENGTH, GlobalTranslate("Cannot process unknown code: %d"), code);
+            ReportError(str);
+            snprintf(str, STRLENGTH, GlobalTranslate("  Last code processed was %d"), last_code);
+            ReportError(str);
+            printf("Terminating due to unforseen error....\n");
+            EndSystem();
+            break;
+        }
+
+		switch (*protocol)
 		{
-        case SERVER_TERMINFO:
+        case ServerProtocol::SrvTermInfo:
             term->size   = term->RInt8();
             term->width  = term->RInt16();
             term->height = term->RInt16();
@@ -315,12 +328,12 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             }
             break;
 
-        case SERVER_ERROR:
+        case ServerProtocol::SrvError:
             vt_safe_string::safe_format(str, STRLENGTH, "TermError: %s", term->RStr());
             ReportError(str);
             break;
 
-        case SERVER_TOUCH:
+        case ServerProtocol::SrvTouch:
             term->time_out   = SystemTime;
             term->last_input = SystemTime;
             {
@@ -336,7 +349,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             }
             break;
 
-        case SERVER_KEY:
+        case ServerProtocol::SrvKey:
         {
             term->RInt16(); // win id - ignored
             genericChar key = (genericChar) term->RInt16();
@@ -348,7 +361,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
         }
         break;
 
-        case SERVER_MOUSE:
+        case ServerProtocol::SrvMouse:
         {
             int my_id = term->RInt16();
             int my_code = term->RInt8();
@@ -367,28 +380,28 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
         }
         break;
 
-        case SERVER_ZONEDATA:
+        case ServerProtocol::SrvZoneData:
             fprintf(stderr, "SERVER_ZONEDATA received, calling ReadZone()\n");
             term->ReadZone(); 
             fprintf(stderr, "SERVER_ZONEDATA: ReadZone() returned\n");
             break;
 
-        case SERVER_ZONECHANGES:
+        case ServerProtocol::SrvZoneChanges:
             term->ReadMultiZone(); break;
 
-        case SERVER_PAGEDATA:
+        case ServerProtocol::SrvPageData:
             term->ReadPage(); break;
 
-        case SERVER_KILLZONE:
+        case ServerProtocol::SrvKillZone:
             term->KillZone(); break;
 
-        case SERVER_KILLPAGE:
+        case ServerProtocol::SrvKillPage:
             term->KillPage(); break;
 
-        case SERVER_DEFPAGE:
+        case ServerProtocol::SrvDefPage:
             term->ReadDefaults(); break;
 
-        case SERVER_TRANSLATE:
+        case ServerProtocol::SrvTranslate:
         {
             int no = term->RInt8(); // translation count
             const genericChar* s1;
@@ -412,10 +425,10 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             }
         }
         break;
-        case SERVER_LISTSELECT:
+        case ServerProtocol::SrvListSelect:
             term->JumpList(term->RInt32());
             break;
-        case SERVER_SWIPE:
+        case ServerProtocol::SrvSwipe:
         {
             const char* s1 = term->RStr();
             if (strlen(s1) < STRLENGTH)
@@ -426,17 +439,17 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             }
         }
         break;
-        case SERVER_BUTTONPRESS:
+        case ServerProtocol::SrvButtonPress:
             term->RInt16(); // layer id
             term->ButtonCommand(term->RInt16());
             break;
-        case SERVER_SHUTDOWN:  // only allow easy exits on debug platforms
+        case ServerProtocol::SrvShutdown:  // only allow easy exits on debug platforms
             if (term->user != nullptr && (term->user->id == 1 || term->user->id == 2))
                 EndSystem();  // superuser and developer can end system
             else if (debug_mode)
                 EndSystem();  // anyone in debug mode can end system
             break;
-        case SERVER_CC_PROCESSED:
+        case ServerProtocol::SrvCcProcessed:
             if (term != nullptr)
             {
                 term->ReadCreditCard();
@@ -446,26 +459,26 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
                     term->Signal("ccprocessed", 0);
             }
             break;
-        case SERVER_CC_SETTLED:
+        case ServerProtocol::SrvCcSettled:
             term->CC_GetSettlementResults();
             term->eod_failed = 0;
             break;
-        case SERVER_CC_INIT:
+        case ServerProtocol::SrvCcInit:
             term->CC_GetInitResults();
             break;
-        case SERVER_CC_TOTALS:
+        case ServerProtocol::SrvCcTotals:
             term->CC_GetTotalsResults();
             break;
-        case SERVER_CC_DETAILS:
+        case ServerProtocol::SrvCcDetails:
             term->CC_GetDetailsResults();
             break;
-        case SERVER_CC_SAFCLEARED:
+        case ServerProtocol::SrvCcSafCleared:
             term->CC_GetSAFClearedResults();
             break;
-        case SERVER_CC_SAFDETAILS:
+        case ServerProtocol::SrvCcSafDetails:
             term->CC_GetSAFDetails();
             break;
-        case SERVER_CC_SETTLEFAILED:
+        case ServerProtocol::SrvCcSettleFailed:
         {
             term->cc_processing = 0;
             term->eod_failed = 1;
@@ -483,17 +496,9 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             }
             break;
         }
-        case SERVER_CC_SAFCLEARFAILED:
+        case ServerProtocol::SrvCcSafClearFailed:
             term->cc_processing = 0;
             term->eod_failed = 1;
-            break;
-        default:
-            snprintf(str, STRLENGTH, GlobalTranslate("Cannot process unknown code: %d"), code);
-            ReportError(str);
-            snprintf(str, STRLENGTH, GlobalTranslate("  Last code processed was %d"), last_code);
-            ReportError(str);
-            printf("Terminating due to unforseen error....\n");
-            EndSystem();
             break;
 		} //end switch
         last_code = code;
@@ -3099,7 +3104,7 @@ int Terminal::EditTerm(int save_data, int edit_mode)
     WInt16(64);  // y
     WInt16(180); // width (increased from 120)
     WInt16(360); // height
-    WInt8(WINFRAME_BORDER | WINFRAME_TITLE | WINFRAME_MOVE);
+    WInt8(ToInt(WindowFrame::FrameBorder) | ToInt(WindowFrame::FrameTitle) | ToInt(WindowFrame::FrameMove));
     WStr("Edit ToolBar");
 
     WInt8(TERM_PUSHBUTTON);
@@ -3770,16 +3775,16 @@ int Terminal::RenderBlankPage()
     if (page == nullptr)
         return 1;
 
-    int mode = MODE_NONE;
+    auto mode = OperationMode::OpNone;
     if (record_activity)
-        mode = MODE_MACRO;
+        mode = OperationMode::OpMacro;
     else if (edit)
-        mode = MODE_EDIT;
+        mode = OperationMode::OpEdit;
     else if (user && user->training)
-        mode = MODE_TRAINING;
+        mode = OperationMode::OpTraining;
 
     WInt8(TERM_BLANKPAGE);
-    WInt8(mode);
+    WInt8(ToInt(mode));
     if (page->image == IMAGE_DEFAULT)
         WInt8(zone_db->default_image);
     else

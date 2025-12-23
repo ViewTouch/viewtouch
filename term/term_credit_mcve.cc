@@ -1006,7 +1006,7 @@ int CCard::BatchSettle()
             if (TransSendSimple(identifier) == 0)
             {
                 binfo.ParseResults(conn, identifier);
-                WInt8(SERVER_CC_SETTLED);
+                WInt8(ToInt(ServerProtocol::SrvCcSettled));
                 binfo.Write();
                 retval = 0;
             }
@@ -1015,7 +1015,7 @@ int CCard::BatchSettle()
 
     if (retval)
     {
-        WInt8(SERVER_CC_SETTLEFAILED);
+        WInt8(ToInt(ServerProtocol::SrvCcSettleFailed));
         if (conn != nullptr)
         {
             SetValue(msgbuff, MCVE_TransactionText(conn, identifier));
@@ -1075,7 +1075,7 @@ int CCard::Totals()
             if (MCVE_ParseCommaDelimited(conn, identifier))
             {
                 rows = MCVE_NumRows(conn, identifier);
-                WInt8(SERVER_CC_TOTALS);
+                WInt8(ToInt(ServerProtocol::SrvCcTotals));
                 WInt16(rows + 1);
                 columns = MCVE_NumColumns(conn, identifier);
                 buffer[0] = '\0';
@@ -1165,7 +1165,7 @@ int CCard::Details()
             {
                 rows = MCVE_NumRows(conn, identifier);
                 columns = MCVE_NumColumns(conn, identifier);
-                WInt8(SERVER_CC_DETAILS);
+                WInt8(ToInt(ServerProtocol::SrvCcDetails));
                 WInt16(rows + 1);
                 buffer[0] = '\0';
                 AppendString(buffer, 8, GlobalTranslate("TTID"));

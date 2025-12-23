@@ -441,22 +441,22 @@ int Layer::TitleBar()
     }
     else
     {
-        if (title_mode == MODE_MACRO)
+        if (title_mode == ToInt(OperationMode::OpMacro))
         {
             Text("** RECORDING MACRO **", 21, page_w / 2, 6, c2,
                  FONT_TIMES_20B, ALIGN_CENTER);
         }
-        else if (title_mode == MODE_TRAINING)
+        else if (title_mode == ToInt(OperationMode::OpTraining))
         {
             Text("** TRAINING MODE **", 19, page_w / 2, 6, c2,
                  FONT_TIMES_20B, ALIGN_CENTER);
         }
-        else if (title_mode == MODE_TRANSLATE)
+        else if (title_mode == ToInt(OperationMode::OpTranslate))
         {
             Text("** TRANSLATION MODE **", 22, page_w / 2, 6, c2,
                  FONT_TIMES_20B, ALIGN_CENTER);
         }
-        else if (title_mode == MODE_EDIT)
+        else if (title_mode == ToInt(OperationMode::OpEdit))
         {
             Text("** EDIT MODE **", 15, page_w / 2, 6, c2,
                  FONT_TIMES_20B, ALIGN_CENTER);
@@ -668,7 +668,7 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
             Text(sub_string[i], sub_length[i], sx, sy, color, font, align, 0, embossed);
         sy += font_h;
     }
-    if (*c && line >= max_lines && title_mode == MODE_EDIT)
+    if (*c && line >= max_lines && title_mode == ToInt(OperationMode::OpEdit))
         Text("!", 1, tx, ty, COLOR_RED, FONT_TIMES_24, ALIGN_LEFT, 0, embossed);
     return 0;
 }
@@ -1870,7 +1870,7 @@ int Layer::MouseAction(LayerList *ll, int mx, int my, int code)
         return 0;
     }
 
-    WInt8(SERVER_MOUSE);
+    WInt8(ToInt(ServerProtocol::SrvMouse));
     WInt16(id);
     WInt8(code);
     WInt16(mx - page_x);
@@ -1882,7 +1882,7 @@ int Layer::Touch(LayerList *ll, int tx, int ty)
 {
     FnTrace("Layer::Touch()");
 
-    WInt8(SERVER_TOUCH);
+    WInt8(ToInt(ServerProtocol::SrvTouch));
     WInt16(id);
     WInt16(tx - page_x);
     WInt16(ty - page_y);
@@ -1893,7 +1893,7 @@ int Layer::Keyboard(LayerList *ll, genericChar key, int code, int state)
 {
     FnTrace("Layer::Keyboard()");
 
-    WInt8(SERVER_KEY);
+    WInt8(ToInt(ServerProtocol::SrvKey));
     WInt16(id);
     WInt16(key);
     WInt32(code);
@@ -2354,7 +2354,7 @@ int LayerList::MouseAction(int x, int y, int code)
         last_layer = l;
     }
 
-    if ((code & MOUSE_PRESS) && l->window_frame & WINFRAME_MOVE)
+    if ((code & MOUSE_PRESS) && (l->window_frame & ToInt(WindowFrame::FrameMove)))
     {
         RegionInfo r(l->x, l->y, l->w, 30);
         if (r.IsPointIn(x, y))
@@ -2700,7 +2700,7 @@ int LO_PushButton::Command(Layer *l)
 {
     FnTrace("LO_PushButton::Command()");
 
-    WInt8(SERVER_BUTTONPRESS);
+    WInt8(ToInt(ServerProtocol::SrvButtonPress));
     WInt16(l->id);
     WInt16(id);
     return SendNow();

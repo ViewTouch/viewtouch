@@ -78,10 +78,7 @@ int MealStartValue[] = {
     INDEX_BREAKFAST, INDEX_BRUNCH, INDEX_LUNCH,
     INDEX_EARLY_DINNER, INDEX_DINNER, INDEX_LATE_NIGHT, -1};
 
-const char* DrawerModeName[] = {
-    GlobalTranslate("Trusted"), GlobalTranslate("Assigned"), GlobalTranslate("Server Bank"), nullptr};
-int   DrawerModeValue[] = {
-    DRAWER_NORMAL, DRAWER_ASSIGNED, DRAWER_SERVER, -1};
+// DrawerMode values provided via DrawerModeType (settings_enums.hh)
 
 const char* SaleCreditName[] = {
     GlobalTranslate("First Server"), GlobalTranslate("Last Server"), nullptr};

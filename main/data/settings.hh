@@ -58,10 +58,12 @@ enum DrawerPrintMode {
     DRAWER_PRINT_BOTH    = 3
 };
 
-// Cash Drawer options
-#define DRAWER_NORMAL     0 // unrestricted access to drawers for employees
-#define DRAWER_ASSIGNED   1 // drawers must be assigned to be used
-#define DRAWER_SERVER     2 // each server has a drawer to maintain for shift
+// Cash Drawer options (converted from macros to enum constants)
+enum DrawerMode {
+    DRAWER_NORMAL   = 0, // unrestricted access to drawers for employees
+    DRAWER_ASSIGNED = 1, // drawers must be assigned to be used
+    DRAWER_SERVER   = 2  // each server has a drawer to maintain for shift
+};
 
 // Terminal Hardware -- seems to be obsolete, BAK
 #define HARDWARE_NONE     0 // No additional hardware for terminal
@@ -232,8 +234,7 @@ extern int   PayPeriodValue[];
 extern const genericChar* MealStartName[];
 extern int   MealStartValue[];
 
-extern const genericChar* DrawerModeName[];
-extern int   DrawerModeValue[];
+// DrawerMode uses enum utilities (DrawerModeType) instead of static arrays
 
 extern const genericChar* SaleCreditName[];
 extern int   SaleCreditValue[];
