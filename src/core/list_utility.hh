@@ -228,15 +228,9 @@ class DList
                         /* p is empty; e must come from q. */
                         e = q; q = q->next; qsize--;
                     }
-                    else if (qsize == 0 || q == nullptr)
+                    else if (qsize == 0 || q == nullptr || cmp(p,q) <= 0)
                     {
-                        /* q is empty; e must come from p. */
-                        e = p; p = p->next; psize--;
-                    }
-                    else if (cmp(p,q) <= 0)
-                    {
-                        /* First element of p is lower (or same);
-                         * e must come from p. */
+                        /* q is empty or p <= q; e must come from p. */
                         e = p; p = p->next; psize--;
                     }
                     else

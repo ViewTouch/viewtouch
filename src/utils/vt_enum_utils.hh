@@ -163,12 +163,13 @@ std::string EnumToDisplayString(E value) {
     for (size_t i = 0; i < name.size(); ++i) {
         if (name[i] == '_') {
             name[i] = ' ';
-        } else if (i == 0 || name[i-1] == ' ') {
-            // Capitalize first letter of each word
-            name[i] = static_cast<char>(std::toupper(static_cast<unsigned char>(name[i])));
-        } else {
-            name[i] = static_cast<char>(std::tolower(static_cast<unsigned char>(name[i])));
+            continue; // underscores fully handled
         }
+
+        const bool word_start = (i == 0 || name[i - 1] == ' ');
+        name[i] = word_start
+            ? static_cast<char>(std::toupper(static_cast<unsigned char>(name[i])))
+            : static_cast<char>(std::tolower(static_cast<unsigned char>(name[i])));
     }
     
     return name;
