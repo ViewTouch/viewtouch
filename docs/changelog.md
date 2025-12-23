@@ -75,6 +75,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
 
 ### Fixed
+- **Duplicate Branch Cleanup in settings.cc (2025-12-23)**
+  - Consolidated repeated branch bodies flagged by clang-tidy (bugprone-branch-clone)
+  - **CouponInfo::Applies methods**: Merged duplicate `retval = 0` assignments by combining conditions with logical OR
+  - **CouponInfo::AppliesItem**: Unified duplicate return value assignments by grouping related conditions
+  - **Count methods** (DiscountCount, CouponCount, CreditCardCount, CompCount, MealCount): Replaced four-way if-else chains with single compound conditions
+    - Pattern changed from: `if (A && B) count++; else if (A && C) count++; ...`
+    - To: `if ((A || D) && (B || C)) count++;`
+  - **Authorize method validation**: Combined duplicate `authorize_method = CCAUTH_NONE` assignments
+  - **Files modified**: `main/data/settings.cc`
+  - **Impact**: Clearer control flow, reduced code duplication, all 40 tests passing
+
 - **Critical Bugprone Fixes (2025-12-23)**
   - Fixed empty catch blocks that were hiding errors in BackTraceFunction (fntrace.hh)
     - Added error logging with `std::fprintf(stderr, ...)` to track memory corruption issues
