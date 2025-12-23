@@ -2966,9 +2966,9 @@ int DeliveryToInt(const char* cost)
 {
     FnTrace("DeliveryToInt()");
     int retval = 0;
-    float interm = atof(cost);
+    double interm = atof(cost);
 
-    retval = (int)(interm * 100.0);
+    retval = static_cast<int>(interm * 100.0);
 
     return retval;
 }
@@ -3080,8 +3080,8 @@ int CompareCardNumbers(const char* card1, const char* card2)
 {
     FnTrace("CompreCardNumbers()");
     int retval = 0;
-    int len1 = 0;
-    int len2 = 0;
+    size_t len1 = 0;
+    size_t len2 = 0;
 
     if (card1[0] == 'x' || card2[0] == 'x')
     {
