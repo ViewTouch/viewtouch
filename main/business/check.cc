@@ -1025,6 +1025,8 @@ int Check::GetStatus()
         case CHECK_VOIDED:
             ++total_voided;
             break;
+        default:
+            break;
         }
     }
 
@@ -1348,6 +1350,9 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                 vt_safe_string::safe_concat(str, STRLENGTH, " ");
             }
             vt_safe_string::safe_concat(str, STRLENGTH, term->Translate("Delivery"));
+            break;
+        default:
+            break;
             break;
         case CHECK_CATERING:
             if (!date.IsSet() || (date <= now))
@@ -6145,6 +6150,8 @@ int Order::CanDiscount(int discount_alcohol, Payment *payment)
         case TENDER_DISCOUNT:
         case TENDER_COUPON:
             retval = !(sales_type & SALES_NO_DISCOUNT);
+            break;
+        default:
             break;
         }
     }
