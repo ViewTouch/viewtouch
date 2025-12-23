@@ -50,12 +50,11 @@ int select_timeout = 1;   // in milliseconds
  * Destructor:
  ****/
 Email::~Email()
-{
-}
+= default;
 
 Email::Email(Email&& other) noexcept
-    : from(std::move(other.from)),
-      subject(std::move(other.subject)),
+    : from(other.from),
+      subject(other.subject),
       tos(std::move(other.tos)),
       body(std::move(other.body)),
       current_to(nullptr),
@@ -67,8 +66,8 @@ Email& Email::operator=(Email&& other) noexcept
 {
     if (this != &other)
     {
-        from         = std::move(other.from);
-        subject      = std::move(other.subject);
+        from         = other.from;
+        subject      = other.subject;
         tos          = std::move(other.tos);
         body         = std::move(other.body);
         current_to   = nullptr;

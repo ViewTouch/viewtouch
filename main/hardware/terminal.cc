@@ -4745,9 +4745,9 @@ int Terminal::SendNow()
 }
 
 #define MOVE_RIGHT  5
-#define MOVE_LEFT  -5
+#define MOVE_LEFT  (-5)
 #define MOVE_DOWN   5
-#define MOVE_UP    -5
+#define MOVE_UP    (-5)
 int Terminal::KeyboardInput(genericChar key, int my_code, int state)
 {
     FnTrace("Terminal::KeyboardInput()");
@@ -5615,7 +5615,7 @@ int Terminal::ReadZone()
     FnTrace("Terminal::ReadZone()");
     FILE *debugfile = fopen("/tmp/viewtouch_debug.log", "a");
     if (debugfile) {
-        fprintf(debugfile, "=== ReadZone() called at %ld ===\n", time(NULL));
+        fprintf(debugfile, "=== ReadZone() called at %ld ===\n", time(nullptr));
         fclose(debugfile);
     }
     fprintf(stderr, "=== ReadZone() called ===\n");

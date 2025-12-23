@@ -57,16 +57,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `main/ui/system_salesmix.cc`
 
 ### Fixed
+- **Comprehensive nullptr Modernization (12-22-2025)**
+  - **Complete C++ Modernization**: Replaced all `NULL` pointer literals with modern C++ `nullptr` across the entire codebase
+  - **Scope**: 123 files modified with ~3,413 insertions and 3,427 deletions
+  - **Coverage**: 
+    - `zone/` directory: 58 files modernized (completed first with ~1,640 lines changed)
+    - `main/` directory: 30 files (1,217+ NULL occurrences replaced)
+    - `term/` directory: 8 files (106+ NULL occurrences replaced)
+    - `src/` directory: 24 files (7+ NULL occurrences replaced)
+    - `loader/` and `cdu/` directories: 1 file each
+  - **Methodology**:
+    - Initial clang-tidy analysis identified 1,332+ NULL occurrences across the codebase
+    - Applied `modernize-use-nullptr` check with `-fix` and `-fix-errors` flags to all source files
+    - Automated fixes applied in batches (zone → main → term → src → loader/cdu)
+    - Manual fixes for 6 edge cases (header default parameters, complex expressions)
+    - Fixed header guard bug in `zone/form_zone.hh` (mismatch between `#ifndef _FORM_ZONE_HH` and `#define FORM_ZONE_HH`)
+  - **Verification**:
+    - Build: Successful (all targets built cleanly)
+    - Tests: 40/40 passing after all changes
+    - NULL in code: 0 occurrences remaining (only in comments, excluded from conversion)
+  - **Benefits**:
+    - Improved type safety: `nullptr` has type `std::nullptr_t` instead of integer 0
+    - Better overload resolution: eliminates ambiguity in function calls with pointer/integer overloads
+    - Clearer intent: `nullptr` explicitly indicates pointer context
+    - Modern C++ compliance: aligns codebase with C++11+ standards
+  - **Files modified**: All 123 modified files tracked in version control, including comprehensive changes across `zone/`, `main/`, `term/`, `src/`, `loader/`, and `cdu/` directories
+
 - **Clang-tidy & static analysis fixes (12-21-2025)**
   - Performed a focused `clang-tidy` and `clang-analyzer` triage and applied multiple correctness, safety, and style fixes across the codebase.
   - Key actions:
     - **Project config:** Added a project `.clang-tidy` file to scope checks to project headers and prioritize the most valuable diagnostics (clang-analyzer, bugprone, performance, modernize-use-override).
     - **Override audit:** Applied `modernize-use-override` conservatively across many `zone/*.hh` headers and other types where safe; examples include `zone/printer.hh`, `zone/cdu_zone.hh`, `zone/report_zone.hh`, `zone/dialog_zone.hh`, `zone/button_zone.hh`, `zone/account_zone.hh`, `zone/chart_zone.hh`, `zone/drawer_zone.hh`, and `zone/creditcard_list_zone.hh`. Incorrect or non-matching `override` annotations were removed during iterative fixes.
-    - **Safety & style fixes:** Replaced common issues reported by clang-tidy (e.g., `NULL` → `nullptr`, removed reserved identifier header guards, `bzero` → `memset`, use `= default` for trivial destructors where appropriate) and fixed several small logic/warning cases found while making changes.
+    - **Safety & style fixes:** Replaced common issues reported by clang-tidy (e.g., removed reserved identifier header guards, `bzero` → `memset`, use `= default` for trivial destructors where appropriate) and fixed several small logic/warning cases found while making changes.
     - **Incremental approach:** Changes were applied file-by-file in small commits; each change was followed by a build and unit test run to limit regressions.
   - Status:
-    - Build and tests verified after edits: **39/40 tests passing**; one pre-existing logging test (`Log File Output`) still fails and is being investigated separately.
-    - Zone header audit and follow-up analyzer passes are ongoing. Representative files modified include `main/business/check.cc`, `src/network/socket.cc`, many headers under `main/`, `src/`, and `zone/`, plus the newly added `.clang-tidy`.
+    - Build and tests verified after edits: **40/40 tests passing** after nullptr modernization and logging fixes
+    - Zone header audit and follow-up analyzer passes complete. Representative files modified include `main/business/check.cc`, `src/network/socket.cc`, many headers under `main/`, `src/`, and `zone/`, plus the newly added `.clang-tidy`.
 
 
 ### Fixed

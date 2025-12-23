@@ -19,7 +19,7 @@
  */
 
 #ifndef _TABLE_ZONE_HH
-#define _TABLE_ZONE_HH
+#define TABLE_ZONE_HH
 
 #include "check.hh"
 #include "customer.hh"
@@ -42,21 +42,21 @@ class CustomerInfoZone : public FormZone
 
 public:
     CustomerInfoZone();
-    ~CustomerInfoZone();
+    ~CustomerInfoZone() override;
 
     // Member Functions
-    int          Type() { return ZONE_CUSTOMER_INFO; }
-    int          RenderInit(Terminal *term, int update_flag);
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar* message);
-    SignalResult Touch(Terminal *term, int tx, int ty);
-    int          LoseFocus(Terminal *term, Zone *newfocus);
+    int          Type() override { return ZONE_CUSTOMER_INFO; }
+    int          RenderInit(Terminal *term, int update_flag) override;
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          LoseFocus(Terminal *term, Zone *newfocus) override;
 
-    int LoadRecord(Terminal *term, int record);
-    int SaveRecord(Terminal *term, int record, int write_file);
-    int UpdateForm(Terminal *term, int record);
-    int RecordCount(Terminal *term);
-    int Search(Terminal *term, int record, const genericChar* word);
+    int LoadRecord(Terminal *term, int record) override;
+    int SaveRecord(Terminal *term, int record, int write_file) override;
+    int UpdateForm(Terminal *term, int record) override;
+    int RecordCount(Terminal *term) override;
+    int Search(Terminal *term, int record, const genericChar* word) override;
 };
 
 class CommandZone : public LayoutZone
@@ -66,14 +66,14 @@ class CommandZone : public LayoutZone
 public:
     CommandZone();
     // Member Functions
-    int          Type() { return ZONE_COMMAND; }
-    RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar* message);
-    SignalResult Touch(Terminal *t, int tx, int ty);
-    SignalResult Keyboard(Terminal *t, int key, int state);
-    int          Update(Terminal *t, int update_message, const genericChar* value);
-    const genericChar* TranslateString(Terminal *t);
-    int          ZoneStates() { return 1; }
+    int          Type() override { return ZONE_COMMAND; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Signal(Terminal *t, const genericChar* message) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    SignalResult Keyboard(Terminal *t, int key, int state) override;
+    int          Update(Terminal *t, int update_message, const genericChar* value) override;
+    const genericChar* TranslateString(Terminal *t) override;
+    int          ZoneStates() override { return 1; }
 
     int   TakeOut(Terminal *t);
     int   FastFood(Terminal *t);
@@ -93,14 +93,14 @@ public:
     TableZone();
 
     // Member Functions
-    int          Type() { return ZONE_TABLE; }
-    std::unique_ptr<Zone> Copy();
-    RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar* message);
-    SignalResult Touch(Terminal *t, int tx, int ty);
-    int          Update(Terminal *t, int update_message, const genericChar* value);
-    int         *CustomerType() { return &customer_type; }
-    Check       *GetCheck()     { return check; }
+    int          Type() override { return ZONE_TABLE; }
+    std::unique_ptr<Zone> Copy() override;
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Signal(Terminal *t, const genericChar* message) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    int          Update(Terminal *t, int update_message, const genericChar* value) override;
+    int         *CustomerType() override { return &customer_type; }
+    Check       *GetCheck() override { return check; }
 };
 
 class GuestCountZone : public LayoutZone
@@ -113,11 +113,11 @@ public:
     GuestCountZone();
 
     // Member Functions
-    int          Type() { return ZONE_GUEST_COUNT; }
-    RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar* message);
-    SignalResult Keyboard(Terminal *t, int key, int state);
-    int          Update(Terminal *t, int update_message, const genericChar* value);
+    int          Type() override { return ZONE_GUEST_COUNT; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Signal(Terminal *t, const genericChar* message) override;
+    SignalResult Keyboard(Terminal *t, int key, int state) override;
+    int          Update(Terminal *t, int update_message, const genericChar* value) override;
 };
 
 class TableAssignZone : public PosZone
@@ -126,12 +126,12 @@ class TableAssignZone : public PosZone
 
 public:
     // Member Functions
-    int          Type() { return ZONE_TABLE_ASSIGN; }
-    RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar* message);
-    SignalResult Touch(Terminal *t, int tx, int ty);
-    int          Update(Terminal *t, int update_message, const genericChar* value);
-    int          ZoneStates() { return 1; }
+    int          Type() override { return ZONE_TABLE_ASSIGN; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Signal(Terminal *t, const genericChar* message) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    int          Update(Terminal *t, int update_message, const genericChar* value) override;
+    int          ZoneStates() override { return 1; }
 
     int MoveTables(Terminal *t, ServerTableObj *sto);
 };

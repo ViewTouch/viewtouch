@@ -40,7 +40,7 @@ public:
     // Constructors
     ZoneObject();
     // Destructor
-    virtual ~ZoneObject() { }
+    ~ZoneObject() override = default;
 
     // Member Functions
     int Draw(Terminal *t);

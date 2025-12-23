@@ -102,7 +102,7 @@ public:
     ReportEntry(const char *t, int c, int a, int m);
     ReportEntry(const std::string &t, int c, int a, int m);
     // Destructor
-    ~ReportEntry() {}
+    ~ReportEntry() = default;
 };
 
 

@@ -107,7 +107,7 @@ void Logger::Initialize(
                 syslog_sink->set_level(spdlog::level::info);
                 sinks.push_back(syslog_sink);
             } catch (const std::exception& e) {
-                std::cerr << "Warning: Could not initialize syslog sink: " << e.what() << std::endl;
+                std::cerr << "Warning: Could not initialize syslog sink: " << e.what() << '\n';
             }
         }
 
@@ -155,7 +155,7 @@ void Logger::Initialize(
         logger_->info("Log level: {}", log_level);
         
     } catch (const std::exception& e) {
-        std::cerr << "Failed to initialize logging system: " << e.what() << std::endl;
+        std::cerr << "Failed to initialize logging system: " << e.what() << '\n';
         // Fall back to basic console logger
         logger_ = spdlog::stdout_color_mt("ViewTouch");
         initialized_ = true;

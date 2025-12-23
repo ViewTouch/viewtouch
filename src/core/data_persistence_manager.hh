@@ -213,14 +213,14 @@ public:
     // Data validation
     ValidationResult ValidateAllData();
     ValidationResult ValidateCriticalData();
-    void RegisterValidationCallback(const std::string& name, ValidationCallback callback);
+    void RegisterValidationCallback(const std::string& name, const ValidationCallback& callback);
     
     // Data saving
     SaveResult SaveAllData();
     SaveResult SaveCriticalData();
     OperationResult SaveAllDataDetailed();
     OperationResult SaveCriticalDataDetailed();
-    void RegisterSaveCallback(const std::string& name, SaveCallback callback);
+    void RegisterSaveCallback(const std::string& name, const SaveCallback& callback);
     
     // Critical data management
     void RegisterCriticalData(const std::string& name, 

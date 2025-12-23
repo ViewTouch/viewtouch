@@ -26,7 +26,7 @@
 #include "list_utility.hh"
 #include <memory>
 
-#define LANG_NONE                -1  // uninitialized POFile class
+#define LANG_NONE                (-1)  // uninitialized POFile class
 #define LANG_PHRASE               0  // for old defaults; do not search POFile classes
 #define LANG_ENGLISH              1
 #define LANG_SPANISH              2
@@ -107,7 +107,7 @@ public:
     const genericChar* TranslatePO(const char* str, int lang = LANG_PHRASE, int clear = 0);
     int NewTranslation(const char* str, const genericChar* value);
 
-    const char* TimeDate(Settings* s, const TimeInfo &timevar, int format, int lang, genericChar* str = 0);
+    const char* TimeDate(Settings* s, const TimeInfo &timevar, int format, int lang, genericChar* str = nullptr);
     char* Page( int current, int page_max, int lang, genericChar* str );
 };
 

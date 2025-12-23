@@ -67,7 +67,7 @@ namespace vt_crash {
             if (S_ISDIR(st.st_mode)) {
                 return true;
             } else {
-                std::cerr << "ERROR: Crash report path exists but is not a directory: " << dir << std::endl;
+                std::cerr << "ERROR: Crash report path exists but is not a directory: " << dir << '\n';
                 return false;
             }
         }
@@ -90,7 +90,7 @@ namespace vt_crash {
             return true;
         } else {
             std::cerr << "ERROR: Failed to create crash report directory: " << dir 
-                      << " (errno: " << errno << ")" << std::endl;
+                      << " (errno: " << errno << ")" << '\n';
             return false;
         }
     }
@@ -101,10 +101,10 @@ namespace vt_crash {
         
         // Create crash report directory if it doesn't exist
         if (!EnsureCrashReportDirectory(crash_report_dir)) {
-            std::cerr << "WARNING: Could not create crash report directory: " << crash_report_dir << std::endl;
-            std::cerr << "Crash reports may not be saved to disk." << std::endl;
+            std::cerr << "WARNING: Could not create crash report directory: " << crash_report_dir << '\n';
+            std::cerr << "Crash reports may not be saved to disk." << '\n';
         } else {
-            std::cerr << "Crash reporting initialized - reports will be saved to: " << crash_report_dir << std::endl;
+            std::cerr << "Crash reporting initialized - reports will be saved to: " << crash_report_dir << '\n';
         }
         
         // Note: We don't set up signal handlers here because they are set up
@@ -663,14 +663,14 @@ namespace vt_crash {
         
         // Ensure directory exists before trying to write
         if (!EnsureCrashReportDirectory(report_dir)) {
-            std::cerr << "ERROR: Cannot create crash report directory: " << report_dir << std::endl;
+            std::cerr << "ERROR: Cannot create crash report directory: " << report_dir << '\n';
             // Try to write to /tmp as fallback
             std::string fallback_dir = "/tmp";
             if (EnsureCrashReportDirectory(fallback_dir)) {
                 report_dir = fallback_dir;
-                std::cerr << "Using fallback directory: " << report_dir << std::endl;
+                std::cerr << "Using fallback directory: " << report_dir << '\n';
             } else {
-                std::cerr << "ERROR: Cannot create fallback directory either!" << std::endl;
+                std::cerr << "ERROR: Cannot create fallback directory either!" << '\n';
             }
         }
         

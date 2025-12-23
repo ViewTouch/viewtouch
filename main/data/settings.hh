@@ -71,7 +71,7 @@ constexpr int SETTINGS_VERSION = 106;  // READ ABOVE
 #define ROUNDING_UP_GRATUITY  2  // price rounded up to nearest nickel
 
 // Meal periods
-#define INDEX_ANY         -1  // any period
+#define INDEX_ANY         (-1)  // any period
 #define INDEX_GENERAL      0  // All day
 #define INDEX_BREAKFAST    1
 #define INDEX_BRUNCH       2
@@ -208,7 +208,7 @@ extern int WeekDays[];
 
 #define LOCAL_MEDIA       1
 #define GLOBAL_MEDIA      0
-#define ALL_MEDIA        -1
+#define ALL_MEDIA        (-1)
 #define GLOBAL_MEDIA_ID   50000
 
 #define ACTIVE_MEDIA      1
@@ -324,7 +324,7 @@ public:
     int local;
 
     MediaInfo();
-    virtual ~MediaInfo() {}
+    virtual ~MediaInfo() = default;
 
     virtual MediaInfo *Copy() = 0;
     virtual int        Read(InputDataFile &df, int version) = 0;
@@ -348,7 +348,7 @@ public:
 
     // Constructor
     DiscountInfo();
-    ~DiscountInfo() {}
+    ~DiscountInfo() override = default;
 
     // Member Functions
     DiscountInfo *Copy() override;
@@ -369,7 +369,7 @@ public:
 
     // Constructor
     CompInfo();
-    ~CompInfo() {}
+    ~CompInfo() override = default;
 
     // Member Functions
     CompInfo *Copy() override;
@@ -401,7 +401,7 @@ public:
 
     // Constructor
     CouponInfo();
-    ~CouponInfo() {}
+    ~CouponInfo() override = default;
 
     // Member Functions
     CouponInfo *Copy() override;
@@ -833,7 +833,7 @@ public:
     // Calculates start & end of periods given reference time
     int OvertimeWeek(const TimeInfo &ref, TimeInfo &start, TimeInfo &end);
     // Calculates wage overtime week for given time
-    char* StoreNum( char* dest = 0);
+    char* StoreNum( char* dest = nullptr);
 
     int MediaFirstID(MediaInfo *mi, int idnum);
     int MediaIsDupe(MediaInfo *mi, int id, int thresh = 0);

@@ -21,7 +21,7 @@
  */
 
 #ifndef _DEBUG_FUNCS_HH
-#define _DEBUG_FUNCS_HH
+#define DEBUG_FUNCS_HH
 
 #include "basic.hh"
 

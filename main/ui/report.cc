@@ -128,7 +128,7 @@ int Report::Load(const std::string &textfile, int color)
         return 1;
 
     FILE *fp = fopen(textfile.c_str(), "r");
-    if (fp == NULL)
+    if (fp == nullptr)
     {
         snprintf(buffer, STRLENGTH, "Report::Load Error %d opening %s",
                  errno, textfile.c_str());
@@ -235,7 +235,7 @@ int Report::CreateHeader(Terminal *term, Printer *p, const Employee *e)
     FnTrace("Report::CreateHeader()");
     char buffer[STRLENGTH];
 
-    if (e == NULL)
+    if (e == nullptr)
         return 1;
 
     Settings *s = term->GetSettings();
@@ -245,7 +245,7 @@ int Report::CreateHeader(Terminal *term, Printer *p, const Employee *e)
     genericChar str[256];
     vt_safe_string::safe_format(str, 256, "%s: %s", term->Translate("Author"), e->system_name.Value());
 
-    if (p == NULL || p->Width() < 80)
+    if (p == nullptr || p->Width() < 80)
     {
         TextL(s->store_name.Value());
         NewLine();
@@ -417,7 +417,7 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
 int Report::Print(Printer *printer)
 {
     FnTrace("Report::Print()");
-    if (printer == NULL)
+    if (printer == nullptr)
         return 1;
 
     int  max_w = printer->MaxWidth();
@@ -492,7 +492,7 @@ int Report::FormalPrint(Printer *printer, int /*columns*/)
     char buffer[STRLONG] = "";
     int  lang = LANG_PHRASE;
 
-    if (printer == NULL)
+    if (printer == nullptr)
         return 1;
 
     int max_w = printer->MaxWidth();

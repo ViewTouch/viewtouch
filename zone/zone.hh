@@ -35,8 +35,8 @@
 #define PAGE_MODIFIER_KEYBOARD 17  // Modifier page with keyboard (parent -96)
 #define PAGE_INDEX_WITH_TABS   18  // Index with tabs for quick navigation (parent -94)
 
-#define PAGE_ID_SETTLEMENT  -20  // Where the Settlement page is in the list.
-#define PAGE_ID_TABSETTLE   -85  // Where the Tab Settlement page is
+#define PAGE_ID_SETTLEMENT  (-20)  // Where the Settlement page is in the list.
+#define PAGE_ID_TABSETTLE   (-85)  // Where the Tab Settlement page is
 
 // Zone Selection Behaviors
 enum behaviors {
@@ -150,7 +150,7 @@ public:
     // Constructor
     Zone();
     // Destructor
-    virtual ~Zone() { }
+    ~Zone() override = default;
 
     // Member Functions
     int Draw(Terminal *t, int update_flag);
@@ -263,7 +263,7 @@ public:
 
 	// Constructor
 	Page();
-	virtual ~Page() { }
+	virtual ~Page() = default;
 
 	// Member Functions
 	Zone *ZoneList()    { return zone_list.Head(); }

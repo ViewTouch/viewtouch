@@ -265,7 +265,7 @@ SignalResult MessageButtonZone::SendandJump(Terminal *term)
     SignalResult sig = SIGNAL_OKAY;
     char signal[STRLONG] = "";
     char command[STRLONG] = VIEWTOUCH_PATH;
-    const char* validcommand = NULL;
+    const char* validcommand = nullptr;
     int len = 0;
     int idx = 0;
 
@@ -283,7 +283,7 @@ SignalResult MessageButtonZone::SendandJump(Terminal *term)
             while (signal[idx] == ' ' && idx < len)
                 idx++;
             validcommand = ValidateCommand(&signal[idx]);
-            if (validcommand != NULL)
+            if (validcommand != nullptr)
             {
                 snprintf(command, STRLONG, "%s >%s 2>&1", validcommand, COMMAND_OUTPUT_FILE);
                 system(command);
@@ -359,7 +359,7 @@ SignalResult MessageButtonZone::Signal(Terminal *term, const char* signal_msg)
     SignalResult sig = SIGNAL_OKAY;
     const char* command_list[] = {
         "sendandjump",
-	"starttakeout", "pickup", "quicktogo", "quickdinein", "quickselforder", NULL};
+	"starttakeout", "pickup", "quicktogo", "quickdinein", "quickselforder", nullptr};
 
     Settings *settings = term->GetSettings();
     int idx = CompareListN(command_list, signal_msg);
@@ -413,7 +413,7 @@ SignalResult MessageButtonZone::Signal(Terminal *term, const char* signal_msg)
 char* MessageButtonZone::ValidateCommand(char* source)
 {
     FnTrace("MessageButtonZone::ValidCommand()");
-    char* retval = NULL;
+    char* retval = nullptr;
     int len = static_cast<int>(strlen(source));
     int sidx = 0;
     char dest[STRLONG] = "";
@@ -422,7 +422,7 @@ char* MessageButtonZone::ValidateCommand(char* source)
 
     // do not allow the command to start with a dot.
     if (source[sidx] == '.')
-        return NULL;
+        return nullptr;
 
     while (sidx < len)
     {
@@ -454,7 +454,7 @@ char* MessageButtonZone::ValidateCommand(char* source)
     }
 
     if (badchar)
-        retval = NULL;
+        retval = nullptr;
     else
     {
         dest[didx] = '\0';
@@ -472,7 +472,7 @@ static const genericChar* KeyWords[] = {
     "local", "supervisor", "manager", "editusers", "merchandise",
     "movetable", "tablepages", "passwords", "superuser",
     "payexpenses", "fastfood", "selforder", "lastendday",
-    "checkbalanced", "haspayments", "training", "selectedorder", NULL};
+    "checkbalanced", "haspayments", "training", "selectedorder", nullptr};
 enum comms {
     CHECK, GUESTS, SUBCHECKS, SETTLE, ORDER, DRAWER,
     DRAWERCOUNT, ORDERBYSEAT, DEVELOPER, FLOW, ASSIGNED,
@@ -482,7 +482,7 @@ enum comms {
     CHECKBALANCED, HASPAYMENTS, TRAINING, SELECTORDER};
 
 static const genericChar* OperatorWords[] = {
-    "=", ">", "<", "!=", ">=", NULL};
+    "=", ">", "<", "!=", ">=", nullptr};
 enum operators {
     EQUAL, GREATER, LESSER, NOTEQUAL, GREATEREQUAL
 };
@@ -842,7 +842,7 @@ SignalResult KillSystemZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
     FnTrace("KillSystemZone::Touch()");
     Employee *e = term->user;
     int users = term->OtherTermsInUse();
-    if (users > 0 && (e == NULL || !e->CanEdit()))
+    if (users > 0 && (e == nullptr || !e->CanEdit()))
         return SIGNAL_IGNORED;
 
     SimpleDialog *d =
@@ -861,7 +861,7 @@ int KillSystemZone::Update(Terminal *term, int update_message, const genericChar
     {
         Employee *e = term->user;
         int users = term->OtherTermsInUse();
-        if (users > 0 && (e == NULL || !e->CanEdit()))
+        if (users > 0 && (e == nullptr || !e->CanEdit()))
             term->KillDialog();
         return Draw(term, 1);
     }
@@ -918,7 +918,7 @@ SignalResult ClearSystemZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("ClearSystemZone::Signal()");
     
-    const genericChar* commands[] = {"clearsystemall", "clearsystemsome", "clearsystemcancel", NULL};
+    const genericChar* commands[] = {"clearsystemall", "clearsystemsome", "clearsystemcancel", nullptr};
     int idx = CompareList(message, commands);
     
     switch (idx)
@@ -955,7 +955,7 @@ RenderResult StatusZone::Render(Terminal *term, int update_flag)
 SignalResult StatusZone::Signal(Terminal *term, const genericChar* message)
 {
     const genericChar* command_list[] = {
-        "status", "clearstatus", NULL };
+        "status", "clearstatus", nullptr };
     int idx = CompareListN(command_list, message);
 
     switch (idx)
@@ -1113,7 +1113,7 @@ std::unique_ptr<Zone> IndexTabZone::Copy()
 int IndexTabZone::CanSelect(Terminal *t)
 {
     FnTrace("IndexTabZone::CanSelect()");
-    if (page == NULL)
+    if (page == nullptr)
         return 1;
 
     // Index Tab buttons can only exist on Index pages or be inherited by Menu Item pages
@@ -1138,11 +1138,11 @@ int IndexTabZone::CanSelect(Terminal *t)
 int IndexTabZone::CanEdit(Terminal *t)
 {
     FnTrace("IndexTabZone::CanEdit()");
-    if (page == NULL)
+    if (page == nullptr)
         return 1;
 
     Employee *e = t->user;
-    if (e == NULL)
+    if (e == nullptr)
         return 0;
 
     // Index Tab buttons can only be edited when on an Index page

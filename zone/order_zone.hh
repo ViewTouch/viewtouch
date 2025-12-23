@@ -19,7 +19,7 @@
  */
 
 #ifndef _ORDER_ZONE_HH
-#define _ORDER_ZONE_HH
+#define ORDER_ZONE_HH
 
 #include "layout_zone.hh"
 
@@ -50,18 +50,18 @@ public:
     OrderEntryZone();
 
     // Member Functions
-    int          Type() { return ZONE_ORDER_ENTRY; }
-    int          RenderInit(Terminal *term, int update_flag);
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar* message);
-    SignalResult Keyboard(Terminal *term, int key, int state);
-    SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar* value);
+    int          Type() override { return ZONE_ORDER_ENTRY; }
+    int          RenderInit(Terminal *term, int update_flag) override;
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    SignalResult Keyboard(Terminal *term, int key, int state) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          Update(Terminal *term, int update_message, const genericChar* value) override;
     int          AddQualifier(Terminal *term, int qualifier_type);
-    Flt         *Spacing() { return &spacing; }
+    Flt         *Spacing() override { return &spacing; }
     Flt          SpacingValue(Terminal *term);  // returns spacing value
-    int          SetSize(Terminal *term, int width, int height);
-    int          SetPosition(Terminal *term, int pos_x, int pos_y);
+    int          SetSize(Terminal *term, int width, int height) override;
+    int          SetPosition(Terminal *term, int pos_x, int pos_y) override;
 
     int  CancelOrders(Terminal *term);
     int  DeleteOrder(Terminal *term, int is_void = 0);
@@ -87,14 +87,14 @@ public:
     OrderPageZone();
 
     // Member Functions
-    int          Type() { return ZONE_ORDER_PAGE; }
-    int          RenderInit(Terminal *term, int update_flag);
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Touch(Terminal *term, int tx, int ty);
-    int          ZoneStates() { return 3; }
-    const genericChar* TranslateString(Terminal *term);
+    int          Type() override { return ZONE_ORDER_PAGE; }
+    int          RenderInit(Terminal *term, int update_flag) override;
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          ZoneStates() override { return 3; }
+    const genericChar* TranslateString(Terminal *term) override;
 
-    int *Amount() { return &amount; }
+    int *Amount() override { return &amount; }
 };
 
 // class OrderFlowZone
@@ -105,12 +105,12 @@ class OrderFlowZone : public PosZone
 
 public:
     // Member Functions
-    int          Type() { return ZONE_ORDER_FLOW; }
-    int          RenderInit(Terminal *term, int update_flag);
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar* value);
-    int          ZoneStates() { return 3; }
+    int          Type() override { return ZONE_ORDER_FLOW; }
+    int          RenderInit(Terminal *term, int update_flag) override;
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          Update(Terminal *term, int update_message, const genericChar* value) override;
+    int          ZoneStates() override { return 3; }
 };
 
 // class OrderAddZone
@@ -124,12 +124,12 @@ public:
     OrderAddZone();
 
     // Member Functions
-    int          Type() { return ZONE_ORDER_ADD; }
-    int          RenderInit(Terminal *term, int update_flag);
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar* value);
-    int          ZoneStates() { return 3; }
+    int          Type() override { return ZONE_ORDER_ADD; }
+    int          RenderInit(Terminal *term, int update_flag) override;
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          Update(Terminal *term, int update_message, const genericChar* value) override;
+    int          ZoneStates() override { return 3; }
 };
 
 // class OrderDeleteZone
@@ -143,12 +143,12 @@ public:
     OrderDeleteZone();
 
     // Member Functions
-    int          Type() { return ZONE_ORDER_DELETE; }
-    int          RenderInit(Terminal *term, int update_flag);
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar* value);
-    int          ZoneStates() { return 3; }
+    int          Type() override { return ZONE_ORDER_DELETE; }
+    int          RenderInit(Terminal *term, int update_flag) override;
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          Update(Terminal *term, int update_message, const genericChar* value) override;
+    int          ZoneStates() override { return 3; }
 };
 
 // class OrderCommentZone
@@ -160,12 +160,12 @@ public:
     OrderCommentZone();
 
     // Member Functions
-    int          Type() { return ZONE_ORDER_COMMENT; }
-    int          RenderInit(Terminal *term, int update_flag);
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar* value);
-    int          ZoneStates() { return 3; }
+    int          Type() override { return ZONE_ORDER_COMMENT; }
+    int          RenderInit(Terminal *term, int update_flag) override;
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          Update(Terminal *term, int update_message, const genericChar* value) override;
+    int          ZoneStates() override { return 3; }
 };
 
 // class OrderDisplayZone
@@ -177,11 +177,11 @@ public:
     OrderDisplayZone();
 
     // Member Functions
-    int          Type() { return ZONE_ORDER_DISPLAY; }
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Touch(Terminal *term, int tx, int ty);
-    SignalResult Keyboard(Terminal *term, int key, int state);
-    int          ZoneStates() { return 1; }
+    int          Type() override { return ZONE_ORDER_DISPLAY; }
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    SignalResult Keyboard(Terminal *term, int key, int state) override;
+    int          ZoneStates() override { return 1; }
 };
 
 // class ItemZone
@@ -199,20 +199,20 @@ public:
     ItemZone();
 
     // Member Functions
-    int          Type() { return ZONE_ITEM; }
-    std::unique_ptr<Zone> Copy();
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const char* message);
-    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          Type() override { return ZONE_ITEM; }
+    std::unique_ptr<Zone> Copy() override;
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Signal(Terminal *term, const char* message) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
     int          AddPayment(Terminal *term, int ptype, int pid, int pflags, int pamount);
-    int          Update(Terminal *term, int update_message, const genericChar* value);
-    SalesItem   *Item(ItemDB *db);
-    const genericChar* TranslateString(Terminal *term) { return nullptr; }
+    int          Update(Terminal *term, int update_message, const genericChar* value) override;
+    SalesItem   *Item(ItemDB *db) override;
+    const genericChar* TranslateString(Terminal *term) override { return nullptr; }
 
-    Str *ItemName() { return &item_name; }
-    Str *Script()   { return &modifier_script; }
-    int *JumpType() { return &jump_type; }
-    int *JumpID()   { return &jump_id;   }
+    Str *ItemName() override { return &item_name; }
+    Str *Script() override   { return &modifier_script; }
+    int *JumpType() override { return &jump_type; }
+    int *JumpID() override   { return &jump_id;   }
 };
 
 // class QualifierZone
@@ -229,15 +229,15 @@ public:
     QualifierZone();
 
     // Member Functions
-    int          Type() { return ZONE_QUALIFIER; }
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar* value);
-    const genericChar* TranslateString(Terminal *term) { return nullptr; }
+    int          Type() override { return ZONE_QUALIFIER; }
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          Update(Terminal *term, int update_message, const genericChar* value) override;
+    const genericChar* TranslateString(Terminal *term) override { return nullptr; }
 
-    int *QualifierType() { return &qualifier_type; }
-    int *JumpType()      { return &jump_type; }
-    int *JumpID()        { return &jump_id;   }
+    int *QualifierType() override { return &qualifier_type; }
+    int *JumpType() override      { return &jump_type; }
+    int *JumpID() override        { return &jump_id;   }
 };
 
 #endif

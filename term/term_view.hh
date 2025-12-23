@@ -379,7 +379,7 @@ extern long long RLLong() noexcept;
 extern int   WFlt(Flt val) noexcept;
 extern Flt   RFlt() noexcept;
 extern int   WStr(const char* s, int len = 0);
-extern genericChar* RStr(genericChar* s = NULL);
+extern genericChar* RStr(genericChar* s = nullptr);
 extern int   SendNow() noexcept;
 extern int   ReloadTermFonts();  // Reload fonts when global defaults change
 void TerminalReloadFonts();

@@ -19,7 +19,7 @@
  */
 
 #ifndef _REMOTE_LINK_HH
-#define _REMOTE_LINK_HH
+#define REMOTE_LINK_HH
 
 #include "basic.hh"
 

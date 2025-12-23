@@ -39,9 +39,9 @@ extern const char* CreditCardName[];
 extern const char* CreditCardShortName[];
 extern int   CreditCardValue[];
 
-#define CC_STATUS_NONE        -2
+#define CC_STATUS_NONE        (-2)
 // these are taken from MCVE
-#define CC_STATUS_ERROR       -1
+#define CC_STATUS_ERROR       (-1)
 #define CC_STATUS_FAIL         0
 #define CC_STATUS_SUCCESS      1
 #define CC_STATUS_AUTH         2
@@ -60,7 +60,7 @@ extern int   CreditCardValue[];
 #define CC_STATUS_WRITEFAIL   21
 
 // actions
-#define CCAUTH_FIND           -1
+#define CCAUTH_FIND           (-1)
 #define CCAUTH_NOACTION        0
 #define CCAUTH_PREAUTH         1
 #define CCAUTH_AUTHORIZE       2
@@ -130,7 +130,7 @@ extern int   CreditCardValue[];
 #define SWIPE_MSG           "Please Swipe Card"
 #define WAIT_MSG            "Please Wait"
 
-#define AUTH_DEFAULT        -1
+#define AUTH_DEFAULT        (-1)
 #define AUTH_NONE            0
 #define AUTH_IN_PROGRESS     1
 #define AUTH_PREAUTH         2
@@ -322,7 +322,7 @@ public:
     int            ParseSwipe(const char* swipe_value);
     int            ParseApproval(const char* value);
     int            CardType() { return card_type; }
-    char* CreditTypeName( char* str=0, int shortname = 0 );
+    char* CreditTypeName( char* str=nullptr, int shortname = 0 );
     int            CreditType();
     int            GetApproval(Terminal *term);
     int            GetPreApproval(Terminal *term);
@@ -352,7 +352,7 @@ public:
     const char* Approval();
     const char* Auth() { return auth.Value(); }
     const char* PAN(int all = 0);
-    char* LastFour( char* dest = 0);
+    char* LastFour( char* dest = nullptr);
     const char* ExpireDate(); // nicely formats expiration date
     const char* Name();
     const char* Verb() { return verb.Value(); }

@@ -46,7 +46,7 @@ const char* PurchaseUnitName[] = {
     "Volume - Ounce", "Volume - Pint",
     "Volume - Quart", "Volume - Gallon",
     "Weight - Gram", "Weight - Kilogram",
-    "Volume - Mililiter", "Volume - Liter", NULL};
+    "Volume - Mililiter", "Volume - Liter", nullptr};
 int PurchaseUnitValue[] = {
     COUNT_SINGLE, COUNT_DOZEN, COUNT_GROSS,
     WEIGHT_OUNCE, WEIGHT_POUND,
@@ -60,7 +60,7 @@ const char* RecipeUnitName[] = {
     "Volume - Dram", "Volume - TSP", "Volume - TBS", "Volume - Ounce",
     "Volume - Cup", "Volume - Pint", "Volume - Quart",
     "Weight - Gram", "Weight - Kilogram",
-    "Volume - Mililiter", "Volume - Liter", NULL};
+    "Volume - Mililiter", "Volume - Liter", nullptr};
 int RecipeUnitValue[] = {
     COUNT_SINGLE,
     WEIGHT_DASH, WEIGHT_OUNCE,
@@ -217,7 +217,7 @@ char* UnitAmount::Description(char* str)
 {
     FnTrace("UnitAmount::Description()");
     static genericChar buffer[256];
-    if (str == NULL)
+    if (str == nullptr)
         str = buffer;
 
     str[0] = '\0';
@@ -254,7 +254,7 @@ char* UnitAmount::Measurement( char* str)
 {
     FnTrace("UnitAmount::Measurement()");
     static genericChar buffer[16];
-    if (str == NULL)
+    if (str == nullptr)
         str = buffer;
 
     str[0] = '\0';
@@ -320,8 +320,8 @@ UnitAmount &UnitAmount::operator-= (UnitAmount &ua)
 // Constructor
 Product::Product()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     cost = 0;
     id   = 0;
 }
@@ -368,8 +368,8 @@ int Product::DoesVendorHave(int vendor_id)
 // Constructor
 RecipePart::RecipePart()
 {
-    next    = NULL;
-    fore    = NULL;
+    next    = nullptr;
+    fore    = nullptr;
     part_id = 0;
 }
 
@@ -408,8 +408,8 @@ int RecipePart::Write(OutputDataFile &df, int version)
 // Constructor
 Recipe::Recipe()
 {
-    next              = NULL;
-    fore              = NULL;
+    next              = nullptr;
+    fore              = nullptr;
     prepare_time      = 0;
     id                = 0;
     in_menu           = 0;
@@ -464,7 +464,7 @@ int Recipe::Write(OutputDataFile &df, int version)
     error += serving.Write(df, 1);
 
     error += df.Write(PartCount());
-    for (RecipePart *rp = PartList(); rp != NULL; rp = rp->next)
+    for (RecipePart *rp = PartList(); rp != nullptr; rp = rp->next)
         rp->Write(df, version);
     return error;
 }
@@ -540,8 +540,8 @@ int Recipe::RemoveIngredient(int part_id, UnitAmount &ua)
 // Constructor
 Vendor::Vendor()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     id   = 0;
 }
 
@@ -668,15 +668,15 @@ int Inventory::Save()
 
     int error = 0;
     error += df.Write(ProductCount());
-    for (Product *pr = ProductList(); pr != NULL; pr = pr->next)
+    for (Product *pr = ProductList(); pr != nullptr; pr = pr->next)
         error += pr->Write(df, 7);
 
     error += df.Write(RecipeCount());
-    for (Recipe *rc = RecipeList(); rc != NULL; rc = rc->next)
+    for (Recipe *rc = RecipeList(); rc != nullptr; rc = rc->next)
         error += rc->Write(df, 7);
 
     error += df.Write(VendorCount());
-    for (Vendor *v = VendorList(); v != NULL; v = v->next)
+    for (Vendor *v = VendorList(); v != nullptr; v = v->next)
         error += v->Write(df, 7);
 
     return error;
@@ -685,7 +685,7 @@ int Inventory::Save()
 int Inventory::Add(Product *pr)
 {
     FnTrace("Inventory::Add(Product)");
-    if (pr == NULL)
+    if (pr == nullptr)
         return 1;
 
     // Start at end of list and work backwords
@@ -707,7 +707,7 @@ int Inventory::Add(Product *pr)
 int Inventory::Add(Recipe *rc)
 {
     FnTrace("Inventory::Add(Recipe)");
-    if (rc == NULL)
+    if (rc == nullptr)
         return 1;
 
     // Start at end of list and work backwords
@@ -729,7 +729,7 @@ int Inventory::Add(Recipe *rc)
 int Inventory::Add(Vendor *v)
 {
     FnTrace("Inventory::Add(Vendor)");
-    if (v == NULL)
+    if (v == nullptr)
         return 1;
 
     // Start at end of list and work backwords
@@ -751,7 +751,7 @@ int Inventory::Add(Vendor *v)
 int Inventory::Add(Stock *s)
 {
     FnTrace("Inventory::Add(Stock)");
-    if (s == NULL)
+    if (s == nullptr)
         return 1;
 
     stock_list.AddToTail(s);
@@ -804,10 +804,10 @@ int Inventory::LoadStock(const char* path)
         stock_path.Set(path);
 
     DIR *dp = opendir(stock_path.Value());
-    if (dp == NULL)
+    if (dp == nullptr)
         return 1;  // Error - can't find directory
 
-    struct dirent *record = NULL;
+    struct dirent *record = nullptr;
     do
     {
         record = readdir(dp);
@@ -824,7 +824,7 @@ int Inventory::LoadStock(const char* path)
                 genericChar str[256];
                 vt_safe_string::safe_format(str, 256, "%s/%s", stock_path.Value(), name);
                 Stock *s = new Stock;
-                if (s == NULL)
+                if (s == nullptr)
                     ReportError("Couldn't create stock");
                 else
                 {
@@ -843,16 +843,16 @@ int Inventory::LoadStock(const char* path)
 int Inventory::PartMatches(const char* word)
 {
     FnTrace("Inventory::PartMatches()");
-    if (word == NULL)
+    if (word == nullptr)
         return 0;
 
     int match = 0;
     int len = strlen(word);
-    for (Product *pr = ProductList(); pr != NULL; pr = pr->next)
+    for (Product *pr = ProductList(); pr != nullptr; pr = pr->next)
         if (StringCompare(pr->name.Value(), word, len) == 0)
             ++match;
 
-    for (Recipe *rc = RecipeList(); rc != NULL; rc = rc->next)
+    for (Recipe *rc = RecipeList(); rc != nullptr; rc = rc->next)
         if (StringCompare(rc->name.Value(), word, len) == 0)
             ++match;
     return match;
@@ -867,27 +867,27 @@ Product *Inventory::FindProductByRecord(int record)
 Product *Inventory::FindProductByWord(const char* word, int &record)
 {
     FnTrace("Inventory::FindProductByWord()");
-    if (word == NULL)
-        return NULL;
+    if (word == nullptr)
+        return nullptr;
 
     record = 0;
     int len = strlen(word);
-    for (Product *pr = ProductList(); pr != NULL; pr = pr->next)
+    for (Product *pr = ProductList(); pr != nullptr; pr = pr->next)
     {
         if (StringCompare(pr->name.Value(), word, len) == 0)
             return pr;
         ++record;
     }
-    return NULL;
+    return nullptr;
 }
 
 Product *Inventory::FindProductByID(int id)
 {
     FnTrace("Inventory::FindProductByID()");
-    for (Product *pr = ProductList(); pr != NULL; pr = pr->next)
+    for (Product *pr = ProductList(); pr != nullptr; pr = pr->next)
         if (pr->id == id)
             return pr;
-    return NULL;
+    return nullptr;
 }
 
 Recipe *Inventory::FindRecipeByRecord(int record)
@@ -899,36 +899,36 @@ Recipe *Inventory::FindRecipeByRecord(int record)
 Recipe *Inventory::FindRecipeByWord(const char* word, int &record)
 {
     FnTrace("Inventory::FindRecipeByWord()");
-    if (word == NULL)
-        return NULL;
+    if (word == nullptr)
+        return nullptr;
 
     record = 0;
     int len = strlen(word);
-    for (Recipe *rc = RecipeList(); rc != NULL; rc = rc->next)
+    for (Recipe *rc = RecipeList(); rc != nullptr; rc = rc->next)
     {
         if (StringCompare(rc->name.Value(), word, len) == 0)
             return rc;
         ++record;
     }
-    return NULL;
+    return nullptr;
 }
 
 Recipe *Inventory::FindRecipeByID(int id)
 {
     FnTrace("Inventory::FindRecipeByID()");
-    for (Recipe *rc = RecipeList(); rc != NULL; rc = rc->next)
+    for (Recipe *rc = RecipeList(); rc != nullptr; rc = rc->next)
         if (rc->id == id)
             return rc;
-    return NULL;
+    return nullptr;
 }
 
 Recipe *Inventory::FindRecipeByName(const char* name)
 {
     FnTrace("Inventory::FindRecipeByName()");
-    for (Recipe *rc = RecipeList(); rc != NULL; rc = rc->next)
+    for (Recipe *rc = RecipeList(); rc != nullptr; rc = rc->next)
         if (StringCompare(rc->name.Value(), name) == 0)
             return rc;
-    return NULL;
+    return nullptr;
 }
 
 Vendor *Inventory::FindVendorByRecord(int record)
@@ -940,43 +940,43 @@ Vendor *Inventory::FindVendorByRecord(int record)
 Vendor *Inventory::FindVendorByWord(const char* word, int &record)
 {
     FnTrace("Inventory::FindVendorByWord()");
-    if (word == NULL)
-        return NULL;
+    if (word == nullptr)
+        return nullptr;
 
     record = 0;
     int len = strlen(word);
-    for (Vendor *v = VendorList(); v != NULL; v = v->next)
+    for (Vendor *v = VendorList(); v != nullptr; v = v->next)
     {
         if (StringCompare(v->name.Value(), word, len) == 0)
             return v;
         ++record;
     }
-    return NULL;
+    return nullptr;
 }
 
 Vendor *Inventory::FindVendorByID(int id)
 {
     FnTrace("Inventory::FindVendorByID()");
-    for (Vendor *v = VendorList(); v != NULL; v = v->next)
+    for (Vendor *v = VendorList(); v != nullptr; v = v->next)
         if (id == v->id)
             return v;
-    return NULL;
+    return nullptr;
 }
 
 int Inventory::ProductListReport(Terminal *t, Stock *s, Report *r)
 {
     FnTrace("Inventory::ProductListReport(Stock)");
-    if (r == NULL)
+    if (r == nullptr)
         return 1;
 
-    if (s == NULL)
+    if (s == nullptr)
     {
         r->TextC("Can't find stock information");
         return 0;
     }
 
     Product *pr = ProductList();
-    if (pr == NULL)
+    if (pr == nullptr)
     {
         r->TextC("There are no products definied");
         return 0;
@@ -1042,11 +1042,11 @@ int Inventory::ProductListReport(Terminal *t, Stock *s, Report *r)
 int Inventory::ProductListReport(Terminal *t, Invoice *in, Report *r)
 {
     FnTrace("Inventory::ProductListReport(Invoice)");
-    if (in == NULL || r == NULL)
+    if (in == nullptr || r == nullptr)
         return 1;
 
     Product *pr = ProductList();
-    if (pr == NULL)
+    if (pr == nullptr)
     {
         r->TextC("There are no products definied");
         return 0;
@@ -1082,7 +1082,7 @@ int Inventory::ProductListReport(Terminal *t, Invoice *in, Report *r)
 int Inventory::ScanItems(ItemDB *db)
 {
     FnTrace("Inventory::ScanItems()");
-    if (db == NULL)
+    if (db == nullptr)
         return 1;
 
     // Clear 'in_menu' flags
@@ -1148,7 +1148,7 @@ bool Inventory::ChangeRecipeName(const std::string &old_name, const std::string 
         return true;
     }
 
-    for (Recipe *r = RecipeList(); r != NULL; r = r->next)
+    for (Recipe *r = RecipeList(); r != nullptr; r = r->next)
     {
         if (StringCompare(r->name.Value(), old_name) == 0)
         {
@@ -1163,7 +1163,7 @@ Stock *Inventory::CurrentStock()
 {
     FnTrace("Inventory::CurrentStock()");
     Stock *end = StockListEnd();
-    if (end == NULL || end->end_time.IsSet())
+    if (end == nullptr || end->end_time.IsSet())
     {
         Stock *s = new Stock;
         Add(s);
@@ -1179,12 +1179,12 @@ int Inventory::MakeOrder(Check *c)
 {
     FnTrace("Inventory::MakeOrder()");
     Stock *s = CurrentStock();
-    if (s == NULL)
+    if (s == nullptr)
         return 1;
 
     int changed = 0;
-    for (SubCheck *sc = c->SubList(); sc != NULL; sc = sc->next)
-        for (Order *o = sc->OrderList(); o != NULL; o = o->next)
+    for (SubCheck *sc = c->SubList(); sc != nullptr; sc = sc->next)
+        for (Order *o = sc->OrderList(); o != nullptr; o = o->next)
             if (!(o->status & ORDER_MADE) && (o->status & ORDER_SENT))
             {
                 o->status |= ORDER_MADE;
@@ -1192,7 +1192,7 @@ int Inventory::MakeOrder(Check *c)
                 {
                     Recipe *rc = FindRecipeByName(o->item_name.Value());
                     if (rc)
-                        for (RecipePart *rp = rc->PartList(); rp != NULL; rp = rp->next)
+                        for (RecipePart *rp = rc->PartList(); rp != nullptr; rp = rp->next)
                         {
                             StockEntry *se = s->FindStock(rp->part_id, 1);
                             UnitAmount ua = rp->amount;
@@ -1211,10 +1211,10 @@ int Inventory::MakeOrder(Check *c)
 int Inventory::InvoiceReport(Terminal *t, Invoice *in, Report *r)
 {
     FnTrace("Inventory::InvoiceReport()");
-    if (r == NULL)
+    if (r == nullptr)
         return 1;
 
-    if (in == NULL)
+    if (in == nullptr)
     {
         r->TextC("No Invoice");
         return 0;
@@ -1280,8 +1280,8 @@ int Inventory::InvoiceReport(Terminal *t, Invoice *in, Report *r)
 // Constructor
 InvoiceEntry::InvoiceEntry()
 {
-    next       = NULL;
-    fore       = NULL;
+    next       = nullptr;
+    fore       = nullptr;
     product_id = 0;
 }
 
@@ -1309,8 +1309,8 @@ int InvoiceEntry::Write(OutputDataFile &df, int version)
 // Constructor
 Invoice::Invoice()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     vendor_id = 0;
     id = 0;
 }
@@ -1352,7 +1352,7 @@ int Invoice::Write(OutputDataFile &df, int version)
     error += df.Write(time);
 
     error += df.Write(EntryCount());
-    for (InvoiceEntry *ie = EntryList(); ie != NULL; ie = ie->next)
+    for (InvoiceEntry *ie = EntryList(); ie != nullptr; ie = ie->next)
         error += ie->Write(df, version);
     return error;
 }
@@ -1381,14 +1381,14 @@ InvoiceEntry *Invoice::FindEntry(int product_id, int create)
     FnTrace("Invoice::FindEntry()");
     InvoiceEntry *ie;
 
-    for (ie = EntryList(); ie != NULL; ie = ie->next)
+    for (ie = EntryList(); ie != nullptr; ie = ie->next)
     {
         if (ie->product_id == product_id)
             return ie;
     }
 
     if (create <= 0)
-        return NULL;
+        return nullptr;
 
     ie = new InvoiceEntry;
     ie->product_id = product_id;
@@ -1400,8 +1400,8 @@ InvoiceEntry *Invoice::FindEntry(int product_id, int create)
 // Constructor
 StockEntry::StockEntry()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     product_id = 0;
 }
 
@@ -1430,8 +1430,8 @@ int StockEntry::Write(OutputDataFile &df, int version)
 // Constructor
 Stock::Stock()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     id   = 0;
 }
 
@@ -1479,11 +1479,11 @@ int Stock::Write(OutputDataFile &df, int version)
     error += df.Write(end_time);
 
     error += df.Write(EntryCount());
-    for (StockEntry *se = EntryList(); se != NULL; se = se->next)
+    for (StockEntry *se = EntryList(); se != nullptr; se = se->next)
         error += se->Write(df, version);
 
     error += df.Write(InvoiceCount());
-    for (Invoice *in = InvoiceList(); in != NULL; in = in->next)
+    for (Invoice *in = InvoiceList(); in != nullptr; in = in->next)
         error += in->Write(df, version);
     return error;
 }
@@ -1550,14 +1550,14 @@ StockEntry *Stock::FindStock(int product_id, int create)
     FnTrace("Stock::FindStock()");
     StockEntry *se;
 
-    for (se = EntryList(); se != NULL; se = se->next)
+    for (se = EntryList(); se != nullptr; se = se->next)
     {
         if (se->product_id == product_id)
             return se;
     }
 
     if (create <= 0)
-        return NULL;
+        return nullptr;
 
     se = new StockEntry;
     se->product_id = product_id;
