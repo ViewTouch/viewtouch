@@ -535,6 +535,11 @@ public:
     void DebugPrint(int printall = 0);
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wanalyzer-optin.performance.Padding"
+#endif
+
 class Settings
 {
     DList<DiscountInfo>   discount_list;
@@ -922,5 +927,9 @@ public:
     int PrinterReport(Terminal *t, Report *r);
     int GetDrawerFloatValue();
 };
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 #endif

@@ -83,16 +83,15 @@ namespace vt_crash {
         }
         
         // Create the directory with permissions 0750 (rely on umask for further restriction)
-        if (mkdir(dir.c_str(), 0750) == 0) {
+        const int mkdir_result = mkdir(dir.c_str(), 0750);
+        if (mkdir_result == 0 || errno == EEXIST) {
+            // Either we created it or another process raced us to create it
             return true;
-        } else if (errno == EEXIST) {
-            // Directory was created by another process
-            return true;
-        } else {
-            std::cerr << "ERROR: Failed to create crash report directory: " << dir 
-                      << " (errno: " << errno << ")" << '\n';
-            return false;
         }
+
+        std::cerr << "ERROR: Failed to create crash report directory: " << dir 
+                  << " (errno: " << errno << ")" << '\n';
+        return false;
     }
 
     void InitializeCrashReporting(const std::string& crash_report_dir) {
@@ -188,7 +187,6 @@ namespace vt_crash {
             bool found_model = false;
             int cpu_count = 0;
             std::string model_name;
-            std::string cpu_freq;
             
             while (fgets(line, sizeof(line), cpuinfo)) {
                 std::string line_str(line);
@@ -426,7 +424,9 @@ namespace vt_crash {
         }
         
         // Get symbols
-        char** symbols = backtrace_symbols(buffer.data(), num_frames);
+        void* raw_symbols = reinterpret_cast<void*>(backtrace_symbols(buffer.data(), num_frames));
+        std::unique_ptr<void, decltype(&std::free)> symbols_guard(raw_symbols, &std::free);
+        auto symbols = static_cast<char**>(raw_symbols);
         if (symbols == nullptr) {
             oss << "Failed to get stack trace symbols\n";
             return oss.str();
@@ -487,7 +487,6 @@ namespace vt_crash {
             oss << "\n";
         }
         
-        free(symbols);
         #else
         oss << "Stack trace not available on this platform\n";
         oss << "(execinfo.h is a GNU/Linux extension)\n";

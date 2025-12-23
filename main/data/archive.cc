@@ -145,11 +145,19 @@ Archive::Archive(Settings *settings, const char* file)
     if (df.Open(file, file_version))
         return;
 
-    int error = 0;
-    error += df.Read(id);
-    if (file_version >= 6)
-        error += df.Read(start_time);
-    error += df.Read(end_time);
+    const int error = [file_version, &df, this]() {
+        int read_error = 0;
+        read_error += df.Read(id);
+        if (file_version >= 6)
+            read_error += df.Read(start_time);
+        read_error += df.Read(end_time);
+        return read_error;
+    }();
+
+    if (error != 0)
+    {
+        corrupt = 1;
+    }
 }
 
 // Member Functions
