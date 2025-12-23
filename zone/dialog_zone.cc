@@ -2793,27 +2793,30 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
 SignalResult CreditCardDialog::Keyboard(Terminal *term, int my_key, int state)
 {
     FnTrace("CreditCardDialog::Keyboard()");
-    SignalResult retval = SIGNAL_IGNORED;
-    CreditCardVoiceDialog *ccv = nullptr;
+    enum class Action { None, Voice, Print };
+    Action action = Action::None;
 
-    switch (my_key)
+    if (my_key == 118 && debug_mode) // 'v'
+        action = Action::Voice;
+    else if (my_key == 114) // 'r'
+        action = Action::Print;
+
+    switch (action)
     {
-    case 118: // v
-        if (debug_mode)
-        {
-            ccv = new CreditCardVoiceDialog();
-            term->NextDialog(ccv);
-            retval = SIGNAL_TERMINATE;
-        }
-        break;
-    case 114: // r
+    case Action::Voice:
+    {
+        auto *ccv = new CreditCardVoiceDialog();
+        term->NextDialog(ccv);
+        return SIGNAL_TERMINATE;
+    }
+    case Action::Print:
         if (term->credit != nullptr)
             term->credit->PrintReceipt(term);
-        retval = SIGNAL_OKAY;
-        break;
+        return SIGNAL_OKAY;
+    case Action::None:
+    default:
+        return SIGNAL_IGNORED;
     }
-
-    return retval;
 }
 
 
@@ -3337,12 +3340,12 @@ SignalResult OpenTabDialog::Signal(Terminal *term, const genericChar* message)
 SignalResult OpenTabDialog::Keyboard(Terminal *term, int kb_key, int state)
 {
     FnTrace("OpenTabDialog::Keyboard()");
-    SignalResult retval = SIGNAL_IGNORED;
+    const char *cmd = nullptr;
 
     switch (kb_key)
     {
     case 8:  // backspace
-        retval = Signal(term, "backspace");
+        cmd = "backspace";
         break;
     case 9:  // tab
         if (current == customer_name)
@@ -3351,20 +3354,18 @@ SignalResult OpenTabDialog::Keyboard(Terminal *term, int kb_key, int state)
             SetCurrent(term, customer_comment);
         else
             SetCurrent(term, customer_name);
-        retval = SIGNAL_OKAY;
-        break;
+        return SIGNAL_OKAY;
     case 13:  // enter
-        retval = Signal(term, "enter");
+        cmd = "enter";
         break;
     case 27:  // ESC
-        retval = Signal(term, "cancel");
+        cmd = "cancel";
         break;
     default:
-        retval = GetTextDialog::Keyboard(term, kb_key, state);
-        break;
+        return GetTextDialog::Keyboard(term, kb_key, state);
     }
 
-    return retval;
+    return cmd ? Signal(term, cmd) : SIGNAL_IGNORED;
 }
 
 int OpenTabDialog::RenderEntry(Terminal *term)

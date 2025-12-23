@@ -339,19 +339,16 @@ SignalResult LoginZone::Keyboard(Terminal *term, int my_key, int key_state)
         genericChar str[] = {(char) my_key, '\0'};
         return Signal(term, str);
     }
-    else if (my_key == 8)
-    {
-        return Signal(term, "backspace");
-    }
+
+    const char *cmd = nullptr;
+    if (my_key == 8)
+        cmd = "backspace";
     else if (my_key == 13)
-    {
-		//handle the ENTER key as 'normal' start
-        return Signal(term, "start");
-	}
+        cmd = "start"; // handle ENTER key as 'normal' start
     else
-    {
         return SIGNAL_IGNORED;
-    }
+
+    return Signal(term, cmd);
 }
 
 int LoginZone::Update(Terminal *term, int update_message, const genericChar* value)
@@ -910,12 +907,16 @@ SignalResult LogoutZone::Keyboard(Terminal *term, int my_key, int state)
         genericChar str[] = {(char) my_key, '\0'};
         return Signal(term, str);
     }
-    else if (my_key == 8)
-        return Signal(term, "backspace");
+
+    const char *cmd = nullptr;
+    if (my_key == 8)
+        cmd = "backspace";
     else if (my_key == 27)
-        return Signal(term, "cancel");
+        cmd = "cancel";
     else
         return SIGNAL_IGNORED;
+
+    return Signal(term, cmd);
 }
 
 int LogoutZone::RenderPaymentEntry(Terminal *term, int line)

@@ -183,7 +183,9 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 	if (max_pages > 1)
 		TextL(term, size_y - 1, term->PageNo(page_no + 1, max_pages), col);
 
-	Flt line = HEADER_SIZE;
+    Flt line = HEADER_SIZE;
+
+    const bool is_open_like = (status == CL_OPEN || status == CL_TAKEOUT || status == CL_FASTFOOD);
 	if (array_size <= 0)
 	{
 		if (status == CL_ALL)
@@ -247,9 +249,9 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 			vt_safe_string::safe_format(str, 128, "%d", c->Guests());
 		TextPosL(term, x1, line, str, tc);
 
-		if (status == CL_OPEN || status == CL_TAKEOUT || status == CL_FASTFOOD)
-			term->TimeDate(str, c->time_open, TD_TIME);
-		else
+        if (is_open_like)
+            term->TimeDate(str, c->time_open, TD_TIME);
+        else
 		{
 			TimeInfo time_close;
 			time_close.Set(c->TimeClosed());
@@ -291,18 +293,27 @@ SignalResult CheckListZone::Signal(Terminal *term, const genericChar* message)
             c->FinalizeOrders(term, 1);
         break;
     default:
+    {
+        int off = -1;
+        Employee *start = nullptr;
         if (strncmp(message, "search ", 7) == 0)
         {
-            if (Search(term, &message[7], nullptr) <= 0)
-                return SIGNAL_IGNORED;
+            off = 7;
         }
         else if (strncmp(message, "nextsearch ", 11) == 0)
         {
-            if (Search(term, &message[11], term->server) <= 0)
-                return SIGNAL_IGNORED;
+            off = 11;
+            start = term->server;
         }
         else
+        {
             return SIGNAL_IGNORED;
+        }
+
+        if (Search(term, &message[off], start) <= 0)
+            return SIGNAL_IGNORED;
+        break;
+    }
     }
 
     Draw(term, 1);
@@ -623,18 +634,17 @@ SignalResult CheckEditZone::Signal(Terminal *term, const genericChar* message)
         break;
     case 2:  //change view
         break;
-    case 3:  //search
-        if (Search(term, -1, &message[7]) <= 0)
-            retval = SIGNAL_IGNORED;
-        else
-            draw = 1;
-        break;
+    case 3:  // search
     case 4:  // nextsearch
-        if (Search(term, record_no, &message[11]) <= 0)
+    {
+        int start = (idx == 3) ? -1 : record_no;
+        int off   = (idx == 3) ? 7  : 11; // skip prefix length
+        if (Search(term, start, &message[off]) <= 0)
             retval = SIGNAL_IGNORED;
         else
             draw = 1;
         break;
+    }
     case 5:  // save
         // We also need to save the customer info.  We'll assume CustomerInfoZone
         // is at group 1, but in the future this should not be necessary.

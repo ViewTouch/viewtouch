@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Logging System Test Failure (2025-12-23)**
+  - Fixed persistent "Log File Output" test failure to achieve 40/40 passing tests
+  - **Root cause**: Test directory `/tmp/viewtouch_test_logs` was shared across all tests, causing log accumulation and initialization conflicts
+  - **Solution**:
+    - Modified "Log File Output" test to use dedicated directory `/tmp/viewtouch_test_logs_file_output`
+    - Fixed structured logger initialization to support both async (production) and synchronous (test) modes
+    - Added per-SECTION shutdown calls to properly reinitialize logger between test sections
+    - Changed `spdlog::shutdown()` to `spdlog::drop_all()` in `Shutdown()` to allow logger reinitialization within the same process
+    - Set JSON sink pattern to `"%v"` instead of empty string to ensure JSON output is written
+    - Changed structured log file from truncate to append mode to preserve test output
+  - **Files modified**:
+    - `src/utils/vt_logger.cc`:
+      - Created separate `structured_logger_` for JSON-only output
+      - Initialize both main and structured loggers with proper async/sync configuration based on test mode
+      - Enhanced `Flush()` to flush both logger instances
+      - Replaced `spdlog::shutdown()` with `spdlog::drop_all()` for proper cleanup
+    - `tests/unit/test_enhanced_logging.cc`:
+      - Use unique test directory to isolate test from other logging tests
+      - Added `#include <iostream>` for debug output (later removed)
+      - Call `Shutdown()` at end of each SECTION to enable proper reinitialization
+  - **Impact**: All 40 tests now pass consistently; logging system properly writes structured JSON and human-readable logs to separate files
+
 ### Added
 - **Duplicate Branch Cleanup (2025-12-22)**
   - Removed duplicated branch bodies flagged by clang-tidy (bugprone-branch-clone)
@@ -23,6 +46,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/creditcard_list_zone.cc`:
       - Replaced repeated switch branches in `GetDB()` with direct mapping
   - **Impact**: Clearer control flow, less chance of divergence and maintenance errors
+
+- **Duplicate Branch Cleanup (2025-12-23)**
+  - Continued removing duplicated branch bodies flagged by clang-tidy (bugprone-branch-clone)
+  - **Files modified**:
+    - `zone/check_list_zone.cc`:
+      - Merged `search` and `nextsearch` cases in `CheckEditZone::Signal()` into a single shared implementation
+      - Unified `CheckListZone::Signal()` handling for `search`/`nextsearch` by computing offsets and start employee
+      - Factored `is_open_like` boolean in `CheckListZone::Render()` for time display clarity
+    - `zone/dialog_zone.cc`:
+      - `CreditCardDialog::Keyboard()`: Mapped key inputs to actions (voice, print) with unified return paths
+      - `OpenTabDialog::Keyboard()`: Collapsed repeated `Signal()` branches using a single command mapping; tab cycling remains explicit
+    - `zone/login_zone.cc`:
+      - `LoginZone::Keyboard()`: Unified non-digit key handling to a single `Signal()` path
+      - `LogoutZone::Keyboard()`: Unified mapping of backspace/cancel to a single `Signal()` path
+    - `zone/report_zone.cc`:
+      - `ReportZone::Keyboard()`: Mapped navigation keys to a `delta` for page changes; unified control flow
+      - `ReadZone::Keyboard()`: Same `delta` mapping for navigation; unified returns
+    - `zone/search_zone.cc`:
+      - `SearchZone::Keyboard()`: Merged identical Enter/Escape handling into one branch
+    - `zone/drawer_zone.cc`:
+      - `DrawerManageZone::Keyboard()`: Collapsed navigation to a `delta` with early returns for other keys
+  - **Impact**: Reduced duplication and simplified search control flow
 
 - **Missing Default Cases in Switch Statements (2025-12-22)**
   - Added default cases to 3 switch statements that were missing them (bugprone-switch-missing-default-case)
