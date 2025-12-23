@@ -141,8 +141,6 @@ SignalResult SearchZone::Keyboard(Terminal *term, int my_key, int state)
         term->Signal(str, group_id);
         return SIGNAL_END;
     case 13: // return
-        Draw(term, 1);
-        return SIGNAL_END;
     case 27: // escape (cancel)
         Draw(term, 1);
         return SIGNAL_END;

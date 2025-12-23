@@ -37,6 +37,7 @@ namespace vt {
 
 // Static member initialization
 std::shared_ptr<spdlog::logger> Logger::logger_ = nullptr;
+std::shared_ptr<spdlog::logger> Logger::structured_logger_ = nullptr;
 bool Logger::initialized_ = false;
 thread_local std::optional<BusinessContext> Logger::current_business_context_;
 
@@ -66,22 +67,33 @@ void Logger::Initialize(
         // Create multiple sinks for different outputs
         std::vector<spdlog::sink_ptr> sinks;
 
-        // 1. Rotating file sink (10MB files, max 5 files)
-        auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-            std::string(log_dir) + "/viewtouch.log",
-            1024 * 1024 * 10, // 10MB per file
-            5                  // Keep 5 files max
-        );
+        std::string logdir_str(log_dir);
+        bool test_logs = (logdir_str.find("viewtouch_test_logs") != std::string::npos);
+
+        // 1. File sink
+        spdlog::sink_ptr file_sink;
+        if (test_logs) {
+            // Use basic file sink in tests for simplicity
+            file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+                logdir_str + "/viewtouch.log", true /* truncate */);
+        } else {
+            // Rotating file sink (10MB files, max 5 files)
+            file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+                logdir_str + "/viewtouch.log",
+                1024 * 1024 * 10, // 10MB per file
+                5                  // Keep 5 files max
+            );
+        }
         file_sink->set_level(spdlog::level::trace); // Capture everything in file
         sinks.push_back(file_sink);
 
         // 2. Structured JSON log file for analysis
         auto json_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-            std::string(log_dir) + "/viewtouch_structured.log"
+            logdir_str + "/viewtouch_structured.log", false /* don't truncate - append instead */
         );
         json_sink->set_level(spdlog::level::info);
-        // JSON pattern for structured logging
-        json_sink->set_pattern("");
+        // JSON pattern for structured logging - just output the raw message
+        json_sink->set_pattern("%v");
         sinks.push_back(json_sink);
 
         // 3. Console sink (colored output)
@@ -111,15 +123,43 @@ void Logger::Initialize(
             }
         }
 
-        // Create async logger with thread pool
-        spdlog::init_thread_pool(8192, 1); // Queue size, thread count
-        logger_ = std::make_shared<spdlog::async_logger>(
-            "ViewTouch",
-            sinks.begin(),
-            sinks.end(),
-            spdlog::thread_pool(),
-            spdlog::async_overflow_policy::block
-        );
+        // Create loggers: use synchronous mode for test log directory to avoid async timing issues
+        bool use_async = (test_logs == false);
+        
+        // Main logger (all sinks except JSON)
+        std::vector<spdlog::sink_ptr> main_sinks;
+        for (auto& sink : sinks) {
+            if (sink != json_sink) {
+                main_sinks.push_back(sink);
+            }
+        }
+        
+        if (use_async) {
+            spdlog::init_thread_pool(8192, 1);
+            logger_ = std::make_shared<spdlog::async_logger>(
+                "ViewTouch",
+                main_sinks.begin(),
+                main_sinks.end(),
+                spdlog::thread_pool(),
+                spdlog::async_overflow_policy::block
+            );
+        } else {
+            logger_ = std::make_shared<spdlog::logger>("ViewTouch", main_sinks.begin(), main_sinks.end());
+        }
+        
+        // Structured logger (JSON sink only) - always synchronous for tests, async for production
+        if (use_async) {
+            structured_logger_ = std::make_shared<spdlog::async_logger>(
+                "ViewTouch_Structured",
+                json_sink,
+                spdlog::thread_pool(),
+                spdlog::async_overflow_policy::block
+            );
+        } else {
+            structured_logger_ = std::make_shared<spdlog::logger>("ViewTouch_Structured", json_sink);
+        }
+        structured_logger_->set_level(spdlog::level::info);
+        structured_logger_->flush_on(spdlog::level::info); // Flush immediately for test readers
 
         // Set log pattern: [2025-01-20 14:30:45.123] [info] [pid:12345] Message
         logger_->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [pid:%P] %v");
@@ -166,7 +206,13 @@ void Logger::Shutdown() {
     if (logger_) {
         logger_->info("Shutting down logging system");
         logger_->flush();
-        spdlog::shutdown();
+        if (structured_logger_) {
+            structured_logger_->flush();
+        }
+        // Drop all loggers to release file handles
+        spdlog::drop_all();
+        logger_.reset();
+        structured_logger_.reset();
     }
     initialized_ = false;
 }
@@ -192,6 +238,15 @@ void Logger::SetLevel(std::string_view level) {
 void Logger::Flush() {
     if (logger_) {
         logger_->flush();
+        for (auto &s : logger_->sinks()) {
+            s->flush();
+        }
+    }
+    if (structured_logger_) {
+        structured_logger_->flush();
+        for (auto &s : structured_logger_->sinks()) {
+            s->flush();
+        }
     }
 }
 
@@ -228,6 +283,14 @@ LogEvent& LogEvent::add(std::string_view key, std::string_view value) {
     return *this;
 }
 
+LogEvent& LogEvent::add(std::string_view key, const char* value) {
+    if (value)
+        metadata[std::string(key)] = std::string(value);
+    else
+        metadata[std::string(key)] = std::string("");
+    return *this;
+}
+
 LogEvent& LogEvent::add(std::string_view key, int value) {
     metadata[std::string(key)] = value;
     return *this;
@@ -252,7 +315,10 @@ nlohmann::json LogEvent::to_json() const {
     nlohmann::json j;
     j["event_type"] = event_type;
     j["message"] = message;
-    j["level"] = spdlog::level::to_string_view(level);
+    {
+        auto sv = spdlog::level::to_string_view(level);
+        j["level"] = std::string(sv.data(), sv.size());
+    }
     j["timestamp"] = std::chrono::duration_cast<std::chrono::milliseconds>(
         timestamp.time_since_epoch()).count();
 
@@ -275,12 +341,11 @@ void Logger::log_event(const LogEvent& event) {
     auto logger = GetLogger();
     if (!logger) return;
 
-    // Log structured JSON to dedicated sink
-    logger->log(event.level, "{}", event.to_json().dump());
-
-    // Ensure structured JSON is flushed to disk immediately so tests or
-    // external readers that check the file right after logging can see it.
-    logger->flush();
+    // Log structured JSON to dedicated JSON logger
+    if (structured_logger_) {
+        structured_logger_->log(event.level, "{}", event.to_json().dump());
+        structured_logger_->flush();
+    }
 
     // Also log human-readable version to regular logs
     std::string readable_msg = event.event_type;

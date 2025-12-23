@@ -1040,31 +1040,26 @@ SignalResult DrawerManageZone::Keyboard(Terminal *term, int my_key, int state)
     FnTrace("DrawerManageZone::Keyboard()");
     genericChar str[16];
 
-    int new_page = page;
-    switch (my_key)
-    {
-    case 16:  // page_up
-        --new_page;
-        break;
-    case 14:  // page down
-        ++new_page;
-        break;
-    case 13:  // enter
+    int delta = 0;
+    if (my_key == 16)       // page up
+        delta = -1;
+    else if (my_key == 14)  // page down
+        delta = 1;
+    else if (my_key == 13)  // enter
         return Signal(term, "enter");
-        break;
-    case 8:   // backspace
+    else if (my_key == 8)   // backspace
         return Signal(term, "backspace");
-        break;
-    default:
+    else
+    {
         str[0] = (char) my_key;
         str[1] = '\0';
         return Signal(term, str);
-        break;
     }
 
     if (report == nullptr)
         return SIGNAL_IGNORED;
 
+    int new_page = page + delta;
     int max_page = report->max_pages;
     if (new_page >= max_page)
         new_page = 0;

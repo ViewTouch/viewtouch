@@ -1288,27 +1288,23 @@ SignalResult ReportZone::Keyboard(Terminal *t, int my_key, int state)
     if (my_key == check_disp_num + '0')
 	return ToggleCheckReport(t);
 
-    int new_page = page;
-    switch (my_key)
+    int delta = 0;
+    if (my_key == 16)       // page up
+        delta = -1;
+    else if (my_key == 14)  // page down
+        delta = 1;
+    else if (my_key == 118 && debug_mode) // 'v'
     {
-    case 16:  // page up
-        --new_page;
-        break;
-    case 14:  // page down
-        ++new_page;
-        break;
-    case 118:  // v
-        if (debug_mode)
-        {
-            TenKeyDialog *tk = new TenKeyDialog(GlobalTranslate("Enter TTID"), "ccvoidttid", 0);
-            t->OpenDialog(tk);
-            return SIGNAL_TERMINATE;
-        }
-        break;
-    default:
+        TenKeyDialog *tk = new TenKeyDialog(GlobalTranslate("Enter TTID"), "ccvoidttid", 0);
+        t->OpenDialog(tk);
+        return SIGNAL_TERMINATE;
+    }
+    else
+    {
         return SIGNAL_IGNORED;
     }
 
+    int new_page = page + delta;
     int max_page = report->max_pages;
     if (new_page >= max_page)
         new_page = 0;
@@ -1535,19 +1531,15 @@ SignalResult ReadZone::Touch(Terminal *t, int tx, int ty)
 SignalResult ReadZone::Keyboard(Terminal *t, int my_key, int state)
 {
     FnTrace("ReadZone::Keyboard()");
-    int new_page = page;
-    switch (my_key)
-    {
-    case 16:  // page up
-        --new_page;
-        break;
-    case 14:  // page down
-        ++new_page;
-        break;
-    default:
+    int delta = 0;
+    if (my_key == 16)       // page up
+        delta = -1;
+    else if (my_key == 14)  // page down
+        delta = 1;
+    else
         return SIGNAL_IGNORED;
-    }
 
+    int new_page = page + delta;
     int max_page = report.max_pages;
     if (new_page >= max_page)
         new_page = 0;
