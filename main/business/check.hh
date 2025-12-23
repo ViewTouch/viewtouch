@@ -28,7 +28,7 @@
 #include <memory>
 
 /**** Module Definitions & Global Data ****/
-#define CHECK_VERSION        25
+constexpr int CHECK_VERSION = 25;
 
 // Check Status
 #define CHECK_OPEN           1
@@ -290,12 +290,12 @@ public:
     Payment *PaymentListEnd()  { return payment_list.Tail(); }
     int      PaymentCount()    { return payment_list.Count(); }
 
-    const Order   *OrderList() const      { return order_list.Head(); }
-    const Order   *OrderListEnd() const   { return order_list.Tail(); }
+    [[nodiscard]] const Order   *OrderList() const      { return order_list.Head(); }
+    [[nodiscard]] const Order   *OrderListEnd() const   { return order_list.Tail(); }
 
-    const Payment *PaymentList() const    { return payment_list.Head(); }
-    const Payment *PaymentListEnd() const { return payment_list.Tail(); }
-    int            PaymentCount() const   { return payment_list.Count(); }
+    [[nodiscard]] const Payment *PaymentList() const    { return payment_list.Head(); }
+    [[nodiscard]] const Payment *PaymentListEnd() const { return payment_list.Tail(); }
+    [[nodiscard]] int            PaymentCount() const   { return payment_list.Count(); }
 
     int TotalTax()
     {
@@ -416,9 +416,9 @@ public:
     SubCheck *SubList()       { return sub_list.Head(); }
     SubCheck *SubListEnd()    { return sub_list.Tail(); }
     int       SubCount()      { return sub_list.Count(); }
-    const SubCheck *SubList() const    { return sub_list.Head(); }
-    const SubCheck *SubListEnd() const { return sub_list.Tail(); }
-    int             SubCount() const   { return sub_list.Count(); }
+    [[nodiscard]] const SubCheck *SubList() const    { return sub_list.Head(); }
+    [[nodiscard]] const SubCheck *SubListEnd() const { return sub_list.Tail(); }
+    [[nodiscard]] int             SubCount() const   { return sub_list.Count(); }
 
     Check    *Copy(Settings *settings);
     int       Load(Settings *settings, const genericChar* filename); // Loads check from file
@@ -457,8 +457,8 @@ public:
     int       MakeReport(Terminal *t, Report *r, int show_what = CHECK_DISPLAY_ALL,
                          int video_target = PRINTER_DEFAULT, ReportZone *rzone = nullptr);  // makes report showing all subchecks
     int       HasOpenTab();
-    int       IsEmpty() const;  // boolean - is check blank?
-    int       IsTraining() const;  // boolean - is this a training check?
+    [[nodiscard]] int       IsEmpty() const;  // boolean - is check blank?
+    [[nodiscard]] int       IsTraining() const;  // boolean - is this a training check?
     int       EntreeCount(int seat);  // counts total entrees at seat
     SubCheck *FirstOpenSubCheck(int seat = -1);  // returns 1st open subcheck (by seat if needed) - sets current_sub
     SubCheck *NextOpenSubCheck(SubCheck *sc = nullptr);  // returns next open subcheck in check - sets current_sub

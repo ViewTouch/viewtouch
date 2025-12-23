@@ -313,10 +313,10 @@ public:
     Xpm(Pixmap pm);
     Xpm(Pixmap pm, int w, int h);
     Xpm(Pixmap pm, Pixmap m, int w, int h);  // Constructor with mask
-    constexpr int Width() const noexcept { return width; }
-    constexpr int Height() const noexcept { return height; }
-    constexpr int PixmapID() const noexcept { return pixmap; }
-    constexpr Pixmap MaskID() const noexcept { return mask; }
+    [[nodiscard]] constexpr int Width() const noexcept { return width; }
+    [[nodiscard]] constexpr int Height() const noexcept { return height; }
+    [[nodiscard]] constexpr int PixmapID() const noexcept { return pixmap; }
+    [[nodiscard]] constexpr Pixmap MaskID() const noexcept { return mask; }
 };
 
 class Pixmaps {
@@ -327,7 +327,7 @@ public:
     int Add(Xpm *pixmap);
     Xpm *Get(int idx);
     Xpm *GetRandom();
-    constexpr int Count() const noexcept { return count; }
+    [[nodiscard]] constexpr int Count() const noexcept { return count; }
 };
 
 extern Pixmaps PixmapList;

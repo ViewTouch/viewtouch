@@ -86,15 +86,15 @@ public:
     bool  Set(const Str &s) { data = s.data; return true; }
     bool  Set(const Str *s) { return Set(s->Value()); }
     void  ChangeAtoB(const char a, const char b);  // character replace
-    int   IntValue() const;
-    Flt   FltValue() const;
-    const char *Value() const noexcept;
-    const char *c_str() const noexcept;
-    std::string str() const noexcept;
+    [[nodiscard]] int   IntValue() const;
+    [[nodiscard]] Flt   FltValue() const;
+    [[nodiscard]] const char *Value() const noexcept;
+    [[nodiscard]] const char *c_str() const noexcept;
+    [[nodiscard]] std::string str() const noexcept;
     const char* ValueSet(const char* set = nullptr);
 
-    bool   empty() const noexcept;
-    size_t size() const noexcept;
+    [[nodiscard]] bool   empty() const noexcept;
+    [[nodiscard]] size_t size() const noexcept;
 
     Str & operator =  (const char* s) { Set(s); return *this; }
     Str & operator =  (const Str  &s) { Set(s); return *this; }

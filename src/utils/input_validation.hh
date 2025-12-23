@@ -271,16 +271,16 @@ public:
     ValidationContext() = default;
 
     void set_severity_level(ValidationSeverity level) { severity_ = level; }
-    ValidationSeverity get_severity_level() const { return severity_; }
+    [[nodiscard]] ValidationSeverity get_severity_level() const { return severity_; }
 
     void add_error(const std::string& error) { errors_.push_back(error); }
     void add_warning(const std::string& warning) { warnings_.push_back(warning); }
 
-    const std::vector<std::string>& get_errors() const { return errors_; }
-    const std::vector<std::string>& get_warnings() const { return warnings_; }
+    [[nodiscard]] const std::vector<std::string>& get_errors() const { return errors_; }
+    [[nodiscard]] const std::vector<std::string>& get_warnings() const { return warnings_; }
 
-    bool has_errors() const { return !errors_.empty(); }
-    bool has_warnings() const { return !warnings_.empty(); }
+    [[nodiscard]] bool has_errors() const { return !errors_.empty(); }
+    [[nodiscard]] bool has_warnings() const { return !warnings_.empty(); }
 
     void clear() {
         errors_.clear();

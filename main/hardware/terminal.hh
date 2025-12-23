@@ -609,7 +609,7 @@ public:
     bool BeginZoneDragPreview();
     bool AddZoneDragDelta(int dx, int dy);
     void EndZoneDragPreview(bool apply_move);
-    bool HasActiveZoneDrag() const noexcept { return edit_drag_active; }
+    [[nodiscard]] bool HasActiveZoneDrag() const noexcept { return edit_drag_active; }
 
     int ButtonCommand(int command);
     int EditZone(Zone *z);

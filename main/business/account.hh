@@ -27,9 +27,9 @@
 
 #include <vector>
 
-#define ACCOUNT_VERSION         1
-#define ACCOUNT_ENTRY_VERSION   1
-#define ACCOUNT_FIRST_NUMBER    1000 // no account number should be below this
+constexpr int ACCOUNT_VERSION = 1;
+constexpr int ACCOUNT_ENTRY_VERSION = 1;
+constexpr int ACCOUNT_FIRST_NUMBER = 1000; // no account number should be below this
 
 /**** Types ****/
 class InputDataFile;
@@ -52,7 +52,7 @@ public:
     // Member Functions
     int Read(InputDataFile &df, [[maybe_unused]] int version);
     int Write(OutputDataFile &df, [[maybe_unused]] int version);
-    int Search(const std::string &word) const;
+    [[nodiscard]] int Search(const std::string &word) const;
 };
 
 class Account
