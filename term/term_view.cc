@@ -34,7 +34,7 @@
 #include <sys/un.h>
 #include <dirent.h>
 #include <fcntl.h>
-#include <time.h>
+#include <ctime>
 #include <unistd.h>
 #include <iostream>
 #include <string>
@@ -970,7 +970,7 @@ int Translations::AddTranslation(const char* key, const char* value)
     FnTrace("Translations::AddTranslation()");
 
     int retval = 0;
-    Translation *trans = new Translation(key, value);
+    auto *trans = new Translation(key, value);
     trans_list.AddToTail(trans);
     
     return retval;
@@ -1125,7 +1125,7 @@ void ExposeCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
 
     static RegionInfo area;
 
-    XExposeEvent *e = reinterpret_cast<XExposeEvent*>(event);
+    auto *e = reinterpret_cast<XExposeEvent*>(event);
     if (CalibrateStage)
         return;
 
@@ -1307,7 +1307,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
     if (UserInput())
         return;
 
-    XKeyEvent *e = reinterpret_cast<XKeyEvent*>(event);
+    auto *e = reinterpret_cast<XKeyEvent*>(event);
     KeySym key = 0;
     std::array<genericChar, 32> buffer;
 
@@ -1583,7 +1583,7 @@ void MouseClickCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
     if (silent_mode > 0)
         return;
 
-    XButtonEvent *btnevent = reinterpret_cast<XButtonEvent*>(event);
+    auto *btnevent = reinterpret_cast<XButtonEvent*>(event);
     int code = MOUSE_PRESS;
     int touch = 0;
 
@@ -1627,7 +1627,7 @@ void MouseReleaseCB(Widget widget, XtPointer client_data, XEvent *event,
     if (silent_mode > 0)
         return;
 
-    XButtonEvent *b = reinterpret_cast<XButtonEvent*>(event);
+    auto *b = reinterpret_cast<XButtonEvent*>(event);
     Layers.RubberBandOff();
 
     int code = MOUSE_RELEASE;
@@ -1654,7 +1654,7 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
         return;
     }
 
-    XPointerMovedEvent *e = reinterpret_cast<XPointerMovedEvent*>(event);
+    auto *e = reinterpret_cast<XPointerMovedEvent*>(event);
     if (UserInput())
         return;
     if (silent_mode > 0)
@@ -2403,7 +2403,7 @@ int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericCh
     }
 
     KillLayer(id);
-    Layer *l = new Layer(Dis, Gfx, MainWin, w, h);
+    auto *l = new Layer(Dis, Gfx, MainWin, w, h);
     if (l == nullptr)
         return 1;
 
@@ -2481,7 +2481,7 @@ int NewPushButton(int id, int x, int y, int w, int h, const genericChar* text,
     Layer *l = TargetLayer;
     if (l == nullptr)
         return 1;
-    LO_PushButton *b = new LO_PushButton(text, c1, c2);
+    auto *b = new LO_PushButton(text, c1, c2);
     b->SetRegion(x + l->offset_x, y + l->offset_y, w, h);
     b->font = font;
     b->id = id;
@@ -3039,7 +3039,7 @@ Xpm *LoadPNGFile(const char* file_name)
     fprintf(stderr, "LoadPNGFile: Row bytes = %d, channels = %d\n", rowbytes, channels);
 
     // Allocate image data
-    png_bytep* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+    auto* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
     if (!row_pointers) {
         fprintf(stderr, "LoadPNGFile: Cannot allocate row pointers\n");
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
@@ -3930,7 +3930,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
     // Setup layers
     Layers.XWindowInit(Dis, Gfx, MainWin);
-    Layer *l = new Layer(Dis, Gfx, MainWin, WinWidth, WinHeight);
+    auto *l = new Layer(Dis, Gfx, MainWin, WinWidth, WinHeight);
     if (l)
     {
         l->id = 1;
@@ -3959,7 +3959,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     // Add Iconify Button
     if (l && IsTermLocal)
     {
-        IconifyButton *b = new IconifyButton("I", COLOR_GRAY, COLOR_LT_BLUE);
+        auto *b = new IconifyButton("I", COLOR_GRAY, COLOR_LT_BLUE);
         // b->SetRegion(WinWidth - l->title_height + 4, 4,
         //              l->title_height - 8, l->title_height - 8);
         b->SetRegion(WinWidth - l->title_height + 8, 8,
@@ -4481,7 +4481,7 @@ void TerminalReloadFonts()
         LayerObject *obj = layer->buttons.Head();
         while (obj != nullptr) {
             // Try to cast to LO_PushButton to check if it's a button
-            LO_PushButton *button = dynamic_cast<LO_PushButton*>(obj);
+            auto *button = dynamic_cast<LO_PushButton*>(obj);
             if (button != nullptr) {
                 // Update button font to use the current font family
                 // The font family will change while keeping the same size

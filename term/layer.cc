@@ -9,7 +9,7 @@
 #include <cctype>
 #include <cmath>
 #include <iostream>
-#include <string.h>
+#include <cstring>
 #include <string>
 #include <algorithm>
 #include <vector>

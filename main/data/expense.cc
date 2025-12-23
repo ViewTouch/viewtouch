@@ -22,8 +22,8 @@
 #include "expense.hh"
 #include "system.hh"
 #include "expense_zone.hh"
-#include <ctype.h>
-#include <string.h>
+#include <cctype>
+#include <cstring>
 #include <dirent.h>
 #include <unistd.h>
 
@@ -516,7 +516,7 @@ int ExpenseDB::Load(const char* path)
                 if (strcmp(&name[len-4], ".fmt") == 0)
                     break;
                 snprintf(fullpath, STRLENGTH, "%s/%s", pathname.Value(), name);
-                Expense *exp = new Expense();
+                auto *exp = new Expense();
                 if (exp->Load(fullpath))
                     ReportError("Error loading expense");
                 else

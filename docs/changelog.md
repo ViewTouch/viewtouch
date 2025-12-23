@@ -61,6 +61,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `main/ui/system_salesmix.cc`
 
 ### Fixed
+- **Extended C++ Modernizations - Phase 2 (12-22-2025)**
+  - Applied clang-tidy-driven fixes: modernize-use-auto, modernize-deprecated-headers, modernize-redundant-void-arg, modernize-loop-convert, modernize-return-braced-init-list, modernize-use-default-member-init, modernize-raw-string-literal
+  - Highlights: auto for new/cast allocations; errno.h → cerrno in [zone/zone.cc](zone/zone.cc) and [main/data/manager.cc](main/data/manager.cc); removed redundant void args in [main/data/manager.cc](main/data/manager.cc); range-based for loops in [main/data/manager.cc](main/data/manager.cc), [main/data/settings.cc](main/data/settings.cc), [term/term_dialog.cc](term/term_dialog.cc); braced init returns in [src/utils/safe_string_utils.hh](src/utils/safe_string_utils.hh); default member init in [src/utils/fntrace.hh](src/utils/fntrace.hh); raw string literal formatting in [main/data/manager.cc](main/data/manager.cc)
+  - Verification: Build successful; Tests 40/40 passing
+  - Impact: 28 files modified, 182 insertions, 184 deletions
 - **Additional C++ Modernizations (12-22-2025)**
   - Applied targeted modernization fixes to improve code quality and C++ compliance
   - **modernize-use-using**: Replaced 3 C-style typedef declarations with modern using aliases

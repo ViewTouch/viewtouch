@@ -261,7 +261,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
                 ReportError("Unexpected end of Check data");
                 goto archive_read_error;
             }
-            Check *check = new Check;
+            auto *check = new Check;
             error = check->Read(settings, df, check_version);
             if (error)
             {
@@ -289,7 +289,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
                 ReportError("Unexpected end of TipDB");
                 goto archive_read_error;
             }
-            TipEntry *te = new TipEntry;
+            auto *te = new TipEntry;
             error = te->Read(df, tip_version);
             if (error)
             {
@@ -342,7 +342,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         {
             for (i = 0; i < count; i++)
             {
-                DiscountInfo *discinfo = new DiscountInfo;
+                auto *discinfo = new DiscountInfo;
                 discinfo->Read(df, media_version);
                 Add(discinfo);
             }
@@ -355,7 +355,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         {
             for (i = 0; i < count; i++)
             {
-                CouponInfo *coupinfo = new CouponInfo;
+                auto *coupinfo = new CouponInfo;
                 coupinfo->Read(df, media_version);
                 Add(coupinfo);
             }
@@ -368,7 +368,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         {
             for (i = 0; i < count; i++)
             {
-                CreditCardInfo *credinfo = new CreditCardInfo;
+                auto *credinfo = new CreditCardInfo;
                 credinfo->Read(df, media_version);
                 Add(credinfo);
             }
@@ -381,7 +381,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         {
             for (i = 0; i < count; i++)
             {
-                CompInfo *compinfo = new CompInfo;
+                auto *compinfo = new CompInfo;
                 compinfo->Read(df, media_version);
                 Add(compinfo);
             }
@@ -394,7 +394,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         {
             for (i = 0; i < count; i++)
             {
-                MealInfo *mealinfo = new MealInfo;
+                auto *mealinfo = new MealInfo;
                 mealinfo->Read(df, media_version);
                 Add(mealinfo);
             }
@@ -517,7 +517,7 @@ int Archive::LoadAlternateMedia()
             mf.Read(count);  // using count for all media types
             for (i = 0; i < count; i++)
             {
-                DiscountInfo *discinfo = new DiscountInfo;
+                auto *discinfo = new DiscountInfo;
                 discinfo->Read(mf, media_version);
                 Add(discinfo);
             }
@@ -525,7 +525,7 @@ int Archive::LoadAlternateMedia()
             mf.Read(count);  // using count for all media types
             for (i = 0; i < count; i++)
             {
-                CouponInfo *coupinfo = new CouponInfo;
+                auto *coupinfo = new CouponInfo;
                 coupinfo->Read(mf, media_version);
                 Add(coupinfo);
             }
@@ -533,7 +533,7 @@ int Archive::LoadAlternateMedia()
             mf.Read(count);  // using count for all media types
             for (i = 0; i < count; i++)
             {
-                CreditCardInfo *credinfo = new CreditCardInfo;
+                auto *credinfo = new CreditCardInfo;
                 credinfo->Read(mf, media_version);
                 Add(credinfo);
             }
@@ -541,7 +541,7 @@ int Archive::LoadAlternateMedia()
             mf.Read(count);  // using count for all media types
             for (i = 0; i < count; i++)
             {
-                CompInfo *compinfo = new CompInfo;
+                auto *compinfo = new CompInfo;
                 compinfo->Read(mf, media_version);
                 Add(compinfo);
             }
@@ -549,7 +549,7 @@ int Archive::LoadAlternateMedia()
             mf.Read(count);  // using count for all media types
             for (i = 0; i < count; i++)
             {
-                MealInfo *mealinfo = new MealInfo;
+                auto *mealinfo = new MealInfo;
                 mealinfo->Read(mf, media_version);
                 Add(mealinfo);
             }

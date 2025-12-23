@@ -71,7 +71,7 @@ int TipEntry::Write(OutputDataFile &df, int version)
 TipEntry *TipEntry::Copy()
 {
     FnTrace("TipEntry::Copy()");
-    TipEntry *te = new TipEntry;
+    auto *te = new TipEntry;
     if (te == nullptr)
         return nullptr;
 

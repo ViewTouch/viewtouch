@@ -440,7 +440,7 @@ int Recipe::Read(Inventory *inv, InputDataFile &df, int version)
     {
         if (df.end_of_file)
             return 1;
-        RecipePart *rp = new RecipePart;
+        auto *rp = new RecipePart;
         error += rp->Read(inv, df, version);
         Add(rp);
     }
@@ -618,7 +618,7 @@ int Inventory::Load(const char* file)
             return 1;
         }
 
-        Product *pr = new Product;
+        auto *pr = new Product;
         error += pr->Read(df, version);
         Add(pr);
     }
@@ -632,7 +632,7 @@ int Inventory::Load(const char* file)
             return 1;
         }
 
-        Recipe *rc = new Recipe;
+        auto *rc = new Recipe;
         error += rc->Read(this, df, version);
         Add(rc);
     }
@@ -646,7 +646,7 @@ int Inventory::Load(const char* file)
             return 1;
         }
 
-        Vendor *v = new Vendor;
+        auto *v = new Vendor;
         error += v->Read(df, version);
         Add(v);
     }
@@ -823,7 +823,7 @@ int Inventory::LoadStock(const char* path)
             {
                 genericChar str[256];
                 vt_safe_string::safe_format(str, 256, "%s/%s", stock_path.Value(), name);
-                Stock *s = new Stock;
+                auto *s = new Stock;
                 if (s == nullptr)
                     ReportError("Couldn't create stock");
                 else
@@ -1165,7 +1165,7 @@ Stock *Inventory::CurrentStock()
     Stock *end = StockListEnd();
     if (end == nullptr || end->end_time.IsSet())
     {
-        Stock *s = new Stock;
+        auto *s = new Stock;
         Add(s);
 
         genericChar str[256];
@@ -1336,7 +1336,7 @@ int Invoice::Read(InputDataFile &df, int version)
         if (df.end_of_file)
             return 1;
 
-        InvoiceEntry *ie = new InvoiceEntry;
+        auto *ie = new InvoiceEntry;
         error += ie->Read(df, version);
         Add(ie);
     }
@@ -1452,7 +1452,7 @@ int Stock::Read(InputDataFile &df, int version)
         if (df.end_of_file)
             return 1;
 
-        StockEntry *se = new StockEntry;
+        auto *se = new StockEntry;
         error += se->Read(df, version);
         Add(se);
     }
@@ -1464,7 +1464,7 @@ int Stock::Read(InputDataFile &df, int version)
         if (df.end_of_file)
             return 1;
 
-        Invoice *in = new Invoice;
+        auto *in = new Invoice;
         error += in->Read(df, version);
         Add(in);
     }
@@ -1630,7 +1630,7 @@ Invoice *Stock::NewInvoice(int vendor_id)
         }
     }
 
-    Invoice *in = new Invoice;
+    auto *in = new Invoice;
     in->vendor_id = vendor_id;
     in->time      = SystemTime;
     Add(in);

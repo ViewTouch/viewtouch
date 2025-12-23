@@ -4220,7 +4220,7 @@ int Locale::Load(const char* file)
     df.Read(count);
     for (int i = 0; i < count; ++i)
     {
-        PhraseInfo *ph = new PhraseInfo;
+        auto *ph = new PhraseInfo;
         ph->Read(df, 1);
         Add(ph);
     }

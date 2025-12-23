@@ -19,7 +19,7 @@
  */
 
 #include <dirent.h>
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 #include "customer.hh"
 #include "data_file.hh"
@@ -584,7 +584,7 @@ int CustomerInfoDB::Load(const genericChar* filepath)
             if (strncmp("customer_", name, 9) == 0)
             {
                 vt_safe_string::safe_format(buffer, STRLONG, "%s/%s", pathname.Value(), name);
-                CustomerInfo *custinfo = new CustomerInfo();
+                auto *custinfo = new CustomerInfo();
                 if (custinfo->Load(buffer))
                     ReportError("Error loading customer");
                 else
@@ -606,7 +606,7 @@ CustomerInfo *CustomerInfoDB::NewCustomer(int type)
 {
     FnTrace("CustomerInfoDB::NewCustomer()");
 
-    CustomerInfo *ci = new CustomerInfo(type);
+    auto *ci = new CustomerInfo(type);
     if (ci != nullptr)
     {
         Add(ci);

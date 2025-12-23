@@ -34,8 +34,8 @@
 #include "safe_string_utils.hh"
 #include <unistd.h>
 #include <cctype>
-#include <time.h>
-#include <string.h>
+#include <ctime>
+#include <cstring>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -447,7 +447,7 @@ int Credit::AddError(Credit *ecredit)
 Credit *Credit::Copy()
 {
     FnTrace("Credit::Copy()");
-    Credit *newcredit = new Credit();
+    auto *newcredit = new Credit();
     Credit *ecredit;
 
     if (newcredit != nullptr)
@@ -3095,7 +3095,7 @@ int CCSettle::Add(Check *check)
 CCSettle *CCSettle::Copy()
 {
     FnTrace("CCSettle::Copy()");
-    CCSettle *newsettle = new CCSettle();
+    auto *newsettle = new CCSettle();
 
     newsettle->result.Set(result);
     newsettle->settle.Set(settle);

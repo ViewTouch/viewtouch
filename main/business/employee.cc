@@ -199,7 +199,7 @@ UserDB::UserDB()
     super_user = new Employee;
     if (super_user)
     {
-        JobInfo *j = new JobInfo;
+        auto *j = new JobInfo;
         j->job = JOB_SUPERUSER;
         super_user->Add(j);
         super_user->system_name.Set("Super User");
@@ -211,7 +211,7 @@ UserDB::UserDB()
     developer = new Employee;
     if (developer)
     {
-        JobInfo *j = new JobInfo;
+        auto *j = new JobInfo;
         j->job = JOB_DEVELOPER;
         developer->Add(j);
         developer->system_name.Set("Editor");
@@ -262,7 +262,7 @@ int UserDB::Load(const char* file)
             return 1;
         }
 
-        Employee *e = new Employee;
+        auto *e = new Employee;
         if (e == nullptr)
         {
             ReportError("Couldn't create employee record");
@@ -712,7 +712,7 @@ Employee *UserDB::NewUser()
     e = new Employee;
     if (e)
     {
-        JobInfo *j = new JobInfo;
+        auto *j = new JobInfo;
         if (j)
         {
             e->Add(j);
@@ -855,7 +855,7 @@ int Employee::Read(InputDataFile &df, int version)
                 ReportError("Unexpected end of Job data in Employee record");
                 return 1;
             }
-            JobInfo *j = new JobInfo;
+            auto *j = new JobInfo;
             j->Read(df, version);
             if (version <= 7)
                 j->dept_code = dept_code;

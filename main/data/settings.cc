@@ -289,7 +289,7 @@ DiscountInfo::DiscountInfo()
 DiscountInfo *DiscountInfo::Copy()
 {
     FnTrace("DiscountInfo::Copy()");
-    DiscountInfo *retdiscount = new DiscountInfo();
+    auto *retdiscount = new DiscountInfo();
     retdiscount->name.Set(name);
     retdiscount->id = id;
     retdiscount->amount = amount;
@@ -340,7 +340,7 @@ CompInfo::CompInfo()
 CompInfo *CompInfo::Copy()
 {
     FnTrace("CompInfo::Copy()");
-    CompInfo *retcomp = new CompInfo();
+    auto *retcomp = new CompInfo();
     retcomp->name.Set(name);
     retcomp->id = id;
     retcomp->flags = flags;
@@ -404,7 +404,7 @@ CouponInfo::CouponInfo()
 CouponInfo *CouponInfo::Copy()
 {
     FnTrace("CouponInfo::Copy()");
-    CouponInfo *retcoupon = new CouponInfo();
+    auto *retcoupon = new CouponInfo();
 
     retcoupon->name.Set(name);
     retcoupon->id = id;
@@ -798,7 +798,7 @@ CreditCardInfo::CreditCardInfo()
 CreditCardInfo *CreditCardInfo::Copy()
 {
     FnTrace("CreditCardInfo::Copy()");
-    CreditCardInfo *retcreditcard = new CreditCardInfo();
+    auto *retcreditcard = new CreditCardInfo();
     retcreditcard->name.Set(name);
     retcreditcard->id = id;
     retcreditcard->local = local;
@@ -844,7 +844,7 @@ MealInfo::MealInfo()
 MealInfo *MealInfo::Copy()
 {
     FnTrace("MealInfo::Copy()");
-    MealInfo *retmeal = new MealInfo();
+    auto *retmeal = new MealInfo();
     retmeal->name.Set(name);
     retmeal->id = id;
     retmeal->amount = amount;
@@ -904,8 +904,8 @@ TermInfo::TermInfo()
     print_workorder = 1;
     workorder_heading = 0;
 
-    for (int i=0; i<4; i++)
-    	tax_inclusive[i] = -1;
+    for (int & i : tax_inclusive)
+    	i = -1;
 
     cc_credit_termid.Set("");
     cc_debit_termid.Set("");
@@ -951,8 +951,8 @@ int TermInfo::Read(InputDataFile &df, int version)
     	error += df.Read(workorder_heading);
     if (version >= 94)
     {
-	for (int i=0; i<4; i++)
-    	error += df.Read(tax_inclusive[i]);
+	for (int & i : tax_inclusive)
+    	error += df.Read(i);
     }
 
     // dpulse is used when there are two drawers attached to one
@@ -992,8 +992,8 @@ int TermInfo::Write(OutputDataFile &df, int version)
     error += df.Write(cc_debit_termid);
     error += df.Write(print_workorder);
     error += df.Write(workorder_heading);
-    for (int i=0; i<4; i++)
-    	error += df.Write(tax_inclusive[i]);
+    for (int i : tax_inclusive)
+    	error += df.Write(i);
 
     return error;
 }
@@ -1597,7 +1597,7 @@ int Settings::Load(const char* file)
         df.Read(tmp);
         if (tmp != MODEL_NONE)
         {
-            PrinterInfo *pi = new PrinterInfo;
+            auto *pi = new PrinterInfo;
             pi->type = PRINTER_REPORT;
 
 #ifdef LINUX
@@ -1754,7 +1754,7 @@ int Settings::Load(const char* file)
             df.Read(pmodel);
             if (phost.size() > 0)
             {
-                PrinterInfo *pi = new PrinterInfo;
+                auto *pi = new PrinterInfo;
                 pi->host.Set(phost);
                 pi->port = pport;
                 pi->model = pmodel;
@@ -1776,7 +1776,7 @@ int Settings::Load(const char* file)
 
             if (thost.size() > 0)
             {
-                TermInfo *ti = new TermInfo;
+                auto *ti = new TermInfo;
                 vt_safe_string::safe_format(str, 256, "Term %d", i + 1);
                 ti->name.Set(str);
                 ti->type = ttype;
@@ -1807,7 +1807,7 @@ int Settings::Load(const char* file)
                 ReportError("Unexpected end of terminals in settings");
                 return 1;
             }
-            TermInfo *ti = new TermInfo;
+            auto *ti = new TermInfo;
             ti->Read(df, version);
             Add(ti);
         }
@@ -1820,7 +1820,7 @@ int Settings::Load(const char* file)
                 ReportError("Unexpected end of printers in settings");
                 return 1;
             }
-            PrinterInfo *pi = new PrinterInfo;
+            auto *pi = new PrinterInfo;
             pi->Read(df, version);
             Add(pi);
         }
@@ -1835,7 +1835,7 @@ int Settings::Load(const char* file)
             ReportError("Unexpected end of discounts in settings");
             return 1;
         }
-        DiscountInfo *ds = new DiscountInfo;
+        auto *ds = new DiscountInfo;
         ds->Read(df, version);
         if (ds->name.size() > 0)
         {
@@ -1854,7 +1854,7 @@ int Settings::Load(const char* file)
             ReportError("Unexpected end of coupons in settings");
             return 1;
         }
-        CouponInfo *cp = new CouponInfo;
+        auto *cp = new CouponInfo;
         cp->Read(df, version);
         if (cp->name.size() > 0)
         {
@@ -1873,7 +1873,7 @@ int Settings::Load(const char* file)
             ReportError("Unexpected end of credit cards in settings");
             return 1;
         }
-        CreditCardInfo *cc = new CreditCardInfo;
+        auto *cc = new CreditCardInfo;
         cc->Read(df, version);
         if (cc->name.size() > 0)
         {
@@ -1892,7 +1892,7 @@ int Settings::Load(const char* file)
             ReportError("Unexpected end of comps in settings");
             return 1;
         }
-        CompInfo *cm = new CompInfo;
+        auto *cm = new CompInfo;
         cm->Read(df, version);
         if (cm->name.size() > 0)
         {
@@ -1911,7 +1911,7 @@ int Settings::Load(const char* file)
             ReportError("Unexpected end of employee meals in settings");
             return 1;
         }
-        MealInfo *mi = new MealInfo;
+        auto *mi = new MealInfo;
         mi->Read(df, version);
         if (mi->name.size() > 0)
         {
@@ -1932,7 +1932,7 @@ int Settings::Load(const char* file)
                 ReportError("Unexpected end of tax definitions in settings");
                 return 1;
             }
-            TaxInfo *tx = new TaxInfo;
+            auto *tx = new TaxInfo;
             tx->Read(df, version);
             Add(tx);
         }
@@ -1946,7 +1946,7 @@ int Settings::Load(const char* file)
                 ReportError("Unexpected end of money definitions in settings");
                 return 1;
             }
-            MoneyInfo *my = new MoneyInfo;
+            auto *my = new MoneyInfo;
             my->Read(df, version);
             Add(my);
         }
@@ -2812,7 +2812,7 @@ int Settings::LoadMedia(const char* file)
             ReportError("Unexpected end of discounts in media file");
             return 1;
         }
-        DiscountInfo *ds = new DiscountInfo;
+        auto *ds = new DiscountInfo;
         ds->Read(df, version);
         if (ds->id < GLOBAL_MEDIA_ID || MediaIsDupe(discount_list.Head(), ds->id))
         {
@@ -2839,7 +2839,7 @@ int Settings::LoadMedia(const char* file)
             ReportError("Unexpected end of coupons in media file");
             return 1;
         }
-        CouponInfo *cp = new CouponInfo;
+        auto *cp = new CouponInfo;
         cp->Read(df, version);
         if (cp->id < GLOBAL_MEDIA_ID || MediaIsDupe(coupon_list.Head(), cp->id))
         {
@@ -2866,7 +2866,7 @@ int Settings::LoadMedia(const char* file)
             ReportError("Unexpected end of credit cards in media file");
             return 1;
         }
-        CreditCardInfo *cc = new CreditCardInfo;
+        auto *cc = new CreditCardInfo;
         cc->Read(df, version);
         if (cc->id < GLOBAL_MEDIA_ID || MediaIsDupe(creditcard_list.Head(), cc->id))
         {
@@ -2893,7 +2893,7 @@ int Settings::LoadMedia(const char* file)
             ReportError("Unexpected end of comps in media file");
             return 1;
         }
-        CompInfo *cm = new CompInfo;
+        auto *cm = new CompInfo;
         cm->Read(df, version);
         if (cm->id < GLOBAL_MEDIA_ID || MediaIsDupe(comp_list.Head(), cm->id))
         {
@@ -2922,7 +2922,7 @@ int Settings::LoadMedia(const char* file)
                 ReportError("Unexpected end of meals in media file");
                 return 1;
             }
-            MealInfo *mi = new MealInfo;
+            auto *mi = new MealInfo;
             mi->Read(df, version);
             if (mi->id < GLOBAL_MEDIA_ID || MediaIsDupe(meal_list.Head(), mi->id))
             {

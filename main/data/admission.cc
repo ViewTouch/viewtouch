@@ -1,7 +1,7 @@
 #include "admission.hh"
 #include <external/core/sha1.hh>
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include "safe_string_utils.hh"
 
 

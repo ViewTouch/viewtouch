@@ -137,7 +137,7 @@ Account::Account(const char* path, int no, const genericChar* namestr)
 Account *Account::Copy()
 {
     FnTrace("Account::Copy()");
-    Account *newAccount = new Account();
+    auto *newAccount = new Account();
 
     newAccount->number = number;
     newAccount->name.Set(name);
@@ -472,7 +472,7 @@ int AccountDB::Load(const char* path)
             no = atoi(name);
             if (no > 0)
             {
-                Account *my_account = new Account(no);
+                auto *my_account = new Account(no);
                 if (my_account->Load(pathname.Value()))
                     ReportError("Error loading account");
                 else
