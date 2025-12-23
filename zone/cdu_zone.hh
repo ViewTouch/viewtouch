@@ -20,7 +20,7 @@
  */
 
 #ifndef _CDU_ZONE_HH
-#define CDU_ZONE_HH
+#define _CDU_ZONE_HH
 
 #include "cdu.hh"
 #include "form_zone.hh"
@@ -41,30 +41,30 @@ class CDUZone : public FormZone
     CDUString *saved_cdustring;
 public:
     CDUZone();
-    ~CDUZone() override;
+    ~CDUZone();
 
-    int          Type() override { return ZONE_CDU; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    int          Update(Terminal *term, int update_message, const genericChar* value) override
+    int          Type() { return ZONE_CDU; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          Update(Terminal *term, int update_message, const genericChar* value)
                     { return FormZone::Update( term, update_message, value); }
-    int          UpdateForm(Terminal *term, int record) override;
+    int          UpdateForm(Terminal *term, int record);
     int          HideFields();
     int          ShowFields();
 
-    Flt *Spacing() override { return &list_spacing; }
+    Flt *Spacing() { return &list_spacing; }
 
     int ColumnSpacing(Terminal *term, int num_columns);
-    int LoadRecord(Terminal *term, int record) override;
-    int SaveRecord(Terminal *term, int record, int write_file) override;
+    int LoadRecord(Terminal *term, int record);
+    int SaveRecord(Terminal *term, int record, int write_file);
     int RestoreRecord(Terminal *term);
-    int NewRecord(Terminal *term) override;
-    int KillRecord(Terminal *term, int record) override;
-    int PrintRecord(Terminal *term, int record) override;
-    int Search(Terminal *term, int record, const genericChar* word) override;
+    int NewRecord(Terminal *term);
+    int KillRecord(Terminal *term, int record);
+    int PrintRecord(Terminal *term, int record);
+    int Search(Terminal *term, int record, const genericChar* word);
     int ListReport(Terminal *term, Report *report);
-    int RecordCount(Terminal *term) override;
+    int RecordCount(Terminal *term);
 };
 
 #endif

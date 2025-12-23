@@ -47,7 +47,7 @@ int VideoTargetZone::AddFields()
     int i = 0;
 
     // Ensure we don't go beyond the array bounds and handle NULL entries
-    while (i < MAX_FAMILIES && FamilyName[i] != nullptr)
+    while (i < MAX_FAMILIES && FamilyName[i] != NULL)
     {
         AddListField(MasterLocale->Translate(FamilyName[i]),
                      PrinterIDName, PrinterIDValue);

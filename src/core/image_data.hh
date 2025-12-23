@@ -19,7 +19,7 @@
  */
 
 #ifndef _IMAGE_DATA_HH
-#define IMAGE_DATA_HH
+#define _IMAGE_DATA_HH
 
 
 #include <array>

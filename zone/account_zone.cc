@@ -37,7 +37,7 @@ AccountZone::AccountZone()
 {
     list_header = 2;
     //list_footer = 1;
-    account = nullptr;
+    account = NULL;
     show_list = 1;
     edit_default = 0;
     AddTextField(GlobalTranslate("Account Name"), 15);
@@ -133,7 +133,7 @@ int AccountZone::LoadRecord(Terminal *term, int my_record_no)
     FormField *field = FieldList();
     account = term->system_data->account_db.FindByRecord(my_record_no);
 
-    if (account != nullptr)
+    if (account != NULL)
     {
         // AddTextField("Account Name", 15, 0);
         field->Set(account->name.Value());
@@ -153,8 +153,7 @@ int AccountZone::SaveRecord(Terminal *term, int my_record_no, int write_file)
     int acct_no = 0;
 
     FnTrace("AccountZone::SaveRecord()");
-    (void)my_record_no;
-    if (account != nullptr)
+    if (account != NULL)
     {
         FormField *field = FieldList();
         field->Get(account->name);  field = field->next;
@@ -176,7 +175,7 @@ int AccountZone::NewRecord(Terminal *term)
     FnTrace("AccountZone::NewRecord()");
     int acct_num = 0;
 
-    if (account != nullptr)
+    if (account != NULL)
         acct_num = account->number;
     account = term->system_data->account_db.NewAccount(acct_num);
     records = RecordCount(term);
@@ -227,15 +226,15 @@ int AccountZone::ListReport(Terminal *term, Report *report)
     int indent = 0;
     int my_color = COLOR_DEFAULT;
 
-    if (report == nullptr)
+    if (report == NULL)
         return 1;
 
     AccountDB *account_db = &(term->system_data->account_db);
     report->Clear();
     Account *acct = account_db->Next();
-    if (acct == nullptr)
+    if (acct == NULL)
         report->TextC(GlobalTranslate("No Accounts Defined"));
-    while (acct != nullptr)
+    while (acct != NULL)
     {
         indent = 0;
         snprintf(buff, STRLENGTH, "%d", acct->number);
@@ -271,7 +270,7 @@ int AccountZone::CheckAccountNumber(Terminal *term, int sendmsg)
     genericChar msggood[] = "clearstatus";
     const genericChar* msgsend = msggood;
 
-    if (account != nullptr)
+    if (account != NULL)
     {
         acctnumfld->Get(number);
         if (! IsValidAccountNumber(term, number))

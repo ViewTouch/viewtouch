@@ -50,11 +50,12 @@ int select_timeout = 1;   // in milliseconds
  * Destructor:
  ****/
 Email::~Email()
-= default;
+{
+}
 
 Email::Email(Email&& other) noexcept
-    : from(other.from),
-      subject(other.subject),
+    : from(std::move(other.from)),
+      subject(std::move(other.subject)),
       tos(std::move(other.tos)),
       body(std::move(other.body)),
       current_to(nullptr),
@@ -66,8 +67,8 @@ Email& Email::operator=(Email&& other) noexcept
 {
     if (this != &other)
     {
-        from         = other.from;
-        subject      = other.subject;
+        from         = std::move(other.from);
+        subject      = std::move(other.subject);
         tos          = std::move(other.tos);
         body         = std::move(other.body);
         current_to   = nullptr;
@@ -412,7 +413,7 @@ int Connect(const char* host, const char* service)
                     perror("setsockopt SO_SNDTIMEO");
                 }
                 
-                memset(&servaddr, 0, sizeof(servaddr));
+                bzero(&servaddr, sizeof(servaddr));
                 servaddr.sin_family = AF_INET;
                 servaddr.sin_port = sp->s_port;
                 memcpy(&servaddr.sin_addr, *pptr, sizeof(struct in_addr));
@@ -441,7 +442,7 @@ int Connect(const char* host, const char* service)
                     FD_ZERO(&write_fds);
                     FD_SET(sockfd, &write_fds);
                     
-                    int select_result = select(sockfd + 1, nullptr, &write_fds, nullptr, &timeout);
+                    int select_result = select(sockfd + 1, NULL, &write_fds, NULL, &timeout);
                     if (select_result > 0)
                     {
                         int error = 0;
@@ -519,7 +520,7 @@ int Connect(const char* host, int port)
                 perror("setsockopt SO_SNDTIMEO");
             }
             
-            memset(&servaddr, 0, sizeof(servaddr));
+            bzero(&servaddr, sizeof(servaddr));
             servaddr.sin_family = AF_INET;
             servaddr.sin_port = htons(port);
             memcpy(&servaddr.sin_addr, *pptr, sizeof(struct in_addr));
@@ -548,7 +549,7 @@ int Connect(const char* host, int port)
                 FD_ZERO(&write_fds);
                 FD_SET(sockfd, &write_fds);
                 
-                int select_result = select(sockfd + 1, nullptr, &write_fds, nullptr, &timeout);
+                int select_result = select(sockfd + 1, NULL, &write_fds, NULL, &timeout);
                 if (select_result > 0)
                 {
                     int error = 0;
@@ -682,7 +683,7 @@ int SMTP(int fd, Email *email)
         }
         // add from address to message body
         snprintf(outgoing, STRLONG, "From: %s\n", buffer);
-        vt_safe_string::safe_concat(body, sizeof(body), outgoing);
+        strncat(body, outgoing, STRLONG);
         
         // write each of the to addresses
         while (email->NextTo(buffer, STRLONG) == 0)
@@ -692,7 +693,7 @@ int SMTP(int fd, Email *email)
             response = GetResponse(fd, responsestr, STRLONG);
             // add the to address to the message body
             snprintf(outgoing, STRLONG, "To: %s\n", buffer);
-            vt_safe_string::safe_concat(body, sizeof(body), outgoing);
+            strncat(body, outgoing, STRLONG);
         }
         
         // write the message

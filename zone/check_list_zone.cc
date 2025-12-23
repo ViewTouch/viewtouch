@@ -50,7 +50,7 @@ enum checkList_types {
 };
 
 const char* CLName[] = {
-    "All", "Open", "Take Out", "Closed", "Fast Food", nullptr};
+    "All", "Open", "Take Out", "Closed", "Fast Food", NULL};
 int CLValue[] = {
     CL_ALL, CL_OPEN, CL_TAKEOUT, CL_CLOSED, CL_FASTFOOD, -1};
 
@@ -75,7 +75,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 	LayoutZone::Render(term, update_flag);
 
 	Employee *e = term->user;
-	if (e == nullptr)
+	if (e == NULL)
 		return RENDER_OKAY;
 
 	// Set up display check list
@@ -124,7 +124,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 				status = CL_OPEN;
 
             if (term->GetSettings()->drawer_mode == DRAWER_SERVER)
-                term->server = nullptr;
+                term->server = NULL;
 		}
 		MakeList(term);
 	}
@@ -149,9 +149,9 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 		vt_safe_string::safe_format(str, 128, "%s Checks", str2);
 	TextC(term, 1, str, col);
 
-	if (term->archive == nullptr)
+	if (term->archive == NULL)
 	{
-		if ((term->server == nullptr && e->training) ||
+		if ((term->server == NULL && e->training) ||
             (term->server && term->server->training))
 			vt_safe_string::safe_copy(str, 128, term->Translate("Current Training Checks"));
 		else
@@ -183,9 +183,7 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 	if (max_pages > 1)
 		TextL(term, size_y - 1, term->PageNo(page_no + 1, max_pages), col);
 
-    Flt line = HEADER_SIZE;
-
-    const bool is_open_like = (status == CL_OPEN || status == CL_TAKEOUT || status == CL_FASTFOOD);
+	Flt line = HEADER_SIZE;
 	if (array_size <= 0)
 	{
 		if (status == CL_ALL)
@@ -249,9 +247,9 @@ RenderResult CheckListZone::Render(Terminal *term, int update_flag)
 			vt_safe_string::safe_format(str, 128, "%d", c->Guests());
 		TextPosL(term, x1, line, str, tc);
 
-        if (is_open_like)
-            term->TimeDate(str, c->time_open, TD_TIME);
-        else
+		if (status == CL_OPEN || status == CL_TAKEOUT || status == CL_FASTFOOD)
+			term->TimeDate(str, c->time_open, TD_TIME);
+		else
 		{
 			TimeInfo time_close;
 			time_close.Set(c->TimeClosed());
@@ -274,10 +272,10 @@ SignalResult CheckListZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("CheckListZone::Signal()");
     static const genericChar* commands[] = {
-        "status", "resend", nullptr};
+        "status", "resend", NULL};
 
     Employee *e = term->user;
-    if (e == nullptr)
+    if (e == NULL)
         return SIGNAL_IGNORED;
 
     Check *c = term->check;
@@ -293,27 +291,18 @@ SignalResult CheckListZone::Signal(Terminal *term, const genericChar* message)
             c->FinalizeOrders(term, 1);
         break;
     default:
-    {
-        int off = -1;
-        Employee *start = nullptr;
         if (strncmp(message, "search ", 7) == 0)
         {
-            off = 7;
+            if (Search(term, &message[7], NULL) <= 0)
+                return SIGNAL_IGNORED;
         }
         else if (strncmp(message, "nextsearch ", 11) == 0)
         {
-            off = 11;
-            start = term->server;
+            if (Search(term, &message[11], term->server) <= 0)
+                return SIGNAL_IGNORED;
         }
         else
-        {
             return SIGNAL_IGNORED;
-        }
-
-        if (Search(term, &message[off], start) <= 0)
-            return SIGNAL_IGNORED;
-        break;
-    }
     }
 
     Draw(term, 1);
@@ -379,7 +368,7 @@ int CheckListZone::MakeList(Terminal *term)
     array_size    = 0;
 
     Employee *e = term->user;
-    if (e == nullptr)
+    if (e == NULL)
         return 1;
 
     Employee *server = term->server;
@@ -389,7 +378,7 @@ int CheckListZone::MakeList(Terminal *term)
     while (c)
     {
         int okay = 0;
-        if ((server == nullptr && (e->training == c->IsTraining() || a)) ||
+        if ((server == NULL && (e->training == c->IsTraining() || a)) ||
             (server && server->training == c->IsTraining() &&
              server->id == c->user_owner))
         {
@@ -444,7 +433,7 @@ int CheckListZone::Search(Terminal *term, const genericChar* emp_name, Employee 
  * CheckEditZone class
  ********************************************************************/
 
-const genericChar* CHECK_TypesChar[] = { "Take Out", "Delivery", "Catering", nullptr };
+const genericChar* CHECK_TypesChar[] = { "Take Out", "Delivery", "Catering", NULL };
 int          CHECK_TypesInt[]  = { CHECK_TAKEOUT, CHECK_DELIVERY, CHECK_CATERING, -1 };
 CheckEditZone::CheckEditZone()
 {
@@ -460,9 +449,9 @@ CheckEditZone::CheckEditZone()
     lines_shown  = 5;
     page         = 1;
 
-    check        = nullptr;
+    check        = NULL;
     my_update    = 1;
-    report       = nullptr;
+    report       = NULL;
     view         = -1;  // -1 represents Show All
 
     AddTimeDateField("TakeOut/Delivery Date");
@@ -471,7 +460,8 @@ CheckEditZone::CheckEditZone()
 }
 
 CheckEditZone::~CheckEditZone()
-= default;
+{
+}
 
 RenderResult CheckEditZone::Render(Terminal *term, int update_flag)
 {
@@ -484,16 +474,16 @@ RenderResult CheckEditZone::Render(Terminal *term, int update_flag)
     {
         check = term->check;
         LoadRecord(term, 0);
-        if (report != nullptr)
+        if (report != NULL)
             free(report);
-        report = nullptr;
+        report = NULL;
         my_update = 0;
     }
 
-    if (check == nullptr)
+    if (check == NULL)
         fields_active = 0;
     FormField *field = FieldList();
-    while (field != nullptr)
+    while (field != NULL)
     {
         field->active = fields_active;
         field = field->next;
@@ -515,7 +505,7 @@ SignalResult CheckEditZone::Keyboard(Terminal *term, int my_key, int state)
     FnTrace("CheckEditZone::Keyboard()");
     SignalResult retval = SIGNAL_OKAY;
 
-    if ((check != nullptr) && (check->GetStatus() == CHECK_OPEN))
+    if ((check != NULL) && (check->GetStatus() == CHECK_OPEN))
         retval = FormZone::Keyboard(term, my_key, state);
     else
         retval = SIGNAL_IGNORED;
@@ -528,7 +518,7 @@ SignalResult CheckEditZone::Touch(Terminal *term, int tx, int ty)
     FnTrace("CheckEditZone::Touch()");
     SignalResult retval = SIGNAL_OKAY;
 
-    if ((check != nullptr) && (check->GetStatus() == CHECK_OPEN))
+    if ((check != NULL) && (check->GetStatus() == CHECK_OPEN))
         retval = FormZone::Touch(term, tx, ty);
     else
         retval = SIGNAL_IGNORED;
@@ -541,7 +531,7 @@ SignalResult CheckEditZone::Mouse(Terminal *term, int action, int mx, int my)
     FnTrace("CheckEditZone::Mouse()");
     SignalResult retval = SIGNAL_OKAY;
 
-    if ((check != nullptr) && (check->GetStatus() == CHECK_OPEN))
+    if ((check != NULL) && (check->GetStatus() == CHECK_OPEN))
         retval = FormZone::Mouse(term, action, mx, my);
     else
         retval = SIGNAL_IGNORED;
@@ -555,14 +545,14 @@ SignalResult CheckEditZone::Mouse(Terminal *term, int action, int mx, int my)
 Check *GetNextCheck(Check *current)
 {
     FnTrace("GetNextCheck()");
-    Check *retval = nullptr;
+    Check *retval = NULL;
 
-    if (current != nullptr)
+    if (current != NULL)
         current = current->next;
     else
         current = MasterSystem->CheckList();
 
-    while (current != nullptr && retval == nullptr)
+    while (current != NULL && retval == NULL)
     {
     	// Don't want to limit this to only takeouts
         // if (current->GetStatus() == CHECK_OPEN && current->IsTakeOut())
@@ -580,14 +570,14 @@ Check *GetNextCheck(Check *current)
 Check *GetPriorCheck(Check *current)
 {
     FnTrace("GetPriorCheck()");
-    Check *retval = nullptr;
+    Check *retval = NULL;
 
-    if (current != nullptr)
+    if (current != NULL)
         current = current->fore;
     else
         current = MasterSystem->CheckListEnd();
 
-    while (current != nullptr && retval == nullptr)
+    while (current != NULL && retval == NULL)
     {
     	// Don't want to limit this to only takeouts
         // if (current->GetStatus() == CHECK_OPEN && current->IsTakeOut())
@@ -604,47 +594,48 @@ SignalResult CheckEditZone::Signal(Terminal *term, const genericChar* message)
     FnTrace("CheckEditZone::Signal()");
     SignalResult retval = SIGNAL_OKAY;
     static const genericChar* commands[] = { "next", "prior", "change view", "search",
-                                       "nextsearch", "save", nullptr};
+                                       "nextsearch", "save", NULL};
     int idx = CompareListN(commands, message);
     int draw = 0;
 
     switch (idx)
     {
     case 0:  //next
-        if (check != nullptr)
+        if (check != NULL)
             SaveRecord(term, 0, 1);
         term->check = GetNextCheck(term->check);
-        if (term->check != nullptr && term->check->customer != nullptr)
+        if (term->check != NULL && term->check->customer != NULL)
             term->customer = term->check->customer;
         else
-            term->customer = nullptr;
+            term->customer = NULL;
         draw = 2;
-        check = nullptr;
+        check = NULL;
         break;
     case 1:  //prior
-        if (check != nullptr)
+        if (check != NULL)
             SaveRecord(term, 0, 1);
         term->check = GetPriorCheck(term->check);
-        if (term->check != nullptr && term->check->customer != nullptr)
+        if (term->check != NULL && term->check->customer != NULL)
             term->customer = term->check->customer;
         else
-            term->customer = nullptr;
+            term->customer = NULL;
         draw = 2;
-        check = nullptr;
+        check = NULL;
         break;
     case 2:  //change view
         break;
-    case 3:  // search
-    case 4:  // nextsearch
-    {
-        int start = (idx == 3) ? -1 : record_no;
-        int off   = (idx == 3) ? 7  : 11; // skip prefix length
-        if (Search(term, start, &message[off]) <= 0)
+    case 3:  //search
+        if (Search(term, -1, &message[7]) <= 0)
             retval = SIGNAL_IGNORED;
         else
             draw = 1;
         break;
-    }
+    case 4:  // nextsearch
+        if (Search(term, record_no, &message[11]) <= 0)
+            retval = SIGNAL_IGNORED;
+        else
+            draw = 1;
+        break;
     case 5:  // save
         // We also need to save the customer info.  We'll assume CustomerInfoZone
         // is at group 1, but in the future this should not be necessary.
@@ -674,7 +665,7 @@ int CheckEditZone::LoseFocus(Terminal *term, Zone *newfocus)
     FnTrace("CheckEditZone::LoseFocus()");
     int retval = 0;
 
-    keyboard_focus = nullptr;
+    keyboard_focus = NULL;
     Draw(term, 0);
 
     return retval;
@@ -689,7 +680,7 @@ int CheckEditZone::LoadRecord(Terminal *term, int record)
     // this prevented the user being able to add customer information to a check that was not
     // a takeout order. Some customers want to do name/number all the time.
     // if (check != NULL && check->GetStatus() == CHECK_OPEN && check->IsTakeOut())
-    if (check != nullptr && check->GetStatus() == CHECK_OPEN)
+    if (check != NULL && check->GetStatus() == CHECK_OPEN)
     {
         fields->Set(check->Date());
         fields = fields->next;
@@ -699,14 +690,14 @@ int CheckEditZone::LoadRecord(Terminal *term, int record)
 
         fields->Set(check->Comment());
     }
-    else if (term->check != nullptr)
+    else if (term->check != NULL)
     {
         // We have a non-takeout check.  Clear it and redraw everything.  We have
         // to redraw because there are likely other check displays (check report)
         // on the screen and we don't know if they've already been drawn.  To
         // keep everything synchronized, we make sure all zones displays the
         // term->check = NULL situation.
-        term->check = nullptr;
+        term->check = NULL;
         term->Draw(1);
     }
 
@@ -723,9 +714,9 @@ int CheckEditZone::SaveRecord(Terminal *term, int record, int write_file)
     genericChar buffer[STRLONG];
 
     // Verify we only save open takeout checks (no tables)
-    if ((check != nullptr) && (check->GetStatus() == CHECK_OPEN) && check->IsTakeOut())
+    if ((check != NULL) && (check->GetStatus() == CHECK_OPEN) && check->IsTakeOut())
     {
-        if (term->customer != nullptr)
+        if (term->customer != NULL)
             term->customer->Save();
 
         fields->Get(date);
@@ -739,9 +730,9 @@ int CheckEditZone::SaveRecord(Terminal *term, int record, int write_file)
         fields->Get(buffer);
         check->Comment(buffer);
 
-        if (check->customer == nullptr || check->customer->IsBlank() || !term->customer->IsBlank())
+        if (check->customer == NULL || check->customer->IsBlank() || !term->customer->IsBlank())
             check->customer = term->customer;
-        if (check->customer != nullptr)
+        if (check->customer != NULL)
             check->customer_id = check->customer->CustomerID();
         else
             check->customer_id = -1;
@@ -773,7 +764,7 @@ int CheckEditZone::RecordCount(Terminal *term)
     FnTrace("CheckEditZone::RecordCount()");
     int retval = 0;
 
-    if (check != nullptr)
+    if (check != NULL)
         retval = 1;
 
     return retval;

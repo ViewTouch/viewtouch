@@ -222,7 +222,7 @@ void FontCheckDrawStringEnhanced(Display *display, XftDraw *xftdraw, XftFont *xf
 int main() {
     Display *display = XOpenDisplay(nullptr);
     if (!display) {
-        std::cerr << "Cannot open display" << '\n';
+        std::cerr << "Cannot open display" << std::endl;
         return 1;
     }
     int screen = DefaultScreen(display);
@@ -271,9 +271,9 @@ int main() {
         }
         // Print result to terminal
         if (success) {
-            std::cout << "\u2713 " << font_label << " (" << font_xft << ") - DISPLAYED" << '\n';
+            std::cout << "\u2713 " << font_label << " (" << font_xft << ") - DISPLAYED" << std::endl;
         } else {
-            std::cout << "\u2717 " << font_label << " (" << font_xft << ") - FAILED" << '\n';
+            std::cout << "\u2717 " << font_label << " (" << font_xft << ") - FAILED" << std::endl;
         }
     }
     if (draw) XftDrawDestroy(draw);

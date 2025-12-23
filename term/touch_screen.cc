@@ -29,7 +29,7 @@
 #include <algorithm>
 #include <fstream>
 
-#include <cerrno>
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -124,7 +124,7 @@ TouchScreen::TouchScreen(const char* h, int p)
 
 // Move constructor
 TouchScreen::TouchScreen(TouchScreen&& other) noexcept
-    : buffer(other.buffer)
+    : buffer(std::move(other.buffer))
     , size(other.size)
     , INIT(std::move(other.INIT))
     , PING(std::move(other.PING))
@@ -142,10 +142,10 @@ TouchScreen::TouchScreen(TouchScreen&& other) noexcept
     , y_res(other.y_res)
     , last_x(other.last_x)
     , last_y(other.last_y)
-    , host(other.host)
+    , host(std::move(other.host))
     , port(other.port)
-    , last_reset(other.last_reset)
-    , error(other.error)
+    , last_reset(std::move(other.last_reset))
+    , error(std::move(other.error))
 {
     other.device_no = 0;
     other.failed = 0;
@@ -159,7 +159,7 @@ TouchScreen& TouchScreen::operator=(TouchScreen&& other) noexcept
         if (device_no > 0)
             close(device_no);
             
-        buffer = other.buffer;
+        buffer = std::move(other.buffer);
         size = other.size;
         INIT = std::move(other.INIT);
         PING = std::move(other.PING);
@@ -177,10 +177,10 @@ TouchScreen& TouchScreen::operator=(TouchScreen&& other) noexcept
         y_res = other.y_res;
         last_x = other.last_x;
         last_y = other.last_y;
-        host = other.host;
+        host = std::move(other.host);
         port = other.port;
-        last_reset = other.last_reset;
-        error = other.error;
+        last_reset = std::move(other.last_reset);
+        error = std::move(other.error);
         
         other.device_no = 0;
         other.failed = 0;
@@ -226,12 +226,12 @@ int TouchScreen::Connect(int boot)
         if (inaddr.sin_addr.s_addr == INADDR_NONE)
         {
             struct hostent *hp = gethostbyname(host.Value());
-            if (hp == nullptr || hp->h_addrtype != AF_INET)
+            if (hp == NULL || hp->h_addrtype != AF_INET)
             {
                 std::string str = std::string("Can't resolve name '")
                         + host.Value() + "'";
                 error.Set(str.c_str());
-                std::cerr << str << '\n';
+                std::cerr << str << std::endl;
                 return 1;
             }
             bcopy(hp->h_addr, &inaddr.sin_addr.s_addr, hp->h_length);
@@ -242,7 +242,7 @@ int TouchScreen::Connect(int boot)
         {
             std::string str = "Can't open socket";
             error.Set(str.c_str());
-            std::cerr << str << '\n';
+            std::cerr << str << std::endl;
             device_no = 0;
             return 1;
         }
@@ -251,7 +251,7 @@ int TouchScreen::Connect(int boot)
         {
             std::string str = std::string("Connection refused with '")
                     + host.Value() + "'";
-            std::cerr << str << '\n';
+            std::cerr << str << std::endl;
             error.Set(str.c_str());
             close(device_no);
             device_no = 0;
@@ -660,7 +660,7 @@ int TouchScreen::SaveCalibration(const char* filename) const
     
     file << calibration.offset_x << " " << calibration.offset_y << " "
          << calibration.scale_x << " " << calibration.scale_y << " "
-         << calibration.rotation << " " << calibration.calibrated << '\n';
+         << calibration.rotation << " " << calibration.calibrated << std::endl;
     
     file.close();
     return 0;

@@ -18,8 +18,8 @@
  * Data storage & report generation for current/previous business days
  */
 
-#ifndef SYSTEM_HH
-#define SYSTEM_HH
+#ifndef _SYSTEM_HH
+#define _SYSTEM_HH
 
 #include "tips.hh"
 #include "labor.hh"
@@ -159,7 +159,7 @@ public:
     int SetDataPath(const char* path);
     // specify directory where system data is kept
     int CheckFileUpdates();
-    genericChar* FullPath(const char* filename, genericChar* buffer = nullptr);
+    genericChar* FullPath(const char* filename, genericChar* buffer = NULL);
     // returns string containing full filename for system datafile
     int LoadCurrentData(const char* path);
     // loads current day's data ('current' directory)
@@ -199,9 +199,9 @@ public:
     // adds check to current data
     int Remove(Check *check);
     // removes check from current check list (doesn't delete)
-    Check *FirstCheck(Archive *archive = nullptr);
+    Check *FirstCheck(Archive *archive = NULL);
     // returns first check of archive or current checks
-    int CountOpenChecks(Employee *e = nullptr);
+    int CountOpenChecks(Employee *e = NULL);
     // counts open checks owned by user (or by everyone)
     int NumberStacked(const char* table, Employee *e);
     // Returns number of open checks at tables
@@ -220,7 +220,7 @@ public:
     // adds drawer to current data
     int Remove(Drawer *drawer);
     // removes drawer from current drawer list (doesn't delete)
-    Drawer *FirstDrawer(Archive *archive = nullptr);
+    Drawer *FirstDrawer(Archive *archive = NULL);
     // returns first drawer of archive or current drawers
     Drawer *GetServerBank(Employee *e);
     // returns server bank for user (creates new one if needed)
@@ -234,11 +234,11 @@ public:
     // boolean - are all drawers pulled or balanced?
 
     // Exception functions
-    ItemException *FirstItemException(Archive *archive = nullptr);
+    ItemException *FirstItemException(Archive *archive = NULL);
     // returns first item exception of archive or current exceptions
-    TableException *FirstTableException(Archive *archive = nullptr);
+    TableException *FirstTableException(Archive *archive = NULL);
     // returns first table exception of archive or current exceptions
-    RebuildException *FirstRebuildException(Archive *archive = nullptr);
+    RebuildException *FirstRebuildException(Archive *archive = NULL);
     // returns first rebuild exception of archive or current exceptions
 
     // report functions (see system_report.cc)
@@ -269,7 +269,7 @@ public:
                        Archive *archive, Report *report, ReportZone *rzone);
     int CreditCardReport(Terminal *term, TimeInfo &start_time, TimeInfo &end_time,
                          Archive *archive, Report *report, ReportZone *rzone);
-    int QuickBooksCSVExport(Terminal *term, const TimeInfo& start_time, const TimeInfo& end_time,
+    int QuickBooksCSVExport(Terminal *term, TimeInfo start_time, TimeInfo end_time,
                             PrinterQuickBooksCSV *printer);
     int AddBatch(long long batchnum);
 };

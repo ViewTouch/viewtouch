@@ -18,8 +18,8 @@
  * layout & formating of report information
  */
 
-#ifndef REPORT_HH
-#define REPORT_HH
+#ifndef _REPORT_HH
+#define _REPORT_HH
 
 #include "utility.hh"
 #include "terminal.hh"
@@ -64,8 +64,16 @@
 #define RP_DEST_SCREEN      1
 #define RP_DEST_PRINTER     2
 
-// Print Modes come from printer.hh
-#include "printer.hh"
+//FIX BAK->GET THIS OUT OF HERE!!!  It should only be in printer.hh.
+// Print Modes (should match printer.hh)
+#define PRINT_RED         1   // use red ink (if available)
+#define PRINT_BOLD        2   // bold text
+#define PRINT_UNDERLINE   4   // underline text
+#define PRINT_NARROW      8   // condensed width text
+#define PRINT_WIDE        16  // print double width only
+#define PRINT_TALL        32  // print double height only
+#define PRINT_LARGE       48  // print double width & height
+#define PRINT_BLUE        64  // blue text (if available)
 
 // Other
 #define MAX_REPORT_COLUMNS  16
@@ -94,7 +102,7 @@ public:
     ReportEntry(const char *t, int c, int a, int m);
     ReportEntry(const std::string &t, int c, int a, int m);
     // Destructor
-    ~ReportEntry() = default;
+    ~ReportEntry() {}
 };
 
 

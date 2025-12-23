@@ -2,7 +2,6 @@
 #include "src/utils/vt_logger.hh"
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <thread>
 #include <chrono>
 #include <variant>
@@ -279,12 +278,9 @@ TEST_CASE("Performance Monitoring", "[enhanced_logging][performance]")
 
 TEST_CASE("Log File Output", "[enhanced_logging][files]")
 {
-    // Use a unique test directory to avoid interference from other tests
-    const std::string test_log_dir = "/tmp/viewtouch_test_logs_file_output";
-    
     // Clean up
-    fs::remove_all(test_log_dir);
-    vt::Logger::Initialize(test_log_dir);
+    fs::remove_all("/tmp/viewtouch_test_logs");
+    vt::Logger::Initialize("/tmp/viewtouch_test_logs");
 
     SECTION("Structured JSON logging")
     {
@@ -297,9 +293,9 @@ TEST_CASE("Log File Output", "[enhanced_logging][files]")
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         // Check structured log file
-        REQUIRE(fs::exists(test_log_dir + "/viewtouch_structured.log"));
+        REQUIRE(fs::exists("/tmp/viewtouch_test_logs/viewtouch_structured.log"));
 
-        std::ifstream structured_log(test_log_dir + "/viewtouch_structured.log");
+        std::ifstream structured_log("/tmp/viewtouch_test_logs/viewtouch_structured.log");
         std::string line;
         bool found_json = false;
         while (std::getline(structured_log, line)) {
@@ -310,8 +306,6 @@ TEST_CASE("Log File Output", "[enhanced_logging][files]")
             }
         }
         REQUIRE(found_json);
-        
-        vt::Logger::Shutdown(); // Shutdown at end of this section
     }
 
     SECTION("Human-readable logging")
@@ -322,9 +316,9 @@ TEST_CASE("Log File Output", "[enhanced_logging][files]")
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         // Check regular log file
-        REQUIRE(fs::exists(test_log_dir + "/viewtouch.log"));
+        REQUIRE(fs::exists("/tmp/viewtouch_test_logs/viewtouch.log"));
 
-        std::ifstream regular_log(test_log_dir + "/viewtouch.log");
+        std::ifstream regular_log("/tmp/viewtouch_test_logs/viewtouch.log");
         std::string line;
         bool found_message = false;
         while (std::getline(regular_log, line)) {
@@ -334,9 +328,9 @@ TEST_CASE("Log File Output", "[enhanced_logging][files]")
             }
         }
         REQUIRE(found_message);
-        
-        vt::Logger::Shutdown(); // Shutdown at end of this section
     }
+
+    vt::Logger::Shutdown();
 }
 
 TEST_CASE("Thread Safety", "[enhanced_logging][threading]")

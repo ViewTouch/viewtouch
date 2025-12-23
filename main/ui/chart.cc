@@ -30,8 +30,8 @@
 // Constructor
 ChartCell::ChartCell()
 {
-    next  = nullptr;
-    fore  = nullptr;
+    next  = NULL;
+    fore  = NULL;
     align = ALIGN_LEFT;
     color = COLOR_DEFAULT;
 }
@@ -40,8 +40,8 @@ ChartCell::ChartCell()
 // Constructor
 ChartRow::ChartRow()
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     id = 0;
 }
 
@@ -49,7 +49,7 @@ ChartRow::ChartRow()
 // Constructor
 Chart::Chart()
 {
-    current_row = nullptr;
+    current_row = NULL;
 }
 
 // Member Functions
@@ -75,7 +75,7 @@ int Chart::SortByColumn(int id)
 
 int Chart::AddRowCell(const char* text)
 {
-    if (current_row == nullptr)
+    if (current_row == NULL)
     {
         ChartRow *r = new ChartRow();
         if (row_list.Tail())
@@ -95,6 +95,6 @@ int Chart::AddRowCell(const char* text)
 
 int Chart::EndRow()
 {
-    current_row = nullptr;
+    current_row = NULL;
     return 0;
 }

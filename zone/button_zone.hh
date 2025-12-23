@@ -19,7 +19,7 @@
  */
 
 #ifndef _BUTTON_ZONE_HH
-#define BUTTON_ZONE_HH
+#define _BUTTON_ZONE_HH
 
 #include "pos_zone.hh"
 #include "layout_zone.hh"
@@ -35,15 +35,15 @@ public:
     ButtonZone();
 
     // Member Functions
-    int          Type() override { return ZONE_SIMPLE; }
-    int          AcceptSignals() override { return 0; }
-    std::unique_ptr<Zone> Copy() override;
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    int          GainFocus(Terminal *term, Zone *oldfocus) override { return 0; }
+    virtual int          Type() { return ZONE_SIMPLE; }
+    virtual int          AcceptSignals() { return 0; }
+    virtual std::unique_ptr<Zone> Copy();
+    virtual RenderResult Render(Terminal *term, int update_flag);
+    virtual SignalResult Touch(Terminal *term, int tx, int ty);
+    virtual int          GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 
-    int *JumpType() override { return &jump_type; }
-    int *JumpID() override   { return &jump_id;   }
+    int *JumpType() { return &jump_type; }
+    int *JumpID()   { return &jump_id;   }
     Str *ImagePath() { return PosZone::ImagePath(); }
 };
 
@@ -58,16 +58,16 @@ public:
 
     // Member Functions
     MessageButtonZone();
-    int          Type() override { return ZONE_STANDARD; }
-    int          AcceptSignals() override { return 1; }
-    std::unique_ptr<Zone> Copy() override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Signal(Terminal *term, const char* signal_msg) override;
-    char* ValidateCommand(char* command);
+    virtual int          Type() { return ZONE_STANDARD; }
+    virtual int          AcceptSignals() { return 1; }
+    virtual std::unique_ptr<Zone> Copy();
+    virtual SignalResult Touch(Terminal *term, int tx, int ty);
+    virtual SignalResult Signal(Terminal *term, const char* signal_msg);
+    virtual char* ValidateCommand(char* command);
 
-    Str *Message() override    { return &message; }
-    int *Confirm() override    { return &confirm; }
-    Str *ConfirmMsg() override { return &confirm_msg; }
+    Str *Message()    { return &message; }
+    int *Confirm()    { return &confirm; }
+    Str *ConfirmMsg() { return &confirm_msg; }
 };
 
 class ConditionalZone : public MessageButtonZone
@@ -80,14 +80,14 @@ public:
     ConditionalZone();
 
     // Member Functions
-    int          Type() override { return ZONE_CONDITIONAL; }
-    std::unique_ptr<Zone> Copy() override;
-    int          RenderInit(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    int          Update(Terminal *term, int update_message, const genericChar* value) override;
+    int          Type() { return ZONE_CONDITIONAL; }
+    std::unique_ptr<Zone> Copy();
+    int          RenderInit(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
 
-    Str *Expression() override { return &expression; }
-    int  ZoneStates() override { return 3; }
+    Str *Expression() { return &expression; }
+    int  ZoneStates() { return 3; }
 
     int EvalExp(Terminal *term);
 };
@@ -103,36 +103,36 @@ public:
     ToggleZone();
 
     // Member Functions
-    int          Type() override { return ZONE_TOGGLE; }
-    int  AcceptSignals() override { return 0; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    const genericChar* TranslateString(Terminal *term) override;
-    int  GainFocus(Terminal *term, Zone *oldfocus) override { return 0; }
+    int          Type() { return ZONE_TOGGLE; }
+    virtual int  AcceptSignals() { return 0; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    const genericChar* TranslateString(Terminal *term);
+    virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 
-    Str *Message() override { return &message; }
+    Str *Message() { return &message; }
 };
 
 class CommentZone : public PosZone
 {
 public:
     // Member Functions
-    int          Type() override { return ZONE_COMMENT; }
-    int  AcceptSignals() override { return 0; }
-    int          RenderInit(Terminal *term, int update_flag) override;
-    int          ZoneStates() override { return 1; }
-    int  GainFocus(Terminal *term, Zone *oldfocus) override { return 0; }
+    int          Type() { return ZONE_COMMENT; }
+    virtual int  AcceptSignals() { return 0; }
+    int          RenderInit(Terminal *term, int update_flag);
+    int          ZoneStates() { return 1; }
+    virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 };
 
 class KillSystemZone : public PosZone
 {
 public:
     // Member Functions
-    int          Type() override { return ZONE_KILL_SYSTEM; }
-    int  AcceptSignals() override { return 0; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    int          Update(Terminal *term, int update_message, const genericChar* value) override;
+    int          Type() { return ZONE_KILL_SYSTEM; }
+    virtual int  AcceptSignals() { return 0; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
 };
 
 class ClearSystemZone : public PosZone
@@ -144,12 +144,12 @@ public:
     ClearSystemZone();
 
     // Member Functions
-    int          Type() override { return ZONE_CLEAR_SYSTEM; }
-    int  AcceptSignals() override { return 1; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    int  GainFocus(Terminal *term, Zone *oldfocus) override { return 0; }
+    int          Type() { return ZONE_CLEAR_SYSTEM; }
+    virtual int  AcceptSignals() { return 1; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 };
 
 class StatusZone : public LayoutZone
@@ -157,11 +157,11 @@ class StatusZone : public LayoutZone
     Str status;
 public:
     StatusZone();
-    int          Type() override { return ZONE_STATUS_BUTTON; }
-    int  AcceptSignals() override { return 1; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    int  GainFocus(Terminal *term, Zone *oldfocus) override { return 0; }
+    int          Type() { return ZONE_STATUS_BUTTON; }
+    virtual int  AcceptSignals() { return 1; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 };
 
 class ImageButtonZone : public ButtonZone
@@ -174,15 +174,15 @@ public:
     ImageButtonZone();
 
     // Member Functions
-    int          Type() override { return ZONE_IMAGE_BUTTON; }
-    int  AcceptSignals() override { return 0; }
-    int          CanSelect(Terminal *t) override;
-    int          State(Terminal *t) override;  // Override to always use normal state for consistent image colors
-    int          ZoneStates() override;       // Override to return 1 (no selection states) to skip selection logic
-    std::unique_ptr<Zone> Copy() override;
-    int          RenderInit(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    int  GainFocus(Terminal *term, Zone *oldfocus) override { return 0; }
+    int          Type() { return ZONE_IMAGE_BUTTON; }
+    virtual int  AcceptSignals() { return 0; }
+    int          CanSelect(Terminal *t);
+    int          State(Terminal *t);  // Override to always use normal state for consistent image colors
+    int          ZoneStates();       // Override to return 1 (no selection states) to skip selection logic
+    std::unique_ptr<Zone> Copy();
+    int          RenderInit(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 };
 
 class IndexTabZone : public ButtonZone
@@ -192,12 +192,12 @@ public:
     IndexTabZone();
 
     // Member Functions
-    int          Type() override { return ZONE_INDEX_TAB; }
+    int          Type() { return ZONE_INDEX_TAB; }
     // Inherit AcceptSignals from ButtonZone (same as Simple buttons)
-    int          CanSelect(Terminal *t) override;
-    int          CanEdit(Terminal *t) override;
-    std::unique_ptr<Zone> Copy() override;
-    int  GainFocus(Terminal *term, Zone *oldfocus) override { return 0; }
+    int          CanSelect(Terminal *t);
+    int          CanEdit(Terminal *t);
+    std::unique_ptr<Zone> Copy();
+    virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 };
 
 class LanguageButtonZone : public ButtonZone
@@ -207,11 +207,11 @@ public:
     LanguageButtonZone();
 
     // Member Functions
-    int          Type() override { return ZONE_LANGUAGE_BUTTON; }
-    std::unique_ptr<Zone> Copy() override;
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    int  GainFocus(Terminal *term, Zone *oldfocus) override { return 0; }
+    int          Type() { return ZONE_LANGUAGE_BUTTON; }
+    std::unique_ptr<Zone> Copy();
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    virtual int  GainFocus(Terminal *term, Zone *oldfocus) { return 0; }
 };
 
 #endif

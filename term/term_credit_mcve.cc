@@ -442,7 +442,7 @@ int BatchInfo::GetAmt(char* dest, const char* value)
  ********************************************************************/
 CCard::CCard()
 {
-    conn = nullptr;
+    conn = NULL;
     trans_success = 0;
     intcode = CC_STATUS_NONE;
 
@@ -570,9 +570,9 @@ int CCard::Connect()
 
     if (server[0] != '\0' && port[0] != '\0')
     {
-        if (conn == nullptr)
+        if (conn == NULL)
             conn = new MCVE_CONN;
-        MCVE_InitEngine(nullptr);
+        MCVE_InitEngine(NULL);
         MCVE_InitConn(conn);
         if (MCVE_SetIP(conn, server, atoi(port)))
         {
@@ -588,7 +588,7 @@ int CCard::Connect()
                 intcode = CC_STATUS_NOCONNECT;
                 MCVE_DestroyConn(conn);
                 MCVE_DestroyEngine();
-                conn = nullptr;
+                conn = NULL;
             }
         }
     }
@@ -601,13 +601,13 @@ int CCard::Close()
     FnTrace("CCard::Close()");
     int retval = 1;
 
-    if (conn != nullptr)
+    if (conn != NULL)
     {
                     vt_safe_string::safe_copy(code, STRLENGTH, GlobalTranslate("NOCONN"));
         intcode = CC_STATUS_NOCONNECT;
         MCVE_DestroyConn(conn);
         MCVE_DestroyEngine();
-        conn = nullptr;
+        conn = NULL;
         retval = 0;
     }
 
@@ -620,7 +620,7 @@ int CCard::SetValue(char* dest, const char* source)
     int retval = 0;
 
     dest[0] = '\0';
-    if (source != nullptr)
+    if (source != NULL)
         vt_safe_string::safe_copy(dest, STRLENGTH, source);
 
     return retval;
@@ -772,7 +772,7 @@ int CCard::SetFields(int gut, long identifier)
 
 
         MCVE_DestroyConn(conn);
-        conn = nullptr;
+        conn = NULL;
     }
     else
         retval = 1;
@@ -1006,7 +1006,7 @@ int CCard::BatchSettle()
             if (TransSendSimple(identifier) == 0)
             {
                 binfo.ParseResults(conn, identifier);
-                WInt8(ToInt(ServerProtocol::SrvCcSettled));
+                WInt8(SERVER_CC_SETTLED);
                 binfo.Write();
                 retval = 0;
             }
@@ -1015,8 +1015,8 @@ int CCard::BatchSettle()
 
     if (retval)
     {
-        WInt8(ToInt(ServerProtocol::SrvCcSettleFailed));
-        if (conn != nullptr)
+        WInt8(SERVER_CC_SETTLEFAILED);
+        if (conn != NULL)
         {
             SetValue(msgbuff, MCVE_TransactionText(conn, identifier));
             if (strlen(msgbuff) < 1)
@@ -1075,7 +1075,7 @@ int CCard::Totals()
             if (MCVE_ParseCommaDelimited(conn, identifier))
             {
                 rows = MCVE_NumRows(conn, identifier);
-                WInt8(ToInt(ServerProtocol::SrvCcTotals));
+                WInt8(SERVER_CC_TOTALS);
                 WInt16(rows + 1);
                 columns = MCVE_NumColumns(conn, identifier);
                 buffer[0] = '\0';
@@ -1165,7 +1165,7 @@ int CCard::Details()
             {
                 rows = MCVE_NumRows(conn, identifier);
                 columns = MCVE_NumColumns(conn, identifier);
-                WInt8(ToInt(ServerProtocol::SrvCcDetails));
+                WInt8(SERVER_CC_DETAILS);
                 WInt16(rows + 1);
                 buffer[0] = '\0';
                 AppendString(buffer, 8, GlobalTranslate("TTID"));

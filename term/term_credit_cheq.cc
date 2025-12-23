@@ -19,11 +19,11 @@
  *   keeping them in vt_term ensures that only the local terminal will be locked.
  */
 
-#include <cerrno>
+#include <errno.h>
 #include <fcntl.h>
-#include <csignal>
-#include <cstdio>
-#include <cstring>
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -96,7 +96,7 @@ int my_connect(int sockfd, struct sockaddr *serv_addr, socklen_t addrlen, int ti
         writeset = readset;
         timev.tv_sec = timeout;
         timev.tv_usec = 0;
-        result = select(sockfd + 1, &readset, &writeset, nullptr, &timev);
+        result = select(sockfd + 1, &readset, &writeset, NULL, &timev);
         if (FD_ISSET(sockfd, &readset) || FD_ISSET(sockfd, &writeset))
             retval = 0;
         else
@@ -1112,7 +1112,7 @@ int CCard::ReadCheq(const char* buffer_param, int buffsize)
             FD_SET(ipconn, &readfd);
             timeout.tv_sec = 0;
             timeout.tv_usec = 50;
-            selresult = select(nfds, &readfd, nullptr, nullptr, &timeout);
+            selresult = select(nfds, &readfd, NULL, NULL, &timeout);
             if (selresult > 0)
             {
                 counter = 0;
@@ -1306,14 +1306,14 @@ int CCard::BatchSettle()
         {
             ParseResponse(buffer);
             binfo.ParseResults(receipt);
-            WInt8(ToInt(ServerProtocol::SrvCcSettled));
+            WInt8(SERVER_CC_SETTLED);
             binfo.Write();
             retval = 0;
         }
     }
 
     if (retval)
-        WInt8(ToInt(ServerProtocol::SrvCcSettleFailed));
+        WInt8(SERVER_CC_SETTLEFAILED);
     SendNow();
 
     return retval;
@@ -1334,7 +1334,7 @@ int CCard::CCInit()
         if (ReadCheq(buffer, STRHUGE) == 0)
         {
             ParseResponse(buffer);
-            WInt8(ToInt(ServerProtocol::SrvCcInit));
+            WInt8(SERVER_CC_INIT);
             WStr(termid);
             WStr(code);
             WInt8(intcode);
@@ -1363,7 +1363,7 @@ int CCard::Totals()
         {
             ParseResponse(buffer);
             binfo.ParseResults(receipt);
-            WInt8(ToInt(ServerProtocol::SrvCcTotals));
+            WInt8(SERVER_CC_TOTALS);
             binfo.Write();
             SendNow();
         }
@@ -1387,7 +1387,7 @@ int CCard::Details()
         if (ReadCheq(buffer, STRHUGE) == 0)
         {
             ParseResponse(buffer);
-            WInt8(ToInt(ServerProtocol::SrvCcDetails));
+            WInt8(SERVER_CC_DETAILS);
             WStr(termid);
             WStr(code);
             WInt8(intcode);
@@ -1415,7 +1415,7 @@ int CCard::ClearSAF()
         {
             if (safclear.ParseSAF(buffer) == 0)
             {
-                WInt8(ToInt(ServerProtocol::SrvCcSafCleared));
+                WInt8(SERVER_CC_SAFCLEARED);
                 safclear.Write();
                 retval = 0;
             }
@@ -1423,7 +1423,7 @@ int CCard::ClearSAF()
     }
 
     if (retval)
-        WInt8(ToInt(ServerProtocol::SrvCcSafClearFailed));
+        WInt8(SERVER_CC_SAFCLEARFAILED);
 
     SendNow();
 
@@ -1447,7 +1447,7 @@ int CCard::SAFDetails()
         {
             if (safclear.ParseSAF(buffer) == 0)
             {
-                WInt8(ToInt(ServerProtocol::SrvCcSafDetails));
+                WInt8(SERVER_CC_SAFDETAILS);
                 safclear.Write();
                 SendNow();
             }

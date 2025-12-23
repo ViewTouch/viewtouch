@@ -43,7 +43,7 @@ enum class ButtonType {
 };
 
 void DemoLogging() {
-    std::cout << "\n=== Logging Demo ===" << '\n';
+    std::cout << "\n=== Logging Demo ===" << std::endl;
     
     // Initialize logger
     vt::Logger::Initialize(
@@ -68,11 +68,11 @@ void DemoLogging() {
     VT_LOG_INFO("This is a convenience macro");
     VT_LOG_DEBUG("Debug value: {}", 100);
 
-    std::cout << "Check /tmp/viewtouch_demo/viewtouch.log for output" << '\n';
+    std::cout << "Check /tmp/viewtouch_demo/viewtouch.log for output" << std::endl;
 }
 
 void DemoJson() {
-    std::cout << "\n=== JSON Config Demo ===" << '\n';
+    std::cout << "\n=== JSON Config Demo ===" << std::endl;
 
     // Create a config file
     vt::JsonConfig cfg("/tmp/viewtouch_demo_config.json");
@@ -87,7 +87,7 @@ void DemoJson() {
 
     // Save to file
     if (cfg.Save()) {
-        std::cout << "Config saved to: " << cfg.GetPath() << '\n';
+        std::cout << "Config saved to: " << cfg.GetPath() << std::endl;
     }
 
     // Load it back
@@ -98,62 +98,62 @@ void DemoJson() {
         auto timeout = loaded.Get<int>("network.timeout", 10);
         bool use_seats = loaded.Get<bool>("settings.use_seats", false);
 
-        std::cout << "Store: " << store << '\n';
-        std::cout << "Food tax: " << tax << '\n';
-        std::cout << "Timeout: " << timeout << "s" << '\n';
-        std::cout << "Use seats: " << (use_seats ? "yes" : "no") << '\n';
+        std::cout << "Store: " << store << std::endl;
+        std::cout << "Food tax: " << tax << std::endl;
+        std::cout << "Timeout: " << timeout << "s" << std::endl;
+        std::cout << "Use seats: " << (use_seats ? "yes" : "no") << std::endl;
     }
 
     // Create example config
     vt::JsonConfig::CreateExample("/tmp/viewtouch_example_config.json");
-    std::cout << "Example config created at /tmp/viewtouch_example_config.json" << '\n';
+    std::cout << "Example config created at /tmp/viewtouch_example_config.json" << std::endl;
 }
 
 void DemoEnums() {
-    std::cout << "\n=== Enum Utils Demo ===" << '\n';
+    std::cout << "\n=== Enum Utils Demo ===" << std::endl;
 
     // Enum to string
     auto payment_name = vt::EnumToString(PaymentType::CreditCard);
-    std::cout << "Payment type: " << payment_name << '\n';
+    std::cout << "Payment type: " << payment_name << std::endl;
 
     // String to enum
     auto payment = vt::StringToEnum<PaymentType>("Cash");
     if (payment) {
-        std::cout << "Parsed payment type: " << vt::EnumToString(*payment) << '\n';
+        std::cout << "Parsed payment type: " << vt::EnumToString(*payment) << std::endl;
     }
 
     // Get all values
-    std::cout << "\nAll payment types:" << '\n';
+    std::cout << "\nAll payment types:" << std::endl;
     for (auto type : vt::GetEnumValues<PaymentType>()) {
-        std::cout << "  - " << vt::EnumToString(type) << '\n';
+        std::cout << "  - " << vt::EnumToString(type) << std::endl;
     }
 
     // Get count
-    std::cout << "\nTotal payment types: " << vt::GetEnumCount<PaymentType>() << '\n';
+    std::cout << "\nTotal payment types: " << vt::GetEnumCount<PaymentType>() << std::endl;
 
     // Display formatting
-    std::cout << "\nButton types (display format):" << '\n';
+    std::cout << "\nButton types (display format):" << std::endl;
     for (auto btn : vt::GetEnumValues<ButtonType>()) {
-        std::cout << "  - " << vt::EnumToDisplayString(btn) << '\n';
+        std::cout << "  - " << vt::EnumToDisplayString(btn) << std::endl;
     }
 
     // Get pairs for UI dropdowns
     auto pairs = vt::GetEnumPairs<ButtonType>();
-    std::cout << "\nButton type pairs (for UI):" << '\n';
+    std::cout << "\nButton type pairs (for UI):" << std::endl;
     for (const auto& [name, value] : pairs) {
-        std::cout << "  " << name << " = " << vt::EnumToInt(value) << '\n';
+        std::cout << "  " << name << " = " << vt::EnumToInt(value) << std::endl;
     }
 
     // Backwards compatibility - C-style array
     const char** payment_names = vt::GetEnumNamesArray<PaymentType>();
-    std::cout << "\nC-style array (backwards compatible):" << '\n';
+    std::cout << "\nC-style array (backwards compatible):" << std::endl;
     for (int i = 0; payment_names[i] != nullptr; ++i) {
-        std::cout << "  [" << i << "] = " << payment_names[i] << '\n';
+        std::cout << "  [" << i << "] = " << payment_names[i] << std::endl;
     }
 }
 
 void DemoCombined() {
-    std::cout << "\n=== Combined Demo ===" << '\n';
+    std::cout << "\n=== Combined Demo ===" << std::endl;
 
     // Use JSON config with enums and logging
     vt::JsonConfig cfg("/tmp/viewtouch_combined_demo.json");
@@ -175,14 +175,14 @@ void DemoCombined() {
         
         if (payment) {
             vt::Logger::info("Loaded payment type: {}", vt::EnumToString(*payment));
-            std::cout << "Successfully parsed payment type from JSON" << '\n';
+            std::cout << "Successfully parsed payment type from JSON" << std::endl;
         }
     }
 }
 
 int main() {
-    std::cout << "=== ViewTouch Modern C++ Libraries Demo ===" << '\n';
-    std::cout << "Demonstrating spdlog, nlohmann/json, and magic_enum" << '\n';
+    std::cout << "=== ViewTouch Modern C++ Libraries Demo ===" << std::endl;
+    std::cout << "Demonstrating spdlog, nlohmann/json, and magic_enum" << std::endl;
 
     try {
         DemoLogging();
@@ -190,14 +190,14 @@ int main() {
         DemoEnums();
         DemoCombined();
 
-        std::cout << "\n=== Demo Complete ===" << '\n';
-        std::cout << "Check the /tmp directory for generated files" << '\n';
+        std::cout << "\n=== Demo Complete ===" << std::endl;
+        std::cout << "Check the /tmp directory for generated files" << std::endl;
 
         // Cleanup
         vt::Logger::Shutdown();
 
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << '\n';
+        std::cerr << "Error: " << e.what() << std::endl;
         return 1;
     }
 

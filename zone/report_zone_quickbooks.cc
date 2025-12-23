@@ -9,14 +9,14 @@ SignalResult ReportZone::QuickBooksExport(Terminal *term)
 {
     FnTrace("ReportZone::QuickBooksExport()");
     Employee *e = term->user;
-    if (e == nullptr)
+    if (e == NULL)
         return SIGNAL_IGNORED;
     
     // Create QuickBooks CSV printer using settings path
     Settings *settings = term->GetSettings();
     PrinterQuickBooksCSV *qb_printer = new PrinterQuickBooksCSV("", 0, settings->quickbooks_export_path.Value(), TARGET_QUICKBOOKS_CSV);
     
-    if (qb_printer == nullptr)
+    if (qb_printer == NULL)
     {
         // Use printf for error message since Terminal doesn't have Error method
         printf("Failed to create QuickBooks export printer\n");

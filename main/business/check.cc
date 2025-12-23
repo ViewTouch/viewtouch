@@ -28,7 +28,6 @@
 #include "data_file.hh"
 #include "system.hh"
 #include "settings.hh"
-#include "main/data/settings_enums.hh"
 #include "data_persistence_manager.hh"
 #include "inventory.hh"
 #include "labels.hh"
@@ -45,7 +44,6 @@
 #include <dirent.h>
 #include <sys/file.h>
 #include <cstring>
-#include <cmath>
 #include <list>
 #include <ctime>
 #include <memory>
@@ -62,7 +60,7 @@
 
 static const genericChar* EmptyStr = "";
 
-const genericChar* CheckStatusName[] = { "Open", "Closed", "Voided", nullptr };
+const genericChar* CheckStatusName[] = { "Open", "Closed", "Voided", NULL };
 int CheckStatusValue[] = { CHECK_OPEN, CHECK_CLOSED, CHECK_VOIDED, -1 };
 
 int tender_order[] = {
@@ -698,7 +696,7 @@ int Check::SendWorkOrder(Terminal *term, int printer_target, int reprint)
     auto report = std::make_unique<Report>();
 
     Printer *printer = term->FindPrinter(printer_target);
-    int retval = PrintWorkOrder(term, report.get(), printer_target, reprint, nullptr, printer);
+    int retval = PrintWorkOrder(term, report.get(), printer_target, reprint, NULL, printer);
     if (report->is_complete && printer != nullptr && retval == 0)
         retval = report->FormalPrint(printer);
 
@@ -713,7 +711,7 @@ int Check::SendWorkOrder(Terminal *term, int printer_target, int reprint)
 	    if (altprinter && altprinter != printer)
 	    {
     		retval = PrintWorkOrder(term, report.get(), printer_target, reprint,
-				nullptr, altprinter);
+				NULL, altprinter);
     		if (report->is_complete && retval == 0)
         		retval = report->FormalPrint(altprinter);
 	    }
@@ -747,7 +745,7 @@ int Check::SetOrderStatus(SubCheck *subCheck, int set_status)
             if (! (thisOrder->status & set_status))
             {
                 change = 1;
-                thisOrder->status = static_cast<short>(static_cast<int>(thisOrder->status) | set_status);
+                thisOrder->status |= set_status;
             }
     
             Order *mod = thisOrder->modifier_list;
@@ -756,7 +754,7 @@ int Check::SetOrderStatus(SubCheck *subCheck, int set_status)
                 if (!(mod->status & set_status))
                 {
                     change = 1;
-                    mod->status = static_cast<short>(static_cast<int>(mod->status) | set_status);
+                    mod->status |= set_status;
                 }
                 mod = mod->next;
             }
@@ -766,7 +764,7 @@ int Check::SetOrderStatus(SubCheck *subCheck, int set_status)
         if (all_subchecks == 1)
             subCheck = subCheck->next;
         else
-            subCheck = nullptr;
+            subCheck = NULL;
     }
 
     return change;
@@ -796,7 +794,7 @@ int Check::ClearOrderStatus(SubCheck *subCheck, int clear_status)
             if (thisOrder->status & clear_status)
             {
                 change = 1;
-                thisOrder->status = static_cast<short>(static_cast<int>(thisOrder->status) & ~clear_status);
+                thisOrder->status &= ~clear_status;
             }
     
             Order *mod = thisOrder->modifier_list;
@@ -805,7 +803,7 @@ int Check::ClearOrderStatus(SubCheck *subCheck, int clear_status)
                 if (mod->status & clear_status)
                 {
                     change = 1;
-                    mod->status = static_cast<short>(static_cast<int>(mod->status) & ~clear_status);
+                    mod->status &= ~clear_status;
                 }
                 mod = mod->next;
             }
@@ -815,7 +813,7 @@ int Check::ClearOrderStatus(SubCheck *subCheck, int clear_status)
         if (all_subchecks == 1)
             subCheck = subCheck->next;
         else
-            subCheck = nullptr;
+            subCheck = NULL;
     }
 
     return change;
@@ -826,7 +824,7 @@ int Check::FinalizeOrders(Terminal *term, int reprint)
     FnTrace("Check::FinalizeOrders()");
     Settings *settings = &MasterSystem->settings;
     SubCheck *subCheck = SubList();
-    Printer *printer = nullptr;
+    Printer *printer = NULL;
     int change = 0;
     int result = 0;
 
@@ -859,13 +857,8 @@ int Check::FinalizeOrders(Terminal *term, int reprint)
         {
             change = SetOrderStatus(subCheck, ORDER_SENT);
             subCheck->ConsolidateOrders();
-            if (change) {
-                if (auto receipt_mode = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {
-                    if (*receipt_mode == ReceiptPrintType::OnSend || *receipt_mode == ReceiptPrintType::OnBoth) {
-                        subCheck->PrintReceipt(term, this, printer);
-                    }
-                }
-            }
+            if (change && (settings->receipt_print & RECEIPT_SEND))
+                subCheck->PrintReceipt(term, this, printer);
     
             subCheck = subCheck->next;
         }
@@ -896,7 +889,7 @@ int Check::Settle(Terminal *term)
     if (e == nullptr)
         return 1;
 
-    Drawer *d = nullptr;
+    Drawer *d = NULL;
     if (! IsTraining())
     {
         d = term->FindDrawer();
@@ -933,7 +926,7 @@ int Check::Close(Terminal *term)
         return 1;
     }
 
-    Drawer *d = nullptr;
+    Drawer *d = NULL;
     if (!IsTraining())
     {
         d = term->FindDrawer();
@@ -1024,8 +1017,6 @@ int Check::GetStatus()
             break;
         case CHECK_VOIDED:
             ++total_voided;
-            break;
-        default:
             break;
         }
     }
@@ -1190,9 +1181,14 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
             // Bar video - check if bar portion was served
             served_for_target = (flags & CF_BAR_SERVED);
         }
+        else if (printer_id == PRINTER_KITCHEN1 || printer_id == PRINTER_KITCHEN2)
+        {
+            // Kitchen video - check if kitchen portion was served
+            served_for_target = (flags & CF_KITCHEN_SERVED);
+        }
         else
         {
-            // Kitchen and other video targets - check if kitchen portion was served
+            // Default/other video targets - check if kitchen portion was served
             served_for_target = (flags & CF_KITCHEN_SERVED);
         }
         
@@ -1204,9 +1200,14 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                 // Bar video - clear bar served flag
                 flags &= ~CF_BAR_SERVED;
             }
+            else if (printer_id == PRINTER_KITCHEN1 || printer_id == PRINTER_KITCHEN2)
+            {
+                // Kitchen video - clear kitchen served flag
+                flags &= ~CF_KITCHEN_SERVED;
+            }
             else
             {
-                // Kitchen and other video targets - clear kitchen served flag
+                // Default/other video targets - clear kitchen served flag
                 flags &= ~CF_KITCHEN_SERVED;
             }
             // Also clear CF_SHOWN so the check can be displayed again
@@ -1255,12 +1256,12 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     }
     
     Employee *employee = sys->user_db.FindByID(user_owner);
-    genericChar str[STRLENGTH] = {'\0'};
-    genericChar str1[STRLENGTH] = {'\0'};
-    genericChar str2[STRLENGTH] = {'\0'};
-    genericChar cststr[STRLENGTH] = {'\0'};
-    genericChar ordstr[STRLENGTH] = {'\0'};
-    genericChar tmpstr[STRLENGTH] = {'\0'};
+    genericChar str[STRLENGTH];
+    genericChar str1[STRLENGTH];
+    genericChar str2[STRLENGTH];
+    genericChar cststr[STRLENGTH];
+    genericChar ordstr[STRLENGTH];
+    genericChar tmpstr[STRLENGTH];
     int pwidth = 80;
     int kitchen_mode = 0;
     if (rzone != nullptr)
@@ -1341,34 +1342,37 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
             }
             vt_safe_string::safe_concat(str, STRLENGTH, term->Translate("Delivery"));
             break;
-        default:
-            break;
         case CHECK_CATERING:
+            if (!date.IsSet() || (date <= now))
+            {
+                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
+                vt_safe_string::safe_concat(str, STRLENGTH, " ");
+            }
+            vt_safe_string::safe_concat(str, STRLENGTH, term->Translate("Catering"));
+            break;
         case CHECK_DINEIN:
+            if (!date.IsSet() || (date <= now))
+            {
+                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
+                vt_safe_string::safe_concat(str, STRLENGTH, " ");
+            }
+            vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("Here"));
+            break;
         case CHECK_TOGO:
+            if (!date.IsSet() || (date <= now))
+            {
+                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
+                vt_safe_string::safe_concat(str, STRLENGTH, " ");
+            }
+            vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("To Go"));
+            break;
         case CHECK_CALLIN:
             if (!date.IsSet() || (date <= now))
             {
                 vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
                 vt_safe_string::safe_concat(str, STRLENGTH, " ");
             }
-            switch(CustomerType())
-            {
-            case CHECK_CATERING:
-                vt_safe_string::safe_concat(str, STRLENGTH, term->Translate("Catering"));
-                break;
-            case CHECK_DINEIN:
-                vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("Here"));
-                break;
-            case CHECK_TOGO:
-                vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("To Go"));
-                break;
-            case CHECK_CALLIN:
-                vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("Pick Up"));
-                break;
-            default:
-                break;
-            }
+            vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("Pick Up"));
             break;
         }
         snprintf(str1, static_cast<size_t>(pwidth), "%s", str);
@@ -1647,9 +1651,9 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
     FnTrace("Check::PrintDeliveryOrder()");
     int       retval = 0;
     Settings *settings = &MasterSystem->settings;
-    SubCheck *subcheck = nullptr;
-    Order    *order = nullptr;
-    Employee *employee = nullptr;
+    SubCheck *subcheck = NULL;
+    Order    *order = NULL;
+    Employee *employee = NULL;
     char      ordstr[STRLONG] = "";
     [[maybe_unused]] char      tmpstr[STRLONG] = "";  // Reserved for future use
     char      str1[STRLONG] = "";
@@ -2039,9 +2043,14 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                 // Bar video - check if bar portion was served
                 served_for_target = (flags & CF_BAR_SERVED);
             }
+            else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
+            {
+                // Kitchen video - check if kitchen portion was served
+                served_for_target = (flags & CF_KITCHEN_SERVED);
+            }
             else
             {
-                // Kitchen and other video targets - check if kitchen portion was served
+                // Default/other video targets - check if kitchen portion was served
                 served_for_target = (flags & CF_KITCHEN_SERVED);
             }
             
@@ -2053,9 +2062,14 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                     // Bar video - clear bar served flag
                     flags &= ~CF_BAR_SERVED;
                 }
+                else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
+                {
+                    // Kitchen video - clear kitchen served flag
+                    flags &= ~CF_KITCHEN_SERVED;
+                }
                 else
                 {
-                    // Kitchen and other video targets - clear kitchen served flag
+                    // Default/other video targets - clear kitchen served flag
                     flags &= ~CF_KITCHEN_SERVED;
                 }
                 // Also clear CF_SHOWN so the check can be displayed again
@@ -2287,7 +2301,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
 
         if (video_target == PRINTER_DEFAULT)
         {
-            Drawer *d = nullptr;
+            Drawer *d = NULL;
             if (archive && archive->DrawerList())
                 d = archive->DrawerList()->FindBySerial(sc->drawer_id);
             else if (sys && sys->DrawerList())
@@ -2633,8 +2647,8 @@ SubCheck *Check::NextOpenSubCheck(SubCheck *sc)
         sc = current_sub;
     if (sc == nullptr || SubList() == nullptr)
     {
-        current_sub = nullptr;
-        return nullptr;
+        current_sub = NULL;
+        return NULL;
     }
 
     int loop = 0;
@@ -2647,8 +2661,8 @@ SubCheck *Check::NextOpenSubCheck(SubCheck *sc)
             // page.  If we just keep looping from check to check, always
             // returning to the beginning, then we'll never get back to
             // the table page.  So if we're at the last subcheck in the
-            // list, return nullptr;
-            return nullptr;
+            // list, return NULL;
+            return NULL;
         }
         else
         {
@@ -2667,24 +2681,24 @@ SubCheck *Check::NextOpenSubCheck(SubCheck *sc)
     }
     while (loop < 2);
 
-    current_sub = nullptr;
-    return nullptr;
+    current_sub = NULL;
+    return NULL;
 }
 
 TimeInfo *Check::TimeClosed()
 {
     FnTrace("Check::TimeClosed()");
-    SubCheck *best = nullptr;
+    SubCheck *best = NULL;
     for (SubCheck *sc = SubList(); sc != nullptr; sc = sc->next)
     {
         if (sc->status == CHECK_OPEN)
-            return nullptr;
+            return NULL;
         if (best == nullptr || best->settle_time < sc->settle_time)
             best = sc;
     }
 
     if (best == nullptr)
-        return nullptr;
+        return NULL;
     else
         return &best->settle_time;
 }
@@ -2718,9 +2732,6 @@ int Check::SeatsUsed()
     int seats[32];
     int i;
 
-    const int bits_per_int = static_cast<int>(sizeof(int) * 8);
-    const int max_bits = bits_per_int * static_cast<int>(sizeof(seats) / sizeof(int));
-
     for (i = 0; i < (int)(sizeof(seats)/sizeof(int)); ++i)
         seats[i] = 0;
 
@@ -2728,11 +2739,11 @@ int Check::SeatsUsed()
         for (Order *order = sc->OrderList(); order != nullptr; order = order->next)
 		{
 			s = order->seat;
-            if (s >= max_bits)
+			if (s >= (int)(sizeof(seats)*8))
 				continue;
 
-            s1 = s / bits_per_int;
-            s2 = 1 << (s % bits_per_int);
+			s1 = s / (sizeof(int)*8);
+			s2 = 1 << (s % (sizeof(int)*8));
 			if (!(seats[s1] & s2))
 			{
 				++count;
@@ -2812,8 +2823,8 @@ const genericChar* Check::PaymentSummary(Terminal *term)
                 case TENDER_COMP:          comp = 1; break;
                 case TENDER_EMPLOYEE_MEAL: emeal = 1; break;
                 case TENDER_GIFT:          gift = 1; break;
-                case TENDER_CHARGE_CARD:
-                case TENDER_CREDIT_CARD:
+                case TENDER_CHARGE_CARD:   credit = 1; break;
+                case TENDER_CREDIT_CARD:   credit = 1; break;
                 case TENDER_DEBIT_CARD:    credit = 1; break;
                 case TENDER_ACCOUNT:       account = 1; break;
                 case TENDER_CHARGE_ROOM:   room = payptr->tender_id; break;
@@ -2935,7 +2946,7 @@ int Check::CustomerType(int set)
     FnTrace("Check::CustomerType()");
 
     if (set >= 0)
-        type = static_cast<short>(set);
+        type = set;
 
     return type;
 }
@@ -3268,9 +3279,9 @@ SubCheck::SubCheck()
 SubCheck *SubCheck::Copy(Settings *settings)
 {
     FnTrace("SubCheck::Copy(Settings)");
-    auto *sc = new SubCheck();
+    SubCheck *sc = new SubCheck();
     if (sc == nullptr)
-        return nullptr;
+        return NULL;
 
     sc->status         = status;
     sc->number         = number;
@@ -3283,10 +3294,10 @@ SubCheck *SubCheck::Copy(Settings *settings)
     sc->check_type     = check_type;
 
     for (Order *order = OrderList(); order != nullptr; order = order->next)
-        sc->Add(order->Copy(), nullptr);
+        sc->Add(order->Copy(), 0);
 
     for (Payment *payptr = PaymentList(); payptr != nullptr; payptr = payptr->next)
-        sc->Add(payptr->Copy(), nullptr);
+        sc->Add(payptr->Copy(), 0);
         
     sc->FigureTotals(settings);
     return sc;
@@ -3311,10 +3322,10 @@ std::unique_ptr<SubCheck> SubCheck::CopyUnique(Settings *settings)
     sc->check_type     = check_type;
 
     for (Order *order = OrderList(); order != nullptr; order = order->next)
-        sc->Add(order->Copy(), nullptr);
+        sc->Add(order->Copy(), 0);
 
     for (Payment *payptr = PaymentList(); payptr != nullptr; payptr = payptr->next)
-        sc->Add(payptr->Copy(), nullptr);
+        sc->Add(payptr->Copy(), 0);
         
     sc->FigureTotals(settings);
     return sc;
@@ -3338,10 +3349,10 @@ int SubCheck::Copy(SubCheck *sc, Settings *settings, int restore)
     check_type     = sc->check_type;
 
     for (Order *order = sc->OrderList(); order != nullptr; order = order->next)
-        Add(order->Copy(), nullptr);
+        Add(order->Copy(), 0);
 
     for (Payment *payptr = sc->PaymentList(); payptr != nullptr; payptr = payptr->next)
-        Add(payptr->Copy(), nullptr);
+        Add(payptr->Copy(), 0);
 
     if (settings)
         FigureTotals(settings);
@@ -3381,7 +3392,7 @@ int SubCheck::Read(Settings *settings, InputDataFile &infile, int version)
                 ReportError(str);
                 return error;
             }
-            if (Add(order.release(), nullptr))
+            if (Add(order.release(), 0))
             {
                 ReportError(GlobalTranslate("Error in adding order"));
             }
@@ -3407,7 +3418,7 @@ int SubCheck::Read(Settings *settings, InputDataFile &infile, int version)
             {
                 return error;
             }
-            if (Add(pmnt.release(), nullptr))
+            if (Add(pmnt.release(), 0))
             {
                 ReportError(GlobalTranslate("Error in adding payment"));
             }
@@ -3472,7 +3483,7 @@ int SubCheck::Write(OutputDataFile &outfile, int version)
 int SubCheck::Add(Order *order, Settings *settings)
 {
     FnTrace("SubCheck::Add(Order, Settings)");
-    Order *ptr = nullptr;
+    Order *ptr = NULL;
     int added = 0;
 
     if (order == nullptr)
@@ -3493,7 +3504,7 @@ int SubCheck::Add(Order *order, Settings *settings)
         {
             if (ptr->IsEqual(order))
             {
-                ptr->count = static_cast<short>(ptr->count + order->count);
+                ptr->count += order->count;
                 delete order;
                 added = 1;
             }
@@ -3546,7 +3557,7 @@ int SubCheck::Add(Payment *pmnt, Settings *settings)
             if (tt == TENDER_COMP || tt == TENDER_EMPLOYEE_MEAL ||
                 tt == TENDER_DISCOUNT)
             {
-                Remove(ptr, nullptr);
+                Remove(ptr, 0);
                 delete ptr;
             }
             else if (tt == TENDER_COUPON)
@@ -3554,7 +3565,7 @@ int SubCheck::Add(Payment *pmnt, Settings *settings)
                 if ((pmnt->flags & TF_APPLY_EACH) == 0 &&
                     (ptr->flags & TF_APPLY_EACH) == 0)
                 {
-                    Remove(ptr, nullptr);
+                    Remove(ptr, 0);
                     delete ptr;
                 }
             }
@@ -3568,7 +3579,7 @@ int SubCheck::Add(Payment *pmnt, Settings *settings)
         Payment *ptr = FindPayment(tt);
         if (ptr)
         {
-            Remove(ptr, nullptr);
+            Remove(ptr, 0);
             delete ptr;
         }
     }
@@ -3634,7 +3645,7 @@ int SubCheck::Purge(int restore)
                     delete paymnt->credit;
                 else
                     MasterSystem->cc_exception_db->Add(paymnt->credit);
-                paymnt->credit = nullptr;
+                paymnt->credit = NULL;
             }
             paymnt = paymnt->next;
         }
@@ -3657,14 +3668,14 @@ Order *SubCheck::RemoveCount(Order *order, int count)
 	FnTrace("SubCheck::RemoveCount()");
 
 	if (order == nullptr)
-		return nullptr;
+		return NULL;
 
 	if (order->count > count)
 	{
 		Order *ptr = order->Copy();
-        order->count = static_cast<short>(order->count - count);
+		order->count -= count;
 		order->FigureCost();
-        ptr->count = static_cast<short>(count);
+		ptr->count = count;
 		ptr->FigureCost();
 		return ptr;
 	}
@@ -3704,7 +3715,7 @@ int SubCheck::CancelPayments(Terminal *term)
     int change = 0;
     Payment *payptr = PaymentList();
     Settings *settings = term->GetSettings();
-    Credit *credit = nullptr;  // just to save some typing
+    Credit *credit = NULL;  // just to save some typing
 
     while (payptr)
     {
@@ -3717,7 +3728,7 @@ int SubCheck::CancelPayments(Terminal *term)
                 if (credit->IsAuthed())
                     MasterSystem->cc_exception_db->Add(term, credit->Copy());
             }
-            Remove(payptr, nullptr);
+            Remove(payptr, 0);
             delete payptr;  // delete payptr also deletes credit
             change = 1;
         }
@@ -3766,8 +3777,8 @@ int SubCheck::FigureTotals(Settings *settings)
 {
     FnTrace("SubCheck::FigureTotals()");
     DList<Payment> coupons;
-    Payment *discount = nullptr; // ptr to discount payment
-    Payment *gratuity = nullptr; // ptr to auto gratuity amount
+    Payment *discount = NULL; // ptr to discount payment
+    Payment *gratuity = NULL; // ptr to auto gratuity amount
     Order *order;
     CouponInfo *coupon;
     int max_change = 0;
@@ -3833,7 +3844,7 @@ int SubCheck::FigureTotals(Settings *settings)
         case TENDER_CHANGE:
         case TENDER_OVERAGE:
         case TENDER_MONEY_LOST:
-            Remove(payptr, nullptr);
+            Remove(payptr, 0);
             delete payptr;
             break;
         case TENDER_GRATUITY:
@@ -3903,10 +3914,16 @@ int SubCheck::FigureTotals(Settings *settings)
                 max_change += payptr->value;
             break;
         case TENDER_CAPTURED_TIP:
-        case TENDER_CHARGED_TIP:
-        case TENDER_CREDIT_CARD_FEE_DOLLAR:
-        case TENDER_CREDIT_CARD_FEE_PERCENT:
             balance += payptr->value;
+            break;
+        case TENDER_CHARGED_TIP:
+            balance += payptr->value;
+            break;
+        case TENDER_CREDIT_CARD_FEE_DOLLAR:
+            balance += payptr->value;  // Add dollar fee to total instead of subtracting payment
+            break;
+        case TENDER_CREDIT_CARD_FEE_PERCENT:
+            balance += payptr->value;  // Add percentage fee to total instead of subtracting payment
             break;
         default:
             payment += payptr->value;
@@ -4080,16 +4097,16 @@ int SubCheck::FigureTotals(Settings *settings)
                 per = 10000;
 
             Flt f = (Flt) food_discount * (1.0 - PercentToFlt(per));
-            food_sales += static_cast<int>(lround(f));
+            food_sales += (int) (f + .5);
 
             f = (Flt) alcohol_discount * (1.0 - PercentToFlt(per));
-            alcohol_sales += static_cast<int>(lround(f));
+            alcohol_sales += (int) (f + .5);
 
             f = (Flt) room_discount * (1.0 - PercentToFlt(per));
-            room_sales += static_cast<int>(lround(f));
+            room_sales += (int) (f + .5);
 
             f = (Flt) merchandise_discount * (1.0 - PercentToFlt(per));
-            merchandise_sales += static_cast<int>(lround(f));
+            merchandise_sales += (int) (f + .5);
 
             discount->value =
 				((food_no_discount + food_discount) - food_sales) +
@@ -4229,9 +4246,9 @@ int SubCheck::FigureTotals(Settings *settings)
         if (current_tax_revenue > 0)
         {
             // Distribute fees proportionally across all revenue bases
-            int fee_to_food = static_cast<int>(lround((Flt)credit_card_fee_total * (Flt)food_tax_revenue / (Flt)current_tax_revenue));
-            int fee_to_alcohol = static_cast<int>(lround((Flt)credit_card_fee_total * (Flt)alcohol_tax_revenue / (Flt)current_tax_revenue));
-            int fee_to_room = static_cast<int>(lround((Flt)credit_card_fee_total * (Flt)room_tax_revenue / (Flt)current_tax_revenue));
+            int fee_to_food = (int)((Flt)credit_card_fee_total * (Flt)food_tax_revenue / (Flt)current_tax_revenue + 0.5);
+            int fee_to_alcohol = (int)((Flt)credit_card_fee_total * (Flt)alcohol_tax_revenue / (Flt)current_tax_revenue + 0.5);
+            int fee_to_room = (int)((Flt)credit_card_fee_total * (Flt)room_tax_revenue / (Flt)current_tax_revenue + 0.5);
             int fee_to_merchandise = credit_card_fee_total - fee_to_food - fee_to_alcohol - fee_to_room;
             
             food_tax_revenue += fee_to_food;
@@ -4277,9 +4294,16 @@ int SubCheck::FigureTotals(Settings *settings)
 		if(currFamily != SALESGROUP_BEVERAGE) 
 			drinksOnly = false;
 	}
-    // PST calculation - alcohol_tax doesn't affect food_tax_revenue parameter choice
-    total_tax_PST = settings->FigurePST(food_tax_revenue,
-                                        SystemTime, drinksOnly, PST_tax);
+    if (alcohol_tax == 0)
+    {
+        total_tax_PST = settings->FigurePST((food_tax_revenue + alcohol_tax_revenue),
+                                            SystemTime, drinksOnly, PST_tax);
+    }
+    else
+    {
+        total_tax_PST = settings->FigurePST(food_tax_revenue,
+                                            SystemTime, drinksOnly, PST_tax);
+    }
 
     total_tax_HST = settings->FigureHST((food_tax_revenue + alcohol_tax_revenue),
                                         SystemTime, HST_tax);
@@ -4441,7 +4465,7 @@ int SubCheck::SettleTab(Terminal *term, int payment_type, int /*payment_id*/, in
 {
     FnTrace("SubCheck::SettleTab()");
     int retval = 0;
-    Payment *paymnt = nullptr;
+    Payment *paymnt = NULL;
 
     if (payment_type == TENDER_CREDIT_CARD || payment_type == TENDER_DEBIT_CARD)
         return retval;
@@ -4490,8 +4514,8 @@ int SubCheck::ConsolidateOrders(Settings *settings, int relaxed)
                 o2->modifier_list == nullptr &&
                 strcmp(thisOrder->item_name.Value(), o2->item_name.Value()) == 0)
             {
-                Remove(o2, nullptr);
-                thisOrder->count = static_cast<short>(thisOrder->count + o2->count);
+                Remove(o2, 0);
+                thisOrder->count += o2->count;
                 delete o2;
             }
             o2 = ptr;
@@ -4524,7 +4548,7 @@ int SubCheck::ConsolidatePayments(Settings *settings)
                 tt == p2->tender_type && payptr->flags == p2->flags &&
                 payptr->drawer_id == p2->drawer_id && payptr->user_id == p2->user_id)
             {
-                Remove(p2, nullptr);
+                Remove(p2, 0);
                 payptr->amount += p2->amount;
                 delete p2;
             }
@@ -4702,7 +4726,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 		else
 			vt_safe_string::safe_format(str1, 64, "%s %d", term->Translate("Drawer"), drawer->number);
 
-		Employee *cashier = nullptr;
+		Employee *cashier = NULL;
 		if (settle_user > 0)
 			cashier = sys->user_db.FindByID(settle_user);
 		else
@@ -4794,7 +4818,7 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     if (pennies)
         tc += -pennies->amount;
 
-    Payment *pay = nullptr;
+    Payment *pay = NULL;
     // check for and print coupons, discounts, and comps
     if (PaymentList())
     {
@@ -4994,9 +5018,10 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 	    printer->LineFeed(8);
     }
     //PRINT TICKETS
-    for(auto ord : tickets)
+    for(std::list<Order*>::iterator loi=tickets.begin();loi!=tickets.end();++loi)
     {
-		int count=ord->count;
+	Order* ord=*loi;
+	int count=ord->count;
 	SalesItem* si=ord->Item(items);
 	for(i=0;i<count;i++)
 	{
@@ -5132,7 +5157,7 @@ Order *SubCheck::LastOrder(int seat)
             else
                 return order;
         }
-    return nullptr;
+    return NULL;
 }
 
 Order *SubCheck::LastParentOrder(int seat)
@@ -5144,7 +5169,7 @@ Order *SubCheck::LastParentOrder(int seat)
             // (parent) order found - no need to search for its last modifier
             return order;
         }
-    return nullptr;
+    return NULL;
 }
 
 int SubCheck::TotalTip()
@@ -5251,7 +5276,7 @@ Payment *SubCheck::FindPayment(int ptype, int pid)
         }
     }
 
-    return nullptr;
+    return NULL;
 }
 
 int SubCheck::TotalPayment(int ptype, int pid)
@@ -5292,7 +5317,7 @@ Order *SubCheck::FindOrder(int order_num, int seat)
 			}
 		}
     }
-	return nullptr;
+	return NULL;
 }
 
 int SubCheck::CompOrder(Settings *settings, Order *ptrOrder, int comp)
@@ -5394,8 +5419,8 @@ int SubCheck::OrderPage(Order *order, int lines_per_page, int seat)
 Payment *SubCheck::NewPayment(int tender, int pid, int pflags, int pamount)
 {
     FnTrace("SubCheck::NewPayment()");
-    auto *payptr = new Payment(tender, pid, pflags, pamount);
-    Add(payptr, nullptr);
+    Payment *payptr = new Payment(tender, pid, pflags, pamount);
+    Add(payptr, 0);
     return payptr;
 }
 
@@ -5405,7 +5430,7 @@ Credit *SubCheck::CurrentCredit()
     for (Payment *payptr = PaymentList(); payptr != nullptr; payptr = payptr->next)
         if (payptr->credit)
             return payptr->credit;
-    return nullptr;
+    return NULL;
 }
 
 int SubCheck::IsEqual(SubCheck *sc)
@@ -5576,7 +5601,7 @@ static int adjust_cost(int cost, Flt tax, int type, Settings *settings, Terminal
 		inclusive = settings->tax_inclusive[type]; 	// use global default
     if (inclusive)
         //return int(cost/(1.0+tax) + tax);			// for round-up
-        return static_cast<int>(lround(cost/(1.0+tax)));	// for rounding
+        return int(cost/(1.0+tax) + 0.5);			// for rounding
     return cost;
 }
 
@@ -5599,13 +5624,13 @@ Order::Order(Settings *settings, SalesItem *item, Terminal *term, int price)
     call_order      = item->call_order;
     allow_increase  = item->allow_increase;
     ignore_split    = item->ignore_split;
-    next            = nullptr;
-    fore            = nullptr;
-    parent          = nullptr;
+    next            = NULL;
+    fore            = NULL;
+    parent          = NULL;
     count           = 1;
     status          = 0;
     cost            = 0;
-    modifier_list   = nullptr;
+    modifier_list   = NULL;
     user_id         = 0;
     page_id         = 0;
     seat            = 0;
@@ -5642,13 +5667,13 @@ Order::Order(const genericChar* name, int price)
     call_order      = 4;
     allow_increase  = 1;
     ignore_split    = 0;
-    next            = nullptr;
-    fore            = nullptr;
-    parent          = nullptr;
+    next            = NULL;
+    fore            = NULL;
+    parent          = NULL;
     count           = 1;
     status          = 0;
     cost            = 0;
-    modifier_list   = nullptr;
+    modifier_list   = NULL;
     qualifier       = QUALIFIER_NONE;
     user_id         = 0;
     page_id         = 0;
@@ -5679,7 +5704,7 @@ Order::~Order()
 Order *Order::Copy()
 {
     FnTrace("Order::Copy()");
-    auto *order = new Order;
+    Order *order = new Order;
     if (order == nullptr)
         return nullptr;
 
@@ -5878,9 +5903,9 @@ int Order::Remove(Order *order)
         order->next->fore = order->fore;
     if (order->fore)
         order->fore->next = order->next;
-    order->next   = nullptr;
-    order->fore   = nullptr;
-    order->parent = nullptr;
+    order->next   = NULL;
+    order->fore   = NULL;
+    order->parent = NULL;
 
     FigureCost();
     return 0;
@@ -6115,8 +6140,6 @@ int Order::CanDiscount(int discount_alcohol, Payment *payment)
         case TENDER_COUPON:
             retval = !(sales_type & SALES_NO_DISCOUNT);
             break;
-        default:
-            break;
         }
     }
     return retval;
@@ -6148,7 +6171,7 @@ int Order::IsEqual(Order *order)
         return 0;
     }
 
-    if (strcmp(item_name.Value(), order->item_name.Value()) != 0)
+    if (strcmp(item_name.Value(), order->item_name.Value()))
         return 0;
 
     // if this is a By the Pound order, then we don't want
@@ -6178,7 +6201,7 @@ int Order::IsEmployeeMeal(int set)
     int retval = employee_meal;
 
     if (set >= 0)
-        employee_meal = static_cast<short>(set);
+        employee_meal = set;
 
     return retval;
 }
@@ -6189,7 +6212,7 @@ int Order::IsReduced(int set)
     int retval = is_reduced;
 
     if (set >= 0)
-        is_reduced = static_cast<short>(set);
+        is_reduced = set;
 
     return retval;
 }
@@ -6294,7 +6317,7 @@ Payment::Payment(int tender, int pid, int pflags, int pamount)
     , value(0)
     , amount(pamount)
     , tender_id(pid)
-    , tender_type(static_cast<short>(tender))
+    , tender_type(tender)
     , flags(pflags)
     , drawer_id(0)
     , credit(nullptr)
@@ -6317,11 +6340,11 @@ Payment::~Payment()
 Payment *Payment::Copy()
 {
     FnTrace("Payment::Copy()");
-    auto *payptr = new Payment;
+    Payment *payptr = new Payment;
     if (payptr == nullptr)
     {
         ReportError("Can't copy payment");
-        return nullptr;
+        return NULL;
     }
 
     payptr->value       = value;
@@ -6391,7 +6414,7 @@ genericChar* Payment::Description(Settings *settings, genericChar* str)
 
     if (tender_type == TENDER_CREDIT_CARD && credit != nullptr)
     {
-        vt_safe_string::safe_format(str, 128, "Credit Card (%s)", credit->CreditTypeName(nullptr, 1));
+        vt_safe_string::safe_format(str, 128, "Credit Card (%s)", credit->CreditTypeName(NULL, 1));
         return str;
     }
 
@@ -6488,7 +6511,7 @@ int Payment::SetBatch(const char* termid, const char* batch)
     FnTrace("Payment::SetBatch()");
     int retval = 1;
 
-    if (credit != nullptr && strcmp(termid, credit->TermID()) != 0)
+    if (credit != nullptr && strcmp(termid, credit->TermID()))
         retval = credit->SetBatch(atol(batch), termid);
 
     return retval;

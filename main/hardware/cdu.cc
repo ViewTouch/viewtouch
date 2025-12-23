@@ -155,7 +155,8 @@ int CDUString::IsBlank()
  * class CDUStrings
  ********************************************************************/
 CDUStrings::CDUStrings()
-= default;
+{
+}
 
 int CDUStrings::Read(InputDataFile &infile, int version)
 {
@@ -181,7 +182,7 @@ int CDUStrings::Write(OutputDataFile &outfile, int version)
     CDUString *currString = strings.Head();
 
     outfile.Write(strings.Count());
-    while (currString != nullptr)
+    while (currString != NULL)
     {
         currString->Write(outfile, version);
         currString = currString->next;
@@ -197,7 +198,7 @@ int CDUStrings::Load(const char* path)
     int version = 0;
     int result = 0;
 
-    if (path != nullptr)
+    if (path != NULL)
         vt_safe_string::safe_copy(filename, STRLONG, path);
 
     result = infile.Open(filename, version);
@@ -213,7 +214,7 @@ int CDUStrings::Save(const char* path)
     OutputDataFile outfile;
     int result = 0;
 
-    if (path != nullptr)
+    if (path != NULL)
         vt_safe_string::safe_copy(filename, STRLONG, path);
     RemoveBlank();
 
@@ -228,14 +229,14 @@ int CDUStrings::RemoveBlank()
 {
     FnTrace("CDUStrings::RemoveBlank()");
     CDUString *currString = strings.Head();
-    CDUString *prevString = nullptr;
+    CDUString *prevString = NULL;
 
-    while (currString != nullptr)
+    while (currString != NULL)
     {
         if (currString->IsBlank())
         {
             Remove(currString);
-            if (prevString != nullptr)
+            if (prevString != NULL)
                 currString = prevString->next;
             else
                 currString = strings.Head();
@@ -253,7 +254,7 @@ int CDUStrings::RemoveBlank()
 int CDUStrings::Remove(CDUString *cdustring)
 {
     FnTrace("CDUStrings::Remove()");
-    if (cdustring == nullptr)
+    if (cdustring == NULL)
         return 1;
 
     strings.RemoveSafe(cdustring);
@@ -263,7 +264,7 @@ int CDUStrings::Remove(CDUString *cdustring)
 CDUString *CDUStrings::GetString(int idx)
 {
     FnTrace("CDUStrings::GetString()");
-    CDUString *retString = nullptr;
+    CDUString *retString = NULL;
     CDUString *currString = strings.Head();
     int record = 0;
     int count = strings.Count();
@@ -279,7 +280,7 @@ CDUString *CDUStrings::GetString(int idx)
             randnum = count - 1;
         idx = randnum;
     }
-    while ((currString != nullptr) && (record <= idx))
+    while ((currString != NULL) && (record <= idx))
     {
         if (record == idx)
             retString = currString;
@@ -298,10 +299,10 @@ CDUString *CDUStrings::FindByRecord(int record)
 CDUString *CDUStrings::FindByID(int id)
 {
     FnTrace("CDUStrings::FindByID()");
-    CDUString *retString = nullptr;
+    CDUString *retString = NULL;
     CDUString *currString = strings.Head();
 
-    while (currString != nullptr && retString == nullptr)
+    while (currString != NULL && retString == NULL)
     {
         if (id == currString->id)
             retString = currString;
@@ -322,7 +323,7 @@ CDUString *CDUStrings::NewString()
     CDUString *newstring = new CDUString();
     CDUString *laststring = strings.Tail();
 
-    if (laststring == nullptr)
+    if (laststring == NULL)
         newstring->id = 1;
     else
         newstring->id = laststring->id + 1;
@@ -403,7 +404,8 @@ CustDispUnit::CustDispUnit(const char* filename, int verbose, int allow_delay)
 
 // Destructor
 CustDispUnit::~CustDispUnit()
-= default;
+{
+}
 
 int CustDispUnit::ParseFileName()
 {
@@ -459,7 +461,7 @@ int CustDispUnit::SocketOpen()
     struct sockaddr_in their_addr; // connector's address information
 
     he = gethostbyname(target);  // get the host info
-    if (he == nullptr) {
+    if (he == NULL) {
         perror("gethostbyname");
         return -1;
     }
@@ -614,12 +616,12 @@ int CustDispUnit::Refresh(int cycles)
 int CustDispUnit::ShowString(CDUStrings *stringlist, int idx, int style)
 {
     FnTrace("CustDispUnit::ShowString()");
-    CDUString *cdustring = nullptr;
+    CDUString *cdustring = NULL;
     int retval = 0;
     int randnum;
 
     cdustring = stringlist->GetString(idx);
-    if (cdustring == nullptr)
+    if (cdustring == NULL)
         return 1;
     
     if (style == CDU_STYLE_RANDOM)
@@ -752,7 +754,8 @@ EpsonDispUnit::EpsonDispUnit(const char* filename, int verbose, int allow_delay)
 }
 
 EpsonDispUnit::~EpsonDispUnit()
-= default;
+{
+}
 
 int EpsonDispUnit::SetAttributes(int fd)
 {
@@ -895,7 +898,8 @@ BA63DispUnit::BA63DispUnit(const char* filename, int verbose, int allow_delay)
 }
 
 BA63DispUnit::~BA63DispUnit()
-= default;
+{
+}
 
 int BA63DispUnit::SetAttributes(int fd)
 {
@@ -979,7 +983,7 @@ int BA63DispUnit::Brightness(int level)
 CustDispUnit *NewCDUObject(const char* filename, int type)
 {
     FnTrace("NewCDUObject()");
-    CustDispUnit *CDURetval = nullptr;
+    CustDispUnit *CDURetval = NULL;
     if (type == CDU_TYPE_EPSON)
         CDURetval = new EpsonDispUnit(filename);
     if (type == CDU_TYPE_BA63)

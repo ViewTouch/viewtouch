@@ -18,15 +18,15 @@
  * Handeling of captured tips and tip payout
  */
 
-#ifndef TIPS_HH
-#define TIPS_HH
+#ifndef _TIPS_HH
+#define _TIPS_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
 
 
 /**** Definitions ****/
-constexpr int TIP_VERSION = 1;
+#define TIP_VERSION 1
 
 
 /**** Types ****/
@@ -86,7 +86,7 @@ public:
     int Remove(TipEntry *te);
     int Purge();
     TipEntry *FindByUser(int id);
-    TipEntry *FindByRecord(int record, Employee *e = nullptr);
+    TipEntry *FindByRecord(int record, Employee *e = NULL);
     int CaptureTip(int user_id, int amount);
     int TransferTip(int user_id, int amount);
     int PayoutTip(int user_id, int amount);

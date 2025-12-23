@@ -19,7 +19,7 @@
  */
 
 #ifndef _USER_EDIT_ZONE_HH
-#define USER_EDIT_ZONE_HH
+#define _USER_EDIT_ZONE_HH
 
 #include "form_zone.hh"
 
@@ -38,21 +38,21 @@ public:
     UserEditZone();
 
     // Member Functions
-    int          Type() override { return ZONE_USER_EDIT; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const char* message) override;
-    int          Update(Terminal *term, int update_message, const char* value) override;
-    Flt         *Spacing() override { return &list_spacing; }
+    int          Type() { return ZONE_USER_EDIT; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const char* message);
+    int          Update(Terminal *term, int update_message, const char* value);
+    Flt         *Spacing() { return &list_spacing; }
 
     int AddStartPages(Terminal *term, FormField *field);
-    int LoadRecord(Terminal *term, int record) override;
-    int SaveRecord(Terminal *term, int record, int write_file) override;
-    int NewRecord(Terminal *t) override;
-    int KillRecord(Terminal *term, int record) override;
-    int PrintRecord(Terminal *term, int record) override;
-    int Search(Terminal *term, int record, const char* word) override;
-    int ListReport(Terminal *term, Report *r) override;
-    int RecordCount(Terminal *term) override;
+    int LoadRecord(Terminal *term, int record);
+    int SaveRecord(Terminal *term, int record, int write_file);
+    int NewRecord(Terminal *t);
+    int KillRecord(Terminal *term, int record);
+    int PrintRecord(Terminal *term, int record);
+    int Search(Terminal *term, int record, const char* word);
+    int ListReport(Terminal *term, Report *r);
+    int RecordCount(Terminal *term);
 };
 
 // Job Security settings
@@ -68,14 +68,14 @@ public:
     JobSecurityZone();
 
     // Member Functions
-    int          Type() override { return ZONE_JOB_SECURITY; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const char* message) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Mouse(Terminal *term, int action, int mx, int my) override;
-    int          LoadRecord(Terminal *term, int record) override;
-    int          SaveRecord(Terminal *term, int record, int write_file) override;
-    int          UpdateForm(Terminal *term, int record) override;
+    int          Type() { return ZONE_JOB_SECURITY; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const char* message);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Mouse(Terminal *term, int action, int mx, int my);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
+    int          UpdateForm(Terminal *term, int record);
 };
 
 #endif

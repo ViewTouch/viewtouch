@@ -19,8 +19,8 @@
  * Functions for the reading & writing of data files
  */
 
-#ifndef DATA_FILE_HH
-#define DATA_FILE_HH
+#ifndef _DATA_FILE_HH
+#define _DATA_FILE_HH
 
 #include "utility.hh"
 
@@ -76,7 +76,7 @@ public:
     int Read(Str &val);
     int Read(TimeInfo &val);
 
-    // conditional reads (won't read if pointer is nullptr)
+    // conditional reads (won't read if pointer is NULL)
     int Read(int *val);
     int Read(Flt *val);
     int Read(Str *val);
@@ -125,7 +125,7 @@ public:
     int Write(Flt       val, int bk = 0);
     int Write(TimeInfo &val, int bk = 0);
 
-    // conditional writes (won't write if pointer is nullptr)
+    // conditional writes (won't write if pointer is NULL)
     int Write(int  *val, int bk = 0);
     int Write(const char* val, int bk = 0);
     int Write(Flt  *val, int bk = 0);

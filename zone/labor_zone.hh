@@ -19,7 +19,7 @@
  */
 
 #ifndef _LABOR_ZONE_HH
-#define LABOR_ZONE_HH
+#define _LABOR_ZONE_HH
 
 #include "form_zone.hh"
 
@@ -47,18 +47,18 @@ public:
     // Constructor
     LaborZone();
     // Destructor
-    ~LaborZone() override;
+    ~LaborZone();
 
     // Member Functions
-    int          Type() override { return ZONE_LABOR; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    int          Update(Terminal *term, int update_message, const genericChar* value) override;
-    int          LoadRecord(Terminal *term, int record) override;
-    int          SaveRecord(Terminal *term, int record, int write_file) override;
-    int          UpdateForm(Terminal *term, int record) override;
-    Flt         *Spacing() override { return &spacing; }
+    int          Type() { return ZONE_LABOR; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
+    int          UpdateForm(Terminal *term, int record);
+    Flt         *Spacing() { return &spacing; }
 
     int Print(Terminal *term, int mode);
 };
@@ -73,12 +73,12 @@ public:
     ScheduleZone();
 
     // Member Functions
-    int          Type() override { return ZONE_SCHEDULE; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Mouse(Terminal *term, int action, int mx, int my) override;
-    int ZoneStates() override { return 1; }
+    int          Type() { return ZONE_SCHEDULE; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Mouse(Terminal *term, int action, int mx, int my);
+    int ZoneStates() { return 1; }
 };
 
 #endif

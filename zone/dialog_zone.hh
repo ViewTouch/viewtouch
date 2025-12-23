@@ -19,7 +19,7 @@
  */
 
 #ifndef _DIALOG_ZONE_HH
-#define DIALOG_ZONE_HH
+#define _DIALOG_ZONE_HH
 
 #include "check.hh"
 #include "layout_zone.hh"
@@ -67,9 +67,9 @@ public:
     Str message;
     int color;
 
-    ButtonObj(const char* text, const genericChar* message = nullptr);
+    ButtonObj(const char* text, const genericChar* message = NULL);
 
-    int Render(Terminal *term) override;
+    int Render(Terminal *term);
     int SetLabel(const char* newlabel) { return label.Set(newlabel); }
     int SetMessage(const char* newmessage) { return message.Set(newmessage); }
 };
@@ -93,17 +93,17 @@ public:
 
     DialogZone();
 
-    std::unique_ptr<Zone> Copy() override
+    std::unique_ptr<Zone> Copy()
     {
         printf("Error:  No DialogZone::Copy() method defined for subclass!\n");
         return nullptr;
     }
-    int Type() override { return ZONE_DLG_UNKNOWN; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Mouse(Terminal *term, int action, int mx, int my) override;
+    int Type() { return ZONE_DLG_UNKNOWN; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Mouse(Terminal *term, int action, int mx, int my);
 
-    ButtonObj *Button(const char* text, const genericChar* message = nullptr);
+    ButtonObj *Button(const char* text, const genericChar* message = NULL);
     int ClosingAction(int action_type, int action, int arg);
     int ClosingAction(int action_type, int action, const char* message);
     int SetAllActions(DialogZone *dest);
@@ -126,9 +126,9 @@ public:
     SimpleDialog(const char* title, int format = 0);
 
     void         SetTitle(const char* new_title) { name.Set(new_title); }
-    int          RenderInit(Terminal *term, int update_flag) override;
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          RenderInit(Terminal *term, int update_flag);
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
 };
 
 class UnitAmountDialog : public DialogZone
@@ -144,10 +144,10 @@ class UnitAmountDialog : public DialogZone
 public:
     UnitAmountDialog(const char* title, UnitAmount &ua);
 
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Keyboard(Terminal *term, int key, int state) override;
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Keyboard(Terminal *term, int key, int state);
 
     int RenderEntry(Terminal *term);
 };
@@ -171,12 +171,12 @@ public:
     TenKeyDialog(const char* title, int amount, int cancel = 1, int dp = 0);
     TenKeyDialog(const char* title, const char* retmsg, int amount, int dp = 0);
 
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Keyboard(Terminal *term, int key, int state) override;
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Keyboard(Terminal *term, int key, int state);
 
-    int RenderEntry(Terminal *term);
+    virtual int RenderEntry(Terminal *term);
 };
 
 class GetTextDialog : public DialogZone
@@ -203,15 +203,15 @@ public:
     GetTextDialog();
     GetTextDialog(const char* msg, const char* retmsg, int mlen = 20);
 
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Keyboard(Terminal *term, int key, int state) override;
+    virtual RenderResult Render(Terminal *term, int update_flag);
+    virtual SignalResult Touch(Terminal *term, int tx, int ty);
+    virtual SignalResult Signal(Terminal *term, const genericChar* message);
+    virtual SignalResult Keyboard(Terminal *term, int key, int state);
 
-    int RenderEntry(Terminal *term);
-    int DrawEntry(Terminal *term);
-    int AddChar(Terminal *term, genericChar val);
-    int Backspace(Terminal *term);
+    virtual int RenderEntry(Terminal *term);
+    virtual int DrawEntry(Terminal *term);
+    virtual int AddChar(Terminal *term, genericChar val);
+    virtual int Backspace(Terminal *term);
 };
 
 class PasswordDialog : public GetTextDialog
@@ -227,8 +227,8 @@ protected:
 public:
     PasswordDialog(const char* password);
 
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
 
     int RenderEntry(Terminal *term);
     int PasswordOkay(Terminal *term);
@@ -244,7 +244,7 @@ public:
     CreditCardAmountDialog();
     CreditCardAmountDialog(Terminal *term, const char* title, int type);
 
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    SignalResult Signal(Terminal *term, const genericChar* message);
 };
 
 class CreditCardEntryDialog : public TenKeyDialog
@@ -265,12 +265,12 @@ class CreditCardEntryDialog : public TenKeyDialog
 public:
     CreditCardEntryDialog();
 
-    int ZoneStates() override { return 1; }
+    int ZoneStates() { return 1; }
 
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Keyboard(Terminal *term, int key, int state) override;
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Keyboard(Terminal *term, int key, int state);
 
     int RenderEntry(Terminal *term);
 };
@@ -280,10 +280,10 @@ class CreditCardVoiceDialog : public GetTextDialog
 public:
     CreditCardVoiceDialog();
     CreditCardVoiceDialog(const char* msg, const char* retmsg, int mlen = 20);
-    ~CreditCardVoiceDialog() override;
+    ~CreditCardVoiceDialog();
 
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    virtual RenderResult Render(Terminal *term, int update_flag);
+    virtual SignalResult Signal(Terminal *term, const genericChar* message);
 };
 
 class CreditCardDialog : public DialogZone
@@ -318,21 +318,21 @@ class CreditCardDialog : public DialogZone
     Credit    *saved_credit;
 
     void  Init(Terminal *term, SubCheck *subch, const char* swipe_value);
-    const char* SetMessage(Terminal *term, const char* msg1, const char* msg2 = nullptr);
+    const char* SetMessage(Terminal *term, const char* msg1, const char* msg2 = NULL);
 
 public:
     CreditCardDialog();
-    CreditCardDialog(Terminal *term, const char* swipe_value = nullptr);
-    CreditCardDialog(Terminal *term, SubCheck *subch, const char* swipe_value = nullptr);
+    CreditCardDialog(Terminal *term, const char* swipe_value = NULL);
+    CreditCardDialog(Terminal *term, SubCheck *subch, const char* swipe_value = NULL);
     CreditCardDialog(Terminal *term, int action, const char* message);
 
-    int          Type() override { return ZONE_DLG_CREDIT; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    int          SetAction(Terminal *term, int action, const char* msg1, const char* msg2 = nullptr);
+    int          Type() { return ZONE_DLG_CREDIT; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          SetAction(Terminal *term, int action, const char* msg1, const char* msg2 = NULL);
     int          ClearAction(Terminal *term, int all = 0);
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Keyboard(Terminal *term, int my_key, int state) override;
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Keyboard(Terminal *term, int my_key, int state);
     int          ProcessSwipe(Terminal *term, const char* swipe_value);
     int          DialogDone(Terminal *term);
     int          FinishCreditCard(Terminal *term);
@@ -347,10 +347,10 @@ class JobFilterDialog : public DialogZone
 public:
     JobFilterDialog();
 
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Keyboard(Terminal *term, int key, int state) override;
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Keyboard(Terminal *term, int key, int state);
 };
 
 class SwipeDialog : public DialogZone
@@ -360,10 +360,10 @@ class SwipeDialog : public DialogZone
 public:
     SwipeDialog();
 
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Keyboard(Terminal *term, int key, int state) override;
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Keyboard(Terminal *term, int key, int state);
 };
 
 class OpenTabDialog : public GetTextDialog
@@ -389,12 +389,12 @@ class OpenTabDialog : public GetTextDialog
 public:
     OpenTabDialog(CustomerInfo *custinfo);
     
-    int ZoneStates() override { return 1; }
+    int ZoneStates() { return 1; }
 
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Keyboard(Terminal *term, int kb_key, int state) override;
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Keyboard(Terminal *term, int kb_key, int state);
 
     int RenderEntry(Terminal *term);
 };
@@ -405,10 +405,10 @@ public:
     OrderCommentDialog();
     OrderCommentDialog(const char* msg, const char* retmsg, int mlen = 100);
 
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Keyboard(Terminal *term, int kb_key, int state) override;
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Keyboard(Terminal *term, int kb_key, int state);
 
     int RenderEntry(Terminal *term);
 };

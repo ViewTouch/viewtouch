@@ -33,7 +33,7 @@
 
 #include <cctype>
 #include <cmath>
-#include <cstring>
+#include <string.h>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -43,9 +43,9 @@
 /**** Module Data ****/
 const char* SalesGroupName[] = {
     GlobalTranslate("Unused"), GlobalTranslate("Food"), GlobalTranslate("Beverage"), GlobalTranslate("Beer"), GlobalTranslate("Wine"), GlobalTranslate("Alcohol"),
-    GlobalTranslate("Merchandise"), GlobalTranslate("Room"), nullptr};
+    GlobalTranslate("Merchandise"), GlobalTranslate("Room"), NULL};
 const char* SalesGroupShortName[] = {
-    "", GlobalTranslate("Food"), GlobalTranslate("Bev"), GlobalTranslate("Beer"), GlobalTranslate("Wine"), GlobalTranslate("Alcohol"), GlobalTranslate("Merchan"), GlobalTranslate("Room"), nullptr};
+    "", GlobalTranslate("Food"), GlobalTranslate("Bev"), GlobalTranslate("Beer"), GlobalTranslate("Wine"), GlobalTranslate("Alcohol"), GlobalTranslate("Merchan"), GlobalTranslate("Room"), NULL};
 int SalesGroupValue[] = {
     SALESGROUP_NONE, SALESGROUP_FOOD, SALESGROUP_BEVERAGE,
     SALESGROUP_BEER, SALESGROUP_WINE, SALESGROUP_ALCOHOL,
@@ -56,8 +56,8 @@ int SalesGroupValue[] = {
 // Constructor
 Component::Component()
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     item_id = 0;
 }
 
@@ -69,8 +69,8 @@ SalesItem::SalesItem(const char* name)
     if (name)
         item_name.Set(name);
 
-    next           = nullptr;
-    fore           = nullptr;
+    next           = NULL;
+    fore           = NULL;
     id             = 0;
     item_code.Set("");
 
@@ -110,7 +110,7 @@ int SalesItem::Copy(SalesItem *target)
     FnTrace("SalesItem::Copy()");
     int retval = 1;
 
-    if (target != nullptr)
+    if (target != NULL)
     {
         target->item_name.Set(item_name);
         target->zone_name.Set(zone_name);
@@ -347,9 +347,9 @@ int SalesItem::Price(Settings *s, int qualifier)
 
     if (qualifier & QUALIFIER_DOUBLE)
     {
-        const auto base = static_cast<double>(c);
-        const auto multiplier = static_cast<double>(s->double_mult);
-        const auto additive = static_cast<double>(s->double_add);
+        const double base = static_cast<double>(c);
+        const double multiplier = static_cast<double>(s->double_mult);
+        const double additive = static_cast<double>(s->double_add);
         const double adjusted = base * multiplier + additive;
         c = static_cast<int>(std::lround(adjusted));
     }
@@ -391,8 +391,8 @@ const char* SalesItem::CallCenterName(Terminal *t)
 // Constructor
 GroupItem::GroupItem()
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
 }
 
 // Member Functions
@@ -412,7 +412,7 @@ ItemDB::ItemDB()
 {
     last_id           = 0;
     changed           = 0;
-    name_array        = nullptr;
+    name_array        = NULL;
     array_size        = 0;
     merchandise_count = 0;
     merchandise_sales = 0;
@@ -452,7 +452,7 @@ int ItemDB::Load(const char* file)
 
     for (int i = 0; i < items; ++i)
     {
-        auto *si = new SalesItem;
+        SalesItem *si = new SalesItem;
         si->Read(df, version);
         Add(si);
     }
@@ -483,7 +483,7 @@ int ItemDB::Save()
     int error = 0;
     error += df.Write(ItemCount());
 
-    for (SalesItem *si = ItemList(); si != nullptr; si = si->next)
+    for (SalesItem *si = ItemList(); si != NULL; si = si->next)
     {
         error += si->Write(df, SALES_ITEM_VERSION);
         si->changed = 0;
@@ -502,13 +502,13 @@ int ItemDB::Save()
 int ItemDB::Add(SalesItem *si)
 {
     FnTrace("ItemDB::Add()");
-    if (si == nullptr)
+    if (si == NULL)
         return 1;
 
-    if (name_array != nullptr)
+    if (name_array != NULL)
     {
         delete [] name_array;
-        name_array = nullptr;
+        name_array = NULL;
         array_size = 0;
     }
 
@@ -534,13 +534,13 @@ int ItemDB::Add(SalesItem *si)
 int ItemDB::Remove(SalesItem *si)
 {
     FnTrace("ItemDB::Remove()");
-    if (si == nullptr)
+    if (si == NULL)
         return 1;
 
-    if (name_array != nullptr)
+    if (name_array != NULL)
     {
         delete [] name_array;
-        name_array = nullptr;
+        name_array = NULL;
         array_size = 0;
     }
     return item_list.Remove(si);
@@ -552,10 +552,10 @@ int ItemDB::Purge()
     item_list.Purge();
     group_list.Purge();
 
-    if (name_array != nullptr)
+    if (name_array != NULL)
     {
         delete [] name_array;
-        name_array = nullptr;
+        name_array = NULL;
         array_size = 0;
     }
     return 0;
@@ -563,7 +563,7 @@ int ItemDB::Purge()
 
 int ItemDB::ResetAdmissionItems()
 {
-	for(SalesItem* si=ItemList();si!=nullptr;si=si->next)
+	for(SalesItem* si=ItemList();si!=NULL;si=si->next)
 	{
 		if(si->type == ITEM_ADMISSION)
 		{
@@ -576,7 +576,7 @@ int ItemDB::ResetAdmissionItems()
 SalesItem *ItemDB::FindByName(const std::string &name)
 {
     FnTrace("ItemDB::FindByName()");
-    if (name_array == nullptr)
+    if (name_array == NULL)
         BuildNameArray();
 
     // use binary search to find item
@@ -595,37 +595,37 @@ SalesItem *ItemDB::FindByName(const std::string &name)
         else
             return mi;
     }
-    return nullptr;
+    return NULL;
 }
 
 SalesItem *ItemDB::FindByID(int id)
 {
     FnTrace("ItemDB::FindByID()");
     if (id <= 0)
-        return nullptr;
+        return NULL;
 
-    for (SalesItem *si = ItemList(); si != nullptr; si = si->next)
+    for (SalesItem *si = ItemList(); si != NULL; si = si->next)
         if (si->id == id)
             return si;
-    return nullptr;
+    return NULL;
 }
 
 SalesItem *ItemDB::FindByRecord(int record)
 {
     FnTrace("ItemDB::FindByRecord()");
     if (record < 0)
-        return nullptr;
-    if (name_array == nullptr)
+        return NULL;
+    if (name_array == NULL)
         BuildNameArray();
     if (record >= array_size)
-        return nullptr;
+        return NULL;
     return name_array[record];
 }
 
 SalesItem *ItemDB::FindByWord(const char* word, int &record)
 {
     FnTrace("ItemDB::FindByWord()");
-    if (name_array == nullptr)
+    if (name_array == NULL)
         BuildNameArray();
 
     int len = strlen(word);
@@ -641,16 +641,16 @@ SalesItem *ItemDB::FindByWord(const char* word, int &record)
         }
     }
     record = 0;
-    return nullptr;
+    return NULL;
 }
 
 SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
 {
     FnTrace("ItemDB::FindByCallCenterName()");
-    if (name_array == nullptr)
+    if (name_array == NULL)
         BuildNameArray();
-    SalesItem *retval = nullptr;
-    SalesItem *si = nullptr;
+    SalesItem *retval = NULL;
+    SalesItem *si = NULL;
     int len = strlen(word);
     int idx = 0;
 
@@ -666,7 +666,7 @@ SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
         }
     }
 
-    if (retval == nullptr)
+    if (retval == NULL)
         record = 0;
 
     return retval;
@@ -675,10 +675,10 @@ SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
 SalesItem *ItemDB::FindByItemCode(const char* code, int &record)
 {
     FnTrace("ItemDB::FindByItemCode()");
-    if (name_array == nullptr)
+    if (name_array == NULL)
         BuildNameArray();
-    SalesItem *retval = nullptr;
-    SalesItem *si = nullptr;
+    SalesItem *retval = NULL;
+    SalesItem *si = NULL;
     int idx = 0;
 
     for (idx = 0; idx < array_size; idx += 1)
@@ -698,24 +698,24 @@ SalesItem *ItemDB::FindByItemCode(const char* code, int &record)
 int ItemDB::BuildNameArray()
 {
     FnTrace("ItemDB::BuildNameArray()");
-    if (name_array != nullptr)
+    if (name_array != NULL)
     {
         delete [] name_array;
-        name_array = nullptr;
+        name_array = NULL;
         array_size = 0;
     }
 
     // Build search array
     array_size = ItemCount();
     name_array = new(std::nothrow) SalesItem*[array_size + 1](); // zero-initialized
-    if (name_array == nullptr)
+    if (name_array == NULL)
     {
         array_size = 0;
         return 1;
     }
 
     int i = 0;
-    for (SalesItem *si = ItemList(); si != nullptr; si = si->next)
+    for (SalesItem *si = ItemList(); si != NULL; si = si->next)
         name_array[i++] = si;
 
     return 0;
@@ -724,13 +724,13 @@ int ItemDB::BuildNameArray()
 int ItemDB::DeleteUnusedItems(ZoneDB *zone_db)
 {
     FnTrace("ItemDB::DeleteUnusedItems()");
-    if (zone_db == nullptr)
+    if (zone_db == NULL)
         return 1;
 
     // crossreference items with touchzones
-    for (Page *p = zone_db->PageList(); p != nullptr; p = p->next)
+    for (Page *p = zone_db->PageList(); p != NULL; p = p->next)
     {
-        for (Zone *z = p->ZoneList(); z != nullptr; z = z->next)
+        for (Zone *z = p->ZoneList(); z != NULL; z = z->next)
         {
             SalesItem *si = z->Item(this);
             if (si)
@@ -761,7 +761,7 @@ int ItemDB::ItemsInFamily(int family)
     int count = 0;
     SalesItem *item = ItemList();
 
-    while (item != nullptr)
+    while (item != NULL)
     {
         if (item->family == family)
             count += 1;

@@ -18,8 +18,8 @@
  * User Interfact componet objects
  */
 
-#ifndef ZONE_OBJECT_HH
-#define ZONE_OBJECT_HH
+#ifndef _ZONE_OBJECT_HH
+#define _ZONE_OBJECT_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -40,7 +40,7 @@ public:
     // Constructors
     ZoneObject();
     // Destructor
-    ~ZoneObject() override = default;
+    virtual ~ZoneObject() { }
 
     // Member Functions
     int Draw(Terminal *t);

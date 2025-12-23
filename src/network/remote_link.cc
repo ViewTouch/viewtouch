@@ -345,7 +345,7 @@ int CharQueue::Read(int device_no)
         timeout.tv_sec = 5;  // 5 second timeout for header
         timeout.tv_usec = 0;
 
-        int select_result = select(device_no + 1, &read_fds, nullptr, nullptr, &timeout);
+        int select_result = select(device_no + 1, &read_fds, NULL, NULL, &timeout);
         if (select_result <= 0) {
             fprintf(stderr, "CharQueue::Read() - Timeout/header read failed\n");
             fcntl(device_no, F_SETFL, original_flags); // Restore original flags
@@ -389,7 +389,7 @@ int CharQueue::Read(int device_no)
         timeout.tv_sec = 5;
         timeout.tv_usec = 0;
 
-        int select_result = select(device_no + 1, &read_fds, nullptr, nullptr, &timeout);
+        int select_result = select(device_no + 1, &read_fds, NULL, NULL, &timeout);
         if (select_result == -1 && errno == EINTR)
             continue;
         if (select_result <= 0)

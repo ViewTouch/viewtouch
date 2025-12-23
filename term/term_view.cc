@@ -34,7 +34,7 @@
 #include <sys/un.h>
 #include <dirent.h>
 #include <fcntl.h>
-#include <ctime>
+#include <time.h>
 #include <unistd.h>
 #include <iostream>
 #include <string>
@@ -132,20 +132,27 @@ enum ConnectionState {
 
 class ConnectionMonitor {
 private:
-    ConnectionState state_{CONNECTION_DISCONNECTED};
-    time_t last_heartbeat_{0};
-    time_t last_reconnect_attempt_{0};
-    int reconnect_attempts_{0};
-    int max_reconnect_attempts_{10};
-    int reconnect_delay_{2};
-    bool keep_alive_enabled_{true};
+    ConnectionState state_;
+    time_t last_heartbeat_;
+    time_t last_reconnect_attempt_;
+    int reconnect_attempts_;
+    int max_reconnect_attempts_;
+    int reconnect_delay_;
+    bool keep_alive_enabled_;
 
 public:
-    ConnectionMonitor() = default;
+    ConnectionMonitor() :
+        state_(CONNECTION_DISCONNECTED),
+        last_heartbeat_(0),
+        last_reconnect_attempt_(0),
+        reconnect_attempts_(0),
+        max_reconnect_attempts_(10),
+        reconnect_delay_(2),
+        keep_alive_enabled_(true) {}
 
     void set_connected() {
         state_ = CONNECTION_CONNECTED;
-        last_heartbeat_ = time(nullptr);
+        last_heartbeat_ = time(NULL);
         reconnect_attempts_ = 0;
         ReportError("Connection established");
     }
@@ -159,7 +166,7 @@ public:
 
     void set_reconnecting() {
         state_ = CONNECTION_RECONNECTING;
-        last_reconnect_attempt_ = time(nullptr);
+        last_reconnect_attempt_ = time(NULL);
         reconnect_attempts_++;
     }
 
@@ -168,37 +175,37 @@ public:
         ReportError("Connection failed permanently");
     }
 
-    [[nodiscard]] ConnectionState get_state() const { return state_; }
+    ConnectionState get_state() const { return state_; }
 
     bool should_attempt_reconnect() {
         if (state_ != CONNECTION_DISCONNECTED) return false;
         if (reconnect_attempts_ >= max_reconnect_attempts_) return false;
 
-        time_t now = time(nullptr);
+        time_t now = time(NULL);
         int delay = reconnect_delay_ * (1 << (reconnect_attempts_ - 1)); // Exponential backoff
         if (delay > 60) delay = 60; // Cap at 60 seconds
 
         return (now - last_reconnect_attempt_) >= delay;
     }
 
-    [[nodiscard]] bool is_healthy() const {
+    bool is_healthy() const {
         if (state_ != CONNECTION_CONNECTED) return false;
         if (!keep_alive_enabled_) return true;
 
-        time_t now = time(nullptr);
+        time_t now = time(NULL);
         return (now - last_heartbeat_) < 30; // 30 second timeout
     }
 
     void send_heartbeat() {
-        last_heartbeat_ = time(nullptr);
+        last_heartbeat_ = time(NULL);
     }
 
     void reset_reconnect_attempts() {
         reconnect_attempts_ = 0;
     }
 
-    [[nodiscard]] int get_reconnect_attempts() const { return reconnect_attempts_; }
-    [[nodiscard]] int get_max_reconnect_attempts() const { return max_reconnect_attempts_; }
+    int get_reconnect_attempts() const { return reconnect_attempts_; }
+    int get_max_reconnect_attempts() const { return max_reconnect_attempts_; }
 };
 
 
@@ -235,8 +242,8 @@ public:
     }
     
     // Accessors
-    [[nodiscard]] int get() const noexcept { return fd_; }
-    [[nodiscard]] bool is_valid() const noexcept { return fd_ > 0; }
+    int get() const noexcept { return fd_; }
+    bool is_valid() const noexcept { return fd_ > 0; }
     
     // Release ownership
     int release() noexcept {
@@ -275,9 +282,9 @@ struct FontDataType
     const genericChar* font;
 };
 
-static constexpr std::array<FontDataType, 16> FontData =
+static FontDataType FontData[] =
 {
-    {{FONT_TIMES_20,     "DejaVu Serif:size=12:style=Book"},
+    {FONT_TIMES_20,     "DejaVu Serif:size=12:style=Book"},
     {FONT_TIMES_24,     "DejaVu Serif:size=14:style=Book"},
     {FONT_TIMES_34,     "DejaVu Serif:size=18:style=Book"},
     {FONT_TIMES_48,     "DejaVu Serif:size=28:style=Book"},
@@ -292,21 +299,18 @@ static constexpr std::array<FontDataType, 16> FontData =
     {FONT_COURIER_18,   "Liberation Serif:size=11:style=Regular"},
     {FONT_COURIER_18B,  "Liberation Serif:size=11:style=Bold"},
     {FONT_COURIER_20,   "Liberation Serif:size=12:style=Regular"},
-    {FONT_COURIER_20B,  "Liberation Serif:size=12:style=Bold"}}
+    {FONT_COURIER_20B,  "Liberation Serif:size=12:style=Bold"}
 };
 
 struct PenDataType
 {
-    int id;
-    std::array<int, 3> t;
-    std::array<int, 3> s;
-    std::array<int, 3> h;
+    int id, t[3], s[3], h[3];
 };
 
-static constexpr std::array<PenDataType, 21> PenData =
+static PenDataType PenData[] =
 {
 // ColorID             Text Color       Shadow Color     HiLight Color
-    {{COLOR_BLACK,       {  0,   0,   0}, {249, 230, 210}, {148, 113,  78}},
+    {COLOR_BLACK,       {  0,   0,   0}, {249, 230, 210}, {148, 113,  78}},
     {COLOR_WHITE,       {255, 255, 255}, { 64,  64,  64}, {117,  97,  78}},
     {COLOR_RED,         {235,   0,   0}, { 47,   0,   0}, {242, 200, 200}},
     {COLOR_GREEN,       {  0, 128,   0}, {  0,  42,   0}, {140, 236, 140}},
@@ -326,12 +330,12 @@ static constexpr std::array<PenDataType, 21> PenData =
     {COLOR_DK_BLUE,     {  0,   0, 145}, {  0,   0,  45}, {205, 205, 245}},
     {COLOR_DK_TEAL,     {  0,  92, 130}, {  0,  12,  30}, {176, 216, 255}},
     {COLOR_DK_MAGENTA,  {160,  32, 110}, { 32,   0,  16}, {232, 188, 210}},
-    {COLOR_DK_SEAGREEN, {  0,  98,  72}, {  0,  32,  16}, {127, 228, 200}}}
+    {COLOR_DK_SEAGREEN, {  0,  98,  72}, {  0,  32,  16}, {127, 228, 200}},
 };
 
-constexpr int FONTS = static_cast<int>(FontData.size());
-constexpr int FONT_COUNT = FONTS;  // Alias for compatibility
-constexpr int FONT_SPACE = FONTS + 4;
+#define FONTS         (int)(sizeof(FontData)/sizeof(FontDataType))
+#define FONT_COUNT    FONTS  // Alias for compatibility
+#define FONT_SPACE    (FONTS+4)
 
 class FontNameClass
 {
@@ -367,18 +371,18 @@ public:
     int  Parse(const char* fontname);
     const char* ToString();
 
-    [[nodiscard]] const char* Foundry() const { return foundry.c_str(); }
-    [[nodiscard]] const char* Family() const { return family.c_str(); }
-    [[nodiscard]] const char* Weight() const { return weight.c_str(); }
-    [[nodiscard]] const char* Slant() const { return slant.c_str(); }
-    [[nodiscard]] const char* Width() const { return width.c_str(); }
-    [[nodiscard]] const char* Pixels() const { return pixels.c_str(); }
-    [[nodiscard]] const char* Points() const { return points.c_str(); }
-    [[nodiscard]] const char* HorRes() const { return horres.c_str(); }
-    [[nodiscard]] const char* VertRes() const { return vertres.c_str(); }
-    [[nodiscard]] const char* Spacing() const { return spacing.c_str(); }
-    [[nodiscard]] const char* AvgWidth() const { return avgwidth.c_str(); }
-    [[nodiscard]] const char* CharSet() const { return charset.c_str(); }
+    const char* Foundry() const { return foundry.c_str(); }
+    const char* Family() const { return family.c_str(); }
+    const char* Weight() const { return weight.c_str(); }
+    const char* Slant() const { return slant.c_str(); }
+    const char* Width() const { return width.c_str(); }
+    const char* Pixels() const { return pixels.c_str(); }
+    const char* Points() const { return points.c_str(); }
+    const char* HorRes() const { return horres.c_str(); }
+    const char* VertRes() const { return vertres.c_str(); }
+    const char* Spacing() const { return spacing.c_str(); }
+    const char* AvgWidth() const { return avgwidth.c_str(); }
+    const char* CharSet() const { return charset.c_str(); }
 
     void ClearFoundry() { foundry = "*"; }
     void ClearFamily() { family = "*"; }
@@ -559,8 +563,8 @@ const char* FontNameClass::ToString()
  *------------------------------------------------------------------*/
 Xpm::Xpm()
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     width = 0;
     height = 0;
     pixmap = 0;
@@ -569,8 +573,8 @@ Xpm::Xpm()
 
 Xpm::Xpm(Pixmap pm)
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     width = 0;
     height = 0;
     pixmap = pm;
@@ -579,8 +583,8 @@ Xpm::Xpm(Pixmap pm)
 
 Xpm::Xpm(Pixmap pm, int w, int h)
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     width = w;
     height = h;
     pixmap = pm;
@@ -589,8 +593,8 @@ Xpm::Xpm(Pixmap pm, int w, int h)
 
 Xpm::Xpm(Pixmap pm, Pixmap m, int w, int h)
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     width = w;
     height = h;
     pixmap = pm;
@@ -617,17 +621,17 @@ Xpm *Pixmaps::Get(int idx)
 {
     int curridx = 0;
     Xpm *currXpm = pixmaps.Head();
-    Xpm *retval = nullptr;
+    Xpm *retval = NULL;
     
     if (pixmaps.Count() < 1)
         return retval;
 
-    while (currXpm != nullptr && curridx < count)
+    while (currXpm != NULL && curridx < count)
     {
         if (curridx == idx)
         {
             retval = currXpm;
-            currXpm = nullptr;
+            currXpm = NULL;
         }
         else
         {
@@ -641,7 +645,7 @@ Xpm *Pixmaps::Get(int idx)
 
 Xpm *Pixmaps::GetRandom()
 {
-    Xpm *retval = nullptr;
+    Xpm *retval = NULL;
 
     if (pixmaps.Count() < 2)
         return retval;
@@ -662,17 +666,17 @@ Pixmaps PixmapList;
  ********************************************************************/
 
 LayerList Layers;
-Layer *MainLayer = nullptr;
+Layer *MainLayer = NULL;
 
 int SocketNo = 0;
 
-Display *Dis = nullptr;
-GC       Gfx = nullptr;
+Display *Dis = NULL;
+GC       Gfx = 0;
 Window   MainWin;
 std::array<Pixmap, IMAGE_COUNT> Texture;
 Pixmap   ShadowPix;
 int      ScrDepth = 0;
-Visual  *ScrVis = nullptr;
+Visual  *ScrVis = NULL;
 Colormap ScrCol = 0;
 int      WinWidth  = 0;
 int      WinHeight = 0;
@@ -718,15 +722,15 @@ void HideReconnectingMessage();
 
 // UI State preservation for disconnections
 struct SavedUIState {
-    int current_page{0};
-    int cursor_x{0}, cursor_y{0};
-    bool input_active{false};
+    int current_page;
+    int cursor_x, cursor_y;
+    bool input_active;
     std::string last_message;
 
-    SavedUIState() = default;
+    SavedUIState() : current_page(0), cursor_x(0), cursor_y(0), input_active(false) {}
 
     void save() {
-        if (MainLayer != nullptr) {
+        if (MainLayer != NULL) {
             current_page = MainLayer->page_x;  // Use page_x instead of page
             cursor_x = MainLayer->cursor;       // Use cursor instead of cursor_x
             cursor_y = 0;                       // No cursor_y, set to 0
@@ -736,7 +740,7 @@ struct SavedUIState {
     }
 
     void restore() {
-        if (MainLayer != nullptr) {
+        if (MainLayer != NULL) {
             // Request the server to switch to the saved page
             // This will be sent when connection is restored
             fprintf(stderr, "UI State: Requesting page %d restore\n", current_page);
@@ -786,9 +790,9 @@ void X11ResourceManager::cleanup() {
     }
 }
 
-static Widget       MainShell = nullptr;
+static Widget       MainShell = NULL;
 static int          ScrNo     = 0;
-static Screen      *ScrPtr    = nullptr;
+static Screen      *ScrPtr    = NULL;
 static int          ScrHeight = 0;
 static int          ScrWidth  = 0;
 static Window       RootWin;
@@ -884,10 +888,10 @@ genericChar* RStr(genericChar* s)
 {
     FnTrace("RStr()");
 
-    static std::array<genericChar, 1024> buffer = {""};
-    if (s == nullptr)
-        s = buffer.data();
-    if (BufferIn.GetString(s, buffer.size()))
+    static genericChar buffer[1024] = "";
+    if (s == NULL)
+        s = buffer;
+    if (BufferIn.GetString(s, sizeof(buffer)))
     {
         s[0] = '\0';
     }
@@ -899,7 +903,7 @@ int ReportError(const std::string &message)
     FnTrace("ReportError()");
     if (SocketNo)
     {
-        WInt8(ToInt(ServerProtocol::SrvError));
+        WInt8(SERVER_ERROR);
         WStr(message.c_str(), 0);
         return SendNow();
     }
@@ -966,7 +970,7 @@ int Translations::AddTranslation(const char* key, const char* value)
     FnTrace("Translations::AddTranslation()");
 
     int retval = 0;
-    auto *trans = new Translation(key, value);
+    Translation *trans = new Translation(key, value);
     trans_list.AddToTail(trans);
     
     return retval;
@@ -977,13 +981,13 @@ const char* Translations::GetTranslation(const char* key)
     FnTrace("Translations::GetTranslation()");
 
     Translation *trans = trans_list.Head();
-    while (trans != nullptr)
+    while (trans != NULL)
     {
         if (trans->Match(key))
         {
-            static std::array<char, STRLONG> buffer{};
-            trans->GetValue(buffer.data(), buffer.size());
-            return buffer.data();
+            static char buffer[STRLONG];
+            trans->GetValue(buffer, STRLONG);
+            return buffer;
         }
         trans = trans->next;
     }
@@ -995,14 +999,14 @@ void Translations::PrintTranslations()
     FnTrace("Translations::PrintTranslations()");
 
     Translation *trans = trans_list.Head();
-    std::array<char, STRLONG> key{};
-    std::array<char, STRLONG> value{};
+    char key[STRLONG];
+    char value[STRLONG];
 
-    while (trans != nullptr)
+    while (trans != NULL)
     {
-        trans->GetKey(key.data(), key.size());
-        trans->GetValue(value.data(), value.size());
-        printf("%s = %s\n", key.data(), value.data());
+        trans->GetKey(key, STRLONG);
+        trans->GetValue(value, STRLONG);
+        printf("%s = %s\n", key, value);
         trans = trans->next;
     }
 }
@@ -1041,7 +1045,7 @@ public:
                 (py < (y + h + EXTRA_ICON_WIDTH));
         }
 
-    int Command(Layer * /*l*/) override
+    int Command(Layer * /*l*/)
         {
             if (allow_iconify)
             {
@@ -1050,7 +1054,7 @@ public:
             }
             return 0;
         }
-    int Render(Layer *l) override
+    int Render(Layer *l)
         {
             if (allow_iconify)
                 return LO_PushButton::Render(l);
@@ -1113,7 +1117,7 @@ void ExposeCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
 {
     FnTrace("ExposeCB()");
 
-    if (event == nullptr)
+    if (event == NULL)
     {
         fprintf(stderr, "ExposeCB: event is NULL, skipping expose processing\n");
         return;
@@ -1121,7 +1125,7 @@ void ExposeCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
 
     static RegionInfo area;
 
-    auto *e = reinterpret_cast<XExposeEvent*>(event);
+    XExposeEvent *e = reinterpret_cast<XExposeEvent*>(event);
     if (CalibrateStage)
         return;
 
@@ -1173,7 +1177,7 @@ void UpdateCB(XtPointer /*client_data*/, XtIntervalId * /*timer_id*/)
     
     // Critical fix: Clear the old timer ID before setting new one to prevent race condition
     UpdateTimerID = 0;
-    UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, nullptr);
+    UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, NULL);
 }
 
 void TouchScreenCB(XtPointer /*client_data*/, int * /*fid*/, XtInputId * /*id*/)
@@ -1287,7 +1291,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
 {
     FnTrace("KeyPressCB()");
 
-    if (event == nullptr)
+    if (event == NULL)
     {
         fprintf(stderr, "KeyPressCB: event is NULL, skipping key press processing\n");
         return;
@@ -1303,11 +1307,11 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
     if (UserInput())
         return;
 
-    auto *e = reinterpret_cast<XKeyEvent*>(event);
+    XKeyEvent *e = reinterpret_cast<XKeyEvent*>(event);
     KeySym key = 0;
     std::array<genericChar, 32> buffer;
 
-    int len = XLookupString(e, buffer.data(), 31, &key, nullptr);
+    int len = XLookupString(e, buffer.data(), 31, &key, NULL);
     if (len < 0)
         len = 0;
     buffer[len] = '\0';
@@ -1332,7 +1336,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
     case XK_End:
         if (e->state & ControlMask && e->state & Mod1Mask)
         {
-            WInt8(ToInt(ServerProtocol::SrvShutdown));
+            WInt8(SERVER_SHUTDOWN);
             SendNow();
         }
         break;
@@ -1414,7 +1418,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
                 swipe_stage = 0;
                 swipe_char = 0;
                 swipe_track2 = 0;
-                WInt8(ToInt(ServerProtocol::SrvSwipe));
+                WInt8(SERVER_SWIPE);
                 WStr(swipe_buffer.data());
                 SendNow();
             }
@@ -1535,7 +1539,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
             }
             fake_cc = 0;
             printf("Sending Fake Credit Card:  '%s'\n", swipe_buffer.data());
-            WInt8(ToInt(ServerProtocol::SrvSwipe));
+            WInt8(SERVER_SWIPE);
             WStr(swipe_buffer.data());
             SendNow();
         }
@@ -1566,7 +1570,7 @@ void MouseClickCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
 {
     FnTrace("MouseClickCB()");
 
-    if (event == nullptr)
+    if (event == NULL)
     {
         fprintf(stderr, "MouseClickCB: event is NULL, skipping mouse click processing\n");
         return;
@@ -1579,7 +1583,7 @@ void MouseClickCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
     if (silent_mode > 0)
         return;
 
-    auto *btnevent = reinterpret_cast<XButtonEvent*>(event);
+    XButtonEvent *btnevent = reinterpret_cast<XButtonEvent*>(event);
     int code = MOUSE_PRESS;
     int touch = 0;
 
@@ -1612,7 +1616,7 @@ void MouseReleaseCB(Widget widget, XtPointer client_data, XEvent *event,
 {
     FnTrace("MouseReleaseCB()");
 
-    if (event == nullptr)
+    if (event == NULL)
     {
         fprintf(stderr, "MouseReleaseCB: event is NULL, skipping mouse release processing\n");
         return;
@@ -1623,7 +1627,7 @@ void MouseReleaseCB(Widget widget, XtPointer client_data, XEvent *event,
     if (silent_mode > 0)
         return;
 
-    auto *b = reinterpret_cast<XButtonEvent*>(event);
+    XButtonEvent *b = reinterpret_cast<XButtonEvent*>(event);
     Layers.RubberBandOff();
 
     int code = MOUSE_RELEASE;
@@ -1644,13 +1648,13 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
 {
     FnTrace("MouseMoveCB()");
 
-    if (event == nullptr)
+    if (event == NULL)
     {
         fprintf(stderr, "MouseMoveCB: event is NULL, skipping mouse move processing\n");
         return;
     }
 
-    auto *e = reinterpret_cast<XPointerMovedEvent*>(event);
+    XPointerMovedEvent *e = reinterpret_cast<XPointerMovedEvent*>(event);
     if (UserInput())
         return;
     if (silent_mode > 0)
@@ -1659,7 +1663,7 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
 
     // try to intelligently determine whether this might be
     // a touch
-    gettimeofday(&now, nullptr);
+    gettimeofday(&now, NULL);
     if ((now.tv_sec - last_mouse_time.tv_sec) > 1 ||
         (now.tv_usec - last_mouse_time.tv_usec) > 100000)
     {
@@ -1722,7 +1726,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             saved_ui_state.save();
 
             // Show "Reconnecting..." message on screen instead of just logging
-            if (MainLayer != nullptr) {
+            if (MainLayer != NULL) {
                 ShowReconnectingMessage();
             }
         }
@@ -1757,7 +1761,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
                 consecutive_failures = 0;
 
                 // Hide reconnecting message and restore normal operation
-                if (MainLayer != nullptr) {
+                if (MainLayer != NULL) {
                     HideReconnectingMessage();
                 }
 
@@ -1786,7 +1790,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
     consecutive_failures = 0;
     if (connection_monitor.get_state() != CONNECTION_CONNECTED) {
         connection_monitor.set_connected();
-        if (MainLayer != nullptr) {
+        if (MainLayer != NULL) {
             HideReconnectingMessage();
             // Restore UI state after reconnection
             saved_ui_state.restore();
@@ -1795,7 +1799,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
     connection_monitor.send_heartbeat();
 
     Layer *l = MainLayer;
-    if (l == nullptr)
+    if (l == NULL)
     {
         fprintf(stderr, "SocketInputCB: MainLayer is NULL, skipping processing\n");
         return;
@@ -1810,9 +1814,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
     const genericChar* s1, *s2;
 
     int failure = 0;
-    std::array<genericChar, STRLONG> s{};
-    std::array<genericChar, STRLENGTH> key{};
-    std::array<genericChar, STRLENGTH> value{};
+    genericChar s[STRLONG];
+    genericChar key[STRLENGTH];
+    genericChar value[STRLENGTH];
 
     while (BufferIn.size > 0)
     {
@@ -1875,7 +1879,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n4 = RInt8();
             n5 = RInt16();
             n6 = RInt8();
-            s1 = RStr(s.data());
+            s1 = RStr(s);
             s2 = RStr();
             if (TScreen)
                 TScreen->Flush();
@@ -1891,61 +1895,61 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             SetTitleBar(RStr());
             break;
         case TERM_TEXTL:
-            RStr(s.data());
+            RStr(s);
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt8();
             n4 = RInt8();
             n5 = RInt16();
-            l->Text(s.data(), strlen(s.data()), n1, n2, n3, n4, ALIGN_LEFT, n5, use_embossed_text);
+            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_LEFT, n5, use_embossed_text);
             break;
         case TERM_TEXTC:
-            RStr(s.data());
+            RStr(s);
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt8();
             n4 = RInt8();
             n5 = RInt16();
-            l->Text(s.data(), strlen(s.data()), n1, n2, n3, n4, ALIGN_CENTER, n5, use_embossed_text);
+            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_CENTER, n5, use_embossed_text);
             break;
         case TERM_TEXTR:
-            RStr(s.data());
+            RStr(s);
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt8();
             n4 = RInt8();
             n5 = RInt16();
-            l->Text(s.data(), strlen(s.data()), n1, n2, n3, n4, ALIGN_RIGHT, n5, use_embossed_text);
+            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_RIGHT, n5, use_embossed_text);
             break;
         case TERM_ZONETEXTL:
-            RStr(s.data());
+            RStr(s);
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt8();
             n6 = RInt8();
-            l->ZoneText(s.data(), n1, n2, n3, n4, n5, n6, ALIGN_LEFT, use_embossed_text);
+            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_LEFT, use_embossed_text);
             break;
         case TERM_ZONETEXTC:
-            RStr(s.data());
+            RStr(s);
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt8();
             n6 = RInt8();
-            l->ZoneText(s.data(), n1, n2, n3, n4, n5, n6, ALIGN_CENTER, use_embossed_text);
+            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_CENTER, use_embossed_text);
             break;
         case TERM_ZONETEXTR:
-            RStr(s.data());
+            RStr(s);
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt8();
             n6 = RInt8();
-            l->ZoneText(s.data(), n1, n2, n3, n4, n5, n6, ALIGN_RIGHT, use_embossed_text);
+            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_RIGHT, use_embossed_text);
             break;
         case TERM_ZONE:
             n1 = RInt16();
@@ -2038,10 +2042,10 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt8();
-            RStr(s.data());
+            RStr(s);
             n6 = RInt8();
             n7 = RInt8();
-            l->StatusBar(n1, n2, n3, n4, n5, s.data(), n6, n7);
+            l->StatusBar(n1, n2, n3, n4, n5, s, n6, n7);
             break;
         case TERM_FLUSH_TS:
             if (TScreen)
@@ -2166,8 +2170,8 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n4 = RInt16();
             n5 = RInt16();
             n6 = RInt8();
-            RStr(s.data());
-            OpenLayer(n1, n2, n3, n4, n5, n6, s.data());
+            RStr(s);
+            OpenLayer(n1, n2, n3, n4, n5, n6, s);
             break;
         case TERM_SHOWWINDOW:
             ShowLayer(RInt16());
@@ -2184,11 +2188,11 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt16();
-            RStr(s.data());
+            RStr(s);
             n6 = RInt8();
             n7 = RInt8();
             n8 = RInt8();
-            NewPushButton(n1, n2, n3, n4, n5, s.data(), n6, n7, n8);
+            NewPushButton(n1, n2, n3, n4, n5, s, n6, n7, n8);
             break;
         case TERM_ICONIFY:
             ResetView();
@@ -2202,9 +2206,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n1 = RInt8();
             for (n2 = 0; n2 < n1; n2++)
             {
-                RStr(key.data());
-                RStr(value.data());
-                MasterTranslations.AddTranslation(key.data(), value.data());
+                RStr(key);
+                RStr(value);
+                MasterTranslations.AddTranslation(key, value);
             }
             new_page_translations = 1;
             new_zone_translations = 1;
@@ -2216,7 +2220,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->Sale();
-                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
+                WInt8(SERVER_CC_PROCESSED);
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2229,7 +2233,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->PreAuth();
-                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
+                WInt8(SERVER_CC_PROCESSED);
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2242,7 +2246,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->FinishAuth();
-                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
+                WInt8(SERVER_CC_PROCESSED);
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2255,7 +2259,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->Void();
-                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
+                WInt8(SERVER_CC_PROCESSED);
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2268,7 +2272,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->VoidCancel();
-                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
+                WInt8(SERVER_CC_PROCESSED);
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2281,7 +2285,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->Refund();
-                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
+                WInt8(SERVER_CC_PROCESSED);
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2294,7 +2298,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->RefundCancel();
-                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
+                WInt8(SERVER_CC_PROCESSED);
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2385,8 +2389,8 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
  * General Functions
  ********************************************************************/
 
-Layer       *TargetLayer = nullptr;
-LayerObject *TargetObject = nullptr;
+Layer       *TargetLayer = NULL;
+LayerObject *TargetObject = NULL;
 
 int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericChar* title)
 {
@@ -2399,8 +2403,8 @@ int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericCh
     }
 
     KillLayer(id);
-    auto *l = new Layer(Dis, Gfx, MainWin, w, h);
-    if (l == nullptr)
+    Layer *l = new Layer(Dis, Gfx, MainWin, w, h);
+    if (l == NULL)
         return 1;
 
     if (l->pix == 0)
@@ -2429,7 +2433,7 @@ int ShowLayer(int id)
     FnTrace("ShowLayer()");
 
     Layer *l = Layers.FindByID(id);
-    if (l == nullptr)
+    if (l == NULL)
         return 1;
 
     l->buttons.Render(l);
@@ -2462,7 +2466,7 @@ int SetTargetLayer(int id)
     FnTrace("SetTargetLayer()");
 
     Layer *l = Layers.FindByID(id);
-    if (l == nullptr)
+    if (l == NULL)
         return 1;
 
     TargetLayer = l;
@@ -2475,9 +2479,9 @@ int NewPushButton(int id, int x, int y, int w, int h, const genericChar* text,
     FnTrace("NewPushButton()");
 
     Layer *l = TargetLayer;
-    if (l == nullptr)
+    if (l == NULL)
         return 1;
-    auto *b = new LO_PushButton(text, c1, c2);
+    LO_PushButton *b = new LO_PushButton(text, c1, c2);
     b->SetRegion(x + l->offset_x, y + l->offset_y, w, h);
     b->font = font;
     b->id = id;
@@ -2599,10 +2603,10 @@ int SaveToPPM()
     ReportError(str.data());
 
     // Generate the screenshot
-    std::array<char, STRLONG> command{};
-    snprintf(command.data(), command.size(), "%s -root -display %s >%s",
+    char command[STRLONG];
+    snprintf(command, STRLONG, "%s -root -display %s >%s",
              Constants::XWD, DisplayString(Dis), filename.data());
-    system(command.data());
+    system(command);
 
     return 0;
 }
@@ -2662,7 +2666,7 @@ Pixmap LoadPixmap(const char**image_data)
     Pixmap retxpm = 0;
     int status;
 
-    status = XpmCreatePixmapFromData(Dis, MainWin, const_cast<char**>(image_data), &retxpm, nullptr, nullptr);
+    status = XpmCreatePixmapFromData(Dis, MainWin, const_cast<char**>(image_data), &retxpm, NULL, NULL);
     if (status != XpmSuccess)
         fprintf(stderr, "XpmError:  %s\n", XpmGetErrorString(status));
 
@@ -2679,7 +2683,7 @@ Xpm *LoadPixmapFile(char* file_name)
 {
     FnTrace("LoadPixmapFile()");
     
-    Xpm *retxpm = nullptr;
+    Xpm *retxpm = NULL;
     Pixmap xpm;
     XpmAttributes attributes;
     int status;
@@ -2690,7 +2694,7 @@ Xpm *LoadPixmapFile(char* file_name)
         if (sb.st_size <= MAX_XPM_SIZE)
         {
             attributes.valuemask = 0;
-            status = XpmReadFileToPixmap(Dis, MainWin, file_name, &xpm, nullptr, &attributes);
+            status = XpmReadFileToPixmap(Dis, MainWin, file_name, &xpm, NULL, &attributes);
             if (status != XpmSuccess)
             {
                 fprintf(stderr, "XpmError %s for %s\n", XpmGetErrorString(status), file_name);
@@ -2961,20 +2965,20 @@ Xpm *LoadPNGFile(const char* file_name)
     }
 
     // Read PNG header to verify format
-    std::array<png_byte, 8> header{};
-    if (fread(header.data(), 1, header.size(), fp) != header.size()) {
+    png_byte header[8];
+    if (fread(header, 1, 8, fp) != 8) {
         fprintf(stderr, "LoadPNGFile: Cannot read PNG header from %s\n", file_name);
         fclose(fp);
         return nullptr;
     }
 
-    if (png_sig_cmp(header.data(), 0, header.size())) {
+    if (png_sig_cmp(header, 0, 8)) {
         fprintf(stderr, "LoadPNGFile: File %s is not a valid PNG\n", file_name);
         fclose(fp);
         return nullptr;
     }
 
-    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!png_ptr) {
         fprintf(stderr, "LoadPNGFile: Cannot create PNG read struct\n");
         fclose(fp);
@@ -2984,14 +2988,14 @@ Xpm *LoadPNGFile(const char* file_name)
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
         fprintf(stderr, "LoadPNGFile: Cannot create PNG info struct\n");
-        png_destroy_read_struct(&png_ptr, nullptr, nullptr);
+        png_destroy_read_struct(&png_ptr, NULL, NULL);
         fclose(fp);
         return nullptr;
     }
 
     if (setjmp(png_jmpbuf(png_ptr))) {
         fprintf(stderr, "LoadPNGFile: PNG read error in %s\n", file_name);
-        png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
         fclose(fp);
         return nullptr;
     }
@@ -3035,10 +3039,10 @@ Xpm *LoadPNGFile(const char* file_name)
     fprintf(stderr, "LoadPNGFile: Row bytes = %d, channels = %d\n", rowbytes, channels);
 
     // Allocate image data
-    auto* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+    png_bytep* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
     if (!row_pointers) {
         fprintf(stderr, "LoadPNGFile: Cannot allocate row pointers\n");
-        png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
         fclose(fp);
         return nullptr;
     }
@@ -3049,7 +3053,7 @@ Xpm *LoadPNGFile(const char* file_name)
             fprintf(stderr, "LoadPNGFile: Cannot allocate row data\n");
             for (int i = 0; i < y; i++) free(row_pointers[i]);
             free(row_pointers);
-            png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+            png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
             fclose(fp);
             return nullptr;
         }
@@ -3165,7 +3169,7 @@ Xpm *LoadPNGFile(const char* file_name)
                 
                 // Put mask to mask pixmap
                 if (mask && mask_image) {
-                    GC mask_gc = XCreateGC(Dis, mask, 0, nullptr);
+                    GC mask_gc = XCreateGC(Dis, mask, 0, NULL);
                     XPutImage(Dis, mask, mask_gc, mask_image, 0, 0, 0, 0, width, height);
                     XFreeGC(Dis, mask_gc);
                     XDestroyImage(mask_image);
@@ -3186,7 +3190,7 @@ Xpm *LoadPNGFile(const char* file_name)
         free(row_pointers[y]);
     }
     free(row_pointers);
-    png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     fclose(fp);
 
     if (pixmap) {
@@ -3350,20 +3354,20 @@ Xpm *LoadGIFFile(const char* file_name)
 int ReadScreenSaverPix()
 {
     FnTrace("ReadScreenSaverPix()");
-    struct dirent *record = nullptr;
+    struct dirent *record = NULL;
     DIR *dp;
     Xpm *newpm;
-    std::array<genericChar, STRLONG> fullpath{};
+    genericChar fullpath[STRLONG];
     int len;
     if (!fs::is_directory(SCREENSAVER_DIR))
     {
         std::cerr << "Screen saver directory does not exist: '"
-            << SCREENSAVER_DIR << "' creating it" << '\n';
+            << SCREENSAVER_DIR << "' creating it" << std::endl;
         fs::create_directory(SCREENSAVER_DIR);
         fs::permissions(SCREENSAVER_DIR, fs::perms::all); // be sure read/write/execute flags are set
     }
     dp = opendir(SCREENSAVER_DIR);
-    if (dp == nullptr)
+    if (dp == NULL)
     {
         ReportError("Can't find screen saver directory");
         return 1;
@@ -3379,9 +3383,9 @@ int ReadScreenSaverPix()
             if ((strcmp(&name[len-4], ".xpm") == 0) ||
                 (strcmp(&name[len-4], ".XPM") == 0))
             {
-                snprintf(fullpath.data(), fullpath.size(), "%s/%s", SCREENSAVER_DIR, name);
-                newpm = LoadPixmapFile(fullpath.data());
-                if (newpm != nullptr)
+                snprintf(fullpath, STRLONG, "%s/%s", SCREENSAVER_DIR, name);
+                newpm = LoadPixmapFile(fullpath);
+                if (newpm != NULL)
                     PixmapList.Add(newpm);
             }
         }
@@ -3552,7 +3556,7 @@ int Calibrate(int status)
 {
     FnTrace("Calibrate()");
 
-    if (TScreen == nullptr)
+    if (TScreen == NULL)
         return 1;
 
     ResetView();
@@ -3569,7 +3573,7 @@ int Calibrate(int status)
         TScreen->Calibrate();
         TouchInputID =
             XtAppAddInput(App, TScreen->device_no, (XtPointer)XtInputReadMask,
-                          (XtInputCallbackProc)CalibrateCB, nullptr);
+                          (XtInputCallbackProc)CalibrateCB, NULL);
         break;
     case 1:   // 2nd stage - get lower left touch
         XSetTile(Dis, Gfx, GetTexture(IMAGE_LIT_SAND));
@@ -3621,7 +3625,7 @@ int StartTimers()
     if (UpdateTimerID == 0)
 	{
         UpdateTimerID = XtAppAddTimeOut(App, Constants::UPDATE_TIME,
-                                        (XtTimerCallbackProc) UpdateCB, nullptr);
+                                        (XtTimerCallbackProc) UpdateCB, NULL);
 	}
 
     if (TouchInputID == 0 && TScreen && TScreen->device_no > 0)
@@ -3633,7 +3637,7 @@ int StartTimers()
                                      TScreen->device_no, 
                                      (XtPointer) XtInputReadMask, 
                                      (XtInputCallbackProc) TouchScreenCB, 
-                                     nullptr);
+                                     NULL);
 	}
 
     return 0;
@@ -3709,9 +3713,9 @@ static bool IsRaspberryPi()
         // Check /proc/cpuinfo for Raspberry Pi
         FILE* cpuinfo = fopen("/proc/cpuinfo", "r");
         if (cpuinfo) {
-            std::array<char, 256> line{};
-            while (fgets(line.data(), line.size(), cpuinfo)) {
-                if (strstr(line.data(), "Raspberry Pi") || strstr(line.data(), "BCM") || strstr(line.data(), "Model")) {
+            char line[256];
+            while (fgets(line, sizeof(line), cpuinfo)) {
+                if (strstr(line, "Raspberry Pi") || strstr(line, "BCM") || strstr(line, "Model")) {
                     is_pi = true;
                     break;
                 }
@@ -3737,7 +3741,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
     int i;
 
-    srand(time(nullptr));
+    srand(time(NULL));
 
     // Init Xt & Create Application Context
     App = XtCreateApplicationContext();
@@ -3747,11 +3751,11 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     FontInfo.fill(nullptr);
 
     // Start Display
-    std::array<genericChar, STRLENGTH> str{};
+    genericChar str[STRLENGTH];
     int argc = 1;
-    std::array<const genericChar*, 1> argv{{"vt_term"}};
+    const genericChar* argv[] = {"vt_term"};
     IsTermLocal = is_term_local;
-    Dis = XtOpenDisplay(App, display, nullptr, nullptr, nullptr, 0, &argc, const_cast<char**>(argv.data()));
+    Dis = XtOpenDisplay(App, display, NULL, NULL, NULL, 0, &argc, const_cast<char**>(argv));
     if (Dis == nullptr)
     {
         std::string error_msg = "Can't open display '" + std::string(display) + "'";
@@ -3782,7 +3786,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     // Load Fonts
     // Use fixed DPI (96) for consistent font rendering across all displays
     // This ensures fonts render at the same size regardless of display DPI
-    static std::array<char, 256> font_spec_with_dpi{};
+    static char font_spec_with_dpi[256];
     for (const auto& fontData : FontData)
     {
         int f = fontData.id;
@@ -3791,8 +3795,8 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         // Append :dpi=96 to font specification if not already present
         const char* xft_font_name = fontData.font;
         if (strstr(xft_font_name, ":dpi=") == nullptr) {
-            snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", xft_font_name);
-            xft_font_name = font_spec_with_dpi.data();
+            snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", xft_font_name);
+            xft_font_name = font_spec_with_dpi;
         }
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
         
@@ -3825,7 +3829,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     // Create Window
     int n = 0;
     std::array<Arg, 16> args;
-    XtSetArg(args[n], (String)"visual",       ScrVis); ++n;
+    XtSetArg(args[n], "visual",       ScrVis); ++n;
     XtSetArg(args[n], XtNdepth,       ScrDepth); ++n;
     //XtSetArg(args[n], "mappedWhenManaged", False); ++n;
     XtSetArg(args[n], XtNx,           0); ++n;
@@ -3833,11 +3837,11 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     XtSetArg(args[n], XtNwidth,       WinWidth); ++n;
     XtSetArg(args[n], XtNheight,      WinHeight); ++n;
     XtSetArg(args[n], XtNborderWidth, 0); ++n;
-    XtSetArg(args[n], (String)"minWidth",     WinWidth); ++n;
-    XtSetArg(args[n], (String)"minHeight",    WinHeight); ++n;
-    XtSetArg(args[n], (String)"maxWidth",     WinWidth); ++n;
-    XtSetArg(args[n], (String)"maxHeight"   , WinHeight); ++n;
-    XtSetArg(args[n], (String)"mwmDecorations", 0); ++n;
+    XtSetArg(args[n], "minWidth",     WinWidth); ++n;
+    XtSetArg(args[n], "minHeight",    WinHeight); ++n;
+    XtSetArg(args[n], "maxWidth",     WinWidth); ++n;
+    XtSetArg(args[n], "maxHeight"   , WinHeight); ++n;
+    XtSetArg(args[n], "mwmDecorations", 0); ++n;
 
     MainShell = XtAppCreateShell("POS", "viewtouch",
                                  applicationShellWidgetClass, Dis, args.data(), n);
@@ -3902,7 +3906,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         fprintf(stderr, "Raspberry Pi detected: Disabling expensive rendering features for better performance\n");
     }
 
-    Gfx       = XCreateGC(Dis, MainWin, 0, nullptr);
+    Gfx       = XCreateGC(Dis, MainWin, 0, NULL);
     ShadowPix = XmuCreateStippledPixmap(ScrPtr, 0, 1, 1);
     XSetStipple(Dis, Gfx, ShadowPix);
 
@@ -3911,7 +3915,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     CursorWait = XCreateFontCursor(Dis, XC_watch);
     // Setup Blank Cursor
     Pixmap p   = XCreatePixmap(Dis, MainWin, 16, 16, 1);
-    GC     pgc = XCreateGC(Dis, p, 0, nullptr);
+    GC     pgc = XCreateGC(Dis, p, 0, NULL);
     XSetForeground(Dis, pgc, BlackPixel(Dis, ScrNo));
     XSetFillStyle(Dis, pgc, FillSolid);
     XFillRectangle(Dis, p, pgc, 0, 0, 16, 16);
@@ -3926,7 +3930,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
     // Setup layers
     Layers.XWindowInit(Dis, Gfx, MainWin);
-    auto *l = new Layer(Dis, Gfx, MainWin, WinWidth, WinHeight);
+    Layer *l = new Layer(Dis, Gfx, MainWin, WinWidth, WinHeight);
     if (l)
     {
         l->id = 1;
@@ -3955,7 +3959,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     // Add Iconify Button
     if (l && IsTermLocal)
     {
-        auto *b = new IconifyButton("I", COLOR_GRAY, COLOR_LT_BLUE);
+        IconifyButton *b = new IconifyButton("I", COLOR_GRAY, COLOR_LT_BLUE);
         // b->SetRegion(WinWidth - l->title_height + 4, 4,
         //              l->title_height - 8, l->title_height - 8);
         b->SetRegion(WinWidth - l->title_height + 8, 8,
@@ -3980,7 +3984,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     LastInput = SystemTime;
 
     SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
-                                  (XtInputCallbackProc) SocketInputCB, nullptr);
+                                  (XtInputCallbackProc) SocketInputCB, NULL);
 
     // Send server term size
     int screen_size = PAGE_SIZE_640x480;
@@ -4018,7 +4022,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     else if (WinWidth >= 768 && WinHeight >= 1024)
         screen_size = PAGE_SIZE_768x1024;
 
-    WInt8(ToInt(ServerProtocol::SrvTermInfo));
+    WInt8(SERVER_TERMINFO);
     WInt8(screen_size);
     WInt16(WinWidth);
     WInt16(WinHeight);
@@ -4027,11 +4031,11 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     if (TScreen)
         TScreen->Flush();
 
-    XtAddEventHandler(MainShell, KeyPressMask, FALSE, KeyPressCB, nullptr);
-    XtAddEventHandler(MainShell, ExposureMask, FALSE, ExposeCB, nullptr);
-    XtAddEventHandler(MainShell, ButtonPressMask, FALSE, MouseClickCB, nullptr);
-    XtAddEventHandler(MainShell, ButtonReleaseMask, FALSE, MouseReleaseCB, nullptr);
-    XtAddEventHandler(MainShell, PointerMotionMask, FALSE, MouseMoveCB, nullptr);
+    XtAddEventHandler(MainShell, KeyPressMask, FALSE, KeyPressCB, NULL);
+    XtAddEventHandler(MainShell, ExposureMask, FALSE, ExposeCB, NULL);
+    XtAddEventHandler(MainShell, ButtonPressMask, FALSE, MouseClickCB, NULL);
+    XtAddEventHandler(MainShell, ButtonReleaseMask, FALSE, MouseReleaseCB, NULL);
+    XtAddEventHandler(MainShell, PointerMotionMask, FALSE, MouseMoveCB, NULL);
 
     //Boolean okay;
     XEvent event;
@@ -4104,7 +4108,7 @@ void ShowReconnectingMessage()
 {
     FnTrace("ShowReconnectingMessage()");
 
-    if (reconnect_message_visible || Dis == nullptr) {
+    if (reconnect_message_visible || Dis == NULL) {
         return;
     }
 
@@ -4163,7 +4167,7 @@ void HideReconnectingMessage()
 {
     FnTrace("HideReconnectingMessage()");
 
-    if (!reconnect_message_visible || Dis == nullptr) {
+    if (!reconnect_message_visible || Dis == NULL) {
         return;
     }
 
@@ -4173,7 +4177,7 @@ void HideReconnectingMessage()
     }
 
     // Force a redraw of the main window to restore normal display
-    if (MainLayer != nullptr) {
+    if (MainLayer != NULL) {
         MainLayer->DrawAll();
         XFlush(Dis);
     }
@@ -4248,7 +4252,7 @@ int ReconnectToServer()
 
     // Re-add the input handler
     SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
-                                  (XtInputCallbackProc) SocketInputCB, nullptr);
+                                  (XtInputCallbackProc) SocketInputCB, NULL);
 
     fprintf(stderr, "ReconnectToServer: Successfully reconnected\n");
     return 0;
@@ -4339,7 +4343,7 @@ int KillTerm()
     if (Gfx)
     {
         XFreeGC(Dis, Gfx);
-        Gfx = nullptr;
+        Gfx = NULL;
     }
 
     for (auto& font : FontInfo)
@@ -4365,12 +4369,12 @@ int KillTerm()
     if (Dis)
     {
         XtCloseDisplay(Dis);
-        Dis = nullptr;
+        Dis = NULL;
     }
     if (App)
     {
         XtDestroyApplicationContext(App);
-        App = nullptr;
+        App = NULL;
     }
     return 0;
 }
@@ -4451,14 +4455,14 @@ void TerminalReloadFonts()
         }
     }
     // Reload fonts with fixed DPI (96) for consistency
-    static std::array<char, 256> font_spec_with_dpi{};
+    static char font_spec_with_dpi[256];
     for (const auto& fontData : FontData) {
         int f = fontData.id;
         const char* xft_font_name = fontData.font;
         // Append :dpi=96 to font specification if not already present
         if (strstr(xft_font_name, ":dpi=") == nullptr) {
-            snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", xft_font_name);
-            xft_font_name = font_spec_with_dpi.data();
+            snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", xft_font_name);
+            xft_font_name = font_spec_with_dpi;
         }
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
         if (XftFontsArr[f]) {
@@ -4477,7 +4481,7 @@ void TerminalReloadFonts()
         LayerObject *obj = layer->buttons.Head();
         while (obj != nullptr) {
             // Try to cast to LO_PushButton to check if it's a button
-            auto *button = dynamic_cast<LO_PushButton*>(obj);
+            LO_PushButton *button = dynamic_cast<LO_PushButton*>(obj);
             if (button != nullptr) {
                 // Update button font to use the current font family
                 // The font family will change while keeping the same size

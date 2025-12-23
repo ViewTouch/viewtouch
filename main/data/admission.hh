@@ -1,5 +1,5 @@
-#ifndef ADMISSION_HH
-#define ADMISSION_HH
+#ifndef _ADMISSION_HH
+#define _ADMISSION_HH
 
 #include "utility.hh"
 #include "sales.hh"

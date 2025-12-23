@@ -1,6 +1,4 @@
 #include <catch2/catch_all.hpp>
-#include <cmath>
-
 #include "../mocks/mock_terminal.hh"
 #include "../mocks/mock_settings.hh"
 
@@ -47,10 +45,10 @@ TEST_CASE("Basic arithmetic operations", "[arithmetic]")
     SECTION("Basic calculations for POS operations")
     {
         // Test basic arithmetic that would be used in POS calculations
-        const int subtotal = 1000;  // $10.00
-        const double tax_rate = 0.0825;  // 8.25%
-        const int tax_amount = static_cast<int>(std::lround(subtotal * tax_rate));  // Round to nearest cent
-        const int total = subtotal + tax_amount;
+        int subtotal = 1000;  // $10.00
+        float tax_rate = 0.0825f;  // 8.25%
+        int tax_amount = static_cast<int>(subtotal * tax_rate + 0.5f);  // Round to nearest cent
+        int total = subtotal + tax_amount;
 
         REQUIRE(subtotal == 1000);
         REQUIRE(tax_amount == 83);  // 1000 * 0.0825 + 0.5 = 82.5 + 0.5 = 83

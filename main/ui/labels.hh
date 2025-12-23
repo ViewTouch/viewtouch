@@ -18,8 +18,8 @@
  * Various symbols & definitions
  */
 
-#ifndef LABELS_HH
-#define LABELS_HH
+#ifndef _LABELS_HH
+#define _LABELS_HH
 
 #include "basic.hh"
 

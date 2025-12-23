@@ -136,7 +136,7 @@ int ConvertAppear(int appear, Uchar &f, Uchar &t)
 
 Zone *NewPosZone(int type)
 {
-	Zone *pNewZone = nullptr;
+	Zone *pNewZone = NULL;
 	switch (type)
 	{
 		// General Zone Types
@@ -386,7 +386,7 @@ Zone *NewPosZone(int type)
         break;
 	}
 
-	if (pNewZone == nullptr)
+	if (pNewZone == NULL)
 	{
 		char str[64];
 		vt_safe_string::safe_format(str, 64, "Creation of PosZone object type %d failed", type);
@@ -399,7 +399,7 @@ Zone *NewPosZone(int type)
 Page *NewPosPage()
 {
     PosPage *p = new PosPage;
-    if (p == nullptr)
+    if (p == NULL)
         ReportError("Creation of PosPage object failed");
 
     return p;
@@ -419,11 +419,11 @@ std::unique_ptr<Zone> PosZone::Copy()
 
 int PosZone::CanSelect(Terminal *t)
 {
-    if (page == nullptr)
+    if (page == NULL)
         return 1;
 
     Employee *e = t->user;
-    if (e == nullptr)
+    if (e == NULL)
         return 0;
 
     if (page->id < 0 && !e->CanEditSystem() && Type() != ZONE_ORDER_ENTRY && Type() != ZONE_TENDER)
@@ -433,11 +433,11 @@ int PosZone::CanSelect(Terminal *t)
 
 int PosZone::CanEdit(Terminal *t)
 {
-    if (page == nullptr)
+    if (page == NULL)
         return 1;
 
     Employee *e = t->user;
-    if (e == nullptr)
+    if (e == NULL)
         return 0;
 
     if (page->id < 0 && !e->CanEditSystem() && Type() != ZONE_ORDER_ENTRY && Type() != ZONE_TENDER)
@@ -448,7 +448,7 @@ int PosZone::CanEdit(Terminal *t)
 int PosZone::CanCopy(Terminal *t)
 {
     Employee *e = t->user;
-    if (e == nullptr)
+    if (e == NULL)
         return 0;
 
     if (page->id < 0 && !e->CanEditSystem() && Type() != ZONE_ORDER_ENTRY && Type() != ZONE_TENDER)
@@ -689,7 +689,7 @@ std::unique_ptr<Page> PosPage::Copy()
         p->default_color[i]   = default_color[i];
     }
 
-    for (Zone *z = ZoneList(); z != nullptr; z = z->next)
+    for (Zone *z = ZoneList(); z != NULL; z = z->next)
     {
         FILE *debugCopy = fopen("/tmp/viewtouch_debug.log", "a");
         if (debugCopy) {
@@ -832,7 +832,7 @@ int PosPage::Read(InputDataFile &infile, int version)
         infile.Read(z_type);
 
         Zone *z = NewPosZone(z_type);
-        if (z == nullptr)
+        if (z == NULL)
         {
             vt_safe_string::safe_format(str, 256, "Error in creating touch zone type %d", type);
             ReportError(str);
@@ -881,7 +881,7 @@ int PosPage::Write(OutputDataFile &df, int version)
     // Write all touch zones
     error += df.Write(ZoneCount(), 1);
 
-    for (Zone *z = ZoneList(); z != nullptr; z = z->next)
+    for (Zone *z = ZoneList(); z != NULL; z = z->next)
     {
         error += df.Write(z->Type());
         error += z->Write(df, version);

@@ -19,7 +19,7 @@
  */
 
 #ifndef _PHRASE_ZONE_HH
-#define PHRASE_ZONE_HH
+#define _PHRASE_ZONE_HH
 
 #include "form_zone.hh"
 
@@ -32,12 +32,12 @@ public:
     PhraseZone();
 
     // Member Functions
-    int          Type() override { return ZONE_PHRASE; }
-    RenderResult Render(Terminal *t, int update_flag) override;
+    int          Type() { return ZONE_PHRASE; }
+    RenderResult Render(Terminal *t, int update_flag);
 
-    int LoadRecord(Terminal *t, int record) override;
-    int SaveRecord(Terminal *t, int record, int write_file) override;
-    int RecordCount(Terminal *t) override;
+    int LoadRecord(Terminal *t, int record);
+    int SaveRecord(Terminal *t, int record, int write_file);
+    int RecordCount(Terminal *t);
 };
 
 #endif

@@ -19,7 +19,7 @@
  */
 
 #ifndef _INVENTORY_ZONE_HH
-#define INVENTORY_ZONE_HH
+#define _INVENTORY_ZONE_HH
 
 #include "form_zone.hh"
 
@@ -45,7 +45,7 @@ public:
     RC_Part();
     
     // Destructor
-    ~RC_Part() override;
+    virtual ~RC_Part();
 
     // Member Functions
     int   Render(Terminal *t);
@@ -63,20 +63,20 @@ public:
     ProductZone();
 
     // Member Functions
-    int          Type() override { return ZONE_INVENTORY; }
-    RenderResult Render(Terminal *t, int update_flag) override;
-    SignalResult Signal(Terminal *t, const genericChar* message) override;
-    SignalResult Mouse(Terminal *t, int action, int mx, int my) override;
-    Flt         *Spacing() override { return &list_spacing; }
+    int          Type() { return ZONE_INVENTORY; }
+    RenderResult Render(Terminal *t, int update_flag);
+    SignalResult Signal(Terminal *t, const genericChar* message);
+    SignalResult Mouse(Terminal *t, int action, int mx, int my);
+    Flt         *Spacing() { return &list_spacing; }
 
-    int LoadRecord(Terminal *t, int record) override;
-    int SaveRecord(Terminal *t, int record, int write_file) override;
-    int UpdateForm(Terminal *t, int record) override;
-    int NewRecord(Terminal *t) override;
-    int KillRecord(Terminal *t, int record) override;
-    int Search(Terminal *t, int record, const genericChar* word) override;
-    int ListReport(Terminal *t, Report *r) override;
-    int RecordCount(Terminal *t) override;
+    int LoadRecord(Terminal *t, int record);
+    int SaveRecord(Terminal *t, int record, int write_file);
+    int UpdateForm(Terminal *t, int record);
+    int NewRecord(Terminal *t);
+    int KillRecord(Terminal *t, int record);
+    int Search(Terminal *t, int record, const genericChar* word);
+    int ListReport(Terminal *t, Report *r);
+    int RecordCount(Terminal *t);
 };
 
 class RecipeZone : public ListFormZone
@@ -91,18 +91,18 @@ public:
     RecipeZone();
 
     // Member Functions
-    int          Type() override { return ZONE_RECIPE; }
-    RenderResult Render(Terminal *t, int update_flag) override;
-    SignalResult Touch(Terminal *t, int tx, int ty) override;
-    Flt         *Spacing() override { return &list_spacing; }
+    int          Type() { return ZONE_RECIPE; }
+    RenderResult Render(Terminal *t, int update_flag);
+    SignalResult Touch(Terminal *t, int tx, int ty);
+    Flt         *Spacing() { return &list_spacing; }
 
-    int LoadRecord(Terminal *t, int record) override;
-    int SaveRecord(Terminal *t, int record, int write_file) override;
-    int NewRecord(Terminal *t) override;
-    int KillRecord(Terminal *t, int record) override;
-    int Search(Terminal *t, int record, const genericChar* word) override;
-    int ListReport(Terminal *t, Report *r) override;
-    int RecordCount(Terminal *t) override;
+    int LoadRecord(Terminal *t, int record);
+    int SaveRecord(Terminal *t, int record, int write_file);
+    int NewRecord(Terminal *t);
+    int KillRecord(Terminal *t, int record);
+    int Search(Terminal *t, int record, const genericChar* word);
+    int ListReport(Terminal *t, Report *r);
+    int RecordCount(Terminal *t);
 
     int  MakeRecipe(Terminal *t, Recipe *rc);
     int  LayoutParts();
@@ -116,17 +116,17 @@ public:
     VendorZone();
 
     // Member Functions
-    int          Type() override { return ZONE_VENDOR; }
-    RenderResult Render(Terminal *t, int update_flag) override;
-    Flt         *Spacing() override { return &list_spacing; }
+    int          Type() { return ZONE_VENDOR; }
+    RenderResult Render(Terminal *t, int update_flag);
+    Flt         *Spacing() { return &list_spacing; }
 
-    int LoadRecord(Terminal *t, int record) override;
-    int SaveRecord(Terminal *t, int record, int write_file) override;
-    int NewRecord(Terminal *t) override;
-    int KillRecord(Terminal *t, int record) override;
-    int Search(Terminal *t, int record, const genericChar* word) override;
-    int ListReport(Terminal *t, Report *r) override;
-    int RecordCount(Terminal *t) override;
+    int LoadRecord(Terminal *t, int record);
+    int SaveRecord(Terminal *t, int record, int write_file);
+    int NewRecord(Terminal *t);
+    int KillRecord(Terminal *t, int record);
+    int Search(Terminal *t, int record, const genericChar* word);
+    int ListReport(Terminal *t, Report *r);
+    int RecordCount(Terminal *t);
 };
 
 class ItemListZone : public ListFormZone
@@ -140,18 +140,18 @@ public:
     ItemListZone();
 
     // Member Functions
-    int          Type() override { return ZONE_ITEM_LIST; }
+    int          Type() { return ZONE_ITEM_LIST; }
     int          AddFields();
-    RenderResult Render(Terminal *t, int update_flag) override;
-    SignalResult Signal(Terminal *t, const genericChar* message) override;
-    SignalResult Mouse(Terminal *t, int action, int mx, int my) override;
-    Flt         *Spacing() override { return &list_spacing; }
+    RenderResult Render(Terminal *t, int update_flag);
+    SignalResult Signal(Terminal *t, const genericChar* message);
+    SignalResult Mouse(Terminal *t, int action, int mx, int my);
+    Flt         *Spacing() { return &list_spacing; }
 
-    int LoadRecord(Terminal *t, int record) override;
-    int SaveRecord(Terminal *t, int record, int write_file) override;
-    int Search(Terminal *t, int record, const genericChar* word) override;
-    int ListReport(Terminal *t, Report *r) override;
-    int RecordCount(Terminal *t) override;
+    int LoadRecord(Terminal *t, int record);
+    int SaveRecord(Terminal *t, int record, int write_file);
+    int Search(Terminal *t, int record, const genericChar* word);
+    int ListReport(Terminal *t, Report *r);
+    int RecordCount(Terminal *t);
     
     // Helper functions for filtering
     int GetItemTypeColor(int item_type);
@@ -169,23 +169,23 @@ public:
     // Constructor
     InvoiceZone();
     // Destructor
-    ~InvoiceZone() override;
+    ~InvoiceZone();
 
     // Member Functions
-    int          Type() override { return ZONE_INVOICE; }
-    RenderResult Render(Terminal *t, int update_flag) override;
-    SignalResult Signal(Terminal *t, const genericChar* message) override;
-    SignalResult Touch(Terminal *t, int tx, int ty) override;
-    SignalResult Mouse(Terminal *t, int action, int mx, int my) override;
-    Flt         *Spacing() override { return &list_spacing; }
+    int          Type() { return ZONE_INVOICE; }
+    RenderResult Render(Terminal *t, int update_flag);
+    SignalResult Signal(Terminal *t, const genericChar* message);
+    SignalResult Touch(Terminal *t, int tx, int ty);
+    SignalResult Mouse(Terminal *t, int action, int mx, int my);
+    Flt         *Spacing() { return &list_spacing; }
 
-    int LoadRecord(Terminal *t, int record) override;
-    int SaveRecord(Terminal *t, int record, int write_file) override;
-    int NewRecord(Terminal *t) override;
-    int KillRecord(Terminal *t, int record) override;
-    int Search(Terminal *t, int record, const genericChar* word) override;
-    int ListReport(Terminal *t, Report *r) override;
-    int RecordCount(Terminal *t) override;
+    int LoadRecord(Terminal *t, int record);
+    int SaveRecord(Terminal *t, int record, int write_file);
+    int NewRecord(Terminal *t);
+    int KillRecord(Terminal *t, int record);
+    int Search(Terminal *t, int record, const genericChar* word);
+    int ListReport(Terminal *t, Report *r);
+    int RecordCount(Terminal *t);
 };
 
 #endif

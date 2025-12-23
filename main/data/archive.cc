@@ -36,8 +36,8 @@
 Archive::Archive(TimeInfo &end)
 {
     FnTrace("Archive::Archive(TimeInfo)");
-    next               = nullptr;
-    fore               = nullptr;
+    next               = NULL;
+    fore               = NULL;
     end_time           = end;
     id                 = 0;
     loaded             = 1;
@@ -79,20 +79,20 @@ Archive::Archive(TimeInfo &end)
     discount_alcohol       = 0;
     price_rounding         = 0;
 
-    cc_exception_db        = nullptr;
-    cc_refund_db           = nullptr;
-    cc_void_db             = nullptr;
-    cc_init_results        = nullptr;
-    cc_saf_details_results = nullptr;
-    cc_settle_results      = nullptr;
+    cc_exception_db        = NULL;
+    cc_refund_db           = NULL;
+    cc_void_db             = NULL;
+    cc_init_results        = NULL;
+    cc_saf_details_results = NULL;
+    cc_settle_results      = NULL;
 }
 
 Archive::Archive(Settings *settings, const char* file)
 {
     FnTrace("Archive::Archive(Settings, const char* )");
     filename.Set(file);
-    next               = nullptr;
-    fore               = nullptr;
+    next               = NULL;
+    fore               = NULL;
     loaded             = 0;
     changed            = 0;
     id                 = 0;
@@ -132,12 +132,12 @@ Archive::Archive(Settings *settings, const char* file)
     discount_alcohol       = settings->discount_alcohol;
     price_rounding         = settings->price_rounding;
 
-    cc_exception_db        = nullptr;
-    cc_refund_db           = nullptr;
-    cc_void_db             = nullptr;
-    cc_init_results        = nullptr;
-    cc_saf_details_results = nullptr;
-    cc_settle_results      = nullptr;
+    cc_exception_db        = NULL;
+    cc_refund_db           = NULL;
+    cc_void_db             = NULL;
+    cc_init_results        = NULL;
+    cc_saf_details_results = NULL;
+    cc_settle_results      = NULL;
 
     // Read in header of archive
     file_version = 0;
@@ -145,19 +145,11 @@ Archive::Archive(Settings *settings, const char* file)
     if (df.Open(file, file_version))
         return;
 
-    const int error = [file_version, &df, this]() {
-        int read_error = 0;
-        read_error += df.Read(id);
-        if (file_version >= 6)
-            read_error += df.Read(start_time);
-        read_error += df.Read(end_time);
-        return read_error;
-    }();
-
-    if (error != 0)
-    {
-        corrupt = 1;
-    }
+    int error = 0;
+    error += df.Read(id);
+    if (file_version >= 6)
+        error += df.Read(start_time);
+    error += df.Read(end_time);
 }
 
 // Member Functions
@@ -269,7 +261,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
                 ReportError("Unexpected end of Check data");
                 goto archive_read_error;
             }
-            auto *check = new Check;
+            Check *check = new Check;
             error = check->Read(settings, df, check_version);
             if (error)
             {
@@ -297,7 +289,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
                 ReportError("Unexpected end of TipDB");
                 goto archive_read_error;
             }
-            auto *te = new TipEntry;
+            TipEntry *te = new TipEntry;
             error = te->Read(df, tip_version);
             if (error)
             {
@@ -350,7 +342,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         {
             for (i = 0; i < count; i++)
             {
-                auto *discinfo = new DiscountInfo;
+                DiscountInfo *discinfo = new DiscountInfo;
                 discinfo->Read(df, media_version);
                 Add(discinfo);
             }
@@ -363,7 +355,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         {
             for (i = 0; i < count; i++)
             {
-                auto *coupinfo = new CouponInfo;
+                CouponInfo *coupinfo = new CouponInfo;
                 coupinfo->Read(df, media_version);
                 Add(coupinfo);
             }
@@ -376,7 +368,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         {
             for (i = 0; i < count; i++)
             {
-                auto *credinfo = new CreditCardInfo;
+                CreditCardInfo *credinfo = new CreditCardInfo;
                 credinfo->Read(df, media_version);
                 Add(credinfo);
             }
@@ -389,7 +381,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         {
             for (i = 0; i < count; i++)
             {
-                auto *compinfo = new CompInfo;
+                CompInfo *compinfo = new CompInfo;
                 compinfo->Read(df, media_version);
                 Add(compinfo);
             }
@@ -402,7 +394,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         {
             for (i = 0; i < count; i++)
             {
-                auto *mealinfo = new MealInfo;
+                MealInfo *mealinfo = new MealInfo;
                 mealinfo->Read(df, media_version);
                 Add(mealinfo);
             }
@@ -469,7 +461,7 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         df.Read(advertise_fund);
 
     // Initialize Data
-    for (drawer = DrawerList(); drawer != nullptr; drawer = drawer->next)
+    for (drawer = DrawerList(); drawer != NULL; drawer = drawer->next)
     {
         drawer->Total(CheckList());
     }
@@ -477,10 +469,10 @@ int Archive::LoadPacked(Settings *settings, const char* file)
     {
         Check *check = CheckList();
         SubCheck *subcheck;
-        while (check != nullptr)
+        while (check != NULL)
         {
             subcheck = check->SubList();
-            while (subcheck != nullptr)
+            while (subcheck != NULL)
             {
                 subcheck->archive = this;
                 subcheck->FigureTotals(settings);
@@ -525,7 +517,7 @@ int Archive::LoadAlternateMedia()
             mf.Read(count);  // using count for all media types
             for (i = 0; i < count; i++)
             {
-                auto *discinfo = new DiscountInfo;
+                DiscountInfo *discinfo = new DiscountInfo;
                 discinfo->Read(mf, media_version);
                 Add(discinfo);
             }
@@ -533,7 +525,7 @@ int Archive::LoadAlternateMedia()
             mf.Read(count);  // using count for all media types
             for (i = 0; i < count; i++)
             {
-                auto *coupinfo = new CouponInfo;
+                CouponInfo *coupinfo = new CouponInfo;
                 coupinfo->Read(mf, media_version);
                 Add(coupinfo);
             }
@@ -541,7 +533,7 @@ int Archive::LoadAlternateMedia()
             mf.Read(count);  // using count for all media types
             for (i = 0; i < count; i++)
             {
-                auto *credinfo = new CreditCardInfo;
+                CreditCardInfo *credinfo = new CreditCardInfo;
                 credinfo->Read(mf, media_version);
                 Add(credinfo);
             }
@@ -549,7 +541,7 @@ int Archive::LoadAlternateMedia()
             mf.Read(count);  // using count for all media types
             for (i = 0; i < count; i++)
             {
-                auto *compinfo = new CompInfo;
+                CompInfo *compinfo = new CompInfo;
                 compinfo->Read(mf, media_version);
                 Add(compinfo);
             }
@@ -557,7 +549,7 @@ int Archive::LoadAlternateMedia()
             mf.Read(count);  // using count for all media types
             for (i = 0; i < count; i++)
             {
-                auto *mealinfo = new MealInfo;
+                MealInfo *mealinfo = new MealInfo;
                 mealinfo->Read(mf, media_version);
                 Add(mealinfo);
             }
@@ -696,7 +688,7 @@ int Archive::SavePacked()
     df.Write(media_version);
     df.Write(DiscountCount());
     DiscountInfo *discount = DiscountList();
-    while (discount != nullptr)
+    while (discount != NULL)
     {
         discount->Write(df, media_version);
         discount = discount->next;
@@ -704,7 +696,7 @@ int Archive::SavePacked()
 
     df.Write(CouponCount());
     CouponInfo *coupon = CouponList();
-    while (coupon != nullptr)
+    while (coupon != NULL)
     {
         coupon->Write(df, media_version);
         coupon = coupon->next;
@@ -712,7 +704,7 @@ int Archive::SavePacked()
 
     df.Write(CreditCardCount());
     CreditCardInfo *creditcard = CreditCardList();
-    while (creditcard != nullptr)
+    while (creditcard != NULL)
     {
         creditcard->Write(df, media_version);
         creditcard = creditcard->next;
@@ -720,7 +712,7 @@ int Archive::SavePacked()
 
     df.Write(CompCount());
     CompInfo *comp = CompList();
-    while (comp != nullptr)
+    while (comp != NULL)
     {
         comp->Write(df, media_version);
         comp = comp->next;
@@ -728,7 +720,7 @@ int Archive::SavePacked()
 
     df.Write(MealCount());
     MealInfo *meal = MealList();
-    while (meal != nullptr)
+    while (meal != NULL)
     {
         meal->Write(df, media_version);
         meal = meal->next;
@@ -751,23 +743,23 @@ int Archive::SavePacked()
     df.Write(discount_alcohol);
     df.Write(tax_VAT);
 
-    if (cc_exception_db == nullptr)
+    if (cc_exception_db == NULL)
         cc_exception_db = new CreditDB(CC_DBTYPE_EXCEPT);
     cc_exception_db->Write(df);
-    if (cc_refund_db == nullptr)
+    if (cc_refund_db == NULL)
         cc_refund_db = new CreditDB(CC_DBTYPE_REFUND);
     cc_refund_db->Write(df);
-    if (cc_void_db == nullptr)
+    if (cc_void_db == NULL)
         cc_void_db = new CreditDB(CC_DBTYPE_VOID);
     cc_void_db->Write(df);
 
-    if (cc_init_results == nullptr)
+    if (cc_init_results == NULL)
         cc_init_results = new CCInit();
     cc_init_results->Write(df);
-    if (cc_saf_details_results == nullptr)
+    if (cc_saf_details_results == NULL)
         cc_saf_details_results = new CCSAFDetails();
     cc_saf_details_results->Write(df);
-    if (cc_settle_results == nullptr)
+    if (cc_settle_results == NULL)
         cc_settle_results = new CCSettle();
     cc_settle_results->Write(df);
 
@@ -801,22 +793,22 @@ int Archive::Unload()
     expense_db.Purge();
 
     delete cc_exception_db;
-    cc_exception_db = nullptr;
+    cc_exception_db = NULL;
 
     delete cc_refund_db;
-    cc_refund_db = nullptr;
+    cc_refund_db = NULL;
 
     delete cc_void_db;
-    cc_void_db = nullptr;
+    cc_void_db = NULL;
 
     delete cc_init_results;
-    cc_init_results = nullptr;
+    cc_init_results = NULL;
 
     delete cc_saf_details_results;
-    cc_saf_details_results = nullptr;
+    cc_saf_details_results = NULL;
 
     delete cc_settle_results;
-    cc_settle_results = nullptr;
+    cc_settle_results = NULL;
 
     loaded = 0;
     return 0;
@@ -825,7 +817,7 @@ int Archive::Unload()
 int Archive::Add(Check *c)
 {
     FnTrace("Archive::Add(Check)");
-    if (loaded == 0 || c == nullptr || c->GetStatus() == CHECK_OPEN)
+    if (loaded == 0 || c == NULL || c->GetStatus() == CHECK_OPEN)
         return 1; // can't archive open check
 
     c->archive = this;
@@ -840,10 +832,10 @@ int Archive::Add(Check *c)
 int Archive::Remove(Check *c)
 {
     FnTrace("Archive::Remove(Check)");
-    if (c == nullptr || c->archive != this)
+    if (c == NULL || c->archive != this)
         return 1;
 
-    c->archive = nullptr;
+    c->archive = NULL;
     check_list.Remove(c);
 
     changed = 1;
@@ -853,7 +845,7 @@ int Archive::Remove(Check *c)
 int Archive::Add(Drawer *drawer)
 {
     FnTrace("Archive::Add(Drawer)");
-    if (drawer == nullptr || loaded == 0)
+    if (drawer == NULL || loaded == 0)
         return 1;
 
     drawer->archive = this;
@@ -869,10 +861,10 @@ int Archive::Add(Drawer *drawer)
 int Archive::Remove(Drawer *drawer)
 {
     FnTrace("Archive::Remove(Drawer)");
-    if (drawer == nullptr || drawer->archive != this)
+    if (drawer == NULL || drawer->archive != this)
         return 1;
 
-    drawer->archive = nullptr;
+    drawer->archive = NULL;
     drawer_list.Remove(drawer);
 
     changed = 1;
@@ -882,7 +874,7 @@ int Archive::Remove(Drawer *drawer)
 int Archive::Add(WorkEntry *we)
 {
     FnTrace("Archive::Add(WorkEntry)");
-    if (we == nullptr || loaded == 0)
+    if (we == NULL || loaded == 0)
         return 1;
 
     work_db.Add(we);
@@ -899,7 +891,7 @@ int Archive::Remove(WorkEntry *we)
 int Archive::Add(DiscountInfo *discount)
 {
     FnTrace("Archive::Add(Discount)");
-    if (discount == nullptr)
+    if (discount == NULL)
         return 1;
     return discount_list.AddToTail(discount);
 }
@@ -907,7 +899,7 @@ int Archive::Add(DiscountInfo *discount)
 int Archive::Add(CouponInfo *coupon)
 {
     FnTrace("Archive::Add(Coupon)");
-    if (coupon == nullptr)
+    if (coupon == NULL)
         return 1;
     return coupon_list.AddToTail(coupon);
 }
@@ -915,7 +907,7 @@ int Archive::Add(CouponInfo *coupon)
 int Archive::Add(CreditCardInfo *creditcard)
 {
     FnTrace("Archive::Add(CreditCard)");
-    if (creditcard == nullptr)
+    if (creditcard == NULL)
         return 1;
     return creditcard_list.AddToTail(creditcard);
 }
@@ -923,7 +915,7 @@ int Archive::Add(CreditCardInfo *creditcard)
 int Archive::Add(CompInfo *comp)
 {
     FnTrace("Archive::Add(Comp)");
-    if (comp == nullptr)
+    if (comp == NULL)
         return 1;
     return comp_list.AddToTail(comp);
 }
@@ -931,7 +923,7 @@ int Archive::Add(CompInfo *comp)
 int Archive::Add(MealInfo *meal)
 {
     FnTrace("Archive::Add(Meal)");
-    if (meal == nullptr)
+    if (meal == NULL)
         return 1;
     return meal_list.AddToTail(meal);
 }
@@ -941,7 +933,7 @@ int Archive::DiscountCount()
     FnTrace("Archive::DiscountCount()");
     int count = 0;
     DiscountInfo *discount = DiscountList();
-    while (discount != nullptr)
+    while (discount != NULL)
     {
         count += 1;
         discount = discount->next;
@@ -954,7 +946,7 @@ int Archive::CouponCount()
     FnTrace("Archive::CouponCount()");
     int count = 0;
     CouponInfo *coupon = CouponList();
-    while (coupon != nullptr)
+    while (coupon != NULL)
     {
         count += 1;
         coupon = coupon->next;
@@ -967,7 +959,7 @@ int Archive::CreditCardCount()
     FnTrace("Archive::CreditCardCount()");
     int count = 0;
     CreditCardInfo *creditcard = CreditCardList();
-    while (creditcard != nullptr)
+    while (creditcard != NULL)
     {
         count += 1;
         creditcard = creditcard->next;
@@ -980,7 +972,7 @@ int Archive::CompCount()
     FnTrace("Archive::CompCount()");
     int count = 0;
     CompInfo *comp = CompList();
-    while (comp != nullptr)
+    while (comp != NULL)
     {
         count += 1;
         comp = comp->next;
@@ -993,7 +985,7 @@ int Archive::MealCount()
     FnTrace("Archive::MealCount()");
     int count = 0;
     MealInfo *meal = MealList();
-    while (meal != nullptr)
+    while (meal != NULL)
     {
         count += 1;
         meal = meal->next;
@@ -1004,54 +996,54 @@ int Archive::MealCount()
 DiscountInfo *Archive::FindDiscountByID(int discount_id)
 {
     FnTrace("Archive::FindDiscountByID()");
-    for (DiscountInfo *ds = discount_list.Head(); ds != nullptr; ds = ds->next)
+    for (DiscountInfo *ds = discount_list.Head(); ds != NULL; ds = ds->next)
     {
         if (ds->id == discount_id)
             return ds;
     }
-    return nullptr;
+    return NULL;
 }
 
 CouponInfo *Archive::FindCouponByID(int coupon_id)
 {
     FnTrace("Archive::FindCouponByID()");
-    for (CouponInfo *cp = coupon_list.Head(); cp != nullptr; cp = cp->next)
+    for (CouponInfo *cp = coupon_list.Head(); cp != NULL; cp = cp->next)
     {
         if (cp->id == coupon_id)
             return cp;
     }
-    return nullptr;
+    return NULL;
 }
 
 CompInfo *Archive::FindCompByID(int comp_id)
 {
     FnTrace("Archive::FindCompByID()");
-    for (CompInfo *cm = comp_list.Head(); cm != nullptr; cm = cm->next)
+    for (CompInfo *cm = comp_list.Head(); cm != NULL; cm = cm->next)
     {
         if (cm->id == comp_id)
             return cm;
     }
-    return nullptr;
+    return NULL;
 }
 
 CreditCardInfo *Archive::FindCreditCardByID(int creditcard_id)
 {
     FnTrace("Archive::FindCreditCardByID()");
-    for (CreditCardInfo *cc = creditcard_list.Head(); cc != nullptr; cc = cc->next)
+    for (CreditCardInfo *cc = creditcard_list.Head(); cc != NULL; cc = cc->next)
     {
         if (cc->id == creditcard_id)
             return cc;
     }
-    return nullptr;
+    return NULL;
 }
 
 MealInfo *Archive::FindMealByID(int meal_id)
 {
     FnTrace("Archive::FindMealByID()");
-    for (MealInfo *mi = meal_list.Head(); mi != nullptr; mi = mi->next)
+    for (MealInfo *mi = meal_list.Head(); mi != NULL; mi = mi->next)
     {
         if (mi->id == meal_id)
             return mi;
     }
-    return nullptr;
+    return NULL;
 }

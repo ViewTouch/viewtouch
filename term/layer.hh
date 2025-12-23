@@ -232,7 +232,7 @@ public:
     // redraws all layers (only layers with update flag if select_all = 0)
     int UpdateArea(int x, int y, int w, int h);
     // redraws all layers in region
-    int OptimalUpdateArea(int x, int y, int w, int h, Layer *end = nullptr);
+    int OptimalUpdateArea(int x, int y, int w, int h, Layer *end = NULL);
     // redraws all layers with update flag set in region
     int RubberBandOff();
     int RubberBandUpdate(int x, int y);

@@ -34,6 +34,7 @@ class BackTraceFunction
 public:
     // Constructor
     BackTraceFunction(const char* func, const char* file, int line)
+        : recorded_entry_(false)
     {
         // Safety check: validate BT_Track is accessible before using it
         // This prevents crashes from memory corruption
@@ -56,8 +57,8 @@ public:
                 std::printf("Entering %s (%s:%d)\n", func, file, line);
             }
         } catch (...) {
-            // Log error but don't crash - prevents crashes when memory is corrupted
-            std::fprintf(stderr, "Warning: BackTraceFunction exception in %s (%s:%d)\n", func, file, line);
+            // Silently ignore errors from corrupted memory/atomic variables
+            // This prevents crashes when memory is corrupted
         }
     }
     
@@ -74,14 +75,14 @@ public:
                 }
             }
         } catch (...) {
-            // Log error but don't crash - prevents crashes when memory is corrupted
-            std::fprintf(stderr, "Warning: ~BackTraceFunction exception in destructor\n");
+            // Silently ignore errors from corrupted memory/atomic variables
+            // This prevents crashes when memory is corrupted
         }
     }
 
 private:
     size_t get_current_memory_usage() noexcept;
-    bool recorded_entry_{false};
+    bool recorded_entry_;
 };
 
 #define FnTrace(func) BackTraceFunction _fn_start(func, __FILE__, __LINE__)

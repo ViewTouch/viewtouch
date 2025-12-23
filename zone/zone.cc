@@ -19,7 +19,7 @@
 #include "safe_string_utils.hh"
 
 #include <cstring>
-#include <cerrno>
+#include <errno.h>
 #include <dirent.h>
 #include <iostream>
 #include <unistd.h>
@@ -95,8 +95,8 @@ int Zone::CopyZone(Zone *target)
         *target->Expression() = *Expression();
 
     // Copy PosZone-specific fields if both are PosZones
-    auto *srcPos = dynamic_cast<PosZone*>(this);
-    auto *dstPos = dynamic_cast<PosZone*>(target);
+    PosZone *srcPos = dynamic_cast<PosZone*>(this);
+    PosZone *dstPos = dynamic_cast<PosZone*>(target);
     if (srcPos && dstPos) {
         *dstPos->ImagePath() = *srcPos->ImagePath();
     }
@@ -404,7 +404,7 @@ int Zone::AlterSize(Terminal *t, int wchange, int hchange,
 int Zone::AlterPosition(Terminal *t, int xchange, int ychange)
 {
     FnTrace("Zone::AlterPosition()");
-    if (page == nullptr)
+    if (page == NULL)
         return 1;
 
     int grid_x = t->grid_x;
@@ -501,9 +501,9 @@ int Zone::RenderShadow(Terminal *t)
  ***********************************************************************/
 Page::Page()
 {
-    next        = nullptr;
-    fore        = nullptr;
-    parent_page = nullptr;
+    next        = NULL;
+    fore        = NULL;
+    parent_page = NULL;
     id          = 0;
     parent_id   = 0;
     image       = IMAGE_DEFAULT;
@@ -548,9 +548,6 @@ int Page::Init(ZoneDB *zone_db)
     case SIZE_1920x1200: width = 1920; height = 1200; break;
     case SIZE_2560x1440: width = 2560; height = 1440; break;	
     case SIZE_2560x1600: width = 2560; height = 1600; break;
-    default:
-        // Use default 1024x768 if size is not recognized
-        width = 1024; height = 768; break;
 	}
 
 	// FIX - should look up these values instead of having hardcoded values
@@ -567,15 +564,12 @@ int Page::Init(ZoneDB *zone_db)
     case PAGE_LIBRARY:   parent_id = 0; break;
     case PAGE_MODIFIER_KEYBOARD: parent_id = -96; break;
     case PAGE_INDEX_WITH_TABS:   parent_id = -94; break;
-    default:
-        // Default to no parent for unrecognized page types
-        parent_id = 0; break;
 	}
 
 	if (zone_db)
 		parent_page = zone_db->FindByID(parent_id, size);
 	else
-		parent_page = nullptr;
+		parent_page = NULL;
 
 	// Check for circular parent pointers
 	int count = 0;
@@ -586,7 +580,7 @@ int Page::Init(ZoneDB *zone_db)
 		{
 			// loop detected - kill parent pointer
 			parent_id   = 0;
-			parent_page = nullptr;
+			parent_page = NULL;
 			break;
 		}
 		++count;
@@ -598,7 +592,7 @@ int Page::Init(ZoneDB *zone_db)
 int Page::Add(Zone *z)
 {
     FnTrace("Page::Add()");
-    if (z == nullptr)
+    if (z == NULL)
         return 1;
 
     // Index Tab buttons can only be added to Index pages
@@ -627,7 +621,7 @@ int Page::Add(Zone *z)
 int Page::AddFront(Zone *z)
 {
     FnTrace("Page::AddFront()");
-    if (z == nullptr)
+    if (z == NULL)
         return 1;
 
     z->page = this;
@@ -649,11 +643,11 @@ int Page::AddFront(Zone *z)
 int Page::Remove(Zone *z)
 {
     FnTrace("Page::Remove()");
-    if (z == nullptr)
+    if (z == NULL)
         return 1;
 
     zone_list.Remove(z);
-    z->page = nullptr;
+    z->page = NULL;
     return 0;
 }
 
@@ -715,7 +709,7 @@ RenderResult Page::Render(Terminal *term, int update_flag, int no_parent)
     if ((type == PAGE_ITEM || type == PAGE_ITEM2) && term->zone_db && !no_parent)
     {
         Page *indexPage = term->zone_db->FindByType(PAGE_INDEX, index, term->size);
-        if (indexPage == nullptr)
+        if (indexPage == NULL)
         {
             // Also try PAGE_INDEX_WITH_TABS
             indexPage = term->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, term->size);
@@ -771,7 +765,7 @@ RenderResult Page::Render(Terminal *term, int update_flag, int no_parent)
     if ((type == PAGE_ITEM || type == PAGE_ITEM2) && term->zone_db && !no_parent)
     {
         Page *indexPage = term->zone_db->FindByType(PAGE_INDEX, index, term->size);
-        if (indexPage == nullptr)
+        if (indexPage == NULL)
         {
             indexPage = term->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, term->size);
         }
@@ -850,7 +844,7 @@ RenderResult Page::Render(Terminal *t, int update_flag,
     if ((type == PAGE_ITEM || type == PAGE_ITEM2) && t->zone_db)
     {
         Page *indexPage = t->zone_db->FindByType(PAGE_INDEX, index, t->size);
-        if (indexPage == nullptr)
+        if (indexPage == NULL)
         {
             indexPage = t->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, t->size);
         }
@@ -910,7 +904,7 @@ RenderResult Page::Render(Terminal *t, int update_flag,
     if ((type == PAGE_ITEM || type == PAGE_ITEM2) && t->zone_db)
     {
         Page *indexPage = t->zone_db->FindByType(PAGE_INDEX, index, t->size);
-        if (indexPage == nullptr)
+        if (indexPage == NULL)
         {
             indexPage = t->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, t->size);
         }
@@ -953,9 +947,9 @@ SignalResult Page::Signal(Terminal *t, const genericChar* message, int group_id)
     SignalResult res;
 
     Page *startpage = t->page;
-    for (Page *p = this; p != nullptr; p = p->parent_page)
+    for (Page *p = this; p != NULL; p = p->parent_page)
     {
-        for (Zone *z = p->ZoneList(); z != nullptr; z = z->next)
+        for (Zone *z = p->ZoneList(); z != NULL; z = z->next)
         {
             if (z->AcceptSignals() &&
                 z->active &&
@@ -988,9 +982,9 @@ SignalResult Page::Keyboard(Terminal *t, int key, int state)
     SignalResult sig = SIGNAL_IGNORED;
 
     Page *startpage = t->page;
-    for (Page *p = this; p != nullptr; p = p->parent_page)
+    for (Page *p = this; p != NULL; p = p->parent_page)
     {
-        for (Zone *z = p->ZoneList(); z != nullptr; z = z->next)
+        for (Zone *z = p->ZoneList(); z != NULL; z = z->next)
         {
             if (z->active)
             {
@@ -1037,7 +1031,7 @@ Zone *Page::FindZone(Terminal *t, int x, int y)
     if ((type == PAGE_ITEM || type == PAGE_ITEM2) && t->zone_db)
     {
         Page *indexPage = t->zone_db->FindByType(PAGE_INDEX, index, t->size);
-        if (indexPage == nullptr)
+        if (indexPage == NULL)
         {
             indexPage = t->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, t->size);
         }
@@ -1054,7 +1048,7 @@ Zone *Page::FindZone(Terminal *t, int x, int y)
         }
     }
 
-    return nullptr;
+    return NULL;
 }
 
 Zone *Page::FindEditZone(Terminal *t, int x, int y)
@@ -1081,7 +1075,7 @@ Zone *Page::FindEditZone(Terminal *t, int x, int y)
     if ((type == PAGE_ITEM || type == PAGE_ITEM2) && t->zone_db)
     {
         Page *indexPage = t->zone_db->FindByType(PAGE_INDEX, index, t->size);
-        if (indexPage == nullptr)
+        if (indexPage == NULL)
         {
             indexPage = t->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, t->size);
         }
@@ -1098,7 +1092,7 @@ Zone *Page::FindEditZone(Terminal *t, int x, int y)
         }
     }
 
-    return nullptr;
+    return NULL;
 }
 
 Zone *Page::FindTranslateZone(Terminal *t, int x, int y)
@@ -1124,7 +1118,7 @@ Zone *Page::FindTranslateZone(Terminal *t, int x, int y)
     if ((type == PAGE_ITEM || type == PAGE_ITEM2) && t->zone_db)
     {
         Page *indexPage = t->zone_db->FindByType(PAGE_INDEX, index, t->size);
-        if (indexPage == nullptr)
+        if (indexPage == NULL)
         {
             indexPage = t->zone_db->FindByType(PAGE_INDEX_WITH_TABS, index, t->size);
         }
@@ -1141,7 +1135,7 @@ Zone *Page::FindTranslateZone(Terminal *t, int x, int y)
         }
     }
 
-    return nullptr;
+    return NULL;
 }
 
 int Page::IsZoneOnPage(Zone *z)
@@ -1269,7 +1263,7 @@ int ZoneDB::Init()
     for (int i = 0; sizes[i] != -1; ++i)
     {
         Page *page94 = FindByID(-94, sizes[i]);
-        if (page94 == nullptr)
+        if (page94 == NULL)
         {
             // Create template page -94 for Index with Tabs
             Page *newPage = NewPosPage();
@@ -1277,7 +1271,7 @@ int ZoneDB::Init()
             {
                 newPage->id = -94;
                 newPage->type = PAGE_INDEX_WITH_TABS;
-                newPage->size = static_cast<short>(sizes[i]);
+                newPage->size = sizes[i];
                 newPage->name.Set("Index with Tabs Template");
                 newPage->index = INDEX_GENERAL;
                 newPage->Init(this);
@@ -1289,9 +1283,9 @@ int ZoneDB::Init()
     // Ensure default Index page (page 60) exists for 1920x1080 only
     // Use page -94 as template if available
     // Check for exact size match, not just max_size
-    Page *page60 = nullptr;
+    Page *page60 = NULL;
     Page *currPage = page_list.Head();
-    while (currPage != nullptr)
+    while (currPage != NULL)
     {
         if (currPage->id == 60 && currPage->size == SIZE_1920x1080)
         {
@@ -1301,12 +1295,12 @@ int ZoneDB::Init()
         currPage = currPage->next;
     }
     
-    if (page60 == nullptr)
+    if (page60 == NULL)
     {
         // Try to use page -94 as template (check for exact size match)
-        Page *templatePage = nullptr;
+        Page *templatePage = NULL;
         currPage = page_list.Head();
-        while (currPage != nullptr)
+        while (currPage != NULL)
         {
             if (currPage->id == -94 && currPage->size == SIZE_1920x1080)
             {
@@ -1316,7 +1310,7 @@ int ZoneDB::Init()
             currPage = currPage->next;
         }
         
-        if (templatePage != nullptr)
+        if (templatePage != NULL)
         {
             // Copy from template page -94
             auto pageCopy = templatePage->Copy();
@@ -1432,7 +1426,7 @@ int ZoneDB::Load(const char* filename)
 int ZoneDB::Save(const char* filename, int page_class)
 {
     FnTrace("ZoneDB::Save()");
-    if (filename == nullptr)
+    if (filename == NULL)
         return 1;
 
     // Count pages to save
@@ -1499,14 +1493,14 @@ int ZoneDB::ImportPage(const char* filename)
     int retval = 0;
     int pagenum;
     int idx;
-    int len = static_cast<int>(strlen(filename));
-    Page *newpage = nullptr;
+    int len = strlen(filename);
+    Page *newpage = NULL;
     InputDataFile infile;
     int version = 0;
     char str[STRLONG];
     int count = 0;
-    SalesItem *salesitem = nullptr;
-    SalesItem *olditem = nullptr;
+    SalesItem *salesitem = NULL;
+    SalesItem *olditem = NULL;
 
     idx = len - 1;
     while (idx > 0 && filename[idx - 1] != '_')
@@ -1526,7 +1520,7 @@ int ZoneDB::ImportPage(const char* filename)
         return 1;  // Error
     }
     newpage = NewPosPage();
-    if (newpage != nullptr)
+    if (newpage != NULL)
     {
         newpage->Read(infile, version);
         newpage->id = pagenum;
@@ -1539,7 +1533,7 @@ int ZoneDB::ImportPage(const char* filename)
         salesitem = new SalesItem();
         salesitem->Read(infile, SALES_ITEM_VERSION);
         olditem = MasterSystem->menu.FindByName(salesitem->item_name.Value());
-        if (olditem != nullptr)
+        if (olditem != NULL)
             MasterSystem->menu.Remove(olditem);
         MasterSystem->menu.Add(salesitem);
         count -= 1;
@@ -1555,18 +1549,18 @@ int ZoneDB::ImportPages()
 {
     FnTrace("ZoneDB::ImportPages()");
     char importdir[STRLONG];
-    DIR *dir = nullptr;
-    struct dirent *record = nullptr;
-    const char* name = nullptr;
+    DIR *dir = NULL;
+    struct dirent *record = NULL;
+    const char* name = NULL;
     char fullpath[STRLONG];
     int count = 0;
 
     MasterSystem->FullPath(PAGEIMPORTS_DIR, importdir);
     dir = opendir(importdir);
-    if (dir != nullptr)
+    if (dir != NULL)
     {
         record = readdir(dir);
-        while (record != nullptr)
+        while (record != NULL)
         {
             name = record->d_name;
             if (strncmp(name, "page_", 5) == 0)
@@ -1593,11 +1587,11 @@ int ZoneDB::ExportPage(Page *page)
     char fullpath[STRLONG];
     char filepath[STRLONG];
     OutputDataFile outfile;
-    Zone *zone = nullptr;
-    SalesItem *salesitem = nullptr;
+    Zone *zone = NULL;
+    SalesItem *salesitem = NULL;
     int count = 0;
 
-    if (page == nullptr)
+    if (page == NULL)
         return retval;
 
     MasterSystem->FullPath(PAGEEXPORTS_DIR, fullpath);
@@ -1608,7 +1602,7 @@ int ZoneDB::ExportPage(Page *page)
     {
         page->Write(outfile, ZONE_VERSION);
         zone = page->ZoneList();
-        while (zone != nullptr)
+        while (zone != NULL)
         {
             if (zone->ItemName())
                 count += 1;
@@ -1616,12 +1610,12 @@ int ZoneDB::ExportPage(Page *page)
         }
         outfile.Write(count);
         zone = page->ZoneList();
-        while (zone != nullptr)
+        while (zone != NULL)
         {
             if (zone->ItemName())
             {
                 salesitem = MasterSystem->menu.FindByName(zone->ItemName()->Value());
-                if (salesitem != nullptr)
+                if (salesitem != NULL)
                     salesitem->Write(outfile, SALES_ITEM_VERSION);
             }
             zone = zone->next;
@@ -1636,7 +1630,7 @@ int ZoneDB::ExportPage(Page *page)
 int ZoneDB::Add(Page *p)
 {
     FnTrace("ZoneDB::Add()");
-    if (p == nullptr)
+    if (p == NULL)
         return 1;
 
     // start at end of list and work backwords
@@ -1652,13 +1646,13 @@ int ZoneDB::AddUnique(Page *page)
 {
     FnTrace("ZoneDB::AddUnique()");
     int retval = 0;
-    Page *oldpage = nullptr;
+    Page *oldpage = NULL;
     int pagenum = page->id;
     char str[STRLENGTH];
 
     // remove a page if there is already one at this ID (of the same size)
     oldpage = FindByID(pagenum, page->size);
-    if (oldpage != nullptr && oldpage->size == page->size)
+    if (oldpage != NULL && oldpage->size == page->size)
     {
         if (Remove(oldpage))
         {
@@ -1696,11 +1690,11 @@ Page *ZoneDB::FindByID(int id, int max_size)
 {
     FnTrace("ZoneDB::FindByID()");
 	if (id == 0)
-		return nullptr;
+		return NULL;
 
-    Page *retPage = nullptr;
+    Page *retPage = NULL;
 	Page *currPage = page_list.Head();
-	while ((retPage == nullptr) && (currPage != nullptr))
+	while ((retPage == NULL) && (currPage != NULL))
 	{
 		if (currPage->id == id && currPage->size <= max_size)
 			retPage = currPage;
@@ -1724,12 +1718,12 @@ Page *ZoneDB::FindByType(int type, int period, int max_size)
             return thisPage;
         }
         if (thisPage == page_list.Tail()) {
-        	return nullptr;
+        	return NULL;
         } else {
             thisPage = thisPage->next;
         }
     }
-    return nullptr;
+    return NULL;
 }
 
 Page *ZoneDB::FindByTerminal(int term_type, int period, int max_size)
@@ -1746,7 +1740,7 @@ Page *ZoneDB::FindByTerminal(int term_type, int period, int max_size)
     if (type != 0)
         return FindByType(type, period, max_size);
     else
-        return nullptr;
+        return NULL;
 }
 
 Page *ZoneDB::FirstTablePage(int max_size)
@@ -1759,7 +1753,7 @@ Page *ZoneDB::FirstTablePage(int max_size)
             return p;
         p = p->next;
     }
-    return nullptr;
+    return NULL;
 }
 
 int ZoneDB::ChangePageID(Page *target, int new_id)
@@ -1776,7 +1770,7 @@ int ZoneDB::ChangePageID(Page *target, int new_id)
         {
             if (p->parent_id == old_id)
                 p->parent_id = new_id;
-            for (Zone *z = p->ZoneList(); z != nullptr; z = z->next)
+            for (Zone *z = p->ZoneList(); z != NULL; z = z->next)
                 z->ChangeJumpID(old_id, new_id);
             p = p->next;
         }
@@ -1945,7 +1939,7 @@ int ZoneDB::CopyEdit(Terminal *t, int modify_x, int modify_y)
     RegionInfo r;
     int count = 0;
 
-    Zone *list = nullptr;
+    Zone *list = NULL;
     Page *p = page_list.Head();
     while (p)
     {
@@ -2013,7 +2007,7 @@ int ZoneDB::CopyEdit(Terminal *t, int modify_x, int modify_y)
 int ZoneDB::RelocateEdit(Terminal *t)
 {
     FnTrace("ZoneDB::RelocateEdit()");
-    Zone *list = nullptr;
+    Zone *list = NULL;
     Page *p = page_list.Head();
     while (p)
     {
@@ -2237,7 +2231,7 @@ int ZoneDB::References(Page *page, int *list, int my_max, int &count)
 int ZoneDB::PageListReport(Terminal *t, int show_system, Report *r)
 {
     FnTrace("ZoneDB::PageListReport()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
 
     r->TextC("Page List", PRINT_UNDERLINE);
@@ -2274,7 +2268,7 @@ int ZoneDB::ChangeItemName(const char* old_name, const genericChar* new_name)
 	Page *thisPage = page_list.Head();
 	while (thisPage)
 	{
-		for (Zone *z = thisPage->ZoneList(); z != nullptr; z = z->next)
+		for (Zone *z = thisPage->ZoneList(); z != NULL; z = z->next)
 		{
 			if (z->ItemName() &&
                 StringCompare(z->ItemName()->Value(), old_name) == 0)
@@ -2302,7 +2296,7 @@ int ZoneDB::PrintZoneDB(const char* dest, int brief)
     int pcount = 0;
     int zcount = 0;
 
-    if (dest != nullptr)
+    if (dest != NULL)
     {
         outfd = open(dest, O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (outfd <= 0)
@@ -2313,7 +2307,7 @@ int ZoneDB::PrintZoneDB(const char* dest, int brief)
             outfd = STDOUT_FILENO;
         }
     }
-    while (currPage != nullptr)
+    while (currPage != NULL)
     {
         if (brief == 0)
         {
@@ -2324,7 +2318,7 @@ int ZoneDB::PrintZoneDB(const char* dest, int brief)
         }
         currZone = currPage->ZoneList();
         pcount += 1;
-        while (currZone != nullptr)
+        while (currZone != NULL)
         {
             if (brief == 0)
             {
@@ -2359,7 +2353,7 @@ int ZoneDB::ValidateSystemPages()
     int invalid_count = 0;
 
     Page *currPage = page_list.Head();
-    while (currPage != nullptr)
+    while (currPage != NULL)
     {
         if (currPage->type == PAGE_SYSTEM && currPage->parent_id > 0)
         {

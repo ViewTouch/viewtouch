@@ -18,8 +18,8 @@
  * Definition of check management classes
  */
 
-#ifndef CHECK_HH
-#define CHECK_HH
+#ifndef _CHECK_HH
+#define _CHECK_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -28,55 +28,29 @@
 #include <memory>
 
 /**** Module Definitions & Global Data ****/
-constexpr int CHECK_VERSION = 25;
+#define CHECK_VERSION        25
 
 // Check Status
-enum class CheckStatus : std::uint8_t {
-    Open = 1,
-    Closed = 2,
-    Voided = 3
-};
-
-// Backward-compatible constexpr shims
-constexpr int CHECK_OPEN = static_cast<int>(CheckStatus::Open);
-constexpr int CHECK_CLOSED = static_cast<int>(CheckStatus::Closed);
-constexpr int CHECK_VOIDED = static_cast<int>(CheckStatus::Voided);
+#define CHECK_OPEN           1
+#define CHECK_CLOSED         2
+#define CHECK_VOIDED         3
 
 // Check Type
-enum class CheckType : std::uint8_t {
-    Restaurant = 1,   // normal check - has table location
-    Takeout = 2,      // take out order - has phone number
-    Bar = 3,          // drink from bar - no guest count or table
-    Merchandise = 4,  // merchandise sale - no guest count or table
-    Delivery = 5,
-    Catering = 6,
-    Hotel = 7,
-    Retail = 8,
-    FastFood = 9,
-    SelfOrder = 10,   // customer self-service order - no login required
-    DineIn = 11,      // dine-in order (restored original value for backward compatibility)
-    ToGo = 12,        // take-out order (restored original value for backward compatibility)
-    CallIn = 13,      // call-in order (restored original value for backward compatibility)
-    SelfDineIn = 14,  // customer self-service dine-in order
-    SelfTakeOut = 15  // customer self-service take-out order
-};
-
-// Backward-compatible constexpr shims
-constexpr int CHECK_RESTAURANT = static_cast<int>(CheckType::Restaurant);
-constexpr int CHECK_TAKEOUT = static_cast<int>(CheckType::Takeout);
-constexpr int CHECK_BAR = static_cast<int>(CheckType::Bar);
-constexpr int CHECK_MERCHANDISE = static_cast<int>(CheckType::Merchandise);
-constexpr int CHECK_DELIVERY = static_cast<int>(CheckType::Delivery);
-constexpr int CHECK_CATERING = static_cast<int>(CheckType::Catering);
-constexpr int CHECK_HOTEL = static_cast<int>(CheckType::Hotel);
-constexpr int CHECK_RETAIL = static_cast<int>(CheckType::Retail);
-constexpr int CHECK_FASTFOOD = static_cast<int>(CheckType::FastFood);
-constexpr int CHECK_SELFORDER = static_cast<int>(CheckType::SelfOrder);
-constexpr int CHECK_DINEIN = static_cast<int>(CheckType::DineIn);
-constexpr int CHECK_TOGO = static_cast<int>(CheckType::ToGo);
-constexpr int CHECK_CALLIN = static_cast<int>(CheckType::CallIn);
-constexpr int CHECK_SELFDINEIN = static_cast<int>(CheckType::SelfDineIn);
-constexpr int CHECK_SELFTAKEOUT = static_cast<int>(CheckType::SelfTakeOut);
+#define CHECK_RESTAURANT     1   // normal check - has table location
+#define CHECK_TAKEOUT        2   // take out order - has phone number
+#define CHECK_BAR            3   // drink from bar - no guest count or table
+#define CHECK_MERCHANDISE    4   // merchandise sale - no guest count or table
+#define CHECK_DELIVERY       5
+#define CHECK_CATERING       6
+#define CHECK_HOTEL          7
+#define CHECK_RETAIL         8
+#define CHECK_FASTFOOD       9
+#define CHECK_SELFORDER     10   // customer self-service order - no login required
+#define CHECK_DINEIN        11   // dine-in order (restored original value for backward compatibility)
+#define CHECK_TOGO          12   // take-out order (restored original value for backward compatibility)
+#define CHECK_CALLIN        13   // call-in order (restored original value for backward compatibility)
+#define CHECK_SELFDINEIN    14   // customer self-service dine-in order
+#define CHECK_SELFTAKEOUT   15   // customer self-service take-out order
 
 // Check Flags
 #define CF_PRINTED           1   // Has been sent to the kitcen at least once
@@ -208,13 +182,13 @@ public:
     int        Add(std::unique_ptr<Order> o);  // Modern C++ version
     int        Remove(Order *o);  // Removes a modifier order
     int        FigureCost();  // Totals up order
-    genericChar* Description(Terminal *t, genericChar* buffer = nullptr);  // Returns string with order description
-    genericChar* PrintDescription( genericChar* str=nullptr, short int pshort = 0 );  // Returns string with printed order description
+    genericChar* Description(Terminal *t, genericChar* buffer = NULL);  // Returns string with order description
+    genericChar* PrintDescription( genericChar* str=NULL, short int pshort = 0 );  // Returns string with printed order description
     int        IsEntree();  // boolean - is this item an "Entree"?
     int        FindPrinterID(Settings *settings);  // PrinterID (based on family) for order
     SalesItem *Item(ItemDB *db);  // Returns menu item this order points to
     int        PrintStatus(Terminal *t, int printer_id, int reprint = 0, int flag_sent = ORDER_SENT);  // Returns 0-don't print, 1-print, 2-notify only
-    genericChar* Seat(Settings *settings, genericChar* buffer = nullptr);  // Returns string with order's seat
+    genericChar* Seat(Settings *settings, genericChar* buffer = NULL);  // Returns string with order's seat
     int        IsModifier();  // Boolean - Is this order a modifier?
     int        CanDiscount(int discount_alcohol, Payment *p);  // Boolean - Does this discount apply?
     int        Finalize();  // Finalizes order
@@ -223,7 +197,7 @@ public:
     int        IsReduced(int set = -1);
     int        VideoTarget(Settings *settings); // returns the video target for this order
     int        AddQualifier(const char* qualifier_str);
-    int        CalculateTax(Settings *settings, Terminal *term = nullptr); // Calculate tax for this order
+    int        CalculateTax(Settings *settings, Terminal *term = NULL); // Calculate tax for this order
 };
 
 class Payment
@@ -249,7 +223,7 @@ public:
     Payment *Copy();  // Returns exact copy of payment object
     int      Read(InputDataFile &df, int version);  // Reads payment from a file
     int      Write(OutputDataFile &df, int version);  // Write payment to a file
-    genericChar* Description(Settings *settings, genericChar* str = nullptr);  // Returns description of discount
+    genericChar* Description(Settings *settings, genericChar* str = NULL);  // Returns description of discount
     int      Priority();  // Sorting priority (higher goes 1st)
     int      Suppress();  // Boolean - Should payment be shown?
     int      IsDiscount();  // Boolean - Is payment a discount?
@@ -316,12 +290,12 @@ public:
     Payment *PaymentListEnd()  { return payment_list.Tail(); }
     int      PaymentCount()    { return payment_list.Count(); }
 
-    [[nodiscard]] const Order   *OrderList() const      { return order_list.Head(); }
-    [[nodiscard]] const Order   *OrderListEnd() const   { return order_list.Tail(); }
+    const Order   *OrderList() const      { return order_list.Head(); }
+    const Order   *OrderListEnd() const   { return order_list.Tail(); }
 
-    [[nodiscard]] const Payment *PaymentList() const    { return payment_list.Head(); }
-    [[nodiscard]] const Payment *PaymentListEnd() const { return payment_list.Tail(); }
-    [[nodiscard]] int            PaymentCount() const   { return payment_list.Count(); }
+    const Payment *PaymentList() const    { return payment_list.Head(); }
+    const Payment *PaymentListEnd() const { return payment_list.Tail(); }
+    int            PaymentCount() const   { return payment_list.Count(); }
 
     int TotalTax()
     {
@@ -342,13 +316,13 @@ public:
 
     SubCheck *Copy(Settings *settings);  // Creates a subcheck copy
     std::unique_ptr<SubCheck> CopyUnique(Settings *settings);  // Modern C++ version returning unique_ptr
-    int       Copy(SubCheck *sc, Settings *settings = nullptr, int restore = 0);  // Copies the contents of a subcheck
+    int       Copy(SubCheck *sc, Settings *settings = NULL, int restore = 0);  // Copies the contents of a subcheck
     int       Read(Settings *settings, InputDataFile &df, int version);  // Reads subcheck from file
     int       Write(OutputDataFile &df, int version);  // Writes subcheck to file
-    int       Add(Order *o, Settings *settings = nullptr);  // Adds an order - recalculates if settings are given
-    int       Add(Payment *p, Settings *settings = nullptr);  // Adds a payment - recalculates if settings are given
-    int       Remove(Order *o, Settings *settings = nullptr);  // Removes an order - recalculates if settings are given
-    int       Remove(Payment *p, Settings *settings = nullptr);  // Removes a payment - recalculates if settings are given
+    int       Add(Order *o, Settings *settings = NULL);  // Adds an order - recalculates if settings are given
+    int       Add(Payment *p, Settings *settings = NULL);  // Adds a payment - recalculates if settings are given
+    int       Remove(Order *o, Settings *settings = NULL);  // Removes an order - recalculates if settings are given
+    int       Remove(Payment *p, Settings *settings = NULL);  // Removes a payment - recalculates if settings are given
     int       Purge(int restore = 0);  // Removes all payments & orders
     Order    *RemoveOne(Order *o);  // Removes one order & returns it
     Order    *RemoveCount(Order *o, int count = 1);
@@ -358,13 +332,13 @@ public:
     int       FigureTotals(Settings *settings);  // Totals costs & payments
     int       TabRemain();
     int       SettleTab(Terminal *term, int payment_type, int payment_id, int payment_flags);
-    int       ConsolidateOrders(Settings *settings = nullptr, int relaxed = 0);  // Combines like orders - recalculates if settings are given
-    int       ConsolidatePayments(Settings *settings = nullptr);  // Combines like payments - recalculates if settings are given
+    int       ConsolidateOrders(Settings *settings = NULL, int relaxed = 0);  // Combines like orders - recalculates if settings are given
+    int       ConsolidatePayments(Settings *settings = NULL);  // Combines like payments - recalculates if settings are given
     int       FinalizeOrders();  // Makes all ordered items final
     int       Void();  // Voids check
     int       SeatsUsed();  // number of seats with orders
     int       PrintReceipt(Terminal *t, Check *c, Printer *p,
-                           Drawer *d = nullptr, int open_drawer = 0);  // Prints receipt
+                           Drawer *d = NULL, int open_drawer = 0);  // Prints receipt
     int       ReceiptReport(Terminal *t, Check *c, Drawer *d, Report *r);  // Makes report of receipt
     const genericChar* StatusString(Terminal *t);  // Returns string with subcheck status (Open, Closed, Voided, etc.)
     int       IsSeatOnCheck(int seat);  // Boolean - Are any of the orders for this seat?
@@ -382,7 +356,7 @@ public:
     int       OrderCount(int seat = -1);  // Returns number of orders for seat
     int       OrderPage(Order *o, int lines_per_page, int seat = -1);  // Returns page order would appear on
     Payment  *NewPayment(int type, int id, int flags, int amount);  // Creates a new order for this subcheck and returns it
-    Credit   *CurrentCredit();  // Returns creditcard info for this subcheck (or nullptr if there is none)
+    Credit   *CurrentCredit();  // Returns creditcard info for this subcheck (or NULL if there is none)
     int       IsEqual(SubCheck *sc);  // Boolean - Are both subchecks the same?
     int       IsTaxExempt();
     int       IsBalanced();
@@ -434,7 +408,7 @@ public:
 
     // Constructors
     Check();
-    Check(Settings *settings, int customer_type, Employee *e = nullptr);
+    Check(Settings *settings, int customer_type, Employee *e = NULL);
     // Destructor
     ~Check();
 
@@ -442,9 +416,9 @@ public:
     SubCheck *SubList()       { return sub_list.Head(); }
     SubCheck *SubListEnd()    { return sub_list.Tail(); }
     int       SubCount()      { return sub_list.Count(); }
-    [[nodiscard]] const SubCheck *SubList() const    { return sub_list.Head(); }
-    [[nodiscard]] const SubCheck *SubListEnd() const { return sub_list.Tail(); }
-    [[nodiscard]] int             SubCount() const   { return sub_list.Count(); }
+    const SubCheck *SubList() const    { return sub_list.Head(); }
+    const SubCheck *SubListEnd() const { return sub_list.Tail(); }
+    int             SubCount() const   { return sub_list.Count(); }
 
     Check    *Copy(Settings *settings);
     int       Load(Settings *settings, const genericChar* filename); // Loads check from file
@@ -475,19 +449,19 @@ public:
                          int flag_sent = ORDER_SENT);  // returns # of orders to be printed
     int       SendWorkOrder(Terminal *term, int printer_target, int reprint);
     int       PrintWorkOrder(Terminal *term, Report *report, int printer_id, int reprint,
-                             ReportZone *rzone = nullptr, Printer *printer = nullptr);
+                             ReportZone *rzone = NULL, Printer *printer = NULL);
     int       PrintDeliveryOrder(Report *report, int pwidth = 80);
     int       PrintCustomerInfo(Printer *printer, int mode);
     int       PrintCustomerInfoReport(Report *report, int mode, int columns = 1, int pwidth = 40);
     int       ListOrdersForReport(Terminal *term, Report *report);
     int       MakeReport(Terminal *t, Report *r, int show_what = CHECK_DISPLAY_ALL,
-                         int video_target = PRINTER_DEFAULT, ReportZone *rzone = nullptr);  // makes report showing all subchecks
+                         int video_target = PRINTER_DEFAULT, ReportZone *rzone = NULL);  // makes report showing all subchecks
     int       HasOpenTab();
-    [[nodiscard]] int       IsEmpty() const;  // boolean - is check blank?
-    [[nodiscard]] int       IsTraining() const;  // boolean - is this a training check?
+    int       IsEmpty() const;  // boolean - is check blank?
+    int       IsTraining() const;  // boolean - is this a training check?
     int       EntreeCount(int seat);  // counts total entrees at seat
     SubCheck *FirstOpenSubCheck(int seat = -1);  // returns 1st open subcheck (by seat if needed) - sets current_sub
-    SubCheck *NextOpenSubCheck(SubCheck *sc = nullptr);  // returns next open subcheck in check - sets current_sub
+    SubCheck *NextOpenSubCheck(SubCheck *sc = NULL);  // returns next open subcheck in check - sets current_sub
     TimeInfo *TimeClosed();  // returns ptr to time closed
     int       WhoGetsSale(Settings *settings);  // returns user_id of server
     int       SecondsOpen();  // total number of seconds open
@@ -507,30 +481,30 @@ public:
     int       IsToGo();
     int       IsForHere();
     int       CustomerType(int set = -1);
-    const genericChar* Table(const genericChar* set = nullptr);  // FIX - name not general enough
+    const genericChar* Table(const genericChar* set = NULL);  // FIX - name not general enough
     int       Guests(int guests = -1);
     int              CallCenterID(int set = -1);
     int              CustomerID(int set = -1);
-    const genericChar* LastName(const genericChar* set = nullptr);
-    const genericChar* FirstName(const genericChar* set = nullptr);
-    genericChar* FullName(genericChar* dest = nullptr);
-    const genericChar* Company(const genericChar* set = nullptr);
-    const genericChar* Address(const genericChar* set = nullptr);
-    const genericChar* Address2(const genericChar* set = nullptr);
-    const genericChar* CrossStreet(const genericChar* set = nullptr);
-    const genericChar* City(const genericChar* set = nullptr);
-    const genericChar* State(const genericChar* set = nullptr);
-    const genericChar* Postal(const genericChar* set = nullptr);
-    const genericChar* Vehicle(const genericChar* set = nullptr);
-    const genericChar* CCNumber(const genericChar* set = nullptr);
-    const genericChar* CCExpire(const genericChar* set = nullptr);
-    const genericChar* License(const genericChar* set = nullptr);
-    const genericChar* Comment(const genericChar* set = nullptr);
-    const genericChar* PhoneNumber(const genericChar* set = nullptr);
-    const genericChar* Extension(const genericChar* set = nullptr);
-    TimeInfo        *Date(TimeInfo *set = nullptr);
-    TimeInfo        *CheckIn(TimeInfo *timevar = nullptr);
-    TimeInfo        *CheckOut(TimeInfo *timevar = nullptr);
+    const genericChar* LastName(const genericChar* set = NULL);
+    const genericChar* FirstName(const genericChar* set = NULL);
+    genericChar* FullName(genericChar* dest = NULL);
+    const genericChar* Company(const genericChar* set = NULL);
+    const genericChar* Address(const genericChar* set = NULL);
+    const genericChar* Address2(const genericChar* set = NULL);
+    const genericChar* CrossStreet(const genericChar* set = NULL);
+    const genericChar* City(const genericChar* set = NULL);
+    const genericChar* State(const genericChar* set = NULL);
+    const genericChar* Postal(const genericChar* set = NULL);
+    const genericChar* Vehicle(const genericChar* set = NULL);
+    const genericChar* CCNumber(const genericChar* set = NULL);
+    const genericChar* CCExpire(const genericChar* set = NULL);
+    const genericChar* License(const genericChar* set = NULL);
+    const genericChar* Comment(const genericChar* set = NULL);
+    const genericChar* PhoneNumber(const genericChar* set = NULL);
+    const genericChar* Extension(const genericChar* set = NULL);
+    TimeInfo        *Date(TimeInfo *set = NULL);
+    TimeInfo        *CheckIn(TimeInfo *timevar = NULL);
+    TimeInfo        *CheckOut(TimeInfo *timevar = NULL);
 };
 
 /**** General Functions ****/

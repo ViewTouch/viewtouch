@@ -46,13 +46,13 @@ int  vt_setproctitle(const char* title);
 class InputDataFile;
 class OutputDataFile;
 
-enum RenderResult : std::uint8_t
+enum RenderResult
 {
     RENDER_OKAY,  // render okay
     RENDER_ERROR // error in rendering
 };
 
-enum SignalResult : std::int8_t
+enum SignalResult
 {
     SIGNAL_ERROR = -1, // error in processing signal
     SIGNAL_OKAY,       // signal received
@@ -86,24 +86,18 @@ public:
     bool  Set(const Str &s) { data = s.data; return true; }
     bool  Set(const Str *s) { return Set(s->Value()); }
     void  ChangeAtoB(const char a, const char b);  // character replace
-    [[nodiscard]] int   IntValue() const;
-    [[nodiscard]] Flt   FltValue() const;
-    [[nodiscard]] const char *Value() const noexcept;
-    [[nodiscard]] const char *c_str() const noexcept;
-    [[nodiscard]] std::string str() const noexcept;
+    int   IntValue() const;
+    Flt   FltValue() const;
+    const char *Value() const noexcept;
+    const char *c_str() const noexcept;
+    std::string str() const noexcept;
     const char* ValueSet(const char* set = nullptr);
 
-    [[nodiscard]] bool   empty() const noexcept;
-    [[nodiscard]] size_t size() const noexcept;
+    bool   empty() const noexcept;
+    size_t size() const noexcept;
 
     Str & operator =  (const char* s) { Set(s); return *this; }
-    Str & operator =  (const Str  &s) {
-        if (this == &s) {
-            return *this;
-        }
-        Set(s);
-        return *this;
-    }
+    Str & operator =  (const Str  &s) { Set(s); return *this; }
     Str & operator =  (const int   s) { Set(s); return *this; }
     Str & operator =  (const Flt   s) { Set(s); return *this; }
     int   operator >  (const Str  &s) const;
@@ -231,7 +225,7 @@ std::string AdjustCaseAndSpacing(const std::string &str);
 
 int CompareList(const genericChar* val, const genericChar* list[], int unknown = -1);
 int CompareList(int   val, int   list[], int unknown = -1);
-// compares val with each item in list (nullptr terminated or -1 terminated)
+// compares val with each item in list (NULL terminated or -1 terminated)
 // returns index of match or 'unknown' for no match.
 
 int CompareListN(const genericChar* list[], const genericChar* str, int unknown = -1);
@@ -239,7 +233,7 @@ int CompareListN(const genericChar* list[], const genericChar* str, int unknown 
 // str="hello" will match list[0]="hello world".
 
 const char* FindStringByValue(int val, int val_list[], const genericChar* str_list[],
-                        const genericChar* unknown = nullptr);
+                        const genericChar* unknown = NULL);
 int   FindValueByString(const genericChar* val, int val_list[], const genericChar* str_list[],
                         int unknown = -1);
 // finds string by finding val index

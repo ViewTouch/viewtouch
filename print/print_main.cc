@@ -84,22 +84,22 @@ int main(int argc, const char* argv[])
     Parameter param = ParseArguments(argc, argv);
     if (param.verbose)
     {
-        std::cout << "Listening on port " << param.InetPortNumber << '\n';
-        std::cout << "Writing to printer at " << param.PrinterDevName << '\n';
+        std::cout << "Listening on port " << param.InetPortNumber << std::endl;
+        std::cout << "Writing to printer at " << param.PrinterDevName << std::endl;
     }
 
     // listen for connections
     my_socket = Listen(param.InetPortNumber);
     if (my_socket < 0)
     {
-        std::cerr << "Failed to create listening socket on port " << param.InetPortNumber << '\n';
+        std::cerr << "Failed to create listening socket on port " << param.InetPortNumber << std::endl;
         return 1;
     }
 
     while (my_socket > -1 && !g_shutdown_requested)
     {
         if (param.verbose)
-            std::cout << "Waiting to accept connection..." << '\n';
+            std::cout << "Waiting to accept connection..." << std::endl;
         connection = Accept(my_socket);
         if (connection > -1)
         {
@@ -111,7 +111,7 @@ int main(int argc, const char* argv[])
                 {
                     PrintFromRemote(connection, printer);
                     if (param.verbose)
-                        std::cout << "Closing Printer" << '\n';
+                        std::cout << "Closing Printer" << std::endl;
                     close(printer);
                     printer = -1;
                 }
@@ -125,7 +125,7 @@ int main(int argc, const char* argv[])
                 lock = -1;
             }
             if (param.verbose)
-                std::cout << "Closing socket" << '\n';
+                std::cout << "Closing socket" << std::endl;
             close(connection);
             connection = -1;
         }
@@ -138,7 +138,7 @@ int main(int argc, const char* argv[])
     }
     if (param.verbose && g_shutdown_requested)
     {
-        std::cout << "Shutdown requested, exiting gracefully..." << '\n';
+        std::cout << "Shutdown requested, exiting gracefully..." << std::endl;
     }
 
     return 0;
@@ -173,7 +173,7 @@ int PrintFromRemote(const int my_socket, const int printer)
             else if (bytes_written != bytes_read)
             {
                 std::cerr << "Warning: Partial write to printer (" << bytes_written 
-                         << " of " << bytes_read << " bytes)" << '\n';
+                         << " of " << bytes_read << " bytes)" << std::endl;
             }
         }
         else if (bytes_read == 0)
@@ -195,16 +195,16 @@ int PrintFromRemote(const int my_socket, const int printer)
  ****/
 void ShowHelp(const std::string &progname)
 {
-    std::cout << '\n'
-              << "Usage:  " << progname << " [OPTIONS]" << '\n'
-              << "  -d<device>  Printer device (default " << DEVPORT << ")" << '\n'
-              << "  -h          Show this help screen" << '\n'
-              << "  -p<port>    Set the listening port (default " << default_port_number << ")" << '\n'
-              << "  -v          Verbose mode" << '\n'
-              << '\n'
-              << "Note:  there can be no spaces between an option and the associated" << '\n'
-              << "argument.  AKA, it's \"-p6555\" not \"-p 6555\"." << '\n'
-              << '\n';
+    std::cout << std::endl
+              << "Usage:  " << progname << " [OPTIONS]" << std::endl
+              << "  -d<device>  Printer device (default " << DEVPORT << ")" << std::endl
+              << "  -h          Show this help screen" << std::endl
+              << "  -p<port>    Set the listening port (default " << default_port_number << ")" << std::endl
+              << "  -v          Verbose mode" << std::endl
+              << std::endl
+              << "Note:  there can be no spaces between an option and the associated" << std::endl
+              << "argument.  AKA, it's \"-p6555\" not \"-p 6555\"." << std::endl
+              << std::endl;
     exit(1);
 }
 
@@ -221,7 +221,7 @@ Parameter ParseArguments(const int argc, const char* const argv[])
         const std::string arg = argv[idx];
         if (arg.length() < 2)
         {
-            std::cout << "Invalid argument format: '" << arg << "'" << '\n';
+            std::cout << "Invalid argument format: '" << arg << "'" << std::endl;
             ShowHelp(argv[0]);
         }
         
@@ -233,7 +233,7 @@ Parameter ParseArguments(const int argc, const char* const argv[])
             if (val.empty())
             {
                 std::cout << "Error parsing argument '" << arg << "'."
-                          << " No printer specified" << '\n';
+                          << " No printer specified" << std::endl;
                 ShowHelp(argv[0]);
             }
             param.PrinterDevName = val;
@@ -247,7 +247,7 @@ Parameter ParseArguments(const int argc, const char* const argv[])
             if (val.empty())
             {
                 std::cout << "Error parsing argument '" << arg << "'."
-                          << " No port number specified" << '\n';
+                          << " No port number specified" << std::endl;
                 ShowHelp(argv[0]);
             }
             std::istringstream ss(val);
@@ -255,7 +255,7 @@ Parameter ParseArguments(const int argc, const char* const argv[])
             if (ss.fail() || param.InetPortNumber <= 0 || param.InetPortNumber > 65535)
             {
                 std::cout << "Invalid port number: " << val 
-                         << " (must be between 1 and 65535)" << '\n';
+                         << " (must be between 1 and 65535)" << std::endl;
                 ShowHelp(argv[0]);
             }
         } 
@@ -265,7 +265,7 @@ Parameter ParseArguments(const int argc, const char* const argv[])
         } 
         else
         {
-            std::cout << "Unrecognized parameter '" << arg << "'" << '\n';
+            std::cout << "Unrecognized parameter '" << arg << "'" << std::endl;
             ShowHelp(argv[0]);
         }
     }

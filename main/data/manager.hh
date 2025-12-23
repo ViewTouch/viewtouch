@@ -19,14 +19,13 @@
  * Standard POS utility functions
  */
 
-#ifndef MANAGER_HH
-#define MANAGER_HH
+#ifndef _MANAGER_HH
+#define _MANAGER_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
-#include <array>
-#include <memory>
 #include <string>
+#include <memory>
 
 #define MASTER_USER_DB       "employee.dat"
 #define MASTER_MENU_DB       "menu.dat"
@@ -59,9 +58,9 @@
 
 
 /**** Types ****/
-using TimeOutFn = void (*)();
-using InputFn = void (*)();
-using WorkFn = int (*)();
+typedef void (* TimeOutFn)();
+typedef void (* InputFn)();
+typedef int  (* WorkFn)();
 
 class Settings;
 class Terminal;
@@ -145,8 +144,8 @@ int ReportError(const std::string &message); // error logging & reporting functi
 int ReportLoader(const char* message);     // gives a message to the loader program if it is still active
 
 char* PriceFormat(const Settings* s, int price, int use_sign, int use_comma,
-                  genericChar* buffer = nullptr); // formats price into string
-int ParsePrice(const char* source, int *val = nullptr); // returns price value from given string
+                  genericChar* buffer = NULL); // formats price into string
+int ParsePrice(const char* source, int *val = NULL); // returns price value from given string
 
 // Load/Save system pages & default system data - 'vt_data' file
 // (i.e. information specific to all pos systems)
@@ -192,15 +191,15 @@ extern MachineInfo *ThisMachineInfo; // MachineInfo for this system
 extern int          AllowLogins;     // whether terms should permit logins
 
 // commonly used strings
-extern const std::array<const genericChar*, 8> DayName;
-extern const std::array<const genericChar*, 8> ShortDayName;
-extern const std::array<const genericChar*, 13> MonthName;
-extern const std::array<const genericChar*, 13> ShortMonthName;
+extern const genericChar* DayName[];
+extern const genericChar* ShortDayName[];
+extern const genericChar* MonthName[];
+extern const genericChar* ShortMonthName[];
 extern const genericChar* CheckRefName[];
 extern int   CheckRefValue[];
-extern const std::array<const genericChar*, 9> TermTypeName;
-extern const std::array<int, 9> TermTypeValue;
-extern const std::array<const genericChar*, 11> PrinterTypeName;
-extern const std::array<int, 11> PrinterTypeValue;
+extern const genericChar* TermTypeName[];
+extern int   TermTypeValue[];
+extern const genericChar* PrinterTypeName[];
+extern int   PrinterTypeValue[];
 
 #endif

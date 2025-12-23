@@ -18,7 +18,7 @@
  */
 
 #ifndef _SEARCH_ZONE_HH
-#define SEARCH_ZONE_HH
+#define _SEARCH_ZONE_HH
 
 #include "layout_zone.hh"
 
@@ -34,13 +34,13 @@ public:
     SearchZone();
 
     // Member Functions
-    int          Type() override { return ZONE_SEARCH; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Keyboard(Terminal *term, int key, int state) override;
-    int          LoseFocus(Terminal *term, Zone *newfocus) override;
-    int          ZoneStates() override { return 2; }
+    int          Type() { return ZONE_SEARCH; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Keyboard(Terminal *term, int key, int state);
+    int          LoseFocus(Terminal *term, Zone *newfocus);
+    int          ZoneStates() { return 2; }
 };
 
 #endif

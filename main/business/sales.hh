@@ -18,8 +18,8 @@
  * Definitions of sale item classes
  */
 
-#ifndef SALES_HH
-#define SALES_HH
+#ifndef _SALES_HH
+#define _SALES_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -28,7 +28,7 @@
 
 /**** Definitions ****/
 
-constexpr int SALES_ITEM_VERSION = 16;
+#define SALES_ITEM_VERSION       16
 
 // Family Difinitions
 #define FAMILY_APPETIZERS        0
@@ -201,7 +201,7 @@ public:
     int   price_type;     // price type (see above)
 
     // Constructor
-    SalesItem(const char* name = nullptr);
+    SalesItem(const char* name = NULL);
 
     // Member Functions
     Component *ComponentList() { return component_list.Head(); }

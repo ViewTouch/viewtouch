@@ -271,16 +271,16 @@ public:
     ValidationContext() = default;
 
     void set_severity_level(ValidationSeverity level) { severity_ = level; }
-    [[nodiscard]] ValidationSeverity get_severity_level() const { return severity_; }
+    ValidationSeverity get_severity_level() const { return severity_; }
 
     void add_error(const std::string& error) { errors_.push_back(error); }
     void add_warning(const std::string& warning) { warnings_.push_back(warning); }
 
-    [[nodiscard]] const std::vector<std::string>& get_errors() const { return errors_; }
-    [[nodiscard]] const std::vector<std::string>& get_warnings() const { return warnings_; }
+    const std::vector<std::string>& get_errors() const { return errors_; }
+    const std::vector<std::string>& get_warnings() const { return warnings_; }
 
-    [[nodiscard]] bool has_errors() const { return !errors_.empty(); }
-    [[nodiscard]] bool has_warnings() const { return !warnings_.empty(); }
+    bool has_errors() const { return !errors_.empty(); }
+    bool has_warnings() const { return !warnings_.empty(); }
 
     void clear() {
         errors_.clear();
@@ -386,7 +386,7 @@ public:
 #define VT_SANITIZE_OR_RETURN(input, sanitizer_func) \
     { \
         auto sanitized = sanitizer_func(input); \
-        if (sanitized != (input)) { \
+        if (sanitized != input) { \
             return ValidationResult(true, "", sanitized); \
         } \
     }

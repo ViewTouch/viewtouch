@@ -78,7 +78,7 @@ public:
      * @return The value or default
      */
     template<typename T>
-    [[nodiscard]] [[nodiscard]] T Get(std::string_view key, const T& default_value = T{}) const {
+    T Get(std::string_view key, const T& default_value = T{}) const {
         try {
             auto keys = SplitKey(key);
             const json* current = &data_;
@@ -121,7 +121,7 @@ public:
     /**
      * @brief Check if a key exists
      */
-    [[nodiscard]] bool Has(std::string_view key) const;
+    bool Has(std::string_view key) const;
 
     /**
      * @brief Remove a key from the config
@@ -132,17 +132,17 @@ public:
      * @brief Get direct access to underlying JSON object
      */
     json& Data() { return data_; }
-    [[nodiscard]] const json& Data() const { return data_; }
+    const json& Data() const { return data_; }
 
     /**
      * @brief Get the file path
      */
-    [[nodiscard]] const std::string& GetPath() const { return filepath_; }
+    const std::string& GetPath() const { return filepath_; }
 
     /**
      * @brief Check if config was loaded successfully
      */
-    [[nodiscard]] bool IsLoaded() const { return loaded_; }
+    bool IsLoaded() const { return loaded_; }
 
     /**
      * @brief Clear all data
@@ -169,7 +169,7 @@ private:
     /**
      * @brief Create backup of config file
      */
-    [[nodiscard]] bool CreateBackup() const;
+    bool CreateBackup() const;
 };
 
 /**

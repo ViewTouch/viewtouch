@@ -439,8 +439,8 @@ XtAppContext InitializeDisplay(int argc, char **argv)
     XtToolkitInitialize();
     XtAppContext app = XtCreateApplicationContext();
 
-    Dis = XtOpenDisplay(app, nullptr, nullptr, nullptr, nullptr, 0, &argc, argv);
-    if (Dis == nullptr)
+    Dis = XtOpenDisplay(app, NULL, NULL, NULL, NULL, 0, &argc, argv);
+    if (Dis == NULL)
     {
         logmsg(LOG_ERR, "Unable to open display\n");
         ExitLoader();
@@ -451,7 +451,7 @@ XtAppContext InitializeDisplay(int argc, char **argv)
     ColorWhite = WhitePixel(Dis, screen_no);
 
     loaderFont = XftFontOpenName(Dis, screen_no, FONT_NAME);
-    if (loaderFont == nullptr)
+    if (loaderFont == NULL)
     {
         logmsg(LOG_ERR, "Unable to load font\n");
         ExitLoader();
@@ -478,7 +478,7 @@ Widget OpenStatusBox(XtAppContext app)
         { (String)"mappedWhenManaged", False                         },
     };
 
-    Widget shell = XtAppCreateShell("Welcome to POS", nullptr,
+    Widget shell = XtAppCreateShell("Welcome to POS", NULL,
         applicationShellWidgetClass, Dis, args, XtNumber(args));
     XtRealizeWidget(shell);
 
@@ -489,8 +489,8 @@ Widget OpenStatusBox(XtAppContext app)
     XftColorAllocName(Dis, DefaultVisual(Dis, screen_no),
         DefaultColormap(Dis, screen_no), "white", &xftWhite);
 
-    XtAddEventHandler(shell, ExposureMask, FALSE, ExposeCB, nullptr);
-    XtAddEventHandler(shell, KeyPressMask, FALSE, KeyPressCB, nullptr);
+    XtAddEventHandler(shell, ExposureMask, FALSE, ExposeCB, NULL);
+    XtAddEventHandler(shell, KeyPressMask, FALSE, KeyPressCB, NULL);
     return shell;
 }
 
@@ -502,7 +502,7 @@ bool WriteArgList(const int argc, char* argv[])
         std::ofstream fout(COMMAND_FILE, std::fstream::trunc);
         if (!fout.is_open())
         {
-            std::cout << msg_base + "error while opening file '" + COMMAND_FILE + "'" << '\n';
+            std::cout << msg_base + "error while opening file '" + COMMAND_FILE + "'" << std::endl;
             return false;
         }
 
@@ -517,7 +517,7 @@ bool WriteArgList(const int argc, char* argv[])
     if (ret != 0)
     {
         std::cout << msg_base + "error while modifying permissions for  file '"
-                  << COMMAND_FILE << "'" << '\n';
+                  << COMMAND_FILE << "'" << std::endl;
         return false;
     }
     return true;
@@ -611,7 +611,7 @@ int main(int argc, genericChar* argv[])
         {
             std::cout << viewtouch::get_project_name() << " "
                       << viewtouch::get_version_info()
-                      << '\n';
+                      << std::endl;
             exit(1);
         }
     }
@@ -620,7 +620,7 @@ int main(int argc, genericChar* argv[])
     // the system
     if (!WriteArgList(argc, argv))
     {
-        std::cout << "Error while writing argument file for vt_main" << '\n';
+        std::cout << "Error while writing argument file for vt_main" << std::endl;
         return 1;
     }
 
@@ -655,7 +655,7 @@ int main(int argc, genericChar* argv[])
 
     // Read Status Messages
     XtAppAddInput(appContext, SocketNo, (XtPointer) XtInputReadMask,
-                  (XtInputCallbackProc) SocketInputCB, nullptr);
+                  (XtInputCallbackProc) SocketInputCB, NULL);
 
     XEvent event;
     for (;;)

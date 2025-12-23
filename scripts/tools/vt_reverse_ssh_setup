@@ -1,0 +1,389 @@
+#!/bin/bash
+#
+# ViewTouch Reverse SSH Setup Helper
+# Helps users set up reverse tunnels without dedicated servers
+#
+
+SCRIPT_NAME=$(basename "$0")
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Logging functions
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+log_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+log_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Check if running as root
+check_root() {
+    if [ "$EUID" -ne 0 ]; then
+        log_error "This script must be run as root for some operations"
+        log_info "Run with: sudo $0"
+        exit 1
+    fi
+}
+
+# Setup ngrok tunnel
+setup_ngrok() {
+    local location_name="$1"
+
+    if [ -z "$location_name" ]; then
+        log_info "Setting up Ngrok tunnel..."
+        log_info "For multiple locations, specify a location name:"
+        log_info "  $SCRIPT_NAME ngrok location_name"
+        location_name="default"
+    else
+        log_info "Setting up Ngrok tunnel for location: $location_name"
+    fi
+
+    # Check if ngrok is installed
+    if ! command -v ngrok >/dev/null 2>&1; then
+        log_info "Ngrok not found. Installing..."
+
+        # Download ngrok
+        wget -q https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz -O /tmp/ngrok.tgz
+        if [ $? -ne 0 ]; then
+            log_error "Failed to download ngrok"
+            return 1
+        fi
+
+        # Extract ngrok
+        tar -xzf /tmp/ngrok.tgz -C /usr/local/bin/
+        if [ $? -ne 0 ]; then
+            log_error "Failed to extract ngrok"
+            return 1
+        fi
+
+        log_success "Ngrok installed successfully"
+    fi
+
+    # Start ngrok tunnel in background
+    log_info "Starting ngrok tunnel for SSH (port 22)..."
+    nohup ngrok tcp 22 > "/var/log/ngrok_$location_name.log" 2>&1 &
+    NGROK_PID=$!
+
+    # Wait a moment for ngrok to start
+    sleep 3
+
+    # Get ngrok tunnel info
+    TUNNEL_INFO=$(curl -s http://localhost:4040/api/tunnels 2>/dev/null | grep -o '"public_url":"tcp://[^"]*"' | cut -d'"' -f4)
+
+    if [ -n "$TUNNEL_INFO" ]; then
+        # Parse the tunnel URL
+        TUNNEL_HOST=$(echo $TUNNEL_INFO | cut -d':' -f2 | sed 's|//||')
+        TUNNEL_PORT=$(echo $TUNNEL_INFO | cut -d':' -f3)
+
+        log_success "Ngrok tunnel established for $location_name!"
+        log_info "Tunnel: $TUNNEL_INFO"
+        log_info "Host: $TUNNEL_HOST"
+        log_info "Port: $TUNNEL_PORT"
+
+        # Configure ViewTouch for this location
+        configure_viewtouch_for_location "$TUNNEL_HOST" "$TUNNEL_PORT" "$location_name"
+
+        # Save tunnel info
+        echo "$TUNNEL_INFO" > "/var/run/ngrok_tunnel_$location_name.info"
+        echo "$NGROK_PID" > "/var/run/ngrok_$location_name.pid"
+
+        log_success "Ngrok setup complete for $location_name!"
+        log_warning "Keep this terminal open to maintain the tunnel"
+        log_info "To connect back: ssh -p $TUNNEL_PORT $USER@$TUNNEL_HOST"
+
+        return 0
+    else
+        log_error "Failed to get tunnel information from ngrok"
+        kill $NGROK_PID 2>/dev/null
+        return 1
+    fi
+}
+
+# Setup serveo tunnel
+setup_serveo() {
+    log_info "Setting up Serveo tunnel..."
+
+    # Check SSH connection to serveo
+    log_info "Testing connection to serveo.net..."
+    if ! ssh -o ConnectTimeout=10 -o BatchMode=yes serveo.net "echo 'Serveo connection test'" >/dev/null 2>&1; then
+        log_error "Cannot connect to serveo.net. Check internet connection."
+        return 1
+    fi
+
+    log_info "Starting Serveo tunnel for SSH (port 22)..."
+    log_warning "This will run in the foreground. Press Ctrl+C to stop."
+
+    # Start serveo tunnel
+    ssh -R 80:localhost:22 serveo.net
+
+    # Note: This runs in foreground, so user needs to keep it running
+    # The actual tunnel URL will be displayed by serveo
+}
+
+# Configure ViewTouch with tunnel information (legacy single location)
+configure_viewtouch() {
+    local tunnel_host="$1"
+    local tunnel_port="$2"
+
+    configure_viewtouch_for_location "$tunnel_host" "$tunnel_port" "default"
+}
+
+# Configure ViewTouch for specific location
+configure_viewtouch_for_location() {
+    local tunnel_host="$1"
+    local tunnel_port="$2"
+    local location_name="$3"
+
+    CONFIG_FILE="/etc/viewtouch/reverse_ssh.conf"
+
+    if [ ! -f "$CONFIG_FILE" ]; then
+        log_error "ViewTouch config file not found: $CONFIG_FILE"
+        return 1
+    fi
+
+    # Create location-specific config if needed
+    if [ "$location_name" != "default" ]; then
+        CONFIG_FILE="/etc/viewtouch/reverse_ssh_$location_name.conf"
+        log_info "Creating location-specific config: $CONFIG_FILE"
+
+        # Copy base config
+        cp "/etc/viewtouch/reverse_ssh.conf" "$CONFIG_FILE"
+
+        # Update location-specific settings
+        echo "# Location: $location_name" >> "$CONFIG_FILE"
+    fi
+
+    log_info "Configuring ViewTouch for tunnel (location: $location_name)..."
+
+    # Update config file
+    sed -i "s|^management_server=.*|management_server=$tunnel_host|" "$CONFIG_FILE"
+    sed -i "s|^management_port=.*|management_port=$tunnel_port|" "$CONFIG_FILE"
+    sed -i "s|^remote_user=.*|remote_user=$USER|" "$CONFIG_FILE"
+
+    # Add location identifier
+    if ! grep -q "^location=" "$CONFIG_FILE"; then
+        echo "location=$location_name" >> "$CONFIG_FILE"
+    else
+        sed -i "s|^location=.*|location=$location_name|" "$CONFIG_FILE"
+    fi
+
+    log_success "ViewTouch configured for tunnel (location: $location_name)"
+    log_info "Config updated: $CONFIG_FILE"
+}
+
+# Setup personal computer as management server
+setup_personal_server() {
+    log_info "Setting up your computer as management server..."
+
+    # Check if SSH server is running
+    if ! systemctl is-active --quiet sshd 2>/dev/null && ! systemctl is-active --quiet ssh 2>/dev/null; then
+        log_info "SSH server not running. Installing and starting..."
+
+        # Try to install SSH server
+        if command -v apt >/dev/null 2>&1; then
+            apt update && apt install -y openssh-server
+        elif command -v dnf >/dev/null 2>&1; then
+            dnf install -y openssh-server
+        elif command -v pacman >/dev/null 2>&1; then
+            pacman -S --noconfirm openssh
+        else
+            log_error "Cannot determine package manager. Please install openssh-server manually."
+            return 1
+        fi
+
+        # Start SSH service
+        systemctl start sshd 2>/dev/null || systemctl start ssh 2>/dev/null
+        systemctl enable sshd 2>/dev/null || systemctl enable ssh 2>/dev/null
+    fi
+
+    # Get public IP
+    PUBLIC_IP=$(curl -s ifconfig.me 2>/dev/null || curl -s icanhazip.com 2>/dev/null)
+
+    if [ -z "$PUBLIC_IP" ]; then
+        log_warning "Could not determine public IP automatically"
+        log_info "Please find your public IP manually and use it below"
+        read -p "Enter your public IP address: " PUBLIC_IP
+    fi
+
+    log_info "Your public IP appears to be: $PUBLIC_IP"
+    log_warning "Make sure port 22 is accessible from the internet!"
+    log_warning "You may need to configure port forwarding in your router."
+
+    # Configure ViewTouch
+    configure_viewtouch "$PUBLIC_IP" "22"
+
+    log_success "Personal server setup complete!"
+    log_info "To connect back: ssh -p 2222 localhost (from this computer)"
+}
+
+# Show tunnel status
+show_status() {
+    log_info "Tunnel Status:"
+
+    # Check all ngrok tunnels
+    NGROK_FOUND=0
+    for pid_file in /var/run/ngrok*.pid; do
+        if [ -f "$pid_file" ]; then
+            location_name=$(basename "$pid_file" | sed 's/ngrok_\(.*\)\.pid/\1/')
+            if [ "$location_name" = "ngrok*.pid" ]; then
+                location_name="default"
+            fi
+
+            pid=$(cat "$pid_file")
+            if kill -0 $pid 2>/dev/null; then
+                NGROK_FOUND=1
+                info_file="/var/run/ngrok_tunnel_${location_name}.info"
+                if [ -f "$info_file" ]; then
+                    TUNNEL=$(cat "$info_file")
+                    log_success "Ngrok tunnel active for $location_name: $TUNNEL"
+                else
+                    log_success "Ngrok tunnel running for $location_name (PID: $pid)"
+                fi
+            fi
+        fi
+    done
+
+    if [ $NGROK_FOUND -eq 0 ]; then
+        log_info "No active ngrok tunnels found"
+    fi
+
+    # Check ViewTouch reverse SSH
+    if command -v vt_reverse_ssh >/dev/null 2>&1; then
+        echo ""
+        log_info "ViewTouch Reverse SSH Status:"
+        vt_reverse_ssh status 2>/dev/null || log_warning "ViewTouch reverse SSH not configured"
+    fi
+}
+
+# Stop tunnels
+stop_tunnels() {
+    local location_name="$1"
+
+    log_info "Stopping tunnels..."
+
+    if [ -n "$location_name" ]; then
+        # Stop specific location
+        pid_file="/var/run/ngrok_${location_name}.pid"
+        info_file="/var/run/ngrok_tunnel_${location_name}.info"
+
+        if [ -f "$pid_file" ]; then
+            NGROK_PID=$(cat "$pid_file")
+            if kill -0 $NGROK_PID 2>/dev/null; then
+                kill $NGROK_PID
+                log_success "Ngrok tunnel stopped for $location_name"
+            fi
+            rm -f "$pid_file" "$info_file"
+        else
+            log_warning "No tunnel found for location: $location_name"
+        fi
+    else
+        # Stop all tunnels
+        TUNNELS_STOPPED=0
+        for pid_file in /var/run/ngrok*.pid; do
+            if [ -f "$pid_file" ]; then
+                location_name=$(basename "$pid_file" | sed 's/ngrok_\(.*\)\.pid/\1/')
+                if [ "$location_name" = "ngrok*.pid" ]; then
+                    location_name="default"
+                fi
+
+                pid=$(cat "$pid_file")
+                if kill -0 $pid 2>/dev/null; then
+                    kill $pid
+                    TUNNELS_STOPPED=$((TUNNELS_STOPPED + 1))
+                    log_success "Ngrok tunnel stopped for $location_name"
+                fi
+
+                # Clean up files
+                info_file="/var/run/ngrok_tunnel_${location_name}.info"
+                rm -f "$pid_file" "$info_file"
+            fi
+        done
+
+        if [ $TUNNELS_STOPPED -eq 0 ]; then
+            log_info "No active tunnels to stop"
+        fi
+    fi
+
+    log_success "Tunnel cleanup complete"
+}
+
+# Show usage
+show_usage() {
+    echo "ViewTouch Reverse SSH Setup Helper"
+    echo ""
+    echo "This tool helps you set up reverse SSH tunnels for ViewTouch"
+    echo "when you don't have a dedicated management server."
+    echo ""
+    echo "Supports multiple locations - each location gets its own tunnel."
+    echo ""
+    echo "Usage: $SCRIPT_NAME [COMMAND] [LOCATION_NAME]"
+    echo ""
+    echo "Commands:"
+    echo "  ngrok [location]     Set up ngrok tunnel (recommended for beginners)"
+    echo "  serveo [location]    Set up Serveo tunnel (SSH-based, free)"
+    echo "  personal [location]  Set up your computer as management server"
+    echo "  status               Show current tunnel status for all locations"
+    echo "  stop [location]      Stop tunnels (all or specific location)"
+    echo "  help                 Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $SCRIPT_NAME ngrok                    # Single location setup"
+    echo "  $SCRIPT_NAME ngrok downtown           # Setup for 'downtown' location"
+    echo "  $SCRIPT_NAME ngrok mall               # Setup for 'mall' location"
+    echo "  $SCRIPT_NAME personal main_street     # Personal server for 'main_street'"
+    echo "  $SCRIPT_NAME status                   # Check all tunnel status"
+    echo "  $SCRIPT_NAME stop downtown            # Stop 'downtown' tunnel only"
+    echo "  $SCRIPT_NAME stop                     # Stop all tunnels"
+    echo ""
+    echo "Requirements:"
+    echo "  - Internet connection"
+    echo "  - ViewTouch installed and configured"
+    echo "  - For personal server: Port 22 accessible from internet"
+}
+
+# Main function
+main() {
+    case "${1:-help}" in
+        ngrok)
+            setup_ngrok "$2"
+            ;;
+        serveo)
+            setup_serveo "$2"
+            ;;
+        personal)
+            check_root
+            setup_personal_server "$2"
+            ;;
+        status)
+            show_status
+            ;;
+        stop)
+            stop_tunnels "$2"
+            ;;
+        help|--help|-h)
+            show_usage
+            ;;
+        *)
+            log_error "Unknown command: $1"
+            echo ""
+            show_usage
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

@@ -19,7 +19,7 @@
  */
 
 #ifndef _SETTINGS_ZONE_H
-#define SETTINGS_ZONE_H
+#define _SETTINGS_ZONE_H
 
 #include "form_zone.hh"
 
@@ -38,13 +38,13 @@ public:
     SwitchZone();
 
     // Member Functions
-    int          Type() override { return ZONE_SWITCH; }
-    std::unique_ptr<Zone> Copy() override;
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    int          Update(Terminal *term, int update_message, const genericChar* value) override;
-    const genericChar* TranslateString(Terminal *term) override;
-    int         *SwitchType() override { return &type; }
+    int          Type() { return ZONE_SWITCH; }
+    std::unique_ptr<Zone> Copy();
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
+    const genericChar* TranslateString(Terminal *term);
+    int         *SwitchType() { return &type; }
 };
 
 
@@ -67,12 +67,12 @@ public:
     SettingsZone();
 
     // Member Functions
-    int          Type() override { return ZONE_SETTINGS; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    int          LoadRecord(Terminal *term, int record) override;
-    int          SaveRecord(Terminal *term, int record, int write_file) override;
+    int          Type() { return ZONE_SETTINGS; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
 };
 
 // Receipt Settings
@@ -83,10 +83,10 @@ public:
     ReceiptSettingsZone();
 
     // Member Functions
-    int          Type() override { return ZONE_RECEIPTS; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    int          LoadRecord(Terminal *term, int record) override;
-    int          SaveRecord(Terminal *term, int record, int write_file) override;
+    int          Type() { return ZONE_RECEIPTS; }
+    RenderResult Render(Terminal *term, int update_flag);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
 };
 
 // Tax Settings Zone
@@ -97,10 +97,10 @@ public:
     TaxSettingsZone();
 
     // Member Functions
-    int          Type() override { return ZONE_TAX_SETTINGS; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    int          LoadRecord(Terminal *term, int record) override;
-    int          SaveRecord(Terminal *term, int record, int write_file) override;
+    int          Type() { return ZONE_TAX_SETTINGS; }
+    RenderResult Render(Terminal *term, int update_flag);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
 };
 
 // Credit/Charge Card Settings
@@ -118,11 +118,11 @@ public:
     CCSettingsZone();
 
     // Member Functions
-    int          Type() override { return ZONE_CC_SETTINGS; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    int          LoadRecord(Terminal *term, int record) override;
-    int          SaveRecord(Terminal *term, int record, int write_file) override;
-    int          UpdateForm(Terminal *term, int record) override;
+    int          Type() { return ZONE_CC_SETTINGS; }
+    RenderResult Render(Terminal *term, int update_flag);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
+    int          UpdateForm(Terminal *term, int record);
 };
 
 // Credit/Charge Card Message Settings
@@ -131,10 +131,10 @@ class CCMessageSettingsZone : public FormZone
 public:
     CCMessageSettingsZone();
 
-    int          Type() override { return ZONE_CC_MSG_SETTINGS; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    int          LoadRecord(Terminal *term, int record) override;
-    int          SaveRecord(Terminal *term, int record, int write_file) override;
+    int          Type() { return ZONE_CC_MSG_SETTINGS; }
+    RenderResult Render(Terminal *term, int update_flag);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
 };
 
 // Low level application settings
@@ -148,12 +148,12 @@ public:
     DeveloperZone();
 
     // Member Functions
-    int          Type() override { return ZONE_DEVELOPER; }
+    int          Type() { return ZONE_DEVELOPER; }
     int          AddFields();
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    int          LoadRecord(Terminal *term, int record) override;
-    int          SaveRecord(Terminal *term, int record, int write_file) override;
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
 };
 
 // Calculation Settings (Multiply, Add/Subtract)
@@ -166,11 +166,11 @@ public:
     CalculationSettingsZone();
 
     // Member Functions
-    int          Type() override { return ZONE_CALCULATION_SETTINGS; }
+    int          Type() { return ZONE_CALCULATION_SETTINGS; }
     int          AddFields();
-    RenderResult Render(Terminal *term, int update_flag) override;
-    int          LoadRecord(Terminal *term, int record) override;
-    int          SaveRecord(Terminal *term, int record, int write_file) override;
+    RenderResult Render(Terminal *term, int update_flag);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
 };
 
 /* Revenue Groups Settings */
@@ -183,11 +183,11 @@ public:
     RevenueGroupsZone();
 
     // Member Functions
-    int          Type() override { return ZONE_REVENUE_GROUPS; }
+    int          Type() { return ZONE_REVENUE_GROUPS; }
     int          AddFields();
-    RenderResult Render(Terminal *term, int update_flag) override;
-    int          LoadRecord(Terminal *term, int record) override;
-    int          SaveRecord(Terminal *term, int record, int write_file) override;
+    RenderResult Render(Terminal *term, int update_flag);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
 };
 
 // Tender Specification & Settings
@@ -215,18 +215,18 @@ public:
     TenderSetZone();
 
     // Member Functions
-    int          Type() override { return ZONE_TENDER_SET; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    Flt         *Spacing() override { return &list_spacing; }
+    int          Type() { return ZONE_TENDER_SET; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    Flt         *Spacing() { return &list_spacing; }
 
-    int LoadRecord(Terminal *term, int record) override;
-    int SaveRecord(Terminal *term, int record, int write_file) override;
-    int NewRecord(Terminal *term) override;
-    int KillRecord(Terminal *term, int record) override;
-    int ListReport(Terminal *term, Report *r) override;
-    int RecordCount(Terminal *term) override;
-    int UpdateForm(Terminal *term, int record) override;
+    int LoadRecord(Terminal *term, int record);
+    int SaveRecord(Terminal *term, int record, int write_file);
+    int NewRecord(Terminal *term);
+    int KillRecord(Terminal *term, int record);
+    int ListReport(Terminal *term, Report *r);
+    int RecordCount(Terminal *term);
+    int UpdateForm(Terminal *term, int record);
     int ItemList(FormField *itemfield, int family, int item_id);
 };
 
@@ -238,17 +238,17 @@ public:
     MoneySetZone();
 
     // Member Functions
-    int Type() override { return ZONE_MONEY_SET; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    Flt         *Spacing() override { return &list_spacing; }
+    int Type() { return ZONE_MONEY_SET; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    Flt         *Spacing() { return &list_spacing; }
 
-    int LoadRecord(Terminal *term, int record) override;
-    int SaveRecord(Terminal *term, int record, int write_file) override;
-    int NewRecord(Terminal *term) override;
-    int KillRecord(Terminal *term, int record) override;
-    int ListReport(Terminal *term, Report *r) override;
-    int RecordCount(Terminal *term) override;
+    int LoadRecord(Terminal *term, int record);
+    int SaveRecord(Terminal *term, int record, int write_file);
+    int NewRecord(Terminal *term);
+    int KillRecord(Terminal *term, int record);
+    int ListReport(Terminal *term, Report *r);
+    int RecordCount(Terminal *term);
 };
 
 // Tax Definition
@@ -259,17 +259,17 @@ public:
     TaxSetZone();
 
     // Member Functions
-    int Type() override { return ZONE_TAX_SET; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    Flt *Spacing() override { return &list_spacing; }
+    int Type() { return ZONE_TAX_SET; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    Flt *Spacing() { return &list_spacing; }
 
-    int LoadRecord(Terminal *term, int record) override;
-    int SaveRecord(Terminal *term, int record, int write_file) override;
-    int NewRecord(Terminal *term) override;
-    int KillRecord(Terminal *term, int record) override;
-    int ListReport(Terminal *term, Report *r) override;
-    int RecordCount(Terminal *term) override; 
+    int LoadRecord(Terminal *term, int record);
+    int SaveRecord(Terminal *term, int record, int write_file);
+    int NewRecord(Terminal *term);
+    int KillRecord(Terminal *term, int record);
+    int ListReport(Terminal *term, Report *r);
+    int RecordCount(Terminal *term); 
 };
 
 // System time settings
@@ -285,13 +285,13 @@ public:
     TimeSettingsZone();
 
     // Member Functions
-    int          Type() override { return ZONE_TIME_SETTINGS; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    int          Update(Terminal *term, int update_message, const genericChar* value) override;
+    int          Type() { return ZONE_TIME_SETTINGS; }
+    RenderResult Render(Terminal *term, int update_flag);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
 
-    int LoadRecord(Terminal *term, int record) override;
-    int SaveRecord(Terminal *term, int record, int write_file) override;
-    int UpdateForm(Terminal *term, int record) override;
+    int LoadRecord(Terminal *term, int record);
+    int SaveRecord(Terminal *term, int record, int write_file);
+    int UpdateForm(Terminal *term, int record);
 };
 
 // Expire Message Settings
@@ -302,10 +302,10 @@ public:
     ExpireSettingsZone();
 
     // Member Functions
-    int          Type() override { return ZONE_EXPIRE_MSG; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    int          LoadRecord(Terminal *term, int record) override;
-    int          SaveRecord(Terminal *term, int record, int write_file) override;
+    int          Type() { return ZONE_EXPIRE_MSG; }
+    RenderResult Render(Terminal *term, int update_flag);
+    int          LoadRecord(Terminal *term, int record);
+    int          SaveRecord(Terminal *term, int record, int write_file);
 };
 
 #endif

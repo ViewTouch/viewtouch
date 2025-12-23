@@ -18,8 +18,8 @@
  * Record of voids/comps and other system changes
  */
 
-#ifndef EXCEPTION_HH
-#define EXCEPTION_HH
+#ifndef _EXCEPTION_HH
+#define _EXCEPTION_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -28,7 +28,7 @@
 /**** Definitions ****/
 #define EXCEPTION_VERSION  3
 
-enum exceptions : std::uint8_t {
+enum exceptions {
 	EXCEPTION_COMP = 1,
 	EXCEPTION_VOID,
 	EXCEPTION_UNCOMP

@@ -60,7 +60,7 @@ System::System()
     data_path.Set(VIEWTOUCH_PATH "/dat");
     temp_path.Set("/tmp");
     non_eod_settle         = 0;
-    eod_term               = nullptr;
+    eod_term               = NULL;
 
     cc_void_db             = std::make_unique<CreditDB>(CC_DBTYPE_VOID);
     cc_exception_db        = std::make_unique<CreditDB>(CC_DBTYPE_EXCEPT);
@@ -71,7 +71,7 @@ System::System()
     cc_details_results     = std::make_unique<CCDetails>();
     cc_saf_details_results = std::make_unique<CCSAFDetails>();
     cc_settle_results      = std::make_unique<CCSettle>();
-    cc_finish              = nullptr;
+    cc_finish              = NULL;
 
     cc_report_type         = CC_REPORT_BATCH;
 }
@@ -85,7 +85,7 @@ System::~System()
 int System::InitCurrentDay()
 {
     FnTrace("System::InitCurrentDay()");
-    for (Drawer *drawer = DrawerList(); drawer != nullptr; drawer = drawer->next)
+    for (Drawer *drawer = DrawerList(); drawer != NULL; drawer = drawer->next)
         drawer->Total(CheckList());
 
     CreateFixedDrawers();
@@ -96,11 +96,11 @@ int System::InitCurrentDay()
 int System::LoadCurrentData(const char* path)
 {
 	FnTrace("System::LoadCurrentData()");
-	if (path == nullptr)
+	if (path == NULL)
 		return 1;
 
 	DIR *dp = opendir(path);
-	if (dp == nullptr)
+	if (dp == NULL)
 	{
 		ReportError("Can't find current data directory");
 		return 1;
@@ -109,7 +109,7 @@ int System::LoadCurrentData(const char* path)
 	current_path.Set(path);
 	char str[256];
     const char* name;
-	struct dirent *record = nullptr;
+	struct dirent *record = NULL;
 	do
 	{
 		record = readdir(dp);
@@ -122,8 +122,8 @@ int System::LoadCurrentData(const char* path)
 			if (strncmp(name, "check_", 6) == 0)
 			{
 				vt_safe_string::safe_format(str, 256, "%s/%s", path, name);
-				auto *check = new Check;
-				if (check == nullptr)
+				Check *check = new Check;
+				if (check == NULL)
 					ReportError("Couldn't create check");
 				else
 				{
@@ -139,8 +139,8 @@ int System::LoadCurrentData(const char* path)
 			else if (strncmp(name, "drawer_", 7) == 0)
 			{
 				vt_safe_string::safe_format(str, 256, "%s/%s", path, name);
-				auto *drawer = new Drawer;
-				if (drawer == nullptr)
+				Drawer *drawer = new Drawer;
+				if (drawer == NULL)
 					ReportError("Couldn't Create Drawer");
 				else
 				{
@@ -212,13 +212,13 @@ int System::ScanArchives(const char* path, const char* altmedia)
         archive_path.Set(path);
 
     DIR *dp = opendir(archive_path.Value());
-    if (dp == nullptr)
+    if (dp == NULL)
     {
         ReportError("Can't find archive directory");
         return 1;
     }
 
-    struct dirent *record = nullptr;
+    struct dirent *record = NULL;
     do
     {
         record = readdir(dp);
@@ -235,9 +235,9 @@ int System::ScanArchives(const char* path, const char* altmedia)
 
                 genericChar str[256];
                 vt_safe_string::safe_format(str, 256, "%s/%s", archive_path.Value(), name);
-                auto *archive = new Archive(&settings, str);
+                Archive *archive = new Archive(&settings, str);
                 archive->altmedia.Set(altmedia);
-                if (archive == nullptr)
+                if (archive == NULL)
                     ReportError("Couldn't create archive");
                 else
                 {
@@ -283,7 +283,7 @@ int System::UnloadArchives()
     FnTrace("System::UnloadArchives()");
     Archive *archive = ArchiveList();
 
-    while (archive != nullptr)
+    while (archive != NULL)
     {
         archive->Unload();
         archive = archive->next;
@@ -294,7 +294,7 @@ int System::UnloadArchives()
 int System::Add(Archive *archive)
 {
     FnTrace("System::Add(Archive)");
-    if (archive == nullptr)
+    if (archive == NULL)
         return 1;  // Add failed
 
     // start at end of list and work backwords
@@ -314,9 +314,9 @@ int System::Remove(Archive *archive)
 Archive *System::NewArchive()
 {
     FnTrace("System::NewArchive()");
-    auto *archive = new Archive(SystemTime);
-    if (archive == nullptr)
-        return nullptr;
+    Archive *archive = new Archive(SystemTime);
+    if (archive == NULL)
+        return NULL;
 
     genericChar str[256];
     archive->id = ++last_archive_id;
@@ -333,7 +333,7 @@ Archive *System::FindByTime(const TimeInfo &timevar)
 {
     FnTrace("System::FindByTime()");
     Archive *archive = ArchiveListEnd();
-    Archive *last = nullptr;
+    Archive *last = NULL;
     while (archive)
     {
         if (timevar >= archive->end_time)
@@ -351,7 +351,7 @@ Archive *System::FindByStart(TimeInfo &timevar)
         return ArchiveList();
 
     Archive *archive    = ArchiveListEnd();
-    Archive *last = nullptr;
+    Archive *last = NULL;
     while (archive)
     {
         if (timevar > archive->end_time)
@@ -362,14 +362,14 @@ Archive *System::FindByStart(TimeInfo &timevar)
     if (last)
         return last->next;
     else
-        return nullptr;
+        return NULL;
 }
 
 int System::SaveChanged()
 {
     FnTrace("System::SaveChanged()");
 
-    for (Archive *archive = ArchiveList(); archive != nullptr; archive = archive->next)
+    for (Archive *archive = ArchiveList(); archive != NULL; archive = archive->next)
     {
         if (archive->changed)
             archive->SavePacked();
@@ -384,7 +384,7 @@ int System::Add(Check *check)
     int retval = 0;
     int done = 0;
     Check *currcheck = CheckListEnd();
-    if (check == nullptr)
+    if (check == NULL)
         return 1;
 
     if (check->serial_number <= 0)
@@ -392,12 +392,12 @@ int System::Add(Check *check)
     if (check->serial_number > last_serial_number)
         last_serial_number = check->serial_number;
 
-    check->archive = nullptr; 
-    if (currcheck == nullptr)
+    check->archive = NULL; 
+    if (currcheck == NULL)
         retval = check_list.AddToTail(check);
     else
     {
-        while (currcheck != nullptr && !done)
+        while (currcheck != NULL && !done)
         {
             if (check->serial_number > currcheck->serial_number)
             {
@@ -416,7 +416,7 @@ int System::Add(Check *check)
 
 int System::Remove(Check *check)
 {
-    if (check == nullptr || check->archive)
+    if (check == NULL || check->archive)
         return 1;
 
     return check_list.Remove(check);
@@ -425,10 +425,10 @@ int System::Remove(Check *check)
 int System::Add(Drawer *drawer)
 {
     FnTrace("System::Add(Drawer)");
-    if (drawer == nullptr)
+    if (drawer == NULL)
         return 1;
 
-    drawer->archive = nullptr;
+    drawer->archive = NULL;
     if (drawer->serial_number <= 0)
         drawer->serial_number = NewSerialNumber();
     else if (drawer->serial_number > last_serial_number)
@@ -444,7 +444,7 @@ int System::Add(Drawer *drawer)
 
 int System::Remove(Drawer *drawer)
 {
-    if (drawer == nullptr || drawer->archive)
+    if (drawer == NULL || drawer->archive)
         return 1;
 
     return drawer_list.Remove(drawer);
@@ -499,7 +499,7 @@ int System::EndDay()
 
     tip_db.Update(this);
     Archive *archive = NewArchive();
-    if (archive == nullptr)
+    if (archive == NULL)
         return 1;
 
     archive->cc_exception_db = cc_exception_db->Copy();
@@ -548,7 +548,7 @@ int System::EndDay()
 
     // Move all open checks to temp check list
     DList<Check> tmp_list;
-    Check *tmp = nullptr;
+    Check *tmp = NULL;
     check = CheckList();
     while (check)
     {
@@ -557,7 +557,7 @@ int System::EndDay()
         check = check_next;
 
         // Only add to list if ExtractOpenCheck returned a valid check
-        if (tmp != nullptr)
+        if (tmp != NULL)
             tmp_list.AddToTail(tmp);
     }
 
@@ -598,31 +598,31 @@ int System::EndDay()
 
     // Copy media data into the archive
     DiscountInfo *discount = settings.DiscountList();
-    while (discount != nullptr)
+    while (discount != NULL)
     {
         archive->Add(discount->Copy());
         discount = discount->next;
     }
     CouponInfo *coupon = settings.CouponList();
-    while (coupon != nullptr)
+    while (coupon != NULL)
     {
         archive->Add(coupon->Copy());
         coupon = coupon->next;
     }
     CreditCardInfo *creditcard = settings.CreditCardList();
-    while (creditcard != nullptr)
+    while (creditcard != NULL)
     {
         archive->Add(creditcard->Copy());
         creditcard = creditcard->next;
     }
     CompInfo *comp = settings.CompList();
-    while (comp != nullptr)
+    while (comp != NULL)
     {
         archive->Add(comp->Copy());
         comp = comp->next;
     }
     MealInfo *meal = settings.MealList();
-    while (meal != nullptr)
+    while (meal != NULL)
     {
         archive->Add(meal->Copy());
         meal = meal->next;
@@ -690,14 +690,14 @@ int System::CheckEndDay(Terminal *term)
     Drawer *drawer = DrawerList();
     Check  *check  = CheckList();
 
-    while (drawer != nullptr && retval == 0)
+    while (drawer != NULL && retval == 0)
     {
         if (!drawer->IsEmpty())
             retval = 1;
         drawer = drawer->next;
     }
 
-    while (check != nullptr)
+    while (check != NULL)
     {
         retval += 1;
         check = check->next;
@@ -709,7 +709,7 @@ int System::CheckEndDay(Terminal *term)
 int System::SetDataPath(const char* path)
 {
     FnTrace("System::SetDataPath()");
-    if (path == nullptr)
+    if (path == NULL)
         return 1;
 
     genericChar str[256] = "";
@@ -862,7 +862,7 @@ char* System::FullPath(const char* filename, genericChar* buffer)
     FnTrace("System::FullPath()");
     static genericChar str[256];
 
-    if (buffer == nullptr)
+    if (buffer == NULL)
         buffer = str;
 
     vt_safe_string::safe_format(buffer, 256, "%s/%s", data_path.Value(), filename);
@@ -903,7 +903,7 @@ char* System::NewPrintFile(char* str)
     FnTrace("System::NewPrintFile()");
     static int counter = 0;
     static genericChar buffer[256];
-    if (str == nullptr)
+    if (str == NULL)
         str = buffer;
 
     ++counter;
@@ -989,7 +989,7 @@ int System::CountOpenChecks(Employee *e)
     now.Set();
     now += std::chrono::minutes(60);
 
-    for (Check *check = CheckList(); check != nullptr; check = check->next)
+    for (Check *check = CheckList(); check != NULL; check = check->next)
     {
         if (check->IsTraining())
             continue;
@@ -1021,11 +1021,11 @@ int System::CountOpenChecks(Employee *e)
 int System::NumberStacked(const char* table, Employee *e)
 {
     FnTrace("System::NumberStacked()");
-    if (e == nullptr)
+    if (e == NULL)
         return 0;
 
     int count = 0;
-    for (Check *check = CheckList(); check != nullptr; check = check->next)
+    for (Check *check = CheckList(); check != NULL; check = check->next)
         if (check->IsTraining() == e->training && check->GetStatus() == CHECK_OPEN &&
             strcmp(check->Table(), table) == 0)
             ++count;
@@ -1035,10 +1035,10 @@ int System::NumberStacked(const char* table, Employee *e)
 Check *System::FindOpenCheck(const char* table, Employee *e)
 {
     FnTrace("System::FindOpenCheck()");
-    if (e == nullptr)
-        return nullptr;
+    if (e == NULL)
+        return NULL;
 
-    for (Check *check = CheckListEnd(); check != nullptr; check = check->fore)
+    for (Check *check = CheckListEnd(); check != NULL; check = check->fore)
     {
         if (check->IsTraining() == e->training && strcmp(check->Table(), table) == 0 &&
             check->GetStatus() == CHECK_OPEN)
@@ -1046,21 +1046,21 @@ Check *System::FindOpenCheck(const char* table, Employee *e)
             return check;
         }
     }
-    return nullptr;
+    return NULL;
 }
 
 Check *System::FindCheckByID(int check_id)
 {
     FnTrace("System::FindCheckByID()");
-    Check *retval = nullptr;
+    Check *retval = NULL;
     Check *currcheck = CheckList();
 
-    while (currcheck != nullptr)
+    while (currcheck != NULL)
     {
         if (currcheck->serial_number == check_id)
         {
             retval = currcheck;
-            currcheck = nullptr;
+            currcheck = NULL;
         }
         else
             currcheck = currcheck->next;
@@ -1072,12 +1072,12 @@ Check *System::FindCheckByID(int check_id)
 Check *System::ExtractOpenCheck(Check *check)
 {
     FnTrace("System::ExtractOpenCheck()");
-    if (check == nullptr || check->IsTraining())
-        return nullptr;
+    if (check == NULL || check->IsTraining())
+        return NULL;
     SubCheck *sc;
 
     int count = 0;
-    for (sc = check->SubList(); sc != nullptr; sc = sc->next)
+    for (sc = check->SubList(); sc != NULL; sc = sc->next)
     {
         if (sc->status == CHECK_OPEN)
             ++count;
@@ -1090,9 +1090,9 @@ Check *System::ExtractOpenCheck(Check *check)
         return check;
     }
     else if (count <= 0)
-        return nullptr; // no closed sub-checks
+        return NULL; // no closed sub-checks
 
-    auto *oc = new Check;
+    Check *oc = new Check;
     oc->Table(check->Table());
     oc->time_open     = check->time_open;
     oc->user_open     = check->user_open;
@@ -1124,7 +1124,7 @@ Check *System::ExtractOpenCheck(Check *check)
 int System::SaveCheck(Check *check)
 {
     FnTrace("System::SaveCheck()");
-    if (check == nullptr || check->IsTraining() || check->archive)
+    if (check == NULL || check->IsTraining() || check->archive)
         return 1;
 
     if (check->serial_number <= 0)
@@ -1178,7 +1178,7 @@ int System::DestroyCheck(Check *check)
             return 1;
         check->DestroyFile();
     }
-    check->customer = nullptr;
+    check->customer = NULL;
     delete check;
     return 0;
 }
@@ -1186,10 +1186,10 @@ int System::DestroyCheck(Check *check)
 Drawer *System::GetServerBank(Employee *e)
 {
     FnTrace("System::GetServerBank()");
-    if (e == nullptr || e->training)
-        return nullptr;
+    if (e == NULL || e->training)
+        return NULL;
 
-    Drawer *drawer = nullptr;
+    Drawer *drawer = NULL;
     if (DrawerList())
         drawer = DrawerList()->FindByOwner(e, DRAWER_OPEN);
     if (drawer)
@@ -1209,14 +1209,14 @@ int System::CreateFixedDrawers()
 
     // Scan System for drawers that need to be created
     int drawer_no = 1;
-    for (Terminal *term = MasterControl->TermList(); term != nullptr; term = term->next)
+    for (Terminal *term = MasterControl->TermList(); term != NULL; term = term->next)
     {
         for (int i = 0; i < term->drawer_count; ++i)
         {
-            Drawer *drawer = nullptr;
+            Drawer *drawer = NULL;
             if (DrawerList())
                 drawer = DrawerList()->FindByNumber(drawer_no);
-            if (drawer == nullptr)
+            if (drawer == NULL)
             {
                 drawer = new Drawer(SystemTime);
                 Add(drawer);
@@ -1256,7 +1256,7 @@ int System::CountDrawersOwned(int user_id)
 {
     FnTrace("System::CoundDrawersOwned()");
     int count = 0;
-    for (Drawer *drawer = DrawerList(); drawer != nullptr; drawer = drawer->next)
+    for (Drawer *drawer = DrawerList(); drawer != NULL; drawer = drawer->next)
         if (drawer->owner_id == user_id && drawer->GetStatus() == DRAWER_OPEN)
             ++count;
     return count;
@@ -1265,7 +1265,7 @@ int System::CountDrawersOwned(int user_id)
 int System::AllDrawersPulled()
 {
     FnTrace("System::AllDrawersPulled()");
-    for (Drawer *drawer = DrawerList(); drawer != nullptr; drawer = drawer->next)
+    for (Drawer *drawer = DrawerList(); drawer != NULL; drawer = drawer->next)
         if (drawer->GetStatus() == DRAWER_OPEN && !drawer->IsEmpty())
             return 0; // false
     return 1;     // true
@@ -1275,13 +1275,13 @@ int System::AddBatch(long long batchnum)
 {
     FnTrace("System::AddBatch()");
     int retval = 0;
-    BatchItem *newbatch = nullptr;
+    BatchItem *newbatch = NULL;
     BatchItem *currbatch = BatchList.Head();
     int done = 1;
 
     if (batchnum > 0)
     {
-        if (currbatch == nullptr)
+        if (currbatch == NULL)
         {
             newbatch = new BatchItem(batchnum);
             BatchList.AddToHead(newbatch);
@@ -1290,7 +1290,7 @@ int System::AddBatch(long long batchnum)
         {
             while (!done)
             {
-                if (currbatch == nullptr)
+                if (currbatch == NULL)
                 {  // add to tail
                     newbatch = new BatchItem(batchnum);
                     BatchList.AddToTail(newbatch);
@@ -1343,7 +1343,7 @@ void System::ClearCapturedTips(TimeInfo &start_time,
 	    {
 	    	if (check->IsTraining() > 0)
 		    continue;
-		for (SubCheck *subcheck = check->SubList(); subcheck != nullptr; subcheck = subcheck->next)
+		for (SubCheck *subcheck = check->SubList(); subcheck != NULL; subcheck = subcheck->next)
 		    subcheck->ClearTips();
 	    }
 
@@ -1353,7 +1353,7 @@ void System::ClearCapturedTips(TimeInfo &start_time,
             else
                 tip_db.ClearHeld();
 
-            if (a == nullptr || archive)
+            if (a == NULL || archive)
                 break;
             if (a->end_time >= end)
                 break;

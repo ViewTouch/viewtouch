@@ -19,7 +19,7 @@
  */
 
 #ifndef _HARDWARE_ZONE_HH
-#define HARDWARE_ZONE_HH
+#define _HARDWARE_ZONE_HH
 
 #include "form_zone.hh"
 
@@ -41,18 +41,18 @@ public:
     HardwareZone();
 
     // Member Functions
-    int          Type() override { return ZONE_HARDWARE; }
-    RenderResult Render(Terminal *t, int update_flag) override;
-    SignalResult Signal(Terminal *t, const genericChar* message) override;
-    Flt         *Spacing() override { return &list_spacing; }
+    int          Type() { return ZONE_HARDWARE; }
+    RenderResult Render(Terminal *t, int update_flag);
+    SignalResult Signal(Terminal *t, const genericChar* message);
+    Flt         *Spacing() { return &list_spacing; }
 
-    int UpdateForm(Terminal *term, int record) override;
-    int LoadRecord(Terminal *t, int record) override;
-    int SaveRecord(Terminal *t, int record, int write_file) override;
-    int NewRecord(Terminal *t) override;
-    int KillRecord(Terminal *t, int record) override;
-    int ListReport(Terminal *t, Report *r) override;
-    int RecordCount(Terminal *t) override;
+    int UpdateForm(Terminal *term, int record);
+    int LoadRecord(Terminal *t, int record);
+    int SaveRecord(Terminal *t, int record, int write_file);
+    int NewRecord(Terminal *t);
+    int KillRecord(Terminal *t, int record);
+    int ListReport(Terminal *t, Report *r);
+    int RecordCount(Terminal *t);
     int ChangeSection(Terminal *t, int no);
     int ChangeStatus(Terminal *t);
     int Calibrate(Terminal *t);

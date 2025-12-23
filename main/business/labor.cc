@@ -42,29 +42,29 @@
 // Constructors
 WorkEntry::WorkEntry()
 {
-    next       = nullptr;
-    fore       = nullptr;
+    next       = NULL;
+    fore       = NULL;
     user_id    = 0;
     job        = 0;
     pay_rate   = PERIOD_HOUR;
     pay_amount = 0;
     tips       = 0;
     edit_id    = 0;
-    original   = nullptr;
+    original   = NULL;
     end_shift  = 0;
     overtime   = 0;
 }
 
 WorkEntry::WorkEntry(Employee *e, int j)
 {
-    next       = nullptr;
-    fore       = nullptr;
+    next       = NULL;
+    fore       = NULL;
     user_id    = e->id;
     start      = SystemTime;
     start.Floor<std::chrono::minutes>();
     tips       = 0;
     edit_id    = 0;
-    original   = nullptr;
+    original   = NULL;
     end_shift  = 0;
     job        = j;
     overtime   = 0;
@@ -97,9 +97,9 @@ WorkEntry::~WorkEntry()
 // Member Functions
 WorkEntry *WorkEntry::Copy()
 {
-    auto *w = new WorkEntry;
-    if (w == nullptr)
-        return nullptr;
+    WorkEntry *w = new WorkEntry;
+    if (w == NULL)
+        return NULL;
 
     w->user_id    = user_id;
     w->job        = job;
@@ -286,7 +286,7 @@ int WorkEntry::Edit(int my_user_id)
     }
 
     WorkEntry *work_entry = Copy();
-    if (work_entry == nullptr)
+    if (work_entry == NULL)
         return 1;
 
     original = work_entry;
@@ -298,7 +298,7 @@ int WorkEntry::Update(LaborPeriod *lp)
 {
     FnTrace("WorkEntry::Update()");
     WorkEntry *work_entry = original;
-    if (work_entry == nullptr)
+    if (work_entry == NULL)
         return 0;
 
     if (lp->fore && start < lp->fore->end_time)
@@ -323,7 +323,7 @@ int WorkEntry::Update(LaborPeriod *lp)
         pay_amount == work_entry->pay_amount && pay_rate == work_entry->pay_rate)
     {
         delete original;
-        original = nullptr;
+        original = NULL;
         edit_id = 0;
     }
     return 0;
@@ -333,7 +333,7 @@ int WorkEntry::UndoEdit()
 {
     FnTrace("WorkEntry::UndoEdit()");
     WorkEntry *work_entry = original;
-    if (work_entry == nullptr)
+    if (work_entry == NULL)
         return 0;
 
     start      = work_entry->start;
@@ -344,7 +344,7 @@ int WorkEntry::UndoEdit()
     tips       = work_entry->tips;
 
     delete original;
-    original = nullptr;
+    original = NULL;
     edit_id = 0;
     return 0;
 }
@@ -390,8 +390,8 @@ int WorkEntry::Overlap(TimeInfo &st, TimeInfo &et)
 // Constructor
 LaborPeriod::LaborPeriod()
 {
-    next          = nullptr;
-    fore          = nullptr;
+    next          = NULL;
+    fore          = NULL;
     serial_number = 0;
     loaded        = 0;
 }
@@ -400,7 +400,7 @@ LaborPeriod::LaborPeriod()
 int LaborPeriod::Add(WorkEntry *work_entry)
 {
     FnTrace("LaborPeriod::Add()");
-    if (work_entry == nullptr)
+    if (work_entry == NULL)
         return 1;
 
     // Start at end of list & work backwards
@@ -428,7 +428,7 @@ int LaborPeriod::Purge()
 int LaborPeriod::Scan(const char* filename)
 {
     FnTrace("LaborPeriod::Scan()");
-    if (filename == nullptr)
+    if (filename == NULL)
         return 1;
 
     file_name.Set(filename);
@@ -484,7 +484,7 @@ int LaborPeriod::Load()
             return 1;
         }
 
-        auto *work_entry = new WorkEntry;
+        WorkEntry *work_entry = new WorkEntry;
         error += work_entry->Read(df, version);
         Add(work_entry);
         work_entry->Update(this);
@@ -525,7 +525,7 @@ int LaborPeriod::Save()
     // Add safety limit to prevent infinite loops from corrupted linked lists
     int max_iterations = 10000;
     int iterations = 0;
-    for (WorkEntry *work_entry = WorkList(); work_entry != nullptr && iterations < max_iterations; work_entry = work_entry->next)
+    for (WorkEntry *work_entry = WorkList(); work_entry != NULL && iterations < max_iterations; work_entry = work_entry->next)
     {
         work_entry->Update(this);
         error += work_entry->Write(df, LABOR_VERSION);
@@ -541,7 +541,7 @@ int LaborPeriod::Save()
 int LaborPeriod::ShiftReport(Terminal *t, WorkEntry *work_entry, Report *r)
 {
     FnTrace("LaborPeriod::ShiftReport()");
-    if (work_entry == nullptr || r == nullptr)
+    if (work_entry == NULL || r == NULL)
         return 1;
 
     r->TextC("Work Summary Report");
@@ -561,7 +561,7 @@ int LaborPeriod::WorkReport(Terminal *t, Employee *user, TimeInfo &tm_s,
                             TimeInfo &tm_e, Report *r)
 {
     FnTrace("LaborPeriod::WorkReport()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
 
     Settings *s = t->GetSettings();
@@ -603,7 +603,7 @@ int LaborPeriod::WorkReport(Terminal *t, Employee *user, TimeInfo &tm_s,
             te = now;
             te.Floor<std::chrono::minutes>();
         }
-        if ((user == nullptr || user->id == wid) && ts <= end && te >= start &&
+        if ((user == NULL || user->id == wid) && ts <= end && te >= start &&
             ((1 << work_entry->job) & t->job_filter) == 0)
         {
             if (!work_entry->end.IsSet())
@@ -682,7 +682,7 @@ int LaborPeriod::WorkReport(Terminal *t, Employee *user, TimeInfo &tm_s,
         }
 
         work_entry = work_entry->next;
-        if (last_id == wid && (work_entry == nullptr || work_entry->user_id != wid))
+        if (last_id == wid && (work_entry == NULL || work_entry->user_id != wid))
         {
             r->Mode(PRINT_BOLD);
 //            r->TextPosR(-25, "Total", COLOR_DK_GREEN);
@@ -730,13 +730,13 @@ WorkEntry *LaborPeriod::WorkReportEntry(Terminal *t, int line, Employee *user,
         if (!te.IsSet())
             te = SystemTime;
 
-        if ((user == nullptr || user->id == wid) && work_entry->start <= end && te >= start &&
+        if ((user == NULL || user->id == wid) && work_entry->start <= end && te >= start &&
             ((1 << work_entry->job) & t->job_filter) == 0)
         {
             if (line == l)
                 return work_entry;
             else if (l > line)
-                return nullptr;
+                return NULL;
             ++l;
             last_id = wid;
 
@@ -745,10 +745,10 @@ WorkEntry *LaborPeriod::WorkReportEntry(Terminal *t, int line, Employee *user,
         }
 
         work_entry = work_entry->next;
-        if (last_id == wid && (work_entry == nullptr || work_entry->user_id != wid))
+        if (last_id == wid && (work_entry == NULL || work_entry->user_id != wid))
             l+= 2;
     }
-    return nullptr;
+    return NULL;
 }
 
 int LaborPeriod::WorkReportLine(Terminal *t, WorkEntry *work, Employee *user,
@@ -778,7 +778,7 @@ int LaborPeriod::WorkReportLine(Terminal *t, WorkEntry *work, Employee *user,
         if (!te.IsSet())
             te = SystemTime;
 
-        if ((user == nullptr || user->id == wid) && work_entry->start <= end && te >= start &&
+        if ((user == NULL || user->id == wid) && work_entry->start <= end && te >= start &&
             ((1 << work_entry->job) & t->job_filter) == 0)
         {
             if (work == work_entry)
@@ -790,7 +790,7 @@ int LaborPeriod::WorkReportLine(Terminal *t, WorkEntry *work, Employee *user,
                 ++l;
         }
         work_entry = work_entry->next;
-        if (last_id == wid && (work_entry == nullptr || work_entry->user_id != wid))
+        if (last_id == wid && (work_entry == NULL || work_entry->user_id != wid))
             l+= 2;
     }
     return -1;
@@ -813,11 +813,11 @@ int LaborDB::Load(const char* path)
     }
 
     DIR *dp = opendir(pathname.Value());
-    if (dp == nullptr)
+    if (dp == NULL)
         return 1;
 
     char str[256];
-    struct dirent *record = nullptr;
+    struct dirent *record = NULL;
     do
 	{
 		record = readdir(dp);
@@ -830,7 +830,7 @@ int LaborDB::Load(const char* path)
 			if (strncmp(name, "labor_", 6) == 0)
 			{
 				vt_safe_string::safe_format(str, 256, "%s/%s", pathname.Value(), name);
-				auto *lp = new LaborPeriod;
+				LaborPeriod *lp = new LaborPeriod;
 				if (lp->Scan(str))
 				{
 					ReportError("Couldn't load labor period");
@@ -849,7 +849,7 @@ int LaborDB::Load(const char* path)
 int LaborDB::Add(LaborPeriod *lp)
 {
     FnTrace("LaborDB::Add()");
-    if (lp == nullptr)
+    if (lp == NULL)
         return 1;  // Add failed
 
     // start at end of list and work backwords
@@ -883,8 +883,8 @@ int LaborDB::Purge()
 int LaborDB::NewLaborPeriod()
 {
     FnTrace("LaborDB::NewLaborPerion()");
-    auto *lp = new LaborPeriod;
-    if (lp == nullptr)
+    LaborPeriod *lp = new LaborPeriod;
+    if (lp == NULL)
         return 1;
 
     LaborPeriod *end = PeriodListEnd();
@@ -896,7 +896,7 @@ int LaborDB::NewLaborPeriod()
             if (!work_entry->IsWorkDone())
             {
                 work_entry->EndEntry(SystemTime);
-                auto *nw = new WorkEntry;
+                WorkEntry *nw = new WorkEntry;
                 nw->user_id    = work_entry->user_id;
                 nw->start      = SystemTime;
                 nw->job        = work_entry->job;
@@ -923,13 +923,13 @@ int LaborDB::NewLaborPeriod()
 LaborPeriod *LaborDB::CurrentPeriod()
 {
     FnTrace("LaborDB::CurrentPeriod()");
-    LaborPeriod *lp = nullptr;
-    if (PeriodListEnd() == nullptr)
+    LaborPeriod *lp = NULL;
+    if (PeriodListEnd() == NULL)
         NewLaborPeriod();
 
     lp = PeriodListEnd();
-    if (lp == nullptr)
-        return nullptr;
+    if (lp == NULL)
+        return NULL;
 
     if (lp->loaded == 0)
         lp->Load();
@@ -939,12 +939,12 @@ LaborPeriod *LaborDB::CurrentPeriod()
 WorkEntry *LaborDB::CurrentWorkEntry(Employee *e)
 {
     FnTrace("LaborDB::CurrentWorkEntry()");
-    if (e == nullptr)
-        return nullptr;
+    if (e == NULL)
+        return NULL;
 
     LaborPeriod *lp = CurrentPeriod();
-    if (lp == nullptr)
-        return nullptr;
+    if (lp == NULL)
+        return NULL;
 
     WorkEntry *work_entry = lp->WorkListEnd();
     // Add safety check to prevent infinite loops from corrupted linked lists
@@ -962,27 +962,27 @@ WorkEntry *LaborDB::CurrentWorkEntry(Employee *e)
     
     // If we hit max iterations, the list might be corrupted - return NULL to be safe
     if (iterations >= max_iterations)
-        return nullptr;
+        return NULL;
     
-    return nullptr;
+    return NULL;
 }
 
 int LaborDB::IsUserOnClock(Employee *e)
 {
     FnTrace("LaborDB::IsUserOnClock()");
-    if (e == nullptr)
+    if (e == NULL)
         return 0;
     if (e->UseClock() == 0)
         return 1;
 
     WorkEntry *work_entry = CurrentWorkEntry(e);
-    return (work_entry != nullptr);
+    return (work_entry != NULL);
 }
 
 int LaborDB::IsUserOnBreak(Employee *e)
 {
     FnTrace("LaborDB::IsUserOnBreak()");
-    if (e == nullptr)
+    if (e == NULL)
         return 0;
     if (e->UseClock() == 0)
         return 0;
@@ -1012,7 +1012,7 @@ int LaborDB::IsUserOnBreak(Employee *e)
 int LaborDB::CurrentJob(Employee *e)
 {
     FnTrace("LaborDB::CurrentJob()");
-    if (e == nullptr)
+    if (e == NULL)
         return 0;
 
     if (e->id == 1)
@@ -1037,14 +1037,14 @@ int LaborDB::CurrentJob(Employee *e)
 WorkEntry *LaborDB::NewWorkEntry(Employee *e, int job)
 {
     FnTrace("LaborDB::NewWorkEntry()");
-    if (e == nullptr || IsUserOnClock(e) || !e->UseClock())
-        return nullptr;
+    if (e == NULL || IsUserOnClock(e) || !e->UseClock())
+        return NULL;
 
     LaborPeriod *lp = CurrentPeriod();
-    if (lp == nullptr)
-        return nullptr;
+    if (lp == NULL)
+        return NULL;
 
-    auto *work_entry = new WorkEntry(e, job);
+    WorkEntry *work_entry = new WorkEntry(e, job);
     lp->Add(work_entry);
     lp->Save();
     return work_entry;
@@ -1053,15 +1053,15 @@ WorkEntry *LaborDB::NewWorkEntry(Employee *e, int job)
 int LaborDB::EndWorkEntry(Employee *e, int end_shift)
 {
     FnTrace("LaborDB::EndWorkEntry()");
-    if (e == nullptr || e->UseClock() == 0)
+    if (e == NULL || e->UseClock() == 0)
         return 1;
 
     WorkEntry *work_entry = CurrentWorkEntry(e);
-    if (work_entry == nullptr)
+    if (work_entry == NULL)
         return 1;
 
     LaborPeriod *lp = CurrentPeriod();
-    if (lp == nullptr)
+    if (lp == NULL)
         return 1;
 
     work_entry->EndEntry(SystemTime);
@@ -1074,7 +1074,7 @@ int LaborDB::ServerLaborReport(Terminal *t, Employee *e, TimeInfo &start,
                                TimeInfo &end, Report *r)
 {
     FnTrace("LaborDB::ServerLaborReport()");
-    if (e == nullptr || r == nullptr)
+    if (e == NULL || r == NULL)
         return 1;
 
     TimeInfo ps;
@@ -1182,11 +1182,11 @@ int LaborDB::ServerLaborReport(Terminal *t, Employee *e, TimeInfo &start,
 WorkEntry *LaborDB::StartOfShift(Employee *e)
 {
     FnTrace("LaborDB::StartOfShift()");
-    if (e == nullptr)
-        return nullptr;
+    if (e == NULL)
+        return NULL;
 
     LaborPeriod *lp = PeriodListEnd();
-    WorkEntry *first = nullptr;
+    WorkEntry *first = NULL;
     while (lp)
     {
         WorkEntry *work_entry = lp->WorkListEnd();
@@ -1208,8 +1208,8 @@ WorkEntry *LaborDB::StartOfShift(Employee *e)
 WorkEntry *LaborDB::NextEntry(WorkEntry *work_entry)
 {
     FnTrace("LaborDB::NextEntry()");
-    if (work_entry == nullptr)
-        return nullptr;
+    if (work_entry == NULL)
+        return NULL;
 
     int user_id = work_entry->user_id;
     work_entry = work_entry->next;
@@ -1219,19 +1219,19 @@ WorkEntry *LaborDB::NextEntry(WorkEntry *work_entry)
             return work_entry;
         work_entry = work_entry->next;
     }
-    return nullptr;
+    return NULL;
 }
 
 #define WORKRECEIPT_TITLE  "Attendance Receipt"
 int LaborDB::WorkReceipt(Terminal *t, Employee *e, Report *r)
 {
     FnTrace("LaborDB::WorkReceipt()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
 
     //r->max_width = 40;
     WorkEntry *we = StartOfShift(e);
-    if (we == nullptr)
+    if (we == NULL)
     {
         r->TextC("No work entries found");
         return 0;
@@ -1377,14 +1377,14 @@ int LaborDB::FigureLabor(Settings *s, TimeInfo &start, TimeInfo &end_time,
 // Constructor
 WorkDB::WorkDB()
 {
-    archive = nullptr;
+    archive = NULL;
 }
 
 // Member Functions
 int WorkDB::Add(WorkEntry *we)
 {
     FnTrace("WorkDB::Add()");
-    if (we == nullptr)
+    if (we == NULL)
         return 1;
 
     // Start at end of list & work backwards
@@ -1447,7 +1447,7 @@ int WorkDB::Read(InputDataFile &df, int version)
     df.Read(count);
     for (int i = 0; i < count; ++i)
     {
-        auto *we = new WorkEntry;
+        WorkEntry *we = new WorkEntry;
         we->Read(df, version);
         Add(we);
     }
@@ -1461,7 +1461,7 @@ int WorkDB::Write(OutputDataFile &df, int version)
     // Add safety limit to prevent infinite loops from corrupted linked lists
     int max_iterations = 10000;
     int iterations = 0;
-    for (WorkEntry *we = WorkList(); we != nullptr && iterations < max_iterations; we = we->next)
+    for (WorkEntry *we = WorkList(); we != NULL && iterations < max_iterations; we = we->next)
     {
         we->Write(df, version);
         iterations++;

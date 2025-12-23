@@ -18,8 +18,8 @@
  * Employee information classes
  */
 
-#ifndef EMPLOYEE_HH
-#define EMPLOYEE_HH
+#ifndef _EMPLOYEE_HH
+#define _EMPLOYEE_HH
 
 #include "utility.hh"
 #include "list_utility.hh"

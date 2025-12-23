@@ -19,7 +19,7 @@
  */
 
 #ifndef _CHART_ZONE_HH
-#define CHART_ZONE_HH
+#define _CHART_ZONE_HH
 
 #include "pos_zone.hh"
 #include "list_utility.hh"
@@ -36,17 +36,16 @@ public:
     // Constructor
     ChartZone();
     // Destructor
-    ~ChartZone() override;
+    ~ChartZone();
 
     // Member Functions
-    int   Type() override { return ZONE_CHART; }
-    std::unique_ptr<Zone> Copy() override;
+    int   Type() { return ZONE_CHART; }
+    std::unique_ptr<Zone> Copy();
 
-    int          RenderInit(Terminal *t, int update_flag) override;
-    RenderResult Render(Terminal *t, int update_flag) override;
-    SignalResult Signal(Terminal *t, const genericChar* message) override;
-    SignalResult Touch(Terminal *t, int tx, int ty) override;
-    using PosZone::Update;  // bring base overloads into scope
+    int          RenderInit(Terminal *t, int update_flag);
+    RenderResult Render(Terminal *t, int update_flag);
+    SignalResult Signal(Terminal *t, const genericChar* message);
+    SignalResult Touch(Terminal *t, int tx, int ty);
     int          Update(Terminal *t, int update_message);
 };
 

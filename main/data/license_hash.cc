@@ -101,11 +101,11 @@ int GetInterfaceInfo(char* stringbuff, int stringlen)
     mib[4] = NET_RT_IFLIST;
     mib[5] = 0;
 
-    if (sysctl(mib, 6, nullptr, &len, nullptr, 0) < 0)
+    if (sysctl(mib, 6, NULL, &len, NULL, 0) < 0)
         return 1;
-    if ((buffer = (char*)malloc(len)) == nullptr)
+    if ((buffer = (char*)malloc(len)) == NULL)
         return 1;
-    if (sysctl(mib, 6, buffer, &len, nullptr, 0) < 0) {
+    if (sysctl(mib, 6, buffer, &len, NULL, 0) < 0) {
         free(buffer);
         return 1;
     }
@@ -374,7 +374,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
     }
     
     close(sockfd);
-    if (buf != nullptr)
+    if (buf != NULL)
         free(buf);
     
     */

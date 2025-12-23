@@ -56,17 +56,17 @@ public:
     // Constructor
     RoomDialog();
     // Destructor
-    ~RoomDialog() override;
+    ~RoomDialog();
 
     // Member Functions
-    int          RenderInit(Terminal *term, int update_flag) override;
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          RenderInit(Terminal *term, int update_flag);
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Touch(Terminal *term, int tx, int ty);
 
-    int LoadRecord(Terminal *term, int record) override;
-    int SaveRecord(Terminal *term, int record, int write_file) override;
-    int UpdateForm(Terminal *term, int record) override;
+    int LoadRecord(Terminal *term, int record);
+    int SaveRecord(Terminal *term, int record, int write_file);
+    int UpdateForm(Terminal *term, int record);
 
     int ParseSwipe(Terminal *term, const genericChar* swipe);
 };
@@ -137,7 +137,7 @@ RenderResult RoomDialog::Render(Terminal *term, int update_flag)
     Check *check = term->check;
     if (check)
     {
-        for (SubCheck *sc = check->SubList(); sc != nullptr; sc = sc->next)
+        for (SubCheck *sc = check->SubList(); sc != NULL; sc = sc->next)
         {
             total   += sc->total_cost + sc->payment;
             balance += sc->balance;
@@ -181,7 +181,7 @@ SignalResult RoomDialog::Touch(Terminal *term, int tx, int ty)
 {
     FnTrace("RoomDialog::Touch()");
     Check *check = term->check;
-    if (check == nullptr)
+    if (check == NULL)
         return SIGNAL_TERMINATE;
 
     if (checkout->IsPointIn(tx, ty))
@@ -239,7 +239,7 @@ int RoomDialog::LoadRecord(Terminal *term, int /*record*/)
 {
     FnTrace("RoomDialog::LoadRecord()");
     Check *check = term->check;
-    if (check == nullptr)
+    if (check == NULL)
         return 0;
 
     FormField *f = FieldList();
@@ -269,7 +269,7 @@ int RoomDialog::SaveRecord(Terminal *term, int /*record*/, int /*write_file*/)
 {
     FnTrace("RoomDialog::SaveRecord()");
     Check *check = term->check;
-    if (check == nullptr)
+    if (check == NULL)
         return 0;
 
     Str tmp;
@@ -419,7 +419,7 @@ int RoomDialog::ParseSwipe(Terminal */*term*/, const genericChar* value)
 CustomerInfoZone::CustomerInfoZone()
 {
     font        = FONT_TIMES_24;
-    customer    = nullptr;
+    customer    = NULL;
     my_update   = 1;
     form_header = 0.65;
 
@@ -444,7 +444,8 @@ CustomerInfoZone::CustomerInfoZone()
 }
 
 CustomerInfoZone::~CustomerInfoZone()
-= default;
+{
+}
 
 int CustomerInfoZone::RenderInit(Terminal *term, int update_flag)
 {
@@ -467,20 +468,20 @@ RenderResult CustomerInfoZone::Render(Terminal *term, int update_flag)
 
     if (update_flag || my_update)
     {
-        if (customer != nullptr)
+        if (customer != NULL)
             customer->Save();
-        if (term->customer == nullptr)
-            customer = nullptr;
+        if (term->customer == NULL)
+            customer = NULL;
         else
             customer = term->customer;
         LoadRecord(term, 0);
         my_update = 0;
     }
 
-    if (customer == nullptr)
+    if (customer == NULL)
         fields_active = 0;
     FormField *field = FieldList();
-    while (field != nullptr)
+    while (field != NULL)
     {
         field->active = static_cast<short>(fields_active);
         field = field->next;
@@ -489,7 +490,7 @@ RenderResult CustomerInfoZone::Render(Terminal *term, int update_flag)
     FormZone::Render(term, update_flag);
     TextC(term, 0, term->Translate(name.Value()), col);
 
-    if (customer == nullptr)
+    if (customer == NULL)
     {
         TextL(term, 3, term->Translate("No customer available"), col);
     }
@@ -502,7 +503,7 @@ SignalResult CustomerInfoZone::Signal(Terminal *term, const genericChar* message
     FnTrace("CustomerInfoZone::Signal()");
     SignalResult retval = SIGNAL_OKAY;
     static const genericChar* commands[] = {
-        "next", "prior", "search", "nextsearch ", "new", nullptr};
+        "next", "prior", "search", "nextsearch ", "new", NULL};
     int idx = CompareListN(commands, message);
     int draw = 0;
     int customer_type = CHECK_TAKEOUT;  // for new records
@@ -512,23 +513,23 @@ SignalResult CustomerInfoZone::Signal(Terminal *term, const genericChar* message
     switch (idx)
     {
     case 0:  //next
-        if (customer != nullptr && customer->next != nullptr)
+        if (customer != NULL && customer->next != NULL)
         {
-            if (customer != nullptr)
+            if (customer != NULL)
                 SaveRecord(term, 0, 1);
             customer = customer->next;
-            if (term != nullptr)
+            if (term != NULL)
                 term->customer = customer;
             draw = 1;
         }
         break;
     case 1:  //prior
-        if (customer != nullptr && customer->fore != nullptr)
+        if (customer != NULL && customer->fore != NULL)
         {
-            if (customer != nullptr)
+            if (customer != NULL)
                 SaveRecord(term, 0, 1);
             customer = customer->fore;
-            if (term != nullptr)
+            if (term != NULL)
                 term->customer = customer;
             draw = 1;
         }
@@ -546,11 +547,11 @@ SignalResult CustomerInfoZone::Signal(Terminal *term, const genericChar* message
             draw = 1;
         break;
     case 4:  // new
-        if (customer != nullptr)
+        if (customer != NULL)
             SaveRecord(term, 0, 1);
-        if (term != nullptr && term->check != nullptr)
+        if (term != NULL && term->check != NULL)
             customer_type = term->check->CustomerType();
-        if (term != nullptr)
+        if (term != NULL)
             term->customer = NewCustomerInfo(customer_type);
         keyboard_focus = FieldList();
         draw = 1;
@@ -560,7 +561,7 @@ SignalResult CustomerInfoZone::Signal(Terminal *term, const genericChar* message
         break;
     }
 
-    if (draw && term != nullptr)
+    if (draw && term != NULL)
     {
         // Normally we'd only draw our own zone, but we changed the current customer
         // term knows about, so other zones may be affected.
@@ -585,7 +586,7 @@ int CustomerInfoZone::LoseFocus(Terminal *term, Zone */*newfocus*/)
     FnTrace("CustomerInfoZone::LoseFocus()");
     int retval = 0;
 
-    keyboard_focus = nullptr;
+    keyboard_focus = NULL;
     Draw(term, 0);
 
     return retval;
@@ -598,7 +599,7 @@ int CustomerInfoZone::LoadRecord(Terminal */*term*/, int /*record*/)
     FormField *fields = FieldList();
     const genericChar* buffer;
 
-    if (customer != nullptr)
+    if (customer != NULL)
     {
         buffer = customer->FirstName();
         fields->Set(buffer);
@@ -659,7 +660,7 @@ int CustomerInfoZone::SaveRecord(Terminal *term, int record, int write_file)
     FormField *fields = FieldList();
     genericChar buffer[STRLONG];
     
-    if (customer != nullptr)
+    if (customer != NULL)
     {
         fields->Get(buffer);
         customer->FirstName(buffer);
@@ -734,7 +735,7 @@ int CustomerInfoZone::RecordCount(Terminal *term)
     // However, the current record may be the very first record, and it
     // may still be empty.  So we'll make sure the current record still
     // counts even if no data has yet been entered.
-    if (retval < 1 && term->customer != nullptr)
+    if (retval < 1 && term->customer != NULL)
         retval = 1;
 
     return retval;
@@ -745,20 +746,20 @@ int CustomerInfoZone::Search(Terminal *term, int record, const genericChar* word
     FnTrace("CustomerInfoZone::Search()");
 
     int retval = 1;
-    CustomerInfo *found = nullptr;
+    CustomerInfo *found = NULL;
 
     if (record > -1)
     {
-        if (customer != nullptr)
+        if (customer != NULL)
             record = customer->CustomerID();
         else
             record = -1;
     }
 
-    found = (term != nullptr && term->system_data != nullptr) ? term->system_data->customer_db.FindByString(word, record) : nullptr;
-    if (found != nullptr && term != nullptr)
+    found = (term != NULL && term->system_data != NULL) ? term->system_data->customer_db.FindByString(word, record) : NULL;
+    if (found != NULL && term != NULL)
         term->customer = found;
-    else if (term != nullptr && term->system_data != nullptr)
+    else if (term != NULL && term->system_data != NULL)
         term->customer = term->system_data->customer_db.FindBlank();
 
     return retval;
@@ -784,7 +785,7 @@ RenderResult CommandZone::Render(Terminal *term, int update_flag)
 
     LayoutZone::Render(term, update_flag);
     Employee *employee = term->user;
-    if (employee == nullptr)
+    if (employee == NULL)
         return RENDER_OKAY;
 
     Settings *settings = term->GetSettings();
@@ -844,7 +845,7 @@ SignalResult CommandZone::Signal(Terminal *term, const genericChar* message)
     FnTrace("CommandZone::Signal()");
     static const genericChar* commands[] = {
         "takeout", "printreceipt", "stack", "move", "more tables",
-        "tablenext", "tableprior", "faststart", nullptr};
+        "tablenext", "tableprior", "faststart", NULL};
 
     int idx = CompareList(message, commands);
 
@@ -862,7 +863,7 @@ SignalResult CommandZone::Signal(Terminal *term, const genericChar* message)
         if (check)
         {
             Printer *p = term->FindPrinter(PRINTER_RECEIPT);
-            for (SubCheck *sc = check->SubList(); sc != nullptr; sc = sc->next)
+            for (SubCheck *sc = check->SubList(); sc != NULL; sc = sc->next)
             {
                 if (sc->status == CHECK_OPEN)
                     sc->PrintReceipt(term, check, p);
@@ -879,7 +880,7 @@ SignalResult CommandZone::Signal(Terminal *term, const genericChar* message)
         if (check)
         {
             term->move_check ^= 1;
-            term->Update(UPDATE_ALL_TABLES, nullptr);
+            term->Update(UPDATE_ALL_TABLES, NULL);
             Draw(term, 0);
             return SIGNAL_OKAY;
         }
@@ -906,7 +907,7 @@ SignalResult CommandZone::Touch(Terminal *term, int tx, int ty)
     FnTrace("CommandZone::Touch()");
     Employee *e = term->user;
     Settings *s = term->GetSettings();
-    if (e == nullptr || !e->IsSupervisor(s))
+    if (e == NULL || !e->IsSupervisor(s))
         return SIGNAL_IGNORED;
 
     term->Jump(JUMP_NORMAL, PAGEID_MANAGER);
@@ -942,7 +943,7 @@ SignalResult CommandZone::Keyboard(Terminal *term, int my_key, int state)
         break;
     case 13: // enter
     {
-        Zone *z = nullptr;
+        Zone *z = NULL;
         if (check && len <= 0)
             z = FindTableZone(term, check->Table());
         else
@@ -996,7 +997,7 @@ int CommandZone::TakeOut(Terminal *term)
         return term->QuickMode(CHECK_TAKEOUT);
 
     Check *check = term->check;
-    if (check == nullptr || check->IsTakeOut())
+    if (check == NULL || check->IsTakeOut())
         return 1;
 
     Str tbl(check->Table());
@@ -1015,7 +1016,7 @@ int CommandZone::FastFood(Terminal *term)
         return term->QuickMode(CHECK_FASTFOOD);
 
     Check *check = term->check;
-    if (check == nullptr || check->IsFastFood())
+    if (check == NULL || check->IsFastFood())
         return 1;
 
     Str tbl(check->Table());
@@ -1030,19 +1031,19 @@ int CommandZone::FastFood(Terminal *term)
 Zone *CommandZone::FindTableZone(Terminal *term, const genericChar* table)
 {
     FnTrace("CommandZone::FindTableZone()");
-    if (table == nullptr)
-        return nullptr;
+    if (table == NULL)
+        return NULL;
 
     int len = strlen(table);
     Page *my_page;
 
     // pass 1
-    for (my_page = term->zone_db->PageList(); my_page != nullptr; my_page = my_page->next)
+    for (my_page = term->zone_db->PageList(); my_page != NULL; my_page = my_page->next)
     {
         if (!my_page->IsTable() || my_page->size > term->size)
             continue;
 
-        for (Zone *z = my_page->ZoneList(); z != nullptr; z = z->next)
+        for (Zone *z = my_page->ZoneList(); z != NULL; z = z->next)
             if (z->Type() == ZONE_TABLE &&
                 StringCompare(z->name.Value(), table, len) == 0)
             {
@@ -1052,12 +1053,12 @@ Zone *CommandZone::FindTableZone(Terminal *term, const genericChar* table)
     }
 
     // pass 2
-    for (my_page = term->zone_db->PageList(); my_page != nullptr; my_page = my_page->next)
+    for (my_page = term->zone_db->PageList(); my_page != NULL; my_page = my_page->next)
     {
         if (!my_page->IsTable() || my_page->size > term->size)
             continue;
 
-        for (Zone *z = my_page->ZoneList(); z != nullptr; z = z->next){
+        for (Zone *z = my_page->ZoneList(); z != NULL; z = z->next){
             if (z->Type() == ZONE_TABLE &&
                 StringCompare(z->name.Value(), table) == 0)
             {
@@ -1066,7 +1067,7 @@ Zone *CommandZone::FindTableZone(Terminal *term, const genericChar* table)
             }
 		}
     }
-    return nullptr;
+    return NULL;
 }
 
 
@@ -1076,7 +1077,7 @@ Zone *CommandZone::FindTableZone(Terminal *term, const genericChar* table)
 // Constructor
 TableZone::TableZone()
 {
-    check         = nullptr;
+    check         = NULL;
     stack_depth   = 0;
     blink         = 0;
     current       = 0;
@@ -1147,7 +1148,7 @@ RenderResult TableZone::Render(Terminal *term, int update_flag)
     // Continue with normal TableZone rendering logic
     Employee *employee = term->user;
 
-    if (employee == nullptr)
+    if (employee == NULL)
         return RENDER_OKAY;
 
     System *sys = term->system_data;
@@ -1158,7 +1159,7 @@ RenderResult TableZone::Render(Terminal *term, int update_flag)
         if (name.size() > 0)
             check = sys->FindOpenCheck(name.Value(), employee);
         else
-            check = nullptr;
+            check = NULL;
         stack_depth = sys->NumberStacked(name.Value(), employee);
     }
 
@@ -1214,7 +1215,7 @@ RenderResult TableZone::Render(Terminal *term, int update_flag)
 SignalResult TableZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("TableZone::Signal()");
-    static const genericChar* commands[] = {"mergetables", nullptr};
+    static const genericChar* commands[] = {"mergetables", NULL};
     
     int idx = CompareList(message, commands);
     switch (idx)
@@ -1253,7 +1254,7 @@ SignalResult TableZone::Signal(Terminal *term, const genericChar* message)
             
             // Clear move mode and update display
             term->move_check = 0;
-            term->UpdateAllTerms(UPDATE_ALL_TABLES | UPDATE_CHECKS, nullptr);
+            term->UpdateAllTerms(UPDATE_ALL_TABLES | UPDATE_CHECKS, NULL);
         }
         return SIGNAL_OKAY;
     }
@@ -1265,7 +1266,7 @@ SignalResult TableZone::Touch(Terminal *term, int tx, int ty)
     FnTrace("TableZone::Touch()");
     Employee *e = term->user;
 
-    if (e == nullptr)
+    if (e == NULL)
         return SIGNAL_IGNORED;
 
     if (term->move_check && term->check)
@@ -1291,12 +1292,12 @@ SignalResult TableZone::Touch(Terminal *term, int tx, int ty)
         // move check to this table & update
         term->check->Table(name.Value());
         term->move_check = 0;
-        term->UpdateAllTerms(UPDATE_ALL_TABLES | UPDATE_CHECKS, nullptr);
+        term->UpdateAllTerms(UPDATE_ALL_TABLES | UPDATE_CHECKS, NULL);
         return SIGNAL_OKAY;
     }
 
     Check *tmp_check = term->check;
-    if (tmp_check == nullptr || tmp_check != check)
+    if (tmp_check == NULL || tmp_check != check)
     {
         if (check)
         {
@@ -1336,7 +1337,7 @@ int TableZone::Update(Terminal *term, int update_message, const genericChar* val
 {
     FnTrace("TableZone::Update()");
     Employee *e = term->user;
-    if (e == nullptr)
+    if (e == NULL)
         return 0;
 
     System *sys = term->system_data;
@@ -1353,7 +1354,7 @@ int TableZone::Update(Terminal *term, int update_message, const genericChar* val
              ((update_message & UPDATE_TABLE) && (StringCompare(name.Value(), value) == 0)))
     {
         Check *tmp_check = sys->FindOpenCheck(name.Value(), e);
-        if (tmp_check == nullptr && check == nullptr)
+        if (tmp_check == NULL && check == NULL)
             return 0;
         check = tmp_check;
         stack_depth = sys->NumberStacked(name.Value(), e);
@@ -1381,7 +1382,7 @@ RenderResult GuestCountZone::Render(Terminal *term, int update_flag)
     FnTrace("GuestCountZone::Render()");
     LayoutZone::Render(term, update_flag);
     Check *check = term->check;
-    if (check == nullptr)
+    if (check == NULL)
         return RENDER_OKAY;
 
     if (update_flag)
@@ -1418,7 +1419,7 @@ SignalResult GuestCountZone::Signal(Terminal *term, const genericChar* message)
     static const genericChar* commands[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "00",
         "backspace", "clear", "increase", "decrease",
-        "done", "ordering", "okay", "cancel", nullptr};
+        "done", "ordering", "okay", "cancel", NULL};
 
     Check *check = term->check;
     int idx = CompareList(message, commands);
@@ -1495,7 +1496,7 @@ SignalResult GuestCountZone::Signal(Terminal *term, const genericChar* message)
 
     term->guests = count;
     Draw(term, 0);
-    term->Update(UPDATE_GUESTS, nullptr);
+    term->Update(UPDATE_GUESTS, NULL);
     return SIGNAL_OKAY;
 }
 
@@ -1540,7 +1541,7 @@ public:
     TableObj(Check *thisCheck);
 
     // Member Functions
-    int Render(Terminal *term) override;
+    int Render(Terminal *term);
     int Draw(Terminal *term);
 };
 
@@ -1603,8 +1604,8 @@ public:
     ServerTableObj(Terminal *term, Employee *e);
 
     // Member Functions
-    int Render(Terminal *term) override;
-    int Layout(Terminal *term, int lx, int ly, int lw, int lh) override;
+    int Render(Terminal *term);
+    int Layout(Terminal *term, int lx, int ly, int lw, int lh);
 };
 
 // Constructor
@@ -1691,9 +1692,9 @@ int ServerTableObj::Layout(Terminal *term, int lx, int ly, int lw, int lh)
 RenderResult TableAssignZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("TableAssignZone::Render()");
-    RenderZone(term, nullptr, update_flag);
+    RenderZone(term, NULL, update_flag);
 
-    if (term->user == nullptr)
+    if (term->user == NULL)
         return RENDER_OKAY;
 
     System *sys = term->system_data;
@@ -1701,7 +1702,7 @@ RenderResult TableAssignZone::Render(Terminal *term, int update_flag)
     if (update_flag)
     {
         servers.Purge();
-        for (Employee *e = sys->user_db.UserList(); e != nullptr; e = e->next)
+        for (Employee *e = sys->user_db.UserList(); e != NULL; e = e->next)
             if ((sys->labor_db.IsUserOnClock(e) && e->CanOrder(s) && !e->training)
                 || sys->CountOpenChecks(e) > 0)
                 servers.Add(new ServerTableObj(term, e));
@@ -1750,7 +1751,7 @@ int TableAssignZone::MoveTables(Terminal *term, ServerTableObj *sto)
 
     // Count selected tables
     int count = 0;
-    for (list = servers.List(); list != nullptr; list = list->next)
+    for (list = servers.List(); list != NULL; list = list->next)
         count += ((ServerTableObj *)list)->tables.CountSelected();
 
     if (count <= 0)
@@ -1760,7 +1761,7 @@ int TableAssignZone::MoveTables(Terminal *term, ServerTableObj *sto)
     }
 
     // Move tables
-    for (list = servers.List(); list != nullptr; list = list->next)
+    for (list = servers.List(); list != NULL; list = list->next)
     {
         ZoneObject *zoneObj = ((ServerTableObj *)list)->tables.List();
         while (zoneObj)
@@ -1785,6 +1786,6 @@ int TableAssignZone::MoveTables(Terminal *term, ServerTableObj *sto)
     }
 
     Draw(term, 1);
-    term->UpdateOtherTerms(UPDATE_ALL_TABLES | UPDATE_CHECKS, nullptr);
+    term->UpdateOtherTerms(UPDATE_ALL_TABLES | UPDATE_CHECKS, NULL);
     return 0;
 }

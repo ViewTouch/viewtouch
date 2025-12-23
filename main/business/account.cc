@@ -137,7 +137,7 @@ Account::Account(const char* path, int no, const genericChar* namestr)
 Account *Account::Copy()
 {
     FnTrace("Account::Copy()");
-    auto *newAccount = new Account();
+    Account *newAccount = new Account();
 
     newAccount->number = number;
     newAccount->name.Set(name);
@@ -322,7 +322,7 @@ AccountDB::AccountDB()
     // be set in manager.cc->StartSystem()
     low_acct_num = 1000;
     high_acct_num = 9999;
-    curr_item = nullptr;
+    curr_item = NULL;
 }
 
 // Member Functions
@@ -333,12 +333,12 @@ int AccountDB::GetAccountNumber(int number)
     int retval = ACCOUNT_FIRST_NUMBER;
     Account *my_account = account_list.Head();
 
-    while (my_account != nullptr)
+    while (my_account != NULL)
     {
         if ((my_account->number > number) &&
             (my_account->number > retval))
         {
-            my_account = nullptr;  // exit the loop
+            my_account = NULL;  // exit the loop
         }
         else
         {
@@ -370,11 +370,11 @@ int AccountSort(Account *acct1, Account *acct2)
 int AccountDB::RemoveBlank()
 {
     FnTrace("AccountDB::RemoveBlank()");
-    Account *nextAcct = nullptr;
+    Account *nextAcct = NULL;
     Account *currAcct = account_list.Head();
     int count = 0;
 
-    while (currAcct != nullptr)
+    while (currAcct != NULL)
     {
         nextAcct = currAcct->next;
         if (currAcct->IsBlank())
@@ -418,7 +418,7 @@ int AccountDB::Save()
     Account *currAcct = account_list.Head();
 
     RemoveBlank();
-    while (currAcct != nullptr)
+    while (currAcct != NULL)
     {
         Save(currAcct, 0);
         currAcct = currAcct->next;
@@ -458,11 +458,11 @@ int AccountDB::Load(const char* path)
         return 1;
 
     DIR *dp = opendir(pathname.Value());
-    if (dp == nullptr)
+    if (dp == NULL)
         return 1;  // Error - can't find directory
 
     int no = 0;
-    struct dirent *record = nullptr;
+    struct dirent *record = NULL;
     do
     {
         record = readdir(dp);
@@ -472,7 +472,7 @@ int AccountDB::Load(const char* path)
             no = atoi(name);
             if (no > 0)
             {
-                auto *my_account = new Account(no);
+                Account *my_account = new Account(no);
                 if (my_account->Load(pathname.Value()))
                     ReportError("Error loading account");
                 else
@@ -489,7 +489,7 @@ int AccountDB::Load(const char* path)
 int AccountDB::Add(Account *my_account)
 {
     FnTrace("AccountDB::Add()");
-    if (my_account == nullptr)
+    if (my_account == NULL)
         return 1;
 
     Account *list = AccountListEnd();
@@ -502,7 +502,7 @@ int AccountDB::Add(Account *my_account)
 int AccountDB::AddDefault(Account *my_account)
 {
     FnTrace("AccountDB::AddDefault()");
-    if (my_account == nullptr)
+    if (my_account == NULL)
         return 1;
 
     Account *list = DefaultListEnd();
@@ -539,10 +539,10 @@ int AccountDB::Purge()
 Account *AccountDB::FindByNumber(int no)
 {
     FnTrace("AccountDB::FindByNumber()");
-    for (Account *my_account = AccountList(); my_account != nullptr; my_account = my_account->next)
+    for (Account *my_account = AccountList(); my_account != NULL; my_account = my_account->next)
         if (my_account->number == no)
             return my_account;
-    return nullptr;
+    return NULL;
 }
 
 Account *AccountDB::FindByRecord(int rec_num)
@@ -550,14 +550,14 @@ Account *AccountDB::FindByRecord(int rec_num)
     FnTrace("AccountDB::FindByRecord()");
     int count = 0;
     Account *my_account = account_list.Head();
-    Account *return_acct = nullptr;
+    Account *return_acct = NULL;
 
-    while (my_account != nullptr)
+    while (my_account != NULL)
     {
         if (count == rec_num)
         {
             return_acct = my_account;
-            my_account = nullptr;  // exit the loop
+            my_account = NULL;  // exit the loop
         }
         else
         {
@@ -575,12 +575,12 @@ int AccountDB::FindRecordByNumber(int num)
     int record = -1;  // -1 indicates record was not found
     Account *currAccount = account_list.Head();
 
-    while (currAccount != nullptr)
+    while (currAccount != NULL)
     {
         if (currAccount->number == num)
         {
             record = count;
-            currAccount = nullptr;  // exit the loop
+            currAccount = NULL;  // exit the loop
         }
         else
         {
@@ -600,18 +600,18 @@ int AccountDB::FindRecordByWord(const genericChar* word, int record)
 
     if (record > 0)
     {
-        while ((curr_rec <= record) && (currAcct != nullptr))
+        while ((curr_rec <= record) && (currAcct != NULL))
         {
             currAcct = currAcct->next;
             curr_rec += 1;
         }
     }
-    while (currAcct != nullptr)
+    while (currAcct != NULL)
     {
         if (currAcct->Search(word))
         {
             retval = curr_rec;
-            currAcct = nullptr;  // end the loop
+            currAcct = NULL;  // end the loop
         }
         else
         {
@@ -654,7 +654,7 @@ int IsValidAccountNumber(Terminal *term, int number)
 Account *AccountDB::Next()
 {
     FnTrace("AccountDB::Next()");
-    if (curr_item == nullptr)
+    if (curr_item == NULL)
         curr_item = account_list.Head();
     else
         curr_item = curr_item->next;

@@ -18,8 +18,8 @@
  * base touch zone for data entry and display
  */
 
-#ifndef FORM_ZONE_HH
-#define FORM_ZONE_HH
+#ifndef _FORM_ZONE_HH
+#define _FORM_ZONE_HH
 
 #include "layout_zone.hh"
 #include "report.hh"
@@ -63,11 +63,11 @@ public:
     FormField *FieldList()    { return field_list.Head(); }
     FormField *FieldListEnd() { return field_list.Tail(); }
 
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Keyboard(Terminal *term, int key, int state) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Mouse(Terminal *term, int action, int mx, int my) override;
+    virtual RenderResult Render(Terminal *term, int update_flag);
+    virtual SignalResult Signal(Terminal *term, const genericChar* message);
+    virtual SignalResult Keyboard(Terminal *term, int key, int state);
+    virtual SignalResult Touch(Terminal *term, int tx, int ty);
+    virtual SignalResult Mouse(Terminal *term, int action, int mx, int my);
 
     virtual int LoadRecord(Terminal *term, int record) = 0;
     virtual int SaveRecord(Terminal *term, int record, int write_file) = 0;
@@ -86,7 +86,7 @@ public:
     int AddTimeDateField(const genericChar* l, int mod = 1, int can_unset = 1);
     int AddTimeDayField(const genericChar* l, int mod = 1, int can_unset = 1);
     int AddWeekDayField(const genericChar* l, int mod = 1);
-    int AddListField( const genericChar* label, const genericChar** item_array, int* value_array = nullptr, Flt min1 = 0, Flt min2 = 0 );
+    int AddListField( const genericChar* label, const genericChar** item_array, int* value_array = 0, Flt min1 = 0, Flt min2 = 0 );
     int AddButtonField(const genericChar* label, const genericChar* message);
     int AddTemplateField(const genericChar* label, const genericChar* temp, Flt min_label = 0);
     int AddNewLine(int lines = 1);
@@ -120,12 +120,12 @@ public:
     ListFormZone();
 
     // Member Functions
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Keyboard(Terminal *term, int key, int state) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Mouse(Terminal *term, int action, int mx, int my) override;
-    int          Update(Terminal *term, int update_message, const genericChar* value) override;
+    virtual RenderResult Render(Terminal *term, int update_flag);
+    virtual SignalResult Signal(Terminal *term, const genericChar* message);
+    virtual SignalResult Keyboard(Terminal *term, int key, int state);
+    virtual SignalResult Touch(Terminal *term, int tx, int ty);
+    virtual SignalResult Mouse(Terminal *term, int action, int mx, int my);
+    virtual int          Update(Terminal *term, int update_message, const genericChar* value);
 
     virtual int ListReport(Terminal *term, Report *report) = 0;
 };
@@ -153,7 +153,7 @@ public:
     // Constructor
     FormField();
     // Destructor
-    virtual ~FormField() = default;
+    virtual ~FormField() { }
 
     // Member Functions
     int Draw(Terminal *term, FormZone *z);
@@ -198,7 +198,7 @@ public:
     virtual int ClearEntries()                  { return 1; }
     virtual int AddEntry(const genericChar* name, int value) { return 1; }
 
-    virtual void Print();   // debug function, not for live code
+    virtual void Print(void);   // debug function, not for live code
 };
 
-#endif // FORM_ZONE_HH
+#endif

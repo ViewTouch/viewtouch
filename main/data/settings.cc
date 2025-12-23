@@ -19,7 +19,6 @@
  */
 
 #include <cstring>
-#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <sys/types.h>
@@ -62,58 +61,74 @@ namespace fs = std::filesystem;
  ********************************************************************/
 
 const char* StoreName[] = {
-    GlobalTranslate("Other"), nullptr};
+    GlobalTranslate("Other"), NULL};
 int StoreValue[] = {
     STORE_OTHER, -1};
 
 const char* PayPeriodName[] = {
-    GlobalTranslate("Weekly"), GlobalTranslate("2 Weeks"), GlobalTranslate("4 Weeks"), GlobalTranslate("Semi Monthly"), GlobalTranslate("Semi Monthly 11/26"), GlobalTranslate("Monthly"), nullptr};
+    GlobalTranslate("Weekly"), GlobalTranslate("2 Weeks"), GlobalTranslate("4 Weeks"), GlobalTranslate("Semi Monthly"), GlobalTranslate("Semi Monthly 11/26"), GlobalTranslate("Monthly"), NULL};
 int PayPeriodValue[] = {
     PERIOD_WEEK, PERIOD_2WEEKS, PERIOD_4WEEKS,
     PERIOD_HALFMONTH, PERIOD_HM_11, PERIOD_MONTH, -1};
 
 const char* MealStartName[] = {
     GlobalTranslate("Breakfast"), GlobalTranslate("Brunch"), GlobalTranslate("Lunch"), GlobalTranslate("Early Dinner"),
-    GlobalTranslate("Dinner"), GlobalTranslate("Late Night"), nullptr};
+    GlobalTranslate("Dinner"), GlobalTranslate("Late Night"), NULL};
 int MealStartValue[] = {
     INDEX_BREAKFAST, INDEX_BRUNCH, INDEX_LUNCH,
     INDEX_EARLY_DINNER, INDEX_DINNER, INDEX_LATE_NIGHT, -1};
 
-// DrawerMode values provided via DrawerModeType (settings_enums.hh)
+const char* DrawerModeName[] = {
+    GlobalTranslate("Trusted"), GlobalTranslate("Assigned"), GlobalTranslate("Server Bank"), NULL};
+int   DrawerModeValue[] = {
+    DRAWER_NORMAL, DRAWER_ASSIGNED, DRAWER_SERVER, -1};
 
 const char* SaleCreditName[] = {
-    GlobalTranslate("First Server"), GlobalTranslate("Last Server"), nullptr};
+    GlobalTranslate("First Server"), GlobalTranslate("Last Server"), NULL};
 int SaleCreditValue[] = {
     1, 0, -1};
 
 const char* SalesPeriodName[] = {
-    GlobalTranslate("None"), GlobalTranslate("1 Week"), GlobalTranslate("2 Weeks"), GlobalTranslate("4 Weeks"), GlobalTranslate("Month"), GlobalTranslate("11/26"), nullptr};
+    GlobalTranslate("None"), GlobalTranslate("1 Week"), GlobalTranslate("2 Weeks"), GlobalTranslate("4 Weeks"), GlobalTranslate("Month"), GlobalTranslate("11/26"), NULL};
 int SalesPeriodValue[] = {
     SP_NONE, SP_WEEK, SP_2WEEKS, SP_4WEEKS, SP_MONTH, SP_HM_11, -1};
 
-// ReceiptPrint values are supplied via enum (ReceiptPrintType) in settings_enums.hh
+const char* ReceiptPrintName[] = {
+    GlobalTranslate("Never"), GlobalTranslate("On Send"), GlobalTranslate("On Finalize"), GlobalTranslate("On Both"), NULL};
+int ReceiptPrintValue[] = {
+    RECEIPT_NONE, RECEIPT_SEND, RECEIPT_FINALIZE, RECEIPT_BOTH, -1};
 
-// DrawerPrint values are provided via DrawerPrintType (settings_enums.hh)
+const char* DrawerPrintName[] = {
+    GlobalTranslate("On Pull"), GlobalTranslate("On Balance"), GlobalTranslate("On Both"), GlobalTranslate("Never"), NULL};
+int DrawerPrintValue[] = {
+    DRAWER_PRINT_PULL, DRAWER_PRINT_BALANCE, DRAWER_PRINT_BOTH, DRAWER_PRINT_NEVER, -1};
 
-// Rounding values are provided via PriceRoundingType (settings_enums.hh)
+const char* RoundingName[] = {
+    GlobalTranslate("None"), GlobalTranslate("Drop Pennies"), GlobalTranslate("Round Up Gratuity"), NULL};
+int RoundingValue[] = {
+    ROUNDING_NONE, ROUNDING_DROP_PENNIES, ROUNDING_UP_GRATUITY, -1};
 
 const char* PrinterName[] = {
     GlobalTranslate("None"), GlobalTranslate("Kitchen1"), GlobalTranslate("Kitchen2"), GlobalTranslate("Bar1"), GlobalTranslate("Bar2"), GlobalTranslate("Expediter"),
     GlobalTranslate("Kitchen1 notify2"), GlobalTranslate("Kitchen2 notify1"), GlobalTranslate("Remote Order"),
-    GlobalTranslate("Default"), nullptr};
+    GlobalTranslate("Default"), NULL};
 int PrinterValue[] = {
     PRINTER_NONE, PRINTER_KITCHEN1, PRINTER_KITCHEN2, PRINTER_BAR1,
     PRINTER_BAR2, PRINTER_EXPEDITER,
     PRINTER_KITCHEN1_NOTIFY, PRINTER_KITCHEN2_NOTIFY,
     PRINTER_REMOTEORDER, PRINTER_DEFAULT, -1};
 
-// MeasureSystem values are provided via MeasureSystemType (settings_enums.hh)
+const char* MeasureSystemName[] = {GlobalTranslate("Standard U.S."), GlobalTranslate("Metric"), NULL};
+int   MeasureSystemValue[] = {MEASURE_STANDARD, MEASURE_METRIC, -1};
 
-// DateFormat values are provided via DateFormatType (settings_enums.hh)
+const char* DateFormatName[] = {GlobalTranslate("MM/DD/YY"), GlobalTranslate("DD/MM/YY"), NULL };
+int   DateFormatValue[] = {DATE_MMDDYY, DATE_DDMMYY, -1};
 
-// NumberFormat values are provided via NumberFormatType (settings_enums.hh)
+const char* NumberFormatName[] = {GlobalTranslate("1,000,000.00"), GlobalTranslate("1.000.000,00"), NULL};
+int   NumberFormatValue[] = {NUMBER_STANDARD, NUMBER_EURO, -1};
 
-// TimeFormat values are provided via TimeFormatType (settings_enums.hh)
+const char* TimeFormatName[] = {GlobalTranslate("12 hour"), GlobalTranslate("24 hour"), NULL};
+int   TimeFormatValue[] = {TIME_12HOUR, TIME_24HOUR, -1};
 
 #ifdef CREDITMCVE
 const char* AuthorizeName[] = {GlobalTranslate("None"), GlobalTranslate("MainStreet"), NULL};
@@ -124,18 +139,18 @@ const char* AuthorizeName[] = {GlobalTranslate("None"), GlobalTranslate("CreditC
 int   AuthorizeValue[] = {CCAUTH_NONE, CCAUTH_CREDITCHEQ, -1};
 int   ccauth_defined = CCAUTH_CREDITCHEQ;
 #else
-const char* AuthorizeName[] = {GlobalTranslate("None"), nullptr};
+const char* AuthorizeName[] = {GlobalTranslate("None"), NULL};
 int   AuthorizeValue[] = {CCAUTH_NONE, -1};
 int   ccauth_defined = CCAUTH_NONE;
 #endif
 
-const char* MarkName[] = {" ", GlobalTranslate("X"), nullptr};
+const char* MarkName[] = {" ", GlobalTranslate("X"), NULL};
 int   MarkValue[] = {0, 1, -1};
 
 const char* HourName[] = {
     GlobalTranslate("12am"), "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
     GlobalTranslate("12pm"), "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
-    GlobalTranslate("12am"), nullptr};
+    GlobalTranslate("12am"), NULL};
 
 int WeekDays[] = { WEEKDAY_SUNDAY, WEEKDAY_MONDAY, WEEKDAY_TUESDAY,
                    WEEKDAY_WEDNESDAY, WEEKDAY_THURSDAY, WEEKDAY_FRIDAY,
@@ -178,8 +193,8 @@ namespace confmap
 
 MoneyInfo::MoneyInfo()
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     id = -1;
     rounding = 0;
     round_amount = 1;
@@ -219,8 +234,8 @@ int MoneyInfo::Write(OutputDataFile &df, int version)
 
 TaxInfo::TaxInfo()
 {
-    next = nullptr;
-    fore = nullptr;
+    next = NULL;
+    fore = NULL;
     id = -1;
     flags = 0;
     amount = 0;
@@ -274,7 +289,7 @@ DiscountInfo::DiscountInfo()
 DiscountInfo *DiscountInfo::Copy()
 {
     FnTrace("DiscountInfo::Copy()");
-    auto *retdiscount = new DiscountInfo();
+    DiscountInfo *retdiscount = new DiscountInfo();
     retdiscount->name.Set(name);
     retdiscount->id = id;
     retdiscount->amount = amount;
@@ -325,7 +340,7 @@ CompInfo::CompInfo()
 CompInfo *CompInfo::Copy()
 {
     FnTrace("CompInfo::Copy()");
-    auto *retcomp = new CompInfo();
+    CompInfo *retcomp = new CompInfo();
     retcomp->name.Set(name);
     retcomp->id = id;
     retcomp->flags = flags;
@@ -389,7 +404,7 @@ CouponInfo::CouponInfo()
 CouponInfo *CouponInfo::Copy()
 {
     FnTrace("CouponInfo::Copy()");
-    auto *retcoupon = new CouponInfo();
+    CouponInfo *retcoupon = new CouponInfo();
 
     retcoupon->name.Set(name);
     retcoupon->id = id;
@@ -490,10 +505,10 @@ int CouponInfo::Apply(SubCheck *subcheck, Payment *payment)
     FnTrace("CouponInfo::Apply()");
     int retval = 0;
     Order *order = subcheck->OrderList();
-    SalesItem *item = nullptr;
+    SalesItem *item = NULL;
     int payment_value = 0;
 
-    while (order != nullptr)
+    while (order != NULL)
     {
         if (order->IsReduced() == 0 && order->IsEmployeeMeal() == 0)
         {
@@ -506,9 +521,9 @@ int CouponInfo::Apply(SubCheck *subcheck, Payment *payment)
         }
         order = order->next;
     }
-    if (payment == nullptr)
+    if (payment == NULL)
         payment = subcheck->FindPayment(TENDER_COUPON, id);
-    if (payment != nullptr)
+    if (payment != NULL)
     {
         payment->amount = amount;
         payment->value = payment_value;
@@ -528,10 +543,10 @@ int CouponInfo::Applies(SubCheck *subcheck, int aut)
     FnTrace("CouponInfo::Applies(SubCheck *, int)");
     int retval = 1;
 
-    if (active == 0 || aut != automatic)
-    {
+    if (active == 0)
         retval = 0;
-    }
+    else if (aut != automatic)
+        retval = 0;
     else
     {
         retval = AppliesTime();
@@ -547,10 +562,12 @@ int CouponInfo::Applies(SalesItem *item, int aut)
     FnTrace("CouponInfo::Applies(SalesItem *, int)");
     int retval = 0;
 
-    if (item == nullptr || active == 0 || aut != automatic)
-    {
+    if (item == NULL)
         retval = 0;
-    }
+    else if (active == 0)
+        retval = 0;
+    else if (aut != automatic)
+        retval = 0;
     else
     {
         retval = AppliesTime();
@@ -609,12 +626,12 @@ int CouponInfo::AppliesItem(SubCheck *subcheck)
 {
     FnTrace("CouponInfo::AppliesItem()");
     int retval = 0;
-    Order *order = nullptr;
+    Order *order = NULL;
 
-    if (subcheck != nullptr)
+    if (subcheck != NULL)
     {
         order = subcheck->OrderList();
-        while (order != nullptr)
+        while (order != NULL)
         {
             if (order->item_family == family)
             {
@@ -638,19 +655,18 @@ int CouponInfo::AppliesItem(SalesItem *item)
     FnTrace("CouponInfo::AppliesItem()");
     int retval = 0;
 
-    if (item != nullptr)
+    if (item != NULL)
     {
         if (flags & TF_ITEM_SPECIFIC)
         {
-            if (family != item->family || item_name.empty())
-            {
+            if (family != item->family)
                 retval = 0;
-            }
-            else if (strcmp(item_name.Value(), item->item_name.Value()) == 0 ||
-                     strcmp(item_name.Value(), ALL_ITEMS_STRING) == 0)
-            {
+            else if (item_name.empty())
+                retval = 0;
+            else if (strcmp(item_name.Value(), item->item_name.Value()) == 0)
                 retval = 1;
-            }
+            else if (strcmp(item_name.Value(), ALL_ITEMS_STRING) == 0)
+                retval = 1;
         }
         else
             retval = 1;
@@ -676,7 +692,7 @@ int CouponInfo::Amount(SubCheck *subcheck)
     else if (flags & TF_ITEM_SPECIFIC)
     {
         item_count = Applies(subcheck);
-        if (item_count > 0 && subcheck->OrderList() != nullptr)
+        if (item_count > 0 && subcheck->OrderList() != NULL)
         {
             item_cost = subcheck->OrderList()->item_cost;
             if (item_cost > 0)
@@ -705,7 +721,7 @@ int CouponInfo::CPAmount(SubCheck *subcheck)
     else if (flags & TF_ITEM_SPECIFIC)
     {
         item_count = Applies(subcheck);
-        if (item_count > 0 && subcheck->OrderList() != nullptr)
+        if (item_count > 0 && subcheck->OrderList() != NULL)
         {
             item_cost = subcheck->OrderList()->item_cost;
             if (item_cost > 0)
@@ -782,7 +798,7 @@ CreditCardInfo::CreditCardInfo()
 CreditCardInfo *CreditCardInfo::Copy()
 {
     FnTrace("CreditCardInfo::Copy()");
-    auto *retcreditcard = new CreditCardInfo();
+    CreditCardInfo *retcreditcard = new CreditCardInfo();
     retcreditcard->name.Set(name);
     retcreditcard->id = id;
     retcreditcard->local = local;
@@ -828,7 +844,7 @@ MealInfo::MealInfo()
 MealInfo *MealInfo::Copy()
 {
     FnTrace("MealInfo::Copy()");
-    auto *retmeal = new MealInfo();
+    MealInfo *retmeal = new MealInfo();
     retmeal->name.Set(name);
     retmeal->id = id;
     retmeal->amount = amount;
@@ -870,8 +886,8 @@ int MealInfo::Write(OutputDataFile &df, int version)
 TermInfo::TermInfo()
 {
     FnTrace("TermInfo::TermInfo()");
-    next          = nullptr;
-    fore          = nullptr;
+    next          = NULL;
+    fore          = NULL;
     type          = TERMINAL_NORMAL;
     sortorder     = CHECK_ORDER_NEWOLD;
     printer_model = 0;
@@ -888,8 +904,8 @@ TermInfo::TermInfo()
     print_workorder = 1;
     workorder_heading = 0;
 
-    for (int & i : tax_inclusive)
-    	i = -1;
+    for (int i=0; i<4; i++)
+    	tax_inclusive[i] = -1;
 
     cc_credit_termid.Set("");
     cc_debit_termid.Set("");
@@ -935,8 +951,8 @@ int TermInfo::Read(InputDataFile &df, int version)
     	error += df.Read(workorder_heading);
     if (version >= 94)
     {
-	for (int & i : tax_inclusive)
-    	error += df.Read(i);
+	for (int i=0; i<4; i++)
+    	error += df.Read(tax_inclusive[i]);
     }
 
     // dpulse is used when there are two drawers attached to one
@@ -976,8 +992,8 @@ int TermInfo::Write(OutputDataFile &df, int version)
     error += df.Write(cc_debit_termid);
     error += df.Write(print_workorder);
     error += df.Write(workorder_heading);
-    for (int i : tax_inclusive)
-    	error += df.Write(i);
+    for (int i=0; i<4; i++)
+    	error += df.Write(tax_inclusive[i]);
 
     return error;
 }
@@ -985,11 +1001,11 @@ int TermInfo::Write(OutputDataFile &df, int version)
 int TermInfo::OpenTerm(Control *control_db, int update)
 {
     FnTrace("TermInfo::OpenTerm()");
-    if (control_db == nullptr)
+    if (control_db == NULL)
         return 1;
 
     Terminal *term = NewTerminal(display_host.Value(), term_hardware, isserver);
-    if (term == nullptr)
+    if (term == NULL)
         return 1;
 
     int flag = UPDATE_TERMINALS;
@@ -1030,7 +1046,7 @@ int TermInfo::OpenTerm(Control *control_db, int update)
                                                   term->printer_host.Value(),
                                                   printer_port,
                                                   printer_model);
-        if (printer != nullptr)
+        if (printer != NULL)
         {
             if (drawers == 1)
                 printer->pulse = dpulse;
@@ -1044,7 +1060,7 @@ int TermInfo::OpenTerm(Control *control_db, int update)
     if (update)
     {
         term->Initialize();
-        control_db->UpdateAll(flag, nullptr);
+        control_db->UpdateAll(flag, NULL);
     }
 
     return 0;
@@ -1053,12 +1069,12 @@ int TermInfo::OpenTerm(Control *control_db, int update)
 Terminal *TermInfo::FindTerm(Control *control_db)
 {
     FnTrace("TermInfo::FindTerm()");
-    for (Terminal *term = control_db->TermList(); term != nullptr; term = term->next)
+    for (Terminal *term = control_db->TermList(); term != NULL; term = term->next)
     {
         if (term->host == display_host)
             return term;
     }
-    return nullptr;
+    return NULL;
 }
 
 Printer *TermInfo::FindPrinter(Control *control_db)
@@ -1094,8 +1110,8 @@ int TermInfo::IsServer(int set)
 PrinterInfo::PrinterInfo()
 {
     FnTrace("PrinterInfo::PrinterInfo()");
-    next         = nullptr;
-    fore         = nullptr;
+    next         = NULL;
+    fore         = NULL;
     type         = 0;
     model        = 0;
     port         = 0;
@@ -1142,7 +1158,7 @@ int PrinterInfo::Write(OutputDataFile &df, int version)
 int PrinterInfo::OpenPrinter(Control *control_db, int update)
 {
     FnTrace("PrinterInfo::OpenPrinter()");
-    if (control_db == nullptr)
+    if (control_db == NULL)
         return 1;
 
     Printer *p = control_db->NewPrinter(host.Value(), port, model);
@@ -1152,7 +1168,7 @@ int PrinterInfo::OpenPrinter(Control *control_db, int update)
         p->SetKitchenMode(kitchen_mode);
 	p->order_margin = order_margin;
         if (update)
-            control_db->UpdateAll(UPDATE_PRINTERS, nullptr);
+            control_db->UpdateAll(UPDATE_PRINTERS, NULL);
     }
     return 0;
 }
@@ -1169,10 +1185,8 @@ const char* PrinterInfo::Name()
     if (name.size() > 0)
         return name.Value();
     else
-        return FindStringByValue(type,
-                     const_cast<int*>(PrinterTypeValue.data()),
-                     const_cast<const genericChar**>(PrinterTypeName.data()),
-                     UnknownStr);
+        return FindStringByValue(type, PrinterTypeValue,
+                                 PrinterTypeName, UnknownStr);
 }
 
 /****
@@ -1193,7 +1207,7 @@ void PrinterInfo::DebugPrint(int printall)
     printf("    Type:   %d\n", type);
     printf("    Kitchen Mode:  %d\n", kitchen_mode);
 
-    if (printall && next != nullptr)
+    if (printall && next != NULL)
         next->DebugPrint(printall);
 }
 
@@ -1224,6 +1238,18 @@ Settings::Settings()
     quickbooks_export_path.Set("/usr/viewtouch/exports/quickbooks");
     quickbooks_auto_export = 0;   // Default disabled
     quickbooks_export_format = 0; // Default to daily format
+
+    // Reverse SSH Tunnel Settings
+    reverse_ssh_enabled = 0;      // Default disabled
+    reverse_ssh_server.Set("");
+    reverse_ssh_port = 22;        // Default SSH port
+    reverse_ssh_user.Set("");
+    reverse_ssh_local_port = 22;  // Default local SSH port
+    reverse_ssh_remote_port = 0;  // Auto-assign remote port
+    reverse_ssh_key_path.Set("/usr/viewtouch/ssh/reverse_ssh_key");
+    reverse_ssh_reconnect_interval = 30; // 30 seconds
+    reverse_ssh_health_check_interval = 60; // 60 seconds
+    reverse_ssh_max_retries = 10; // Maximum 10 retries
 
     // Language Settings
     current_language = LANG_ENGLISH; // Default to English
@@ -1583,7 +1609,7 @@ int Settings::Load(const char* file)
         df.Read(tmp);
         if (tmp != MODEL_NONE)
         {
-            auto *pi = new PrinterInfo;
+            PrinterInfo *pi = new PrinterInfo;
             pi->type = PRINTER_REPORT;
 
 #ifdef LINUX
@@ -1646,11 +1672,10 @@ int Settings::Load(const char* file)
         // it has to be NONE.  This prevents error that might otherwise
         // be caused by copying CREDITCHEQ data files into MAINSTREET
         // binaries.
-        if (authorize_method < 0 || authorize_method > CCAUTH_MAX ||
-            authorize_method != ccauth_defined)
-        {
+        if (authorize_method < 0 || authorize_method > CCAUTH_MAX)
             authorize_method = CCAUTH_NONE;
-        }
+        else if (authorize_method != ccauth_defined)
+            authorize_method = CCAUTH_NONE;
         df.Read(always_open);
     }
     if (version >= 28)
@@ -1741,7 +1766,7 @@ int Settings::Load(const char* file)
             df.Read(pmodel);
             if (phost.size() > 0)
             {
-                auto *pi = new PrinterInfo;
+                PrinterInfo *pi = new PrinterInfo;
                 pi->host.Set(phost);
                 pi->port = pport;
                 pi->model = pmodel;
@@ -1763,7 +1788,7 @@ int Settings::Load(const char* file)
 
             if (thost.size() > 0)
             {
-                auto *ti = new TermInfo;
+                TermInfo *ti = new TermInfo;
                 vt_safe_string::safe_format(str, 256, "Term %d", i + 1);
                 ti->name.Set(str);
                 ti->type = ttype;
@@ -1776,7 +1801,6 @@ int Settings::Load(const char* file)
                 case 1: break;
                 case 2: ti->drawers = 1; break;
                 case 3: ti->drawers = 2; break;
-                default: break;
                 }
                 ti->kitchen = tkitchen;
                 Add(ti);
@@ -1795,7 +1819,7 @@ int Settings::Load(const char* file)
                 ReportError("Unexpected end of terminals in settings");
                 return 1;
             }
-            auto *ti = new TermInfo;
+            TermInfo *ti = new TermInfo;
             ti->Read(df, version);
             Add(ti);
         }
@@ -1808,7 +1832,7 @@ int Settings::Load(const char* file)
                 ReportError("Unexpected end of printers in settings");
                 return 1;
             }
-            auto *pi = new PrinterInfo;
+            PrinterInfo *pi = new PrinterInfo;
             pi->Read(df, version);
             Add(pi);
         }
@@ -1823,7 +1847,7 @@ int Settings::Load(const char* file)
             ReportError("Unexpected end of discounts in settings");
             return 1;
         }
-        auto *ds = new DiscountInfo;
+        DiscountInfo *ds = new DiscountInfo;
         ds->Read(df, version);
         if (ds->name.size() > 0)
         {
@@ -1842,7 +1866,7 @@ int Settings::Load(const char* file)
             ReportError("Unexpected end of coupons in settings");
             return 1;
         }
-        auto *cp = new CouponInfo;
+        CouponInfo *cp = new CouponInfo;
         cp->Read(df, version);
         if (cp->name.size() > 0)
         {
@@ -1861,7 +1885,7 @@ int Settings::Load(const char* file)
             ReportError("Unexpected end of credit cards in settings");
             return 1;
         }
-        auto *cc = new CreditCardInfo;
+        CreditCardInfo *cc = new CreditCardInfo;
         cc->Read(df, version);
         if (cc->name.size() > 0)
         {
@@ -1880,7 +1904,7 @@ int Settings::Load(const char* file)
             ReportError("Unexpected end of comps in settings");
             return 1;
         }
-        auto *cm = new CompInfo;
+        CompInfo *cm = new CompInfo;
         cm->Read(df, version);
         if (cm->name.size() > 0)
         {
@@ -1899,7 +1923,7 @@ int Settings::Load(const char* file)
             ReportError("Unexpected end of employee meals in settings");
             return 1;
         }
-        auto *mi = new MealInfo;
+        MealInfo *mi = new MealInfo;
         mi->Read(df, version);
         if (mi->name.size() > 0)
         {
@@ -1920,7 +1944,7 @@ int Settings::Load(const char* file)
                 ReportError("Unexpected end of tax definitions in settings");
                 return 1;
             }
-            auto *tx = new TaxInfo;
+            TaxInfo *tx = new TaxInfo;
             tx->Read(df, version);
             Add(tx);
         }
@@ -1934,7 +1958,7 @@ int Settings::Load(const char* file)
                 ReportError("Unexpected end of money definitions in settings");
                 return 1;
             }
-            auto *my = new MoneyInfo;
+            MoneyInfo *my = new MoneyInfo;
             my->Read(df, version);
             Add(my);
         }
@@ -2018,6 +2042,19 @@ int Settings::Load(const char* file)
         df.Read(quickbooks_export_path);
         df.Read(quickbooks_auto_export);
         df.Read(quickbooks_export_format);
+    }
+    if (version >= 105)  // Reverse SSH tunnel settings
+    {
+        df.Read(reverse_ssh_enabled);
+        df.Read(reverse_ssh_server);
+        df.Read(reverse_ssh_port);
+        df.Read(reverse_ssh_user);
+        df.Read(reverse_ssh_local_port);
+        df.Read(reverse_ssh_remote_port);
+        df.Read(reverse_ssh_key_path);
+        df.Read(reverse_ssh_reconnect_interval);
+        df.Read(reverse_ssh_health_check_interval);
+        df.Read(reverse_ssh_max_retries);
     }
     if (version >= 51)
         df.Read(fast_takeouts);
@@ -2182,7 +2219,7 @@ int Settings::Load(const char* file)
             if (!std::ifstream(CONFIG_TAX_FILE).good())
             {
                 std::cerr << "Config file does not exist: '"
-                          << CONFIG_TAX_FILE << "'" << '\n';
+                          << CONFIG_TAX_FILE << "'" << std::endl;
             } else {
                 ConfFile conf(CONFIG_TAX_FILE, true);
                 // GetValue modifies target only if key exists
@@ -2202,7 +2239,7 @@ int Settings::Load(const char* file)
             if (!std::ifstream(CONFIG_FEES_FILE).good())
             {
                 std::cerr << "Config file does not exist: '"
-                          << CONFIG_FEES_FILE << "'" << '\n';
+                          << CONFIG_FEES_FILE << "'" << std::endl;
             } else {
                 ConfFile conf(CONFIG_FEES_FILE, true);
                 conf.GetValue(royalty_rate, vars[V_ROYALTY_RATE], sects[S_MISC]);
@@ -2219,7 +2256,7 @@ int Settings::Load(const char* file)
             if (!std::ifstream(CONFIG_FASTFOOD_FILE).good())
             {
                 std::cerr << "Config file does not exist: '"
-                          << CONFIG_FASTFOOD_FILE << "'" << '\n';
+                          << CONFIG_FASTFOOD_FILE << "'" << std::endl;
             } else {
                 ConfFile conf(CONFIG_FASTFOOD_FILE, true);
                 conf.GetValue(personalize_fast_food, vars[V_PERSONALIZE_FAST_FOOD], sects[S_MISC]);
@@ -2348,18 +2385,18 @@ int Settings::Save()
     }
 
     df.Write(term_list.Count());
-    for (TermInfo *ti = term_list.Head(); ti != nullptr; ti = ti->next)
+    for (TermInfo *ti = term_list.Head(); ti != NULL; ti = ti->next)
         ti->Write(df, SETTINGS_VERSION);
 
     df.Write(printer_list.Count());
-    for (PrinterInfo *pi = printer_list.Head(); pi != nullptr; pi = pi->next)
+    for (PrinterInfo *pi = printer_list.Head(); pi != NULL; pi = pi->next)
         pi->Write(df, SETTINGS_VERSION);
 
     df.Write(last_discount_id);
     count = DiscountCount(LOCAL_MEDIA);
     df.Write(count);
     DiscountInfo *discount = discount_list.Head();
-    while (discount != nullptr)
+    while (discount != NULL)
     {
         if (discount->IsLocal())
             discount->Write(df, SETTINGS_VERSION);
@@ -2370,7 +2407,7 @@ int Settings::Save()
     count = CouponCount(LOCAL_MEDIA);
     df.Write(count);
     CouponInfo *coupon = coupon_list.Head();
-    while (coupon != nullptr)
+    while (coupon != NULL)
     {
         if (coupon->IsLocal())
             coupon->Write(df, SETTINGS_VERSION);
@@ -2381,7 +2418,7 @@ int Settings::Save()
     count = CreditCardCount(LOCAL_MEDIA);
     df.Write(count);
     CreditCardInfo *creditcard = creditcard_list.Head();
-    while (creditcard != nullptr)
+    while (creditcard != NULL)
     {
         if (creditcard->IsLocal())
             creditcard->Write(df, SETTINGS_VERSION);
@@ -2392,7 +2429,7 @@ int Settings::Save()
     count = CompCount(LOCAL_MEDIA);
     df.Write(count);
     CompInfo *comp = comp_list.Head();
-    while (comp != nullptr)
+    while (comp != NULL)
     {
         if (comp->IsLocal())
             comp->Write(df, SETTINGS_VERSION);
@@ -2402,17 +2439,17 @@ int Settings::Save()
     df.Write(last_meal_id);
     count = meal_list.Count();
     df.Write(count);
-    for (MealInfo *mi = meal_list.Head(); mi != nullptr; mi = mi->next)
+    for (MealInfo *mi = meal_list.Head(); mi != NULL; mi = mi->next)
         mi->Write(df, SETTINGS_VERSION);
 
     df.Write(last_tax_id);
     df.Write(tax_list.Count());
-    for (TaxInfo *tx = tax_list.Head(); tx != nullptr; tx = tx->next)
+    for (TaxInfo *tx = tax_list.Head(); tx != NULL; tx = tx->next)
         tx->Write(df, SETTINGS_VERSION);
 
     df.Write(last_money_id);
     df.Write(money_list.Count());
-    for (MoneyInfo *my = money_list.Head(); my != nullptr; my = my->next)
+    for (MoneyInfo *my = money_list.Head(); my != NULL; my = my->next)
         my->Write(df, SETTINGS_VERSION);
 
     for (i = 0; i < 4; ++i)
@@ -2455,6 +2492,16 @@ int Settings::Save()
     df.Write(quickbooks_export_path);
     df.Write(quickbooks_auto_export);
     df.Write(quickbooks_export_format);
+    df.Write(reverse_ssh_enabled);
+    df.Write(reverse_ssh_server);
+    df.Write(reverse_ssh_port);
+    df.Write(reverse_ssh_user);
+    df.Write(reverse_ssh_local_port);
+    df.Write(reverse_ssh_remote_port);
+    df.Write(reverse_ssh_key_path);
+    df.Write(reverse_ssh_reconnect_interval);
+    df.Write(reverse_ssh_health_check_interval);
+    df.Write(reverse_ssh_max_retries);
     df.Write(fast_takeouts);
     df.Write(money_symbol);
     df.Write(require_drawer_balance);
@@ -2539,7 +2586,7 @@ int Settings::Save()
     if (!fs::is_directory(CONFIG_DIR))
     {
         std::cerr << "Config directory does not exist: '"
-            << CONFIG_DIR << "' creating it" << '\n';
+            << CONFIG_DIR << "' creating it" << std::endl;
         fs::create_directory(CONFIG_DIR);
         fs::permissions(CONFIG_DIR, fs::perms::all); // be sure read/write/execute flags are set
     }
@@ -2557,7 +2604,7 @@ int Settings::Save()
         error += conf.SetValue(tax_HST, vars[V_HST], sects[S_SALES_TAX_CANADA]);
         error += conf.SetValue(tax_QST, vars[V_QST], sects[S_SALES_TAX_CANADA]);
         if (! conf.Save()) {
-            std::cerr << "  failed to save tax config file" << '\n';
+            std::cerr << "  failed to save tax config file" << std::endl;
             error++;
         }
     }
@@ -2574,7 +2621,7 @@ int Settings::Save()
         error += conf.SetValue(credit_cost, vars[V_CREDIT_COST], sects[S_ELEC_TRANS]);
         error += conf.SetValue(line_item_cost, vars[V_LINE_ITEM_COST], sects[S_ELEC_TRANS]);
         if (! conf.Save()) {
-            std::cerr << "  failed to save fees config file" << '\n';
+            std::cerr << "  failed to save fees config file" << std::endl;
             error++;
         }
     }
@@ -2586,7 +2633,7 @@ int Settings::Save()
         error += conf.SetValue(tax_takeout_food, vars[V_TAX_TAKEOUT_FOOD], sects[S_MISC]);
 
         if (! conf.Save()) {
-            std::cerr << "  failed to save fastfood config file" << '\n';
+            std::cerr << "  failed to save fastfood config file" << std::endl;
             error++;
         }
     }
@@ -2605,14 +2652,14 @@ int Settings::MediaFirstID(MediaInfo *mi, int idnum)
     int retid = idnum;
     MediaInfo *curr = mi;
 
-    while (curr != nullptr && curr->Fore() != nullptr)
+    while (curr != NULL && curr->Fore() != NULL)
         curr = curr->Fore();
 
-    while (curr != nullptr)
+    while (curr != NULL)
     {
         if (retid < curr->id)
         {
-            curr = nullptr;
+            curr = NULL;
         }
         else if (retid > curr->id)
         {
@@ -2635,11 +2682,11 @@ int Settings::MediaIsDupe(MediaInfo *mi, int id, int thresh)
     int count = 0;
 
     // rewind to head
-    while (mi != nullptr && mi->Fore() != nullptr)
+    while (mi != NULL && mi->Fore() != NULL)
         mi = mi->Fore();
 
     // now accumulate a count
-    while (mi != nullptr)
+    while (mi != NULL)
     {
         if (mi->id == id)
             count += 1;
@@ -2658,13 +2705,16 @@ int Settings::DiscountCount(int local, int active)
     DiscountInfo *discount = discount_list.Head();
     int count = 0;
 
-    while (discount != nullptr)
+    while (discount != NULL)
     {
-        if ((local == ALL_MEDIA || local == discount->local) &&
-            (active == ALL_MEDIA || active == discount->active))
-        {
+        if (local == ALL_MEDIA && active == ALL_MEDIA)
             count += 1;
-        }
+        else if (local == ALL_MEDIA && active == discount->active)
+            count += 1;
+        else if (local == discount->local && active == ALL_MEDIA)
+            count += 1;
+        else if (local == discount->local && active == discount->active)
+            count += 1;
         discount = discount->next;
     }
 
@@ -2677,13 +2727,16 @@ int Settings::CouponCount(int local, int active)
     CouponInfo *coupon = coupon_list.Head();
     int count = 0;
 
-    while (coupon != nullptr)
+    while (coupon != NULL)
     {
-        if ((local == ALL_MEDIA || local == coupon->local) &&
-            (active == ALL_MEDIA || active == coupon->active))
-        {
+        if (local == ALL_MEDIA && active == ALL_MEDIA)
             count += 1;
-        }
+        else if (local == ALL_MEDIA && active == coupon->active)
+            count += 1;
+        else if (local == coupon->local && active == ALL_MEDIA)
+            count += 1;
+        else if (local == coupon->local && active == coupon->active)
+            count += 1;
         coupon = coupon->next;
     }
 
@@ -2696,13 +2749,16 @@ int Settings::CreditCardCount(int local, int active)
     CreditCardInfo *creditcard = creditcard_list.Head();
     int count = 0;
 
-    while (creditcard != nullptr)
+    while (creditcard != NULL)
     {
-        if ((local == ALL_MEDIA || local == creditcard->local) &&
-            (active == ALL_MEDIA || active == creditcard->active))
-        {
+        if (local == ALL_MEDIA && active == ALL_MEDIA)
             count += 1;
-        }
+        else if (local == ALL_MEDIA && active == creditcard->active)
+            count += 1;
+        else if (local == creditcard->local && active == ALL_MEDIA)
+            count += 1;
+        else if (local == creditcard->local && active == creditcard->active)
+            count += 1;
         creditcard = creditcard->next;
     }
 
@@ -2715,13 +2771,16 @@ int Settings::CompCount(int local, int active)
     CompInfo *comp = comp_list.Head();
     int count = 0;
 
-    while (comp != nullptr)
+    while (comp != NULL)
     {
-        if ((local == ALL_MEDIA || local == comp->local) &&
-            (active == ALL_MEDIA || active == comp->active))
-        {
+        if (local == ALL_MEDIA && active == ALL_MEDIA)
             count += 1;
-        }
+        else if (local == ALL_MEDIA && active == comp->active)
+            count += 1;
+        else if (local == comp->local && active == ALL_MEDIA)
+            count += 1;
+        else if (local == comp->local && active == comp->active)
+            count += 1;
         comp = comp->next;
     }
 
@@ -2734,13 +2793,16 @@ int Settings::MealCount(int local, int active)
     MealInfo *meal = meal_list.Head();
     int count = 0;
 
-    while (meal != nullptr)
+    while (meal != NULL)
     {
-        if ((local == ALL_MEDIA || local == meal->local) &&
-            (active == ALL_MEDIA || active == meal->active))
-        {
+        if (local == ALL_MEDIA && active == ALL_MEDIA)
             count += 1;
-        }
+        else if (local == ALL_MEDIA && active == meal->active)
+            count += 1;
+        else if (local == meal->local && active == ALL_MEDIA)
+            count += 1;
+        else if (local == meal->local && active == meal->active)
+            count += 1;
         meal = meal->next;
     }
 
@@ -2785,7 +2847,7 @@ int Settings::LoadMedia(const char* file)
             ReportError("Unexpected end of discounts in media file");
             return 1;
         }
-        auto *ds = new DiscountInfo;
+        DiscountInfo *ds = new DiscountInfo;
         ds->Read(df, version);
         if (ds->id < GLOBAL_MEDIA_ID || MediaIsDupe(discount_list.Head(), ds->id))
         {
@@ -2812,7 +2874,7 @@ int Settings::LoadMedia(const char* file)
             ReportError("Unexpected end of coupons in media file");
             return 1;
         }
-        auto *cp = new CouponInfo;
+        CouponInfo *cp = new CouponInfo;
         cp->Read(df, version);
         if (cp->id < GLOBAL_MEDIA_ID || MediaIsDupe(coupon_list.Head(), cp->id))
         {
@@ -2839,7 +2901,7 @@ int Settings::LoadMedia(const char* file)
             ReportError("Unexpected end of credit cards in media file");
             return 1;
         }
-        auto *cc = new CreditCardInfo;
+        CreditCardInfo *cc = new CreditCardInfo;
         cc->Read(df, version);
         if (cc->id < GLOBAL_MEDIA_ID || MediaIsDupe(creditcard_list.Head(), cc->id))
         {
@@ -2866,7 +2928,7 @@ int Settings::LoadMedia(const char* file)
             ReportError("Unexpected end of comps in media file");
             return 1;
         }
-        auto *cm = new CompInfo;
+        CompInfo *cm = new CompInfo;
         cm->Read(df, version);
         if (cm->id < GLOBAL_MEDIA_ID || MediaIsDupe(comp_list.Head(), cm->id))
         {
@@ -2895,7 +2957,7 @@ int Settings::LoadMedia(const char* file)
                 ReportError("Unexpected end of meals in media file");
                 return 1;
             }
-            auto *mi = new MealInfo;
+            MealInfo *mi = new MealInfo;
             mi->Read(df, version);
             if (mi->id < GLOBAL_MEDIA_ID || MediaIsDupe(meal_list.Head(), mi->id))
             {
@@ -2935,7 +2997,7 @@ int Settings::SaveMedia()
     count = DiscountCount(GLOBAL_MEDIA);
     df.Write(count);
     DiscountInfo *discount = discount_list.Head();
-    while (discount != nullptr)
+    while (discount != NULL)
     {
         if (discount->IsGlobal())
         {
@@ -2951,7 +3013,7 @@ int Settings::SaveMedia()
     count = CouponCount(GLOBAL_MEDIA);
     df.Write(count);
     CouponInfo *coupon = coupon_list.Head();
-    while (coupon != nullptr)
+    while (coupon != NULL)
     {
         if (coupon->IsGlobal())
         {
@@ -2967,7 +3029,7 @@ int Settings::SaveMedia()
     count = CreditCardCount(GLOBAL_MEDIA);
     df.Write(count);
     CreditCardInfo *creditcard = creditcard_list.Head();
-    while (creditcard != nullptr)
+    while (creditcard != NULL)
     {
         if (creditcard->IsGlobal())
         {
@@ -2983,7 +3045,7 @@ int Settings::SaveMedia()
     count = CompCount(GLOBAL_MEDIA);
     df.Write(count);
     CompInfo *comp = comp_list.Head();
-    while (comp != nullptr)
+    while (comp != NULL)
     {
         if (comp->IsGlobal())
         {
@@ -2999,7 +3061,7 @@ int Settings::SaveMedia()
     count = MealCount(GLOBAL_MEDIA);
     df.Write(count);
     MealInfo *meal = meal_list.Head();
-    while (meal != nullptr)
+    while (meal != NULL)
     {
         if (meal->IsGlobal())
         {
@@ -3042,7 +3104,7 @@ int Settings::SaveAltMedia(const genericChar* altmedia)
             // Write Discounts
             outfile.Write(DiscountCount());
             DiscountInfo *discount = discount_list.Head();
-            while (discount != nullptr)
+            while (discount != NULL)
             {
                 if (discount->active > 0)
                     discount->Write(outfile, SETTINGS_VERSION);
@@ -3051,7 +3113,7 @@ int Settings::SaveAltMedia(const genericChar* altmedia)
             // Write Coupons
             outfile.Write(CouponCount());
             CouponInfo *coupon = coupon_list.Head();
-            while (coupon != nullptr)
+            while (coupon != NULL)
             {
                 if (coupon->active > 0)
                     coupon->Write(outfile, SETTINGS_VERSION);
@@ -3060,7 +3122,7 @@ int Settings::SaveAltMedia(const genericChar* altmedia)
             // Write CreditCards
             outfile.Write(CreditCardCount());
             CreditCardInfo *creditcard = creditcard_list.Head();
-            while (creditcard != nullptr)
+            while (creditcard != NULL)
             {
                 if (creditcard->active > 0)
                     creditcard->Write(outfile, SETTINGS_VERSION);
@@ -3069,7 +3131,7 @@ int Settings::SaveAltMedia(const genericChar* altmedia)
             // Write Comps
             outfile.Write(CompCount());
             CompInfo *comp = comp_list.Head();
-            while (comp != nullptr)
+            while (comp != NULL)
             {
                 if (comp->active > 0)
                     comp->Write(outfile, SETTINGS_VERSION);
@@ -3078,7 +3140,7 @@ int Settings::SaveAltMedia(const genericChar* altmedia)
             // Write Meals
             outfile.Write(MealCount());
             MealInfo *meal = meal_list.Head();
-            while (meal != nullptr)
+            while (meal != NULL)
             {
                 if (meal->active > 0)
                     meal->Write(outfile, SETTINGS_VERSION);
@@ -3426,9 +3488,6 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
         case SP_QUARTER:
             end += date::months(3);
             break;
-        default:
-            break;
-            break;
         case SP_YTD:
             end += date::years(1);
             break;
@@ -3464,8 +3523,6 @@ int Settings::SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end,
         break;
     case SP_YTD:
         start -= date::years(1);
-        break;
-    default:
         break;
     }
 //    printf("Settings::SetPeriod(): end ref=%d/%d/%d : start=%d/%d/%d : end=%d/%d/%d\n",
@@ -3519,7 +3576,7 @@ char* Settings::StoreNum(char* dest)
     FnTrace("Settings::StoreNum()");
     static char buffer[STRLONG] = "";
 
-    if (dest == nullptr)
+    if (dest == NULL)
         dest = buffer;
 
     vt_safe_string::safe_format(dest, STRLONG, "%d", store_code);
@@ -3529,7 +3586,7 @@ char* Settings::StoreNum(char* dest)
 
 static inline int tax_calc(int amount, Flt tax)
 {
-    return static_cast<int>(std::round(amount * tax));
+    return int(amount * tax + 0.5);	// round
 }
 
 int Settings::FigureFoodTax(int amount, TimeInfo &timevar, Flt tax)
@@ -3586,7 +3643,7 @@ char* Settings::TenderName(int tender_type, int tender_id, genericChar* str)
     static const genericChar* name[] = {
         "Cash Received", "Check", "Gift Certificate", "House Account", "Overage",
         "Change", "Tip", "Payout", "Money Lost", "Gratuity", "Tips Paid",
-        "ATM/Debit Card", "Credit Card Tip", "Expenses", "Cash", "Credit Card Fee (Dollar)", "Credit Card Fee (Percent)", nullptr};
+        "ATM/Debit Card", "Credit Card Tip", "Expenses", "Cash", "Credit Card Fee (Dollar)", "Credit Card Fee (Percent)", NULL};
     static int value[] = {
         TENDER_CASH, TENDER_CHECK, TENDER_GIFT, TENDER_ACCOUNT, TENDER_OVERAGE,
         TENDER_CHANGE, TENDER_CAPTURED_TIP, TENDER_PAYOUT, TENDER_MONEY_LOST,
@@ -3603,7 +3660,7 @@ char* Settings::TenderName(int tender_type, int tender_id, genericChar* str)
     Terminal *term = MasterControl->TermListEnd();
     char str2[STRLENGTH];
 
-    if (str == nullptr)
+    if (str == NULL)
         str = buffer;
 
     if (tender_type == TENDER_CHARGE_ROOM)
@@ -3666,7 +3723,7 @@ char* Settings::TenderName(int tender_type, int tender_id, genericChar* str)
     else
         vt_safe_string::safe_copy(str, STRLENGTH, FindStringByValue(tender_type, value, name, UnknownStr));
 
-    if (term != nullptr)
+    if (term != NULL)
     {
         vt_safe_string::safe_copy(str2, STRLENGTH, term->Translate(str));
         vt_safe_string::safe_copy(str, STRLENGTH, str2);
@@ -3678,19 +3735,19 @@ char* Settings::TenderName(int tender_type, int tender_id, genericChar* str)
 int Settings::Add(DiscountInfo *ds)
 {
     FnTrace("Settings::Add(DiscountInfo)");
-    if (ds == nullptr)
+    if (ds == NULL)
         return 1;
     DiscountInfo *node = discount_list.Head();
 
     if (ds->id < 1)
     {
-        if (node != nullptr)
+        if (node != NULL)
             ds->id = MediaFirstID(discount_list.Head(), 1);
         else
             ds->id = 1;
     }
 
-    while (node != nullptr)
+    while (node != NULL)
     {
         if (ds->id < node->id)
         {
@@ -3700,7 +3757,7 @@ int Settings::Add(DiscountInfo *ds)
         else
             node = node->next;
     }
-    if (node == nullptr)
+    if (node == NULL)
     {
         discount_list.AddToTail(ds);
     }
@@ -3711,19 +3768,19 @@ int Settings::Add(DiscountInfo *ds)
 int Settings::Add(CouponInfo *cp)
 {
     FnTrace("Settings::Add(CouponInfo)");
-    if (cp == nullptr)
+    if (cp == NULL)
         return 1;
     CouponInfo *node = coupon_list.Head();
 
     if (cp->id < 1)
     {
-        if (node != nullptr)
+        if (node != NULL)
             cp->id = MediaFirstID(coupon_list.Head(), 1);
         else
             cp->id = 1;
     }
 
-    while (node != nullptr)
+    while (node != NULL)
     {
         if (cp->id < node->id)
         {
@@ -3733,7 +3790,7 @@ int Settings::Add(CouponInfo *cp)
         else
             node = node->next;
     }
-    if (node == nullptr)
+    if (node == NULL)
         coupon_list.AddToTail(cp);
     return 0;
 }
@@ -3741,19 +3798,19 @@ int Settings::Add(CouponInfo *cp)
 int Settings::Add(CreditCardInfo *cc)
 {
     FnTrace("Settings::Add(CreditCardInfo)");
-    if (cc == nullptr)
+    if (cc == NULL)
         return 1;
     CreditCardInfo *node = creditcard_list.Head();
 
     if (cc->id < 1)
     {
-        if (node != nullptr)
+        if (node != NULL)
             cc->id = MediaFirstID(creditcard_list.Head(), 1);
         else
             cc->id = 1;
     }
 
-    while (node != nullptr)
+    while (node != NULL)
     {
         if (cc->id < node->id)
         {
@@ -3764,7 +3821,7 @@ int Settings::Add(CreditCardInfo *cc)
             node = node->next;
     }
 
-    if (node == nullptr)
+    if (node == NULL)
         creditcard_list.AddToTail(cc);
 
     return 0;
@@ -3773,19 +3830,19 @@ int Settings::Add(CreditCardInfo *cc)
 int Settings::Add(CompInfo *cm)
 {
     FnTrace("Settings::Add(CompInfo)");
-    if (cm == nullptr)
+    if (cm == NULL)
         return 1;
     CompInfo *node = comp_list.Head();
 
     if (cm->id < 1)
     {
-        if (node != nullptr)
+        if (node != NULL)
             cm->id = MediaFirstID(comp_list.Head(), 1);
         else
             cm->id = 1;
     }
 
-    while (node != nullptr)
+    while (node != NULL)
     {
         if (cm->id < node->id)
         {
@@ -3795,7 +3852,7 @@ int Settings::Add(CompInfo *cm)
         else
             node = node->next;
     }
-    if (node == nullptr)
+    if (node == NULL)
         comp_list.AddToTail(cm);
     return 0;
 }
@@ -3803,19 +3860,19 @@ int Settings::Add(CompInfo *cm)
 int Settings::Add(MealInfo *mi)
 {
     FnTrace("Settings::Add(MealInfo)");
-    if (mi == nullptr)
+    if (mi == NULL)
         return 1;
     MealInfo *node = meal_list.Head();
 
     if (mi->id < 1)
     {
-        if (node != nullptr)
+        if (node != NULL)
             mi->id = MediaFirstID(meal_list.Head(), 1);
         else
             mi->id = 1;
     }
 
-    while (node != nullptr)
+    while (node != NULL)
     {
         if (mi->id < node->id)
         {
@@ -3825,7 +3882,7 @@ int Settings::Add(MealInfo *mi)
         else
             node = node->next;
     }
-    if (node == nullptr)
+    if (node == NULL)
         meal_list.AddToTail(mi);
     return 0;
 }
@@ -3836,7 +3893,7 @@ int Settings::HaveServerTerm()
     int retval = 0;
     TermInfo *ti = TermList();
 
-    while (ti != nullptr)
+    while (ti != NULL)
     {
         if (ti->IsServer())
             retval += 1;
@@ -3927,12 +3984,12 @@ int Settings::Remove(MoneyInfo *my)
 int Settings::DiscountReport(Terminal *t, Report *r)
 {
     FnTrace("Settings::DiscountReport()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
 
     int color = COLOR_DEFAULT;
     DiscountInfo *ds = discount_list.Head();
-    if (ds == nullptr)
+    if (ds == NULL)
     {
         r->TextC(t->Translate("No Discount Definitions"));
         return 0;
@@ -3968,12 +4025,12 @@ int Settings::DiscountReport(Terminal *t, Report *r)
 int Settings::CouponReport(Terminal *t, Report *r)
 {
     FnTrace("Settings::CouponReport()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
 
     int color = COLOR_DEFAULT;
     CouponInfo *cp = coupon_list.Head();
-    if (cp == nullptr)
+    if (cp == NULL)
     {
         r->TextC(t->Translate("No Coupon Definitions"));
         return 0;
@@ -4009,12 +4066,12 @@ int Settings::CouponReport(Terminal *t, Report *r)
 int Settings::CreditCardReport(Terminal *t, Report *r)
 {
     FnTrace("Settings::CreditCardReport()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
 
     int color = COLOR_DEFAULT;
     CreditCardInfo *cc = creditcard_list.Head();
-    if (cc == nullptr)
+    if (cc == NULL)
     {
         r->TextC(t->Translate("No Card Definitions"));
         return 0;
@@ -4045,12 +4102,12 @@ int Settings::CreditCardReport(Terminal *t, Report *r)
 int Settings::CompReport(Terminal *t, Report *r)
 {
     FnTrace("Settings::CompReport()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
 
     int color = COLOR_DEFAULT;
     CompInfo *cm = comp_list.Head();
-    if (cm == nullptr)
+    if (cm == NULL)
     {
         r->TextC(t->Translate("No Whole Meal Comp Definitions"));
         return 0;
@@ -4081,11 +4138,11 @@ int Settings::CompReport(Terminal *t, Report *r)
 int Settings::MealReport(Terminal *t, Report *r)
 {
     FnTrace("Settings::MealReport()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
 
     MealInfo *mi = meal_list.Head();
-    if (mi == nullptr)
+    if (mi == NULL)
     {
         r->TextC(t->Translate("No Employee Discount Definitions"));
         return 0;
@@ -4120,7 +4177,7 @@ int Settings::RemoveInactiveMedia()
 
     // Remove inactive discounts
     DiscountInfo *discount_node = discount_list.Head();
-    while (discount_node != nullptr)
+    while (discount_node != NULL)
     {
         if (discount_node->active == 0)
         {
@@ -4133,7 +4190,7 @@ int Settings::RemoveInactiveMedia()
 
     // Remove inactive coupons
     CouponInfo *coupon_node = coupon_list.Head();
-    while (coupon_node != nullptr)
+    while (coupon_node != NULL)
     {
         if (coupon_node->active == 0)
         {
@@ -4146,7 +4203,7 @@ int Settings::RemoveInactiveMedia()
 
     // Remove inactive comps
     CompInfo *comp_node = comp_list.Head();
-    while (comp_node != nullptr)
+    while (comp_node != NULL)
     {
         if (comp_node->active == 0)
         {
@@ -4159,7 +4216,7 @@ int Settings::RemoveInactiveMedia()
 
     // Remove inactive credit cards
     CreditCardInfo *creditcard_node = creditcard_list.Head();
-    while (creditcard_node != nullptr)
+    while (creditcard_node != NULL)
     {
         if (creditcard_node->active == 0)
         {
@@ -4172,7 +4229,7 @@ int Settings::RemoveInactiveMedia()
 
     // Remove inactive meals
     MealInfo *meal_node = meal_list.Head();
-    while (meal_node != nullptr)
+    while (meal_node != NULL)
     {
         if (meal_node->active == 0)
         {
@@ -4190,12 +4247,12 @@ int Settings::RemoveInactiveMedia()
 int Settings::TermReport(Terminal *t, Report *r)
 {
     FnTrace("Settings::TermReport()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
 
     r->update_flag = UPDATE_TERMINALS | UPDATE_USERS;
     TermInfo *ti = term_list.Head();
-    if (ti == nullptr)
+    if (ti == NULL)
     {
         r->TextC(t->Translate("No Terminal Definitions"));
         return 0;
@@ -4238,13 +4295,13 @@ int Settings::TermReport(Terminal *t, Report *r)
 int Settings::PrinterReport(Terminal *t, Report *r)
 {
     FnTrace("Settings::PrinterReport()");
-    if (r == nullptr)
+    if (r == NULL)
         return 1;
     genericChar buffer[STRLENGTH];
 
     r->update_flag = UPDATE_PRINTERS;
     PrinterInfo *pi = printer_list.Head();
-    if (pi == nullptr)
+    if (pi == NULL)
     {
         r->TextC(t->Translate("No Printer Definitions"));
         return 0;
@@ -4266,7 +4323,7 @@ int Settings::PrinterReport(Terminal *t, Report *r)
         }
         r->TextPosL(18, buffer);
 
-        int idx = CompareList(pi->type, const_cast<int*>(PrinterTypeValue.data()));
+        int idx = CompareList(pi->type, PrinterTypeValue);
         if (idx < 0)
             r->TextPosL(38, t->Translate("Unknown Type"));
         else
@@ -4295,8 +4352,8 @@ DiscountInfo *Settings::FindDiscountByRecord(int record)
     FnTrace("Settings::FindDiscountByRecord()");
     int idx = 0;
     DiscountInfo *discount = discount_list.Head();
-    DiscountInfo *retdiscount = nullptr;
-    while ((discount != nullptr) && (retdiscount == nullptr))
+    DiscountInfo *retdiscount = NULL;
+    while ((discount != NULL) && (retdiscount == NULL))
     {
         if (discount->active)
         {
@@ -4313,12 +4370,12 @@ DiscountInfo *Settings::FindDiscountByRecord(int record)
 DiscountInfo *Settings::FindDiscountByID(int id)
 {
     FnTrace("Settings::FindDiscountByID()");
-    for (DiscountInfo *ds = discount_list.Head(); ds != nullptr; ds = ds->next)
+    for (DiscountInfo *ds = discount_list.Head(); ds != NULL; ds = ds->next)
     {
         if (ds->id == id)
             return ds;
     }
-    return nullptr;
+    return NULL;
 }
 
 CouponInfo *Settings::FindCouponByRecord(int record)
@@ -4326,8 +4383,8 @@ CouponInfo *Settings::FindCouponByRecord(int record)
     FnTrace("Settings::FindCouponByRecord()");
     int idx = 0;
     CouponInfo *coupon = coupon_list.Head();
-    CouponInfo *retcoupon = nullptr;
-    while ((coupon != nullptr) && (retcoupon == nullptr))
+    CouponInfo *retcoupon = NULL;
+    while ((coupon != NULL) && (retcoupon == NULL))
     {
         if (coupon->active)
         {
@@ -4344,26 +4401,26 @@ CouponInfo *Settings::FindCouponByRecord(int record)
 CouponInfo *Settings::FindCouponByID(int id)
 {
     FnTrace("Settings::FindCouponByID()");
-    for (CouponInfo *cp = coupon_list.Head(); cp != nullptr; cp = cp->next)
+    for (CouponInfo *cp = coupon_list.Head(); cp != NULL; cp = cp->next)
     {
         if (cp->id == id)
             return cp;
     }
-    return nullptr;
+    return NULL;
 }
 
 CouponInfo *Settings::FindCouponByItem(SalesItem *item, int aut)
 {
     FnTrace("Settings::FindCouponByItem()");
-    CouponInfo *retval = nullptr;
+    CouponInfo *retval = NULL;
     CouponInfo *coupon = coupon_list.Head();
 
-    while (coupon != nullptr)
+    while (coupon != NULL)
     {
         if (coupon->Applies(item, aut))
         {
             retval = coupon;
-            coupon = nullptr;
+            coupon = NULL;
         }
         else
             coupon = coupon->next;
@@ -4377,8 +4434,8 @@ CompInfo *Settings::FindCompByRecord(int record)
     FnTrace("Settings::FindCompByRecord()");
     int idx = 0;
     CompInfo *comp = comp_list.Head();
-    CompInfo *retcomp = nullptr;
-    while ((comp != nullptr) && (retcomp == nullptr))
+    CompInfo *retcomp = NULL;
+    while ((comp != NULL) && (retcomp == NULL))
     {
         if (comp->active)
         {
@@ -4395,12 +4452,12 @@ CompInfo *Settings::FindCompByRecord(int record)
 CompInfo *Settings::FindCompByID(int id)
 {
     FnTrace("Settings::FindCompByID()");
-    for (CompInfo *cm = comp_list.Head(); cm != nullptr; cm = cm->next)
+    for (CompInfo *cm = comp_list.Head(); cm != NULL; cm = cm->next)
     {
         if (cm->id == id)
             return cm;
     }
-    return nullptr;
+    return NULL;
 }
 
 CreditCardInfo *Settings::FindCreditCardByRecord(int record)
@@ -4408,8 +4465,8 @@ CreditCardInfo *Settings::FindCreditCardByRecord(int record)
     FnTrace("Settings::FindCreditCardByRecord()");
     int idx = 0;
     CreditCardInfo *creditcard = creditcard_list.Head();
-    CreditCardInfo *retcreditcard = nullptr;
-    while ((creditcard != nullptr) && (retcreditcard == nullptr))
+    CreditCardInfo *retcreditcard = NULL;
+    while ((creditcard != NULL) && (retcreditcard == NULL))
     {
         if (creditcard->active)
         {
@@ -4426,12 +4483,12 @@ CreditCardInfo *Settings::FindCreditCardByRecord(int record)
 CreditCardInfo *Settings::FindCreditCardByID(int id)
 {
     FnTrace("Settings::FindCreditCardByID()");
-    for (CreditCardInfo *cc = creditcard_list.Head(); cc != nullptr; cc = cc->next)
+    for (CreditCardInfo *cc = creditcard_list.Head(); cc != NULL; cc = cc->next)
     {
         if (cc->id == id)
             return cc;
     }
-    return nullptr;
+    return NULL;
 }
 
 MealInfo *Settings::FindMealByRecord(int record)
@@ -4439,8 +4496,8 @@ MealInfo *Settings::FindMealByRecord(int record)
     FnTrace("Settings::FindMealByRecord()");
     int idx = 0;
     MealInfo *meal = meal_list.Head();
-    MealInfo *retmeal = nullptr;
-    while ((meal != nullptr) && (retmeal == nullptr))
+    MealInfo *retmeal = NULL;
+    while ((meal != NULL) && (retmeal == NULL))
     {
         if (meal->active)
         {
@@ -4457,21 +4514,21 @@ MealInfo *Settings::FindMealByRecord(int record)
 MealInfo *Settings::FindMealByID(int id)
 {
     FnTrace("Settings::FindMealByID()");
-    for (MealInfo *mi = meal_list.Head(); mi != nullptr; mi = mi->next)
+    for (MealInfo *mi = meal_list.Head(); mi != NULL; mi = mi->next)
     {
         if (mi->id == id)
             return mi;
     }
-    return nullptr;
+    return NULL;
 }
 
 TermInfo *Settings::FindServer(const genericChar* displaystr)
 {
     FnTrace("Settings::FindServer()");
-    TermInfo *retti = nullptr;
+    TermInfo *retti = NULL;
     TermInfo *ti = term_list.Head();
 
-    while (ti != nullptr)
+    while (ti != NULL)
     {
         if (ti->IsServer() || (strcmp(displaystr, ti->display_host.Value()) == 0))
         {
@@ -4481,7 +4538,7 @@ TermInfo *Settings::FindServer(const genericChar* displaystr)
         ti = ti->next;
     }
 
-    if (retti == nullptr)
+    if (retti == NULL)
     {
         retti = new TermInfo;
         retti->name.Set("Server");
@@ -4498,10 +4555,10 @@ TermInfo *Settings::FindServer(const genericChar* displaystr)
 TermInfo *Settings::FindTerminal(const char* displaystr)
 {
     FnTrace("Settings:FindTermEntry()");
-    TermInfo *retti = nullptr;
+    TermInfo *retti = NULL;
     TermInfo *ti = term_list.Head();
 
-    while (ti != nullptr && retti == nullptr)
+    while (ti != NULL && retti == NULL)
     {
         if (strcmp(displaystr, ti->display_host.Value()) == 0)
             retti = ti;
@@ -4527,12 +4584,12 @@ PrinterInfo *Settings::FindPrinterByRecord(int record)
 PrinterInfo *Settings::FindPrinterByType(int type)
 {
     FnTrace("Settings::FindPrinterByType()");
-    for (PrinterInfo *pi = printer_list.Head(); pi != nullptr; pi = pi->next)
+    for (PrinterInfo *pi = printer_list.Head(); pi != NULL; pi = pi->next)
     {
         if (pi->type == type)
             return pi;
     }
-    return nullptr;
+    return NULL;
 }
 
 int Settings::GetDrawerFloatValue()

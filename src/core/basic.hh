@@ -18,8 +18,8 @@
  * Standard types, macros & definitions used in application
  */
 
-#ifndef BASIC_HH
-#define BASIC_HH
+#ifndef _BASIC_HH
+#define _BASIC_HH
 
 #include <cstdio>
 #include <cstdlib>

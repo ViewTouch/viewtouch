@@ -46,6 +46,7 @@
 #include "src/utils/vt_logger.hh"  // Modern C++ logging
 #include "safe_string_utils.hh"     // Safe string operations
 #include "date/date.h"      // helper library to output date strings with std::chrono
+#include "src/network/reverse_ssh_service.hh"  // Reverse SSH tunnel service
 #include "src/core/crash_report.hh"  // Automatic crash reporting
 
 #include <curlpp/cURLpp.hpp>
@@ -55,7 +56,7 @@
 #include <memory>
 
                             // Standard C++ libraries
-#include <cerrno>          // system error numbers
+#include <errno.h>          // system error numbers
 #include <iostream>         // basic input and output controls (C++ alone contains no facilities for IO)
 #include <fstream>          // basic file input and output
 #include <unistd.h>         // standard symbolic constants and types
@@ -76,7 +77,6 @@
 #include <fcntl.h>          // File Control
 #include <filesystem>       // generic filesystem functions available since C++17
 #include <cstdio>           // for std::remove
-#include <array>            // std::array for fixed-size buffers
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -110,25 +110,25 @@ constexpr int CALLCTR_STATUS_FAILED     = 2;
 /*************************************************************
  * Calendar Values
  *************************************************************/
-const std::array<const char*, 8> DayName = {"Sunday", "Monday", "Tuesday", "Wednesday",
+const char* DayName[] = { "Sunday", "Monday", "Tuesday", "Wednesday", 
                     "Thursday", "Friday", "Saturday", nullptr};
 
-const std::array<const char*, 8> ShortDayName = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", nullptr};
+const char* ShortDayName[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", nullptr};
 
-const std::array<const char*, 13> MonthName = {"January", "February", "March", "April",
-                      "May", "June", "July", "August", "September",
+const char* MonthName[] = { "January", "February", "March", "April", 
+                      "May", "June", "July", "August", "September", 
                       "October", "November", "December", nullptr};
 
-const std::array<const char*, 13> ShortMonthName = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+const char* ShortMonthName[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", nullptr};
 
 /*************************************************************
  * Terminal Type values
  *************************************************************/
-const std::array<const char*, 9> TermTypeName = {"Normal", "Order Only", "Bar", "Bar2",
+const char* TermTypeName[] = { 	"Normal", "Order Only", "Bar", "Bar2", 
                             "Fast Food", "Self Order", "Kitchen Video", "Kitchen Video2", nullptr};
 
-const std::array<int, 9> TermTypeValue = {TERMINAL_NORMAL, TERMINAL_ORDER_ONLY,
+int TermTypeValue[] = { TERMINAL_NORMAL, TERMINAL_ORDER_ONLY,
                         TERMINAL_BAR, TERMINAL_BAR2,
                         TERMINAL_FASTFOOD, TERMINAL_SELFORDER, TERMINAL_KITCHEN_VIDEO,
                         TERMINAL_KITCHEN_VIDEO2, -1};
@@ -136,11 +136,11 @@ const std::array<int, 9> TermTypeValue = {TERMINAL_NORMAL, TERMINAL_ORDER_ONLY,
 /*************************************************************
  * Printer Type values
  *************************************************************/
-const std::array<const char*, 11> PrinterTypeName = {"Kitchen 1", "Kitchen 2", "Kitchen 3", "Kitchen 4",
+const char* PrinterTypeName[] = { "Kitchen 1", "Kitchen 2", "Kitchen 3", "Kitchen 4",
                             "Bar 1", "Bar 2", "Expediter", "Report",
                             "Credit Receipt", "Remote Order", nullptr};
 
-const std::array<int, 11> PrinterTypeValue = {PRINTER_KITCHEN1, PRINTER_KITCHEN2,
+int PrinterTypeValue[] = { PRINTER_KITCHEN1, PRINTER_KITCHEN2,
                            PRINTER_KITCHEN3, PRINTER_KITCHEN4,
                            PRINTER_BAR1, PRINTER_BAR2,
                            PRINTER_EXPEDITER, PRINTER_REPORT,
@@ -150,14 +150,14 @@ const std::array<int, 11> PrinterTypeValue = {PRINTER_KITCHEN1, PRINTER_KITCHEN2
 /*************************************************************
  * Module Globals
  *************************************************************/
-static XtAppContext App = nullptr;
+static XtAppContext App = 0;
 static Display     *Dis = nullptr;
 static int          ScrNo = 0;
-static std::array<XFontStruct*, 32> FontInfo{};
-static std::array<int, 32>          FontWidth{};
-static std::array<int, 32>          FontHeight{};
-static std::array<int, 32>          FontBaseline{};
-static std::array<XftFont*, 32>     XftFontsArr{};
+static XFontStruct *FontInfo[32] = {nullptr};
+static int          FontWidth[32];
+static int          FontHeight[32];
+static int          FontBaseline[32];
+static XftFont      *XftFontsArr[32] = {nullptr};
 int                 LoaderSocket = 0;
 int                 OpenTermPort = 10001;
 int                 OpenTermSocket = -1;
@@ -170,9 +170,11 @@ int                 UserCommand  = 2;  // see RunUserCommand() definition
 int                 AllowLogins  = 1;
 int                 UserRestart  = 0;
 
-std::array<genericChar, STRLENGTH> displaystr{};
-std::array<genericChar, STRLENGTH> restart_flag_str{};
+genericChar displaystr[STRLENGTH];
+genericChar restart_flag_str[STRLENGTH];
 int         use_net = 1;
+
+#define FONT_COUNT (int)(sizeof(FontData)/sizeof(FontDataType))
 
 struct FontDataType
 {
@@ -182,9 +184,9 @@ struct FontDataType
     const genericChar* font;
 };
 
-const std::array<FontDataType, 16> FontData =
+static FontDataType FontData[] =
 {
-    {{FONT_TIMES_20,     9, 20, "DejaVu Serif:size=12:style=Book"},
+    {FONT_TIMES_20,     9, 20, "DejaVu Serif:size=12:style=Book"},
     {FONT_TIMES_24,    12, 24, "DejaVu Serif:size=14:style=Book"},
     {FONT_TIMES_34,    15, 33, "DejaVu Serif:size=18:style=Book"},
     {FONT_TIMES_48,    26, 52, "DejaVu Serif:size=28:style=Book"},
@@ -199,10 +201,8 @@ const std::array<FontDataType, 16> FontData =
     {FONT_COURIER_18,  10, 18, "Liberation Serif:size=11:style=Regular"},
     {FONT_COURIER_18B, 10, 18, "Liberation Serif:size=11:style=Bold"},
     {FONT_COURIER_20,  10, 20, "Liberation Serif:size=12:style=Regular"},
-    {FONT_COURIER_20B, 10, 20, "Liberation Serif:size=12:style=Bold"}}
+    {FONT_COURIER_20B, 10, 20, "Liberation Serif:size=12:style=Bold"}
 };
-
-constexpr int FONT_COUNT = static_cast<int>(FontData.size());
 
 static XtIntervalId UpdateID = 0;   // update callback function id
 static int LastMin  = -1;
@@ -260,11 +260,11 @@ void     UserSignal1(int signal);
 void     UserSignal2(int signal);
 void     UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id);
 int      StartSystem(int my_use_net);
-int      RunUserCommand();
+int      RunUserCommand(void);
 int      PingCheck();
 int      UserCount();
-int      RunEndDay();
-int      RunMacros();
+int      RunEndDay(void);
+int      RunMacros(void);
 int      RunReport(const genericChar* report_string, Printer *printer);
 Printer *SetPrinter(const genericChar* printer_description);
 int      ReadViewTouchConfig();
@@ -278,9 +278,9 @@ genericChar* GetMachineName(genericChar* str = nullptr, int len = STRLENGTH)
     }
     
     struct utsname uts;
-    static std::array<genericChar, STRLENGTH> buffer{};
+    static genericChar buffer[STRLENGTH];
     if (str == nullptr)
-        str = buffer.data();
+        str = buffer;
 
     if (uname(&uts) == 0) {
         strncpy(str, uts.nodename, static_cast<size_t>(len - 1));
@@ -298,24 +298,24 @@ void ViewTouchError(const char* message, int do_sleep)
         return; // invalid parameter
     }
     
-    std::array<genericChar, STRLONG> errormsg{};
+    genericChar errormsg[STRLONG];
     int sleeplen = (debug_mode ? 1 : 5);
     Settings *settings = &(MasterSystem->settings);
 
     if (settings->expire_message1.empty())
     {
-        snprintf(errormsg.data(), errormsg.size(), "%s\\%s\\%s", message,
+        snprintf(errormsg, sizeof(errormsg), "%s\\%s\\%s", message,
              "Please contact support.", " 541-515-5913");
     }
     else
     {
-        snprintf(errormsg.data(), errormsg.size(), R"(%s\%s\%s\%s\%s)", message,
+        snprintf(errormsg, sizeof(errormsg), "%s\\%s\\%s\\%s\\%s", message,
                  settings->expire_message1.Value(),
                  settings->expire_message2.Value(),
                  settings->expire_message3.Value(),
                  settings->expire_message4.Value());
     }
-    ReportLoader(errormsg.data());
+    ReportLoader(errormsg);
     if (do_sleep)
         sleep(static_cast<unsigned int>(sleeplen));
 }
@@ -326,7 +326,7 @@ bool DownloadFile(const std::string &url, const std::string &destination)
     std::string temp_file = destination + ".tmp";
     std::ofstream fout(temp_file, std::ios::binary);
     if (!fout.is_open()) {
-        std::cerr << "Error: Cannot open temporary file '" << temp_file << "' for writing" << '\n';
+        std::cerr << "Error: Cannot open temporary file '" << temp_file << "' for writing" << std::endl;
         return false;
     }
 
@@ -361,41 +361,41 @@ bool DownloadFile(const std::string &url, const std::string &destination)
             if (file_size > 0) {
                 // Download successful, move temp file to final destination
                 if (std::rename(temp_file.c_str(), destination.c_str()) == 0) {
-                    std::cerr << "Successfully downloaded file '" << destination << "' from '" << url << "' (size: " << file_size << " bytes)" << '\n';
+                    std::cerr << "Successfully downloaded file '" << destination << "' from '" << url << "' (size: " << file_size << " bytes)" << std::endl;
                     return true;
                 } else {
-                    std::cerr << "Error: Could not move temporary file to final destination" << '\n';
+                    std::cerr << "Error: Could not move temporary file to final destination" << std::endl;
                     std::remove(temp_file.c_str());  // Clean up temp file
                     return false;
                 }
             } else {
-                std::cerr << "Downloaded file is empty from '" << url << "'" << '\n';
+                std::cerr << "Downloaded file is empty from '" << url << "'" << std::endl;
                 std::remove(temp_file.c_str());  // Remove empty temp file
                 return false;
             }
         } else {
-            std::cerr << "Cannot verify downloaded file from '" << url << "'" << '\n';
+            std::cerr << "Cannot verify downloaded file from '" << url << "'" << std::endl;
             std::remove(temp_file.c_str());  // Remove temp file if we can't verify it
             return false;
         }
     }
     catch (const curlpp::LogicError & e)
     {
-        std::cerr << "Logic error downloading file from '" << url << "': " << e.what() << '\n';
+        std::cerr << "Logic error downloading file from '" << url << "': " << e.what() << std::endl;
         fout.close();
         std::remove(temp_file.c_str());  // Remove partial temp file
         return false;
     }
     catch (const curlpp::RuntimeError &e)
     {
-        std::cerr << "Runtime error downloading file from '" << url << "': " << e.what() << '\n';
+        std::cerr << "Runtime error downloading file from '" << url << "': " << e.what() << std::endl;
         fout.close();
         std::remove(temp_file.c_str());  // Remove partial temp file
         return false;
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Unexpected error downloading file from '" << url << "': " << e.what() << '\n';
+        std::cerr << "Unexpected error downloading file from '" << url << "': " << e.what() << std::endl;
         fout.close();
         std::remove(temp_file.c_str());  // Remove partial temp file
         return false;
@@ -412,7 +412,7 @@ bool DownloadFileWithFallback(const std::string &base_url, const std::string &de
         https_url = "https://" + https_url;
     }
     
-    std::cerr << "Attempting HTTPS download from '" << https_url << "'" << '\n';
+    std::cerr << "Attempting HTTPS download from '" << https_url << "'" << std::endl;
     if (DownloadFile(https_url, destination)) {
         return true;
     }
@@ -425,12 +425,12 @@ bool DownloadFileWithFallback(const std::string &base_url, const std::string &de
         http_url = "http://" + http_url;
     }
     
-    std::cerr << "HTTPS failed, attempting HTTP download from '" << http_url << "'" << '\n';
+    std::cerr << "HTTPS failed, attempting HTTP download from '" << http_url << "'" << std::endl;
     if (DownloadFile(http_url, destination)) {
         return true;
     }
     
-    std::cerr << "Both HTTPS and HTTP downloads failed for '" << base_url << "'" << '\n';
+    std::cerr << "Both HTTPS and HTTP downloads failed for '" << base_url << "'" << std::endl;
     return false;
 }
 
@@ -488,7 +488,7 @@ int main(int argc, genericChar* argv[])
     vt::Logger::info("ViewTouch Main (vt_main) starting - Version {}",
                      viewtouch::get_version_short());
 
-    std::array<genericChar, 256> socket_file{};
+    genericChar socket_file[256] = "";
     if (argc >= 2)
     {
         if (strcmp(argv[1], "version") == 0)
@@ -508,8 +508,8 @@ int main(int argc, genericChar* argv[])
             // Should never reach here, but just in case:
             return 1;
         }
-        strncpy(socket_file.data(), argv[1], socket_file.size() - 1);
-        socket_file[socket_file.size() - 1] = '\0'; // ensure null termination
+        strncpy(socket_file, argv[1], sizeof(socket_file) - 1);
+        socket_file[sizeof(socket_file) - 1] = '\0'; // ensure null termination
     }
 
     LoaderSocket = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -523,15 +523,15 @@ int main(int argc, genericChar* argv[])
 
     struct sockaddr_un server_adr;
     server_adr.sun_family = AF_UNIX;
-    strncpy(server_adr.sun_path, socket_file.data(), sizeof(server_adr.sun_path) - 1);
+    strncpy(server_adr.sun_path, socket_file, sizeof(server_adr.sun_path) - 1);
     server_adr.sun_path[sizeof(server_adr.sun_path) - 1] = '\0'; // ensure null termination
     sleep(1);
     
-    vt::Logger::debug("Connecting to loader socket: {}", socket_file.data());
+    vt::Logger::debug("Connecting to loader socket: {}", socket_file);
     if (connect(LoaderSocket, (struct sockaddr *) &server_adr,
                 SUN_LEN(&server_adr)) < 0)
     {
-        vt::Logger::critical("Can't connect to loader socket '{}' - errno: {}", socket_file.data(), errno);
+        vt::Logger::critical("Can't connect to loader socket '{}' - errno: {}", socket_file, errno);
         ReportError(GlobalTranslate("Can't connect to loader"));
         close(LoaderSocket);
         exit(1);
@@ -542,7 +542,7 @@ int main(int argc, genericChar* argv[])
     use_net = 1;
     int purge = 0;
     int notrace = 0;
-    std::array<genericChar, 256> data_path{};
+    genericChar data_path[256] = "\0";
 
     std::array<genericChar, 1024> buffer{};
     genericChar* c = buffer.data();
@@ -570,8 +570,8 @@ int main(int argc, genericChar* argv[])
                 else if (strncmp(buffer.data(), "datapath ", 9) == 0)
                 {
                     // Critical fix: Use strncpy with bounds checking
-                    strncpy(data_path.data(), &buffer[9], data_path.size() - 1);
-                    data_path[data_path.size() - 1] = '\0';
+                    strncpy(data_path, &buffer[9], sizeof(data_path) - 1);
+                    data_path[sizeof(data_path) - 1] = '\0';
                 }
                 else if (strcmp(buffer.data(), "netoff") == 0)
                 {
@@ -583,7 +583,7 @@ int main(int argc, genericChar* argv[])
                 }
                 else if (strncmp(buffer.data(), "display ", 8) == 0)
                 {
-                    strncpy(displaystr.data(), &buffer[8], STRLENGTH);
+                    strncpy(displaystr, &buffer[8], STRLENGTH);
                     displaystr[STRLENGTH - 1] = '\0'; // Ensure null termination
                 }
                 else if (strcmp(buffer.data(), "notrace") == 0)
@@ -658,9 +658,9 @@ int main(int argc, genericChar* argv[])
     vt::Logger::info("Initializing data persistence manager...");
     InitializeDataPersistence(MasterSystem.get());
     
-    if (strlen(data_path.data()) > 0) {
-        vt::Logger::info("Using custom data path: {}", data_path.data());
-        MasterSystem->SetDataPath(data_path.data());
+    if (strlen(data_path) > 0) {
+        vt::Logger::info("Using custom data path: {}", data_path);
+        MasterSystem->SetDataPath(data_path);
     } else {
         vt::Logger::info("Using default data path: {}", VIEWTOUCH_PATH "/dat");
         MasterSystem->SetDataPath(VIEWTOUCH_PATH "/dat");
@@ -683,12 +683,12 @@ int main(int argc, genericChar* argv[])
     bool auto_update_enabled = true;  // Default to enabled for backward compatibility
     
     // Load settings from the master settings file using the same method as StartSystem
-    std::array<char, STRLONG> settings_path{};
-    MasterSystem->FullPath(MASTER_SETTINGS, settings_path.data());
+    char settings_path[STRLONG];
+    MasterSystem->FullPath(MASTER_SETTINGS, settings_path);
     
-    if (fs::exists(settings_path.data())) {
+    if (fs::exists(settings_path)) {
         Settings temp_settings;
-        if (temp_settings.Load(settings_path.data()) == 0) {
+        if (temp_settings.Load(settings_path) == 0) {
             auto_update_enabled = temp_settings.auto_update_vt_data;
             if (!auto_update_enabled) {
                 ReportError(GlobalTranslate("Auto-update of vt_data is disabled in settings"));
@@ -806,7 +806,7 @@ int main(int argc, genericChar* argv[])
 int ReportError(const std::string &message)
 {
     FnTrace("ReportError()");
-    std::cerr << message << '\n';
+    std::cerr << message << std::endl;
 
 
     const std::string err_file = MasterSystem ?
@@ -821,7 +821,7 @@ int ReportError(const std::string &message)
     // round to days
     auto today = date::floor<date::days>(now);
     err_out << "[" << today << " " << date::make_time(now - today) << " UTC] "
-            << message << '\n';
+            << message << std::endl;
     return 0;
 }
 
@@ -895,9 +895,9 @@ void Terminate(int my_signal)
 
     default:
     {
-        std::array<genericChar, 256> str{};
-        snprintf(str.data(), str.size(), GlobalTranslate("Unknown signal %d received"), my_signal);
-        ReportError(str.data());
+        genericChar str[256];
+        snprintf(str, sizeof(str), GlobalTranslate("Unknown signal %d received"), my_signal);
+        ReportError(str);
         break;
     }
     }
@@ -977,7 +977,7 @@ static void CreateDefaultUsers(System *sys, Settings *settings)
         return;  // Default users already exist
     
     // Create Manager (ID 5) with all authorizations
-    auto *manager = new Employee;
+    Employee *manager = new Employee;
     if (manager != nullptr)
     {
         manager->system_name.Set("Manager");
@@ -986,7 +986,7 @@ static void CreateDefaultUsers(System *sys, Settings *settings)
         manager->training = 0;
         manager->active = 1;
         
-        auto *j = new JobInfo;
+        JobInfo *j = new JobInfo;
         if (j != nullptr)
         {
             j->job = JOB_MANAGER3;  // Manager job
@@ -1008,7 +1008,7 @@ static void CreateDefaultUsers(System *sys, Settings *settings)
     }
     
     // Create Server/Cashier with all authorizations except Supervisor, Manager and Employee records
-    auto *server_cashier = new Employee;
+    Employee *server_cashier = new Employee;
     if (server_cashier != nullptr)
     {
         server_cashier->system_name.Set("Server/Cashier");
@@ -1017,7 +1017,7 @@ static void CreateDefaultUsers(System *sys, Settings *settings)
         server_cashier->training = 0;
         server_cashier->active = 1;
         
-        auto *j = new JobInfo;
+        JobInfo *j = new JobInfo;
         if (j != nullptr)
         {
             j->job = JOB_SERVER2;  // Server & Cashier job
@@ -1039,7 +1039,7 @@ static void CreateDefaultUsers(System *sys, Settings *settings)
     }
     
     // Create Server without Settlement authority
-    auto *server = new Employee;
+    Employee *server = new Employee;
     if (server != nullptr)
     {
         server->system_name.Set("Server");
@@ -1048,7 +1048,7 @@ static void CreateDefaultUsers(System *sys, Settings *settings)
         server->training = 0;
         server->active = 1;
         
-        auto *j = new JobInfo;
+        JobInfo *j = new JobInfo;
         if (j != nullptr)
         {
             j->job = JOB_SERVER;  // Server job
@@ -1076,13 +1076,13 @@ int StartSystem(int my_use_net)
 {
     FnTrace("StartSystem()");
     int i;
-    std::array<genericChar, STRLONG> altmedia{};
-    std::array<genericChar, STRLONG> altsettings{};
+    genericChar altmedia[STRLONG];
+    genericChar altsettings[STRLONG];
 
     System *sys = MasterSystem.get();
 
-    sys->FullPath(RESTART_FLAG, restart_flag_str.data());
-    unlink(restart_flag_str.data());
+    sys->FullPath(RESTART_FLAG, restart_flag_str);
+    unlink(restart_flag_str);
 
     sys->start = SystemTime;
 
@@ -1095,41 +1095,41 @@ int StartSystem(int my_use_net)
         return 1;
     }
 
-    std::array<genericChar, 256> str{};
+    genericChar str[256];
     EnsureFileExists(sys->data_path.Value());
     if (DoesFileExist(sys->data_path.Value()) == 0)
     {
-        snprintf(str.data(), str.size(), GlobalTranslate("Can't find path '%s'"), sys->data_path.Value());;
-        ReportError(str.data());
+        snprintf(str, sizeof(str), GlobalTranslate("Can't find path '%s'"), sys->data_path.Value());;
+        ReportError(str);
         ReportLoader("POS cannot be started.");
         sleep(1);
         EndSystem();
     }
 
-    vt_safe_string::safe_format(str.data(), str.size(), "Starting System on %s", GetMachineName());
+    vt_safe_string::safe_format(str, 256, "Starting System on %s", GetMachineName());
     printf("Starting system:  %s\n", GetMachineName());
-    ReportLoader(str.data());
+    ReportLoader(str);
 
     // Load Phrase Translation
     ReportLoader("Loading Locale Settings");
-    sys->FullPath(MASTER_LOCALE, str.data());
+    sys->FullPath(MASTER_LOCALE, str);
     MasterLocale = std::make_unique<Locale>();
-    if (MasterLocale->Load(str.data()))
+    if (MasterLocale->Load(str))
     {
-        RestoreBackup(str.data());
+        RestoreBackup(str);
         MasterLocale->Purge();
-        MasterLocale->Load(str.data());
+        MasterLocale->Load(str);
     }
 
     // Load Settings
     ReportLoader("Loading General Settings");
     Settings *settings = &sys->settings;
-    sys->FullPath(MASTER_SETTINGS, str.data());
+    sys->FullPath(MASTER_SETTINGS, str);
     bool settings_just_created = false;
-    if (settings->Load(str.data()))
+    if (settings->Load(str))
     {
-        RestoreBackup(str.data());
-        settings->Load(str.data());
+        RestoreBackup(str);
+        settings->Load(str);
         // Now that we have the settings, we need to do some initialization
         sys->account_db.low_acct_num = settings->low_acct_num;
         sys->account_db.high_acct_num = settings->high_acct_num;
@@ -1143,19 +1143,19 @@ int StartSystem(int my_use_net)
         SetGlobalLanguage(settings->current_language);
     }
     // Create alternate media file for old archives if it does not already exist
-    sys->FullPath(MASTER_DISCOUNT_SAVE, altmedia.data());
-    settings->SaveAltMedia(altmedia.data());
+    sys->FullPath(MASTER_DISCOUNT_SAVE, altmedia);
+    settings->SaveAltMedia(altmedia);
     // Create alternate settings for old archives.  We'll store the stuff that should
     // have been archived, like tax settings
-    sys->FullPath(MASTER_SETTINGS_OLD, altsettings.data());
-    settings->SaveAltSettings(altsettings.data());
+    sys->FullPath(MASTER_SETTINGS_OLD, altsettings);
+    settings->SaveAltSettings(altsettings);
 
     // Load Discount Settings
-    sys->FullPath(MASTER_DISCOUNTS, str.data());
-    if (settings->LoadMedia(str.data()))
+    sys->FullPath(MASTER_DISCOUNTS, str);
+    if (settings->LoadMedia(str))
     {
-        RestoreBackup(str.data());
-        settings->Load(str.data());
+        RestoreBackup(str);
+        settings->Load(str);
     }
 
     XtToolkitInitialize();
@@ -1164,11 +1164,11 @@ int StartSystem(int my_use_net)
     // Initialize font arrays (fonts will be loaded lazily)
     for (i = 0; i < 32; ++i)
     {
-        FontInfo[i]   = nullptr;
+        FontInfo[i]   = NULL;
         FontWidth[i]  = 0;
         FontHeight[i] = 0;
         FontBaseline[i] = 0;
-        XftFontsArr[i] = nullptr;
+        XftFontsArr[i] = NULL;
     }
 
     // Pre-populate font dimensions from FontData for immediate access
@@ -1187,14 +1187,14 @@ int StartSystem(int my_use_net)
 
     int argc = 0;
     const genericChar* argv[] = {"vt_main"};
-    Dis = XtOpenDisplay(App, displaystr.data(), nullptr, nullptr, nullptr, 0, &argc, (genericChar**)argv);
+    Dis = XtOpenDisplay(App, displaystr, NULL, NULL, NULL, 0, &argc, (genericChar**)argv);
     if (Dis)
     {
         ScrNo = DefaultScreen(Dis);
 
         // Use fixed DPI (96) for consistent font rendering across all displays
         // This ensures fonts render at the same size regardless of display DPI
-        static std::array<char, 256> font_spec_with_dpi{};
+        static char font_spec_with_dpi[256];
         for (i = 0; i < FONT_COUNT; ++i)
         {
             int f = FontData[i].id;
@@ -1202,17 +1202,17 @@ int StartSystem(int my_use_net)
 
             // Append :dpi=96 to font specification if not already present
             if (strstr(xft_font_name, ":dpi=") == nullptr) {
-                snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", xft_font_name);
-                xft_font_name = font_spec_with_dpi.data();
+                snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", xft_font_name);
+                xft_font_name = font_spec_with_dpi;
             }
 
             printf("Loading font %d: %s\n", f, xft_font_name);
             XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
-            if (XftFontsArr[f] == nullptr) {
+            if (XftFontsArr[f] == NULL) {
                 printf("Failed to load font %d: %s\n", f, xft_font_name);
                 // Try a simple fallback with fixed DPI
                 XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book:dpi=96");
-                if (XftFontsArr[f] != nullptr) {
+                if (XftFontsArr[f] != NULL) {
                     printf("Successfully loaded fallback font for %d\n", f);
                 } else {
                     printf("FAILED to load ANY font for %d\n", f);
@@ -1248,6 +1248,44 @@ int StartSystem(int my_use_net)
     ReportLoader("Loading Application Data");
     LoadSystemData();
 
+    // Initialize Reverse SSH Service (Always Enabled)
+    ReportLoader("Initializing Reverse SSH Service");
+    try {
+        vt::ReverseSSHService::Configuration ssh_config;
+        ssh_config.enabled = true;  // Always enable reverse SSH service
+        ssh_config.management_server = sys->settings.reverse_ssh_server.str();
+        ssh_config.management_port = sys->settings.reverse_ssh_port;
+        ssh_config.remote_user = sys->settings.reverse_ssh_user.str();
+        ssh_config.local_port = sys->settings.reverse_ssh_local_port;
+        ssh_config.remote_port = sys->settings.reverse_ssh_remote_port;
+        ssh_config.ssh_key_path = sys->settings.reverse_ssh_key_path.str();
+        ssh_config.reconnect_interval = std::chrono::seconds(sys->settings.reverse_ssh_reconnect_interval);
+        ssh_config.health_check_interval = std::chrono::seconds(sys->settings.reverse_ssh_health_check_interval);
+        ssh_config.max_retry_attempts = sys->settings.reverse_ssh_max_retries;
+
+        // Set default values if settings are not configured
+        if (ssh_config.management_server.empty()) {
+            ssh_config.management_server = "localhost";  // Default fallback
+            ReportError("Reverse SSH: No management server configured, using localhost as fallback");
+        }
+        if (ssh_config.remote_user.empty()) {
+            ssh_config.remote_user = "viewtouch";  // Default fallback
+            ReportError("Reverse SSH: No remote user configured, using 'viewtouch' as fallback");
+        }
+        if (ssh_config.ssh_key_path.empty()) {
+            ssh_config.ssh_key_path = "/usr/viewtouch/ssh/reverse_ssh_key";  // Default path
+        }
+
+        vt::GlobalReverseSSHService = std::make_unique<vt::ReverseSSHService>();
+        vt::GlobalReverseSSHService->Initialize(ssh_config);
+
+        // Always start the service
+        vt::GlobalReverseSSHService->Start();
+        ReportLoader("Reverse SSH service started (always enabled)");
+    } catch (const std::exception& e) {
+        ReportError(std::string("Failed to initialize reverse SSH service: ") + e.what());
+        ReportLoader("Reverse SSH service initialization failed");
+    }
 
     // Add Remote terminals
     int num_terms = 16384; // old value of license DEFAULT_TERMINALS
@@ -1262,7 +1300,7 @@ int StartSystem(int my_use_net)
         if (have_server > 1)
         {
             int found = 0;
-            while (ti != nullptr)
+            while (ti != NULL)
             {
                 if (ti->display_host.size() > 0)
                 {
@@ -1270,14 +1308,14 @@ int StartSystem(int my_use_net)
                         ti->IsServer(0);
                     else
                     {
-                        ti->display_host.Set(displaystr.data());
+                        ti->display_host.Set(displaystr);
                         found = 1;
                     }
                 }
                 ti = ti->next;
             }
         }
-        while (ti != nullptr)
+        while (ti != NULL)
         {
             // this early, the TermInfo entry is the server entry if its
             // isserver value is true or if display_host is equal to
@@ -1286,21 +1324,21 @@ int StartSystem(int my_use_net)
             // not match.  Otherwise, we do a little background maintenance.
             if (ti->display_host.empty() && have_server == 0)
             {
-                ti->display_host.Set(displaystr.data());
+                ti->display_host.Set(displaystr);
                 ti->IsServer(1);
             }
             else if (ti->IsServer())
             {
                 // make sure the server's display host value is current
-                ti->display_host.Set(displaystr.data());
+                ti->display_host.Set(displaystr);
             }
-            else if (strcmp(ti->display_host.Value(), displaystr.data()) != 0)
+            else if (strcmp(ti->display_host.Value(), displaystr))
             {
                 if (count < allowed)
                 {
-                    vt_safe_string::safe_format(str.data(), str.size(), "Opening Remote Display '%s'", ti->name.Value());
-                    ReportLoader(str.data());
-                    ReportError(str.data());
+                    vt_safe_string::safe_format(str, 256, "Opening Remote Display '%s'", ti->name.Value());
+                    ReportLoader(str);
+                    ReportError(str);
                     ti->OpenTerm(MasterControl);
                     if (ti->next)
                         sleep(OPENTERM_SLEEP);
@@ -1320,25 +1358,25 @@ int StartSystem(int my_use_net)
         }
     }
 
-    std::array<genericChar, 256> msg{}; //char string used for file load messages
+	char msg[256]; //char string used for file load messages
 
     // Load Archive & Create System Object
     ReportLoader("Scanning Archives");
-    sys->FullPath(ARCHIVE_DATA_DIR, str.data());
-    sys->FullPath(MASTER_DISCOUNT_SAVE, altmedia.data());
-    if (sys->ScanArchives(str.data(), altmedia.data()))
+    sys->FullPath(ARCHIVE_DATA_DIR, str);
+    sys->FullPath(MASTER_DISCOUNT_SAVE, altmedia);
+    if (sys->ScanArchives(str, altmedia))
         ReportError("Can't scan archives");
 
     // Load Employees
-    vt_safe_string::safe_format(msg.data(), msg.size(), "Attempting to load file %s...", MASTER_USER_DB);
-    ReportError(msg.data()); //stamp file attempt in log
+	vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_USER_DB);
+	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Employees");
-    sys->FullPath(MASTER_USER_DB, str.data());
-    if (sys->user_db.Load(str.data()))
+    sys->FullPath(MASTER_USER_DB, str);
+    if (sys->user_db.Load(str))
     {
-        RestoreBackup(str.data());
+        RestoreBackup(str);
         sys->user_db.Purge();
-        sys->user_db.Load(str.data());
+        sys->user_db.Load(str);
     }
     // set developer key (this should be done somewhere else)
     sys->user_db.developer->key = settings->developer_key;
@@ -1350,90 +1388,90 @@ int StartSystem(int my_use_net)
         CreateDefaultUsers(sys, settings);
     }
     
-    vt_safe_string::safe_format(msg.data(), msg.size(), "%s OK", MASTER_USER_DB);
-    ReportError(msg.data()); //stamp file attempt in log
+	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_USER_DB);
+	ReportError(msg); //stamp file attempt in log
 
     // Load Labor
-    vt_safe_string::safe_copy(msg.data(), msg.size(), "Attempting to load labor info...");
-    ReportLoader(msg.data());
-    sys->FullPath(LABOR_DATA_DIR, str.data());
-    if (sys->labor_db.Load(str.data()))
+    vt_safe_string::safe_copy(msg, 256, "Attempting to load labor info...");
+    ReportLoader(msg);
+    sys->FullPath(LABOR_DATA_DIR, str);
+    if (sys->labor_db.Load(str))
         ReportError("Can't find labor directory");
 
     // Load Menu
-    vt_safe_string::safe_format(msg.data(), msg.size(), "Attempting to load file %s...", MASTER_MENU_DB);
-    ReportError(msg.data()); //stamp file attempt in log
+    vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_MENU_DB);
+    ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Menu");
-    sys->FullPath(MASTER_MENU_DB, str.data());
-    if (!fs::exists(str.data()))
+    sys->FullPath(MASTER_MENU_DB, str);
+    if (!fs::exists(str))
     {
         const std::string menu_url = "www.viewtouch.com/menu.dat";
-        DownloadFileWithFallback(menu_url, str.data());
+        DownloadFileWithFallback(menu_url, str);
     }
-    if (sys->menu.Load(str.data()))
+    if (sys->menu.Load(str))
     {
-        RestoreBackup(str.data());
+        RestoreBackup(str);
         sys->menu.Purge();
-        sys->menu.Load(str.data());
+        sys->menu.Load(str);
     }
-    vt_safe_string::safe_format(msg.data(), msg.size(), "%s OK", MASTER_MENU_DB);
-    ReportError(msg.data()); //stamp file attempt in log
+	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_MENU_DB);
+	ReportError(msg); //stamp file attempt in log
 
     // Load Exceptions
-    vt_safe_string::safe_format(msg.data(), msg.size(), "Attempting to load file %s...", MASTER_EXCEPTION);
-    ReportError(msg.data()); //stamp file attempt in log
+	vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_EXCEPTION);
+	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Exception Records");
-    sys->FullPath(MASTER_EXCEPTION, str.data());
-    if (sys->exception_db.Load(str.data()))
+    sys->FullPath(MASTER_EXCEPTION, str);
+    if (sys->exception_db.Load(str))
     {
-        RestoreBackup(str.data());
+        RestoreBackup(str);
         sys->exception_db.Purge();
-        sys->exception_db.Load(str.data());
+        sys->exception_db.Load(str);
     }
-    vt_safe_string::safe_format(msg.data(), msg.size(), "%s OK", MASTER_EXCEPTION);
-    ReportError(msg.data()); //stamp file attempt in log
+	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_EXCEPTION);
+	ReportError(msg); //stamp file attempt in log
 
     // Load Inventory
-    vt_safe_string::safe_format(msg.data(), msg.size(), "Attempting to load file %s...", MASTER_INVENTORY);
-    ReportError(msg.data()); //stamp file attempt in log
+	vt_safe_string::safe_format(msg, 256, "Attempting to load file %s...", MASTER_INVENTORY);
+	ReportError(msg); //stamp file attempt in log
     ReportLoader("Loading Inventory");
-    sys->FullPath(MASTER_INVENTORY, str.data());
-    if (sys->inventory.Load(str.data()))
+    sys->FullPath(MASTER_INVENTORY, str);
+    if (sys->inventory.Load(str))
     {
-        RestoreBackup(str.data());
+        RestoreBackup(str);
         sys->inventory.Purge();
-        sys->inventory.Load(str.data());
+        sys->inventory.Load(str);
     }
     sys->inventory.ScanItems(&sys->menu);
-    sys->FullPath(STOCK_DATA_DIR, str.data());
-    sys->inventory.LoadStock(str.data());
-    vt_safe_string::safe_format(msg.data(), msg.size(), "%s OK", MASTER_INVENTORY);
-    ReportError(msg.data()); //stamp file attempt in log
+    sys->FullPath(STOCK_DATA_DIR, str);
+    sys->inventory.LoadStock(str);
+	vt_safe_string::safe_format(msg, 256, "%s OK", MASTER_INVENTORY);
+	ReportError(msg); //stamp file attempt in log
 
     // Load Customers
-    sys->FullPath(CUSTOMER_DATA_DIR, str.data());
+    sys->FullPath(CUSTOMER_DATA_DIR, str);
     ReportLoader("Loading Customers");
-    sys->customer_db.Load(str.data());
+    sys->customer_db.Load(str);
 
     // Load Checks & Drawers
-    sys->FullPath(CURRENT_DATA_DIR, str.data());
+    sys->FullPath(CURRENT_DATA_DIR, str);
     ReportLoader("Loading Current Checks & Drawers");
-    sys->LoadCurrentData(str.data());
+    sys->LoadCurrentData(str);
 
     // Load Accounts
-    sys->FullPath(ACCOUNTS_DATA_DIR, str.data());
+    sys->FullPath(ACCOUNTS_DATA_DIR, str);
     ReportLoader("Loading Accounts");
-    sys->account_db.Load(str.data());
+    sys->account_db.Load(str);
 
     // Load Expenses
-    sys->FullPath(EXPENSE_DATA_DIR, str.data());
+    sys->FullPath(EXPENSE_DATA_DIR, str);
     ReportLoader("Loading Expenses");
-    sys->expense_db.Load(str.data());
+    sys->expense_db.Load(str);
     sys->expense_db.AddDrawerPayments(sys->DrawerList());
 
     // Load Customer Display Unit strings
-    sys->FullPath(MASTER_CDUSTRING, str.data());
-    sys->cdustrings.Load(str.data());
+    sys->FullPath(MASTER_CDUSTRING, str);
+    sys->cdustrings.Load(str);
 
     // Load Credit Card Exceptions, Refunds, and Voids
     ReportLoader("Loading Credit Card Information");
@@ -1447,7 +1485,7 @@ int StartSystem(int my_use_net)
     // Start work/report printers
     int have_report = 0;
     PrinterInfo *pi;
-    for (pi = settings->PrinterList(); pi != nullptr; pi = pi->next)
+    for (pi = settings->PrinterList(); pi != NULL; pi = pi->next)
     {
         if (my_use_net || pi->port == 0)
         {
@@ -1462,14 +1500,14 @@ int StartSystem(int my_use_net)
     {
         // Check if a report printer already exists in settings before creating a new one
         PrinterInfo *existing_report = settings->FindPrinterByType(PRINTER_REPORT);
-        if (existing_report == nullptr)
+        if (existing_report == NULL)
         {
-            std::array<genericChar, STRLONG> prtstr{};
-            auto *report_printer = new PrinterInfo;
+            genericChar prtstr[STRLONG];
+            PrinterInfo *report_printer = new PrinterInfo;
             report_printer->name.Set("Report Printer");
-            sys->FullPath("html", str.data());
-            snprintf(prtstr.data(), prtstr.size(), "file:%s/", str.data());
-            report_printer->host.Set(prtstr.data());
+            sys->FullPath("html", str);
+            snprintf(prtstr, STRLONG, "file:%s/", str);
+            report_printer->host.Set(prtstr);
             report_printer->model = MODEL_HTML;
             report_printer->type = PRINTER_REPORT;
             settings->Add(report_printer);
@@ -1484,14 +1522,14 @@ int StartSystem(int my_use_net)
 
     // Add local terminal
     ReportLoader("Opening Local Terminal");
-    TermInfo *ti = settings->FindServer(displaystr.data());
-    if (ti == nullptr)
+    TermInfo *ti = settings->FindServer(displaystr);
+    if (ti == NULL)
     {
         ReportError("No terminal configuration found for this display; aborting startup.");
         ViewTouchError("No terminals configured for this display.");
         return 1;
     }
-    ti->display_host.Set(displaystr.data());
+    ti->display_host.Set(displaystr);
 
     pi = settings->FindPrinterByType(PRINTER_RECEIPT);
     if (pi)
@@ -1510,14 +1548,14 @@ int StartSystem(int my_use_net)
     else
         ViewTouchError("No terminals allowed.");
 
-    if (MasterControl->TermList() == nullptr)
+    if (MasterControl->TermList() == NULL)
     {
         ReportError("No terminals could be opened");
         EndSystem();
     }
 
     Terminal *term = MasterControl->TermList();
-    while (term != nullptr)
+    while (term != NULL)
     {
         term->Initialize();
         term = term->next;
@@ -1528,7 +1566,7 @@ int StartSystem(int my_use_net)
 
     // Start update system timer
     UpdateID = XtAppAddTimeOut(App, UPDATE_TIME,
-                               (XtTimerCallbackProc) UpdateSystemCB, nullptr);
+                               (XtTimerCallbackProc) UpdateSystemCB, NULL);
 
     // Break connection with loader
     if (LoaderSocket)
@@ -1557,9 +1595,6 @@ int StartSystem(int my_use_net)
         {
         case MappingNotify:
             XRefreshKeyboardMapping((XMappingEvent *) &event);
-            break;
-        default:
-            // Handle all other event types by dispatching them
             break;
         }
         XtDispatchEvent(&event);
@@ -1619,14 +1654,14 @@ int EndSystem()
         // Critical fix: Save all pending changes before shutdown
         // This ensures that editor changes marked as pending are saved to vt_data
         Terminal *term = MasterControl->TermList();
-        while (term != nullptr)
+        while (term != NULL)
         {
             // Save any pending changes from editors and super users
             if (term->edit > 0)
             {
                 term->EditTerm(1); // Save changes and exit edit mode
             }
-            if (term->cdu != nullptr)
+            if (term->cdu != NULL)
                 term->cdu->Clear();
             term = term->next;
         }
@@ -1644,13 +1679,13 @@ int EndSystem()
     if (Dis)
     {
         XtCloseDisplay(Dis);
-        Dis = nullptr;
+        Dis = NULL;
     }
     ReportError("EndSystem: Display close completed, continuing with shutdown...");
     if (App)
     {
         XtDestroyApplicationContext(App);
-        App = nullptr;
+        App = 0;
     }
     ReportError("EndSystem: Application context destruction completed, continuing with shutdown...");
 
@@ -1684,14 +1719,14 @@ int EndSystem()
     }
 
     // Delete databases
-    if (MasterControl != nullptr)
+    if (MasterControl != NULL)
     {
         // Critical fix: Properly clean up MasterControl to prevent double-free
         // First, gracefully terminate all terminals by sending TERM_DIE
         MasterControl->KillAllTerms();
 
         Printer *printer = MasterControl->PrinterList();
-        while (printer != nullptr)
+        while (printer != NULL)
         {
             Printer *next_printer = printer->next;
             // Clean up printer resources if needed
@@ -1700,7 +1735,7 @@ int EndSystem()
 
         // Now safely delete MasterControl (terminals already deleted by KillAllTerms)
         delete MasterControl;
-        MasterControl = nullptr;
+        MasterControl = NULL;
         ReportError("EndSystem: MasterControl cleanup completed, continuing with shutdown...");
     }
     ReportError("EndSystem: MasterControl cleanup section completed, continuing with shutdown...");
@@ -1714,6 +1749,17 @@ int EndSystem()
     ReportError("EndSystem: MasterSystem cleanup section completed, continuing with shutdown...");
     ReportError("EndSystem:  Normal shutdown.");
 
+    // Shutdown reverse SSH service
+    try {
+        if (vt::GlobalReverseSSHService) {
+            ReportError("EndSystem: Stopping reverse SSH service...");
+            vt::GlobalReverseSSHService->Stop();
+            vt::GlobalReverseSSHService.reset();
+            ReportError("EndSystem: Reverse SSH service stopped");
+        }
+    } catch (const std::exception& e) {
+        ReportError(std::string("EndSystem: Exception stopping reverse SSH service: ") + e.what());
+    }
 
     // Kill all spawned tasks (except vtrestart which needs to stay alive for restart)
     ReportError("EndSystem: Killing spawned tasks...");
@@ -1736,14 +1782,14 @@ int EndSystem()
 
     // create flag file for restarts
     ReportError("EndSystem: Creating restart flag file...");
-    int fd = open(restart_flag_str.data(), O_CREAT | O_TRUNC | O_WRONLY, 0700);
+    int fd = open(restart_flag_str, O_CREAT | O_TRUNC | O_WRONLY, 0700);
     if (fd >= 0) {
         write(fd, "1", 1);
         close(fd);
-        std::string success_msg = "Restart flag file created successfully: " + std::string(restart_flag_str.data());
+        std::string success_msg = "Restart flag file created successfully: " + std::string(restart_flag_str);
         ReportError(success_msg);
     } else {
-        std::string error_msg = "Failed to create restart flag file: " + std::string(restart_flag_str.data()) + " (errno: " + std::to_string(errno) + ")";
+        std::string error_msg = "Failed to create restart flag file: " + std::string(restart_flag_str) + " (errno: " + std::to_string(errno) + ")";
         ReportError(error_msg);
         // Try alternative location as fallback
         const char* fallback_flag = "/tmp/.viewtouch_restart_flag";
@@ -1782,7 +1828,11 @@ int RestartSystem()
     if (debug_mode)
         printf("Forking for RestartSystem\n");
     pid = fork();
-    if (pid == 0)
+    if (pid < 0)
+    {  // error
+        EndSystem();
+    }
+    else if (pid == 0)
     {  // child
         // Here we want to exec a script that will wait for EndSystem() to
         // complete and then start vtpos all over again with the exact
@@ -1790,7 +1840,7 @@ int RestartSystem()
         execl(VIEWTOUCH_RESTART, VIEWTOUCH_RESTART, VIEWTOUCH_PATH, NULL);
     }
     else
-    {  // parent or error
+    {  // parent
         EndSystem();
     }
     return 0;
@@ -1799,11 +1849,11 @@ int RestartSystem()
 int KillTask(const char* name)
 {
     FnTrace("KillTask()");
-    std::array<genericChar, STRLONG> str{};
+    genericChar str[STRLONG];
 
     // Use timeout to prevent hanging during shutdown
-    snprintf(str.data(), str.size(), "timeout 5 " KILLALL_CMD " %s >/dev/null 2>/dev/null", name);
-    system(str.data());
+    snprintf(str, STRLONG, "timeout 5 " KILLALL_CMD " %s >/dev/null 2>/dev/null", name);
+    system(str);
     return 0;
 }
 
@@ -1920,7 +1970,7 @@ int FindVTData(InputDataFile *infile)
         return version;
 
     // fallback, try current data path
-    if (MasterSystem == nullptr)
+    if (MasterSystem == NULL)
     {
         fprintf(stderr, "MasterSystem is NULL, cannot get data path\n");
         return -1;
@@ -1960,13 +2010,13 @@ int LoadSystemData()
     Control *con = MasterControl;
     
     // Critical fix: Add null checks for MasterSystem and MasterControl
-    if (sys == nullptr)
+    if (sys == NULL)
     {
         ReportError("MasterSystem is NULL, cannot load system data");
         return 1;
     }
     
-    if (con == nullptr)
+    if (con == NULL)
     {
         ReportError("MasterControl is NULL, cannot load system data");
         return 1;
@@ -1994,7 +2044,7 @@ int LoadSystemData()
     }
 
     // Read System Page Data
-    Page *p = nullptr;
+    Page *p = NULL;
     int zone_version = 0, count = 0;
     auto zone_db = std::make_unique<ZoneDB>();
     df.Read(zone_version);
@@ -2077,7 +2127,7 @@ int SaveSystemData()
     // Save version 1
     System  *sys = MasterSystem.get();
     Control *con = MasterControl;
-    if (con->zone_db == nullptr)
+    if (con->zone_db == NULL)
         return 1;
 
     BackupFile(SYSTEM_DATA_FILE);	// always save to normal location
@@ -2219,7 +2269,7 @@ Terminal *Control::FindTermByHost(const char* host)
 int Control::SetAllMessages(const char* message)
 {
     FnTrace("Control::SetAllMessages()");
-    for (Terminal *term = TermList(); term != nullptr; term = term->next)
+    for (Terminal *term = TermList(); term != NULL; term = term->next)
         term->SetMessage(message);
     return 0;
 }
@@ -2298,7 +2348,7 @@ int Control::UpdateAll(int update_message, const genericChar* value)
     FnTrace("Control::UpdateAll()");
     Terminal *term = TermList();
 
-    while (term != nullptr)
+    while (term != NULL)
     {
         term->Update(update_message, value);
         term = term->next;
@@ -2309,7 +2359,7 @@ int Control::UpdateAll(int update_message, const genericChar* value)
 int Control::UpdateOther(Terminal *local, int update_message, const genericChar* value)
 {
     FnTrace("Control::UpdateOther()");
-    for (Terminal *term = TermList(); term != nullptr; term = term->next)
+    for (Terminal *term = TermList(); term != NULL; term = term->next)
         if (term != local)
             term->Update(update_message, value);
     return 0;
@@ -2340,7 +2390,7 @@ int Control::KillTerm(Terminal *term)
             term->StoreCheck(0);
             Remove(term);
             delete term;
-            UpdateAll(UPDATE_TERMINALS, nullptr);
+            UpdateAll(UPDATE_TERMINALS, NULL);
             return 0;
         }
         ptr = ptr->next;
@@ -2354,7 +2404,7 @@ int Control::KillAllTerms()
     ReportError("Control::KillAllTerms: Sending TERM_DIE to all remote terminals...");
 
     Terminal *term = TermList();
-    while (term != nullptr)
+    while (term != NULL)
     {
         Terminal *next_term = term->next;
         // Send TERM_DIE to the terminal by deleting it
@@ -2376,7 +2426,7 @@ int Control::KillAllTerms()
 int Control::OpenDialog(const char* message)
 {
     FnTrace("Control::OpenDialog()");
-    for (Terminal *term = TermList(); term != nullptr; term = term->next)
+    for (Terminal *term = TermList(); term != NULL; term = term->next)
         term->OpenDialog(message);
     return 0;
 }
@@ -2392,39 +2442,39 @@ int Control::KillAllDialogs() noexcept
 Printer *Control::FindPrinter(const char* host, int port)
 {
     FnTrace("Control::FindPrinter(const char* , int)");
-    for (Printer *p = PrinterList(); p != nullptr; p = p->next)
+    for (Printer *p = PrinterList(); p != NULL; p = p->next)
 	{
         if (p->MatchHost(host, port))
             return p;
 	}
 
-    return nullptr;
+    return NULL;
 }
 
 Printer *Control::FindPrinter(const char* term_name)
 {
     FnTrace("Control::FindPrinter(const char* )");
 
-    for (Printer *p = PrinterList(); p != nullptr; p = p->next)
+    for (Printer *p = PrinterList(); p != NULL; p = p->next)
     {
         if (strcmp(p->term_name.Value(), term_name) == 0)
             return p;
     }
 
-    return nullptr;
+    return NULL;
 }
 
 Printer *Control::FindPrinter(int printer_type)
 {
     FnTrace("Control::FindPrinter(int)");
 
-    for (Printer *p = PrinterList(); p != nullptr; p = p->next)
+    for (Printer *p = PrinterList(); p != NULL; p = p->next)
     {
         if (p->IsType(printer_type))
             return p;
     }
 
-    return nullptr;
+    return NULL;
 }
 
 /****
@@ -2461,7 +2511,7 @@ Printer *Control::NewPrinter(const char* term_name, const char* host, int port, 
 int Control::KillPrinter(Printer *p, int update)
 {
     FnTrace("Control::KillPrinter()");
-    if (p == nullptr)
+    if (p == NULL)
         return 1;
 
     Printer *ptr = PrinterList();
@@ -2472,7 +2522,7 @@ int Control::KillPrinter(Printer *p, int update)
             Remove(p);
             delete p;
             if (update)
-                UpdateAll(UPDATE_PRINTERS, nullptr);
+                UpdateAll(UPDATE_PRINTERS, NULL);
             return 0;
         }
         ptr = ptr->next;
@@ -2485,7 +2535,7 @@ int Control::TestPrinters(Terminal *term, int report)
 
     FnTrace("Control::TestPrinters()");
 
-    for (Printer *p = PrinterList(); p != nullptr; p = p->next)
+    for (Printer *p = PrinterList(); p != NULL; p = p->next)
 	{
         if ((p->IsType(PRINTER_REPORT) && report) ||
             (!p->IsType(PRINTER_REPORT) && !report))
@@ -2533,41 +2583,41 @@ int Control::SaveMenuPages()
 {
     FnTrace("Control::SaveMenuPages()");
     System  *sys = MasterSystem.get();
-    if (!zone_db || sys == nullptr)
+    if (!zone_db || sys == NULL)
         return 1;
 
-    std::array<genericChar, 256> str{};
-    vt_safe_string::safe_format(str.data(), str.size(), "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB2);
-    BackupFile(str.data());
-    return zone_db->Save(str.data(), PAGECLASS_MENU);
+    genericChar str[256];
+    vt_safe_string::safe_format(str, 256, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB2);
+    BackupFile(str);
+    return zone_db->Save(str, PAGECLASS_MENU);
 }
 
 int Control::SaveTablePages()
 {
     FnTrace("Control::SaveTablePages()");
     System  *sys = MasterSystem.get();
-    if (!zone_db || sys == nullptr)
+    if (!zone_db || sys == NULL)
         return 1;
 
-    std::array<genericChar, 256> str{};
-    vt_safe_string::safe_format(str.data(), str.size(), "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB1);
-    BackupFile(str.data());
-    return zone_db->Save(str.data(), PAGECLASS_TABLE);
+    genericChar str[256];
+    vt_safe_string::safe_format(str, 256, "%s/%s", sys->data_path.Value(), MASTER_ZONE_DB1);
+    BackupFile(str);
+    return zone_db->Save(str, PAGECLASS_TABLE);
 }
 
 int ReloadTermFonts()
 {
     FnTrace("ReloadTermFonts()");
-    if (Dis == nullptr)
+    if (Dis == NULL)
         return 1;
 
     // Close existing Xft fonts
-    for (auto & i : XftFontsArr)
+    for (int i = 0; i < 32; ++i)
     {
-        if (i)
+        if (XftFontsArr[i])
         {
-            XftFontClose(Dis, i);
-            i = nullptr;
+            XftFontClose(Dis, XftFontsArr[i]);
+            XftFontsArr[i] = NULL;
         }
     }
 
@@ -2575,29 +2625,29 @@ int ReloadTermFonts()
     const char* font_family = GetGlobalFontFamily();
 
     // Reload fonts with compatible font specifications
-    for (auto & i : FontData)
+    for (int i = 0; i < FONT_COUNT; ++i)
     {
-        int f = i.id;
+        int f = FontData[i].id;
         
         // Get a compatible font specification that maintains UI layout
         const char* new_font_spec = GetCompatibleFontSpec(f, font_family);
         
         // Append :dpi=96 to font specification if not already present
-        static std::array<char, 256> font_spec_with_dpi{};
+        static char font_spec_with_dpi[256];
         const char* font_to_load = new_font_spec;
         if (strstr(new_font_spec, ":dpi=") == nullptr) {
-            snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", new_font_spec);
-            font_to_load = font_spec_with_dpi.data();
+            snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", new_font_spec);
+            font_to_load = font_spec_with_dpi;
         }
         
         printf("Reloading term font %d with compatible spec: %s\n", f, font_to_load);
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, font_to_load);
         
-        if (XftFontsArr[f] == nullptr) {
+        if (XftFontsArr[f] == NULL) {
             printf("Failed to reload term font %d: %s\n", f, font_to_load);
             // Try a simple fallback with fixed DPI
             XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, "DejaVu Serif:size=24:style=Book:dpi=96");
-            if (XftFontsArr[f] != nullptr) {
+            if (XftFontsArr[f] != NULL) {
                 printf("Successfully loaded fallback font for %d\n", f);
             } else {
                 printf("FAILED to load ANY font for %d\n", f);
@@ -2607,10 +2657,10 @@ int ReloadTermFonts()
         }
         
         // Always use FontData dimensions to maintain UI compatibility
-        for (auto & fd : FontData) {
-            if (fd.id == f) {
-                FontWidth[f] = fd.width;
-                FontHeight[f] = fd.height;
+        for (int fd = 0; fd < FONT_COUNT; ++fd) {
+            if (FontData[fd].id == f) {
+                FontWidth[f] = FontData[fd].width;
+                FontHeight[f] = FontData[fd].height;
                 break;
             }
         }
@@ -2658,44 +2708,44 @@ int SetTermInfo(TermInfo *ti, const char* termname, const char* termhost, const 
 {
     FnTrace("SetTermInfo()");
     int  retval = 0;
-    std::array<char, STRLENGTH> termtype{};
-    std::array<char, STRLENGTH> printhost{};
-    std::array<char, STRLENGTH> printmodl{};
-    std::array<char, STRLENGTH> numdrawers{};
+    char termtype[STRLENGTH];
+    char printhost[STRLENGTH];
+    char printmodl[STRLENGTH];
+    char numdrawers[STRLENGTH];
     int  idx = 0;
 
-    idx = GetTermWord(termtype.data(), STRLENGTH, term_info, idx);
-    idx = GetTermWord(printhost.data(), STRLENGTH, term_info, idx);
-    idx = GetTermWord(printmodl.data(), STRLENGTH, term_info, idx);
-    idx = GetTermWord(numdrawers.data(), STRLENGTH, term_info, idx);
+    idx = GetTermWord(termtype, STRLENGTH, term_info, idx);
+    idx = GetTermWord(printhost, STRLENGTH, term_info, idx);
+    idx = GetTermWord(printmodl, STRLENGTH, term_info, idx);
+    idx = GetTermWord(numdrawers, STRLENGTH, term_info, idx);
 
     if (debug_mode)
     {
-        printf("     Type:  %s\n", termtype.data());
-        printf("    Prntr:  %s\n", printhost.data());
-        printf("     Type:  %s\n", printmodl.data());
-        printf("    Drwrs:  %s\n", numdrawers.data());
+        printf("     Type:  %s\n", termtype);
+        printf("    Prntr:  %s\n", printhost);
+        printf("     Type:  %s\n", printmodl);
+        printf("    Drwrs:  %s\n", numdrawers);
     }
 
     ti->name.Set(termname);
-    if (termhost != nullptr)
+    if (termhost != NULL)
         ti->display_host.Set(termhost);
-    if (strcmp(termtype.data(), "kitchen") == 0)
+    if (strcmp(termtype, "kitchen") == 0)
         ti->type = TERMINAL_KITCHEN_VIDEO;
     else
         ti->type = TERMINAL_NORMAL;
-    if (strcmp(printhost.data(), "none") != 0)
+    if (strcmp(printhost, "none"))
     {
-        ti->printer_host.Set(printhost.data());
-        if (strcmp(printmodl.data(), "epson") == 0)
+        ti->printer_host.Set(printhost);
+        if (strcmp(printmodl, "epson") == 0)
             ti->printer_model = MODEL_EPSON;
-        else if (strcmp(printmodl.data(), "star") == 0)
+        else if (strcmp(printmodl, "star") == 0)
             ti->printer_model = MODEL_STAR;
-        else if (strcmp(printmodl.data(), "ithaca") == 0)
+        else if (strcmp(printmodl, "ithaca") == 0)
             ti->printer_model = MODEL_ITHACA;
-        else if (strcmp(printmodl.data(), "text") == 0)
+        else if (strcmp(printmodl, "text") == 0)
             ti->printer_model = MODEL_RECEIPT_TEXT;
-        ti->drawers = atoi(numdrawers.data());
+        ti->drawers = atoi(numdrawers);
     }
 
     return retval;
@@ -2714,44 +2764,44 @@ int OpenDynTerminal(const char* remote_terminal)
 {
     FnTrace("OpenDynTerminal()");
     int retval = 1;
-    TermInfo *ti = nullptr;
-    std::array<char, STRLENGTH> termname{};
-    std::array<char, STRLENGTH> termhost{};
-    std::array<char, STRLENGTH> update{};
-    std::array<char, STRLONG> str{};
+    TermInfo *ti = NULL;
+    char termname[STRLENGTH];
+    char termhost[STRLENGTH];
+    char update[STRLENGTH];
+    char str[STRLENGTH];
     int idx = 0;
     Terminal *term;
 
-    idx = GetTermWord(termname.data(), STRLENGTH, remote_terminal, idx);
-    idx = GetTermWord(termhost.data(), STRLENGTH, remote_terminal, idx);
-    idx = GetTermWord(update.data(), STRLENGTH, remote_terminal, idx);
+    idx = GetTermWord(termname, STRLENGTH, remote_terminal, idx);
+    idx = GetTermWord(termhost, STRLENGTH, remote_terminal, idx);
+    idx = GetTermWord(update, STRLENGTH, remote_terminal, idx);
     if (debug_mode)
     {
-        snprintf(str.data(), str.size(), "  Term Name:  %s", termname.data());
-        ReportError(str.data());
-        snprintf(str.data(), str.size(), "       Host:  %s", termhost.data());
-        ReportError(str.data());
-        snprintf(str.data(), str.size(), "     Update:  %s", update.data());
-        ReportError(str.data());
+        snprintf(str, STRLONG, "  Term Name:  %s", termname);
+        ReportError(str);
+        snprintf(str, STRLONG, "       Host:  %s", termhost);
+        ReportError(str);
+        snprintf(str, STRLONG, "     Update:  %s", update);
+        ReportError(str);
     }
 
     if (termname[0] != '\0' && termhost[0] != '\0')
     {
-        ti = MasterSystem->settings.FindTerminal(termhost.data());
-        if (ti != nullptr)
+        ti = MasterSystem->settings.FindTerminal(termhost);
+        if (ti != NULL)
         {
             term = ti->FindTerm(MasterControl);
-            if (term == nullptr)
+            if (term == NULL)
             {
-                if (strcmp(update.data(), "update") == 0)
-                    SetTermInfo(ti, termname.data(), nullptr, &remote_terminal[idx]);
+                if (strcmp(update, "update") == 0)
+                    SetTermInfo(ti, termname, NULL, &remote_terminal[idx]);
                 ti->OpenTerm(MasterControl, 1);
             }
         }
         else
         {
             ti = new TermInfo();
-            SetTermInfo(ti, termname.data(), termhost.data(), &remote_terminal[idx]);
+            SetTermInfo(ti, termname, termhost, &remote_terminal[idx]);
             MasterSystem->settings.Add(ti);
             ti->OpenTerm(MasterControl, 1);
             retval = 0;
@@ -2765,15 +2815,15 @@ int CloseDynTerminal(const char* remote_terminal)
 {
     FnTrace("CloseDynTerminal()");
     int retval = 1;
-    std::array<char, STRLENGTH> termhost{};
+    char termhost[STRLENGTH];
     int idx = 0;
-    Terminal *term = nullptr;
-    TermInfo *ti = nullptr;
-    Printer  *printer = nullptr;
+    Terminal *term = NULL;
+    TermInfo *ti = NULL;
+    Printer  *printer = NULL;
 
-    idx = GetTermWord(termhost.data(), STRLENGTH, remote_terminal, idx);
-    ti = MasterSystem->settings.FindTerminal(termhost.data());
-    if (ti != nullptr)
+    idx = GetTermWord(termhost, STRLENGTH, remote_terminal, idx);
+    ti = MasterSystem->settings.FindTerminal(termhost);
+    if (ti != NULL)
     {
         term = ti->FindTerm(MasterControl);
         if (term)
@@ -2792,20 +2842,20 @@ int CloneDynTerminal(const char* remote_terminal)
 {
     FnTrace("CloneDynTerminal()");
     int retval = 1;
-    std::array<char, STRLENGTH> termhost{};
-    std::array<char, STRLENGTH> clonedest{};
+    char termhost[STRLENGTH];
+    char clonedest[STRLENGTH];
     int idx = 0;
-    Terminal *term = nullptr;
-    TermInfo *ti = nullptr;
+    Terminal *term = NULL;
+    TermInfo *ti = NULL;
 
-    idx = GetTermWord(termhost.data(), STRLENGTH, remote_terminal, idx);
-    /* idx = GetTermWord(clonedest.data(), STRLENGTH, remote_terminal, idx); */  // idx is not used after this, dead store removed
-    ti = MasterSystem->settings.FindTerminal(termhost.data());
-    if (ti != nullptr)
+    idx = GetTermWord(termhost, STRLENGTH, remote_terminal, idx);
+    /* idx = GetTermWord(clonedest, STRLENGTH, remote_terminal, idx); */  // idx is not used after this, dead store removed
+    ti = MasterSystem->settings.FindTerminal(termhost);
+    if (ti != NULL)
     {
         term = ti->FindTerm(MasterControl);
-        if (term != nullptr)
-            retval = CloneTerminal(term, clonedest.data(), termhost.data());
+        if (term != NULL)
+            retval = CloneTerminal(term, clonedest, termhost);
     }
 
     return retval;
@@ -2815,29 +2865,29 @@ int ProcessRemoteOrderEntry(SubCheck *subcheck, Order **order, const char* key, 
 {
     FnTrace("ProcessRemoteOrderEntry()");
     int retval = CALLCTR_ERROR_NONE;
-    static Order *detail = nullptr;
+    static Order *detail = NULL;
     SalesItem *sales_item;
     int record;  // not really used; only for FindByItemCode
 
     if ((strncmp(key, "ItemCode", 8) == 0) ||
         (strncmp(key, "ProductCode", 11) == 0))
     {
-        if (*order != nullptr)
+        if (*order != NULL)
             ReportError("Have an order we should get rid of....");
         sales_item = MasterSystem->menu.FindByItemCode(value, record);
         if (sales_item)
-            *order = new Order(&MasterSystem->settings, sales_item, nullptr);
+            *order = new Order(&MasterSystem->settings, sales_item, NULL);
         else
             retval = CALLCTR_ERROR_BADITEM;
     }
     else if ((strncmp(key, "DetailCode", 10) == 0) ||
              (strncmp(key, "AddonCode", 9) == 0))
     {
-        if (detail != nullptr)
+        if (detail != NULL)
             ReportError("Have a detail we should get rid of....");
         sales_item = MasterSystem->menu.FindByItemCode(value, record);
         if (sales_item)
-            detail = new Order(&MasterSystem->settings, sales_item, nullptr);
+            detail = new Order(&MasterSystem->settings, sales_item, NULL);
         else
             retval = CALLCTR_ERROR_BADDETAIL;
     }
@@ -2845,21 +2895,21 @@ int ProcessRemoteOrderEntry(SubCheck *subcheck, Order **order, const char* key, 
              (strncmp(key, "EndProduct", 10) == 0))
     {
         subcheck->Add(*order, &MasterSystem->settings);
-        *order = nullptr;
+        *order = NULL;
     }
     else if ((strncmp(key, "EndDetail", 9) == 0) ||
              (strncmp(key, "EndAddon", 8) == 0))
     {
         (*order)->Add(detail);
-        detail = nullptr;
+        detail = NULL;
     }
-    else if (*order != nullptr)
+    else if (*order != NULL)
     {
         if (strncmp(key, "ItemQTY", 7) == 0)
-            (*order)->count = static_cast<short>(std::min(atoi(value), 32767));
+            (*order)->count = atoi(value);
         else if (strncmp(key, "ProductQTY", 10) == 0)
-            (*order)->count = static_cast<short>(std::min(atoi(value), 32767));
-        else if (detail != nullptr && strncmp(key, "AddonQualifier", 14) == 0)
+            (*order)->count = atoi(value);
+        else if (detail != NULL && strncmp(key, "AddonQualifier", 14) == 0)
             detail->AddQualifier(value);
     }
     else if (debug_mode)
@@ -2875,17 +2925,17 @@ int CompleteRemoteOrder(Check *check)
     FnTrace("CompleteRemoteOrder()");
     int       status = CALLCTR_STATUS_INCOMPLETE;
     int       order_count = 0;
-    SubCheck *subcheck = nullptr;
-    Order    *order = nullptr;
-    Printer  *printer = nullptr;
-    Report   *report = nullptr;
+    SubCheck *subcheck = NULL;
+    Order    *order = NULL;
+    Printer  *printer = NULL;
+    Report   *report = NULL;
     Terminal *term = MasterControl->TermList();
 
     subcheck = check->SubList();
-    while (subcheck != nullptr)
+    while (subcheck != NULL)
     {
         order = subcheck->OrderList();
-        while (order != nullptr)
+        while (order != NULL)
         {
             order_count += 1;
             order = order->next;
@@ -2899,12 +2949,12 @@ int CompleteRemoteOrder(Check *check)
         check->date.Set();
         check->FinalizeOrders(term);
         check->Save();
-        MasterControl->UpdateAll(UPDATE_CHECKS, nullptr);
+        MasterControl->UpdateAll(UPDATE_CHECKS, NULL);
         check->current_sub = check->FirstOpenSubCheck();
 
         // need to print the check
         printer = MasterControl->FindPrinter(PRINTER_REMOTEORDER);
-        if (printer != nullptr) {
+        if (printer != NULL) {
             report = new Report();
             if (report)
             {
@@ -2925,39 +2975,39 @@ int SendRemoteOrderResult(int socket, Check *check, int result_code, int status)
 {
     FnTrace("SendRemoteOrderResult()");
     int retval = 0;
-    std::array<char, STRLONG> result_str{};
+    char result_str[STRLONG];
 
     result_str[0] = '\0';
-    snprintf(result_str.data(), result_str.size(), "%d:%d:", check->CallCenterID(),
+    snprintf(result_str, STRLONG, "%d:%d:", check->CallCenterID(),
              check->serial_number);
     if (result_code == CALLCTR_ERROR_NONE)
     {
         if (status == CALLCTR_STATUS_COMPLETE)
-            vt_safe_string::safe_concat(result_str.data(), STRLONG, "COMPLETE");
+            vt_safe_string::safe_concat(result_str, STRLONG, "COMPLETE");
         else if (status == CALLCTR_STATUS_INCOMPLETE)
-            vt_safe_string::safe_concat(result_str.data(), STRLONG, "INCOMPLETE");
+            vt_safe_string::safe_concat(result_str, STRLONG, "INCOMPLETE");
         else if (status == CALLCTR_STATUS_FAILED)
-            vt_safe_string::safe_concat(result_str.data(), STRLONG, "FAILED");
+            vt_safe_string::safe_concat(result_str, STRLONG, "FAILED");
         else
-            vt_safe_string::safe_concat(result_str.data(), STRLONG, "UNKNOWNSTAT");
+            vt_safe_string::safe_concat(result_str, STRLONG, "UNKNOWNSTAT");
     }
     else
     {
         if (result_code == CALLCTR_ERROR_BADITEM)
-            vt_safe_string::safe_concat(result_str.data(), STRLONG, "BADITEM");
+            vt_safe_string::safe_concat(result_str, STRLONG, "BADITEM");
         else if (result_code == CALLCTR_ERROR_BADDETAIL)
-            vt_safe_string::safe_concat(result_str.data(), STRLONG, "BADDETAIL");
+            vt_safe_string::safe_concat(result_str, STRLONG, "BADDETAIL");
         else
-            vt_safe_string::safe_concat(result_str.data(), STRLONG, "UNKNOWNERR");
+            vt_safe_string::safe_concat(result_str, STRLONG, "UNKNOWNERR");
     }
 
-    vt_safe_string::safe_concat(result_str.data(), STRLONG, ":");
+    vt_safe_string::safe_concat(result_str, STRLONG, ":");
     if (result_code == CALLCTR_ERROR_NONE)
-        vt_safe_string::safe_concat(result_str.data(), STRLONG, "PRINTED");
+        vt_safe_string::safe_concat(result_str, STRLONG, "PRINTED");
     else
-        vt_safe_string::safe_concat(result_str.data(), STRLONG, "NOTPRINTED");
+        vt_safe_string::safe_concat(result_str, STRLONG, "NOTPRINTED");
 
-    write(socket, result_str.data(), strlen(result_str.data()));
+    write(socket, result_str, strlen(result_str));
 
     return retval;
 }
@@ -2966,9 +3016,9 @@ int DeliveryToInt(const char* cost)
 {
     FnTrace("DeliveryToInt()");
     int retval = 0;
-    double interm = atof(cost);
+    float interm = atof(cost);
 
-    retval = static_cast<int>(interm * 100.0);
+    retval = (int)(interm * 100.0);
 
     return retval;
 }
@@ -2978,13 +3028,13 @@ int ProcessRemoteOrder(int sock_fd)
     FnTrace("ProcessRemoteOrder()");
     int        retval = 0;
     KeyValueInputFile kvif;
-    std::array<char, STRLONG> key{};
-    std::array<char, STRLONG> value{};
+    char       key[STRLONG];
+    char       value[STRLONG];
     Settings  *settings = &MasterSystem->settings;
-    Check     *check = nullptr;
-    SubCheck  *subcheck = nullptr;
-    Order     *order = nullptr;
-    std::array<char, STRSHORT> StoreNum{};
+    Check     *check = NULL;
+    SubCheck  *subcheck = NULL;
+    Order     *order = NULL;
+    char       StoreNum[STRSHORT];
     int        status = CALLCTR_STATUS_INCOMPLETE;
 
     kvif.Set(sock_fd);
@@ -2992,77 +3042,82 @@ int ProcessRemoteOrder(int sock_fd)
     write(sock_fd, "SENDORDER\n", 10);
 
     check = new Check(settings, CHECK_DELIVERY);
-    if (check == nullptr)
+    if (check == NULL)
         return retval;
     subcheck = check->NewSubCheck();
-    if (subcheck == nullptr)
+    if (subcheck == NULL)
         return retval;
 
     while ((status == CALLCTR_STATUS_INCOMPLETE) &&
            (retval == CALLCTR_ERROR_NONE) &&
-           (kvif.Read(key.data(), value.data(), STRLONG - 2) > 0))
+           (kvif.Read(key, value, STRLONG - 2) > 0))
     {
         if (debug_mode)
-            printf("Key:  %s, Value:  %s\n", key.data(), value.data());
-        if (strncmp(key.data(), "OrderID", 7) == 0)
-            check->CallCenterID(atoi(value.data()));
-        else if (strncmp(key.data(), "OrderType", 9) == 0)
+            printf("Key:  %s, Value:  %s\n", key, value);
+        if (strncmp(key, "OrderID", 7) == 0)
+            check->CallCenterID(atoi(value));
+        else if (strncmp(key, "OrderType", 9) == 0)
             check->CustomerType((value[0] == 'D') ? CHECK_DELIVERY : CHECK_TAKEOUT);
-        else if ( strncmp(key.data(), "OrderStatus", 11) == 0)
+        else if ( strncmp(key, "OrderStatus", 11) == 0)
             ; // ignore this
-        else if (strncmp(key.data(), "FirstName", 9) == 0)
-            check->FirstName(value.data());
-        else if (strncmp(key.data(), "LastName", 8) == 0)
-            check->LastName(value.data());
-        else if (strncmp(key.data(), "CustomerName", 12) == 0)
-            check->FirstName(value.data());
-        else if (strncmp(key.data(), "PhoneNo", 7) == 0)
-            check->PhoneNumber(value.data());
-        else if (strncmp(key.data(), "PhoneExt", 8) == 0)
-            check->Extension(value.data());
-        else if (strncmp(key.data(), "Street", 6) == 0)
-            check->Address(value.data());
-        else if (strncmp(key.data(), "Address", 7) == 0)
-            check->Address(value.data());
-        else if (strncmp(key.data(), "Suite", 5) == 0)
-            check->Address2(value.data());
-        else if (strncmp(key.data(), "CrossStreet", 11) == 0)
-            check->CrossStreet(value.data());
-        else if (strncmp(key.data(), "City", 4) == 0)
-            check->City(value.data());
-        else if (strncmp(key.data(), "State", 5) == 0)
-            check->State(value.data());
-        else if (strncmp(key.data(), "Zip", 3) == 0)
-            check->Postal(value.data());
-        else if (strncmp(key.data(), "DeliveryCharge", 14) == 0)
-            subcheck->delivery_charge = DeliveryToInt(value.data());
-        else if (strncmp(key.data(), "RestaurantID", 12) == 0)
-            vt_safe_string::safe_copy(StoreNum.data(), StoreNum.size(), value.data());
-        else if (
-            (strncmp(key.data(), "Item", 4) == 0) ||
-            (strncmp(key.data(), "Detail", 6) == 0) ||
-            (strncmp(key.data(), "Product", 7) == 0) ||
-            (strncmp(key.data(), "Addon", 5) == 0) ||
-            (strncmp(key.data(), "SideNumber", 10) == 0) ||
-            (strncmp(key.data(), "EndItem", 7) == 0) ||
-            (strncmp(key.data(), "EndDetail", 9) == 0) ||
-            (strncmp(key.data(), "EndProduct", 10) == 0) ||
-            (strncmp(key.data(), "EndAddon", 8) == 0))
-        {
-            retval = ProcessRemoteOrderEntry(subcheck, &order, key.data(), value.data());
-        }
-        else if (strncmp(key.data(), "EndOrder", 8) == 0)
+        else if (strncmp(key, "FirstName", 9) == 0)
+            check->FirstName(value);
+        else if (strncmp(key, "LastName", 8) == 0)
+            check->LastName(value);
+        else if (strncmp(key, "CustomerName", 12) == 0)
+            check->FirstName(value);
+        else if (strncmp(key, "PhoneNo", 7) == 0)
+            check->PhoneNumber(value);
+        else if (strncmp(key, "PhoneExt", 8) == 0)
+            check->Extension(value);
+        else if (strncmp(key, "Street", 6) == 0)
+            check->Address(value);
+        else if (strncmp(key, "Address", 7) == 0)
+            check->Address(value);
+        else if (strncmp(key, "Suite", 5) == 0)
+            check->Address2(value);
+        else if (strncmp(key, "CrossStreet", 11) == 0)
+            check->CrossStreet(value);
+        else if (strncmp(key, "City", 4) == 0)
+            check->City(value);
+        else if (strncmp(key, "State", 5) == 0)
+            check->State(value);
+        else if (strncmp(key, "Zip", 3) == 0)
+            check->Postal(value);
+        else if (strncmp(key, "DeliveryCharge", 14) == 0)
+            subcheck->delivery_charge = DeliveryToInt(value);
+        else if (strncmp(key, "RestaurantID", 12) == 0)
+            strncpy(StoreNum, value, 10);  // arbitrary limit on StoreNum
+        else if (strncmp(key, "Item", 4) == 0)
+            retval = ProcessRemoteOrderEntry(subcheck, &order, key, value);
+        else if (strncmp(key, "Detail", 6) == 0)
+            retval = ProcessRemoteOrderEntry(subcheck, &order, key, value);
+        else if (strncmp(key, "Product", 7) == 0)
+            retval = ProcessRemoteOrderEntry(subcheck, &order, key, value);
+        else if (strncmp(key, "Addon", 5) == 0)
+            retval = ProcessRemoteOrderEntry(subcheck, &order, key, value);
+        else if (strncmp(key, "SideNumber", 10) == 0)
+            retval = ProcessRemoteOrderEntry(subcheck, &order, key, value);
+        else if (strncmp(key, "EndItem", 7) == 0)
+            retval = ProcessRemoteOrderEntry(subcheck, &order, key, value);
+        else if (strncmp(key, "EndDetail", 9) == 0)
+            retval = ProcessRemoteOrderEntry(subcheck, &order, key, value);
+        else if (strncmp(key, "EndProduct", 10) == 0)
+            retval = ProcessRemoteOrderEntry(subcheck, &order, key, value);
+        else if (strncmp(key, "EndAddon", 8) == 0)
+            retval = ProcessRemoteOrderEntry(subcheck, &order, key, value);
+        else if (strncmp(key, "EndOrder", 8) == 0)
             status = CompleteRemoteOrder(check);
         else if (debug_mode)
-            printf("Unknown Key:  %s, Value:  %s\n", key.data(), value.data());
+            printf("Unknown Key:  %s, Value:  %s\n", key, value);
     }
-    if (strncmp(key.data(), "EndOrder", 8) != 0)
+    if (strncmp(key, "EndOrder", 8))
     {
         // There are still key/value pairs waiting, so we need to read them
         // all to clear out the queue.
-        while (kvif.Read(key.data(), value.data(), STRLONG - 2) > 0)
+        while (kvif.Read(key, value, STRLONG - 2) > 0)
         {
-            if (strncmp(key.data(), "EndOrder", 8) == 0)
+            if (strncmp(key, "EndOrder", 8) == 0)
                 break;
         }
     }
@@ -3075,8 +3130,8 @@ int CompareCardNumbers(const char* card1, const char* card2)
 {
     FnTrace("CompreCardNumbers()");
     int retval = 0;
-    size_t len1 = 0;
-    size_t len2 = 0;
+    int len1 = 0;
+    int len2 = 0;
 
     if (card1[0] == 'x' || card2[0] == 'x')
     {
@@ -3100,30 +3155,30 @@ int CompareCardNumbers(const char* card1, const char* card2)
 Check* FindCCData(const char* cardnum, int value)
 {
     FnTrace("FindCCData()");
-    Check    *ret_check = nullptr;
-    Check    *curr_check = nullptr;
-    Archive  *archive = nullptr;
-    SubCheck *subcheck = nullptr;
-    Payment  *payment = nullptr;
-    Credit   *credit = nullptr;
-    std::array<char, STRLENGTH> cn{};
+    Check    *ret_check = NULL;
+    Check    *curr_check = NULL;
+    Archive  *archive = NULL;
+    SubCheck *subcheck = NULL;
+    Payment  *payment = NULL;
+    Credit   *credit = NULL;
+    char      cn[STRLENGTH];
 
     curr_check = MasterSystem->CheckList();
-    while (ret_check == nullptr && archive != MasterSystem->ArchiveList())
+    while (ret_check == NULL && archive != MasterSystem->ArchiveList())
     {
-        while (curr_check != nullptr && ret_check == nullptr)
+        while (curr_check != NULL && ret_check == NULL)
         {
             subcheck = curr_check->SubList();
-            while (subcheck != nullptr && ret_check == nullptr)
+            while (subcheck != NULL && ret_check == NULL)
             {
                 payment = subcheck->PaymentList();
-                while (payment != nullptr && ret_check == nullptr)
+                while (payment != NULL && ret_check == NULL)
                 {
-                    if (payment->credit != nullptr)
+                    if (payment->credit != NULL)
                     {
                         credit = payment->credit;
-                        vt_safe_string::safe_copy(cn.data(), STRLENGTH, credit->PAN(2));
-                        if (CompareCardNumbers(cn.data(), cardnum) &&
+                        vt_safe_string::safe_copy(cn, STRLENGTH, credit->PAN(2));
+                        if (CompareCardNumbers(cn, cardnum) &&
                             credit->FullAmount() == value) {
                             ret_check = curr_check;
                         }
@@ -3134,9 +3189,9 @@ Check* FindCCData(const char* cardnum, int value)
             }
             curr_check = curr_check->next;
         }
-        if (ret_check == nullptr)
+        if (ret_check == NULL)
         {
-            if (archive == nullptr)
+            if (archive == NULL)
                 archive = MasterSystem->ArchiveListEnd();
             else
                 archive = archive->fore;
@@ -3153,16 +3208,16 @@ int GetCCData(const char* data)
 {
     FnTrace("GetCCData()");
     int       retval = 0;
-    std::array<char, STRLENGTH> cardnum{};
-    std::array<char, STRLENGTH> camount{};
+    char      cardnum[STRLENGTH];
+    char      camount[STRLENGTH];
     int       amount;
     int       sidx = 0;
     int       didx = 0;
     int       maxlen = 28;  // arbitrary:  19 chars for PAN, 8 for amount, 1 for space
-    Check    *check = nullptr;
-    SubCheck *subcheck = nullptr;
-    Payment  *payment = nullptr;
-    Credit   *credit = nullptr;
+    Check    *check = NULL;
+    SubCheck *subcheck = NULL;
+    Payment  *payment = NULL;
+    Credit   *credit = NULL;
 
     // get cardnum
     while (data[sidx] != ' ' && data[sidx] != '\0' && sidx < maxlen)
@@ -3182,20 +3237,20 @@ int GetCCData(const char* data)
         sidx += 1;
     }
     camount[didx] = '\0';
-    amount = atoi(camount.data());
+    amount = atoi(camount);
 
-    check = FindCCData(cardnum.data(), amount);
+    check = FindCCData(cardnum, amount);
     if (check)
     {
-        printf("Card %s was processed on %s\n", cardnum.data(), check->made_time.to_string().c_str());
+        printf("Card %s was processed on %s\n", cardnum, check->made_time.to_string().c_str());
         printf("    Check ID:  %d\n", check->serial_number);
         subcheck = check->SubList();
-        while (subcheck != nullptr)
+        while (subcheck != NULL)
         {
             payment = subcheck->PaymentList();
-            while (payment != nullptr)
+            while (payment != NULL)
             {
-                if (payment->credit != nullptr)
+                if (payment->credit != NULL)
                 {
                     credit = payment->credit;
                     printf("    Card Name:  %s\n", credit->Name());
@@ -3216,7 +3271,7 @@ int ProcessSocketRequest(char* request)
     FnTrace("ProcessSocketRequest()");
     int retval = 1;
     int idx = 0;
-    std::array<char, STRLONG> str{};
+    char str[STRLONG];
 
     while (request[idx] != '\0' &&
            request[idx] != '\n' &&
@@ -3227,8 +3282,8 @@ int ProcessSocketRequest(char* request)
     }
     request[idx] = '\0';
 
-    snprintf(str.data(), str.size(), "Processing Request:  %s", request);
-    ReportError(str.data());
+    snprintf(str, STRLONG, "Processing Request:  %s", request);
+    ReportError(str);
 
     if (strncmp(request, "openterm ", 9) == 0)
         retval = OpenDynTerminal(&request[9]);
@@ -3248,7 +3303,7 @@ int ReadSocketRequest(int listen_sock)
     int  retval = 1;
     static int open_sock = -1;
     static int count = 0;
-    std::array<char, STRLONG> request{};
+    char request[STRLONG] = "";
     int  bytes_read = 0;
     int  sel_result;
 
@@ -3262,19 +3317,18 @@ int ReadSocketRequest(int listen_sock)
         sel_result = SelectIn(open_sock, select_timeout);
         if (sel_result > 0)
         {
-            ssize_t read_result = read(open_sock, request.data(), request.size() - 1);
-            bytes_read = static_cast<int>(std::min(read_result, static_cast<ssize_t>(INT_MAX)));
+            bytes_read = read(open_sock, request, sizeof(request) - 1);
             if (bytes_read > 0)
             {
                 // In most cases we're only going to read once and then close the socket.
                 // This really isn't intended to be a conversation at this point.
-                if (strncmp(request.data(), "remoteorder", 11) == 0)
+                if (strncmp(request, "remoteorder", 11) == 0)
                     retval = ProcessRemoteOrder(open_sock);
                 else
                 {
                     request[bytes_read] = '\0';
                     write(open_sock, "ACK", 3);
-                    retval = ProcessSocketRequest(request.data());
+                    retval = ProcessSocketRequest(request);
                 }
                 close(open_sock);
                 open_sock = -1;
@@ -3328,7 +3382,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
 
     if (UserRestart)
     {
-        if (MasterControl->TermList() != nullptr &&
+        if (MasterControl->TermList() != NULL &&
             MasterControl->TermList()->TermsInUse() == 0)
         {
             RestartSystem();
@@ -3367,7 +3421,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
         LastDay = day;
     }
 
-    if (sys->eod_term != nullptr && sys->eod_term->eod_processing != EOD_DONE)
+    if (sys->eod_term != NULL && sys->eod_term->eod_processing != EOD_DONE)
     {
         sys->eod_term->EndDay();
     }
@@ -3383,7 +3437,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
         int online_count = 0;
         int total_count = 0;
         
-        for (Printer *p = MasterControl->PrinterList(); p != nullptr; p = p->next)
+        for (Printer *p = MasterControl->PrinterList(); p != NULL; p = p->next)
         {
             // Attempt to reconnect offline remote printers (failure == 999)
             p->ReconnectIfOffline();
@@ -3441,7 +3495,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
     while (term)
     {
         Terminal *tnext = term->next;
-        if (term->reload_zone_db && term->user == nullptr)
+        if (term->reload_zone_db && term->user == NULL)
         {
             // Reload zone information if needed
             ReportError("Updating zone information");
@@ -3467,10 +3521,10 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
             if (term->page->IsTable() || term->page->IsKitchen())
                 u |= UPDATE_BLINK;  // half second blink message for table pages
             if (u)
-                term->Update(u, nullptr);
+                term->Update(u, NULL);
         }
 
-        if (term->cdu != nullptr)
+        if (term->cdu != NULL)
             term->cdu->Refresh();
 
         if (term->kill_me)
@@ -3478,7 +3532,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
         term = tnext;
     }
 
-    if (con->TermList() == nullptr)
+    if (con->TermList() == NULL)
     {
         ReportError("All terminals lost - shutting down system");
         EndSystem();
@@ -3518,17 +3572,17 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
  *  have been processed (or if there is no command file) we delete the command
  *  file and disable command processing until the next SIGUSR2 signal.
  ****/
-int RunUserCommand()
+int RunUserCommand(void)
 {
     FnTrace("RunUserCommand()");
     int retval = 0;
-    std::array<genericChar, STRLENGTH> key{};
-    std::array<genericChar, STRLENGTH> value{};
+    genericChar key[STRLENGTH];
+    genericChar value[STRLENGTH];
     static int working = 0;
     static int macros  = 0;
     static int endday  = 0;
-    static Printer *printer = nullptr;
-    static Report *report = nullptr;
+    static Printer *printer = NULL;
+    static Report *report = NULL;
     static KeyValueInputFile kvfile;
     static int exit_system = 0;
 
@@ -3537,7 +3591,7 @@ int RunUserCommand()
 
     if (working)
     {
-        working = RunReport(nullptr, printer);
+        working = RunReport(NULL, printer);
     }
     else if (endday)
     {
@@ -3547,28 +3601,28 @@ int RunUserCommand()
     {
         macros = RunMacros();
     }
-    else if (kvfile.IsOpen() && kvfile.Read(key.data(), value.data(), STRLENGTH))
+    else if (kvfile.IsOpen() && kvfile.Read(key, value, STRLENGTH))
     {
-        if (strcmp(key.data(), "report") == 0)
-            working = RunReport(value.data(), printer);
-        else if (strcmp(key.data(), "printer") == 0)
-            printer = SetPrinter(value.data());
-        else if (strcmp(key.data(), "nologin") == 0)
+        if (strcmp(key, "report") == 0)
+            working = RunReport(value, printer);
+        else if (strcmp(key, "printer") == 0)
+            printer = SetPrinter(value);
+        else if (strcmp(key, "nologin") == 0)
             AllowLogins = 0;
-        else if (strcmp(key.data(), "allowlogin") == 0)
+        else if (strcmp(key, "allowlogin") == 0)
             AllowLogins = 1;
-        else if (strcmp(key.data(), "exitsystem") == 0)
+        else if (strcmp(key, "exitsystem") == 0)
             exit_system = 1;
-        else if (strcmp(key.data(), "endday") == 0)
+        else if (strcmp(key, "endday") == 0)
             endday = RunEndDay();
-        else if (strcmp(key.data(), "runmacros") == 0)
+        else if (strcmp(key, "runmacros") == 0)
             macros = RunMacros();
-        else if (strcmp(key.data(), "ping") == 0)
+        else if (strcmp(key, "ping") == 0)
             PingCheck();
-        else if (strcmp(key.data(), "usercount") == 0)
+        else if (strcmp(key, "usercount") == 0)
             UserCount();
-        else if (strlen(key.data()) > 0)
-            fprintf(stderr, "Unknown external command:  '%s'\n", key.data());
+        else if (strlen(key) > 0)
+            fprintf(stderr, "Unknown external command:  '%s'\n", key);
     }
     else
     {
@@ -3577,9 +3631,9 @@ int RunUserCommand()
             kvfile.Reset();
             unlink(VIEWTOUCH_COMMAND);
         }
-        if (printer != nullptr)
+        if (printer != NULL)
             delete printer;
-        if (report != nullptr)
+        if (report != NULL)
             delete report;
         // only allow system exit if we're running at startup (to be used to
         // run multiple reports for multiple data sets, not to be used for
@@ -3620,17 +3674,17 @@ int UserCount()
     FnTrace("UserCount()");
     int retval = 0;
     int count = 0;
-    std::array<char, STRLENGTH> message{};
-    Terminal *term = nullptr;
+    char message[STRLENGTH];
+    Terminal *term = NULL;
 
     count = MasterControl->TermList()->TermsInUse();
-    snprintf(message.data(), message.size(), "UserCount:  %d users active", count);
-    ReportError(message.data());
+    snprintf(message, STRLENGTH, "UserCount:  %d users active", count);
+    ReportError(message);
 
     if (count > 0)
     {
         term = MasterControl->TermList();
-        while (term != nullptr)
+        while (term != NULL)
         {
             if (term->user)
             {
@@ -3682,16 +3736,16 @@ int RunEndDay()
 int RunMacros()
 {
     FnTrace("RunMacros()");
-    static Terminal *term = nullptr;
+    static Terminal *term = NULL;
     static int count = 0;
     int retval = 0;
 
-    if (term == nullptr)
+    if (term == NULL)
         term = MasterControl->TermListEnd();
 
-    while (term != nullptr && retval == 0)
+    while (term != NULL && retval == 0)
     {
-        if (term->page != nullptr)
+        if (term->page != NULL)
         {
             term->ReadRecordFile();
             term = term->next;
@@ -3721,17 +3775,17 @@ int RunReport(const genericChar* report_string, Printer *printer)
 {
     FnTrace("RunReport()");
     int retval = 0;
-    static Report *report = nullptr;
-    std::array<genericChar, STRLONG> report_name{};
-    std::array<genericChar, STRLONG> report_from{};
+    static Report *report = NULL;
+    genericChar report_name[STRLONG] = "";
+    genericChar report_from[STRLONG] = "";
     TimeInfo from;
-    std::array<genericChar, STRLONG> report_to{};
+    genericChar report_to[STRLONG] = "";
     TimeInfo to;
     int idx = 0;
     Terminal *term = MasterControl->TermList();
     System *system_data = term->system_data;
 
-    if (report == nullptr && report_string != nullptr)
+    if (report == NULL && report_string != NULL)
     {
         report = new Report;
 
@@ -3740,13 +3794,13 @@ int RunReport(const genericChar* report_string, Printer *printer)
 
         // need to pull out "Report From To"
         // date will be in the format "DD/MM/YY,HH:MM" in 24hour format
-        if (NextToken(report_name.data(), report_string, ' ', &idx))
+        if (NextToken(report_name, report_string, ' ', &idx))
         {
-            if (NextToken(report_from.data(), report_string, ' ', &idx))
+            if (NextToken(report_from, report_string, ' ', &idx))
             {
-                from.Set(report_from.data());
-                if (NextToken(report_to.data(), report_string, ' ', &idx))
-                    to.Set(report_to.data());
+                from.Set(report_from);
+                if (NextToken(report_to, report_string, ' ', &idx))
+                    to.Set(report_to);
             }
         }
         if (!from.IsSet())
@@ -3761,38 +3815,38 @@ int RunReport(const genericChar* report_string, Printer *printer)
             to.Floor<date::days>();
             to -= std::chrono::seconds(1);
         }
-        if (strcmp(report_name.data(), "daily") == 0)
-            system_data->DepositReport(term, from, to, nullptr, report);
-        else if (strcmp(report_name.data(), "expense") == 0)
-            system_data->ExpenseReport(term, from, to, nullptr, report, nullptr);
-        else if (strcmp(report_name.data(), "revenue") == 0)
+        if (strcmp(report_name, "daily") == 0)
+            system_data->DepositReport(term, from, to, NULL, report);
+        else if (strcmp(report_name, "expense") == 0)
+            system_data->ExpenseReport(term, from, to, NULL, report, NULL);
+        else if (strcmp(report_name, "revenue") == 0)
             system_data->BalanceReport(term, from, to, report);
-        else if (strcmp(report_name.data(), "royalty") == 0)
-            system_data->RoyaltyReport(term, from, to, nullptr, report, nullptr);
-        else if (strcmp(report_name.data(), "sales") == 0)
-            system_data->SalesMixReport(term, from, to, nullptr, report);
-        else if (strcmp(report_name.data(), "audit") == 0)
-            system_data->AuditingReport(term, from, to, nullptr, report, nullptr);
-        else if (strcmp(report_name.data(), "batchsettle") == 0)
+        else if (strcmp(report_name, "royalty") == 0)
+            system_data->RoyaltyReport(term, from, to, NULL, report, NULL);
+        else if (strcmp(report_name, "sales") == 0)
+            system_data->SalesMixReport(term, from, to, NULL, report);
+        else if (strcmp(report_name, "audit") == 0)
+            system_data->AuditingReport(term, from, to, NULL, report, NULL);
+        else if (strcmp(report_name, "batchsettle") == 0)
         {
             MasterSystem->cc_report_type = CC_REPORT_BATCH;
-            system_data->CreditCardReport(term, from, to, nullptr, report, nullptr);
+            system_data->CreditCardReport(term, from, to, NULL, report, NULL);
         }
         else
         {
-            fprintf(stderr, "Unknown report '%s'\n", report_name.data());
+            fprintf(stderr, "Unknown report '%s'\n", report_name);
             delete report;
-            report = nullptr;
+            report = NULL;
         }
     }
 
-    if (report != nullptr)
+    if (report != NULL)
     {
         if (report->is_complete > 0)
         {
             report->Print(printer);
             delete report;
-            report = nullptr;
+            report = NULL;
             retval = 0;
         }
         else
@@ -3808,7 +3862,7 @@ int RunReport(const genericChar* report_string, Printer *printer)
 Printer *SetPrinter(const genericChar* printer_description)
 {
     FnTrace("SetPrinter()");
-    Printer *retPrinter = nullptr;
+    Printer *retPrinter = NULL;
 
     retPrinter = NewPrinterFromString(printer_description);
     return retPrinter;
@@ -3859,13 +3913,13 @@ void ShowRestartDialog()
     Terminal *term = MasterControl->TermList();
     if (!term) return;
     
-    auto *sd = new SimpleDialog(GlobalTranslate("Scheduled Restart Time\\System needs to restart now.\\Choose an option:"), 1);
+    SimpleDialog *sd = new SimpleDialog(GlobalTranslate("Scheduled Restart Time\\System needs to restart now.\\Choose an option:"), 1);
     sd->Button(GlobalTranslate("Restart Now"), "restart_now");
     sd->Button(GlobalTranslate("Postpone 1 Hour"), "restart_postpone");
     
     // Set 5-minute auto-restart timeout
     restart_timeout_id = XtAppAddTimeOut(App, 5 * 60 * 1000, 
-                                       (XtTimerCallbackProc) AutoRestartTimeoutCB, nullptr);
+                                       (XtTimerCallbackProc) AutoRestartTimeoutCB, NULL);
     
     term->OpenDialog(sd);
 }
@@ -3928,7 +3982,7 @@ int GetFontSize(int font_id, int &w, int &h)
 int GetTextWidth(const char* my_string, int len, int font_id)
 {
     FnTrace("GetTextWidth()");
-    if (my_string == nullptr || len <= 0)
+    if (my_string == NULL || len <= 0)
         return 0;
     else if (FontInfo[font_id])
         return XTextWidth(FontInfo[font_id], my_string, len);
@@ -3970,7 +4024,7 @@ int RemoveInputFn(unsigned long fn_id)
     if (fn_id > 0)
     {
         // Check if App context is still valid before removing input
-        if (App != nullptr)
+        if (App != NULL)
         {
             XtRemoveInput(fn_id);
         }
@@ -3998,22 +4052,22 @@ int ReloadFonts()
     for (int f = 0; f < 32; ++f) {
         if (XftFontsArr[f]) {
             XftFontClose(Dis, XftFontsArr[f]);
-            XftFontsArr[f] = nullptr;
+            XftFontsArr[f] = NULL;
         }
         
         // Find the font in FontData array and use its specification directly
         int found = 0;
-        for (auto & fd : FontData) {
-            if (fd.id == f) {
+        for (int fd = 0; fd < FONT_COUNT; ++fd) {
+            if (FontData[fd].id == f) {
                 // Use the font specification directly from FontData
-                const char* font_spec = fd.font;
+                const char* font_spec = FontData[fd].font;
                 
                 // Append :dpi=96 to font specification if not already present
-                static std::array<char, 256> font_spec_with_dpi;
+                static char font_spec_with_dpi[256];
                 const char* font_to_load = font_spec;
                 if (strstr(font_spec, ":dpi=") == nullptr) {
-                    snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", font_spec);
-                    font_to_load = font_spec_with_dpi.data();
+                    snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", font_spec);
+                    font_to_load = font_spec_with_dpi;
                 }
                 
                 // Load the font using the original specification with fixed DPI
@@ -4033,10 +4087,10 @@ int ReloadFonts()
         }
         
         // Update font dimensions from FontData array to maintain UI layout compatibility
-        for (auto & fd : FontData) {
-            if (fd.id == f) {
-                FontWidth[f] = fd.width;
-                FontHeight[f] = fd.height;
+        for (int fd = 0; fd < FONT_COUNT; ++fd) {
+            if (FontData[fd].id == f) {
+                FontWidth[f] = FontData[fd].width;
+                FontHeight[f] = FontData[fd].height;
                 break;
             }
         }
@@ -4062,7 +4116,7 @@ int ReloadFonts()
     
     // Notify all terminals to reload fonts
     Terminal *term = MasterControl->TermList();
-    while (term != nullptr) {
+    while (term != NULL) {
         if (term->socket_no > 0) {
             term->WInt8(TERM_RELOAD_FONTS);
             term->SendNow();
@@ -4103,19 +4157,19 @@ static const char* CompatibleFontFamilies[] = {
     "Nimbus Mono PS",        // URW Courier equivalent
     "D050000L",              // URW Dingbats
     "Z003",                  // URW Zapf Dingbats
-    nullptr
+    NULL
 };
 
 // Lazy font loading function for performance optimization
 // Function to get a compatible font specification
 const char* GetCompatibleFontSpec(int font_id, const char* desired_family) {
-    static std::array<char, 256> font_spec;
+    static char font_spec[256];
     
     // Find the base font data
-    const char* base_spec = nullptr;
-    for (auto & i : FontData) {
-        if (i.id == font_id) {
-            base_spec = i.font;
+    const char* base_spec = NULL;
+    for (int i = 0; i < FONT_COUNT; ++i) {
+        if (FontData[i].id == font_id) {
+            base_spec = FontData[i].font;
             break;
         }
     }
@@ -4139,7 +4193,7 @@ const char* GetCompatibleFontSpec(int font_id, const char* desired_family) {
     
     // Check if desired family is compatible
     int is_compatible = 0;
-    for (int i = 0; CompatibleFontFamilies[i] != nullptr; ++i) {
+    for (int i = 0; CompatibleFontFamilies[i] != NULL; ++i) {
         if (strcmp(desired_family, CompatibleFontFamilies[i]) == 0) {
             is_compatible = 1;
             break;
@@ -4149,42 +4203,42 @@ const char* GetCompatibleFontSpec(int font_id, const char* desired_family) {
     // If not compatible, use DejaVu Serif (guaranteed to work)
     const char* family = is_compatible ? desired_family : "DejaVu Serif";
     
-    snprintf(font_spec.data(), font_spec.size(), "%s:pixelsize=%d:style=%s", 
+    snprintf(font_spec, sizeof(font_spec), "%s:pixelsize=%d:style=%s", 
              family, pixelsize, style);
     
-    return font_spec.data();
+    return font_spec;
 }
 
 // Function to read global font family from configuration
 const char* GetGlobalFontFamily() {
-    static std::array<char, 256> font_family = {"DejaVu Serif"}; // default
+    static char font_family[256] = "DejaVu Serif"; // default
     
     // Try to read from configuration file
     const char* config_file = "/usr/viewtouch/dat/conf/font.conf";
     FILE* fp = fopen(config_file, "r");
     if (fp) {
-        std::array<char, 256> line;
-        if (fgets(line.data(), line.size(), fp)) {
+        char line[256];
+        if (fgets(line, sizeof(line), fp)) {
             // Remove newline
-            line[line.size() > 0 ? strcspn(line.data(), "\n") : 0] = 0;
+            line[strcspn(line, "\n")] = 0;
             // Check if it's a valid font family
             int is_valid = 0;
-            for (int i = 0; CompatibleFontFamilies[i] != nullptr; ++i) {
-                if (strcmp(line.data(), CompatibleFontFamilies[i]) == 0) {
+            for (int i = 0; CompatibleFontFamilies[i] != NULL; ++i) {
+                if (strcmp(line, CompatibleFontFamilies[i]) == 0) {
                     is_valid = 1;
                     break;
                 }
             }
             if (is_valid) {
-                std::strncpy(font_family.data(), line.data(), font_family.size() - 1);
-                font_family[font_family.size() - 1] = '\0';
-                printf("Loaded font family from config: %s\n", font_family.data());
+                strncpy(font_family, line, sizeof(font_family) - 1);
+                font_family[sizeof(font_family) - 1] = '\0';
+                printf("Loaded font family from config: %s\n", font_family);
             } else {
-                printf("Invalid font family in config: %s, using default\n", line.data());
+                printf("Invalid font family in config: %s, using default\n", line);
             }
         }
         fclose(fp);
     }
     
-    return font_family.data();
+    return font_family;
 }

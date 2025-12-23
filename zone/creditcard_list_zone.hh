@@ -39,24 +39,24 @@ class CreditCardListZone : public ListFormZone
 
 public:
     CreditCardListZone();
-    ~CreditCardListZone() override;
+    ~CreditCardListZone();
 
-    int          Type() override { return ZONE_CREDITCARD_LIST; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          Type() { return ZONE_CREDITCARD_LIST; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Touch(Terminal *term, int tx, int ty);
 
-    Flt *Spacing() override { return &list_spacing; }
+    Flt *Spacing() { return &list_spacing; }
 
-    int LoadRecord(Terminal *term, int record) override;
-    int SaveRecord(Terminal *term, int record, int write_file) override;
+    int LoadRecord(Terminal *term, int record);
+    int SaveRecord(Terminal *term, int record, int write_file);
     int RestoreRecord(Terminal *term);
-    int NewRecord(Terminal *term) override;
-    int KillRecord(Terminal *term, int record) override;
-    int PrintRecord(Terminal *term, int record) override;
-    int Search(Terminal *term, int record, const genericChar* word) override;
-    int ListReport(Terminal *term, Report *report) override;
-    int RecordCount(Terminal *term) override;
+    int NewRecord(Terminal *term);
+    int KillRecord(Terminal *term, int record);
+    int PrintRecord(Terminal *term, int record);
+    int Search(Terminal *term, int record, const genericChar* word);
+    int ListReport(Terminal *term, Report *report);
+    int RecordCount(Terminal *term);
     CreditDB *GetDB(int in_system = 1);
     CreditDB *NextCreditDB(Terminal *term);
     CreditDB *PrevCreditDB(Terminal *term);

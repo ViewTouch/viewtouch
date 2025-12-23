@@ -19,7 +19,7 @@
  */
 
 #ifndef _CHECK_LIST_ZONE_HH
-#define CHECK_LIST_ZONE_HH
+#define _CHECK_LIST_ZONE_HH
 
 #include "form_zone.hh"
 #include "layout_zone.hh"
@@ -46,12 +46,12 @@ public:
     CheckListZone();
 
     // Member Functions
-    int          Type() override { return ZONE_CHECK_LIST; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    int          Update(Terminal *term, int update_message, const genericChar* value) override;
-    Flt         *Spacing() override { return &spacing; }
+    int          Type() { return ZONE_CHECK_LIST; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          Update(Terminal *term, int update_message, const genericChar* value);
+    Flt         *Spacing() { return &spacing; }
 
     int  MakeList(Terminal *term);
     int  Search(Terminal *term, const genericChar* name, Employee *start);
@@ -71,23 +71,23 @@ class CheckEditZone : public FormZone
 
 public:
     CheckEditZone();
-    ~CheckEditZone() override;
+    ~CheckEditZone();
 
-    int          Type() override { return ZONE_CHECK_EDIT; }
-    RenderResult Render(Terminal *term, int update_flag) override;
-    SignalResult Keyboard(Terminal *term, int my_key, int state) override;
-    SignalResult Touch(Terminal *term, int tx, int ty) override;
-    SignalResult Mouse(Terminal *term, int action, int mx, int my) override;
-    SignalResult Signal(Terminal *term, const genericChar* message) override;
-    int          LoseFocus(Terminal *term, Zone *newfocus) override;
+    int          Type() { return ZONE_CHECK_EDIT; }
+    RenderResult Render(Terminal *term, int update_flag);
+    SignalResult Keyboard(Terminal *term, int my_key, int state);
+    SignalResult Touch(Terminal *term, int tx, int ty);
+    SignalResult Mouse(Terminal *term, int action, int mx, int my);
+    SignalResult Signal(Terminal *term, const genericChar* message);
+    int          LoseFocus(Terminal *term, Zone *newfocus);
 
-    Flt *Spacing() override { return &list_spacing; }
+    Flt *Spacing() { return &list_spacing; }
 
-    int LoadRecord(Terminal *term, int record) override;
-    int SaveRecord(Terminal *term, int record, int write_file) override;
-    int Search(Terminal *term, int record, const genericChar* word) override;
+    int LoadRecord(Terminal *term, int record);
+    int SaveRecord(Terminal *term, int record, int write_file);
+    int Search(Terminal *term, int record, const genericChar* word);
     int ListReport(Terminal *term, Report *report);
-    int RecordCount(Terminal *term) override;
+    int RecordCount(Terminal *term);
 };
 
 #endif
