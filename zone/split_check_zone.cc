@@ -745,8 +745,10 @@ RenderResult ItemPrintTargetZone::Render(Terminal *t, int update_flag)
                 if (pi->name.size() > 0)
                     pto->name.Set(pi->name);
                 else
-                    pto->name.Set(FindStringByValue(pi->type, PrinterTypeValue,
-                                                    PrinterTypeName, UnknownStr));
+                    pto->name.Set(FindStringByValue(pi->type,
+                                                    const_cast<int*>(PrinterTypeValue.data()),
+                                                    const_cast<const genericChar**>(PrinterTypeName.data()),
+                                                    UnknownStr));
                 if (pto->items.Count() > 0 || pi->type == PRINTER_KITCHEN1)
                     targets.Add(pto);
                 else

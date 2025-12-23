@@ -67,9 +67,9 @@ extern int   silent_mode;        // to disable clone input
 // Avoids expensive XQueryColor calls for every text render
 struct ColorCache {
     std::array<XRenderColor, TEXT_COLORS> cached_colors;
-    bool initialized;
+    bool initialized{false};
     
-    ColorCache() : initialized(false) {
+    ColorCache() {
         for (auto& c : cached_colors) {
             c.red = c.green = c.blue = c.alpha = 0;
         }

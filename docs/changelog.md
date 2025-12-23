@@ -61,6 +61,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `main/ui/system_salesmix.cc`
 
 ### Fixed
+- **Comprehensive C-Array Modernization in manager.cc (12-22-2025)**
+  - Applied clang-tidy modernize-avoid-c-arrays fixes to convert all remaining C-style buffers to std::array
+  - **Scope**: Complete modernization of manager.cc focusing on:
+    - Terminal parsing and dynamic terminal management (SetTermInfo, OpenDynTerminal, CloseDynTerminal, CloneDynTerminal)
+    - Remote order processing (ProcessRemoteOrder, SendRemoteOrderResult, GetCCData, FindCCData)
+    - Socket request handling (ProcessSocketRequest, ReadSocketRequest)
+    - Background command/report execution (RunUserCommand, UserCount, RunReport)
+    - System startup resource loading (StartSystem resource file paths and format buffers)
+  - **Key Conversions**:
+    - Terminal info buffers: `termtype`, `printhost`, `printmodl`, `numdrawers` → std::array with .data() access
+    - Remote order KV parsing: `key`, `value`, `StoreNum`, `cardnum`, `camount`, `cn` → std::array with safe string ops
+    - Socket request buffers: `request`, `result_str`, `str` → std::array with proper size tracking
+    - Message/format buffers: `msg`, `report_name`, `report_from`, `report_to` → std::array with .data()/.size()
+    - System path buffers: All FullPath calls now use `.data()` for C API compatibility
+  - **Legacy API Compatibility**: Maintained compatibility with existing function signatures expecting raw pointers by using `.data()` and `.size()` methods
+  - **Verification**: Build successful with no new errors or warnings; existing tests remain passing
+  - **Impact**: Improved memory safety with compile-time bounds checking, eliminated remaining clang-tidy modernize-avoid-c-arrays warnings in manager.cc
+  - **Files modified**: `main/data/manager.cc` (extensive conversion throughout multiple function families)
+
 - **Extended C++ Modernizations - Phase 2 (12-22-2025)**
   - Applied clang-tidy-driven fixes: modernize-use-auto, modernize-deprecated-headers, modernize-redundant-void-arg, modernize-loop-convert, modernize-return-braced-init-list, modernize-use-default-member-init, modernize-raw-string-literal
   - Highlights: auto for new/cast allocations; errno.h → cerrno in [zone/zone.cc](zone/zone.cc) and [main/data/manager.cc](main/data/manager.cc); removed redundant void args in [main/data/manager.cc](main/data/manager.cc); range-based for loops in [main/data/manager.cc](main/data/manager.cc), [main/data/settings.cc](main/data/settings.cc), [term/term_dialog.cc](term/term_dialog.cc); braced init returns in [src/utils/safe_string_utils.hh](src/utils/safe_string_utils.hh); default member init in [src/utils/fntrace.hh](src/utils/fntrace.hh); raw string literal formatting in [main/data/manager.cc](main/data/manager.cc)

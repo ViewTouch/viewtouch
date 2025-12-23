@@ -1185,8 +1185,10 @@ const char* PrinterInfo::Name()
     if (name.size() > 0)
         return name.Value();
     else
-        return FindStringByValue(type, PrinterTypeValue,
-                                 PrinterTypeName, UnknownStr);
+        return FindStringByValue(type,
+                     const_cast<int*>(PrinterTypeValue.data()),
+                     const_cast<const genericChar**>(PrinterTypeName.data()),
+                     UnknownStr);
 }
 
 /****
@@ -4288,7 +4290,7 @@ int Settings::PrinterReport(Terminal *t, Report *r)
         }
         r->TextPosL(18, buffer);
 
-        int idx = CompareList(pi->type, PrinterTypeValue);
+        int idx = CompareList(pi->type, const_cast<int*>(PrinterTypeValue.data()));
         if (idx < 0)
             r->TextPosL(38, t->Translate("Unknown Type"));
         else

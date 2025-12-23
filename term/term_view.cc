@@ -132,23 +132,16 @@ enum ConnectionState {
 
 class ConnectionMonitor {
 private:
-    ConnectionState state_;
-    time_t last_heartbeat_;
-    time_t last_reconnect_attempt_;
-    int reconnect_attempts_;
-    int max_reconnect_attempts_;
-    int reconnect_delay_;
-    bool keep_alive_enabled_;
+    ConnectionState state_{CONNECTION_DISCONNECTED};
+    time_t last_heartbeat_{0};
+    time_t last_reconnect_attempt_{0};
+    int reconnect_attempts_{0};
+    int max_reconnect_attempts_{10};
+    int reconnect_delay_{2};
+    bool keep_alive_enabled_{true};
 
 public:
-    ConnectionMonitor() :
-        state_(CONNECTION_DISCONNECTED),
-        last_heartbeat_(0),
-        last_reconnect_attempt_(0),
-        reconnect_attempts_(0),
-        max_reconnect_attempts_(10),
-        reconnect_delay_(2),
-        keep_alive_enabled_(true) {}
+    ConnectionMonitor() = default;
 
     void set_connected() {
         state_ = CONNECTION_CONNECTED;
@@ -282,9 +275,9 @@ struct FontDataType
     const genericChar* font;
 };
 
-static FontDataType FontData[] =
+static constexpr std::array<FontDataType, 16> FontData =
 {
-    {FONT_TIMES_20,     "DejaVu Serif:size=12:style=Book"},
+    {{FONT_TIMES_20,     "DejaVu Serif:size=12:style=Book"},
     {FONT_TIMES_24,     "DejaVu Serif:size=14:style=Book"},
     {FONT_TIMES_34,     "DejaVu Serif:size=18:style=Book"},
     {FONT_TIMES_48,     "DejaVu Serif:size=28:style=Book"},
@@ -299,18 +292,21 @@ static FontDataType FontData[] =
     {FONT_COURIER_18,   "Liberation Serif:size=11:style=Regular"},
     {FONT_COURIER_18B,  "Liberation Serif:size=11:style=Bold"},
     {FONT_COURIER_20,   "Liberation Serif:size=12:style=Regular"},
-    {FONT_COURIER_20B,  "Liberation Serif:size=12:style=Bold"}
+    {FONT_COURIER_20B,  "Liberation Serif:size=12:style=Bold"}}
 };
 
 struct PenDataType
 {
-    int id, t[3], s[3], h[3];
+    int id;
+    std::array<int, 3> t;
+    std::array<int, 3> s;
+    std::array<int, 3> h;
 };
 
-static PenDataType PenData[] =
+static constexpr std::array<PenDataType, 21> PenData =
 {
 // ColorID             Text Color       Shadow Color     HiLight Color
-    {COLOR_BLACK,       {  0,   0,   0}, {249, 230, 210}, {148, 113,  78}},
+    {{COLOR_BLACK,       {  0,   0,   0}, {249, 230, 210}, {148, 113,  78}},
     {COLOR_WHITE,       {255, 255, 255}, { 64,  64,  64}, {117,  97,  78}},
     {COLOR_RED,         {235,   0,   0}, { 47,   0,   0}, {242, 200, 200}},
     {COLOR_GREEN,       {  0, 128,   0}, {  0,  42,   0}, {140, 236, 140}},
@@ -330,12 +326,12 @@ static PenDataType PenData[] =
     {COLOR_DK_BLUE,     {  0,   0, 145}, {  0,   0,  45}, {205, 205, 245}},
     {COLOR_DK_TEAL,     {  0,  92, 130}, {  0,  12,  30}, {176, 216, 255}},
     {COLOR_DK_MAGENTA,  {160,  32, 110}, { 32,   0,  16}, {232, 188, 210}},
-    {COLOR_DK_SEAGREEN, {  0,  98,  72}, {  0,  32,  16}, {127, 228, 200}},
+    {COLOR_DK_SEAGREEN, {  0,  98,  72}, {  0,  32,  16}, {127, 228, 200}}}
 };
 
-#define FONTS         (int)(sizeof(FontData)/sizeof(FontDataType))
-#define FONT_COUNT    FONTS  // Alias for compatibility
-#define FONT_SPACE    (FONTS+4)
+constexpr int FONTS = static_cast<int>(FontData.size());
+constexpr int FONT_COUNT = FONTS;  // Alias for compatibility
+constexpr int FONT_SPACE = FONTS + 4;
 
 class FontNameClass
 {
@@ -722,12 +718,12 @@ void HideReconnectingMessage();
 
 // UI State preservation for disconnections
 struct SavedUIState {
-    int current_page;
-    int cursor_x, cursor_y;
-    bool input_active;
+    int current_page{0};
+    int cursor_x{0}, cursor_y{0};
+    bool input_active{false};
     std::string last_message;
 
-    SavedUIState() : current_page(0), cursor_x(0), cursor_y(0), input_active(false) {}
+    SavedUIState() = default;
 
     void save() {
         if (MainLayer != nullptr) {
@@ -888,10 +884,10 @@ genericChar* RStr(genericChar* s)
 {
     FnTrace("RStr()");
 
-    static genericChar buffer[1024] = "";
+    static std::array<genericChar, 1024> buffer = {""};
     if (s == nullptr)
-        s = buffer;
-    if (BufferIn.GetString(s, sizeof(buffer)))
+        s = buffer.data();
+    if (BufferIn.GetString(s, buffer.size()))
     {
         s[0] = '\0';
     }
@@ -985,9 +981,9 @@ const char* Translations::GetTranslation(const char* key)
     {
         if (trans->Match(key))
         {
-            static char buffer[STRLONG];
-            trans->GetValue(buffer, STRLONG);
-            return buffer;
+            static std::array<char, STRLONG> buffer{};
+            trans->GetValue(buffer.data(), buffer.size());
+            return buffer.data();
         }
         trans = trans->next;
     }
@@ -999,14 +995,14 @@ void Translations::PrintTranslations()
     FnTrace("Translations::PrintTranslations()");
 
     Translation *trans = trans_list.Head();
-    char key[STRLONG];
-    char value[STRLONG];
+    std::array<char, STRLONG> key{};
+    std::array<char, STRLONG> value{};
 
     while (trans != nullptr)
     {
-        trans->GetKey(key, STRLONG);
-        trans->GetValue(value, STRLONG);
-        printf("%s = %s\n", key, value);
+        trans->GetKey(key.data(), key.size());
+        trans->GetValue(value.data(), value.size());
+        printf("%s = %s\n", key.data(), value.data());
         trans = trans->next;
     }
 }
@@ -1814,9 +1810,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
     const genericChar* s1, *s2;
 
     int failure = 0;
-    genericChar s[STRLONG];
-    genericChar key[STRLENGTH];
-    genericChar value[STRLENGTH];
+    std::array<genericChar, STRLONG> s{};
+    std::array<genericChar, STRLENGTH> key{};
+    std::array<genericChar, STRLENGTH> value{};
 
     while (BufferIn.size > 0)
     {
@@ -1879,7 +1875,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n4 = RInt8();
             n5 = RInt16();
             n6 = RInt8();
-            s1 = RStr(s);
+            s1 = RStr(s.data());
             s2 = RStr();
             if (TScreen)
                 TScreen->Flush();
@@ -1895,61 +1891,61 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             SetTitleBar(RStr());
             break;
         case TERM_TEXTL:
-            RStr(s);
+            RStr(s.data());
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt8();
             n4 = RInt8();
             n5 = RInt16();
-            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_LEFT, n5, use_embossed_text);
+            l->Text(s.data(), strlen(s.data()), n1, n2, n3, n4, ALIGN_LEFT, n5, use_embossed_text);
             break;
         case TERM_TEXTC:
-            RStr(s);
+            RStr(s.data());
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt8();
             n4 = RInt8();
             n5 = RInt16();
-            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_CENTER, n5, use_embossed_text);
+            l->Text(s.data(), strlen(s.data()), n1, n2, n3, n4, ALIGN_CENTER, n5, use_embossed_text);
             break;
         case TERM_TEXTR:
-            RStr(s);
+            RStr(s.data());
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt8();
             n4 = RInt8();
             n5 = RInt16();
-            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_RIGHT, n5, use_embossed_text);
+            l->Text(s.data(), strlen(s.data()), n1, n2, n3, n4, ALIGN_RIGHT, n5, use_embossed_text);
             break;
         case TERM_ZONETEXTL:
-            RStr(s);
+            RStr(s.data());
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt8();
             n6 = RInt8();
-            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_LEFT, use_embossed_text);
+            l->ZoneText(s.data(), n1, n2, n3, n4, n5, n6, ALIGN_LEFT, use_embossed_text);
             break;
         case TERM_ZONETEXTC:
-            RStr(s);
+            RStr(s.data());
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt8();
             n6 = RInt8();
-            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_CENTER, use_embossed_text);
+            l->ZoneText(s.data(), n1, n2, n3, n4, n5, n6, ALIGN_CENTER, use_embossed_text);
             break;
         case TERM_ZONETEXTR:
-            RStr(s);
+            RStr(s.data());
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt8();
             n6 = RInt8();
-            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_RIGHT, use_embossed_text);
+            l->ZoneText(s.data(), n1, n2, n3, n4, n5, n6, ALIGN_RIGHT, use_embossed_text);
             break;
         case TERM_ZONE:
             n1 = RInt16();
@@ -2042,10 +2038,10 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt8();
-            RStr(s);
+            RStr(s.data());
             n6 = RInt8();
             n7 = RInt8();
-            l->StatusBar(n1, n2, n3, n4, n5, s, n6, n7);
+            l->StatusBar(n1, n2, n3, n4, n5, s.data(), n6, n7);
             break;
         case TERM_FLUSH_TS:
             if (TScreen)
@@ -2170,8 +2166,8 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n4 = RInt16();
             n5 = RInt16();
             n6 = RInt8();
-            RStr(s);
-            OpenLayer(n1, n2, n3, n4, n5, n6, s);
+            RStr(s.data());
+            OpenLayer(n1, n2, n3, n4, n5, n6, s.data());
             break;
         case TERM_SHOWWINDOW:
             ShowLayer(RInt16());
@@ -2188,11 +2184,11 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt16();
-            RStr(s);
+            RStr(s.data());
             n6 = RInt8();
             n7 = RInt8();
             n8 = RInt8();
-            NewPushButton(n1, n2, n3, n4, n5, s, n6, n7, n8);
+            NewPushButton(n1, n2, n3, n4, n5, s.data(), n6, n7, n8);
             break;
         case TERM_ICONIFY:
             ResetView();
@@ -2206,9 +2202,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n1 = RInt8();
             for (n2 = 0; n2 < n1; n2++)
             {
-                RStr(key);
-                RStr(value);
-                MasterTranslations.AddTranslation(key, value);
+                RStr(key.data());
+                RStr(value.data());
+                MasterTranslations.AddTranslation(key.data(), value.data());
             }
             new_page_translations = 1;
             new_zone_translations = 1;
@@ -2603,10 +2599,10 @@ int SaveToPPM()
     ReportError(str.data());
 
     // Generate the screenshot
-    char command[STRLONG];
-    snprintf(command, STRLONG, "%s -root -display %s >%s",
+    std::array<char, STRLONG> command{};
+    snprintf(command.data(), command.size(), "%s -root -display %s >%s",
              Constants::XWD, DisplayString(Dis), filename.data());
-    system(command);
+    system(command.data());
 
     return 0;
 }
@@ -2965,14 +2961,14 @@ Xpm *LoadPNGFile(const char* file_name)
     }
 
     // Read PNG header to verify format
-    png_byte header[8];
-    if (fread(header, 1, 8, fp) != 8) {
+    std::array<png_byte, 8> header{};
+    if (fread(header.data(), 1, header.size(), fp) != header.size()) {
         fprintf(stderr, "LoadPNGFile: Cannot read PNG header from %s\n", file_name);
         fclose(fp);
         return nullptr;
     }
 
-    if (png_sig_cmp(header, 0, 8)) {
+    if (png_sig_cmp(header.data(), 0, header.size())) {
         fprintf(stderr, "LoadPNGFile: File %s is not a valid PNG\n", file_name);
         fclose(fp);
         return nullptr;
@@ -3357,7 +3353,7 @@ int ReadScreenSaverPix()
     struct dirent *record = nullptr;
     DIR *dp;
     Xpm *newpm;
-    genericChar fullpath[STRLONG];
+    std::array<genericChar, STRLONG> fullpath{};
     int len;
     if (!fs::is_directory(SCREENSAVER_DIR))
     {
@@ -3383,8 +3379,8 @@ int ReadScreenSaverPix()
             if ((strcmp(&name[len-4], ".xpm") == 0) ||
                 (strcmp(&name[len-4], ".XPM") == 0))
             {
-                snprintf(fullpath, STRLONG, "%s/%s", SCREENSAVER_DIR, name);
-                newpm = LoadPixmapFile(fullpath);
+                snprintf(fullpath.data(), fullpath.size(), "%s/%s", SCREENSAVER_DIR, name);
+                newpm = LoadPixmapFile(fullpath.data());
                 if (newpm != nullptr)
                     PixmapList.Add(newpm);
             }
@@ -3713,9 +3709,9 @@ static bool IsRaspberryPi()
         // Check /proc/cpuinfo for Raspberry Pi
         FILE* cpuinfo = fopen("/proc/cpuinfo", "r");
         if (cpuinfo) {
-            char line[256];
-            while (fgets(line, sizeof(line), cpuinfo)) {
-                if (strstr(line, "Raspberry Pi") || strstr(line, "BCM") || strstr(line, "Model")) {
+            std::array<char, 256> line{};
+            while (fgets(line.data(), line.size(), cpuinfo)) {
+                if (strstr(line.data(), "Raspberry Pi") || strstr(line.data(), "BCM") || strstr(line.data(), "Model")) {
                     is_pi = true;
                     break;
                 }
@@ -3751,11 +3747,11 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     FontInfo.fill(nullptr);
 
     // Start Display
-    genericChar str[STRLENGTH];
+    std::array<genericChar, STRLENGTH> str{};
     int argc = 1;
-    const genericChar* argv[] = {"vt_term"};
+    std::array<const genericChar*, 1> argv{{"vt_term"}};
     IsTermLocal = is_term_local;
-    Dis = XtOpenDisplay(App, display, nullptr, nullptr, nullptr, 0, &argc, const_cast<char**>(argv));
+    Dis = XtOpenDisplay(App, display, nullptr, nullptr, nullptr, 0, &argc, const_cast<char**>(argv.data()));
     if (Dis == nullptr)
     {
         std::string error_msg = "Can't open display '" + std::string(display) + "'";
@@ -3786,7 +3782,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     // Load Fonts
     // Use fixed DPI (96) for consistent font rendering across all displays
     // This ensures fonts render at the same size regardless of display DPI
-    static char font_spec_with_dpi[256];
+    static std::array<char, 256> font_spec_with_dpi{};
     for (const auto& fontData : FontData)
     {
         int f = fontData.id;
@@ -3795,8 +3791,8 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         // Append :dpi=96 to font specification if not already present
         const char* xft_font_name = fontData.font;
         if (strstr(xft_font_name, ":dpi=") == nullptr) {
-            snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", xft_font_name);
-            xft_font_name = font_spec_with_dpi;
+            snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", xft_font_name);
+            xft_font_name = font_spec_with_dpi.data();
         }
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
         
@@ -4455,14 +4451,14 @@ void TerminalReloadFonts()
         }
     }
     // Reload fonts with fixed DPI (96) for consistency
-    static char font_spec_with_dpi[256];
+    static std::array<char, 256> font_spec_with_dpi{};
     for (const auto& fontData : FontData) {
         int f = fontData.id;
         const char* xft_font_name = fontData.font;
         // Append :dpi=96 to font specification if not already present
         if (strstr(xft_font_name, ":dpi=") == nullptr) {
-            snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", xft_font_name);
-            xft_font_name = font_spec_with_dpi;
+            snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", xft_font_name);
+            xft_font_name = font_spec_with_dpi.data();
         }
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
         if (XftFontsArr[f]) {
