@@ -1781,11 +1781,7 @@ int RestartSystem()
     if (debug_mode)
         printf("Forking for RestartSystem\n");
     pid = fork();
-    if (pid < 0)
-    {  // error
-        EndSystem();
-    }
-    else if (pid == 0)
+    if (pid == 0)
     {  // child
         // Here we want to exec a script that will wait for EndSystem() to
         // complete and then start vtpos all over again with the exact
@@ -1793,7 +1789,7 @@ int RestartSystem()
         execl(VIEWTOUCH_RESTART, VIEWTOUCH_RESTART, VIEWTOUCH_PATH, NULL);
     }
     else
-    {  // parent
+    {  // parent or error
         EndSystem();
     }
     return 0;
@@ -3041,24 +3037,19 @@ int ProcessRemoteOrder(int sock_fd)
             subcheck->delivery_charge = DeliveryToInt(value.data());
         else if (strncmp(key.data(), "RestaurantID", 12) == 0)
             vt_safe_string::safe_copy(StoreNum.data(), StoreNum.size(), value.data());
-        else if (strncmp(key.data(), "Item", 4) == 0)
+        else if (
+            (strncmp(key.data(), "Item", 4) == 0) ||
+            (strncmp(key.data(), "Detail", 6) == 0) ||
+            (strncmp(key.data(), "Product", 7) == 0) ||
+            (strncmp(key.data(), "Addon", 5) == 0) ||
+            (strncmp(key.data(), "SideNumber", 10) == 0) ||
+            (strncmp(key.data(), "EndItem", 7) == 0) ||
+            (strncmp(key.data(), "EndDetail", 9) == 0) ||
+            (strncmp(key.data(), "EndProduct", 10) == 0) ||
+            (strncmp(key.data(), "EndAddon", 8) == 0))
+        {
             retval = ProcessRemoteOrderEntry(subcheck, &order, key.data(), value.data());
-        else if (strncmp(key.data(), "Detail", 6) == 0)
-            retval = ProcessRemoteOrderEntry(subcheck, &order, key.data(), value.data());
-        else if (strncmp(key.data(), "Product", 7) == 0)
-            retval = ProcessRemoteOrderEntry(subcheck, &order, key.data(), value.data());
-        else if (strncmp(key.data(), "Addon", 5) == 0)
-            retval = ProcessRemoteOrderEntry(subcheck, &order, key.data(), value.data());
-        else if (strncmp(key.data(), "SideNumber", 10) == 0)
-            retval = ProcessRemoteOrderEntry(subcheck, &order, key.data(), value.data());
-        else if (strncmp(key.data(), "EndItem", 7) == 0)
-            retval = ProcessRemoteOrderEntry(subcheck, &order, key.data(), value.data());
-        else if (strncmp(key.data(), "EndDetail", 9) == 0)
-            retval = ProcessRemoteOrderEntry(subcheck, &order, key.data(), value.data());
-        else if (strncmp(key.data(), "EndProduct", 10) == 0)
-            retval = ProcessRemoteOrderEntry(subcheck, &order, key.data(), value.data());
-        else if (strncmp(key.data(), "EndAddon", 8) == 0)
-            retval = ProcessRemoteOrderEntry(subcheck, &order, key.data(), value.data());
+        }
         else if (strncmp(key.data(), "EndOrder", 8) == 0)
             status = CompleteRemoteOrder(check);
         else if (debug_mode)
