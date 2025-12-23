@@ -747,7 +747,7 @@ int Check::SetOrderStatus(SubCheck *subCheck, int set_status)
             if (! (thisOrder->status & set_status))
             {
                 change = 1;
-                thisOrder->status |= set_status;
+                thisOrder->status = static_cast<short>(static_cast<int>(thisOrder->status) | set_status);
             }
     
             Order *mod = thisOrder->modifier_list;
@@ -756,7 +756,7 @@ int Check::SetOrderStatus(SubCheck *subCheck, int set_status)
                 if (!(mod->status & set_status))
                 {
                     change = 1;
-                    mod->status |= set_status;
+                    mod->status = static_cast<short>(static_cast<int>(mod->status) | set_status);
                 }
                 mod = mod->next;
             }
@@ -796,7 +796,7 @@ int Check::ClearOrderStatus(SubCheck *subCheck, int clear_status)
             if (thisOrder->status & clear_status)
             {
                 change = 1;
-                thisOrder->status &= ~clear_status;
+                thisOrder->status = static_cast<short>(static_cast<int>(thisOrder->status) & ~clear_status);
             }
     
             Order *mod = thisOrder->modifier_list;
@@ -805,7 +805,7 @@ int Check::ClearOrderStatus(SubCheck *subCheck, int clear_status)
                 if (mod->status & clear_status)
                 {
                     change = 1;
-                    mod->status &= ~clear_status;
+                    mod->status = static_cast<short>(static_cast<int>(mod->status) & ~clear_status);
                 }
                 mod = mod->next;
             }
@@ -2718,6 +2718,9 @@ int Check::SeatsUsed()
     int seats[32];
     int i;
 
+    const int bits_per_int = static_cast<int>(sizeof(int) * 8);
+    const int max_bits = bits_per_int * static_cast<int>(sizeof(seats) / sizeof(int));
+
     for (i = 0; i < (int)(sizeof(seats)/sizeof(int)); ++i)
         seats[i] = 0;
 
@@ -2725,11 +2728,11 @@ int Check::SeatsUsed()
         for (Order *order = sc->OrderList(); order != nullptr; order = order->next)
 		{
 			s = order->seat;
-			if (s >= (int)(sizeof(seats)*8))
+            if (s >= max_bits)
 				continue;
 
-			s1 = s / (sizeof(int)*8);
-			s2 = 1 << (s % (sizeof(int)*8));
+            s1 = s / bits_per_int;
+            s2 = 1 << (s % bits_per_int);
 			if (!(seats[s1] & s2))
 			{
 				++count;
@@ -2932,7 +2935,7 @@ int Check::CustomerType(int set)
     FnTrace("Check::CustomerType()");
 
     if (set >= 0)
-        type = set;
+        type = static_cast<short>(set);
 
     return type;
 }
@@ -3490,7 +3493,7 @@ int SubCheck::Add(Order *order, Settings *settings)
         {
             if (ptr->IsEqual(order))
             {
-                ptr->count += order->count;
+                ptr->count = static_cast<short>(ptr->count + order->count);
                 delete order;
                 added = 1;
             }
@@ -3659,9 +3662,9 @@ Order *SubCheck::RemoveCount(Order *order, int count)
 	if (order->count > count)
 	{
 		Order *ptr = order->Copy();
-		order->count -= count;
+        order->count = static_cast<short>(order->count - count);
 		order->FigureCost();
-		ptr->count = count;
+        ptr->count = static_cast<short>(count);
 		ptr->FigureCost();
 		return ptr;
 	}
@@ -4488,7 +4491,7 @@ int SubCheck::ConsolidateOrders(Settings *settings, int relaxed)
                 strcmp(thisOrder->item_name.Value(), o2->item_name.Value()) == 0)
             {
                 Remove(o2, nullptr);
-                thisOrder->count += o2->count;
+                thisOrder->count = static_cast<short>(thisOrder->count + o2->count);
                 delete o2;
             }
             o2 = ptr;
@@ -6175,7 +6178,7 @@ int Order::IsEmployeeMeal(int set)
     int retval = employee_meal;
 
     if (set >= 0)
-        employee_meal = set;
+        employee_meal = static_cast<short>(set);
 
     return retval;
 }
@@ -6186,7 +6189,7 @@ int Order::IsReduced(int set)
     int retval = is_reduced;
 
     if (set >= 0)
-        is_reduced = set;
+        is_reduced = static_cast<short>(set);
 
     return retval;
 }
@@ -6291,7 +6294,7 @@ Payment::Payment(int tender, int pid, int pflags, int pamount)
     , value(0)
     , amount(pamount)
     , tender_id(pid)
-    , tender_type(tender)
+    , tender_type(static_cast<short>(tender))
     , flags(pflags)
     , drawer_id(0)
     , credit(nullptr)
