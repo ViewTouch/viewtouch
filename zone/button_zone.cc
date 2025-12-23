@@ -370,30 +370,24 @@ SignalResult MessageButtonZone::Signal(Terminal *term, const char* signal_msg)
         sig = SendandJump(term);
         break;
     case 1: // starttakeout
-	if (term->QuickMode(CHECK_TAKEOUT))
-	    return SIGNAL_IGNORED;
-	term->Jump(JUMP_STEALTH, -8);
-        break;
     case 2:  // pickup/delivery
-	if (term->QuickMode(CHECK_CALLIN))
-	    return SIGNAL_IGNORED;
-	term->Jump(JUMP_STEALTH, -8);
+    {
+        int mode = (idx == 1) ? CHECK_TAKEOUT : CHECK_CALLIN;
+        if (term->QuickMode(mode))
+            return SIGNAL_IGNORED;
+        term->Jump(JUMP_STEALTH, -8);
         break;
+    }
     case 3:  // quick to-go
-    	if (term->QuickMode(CHECK_SELFTAKEOUT))
-	    return SIGNAL_IGNORED;
-	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
-        break;
     case 4:  // quick dine-in
-    	if (term->QuickMode(CHECK_SELFDINEIN))
-	    return SIGNAL_IGNORED;
-	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
-        break;
     case 5:  // quick self-order
-    	if (term->QuickMode(CHECK_SELFORDER))
-	    return SIGNAL_IGNORED;
-	term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
+    {
+        int mode = (idx == 3) ? CHECK_SELFTAKEOUT : (idx == 4 ? CHECK_SELFDINEIN : CHECK_SELFORDER);
+        if (term->QuickMode(mode))
+            return SIGNAL_IGNORED;
+        term->JumpToIndex(IndexValue[settings->MealPeriod(SystemTime)]);
         break;
+    }
     default:
         sig = SIGNAL_IGNORED;
         break;
@@ -545,16 +539,19 @@ SignalResult ConditionalZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
     FnTrace("ConditionalZone::Touch()");
     SignalResult sig = SIGNAL_OKAY;
 
+    const char* to_send = nullptr;
     if (message.size() > 0)
     {
         // broadcast button's message
-        sig = term->Signal(message.Value(), group_id);
+        to_send = message.Value();
     }
     else if (name.size() > 0)
     {
         // broadcast button's name
-        sig = term->Signal(name.Value(), group_id);
+        to_send = name.Value();
     }
+    if (to_send)
+        sig = term->Signal(to_send, group_id);
 
     if (sig != SIGNAL_ERROR)
         term->Jump(jump_type, jump_id);
@@ -662,10 +659,8 @@ int ConditionalZone::EvalExp(Terminal *term)
             n = e->CanPayExpenses(s);
         break;
     case FASTFOOD: // fastfood
-        n = (term->type == TERMINAL_FASTFOOD);
-        break;
     case SELFORDER: // selforder
-        n = (term->type == TERMINAL_SELFORDER);
+        n = (term->type == ((keyword == FASTFOOD) ? TERMINAL_FASTFOOD : TERMINAL_SELFORDER));
         break;
     case LASTENDDAY: // lastendday
         if (term && term->system_data && term->system_data->CheckEndDay(term) > 0)
@@ -824,16 +819,18 @@ RenderResult KillSystemZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("KillSystemZone::Render()");
     int users = term->OtherTermsInUse(1);
+    const char* label = nullptr;
+    genericChar str[32];
     if (users <= 0)
-        RenderZone(term, name.Value(), update_flag);
+        label = name.Value();
     else if (users == 1)
-        RenderZone(term, "1 Terminal Busy", update_flag);
+        label = "1 Terminal Busy";
     else
     {
-        genericChar str[32];
         vt_safe_string::safe_format(str, 32, "%d Terminals Busy", users);
-        RenderZone(term, str, update_flag);
+        label = str;
     }
+    RenderZone(term, label, update_flag);
     return RENDER_OKAY;
 }
 
