@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Changed
+- **Macro → Enum: Zone Types (2025-12-23)**
+  - Replaced `ZONE_*` zone type `#define` macros with a single `enum ZoneType` preserving all identifiers and numeric values
+  - Improves type safety and discoverability while maintaining full backward compatibility (implicit conversion to `int` where needed)
+  - **Files modified**: `zone/pos_zone.hh`
+  - **Impact**: No functional change; build and all tests remain green (40/40)
+
 ### Fixed
 - **Critical Bugprone Fixes (2025-12-23)**
   - Fixed empty catch blocks that were hiding errors in BackTraceFunction (fntrace.hh)
