@@ -144,8 +144,9 @@ void Logger::Initialize(
         // Register as default logger
         spdlog::set_default_logger(logger_);
 
-        // Flush on warning or higher
-        logger_->flush_on(spdlog::level::warn);
+        // Flush on info or higher so structured JSON messages are immediately
+        // available to external readers (tests read files immediately).
+        logger_->flush_on(spdlog::level::info);
 
         initialized_ = true;
 
@@ -276,6 +277,10 @@ void Logger::log_event(const LogEvent& event) {
 
     // Log structured JSON to dedicated sink
     logger->log(event.level, "{}", event.to_json().dump());
+
+    // Ensure structured JSON is flushed to disk immediately so tests or
+    // external readers that check the file right after logging can see it.
+    logger->flush();
 
     // Also log human-readable version to regular logs
     std::string readable_msg = event.event_type;
