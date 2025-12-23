@@ -527,10 +527,10 @@ int CouponInfo::Applies(SubCheck *subcheck, int aut)
     FnTrace("CouponInfo::Applies(SubCheck *, int)");
     int retval = 1;
 
-    if (active == 0)
+    if (active == 0 || aut != automatic)
+    {
         retval = 0;
-    else if (aut != automatic)
-        retval = 0;
+    }
     else
     {
         retval = AppliesTime();
@@ -546,12 +546,10 @@ int CouponInfo::Applies(SalesItem *item, int aut)
     FnTrace("CouponInfo::Applies(SalesItem *, int)");
     int retval = 0;
 
-    if (item == nullptr)
+    if (item == nullptr || active == 0 || aut != automatic)
+    {
         retval = 0;
-    else if (active == 0)
-        retval = 0;
-    else if (aut != automatic)
-        retval = 0;
+    }
     else
     {
         retval = AppliesTime();
@@ -643,14 +641,15 @@ int CouponInfo::AppliesItem(SalesItem *item)
     {
         if (flags & TF_ITEM_SPECIFIC)
         {
-            if (family != item->family)
+            if (family != item->family || item_name.empty())
+            {
                 retval = 0;
-            else if (item_name.empty())
-                retval = 0;
-            else if (strcmp(item_name.Value(), item->item_name.Value()) == 0)
+            }
+            else if (strcmp(item_name.Value(), item->item_name.Value()) == 0 ||
+                     strcmp(item_name.Value(), ALL_ITEMS_STRING) == 0)
+            {
                 retval = 1;
-            else if (strcmp(item_name.Value(), ALL_ITEMS_STRING) == 0)
-                retval = 1;
+            }
         }
         else
             retval = 1;
@@ -1646,10 +1645,11 @@ int Settings::Load(const char* file)
         // it has to be NONE.  This prevents error that might otherwise
         // be caused by copying CREDITCHEQ data files into MAINSTREET
         // binaries.
-        if (authorize_method < 0 || authorize_method > CCAUTH_MAX)
+        if (authorize_method < 0 || authorize_method > CCAUTH_MAX ||
+            authorize_method != ccauth_defined)
+        {
             authorize_method = CCAUTH_NONE;
-        else if (authorize_method != ccauth_defined)
-            authorize_method = CCAUTH_NONE;
+        }
         df.Read(always_open);
     }
     if (version >= 28)
@@ -2658,14 +2658,11 @@ int Settings::DiscountCount(int local, int active)
 
     while (discount != nullptr)
     {
-        if (local == ALL_MEDIA && active == ALL_MEDIA)
+        if ((local == ALL_MEDIA || local == discount->local) &&
+            (active == ALL_MEDIA || active == discount->active))
+        {
             count += 1;
-        else if (local == ALL_MEDIA && active == discount->active)
-            count += 1;
-        else if (local == discount->local && active == ALL_MEDIA)
-            count += 1;
-        else if (local == discount->local && active == discount->active)
-            count += 1;
+        }
         discount = discount->next;
     }
 
@@ -2680,14 +2677,11 @@ int Settings::CouponCount(int local, int active)
 
     while (coupon != nullptr)
     {
-        if (local == ALL_MEDIA && active == ALL_MEDIA)
+        if ((local == ALL_MEDIA || local == coupon->local) &&
+            (active == ALL_MEDIA || active == coupon->active))
+        {
             count += 1;
-        else if (local == ALL_MEDIA && active == coupon->active)
-            count += 1;
-        else if (local == coupon->local && active == ALL_MEDIA)
-            count += 1;
-        else if (local == coupon->local && active == coupon->active)
-            count += 1;
+        }
         coupon = coupon->next;
     }
 
@@ -2702,14 +2696,11 @@ int Settings::CreditCardCount(int local, int active)
 
     while (creditcard != nullptr)
     {
-        if (local == ALL_MEDIA && active == ALL_MEDIA)
+        if ((local == ALL_MEDIA || local == creditcard->local) &&
+            (active == ALL_MEDIA || active == creditcard->active))
+        {
             count += 1;
-        else if (local == ALL_MEDIA && active == creditcard->active)
-            count += 1;
-        else if (local == creditcard->local && active == ALL_MEDIA)
-            count += 1;
-        else if (local == creditcard->local && active == creditcard->active)
-            count += 1;
+        }
         creditcard = creditcard->next;
     }
 
@@ -2724,14 +2715,11 @@ int Settings::CompCount(int local, int active)
 
     while (comp != nullptr)
     {
-        if (local == ALL_MEDIA && active == ALL_MEDIA)
+        if ((local == ALL_MEDIA || local == comp->local) &&
+            (active == ALL_MEDIA || active == comp->active))
+        {
             count += 1;
-        else if (local == ALL_MEDIA && active == comp->active)
-            count += 1;
-        else if (local == comp->local && active == ALL_MEDIA)
-            count += 1;
-        else if (local == comp->local && active == comp->active)
-            count += 1;
+        }
         comp = comp->next;
     }
 
@@ -2746,14 +2734,11 @@ int Settings::MealCount(int local, int active)
 
     while (meal != nullptr)
     {
-        if (local == ALL_MEDIA && active == ALL_MEDIA)
+        if ((local == ALL_MEDIA || local == meal->local) &&
+            (active == ALL_MEDIA || active == meal->active))
+        {
             count += 1;
-        else if (local == ALL_MEDIA && active == meal->active)
-            count += 1;
-        else if (local == meal->local && active == ALL_MEDIA)
-            count += 1;
-        else if (local == meal->local && active == meal->active)
-            count += 1;
+        }
         meal = meal->next;
     }
 
