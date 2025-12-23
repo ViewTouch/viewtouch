@@ -26,6 +26,8 @@
 #include "system.hh"
 #include "dialog_zone.hh"
 #include "settings.hh"
+#include "main/data/settings_enums.hh"
+#include "src/utils/vt_enum_utils.hh"
 #include "labor.hh"
 #include "image_data.hh"
 #include "archive.hh"
@@ -775,7 +777,7 @@ SignalResult DrawerManageZone::Signal(Terminal *term, const genericChar* message
     Employee *employee;
     Drawer *drawer;
     DrawerBalance *db;
-    int drawer_print = term->GetSettings()->drawer_print;
+    const auto drawer_print = vt::IntToEnum<DrawerPrintType>(term->GetSettings()->drawer_print);
 
     employee = term->user;
     if (employee == nullptr)
@@ -857,14 +859,14 @@ SignalResult DrawerManageZone::Signal(Terminal *term, const genericChar* message
             media = 0;
             if (mode == DRAWER_OPEN)
             {
-                if (drawer_print == DRAWER_PRINT_BOTH || drawer_print == DRAWER_PRINT_PULL)
+                if (drawer_print && (*drawer_print == DrawerPrintType::OnBoth || *drawer_print == DrawerPrintType::OnPull))
                     Print(term, RP_PRINT_REPORT);
                 drawer->Pull(employee->id);
                 Draw(term, 0);
             }
             else if (mode == DRAWER_PULLED)
             {
-                if (drawer_print == DRAWER_PRINT_BOTH || drawer_print == DRAWER_PRINT_BALANCE)
+                if (drawer_print && (*drawer_print == DrawerPrintType::OnBoth || *drawer_print == DrawerPrintType::OnBalance))
                     Print(term, RP_PRINT_REPORT);
                 drawer->Balance(employee->id);
                 DrawerBalance *drawer_balance = drawer->FindBalance(TENDER_EXPENSE, 0);

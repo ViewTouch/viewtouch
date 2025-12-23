@@ -34,6 +34,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `main/business/check.cc`, `zone/payment_zone.cc`, `zone/settings_zone.cc`, `main/data/settings.cc`, `main/data/settings.hh`
   - **Impact**: Behavior unchanged; tests remain 40/40 passing
 
+- **Enum Usage: DrawerPrintType (2025-12-23)**
+  - Converted drawer print options to enum-driven flow: added `DrawerPrintType` and display helpers
+  - Removed legacy `DrawerPrintName`/`DrawerPrintValue` arrays; UI display/cycle now uses enum values
+  - Updated drawer print execution paths to use `DrawerPrintType` instead of macros/arrays
+  - **Files modified**: `main/data/settings_enums.hh`, `main/data/settings.hh`, `main/data/settings.cc`, `zone/settings_zone.cc`, `zone/drawer_zone.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
 ### Fixed
 - **Critical Bugprone Fixes (2025-12-23)**
   - Fixed empty catch blocks that were hiding errors in BackTraceFunction (fntrace.hh)

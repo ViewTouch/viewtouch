@@ -50,11 +50,13 @@ enum ReceiptPrintMode {
     RECEIPT_BOTH     = 3
 };
 
-// Drawer report options
-#define DRAWER_PRINT_PULL    1
-#define DRAWER_PRINT_BALANCE 2
-#define DRAWER_PRINT_BOTH    3
-#define DRAWER_PRINT_NEVER   0
+// Drawer report options (converted from macros to enum constants)
+enum DrawerPrintMode {
+    DRAWER_PRINT_NEVER   = 0,
+    DRAWER_PRINT_PULL    = 1,
+    DRAWER_PRINT_BALANCE = 2,
+    DRAWER_PRINT_BOTH    = 3
+};
 
 // Cash Drawer options
 #define DRAWER_NORMAL     0 // unrestricted access to drawers for employees
@@ -241,8 +243,7 @@ extern int   SalesPeriodValue[];
 
 // ReceiptPrint uses enum utilities (ReceiptPrintType) instead of static arrays
 
-extern const genericChar* DrawerPrintName[];
-extern int   DrawerPrintValue[];
+// DrawerPrint uses enum utilities (DrawerPrintType) instead of static arrays
 
 extern const genericChar* RoundingName[];
 extern int   RoundingValue[];

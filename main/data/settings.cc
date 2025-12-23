@@ -95,10 +95,7 @@ int SalesPeriodValue[] = {
 
 // ReceiptPrint values are supplied via enum (ReceiptPrintType) in settings_enums.hh
 
-const char* DrawerPrintName[] = {
-    GlobalTranslate("On Pull"), GlobalTranslate("On Balance"), GlobalTranslate("On Both"), GlobalTranslate("Never"), nullptr};
-int DrawerPrintValue[] = {
-    DRAWER_PRINT_PULL, DRAWER_PRINT_BALANCE, DRAWER_PRINT_BOTH, DRAWER_PRINT_NEVER, -1};
+// DrawerPrint values are provided via DrawerPrintType (settings_enums.hh)
 
 const char* RoundingName[] = {
     GlobalTranslate("None"), GlobalTranslate("Drop Pennies"), GlobalTranslate("Round Up Gratuity"), nullptr};
