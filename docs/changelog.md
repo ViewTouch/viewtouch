@@ -97,6 +97,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Version bump from 25.03.0 to 25.03.1
 
 ### Changed
+- **C-Array Modernization (2025-12-23)**
+  - Converted fixed-size C-style buffers to `std::array` in manager.cc
+  - **Details**:
+    - Replaced `font_spec_with_dpi[256]`, `font_spec[256]`, `font_family[256]`, and local `line[256]` with `std::array<char, 256>`
+    - Updated calls to use `.data()` and `.size()` with `snprintf`, `fgets`, `strcmp`, and `strncpy`
+    - Preserved existing behavior and ABI by returning `const char*` via `.data()`
+  - **Files modified**: `main/data/manager.cc`
+  - **Impact**: Safer buffer handling with compile-time bounds, no behavior changes; all tests pass
+
 - **Editor Settings Button Split and Password Function Removal (2025-12-XX)**
   - **Split Editor Settings**: Separated "Editor Settings" functionality into two distinct buttons for better organization
     - **Editor Settings** button (`ZONE_DEVELOPER`) now contains only:
