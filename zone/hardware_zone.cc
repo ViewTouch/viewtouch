@@ -66,7 +66,9 @@ HardwareZone::HardwareZone()
     // Term Fields
     AddTextField("This Display's Name is", 32);
     term_start = FieldListEnd();
-    AddListField("This Display's Function is", TermTypeName, TermTypeValue);
+    AddListField("This Display's Function is",
+                 const_cast<const genericChar**>(TermTypeName.data()),
+                 const_cast<int*>(TermTypeValue.data()));
     AddListField("If This Display is a Kitchen Video Then It Sorts By", CheckDisplayOrderName, CheckDisplayOrderValue);
     AddListField("The Requisition Ticket Heading is", WOHeadingName, WOHeadingValue);
     AddListField("Does This Display Print Requisition Tickets?", NoYesName, NoYesValue);
@@ -117,7 +119,9 @@ HardwareZone::HardwareZone()
     // Printer Fields
     AddTextField("This Printer Is Identified As", 20);
     printer_start = FieldListEnd();
-    AddListField("This Printer's Performance Assignment Is", PrinterTypeName, PrinterTypeValue);
+    AddListField("This Printer's Performance Assignment Is",
+                 const_cast<const genericChar**>(PrinterTypeName.data()),
+                 const_cast<int*>(PrinterTypeValue.data()));
     AddTextField("This Printer's Queue Name Is", 20);
     //AddListField("Connection Interface", PortName, PortValue);
     AddListField("This Printer's Output Is Formatted For", PrinterModelName, PrinterModelValue);

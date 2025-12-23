@@ -31,26 +31,52 @@
 constexpr int CHECK_VERSION = 25;
 
 // Check Status
-#define CHECK_OPEN           1
-#define CHECK_CLOSED         2
-#define CHECK_VOIDED         3
+enum class CheckStatus : int {
+    Open = 1,
+    Closed = 2,
+    Voided = 3
+};
+
+// Backward-compatible constexpr shims
+constexpr int CHECK_OPEN = static_cast<int>(CheckStatus::Open);
+constexpr int CHECK_CLOSED = static_cast<int>(CheckStatus::Closed);
+constexpr int CHECK_VOIDED = static_cast<int>(CheckStatus::Voided);
 
 // Check Type
-#define CHECK_RESTAURANT     1   // normal check - has table location
-#define CHECK_TAKEOUT        2   // take out order - has phone number
-#define CHECK_BAR            3   // drink from bar - no guest count or table
-#define CHECK_MERCHANDISE    4   // merchandise sale - no guest count or table
-#define CHECK_DELIVERY       5
-#define CHECK_CATERING       6
-#define CHECK_HOTEL          7
-#define CHECK_RETAIL         8
-#define CHECK_FASTFOOD       9
-#define CHECK_SELFORDER     10   // customer self-service order - no login required
-#define CHECK_DINEIN        11   // dine-in order (restored original value for backward compatibility)
-#define CHECK_TOGO          12   // take-out order (restored original value for backward compatibility)
-#define CHECK_CALLIN        13   // call-in order (restored original value for backward compatibility)
-#define CHECK_SELFDINEIN    14   // customer self-service dine-in order
-#define CHECK_SELFTAKEOUT   15   // customer self-service take-out order
+enum class CheckType : int {
+    Restaurant = 1,   // normal check - has table location
+    Takeout = 2,      // take out order - has phone number
+    Bar = 3,          // drink from bar - no guest count or table
+    Merchandise = 4,  // merchandise sale - no guest count or table
+    Delivery = 5,
+    Catering = 6,
+    Hotel = 7,
+    Retail = 8,
+    FastFood = 9,
+    SelfOrder = 10,   // customer self-service order - no login required
+    DineIn = 11,      // dine-in order (restored original value for backward compatibility)
+    ToGo = 12,        // take-out order (restored original value for backward compatibility)
+    CallIn = 13,      // call-in order (restored original value for backward compatibility)
+    SelfDineIn = 14,  // customer self-service dine-in order
+    SelfTakeOut = 15  // customer self-service take-out order
+};
+
+// Backward-compatible constexpr shims
+constexpr int CHECK_RESTAURANT = static_cast<int>(CheckType::Restaurant);
+constexpr int CHECK_TAKEOUT = static_cast<int>(CheckType::Takeout);
+constexpr int CHECK_BAR = static_cast<int>(CheckType::Bar);
+constexpr int CHECK_MERCHANDISE = static_cast<int>(CheckType::Merchandise);
+constexpr int CHECK_DELIVERY = static_cast<int>(CheckType::Delivery);
+constexpr int CHECK_CATERING = static_cast<int>(CheckType::Catering);
+constexpr int CHECK_HOTEL = static_cast<int>(CheckType::Hotel);
+constexpr int CHECK_RETAIL = static_cast<int>(CheckType::Retail);
+constexpr int CHECK_FASTFOOD = static_cast<int>(CheckType::FastFood);
+constexpr int CHECK_SELFORDER = static_cast<int>(CheckType::SelfOrder);
+constexpr int CHECK_DINEIN = static_cast<int>(CheckType::DineIn);
+constexpr int CHECK_TOGO = static_cast<int>(CheckType::ToGo);
+constexpr int CHECK_CALLIN = static_cast<int>(CheckType::CallIn);
+constexpr int CHECK_SELFDINEIN = static_cast<int>(CheckType::SelfDineIn);
+constexpr int CHECK_SELFTAKEOUT = static_cast<int>(CheckType::SelfTakeOut);
 
 // Check Flags
 #define CF_PRINTED           1   // Has been sent to the kitcen at least once

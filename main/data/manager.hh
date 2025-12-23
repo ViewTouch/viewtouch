@@ -24,8 +24,9 @@
 
 #include "utility.hh"
 #include "list_utility.hh"
-#include <string>
+#include <array>
 #include <memory>
+#include <string>
 
 #define MASTER_USER_DB       "employee.dat"
 #define MASTER_MENU_DB       "menu.dat"
@@ -191,15 +192,15 @@ extern MachineInfo *ThisMachineInfo; // MachineInfo for this system
 extern int          AllowLogins;     // whether terms should permit logins
 
 // commonly used strings
-extern const genericChar* DayName[];
-extern const genericChar* ShortDayName[];
-extern const genericChar* MonthName[];
-extern const genericChar* ShortMonthName[];
+extern const std::array<const genericChar*, 8> DayName;
+extern const std::array<const genericChar*, 8> ShortDayName;
+extern const std::array<const genericChar*, 13> MonthName;
+extern const std::array<const genericChar*, 13> ShortMonthName;
 extern const genericChar* CheckRefName[];
 extern int   CheckRefValue[];
-extern const genericChar* TermTypeName[];
-extern int   TermTypeValue[];
-extern const genericChar* PrinterTypeName[];
-extern int   PrinterTypeValue[];
+extern const std::array<const genericChar*, 9> TermTypeName;
+extern const std::array<int, 9> TermTypeValue;
+extern const std::array<const genericChar*, 11> PrinterTypeName;
+extern const std::array<int, 11> PrinterTypeValue;
 
 #endif
