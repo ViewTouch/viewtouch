@@ -54,7 +54,7 @@ struct BusinessContext {
     std::optional<std::chrono::system_clock::time_point> start_time;
 
     // Convert to JSON for structured logging
-    nlohmann::json to_json() const;
+    [[nodiscard]] nlohmann::json to_json() const;
 };
 
 /**
@@ -73,6 +73,7 @@ struct LogEvent {
 
     // Add metadata
     LogEvent& add(std::string_view key, std::string_view value);
+    LogEvent& add(std::string_view key, const char* value); // ensure const char* selects string, not bool
     LogEvent& add(std::string_view key, int value);
     LogEvent& add(std::string_view key, double value);
     LogEvent& add(std::string_view key, bool value);
@@ -223,6 +224,7 @@ public:
 
 private:
     static std::shared_ptr<spdlog::logger> logger_;
+    static std::shared_ptr<spdlog::logger> structured_logger_;
     static bool initialized_;
     static thread_local std::optional<BusinessContext> current_business_context_;
 };

@@ -11,6 +11,7 @@
 #include <sstream>
 #include <algorithm>
 #include <filesystem>
+#include <utility>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -293,7 +294,7 @@ DataPersistenceManager::ValidationResult DataPersistenceManager::ValidateCritica
     return overall_result;
 }
 
-void DataPersistenceManager::RegisterValidationCallback(const std::string& name, ValidationCallback callback)
+void DataPersistenceManager::RegisterValidationCallback(const std::string& name, const ValidationCallback& callback)
 {
     validation_callbacks.push_back(callback);
     LogInfo("Registered validation callback: " + name);
@@ -351,7 +352,7 @@ DataPersistenceManager::SaveResult DataPersistenceManager::SaveCriticalData()
     return overall_result;
 }
 
-void DataPersistenceManager::RegisterSaveCallback(const std::string& name, SaveCallback callback)
+void DataPersistenceManager::RegisterSaveCallback(const std::string& name, const SaveCallback& callback)
 {
     save_callbacks.push_back(callback);
     LogInfo("Registered save callback: " + name);
@@ -365,8 +366,8 @@ void DataPersistenceManager::RegisterCriticalData(const std::string& name,
     data_item.name = name;
     data_item.is_dirty = false;
     data_item.last_modified = std::chrono::steady_clock::now();
-    data_item.validator = validator;
-    data_item.saver = saver;
+    data_item.validator = std::move(validator);
+    data_item.saver = std::move(saver);
     data_item.consecutive_failures = 0;
     data_item.last_failure = std::chrono::steady_clock::now();
 

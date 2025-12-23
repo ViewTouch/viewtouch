@@ -24,44 +24,58 @@
 #include "src/utils/vt_enum_utils.hh"
 #include <string_view>
 
-// Example: Modernized drawer mode enum
-enum class DrawerModeType {
-    Trusted = 0,    // DRAWER_NORMAL
-    Assigned = 1,   // DRAWER_ASSIGNED  
-    ServerBank = 2  // DRAWER_SERVER
-};
-
 // Receipt printing options - values must match RECEIPT_* constants
-enum class ReceiptPrintType {
+enum class ReceiptPrintType : std::uint8_t {
     Never = 0,       // RECEIPT_NONE
     OnSend = 1,      // RECEIPT_SEND
     OnFinalize = 2,  // RECEIPT_FINALIZE
     OnBoth = 3       // RECEIPT_BOTH
 };
 
-// Example: Price rounding options
-enum class PriceRoundingType {
+// Drawer print options - values must match DRAWER_PRINT_* constants
+enum class DrawerPrintType : std::uint8_t {
+    Never = 0,     // DRAWER_PRINT_NEVER
+    OnPull = 1,    // DRAWER_PRINT_PULL
+    OnBalance = 2, // DRAWER_PRINT_BALANCE
+    OnBoth = 3     // DRAWER_PRINT_BOTH
+};
+
+// Drawer mode options - values must match DRAWER_* constants
+enum class DrawerModeType : std::uint8_t {
+    Trusted = 0,    // DRAWER_NORMAL
+    Assigned = 1,   // DRAWER_ASSIGNED
+    ServerBank = 2  // DRAWER_SERVER
+};
+
+// Price rounding options - values must match ROUNDING_* constants
+enum class PriceRoundingType : std::uint8_t {
     None = 0,              // ROUNDING_NONE
     DropPennies = 1,       // ROUNDING_DROP_PENNIES
     RoundUpGratuity = 2    // ROUNDING_UP_GRATUITY
 };
 
-// Example: Time format options
-enum class TimeFormatType {
-    Hour12 = 0,  // TIME_12HOUR
-    Hour24 = 1   // TIME_24HOUR
+// Measurement system options - values must match MEASURE_* constants
+enum class MeasureSystemType : std::uint8_t {
+    Standard = 1,  // MEASURE_STANDARD (U.S./Imperial)
+    Metric = 2     // MEASURE_METRIC
 };
 
-// Example: Date format options
-enum class DateFormatType {
-    MMDDYY = 0,  // DATE_MMDDYY
-    DDMMYY = 1   // DATE_DDMMYY
+// Time format options - values must match TIME_* constants
+enum class TimeFormatType : std::uint8_t {
+    Hour12 = 1,  // TIME_12HOUR
+    Hour24 = 2   // TIME_24HOUR
 };
 
-// Example: Number format options
-enum class NumberFormatType {
-    Standard = 0,  // NUMBER_STANDARD (1,000,000.00)
-    Euro = 1       // NUMBER_EURO (1.000.000,00)
+// Date format options - values must match DATE_* constants
+enum class DateFormatType : std::uint8_t {
+    MMDDYY = 1,  // DATE_MMDDYY
+    DDMMYY = 2   // DATE_DDMMYY
+};
+
+// Number format options - values must match NUMBER_* constants
+enum class NumberFormatType : std::uint8_t {
+    Standard = 1,  // NUMBER_STANDARD (1,000,000.00)
+    Euro = 2       // NUMBER_EURO (1.000.000,00)
 };
 
 // Example: Sales period options
@@ -93,8 +107,18 @@ namespace vt {
 // Helper functions to get display names (translated versions)
 // These can be used in UI dropdowns, reports, etc.
 
-inline const char* GetDrawerModeDisplayName(DrawerModeType mode) {
-    switch (mode) {
+inline const char* GetReceiptPrintDisplayName(ReceiptPrintType type) {
+    switch (type) {
+        case ReceiptPrintType::OnSend: return "On Send";
+        case ReceiptPrintType::OnFinalize: return "On Finalize";
+        case ReceiptPrintType::OnBoth: return "On Both";
+        case ReceiptPrintType::Never: return "Never";
+        default: return "Unknown";
+    }
+}
+
+inline const char* GetDrawerModeDisplayName(DrawerModeType type) {
+    switch (type) {
         case DrawerModeType::Trusted: return "Trusted";
         case DrawerModeType::Assigned: return "Assigned";
         case DrawerModeType::ServerBank: return "Server Bank";
@@ -102,12 +126,29 @@ inline const char* GetDrawerModeDisplayName(DrawerModeType mode) {
     }
 }
 
-inline const char* GetReceiptPrintDisplayName(ReceiptPrintType type) {
+inline const char* GetDrawerPrintDisplayName(DrawerPrintType type) {
     switch (type) {
-        case ReceiptPrintType::OnSend: return "On Send";
-        case ReceiptPrintType::OnFinalize: return "On Finalize";
-        case ReceiptPrintType::OnBoth: return "On Both";
-        case ReceiptPrintType::Never: return "Never";
+        case DrawerPrintType::OnPull: return "On Pull";
+        case DrawerPrintType::OnBalance: return "On Balance";
+        case DrawerPrintType::OnBoth: return "On Both";
+        case DrawerPrintType::Never: return "Never";
+        default: return "Unknown";
+    }
+}
+
+inline const char* GetPriceRoundingDisplayName(PriceRoundingType type) {
+    switch (type) {
+        case PriceRoundingType::None: return "None";
+        case PriceRoundingType::DropPennies: return "Drop Pennies";
+        case PriceRoundingType::RoundUpGratuity: return "Round Up Gratuity";
+        default: return "Unknown";
+    }
+}
+
+inline const char* GetMeasureSystemDisplayName(MeasureSystemType type) {
+    switch (type) {
+        case MeasureSystemType::Standard: return "Standard U.S.";
+        case MeasureSystemType::Metric: return "Metric";
         default: return "Unknown";
     }
 }
@@ -152,8 +193,28 @@ inline auto GetAllReceiptPrintOptions() {
     return GetEnumPairs<ReceiptPrintType>();
 }
 
+inline auto GetAllDrawerPrintOptions() {
+    return GetEnumPairs<DrawerPrintType>();
+}
+
+inline auto GetAllPriceRoundingOptions() {
+    return GetEnumPairs<PriceRoundingType>();
+}
+
+inline auto GetAllMeasureSystems() {
+    return GetEnumPairs<MeasureSystemType>();
+}
+
 inline auto GetAllTimeFormats() {
     return GetEnumPairs<TimeFormatType>();
+}
+
+inline auto GetAllDateFormats() {
+    return GetEnumPairs<DateFormatType>();
+}
+
+inline auto GetAllNumberFormats() {
+    return GetEnumPairs<NumberFormatType>();
 }
 
 } // namespace vt
@@ -166,7 +227,7 @@ inline auto GetAllTimeFormats() {
  * ---------------------------------------
  * const char* DrawerModeName[] = {
  *     GlobalTranslate("Trusted"), GlobalTranslate("Assigned"), 
- *     GlobalTranslate("Server Bank"), NULL};
+ *     GlobalTranslate("Server Bank"), nullptr};
  * int DrawerModeValue[] = {
  *     DRAWER_NORMAL, DRAWER_ASSIGNED, DRAWER_SERVER, -1};
  *
@@ -184,7 +245,7 @@ inline auto GetAllTimeFormats() {
  * ✅ No manual array maintenance
  * ✅ Type-safe conversions
  * ✅ Compile-time validation
- * ✅ No NULL terminators to forget
+ * ✅ No nullptr terminators to forget
  * ✅ Automatic JSON serialization
  * ✅ Better logging with vt::Logger
  */

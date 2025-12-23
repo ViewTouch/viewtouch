@@ -1,7 +1,7 @@
 #include "admission.hh"
 #include <external/core/sha1.hh>
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include "safe_string_utils.hh"
 
 
@@ -51,7 +51,7 @@ void admission_parse_hash_ltime_hash(Str& hashout,const Str& ih)
 	uint32_t val=0;
 	if(zloc)
 	{
-		val=strtoul(zloc+1,NULL,16);
+		val=strtoul(zloc+1,nullptr,16);
 	}
 	if(val!=0)
 	{

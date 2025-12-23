@@ -7,6 +7,184 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Changed
+- **Macro → Enum: Zone Types (2025-12-23)**
+  - Replaced `ZONE_*` zone type `#define` macros with a single `enum ZoneType` preserving all identifiers and numeric values
+  - Improves type safety and discoverability while maintaining full backward compatibility (implicit conversion to `int` where needed)
+  - **Files modified**: `zone/pos_zone.hh`
+  - **Impact**: No functional change; build and all tests remain green (40/40)
+
+- **Macro → Enum: Print Modes (2025-12-23)**
+  - Replaced `PRINT_*` style `#define` macros with `enum PrintModeFlags` in `printer.hh`
+  - Removed duplicated `PRINT_*` macros from `report.hh` and included `printer.hh` instead
+  - Preserved all bitmask values for backward compatibility with existing flag operations
+  - **Files modified**: `main/hardware/printer.hh`, `main/ui/report.hh`
+  - **Impact**: No functional change; build and all tests remain green (40/40)
+
+- **Macro → Enum: Receipt Constants (2025-12-23)**
+  - Converted receipt copy selection constants to `enum ReceiptCopy` (`RECEIPT_PICK`, `RECEIPT_CUSTOMER`, `RECEIPT_MERCHANT`) in `credit.hh`
+  - Converted receipt printing options to `enum ReceiptPrintMode` (`RECEIPT_NONE`, `RECEIPT_SEND`, `RECEIPT_FINALIZE`, `RECEIPT_BOTH`) in `settings.hh`
+  - Preserved numeric values and identifiers for compatibility with existing code paths and bitwise checks
+  - **Files modified**: `main/data/credit.hh`, `main/data/settings.hh`
+  - **Impact**: No functional change; build and all tests remain green (40/40)
+
+- **Enum Usage: Settings Formats (PriceRounding, MeasureSystem, DateFormat, NumberFormat, TimeFormat) (2025-12-23)**
+  - Completed migration of user-facing format settings to type-safe enums with display helpers
+  - Added `MeasureSystemType` enum (Standard/Metric) and `GetMeasureSystemDisplayName`, `GetAllMeasureSystems` helpers
+  - Added `GetPriceRoundingDisplayName` and `GetAllPriceRoundingOptions` helpers for `PriceRoundingType`
+  - Added `GetAllDateFormats` and `GetAllNumberFormats` helpers to complete existing enums
+  - Fixed enum value mismatches: Updated TimeFormat, DateFormat, NumberFormat to match actual #define values (1-based, not 0-based)
+  - Replaced legacy array-based cycling with enum-driven approach using `vt::GetEnumValues` for all five settings types
+  - Removed legacy `RoundingName/Value`, `MeasureSystemName/Value`, `DateFormatName/Value`, `NumberFormatName/Value`, `TimeFormatName/Value` arrays
+  - **Files modified**: `main/data/settings_enums.hh`, `main/data/settings.cc`, `main/data/settings.hh`, `zone/settings_zone.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
+- **Enum Usage: ReceiptPrintType (2025-12-23)**
+  - Updated receipt printing logic to use `ReceiptPrintType` via `vt::IntToEnum` instead of bitmask checks
+  - Conditions now compare against `OnSend`/`OnFinalize`/`OnBoth` for clarity and type-safety
+  - Replaced legacy arrays `ReceiptPrintName`/`ReceiptPrintValue` with enum-driven helpers and switching logic
+  - **Files modified**: `main/business/check.cc`, `zone/payment_zone.cc`, `zone/settings_zone.cc`, `main/data/settings.cc`, `main/data/settings.hh`
+  - **Impact**: Behavior unchanged; tests remain 40/40 passing
+
+- **Enum Usage: DrawerPrintType (2025-12-23)**
+  - Converted drawer print options to enum-driven flow: added `DrawerPrintType` and display helpers
+  - Removed legacy `DrawerPrintName`/`DrawerPrintValue` arrays; UI display/cycle now uses enum values
+  - Updated drawer print execution paths to use `DrawerPrintType` instead of macros/arrays
+  - **Files modified**: `main/data/settings_enums.hh`, `main/data/settings.hh`, `main/data/settings.cc`, `zone/settings_zone.cc`, `zone/drawer_zone.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
+- **Enum Usage: DrawerModeType (2025-12-23)**
+  - Migrated drawer mode selection to `DrawerModeType` with enum display helpers
+  - Removed legacy `DrawerModeName`/`DrawerModeValue` arrays; settings UI now cycles via enum values using `vt::GetEnumValues`
+  - Preserved numeric values for compatibility with persisted settings and existing logic
+  - **Files modified**: `main/data/settings_enums.hh`, `main/data/settings.cc`, `zone/settings_zone.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
+- **Macro → Enum: Printer Protocol (2025-12-23)**
+  - Replaced `PRINTER_*` protocol macros with scoped `enum class PrinterProtocol` and an explicit `ToInt` helper
+  - Updated remote printer command writes to use enum values instead of macros
+  - **Files modified**: `src/network/remote_link.hh`, `main/hardware/remote_printer.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
+- **Macro → Enum: Server/Op/Window Protocols (2025-12-23)**
+  - Converted legacy `SERVER_*`, `MODE_*`, and `WINFRAME_*` macros into scoped enums: `ServerProtocol`, `OperationMode`, and `WindowFrame`
+  - Added `ToInt(...)` helpers and adjusted bitmask composition for window frame flags
+  - Resolved X11 macro collisions by prefixing enum values (e.g., `SrvButtonPress`, `OpNone`, `FrameMove`)
+  - Updated send/receive sites in terminal and term modules to use typed enums
+  - Cleaned up lingering legacy macro references in debug strings, comments, and locale strings
+  - **Files modified**: `src/network/remote_link.hh`, `main/hardware/terminal.cc`, `term/layer.cc`, `term/term_view.cc`, `term/term_dialog.cc`, `src/core/debug.cc`, `main/data/locale.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
+### Fixed
+- **Static Analysis Cleanups (2025-12-23)**
+  - Addressed clang-tidy findings: removed branch-clone in DList merge, added self-assignment guard to `Str`, corrected rounding and narrowing in `test_check`, fixed archive header error handling, and cleaned crash reporting/tests for empty-catch/pointer warnings
+  - Suppressed analyzer padding noise for large `Settings`/`Terminal` classes and tightened enum underlying types in terminal hardware definitions
+  - Impact: No behavior change; builds/tests remain green (40/40)
+- **Duplicate Branch Cleanup in settings.cc (2025-12-23)**
+  - Consolidated repeated branch bodies flagged by clang-tidy (bugprone-branch-clone)
+  - **CouponInfo::Applies methods**: Merged duplicate `retval = 0` assignments by combining conditions with logical OR
+  - **CouponInfo::AppliesItem**: Unified duplicate return value assignments by grouping related conditions
+  - **Count methods** (DiscountCount, CouponCount, CreditCardCount, CompCount, MealCount): Replaced four-way if-else chains with single compound conditions
+    - Pattern changed from: `if (A && B) count++; else if (A && C) count++; ...`
+    - To: `if ((A || D) && (B || C)) count++;`
+  - **Authorize method validation**: Combined duplicate `authorize_method = CCAUTH_NONE` assignments
+  - **Files modified**: `main/data/settings.cc`
+  - **Impact**: Clearer control flow, reduced code duplication, all 40 tests passing
+
+- **Critical Bugprone Fixes (2025-12-23)**
+  - Fixed empty catch blocks that were hiding errors in BackTraceFunction (fntrace.hh)
+    - Added error logging with `std::fprintf(stderr, ...)` to track memory corruption issues
+    - Changed from silently ignoring to logging warnings while still preventing crashes
+  - Fixed narrowing conversion warnings that could cause data loss
+    - **Order count conversions** (manager.cc lines 2858, 2860): Fixed int→short narrowing when parsing ItemQTY/ProductQTY
+      - Added bounds checking: `static_cast<short>(std::min(atoi(value), 32767))`
+      - Prevents overflow when order quantities exceed short range
+    - **Socket read conversion** (manager.cc line 3264): Fixed ssize_t→int narrowing for read() return
+      - Changed to: `ssize_t read_result = read(...); bytes_read = static_cast<int>(std::min(read_result, static_cast<ssize_t>(INT_MAX)))`
+      - Prevents data loss when read returns values larger than INT_MAX
+  - **Files modified**: `src/utils/fntrace.hh`, `main/data/manager.cc`
+  - **Impact**: Improved error visibility and prevented potential data corruption from type conversions
+
+- **Logging System Test Failure (2025-12-23)**
+  - Fixed persistent "Log File Output" test failure to achieve 40/40 passing tests
+  - **Root cause**: Test directory `/tmp/viewtouch_test_logs` was shared across all tests, causing log accumulation and initialization conflicts
+  - **Solution**:
+    - Modified "Log File Output" test to use dedicated directory `/tmp/viewtouch_test_logs_file_output`
+    - Fixed structured logger initialization to support both async (production) and synchronous (test) modes
+    - Added per-SECTION shutdown calls to properly reinitialize logger between test sections
+    - Changed `spdlog::shutdown()` to `spdlog::drop_all()` in `Shutdown()` to allow logger reinitialization within the same process
+    - Set JSON sink pattern to `"%v"` instead of empty string to ensure JSON output is written
+    - Changed structured log file from truncate to append mode to preserve test output
+  - **Files modified**:
+    - `src/utils/vt_logger.cc`:
+      - Created separate `structured_logger_` for JSON-only output
+      - Initialize both main and structured loggers with proper async/sync configuration based on test mode
+      - Enhanced `Flush()` to flush both logger instances
+      - Replaced `spdlog::shutdown()` with `spdlog::drop_all()` for proper cleanup
+    - `tests/unit/test_enhanced_logging.cc`:
+      - Use unique test directory to isolate test from other logging tests
+      - Added `#include <iostream>` for debug output (later removed)
+      - Call `Shutdown()` at end of each SECTION to enable proper reinitialization
+  - **Impact**: All 40 tests now pass consistently; logging system properly writes structured JSON and human-readable logs to separate files
+
+### Added
+- **Duplicate Branch Cleanup (2025-12-22)**
+  - Removed duplicated branch bodies flagged by clang-tidy (bugprone-branch-clone)
+  - **Files modified**:
+    - `main/data/manager.cc`:
+      - Consolidated `EndSystem()` after `fork()` for error/parent paths
+      - Merged repeated `ProcessRemoteOrderEntry()` else-if branches into a single combined condition
+    - `zone/button_zone.cc`:
+      - Merged duplicate `Signal()` send branches in `ConditionalZone::Touch`
+      - Unified `KillSystemZone::Render()` to a single `RenderZone` call
+      - Grouped `MessageButtonZone::Signal` cases by behavior to avoid repeated bodies
+      - Combined `FASTFOOD`/`SELFORDER` cases in `ConditionalZone::EvalExp`
+    - `zone/dialog_zone.cc`:
+      - Consolidated keyboard handling to map key codes to a single `Signal()` path (prevents repeated return branches)
+    - `zone/creditcard_list_zone.cc`:
+      - Replaced repeated switch branches in `GetDB()` with direct mapping
+  - **Impact**: Clearer control flow, less chance of divergence and maintenance errors
+
+- **Duplicate Branch Cleanup (2025-12-23)**
+  - Continued removing duplicated branch bodies flagged by clang-tidy (bugprone-branch-clone)
+  - **Files modified**:
+    - `zone/check_list_zone.cc`:
+      - Merged `search` and `nextsearch` cases in `CheckEditZone::Signal()` into a single shared implementation
+      - Unified `CheckListZone::Signal()` handling for `search`/`nextsearch` by computing offsets and start employee
+      - Factored `is_open_like` boolean in `CheckListZone::Render()` for time display clarity
+    - `zone/dialog_zone.cc`:
+      - `CreditCardDialog::Keyboard()`: Mapped key inputs to actions (voice, print) with unified return paths
+      - `OpenTabDialog::Keyboard()`: Collapsed repeated `Signal()` branches using a single command mapping; tab cycling remains explicit
+    - `zone/login_zone.cc`:
+      - `LoginZone::Keyboard()`: Unified non-digit key handling to a single `Signal()` path
+      - `LogoutZone::Keyboard()`: Unified mapping of backspace/cancel to a single `Signal()` path
+    - `zone/report_zone.cc`:
+      - `ReportZone::Keyboard()`: Mapped navigation keys to a `delta` for page changes; unified control flow
+      - `ReadZone::Keyboard()`: Same `delta` mapping for navigation; unified returns
+    - `zone/search_zone.cc`:
+      - `SearchZone::Keyboard()`: Merged identical Enter/Escape handling into one branch
+    - `zone/drawer_zone.cc`:
+      - `DrawerManageZone::Keyboard()`: Collapsed navigation to a `delta` with early returns for other keys
+  - **Impact**: Reduced duplication and simplified search control flow
+
+- **Missing Default Cases in Switch Statements (2025-12-22)**
+  - Added default cases to 3 switch statements that were missing them (bugprone-switch-missing-default-case)
+  - **Files modified**:
+    - `main/data/manager.cc` (line 1555): Added default case to X11 event type switch
+    - `zone/zone.cc` (lines 535, 554): Added default cases to page size and type switches with safe fallback values
+    - `zone/dialog_zone.cc` (lines 181, 201): Added default cases to dialog action type switches
+  - **Impact**: Improved code safety by ensuring all switch statements have explicit handling for unexpected values
+  - **Note**: This addresses potential issues where unhandled enumeration values could lead to uninitialized variables or unexpected behavior
+
+### Changed
+- **C-Array Modernization (2025-12-23)**
+  - Converted fixed-size C-style buffers to `std::array` in manager.cc
+  - **Details**:
+    - Replaced `font_spec_with_dpi[256]`, `font_spec[256]`, `font_family[256]`, and local `line[256]` with `std::array<char, 256>`
+    - Updated calls to use `.data()` and `.size()` with `snprintf`, `fgets`, `strcmp`, and `strncpy`
+    - Preserved existing behavior and ABI by returning `const char*` via `.data()`
+  - **Files modified**: `main/data/manager.cc`
+  - **Impact**: Safer buffer handling with compile-time bounds, no behavior changes; all tests pass
+
 - **Editor Settings Button Split and Password Function Removal (2025-12-XX)**
   - **Split Editor Settings**: Separated "Editor Settings" functionality into two distinct buttons for better organization
     - **Editor Settings** button (`ZONE_DEVELOPER`) now contains only:
@@ -55,6 +233,108 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Professional appearance suitable for business documentation
   - Maintains all existing functionality while significantly improving visual clarity
   - **Files modified**: `main/ui/system_salesmix.cc`
+
+### Fixed
+- **Narrowing Conversion Safety Fixes (12-22-2025)**
+  - Applied bugprone-narrowing-conversions fixes to prevent type conversion bugs and unintended value changes
+  - **Key Fixes**:
+    - [manager.cc#L2969](main/data/manager.cc#L2969): Changed `float interm = atof(cost)` to `double` (atof returns double, not float)
+    - [manager.cc#L3088-3089](main/data/manager.cc#L3088-L3089): Changed strlen result variables from `int` to `size_t` for proper unsigned handling
+    - [zone.cc#L1274](zone/zone.cc#L1274): Added explicit `static_cast<short>` for Page size assignment
+    - [zone.cc#L1496](zone/zone.cc#L1496): Added explicit `static_cast<int>` for strlen result assignment
+    - [user_edit_zone.cc#L739](zone/user_edit_zone.cc#L739): Added explicit `static_cast<short>` for FormField Set() call with int parameter
+  - **Impact**: Eliminated clang-tidy bugprone-narrowing-conversions warnings across core files; improved type safety and prevented potential data loss from implicit conversions
+  - **Verification**: Build successful, all 40 tests passing
+  - **Files modified**: `main/data/manager.cc`, `zone/zone.cc`, `zone/user_edit_zone.cc`
+
+- **Comprehensive C-Array Modernization in manager.cc (12-22-2025)**
+  - Applied clang-tidy modernize-avoid-c-arrays fixes to convert all remaining C-style buffers to std::array
+  - **Scope**: Complete modernization of manager.cc focusing on:
+    - Terminal parsing and dynamic terminal management (SetTermInfo, OpenDynTerminal, CloseDynTerminal, CloneDynTerminal)
+    - Remote order processing (ProcessRemoteOrder, SendRemoteOrderResult, GetCCData, FindCCData)
+    - Socket request handling (ProcessSocketRequest, ReadSocketRequest)
+    - Background command/report execution (RunUserCommand, UserCount, RunReport)
+    - System startup resource loading (StartSystem resource file paths and format buffers)
+  - **Key Conversions**:
+    - Terminal info buffers: `termtype`, `printhost`, `printmodl`, `numdrawers` → std::array with .data() access
+    - Remote order KV parsing: `key`, `value`, `StoreNum`, `cardnum`, `camount`, `cn` → std::array with safe string ops
+    - Socket request buffers: `request`, `result_str`, `str` → std::array with proper size tracking
+    - Message/format buffers: `msg`, `report_name`, `report_from`, `report_to` → std::array with .data()/.size()
+    - System path buffers: All FullPath calls now use `.data()` for C API compatibility
+  - **Legacy API Compatibility**: Maintained compatibility with existing function signatures expecting raw pointers by using `.data()` and `.size()` methods
+  - **Verification**: Build successful with no new errors or warnings; existing tests remain passing
+  - **Impact**: Improved memory safety with compile-time bounds checking, eliminated remaining clang-tidy modernize-avoid-c-arrays warnings in manager.cc
+  - **Files modified**: `main/data/manager.cc` (extensive conversion throughout multiple function families)
+
+- **Extended C++ Modernizations - Phase 2 (12-22-2025)**
+  - Applied clang-tidy-driven fixes: modernize-use-auto, modernize-deprecated-headers, modernize-redundant-void-arg, modernize-loop-convert, modernize-return-braced-init-list, modernize-use-default-member-init, modernize-raw-string-literal
+  - Highlights: auto for new/cast allocations; errno.h → cerrno in [zone/zone.cc](zone/zone.cc) and [main/data/manager.cc](main/data/manager.cc); removed redundant void args in [main/data/manager.cc](main/data/manager.cc); range-based for loops in [main/data/manager.cc](main/data/manager.cc), [main/data/settings.cc](main/data/settings.cc), [term/term_dialog.cc](term/term_dialog.cc); braced init returns in [src/utils/safe_string_utils.hh](src/utils/safe_string_utils.hh); default member init in [src/utils/fntrace.hh](src/utils/fntrace.hh); raw string literal formatting in [main/data/manager.cc](main/data/manager.cc)
+  - Verification: Build successful; Tests 40/40 passing
+  - Impact: 28 files modified, 182 insertions, 184 deletions
+- **Additional C++ Modernizations (12-22-2025)**
+  - Applied targeted modernization fixes to improve code quality and C++ compliance
+  - **modernize-use-using**: Replaced 3 C-style typedef declarations with modern using aliases
+    - Converted function pointer typedefs in [main/data/manager.hh](main/data/manager.hh):
+      - `typedef void (* TimeOutFn)()` → `using TimeOutFn = void (*)()`
+      - `typedef void (* InputFn)()` → `using InputFn = void (*)()`
+      - `typedef int (* WorkFn)()` → `using WorkFn = int (*)()`
+    - Benefits: Clearer syntax, better readability, consistent with modern C++ style
+  - **modernize-macro-to-enum**: Converted 6 VERSION macros to constexpr constants
+    - `ACCOUNT_VERSION`, `ACCOUNT_ENTRY_VERSION` in [main/business/account.hh](main/business/account.hh)
+    - `CHECK_VERSION` in [main/business/check.hh](main/business/check.hh)
+    - `CUSTOMER_VERSION` in [main/business/customer.hh](main/business/customer.hh)
+    - `WORK_VERSION` in [main/business/labor.hh](main/business/labor.hh)
+    - `SALES_ITEM_VERSION` in [main/business/sales.hh](main/business/sales.hh)
+    - `TIP_VERSION` in [main/business/tips.hh](main/business/tips.hh)
+    - Benefits: Type safety, proper scoping, debugger-friendly, no preprocessor pollution
+  - **modernize-use-nodiscard**: Applied [[nodiscard]] attributes to functions with important return values
+    - Automatically applied using clang-tidy --fix across entire codebase
+    - Affected headers: [src/core/time_info.hh](src/core/time_info.hh), [src/utils/utility.hh](src/utils/utility.hh), [src/utils/vt_logger.hh](src/utils/vt_logger.hh), [main/hardware/terminal.hh](main/hardware/terminal.hh), and others
+    - Prevents accidental ignoring of return values (e.g., IsEmpty(), Count(), Search())
+    - Benefits: Compile-time warnings when important return values are discarded, fewer bugs
+  - **Verification**:
+    - Build: Successful with no errors
+    - Tests: 40/40 passing
+    - Impact: 15 files modified, 81 insertions(+), 81 deletions(-)
+  - **Remaining opportunities**: 2,065 trailing-return-type suggestions (stylistic), 794 macro-to-enum candidates (requires careful refactoring), 178 C-array suggestions
+
+- **Comprehensive nullptr Modernization (12-22-2025)**
+  - **Complete C++ Modernization**: Replaced all `NULL` pointer literals with modern C++ `nullptr` across the entire codebase
+  - **Scope**: 123 files modified with ~3,413 insertions and 3,427 deletions
+  - **Coverage**: 
+    - `zone/` directory: 58 files modernized (completed first with ~1,640 lines changed)
+    - `main/` directory: 30 files (1,217+ NULL occurrences replaced)
+    - `term/` directory: 8 files (106+ NULL occurrences replaced)
+    - `src/` directory: 24 files (7+ NULL occurrences replaced)
+    - `loader/` and `cdu/` directories: 1 file each
+  - **Methodology**:
+    - Initial clang-tidy analysis identified 1,332+ NULL occurrences across the codebase
+    - Applied `modernize-use-nullptr` check with `-fix` and `-fix-errors` flags to all source files
+    - Automated fixes applied in batches (zone → main → term → src → loader/cdu)
+    - Manual fixes for 6 edge cases (header default parameters, complex expressions)
+    - Fixed header guard bug in `zone/form_zone.hh` (mismatch between `#ifndef _FORM_ZONE_HH` and `#define FORM_ZONE_HH`)
+  - **Verification**:
+    - Build: Successful (all targets built cleanly)
+    - Tests: 40/40 passing after all changes
+    - NULL in code: 0 occurrences remaining (only in comments, excluded from conversion)
+  - **Benefits**:
+    - Improved type safety: `nullptr` has type `std::nullptr_t` instead of integer 0
+    - Better overload resolution: eliminates ambiguity in function calls with pointer/integer overloads
+    - Clearer intent: `nullptr` explicitly indicates pointer context
+    - Modern C++ compliance: aligns codebase with C++11+ standards
+  - **Files modified**: All 123 modified files tracked in version control, including comprehensive changes across `zone/`, `main/`, `term/`, `src/`, `loader/`, and `cdu/` directories
+
+- **Clang-tidy & static analysis fixes (12-21-2025)**
+  - Performed a focused `clang-tidy` and `clang-analyzer` triage and applied multiple correctness, safety, and style fixes across the codebase.
+  - Key actions:
+    - **Project config:** Added a project `.clang-tidy` file to scope checks to project headers and prioritize the most valuable diagnostics (clang-analyzer, bugprone, performance, modernize-use-override).
+    - **Override audit:** Applied `modernize-use-override` conservatively across many `zone/*.hh` headers and other types where safe; examples include `zone/printer.hh`, `zone/cdu_zone.hh`, `zone/report_zone.hh`, `zone/dialog_zone.hh`, `zone/button_zone.hh`, `zone/account_zone.hh`, `zone/chart_zone.hh`, `zone/drawer_zone.hh`, and `zone/creditcard_list_zone.hh`. Incorrect or non-matching `override` annotations were removed during iterative fixes.
+    - **Safety & style fixes:** Replaced common issues reported by clang-tidy (e.g., removed reserved identifier header guards, `bzero` → `memset`, use `= default` for trivial destructors where appropriate) and fixed several small logic/warning cases found while making changes.
+    - **Incremental approach:** Changes were applied file-by-file in small commits; each change was followed by a build and unit test run to limit regressions.
+  - Status:
+    - Build and tests verified after edits: **40/40 tests passing** after nullptr modernization and logging fixes
+    - Zone header audit and follow-up analyzer passes complete. Representative files modified include `main/business/check.cc`, `src/network/socket.cc`, many headers under `main/`, `src/`, and `zone/`, plus the newly added `.clang-tidy`.
+
 
 ### Fixed
 - **Build System Compilation Errors and Warnings (12-13-2025)**
@@ -427,6 +707,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `CMakeLists.txt`
 
 ### Removed
+- **Reverse SSH Tunnel Removal (2025-12-21)**
+  - **Removal**: Removed the Reverse SSH subsystem (service implementation, standalone daemon, management scripts, systemd unit, configuration files, and documentation).
+  - **Notes**: Also removed related settings fields and build/install rules; implementation relied on the system OpenSSH client and was removed to simplify the codebase.
 - **Texture Loading System Removal (2025-12-XX)**
   - **Removal**: Completely removed all texture loading and management systems
   - **Implementation**:

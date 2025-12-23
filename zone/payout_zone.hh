@@ -19,7 +19,7 @@
  */
 
 #ifndef _PAYOUT_ZONE_HH
-#define _PAYOUT_ZONE_HH
+#define PAYOUT_ZONE_HH
 
 #include "layout_zone.hh"
 
@@ -46,15 +46,15 @@ public:
     // Constructor
     PayoutZone();
     // Destructor
-    ~PayoutZone();
+    ~PayoutZone() override;
 
     // Member Functions
-    int          Type() { return ZONE_PAYOUT; }
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar* message);
-    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          Type() override { return ZONE_PAYOUT; }
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
 
-    Flt *Spacing() { return &spacing; }
+    Flt *Spacing() override { return &spacing; }
 
     int PayoutTips(Terminal *term);
     int Print(Terminal *term, int mode);
@@ -73,10 +73,10 @@ public:
     EndDayZone();
 
     // Member Functions
-    int          Type() { return ZONE_END_DAY; }
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar* message);
-    int          Update(Terminal *term, int update_message, const genericChar* value);
+    int          Type() override { return ZONE_END_DAY; }
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    int          Update(Terminal *term, int update_message, const genericChar* value) override;
     int          EndOfDay(Terminal *term, int force = 0);
 };
 

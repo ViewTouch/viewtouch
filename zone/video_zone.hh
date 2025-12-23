@@ -33,10 +33,10 @@ public:
     VideoTargetZone();
 
     // Member Functions
-    int          Type() { return ZONE_VIDEO_TARGET; }
+    int          Type() override { return ZONE_VIDEO_TARGET; }
     int          AddFields();
-    RenderResult Render(Terminal *t, int update_flag);
+    RenderResult Render(Terminal *t, int update_flag) override;
 
-    int LoadRecord(Terminal *t, int record);
-    int SaveRecord(Terminal *t, int record, int write_file);
+    int LoadRecord(Terminal *t, int record) override;
+    int SaveRecord(Terminal *t, int record, int write_file) override;
 };

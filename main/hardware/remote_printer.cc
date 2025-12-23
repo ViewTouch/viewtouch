@@ -120,9 +120,9 @@ public:
 
     // Member Functions
     int   WInt8(int val);
-    int   RInt8(int *val = NULL);
+    int   RInt8(int *val = nullptr);
     int   WStr(const char* str, int len = 0);
-    const genericChar* RStr(char* str = NULL);  // Changed to non-const for GetString
+    const genericChar* RStr(char* str = nullptr);  // Changed to non-const for GetString
     int   Send();
     int   SendNow();
     int   Reconnect();  // Critical fix: Add reconnection method
@@ -218,7 +218,7 @@ RemotePrinter::~RemotePrinter()
         RemoveInputFn(input_id);
     if (socket_no >= 0)
     {
-        WInt8(PRINTER_DIE);
+        WInt8(ToInt(PrinterProtocol::Die));
         SendNow();
         close(socket_no);
     }
@@ -241,7 +241,7 @@ int RemotePrinter::RInt8(int *val)
 
 int RemotePrinter::WStr(const char* s, int len)
 {
-    if (s == NULL)
+    if (s == nullptr)
         return buffer_out->PutString("", 0);
     else
         return buffer_out->PutString(s, len);
@@ -250,7 +250,7 @@ int RemotePrinter::WStr(const char* s, int len)
 const char* RemotePrinter::RStr(char* s)
 {
     static std::array<char, 1024> buffer{};
-    if (s == NULL)
+    if (s == nullptr)
         s = buffer.data();
     if (buffer_in->GetString(s, buffer.size()))
     {
@@ -372,7 +372,7 @@ int RemotePrinter::Reconnect()
     
     // Update UI to show printer as online
     if (parent)
-        parent->UpdateAll(UPDATE_PRINTERS, NULL);
+        parent->UpdateAll(UPDATE_PRINTERS, nullptr);
     
     return 0;
 }
@@ -405,13 +405,13 @@ int RemotePrinter::IsOnline() const
 
 int RemotePrinter::StopPrint()
 {
-    WInt8(PRINTER_CANCEL);
+    WInt8(ToInt(PrinterProtocol::Cancel));
     return SendNow();
 }
 
 int RemotePrinter::OpenDrawer(int drawer)
 {
-    WInt8(PRINTER_OPENDRAWER);
+    WInt8(ToInt(PrinterProtocol::OpenDrawer));
     return SendNow();
 }
 
@@ -537,7 +537,7 @@ int RemotePrinter::End()
     close(device_no);
     device_no = 0;
 
-    WInt8(PRINTER_FILE);
+    WInt8(ToInt(PrinterProtocol::File));
     WStr(filename.Value());
     return SendNow();
 }
@@ -591,7 +591,7 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
             // Mark printer as offline but keep it in the list for reconnection attempts
             p->failure = 999; // Special value to indicate offline status
             // Update UI to show printer as offline
-            db->UpdateAll(UPDATE_PRINTERS, NULL);
+            db->UpdateAll(UPDATE_PRINTERS, nullptr);
         }
         return;
     }
@@ -607,7 +607,7 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
         
         // Update UI to show printer as online
         if (db)
-            db->UpdateAll(UPDATE_PRINTERS, NULL);
+            db->UpdateAll(UPDATE_PRINTERS, nullptr);
     }
 
     std::array<char, 256> str{};
@@ -616,14 +616,14 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
         int code = p->RInt8();
         switch (code)
         {
-        case SERVER_ERROR:
+        case ToInt(ServerProtocol::SrvError):
             snprintf(str.data(), str.size(), "PrinterError: %s", p->RStr());
             ReportError(str.data());
             break;
-        case SERVER_PRINTER_DONE:
+        case ToInt(ServerProtocol::SrvPrinterDone):
             DeleteFile(p->RStr());
             break;
-        case SERVER_BADFILE:
+        case ToInt(ServerProtocol::SrvBadFile):
             p->RStr();
             break;
         }
@@ -635,13 +635,13 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
 Printer *NewRemotePrinter(const char* host, int port, int model, int no)
 {
     RemotePrinter *p = new RemotePrinter(host, port, model, no);
-    if (p == NULL)
-        return NULL;
+    if (p == nullptr)
+        return nullptr;
 
     if (p->socket_no < 0)
     {
         delete p;
-        return NULL;
+        return nullptr;
     }
 
     p->input_id = AddInputFn((InputFn) PrinterCB, p->socket_no, p);

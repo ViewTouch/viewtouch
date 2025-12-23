@@ -78,9 +78,9 @@ public:
         std::string component;
         int severity; // 0=info, 1=warning, 2=error, 3=critical
 
-        ErrorInfo(const std::string& msg, const std::string& comp, int sev = 2)
-            : message(msg), timestamp(std::chrono::system_clock::now()),
-              component(comp), severity(sev) {}
+                ErrorInfo(std::string msg, std::string comp, int sev = 2)
+                        : message(std::move(msg)), timestamp(std::chrono::system_clock::now()),
+                            component(std::move(comp)), severity(sev) {}
     };
 
     // Data operation result with detailed information
@@ -121,14 +121,14 @@ private:
     // Critical data tracking
     struct CriticalData {
         std::string name;
-        bool is_dirty;
+        bool is_dirty{false};
         std::chrono::steady_clock::time_point last_modified;
         ValidationCallback validator;
         SaveCallback saver;
-        int consecutive_failures;
+        int consecutive_failures{0};
         std::chrono::steady_clock::time_point last_failure;
 
-        CriticalData() : is_dirty(false), consecutive_failures(0) {}
+        CriticalData() = default;
     };
     std::vector<CriticalData> critical_data_items;
 
@@ -151,18 +151,16 @@ private:
 
     // Performance metrics
     struct PerformanceMetrics {
-        int total_validations;
-        int total_saves;
-        int failed_validations;
-        int failed_saves;
-        std::chrono::milliseconds total_validation_time;
-        std::chrono::milliseconds total_save_time;
+        int total_validations{0};
+        int total_saves{0};
+        int failed_validations{0};
+        int failed_saves{0};
+        std::chrono::milliseconds total_validation_time{0};
+        std::chrono::milliseconds total_save_time{0};
         std::chrono::steady_clock::time_point last_reset;
 
-        PerformanceMetrics() : total_validations(0), total_saves(0),
-                              failed_validations(0), failed_saves(0),
-                              total_validation_time(0), total_save_time(0),
-                              last_reset(std::chrono::steady_clock::now()) {}
+        PerformanceMetrics()
+            : last_reset(std::chrono::steady_clock::now()) {}
     };
     PerformanceMetrics metrics;
     
@@ -213,14 +211,14 @@ public:
     // Data validation
     ValidationResult ValidateAllData();
     ValidationResult ValidateCriticalData();
-    void RegisterValidationCallback(const std::string& name, ValidationCallback callback);
+    void RegisterValidationCallback(const std::string& name, const ValidationCallback& callback);
     
     // Data saving
     SaveResult SaveAllData();
     SaveResult SaveCriticalData();
     OperationResult SaveAllDataDetailed();
     OperationResult SaveCriticalDataDetailed();
-    void RegisterSaveCallback(const std::string& name, SaveCallback callback);
+    void RegisterSaveCallback(const std::string& name, const SaveCallback& callback);
     
     // Critical data management
     void RegisterCriticalData(const std::string& name, 

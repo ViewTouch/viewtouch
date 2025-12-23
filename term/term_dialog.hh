@@ -71,7 +71,7 @@ public:
     // Member Functions
     int Clear();
     int Init(Widget parent, const genericChar* label, const genericChar* *option_name, int *option_value,
-             void *option_cb = NULL, void *client_data = NULL);
+             void *option_cb = nullptr, void *client_data = nullptr);
     int Show(int flag);
     int Set(int val);
     int SetLabel(const char* label);

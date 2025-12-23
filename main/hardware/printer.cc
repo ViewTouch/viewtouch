@@ -61,7 +61,7 @@
 const genericChar* PrinterModelName[] = {
     "No Printer", "Epson", "Star", "HP", "Toshiba", "Ithaca",
     "HTML", "PostScript", "PDF", "Receipt Text",
-    "Report Text", "QuickBooks CSV", NULL};
+    "Report Text", "QuickBooks CSV", nullptr};
 int          PrinterModelValue[] = {
     MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_HP, MODEL_TOSHIBA, MODEL_ITHACA,
     MODEL_HTML, MODEL_POSTSCRIPT, MODEL_PDF, MODEL_RECEIPT_TEXT,
@@ -75,7 +75,7 @@ int          PrinterModelValue[] = {
 const genericChar* ReceiptPrinterModelName[] = {
     "No Printer", "Epson", "Star", "HP", "Toshiba", "Ithaca",
     "HTML", "PostScript", "PDF", "Receipt Text",
-    "Report Text", "QuickBooks CSV", NULL};
+    "Report Text", "QuickBooks CSV", nullptr};
 int          ReceiptPrinterModelValue[] = {
     MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_HP, MODEL_TOSHIBA, MODEL_ITHACA,
     MODEL_HTML, MODEL_POSTSCRIPT, MODEL_PDF, MODEL_RECEIPT_TEXT,
@@ -83,7 +83,7 @@ int          ReceiptPrinterModelValue[] = {
 
 const genericChar* ReportPrinterModelName[] = {
     "No Printer", "HP", "Toshiba", "HTML", "PostScript",
-    "PDF", "Text", "QuickBooks CSV", NULL};
+    "PDF", "Text", "QuickBooks CSV", nullptr};
 int          ReportPrinterModelValue[] = {
     MODEL_NONE, MODEL_HP, MODEL_TOSHIBA, MODEL_HTML, MODEL_POSTSCRIPT,
     MODEL_PDF, MODEL_REPORT_TEXT, MODEL_QUICKBOOKS_CSV, -1};
@@ -92,7 +92,7 @@ int          ReportPrinterModelValue[] = {
 
 const genericChar* PortName[] = {
     "XCD Parallel", "XCD Serial", "Explora Parallel", "Explora Serial",
-    "VT Daemon", "Device On Server", NULL};
+    "VT Daemon", "Device On Server", nullptr};
 int          PortValue[] = {
     PORT_XCD_PARALLEL, PORT_XCD_SERIAL, PORT_EXPLORA_PARALLEL, PORT_EXPLORA_SERIAL,
     PORT_VT_DAEMON, PORT_SERVER_DEVICE, -1};
@@ -105,9 +105,9 @@ int          PortValue[] = {
 
 Printer::Printer()
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -130,9 +130,9 @@ Printer::Printer()
 
 Printer::Printer(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -154,8 +154,7 @@ Printer::Printer(const genericChar* host, int port, const genericChar* targetstr
 }
 
 Printer::~Printer()
-{
-}
+= default;
 
 /****
  * MatchHost:  This is fairly rudimentary.  It only checks the hostname.  I can only
@@ -169,7 +168,7 @@ int Printer::MatchHost(const genericChar* host, int /*port*/)
     FnTrace("Printer::MatchHost()");
     int retval = 1;
 
-    if (strcmp(host_name.Value(), host))
+    if (strcmp(host_name.Value(), host) != 0)
         retval = 0;
 
     return retval;
@@ -180,7 +179,7 @@ int Printer::MatchTerminal(const genericChar* termname)
     FnTrace("Printer::MatchTerminal()");
     int retval = 1;
 
-    if (strcmp(term_name.Value(), termname))
+    if (strcmp(term_name.Value(), termname) != 0)
         retval = 0;
 
     return retval;
@@ -332,7 +331,7 @@ int Printer::ParallelPrint()
                 while (bytes > 0)
                 {
                     bytes = write(outfd, buff, static_cast<size_t>(bytes));
-                    select(0, NULL, NULL, NULL, &timeout);
+                    select(0, nullptr, nullptr, nullptr, &timeout);
                     if (bytes > 0)
                         bytes = read(infd, buff, STRLENGTH);
                 }
@@ -398,7 +397,7 @@ int Printer::SocketPrint()
     struct sockaddr_in their_addr; // connector's address information
 
     he = gethostbyname(target.Value());  // get the host info
-    if (he == NULL)
+    if (he == nullptr)
     {
         vt::Logger::error("SocketPrint: Failed to resolve host '{}'", target.Value());
         perror("gethostbyname");
@@ -491,7 +490,7 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
     const genericChar* title_source;
 
     // Select the source string without copying
-    if (source != NULL)
+    if (source != nullptr)
         title_source = source;
     else if (have_title)
         title_source = page_title.c_str();
@@ -517,7 +516,7 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
         buffidx += snprintf(buffer + buffidx, max_len - buffidx, "-%02d-%02d-%d",
                            now.Day(), now.Month(), now.Year());
 
-        if (ext == NULL)
+        if (ext == nullptr)
         {
             // append an extension
             switch (Model())
@@ -595,7 +594,7 @@ int Printer::GetFilePath(char* dest)
 
     if (IsDirectory(target.Value()))
     {
-        MakeFileName(filename, NULL, NULL, STRLENGTH);
+        MakeFileName(filename, nullptr, nullptr, STRLENGTH);
         vt_safe_string::safe_format(dest, STRLENGTH, "%s/%s", target.Value(), filename);
     }
     else
@@ -825,7 +824,7 @@ void Printer::DebugPrint(int printall)
     printf("    Have Title:  %d\n", have_title);
     printf("    Kitchen Mode:  %d\n", kitchen_mode);
 
-    if (printall && next != NULL)
+    if (printall && next != nullptr)
         next->DebugPrint(printall);
 }
 
@@ -835,9 +834,9 @@ void Printer::DebugPrint(int printall)
  ********************************************************************/
 PrinterIthaca::PrinterIthaca(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1027,9 +1026,9 @@ int PrinterIthaca::CutPaper(int partial_only)
  ********************************************************************/
 PrinterStar::PrinterStar(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1258,9 +1257,9 @@ int PrinterStar::CutPaper(int partial_only)
  ********************************************************************/
 PrinterEpson::PrinterEpson(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1479,9 +1478,9 @@ int PrinterEpson::CutPaper(int partial_only)
 
 PrinterHP::PrinterHP(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1656,9 +1655,9 @@ int PrinterHP::CutPaper(int partial_only)
  ********************************************************************/
 PrinterHTML::PrinterHTML(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1804,9 +1803,9 @@ int PrinterHTML::LineFeed(int lines)
  ********************************************************************/
 PrinterPostScript::PrinterPostScript()
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1830,9 +1829,9 @@ PrinterPostScript::PrinterPostScript()
 
 PrinterPostScript::PrinterPostScript(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1964,13 +1963,13 @@ int PrinterPostScript::Init()
             "RegularFont\n",
             "} def\n",
             "NewPage\n",
-            NULL
+            nullptr
             };
     
     if (temp_fd <= 0)
         return 1;
 
-    while (lines[idx] != NULL)
+    while (lines[idx] != nullptr)
     {
         if (write(temp_fd, lines[idx], strlen(lines[idx])) < 0)
             break;
@@ -2208,9 +2207,9 @@ int PrinterPostScript::Put(genericChar c, int flags)
 
 PrinterPDF::PrinterPDF()
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2232,9 +2231,9 @@ PrinterPDF::PrinterPDF()
 
 PrinterPDF::PrinterPDF(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2267,7 +2266,7 @@ int PrinterPDF::Close()
     close(temp_fd);
 
     // create the PDF filename and convert the temp file
-    MakeFileName(filename, NULL, ".pdf", STRLONG);
+    MakeFileName(filename, nullptr, ".pdf", STRLONG);
     vt_safe_string::safe_format(pdffullpath, STRLONG, "/tmp/%s", filename);
     vt_safe_string::safe_format(command, STRLONG, "ps2pdf %s %s", temp_name.Value(), pdffullpath);
     system(command);
@@ -2292,9 +2291,9 @@ int PrinterPDF::Close()
  ********************************************************************/
 PrinterReceiptText::PrinterReceiptText()
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2316,9 +2315,9 @@ PrinterReceiptText::PrinterReceiptText()
 
 PrinterReceiptText::PrinterReceiptText(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2398,9 +2397,9 @@ int PrinterReceiptText::LineFeed(int lines)
  ********************************************************************/
 PrinterReportText::PrinterReportText(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2541,7 +2540,7 @@ int ParseDestination(int &type, genericChar* target, int &port, const genericCha
 Printer *NewPrinterObj(const genericChar* destination, int port, int model, int no)
 {
     FnTrace("NewPrinterObj()");
-    Printer *retPrinter = NULL;
+    Printer *retPrinter = nullptr;
     genericChar target[STRLENGTH] = "";
     int target_type;
 
@@ -2585,7 +2584,7 @@ Printer *NewPrinterObj(const genericChar* destination, int port, int model, int 
             retPrinter = new PrinterQuickBooksCSV(destination, port, target, target_type);
             break;
         default:
-            retPrinter = NULL;
+            retPrinter = nullptr;
             break;
         }
     }
@@ -2596,7 +2595,7 @@ Printer *NewPrinterObj(const genericChar* destination, int port, int model, int 
 Printer *NewPrinterFromString(const genericChar* specification)
 {
     FnTrace("NewPrinterFromString()");
-    Printer *retPrinter = NULL;
+    Printer *retPrinter = nullptr;
     genericChar destination[STRLONG] = "";
     genericChar modelstr[STRLONG] = "";
     int model = MODEL_HTML;  // use default model
@@ -2652,9 +2651,9 @@ Printer *NewPrinterFromString(const genericChar* specification)
  ********************************************************************/
 PrinterQuickBooksCSV::PrinterQuickBooksCSV(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;

@@ -18,8 +18,8 @@
  * Definition of zone types & other zone data
  */
 
-#ifndef _POS_ZONE_HH
-#define _POS_ZONE_HH
+#ifndef POS_ZONE_HH
+#define POS_ZONE_HH
 
 #include "zone.hh"
 
@@ -27,92 +27,94 @@
 /**** Definitions ****/
 #define ZONE_VERSION 29
 
-// Zone Types
-#define ZONE_UNDEFINED       0   // type not defined
-#define ZONE_STANDARD        1   // button with message & jump
-#define ZONE_ITEM            2   // order menu item
-#define ZONE_CONDITIONAL     3   // work if conditions are met
-#define ZONE_TENDER          4   // tender payment type button
-#define ZONE_TABLE           5   // table status/selection
-#define ZONE_COMMENT         6   // only seen by superuser
-#define ZONE_QUALIFIER       7   // qualifier: no, extra, lite
-#define ZONE_TOGGLE          8   // button with toggleing text/message
-#define ZONE_SIMPLE          9   // button with only jump
-#define ZONE_SWITCH          10  // settings selection button
+// Zone Types (converted from macros to enum constants)
+enum ZoneType : std::uint8_t {
+    ZONE_UNDEFINED       = 0,   // type not defined
+    ZONE_STANDARD        = 1,   // button with message & jump
+    ZONE_ITEM            = 2,   // order menu item
+    ZONE_CONDITIONAL     = 3,   // work if conditions are met
+    ZONE_TENDER          = 4,   // tender payment type button
+    ZONE_TABLE           = 5,   // table status/selection
+    ZONE_COMMENT         = 6,   // only seen by superuser
+    ZONE_QUALIFIER       = 7,   // qualifier: no, extra, lite
+    ZONE_TOGGLE          = 8,   // button with toggleing text/message
+    ZONE_SIMPLE          = 9,   // button with only jump
+    ZONE_SWITCH          = 10,  // settings selection button
 
-#define ZONE_LOGIN           20  // takes user id for login
-#define ZONE_COMMAND         21  // system command/status
-#define ZONE_GUEST_COUNT     23  // enter the number of guests
-#define ZONE_LOGOUT          24  // user logout stuff
-#define ZONE_CHECK_LIST      31  // show open checks
-#define ZONE_ORDER_ENTRY     30  // show current menu order
-#define ZONE_ORDER_PAGE      51  // page change on order entry window
-#define ZONE_ORDER_FLOW      64  // order start/index/continue
-#define ZONE_ORDER_ADD       83  // increase order button on order entry page
-#define ZONE_ORDER_DELETE    84  // delete/rebuild button on order entry page
-#define ZONE_ORDER_DISPLAY   85  // kitchen work order display
-#define ZONE_ORDER_COMMENT   104 // add comment button on order entry page
-#define ZONE_PAYMENT_ENTRY   32  // show/allow payments for check
-#define ZONE_USER_EDIT       33  // show/edit users
-#define ZONE_SETTINGS        34  // edit general system variables
-#define ZONE_TAX_SETTINGS    35  // tax and royalty settings
-#define ZONE_DEVELOPER       36  // developer application settings
-#define ZONE_TENDER_SET      37  // tender selection & settings
-#define ZONE_TAX_SET         38  // tax specifications
-#define ZONE_MONEY_SET       39  // currency specifications
-#define ZONE_CC_SETTINGS     40  // credit/charge card settings
-#define ZONE_CC_MSG_SETTINGS 41  // credit/charge card messages
-#define ZONE_REPORT          50  // super report zone
-#define ZONE_SCHEDULE        52  // employee scheduling
-#define ZONE_PRINT_TARGET    53  // family printer destinations
-#define ZONE_SPLIT_CHECK     54  // check splitting zone
-#define ZONE_DRAWER_MANAGE   55  // Drawer pulling/balancing
-#define ZONE_HARDWARE        56  // terminal & printer setup/settings/status
-#define ZONE_TIME_SETTINGS   57  // store hours/shifts
-#define ZONE_TABLE_ASSIGN    58  // transfer tables/checks between servers
-#define ZONE_CHECK_DISPLAY   59  // display multiple checks on the screen
-#define ZONE_KILL_SYSTEM     61  // system termination
-#define ZONE_PAYOUT          62  // cash payout system
-#define ZONE_DRAWER_ASSIGN   63  // drawer assignment
-#define ZONE_SEARCH          66  // search for word though records
-#define ZONE_SPLIT_KITCHEN   67  // split kitchen terminal assignment
-#define ZONE_END_DAY         68  // end of day management
-#define ZONE_READ            69  // reading & displaying text files
-#define ZONE_JOB_SECURITY    70  // job secuity settings
-#define ZONE_INVENTORY       71  // raw product inventory
-#define ZONE_RECIPE          72  // recipes using raw products
-#define ZONE_VENDOR          73  // raw product suppliers
-#define ZONE_LABOR           74  // labor management
-#define ZONE_ITEM_LIST       75  // list all sales items
-#define ZONE_INVOICE         76  // invoice entry/listing
-#define ZONE_PHRASE          77  // phrase translation/replacement
-#define ZONE_ITEM_TARGET     78  // item printer target
-#define ZONE_RECEIPT_SET     79  // printed receipt settings
-#define ZONE_MERCHANT        80  // merchant info for credit authorize
-#define ZONE_LICENSE         81  // viewtouch pos license setup
-#define ZONE_ACCOUNT         82  // chart of accounts list/edit
-#define ZONE_CHART           86  // spreadsheet like data display
-#define ZONE_VIDEO_TARGET    87  // for Kitchen Video, which food types get displayed
-#define ZONE_EXPENSE         88  // paying expense from revenue
-#define ZONE_STATUS_BUTTON   89  // for error messages and other things
-#define ZONE_CDU             90  // CDU string entry and modification
-#define ZONE_RECEIPTS        91  // Strings for receipt headers and footers
-#define ZONE_CUSTOMER_INFO   92  // For editing customer info (name, address, et al)
-#define ZONE_CHECK_EDIT      93  // For editing check info like Delivery Date.
-#define ZONE_CREDITCARD_LIST 94  // For managing exceptions, refunds, and voids
-#define ZONE_EXPIRE_MSG      95  // For setting the expiration message
-#define ZONE_REVENUE_GROUPS  96  // Revenue group settings for menu families
-#define ZONE_IMAGE_BUTTON    97  // button with user-selectable image
-#define ZONE_CALCULATION_SETTINGS 110  // calculation settings (multiply, add/subtract)
-#define ZONE_ITEM_NORMAL     98  // menu item button
-#define ZONE_ITEM_MODIFIER   99  // modifier button
-#define ZONE_ITEM_METHOD     100 // non-tracking modifier button
-#define ZONE_ITEM_SUBSTITUTE 101 // menu item + substitute button
-#define ZONE_ITEM_POUND      102 // priced by weight button
-#define ZONE_ITEM_ADMISSION  103 // event admission button
-#define ZONE_INDEX_TAB       108 // index tab button (only on Index pages, inherited by Menu Item pages)
-#define ZONE_LANGUAGE_BUTTON 109 // language selection button
-#define ZONE_CLEAR_SYSTEM    107 // clear system with countdown
+    ZONE_LOGIN           = 20,  // takes user id for login
+    ZONE_COMMAND         = 21,  // system command/status
+    ZONE_GUEST_COUNT     = 23,  // enter the number of guests
+    ZONE_LOGOUT          = 24,  // user logout stuff
+    ZONE_CHECK_LIST      = 31,  // show open checks
+    ZONE_ORDER_ENTRY     = 30,  // show current menu order
+    ZONE_ORDER_PAGE      = 51,  // page change on order entry window
+    ZONE_ORDER_FLOW      = 64,  // order start/index/continue
+    ZONE_ORDER_ADD       = 83,  // increase order button on order entry page
+    ZONE_ORDER_DELETE    = 84,  // delete/rebuild button on order entry page
+    ZONE_ORDER_DISPLAY   = 85,  // kitchen work order display
+    ZONE_ORDER_COMMENT   = 104, // add comment button on order entry page
+    ZONE_PAYMENT_ENTRY   = 32,  // show/allow payments for check
+    ZONE_USER_EDIT       = 33,  // show/edit users
+    ZONE_SETTINGS        = 34,  // edit general system variables
+    ZONE_TAX_SETTINGS    = 35,  // tax and royalty settings
+    ZONE_DEVELOPER       = 36,  // developer application settings
+    ZONE_TENDER_SET      = 37,  // tender selection & settings
+    ZONE_TAX_SET         = 38,  // tax specifications
+    ZONE_MONEY_SET       = 39,  // currency specifications
+    ZONE_CC_SETTINGS     = 40,  // credit/charge card settings
+    ZONE_CC_MSG_SETTINGS = 41,  // credit/charge card messages
+    ZONE_REPORT          = 50,  // super report zone
+    ZONE_SCHEDULE        = 52,  // employee scheduling
+    ZONE_PRINT_TARGET    = 53,  // family printer destinations
+    ZONE_SPLIT_CHECK     = 54,  // check splitting zone
+    ZONE_DRAWER_MANAGE   = 55,  // Drawer pulling/balancing
+    ZONE_HARDWARE        = 56,  // terminal & printer setup/settings/status
+    ZONE_TIME_SETTINGS   = 57,  // store hours/shifts
+    ZONE_TABLE_ASSIGN    = 58,  // transfer tables/checks between servers
+    ZONE_CHECK_DISPLAY   = 59,  // display multiple checks on the screen
+    ZONE_KILL_SYSTEM     = 61,  // system termination
+    ZONE_PAYOUT          = 62,  // cash payout system
+    ZONE_DRAWER_ASSIGN   = 63,  // drawer assignment
+    ZONE_SEARCH          = 66,  // search for word though records
+    ZONE_SPLIT_KITCHEN   = 67,  // split kitchen terminal assignment
+    ZONE_END_DAY         = 68,  // end of day management
+    ZONE_READ            = 69,  // reading & displaying text files
+    ZONE_JOB_SECURITY    = 70,  // job secuity settings
+    ZONE_INVENTORY       = 71,  // raw product inventory
+    ZONE_RECIPE          = 72,  // recipes using raw products
+    ZONE_VENDOR          = 73,  // raw product suppliers
+    ZONE_LABOR           = 74,  // labor management
+    ZONE_ITEM_LIST       = 75,  // list all sales items
+    ZONE_INVOICE         = 76,  // invoice entry/listing
+    ZONE_PHRASE          = 77,  // phrase translation/replacement
+    ZONE_ITEM_TARGET     = 78,  // item printer target
+    ZONE_RECEIPT_SET     = 79,  // printed receipt settings
+    ZONE_MERCHANT        = 80,  // merchant info for credit authorize
+    ZONE_LICENSE         = 81,  // viewtouch pos license setup
+    ZONE_ACCOUNT         = 82,  // chart of accounts list/edit
+    ZONE_CHART           = 86,  // spreadsheet like data display
+    ZONE_VIDEO_TARGET    = 87,  // for Kitchen Video, which food types get displayed
+    ZONE_EXPENSE         = 88,  // paying expense from revenue
+    ZONE_STATUS_BUTTON   = 89,  // for error messages and other things
+    ZONE_CDU             = 90,  // CDU string entry and modification
+    ZONE_RECEIPTS        = 91,  // Strings for receipt headers and footers
+    ZONE_CUSTOMER_INFO   = 92,  // For editing customer info (name, address, et al)
+    ZONE_CHECK_EDIT      = 93,  // For editing check info like Delivery Date.
+    ZONE_CREDITCARD_LIST = 94,  // For managing exceptions, refunds, and voids
+    ZONE_EXPIRE_MSG      = 95,  // For setting the expiration message
+    ZONE_REVENUE_GROUPS  = 96,  // Revenue group settings for menu families
+    ZONE_IMAGE_BUTTON    = 97,  // button with user-selectable image
+    ZONE_CALCULATION_SETTINGS = 110,  // calculation settings (multiply, add/subtract)
+    ZONE_ITEM_NORMAL     = 98,  // menu item button
+    ZONE_ITEM_MODIFIER   = 99,  // modifier button
+    ZONE_ITEM_METHOD     = 100, // non-tracking modifier button
+    ZONE_ITEM_SUBSTITUTE = 101, // menu item + substitute button
+    ZONE_ITEM_POUND      = 102, // priced by weight button
+    ZONE_ITEM_ADMISSION  = 103, // event admission button
+    ZONE_INDEX_TAB       = 108, // index tab button (only on Index pages, inherited by Menu Item pages)
+    ZONE_LANGUAGE_BUTTON = 109, // language selection button
+    ZONE_CLEAR_SYSTEM    = 107  // clear system with countdown
+};
 
 /**** Types ****/
 class PosZone : public Zone
@@ -122,16 +124,16 @@ class PosZone : public Zone
 
 public:
     // Member Functions
-    virtual int   Type() { return ZONE_UNDEFINED; }
-    virtual std::unique_ptr<Zone> Copy();
+    int   Type() override { return ZONE_UNDEFINED; }
+    std::unique_ptr<Zone> Copy() override;
 
-    virtual int CanSelect(Terminal *t);
-    virtual int CanEdit(Terminal *t);
-    virtual int CanCopy(Terminal *t);
-    virtual int SetSize(Terminal *t, int width, int height);
-    virtual int SetPosition(Terminal *t, int pos_x, int pos_y);
-    virtual int Read(InputDataFile &df, int version);
-    virtual int Write(OutputDataFile &df, int version);
+    int CanSelect(Terminal *t) override;
+    int CanEdit(Terminal *t) override;
+    int CanCopy(Terminal *t) override;
+    int SetSize(Terminal *t, int width, int height) override;
+    int SetPosition(Terminal *t, int pos_x, int pos_y) override;
+    int Read(InputDataFile &df, int version) override;
+    int Write(OutputDataFile &df, int version) override;
 
     Str *ImagePath() { return &image_path; }
 };
@@ -140,9 +142,9 @@ class PosPage : public Page
 {
 public:
     // Member Functions
-    virtual std::unique_ptr<Page> Copy();
-    virtual int   Read(InputDataFile &df, int version);
-    virtual int   Write(OutputDataFile &df, int version);
+    std::unique_ptr<Page> Copy() override;
+    int   Read(InputDataFile &df, int version) override;
+    int   Write(OutputDataFile &df, int version) override;
 };
 
 

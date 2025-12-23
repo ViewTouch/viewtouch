@@ -39,7 +39,7 @@ public:
     TimeInfo();
     TimeInfo(const TimeInfo &other);
 
-    const date::local_time<std::chrono::seconds> &get_local_time() const;
+    [[nodiscard]] const date::local_time<std::chrono::seconds> &get_local_time() const;
     // Member Functions
     int   Set();                          // Sets time values to current time
     int   Set(int s, int y);
@@ -47,7 +47,7 @@ public:
     int   Set(const TimeInfo *other);           // Copies time value
     int   Set(const TimeInfo &other);           // Copies time value
     int   Clear();                        // Erases time value
-    bool  IsSet() const;                  // boolean - has time been set?
+    [[nodiscard]] bool  IsSet() const;                  // boolean - has time been set?
     int   AdjustSeconds(int amount);      // Adds 'amount' to current second
     int   AdjustMinutes(int amount);      // Adds 'amount' to current minute
     int   AdjustDays(int amount);         // Adds 'amount' to current day
@@ -61,10 +61,10 @@ public:
     // if sign < 0 jump backward a half mont
     // d_low and d_high are the days in the month to jump to
     void half_month_jump(const int sign, const int d_low, const int d_high);
-    std::string DebugPrint() const;  // Just prints the time value for debugging (minutes accuracy)
-    std::string to_string() const;
-    std::string Date() const;
-    std::string Time()const;
+    [[nodiscard]] std::string DebugPrint() const;  // Just prints the time value for debugging (minutes accuracy)
+    [[nodiscard]] std::string to_string() const;
+    [[nodiscard]] std::string Date() const;
+    [[nodiscard]] std::string Time()const;
 
     TimeInfo& operator=  (const TimeInfo &other);
 
@@ -108,7 +108,7 @@ public:
 
     // helper to get the specified property
     template<typename Duration_return, typename Duration_floor>
-    int get() const
+    [[nodiscard]] int get() const
     {
         auto t_floor = date::floor<Duration_floor>(t_);
         auto dur = std::chrono::duration_cast<Duration_return>(t_ - t_floor);
@@ -118,18 +118,18 @@ public:
         return static_cast<int>(dur_cnt);
     }
     // getters using get()
-    int Sec() const;
-    int Min() const;
-    int Hour() const;
-    int Day() const;
-    int Month() const;
-    int Year() const;
+    [[nodiscard]] int Sec() const;
+    [[nodiscard]] int Min() const;
+    [[nodiscard]] int Hour() const;
+    [[nodiscard]] int Day() const;
+    [[nodiscard]] int Month() const;
+    [[nodiscard]] int Year() const;
     // the weekday of the TimeInfo
-    int WeekDay() const;
+    [[nodiscard]] int WeekDay() const;
     // get the seconds since midnight of the current year
-    int SecondsInYear() const;
+    [[nodiscard]] int SecondsInYear() const;
     // get the days in the current month
-    int DaysInMonth() const;
+    [[nodiscard]] int DaysInMonth() const;
 
     // round down to the precision defined by Duration
     // for example floor<std::chrono::seconds>()

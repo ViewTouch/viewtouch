@@ -36,8 +36,8 @@
 // Constructors
 ItemException::ItemException()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     user_id = 0;
     exception_type = 0;
     reason = -1;
@@ -48,8 +48,8 @@ ItemException::ItemException()
 
 ItemException::ItemException(Check *c, Order *o)
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     user_id = 0;
     exception_type = 0;
     reason = -1;
@@ -96,8 +96,8 @@ int ItemException::Write(OutputDataFile &df, int version)
 // Constructors
 TableException::TableException()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     user_id = 0;
     source_id = 0;
     target_id = 0;
@@ -106,8 +106,8 @@ TableException::TableException()
 
 TableException::TableException(Check *c)
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     user_id = 0;
     source_id = 0;
     target_id = 0;
@@ -145,16 +145,16 @@ int TableException::Write(OutputDataFile &df, int version)
 // Constructor
 RebuildException::RebuildException()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     user_id = 0;
     check_serial = 0;
 }
 
 RebuildException::RebuildException(Check *c)
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     user_id = 0;
     check_serial = c->serial_number;
 }
@@ -185,7 +185,7 @@ int RebuildException::Write(OutputDataFile &df, int version)
 // Constructor
 ExceptionDB::ExceptionDB()
 {
-    archive = NULL;
+    archive = nullptr;
 }
 
 // Member Functions
@@ -237,7 +237,7 @@ int ExceptionDB::Read(InputDataFile &df, int version)
 
     for (i = 0; i < count; ++i)
     {
-        ItemException *ie = new ItemException;
+        auto *ie = new ItemException;
         ie->Read(df, version);
         Add(ie);
     }
@@ -245,7 +245,7 @@ int ExceptionDB::Read(InputDataFile &df, int version)
     error += df.Read(count);
     for (i = 0; i < count; ++i)
     {
-        TableException *te = new TableException;
+        auto *te = new TableException;
         te->Read(df, version);
         Add(te);
     }
@@ -253,7 +253,7 @@ int ExceptionDB::Read(InputDataFile &df, int version)
     error += df.Read(count);
     for (i = 0; i < count; ++i)
     {
-        RebuildException *re = new RebuildException;
+        auto *re = new RebuildException;
         re->Read(df, version);
         Add(re);
     }
@@ -267,17 +267,17 @@ int ExceptionDB::Write(OutputDataFile &df, int version)
 
     // Write Item Exceptions
     int error = df.Write(ItemCount(), 1);
-    for (ItemException *ie = ItemList(); ie != NULL; ie = ie->next)
+    for (ItemException *ie = ItemList(); ie != nullptr; ie = ie->next)
         error += ie->Write(df, version);
 
     // Write Table Exceptions
     error += df.Write(TableCount(), 1);
-    for (TableException *te = TableList(); te != NULL; te = te->next)
+    for (TableException *te = TableList(); te != nullptr; te = te->next)
         error += te->Write(df, version);
 
     // Write Rebuild Exceptions
     error += df.Write(RebuildCount(), 1);
-    for (RebuildException *re = RebuildList(); re != NULL; re = re->next)
+    for (RebuildException *re = RebuildList(); re != nullptr; re = re->next)
         error += re->Write(df, version);
     return error;
 }
@@ -352,13 +352,13 @@ int ExceptionDB::AddItemException(Terminal *term, Check *thisCheck, Order *thisO
     FnTrace("ExceptionDB::AddItemException()");
 
     Employee *thisEmployee = term->user;
-    if (thisOrder == NULL || !(thisOrder->status & ORDER_FINAL) || thisEmployee == NULL)
+    if (thisOrder == nullptr || !(thisOrder->status & ORDER_FINAL) || thisEmployee == nullptr)
 	{
         return 1; // exception ignored
 	}
 
 	// allocate space on the heap for exception structure
-    ItemException *ie = new ItemException(thisCheck, thisOrder);
+    auto *ie = new ItemException(thisCheck, thisOrder);
 	// NOTE: need to implement check for failed allocation
 
 	// set relevant properties for this exception
@@ -377,11 +377,11 @@ int ExceptionDB::AddTableException(Terminal *t, Check *c, int target_id)
 {
     FnTrace("ExceptionDB::AddTableException()");
     Employee *e = t->user;
-    if (c == NULL || c->IsEmpty() || c->IsTraining() || e == NULL)
+    if (c == nullptr || c->IsEmpty() || c->IsTraining() || e == nullptr)
         return 1;  // exception ignored
 
     // Add table exception
-    TableException *te = new TableException(c);
+    auto *te = new TableException(c);
     te->user_id = e->id;
     te->time = SystemTime;
     te->source_id = c->user_owner;
@@ -395,11 +395,11 @@ int ExceptionDB::AddRebuildException(Terminal *t, Check *c)
 {
     FnTrace("ExceptionDB::AddRebuildException()");
     Employee *e = t->user;
-    if (c == NULL || c->IsTraining() || e == NULL)
+    if (c == nullptr || c->IsTraining() || e == nullptr)
         return 1;  // exception ignored
 
     // Add rebuild exception
-    RebuildException *re = new RebuildException(c);
+    auto *re = new RebuildException(c);
     re->user_id = e->id;
     re->time = SystemTime;
     Add(re);

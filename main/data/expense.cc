@@ -22,8 +22,8 @@
 #include "expense.hh"
 #include "system.hh"
 #include "expense_zone.hh"
-#include <ctype.h>
-#include <string.h>
+#include <cctype>
+#include <cstring>
 #include <dirent.h>
 #include <unistd.h>
 
@@ -39,7 +39,7 @@ int compareString(const char* big, const genericChar* little)
 
     if (lenlit > lenbig)
         return 0;
-    if (NULL != strstr(big, little))
+    if (nullptr != strstr(big, little))
         return 1;
     else
         return 0;
@@ -189,7 +189,7 @@ int Expense::IsBlank()
 int Expense::Author( Terminal* term, genericChar* employee_name )
 {
     FnTrace("Expense::Author()");
-    if (term == NULL || term->system_data == NULL || employee_name == NULL)
+    if (term == nullptr || term->system_data == nullptr || employee_name == nullptr)
         return 1;
     UserDB *employee_db = &(term->system_data->user_db);
     Employee *employee;
@@ -205,20 +205,20 @@ int Expense::Author( Terminal* term, genericChar* employee_name )
 int Expense::DrawerOwner(Terminal *term, genericChar* drawer_name, Archive *archive)
 {
     FnTrace("Expense::DrawerOwner(term)");
-    if (term == NULL || drawer_name == NULL)
+    if (term == nullptr || drawer_name == nullptr)
         return 1;
     UserDB *employee_db = &(term->system_data->user_db);
     Drawer *drawerlist;
-    if (archive != NULL)
+    if (archive != nullptr)
         drawerlist = archive->DrawerList();
     else
         drawerlist = term->system_data->DrawerList();
-    Drawer *drawer = NULL;
-    Employee *drawer_owner = NULL;
+    Drawer *drawer = nullptr;
+    Employee *drawer_owner = nullptr;
 
     drawer_name[0] = '\0';
     drawer = drawerlist->FindBySerial(drawer_id);
-    if (drawer != NULL)
+    if (drawer != nullptr)
     {
         drawer_owner = employee_db->FindByID(drawer->owner_id);
         if (drawer_owner)
@@ -245,13 +245,13 @@ int Expense::DrawerOwner(Terminal *term, genericChar* drawer_name, Archive *arch
 int Expense::AccountName(Terminal *term, genericChar* account_name, Archive *archive)
 {
     FnTrace("Expense::AccountName()");
-    if (term == NULL || account_name == NULL)
+    if (term == nullptr || account_name == nullptr)
         return 1;
     AccountDB *acct_db = &(term->system_data->account_db);
-    Account *account = NULL;
+    Account *account = nullptr;
     
     account = acct_db->FindByNumber(account_id);
-    if (account != NULL)
+    if (account != nullptr)
         snprintf(account_name, STRLENGTH, "%s", account->name.Value());
     else
         account_name[0] = '\0';
@@ -394,13 +394,13 @@ int ExpenseDB::StatusMatch(int status, int drawer_status)
 int ExpenseDB::ExpenseCount(Terminal *term, int status)
 {
     FnTrace("ExpenseDB::ExpenseCount()");
-    Expense *currExpense = NULL;
-    Drawer *dlist = NULL;
-    Drawer *drawer = NULL;
+    Expense *currExpense = nullptr;
+    Drawer *dlist = nullptr;
+    Drawer *drawer = nullptr;
     int dstat;
     int count = 0;
 
-    if (term == NULL)
+    if (term == nullptr)
     {
         count = expense_list.Count();
     }
@@ -408,7 +408,7 @@ int ExpenseDB::ExpenseCount(Terminal *term, int status)
     {
         dlist = term->system_data->DrawerList();
         currExpense = expense_list.Head();
-        while (currExpense != NULL)
+        while (currExpense != nullptr)
         {
             drawer = dlist->FindBySerial(currExpense->drawer_id);
             if (drawer)
@@ -465,7 +465,7 @@ int ExpenseDB::Write(OutputDataFile &outfile, int version)
     outfile.Write(entered);
 
     outfile.Write(expense_list.Count());
-    while (currExp != NULL)
+    while (currExp != nullptr)
     {
         if (! currExp->IsTraining())
             currExp->Write(outfile, version);
@@ -478,7 +478,7 @@ int ExpenseDB::Load(const char* path)
 {
     FnTrace("ExpenseDB::Load()");
     InputDataFile infile;
-    struct dirent *record = NULL;
+    struct dirent *record = nullptr;
     const genericChar* name;
     genericChar fullpath[STRLENGTH];
     int version = 0;
@@ -502,7 +502,7 @@ int ExpenseDB::Load(const char* path)
 
     // then read the individual expenses
     DIR *dp = opendir(pathname.Value());
-    if (dp == NULL)
+    if (dp == nullptr)
         return 1;  // Error - can't find directory
     do
     {
@@ -516,7 +516,7 @@ int ExpenseDB::Load(const char* path)
                 if (strcmp(&name[len-4], ".fmt") == 0)
                     break;
                 snprintf(fullpath, STRLENGTH, "%s/%s", pathname.Value(), name);
-                Expense *exp = new Expense();
+                auto *exp = new Expense();
                 if (exp->Load(fullpath))
                     ReportError("Error loading expense");
                 else
@@ -538,11 +538,11 @@ int ExpenseDB::RemoveBlank()
 {
     FnTrace("ExpenseDB::RemoveBlank()");
     Expense *curr = expense_list.Head();
-    Expense *next = NULL;
+    Expense *next = nullptr;
     int new_id = 0;
 
     // wipe out all blank records and find the highest id
-    while (curr != NULL)
+    while (curr != nullptr)
     {
         next = curr->next;
         if (curr->IsBlank())
@@ -582,7 +582,7 @@ int ExpenseDB::Save()
     
     // save individual expenses
     Expense *thisexp = expense_list.Head();
-    while (thisexp != NULL)
+    while (thisexp != nullptr)
     {
         if (! thisexp->IsTraining())
             thisexp->Save(pathname.Value());
@@ -598,7 +598,7 @@ int ExpenseDB::Save(int id)
 
     RemoveBlank();
     Expense *exp = FindByID(id);
-    if (exp != NULL && exp->IsTraining() == 0)
+    if (exp != nullptr && exp->IsTraining() == 0)
     {
         exp->Save(pathname.Value());
         retval = 0;
@@ -612,12 +612,12 @@ int ExpenseDB::SaveEntered(int entered_val, int drawer_serial)
     int retval = 0;
     Expense *expense = expense_list.Head();
 
-    while (expense != NULL)
+    while (expense != nullptr)
     {
         if (expense->drawer_id == drawer_serial)
         {
             expense->entered = entered_val;
-            expense = NULL;  // end the loop
+            expense = nullptr;  // end the loop
         }
         else
         {
@@ -663,10 +663,10 @@ int ExpenseDB::AddDrawerPayments(Drawer *drawer_list)
     int count;
 
     // First, clear out the payment balances
-    while (currDrawer != NULL)
+    while (currDrawer != nullptr)
     {
         currBalance = currDrawer->BalanceList();
-        while (currBalance != NULL)
+        while (currBalance != nullptr)
         {
             nextBalance = currBalance->next;
             if (currBalance->tender_type == TENDER_EXPENSE)
@@ -679,13 +679,13 @@ int ExpenseDB::AddDrawerPayments(Drawer *drawer_list)
     }
 
     currDrawer = drawer_list;
-    while (currDrawer != NULL)
+    while (currDrawer != nullptr)
     {
         amount = 0;
         my_entered = 0;
         count = 0;
         Expense *currExpense = expense_list.Head();
-        while (currExpense != NULL)
+        while (currExpense != nullptr)
         {
             if ((currExpense->IsTraining() == 0) &&
                 (currExpense->drawer_id == currDrawer->serial_number))
@@ -704,7 +704,7 @@ int ExpenseDB::AddDrawerPayments(Drawer *drawer_list)
                 currBalance->amount  = amount;
                 currBalance->count   = count;
                 currBalance->entered = my_entered;
-                currDrawer->Total(NULL, 1);
+                currDrawer->Total(nullptr, 1);
             }
         }
         currDrawer = currDrawer->next;
@@ -745,12 +745,12 @@ int ExpenseDB::MoveTo(ExpenseDB *exp_db, Drawer *DrawerList)
 {
     FnTrace("ExpenseDB::MoveTo()");
     Expense *currExpense = expense_list.Head();
-    Expense *prevExpense = NULL;
+    Expense *prevExpense = nullptr;
     Drawer *currDrawer;
     int move;
 
     exp_db->entered = entered;
-    while (currExpense != NULL)
+    while (currExpense != nullptr)
     {
         move = 0;
         // if the Expense is from an account, or if the drawer has been balanced,
@@ -762,7 +762,7 @@ int ExpenseDB::MoveTo(ExpenseDB *exp_db, Drawer *DrawerList)
         if (currExpense->drawer_id > -1)
         {
             currDrawer = DrawerList->FindBySerial(currExpense->drawer_id);
-            if (currDrawer != NULL && currDrawer->GetStatus() == DRAWER_BALANCED)
+            if (currDrawer != nullptr && currDrawer->GetStatus() == DRAWER_BALANCED)
             {
                 move = 1;
             }
@@ -803,10 +803,10 @@ int ExpenseDB::MoveAll(ExpenseDB *exp_db)
     FnTrace("ExpenseDB::MoveAll()");
     Expense *currExpense = expense_list.Head();
 
-    while (currExpense != NULL)
+    while (currExpense != nullptr)
     {
         Remove(currExpense);
-        if (exp_db != NULL)
+        if (exp_db != nullptr)
             exp_db->Add(currExpense);
         currExpense = expense_list.Head();
     }
@@ -816,32 +816,32 @@ int ExpenseDB::MoveAll(ExpenseDB *exp_db)
 Expense *ExpenseDB::FindByRecord(Terminal *term, int no, int drawer_type)
 {
     FnTrace("ExpenseDB::FindByRecord()");
-    Drawer *dlist = NULL;
-    Drawer *drawer = NULL;
+    Drawer *dlist = nullptr;
+    Drawer *drawer = nullptr;
     Expense *thisexp = expense_list.Head();
-    Expense *retexp = NULL;
+    Expense *retexp = nullptr;
     int count = 0;
     int maxcount = expense_list.Count();
 
-    if (term != NULL)
+    if (term != nullptr)
         dlist = term->system_data->DrawerList();
-    while (thisexp != NULL && count < maxcount)
+    while (thisexp != nullptr && count < maxcount)
     {
-        if (dlist != NULL)
+        if (dlist != nullptr)
             drawer = dlist->FindBySerial(thisexp->drawer_id);
-        if ((drawer == NULL) || (StatusMatch(drawer_type, drawer->GetStatus())))
+        if ((drawer == nullptr) || (StatusMatch(drawer_type, drawer->GetStatus())))
         {
             if (count == no)
             {
                 retexp = thisexp;
-                thisexp = NULL;  //end the loop
+                thisexp = nullptr;  //end the loop
             }
             else
             {
                 count += 1;
             }
         }
-        if (thisexp != NULL)
+        if (thisexp != nullptr)
             thisexp = thisexp->next;
     }
     return retexp;
@@ -851,14 +851,14 @@ Expense *ExpenseDB::FindByID(int id)
 {
     FnTrace("ExpenseDB::FindByID()");
     Expense *thisexp = expense_list.Head();
-    Expense *retexp = NULL;
+    Expense *retexp = nullptr;
 
-    while (thisexp != NULL)
+    while (thisexp != nullptr)
     {
         if (id == thisexp->eid)
         {
             retexp = thisexp;
-            thisexp = NULL;  //end the loop
+            thisexp = nullptr;  //end the loop
         }
         else
             thisexp = thisexp->next;
@@ -873,34 +873,34 @@ Expense *ExpenseDB::FindByID(int id)
 int ExpenseDB::FindRecordByWord(Terminal *term, const genericChar* word, int start, Archive *archive)
 {
     FnTrace("ExpenseDB::FindRecordByWord()");
-    Drawer *dlist = NULL;
-    Drawer *drawer = NULL;
+    Drawer *dlist = nullptr;
+    Drawer *drawer = nullptr;
     Expense *thisexp = expense_list.Head();
     int count = 0;
     int maxcount = expense_list.Count();
     int retval = -1;
 
-    if (archive != NULL)
+    if (archive != nullptr)
         dlist = archive->DrawerList();
-    else if (term != NULL)
+    else if (term != nullptr)
         dlist = term->system_data->DrawerList();
-    while (thisexp != NULL && count < maxcount)
+    while (thisexp != nullptr && count < maxcount)
     {
-        if (dlist != NULL)
+        if (dlist != nullptr)
             drawer = dlist->FindBySerial(thisexp->drawer_id);
-        if ((drawer == NULL) || (StatusMatch(DRAWER_OPEN, drawer->GetStatus())))
+        if ((drawer == nullptr) || (StatusMatch(DRAWER_OPEN, drawer->GetStatus())))
         {
             if ((count > start) && thisexp->WordMatch(term, word))
             {
                 retval = count;
-                thisexp = NULL;  //end the loop
+                thisexp = nullptr;  //end the loop
             }
             else
             {
                 count += 1;
             }
         }
-        if (thisexp != NULL)
+        if (thisexp != nullptr)
             thisexp = thisexp->next;
     }
     return retval;
@@ -918,7 +918,7 @@ int ExpenseDB::CountFromDrawer(int drawer_id, int training)
     Expense *currExp = expense_list.Head();
     int drawer_count = 0;
 
-    while (currExp != NULL)
+    while (currExp != nullptr)
     {
         if ((currExp->drawer_id == drawer_id) &&
             (currExp->IsTraining() == training))
@@ -942,7 +942,7 @@ int ExpenseDB::BalanceFromDrawer(int drawer_id, int training)
     Expense *currExp = expense_list.Head();
     int drawer_expenses = 0;
 
-    while (currExp != NULL)
+    while (currExp != nullptr)
     {
         if ((currExp->drawer_id == drawer_id) &&
             (currExp->IsTraining() == training))
@@ -960,7 +960,7 @@ int ExpenseDB::CountFromAccount(int account_id, int training)
     Expense *currExp = expense_list.Head();
     int account_count = 0;
 
-    while (currExp != NULL)
+    while (currExp != nullptr)
     {
         if ((currExp->account_id == account_id) &&
             (currExp->IsTraining() == training))
@@ -978,7 +978,7 @@ int ExpenseDB::BalanceFromAccount(int account_id, int training)
     Expense *currExp = expense_list.Head();
     int account_expenses = 0;
 
-    while (currExp != NULL)
+    while (currExp != nullptr)
     {
         if ((currExp->account_id == account_id) &&
             (currExp->IsTraining() == training))
@@ -1008,7 +1008,7 @@ int ExpenseDB::TotalExpenses(int training)
     Expense *currExp = expense_list.Head();
     int total_expenses = 0;
 
-    while (currExp != NULL)
+    while (currExp != nullptr)
     {
         if (currExp->IsTraining() == training)
             total_expenses += currExp->amount;
@@ -1023,7 +1023,7 @@ int ExpenseDB::EnteredFromDrawer(int drawer_id, int training)
     Expense *currExp = expense_list.Head();
     int drawer_entered = 0;
 
-    while (currExp != NULL)
+    while (currExp != nullptr)
     {
         if ((currExp->drawer_id == drawer_id) &&
             (currExp->IsTraining() == training))
@@ -1041,7 +1041,7 @@ int ExpenseDB::PrintExpenses()
     Expense *currExpense = expense_list.Head();
     
     printf("Print Start...\n");
-    while (currExpense != NULL)
+    while (currExpense != nullptr)
     {
         printf("  Expense %s\n", currExpense->document.Value());
         currExpense = currExpense->next;

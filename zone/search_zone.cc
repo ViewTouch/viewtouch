@@ -62,7 +62,7 @@ SignalResult SearchZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("SearchZone::Signal()");
     static const genericChar* commands[] =
-        {"nextsearch", "backspace", "clear", NULL};
+        {"nextsearch", "backspace", "clear", nullptr};
     unsigned int bufflen = strlen(buffer);
     genericChar tbuff[STRLENGTH];
     SignalResult retval = SIGNAL_IGNORED;
@@ -141,8 +141,6 @@ SignalResult SearchZone::Keyboard(Terminal *term, int my_key, int state)
         term->Signal(str, group_id);
         return SIGNAL_END;
     case 13: // return
-        Draw(term, 1);
-        return SIGNAL_END;
     case 27: // escape (cancel)
         Draw(term, 1);
         return SIGNAL_END;

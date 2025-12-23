@@ -6,8 +6,8 @@
  * Terminal Display module
  */
 
-#ifndef _TERM_VIEW_HH
-#define _TERM_VIEW_HH
+#ifndef TERM_VIEW_HH
+#define TERM_VIEW_HH
 
 #include "list_utility.hh"
 #include "utility.hh"
@@ -67,9 +67,9 @@ extern int   silent_mode;        // to disable clone input
 // Avoids expensive XQueryColor calls for every text render
 struct ColorCache {
     std::array<XRenderColor, TEXT_COLORS> cached_colors;
-    bool initialized;
+    bool initialized{false};
     
-    ColorCache() : initialized(false) {
+    ColorCache() {
         for (auto& c : cached_colors) {
             c.red = c.green = c.blue = c.alpha = 0;
         }
@@ -180,7 +180,7 @@ extern Translations MasterTranslations;
 #define MAX_SCREEN_HEIGHT 1200
 
 // Page Sizes (resolutions)
-enum page_sizes {
+enum page_sizes : std::uint8_t {
   PAGE_SIZE_640x480 =  1,
   PAGE_SIZE_768x1024,
   PAGE_SIZE_800x480,
@@ -313,10 +313,10 @@ public:
     Xpm(Pixmap pm);
     Xpm(Pixmap pm, int w, int h);
     Xpm(Pixmap pm, Pixmap m, int w, int h);  // Constructor with mask
-    constexpr int Width() const noexcept { return width; }
-    constexpr int Height() const noexcept { return height; }
-    constexpr int PixmapID() const noexcept { return pixmap; }
-    constexpr Pixmap MaskID() const noexcept { return mask; }
+    [[nodiscard]] constexpr int Width() const noexcept { return width; }
+    [[nodiscard]] constexpr int Height() const noexcept { return height; }
+    [[nodiscard]] constexpr int PixmapID() const noexcept { return pixmap; }
+    [[nodiscard]] constexpr Pixmap MaskID() const noexcept { return mask; }
 };
 
 class Pixmaps {
@@ -327,7 +327,7 @@ public:
     int Add(Xpm *pixmap);
     Xpm *Get(int idx);
     Xpm *GetRandom();
-    constexpr int Count() const noexcept { return count; }
+    [[nodiscard]] constexpr int Count() const noexcept { return count; }
 };
 
 extern Pixmaps PixmapList;
@@ -379,7 +379,7 @@ extern long long RLLong() noexcept;
 extern int   WFlt(Flt val) noexcept;
 extern Flt   RFlt() noexcept;
 extern int   WStr(const char* s, int len = 0);
-extern genericChar* RStr(genericChar* s = NULL);
+extern genericChar* RStr(genericChar* s = nullptr);
 extern int   SendNow() noexcept;
 extern int   ReloadTermFonts();  // Reload fonts when global defaults change
 void TerminalReloadFonts();
