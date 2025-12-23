@@ -188,6 +188,9 @@ int DialogZone::ClosingAction(int action_type, int action, int arg)
         cancel_action.type = action;
         cancel_action.arg = arg;
         break;
+    default:
+        // Unknown action type, ignore
+        break;
     }
 
     return retval;
@@ -207,6 +210,9 @@ int DialogZone::ClosingAction(int action_type, int action, const char* message)
     case ACTION_CANCEL:
         cancel_action.type = action;
         strncpy(cancel_action.msg, message, STRLENGTH);
+        break;
+    default:
+        // Unknown action type, ignore
         break;
     }
 

@@ -548,6 +548,9 @@ int Page::Init(ZoneDB *zone_db)
     case SIZE_1920x1200: width = 1920; height = 1200; break;
     case SIZE_2560x1440: width = 2560; height = 1440; break;	
     case SIZE_2560x1600: width = 2560; height = 1600; break;
+    default:
+        // Use default 1024x768 if size is not recognized
+        width = 1024; height = 768; break;
 	}
 
 	// FIX - should look up these values instead of having hardcoded values
@@ -564,6 +567,9 @@ int Page::Init(ZoneDB *zone_db)
     case PAGE_LIBRARY:   parent_id = 0; break;
     case PAGE_MODIFIER_KEYBOARD: parent_id = -96; break;
     case PAGE_INDEX_WITH_TABS:   parent_id = -94; break;
+    default:
+        // Default to no parent for unrecognized page types
+        parent_id = 0; break;
 	}
 
 	if (zone_db)

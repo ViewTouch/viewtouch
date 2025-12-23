@@ -1557,6 +1557,9 @@ int StartSystem(int my_use_net)
         case MappingNotify:
             XRefreshKeyboardMapping((XMappingEvent *) &event);
             break;
+        default:
+            // Handle all other event types by dispatching them
+            break;
         }
         XtDispatchEvent(&event);
         
