@@ -59,7 +59,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Added `ToInt(...)` helpers and adjusted bitmask composition for window frame flags
   - Resolved X11 macro collisions by prefixing enum values (e.g., `SrvButtonPress`, `OpNone`, `FrameMove`)
   - Updated send/receive sites in terminal and term modules to use typed enums
-  - **Files modified**: `src/network/remote_link.hh`, `main/hardware/terminal.cc`, `term/layer.cc`, `term/term_view.cc`, `term/term_dialog.cc`
+  - Cleaned up lingering legacy macro references in debug strings, comments, and locale strings
+  - **Files modified**: `src/network/remote_link.hh`, `main/hardware/terminal.cc`, `term/layer.cc`, `term/term_view.cc`, `term/term_dialog.cc`, `src/core/debug.cc`, `main/data/locale.cc`
   - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
 
 ### Fixed
