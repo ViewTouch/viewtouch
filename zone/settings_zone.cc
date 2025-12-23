@@ -190,6 +190,13 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
             str = "Unknown";
         }
         break;
+    case SWITCH_DRAWER_PRINT:
+        if (auto drawer_type = vt::IntToEnum<DrawerPrintType>(settings->drawer_print)) {
+            str = vt::GetDrawerPrintDisplayName(*drawer_type);
+        } else {
+            str = "Unknown";
+        }
+        break;
     case SWITCH_DATE_FORMAT:
         // Modern enum-based approach
         if (auto format = vt::IntToEnum<DateFormatType>(settings->date_format)) {
@@ -260,9 +267,6 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         break;
     case SWITCH_RECEIPT_ALL_MODS:
         onoff = settings->receipt_all_modifiers;
-        break;
-    case SWITCH_DRAWER_PRINT:
-        str = FindStringByValue(settings->drawer_print, DrawerPrintValue, DrawerPrintName);
         break;
     case SWITCH_BALANCE_AUTO_CPNS:
         onoff = settings->balance_auto_coupons;
@@ -408,6 +412,23 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
             settings->receipt_print = next_val;
         }
         break;
+    case SWITCH_DRAWER_PRINT:
+        {
+            auto values = vt::GetEnumValues<DrawerPrintType>();
+            int next_val = settings->drawer_print;
+            if (auto current = vt::IntToEnum<DrawerPrintType>(settings->drawer_print)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->drawer_print = next_val;
+        }
+        break;
     case SWITCH_DATE_FORMAT:
         settings->date_format = NextValue(settings->date_format, DateFormatValue);
         break;
@@ -482,9 +503,6 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         break;
     case SWITCH_RECEIPT_ALL_MODS:
         settings->receipt_all_modifiers ^= 1;
-        break;
-    case SWITCH_DRAWER_PRINT:
-        settings->drawer_print = NextValue(settings->drawer_print, DrawerPrintValue);
         break;
     case SWITCH_BALANCE_AUTO_CPNS:
         settings->balance_auto_coupons ^= 1;

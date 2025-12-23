@@ -39,6 +39,14 @@ enum class ReceiptPrintType {
     OnBoth = 3       // RECEIPT_BOTH
 };
 
+// Drawer print options - values must match DRAWER_PRINT_* constants
+enum class DrawerPrintType {
+    Never = 0,     // DRAWER_PRINT_NEVER
+    OnPull = 1,    // DRAWER_PRINT_PULL
+    OnBalance = 2, // DRAWER_PRINT_BALANCE
+    OnBoth = 3     // DRAWER_PRINT_BOTH
+};
+
 // Example: Price rounding options
 enum class PriceRoundingType {
     None = 0,              // ROUNDING_NONE
@@ -112,6 +120,16 @@ inline const char* GetReceiptPrintDisplayName(ReceiptPrintType type) {
     }
 }
 
+inline const char* GetDrawerPrintDisplayName(DrawerPrintType type) {
+    switch (type) {
+        case DrawerPrintType::OnPull: return "On Pull";
+        case DrawerPrintType::OnBalance: return "On Balance";
+        case DrawerPrintType::OnBoth: return "On Both";
+        case DrawerPrintType::Never: return "Never";
+        default: return "Unknown";
+    }
+}
+
 inline const char* GetTimeFormatDisplayName(TimeFormatType format) {
     switch (format) {
         case TimeFormatType::Hour12: return "12 hour";
@@ -150,6 +168,10 @@ inline auto GetAllDrawerModes() {
 
 inline auto GetAllReceiptPrintOptions() {
     return GetEnumPairs<ReceiptPrintType>();
+}
+
+inline auto GetAllDrawerPrintOptions() {
+    return GetEnumPairs<DrawerPrintType>();
 }
 
 inline auto GetAllTimeFormats() {
