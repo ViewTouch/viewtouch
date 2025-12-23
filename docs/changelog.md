@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **Duplicate Branch Cleanup (2025-12-22)**
+  - Removed duplicated branch bodies flagged by clang-tidy (bugprone-branch-clone)
+  - **Files modified**:
+    - `main/data/manager.cc`:
+      - Consolidated `EndSystem()` after `fork()` for error/parent paths
+      - Merged repeated `ProcessRemoteOrderEntry()` else-if branches into a single combined condition
+  - **Impact**: Clearer control flow, less chance of divergence and maintenance errors
+
 - **Missing Default Cases in Switch Statements (2025-12-22)**
   - Added default cases to 3 switch statements that were missing them (bugprone-switch-missing-default-case)
   - **Files modified**:
