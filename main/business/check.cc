@@ -28,6 +28,7 @@
 #include "data_file.hh"
 #include "system.hh"
 #include "settings.hh"
+#include "main/data/settings_enums.hh"
 #include "data_persistence_manager.hh"
 #include "inventory.hh"
 #include "labels.hh"
@@ -858,8 +859,13 @@ int Check::FinalizeOrders(Terminal *term, int reprint)
         {
             change = SetOrderStatus(subCheck, ORDER_SENT);
             subCheck->ConsolidateOrders();
-            if (change && (settings->receipt_print & RECEIPT_SEND))
-                subCheck->PrintReceipt(term, this, printer);
+            if (change) {
+                if (auto receipt_mode = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {
+                    if (*receipt_mode == ReceiptPrintType::OnSend || *receipt_mode == ReceiptPrintType::OnBoth) {
+                        subCheck->PrintReceipt(term, this, printer);
+                    }
+                }
+            }
     
             subCheck = subCheck->next;
         }

@@ -27,6 +27,7 @@
 #include "dialog_zone.hh"
 #include "locale.hh"
 #include "settings.hh"
+#include "main/data/settings_enums.hh"
 #include "system.hh"
 #include "credit.hh"
 #include "archive.hh"
@@ -1124,11 +1125,15 @@ int PaymentZone::CloseCheck(Terminal *term, int force)
         // Update drawer record
         drawer_open = 0;
         Printer *pr = term->FindPrinter(PRINTER_RECEIPT);
-        if (pr && (settings->receipt_print & RECEIPT_FINALIZE))
+        if (pr)
         {
-            if (settings->cash_receipt || subCheck->OnlyCredit() == 0)
-            {
-                subCheck->PrintReceipt(term, currCheck, pr, drawer, open_drawer);
+            if (auto receipt_mode = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {
+                if (*receipt_mode == ReceiptPrintType::OnFinalize || *receipt_mode == ReceiptPrintType::OnBoth) {
+                    if (settings->cash_receipt || subCheck->OnlyCredit() == 0)
+                    {
+                        subCheck->PrintReceipt(term, currCheck, pr, drawer, open_drawer);
+                    }
+                }
             }
         }
     }
