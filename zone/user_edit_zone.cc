@@ -733,7 +733,7 @@ int JobSecurityZone::LoadRecord(Terminal *term, int record)
         f = f->next;
 
         // Active switch
-        f->Set(a); f = f->next;
+        f->Set(static_cast<short>(a)); f = f->next;
 
         // tables
         f->active = a;

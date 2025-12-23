@@ -1271,7 +1271,7 @@ int ZoneDB::Init()
             {
                 newPage->id = -94;
                 newPage->type = PAGE_INDEX_WITH_TABS;
-                newPage->size = sizes[i];
+                newPage->size = static_cast<short>(sizes[i]);
                 newPage->name.Set("Index with Tabs Template");
                 newPage->index = INDEX_GENERAL;
                 newPage->Init(this);
@@ -1493,7 +1493,7 @@ int ZoneDB::ImportPage(const char* filename)
     int retval = 0;
     int pagenum;
     int idx;
-    int len = strlen(filename);
+    int len = static_cast<int>(strlen(filename));
     Page *newpage = nullptr;
     InputDataFile infile;
     int version = 0;

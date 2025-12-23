@@ -61,6 +61,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `main/ui/system_salesmix.cc`
 
 ### Fixed
+- **Narrowing Conversion Safety Fixes (12-22-2025)**
+  - Applied bugprone-narrowing-conversions fixes to prevent type conversion bugs and unintended value changes
+  - **Key Fixes**:
+    - [manager.cc#L2969](main/data/manager.cc#L2969): Changed `float interm = atof(cost)` to `double` (atof returns double, not float)
+    - [manager.cc#L3088-3089](main/data/manager.cc#L3088-L3089): Changed strlen result variables from `int` to `size_t` for proper unsigned handling
+    - [zone.cc#L1274](zone/zone.cc#L1274): Added explicit `static_cast<short>` for Page size assignment
+    - [zone.cc#L1496](zone/zone.cc#L1496): Added explicit `static_cast<int>` for strlen result assignment
+    - [user_edit_zone.cc#L739](zone/user_edit_zone.cc#L739): Added explicit `static_cast<short>` for FormField Set() call with int parameter
+  - **Impact**: Eliminated clang-tidy bugprone-narrowing-conversions warnings across core files; improved type safety and prevented potential data loss from implicit conversions
+  - **Verification**: Build successful, all 40 tests passing
+  - **Files modified**: `main/data/manager.cc`, `zone/zone.cc`, `zone/user_edit_zone.cc`
+
 - **Comprehensive C-Array Modernization in manager.cc (12-22-2025)**
   - Applied clang-tidy modernize-avoid-c-arrays fixes to convert all remaining C-style buffers to std::array
   - **Scope**: Complete modernization of manager.cc focusing on:
