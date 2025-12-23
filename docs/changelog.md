@@ -27,6 +27,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `main/data/credit.hh`, `main/data/settings.hh`
   - **Impact**: No functional change; build and all tests remain green (40/40)
 
+- **Enum Usage: ReceiptPrintType (2025-12-23)**
+  - Updated receipt printing logic to use `ReceiptPrintType` via `vt::IntToEnum` instead of bitmask checks
+  - Conditions now compare against `OnSend`/`OnFinalize`/`OnBoth` for clarity and type-safety
+  - **Files modified**: `main/business/check.cc`, `zone/payment_zone.cc`
+  - **Impact**: Behavior unchanged; tests remain 40/40 passing
+
 ### Fixed
 - **Critical Bugprone Fixes (2025-12-23)**
   - Fixed empty catch blocks that were hiding errors in BackTraceFunction (fntrace.hh)
