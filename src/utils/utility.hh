@@ -46,13 +46,13 @@ int  vt_setproctitle(const char* title);
 class InputDataFile;
 class OutputDataFile;
 
-enum RenderResult
+enum RenderResult : std::uint8_t
 {
     RENDER_OKAY,  // render okay
     RENDER_ERROR // error in rendering
 };
 
-enum SignalResult
+enum SignalResult : std::int8_t
 {
     SIGNAL_ERROR = -1, // error in processing signal
     SIGNAL_OKAY,       // signal received

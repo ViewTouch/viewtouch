@@ -28,7 +28,7 @@
 #define ZONE_VERSION 29
 
 // Zone Types (converted from macros to enum constants)
-enum ZoneType {
+enum ZoneType : std::uint8_t {
     ZONE_UNDEFINED       = 0,   // type not defined
     ZONE_STANDARD        = 1,   // button with message & jump
     ZONE_ITEM            = 2,   // order menu item

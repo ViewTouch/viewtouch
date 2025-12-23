@@ -143,7 +143,7 @@ extern int   CreditCardValue[];
 #define AUTH_ADVICE        256
 
 // Receipt copy selection (converted from macros to enum constants)
-enum ReceiptCopy {
+enum ReceiptCopy : std::uint8_t {
     RECEIPT_PICK     = 0, // auto-select receipt types based on settings
     RECEIPT_CUSTOMER = 1,
     RECEIPT_MERCHANT = 2

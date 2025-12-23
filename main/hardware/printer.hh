@@ -27,7 +27,7 @@
 
 /**** Definitions ****/
 // Printer style flags (converted from macros to enum constants)
-enum PrintModeFlags : int {
+enum PrintModeFlags : std::uint8_t {
     PRINT_RED       = 1,   // use red ink (if available)
     PRINT_BOLD      = 2,   // bold text
     PRINT_UNDERLINE = 4,   // underline text
@@ -53,7 +53,7 @@ enum PrintModeFlags : int {
 #define TARGET_TYPE_EMAIL     "email"
 #define TARGET_TYPE_QUICKBOOKS_CSV "quickbooks_csv"
 
-enum targettype {
+enum targettype : std::uint8_t {
     TARGET_NONE,
     TARGET_PARALLEL,
     TARGET_LPD,
@@ -63,7 +63,7 @@ enum targettype {
     TARGET_QUICKBOOKS_CSV
 };
 
-enum printer_models {
+enum printer_models : std::uint8_t {
 	MODEL_NONE,
 	MODEL_EPSON,
 	MODEL_STAR,
