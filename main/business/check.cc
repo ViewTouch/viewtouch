@@ -1190,14 +1190,9 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
             // Bar video - check if bar portion was served
             served_for_target = (flags & CF_BAR_SERVED);
         }
-        else if (printer_id == PRINTER_KITCHEN1 || printer_id == PRINTER_KITCHEN2)
-        {
-            // Kitchen video - check if kitchen portion was served
-            served_for_target = (flags & CF_KITCHEN_SERVED);
-        }
         else
         {
-            // Default/other video targets - check if kitchen portion was served
+            // Kitchen and other video targets - check if kitchen portion was served
             served_for_target = (flags & CF_KITCHEN_SERVED);
         }
         
@@ -1209,14 +1204,9 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                 // Bar video - clear bar served flag
                 flags &= ~CF_BAR_SERVED;
             }
-            else if (printer_id == PRINTER_KITCHEN1 || printer_id == PRINTER_KITCHEN2)
-            {
-                // Kitchen video - clear kitchen served flag
-                flags &= ~CF_KITCHEN_SERVED;
-            }
             else
             {
-                // Default/other video targets - clear kitchen served flag
+                // Kitchen and other video targets - clear kitchen served flag
                 flags &= ~CF_KITCHEN_SERVED;
             }
             // Also clear CF_SHOWN so the check can be displayed again
@@ -1353,38 +1343,32 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
             break;
         default:
             break;
-            break;
         case CHECK_CATERING:
-            if (!date.IsSet() || (date <= now))
-            {
-                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
-                vt_safe_string::safe_concat(str, STRLENGTH, " ");
-            }
-            vt_safe_string::safe_concat(str, STRLENGTH, term->Translate("Catering"));
-            break;
         case CHECK_DINEIN:
-            if (!date.IsSet() || (date <= now))
-            {
-                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
-                vt_safe_string::safe_concat(str, STRLENGTH, " ");
-            }
-            vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("Here"));
-            break;
         case CHECK_TOGO:
-            if (!date.IsSet() || (date <= now))
-            {
-                vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
-                vt_safe_string::safe_concat(str, STRLENGTH, " ");
-            }
-            vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("To Go"));
-            break;
         case CHECK_CALLIN:
             if (!date.IsSet() || (date <= now))
             {
                 vt_safe_string::safe_copy(str, STRLENGTH, term->Translate(WAITSTR));
                 vt_safe_string::safe_concat(str, STRLENGTH, " ");
             }
-            vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("Pick Up"));
+            switch(CustomerType())
+            {
+            case CHECK_CATERING:
+                vt_safe_string::safe_concat(str, STRLENGTH, term->Translate("Catering"));
+                break;
+            case CHECK_DINEIN:
+                vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("Here"));
+                break;
+            case CHECK_TOGO:
+                vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("To Go"));
+                break;
+            case CHECK_CALLIN:
+                vt_safe_string::safe_concat(str, STRLENGTH, GlobalTranslate("Pick Up"));
+                break;
+            default:
+                break;
+            }
             break;
         }
         snprintf(str1, static_cast<size_t>(pwidth), "%s", str);
@@ -2055,14 +2039,9 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                 // Bar video - check if bar portion was served
                 served_for_target = (flags & CF_BAR_SERVED);
             }
-            else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
-            {
-                // Kitchen video - check if kitchen portion was served
-                served_for_target = (flags & CF_KITCHEN_SERVED);
-            }
             else
             {
-                // Default/other video targets - check if kitchen portion was served
+                // Kitchen and other video targets - check if kitchen portion was served
                 served_for_target = (flags & CF_KITCHEN_SERVED);
             }
             
@@ -2074,14 +2053,9 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                     // Bar video - clear bar served flag
                     flags &= ~CF_BAR_SERVED;
                 }
-                else if (video_target == PRINTER_KITCHEN1 || video_target == PRINTER_KITCHEN2)
-                {
-                    // Kitchen video - clear kitchen served flag
-                    flags &= ~CF_KITCHEN_SERVED;
-                }
                 else
                 {
-                    // Default/other video targets - clear kitchen served flag
+                    // Kitchen and other video targets - clear kitchen served flag
                     flags &= ~CF_KITCHEN_SERVED;
                 }
                 // Also clear CF_SHOWN so the check can be displayed again
@@ -2835,8 +2809,8 @@ const genericChar* Check::PaymentSummary(Terminal *term)
                 case TENDER_COMP:          comp = 1; break;
                 case TENDER_EMPLOYEE_MEAL: emeal = 1; break;
                 case TENDER_GIFT:          gift = 1; break;
-                case TENDER_CHARGE_CARD:   credit = 1; break;
-                case TENDER_CREDIT_CARD:   credit = 1; break;
+                case TENDER_CHARGE_CARD:
+                case TENDER_CREDIT_CARD:
                 case TENDER_DEBIT_CARD:    credit = 1; break;
                 case TENDER_ACCOUNT:       account = 1; break;
                 case TENDER_CHARGE_ROOM:   room = payptr->tender_id; break;
@@ -3926,16 +3900,10 @@ int SubCheck::FigureTotals(Settings *settings)
                 max_change += payptr->value;
             break;
         case TENDER_CAPTURED_TIP:
-            balance += payptr->value;
-            break;
         case TENDER_CHARGED_TIP:
-            balance += payptr->value;
-            break;
         case TENDER_CREDIT_CARD_FEE_DOLLAR:
-            balance += payptr->value;  // Add dollar fee to total instead of subtracting payment
-            break;
         case TENDER_CREDIT_CARD_FEE_PERCENT:
-            balance += payptr->value;  // Add percentage fee to total instead of subtracting payment
+            balance += payptr->value;
             break;
         default:
             payment += payptr->value;
@@ -4306,16 +4274,9 @@ int SubCheck::FigureTotals(Settings *settings)
 		if(currFamily != SALESGROUP_BEVERAGE) 
 			drinksOnly = false;
 	}
-    if (alcohol_tax == 0)
-    {
-        total_tax_PST = settings->FigurePST((food_tax_revenue + alcohol_tax_revenue),
-                                            SystemTime, drinksOnly, PST_tax);
-    }
-    else
-    {
-        total_tax_PST = settings->FigurePST(food_tax_revenue,
-                                            SystemTime, drinksOnly, PST_tax);
-    }
+    // PST calculation - alcohol_tax doesn't affect food_tax_revenue parameter choice
+    total_tax_PST = settings->FigurePST(food_tax_revenue,
+                                        SystemTime, drinksOnly, PST_tax);
 
     total_tax_HST = settings->FigureHST((food_tax_revenue + alcohol_tax_revenue),
                                         SystemTime, HST_tax);
