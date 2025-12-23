@@ -13,6 +13,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `main/data/manager.cc`:
       - Consolidated `EndSystem()` after `fork()` for error/parent paths
       - Merged repeated `ProcessRemoteOrderEntry()` else-if branches into a single combined condition
+    - `zone/button_zone.cc`:
+      - Merged duplicate `Signal()` send branches in `ConditionalZone::Touch`
+      - Unified `KillSystemZone::Render()` to a single `RenderZone` call
+      - Grouped `MessageButtonZone::Signal` cases by behavior to avoid repeated bodies
+      - Combined `FASTFOOD`/`SELFORDER` cases in `ConditionalZone::EvalExp`
   - **Impact**: Clearer control flow, less chance of divergence and maintenance errors
 
 - **Missing Default Cases in Switch Statements (2025-12-22)**
