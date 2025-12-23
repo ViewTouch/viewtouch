@@ -28,7 +28,7 @@
 #include <sys/socket.h>
 #include <sys/file.h>
 #include <sys/un.h>
-#include <errno.h>
+#include <cerrno>
 #include <unistd.h>
 #include <Xm/Xm.h>
 #include <memory>

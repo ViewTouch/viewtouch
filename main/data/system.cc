@@ -122,7 +122,7 @@ int System::LoadCurrentData(const char* path)
 			if (strncmp(name, "check_", 6) == 0)
 			{
 				vt_safe_string::safe_format(str, 256, "%s/%s", path, name);
-				Check *check = new Check;
+				auto *check = new Check;
 				if (check == nullptr)
 					ReportError("Couldn't create check");
 				else
@@ -139,7 +139,7 @@ int System::LoadCurrentData(const char* path)
 			else if (strncmp(name, "drawer_", 7) == 0)
 			{
 				vt_safe_string::safe_format(str, 256, "%s/%s", path, name);
-				Drawer *drawer = new Drawer;
+				auto *drawer = new Drawer;
 				if (drawer == nullptr)
 					ReportError("Couldn't Create Drawer");
 				else
@@ -235,7 +235,7 @@ int System::ScanArchives(const char* path, const char* altmedia)
 
                 genericChar str[256];
                 vt_safe_string::safe_format(str, 256, "%s/%s", archive_path.Value(), name);
-                Archive *archive = new Archive(&settings, str);
+                auto *archive = new Archive(&settings, str);
                 archive->altmedia.Set(altmedia);
                 if (archive == nullptr)
                     ReportError("Couldn't create archive");
@@ -314,7 +314,7 @@ int System::Remove(Archive *archive)
 Archive *System::NewArchive()
 {
     FnTrace("System::NewArchive()");
-    Archive *archive = new Archive(SystemTime);
+    auto *archive = new Archive(SystemTime);
     if (archive == nullptr)
         return nullptr;
 
@@ -1092,7 +1092,7 @@ Check *System::ExtractOpenCheck(Check *check)
     else if (count <= 0)
         return nullptr; // no closed sub-checks
 
-    Check *oc = new Check;
+    auto *oc = new Check;
     oc->Table(check->Table());
     oc->time_open     = check->time_open;
     oc->user_open     = check->user_open;

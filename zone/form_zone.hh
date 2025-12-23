@@ -198,7 +198,7 @@ public:
     virtual int ClearEntries()                  { return 1; }
     virtual int AddEntry(const genericChar* name, int value) { return 1; }
 
-    virtual void Print(void);   // debug function, not for live code
+    virtual void Print();   // debug function, not for live code
 };
 
 #endif // FORM_ZONE_HH

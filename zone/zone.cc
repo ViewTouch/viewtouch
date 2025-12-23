@@ -19,7 +19,7 @@
 #include "safe_string_utils.hh"
 
 #include <cstring>
-#include <errno.h>
+#include <cerrno>
 #include <dirent.h>
 #include <iostream>
 #include <unistd.h>
@@ -95,8 +95,8 @@ int Zone::CopyZone(Zone *target)
         *target->Expression() = *Expression();
 
     // Copy PosZone-specific fields if both are PosZones
-    PosZone *srcPos = dynamic_cast<PosZone*>(this);
-    PosZone *dstPos = dynamic_cast<PosZone*>(target);
+    auto *srcPos = dynamic_cast<PosZone*>(this);
+    auto *dstPos = dynamic_cast<PosZone*>(target);
     if (srcPos && dstPos) {
         *dstPos->ImagePath() = *srcPos->ImagePath();
     }

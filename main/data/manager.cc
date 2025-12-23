@@ -55,7 +55,7 @@
 #include <memory>
 
                             // Standard C++ libraries
-#include <errno.h>          // system error numbers
+#include <cerrno>          // system error numbers
 #include <iostream>         // basic input and output controls (C++ alone contains no facilities for IO)
 #include <fstream>          // basic file input and output
 #include <unistd.h>         // standard symbolic constants and types
@@ -259,11 +259,11 @@ void     UserSignal1(int signal);
 void     UserSignal2(int signal);
 void     UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id);
 int      StartSystem(int my_use_net);
-int      RunUserCommand(void);
+int      RunUserCommand();
 int      PingCheck();
 int      UserCount();
-int      RunEndDay(void);
-int      RunMacros(void);
+int      RunEndDay();
+int      RunMacros();
 int      RunReport(const genericChar* report_string, Printer *printer);
 Printer *SetPrinter(const genericChar* printer_description);
 int      ReadViewTouchConfig();
@@ -308,7 +308,7 @@ void ViewTouchError(const char* message, int do_sleep)
     }
     else
     {
-        snprintf(errormsg, sizeof(errormsg), "%s\\%s\\%s\\%s\\%s", message,
+        snprintf(errormsg, sizeof(errormsg), R"(%s\%s\%s\%s\%s)", message,
                  settings->expire_message1.Value(),
                  settings->expire_message2.Value(),
                  settings->expire_message3.Value(),
@@ -976,7 +976,7 @@ static void CreateDefaultUsers(System *sys, Settings *settings)
         return;  // Default users already exist
     
     // Create Manager (ID 5) with all authorizations
-    Employee *manager = new Employee;
+    auto *manager = new Employee;
     if (manager != nullptr)
     {
         manager->system_name.Set("Manager");
@@ -985,7 +985,7 @@ static void CreateDefaultUsers(System *sys, Settings *settings)
         manager->training = 0;
         manager->active = 1;
         
-        JobInfo *j = new JobInfo;
+        auto *j = new JobInfo;
         if (j != nullptr)
         {
             j->job = JOB_MANAGER3;  // Manager job
@@ -1007,7 +1007,7 @@ static void CreateDefaultUsers(System *sys, Settings *settings)
     }
     
     // Create Server/Cashier with all authorizations except Supervisor, Manager and Employee records
-    Employee *server_cashier = new Employee;
+    auto *server_cashier = new Employee;
     if (server_cashier != nullptr)
     {
         server_cashier->system_name.Set("Server/Cashier");
@@ -1016,7 +1016,7 @@ static void CreateDefaultUsers(System *sys, Settings *settings)
         server_cashier->training = 0;
         server_cashier->active = 1;
         
-        JobInfo *j = new JobInfo;
+        auto *j = new JobInfo;
         if (j != nullptr)
         {
             j->job = JOB_SERVER2;  // Server & Cashier job
@@ -1038,7 +1038,7 @@ static void CreateDefaultUsers(System *sys, Settings *settings)
     }
     
     // Create Server without Settlement authority
-    Employee *server = new Employee;
+    auto *server = new Employee;
     if (server != nullptr)
     {
         server->system_name.Set("Server");
@@ -1047,7 +1047,7 @@ static void CreateDefaultUsers(System *sys, Settings *settings)
         server->training = 0;
         server->active = 1;
         
-        JobInfo *j = new JobInfo;
+        auto *j = new JobInfo;
         if (j != nullptr)
         {
             j->job = JOB_SERVER;  // Server job
@@ -1464,7 +1464,7 @@ int StartSystem(int my_use_net)
         if (existing_report == nullptr)
         {
             genericChar prtstr[STRLONG];
-            PrinterInfo *report_printer = new PrinterInfo;
+            auto *report_printer = new PrinterInfo;
             report_printer->name.Set("Report Printer");
             sys->FullPath("html", str);
             snprintf(prtstr, STRLONG, "file:%s/", str);
@@ -2562,12 +2562,12 @@ int ReloadTermFonts()
         return 1;
 
     // Close existing Xft fonts
-    for (int i = 0; i < 32; ++i)
+    for (auto & i : XftFontsArr)
     {
-        if (XftFontsArr[i])
+        if (i)
         {
-            XftFontClose(Dis, XftFontsArr[i]);
-            XftFontsArr[i] = nullptr;
+            XftFontClose(Dis, i);
+            i = nullptr;
         }
     }
 
@@ -2575,9 +2575,9 @@ int ReloadTermFonts()
     const char* font_family = GetGlobalFontFamily();
 
     // Reload fonts with compatible font specifications
-    for (int i = 0; i < FONT_COUNT; ++i)
+    for (auto & i : FontData)
     {
-        int f = FontData[i].id;
+        int f = i.id;
         
         // Get a compatible font specification that maintains UI layout
         const char* new_font_spec = GetCompatibleFontSpec(f, font_family);
@@ -2607,10 +2607,10 @@ int ReloadTermFonts()
         }
         
         // Always use FontData dimensions to maintain UI compatibility
-        for (int fd = 0; fd < FONT_COUNT; ++fd) {
-            if (FontData[fd].id == f) {
-                FontWidth[f] = FontData[fd].width;
-                FontHeight[f] = FontData[fd].height;
+        for (auto & fd : FontData) {
+            if (fd.id == f) {
+                FontWidth[f] = fd.width;
+                FontHeight[f] = fd.height;
                 break;
             }
         }
@@ -3522,7 +3522,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
  *  have been processed (or if there is no command file) we delete the command
  *  file and disable command processing until the next SIGUSR2 signal.
  ****/
-int RunUserCommand(void)
+int RunUserCommand()
 {
     FnTrace("RunUserCommand()");
     int retval = 0;
@@ -3863,7 +3863,7 @@ void ShowRestartDialog()
     Terminal *term = MasterControl->TermList();
     if (!term) return;
     
-    SimpleDialog *sd = new SimpleDialog(GlobalTranslate("Scheduled Restart Time\\System needs to restart now.\\Choose an option:"), 1);
+    auto *sd = new SimpleDialog(GlobalTranslate("Scheduled Restart Time\\System needs to restart now.\\Choose an option:"), 1);
     sd->Button(GlobalTranslate("Restart Now"), "restart_now");
     sd->Button(GlobalTranslate("Postpone 1 Hour"), "restart_postpone");
     
@@ -4007,10 +4007,10 @@ int ReloadFonts()
         
         // Find the font in FontData array and use its specification directly
         int found = 0;
-        for (int fd = 0; fd < FONT_COUNT; ++fd) {
-            if (FontData[fd].id == f) {
+        for (auto & fd : FontData) {
+            if (fd.id == f) {
                 // Use the font specification directly from FontData
-                const char* font_spec = FontData[fd].font;
+                const char* font_spec = fd.font;
                 
                 // Append :dpi=96 to font specification if not already present
                 static char font_spec_with_dpi[256];
@@ -4037,10 +4037,10 @@ int ReloadFonts()
         }
         
         // Update font dimensions from FontData array to maintain UI layout compatibility
-        for (int fd = 0; fd < FONT_COUNT; ++fd) {
-            if (FontData[fd].id == f) {
-                FontWidth[f] = FontData[fd].width;
-                FontHeight[f] = FontData[fd].height;
+        for (auto & fd : FontData) {
+            if (fd.id == f) {
+                FontWidth[f] = fd.width;
+                FontHeight[f] = fd.height;
                 break;
             }
         }
@@ -4117,9 +4117,9 @@ const char* GetCompatibleFontSpec(int font_id, const char* desired_family) {
     
     // Find the base font data
     const char* base_spec = nullptr;
-    for (int i = 0; i < FONT_COUNT; ++i) {
-        if (FontData[i].id == font_id) {
-            base_spec = FontData[i].font;
+    for (auto & i : FontData) {
+        if (i.id == font_id) {
+            base_spec = i.font;
             break;
         }
     }

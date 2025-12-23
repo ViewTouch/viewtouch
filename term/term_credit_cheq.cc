@@ -19,11 +19,11 @@
  *   keeping them in vt_term ensures that only the local terminal will be locked.
  */
 
-#include <errno.h>
+#include <cerrno>
 #include <fcntl.h>
-#include <signal.h>
-#include <stdio.h>
-#include <string.h>
+#include <csignal>
+#include <cstdio>
+#include <cstring>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>

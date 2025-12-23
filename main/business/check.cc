@@ -3280,7 +3280,7 @@ SubCheck::SubCheck()
 SubCheck *SubCheck::Copy(Settings *settings)
 {
     FnTrace("SubCheck::Copy(Settings)");
-    SubCheck *sc = new SubCheck();
+    auto *sc = new SubCheck();
     if (sc == nullptr)
         return nullptr;
 
@@ -5019,10 +5019,9 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 	    printer->LineFeed(8);
     }
     //PRINT TICKETS
-    for(std::list<Order*>::iterator loi=tickets.begin();loi!=tickets.end();++loi)
+    for(auto ord : tickets)
     {
-	Order* ord=*loi;
-	int count=ord->count;
+		int count=ord->count;
 	SalesItem* si=ord->Item(items);
 	for(i=0;i<count;i++)
 	{
@@ -5420,7 +5419,7 @@ int SubCheck::OrderPage(Order *order, int lines_per_page, int seat)
 Payment *SubCheck::NewPayment(int tender, int pid, int pflags, int pamount)
 {
     FnTrace("SubCheck::NewPayment()");
-    Payment *payptr = new Payment(tender, pid, pflags, pamount);
+    auto *payptr = new Payment(tender, pid, pflags, pamount);
     Add(payptr, nullptr);
     return payptr;
 }
@@ -5705,7 +5704,7 @@ Order::~Order()
 Order *Order::Copy()
 {
     FnTrace("Order::Copy()");
-    Order *order = new Order;
+    auto *order = new Order;
     if (order == nullptr)
         return nullptr;
 
@@ -6341,7 +6340,7 @@ Payment::~Payment()
 Payment *Payment::Copy()
 {
     FnTrace("Payment::Copy()");
-    Payment *payptr = new Payment;
+    auto *payptr = new Payment;
     if (payptr == nullptr)
     {
         ReportError("Can't copy payment");

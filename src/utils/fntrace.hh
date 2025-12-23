@@ -34,7 +34,6 @@ class BackTraceFunction
 public:
     // Constructor
     BackTraceFunction(const char* func, const char* file, int line)
-        : recorded_entry_(false)
     {
         // Safety check: validate BT_Track is accessible before using it
         // This prevents crashes from memory corruption
@@ -82,7 +81,7 @@ public:
 
 private:
     size_t get_current_memory_usage() noexcept;
-    bool recorded_entry_;
+    bool recorded_entry_{false};
 };
 
 #define FnTrace(func) BackTraceFunction _fn_start(func, __FILE__, __LINE__)

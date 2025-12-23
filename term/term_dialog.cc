@@ -581,14 +581,14 @@ int DialogDoubleMenu::Value(int &v1, int &v2)
 // Callback Functions
 void EP_OkayCB(Widget /*widget*/, XtPointer client_data, XtPointer /*call_data*/)
 {
-    PageDialog *d = static_cast<PageDialog*>(client_data);
+    auto *d = static_cast<PageDialog*>(client_data);
     d->Close();
     d->Send();
 }
 
 void EP_DeleteCB(Widget /*widget*/, XtPointer client_data, XtPointer /*call_data*/)
 {
-    PageDialog *d = static_cast<PageDialog*>(client_data);
+    auto *d = static_cast<PageDialog*>(client_data);
     d->Close();
     WInt8(SERVER_KILLPAGE);
     SendNow();
@@ -596,13 +596,13 @@ void EP_DeleteCB(Widget /*widget*/, XtPointer client_data, XtPointer /*call_data
 
 void EP_CancelCB(Widget /*widget*/, XtPointer client_data, XtPointer /*call_data*/)
 {
-    PageDialog *d = static_cast<PageDialog*>(client_data);
+    auto *d = static_cast<PageDialog*>(client_data);
     d->Close();
 }
 
 void EP_TypeCB(Widget /*widget*/, XtPointer client_data, XtPointer /*call_data*/)
 {
-    PageDialog *d = static_cast<PageDialog*>(client_data);
+    auto *d = static_cast<PageDialog*>(client_data);
     int new_type = 0;
     if (d->full_edit)
         new_type = d->type.Value();
@@ -785,14 +785,14 @@ int PageDialog::Send()
 // Callback Functions
 void DP_OkayCB(Widget /*widget*/, XtPointer client_data, XtPointer /*call_data*/)
 {
-    DefaultDialog *d = static_cast<DefaultDialog*>(client_data);
+    auto *d = static_cast<DefaultDialog*>(client_data);
     d->Close();
     d->Send();
 }
 
 void DP_CancelCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    DefaultDialog *d = static_cast<DefaultDialog*>(client_data);
+    auto *d = static_cast<DefaultDialog*>(client_data);
     d->Close();
 }
 
@@ -979,14 +979,14 @@ void ScanImageFiles()
 
 void EZ_OkayCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ZoneDialog *d = static_cast<ZoneDialog*>(client_data);
+    auto *d = static_cast<ZoneDialog*>(client_data);
     d->Close();
     d->Send();
 }
 
 void EZ_DeleteCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ZoneDialog *d = static_cast<ZoneDialog*>(client_data);
+    auto *d = static_cast<ZoneDialog*>(client_data);
     d->Close();
     WInt8(SERVER_KILLZONE);
     SendNow();
@@ -994,13 +994,13 @@ void EZ_DeleteCB(Widget widget, XtPointer client_data, XtPointer call_data)
 
 void EZ_CancelCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ZoneDialog *d = static_cast<ZoneDialog*>(client_data);
+    auto *d = static_cast<ZoneDialog*>(client_data);
     d->Close();
 }
 
 void EZ_TypeCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ZoneDialog *d = static_cast<ZoneDialog*>(client_data);
+    auto *d = static_cast<ZoneDialog*>(client_data);
     int ztype = 0, itype = 0;
     if (d->full_edit)
         ztype = d->type.Value();
@@ -1028,7 +1028,7 @@ void EZ_TypeCB(Widget widget, XtPointer client_data, XtPointer call_data)
 
 void EZ_JumpCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ZoneDialog *d = static_cast<ZoneDialog*>(client_data);
+    auto *d = static_cast<ZoneDialog*>(client_data);
     int jtype = 0;
     if (d->full_edit)
         jtype = d->jump_type.Value();
@@ -1049,7 +1049,7 @@ void EZ_JumpCB(Widget widget, XtPointer client_data, XtPointer call_data)
 
 void EZ_CorrectCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ZoneDialog *d = static_cast<ZoneDialog*>(client_data);
+    auto *d = static_cast<ZoneDialog*>(client_data);
     d->Correct();
 }
 
@@ -1487,14 +1487,14 @@ int ZoneDialog::Send()
 
 void MZ_OkayCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    MultiZoneDialog *d = static_cast<MultiZoneDialog*>(client_data);
+    auto *d = static_cast<MultiZoneDialog*>(client_data);
     d->Close();
     d->Send();
 }
 
 void MZ_CancelCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    MultiZoneDialog *d = static_cast<MultiZoneDialog*>(client_data);
+    auto *d = static_cast<MultiZoneDialog*>(client_data);
     d->Close();
 }
 
@@ -1604,14 +1604,14 @@ int MultiZoneDialog::Send()
 
 void TD_OkayCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    TranslateDialog *d = static_cast<TranslateDialog*>(client_data);
+    auto *d = static_cast<TranslateDialog*>(client_data);
     d->Close();
     d->Send();
 }
 
 void TD_CancelCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    TranslateDialog *d = static_cast<TranslateDialog*>(client_data);
+    auto *d = static_cast<TranslateDialog*>(client_data);
     d->Close();
 }
 
@@ -1683,8 +1683,8 @@ int TranslateDialog::Send()
 
 void ListSelectCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    XmListCallbackStruct *data = static_cast<XmListCallbackStruct*>(call_data);
-    ListDialog *d = static_cast<ListDialog*>(client_data);
+    auto *data = static_cast<XmListCallbackStruct*>(call_data);
+    auto *d = static_cast<ListDialog*>(client_data);
 
     int new_pos = data->item_position;
     if (new_pos != d->selected)
@@ -1704,7 +1704,7 @@ void ListPrintCB(Widget widget, XtPointer client_data, XtPointer call_data)
 
 void ListCloseCB(Widget widget, XtPointer client_data, XtPointer call_data)
 {
-    ListDialog *d = static_cast<ListDialog*>(client_data);
+    auto *d = static_cast<ListDialog*>(client_data);
     d->Close();
 }
 

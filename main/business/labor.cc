@@ -97,7 +97,7 @@ WorkEntry::~WorkEntry()
 // Member Functions
 WorkEntry *WorkEntry::Copy()
 {
-    WorkEntry *w = new WorkEntry;
+    auto *w = new WorkEntry;
     if (w == nullptr)
         return nullptr;
 
@@ -484,7 +484,7 @@ int LaborPeriod::Load()
             return 1;
         }
 
-        WorkEntry *work_entry = new WorkEntry;
+        auto *work_entry = new WorkEntry;
         error += work_entry->Read(df, version);
         Add(work_entry);
         work_entry->Update(this);
@@ -830,7 +830,7 @@ int LaborDB::Load(const char* path)
 			if (strncmp(name, "labor_", 6) == 0)
 			{
 				vt_safe_string::safe_format(str, 256, "%s/%s", pathname.Value(), name);
-				LaborPeriod *lp = new LaborPeriod;
+				auto *lp = new LaborPeriod;
 				if (lp->Scan(str))
 				{
 					ReportError("Couldn't load labor period");
@@ -883,7 +883,7 @@ int LaborDB::Purge()
 int LaborDB::NewLaborPeriod()
 {
     FnTrace("LaborDB::NewLaborPerion()");
-    LaborPeriod *lp = new LaborPeriod;
+    auto *lp = new LaborPeriod;
     if (lp == nullptr)
         return 1;
 
@@ -896,7 +896,7 @@ int LaborDB::NewLaborPeriod()
             if (!work_entry->IsWorkDone())
             {
                 work_entry->EndEntry(SystemTime);
-                WorkEntry *nw = new WorkEntry;
+                auto *nw = new WorkEntry;
                 nw->user_id    = work_entry->user_id;
                 nw->start      = SystemTime;
                 nw->job        = work_entry->job;
@@ -1044,7 +1044,7 @@ WorkEntry *LaborDB::NewWorkEntry(Employee *e, int job)
     if (lp == nullptr)
         return nullptr;
 
-    WorkEntry *work_entry = new WorkEntry(e, job);
+    auto *work_entry = new WorkEntry(e, job);
     lp->Add(work_entry);
     lp->Save();
     return work_entry;
@@ -1447,7 +1447,7 @@ int WorkDB::Read(InputDataFile &df, int version)
     df.Read(count);
     for (int i = 0; i < count; ++i)
     {
-        WorkEntry *we = new WorkEntry;
+        auto *we = new WorkEntry;
         we->Read(df, version);
         Add(we);
     }

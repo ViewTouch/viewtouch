@@ -33,7 +33,7 @@
 
 #include <cctype>
 #include <cmath>
-#include <string.h>
+#include <cstring>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -347,9 +347,9 @@ int SalesItem::Price(Settings *s, int qualifier)
 
     if (qualifier & QUALIFIER_DOUBLE)
     {
-        const double base = static_cast<double>(c);
-        const double multiplier = static_cast<double>(s->double_mult);
-        const double additive = static_cast<double>(s->double_add);
+        const auto base = static_cast<double>(c);
+        const auto multiplier = static_cast<double>(s->double_mult);
+        const auto additive = static_cast<double>(s->double_add);
         const double adjusted = base * multiplier + additive;
         c = static_cast<int>(std::lround(adjusted));
     }
@@ -452,7 +452,7 @@ int ItemDB::Load(const char* file)
 
     for (int i = 0; i < items; ++i)
     {
-        SalesItem *si = new SalesItem;
+        auto *si = new SalesItem;
         si->Read(df, version);
         Add(si);
     }

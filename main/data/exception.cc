@@ -237,7 +237,7 @@ int ExceptionDB::Read(InputDataFile &df, int version)
 
     for (i = 0; i < count; ++i)
     {
-        ItemException *ie = new ItemException;
+        auto *ie = new ItemException;
         ie->Read(df, version);
         Add(ie);
     }
@@ -245,7 +245,7 @@ int ExceptionDB::Read(InputDataFile &df, int version)
     error += df.Read(count);
     for (i = 0; i < count; ++i)
     {
-        TableException *te = new TableException;
+        auto *te = new TableException;
         te->Read(df, version);
         Add(te);
     }
@@ -253,7 +253,7 @@ int ExceptionDB::Read(InputDataFile &df, int version)
     error += df.Read(count);
     for (i = 0; i < count; ++i)
     {
-        RebuildException *re = new RebuildException;
+        auto *re = new RebuildException;
         re->Read(df, version);
         Add(re);
     }
@@ -358,7 +358,7 @@ int ExceptionDB::AddItemException(Terminal *term, Check *thisCheck, Order *thisO
 	}
 
 	// allocate space on the heap for exception structure
-    ItemException *ie = new ItemException(thisCheck, thisOrder);
+    auto *ie = new ItemException(thisCheck, thisOrder);
 	// NOTE: need to implement check for failed allocation
 
 	// set relevant properties for this exception
@@ -381,7 +381,7 @@ int ExceptionDB::AddTableException(Terminal *t, Check *c, int target_id)
         return 1;  // exception ignored
 
     // Add table exception
-    TableException *te = new TableException(c);
+    auto *te = new TableException(c);
     te->user_id = e->id;
     te->time = SystemTime;
     te->source_id = c->user_owner;
@@ -399,7 +399,7 @@ int ExceptionDB::AddRebuildException(Terminal *t, Check *c)
         return 1;  // exception ignored
 
     // Add rebuild exception
-    RebuildException *re = new RebuildException(c);
+    auto *re = new RebuildException(c);
     re->user_id = e->id;
     re->time = SystemTime;
     Add(re);
