@@ -19,6 +19,7 @@
  */
 
 #include <cstring>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <sys/types.h>
@@ -3528,7 +3529,7 @@ char* Settings::StoreNum(char* dest)
 
 static inline int tax_calc(int amount, Flt tax)
 {
-    return int(amount * tax + 0.5);	// round
+    return static_cast<int>(std::round(amount * tax));
 }
 
 int Settings::FigureFoodTax(int amount, TimeInfo &timevar, Flt tax)
