@@ -3239,7 +3239,7 @@ int Terminal::UpdateZoneDB(Control *con)
     }
     org_page_id = 0;
 
-    // SERVER_TERMINFO command from term will cause jump to login page
+    // ServerProtocol::SrvTermInfo command from term will cause jump to login page
     return 0;
 }
 
