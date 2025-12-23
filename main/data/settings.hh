@@ -246,20 +246,15 @@ extern int   SalesPeriodValue[];
 
 // DrawerPrint uses enum utilities (DrawerPrintType) instead of static arrays
 
-extern const genericChar* RoundingName[];
-extern int   RoundingValue[];
+// Rounding uses enum utilities (PriceRoundingType) instead of static arrays
 
 extern const genericChar* PrinterName[];
 extern int   PrinterValue[];
 
-extern const genericChar* MeasureSystemName[];
-extern int   MeasureSystemValue[];
-extern const genericChar* DateFormatName[];
-extern int   DateFormatValue[];
-extern const genericChar* NumberFormatName[];
-extern int   NumberFormatValue[];
-extern const genericChar* TimeFormatName[];
-extern int   TimeFormatValue[];
+// MeasureSystem uses enum utilities (MeasureSystemType) instead of static arrays
+// DateFormat uses enum utilities (DateFormatType) instead of static arrays
+// NumberFormat uses enum utilities (NumberFormatType) instead of static arrays
+// TimeFormat uses enum utilities (TimeFormatType) instead of static arrays
 
 extern const genericChar* AuthorizeName[];
 extern int   AuthorizeValue[];

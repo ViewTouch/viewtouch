@@ -94,10 +94,7 @@ int SalesPeriodValue[] = {
 
 // DrawerPrint values are provided via DrawerPrintType (settings_enums.hh)
 
-const char* RoundingName[] = {
-    GlobalTranslate("None"), GlobalTranslate("Drop Pennies"), GlobalTranslate("Round Up Gratuity"), nullptr};
-int RoundingValue[] = {
-    ROUNDING_NONE, ROUNDING_DROP_PENNIES, ROUNDING_UP_GRATUITY, -1};
+// Rounding values are provided via PriceRoundingType (settings_enums.hh)
 
 const char* PrinterName[] = {
     GlobalTranslate("None"), GlobalTranslate("Kitchen1"), GlobalTranslate("Kitchen2"), GlobalTranslate("Bar1"), GlobalTranslate("Bar2"), GlobalTranslate("Expediter"),
@@ -109,17 +106,13 @@ int PrinterValue[] = {
     PRINTER_KITCHEN1_NOTIFY, PRINTER_KITCHEN2_NOTIFY,
     PRINTER_REMOTEORDER, PRINTER_DEFAULT, -1};
 
-const char* MeasureSystemName[] = {GlobalTranslate("Standard U.S."), GlobalTranslate("Metric"), nullptr};
-int   MeasureSystemValue[] = {MEASURE_STANDARD, MEASURE_METRIC, -1};
+// MeasureSystem values are provided via MeasureSystemType (settings_enums.hh)
 
-const char* DateFormatName[] = {GlobalTranslate("MM/DD/YY"), GlobalTranslate("DD/MM/YY"), nullptr };
-int   DateFormatValue[] = {DATE_MMDDYY, DATE_DDMMYY, -1};
+// DateFormat values are provided via DateFormatType (settings_enums.hh)
 
-const char* NumberFormatName[] = {GlobalTranslate("1,000,000.00"), GlobalTranslate("1.000.000,00"), nullptr};
-int   NumberFormatValue[] = {NUMBER_STANDARD, NUMBER_EURO, -1};
+// NumberFormat values are provided via NumberFormatType (settings_enums.hh)
 
-const char* TimeFormatName[] = {GlobalTranslate("12 hour"), GlobalTranslate("24 hour"), nullptr};
-int   TimeFormatValue[] = {TIME_12HOUR, TIME_24HOUR, -1};
+// TimeFormat values are provided via TimeFormatType (settings_enums.hh)
 
 #ifdef CREDITMCVE
 const char* AuthorizeName[] = {GlobalTranslate("None"), GlobalTranslate("MainStreet"), NULL};
