@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+- **Missing Default Cases in Switch Statements (2025-12-22)**
+  - Added default cases to 3 switch statements that were missing them (bugprone-switch-missing-default-case)
+  - **Files modified**:
+    - `main/data/manager.cc` (line 1555): Added default case to X11 event type switch
+    - `zone/zone.cc` (lines 535, 554): Added default cases to page size and type switches with safe fallback values
+    - `zone/dialog_zone.cc` (lines 181, 201): Added default cases to dialog action type switches
+  - **Impact**: Improved code safety by ensuring all switch statements have explicit handling for unexpected values
+  - **Note**: This addresses potential issues where unhandled enumeration values could lead to uninitialized variables or unexpected behavior
+
 ### Changed
 - **Editor Settings Button Split and Password Function Removal (2025-12-XX)**
   - **Split Editor Settings**: Separated "Editor Settings" functionality into two distinct buttons for better organization
