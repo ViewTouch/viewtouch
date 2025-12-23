@@ -218,7 +218,7 @@ RemotePrinter::~RemotePrinter()
         RemoveInputFn(input_id);
     if (socket_no >= 0)
     {
-        WInt8(PRINTER_DIE);
+        WInt8(ToInt(PrinterProtocol::Die));
         SendNow();
         close(socket_no);
     }
@@ -405,13 +405,13 @@ int RemotePrinter::IsOnline() const
 
 int RemotePrinter::StopPrint()
 {
-    WInt8(PRINTER_CANCEL);
+    WInt8(ToInt(PrinterProtocol::Cancel));
     return SendNow();
 }
 
 int RemotePrinter::OpenDrawer(int drawer)
 {
-    WInt8(PRINTER_OPENDRAWER);
+    WInt8(ToInt(PrinterProtocol::OpenDrawer));
     return SendNow();
 }
 
@@ -537,7 +537,7 @@ int RemotePrinter::End()
     close(device_no);
     device_no = 0;
 
-    WInt8(PRINTER_FILE);
+    WInt8(ToInt(PrinterProtocol::File));
     WStr(filename.Value());
     return SendNow();
 }
@@ -616,14 +616,14 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
         int code = p->RInt8();
         switch (code)
         {
-        case SERVER_ERROR:
+        case ToInt(ServerProtocol::SrvError):
             snprintf(str.data(), str.size(), "PrinterError: %s", p->RStr());
             ReportError(str.data());
             break;
-        case SERVER_PRINTER_DONE:
+        case ToInt(ServerProtocol::SrvPrinterDone):
             DeleteFile(p->RStr());
             break;
-        case SERVER_BADFILE:
+        case ToInt(ServerProtocol::SrvBadFile):
             p->RStr();
             break;
         }

@@ -899,7 +899,7 @@ int ReportError(const std::string &message)
     FnTrace("ReportError()");
     if (SocketNo)
     {
-        WInt8(SERVER_ERROR);
+        WInt8(ToInt(ServerProtocol::SrvError));
         WStr(message.c_str(), 0);
         return SendNow();
     }
@@ -1332,7 +1332,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
     case XK_End:
         if (e->state & ControlMask && e->state & Mod1Mask)
         {
-            WInt8(SERVER_SHUTDOWN);
+            WInt8(ToInt(ServerProtocol::SrvShutdown));
             SendNow();
         }
         break;
@@ -1414,7 +1414,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
                 swipe_stage = 0;
                 swipe_char = 0;
                 swipe_track2 = 0;
-                WInt8(SERVER_SWIPE);
+                WInt8(ToInt(ServerProtocol::SrvSwipe));
                 WStr(swipe_buffer.data());
                 SendNow();
             }
@@ -1535,7 +1535,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
             }
             fake_cc = 0;
             printf("Sending Fake Credit Card:  '%s'\n", swipe_buffer.data());
-            WInt8(SERVER_SWIPE);
+            WInt8(ToInt(ServerProtocol::SrvSwipe));
             WStr(swipe_buffer.data());
             SendNow();
         }
@@ -2216,7 +2216,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->Sale();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2229,7 +2229,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->PreAuth();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2242,7 +2242,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->FinishAuth();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2255,7 +2255,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->Void();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2268,7 +2268,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->VoidCancel();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2281,7 +2281,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->Refund();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2294,7 +2294,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->RefundCancel();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -4018,7 +4018,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     else if (WinWidth >= 768 && WinHeight >= 1024)
         screen_size = PAGE_SIZE_768x1024;
 
-    WInt8(SERVER_TERMINFO);
+    WInt8(ToInt(ServerProtocol::SrvTermInfo));
     WInt8(screen_size);
     WInt16(WinWidth);
     WInt16(WinHeight);
