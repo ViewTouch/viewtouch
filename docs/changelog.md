@@ -13,6 +13,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `zone/pos_zone.hh`
   - **Impact**: No functional change; build and all tests remain green (40/40)
 
+- **Macro → Enum: Print Modes (2025-12-23)**
+  - Replaced `PRINT_*` style `#define` macros with `enum PrintModeFlags` in `printer.hh`
+  - Removed duplicated `PRINT_*` macros from `report.hh` and included `printer.hh` instead
+  - Preserved all bitmask values for backward compatibility with existing flag operations
+  - **Files modified**: `main/hardware/printer.hh`, `main/ui/report.hh`
+  - **Impact**: No functional change; build and all tests remain green (40/40)
+
 ### Fixed
 - **Critical Bugprone Fixes (2025-12-23)**
   - Fixed empty catch blocks that were hiding errors in BackTraceFunction (fntrace.hh)

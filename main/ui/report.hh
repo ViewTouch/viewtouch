@@ -64,16 +64,8 @@
 #define RP_DEST_SCREEN      1
 #define RP_DEST_PRINTER     2
 
-//FIX BAK->GET THIS OUT OF HERE!!!  It should only be in printer.hh.
-// Print Modes (should match printer.hh)
-#define PRINT_RED         1   // use red ink (if available)
-#define PRINT_BOLD        2   // bold text
-#define PRINT_UNDERLINE   4   // underline text
-#define PRINT_NARROW      8   // condensed width text
-#define PRINT_WIDE        16  // print double width only
-#define PRINT_TALL        32  // print double height only
-#define PRINT_LARGE       48  // print double width & height
-#define PRINT_BLUE        64  // blue text (if available)
+// Print Modes come from printer.hh
+#include "printer.hh"
 
 // Other
 #define MAX_REPORT_COLUMNS  16

@@ -26,14 +26,17 @@
 #include <string>
 
 /**** Definitions ****/
-#define PRINT_RED       1   // use red ink (if available)
-#define PRINT_BOLD      2   // bold text
-#define PRINT_UNDERLINE 4   // underline text
-#define PRINT_NARROW    8   // condensed width text
-#define PRINT_WIDE      16  // print double width only
-#define PRINT_TALL      32  // print double height only
-#define PRINT_LARGE     48  // print double width & height
-#define PRINT_BLUE      64  // blue text (if available)
+// Printer style flags (converted from macros to enum constants)
+enum PrintModeFlags : int {
+    PRINT_RED       = 1,   // use red ink (if available)
+    PRINT_BOLD      = 2,   // bold text
+    PRINT_UNDERLINE = 4,   // underline text
+    PRINT_NARROW    = 8,   // condensed width text
+    PRINT_WIDE      = 16,  // print double width only
+    PRINT_TALL      = 32,  // print double height only
+    PRINT_LARGE     = 48,  // print double width & height
+    PRINT_BLUE      = 64   // blue text (if available)
+};
 
 #define EPSON_WIDE      32
 #define EPSON_TALL      16
