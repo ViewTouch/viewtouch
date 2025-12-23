@@ -2855,9 +2855,9 @@ int ProcessRemoteOrderEntry(SubCheck *subcheck, Order **order, const char* key, 
     else if (*order != nullptr)
     {
         if (strncmp(key, "ItemQTY", 7) == 0)
-            (*order)->count = atoi(value);
+            (*order)->count = static_cast<short>(std::min(atoi(value), 32767));
         else if (strncmp(key, "ProductQTY", 10) == 0)
-            (*order)->count = atoi(value);
+            (*order)->count = static_cast<short>(std::min(atoi(value), 32767));
         else if (detail != nullptr && strncmp(key, "AddonQualifier", 14) == 0)
             detail->AddQualifier(value);
     }
@@ -3261,7 +3261,8 @@ int ReadSocketRequest(int listen_sock)
         sel_result = SelectIn(open_sock, select_timeout);
         if (sel_result > 0)
         {
-            bytes_read = read(open_sock, request.data(), request.size() - 1);
+            ssize_t read_result = read(open_sock, request.data(), request.size() - 1);
+            bytes_read = static_cast<int>(std::min(read_result, static_cast<ssize_t>(INT_MAX)));
             if (bytes_read > 0)
             {
                 // In most cases we're only going to read once and then close the socket.

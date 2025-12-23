@@ -56,8 +56,8 @@ public:
                 std::printf("Entering %s (%s:%d)\n", func, file, line);
             }
         } catch (...) {
-            // Silently ignore errors from corrupted memory/atomic variables
-            // This prevents crashes when memory is corrupted
+            // Log error but don't crash - prevents crashes when memory is corrupted
+            std::fprintf(stderr, "Warning: BackTraceFunction exception in %s (%s:%d)\n", func, file, line);
         }
     }
     
@@ -74,8 +74,8 @@ public:
                 }
             }
         } catch (...) {
-            // Silently ignore errors from corrupted memory/atomic variables
-            // This prevents crashes when memory is corrupted
+            // Log error but don't crash - prevents crashes when memory is corrupted
+            std::fprintf(stderr, "Warning: ~BackTraceFunction exception in destructor\n");
         }
     }
 
