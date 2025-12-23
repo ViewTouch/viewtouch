@@ -76,6 +76,7 @@
 #include <fcntl.h>          // File Control
 #include <filesystem>       // generic filesystem functions available since C++17
 #include <cstdio>           // for std::remove
+#include <array>            // std::array for fixed-size buffers
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -325,7 +326,7 @@ bool DownloadFile(const std::string &url, const std::string &destination)
     std::string temp_file = destination + ".tmp";
     std::ofstream fout(temp_file, std::ios::binary);
     if (!fout.is_open()) {
-        std::cerr << "Error: Cannot open temporary file '" << temp_file << "' for writing" << std::endl;
+        std::cerr << "Error: Cannot open temporary file '" << temp_file << "' for writing" << '\n';
         return false;
     }
 
@@ -360,41 +361,41 @@ bool DownloadFile(const std::string &url, const std::string &destination)
             if (file_size > 0) {
                 // Download successful, move temp file to final destination
                 if (std::rename(temp_file.c_str(), destination.c_str()) == 0) {
-                    std::cerr << "Successfully downloaded file '" << destination << "' from '" << url << "' (size: " << file_size << " bytes)" << std::endl;
+                    std::cerr << "Successfully downloaded file '" << destination << "' from '" << url << "' (size: " << file_size << " bytes)" << '\n';
                     return true;
                 } else {
-                    std::cerr << "Error: Could not move temporary file to final destination" << std::endl;
+                    std::cerr << "Error: Could not move temporary file to final destination" << '\n';
                     std::remove(temp_file.c_str());  // Clean up temp file
                     return false;
                 }
             } else {
-                std::cerr << "Downloaded file is empty from '" << url << "'" << std::endl;
+                std::cerr << "Downloaded file is empty from '" << url << "'" << '\n';
                 std::remove(temp_file.c_str());  // Remove empty temp file
                 return false;
             }
         } else {
-            std::cerr << "Cannot verify downloaded file from '" << url << "'" << std::endl;
+            std::cerr << "Cannot verify downloaded file from '" << url << "'" << '\n';
             std::remove(temp_file.c_str());  // Remove temp file if we can't verify it
             return false;
         }
     }
     catch (const curlpp::LogicError & e)
     {
-        std::cerr << "Logic error downloading file from '" << url << "': " << e.what() << std::endl;
+        std::cerr << "Logic error downloading file from '" << url << "': " << e.what() << '\n';
         fout.close();
         std::remove(temp_file.c_str());  // Remove partial temp file
         return false;
     }
     catch (const curlpp::RuntimeError &e)
     {
-        std::cerr << "Runtime error downloading file from '" << url << "': " << e.what() << std::endl;
+        std::cerr << "Runtime error downloading file from '" << url << "': " << e.what() << '\n';
         fout.close();
         std::remove(temp_file.c_str());  // Remove partial temp file
         return false;
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Unexpected error downloading file from '" << url << "': " << e.what() << std::endl;
+        std::cerr << "Unexpected error downloading file from '" << url << "': " << e.what() << '\n';
         fout.close();
         std::remove(temp_file.c_str());  // Remove partial temp file
         return false;
@@ -411,7 +412,7 @@ bool DownloadFileWithFallback(const std::string &base_url, const std::string &de
         https_url = "https://" + https_url;
     }
     
-    std::cerr << "Attempting HTTPS download from '" << https_url << "'" << std::endl;
+    std::cerr << "Attempting HTTPS download from '" << https_url << "'" << '\n';
     if (DownloadFile(https_url, destination)) {
         return true;
     }
@@ -424,12 +425,12 @@ bool DownloadFileWithFallback(const std::string &base_url, const std::string &de
         http_url = "http://" + http_url;
     }
     
-    std::cerr << "HTTPS failed, attempting HTTP download from '" << http_url << "'" << std::endl;
+    std::cerr << "HTTPS failed, attempting HTTP download from '" << http_url << "'" << '\n';
     if (DownloadFile(http_url, destination)) {
         return true;
     }
     
-    std::cerr << "Both HTTPS and HTTP downloads failed for '" << base_url << "'" << std::endl;
+    std::cerr << "Both HTTPS and HTTP downloads failed for '" << base_url << "'" << '\n';
     return false;
 }
 
@@ -805,7 +806,7 @@ int main(int argc, genericChar* argv[])
 int ReportError(const std::string &message)
 {
     FnTrace("ReportError()");
-    std::cerr << message << std::endl;
+    std::cerr << message << '\n';
 
 
     const std::string err_file = MasterSystem ?
@@ -820,7 +821,7 @@ int ReportError(const std::string &message)
     // round to days
     auto today = date::floor<date::days>(now);
     err_out << "[" << today << " " << date::make_time(now - today) << " UTC] "
-            << message << std::endl;
+            << message << '\n';
     return 0;
 }
 
@@ -4008,11 +4009,11 @@ int ReloadFonts()
                 const char* font_spec = fd.font;
                 
                 // Append :dpi=96 to font specification if not already present
-                static char font_spec_with_dpi[256];
+                static std::array<char, 256> font_spec_with_dpi;
                 const char* font_to_load = font_spec;
                 if (strstr(font_spec, ":dpi=") == nullptr) {
-                    snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", font_spec);
-                    font_to_load = font_spec_with_dpi;
+                    snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", font_spec);
+                    font_to_load = font_spec_with_dpi.data();
                 }
                 
                 // Load the font using the original specification with fixed DPI
@@ -4108,7 +4109,7 @@ static const char* CompatibleFontFamilies[] = {
 // Lazy font loading function for performance optimization
 // Function to get a compatible font specification
 const char* GetCompatibleFontSpec(int font_id, const char* desired_family) {
-    static char font_spec[256];
+    static std::array<char, 256> font_spec;
     
     // Find the base font data
     const char* base_spec = nullptr;
@@ -4148,42 +4149,42 @@ const char* GetCompatibleFontSpec(int font_id, const char* desired_family) {
     // If not compatible, use DejaVu Serif (guaranteed to work)
     const char* family = is_compatible ? desired_family : "DejaVu Serif";
     
-    snprintf(font_spec, sizeof(font_spec), "%s:pixelsize=%d:style=%s", 
+    snprintf(font_spec.data(), font_spec.size(), "%s:pixelsize=%d:style=%s", 
              family, pixelsize, style);
     
-    return font_spec;
+    return font_spec.data();
 }
 
 // Function to read global font family from configuration
 const char* GetGlobalFontFamily() {
-    static char font_family[256] = "DejaVu Serif"; // default
+    static std::array<char, 256> font_family = {"DejaVu Serif"}; // default
     
     // Try to read from configuration file
     const char* config_file = "/usr/viewtouch/dat/conf/font.conf";
     FILE* fp = fopen(config_file, "r");
     if (fp) {
-        char line[256];
-        if (fgets(line, sizeof(line), fp)) {
+        std::array<char, 256> line;
+        if (fgets(line.data(), line.size(), fp)) {
             // Remove newline
-            line[strcspn(line, "\n")] = 0;
+            line[line.size() > 0 ? strcspn(line.data(), "\n") : 0] = 0;
             // Check if it's a valid font family
             int is_valid = 0;
             for (int i = 0; CompatibleFontFamilies[i] != nullptr; ++i) {
-                if (strcmp(line, CompatibleFontFamilies[i]) == 0) {
+                if (strcmp(line.data(), CompatibleFontFamilies[i]) == 0) {
                     is_valid = 1;
                     break;
                 }
             }
             if (is_valid) {
-                strncpy(font_family, line, sizeof(font_family) - 1);
-                font_family[sizeof(font_family) - 1] = '\0';
-                printf("Loaded font family from config: %s\n", font_family);
+                std::strncpy(font_family.data(), line.data(), font_family.size() - 1);
+                font_family[font_family.size() - 1] = '\0';
+                printf("Loaded font family from config: %s\n", font_family.data());
             } else {
-                printf("Invalid font family in config: %s, using default\n", line);
+                printf("Invalid font family in config: %s, using default\n", line.data());
             }
         }
         fclose(fp);
     }
     
-    return font_family;
+    return font_family.data();
 }
