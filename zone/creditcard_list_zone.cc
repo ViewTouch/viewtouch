@@ -340,33 +340,17 @@ CreditDB *CreditCardListZone::GetDB(int in_system)
 
     if (in_system)
     {
-        switch (mode)
-        {
-        case MODE_EXCEPTIONS:
-            retval = MasterSystem->cc_exception_db.get();
-            break;
-        case MODE_REFUNDS:
-            retval = MasterSystem->cc_refund_db.get();
-            break;
-        case MODE_VOIDS:
-            retval = MasterSystem->cc_void_db.get();
-            break;
-        }
+        retval = (mode == MODE_EXCEPTIONS) ? MasterSystem->cc_exception_db.get()
+               : (mode == MODE_REFUNDS)    ? MasterSystem->cc_refund_db.get()
+               : (mode == MODE_VOIDS)      ? MasterSystem->cc_void_db.get()
+               : nullptr;
     }
     else if (archive != nullptr)
     {
-        switch (mode)
-        {
-        case MODE_EXCEPTIONS:
-            retval = archive->cc_exception_db;
-            break;
-        case MODE_REFUNDS:
-            retval = archive->cc_refund_db;
-            break;
-        case MODE_VOIDS:
-            retval = archive->cc_void_db;
-            break;
-        }
+        retval = (mode == MODE_EXCEPTIONS) ? archive->cc_exception_db
+               : (mode == MODE_REFUNDS)    ? archive->cc_refund_db
+               : (mode == MODE_VOIDS)      ? archive->cc_void_db
+               : nullptr;
     }
 
     return retval;

@@ -689,16 +689,16 @@ SignalResult UnitAmountDialog::Signal(Terminal *term, const genericChar* message
 SignalResult UnitAmountDialog::Keyboard(Terminal *term, int my_key, int state)
 {
     FnTrace("UnitAmountDialog::Keyboard()");
+    const char* action = nullptr;
     switch (my_key)
     {
-    case 27:  // ESC
-        return Signal(term, "cancel");
-    case 13:  // return
-        return Signal(term, "enter");
-    case 8:   // backspace
-        return Signal(term, "backspace");
+    case 27:  action = "cancel";    break; // ESC
+    case 13:  action = "enter";     break; // return
+    case 8:   action = "backspace"; break; // backspace
+    default:  break;
     }
-
+    if (action)
+        return Signal(term, action);
     genericChar str[] = {(char) my_key, '\0'};
     return Signal(term, str);
 }
@@ -937,16 +937,16 @@ SignalResult TenKeyDialog::Signal(Terminal *term, const genericChar* message)
 SignalResult TenKeyDialog::Keyboard(Terminal *term, int my_key, int state)
 {
     FnTrace("TenKeyDialog::Keyboard()");
+    const char* action = nullptr;
     switch (my_key)
     {
-    case 27:  // ESC
-        return Signal(term, "cancel");
-    case 13:  // return
-        return Signal(term, "enter");
-    case 8:   // backspace
-        return Signal(term, "backspace");
+    case 27:  action = "cancel";    break; // ESC
+    case 13:  action = "enter";     break; // return
+    case 8:   action = "backspace"; break; // backspace
+    default:  break;
     }
-
+    if (action)
+        return Signal(term, action);
     genericChar str[] = {(char) my_key, '\0'};
     return Signal(term, str);
 }
@@ -1206,21 +1206,19 @@ SignalResult GetTextDialog::Keyboard(Terminal *term, int my_key, int state)
     FnTrace("GetTextDialog::Keyboard()");
     SignalResult retval = SIGNAL_IGNORED;
 
+    const char* action = nullptr;
     switch (my_key)
     {
-    case 8:  // Backspace
-        retval = Signal(term, "backspace");
-        break;
-    case 13: // Enter
-        retval = Signal(term, "enter");
-        break;
-    case 27: // Esc
-        retval = Signal(term, "cancel");
-        break;
-    default:
+    case 8:   action = "backspace"; break; // Backspace
+    case 13:  action = "enter";     break; // Enter
+    case 27:  action = "cancel";    break; // Esc
+    default:  break;
+    }
+    if (action)
+        return Signal(term, action);
+    {
         genericChar str[] = {(char) my_key, '\0'};
         retval = Signal(term, str);
-        break;
     }
 
     return retval;
