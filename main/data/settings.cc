@@ -93,10 +93,7 @@ const char* SalesPeriodName[] = {
 int SalesPeriodValue[] = {
     SP_NONE, SP_WEEK, SP_2WEEKS, SP_4WEEKS, SP_MONTH, SP_HM_11, -1};
 
-const char* ReceiptPrintName[] = {
-    GlobalTranslate("Never"), GlobalTranslate("On Send"), GlobalTranslate("On Finalize"), GlobalTranslate("On Both"), nullptr};
-int ReceiptPrintValue[] = {
-    RECEIPT_NONE, RECEIPT_SEND, RECEIPT_FINALIZE, RECEIPT_BOTH, -1};
+// ReceiptPrint values are supplied via enum (ReceiptPrintType) in settings_enums.hh
 
 const char* DrawerPrintName[] = {
     GlobalTranslate("On Pull"), GlobalTranslate("On Balance"), GlobalTranslate("On Both"), GlobalTranslate("Never"), nullptr};

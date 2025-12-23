@@ -239,8 +239,7 @@ extern int   SaleCreditValue[];
 extern const genericChar* SalesPeriodName[];
 extern int   SalesPeriodValue[];
 
-extern const genericChar* ReceiptPrintName[];
-extern int   ReceiptPrintValue[];
+// ReceiptPrint uses enum utilities (ReceiptPrintType) instead of static arrays
 
 extern const genericChar* DrawerPrintName[];
 extern int   DrawerPrintValue[];

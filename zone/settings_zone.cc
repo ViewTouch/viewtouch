@@ -183,11 +183,11 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         str = FindStringByValue(settings->price_rounding, RoundingValue, RoundingName);
         break;
     case SWITCH_RECEIPT_PRINT:
-        // Modern enum-based approach
-        if (auto receipt_type = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {  // Renamed to avoid shadowing member 'type'
+        // Enum-based display name (no legacy array fallback)
+        if (auto receipt_type = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {
             str = vt::GetReceiptPrintDisplayName(*receipt_type);
         } else {
-            str = FindStringByValue(settings->receipt_print, ReceiptPrintValue, ReceiptPrintName);
+            str = "Unknown";
         }
         break;
     case SWITCH_DATE_FORMAT:
@@ -390,7 +390,23 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         settings->price_rounding = NextValue(settings->price_rounding, RoundingValue);
         break;
     case SWITCH_RECEIPT_PRINT:
-        settings->receipt_print = NextValue(settings->receipt_print, ReceiptPrintValue);
+        {
+            auto values = vt::GetEnumValues<ReceiptPrintType>();
+            int next_val = settings->receipt_print;
+            if (auto current = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {
+                // find current index
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                // default to first value if invalid
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->receipt_print = next_val;
+        }
         break;
     case SWITCH_DATE_FORMAT:
         settings->date_format = NextValue(settings->date_format, DateFormatValue);
