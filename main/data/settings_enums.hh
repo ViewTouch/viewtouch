@@ -47,29 +47,35 @@ enum class DrawerModeType {
     ServerBank = 2  // DRAWER_SERVER
 };
 
-// Example: Price rounding options
+// Price rounding options - values must match ROUNDING_* constants
 enum class PriceRoundingType {
     None = 0,              // ROUNDING_NONE
     DropPennies = 1,       // ROUNDING_DROP_PENNIES
     RoundUpGratuity = 2    // ROUNDING_UP_GRATUITY
 };
 
-// Example: Time format options
+// Measurement system options - values must match MEASURE_* constants
+enum class MeasureSystemType {
+    Standard = 1,  // MEASURE_STANDARD (U.S./Imperial)
+    Metric = 2     // MEASURE_METRIC
+};
+
+// Time format options - values must match TIME_* constants
 enum class TimeFormatType {
-    Hour12 = 0,  // TIME_12HOUR
-    Hour24 = 1   // TIME_24HOUR
+    Hour12 = 1,  // TIME_12HOUR
+    Hour24 = 2   // TIME_24HOUR
 };
 
-// Example: Date format options
+// Date format options - values must match DATE_* constants
 enum class DateFormatType {
-    MMDDYY = 0,  // DATE_MMDDYY
-    DDMMYY = 1   // DATE_DDMMYY
+    MMDDYY = 1,  // DATE_MMDDYY
+    DDMMYY = 2   // DATE_DDMMYY
 };
 
-// Example: Number format options
+// Number format options - values must match NUMBER_* constants
 enum class NumberFormatType {
-    Standard = 0,  // NUMBER_STANDARD (1,000,000.00)
-    Euro = 1       // NUMBER_EURO (1.000.000,00)
+    Standard = 1,  // NUMBER_STANDARD (1,000,000.00)
+    Euro = 2       // NUMBER_EURO (1.000.000,00)
 };
 
 // Example: Sales period options
@@ -130,6 +136,23 @@ inline const char* GetDrawerPrintDisplayName(DrawerPrintType type) {
     }
 }
 
+inline const char* GetPriceRoundingDisplayName(PriceRoundingType type) {
+    switch (type) {
+        case PriceRoundingType::None: return "None";
+        case PriceRoundingType::DropPennies: return "Drop Pennies";
+        case PriceRoundingType::RoundUpGratuity: return "Round Up Gratuity";
+        default: return "Unknown";
+    }
+}
+
+inline const char* GetMeasureSystemDisplayName(MeasureSystemType type) {
+    switch (type) {
+        case MeasureSystemType::Standard: return "Standard U.S.";
+        case MeasureSystemType::Metric: return "Metric";
+        default: return "Unknown";
+    }
+}
+
 inline const char* GetTimeFormatDisplayName(TimeFormatType format) {
     switch (format) {
         case TimeFormatType::Hour12: return "12 hour";
@@ -174,8 +197,24 @@ inline auto GetAllDrawerPrintOptions() {
     return GetEnumPairs<DrawerPrintType>();
 }
 
+inline auto GetAllPriceRoundingOptions() {
+    return GetEnumPairs<PriceRoundingType>();
+}
+
+inline auto GetAllMeasureSystems() {
+    return GetEnumPairs<MeasureSystemType>();
+}
+
 inline auto GetAllTimeFormats() {
     return GetEnumPairs<TimeFormatType>();
+}
+
+inline auto GetAllDateFormats() {
+    return GetEnumPairs<DateFormatType>();
+}
+
+inline auto GetAllNumberFormats() {
+    return GetEnumPairs<NumberFormatType>();
 }
 
 } // namespace vt

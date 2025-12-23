@@ -178,7 +178,11 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         str = FindStringByValue(settings->store, StoreValue, StoreName);
         break;
     case SWITCH_ROUNDING:
-        str = FindStringByValue(settings->price_rounding, RoundingValue, RoundingName);
+        if (auto rounding = vt::IntToEnum<PriceRoundingType>(settings->price_rounding)) {
+            str = vt::GetPriceRoundingDisplayName(*rounding);
+        } else {
+            str = "Unknown";
+        }
         break;
     case SWITCH_RECEIPT_PRINT:
         // Enum-based display name (no legacy array fallback)
@@ -196,23 +200,25 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         }
         break;
     case SWITCH_DATE_FORMAT:
-        // Modern enum-based approach
         if (auto format = vt::IntToEnum<DateFormatType>(settings->date_format)) {
             str = vt::GetDateFormatDisplayName(*format);
         } else {
-            str = FindStringByValue(settings->date_format, DateFormatValue, DateFormatName);
+            str = "Unknown";
         }
         break;
     case SWITCH_NUMBER_FORMAT:
-        // Modern enum-based approach
         if (auto format = vt::IntToEnum<NumberFormatType>(settings->number_format)) {
             str = vt::GetNumberFormatDisplayName(*format);
         } else {
-            str = FindStringByValue(settings->number_format, NumberFormatValue, NumberFormatName);
+            str = "Unknown";
         }
         break;
     case SWITCH_MEASUREMENTS:
-        str = FindStringByValue(settings->measure_system, MeasureSystemValue, MeasureSystemName);
+        if (auto measure = vt::IntToEnum<MeasureSystemType>(settings->measure_system)) {
+            str = vt::GetMeasureSystemDisplayName(*measure);
+        } else {
+            str = "Unknown";
+        }
         break;
     case SWITCH_LOCALE:
         // Show current language
@@ -226,11 +232,10 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         }
         break;
     case SWITCH_TIME_FORMAT:
-        // Modern enum-based approach  
         if (auto format = vt::IntToEnum<TimeFormatType>(settings->time_format)) {
             str = vt::GetTimeFormatDisplayName(*format);
         } else {
-            str = FindStringByValue(settings->time_format, TimeFormatValue, TimeFormatName);
+            str = "Unknown";
         }
         break;
     case SWITCH_AUTHORIZE_METHOD:
@@ -403,7 +408,21 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         settings->store = NextValue(settings->store, StoreValue);
         break;
     case SWITCH_ROUNDING:
-        settings->price_rounding = NextValue(settings->price_rounding, RoundingValue);
+        {
+            auto values = vt::GetEnumValues<PriceRoundingType>();
+            int next_val = settings->price_rounding;
+            if (auto current = vt::IntToEnum<PriceRoundingType>(settings->price_rounding)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->price_rounding = next_val;
+        }
         break;
     case SWITCH_RECEIPT_PRINT:
         {
@@ -442,13 +461,55 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         }
         break;
     case SWITCH_DATE_FORMAT:
-        settings->date_format = NextValue(settings->date_format, DateFormatValue);
+        {
+            auto values = vt::GetEnumValues<DateFormatType>();
+            int next_val = settings->date_format;
+            if (auto current = vt::IntToEnum<DateFormatType>(settings->date_format)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->date_format = next_val;
+        }
         break;
     case SWITCH_NUMBER_FORMAT:
-        settings->number_format = NextValue(settings->number_format, NumberFormatValue);
+        {
+            auto values = vt::GetEnumValues<NumberFormatType>();
+            int next_val = settings->number_format;
+            if (auto current = vt::IntToEnum<NumberFormatType>(settings->number_format)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->number_format = next_val;
+        }
         break;
     case SWITCH_MEASUREMENTS:
-        settings->measure_system = NextValue(settings->measure_system, MeasureSystemValue);
+        {
+            auto values = vt::GetEnumValues<MeasureSystemType>();
+            int next_val = settings->measure_system;
+            if (auto current = vt::IntToEnum<MeasureSystemType>(settings->measure_system)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->measure_system = next_val;
+        }
         break;
     case SWITCH_LOCALE:
         // Language switching - cycle between English and Spanish
@@ -477,7 +538,21 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         no_update = 1;  // Don't update settings since language is handled separately
         break;
     case SWITCH_TIME_FORMAT:
-        settings->time_format = NextValue(settings->time_format, TimeFormatValue);
+        {
+            auto values = vt::GetEnumValues<TimeFormatType>();
+            int next_val = settings->time_format;
+            if (auto current = vt::IntToEnum<TimeFormatType>(settings->time_format)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->time_format = next_val;
+        }
         break;
     case SWITCH_AUTHORIZE_METHOD:
         settings->authorize_method = NextValue(settings->authorize_method, AuthorizeValue);

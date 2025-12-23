@@ -27,6 +27,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `main/data/credit.hh`, `main/data/settings.hh`
   - **Impact**: No functional change; build and all tests remain green (40/40)
 
+- **Enum Usage: Settings Formats (PriceRounding, MeasureSystem, DateFormat, NumberFormat, TimeFormat) (2025-12-23)**
+  - Completed migration of user-facing format settings to type-safe enums with display helpers
+  - Added `MeasureSystemType` enum (Standard/Metric) and `GetMeasureSystemDisplayName`, `GetAllMeasureSystems` helpers
+  - Added `GetPriceRoundingDisplayName` and `GetAllPriceRoundingOptions` helpers for `PriceRoundingType`
+  - Added `GetAllDateFormats` and `GetAllNumberFormats` helpers to complete existing enums
+  - Fixed enum value mismatches: Updated TimeFormat, DateFormat, NumberFormat to match actual #define values (1-based, not 0-based)
+  - Replaced legacy array-based cycling with enum-driven approach using `vt::GetEnumValues` for all five settings types
+  - Removed legacy `RoundingName/Value`, `MeasureSystemName/Value`, `DateFormatName/Value`, `NumberFormatName/Value`, `TimeFormatName/Value` arrays
+  - **Files modified**: `main/data/settings_enums.hh`, `main/data/settings.cc`, `main/data/settings.hh`, `zone/settings_zone.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
 - **Enum Usage: ReceiptPrintType (2025-12-23)**
   - Updated receipt printing logic to use `ReceiptPrintType` via `vt::IntToEnum` instead of bitmask checks
   - Conditions now compare against `OnSend`/`OnFinalize`/`OnBoth` for clarity and type-safety
