@@ -42,11 +42,13 @@ constexpr int SETTINGS_VERSION = 106;  // READ ABOVE
 #define MAX_FOOTER_LINES 4
 #define MAX_JOBS         20
 
-// Receipt printing options
-#define RECEIPT_SEND      1
-#define RECEIPT_FINALIZE  2
-#define RECEIPT_BOTH      3
-#define RECEIPT_NONE      0
+// Receipt printing options (converted from macros to enum constants)
+enum ReceiptPrintMode {
+    RECEIPT_NONE     = 0,
+    RECEIPT_SEND     = 1,
+    RECEIPT_FINALIZE = 2,
+    RECEIPT_BOTH     = 3
+};
 
 // Drawer report options
 #define DRAWER_PRINT_PULL    1

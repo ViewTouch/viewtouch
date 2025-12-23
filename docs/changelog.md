@@ -20,6 +20,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `main/hardware/printer.hh`, `main/ui/report.hh`
   - **Impact**: No functional change; build and all tests remain green (40/40)
 
+- **Macro → Enum: Receipt Constants (2025-12-23)**
+  - Converted receipt copy selection constants to `enum ReceiptCopy` (`RECEIPT_PICK`, `RECEIPT_CUSTOMER`, `RECEIPT_MERCHANT`) in `credit.hh`
+  - Converted receipt printing options to `enum ReceiptPrintMode` (`RECEIPT_NONE`, `RECEIPT_SEND`, `RECEIPT_FINALIZE`, `RECEIPT_BOTH`) in `settings.hh`
+  - Preserved numeric values and identifiers for compatibility with existing code paths and bitwise checks
+  - **Files modified**: `main/data/credit.hh`, `main/data/settings.hh`
+  - **Impact**: No functional change; build and all tests remain green (40/40)
+
 ### Fixed
 - **Critical Bugprone Fixes (2025-12-23)**
   - Fixed empty catch blocks that were hiding errors in BackTraceFunction (fntrace.hh)

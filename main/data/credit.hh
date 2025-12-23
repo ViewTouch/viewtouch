@@ -142,9 +142,12 @@ extern int   CreditCardValue[];
 #define AUTH_COMPLETE      128
 #define AUTH_ADVICE        256
 
-#define RECEIPT_PICK         0  // auto-select receipts types based on settings
-#define RECEIPT_CUSTOMER     1
-#define RECEIPT_MERCHANT     2
+// Receipt copy selection (converted from macros to enum constants)
+enum ReceiptCopy {
+    RECEIPT_PICK     = 0, // auto-select receipt types based on settings
+    RECEIPT_CUSTOMER = 1,
+    RECEIPT_MERCHANT = 2
+};
 
 #define MASTER_CC_EXCEPT     VIEWTOUCH_PATH "/dat/current/cc_exceptions.dat"
 #define MASTER_CC_REFUND     VIEWTOUCH_PATH "/dat/current/cc_refunds.dat"
