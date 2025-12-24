@@ -24,6 +24,7 @@
 #include "labels.hh"
 #include "manager.hh"
 #include "system.hh"
+#include <cstring>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -134,16 +135,48 @@ HardwareZone::HardwareZone()
 RenderResult HardwareZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("HardwareZone::Render()");
+
+    // Mirror ListFormZone::Render but avoid rendering form fields when show_list is set.
+    records = RecordCount(term);
     if (update_flag == RENDER_NEW)
     {
+        record_no = 0;
+        if (records > 0)
+            LoadRecord(term, 0);
+        show_list = 1;
+        list_page = 0;
         page = 0;
         section = 0;
     }
 
+    if (records <= 0)
+        show_list = 1;
+    if (update_flag && show_list)
+    {
+        list_report.Clear();
+        ListReport(term, &list_report);
+    }
+
+    if (update_flag || keep_focus == 0)
+        keyboard_focus = nullptr;
+
     int col = color[0];
-    ListFormZone::Render(term, update_flag);
+
     if (show_list)
     {
+        // Render base layout without form fields
+        LayoutZone::Render(term, update_flag);
+
+        // Render list
+        if (records > 0)
+            list_report.selected_line = record_no;
+        else
+            list_report.selected_line = -1;
+        if (update_flag)
+            list_page = -1; // force update
+        list_report.Render(term, this, list_header, list_footer, list_page, 0, list_spacing);
+
+        // List headings
         switch (section)
         {
         default:
@@ -165,6 +198,10 @@ RenderResult HardwareZone::Render(Terminal *term, int update_flag)
     }
     else
     {
+        // Render form view (fields) via FormZone logic
+        FormZone::Render(term, update_flag);
+
+        // Form headings
         switch (section)
         {
         default:
@@ -175,7 +212,57 @@ RenderResult HardwareZone::Render(Terminal *term, int update_flag)
             break;
         }
     }
+
     return RENDER_OKAY;
+}
+
+SignalResult HardwareZone::Touch(Terminal *term, int tx, int ty)
+{
+    FnTrace("HardwareZone::Touch()");
+    if (records <= 0)
+        return SIGNAL_IGNORED;
+
+    FormZone::Touch(term, tx, ty);
+    if (show_list)
+    {
+        int new_page = list_page;
+        int max_page = list_report.max_pages;
+        int row = list_report.TouchLine(list_spacing, selected_y);
+        if (row == -1)      // header touched
+        {
+            --new_page;
+            if (new_page < 0)
+                new_page = max_page - 1;
+        }
+        else if (row == -2) // footer touched
+        {
+            ++new_page;
+            if (new_page >= max_page)
+                new_page = 0;
+        }
+        else if (row != record_no && row >= 0 && row < records)
+        {
+            // Only update selection, don't load the record into form fields
+            // User must send "change view" signal to see the configuration
+            record_no = row;
+            Draw(term, 0);
+            return SIGNAL_OKAY;
+        }
+        if (list_page != new_page)
+        {
+            list_page = new_page;
+            Draw(term, 0);
+            return SIGNAL_OKAY;
+        }
+        return SIGNAL_IGNORED;
+    }
+
+    keyboard_focus = Find(selected_x, selected_y);
+    if (keyboard_focus &&
+        keyboard_focus->Touch(term, this, selected_x, selected_y) == SIGNAL_OKAY)
+        UpdateForm(term, record_no);
+    Draw(term, 0);
+    return SIGNAL_OKAY;
 }
 
 int HardwareZone::UpdateForm(Terminal *term, int record)
@@ -215,6 +302,7 @@ int HardwareZone::UpdateForm(Terminal *term, int record)
 SignalResult HardwareZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("HardwareZone::Signal()");
+    int prev_show = show_list;
     static const genericChar* commands[] = {
         "section0", "section1", "changestatus", "calibrate",
         "testreceipt", "testreport",
@@ -258,7 +346,17 @@ SignalResult HardwareZone::Signal(Terminal *term, const genericChar* message)
             printer->OpenDrawer(1);
         return SIGNAL_OKAY;
     default:
-        return ListFormZone::Signal(term, message);
+        {
+            SignalResult res = ListFormZone::Signal(term, message);
+            // When toggling from list to form view, load the current record so the form shows data
+            if (res != SIGNAL_IGNORED && prev_show && !show_list && records > 0 && strcmp(message, "change view") == 0)
+            {
+                LoadRecord(term, record_no);
+                UpdateForm(term, record_no);
+                Draw(term, 0);
+            }
+            return res;
+        }
     }
 }
 

@@ -19,7 +19,7 @@
  */
 
 #ifndef _HARDWARE_ZONE_HH
-#define HARDWARE_ZONE_HH
+#define _HARDWARE_ZONE_HH
 
 #include "form_zone.hh"
 
@@ -57,6 +57,7 @@ public:
     int ChangeStatus(Terminal *t);
     int Calibrate(Terminal *t);
     Printer *FindPrinter(Terminal *t);
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
 };
 
 #endif
