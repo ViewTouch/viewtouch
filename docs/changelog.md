@@ -75,6 +75,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
 
 ### Fixed
+- **Job Security button double-touch regression (2025-12-23)**
+  - Prevented duplicate touch handling that immediately reverted job activation/deactivation in Job Security settings
+- **Hardware button list/form separation (2025-12-23)**
+  - Hardware view now shows only the device list by default and switches to configuration view only after an explicit "change view" signal
 - **Static Analysis Cleanups (2025-12-23)**
   - Addressed clang-tidy findings: removed branch-clone in DList merge, added self-assignment guard to `Str`, corrected rounding and narrowing in `test_check`, fixed archive header error handling, and cleaned crash reporting/tests for empty-catch/pointer warnings
   - Suppressed analyzer padding noise for large `Settings`/`Terminal` classes and tightened enum underlying types in terminal hardware definitions

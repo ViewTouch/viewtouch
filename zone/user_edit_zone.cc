@@ -679,7 +679,6 @@ SignalResult JobSecurityZone::Touch(Terminal *term, int tx, int ty)
     if (records <= 0)
         return SIGNAL_IGNORED;
     
-    FormZone::Touch(term, tx, ty);
 
     // It's bad to disable a job category when there are employee's configured
     // for that job.  We'll allow it, but only after a confirmation.
