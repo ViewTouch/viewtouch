@@ -905,8 +905,6 @@ RenderResult ListFormZone::Render(Terminal *term, int update_flag)
     if (update_flag == RENDER_NEW)
     {
         record_no = 0;
-        if (records > 0)
-            LoadRecord(term, 0);
         show_list = 1;
         list_page = 0;
     }
@@ -922,10 +920,11 @@ RenderResult ListFormZone::Render(Terminal *term, int update_flag)
     if (update_flag || keep_focus == 0)
         keyboard_focus = nullptr;
 
-    FormZone::Render(term, update_flag);
-
     if (show_list)
     {
+        // Render list view - don't call FormZone::Render() to avoid showing form fields
+        LayoutZone::Render(term, update_flag);
+        
         if (records > 0)
             list_report.selected_line = record_no;
         else
@@ -937,25 +936,8 @@ RenderResult ListFormZone::Render(Terminal *term, int update_flag)
     }
     else
     {
-        if (!no_line)
-        {
-            Flt tl = form_header;
-            if (tl < 0)
-                tl += size_y;
-            if (tl > 0)
-                Line(term, tl + .1, color[0]);
-        }
-
-        if (records > 0)
-        {
-            LayoutForm(term);
-            for (FormField *f = FieldList(); f != nullptr; f = f->next)
-            {
-                f->selected = (keyboard_focus == f);
-                if (f->active)
-                    f->Render(term, this);
-            }
-        }
+        // Render form view via FormZone logic
+        FormZone::Render(term, update_flag);
     }
     return RENDER_OKAY;
 }
@@ -1056,9 +1038,17 @@ SignalResult ListFormZone::Signal(Terminal *term, const genericChar* message)
     case 7:  // Unfocus
         break;
     case 8:  // change view
-        show_list ^= 1;
-        if (show_list)
-            SaveRecord(term, record_no, 0);
+        {
+            int prev_show = show_list;
+            show_list ^= 1;
+            if (show_list)
+                SaveRecord(term, record_no, 0);
+            else if (prev_show && !show_list && records > 0)
+            {
+                // Switching from list to form view - load the current record
+                LoadRecord(term, record_no);
+            }
+        }
         break;
     default:
         if (strncmp(message, "search ", 7) == 0)
@@ -1109,9 +1099,10 @@ SignalResult ListFormZone::Touch(Terminal *term, int tx, int ty)
         }
         else if (row != record_no && row >= 0 && row < records)
         {
+            // Only update selection, don't load the record into form fields
+            // User must send "change view" signal to see the configuration
             SaveRecord(term, record_no, 0);
             record_no = row;
-            LoadRecord(term, record_no);
             Draw(term, 0);
             return SIGNAL_OKAY;
         }
