@@ -75,6 +75,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
 
 ### Fixed
+- **Sales Item List button view separation (2025-12-26)**
+  - Fixed bug where Sales Item List button type was showing both the list of items and the selected item's configuration simultaneously
+  - **Root Cause**: `ListFormZone::Render()` was unconditionally calling `FormZone::Render()` which displayed form fields even when showing the list view
+  - **Solution**: Modified `ListFormZone::Render()` to conditionally call `FormZone::Render()` only when `show_list` is false (form view), and modified `ListFormZone::Touch()` to not load form fields when selecting items from the list
+  - **Result**: List view now shows only items; form view shows only configuration fields; switching between views requires explicit "change view" signal
+  - **Files modified**: `zone/form_zone.cc` (`ListFormZone::Render()`, `ListFormZone::Touch()`, `ListFormZone::Signal()`)
+  - **Impact**: Affects all `ListFormZone`-based zones (ItemListZone, etc.); behavior now matches HardwareZone pattern
 - **Job Security button double-touch regression (2025-12-23)**
   - Prevented duplicate touch handling that immediately reverted job activation/deactivation in Job Security settings
 - **Hardware button list/form separation (2025-12-23)**
