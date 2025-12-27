@@ -9,7 +9,7 @@ set(PROJECT_IDENTIFIER ${TOP_PROJECT_UPPER})
 # The version number.
 set (ViewTouch_VERSION_MAJOR 25)
 set (ViewTouch_VERSION_MINOR 03)
-set (ViewTouch_VERSION_PATCH  0)
+set (ViewTouch_VERSION_PATCH  1)
 
 # generate short version string <MAJOR>.<MINOR>.<PATCH>
 gen_version_string(
