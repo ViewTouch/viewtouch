@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [v25.03.1] - 2025-12-26
+### Changed
+- Version bump from 25.03.0 to 25.03.1
+
 ### Changed
 - **Editor Settings Button Split and Password Function Removal (2025-12-XX)**
   - **Split Editor Settings**: Separated "Editor Settings" functionality into two distinct buttons for better organization
