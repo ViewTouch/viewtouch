@@ -45,6 +45,7 @@
 #include "conf_file.hh"
 #include "src/utils/vt_logger.hh"  // Modern C++ logging
 #include "safe_string_utils.hh"     // Safe string operations
+#include "src/utils/cpp23_utils.hh"  // C++23 formatting utilities
 #include "date/date.h"      // helper library to output date strings with std::chrono
 #include "src/core/crash_report.hh"  // Automatic crash reporting
 
@@ -80,6 +81,7 @@
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#include "src/utils/cpp23_utils.hh"
 #endif
 
 namespace fs = std::filesystem;
@@ -304,12 +306,12 @@ void ViewTouchError(const char* message, int do_sleep)
 
     if (settings->expire_message1.empty())
     {
-        snprintf(errormsg.data(), errormsg.size(), "%s\\%s\\%s", message,
+        vt::cpp23::format_to_buffer(errormsg.data(), errormsg.size(), "{}\\{}\\{}", message,
              "Please contact support.", " 541-515-5913");
     }
     else
     {
-        snprintf(errormsg.data(), errormsg.size(), R"(%s\%s\%s\%s\%s)", message,
+        vt::cpp23::format_to_buffer(errormsg.data(), errormsg.size(), R"({}\{}\{}\{}\{})", message,
                  settings->expire_message1.Value(),
                  settings->expire_message2.Value(),
                  settings->expire_message3.Value(),
@@ -896,7 +898,7 @@ void Terminate(int my_signal)
     default:
     {
         std::array<genericChar, 256> str{};
-        snprintf(str.data(), str.size(), GlobalTranslate("Unknown signal %d received"), my_signal);
+        vt_safe_string::safe_format(str.data(), str.size(), GlobalTranslate("Unknown signal %d received"), my_signal);
         ReportError(str.data());
         break;
     }
@@ -1099,7 +1101,7 @@ int StartSystem(int my_use_net)
     EnsureFileExists(sys->data_path.Value());
     if (DoesFileExist(sys->data_path.Value()) == 0)
     {
-        snprintf(str.data(), str.size(), GlobalTranslate("Can't find path '%s'"), sys->data_path.Value());;
+        vt_safe_string::safe_format(str.data(), str.size(), GlobalTranslate("Can't find path '%s'"), sys->data_path.Value());;
         ReportError(str.data());
         ReportLoader("POS cannot be started.");
         sleep(1);
@@ -1202,7 +1204,7 @@ int StartSystem(int my_use_net)
 
             // Append :dpi=96 to font specification if not already present
             if (strstr(xft_font_name, ":dpi=") == nullptr) {
-                snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", xft_font_name);
+                vt::cpp23::format_to_buffer(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "{}:dpi=96", xft_font_name);
                 xft_font_name = font_spec_with_dpi.data();
             }
 
@@ -1468,7 +1470,7 @@ int StartSystem(int my_use_net)
             auto *report_printer = new PrinterInfo;
             report_printer->name.Set("Report Printer");
             sys->FullPath("html", str.data());
-            snprintf(prtstr.data(), prtstr.size(), "file:%s/", str.data());
+            vt::cpp23::format_to_buffer(prtstr.data(), prtstr.size(), "file:{}/", str.data());
             report_printer->host.Set(prtstr.data());
             report_printer->model = MODEL_HTML;
             report_printer->type = PRINTER_REPORT;
@@ -1802,7 +1804,7 @@ int KillTask(const char* name)
     std::array<genericChar, STRLONG> str{};
 
     // Use timeout to prevent hanging during shutdown
-    snprintf(str.data(), str.size(), "timeout 5 " KILLALL_CMD " %s >/dev/null 2>/dev/null", name);
+    vt::cpp23::format_to_buffer(str.data(), str.size(), "timeout 5 " KILLALL_CMD " {} >/dev/null 2>/dev/null", name);
     system(str.data());
     return 0;
 }
@@ -1831,33 +1833,33 @@ char* PriceFormat(const Settings* settings, int price, int use_sign, int use_com
 
     std::array<char, 32> dollar_str{};
     if (use_comma && dollars > 999999){
-        snprintf(dollar_str.data(), dollar_str.size(), "%d%c%03d%c%03d",
+        vt::cpp23::format_to_buffer(dollar_str.data(), dollar_str.size(), "{}{}{:03d}{}{:03d}",
                 dollars / 1000000, comma,
                 (dollars / 1000) % 1000, comma,
                 dollars % 1000);
 	}
     else if (use_comma && dollars > 999)
-        snprintf(dollar_str.data(), dollar_str.size(), "%d%c%03d", dollars / 1000, comma, dollars % 1000);
+        vt::cpp23::format_to_buffer(dollar_str.data(), dollar_str.size(), "{}{}{:03d}", dollars / 1000, comma, dollars % 1000);
     else if (dollars > 0)
-        snprintf(dollar_str.data(), dollar_str.size(), "%d", dollars);
+        vt::cpp23::format_to_buffer(dollar_str.data(), dollar_str.size(), "{}", dollars);
     else
         dollar_str[0] = '\0';
 
     if (use_sign)
     {
         if (price < 0)
-            snprintf(str, 32, "%s-%s%c%02d", settings->money_symbol.Value(),
+            vt::cpp23::format_to_buffer(str, 32, "{}-{}{}{:02d}", settings->money_symbol.Value(),
                     dollar_str.data(), point, change);
         else
-            snprintf(str, 32, "%s%s%c%02d", settings->money_symbol.Value(),
+            vt::cpp23::format_to_buffer(str, 32, "{}{}{}{:02d}", settings->money_symbol.Value(),
                     dollar_str.data(), point, change);
     }
     else
     {
         if (price < 0)
-            snprintf(str, 32, "-%s%c%02d", dollar_str.data(), point, change);
+            vt::cpp23::format_to_buffer(str, 32, "-{}{}{:02d}", dollar_str.data(), point, change);
         else
-            snprintf(str, 32, "%s%c%02d", dollar_str.data(), point, change);
+            vt::cpp23::format_to_buffer(str, 32, "{}{}{:02d}", dollar_str.data(), point, change);
     }
     return str;
 }
@@ -2586,7 +2588,7 @@ int ReloadTermFonts()
         static std::array<char, 256> font_spec_with_dpi{};
         const char* font_to_load = new_font_spec;
         if (strstr(new_font_spec, ":dpi=") == nullptr) {
-            snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", new_font_spec);
+            vt::cpp23::format_to_buffer(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "{}:dpi=96", new_font_spec);
             font_to_load = font_spec_with_dpi.data();
         }
         
@@ -2727,11 +2729,11 @@ int OpenDynTerminal(const char* remote_terminal)
     idx = GetTermWord(update.data(), STRLENGTH, remote_terminal, idx);
     if (debug_mode)
     {
-        snprintf(str.data(), str.size(), "  Term Name:  %s", termname.data());
+        vt::cpp23::format_to_buffer(str.data(), str.size(), "  Term Name:  {}", termname.data());
         ReportError(str.data());
-        snprintf(str.data(), str.size(), "       Host:  %s", termhost.data());
+        vt::cpp23::format_to_buffer(str.data(), str.size(), "       Host:  {}", termhost.data());
         ReportError(str.data());
-        snprintf(str.data(), str.size(), "     Update:  %s", update.data());
+        vt::cpp23::format_to_buffer(str.data(), str.size(), "     Update:  {}", update.data());
         ReportError(str.data());
     }
 
@@ -2928,7 +2930,7 @@ int SendRemoteOrderResult(int socket, Check *check, int result_code, int status)
     std::array<char, STRLONG> result_str{};
 
     result_str[0] = '\0';
-    snprintf(result_str.data(), result_str.size(), "%d:%d:", check->CallCenterID(),
+    vt::cpp23::format_to_buffer(result_str.data(), result_str.size(), "{}:{}:", check->CallCenterID(),
              check->serial_number);
     if (result_code == CALLCTR_ERROR_NONE)
     {
@@ -3227,7 +3229,7 @@ int ProcessSocketRequest(char* request)
     }
     request[idx] = '\0';
 
-    snprintf(str.data(), str.size(), "Processing Request:  %s", request);
+    vt::cpp23::format_to_buffer(str.data(), str.size(), "Processing Request:  {}", request);
     ReportError(str.data());
 
     if (strncmp(request, "openterm ", 9) == 0)
@@ -3311,7 +3313,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
     auto loop_gap = std::chrono::duration_cast<std::chrono::milliseconds>(now_tick - last_tick);
     if (loop_gap > std::chrono::milliseconds(3000)) {
         std::array<char, 256> msg{};
-        snprintf(msg.data(), msg.size(), "UpdateSystemCB lag detected: %lld ms since last tick",
+        vt::cpp23::format_to_buffer(msg.data(), msg.size(), "UpdateSystemCB lag detected: {} ms since last tick",
                  static_cast<long long>(loop_gap.count()));
         ReportError(msg.data());
     }
@@ -3396,7 +3398,7 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
         if (total_count > 0)
         {
             std::array<char, 256> msg{};
-            snprintf(msg.data(), msg.size(), "Printer health check: %d/%d printers monitored", 
+            vt::cpp23::format_to_buffer(msg.data(), msg.size(), "Printer health check: {}/{} printers monitored", 
                      online_count, total_count);
             if (debug_mode)
                 ReportError(msg.data());
@@ -3624,7 +3626,7 @@ int UserCount()
     Terminal *term = nullptr;
 
     count = MasterControl->TermList()->TermsInUse();
-    snprintf(message.data(), message.size(), "UserCount:  %d users active", count);
+    vt::cpp23::format_to_buffer(message.data(), message.size(), "UserCount:  {} users active", count);
     ReportError(message.data());
 
     if (count > 0)
@@ -4012,7 +4014,7 @@ int ReloadFonts()
                 static std::array<char, 256> font_spec_with_dpi;
                 const char* font_to_load = font_spec;
                 if (strstr(font_spec, ":dpi=") == nullptr) {
-                    snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", font_spec);
+                    vt::cpp23::format_to_buffer(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "{}:dpi=96", font_spec);
                     font_to_load = font_spec_with_dpi.data();
                 }
                 
@@ -4149,7 +4151,7 @@ const char* GetCompatibleFontSpec(int font_id, const char* desired_family) {
     // If not compatible, use DejaVu Serif (guaranteed to work)
     const char* family = is_compatible ? desired_family : "DejaVu Serif";
     
-    snprintf(font_spec.data(), font_spec.size(), "%s:pixelsize=%d:style=%s", 
+    vt::cpp23::format_to_buffer(font_spec.data(), font_spec.size(), "{}:pixelsize={}:style={}", 
              family, pixelsize, style);
     
     return font_spec.data();

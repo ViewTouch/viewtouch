@@ -42,6 +42,8 @@
 #include <sys/ioctl.h> // ioctl, SIOCGIFHWADDR
 #endif
 
+#include "src/utils/cpp23_utils.hh"
+
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
@@ -63,7 +65,7 @@ int GetUnameInfo(char* buffer, int bufflen)
         return 1;
 
     // Format system info without leaking it to stdout in production
-    snprintf(buffer, bufflen, "%s %s %s %s", utsbuff.sysname, utsbuff.nodename,
+    vt::cpp23::format_to_buffer(buffer, bufflen, "{} {} {} {}", utsbuff.sysname, utsbuff.nodename,
              utsbuff.release, utsbuff.machine);
     return 0;
 }
@@ -122,7 +124,7 @@ int GetInterfaceInfo(char* stringbuff, int stringlen)
             if (sdl->sdl_alen > 0)
             {
                 memcpy(address, LLADDR(sdl), sdl->sdl_alen);
-                snprintf(stringbuff, stringlen, "%s", link_ntoa(sdl));
+                vt::cpp23::format_to_buffer(stringbuff, stringlen, "{}", link_ntoa(sdl));
                 retval = 0;
             }
         }
@@ -148,7 +150,7 @@ int MacToString(char* macstr, int maxlen, unsigned const char* mac)
     {
         if (idx)
             vt_safe_string::safe_concat(macstr, maxlen, ":");
-        snprintf(buffer, LICENCE_HASH_STRLENGTH, "%02X", mac[idx]);
+        vt::cpp23::format_to_buffer(buffer, LICENCE_HASH_STRLENGTH, "{:02X}", mac[idx]);
         vt_safe_string::safe_concat(macstr, maxlen, buffer);
     }
 

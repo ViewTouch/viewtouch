@@ -23,6 +23,7 @@
 #include "account.hh"
 #include "employee.hh"
 #include "system.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -108,7 +109,8 @@ RenderResult ExpenseZone::Render(Terminal *term, int update_flag)
     TextPosL(term, indent, header_line, term->Translate("Amount"), col);
     indent += num_spaces;
     TextPosL(term, indent, header_line, term->Translate("Document"), col);
-    snprintf(buff, STRLENGTH, "Total Expenses: %s", term->FormatPrice(total_expenses));
+    // C++23: Use std::format
+    vt::cpp23::format_to_buffer(buff, STRLENGTH, "Total Expenses: {}", term->FormatPrice(total_expenses));
     TextC(term, size_y - 1, buff, col);
 
     // generate and display the list of expenses
@@ -436,7 +438,8 @@ int ExpenseZone::LoadRecord(Terminal *term, int record)
                 }
                 else
                 {
-                    snprintf(buffer, STRLENGTH, "Drawer %d", drawer->number);
+                    // C++23: Use std::format
+                    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "Drawer {}", drawer->number);
                     field->AddEntry(buffer, drawer->serial_number);
                 }
             }

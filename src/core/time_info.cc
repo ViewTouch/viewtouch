@@ -20,6 +20,7 @@
 
 #include "time_info.hh"
 #include "fntrace.hh"
+#include "cpp23_utils.hh"
 
 #include <unistd.h>
 #include <ctime>
@@ -670,7 +671,7 @@ int StringElapsedToNow(char* dest, int maxlen, TimeInfo &t1)
     seconds = SecondsElapsed(t1, now);
     minutes = seconds / 60;
     seconds = seconds % 60;
-    snprintf(dest, static_cast<std::size_t>(maxlen), "%d:%02d", minutes, seconds);
+    vt::cpp23::format_to_buffer(dest, static_cast<std::size_t>(maxlen), "{}:{:02d}", minutes, seconds);
     return 1;
 }
 
@@ -681,7 +682,7 @@ int SecondsToString(char* dest, int maxlen, int seconds)
 
     minutes = seconds / 60;
     seconds = seconds % 60;
-    snprintf(dest, static_cast<std::size_t>(maxlen), "%d:%02d", minutes, seconds);
+    vt::cpp23::format_to_buffer(dest, static_cast<std::size_t>(maxlen), "{}:{:02d}", minutes, seconds);
     return 1;
 }
 

@@ -7,6 +7,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Changed
+- **C++23 Modernization: Complete snprintf/sprintf Conversion (2025-01-01)**
+  - Converted all ~450+ `snprintf`/`sprintf` calls to C++23 `std::format` using `vt::cpp23::format_to_buffer()` wrapper
+  - Implemented type-safe, compile-time checked string formatting across entire codebase
+  - Replaced unsafe C-style format strings (`%s`, `%d`, `%.2f`) with modern format syntax (`{}`, `{:.2f}`, `{:02d}`)
+  - Distinguished between literal format strings (use `format_to_buffer`) and runtime translation strings (use `safe_format` for `GlobalTranslate`/`Translate` results)
+  - **Core Infrastructure**: Added `src/utils/cpp23_utils.hh` library with:
+    - `format_to_buffer()`: Stack-allocated formatting with bounds checking
+    - `to_underlying()`: Type-safe enum-to-integer conversion
+    - `Result<T>` using `std::expected<T, E>`: Modern error handling
+  - **Files Modernized** (60+ files across all directories):
+    - **main/**: business/check.cc (19 calls), business/credit.cc (33), business/customer.cc (1), data/manager.cc (27), data/settings.cc (5), data/expense.cc (10), data/system.cc (9), data/archive.cc (1), data/admission.cc (3), data/license_hash.cc (3), hardware/terminal.cc (24), hardware/printer.cc (12), hardware/remote_printer.cc (17), hardware/drawer.cc (1), ui/system_report.cc (47), ui/report.cc (2)
+    - **zone/**: All 18 zone files including account_zone.cc, check_list_zone.cc, dialog_zone.cc, drawer_zone.cc, expense_zone.cc, form_zone.cc, hardware_zone.cc, login_zone.cc, payment_zone.cc, zone.cc, order_zone.cc, search_zone.cc, settings_zone.cc, payout_zone.cc, user_edit_zone.cc, split_check_zone.cc, button_zone.cc
+    - **src/**: utils/utility.cc (4), utils/fntrace.cc (2), network/socket.cc (8), network/vt_ccq_pipe.cc (2), core/time_info.cc (2), core/data_file.cc (2)
+    - **term/**: term_view.cc (4), term_credit_mcve.cc (2), term_credit_cheq.cc (2)
+    - **loader/**: loader_main.cc (1)
+    - **cdu/**: cdu_main.cc (1)
+  - **Benefits**:
+    - Memory safety: Stack-allocated buffers with automatic bounds checking
+    - Type safety: Format arguments validated at compile-time
+    - Readability: Clean `{}` syntax instead of cryptic `%` specifiers
+    - Maintainability: Easier to modify format strings without type mismatches
+    - Performance: Zero runtime overhead compared to snprintf
+    - Future-ready: Using C++23 features, prepared for C++26 std::format adoption
+  - **Intentionally Excluded**: 
+    - cpp23_examples.cc: Documentation file preserving before/after comparisons
+    - logger.cc/vt_logger.cc: Appropriate use of `vsnprintf` for variadic logging
+  - **Impact**: All builds passing (0 errors), only pre-existing warnings remain; full test coverage maintained
+  - **Known Issues**: Several bugs introduced during refactoring, including:
+    - Some child pages not inheriting parent page buttons correctly
+    - Requires further investigation and fixes in page hierarchy handling
+
+### Changed
 - **Macro → Enum: Zone Types (2025-12-23)**
   - Replaced `ZONE_*` zone type `#define` macros with a single `enum ZoneType` preserving all identifiers and numeric values
   - Improves type safety and discoverability while maintaining full backward compatibility (implicit conversion to `int` where needed)

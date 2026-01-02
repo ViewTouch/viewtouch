@@ -23,6 +23,7 @@
 #include "utility.hh"
 #include "locale.hh"
 #include "src/utils/vt_logger.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #include "version/vt_version_info.hh"
 
@@ -279,7 +280,7 @@ int UpdateKeyboard(const char* str = nullptr)
 
     if (str)
     {
-        snprintf(KBInput.data(), KBInput.size(), "%s_", str);
+        vt::cpp23::format_to_buffer(KBInput.data(), KBInput.size(), "{}_", str);
     }
 
     // Erase first

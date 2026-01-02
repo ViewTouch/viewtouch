@@ -32,6 +32,7 @@
 #include "utility.hh"
 #include "src/utils/vt_logger.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include <unistd.h>
 #include <cctype>
 #include <ctime>
@@ -1799,9 +1800,9 @@ const char* Credit::Name()
 
     str[0] = '\0';
     if (init != '\0')
-        snprintf(str, STRLENGTH, "%s %c. %s", first, init, last);
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{} {}. {}", first, init, last);
     else if (first[0] != '\0')
-        snprintf(str, STRLENGTH, "%s %s", first, last);
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{} {}", first, last);
     else if (last[0] != '\0')
         vt_safe_string::safe_copy(str, STRLENGTH, last);
 
@@ -2108,12 +2109,12 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
     if (printer != nullptr)
     {
         pwidth = printer->MaxWidth();
-        snprintf(line, STRLENGTH, "%*s", pwidth, "________________");
+        vt::cpp23::format_to_buffer(line, STRLENGTH, "{:>{}}", "________________", pwidth);
         if (debug_mode)
         {
             while (1)
             {
-                snprintf(buffer, STRLENGTH, "CreditCardReceipt-%02d\n", count);
+                vt::cpp23::format_to_buffer(buffer, STRLENGTH, "CreditCardReceipt-{:02d}\n", count);
                 printer->SetTitle(buffer);
                 printer->GetFilePath(buffer);
                 if (!DoesFileExist(buffer))
@@ -2129,7 +2130,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
         vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("==== TRANSACTION RECORD ====", lang));
         len = strlen(buffer);
         width = ((pwidth - len) / 2) + len;
-        snprintf(buffer2, STRLENGTH, "%*s", width, buffer);
+        vt::cpp23::format_to_buffer(buffer2, STRLENGTH, "{:>{}}", buffer, width);
         printer->Write(buffer2);
         printer->NewLine();
         
@@ -2160,26 +2161,26 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
                 vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("Void Cancel", lang));
             else
                 vt_safe_string::safe_copy(buffer, STRLENGTH, term->Translate("Unknown Transaction", lang));
-            snprintf(buffer2, STRLENGTH, "%s: %s", term->Translate("Transaction Type", lang), buffer);
+            vt::cpp23::format_to_buffer(buffer2, STRLENGTH, "{}: {}", term->Translate("Transaction Type", lang), buffer);
             printer->Write(buffer2);
             printer->LineFeed();
         }
 
         // amount of transaction, with tip and total
         if (IsPreauthed() && print_amount > -1)
-            snprintf(buffer, STRLENGTH, "%s", term->FormatPrice(print_amount, 1));
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}", term->FormatPrice(print_amount, 1));
         else
-            snprintf(buffer, STRLENGTH, "%s", term->FormatPrice(FullAmount(), 1));
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}", term->FormatPrice(FullAmount(), 1));
         width = pwidth - strlen(buffer) - 1;
-        snprintf(buffer2, STRLENGTH, "%s:", term->Translate("Amount", lang));
-        snprintf(buffer3, STRLENGTH, "%*s %s", -width, buffer2, buffer);
+        vt::cpp23::format_to_buffer(buffer2, STRLENGTH, "{}:", term->Translate("Amount", lang));
+        vt::cpp23::format_to_buffer(buffer3, STRLENGTH, "{:<{}} {}", buffer2, -width, buffer);
         printer->Write(buffer3);
         if (IsPreauthed())
         {
-            snprintf(buffer, STRLENGTH, "%s:", term->Translate("Tip", lang));
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}:", term->Translate("Tip", lang));
             printer->Write(buffer);
             printer->Write(line);
-            snprintf(buffer, STRLENGTH, "%s:", term->Translate("Total", lang));
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}:", term->Translate("Total", lang));
             printer->Write(buffer);
             printer->Write(line);
             printer->NewLine();
@@ -2195,7 +2196,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
                 vt_safe_string::safe_copy(buffer2, STRLENGTH, parent->FullName());
                 if (strlen(buffer2) > 0)
                 {
-                    snprintf(buffer, STRLENGTH, "%s: %s",
+                    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}: {}",
                              term->Translate("Customer Name", lang), buffer2);
                     printer->Write(buffer);
                     did_print = 1;
@@ -2203,7 +2204,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
                 vt_safe_string::safe_copy(buffer2, STRLENGTH, parent->Table());
                 if (strlen(buffer2) > 0)
                 {
-                    snprintf(buffer, STRLENGTH, "%s: %s",
+                    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}: {}",
                              term->Translate("Table", lang), buffer2);
                     printer->Write(buffer);
                     did_print = 1;
@@ -2213,37 +2214,37 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
             }
             if (name.size() > 0)
             {
-                snprintf(buffer, STRLENGTH, "%s: %s",
+                vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}: {}",
                          term->Translate("Card Owner", lang), Name());
                 printer->Write(buffer);
             }
         }
         if (card_type == CARD_TYPE_DEBIT)
         {
-            snprintf(buffer, STRLENGTH, "%s: %s",
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}: {}",
                      term->Translate("Debit Card Number", lang),
                      PAN(settings->show_entire_cc_num));
         }
         else
         {
-            snprintf(buffer, STRLENGTH, "%s: %s",
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}: {}",
                      term->Translate("Card Number", lang),
                      PAN(settings->show_entire_cc_num));
         }
         printer->Write(buffer);
         vt_safe_string::safe_copy(buffer3, STRLONG, term->Translate(CreditTypeName(buffer2), lang));
-        snprintf(buffer, STRLONG, "%s: %s", term->Translate("Account Type", lang),
+        vt::cpp23::format_to_buffer(buffer, STRLONG, "{}: {}", term->Translate("Account Type", lang),
                  buffer3);
         printer->Write(buffer);
         if (server_date.size() > 0 && server_time.size() > 0)
         {
-            snprintf(buffer, STRLENGTH, "%s: %s %s", term->Translate("Date/Time", lang),
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}: {} {}", term->Translate("Date/Time", lang),
                      server_date.Value(), server_time.Value());
             printer->Write(buffer);
         }
         else
         {
-            snprintf(buffer, STRLENGTH, "%s:  %s", term->Translate("Date/Time", lang),
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}:  {}", term->Translate("Date/Time", lang),
                      term->TimeDate(SystemTime, TD3));
             printer->Write(buffer);
             
@@ -2262,7 +2263,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
         }
         if (auth.size() > 0)
         {
-            snprintf(buffer, STRLENGTH, "%s: %s", term->Translate("Authorization Number", lang),
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}: {}", term->Translate("Authorization Number", lang),
                      auth.Value());
             printer->Write(buffer);
         }
@@ -2281,14 +2282,14 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
             printer->LineFeed();
             width = pwidth - (receipt_line.size());
             width = (width / 2) + receipt_line.size();
-            snprintf(buffer, STRLENGTH, "%*s", width, receipt_line.Value());
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{:>{}}", receipt_line.Value(), width);
 
             printer->Write(buffer);
         }
         else
         {
             width = ((pwidth - verb.size()) / 2) + verb.size();
-            snprintf(buffer, STRLENGTH, "%*s", width, verb.Value());
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{:>{}}", verb.Value(), width);
             printer->Write(buffer);
         }
 
@@ -2304,13 +2305,13 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
             printer->LineFeed(2);
             for (idx = 1; idx < 5; idx += 1)
             {
-                snprintf(buffer, STRLENGTH, "Customer Agreement %d", idx);
+                vt::cpp23::format_to_buffer(buffer, STRLENGTH, "Customer Agreement {}", idx);
                 vt_safe_string::safe_copy(buffer2, STRLENGTH, term->Translate(buffer, lang, 1));
                 len = strlen(buffer2);
                 if (len > 0)
                 {
                     width = ((pwidth - len) / 2) + len;
-                    snprintf(buffer, STRLENGTH, "%*s", len, buffer2);
+                    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{:>{}}", buffer2, len);
                     printer->Write(buffer);
                 }
             }
@@ -3397,10 +3398,10 @@ int CCSettle::GenerateReport(Terminal *term, Report *report, ReportZone *rzone, 
         }
         report->NewLine();
         
-        snprintf(str, STRLENGTH, "%s: %s %s", term->Translate("Date/Time"),
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}: {} {}", term->Translate("Date/Time"),
                  bdate.Value(), btime.Value());
         report->TextL(str);
-        snprintf(str, STRLENGTH, "%s: %s", term->Translate("Batch"), batch.Value());
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}: {}", term->Translate("Batch"), batch.Value());
         report->TextR(str);
         report->NewLine(2);
         
@@ -3746,7 +3747,7 @@ int CCInit::Add(const char* termid, const char* result)
     int datefmt = TD_SHORT_MONTH | TD_NO_DAY | TD_PAD | TD_SHORT_TIME;
 
     now.Set();
-    snprintf(buffer, STRLONG, "%s  %s: %s", term->TimeDate(now, datefmt),
+    vt::cpp23::format_to_buffer(buffer, STRLONG, "{}  {}: {}", term->TimeDate(now, datefmt),
              termid, result);
     newstr->Set(buffer);
     init_list.AddToTail(newstr);
@@ -4288,20 +4289,20 @@ int CCSAFDetails::GenerateReport(Terminal *term, Report *report, ReportZone *rzo
         report->Mode(0);
         report->NewLine();
         
-        snprintf(str, STRLENGTH, "%s: %s", term->Translate("Terminal"), terminal.Value());
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}: {}", term->Translate("Terminal"), terminal.Value());
         report->TextL(str);
-        snprintf(str, STRLENGTH, "%s: %s %s", term->Translate("Date/Time"),
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}: {} {}", term->Translate("Date/Time"),
                  safdate.Value(), saftime.Value());
         report->TextR(str);
         report->NewLine();
         
-        snprintf(str, STRLENGTH, "%s: %s", term->Translate("Batch"), batch.Value());
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}: {}", term->Translate("Batch"), batch.Value());
         report->TextL(str);
-        snprintf(str, STRLENGTH, "%s: %s", term->Translate("SAF Number"), safnum.Value());
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}: {}", term->Translate("SAF Number"), safnum.Value());
         report->TextR(str);
         report->NewLine();
         
-        snprintf(str, STRLENGTH, "%s: %s", term->Translate("Merchant ID"), merchid.Value());
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}: {}", term->Translate("Merchant ID"), merchid.Value());
         report->TextL(str);
         report->NewLine(2);
         

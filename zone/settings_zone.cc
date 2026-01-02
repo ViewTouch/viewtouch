@@ -35,6 +35,7 @@
 #include "src/utils/vt_enum_utils.hh"
 #include "src/utils/vt_logger.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #include <iostream>
 #include <iomanip>
@@ -320,7 +321,7 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
 	if (type == SWITCH_F3_F4_RECORDING)
 	{
 		char debug_str[256];
-		snprintf(debug_str, sizeof(debug_str), "F3F4: onoff=%d, setting=%d", 
+		vt::cpp23::format_to_buffer(debug_str, sizeof(debug_str), "F3F4: onoff={}, setting={}", 
 		         onoff, settings->enable_f3_f4_recording);
 		term->RenderText(debug_str, x + 5, y + 5, COLOR_BLUE, FONT_TIMES_14, ALIGN_LEFT);
 	}
@@ -529,7 +530,7 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
             // Show confirmation dialog
             const char* lang_name = (next_lang == LANG_ENGLISH) ? "English" : "Español";
             char msg[256];
-            snprintf(msg, sizeof(msg), term->Translate("Language changed to: %s"), lang_name);
+            vt_safe_string::safe_format(msg, sizeof(msg), term->Translate("Language changed to: %s"), lang_name);
 
             SimpleDialog *d = new SimpleDialog(msg);
             d->Button(term->Translate("Okay"));
@@ -833,7 +834,7 @@ SignalResult SettingsZone::Touch(Terminal *term, int tx, int ty)
         if (clicked_section >= 0 && clicked_section < 8)
         {
             char section_cmd[16];
-            snprintf(section_cmd, sizeof(section_cmd), "section%d", clicked_section);
+            vt::cpp23::format_to_buffer(section_cmd, sizeof(section_cmd), "section{}", clicked_section);
             return Signal(term, section_cmd);
         }
     }

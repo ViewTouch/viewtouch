@@ -28,6 +28,7 @@
 #include "settings.hh"
 #include "main/data/settings_enums.hh"
 #include "src/utils/vt_enum_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include "labor.hh"
 #include "image_data.hh"
 #include "archive.hh"
@@ -728,7 +729,8 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
                 {
                     if (termlist->host == d->host)
                     {
-                        snprintf(str, 256, "%s", termlist->name.Value());
+                        // C++23: Use std::format instead of snprintf
+                        vt::cpp23::format_to_buffer(str, 256, "{}", termlist->name.Value());
                         TextC(term, 1, str, color[0]);
                         termlist = nullptr;
                     }
@@ -777,6 +779,7 @@ SignalResult DrawerManageZone::Signal(Terminal *term, const genericChar* message
     Employee *employee;
     Drawer *drawer;
     DrawerBalance *db;
+    // C++23: Convert from int to enum, using underlying value
     const auto drawer_print = vt::IntToEnum<DrawerPrintType>(term->GetSettings()->drawer_print);
 
     employee = term->user;

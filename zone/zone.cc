@@ -17,6 +17,7 @@
 #include "pos_zone.hh"   // NewPosPage()
 #include "logger.hh"     // logmsg()
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #include <cstring>
 #include <cerrno>
@@ -1397,7 +1398,7 @@ int ZoneDB::Load(const char* filename)
 			}
             if (currPage->id > 100000)
             {
-                snprintf(str, STRLENGTH, "Bad Page ID:  %d", currPage->id);
+                vt::cpp23::format_to_buffer(str, STRLENGTH, "Bad Page ID:  {}", currPage->id);
                 ReportError(str);
                 delete currPage;
             }
@@ -1513,7 +1514,7 @@ int ZoneDB::ImportPage(const char* filename)
         idx -= 1;
     pagenum = atoi(&filename[idx]);
 
-    snprintf(str, STRLONG, "Importing page %d", pagenum);
+    vt::cpp23::format_to_buffer(str, STRLONG, "Importing page {}", pagenum);
     ReportError(str);
 
     // load the file into a Page object
@@ -1571,7 +1572,7 @@ int ZoneDB::ImportPages()
             name = record->d_name;
             if (strncmp(name, "page_", 5) == 0)
             {
-                snprintf(fullpath, STRLONG, "%s/%s", importdir, name);
+                vt::cpp23::format_to_buffer(fullpath, STRLONG, "{}/{}", importdir, name);
                 if (ImportPage(fullpath) == 0)
                 {
                     unlink(fullpath);
@@ -1602,7 +1603,7 @@ int ZoneDB::ExportPage(Page *page)
 
     MasterSystem->FullPath(PAGEEXPORTS_DIR, fullpath);
     EnsureFileExists(fullpath);
-    snprintf(filepath, STRLONG, "/page_%d", page->id);
+    vt::cpp23::format_to_buffer(filepath, STRLONG, "/page_{}", page->id);
     vt_safe_string::safe_concat(fullpath, STRLONG, filepath);
     if (outfile.Open(fullpath, ZONE_VERSION) == 0)
     {
@@ -2307,7 +2308,7 @@ int ZoneDB::PrintZoneDB(const char* dest, int brief)
         outfd = open(dest, O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (outfd <= 0)
         {
-            snprintf(buffer, STRLONG, "PrintZoneDB Error %d opening %s",
+            vt::cpp23::format_to_buffer(buffer, STRLONG, "PrintZoneDB Error {} opening {}",
                      errno, dest);
             ReportError(buffer);
             outfd = STDOUT_FILENO;
@@ -2317,7 +2318,7 @@ int ZoneDB::PrintZoneDB(const char* dest, int brief)
     {
         if (brief == 0)
         {
-            snprintf(buffer, 75, "Page (%d, %d):  %s",
+            vt::cpp23::format_to_buffer(buffer, 75, "Page ({}, {}):  {}",
                      currPage->id, currPage->size, currPage->name.Value());
             write(outfd, buffer, strlen(buffer));
             write(outfd, "\n", 1);
@@ -2328,7 +2329,7 @@ int ZoneDB::PrintZoneDB(const char* dest, int brief)
         {
             if (brief == 0)
             {
-                snprintf(buffer, 75, "    Zone (%d):  %s",
+                vt::cpp23::format_to_buffer(buffer, 75, "    Zone ({}):  {}",
                          currZone->Type(), currZone->name.Value());
                 write(outfd, buffer, strlen(buffer));
                 write(outfd, "\n", 1);
@@ -2338,7 +2339,7 @@ int ZoneDB::PrintZoneDB(const char* dest, int brief)
         }
         currPage = currPage->next;
     }
-    snprintf(buffer, STRLONG, "There are %d pages and %d zones\n", pcount, zcount);
+    vt::cpp23::format_to_buffer(buffer, STRLONG, "There are {} pages and {} zones\n", pcount, zcount);
     write(outfd, buffer, strlen(buffer));
     if (outfd != STDOUT_FILENO)
         close(outfd);
@@ -2365,8 +2366,8 @@ int ZoneDB::ValidateSystemPages()
         {
             invalid_count++;
             char buffer[STRLONG];
-            snprintf(buffer, STRLONG,
-                     "INVALID: System Page id=%d name='%s' has parent_id=%d (should be 0)",
+            vt::cpp23::format_to_buffer(buffer, STRLONG,
+                     "INVALID: System Page id={} name='{}' has parent_id={} (should be 0)",
                      currPage->id, currPage->name.Value(), currPage->parent_id);
             ReportError(buffer);
             logmsg(LOG_DEBUG, "%s", buffer);
@@ -2377,8 +2378,8 @@ int ZoneDB::ValidateSystemPages()
     if (invalid_count > 0)
     {
         char buffer[STRLONG];
-        snprintf(buffer, STRLONG,
-                 "Found %d System Page(s) with invalid parent_id > 0. "
+        vt::cpp23::format_to_buffer(buffer, STRLONG,
+                 "Found {} System Page(s) with invalid parent_id > 0. "
                  "This can occur due to corrupted data files or incorrect saving.",
                  invalid_count);
         ReportError(buffer);
