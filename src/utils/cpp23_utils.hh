@@ -21,13 +21,28 @@
 #ifndef VT_CPP23_UTILS_HH
 #define VT_CPP23_UTILS_HH
 
-#include <utility>      // std::to_underlying
-#include <format>       // std::format
-#include <expected>     // std::expected
+#include <utility>      // std::to_underlying (C++23)
 #include <string>
 #include <string_view>
 #include <system_error>
 #include <stdexcept>
+#include <type_traits>
+
+// Feature detection for C++20/C++23 features
+#ifdef __has_include
+#  if __has_include(<format>)
+#    include <format>
+#    define VT_HAS_STD_FORMAT 1
+#  endif
+#  if __has_include(<expected>)
+#    include <expected>
+#    define VT_HAS_STD_EXPECTED 1
+#  endif
+#endif
+
+#ifndef VT_HAS_STD_FORMAT
+#  error "std::format is required but not available. Please use C++20 or later with a compiler that supports std::format."
+#endif
 
 namespace vt::cpp23 {
 
@@ -52,7 +67,11 @@ namespace vt::cpp23 {
 template<typename E>
     requires std::is_enum_v<E>
 [[nodiscard]] constexpr std::underlying_type_t<E> to_underlying(E e) noexcept {
-    return std::to_underlying(e);
+    #if __cpp_lib_to_underlying >= 202102L
+        return std::to_underlying(e);
+    #else
+        return static_cast<std::underlying_type_t<E>>(e);
+    #endif
 }
 
 // ============================================================================
@@ -159,6 +178,7 @@ template<typename... Args>
 // Error Handling with std::expected
 // ============================================================================
 
+#ifdef VT_HAS_STD_EXPECTED
 /**
  * @brief Result type for operations that can fail
  * 
@@ -203,6 +223,8 @@ template<typename T, typename... Args>
  */
 template<typename T>
 using SystemResult = std::expected<T, std::error_code>;
+
+#endif // VT_HAS_STD_EXPECTED
 
 // ============================================================================
 // Optional Utilities (C++23 Monadic Operations)
