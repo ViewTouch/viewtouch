@@ -568,9 +568,6 @@ int Page::Init(ZoneDB *zone_db)
     case PAGE_LIBRARY:   parent_id = 0; break;
     case PAGE_MODIFIER_KEYBOARD: parent_id = -96; break;
     case PAGE_INDEX_WITH_TABS:   parent_id = -94; break;
-    default:
-        // Default to no parent for unrecognized page types
-        parent_id = 0; break;
 	}
 
 	if (zone_db)

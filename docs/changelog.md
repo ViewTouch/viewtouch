@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Page Inheritance: Remove Default Case Breaking Parent Page Relationships (2025-01-01)**
+  - Removed erroneous `default:` case in `Page::Init()` switch statement that was forcing `parent_id = 0` for unhandled page types
+  - This was breaking inheritance for several page types: PAGE_SYSTEM, PAGE_TEMPLATE, PAGE_CHECKS, PAGE_KITCHEN_VID, PAGE_KITCHEN_VID2, PAGE_BAR1, PAGE_BAR2
+  - Restored master branch behavior where unhandled page types retain their initialized parent_id value
+  - **Root Cause**: C++23 modernization added defensive default case without realizing some page types intentionally fall through
+  - **Files modified**: `zone/zone.cc` (Page::Init function)
+  - **Impact**: All pages now correctly inherit zones from their parent pages; matches master branch behavior exactly
+
 ### Changed
 - **C++23 Modernization: Complete snprintf/sprintf Conversion (2025-01-01)**
   - Converted all ~450+ `snprintf`/`sprintf` calls to C++23 `std::format` using `vt::cpp23::format_to_buffer()` wrapper
