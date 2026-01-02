@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **CI: Update Linux Builds to C++23 Standard (2026-01-01)**
+  - Changed CI workflow from C++20 to C++23 to match project requirements
+  - Project now requires C++23 for std::format and other modernization features
+  - **Files modified**: `.github/workflows/linux-simple-builds.yml`
+  - **Impact**: CI builds now use correct C++23 standard matching local development
+
 - **C++23 Compatibility: Add Feature Detection for Clang Support (2026-01-01)**
   - Added `__has_include` feature detection for `<expected>` and `<format>` header availability
   - Added fallback implementation for `std::to_underlying()` when C++23 stdlib feature isn't available
