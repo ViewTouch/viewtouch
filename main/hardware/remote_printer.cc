@@ -25,6 +25,8 @@
 #include "system.hh"
 #include "terminal.hh"
 #include "manager.hh"
+#include "src/utils/cpp23_utils.hh"
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -165,7 +167,7 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     buffer_out = std::make_unique<CharQueue>(1024);
     std::array<char, 256> str{}, tmp{};
     struct sockaddr_un addr{};
-    snprintf(str.data(), str.size(), "/tmp/vt_print%d", no);
+    vt::cpp23::format_to_buffer(str.data(), str.size(), "/tmp/vt_print{}", no);
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, str.data(), sizeof(addr.sun_path) - 1);
     addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
@@ -174,14 +176,14 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     int dev = socket(AF_UNIX, SOCK_STREAM, 0);
     if (dev < 0)
     {
-        snprintf(tmp.data(), tmp.size(), "Failed to open socket '%s'", str.data());
+        vt::cpp23::format_to_buffer(tmp.data(), tmp.size(), "Failed to open socket '{}'", str.data());
         ReportError(tmp.data());
         return;
     }
     if (bind(dev, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) == -1)
     {
         close(dev);
-        snprintf(tmp.data(), tmp.size(), "Failed to bind socket '%s'", str.data());
+        vt::cpp23::format_to_buffer(tmp.data(), tmp.size(), "Failed to bind socket '{}'", str.data());
         ReportError(tmp.data());
         return;
     }
@@ -205,7 +207,7 @@ RemotePrinter::RemotePrinter(const char* host, int port, int mod, int no)
     socket_no = accept(dev, reinterpret_cast<struct sockaddr*>(&peer), &len);
     if (socket_no < 0)
     {
-        snprintf(tmp.data(), tmp.size(), "Failed to get connection with printer %d", no);
+        vt::cpp23::format_to_buffer(tmp.data(), tmp.size(), "Failed to get connection with printer {}", no);
         ReportError(tmp.data());
     }
     close(dev);
@@ -291,7 +293,7 @@ int RemotePrinter::Reconnect()
     
     std::array<char, 256> str{}, tmp{};
     struct sockaddr_un addr{};
-    snprintf(str.data(), str.size(), "/tmp/vt_print%d", number);
+    vt::cpp23::format_to_buffer(str.data(), str.size(), "/tmp/vt_print{}", number);
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, str.data(), sizeof(addr.sun_path) - 1);
     addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
@@ -300,7 +302,7 @@ int RemotePrinter::Reconnect()
     int dev = socket(AF_UNIX, SOCK_STREAM, 0);
     if (dev < 0)
     {
-        snprintf(tmp.data(), tmp.size(), "Reconnect failed: Cannot open socket '%s'", str.data());
+        vt::cpp23::format_to_buffer(tmp.data(), tmp.size(), "Reconnect failed: Cannot open socket '{}'", str.data());
         ReportError(tmp.data());
         return 1;
     }
@@ -311,7 +313,7 @@ int RemotePrinter::Reconnect()
     if (bind(dev, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) == -1)
     {
         close(dev);
-        snprintf(tmp.data(), tmp.size(), "Reconnect failed: Cannot bind socket '%s'", str.data());
+        vt::cpp23::format_to_buffer(tmp.data(), tmp.size(), "Reconnect failed: Cannot bind socket '{}'", str.data());
         ReportError(tmp.data());
         return 1;
     }
@@ -341,7 +343,7 @@ int RemotePrinter::Reconnect()
     int sel = select(dev + 1, &readfds, nullptr, nullptr, &tv);
     if (sel <= 0) {
         close(dev);
-        snprintf(tmp.data(), tmp.size(), "Reconnect failed: Timed out waiting for vt_print on %s", str.data());
+        vt::cpp23::format_to_buffer(tmp.data(), tmp.size(), "Reconnect failed: Timed out waiting for vt_print on {}", str.data());
         ReportError(tmp.data());
         return 1;
     }
@@ -352,7 +354,7 @@ int RemotePrinter::Reconnect()
     if (new_socket < 0)
     {
         close(dev);
-        snprintf(tmp.data(), tmp.size(), "Reconnect failed: Cannot connect to printer %d", number);
+        vt::cpp23::format_to_buffer(tmp.data(), tmp.size(), "Reconnect failed: Cannot connect to printer {}", number);
         ReportError(tmp.data());
         return 1;
     }
@@ -367,7 +369,7 @@ int RemotePrinter::Reconnect()
         RemoveInputFn(input_id);
     input_id = AddInputFn((InputFn) PrinterCB, socket_no, this);
     
-    snprintf(tmp.data(), tmp.size(), "Printer %s:%d successfully reconnected", host_name.Value(), port_no);
+    vt::cpp23::format_to_buffer(tmp.data(), tmp.size(), "Printer {}:{} successfully reconnected", host_name.Value(), port_no);
     ReportError(tmp.data());
     
     // Update UI to show printer as online
@@ -494,7 +496,7 @@ int RemotePrinter::Start()
     char print_file_buffer[256];
     filename.Set(MasterSystem->NewPrintFile(print_file_buffer));
     std::array<char, 256> str{};
-    snprintf(str.data(), str.size(), "/tmp/vt_%s", host_name.Value());
+    vt::cpp23::format_to_buffer(str.data(), str.size(), "/tmp/vt_{}", host_name.Value());
     device_no = creat(str.data(), 0666);
 
     if (device_no <= 0)
@@ -558,13 +560,13 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
         std::array<char, 256> errmsg{};
         if (p->failure == 1)
         {
-            snprintf(errmsg.data(), errmsg.size(), "Printer %s:%d connection lost (attempt %d/8)", 
+            vt::cpp23::format_to_buffer(errmsg.data(), errmsg.size(), "Printer {}:{} connection lost (attempt {}/8)", 
                      p->host_name.Value(), p->port_no, p->failure);
             ReportError(errmsg.data());
         }
         else if (p->failure == 4)
         {
-            snprintf(errmsg.data(), errmsg.size(), "Printer %s:%d still offline (attempt %d/8) - checking connection", 
+            vt::cpp23::format_to_buffer(errmsg.data(), errmsg.size(), "Printer {}:{} still offline (attempt {}/8) - checking connection", 
                      p->host_name.Value(), p->port_no, p->failure);
             ReportError(errmsg.data());
         }
@@ -573,7 +575,7 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
             return;
 
         // After 8 failures, mark printer as offline and attempt reconnection
-        snprintf(errmsg.data(), errmsg.size(), "Printer %s:%d marked as OFFLINE after %d connection failures", 
+        vt::cpp23::format_to_buffer(errmsg.data(), errmsg.size(), "Printer {}:{} marked as OFFLINE after {} connection failures", 
                  p->host_name.Value(), p->port_no, p->failure);
         ReportError(errmsg.data());
 
@@ -600,7 +602,7 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
     if (p->failure > 0)
     {
         std::array<char, 256> msg{};
-        snprintf(msg.data(), msg.size(), "Printer %s:%d connection restored", 
+        vt::cpp23::format_to_buffer(msg.data(), msg.size(), "Printer {}:{} connection restored", 
                  p->host_name.Value(), p->port_no);
         ReportError(msg.data());
         p->failure = 0;
@@ -617,7 +619,7 @@ void PrinterCB(XtPointer client_data, int *fid, XtInputId *id)
         switch (code)
         {
         case ToInt(ServerProtocol::SrvError):
-            snprintf(str.data(), str.size(), "PrinterError: %s", p->RStr());
+            vt::cpp23::format_to_buffer(str.data(), str.size(), "PrinterError: {}", p->RStr());
             ReportError(str.data());
             break;
         case ToInt(ServerProtocol::SrvPrinterDone):

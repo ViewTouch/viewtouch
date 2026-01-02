@@ -26,6 +26,7 @@
 #include "system.hh"
 #include "image_data.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include <assert.h>
 #include <cstring>
 #include <cctype>
@@ -1159,7 +1160,7 @@ SignalResult GetTextDialog::Signal(Terminal *term, const genericChar* message)
         DrawEntry(term);
         break;
     case 2:  // enter
-        snprintf(msgbuf, STRLENGTH, "%s %s", return_message, buffer);
+        vt::cpp23::format_to_buffer(msgbuf, STRLENGTH, "{} {}", return_message, buffer);
         term->Signal(msgbuf, group_id);
         term->Draw(1);
         retval = SIGNAL_TERMINATE;
@@ -2074,7 +2075,7 @@ const char* CreditCardDialog::SetMessage(Terminal *term, const char* msg1, const
             else
                 msg2 = WAIT_MSG;
         }
-        snprintf(message_str, STRLENGTH, "%s...%s",
+        vt::cpp23::format_to_buffer(message_str, STRLENGTH, "{}...{}",
                  term->Translate(msg1),
                  term->Translate(msg2));
     }
@@ -2082,7 +2083,7 @@ const char* CreditCardDialog::SetMessage(Terminal *term, const char* msg1, const
     {
         if (msg2 == nullptr)
             msg2 = WAIT_MSG;
-        snprintf(message_str, STRLENGTH, "%s...%s", msg1, msg2);
+        vt::cpp23::format_to_buffer(message_str, STRLENGTH, "{}...{}", msg1, msg2);
     }
 
     return message_str;
@@ -2204,23 +2205,23 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
         status = term->credit->GetStatus();
 
         font = FONT_TIMES_24;
-        snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Card Number"),
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}:  {}", term->Translate("Card Number"),
                  term->credit->PAN(settings->show_entire_cc_num));
         TextC(term, line, str, color_text);
         line += space;
-        snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Expires"), term->credit->ExpireDate());
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}:  {}", term->Translate("Expires"), term->credit->ExpireDate());
         TextC(term, line, str, color_text);
         if (strlen(term->credit->Name()) > 0)
         {
             line += space;
-            snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Holder"), term->credit->Name());
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{}:  {}", term->Translate("Holder"), term->credit->Name());
             TextC(term, line, str, color_text);
         }
 
         if (term->credit->Tip() == 0)
         {
             line += space;
-            snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Charge Amount"),
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{}:  {}", term->Translate("Charge Amount"),
                      term->FormatPrice(term->credit->Amount(), 1));
             TextC(term, line, str, color_text);
         }
@@ -2230,19 +2231,19 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
             char tipstr[STRLENGTH];
             char totstr[STRLENGTH];
             line += space;
-            snprintf(crdstr, STRLENGTH, "Amount:  %s",
+            vt::cpp23::format_to_buffer(crdstr, STRLENGTH, "Amount:  {}",
                      term->FormatPrice(term->credit->Amount() - term->credit->Tip(), 1));
-            snprintf(tipstr, STRLENGTH, "Tip:  %s",
+            vt::cpp23::format_to_buffer(tipstr, STRLENGTH, "Tip:  {}",
                      term->FormatPrice(term->credit->Tip(), 1));
-            snprintf(totstr, STRLENGTH, "Total:  %s",
+            vt::cpp23::format_to_buffer(totstr, STRLENGTH, "Total:  {}",
                      term->FormatPrice(term->credit->Total(1), 1));
-            snprintf(str, STRLENGTH, "%s, %s, %s", crdstr, tipstr, totstr);
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{}, {}, {}", crdstr, tipstr, totstr);
             TextC(term, line, str, color_text);
         }
         if (term->auth_voice.size() > 0)
         {
             line += space;
-            snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Voice Auth"),
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{}:  {}", term->Translate("Voice Auth"),
                      term->auth_voice.Value());
             TextC(term, line, str, color_text);
         }
@@ -2261,7 +2262,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
         else
             vt_safe_string::safe_copy(str, STRLENGTH, term->credit->Verb());
         if (str[0] == '\0')
-            snprintf(str, STRLENGTH, "%s %s", term->credit->Code(), term->credit->Auth());
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{} {}", term->credit->Code(), term->credit->Auth());
         if (strlen(str) > 0)
         {
             if (term->credit->IsAuthed(1))
@@ -2899,7 +2900,7 @@ int CreditCardDialog::FinishCreditCard(Terminal *term)
             {
                 if (term->credit->Tip() > 0)
                 {
-                    snprintf(str, STRLENGTH, "tender %d %d %d %d",
+                    vt::cpp23::format_to_buffer(str, STRLENGTH, "tender {} {} {} {}",
                              TENDER_CHARGED_TIP, 0, 0, term->credit->Tip());
                     (void)term->Signal(str, 0);  // Signal has nodiscard, but we only need side effect
                 }
@@ -2909,7 +2910,7 @@ int CreditCardDialog::FinishCreditCard(Terminal *term)
                     tender = TENDER_DEBIT_CARD;
                 else
                     tender = TENDER_CREDIT_CARD;
-                snprintf(str, STRLENGTH, "tender %d %d %d %d",
+                vt::cpp23::format_to_buffer(str, STRLENGTH, "tender {} {} {} {}",
                          tender, cc_id, 0, term->credit->Total());
                 result = term->Signal(str, 0);
 

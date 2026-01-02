@@ -26,6 +26,7 @@
 #include <string_view>
 #include <optional>
 #include <vector>
+#include <utility>  // std::to_underlying (C++23)
 
 namespace vt {
 
@@ -121,10 +122,27 @@ std::optional<E> IntToEnum(int value) {
 }
 
 /**
- * @brief Convert enum to integer
+ * @brief Convert enum to integer using C++23 std::to_underlying
+ * @tparam E Enum type
+ * @param value Enum value
+ * @return Underlying type value
+ * 
+ * Note: Prefer this over EnumToInt for C++23 codebases as it's standard library.
+ */
+template<typename E>
+    requires std::is_enum_v<E>
+constexpr auto EnumToUnderlying(E value) noexcept {
+    return std::to_underlying(value);
+}
+
+/**
+ * @brief Convert enum to integer (magic_enum version)
  * @tparam E Enum type
  * @param value Enum value
  * @return Integer representation
+ * 
+ * Note: This uses magic_enum. For simple underlying type conversion,
+ * prefer EnumToUnderlying() which uses std::to_underlying (C++23).
  */
 template<typename E>
 constexpr auto EnumToInt(E value) {

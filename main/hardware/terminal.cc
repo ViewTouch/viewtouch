@@ -48,6 +48,7 @@
 #include "touch_screen.hh"
 #endif
 #include "utility.hh"
+#include "src/utils/cpp23_utils.hh"
 #include "safe_string_utils.hh"
 #include "zone.hh"
 #include "version/vt_version_info.hh"
@@ -73,6 +74,7 @@
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#include "src/utils/cpp23_utils.hh"
 #endif
 
 
@@ -258,9 +260,9 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
 
         auto protocol = vt::IntToEnum<ServerProtocol>(code);
         if (!protocol) {
-            snprintf(str, STRLENGTH, GlobalTranslate("Cannot process unknown code: %d"), code);
+            vt_safe_string::safe_format(str, STRLENGTH, GlobalTranslate("Cannot process unknown code: %d"), code);
             ReportError(str);
-            snprintf(str, STRLENGTH, GlobalTranslate("  Last code processed was %d"), last_code);
+            vt_safe_string::safe_format(str, STRLENGTH, GlobalTranslate("  Last code processed was %d"), last_code);
             ReportError(str);
             printf("Terminating due to unforseen error....\n");
             EndSystem();
@@ -904,7 +906,7 @@ int Terminal::Jump(int jump_type, int jump_id)
     if (targetPage == nullptr)
 	{
         genericChar buffer[STRLENGTH];
-        snprintf(buffer, STRLENGTH, Translate("Unable to find jump target (%d, %d) for %s"),
+        vt_safe_string::safe_format(buffer, STRLENGTH, Translate("Unable to find jump target (%d, %d) for %s"),
                  jump_id, size, name.Value());
         TerminalError(buffer);
         return 1;
@@ -1320,8 +1322,8 @@ int Terminal::OpenTabList(const char* message)
                 }
                 subcheck = subcheck->next;
             }
-            snprintf(btitle, STRLENGTH, "%s\\%s", fname, four);
-            snprintf(bmesg, STRLENGTH, "%s %d", message, currcheck->serial_number);
+            vt::cpp23::format_to_buffer(btitle, STRLENGTH, "{}\\{}", fname, four);
+            vt::cpp23::format_to_buffer(bmesg, STRLENGTH, "{} {}", message, currcheck->serial_number);
             sd->Button(btitle, bmesg);
         }
         currcheck = currcheck->next;
@@ -1636,7 +1638,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         
         // Show confirmation message
         char confirmation_msg[STRLONG];
-        snprintf(confirmation_msg, STRLONG, Translate("Button images %s on this terminal"), show_button_images ? Translate("ENABLED") : Translate("DISABLED"));
+        vt_safe_string::safe_format(confirmation_msg, STRLONG, Translate("Button images %s on this terminal"), show_button_images ? Translate("ENABLED") : Translate("DISABLED"));
         ReportError(confirmation_msg);
         
         return SIGNAL_OKAY;
@@ -1833,11 +1835,11 @@ int Terminal::OpenRecordFile()
     char filename[STRLENGTH];
     char buffer[STRLENGTH];
 
-    snprintf(filename, STRLENGTH, ".record_%s.macro", name.Value());
+    vt::cpp23::format_to_buffer(filename, STRLENGTH, ".record_{}.macro", name.Value());
     record_fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0600);
     if (record_fd < 0)
     {
-        snprintf(buffer, STRLENGTH, "OpenRecordFile Error %d opening %s",
+        vt::cpp23::format_to_buffer(buffer, STRLENGTH, "OpenRecordFile Error {} opening {}",
                  errno, filename);
         ReportError(buffer);
         retval = 1;
@@ -1856,7 +1858,7 @@ int Terminal::RecordTouch(int x, int y)
 
     if (record_fd > 0)
     {
-        snprintf(recordstr, STRLENGTH, "Touch: %d %d\n", x, y);
+        vt::cpp23::format_to_buffer(recordstr, STRLENGTH, "Touch: {} {}\n", x, y);
         write(record_fd, recordstr, strlen(recordstr));
     }
     return retval;
@@ -1874,7 +1876,7 @@ int Terminal::RecordKey(int key, int my_code, int state)
         retval = 1;
     else if (record_fd > 0)
     {
-        snprintf(recordstr, STRLENGTH, "Key: %d %d %d\n", key, my_code, state);
+        vt::cpp23::format_to_buffer(recordstr, STRLENGTH, "Key: {} {} {}\n", key, my_code, state);
         write(record_fd, recordstr, strlen(recordstr));
     }
     return retval;
@@ -1890,7 +1892,7 @@ int Terminal::RecordMouse(int my_code, int x, int y)
 
     if (record_fd > 0)
     {
-        snprintf(recordstr, STRLENGTH, "Mouse: %d %d %d\n", my_code, x, y);
+        vt::cpp23::format_to_buffer(recordstr, STRLENGTH, "Mouse: {} {} {}\n", my_code, x, y);
         write(record_fd, recordstr, strlen(recordstr));
     }
     return retval;
@@ -1916,7 +1918,7 @@ int Terminal::ReadRecordFile()
     int state;
     KeyValueInputFile infile;
 
-    snprintf(filename, STRLENGTH, ".record_%s.macro", name.Value());
+    vt::cpp23::format_to_buffer(filename, STRLENGTH, ".record_{}.macro", name.Value());
     if (infile.Open(filename))
     {
         while (infile.Read(key, value, STRLENGTH))
@@ -3234,7 +3236,7 @@ int Terminal::UpdateZoneDB(Control *con)
         {
             int fallback_page = GetDefaultLoginPage();
             genericChar buffer[STRLONG];
-            snprintf(buffer, STRLONG, "Can't Find Page %d for %s",
+            vt::cpp23::format_to_buffer(buffer, STRLONG, "Can't Find Page {} for {}",
                      fallback_page, name.Value());
             ReportError(buffer);
             page = nullptr;
@@ -3604,7 +3606,7 @@ int Terminal::FinalizeOrders()
                 jump_target = -1;        
             if (Jump(JUMP_NORMAL, jump_target))
             {
-                snprintf(str, STRLENGTH, Translate("Couldn't jump to page %d"), PAGE_ID_SETTLEMENT);
+                vt_safe_string::safe_format(str, STRLENGTH, Translate("Couldn't jump to page %d"), PAGE_ID_SETTLEMENT);
                 ReportError(str);
             }
             break;
@@ -3612,7 +3614,7 @@ int Terminal::FinalizeOrders()
             // For SelfOrder terminals, go to settlement page after finalizing
             if (Jump(JUMP_NORMAL, jump_target))
             {
-                snprintf(str, STRLENGTH, Translate("Couldn't jump to page %d"), PAGE_ID_SETTLEMENT);
+                vt_safe_string::safe_format(str, STRLENGTH, Translate("Couldn't jump to page %d"), PAGE_ID_SETTLEMENT);
                 ReportError(str);
             }
             break;
@@ -3848,7 +3850,7 @@ int Terminal::RenderBlankPage()
                 {
                     if (i > 0)
                         ref_list[ref_pos++] = ',';
-                    ref_pos += snprintf(ref_list + ref_pos, STRLENGTH - ref_pos, "%d", list[i]);
+                    ref_pos += vt::cpp23::format_to_buffer(ref_list + ref_pos, STRLENGTH - ref_pos, "{}", list[i]);
                 }
                 if (ref > 6)
                 {
@@ -6458,7 +6460,7 @@ int Terminal::ReadCreditCard()
             else
             {
                 char temp[STRLENGTH];
-                snprintf(temp, STRLENGTH, "%s %s", credit->code.Value(), credit->auth.Value());
+                vt::cpp23::format_to_buffer(temp, STRLENGTH, "{} {}", credit->code.Value(), credit->auth.Value());
                 credit->verb.Set(temp);
             }
         }
@@ -7132,7 +7134,7 @@ int Terminal::CC_GetTotalsResults()
         {
             if (RStr(line) == nullptr)
             {
-                snprintf(line, STRLONG, "Failed at %d reading totals results", total_rows - rows);
+                vt::cpp23::format_to_buffer(line, STRLONG, "Failed at {} reading totals results", total_rows - rows);
                 ReportError(line);
                 rows = 0;
             }
@@ -7276,13 +7278,13 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
     if (dev <= 0)
     {
         // Critical fix: Use snprintf instead of sprintf for buffer safety
-        snprintf(str, sizeof(str), "Failed to open socket '%s'", SOCKET_FILE);
+        vt::cpp23::format_to_buffer(str, sizeof(str), "Failed to open socket '{}'", SOCKET_FILE);
         ReportError(str);
     }
     else if (bind(dev, (struct sockaddr *) &server_adr, SUN_LEN(&server_adr)) < 0)
     {
         // Critical fix: Use snprintf instead of sprintf for buffer safety
-        snprintf(str, sizeof(str), "Failed to bind socket '%s'", SOCKET_FILE);
+        vt::cpp23::format_to_buffer(str, sizeof(str), "Failed to bind socket '{}'", SOCKET_FILE);
         ReportError(str);
     }
     else
@@ -7290,13 +7292,13 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
         if (width > -1 && height > -1)
         {
             // Critical fix: Use snprintf instead of sprintf for buffer safety
-            snprintf(str, sizeof(str), VIEWTOUCH_PATH "/bin/vt_term %s %d %s %d %d %d &",
+            vt::cpp23::format_to_buffer(str, sizeof(str), VIEWTOUCH_PATH "/bin/vt_term {} {} {} {} {} {} &",
                     SOCKET_FILE, hardware_type, hostname, isserver, width, height);
         }
         else
         {
             // Critical fix: Use snprintf instead of sprintf for buffer safety
-            snprintf(str, sizeof(str), VIEWTOUCH_PATH "/bin/vt_term %s %d %s %d&",
+            vt::cpp23::format_to_buffer(str, sizeof(str), VIEWTOUCH_PATH "/bin/vt_term {} {} {} {}&",
                     SOCKET_FILE, hardware_type, hostname, isserver);
         }
         system(str);
@@ -7313,7 +7315,7 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
         if (socket_no < 0)
         {
             // Critical fix: Use snprintf instead of sprintf for buffer safety
-            snprintf(str, sizeof(str), "Failed to open term on host '%s'", hostname);
+            vt::cpp23::format_to_buffer(str, sizeof(str), "Failed to open term on host '{}'", hostname);
             ReportError(str);
         }
     }

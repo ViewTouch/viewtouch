@@ -21,6 +21,7 @@
 #include "fntrace.hh"
 #include "utility.hh"
 #include "safe_string_utils.hh"
+#include "cpp23_utils.hh"
 
 #include <sys/types.h>
 #include <errno.h>
@@ -257,7 +258,7 @@ const char* Sock_ntop(const struct sockaddr_in *sa, socklen_t /*addrlen*/)
         return nullptr;
     if (ntohs(sa->sin_port) != 0)
     {
-        snprintf(portstr, sizeof(portstr), ":%d", ntohs(sa->sin_port));
+        vt::cpp23::format_to_buffer(portstr, sizeof(portstr), ":{}", ntohs(sa->sin_port));
         vt_safe_string::safe_concat(str, sizeof(str), portstr);
     }
 
@@ -306,7 +307,7 @@ int Listen(int port, int nonblocking)
 
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
     {
-        snprintf(str, STRLENGTH, "setsockopt port %d", port);
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "setsockopt port {}", port);
         perror(str);
         return -1;
     }
@@ -318,14 +319,14 @@ int Listen(int port, int nonblocking)
     
     if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1)
     {
-        snprintf(str, STRLENGTH, "bind port %d", port);
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "bind port {}", port);
         perror(str);
         return -1;
     }
     
     if (listen(sockfd, BACKLOG) == -1)
     {
-        snprintf(str, STRLENGTH, "listen port %d", port);
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "listen port {}", port);
         perror(str);
         return -1;
     }
@@ -672,7 +673,7 @@ int SMTP(int fd, Email *email)
         
         // write the from address
         email->From(buffer, STRLONG);
-        snprintf(outgoing, STRLONG, "MAIL FROM:%s\r\n", buffer);
+        vt::cpp23::format_to_buffer(outgoing, STRLONG, "MAIL FROM:{}\r\n", buffer);
         write(fd, outgoing, strlen(outgoing));
         response = GetResponse(fd, responsestr, STRLONG);
         if (response > 299)
@@ -681,17 +682,17 @@ int SMTP(int fd, Email *email)
             exit(1);
         }
         // add from address to message body
-        snprintf(outgoing, STRLONG, "From: %s\n", buffer);
+        vt::cpp23::format_to_buffer(outgoing, STRLONG, "From: {}\n", buffer);
         vt_safe_string::safe_concat(body, sizeof(body), outgoing);
         
         // write each of the to addresses
         while (email->NextTo(buffer, STRLONG) == 0)
         {
-            snprintf(outgoing, STRLONG, "RCPT TO:%s\r\n", buffer);
+            vt::cpp23::format_to_buffer(outgoing, STRLONG, "RCPT TO:{}\r\n", buffer);
             write(fd, outgoing, strlen(outgoing));
             response = GetResponse(fd, responsestr, STRLONG);
             // add the to address to the message body
-            snprintf(outgoing, STRLONG, "To: %s\n", buffer);
+            vt::cpp23::format_to_buffer(outgoing, STRLONG, "To: {}\n", buffer);
             vt_safe_string::safe_concat(body, sizeof(body), outgoing);
         }
         
@@ -706,7 +707,7 @@ int SMTP(int fd, Email *email)
         // write the headers (From, To, Subject)
         write(fd, body, strlen(body));
         email->Subject(buffer, STRLONG);
-        snprintf(outgoing, STRLONG, "Subject: %s\n", buffer);
+        vt::cpp23::format_to_buffer(outgoing, STRLONG, "Subject: {}\n", buffer);
         write(fd, outgoing, strlen(outgoing));
         write(fd, mimever, strlen(mimever));
         write(fd, mimehead, strlen(mimehead));

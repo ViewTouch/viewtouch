@@ -25,6 +25,7 @@
 #include "settings.hh"
 #include "admission.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #include <cctype>
 #include <cstring>
@@ -1586,7 +1587,7 @@ int TextField::InsertStringAtCursor(genericChar* my_string)
         }
         bufidx += 1;
     }
-    snprintf(newstr, STRLENGTH, "%s%s%s", first, my_string, last);
+    vt::cpp23::format_to_buffer(newstr, STRLENGTH, "{}{}{}", first, my_string, last);
     buffer.Set(newstr);
     cursor += stridx;
     return 0;
@@ -1709,7 +1710,7 @@ int TextField::Append(int val)
     }
     else
     {
-        snprintf(my_string, STRLENGTH, "%d", val);
+        vt::cpp23::format_to_buffer(my_string, STRLENGTH, "{}", val);
         retval = InsertStringAtCursor(my_string);
     }
     return retval;
@@ -1964,22 +1965,22 @@ RenderResult TimeDateField::Render(Terminal *term, FormZone *fzone)
 
     val = buffer.WeekDay();
     if (!buffer.IsSet() || val < 0 || val > 6)
-        snprintf(str, STRLENGTH, "---");
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "---");
     else
-        snprintf(str, STRLENGTH, "%s",term->Translate(ShortDayName[val]));
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}",term->Translate(ShortDayName[val]));
     fzone->TextPosL(term, xx,        y, str, COLOR_WHITE);
 
     val = buffer.Month() - 1;
     if (!buffer.IsSet() || val < 0 || val > 11)
-        snprintf(str, STRLENGTH, "---");
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "---");
     else
-        snprintf(str, STRLENGTH, "%s",term->Translate(ShortMonthName[val]));
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}",term->Translate(ShortMonthName[val]));
     fzone->TextPosC(term, xx + 6.5,  y, str, COLOR_WHITE);
 
-    snprintf(str, STRLENGTH, "%d", buffer.Day());
+    vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", buffer.Day());
     fzone->TextPosC(term, xx + 10,   y, str, COLOR_WHITE);
     fzone->TextPosC(term, xx + 11.5, y, ",", COLOR_WHITE);
-    snprintf(str, STRLENGTH, "%d", buffer.Year());
+    vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", buffer.Year());
     fzone->TextPosC(term, xx + 14,   y, str, COLOR_WHITE);
 
     if (show_time)
@@ -1987,15 +1988,15 @@ RenderResult TimeDateField::Render(Terminal *term, FormZone *fzone)
         int hour = buffer.Hour() % 12;
         if (hour == 0)
             hour = 12;
-        snprintf(str, STRLENGTH, "%d", hour);
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", hour);
         fzone->TextPosC(term, xx + 18,   y, str, COLOR_WHITE);
         fzone->TextPosC(term, xx + 19.5, y, ":", COLOR_WHITE);
-        snprintf(str, STRLENGTH, "%02d", buffer.Min());
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{:02d}", buffer.Min());
         fzone->TextPosC(term, xx + 21,   y, str, COLOR_WHITE);
         if (buffer.Hour() >= 12)
-            snprintf(str, STRLENGTH, "%s", GlobalTranslate("pm"));
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", GlobalTranslate("pm"));
         else
-            snprintf(str, STRLENGTH, "%s", GlobalTranslate("am"));
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", GlobalTranslate("am"));
         fzone->TextPosL(term, xx + 22.3, y, str, COLOR_WHITE);
     }
     return RENDER_OKAY;
@@ -2208,22 +2209,22 @@ RenderResult TimeDayField::Render(Terminal *term, FormZone *fzone)
     if (my_hour == 0)
         my_hour = 12;
     if (is_unset)
-        snprintf(str, STRLENGTH, "--");
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "--");
     else
-        snprintf(str, STRLENGTH, "%d", my_hour);
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", my_hour);
     fzone->TextPosC(term, xx + 6,   y, str, COLOR_WHITE);
     fzone->TextPosC(term, xx + 7.5, y, ":", COLOR_WHITE);
     if (is_unset)
-        snprintf(str, STRLENGTH, "--");
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "--");
     else
-        snprintf(str, STRLENGTH, "%02d", min);
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{:02d}", min);
     fzone->TextPosC(term, xx + 9,   y, str, COLOR_WHITE);
     if (!is_unset)
     {
         if (hour >= 12)
-            snprintf(str, STRLENGTH, "%s", GlobalTranslate("pm"));
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", GlobalTranslate("pm"));
         else
-            snprintf(str, STRLENGTH, "%s", GlobalTranslate("am"));
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", GlobalTranslate("am"));
         fzone->TextPosL(term, xx + 10.3, y, str, COLOR_WHITE);
     }
     return RENDER_OKAY;

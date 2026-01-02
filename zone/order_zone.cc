@@ -32,6 +32,7 @@
 #include "manager.hh"
 #include "customer.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include <string.h>
 
 #ifdef DMALLOC
@@ -1869,7 +1870,7 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
 	{
 		offsety+=font_height;
 		genericChar buffer[64];
-		snprintf(buffer,64,"%s/%s",item->available_tickets.Value(),item->total_tickets.Value());
+		vt::cpp23::format_to_buffer(buffer,64,"{}/{}",item->available_tickets.Value(),item->total_tickets.Value());
 		t->RenderText(buffer,x + w / 2.0,y + offsety,col,font,ALIGN_CENTER);
 	}
     }
@@ -2048,7 +2049,7 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
         t->cdu->Refresh(20);
         t->cdu->Clear();
         width = t->cdu->Width();
-        snprintf(buffer, width + 1, "%s",item->PrintName());
+        vt::cpp23::format_to_buffer(buffer, width + 1, "{}",item->PrintName());
         t->cdu->Write(buffer);
         vt_safe_string::safe_copy(buffer, STRLONG, t->FormatPrice(item->cost));
         buflen = strlen(buffer);

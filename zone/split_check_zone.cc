@@ -21,6 +21,7 @@
 #include "split_check_zone.hh"
 #include "terminal.hh"
 #include "check.hh"
+#include "src/utils/cpp23_utils.hh"
 #include "image_data.hh"
 #include "settings.hh"
 #include "labels.hh"
@@ -115,7 +116,7 @@ int ItemObj::Render(Terminal *t)
         order->Description(t, str);
         if (order->item_type == ITEM_POUND)
         {
-            snprintf(str2, STRLENGTH, "%s %.2f %s", str,
+            vt::cpp23::format_to_buffer(str2, STRLENGTH, "{} {:.2f} {}", str,
                      order->count / 100.0, t->Translate("Lb."));
             vt_safe_string::safe_copy(str, STRLENGTH, str2);
         }

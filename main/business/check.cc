@@ -40,6 +40,7 @@
 #include "admission.hh"
 #include "src/utils/vt_logger.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -54,6 +55,7 @@
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#include "src/utils/cpp23_utils.hh"
 #endif
 
 
@@ -1371,13 +1373,13 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
             }
             break;
         }
-        snprintf(str1, static_cast<size_t>(pwidth), "%s", str);
+        vt::cpp23::format_to_buffer(str1, static_cast<size_t>(pwidth), "{}", str);
         report->Mode(PRINT_LARGE);
         report->TextL(str1, color);
         report->NewLine();
 
 	// order due time
-        snprintf(str1, static_cast<size_t>(pwidth), "%s", term->TimeDate(date, TD_DATETIME));
+        vt::cpp23::format_to_buffer(str1, static_cast<size_t>(pwidth), "{}", term->TimeDate(date, TD_DATETIME));
         report->TextL(str1, color);
         report->Mode(0);
         report->NewLine();
@@ -1693,15 +1695,15 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
     report->Divider2Col();
 
     // Customer information, including address
-    snprintf(str1, STRLONG, "%s:  %s", GlobalTranslate("Phone"), PhoneNumber());
+    vt::cpp23::format_to_buffer(str1, STRLONG, "{}:  {}", GlobalTranslate("Phone"), PhoneNumber());
     report->TextL2Col(str1);
     if (strlen(Extension()) > 0)
     {
-        snprintf(str1, STRLONG, "%s:  %s", GlobalTranslate("Ext"), Extension());
+        vt::cpp23::format_to_buffer(str1, STRLONG, "{}:  {}", GlobalTranslate("Ext"), Extension());
         report->TextPosL2Col(25, str1);
     }
     report->NewLine();
-    snprintf(str1, STRLONG, "%s:  %s", GlobalTranslate("Name"), FullName());
+    vt_safe_string::safe_format(str1, STRLONG, "%s:  %s", GlobalTranslate("Name"), FullName());
     report->TextL2Col(str1);
     report->NewLine();
     if (strlen(Address()) > 0)
@@ -1735,21 +1737,21 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
     report->Divider2Col();
 
     //Store information
-    snprintf(str1, STRLONG, "%s:  %s", GlobalTranslate("Store"), settings->StoreNum());
+    vt::cpp23::format_to_buffer(str1, STRLONG, "{}:  {}", GlobalTranslate("Store"), settings->StoreNum());
     report->TextL2Col(str1);
     employee = MasterSystem->user_db.FindByID(user_owner);
     if (employee != nullptr)
-        snprintf(str1, STRLONG, "%s:  %s", GlobalTranslate("Op"), employee->system_name.Value());
+        vt::cpp23::format_to_buffer(str1, STRLONG, "{}:  {}", GlobalTranslate("Op"), employee->system_name.Value());
     else
         vt_safe_string::safe_copy(str1, STRLONG, GlobalTranslate("Op:  callcenter"));
     report->TextPosL2Col(20, str1);
     report->NewLine();
-    snprintf(str1, STRLONG, "%s:  %s", GlobalTranslate("Date"), time_open.Date().c_str());
+    vt::cpp23::format_to_buffer(str1, STRLONG, "{}:  {}", GlobalTranslate("Date"), time_open.Date().c_str());
     report->TextL2Col(str1);
-    snprintf(str1, STRLONG, "%s:  %d", GlobalTranslate("Order #"), call_center_id);
+    vt::cpp23::format_to_buffer(str1, STRLONG, "{}:  {}", GlobalTranslate("Order #"), call_center_id);
     report->TextPosL2Col(20, str1);
     report->NewLine();
-    snprintf(str1, STRLONG, "%s:  %s", GlobalTranslate("Order Created"), time_open.Time().c_str());
+    vt::cpp23::format_to_buffer(str1, STRLONG, "{}:  {}", GlobalTranslate("Order Created"), time_open.Time().c_str());
     report->TextL2Col(str1);
     report->NewLine();
     report->Divider2Col();
@@ -2129,34 +2131,34 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
     switch (CustomerType())
     {
     case CHECK_RESTAURANT:
-        snprintf(str, STRLONG, "%s: %d", term->Translate("Guests"), Guests());
+        vt::cpp23::format_to_buffer(str, STRLONG, "{}: {}", term->Translate("Guests"), Guests());
         break;
     case CHECK_HOTEL:
-        snprintf(str, STRLONG, "%s %s", term->Translate("Room"), Table());
+        vt::cpp23::format_to_buffer(str, STRLONG, "{} {}", term->Translate("Room"), Table());
         break;
     case CHECK_TAKEOUT:
 	if (date.IsSet() && (date <= now))
-	    snprintf(str, STRLONG, "%s %s", term->Translate(WAITSTR), term->Translate("Take Out"));
+	    vt::cpp23::format_to_buffer(str, STRLONG, "{} {}", term->Translate(WAITSTR), term->Translate("Take Out"));
 	else
-	    snprintf(str, STRLONG, "%s",term->Translate("Take Out"));
+	    vt::cpp23::format_to_buffer(str, STRLONG, "{}",term->Translate("Take Out"));
         break;
     case CHECK_FASTFOOD:
-        snprintf(str, STRLONG, "%s",term->Translate("Fast Food"));
+        vt::cpp23::format_to_buffer(str, STRLONG, "{}",term->Translate("Fast Food"));
         break;
     case CHECK_CATERING:
 	if (date.IsSet() && (date <= now))
-	    snprintf(str, STRLONG, "%s %s", term->Translate(WAITSTR), term->Translate("Catering"));
+	    vt::cpp23::format_to_buffer(str, STRLONG, "{} {}", term->Translate(WAITSTR), term->Translate("Catering"));
 	else
-	    snprintf(str, STRLONG, "%s",term->Translate("Catering"));
+	    vt::cpp23::format_to_buffer(str, STRLONG, "{}",term->Translate("Catering"));
         break;
     case CHECK_DELIVERY:
 	if (date.IsSet() && (date <= now))
-	    snprintf(str, STRLONG, "%s %s", term->Translate(WAITSTR), term->Translate("Delivery"));
+	    vt::cpp23::format_to_buffer(str, STRLONG, "{} {}", term->Translate(WAITSTR), term->Translate("Delivery"));
 	else
-	    snprintf(str, STRLONG, "%s",term->Translate("Delivery"));
+	    vt::cpp23::format_to_buffer(str, STRLONG, "{}",term->Translate("Delivery"));
         break;
     case CHECK_RETAIL:
-        snprintf(str, STRLONG,"%s", term->Translate("Retail"));
+        vt::cpp23::format_to_buffer(str, STRLONG,"{}", term->Translate("Retail"));
         break;
     case CHECK_DINEIN:
         vt_safe_string::safe_copy(str, STRLONG, GlobalTranslate("Here"));
@@ -3133,9 +3135,9 @@ genericChar* Check::FullName(genericChar* dest)
     if (customer != nullptr)
     {
         if (strlen(customer->FirstName()) > 0)
-            snprintf(dest, STRLENGTH, "%s %s", customer->FirstName(), customer->LastName());
+            vt::cpp23::format_to_buffer(dest, STRLENGTH, "{} {}", customer->FirstName(), customer->LastName());
         else if (strlen(customer->LastName()) > 0)
-            snprintf(dest, STRLENGTH, "%s", customer->LastName());
+            vt::cpp23::format_to_buffer(dest, STRLENGTH, "{}", customer->LastName());
     }
 
     return dest;
@@ -4645,34 +4647,34 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
     switch (check->CustomerType())
 	{
     case CHECK_RESTAURANT:
-        snprintf(str1, 64, "%s %s #%d", term->Translate("Table"), check->Table(), number);
+        vt_safe_string::safe_format(str1, 64, "%s %s #%d", term->Translate("Table"), check->Table(), number);
         break;
     case CHECK_HOTEL:
-        snprintf(str1, 64, "%s %s", term->Translate("Room"), check->Table());
+        vt_safe_string::safe_format(str1, 64, "%s %s", term->Translate("Room"), check->Table());
         break;
     case CHECK_TAKEOUT:
-        snprintf(str1, 64, "%s",term->Translate("Take Out"));
+        vt_safe_string::safe_format(str1, 64, "%s",term->Translate("Take Out"));
         break;
     case CHECK_FASTFOOD:
-        snprintf(str1, 64, "%s",term->Translate("Fast"));
+        vt_safe_string::safe_format(str1, 64, "%s",term->Translate("Fast"));
         break;
     case CHECK_CATERING:
-        snprintf(str1, 64,"%s", term->Translate("Catering"));
+        vt_safe_string::safe_format(str1, 64,"%s", term->Translate("Catering"));
         break;
     case CHECK_DELIVERY:
-        snprintf(str1, 64, "%s",term->Translate("Deliver"));
+        vt_safe_string::safe_format(str1, 64, "%s",term->Translate("Deliver"));
         break;
     case CHECK_RETAIL:
-        snprintf(str1, 64, "%s",term->Translate("Retail"));
+        vt_safe_string::safe_format(str1, 64, "%s",term->Translate("Retail"));
         break;
     case CHECK_DINEIN:
-        snprintf(str1, 64, "Here");
+        vt::cpp23::format_to_buffer(str1, 64, "Here");
         break;
     case CHECK_TOGO:
-        snprintf(str1, 64, "To Go");
+        vt::cpp23::format_to_buffer(str1, 64, "To Go");
         break;
     case CHECK_CALLIN:
-        snprintf(str1, 64, "Pick Up");
+        vt::cpp23::format_to_buffer(str1, 64, "Pick Up");
         break;
     default:
         str1[0] = '\0';
@@ -5002,14 +5004,14 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 	{
 		//sys->NewSerialNumber()
 		
-		snprintf(serialnumber,14,"%d-%d",check->serial_number,ticket_count_on_subcheck);
+		vt::cpp23::format_to_buffer(serialnumber,14,"{}-{}",check->serial_number,ticket_count_on_subcheck);
 		ticket_count_on_subcheck++;
 		//print ticket and stub here.
 		printer->CutPaper(1);
 		
 		Str tname;
 		admission_parse_hash_name(tname,si->item_name);
-		snprintf(charbuffer,14,"%s",tname.Value());
+		vt::cpp23::format_to_buffer(charbuffer,14,"{}",tname.Value());
 		spacefill(charbuffer,14);
 		printer->Put(charbuffer,leftflags);
 		printer->Put(charbuffer,rightflags);
@@ -5020,36 +5022,36 @@ int SubCheck::PrintReceipt(Terminal *term, Check *check, Printer *printer, Drawe
 		printer->Put(datebuffer,rightflags);
 		printer->NewLine();
 		
-		snprintf(charbuffer,14,"%s",si->event_time.Value());
+		vt::cpp23::format_to_buffer(charbuffer,14,"{}",si->event_time.Value());
 		spacefill(charbuffer,14);
 		printer->Put(charbuffer,leftflags);
 		printer->Put(charbuffer,rightflags);
 		printer->NewLine();
 		
-		snprintf(charbuffer,14,"%s",si->location.Value());
+		vt::cpp23::format_to_buffer(charbuffer,14,"{}",si->location.Value());
 		spacefill(charbuffer,14);
 		printer->Put(charbuffer,leftflags);
 		printer->Put(charbuffer,rightflags);
 		printer->NewLine();
 		
-		snprintf(charbuffer,14,"1 %s",si->price_label.Value());
+		vt::cpp23::format_to_buffer(charbuffer,14,"1 {}",si->price_label.Value());
 		spacefill(charbuffer,14);
 		printer->Put(charbuffer,leftflags);
 		printer->Put(charbuffer,rightflags);
 		printer->NewLine();
 		
-		snprintf(charbuffer,14,"%s",term->FormatPrice(ord->cost));//Price
+		vt::cpp23::format_to_buffer(charbuffer,14,"{}",term->FormatPrice(ord->cost));//Price
 		spacefill(charbuffer,14);
 		printer->Put(charbuffer,leftflags);
 		printer->Put(serialnumber,rightflags);
 		printer->NewLine();
 		
-		snprintf(charbuffer,14,"%s",settings->store_name.Value());//Store name
+		vt::cpp23::format_to_buffer(charbuffer,14,"{}",settings->store_name.Value());//Store name
 		spacefill(charbuffer,14);
 		printer->Put(charbuffer,leftflags);
 		printer->NewLine();
 		
-		snprintf(charbuffer, STRLENGTH, "%s", serialnumber);//Store name
+		vt::cpp23::format_to_buffer(charbuffer, STRLENGTH, "{}", serialnumber);//Store name
 		spacefill(charbuffer, STRLENGTH);
 		printer->Put(charbuffer,leftflags);
 		printer->NewLine();

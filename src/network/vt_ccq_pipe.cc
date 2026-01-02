@@ -36,6 +36,7 @@
 #include "socket.hh"
 #include "utility.hh"
 #include "safe_string_utils.hh"
+#include "cpp23_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -622,7 +623,7 @@ int Read(int fd, char* buffer, int bufflen)
         readlen = static_cast<int>(read(fd, buffer, static_cast<size_t>(bufflen)));
         if (readlen < 0 && errno != EAGAIN)
         {
-            snprintf(errbuff, STRLENGTH, "Read Error %d", errno);
+            vt::cpp23::format_to_buffer(errbuff, STRLENGTH, "Read Error {}", errno);
             perror(errbuff);
             done = 1;
         }
@@ -647,7 +648,7 @@ int Write(int fd, const char* buffer, int bufflen)
         bytes = write(fd, buffer, bufflen);
         if (bytes < 0)
         {
-            snprintf(errbuff, STRLONG, "Write Error to File Descriptor %d", fd);
+            vt::cpp23::format_to_buffer(errbuff, STRLONG, "Write Error to File Descriptor {}", fd);
             perror(errbuff);
             writelen = bytes;
         }

@@ -38,6 +38,7 @@
 #include "term_view.hh"
 #include "utility.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -981,7 +982,7 @@ int CCard::Command(const char* trans_type, const char* sub_type)
         {
             if (ReadCheq(buffer, STRHUGE) == 0)
             {
-                snprintf(outbuff, STRLENGTH, "%c", 0x06);
+                vt::cpp23::format_to_buffer(outbuff, STRLENGTH, "{}", char(0x06));
                 while (writedone == 0)
                 {
                     writelen = write(ipconn, outbuff, 1);
@@ -1032,7 +1033,7 @@ int CCard::SendCheq(const char* trans_type, const char* sub_type)
         if (trans_type[0] == 'T')
             tmpstring[0] = '\0';
         else
-            snprintf(tmpstring, STRLENGTH, "%.2f", (fullamount / 100.0));
+            vt::cpp23::format_to_buffer(tmpstring, STRLENGTH, "{:.2f}", (fullamount / 100.0));
         len += CCQ_AddString(authstring, tmpstring, 10);         // amount, with decimal point
         if (trans_type[0] == 'T')
             reference[0] = '\0';
