@@ -9,9 +9,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Fixed
 - **CI: Update Linux Builds to C++23 Standard (2026-01-01)**
   - Changed CI workflow from C++20 to C++23 to match project requirements
+  - Restricted CI testing to GCC 14+ which has full C++23 stdlib support
+  - Older compilers (GCC 12-13, Clang 16-18) lack std::format in libstdc++ even with `-std=c++23`
+  - Changed std::format availability check from compile error to warning for better diagnostics
   - Project now requires C++23 for std::format and other modernization features
-  - **Files modified**: `.github/workflows/linux-simple-builds.yml`
-  - **Impact**: CI builds now use correct C++23 standard matching local development
+  - **Files modified**: `.github/workflows/linux-simple-builds.yml`, `src/utils/cpp23_utils.hh`
+  - **Impact**: CI builds now use correct C++23 standard with compatible compilers matching local development
 
 - **C++23 Compatibility: Add Feature Detection for Clang Support (2026-01-01)**
   - Added `__has_include` feature detection for `<expected>` and `<format>` header availability

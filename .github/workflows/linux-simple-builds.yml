@@ -11,12 +11,9 @@ jobs:
       fail-fast: false
       matrix:
         cxx:
-          - g++-12
-          - g++-13
           - g++-14
-          - clang++-16
-          - clang++-17
-          - clang++-18
+          # Note: Older compilers (g++-12, g++-13, clang++-16, clang++-17, clang++-18)
+          # don't have full C++23 stdlib support (missing std::format in libstdc++)
         build_type: [Debug] #, Release]
         std: [23]
         include:

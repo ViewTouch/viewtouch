@@ -41,7 +41,9 @@
 #endif
 
 #ifndef VT_HAS_STD_FORMAT
-#  error "std::format is required but not available. Please use C++20 or later with a compiler that supports std::format."
+#  warning "std::format is not available in this compiler/stdlib combination. This will cause compilation errors."
+#  warning "ViewTouch requires C++23 with a modern standard library (GCC 14+ or Clang 18+ with libc++)."
+#  warning "Please upgrade your compiler or use a newer standard library."
 #endif
 
 namespace vt::cpp23 {
