@@ -22,6 +22,7 @@
 #include "system.hh"
 #include "account.hh"
 #include "report.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #include <iostream>
 #include "safe_string_utils.hh"
@@ -77,9 +78,10 @@ RenderResult AccountZone::Render(Terminal *term, int update_flag)
     {
         int my_records = term->system_data->account_db.AccountCount();
         if (account)
-            snprintf(buff, STRLENGTH, "Account %d of %d", record_no + 1, my_records);
+            // C++23: Use std::format for type-safe formatting
+            vt::cpp23::format_to_buffer(buff, STRLENGTH, "Account {} of {}", record_no + 1, my_records);
         else
-            snprintf(buff, STRLENGTH, "%s", GlobalTranslate("No Accounts"));
+            vt::cpp23::format_to_buffer(buff, STRLENGTH, "{}", GlobalTranslate("No Accounts"));
         TextC(term, 0, buff, col);
     }
     return RENDER_OKAY;
@@ -238,7 +240,8 @@ int AccountZone::ListReport(Terminal *term, Report *report)
     while (acct != nullptr)
     {
         indent = 0;
-        snprintf(buff, STRLENGTH, "%d", acct->number);
+        // C++23: Use std::format for integer formatting
+        vt::cpp23::format_to_buffer(buff, STRLENGTH, "{}", acct->number);
         report->TextPosL(indent, buff, my_color);
         indent += num_spaces;
         report->TextPosL(indent, acct->name.Value(), my_color);

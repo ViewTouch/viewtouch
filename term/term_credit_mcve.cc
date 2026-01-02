@@ -31,6 +31,7 @@
 #include "term_view.hh"
 #include "utility.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -85,7 +86,7 @@ int AppendString(char* dest, int fwidth, const char* source)
     int retval = 0;
     char buffer[STRLONG];
 
-    snprintf(buffer, STRLONG, "%-*s", fwidth, source);
+    vt::cpp23::format_to_buffer(buffer, STRLONG, "{:<{}}", source, fwidth);
     vt_safe_string::safe_concat(dest, STRLONG, buffer);
 
     return retval;
@@ -1025,7 +1026,7 @@ int CCard::BatchSettle()
         else
             vt_safe_string::safe_copy(msgbuff, STRLENGTH, GlobalTranslate("Connect error"));
         WStr(msgbuff);
-        snprintf(errbuff, STRLENGTH, "Failed to close batch '%s'", batchnum);
+        vt::cpp23::format_to_buffer(errbuff, STRLENGTH, "Failed to close batch '{}'", batchnum);
         ReportError(errbuff);
         ReportError(msgbuff);
     }

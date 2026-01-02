@@ -28,6 +28,7 @@
 #include "labels.hh"
 #include "system.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include <string.h>
 #include <unistd.h>
 
@@ -285,7 +286,7 @@ SignalResult MessageButtonZone::SendandJump(Terminal *term)
             validcommand = ValidateCommand(&signal[idx]);
             if (validcommand != nullptr)
             {
-                snprintf(command, STRLONG, "%s >%s 2>&1", validcommand, COMMAND_OUTPUT_FILE);
+                vt::cpp23::format_to_buffer(command, STRLONG, "{} >{} 2>&1", validcommand, COMMAND_OUTPUT_FILE);
                 system(command);
                 term->Draw(1);
             }
@@ -878,9 +879,9 @@ RenderResult ClearSystemZone::Render(Terminal *term, int update_flag)
     FnTrace("ClearSystemZone::Render()");
     genericChar str[64];
     if (countdown > 0)
-        snprintf(str, sizeof(str), "Clear System (%d)", countdown);
+        vt::cpp23::format_to_buffer(str, sizeof(str), "Clear System ({})", countdown);
     else
-        snprintf(str, sizeof(str), "Clear System");
+        vt::cpp23::format_to_buffer(str, sizeof(str), "Clear System");
     
     RenderZone(term, str, update_flag);
     return RENDER_OKAY;

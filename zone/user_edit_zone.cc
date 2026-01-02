@@ -27,6 +27,7 @@
 #include "system.hh"
 #include "manager.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include <string.h>
 
 #ifdef DMALLOC
@@ -197,8 +198,8 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
             else
             {
                 char str[STRLENGTH];
-                snprintf(str, STRLENGTH, "This employee is clocked in.  You cannot\\"
-                                        "change the employee's status until he or\\"
+                vt::cpp23::format_to_buffer(str, STRLENGTH, "This employee is clocked in.  You cannot"
+                                        "change the employee's status until he or"
                                         "she is clocked out of the system.");
                 SimpleDialog *d = new SimpleDialog(str);
                 d->force_width = 600;
@@ -209,7 +210,7 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
         else if (user != nullptr)
         {
             char str[STRLENGTH];
-            snprintf(str, STRLENGTH, "Employee '%s' is inactive.  What do you want to do?",
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "Employee '{}' is inactive.  What do you want to do?",
                     user->system_name.Value());
             SimpleDialog *d = new SimpleDialog(str);
             d->Button("Reactivate this employee", "activate");
@@ -449,7 +450,7 @@ int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
         ((e->first_name.size() > 0) && (e->last_name.size() > 0)))
     {
         char tempname[STRLONG];
-        snprintf(tempname, STRLONG, "%s %s", e->first_name.Value(), e->last_name.Value());
+        vt::cpp23::format_to_buffer(tempname, STRLONG, "{} {}", e->first_name.Value(), e->last_name.Value());
         e->system_name.Set(tempname);
     }
     

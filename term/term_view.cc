@@ -38,6 +38,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <string>
+#include "src/utils/cpp23_utils.hh"
 #include <chrono>
 #include <vector>
 #include <array>
@@ -2600,7 +2601,7 @@ int SaveToPPM()
 
     // Generate the screenshot
     std::array<char, STRLONG> command{};
-    snprintf(command.data(), command.size(), "%s -root -display %s >%s",
+    vt::cpp23::format_to_buffer(command.data(), command.size(), "{} -root -display {} >{}",
              Constants::XWD, DisplayString(Dis), filename.data());
     system(command.data());
 
@@ -3379,7 +3380,7 @@ int ReadScreenSaverPix()
             if ((strcmp(&name[len-4], ".xpm") == 0) ||
                 (strcmp(&name[len-4], ".XPM") == 0))
             {
-                snprintf(fullpath.data(), fullpath.size(), "%s/%s", SCREENSAVER_DIR, name);
+                vt::cpp23::format_to_buffer(fullpath.data(), fullpath.size(), "{}/{}", SCREENSAVER_DIR, name);
                 newpm = LoadPixmapFile(fullpath.data());
                 if (newpm != nullptr)
                     PixmapList.Add(newpm);
@@ -3791,7 +3792,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         // Append :dpi=96 to font specification if not already present
         const char* xft_font_name = fontData.font;
         if (strstr(xft_font_name, ":dpi=") == nullptr) {
-            snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", xft_font_name);
+            vt::cpp23::format_to_buffer(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "{}:dpi=96", xft_font_name);
             xft_font_name = font_spec_with_dpi.data();
         }
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
@@ -4457,7 +4458,7 @@ void TerminalReloadFonts()
         const char* xft_font_name = fontData.font;
         // Append :dpi=96 to font specification if not already present
         if (strstr(xft_font_name, ":dpi=") == nullptr) {
-            snprintf(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "%s:dpi=96", xft_font_name);
+            vt::cpp23::format_to_buffer(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "{}:dpi=96", xft_font_name);
             xft_font_name = font_spec_with_dpi.data();
         }
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);

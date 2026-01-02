@@ -28,6 +28,7 @@
 #include "settings.hh"
 #include "system.hh"
 #include "terminal.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #include <iostream>
 #include <string>
@@ -40,6 +41,7 @@
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#include "src/utils/cpp23_utils.hh"
 #endif
 
 
@@ -133,11 +135,11 @@ RenderResult LoginZone::Render(Terminal *term, int update_flag)
         break;
 
     case STATE_USER_ONLINE:
-        snprintf(str, sizeof(str), "%s %s", term->Translate("Hello"), employee->system_name.Value());
+        vt::cpp23::format_to_buffer(str, sizeof(str), "{} {}", term->Translate("Hello"), employee->system_name.Value());
         TextC(term, .5, str, col);
         if (time.IsSet())
         {
-            snprintf(str, sizeof(str), "%s %s", term->Translate("Starting Time Is"),
+            vt::cpp23::format_to_buffer(str, sizeof(str), "{} {}", term->Translate("Starting Time Is"),
                     term->TimeDate(time, TD_TIME));
             TextC(term, 1.5, str, col);
         }
@@ -430,14 +432,14 @@ int LoginZone::ClockOn(Terminal *term, int job_no)
 
         // Ask user for job to work
         genericChar str[256];
-        snprintf(str, sizeof(str), "%s %s \\%s", term->Translate("Hello"), employee->system_name.Value(),
+        vt::cpp23::format_to_buffer(str, sizeof(str), "{} {} \\{}", term->Translate("Hello"), employee->system_name.Value(),
                 term->Translate("Pick A Job For This Shift"));
         SimpleDialog *d = new SimpleDialog(str);
 
         int n = 0;
         for (JobInfo *j = employee->JobList(); j != nullptr; j = j->next)
         {
-            snprintf(str, sizeof(str), "job%d", n++);
+            vt::cpp23::format_to_buffer(str, sizeof(str), "job{}", n++);
             d->Button(j->Title(term), str);
         }
 
@@ -778,33 +780,33 @@ RenderResult LogoutZone::Render(Terminal *term, int update_flag)
     end.Floor<std::chrono::minutes>();
 
     genericChar str[256];
-    snprintf(str, sizeof(str), "     Shift Start: %s", term->TimeDate(start, TD0));
+    vt::cpp23::format_to_buffer(str, sizeof(str), "     Shift Start: {}", term->TimeDate(start, TD0));
     TextL(term, 5, str, color[0]);
 
-    snprintf(str, sizeof(str), "    Current Time: %s", term->TimeDate(end, TD0));
+    vt::cpp23::format_to_buffer(str, sizeof(str), "    Current Time: {}", term->TimeDate(end, TD0));
     TextL(term, 6, str, color[0]);
 
     genericChar hstr[32], mstr[32];
     int hour = (shift_min / 60), m = (shift_min % 60);
     if (hour == 1)
-        snprintf(hstr, sizeof(hstr), "1 hour");
+        vt::cpp23::format_to_buffer(hstr, sizeof(hstr), "1 hour");
     else
-        snprintf(hstr, sizeof(hstr), "%d hours", hour);
+        vt::cpp23::format_to_buffer(hstr, sizeof(hstr), "{} hours", hour);
 
     if (m == 1)
-        snprintf(mstr, sizeof(mstr), "1 minute");
+        vt::cpp23::format_to_buffer(mstr, sizeof(mstr), "1 minute");
     else
-        snprintf(mstr, sizeof(mstr), "%d minutes", m);
+        vt::cpp23::format_to_buffer(mstr, sizeof(mstr), "{} minutes", m);
 
     genericChar str2[256];
     if (hour > 0 && m > 0)
-        snprintf(str2, sizeof(str2), "%s, %s", hstr, mstr);
+        vt::cpp23::format_to_buffer(str2, sizeof(str2), "{}, {}", hstr, mstr);
     else if (hour > 0)
-        snprintf(str2, sizeof(str2), "%s", hstr);
+        vt::cpp23::format_to_buffer(str2, sizeof(str2), "{}", hstr);
     else
-        snprintf(str2, sizeof(str2), "%s", mstr);
+        vt::cpp23::format_to_buffer(str2, sizeof(str2), "{}", mstr);
 
-    snprintf(str, sizeof(str), " Total Work Time: %s", str2);
+    vt::cpp23::format_to_buffer(str, sizeof(str), " Total Work Time: {}", str2);
     TextL(term, 7, str, color[0]);
 
     if (!employee->CanOrder(settings))

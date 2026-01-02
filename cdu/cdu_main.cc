@@ -34,6 +34,7 @@
 #include "cdu_att.hh"
 #include "socket.hh"
 #include "utility.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -219,7 +220,7 @@ int main(int argc, const char* argv[])
             else
             {
                 std::array<char, STRLENGTH> error_message{};
-                std::snprintf(error_message.data(), error_message.size(), "Could not write %s", g_deviceName.c_str());
+                vt::cpp23::format_to_buffer(error_message.data(), error_message.size(), "Could not write {}", g_deviceName.c_str());
                 perror(error_message.data());
             }
         }

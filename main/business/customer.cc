@@ -26,6 +26,8 @@
 #include "system.hh"
 #include "safe_string_utils.hh"
 
+#include "src/utils/cpp23_utils.hh"
+
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
@@ -110,7 +112,7 @@ int CustomerInfo::SetFileName(const genericChar* filename)
     FnTrace("CustomerInfo::SetFileName()");
     genericChar buffer[STRLONG];
 
-    snprintf(buffer, STRLONG, "%s/customer_%d", filename, id);
+    vt::cpp23::format_to_buffer(buffer, STRLONG, "{}/customer_{}", filename, id);
     filepath.Set(buffer);
     return 0;
 }

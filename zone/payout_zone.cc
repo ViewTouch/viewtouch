@@ -34,6 +34,7 @@
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#include "src/utils/cpp23_utils.hh"
 #endif
 
 #define ERR_BALANCE_CASH1 "All cash drawers and server banks must be"
@@ -396,7 +397,7 @@ RenderResult EndDayZone::Render(Terminal *term, int update_flag)
     }
     if (flag3)
     {
-        snprintf(buffer, STRLENGTH, ERR_INSUFF_TIME, min_day_hrs);
+        vt_safe_string::safe_format(buffer, STRLENGTH, ERR_INSUFF_TIME, min_day_hrs);
         TextC(term, ++line, buffer);
         ++line;
     }
@@ -425,7 +426,7 @@ SignalResult EndDayZone::Signal(Terminal *term, const genericChar* message)
             {
                 int min_day_secs = term->GetSettings()->min_day_length;
                 int min_day_hrs = min_day_secs / 60 / 60;
-                snprintf(buffer, STRLENGTH, ERR_INSUFF_TIME, min_day_hrs);
+                vt_safe_string::safe_format(buffer, STRLENGTH, ERR_INSUFF_TIME, min_day_hrs);
                 d = new SimpleDialog(buffer);
             }
             else if (flag4)

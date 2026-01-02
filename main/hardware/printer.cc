@@ -25,6 +25,7 @@
 #include "terminal.hh"
 #include "src/utils/vt_logger.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #include <errno.h>
 #include <iostream>
@@ -306,7 +307,7 @@ int Printer::ParallelPrint()
     unsigned char buff[STRLENGTH];
     struct timeval timeout;
 
-    snprintf(buffer, STRLENGTH, "cat %s >>%s", temp_name.Value(), target.Value());
+    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "cat {} >>{}", temp_name.Value(), target.Value());
 
     if (debug_mode)
         printf("Forking for ParallelPrint\n");
@@ -344,13 +345,13 @@ int Printer::ParallelPrint()
             {
                 if (infd < 0)
                 {
-                    snprintf(buffer, STRLENGTH, "ParallelPrint Error %d opening %s for read",
+                    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "ParallelPrint Error {} opening {} for read",
                              errno, temp_name.Value());
                     ReportError(buffer);
                 }
                 if (outfd < 0)
                 {
-                    snprintf(buffer, STRLENGTH, "ParallelPrint Error %d opening %s for write",
+                    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "ParallelPrint Error {} opening {} for write",
                              errno, target.Value());
                     ReportError(buffer);
                 }
@@ -379,7 +380,7 @@ int Printer::LPDPrint()
     FnTrace("Printer::LPDPrint()");
     genericChar buffer[STRLONG];
 
-    snprintf(buffer, STRLONG, "cat %s | /usr/bin/lpr -P%s", temp_name.Value(), target.Value());
+    vt::cpp23::format_to_buffer(buffer, STRLONG, "cat {} | /usr/bin/lpr -P{}", temp_name.Value(), target.Value());
     system(buffer);
     return 0;
 }
@@ -430,7 +431,7 @@ int Printer::SocketPrint()
     {
         close(sockfd);
         vt::Logger::error("SocketPrint: Failed to open temp file '{}' (errno: {})", temp_name.Value(), errno);
-        snprintf(buffer, STRLENGTH, "SocketPrint Error %d opening %s",
+        vt::cpp23::format_to_buffer(buffer, STRLENGTH, "SocketPrint Error {} opening {}",
                  errno, temp_name.Value());
         ReportError(buffer);
         return 1;
@@ -513,7 +514,7 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
     {
         // append the date directly to buffer
         now.Set();
-        buffidx += snprintf(buffer + buffidx, max_len - buffidx, "-%02d-%02d-%d",
+        buffidx += vt::cpp23::format_to_buffer(buffer + buffidx, max_len - buffidx, "-{:02d}-{:02d}-{}",
                            now.Day(), now.Month(), now.Year());
 
         if (ext == nullptr)
@@ -578,7 +579,7 @@ int Printer::FilePrint()
     genericChar command[STRLONG];
 
     GetFilePath(fullpath);
-    snprintf(command, STRLONG, "mv %s %s", temp_name.Value(), fullpath);
+    vt::cpp23::format_to_buffer(command, STRLONG, "mv {} {}", temp_name.Value(), fullpath);
     renval = system(command);
     if (renval < 0)
         retval = 1;  // return error
@@ -661,7 +662,7 @@ int Printer::EmailPrint()
     }
     else if (fd < 0)
     {
-        snprintf(buffer, STRLONG, "EmailPrint Error %d opening %s",
+        vt::cpp23::format_to_buffer(buffer, STRLONG, "EmailPrint Error {} opening {}",
                  errno, temp_name.Value());
         ReportError(buffer);
     }
@@ -1769,7 +1770,7 @@ int PrinterHTML::Init()
     Write("<html>\n<head>", 0);
     if (!have_title)
         page_title = GENERIC_TITLE;
-    snprintf(buffer, STRLENGTH, "<title>%s</title>", page_title.c_str());
+    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "<title>{}</title>", page_title.c_str());
     Write(buffer, 0);
     Write("</head>", 0);
     Write("<body>", 0);
@@ -1977,7 +1978,7 @@ int PrinterPostScript::Init()
     }
     if (!have_title)
         page_title = GENERIC_TITLE;
-    snprintf(buffer, STRLENGTH, "(%s) ShowTitleText\n", page_title.c_str());
+    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "({}) ShowTitleText\n", page_title.c_str());
     write(temp_fd, buffer, strlen(buffer));
     return 0;
 }
@@ -2520,7 +2521,7 @@ int ParseDestination(int &type, genericChar* target, int &port, const genericCha
         else if (port == 0)
         {
             type = TARGET_PARALLEL;
-            snprintf(target, STRLENGTH, "/dev/%s", destination);
+            vt::cpp23::format_to_buffer(target, STRLENGTH, "/dev/{}", destination);
         }
         else
         {
@@ -2726,7 +2727,7 @@ int PrinterQuickBooksCSV::WriteCSVLine(const char* date, const char* type,
         float amount_f = (float)amount / 100.0;
         float tax_f = (float)tax / 100.0;
         
-        snprintf(line, STRLONG, "%s,%s,%s,%s,%.2f,%.2f\n",
+        vt::cpp23::format_to_buffer(line, STRLONG, "{},{},{},{},{:.2f},{:.2f}\n",
                  date, type, account, description, amount_f, tax_f);
         write(temp_fd, line, strlen(line));
     }

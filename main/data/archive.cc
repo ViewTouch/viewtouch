@@ -26,6 +26,8 @@
 #include "utility.hh"
 #include "safe_string_utils.hh"
 
+#include "src/utils/cpp23_utils.hh"
+
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
@@ -332,8 +334,8 @@ int Archive::LoadPacked(Settings *settings, const char* file)
         error = expense_db.Read(df, expense_version);
         if (error)
         {
-            snprintf(str, STRLENGTH,
-                    "Error %d loading expense data (version %d) from archive",
+            vt::cpp23::format_to_buffer(str, STRLENGTH,
+                    "Error {} loading expense data (version {}) from archive",
                     error, expense_version);
             ReportError(str);
             goto archive_read_error;

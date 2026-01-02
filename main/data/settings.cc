@@ -44,6 +44,7 @@
 #include "utility.hh"
 #include "safe_string_utils.hh"
 #include "video_zone.hh"
+#include "src/utils/cpp23_utils.hh"
 
 
 
@@ -54,6 +55,7 @@
 
 #include <filesystem>
 #include <iostream> // temp
+#include "src/utils/cpp23_utils.hh"
 
 namespace fs = std::filesystem;
 
@@ -3950,7 +3952,7 @@ int Settings::DiscountReport(Terminal *t, Report *r)
             r->TextL(ds->name.Value(), color);
             if (debug_mode)
             {
-                snprintf(str, STRLENGTH, "%d", ds->id);
+                vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", ds->id);
                 r->TextC(str, COLOR_RED);
             }
             if (ds->flags & TF_IS_PERCENT)
@@ -3991,7 +3993,7 @@ int Settings::CouponReport(Terminal *t, Report *r)
             r->TextL(cp->name.Value(), color);
             if (debug_mode)
             {
-                snprintf(str, STRLENGTH, "%d", cp->id);
+                vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", cp->id);
                 r->TextC(str, COLOR_RED);
             }
             if (cp->flags & TF_IS_PERCENT)
@@ -4032,7 +4034,7 @@ int Settings::CreditCardReport(Terminal *t, Report *r)
             if (debug_mode)
             {
                 genericChar str[STRLENGTH];
-                snprintf(str, STRLENGTH, "%d", cc->id);
+                vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", cc->id);
                 r->TextC(str, COLOR_RED);
             }
             r->NewLine();
@@ -4068,7 +4070,7 @@ int Settings::CompReport(Terminal *t, Report *r)
             if (debug_mode)
             {
                 genericChar str[STRLENGTH];
-                snprintf(str, STRLENGTH, "%d", cm->id);
+                vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", cm->id);
                 r->TextC(str, COLOR_RED);
             }
             r->NewLine();
@@ -4103,7 +4105,7 @@ int Settings::MealReport(Terminal *t, Report *r)
                 t->FormatPrice(str, mi->amount, 1);
             if (debug_mode)
             {
-                snprintf(str, STRLENGTH, "%d", mi->id);
+                vt::cpp23::format_to_buffer(str, STRLENGTH, "{}", mi->id);
                 r->TextC(str, COLOR_RED);
             }
             r->TextR(str);

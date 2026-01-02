@@ -36,11 +36,13 @@
 #include "image_data.hh"
 #include "utility.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include <cstring>
 #include <sys/stat.h>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#include "src/utils/cpp23_utils.hh"
 #endif
 
 
@@ -264,7 +266,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     if (term->cdu != nullptr)
     {
         term->cdu->Refresh(-1);  // make sure the screen doesn't clear until we're done
-        snprintf(cdustring, STRLONG, "Total  %s%s", settings->money_symbol.Value(),
+        vt::cpp23::format_to_buffer(cdustring, STRLONG, "Total  {}{}", settings->money_symbol.Value(),
                  term->FormatPrice(total_cost));
         term->cdu->Clear();
         term->cdu->Write(cdustring);
@@ -348,7 +350,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
                 if (cr->IsVoiced())
                 {
                     TextPosL(term, 2, line, "Auth", c2);
-                    snprintf(str, 256, "Voice (%s)", cr->Approval());  // str is 256 bytes, not STRLENGTH
+                    vt::cpp23::format_to_buffer(str, 256, "Voice ({})", cr->Approval());  // str is 256 bytes, not STRLENGTH
                     TextPosL(term, 10, line, str, COLOR_GREEN);
                 }
                 else if (cr->IsVoided())
@@ -432,7 +434,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     {
         if (term->cdu != nullptr)
         {
-            snprintf(cdustring, STRLONG, "Due:  %s%s", settings->money_symbol.Value(),
+            vt::cpp23::format_to_buffer(cdustring, STRLONG, "Due:  {}{}", settings->money_symbol.Value(),
                      term->FormatPrice(subCheck->balance));
             term->cdu->NewLine();
             term->cdu->Write(cdustring);
@@ -455,7 +457,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
         }
         if (term->cdu != nullptr)
         {
-            snprintf(cdustring, STRLONG, "Change  %s%s", settings->money_symbol.Value(),
+            vt::cpp23::format_to_buffer(cdustring, STRLONG, "Change  {}{}", settings->money_symbol.Value(),
                      term->FormatPrice(change_value));
             term->cdu->NewLine();
             term->cdu->Write(cdustring);
@@ -529,7 +531,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
             if (term->dialog != nullptr)
             {
                 ReportError("PaymentZone Signal Swipe dumping previous dialog!");
-                snprintf(buffer, STRLONG, "    Named:  %s\n", term->dialog->name.Value());
+                vt::cpp23::format_to_buffer(buffer, STRLONG, "    Named:  {}\n", term->dialog->name.Value());
                 ReportError(buffer);
             }
             AddPayment(term, TENDER_CREDIT_CARD, &message[6]);
@@ -1505,10 +1507,10 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, const genericChar* swipe_
                     if (currpay->credit != nullptr)
                     {
                         count += 1;
-                        snprintf(str, STRLENGTH, "%s\\%s",
+                        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}\\{}",
                                  currpay->credit->LastFour(),
                                  currpay->credit->Approval());
-                        snprintf(str1, STRLENGTH, "swipe %d", count);
+                        vt::cpp23::format_to_buffer(str1, STRLENGTH, "swipe {}", count);
                         sd->Button(str, str1);
                     }
                     currpay = currpay->next;

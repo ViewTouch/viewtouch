@@ -29,6 +29,7 @@
 #include "manager.hh"
 #include "utility.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include <cstring>
 #include <errno.h>
 #include <vector>
@@ -130,7 +131,7 @@ int Report::Load(const std::string &textfile, int color)
     FILE *fp = fopen(textfile.c_str(), "r");
     if (fp == nullptr)
     {
-        snprintf(buffer, STRLENGTH, "Report::Load Error %d opening %s",
+        vt::cpp23::format_to_buffer(buffer, STRLENGTH, "Report::Load Error {} opening {}",
                  errno, textfile.c_str());
         ReportError(buffer);
         return 1;
@@ -258,7 +259,7 @@ int Report::CreateHeader(Terminal *term, Printer *p, const Employee *e)
         TextL(s->store_name.Value());
         if (s->store_address2.size() > 0)
         {
-            snprintf(buffer, STRLENGTH, "%s, %s", s->store_address.Value(),
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}, {}", s->store_address.Value(),
                      s->store_address2.Value());
         }
         else

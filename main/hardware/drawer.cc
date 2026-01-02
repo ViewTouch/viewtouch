@@ -28,6 +28,7 @@
 #include "manager.hh"
 #include "archive.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include <sys/types.h>
 #include <sys/file.h>
 #include <dirent.h>
@@ -450,7 +451,7 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
     {
         if (termlist->host == host)
         {
-            snprintf(str, 256, "Host:  %s", termlist->name.Value());
+            vt::cpp23::format_to_buffer(str, 256, "Host:  {}", termlist->name.Value());
             r->TextL(str);
             r->NewLine();
             termlist = nullptr;

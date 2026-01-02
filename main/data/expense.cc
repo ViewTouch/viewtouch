@@ -22,6 +22,8 @@
 #include "expense.hh"
 #include "system.hh"
 #include "expense_zone.hh"
+#include "src/utils/cpp23_utils.hh"
+
 #include <cctype>
 #include <cstring>
 #include <dirent.h>
@@ -87,7 +89,7 @@ Expense::Expense(int &no)
 int Expense::SetFileName(char* buffer, int maxlen, const genericChar* path)
 {
     FnTrace("Expense::SetFileName()");
-    snprintf(buffer, maxlen, "%s/expense_%d", path, eid);
+    vt::cpp23::format_to_buffer(buffer, maxlen, "{}/expense_{}", path, eid);
     return 0;
 }
 
@@ -196,9 +198,9 @@ int Expense::Author( Terminal* term, genericChar* employee_name )
 
     employee = employee_db->FindByID(employee_id);
     if (employee)
-        snprintf(employee_name, STRLENGTH, "%s", employee->system_name.Value());
+        vt::cpp23::format_to_buffer(employee_name, STRLENGTH, "{}", employee->system_name.Value());
     else
-        snprintf(employee_name, STRLENGTH, "Unknown");
+        vt::cpp23::format_to_buffer(employee_name, STRLENGTH, "Unknown");
     return 0;
 }
 
@@ -222,14 +224,14 @@ int Expense::DrawerOwner(Terminal *term, genericChar* drawer_name, Archive *arch
     {
         drawer_owner = employee_db->FindByID(drawer->owner_id);
         if (drawer_owner)
-            snprintf(drawer_name, STRLENGTH, "%s", drawer_owner->system_name.Value());
+            vt::cpp23::format_to_buffer(drawer_name, STRLENGTH, "{}", drawer_owner->system_name.Value());
         else
-            snprintf(drawer_name, STRLENGTH, "%s %d", term->Translate("Drawer"), drawer->number);
+            vt::cpp23::format_to_buffer(drawer_name, STRLENGTH, "{} {}", term->Translate("Drawer"), drawer->number);
     }
     // last resort
     if (drawer_name[0] == '\0' && drawer_id >= 0)
     {
-        snprintf(drawer_name, STRLENGTH, "Drawer %d", drawer_id);
+        vt::cpp23::format_to_buffer(drawer_name, STRLENGTH, "Drawer {}", drawer_id);
         return 1;
     }
     return 0;
@@ -252,7 +254,7 @@ int Expense::AccountName(Terminal *term, genericChar* account_name, Archive *arc
     
     account = acct_db->FindByNumber(account_id);
     if (account != nullptr)
-        snprintf(account_name, STRLENGTH, "%s", account->name.Value());
+        vt::cpp23::format_to_buffer(account_name, STRLENGTH, "{}", account->name.Value());
     else
         account_name[0] = '\0';
     return 0;
@@ -491,7 +493,7 @@ int ExpenseDB::Load(const char* path)
         return 1;
 
     // first read the global ExpenseDB file
-    snprintf(fullpath, STRLENGTH, "%s/expensedb", pathname.Value());
+    vt::cpp23::format_to_buffer(fullpath, STRLENGTH, "{}/expensedb", pathname.Value());
     error = infile.Open(fullpath, version);
     if (error == 0)
     {
@@ -515,7 +517,7 @@ int ExpenseDB::Load(const char* path)
                 int len = strlen(name);
                 if (strcmp(&name[len-4], ".fmt") == 0)
                     break;
-                snprintf(fullpath, STRLENGTH, "%s/%s", pathname.Value(), name);
+                vt::cpp23::format_to_buffer(fullpath, STRLENGTH, "{}/{}", pathname.Value(), name);
                 auto *exp = new Expense();
                 if (exp->Load(fullpath))
                     ReportError("Error loading expense");
@@ -573,7 +575,7 @@ int ExpenseDB::Save()
 
     RemoveBlank();
     // save off the global ExpenseDB stuff
-    snprintf(fullpath, STRLENGTH, "%s/expensedb", pathname.Value());
+    vt::cpp23::format_to_buffer(fullpath, STRLENGTH, "{}/expensedb", pathname.Value());
     if (outfile.Open(fullpath, EXPENSE_VERSION) == 0)
     {
         outfile.Write(entered);

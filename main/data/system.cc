@@ -34,6 +34,8 @@
 #include "customer.hh"
 #include "utility.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
+
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/file.h>
@@ -193,11 +195,11 @@ int System::BackupCurrentData()
         retval = 1;
     else
     {
-        snprintf(bakname, STRLONG, "%s/current_%04d%02d%02d%02d%02d.tar.gz",
+        vt::cpp23::format_to_buffer(bakname, STRLONG, "{}/current_{:04d}{:02d}{:02d}{:02d}{:02d}.tar.gz",
                  backup_path.Value(), SystemTime.Year(),
                  SystemTime.Month(), SystemTime.Day(),
                  SystemTime.Hour(), SystemTime.Min());
-        snprintf(command, STRLONG, "tar czf %s %s",
+        vt::cpp23::format_to_buffer(command, STRLONG, "tar czf {} {}",
                  bakname, current_path.Value());
         system(command);
     }
@@ -819,18 +821,18 @@ int System::CheckFileUpdate(const char* file)
     char newfile[STRLENGTH];
     char backup[STRLENGTH];
 
-    snprintf(update, STRLENGTH, "%s/%s/%s", data_path.Value(), UPDATES_DATA_DIR, file);
+    vt::cpp23::format_to_buffer(update, STRLENGTH, "{}/{}/{}", data_path.Value(), UPDATES_DATA_DIR, file);
     if (DoesFileExist(update))
     {
-        snprintf(buffer, STRLENGTH, "Updating %s", update);
+        vt::cpp23::format_to_buffer(buffer, STRLENGTH, "Updating {}", update);
         ReportError(buffer);
-        snprintf(newfile, STRLENGTH, "%s/%s", data_path.Value(), file);
+        vt::cpp23::format_to_buffer(newfile, STRLENGTH, "{}/{}", data_path.Value(), file);
         if (DoesFileExist(newfile))
         {
-            snprintf(backup, STRLENGTH, "%s.%04d%02d%02d%02d%02d", newfile,
+            vt::cpp23::format_to_buffer(backup, STRLENGTH, "{}.{:04d}{:02d}{:02d}{:02d}{:02d}", newfile,
                      SystemTime.Year(), SystemTime.Month(), SystemTime.Day(),
                      SystemTime.Hour(), SystemTime.Min());
-            snprintf(buffer, STRLENGTH, "  Saving original as %s", backup);
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "  Saving original as {}", backup);
             ReportError(buffer);
             rename(newfile, backup);
         }
@@ -879,13 +881,13 @@ int System::ClearSystem(int all)
     DeleteFile(str);
     vt_safe_string::safe_format(str, STRLONG, "%s/exception.dat", p);
     DeleteFile(str);
-    snprintf(str, STRLONG, "/bin/rm -r %s/%s %s/%s %s/%s",
+    vt::cpp23::format_to_buffer(str, STRLONG, "/bin/rm -r {}/{} {}/{} {}/{}",
             p, ARCHIVE_DATA_DIR, p, CURRENT_DATA_DIR,
             p, STOCK_DATA_DIR);
     system(str);
     if (all)
     {
-        snprintf(str, STRLONG, "/bin/rm -r %s/%s", p, LABOR_DATA_DIR);
+        vt::cpp23::format_to_buffer(str, STRLONG, "/bin/rm -r {}/{}", p, LABOR_DATA_DIR);
         system(str);
     }
     return EndSystem();
