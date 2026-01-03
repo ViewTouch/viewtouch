@@ -1080,7 +1080,7 @@ SignalResult ListFormZone::Touch(Terminal *term, int tx, int ty)
     if (records <= 0)
         return SIGNAL_IGNORED;
 
-    FormZone::Touch(term, tx, ty);
+    LayoutZone::Touch(term, tx, ty);
     if (show_list)
     {
         int new_page = list_page;
@@ -1137,7 +1137,7 @@ SignalResult ListFormZone::Mouse(Terminal *term, int action, int mx, int my)
             return sig;
     }
 
-    FormZone::Touch(term, mx, my);
+    LayoutZone::Touch(term, mx, my);
     if (show_list)
     {
         int new_page = list_page;
@@ -2751,9 +2751,9 @@ SignalResult ListField::Touch(Terminal *term, FormZone *fzone, Flt tx, Flt ty)
     FnTrace("ListField::Touch()");
     Flt xx = x;
     if (label.size() > 0)
-        xx += label_width + .6;
+        xx += label_width + 1;
 
-    if (tx >= xx && tx <= (xx + entry_width + 1))
+    if (tx >= xx && tx <= (xx + entry_width))
         NextEntry();
     return SIGNAL_OKAY;
 }

@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Form Zone: Fix Double-Touch and Click Area Issues in ListField (2026-01-03)**
+  - Fixed double-triggering of field Touch events when using touchscreen input
+  - Fixed ListField click detection area not matching the visual button boundaries
+  - **Root Cause**: Both Touch and Mouse events were calling `FormZone::Touch()` which triggered field actions, causing double-clicks on touchscreens
+  - **Solution**: Changed `ListFormZone::Touch()` and `ListFormZone::Mouse()` to call `LayoutZone::Touch()` instead, which only updates coordinates without triggering field actions
+  - **Offset Fix**: Changed ListField offset calculation from `label_width + .6` to `label_width + 1` and boundary from `entry_width + 1` to `entry_width` to match the Render and Mouse methods
+  - **Files modified**: `zone/form_zone.cc` (`ListFormZone::Touch()`, `ListFormZone::Mouse()`, `ListField::Touch()`)
+  - **Impact**: Tender Settings and all form zones with list fields now respond correctly to single clicks/taps without double-triggering, and buttons are clickable across their entire visual area
+
 - **CI: Update Linux Builds to C++23 Standard (2026-01-01)**
   - Changed CI workflow from C++20 to C++23 to match project requirements
   - Restricted CI testing to GCC 14+ which has full C++23 stdlib support
