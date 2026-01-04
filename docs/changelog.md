@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Dialog Keyboard: Order Comment Dialog Text Entry Improvements (2026-01-03)** *(Work in Progress)*
+  - Redesigned Order Comment dialog with modern 6-row QWERTY keyboard layout (previously had overlapping keyboard layers)
+  - Implemented visible text entry box at top of dialog with absolute positioning
+  - Fixed text display updates - text now appears in RED as user types on keyboard
+  - Added proper background clearing to prevent text artifacting when clearing input
+  - Adjusted text positioning for better vertical centering in entry box
+  - **Files modified**: `zone/dialog_zone.cc` (OrderCommentDialog constructor, Render, RenderEntry, DrawEntry, Signal methods), `zone/dialog_zone.hh`
+  - **Status**: Text entry box is visible and functional, keyboard responds to clicks. Still working on final polish and testing.
+
 - **Form Zone: Fix Double-Touch and Click Area Issues in ListField (2026-01-03)**
   - Fixed double-triggering of field Touch events when using touchscreen input
   - Fixed ListField click detection area not matching the visual button boundaries
