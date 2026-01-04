@@ -3431,6 +3431,7 @@ OrderCommentDialog::OrderCommentDialog(const char* msg, const char* retmsg, int 
     h = 850;  // Increased from 780 to make room for bigger buttons
     // Increase button height for larger keyboard
     hh = 110;  // Increased from 90 to make buttons bigger
+    
     // Change labels for Done and Cancel buttons
     if (enterkey)
     {
@@ -3458,78 +3459,87 @@ RenderResult OrderCommentDialog::Render(Terminal *term, int update_flag)
         return RENDER_OKAY;
     }
 
-    // Call parent Render to set up keyboard layout
-    GetTextDialog::Render(term, update_flag);
-    first_row_y = y + first_row;
-
-    // Layout buttons - reuse GetTextDialog layout code
+    // Call DialogZone::Render to set up base dialog
+    DialogZone::Render(term, update_flag);
+    
+    int ww = w - (border * 2);
+    int col = color[0];
+    
+    // Modern layout with clear spacing
+    // Text entry area at top: 150 pixels
+    // Keyboard area: rest of dialog
+    
+    int entry_area_height = 150;
+    int keyboard_start_y = y + entry_area_height;
+    int button_height = 90;  // Larger, more touchable buttons
+    int button_gap = 4;
+    
+    // ========== TEXT ENTRY AREA ==========
+    // Title
+    if (display_string[0] != '\0')
+        TextC(term, 1, term->Translate(display_string), COLOR_BLACK);
+    
+    // ========== KEYBOARD LAYOUT ==========
+    int ky = keyboard_start_y;
     int kx = 0;
     int kw = 0;
-    int ww = w - (border * 2);
-    // Start keyboard higher to accommodate clear/space/backspace and done/cancel rows
-    int ky = y + h - (hh * 6) - border - 8;
-    int i;
-    int col = color[0];
-
-    // Layout QWERTY keyboard buttons (same as GetTextDialog)
-    for (i = 0; i < 10; ++i)
-    {
-        kx = (ww * i * 2) / 21;
-        kw = ((ww * (i * 2 + 2)) / 21) - kx;
-        key[i]->SetRegion(x + border + kx, ky, kw, hh);
-    }
-
-    ky += hh;
-    for (i = 10; i < 20; ++i)
-    {
-        kx = (ww * (i * 2 - 19)) / 21;
-        kw = ((ww * (i * 2 - 17)) / 21) - kx;
-        key[i]->SetRegion(x + border + kx, ky, kw, hh);
-    }
-
-    ky += hh;
-    for (i = 20; i < 29; ++i)
-    {
-        kx = (ww * (i * 2 - 38)) / 21;
-        kw = ((ww * (i * 2 - 36)) / 21) - kx;
-        key[i]->SetRegion(x + border + kx, ky, kw, hh);
-    }
-
-    ky += hh;
-    for (i = 29; i < 36; ++i)
-    {
-        kx = (ww * (i * 2 - 55)) / 21;
-        kw = ((ww * (i * 2 - 53)) / 21) - kx;
-        key[i]->SetRegion(x + border + kx, ky, kw, hh);
-    }
-
-    // Layout space, backspace, clear buttons (above keyboard, same as GetTextDialog)
-    ky += hh + 4;
-    kw = ((ww * 6) / 40);
-    clearkey->SetRegion(x + border, ky, kw, hh);
-
-    kx = (ww * 9) / 40;
-    kw = ((ww * 24) / 40) - kx;
-    spacekey->SetRegion(x + border + kx, ky, kw, hh);
-
-    kx = (ww * 27) / 40;
-    kw = ((ww * 33) / 40) - kx;
-    bskey->SetRegion(x + border + kx, ky, kw, hh);
-
-    // Layout Done and Cancel buttons at the very bottom (below clear/space/backspace)
-    ky += hh + 4;
-    kw = (ww * 18) / 40;
-    if (enterkey)
-        enterkey->SetRegion(x + border, ky, kw, hh);
     
-    kx = (ww * 22) / 40;
-    kw = (ww * 18) / 40;
+    // Row 1: Numbers 1-0 (10 buttons, 9 gaps between them)
+    int num_button_w = (ww - (9 * button_gap)) / 10;
+    for (int i = 0; i < 10; ++i)
+    {
+        kx = (num_button_w + button_gap) * i;
+        key[i]->SetRegion(x + border + kx, ky, num_button_w, button_height);
+    }
+    
+    // Row 2: QWERTYUIOP (10 buttons, 9 gaps between them)
+    ky += button_height + button_gap;
+    int qwerty_button_w = (ww - (9 * button_gap)) / 10;
+    for (int i = 10; i < 20; ++i)
+    {
+        kx = (qwerty_button_w + button_gap) * (i - 10);
+        key[i]->SetRegion(x + border + kx, ky, qwerty_button_w, button_height);
+    }
+    
+    // Row 3: ASDFGHJKL (9 buttons, 8 gaps, centered)
+    ky += button_height + button_gap;
+    int asdf_button_w = (ww - (8 * button_gap)) / 9;
+    int asdf_offset = (ww - ((asdf_button_w * 9) + (8 * button_gap))) / 2;
+    for (int i = 20; i < 29; ++i)
+    {
+        kx = asdf_offset + (asdf_button_w + button_gap) * (i - 20);
+        key[i]->SetRegion(x + border + kx, ky, asdf_button_w, button_height);
+    }
+    
+    // Row 4: ZXCVBNM (7 buttons, 6 gaps, centered)
+    ky += button_height + button_gap;
+    int zxcv_button_w = (ww - (6 * button_gap)) / 7;
+    int zxcv_offset = (ww - ((zxcv_button_w * 7) + (6 * button_gap))) / 2;
+    for (int i = 29; i < 36; ++i)
+    {
+        kx = zxcv_offset + (zxcv_button_w + button_gap) * (i - 29);
+        key[i]->SetRegion(x + border + kx, ky, zxcv_button_w, button_height);
+    }
+    
+    // Row 5: Action buttons (Clear, Space, Backspace) - 3 buttons, 2 gaps
+    ky += button_height + button_gap;
+    int action_w = (ww - (2 * button_gap)) / 3;
+    clearkey->SetRegion(x + border, ky, action_w, button_height);
+    spacekey->SetRegion(x + border + action_w + button_gap, ky, action_w, button_height);
+    bskey->SetRegion(x + border + (action_w + button_gap) * 2, ky, action_w, button_height);
+    
+    // Row 6: Done and Cancel (2 large buttons, 1 gap)
+    ky += button_height + button_gap;
+    int bottom_w = (ww - button_gap) / 2;
+    if (enterkey)
+        enterkey->SetRegion(x + border, ky, bottom_w, button_height);
     if (cancelkey)
-        cancelkey->SetRegion(x + border + kx, ky, kw, hh);
-
-    if (display_string[0] != '\0')
-        TextC(term, 1, term->Translate(display_string), col);
+        cancelkey->SetRegion(x + border + bottom_w + button_gap, ky, bottom_w, button_height);
+    
+    // Render entry field with text (using zone-relative coordinates like GetTextDialog)
     RenderEntry(term);
+    
+    // Render all buttons
     buttons.Render(term);
 
     return retval;
@@ -3548,6 +3558,7 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
     {
     case 0:  // backspace
         Backspace(term);
+        DrawEntry(term);  // Ensure display updates
         break;
     case 1:  // clear
         buffer[0] = '\0';
@@ -3601,7 +3612,10 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
         break;
     default:
         if (message[1] == '\0')
+        {
             AddChar(term, message[0]);
+            DrawEntry(term);  // Ensure display updates after adding char
+        }
         break;
     }
 
@@ -3637,8 +3651,46 @@ SignalResult OrderCommentDialog::Keyboard(Terminal *term, int kb_key, int state)
 int OrderCommentDialog::RenderEntry(Terminal *term)
 {
     FnTrace("OrderCommentDialog::RenderEntry()");
-    Entry(term, (size_x/2) - 15, 2.5, 30);
-    TextC(term, 2.5, buffer, COLOR_WHITE);
+    
+    // Draw entry box at top of dialog using absolute coordinates
+    // Position it well above the keyboard area
+    int entry_x = x + border + 20;
+    int entry_y = y + 80;  // Below the title, well above keyboard
+    int entry_w = w - (border * 2) - 40;
+    int entry_h = 60;
+    
+    // Draw the entry box with inset frame - this clears the background
+    term->RenderFilledFrame(entry_x, entry_y, entry_w, entry_h, 
+                           2, IMAGE_DARK_WOOD, FRAME_INSET | FRAME_2COLOR);
+    
+    // Add cursor to text
+    genericChar display_text[256];
+    if (buffidx > 0 && buffer[0] != '\0')
+    {
+        vt_safe_string::safe_copy(display_text, 256, buffer);
+        vt_safe_string::safe_concat(display_text, 256, "_");
+    }
+    else
+    {
+        vt_safe_string::safe_copy(display_text, 256, "_");
+    }
+    
+    // Render text in RED, positioned better within the entry box
+    int text_x = entry_x + 10;
+    int text_y = entry_y + 38;  // Adjusted for better vertical centering
+    term->RenderText(display_text, text_x, text_y, COLOR_RED, FONT_TIMES_34);
+    
+    return 0;
+}
+
+int OrderCommentDialog::DrawEntry(Terminal *term)
+{
+    FnTrace("OrderCommentDialog::DrawEntry()");
+    
+    RenderEntry(term);
+    // Update the entry box area at top of dialog
+    term->UpdateArea(x + border, y + 80, w - (border * 2), 60);
+    
     return 0;
 }
 

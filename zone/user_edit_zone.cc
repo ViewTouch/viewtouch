@@ -680,6 +680,8 @@ SignalResult JobSecurityZone::Touch(Terminal *term, int tx, int ty)
     if (records <= 0)
         return SIGNAL_IGNORED;
     
+    // Update coordinates first
+    LayoutZone::Touch(term, tx, ty);
 
     // It's bad to disable a job category when there are employee's configured
     // for that job.  We'll allow it, but only after a confirmation.
@@ -696,7 +698,13 @@ SignalResult JobSecurityZone::Touch(Terminal *term, int tx, int ty)
         term->OpenDialog(sdialog);
     }
     else
-        FormZone::Touch(term, tx, ty);
+    {
+        if (keyboard_focus &&
+            keyboard_focus->Touch(term, this, selected_x, selected_y) == SIGNAL_OKAY)
+        {
+            UpdateForm(term, record_no);
+        }
+    }
 
     Draw(term, 0);
     return SIGNAL_OKAY;
@@ -705,15 +713,23 @@ SignalResult JobSecurityZone::Touch(Terminal *term, int tx, int ty)
 SignalResult JobSecurityZone::Mouse(Terminal *term, int action, int mx, int my)
 {
     FnTrace("JobSecurityZone::Mouse()");
-    SignalResult retval = SIGNAL_IGNORED;
     if (records <= 0 || !(action & MOUSE_PRESS))
         return SIGNAL_IGNORED;
 
-    // mouse touches are just touches here
-    if (action & MOUSE_PRESS)
-        retval = Touch(term, mx, my);
-
-    return retval;
+    // Update coordinates
+    LayoutZone::Touch(term, mx, my);
+    
+    keyboard_focus = Find(selected_x, selected_y);
+    if (keyboard_focus)
+    {
+        if (keyboard_focus->Mouse(term, this, action, selected_x, selected_y) == SIGNAL_OKAY)
+        {
+            UpdateForm(term, record_no);
+        }
+        Draw(term, 0);
+        return SIGNAL_OKAY;
+    }
+    return SIGNAL_IGNORED;
 }
 
 int JobSecurityZone::LoadRecord(Terminal *term, int record)

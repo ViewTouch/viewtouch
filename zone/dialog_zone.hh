@@ -411,6 +411,7 @@ public:
     SignalResult Keyboard(Terminal *term, int kb_key, int state) override;
 
     int RenderEntry(Terminal *term);
+    int DrawEntry(Terminal *term);
 };
 
 
