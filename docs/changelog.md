@@ -7,14 +7,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
-- **Dialog Keyboard: Order Comment Dialog Text Entry Improvements (2026-01-03)** *(Work in Progress)*
+- **Dialog Keyboard: Complete OrderCommentDialog Redesign (2026-01-06)**
+  - Completely redesigned keyboard layout with cleaner, more modern appearance
+  - Increased text entry box height from 60px to 80px for better visibility
+  - Changed entry box background to IMAGE_LITE_WOOD with FRAME_INSET for cleaner look
+  - Repositioned text entry box directly below title (y+60) with proper spacing
+  - Fine-tuned text baseline positioning (y+50) for perfect vertical centering in entry box
+  - Improved button spacing with 6px gaps between keys for better visual separation
+  - Adjusted button heights to 85px for optimal touch targets
+  - Text now displays in bold black (FONT_TIMES_34B) with proper contrast
+  - **Files modified**: `zone/dialog_zone.cc` (OrderCommentDialog::Render, RenderEntry, DrawEntry methods)
+  - **Status**: Complete - OrderCommentDialog now has professional, modern appearance with clear text entry
+
+- **Dialog Keyboard: Polish Order Comment Dialog Implementation (2026-01-06)**
+  - Improved text entry visual appearance with lighter background (IMAGE_WOOD instead of IMAGE_DARK_WOOD) for better contrast
+  - Changed text color from RED to BLACK for better readability
+  - Increased font size from FONT_TIMES_34 to FONT_TIMES_34B (bold) for clearer text display
+  - Removed unused variables (col, kw) from Render method
+  - Adjusted text vertical positioning from y+38 to y+45 to better center the larger bold font
+  - **Files modified**: `zone/dialog_zone.cc` (OrderCommentDialog::Render and RenderEntry methods)
+  - **Status**: Complete - OrderCommentDialog now has professional appearance with clear, readable text entry
+
+- **Dialog Keyboard: Order Comment Dialog Text Entry Improvements (2026-01-03)**
   - Redesigned Order Comment dialog with modern 6-row QWERTY keyboard layout (previously had overlapping keyboard layers)
   - Implemented visible text entry box at top of dialog with absolute positioning
-  - Fixed text display updates - text now appears in RED as user types on keyboard
+  - Fixed text display updates - text now appears as user types on keyboard
   - Added proper background clearing to prevent text artifacting when clearing input
   - Adjusted text positioning for better vertical centering in entry box
   - **Files modified**: `zone/dialog_zone.cc` (OrderCommentDialog constructor, Render, RenderEntry, DrawEntry, Signal methods), `zone/dialog_zone.hh`
-  - **Status**: Text entry box is visible and functional, keyboard responds to clicks. Still working on final polish and testing.
 
 - **Form Zone: Fix Double-Touch and Click Area Issues in ListField (2026-01-03)**
   - Fixed double-triggering of field Touch events when using touchscreen input
