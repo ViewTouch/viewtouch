@@ -3463,72 +3463,71 @@ RenderResult OrderCommentDialog::Render(Terminal *term, int update_flag)
     DialogZone::Render(term, update_flag);
     
     int ww = w - (border * 2);
-    int col = color[0];
     
-    // Modern layout with clear spacing
-    // Text entry area at top: 150 pixels
-    // Keyboard area: rest of dialog
+    // Clean modern layout with prominent text entry
+    // Title area: 60 pixels
+    // Text entry: 80 pixels (larger for visibility)
+    // Gap: 20 pixels
+    // Keyboard: remaining space
     
-    int entry_area_height = 150;
-    int keyboard_start_y = y + entry_area_height;
-    int button_height = 90;  // Larger, more touchable buttons
-    int button_gap = 4;
+    int title_height = 60;
+    int entry_height = 80;
+    int gap = 20;
+    int keyboard_start_y = y + title_height + entry_height + gap;
+    int button_height = 85;
+    int button_gap = 6;
     
-    // ========== TEXT ENTRY AREA ==========
-    // Title
+    // ========== TITLE ==========
     if (display_string[0] != '\0')
         TextC(term, 1, term->Translate(display_string), COLOR_BLACK);
     
     // ========== KEYBOARD LAYOUT ==========
     int ky = keyboard_start_y;
-    int kx = 0;
-    int kw = 0;
     
-    // Row 1: Numbers 1-0 (10 buttons, 9 gaps between them)
+    // Row 1: Numbers 1234567890 (10 buttons)
     int num_button_w = (ww - (9 * button_gap)) / 10;
     for (int i = 0; i < 10; ++i)
     {
-        kx = (num_button_w + button_gap) * i;
+        int kx = (num_button_w + button_gap) * i;
         key[i]->SetRegion(x + border + kx, ky, num_button_w, button_height);
     }
     
-    // Row 2: QWERTYUIOP (10 buttons, 9 gaps between them)
+    // Row 2: QWERTYUIOP (10 buttons)
     ky += button_height + button_gap;
-    int qwerty_button_w = (ww - (9 * button_gap)) / 10;
     for (int i = 10; i < 20; ++i)
     {
-        kx = (qwerty_button_w + button_gap) * (i - 10);
-        key[i]->SetRegion(x + border + kx, ky, qwerty_button_w, button_height);
+        int kx = (num_button_w + button_gap) * (i - 10);
+        key[i]->SetRegion(x + border + kx, ky, num_button_w, button_height);
     }
     
-    // Row 3: ASDFGHJKL (9 buttons, 8 gaps, centered)
+    // Row 3: ASDFGHJKL (9 buttons, slightly centered)
     ky += button_height + button_gap;
     int asdf_button_w = (ww - (8 * button_gap)) / 9;
     int asdf_offset = (ww - ((asdf_button_w * 9) + (8 * button_gap))) / 2;
     for (int i = 20; i < 29; ++i)
     {
-        kx = asdf_offset + (asdf_button_w + button_gap) * (i - 20);
+        int kx = asdf_offset + (asdf_button_w + button_gap) * (i - 20);
         key[i]->SetRegion(x + border + kx, ky, asdf_button_w, button_height);
     }
     
-    // Row 4: ZXCVBNM (7 buttons, 6 gaps, centered)
+    // Row 4: ZXCVBNM (7 buttons, centered)
     ky += button_height + button_gap;
     int zxcv_button_w = (ww - (6 * button_gap)) / 7;
     int zxcv_offset = (ww - ((zxcv_button_w * 7) + (6 * button_gap))) / 2;
     for (int i = 29; i < 36; ++i)
     {
-        kx = zxcv_offset + (zxcv_button_w + button_gap) * (i - 29);
+        int kx = zxcv_offset + (zxcv_button_w + button_gap) * (i - 29);
         key[i]->SetRegion(x + border + kx, ky, zxcv_button_w, button_height);
     }
     
-    // Row 5: Action buttons (Clear, Space, Backspace) - 3 buttons, 2 gaps
+    // Row 5: Clear, Space, Backspace (3 wide buttons)
     ky += button_height + button_gap;
     int action_w = (ww - (2 * button_gap)) / 3;
     clearkey->SetRegion(x + border, ky, action_w, button_height);
     spacekey->SetRegion(x + border + action_w + button_gap, ky, action_w, button_height);
     bskey->SetRegion(x + border + (action_w + button_gap) * 2, ky, action_w, button_height);
     
-    // Row 6: Done and Cancel (2 large buttons, 1 gap)
+    // Row 6: Done and Cancel (2 large buttons)
     ky += button_height + button_gap;
     int bottom_w = (ww - button_gap) / 2;
     if (enterkey)
@@ -3536,7 +3535,7 @@ RenderResult OrderCommentDialog::Render(Terminal *term, int update_flag)
     if (cancelkey)
         cancelkey->SetRegion(x + border + bottom_w + button_gap, ky, bottom_w, button_height);
     
-    // Render entry field with text (using zone-relative coordinates like GetTextDialog)
+    // Render text entry box
     RenderEntry(term);
     
     // Render all buttons
@@ -3652,18 +3651,17 @@ int OrderCommentDialog::RenderEntry(Terminal *term)
 {
     FnTrace("OrderCommentDialog::RenderEntry()");
     
-    // Draw entry box at top of dialog using absolute coordinates
-    // Position it well above the keyboard area
-    int entry_x = x + border + 20;
-    int entry_y = y + 80;  // Below the title, well above keyboard
-    int entry_w = w - (border * 2) - 40;
-    int entry_h = 60;
+    // Draw prominent text entry box positioned above keyboard
+    int entry_x = x + border + 10;
+    int entry_y = y + 60;  // Just below title
+    int entry_w = w - (border * 2) - 20;
+    int entry_h = 80;  // Taller for better visibility
     
-    // Draw the entry box with inset frame - this clears the background
+    // Draw entry box with light background for high contrast
     term->RenderFilledFrame(entry_x, entry_y, entry_w, entry_h, 
-                           2, IMAGE_DARK_WOOD, FRAME_INSET | FRAME_2COLOR);
+                           3, IMAGE_LITE_WOOD, FRAME_INSET);
     
-    // Add cursor to text
+    // Prepare display text with cursor
     genericChar display_text[256];
     if (buffidx > 0 && buffer[0] != '\0')
     {
@@ -3675,10 +3673,11 @@ int OrderCommentDialog::RenderEntry(Terminal *term)
         vt_safe_string::safe_copy(display_text, 256, "_");
     }
     
-    // Render text in RED, positioned better within the entry box
-    int text_x = entry_x + 10;
-    int text_y = entry_y + 38;  // Adjusted for better vertical centering
-    term->RenderText(display_text, text_x, text_y, COLOR_RED, FONT_TIMES_34);
+    // Render text centered vertically in the entry box
+    // For a 80px tall box with FONT_TIMES_34B, position baseline at about 50px from top
+    int text_x = entry_x + 15;
+    int text_y = entry_y + 50;
+    term->RenderText(display_text, text_x, text_y, COLOR_BLACK, FONT_TIMES_34B);
     
     return 0;
 }
@@ -3688,8 +3687,8 @@ int OrderCommentDialog::DrawEntry(Terminal *term)
     FnTrace("OrderCommentDialog::DrawEntry()");
     
     RenderEntry(term);
-    // Update the entry box area at top of dialog
-    term->UpdateArea(x + border, y + 80, w - (border * 2), 60);
+    // Update the entry box area
+    term->UpdateArea(x + border, y + 60, w - (border * 2), 80);
     
     return 0;
 }
