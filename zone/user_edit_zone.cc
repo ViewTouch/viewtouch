@@ -397,52 +397,62 @@ int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("UserEditZone::SaveRecord()");
     Employee *e = user;
-    if (e)
+    if (e == nullptr)
     {
-        FormField *f = FieldList();
-        
-        // Critical fix: Add null checks for field iteration to prevent crashes
-        if (f) { f->Get(e->key); f = f->next; }
-        if (f) { f->Get(e->system_name); f = f->next; }
-        if (e->system_name.size() > 0) {
-            e->system_name = AdjustCase(e->system_name.str());
-        }
-        if (f) { f->Get(e->training); f = f->next; }
-        if (f) { f->Get(e->last_name); f = f->next; }
-        if (e->last_name.size() > 0) {
-            e->last_name = AdjustCase(e->last_name.str());
-        }
-        if (f) { f->Get(e->first_name); f = f->next; }
-        if (e->first_name.size() > 0) {
-            e->first_name = AdjustCase(e->first_name.str());
-        }
-        if (f) { f->Get(e->address); f = f->next; }
-        if (e->address.size() > 0) {
-            e->address = AdjustCase(e->address.str());
-        }
-        if (f) { f->Get(e->city); f = f->next; }
-        if (e->city.size() > 0) {
-            e->city = AdjustCase(e->city.str());
-        }
-        if (f) { f->Get(e->state); f = f->next; }
-        if (e->state.size() > 0) {
-            e->state = StringToUpper(e->state.str());
-        }
-        if (f) { f->Get(e->phone); f = f->next; }
-        if (f) { f->Get(e->ssn); f = f->next; }
-        if (f) { f->Get(e->description); f = f->next; }
-        if (f) { f->Get(e->employee_no); f = f->next; }
+        ReportError("UserEditZone::SaveRecord: user is NULL");
+        return 1;
+    }
+    
+    FormField *f = FieldList();
+    if (f == nullptr)
+    {
+        ReportError("UserEditZone::SaveRecord: FieldList returned NULL");
+        return 1;
+    }
+    
+    // Critical fix: Add null checks for field iteration to prevent crashes
+    if (f) { f->Get(e->key); f = f->next; }
+    if (f) { f->Get(e->system_name); f = f->next; }
+    if (e->system_name.size() > 0) {
+        e->system_name = AdjustCase(e->system_name.str());
+    }
+    if (f) { f->Get(e->training); f = f->next; }
+    if (f) { f->Get(e->last_name); f = f->next; }
+    if (e->last_name.size() > 0) {
+        e->last_name = AdjustCase(e->last_name.str());
+    }
+    if (f) { f->Get(e->first_name); f = f->next; }
+    if (e->first_name.size() > 0) {
+        e->first_name = AdjustCase(e->first_name.str());
+    }
+    if (f) { f->Get(e->address); f = f->next; }
+    if (e->address.size() > 0) {
+        e->address = AdjustCase(e->address.str());
+    }
+    if (f) { f->Get(e->city); f = f->next; }
+    if (e->city.size() > 0) {
+        e->city = AdjustCase(e->city.str());
+    }
+    if (f) { f->Get(e->state); f = f->next; }
+    if (e->state.size() > 0) {
+        e->state = StringToUpper(e->state.str());
+    }
+    if (f) { f->Get(e->phone); f = f->next; }
+    if (f) { f->Get(e->ssn); f = f->next; }
+    if (f) { f->Get(e->description); f = f->next; }
+    if (f) { f->Get(e->employee_no); f = f->next; }
 
-        for (JobInfo *j = e->JobList(); j != nullptr && f != nullptr; j = j->next)
-        {
-            f = f->next;
-            if (f) { f->Get(j->job); f = f->next; }
-            if (f) { f->Get(j->pay_rate); f = f->next; }
-            if (f) { f->GetPrice(j->pay_amount); f = f->next; }
-            if (f) { f->Get(j->starting_page); f = f->next; }
-            if (f) { f->Get(j->dept_code); f = f->next; }
-            if (f) { f = f->next; }
-        }
+    for (JobInfo *j = e->JobList(); j != nullptr && f != nullptr; j = j->next)
+    {
+        // Check if we can advance to next field before dereferencing
+        if (f == nullptr) break;
+        f = f->next;
+        if (f) { f->Get(j->job); f = f->next; }
+        if (f) { f->Get(j->pay_rate); f = f->next; }
+        if (f) { f->GetPrice(j->pay_amount); f = f->next; }
+        if (f) { f->Get(j->starting_page); f = f->next; }
+        if (f) { f->Get(j->dept_code); f = f->next; }
+        if (f) { f = f->next; }
     }
 
     // Critical fix: Check if employee exists before accessing its fields

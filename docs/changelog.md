@@ -25,6 +25,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Status**: Complete - comprehensive test coverage for time operations and error handling
 
 ### Fixed
+- **User Edit Zone: Fix NULL Pointer Dereference in SaveRecord (2026-01-07)**
+  - Fixed segmentation fault (SIGSEGV) in `UserEditZone::SaveRecord()` when iterating through form fields
+  - **Root Cause**: Loop was checking `f != nullptr` in condition but immediately dereferencing `f->next` without revalidation
+  - **Solution**: Added explicit NULL check before dereferencing pointer in job info field iteration loop
+  - Added early return with error logging when user or field list is NULL
+  - Improved error handling and logging for easier debugging of similar issues
+  - **Crash Location**: `TextField::Get(int&)` called from field iteration in SaveRecord
+  - **Files modified**: `zone/user_edit_zone.cc` (`UserEditZone::SaveRecord()`)
+  - **Status**: Complete - prevents crash when form fields are incomplete or NULL during employee record saving
+
+### Fixed
 - **Dialog Keyboard: Complete OrderCommentDialog Redesign (2026-01-06)**
   - Completely redesigned keyboard layout with cleaner, more modern appearance
   - Increased text entry box height from 60px to 80px for better visibility
