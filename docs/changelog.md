@@ -25,15 +25,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Status**: Complete - comprehensive test coverage for time operations and error handling
 
 ### Fixed
-- **User Edit Zone: Fix NULL Pointer Dereference in SaveRecord (2026-01-07)**
-  - Fixed segmentation fault (SIGSEGV) in `UserEditZone::SaveRecord()` when iterating through form fields
-  - **Root Cause**: Loop was checking `f != nullptr` in condition but immediately dereferencing `f->next` without revalidation
-  - **Solution**: Added explicit NULL check before dereferencing pointer in job info field iteration loop
-  - Added early return with error logging when user or field list is NULL
-  - Improved error handling and logging for easier debugging of similar issues
-  - **Crash Location**: `TextField::Get(int&)` called from field iteration in SaveRecord
-  - **Files modified**: `zone/user_edit_zone.cc` (`UserEditZone::SaveRecord()`)
-  - **Status**: Complete - prevents crash when form fields are incomplete or NULL during employee record saving
+- **User Edit Zone: Fix NULL and Dangling Pointer Issues in Employee Save Operations (2026-01-07)**
+  - Fixed critical segmentation fault (SIGSEGV) when saving employee records in User Edit button type
+  - **Root Causes Identified**:
+    1. `SaveRecord()` called with NULL/dangling user pointer when toggling Active/Inactive views
+    2. `SaveRecord()` called with invalid user pointer during job filter updates
+    3. Loop in `SaveRecord()` was advancing field pointer without null checks causing crashes on incomplete forms
+  - **Solutions Implemented**:
+    - Added `user != nullptr` validation before calling `SaveRecord()` in `Signal()` (active/inactive toggle)
+    - Added `user != nullptr` validation before calling `SaveRecord()` in `Update()` (job filter changes)
+    - Enhanced `SaveRecord()` field iteration loop with proper null checks and early breaks
+    - Added dangling pointer detection using AddressSanitizer poison value detection
+    - Improved error logging to distinguish between NULL pointers and freed memory access
+  - **Crash Detection**: AddressSanitizer identified access to freed memory (`0xbebebebebebebebe`)
+  - **Files modified**: `zone/user_edit_zone.cc` (SaveRecord, Signal, Update methods)
+  - **Testing**: Validated with Debug build + AddressSanitizer to catch memory issues
+  - **Status**: Complete - User Edit save operations now safely handle edge cases without crashes
 
 ### Fixed
 - **Dialog Keyboard: Complete OrderCommentDialog Redesign (2026-01-06)**

@@ -156,7 +156,8 @@ SignalResult UserEditZone::Signal(Terminal *term, const char* message)
     {
     case 0:  // active
     case 1:  // inactive
-        if (records > 0)
+        // Only save if we have a valid user loaded
+        if (records > 0 && user != nullptr)
             SaveRecord(term, record_no, 0);
         show_list = 1;
         view_active ^= 1;
@@ -287,7 +288,9 @@ int UserEditZone::Update(Terminal *term, int update_message, const char* value)
 {
     if (update_message & UPDATE_JOB_FILTER)
     {
-        SaveRecord(term, record_no, 0);
+        // Only save if we have a valid user loaded
+        if (user != nullptr)
+            SaveRecord(term, record_no, 0);
         record_no = 0;
         show_list = 1;
         Draw(term, 1);
@@ -403,6 +406,22 @@ int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
         return 1;
     }
     
+    // Critical fix: Verify the user pointer is still valid by checking if it exists in the database
+    // This prevents crashes from dangling pointers (user was deleted elsewhere)
+    Employee *verify = term->system_data->user_db.FindByRecord(term, record, view_active);
+    if (verify != e)
+    {
+        ReportError("UserEditZone::SaveRecord: user pointer is invalid (dangling pointer detected)");
+        // Reload the correct user
+        user = verify;
+        e = user;
+        if (e == nullptr)
+        {
+            ReportError("UserEditZone::SaveRecord: no valid user found at this record");
+            return 1;
+        }
+    }
+    
     FormField *f = FieldList();
     if (f == nullptr)
     {
@@ -444,14 +463,14 @@ int UserEditZone::SaveRecord(Terminal *term, int record, int write_file)
 
     for (JobInfo *j = e->JobList(); j != nullptr && f != nullptr; j = j->next)
     {
-        // Check if we can advance to next field before dereferencing
-        if (f == nullptr) break;
-        f = f->next;
-        if (f) { f->Get(j->job); f = f->next; }
-        if (f) { f->Get(j->pay_rate); f = f->next; }
-        if (f) { f->GetPrice(j->pay_amount); f = f->next; }
-        if (f) { f->Get(j->starting_page); f = f->next; }
-        if (f) { f->Get(j->dept_code); f = f->next; }
+        // Skip the newline/label field before job fields
+        if (f) { f = f->next; } else { break; }
+        if (f) { f->Get(j->job); f = f->next; } else { break; }
+        if (f) { f->Get(j->pay_rate); f = f->next; } else { break; }
+        if (f) { f->GetPrice(j->pay_amount); f = f->next; } else { break; }
+        if (f) { f->Get(j->starting_page); f = f->next; } else { break; }
+        if (f) { f->Get(j->dept_code); f = f->next; } else { break; }
+        // Skip the button field after job fields
         if (f) { f = f->next; }
     }
 
