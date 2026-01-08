@@ -29,12 +29,12 @@ TEST_CASE("Mock classes functionality", "[mocks]")
         MockSettings settings;
 
         // Check default tax rates
-        REQUIRE(settings.tax_food == 0.0825f);
-        REQUIRE(settings.tax_alcohol == 0.0f);
+        REQUIRE(settings.tax_food == Catch::Approx(0.0825f));
+        REQUIRE(settings.tax_alcohol == Catch::Approx(0.0f));
 
         // Test setting tax rates
         settings.SetTaxRate(0, 1000);  // 10%
-        REQUIRE(settings.tax_food == 0.1f);
+        REQUIRE(settings.tax_food == Catch::Approx(0.1f));
 
         // Test drawer mode
         settings.SetDrawerMode(1);
