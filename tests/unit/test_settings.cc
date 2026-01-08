@@ -21,17 +21,17 @@ TEST_CASE("Settings basic functionality", "[settings]")
         MockSettings settings;
 
         settings.SetTaxRate(0, 1000);  // 10%
-        REQUIRE(settings.tax_food == 0.1f);
+        REQUIRE(settings.tax_food == Catch::Approx(0.1f));
 
         settings.SetTaxRate(1, 500);   // 5%
-        REQUIRE(settings.tax_alcohol == 0.05f);
+        REQUIRE(settings.tax_alcohol == Catch::Approx(0.05f));
 
         // Test bounds checking (should not crash)
         settings.SetTaxRate(-1, 100);
         settings.SetTaxRate(4, 100);
         // Values should remain unchanged
-        REQUIRE(settings.tax_food == 0.1f);
-        REQUIRE(settings.tax_alcohol == 0.05f);
+        REQUIRE(settings.tax_food == Catch::Approx(0.1f));
+        REQUIRE(settings.tax_alcohol == Catch::Approx(0.05f));
     }
 
     SECTION("Drawer mode setting")
@@ -54,13 +54,13 @@ TEST_CASE("Settings validation", "[settings]")
 
         // Test valid tax rates (0% to 99%)
         settings.SetTaxRate(0, 0);     // 0%
-        REQUIRE(settings.tax_food == 0.0f);
+        REQUIRE(settings.tax_food == Catch::Approx(0.0f));
 
         settings.SetTaxRate(0, 2500);  // 25%
-        REQUIRE(settings.tax_food == 0.25f);
+        REQUIRE(settings.tax_food == Catch::Approx(0.25f));
 
         settings.SetTaxRate(0, 9900);  // 99%
-        REQUIRE(settings.tax_food == 0.99f);
+        REQUIRE(settings.tax_food == Catch::Approx(0.99f));
     }
 
     SECTION("Invalid tax rates are handled")

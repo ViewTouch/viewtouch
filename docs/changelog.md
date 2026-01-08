@@ -6,6 +6,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+- **Testing: Comprehensive Test Suite Expansion (2026-01-07)**
+  - Added 26 new test cases covering time/date operations and error handling
+  - Created `test_time_operations.cc` with tests for TimeInfo class operations
+    * Time arithmetic (seconds, minutes, days, weeks, months, years)
+    * Comparison operators and date ordering
+    * Business logic scenarios (shift scheduling, time ranges)
+    * String operations and edge cases
+  - Created `test_error_handler.cc` with tests for error management
+    * ErrorInfo construction with severity levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    * Error categories (GENERAL, SYSTEM, NETWORK, DATABASE, UI, PRINTER, CREDIT_CARD, FILE_IO, MEMORY)
+    * Context tracking (file, line, function, error code)
+    * Real-world error scenarios (database, printer, payment, memory, file I/O errors)
+  - Test suite now contains 80 test cases with 568 assertions (100% passing)
+  - **Files added**: `tests/unit/test_time_operations.cc`, `tests/unit/test_error_handler.cc`, `tests/unit/test_conf_file.cc` (API verification), `tests/unit/test_report_generation.cc` (constants verification)
+  - **Files modified**: `tests/CMakeLists.txt`
+  - **Status**: Complete - comprehensive test coverage for time operations and error handling
+
+### Fixed
+- **User Edit Zone: Fix NULL and Dangling Pointer Issues in Employee Save Operations (2026-01-07)**
+  - Fixed critical segmentation fault (SIGSEGV) when saving employee records in User Edit button type
+  - **Root Causes Identified**:
+    1. `SaveRecord()` called with NULL/dangling user pointer when toggling Active/Inactive views
+    2. `SaveRecord()` called with invalid user pointer during job filter updates
+    3. Loop in `SaveRecord()` was advancing field pointer without null checks causing crashes on incomplete forms
+  - **Solutions Implemented**:
+    - Added `user != nullptr` validation before calling `SaveRecord()` in `Signal()` (active/inactive toggle)
+    - Added `user != nullptr` validation before calling `SaveRecord()` in `Update()` (job filter changes)
+    - Enhanced `SaveRecord()` field iteration loop with proper null checks and early breaks
+    - Added dangling pointer detection using AddressSanitizer poison value detection
+    - Improved error logging to distinguish between NULL pointers and freed memory access
+  - **Crash Detection**: AddressSanitizer identified access to freed memory (`0xbebebebebebebebe`)
+  - **Files modified**: `zone/user_edit_zone.cc` (SaveRecord, Signal, Update methods)
+  - **Testing**: Validated with Debug build + AddressSanitizer to catch memory issues
+  - **Status**: Complete - User Edit save operations now safely handle edge cases without crashes
+
 ### Fixed
 - **Dialog Keyboard: Complete OrderCommentDialog Redesign (2026-01-06)**
   - Completely redesigned keyboard layout with cleaner, more modern appearance
