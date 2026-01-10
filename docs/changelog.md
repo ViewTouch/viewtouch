@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Button Highlighting Bug with Lazy Texture Loading (2026-01-09)**
+  - Fixed buttons incorrectly showing highlighted state when they shouldn't be
+  - **Root Cause**: The lazy texture loading introduced in the memory optimization commit conflicted with the static tile cache in `Layer::Rectangle()`. When textures were loaded on-demand, the cache could cause incorrect texture rendering.
+  - **Solution**: Added `PreloadAllTextures()` function that loads all textures at startup, ensuring consistent Pixmap values before any rendering occurs.
+  - **Files modified**: `term/term_view.cc`, `term/term_view.hh`
+
 ### Added
 - **Performance: Object Pool System for Memory Efficiency (2026-01-09)**
   - Created `src/core/object_pool.hh` with thread-safe object pooling templates

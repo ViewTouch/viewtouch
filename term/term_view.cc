@@ -3957,6 +3957,10 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     MainLayer = l;
     ResetView();
 
+    // Preload all textures to prevent button highlighting bugs.
+    // The static cache optimization in Layer::Rectangle() can cause
+    // incorrect texture rendering if textures are lazy-loaded.
+    PreloadAllTextures();
 
     // Performance monitoring removed for production efficiency
     ReadScreenSaverPix();
@@ -4455,6 +4459,20 @@ void ClearTextureCache() noexcept
             XFreePixmap(Dis, Texture[i]);
             Texture[i] = 0;
         }
+    }
+}
+
+void PreloadAllTextures() noexcept
+{
+    FnTrace("PreloadAllTextures()");
+    
+    // Preload all textures at startup to prevent rendering bugs.
+    // The static cache in Layer::Rectangle() can cause buttons to show
+    // incorrect textures (e.g., highlighted when they shouldn't be) when
+    // lazy loading is used. By preloading all textures, we ensure that
+    // GetTexture() always returns consistent Pixmap values.
+    for (int i = 0; i < IMAGE_COUNT; ++i) {
+        (void)GetTexture(i);  // Load and cache each texture
     }
 }
 
