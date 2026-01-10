@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Button Highlighting Bug - Remove Broken Static Cache (2026-01-10)**
+  - Fixed buttons incorrectly showing highlighted/yellow state
+  - **Root Cause**: The static tile cache optimization in `Layer::Rectangle()` was fundamentally broken. Static variables persisted across all calls, causing stale cache values to be used when rendering buttons with different textures.
+  - **Solution**: Removed the static cache optimization entirely. Each `Rectangle()` call now properly sets the tile and origin, ensuring correct texture rendering.
+  - **Files modified**: `term/layer.cc`
+
 - **Button Highlighting Bug with Lazy Texture Loading (2026-01-09)**
   - Fixed buttons incorrectly showing highlighted state when they shouldn't be
   - **Root Cause**: The lazy texture loading introduced in the memory optimization commit conflicted with the static tile cache in `Layer::Rectangle()`. When textures were loaded on-demand, the cache could cause incorrect texture rendering.
