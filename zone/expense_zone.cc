@@ -71,8 +71,6 @@ ExpenseZone::ExpenseZone()
 
 ExpenseZone::~ExpenseZone()
 {
-    if (report != nullptr)
-        delete report;
     if (saved_expense != nullptr)
         delete saved_expense;
 }
@@ -116,10 +114,8 @@ RenderResult ExpenseZone::Render(Terminal *term, int update_flag)
     // generate and display the list of expenses
     if (update || update_flag || (report == nullptr))
     {
-        if (report != nullptr)
-            delete report;
-        report = new Report;
-        ListReport(term, report);
+        report = std::make_unique<Report>();
+        ListReport(term, report.get());
     }
     if (show_expense)
         report->selected_line = record_no;
@@ -336,11 +332,7 @@ int ExpenseZone::UpdateForm(Terminal *term, int record)
 
     if (changed)
     {
-        if (report != nullptr)
-        {
-            delete report;
-            report = nullptr;
-        }
+        report.reset();
         update = 1;
     }
     return 0;
@@ -554,9 +546,7 @@ int ExpenseZone::SaveRecord(Terminal *term, int record, int write_file)
         record_no = records - 1;
     // Update the drawer balance entry
     term->system_data->expense_db.AddDrawerPayments(dlist);
-    if (report != nullptr)
-        delete report;
-    report = nullptr;
+    report.reset();
     expense = nullptr;
     show_expense = 0;
     update = 1;
@@ -657,8 +647,7 @@ int ExpenseZone::Search(Terminal *term, int record, const genericChar* word)
     {
         record_no = -1;
         show_expense = 0;
-        delete report;
-        report = nullptr;
+        report.reset();
     }
     return 1;
 }

@@ -410,6 +410,7 @@ int SetupConnection(const std::string &socket_file)
     else if (bind(dev, reinterpret_cast<struct sockaddr*>(&server_adr), SUN_LEN(&server_adr)) < 0)
     {
         logmsg(LOG_ERR, "Failed to bind socket '%s'", SOCKET_FILE.c_str());
+        close(dev);  // Fix socket leak on bind failure
     }
     else
     {

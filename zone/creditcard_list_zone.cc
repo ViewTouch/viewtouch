@@ -97,10 +97,8 @@ RenderResult CreditCardListZone::Render(Terminal *term, int update_flag)
 
     if (update || update_flag || (report == nullptr))
     {
-        if (report != nullptr)
-            delete report;
-        report = new Report;
-        ListReport(term, report);
+        report = std::make_unique<Report>();
+        ListReport(term, report.get());
     }
 
     if (report != nullptr)

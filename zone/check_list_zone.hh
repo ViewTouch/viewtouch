@@ -24,11 +24,13 @@
 #include "form_zone.hh"
 #include "layout_zone.hh"
 
+#include <memory>
 
 /**** Types ****/
 class Archive;
 class Check;
 class Employee;
+class Report;
 
 class CheckListZone : public LayoutZone
 {
@@ -66,7 +68,7 @@ class CheckEditZone : public FormZone
     int page;
     int my_update;
     Check *check;
-    Report *report;
+    std::unique_ptr<Report> report;
     int view;
 
 public:

@@ -41,7 +41,6 @@ CDUZone::CDUZone()
     AddSubmit("Submit", 10);
 
     record_no = -1;
-    report = nullptr;
     page = 0;
     no_line = 1;
     lines_shown = 0;
@@ -49,11 +48,7 @@ CDUZone::CDUZone()
     cdustring = nullptr;
 }
 
-CDUZone::~CDUZone()
-{
-    if (report != nullptr)
-        delete report;
-}
+CDUZone::~CDUZone() = default;
 
 RenderResult CDUZone::Render(Terminal *term, int update_flag)
 {
@@ -80,10 +75,8 @@ RenderResult CDUZone::Render(Terminal *term, int update_flag)
 
     if (update || update_flag || (report == nullptr))
     {
-        if (report != nullptr)
-            delete report;
-        report = new Report;
-        ListReport(term, report);
+        report = std::make_unique<Report>();
+        ListReport(term, report.get());
     }
     if (show_item)
         report->selected_line = record_no;
@@ -260,11 +253,7 @@ int CDUZone::UpdateForm(Terminal *term, int record)
     }
     if (changed)
     {
-        if (report != nullptr)
-        {
-            delete report;
-            report = nullptr;
-        }
+        report.reset();
         update = 1;
     }
     return 0;
@@ -353,9 +342,7 @@ int CDUZone::SaveRecord(Terminal *term, int record, int write_file)
     records = RecordCount(term);
     if (record_no >= records)
         record_no = records - 1;
-    if (report != nullptr)
-        delete report;
-    report = nullptr;
+    report.reset();
     cdustring = nullptr;
     show_item = 0;
     update = 1;
@@ -436,8 +423,7 @@ int CDUZone::Search(Terminal *term, int record, const genericChar* word)
     {
         record_no = -1;
         show_item = 0;
-        delete report;
-        report = nullptr;
+        report.reset();
     }
     return 1;
 }

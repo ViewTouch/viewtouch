@@ -157,6 +157,7 @@ public:
     virtual int SetTitle(const std::string &title);
     virtual int Open();
     virtual int Close();
+    virtual void CloseAsync();  // Non-blocking version - fire and forget
     virtual int ParallelPrint();
     virtual int LPDPrint();
     virtual int SocketPrint();                           // print to TCP socket

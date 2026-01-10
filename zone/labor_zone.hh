@@ -23,6 +23,7 @@
 
 #include "form_zone.hh"
 
+#include <memory>
 
 /**** Types ****/
 class Employee;
@@ -33,7 +34,7 @@ class WorkEntry;
 // Employee timeclock viewing/editing
 class LaborZone : public FormZone
 {
-    Report      *report;
+    std::unique_ptr<Report> report;
     LaborPeriod *period;
     WorkEntry   *work;
     int          page;

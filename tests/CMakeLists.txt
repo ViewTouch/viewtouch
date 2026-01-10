@@ -14,6 +14,7 @@ add_executable(vt_tests
     unit/test_sales_tax_calculations.cc
     unit/test_time_operations.cc
     unit/test_error_handler.cc
+    unit/test_list_utility.cc
     mocks/mock_terminal.cc
     mocks/mock_settings.cc
 )

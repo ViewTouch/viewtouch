@@ -26,6 +26,8 @@
 #include "form_zone.hh"
 #include "utility.hh"
 
+#include <memory>
+
 #define CDU_ZONE_COLUMNS  2
 
 class CDUZone : public FormZone
@@ -34,7 +36,7 @@ class CDUZone : public FormZone
     Flt list_footer;
     Flt list_spacing;
     int lines_shown;
-    Report *report;
+    std::unique_ptr<Report> report;
     int page;
     int show_item;
     CDUString *cdustring;

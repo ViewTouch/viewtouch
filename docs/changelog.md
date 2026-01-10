@@ -6,6 +6,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Button Highlighting Bug - Remove Broken Static Cache (2026-01-10)**
+  - Fixed buttons incorrectly showing highlighted/yellow state
+  - **Root Cause**: The static tile cache optimization in `Layer::Rectangle()` was fundamentally broken. Static variables persisted across all calls, causing stale cache values to be used when rendering buttons with different textures.
+  - **Solution**: Removed the static cache optimization entirely. Each `Rectangle()` call now properly sets the tile and origin, ensuring correct texture rendering.
+  - **Files modified**: `term/layer.cc`
+
+- **Button Highlighting Bug with Lazy Texture Loading (2026-01-09)**
+  - Fixed buttons incorrectly showing highlighted state when they shouldn't be
+  - **Root Cause**: The lazy texture loading introduced in the memory optimization commit conflicted with the static tile cache in `Layer::Rectangle()`. When textures were loaded on-demand, the cache could cause incorrect texture rendering.
+  - **Solution**: Added `PreloadAllTextures()` function that loads all textures at startup, ensuring consistent Pixmap values before any rendering occurs.
+  - **Files modified**: `term/term_view.cc`, `term/term_view.hh`
+
+### Added
+- **Performance: Object Pool System for Memory Efficiency (2026-01-09)**
+  - Created `src/core/object_pool.hh` with thread-safe object pooling templates
+  - `ObjectPool<T>`: Reusable object pool with configurable max size (default 64)
+    * Thread-safe acquire/release with mutex protection
+    * Pre-allocation support via `reserve()` method
+    * Automatic cleanup of pooled objects on destruction
+  - `PooledObject<T>`: RAII wrapper for automatic return to pool
+  - `BufferPool<Size>`: Specialized pool for fixed-size char buffers
+  - Reduces allocation overhead and memory fragmentation on resource-constrained devices
+  - **Files added**: `src/core/object_pool.hh`
+  - **Target**: Raspberry Pi CM5 with 2GB RAM optimization
+
+### Improved
+- **Performance: Settings Pointer Caching (2026-01-09)**
+  - Cached `term->GetSettings()` calls at function start in hot paths
+  - `zone/dialog_zone.cc`: `CreditCardDialog::Init()` - cached 4 consecutive GetSettings() calls
+  - `zone/payout_zone.cc`: `EndDayZone::Render()` - cached settings pointer for multiple accesses
+  - Reduces function call overhead on resource-constrained devices
+  - **Files modified**: `zone/dialog_zone.cc`, `zone/payout_zone.cc`
+
 ### Added
 - **Testing: Comprehensive Test Suite Expansion (2026-01-07)**
   - Added 26 new test cases covering time/date operations and error handling

@@ -30,11 +30,12 @@ class SList
 {
     T *list_head{nullptr};
     T *list_tail{nullptr};
+    int cached_count{0};  // Cached count for O(1) Count()
 
 public:
     // Constructors
     SList() = default;
-    explicit SList(T *item) : list_head(item), list_tail(item) {}
+    explicit SList(T *item) : list_head(item), list_tail(item), cached_count(item ? 1 : 0) {}
     
     // Delete copy operations (use move instead)
     SList(const SList&) = delete;
@@ -44,9 +45,11 @@ public:
     SList(SList&& other) noexcept 
         : list_head(other.list_head)
         , list_tail(other.list_tail)
+        , cached_count(other.cached_count)
     {
         other.list_head = nullptr;
         other.list_tail = nullptr;
+        other.cached_count = 0;
     }
     
     SList& operator=(SList&& other) noexcept
@@ -56,8 +59,10 @@ public:
             Purge();
             list_head = other.list_head;
             list_tail = other.list_tail;
+            cached_count = other.cached_count;
             other.list_head = nullptr;
             other.list_tail = nullptr;
+            other.cached_count = 0;
         }
         return *this;
     }
@@ -88,6 +93,7 @@ public:
             list_tail = item;
 
         list_head = item;
+        ++cached_count;
         return 0;
     }
 
@@ -104,6 +110,7 @@ public:
         else
             list_head = item;
         list_tail = item;
+        ++cached_count;
         return 0;
     }
 
@@ -117,6 +124,7 @@ public:
 
         item->next = node->next;
         node->next = item;
+        ++cached_count;
         return 0;
     }
 
@@ -130,6 +138,7 @@ public:
             delete tmp;
         }
         list_tail = nullptr;
+        cached_count = 0;
     }
 
     int Remove(T *node) noexcept
@@ -147,18 +156,35 @@ public:
                 if (list_tail == node)
                     list_tail = p;
                 node->next = nullptr;
+                --cached_count;
                 return 0;
             }
         return 1;
     }
 
+    /**
+     * @brief Removes item from list AND deletes it.
+     * @param item The item to remove and delete
+     * @return 0 on success, 1 on failure
+     * @note Use this when the SList owns the item's memory.
+     *       Use Remove() alone when ownership is transferred elsewhere.
+     */
+    int RemoveAndDelete(T *item) noexcept
+    {
+        FnTrace("SList::RemoveAndDelete()");
+        if (item == nullptr)
+            return 1;
+        
+        int result = Remove(item);
+        if (result == 0)
+            delete item;
+        return result;
+    }
+
     [[nodiscard]] int Count() const noexcept
     {
         FnTrace("SList::Count()");
-        int count = 0;
-        for (T *n = list_head; n != nullptr; n = n->next)
-            ++count;
-        return count;
+        return cached_count;  // O(1) instead of O(n)
     }
 
     [[nodiscard]] T *Index(int i) noexcept
@@ -182,6 +208,7 @@ class DList
 {
     T *list_head{nullptr};
     T *list_tail{nullptr};
+    int cached_count{0};  // Cached count for O(1) Count()
     
     T *InternalSort(T *list, int (*cmp)(T *, T *)) noexcept
     {
@@ -265,7 +292,7 @@ class DList
 public:
     // Constructors
     DList() = default;
-    explicit DList(T *item) : list_head(item), list_tail(item) {}
+    explicit DList(T *item) : list_head(item), list_tail(item), cached_count(item ? 1 : 0) {}
     
     // Delete copy operations
     DList(const DList&) = delete;
@@ -275,9 +302,11 @@ public:
     DList(DList&& other) noexcept 
         : list_head(other.list_head)
         , list_tail(other.list_tail)
+        , cached_count(other.cached_count)
     {
         other.list_head = nullptr;
         other.list_tail = nullptr;
+        other.cached_count = 0;
     }
     
     DList& operator=(DList&& other) noexcept
@@ -287,8 +316,10 @@ public:
             Purge();
             list_head = other.list_head;
             list_tail = other.list_tail;
+            cached_count = other.cached_count;
             other.list_head = nullptr;
             other.list_tail = nullptr;
+            other.cached_count = 0;
         }
         return *this;
     }
@@ -324,6 +355,7 @@ public:
         else
             list_tail = item;
         list_head = item;
+        ++cached_count;
         return 0;
     }
 
@@ -340,6 +372,7 @@ public:
         else
             list_head = item;
         list_tail = item;
+        ++cached_count;
         return 0;
     }
 
@@ -355,6 +388,7 @@ public:
         item->next = node->next;
         node->next->fore = item;
         node->next = item;
+        ++cached_count;
         return 0;
     }
 
@@ -370,6 +404,7 @@ public:
         item->fore = node->fore;
         item->fore->next = item;
         node->fore = item;
+        ++cached_count;
         return 0;
     }
 
@@ -407,6 +442,7 @@ public:
             item->fore->next = item->next;
         item->fore = nullptr;
         item->next = nullptr;
+        --cached_count;
         return 0;
     }
 
@@ -421,6 +457,25 @@ public:
         return 1;
     }
 
+    /**
+     * @brief Removes item from list AND deletes it.
+     * @param item The item to remove and delete
+     * @return 0 on success, 1 on failure
+     * @note Use this when the DList owns the item's memory.
+     *       Use Remove() alone when ownership is transferred elsewhere.
+     */
+    int RemoveAndDelete(T *item) noexcept
+    {
+        FnTrace("DList::RemoveAndDelete()");
+        if (item == nullptr)
+            return 1;
+        
+        int result = Remove(item);
+        if (result == 0)
+            delete item;
+        return result;
+    }
+
     void Purge() noexcept
     {
         FnTrace("DList::Purge()");
@@ -432,15 +487,13 @@ public:
             delete tmp;
         }
         list_tail = nullptr;
+        cached_count = 0;
     }
 
     [[nodiscard]] int Count() const noexcept
     {
         FnTrace("DList::Count()");
-        int count = 0;
-        for (T *n = list_head; n != nullptr; n = n->next)
-            ++count;
-        return count;
+        return cached_count;  // O(1) instead of O(n)
     }
 
     [[nodiscard]] T *Index(int i) noexcept

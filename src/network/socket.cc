@@ -309,6 +309,7 @@ int Listen(int port, int nonblocking)
     {
         vt::cpp23::format_to_buffer(str, STRLENGTH, "setsockopt port {}", port);
         perror(str);
+        close(sockfd);
         return -1;
     }
     
@@ -321,6 +322,7 @@ int Listen(int port, int nonblocking)
     {
         vt::cpp23::format_to_buffer(str, STRLENGTH, "bind port {}", port);
         perror(str);
+        close(sockfd);
         return -1;
     }
     
@@ -328,6 +330,7 @@ int Listen(int port, int nonblocking)
     {
         vt::cpp23::format_to_buffer(str, STRLENGTH, "listen port {}", port);
         perror(str);
+        close(sockfd);
         return -1;
     }
     return sockfd;

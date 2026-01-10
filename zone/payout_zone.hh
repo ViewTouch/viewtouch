@@ -23,6 +23,7 @@
 
 #include "layout_zone.hh"
 
+#include <memory>
 
 /**** Types ****/
 class Archive;
@@ -40,7 +41,7 @@ class PayoutZone : public LayoutZone
     Archive *archive;
     TipDB   *tip_db;
     Flt      spacing;
-    Report  *report;
+    std::unique_ptr<Report> report;
 
 public:
     // Constructor
