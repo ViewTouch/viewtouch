@@ -66,13 +66,7 @@ ReportZone::ReportZone()
 }
 
 // Destructor
-ReportZone::~ReportZone()
-{
-    if (report)
-        delete report;
-    if (temp_report)
-        delete temp_report;
-}
+ReportZone::~ReportZone() = default;
 
 // Member Functions
 RenderResult ReportZone::Render(Terminal *term, int update_flag)
@@ -81,7 +75,7 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
     Employee *e = term->user;
     System *sys = term->system_data;
     Settings *s = &(sys->settings);
-    Report *r = temp_report;
+    Report *r = temp_report.get();
 
     // allow no user signin for kitchen display
     if (e == nullptr && report_type != REPORT_CHECK)
@@ -92,19 +86,14 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
         update_flag = 0;
         if (r->is_complete)
         {
-            if (report)
-                delete report;
-            report = r;
-            temp_report = nullptr;
+            report = std::move(temp_report);
             if (printing_to_printer)
             {
                 Print(term, printer_dest);
                 printing_to_printer = 0;
-                if (report != nullptr)
-                    delete report;
-                report = nullptr;
-                temp_report = new Report();
-                sys->RoyaltyReport(term, day_start, day_end, term->archive, temp_report, this);
+                report.reset();
+                temp_report = std::make_unique<Report>();
+                sys->RoyaltyReport(term, day_start, day_end, term->archive, temp_report.get(), this);
                 return RENDER_OKAY;
             }
         }
@@ -116,8 +105,7 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
     {
         if (report)
         {
-            delete report;
-            report = nullptr;
+            report.reset();
             // page = 0;  // <--- REMOVE THIS LINE!
         }
 
@@ -229,68 +217,68 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
                 d = term->FindDrawer();
         }
 
-        temp_report = new Report;
+        temp_report = std::make_unique<Report>();
         switch (report_type)
         {
         case REPORT_DRAWER:
             if (term->server == nullptr)
-                sys->DrawerSummaryReport(term, drawer_list, check_list, temp_report);
+                sys->DrawerSummaryReport(term, drawer_list, check_list, temp_report.get());
             else if (d)
-                d->MakeReport(term, check_list, temp_report);
+                d->MakeReport(term, check_list, temp_report.get());
             break;
         case REPORT_CLOSEDCHECK:
-            sys->ClosedCheckReport(term, day_start, day_end, term->server, temp_report);
+            sys->ClosedCheckReport(term, day_start, day_end, term->server, temp_report.get());
             break;
         case REPORT_SERVERLABOR:
-            sys->labor_db.ServerLaborReport(term, e, day_start, day_end, temp_report);
+            sys->labor_db.ServerLaborReport(term, e, day_start, day_end, temp_report.get());
             break;
         case REPORT_CHECK:
-            DisplayCheckReport(term, temp_report);
+            DisplayCheckReport(term, temp_report.get());
             break;
         case REPORT_SERVER:
-            sys->ServerReport(term, day_start, day_end, term->server, temp_report);
+            sys->ServerReport(term, day_start, day_end, term->server, temp_report.get());
             break;
         case REPORT_SALES:
-            sys->SalesMixReport(term, day_start, day_end, term->server, temp_report);
+            sys->SalesMixReport(term, day_start, day_end, term->server, temp_report.get());
             break;
         case REPORT_BALANCE:
             if (period_view != SP_DAY)
-                sys->BalanceReport(term, day_start, day_end, temp_report);
+                sys->BalanceReport(term, day_start, day_end, temp_report.get());
             else
-                sys->ShiftBalanceReport(term, ref, temp_report);
+                sys->ShiftBalanceReport(term, ref, temp_report.get());
             break;
         case REPORT_DEPOSIT:
             if (period_view != SP_NONE)
-                sys->DepositReport(term, day_start, day_end, nullptr, temp_report);
+                sys->DepositReport(term, day_start, day_end, nullptr, temp_report.get());
             else
-                sys->DepositReport(term, day_start, day_end, term->archive, temp_report);
+                sys->DepositReport(term, day_start, day_end, term->archive, temp_report.get());
             break;
         case REPORT_COMPEXCEPTION:
-            sys->ItemExceptionReport(term, day_start, day_end, 1, term->server, temp_report);
+            sys->ItemExceptionReport(term, day_start, day_end, 1, term->server, temp_report.get());
             break;
         case REPORT_VOIDEXCEPTION:
-            sys->ItemExceptionReport(term, day_start, day_end, 2, term->server, temp_report);
+            sys->ItemExceptionReport(term, day_start, day_end, 2, term->server, temp_report.get());
             break;
         case REPORT_TABLEEXCEPTION:
-            sys->TableExceptionReport(term, day_start, day_end, term->server, temp_report);
+            sys->TableExceptionReport(term, day_start, day_end, term->server, temp_report.get());
             break;
         case REPORT_REBUILDEXCEPTION:
-            sys->RebuildExceptionReport(term, day_start, day_end, term->server, temp_report);
+            sys->RebuildExceptionReport(term, day_start, day_end, term->server, temp_report.get());
             break;
         case REPORT_CUSTOMERDETAIL:
-            sys->CustomerDetailReport(term, e, temp_report);
+            sys->CustomerDetailReport(term, e, temp_report.get());
             break;
         case REPORT_EXPENSES:
-            sys->ExpenseReport(term, day_start, day_end, nullptr, temp_report, this);
+            sys->ExpenseReport(term, day_start, day_end, nullptr, temp_report.get(), this);
             break;
         case REPORT_ROYALTY:
-            sys->RoyaltyReport(term, day_start, day_end, term->archive, temp_report, this);
+            sys->RoyaltyReport(term, day_start, day_end, term->archive, temp_report.get(), this);
             break;
         case REPORT_AUDITING:
-            sys->AuditingReport(term, day_start, day_end, term->archive, temp_report, this);
+            sys->AuditingReport(term, day_start, day_end, term->archive, temp_report.get(), this);
             break;
         case REPORT_CREDITCARD:
-            sys->CreditCardReport(term, day_start, day_end, term->archive, temp_report, this);
+            sys->CreditCardReport(term, day_start, day_end, term->archive, temp_report.get(), this);
             break;
         }
         
@@ -298,8 +286,7 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
 
         if (temp_report && temp_report->is_complete)
         {
-            report = temp_report;
-            temp_report = nullptr;
+            report = std::move(temp_report);
         }
     }
 
@@ -1338,7 +1325,7 @@ int ReportZone::Update(Terminal *t, int update_message, const genericChar* value
         return 0;
     }
 
-    Report *r = report;
+    Report *r = report.get();
     if (r == nullptr)
         return 0;
 
@@ -1411,20 +1398,11 @@ int ReportZone::Print(Terminal *t, int print_mode)
     {
         System *sys = t->system_data;
         printing_to_printer = 1;
-        if (report != nullptr)
-        {
-            delete report;
-            report = nullptr;
-        }
-        if (temp_report != nullptr)
-        {
-            delete temp_report;
-            temp_report = nullptr;
-        }
-        temp_report = new Report;
+        report.reset();
+        temp_report = std::make_unique<Report>();
         temp_report->max_width = p->MaxWidth();
         temp_report->destination = RP_DEST_PRINTER;
-        sys->RoyaltyReport(t, day_start, day_end, t->archive, temp_report, this);
+        sys->RoyaltyReport(t, day_start, day_end, t->archive, temp_report.get(), this);
         return 0;
     }
 

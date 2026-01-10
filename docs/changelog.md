@@ -7,6 +7,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **Performance: Object Pool System for Memory Efficiency (2026-01-09)**
+  - Created `src/core/object_pool.hh` with thread-safe object pooling templates
+  - `ObjectPool<T>`: Reusable object pool with configurable max size (default 64)
+    * Thread-safe acquire/release with mutex protection
+    * Pre-allocation support via `reserve()` method
+    * Automatic cleanup of pooled objects on destruction
+  - `PooledObject<T>`: RAII wrapper for automatic return to pool
+  - `BufferPool<Size>`: Specialized pool for fixed-size char buffers
+  - Reduces allocation overhead and memory fragmentation on resource-constrained devices
+  - **Files added**: `src/core/object_pool.hh`
+  - **Target**: Raspberry Pi CM5 with 2GB RAM optimization
+
+### Improved
+- **Performance: Settings Pointer Caching (2026-01-09)**
+  - Cached `term->GetSettings()` calls at function start in hot paths
+  - `zone/dialog_zone.cc`: `CreditCardDialog::Init()` - cached 4 consecutive GetSettings() calls
+  - `zone/payout_zone.cc`: `EndDayZone::Render()` - cached settings pointer for multiple accesses
+  - Reduces function call overhead on resource-constrained devices
+  - **Files modified**: `zone/dialog_zone.cc`, `zone/payout_zone.cc`
+
+### Added
 - **Testing: Comprehensive Test Suite Expansion (2026-01-07)**
   - Added 26 new test cases covering time/date operations and error handling
   - Created `test_time_operations.cc` with tests for TimeInfo class operations

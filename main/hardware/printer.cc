@@ -26,6 +26,7 @@
 #include "src/utils/vt_logger.hh"
 #include "safe_string_utils.hh"
 #include "src/utils/cpp23_utils.hh"
+#include "src/core/thread_pool.hh"
 
 #include <errno.h>
 #include <iostream>
@@ -288,6 +289,137 @@ int Printer::Close()
 }
 
 /****
+ * CloseAsync:  Non-blocking version of Close() for use when UI responsiveness
+ *   is critical.  Spawns the print job to a background thread.
+ *   Note: Only works for socket and LPD printing where the temp file can be
+ *   safely copied and processed asynchronously.
+ ****/
+void Printer::CloseAsync()
+{
+    FnTrace("Printer::CloseAsync()");
+
+    // Close the temp file handle first
+    if (temp_fd > 0)
+        close(temp_fd);
+    temp_fd = -1;
+
+    // For parallel printing, we still use synchronous (it already forks)
+    // For file/email, use sync since they're local operations
+    if (target_type == TARGET_PARALLEL || target_type == TARGET_FILE || 
+        target_type == TARGET_EMAIL)
+    {
+        // Fall back to sync for these
+        switch (target_type)
+        {
+        case TARGET_PARALLEL:
+            ParallelPrint();
+            break;
+        case TARGET_FILE:
+            FilePrint();
+            break;
+        case TARGET_EMAIL:
+            EmailPrint();
+            break;
+        default:
+            break;
+        }
+        unlink(temp_name.Value());
+        temp_name.Set("");
+        return;
+    }
+
+    // For socket and LPD, run async
+    // Capture temp file name for async operation
+    std::string temp_file = temp_name.Value();
+    std::string target_str = target.Value();
+    int port = port_no;
+    int type = target_type;
+
+    temp_name.Set("");  // Clear so printer can be reused
+
+    // Queue the print job to the thread pool
+    vt::ThreadPool::instance().enqueue_detached(
+        [temp_file, target_str, port, type]() {
+            vt::Logger::debug("Async print starting: {} -> {}:{}", temp_file, target_str, port);
+            
+            if (type == TARGET_SOCKET)
+            {
+                // Socket printing logic (duplicated to avoid this pointer issues)
+                ssize_t bytesread;
+                ssize_t byteswritten = 1;
+                char buffer[4096];
+                struct hostent *he;
+                struct sockaddr_in their_addr;
+
+                he = gethostbyname(target_str.c_str());
+                if (he == nullptr)
+                {
+                    vt::Logger::error("Async SocketPrint: Failed to resolve host '{}'", target_str);
+                    unlink(temp_file.c_str());
+                    return;
+                }
+
+                int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+                if (sockfd == -1)
+                {
+                    vt::Logger::error("Async SocketPrint: Failed to create socket");
+                    unlink(temp_file.c_str());
+                    return;
+                }
+
+                their_addr.sin_family = AF_INET;
+                their_addr.sin_port = htons(static_cast<uint16_t>(port));
+                their_addr.sin_addr = *((struct in_addr *)he->h_addr);
+                memset(&(their_addr.sin_zero), '\0', 8);
+
+                if (connect(sockfd, (struct sockaddr *)&their_addr, sizeof(struct sockaddr)) == -1)
+                {
+                    vt::Logger::error("Async SocketPrint: Failed to connect to {}:{}", target_str, port);
+                    close(sockfd);
+                    unlink(temp_file.c_str());
+                    return;
+                }
+
+                int fd = open(temp_file.c_str(), O_RDONLY, 0);
+                if (fd <= 0)
+                {
+                    vt::Logger::error("Async SocketPrint: Failed to open temp file '{}'", temp_file);
+                    close(sockfd);
+                    unlink(temp_file.c_str());
+                    return;
+                }
+
+                bytesread = read(fd, buffer, sizeof(buffer));
+                while (bytesread > 0 && byteswritten > 0)
+                {
+                    byteswritten = write(sockfd, buffer, static_cast<size_t>(bytesread));
+                    bytesread = read(fd, buffer, sizeof(buffer));
+                }
+
+                close(fd);
+                close(sockfd);
+                vt::Logger::info("Async SocketPrint: Successfully printed to {}:{}", target_str, port);
+            }
+            else if (type == TARGET_LPD)
+            {
+                // LPD printing
+                char cmd[512];
+                snprintf(cmd, sizeof(cmd), "cat %s | /usr/bin/lpr -P%s", 
+                         temp_file.c_str(), target_str.c_str());
+                int result = system(cmd);
+                if (result != 0)
+                    vt::Logger::error("Async LPDPrint: Command failed with code {}", result);
+                else
+                    vt::Logger::info("Async LPDPrint: Successfully sent to {}", target_str);
+            }
+
+            // Clean up temp file
+            unlink(temp_file.c_str());
+        }
+    );
+}
+
+/****
  * ParallelPrint:  I've been experiencing severe slowdowns with parallel printing.
  *  Apparently, we have to wait until the whole job is done.  So I'm spawning
  *  a child process that will do the printing.  The parent should be able to continue
@@ -413,6 +545,13 @@ int Printer::SocketPrint()
         return 1;
     }
 
+    // Set socket timeouts (5 seconds for printer connections)
+    struct timeval timeout;
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 0;
+    setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+
     their_addr.sin_family = AF_INET;    // host byte order
     their_addr.sin_port = htons(port_no);  // short, network byte order
     their_addr.sin_addr = *((struct in_addr *)he->h_addr);
@@ -423,6 +562,7 @@ int Printer::SocketPrint()
         vt::Logger::error("SocketPrint: Failed to connect to {}:{}", target.Value(), port_no);
         perror("connect");
         fprintf(stderr, "Is vt_print running?\n");
+        close(sockfd);
         return 1;
     }
     

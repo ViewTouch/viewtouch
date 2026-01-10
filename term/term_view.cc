@@ -670,7 +670,7 @@ int SocketNo = 0;
 Display *Dis = nullptr;
 GC       Gfx = nullptr;
 Window   MainWin;
-std::array<Pixmap, IMAGE_COUNT> Texture;
+std::array<Pixmap, IMAGE_COUNT> Texture{};  // Lazy-loaded texture cache (initialized to 0)
 Pixmap   ShadowPix;
 int      ScrDepth = 0;
 Visual  *ScrVis = nullptr;
@@ -757,6 +757,14 @@ void X11ResourceManager::cleanup() {
     if (Gfx) {
         XFreeGC(Dis, Gfx);
         Gfx = nullptr;
+    }
+    
+    // Clean up cached textures
+    for (size_t i = 0; i < IMAGE_COUNT; ++i) {
+        if (Texture[i] != 0 && Dis != nullptr) {
+            XFreePixmap(Dis, Texture[i]);
+            Texture[i] = 0;
+        }
     }
     
     // Clean up fonts
@@ -4422,12 +4430,45 @@ Pixmap GetTexture(const int texture) noexcept
 {
     FnTrace("GetTexture()");
 
+    // Validate texture index
     if (texture < 0 || texture >= IMAGE_COUNT) {
         // Return default texture (DARK_SAND) for invalid texture IDs
-        return LoadPixmap(ImageData[IMAGE_DARK_SAND]);
+        return GetTexture(IMAGE_DARK_SAND);
     }
 
-    return LoadPixmap(ImageData[texture]);
+    // Check if already cached
+    if (Texture[texture] != 0) {
+        return Texture[texture];
+    }
+
+    // Load and cache the texture (lazy loading)
+    Texture[texture] = LoadPixmap(ImageData[texture]);
+    return Texture[texture];
+}
+
+void ClearTextureCache() noexcept
+{
+    FnTrace("ClearTextureCache()");
+    
+    for (size_t i = 0; i < IMAGE_COUNT; ++i) {
+        if (Texture[i] != 0 && Dis != nullptr) {
+            XFreePixmap(Dis, Texture[i]);
+            Texture[i] = 0;
+        }
+    }
+}
+
+int GetCachedTextureCount() noexcept
+{
+    FnTrace("GetCachedTextureCount()");
+    
+    int count = 0;
+    for (size_t i = 0; i < IMAGE_COUNT; ++i) {
+        if (Texture[i] != 0) {
+            ++count;
+        }
+    }
+    return count;
 }
 
 XftFont *GetXftFontInfo(const int font_id) noexcept

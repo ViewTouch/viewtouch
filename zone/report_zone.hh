@@ -24,6 +24,7 @@
 #include "layout_zone.hh"
 #include "report.hh"
 
+#include <memory>
 
 /**** Types ****/
 class Employee;
@@ -31,8 +32,8 @@ class Employee;
 // General report viewing zone
 class ReportZone : public LayoutZone
 {
-    Report   *report;
-    Report   *temp_report;
+    std::unique_ptr<Report> report;
+    std::unique_ptr<Report> temp_report;
     int       lines_shown;
     int       page;
     int       header;

@@ -367,11 +367,7 @@ DrawerManageZone::DrawerManageZone()
     drawer_zone_type = DRAWER_ZONE_BALANCE;
 }
 
-DrawerManageZone::~DrawerManageZone()
-{
-    if (report)
-        delete report;
-}
+DrawerManageZone::~DrawerManageZone() = default;
 
 RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
 {
@@ -413,8 +409,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
 
         if (report)
         {
-            delete report;
-            report = nullptr;
+            report.reset();
         }
         CreateDrawers(term);
         group = 0;
@@ -622,13 +617,9 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
     genericChar str[256];
     if (d == nullptr)
     {
-        if (report)
-        {
-            delete report;
-            report = nullptr;
-        }
+        report.reset();
 
-        report = new Report;
+        report = std::make_unique<Report>();
         if (view == DRAWER_OPEN)
             report->TextC(term->Translate("There Are No Open Drawers For"));
         else
@@ -660,8 +651,8 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
         default:
             if (report == nullptr)
             {
-                report = new Report;
-                d->MakeReport(term, check_list, report);
+                report = std::make_unique<Report>();
+                d->MakeReport(term, check_list, report.get());
             }
             if (report)
             {
@@ -675,11 +666,7 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
             break;
 
         case DRAWER_PULLED:
-            if (report)
-            {
-                delete report;
-                report = nullptr;
-            }
+            report.reset();
 
             int pcolor;
             int per_page = (int) ((size_y - 4) / 2.0);
@@ -926,8 +913,7 @@ SignalResult DrawerManageZone::Signal(Terminal *term, const genericChar* message
             current = zoneobj;
             if (report)
             {
-                delete report;
-                report = nullptr;
+                report.reset();
             }
             Draw(term, 0);
             return SIGNAL_OKAY;
@@ -950,8 +936,7 @@ SignalResult DrawerManageZone::Signal(Terminal *term, const genericChar* message
             current = zoneobj;
             if (report)
             {
-                delete report;
-                report = nullptr;
+                report.reset();
             }
             Draw(term, 0);
             return SIGNAL_OKAY;
@@ -993,8 +978,7 @@ SignalResult DrawerManageZone::Touch(Terminal *term, int tx, int ty)
             }
             if (report)
             {
-                delete report;
-                report = nullptr;
+                report.reset();
             }
             media = TENDER_CASH;
             Draw(term, 0);
@@ -1089,8 +1073,7 @@ int DrawerManageZone::Update(Terminal *term, int update_message, const genericCh
     {
         if (report)
         {
-            delete report;
-            report = nullptr;
+            report.reset();
         }
         return Draw(term, 0);
     }

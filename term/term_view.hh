@@ -349,6 +349,8 @@ extern XftFont *GetXftFontInfo(int font_id) noexcept;
 extern int          GetFontBaseline(int font_id) noexcept;
 extern int          GetFontHeight(int font_id) noexcept;
 extern Pixmap       GetTexture(int texture) noexcept;
+extern void         ClearTextureCache() noexcept;  // Clear cached textures to free memory
+extern int          GetCachedTextureCount() noexcept;  // Get number of currently loaded textures
 
 // Image loading functions
 extern Pixmap LoadPixmap(const char** image_data);

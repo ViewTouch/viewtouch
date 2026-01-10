@@ -24,13 +24,15 @@
 #include "form_zone.hh"
 #include "credit.hh"
 
+#include <memory>
+
 class CreditCardListZone : public ListFormZone
 {
     Flt       list_header;
     Flt       list_footer;
     Flt       list_spacing;
     int       lines_shown;
-    Report   *report;
+    std::unique_ptr<Report> report;
     Credit   *credit;
     CreditDB *creditdb;
     Archive  *archive;

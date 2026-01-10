@@ -58,15 +58,10 @@ PayoutZone::PayoutZone()
     page     = 0;
     archive  = nullptr;
     tip_db   = nullptr;
-    report   = nullptr;
 }
 
 // Destructor
-PayoutZone::~PayoutZone()
-{
-    if (report)
-        delete report;
-}
+PayoutZone::~PayoutZone() = default;
 
 // Member Functions
 RenderResult PayoutZone::Render(Terminal *term, int update_flag)
@@ -80,11 +75,7 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
             sys->tip_db.Update(sys);
             archive = nullptr;
         }
-        if (report)
-        {
-            delete report;
-            report = nullptr;
-        }
+        report.reset();
         if (archive)
             tip_db = &(archive->tip_db);
         else
@@ -98,8 +89,8 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
 
     if (report == nullptr)
     {
-        report = new Report;
-        tip_db->ListReport(term, term->user, report);
+        report = std::make_unique<Report>();
+        tip_db->ListReport(term, term->user, report.get());
     }
 
     genericChar str[256], price[64];
@@ -345,7 +336,9 @@ RenderResult EndDayZone::Render(Terminal *term, int update_flag)
     Settings *s = &(sys->settings);
     Archive *a = sys->ArchiveListEnd();
     genericChar buffer[STRLENGTH];
-    int min_day_secs = term->GetSettings()->min_day_length;
+    // Cache settings pointer for efficiency
+    Settings *settings = term->GetSettings();
+    int min_day_secs = settings->min_day_length;
     int min_day_hrs = min_day_secs / 60 / 60;
 
     int line = 0;

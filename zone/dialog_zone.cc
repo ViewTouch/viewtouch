@@ -2025,16 +2025,18 @@ void CreditCardDialog::Init(Terminal *term, SubCheck *subch, const char* swipe_v
                 term->credit->ParseSwipe(swipe_value);
             else
                 ProcessSwipe(term, swipe_value);
+            // Cache settings pointer for efficiency
+            Settings *settings = term->GetSettings();
             if (term->credit != nullptr && term->credit->IsValid() &&
                 term->auth_action == 0 &&
                 !term->credit->IsAuthed() &&
                 !term->credit->IsPreauthed() &&
-                (term->GetSettings()->authorize_method == CCAUTH_CREDITCHEQ ||
-                 term->GetSettings()->auto_authorize > 0))
+                (settings->authorize_method == CCAUTH_CREDITCHEQ ||
+                 settings->auto_authorize > 0))
             {
                 if ((term->credit->CardType() == CARD_TYPE_NONE) &&
-                    ((term->GetSettings()->card_types & CARD_TYPE_DEBIT) == 0) &&
-                    ((term->GetSettings()->card_types & CARD_TYPE_GIFT) == 0))
+                    ((settings->card_types & CARD_TYPE_DEBIT) == 0) &&
+                    ((settings->card_types & CARD_TYPE_GIFT) == 0))
                 {
                     term->credit->SetCardType(CARD_TYPE_CREDIT);
                 }

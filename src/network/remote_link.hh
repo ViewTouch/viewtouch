@@ -28,7 +28,9 @@
 #include <string>
 #include <vector>
 
-inline constexpr size_t QUEUE_SIZE = 2097152;
+// Reduced from 2MB to 256KB for better performance on memory-constrained 
+// systems like Raspberry Pi CM5 with 2GB RAM
+inline constexpr size_t QUEUE_SIZE = 262144;
 
 /**** Types ****/
 class CharQueue

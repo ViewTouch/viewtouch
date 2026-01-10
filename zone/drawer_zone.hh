@@ -25,6 +25,7 @@
 #include "zone_object.hh"
 #include "expense.hh"
 
+#include <memory>
 
 /**** Definitions ****/
 #define MAX_BALANCES 64
@@ -63,7 +64,7 @@ class DrawerManageZone : public LayoutZone
     ZoneObject    *current;
     int            drawers_shown;
     int            group;
-    Report        *report;
+    std::unique_ptr<Report> report;
     int            mode;
     int            view;
     Drawer        *drawer_list;

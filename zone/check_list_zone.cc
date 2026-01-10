@@ -485,9 +485,7 @@ RenderResult CheckEditZone::Render(Terminal *term, int update_flag)
     {
         check = term->check;
         LoadRecord(term, 0);
-        if (report != nullptr)
-            free(report);
-        report = nullptr;
+        report.reset();
         my_update = 0;
     }
 

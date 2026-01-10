@@ -24,6 +24,8 @@
 #include "form_zone.hh"
 #include "expense.hh"
 
+#include <memory>
+
 #define EXPENSE_ZONE_COLUMNS 5
 
 class ExpenseZone : public FormZone
@@ -35,7 +37,7 @@ class ExpenseZone : public FormZone
     Flt list_footer;
     Flt list_spacing;
     int lines_shown;
-    Report *report;
+    std::unique_ptr<Report> report;
     int page;
     int allow_balanced;
 public:

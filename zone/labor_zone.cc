@@ -66,11 +66,7 @@ LaborZone::LaborZone()
 }
 
 // Destructor
-LaborZone::~LaborZone()
-{
-    if (report)
-        delete report;
-}
+LaborZone::~LaborZone() = default;
 
 // Member Functions
 RenderResult LaborZone::Render(Terminal *term, int update_flag)
@@ -82,8 +78,7 @@ RenderResult LaborZone::Render(Terminal *term, int update_flag)
     {
         if (report)
         {
-            delete report;
-            report = nullptr;
+            report.reset();
         }
 
         if (update_flag == RENDER_NEW || period == nullptr)
@@ -120,9 +115,9 @@ RenderResult LaborZone::Render(Terminal *term, int update_flag)
 
     if (report == nullptr && period)
     {
-        report = new Report;
+        report = std::make_unique<Report>();
         report->SetTitle(GlobalTranslate("Time Clock Summary"));
-        period->WorkReport(term, term->server, start, end, report);
+        period->WorkReport(term, term->server, start, end, report.get());
     }
     FormZone::Render(term, update_flag);
 
@@ -391,7 +386,7 @@ SignalResult LaborZone::Touch(Terminal *term, int tx, int ty)
 int LaborZone::Update(Terminal *term, int update_message, const genericChar* value)
 {
     FnTrace("LaborZone::Update()");
-    Report *r = report;
+    Report *r = report.get();
     if (r == nullptr || r->update_flag & update_message)
         return Draw(term, 1);
 
@@ -520,8 +515,7 @@ int LaborZone::UpdateForm(Terminal *term, int record)
         work->end   = we;
         if (report)
         {
-            delete report;
-            report = nullptr;
+            report.reset();
         }
     }
     return 0;
