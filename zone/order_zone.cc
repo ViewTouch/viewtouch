@@ -1362,14 +1362,9 @@ SignalResult OrderAddZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
     {
         if (order->count >= 5)
         {
-            //The tenkey dialog pops up and gets a number from the user.
-            //There is no destination associated to the dialog, so when
-            //the user presses "Enter" the dialog simply sends a
-            //term->Signal() and exits.  On the order page the OrderEntry
-            //zone will normally trap the message and apply it to the
-            //current order.
+            // Redesigned keypad: allows up to 10000, start with 0 for new entry
             TenKeyDialog *d = new TenKeyDialog(GlobalTranslate("Enter Item Count"), 0, 1);
-            d->max_amount = 100; // this will allow up to 999
+            d->max_amount = 10001; // Allow up to 10000
             term->OpenDialog(d);
             return SIGNAL_OKAY;
         }

@@ -33,12 +33,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Target**: Raspberry Pi CM5 with 2GB RAM optimization
 
 ### Improved
-- **Performance: Settings Pointer Caching (2026-01-09)**
-  - Cached `term->GetSettings()` calls at function start in hot paths
-  - `zone/dialog_zone.cc`: `CreditCardDialog::Init()` - cached 4 consecutive GetSettings() calls
-  - `zone/payout_zone.cc`: `EndDayZone::Render()` - cached settings pointer for multiple accesses
-  - Reduces function call overhead on resource-constrained devices
-  - **Files modified**: `zone/dialog_zone.cc`, `zone/payout_zone.cc`
+- **UI: Modernized Quantity Entry Keypad (2026-01-14)**
+  - Completely redesigned the numeric keypad for item quantity entry with a modern phone-style layout (1-2-3 on top row, 4-5-6 middle, etc.)
+  - Removed the arbitrary 5-item limit; now allows unlimited increments up to 10,000 with a single button press
+  - Enhanced entry field: larger size (200x50), bigger font (34pt), centered at top of dialog
+  - Eliminated input delay by making redraws immediate (0ms instead of 500ms)
+  - Removed dialog title to reduce clutter; entry field starts blank for clean quantity input
+  - **Files modified**: `zone/order_zone.cc`, `zone/dialog_zone.cc`
 
 ### Added
 - **Testing: Comprehensive Test Suite Expansion (2026-01-07)**
