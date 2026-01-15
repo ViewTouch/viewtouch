@@ -3433,11 +3433,22 @@ int DrawScreenSaver()
     static float vel_x = 4.0f;    // X velocity (pixels per frame)
     static float vel_y = 3.0f;    // Y velocity (pixels per frame)
     
+    // Cached values to avoid recomputation
+    static XftFont *font = nullptr;
+    static int text_width = 0;
+    static int text_height = 0;
+    static int text_len = 0;
+    static const char* text = "ViewTouch 35 Years In Point Of Sales";
+    static bool first_draw = true;
+    static float prev_text_x = -1.0f;
+    static float prev_text_y = -1.0f;
+    
     // Check if reset was requested
     if (g_reset_screensaver)
     {
         text_x = -1.0f;  // Mark for re-initialization
         text_y = -1.0f;
+        first_draw = true;  // Force full redraw
         g_reset_screensaver = false;
     }
 
@@ -3447,74 +3458,92 @@ int DrawScreenSaver()
     XSetTSOrigin(Dis, Gfx, 0, 0);
     XSetForeground(Dis, Gfx, ColorBlack);
     XSetFillStyle(Dis, Gfx, FillSolid);
-    XFillRectangle(Dis, MainWin, Gfx, 0, 0, WinWidth, WinHeight);
     
-    // Draw "ViewTouch 35 Years In Point Of Sales" bouncing around screen
-    const char* text = "ViewTouch 35 Years In Point Of Sales";
-    int text_len = strlen(text);
-    
-    // Use a large, elegant font for the screensaver text
-    XftFont *font = GetXftFontInfo(FONT_TIMES_34B);
-    if (font)
+    // Cache font and text metrics on first call
+    if (font == nullptr)
     {
-        // Get text extents for collision detection
-        XGlyphInfo extents;
-        XftTextExtentsUtf8(Dis, font, reinterpret_cast<const FcChar8*>(text), text_len, &extents);
-        
-        int text_width = extents.width;
-        int text_height = font->ascent + font->descent;
-        
-        // Initialize position on first call (center of screen)
-        if (text_x < 0)
+        font = GetXftFontInfo(FONT_TIMES_34B);
+        if (font)
         {
-            text_x = (WinWidth - text_width) / 2.0f;
-            text_y = (WinHeight - text_height) / 2.0f;
-        }
-        
-        // Update position
-        text_x += vel_x;
-        text_y += vel_y;
-        
-        // Bounce off edges (like DVD logo)
-        if (text_x <= 0 || text_x + text_width >= WinWidth)
-        {
-            vel_x = -vel_x;
-            // Clamp position to stay within bounds
-            if (text_x < 0) text_x = 0;
-            if (text_x + text_width > WinWidth) text_x = WinWidth - text_width;
-        }
-        
-        if (text_y <= 0 || text_y + text_height >= WinHeight)
-        {
-            vel_y = -vel_y;
-            // Clamp position to stay within bounds
-            if (text_y < 0) text_y = 0;
-            if (text_y + text_height > WinHeight) text_y = WinHeight - text_height;
-        }
-        
-        // Create XftDraw context for MainWin
-        XftDraw *xftdraw = XftDrawCreate(Dis, MainWin, 
-                                          DefaultVisual(Dis, ScrNo), 
-                                          DefaultColormap(Dis, ScrNo));
-        if (xftdraw)
-        {
-            // Set up white color for text
-            XRenderColor render_color;
-            render_color.red   = 0xFFFF;
-            render_color.green = 0xFFFF;
-            render_color.blue  = 0xFFFF;
-            render_color.alpha = 0xFFFF;
-            
-            // Draw the text at current bouncing position
-            int draw_x = static_cast<int>(text_x);
-            int draw_y = static_cast<int>(text_y) + font->ascent;
-            
-            GenericDrawStringXftAntialiased(Dis, MainWin, xftdraw, font, &render_color, 
-                                           draw_x, draw_y, text, text_len, ScrNo);
-            
-            XftDrawDestroy(xftdraw);
+            text_len = strlen(text);
+            XGlyphInfo extents;
+            XftTextExtentsUtf8(Dis, font, reinterpret_cast<const FcChar8*>(text), text_len, &extents);
+            text_width = extents.width;
+            text_height = font->ascent + font->descent;
         }
     }
+    
+    if (font == nullptr)
+        return 0;  // Can't draw without font
+    
+    // Initialize position on first call (center of screen)
+    if (text_x < 0)
+    {
+        text_x = (WinWidth - text_width) / 2.0f;
+        text_y = (WinHeight - text_height) / 2.0f;
+    }
+    
+    // On first draw or after reset, fill the entire screen black
+    if (first_draw)
+    {
+        XFillRectangle(Dis, MainWin, Gfx, 0, 0, WinWidth, WinHeight);
+        first_draw = false;
+    }
+    else
+    {
+        // Erase previous text by drawing black rectangle over it
+        int prev_draw_x = static_cast<int>(prev_text_x);
+        int prev_draw_y = static_cast<int>(prev_text_y);
+        XFillRectangle(Dis, MainWin, Gfx, prev_draw_x, prev_draw_y, text_width, text_height);
+    }
+    
+    // Update position
+    text_x += vel_x;
+    text_y += vel_y;
+    
+    // Bounce off edges (like DVD logo)
+    if (text_x <= 0 || text_x + text_width >= WinWidth)
+    {
+        vel_x = -vel_x;
+        // Clamp position to stay within bounds
+        if (text_x < 0) text_x = 0;
+        if (text_x + text_width > WinWidth) text_x = WinWidth - text_width;
+    }
+    
+    if (text_y <= 0 || text_y + text_height >= WinHeight)
+    {
+        vel_y = -vel_y;
+        // Clamp position to stay within bounds
+        if (text_y < 0) text_y = 0;
+        if (text_y + text_height > WinHeight) text_y = WinHeight - text_height;
+    }
+    
+    // Create XftDraw context for MainWin
+    XftDraw *xftdraw = XftDrawCreate(Dis, MainWin, 
+                                      DefaultVisual(Dis, ScrNo), 
+                                      DefaultColormap(Dis, ScrNo));
+    if (xftdraw)
+    {
+        // Set up white color for text
+        XRenderColor render_color;
+        render_color.red   = 0xFFFF;
+        render_color.green = 0xFFFF;
+        render_color.blue  = 0xFFFF;
+        render_color.alpha = 0xFFFF;
+        
+        // Draw the text at current bouncing position
+        int draw_x = static_cast<int>(text_x);
+        int draw_y = static_cast<int>(text_y) + font->ascent;
+        
+        GenericDrawStringXftAntialiased(Dis, MainWin, xftdraw, font, &render_color, 
+                                       draw_x, draw_y, text, text_len, ScrNo);
+        
+        XftDrawDestroy(xftdraw);
+    }
+    
+    // Store previous position for next erase
+    prev_text_x = text_x;
+    prev_text_y = text_y;
     
     return 0;
 }

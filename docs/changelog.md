@@ -41,6 +41,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Removed dialog title to reduce clutter; entry field starts blank for clean quantity input
   - **Files modified**: `zone/order_zone.cc`, `zone/dialog_zone.cc`
 
+- **Performance: Optimized Screen Saver Drawing Efficiency (2026-01-14)**
+  - Significantly improved screen saver performance by reducing unnecessary drawing operations
+  - **Optimizations Implemented**:
+    - Cached font and text metrics (width/height) in static variables to avoid recomputation every frame
+    - Eliminated full-screen black fill on every animation frame; now only fills screen initially and on reset
+    - Added selective erasure: draws black rectangle only over previous text position before drawing new position
+  - **Performance Impact**: Reduced CPU/GPU load during screen saver animation, especially beneficial for larger displays
+  - **Files modified**: `term/term_view.cc` (DrawScreenSaver function)
+
 ### Added
 - **Testing: Comprehensive Test Suite Expansion (2026-01-07)**
   - Added 26 new test cases covering time/date operations and error handling
