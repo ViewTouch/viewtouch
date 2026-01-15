@@ -832,49 +832,47 @@ RenderResult TenKeyDialog::Render(Terminal *term, int update_flag)
         return RENDER_OKAY;
     }
 
-    DialogZone::Render(term, update_flag);
+    // Render background without title
+    RenderZone(term, nullptr, update_flag);
     first_row_y = y + first_row;
 
-    // Layout Buttons
+    // Redesigned Layout: Phone-style keypad
     int gap = 8;
-    int bw = (w - (border * 2) - (gap * 3)) / 4;
-    int bh;
-    if (key[12])
-        bh = (h - (border * 2) - (gap * 4) - first_row) / 5;
-    else
-        bh = (h - (border * 2) - (gap * 3) - first_row) / 4;
+    int bw = (w - (border * 2) - (gap * 2)) / 3;  // 3 columns
+    int bh = (h - (border * 2) - (gap * 5) - first_row) / 5;  // 5 rows for numbers + controls
 
-    int col[4];
+    int col[3];
     int row[5];
     col[0] = x + border;
     row[0] = y + border + first_row;
+    for (i = 1; i < 3; ++i)
+        col[i] = col[i-1] + bw + gap;
     for (i = 1; i < 5; ++i)
         row[i] = row[i-1] + bh + gap;
 
-    for (i = 1; i < 4; ++i)
-        col[i] = col[i-1] + bw + gap;
+    // Phone layout: 1 2 3
+    //               4 5 6
+    //               7 8 9
+    //                 0
+    key[1]->SetRegion(col[0], row[0], bw, bh);  // 1
+    key[2]->SetRegion(col[1], row[0], bw, bh);  // 2
+    key[3]->SetRegion(col[2], row[0], bw, bh);  // 3
+    key[4]->SetRegion(col[0], row[1], bw, bh);  // 4
+    key[5]->SetRegion(col[1], row[1], bw, bh);  // 5
+    key[6]->SetRegion(col[2], row[1], bw, bh);  // 6
+    key[7]->SetRegion(col[0], row[2], bw, bh);  // 7
+    key[8]->SetRegion(col[1], row[2], bw, bh);  // 8
+    key[9]->SetRegion(col[2], row[2], bw, bh);  // 9
+    key[0]->SetRegion(col[1], row[3], bw, bh);  // 0 centered
 
-    key[0]->SetRegion(col[0], row[3], bw*2 + gap, bh);
-    key[1]->SetRegion(col[0], row[0], bw, bh);
-    key[2]->SetRegion(col[1], row[0], bw, bh);
-    key[3]->SetRegion(col[2], row[0], bw, bh);
-    key[4]->SetRegion(col[0], row[1], bw, bh);
-    key[5]->SetRegion(col[1], row[1], bw, bh);
-    key[6]->SetRegion(col[2], row[1], bw, bh);
-    key[7]->SetRegion(col[0], row[2], bw, bh);
-    key[8]->SetRegion(col[1], row[2], bw, bh);
-    key[9]->SetRegion(col[2], row[2], bw, bh);
-
-    key[10]->SetRegion(col[3], row[2], bw, bh*2 + gap);
-    key[11]->SetRegion(col[3], row[0], bw, bh*2 + gap);
+    // Controls
+    key[11]->SetRegion(col[0], row[4], bw, bh);  // Back Space
+    key[10]->SetRegion(col[2], row[4], bw, bh);  // Enter
     if (key[12])
-        key[12]->SetRegion(col[1], row[4], bw*2 + gap, bh);
-    if (key[13])
-        key[13]->SetRegion(col[2], row[3], bw, bh);
+        key[12]->SetRegion(col[1], row[4], bw, bh);  // Cancel in middle if present
 
     // Render
-    if (name.size() > 0)
-        TextC(term, 0, name.Value());
+    // No title, entry field at top center
     RenderEntry(term);
     buttons.Render(term);
 
@@ -892,7 +890,7 @@ SignalResult TenKeyDialog::Touch(Terminal *term, int tx, int ty)
         ButtonObj *b = (ButtonObj *) zo;
         lit = b;
         b->Draw(term, 1);
-        term->RedrawZone(this, 500);
+        term->RedrawZone(this, 0);
         return Signal(term, b->message.Value());
     }
     return SIGNAL_IGNORED;
@@ -956,7 +954,12 @@ int TenKeyDialog::RenderEntry(Terminal *term)
 {
     FnTrace("TenKeyDialog::RenderEntry()");
 
-    Entry(term, (size_x/2) - 10, 1.5, 20);
+    // Draw larger entry box at top center
+    int entry_width = 200;
+    int entry_height = 50;
+    int entry_x = x + border + (w - 2 * border - entry_width) / 2;
+    int entry_y = y + border + 20;
+    term->RenderButton(entry_x, entry_y, entry_width, entry_height, ZF_RAISED, IMAGE_SAND);
     genericChar str[16];
     if (decimal)
     {
@@ -973,7 +976,7 @@ int TenKeyDialog::RenderEntry(Terminal *term)
     {
         vt_safe_string::safe_format(str, 16, "%d", buffer);
     }
-    TextC(term, 1.5, str, COLOR_WHITE);
+    term->RenderZoneText(str, entry_x + 10, entry_y, entry_width - 20, entry_height, COLOR_WHITE, FONT_TIMES_34);
     return 0;
 }
 
