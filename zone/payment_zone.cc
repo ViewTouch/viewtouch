@@ -236,7 +236,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
         line += min_spacing;
     }
 
-    if (settings->tax_VAT > 0)
+    if (settings->tax_VAT > 0 && subCheck->total_tax_VAT != 0)
     {
         TextPosR(term, mark, line, "VAT");
         TextPosR(term, mark + 9, line, term->FormatPrice(subCheck->total_tax_VAT));

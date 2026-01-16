@@ -23,6 +23,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `zone/payment_zone.cc` (header rendering in Render function)
   - **Impact**: Users can now clearly see which guest check is currently selected on the settlement page, with status information and visual highlighting
 
+- **Payment Zone: Hide Zero VAT Display (2026-01-15)**
+  - Fixed VAT .00 being displayed unnecessarily when VAT amount is zero
+  - **Root Cause**: VAT display only checked if VAT tax rate was configured (`settings->tax_VAT > 0`) but not if the calculated VAT amount was actually greater than zero
+  - **Solution**: Added condition to check both `settings->tax_VAT > 0` AND `subCheck->total_tax_VAT != 0`
+  - **Files modified**: `zone/payment_zone.cc` (VAT display logic in Render function)
+  - **Impact**: VAT is now only displayed when there is an actual VAT amount to show, reducing UI clutter
+
+- **Printer: Prevent USB Printer Hanging (2026-01-15)**
+  - Fixed application hanging when USB printer is unavailable
+  - **Root Cause**: `open()` system call for printer device files would block indefinitely when USB printer was disconnected or unavailable
+  - **Solution**: Added `O_NONBLOCK` flag to printer device open call to prevent blocking
+  - **Files modified**: `main/hardware/printer.cc` (ParallelPrint function)
+  - **Impact**: Application continues to function normally even when USB printers are unavailable, preventing system hangs
+
 - **Per-Terminal Button Image Settings: Preserve Individual Terminal Preferences (2026-01-15)**
   - Fixed global "Show Button Images" setting incorrectly overriding per-terminal customizations
   - **Root Cause**: The global setting was being applied universally, ignoring individual terminal configurations

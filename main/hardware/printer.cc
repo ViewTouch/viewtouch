@@ -455,7 +455,7 @@ int Printer::ParallelPrint()
         if (lockfd > 0)
         {
             infd = open(temp_name.Value(), O_RDONLY);
-            outfd = open(target.Value(), O_WRONLY);
+            outfd = open(target.Value(), O_WRONLY | O_NONBLOCK);
             if (infd > 0 && outfd > 0)
             {
                 timeout.tv_sec = 0;
