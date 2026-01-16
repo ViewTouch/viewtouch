@@ -114,8 +114,10 @@ constexpr int CHECK_SELFTAKEOUT = static_cast<int>(CheckType::SelfTakeOut);
 #define TENDER_CASH_AVAIL    24  // cash - expense, for balancing only
 #define TENDER_CREDIT_CARD_FEE_DOLLAR 25  // credit card processing fee (dollar amount)
 #define TENDER_CREDIT_CARD_FEE_PERCENT 26  // credit card processing fee (percentage)
+#define TENDER_DEBIT_CARD_FEE_DOLLAR 27    // debit card processing fee (dollar amount)
+#define TENDER_DEBIT_CARD_FEE_PERCENT 28   // debit card processing fee (percentage)
 
-#define NUMBER_OF_TENDERS    27  // true number + 1 for no known reason
+#define NUMBER_OF_TENDERS    29  // true number + 1 for no known reason
 extern int tender_order[];
 
 // Order States

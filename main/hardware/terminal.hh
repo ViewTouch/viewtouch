@@ -440,6 +440,7 @@ public:
     int show_family;     // boolean - show family grouping in reports?
     int expand_goodwill; // boolean - show expanded goodwill adjustments list?
     int show_button_images; // boolean - show images on buttons (per-terminal setting)
+    int show_button_images_custom; // boolean - has the button images setting been customized per-terminal?
 
     // Font/Graphics Info
     int size;            // screen size

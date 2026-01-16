@@ -627,6 +627,7 @@ Terminal::Terminal()
     show_family     = 1;
     expand_goodwill = 0;
     show_button_images = 1;  // Default to showing images
+    show_button_images_custom = 0;  // Not customized initially
 
     cc_credit_termid.Set("");
     cc_debit_termid.Set("");
@@ -752,6 +753,7 @@ int Terminal::Initialize()
     SetShadowOffset(settings->shadow_offset_x, settings->shadow_offset_y);
     SetShadowBlur(settings->shadow_blur_radius);
     show_button_images = settings->show_button_images_default;
+    show_button_images_custom = 0;  // Reset custom flag when initializing from global default
 
     return retval;
 }
@@ -1623,6 +1625,7 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
     {
         // Toggle button image display mode for this terminal only
         show_button_images = !show_button_images;
+        show_button_images_custom = 1;  // Mark as customized
         
         // Force complete redraw of all zones
         if (page)
@@ -2485,9 +2488,13 @@ int Terminal::Update(int update_message, const genericChar* value)
             int switch_type = atoi(value);
             if (switch_type == SWITCH_BUTTON_IMAGES)
             {
-                Settings *settings = GetSettings();
-                if (settings != nullptr)
-                    show_button_images = settings->show_button_images_default;
+                // Only update if not customized per-terminal
+                if (show_button_images_custom == 0)
+                {
+                    Settings *settings = GetSettings();
+                    if (settings != nullptr)
+                        show_button_images = settings->show_button_images_default;
+                }
                 if (page != nullptr)
                 {
                     page->changed = 1;

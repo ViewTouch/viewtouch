@@ -495,11 +495,11 @@ int ReportPrintValue[] = {
 const genericChar* TenderName[] = {
     "Cash", "Check", "Gift Certificate", "House Account",
     "Charge Room", "Gratuity", "Credit Card", "Discount",
-    "Coupon", "Comp", "Employee Meal", "Tip", "Credit Card Fee (Dollar)", "Credit Card Fee (Percent)", nullptr};
+    "Coupon", "Comp", "Employee Meal", "Tip", "Credit Card Fee", "Credit Card Fee", "Debit Card Fee", "Debit Card Fee", nullptr};
 int TenderValue[] = {
     TENDER_CASH, TENDER_CHECK, TENDER_GIFT, TENDER_ACCOUNT,
     TENDER_CHARGE_ROOM, TENDER_GRATUITY, TENDER_CHARGE_CARD, TENDER_DISCOUNT,
-    TENDER_COUPON, TENDER_COMP, TENDER_EMPLOYEE_MEAL, TENDER_CAPTURED_TIP, TENDER_CREDIT_CARD_FEE_DOLLAR, TENDER_CREDIT_CARD_FEE_PERCENT, -1};
+    TENDER_COUPON, TENDER_COMP, TENDER_EMPLOYEE_MEAL, TENDER_CAPTURED_TIP, TENDER_CREDIT_CARD_FEE_DOLLAR, TENDER_CREDIT_CARD_FEE_PERCENT, TENDER_DEBIT_CARD_FEE_DOLLAR, TENDER_DEBIT_CARD_FEE_PERCENT, -1};
 
 const genericChar* PrinterIDName[] = {
     "Default", "Kitchen1", "Kitchen2", "Bar1", "Bar2", "Expediter",

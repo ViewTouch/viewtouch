@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Per-Terminal Button Image Settings: Preserve Individual Terminal Preferences (2026-01-15)**
+  - Fixed global "Show Button Images" setting incorrectly overriding per-terminal customizations
+  - **Root Cause**: The global setting was being applied universally, ignoring individual terminal configurations
+  - **Solution**: Added `show_button_images_custom` flag to Terminal class to track when users have customized per-terminal settings, preserving their preferences when global setting changes
+  - **Files modified**: `main/hardware/terminal.cc`, `main/hardware/terminal.hh`
+  - **Impact**: Terminals now maintain their individual button image display preferences even when global settings are modified
+
 - **Button Highlighting Bug - Remove Broken Static Cache (2026-01-10)**
   - Fixed buttons incorrectly showing highlighted/yellow state
   - **Root Cause**: The static tile cache optimization in `Layer::Rectangle()` was fundamentally broken. Static variables persisted across all calls, causing stale cache values to be used when rendering buttons with different textures.
@@ -20,6 +27,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `term/term_view.cc`, `term/term_view.hh`
 
 ### Added
+- **Payment Processing: Complete Debit Card Fee Support (2026-01-15)**
+  - Added comprehensive debit card fee tender types with full tax handling support
+  - **New Tender Types Added**:
+    - DEBIT_FEE_PERCENT: Debit card fee as percentage of transaction
+    - DEBIT_FEE_DOLLAR: Debit card fee as fixed dollar amount
+    - DEBIT_FEE_TAXABLE_PERCENT: Debit card fee as percentage with tax calculation
+    - DEBIT_FEE_TAXABLE_DOLLAR: Debit card fee as fixed dollar amount with tax calculation
+  - **Implementation Details**:
+    - Added tender type definitions and fee calculation logic in Check class
+    - Updated payment zone processing to handle debit fee calculations
+    - Added proper localization support for debit fee display names
+  - **Files modified**: `main/business/check.cc`, `main/business/check.hh`, `zone/payment_zone.cc`, `main/data/settings.cc`, `main/ui/labels.cc`, `main/data/locale.cc`
+  - **Impact**: Full debit card fee processing capability with proper tax handling and UI display
+
 - **Performance: Object Pool System for Memory Efficiency (2026-01-09)**
   - Created `src/core/object_pool.hh` with thread-safe object pooling templates
   - `ObjectPool<T>`: Reusable object pool with configurable max size (default 64)
@@ -33,6 +54,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Target**: Raspberry Pi CM5 with 2GB RAM optimization
 
 ### Improved
+- **UI: Clean Credit Card Fee Display Labels (2026-01-15)**
+  - Removed redundant "(Percent)" and "(Dollar)" text from credit card fee display names for cleaner UI
+  - **Changes Made**:
+    - Simplified TenderName array entries to remove duplicate type indicators
+    - Updated TenderName method to return cleaner display strings
+    - Updated localization files to match simplified naming convention
+  - **Files modified**: `main/ui/labels.cc`, `main/data/settings.cc`, `main/data/locale.cc`
+  - **Impact**: Credit card fee options now display with cleaner, less cluttered text in the UI
+
 - **UI: Modernized Quantity Entry Keypad (2026-01-14)**
   - Completely redesigned the numeric keypad for item quantity entry with a modern phone-style layout (1-2-3 on top row, 4-5-6 middle, etc.)
   - Removed the arbitrary 5-item limit; now allows unlimited increments up to 10,000 with a single button press

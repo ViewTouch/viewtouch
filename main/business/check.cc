@@ -93,6 +93,8 @@ int tender_order[] = {
     TENDER_EXPENSE,
     TENDER_CREDIT_CARD_FEE_DOLLAR,
     TENDER_CREDIT_CARD_FEE_PERCENT,
+    TENDER_DEBIT_CARD_FEE_DOLLAR,
+    TENDER_DEBIT_CARD_FEE_PERCENT,
     -1
 };
 
@@ -3819,7 +3821,8 @@ int SubCheck::FigureTotals(Settings *settings)
         {
             // Calculate percentage value based on raw sales
             // Note: raw_sales may be from previous calculation; will recalculate after orders are processed
-            if (payptr->tender_type == TENDER_CREDIT_CARD_FEE_PERCENT)
+            if (payptr->tender_type == TENDER_CREDIT_CARD_FEE_PERCENT ||
+                payptr->tender_type == TENDER_DEBIT_CARD_FEE_PERCENT)
             {
                 Flt f = PriceToFlt(raw_sales) * PercentToFlt(payptr->amount);
                 payptr->value = FltToPrice(f);
@@ -3908,6 +3911,8 @@ int SubCheck::FigureTotals(Settings *settings)
         case TENDER_CHARGED_TIP:
         case TENDER_CREDIT_CARD_FEE_DOLLAR:
         case TENDER_CREDIT_CARD_FEE_PERCENT:
+        case TENDER_DEBIT_CARD_FEE_DOLLAR:
+        case TENDER_DEBIT_CARD_FEE_PERCENT:
             balance += payptr->value;
             break;
         default:
@@ -4165,15 +4170,17 @@ int SubCheck::FigureTotals(Settings *settings)
         payptr = payptr->next;
     }
     
-    // Calculate total credit card fees to include in taxable revenue
-    int credit_card_fee_total = 0;
+    // Calculate total credit/debit card fees to include in taxable revenue
+    int card_fee_total = 0;
     payptr = PaymentList();
     while (payptr)
     {
         if (payptr->tender_type == TENDER_CREDIT_CARD_FEE_DOLLAR ||
-            payptr->tender_type == TENDER_CREDIT_CARD_FEE_PERCENT)
+            payptr->tender_type == TENDER_CREDIT_CARD_FEE_PERCENT ||
+            payptr->tender_type == TENDER_DEBIT_CARD_FEE_DOLLAR ||
+            payptr->tender_type == TENDER_DEBIT_CARD_FEE_PERCENT)
         {
-            credit_card_fee_total += payptr->value;
+            card_fee_total += payptr->value;
         }
         payptr = payptr->next;
     }
@@ -4226,15 +4233,15 @@ int SubCheck::FigureTotals(Settings *settings)
     int current_tax_revenue = food_tax_revenue + alcohol_tax_revenue +
         room_tax_revenue + merchandise_tax_revenue;
     
-    if (credit_card_fee_total > 0)
+    if (card_fee_total > 0)
     {
         if (current_tax_revenue > 0)
         {
             // Distribute fees proportionally across all revenue bases
-            int fee_to_food = static_cast<int>(lround((Flt)credit_card_fee_total * (Flt)food_tax_revenue / (Flt)current_tax_revenue));
-            int fee_to_alcohol = static_cast<int>(lround((Flt)credit_card_fee_total * (Flt)alcohol_tax_revenue / (Flt)current_tax_revenue));
-            int fee_to_room = static_cast<int>(lround((Flt)credit_card_fee_total * (Flt)room_tax_revenue / (Flt)current_tax_revenue));
-            int fee_to_merchandise = credit_card_fee_total - fee_to_food - fee_to_alcohol - fee_to_room;
+            int fee_to_food = static_cast<int>(lround((Flt)card_fee_total * (Flt)food_tax_revenue / (Flt)current_tax_revenue));
+            int fee_to_alcohol = static_cast<int>(lround((Flt)card_fee_total * (Flt)alcohol_tax_revenue / (Flt)current_tax_revenue));
+            int fee_to_room = static_cast<int>(lround((Flt)card_fee_total * (Flt)room_tax_revenue / (Flt)current_tax_revenue));
+            int fee_to_merchandise = card_fee_total - fee_to_food - fee_to_alcohol - fee_to_room;
             
             food_tax_revenue += fee_to_food;
             alcohol_tax_revenue += fee_to_alcohol;
@@ -4246,8 +4253,8 @@ int SubCheck::FigureTotals(Settings *settings)
             // If no taxable revenue (e.g., all takeout with no other items), 
             // distribute fees evenly to ensure they're taxed by at least some tax types
             // This ensures fees are always included in tax calculations
-            int fee_per_base = credit_card_fee_total / 4;
-            int fee_remainder = credit_card_fee_total % 4;
+            int fee_per_base = card_fee_total / 4;
+            int fee_remainder = card_fee_total % 4;
             
             food_tax_revenue += fee_per_base + (fee_remainder > 0 ? 1 : 0);
             alcohol_tax_revenue += fee_per_base + (fee_remainder > 1 ? 1 : 0);

@@ -1929,9 +1929,10 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
         int flags = 0;
         if (tender_type == TENDER_GRATUITY)
             flags |= TF_IS_PERCENT;
-        else if (tender_type == TENDER_CREDIT_CARD_FEE_PERCENT)
+        else if (tender_type == TENDER_CREDIT_CARD_FEE_PERCENT ||
+                 tender_type == TENDER_DEBIT_CARD_FEE_PERCENT)
         {
-            // Credit Card Fee (Percentage) always uses percentage
+            // Credit/Debit Card Fee (Percentage) always uses percentage
             flags |= TF_IS_PERCENT;
         }
         // Credit Card Fee (Dollar) uses default flags = 0 (dollar amount)
