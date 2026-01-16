@@ -1783,7 +1783,7 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
             report->TextL2Col(ordstr);
             if (order->cost > 0)
             {
-                PriceFormat(settings, order->cost, 0, 0, str1);
+                PriceFormat(settings, order->cost, 1, 0, str1);
                 report->TextR2Col(str1);
             }
             report->NewLine();
@@ -1804,11 +1804,11 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
 	}
     report->Divider2Col();
     report->TextL2Col(GlobalTranslate("SubTotal:"));
-    PriceFormat(settings, total_cost, 0, 0, str1);
+    PriceFormat(settings, total_cost, 1, 0, str1);
     report->TextR2Col(str1);
     report->NewLine();
     report->TextL2Col(GlobalTranslate("Delivery:"));
-    PriceFormat(settings, delivery_cost, 0, 0, str1);
+    PriceFormat(settings, delivery_cost, 1, 0, str1);
     report->TextR2Col(str1);
     report->NewLine();
 
@@ -1816,7 +1816,7 @@ int Check::PrintDeliveryOrder(Report *report, int pwidth)
     total_cost += delivery_cost;
     report->Divider2Col('=');
     report->TextL2Col(GlobalTranslate("Total Including Taxes:"));
-    PriceFormat(settings, total_cost, 0, 0, str1);
+    PriceFormat(settings, total_cost, 1, 0, str1);
     report->TextR2Col(str1);
     report->NewLine();
 
@@ -2439,12 +2439,12 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                 {
                     if (order->cost != 0.0 || (order->status & ORDER_COMP))
                     {
-                        report->TextR(term->FormatPrice(order->cost));
+                        report->TextR(term->FormatPrice(order->cost, 1));
                         if (order->status & ORDER_COMP)
                         {
                             report->NewLine();
                             report->TextPosR(-8, GlobalTranslate("COMP"));
-                            report->TextR(term->FormatPrice(-order->cost), COLOR_RED);
+                            report->TextR(term->FormatPrice(-order->cost, 1), COLOR_RED);
                         }
                     }
                 }
@@ -2507,7 +2507,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                                 if (mod->status & ORDER_COMP)
                                     report->TextR(GlobalTranslate("COMP"));
                                 else
-                                    report->TextR(term->FormatPrice(mod->cost));
+                                    report->TextR(term->FormatPrice(mod->cost, 1));
                             }
                         }
                         first = 0;
@@ -2527,12 +2527,12 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
             if (tax)
             {
                 report->TextPosR(-8, GlobalTranslate("Tax"));
-                report->TextR(term->FormatPrice(tax));
+                report->TextR(term->FormatPrice(tax, 1));
                 report->NewLine();
                 if (sc->IsTaxExempt())
                 {
                     report->TextPosR(-8, GlobalTranslate("Tax Exempt"));
-                    report->TextR(term->FormatPrice(-tax));
+                    report->TextR(term->FormatPrice(-tax, 1));
                     report->NewLine();
                     vt_safe_string::safe_format(str, STRLONG, "%s:  %s", GlobalTranslate("Tax ID"), sc->tax_exempt.Value());
                     report->Mode(PRINT_BOLD);
@@ -2553,7 +2553,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                 while (payptr)
                 {
                     report->TextL(payptr->Description(settings));
-                    report->TextR(term->FormatPrice(payptr->value));
+                    report->TextR(term->FormatPrice(payptr->value, 1));
                     report->NewLine();
                     payptr = payptr->next;
                 }

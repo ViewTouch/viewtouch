@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **UI: Add Dollar Signs to Guest Check and Payment Summary Amounts (2026-01-15)**
+  - Fixed missing dollar signs ($) on amounts displayed in Payment Summary window and Guest Check Window menu items
+  - **Root Cause**: `Terminal::FormatPrice()` has a default parameter `sign = 0` which excludes the currency symbol, and many calls used this default instead of explicitly setting `sign = 1`
+  - **Solution**: Changed all `FormatPrice()` calls in check display functions to use `sign = 1` to include dollar signs on all amounts (individual items, modifiers, taxes, payments, and totals)
+  - **Files modified**: `main/business/check.cc` (MakeReport function and related price display calls)
+  - **Impact**: Guest Check Window and Payment Summary now consistently display all amounts with proper currency formatting including dollar signs
+
 - **Per-Terminal Button Image Settings: Preserve Individual Terminal Preferences (2026-01-15)**
   - Fixed global "Show Button Images" setting incorrectly overriding per-terminal customizations
   - **Root Cause**: The global setting was being applied universally, ignoring individual terminal configurations
