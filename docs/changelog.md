@@ -14,6 +14,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `main/business/check.cc` (MakeReport function and related price display calls)
   - **Impact**: Guest Check Window and Payment Summary now consistently display all amounts with proper currency formatting including dollar signs
 
+- **Settlement Page: Highlight Current Guest Check with Status (2026-01-15)**
+  - Added highlighting and status display for current guest check when multiple checks exist on settlement page
+  - **Changes Made**:
+    - Changed subcheck display from "#1" to "Check #1 - Open/Closed/Voided"
+    - Added background highlighting for the currently selected subcheck
+    - Used blue text color for better visibility when highlighted
+  - **Files modified**: `zone/payment_zone.cc` (header rendering in Render function)
+  - **Impact**: Users can now clearly see which guest check is currently selected on the settlement page, with status information and visual highlighting
+
 - **Per-Terminal Button Image Settings: Preserve Individual Terminal Preferences (2026-01-15)**
   - Fixed global "Show Button Images" setting incorrectly overriding per-terminal customizations
   - **Root Cause**: The global setting was being applied universally, ignoring individual terminal configurations

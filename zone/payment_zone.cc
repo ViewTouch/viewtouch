@@ -132,8 +132,19 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     TextL(term, line, str, text);
     if (currCheck->SubCount() > 1)
     {
-        vt_safe_string::safe_format(str, 256, "#%d", subCheck->number);
-        TextC(term, line, str, text);
+        const char* status_str = "";
+        if (subCheck->status == CHECK_OPEN)
+            status_str = " - Open";
+        else if (subCheck->status == CHECK_CLOSED)
+            status_str = " - Closed";
+        else if (subCheck->status == CHECK_VOIDED)
+            status_str = " - Voided";
+        
+        vt_safe_string::safe_format(str, 256, "Check #%d%s", subCheck->number, status_str);
+        
+        // Highlight the current subcheck
+        Background(term, line - ((spacing - 1)/2), 1.0, IMAGE_LIT_SAND);
+        TextC(term, line, str, COLOR_DK_BLUE);
     }
     int guests = currCheck->Guests();
     if (guests > 0)
