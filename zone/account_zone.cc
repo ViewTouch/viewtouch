@@ -22,6 +22,7 @@
 #include "system.hh"
 #include "account.hh"
 #include "report.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #include <iostream>
 #include "safe_string_utils.hh"
@@ -37,7 +38,7 @@ AccountZone::AccountZone()
 {
     list_header = 2;
     //list_footer = 1;
-    account = NULL;
+    account = nullptr;
     show_list = 1;
     edit_default = 0;
     AddTextField(GlobalTranslate("Account Name"), 15);
@@ -77,9 +78,10 @@ RenderResult AccountZone::Render(Terminal *term, int update_flag)
     {
         int my_records = term->system_data->account_db.AccountCount();
         if (account)
-            snprintf(buff, STRLENGTH, "Account %d of %d", record_no + 1, my_records);
+            // C++23: Use std::format for type-safe formatting
+            vt::cpp23::format_to_buffer(buff, STRLENGTH, "Account {} of {}", record_no + 1, my_records);
         else
-            snprintf(buff, STRLENGTH, "%s", GlobalTranslate("No Accounts"));
+            vt::cpp23::format_to_buffer(buff, STRLENGTH, "{}", GlobalTranslate("No Accounts"));
         TextC(term, 0, buff, col);
     }
     return RENDER_OKAY;
@@ -133,7 +135,7 @@ int AccountZone::LoadRecord(Terminal *term, int my_record_no)
     FormField *field = FieldList();
     account = term->system_data->account_db.FindByRecord(my_record_no);
 
-    if (account != NULL)
+    if (account != nullptr)
     {
         // AddTextField("Account Name", 15, 0);
         field->Set(account->name.Value());
@@ -153,7 +155,8 @@ int AccountZone::SaveRecord(Terminal *term, int my_record_no, int write_file)
     int acct_no = 0;
 
     FnTrace("AccountZone::SaveRecord()");
-    if (account != NULL)
+    (void)my_record_no;
+    if (account != nullptr)
     {
         FormField *field = FieldList();
         field->Get(account->name);  field = field->next;
@@ -175,7 +178,7 @@ int AccountZone::NewRecord(Terminal *term)
     FnTrace("AccountZone::NewRecord()");
     int acct_num = 0;
 
-    if (account != NULL)
+    if (account != nullptr)
         acct_num = account->number;
     account = term->system_data->account_db.NewAccount(acct_num);
     records = RecordCount(term);
@@ -226,18 +229,19 @@ int AccountZone::ListReport(Terminal *term, Report *report)
     int indent = 0;
     int my_color = COLOR_DEFAULT;
 
-    if (report == NULL)
+    if (report == nullptr)
         return 1;
 
     AccountDB *account_db = &(term->system_data->account_db);
     report->Clear();
     Account *acct = account_db->Next();
-    if (acct == NULL)
+    if (acct == nullptr)
         report->TextC(GlobalTranslate("No Accounts Defined"));
-    while (acct != NULL)
+    while (acct != nullptr)
     {
         indent = 0;
-        snprintf(buff, STRLENGTH, "%d", acct->number);
+        // C++23: Use std::format for integer formatting
+        vt::cpp23::format_to_buffer(buff, STRLENGTH, "{}", acct->number);
         report->TextPosL(indent, buff, my_color);
         indent += num_spaces;
         report->TextPosL(indent, acct->name.Value(), my_color);
@@ -270,7 +274,7 @@ int AccountZone::CheckAccountNumber(Terminal *term, int sendmsg)
     genericChar msggood[] = "clearstatus";
     const genericChar* msgsend = msggood;
 
-    if (account != NULL)
+    if (account != nullptr)
     {
         acctnumfld->Get(number);
         if (! IsValidAccountNumber(term, number))

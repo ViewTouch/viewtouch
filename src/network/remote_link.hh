@@ -19,7 +19,7 @@
  */
 
 #ifndef _REMOTE_LINK_HH
-#define _REMOTE_LINK_HH
+#define REMOTE_LINK_HH
 
 #include "basic.hh"
 
@@ -28,7 +28,9 @@
 #include <string>
 #include <vector>
 
-inline constexpr size_t QUEUE_SIZE = 2097152;
+// Reduced from 2MB to 256KB for better performance on memory-constrained 
+// systems like Raspberry Pi CM5 with 2GB RAM
+inline constexpr size_t QUEUE_SIZE = 262144;
 
 /**** Types ****/
 class CharQueue
@@ -297,117 +299,85 @@ namespace TerminalProtocol {
 
 /**** Server Protocol Constants ****/
 // Note: any updates should be applied to debug.cc too
-namespace ServerProtocol {
-    inline constexpr int ERROR           = 1;  // <s>
-    inline constexpr int TERMINFO        = 2;  // <sz, width, height, depth>
-    inline constexpr int TOUCH           = 3;  // <I2, x, y>
-    inline constexpr int KEY             = 4;  // <I2, k, kc>
-    inline constexpr int MOUSE           = 5;  // <I2, mc, x, y>
-    inline constexpr int PAGEDATA        = 6;  // see term_dialog.cc
-    inline constexpr int ZONEDATA        = 7;  // see term_dialog.cc
-    inline constexpr int ZONECHANGES     = 8;  // see term_dialog.cc
-    inline constexpr int KILLPAGE        = 9;  // no args
-    inline constexpr int KILLZONE        = 10; // no args
-    inline constexpr int KILLZONES       = 11; // no args
-    inline constexpr int TRANSLATE       = 12; // <str, str>
-    inline constexpr int LISTSELECT      = 13; // see term_dialog.cc
-    inline constexpr int SWIPE           = 14; // <str> - card swiped in card reader
-    inline constexpr int BUTTONPRESS     = 15; // <I2, I2> - layer id, button id
-    inline constexpr int ITEMSELECT      = 16; // <I2, I2, I2> - layer, menu/list, item
-    inline constexpr int TEXTENTRY       = 17; // <I2, I2, str> - layer, entry, value
-    inline constexpr int SHUTDOWN        = 18; // no args
+enum class ServerProtocol : int {
+    SrvError           = 1,  // <s>
+    SrvTermInfo        = 2,  // <sz, width, height, depth>
+    SrvTouch           = 3,  // <I2, x, y>
+    SrvKey             = 4,  // <I2, k, kc>
+    SrvMouse           = 5,  // <I2, mc, x, y>
+    SrvPageData        = 6,  // see term_dialog.cc
+    SrvZoneData        = 7,  // see term_dialog.cc
+    SrvZoneChanges     = 8,  // see term_dialog.cc
+    SrvKillPage        = 9,  // no args
+    SrvKillZone        = 10, // no args
+    SrvKillZones       = 11, // no args
+    SrvTranslate       = 12, // <str, str>
+    SrvListSelect      = 13, // see term_dialog.cc
+    SrvSwipe           = 14, // <str> - card swiped in card reader
+    SrvButtonPress     = 15, // <I2, I2> - layer id, button id
+    SrvItemSelect      = 16, // <I2, I2, I2> - layer, menu/list, item
+    SrvTextEntry       = 17, // <I2, I2, str> - layer, entry, value
+    SrvShutdown        = 18, // no args
     
-    inline constexpr int PRINTER_DONE    = 20; // <str> - printer done printing file
-    inline constexpr int BADFILE         = 21; // <str> - invalid file given
-    inline constexpr int DEFPAGE         = 22; // see term_dialog.cc
+    SrvPrinterDone     = 20, // <str> - printer done printing file
+    SrvBadFile         = 21, // <str> - invalid file given
+    SrvDefPage         = 22, // see term_dialog.cc
     
-    inline constexpr int CC_PROCESSED    = 30; // see Terminal::ReadCreditCard()
-    inline constexpr int CC_SETTLED      = 31;
-    inline constexpr int CC_INIT         = 32;
-    inline constexpr int CC_TOTALS       = 33;
-    inline constexpr int CC_DETAILS      = 34;
-    inline constexpr int CC_SAFCLEARED   = 35;
-    inline constexpr int CC_SAFDETAILS   = 36;
-    inline constexpr int CC_SETTLEFAILED = 37;
-    inline constexpr int CC_SAFCLEARFAILED = 38;
-}
+    SrvCcProcessed     = 30, // see Terminal::ReadCreditCard()
+    SrvCcSettled       = 31,
+    SrvCcInit          = 32,
+    SrvCcTotals        = 33,
+    SrvCcDetails       = 34,
+    SrvCcSafCleared    = 35,
+    SrvCcSafDetails    = 36,
+    SrvCcSettleFailed  = 37,
+    SrvCcSafClearFailed = 38
+};
 
-// Maintain backward compatibility with legacy #define names
-#define SERVER_ERROR              ServerProtocol::ERROR
-#define SERVER_TERMINFO           ServerProtocol::TERMINFO
-#define SERVER_TOUCH              ServerProtocol::TOUCH
-#define SERVER_KEY                ServerProtocol::KEY
-#define SERVER_MOUSE              ServerProtocol::MOUSE
-#define SERVER_PAGEDATA           ServerProtocol::PAGEDATA
-#define SERVER_ZONEDATA           ServerProtocol::ZONEDATA
-#define SERVER_ZONECHANGES        ServerProtocol::ZONECHANGES
-#define SERVER_KILLPAGE           ServerProtocol::KILLPAGE
-#define SERVER_KILLZONE           ServerProtocol::KILLZONE
-#define SERVER_KILLZONES          ServerProtocol::KILLZONES
-#define SERVER_TRANSLATE          ServerProtocol::TRANSLATE
-#define SERVER_LISTSELECT         ServerProtocol::LISTSELECT
-#define SERVER_SWIPE              ServerProtocol::SWIPE
-#define SERVER_BUTTONPRESS        ServerProtocol::BUTTONPRESS
-#define SERVER_ITEMSELECT         ServerProtocol::ITEMSELECT
-#define SERVER_TEXTENTRY          ServerProtocol::TEXTENTRY
-#define SERVER_SHUTDOWN           ServerProtocol::SHUTDOWN
-#define SERVER_PRINTER_DONE       ServerProtocol::PRINTER_DONE
-#define SERVER_BADFILE            ServerProtocol::BADFILE
-#define SERVER_DEFPAGE            ServerProtocol::DEFPAGE
-#define SERVER_CC_PROCESSED       ServerProtocol::CC_PROCESSED
-#define SERVER_CC_SETTLED         ServerProtocol::CC_SETTLED
-#define SERVER_CC_INIT            ServerProtocol::CC_INIT
-#define SERVER_CC_TOTALS          ServerProtocol::CC_TOTALS
-#define SERVER_CC_DETAILS         ServerProtocol::CC_DETAILS
-#define SERVER_CC_SAFCLEARED      ServerProtocol::CC_SAFCLEARED
-#define SERVER_CC_SAFDETAILS      ServerProtocol::CC_SAFDETAILS
-#define SERVER_CC_SETTLEFAILED    ServerProtocol::CC_SETTLEFAILED
-#define SERVER_CC_SAFCLEARFAILED  ServerProtocol::CC_SAFCLEARFAILED
+inline constexpr int ToInt(ServerProtocol code) {
+    return static_cast<int>(code);
+}
 
 /**** Printer Protocol Constants ****/
-namespace PrinterProtocol {
-    inline constexpr int FILE       = 1;  // <str> - specify file to print
-    inline constexpr int CANCEL     = 2;  // no args - cancel current printing task
-    inline constexpr int OPENDRAWER = 3;  // <I1> - open drawer <I1>
-    inline constexpr int DIE        = 99; // no args - kills printer process
+enum class PrinterProtocol : int {
+    File       = 1,  // <str> - specify file to print
+    Cancel     = 2,  // no args - cancel current printing task
+    OpenDrawer = 3,  // <I1> - open drawer <I1>
+    Die        = 99  // no args - kills printer process
+};
+
+inline constexpr int ToInt(PrinterProtocol code) {
+    return static_cast<int>(code);
 }
 
-// Maintain backward compatibility
-#define PRINTER_FILE       PrinterProtocol::FILE
-#define PRINTER_CANCEL     PrinterProtocol::CANCEL
-#define PRINTER_OPENDRAWER PrinterProtocol::OPENDRAWER
-#define PRINTER_DIE        PrinterProtocol::DIE
+/*** Mode Constants ***/
+enum class OperationMode : int {
+    OpNone      = 0,  // normal operation mode
+    OpTraining  = 1,  // current user is in training
+    OpTranslate = 2,  // edit mode - button translation
+    OpEdit      = 3,  // edit mode - application building
+    OpMacro     = 5   // record a macro
+};
 
-/**** Mode Constants ****/
-namespace OperationMode {
-    inline constexpr int NONE      = 0;  // normal operation mode
-    inline constexpr int TRAINING  = 1;  // current user is in training
-    inline constexpr int TRANSLATE = 2;  // edit mode - button translation
-    inline constexpr int EDIT      = 3;  // edit mode - application building
-    inline constexpr int MACRO     = 5;  // record a macro
+inline constexpr int ToInt(OperationMode mode) {
+    return static_cast<int>(mode);
 }
 
-// Maintain backward compatibility
-#define MODE_NONE      OperationMode::NONE
-#define MODE_TRAINING  OperationMode::TRAINING
-#define MODE_TRANSLATE OperationMode::TRANSLATE
-#define MODE_EDIT      OperationMode::EDIT
-#define MODE_MACRO     OperationMode::MACRO
+/*** Window Frame Constants ***/
+enum class WindowFrame : int {
+    FrameBorder = 1,  // regular border for window
+    FrameTitle  = 2,  // title bar on window
+    FrameMove   = 4,  // window can be moved by titlebar
+    FrameResize = 8,  // resize window handles on border
+    FrameClose  = 16  // close button on window border
+};
 
-/**** Window Frame Constants ****/
-namespace WindowFrame {
-    inline constexpr int BORDER = 1;  // regular border for window
-    inline constexpr int TITLE  = 2;  // title bar on window
-    inline constexpr int MOVE   = 4;  // window can be moved by titlebar
-    inline constexpr int RESIZE = 8;  // resize window handles on border
-    inline constexpr int CLOSE  = 16; // close button on window border
+inline constexpr int ToInt(WindowFrame frame) {
+    return static_cast<int>(frame);
 }
 
-// Maintain backward compatibility
-#define WINFRAME_BORDER WindowFrame::BORDER
-#define WINFRAME_TITLE  WindowFrame::TITLE
-#define WINFRAME_MOVE   WindowFrame::MOVE
-#define WINFRAME_RESIZE WindowFrame::RESIZE
-#define WINFRAME_CLOSE  WindowFrame::CLOSE
+inline constexpr int operator|(WindowFrame lhs, WindowFrame rhs) {
+    return ToInt(lhs) | ToInt(rhs);
+}
 
 #endif

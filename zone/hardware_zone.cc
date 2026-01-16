@@ -24,6 +24,7 @@
 #include "labels.hh"
 #include "manager.hh"
 #include "system.hh"
+#include <cstring>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -46,12 +47,12 @@ int IsKitchenPrinter(int type)
 
 /**** HardwareZone class ****/
 static const genericChar* DrawerCountName[] = {
-    "None", "One", "Two", NULL};
+    "None", "One", "Two", nullptr};
 static int DrawerCountValue[] = {
     0, 1, 2, -1};
 
 static const genericChar* DrawerPulseName[] = {
-    "Pulse 1", "Pulse 2", NULL };
+    "Pulse 1", "Pulse 2", nullptr };
 static int          DrawerPulseValue[] = {
     0, 1, -1 };
 
@@ -66,7 +67,9 @@ HardwareZone::HardwareZone()
     // Term Fields
     AddTextField("This Display's Name is", 32);
     term_start = FieldListEnd();
-    AddListField("This Display's Function is", TermTypeName, TermTypeValue);
+    AddListField("This Display's Function is",
+                 const_cast<const genericChar**>(TermTypeName.data()),
+                 const_cast<int*>(TermTypeValue.data()));
     AddListField("If This Display is a Kitchen Video Then It Sorts By", CheckDisplayOrderName, CheckDisplayOrderValue);
     AddListField("The Requisition Ticket Heading is", WOHeadingName, WOHeadingValue);
     AddListField("Does This Display Print Requisition Tickets?", NoYesName, NoYesValue);
@@ -117,7 +120,9 @@ HardwareZone::HardwareZone()
     // Printer Fields
     AddTextField("This Printer Is Identified As", 20);
     printer_start = FieldListEnd();
-    AddListField("This Printer's Performance Assignment Is", PrinterTypeName, PrinterTypeValue);
+    AddListField("This Printer's Performance Assignment Is",
+                 const_cast<const genericChar**>(PrinterTypeName.data()),
+                 const_cast<int*>(PrinterTypeValue.data()));
     AddTextField("This Printer's Queue Name Is", 20);
     //AddListField("Connection Interface", PortName, PortValue);
     AddListField("This Printer's Output Is Formatted For", PrinterModelName, PrinterModelValue);
@@ -130,16 +135,48 @@ HardwareZone::HardwareZone()
 RenderResult HardwareZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("HardwareZone::Render()");
+
+    // Mirror ListFormZone::Render but avoid rendering form fields when show_list is set.
+    records = RecordCount(term);
     if (update_flag == RENDER_NEW)
     {
+        record_no = 0;
+        if (records > 0)
+            LoadRecord(term, 0);
+        show_list = 1;
+        list_page = 0;
         page = 0;
         section = 0;
     }
 
+    if (records <= 0)
+        show_list = 1;
+    if (update_flag && show_list)
+    {
+        list_report.Clear();
+        ListReport(term, &list_report);
+    }
+
+    if (update_flag || keep_focus == 0)
+        keyboard_focus = nullptr;
+
     int col = color[0];
-    ListFormZone::Render(term, update_flag);
+
     if (show_list)
     {
+        // Render base layout without form fields
+        LayoutZone::Render(term, update_flag);
+
+        // Render list
+        if (records > 0)
+            list_report.selected_line = record_no;
+        else
+            list_report.selected_line = -1;
+        if (update_flag)
+            list_page = -1; // force update
+        list_report.Render(term, this, list_header, list_footer, list_page, 0, list_spacing);
+
+        // List headings
         switch (section)
         {
         default:
@@ -161,6 +198,10 @@ RenderResult HardwareZone::Render(Terminal *term, int update_flag)
     }
     else
     {
+        // Render form view (fields) via FormZone logic
+        FormZone::Render(term, update_flag);
+
+        // Form headings
         switch (section)
         {
         default:
@@ -171,7 +212,57 @@ RenderResult HardwareZone::Render(Terminal *term, int update_flag)
             break;
         }
     }
+
     return RENDER_OKAY;
+}
+
+SignalResult HardwareZone::Touch(Terminal *term, int tx, int ty)
+{
+    FnTrace("HardwareZone::Touch()");
+    if (records <= 0)
+        return SIGNAL_IGNORED;
+
+    FormZone::Touch(term, tx, ty);
+    if (show_list)
+    {
+        int new_page = list_page;
+        int max_page = list_report.max_pages;
+        int row = list_report.TouchLine(list_spacing, selected_y);
+        if (row == -1)      // header touched
+        {
+            --new_page;
+            if (new_page < 0)
+                new_page = max_page - 1;
+        }
+        else if (row == -2) // footer touched
+        {
+            ++new_page;
+            if (new_page >= max_page)
+                new_page = 0;
+        }
+        else if (row != record_no && row >= 0 && row < records)
+        {
+            // Only update selection, don't load the record into form fields
+            // User must send "change view" signal to see the configuration
+            record_no = row;
+            Draw(term, 0);
+            return SIGNAL_OKAY;
+        }
+        if (list_page != new_page)
+        {
+            list_page = new_page;
+            Draw(term, 0);
+            return SIGNAL_OKAY;
+        }
+        return SIGNAL_IGNORED;
+    }
+
+    keyboard_focus = Find(selected_x, selected_y);
+    if (keyboard_focus &&
+        keyboard_focus->Touch(term, this, selected_x, selected_y) == SIGNAL_OKAY)
+        UpdateForm(term, record_no);
+    Draw(term, 0);
+    return SIGNAL_OKAY;
 }
 
 int HardwareZone::UpdateForm(Terminal *term, int record)
@@ -211,12 +302,13 @@ int HardwareZone::UpdateForm(Terminal *term, int record)
 SignalResult HardwareZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("HardwareZone::Signal()");
+    int prev_show = show_list;
     static const genericChar* commands[] = {
         "section0", "section1", "changestatus", "calibrate",
         "testreceipt", "testreport",
-        "printertest", "opendrawer1", "opendrawer2", NULL};
+        "printertest", "opendrawer1", "opendrawer2", nullptr};
 
-    Printer *printer = NULL;
+    Printer *printer = nullptr;
     int idx = CompareList(message, commands);
     switch (idx)
     {
@@ -254,18 +346,28 @@ SignalResult HardwareZone::Signal(Terminal *term, const genericChar* message)
             printer->OpenDrawer(1);
         return SIGNAL_OKAY;
     default:
-        return ListFormZone::Signal(term, message);
+        {
+            SignalResult res = ListFormZone::Signal(term, message);
+            // When toggling from list to form view, load the current record so the form shows data
+            if (res != SIGNAL_IGNORED && prev_show && !show_list && records > 0 && strcmp(message, "change view") == 0)
+            {
+                LoadRecord(term, record_no);
+                UpdateForm(term, record_no);
+                Draw(term, 0);
+            }
+            return res;
+        }
     }
 }
 
 int HardwareZone::LoadRecord(Terminal *term, int record)
 {
 	FnTrace("HardwareZone::LoadRecord()");
-    PrinterInfo *pi = NULL;
-    TermInfo    *ti = NULL;
-    FormField   *thisForm = NULL;
+    PrinterInfo *pi = nullptr;
+    TermInfo    *ti = nullptr;
+    FormField   *thisForm = nullptr;
 
-	for (FormField *field = FieldList(); field != NULL; field = field->next)
+	for (FormField *field = FieldList(); field != nullptr; field = field->next)
 		field->active = 0;
 
 	Settings *settings = term->GetSettings();
@@ -273,7 +375,7 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
 	{
     case 1:  // remote printer
         pi = settings->FindPrinterByRecord(record);
-        if (pi == NULL)
+        if (pi == nullptr)
             break;
 
         thisForm = printer_start;
@@ -293,7 +395,7 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         break;
     default:  // terminal
         ti = settings->FindTermByRecord(record);
-        if (ti == NULL)
+        if (ti == nullptr)
             break;
 
         thisForm = term_start;
@@ -344,10 +446,10 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
 int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
 {
 	FnTrace("HardwareZone::SaveRecord()");
-    TermInfo    *ti = NULL;
-    PrinterInfo *pi = NULL;
+    TermInfo    *ti = nullptr;
+    PrinterInfo *pi = nullptr;
 	Settings    *settings = term->GetSettings();
-	FormField   *field = NULL;
+	FormField   *field = nullptr;
 
 	switch (section)
 	{
@@ -509,16 +611,16 @@ int HardwareZone::ChangeStatus(Terminal *term)
 {
     FnTrace("HardwareZone::ChangeStatus()");
     Settings    *settings = term->GetSettings();
-    TermInfo    *ti = NULL;
-    Terminal    *terminal = NULL;
-    PrinterInfo *pi = NULL;
-    Printer     *printer = NULL;
+    TermInfo    *ti = nullptr;
+    Terminal    *terminal = nullptr;
+    PrinterInfo *pi = nullptr;
+    Printer     *printer = nullptr;
 
     switch (section)
     {
     default:
         ti = settings->FindTermByRecord(record_no);
-        if (ti == NULL || ti->IsServer())
+        if (ti == nullptr || ti->IsServer())
             return 0;
 
         terminal = ti->FindTerm(term->parent);
@@ -535,14 +637,14 @@ int HardwareZone::ChangeStatus(Terminal *term)
             term->OpenDialog("Starting The Display Terminal\\Please Wait");
             ti->OpenTerm(term->parent, 1);
             term->KillDialog();
-            term->UpdateAllTerms(UPDATE_TERMINALS | UPDATE_PRINTERS, NULL);
+            term->UpdateAllTerms(UPDATE_TERMINALS | UPDATE_PRINTERS, nullptr);
 
             // enable any associated printers
             pi = settings->PrinterList();
             while (pi)
             {
                 printer = pi->FindPrinter(term->parent);
-                if (printer == NULL &&
+                if (printer == nullptr &&
                     (pi->host == ti->printer_host || pi->host == ti->display_host))
                     pi->OpenPrinter(term->parent, 1);
                 pi = pi->next;
@@ -554,7 +656,7 @@ int HardwareZone::ChangeStatus(Terminal *term)
         break;
     case 1:
         pi = settings->FindPrinterByRecord(record_no);
-        if (pi == NULL)
+        if (pi == nullptr)
             return 0;
 
         printer = pi->FindPrinter(term->parent);
@@ -569,7 +671,7 @@ int HardwareZone::ChangeStatus(Terminal *term)
             term->OpenDialog("Starting The Printer\\Please Wait");
             pi->OpenPrinter(term->parent, 1);
             term->KillDialog();
-            term->UpdateAllTerms(UPDATE_PRINTERS, NULL);
+            term->UpdateAllTerms(UPDATE_PRINTERS, nullptr);
         }
         break;
     }
@@ -584,11 +686,11 @@ int HardwareZone::Calibrate(Terminal *term)
 
     Settings *settings = term->GetSettings();
     TermInfo *ti = settings->FindTermByRecord(record_no);
-    if (ti == NULL)
+    if (ti == nullptr)
         return 0;
 
     Terminal *parent_term = ti->FindTerm(term->parent);
-    if (parent_term == NULL)
+    if (parent_term == nullptr)
         return 0;
     else
         return parent_term->CalibrateTS();
@@ -602,5 +704,5 @@ Printer *HardwareZone::FindPrinter(Terminal *term)
     if (ti)
         return ti->FindPrinter(MasterControl);
     else
-        return NULL;
+        return nullptr;
 }

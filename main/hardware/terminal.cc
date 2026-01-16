@@ -38,6 +38,7 @@
 #include "manager.hh"
 #include "printer.hh"
 #include "remote_link.hh"
+#include "src/utils/vt_enum_utils.hh"
 #include "report.hh"
 #include "sales.hh"
 #include "settings.hh"
@@ -47,6 +48,7 @@
 #include "touch_screen.hh"
 #endif
 #include "utility.hh"
+#include "src/utils/cpp23_utils.hh"
 #include "safe_string_utils.hh"
 #include "zone.hh"
 #include "version/vt_version_info.hh"
@@ -72,6 +74,7 @@
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#include "src/utils/cpp23_utils.hh"
 #endif
 
 
@@ -254,9 +257,21 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
 	{
 		int code = term->RInt8();
         term->buffer_in->SetCode("vt_main", code);
-		switch (code)
+
+        auto protocol = vt::IntToEnum<ServerProtocol>(code);
+        if (!protocol) {
+            vt_safe_string::safe_format(str, STRLENGTH, GlobalTranslate("Cannot process unknown code: %d"), code);
+            ReportError(str);
+            vt_safe_string::safe_format(str, STRLENGTH, GlobalTranslate("  Last code processed was %d"), last_code);
+            ReportError(str);
+            printf("Terminating due to unforseen error....\n");
+            EndSystem();
+            break;
+        }
+
+		switch (*protocol)
 		{
-        case SERVER_TERMINFO:
+        case ServerProtocol::SrvTermInfo:
             term->size   = term->RInt8();
             term->width  = term->RInt16();
             term->height = term->RInt16();
@@ -315,12 +330,12 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             }
             break;
 
-        case SERVER_ERROR:
+        case ServerProtocol::SrvError:
             vt_safe_string::safe_format(str, STRLENGTH, "TermError: %s", term->RStr());
             ReportError(str);
             break;
 
-        case SERVER_TOUCH:
+        case ServerProtocol::SrvTouch:
             term->time_out   = SystemTime;
             term->last_input = SystemTime;
             {
@@ -336,7 +351,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             }
             break;
 
-        case SERVER_KEY:
+        case ServerProtocol::SrvKey:
         {
             term->RInt16(); // win id - ignored
             genericChar key = (genericChar) term->RInt16();
@@ -348,7 +363,7 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
         }
         break;
 
-        case SERVER_MOUSE:
+        case ServerProtocol::SrvMouse:
         {
             int my_id = term->RInt16();
             int my_code = term->RInt8();
@@ -367,28 +382,28 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
         }
         break;
 
-        case SERVER_ZONEDATA:
+        case ServerProtocol::SrvZoneData:
             fprintf(stderr, "SERVER_ZONEDATA received, calling ReadZone()\n");
             term->ReadZone(); 
             fprintf(stderr, "SERVER_ZONEDATA: ReadZone() returned\n");
             break;
 
-        case SERVER_ZONECHANGES:
+        case ServerProtocol::SrvZoneChanges:
             term->ReadMultiZone(); break;
 
-        case SERVER_PAGEDATA:
+        case ServerProtocol::SrvPageData:
             term->ReadPage(); break;
 
-        case SERVER_KILLZONE:
+        case ServerProtocol::SrvKillZone:
             term->KillZone(); break;
 
-        case SERVER_KILLPAGE:
+        case ServerProtocol::SrvKillPage:
             term->KillPage(); break;
 
-        case SERVER_DEFPAGE:
+        case ServerProtocol::SrvDefPage:
             term->ReadDefaults(); break;
 
-        case SERVER_TRANSLATE:
+        case ServerProtocol::SrvTranslate:
         {
             int no = term->RInt8(); // translation count
             const genericChar* s1;
@@ -412,10 +427,10 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             }
         }
         break;
-        case SERVER_LISTSELECT:
+        case ServerProtocol::SrvListSelect:
             term->JumpList(term->RInt32());
             break;
-        case SERVER_SWIPE:
+        case ServerProtocol::SrvSwipe:
         {
             const char* s1 = term->RStr();
             if (strlen(s1) < STRLENGTH)
@@ -426,17 +441,17 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             }
         }
         break;
-        case SERVER_BUTTONPRESS:
+        case ServerProtocol::SrvButtonPress:
             term->RInt16(); // layer id
             term->ButtonCommand(term->RInt16());
             break;
-        case SERVER_SHUTDOWN:  // only allow easy exits on debug platforms
+        case ServerProtocol::SrvShutdown:  // only allow easy exits on debug platforms
             if (term->user != nullptr && (term->user->id == 1 || term->user->id == 2))
                 EndSystem();  // superuser and developer can end system
             else if (debug_mode)
                 EndSystem();  // anyone in debug mode can end system
             break;
-        case SERVER_CC_PROCESSED:
+        case ServerProtocol::SrvCcProcessed:
             if (term != nullptr)
             {
                 term->ReadCreditCard();
@@ -446,26 +461,26 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
                     term->Signal("ccprocessed", 0);
             }
             break;
-        case SERVER_CC_SETTLED:
+        case ServerProtocol::SrvCcSettled:
             term->CC_GetSettlementResults();
             term->eod_failed = 0;
             break;
-        case SERVER_CC_INIT:
+        case ServerProtocol::SrvCcInit:
             term->CC_GetInitResults();
             break;
-        case SERVER_CC_TOTALS:
+        case ServerProtocol::SrvCcTotals:
             term->CC_GetTotalsResults();
             break;
-        case SERVER_CC_DETAILS:
+        case ServerProtocol::SrvCcDetails:
             term->CC_GetDetailsResults();
             break;
-        case SERVER_CC_SAFCLEARED:
+        case ServerProtocol::SrvCcSafCleared:
             term->CC_GetSAFClearedResults();
             break;
-        case SERVER_CC_SAFDETAILS:
+        case ServerProtocol::SrvCcSafDetails:
             term->CC_GetSAFDetails();
             break;
-        case SERVER_CC_SETTLEFAILED:
+        case ServerProtocol::SrvCcSettleFailed:
         {
             term->cc_processing = 0;
             term->eod_failed = 1;
@@ -483,17 +498,9 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
             }
             break;
         }
-        case SERVER_CC_SAFCLEARFAILED:
+        case ServerProtocol::SrvCcSafClearFailed:
             term->cc_processing = 0;
             term->eod_failed = 1;
-            break;
-        default:
-            snprintf(str, STRLENGTH, GlobalTranslate("Cannot process unknown code: %d"), code);
-            ReportError(str);
-            snprintf(str, STRLENGTH, GlobalTranslate("  Last code processed was %d"), last_code);
-            ReportError(str);
-            printf("Terminating due to unforseen error....\n");
-            EndSystem();
             break;
 		} //end switch
         last_code = code;
@@ -899,7 +906,7 @@ int Terminal::Jump(int jump_type, int jump_id)
     if (targetPage == nullptr)
 	{
         genericChar buffer[STRLENGTH];
-        snprintf(buffer, STRLENGTH, Translate("Unable to find jump target (%d, %d) for %s"),
+        vt_safe_string::safe_format(buffer, STRLENGTH, Translate("Unable to find jump target (%d, %d) for %s"),
                  jump_id, size, name.Value());
         TerminalError(buffer);
         return 1;
@@ -984,6 +991,8 @@ int Terminal::RunScript(const genericChar* script, int jump_type, int jump_id)
                 if (p)
                     PushPage(p->id);
             }
+            break;
+        default:
             break;
         }
 
@@ -1313,8 +1322,8 @@ int Terminal::OpenTabList(const char* message)
                 }
                 subcheck = subcheck->next;
             }
-            snprintf(btitle, STRLENGTH, "%s\\%s", fname, four);
-            snprintf(bmesg, STRLENGTH, "%s %d", message, currcheck->serial_number);
+            vt::cpp23::format_to_buffer(btitle, STRLENGTH, "{}\\{}", fname, four);
+            vt::cpp23::format_to_buffer(bmesg, STRLENGTH, "{} {}", message, currcheck->serial_number);
             sd->Button(btitle, bmesg);
         }
         currcheck = currcheck->next;
@@ -1629,11 +1638,13 @@ SignalResult Terminal::Signal(const genericChar* message, int group_id)
         
         // Show confirmation message
         char confirmation_msg[STRLONG];
-        snprintf(confirmation_msg, STRLONG, Translate("Button images %s on this terminal"), show_button_images ? Translate("ENABLED") : Translate("DISABLED"));
+        vt_safe_string::safe_format(confirmation_msg, STRLONG, Translate("Button images %s on this terminal"), show_button_images ? Translate("ENABLED") : Translate("DISABLED"));
         ReportError(confirmation_msg);
         
         return SIGNAL_OKAY;
     }
+    default:
+        break;
     }
     
     return SIGNAL_IGNORED;
@@ -1824,11 +1835,11 @@ int Terminal::OpenRecordFile()
     char filename[STRLENGTH];
     char buffer[STRLENGTH];
 
-    snprintf(filename, STRLENGTH, ".record_%s.macro", name.Value());
+    vt::cpp23::format_to_buffer(filename, STRLENGTH, ".record_{}.macro", name.Value());
     record_fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0600);
     if (record_fd < 0)
     {
-        snprintf(buffer, STRLENGTH, "OpenRecordFile Error %d opening %s",
+        vt::cpp23::format_to_buffer(buffer, STRLENGTH, "OpenRecordFile Error {} opening {}",
                  errno, filename);
         ReportError(buffer);
         retval = 1;
@@ -1847,7 +1858,7 @@ int Terminal::RecordTouch(int x, int y)
 
     if (record_fd > 0)
     {
-        snprintf(recordstr, STRLENGTH, "Touch: %d %d\n", x, y);
+        vt::cpp23::format_to_buffer(recordstr, STRLENGTH, "Touch: {} {}\n", x, y);
         write(record_fd, recordstr, strlen(recordstr));
     }
     return retval;
@@ -1865,7 +1876,7 @@ int Terminal::RecordKey(int key, int my_code, int state)
         retval = 1;
     else if (record_fd > 0)
     {
-        snprintf(recordstr, STRLENGTH, "Key: %d %d %d\n", key, my_code, state);
+        vt::cpp23::format_to_buffer(recordstr, STRLENGTH, "Key: {} {} {}\n", key, my_code, state);
         write(record_fd, recordstr, strlen(recordstr));
     }
     return retval;
@@ -1881,7 +1892,7 @@ int Terminal::RecordMouse(int my_code, int x, int y)
 
     if (record_fd > 0)
     {
-        snprintf(recordstr, STRLENGTH, "Mouse: %d %d %d\n", my_code, x, y);
+        vt::cpp23::format_to_buffer(recordstr, STRLENGTH, "Mouse: {} {} {}\n", my_code, x, y);
         write(record_fd, recordstr, strlen(recordstr));
     }
     return retval;
@@ -1907,7 +1918,7 @@ int Terminal::ReadRecordFile()
     int state;
     KeyValueInputFile infile;
 
-    snprintf(filename, STRLENGTH, ".record_%s.macro", name.Value());
+    vt::cpp23::format_to_buffer(filename, STRLENGTH, ".record_{}.macro", name.Value());
     if (infile.Open(filename))
     {
         while (infile.Read(key, value, STRLENGTH))
@@ -3099,7 +3110,7 @@ int Terminal::EditTerm(int save_data, int edit_mode)
     WInt16(64);  // y
     WInt16(180); // width (increased from 120)
     WInt16(360); // height
-    WInt8(WINFRAME_BORDER | WINFRAME_TITLE | WINFRAME_MOVE);
+    WInt8(ToInt(WindowFrame::FrameBorder) | ToInt(WindowFrame::FrameTitle) | ToInt(WindowFrame::FrameMove));
     WStr("Edit ToolBar");
 
     WInt8(TERM_PUSHBUTTON);
@@ -3225,7 +3236,7 @@ int Terminal::UpdateZoneDB(Control *con)
         {
             int fallback_page = GetDefaultLoginPage();
             genericChar buffer[STRLONG];
-            snprintf(buffer, STRLONG, "Can't Find Page %d for %s",
+            vt::cpp23::format_to_buffer(buffer, STRLONG, "Can't Find Page {} for {}",
                      fallback_page, name.Value());
             ReportError(buffer);
             page = nullptr;
@@ -3234,7 +3245,7 @@ int Terminal::UpdateZoneDB(Control *con)
     }
     org_page_id = 0;
 
-    // SERVER_TERMINFO command from term will cause jump to login page
+    // ServerProtocol::SrvTermInfo command from term will cause jump to login page
     return 0;
 }
 
@@ -3595,7 +3606,7 @@ int Terminal::FinalizeOrders()
                 jump_target = -1;        
             if (Jump(JUMP_NORMAL, jump_target))
             {
-                snprintf(str, STRLENGTH, Translate("Couldn't jump to page %d"), PAGE_ID_SETTLEMENT);
+                vt_safe_string::safe_format(str, STRLENGTH, Translate("Couldn't jump to page %d"), PAGE_ID_SETTLEMENT);
                 ReportError(str);
             }
             break;
@@ -3603,7 +3614,7 @@ int Terminal::FinalizeOrders()
             // For SelfOrder terminals, go to settlement page after finalizing
             if (Jump(JUMP_NORMAL, jump_target))
             {
-                snprintf(str, STRLENGTH, Translate("Couldn't jump to page %d"), PAGE_ID_SETTLEMENT);
+                vt_safe_string::safe_format(str, STRLENGTH, Translate("Couldn't jump to page %d"), PAGE_ID_SETTLEMENT);
                 ReportError(str);
             }
             break;
@@ -3770,16 +3781,16 @@ int Terminal::RenderBlankPage()
     if (page == nullptr)
         return 1;
 
-    int mode = MODE_NONE;
+    auto mode = OperationMode::OpNone;
     if (record_activity)
-        mode = MODE_MACRO;
+        mode = OperationMode::OpMacro;
     else if (edit)
-        mode = MODE_EDIT;
+        mode = OperationMode::OpEdit;
     else if (user && user->training)
-        mode = MODE_TRAINING;
+        mode = OperationMode::OpTraining;
 
     WInt8(TERM_BLANKPAGE);
-    WInt8(mode);
+    WInt8(ToInt(mode));
     if (page->image == IMAGE_DEFAULT)
         WInt8(zone_db->default_image);
     else
@@ -3839,7 +3850,7 @@ int Terminal::RenderBlankPage()
                 {
                     if (i > 0)
                         ref_list[ref_pos++] = ',';
-                    ref_pos += snprintf(ref_list + ref_pos, STRLENGTH - ref_pos, "%d", list[i]);
+                    ref_pos += vt::cpp23::format_to_buffer(ref_list + ref_pos, STRLENGTH - ref_pos, "{}", list[i]);
                 }
                 if (ref > 6)
                 {
@@ -3925,6 +3936,7 @@ int Terminal::RenderText(const std::string &str, int x, int y, int color, int fo
         case FONT_COURIER_20: font = FONT_COURIER_20B; break;
         case FONT_COURIER_18B: font = FONT_COURIER_18; break;
         case FONT_COURIER_20B: font = FONT_COURIER_20; break;
+        default: break;
         }
     }
     if (mode & PRINT_UNDERLINE)
@@ -3978,6 +3990,7 @@ int Terminal::RenderTextLen(const genericChar* str, int len, int x, int y, int c
         case FONT_COURIER_20:  font = FONT_COURIER_20B; break;
         case FONT_COURIER_18B: font = FONT_COURIER_18;  break;
         case FONT_COURIER_20B: font = FONT_COURIER_20;  break;
+        default: break;
         }
     }
     if (mode & PRINT_UNDERLINE)
@@ -4745,9 +4758,9 @@ int Terminal::SendNow()
 }
 
 #define MOVE_RIGHT  5
-#define MOVE_LEFT  -5
+#define MOVE_LEFT  (-5)
 #define MOVE_DOWN   5
-#define MOVE_UP    -5
+#define MOVE_UP    (-5)
 int Terminal::KeyboardInput(genericChar key, int my_code, int state)
 {
     FnTrace("Terminal::KeyboardInput()");
@@ -4764,6 +4777,7 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             return EditTerm(0);  // Exit edit without saving, if we're in edit mode
         else
             return EditTerm(1);  // EditTerm defaults to 1 anyway
+        break;
     case XK_F3:  // record activity
         if (system_data->settings.enable_f3_f4_recording)
         {
@@ -4823,6 +4837,8 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             ForePage(); return 0;
         case XK_Page_Down:
             NextPage(); return 0;
+        default:
+            break;
         }
      }
     if (edit == 0)
@@ -4861,6 +4877,9 @@ int Terminal::KeyboardInput(genericChar key, int my_code, int state)
             zone_db->CopyEdit(this, MOVE_RIGHT, 0);
         else
             zone_db->PositionEdit(this, grid_x, 0);
+        break;
+    default:
+        break;
         break;
     case XK_KP_3:
         if (state & ControlMask)
@@ -5157,6 +5176,8 @@ int Terminal::ButtonCommand(int command)
         WInt8(TERM_ICONIFY);
         SendNow();
         break;
+    default:
+        break;
 	}
 
 	if (edit == 0)
@@ -5184,6 +5205,8 @@ int Terminal::ButtonCommand(int command)
         break;
     case WB_PRIOR:
         ForePage();
+        break;
+    default:
         break;
     case WB_NEXT:
         NextPage();
@@ -5615,7 +5638,7 @@ int Terminal::ReadZone()
     FnTrace("Terminal::ReadZone()");
     FILE *debugfile = fopen("/tmp/viewtouch_debug.log", "a");
     if (debugfile) {
-        fprintf(debugfile, "=== ReadZone() called at %ld ===\n", time(NULL));
+        fprintf(debugfile, "=== ReadZone() called at %ld ===\n", time(nullptr));
         fclose(debugfile);
     }
     fprintf(stderr, "=== ReadZone() called ===\n");
@@ -6437,7 +6460,7 @@ int Terminal::ReadCreditCard()
             else
             {
                 char temp[STRLENGTH];
-                snprintf(temp, STRLENGTH, "%s %s", credit->code.Value(), credit->auth.Value());
+                vt::cpp23::format_to_buffer(temp, STRLENGTH, "{} {}", credit->code.Value(), credit->auth.Value());
                 credit->verb.Set(temp);
             }
         }
@@ -7111,7 +7134,7 @@ int Terminal::CC_GetTotalsResults()
         {
             if (RStr(line) == nullptr)
             {
-                snprintf(line, STRLONG, "Failed at %d reading totals results", total_rows - rows);
+                vt::cpp23::format_to_buffer(line, STRLONG, "Failed at {} reading totals results", total_rows - rows);
                 ReportError(line);
                 rows = 0;
             }
@@ -7255,13 +7278,13 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
     if (dev <= 0)
     {
         // Critical fix: Use snprintf instead of sprintf for buffer safety
-        snprintf(str, sizeof(str), "Failed to open socket '%s'", SOCKET_FILE);
+        vt::cpp23::format_to_buffer(str, sizeof(str), "Failed to open socket '{}'", SOCKET_FILE);
         ReportError(str);
     }
     else if (bind(dev, (struct sockaddr *) &server_adr, SUN_LEN(&server_adr)) < 0)
     {
         // Critical fix: Use snprintf instead of sprintf for buffer safety
-        snprintf(str, sizeof(str), "Failed to bind socket '%s'", SOCKET_FILE);
+        vt::cpp23::format_to_buffer(str, sizeof(str), "Failed to bind socket '{}'", SOCKET_FILE);
         ReportError(str);
     }
     else
@@ -7269,13 +7292,13 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
         if (width > -1 && height > -1)
         {
             // Critical fix: Use snprintf instead of sprintf for buffer safety
-            snprintf(str, sizeof(str), VIEWTOUCH_PATH "/bin/vt_term %s %d %s %d %d %d &",
+            vt::cpp23::format_to_buffer(str, sizeof(str), VIEWTOUCH_PATH "/bin/vt_term {} {} {} {} {} {} &",
                     SOCKET_FILE, hardware_type, hostname, isserver, width, height);
         }
         else
         {
             // Critical fix: Use snprintf instead of sprintf for buffer safety
-            snprintf(str, sizeof(str), VIEWTOUCH_PATH "/bin/vt_term %s %d %s %d&",
+            vt::cpp23::format_to_buffer(str, sizeof(str), VIEWTOUCH_PATH "/bin/vt_term {} {} {} {}&",
                     SOCKET_FILE, hardware_type, hostname, isserver);
         }
         system(str);
@@ -7292,7 +7315,7 @@ int OpenTerminalSocket(const char* hostname, int hardware_type, int isserver, in
         if (socket_no < 0)
         {
             // Critical fix: Use snprintf instead of sprintf for buffer safety
-            snprintf(str, sizeof(str), "Failed to open term on host '%s'", hostname);
+            vt::cpp23::format_to_buffer(str, sizeof(str), "Failed to open term on host '{}'", hostname);
             ReportError(str);
         }
     }

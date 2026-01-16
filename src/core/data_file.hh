@@ -19,8 +19,8 @@
  * Functions for the reading & writing of data files
  */
 
-#ifndef _DATA_FILE_HH
-#define _DATA_FILE_HH
+#ifndef DATA_FILE_HH
+#define DATA_FILE_HH
 
 #include "utility.hh"
 
@@ -76,7 +76,7 @@ public:
     int Read(Str &val);
     int Read(TimeInfo &val);
 
-    // conditional reads (won't read if pointer is NULL)
+    // conditional reads (won't read if pointer is nullptr)
     int Read(int *val);
     int Read(Flt *val);
     int Read(Str *val);
@@ -125,7 +125,7 @@ public:
     int Write(Flt       val, int bk = 0);
     int Write(TimeInfo &val, int bk = 0);
 
-    // conditional writes (won't write if pointer is NULL)
+    // conditional writes (won't write if pointer is nullptr)
     int Write(int  *val, int bk = 0);
     int Write(const char* val, int bk = 0);
     int Write(Flt  *val, int bk = 0);
@@ -154,6 +154,50 @@ public:
     KeyValueInputFile() = default;
     explicit KeyValueInputFile(int fd);
     explicit KeyValueInputFile(const std::string &filename);
+    
+    // RAII destructor - ensures file is closed
+    ~KeyValueInputFile() { Close(); }
+    
+    // Delete copy operations (prevent double-close)
+    KeyValueInputFile(const KeyValueInputFile&) = delete;
+    KeyValueInputFile& operator=(const KeyValueInputFile&) = delete;
+    
+    // Move operations
+    KeyValueInputFile(KeyValueInputFile&& other) noexcept
+        : filedes(other.filedes)
+        , bytesread(other.bytesread)
+        , keyidx(other.keyidx)
+        , validx(other.validx)
+        , buffidx(other.buffidx)
+        , comment(other.comment)
+        , getvalue(other.getvalue)
+        , delimiter(other.delimiter)
+        , buffer(std::move(other.buffer))
+        , inputfile(std::move(other.inputfile))
+    {
+        other.filedes = -1;
+    }
+    
+    KeyValueInputFile& operator=(KeyValueInputFile&& other) noexcept
+    {
+        if (this != &other)
+        {
+            Close();
+            filedes = other.filedes;
+            bytesread = other.bytesread;
+            keyidx = other.keyidx;
+            validx = other.validx;
+            buffidx = other.buffidx;
+            comment = other.comment;
+            getvalue = other.getvalue;
+            delimiter = other.delimiter;
+            buffer = std::move(other.buffer);
+            inputfile = std::move(other.inputfile);
+            other.filedes = -1;
+        }
+        return *this;
+    }
+    
     bool Open();
     bool Open(const std::string &filename);
     [[nodiscard]] bool IsOpen() const noexcept;
@@ -179,6 +223,36 @@ public:
     KeyValueOutputFile() = default;
     explicit KeyValueOutputFile(int fd);
     explicit KeyValueOutputFile(const std::string &filename);
+    
+    // RAII destructor - ensures file is closed
+    ~KeyValueOutputFile() { Close(); }
+    
+    // Delete copy operations (prevent double-close)
+    KeyValueOutputFile(const KeyValueOutputFile&) = delete;
+    KeyValueOutputFile& operator=(const KeyValueOutputFile&) = delete;
+    
+    // Move operations
+    KeyValueOutputFile(KeyValueOutputFile&& other) noexcept
+        : filedes(other.filedes)
+        , delimiter(other.delimiter)
+        , outputfile(std::move(other.outputfile))
+    {
+        other.filedes = -1;
+    }
+    
+    KeyValueOutputFile& operator=(KeyValueOutputFile&& other) noexcept
+    {
+        if (this != &other)
+        {
+            Close();
+            filedes = other.filedes;
+            delimiter = other.delimiter;
+            outputfile = std::move(other.outputfile);
+            other.filedes = -1;
+        }
+        return *this;
+    }
+    
     int Open();
     int Open(const std::string &filename);
     [[nodiscard]] bool IsOpen() const noexcept;

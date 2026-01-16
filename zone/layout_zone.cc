@@ -50,7 +50,7 @@ LayoutZone::LayoutZone()
 RenderResult LayoutZone::Render(Terminal *term, int update_flag)
 {
     FnTrace("LayoutZone::Render()");
-    RenderZone(term, NULL, update_flag);
+    RenderZone(term, nullptr, update_flag);
     term->FontSize(font, font_width, font_height);
 
     int lw = w - (border * 2) - left_margin - right_margin;
@@ -94,7 +94,7 @@ int LayoutZone::SetSize(Terminal *t, int width, int height)
 
 Flt LayoutZone::TextWidth(Terminal *t, const genericChar* str, int len)
 {
-    if (str == NULL)
+    if (str == nullptr)
         return 0.0;
 
     if (len <= 0)
@@ -117,7 +117,7 @@ int LayoutZone::SetMargins(int left, int right)
 int LayoutZone::TextL(Terminal *t, Flt line, const genericChar* text, int my_color, int mode)
 {
     FnTrace("LayoutZone::TextL()");
-    if (line < 0.0 || line >= size_y || text == NULL)
+    if (line < 0.0 || line >= size_y || text == nullptr)
         return 1;  // Can't draw text
 
     if (my_color == COLOR_DEFAULT)
@@ -133,7 +133,7 @@ int LayoutZone::TextL(Terminal *t, Flt line, const genericChar* text, int my_col
 int LayoutZone::TextC(Terminal *t, Flt line, const genericChar* text, int my_color, int mode)
 {
     FnTrace("LayoutZone::TextC()");
-    if (line < 0.0 || line >= size_y || text == NULL)
+    if (line < 0.0 || line >= size_y || text == nullptr)
         return 1;  // Can't draw text
 
     if (my_color == COLOR_DEFAULT)
@@ -149,7 +149,7 @@ int LayoutZone::TextC(Terminal *t, Flt line, const genericChar* text, int my_col
 int LayoutZone::TextR(Terminal *t, Flt line, const genericChar* text, int my_color, int mode)
 {
     FnTrace("LayoutZone::TextR()");
-    if (line < 0.0 || line >= size_y || text == NULL)
+    if (line < 0.0 || line >= size_y || text == nullptr)
         return 1;  // Can't draw text
 
     if (my_color == COLOR_DEFAULT)
@@ -172,7 +172,7 @@ int LayoutZone::TextPosL(Terminal *t, Flt row, Flt line, const genericChar* text
                          int my_color, int mode)
 {
     FnTrace("LayoutZone::TextPosL()");
-    if (line < 0.0 || line >= size_y || text == NULL)
+    if (line < 0.0 || line >= size_y || text == nullptr)
         return 1;  // Can't draw text
 
     if (my_color == COLOR_DEFAULT)
@@ -193,7 +193,7 @@ int LayoutZone::TextPosC(Terminal *t, Flt row, Flt line, const genericChar* text
                          int my_color, int mode)
 {
     FnTrace("LayoutZone::TextPosC()");
-    if (line < 0.0 || line >= size_y || text == NULL)
+    if (line < 0.0 || line >= size_y || text == nullptr)
         return 1;
 
     if (my_color == COLOR_DEFAULT)
@@ -210,7 +210,7 @@ int LayoutZone::TextPosR(Terminal *t, Flt row, Flt line, const genericChar* text
                          int my_color, int mode)
 {
     FnTrace("LayoutZone::TextPosR()");
-    if (line < 0.0 || line >= size_y || text == NULL)
+    if (line < 0.0 || line >= size_y || text == nullptr)
         return 1;
 
     if (my_color == COLOR_DEFAULT)
@@ -332,7 +332,7 @@ int LayoutZone::Entry(Terminal *t, Flt px, Flt py, Flt len, RegionInfo *place)
 
     t->RenderFilledFrame(sx, sy, sw, sh, 2, ft, FRAME_INSET | FRAME_2COLOR);
 
-    if (place != NULL)
+    if (place != nullptr)
     {
         place->x = sx;
         place->y = sy;

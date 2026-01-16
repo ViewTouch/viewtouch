@@ -25,6 +25,8 @@
 #include "terminal.hh"
 #include "src/utils/vt_logger.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
+#include "src/core/thread_pool.hh"
 
 #include <errno.h>
 #include <iostream>
@@ -61,7 +63,7 @@
 const genericChar* PrinterModelName[] = {
     "No Printer", "Epson", "Star", "HP", "Toshiba", "Ithaca",
     "HTML", "PostScript", "PDF", "Receipt Text",
-    "Report Text", "QuickBooks CSV", NULL};
+    "Report Text", "QuickBooks CSV", nullptr};
 int          PrinterModelValue[] = {
     MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_HP, MODEL_TOSHIBA, MODEL_ITHACA,
     MODEL_HTML, MODEL_POSTSCRIPT, MODEL_PDF, MODEL_RECEIPT_TEXT,
@@ -75,7 +77,7 @@ int          PrinterModelValue[] = {
 const genericChar* ReceiptPrinterModelName[] = {
     "No Printer", "Epson", "Star", "HP", "Toshiba", "Ithaca",
     "HTML", "PostScript", "PDF", "Receipt Text",
-    "Report Text", "QuickBooks CSV", NULL};
+    "Report Text", "QuickBooks CSV", nullptr};
 int          ReceiptPrinterModelValue[] = {
     MODEL_NONE, MODEL_EPSON, MODEL_STAR, MODEL_HP, MODEL_TOSHIBA, MODEL_ITHACA,
     MODEL_HTML, MODEL_POSTSCRIPT, MODEL_PDF, MODEL_RECEIPT_TEXT,
@@ -83,7 +85,7 @@ int          ReceiptPrinterModelValue[] = {
 
 const genericChar* ReportPrinterModelName[] = {
     "No Printer", "HP", "Toshiba", "HTML", "PostScript",
-    "PDF", "Text", "QuickBooks CSV", NULL};
+    "PDF", "Text", "QuickBooks CSV", nullptr};
 int          ReportPrinterModelValue[] = {
     MODEL_NONE, MODEL_HP, MODEL_TOSHIBA, MODEL_HTML, MODEL_POSTSCRIPT,
     MODEL_PDF, MODEL_REPORT_TEXT, MODEL_QUICKBOOKS_CSV, -1};
@@ -92,7 +94,7 @@ int          ReportPrinterModelValue[] = {
 
 const genericChar* PortName[] = {
     "XCD Parallel", "XCD Serial", "Explora Parallel", "Explora Serial",
-    "VT Daemon", "Device On Server", NULL};
+    "VT Daemon", "Device On Server", nullptr};
 int          PortValue[] = {
     PORT_XCD_PARALLEL, PORT_XCD_SERIAL, PORT_EXPLORA_PARALLEL, PORT_EXPLORA_SERIAL,
     PORT_VT_DAEMON, PORT_SERVER_DEVICE, -1};
@@ -105,9 +107,9 @@ int          PortValue[] = {
 
 Printer::Printer()
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -130,9 +132,9 @@ Printer::Printer()
 
 Printer::Printer(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -154,8 +156,7 @@ Printer::Printer(const genericChar* host, int port, const genericChar* targetstr
 }
 
 Printer::~Printer()
-{
-}
+= default;
 
 /****
  * MatchHost:  This is fairly rudimentary.  It only checks the hostname.  I can only
@@ -169,7 +170,7 @@ int Printer::MatchHost(const genericChar* host, int /*port*/)
     FnTrace("Printer::MatchHost()");
     int retval = 1;
 
-    if (strcmp(host_name.Value(), host))
+    if (strcmp(host_name.Value(), host) != 0)
         retval = 0;
 
     return retval;
@@ -180,7 +181,7 @@ int Printer::MatchTerminal(const genericChar* termname)
     FnTrace("Printer::MatchTerminal()");
     int retval = 1;
 
-    if (strcmp(term_name.Value(), termname))
+    if (strcmp(term_name.Value(), termname) != 0)
         retval = 0;
 
     return retval;
@@ -288,6 +289,137 @@ int Printer::Close()
 }
 
 /****
+ * CloseAsync:  Non-blocking version of Close() for use when UI responsiveness
+ *   is critical.  Spawns the print job to a background thread.
+ *   Note: Only works for socket and LPD printing where the temp file can be
+ *   safely copied and processed asynchronously.
+ ****/
+void Printer::CloseAsync()
+{
+    FnTrace("Printer::CloseAsync()");
+
+    // Close the temp file handle first
+    if (temp_fd > 0)
+        close(temp_fd);
+    temp_fd = -1;
+
+    // For parallel printing, we still use synchronous (it already forks)
+    // For file/email, use sync since they're local operations
+    if (target_type == TARGET_PARALLEL || target_type == TARGET_FILE || 
+        target_type == TARGET_EMAIL)
+    {
+        // Fall back to sync for these
+        switch (target_type)
+        {
+        case TARGET_PARALLEL:
+            ParallelPrint();
+            break;
+        case TARGET_FILE:
+            FilePrint();
+            break;
+        case TARGET_EMAIL:
+            EmailPrint();
+            break;
+        default:
+            break;
+        }
+        unlink(temp_name.Value());
+        temp_name.Set("");
+        return;
+    }
+
+    // For socket and LPD, run async
+    // Capture temp file name for async operation
+    std::string temp_file = temp_name.Value();
+    std::string target_str = target.Value();
+    int port = port_no;
+    int type = target_type;
+
+    temp_name.Set("");  // Clear so printer can be reused
+
+    // Queue the print job to the thread pool
+    vt::ThreadPool::instance().enqueue_detached(
+        [temp_file, target_str, port, type]() {
+            vt::Logger::debug("Async print starting: {} -> {}:{}", temp_file, target_str, port);
+            
+            if (type == TARGET_SOCKET)
+            {
+                // Socket printing logic (duplicated to avoid this pointer issues)
+                ssize_t bytesread;
+                ssize_t byteswritten = 1;
+                char buffer[4096];
+                struct hostent *he;
+                struct sockaddr_in their_addr;
+
+                he = gethostbyname(target_str.c_str());
+                if (he == nullptr)
+                {
+                    vt::Logger::error("Async SocketPrint: Failed to resolve host '{}'", target_str);
+                    unlink(temp_file.c_str());
+                    return;
+                }
+
+                int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+                if (sockfd == -1)
+                {
+                    vt::Logger::error("Async SocketPrint: Failed to create socket");
+                    unlink(temp_file.c_str());
+                    return;
+                }
+
+                their_addr.sin_family = AF_INET;
+                their_addr.sin_port = htons(static_cast<uint16_t>(port));
+                their_addr.sin_addr = *((struct in_addr *)he->h_addr);
+                memset(&(their_addr.sin_zero), '\0', 8);
+
+                if (connect(sockfd, (struct sockaddr *)&their_addr, sizeof(struct sockaddr)) == -1)
+                {
+                    vt::Logger::error("Async SocketPrint: Failed to connect to {}:{}", target_str, port);
+                    close(sockfd);
+                    unlink(temp_file.c_str());
+                    return;
+                }
+
+                int fd = open(temp_file.c_str(), O_RDONLY, 0);
+                if (fd <= 0)
+                {
+                    vt::Logger::error("Async SocketPrint: Failed to open temp file '{}'", temp_file);
+                    close(sockfd);
+                    unlink(temp_file.c_str());
+                    return;
+                }
+
+                bytesread = read(fd, buffer, sizeof(buffer));
+                while (bytesread > 0 && byteswritten > 0)
+                {
+                    byteswritten = write(sockfd, buffer, static_cast<size_t>(bytesread));
+                    bytesread = read(fd, buffer, sizeof(buffer));
+                }
+
+                close(fd);
+                close(sockfd);
+                vt::Logger::info("Async SocketPrint: Successfully printed to {}:{}", target_str, port);
+            }
+            else if (type == TARGET_LPD)
+            {
+                // LPD printing
+                char cmd[512];
+                snprintf(cmd, sizeof(cmd), "cat %s | /usr/bin/lpr -P%s", 
+                         temp_file.c_str(), target_str.c_str());
+                int result = system(cmd);
+                if (result != 0)
+                    vt::Logger::error("Async LPDPrint: Command failed with code {}", result);
+                else
+                    vt::Logger::info("Async LPDPrint: Successfully sent to {}", target_str);
+            }
+
+            // Clean up temp file
+            unlink(temp_file.c_str());
+        }
+    );
+}
+
+/****
  * ParallelPrint:  I've been experiencing severe slowdowns with parallel printing.
  *  Apparently, we have to wait until the whole job is done.  So I'm spawning
  *  a child process that will do the printing.  The parent should be able to continue
@@ -307,7 +439,7 @@ int Printer::ParallelPrint()
     unsigned char buff[STRLENGTH];
     struct timeval timeout;
 
-    snprintf(buffer, STRLENGTH, "cat %s >>%s", temp_name.Value(), target.Value());
+    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "cat {} >>{}", temp_name.Value(), target.Value());
 
     if (debug_mode)
         printf("Forking for ParallelPrint\n");
@@ -332,7 +464,7 @@ int Printer::ParallelPrint()
                 while (bytes > 0)
                 {
                     bytes = write(outfd, buff, static_cast<size_t>(bytes));
-                    select(0, NULL, NULL, NULL, &timeout);
+                    select(0, nullptr, nullptr, nullptr, &timeout);
                     if (bytes > 0)
                         bytes = read(infd, buff, STRLENGTH);
                 }
@@ -345,13 +477,13 @@ int Printer::ParallelPrint()
             {
                 if (infd < 0)
                 {
-                    snprintf(buffer, STRLENGTH, "ParallelPrint Error %d opening %s for read",
+                    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "ParallelPrint Error {} opening {} for read",
                              errno, temp_name.Value());
                     ReportError(buffer);
                 }
                 if (outfd < 0)
                 {
-                    snprintf(buffer, STRLENGTH, "ParallelPrint Error %d opening %s for write",
+                    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "ParallelPrint Error {} opening {} for write",
                              errno, target.Value());
                     ReportError(buffer);
                 }
@@ -380,7 +512,7 @@ int Printer::LPDPrint()
     FnTrace("Printer::LPDPrint()");
     genericChar buffer[STRLONG];
 
-    snprintf(buffer, STRLONG, "cat %s | /usr/bin/lpr -P%s", temp_name.Value(), target.Value());
+    vt::cpp23::format_to_buffer(buffer, STRLONG, "cat {} | /usr/bin/lpr -P{}", temp_name.Value(), target.Value());
     system(buffer);
     return 0;
 }
@@ -398,7 +530,7 @@ int Printer::SocketPrint()
     struct sockaddr_in their_addr; // connector's address information
 
     he = gethostbyname(target.Value());  // get the host info
-    if (he == NULL)
+    if (he == nullptr)
     {
         vt::Logger::error("SocketPrint: Failed to resolve host '{}'", target.Value());
         perror("gethostbyname");
@@ -413,6 +545,13 @@ int Printer::SocketPrint()
         return 1;
     }
 
+    // Set socket timeouts (5 seconds for printer connections)
+    struct timeval timeout;
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 0;
+    setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+
     their_addr.sin_family = AF_INET;    // host byte order
     their_addr.sin_port = htons(port_no);  // short, network byte order
     their_addr.sin_addr = *((struct in_addr *)he->h_addr);
@@ -423,6 +562,7 @@ int Printer::SocketPrint()
         vt::Logger::error("SocketPrint: Failed to connect to {}:{}", target.Value(), port_no);
         perror("connect");
         fprintf(stderr, "Is vt_print running?\n");
+        close(sockfd);
         return 1;
     }
     
@@ -431,7 +571,7 @@ int Printer::SocketPrint()
     {
         close(sockfd);
         vt::Logger::error("SocketPrint: Failed to open temp file '{}' (errno: {})", temp_name.Value(), errno);
-        snprintf(buffer, STRLENGTH, "SocketPrint Error %d opening %s",
+        vt::cpp23::format_to_buffer(buffer, STRLENGTH, "SocketPrint Error {} opening {}",
                  errno, temp_name.Value());
         ReportError(buffer);
         return 1;
@@ -491,7 +631,7 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
     const genericChar* title_source;
 
     // Select the source string without copying
-    if (source != NULL)
+    if (source != nullptr)
         title_source = source;
     else if (have_title)
         title_source = page_title.c_str();
@@ -514,10 +654,10 @@ int Printer::MakeFileName(genericChar* buffer, const genericChar* source, const 
     {
         // append the date directly to buffer
         now.Set();
-        buffidx += snprintf(buffer + buffidx, max_len - buffidx, "-%02d-%02d-%d",
+        buffidx += vt::cpp23::format_to_buffer(buffer + buffidx, max_len - buffidx, "-{:02d}-{:02d}-{}",
                            now.Day(), now.Month(), now.Year());
 
-        if (ext == NULL)
+        if (ext == nullptr)
         {
             // append an extension
             switch (Model())
@@ -579,7 +719,7 @@ int Printer::FilePrint()
     genericChar command[STRLONG];
 
     GetFilePath(fullpath);
-    snprintf(command, STRLONG, "mv %s %s", temp_name.Value(), fullpath);
+    vt::cpp23::format_to_buffer(command, STRLONG, "mv {} {}", temp_name.Value(), fullpath);
     renval = system(command);
     if (renval < 0)
         retval = 1;  // return error
@@ -595,7 +735,7 @@ int Printer::GetFilePath(char* dest)
 
     if (IsDirectory(target.Value()))
     {
-        MakeFileName(filename, NULL, NULL, STRLENGTH);
+        MakeFileName(filename, nullptr, nullptr, STRLENGTH);
         vt_safe_string::safe_format(dest, STRLENGTH, "%s/%s", target.Value(), filename);
     }
     else
@@ -662,7 +802,7 @@ int Printer::EmailPrint()
     }
     else if (fd < 0)
     {
-        snprintf(buffer, STRLONG, "EmailPrint Error %d opening %s",
+        vt::cpp23::format_to_buffer(buffer, STRLONG, "EmailPrint Error {} opening {}",
                  errno, temp_name.Value());
         ReportError(buffer);
     }
@@ -825,7 +965,7 @@ void Printer::DebugPrint(int printall)
     printf("    Have Title:  %d\n", have_title);
     printf("    Kitchen Mode:  %d\n", kitchen_mode);
 
-    if (printall && next != NULL)
+    if (printall && next != nullptr)
         next->DebugPrint(printall);
 }
 
@@ -835,9 +975,9 @@ void Printer::DebugPrint(int printall)
  ********************************************************************/
 PrinterIthaca::PrinterIthaca(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1027,9 +1167,9 @@ int PrinterIthaca::CutPaper(int partial_only)
  ********************************************************************/
 PrinterStar::PrinterStar(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1258,9 +1398,9 @@ int PrinterStar::CutPaper(int partial_only)
  ********************************************************************/
 PrinterEpson::PrinterEpson(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1479,9 +1619,9 @@ int PrinterEpson::CutPaper(int partial_only)
 
 PrinterHP::PrinterHP(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1656,9 +1796,9 @@ int PrinterHP::CutPaper(int partial_only)
  ********************************************************************/
 PrinterHTML::PrinterHTML(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1770,7 +1910,7 @@ int PrinterHTML::Init()
     Write("<html>\n<head>", 0);
     if (!have_title)
         page_title = GENERIC_TITLE;
-    snprintf(buffer, STRLENGTH, "<title>%s</title>", page_title.c_str());
+    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "<title>{}</title>", page_title.c_str());
     Write(buffer, 0);
     Write("</head>", 0);
     Write("<body>", 0);
@@ -1804,9 +1944,9 @@ int PrinterHTML::LineFeed(int lines)
  ********************************************************************/
 PrinterPostScript::PrinterPostScript()
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1830,9 +1970,9 @@ PrinterPostScript::PrinterPostScript()
 
 PrinterPostScript::PrinterPostScript(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -1964,13 +2104,13 @@ int PrinterPostScript::Init()
             "RegularFont\n",
             "} def\n",
             "NewPage\n",
-            NULL
+            nullptr
             };
     
     if (temp_fd <= 0)
         return 1;
 
-    while (lines[idx] != NULL)
+    while (lines[idx] != nullptr)
     {
         if (write(temp_fd, lines[idx], strlen(lines[idx])) < 0)
             break;
@@ -1978,7 +2118,7 @@ int PrinterPostScript::Init()
     }
     if (!have_title)
         page_title = GENERIC_TITLE;
-    snprintf(buffer, STRLENGTH, "(%s) ShowTitleText\n", page_title.c_str());
+    vt::cpp23::format_to_buffer(buffer, STRLENGTH, "({}) ShowTitleText\n", page_title.c_str());
     write(temp_fd, buffer, strlen(buffer));
     return 0;
 }
@@ -2208,9 +2348,9 @@ int PrinterPostScript::Put(genericChar c, int flags)
 
 PrinterPDF::PrinterPDF()
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2232,9 +2372,9 @@ PrinterPDF::PrinterPDF()
 
 PrinterPDF::PrinterPDF(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2267,7 +2407,7 @@ int PrinterPDF::Close()
     close(temp_fd);
 
     // create the PDF filename and convert the temp file
-    MakeFileName(filename, NULL, ".pdf", STRLONG);
+    MakeFileName(filename, nullptr, ".pdf", STRLONG);
     vt_safe_string::safe_format(pdffullpath, STRLONG, "/tmp/%s", filename);
     vt_safe_string::safe_format(command, STRLONG, "ps2pdf %s %s", temp_name.Value(), pdffullpath);
     system(command);
@@ -2292,9 +2432,9 @@ int PrinterPDF::Close()
  ********************************************************************/
 PrinterReceiptText::PrinterReceiptText()
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2316,9 +2456,9 @@ PrinterReceiptText::PrinterReceiptText()
 
 PrinterReceiptText::PrinterReceiptText(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2398,9 +2538,9 @@ int PrinterReceiptText::LineFeed(int lines)
  ********************************************************************/
 PrinterReportText::PrinterReportText(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2521,7 +2661,7 @@ int ParseDestination(int &type, genericChar* target, int &port, const genericCha
         else if (port == 0)
         {
             type = TARGET_PARALLEL;
-            snprintf(target, STRLENGTH, "/dev/%s", destination);
+            vt::cpp23::format_to_buffer(target, STRLENGTH, "/dev/{}", destination);
         }
         else
         {
@@ -2541,7 +2681,7 @@ int ParseDestination(int &type, genericChar* target, int &port, const genericCha
 Printer *NewPrinterObj(const genericChar* destination, int port, int model, int no)
 {
     FnTrace("NewPrinterObj()");
-    Printer *retPrinter = NULL;
+    Printer *retPrinter = nullptr;
     genericChar target[STRLENGTH] = "";
     int target_type;
 
@@ -2585,7 +2725,7 @@ Printer *NewPrinterObj(const genericChar* destination, int port, int model, int 
             retPrinter = new PrinterQuickBooksCSV(destination, port, target, target_type);
             break;
         default:
-            retPrinter = NULL;
+            retPrinter = nullptr;
             break;
         }
     }
@@ -2596,7 +2736,7 @@ Printer *NewPrinterObj(const genericChar* destination, int port, int model, int 
 Printer *NewPrinterFromString(const genericChar* specification)
 {
     FnTrace("NewPrinterFromString()");
-    Printer *retPrinter = NULL;
+    Printer *retPrinter = nullptr;
     genericChar destination[STRLONG] = "";
     genericChar modelstr[STRLONG] = "";
     int model = MODEL_HTML;  // use default model
@@ -2652,9 +2792,9 @@ Printer *NewPrinterFromString(const genericChar* specification)
  ********************************************************************/
 PrinterQuickBooksCSV::PrinterQuickBooksCSV(const genericChar* host, int port, const genericChar* targetstr, int type)
 {
-    next         = NULL;
-    fore         = NULL;
-    parent       = NULL;
+    next         = nullptr;
+    fore         = nullptr;
+    parent       = nullptr;
     last_mode    = 0;
     last_color   = 0;
     last_uni     = 0;
@@ -2727,7 +2867,7 @@ int PrinterQuickBooksCSV::WriteCSVLine(const char* date, const char* type,
         float amount_f = (float)amount / 100.0;
         float tax_f = (float)tax / 100.0;
         
-        snprintf(line, STRLONG, "%s,%s,%s,%s,%.2f,%.2f\n",
+        vt::cpp23::format_to_buffer(line, STRLONG, "{},{},{},{},{:.2f},{:.2f}\n",
                  date, type, account, description, amount_f, tax_f);
         write(temp_fd, line, strlen(line));
     }

@@ -11,39 +11,15 @@ jobs:
       fail-fast: false
       matrix:
         cxx:
-          - g++-12
-          - g++-13
           - g++-14
-          - clang++-16
-          - clang++-17
-          - clang++-18
+          # Note: Older compilers (g++-12, g++-13, clang++-16, clang++-17, clang++-18)
+          # don't have full C++23 stdlib support (missing std::format in libstdc++)
         build_type: [Debug] #, Release]
-        std: [20]
+        std: [23]
         include:
-        # cannot be installed on ubuntu-24.04 be default?
-          - cxx: g++-12
-            cc: gcc-12
-            other_pkgs: g++-12
-            cxxflags: "-O1 -fmax-errors=5"
-          - cxx: g++-13
-            cc: gcc-13
-            other_pkgs: g++-13
-            cxxflags: "-O1 -fmax-errors=5"
           - cxx: g++-14
             cc: gcc-14
             other_pkgs: g++-14
-            cxxflags: "-O1 -fmax-errors=5"
-          - cxx: clang++-16
-            cc: clang-16
-            other_pkgs: clang-16
-            cxxflags: "-O1 -fmax-errors=5"
-          - cxx: clang++-17
-            cc: clang-17
-            other_pkgs: clang-17
-            cxxflags: "-O1 -fmax-errors=5"
-          - cxx: clang++-18
-            cc: clang-18
-            other_pkgs: clang-18
             cxxflags: "-O1 -fmax-errors=5"
 
     steps:

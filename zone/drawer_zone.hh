@@ -19,12 +19,13 @@
  */
 
 #ifndef _DRAWER_ZONE_HH
-#define _DRAWER_ZONE_HH
+#define DRAWER_ZONE_HH
 
 #include "layout_zone.hh"
 #include "zone_object.hh"
 #include "expense.hh"
 
+#include <memory>
 
 /**** Definitions ****/
 #define MAX_BALANCES 64
@@ -48,11 +49,11 @@ class DrawerAssignZone : public PosZone
 
 public:
     // Member Functions
-    int          Type() { return ZONE_DRAWER_ASSIGN; }
-    RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Touch(Terminal *t, int tx, int ty);
-    int          Update(Terminal *t, int update_message, const genericChar* value);
-    int          ZoneStates() { return 1; }
+    int          Type() override { return ZONE_DRAWER_ASSIGN; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    int          Update(Terminal *t, int update_message, const genericChar* value) override;
+    int          ZoneStates() override { return 1; }
 
     int MoveDrawers(Terminal *t, Employee *user);
 };
@@ -63,7 +64,7 @@ class DrawerManageZone : public LayoutZone
     ZoneObject    *current;
     int            drawers_shown;
     int            group;
-    Report        *report;
+    std::unique_ptr<Report> report;
     int            mode;
     int            view;
     Drawer        *drawer_list;
@@ -82,17 +83,17 @@ public:
     // Constructor
     DrawerManageZone();
     // Destructor
-    ~DrawerManageZone();
+    ~DrawerManageZone() override;
 
     // Member Functions
-    int          Type() { return ZONE_DRAWER_MANAGE; }
-    RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar* message);
-    SignalResult Touch(Terminal *t, int tx, int ty);
-    SignalResult Keyboard(Terminal *t, int key, int state);
-    int          Update(Terminal *t, int update_message, const genericChar* value);
-    Flt         *Spacing() { return &spacing; }
-    int         *DrawerZoneType() { return &drawer_zone_type; }
+    int          Type() override { return ZONE_DRAWER_MANAGE; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Signal(Terminal *t, const genericChar* message) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    SignalResult Keyboard(Terminal *t, int key, int state) override;
+    int          Update(Terminal *t, int update_message, const genericChar* value) override;
+    Flt         *Spacing() override { return &spacing; }
+    int         *DrawerZoneType() override { return &drawer_zone_type; }
 
     int CreateDrawers(Terminal *t);
     int Print(Terminal *t, int mode);

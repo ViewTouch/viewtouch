@@ -22,6 +22,7 @@
 #include "utility.hh"
 #include "fntrace.hh"
 #include "safe_string_utils.hh"
+#include "cpp23_utils.hh"
 
 #include <unistd.h>
 #include <ctime>
@@ -104,7 +105,7 @@ int vt_setproctitle(const char* title)
 //int Str::nAllocated = 0;
 
 Str::Str()
-{}
+= default;
 
 Str::Str(const std::string &str)
 {
@@ -118,7 +119,7 @@ Str::Str(const Str &s)
 
 // Destructor
 Str::~Str()
-{}
+= default;
 
 // Member Functions
 int Str::Clear()
@@ -284,8 +285,7 @@ RegionInfo::RegionInfo(int rx, int ry, int rw, int rh)
 
 //Destructor
 RegionInfo::~RegionInfo()
-{
-}
+= default;
 
 // Member Functions
 int RegionInfo::Fit(int rx, int ry, int rw, int rh)
@@ -348,22 +348,22 @@ int Price::Write(OutputDataFile &df, int version)
 
 const char* Price::Format(int sign)
 {
-    return NULL;
+    return nullptr;
 }
 
 const char* Price::Format(const char* buffer, int sign)
 {
-    return NULL;
+    return nullptr;
 }
 
 const char* Price::SimpleFormat()
 {
-    return NULL;
+    return nullptr;
 }
 
 const char* Price::SimpleFormat(const char* buffer)
 {
-    return NULL;
+    return nullptr;
 }
 
 
@@ -612,12 +612,12 @@ int BackupFile(const genericChar* filename)
         return 1;  // No file to backup
 
     genericChar bak[256];
-    snprintf(bak, sizeof(bak), "%s.bak", filename);
+    vt::cpp23::format_to_buffer(bak, sizeof(bak), "{}.bak", filename);
 
     if (DoesFileExist(bak))
     {
         genericChar bak2[256];
-        snprintf(bak2, sizeof(bak2), "%s.bak2", filename);
+        vt::cpp23::format_to_buffer(bak2, sizeof(bak2), "{}.bak2", filename);
 
         // delete *.bak2
         unlink(bak2);
@@ -640,12 +640,12 @@ int RestoreBackup(const genericChar* filename)
     }
     
     genericChar str[256];
-    snprintf(str, sizeof(str), "%s.bak", filename);
+    vt::cpp23::format_to_buffer(str, sizeof(str), "{}.bak", filename);
 
     if (DoesFileExist(str) == 0)
         return 1;  // No backup to restore
 
-    snprintf(str, sizeof(str), "/bin/cp %s.bak %s", filename, filename);
+    vt::cpp23::format_to_buffer(str, sizeof(str), "/bin/cp {}.bak {}", filename, filename);
     return system(str);
 }
 
@@ -1003,7 +1003,7 @@ int LockDevice(const genericChar* devpath)
             buffer[idx] = '.';
         ++idx;
     }
-    snprintf(lockpath, STRLONG, "%s/%s", LOCK_DIR, buffer);
+    vt::cpp23::format_to_buffer(lockpath, STRLONG, "{}/{}", LOCK_DIR, buffer);
 
     retval = open(lockpath, O_WRONLY | O_CREAT, 0755);
     if (retval > 0)

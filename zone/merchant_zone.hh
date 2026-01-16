@@ -19,7 +19,7 @@
  */
 
 #ifndef _MERCHANT_ZONE_HH
-#define _MERCHANT_ZONE_HH
+#define MERCHANT_ZONE_HH
 
 #include "form_zone.hh"
 
@@ -32,12 +32,12 @@ public:
     MerchantZone();
 
     // Member Functions
-    int          Type() { return ZONE_MERCHANT; }
-    RenderResult Render(Terminal *t, int update_flag);
-    Flt         *Spacing() { return &form_spacing; }
+    int          Type() override { return ZONE_MERCHANT; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    Flt         *Spacing() override { return &form_spacing; }
 
-    int LoadRecord(Terminal *t, int record_no);
-    int SaveRecord(Terminal *t, int record_no, int write_file);
+    int LoadRecord(Terminal *t, int record_no) override;
+    int SaveRecord(Terminal *t, int record_no, int write_file) override;
 };
 
 #endif

@@ -28,7 +28,7 @@
 #include <sys/socket.h>
 #include <sys/file.h>
 #include <sys/un.h>
-#include <errno.h>
+#include <cerrno>
 #include <unistd.h>
 #include <Xm/Xm.h>
 #include <memory>
@@ -148,7 +148,7 @@ int main(int argc, const genericChar* *argv)
     if (argc >= 7)
         set_height = atoi(argv[6]);
 
-    if (strchr(display.data(), ':') == NULL)
+    if (strchr(display.data(), ':') == nullptr)
         vt_safe_string::safe_concat(display.data(), display.size(), ":0");
 
     // if OpenTerm() returns there must be an error

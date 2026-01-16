@@ -18,8 +18,8 @@
  * Credit/charge card verification/authorization
  */
 
-#ifndef _CREDIT_HH
-#define _CREDIT_HH
+#ifndef CREDIT_HH
+#define CREDIT_HH
 
 #include "list_utility.hh"
 #include "printer.hh"
@@ -39,9 +39,9 @@ extern const char* CreditCardName[];
 extern const char* CreditCardShortName[];
 extern int   CreditCardValue[];
 
-#define CC_STATUS_NONE        -2
+#define CC_STATUS_NONE        (-2)
 // these are taken from MCVE
-#define CC_STATUS_ERROR       -1
+#define CC_STATUS_ERROR       (-1)
 #define CC_STATUS_FAIL         0
 #define CC_STATUS_SUCCESS      1
 #define CC_STATUS_AUTH         2
@@ -60,7 +60,7 @@ extern int   CreditCardValue[];
 #define CC_STATUS_WRITEFAIL   21
 
 // actions
-#define CCAUTH_FIND           -1
+#define CCAUTH_FIND           (-1)
 #define CCAUTH_NOACTION        0
 #define CCAUTH_PREAUTH         1
 #define CCAUTH_AUTHORIZE       2
@@ -130,7 +130,7 @@ extern int   CreditCardValue[];
 #define SWIPE_MSG           "Please Swipe Card"
 #define WAIT_MSG            "Please Wait"
 
-#define AUTH_DEFAULT        -1
+#define AUTH_DEFAULT        (-1)
 #define AUTH_NONE            0
 #define AUTH_IN_PROGRESS     1
 #define AUTH_PREAUTH         2
@@ -142,9 +142,12 @@ extern int   CreditCardValue[];
 #define AUTH_COMPLETE      128
 #define AUTH_ADVICE        256
 
-#define RECEIPT_PICK         0  // auto-select receipts types based on settings
-#define RECEIPT_CUSTOMER     1
-#define RECEIPT_MERCHANT     2
+// Receipt copy selection (converted from macros to enum constants)
+enum ReceiptCopy : std::uint8_t {
+    RECEIPT_PICK     = 0, // auto-select receipt types based on settings
+    RECEIPT_CUSTOMER = 1,
+    RECEIPT_MERCHANT = 2
+};
 
 #define MASTER_CC_EXCEPT     VIEWTOUCH_PATH "/dat/current/cc_exceptions.dat"
 #define MASTER_CC_REFUND     VIEWTOUCH_PATH "/dat/current/cc_refunds.dat"
@@ -292,7 +295,7 @@ class Credit
     char* ReverseExpiry( char* expiry );
     int     ValidateCardInfo();
     int     CanPrintSignature();
-    int     ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter = NULL,
+    int     ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter = nullptr,
                          int print_amount = -1);
 
 public:
@@ -322,7 +325,7 @@ public:
     int            ParseSwipe(const char* swipe_value);
     int            ParseApproval(const char* value);
     int            CardType() { return card_type; }
-    char* CreditTypeName( char* str=0, int shortname = 0 );
+    char* CreditTypeName( char* str=nullptr, int shortname = 0 );
     int            CreditType();
     int            GetApproval(Terminal *term);
     int            GetPreApproval(Terminal *term);
@@ -332,7 +335,7 @@ public:
     int            GetRefund(Terminal *term);
     int            GetRefundCancel(Terminal *term);
     int            PrintReceipt(Terminal *term, int receipt_type = RECEIPT_PICK,
-                                Printer *pprinter = NULL, int print_amount = -1);
+                                Printer *pprinter = nullptr, int print_amount = -1);
     int            IsEmpty();
     int            IsValid();
     int            IsVoiced();
@@ -352,7 +355,7 @@ public:
     const char* Approval();
     const char* Auth() { return auth.Value(); }
     const char* PAN(int all = 0);
-    char* LastFour( char* dest = 0);
+    char* LastFour( char* dest = nullptr);
     const char* ExpireDate(); // nicely formats expiration date
     const char* Name();
     const char* Verb() { return verb.Value(); }
@@ -368,7 +371,7 @@ public:
     int            SetCode(const char* set) { code.Set(set); return 0; }
     int            SetVerb(const char* set) { verb.Set(set); return 0; }
     int            SetAuth(const char* set) { auth.Set(set); return 0; }
-    int            SetBatch(long long set, const char* btermid = NULL);
+    int            SetBatch(long long set, const char* btermid = nullptr);
     int            SetItem(long set) { item = set; return 0; }
     int            SetTTID(long set) { ttid = set; return 0; }
     int            SetAVS(const char* set) { AVS.Set(set); return 0; }
@@ -513,7 +516,7 @@ public:
     int       Next(Terminal *term);
     int       Fore(Terminal *term);
     CCSettle *Last();
-    int       Add(Terminal *term, const char* message = NULL);
+    int       Add(Terminal *term, const char* message = nullptr);
     int       Add(Check *check);
     CCSettle *Copy();
     void      Clear();

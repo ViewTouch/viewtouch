@@ -20,6 +20,7 @@
  */
 
 #include "data_file.hh"
+#include "cpp23_utils.hh"
 
 #include <algorithm>
 #include <array>
@@ -601,8 +602,8 @@ int OutputDataFile::Write(Flt val, int bk)
     FnTrace("OutputDataFile::Write(Flt)");
     std::array<char, 64> buffer{};
     const int written = bk
-        ? std::snprintf(buffer.data(), buffer.size(), "%g\n", static_cast<double>(val))
-        : std::snprintf(buffer.data(), buffer.size(), "%g ", static_cast<double>(val));
+        ? vt::cpp23::format_to_buffer(buffer.data(), buffer.size(), "{}\n", static_cast<double>(val))
+        : vt::cpp23::format_to_buffer(buffer.data(), buffer.size(), "{} ", static_cast<double>(val));
     if (written > 0)
     {
         write_raw(gz_fp, file_fp, compress, buffer.data(), static_cast<std::size_t>(written));

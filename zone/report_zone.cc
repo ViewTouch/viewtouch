@@ -48,15 +48,15 @@ ReportZone::ReportZone()
     min_size_x       = 10;
     min_size_y       = 5;
     report_type      = REPORT_SERVER;
-    report           = NULL;
-    temp_report      = NULL;
+    report           = nullptr;
+    temp_report      = nullptr;
     lines_shown      = 0;
     page             = 0;
     columns          = 1;
     print            = RP_PRINT_LOCAL;
     printer_dest     = RP_PRINT_LOCAL;
     period_view      = 0;
-    period_fiscal    = NULL;
+    period_fiscal    = nullptr;
     spacing          = 1;
     check_disp_num   = 0;
     video_target     = PRINTER_DEFAULT;
@@ -66,13 +66,7 @@ ReportZone::ReportZone()
 }
 
 // Destructor
-ReportZone::~ReportZone()
-{
-    if (report)
-        delete report;
-    if (temp_report)
-        delete temp_report;
-}
+ReportZone::~ReportZone() = default;
 
 // Member Functions
 RenderResult ReportZone::Render(Terminal *term, int update_flag)
@@ -81,10 +75,10 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
     Employee *e = term->user;
     System *sys = term->system_data;
     Settings *s = &(sys->settings);
-    Report *r = temp_report;
+    Report *r = temp_report.get();
 
     // allow no user signin for kitchen display
-    if (e == NULL && report_type != REPORT_CHECK)
+    if (e == nullptr && report_type != REPORT_CHECK)
         return RENDER_OKAY;
 
     if (r)
@@ -92,19 +86,14 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
         update_flag = 0;
         if (r->is_complete)
         {
-            if (report)
-                delete report;
-            report = r;
-            temp_report = NULL;
+            report = std::move(temp_report);
             if (printing_to_printer)
             {
                 Print(term, printer_dest);
                 printing_to_printer = 0;
-                if (report != NULL)
-                    delete report;
-                report = NULL;
-                temp_report = new Report();
-                sys->RoyaltyReport(term, day_start, day_end, term->archive, temp_report, this);
+                report.reset();
+                temp_report = std::make_unique<Report>();
+                sys->RoyaltyReport(term, day_start, day_end, term->archive, temp_report.get(), this);
                 return RENDER_OKAY;
             }
         }
@@ -116,8 +105,7 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
     {
         if (report)
         {
-            delete report;
-            report = NULL;
+            report.reset();
             // page = 0;  // <--- REMOVE THIS LINE!
         }
 
@@ -129,13 +117,13 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
             period_view = s->default_report_period;
             page = 0; // <--- Only reset page on NEW
 
-            if (term->server == NULL && s->drawer_mode == DRAWER_SERVER)
+            if (term->server == nullptr && s->drawer_mode == DRAWER_SERVER)
                 term->server = e;
 //            printf("ReportZone::Render() drawer_mode == DRAWER_SERVER\n");
 
 //            period_fiscal = &s->sales_start;
 //            period_view = SP_DAY;
-            period_fiscal = NULL;
+            period_fiscal = nullptr;
             period_view = s->default_report_period;
             if (report_type == REPORT_SALES)
             {
@@ -143,7 +131,7 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
                 period_view = SP_DAY;
 //                period_view = s->sales_period;
                 period_fiscal = &s->sales_start;
-                term->server = NULL;  // sales report defaults to all users
+                term->server = nullptr;  // sales report defaults to all users
             }
             else if (report_type == REPORT_BALANCE &&
                      s->report_start_midnight == 0)
@@ -169,13 +157,13 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
             {
 //                printf("ReportZone::Render() report_type == REPORT_ROYALTY\n");
                 period_view = SP_MONTH;
-                period_fiscal = NULL;
+                period_fiscal = nullptr;
             }
             else if (report_type == REPORT_AUDITING)
             {
 //                printf("ReportZone::Render() report_type == REPORT_AUDITING\n");
                 period_view = SP_DAY;
-                period_fiscal = NULL;
+                period_fiscal = nullptr;
             }
         }
 
@@ -220,8 +208,8 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
             drawer_list = a->DrawerList();
         }
 
-        Drawer *d = NULL;
-        if (a == NULL)
+        Drawer *d = nullptr;
+        if (a == nullptr)
         {
             if (term->server)
                 d = drawer_list->FindByOwner(term->server, DRAWER_OPEN);
@@ -229,68 +217,68 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
                 d = term->FindDrawer();
         }
 
-        temp_report = new Report;
+        temp_report = std::make_unique<Report>();
         switch (report_type)
         {
         case REPORT_DRAWER:
-            if (term->server == NULL)
-                sys->DrawerSummaryReport(term, drawer_list, check_list, temp_report);
+            if (term->server == nullptr)
+                sys->DrawerSummaryReport(term, drawer_list, check_list, temp_report.get());
             else if (d)
-                d->MakeReport(term, check_list, temp_report);
+                d->MakeReport(term, check_list, temp_report.get());
             break;
         case REPORT_CLOSEDCHECK:
-            sys->ClosedCheckReport(term, day_start, day_end, term->server, temp_report);
+            sys->ClosedCheckReport(term, day_start, day_end, term->server, temp_report.get());
             break;
         case REPORT_SERVERLABOR:
-            sys->labor_db.ServerLaborReport(term, e, day_start, day_end, temp_report);
+            sys->labor_db.ServerLaborReport(term, e, day_start, day_end, temp_report.get());
             break;
         case REPORT_CHECK:
-            DisplayCheckReport(term, temp_report);
+            DisplayCheckReport(term, temp_report.get());
             break;
         case REPORT_SERVER:
-            sys->ServerReport(term, day_start, day_end, term->server, temp_report);
+            sys->ServerReport(term, day_start, day_end, term->server, temp_report.get());
             break;
         case REPORT_SALES:
-            sys->SalesMixReport(term, day_start, day_end, term->server, temp_report);
+            sys->SalesMixReport(term, day_start, day_end, term->server, temp_report.get());
             break;
         case REPORT_BALANCE:
             if (period_view != SP_DAY)
-                sys->BalanceReport(term, day_start, day_end, temp_report);
+                sys->BalanceReport(term, day_start, day_end, temp_report.get());
             else
-                sys->ShiftBalanceReport(term, ref, temp_report);
+                sys->ShiftBalanceReport(term, ref, temp_report.get());
             break;
         case REPORT_DEPOSIT:
             if (period_view != SP_NONE)
-                sys->DepositReport(term, day_start, day_end, NULL, temp_report);
+                sys->DepositReport(term, day_start, day_end, nullptr, temp_report.get());
             else
-                sys->DepositReport(term, day_start, day_end, term->archive, temp_report);
+                sys->DepositReport(term, day_start, day_end, term->archive, temp_report.get());
             break;
         case REPORT_COMPEXCEPTION:
-            sys->ItemExceptionReport(term, day_start, day_end, 1, term->server, temp_report);
+            sys->ItemExceptionReport(term, day_start, day_end, 1, term->server, temp_report.get());
             break;
         case REPORT_VOIDEXCEPTION:
-            sys->ItemExceptionReport(term, day_start, day_end, 2, term->server, temp_report);
+            sys->ItemExceptionReport(term, day_start, day_end, 2, term->server, temp_report.get());
             break;
         case REPORT_TABLEEXCEPTION:
-            sys->TableExceptionReport(term, day_start, day_end, term->server, temp_report);
+            sys->TableExceptionReport(term, day_start, day_end, term->server, temp_report.get());
             break;
         case REPORT_REBUILDEXCEPTION:
-            sys->RebuildExceptionReport(term, day_start, day_end, term->server, temp_report);
+            sys->RebuildExceptionReport(term, day_start, day_end, term->server, temp_report.get());
             break;
         case REPORT_CUSTOMERDETAIL:
-            sys->CustomerDetailReport(term, e, temp_report);
+            sys->CustomerDetailReport(term, e, temp_report.get());
             break;
         case REPORT_EXPENSES:
-            sys->ExpenseReport(term, day_start, day_end, NULL, temp_report, this);
+            sys->ExpenseReport(term, day_start, day_end, nullptr, temp_report.get(), this);
             break;
         case REPORT_ROYALTY:
-            sys->RoyaltyReport(term, day_start, day_end, term->archive, temp_report, this);
+            sys->RoyaltyReport(term, day_start, day_end, term->archive, temp_report.get(), this);
             break;
         case REPORT_AUDITING:
-            sys->AuditingReport(term, day_start, day_end, term->archive, temp_report, this);
+            sys->AuditingReport(term, day_start, day_end, term->archive, temp_report.get(), this);
             break;
         case REPORT_CREDITCARD:
-            sys->CreditCardReport(term, day_start, day_end, term->archive, temp_report, this);
+            sys->CreditCardReport(term, day_start, day_end, term->archive, temp_report.get(), this);
             break;
         }
         
@@ -298,8 +286,7 @@ RenderResult ReportZone::Render(Terminal *term, int update_flag)
 
         if (temp_report && temp_report->is_complete)
         {
-            report = temp_report;
-            temp_report = NULL;
+            report = std::move(temp_report);
         }
     }
 
@@ -343,7 +330,7 @@ RenderResult ReportZone::DisplayCheckReport(Terminal *term, Report *disp_report)
     {
         // This is only for the Kitchen Video reports.
         Check *disp_check = GetDisplayCheck(term);
-        if (disp_check != NULL)
+        if (disp_check != nullptr)
         {
             // Check if this specific video target has marked their portion as made
             int made_for_target = 0;
@@ -411,7 +398,7 @@ int ReportZone::IsKitchenCheck(Terminal *term, Check *check)
 
     // I don't like huge conditionals ("if (a && b || (c || d)...)"),
     // so I'm going to break it out into an if-elsif block instead.
-    if (check == NULL)
+    if (check == nullptr)
         retval = 0;
     else if (check->GetStatus() == CHECK_VOIDED)
         retval = 0;
@@ -512,10 +499,10 @@ int ReportZone::ShowCheck(Terminal *term, Check *check)
     int vtarget;
     Order *order;
     SubCheck *scheck = check->SubList();
-    while (!show && (scheck != NULL))
+    while (!show && (scheck != nullptr))
     {
         order = scheck->OrderList();
-        while (!show && (order != NULL))
+        while (!show && (order != nullptr))
         {
             vtarget = order->VideoTarget(settings);
             if (vtarget == video_target)
@@ -533,7 +520,7 @@ int ReportZone::ShowCheck(Terminal *term, Check *check)
 Check *ReportZone::NextCheck(Check *check, int sort_order)
 {
     FnTrace("ReportZone::NextCheck()");
-    Check *retcheck = NULL;
+    Check *retcheck = nullptr;
     if (sort_order == CHECK_ORDER_OLDNEW)
         retcheck = check->next;
     else
@@ -549,8 +536,8 @@ Check *ReportZone::NextCheck(Check *check, int sort_order)
 Check *ReportZone::GetDisplayCheck(Terminal *term)
 {
     FnTrace("ReportZone::GetDisplayCheck()");
-    Check *checklist = NULL;
-    Check *disp_check = NULL;
+    Check *checklist = nullptr;
+    Check *disp_check = nullptr;
     int counter = 0;
 
     if (term->sortorder == CHECK_ORDER_NEWOLD)
@@ -560,7 +547,7 @@ Check *ReportZone::GetDisplayCheck(Terminal *term)
 
     if (checklist)
     {
-        while ((counter < check_disp_num) && (checklist != NULL))
+        while ((counter < check_disp_num) && (checklist != nullptr))
         {
             if (IsKitchenCheck(term, checklist))
             {
@@ -572,7 +559,7 @@ Check *ReportZone::GetDisplayCheck(Terminal *term)
         // verify we have a check we want
         if (!IsKitchenCheck(term, disp_check) ||
             (counter < check_disp_num))
-            disp_check = NULL;
+            disp_check = nullptr;
     }
 
     if (disp_check)
@@ -602,10 +589,10 @@ Check *ReportZone::GetCheckByNum(Terminal *term)
 {
     FnTrace("ReportZone::GetCheckByNum()");
     Check *checkptr = term->system_data->CheckList();
-    Check *retcheck = NULL;
+    Check *retcheck = nullptr;
     // Steve McConnell would probably hate this:  stop when we have no more
     // checks to look at or when we have a return value
-    while ((checkptr != NULL) && (retcheck == NULL))
+    while ((checkptr != nullptr) && (retcheck == nullptr))
     {
         if (check_disp_num == checkptr->checknum)
             retcheck = checkptr;
@@ -626,12 +613,12 @@ int ReportZone::UndoRecentCheck(Terminal *term)
     {
         term->same_signal = 1;
         Check *currcheck = term->system_data->CheckListEnd();
-        Check *lastcheck = NULL;
+        Check *lastcheck = nullptr;
         TimeInfo lasttime = term->system_data->start;
         lasttime.AdjustYears(-1);
         
         // Look for the most recent check that was served by THIS video target
-        while (currcheck != NULL)
+        while (currcheck != nullptr)
         {
             // Check if this check was served by the current video target
             int served_by_this_target = 0;
@@ -659,7 +646,7 @@ int ReportZone::UndoRecentCheck(Terminal *term)
             currcheck = currcheck->fore;
         }
         
-        if (lastcheck != NULL)
+        if (lastcheck != nullptr)
         {
             // Recall the order for THIS video target only
             if (video_target == PRINTER_BAR1 || video_target == PRINTER_BAR2)
@@ -681,7 +668,7 @@ int ReportZone::UndoRecentCheck(Terminal *term)
             // Clear the SHOWN flag since we're bringing it back to display
             lastcheck->flags &= ~CF_SHOWN;
             // Clear the ORDER_SHOWN status to bring it back to video display
-            lastcheck->ClearOrderStatus(NULL, ORDER_SHOWN);
+            lastcheck->ClearOrderStatus(nullptr, ORDER_SHOWN);
             
             // Save the changes
             lastcheck->Save();
@@ -748,17 +735,17 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
         "ccdetailsdone", "ccrefund", "ccvoids", "ccrefunds",
         "ccexceptions", "ccfinish", "ccfinish2 ", "ccfinish3 ",
         "ccprocessed", "ccrefundamount ", "ccvoidttid ", 
-	"zero captured tips", "bump", NULL};
+	"zero captured tips", "bump", nullptr};
 
     Employee         *e = t->user;
     System           *sys = t->system_data;
     Settings         *s = &sys->settings;
-    TenKeyDialog     *tkdialog = NULL;
-    CreditCardDialog *ccdialog = NULL;
-    GetTextDialog    *gtdialog = NULL;
-    const char* batchnum = NULL;
+    TenKeyDialog     *tkdialog = nullptr;
+    CreditCardDialog *ccdialog = nullptr;
+    GetTextDialog    *gtdialog = nullptr;
+    const char* batchnum = nullptr;
 
-    if (e == NULL)
+    if (e == nullptr)
         return SIGNAL_IGNORED;
 
     int idx = CompareListN(commands, message);
@@ -787,7 +774,7 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
 	    Zone *z = zcur;
 	    while (1)
 	    {
-	    	if (z == NULL)
+	    	if (z == nullptr)
 		    z = t->page->ZoneList();    // (re)start at top of list
 		else
 		    z = z->next;
@@ -807,7 +794,7 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
             AdjustPeriod(ref, period_view, 1);
             if (t->archive)
                 t->archive = t->archive->next;
-            else if (t->archive == NULL)
+            else if (t->archive == nullptr)
                 t->archive = sys->ArchiveList();
         }
         Draw(t, 1);
@@ -835,7 +822,7 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
 	    Zone *z = zcur;
 	    while (1)
 	    {
-	    	if (z == NULL)
+	    	if (z == nullptr)
 		    z = t->page->ZoneListEnd();    // (re)start at end of list
 		else
 		    z = z->fore;
@@ -855,7 +842,7 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
             AdjustPeriod(ref, period_view, -1);
             if (t->archive)
                 t->archive = t->archive->fore;
-            else if (t->archive == NULL)
+            else if (t->archive == nullptr)
                 t->archive = sys->ArchiveListEnd();
         }
         Draw(t, 1);
@@ -955,7 +942,7 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
             if (strlen(&message[10]) > 0)
                 batchnum = &message[10];
             else
-                batchnum = NULL;
+                batchnum = nullptr;
             if (t->CC_Settle(batchnum) >= 0)
             {
                 sys->non_eod_settle = 0;
@@ -1020,7 +1007,7 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
         t->OpenDialog(gtdialog);
         return SIGNAL_OKAY;
     case 30: // ccfinish2
-        if (t->credit == NULL)
+        if (t->credit == nullptr)
         {
             t->credit = new Credit();
             if (t->GetSettings()->authorize_method == CCAUTH_MAINSTREET)
@@ -1032,17 +1019,17 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
         }
         return SIGNAL_OKAY;
     case 31: // ccfinish3
-        if (t->credit != NULL)
+        if (t->credit != nullptr)
         {
             t->credit->Amount(atoi(&message[10]));
             t->CC_GetFinalApproval();
         }
         return SIGNAL_OKAY;
     case 32: // ccprocessed
-        if (t->credit != NULL && t->credit->IsRefunded(1) == 0)
+        if (t->credit != nullptr && t->credit->IsRefunded(1) == 0)
         {
             sys->cc_exception_db->Add(t, t->credit);
-            t->credit = NULL;
+            t->credit = nullptr;
             sys->cc_finish = sys->cc_exception_db->CreditListEnd();
             sys->cc_report_type = CC_REPORT_FINISH;
             Draw(t, 1);
@@ -1050,7 +1037,7 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
         return SIGNAL_OKAY;
     case 33: // ccrefundamount
         // got refund amount for Credit Card Report.
-        t->credit = NULL;
+        t->credit = nullptr;
         t->auth_amount = atoi(&message[15]);
         t->auth_action = AUTH_REFUND;
         t->auth_message = REFUND_MSG;
@@ -1077,7 +1064,7 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
     default:
         if (strncmp(message, "search ", 7) == 0)
         {
-            e = sys->user_db.NameSearch(&message[7], NULL);
+            e = sys->user_db.NameSearch(&message[7], nullptr);
             if (e)
             {
                 t->server = e;
@@ -1104,7 +1091,7 @@ SignalResult ReportZone::Signal(Terminal *t, const genericChar* message)
 SignalResult ReportZone::Touch(Terminal *term, int tx, int ty)
 {
     FnTrace("ReportZone::Touch()");
-    if (report == NULL)
+    if (report == nullptr)
         return SIGNAL_IGNORED;
 
     int new_page = page;
@@ -1157,7 +1144,7 @@ SignalResult ReportZone::Touch(Terminal *term, int tx, int ty)
 SignalResult ReportZone::Mouse(Terminal *term, int action, int mx, int my)
 {
     FnTrace("ReportZone::Mouse()");
-    if (!(action & MOUSE_PRESS) || report == NULL)
+    if (!(action & MOUSE_PRESS) || report == nullptr)
         return SIGNAL_IGNORED;
 
     int new_page = page;
@@ -1265,7 +1252,7 @@ SignalResult ReportZone::ToggleCheckReport(Terminal *term)
                 reportcheck->flags |= CF_KITCHEN_SERVED;
             }
             reportcheck->flags |= CF_SHOWN;
-            reportcheck->SetOrderStatus(NULL, ORDER_SHOWN);
+            reportcheck->SetOrderStatus(nullptr, ORDER_SHOWN);
         }
         update = 1;
         reportcheck->Save();
@@ -1281,34 +1268,30 @@ SignalResult ReportZone::ToggleCheckReport(Terminal *term)
 SignalResult ReportZone::Keyboard(Terminal *t, int my_key, int state)
 {
     FnTrace("ReportZone::Keyboard()");
-    if (report == NULL)
+    if (report == nullptr)
         return SIGNAL_IGNORED;
 
     // automatically accept check number (in ascii) as keyboard shortcut to bump
     if (my_key == check_disp_num + '0')
 	return ToggleCheckReport(t);
 
-    int new_page = page;
-    switch (my_key)
+    int delta = 0;
+    if (my_key == 16)       // page up
+        delta = -1;
+    else if (my_key == 14)  // page down
+        delta = 1;
+    else if (my_key == 118 && debug_mode) // 'v'
     {
-    case 16:  // page up
-        --new_page;
-        break;
-    case 14:  // page down
-        ++new_page;
-        break;
-    case 118:  // v
-        if (debug_mode)
-        {
-            TenKeyDialog *tk = new TenKeyDialog(GlobalTranslate("Enter TTID"), "ccvoidttid", 0);
-            t->OpenDialog(tk);
-            return SIGNAL_TERMINATE;
-        }
-        break;
-    default:
+        TenKeyDialog *tk = new TenKeyDialog(GlobalTranslate("Enter TTID"), "ccvoidttid", 0);
+        t->OpenDialog(tk);
+        return SIGNAL_TERMINATE;
+    }
+    else
+    {
         return SIGNAL_IGNORED;
     }
 
+    int new_page = page + delta;
     int max_page = report->max_pages;
     if (new_page >= max_page)
         new_page = 0;
@@ -1342,8 +1325,8 @@ int ReportZone::Update(Terminal *t, int update_message, const genericChar* value
         return 0;
     }
 
-    Report *r = report;
-    if (r == NULL)
+    Report *r = report.get();
+    if (r == nullptr)
         return 0;
 
     if ((update_message & r->update_flag) && r->is_complete)
@@ -1384,12 +1367,12 @@ int ReportZone::Print(Terminal *t, int print_mode)
         return 0;
 
     Employee *e = t->user;
-    if (e == NULL || report == NULL)
+    if (e == nullptr || report == nullptr)
         return 1;
 
     Printer *p1 = t->FindPrinter(PRINTER_RECEIPT);
     Printer *p2 = t->FindPrinter(PRINTER_REPORT);
-    if (p1 == NULL && p2 == NULL)
+    if (p1 == nullptr && p2 == nullptr)
         return 1;
 
     // If we have RP_ASK and there are two different printers, ask.
@@ -1405,30 +1388,21 @@ int ReportZone::Print(Terminal *t, int print_mode)
         printer_dest = print_mode;
 
     Printer *p = p1;
-    if ((print_mode == RP_PRINT_REPORT && p2) || p1 == NULL)
+    if ((print_mode == RP_PRINT_REPORT && p2) || p1 == nullptr)
         p = p2;
 
-    if (p == NULL)
+    if (p == nullptr)
         return 1;
 
     if (report_type == REPORT_ROYALTY && printing_to_printer == 0)
     {
         System *sys = t->system_data;
         printing_to_printer = 1;
-        if (report != NULL)
-        {
-            delete report;
-            report = NULL;
-        }
-        if (temp_report != NULL)
-        {
-            delete temp_report;
-            temp_report = NULL;
-        }
-        temp_report = new Report;
+        report.reset();
+        temp_report = std::make_unique<Report>();
         temp_report->max_width = p->MaxWidth();
         temp_report->destination = RP_DEST_PRINTER;
-        sys->RoyaltyReport(t, day_start, day_end, t->archive, temp_report, this);
+        sys->RoyaltyReport(t, day_start, day_end, t->archive, temp_report.get(), this);
         return 0;
     }
 
@@ -1535,19 +1509,15 @@ SignalResult ReadZone::Touch(Terminal *t, int tx, int ty)
 SignalResult ReadZone::Keyboard(Terminal *t, int my_key, int state)
 {
     FnTrace("ReadZone::Keyboard()");
-    int new_page = page;
-    switch (my_key)
-    {
-    case 16:  // page up
-        --new_page;
-        break;
-    case 14:  // page down
-        ++new_page;
-        break;
-    default:
+    int delta = 0;
+    if (my_key == 16)       // page up
+        delta = -1;
+    else if (my_key == 14)  // page down
+        delta = 1;
+    else
         return SIGNAL_IGNORED;
-    }
 
+    int new_page = page + delta;
     int max_page = report.max_pages;
     if (new_page >= max_page)
         new_page = 0;

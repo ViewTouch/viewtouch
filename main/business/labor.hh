@@ -18,8 +18,8 @@
  * Work scheduling & time clock classes
  */
 
-#ifndef _LABOR_HH
-#define _LABOR_HH
+#ifndef LABOR_HH
+#define LABOR_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -169,7 +169,7 @@ public:
 
 
 // Will replace LaborPeriod & LaborDB
-#define WORK_VERSION 1
+constexpr int WORK_VERSION = 1;
 
 class WorkDB
 {

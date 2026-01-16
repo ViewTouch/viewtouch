@@ -24,13 +24,15 @@
 #include "form_zone.hh"
 #include "credit.hh"
 
+#include <memory>
+
 class CreditCardListZone : public ListFormZone
 {
     Flt       list_header;
     Flt       list_footer;
     Flt       list_spacing;
     int       lines_shown;
-    Report   *report;
+    std::unique_ptr<Report> report;
     Credit   *credit;
     CreditDB *creditdb;
     Archive  *archive;
@@ -39,24 +41,24 @@ class CreditCardListZone : public ListFormZone
 
 public:
     CreditCardListZone();
-    ~CreditCardListZone();
+    ~CreditCardListZone() override;
 
-    int          Type() { return ZONE_CREDITCARD_LIST; }
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar* message);
-    SignalResult Touch(Terminal *term, int tx, int ty);
+    int          Type() override { return ZONE_CREDITCARD_LIST; }
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
 
-    Flt *Spacing() { return &list_spacing; }
+    Flt *Spacing() override { return &list_spacing; }
 
-    int LoadRecord(Terminal *term, int record);
-    int SaveRecord(Terminal *term, int record, int write_file);
+    int LoadRecord(Terminal *term, int record) override;
+    int SaveRecord(Terminal *term, int record, int write_file) override;
     int RestoreRecord(Terminal *term);
-    int NewRecord(Terminal *term);
-    int KillRecord(Terminal *term, int record);
-    int PrintRecord(Terminal *term, int record);
-    int Search(Terminal *term, int record, const genericChar* word);
-    int ListReport(Terminal *term, Report *report);
-    int RecordCount(Terminal *term);
+    int NewRecord(Terminal *term) override;
+    int KillRecord(Terminal *term, int record) override;
+    int PrintRecord(Terminal *term, int record) override;
+    int Search(Terminal *term, int record, const genericChar* word) override;
+    int ListReport(Terminal *term, Report *report) override;
+    int RecordCount(Terminal *term) override;
     CreditDB *GetDB(int in_system = 1);
     CreditDB *NextCreditDB(Terminal *term);
     CreditDB *PrevCreditDB(Terminal *term);

@@ -19,7 +19,7 @@
  */
 
 #ifndef _CHART_HH
-#define _CHART_HH
+#define CHART_HH
 
 #include "list_utility.hh"
 #include "utility.hh"

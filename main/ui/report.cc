@@ -29,6 +29,7 @@
 #include "manager.hh"
 #include "utility.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include <cstring>
 #include <errno.h>
 #include <vector>
@@ -128,9 +129,9 @@ int Report::Load(const std::string &textfile, int color)
         return 1;
 
     FILE *fp = fopen(textfile.c_str(), "r");
-    if (fp == NULL)
+    if (fp == nullptr)
     {
-        snprintf(buffer, STRLENGTH, "Report::Load Error %d opening %s",
+        vt::cpp23::format_to_buffer(buffer, STRLENGTH, "Report::Load Error {} opening {}",
                  errno, textfile.c_str());
         ReportError(buffer);
         return 1;
@@ -235,7 +236,7 @@ int Report::CreateHeader(Terminal *term, Printer *p, const Employee *e)
     FnTrace("Report::CreateHeader()");
     char buffer[STRLENGTH];
 
-    if (e == NULL)
+    if (e == nullptr)
         return 1;
 
     Settings *s = term->GetSettings();
@@ -245,7 +246,7 @@ int Report::CreateHeader(Terminal *term, Printer *p, const Employee *e)
     genericChar str[256];
     vt_safe_string::safe_format(str, 256, "%s: %s", term->Translate("Author"), e->system_name.Value());
 
-    if (p == NULL || p->Width() < 80)
+    if (p == nullptr || p->Width() < 80)
     {
         TextL(s->store_name.Value());
         NewLine();
@@ -258,7 +259,7 @@ int Report::CreateHeader(Terminal *term, Printer *p, const Employee *e)
         TextL(s->store_name.Value());
         if (s->store_address2.size() > 0)
         {
-            snprintf(buffer, STRLENGTH, "%s, %s", s->store_address.Value(),
+            vt::cpp23::format_to_buffer(buffer, STRLENGTH, "{}, {}", s->store_address.Value(),
                      s->store_address2.Value());
         }
         else
@@ -417,7 +418,7 @@ int Report::Render(Terminal *term, LayoutZone *lz, Flt header_size,
 int Report::Print(Printer *printer)
 {
     FnTrace("Report::Print()");
-    if (printer == NULL)
+    if (printer == nullptr)
         return 1;
 
     int  max_w = printer->MaxWidth();
@@ -492,7 +493,7 @@ int Report::FormalPrint(Printer *printer, int /*columns*/)
     char buffer[STRLONG] = "";
     int  lang = LANG_PHRASE;
 
-    if (printer == NULL)
+    if (printer == nullptr)
         return 1;
 
     int max_w = printer->MaxWidth();

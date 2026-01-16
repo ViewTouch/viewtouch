@@ -18,8 +18,8 @@
  * POS terminal state class
  */
 
-#ifndef _TERMINAL_HH
-#define _TERMINAL_HH
+#ifndef TERMINAL_HH
+#define TERMINAL_HH
 
 #include "cdu.hh"
 #include "credit.hh"
@@ -30,6 +30,7 @@
 #include <string>
 #include <memory>
 #include <mutex>
+#include <cstdint>
 
 // FIX - split Terminal into core class and PosTerm
 
@@ -46,7 +47,7 @@
 #define EOD_NOSETTLE 4
 
 
-enum page_id {
+enum page_id : std::int8_t {
 /************************************************************* 
  * NOTE: enums always increment.  Initializing this structure to
  * -10 is done for consistancy with original #define
@@ -66,7 +67,7 @@ enum page_id {
 	PAGEID_LOGIN 
 };
 
-enum jump_tags {	
+enum jump_tags : std::uint8_t {	
 	JUMP_NONE, 			// Don't jump
 	JUMP_NORMAL, 		// Jump to page, push current page onto stack
 	JUMP_STEALTH, 	    // Jump to page (don't put current page on stack)
@@ -83,7 +84,7 @@ constexpr int SCRIPT_STACK_SIZE = 32;
 constexpr int TITLE_HEIGHT      = 32;
 
 // Terminal Types
-enum term_types {
+enum term_types : std::uint8_t {
 	TERMINAL_ORDER_ONLY,    // can order but no settling at this term
 	TERMINAL_NORMAL,        // normal operation
 	TERMINAL_BAR,           // alternate menu index, pay & settle at once
@@ -150,7 +151,7 @@ constexpr int COLOR_PAGE_DEFAULT = 254; // color determined by page setting
 constexpr int COLOR_CLEAR        = 253; // text not rendered
 constexpr int COLOR_UNCHANGED    = 252; // don't change value (or treat as default)
 
-enum colors { 
+enum colors : std::uint8_t { 
 	COLOR_BLACK, COLOR_WHITE, COLOR_RED, COLOR_GREEN,
 	COLOR_BLUE, COLOR_YELLOW, COLOR_BROWN, COLOR_ORANGE,
 	COLOR_PURPLE, COLOR_TEAL, COLOR_GRAY, COLOR_MAGENTA,
@@ -162,14 +163,14 @@ enum colors {
 constexpr int SHADOW_DEFAULT = 256;
 
 // Text Alignment
-enum text_align {
+enum text_align : std::uint8_t {
 	ALIGN_LEFT,
 	ALIGN_CENTER,
 	ALIGN_RIGHT
 };
 
 // Shape Types
-enum shapes {
+enum shapes : std::uint8_t {
 	SHAPE_RECTANGLE = 1,
 	SHAPE_DIAMOND,
 	SHAPE_CIRCLE,
@@ -184,7 +185,7 @@ constexpr int FRAME_INSET   = 32;  // top-bottom, left-right colors switched
 constexpr int FRAME_2COLOR  = 64;  // 2 colors used instead of 4
 
 // Fonts
-enum font_info {
+enum font_info : std::uint8_t {
 	FONT_DEFAULT     = 0,
 	FONT_TIMES_48    = 1,
 	FONT_TIMES_48B   = 2,
@@ -259,7 +260,7 @@ enum font_info {
 #define TABOPEN_CANCEL  4
 
 // Cursor Types
-enum cursors_style {
+enum cursors_style : std::uint8_t {
 	CURSOR_DEFAULT,
 	CURSOR_BLANK,
 	CURSOR_POINTER,
@@ -286,6 +287,11 @@ class System;
 class CharQueue;
 class Settings;
 struct BatchItem;
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wanalyzer-optin.performance.Padding"
+#endif
 
 class Terminal
 {
@@ -478,7 +484,7 @@ public:
     int PushPage(int page_id);      // puts page id on stack
     int RunScript(const char* script, int jump_type, int jump_id);
     int FastStartLogin();
-    int OpenTab(int phase = TABOPEN_START, const char* message = NULL);
+    int OpenTab(int phase = TABOPEN_START, const char* message = nullptr);
     int ContinueTab(int serial_number = -1);
     int CloseTab(int serial_number = -1);
     int OpenTabList(const char* message);
@@ -609,7 +615,7 @@ public:
     bool BeginZoneDragPreview();
     bool AddZoneDragDelta(int dx, int dy);
     void EndZoneDragPreview(bool apply_move);
-    bool HasActiveZoneDrag() const noexcept { return edit_drag_active; }
+    [[nodiscard]] bool HasActiveZoneDrag() const noexcept { return edit_drag_active; }
 
     int ButtonCommand(int command);
     int EditZone(Zone *z);
@@ -630,26 +636,26 @@ public:
     // Data read/write functions
     int   WInt8(int val);
     int   WInt8(int *val);
-    int   RInt8(int *val = NULL);
+    int   RInt8(int *val = nullptr);
     int   WInt16(int val);
     int   WInt16(int *val);
-    int   RInt16(int *val = NULL);
+    int   RInt16(int *val = nullptr);
     int   WInt32(int val);
     int   WInt32(int *val);
-    int   RInt32(int *val = NULL);
+    int   RInt32(int *val = nullptr);
     long  WLong(long val);
     long  WLong(long *val);
-    long  RLong(long *val = NULL);
+    long  RLong(long *val = nullptr);
     long long WLLong(long long val);
     long long WLLong(long long *val);
-    long long RLLong(long long *val = NULL);
+    long long RLLong(long long *val = nullptr);
     int   WFlt(Flt val);
     int   WFlt(Flt *val);
-    Flt   RFlt(Flt *val = NULL);
+    Flt   RFlt(Flt *val = nullptr);
     int   WStr(const std::string &s, int len = 0);
     int   WStr(const Str &s);
     int   WStr(const Str *s);
-    genericChar* RStr(char* s = NULL);
+    genericChar* RStr(char* s = nullptr);
     genericChar* RStr(Str *s);
     int   Send();
     int   SendNow();
@@ -669,9 +675,9 @@ public:
     Terminal *CC_NextTermWithID(Terminal *cc_term);
     int   CC_NextTermID( int* cc_state, char* termid );
     int   CC_NextBatch(int *state, BatchItem **currbatch, long long *batch);
-    int   CC_Settle(const char* batch = NULL, int reset = 0);
+    int   CC_Settle(const char* batch = nullptr, int reset = 0);
     int   CC_Init();
-    int   CC_Totals(const char* batch = NULL);
+    int   CC_Totals(const char* batch = nullptr);
     int   CC_Details();
     int   CC_ClearSAF(int reset = 0);
     int   CC_SAFDetails();
@@ -687,6 +693,10 @@ public:
     friend Terminal *NewTerminal(const char* , int, int);
     friend int       CloneTerminal(Terminal *, const char* , const char* );
 };
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 
 /**** Funtions ****/

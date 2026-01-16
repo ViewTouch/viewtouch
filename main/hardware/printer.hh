@@ -18,22 +18,25 @@
  * Definition of printer device class
  */
 
-#ifndef _PRINTER_HH
-#define _PRINTER_HH
+#ifndef PRINTER_HH
+#define PRINTER_HH
 
 #include "utility.hh"
 
 #include <string>
 
 /**** Definitions ****/
-#define PRINT_RED       1   // use red ink (if available)
-#define PRINT_BOLD      2   // bold text
-#define PRINT_UNDERLINE 4   // underline text
-#define PRINT_NARROW    8   // condensed width text
-#define PRINT_WIDE      16  // print double width only
-#define PRINT_TALL      32  // print double height only
-#define PRINT_LARGE     48  // print double width & height
-#define PRINT_BLUE      64  // blue text (if available)
+// Printer style flags (converted from macros to enum constants)
+enum PrintModeFlags : std::uint8_t {
+    PRINT_RED       = 1,   // use red ink (if available)
+    PRINT_BOLD      = 2,   // bold text
+    PRINT_UNDERLINE = 4,   // underline text
+    PRINT_NARROW    = 8,   // condensed width text
+    PRINT_WIDE      = 16,  // print double width only
+    PRINT_TALL      = 32,  // print double height only
+    PRINT_LARGE     = 48,  // print double width & height
+    PRINT_BLUE      = 64   // blue text (if available)
+};
 
 #define EPSON_WIDE      32
 #define EPSON_TALL      16
@@ -50,7 +53,7 @@
 #define TARGET_TYPE_EMAIL     "email"
 #define TARGET_TYPE_QUICKBOOKS_CSV "quickbooks_csv"
 
-enum targettype {
+enum targettype : std::uint8_t {
     TARGET_NONE,
     TARGET_PARALLEL,
     TARGET_LPD,
@@ -60,7 +63,7 @@ enum targettype {
     TARGET_QUICKBOOKS_CSV
 };
 
-enum printer_models {
+enum printer_models : std::uint8_t {
 	MODEL_NONE,
 	MODEL_EPSON,
 	MODEL_STAR,
@@ -154,6 +157,7 @@ public:
     virtual int SetTitle(const std::string &title);
     virtual int Open();
     virtual int Close();
+    virtual void CloseAsync();  // Non-blocking version - fire and forget
     virtual int ParallelPrint();
     virtual int LPDPrint();
     virtual int SocketPrint();                           // print to TCP socket
@@ -186,82 +190,82 @@ public:
 
 class PrinterIthaca : public Printer
 {
-    virtual int WriteFlags(int flags);
+    int WriteFlags(int flags) override;
 public:
     PrinterIthaca(const genericChar* host, int port, const genericChar* targetstr, int type);
-    virtual int Model() { return MODEL_ITHACA; }
-    virtual int Start();
-    virtual int End();
-    virtual int Init();
-    virtual int NewLine();
-    virtual int LineFeed(int lines = 1);
-    virtual int FormFeed();
-    virtual int MaxWidth();
-    virtual int MaxLines();
-    virtual int Width(int flags = 0);
-    virtual int StopPrint();
-    virtual int OpenDrawer(int drawer);
-    virtual int CutPaper(int partial_only = 0);
+    int Model() override { return MODEL_ITHACA; }
+    int Start() override;
+    int End() override;
+    int Init() override;
+    int NewLine() override;
+    int LineFeed(int lines = 1) override;
+    int FormFeed() override;
+    int MaxWidth() override;
+    int MaxLines() override;
+    int Width(int flags = 0) override;
+    int StopPrint() override;
+    int OpenDrawer(int drawer) override;
+    int CutPaper(int partial_only = 0) override;
 };
 
 class PrinterStar : public Printer
 {
-    virtual int WriteFlags(int flags);
+    int WriteFlags(int flags) override;
 public:
     PrinterStar(const genericChar* host, int port, const genericChar* targetstr, int type);
-    virtual int Model() { return MODEL_STAR; }
-    virtual int Start();
-    virtual int End();
-    virtual int Init();
-    virtual int NewLine();
-    virtual int LineFeed(int lines = 1);
-    virtual int FormFeed();
-    virtual int MaxWidth();
-    virtual int MaxLines();
-    virtual int Width(int flags = 0);
-    virtual int StopPrint();
-    virtual int OpenDrawer(int drawer);
-    virtual int CutPaper(int partial_only = 0);
+    int Model() override { return MODEL_STAR; }
+    int Start() override;
+    int End() override;
+    int Init() override;
+    int NewLine() override;
+    int LineFeed(int lines = 1) override;
+    int FormFeed() override;
+    int MaxWidth() override;
+    int MaxLines() override;
+    int Width(int flags = 0) override;
+    int StopPrint() override;
+    int OpenDrawer(int drawer) override;
+    int CutPaper(int partial_only = 0) override;
 };
 
 class PrinterEpson : public Printer
 {
-    virtual int WriteFlags(int flags);
+    int WriteFlags(int flags) override;
 public:
     PrinterEpson(const genericChar* host, int port, const genericChar* targetstr, int type);
-    virtual int Model() { return MODEL_EPSON; }
-    virtual int Start();
-    virtual int End();
-    virtual int Init();
-    virtual int NewLine();
-    virtual int LineFeed(int lines = 1);
-    virtual int FormFeed();
-    virtual int MaxWidth();
-    virtual int MaxLines();
-    virtual int Width(int flags = 0);
-    virtual int StopPrint();
-    virtual int OpenDrawer(int drawer);
-    virtual int CutPaper(int partial_only = 0);
+    int Model() override { return MODEL_EPSON; }
+    int Start() override;
+    int End() override;
+    int Init() override;
+    int NewLine() override;
+    int LineFeed(int lines = 1) override;
+    int FormFeed() override;
+    int MaxWidth() override;
+    int MaxLines() override;
+    int Width(int flags = 0) override;
+    int StopPrint() override;
+    int OpenDrawer(int drawer) override;
+    int CutPaper(int partial_only = 0) override;
 };
 
 class PrinterHP : public Printer
 {
-    virtual int WriteFlags(int flags);
+    int WriteFlags(int flags) override;
 public:
     PrinterHP(const genericChar* host, int port, const genericChar* targetstr, int type);
-    virtual int Model() { return MODEL_HP; }
-    virtual int Start();
-    virtual int End();
-    virtual int Init();
-    virtual int NewLine();
-    virtual int LineFeed(int lines = 1);
-    virtual int FormFeed();
-    virtual int MaxWidth();
-    virtual int MaxLines();
-    virtual int Width(int flags = 0);
-    virtual int StopPrint();
-    virtual int OpenDrawer(int drawer);
-    virtual int CutPaper(int partial_only = 0);
+    int Model() override { return MODEL_HP; }
+    int Start() override;
+    int End() override;
+    int Init() override;
+    int NewLine() override;
+    int LineFeed(int lines = 1) override;
+    int FormFeed() override;
+    int MaxWidth() override;
+    int MaxLines() override;
+    int Width(int flags = 0) override;
+    int StopPrint() override;
+    int OpenDrawer(int drawer) override;
+    int CutPaper(int partial_only = 0) override;
 };
 
 class PrinterHTML : public Printer

@@ -36,6 +36,7 @@
 #include "socket.hh"
 #include "utility.hh"
 #include "safe_string_utils.hh"
+#include "cpp23_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -128,7 +129,7 @@ int SocketToSerial(int listen_port, const char* pinpad_device)
     /* now loop with proper error handling and exit conditions */
     int consecutive_failures = 0;
     const int max_failures = 100; // Maximum consecutive failures before giving up
-    time_t last_success = time(NULL);
+    time_t last_success = time(nullptr);
     const int max_idle_time = 300; // 5 minutes of no activity before checking health
     
     while (1)
@@ -143,7 +144,7 @@ int SocketToSerial(int listen_port, const char* pinpad_device)
                 if (diagnostics)
                     printf("Opened Device %s, File Descriptor %d\n", pinpad_device, pinpad_fd);
                 consecutive_failures = 0; // Reset failure counter on success
-                last_success = time(NULL);
+                last_success = time(nullptr);
             }
             else
             {
@@ -164,7 +165,7 @@ int SocketToSerial(int listen_port, const char* pinpad_device)
                 if (diagnostics)
                     printf("Listening on Port:  %d\n", listen_port);
                 consecutive_failures = 0; // Reset failure counter on success
-                last_success = time(NULL);
+                last_success = time(nullptr);
             }
             else
             {
@@ -195,10 +196,10 @@ int SocketToSerial(int listen_port, const char* pinpad_device)
             FD_SET(listen_fd, &in_fds);
             timeout.tv_sec = 0;
             timeout.tv_usec = 10;
-            reads = select(nfds, &in_fds, NULL, NULL, &timeout);
+            reads = select(nfds, &in_fds, nullptr, nullptr, &timeout);
             if (reads > 0)
             {
-                last_success = time(NULL); // Update last success time
+                last_success = time(nullptr); // Update last success time
                 consecutive_failures = 0; // Reset failure counter on activity
                 
                 if (FD_ISSET(pinpad_fd, &in_fds))
@@ -246,7 +247,7 @@ int SocketToSerial(int listen_port, const char* pinpad_device)
             else
             {
                 // Timeout - check if we've been idle too long
-                time_t now = time(NULL);
+                time_t now = time(nullptr);
                 if (now - last_success > max_idle_time)
                 {
                     if (diagnostics)
@@ -315,7 +316,7 @@ int SocketToSocket(int listen_port, const char* host, int port)
             FD_SET(listen_fd, &in_fds);
             timeout.tv_sec = 0;
             timeout.tv_usec = 10;
-            reads = select(nfds, &in_fds, NULL, NULL, &timeout);
+            reads = select(nfds, &in_fds, nullptr, nullptr, &timeout);
             if (reads > 0)
             {
                 if (FD_ISSET(listen_fd, &in_fds))
@@ -500,10 +501,10 @@ int ProcessConnection(int serverfd, int pinpadfd)
         {
             timeout.tv_sec  = check_interval;
             timeout.tv_usec = 0;
-            readies = select(nfds, &in_fds, NULL, NULL, &timeout);
+            readies = select(nfds, &in_fds, nullptr, nullptr, &timeout);
         }
         else
-            readies = select(nfds, &in_fds, NULL, NULL, NULL);
+            readies = select(nfds, &in_fds, nullptr, nullptr, nullptr);
         if (readies < 0)
         {
             perror("ProcessConnection select");
@@ -517,7 +518,7 @@ int ProcessConnection(int serverfd, int pinpadfd)
                 readlen = ReadCmd(serverfd, buffer, STRLONG);
                 if (readlen >= 0)
                 {
-                    lastserver = time(NULL);
+                    lastserver = time(nullptr);
                     // send to pinpad
                     if (diagnostics)
                         PrintRead("from Socket", buffer, readlen);
@@ -547,7 +548,7 @@ int ProcessConnection(int serverfd, int pinpadfd)
         }
         else if (lastserver && time_limit)
         {  // check for timeouts
-            now = time(NULL);
+            now = time(nullptr);
             if ((now - lastserver) > time_limit)
                 retval = ERR_TIMEOUT;
         }
@@ -622,7 +623,7 @@ int Read(int fd, char* buffer, int bufflen)
         readlen = static_cast<int>(read(fd, buffer, static_cast<size_t>(bufflen)));
         if (readlen < 0 && errno != EAGAIN)
         {
-            snprintf(errbuff, STRLENGTH, "Read Error %d", errno);
+            vt::cpp23::format_to_buffer(errbuff, STRLENGTH, "Read Error {}", errno);
             perror(errbuff);
             done = 1;
         }
@@ -647,7 +648,7 @@ int Write(int fd, const char* buffer, int bufflen)
         bytes = write(fd, buffer, bufflen);
         if (bytes < 0)
         {
-            snprintf(errbuff, STRLONG, "Write Error to File Descriptor %d", fd);
+            vt::cpp23::format_to_buffer(errbuff, STRLONG, "Write Error to File Descriptor {}", fd);
             perror(errbuff);
             writelen = bytes;
         }

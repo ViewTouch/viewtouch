@@ -1,8 +1,9 @@
 #include "admission.hh"
 #include <external/core/sha1.hh>
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 
 
 void admission_itemname_hash(Str& ih,const Str& name,const Str& location,const Str& time, const Str& price_class)
@@ -22,7 +23,7 @@ void admission_itemname_hash(Str& ih,const Str& name,const Str& location,const S
 		result |= hashbytes[i];
 	}
 	
-	snprintf(outbuf,256,"%s@%08X:%s",admission_filteredname(name),result,price_class.Value());
+	vt::cpp23::format_to_buffer(outbuf,256,"{}@{:08X}:{}",admission_filteredname(name),result,price_class.Value());
 	ih.Set(outbuf);
 }//converts a name to the item~hash form.
 
@@ -51,11 +52,11 @@ void admission_parse_hash_ltime_hash(Str& hashout,const Str& ih)
 	uint32_t val=0;
 	if(zloc)
 	{
-		val=strtoul(zloc+1,NULL,16);
+		val=strtoul(zloc+1,nullptr,16);
 	}
 	if(val!=0)
 	{
-		snprintf(buffer,256,"%08X",val);
+		vt::cpp23::format_to_buffer(buffer,256,"{:08X}",val);
 		hashout.Set(buffer);
 	}
 	else
@@ -68,7 +69,7 @@ const char* admission_filteredname(const Str& item_name)
 	static genericChar buf[256];
 	Str outname;
 	admission_parse_hash_name(outname,item_name);
-	snprintf(buf,256,"%s",outname.Value());
+	vt::cpp23::format_to_buffer(buf,256,"{}",outname.Value());
 	return buf;
 }
 /*

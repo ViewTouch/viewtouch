@@ -23,6 +23,7 @@
 #include "utility.hh"
 #include "locale.hh"
 #include "src/utils/vt_logger.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #include "version/vt_version_info.hh"
 
@@ -279,7 +280,7 @@ int UpdateKeyboard(const char* str = nullptr)
 
     if (str)
     {
-        snprintf(KBInput.data(), KBInput.size(), "%s_", str);
+        vt::cpp23::format_to_buffer(KBInput.data(), KBInput.size(), "{}_", str);
     }
 
     // Erase first
@@ -409,6 +410,7 @@ int SetupConnection(const std::string &socket_file)
     else if (bind(dev, reinterpret_cast<struct sockaddr*>(&server_adr), SUN_LEN(&server_adr)) < 0)
     {
         logmsg(LOG_ERR, "Failed to bind socket '%s'", SOCKET_FILE.c_str());
+        close(dev);  // Fix socket leak on bind failure
     }
     else
     {
@@ -439,8 +441,8 @@ XtAppContext InitializeDisplay(int argc, char **argv)
     XtToolkitInitialize();
     XtAppContext app = XtCreateApplicationContext();
 
-    Dis = XtOpenDisplay(app, NULL, NULL, NULL, NULL, 0, &argc, argv);
-    if (Dis == NULL)
+    Dis = XtOpenDisplay(app, nullptr, nullptr, nullptr, nullptr, 0, &argc, argv);
+    if (Dis == nullptr)
     {
         logmsg(LOG_ERR, "Unable to open display\n");
         ExitLoader();
@@ -451,7 +453,7 @@ XtAppContext InitializeDisplay(int argc, char **argv)
     ColorWhite = WhitePixel(Dis, screen_no);
 
     loaderFont = XftFontOpenName(Dis, screen_no, FONT_NAME);
-    if (loaderFont == NULL)
+    if (loaderFont == nullptr)
     {
         logmsg(LOG_ERR, "Unable to load font\n");
         ExitLoader();
@@ -478,7 +480,7 @@ Widget OpenStatusBox(XtAppContext app)
         { (String)"mappedWhenManaged", False                         },
     };
 
-    Widget shell = XtAppCreateShell("Welcome to POS", NULL,
+    Widget shell = XtAppCreateShell("Welcome to POS", nullptr,
         applicationShellWidgetClass, Dis, args, XtNumber(args));
     XtRealizeWidget(shell);
 
@@ -489,8 +491,8 @@ Widget OpenStatusBox(XtAppContext app)
     XftColorAllocName(Dis, DefaultVisual(Dis, screen_no),
         DefaultColormap(Dis, screen_no), "white", &xftWhite);
 
-    XtAddEventHandler(shell, ExposureMask, FALSE, ExposeCB, NULL);
-    XtAddEventHandler(shell, KeyPressMask, FALSE, KeyPressCB, NULL);
+    XtAddEventHandler(shell, ExposureMask, FALSE, ExposeCB, nullptr);
+    XtAddEventHandler(shell, KeyPressMask, FALSE, KeyPressCB, nullptr);
     return shell;
 }
 
@@ -502,7 +504,7 @@ bool WriteArgList(const int argc, char* argv[])
         std::ofstream fout(COMMAND_FILE, std::fstream::trunc);
         if (!fout.is_open())
         {
-            std::cout << msg_base + "error while opening file '" + COMMAND_FILE + "'" << std::endl;
+            std::cout << msg_base + "error while opening file '" + COMMAND_FILE + "'" << '\n';
             return false;
         }
 
@@ -517,7 +519,7 @@ bool WriteArgList(const int argc, char* argv[])
     if (ret != 0)
     {
         std::cout << msg_base + "error while modifying permissions for  file '"
-                  << COMMAND_FILE << "'" << std::endl;
+                  << COMMAND_FILE << "'" << '\n';
         return false;
     }
     return true;
@@ -611,7 +613,7 @@ int main(int argc, genericChar* argv[])
         {
             std::cout << viewtouch::get_project_name() << " "
                       << viewtouch::get_version_info()
-                      << std::endl;
+                      << '\n';
             exit(1);
         }
     }
@@ -620,7 +622,7 @@ int main(int argc, genericChar* argv[])
     // the system
     if (!WriteArgList(argc, argv))
     {
-        std::cout << "Error while writing argument file for vt_main" << std::endl;
+        std::cout << "Error while writing argument file for vt_main" << '\n';
         return 1;
     }
 
@@ -655,7 +657,7 @@ int main(int argc, genericChar* argv[])
 
     // Read Status Messages
     XtAppAddInput(appContext, SocketNo, (XtPointer) XtInputReadMask,
-                  (XtInputCallbackProc) SocketInputCB, NULL);
+                  (XtInputCallbackProc) SocketInputCB, nullptr);
 
     XEvent event;
     for (;;)

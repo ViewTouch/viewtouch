@@ -20,6 +20,7 @@
 #include "search_zone.hh"
 #include "terminal.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include <string.h>
 #include <cctype>
 
@@ -62,7 +63,7 @@ SignalResult SearchZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("SearchZone::Signal()");
     static const genericChar* commands[] =
-        {"nextsearch", "backspace", "clear", NULL};
+        {"nextsearch", "backspace", "clear", nullptr};
     unsigned int bufflen = strlen(buffer);
     genericChar tbuff[STRLENGTH];
     SignalResult retval = SIGNAL_IGNORED;
@@ -88,7 +89,7 @@ SignalResult SearchZone::Signal(Terminal *term, const genericChar* message)
     default:  // character entered from onscreen keyboard or keypad
         if (strlen(message) == 1)
         {
-            snprintf(tbuff, STRLENGTH, "%s%s", buffer, message);
+            vt::cpp23::format_to_buffer(tbuff, STRLENGTH, "{}{}", buffer, message);
             strncpy(buffer, tbuff, STRLENGTH);
             retval = SIGNAL_OKAY;
         }
@@ -110,7 +111,7 @@ SignalResult SearchZone::Touch(Terminal *term, int tx, int ty)
         search = 1;
         if (strlen(buffer) > 0)
         {
-            snprintf(msgbuffer, STRLENGTH, "search %s", buffer);
+            vt::cpp23::format_to_buffer(msgbuffer, STRLENGTH, "search {}", buffer);
             term->Signal(msgbuffer, group_id);
         }
         buffer[0] = '\0';
@@ -141,8 +142,6 @@ SignalResult SearchZone::Keyboard(Terminal *term, int my_key, int state)
         term->Signal(str, group_id);
         return SIGNAL_END;
     case 13: // return
-        Draw(term, 1);
-        return SIGNAL_END;
     case 27: // escape (cancel)
         Draw(term, 1);
         return SIGNAL_END;

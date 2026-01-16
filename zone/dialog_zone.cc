@@ -26,6 +26,7 @@
 #include "system.hh"
 #include "image_data.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include <assert.h>
 #include <cstring>
 #include <cctype>
@@ -122,7 +123,7 @@ int ButtonObj::Render(Terminal *term)
  ********************************************************************/
 DialogZone::DialogZone()
 {
-    target_zone = NULL;
+    target_zone = nullptr;
     target_index = 0;
     target_signal[0] = '\0';
     color[0]   = COLOR_BLACK;
@@ -188,6 +189,9 @@ int DialogZone::ClosingAction(int action_type, int action, int arg)
         cancel_action.type = action;
         cancel_action.arg = arg;
         break;
+    default:
+        // Unknown action type, ignore
+        break;
     }
 
     return retval;
@@ -207,6 +211,9 @@ int DialogZone::ClosingAction(int action_type, int action, const char* message)
     case ACTION_CANCEL:
         cancel_action.type = action;
         strncpy(cancel_action.msg, message, STRLENGTH);
+        break;
+    default:
+        // Unknown action type, ignore
         break;
     }
 
@@ -336,7 +343,7 @@ int SimpleDialog::RenderInit(Terminal * /*term*/, int /*update_flag*/)
 RenderResult SimpleDialog::Render(Terminal *term, int update_flag)
 {
     FnTrace("SimpleDialog::Render()");
-    RenderZone(term, NULL, update_flag);
+    RenderZone(term, nullptr, update_flag);
     int bx = 0;
     int by = 0;
     int bw = 0;
@@ -369,11 +376,11 @@ RenderResult SimpleDialog::Render(Terminal *term, int update_flag)
                 bx = x + border;
             // last button, if odd number of buttons, is width of dialog
             // minus border width * 2
-            if (zo->next == NULL && (buttons.Count() % 2))
+            if (zo->next == nullptr && (buttons.Count() % 2))
                 bw = w - (border * 2);
             zo->font = zofont;
             zo->Layout(term, bx, by, bw, btn_height);
-            if (((z % 2) == 0) && zo->next != NULL)
+            if (((z % 2) == 0) && zo->next != nullptr)
                 by += btn_height + gap;
             z += 1;
             zo = zo->next;
@@ -393,7 +400,7 @@ RenderResult SimpleDialog::Render(Terminal *term, int update_flag)
                 bx = x + border;
             else
                 bx += bw + gap;
-            if (zo->next == NULL)
+            if (zo->next == nullptr)
             {
                 if (z == 1)
                     bw = w - (border * 2);
@@ -402,7 +409,7 @@ RenderResult SimpleDialog::Render(Terminal *term, int update_flag)
             }
             zo->font = zofont;
             zo->Layout(term, bx, by, bw, btn_height);
-            if (z == 3 && zo->next != NULL)
+            if (z == 3 && zo->next != nullptr)
             {
                 by += btn_height + gap;
                 z = 1;
@@ -421,7 +428,7 @@ SignalResult SimpleDialog::Touch(Terminal *term, int tx, int ty)
 {
     FnTrace("SimpleDialog::Touch()");
     ZoneObject *zo = buttons.List();
-    if (zo == NULL || ty < zo->y)
+    if (zo == nullptr || ty < zo->y)
         return SIGNAL_TERMINATE;
 
     zo = buttons.Find(tx, ty);
@@ -448,7 +455,7 @@ UnitAmountDialog::UnitAmountDialog(const char* title, UnitAmount &u)
     FnTrace("UnitAmountDialog::UnitAmountDialog()");
     int i;
 
-    lit = NULL;
+    lit = nullptr;
     name.Set(title);
     buffer[0] = '\0';
     if (u.amount != 0.0)
@@ -506,7 +513,7 @@ UnitAmountDialog::UnitAmountDialog(const char* title, UnitAmount &u)
     {
         UnitAmount tmp;
         tmp.type = ul[units];
-        unit[units] = Button(tmp.Measurement(), NULL);
+        unit[units] = Button(tmp.Measurement(), nullptr);
         ut[units] = tmp.type;
         ++units;
     }
@@ -521,15 +528,15 @@ RenderResult UnitAmountDialog::Render(Terminal *term, int update_flag)
     int i;
 
     if (update_flag)
-        lit = NULL;
+        lit = nullptr;
     if (lit)
     {
         lit->Draw(term, 0);
-        lit = NULL;
+        lit = nullptr;
         return RENDER_OKAY;
     }
 
-    LayoutZone::Render(term, update_flag);
+    DialogZone::Render(term, update_flag);
 
     // Layout buttons
     int gap = 8;
@@ -618,7 +625,7 @@ SignalResult UnitAmountDialog::Touch(Terminal *term, int tx, int ty)
         {
             if (lit)
                 lit->Draw(term, 0);
-            lit = NULL;
+            lit = nullptr;
             unit_type = ut[i];
             Draw(term, 0);
             return SIGNAL_OKAY;
@@ -633,7 +640,7 @@ SignalResult UnitAmountDialog::Signal(Terminal *term, const genericChar* message
     FnTrace("UnitAmountDialog::Signal()");
     static const genericChar* command[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".",
-            "enter", "backspace", "cancel", NULL};
+            "enter", "backspace", "cancel", nullptr};
 
     int idx = CompareList(message, command);
     if (idx < 0)
@@ -683,16 +690,16 @@ SignalResult UnitAmountDialog::Signal(Terminal *term, const genericChar* message
 SignalResult UnitAmountDialog::Keyboard(Terminal *term, int my_key, int state)
 {
     FnTrace("UnitAmountDialog::Keyboard()");
+    const char* action = nullptr;
     switch (my_key)
     {
-    case 27:  // ESC
-        return Signal(term, "cancel");
-    case 13:  // return
-        return Signal(term, "enter");
-    case 8:   // backspace
-        return Signal(term, "backspace");
+    case 27:  action = "cancel";    break; // ESC
+    case 13:  action = "enter";     break; // return
+    case 8:   action = "backspace"; break; // backspace
+    default:  break;
     }
-
+    if (action)
+        return Signal(term, action);
     genericChar str[] = {(char) my_key, '\0'};
     return Signal(term, str);
 }
@@ -723,7 +730,7 @@ TenKeyDialog::TenKeyDialog()
     FnTrace("TenKeyDialog::TenKeyDialog()");
     int i;
 
-    lit = NULL;
+    lit = nullptr;
     name.Set(GlobalTranslate("Enter Amount"));
     buffer = 0;
     max_amount = 100000;
@@ -738,7 +745,7 @@ TenKeyDialog::TenKeyDialog()
     key[10] = Button(GlobalTranslate("Enter"), "enter");
     key[11] = Button(GlobalTranslate("Back Space"), "backspace");
     key[12] = Button(GlobalTranslate("Cancel"), "cancel");
-    key[13] = NULL;
+    key[13] = nullptr;
 
     w = 420;
     h = 580;
@@ -751,7 +758,7 @@ TenKeyDialog::TenKeyDialog(const char* title, int amount, int cancel, int dp)
     FnTrace("TenKeyDialog::TenKeyDialog(const char* , int, int, int)");
     int i;
 
-    lit = NULL;
+    lit = nullptr;
     name.Set(title);
     buffer = amount;
     max_amount = 100000;
@@ -768,11 +775,11 @@ TenKeyDialog::TenKeyDialog(const char* title, int amount, int cancel, int dp)
     if (cancel)
         key[12] = Button(GlobalTranslate("Cancel"), "cancel");
     else
-        key[12] = NULL;
+        key[12] = nullptr;
 
     // the decimal will be automatic, so we won't show the button.
     decimal = dp;
-    key[13] = NULL;
+    key[13] = nullptr;
 
     w = 420;
     h = 580;
@@ -785,7 +792,7 @@ TenKeyDialog::TenKeyDialog(const char* title, const char* retmsg, int amount, in
     FnTrace("TenKeyDialog::TenKeyDialog(const char* , const char* , int, int)");
     int i;
 
-    lit = NULL;
+    lit = nullptr;
     name.Set(title);
     buffer = amount;
     max_amount = 100000;
@@ -803,7 +810,7 @@ TenKeyDialog::TenKeyDialog(const char* title, const char* retmsg, int amount, in
 
     // the decimal will be automatic, so we won't show the button.
     decimal = dp;
-    key[13] = NULL;
+    key[13] = nullptr;
 
     w = 420;
     h = 580;
@@ -817,57 +824,55 @@ RenderResult TenKeyDialog::Render(Terminal *term, int update_flag)
     int i;
 
     if (update_flag)
-        lit = NULL;
+        lit = nullptr;
     if (lit)
     {
         lit->Draw(term, 0);
-        lit = NULL;
+        lit = nullptr;
         return RENDER_OKAY;
     }
 
-    LayoutZone::Render(term, update_flag);
+    // Render background without title
+    RenderZone(term, nullptr, update_flag);
     first_row_y = y + first_row;
 
-    // Layout Buttons
+    // Redesigned Layout: Phone-style keypad
     int gap = 8;
-    int bw = (w - (border * 2) - (gap * 3)) / 4;
-    int bh;
-    if (key[12])
-        bh = (h - (border * 2) - (gap * 4) - first_row) / 5;
-    else
-        bh = (h - (border * 2) - (gap * 3) - first_row) / 4;
+    int bw = (w - (border * 2) - (gap * 2)) / 3;  // 3 columns
+    int bh = (h - (border * 2) - (gap * 5) - first_row) / 5;  // 5 rows for numbers + controls
 
-    int col[4];
+    int col[3];
     int row[5];
     col[0] = x + border;
     row[0] = y + border + first_row;
+    for (i = 1; i < 3; ++i)
+        col[i] = col[i-1] + bw + gap;
     for (i = 1; i < 5; ++i)
         row[i] = row[i-1] + bh + gap;
 
-    for (i = 1; i < 4; ++i)
-        col[i] = col[i-1] + bw + gap;
+    // Phone layout: 1 2 3
+    //               4 5 6
+    //               7 8 9
+    //                 0
+    key[1]->SetRegion(col[0], row[0], bw, bh);  // 1
+    key[2]->SetRegion(col[1], row[0], bw, bh);  // 2
+    key[3]->SetRegion(col[2], row[0], bw, bh);  // 3
+    key[4]->SetRegion(col[0], row[1], bw, bh);  // 4
+    key[5]->SetRegion(col[1], row[1], bw, bh);  // 5
+    key[6]->SetRegion(col[2], row[1], bw, bh);  // 6
+    key[7]->SetRegion(col[0], row[2], bw, bh);  // 7
+    key[8]->SetRegion(col[1], row[2], bw, bh);  // 8
+    key[9]->SetRegion(col[2], row[2], bw, bh);  // 9
+    key[0]->SetRegion(col[1], row[3], bw, bh);  // 0 centered
 
-    key[0]->SetRegion(col[0], row[3], bw*2 + gap, bh);
-    key[1]->SetRegion(col[0], row[0], bw, bh);
-    key[2]->SetRegion(col[1], row[0], bw, bh);
-    key[3]->SetRegion(col[2], row[0], bw, bh);
-    key[4]->SetRegion(col[0], row[1], bw, bh);
-    key[5]->SetRegion(col[1], row[1], bw, bh);
-    key[6]->SetRegion(col[2], row[1], bw, bh);
-    key[7]->SetRegion(col[0], row[2], bw, bh);
-    key[8]->SetRegion(col[1], row[2], bw, bh);
-    key[9]->SetRegion(col[2], row[2], bw, bh);
-
-    key[10]->SetRegion(col[3], row[2], bw, bh*2 + gap);
-    key[11]->SetRegion(col[3], row[0], bw, bh*2 + gap);
+    // Controls
+    key[11]->SetRegion(col[0], row[4], bw, bh);  // Back Space
+    key[10]->SetRegion(col[2], row[4], bw, bh);  // Enter
     if (key[12])
-        key[12]->SetRegion(col[1], row[4], bw*2 + gap, bh);
-    if (key[13])
-        key[13]->SetRegion(col[2], row[3], bw, bh);
+        key[12]->SetRegion(col[1], row[4], bw, bh);  // Cancel in middle if present
 
     // Render
-    if (name.size() > 0)
-        TextC(term, 0, name.Value());
+    // No title, entry field at top center
     RenderEntry(term);
     buttons.Render(term);
 
@@ -885,7 +890,7 @@ SignalResult TenKeyDialog::Touch(Terminal *term, int tx, int ty)
         ButtonObj *b = (ButtonObj *) zo;
         lit = b;
         b->Draw(term, 1);
-        term->RedrawZone(this, 500);
+        term->RedrawZone(this, 0);
         return Signal(term, b->message.Value());
     }
     return SIGNAL_IGNORED;
@@ -896,7 +901,7 @@ SignalResult TenKeyDialog::Signal(Terminal *term, const genericChar* message)
     FnTrace("TenKeyDialog::Signal()");
     static const genericChar* command[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-            "enter", "backspace", "cancel", NULL};
+            "enter", "backspace", "cancel", nullptr};
 
     int idx = CompareList(message, command);
     if (idx < 0)
@@ -931,16 +936,16 @@ SignalResult TenKeyDialog::Signal(Terminal *term, const genericChar* message)
 SignalResult TenKeyDialog::Keyboard(Terminal *term, int my_key, int state)
 {
     FnTrace("TenKeyDialog::Keyboard()");
+    const char* action = nullptr;
     switch (my_key)
     {
-    case 27:  // ESC
-        return Signal(term, "cancel");
-    case 13:  // return
-        return Signal(term, "enter");
-    case 8:   // backspace
-        return Signal(term, "backspace");
+    case 27:  action = "cancel";    break; // ESC
+    case 13:  action = "enter";     break; // return
+    case 8:   action = "backspace"; break; // backspace
+    default:  break;
     }
-
+    if (action)
+        return Signal(term, action);
     genericChar str[] = {(char) my_key, '\0'};
     return Signal(term, str);
 }
@@ -949,7 +954,12 @@ int TenKeyDialog::RenderEntry(Terminal *term)
 {
     FnTrace("TenKeyDialog::RenderEntry()");
 
-    Entry(term, (size_x/2) - 10, 1.5, 20);
+    // Draw larger entry box at top center
+    int entry_width = 200;
+    int entry_height = 50;
+    int entry_x = x + border + (w - 2 * border - entry_width) / 2;
+    int entry_y = y + border + 20;
+    term->RenderButton(entry_x, entry_y, entry_width, entry_height, ZF_RAISED, IMAGE_SAND);
     genericChar str[16];
     if (decimal)
     {
@@ -966,7 +976,7 @@ int TenKeyDialog::RenderEntry(Terminal *term)
     {
         vt_safe_string::safe_format(str, 16, "%d", buffer);
     }
-    TextC(term, 1.5, str, COLOR_WHITE);
+    term->RenderZoneText(str, entry_x + 10, entry_y, entry_width - 20, entry_height, COLOR_WHITE, FONT_TIMES_34);
     return 0;
 }
 
@@ -980,7 +990,7 @@ GetTextDialog::GetTextDialog()
     FnTrace("GetTextDialog::GetTextDialog()");
     int i;
 
-    lit = NULL;
+    lit = nullptr;
     w   = 950;
     h   = 680;
     hh  = 90;
@@ -1014,7 +1024,7 @@ GetTextDialog::GetTextDialog(const char* msg, const char* retmsg, int mlen)
     FnTrace("GetTextDialog::GetTextDialog(const char* )");
     int i;
 
-    lit = NULL;
+    lit = nullptr;
     w   = 950;
     h   = 680;
     hh  = 90;
@@ -1049,15 +1059,15 @@ RenderResult GetTextDialog::Render(Terminal *term, int update_flag)
     RenderResult retval = RENDER_OKAY;
 
     if (update_flag)
-        lit = NULL;
+        lit = nullptr;
     if (lit)
     {
         lit->Draw(term, 0);
-        lit = NULL;
+        lit = nullptr;
         return RENDER_OKAY;
     }
 
-    LayoutZone::Render(term, update_flag);
+    DialogZone::Render(term, update_flag);
     first_row_y = y + first_row;
 
     // Layout buttons
@@ -1137,7 +1147,7 @@ SignalResult GetTextDialog::Signal(Terminal *term, const genericChar* message)
     FnTrace("GetTextDialog::Signal()");
     SignalResult retval = SIGNAL_OKAY;
     static const genericChar* commands[] = {
-        "backspace", "clear", "enter", "cancel", NULL};
+        "backspace", "clear", "enter", "cancel", nullptr};
     int idx = CompareList(message, commands);
     int error = 0;
     genericChar msgbuf[STRLENGTH];
@@ -1153,7 +1163,7 @@ SignalResult GetTextDialog::Signal(Terminal *term, const genericChar* message)
         DrawEntry(term);
         break;
     case 2:  // enter
-        snprintf(msgbuf, STRLENGTH, "%s %s", return_message, buffer);
+        vt::cpp23::format_to_buffer(msgbuf, STRLENGTH, "{} {}", return_message, buffer);
         term->Signal(msgbuf, group_id);
         term->Draw(1);
         retval = SIGNAL_TERMINATE;
@@ -1200,21 +1210,19 @@ SignalResult GetTextDialog::Keyboard(Terminal *term, int my_key, int state)
     FnTrace("GetTextDialog::Keyboard()");
     SignalResult retval = SIGNAL_IGNORED;
 
+    const char* action = nullptr;
     switch (my_key)
     {
-    case 8:  // Backspace
-        retval = Signal(term, "backspace");
-        break;
-    case 13: // Enter
-        retval = Signal(term, "enter");
-        break;
-    case 27: // Esc
-        retval = Signal(term, "cancel");
-        break;
-    default:
+    case 8:   action = "backspace"; break; // Backspace
+    case 13:  action = "enter";     break; // Enter
+    case 27:  action = "cancel";    break; // Esc
+    default:  break;
+    }
+    if (action)
+        return Signal(term, action);
+    {
         genericChar str[] = {(char) my_key, '\0'};
         retval = Signal(term, str);
-        break;
     }
 
     return retval;
@@ -1362,7 +1370,7 @@ SignalResult PasswordDialog::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("PasswordDialog::Signal()");
     static const genericChar* commands[] = {
-        "enter", "change", "cancel", NULL};
+        "enter", "change", "cancel", nullptr};
 
     Employee *e = term->user;
     int error = 0;
@@ -1403,7 +1411,7 @@ SignalResult PasswordDialog::Signal(Terminal *term, const genericChar* message)
             return SIGNAL_OKAY;
 
         case 3:
-            if (StringCompare(new_password, buffer) || e == NULL)
+            if (StringCompare(new_password, buffer) || e == nullptr)
                 PasswordFailed(term);
             else
             {
@@ -1512,8 +1520,8 @@ SignalResult CreditCardAmountDialog::Signal(Terminal *term, const genericChar* m
 {
     FnTrace("CreditCardAmountDialog::Signal()");
     SignalResult retval = SIGNAL_IGNORED;
-    static const genericChar* command[] = { "cancel", "enter", NULL };
-    CreditCardDialog *ccm = NULL;
+    static const genericChar* command[] = { "cancel", "enter", nullptr };
+    CreditCardDialog *ccm = nullptr;
 
     int idx = CompareList(message, command);
     switch (idx)
@@ -1525,15 +1533,15 @@ SignalResult CreditCardAmountDialog::Signal(Terminal *term, const genericChar* m
         if (cct_type == CC_REFUND)
             ccm = new CreditCardDialog(term, AUTH_REFUND, REFUND_MSG);
         else
-            ccm = new CreditCardDialog(term, 0, NULL);
+            ccm = new CreditCardDialog(term, 0, nullptr);
         term->NextDialog(ccm);
-        if (idx == 1 && term->credit != NULL)
+        if (idx == 1 && term->credit != nullptr)
         {
             if (cct_type == CC_TIP)
             {
                 term->credit->Tip(buffer);
                 if (term->GetSettings()->auto_authorize &&
-                    term->credit != NULL &&
+                    term->credit != nullptr &&
                     term->credit->IsPreauthed())
                 {
                     term->auth_action = AUTH_COMPLETE;
@@ -1571,7 +1579,7 @@ CreditCardEntryDialog::CreditCardEntryDialog()
     cc_expire[0] = '\0';
     max_expire   = 5;   // 'mm/yy'  == 4 + 1
     current      = cc_num;
-    last_current = NULL;
+    last_current = nullptr;
     max_current  = max_num;
     curr_entry   = &entry_pos[0];
 }
@@ -1673,10 +1681,10 @@ SignalResult CreditCardEntryDialog::Signal(Terminal *term, const genericChar* me
     FnTrace("CreditCardEntryDialog::Signal()");
     static const genericChar* command[] = {
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-        "enter", "backspace", "cancel", NULL };
+        "enter", "backspace", "cancel", nullptr };
     int len;
     SignalResult retval = SIGNAL_OKAY;
-    CreditCardDialog *ccm = NULL;
+    CreditCardDialog *ccm = nullptr;
 
     int idx = CompareList(message, command);
     if (idx < 0)
@@ -1704,7 +1712,7 @@ SignalResult CreditCardEntryDialog::Signal(Terminal *term, const genericChar* me
         }
         break;
     case 11:  // backspace
-        if (current != NULL)
+        if (current != nullptr)
         {
             len = strlen(current);
             if (current[len - 1] == ' ' || current[len - 1] == '/')
@@ -1719,7 +1727,7 @@ SignalResult CreditCardEntryDialog::Signal(Terminal *term, const genericChar* me
         retval = SIGNAL_TERMINATE;
         break;
     default:
-        if (current != NULL)
+        if (current != nullptr)
         {
             len = strlen(current);
             if (len < max_current)
@@ -1838,12 +1846,12 @@ CreditCardVoiceDialog::CreditCardVoiceDialog(const char* msg, const char* retmsg
 {
     FnTrace("CreditCardVoiceDialog::CreditCardVoiceDialog(const char* , const char* , int)");
 
-    if (msg != NULL)
+    if (msg != nullptr)
         vt_safe_string::safe_copy(display_string, STRLENGTH, msg);
     else
         vt_safe_string::safe_copy(display_string, STRLENGTH, CCVD_DISPLAY);
 
-    if (retmsg != NULL)
+    if (retmsg != nullptr)
         vt_safe_string::safe_copy(return_message, STRLENGTH, retmsg);
     else
         vt_safe_string::safe_copy(return_message, STRLENGTH, CCVD_RETURN);
@@ -1853,8 +1861,7 @@ CreditCardVoiceDialog::CreditCardVoiceDialog(const char* msg, const char* retmsg
 }
 
 CreditCardVoiceDialog::~CreditCardVoiceDialog()
-{
-}
+= default;
 
 RenderResult CreditCardVoiceDialog::Render(Terminal *term, int update_flag)
 {
@@ -1884,10 +1891,10 @@ SignalResult CreditCardVoiceDialog::Signal(Terminal *term, const genericChar* me
     FnTrace("CreditCardVoiceDialog::Signal()");
     SignalResult retval = SIGNAL_OKAY;
     static const genericChar* commands[] = {
-        "enter", "cancel", NULL};
+        "enter", "cancel", nullptr};
     int idx = CompareList(message, commands);
     int error = 0;
-    CreditCardDialog *ccm = NULL;
+    CreditCardDialog *ccm = nullptr;
 
     switch (idx)
     {
@@ -1929,8 +1936,8 @@ CreditCardDialog::CreditCardDialog()
     FnTrace("CreditCardDialog::CreditCardDialog()");
 
     authorizing = AUTH_NONE;
-    SetMessage(NULL, NULL, NULL);
-    Init(NULL, NULL, NULL);
+    SetMessage(nullptr, nullptr, nullptr);
+    Init(nullptr, nullptr, nullptr);
 }
 
 CreditCardDialog::CreditCardDialog(Terminal *term, const char* swipe_value)
@@ -1938,8 +1945,8 @@ CreditCardDialog::CreditCardDialog(Terminal *term, const char* swipe_value)
     FnTrace("CreditCardDialog::CreditCardDialog(Terminal, const char* )");
 
     authorizing = AUTH_NONE;
-    SetMessage(NULL, NULL, NULL);
-    Init(term, NULL, swipe_value);
+    SetMessage(nullptr, nullptr, nullptr);
+    Init(term, nullptr, swipe_value);
 }
 
 CreditCardDialog::CreditCardDialog(Terminal *term, SubCheck *subch, const char* swipe_value)
@@ -1947,7 +1954,7 @@ CreditCardDialog::CreditCardDialog(Terminal *term, SubCheck *subch, const char* 
     FnTrace("CreditCardDialog::CreditCardDialog(Terminal, SubCheck, const char* )");
 
     authorizing = AUTH_NONE;
-    SetMessage(NULL, NULL, NULL);
+    SetMessage(nullptr, nullptr, nullptr);
     Init(term, subch, swipe_value);
 }
 
@@ -1957,10 +1964,10 @@ CreditCardDialog::CreditCardDialog(Terminal *term, int action, const char* messa
     const char* swipe_msg = WAIT_MSG;
 
     authorizing = action;
-    if (term != NULL && term->credit != NULL && term->credit->CardType() == CARD_TYPE_DEBIT)
+    if (term != nullptr && term->credit != nullptr && term->credit->CardType() == CARD_TYPE_DEBIT)
         swipe_msg = SWIPE_MSG;
     SetMessage(term, message, swipe_msg);
-    Init(term, NULL, NULL);
+    Init(term, nullptr, nullptr);
 }
 
 
@@ -1995,8 +2002,8 @@ void CreditCardDialog::Init(Terminal *term, SubCheck *subch, const char* swipe_v
     clear_key      = Button("Clear", "ccclear");
     voice_key      = Button("Voice Authorization", "ccvoice");
 
-    lit            = NULL;
-    saved_credit   = NULL;
+    lit            = nullptr;
+    saved_credit   = nullptr;
     declined       = 0;
     finalizing     = 0;
     from_swipe     = 0;
@@ -2011,35 +2018,37 @@ void CreditCardDialog::Init(Terminal *term, SubCheck *subch, const char* swipe_v
     name.Set("CCM");
     last_message[0] = '\0';
 
-    if (term != NULL)
+    if (term != nullptr)
     {
-        if (subch != NULL)
+        if (subch != nullptr)
             term->pending_subcheck = subch;
-        if (swipe_value != NULL)
+        if (swipe_value != nullptr)
         {
-            if (term->credit != NULL)
+            if (term->credit != nullptr)
                 term->credit->ParseSwipe(swipe_value);
             else
                 ProcessSwipe(term, swipe_value);
-            if (term->credit != NULL && term->credit->IsValid() &&
+            // Cache settings pointer for efficiency
+            Settings *settings = term->GetSettings();
+            if (term->credit != nullptr && term->credit->IsValid() &&
                 term->auth_action == 0 &&
                 !term->credit->IsAuthed() &&
                 !term->credit->IsPreauthed() &&
-                (term->GetSettings()->authorize_method == CCAUTH_CREDITCHEQ ||
-                 term->GetSettings()->auto_authorize > 0))
+                (settings->authorize_method == CCAUTH_CREDITCHEQ ||
+                 settings->auto_authorize > 0))
             {
                 if ((term->credit->CardType() == CARD_TYPE_NONE) &&
-                    ((term->GetSettings()->card_types & CARD_TYPE_DEBIT) == 0) &&
-                    ((term->GetSettings()->card_types & CARD_TYPE_GIFT) == 0))
+                    ((settings->card_types & CARD_TYPE_DEBIT) == 0) &&
+                    ((settings->card_types & CARD_TYPE_GIFT) == 0))
                 {
                     term->credit->SetCardType(CARD_TYPE_CREDIT);
                 }
                 if (term->credit->CardType() == CARD_TYPE_NONE)
                     from_swipe = 1;
                 else
-                    SetAction(term, AUTH_PICK, NULL);
+                    SetAction(term, AUTH_PICK, nullptr);
             }
-        } else if (term->credit != NULL &&
+        } else if (term->credit != nullptr &&
             term->auth_voice.size() > 0 &&
             term->credit->GetStatus() == CC_STATUS_NONE)
         {
@@ -2056,13 +2065,13 @@ const char* CreditCardDialog::SetMessage(Terminal *term, const char* msg1, const
 {
     FnTrace("SetMessage()");
 
-    if (msg1 == NULL)
+    if (msg1 == nullptr)
     {
         message_str[0] = '\0';
     }
-    else if (term != NULL)
+    else if (term != nullptr)
     {
-        if (msg2 == NULL)
+        if (msg2 == nullptr)
         {
             if (term->credit->CardType() == CARD_TYPE_DEBIT)
                 msg2 = SWIPE_MSG;
@@ -2071,15 +2080,15 @@ const char* CreditCardDialog::SetMessage(Terminal *term, const char* msg1, const
             else
                 msg2 = WAIT_MSG;
         }
-        snprintf(message_str, STRLENGTH, "%s...%s",
+        vt::cpp23::format_to_buffer(message_str, STRLENGTH, "{}...{}",
                  term->Translate(msg1),
                  term->Translate(msg2));
     }
     else
     {
-        if (msg2 == NULL)
+        if (msg2 == nullptr)
             msg2 = WAIT_MSG;
-        snprintf(message_str, STRLENGTH, "%s...%s", msg1, msg2);
+        vt::cpp23::format_to_buffer(message_str, STRLENGTH, "{}...{}", msg1, msg2);
     }
 
     return message_str;
@@ -2102,7 +2111,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
     Flt  space = 0.7;
     Flt  line = 0.0;
     Settings *settings = term->GetSettings();
-    SubCheck *sc = NULL;
+    SubCheck *sc = nullptr;
     Employee *employee = term->user;
     [[maybe_unused]] int  ismanager = 0;  // Reserved for future use
     int  font_color;
@@ -2116,38 +2125,38 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
 
     message_line = 4;
 
-    if (term->pending_subcheck != NULL)
+    if (term->pending_subcheck != nullptr)
         sc = term->pending_subcheck;
-    else if (term->check != NULL)
+    else if (term->check != nullptr)
         sc = term->check->current_sub;
 
-    if (employee != NULL && employee->IsManager(settings))
+    if (employee != nullptr && employee->IsManager(settings))
         ismanager = 1;
-    if (sc != NULL && sc->TotalTip() > 0)
+    if (sc != nullptr && sc->TotalTip() > 0)
         have_tip = 1;
 
-    if (lit != NULL)
+    if (lit != nullptr)
     {
         lit->Draw(term, 0);
-        lit = NULL;
+        lit = nullptr;
     }
 
-    LayoutZone::Render(term, update_flag);
+    DialogZone::Render(term, update_flag);
 
-    if (term->credit == NULL &&
+    if (term->credit == nullptr &&
         finalizing == 0 &&
         settings->CanDoDebit() == 0 &&
         settings->CanDoGift() == 0)
     {
         term->credit = new Credit();
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
             term->credit->SetCardType(CARD_TYPE_CREDIT);
     }
 
     // First, find out what amount should go on the credit card and
     // initiate an action if all is done (card is valid and we haven't
     // already initiated action).
-    if (term->credit != NULL)
+    if (term->credit != nullptr)
     {
         if (term->auth_amount > 0)
         {
@@ -2155,7 +2164,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
         }
         else if (term->credit->Amount() == 0)
         {
-            if (sc != NULL)
+            if (sc != nullptr)
             {
                 sc->FigureTotals(settings);
                 term->credit->Amount(sc->balance);
@@ -2176,7 +2185,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
                     have_tip)
                 {
                     authorizing = AUTH_AUTHORIZE;
-                    if (term->auth_message != NULL)
+                    if (term->auth_message != nullptr)
                         SetMessage(term, term->auth_message, term->auth_message2);
                     else
                         SetMessage(term, AUTHORIZE_MSG);
@@ -2184,7 +2193,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
                 else
                 {
                     authorizing = AUTH_PREAUTH;
-                    if (term->auth_message != NULL)
+                    if (term->auth_message != nullptr)
                         SetMessage(term, term->auth_message, term->auth_message2);
                     else
                         SetMessage(term, PREAUTH_MSG);
@@ -2196,28 +2205,28 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
     }
 
     // Render the top information (cc#, expiry, name)
-    if (term->credit != NULL && term->credit->IsValid())
+    if (term->credit != nullptr && term->credit->IsValid())
     {
         status = term->credit->GetStatus();
 
         font = FONT_TIMES_24;
-        snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Card Number"),
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}:  {}", term->Translate("Card Number"),
                  term->credit->PAN(settings->show_entire_cc_num));
         TextC(term, line, str, color_text);
         line += space;
-        snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Expires"), term->credit->ExpireDate());
+        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}:  {}", term->Translate("Expires"), term->credit->ExpireDate());
         TextC(term, line, str, color_text);
         if (strlen(term->credit->Name()) > 0)
         {
             line += space;
-            snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Holder"), term->credit->Name());
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{}:  {}", term->Translate("Holder"), term->credit->Name());
             TextC(term, line, str, color_text);
         }
 
         if (term->credit->Tip() == 0)
         {
             line += space;
-            snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Charge Amount"),
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{}:  {}", term->Translate("Charge Amount"),
                      term->FormatPrice(term->credit->Amount(), 1));
             TextC(term, line, str, color_text);
         }
@@ -2227,19 +2236,19 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
             char tipstr[STRLENGTH];
             char totstr[STRLENGTH];
             line += space;
-            snprintf(crdstr, STRLENGTH, "Amount:  %s",
+            vt::cpp23::format_to_buffer(crdstr, STRLENGTH, "Amount:  {}",
                      term->FormatPrice(term->credit->Amount() - term->credit->Tip(), 1));
-            snprintf(tipstr, STRLENGTH, "Tip:  %s",
+            vt::cpp23::format_to_buffer(tipstr, STRLENGTH, "Tip:  {}",
                      term->FormatPrice(term->credit->Tip(), 1));
-            snprintf(totstr, STRLENGTH, "Total:  %s",
+            vt::cpp23::format_to_buffer(totstr, STRLENGTH, "Total:  {}",
                      term->FormatPrice(term->credit->Total(1), 1));
-            snprintf(str, STRLENGTH, "%s, %s, %s", crdstr, tipstr, totstr);
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{}, {}, {}", crdstr, tipstr, totstr);
             TextC(term, line, str, color_text);
         }
         if (term->auth_voice.size() > 0)
         {
             line += space;
-            snprintf(str, STRLENGTH, "%s:  %s", term->Translate("Voice Auth"),
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{}:  {}", term->Translate("Voice Auth"),
                      term->auth_voice.Value());
             TextC(term, line, str, color_text);
         }
@@ -2248,7 +2257,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
     }
 
     // Do we at least have an error message of some sort?
-    if (term->credit != NULL && authorizing == 0)
+    if (term->credit != nullptr && authorizing == 0)
     {
         str[0] = '\0';  // Initialize to ensure it's not garbage
         if (term->credit->IsVoided())
@@ -2258,7 +2267,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
         else
             vt_safe_string::safe_copy(str, STRLENGTH, term->credit->Verb());
         if (str[0] == '\0')
-            snprintf(str, STRLENGTH, "%s %s", term->credit->Code(), term->credit->Auth());
+            vt::cpp23::format_to_buffer(str, STRLENGTH, "{} {}", term->credit->Code(), term->credit->Auth());
         if (strlen(str) > 0)
         {
             if (term->credit->IsAuthed(1))
@@ -2294,7 +2303,7 @@ RenderResult CreditCardDialog::Render(Terminal *term, int update_flag)
     bypos   = y + h - (bshort + bborder);
 
     // display buttons
-    if (term->credit == NULL ||
+    if (term->credit == nullptr ||
         term->credit->CardType() == CARD_TYPE_NONE)
     {
         TextC(term, query_line, term->Translate("Please select card type."), color_text);
@@ -2489,11 +2498,11 @@ SignalResult CreditCardDialog::Touch(Terminal *term, int tx, int ty)
     SignalResult retval = SIGNAL_IGNORED;
     ZoneObject *zo = buttons.Find(tx, ty);
 
-    if (zo != NULL)
+    if (zo != nullptr)
     {
         if (lit)
             lit->Draw(term, 0);
-        lit = NULL;
+        lit = nullptr;
         ButtonObj *b = (ButtonObj *) zo;
         b->Draw(term, 1);
         retval = Signal(term, b->message.Value());
@@ -2509,7 +2518,7 @@ int CreditCardDialog::SetAction(Terminal *term, int action, const char* msg1, co
     FnTrace("CreditCardDialog::SetAction()");
     int retval = 1;
 
-    if (term->credit != NULL)
+    if (term->credit != nullptr)
     {
         saved_credit = term->credit->Copy();
         if (term->credit->RequireSwipe())
@@ -2536,12 +2545,12 @@ int CreditCardDialog::ClearAction(Terminal *term, int all)
     term->auth_amount   = 0;
     term->auth_action   = AUTH_NONE;
     term->auth_swipe    = 0;
-    term->auth_message  = NULL;
-    term->auth_message2 = NULL;
+    term->auth_message  = nullptr;
+    term->auth_message2 = nullptr;
     term->auth_voice.Clear();
     authorizing = 0;
 
-    SetMessage(NULL, NULL, NULL);
+    SetMessage(nullptr, nullptr, nullptr);
     last_message[0] = '\0';
 
     return retval;
@@ -2551,12 +2560,12 @@ int CreditCardDialog::DialogDone(Terminal *term)
 {
     int retval = 0;
 
-    if (term->credit != NULL)
+    if (term->credit != nullptr)
     {
         FinishCreditCard(term);
         term->Signal("ccamountchanged", 0);
-        term->credit = NULL;
-        term->pending_subcheck = NULL;
+        term->credit = nullptr;
+        term->pending_subcheck = nullptr;
         ClearAction(term);
         PrepareForClose(ACTION_SUCCESS);
     }
@@ -2572,12 +2581,12 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
                          "ccvoid", "ccrefund", "ccaddtip", "cccancel",
                          "ccmanual", "ccdone", "ccprocessed", "cccredit",
                          "ccdebit", "ccswipe", "ccundorefund", "ccclear",
-                         "ccvoice", "ccadvice", NULL };
+                         "ccvoice", "ccadvice", nullptr };
     int idx = CompareListN(commands, message);
-    CreditCardEntryDialog *cce = NULL;
-    CreditCardAmountDialog *cct = NULL;
-    CreditCardVoiceDialog *ccv = NULL;
-    SimpleDialog *sd = NULL;
+    CreditCardEntryDialog *cce = nullptr;
+    CreditCardAmountDialog *cct = nullptr;
+    CreditCardVoiceDialog *ccv = nullptr;
+    SimpleDialog *sd = nullptr;
     int draw = 0;
     Settings *settings = term->GetSettings();
 
@@ -2588,12 +2597,12 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
             settings->auto_authorize == 1)
         {
             if (term->auth_action == AUTH_NONE)
-                SetAction(term, AUTH_PICK, NULL);
+                SetAction(term, AUTH_PICK, nullptr);
         }
         draw = 1;
         break;
     case 1:  // ccauthorize
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
         {
             SetAction(term, AUTH_AUTHORIZE, AUTHORIZE_MSG);
             draw = 1;
@@ -2602,7 +2611,7 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
             retval = SIGNAL_TERMINATE;
         break;
     case 2:  // ccpreauth
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
         {
             SetAction(term, AUTH_PREAUTH, PREAUTH_MSG);
             draw = 1;
@@ -2611,7 +2620,7 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
             retval = SIGNAL_TERMINATE;
         break;
     case 3:  // cccomplete
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
         {
             SetAction(term, AUTH_COMPLETE, COMPLETE_MSG);
             draw = 1;
@@ -2621,7 +2630,7 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
         if (term->user->IsManager(settings))
         {
             term->auth_amount = term->void_amount;
-            if (term->credit != NULL)
+            if (term->credit != nullptr)
             {
                 SetAction(term, AUTH_VOID, VOID_MSG);
                 draw = 1;
@@ -2640,7 +2649,7 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
     case 5:  // ccrefund
         if (term->user->IsManager(settings))
         {
-            if (term->credit != NULL)
+            if (term->credit != nullptr)
             {
                 SetAction(term, AUTH_REFUND, REFUND_MSG);
                 draw = 1;
@@ -2664,7 +2673,7 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
         retval = SIGNAL_TERMINATE;
         break;
     case 7:  // cccancel
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
         {
             if (term->credit->IsAuthed(1))
             {
@@ -2673,7 +2682,7 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
             }
             else
             {
-                term->credit = NULL;
+                term->credit = nullptr;
                 retval = SIGNAL_TERMINATE;
             }
         }
@@ -2694,7 +2703,7 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
     case 10:  // ccprocessed
         retval = ProcessCreditCard(term);
         ClearAction(term);
-        if (term->credit != NULL &&
+        if (term->credit != nullptr &&
             term->credit->IsAuthed() &&
             settings->auto_authorize)
         {
@@ -2703,11 +2712,11 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
         draw = 1;
         break;
     case 11:  // cccredit
-        if (term->credit == NULL)
+        if (term->credit == nullptr)
             term->credit = new Credit();
         else if (from_swipe == 0)
             term->credit->Clear();
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
         {
             term->credit->SetCardType(CARD_TYPE_CREDIT);
             draw = 1;
@@ -2715,11 +2724,11 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
         from_swipe = 0;
         break;
     case 12:  // ccdebit
-        if (term->credit == NULL)
+        if (term->credit == nullptr)
             term->credit = new Credit();
         else if (from_swipe == 0)
             term->credit->Clear();
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
         {
             term->credit->SetCardType(CARD_TYPE_DEBIT);
             SetAction(term, AUTH_AUTHORIZE, AUTHORIZE_MSG, SWIPE_MSG);
@@ -2730,7 +2739,7 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
     case 13:  // ccswipe
         // This should only be called for CreditCheq Multi.
         // Starts the authorization process without a card number.
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
         {
             term->auth_swipe = 1;
             if (term->auth_action == AUTH_NONE)
@@ -2741,21 +2750,21 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
             retval = SIGNAL_TERMINATE;
         break;
     case 14:  // ccundorefund
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
         {
             SetAction(term, AUTH_REFUND_CORRECT, REFUND_CANCEL_MSG);
             draw = 1;
         }
         break;
     case 15:  // ccclear
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
         {
             term->credit->Clear();
             draw = 1;
         }
         break;
     case 16:  // ccvoice
-        if (term->credit != NULL && term->credit->CardType() != CARD_TYPE_NONE)
+        if (term->credit != nullptr && term->credit->CardType() != CARD_TYPE_NONE)
         {
             ccv = new CreditCardVoiceDialog();
             term->NextDialog(ccv);
@@ -2765,7 +2774,7 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
             retval = SIGNAL_IGNORED;
         break;
     case 17:  // ccadvice
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
         {
             SetAction(term, AUTH_ADVICE, ADVICE_MSG);
             draw = 1;
@@ -2790,27 +2799,30 @@ SignalResult CreditCardDialog::Signal(Terminal *term, const genericChar* message
 SignalResult CreditCardDialog::Keyboard(Terminal *term, int my_key, int state)
 {
     FnTrace("CreditCardDialog::Keyboard()");
-    SignalResult retval = SIGNAL_IGNORED;
-    CreditCardVoiceDialog *ccv = NULL;
+    enum class Action { None, Voice, Print };
+    Action action = Action::None;
 
-    switch (my_key)
+    if (my_key == 118 && debug_mode) // 'v'
+        action = Action::Voice;
+    else if (my_key == 114) // 'r'
+        action = Action::Print;
+
+    switch (action)
     {
-    case 118: // v
-        if (debug_mode)
-        {
-            ccv = new CreditCardVoiceDialog();
-            term->NextDialog(ccv);
-            retval = SIGNAL_TERMINATE;
-        }
-        break;
-    case 114: // r
-        if (term->credit != NULL)
-            term->credit->PrintReceipt(term);
-        retval = SIGNAL_OKAY;
-        break;
+    case Action::Voice:
+    {
+        auto *ccv = new CreditCardVoiceDialog();
+        term->NextDialog(ccv);
+        return SIGNAL_TERMINATE;
     }
-
-    return retval;
+    case Action::Print:
+        if (term->credit != nullptr)
+            term->credit->PrintReceipt(term);
+        return SIGNAL_OKAY;
+    case Action::None:
+    default:
+        return SIGNAL_IGNORED;
+    }
 }
 
 
@@ -2820,19 +2832,19 @@ int CreditCardDialog::ProcessSwipe(Terminal *term, const char* swipe_value)
     int retval = 0;
     Employee *employee = term->user;
 
-    if (employee == NULL)
+    if (employee == nullptr)
         return 1;
 
-    if (term->credit == NULL)
+    if (term->credit == nullptr)
         term->credit = new Credit(swipe_value);
     else
         term->credit->ParseSwipe(swipe_value);
 
-    if (term->credit == NULL || term->credit->IsValid() < 1)
+    if (term->credit == nullptr || term->credit->IsValid() < 1)
     {
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
             delete term->credit;
-        term->credit = NULL;
+        term->credit = nullptr;
         retval = 1;
     }
 
@@ -2856,7 +2868,7 @@ int CreditCardDialog::FinishCreditCard(Terminal *term)
 
     // term->credit == NULL should not even be an option at this point,
     // but we'll double check it for safety.
-    if (term->credit != NULL)
+    if (term->credit != nullptr)
     {
         finalizing = 1;
         // The only time preauth_time or auth_time is set is from
@@ -2893,7 +2905,7 @@ int CreditCardDialog::FinishCreditCard(Terminal *term)
             {
                 if (term->credit->Tip() > 0)
                 {
-                    snprintf(str, STRLENGTH, "tender %d %d %d %d",
+                    vt::cpp23::format_to_buffer(str, STRLENGTH, "tender {} {} {} {}",
                              TENDER_CHARGED_TIP, 0, 0, term->credit->Tip());
                     (void)term->Signal(str, 0);  // Signal has nodiscard, but we only need side effect
                 }
@@ -2903,7 +2915,7 @@ int CreditCardDialog::FinishCreditCard(Terminal *term)
                     tender = TENDER_DEBIT_CARD;
                 else
                     tender = TENDER_CREDIT_CARD;
-                snprintf(str, STRLENGTH, "tender %d %d %d %d",
+                vt::cpp23::format_to_buffer(str, STRLENGTH, "tender {} {} {} {}",
                          tender, cc_id, 0, term->credit->Total());
                 result = term->Signal(str, 0);
 
@@ -2911,12 +2923,12 @@ int CreditCardDialog::FinishCreditCard(Terminal *term)
                 {
                     // Probably opening a tab (otherwise: fatal error).  We
                     // need to add the payment manually.
-                    if (term->check != NULL &&
-                        term->page != NULL &&
+                    if (term->check != nullptr &&
+                        term->page != nullptr &&
                         term->page->id != -20)
                     {
                         SubCheck *sc = term->check->current_sub;
-                        if (sc == NULL)
+                        if (sc == nullptr)
                             sc = term->check->NewSubCheck();
                         Payment *paymnt = sc->NewPayment(tender, cc_id, 0, term->credit->Total());
                         paymnt->credit = term->credit;
@@ -2939,10 +2951,10 @@ SignalResult CreditCardDialog::ProcessCreditCard(Terminal *term)
 {
     FnTrace("CreditCardDialog::ProcessCreditCard()");
     SignalResult retval = SIGNAL_OKAY;
-    SimpleDialog *sd = NULL;
+    SimpleDialog *sd = nullptr;
     Settings *settings = term->GetSettings();
 
-    if (term->credit != NULL)
+    if (term->credit != nullptr)
     {
         declined = 0;
 
@@ -2977,14 +2989,14 @@ SignalResult CreditCardDialog::ProcessCreditCard(Terminal *term)
             term->credit->GetStatus() == CC_STATUS_DENY)
         {
             declined = 1;
-            if (saved_credit != NULL)
+            if (saved_credit != nullptr)
             {
                 // We do not delete term->credit because we store it
                 // in the credit card as an error.
                 saved_credit->SetVerb(term->credit->Verb());
                 saved_credit->AddError(term->credit);
                 term->credit->Copy(saved_credit);
-                saved_credit = NULL;
+                saved_credit = nullptr;
             }
             else if (debug_mode)
             {
@@ -3004,10 +3016,10 @@ SignalResult CreditCardDialog::ProcessCreditCard(Terminal *term)
                 retval = SIGNAL_TERMINATE;
             }
         }
-        else if (saved_credit != NULL)
+        else if (saved_credit != nullptr)
         {
             delete saved_credit;
-            saved_credit = NULL;
+            saved_credit = nullptr;
         }
 
         Draw(term, 1);
@@ -3050,7 +3062,7 @@ RenderResult JobFilterDialog::Render(Terminal *term, int update_flag)
     if (update_flag)
         filter = term->job_filter;
 
-    LayoutZone::Render(term, update_flag);
+    DialogZone::Render(term, update_flag);
     TextC(term, 0, term->Translate("Wage Group Filter"));
 
     int ww = w - border * 2;
@@ -3122,7 +3134,7 @@ RenderResult JobFilterDialog::Render(Terminal *term, int update_flag)
 SignalResult JobFilterDialog::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("JobFilterDialog::Signal()");
-    static const genericChar* commands[] = {"okay", "cancel", NULL};
+    static const genericChar* commands[] = {"okay", "cancel", nullptr};
 
     int idx = CompareList(message, commands);
     switch (idx)
@@ -3132,7 +3144,7 @@ SignalResult JobFilterDialog::Signal(Terminal *term, const genericChar* message)
         if (term->job_filter != filter)
         {
             term->job_filter = filter;
-            term->Update(UPDATE_JOB_FILTER, NULL);
+            term->Update(UPDATE_JOB_FILTER, nullptr);
         }
         return SIGNAL_TERMINATE;
     case 1:
@@ -3202,7 +3214,7 @@ OpenTabDialog::OpenTabDialog(CustomerInfo *custinfo)
     max_comment = 35;
 
     current = customer_name;
-    last_current = NULL;
+    last_current = nullptr;
     max_current = max_name;
 
     name.Set("Open Customer Tab");
@@ -3271,15 +3283,15 @@ SignalResult OpenTabDialog::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("OpenTabDialog::Signal()");
     SignalResult retval = SIGNAL_OKAY;
-    static const char* command[] = { "enter", "backspace", "cancel", "clear", NULL };
+    static const char* command[] = { "enter", "backspace", "cancel", "clear", nullptr };
     int len;
     int idx = CompareList(message, command);
 
     switch (idx)
     {
     case 0:  // enter
-        if (customer != NULL &&
-            term->check != NULL &&
+        if (customer != nullptr &&
+            term->check != nullptr &&
             (customer_name[0] != '\0' ||
              customer_phone[0] != '\0' ||
              customer_comment[0] != '\0'))
@@ -3300,7 +3312,7 @@ SignalResult OpenTabDialog::Signal(Terminal *term, const genericChar* message)
         }
         break;
     case 1:  // backspace
-        if (current != NULL && (len = strlen(current)) > 0)
+        if (current != nullptr && (len = strlen(current)) > 0)
         {
             current[len - 1] = '\0';
         }
@@ -3315,7 +3327,7 @@ SignalResult OpenTabDialog::Signal(Terminal *term, const genericChar* message)
         customer_comment[0] = '\0';
         break;
     default:
-        if (current != NULL)
+        if (current != nullptr)
         {
             len = strlen(current);
             if (len < max_current)
@@ -3334,12 +3346,12 @@ SignalResult OpenTabDialog::Signal(Terminal *term, const genericChar* message)
 SignalResult OpenTabDialog::Keyboard(Terminal *term, int kb_key, int state)
 {
     FnTrace("OpenTabDialog::Keyboard()");
-    SignalResult retval = SIGNAL_IGNORED;
+    const char *cmd = nullptr;
 
     switch (kb_key)
     {
     case 8:  // backspace
-        retval = Signal(term, "backspace");
+        cmd = "backspace";
         break;
     case 9:  // tab
         if (current == customer_name)
@@ -3348,20 +3360,18 @@ SignalResult OpenTabDialog::Keyboard(Terminal *term, int kb_key, int state)
             SetCurrent(term, customer_comment);
         else
             SetCurrent(term, customer_name);
-        retval = SIGNAL_OKAY;
-        break;
+        return SIGNAL_OKAY;
     case 13:  // enter
-        retval = Signal(term, "enter");
+        cmd = "enter";
         break;
     case 27:  // ESC
-        retval = Signal(term, "cancel");
+        cmd = "cancel";
         break;
     default:
-        retval = GetTextDialog::Keyboard(term, kb_key, state);
-        break;
+        return GetTextDialog::Keyboard(term, kb_key, state);
     }
 
-    return retval;
+    return cmd ? Signal(term, cmd) : SIGNAL_IGNORED;
 }
 
 int OpenTabDialog::RenderEntry(Terminal *term)
@@ -3426,6 +3436,7 @@ OrderCommentDialog::OrderCommentDialog(const char* msg, const char* retmsg, int 
     h = 850;  // Increased from 780 to make room for bigger buttons
     // Increase button height for larger keyboard
     hh = 110;  // Increased from 90 to make buttons bigger
+    
     // Change labels for Done and Cancel buttons
     if (enterkey)
     {
@@ -3445,86 +3456,94 @@ RenderResult OrderCommentDialog::Render(Terminal *term, int update_flag)
     RenderResult retval = RENDER_OKAY;
 
     if (update_flag)
-        lit = NULL;
+        lit = nullptr;
     if (lit)
     {
         lit->Draw(term, 0);
-        lit = NULL;
+        lit = nullptr;
         return RENDER_OKAY;
     }
 
-    // Call parent Render to set up keyboard layout
-    LayoutZone::Render(term, update_flag);
-    first_row_y = y + first_row;
-
-    // Layout buttons - reuse GetTextDialog layout code
-    int kx = 0;
-    int kw = 0;
-    int ww = w - (border * 2);
-    // Start keyboard higher to accommodate clear/space/backspace and done/cancel rows
-    int ky = y + h - (hh * 6) - border - 8;
-    int i;
-    int col = color[0];
-
-    // Layout QWERTY keyboard buttons (same as GetTextDialog)
-    for (i = 0; i < 10; ++i)
-    {
-        kx = (ww * i * 2) / 21;
-        kw = ((ww * (i * 2 + 2)) / 21) - kx;
-        key[i]->SetRegion(x + border + kx, ky, kw, hh);
-    }
-
-    ky += hh;
-    for (i = 10; i < 20; ++i)
-    {
-        kx = (ww * (i * 2 - 19)) / 21;
-        kw = ((ww * (i * 2 - 17)) / 21) - kx;
-        key[i]->SetRegion(x + border + kx, ky, kw, hh);
-    }
-
-    ky += hh;
-    for (i = 20; i < 29; ++i)
-    {
-        kx = (ww * (i * 2 - 38)) / 21;
-        kw = ((ww * (i * 2 - 36)) / 21) - kx;
-        key[i]->SetRegion(x + border + kx, ky, kw, hh);
-    }
-
-    ky += hh;
-    for (i = 29; i < 36; ++i)
-    {
-        kx = (ww * (i * 2 - 55)) / 21;
-        kw = ((ww * (i * 2 - 53)) / 21) - kx;
-        key[i]->SetRegion(x + border + kx, ky, kw, hh);
-    }
-
-    // Layout space, backspace, clear buttons (above keyboard, same as GetTextDialog)
-    ky += hh + 4;
-    kw = ((ww * 6) / 40);
-    clearkey->SetRegion(x + border, ky, kw, hh);
-
-    kx = (ww * 9) / 40;
-    kw = ((ww * 24) / 40) - kx;
-    spacekey->SetRegion(x + border + kx, ky, kw, hh);
-
-    kx = (ww * 27) / 40;
-    kw = ((ww * 33) / 40) - kx;
-    bskey->SetRegion(x + border + kx, ky, kw, hh);
-
-    // Layout Done and Cancel buttons at the very bottom (below clear/space/backspace)
-    ky += hh + 4;
-    kw = (ww * 18) / 40;
-    if (enterkey)
-        enterkey->SetRegion(x + border, ky, kw, hh);
+    // Call DialogZone::Render to set up base dialog
+    DialogZone::Render(term, update_flag);
     
-    kx = (ww * 22) / 40;
-    kw = (ww * 18) / 40;
-    if (cancelkey)
-        cancelkey->SetRegion(x + border + kx, ky, kw, hh);
-
+    int ww = w - (border * 2);
+    
+    // Clean modern layout with prominent text entry
+    // Title area: 60 pixels
+    // Text entry: 80 pixels (larger for visibility)
+    // Gap: 20 pixels
+    // Keyboard: remaining space
+    
+    int title_height = 60;
+    int entry_height = 80;
+    int gap = 20;
+    int keyboard_start_y = y + title_height + entry_height + gap;
+    int button_height = 85;
+    int button_gap = 6;
+    
+    // ========== TITLE ==========
     if (display_string[0] != '\0')
-        TextC(term, 1, term->Translate(display_string), col);
+        TextC(term, 1, term->Translate(display_string), COLOR_BLACK);
+    
+    // ========== KEYBOARD LAYOUT ==========
+    int ky = keyboard_start_y;
+    
+    // Row 1: Numbers 1234567890 (10 buttons)
+    int num_button_w = (ww - (9 * button_gap)) / 10;
+    for (int i = 0; i < 10; ++i)
+    {
+        int kx = (num_button_w + button_gap) * i;
+        key[i]->SetRegion(x + border + kx, ky, num_button_w, button_height);
+    }
+    
+    // Row 2: QWERTYUIOP (10 buttons)
+    ky += button_height + button_gap;
+    for (int i = 10; i < 20; ++i)
+    {
+        int kx = (num_button_w + button_gap) * (i - 10);
+        key[i]->SetRegion(x + border + kx, ky, num_button_w, button_height);
+    }
+    
+    // Row 3: ASDFGHJKL (9 buttons, slightly centered)
+    ky += button_height + button_gap;
+    int asdf_button_w = (ww - (8 * button_gap)) / 9;
+    int asdf_offset = (ww - ((asdf_button_w * 9) + (8 * button_gap))) / 2;
+    for (int i = 20; i < 29; ++i)
+    {
+        int kx = asdf_offset + (asdf_button_w + button_gap) * (i - 20);
+        key[i]->SetRegion(x + border + kx, ky, asdf_button_w, button_height);
+    }
+    
+    // Row 4: ZXCVBNM (7 buttons, centered)
+    ky += button_height + button_gap;
+    int zxcv_button_w = (ww - (6 * button_gap)) / 7;
+    int zxcv_offset = (ww - ((zxcv_button_w * 7) + (6 * button_gap))) / 2;
+    for (int i = 29; i < 36; ++i)
+    {
+        int kx = zxcv_offset + (zxcv_button_w + button_gap) * (i - 29);
+        key[i]->SetRegion(x + border + kx, ky, zxcv_button_w, button_height);
+    }
+    
+    // Row 5: Clear, Space, Backspace (3 wide buttons)
+    ky += button_height + button_gap;
+    int action_w = (ww - (2 * button_gap)) / 3;
+    clearkey->SetRegion(x + border, ky, action_w, button_height);
+    spacekey->SetRegion(x + border + action_w + button_gap, ky, action_w, button_height);
+    bskey->SetRegion(x + border + (action_w + button_gap) * 2, ky, action_w, button_height);
+    
+    // Row 6: Done and Cancel (2 large buttons)
+    ky += button_height + button_gap;
+    int bottom_w = (ww - button_gap) / 2;
+    if (enterkey)
+        enterkey->SetRegion(x + border, ky, bottom_w, button_height);
+    if (cancelkey)
+        cancelkey->SetRegion(x + border + bottom_w + button_gap, ky, bottom_w, button_height);
+    
+    // Render text entry box
     RenderEntry(term);
+    
+    // Render all buttons
     buttons.Render(term);
 
     return retval;
@@ -3535,7 +3554,7 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
     FnTrace("OrderCommentDialog::Signal()");
     SignalResult retval = SIGNAL_OKAY;
     static const genericChar* commands[] = {
-        "backspace", "clear", "enter", "cancel", NULL};
+        "backspace", "clear", "enter", "cancel", nullptr};
     int idx = CompareList(message, commands);
     genericChar msgbuf[STRLENGTH];
 
@@ -3543,6 +3562,7 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
     {
     case 0:  // backspace
         Backspace(term);
+        DrawEntry(term);  // Ensure display updates
         break;
     case 1:  // clear
         buffer[0] = '\0';
@@ -3551,7 +3571,7 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
         break;
     case 2:  // enter (Done)
         // Add comment as a modifier order under the currently selected order
-        if (term->check != NULL && term->order != NULL && buffidx > 0 && buffer[0] != '\0')
+        if (term->check != nullptr && term->order != nullptr && buffidx > 0 && buffer[0] != '\0')
         {
             Order *parent_order = term->order;
             // Make sure we're working with the parent order, not a modifier
@@ -3560,7 +3580,7 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
             
             // Create a new modifier order with the comment text
             Order *comment_order = new Order(buffer, 0);  // Price is 0 for comments
-            if (comment_order != NULL)
+            if (comment_order != nullptr)
             {
                 comment_order->item_type = ITEM_MODIFIER;
                 comment_order->call_order = 4;  // Standard call order for modifiers
@@ -3573,12 +3593,12 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
                 {
                     // Successfully added - update totals and display
                     SubCheck *sc = term->check->current_sub;
-                    if (sc != NULL)
+                    if (sc != nullptr)
                     {
                         Settings *s = term->GetSettings();
                         sc->FigureTotals(s);
                     }
-                    term->Update(UPDATE_ORDERS, NULL);
+                    term->Update(UPDATE_ORDERS, nullptr);
                 }
                 else
                 {
@@ -3596,7 +3616,10 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
         break;
     default:
         if (message[1] == '\0')
+        {
             AddChar(term, message[0]);
+            DrawEntry(term);  // Ensure display updates after adding char
+        }
         break;
     }
 
@@ -3632,8 +3655,46 @@ SignalResult OrderCommentDialog::Keyboard(Terminal *term, int kb_key, int state)
 int OrderCommentDialog::RenderEntry(Terminal *term)
 {
     FnTrace("OrderCommentDialog::RenderEntry()");
-    Entry(term, (size_x/2) - 15, 2.5, 30);
-    TextC(term, 2.5, buffer, COLOR_WHITE);
+    
+    // Draw prominent text entry box positioned above keyboard
+    int entry_x = x + border + 10;
+    int entry_y = y + 60;  // Just below title
+    int entry_w = w - (border * 2) - 20;
+    int entry_h = 80;  // Taller for better visibility
+    
+    // Draw entry box with light background for high contrast
+    term->RenderFilledFrame(entry_x, entry_y, entry_w, entry_h, 
+                           3, IMAGE_LITE_WOOD, FRAME_INSET);
+    
+    // Prepare display text with cursor
+    genericChar display_text[256];
+    if (buffidx > 0 && buffer[0] != '\0')
+    {
+        vt_safe_string::safe_copy(display_text, 256, buffer);
+        vt_safe_string::safe_concat(display_text, 256, "_");
+    }
+    else
+    {
+        vt_safe_string::safe_copy(display_text, 256, "_");
+    }
+    
+    // Render text centered vertically in the entry box
+    // For a 80px tall box with FONT_TIMES_34B, position baseline at about 50px from top
+    int text_x = entry_x + 15;
+    int text_y = entry_y + 50;
+    term->RenderText(display_text, text_x, text_y, COLOR_BLACK, FONT_TIMES_34B);
+    
+    return 0;
+}
+
+int OrderCommentDialog::DrawEntry(Terminal *term)
+{
+    FnTrace("OrderCommentDialog::DrawEntry()");
+    
+    RenderEntry(term);
+    // Update the entry box area
+    term->UpdateArea(x + border, y + 60, w - (border * 2), 80);
+    
     return 0;
 }
 

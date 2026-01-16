@@ -6,8 +6,8 @@
  * Functions for managing zones on a view
  */
 
-#ifndef _ZONE_HH
-#define _ZONE_HH
+#ifndef ZONE_HH
+#define ZONE_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -35,11 +35,11 @@
 #define PAGE_MODIFIER_KEYBOARD 17  // Modifier page with keyboard (parent -96)
 #define PAGE_INDEX_WITH_TABS   18  // Index with tabs for quick navigation (parent -94)
 
-#define PAGE_ID_SETTLEMENT  -20  // Where the Settlement page is in the list.
-#define PAGE_ID_TABSETTLE   -85  // Where the Tab Settlement page is
+#define PAGE_ID_SETTLEMENT  (-20)  // Where the Settlement page is in the list.
+#define PAGE_ID_TABSETTLE   (-85)  // Where the Tab Settlement page is
 
 // Zone Selection Behaviors
-enum behaviors {
+enum behaviors : std::uint8_t {
 	BEHAVE_NONE    , // Zone doesn't change when selected
 	BEHAVE_TOGGLE  , // Zone toggles with each selection
 	BEHAVE_BLINK   , // Zone depresses then resets itself
@@ -150,7 +150,7 @@ public:
     // Constructor
     Zone();
     // Destructor
-    virtual ~Zone() { }
+    ~Zone() override = default;
 
     // Member Functions
     int Draw(Terminal *t, int update_flag);
@@ -203,32 +203,32 @@ public:
     // boolean - can zone be copied/moved/deleted?
 
     virtual int ZoneStates() { return 2; }
-    virtual SalesItem *Item(ItemDB *db) { return NULL; }
+    virtual SalesItem *Item(ItemDB *db) { return nullptr; }
 
     // Interface for zone settings (FIX - should be moved to pos_zone module)
-    virtual int   *Amount()          { return NULL; }   // generic amount setting
-    virtual Str   *Expression()      { return NULL; }   // enable expression
-    virtual Str   *FileName()        { return NULL; }   // filename
-    virtual Str   *ItemName()        { return NULL; }   // name in ItemDB
-    virtual int   *JumpType()        { return NULL; }   // jump type
-    virtual int   *JumpID()          { return NULL; }   // target page id
-    virtual Str   *Message()         { return NULL; }   // broadcast message
-    virtual int   *QualifierType()   { return NULL; }   // qualifier type
-    virtual int   *ReportType()      { return NULL; }   // report type
-    virtual int   *ReportPrint()     { return NULL; }   // report print option
-    virtual Str   *Script()          { return NULL; }   // page script
-    virtual Flt   *Spacing()         { return NULL; }   // line spacing
-    virtual int   *SwitchType()      { return NULL; }   // setting switch type
-    virtual int   *TenderType()      { return NULL; }   // type of tender
-    virtual int   *TenderAmount()    { return NULL; }   // cash amount
-    virtual int   *Columns()         { return NULL; }   // columns to display
-    virtual int   *CustomerType()    { return NULL; }   // customer transaction type
-    virtual Check *GetCheck()      { return NULL; }   // check belonging to zone
-    virtual int   *CheckDisplayNum() { return NULL; }   // which check to display on kitchen video
-    virtual int   *VideoTarget()     { return NULL; }   // which kitchen video target to use
-    virtual int   *DrawerZoneType()  { return NULL; }   // pull/balance or drawer select
-    virtual int   *Confirm()         { return NULL; }   // for touch,click confirmations
-    virtual Str   *ConfirmMsg()      { return NULL; }   // message for confirmation dialogs
+    virtual int   *Amount()          { return nullptr; }   // generic amount setting
+    virtual Str   *Expression()      { return nullptr; }   // enable expression
+    virtual Str   *FileName()        { return nullptr; }   // filename
+    virtual Str   *ItemName()        { return nullptr; }   // name in ItemDB
+    virtual int   *JumpType()        { return nullptr; }   // jump type
+    virtual int   *JumpID()          { return nullptr; }   // target page id
+    virtual Str   *Message()         { return nullptr; }   // broadcast message
+    virtual int   *QualifierType()   { return nullptr; }   // qualifier type
+    virtual int   *ReportType()      { return nullptr; }   // report type
+    virtual int   *ReportPrint()     { return nullptr; }   // report print option
+    virtual Str   *Script()          { return nullptr; }   // page script
+    virtual Flt   *Spacing()         { return nullptr; }   // line spacing
+    virtual int   *SwitchType()      { return nullptr; }   // setting switch type
+    virtual int   *TenderType()      { return nullptr; }   // type of tender
+    virtual int   *TenderAmount()    { return nullptr; }   // cash amount
+    virtual int   *Columns()         { return nullptr; }   // columns to display
+    virtual int   *CustomerType()    { return nullptr; }   // customer transaction type
+    virtual Check *GetCheck()      { return nullptr; }   // check belonging to zone
+    virtual int   *CheckDisplayNum() { return nullptr; }   // which check to display on kitchen video
+    virtual int   *VideoTarget()     { return nullptr; }   // which kitchen video target to use
+    virtual int   *DrawerZoneType()  { return nullptr; }   // pull/balance or drawer select
+    virtual int   *Confirm()         { return nullptr; }   // for touch,click confirmations
+    virtual Str   *ConfirmMsg()      { return nullptr; }   // message for confirmation dialogs
 };
 
 class Page
@@ -263,7 +263,7 @@ public:
 
 	// Constructor
 	Page();
-	virtual ~Page() { }
+	virtual ~Page() = default;
 
 	// Member Functions
 	Zone *ZoneList()    { return zone_list.Head(); }
@@ -387,7 +387,7 @@ public:
     int ChangeItemName(const char* old_name, const genericChar* new_name);
 
     int ValidateSystemPages();  // Check for System Pages with invalid parent_id values
-    int PrintZoneDB(const char* dest = NULL, int brief = 0);  // for debugging only
+    int PrintZoneDB(const char* dest = nullptr, int brief = 0);  // for debugging only
 };
 
 #endif
