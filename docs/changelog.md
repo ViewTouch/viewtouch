@@ -110,6 +110,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Performance Impact**: Reduced CPU/GPU load during screen saver animation, especially beneficial for larger displays
   - **Files modified**: `term/term_view.cc` (DrawScreenSaver function)
 
+- **CI/CD: Modernize Build Badges and Add Test Execution (2026-01-18)**
+  - Replaced outdated Travis CI badge with GitHub Actions status badge in README.md
+  - Added automated test execution to Linux build workflow using ctest
+  - Tests now run on every push and pull request to ensure code quality
+  - **Files modified**: `README.md`, `.github/workflows/linux-simple-builds.yml`
+
 ### Added
 - **Testing: Comprehensive Test Suite Expansion (2026-01-07)**
   - Added 26 new test cases covering time/date operations and error handling

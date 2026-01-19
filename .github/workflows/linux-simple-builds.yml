@@ -101,7 +101,9 @@ jobs:
         fi
 
         if [ -f "_build_${{matrix.cxx}}_${{matrix.std}}/vt_main" ]; then
-          echo "Build appears successful, proceeding with install..."
+          echo "Build appears successful, running tests..."
+          ctest --test-dir _build_${{matrix.cxx}}_${{matrix.std}} --output-on-failure -j$(nproc)
+          echo "Tests completed successfully, proceeding with install..."
           timeout 120 cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target install
         else
           echo "Build failed - executable not found"

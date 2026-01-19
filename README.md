@@ -4,7 +4,7 @@
 
 **The Original Graphical Touchscreen Restaurant Point of Sale Interface**
 
-[![Build Status](https://img.shields.io/travis/ViewTouch/viewtouch/master.svg?label=Travis)](https://travis-ci.org/ViewTouch/viewtouch/builds)
+[![Linux builds (basic)](https://github.com/ViewTouch/viewtouch/actions/workflows/linux-simple-builds.yml/badge.svg)](https://github.com/ViewTouch/viewtouch/actions/workflows/linux-simple-builds.yml)
 [![Discord](https://img.shields.io/discord/YOUR_SERVER_ID?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.com/invite/ySmH2U2Mzb)
 [![Join the chat at https://gitter.im/ViewTouch/viewtouch](https://badges.gitter.im/ViewTouch/viewtouch.svg)](https://gitter.im/ViewTouch/viewtouch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
