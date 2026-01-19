@@ -116,6 +116,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Tests now run on every push and pull request to ensure code quality
   - **Files modified**: `README.md`, `.github/workflows/linux-simple-builds.yml`
 
+- **Documentation: Improve README Badges and Quick Start (2026-01-18)**
+  - Removed invalid Discord badge with placeholder server ID
+  - Added C++23 version badge to indicate language standard requirement
+  - Enhanced Quick Start section with basic build instructions and commands
+  - **Files modified**: `README.md`
+
 ### Added
 - **Testing: Comprehensive Test Suite Expansion (2026-01-07)**
   - Added 26 new test cases covering time/date operations and error handling
