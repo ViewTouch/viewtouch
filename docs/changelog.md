@@ -122,6 +122,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Enhanced Quick Start section with basic build instructions and commands
   - **Files modified**: `README.md`
 
+- **Security: Update Supported Versions Policy (2026-01-18)**
+  - Updated supported versions table to reflect current stable release (26.01.x)
+  - Marked versions prior to 26.01 as end of life
+  - **Files modified**: `SECURITY.md`
+
 ### Added
 - **Testing: Comprehensive Test Suite Expansion (2026-01-07)**
   - Added 26 new test cases covering time/date operations and error handling
