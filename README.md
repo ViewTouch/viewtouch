@@ -4,10 +4,10 @@
 
 **The Original Graphical Touchscreen Restaurant Point of Sale Interface**
 
-[![Build Status](https://img.shields.io/travis/ViewTouch/viewtouch/master.svg?label=Travis)](https://travis-ci.org/ViewTouch/viewtouch/builds)
-[![Discord](https://img.shields.io/discord/YOUR_SERVER_ID?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.com/invite/ySmH2U2Mzb)
+[![Linux builds (basic)](https://github.com/ViewTouch/viewtouch/actions/workflows/linux-simple-builds.yml/badge.svg)](https://github.com/ViewTouch/viewtouch/actions/workflows/linux-simple-builds.yml)
 [![Join the chat at https://gitter.im/ViewTouch/viewtouch](https://badges.gitter.im/ViewTouch/viewtouch.svg)](https://gitter.im/ViewTouch/viewtouch?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![C++](https://img.shields.io/badge/C%2B%2B-23-blue)](https://en.wikipedia.org/wiki/C%2B%2B23)
 
 *ViewTouch is a registered trademark in the USA*
 
@@ -58,6 +58,23 @@ ViewTouch is a powerful, open-source Point of Sale system designed specifically 
 #### Building
 
 See the [Wiki](../../wiki) for detailed build instructions and development setup.  Make sure your display is 1920 x 1080.
+
+**Basic Build Instructions:**
+
+```bash
+# Install dependencies (Ubuntu/Debian)
+sudo apt-get update
+sudo apt-get install -y build-essential cmake xorg-dev libmotif-dev libfreetype6-dev libcurl4-gnutls-dev
+
+# Clone and build
+git clone https://github.com/ViewTouch/viewtouch.git
+cd viewtouch
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j$(nproc)
+cmake --build build --target install
+```
+
+For more detailed instructions and development setup, see the [Wiki](../../wiki).
 
 ---
 

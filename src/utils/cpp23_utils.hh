@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -34,10 +34,11 @@
 #    include <format>
 #    define VT_HAS_STD_FORMAT 1
 #  endif
-#  if __has_include(<expected>)
-#    include <expected>
-#    define VT_HAS_STD_EXPECTED 1
-#  endif
+#endif
+
+#ifdef __cpp_lib_expected
+#  include <expected>
+#  define VT_HAS_STD_EXPECTED 1
 #endif
 
 #ifndef VT_HAS_STD_FORMAT

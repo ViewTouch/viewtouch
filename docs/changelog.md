@@ -50,6 +50,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Solution**: Removed the static cache optimization entirely. Each `Rectangle()` call now properly sets the tile and origin, ensuring correct texture rendering.
   - **Files modified**: `term/layer.cc`
 
+- **C++23 Feature Detection: Fix std::expected Compilation on Older Compilers (2026-01-18)**
+  - Fixed compilation errors on systems with older compilers that don't support std::expected
+  - **Root Cause**: The feature detection used `__has_include(<expected>)` which only checks for header presence, not actual implementation availability in the standard library
+  - **Solution**: Changed to use `__cpp_lib_expected` feature test macro for proper detection of std::expected support
+  - **Files modified**: `src/utils/cpp23_utils.hh`
+  - **Impact**: Allows building on Raspberry Pi and other systems with older compilers that lack C++23 std::expected support
+
 - **Button Highlighting Bug with Lazy Texture Loading (2026-01-09)**
   - Fixed buttons incorrectly showing highlighted state when they shouldn't be
   - **Root Cause**: The lazy texture loading introduced in the memory optimization commit conflicted with the static tile cache in `Layer::Rectangle()`. When textures were loaded on-demand, the cache could cause incorrect texture rendering.
@@ -109,6 +116,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Added selective erasure: draws black rectangle only over previous text position before drawing new position
   - **Performance Impact**: Reduced CPU/GPU load during screen saver animation, especially beneficial for larger displays
   - **Files modified**: `term/term_view.cc` (DrawScreenSaver function)
+
+- **CI/CD: Modernize Build Badges and Add Test Execution (2026-01-18)**
+  - Replaced outdated Travis CI badge with GitHub Actions status badge in README.md
+  - Added automated test execution to Linux build workflow using ctest
+  - Tests now run on every push and pull request to ensure code quality
+  - **Files modified**: `README.md`, `.github/workflows/linux-simple-builds.yml`
+
+- **Documentation: Improve README Badges and Quick Start (2026-01-18)**
+  - Removed invalid Discord badge with placeholder server ID
+  - Added C++23 version badge to indicate language standard requirement
+  - Enhanced Quick Start section with basic build instructions and commands
+  - **Files modified**: `README.md`
+
+- **Security: Update Supported Versions Policy (2026-01-18)**
+  - Updated supported versions table to reflect current stable release (26.01.x)
+  - Marked versions prior to 26.01 as end of life
+  - **Files modified**: `SECURITY.md`
+
+- **Copyright: Update Copyright Years to 2026 (2026-01-18)**
+  - Updated copyright notices in all source files to include 2026
+  - Standardized copyright format across codebase
+  - **Files modified**: 140+ source files (.cc, .hh, .h)
 
 ### Added
 - **Testing: Comprehensive Test Suite Expansion (2026-01-07)**
