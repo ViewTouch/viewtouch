@@ -127,6 +127,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Marked versions prior to 26.01 as end of life
   - **Files modified**: `SECURITY.md`
 
+- **Copyright: Update Copyright Years to 2026 (2026-01-18)**
+  - Updated copyright notices in all source files to include 2026
+  - Standardized copyright format across codebase
+  - **Files modified**: 140+ source files (.cc, .hh, .h)
+
 ### Added
 - **Testing: Comprehensive Test Suite Expansion (2026-01-07)**
   - Added 26 new test cases covering time/date operations and error handling
