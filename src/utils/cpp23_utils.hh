@@ -34,10 +34,11 @@
 #    include <format>
 #    define VT_HAS_STD_FORMAT 1
 #  endif
-#  if __has_include(<expected>)
-#    include <expected>
-#    define VT_HAS_STD_EXPECTED 1
-#  endif
+#endif
+
+#ifdef __cpp_lib_expected
+#  include <expected>
+#  define VT_HAS_STD_EXPECTED 1
 #endif
 
 #ifndef VT_HAS_STD_FORMAT

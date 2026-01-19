@@ -50,6 +50,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Solution**: Removed the static cache optimization entirely. Each `Rectangle()` call now properly sets the tile and origin, ensuring correct texture rendering.
   - **Files modified**: `term/layer.cc`
 
+- **C++23 Feature Detection: Fix std::expected Compilation on Older Compilers (2026-01-18)**
+  - Fixed compilation errors on systems with older compilers that don't support std::expected
+  - **Root Cause**: The feature detection used `__has_include(<expected>)` which only checks for header presence, not actual implementation availability in the standard library
+  - **Solution**: Changed to use `__cpp_lib_expected` feature test macro for proper detection of std::expected support
+  - **Files modified**: `src/utils/cpp23_utils.hh`
+  - **Impact**: Allows building on Raspberry Pi and other systems with older compilers that lack C++23 std::expected support
+
 - **Button Highlighting Bug with Lazy Texture Loading (2026-01-09)**
   - Fixed buttons incorrectly showing highlighted state when they shouldn't be
   - **Root Cause**: The lazy texture loading introduced in the memory optimization commit conflicted with the static tile cache in `Layer::Rectangle()`. When textures were loaded on-demand, the cache could cause incorrect texture rendering.
