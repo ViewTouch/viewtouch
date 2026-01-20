@@ -1913,12 +1913,12 @@ int Terminal::ReadRecordFile()
     genericChar filename[STRLENGTH];
     genericChar key[STRLENGTH];
     genericChar value[STRLENGTH];
-    int idx;
-    int keyval;
-    int x;
-    int y;
-    int my_code;
-    int state;
+    int idx = 0;
+    int keyval = 0;
+    int x = 0;
+    int y = 0;
+    int my_code = 0;
+    int state = 0;
     KeyValueInputFile infile;
 
     vt::cpp23::format_to_buffer(filename, STRLENGTH, ".record_{}.macro", name.Value());

@@ -213,7 +213,7 @@ class DList
     T *InternalSort(T *list, int (*cmp)(T *, T *)) noexcept
     {
         FnTrace("DList::InternalSort()");
-        T *p, *q, *e, *tail;
+        T *p, *q, *e, *tail = nullptr;
         int insize, nmerges, psize, qsize, i;
         
         if (list == nullptr)

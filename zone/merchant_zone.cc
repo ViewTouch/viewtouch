@@ -71,14 +71,23 @@ int MerchantZone::LoadRecord(Terminal *t, int my_record_no)
 {
     Settings *s = t->GetSettings();
     FormField *f = FieldList();
+    if (!f) return -1;
     f->Set(s->visanet_acquirer_bin); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_merchant); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_store); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_terminal); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_currency); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_country); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_city); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_language); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_timezone); f = f->next;
     return 0;
 }

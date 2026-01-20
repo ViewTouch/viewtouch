@@ -1238,6 +1238,7 @@ int LaborDB::WorkReceipt(Terminal *t, Employee *e, Report *r)
     }
 
     Settings *settings = t->GetSettings();
+    if (!settings) return 1;
     Str *header = &settings->receipt_header[0];
     char buffer[STRLONG];
     char buff2[STRLONG];
