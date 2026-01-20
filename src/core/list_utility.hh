@@ -278,7 +278,9 @@ class DList
                 /* now p has stepped `insize' places along, and q has too */
                 p = q;
             }
-            tail->next = nullptr;
+            if (tail != nullptr) {
+                tail->next = nullptr;
+            }
             
             /* If we have done only one merge, we're finished. */
             if (nmerges <= 1)   /* allow for nmerges==0, the empty list case */

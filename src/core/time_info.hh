@@ -23,7 +23,10 @@
 
 #include "basic.hh"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-literal-operator"
 #include "date/tz.h"
+#pragma GCC diagnostic pop
 
 #include <time.h>
 #include <string>

@@ -138,6 +138,8 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
 
 	RenderZone(term, SwitchName[idx], update_flag);
 	Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return RENDER_ERROR;
 
     int   col = COLOR_BLUE;
     int   onoff = -1;
@@ -362,6 +364,8 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
 	FnTrace("SwitchZone::Touch()");
 	int no_update = 0;
 	Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return SIGNAL_IGNORED;
 	switch (type)
 	{
     case SWITCH_SEATS:
@@ -983,6 +987,8 @@ int SettingsZone::LoadRecord(Terminal *term, int /*record*/)
 {
     FnTrace("SettingsZone::LoadRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = nullptr;
     int day_length_hrs = settings->min_day_length / 60 / 60;
 
@@ -1086,6 +1092,8 @@ int SettingsZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("SettingsZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = nullptr;
     int day_length_hrs = 0;
 
@@ -1263,6 +1271,8 @@ int ReceiptSettingsZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("ReceiptSettingsZone::LoadRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f = f->next;
@@ -1290,6 +1300,8 @@ int ReceiptSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("ReceiptSettingsZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f = f->next;
@@ -1383,6 +1395,8 @@ int TaxSettingsZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("TaxSettingsZone::LoadRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f = f->next;  // skip US Tax label
@@ -1415,6 +1429,8 @@ int TaxSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("TaxSettingsZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f = f->next;  // skip US Tax label
@@ -1545,6 +1561,8 @@ int CCSettingsZone::LoadRecord(Terminal *term, int record)
     FnTrace("CCSettingsZone::LoadRecord()");
     int retval = 0;
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *field = FieldList();
 
     field->Set(settings->cc_server);           field = field->next;
@@ -1601,6 +1619,8 @@ int CCSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
     FnTrace("CCSettingsZone::SaveRecord()");
     int retval = 0;
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *field = FieldList();
     int cancredit;
     int candebit;
@@ -1652,6 +1672,8 @@ int CCSettingsZone::UpdateForm(Terminal *term, int record)
 {
     FnTrace("CCSettingsZone::UpdateForm()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     int retval = 0;
     int save = 0;
 
@@ -1742,6 +1764,8 @@ int CCMessageSettingsZone::LoadRecord(Terminal *term, int record)
     FnTrace("CCMessageSettingsZone::LoadRecord()");
     int retval = 0;
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f = f->next;
@@ -1763,6 +1787,8 @@ int CCMessageSettingsZone::SaveRecord(Terminal *term, int record, int write_file
     FnTrace("CCMessageSettingsZone::SaveRecord()");
     int retval = 0;
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f = f->next;
@@ -1832,6 +1858,8 @@ int DeveloperZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("DeveloperZone::LoadRecord()");
     Settings  *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f->Set(settings->developer_key); f = f->next;
@@ -1843,6 +1871,8 @@ int DeveloperZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("DeveloperZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f->Get(settings->developer_key); f = f->next;
@@ -1935,6 +1965,8 @@ int CalculationSettingsZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("CalculationSettingsZone::LoadRecord()");
     Settings  *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     const std::string multiplier_text = FormatMultiplierDisplay(settings->double_mult);
@@ -1948,6 +1980,8 @@ int CalculationSettingsZone::SaveRecord(Terminal *term, int record, int write_fi
 {
     FnTrace("CalculationSettingsZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f->Get(settings->double_mult); f = f->next;
@@ -2015,6 +2049,8 @@ int RevenueGroupsZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("RevenueGroupsZone::LoadRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     int i = 0;
@@ -2030,6 +2066,8 @@ int RevenueGroupsZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("RevenueGroupsZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     int i = 0;
@@ -2560,6 +2598,8 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("TenderSetZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f;
     int tmp;
     DiscountInfo *dslist = settings->DiscountList();
@@ -2835,6 +2875,8 @@ int TenderSetZone::NewRecord(Terminal *term)
 {
     FnTrace("TenderSetZone::NewRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     switch (section)
     {
     default:
@@ -2880,6 +2922,8 @@ int TenderSetZone::KillRecord(Terminal *term, int record)
 {
     FnTrace("TenderSetZone::KillRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     switch (section)
     {
     default:
@@ -2923,6 +2967,8 @@ int TenderSetZone::ListReport(Terminal *term, Report *r)
 {
     FnTrace("TenderSetZone::ListReport()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 0;
     switch (section)
     {
     case 1: return settings->CouponReport(term, r);

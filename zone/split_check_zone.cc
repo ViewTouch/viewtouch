@@ -309,6 +309,8 @@ RenderResult SplitCheckZone::Render(Terminal *t, int update_flag)
         return RENDER_OKAY;
 
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return RENDER_ERROR;
     if (update_flag)
     {
         start_check = 0;
@@ -335,6 +337,8 @@ SignalResult SplitCheckZone::Signal(Terminal *t, const genericChar* message)
         return SIGNAL_IGNORED;
 
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return SIGNAL_IGNORED;
     int subs;
     int error = 1;
     int idx = CompareListN(commands, message);
@@ -599,7 +603,8 @@ int SplitCheckZone::MoveItems(Terminal *t, CheckObj *target, int move_amount)
     }
 
     Settings *s = t->GetSettings();
-    t->check->Update(s);
+    if (s != nullptr)
+        t->check->Update(s);
     if (last)
         start_check = t->check->SubCount();
     CreateChecks(t);
@@ -655,7 +660,7 @@ PrintTargetObj::PrintTargetObj(Terminal *t, Check *c, int printer_id)
             {
                 pid = o->printer_id;
                 if (pid == PRINTER_DEFAULT)
-                    pid = o->FindPrinterID(s);
+                    pid = (s != nullptr) ? o->FindPrinterID(s) : 0;
                 if (pid == printer_id)
                     for (int i = 0; i < o->count; ++i)
                         items.Add(new ItemObj(o));
@@ -732,6 +737,8 @@ RenderResult ItemPrintTargetZone::Render(Terminal *t, int update_flag)
         return RENDER_OKAY;
 
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return RENDER_ERROR;
     if (update_flag)
     {
         targets.Purge();

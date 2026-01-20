@@ -79,6 +79,8 @@ RenderResult PrintTargetZone::Render(Terminal *t, int update_flag)
 int PrintTargetZone::LoadRecord(Terminal *t, int record)
 {
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return 1;
     FormField *f = FieldList();
     int z = 0;
     
@@ -95,6 +97,8 @@ int PrintTargetZone::LoadRecord(Terminal *t, int record)
 int PrintTargetZone::SaveRecord(Terminal *t, int record, int write_file)
 {
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return 1;
     FormField *f = FieldList();
     int z = 0;
     
@@ -374,6 +378,8 @@ RenderResult ReceiptSetZone::Render(Terminal *t, int update_flag)
 int ReceiptSetZone::LoadRecord(Terminal *t, int my_record_no)
 {
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return 1;
     FormField *f = FieldList();
     f->Set(s->receipt_header[0]); f = f->next;
     f->Set(s->receipt_header[1]); f = f->next;
@@ -390,6 +396,8 @@ int ReceiptSetZone::LoadRecord(Terminal *t, int my_record_no)
 int ReceiptSetZone::SaveRecord(Terminal *t, int my_record_no, int write_file)
 {
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return 1;
     FormField *f = FieldList();
     f->Get(s->receipt_header[0]); f = f->next;
     f->Get(s->receipt_header[1]); f = f->next;

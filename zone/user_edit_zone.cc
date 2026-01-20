@@ -765,6 +765,8 @@ int JobSecurityZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("JobSecurityZone::LoadRecord()");
     Settings  *s = term->GetSettings();
+    if (s == nullptr)
+        return 1;
     FormField *f = FieldList();
     int i = 1;
     while (JobName[i])
@@ -860,6 +862,8 @@ int JobSecurityZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("JobSecurityZone::SaveRecord()");
     Settings  *s = term->GetSettings();
+    if (s == nullptr)
+        return 1;
     FormField *f = FieldList();
     int i = 1;
     while (JobName[i])
