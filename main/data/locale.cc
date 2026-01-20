@@ -749,7 +749,7 @@ static const TranslationEntry ui_config_translations[] = {
     {"Kill System", "Matar Sistema"},
     {"Kitchen Print Mode", "Modo de Impresión de Cocina"},
     {"Kitchen Video2", "Video de Cocina2"},
-    {"Kitchen Video Print Method", "Método de Impresión de Video de Cocina"},
+    {"Remote Video", "Video Remoto"},
     {"Kitchen Video Show User", "Mostrar Usuario de Video de Cocina"},
     {"Labor Period", "Período Laboral"},
     {"Labor Period Time Clock View", "Vista de Reloj de Tiempo del Período Laboral"},
@@ -1413,7 +1413,7 @@ static const TranslationEntry ui_config_translations[] = {
     {"Kill System", "Matar Sistema"},
     {"Kitchen Print Mode", "Modo de Impresión de Cocina"},
     {"Kitchen Video2", "Video de Cocina2"},
-    {"Kitchen Video Print Method", "Método de Impresión de Video de Cocina"},
+    {"Remote Video", "Video Remoto"},
     {"Kitchen Video Show User", "Mostrar Usuario de Video de Cocina"},
     {"Labor Period", "Período Laboral"},
     {"Labor Period Time Clock View", "Vista de Reloj de Tiempo del Período Laboral"},
@@ -2285,8 +2285,8 @@ static const TranslationEntry settings_config_translations[] = {
     {"Wide & Tall", "Ancho y Alto"},
 
     // Kitchen video print method names
-    {"Unmatched", "Sin Coincidir"},
-    {"Matched", "Coincidente"},
+    {"Split Checks", "Dividir Cheques"},
+    {"Consolidate Checks", "Consolidar Cheques"},
 
     // Work order heading names
     {"Standard", "Estándar"},
@@ -2572,7 +2572,7 @@ static const TranslationEntry settings_config_translations[] = {
     {"Kill System", "Matar Sistema"},
     {"Kitchen Print Mode", "Modo de Impresión de Cocina"},
     {"Kitchen Video2", "Video de Cocina2"},
-    {"Kitchen Video Print Method", "Método de Impresión de Video de Cocina"},
+    {"Remote Video", "Video Remoto"},
     {"Kitchen Video Show User", "Mostrar Usuario de Video de Cocina"},
     {"Labor Period", "Período Laboral"},
     {"Labor Period Time Clock View", "Vista de Reloj de Tiempo del Período Laboral"},
@@ -3344,7 +3344,7 @@ static const TranslationEntry extended_translations[] = {
     {"Kill System", "Matar Sistema"},
     {"Kitchen Print Mode", "Modo de Impresión de Cocina"},
     {"Kitchen Video2", "Video de Cocina2"},
-    {"Kitchen Video Print Method", "Método de Impresión de Video de Cocina"},
+    {"Remote Video", "Video Remoto"},
     {"Kitchen Video Show User", "Mostrar Usuario de Video de Cocina"},
     {"Labor Period", "Período Laboral"},
     {"Labor Period Time Clock View", "Vista de Reloj de Tiempo del Período Laboral"},

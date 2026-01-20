@@ -1250,7 +1250,7 @@ ReceiptSettingsZone::ReceiptSettingsZone()
     AddLabel("Kitchen Video/Printouts");
     AddNewLine();
     LeftAlign();
-    AddListField("Kitchen Video Print Method", KVPrintMethodName, KVPrintMethodValue);
+    AddListField("Remote Video", KVPrintMethodName, KVPrintMethodValue);
     AddListField("Kitchen Video Show User", YesNoName, YesNoValue);
 }
 

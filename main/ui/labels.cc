@@ -571,7 +571,7 @@ int PrintModeValue[] = {
     0, PRINT_TALL, PRINT_WIDE, PRINT_TALL | PRINT_WIDE, -1};
 
 const char* KVPrintMethodName[] = {
-    "Unmatched", "Matched", nullptr};
+    "Split Checks", "Consolidate Checks", nullptr};
 int KVPrintMethodValue[] = {
     KV_PRINT_UNMATCHED, KV_PRINT_MATCHED, -1};
 
