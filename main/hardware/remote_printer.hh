@@ -19,7 +19,7 @@
  */
 
 #ifndef _REMOTE_PRINTER_HH
-#define REMOTE_PRINTER_HH
+#define _REMOTE_PRINTER_HH
 
 /**** Types ****/
 class Printer;

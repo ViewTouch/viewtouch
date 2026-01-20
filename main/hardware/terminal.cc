@@ -400,6 +400,24 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
         case ServerProtocol::SrvKillPage:
             term->KillPage(); break;
 
+        case ServerProtocol::SrvKillZones:
+            // Kill all zones on current page (similar to KillZone but for all zones)
+            if (term->edit_page)
+            {
+                Zone *z = term->edit_page->ZoneList();
+                while (z)
+                {
+                    Zone *next = z->next;
+                    if (z == term->edit_zone)
+                        term->edit_zone = nullptr;
+                    term->edit_page->Remove(z);
+                    delete z;
+                    z = next;
+                }
+                term->Draw(RENDER_NEW);
+            }
+            break;
+
         case ServerProtocol::SrvDefPage:
             term->ReadDefaults(); break;
 
@@ -444,6 +462,50 @@ void TermCB(XtPointer client_data, int *fid, XtInputId * /*id*/)
         case ServerProtocol::SrvButtonPress:
             term->RInt16(); // layer id
             term->ButtonCommand(term->RInt16());
+            break;
+        case ServerProtocol::SrvItemSelect:
+            // Handle item selection in menu/list - <I2, I2, I2> - layer, menu/list, item
+            {
+                int layer_id = term->RInt16(); // layer
+                int menu_list_id = term->RInt16(); // menu/list
+                int item_id = term->RInt16(); // item
+                // Send signal for item selection
+                vt_safe_string::safe_format(str, STRLENGTH, "itemselect %d %d %d", layer_id, menu_list_id, item_id);
+                if (term != nullptr)
+                    term->Signal(str, 0);
+            }
+            break;
+        case ServerProtocol::SrvTextEntry:
+            // Handle text entry - <I2, I2, str> - layer, entry, value
+            {
+                int layer_id = term->RInt16(); // layer
+                int entry_id = term->RInt16(); // entry
+                const genericChar* value = term->RStr();   // value
+                // Send signal for text entry
+                vt_safe_string::safe_format(str, STRLENGTH, "textentry %d %d %s", layer_id, entry_id, value ? value : "");
+                if (term != nullptr)
+                    term->Signal(str, 0);
+            }
+            break;
+        case ServerProtocol::SrvPrinterDone:
+            // Handle printer done notification - <str> - printer done printing file
+            {
+                const genericChar* filename = term->RStr(); // filename
+                // Send signal for printer completion
+                vt_safe_string::safe_format(str, STRLENGTH, "printerdone %s", filename ? filename : "");
+                if (term != nullptr)
+                    term->Signal(str, 0);
+            }
+            break;
+        case ServerProtocol::SrvBadFile:
+            // Handle bad file notification - <str> - invalid file given
+            {
+                const genericChar* filename = term->RStr(); // filename
+                // Send signal for bad file error
+                vt_safe_string::safe_format(str, STRLENGTH, "badfile %s", filename ? filename : "");
+                if (term != nullptr)
+                    term->Signal(str, 0);
+            }
             break;
         case ServerProtocol::SrvShutdown:  // only allow easy exits on debug platforms
             if (term->user != nullptr && (term->user->id == 1 || term->user->id == 2))
@@ -1913,12 +1975,12 @@ int Terminal::ReadRecordFile()
     genericChar filename[STRLENGTH];
     genericChar key[STRLENGTH];
     genericChar value[STRLENGTH];
-    int idx;
-    int keyval;
-    int x;
-    int y;
-    int my_code;
-    int state;
+    int idx = 0;
+    int keyval = 0;
+    int x = 0;
+    int y = 0;
+    int my_code = 0;
+    int state = 0;
     KeyValueInputFile infile;
 
     vt::cpp23::format_to_buffer(filename, STRLENGTH, ".record_{}.macro", name.Value());
@@ -6734,6 +6796,8 @@ int Terminal::CC_NextTermID(int *cc_state, char* termid)
     int retval = 0;
     static Str *next_id = nullptr;
     Settings *settings = GetSettings();
+    if (settings == nullptr)
+        return 0;
 
     if (settings->authorize_method == CCAUTH_CREDITCHEQ)
     {

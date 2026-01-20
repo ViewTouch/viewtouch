@@ -7,6 +7,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Build Warnings: Comprehensive Warning Cleanup (2026-01-20)**
+  - Fixed multiple compiler warnings across the codebase to improve code quality and reduce noise
+  - **Issues Fixed**:
+    - Header guard mismatches in network and core header files
+    - Buffer overflow in `GetTermWord()` string parsing function
+    - Potential null pointer dereference in `WorkReceipt()` labor reporting
+    - Uninitialized variables in terminal record file reading
+    - Missing null checks in form field loading
+    - Uninitialized pointer in list sorting algorithm
+    - Missing virtual keyword in function override
+  - **Root Cause**: Various code quality issues accumulated over time, including unsafe string operations, missing initialization, and inconsistent header guards
+  - **Solution**: 
+    - Corrected header guard definitions to match standard naming conventions
+    - Fixed string parsing to prevent buffer overflows by limiting copy operations
+    - Added null pointer checks and variable initialization where needed
+    - Added virtual keyword to properly override base class methods
+  - **Files modified**: 
+    - `src/network/remote_link.hh`, `src/core/debug.hh`, `src/core/image_data.hh` (header guards)
+    - `main/data/manager.cc` (buffer overflow fix)
+    - `main/business/labor.cc` (null check)
+    - `main/hardware/terminal.cc` (uninitialized variables)
+    - `zone/merchant_zone.cc` (null checks)
+    - `src/core/list_utility.hh` (pointer initialization)
+    - `term/term_view.cc` (virtual function)
+  - **Impact**: Reduced build warnings from ~814 to ~240 in our codebase, improved code safety and maintainability
+
 - **UI: Add Dollar Signs to Guest Check and Payment Summary Amounts (2026-01-15)**
   - Fixed missing dollar signs ($) on amounts displayed in Payment Summary window and Guest Check Window menu items
   - **Root Cause**: `Terminal::FormatPrice()` has a default parameter `sign = 0` which excludes the currency symbol, and many calls used this default instead of explicitly setting `sign = 1`

@@ -19,7 +19,7 @@
  */
 
 #ifndef _EXPENSE_ZONE_HH
-#define EXPENSE_ZONE_HH
+#define _EXPENSE_ZONE_HH
 
 #include "form_zone.hh"
 #include "expense.hh"

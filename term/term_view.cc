@@ -1042,7 +1042,7 @@ public:
      *code accordingly.  In that case, you should also make the code
      *more dynamic, though it should still be quite fast.
      ****/
-    bool IsPointIn(int px, int py)  // Overrides RegionInfo::IsPointIn but not marked virtual in intermediate classes
+    virtual bool IsPointIn(int px, int py)  // Overrides RegionInfo::IsPointIn but not marked virtual in intermediate classes
         {
             return (px >= (x - EXTRA_ICON_WIDTH)) &&
                 (py >= y) &&

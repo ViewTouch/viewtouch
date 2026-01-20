@@ -213,7 +213,7 @@ class DList
     T *InternalSort(T *list, int (*cmp)(T *, T *)) noexcept
     {
         FnTrace("DList::InternalSort()");
-        T *p, *q, *e, *tail;
+        T *p, *q, *e, *tail = nullptr;
         int insize, nmerges, psize, qsize, i;
         
         if (list == nullptr)
@@ -278,7 +278,9 @@ class DList
                 /* now p has stepped `insize' places along, and q has too */
                 p = q;
             }
-            tail->next = nullptr;
+            if (tail != nullptr) {
+                tail->next = nullptr;
+            }
             
             /* If we have done only one merge, we're finished. */
             if (nmerges <= 1)   /* allow for nmerges==0, the empty list case */

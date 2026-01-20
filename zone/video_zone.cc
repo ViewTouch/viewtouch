@@ -77,6 +77,8 @@ int VideoTargetZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("VideoTargetZone::LoadRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *form = FieldList();
     int idx = 0;
     
@@ -95,6 +97,8 @@ int VideoTargetZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("VideoTargetZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *form = FieldList();
     int idx = 0;
     

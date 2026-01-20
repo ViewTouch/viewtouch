@@ -18,7 +18,7 @@
  * Data for textures in XPM format
  */
 
-#ifndef _IMAGE_DATA_HH
+#ifndef IMAGE_DATA_HH
 #define IMAGE_DATA_HH
 
 

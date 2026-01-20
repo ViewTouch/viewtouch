@@ -789,6 +789,8 @@ RenderResult CommandZone::Render(Terminal *term, int update_flag)
         return RENDER_OKAY;
 
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return RENDER_ERROR;
     Check *check = term->check;
     Drawer *drawer = term->FindDrawer();
     int col = color[0];
@@ -907,7 +909,7 @@ SignalResult CommandZone::Touch(Terminal *term, int tx, int ty)
     FnTrace("CommandZone::Touch()");
     Employee *e = term->user;
     Settings *s = term->GetSettings();
-    if (e == nullptr || !e->IsSupervisor(s))
+    if (e == nullptr || s == nullptr || !e->IsSupervisor(s))
         return SIGNAL_IGNORED;
 
     term->Jump(JUMP_NORMAL, PAGEID_MANAGER);
@@ -1242,7 +1244,8 @@ SignalResult TableZone::Signal(Terminal *term, const genericChar* message)
             
             // Update the target check
             Settings *settings = term->GetSettings();
-            target_check->Update(settings);
+            if (settings != nullptr)
+                target_check->Update(settings);
             
             // Clear the moving check's table assignment and guest count
             // This ensures the source table is properly cleared even if StoreCheck doesn't destroy the check

@@ -2232,7 +2232,7 @@ int Credit::ReceiptPrint(Terminal *term, int receipt_type, Printer *pprinter, in
                      PAN(settings->show_entire_cc_num));
         }
         printer->Write(buffer);
-        vt_safe_string::safe_copy(buffer3, STRLONG, term->Translate(CreditTypeName(buffer2), lang));
+        vt_safe_string::safe_copy(buffer3, STRLENGTH, term->Translate(CreditTypeName(buffer2), lang));
         vt::cpp23::format_to_buffer(buffer, STRLONG, "{}: {}", term->Translate("Account Type", lang),
                  buffer3);
         printer->Write(buffer);

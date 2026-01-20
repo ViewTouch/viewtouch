@@ -2643,7 +2643,7 @@ int GetTermWord(char* dest, int maxlen, const char* src, int sidx)
     FnTrace("GetTermWord()");
     int didx = 0;
 
-    while (src[sidx] != '\0' && src[sidx] != ' ' && didx < maxlen)
+    while (src[sidx] != '\0' && src[sidx] != ' ' && didx < maxlen - 1)
     {
         dest[didx] = src[sidx];
         didx += 1;

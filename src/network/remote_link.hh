@@ -18,7 +18,7 @@
  * Functions/Protocols for server/terminal/printer communication
  */
 
-#ifndef _REMOTE_LINK_HH
+#ifndef REMOTE_LINK_HH
 #define REMOTE_LINK_HH
 
 #include "basic.hh"

@@ -108,6 +108,8 @@ RenderResult LoginZone::Render(Terminal *term, int update_flag)
     genericChar* currChar;
 
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return RENDER_ERROR;
     Employee *employee = term->user;
 
     if (employee == nullptr && state == STATE_USER_ONLINE)

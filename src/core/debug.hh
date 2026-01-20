@@ -20,7 +20,7 @@
  * Created By:  Bruce Alon King, Tue Apr  2 08:45:15 2002
  */
 
-#ifndef _DEBUG_FUNCS_HH
+#ifndef DEBUG_FUNCS_HH
 #define DEBUG_FUNCS_HH
 
 #include "basic.hh"
