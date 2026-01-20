@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Payment Zone: Fix Undo Signal Cross-Page Interference (2026-01-20)**
+  - Fixed bug where "undo" message on Settlement page incorrectly affected kitchen/bar pages displaying the same check data
+  - **Root Cause**: Undo operations in payment zone modified shared check payment data but failed to notify other terminals of the changes, causing inconsistent display across pages
+  - **Solution**: Added `UpdateOtherTerms(UPDATE_CHECKS, nullptr)` calls after both undo operation paths (single payment removal and full payment undo) to broadcast check data changes to all terminals
+  - **Files modified**: `zone/payment_zone.cc` (undo operation handlers)
+  - **Impact**: Undo operations on settlement page now properly notify other terminals, ensuring kitchen/bar pages display updated check data while maintaining undo scope to current page
+
 - **Build Warnings: Comprehensive Warning Cleanup (2026-01-20)**
   - Fixed multiple compiler warnings across the codebase to improve code quality and reduce noise
   - **Issues Fixed**:
