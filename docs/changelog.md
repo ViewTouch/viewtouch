@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Receipt Settings: Update Kitchen Video Print Method Label (2026-01-20)**
+  - Updated the Receipt Settings page UI text for better clarity and user experience
+  - **Changes Made**:
+    - Changed label from "Kitchen Video Print Method" to "Remote Video"
+    - Updated option names from "Unmatched"/"Matched" to "Split Checks"/"Consolidate Checks"
+    - Updated all locale translations (English and Spanish)
+  - **Root Cause**: The original terminology was unclear and not intuitive for users
+  - **Solution**: Replaced with more descriptive and user-friendly terminology that better reflects the functionality
+  - **Files modified**: 
+    - `zone/settings_zone.cc` (main UI label)
+    - `main/ui/labels.cc` (option names)
+    - `main/data/locale.cc` (internationalization support)
+  - **Impact**: Receipt Settings page now has clearer, more intuitive labeling that better communicates the split/consolidate check functionality to users
+
 - **Build Warnings: Comprehensive Warning Cleanup (2026-01-20)**
   - Fixed multiple compiler warnings across the codebase to improve code quality and reduce noise
   - **Issues Fixed**:
