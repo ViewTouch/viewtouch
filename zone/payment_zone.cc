@@ -717,8 +717,6 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
                 term->check_balanced = 0;
                 term->Draw(1);
             }
-            // Notify other terminals that check data has changed
-            term->UpdateOtherTerms(UPDATE_CHECKS, nullptr);
             return SIGNAL_OKAY;
         }
         else if (sc)
@@ -733,8 +731,6 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
             else
                 term->check_balanced = 0;
             term->Draw(1);
-            // Notify other terminals that check data has changed
-            term->UpdateOtherTerms(UPDATE_CHECKS, nullptr);
             return SIGNAL_OKAY;
         }
         break;
