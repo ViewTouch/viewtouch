@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+- **Split Check Interface: Complete Redesign for Simplicity and Functionality (2026-01-20)**
+  - Comprehensive redesign of the split check interface focusing on simplicity, functionality, and improved user experience
+  - **Changes Made**:
+    - Simplified item rendering with clean button design and yellow highlight for selected items
+    - Streamlined check containers with check numbers and properly positioned totals
+    - Added tax display above totals when applicable, using same font size as totals
+    - Improved empty state messaging for better user guidance
+    - Enhanced instruction text for clearer user direction
+    - Removed complex text wrapping and formatting for cleaner, simpler display
+  - **Root Cause**: Original split check interface was overly complex with cluttered displays, poor visual hierarchy, and confusing user experience
+  - **Solution**: 
+    - Simplified ItemObj::Render to use basic text display without wrapping
+    - Streamlined CheckObj::Render to show essential information only
+    - Added conditional tax display with proper positioning
+    - Changed selected item texture to IMAGE_YELLOW_TEXTURE for clear visual feedback
+    - Repositioned total amounts to avoid overlaying UI edges
+  - **Files modified**: 
+    - `zone/split_check_zone.cc` (main interface implementation)
+    - `zone/split_check_zone.hh` (header declarations)
+    - `main/business/check.cc` (added SplitCheckEqually method, later removed)
+    - `main/business/check.hh` (SplitCheckEqually declaration, later removed)
+  - **Impact**: Split check interface now provides clean, simple, and functional experience with clear visual feedback, proper pricing display, and intuitive manual item selection
+
 ### Fixed
 - **Split Check Interface: Enhanced Button Display and Usability (2026-01-20)**
   - Improved the split check zone interface for better readability and user experience
