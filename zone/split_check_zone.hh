@@ -54,6 +54,7 @@ public:
     int MoveItems(Terminal *t, CheckObj *target, int move_amount = -1);
     // moves selected items to check
     int PrintReceipts(Terminal *t);
+    void RenderInstructions(Terminal *t);
 };
 
 class ItemPrintTargetZone : public PosZone

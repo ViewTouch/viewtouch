@@ -51,8 +51,6 @@ public:
 
     // Member Function
     int Render(Terminal *t) override;
-    int RenderWrappedText(Terminal *t, const genericChar *text, int x_pos, int y_pos, 
-                         int max_width, int color, int font_id);
 };
 
 // Constructors
@@ -76,126 +74,24 @@ ItemObj::ItemObj(int seat_no, int font_id)
 }
 
 // Member Functions
-int ItemObj::RenderWrappedText(Terminal *t, const genericChar *text, int x_pos, int y_pos, 
-                              int max_width, int color, int font_id)
-{
-    if (!text || !*text) return y_pos;
-    
-    genericChar line[STRLENGTH];
-    genericChar word[STRLENGTH];
-    int line_len = 0;
-    int word_len = 0;
-    int current_y = y_pos;
-    const genericChar *ptr = text;
-    
-    line[0] = '\0';
-    
-    while (*ptr)
-    {
-        // Extract next word
-        word_len = 0;
-        while (*ptr && *ptr != ' ' && word_len < STRLENGTH - 1)
-        {
-            word[word_len++] = *ptr++;
-        }
-        word[word_len] = '\0';
-        
-        // Skip spaces
-        while (*ptr == ' ') ptr++;
-        
-        // Check if word fits on current line
-        int test_len = line_len + (line_len > 0 ? 1 : 0) + word_len;
-        genericChar test_line[STRLENGTH];
-        if (line_len > 0)
-        {
-            vt_safe_string::safe_copy(test_line, STRLENGTH, line);
-            vt_safe_string::safe_concat(test_line, STRLENGTH, " ");
-            vt_safe_string::safe_concat(test_line, STRLENGTH, word);
-        }
-        else
-        {
-            vt_safe_string::safe_copy(test_line, STRLENGTH, word);
-        }
-        
-        if (t->TextWidth(test_line, strlen(test_line), font_id) <= max_width)
-        {
-            // Word fits, add it to current line
-            if (line_len > 0)
-            {
-                vt_safe_string::safe_concat(line, STRLENGTH, " ");
-                line_len++;
-            }
-            vt_safe_string::safe_concat(line, STRLENGTH, word);
-            line_len += word_len;
-        }
-        else
-        {
-            // Word doesn't fit, render current line and start new one
-            if (line_len > 0)
-            {
-                t->RenderText(line, x_pos, current_y, color, font_id, ALIGN_LEFT, max_width);
-                current_y += 18; // Line height
-            }
-            
-            // Start new line with current word
-            vt_safe_string::safe_copy(line, STRLENGTH, word);
-            line_len = word_len;
-        }
-    }
-    
-    // Render final line
-    if (line_len > 0)
-    {
-        t->RenderText(line, x_pos, current_y, color, font_id, ALIGN_LEFT, max_width);
-        current_y += 18; // Line height
-    }
-    
-    return current_y;
-}
-
 int ItemObj::Render(Terminal *t)
 {
     FnTrace("ItemObj::Render()");
     genericChar str[STRLENGTH];
-    genericChar str2[STRLENGTH];
+
+    int frame_type = selected ? ZF_DOUBLE : ZF_RAISED;
+    int texture = selected ? IMAGE_YELLOW_TEXTURE : IMAGE_SAND;
+    t->RenderButton(x, y, w, h, frame_type, texture);
 
     if (seat >= 0)
     {
-        // Render Seat Item
-        if (selected)
-            t->RenderButton(x, y, w, h, ZF_RAISED, IMAGE_LIT_SAND);
-        else
-            t->RenderButton(x, y, w, h, ZF_RAISED, IMAGE_WOOD);
-
         SeatName(seat, str);
-        t->RenderText(str, x + (w/2), y + 22, COLOR_WHITE,
-                      font, ALIGN_CENTER);
+        t->RenderText(str, x + (w/2), y + (h/2), COLOR_BLACK, font, ALIGN_CENTER);
     }
     else if (order)
     {
-        // Render Order Item
-        if (selected)
-            t->RenderButton(x, y, w, h, ZF_RAISED, IMAGE_LIT_SAND);
-        else
-            t->RenderButton(x, y, w, h, ZF_RAISED, IMAGE_SAND);
-
-        int col = COLOR_DK_BLUE;
-        if (order->status & ORDER_SENT)
-            col = COLOR_BLACK;
-
-        int ty = y + 8;
         order->Description(t, str);
-        if (order->item_type == ITEM_POUND)
-        {
-            vt::cpp23::format_to_buffer(str2, STRLENGTH, "{} {:.2f} {}", str,
-                     order->count / 100.0, t->Translate("Lb."));
-            vt_safe_string::safe_copy(str, STRLENGTH, str2);
-        }
-
-        int available_width = w - 12;
-
-        // Render order description with text wrapping
-        ty = RenderWrappedText(t, str, x + 8, ty, available_width, col, font);
+        t->RenderText(str, x + 8, y + (h/2), COLOR_BLACK, font, ALIGN_LEFT);
     }
     return 0;
 }
@@ -321,45 +217,26 @@ int CheckObj::Layout(Terminal *t, int lx, int ly, int lw, int lh)
 int CheckObj::Render(Terminal *t)
 {
     FnTrace("CheckObj::Render()");
-    Page *p = t->page;
-    t->RenderButton(x, y, w, h, p->default_frame[0], p->default_texture[0]);
 
-    if (page >= max_pages)
-        page = 0;
+    t->RenderButton(x, y, w, h, ZF_DOUBLE, IMAGE_SAND);
 
     genericChar str[256];
-    if (sub)
+    if (sub) {
         vt_safe_string::safe_format(str, 256, "%s %d", t->Translate("Check"), sub->number);
-    else
-        vt_safe_string::safe_copy(str, 256, GlobalTranslate("Blank Check"));
+        t->RenderText(str, x + (w/2), y + 20, COLOR_BLACK, font, ALIGN_CENTER);
 
-    t->RenderText(str, x + (w/2), y + 16, COLOR_BLACK,
-                  font, ALIGN_CENTER);
-
-    if (sub)
-    {
-        int hh = y + h - 44;
-        int tax = sub->TotalTax();
-        if (tax > 0)
-        {
-            t->RenderText(t->FormatPrice(tax), x + w - 8, hh, COLOR_BLACK,
-                          font, ALIGN_RIGHT);
-            t->RenderText(t->Translate("Tax"), x + w - 80, hh, COLOR_BLACK,
-                          font, ALIGN_RIGHT);
-            hh += 20;
+        // Show tax amount above total if there's tax
+        int tax_amount = sub->TotalTax();
+        if (tax_amount > 0) {
+            vt_safe_string::safe_format(str, 256, "%s %s", t->Translate("Tax"), t->FormatPrice(tax_amount));
+            t->RenderText(str, x + (w/2), y + h - 64, COLOR_BLACK, FONT_TIMES_20B, ALIGN_CENTER);
         }
 
-        t->RenderText(t->FormatPrice(sub->total_sales + tax), x + w - 8, hh,
-                      COLOR_BLACK, font, ALIGN_RIGHT);
-        t->RenderText(t->Translate("Total"), x + w - 80, hh, COLOR_BLACK,
-                      font, ALIGN_RIGHT);
-
-        if (max_pages > 1)
-            t->RenderText(t->PageNo(page + 1, max_pages), x + 8, y + h - 24,
-                          COLOR_RED, font);
+        t->RenderText(t->FormatPrice(sub->total_cost), x + (w/2), y + h - 40, COLOR_BLACK, FONT_TIMES_20B, ALIGN_CENTER);
+    } else {
+        t->RenderText(t->Translate("New Check"), x + (w/2), y + (h/2), COLOR_GRAY, font, ALIGN_CENTER);
     }
 
-    // Render Items
     items.Render(t);
     return 0;
 }
@@ -371,12 +248,17 @@ RenderResult SplitCheckZone::Render(Terminal *t, int update_flag)
 {
     FnTrace("SplitCheckZone::Render()");
     RenderZone(t, nullptr, update_flag);
+
     if (t->check == nullptr || t->check->SubList() == nullptr)
+    {
+        t->RenderText(t->Translate("Add items to your order first"), x + (w/2), y + (h/2), COLOR_BLACK, font, ALIGN_CENTER);
         return RENDER_OKAY;
+    }
 
     Settings *s = t->GetSettings();
     if (s == nullptr)
         return RENDER_ERROR;
+
     if (update_flag)
     {
         start_check = 0;
@@ -386,8 +268,13 @@ RenderResult SplitCheckZone::Render(Terminal *t, int update_flag)
         CreateChecks(t);
     }
 
+    // Render instruction header
+    RenderInstructions(t);
+
+    // Render checks
     LayoutChecks(t);
     checks.Render(t);
+
     return RENDER_OKAY;
 }
 
@@ -501,7 +388,7 @@ SignalResult SplitCheckZone::Touch(Terminal *t, int tx, int ty)
     FnTrace("SplitCheckZone::Touch()");
     if (t->check == nullptr)
         return SIGNAL_IGNORED;
-  
+
     ZoneObject *zo = checks.Find(tx, ty);
     if (zo)
     {
@@ -677,6 +564,12 @@ int SplitCheckZone::MoveItems(Terminal *t, CheckObj *target, int move_amount)
     Draw(t, 0);
 
     return 0;
+}
+
+void SplitCheckZone::RenderInstructions(Terminal *t)
+{
+    FnTrace("SplitCheckZone::RenderInstructions()");
+    t->RenderText(t->Translate("Select items, then tap destination check"), x + (w/2), y + 25, COLOR_BLACK, font, ALIGN_CENTER);
 }
 
 int SplitCheckZone::PrintReceipts(Terminal *t)
