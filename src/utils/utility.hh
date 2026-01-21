@@ -21,6 +21,8 @@
 #ifndef VT_UTILITY_HH
 #define VT_UTILITY_HH
 
+#pragma GCC diagnostic ignored "-Wnull-dereference"
+
 #include "basic.hh"
 #include "fntrace.hh"
 #include "time_info.hh"
