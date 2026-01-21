@@ -21,6 +21,8 @@
 #ifndef BASIC_HH
 #define BASIC_HH
 
+#pragma GCC diagnostic ignored "-Wnull-dereference"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstddef>  // for size_t

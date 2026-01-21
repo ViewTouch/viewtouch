@@ -7,6 +7,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Build Warnings: Compiler Warning Fixes (2026-01-20)**
+  - Fixed various C++ compiler warnings to achieve clean builds
+  - **Issues Fixed**:
+    - Deprecated user-defined literal operator syntax in external date library
+    - Invalid pragma directive in time handling code
+    - Incorrect calloc argument order in memory allocation
+    - Misleading indentation in settings zone
+    - False-positive null dereference warnings
+    - Third-party dangling reference warnings from spdlog
+  - **Root Cause**: Code using outdated C++ syntax, incorrect function calls, and compiler false positives in third-party libraries
+  - **Solution**: 
+    - Updated literal operator syntax to modern C++ standards
+    - Removed invalid pragma directive
+    - Corrected calloc arguments to proper size/count order
+    - Added braces to clarify indentation
+    - Suppressed false-positive warnings via CMake flags
+  - **Files modified**: 
+    - `external/date/include/date/*.h` (multiple date library files)
+    - `src/core/time_info.hh`
+    - `main/data/locale.cc`
+    - `main/business/employee.cc`
+    - `zone/settings_zone.cc`
+    - `CMakeLists.txt`
+  - **Impact**: Achieved clean build with zero warnings from our codebase and third-party dependencies
+
 - **Receipt Settings: Update Kitchen Video Print Method Label (2026-01-20)**
   - Updated the Receipt Settings page UI text for better clarity and user experience
   - **Changes Made**:

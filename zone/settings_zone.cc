@@ -365,7 +365,9 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
 	int no_update = 0;
 	Settings *settings = term->GetSettings();
     if (settings == nullptr)
+    {
         return SIGNAL_IGNORED;
+    }
 	switch (type)
 	{
     case SWITCH_SEATS:

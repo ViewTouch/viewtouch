@@ -4321,7 +4321,7 @@ int Locale::BuildSearchArray()
     }
 
     array_size = PhraseCount();
-    search_array = (PhraseInfo **)calloc(sizeof(PhraseInfo *), (array_size + 1));
+    search_array = (PhraseInfo **)calloc((array_size + 1), sizeof(PhraseInfo *));
     if (search_array == nullptr)
         return 1;
 
