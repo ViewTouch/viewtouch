@@ -46,42 +46,113 @@ public:
     int    seat;
 
     // Constructors
-    ItemObj(Order *o);
-    ItemObj(int seat_no);
+    ItemObj(Order *o, int font_id = FONT_DEFAULT);
+    ItemObj(int seat_no, int font_id = FONT_DEFAULT);
 
     // Member Function
     int Render(Terminal *t) override;
+    int RenderWrappedText(Terminal *t, const genericChar *text, int x_pos, int y_pos, 
+                         int max_width, int color, int font_id);
 };
 
 // Constructors
-ItemObj::ItemObj(Order *o)
+ItemObj::ItemObj(Order *o, int font_id)
 {
     FnTrace("ItemObj::ItemObj()");
     order = o;
     seat = -1;
-    w = 196;
-    h = 40;
-
-    if (o)
-    {
-        Order *mod = o->modifier_list;
-        while (mod)
-        {
-            h += 20;
-            mod = mod->next;
-        }
-    }
+    w = 280;
+    h = 80;
+    font = font_id;
 }
 
-ItemObj::ItemObj(int seat_no)
+ItemObj::ItemObj(int seat_no, int font_id)
 {
     order = nullptr;
     seat = seat_no;
-    w = 84;
-    h = 84;
+    w = 150;
+    h = 168;
+    font = font_id;
 }
 
 // Member Functions
+int ItemObj::RenderWrappedText(Terminal *t, const genericChar *text, int x_pos, int y_pos, 
+                              int max_width, int color, int font_id)
+{
+    if (!text || !*text) return y_pos;
+    
+    genericChar line[STRLENGTH];
+    genericChar word[STRLENGTH];
+    int line_len = 0;
+    int word_len = 0;
+    int current_y = y_pos;
+    const genericChar *ptr = text;
+    
+    line[0] = '\0';
+    
+    while (*ptr)
+    {
+        // Extract next word
+        word_len = 0;
+        while (*ptr && *ptr != ' ' && word_len < STRLENGTH - 1)
+        {
+            word[word_len++] = *ptr++;
+        }
+        word[word_len] = '\0';
+        
+        // Skip spaces
+        while (*ptr == ' ') ptr++;
+        
+        // Check if word fits on current line
+        int test_len = line_len + (line_len > 0 ? 1 : 0) + word_len;
+        genericChar test_line[STRLENGTH];
+        if (line_len > 0)
+        {
+            vt_safe_string::safe_copy(test_line, STRLENGTH, line);
+            vt_safe_string::safe_concat(test_line, STRLENGTH, " ");
+            vt_safe_string::safe_concat(test_line, STRLENGTH, word);
+        }
+        else
+        {
+            vt_safe_string::safe_copy(test_line, STRLENGTH, word);
+        }
+        
+        if (t->TextWidth(test_line, strlen(test_line), font_id) <= max_width)
+        {
+            // Word fits, add it to current line
+            if (line_len > 0)
+            {
+                vt_safe_string::safe_concat(line, STRLENGTH, " ");
+                line_len++;
+            }
+            vt_safe_string::safe_concat(line, STRLENGTH, word);
+            line_len += word_len;
+        }
+        else
+        {
+            // Word doesn't fit, render current line and start new one
+            if (line_len > 0)
+            {
+                t->RenderText(line, x_pos, current_y, color, font_id, ALIGN_LEFT, max_width);
+                current_y += 18; // Line height
+            }
+            
+            // Start new line with current word
+            vt_safe_string::safe_copy(line, STRLENGTH, word);
+            line_len = word_len;
+        }
+    }
+    
+    // Render final line
+    if (line_len > 0)
+    {
+        t->RenderText(line, x_pos, current_y, color, font_id, ALIGN_LEFT, max_width);
+        current_y += 18; // Line height
+    }
+    
+    return current_y;
+}
+
 int ItemObj::Render(Terminal *t)
 {
     FnTrace("ItemObj::Render()");
@@ -98,7 +169,7 @@ int ItemObj::Render(Terminal *t)
 
         SeatName(seat, str);
         t->RenderText(str, x + (w/2), y + 22, COLOR_WHITE,
-                      FONT_TIMES_34B, ALIGN_CENTER);
+                      font, ALIGN_CENTER);
     }
     else if (order)
     {
@@ -121,16 +192,10 @@ int ItemObj::Render(Terminal *t)
             vt_safe_string::safe_copy(str, STRLENGTH, str2);
         }
 
-        t->RenderText(str, x + 8, ty, col, FONT_TIMES_20, ALIGN_LEFT, w - 12);
+        int available_width = w - 12;
 
-        Order *mod = order->modifier_list;
-        while (mod)
-        {
-            ty += 20;
-            mod->Description(t, str);
-            t->RenderText(str, x + 24, ty, col, FONT_TIMES_20, ALIGN_LEFT, w - 28);
-            mod = mod->next;
-        }
+        // Render order description with text wrapping
+        ty = RenderWrappedText(t, str, x + 8, ty, available_width, col, font);
     }
     return 0;
 }
@@ -145,7 +210,7 @@ public:
     SubCheck *sub;
 
     // Constructor
-    CheckObj(SubCheck *sc, int seat_mode = 0);
+    CheckObj(SubCheck *sc, int seat_mode = 0, int font_id = FONT_DEFAULT);
 
     // Member Functions
     int   Layout(Terminal *t, int lx, int ly, int lw, int lh) override;
@@ -154,13 +219,14 @@ public:
 };
 
 // Constructor
-CheckObj::CheckObj(SubCheck *sc, int seat_mode)
+CheckObj::CheckObj(SubCheck *sc, int seat_mode, int font_id)
 {
     FnTrace("CheckObj::CheckObj()");
     sub       = sc;
     page      = 0;
     max_pages = 0;
     active    = 0;
+    font      = font_id;
     int i;
 
     if (sc == nullptr)
@@ -184,7 +250,7 @@ CheckObj::CheckObj(SubCheck *sc, int seat_mode)
         for (i = 0; i < 32; ++i)
         {
             if (seat_count[i] > 0)
-                items.Add(new ItemObj(i));  // Add new seat item
+                items.Add(new ItemObj(i, font_id));  // Add new seat item
         }
     }
     else
@@ -193,12 +259,12 @@ CheckObj::CheckObj(SubCheck *sc, int seat_mode)
         {
             if (o->item_type == ITEM_POUND)
             {
-                items.Add(new ItemObj(o));
+                items.Add(new ItemObj(o, font_id));
             }
             else
             {
                 for (i = 0; i < o->count; ++i)
-                    items.Add(new ItemObj(o));
+                    items.Add(new ItemObj(o, font_id));
             }
         }
     }
@@ -268,7 +334,7 @@ int CheckObj::Render(Terminal *t)
         vt_safe_string::safe_copy(str, 256, GlobalTranslate("Blank Check"));
 
     t->RenderText(str, x + (w/2), y + 16, COLOR_BLACK,
-                  FONT_TIMES_20B, ALIGN_CENTER);
+                  font, ALIGN_CENTER);
 
     if (sub)
     {
@@ -277,20 +343,20 @@ int CheckObj::Render(Terminal *t)
         if (tax > 0)
         {
             t->RenderText(t->FormatPrice(tax), x + w - 8, hh, COLOR_BLACK,
-                          FONT_TIMES_20, ALIGN_RIGHT);
+                          font, ALIGN_RIGHT);
             t->RenderText(t->Translate("Tax"), x + w - 80, hh, COLOR_BLACK,
-                          FONT_TIMES_20, ALIGN_RIGHT);
+                          font, ALIGN_RIGHT);
             hh += 20;
         }
 
         t->RenderText(t->FormatPrice(sub->total_sales + tax), x + w - 8, hh,
-                      COLOR_BLACK, FONT_TIMES_20, ALIGN_RIGHT);
+                      COLOR_BLACK, font, ALIGN_RIGHT);
         t->RenderText(t->Translate("Total"), x + w - 80, hh, COLOR_BLACK,
-                      FONT_TIMES_20, ALIGN_RIGHT);
+                      font, ALIGN_RIGHT);
 
         if (max_pages > 1)
             t->RenderText(t->PageNo(page + 1, max_pages), x + 8, y + h - 24,
-                          COLOR_RED, FONT_TIMES_20);
+                          COLOR_RED, font);
     }
 
     // Render Items
@@ -472,11 +538,11 @@ int SplitCheckZone::CreateChecks(Terminal *t)
     for (SubCheck *sc = check->SubList(); sc != nullptr; sc = sc->next)
     {
         if (sc->status == CHECK_OPEN)
-            checks.Add(new CheckObj(sc, seat_mode));
+            checks.Add(new CheckObj(sc, seat_mode, font));
     }
 
     // Add Blank Check
-    checks.Add(new CheckObj(nullptr));
+    checks.Add(new CheckObj(nullptr, 0, font));
     return 0;
 }
 

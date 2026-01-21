@@ -7,6 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Split Check Interface: Enhanced Button Display and Usability (2026-01-20)**
+  - Improved the split check zone interface for better readability and user experience
+  - **Changes Made**:
+    - Added dynamic font responsiveness - buttons now properly inherit font sizes from zone settings
+    - Implemented text wrapping instead of truncation - long item names now wrap to multiple lines within buttons
+    - Increased button widths - order item buttons from 250px to 280px, seat buttons from 120px to 150px
+    - Doubled button heights - order buttons from 40px to 80px, seat buttons from 84px to 168px
+    - Removed modifier display from split check buttons for cleaner interface
+  - **Root Cause**: Split check buttons had hardcoded fonts, truncated text, cramped dimensions, and cluttered display with modifiers
+  - **Solution**: 
+    - Modified ItemObj constructors to accept font_id parameters and use dynamic fonts
+    - Added RenderWrappedText helper method for word-based text wrapping
+    - Increased button dimensions for better text accommodation
+    - Removed modifier rendering loop and dynamic height calculation
+  - **Files modified**: 
+    - `zone/split_check_zone.cc` (main implementation)
+    - `zone/split_check_zone.hh` (method declaration)
+  - **Impact**: Split check interface now displays longer item names clearly with proper text wrapping, responsive fonts, and improved button sizing for better usability
+
 - **Build Warnings: Compiler Warning Fixes (2026-01-20)**
   - Fixed various C++ compiler warnings to achieve clean builds
   - **Issues Fixed**:
