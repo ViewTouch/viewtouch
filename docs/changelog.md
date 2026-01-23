@@ -31,7 +31,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Impact**: Split check interface now provides clean, simple, and functional experience with clear visual feedback, proper pricing display, and intuitive manual item selection
 
 ### Fixed
-- **Split Check Interface: Enhanced Button Display and Usability (2026-01-20)**
+- **Removed Automatic Creation of System Page -94 (2026-01-23)**
+  - Eliminated the automatic creation of page -94 (Index with Tabs template) that was causing "Can't delete page -94" errors
+  - **Changes Made**:
+    - Removed the code that creates page -94 for all screen resolutions during ZoneDB initialization
+    - Simplified page 60 creation to use a default template instead of copying from page -94
+  - **Root Cause**: System was automatically creating page -94 as a template for Index with Tabs pages, but this page couldn't be deleted, causing user confusion and errors
+  - **Solution**: 
+    - Removed the template creation loop in ZoneDB::Init()
+    - Modified page 60 creation to always use a basic default configuration
+  - **Files modified**: 
+    - `zone/zone.cc` (removed page -94 creation code and simplified page 60 creation)
+  - **Impact**: Prevents "Can't delete page -94" errors and reduces system complexity by removing unnecessary template pages
   - Improved the split check zone interface for better readability and user experience
   - **Changes Made**:
     - Added dynamic font responsiveness - buttons now properly inherit font sizes from zone settings
