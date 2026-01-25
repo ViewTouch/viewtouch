@@ -275,6 +275,9 @@ int Layer::BlankPage(int mode, int texture, int tc, int size, int split,
         frame_width = 4;
         break;
      }
+    // Clip page size to layer size to prevent X11 errors
+    page_w = Min(page_w, static_cast<int>(w));
+    page_h = Min(page_h, static_cast<int>(h));
     page_x = Max(w - page_w, 0) / 2 + offset_x;
     page_y = Max(h - page_h, 0) / 2 + offset_y;
     use_clip = 0;
