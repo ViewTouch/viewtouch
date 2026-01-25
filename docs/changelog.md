@@ -45,6 +45,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Impact**: Split check interface now provides clean, simple, and functional experience with clear visual feedback, proper pricing display, and intuitive manual item selection
 
 ### Fixed
+- **Fixed GCC 14 Warning in Date Library (2026-01-25)**
+  - Resolved stringop-overflow warning in external/date/include/date/date.h when compiling on Raspberry Pi Compute Module 5 with GCC 14
+  - **Changes Made**:
+    - Changed buffer size calculation from std::numeric_limits<unsigned>::digits10+2u to std::numeric_limits<unsigned long long>::digits10+2u
+    - Updated cast from static_cast<unsigned>(a0) to static_cast<unsigned long long>(a0)
+  - **Root Cause**: GCC 14's enhanced bounds checking detected potential out-of-bounds access in the read function's buffer
+  - **Solution**: Used unsigned long long type for safer buffer sizing
+  - **Files modified**: external/date/include/date/date.h
+  - **Impact**: Eliminates compiler warning without changing functionality
+
 - **Removed Automatic Creation of System Page -94 (2026-01-23)**
   - Eliminated the automatic creation of page -94 (Index with Tabs template) that was causing "Can't delete page -94" errors
   - **Changes Made**:
