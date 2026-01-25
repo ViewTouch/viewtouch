@@ -182,6 +182,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Solution**: Added `PreloadAllTextures()` function that loads all textures at startup, ensuring consistent Pixmap values before any rendering occurs.
   - **Files modified**: `term/term_view.cc`, `term/term_view.hh`
 
+- **Terminal Crash: Prevent X11 BadMatch Errors from Oversized Pages (2026-01-24)**
+  - Fixed SIGABRT crashes when server sends page sizes larger than terminal window dimensions
+  - **Root Cause**: Server could send TERM_BLANKPAGE commands with page dimensions exceeding the terminal's allocated pixmap size, causing X11 drawing operations to fail with BadMatch errors
+  - **Solution**: Added page size clipping in Layer::BlankPage() to ensure page dimensions never exceed the layer's actual width and height
+  - **Files modified**: `term/layer.cc`
+  - **Impact**: Prevents terminal crashes when connecting to servers with larger display configurations, ensuring stable operation across different screen sizes
+
 ### Added
 - **Payment Processing: Complete Debit Card Fee Support (2026-01-15)**
   - Added comprehensive debit card fee tender types with full tax handling support
