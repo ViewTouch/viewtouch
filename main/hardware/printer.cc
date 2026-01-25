@@ -404,7 +404,7 @@ void Printer::CloseAsync()
             {
                 // LPD printing
                 char cmd[512];
-                snprintf(cmd, sizeof(cmd), "cat %s | /usr/bin/lpr -P%s", 
+                vt::cpp23::format_to_buffer(cmd, sizeof(cmd), "cat {} | /usr/bin/lpr -P{}", 
                          temp_file.c_str(), target_str.c_str());
                 int result = system(cmd);
                 if (result != 0)
