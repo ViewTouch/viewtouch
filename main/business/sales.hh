@@ -28,7 +28,7 @@
 
 /**** Definitions ****/
 
-constexpr int SALES_ITEM_VERSION = 16;
+constexpr int SALES_ITEM_VERSION = 17;
 
 // Family Difinitions
 #define FAMILY_APPETIZERS        0
@@ -194,6 +194,7 @@ public:
     short has_zone;       // boolean - is there a zone that can order this item?
     short allow_increase; // whether to show the OrderAddZone button.
     short ignore_split;	  // ignore split kitchen?
+    short out_of_stock;   // boolean - is item 86'd or out of stock
     int   period;         // time of day served
     int   prepare_time;   // time to make menu item
     int   quanity;        // Number of item remaining

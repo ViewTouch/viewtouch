@@ -1619,6 +1619,18 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
 {
     FnTrace("ItemZone::Render()");
 
+    // Handle out of stock color override
+    int saved_color[3];
+    int color_modified = 0;
+    if (item && item->out_of_stock) {
+        int num_states = ZoneStates();
+        for (int i = 0; i < num_states; i++) {
+            saved_color[i] = color[i];
+            color[i] = COLOR_DK_RED;
+        }
+        color_modified = 1;
+    }
+
     if (update_flag)
     {
         item = Item(&(t->system_data->menu));
@@ -1635,6 +1647,12 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
 
     if (item == nullptr)
     {
+        if (color_modified) {
+            int num_states = ZoneStates();
+            for (int i = 0; i < num_states; i++) {
+                color[i] = saved_color[i];
+            }
+        }
         RenderZone(t, "<Unknown>", update_flag);
         return RENDER_OKAY;
     }
@@ -1665,6 +1683,16 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
 
     const char* zn = item->type == ITEM_ADMISSION ? "" : item->ZoneName();
     const bool has_custom_image = ImagePath() && ImagePath()->size() > 0;
+
+    // Handle out of stock display
+    Str display_text;
+    genericChar str[256];
+    if (item->out_of_stock) {
+        vt_safe_string::safe_format(str, 256, "%s - %s", zn, GlobalTranslate("Out of stock"));
+        display_text.Set(str);
+    } else {
+        display_text.Set(zn);
+    }
 
     int font_width = 0;
     int font_height = 0;
@@ -1789,7 +1817,7 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
     else
     {
         // Normal rendering without image
-        RenderZone(t, zn, update_flag);
+        RenderZone(t, display_text.Value(), update_flag);
     }
 
     // Continue with normal ItemZone rendering logic for pricing, etc.
@@ -1895,6 +1923,15 @@ RenderResult ItemZone::Render(Terminal *t, int update_flag)
         t->RenderText(str, x + border, y + border + 45, col, FONT_TIMES_14,
                       ALIGN_LEFT, w - border);
     }
+
+    // Restore colors if modified
+    if (color_modified) {
+        int num_states = ZoneStates();
+        for (int i = 0; i < num_states; i++) {
+            color[i] = saved_color[i];
+        }
+    }
+
     return RENDER_OKAY;
 }
 

@@ -101,6 +101,7 @@ SalesItem::SalesItem(const char* name)
     changed = 0;
     allow_increase = 1;
     ignore_split   = 0;
+    out_of_stock   = 0;
 }
 
 // Member Functions
@@ -146,6 +147,7 @@ int SalesItem::Copy(SalesItem *target)
         target->price_type = price_type;
         target->allow_increase = allow_increase;
         target->ignore_split = ignore_split;
+        target->out_of_stock = out_of_stock;
         retval = 0;
     }
     return retval;
@@ -184,6 +186,7 @@ int SalesItem::Read(InputDataFile &df, int version)
     // 14 (04/30/15) added all properties relating to cinema mode.
     // 15 (11/06/15) added ignore split kitchen
     // 16 (11/03/25) added image_path persistence
+    // 17 (01/31/26) added out_of_stock flag
 
     if (version < 8)
         return 1;
@@ -247,6 +250,11 @@ int SalesItem::Read(InputDataFile &df, int version)
         df.Read(image_path);
     else
         image_path.Clear();
+
+    if (version >= 17)
+        df.Read(out_of_stock);
+    else
+        out_of_stock = 0;
 
     // Item property checks
     if (call_order < 0)
@@ -317,6 +325,8 @@ int SalesItem::Write(OutputDataFile &df, int version)
         error += df.Write(ignore_split);
     if (version >= 16)
         error += df.Write(image_path);
+    if (version >= 17)
+        error += df.Write(out_of_stock);
 
     return error;
 }
