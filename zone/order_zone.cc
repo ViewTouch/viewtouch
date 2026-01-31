@@ -244,18 +244,9 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
     // Draw Footer
     // Calculate total with tax
     int base_total = sc->raw_sales - sc->item_comps;
-    int total_tax = 0;
-    
-    // Calculate tax for all orders in the subcheck
-    Order *order = sc->OrderList();
-    while (order)
-    {
-        if (!(order->status & ORDER_COMP))
-        {
-            total_tax += order->CalculateTax(s, t);
-        }
-        order = order->next;
-    }
+    int total_tax = sc->total_tax_food + sc->total_tax_alcohol + sc->total_tax_GST +
+                    sc->total_tax_PST + sc->total_tax_HST + sc->total_tax_QST +
+                    sc->total_tax_room + sc->total_tax_merchandise + sc->total_tax_VAT;
     
     int total_with_tax = base_total + total_tax;
     

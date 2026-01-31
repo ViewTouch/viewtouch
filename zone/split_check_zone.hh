@@ -19,7 +19,7 @@
  */
 
 #ifndef _SPLIT_CHECK_HH
-#define SPLIT_CHECK_HH
+#define _SPLIT_CHECK_HH
 
 #include "pos_zone.hh"
 #include "zone_object.hh"

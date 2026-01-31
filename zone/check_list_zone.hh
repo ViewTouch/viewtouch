@@ -19,7 +19,7 @@
  */
 
 #ifndef _CHECK_LIST_ZONE_HH
-#define CHECK_LIST_ZONE_HH
+#define _CHECK_LIST_ZONE_HH
 
 #include "form_zone.hh"
 #include "layout_zone.hh"

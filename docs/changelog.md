@@ -61,6 +61,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `zone/order_zone.cc` (modified rendering logic)
   - **Impact**: Staff can now easily identify unavailable items, managers can quickly toggle item availability, improves operational efficiency during stock shortages
 
+- **Fixed Order Entry Total Off-by-One-Cent Issue with Tax (2026-01-31)**
+  - Resolved discrepancy between Order Entry zone total display and actual check total when tax is included
+  - **Changes Made**:
+    - Modified OrderEntryZone::Render to use pre-calculated tax totals from SubCheck instead of recalculating tax per individual order
+    - Replaced per-order tax summation with direct use of aggregated tax fields (total_tax_food, total_tax_GST, etc.)
+  - **Root Cause**: Order Entry zone was calculating tax by summing individual order taxes, while check totals use aggregated tax calculation, causing rounding differences
+  - **Solution**: Use the same tax calculation method as the main check total for consistency
+  - **Files modified**: `zone/order_zone.cc` (OrderEntryZone::Render method)
+  - **Impact**: Order Entry zone now displays the exact same total as the final check, eliminating confusion for staff
+
 ### Fixed
 - **Fixed GCC 14 Warning in Date Library (2026-01-25)**
   - Resolved stringop-overflow warning in external/date/include/date/date.h when compiling on Raspberry Pi Compute Module 5 with GCC 14

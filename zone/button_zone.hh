@@ -19,7 +19,7 @@
  */
 
 #ifndef _BUTTON_ZONE_HH
-#define BUTTON_ZONE_HH
+#define _BUTTON_ZONE_HH
 
 #include "pos_zone.hh"
 #include "layout_zone.hh"

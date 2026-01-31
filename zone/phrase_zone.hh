@@ -19,7 +19,7 @@
  */
 
 #ifndef _PHRASE_ZONE_HH
-#define PHRASE_ZONE_HH
+#define _PHRASE_ZONE_HH
 
 #include "form_zone.hh"
 

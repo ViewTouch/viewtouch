@@ -19,7 +19,7 @@
  */
 
 #ifndef _CHART_ZONE_HH
-#define CHART_ZONE_HH
+#define _CHART_ZONE_HH
 
 #include "pos_zone.hh"
 #include "list_utility.hh"

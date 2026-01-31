@@ -19,7 +19,7 @@
  */
 
 #ifndef _INVENTORY_ZONE_HH
-#define INVENTORY_ZONE_HH
+#define _INVENTORY_ZONE_HH
 
 #include "form_zone.hh"
 

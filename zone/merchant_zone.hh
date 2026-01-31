@@ -19,7 +19,7 @@
  */
 
 #ifndef _MERCHANT_ZONE_HH
-#define MERCHANT_ZONE_HH
+#define _MERCHANT_ZONE_HH
 
 #include "form_zone.hh"
 

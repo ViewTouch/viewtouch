@@ -19,6 +19,9 @@
  *  to determine which food types get sent to the Kitchen Video reports.
  */
 
+#ifndef _VIDEO_ZONE_HH
+#define _VIDEO_ZONE_HH
+
 #define VIDEO_TARGET_NORMAL  0
 #define VIDEO_TARGET_KITCHEN 1
 
@@ -40,3 +43,5 @@ public:
     int LoadRecord(Terminal *t, int record) override;
     int SaveRecord(Terminal *t, int record, int write_file) override;
 };
+
+#endif

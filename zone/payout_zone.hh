@@ -19,7 +19,7 @@
  */
 
 #ifndef _PAYOUT_ZONE_HH
-#define PAYOUT_ZONE_HH
+#define _PAYOUT_ZONE_HH
 
 #include "layout_zone.hh"
 
