@@ -213,6 +213,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - **Files modified**: `term/layer.cc`
   - **Impact**: Prevents terminal crashes when connecting to servers with larger display configurations, ensuring stable operation across different screen sizes
 
+- **Tax Settings: Improved Decimal Display Formatting (2026-01-30)**
+  - Fixed tax rate display to show clean decimal formatting without trailing zeros and hide zero rates
+  - **Changes Made**:
+    - Modified TaxSettingsZone::LoadRecord() to use FormatMultiplierDisplay() for proper decimal formatting
+    - Tax rates now display as "8.3" instead of "8.300000", "8.25" stays "8.25", and 0% shows as blank field
+    - Used existing FormatMultiplierDisplay function to trim trailing zeros appropriately
+  - **Root Cause**: Tax percentage fields were displaying unnecessary trailing zeros and showing "0.000000" for zero rates
+  - **Solution**: Applied FormatMultiplierDisplay() function to format tax rates with appropriate precision and set empty strings for zero values
+  - **Files modified**: `zone/settings_zone.cc`
+  - **Impact**: Tax Settings interface now displays rates cleanly without visual clutter from extra zeros
+
 ### Added
 - **Payment Processing: Complete Debit Card Fee Support (2026-01-15)**
   - Added comprehensive debit card fee tender types with full tax handling support
