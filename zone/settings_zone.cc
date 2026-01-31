@@ -1379,6 +1379,8 @@ TaxSettingsZone::TaxSettingsZone()
     AddTextField("Royalty Rate %", 6);
     AddNewLine();
     AddTextField("Advertising Fund %", 6);
+
+    // Keep default appearance
 }
 
 RenderResult TaxSettingsZone::Render(Terminal *term, int update_flag)
@@ -1402,28 +1404,94 @@ int TaxSettingsZone::LoadRecord(Terminal *term, int record)
     FormField *f = FieldList();
 
     f = f->next;  // skip US Tax label
-    f->Set(settings->tax_food * 100.0); f = f->next;
+    if (settings->tax_food > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_food * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
     f->Set(settings->food_inclusive); f = f->next;
-    f->Set(settings->tax_alcohol * 100.0); f = f->next;
+    if (settings->tax_alcohol > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_alcohol * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
     f->Set(settings->alcohol_inclusive); f = f->next;
 
-    f->Set(settings->tax_room * 100.0); f = f->next;
+    if (settings->tax_room > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_room * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
     f->Set(settings->room_inclusive); f = f->next;
-    f->Set(settings->tax_merchandise * 100.0); f = f->next;
+    if (settings->tax_merchandise > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_merchandise * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
     f->Set(settings->merchandise_inclusive); f = f->next;
 
     f = f->next;  // skip Canadian Tax label
-    f->Set(settings->tax_GST * 100.0); f = f->next;
-    f->Set(settings->tax_PST * 100.0); f = f->next;
-    f->Set(settings->tax_HST * 100.0); f = f->next;
-    f->Set(settings->tax_QST * 100.0); f = f->next;
+    if (settings->tax_GST > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_GST * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
+    if (settings->tax_PST > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_PST * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
+    if (settings->tax_HST > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_HST * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
+    if (settings->tax_QST > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_QST * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
 
     f = f->next;  // skip Euro Tax label
-    f->Set(settings->tax_VAT * 100.0); f = f->next;
+    if (settings->tax_VAT > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_VAT * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
 
     f = f->next;  // skip General Rates label
-    f->Set(settings->royalty_rate * 100.0); f = f->next;
-    f->Set(settings->advertise_fund * 100.0); f = f->next;
+    if (settings->royalty_rate > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->royalty_rate * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
+    if (settings->advertise_fund > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->advertise_fund * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
     return 0;
 }
 
