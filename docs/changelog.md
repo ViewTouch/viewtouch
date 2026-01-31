@@ -44,6 +44,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - `main/business/check.hh` (SplitCheckEqually declaration, later removed)
   - **Impact**: Split check interface now provides clean, simple, and functional experience with clear visual feedback, proper pricing display, and intuitive manual item selection
 
+- **Out of Stock (86) Toggle Feature for Menu Items (2026-01-31)**
+  - Added ability to mark menu items as "86" (out of stock) with visual feedback on buttons
+  - **Changes Made**:
+    - Added `out_of_stock` boolean field to SalesItem class for tracking availability
+    - Updated data file version to 17 for backward compatibility
+    - Modified ItemZone rendering to display "Item Name - Out of stock" in red when item is unavailable
+    - Added "Out of Stock (86'd)?" toggle in item editing interface
+    - Implemented safe color override during rendering to maintain visual consistency
+  - **Root Cause**: No built-in way to temporarily disable menu items without removing them entirely
+  - **Solution**: Added toggleable out-of-stock status with clear visual indicators
+  - **Files modified**:
+    - `main/business/sales.hh` (added out_of_stock field)
+    - `main/business/sales.cc` (updated serialization and data handling)
+    - `zone/inventory_zone.cc` (added editing interface)
+    - `zone/order_zone.cc` (modified rendering logic)
+  - **Impact**: Staff can now easily identify unavailable items, managers can quickly toggle item availability, improves operational efficiency during stock shortages
+
 ### Fixed
 - **Fixed GCC 14 Warning in Date Library (2026-01-25)**
   - Resolved stringop-overflow warning in external/date/include/date/date.h when compiling on Raspberry Pi Compute Module 5 with GCC 14

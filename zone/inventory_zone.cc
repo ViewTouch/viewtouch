@@ -1162,6 +1162,7 @@ int ItemListZone::AddFields()
     AddListField("Is Item Stocked?", NoYesName);
     AddListField("Allow Increase Button?", NoYesName);
     AddListField("Ignore Split Kitchen?", NoYesName);
+    AddListField("Out of Stock (86'd)?", NoYesName);
 
     return 0;
 }
@@ -1382,7 +1383,8 @@ int ItemListZone::LoadRecord(Terminal *t, int record)
     f->Set(si->call_order); f = f->next;
     f->Set(si->stocked); f = f->next;
     f->Set(si->allow_increase); f = f->next;
-    f->Set(si->ignore_split);
+    f->Set(si->ignore_split); f = f->next;
+    f->Set(si->out_of_stock);
     return 0;
 }
 
@@ -1422,6 +1424,7 @@ int ItemListZone::SaveRecord(Terminal *t, int record, int write_file)
         f->Get(tmp); f = f->next; si->stocked = tmp;
         f->Get(tmp); f = f->next; si->allow_increase = tmp;
         f->Get(tmp); f = f->next; si->ignore_split = tmp;
+        f->Get(tmp); si->out_of_stock = tmp;
         if (item_name != si->item_name)
         {
             name_change = 1;
