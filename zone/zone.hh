@@ -6,8 +6,8 @@
  * Functions for managing zones on a view
  */
 
-#ifndef ZONE_HH
-#define ZONE_HH
+#ifndef _ZONE_HH
+#define _ZONE_HH
 
 #include "utility.hh"
 #include "list_utility.hh"

@@ -19,7 +19,7 @@
  */
 
 #ifndef _ORDER_ZONE_HH
-#define ORDER_ZONE_HH
+#define _ORDER_ZONE_HH
 
 #include "layout_zone.hh"
 

@@ -18,8 +18,8 @@
  * Touch zone for managing credit cards
  */
 
-#ifndef CREDITCARD_LIST_ZONE_HH
-#define CREDITCARD_LIST_ZONE_HH
+#ifndef _CREDITCARD_LIST_ZONE_HH
+#define _CREDITCARD_LIST_ZONE_HH
 
 #include "form_zone.hh"
 #include "credit.hh"

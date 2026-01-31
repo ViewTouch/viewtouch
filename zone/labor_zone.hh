@@ -19,7 +19,7 @@
  */
 
 #ifndef _LABOR_ZONE_HH
-#define LABOR_ZONE_HH
+#define _LABOR_ZONE_HH
 
 #include "form_zone.hh"
 

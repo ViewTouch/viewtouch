@@ -19,7 +19,7 @@
  */
 
 #ifndef _DIALOG_ZONE_HH
-#define DIALOG_ZONE_HH
+#define _DIALOG_ZONE_HH
 
 #include "check.hh"
 #include "layout_zone.hh"

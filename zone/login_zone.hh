@@ -19,7 +19,7 @@
  */
 
 #ifndef _LOGIN_ZONE_HH
-#define LOGIN_ZONE_HH
+#define _LOGIN_ZONE_HH
 
 #include "layout_zone.hh"
 

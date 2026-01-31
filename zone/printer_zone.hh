@@ -19,7 +19,7 @@
  */
 
 #ifndef _PRINTER_ZONE_HH
-#define PRINTER_ZONE_HH
+#define _PRINTER_ZONE_HH
 
 #include "form_zone.hh"
 #include "zone_object.hh"

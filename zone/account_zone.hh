@@ -19,7 +19,7 @@
  */
 
 #ifndef _ACCOUNT_ZONE_HH
-#define ACCOUNT_ZONE_HH
+#define _ACCOUNT_ZONE_HH
 
 #include "form_zone.hh"
 

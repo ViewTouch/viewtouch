@@ -18,7 +18,7 @@
  */
 
 #ifndef _SEARCH_ZONE_HH
-#define SEARCH_ZONE_HH
+#define _SEARCH_ZONE_HH
 
 #include "layout_zone.hh"
 

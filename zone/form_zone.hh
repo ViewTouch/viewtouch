@@ -18,8 +18,8 @@
  * base touch zone for data entry and display
  */
 
-#ifndef FORM_ZONE_HH
-#define FORM_ZONE_HH
+#ifndef _FORM_ZONE_HH
+#define _FORM_ZONE_HH
 
 #include "layout_zone.hh"
 #include "report.hh"

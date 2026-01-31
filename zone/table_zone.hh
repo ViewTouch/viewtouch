@@ -19,7 +19,7 @@
  */
 
 #ifndef _TABLE_ZONE_HH
-#define TABLE_ZONE_HH
+#define _TABLE_ZONE_HH
 
 #include "check.hh"
 #include "customer.hh"

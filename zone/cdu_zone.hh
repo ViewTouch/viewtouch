@@ -20,7 +20,7 @@
  */
 
 #ifndef _CDU_ZONE_HH
-#define CDU_ZONE_HH
+#define _CDU_ZONE_HH
 
 #include "cdu.hh"
 #include "form_zone.hh"

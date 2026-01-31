@@ -19,7 +19,7 @@
  */
 
 #ifndef _USER_EDIT_ZONE_HH
-#define USER_EDIT_ZONE_HH
+#define _USER_EDIT_ZONE_HH
 
 #include "form_zone.hh"
 

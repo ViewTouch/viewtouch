@@ -19,7 +19,7 @@
  */
 
 #ifndef _SETTINGS_ZONE_H
-#define SETTINGS_ZONE_H
+#define _SETTINGS_ZONE_H
 
 #include "form_zone.hh"
 
