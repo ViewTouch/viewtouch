@@ -2999,35 +2999,66 @@ int TenderSetZone::KillRecord(Terminal *term, int record)
     default:
     {
         DiscountInfo *ds = settings->FindDiscountByRecord(record);
-        ds->active = 0;
-        if (ds->next != nullptr)
-            display_id = ds->next->id;
-        else
-            record_no = -1;
+        if (ds)
+        {
+            ds->active = 0;
+            if (ds->next != nullptr)
+                display_id = ds->next->id;
+            else
+                record_no = -1;
+        }
         return 0;
     }
     case 1:
     {
         CouponInfo *cp = settings->FindCouponByRecord(record);
-        cp->active = 0;
+        if (cp)
+        {
+            cp->active = 0;
+            if (cp->next != nullptr)
+                display_id = cp->next->id;
+            else
+                record_no = -1;
+        }
         return 0;
     }
     case 2:
     {
         CreditCardInfo *cc = settings->FindCreditCardByRecord(record);
-        cc->active = 0;
+        if (cc)
+        {
+            cc->active = 0;
+            if (cc->next != nullptr)
+                display_id = cc->next->id;
+            else
+                record_no = -1;
+        }
         return 0;
     }
     case 3:
     {
         CompInfo *cm = settings->FindCompByRecord(record);
-        cm->active = 0;
+        if (cm)
+        {
+            cm->active = 0;
+            if (cm->next != nullptr)
+                display_id = cm->next->id;
+            else
+                record_no = -1;
+        }
         return 0;
     }
     case 4:
     {
         MealInfo *mi = settings->FindMealByRecord(record);
-        mi->active = 0;
+        if (mi)
+        {
+            mi->active = 0;
+            if (mi->next != nullptr)
+                display_id = mi->next->id;
+            else
+                record_no = -1;
+        }
         return 0;
     }
     }
