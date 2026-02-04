@@ -4473,16 +4473,35 @@ TermInfo *Settings::FindServer(const genericChar* displaystr)
     TermInfo *retti = nullptr;
     TermInfo *ti = term_list.Head();
 
+    // First pass: look for a terminal explicitly marked as server
     while (ti != nullptr)
     {
-        if (ti->IsServer() || (strcmp(displaystr, ti->display_host.Value()) == 0))
+        if (ti->IsServer())
         {
             retti = ti;
-            break;  // exit the loop
+            break;
         }
         ti = ti->next;
     }
 
+    // Second pass: if no server found, look for matching display_host
+    if (retti == nullptr)
+    {
+        ti = term_list.Head();
+        while (ti != nullptr)
+        {
+            if (strcmp(displaystr, ti->display_host.Value()) == 0)
+            {
+                retti = ti;
+                // Mark this terminal as the server since it matches our display
+                retti->IsServer(1);
+                break;
+            }
+            ti = ti->next;
+        }
+    }
+
+    // If still no match, create a new server terminal
     if (retti == nullptr)
     {
         retti = new TermInfo;

@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Hardware Button Type: Critical Startup Bugs (2026-02-04)**
+  - Fixed multiple critical bugs in Hardware button type that caused issues after system reboot
+  - **Bug 1: Printer Deletion on Every Startup**
+    - **Root Cause**: Code was migrating receipt printer from printer list to server terminal on every startup, then deleting it
+    - **Solution**: Added check to only migrate printer if server terminal doesn't already have one configured
+    - **Impact**: Printers no longer disappear or get replaced with defaults after reboot
+  - **Bug 2: Terminal Iterator Not Reset**
+    - **Root Cause**: When cleaning up multiple server terminals, the iterator wasn't reset before the second processing loop
+    - **Solution**: Added `ti = settings->TermList()` to reset iterator after cleanup
+    - **Impact**: Terminal initialization now processes all terminals correctly
+  - **Bug 3: Multiple Terminals Marked as Server**
+    - **Root Cause**: `have_server` count wasn't updated after marking a terminal as server, allowing multiple terminals to be set as server in single startup
+    - **Solution**: Added `have_server = 1` after each `IsServer(1)` call
+    - **Impact**: Only one terminal is now marked as server
+  - **Bug 4: FindServer Priority Issue**
+    - **Root Cause**: `FindServer()` checked display_host match before IsServer flag, potentially returning wrong terminal
+    - **Solution**: Changed to two-pass approach - first find explicit server, then check display_host match
+    - **Impact**: Existing server terminal is always found first
+  - **⚠️ KNOWN ISSUE**: Duplicate "Server" displays may still appear in some configurations - investigation ongoing
+  - **Files modified**: `main/data/manager.cc`, `main/data/settings.cc`
+
+- **Tender Settings Button Type: Null Pointer and Record Navigation Bugs (2026-02-04)**
+  - Fixed bugs in TenderSetZone::KillRecord that could cause crashes and navigation issues
+  - **Changes Made**:
+    - Added null pointer checks before accessing record data in all sections (Discounts, Coupons, Credit Cards, Comps, Employee Meals)
+    - Added consistent `display_id` and `record_no` handling for all sections (previously only Discounts had this)
+  - **Root Cause**: KillRecord didn't check if `FindXxxByRecord()` returned nullptr before dereferencing, and sections 1-4 didn't update navigation state after deletion
+  - **Solution**: Added null checks and consistent record navigation handling across all tender types
+  - **Files modified**: `zone/settings_zone.cc`
+
 ### Added
 - **🚀 Recommendations for Modern POS Transformation (2026-01-24)**
   - **Phase 1: Complete Current Modernization (1-2 months)**

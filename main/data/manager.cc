@@ -1263,21 +1263,30 @@ int StartSystem(int my_use_net)
         TermInfo *ti = settings->TermList();
         if (have_server > 1)
         {
+            // Multiple terminals are marked as server - keep only the first one
             int found = 0;
             while (ti != nullptr)
             {
-                if (ti->display_host.size() > 0)
+                if (ti->IsServer())
                 {
                     if (found)
+                    {
+                        // Clear server flag on all but the first server found
                         ti->IsServer(0);
+                    }
                     else
                     {
+                        // First server found - update its display host and keep it
                         ti->display_host.Set(displaystr.data());
                         found = 1;
                     }
                 }
                 ti = ti->next;
             }
+            // Save settings after cleaning up duplicate servers
+            settings->Save();
+            // Reset ti to the head of the list for the second loop
+            ti = settings->TermList();
         }
         while (ti != nullptr)
         {
@@ -1290,6 +1299,7 @@ int StartSystem(int my_use_net)
             {
                 ti->display_host.Set(displaystr.data());
                 ti->IsServer(1);
+                have_server = 1;  // Update count to prevent setting another terminal as server
             }
             else if (ti->IsServer())
             {
@@ -1317,6 +1327,7 @@ int StartSystem(int my_use_net)
                 // this entry isn't explicitly set as server, but we got a match on
                 // the display string, so we'll set it now.
                 ti->IsServer(1);
+                have_server = 1;  // Update count to prevent setting another terminal as server
             }
             ti = ti->next;
         }
@@ -1486,6 +1497,7 @@ int StartSystem(int my_use_net)
 
     // Add local terminal
     ReportLoader("Opening Local Terminal");
+    int term_count_before = settings->TermCount();
     TermInfo *ti = settings->FindServer(displaystr.data());
     if (ti == nullptr)
     {
@@ -1494,17 +1506,30 @@ int StartSystem(int my_use_net)
         return 1;
     }
     ti->display_host.Set(displaystr.data());
-
-    pi = settings->FindPrinterByType(PRINTER_RECEIPT);
-    if (pi)
+    
+    // If FindServer created a new terminal, save settings to persist it
+    // This prevents creating duplicate server terminals on every restart
+    if (settings->TermCount() > term_count_before)
     {
-        ti->printer_host.Set(pi->host);
-        ti->printer_port  = pi->port;
-        ti->printer_model = pi->model;
-
-        settings->Remove(pi);
-        delete pi;
         settings->Save();
+    }
+
+    // Only migrate receipt printer to server terminal if the server terminal
+    // does not already have a printer configured. This prevents repeatedly
+    // deleting printers from the printer list on every startup.
+    if (ti->printer_model == MODEL_NONE || ti->printer_host.empty())
+    {
+        pi = settings->FindPrinterByType(PRINTER_RECEIPT);
+        if (pi)
+        {
+            ti->printer_host.Set(pi->host);
+            ti->printer_port  = pi->port;
+            ti->printer_model = pi->model;
+
+            settings->Remove(pi);
+            delete pi;
+            settings->Save();
+        }
     }
 
     if (num_terms > 0)
