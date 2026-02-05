@@ -1259,54 +1259,22 @@ int StartSystem(int my_use_net)
         // for the local terminal.
         int count = 0;
         int allowed = num_terms - 1;
-        int have_server = settings->HaveServerTerm();
+        
+        // The first terminal is always the server - handled by FindServer()
+        // Process all other terminals as remote displays
         TermInfo *ti = settings->TermList();
-        if (have_server > 1)
-        {
-            // Multiple terminals are marked as server - keep only the first one
-            int found = 0;
-            while (ti != nullptr)
-            {
-                if (ti->IsServer())
-                {
-                    if (found)
-                    {
-                        // Clear server flag on all but the first server found
-                        ti->IsServer(0);
-                    }
-                    else
-                    {
-                        // First server found - update its display host and keep it
-                        ti->display_host.Set(displaystr.data());
-                        found = 1;
-                    }
-                }
-                ti = ti->next;
-            }
-            // Save settings after cleaning up duplicate servers
-            settings->Save();
-            // Reset ti to the head of the list for the second loop
-            ti = settings->TermList();
-        }
+        if (ti != nullptr)
+            ti = ti->next;  // Skip the first terminal (server)
+            
         while (ti != nullptr)
         {
-            // this early, the TermInfo entry is the server entry if its
-            // isserver value is true or if display_host is equal to
-            // displaystr.  So we only start up a remote terminal if
-            // IsServer() returns false and the two display strings do
-            // not match.  Otherwise, we do a little background maintenance.
-            if (ti->display_host.empty() && have_server == 0)
-            {
-                ti->display_host.Set(displaystr.data());
-                ti->IsServer(1);
-                have_server = 1;  // Update count to prevent setting another terminal as server
-            }
-            else if (ti->IsServer())
-            {
-                // make sure the server's display host value is current
-                ti->display_host.Set(displaystr.data());
-            }
-            else if (strcmp(ti->display_host.Value(), displaystr.data()) != 0)
+            // Clear any stale server flags on non-first terminals
+            if (ti->IsServer())
+                ti->IsServer(0);
+                
+            // Open remote terminals that have a different display host
+            if (!ti->display_host.empty() && 
+                strcmp(ti->display_host.Value(), displaystr.data()) != 0)
             {
                 if (count < allowed)
                 {
@@ -1316,18 +1284,12 @@ int StartSystem(int my_use_net)
                     ti->OpenTerm(MasterControl);
                     if (ti->next)
                         sleep(OPENTERM_SLEEP);
+                    count++;
                 }
                 else
                 {
                     printf("Not licensed to run terminal '%s'\n", ti->name.Value());
                 }
-            }
-            else if (have_server == 0)
-            {
-                // this entry isn't explicitly set as server, but we got a match on
-                // the display string, so we'll set it now.
-                ti->IsServer(1);
-                have_server = 1;  // Update count to prevent setting another terminal as server
             }
             ti = ti->next;
         }
