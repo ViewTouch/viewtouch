@@ -4470,50 +4470,52 @@ MealInfo *Settings::FindMealByID(int id)
 TermInfo *Settings::FindServer(const genericChar* displaystr)
 {
     FnTrace("Settings::FindServer()");
-    TermInfo *retti = nullptr;
     TermInfo *ti = term_list.Head();
 
-    // First pass: look for a terminal explicitly marked as server
-    while (ti != nullptr)
+    // The first terminal in the list is ALWAYS the server display
+    if (ti != nullptr)
     {
-        if (ti->IsServer())
+        // Ensure the first terminal is marked as server
+        if (!ti->IsServer())
         {
-            retti = ti;
-            break;
+            ti->IsServer(1);
         }
-        ti = ti->next;
-    }
-
-    // Second pass: if no server found, look for matching display_host
-    if (retti == nullptr)
-    {
-        ti = term_list.Head();
-        while (ti != nullptr)
+        
+        // Remove any other terminals that were previously marked as server
+        // and have the default "Server" name (auto-created duplicates)
+        TermInfo *other = ti->next;
+        while (other != nullptr)
         {
-            if (strcmp(displaystr, ti->display_host.Value()) == 0)
+            TermInfo *next_other = other->next;
+            if (other->IsServer())
             {
-                retti = ti;
-                // Mark this terminal as the server since it matches our display
-                retti->IsServer(1);
-                break;
+                other->IsServer(0);
             }
-            ti = ti->next;
+            // Remove auto-created "Server" terminals that are duplicates
+            if (strcmp(other->name.Value(), "Server") == 0 && 
+                (other->display_host.empty() || 
+                 strcmp(other->display_host.Value(), displaystr) == 0))
+            {
+                Remove(other);
+                delete other;
+            }
+            other = next_other;
         }
+        
+        return ti;
     }
 
-    // If still no match, create a new server terminal
-    if (retti == nullptr)
-    {
-        retti = new TermInfo;
-        retti->name.Set("Server");
-        retti->display_host.Clear();
-        retti->type = TERMINAL_NORMAL;
-        retti->printer_model = 0;
-        retti->printer_port = 0;
-        retti->IsServer(1);
-        AddFront(retti);
-    }
-    return retti;
+    // No terminals exist - create the server terminal
+    ti = new TermInfo;
+    ti->name.Set("Server");
+    ti->display_host.Clear();
+    ti->type = TERMINAL_NORMAL;
+    ti->printer_model = 0;
+    ti->printer_port = 0;
+    ti->IsServer(1);
+    AddFront(ti);
+    
+    return ti;
 }
 
 TermInfo *Settings::FindTerminal(const char* displaystr)

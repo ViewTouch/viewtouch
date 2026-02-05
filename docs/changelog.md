@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Hardware Button Type: Simplified Server Display Logic (2026-02-05)**
+  - Completely simplified the server display and terminal initialization logic
+  - **New Approach**: The FIRST terminal in the list is ALWAYS the server display
+  - **Changes Made**:
+    - Rewrote `FindServer()` to simply return the first terminal and ensure it's marked as server
+    - Simplified remote terminal initialization to skip the first terminal (server) and process others
+    - Removed complex multi-pass server detection and matching logic
+    - Removed `have_server` counting and display_host matching complexity
+    - Added automatic cleanup of duplicate "Server" terminals created by previous buggy code
+  - **Root Cause**: Previous complex logic with multiple passes, display_host matching, and server flag tracking was causing duplicate server displays to be created and persisted
+  - **Solution**: Simple rule - first terminal = server, all others = remote displays. FindServer() now removes any duplicate auto-created "Server" terminals found after the first terminal.
+  - **Impact**: No more duplicate server displays, existing duplicates are automatically cleaned up on startup
+  - **Files modified**: `main/data/manager.cc`, `main/data/settings.cc`
+
 - **Hardware Button Type: Critical Startup Bugs (2026-02-04)**
   - Fixed multiple critical bugs in Hardware button type that caused issues after system reboot
   - **Bug 1: Printer Deletion on Every Startup**
@@ -25,7 +39,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - **Root Cause**: `FindServer()` checked display_host match before IsServer flag, potentially returning wrong terminal
     - **Solution**: Changed to two-pass approach - first find explicit server, then check display_host match
     - **Impact**: Existing server terminal is always found first
-  - **⚠️ KNOWN ISSUE**: Duplicate "Server" displays may still appear in some configurations - investigation ongoing
   - **Files modified**: `main/data/manager.cc`, `main/data/settings.cc`
 
 - **Tender Settings Button Type: Null Pointer and Record Navigation Bugs (2026-02-04)**
