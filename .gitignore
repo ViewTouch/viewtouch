@@ -50,3 +50,4 @@ coverage/
 *.zip
 *.deb
 *.rpm
+v2/
