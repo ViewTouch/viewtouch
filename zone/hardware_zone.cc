@@ -539,10 +539,14 @@ int HardwareZone::KillRecord(Terminal *term, int record)
         TermInfo *ti = settings->FindTermByRecord(record);
         if (ti && !ti->IsServer())
         {
+            // Check if the printer is shared by other terminals
+            if (!settings->IsPrinterShared(ti->printer_host.Value(), ti->printer_port, ti))
+            {
+                Printer *printer = ti->FindPrinter(db);
+                if (printer)
+                    db->KillPrinter(printer);
+            }
             settings->Remove(ti);
-            Printer *printer = ti->FindPrinter(db);
-            if (printer)
-                db->KillPrinter(printer);
             Terminal *tmp = ti->FindTerm(db);
             if (tmp)
                 tmp->kill_me = 1;
