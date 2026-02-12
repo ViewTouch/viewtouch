@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Auto-Update vt_data Inconsistency Between Displays (2026-02-12)**
+  - Fixed bug where vt_data auto-update setting behaved differently on server display vs external displays
+  - **Root Cause**: The auto_update_vt_data setting was loaded from the settings file in the data directory, which could be different for different displays in multi-display setups
+  - **Solution**: Modified the auto-update check to load the setting from a fixed path (/usr/viewtouch/dat/settings.dat) to ensure consistency across all displays
+  - **Impact**: vt_data auto-update setting now works consistently regardless of which display is used to start the system
+  - **Files modified**: `main/data/manager.cc`
 - **Hardware Button Type: Server Terminal Duplicates and Printer Removal (2026-02-12)**
   - Fixed bugs in Hardware zone that created duplicate server terminals and incorrectly removed shared printers
   - **Bug 1: Duplicate Server Terminals**

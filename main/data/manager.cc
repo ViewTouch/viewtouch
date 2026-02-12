@@ -681,16 +681,15 @@ int main(int argc, genericChar* argv[])
     // Check if vt_data exists locally first
     bool vt_data_updated = false;
     
-    // Check if auto-update is enabled by loading settings
+    // Check if auto-update is enabled by loading settings from a fixed location
+    // to ensure consistency across all displays
     bool auto_update_enabled = true;  // Default to enabled for backward compatibility
     
-    // Load settings from the master settings file using the same method as StartSystem
-    std::array<char, STRLONG> settings_path{};
-    MasterSystem->FullPath(MASTER_SETTINGS, settings_path.data());
+    std::string fixed_settings_path = std::string(VIEWTOUCH_PATH) + "/dat/settings.dat";
     
-    if (fs::exists(settings_path.data())) {
+    if (fs::exists(fixed_settings_path)) {
         Settings temp_settings;
-        if (temp_settings.Load(settings_path.data()) == 0) {
+        if (temp_settings.Load(fixed_settings_path.c_str()) == 0) {
             auto_update_enabled = temp_settings.auto_update_vt_data;
             if (!auto_update_enabled) {
                 ReportError(GlobalTranslate("Auto-update of vt_data is disabled in settings"));
