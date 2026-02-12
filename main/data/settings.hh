@@ -916,6 +916,7 @@ public:
     int AddFront(TermInfo *ti);
     int Remove(TermInfo *ti);
     int TermReport(Terminal *t, Report *r);
+    bool IsPrinterShared(const genericChar* host, int port, TermInfo *exclude = nullptr);
 
     // printer functions
     PrinterInfo *PrinterList() { return printer_list.Head(); }

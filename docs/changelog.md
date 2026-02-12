@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Hardware Button Type: Server Terminal Duplicates and Printer Removal (2026-02-12)**
+  - Fixed bugs in Hardware zone that created duplicate server terminals and incorrectly removed shared printers
+  - **Bug 1: Duplicate Server Terminals**
+    - **Root Cause**: `FindServer()` assumed first terminal was always server but didn't properly search for existing servers or handle loaded settings with incorrect order
+    - **Solution**: Rewrote `FindServer()` to first search for terminal matching display hostname, then existing server terminals, ensure correct terminal is marked as server and moved to front, clear IsServer flags from others, and remove duplicate "Server" named terminals
+    - **Impact**: Server terminals are correctly identified, duplicates are prevented and cleaned up
+  - **Bug 2: Shared Printer Removal**
+    - **Root Cause**: When removing a terminal, associated printer was killed even if other terminals shared the same printer configuration
+    - **Solution**: Added `IsPrinterShared()` method to check if printer is used by multiple terminals, modified `KillRecord()` to only kill printer if not shared
+    - **Impact**: Printers are preserved when shared between terminals, only removed when truly no longer needed
+  - **Files modified**: `main/data/settings.cc`, `main/data/settings.hh`, `zone/hardware_zone.cc`
 - **Hardware Button Type: Simplified Server Display Logic (2026-02-05)**
   - Completely simplified the server display and terminal initialization logic
   - **New Approach**: The FIRST terminal in the list is ALWAYS the server display

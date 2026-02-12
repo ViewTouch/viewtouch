@@ -3920,6 +3920,20 @@ int Settings::Remove(PrinterInfo *pr)
     return printer_list.Remove(pr);
 }
 
+bool Settings::IsPrinterShared(const genericChar* host, int port, TermInfo *exclude)
+{
+    FnTrace("Settings::IsPrinterShared()");
+    for (TermInfo *ti = term_list.Head(); ti != nullptr; ti = ti->next)
+    {
+        if (ti == exclude) continue;
+        if (strcmp(ti->printer_host.Value(), host) == 0 && ti->printer_port == port)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 int Settings::Remove(MoneyInfo *my)
 {
     FnTrace("Settings::Remove(MoneyInfo)");
@@ -4471,51 +4485,93 @@ TermInfo *Settings::FindServer(const genericChar* displaystr)
 {
     FnTrace("Settings::FindServer()");
     TermInfo *ti = term_list.Head();
+    TermInfo *found = nullptr;
 
-    // The first terminal in the list is ALWAYS the server display
-    if (ti != nullptr)
+    // First, look for a terminal matching the displaystr
+    while (ti != nullptr)
     {
-        // Ensure the first terminal is marked as server
-        if (!ti->IsServer())
+        if (strcmp(ti->display_host.Value(), displaystr) == 0)
         {
-            ti->IsServer(1);
+            found = ti;
+            break;
         }
-        
-        // Remove any other terminals that were previously marked as server
-        // and have the default "Server" name (auto-created duplicates)
-        TermInfo *other = ti->next;
-        while (other != nullptr)
-        {
-            TermInfo *next_other = other->next;
-            if (other->IsServer())
-            {
-                other->IsServer(0);
-            }
-            // Remove auto-created "Server" terminals that are duplicates
-            if (strcmp(other->name.Value(), "Server") == 0 && 
-                (other->display_host.empty() || 
-                 strcmp(other->display_host.Value(), displaystr) == 0))
-            {
-                Remove(other);
-                delete other;
-            }
-            other = next_other;
-        }
-        
-        return ti;
+        ti = ti->next;
     }
 
-    // No terminals exist - create the server terminal
-    ti = new TermInfo;
-    ti->name.Set("Server");
-    ti->display_host.Clear();
-    ti->type = TERMINAL_NORMAL;
-    ti->printer_model = 0;
-    ti->printer_port = 0;
-    ti->IsServer(1);
-    AddFront(ti);
-    
-    return ti;
+    // If not found, look for an existing server
+    if (found == nullptr)
+    {
+        ti = term_list.Head();
+        while (ti != nullptr)
+        {
+            if (ti->IsServer())
+            {
+                found = ti;
+                break;
+            }
+            ti = ti->next;
+        }
+    }
+
+    // If still not found, use the first terminal or create one
+    if (found == nullptr)
+    {
+        ti = term_list.Head();
+        if (ti != nullptr)
+        {
+            found = ti;
+        }
+        else
+        {
+            // No terminals exist - create the server terminal
+            found = new TermInfo;
+            found->name.Set("Server");
+            found->display_host.Set(displaystr);
+            found->type = TERMINAL_NORMAL;
+            found->printer_model = 0;
+            found->printer_port = 0;
+            found->IsServer(1);
+            AddFront(found);
+            return found;
+        }
+    }
+
+    // Ensure the found terminal is marked as server and moved to front if not already
+    found->IsServer(1);
+    if (found != term_list.Head())
+    {
+        // Move to front
+        Remove(found);
+        AddFront(found);
+    }
+
+    // Clear IsServer from all others
+    ti = term_list.Head();
+    while (ti != nullptr)
+    {
+        if (ti != found)
+        {
+            ti->IsServer(0);
+        }
+        ti = ti->next;
+    }
+
+    // Remove auto-created duplicate "Server" terminals
+    ti = term_list.Head()->next; // Start from second
+    while (ti != nullptr)
+    {
+        TermInfo *next_ti = ti->next;
+        if (strcmp(ti->name.Value(), "Server") == 0 && 
+            (ti->display_host.empty() || 
+             strcmp(ti->display_host.Value(), displaystr) == 0))
+        {
+            Remove(ti);
+            delete ti;
+        }
+        ti = next_ti;
+    }
+
+    return found;
 }
 
 TermInfo *Settings::FindTerminal(const char* displaystr)
