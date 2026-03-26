@@ -9,6 +9,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - **Remove premade employees (2026-03-25)**: Default installation no longer auto-creates premade employee accounts such as `Manager`, `Server/Cashier`, or `Server`. The system still creates `Super User` and `Editor` (Developer) via the `UserDB` constructor; `Customer` is created on-demand for SelfOrder terminals. This change applies to new installs only and does not modify existing `employee.dat` files.
   - Files modified: `main/data/manager.cc`
 
+### Fixed
+- **Modifiers / Comments ordering (2026-03-26)**: Fixed a bug where adding a modifier after adding a comment would place the modifier above the comment. Modifiers are now explicitly appended after existing comment modifiers so the visible order is:
+  - ITEM
+  - COMMENT
+  - MODIFIER
+  - Files modified: `main/business/check.hh`, `main/business/check.cc`, `zone/order_zone.cc`, `zone/dialog_zone.cc`
+
 
 ## [v25.03.1] - 2025-12-26
 ### Changed

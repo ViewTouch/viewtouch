@@ -5891,6 +5891,49 @@ int Order::Add(std::unique_ptr<Order> order)
     return Add(raw_order);
 }
 
+int Order::AppendModifier(Order *mod)
+{
+    FnTrace("Order::AppendModifier()");
+    if (mod == nullptr)
+        return 1;
+
+    // Clean any previous links on mod to avoid corrupt lists
+    mod->next = NULL;
+    mod->fore = NULL;
+
+    // Find tail of modifier list
+    Order *tail = modifier_list;
+    if (tail)
+    {
+        while (tail->next)
+            tail = tail->next;
+
+        // Ensure call_order keeps appended modifiers after existing ones
+        if (mod->call_order <= tail->call_order)
+        {
+            if (tail->call_order < 255)
+                mod->call_order = tail->call_order + 1;
+            else
+                mod->call_order = tail->call_order;
+        }
+
+        // Attach at tail
+        tail->next = mod;
+        mod->fore = tail;
+        mod->next = NULL;
+    }
+    else
+    {
+        // Empty modifier list -> make mod the first
+        modifier_list = mod;
+        mod->next = NULL;
+        mod->fore = NULL;
+    }
+
+    mod->parent = this;
+    return FigureCost();
+}
+
 int Order::Remove(Order *order)
 {
     FnTrace("Order::Remove()");

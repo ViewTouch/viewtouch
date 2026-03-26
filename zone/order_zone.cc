@@ -2013,7 +2013,7 @@ SignalResult ItemZone::Touch(Terminal *t, int tx, int ty)
         t->order = t->order->parent;
     if (t->order && o->IsModifier())
     {
-        if (t->order->Add(o))
+        if (t->order->AppendModifier(o))
         {
             delete o;
             return SIGNAL_IGNORED;

@@ -3568,8 +3568,8 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
                 comment_order->seat = parent_order->seat;
                 comment_order->page_id = parent_order->page_id;
                 
-                // Add the comment as a modifier to the parent order
-                if (parent_order->Add(comment_order) == 0)
+                // Add the comment as a modifier to the parent order (append)
+                if (parent_order->AppendModifier(comment_order) == 0)
                 {
                     // Successfully added - update totals and display
                     SubCheck *sc = term->check->current_sub;

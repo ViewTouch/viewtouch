@@ -180,6 +180,9 @@ public:
     int        Write(OutputDataFile &df, int version);  // Write order to a file
     int        Add(Order *o);  // Add a modifier order
     int        Add(std::unique_ptr<Order> o);  // Modern C++ version
+    // Append a modifier to the end of this orders modifier_list (preserves
+    // existing comments before other modifiers). Returns 0 on success.
+    int        AppendModifier(Order *o);
     int        Remove(Order *o);  // Removes a modifier order
     int        FigureCost();  // Totals up order
     genericChar* Description(Terminal *t, genericChar* buffer = NULL);  // Returns string with order description
