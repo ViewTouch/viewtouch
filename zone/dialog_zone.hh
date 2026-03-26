@@ -397,6 +397,7 @@ public:
     SignalResult Keyboard(Terminal *term, int kb_key, int state);
 
     int RenderEntry(Terminal *term);
+    
 };
 
 class OrderCommentDialog : public GetTextDialog
@@ -411,6 +412,10 @@ public:
     SignalResult Keyboard(Terminal *term, int kb_key, int state);
 
     int RenderEntry(Terminal *term);
+    // punctuation keys specific to the Order Comment dialog
+    ButtonObj *punctkey[12];
+    // allow punctuation in comments
+    virtual int AddChar(Terminal *term, genericChar val);
 };
 
 
