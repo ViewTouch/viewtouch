@@ -969,106 +969,32 @@ void UserSignal2(int /*my_signal*/)
 static void CreateDefaultUsers(System *sys, Settings *settings)
 {
     FnTrace("CreateDefaultUsers()");
-    
-    // Check if Manager (ID 5) already exists
-    Employee *existing_manager = sys->user_db.FindByID(5);
-    if (existing_manager != nullptr)
-        return;  // Default users already exist
-    
-    // Create Manager (ID 5) with all authorizations
-    Employee *manager = new Employee;
-    if (manager != nullptr)
-    {
-        manager->system_name.Set("Manager");
-        manager->id = 5;
-        manager->key = 5;
-        manager->training = 0;
-        manager->active = 1;
-        
-        JobInfo *j = new JobInfo;
-        if (j != nullptr)
-        {
-            j->job = JOB_MANAGER3;  // Manager job
-            manager->Add(j);
-            
-            // Set job flags for Manager - all authorizations
-            settings->job_active[JOB_MANAGER3] = 1;
-            settings->job_flags[JOB_MANAGER3] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE |
-                                                SECURITY_TRANSFER | SECURITY_REBUILD | SECURITY_COMP |
-                                                SECURITY_SUPERVISOR | SECURITY_MANAGER | SECURITY_EMPLOYEES |
-                                                SECURITY_EXPENSES;
-            
-            sys->user_db.Add(manager);
-        }
-        else
-        {
-            delete manager;
-        }
-    }
-    
-    // Create Server/Cashier with all authorizations except Supervisor, Manager and Employee records
-    Employee *server_cashier = new Employee;
-    if (server_cashier != nullptr)
-    {
-        server_cashier->system_name.Set("Server/Cashier");
-        server_cashier->id = sys->user_db.FindUniqueID();
-        server_cashier->key = sys->user_db.FindUniqueKey();
-        server_cashier->training = 0;
-        server_cashier->active = 1;
-        
-        JobInfo *j = new JobInfo;
-        if (j != nullptr)
-        {
-            j->job = JOB_SERVER2;  // Server & Cashier job
-            server_cashier->Add(j);
-            
-            // Set job flags - all except Supervisor, Manager and Employee records
-            settings->job_active[JOB_SERVER2] = 1;
-            settings->job_flags[JOB_SERVER2] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE |
-                                               SECURITY_TRANSFER | SECURITY_REBUILD | SECURITY_COMP |
-                                               SECURITY_EXPENSES;
-            // Note: Excludes SECURITY_SUPERVISOR, SECURITY_MANAGER, SECURITY_EMPLOYEES
-            
-            sys->user_db.Add(server_cashier);
-        }
-        else
-        {
-            delete server_cashier;
-        }
-    }
-    
-    // Create Server without Settlement authority
-    Employee *server = new Employee;
-    if (server != nullptr)
-    {
-        server->system_name.Set("Server");
-        server->id = sys->user_db.FindUniqueID();
-        server->key = sys->user_db.FindUniqueKey();
-        server->training = 0;
-        server->active = 1;
-        
-        JobInfo *j = new JobInfo;
-        if (j != nullptr)
-        {
-            j->job = JOB_SERVER;  // Server job
-            server->Add(j);
-            
-            // Set job flags - all except Settlement
-            settings->job_active[JOB_SERVER] = 1;
-            settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER |
-                                               SECURITY_TRANSFER | SECURITY_COMP;
-            // Note: Excludes SECURITY_SETTLE
-            
-            sys->user_db.Add(server);
-        }
-        else
-        {
-            delete server;
-        }
-    }
-    
-    // Save user database
-    sys->user_db.Save();
+
+    // Do not create premade Employee accounts on new installs.
+    // Preserve job role defaults so system features remain available,
+    // but do not add Manager/Server/Server-Cashier user records.
+
+    // Activate Manager (JOB_MANAGER3) and set its flags
+    settings->job_active[JOB_MANAGER3] = 1;
+    settings->job_flags[JOB_MANAGER3] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE |
+                                        SECURITY_TRANSFER | SECURITY_REBUILD | SECURITY_COMP |
+                                        SECURITY_SUPERVISOR | SECURITY_MANAGER | SECURITY_EMPLOYEES |
+                                        SECURITY_EXPENSES;
+
+    // Activate Server/Cashier (JOB_SERVER2) and set its flags
+    settings->job_active[JOB_SERVER2] = 1;
+    settings->job_flags[JOB_SERVER2] = SECURITY_TABLES | SECURITY_ORDER | SECURITY_SETTLE |
+                                       SECURITY_TRANSFER | SECURITY_REBUILD | SECURITY_COMP |
+                                       SECURITY_EXPENSES;
+
+    // Activate Server (JOB_SERVER) and set its flags
+    settings->job_active[JOB_SERVER] = 1;
+    settings->job_flags[JOB_SERVER] = SECURITY_TABLES | SECURITY_ORDER |
+                                      SECURITY_TRANSFER | SECURITY_COMP;
+
+    // Leave actual Employee records alone. `super_user` and `developer`
+    // (Editor) are created by UserDB constructor and will remain.
+    return;
 }
 
 int StartSystem(int my_use_net)
