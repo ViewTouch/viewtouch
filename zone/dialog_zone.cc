@@ -3423,7 +3423,8 @@ OrderCommentDialog::OrderCommentDialog(const char* msg, const char* retmsg, int 
     // Make dialog almost full screen width for 1920x1080 displays
     w = 1800;  // Increased from 950 to fit almost all screen width
     // Increase dialog height to accommodate larger keyboard buttons
-    h = 850;  // Increased from 780 to make room for bigger buttons
+    // Make dialog taller so the entry field stays above the keyboard
+    h = 980;  // Increased from 850 to make room for bigger buttons and entry field
     // Increase button height for larger keyboard
     hh = 110;  // Increased from 90 to make buttons bigger
     // Change labels for Done and Cancel buttons
@@ -3436,6 +3437,18 @@ OrderCommentDialog::OrderCommentDialog(const char* msg, const char* retmsg, int 
     {
         cancelkey->SetLabel(GlobalTranslate("Cancel"));
         cancelkey->color = COLOR_RED;
+    }
+
+    // Create punctuation keys specific to the comment dialog
+    {
+        const char *punct_list[12] = {".", ",", "'", "@", "-", "/", ":", "?", ";", "!", "(", ")"};
+        int i;
+        for (i = 0; i < 12; ++i)
+        {
+            punctkey[i] = Button(punct_list[i], punct_list[i]);
+            if (punctkey[i])
+                punctkey[i]->color = COLOR_DK_BLUE;
+        }
     }
 }
 
@@ -3461,8 +3474,9 @@ RenderResult OrderCommentDialog::Render(Terminal *term, int update_flag)
     int kx = 0;
     int kw = 0;
     int ww = w - (border * 2);
-    // Start keyboard higher to accommodate clear/space/backspace and done/cancel rows
-    int ky = y + h - (hh * 6) - border - 8;
+    // Start keyboard higher to accommodate extra punctuation row, clear/space/backspace and done/cancel rows
+    // Use 7 rows baseline so bottom action row fits inside the dialog; we'll compute exact bottom rows later
+    int ky = y + h - (hh * 7) - border - 8;
     int i;
     int col = color[0];
 
@@ -3472,6 +3486,20 @@ RenderResult OrderCommentDialog::Render(Terminal *term, int update_flag)
         kx = (ww * i * 2) / 21;
         kw = ((ww * (i * 2 + 2)) / 21) - kx;
         key[i]->SetRegion(x + border + kx, ky, kw, hh);
+    }
+
+    // punctuation row (comment-only)
+    ky += hh;
+    if (punctkey[0])
+    {
+        int pcount = 12;
+        int j;
+        for (j = 0; j < pcount; ++j)
+        {
+            int px = (ww * j) / pcount;
+            int pkw = ((ww * (j + 1)) / pcount) - px;
+            punctkey[j]->SetRegion(x + border + px, ky, pkw, hh);
+        }
     }
 
     ky += hh;
@@ -3498,29 +3526,31 @@ RenderResult OrderCommentDialog::Render(Terminal *term, int update_flag)
         key[i]->SetRegion(x + border + kx, ky, kw, hh);
     }
 
-    // Layout space, backspace, clear buttons (above keyboard, same as GetTextDialog)
-    ky += hh + 4;
-    kw = ((ww * 6) / 40);
-    clearkey->SetRegion(x + border, ky, kw, hh);
+    // Compute bottom two rows (clear/space/backspace and Done/Cancel) so they fit inside the dialog
+    int enter_top = y + h - border - hh - 4;            // top Y for Done/Cancel row (with small margin)
+    int clear_row_top = enter_top - (hh + 4);           // top Y for clear/space/backspace row
 
-    kx = (ww * 9) / 40;
-    kw = ((ww * 24) / 40) - kx;
-    spacekey->SetRegion(x + border + kx, ky, kw, hh);
+    // Widen spacebar and make backspace more prominent for comment entry
+    kw = ((ww * 5) / 40);
+    clearkey->SetRegion(x + border, clear_row_top, kw, hh);
 
-    kx = (ww * 27) / 40;
-    kw = ((ww * 33) / 40) - kx;
-    bskey->SetRegion(x + border + kx, ky, kw, hh);
+    kx = (ww * 6) / 40;
+    kw = ((ww * 28) / 40) - kx;
+    spacekey->SetRegion(x + border + kx, clear_row_top, kw, hh);
+
+    kx = (ww * 28) / 40;
+    kw = ((ww * 34) / 40) - kx;
+    bskey->SetRegion(x + border + kx, clear_row_top, kw, hh);
 
     // Layout Done and Cancel buttons at the very bottom (below clear/space/backspace)
-    ky += hh + 4;
     kw = (ww * 18) / 40;
     if (enterkey)
-        enterkey->SetRegion(x + border, ky, kw, hh);
-    
+        enterkey->SetRegion(x + border, enter_top, kw, hh);
+
     kx = (ww * 22) / 40;
     kw = (ww * 18) / 40;
     if (cancelkey)
-        cancelkey->SetRegion(x + border + kx, ky, kw, hh);
+        cancelkey->SetRegion(x + border + kx, enter_top, kw, hh);
 
     if (display_string[0] != '\0')
         TextC(term, 1, term->Translate(display_string), col);
@@ -3528,6 +3558,32 @@ RenderResult OrderCommentDialog::Render(Terminal *term, int update_flag)
     buttons.Render(term);
 
     return retval;
+}
+
+int OrderCommentDialog::AddChar(Terminal *term, genericChar val)
+{
+    FnTrace("OrderCommentDialog::AddChar()");
+    static const genericChar* okay = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,'@-/:?;!()";
+
+    if (buffidx >= max_len)
+        return 1;
+
+    genericChar  v = toupper(val);
+    const genericChar* c = okay;
+    while (*c)
+    {
+        if (*c == v)
+        {
+            buffer[buffidx]   = *c;
+            buffidx += 1;
+            buffer[buffidx] = '\0';
+            DrawEntry(term);
+            return 0;
+        }
+        ++c;
+    }
+
+    return 1;
 }
 
 SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* message)

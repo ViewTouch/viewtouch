@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 ### Changed
+- **Add Comment keyboard improvements (2026-03-26)**: Improved ergonomics for the Add Comment dialog while keeping the QWERTY layout — added a punctuation row, widened Space/Backspace/Clear, and increased dialog height so the entry field doesn't overlap the keyboard. Changes are localized to the comment dialog.
+  - Files modified: `zone/dialog_zone.cc`
+
 - **Remove premade employees (2026-03-25)**: Default installation no longer auto-creates premade employee accounts such as `Manager`, `Server/Cashier`, or `Server`. The system still creates `Super User` and `Editor` (Developer) via the `UserDB` constructor; `Customer` is created on-demand for SelfOrder terminals. This change applies to new installs only and does not modify existing `employee.dat` files.
   - Files modified: `main/data/manager.cc`
 
