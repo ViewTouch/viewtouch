@@ -66,14 +66,18 @@ int OrderEntryZone::RenderInit(Terminal *term, int /*update_flag*/)
     FnTrace("OrderEntryZone::RenderInit()");
     Settings *currSettings = term->GetSettings();
 
-    // set size & position
-    int size = page->size - 1;
-    if (currSettings->oewindow[size].IsSet())
+    // set size & position (clamp page size index to settings array bounds)
+    int size_idx = page->size - 1;
+    if (size_idx < 0)
+        size_idx = 0;
+    if (size_idx >= 4)
+        size_idx = 3;
+    if (currSettings->oewindow[size_idx].IsSet())
     {
-        x = currSettings->oewindow[size].x;
-        y = currSettings->oewindow[size].y;
-        w = currSettings->oewindow[size].w;
-        h = currSettings->oewindow[size].h;
+        x = currSettings->oewindow[size_idx].x;
+        y = currSettings->oewindow[size_idx].y;
+        w = currSettings->oewindow[size_idx].w;
+        h = currSettings->oewindow[size_idx].h;
     }
 
     Check *thisCheck = term->check;

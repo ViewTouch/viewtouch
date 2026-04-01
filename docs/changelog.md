@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - **Add Comment keyboard improvements (2026-03-26)**: Improved ergonomics for the Add Comment dialog while keeping the QWERTY layout — added a punctuation row, widened Space/Backspace/Clear, and increased dialog height so the entry field doesn't overlap the keyboard. Changes are localized to the comment dialog.
   - Files modified: `zone/dialog_zone.cc`
 
+- **Comment keyboard font (2026-04-01)**: Set the comment keyboard button font to DejaVu Serif 48 Bold (`FONT_TIMES_48B`) to improve legibility on high-resolution displays.
+  - Files modified: `zone/dialog_zone.cc`
+
 - **Remove premade employees (2026-03-25)**: Default installation no longer auto-creates premade employee accounts such as `Manager`, `Server/Cashier`, or `Server`. The system still creates `Super User` and `Editor` (Developer) via the `UserDB` constructor; `Customer` is created on-demand for SelfOrder terminals. This change applies to new installs only and does not modify existing `employee.dat` files.
   - Files modified: `main/data/manager.cc`
 
@@ -18,6 +21,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - COMMENT
   - MODIFIER
   - Files modified: `main/business/check.hh`, `main/business/check.cc`, `zone/order_zone.cc`, `zone/dialog_zone.cc`
+
+- **GetTextDialog key initialization (2026-04-01)**: Initialize the `key[]` array to NULL in `GetTextDialog` constructors to avoid uninitialized pointer access that could lead to crashes; guard uses of `key[i]` accordingly.
+  - Files modified: `zone/dialog_zone.cc`
+
+- **OrderEntryZone oewindow index clamp (2026-04-01)**: Clamp `page->size - 1` to the valid range before indexing `settings->oewindow` to prevent out-of-bounds access and runtime errors.
+  - Files modified: `zone/order_zone.cc`
 
 
 ## [v25.03.1] - 2025-12-26
