@@ -993,12 +993,18 @@ GetTextDialog::GetTextDialog()
 
     genericChar str[2];
     str[1] = '\0';
+    /* Ensure all key pointers are initialized to NULL to avoid
+       reading uninitialized memory later. */
+    for (i = 0; i < 37; ++i)
+        key[i] = NULL;
+
     genericChar keys[] = "1234567890QWERTYUIOPASDFGHJKLZXCVBNM";
     for (i = 0; i < (int)(sizeof(keys)-1); ++i)
     {
         str[0] = keys[i];
         key[i] = Button(str, str);
-        key[i]->color = COLOR_DK_BLUE;
+        if (key[i])
+            key[i]->color = COLOR_DK_BLUE;
     }
 
     cancelkey = Button(GlobalTranslate("Cancel"), "cancel");
@@ -1027,12 +1033,17 @@ GetTextDialog::GetTextDialog(const char* msg, const char* retmsg, int mlen)
 
     genericChar str[2];
     str[1] = '\0';
+    /* Initialize all key pointers to NULL first. */
+    for (i = 0; i < 37; ++i)
+        key[i] = NULL;
+
     genericChar keys[] = "1234567890QWERTYUIOPASDFGHJKLZXCVBNM";
     for (i = 0; i < (int)(sizeof(keys)-1); ++i)
     {
         str[0] = keys[i];
         key[i] = Button(str, str);
-        key[i]->color = COLOR_DK_BLUE;
+        if (key[i])
+            key[i]->color = COLOR_DK_BLUE;
     }
 
     cancelkey = Button(GlobalTranslate("Cancel"), "cancel");
@@ -3449,6 +3460,23 @@ OrderCommentDialog::OrderCommentDialog(const char* msg, const char* retmsg, int 
             if (punctkey[i])
                 punctkey[i]->color = COLOR_DK_BLUE;
         }
+    }
+
+    // Use a larger bold serif font for the comment keyboard buttons
+    {
+        int i;
+        int kfont = FONT_TIMES_48B; // DejaVu Serif 48 Bold
+        for (i = 0; i < 37; ++i)
+            if (key[i])
+                key[i]->font = kfont;
+        for (i = 0; i < 12; ++i)
+            if (punctkey[i])
+                punctkey[i]->font = kfont;
+        if (clearkey) clearkey->font = kfont;
+        if (spacekey) spacekey->font = kfont;
+        if (bskey)    bskey->font = kfont;
+        if (enterkey) enterkey->font = kfont;
+        if (cancelkey) cancelkey->font = kfont;
     }
 }
 
