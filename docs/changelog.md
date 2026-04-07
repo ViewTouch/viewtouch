@@ -18,6 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Fixed
 - **X11 image creation memory leak fixes (2026-04-07)**: Prevent leaks when `XCreateImage()` fails by allocating image/mask pixel buffers into temporaries and freeing them on error; avoids losing ownership of malloc'd buffers.
   - Files modified: `term/term_view.cc`, `term/layer.cc`
+  
+- **Image loader: prevent integer-overflow and unchecked allocations (2026-04-07)**: Validate image dimensions and check multiplication before allocating pixel/mask buffers to avoid under-allocation and heap overflows; added overflow-checked helpers and safer allocation paths for XImage/mask data.
+  - Files modified: `term/term_view.cc`, `src/utils/safe_math.hh`, `tests/unit/test_safe_math.cc`, `tests/CMakeLists.txt`
 - **Guard MAC printing in ListAddresses (2026-04-07)**: Avoid reading uninitialized interface data when no hardware address is found; print a clear message when no MAC is available.
   - Files modified: `main/data/license_hash.cc`
 - **Modifiers / Comments ordering (2026-03-26)**: Fixed a bug where adding a modifier after adding a comment would place the modifier above the comment. Modifiers are now explicitly appended after existing comment modifiers so the visible order is:

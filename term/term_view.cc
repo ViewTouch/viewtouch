@@ -49,6 +49,8 @@
 
 #include "debug.hh"
 #include "safe_string_utils.hh"
+// Safe multiplication helpers (overflow-checked)
+#include "safe_math.hh"
 #include "term_view.hh"
 #include "term_dialog.hh"
 #include "remote_link.hh"
@@ -77,6 +79,7 @@
 #include <iostream>
 #include <vector>
 #include <numeric>
+#include <limits>
 
 namespace fs = std::filesystem;
 
@@ -90,7 +93,10 @@ namespace Constants {
     constexpr const char* SCREEN_DIR = "/usr/viewtouch/screenshots";  /* where to save screenshots */
     constexpr int TERM_RELOAD_FONTS = 0xA5;
     [[maybe_unused]] constexpr int MAX_TRIES = 8;
-    [[maybe_unused]] constexpr int MAX_XPM_SIZE = 4194304;
+    // Maximum allowed image size in bytes (used for XImage/mask allocations)
+    [[maybe_unused]] constexpr size_t MAX_IMAGE_BYTES = 4194304;
+    // Maximum allowed image dimension (width or height) to avoid huge allocations
+    constexpr int MAX_IMAGE_DIM = 10000;
     [[maybe_unused]] constexpr const char* SCREENSAVER_DIR = VIEWTOUCH_PATH "/dat/screensaver";
     // EXTRA_ICON_WIDTH is defined as macro below, not needed here
     constexpr int MAX_EVENTS_PER_SECOND = 1000;
@@ -2730,6 +2736,9 @@ Xpm *LoadPixmapFile(char* file_name)
  * If checkered background is detected, the image will be converted to RGBA format
  * with alpha channel added.
  ****/
+using vt::safe_math::safe_mul_size_t;
+using vt::safe_math::safe_mul3_size_t;
+
 static bool RemoveCheckeredBackground(png_bytep** row_pointers_ptr, int width, int height, 
                                        int& channels, int& rowbytes)
 {
@@ -2860,14 +2869,35 @@ static bool RemoveCheckeredBackground(png_bytep** row_pointers_ptr, int width, i
     png_bytep* new_row_pointers = nullptr;
     
     if (needs_alpha) {
-        // Allocate new row pointers with alpha channel
-        int new_rowbytes = width * 4;
-        new_row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+        // Sanity checks on dimensions to avoid huge allocations or overflows
+        if (width <= 0 || height <= 0) {
+            fprintf(stderr, "RemoveCheckeredBackground: Invalid image dimensions %dx%d\n", width, height);
+            return false;
+        }
+        if (width > Constants::MAX_IMAGE_DIM || height > Constants::MAX_IMAGE_DIM) {
+            fprintf(stderr, "RemoveCheckeredBackground: Image dimensions too large %dx%d\n", width, height);
+            return false;
+        }
+
+        // Compute new row size (width * 4) safely
+        size_t new_rowbytes = 0;
+        if (!safe_mul_size_t((size_t)width, 4, new_rowbytes)) {
+            fprintf(stderr, "RemoveCheckeredBackground: Row size multiplication overflow %dx4\n", width);
+            return false;
+        }
+
+        // Allocate pointer array safely (sizeof(png_bytep) * height)
+        size_t ptrs_bytes = 0;
+        if (!safe_mul_size_t(sizeof(png_bytep), (size_t)height, ptrs_bytes)) {
+            fprintf(stderr, "RemoveCheckeredBackground: Row pointer array size overflow\n");
+            return false;
+        }
+        new_row_pointers = (png_bytep*)malloc(ptrs_bytes);
         if (!new_row_pointers) {
             fprintf(stderr, "RemoveCheckeredBackground: Cannot allocate new row pointers\n");
             return false;
         }
-        
+
         for (int y = 0; y < height; y++) {
             new_row_pointers[y] = (png_byte*)malloc(new_rowbytes);
             if (!new_row_pointers[y]) {
@@ -2876,7 +2906,7 @@ static bool RemoveCheckeredBackground(png_bytep** row_pointers_ptr, int width, i
                 free(new_row_pointers);
                 return false;
             }
-            
+
             // Copy RGB data and add alpha channel (fully opaque initially)
             for (int x = 0; x < width; x++) {
                 new_row_pointers[y][x * 4 + 0] = row_pointers[y][x * 3 + 0];
@@ -2885,12 +2915,12 @@ static bool RemoveCheckeredBackground(png_bytep** row_pointers_ptr, int width, i
                 new_row_pointers[y][x * 4 + 3] = 255;  // Fully opaque initially
             }
         }
-        
+
         // Update to use new row pointers
         *row_pointers_ptr = new_row_pointers;
         row_pointers = new_row_pointers;
         channels = 4;
-        rowbytes = new_rowbytes;
+        rowbytes = static_cast<int>(new_rowbytes);
     } else if (channels == 4) {
         // Image already has alpha channel - we'll modify it
         // Make sure existing transparent pixels stay transparent
@@ -3037,9 +3067,37 @@ Xpm *LoadPNGFile(const char* file_name)
     int rowbytes = png_get_rowbytes(png_ptr, info_ptr);
     int channels = png_get_channels(png_ptr, info_ptr);
     fprintf(stderr, "LoadPNGFile: Row bytes = %d, channels = %d\n", rowbytes, channels);
+    // Basic sanity checks on dimensions to avoid huge allocations
+    if (width <= 0 || height <= 0) {
+        fprintf(stderr, "LoadPNGFile: Invalid image dimensions %dx%d\n", width, height);
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        fclose(fp);
+        return nullptr;
+    }
+    if (width > Constants::MAX_IMAGE_DIM || height > Constants::MAX_IMAGE_DIM) {
+        fprintf(stderr, "LoadPNGFile: Image dimensions too large %dx%d\n", width, height);
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        fclose(fp);
+        return nullptr;
+    }
 
-    // Allocate image data
-    png_bytep* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
+    // If image is larger than our current window, reject early to avoid huge allocations
+    if (width > WinWidth || height > WinHeight) {
+        fprintf(stderr, "LoadPNGFile: Image too large (%dx%d > %dx%d)\n",
+                width, height, WinWidth, WinHeight);
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        fclose(fp);
+        return nullptr;
+    }
+
+    // Allocate image data (row pointers)
+    if ((size_t)height > std::numeric_limits<size_t>::max() / sizeof(png_bytep)) {
+        fprintf(stderr, "LoadPNGFile: Row pointer array size overflow\n");
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        fclose(fp);
+        return nullptr;
+    }
+    png_bytep* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * (size_t)height);
     if (!row_pointers) {
         fprintf(stderr, "LoadPNGFile: Cannot allocate row pointers\n");
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
@@ -3098,7 +3156,15 @@ Xpm *LoadPNGFile(const char* file_name)
             }
             
             // Create XImage with proper format for the visual
-            char *ximage_data = (char*)malloc((size_t)width * (size_t)height * 4);
+            // Allocate XImage data safely (width * height * 4)
+            size_t ximage_size = 0;
+            char *ximage_data = nullptr;
+            if (safe_mul3_size_t((size_t)width, (size_t)height, 4, ximage_size) &&
+                ximage_size <= static_cast<size_t>(Constants::MAX_IMAGE_BYTES)) {
+                ximage_data = (char*)malloc(ximage_size);
+            } else {
+                ximage_data = nullptr;
+            }
             XImage *ximage = nullptr;
             if (ximage_data) {
                 ximage = XCreateImage(Dis, visual, depth, ZPixmap, 0, ximage_data, width, height, 32, 0);
@@ -3118,17 +3184,23 @@ Xpm *LoadPNGFile(const char* file_name)
                 char *mask_image_data = nullptr;
                 XImage *mask_image = nullptr;
                 if (mask) {
-                    mask_image_data = (char*)malloc(((width + 7) / 8) * (size_t)height);
-                    if (mask_image_data) {
-                        mask_image = XCreateImage(Dis, visual, 1, XYBitmap, 0, mask_image_data,
-                                                   width, height, 8, 0);
-                        if (mask_image) {
-                            // Initialize mask to all transparent
-                            memset(mask_image->data, 0, (width + 7) / 8 * height);
-                        } else {
-                            free(mask_image_data);
-                            mask_image_data = nullptr;
+                    size_t mask_bytes = 0;
+                    size_t mask_row = ((size_t)width + 7) / 8;
+                    if (safe_mul_size_t(mask_row, (size_t)height, mask_bytes) && mask_bytes > 0 && mask_bytes <= static_cast<size_t>(Constants::MAX_IMAGE_BYTES)) {
+                        mask_image_data = (char*)malloc(mask_bytes);
+                        if (mask_image_data) {
+                            mask_image = XCreateImage(Dis, visual, 1, XYBitmap, 0, mask_image_data,
+                                                       width, height, 8, 0);
+                            if (mask_image) {
+                                // Initialize mask to all transparent
+                                memset(mask_image->data, 0, mask_bytes);
+                            } else {
+                                free(mask_image_data);
+                                mask_image_data = nullptr;
+                            }
                         }
+                    } else {
+                        mask_image_data = nullptr;
                     }
                 }
                 
@@ -3243,6 +3315,20 @@ Xpm *LoadJPEGFile(const char* file_name)
     int height = cinfo.output_height;
     int num_components = cinfo.output_components;
 
+    // Basic sanity checks on JPEG dimensions
+    if (width <= 0 || height <= 0) {
+        jpeg_finish_decompress(&cinfo);
+        jpeg_destroy_decompress(&cinfo);
+        fclose(fp);
+        return nullptr;
+    }
+    if (width > Constants::MAX_IMAGE_DIM || height > Constants::MAX_IMAGE_DIM) {
+        jpeg_finish_decompress(&cinfo);
+        jpeg_destroy_decompress(&cinfo);
+        fclose(fp);
+        return nullptr;
+    }
+
     // Allocate image data
     JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)
         ((j_common_ptr) &cinfo, JPOOL_IMAGE, width * num_components, 1);
@@ -3251,7 +3337,13 @@ Xpm *LoadJPEGFile(const char* file_name)
     if (width <= WinWidth && height <= WinHeight) {
         pixmap = XCreatePixmap(Dis, MainWin, width, height, DefaultDepth(Dis, DefaultScreen(Dis)));
 
-        char *jpeg_image_data = (char*)malloc((size_t)width * (size_t)height * 4);
+        // Allocate XImage data safely
+        size_t jpeg_image_size = 0;
+        char *jpeg_image_data = nullptr;
+        if (safe_mul3_size_t((size_t)width, (size_t)height, 4, jpeg_image_size) &&
+            jpeg_image_size <= static_cast<size_t>(Constants::MAX_IMAGE_BYTES)) {
+            jpeg_image_data = (char*)malloc(jpeg_image_size);
+        }
         XImage *ximage = nullptr;
         if (jpeg_image_data) {
             ximage = XCreateImage(Dis, DefaultVisual(Dis, DefaultScreen(Dis)),
@@ -3342,11 +3434,27 @@ Xpm *LoadGIFFile(const char* file_name)
     int width = desc->Width;
     int height = desc->Height;
 
+    // Basic sanity checks on GIF dimensions
+    if (width <= 0 || height <= 0) {
+        DGifCloseFile(gif, NULL);
+        return nullptr;
+    }
+    if (width > Constants::MAX_IMAGE_DIM || height > Constants::MAX_IMAGE_DIM) {
+        DGifCloseFile(gif, NULL);
+        return nullptr;
+    }
+
     Pixmap pixmap = 0;
     if (width <= WinWidth && height <= WinHeight) {
         pixmap = XCreatePixmap(Dis, MainWin, width, height, DefaultDepth(Dis, DefaultScreen(Dis)));
 
-        char *gif_image_data = (char*)malloc((size_t)width * (size_t)height * 4);
+        // Allocate GIF XImage data safely
+        size_t gif_image_size = 0;
+        char *gif_image_data = nullptr;
+        if (safe_mul3_size_t((size_t)width, (size_t)height, 4, gif_image_size) &&
+            gif_image_size <= static_cast<size_t>(Constants::MAX_IMAGE_BYTES)) {
+            gif_image_data = (char*)malloc(gif_image_size);
+        }
         XImage *ximage = nullptr;
         if (gif_image_data) {
             ximage = XCreateImage(Dis, DefaultVisual(Dis, DefaultScreen(Dis)),

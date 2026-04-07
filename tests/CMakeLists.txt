@@ -8,6 +8,7 @@ add_executable(vt_tests
     unit/test_utility.cc
     unit/test_memory_modernization.cc
     unit/test_safe_string_utils.cc
+    unit/test_safe_math.cc
     unit/test_input_validation.cc
     unit/test_enhanced_logging.cc
     unit/test_coupon_calculations.cc
