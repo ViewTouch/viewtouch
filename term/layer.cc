@@ -825,10 +825,14 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
                 const int bytes_per_line =
                     ((draw_w * bits_per_pixel + (bitmap_pad - 1)) / bitmap_pad) * (bitmap_pad / 8);
 
-                XImage *scaled_image = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
-                                                  orig_image->depth, ZPixmap, 0,
-                                                  static_cast<char*>(malloc(static_cast<size_t>(bytes_per_line) * static_cast<size_t>(draw_h))),
-                                                  draw_w, draw_h, bitmap_pad, bytes_per_line);
+                char *scaled_image_data = (char*)malloc((size_t)bytes_per_line * (size_t)draw_h);
+                XImage *scaled_image = nullptr;
+                if (scaled_image_data) {
+                    scaled_image = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
+                                              orig_image->depth, ZPixmap, 0,
+                                              scaled_image_data,
+                                              draw_w, draw_h, bitmap_pad, bytes_per_line);
+                }
 
                 Pixmap scaled_mask = 0;
                 if (scaled_image && scaled_image->data)
@@ -859,30 +863,33 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
                         if (orig_mask)
                         {
                             scaled_mask = XCreatePixmap(dis, pix, draw_w, draw_h, 1);
-                            XImage *scaled_mask_img = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
-                                                                  1, XYBitmap, 0,
-                                                                  static_cast<char*>(malloc((draw_w + 7) / 8 * draw_h)),
-                                                                  draw_w, draw_h, 8, 0);
-                            if (scaled_mask_img && scaled_mask_img->data)
-                            {
-                                memset(scaled_mask_img->data, 0, (draw_w + 7) / 8 * draw_h);
-                                for (int y = 0; y < draw_h; ++y)
-                                {
-                                    for (int x = 0; x < draw_w; ++x)
-                                    {
-                                        int src_x = static_cast<int>(x * inv_scale_x);
-                                        int src_y = static_cast<int>(y * inv_scale_y);
-                                        if (src_x >= img_w) src_x = img_w - 1;
-                                        if (src_y >= img_h) src_y = img_h - 1;
-                                        
-                                        unsigned long mask_pixel = XGetPixel(orig_mask, src_x, src_y);
-                                        XPutPixel(scaled_mask_img, x, y, mask_pixel);
+                            char *scaled_mask_data = (char*)malloc(((draw_w + 7) / 8) * (size_t)draw_h);
+                            XImage *scaled_mask_img = nullptr;
+                            if (scaled_mask_data) {
+                                scaled_mask_img = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
+                                                              1, XYBitmap, 0,
+                                                              scaled_mask_data,
+                                                              draw_w, draw_h, 8, 0);
+                                if (scaled_mask_img && scaled_mask_img->data) {
+                                    memset(scaled_mask_img->data, 0, (draw_w + 7) / 8 * draw_h);
+                                    for (int y = 0; y < draw_h; ++y) {
+                                        for (int x = 0; x < draw_w; ++x) {
+                                            int src_x = static_cast<int>(x * inv_scale_x);
+                                            int src_y = static_cast<int>(y * inv_scale_y);
+                                            if (src_x >= img_w) src_x = img_w - 1;
+                                            if (src_y >= img_h) src_y = img_h - 1;
+                                            
+                                            unsigned long mask_pixel = XGetPixel(orig_mask, src_x, src_y);
+                                            XPutPixel(scaled_mask_img, x, y, mask_pixel);
+                                        }
                                     }
+                                    GC mask_gc = XCreateGC(dis, scaled_mask, 0, NULL);
+                                    XPutImage(dis, scaled_mask, mask_gc, scaled_mask_img, 0, 0, 0, 0, draw_w, draw_h);
+                                    XFreeGC(dis, mask_gc);
+                                    XDestroyImage(scaled_mask_img);
+                                } else {
+                                    if (scaled_mask_data) { free(scaled_mask_data); scaled_mask_data = nullptr; }
                                 }
-                                GC mask_gc = XCreateGC(dis, scaled_mask, 0, NULL);
-                                XPutImage(dis, scaled_mask, mask_gc, scaled_mask_img, 0, 0, 0, 0, draw_w, draw_h);
-                                XFreeGC(dis, mask_gc);
-                                XDestroyImage(scaled_mask_img);
                             }
                             XDestroyImage(orig_mask);
                         }

@@ -3098,24 +3098,37 @@ Xpm *LoadPNGFile(const char* file_name)
             }
             
             // Create XImage with proper format for the visual
-            XImage *ximage = XCreateImage(Dis, visual, depth, ZPixmap, 0,
-                                         (char*)malloc(width * height * 4), width, height, 32, 0);
+            char *ximage_data = (char*)malloc((size_t)width * (size_t)height * 4);
+            XImage *ximage = nullptr;
+            if (ximage_data) {
+                ximage = XCreateImage(Dis, visual, depth, ZPixmap, 0, ximage_data, width, height, 32, 0);
+            }
             if (!ximage) {
                 fprintf(stderr, "LoadPNGFile: Cannot create XImage\n");
+                if (ximage_data) {
+                    free(ximage_data);
+                    ximage_data = nullptr;
+                }
                 XFreePixmap(Dis, pixmap);
                 if (mask) XFreePixmap(Dis, mask);
                 pixmap = 0;
                 mask = 0;
             } else {
                 // Create mask image if needed
+                char *mask_image_data = nullptr;
                 XImage *mask_image = nullptr;
                 if (mask) {
-                    mask_image = XCreateImage(Dis, visual, 1, XYBitmap, 0,
-                                            (char*)malloc((width + 7) / 8 * height), 
-                                            width, height, 8, 0);
-                    if (mask_image) {
-                        // Initialize mask to all transparent
-                        memset(mask_image->data, 0, (width + 7) / 8 * height);
+                    mask_image_data = (char*)malloc(((width + 7) / 8) * (size_t)height);
+                    if (mask_image_data) {
+                        mask_image = XCreateImage(Dis, visual, 1, XYBitmap, 0, mask_image_data,
+                                                   width, height, 8, 0);
+                        if (mask_image) {
+                            // Initialize mask to all transparent
+                            memset(mask_image->data, 0, (width + 7) / 8 * height);
+                        } else {
+                            free(mask_image_data);
+                            mask_image_data = nullptr;
+                        }
                     }
                 }
                 
@@ -3238,28 +3251,43 @@ Xpm *LoadJPEGFile(const char* file_name)
     if (width <= WinWidth && height <= WinHeight) {
         pixmap = XCreatePixmap(Dis, MainWin, width, height, DefaultDepth(Dis, DefaultScreen(Dis)));
 
-        XImage *ximage = XCreateImage(Dis, DefaultVisual(Dis, DefaultScreen(Dis)),
-                                     DefaultDepth(Dis, DefaultScreen(Dis)), ZPixmap, 0,
-                                     (char*)malloc(width * height * 4), width, height, 32, 0);
+        char *jpeg_image_data = (char*)malloc((size_t)width * (size_t)height * 4);
+        XImage *ximage = nullptr;
+        if (jpeg_image_data) {
+            ximage = XCreateImage(Dis, DefaultVisual(Dis, DefaultScreen(Dis)),
+                                 DefaultDepth(Dis, DefaultScreen(Dis)), ZPixmap, 0,
+                                 jpeg_image_data, width, height, 32, 0);
+        }
 
-        // Read and convert JPEG data
+        // Read and convert JPEG data (always consume scanlines, but only write into XImage if available)
         while (cinfo.output_scanline < height) {
             jpeg_read_scanlines(&cinfo, buffer, 1);
             int y = cinfo.output_scanline - 1;
 
-            for (int x = 0; x < width; x++) {
-                unsigned long pixel = 0;
-                if (num_components >= 3) {
-                    pixel = (buffer[0][x*num_components+0] << 16) |
-                           (buffer[0][x*num_components+1] << 8) |
-                           buffer[0][x*num_components+2];
+            if (ximage) {
+                for (int x = 0; x < width; x++) {
+                    unsigned long pixel = 0;
+                    if (num_components >= 3) {
+                        pixel = (buffer[0][x*num_components+0] << 16) |
+                               (buffer[0][x*num_components+1] << 8) |
+                               buffer[0][x*num_components+2];
+                    }
+                    XPutPixel(ximage, x, y, pixel);
                 }
-                XPutPixel(ximage, x, y, pixel);
             }
         }
 
-        XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
-        XDestroyImage(ximage);
+        if (ximage) {
+            XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
+            XDestroyImage(ximage);
+        } else {
+            if (jpeg_image_data) {
+                free(jpeg_image_data);
+                jpeg_image_data = nullptr;
+            }
+            XFreePixmap(Dis, pixmap);
+            pixmap = 0;
+        }
     }
 
     jpeg_finish_decompress(&cinfo);
@@ -3318,9 +3346,13 @@ Xpm *LoadGIFFile(const char* file_name)
     if (width <= WinWidth && height <= WinHeight) {
         pixmap = XCreatePixmap(Dis, MainWin, width, height, DefaultDepth(Dis, DefaultScreen(Dis)));
 
-        XImage *ximage = XCreateImage(Dis, DefaultVisual(Dis, DefaultScreen(Dis)),
-                                     DefaultDepth(Dis, DefaultScreen(Dis)), ZPixmap, 0,
-                                     (char*)malloc(width * height * 4), width, height, 32, 0);
+        char *gif_image_data = (char*)malloc((size_t)width * (size_t)height * 4);
+        XImage *ximage = nullptr;
+        if (gif_image_data) {
+            ximage = XCreateImage(Dis, DefaultVisual(Dis, DefaultScreen(Dis)),
+                                 DefaultDepth(Dis, DefaultScreen(Dis)), ZPixmap, 0,
+                                 gif_image_data, width, height, 32, 0);
+        }
 
         // Convert GIF pixels to X11 pixels
         GifPixelType *gif_pixels = image->RasterBits;
@@ -3332,13 +3364,24 @@ Xpm *LoadGIFFile(const char* file_name)
                 if (color_index < color_map->ColorCount) {
                     GifColorType *color = &color_map->Colors[color_index];
                     unsigned long pixel = (color->Red << 16) | (color->Green << 8) | color->Blue;
-                    XPutPixel(ximage, x, y, pixel);
+                    if (ximage) {
+                        XPutPixel(ximage, x, y, pixel);
+                    }
                 }
             }
         }
 
-        XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
-        XDestroyImage(ximage);
+        if (ximage) {
+            XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
+            XDestroyImage(ximage);
+        } else {
+            if (gif_image_data) {
+                free(gif_image_data);
+                gif_image_data = nullptr;
+            }
+            XFreePixmap(Dis, pixmap);
+            pixmap = 0;
+        }
     }
 
     DGifCloseFile(gif, NULL);

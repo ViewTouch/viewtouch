@@ -253,17 +253,20 @@ int ListAddresses( )
 
     if (success) memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
         
-    printf("ListAddresses mac(%02X:%02X:%02X:%02X:%02X:%02X)\n",
-                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[0],
-                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[1],
-                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[2],
-                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[3],
-                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[4],
-                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[5]
-               );
-        
-        close(sock);  // Critical fix: Close socket before returning
-        return 0;
+    if (success) {
+        printf("ListAddresses mac(%02X:%02X:%02X:%02X:%02X:%02X)\n",
+               (unsigned char)mac_address[0],
+               (unsigned char)mac_address[1],
+               (unsigned char)mac_address[2],
+               (unsigned char)mac_address[3],
+               (unsigned char)mac_address[4],
+               (unsigned char)mac_address[5]);
+    } else {
+        printf("ListAddresses: no MAC address found\n");
+    }
+
+    close(sock);
+    return 0;
 }
 
 /*******
