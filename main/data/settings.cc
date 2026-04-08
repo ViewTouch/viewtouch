@@ -884,7 +884,9 @@ TermInfo::TermInfo()
     stripe_reader = 0;
     kitchen       = 0;
     sound_volume  = 0;
-    display_host.Set("unknown");
+    // Default to empty display host to avoid accidental host collisions
+    // across multiple TermInfo instances (previously was "unknown").
+    display_host.Set("");
     term_hardware = 0;
     isserver      = 0;
     print_workorder = 1;
@@ -994,6 +996,14 @@ int TermInfo::OpenTerm(Control *control_db, int update)
     if (term == nullptr)
         return 1;
 
+    // Diagnostic log: show term creation parameters
+    fprintf(stderr, "DEBUG: TermInfo::OpenTerm - name='%s' display_host='%s' printer_host='%s' printer_model=%d printer_port=%d\n",
+            name.Value() ? name.Value() : "(null)",
+            display_host.Value() ? display_host.Value() : "(null)",
+            printer_host.Value() ? printer_host.Value() : "(null)",
+            printer_model,
+            printer_port);
+
     int flag = UPDATE_TERMINALS;
     term->is_server = IsServer();
     term->name.Set(name);
@@ -1055,10 +1065,14 @@ int TermInfo::OpenTerm(Control *control_db, int update)
 Terminal *TermInfo::FindTerm(Control *control_db)
 {
     FnTrace("TermInfo::FindTerm()");
+    fprintf(stderr, "DEBUG: TermInfo::FindTerm searching for display_host='%s'\n", display_host.Value() ? display_host.Value() : "(null)");
     for (Terminal *term = control_db->TermList(); term != nullptr; term = term->next)
     {
         if (term->host == display_host)
+        {
+            fprintf(stderr, "DEBUG: TermInfo::FindTerm found Terminal %p host='%s'\n", (void*)term, term->host.Value());
             return term;
+        }
     }
     return nullptr;
 }
@@ -1067,9 +1081,24 @@ Printer *TermInfo::FindPrinter(Control *control_db)
 {
     FnTrace("TermInfo::FindPrinter()");
     if (printer_host.size() > 0)
-        return control_db->FindPrinter(printer_host.Value(), printer_port);
+    {
+        fprintf(stderr, "DEBUG: TermInfo::FindPrinter searching for printer_host='%s' port=%d\n", printer_host.Value(), printer_port);
+        Printer *p = control_db->FindPrinter(printer_host.Value(), printer_port);
+        fprintf(stderr, "DEBUG: TermInfo::FindPrinter result %p\n", (void*)p);
+        return p;
+    }
+    else if (display_host.size() > 0)
+    {
+        fprintf(stderr, "DEBUG: TermInfo::FindPrinter falling back to display_host='%s' port=%d\n", display_host.Value(), printer_port);
+        Printer *p = control_db->FindPrinter(display_host.Value(), printer_port);
+        fprintf(stderr, "DEBUG: TermInfo::FindPrinter result %p\n", (void*)p);
+        return p;
+    }
     else
-        return control_db->FindPrinter(display_host.Value(), printer_port);
+    {
+        fprintf(stderr, "DEBUG: TermInfo::FindPrinter no host configured, returning nullptr\n");
+        return nullptr;
+    }
 }
 
 /****
@@ -3855,6 +3884,7 @@ int Settings::Add(TermInfo *ti)
 #ifdef HW_ZONE_DEBUG_MAP
     printf("HWDBG: Settings::Add TermInfo %p, new_count=%d\n", (void*)ti, term_list.Count());
 #endif
+    fprintf(stderr, "DEBUG: Settings::Add(TermInfo) %p new_count=%d\n", (void*)ti, term_list.Count());
     return rv;
 }
 
@@ -3871,6 +3901,7 @@ int Settings::Add(PrinterInfo *pr)
 #ifdef HW_ZONE_DEBUG_MAP
     printf("HWDBG: Settings::Add PrinterInfo %p, new_count=%d\n", (void*)pr, printer_list.Count());
 #endif
+    fprintf(stderr, "DEBUG: Settings::Add(PrinterInfo) %p new_count=%d\n", (void*)pr, printer_list.Count());
     return rv;
 }
 
@@ -4604,11 +4635,16 @@ TermInfo *Settings::FindTerminal(const char* displaystr)
 
     while (ti != nullptr && retti == nullptr)
     {
-        if (strcmp(displaystr, ti->display_host.Value()) == 0)
+        const char *host = ti->display_host.Value();
+        // Avoid matching empty host strings to prevent accidental collisions
+        // between multiple unconfigured TermInfo entries.
+        if (displaystr && displaystr[0] != '\0' && host && host[0] != '\0' && strcmp(displaystr, host) == 0)
             retti = ti;
         else
             ti = ti->next;
     }
+
+    fprintf(stderr, "DEBUG: Settings::FindTerminal('%s') -> %p\n", displaystr ? displaystr : "(null)", (void*)retti);
 
     return retti;
 }
@@ -4616,13 +4652,17 @@ TermInfo *Settings::FindTerminal(const char* displaystr)
 TermInfo *Settings::FindTermByRecord(int record)
 {
     FnTrace("Settings::FindTermByRecord()");
-    return term_list.Index(record);
+    TermInfo *ret = term_list.Index(record);
+    fprintf(stderr, "DEBUG: Settings::FindTermByRecord(%d) -> %p\n", record, (void*)ret);
+    return ret;
 }
 
 PrinterInfo *Settings::FindPrinterByRecord(int record)
 {
     FnTrace("Settings::FindPrinterByRecord()");
-    return printer_list.Index(record);
+    PrinterInfo *ret = printer_list.Index(record);
+    fprintf(stderr, "DEBUG: Settings::FindPrinterByRecord(%d) -> %p\n", record, (void*)ret);
+    return ret;
 }
 
 PrinterInfo *Settings::FindPrinterByType(int type)

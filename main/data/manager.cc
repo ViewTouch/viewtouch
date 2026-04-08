@@ -2435,6 +2435,7 @@ Printer *Control::NewPrinter(const char* host, int port, int model)
 #ifdef HW_ZONE_DEBUG_MAP
     printf("HWDBG: Control::NewPrinter(created) %p host=%s port=%d model=%d\n", (void*)p, host ? host : "(null)", port, model);
 #endif
+    fprintf(stderr, "DEBUG: Control::NewPrinter(host=%s port=%d model=%d) -> %p\n", host ? host : "(null)", port, model, (void*)p);
     return p;
 }
 
@@ -2450,6 +2451,7 @@ Printer *Control::NewPrinter(const char* term_name, const char* host, int port, 
 #ifdef HW_ZONE_DEBUG_MAP
     printf("HWDBG: Control::NewPrinter(term_name=%s) created %p host=%s port=%d model=%d\n", term_name ? term_name : "(null)", (void*)p, host ? host : "(null)", port, model);
 #endif
+    fprintf(stderr, "DEBUG: Control::NewPrinter(term_name=%s host=%s port=%d model=%d) -> %p\n", term_name ? term_name : "(null)", host ? host : "(null)", port, model, (void*)p);
     return p;
 }
 

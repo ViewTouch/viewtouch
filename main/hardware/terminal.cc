@@ -7433,6 +7433,10 @@ int CloneTerminal(Terminal *term, const char* dest, const char* name)
         new_term->buffer_in = nullptr;
         new_term->buffer_out = nullptr;
         new_term->host.Set(name);
+        // Register the clone's socket with the original terminal's
+        // input handler. Clones share the primary terminal's input
+        // buffer, so TermCB expects the primary `term` as client_data
+        // and will map the file descriptor to the correct clone.
         new_term->input_id = AddInputFn((InputFn) TermCB, new_term->socket_no, term);
         term->AddClone(new_term);
     }
