@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -32,12 +32,12 @@ public:
     PhraseZone();
 
     // Member Functions
-    int          Type() { return ZONE_PHRASE; }
-    RenderResult Render(Terminal *t, int update_flag);
+    int          Type() override { return ZONE_PHRASE; }
+    RenderResult Render(Terminal *t, int update_flag) override;
 
-    int LoadRecord(Terminal *t, int record);
-    int SaveRecord(Terminal *t, int record, int write_file);
-    int RecordCount(Terminal *t);
+    int LoadRecord(Terminal *t, int record) override;
+    int SaveRecord(Terminal *t, int record, int write_file) override;
+    int RecordCount(Terminal *t) override;
 };
 
 #endif

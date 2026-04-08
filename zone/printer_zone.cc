@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -79,6 +79,8 @@ RenderResult PrintTargetZone::Render(Terminal *t, int update_flag)
 int PrintTargetZone::LoadRecord(Terminal *t, int record)
 {
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return 1;
     FormField *f = FieldList();
     int z = 0;
     
@@ -95,6 +97,8 @@ int PrintTargetZone::LoadRecord(Terminal *t, int record)
 int PrintTargetZone::SaveRecord(Terminal *t, int record, int write_file)
 {
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return 1;
     FormField *f = FieldList();
     int z = 0;
     
@@ -127,7 +131,7 @@ public:
 
     // Member Functions
     bool IsValid(Terminal *t);
-    int Render(Terminal *t);
+    int Render(Terminal *t) override;
 };
 
 // Constructor
@@ -186,8 +190,8 @@ public:
     KitchenObj(Control *db, int no);
 
     // Member Functions
-    int Layout(Terminal *t, int lx, int ly, int lw, int lh);
-    int Render(Terminal *t);
+    int Layout(Terminal *t, int lx, int ly, int lw, int lh) override;
+    int Render(Terminal *t) override;
 };
 
 // Constructor
@@ -195,7 +199,7 @@ KitchenObj::KitchenObj(Control *db, int no)
 {
     number = no;
 
-    for (Terminal *t = db->TermList(); t != NULL; t = t->next)
+    for (Terminal *t = db->TermList(); t != nullptr; t = t->next)
         if (t->kitchen == no)
             terms.Add(new TermObj(t));
 }
@@ -257,7 +261,7 @@ int KitchenObj::Render(Terminal *t)
 // Member Functions
 RenderResult SplitKitchenZone::Render(Terminal *t, int update_flag)
 {
-    RenderZone(t, NULL, update_flag);
+    RenderZone(t, nullptr, update_flag);
     if (update_flag)
     {
         kitchens.Purge();
@@ -274,7 +278,7 @@ RenderResult SplitKitchenZone::Render(Terminal *t, int update_flag)
 
 SignalResult SplitKitchenZone::Signal(Terminal *t, const genericChar* message)
 {
-    static const genericChar* commands[] = {"cancel", NULL};
+    static const genericChar* commands[] = {"cancel", nullptr};
 
     int idx = CompareList(message, commands);
     switch (idx)
@@ -374,6 +378,8 @@ RenderResult ReceiptSetZone::Render(Terminal *t, int update_flag)
 int ReceiptSetZone::LoadRecord(Terminal *t, int my_record_no)
 {
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return 1;
     FormField *f = FieldList();
     f->Set(s->receipt_header[0]); f = f->next;
     f->Set(s->receipt_header[1]); f = f->next;
@@ -390,6 +396,8 @@ int ReceiptSetZone::LoadRecord(Terminal *t, int my_record_no)
 int ReceiptSetZone::SaveRecord(Terminal *t, int my_record_no, int write_file)
 {
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return 1;
     FormField *f = FieldList();
     f->Get(s->receipt_header[0]); f = f->next;
     f->Get(s->receipt_header[1]); f = f->next;

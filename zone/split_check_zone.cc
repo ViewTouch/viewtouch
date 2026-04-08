@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -21,6 +21,7 @@
 #include "split_check_zone.hh"
 #include "terminal.hh"
 #include "check.hh"
+#include "src/utils/cpp23_utils.hh"
 #include "image_data.hh"
 #include "settings.hh"
 #include "labels.hh"
@@ -45,39 +46,31 @@ public:
     int    seat;
 
     // Constructors
-    ItemObj(Order *o);
-    ItemObj(int seat_no);
+    ItemObj(Order *o, int font_id = FONT_DEFAULT);
+    ItemObj(int seat_no, int font_id = FONT_DEFAULT);
 
     // Member Function
-    int Render(Terminal *t);
+    int Render(Terminal *t) override;
 };
 
 // Constructors
-ItemObj::ItemObj(Order *o)
+ItemObj::ItemObj(Order *o, int font_id)
 {
     FnTrace("ItemObj::ItemObj()");
     order = o;
     seat = -1;
-    w = 196;
-    h = 40;
-
-    if (o)
-    {
-        Order *mod = o->modifier_list;
-        while (mod)
-        {
-            h += 20;
-            mod = mod->next;
-        }
-    }
+    w = 280;
+    h = 80;
+    font = font_id;
 }
 
-ItemObj::ItemObj(int seat_no)
+ItemObj::ItemObj(int seat_no, int font_id)
 {
-    order = NULL;
+    order = nullptr;
     seat = seat_no;
-    w = 84;
-    h = 84;
+    w = 150;
+    h = 168;
+    font = font_id;
 }
 
 // Member Functions
@@ -85,51 +78,20 @@ int ItemObj::Render(Terminal *t)
 {
     FnTrace("ItemObj::Render()");
     genericChar str[STRLENGTH];
-    genericChar str2[STRLENGTH];
+
+    int frame_type = selected ? ZF_DOUBLE : ZF_RAISED;
+    int texture = selected ? IMAGE_YELLOW_TEXTURE : IMAGE_SAND;
+    t->RenderButton(x, y, w, h, frame_type, texture);
 
     if (seat >= 0)
     {
-        // Render Seat Item
-        if (selected)
-            t->RenderButton(x, y, w, h, ZF_RAISED, IMAGE_LIT_SAND);
-        else
-            t->RenderButton(x, y, w, h, ZF_RAISED, IMAGE_WOOD);
-
         SeatName(seat, str);
-        t->RenderText(str, x + (w/2), y + 22, COLOR_WHITE,
-                      FONT_TIMES_34B, ALIGN_CENTER);
+        t->RenderText(str, x + (w/2), y + (h/2), COLOR_BLACK, font, ALIGN_CENTER);
     }
     else if (order)
     {
-        // Render Order Item
-        if (selected)
-            t->RenderButton(x, y, w, h, ZF_RAISED, IMAGE_LIT_SAND);
-        else
-            t->RenderButton(x, y, w, h, ZF_RAISED, IMAGE_SAND);
-
-        int col = COLOR_DK_BLUE;
-        if (order->status & ORDER_SENT)
-            col = COLOR_BLACK;
-
-        int ty = y + 8;
         order->Description(t, str);
-        if (order->item_type == ITEM_POUND)
-        {
-            snprintf(str2, STRLENGTH, "%s %.2f %s", str,
-                     order->count / 100.0, t->Translate("Lb."));
-            vt_safe_string::safe_copy(str, STRLENGTH, str2);
-        }
-
-        t->RenderText(str, x + 8, ty, col, FONT_TIMES_20, ALIGN_LEFT, w - 12);
-
-        Order *mod = order->modifier_list;
-        while (mod)
-        {
-            ty += 20;
-            mod->Description(t, str);
-            t->RenderText(str, x + 24, ty, col, FONT_TIMES_20, ALIGN_LEFT, w - 28);
-            mod = mod->next;
-        }
+        t->RenderText(str, x + 8, y + (h/2), COLOR_BLACK, font, ALIGN_LEFT);
     }
     return 0;
 }
@@ -144,25 +106,26 @@ public:
     SubCheck *sub;
 
     // Constructor
-    CheckObj(SubCheck *sc, int seat_mode = 0);
+    CheckObj(SubCheck *sc, int seat_mode = 0, int font_id = FONT_DEFAULT);
 
     // Member Functions
-    int   Layout(Terminal *t, int lx, int ly, int lw, int lh);
-    int   Render(Terminal *t);
+    int   Layout(Terminal *t, int lx, int ly, int lw, int lh) override;
+    int   Render(Terminal *t) override;
     void *Data() { return sub; }
 };
 
 // Constructor
-CheckObj::CheckObj(SubCheck *sc, int seat_mode)
+CheckObj::CheckObj(SubCheck *sc, int seat_mode, int font_id)
 {
     FnTrace("CheckObj::CheckObj()");
     sub       = sc;
     page      = 0;
     max_pages = 0;
     active    = 0;
+    font      = font_id;
     int i;
 
-    if (sc == NULL)
+    if (sc == nullptr)
         return;
 
     if (seat_mode)
@@ -173,7 +136,7 @@ CheckObj::CheckObj(SubCheck *sc, int seat_mode)
             seat_count[i] = 0;
 
         // count orders per seat
-        for (Order *o = sc->OrderList(); o != NULL; o = o->next)
+        for (Order *o = sc->OrderList(); o != nullptr; o = o->next)
         {
             if (o->seat >= 0 && o->seat < 32)
                 ++seat_count[o->seat];
@@ -183,21 +146,21 @@ CheckObj::CheckObj(SubCheck *sc, int seat_mode)
         for (i = 0; i < 32; ++i)
         {
             if (seat_count[i] > 0)
-                items.Add(new ItemObj(i));  // Add new seat item
+                items.Add(new ItemObj(i, font_id));  // Add new seat item
         }
     }
     else
     {
-        for (Order *o = sc->OrderList(); o != NULL; o = o->next)
+        for (Order *o = sc->OrderList(); o != nullptr; o = o->next)
         {
             if (o->item_type == ITEM_POUND)
             {
-                items.Add(new ItemObj(o));
+                items.Add(new ItemObj(o, font_id));
             }
             else
             {
                 for (i = 0; i < o->count; ++i)
-                    items.Add(new ItemObj(o));
+                    items.Add(new ItemObj(o, font_id));
             }
         }
     }
@@ -254,45 +217,26 @@ int CheckObj::Layout(Terminal *t, int lx, int ly, int lw, int lh)
 int CheckObj::Render(Terminal *t)
 {
     FnTrace("CheckObj::Render()");
-    Page *p = t->page;
-    t->RenderButton(x, y, w, h, p->default_frame[0], p->default_texture[0]);
 
-    if (page >= max_pages)
-        page = 0;
+    t->RenderButton(x, y, w, h, ZF_DOUBLE, IMAGE_SAND);
 
     genericChar str[256];
-    if (sub)
+    if (sub) {
         vt_safe_string::safe_format(str, 256, "%s %d", t->Translate("Check"), sub->number);
-    else
-        vt_safe_string::safe_copy(str, 256, GlobalTranslate("Blank Check"));
+        t->RenderText(str, x + (w/2), y + 20, COLOR_BLACK, font, ALIGN_CENTER);
 
-    t->RenderText(str, x + (w/2), y + 16, COLOR_BLACK,
-                  FONT_TIMES_20B, ALIGN_CENTER);
-
-    if (sub)
-    {
-        int hh = y + h - 44;
-        int tax = sub->TotalTax();
-        if (tax > 0)
-        {
-            t->RenderText(t->FormatPrice(tax), x + w - 8, hh, COLOR_BLACK,
-                          FONT_TIMES_20, ALIGN_RIGHT);
-            t->RenderText(t->Translate("Tax"), x + w - 80, hh, COLOR_BLACK,
-                          FONT_TIMES_20, ALIGN_RIGHT);
-            hh += 20;
+        // Show tax amount above total if there's tax
+        int tax_amount = sub->TotalTax();
+        if (tax_amount > 0) {
+            vt_safe_string::safe_format(str, 256, "%s %s", t->Translate("Tax"), t->FormatPrice(tax_amount));
+            t->RenderText(str, x + (w/2), y + h - 64, COLOR_BLACK, FONT_TIMES_20B, ALIGN_CENTER);
         }
 
-        t->RenderText(t->FormatPrice(sub->total_sales + tax), x + w - 8, hh,
-                      COLOR_BLACK, FONT_TIMES_20, ALIGN_RIGHT);
-        t->RenderText(t->Translate("Total"), x + w - 80, hh, COLOR_BLACK,
-                      FONT_TIMES_20, ALIGN_RIGHT);
-
-        if (max_pages > 1)
-            t->RenderText(t->PageNo(page + 1, max_pages), x + 8, y + h - 24,
-                          COLOR_RED, FONT_TIMES_20);
+        t->RenderText(t->FormatPrice(sub->total_cost), x + (w/2), y + h - 40, COLOR_BLACK, FONT_TIMES_20B, ALIGN_CENTER);
+    } else {
+        t->RenderText(t->Translate("New Check"), x + (w/2), y + (h/2), COLOR_GRAY, font, ALIGN_CENTER);
     }
 
-    // Render Items
     items.Render(t);
     return 0;
 }
@@ -303,11 +247,18 @@ int CheckObj::Render(Terminal *t)
 RenderResult SplitCheckZone::Render(Terminal *t, int update_flag)
 {
     FnTrace("SplitCheckZone::Render()");
-    RenderZone(t, NULL, update_flag);
-    if (t->check == NULL || t->check->SubList() == NULL)
+    RenderZone(t, nullptr, update_flag);
+
+    if (t->check == nullptr || t->check->SubList() == nullptr)
+    {
+        t->RenderText(t->Translate("Add items to your order first"), x + (w/2), y + (h/2), COLOR_BLACK, font, ALIGN_CENTER);
         return RENDER_OKAY;
+    }
 
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return RENDER_ERROR;
+
     if (update_flag)
     {
         start_check = 0;
@@ -317,8 +268,13 @@ RenderResult SplitCheckZone::Render(Terminal *t, int update_flag)
         CreateChecks(t);
     }
 
+    // Render instruction header
+    RenderInstructions(t);
+
+    // Render checks
     LayoutChecks(t);
     checks.Render(t);
+
     return RENDER_OKAY;
 }
 
@@ -327,13 +283,15 @@ SignalResult SplitCheckZone::Signal(Terminal *t, const genericChar* message)
     FnTrace("SplitCheckZone::Signal()");
     static const genericChar* commands[] = {
         "change view", "print", "split by seat", "merge", "next", "prior",
-        "amount ", NULL};
+        "amount ", nullptr};
 
     Check *c = t->check;
-    if (c == NULL)
+    if (c == nullptr)
         return SIGNAL_IGNORED;
 
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return SIGNAL_IGNORED;
     int subs;
     int error = 1;
     int idx = CompareListN(commands, message);
@@ -398,19 +356,19 @@ SignalResult SplitCheckZone::Signal(Terminal *t, const genericChar* message)
         }
         break;
     case 6:  // amount
-        if (from_check != NULL && to_check != NULL && item_object != NULL)
+        if (from_check != nullptr && to_check != nullptr && item_object != nullptr)
         {
             int last = 0;
-            if (to_check->sub == NULL)
+            if (to_check->sub == nullptr)
             {
                 last = 1;
                 to_check->sub = t->check->NewSubCheck();
             }
             amount = atoi(&message[7]);
             to_check->sub->Add(from_check->sub->RemoveCount(item_object->order, amount));
-            from_check = NULL;
-            to_check = NULL;
-            item_object = NULL;
+            from_check = nullptr;
+            to_check = nullptr;
+            item_object = nullptr;
             t->check->Update(s);
             if (last)
                 start_check = t->check->SubCount();
@@ -428,9 +386,9 @@ SignalResult SplitCheckZone::Signal(Terminal *t, const genericChar* message)
 SignalResult SplitCheckZone::Touch(Terminal *t, int tx, int ty)
 {
     FnTrace("SplitCheckZone::Touch()");
-    if (t->check == NULL)
+    if (t->check == nullptr)
         return SIGNAL_IGNORED;
-  
+
     ZoneObject *zo = checks.Find(tx, ty);
     if (zo)
     {
@@ -461,17 +419,17 @@ int SplitCheckZone::CreateChecks(Terminal *t)
     FnTrace("SplitCheckZone::CreateChecks()");
     checks.Purge();
     Check *check = t->check;
-    if (check == NULL || check->SubList() == NULL)
+    if (check == nullptr || check->SubList() == nullptr)
         return 1;
 
-    for (SubCheck *sc = check->SubList(); sc != NULL; sc = sc->next)
+    for (SubCheck *sc = check->SubList(); sc != nullptr; sc = sc->next)
     {
         if (sc->status == CHECK_OPEN)
-            checks.Add(new CheckObj(sc, seat_mode));
+            checks.Add(new CheckObj(sc, seat_mode, font));
     }
 
     // Add Blank Check
-    checks.Add(new CheckObj(NULL));
+    checks.Add(new CheckObj(nullptr, 0, font));
     return 0;
 }
 
@@ -506,14 +464,14 @@ int SplitCheckZone::LayoutChecks(Terminal *t)
 
         zo->active = 1;
         int lw;
-        if (zo->next == NULL)
+        if (zo->next == nullptr)
             lw = w - cx - border;
         else
             lw = cw;
         zo->Layout(t, cx, cy, lw, ch);
         cx += cw;
         zo = zo->next;
-        if (zo == NULL)
+        if (zo == nullptr)
             break;
     }
     return 0;
@@ -524,7 +482,7 @@ int SplitCheckZone::MoveItems(Terminal *t, CheckObj *target, int move_amount)
     FnTrace("SplitCheckZone::MoveItems()");
     TenKeyDialog *dialog;
 
-    if (target == NULL)
+    if (target == nullptr)
         return 1;
     target->items.SetSelected(0);
 
@@ -543,7 +501,7 @@ int SplitCheckZone::MoveItems(Terminal *t, CheckObj *target, int move_amount)
     }
 
     int last = 0;
-    if (target->sub == NULL)
+    if (target->sub == nullptr)
     {
         // target is blankcheck area - create new sub check for moved items
         last = 1;
@@ -598,7 +556,8 @@ int SplitCheckZone::MoveItems(Terminal *t, CheckObj *target, int move_amount)
     }
 
     Settings *s = t->GetSettings();
-    t->check->Update(s);
+    if (s != nullptr)
+        t->check->Update(s);
     if (last)
         start_check = t->check->SubCount();
     CreateChecks(t);
@@ -607,15 +566,21 @@ int SplitCheckZone::MoveItems(Terminal *t, CheckObj *target, int move_amount)
     return 0;
 }
 
+void SplitCheckZone::RenderInstructions(Terminal *t)
+{
+    FnTrace("SplitCheckZone::RenderInstructions()");
+    t->RenderText(t->Translate("Select items, then tap destination check"), x + (w/2), y + 25, COLOR_BLACK, font, ALIGN_CENTER);
+}
+
 int SplitCheckZone::PrintReceipts(Terminal *t)
 {
     FnTrace("SplitCheckZone::PrintReceipts()");
     Check *c = t->check;
-    if (c == NULL)
+    if (c == nullptr)
         return 1;
 
     Printer *p = t->FindPrinter(PRINTER_RECEIPT);
-    for (SubCheck *sc = c->SubList(); sc != NULL; sc = sc->next)
+    for (SubCheck *sc = c->SubList(); sc != nullptr; sc = sc->next)
         if (sc->status == CHECK_OPEN)
             sc->PrintReceipt(t, c, p);
     return 0;
@@ -634,8 +599,8 @@ public:
     PrintTargetObj(Terminal *t, Check *c, int printer_id);
 
     // Member Functions
-    int Render(Terminal *t);
-    int Layout(Terminal *t, int lx, int ly, int lw, int lh);
+    int Render(Terminal *t) override;
+    int Layout(Terminal *t, int lx, int ly, int lw, int lh) override;
 };
 
 // Constructors
@@ -648,13 +613,13 @@ PrintTargetObj::PrintTargetObj(Terminal *t, Check *c, int printer_id)
 
     int pid;
     Settings *s = t->GetSettings();
-    for (SubCheck *sc = c->SubList(); sc != NULL; sc = sc->next)
-        for (Order *o = sc->OrderList(); o != NULL; o = o->next)
+    for (SubCheck *sc = c->SubList(); sc != nullptr; sc = sc->next)
+        for (Order *o = sc->OrderList(); o != nullptr; o = o->next)
             if (!(o->status & ORDER_SENT))
             {
                 pid = o->printer_id;
                 if (pid == PRINTER_DEFAULT)
-                    pid = o->FindPrinterID(s);
+                    pid = (s != nullptr) ? o->FindPrinterID(s) : 0;
                 if (pid == printer_id)
                     for (int i = 0; i < o->count; ++i)
                         items.Add(new ItemObj(o));
@@ -725,12 +690,14 @@ int PrintTargetObj::Layout(Terminal *t, int lx, int ly, int lw, int lh)
 RenderResult ItemPrintTargetZone::Render(Terminal *t, int update_flag)
 {
     FnTrace("ItemPrintTargetZone::Render()");
-    RenderZone(t, NULL, update_flag);
+    RenderZone(t, nullptr, update_flag);
     Check *c = t->check;
-    if (c == NULL)
+    if (c == nullptr)
         return RENDER_OKAY;
 
     Settings *s = t->GetSettings();
+    if (s == nullptr)
+        return RENDER_ERROR;
     if (update_flag)
     {
         targets.Purge();
@@ -745,8 +712,10 @@ RenderResult ItemPrintTargetZone::Render(Terminal *t, int update_flag)
                 if (pi->name.size() > 0)
                     pto->name.Set(pi->name);
                 else
-                    pto->name.Set(FindStringByValue(pi->type, PrinterTypeValue,
-                                                    PrinterTypeName, UnknownStr));
+                    pto->name.Set(FindStringByValue(pi->type,
+                                                    const_cast<int*>(PrinterTypeValue.data()),
+                                                    const_cast<const genericChar**>(PrinterTypeName.data()),
+                                                    UnknownStr));
                 if (pto->items.Count() > 0 || pi->type == PRINTER_KITCHEN1)
                     targets.Add(pto);
                 else
@@ -784,7 +753,7 @@ RenderResult ItemPrintTargetZone::Render(Terminal *t, int update_flag)
 SignalResult ItemPrintTargetZone::Signal(Terminal *t, const genericChar* message)
 {
     FnTrace("ItemPrintTargetZone::Signal()");
-    static const genericChar* commands[] = {"final", "reset", NULL};
+    static const genericChar* commands[] = {"final", "reset", nullptr};
     int idx = CompareList(message, commands);
     switch (idx)
     {
@@ -817,7 +786,7 @@ SignalResult ItemPrintTargetZone::Signal(Terminal *t, const genericChar* message
 SignalResult ItemPrintTargetZone::Touch(Terminal *t, int tx, int ty)
 {
     FnTrace("ItemPrintTargetZone::Touch()");
-    if (t->check == NULL)
+    if (t->check == nullptr)
         return SIGNAL_IGNORED;
 
     ZoneObject *zo = empty_targets.Find(tx, ty);
@@ -855,7 +824,7 @@ SignalResult ItemPrintTargetZone::Touch(Terminal *t, int tx, int ty)
 int ItemPrintTargetZone::MoveItems(Terminal *t, PrintTargetObj *target)
 {
     FnTrace("ItemPrintTargetZone::MoveItems()");
-    if (target == NULL)
+    if (target == nullptr)
         return 1;
 
     int count = 0;

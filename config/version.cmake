@@ -7,8 +7,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/gen_compiler_tag.cmake)
 set(PROJECT_IDENTIFIER ${TOP_PROJECT_UPPER})
 
 # The version number.
-set (ViewTouch_VERSION_MAJOR 25)
-set (ViewTouch_VERSION_MINOR 03)
+set (ViewTouch_VERSION_MAJOR 26)
+set (ViewTouch_VERSION_MINOR 0)
 set (ViewTouch_VERSION_PATCH  1)
 
 # generate short version string <MAJOR>.<MINOR>.<PATCH>

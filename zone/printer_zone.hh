@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -35,12 +35,12 @@ public:
     PrintTargetZone();
 
     // Member Functions
-    int          Type() { return ZONE_PRINT_TARGET; }
+    int          Type() override { return ZONE_PRINT_TARGET; }
     int          AddFields();
-    RenderResult Render(Terminal *t, int update_flag);
+    RenderResult Render(Terminal *t, int update_flag) override;
 
-    int LoadRecord(Terminal *t, int record);
-    int SaveRecord(Terminal *t, int record, int write_file);
+    int LoadRecord(Terminal *t, int record) override;
+    int SaveRecord(Terminal *t, int record, int write_file) override;
 };
 
 class SplitKitchenZone : public PosZone
@@ -49,11 +49,11 @@ class SplitKitchenZone : public PosZone
 
 public:
     // Member Functions
-    int          Type() { return ZONE_SPLIT_KITCHEN; }
-    RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar* message);
-    SignalResult Touch(Terminal *t, int tx, int ty);
-    int          ZoneStates() { return 1; }
+    int          Type() override { return ZONE_SPLIT_KITCHEN; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Signal(Terminal *t, const genericChar* message) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    int          ZoneStates() override { return 1; }
 
     int MoveTerms(Terminal *t, int no);
 };
@@ -65,11 +65,11 @@ public:
     ReceiptSetZone();
 
     // Member Functions
-    int          Type() { return ZONE_RECEIPT_SET; }
-    RenderResult Render(Terminal *t, int update_flag);
+    int          Type() override { return ZONE_RECEIPT_SET; }
+    RenderResult Render(Terminal *t, int update_flag) override;
 
-    int LoadRecord(Terminal *t, int record);
-    int SaveRecord(Terminal *t, int record, int write_file);
+    int LoadRecord(Terminal *t, int record) override;
+    int SaveRecord(Terminal *t, int record, int write_file) override;
 };
 
 #endif

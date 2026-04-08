@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -30,12 +30,12 @@
 
 /**** Module Data ****/
 static const genericChar* TimeZoneName[] = {
-    "Eastern", "Central", "Mountain", "Pacific", NULL};
+    "Eastern", "Central", "Mountain", "Pacific", nullptr};
 static int TimeZoneValue[] = {
     705, 706, 707, 708, -1};
 
 static const genericChar* LanguageName[] = {
-    "U.S. English", "Spanish", "Portuguese", NULL};
+    "U.S. English", "Spanish", "Portuguese", nullptr};
 static int LanguageValue[] = {
     0, 1, 2, -1};
 
@@ -71,14 +71,23 @@ int MerchantZone::LoadRecord(Terminal *t, int my_record_no)
 {
     Settings *s = t->GetSettings();
     FormField *f = FieldList();
+    if (!f) return -1;
     f->Set(s->visanet_acquirer_bin); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_merchant); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_store); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_terminal); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_currency); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_country); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_city); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_language); f = f->next;
+    if (!f) return -1;
     f->Set(s->visanet_timezone); f = f->next;
     return 0;
 }

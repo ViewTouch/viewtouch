@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -18,8 +18,8 @@
  * Data for textures in XPM format
  */
 
-#ifndef _IMAGE_DATA_HH
-#define _IMAGE_DATA_HH
+#ifndef IMAGE_DATA_HH
+#define IMAGE_DATA_HH
 
 
 #include <array>

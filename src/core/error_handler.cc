@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -64,7 +64,7 @@ namespace vt_error {
         log_file_.open(log_file_path_, std::ios::app);
         
         if (!log_file_.is_open()) {
-            std::cerr << "Error: Could not open log file: " << log_file_path_ << std::endl;
+            std::cerr << "Error: Could not open log file: " << log_file_path_ << '\n';
         }
     }
 
@@ -250,14 +250,14 @@ namespace vt_error {
         }
         
         if (log_file_.is_open()) {
-            log_file_ << formatLogEntry(error) << std::endl;
+            log_file_ << formatLogEntry(error) << '\n';
             log_file_.flush();
         }
     }
 
     void ErrorHandler::logToConsole(const ErrorInfo& error) {
         std::ostream& stream = (error.severity >= Severity::ERROR) ? std::cerr : std::cout;
-        stream << formatLogEntry(error) << std::endl;
+        stream << formatLogEntry(error) << '\n';
     }
 
     void ErrorHandler::notifyCallbacks(const ErrorInfo& error) {
@@ -267,7 +267,7 @@ namespace vt_error {
                 callback(error);
             } catch (const std::exception& e) {
                 // Log callback error but don't let it propagate
-                std::cerr << "Error in error handler callback: " << e.what() << std::endl;
+                std::cerr << "Error in error handler callback: " << e.what() << '\n';
             }
         }
     }

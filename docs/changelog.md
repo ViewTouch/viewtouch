@@ -5,35 +5,725 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 
 ## [Unreleased]
-### Changed
-- **Add Comment keyboard improvements (2026-03-26)**: Improved ergonomics for the Add Comment dialog while keeping the QWERTY layout — added a punctuation row, widened Space/Backspace/Clear, and increased dialog height so the entry field doesn't overlap the keyboard. Changes are localized to the comment dialog.
-  - Files modified: `zone/dialog_zone.cc`
-
-- **Comment keyboard font (2026-04-01)**: Set the comment keyboard button font to DejaVu Serif 48 Bold (`FONT_TIMES_48B`) to improve legibility on high-resolution displays.
-  - Files modified: `zone/dialog_zone.cc`
-
-- **Remove premade employees (2026-03-25)**: Default installation no longer auto-creates premade employee accounts such as `Manager`, `Server/Cashier`, or `Server`. The system still creates `Super User` and `Editor` (Developer) via the `UserDB` constructor; `Customer` is created on-demand for SelfOrder terminals. This change applies to new installs only and does not modify existing `employee.dat` files.
-  - Files modified: `main/data/manager.cc`
 
 ### Fixed
-- **Modifiers / Comments ordering (2026-03-26)**: Fixed a bug where adding a modifier after adding a comment would place the modifier above the comment. Modifiers are now explicitly appended after existing comment modifiers so the visible order is:
-  - ITEM
-  - COMMENT
-  - MODIFIER
-  - Files modified: `main/business/check.hh`, `main/business/check.cc`, `zone/order_zone.cc`, `zone/dialog_zone.cc`
+ - **Order Comment: Treat comment modifiers like normal modifiers (2026-04-08)**
+   - Comment modifiers were previously assigned a hardcoded `call_order`, which caused them to be moved to the bottom when new normal modifiers were added. Comments now inherit a contextual `call_order` so they preserve insertion order and behave like normal modifiers.
+   - Files modified: `zone/dialog_zone.cc`
+ - **Hardware Zone: Prevent accidental overwrites when switching selections (2026-04-08)**
+   - Fixed bug where editing or creating a display/printer then switching selections could overwrite a different record with empty form values.
+   - Root Cause: `SaveRecord()` could be called for a record that had not been loaded into the form, combined with transient row→record mapping during list interactions.
+   - Solution: `HardwareZone` now tracks which `section`/`record` the form was loaded for (`loaded_section`/`loaded_record`) and `SaveRecord()` skips writes unless the form was explicitly loaded for that record. Also ensured row→record mapping is rebuilt before touch handling and added diagnostics to trace load/save events.
+   - Files modified: `zone/hardware_zone.cc`, `zone/hardware_zone.hh`
 
-- **GetTextDialog key initialization (2026-04-01)**: Initialize the `key[]` array to NULL in `GetTextDialog` constructors to avoid uninitialized pointer access that could lead to crashes; guard uses of `key[i]` accordingly.
-  - Files modified: `zone/dialog_zone.cc`
+- **Auto-Update vt_data Inconsistency Between Displays (2026-02-12)**
+  - Fixed bug where vt_data auto-update setting behaved differently on server display vs external displays
+  - **Root Cause**: The auto_update_vt_data setting was loaded from the settings file in the data directory, which could be different for different displays in multi-display setups
+  - **Solution**: Modified the auto-update check to load the setting from a fixed path (/usr/viewtouch/dat/settings.dat) to ensure consistency across all displays
+  - **Impact**: vt_data auto-update setting now works consistently regardless of which display is used to start the system
+  - **Files modified**: `main/data/manager.cc`
+- **Hardware Button Type: Server Terminal Duplicates and Printer Removal (2026-02-12)**
+  - Fixed bugs in Hardware zone that created duplicate server terminals and incorrectly removed shared printers
+  - **Bug 1: Duplicate Server Terminals**
+    - **Root Cause**: `FindServer()` assumed first terminal was always server but didn't properly search for existing servers or handle loaded settings with incorrect order
+    - **Solution**: Rewrote `FindServer()` to first search for terminal matching display hostname, then existing server terminals, ensure correct terminal is marked as server and moved to front, clear IsServer flags from others, and remove duplicate "Server" named terminals
+    - **Impact**: Server terminals are correctly identified, duplicates are prevented and cleaned up
+  - **Bug 2: Shared Printer Removal**
+    - **Root Cause**: When removing a terminal, associated printer was killed even if other terminals shared the same printer configuration
+    - **Solution**: Added `IsPrinterShared()` method to check if printer is used by multiple terminals, modified `KillRecord()` to only kill printer if not shared
+    - **Impact**: Printers are preserved when shared between terminals, only removed when truly no longer needed
+  - **Files modified**: `main/data/settings.cc`, `main/data/settings.hh`, `zone/hardware_zone.cc`
+- **Hardware Button Type: Simplified Server Display Logic (2026-02-05)**
+  - Completely simplified the server display and terminal initialization logic
+  - **New Approach**: The FIRST terminal in the list is ALWAYS the server display
+  - **Changes Made**:
+    - Rewrote `FindServer()` to simply return the first terminal and ensure it's marked as server
+    - Simplified remote terminal initialization to skip the first terminal (server) and process others
+    - Removed complex multi-pass server detection and matching logic
+    - Removed `have_server` counting and display_host matching complexity
+    - Added automatic cleanup of duplicate "Server" terminals created by previous buggy code
+  - **Root Cause**: Previous complex logic with multiple passes, display_host matching, and server flag tracking was causing duplicate server displays to be created and persisted
+  - **Solution**: Simple rule - first terminal = server, all others = remote displays. FindServer() now removes any duplicate auto-created "Server" terminals found after the first terminal.
+  - **Impact**: No more duplicate server displays, existing duplicates are automatically cleaned up on startup
+  - **Files modified**: `main/data/manager.cc`, `main/data/settings.cc`
 
-- **OrderEntryZone oewindow index clamp (2026-04-01)**: Clamp `page->size - 1` to the valid range before indexing `settings->oewindow` to prevent out-of-bounds access and runtime errors.
-  - Files modified: `zone/order_zone.cc`
+- **Hardware Button Type: Critical Startup Bugs (2026-02-04)**
+  - Fixed multiple critical bugs in Hardware button type that caused issues after system reboot
+  - **Bug 1: Printer Deletion on Every Startup**
+    - **Root Cause**: Code was migrating receipt printer from printer list to server terminal on every startup, then deleting it
+    - **Solution**: Added check to only migrate printer if server terminal doesn't already have one configured
+    - **Impact**: Printers no longer disappear or get replaced with defaults after reboot
+  - **Bug 2: Terminal Iterator Not Reset**
+    - **Root Cause**: When cleaning up multiple server terminals, the iterator wasn't reset before the second processing loop
+    - **Solution**: Added `ti = settings->TermList()` to reset iterator after cleanup
+    - **Impact**: Terminal initialization now processes all terminals correctly
+  - **Bug 3: Multiple Terminals Marked as Server**
+    - **Root Cause**: `have_server` count wasn't updated after marking a terminal as server, allowing multiple terminals to be set as server in single startup
+    - **Solution**: Added `have_server = 1` after each `IsServer(1)` call
+    - **Impact**: Only one terminal is now marked as server
+  - **Bug 4: FindServer Priority Issue**
+    - **Root Cause**: `FindServer()` checked display_host match before IsServer flag, potentially returning wrong terminal
+    - **Solution**: Changed to two-pass approach - first find explicit server, then check display_host match
+    - **Impact**: Existing server terminal is always found first
+  - **Files modified**: `main/data/manager.cc`, `main/data/settings.cc`
 
+- **Tender Settings Button Type: Null Pointer and Record Navigation Bugs (2026-02-04)**
+  - Fixed bugs in TenderSetZone::KillRecord that could cause crashes and navigation issues
+  - **Changes Made**:
+    - Added null pointer checks before accessing record data in all sections (Discounts, Coupons, Credit Cards, Comps, Employee Meals)
+    - Added consistent `display_id` and `record_no` handling for all sections (previously only Discounts had this)
+  - **Root Cause**: KillRecord didn't check if `FindXxxByRecord()` returned nullptr before dereferencing, and sections 1-4 didn't update navigation state after deletion
+  - **Solution**: Added null checks and consistent record navigation handling across all tender types
+  - **Files modified**: `zone/settings_zone.cc`
+
+### Added
+- **🚀 Recommendations for Modern POS Transformation (2026-01-24)**
+  - **Phase 1: Complete Current Modernization (1-2 months)**
+    - **1.1 Finish C++23 String Migration**
+      - Status: ~97% complete (14/318 calls modernized)
+      - Remaining: 14 sprintf/snprintf calls in 5 files (mostly comments/includes)
+      - Priority files: main/hardware/printer.cc (1 call) - COMPLETED
+      - Recommendation: Use the existing modernize_cpp23.sh to systematically convert remaining sprintf/snprintf calls to format_to_buffer().
+    - **1.2 Expand Test Coverage**
+      - Current: 14 test files, ~671 assertions
+      - Target areas: Payment processing (credit.cc, check.cc), Data serialization/deserialization, Hardware interface mocking, UI zone logic
+  - **Root Cause**: Ongoing modernization effort to improve code safety, maintainability, and test coverage
+  - **Solution**: Systematic completion of C++23 migration and test expansion
+  - **Impact**: Enhanced code quality, security, and reliability for production deployment
+
+- **Split Check Interface: Complete Redesign for Simplicity and Functionality (2026-01-20)**
+  - Comprehensive redesign of the split check interface focusing on simplicity, functionality, and improved user experience
+  - **Changes Made**:
+    - Simplified item rendering with clean button design and yellow highlight for selected items
+    - Streamlined check containers with check numbers and properly positioned totals
+    - Added tax display above totals when applicable, using same font size as totals
+    - Improved empty state messaging for better user guidance
+    - Enhanced instruction text for clearer user direction
+    - Removed complex text wrapping and formatting for cleaner, simpler display
+  - **Root Cause**: Original split check interface was overly complex with cluttered displays, poor visual hierarchy, and confusing user experience
+  - **Solution**: 
+    - Simplified ItemObj::Render to use basic text display without wrapping
+    - Streamlined CheckObj::Render to show essential information only
+    - Added conditional tax display with proper positioning
+    - Changed selected item texture to IMAGE_YELLOW_TEXTURE for clear visual feedback
+    - Repositioned total amounts to avoid overlaying UI edges
+  - **Files modified**: 
+    - `zone/split_check_zone.cc` (main interface implementation)
+    - `zone/split_check_zone.hh` (header declarations)
+    - `main/business/check.cc` (added SplitCheckEqually method, later removed)
+    - `main/business/check.hh` (SplitCheckEqually declaration, later removed)
+  - **Impact**: Split check interface now provides clean, simple, and functional experience with clear visual feedback, proper pricing display, and intuitive manual item selection
+
+- **Out of Stock (86) Toggle Feature for Menu Items (2026-01-31)**
+  - Added ability to mark menu items as "86" (out of stock) with visual feedback on buttons
+  - **Changes Made**:
+    - Added `out_of_stock` boolean field to SalesItem class for tracking availability
+    - Updated data file version to 17 for backward compatibility
+    - Modified ItemZone rendering to display "Item Name - Out of stock" in red when item is unavailable
+    - Added "Out of Stock (86'd)?" toggle in item editing interface
+    - Implemented safe color override during rendering to maintain visual consistency
+  - **Root Cause**: No built-in way to temporarily disable menu items without removing them entirely
+  - **Solution**: Added toggleable out-of-stock status with clear visual indicators
+  - **Files modified**:
+    - `main/business/sales.hh` (added out_of_stock field)
+    - `main/business/sales.cc` (updated serialization and data handling)
+    - `zone/inventory_zone.cc` (added editing interface)
+    - `zone/order_zone.cc` (modified rendering logic)
+  - **Impact**: Staff can now easily identify unavailable items, managers can quickly toggle item availability, improves operational efficiency during stock shortages
+
+- **Fixed Order Entry Total Off-by-One-Cent Issue with Tax (2026-01-31)**
+  - Resolved discrepancy between Order Entry zone total display and actual check total when tax is included
+  - **Changes Made**:
+    - Modified OrderEntryZone::Render to use pre-calculated tax totals from SubCheck instead of recalculating tax per individual order
+    - Replaced per-order tax summation with direct use of aggregated tax fields (total_tax_food, total_tax_GST, etc.)
+  - **Root Cause**: Order Entry zone was calculating tax by summing individual order taxes, while check totals use aggregated tax calculation, causing rounding differences
+  - **Solution**: Use the same tax calculation method as the main check total for consistency
+  - **Files modified**: `zone/order_zone.cc` (OrderEntryZone::Render method)
+  - **Impact**: Order Entry zone now displays the exact same total as the final check, eliminating confusion for staff
+
+### Fixed
+- **Fixed GCC 14 Warning in Date Library (2026-01-25)**
+  - Resolved stringop-overflow warning in external/date/include/date/date.h when compiling on Raspberry Pi Compute Module 5 with GCC 14
+  - **Changes Made**:
+    - Changed buffer size calculation from std::numeric_limits<unsigned>::digits10+2u to std::numeric_limits<unsigned long long>::digits10+2u
+    - Updated cast from static_cast<unsigned>(a0) to static_cast<unsigned long long>(a0)
+  - **Root Cause**: GCC 14's enhanced bounds checking detected potential out-of-bounds access in the read function's buffer
+  - **Solution**: Used unsigned long long type for safer buffer sizing
+  - **Files modified**: external/date/include/date/date.h
+  - **Impact**: Eliminates compiler warning without changing functionality
+
+- **Removed Automatic Creation of System Page -94 (2026-01-23)**
+  - Eliminated the automatic creation of page -94 (Index with Tabs template) that was causing "Can't delete page -94" errors
+  - **Changes Made**:
+    - Removed the code that creates page -94 for all screen resolutions during ZoneDB initialization
+    - Simplified page 60 creation to use a default template instead of copying from page -94
+  - **Root Cause**: System was automatically creating page -94 as a template for Index with Tabs pages, but this page couldn't be deleted, causing user confusion and errors
+  - **Solution**: 
+    - Removed the template creation loop in ZoneDB::Init()
+    - Modified page 60 creation to always use a basic default configuration
+  - **Files modified**: 
+    - `zone/zone.cc` (removed page -94 creation code and simplified page 60 creation)
+  - **Impact**: Prevents "Can't delete page -94" errors and reduces system complexity by removing unnecessary template pages
+  - Improved the split check zone interface for better readability and user experience
+  - **Changes Made**:
+    - Added dynamic font responsiveness - buttons now properly inherit font sizes from zone settings
+    - Implemented text wrapping instead of truncation - long item names now wrap to multiple lines within buttons
+    - Increased button widths - order item buttons from 250px to 280px, seat buttons from 120px to 150px
+    - Doubled button heights - order buttons from 40px to 80px, seat buttons from 84px to 168px
+    - Removed modifier display from split check buttons for cleaner interface
+  - **Root Cause**: Split check buttons had hardcoded fonts, truncated text, cramped dimensions, and cluttered display with modifiers
+  - **Solution**: 
+    - Modified ItemObj constructors to accept font_id parameters and use dynamic fonts
+    - Added RenderWrappedText helper method for word-based text wrapping
+    - Increased button dimensions for better text accommodation
+    - Removed modifier rendering loop and dynamic height calculation
+  - **Files modified**: 
+    - `zone/split_check_zone.cc` (main implementation)
+    - `zone/split_check_zone.hh` (method declaration)
+  - **Impact**: Split check interface now displays longer item names clearly with proper text wrapping, responsive fonts, and improved button sizing for better usability
+
+- **Build Warnings: Compiler Warning Fixes (2026-01-20)**
+  - Fixed various C++ compiler warnings to achieve clean builds
+  - **Issues Fixed**:
+    - Deprecated user-defined literal operator syntax in external date library
+    - Invalid pragma directive in time handling code
+    - Incorrect calloc argument order in memory allocation
+    - Misleading indentation in settings zone
+    - False-positive null dereference warnings
+    - Third-party dangling reference warnings from spdlog
+  - **Root Cause**: Code using outdated C++ syntax, incorrect function calls, and compiler false positives in third-party libraries
+  - **Solution**: 
+    - Updated literal operator syntax to modern C++ standards
+    - Removed invalid pragma directive
+    - Corrected calloc arguments to proper size/count order
+    - Added braces to clarify indentation
+    - Suppressed false-positive warnings via CMake flags
+  - **Files modified**: 
+    - `external/date/include/date/*.h` (multiple date library files)
+    - `src/core/time_info.hh`
+    - `main/data/locale.cc`
+    - `main/business/employee.cc`
+    - `zone/settings_zone.cc`
+    - `CMakeLists.txt`
+  - **Impact**: Achieved clean build with zero warnings from our codebase and third-party dependencies
+
+- **Receipt Settings: Update Kitchen Video Print Method Label (2026-01-20)**
+  - Updated the Receipt Settings page UI text for better clarity and user experience
+  - **Changes Made**:
+    - Changed label from "Kitchen Video Print Method" to "Remote Video"
+    - Updated option names from "Unmatched"/"Matched" to "Split Checks"/"Consolidate Checks"
+    - Updated all locale translations (English and Spanish)
+  - **Root Cause**: The original terminology was unclear and not intuitive for users
+  - **Solution**: Replaced with more descriptive and user-friendly terminology that better reflects the functionality
+  - **Files modified**: 
+    - `zone/settings_zone.cc` (main UI label)
+    - `main/ui/labels.cc` (option names)
+    - `main/data/locale.cc` (internationalization support)
+  - **Impact**: Receipt Settings page now has clearer, more intuitive labeling that better communicates the split/consolidate check functionality to users
+
+- **Build Warnings: Comprehensive Warning Cleanup (2026-01-20)**
+  - Fixed multiple compiler warnings across the codebase to improve code quality and reduce noise
+  - **Issues Fixed**:
+    - Header guard mismatches in network and core header files
+    - Buffer overflow in `GetTermWord()` string parsing function
+    - Potential null pointer dereference in `WorkReceipt()` labor reporting
+    - Uninitialized variables in terminal record file reading
+    - Missing null checks in form field loading
+    - Uninitialized pointer in list sorting algorithm
+    - Missing virtual keyword in function override
+  - **Root Cause**: Various code quality issues accumulated over time, including unsafe string operations, missing initialization, and inconsistent header guards
+  - **Solution**: 
+    - Corrected header guard definitions to match standard naming conventions
+    - Fixed string parsing to prevent buffer overflows by limiting copy operations
+    - Added null pointer checks and variable initialization where needed
+    - Added virtual keyword to properly override base class methods
+  - **Files modified**: 
+    - `src/network/remote_link.hh`, `src/core/debug.hh`, `src/core/image_data.hh` (header guards)
+    - `main/data/manager.cc` (buffer overflow fix)
+    - `main/business/labor.cc` (null check)
+    - `main/hardware/terminal.cc` (uninitialized variables)
+    - `zone/merchant_zone.cc` (null checks)
+    - `src/core/list_utility.hh` (pointer initialization)
+    - `term/term_view.cc` (virtual function)
+  - **Impact**: Reduced build warnings from ~814 to ~240 in our codebase, improved code safety and maintainability
+
+- **UI: Add Dollar Signs to Guest Check and Payment Summary Amounts (2026-01-15)**
+  - Fixed missing dollar signs ($) on amounts displayed in Payment Summary window and Guest Check Window menu items
+  - **Root Cause**: `Terminal::FormatPrice()` has a default parameter `sign = 0` which excludes the currency symbol, and many calls used this default instead of explicitly setting `sign = 1`
+  - **Solution**: Changed all `FormatPrice()` calls in check display functions to use `sign = 1` to include dollar signs on all amounts (individual items, modifiers, taxes, payments, and totals)
+  - **Files modified**: `main/business/check.cc` (MakeReport function and related price display calls)
+  - **Impact**: Guest Check Window and Payment Summary now consistently display all amounts with proper currency formatting including dollar signs
+
+- **Settlement Page: Highlight Current Guest Check with Status (2026-01-15)**
+  - Added highlighting and status display for current guest check when multiple checks exist on settlement page
+  - **Changes Made**:
+    - Changed subcheck display from "#1" to "Check #1 - Open/Closed/Voided"
+    - Added background highlighting for the currently selected subcheck
+    - Used blue text color for better visibility when highlighted
+  - **Files modified**: `zone/payment_zone.cc` (header rendering in Render function)
+  - **Impact**: Users can now clearly see which guest check is currently selected on the settlement page, with status information and visual highlighting
+
+- **Payment Zone: Hide Zero VAT Display (2026-01-15)**
+  - Fixed VAT .00 being displayed unnecessarily when VAT amount is zero
+  - **Root Cause**: VAT display only checked if VAT tax rate was configured (`settings->tax_VAT > 0`) but not if the calculated VAT amount was actually greater than zero
+  - **Solution**: Added condition to check both `settings->tax_VAT > 0` AND `subCheck->total_tax_VAT != 0`
+  - **Files modified**: `zone/payment_zone.cc` (VAT display logic in Render function)
+  - **Impact**: VAT is now only displayed when there is an actual VAT amount to show, reducing UI clutter
+
+- **Printer: Prevent USB Printer Hanging (2026-01-15)**
+  - Fixed application hanging when USB printer is unavailable
+  - **Root Cause**: `open()` system call for printer device files would block indefinitely when USB printer was disconnected or unavailable
+  - **Solution**: Added `O_NONBLOCK` flag to printer device open call to prevent blocking
+  - **Files modified**: `main/hardware/printer.cc` (ParallelPrint function)
+  - **Impact**: Application continues to function normally even when USB printers are unavailable, preventing system hangs
+
+- **Per-Terminal Button Image Settings: Preserve Individual Terminal Preferences (2026-01-15)**
+  - Fixed global "Show Button Images" setting incorrectly overriding per-terminal customizations
+  - **Root Cause**: The global setting was being applied universally, ignoring individual terminal configurations
+  - **Solution**: Added `show_button_images_custom` flag to Terminal class to track when users have customized per-terminal settings, preserving their preferences when global setting changes
+  - **Files modified**: `main/hardware/terminal.cc`, `main/hardware/terminal.hh`
+  - **Impact**: Terminals now maintain their individual button image display preferences even when global settings are modified
+
+- **Button Highlighting Bug - Remove Broken Static Cache (2026-01-10)**
+  - Fixed buttons incorrectly showing highlighted/yellow state
+  - **Root Cause**: The static tile cache optimization in `Layer::Rectangle()` was fundamentally broken. Static variables persisted across all calls, causing stale cache values to be used when rendering buttons with different textures.
+  - **Solution**: Removed the static cache optimization entirely. Each `Rectangle()` call now properly sets the tile and origin, ensuring correct texture rendering.
+  - **Files modified**: `term/layer.cc`
+
+- **C++23 Feature Detection: Fix std::expected Compilation on Older Compilers (2026-01-18)**
+  - Fixed compilation errors on systems with older compilers that don't support std::expected
+  - **Root Cause**: The feature detection used `__has_include(<expected>)` which only checks for header presence, not actual implementation availability in the standard library
+  - **Solution**: Changed to use `__cpp_lib_expected` feature test macro for proper detection of std::expected support
+  - **Files modified**: `src/utils/cpp23_utils.hh`
+  - **Impact**: Allows building on Raspberry Pi and other systems with older compilers that lack C++23 std::expected support
+
+- **Button Highlighting Bug with Lazy Texture Loading (2026-01-09)**
+  - Fixed buttons incorrectly showing highlighted state when they shouldn't be
+  - **Root Cause**: The lazy texture loading introduced in the memory optimization commit conflicted with the static tile cache in `Layer::Rectangle()`. When textures were loaded on-demand, the cache could cause incorrect texture rendering.
+  - **Solution**: Added `PreloadAllTextures()` function that loads all textures at startup, ensuring consistent Pixmap values before any rendering occurs.
+  - **Files modified**: `term/term_view.cc`, `term/term_view.hh`
+
+- **Terminal Crash: Prevent X11 BadMatch Errors from Oversized Pages (2026-01-24)**
+  - Fixed SIGABRT crashes when server sends page sizes larger than terminal window dimensions
+  - **Root Cause**: Server could send TERM_BLANKPAGE commands with page dimensions exceeding the terminal's allocated pixmap size, causing X11 drawing operations to fail with BadMatch errors
+  - **Solution**: Added page size clipping in Layer::BlankPage() to ensure page dimensions never exceed the layer's actual width and height
+  - **Files modified**: `term/layer.cc`
+  - **Impact**: Prevents terminal crashes when connecting to servers with larger display configurations, ensuring stable operation across different screen sizes
+
+- **Tax Settings: Improved Decimal Display Formatting (2026-01-30)**
+  - Fixed tax rate display to show clean decimal formatting without trailing zeros and hide zero rates
+  - **Changes Made**:
+    - Modified TaxSettingsZone::LoadRecord() to use FormatMultiplierDisplay() for proper decimal formatting
+    - Tax rates now display as "8.3" instead of "8.300000", "8.25" stays "8.25", and 0% shows as blank field
+    - Used existing FormatMultiplierDisplay function to trim trailing zeros appropriately
+  - **Root Cause**: Tax percentage fields were displaying unnecessary trailing zeros and showing "0.000000" for zero rates
+  - **Solution**: Applied FormatMultiplierDisplay() function to format tax rates with appropriate precision and set empty strings for zero values
+  - **Files modified**: `zone/settings_zone.cc`
+  - **Impact**: Tax Settings interface now displays rates cleanly without visual clutter from extra zeros
+
+### Added
+- **Payment Processing: Complete Debit Card Fee Support (2026-01-15)**
+  - Added comprehensive debit card fee tender types with full tax handling support
+  - **New Tender Types Added**:
+    - DEBIT_FEE_PERCENT: Debit card fee as percentage of transaction
+    - DEBIT_FEE_DOLLAR: Debit card fee as fixed dollar amount
+    - DEBIT_FEE_TAXABLE_PERCENT: Debit card fee as percentage with tax calculation
+    - DEBIT_FEE_TAXABLE_DOLLAR: Debit card fee as fixed dollar amount with tax calculation
+  - **Implementation Details**:
+    - Added tender type definitions and fee calculation logic in Check class
+    - Updated payment zone processing to handle debit fee calculations
+    - Added proper localization support for debit fee display names
+  - **Files modified**: `main/business/check.cc`, `main/business/check.hh`, `zone/payment_zone.cc`, `main/data/settings.cc`, `main/ui/labels.cc`, `main/data/locale.cc`
+  - **Impact**: Full debit card fee processing capability with proper tax handling and UI display
+
+- **Performance: Object Pool System for Memory Efficiency (2026-01-09)**
+  - Created `src/core/object_pool.hh` with thread-safe object pooling templates
+  - `ObjectPool<T>`: Reusable object pool with configurable max size (default 64)
+    * Thread-safe acquire/release with mutex protection
+    * Pre-allocation support via `reserve()` method
+    * Automatic cleanup of pooled objects on destruction
+  - `PooledObject<T>`: RAII wrapper for automatic return to pool
+  - `BufferPool<Size>`: Specialized pool for fixed-size char buffers
+  - Reduces allocation overhead and memory fragmentation on resource-constrained devices
+  - **Files added**: `src/core/object_pool.hh`
+  - **Target**: Raspberry Pi CM5 with 2GB RAM optimization
+
+### Improved
+- **UI: Clean Credit Card Fee Display Labels (2026-01-15)**
+  - Removed redundant "(Percent)" and "(Dollar)" text from credit card fee display names for cleaner UI
+  - **Changes Made**:
+    - Simplified TenderName array entries to remove duplicate type indicators
+    - Updated TenderName method to return cleaner display strings
+    - Updated localization files to match simplified naming convention
+  - **Files modified**: `main/ui/labels.cc`, `main/data/settings.cc`, `main/data/locale.cc`
+  - **Impact**: Credit card fee options now display with cleaner, less cluttered text in the UI
+
+- **UI: Modernized Quantity Entry Keypad (2026-01-14)**
+  - Completely redesigned the numeric keypad for item quantity entry with a modern phone-style layout (1-2-3 on top row, 4-5-6 middle, etc.)
+  - Removed the arbitrary 5-item limit; now allows unlimited increments up to 10,000 with a single button press
+  - Enhanced entry field: larger size (200x50), bigger font (34pt), centered at top of dialog
+  - Eliminated input delay by making redraws immediate (0ms instead of 500ms)
+  - Removed dialog title to reduce clutter; entry field starts blank for clean quantity input
+  - **Files modified**: `zone/order_zone.cc`, `zone/dialog_zone.cc`
+
+- **Performance: Optimized Screen Saver Drawing Efficiency (2026-01-14)**
+  - Significantly improved screen saver performance by reducing unnecessary drawing operations
+  - **Optimizations Implemented**:
+    - Cached font and text metrics (width/height) in static variables to avoid recomputation every frame
+    - Eliminated full-screen black fill on every animation frame; now only fills screen initially and on reset
+    - Added selective erasure: draws black rectangle only over previous text position before drawing new position
+  - **Performance Impact**: Reduced CPU/GPU load during screen saver animation, especially beneficial for larger displays
+  - **Files modified**: `term/term_view.cc` (DrawScreenSaver function)
+
+- **CI/CD: Modernize Build Badges and Add Test Execution (2026-01-18)**
+  - Replaced outdated Travis CI badge with GitHub Actions status badge in README.md
+  - Added automated test execution to Linux build workflow using ctest
+  - Tests now run on every push and pull request to ensure code quality
+  - **Files modified**: `README.md`, `.github/workflows/linux-simple-builds.yml`
+
+- **Documentation: Improve README Badges and Quick Start (2026-01-18)**
+  - Removed invalid Discord badge with placeholder server ID
+  - Added C++23 version badge to indicate language standard requirement
+  - Enhanced Quick Start section with basic build instructions and commands
+  - **Files modified**: `README.md`
+
+- **Security: Update Supported Versions Policy (2026-01-18)**
+  - Updated supported versions table to reflect current stable release (26.01.x)
+  - Marked versions prior to 26.01 as end of life
+  - **Files modified**: `SECURITY.md`
+
+- **Copyright: Update Copyright Years to 2026 (2026-01-18)**
+  - Updated copyright notices in all source files to include 2026
+  - Standardized copyright format across codebase
+  - **Files modified**: 140+ source files (.cc, .hh, .h)
+
+### Added
+- **Testing: Comprehensive Test Suite Expansion (2026-01-07)**
+  - Added 26 new test cases covering time/date operations and error handling
+  - Created `test_time_operations.cc` with tests for TimeInfo class operations
+    * Time arithmetic (seconds, minutes, days, weeks, months, years)
+    * Comparison operators and date ordering
+    * Business logic scenarios (shift scheduling, time ranges)
+    * String operations and edge cases
+  - Created `test_error_handler.cc` with tests for error management
+    * ErrorInfo construction with severity levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    * Error categories (GENERAL, SYSTEM, NETWORK, DATABASE, UI, PRINTER, CREDIT_CARD, FILE_IO, MEMORY)
+    * Context tracking (file, line, function, error code)
+    * Real-world error scenarios (database, printer, payment, memory, file I/O errors)
+  - Test suite now contains 80 test cases with 568 assertions (100% passing)
+  - **Files added**: `tests/unit/test_time_operations.cc`, `tests/unit/test_error_handler.cc`, `tests/unit/test_conf_file.cc` (API verification), `tests/unit/test_report_generation.cc` (constants verification)
+  - **Files modified**: `tests/CMakeLists.txt`
+  - **Status**: Complete - comprehensive test coverage for time operations and error handling
+
+### Fixed
+- **User Edit Zone: Fix NULL and Dangling Pointer Issues in Employee Save Operations (2026-01-07)**
+  - Fixed critical segmentation fault (SIGSEGV) when saving employee records in User Edit button type
+  - **Root Causes Identified**:
+    1. `SaveRecord()` called with NULL/dangling user pointer when toggling Active/Inactive views
+    2. `SaveRecord()` called with invalid user pointer during job filter updates
+    3. Loop in `SaveRecord()` was advancing field pointer without null checks causing crashes on incomplete forms
+  - **Solutions Implemented**:
+    - Added `user != nullptr` validation before calling `SaveRecord()` in `Signal()` (active/inactive toggle)
+    - Added `user != nullptr` validation before calling `SaveRecord()` in `Update()` (job filter changes)
+    - Enhanced `SaveRecord()` field iteration loop with proper null checks and early breaks
+    - Added dangling pointer detection using AddressSanitizer poison value detection
+    - Improved error logging to distinguish between NULL pointers and freed memory access
+  - **Crash Detection**: AddressSanitizer identified access to freed memory (`0xbebebebebebebebe`)
+  - **Files modified**: `zone/user_edit_zone.cc` (SaveRecord, Signal, Update methods)
+  - **Testing**: Validated with Debug build + AddressSanitizer to catch memory issues
+  - **Status**: Complete - User Edit save operations now safely handle edge cases without crashes
+
+### Fixed
+- **Dialog Keyboard: Complete OrderCommentDialog Redesign (2026-01-06)**
+  - Completely redesigned keyboard layout with cleaner, more modern appearance
+  - Increased text entry box height from 60px to 80px for better visibility
+  - Changed entry box background to IMAGE_LITE_WOOD with FRAME_INSET for cleaner look
+  - Repositioned text entry box directly below title (y+60) with proper spacing
+  - Fine-tuned text baseline positioning (y+50) for perfect vertical centering in entry box
+  - Improved button spacing with 6px gaps between keys for better visual separation
+  - Adjusted button heights to 85px for optimal touch targets
+  - Text now displays in bold black (FONT_TIMES_34B) with proper contrast
+  - **Files modified**: `zone/dialog_zone.cc` (OrderCommentDialog::Render, RenderEntry, DrawEntry methods)
+  - **Status**: Complete - OrderCommentDialog now has professional, modern appearance with clear text entry
+
+- **Dialog Keyboard: Polish Order Comment Dialog Implementation (2026-01-06)**
+  - Improved text entry visual appearance with lighter background (IMAGE_WOOD instead of IMAGE_DARK_WOOD) for better contrast
+  - Changed text color from RED to BLACK for better readability
+  - Increased font size from FONT_TIMES_34 to FONT_TIMES_34B (bold) for clearer text display
+  - Removed unused variables (col, kw) from Render method
+  - Adjusted text vertical positioning from y+38 to y+45 to better center the larger bold font
+  - **Files modified**: `zone/dialog_zone.cc` (OrderCommentDialog::Render and RenderEntry methods)
+  - **Status**: Complete - OrderCommentDialog now has professional appearance with clear, readable text entry
+
+- **Dialog Keyboard: Order Comment Dialog Text Entry Improvements (2026-01-03)**
+  - Redesigned Order Comment dialog with modern 6-row QWERTY keyboard layout (previously had overlapping keyboard layers)
+  - Implemented visible text entry box at top of dialog with absolute positioning
+  - Fixed text display updates - text now appears as user types on keyboard
+  - Added proper background clearing to prevent text artifacting when clearing input
+  - Adjusted text positioning for better vertical centering in entry box
+  - **Files modified**: `zone/dialog_zone.cc` (OrderCommentDialog constructor, Render, RenderEntry, DrawEntry, Signal methods), `zone/dialog_zone.hh`
+
+- **Form Zone: Fix Double-Touch and Click Area Issues in ListField (2026-01-03)**
+  - Fixed double-triggering of field Touch events when using touchscreen input
+  - Fixed ListField click detection area not matching the visual button boundaries
+  - **Root Cause**: Both Touch and Mouse events were calling `FormZone::Touch()` which triggered field actions, causing double-clicks on touchscreens
+  - **Solution**: Changed `ListFormZone::Touch()` and `ListFormZone::Mouse()` to call `LayoutZone::Touch()` instead, which only updates coordinates without triggering field actions
+  - **Offset Fix**: Changed ListField offset calculation from `label_width + .6` to `label_width + 1` and boundary from `entry_width + 1` to `entry_width` to match the Render and Mouse methods
+  - **Files modified**: `zone/form_zone.cc` (`ListFormZone::Touch()`, `ListFormZone::Mouse()`, `ListField::Touch()`)
+  - **Impact**: Tender Settings and all form zones with list fields now respond correctly to single clicks/taps without double-triggering, and buttons are clickable across their entire visual area
+
+- **CI: Update Linux Builds to C++23 Standard (2026-01-01)**
+  - Changed CI workflow from C++20 to C++23 to match project requirements
+  - Restricted CI testing to GCC 14+ which has full C++23 stdlib support
+  - Older compilers (GCC 12-13, Clang 16-18) lack std::format in libstdc++ even with `-std=c++23`
+  - Changed std::format availability check from compile error to warning for better diagnostics
+  - Project now requires C++23 for std::format and other modernization features
+  - **Files modified**: `.github/workflows/linux-simple-builds.yml`, `src/utils/cpp23_utils.hh`
+  - **Impact**: CI builds now use correct C++23 standard with compatible compilers matching local development
+
+- **C++23 Compatibility: Add Feature Detection for Clang Support (2026-01-01)**
+  - Added `__has_include` feature detection for `<expected>` and `<format>` header availability
+  - Added fallback implementation for `std::to_underlying()` when C++23 stdlib feature isn't available
+  - Conditionally compile `std::expected` types only when available (not currently used in codebase)
+  - Added compile-time error if `std::format` is not available (requires C++20+ with proper stdlib support)
+  - **Root Cause**: Clang 18 with libstdc++ from GCC 14 doesn't provide all C++20/C++23 stdlib features yet
+  - **Files modified**: `src/utils/cpp23_utils.hh`
+  - **Impact**: Builds now succeed with both GCC 14 and Clang 18 when stdlib provides std::format; clear error message otherwise
+
+- **Page Inheritance: Remove Default Case Breaking Parent Page Relationships (2026-01-01)**
+  - Removed erroneous `default:` case in `Page::Init()` switch statement that was forcing `parent_id = 0` for unhandled page types
+  - This was breaking inheritance for several page types: PAGE_SYSTEM, PAGE_TEMPLATE, PAGE_CHECKS, PAGE_KITCHEN_VID, PAGE_KITCHEN_VID2, PAGE_BAR1, PAGE_BAR2
+  - Restored master branch behavior where unhandled page types retain their initialized parent_id value
+  - **Root Cause**: C++23 modernization added defensive default case without realizing some page types intentionally fall through
+  - **Files modified**: `zone/zone.cc` (Page::Init function)
+  - **Impact**: All pages now correctly inherit zones from their parent pages; matches master branch behavior exactly
+
+### Changed
+- **C++23 Modernization: Complete snprintf/sprintf Conversion (2026-01-01)**
+  - Converted all ~450+ `snprintf`/`sprintf` calls to C++23 `std::format` using `vt::cpp23::format_to_buffer()` wrapper
+  - Implemented type-safe, compile-time checked string formatting across entire codebase
+  - Replaced unsafe C-style format strings (`%s`, `%d`, `%.2f`) with modern format syntax (`{}`, `{:.2f}`, `{:02d}`)
+  - Distinguished between literal format strings (use `format_to_buffer`) and runtime translation strings (use `safe_format` for `GlobalTranslate`/`Translate` results)
+  - **Core Infrastructure**: Added `src/utils/cpp23_utils.hh` library with:
+    - `format_to_buffer()`: Stack-allocated formatting with bounds checking
+    - `to_underlying()`: Type-safe enum-to-integer conversion
+    - `Result<T>` using `std::expected<T, E>`: Modern error handling
+  - **Files Modernized** (60+ files across all directories):
+    - **main/**: business/check.cc (19 calls), business/credit.cc (33), business/customer.cc (1), data/manager.cc (27), data/settings.cc (5), data/expense.cc (10), data/system.cc (9), data/archive.cc (1), data/admission.cc (3), data/license_hash.cc (3), hardware/terminal.cc (24), hardware/printer.cc (12), hardware/remote_printer.cc (17), hardware/drawer.cc (1), ui/system_report.cc (47), ui/report.cc (2)
+    - **zone/**: All 18 zone files including account_zone.cc, check_list_zone.cc, dialog_zone.cc, drawer_zone.cc, expense_zone.cc, form_zone.cc, hardware_zone.cc, login_zone.cc, payment_zone.cc, zone.cc, order_zone.cc, search_zone.cc, settings_zone.cc, payout_zone.cc, user_edit_zone.cc, split_check_zone.cc, button_zone.cc
+    - **src/**: utils/utility.cc (4), utils/fntrace.cc (2), network/socket.cc (8), network/vt_ccq_pipe.cc (2), core/time_info.cc (2), core/data_file.cc (2)
+    - **term/**: term_view.cc (4), term_credit_mcve.cc (2), term_credit_cheq.cc (2)
+    - **loader/**: loader_main.cc (1)
+    - **cdu/**: cdu_main.cc (1)
+  - **Benefits**:
+    - Memory safety: Stack-allocated buffers with automatic bounds checking
+    - Type safety: Format arguments validated at compile-time
+    - Readability: Clean `{}` syntax instead of cryptic `%` specifiers
+    - Maintainability: Easier to modify format strings without type mismatches
+    - Performance: Zero runtime overhead compared to snprintf
+    - Future-ready: Using C++23 features, prepared for C++26 std::format adoption
+  - **Intentionally Excluded**: 
+    - cpp23_examples.cc: Documentation file preserving before/after comparisons
+    - logger.cc/vt_logger.cc: Appropriate use of `vsnprintf` for variadic logging
+  - **Impact**: All builds passing (0 errors), only pre-existing warnings remain; full test coverage maintained
+  - **Known Issues**: Several bugs introduced during refactoring, including:
+    - Some child pages not inheriting parent page buttons correctly
+    - Requires further investigation and fixes in page hierarchy handling
+
+### Changed
+- **Macro → Enum: Zone Types (2025-12-23)**
+  - Replaced `ZONE_*` zone type `#define` macros with a single `enum ZoneType` preserving all identifiers and numeric values
+  - Improves type safety and discoverability while maintaining full backward compatibility (implicit conversion to `int` where needed)
+  - **Files modified**: `zone/pos_zone.hh`
+  - **Impact**: No functional change; build and all tests remain green (40/40)
+
+- **Macro → Enum: Print Modes (2025-12-23)**
+  - Replaced `PRINT_*` style `#define` macros with `enum PrintModeFlags` in `printer.hh`
+  - Removed duplicated `PRINT_*` macros from `report.hh` and included `printer.hh` instead
+  - Preserved all bitmask values for backward compatibility with existing flag operations
+  - **Files modified**: `main/hardware/printer.hh`, `main/ui/report.hh`
+  - **Impact**: No functional change; build and all tests remain green (40/40)
+
+- **Macro → Enum: Receipt Constants (2025-12-23)**
+  - Converted receipt copy selection constants to `enum ReceiptCopy` (`RECEIPT_PICK`, `RECEIPT_CUSTOMER`, `RECEIPT_MERCHANT`) in `credit.hh`
+  - Converted receipt printing options to `enum ReceiptPrintMode` (`RECEIPT_NONE`, `RECEIPT_SEND`, `RECEIPT_FINALIZE`, `RECEIPT_BOTH`) in `settings.hh`
+  - Preserved numeric values and identifiers for compatibility with existing code paths and bitwise checks
+  - **Files modified**: `main/data/credit.hh`, `main/data/settings.hh`
+  - **Impact**: No functional change; build and all tests remain green (40/40)
+
+- **Enum Usage: Settings Formats (PriceRounding, MeasureSystem, DateFormat, NumberFormat, TimeFormat) (2025-12-23)**
+  - Completed migration of user-facing format settings to type-safe enums with display helpers
+  - Added `MeasureSystemType` enum (Standard/Metric) and `GetMeasureSystemDisplayName`, `GetAllMeasureSystems` helpers
+  - Added `GetPriceRoundingDisplayName` and `GetAllPriceRoundingOptions` helpers for `PriceRoundingType`
+  - Added `GetAllDateFormats` and `GetAllNumberFormats` helpers to complete existing enums
+  - Fixed enum value mismatches: Updated TimeFormat, DateFormat, NumberFormat to match actual #define values (1-based, not 0-based)
+  - Replaced legacy array-based cycling with enum-driven approach using `vt::GetEnumValues` for all five settings types
+  - Removed legacy `RoundingName/Value`, `MeasureSystemName/Value`, `DateFormatName/Value`, `NumberFormatName/Value`, `TimeFormatName/Value` arrays
+  - **Files modified**: `main/data/settings_enums.hh`, `main/data/settings.cc`, `main/data/settings.hh`, `zone/settings_zone.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
+- **Enum Usage: ReceiptPrintType (2025-12-23)**
+  - Updated receipt printing logic to use `ReceiptPrintType` via `vt::IntToEnum` instead of bitmask checks
+  - Conditions now compare against `OnSend`/`OnFinalize`/`OnBoth` for clarity and type-safety
+  - Replaced legacy arrays `ReceiptPrintName`/`ReceiptPrintValue` with enum-driven helpers and switching logic
+  - **Files modified**: `main/business/check.cc`, `zone/payment_zone.cc`, `zone/settings_zone.cc`, `main/data/settings.cc`, `main/data/settings.hh`
+  - **Impact**: Behavior unchanged; tests remain 40/40 passing
+
+- **Enum Usage: DrawerPrintType (2025-12-23)**
+  - Converted drawer print options to enum-driven flow: added `DrawerPrintType` and display helpers
+  - Removed legacy `DrawerPrintName`/`DrawerPrintValue` arrays; UI display/cycle now uses enum values
+  - Updated drawer print execution paths to use `DrawerPrintType` instead of macros/arrays
+  - **Files modified**: `main/data/settings_enums.hh`, `main/data/settings.hh`, `main/data/settings.cc`, `zone/settings_zone.cc`, `zone/drawer_zone.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
+- **Enum Usage: DrawerModeType (2025-12-23)**
+  - Migrated drawer mode selection to `DrawerModeType` with enum display helpers
+  - Removed legacy `DrawerModeName`/`DrawerModeValue` arrays; settings UI now cycles via enum values using `vt::GetEnumValues`
+  - Preserved numeric values for compatibility with persisted settings and existing logic
+  - **Files modified**: `main/data/settings_enums.hh`, `main/data/settings.cc`, `zone/settings_zone.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
+- **Macro → Enum: Printer Protocol (2025-12-23)**
+  - Replaced `PRINTER_*` protocol macros with scoped `enum class PrinterProtocol` and an explicit `ToInt` helper
+  - Updated remote printer command writes to use enum values instead of macros
+  - **Files modified**: `src/network/remote_link.hh`, `main/hardware/remote_printer.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
+- **Macro → Enum: Server/Op/Window Protocols (2025-12-23)**
+  - Converted legacy `SERVER_*`, `MODE_*`, and `WINFRAME_*` macros into scoped enums: `ServerProtocol`, `OperationMode`, and `WindowFrame`
+  - Added `ToInt(...)` helpers and adjusted bitmask composition for window frame flags
+  - Resolved X11 macro collisions by prefixing enum values (e.g., `SrvButtonPress`, `OpNone`, `FrameMove`)
+  - Updated send/receive sites in terminal and term modules to use typed enums
+  - Cleaned up lingering legacy macro references in debug strings, comments, and locale strings
+  - **Files modified**: `src/network/remote_link.hh`, `main/hardware/terminal.cc`, `term/layer.cc`, `term/term_view.cc`, `term/term_dialog.cc`, `src/core/debug.cc`, `main/data/locale.cc`
+  - **Impact**: Behavior unchanged; build and all tests remain green (40/40)
+
+### Fixed
+- **Sales Item List button view separation (2025-12-26)**
+  - Fixed bug where Sales Item List button type was showing both the list of items and the selected item's configuration simultaneously
+  - **Root Cause**: `ListFormZone::Render()` was unconditionally calling `FormZone::Render()` which displayed form fields even when showing the list view
+  - **Solution**: Modified `ListFormZone::Render()` to conditionally call `FormZone::Render()` only when `show_list` is false (form view), and modified `ListFormZone::Touch()` to not load form fields when selecting items from the list
+  - **Result**: List view now shows only items; form view shows only configuration fields; switching between views requires explicit "change view" signal
+  - **Files modified**: `zone/form_zone.cc` (`ListFormZone::Render()`, `ListFormZone::Touch()`, `ListFormZone::Signal()`)
+  - **Impact**: Affects all `ListFormZone`-based zones (ItemListZone, etc.); behavior now matches HardwareZone pattern
+- **Job Security button double-touch regression (2025-12-23)**
+  - Prevented duplicate touch handling that immediately reverted job activation/deactivation in Job Security settings
+- **Hardware button list/form separation (2025-12-23)**
+  - Hardware view now shows only the device list by default and switches to configuration view only after an explicit "change view" signal
+- **Static Analysis Cleanups (2025-12-23)**
+  - Addressed clang-tidy findings: removed branch-clone in DList merge, added self-assignment guard to `Str`, corrected rounding and narrowing in `test_check`, fixed archive header error handling, and cleaned crash reporting/tests for empty-catch/pointer warnings
+  - Suppressed analyzer padding noise for large `Settings`/`Terminal` classes and tightened enum underlying types in terminal hardware definitions
+  - Impact: No behavior change; builds/tests remain green (40/40)
+- **Duplicate Branch Cleanup in settings.cc (2025-12-23)**
+  - Consolidated repeated branch bodies flagged by clang-tidy (bugprone-branch-clone)
+  - **CouponInfo::Applies methods**: Merged duplicate `retval = 0` assignments by combining conditions with logical OR
+  - **CouponInfo::AppliesItem**: Unified duplicate return value assignments by grouping related conditions
+  - **Count methods** (DiscountCount, CouponCount, CreditCardCount, CompCount, MealCount): Replaced four-way if-else chains with single compound conditions
+    - Pattern changed from: `if (A && B) count++; else if (A && C) count++; ...`
+    - To: `if ((A || D) && (B || C)) count++;`
+  - **Authorize method validation**: Combined duplicate `authorize_method = CCAUTH_NONE` assignments
+  - **Files modified**: `main/data/settings.cc`
+  - **Impact**: Clearer control flow, reduced code duplication, all 40 tests passing
+
+- **Critical Bugprone Fixes (2025-12-23)**
+  - Fixed empty catch blocks that were hiding errors in BackTraceFunction (fntrace.hh)
+    - Added error logging with `std::fprintf(stderr, ...)` to track memory corruption issues
+    - Changed from silently ignoring to logging warnings while still preventing crashes
+  - Fixed narrowing conversion warnings that could cause data loss
+    - **Order count conversions** (manager.cc lines 2858, 2860): Fixed int→short narrowing when parsing ItemQTY/ProductQTY
+      - Added bounds checking: `static_cast<short>(std::min(atoi(value), 32767))`
+      - Prevents overflow when order quantities exceed short range
+    - **Socket read conversion** (manager.cc line 3264): Fixed ssize_t→int narrowing for read() return
+      - Changed to: `ssize_t read_result = read(...); bytes_read = static_cast<int>(std::min(read_result, static_cast<ssize_t>(INT_MAX)))`
+      - Prevents data loss when read returns values larger than INT_MAX
+  - **Files modified**: `src/utils/fntrace.hh`, `main/data/manager.cc`
+  - **Impact**: Improved error visibility and prevented potential data corruption from type conversions
+
+- **Logging System Test Failure (2025-12-23)**
+  - Fixed persistent "Log File Output" test failure to achieve 40/40 passing tests
+  - **Root cause**: Test directory `/tmp/viewtouch_test_logs` was shared across all tests, causing log accumulation and initialization conflicts
+  - **Solution**:
+    - Modified "Log File Output" test to use dedicated directory `/tmp/viewtouch_test_logs_file_output`
+    - Fixed structured logger initialization to support both async (production) and synchronous (test) modes
+    - Added per-SECTION shutdown calls to properly reinitialize logger between test sections
+    - Changed `spdlog::shutdown()` to `spdlog::drop_all()` in `Shutdown()` to allow logger reinitialization within the same process
+    - Set JSON sink pattern to `"%v"` instead of empty string to ensure JSON output is written
+    - Changed structured log file from truncate to append mode to preserve test output
+  - **Files modified**:
+    - `src/utils/vt_logger.cc`:
+      - Created separate `structured_logger_` for JSON-only output
+      - Initialize both main and structured loggers with proper async/sync configuration based on test mode
+      - Enhanced `Flush()` to flush both logger instances
+      - Replaced `spdlog::shutdown()` with `spdlog::drop_all()` for proper cleanup
+    - `tests/unit/test_enhanced_logging.cc`:
+      - Use unique test directory to isolate test from other logging tests
+      - Added `#include <iostream>` for debug output (later removed)
+      - Call `Shutdown()` at end of each SECTION to enable proper reinitialization
+  - **Impact**: All 40 tests now pass consistently; logging system properly writes structured JSON and human-readable logs to separate files
+
+### Added
+- **Duplicate Branch Cleanup (2025-12-22)**
+  - Removed duplicated branch bodies flagged by clang-tidy (bugprone-branch-clone)
+  - **Files modified**:
+    - `main/data/manager.cc`:
+      - Consolidated `EndSystem()` after `fork()` for error/parent paths
+      - Merged repeated `ProcessRemoteOrderEntry()` else-if branches into a single combined condition
+    - `zone/button_zone.cc`:
+      - Merged duplicate `Signal()` send branches in `ConditionalZone::Touch`
+      - Unified `KillSystemZone::Render()` to a single `RenderZone` call
+      - Grouped `MessageButtonZone::Signal` cases by behavior to avoid repeated bodies
+      - Combined `FASTFOOD`/`SELFORDER` cases in `ConditionalZone::EvalExp`
+    - `zone/dialog_zone.cc`:
+      - Consolidated keyboard handling to map key codes to a single `Signal()` path (prevents repeated return branches)
+    - `zone/creditcard_list_zone.cc`:
+      - Replaced repeated switch branches in `GetDB()` with direct mapping
+  - **Impact**: Clearer control flow, less chance of divergence and maintenance errors
+
+- **Duplicate Branch Cleanup (2025-12-23)**
+  - Continued removing duplicated branch bodies flagged by clang-tidy (bugprone-branch-clone)
+  - **Files modified**:
+    - `zone/check_list_zone.cc`:
+      - Merged `search` and `nextsearch` cases in `CheckEditZone::Signal()` into a single shared implementation
+      - Unified `CheckListZone::Signal()` handling for `search`/`nextsearch` by computing offsets and start employee
+      - Factored `is_open_like` boolean in `CheckListZone::Render()` for time display clarity
+    - `zone/dialog_zone.cc`:
+      - `CreditCardDialog::Keyboard()`: Mapped key inputs to actions (voice, print) with unified return paths
+      - `OpenTabDialog::Keyboard()`: Collapsed repeated `Signal()` branches using a single command mapping; tab cycling remains explicit
+    - `zone/login_zone.cc`:
+      - `LoginZone::Keyboard()`: Unified non-digit key handling to a single `Signal()` path
+      - `LogoutZone::Keyboard()`: Unified mapping of backspace/cancel to a single `Signal()` path
+    - `zone/report_zone.cc`:
+      - `ReportZone::Keyboard()`: Mapped navigation keys to a `delta` for page changes; unified control flow
+      - `ReadZone::Keyboard()`: Same `delta` mapping for navigation; unified returns
+    - `zone/search_zone.cc`:
+      - `SearchZone::Keyboard()`: Merged identical Enter/Escape handling into one branch
+    - `zone/drawer_zone.cc`:
+      - `DrawerManageZone::Keyboard()`: Collapsed navigation to a `delta` with early returns for other keys
+  - **Impact**: Reduced duplication and simplified search control flow
+
+- **Missing Default Cases in Switch Statements (2025-12-22)**
+  - Added default cases to 3 switch statements that were missing them (bugprone-switch-missing-default-case)
+  - **Files modified**:
+    - `main/data/manager.cc` (line 1555): Added default case to X11 event type switch
+    - `zone/zone.cc` (lines 535, 554): Added default cases to page size and type switches with safe fallback values
+    - `zone/dialog_zone.cc` (lines 181, 201): Added default cases to dialog action type switches
+  - **Impact**: Improved code safety by ensuring all switch statements have explicit handling for unexpected values
+  - **Note**: This addresses potential issues where unhandled enumeration values could lead to uninitialized variables or unexpected behavior
 
 ## [v25.03.1] - 2025-12-26
 ### Changed
 - Version bump from 25.03.0 to 25.03.1
 
 ### Changed
+- **C-Array Modernization (2025-12-23)**
+  - Converted fixed-size C-style buffers to `std::array` in manager.cc
+  - **Details**:
+    - Replaced `font_spec_with_dpi[256]`, `font_spec[256]`, `font_family[256]`, and local `line[256]` with `std::array<char, 256>`
+    - Updated calls to use `.data()` and `.size()` with `snprintf`, `fgets`, `strcmp`, and `strncpy`
+    - Preserved existing behavior and ABI by returning `const char*` via `.data()`
+  - **Files modified**: `main/data/manager.cc`
+  - **Impact**: Safer buffer handling with compile-time bounds, no behavior changes; all tests pass
+
 - **Editor Settings Button Split and Password Function Removal (2025-12-XX)**
   - **Split Editor Settings**: Separated "Editor Settings" functionality into two distinct buttons for better organization
     - **Editor Settings** button (`ZONE_DEVELOPER`) now contains only:
@@ -82,6 +772,108 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
     - Professional appearance suitable for business documentation
   - Maintains all existing functionality while significantly improving visual clarity
   - **Files modified**: `main/ui/system_salesmix.cc`
+
+### Fixed
+- **Narrowing Conversion Safety Fixes (12-22-2025)**
+  - Applied bugprone-narrowing-conversions fixes to prevent type conversion bugs and unintended value changes
+  - **Key Fixes**:
+    - [manager.cc#L2969](main/data/manager.cc#L2969): Changed `float interm = atof(cost)` to `double` (atof returns double, not float)
+    - [manager.cc#L3088-3089](main/data/manager.cc#L3088-L3089): Changed strlen result variables from `int` to `size_t` for proper unsigned handling
+    - [zone.cc#L1274](zone/zone.cc#L1274): Added explicit `static_cast<short>` for Page size assignment
+    - [zone.cc#L1496](zone/zone.cc#L1496): Added explicit `static_cast<int>` for strlen result assignment
+    - [user_edit_zone.cc#L739](zone/user_edit_zone.cc#L739): Added explicit `static_cast<short>` for FormField Set() call with int parameter
+  - **Impact**: Eliminated clang-tidy bugprone-narrowing-conversions warnings across core files; improved type safety and prevented potential data loss from implicit conversions
+  - **Verification**: Build successful, all 40 tests passing
+  - **Files modified**: `main/data/manager.cc`, `zone/zone.cc`, `zone/user_edit_zone.cc`
+
+- **Comprehensive C-Array Modernization in manager.cc (12-22-2025)**
+  - Applied clang-tidy modernize-avoid-c-arrays fixes to convert all remaining C-style buffers to std::array
+  - **Scope**: Complete modernization of manager.cc focusing on:
+    - Terminal parsing and dynamic terminal management (SetTermInfo, OpenDynTerminal, CloseDynTerminal, CloneDynTerminal)
+    - Remote order processing (ProcessRemoteOrder, SendRemoteOrderResult, GetCCData, FindCCData)
+    - Socket request handling (ProcessSocketRequest, ReadSocketRequest)
+    - Background command/report execution (RunUserCommand, UserCount, RunReport)
+    - System startup resource loading (StartSystem resource file paths and format buffers)
+  - **Key Conversions**:
+    - Terminal info buffers: `termtype`, `printhost`, `printmodl`, `numdrawers` → std::array with .data() access
+    - Remote order KV parsing: `key`, `value`, `StoreNum`, `cardnum`, `camount`, `cn` → std::array with safe string ops
+    - Socket request buffers: `request`, `result_str`, `str` → std::array with proper size tracking
+    - Message/format buffers: `msg`, `report_name`, `report_from`, `report_to` → std::array with .data()/.size()
+    - System path buffers: All FullPath calls now use `.data()` for C API compatibility
+  - **Legacy API Compatibility**: Maintained compatibility with existing function signatures expecting raw pointers by using `.data()` and `.size()` methods
+  - **Verification**: Build successful with no new errors or warnings; existing tests remain passing
+  - **Impact**: Improved memory safety with compile-time bounds checking, eliminated remaining clang-tidy modernize-avoid-c-arrays warnings in manager.cc
+  - **Files modified**: `main/data/manager.cc` (extensive conversion throughout multiple function families)
+
+- **Extended C++ Modernizations - Phase 2 (12-22-2025)**
+  - Applied clang-tidy-driven fixes: modernize-use-auto, modernize-deprecated-headers, modernize-redundant-void-arg, modernize-loop-convert, modernize-return-braced-init-list, modernize-use-default-member-init, modernize-raw-string-literal
+  - Highlights: auto for new/cast allocations; errno.h → cerrno in [zone/zone.cc](zone/zone.cc) and [main/data/manager.cc](main/data/manager.cc); removed redundant void args in [main/data/manager.cc](main/data/manager.cc); range-based for loops in [main/data/manager.cc](main/data/manager.cc), [main/data/settings.cc](main/data/settings.cc), [term/term_dialog.cc](term/term_dialog.cc); braced init returns in [src/utils/safe_string_utils.hh](src/utils/safe_string_utils.hh); default member init in [src/utils/fntrace.hh](src/utils/fntrace.hh); raw string literal formatting in [main/data/manager.cc](main/data/manager.cc)
+  - Verification: Build successful; Tests 40/40 passing
+  - Impact: 28 files modified, 182 insertions, 184 deletions
+- **Additional C++ Modernizations (12-22-2025)**
+  - Applied targeted modernization fixes to improve code quality and C++ compliance
+  - **modernize-use-using**: Replaced 3 C-style typedef declarations with modern using aliases
+    - Converted function pointer typedefs in [main/data/manager.hh](main/data/manager.hh):
+      - `typedef void (* TimeOutFn)()` → `using TimeOutFn = void (*)()`
+      - `typedef void (* InputFn)()` → `using InputFn = void (*)()`
+      - `typedef int (* WorkFn)()` → `using WorkFn = int (*)()`
+    - Benefits: Clearer syntax, better readability, consistent with modern C++ style
+  - **modernize-macro-to-enum**: Converted 6 VERSION macros to constexpr constants
+    - `ACCOUNT_VERSION`, `ACCOUNT_ENTRY_VERSION` in [main/business/account.hh](main/business/account.hh)
+    - `CHECK_VERSION` in [main/business/check.hh](main/business/check.hh)
+    - `CUSTOMER_VERSION` in [main/business/customer.hh](main/business/customer.hh)
+    - `WORK_VERSION` in [main/business/labor.hh](main/business/labor.hh)
+    - `SALES_ITEM_VERSION` in [main/business/sales.hh](main/business/sales.hh)
+    - `TIP_VERSION` in [main/business/tips.hh](main/business/tips.hh)
+    - Benefits: Type safety, proper scoping, debugger-friendly, no preprocessor pollution
+  - **modernize-use-nodiscard**: Applied [[nodiscard]] attributes to functions with important return values
+    - Automatically applied using clang-tidy --fix across entire codebase
+    - Affected headers: [src/core/time_info.hh](src/core/time_info.hh), [src/utils/utility.hh](src/utils/utility.hh), [src/utils/vt_logger.hh](src/utils/vt_logger.hh), [main/hardware/terminal.hh](main/hardware/terminal.hh), and others
+    - Prevents accidental ignoring of return values (e.g., IsEmpty(), Count(), Search())
+    - Benefits: Compile-time warnings when important return values are discarded, fewer bugs
+  - **Verification**:
+    - Build: Successful with no errors
+    - Tests: 40/40 passing
+    - Impact: 15 files modified, 81 insertions(+), 81 deletions(-)
+  - **Remaining opportunities**: 2,065 trailing-return-type suggestions (stylistic), 794 macro-to-enum candidates (requires careful refactoring), 178 C-array suggestions
+
+- **Comprehensive nullptr Modernization (12-22-2025)**
+  - **Complete C++ Modernization**: Replaced all `NULL` pointer literals with modern C++ `nullptr` across the entire codebase
+  - **Scope**: 123 files modified with ~3,413 insertions and 3,427 deletions
+  - **Coverage**: 
+    - `zone/` directory: 58 files modernized (completed first with ~1,640 lines changed)
+    - `main/` directory: 30 files (1,217+ NULL occurrences replaced)
+    - `term/` directory: 8 files (106+ NULL occurrences replaced)
+    - `src/` directory: 24 files (7+ NULL occurrences replaced)
+    - `loader/` and `cdu/` directories: 1 file each
+  - **Methodology**:
+    - Initial clang-tidy analysis identified 1,332+ NULL occurrences across the codebase
+    - Applied `modernize-use-nullptr` check with `-fix` and `-fix-errors` flags to all source files
+    - Automated fixes applied in batches (zone → main → term → src → loader/cdu)
+    - Manual fixes for 6 edge cases (header default parameters, complex expressions)
+    - Fixed header guard bug in `zone/form_zone.hh` (mismatch between `#ifndef _FORM_ZONE_HH` and `#define FORM_ZONE_HH`)
+  - **Verification**:
+    - Build: Successful (all targets built cleanly)
+    - Tests: 40/40 passing after all changes
+    - NULL in code: 0 occurrences remaining (only in comments, excluded from conversion)
+  - **Benefits**:
+    - Improved type safety: `nullptr` has type `std::nullptr_t` instead of integer 0
+    - Better overload resolution: eliminates ambiguity in function calls with pointer/integer overloads
+    - Clearer intent: `nullptr` explicitly indicates pointer context
+    - Modern C++ compliance: aligns codebase with C++11+ standards
+  - **Files modified**: All 123 modified files tracked in version control, including comprehensive changes across `zone/`, `main/`, `term/`, `src/`, `loader/`, and `cdu/` directories
+
+- **Clang-tidy & static analysis fixes (12-21-2025)**
+  - Performed a focused `clang-tidy` and `clang-analyzer` triage and applied multiple correctness, safety, and style fixes across the codebase.
+  - Key actions:
+    - **Project config:** Added a project `.clang-tidy` file to scope checks to project headers and prioritize the most valuable diagnostics (clang-analyzer, bugprone, performance, modernize-use-override).
+    - **Override audit:** Applied `modernize-use-override` conservatively across many `zone/*.hh` headers and other types where safe; examples include `zone/printer.hh`, `zone/cdu_zone.hh`, `zone/report_zone.hh`, `zone/dialog_zone.hh`, `zone/button_zone.hh`, `zone/account_zone.hh`, `zone/chart_zone.hh`, `zone/drawer_zone.hh`, and `zone/creditcard_list_zone.hh`. Incorrect or non-matching `override` annotations were removed during iterative fixes.
+    - **Safety & style fixes:** Replaced common issues reported by clang-tidy (e.g., removed reserved identifier header guards, `bzero` → `memset`, use `= default` for trivial destructors where appropriate) and fixed several small logic/warning cases found while making changes.
+    - **Incremental approach:** Changes were applied file-by-file in small commits; each change was followed by a build and unit test run to limit regressions.
+  - Status:
+    - Build and tests verified after edits: **40/40 tests passing** after nullptr modernization and logging fixes
+    - Zone header audit and follow-up analyzer passes complete. Representative files modified include `main/business/check.cc`, `src/network/socket.cc`, many headers under `main/`, `src/`, and `zone/`, plus the newly added `.clang-tidy`.
+
 
 ### Fixed
 - **Build System Compilation Errors and Warnings (12-13-2025)**

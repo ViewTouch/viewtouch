@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -19,6 +19,9 @@
  *  to determine which food types get sent to the Kitchen Video reports.
  */
 
+#ifndef _VIDEO_ZONE_HH
+#define _VIDEO_ZONE_HH
+
 #define VIDEO_TARGET_NORMAL  0
 #define VIDEO_TARGET_KITCHEN 1
 
@@ -33,10 +36,12 @@ public:
     VideoTargetZone();
 
     // Member Functions
-    int          Type() { return ZONE_VIDEO_TARGET; }
+    int          Type() override { return ZONE_VIDEO_TARGET; }
     int          AddFields();
-    RenderResult Render(Terminal *t, int update_flag);
+    RenderResult Render(Terminal *t, int update_flag) override;
 
-    int LoadRecord(Terminal *t, int record);
-    int SaveRecord(Terminal *t, int record, int write_file);
+    int LoadRecord(Terminal *t, int record) override;
+    int SaveRecord(Terminal *t, int record, int write_file) override;
 };
+
+#endif

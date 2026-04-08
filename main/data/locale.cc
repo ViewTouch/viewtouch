@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -749,7 +749,7 @@ static const TranslationEntry ui_config_translations[] = {
     {"Kill System", "Matar Sistema"},
     {"Kitchen Print Mode", "Modo de Impresión de Cocina"},
     {"Kitchen Video2", "Video de Cocina2"},
-    {"Kitchen Video Print Method", "Método de Impresión de Video de Cocina"},
+    {"Remote Video", "Video Remoto"},
     {"Kitchen Video Show User", "Mostrar Usuario de Video de Cocina"},
     {"Labor Period", "Período Laboral"},
     {"Labor Period Time Clock View", "Vista de Reloj de Tiempo del Período Laboral"},
@@ -1413,7 +1413,7 @@ static const TranslationEntry ui_config_translations[] = {
     {"Kill System", "Matar Sistema"},
     {"Kitchen Print Mode", "Modo de Impresión de Cocina"},
     {"Kitchen Video2", "Video de Cocina2"},
-    {"Kitchen Video Print Method", "Método de Impresión de Video de Cocina"},
+    {"Remote Video", "Video Remoto"},
     {"Kitchen Video Show User", "Mostrar Usuario de Video de Cocina"},
     {"Labor Period", "Período Laboral"},
     {"Labor Period Time Clock View", "Vista de Reloj de Tiempo del Período Laboral"},
@@ -2201,8 +2201,10 @@ static const TranslationEntry settings_config_translations[] = {
     {"Comp", "Compensación"},
     {"Employee Meal", "Comida de Empleado"},
     {"Tip", "Propina"},
-    {"Credit Card Fee (Dollar)", "Tarifa de Tarjeta de Crédito (Dólar)"},
-    {"Credit Card Fee (Percent)", "Tarifa de Tarjeta de Crédito (Porcentaje)"},
+    {"Credit Card Fee", "Tarifa de Tarjeta de Crédito"},
+    {"Credit Card Fee", "Tarifa de Tarjeta de Crédito"},
+    {"Debit Card Fee", "Tarifa de Tarjeta de Débito"},
+    {"Debit Card Fee", "Tarifa de Tarjeta de Débito"},
 
     // Printer ID names
     {"Kitchen1", "Cocina1"},
@@ -2283,8 +2285,8 @@ static const TranslationEntry settings_config_translations[] = {
     {"Wide & Tall", "Ancho y Alto"},
 
     // Kitchen video print method names
-    {"Unmatched", "Sin Coincidir"},
-    {"Matched", "Coincidente"},
+    {"Split Checks", "Dividir Cheques"},
+    {"Consolidate Checks", "Consolidar Cheques"},
 
     // Work order heading names
     {"Standard", "Estándar"},
@@ -2404,8 +2406,10 @@ static const TranslationEntry settings_config_translations[] = {
     {"Credit Card Tip", "Propina de Tarjeta de Crédito"},
     {"Expenses", "Gastos"},
     {"Cash", "Efectivo"},
-    {"Credit Card Fee (Dollar)", "Tarifa de Tarjeta de Crédito (Dólar)"},
-    {"Credit Card Fee (Percent)", "Tarifa de Tarjeta de Crédito (Porcentaje)"},
+    {"Credit Card Fee", "Tarifa de Tarjeta de Crédito"},
+    {"Credit Card Fee", "Tarifa de Tarjeta de Crédito"},
+    {"Debit Card Fee", "Tarifa de Tarjeta de Débito"},
+    {"Debit Card Fee", "Tarifa de Tarjeta de Débito"},
     {"Room Charge", "Cargo de Habitación"},
     {"Unknown Credit Card", "Tarjeta de Crédito Desconocida"},
     {"Unknown Discount", "Descuento Desconocido"},
@@ -2568,7 +2572,7 @@ static const TranslationEntry settings_config_translations[] = {
     {"Kill System", "Matar Sistema"},
     {"Kitchen Print Mode", "Modo de Impresión de Cocina"},
     {"Kitchen Video2", "Video de Cocina2"},
-    {"Kitchen Video Print Method", "Método de Impresión de Video de Cocina"},
+    {"Remote Video", "Video Remoto"},
     {"Kitchen Video Show User", "Mostrar Usuario de Video de Cocina"},
     {"Labor Period", "Período Laboral"},
     {"Labor Period Time Clock View", "Vista de Reloj de Tiempo del Período Laboral"},
@@ -3340,7 +3344,7 @@ static const TranslationEntry extended_translations[] = {
     {"Kill System", "Matar Sistema"},
     {"Kitchen Print Mode", "Modo de Impresión de Cocina"},
     {"Kitchen Video2", "Video de Cocina2"},
-    {"Kitchen Video Print Method", "Método de Impresión de Video de Cocina"},
+    {"Remote Video", "Video Remoto"},
     {"Kitchen Video Show User", "Mostrar Usuario de Video de Cocina"},
     {"Labor Period", "Período Laboral"},
     {"Labor Period Time Clock View", "Vista de Reloj de Tiempo del Período Laboral"},
@@ -3820,8 +3824,8 @@ static const TranslationEntry extended_translations[] = {
     {"Scheduled Restart Settings", "Configuración de Reinicio Programado"},
     {"Kitchen Video Order Alert Settings", "Configuración de Alertas de Pedidos de Video de Cocina"},
     {"TermError", "Error de Terminal"},
-    {"SERVER_ZONEDATA received, calling ReadZone()", "Datos de zona del servidor recibidos, llamando ReadZone()"},
-    {"SERVER_ZONEDATA: ReadZone() returned", "Datos de zona del servidor: ReadZone() retornó"},
+    {"ServerProtocol::SrvZoneData received, calling ReadZone()", "Datos de zona del servidor recibidos, llamando ReadZone()"},
+    {"ServerProtocol::SrvZoneData: ReadZone() returned", "Datos de zona del servidor: ReadZone() retornó"},
     {"Unknown check version '%d'", "Versión de cheque desconocida '%d'"},
     {"Warning Time (minutes)", "Tiempo de Advertencia (minutos)"},
     {"Warning Color", "Color de Advertencia"},
@@ -3869,7 +3873,7 @@ static const char* LookupHardcodedTranslation(const char* str, int lang) {
 
 void StartupLocalization()
 {
-    if (setlocale(LC_ALL, "") == NULL)
+    if (setlocale(LC_ALL, "") == nullptr)
     {
 	    (void) fprintf(stderr, "Cannot set locale.\n");
 	    exit(1);
@@ -3879,7 +3883,7 @@ void StartupLocalization()
 // Global translation function that can be used anywhere
 const genericChar* GlobalTranslate(const genericChar* str)
 {
-    if (MasterLocale == NULL)
+    if (MasterLocale == nullptr)
         return str;
 
     return MasterLocale->Translate(str, global_current_language, 0);
@@ -4132,7 +4136,7 @@ PhraseEntry PhraseData[] = {
     {15, "Pre-Auth Complete"},
     {15, "Fast Food"},
 
-    {-1, NULL}
+    {-1, nullptr}
 };
 
 /*********************************************************************
@@ -4142,15 +4146,15 @@ PhraseEntry PhraseData[] = {
 PhraseInfo::PhraseInfo()
 {
     FnTrace("PhraseInfo::PhraseInfo()");
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
 }
 
 PhraseInfo::PhraseInfo(const char* k, const genericChar* v)
 {
     FnTrace("PhraseInfo::PhraseInfo(const char* , const char* )");
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     key.Set(k);
     value.Set(v);
 }
@@ -4180,9 +4184,9 @@ int PhraseInfo::Write(OutputDataFile &df, int version)
 Locale::Locale()
 {
     FnTrace("Locale::Locale()");
-    next = NULL;
-    fore = NULL;
-    search_array = NULL;
+    next = nullptr;
+    fore = nullptr;
+    search_array = nullptr;
     array_size = 0;
 }
 
@@ -4220,7 +4224,7 @@ int Locale::Load(const char* file)
     df.Read(count);
     for (int i = 0; i < count; ++i)
     {
-        PhraseInfo *ph = new PhraseInfo;
+        auto *ph = new PhraseInfo;
         ph->Read(df, 1);
         Add(ph);
     }
@@ -4247,7 +4251,7 @@ int Locale::Save()
     df.Write(0);
 
     df.Write(PhraseCount());
-    for (PhraseInfo *ph = PhraseList(); ph != NULL; ph = ph->next)
+    for (PhraseInfo *ph = PhraseList(); ph != nullptr; ph = ph->next)
         ph->Write(df, 1);
     return 0;
 }
@@ -4255,13 +4259,13 @@ int Locale::Save()
 int Locale::Add(PhraseInfo *ph)
 {
     FnTrace("Locale::Add()");
-    if (ph == NULL)
+    if (ph == nullptr)
         return 1;
 
     if (search_array)
     {
 	free(search_array);
-        search_array = NULL;
+        search_array = nullptr;
         array_size = 0;
     }
 
@@ -4278,13 +4282,13 @@ int Locale::Add(PhraseInfo *ph)
 int Locale::Remove(PhraseInfo *ph)
 {
     FnTrace("Locale::Remove()");
-    if (ph == NULL)
+    if (ph == nullptr)
         return 1;
 
     if (search_array)
     {
 	free(search_array);
-        search_array = NULL;
+        search_array = nullptr;
         array_size = 0;
     }
     return phrase_list.Remove(ph);
@@ -4298,7 +4302,7 @@ int Locale::Purge()
     if (search_array)
     {
 	free(search_array);
-        search_array = NULL;
+        search_array = nullptr;
         array_size = 0;
     }
     return 0;
@@ -4317,8 +4321,8 @@ int Locale::BuildSearchArray()
     }
 
     array_size = PhraseCount();
-    search_array = (PhraseInfo **)calloc(sizeof(PhraseInfo *), (array_size + 1));
-    if (search_array == NULL)
+    search_array = (PhraseInfo **)calloc((array_size + 1), sizeof(PhraseInfo *));
+    if (search_array == nullptr)
         return 1;
 
     PhraseInfo *ph = PhraseList();
@@ -4336,9 +4340,9 @@ int Locale::BuildSearchArray()
 PhraseInfo *Locale::Find(const char* key)
 {
     FnTrace("Locale::Find()");
-    if (key == NULL)
-        return NULL;
-    if (search_array == NULL)
+    if (key == nullptr)
+        return nullptr;
+    if (search_array == nullptr)
         BuildSearchArray();
 
     int l = 0;
@@ -4356,7 +4360,7 @@ PhraseInfo *Locale::Find(const char* key)
         else
             return ph;
     }
-    return NULL;
+    return nullptr;
 }
 
 /****
@@ -4371,7 +4375,7 @@ const char* Locale::Translate(const char* str, int lang, int clear)
     if (lang == LANG_PHRASE)
     {
         PhraseInfo *ph = Find(str);
-        if (ph == NULL)
+        if (ph == nullptr)
         {
             // If clear flag is set and phrase not found, return empty string
             if (clear)
@@ -4418,19 +4422,19 @@ int Locale::NewTranslation(const char* str, const genericChar* value)
         if (search_array)
         {
 	    free(search_array);
-            search_array = NULL;
+            search_array = nullptr;
             array_size = 0;
         }
         return 0;
     }
 
-    if (value == NULL || strlen(value) <= 0)
+    if (value == nullptr || strlen(value) <= 0)
         return 1;
 
     if (search_array)
     {
 	free(search_array);
-        search_array = NULL;
+        search_array = nullptr;
         array_size = 0;
     }
     return Add(new PhraseInfo(str, value));
@@ -4447,7 +4451,7 @@ const char* Locale::TimeDate(Settings *s, const TimeInfo &timevar, int format, i
 	// Mon Oct  1 13:14:27 PDT 2001: some work done in this direction - JMK
 
     static genericChar buffer[256];
-    if (str == NULL)
+    if (str == nullptr)
         str = buffer;
 
     if (!timevar.IsSet())
@@ -4591,7 +4595,7 @@ char* Locale::Page(int current, int page_max, int lang, genericChar* str)
 {
     FnTrace("Locale::Page()");
     static genericChar buffer[32];
-    if (str == NULL)
+    if (str == nullptr)
         str = buffer;
 
     // Ensure current and page_max are valid

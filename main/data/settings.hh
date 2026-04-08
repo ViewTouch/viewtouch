@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -18,8 +18,8 @@
  * General system settings
  */
 
-#ifndef _SETTINGS_HH
-#define _SETTINGS_HH
+#ifndef SETTINGS_HH
+#define SETTINGS_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
@@ -42,22 +42,28 @@ constexpr int SETTINGS_VERSION = 106;  // READ ABOVE
 #define MAX_FOOTER_LINES 4
 #define MAX_JOBS         20
 
-// Receipt printing options
-#define RECEIPT_SEND      1
-#define RECEIPT_FINALIZE  2
-#define RECEIPT_BOTH      3
-#define RECEIPT_NONE      0
+// Receipt printing options (converted from macros to enum constants)
+enum ReceiptPrintMode : std::uint8_t {
+    RECEIPT_NONE     = 0,
+    RECEIPT_SEND     = 1,
+    RECEIPT_FINALIZE = 2,
+    RECEIPT_BOTH     = 3
+};
 
-// Drawer report options
-#define DRAWER_PRINT_PULL    1
-#define DRAWER_PRINT_BALANCE 2
-#define DRAWER_PRINT_BOTH    3
-#define DRAWER_PRINT_NEVER   0
+// Drawer report options (converted from macros to enum constants)
+enum DrawerPrintMode : std::uint8_t {
+    DRAWER_PRINT_NEVER   = 0,
+    DRAWER_PRINT_PULL    = 1,
+    DRAWER_PRINT_BALANCE = 2,
+    DRAWER_PRINT_BOTH    = 3
+};
 
-// Cash Drawer options
-#define DRAWER_NORMAL     0 // unrestricted access to drawers for employees
-#define DRAWER_ASSIGNED   1 // drawers must be assigned to be used
-#define DRAWER_SERVER     2 // each server has a drawer to maintain for shift
+// Cash Drawer options (converted from macros to enum constants)
+enum DrawerMode : std::uint8_t {
+    DRAWER_NORMAL   = 0, // unrestricted access to drawers for employees
+    DRAWER_ASSIGNED = 1, // drawers must be assigned to be used
+    DRAWER_SERVER   = 2  // each server has a drawer to maintain for shift
+};
 
 // Terminal Hardware -- seems to be obsolete, BAK
 #define HARDWARE_NONE     0 // No additional hardware for terminal
@@ -71,7 +77,7 @@ constexpr int SETTINGS_VERSION = 106;  // READ ABOVE
 #define ROUNDING_UP_GRATUITY  2  // price rounded up to nearest nickel
 
 // Meal periods
-#define INDEX_ANY         -1  // any period
+#define INDEX_ANY         (-1)  // any period
 #define INDEX_GENERAL      0  // All day
 #define INDEX_BREAKFAST    1
 #define INDEX_BRUNCH       2
@@ -208,7 +214,7 @@ extern int WeekDays[];
 
 #define LOCAL_MEDIA       1
 #define GLOBAL_MEDIA      0
-#define ALL_MEDIA        -1
+#define ALL_MEDIA        (-1)
 #define GLOBAL_MEDIA_ID   50000
 
 #define ACTIVE_MEDIA      1
@@ -228,8 +234,7 @@ extern int   PayPeriodValue[];
 extern const genericChar* MealStartName[];
 extern int   MealStartValue[];
 
-extern const genericChar* DrawerModeName[];
-extern int   DrawerModeValue[];
+// DrawerMode uses enum utilities (DrawerModeType) instead of static arrays
 
 extern const genericChar* SaleCreditName[];
 extern int   SaleCreditValue[];
@@ -237,26 +242,19 @@ extern int   SaleCreditValue[];
 extern const genericChar* SalesPeriodName[];
 extern int   SalesPeriodValue[];
 
-extern const genericChar* ReceiptPrintName[];
-extern int   ReceiptPrintValue[];
+// ReceiptPrint uses enum utilities (ReceiptPrintType) instead of static arrays
 
-extern const genericChar* DrawerPrintName[];
-extern int   DrawerPrintValue[];
+// DrawerPrint uses enum utilities (DrawerPrintType) instead of static arrays
 
-extern const genericChar* RoundingName[];
-extern int   RoundingValue[];
+// Rounding uses enum utilities (PriceRoundingType) instead of static arrays
 
 extern const genericChar* PrinterName[];
 extern int   PrinterValue[];
 
-extern const genericChar* MeasureSystemName[];
-extern int   MeasureSystemValue[];
-extern const genericChar* DateFormatName[];
-extern int   DateFormatValue[];
-extern const genericChar* NumberFormatName[];
-extern int   NumberFormatValue[];
-extern const genericChar* TimeFormatName[];
-extern int   TimeFormatValue[];
+// MeasureSystem uses enum utilities (MeasureSystemType) instead of static arrays
+// DateFormat uses enum utilities (DateFormatType) instead of static arrays
+// NumberFormat uses enum utilities (NumberFormatType) instead of static arrays
+// TimeFormat uses enum utilities (TimeFormatType) instead of static arrays
 
 extern const genericChar* AuthorizeName[];
 extern int   AuthorizeValue[];
@@ -324,7 +322,7 @@ public:
     int local;
 
     MediaInfo();
-    virtual ~MediaInfo() {}
+    virtual ~MediaInfo() = default;
 
     virtual MediaInfo *Copy() = 0;
     virtual int        Read(InputDataFile &df, int version) = 0;
@@ -348,15 +346,15 @@ public:
 
     // Constructor
     DiscountInfo();
-    ~DiscountInfo() {}
+    ~DiscountInfo() override = default;
 
     // Member Functions
-    DiscountInfo *Copy();
-    int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    DiscountInfo *Copy() override;
+    int Read(InputDataFile &df, int version) override;
+    int Write(OutputDataFile &df, int version) override;
 
-    DiscountInfo *Next() { return next; }
-    DiscountInfo *Fore() { return fore; }
+    DiscountInfo *Next() override { return next; }
+    DiscountInfo *Fore() override { return fore; }
 };
 
 class CompInfo : public MediaInfo
@@ -369,15 +367,15 @@ public:
 
     // Constructor
     CompInfo();
-    ~CompInfo() {}
+    ~CompInfo() override = default;
 
     // Member Functions
-    CompInfo *Copy();
-    int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    CompInfo *Copy() override;
+    int Read(InputDataFile &df, int version) override;
+    int Write(OutputDataFile &df, int version) override;
 
-    CompInfo *Next() { return next; }
-    CompInfo *Fore() { return fore; }
+    CompInfo *Next() override { return next; }
+    CompInfo *Fore() override { return fore; }
 };
 
 class CouponInfo : public MediaInfo
@@ -401,16 +399,16 @@ public:
 
     // Constructor
     CouponInfo();
-    ~CouponInfo() {}
+    ~CouponInfo() override = default;
 
     // Member Functions
-    CouponInfo *Copy();
-    int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    CouponInfo *Copy() override;
+    int Read(InputDataFile &df, int version) override;
+    int Write(OutputDataFile &df, int version) override;
 
-    CouponInfo *Next() { return next; }
-    CouponInfo *Fore() { return fore; }
-    int Apply(SubCheck *subcheck, Payment *payment = NULL);
+    CouponInfo *Next() override { return next; }
+    CouponInfo *Fore() override { return fore; }
+    int Apply(SubCheck *subcheck, Payment *payment = nullptr);
     int Applies(SubCheck *subcheck, int aut = 0);
     int Applies(SalesItem *item, int aut = 0);
     int AppliesTime();
@@ -433,12 +431,12 @@ public:
     CreditCardInfo();
 
     // Member Functions
-    CreditCardInfo *Copy();
-    int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    CreditCardInfo *Copy() override;
+    int Read(InputDataFile &df, int version) override;
+    int Write(OutputDataFile &df, int version) override;
 
-    CreditCardInfo *Next() { return next; }
-    CreditCardInfo *Fore() { return fore; }
+    CreditCardInfo *Next() override { return next; }
+    CreditCardInfo *Fore() override { return fore; }
 };
 
 class MealInfo : public MediaInfo
@@ -454,12 +452,12 @@ public:
     MealInfo();
 
     // Member Functions
-    MealInfo *Copy();
-    int Read(InputDataFile &df, int version);
-    int Write(OutputDataFile &df, int version);
+    MealInfo *Copy() override;
+    int Read(InputDataFile &df, int version) override;
+    int Write(OutputDataFile &df, int version) override;
 
-    MediaInfo *Next() { return next; }
-    MediaInfo *Fore() { return fore; }
+    MediaInfo *Next() override { return next; }
+    MediaInfo *Fore() override { return fore; }
 };
 
 class TermInfo
@@ -536,6 +534,11 @@ public:
     const genericChar* Name();
     void DebugPrint(int printall = 0);
 };
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wanalyzer-optin.performance.Padding"
+#endif
 
 class Settings
 {
@@ -829,11 +832,11 @@ public:
     char* TenderName( int tender_type, int tender_id, genericChar* str );
     // returns text name of tender
     int LaborPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end);
-    int SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end, int period_view, TimeInfo *fiscal = NULL);
+    int SetPeriod(TimeInfo &ref, TimeInfo &start, TimeInfo &end, int period_view, TimeInfo *fiscal = nullptr);
     // Calculates start & end of periods given reference time
     int OvertimeWeek(const TimeInfo &ref, TimeInfo &start, TimeInfo &end);
     // Calculates wage overtime week for given time
-    char* StoreNum( char* dest = 0);
+    char* StoreNum( char* dest = nullptr);
 
     int MediaFirstID(MediaInfo *mi, int idnum);
     int MediaIsDupe(MediaInfo *mi, int id, int thresh = 0);
@@ -903,7 +906,7 @@ public:
 
     // term functions
     TermInfo *TermList() { return term_list.Head(); }
-    TermInfo *FindServer(const genericChar* displaystr = NULL);
+    TermInfo *FindServer(const genericChar* displaystr = nullptr);
     TermInfo *FindTerminal(const char* displaystr);
     TermInfo *FindTermByRecord(int record);
     int TermCount()      { return term_list.Count(); }
@@ -913,6 +916,7 @@ public:
     int AddFront(TermInfo *ti);
     int Remove(TermInfo *ti);
     int TermReport(Terminal *t, Report *r);
+    bool IsPrinterShared(const genericChar* host, int port, TermInfo *exclude = nullptr);
 
     // printer functions
     PrinterInfo *PrinterList() { return printer_list.Head(); }
@@ -924,5 +928,9 @@ public:
     int PrinterReport(Terminal *t, Report *r);
     int GetDrawerFloatValue();
 };
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 #endif

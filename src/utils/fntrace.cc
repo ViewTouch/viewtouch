@@ -1,4 +1,5 @@
 #include "fntrace.hh"
+#include "cpp23_utils.hh"
 
 #include <unistd.h>
 #include <ctime>
@@ -93,9 +94,9 @@ const char* FnReturnLast()
     last[0] = '\0';
     const int depth_snapshot = BT_Depth.load();
     if (depth_snapshot == 1) {
-        std::snprintf(last, STRLENGTH, "%s", BT_Stack[0].function);
+        vt::cpp23::format_to_buffer(last, STRLENGTH, "{}", BT_Stack[0].function);
     } else if (depth_snapshot > 1) {
-        std::snprintf(last, STRLENGTH, "%s", BT_Stack[depth_snapshot - 2].function);
+        vt::cpp23::format_to_buffer(last, STRLENGTH, "{}", BT_Stack[depth_snapshot - 2].function);
     }
 
     return last;
