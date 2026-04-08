@@ -24,6 +24,7 @@
 #include "utility.hh"
 #include "list_utility.hh"
 #include <string>
+#include <vector>
 
 
 /**** Definitions ****/
@@ -247,7 +248,7 @@ public:
 
 class ItemDB
 {
-    SalesItem **name_array; // array of items for binary search
+    std::vector<SalesItem*> name_array; // array of items for binary search
     int         array_size;
     int         last_id;    // last id used
 

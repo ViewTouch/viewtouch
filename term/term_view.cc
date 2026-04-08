@@ -58,6 +58,7 @@
 #include "touch_screen.hh"
 #include "layer.hh"
 #include "generic_char.hh"
+#include "buffer_pool.hh"
 
 #ifdef CREDITMCVE
 #include "term_credit_mcve.hh"
@@ -2892,18 +2893,18 @@ static bool RemoveCheckeredBackground(png_bytep** row_pointers_ptr, int width, i
             fprintf(stderr, "RemoveCheckeredBackground: Row pointer array size overflow\n");
             return false;
         }
-        new_row_pointers = (png_bytep*)malloc(ptrs_bytes);
+        new_row_pointers = static_cast<png_bytep*>(vt::BufferPool::Instance().Acquire(ptrs_bytes));
         if (!new_row_pointers) {
             fprintf(stderr, "RemoveCheckeredBackground: Cannot allocate new row pointers\n");
             return false;
         }
 
         for (int y = 0; y < height; y++) {
-            new_row_pointers[y] = (png_byte*)malloc(new_rowbytes);
+            new_row_pointers[y] = static_cast<png_byte*>(vt::BufferPool::Instance().Acquire(new_rowbytes));
             if (!new_row_pointers[y]) {
                 fprintf(stderr, "RemoveCheckeredBackground: Cannot allocate new row data\n");
-                for (int i = 0; i < y; i++) free(new_row_pointers[i]);
-                free(new_row_pointers);
+                for (int i = 0; i < y; i++) vt::BufferPool::Instance().Release(new_row_pointers[i], new_rowbytes);
+                vt::BufferPool::Instance().Release(new_row_pointers, ptrs_bytes);
                 return false;
             }
 
@@ -3097,7 +3098,8 @@ Xpm *LoadPNGFile(const char* file_name)
         fclose(fp);
         return nullptr;
     }
-    png_bytep* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * (size_t)height);
+    size_t rowptrs_bytes = sizeof(png_bytep) * (size_t)height;
+    png_bytep* row_pointers = static_cast<png_bytep*>(vt::BufferPool::Instance().Acquire(rowptrs_bytes));
     if (!row_pointers) {
         fprintf(stderr, "LoadPNGFile: Cannot allocate row pointers\n");
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
@@ -3106,11 +3108,11 @@ Xpm *LoadPNGFile(const char* file_name)
     }
 
     for (int y = 0; y < height; y++) {
-        row_pointers[y] = (png_byte*)malloc(rowbytes);
+        row_pointers[y] = static_cast<png_byte*>(vt::BufferPool::Instance().Acquire((size_t)rowbytes));
         if (!row_pointers[y]) {
             fprintf(stderr, "LoadPNGFile: Cannot allocate row data\n");
-            for (int i = 0; i < y; i++) free(row_pointers[i]);
-            free(row_pointers);
+            for (int i = 0; i < y; i++) vt::BufferPool::Instance().Release(row_pointers[i], (size_t)rowbytes);
+            vt::BufferPool::Instance().Release(row_pointers, rowptrs_bytes);
             png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
             fclose(fp);
             return nullptr;
@@ -3125,9 +3127,9 @@ Xpm *LoadPNGFile(const char* file_name)
     if (checkered_removed && row_pointers != original_row_pointers) {
         // Free original row pointers if they were replaced
         for (int y = 0; y < height; y++) {
-            free(original_row_pointers[y]);
+            vt::BufferPool::Instance().Release(original_row_pointers[y], (size_t)rowbytes);
         }
-        free(original_row_pointers);
+        vt::BufferPool::Instance().Release(original_row_pointers, rowptrs_bytes);
         fprintf(stderr, "LoadPNGFile: Checkered background removed, image converted to RGBA\n");
     }
 
@@ -3161,7 +3163,7 @@ Xpm *LoadPNGFile(const char* file_name)
             char *ximage_data = nullptr;
             if (safe_mul3_size_t((size_t)width, (size_t)height, 4, ximage_size) &&
                 ximage_size <= static_cast<size_t>(Constants::MAX_IMAGE_BYTES)) {
-                ximage_data = (char*)malloc(ximage_size);
+                ximage_data = static_cast<char*>(vt::BufferPool::Instance().Acquire(ximage_size));
             } else {
                 ximage_data = nullptr;
             }
@@ -3172,7 +3174,7 @@ Xpm *LoadPNGFile(const char* file_name)
             if (!ximage) {
                 fprintf(stderr, "LoadPNGFile: Cannot create XImage\n");
                 if (ximage_data) {
-                    free(ximage_data);
+                    vt::BufferPool::Instance().Release(ximage_data, ximage_size);
                     ximage_data = nullptr;
                 }
                 XFreePixmap(Dis, pixmap);
@@ -3187,7 +3189,7 @@ Xpm *LoadPNGFile(const char* file_name)
                     size_t mask_bytes = 0;
                     size_t mask_row = ((size_t)width + 7) / 8;
                     if (safe_mul_size_t(mask_row, (size_t)height, mask_bytes) && mask_bytes > 0 && mask_bytes <= static_cast<size_t>(Constants::MAX_IMAGE_BYTES)) {
-                        mask_image_data = (char*)malloc(mask_bytes);
+                        mask_image_data = static_cast<char*>(vt::BufferPool::Instance().Acquire(mask_bytes));
                         if (mask_image_data) {
                             mask_image = XCreateImage(Dis, visual, 1, XYBitmap, 0, mask_image_data,
                                                        width, height, 8, 0);
@@ -3195,7 +3197,7 @@ Xpm *LoadPNGFile(const char* file_name)
                                 // Initialize mask to all transparent
                                 memset(mask_image->data, 0, mask_bytes);
                             } else {
-                                free(mask_image_data);
+                                vt::BufferPool::Instance().Release(mask_image_data, mask_bytes);
                                 mask_image_data = nullptr;
                             }
                         }
@@ -3257,9 +3259,21 @@ Xpm *LoadPNGFile(const char* file_name)
                     GC mask_gc = XCreateGC(Dis, mask, 0, NULL);
                     XPutImage(Dis, mask, mask_gc, mask_image, 0, 0, 0, 0, width, height);
                     XFreeGC(Dis, mask_gc);
+                    if (mask_image->data) {
+                        size_t mask_row = ((size_t)width + 7) / 8;
+                        size_t mask_bytes = mask_row * (size_t)height;
+                        vt::BufferPool::Instance().Release(mask_image->data, mask_bytes);
+                        mask_image->data = nullptr;
+                    }
                     XDestroyImage(mask_image);
                 }
-                
+
+                if (ximage) {
+                    if (ximage->data) {
+                        vt::BufferPool::Instance().Release(ximage->data, ximage_size);
+                        ximage->data = nullptr;
+                    }
+                }
                 XDestroyImage(ximage);
                 fprintf(stderr, "LoadPNGFile: Successfully loaded PNG with%s transparency\n",
                         mask ? "" : "out");
@@ -3272,9 +3286,9 @@ Xpm *LoadPNGFile(const char* file_name)
 
     // Cleanup
     for (int y = 0; y < height; y++) {
-        free(row_pointers[y]);
+        vt::BufferPool::Instance().Release(row_pointers[y], (size_t)rowbytes);
     }
-    free(row_pointers);
+    vt::BufferPool::Instance().Release(row_pointers, rowptrs_bytes);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     fclose(fp);
 
@@ -3342,7 +3356,7 @@ Xpm *LoadJPEGFile(const char* file_name)
         char *jpeg_image_data = nullptr;
         if (safe_mul3_size_t((size_t)width, (size_t)height, 4, jpeg_image_size) &&
             jpeg_image_size <= static_cast<size_t>(Constants::MAX_IMAGE_BYTES)) {
-            jpeg_image_data = (char*)malloc(jpeg_image_size);
+            jpeg_image_data = static_cast<char*>(vt::BufferPool::Instance().Acquire(jpeg_image_size));
         }
         XImage *ximage = nullptr;
         if (jpeg_image_data) {
@@ -3371,10 +3385,14 @@ Xpm *LoadJPEGFile(const char* file_name)
 
         if (ximage) {
             XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
+            if (ximage->data) {
+                vt::BufferPool::Instance().Release(ximage->data, jpeg_image_size);
+                ximage->data = nullptr;
+            }
             XDestroyImage(ximage);
         } else {
             if (jpeg_image_data) {
-                free(jpeg_image_data);
+                vt::BufferPool::Instance().Release(jpeg_image_data, jpeg_image_size);
                 jpeg_image_data = nullptr;
             }
             XFreePixmap(Dis, pixmap);
@@ -3453,7 +3471,7 @@ Xpm *LoadGIFFile(const char* file_name)
         char *gif_image_data = nullptr;
         if (safe_mul3_size_t((size_t)width, (size_t)height, 4, gif_image_size) &&
             gif_image_size <= static_cast<size_t>(Constants::MAX_IMAGE_BYTES)) {
-            gif_image_data = (char*)malloc(gif_image_size);
+            gif_image_data = static_cast<char*>(vt::BufferPool::Instance().Acquire(gif_image_size));
         }
         XImage *ximage = nullptr;
         if (gif_image_data) {
@@ -3481,10 +3499,14 @@ Xpm *LoadGIFFile(const char* file_name)
 
         if (ximage) {
             XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
+            if (ximage->data) {
+                vt::BufferPool::Instance().Release(ximage->data, gif_image_size);
+                ximage->data = nullptr;
+            }
             XDestroyImage(ximage);
         } else {
             if (gif_image_data) {
-                free(gif_image_data);
+                vt::BufferPool::Instance().Release(gif_image_data, gif_image_size);
                 gif_image_data = nullptr;
             }
             XFreePixmap(Dis, pixmap);

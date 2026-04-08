@@ -23,6 +23,7 @@
 
 #include "utility.hh"
 #include "list_utility.hh"
+#include <vector>
 
 
 /**** Definitions & Global Data ****/
@@ -190,8 +191,8 @@ public:
     Str       filename;
     int       changed;
 
-    Employee **name_array; // cached name list
-    Employee **id_array;   // cached id list
+    std::vector<Employee*> name_array; // cached name list
+    std::vector<Employee*> id_array;   // cached id list
 
     // Constructor
     UserDB();

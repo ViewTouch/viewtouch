@@ -425,12 +425,16 @@ namespace vt_crash {
             return oss.str();
         }
         
-        // Get symbols
-        char** symbols = backtrace_symbols(buffer.data(), num_frames);
-        if (symbols == nullptr) {
+        // Get symbols (backtrace_symbols uses malloc internally)
+        char** raw_symbols = backtrace_symbols(buffer.data(), num_frames);
+        if (raw_symbols == nullptr) {
             oss << "Failed to get stack trace symbols\n";
             return oss.str();
         }
+
+        // RAII wrapper to ensure symbols are freed via free()
+        struct BacktraceSymbolsDeleter { void operator()(char** p) const noexcept { std::free(p); } };
+        std::unique_ptr<char*, BacktraceSymbolsDeleter> symbols(raw_symbols);
         
         // Get executable path for addr2line
         std::string exe_path = GetExecutablePath();
@@ -453,7 +457,7 @@ namespace vt_crash {
                 oss << decoded_info;
             } else {
                 // Fall back to backtrace_symbols and dladdr
-                std::string symbol_str = symbols[i];
+                    std::string symbol_str = symbols.get()[i];
                 
                 // Try dladdr for better function info
                 std::string func_info = GetFunctionInfo(buffer[static_cast<std::size_t>(i)]);
@@ -487,7 +491,7 @@ namespace vt_crash {
             oss << "\n";
         }
         
-        free(symbols);
+        // symbols will be freed automatically by unique_ptr's deleter
         #else
         oss << "Stack trace not available on this platform\n";
         oss << "(execinfo.h is a GNU/Linux extension)\n";

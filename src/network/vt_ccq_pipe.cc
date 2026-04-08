@@ -194,7 +194,7 @@ int SocketToSerial(int listen_port, const char* pinpad_device)
             FD_SET(pinpad_fd, &in_fds);
             FD_SET(listen_fd, &in_fds);
             timeout.tv_sec = 0;
-            timeout.tv_usec = 10;
+            timeout.tv_usec = 10000; // 10 ms: avoid tight spin-wait
             reads = select(nfds, &in_fds, NULL, NULL, &timeout);
             if (reads > 0)
             {
@@ -314,7 +314,7 @@ int SocketToSocket(int listen_port, const char* host, int port)
             FD_ZERO(&in_fds);
             FD_SET(listen_fd, &in_fds);
             timeout.tv_sec = 0;
-            timeout.tv_usec = 10;
+            timeout.tv_usec = 10000; // 10 ms: avoid tight spin-wait
             reads = select(nfds, &in_fds, NULL, NULL, &timeout);
             if (reads > 0)
             {

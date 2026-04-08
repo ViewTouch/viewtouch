@@ -72,7 +72,11 @@ void Logger::Initialize(
             1024 * 1024 * 10, // 10MB per file
             5                  // Keep 5 files max
         );
-        file_sink->set_level(spdlog::level::trace); // Capture everything in file
+    #ifdef DEBUG
+        file_sink->set_level(spdlog::level::trace); // Capture everything in file for debug builds
+    #else
+        file_sink->set_level(spdlog::level::info); // Keep structured file logs lean in Release
+    #endif
         sinks.push_back(file_sink);
 
         // 2. Structured JSON log file for analysis
@@ -112,7 +116,11 @@ void Logger::Initialize(
         }
 
         // Create async logger with thread pool
-        spdlog::init_thread_pool(8192, 1); // Queue size, thread count
+    #ifdef DEBUG
+        spdlog::init_thread_pool(8192, 1); // Debug: large queue
+    #else
+        spdlog::init_thread_pool(1024, 1); // Release: conservative queue
+    #endif
         logger_ = std::make_shared<spdlog::async_logger>(
             "ViewTouch",
             sinks.begin(),
@@ -274,8 +282,11 @@ void Logger::log_event(const LogEvent& event) {
     auto logger = GetLogger();
     if (!logger) return;
 
-    // Log structured JSON to dedicated sink
-    logger->log(event.level, "{}", event.to_json().dump());
+    // Avoid expensive JSON serialization for high-frequency logs.
+    // Emit structured JSON only for warnings and above by default.
+    if (event.level >= spdlog::level::warn) {
+        logger->log(event.level, "{}", event.to_json().dump());
+    }
 
     // Also log human-readable version to regular logs
     std::string readable_msg = event.event_type;

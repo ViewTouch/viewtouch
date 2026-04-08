@@ -412,7 +412,6 @@ ItemDB::ItemDB()
 {
     last_id           = 0;
     changed           = 0;
-    name_array        = NULL;
     array_size        = 0;
     merchandise_count = 0;
     merchandise_sales = 0;
@@ -505,10 +504,10 @@ int ItemDB::Add(SalesItem *si)
     if (si == NULL)
         return 1;
 
-    if (name_array != NULL)
+    if (!name_array.empty())
     {
-        delete [] name_array;
-        name_array = NULL;
+        name_array.clear();
+        name_array.shrink_to_fit();
         array_size = 0;
     }
 
@@ -536,11 +535,10 @@ int ItemDB::Remove(SalesItem *si)
     FnTrace("ItemDB::Remove()");
     if (si == NULL)
         return 1;
-
-    if (name_array != NULL)
+    if (!name_array.empty())
     {
-        delete [] name_array;
-        name_array = NULL;
+        name_array.clear();
+        name_array.shrink_to_fit();
         array_size = 0;
     }
     return item_list.Remove(si);
@@ -551,11 +549,10 @@ int ItemDB::Purge()
     FnTrace("ItemDB::Purge()");
     item_list.Purge();
     group_list.Purge();
-
-    if (name_array != NULL)
+    if (!name_array.empty())
     {
-        delete [] name_array;
-        name_array = NULL;
+        name_array.clear();
+        name_array.shrink_to_fit();
         array_size = 0;
     }
     return 0;
@@ -576,7 +573,7 @@ int ItemDB::ResetAdmissionItems()
 SalesItem *ItemDB::FindByName(const std::string &name)
 {
     FnTrace("ItemDB::FindByName()");
-    if (name_array == NULL)
+    if (name_array.empty())
         BuildNameArray();
 
     // use binary search to find item
@@ -615,7 +612,7 @@ SalesItem *ItemDB::FindByRecord(int record)
     FnTrace("ItemDB::FindByRecord()");
     if (record < 0)
         return NULL;
-    if (name_array == NULL)
+    if (name_array.empty())
         BuildNameArray();
     if (record >= array_size)
         return NULL;
@@ -625,7 +622,7 @@ SalesItem *ItemDB::FindByRecord(int record)
 SalesItem *ItemDB::FindByWord(const char* word, int &record)
 {
     FnTrace("ItemDB::FindByWord()");
-    if (name_array == NULL)
+    if (name_array.empty())
         BuildNameArray();
 
     int len = strlen(word);
@@ -647,7 +644,7 @@ SalesItem *ItemDB::FindByWord(const char* word, int &record)
 SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
 {
     FnTrace("ItemDB::FindByCallCenterName()");
-    if (name_array == NULL)
+    if (name_array.empty())
         BuildNameArray();
     SalesItem *retval = NULL;
     SalesItem *si = NULL;
@@ -675,7 +672,7 @@ SalesItem *ItemDB::FindByCallCenterName(const char* word, int &record)
 SalesItem *ItemDB::FindByItemCode(const char* code, int &record)
 {
     FnTrace("ItemDB::FindByItemCode()");
-    if (name_array == NULL)
+    if (name_array.empty())
         BuildNameArray();
     SalesItem *retval = NULL;
     SalesItem *si = NULL;
@@ -698,24 +695,21 @@ SalesItem *ItemDB::FindByItemCode(const char* code, int &record)
 int ItemDB::BuildNameArray()
 {
     FnTrace("ItemDB::BuildNameArray()");
-    if (name_array != NULL)
+    if (!name_array.empty())
     {
-        delete [] name_array;
-        name_array = NULL;
+        name_array.clear();
+        name_array.shrink_to_fit();
         array_size = 0;
     }
 
     // Build search array
     array_size = ItemCount();
-    name_array = new(std::nothrow) SalesItem*[array_size + 1](); // zero-initialized
-    if (name_array == NULL)
-    {
-        array_size = 0;
-        return 1;
-    }
+    if (array_size <= 0)
+        return 0;
+    name_array.resize(array_size);
 
     int i = 0;
-    for (SalesItem *si = ItemList(); si != NULL; si = si->next)
+    for (SalesItem *si = ItemList(); si != NULL && i < array_size; si = si->next)
         name_array[i++] = si;
 
     return 0;

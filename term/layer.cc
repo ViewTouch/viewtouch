@@ -20,6 +20,7 @@
 #include "term_view.hh"
 #include "image_data.hh"
 #include "remote_link.hh"
+#include "buffer_pool.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -825,7 +826,8 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
                 const int bytes_per_line =
                     ((draw_w * bits_per_pixel + (bitmap_pad - 1)) / bitmap_pad) * (bitmap_pad / 8);
 
-                char *scaled_image_data = (char*)malloc((size_t)bytes_per_line * (size_t)draw_h);
+                size_t scaled_size = (size_t)bytes_per_line * (size_t)draw_h;
+                char *scaled_image_data = static_cast<char*>(vt::BufferPool::Instance().Acquire(scaled_size));
                 XImage *scaled_image = nullptr;
                 if (scaled_image_data) {
                     scaled_image = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
@@ -863,7 +865,8 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
                         if (orig_mask)
                         {
                             scaled_mask = XCreatePixmap(dis, pix, draw_w, draw_h, 1);
-                            char *scaled_mask_data = (char*)malloc(((draw_w + 7) / 8) * (size_t)draw_h);
+                            size_t scaled_mask_size = ((draw_w + 7) / 8) * (size_t)draw_h;
+                            char *scaled_mask_data = static_cast<char*>(vt::BufferPool::Instance().Acquire(scaled_mask_size));
                             XImage *scaled_mask_img = nullptr;
                             if (scaled_mask_data) {
                                 scaled_mask_img = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
@@ -886,12 +889,16 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
                                     GC mask_gc = XCreateGC(dis, scaled_mask, 0, NULL);
                                     XPutImage(dis, scaled_mask, mask_gc, scaled_mask_img, 0, 0, 0, 0, draw_w, draw_h);
                                     XFreeGC(dis, mask_gc);
+                                    if (scaled_mask_img->data) {
+                                        vt::BufferPool::Instance().Release(scaled_mask_img->data, scaled_mask_size);
+                                        scaled_mask_img->data = nullptr;
+                                    }
                                     XDestroyImage(scaled_mask_img);
                                 } else {
-                                    if (scaled_mask_data) { free(scaled_mask_data); scaled_mask_data = nullptr; }
+                                    if (scaled_mask_data) { vt::BufferPool::Instance().Release(scaled_mask_data, scaled_mask_size); scaled_mask_data = nullptr; }
                                 }
                             }
-                            XDestroyImage(orig_mask);
+                                    XDestroyImage(orig_mask);
                         }
                     }
 
@@ -918,8 +925,10 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
                 if (scaled_image)
                 {
                     if (scaled_image->data)
-                        free(scaled_image->data);
-                    scaled_image->data = nullptr;
+                    {
+                        vt::BufferPool::Instance().Release(scaled_image->data, scaled_size);
+                        scaled_image->data = nullptr;
+                    }
                     XDestroyImage(scaled_image);
                 }
 

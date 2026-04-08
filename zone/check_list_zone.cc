@@ -474,9 +474,10 @@ RenderResult CheckEditZone::Render(Terminal *term, int update_flag)
     {
         check = term->check;
         LoadRecord(term, 0);
-        if (report != NULL)
-            free(report);
-        report = NULL;
+        if (report != NULL) {
+            delete report;
+            report = NULL;
+        }
         my_update = 0;
     }
 

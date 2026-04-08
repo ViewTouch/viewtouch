@@ -25,6 +25,7 @@
 #include "utility.hh"
 #include "list_utility.hh"
 #include <memory>
+#include <vector>
 
 #define LANG_NONE                -1  // uninitialized POFile class
 #define LANG_PHRASE               0  // for old defaults; do not search POFile classes
@@ -82,7 +83,7 @@ public:
     Locale *fore;
     Str name;
     Str filename;
-    PhraseInfo **search_array;
+    std::vector<PhraseInfo*> search_array;
     int array_size;
 
     // Constructor

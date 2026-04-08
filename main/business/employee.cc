@@ -28,6 +28,7 @@
 #include "safe_string_utils.hh"
 #include <cctype>
 #include <cstring>
+#include <algorithm>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -219,8 +220,7 @@ UserDB::UserDB()
         developer->training = 1;
     }
 
-    name_array = NULL;
-    id_array = NULL;
+    // vectors default-initialize empty
 }
 
 // Destructor
@@ -310,15 +310,15 @@ int UserDB::Add(Employee *e)
     if (e == NULL)
         return 1;
 
-    if (name_array)
+    if (!name_array.empty())
     {
-	free(name_array);
-        name_array = NULL;
+        name_array.clear();
+        name_array.shrink_to_fit();
     }
-    if (id_array)
+    if (!id_array.empty())
     {
-	free(id_array);
-        id_array = NULL;
+        id_array.clear();
+        id_array.shrink_to_fit();
     }
 
     if (e->id <= 0)
@@ -336,15 +336,15 @@ int UserDB::Remove(Employee *e)
     if (e == NULL)
         return 1;
 
-    if (name_array)
+    if (!name_array.empty())
     {
-	free(name_array);
-        name_array = NULL;
+        name_array.clear();
+        name_array.shrink_to_fit();
     }
-    if (id_array)
+    if (!id_array.empty())
     {
-	free(id_array);
-        id_array = NULL;
+        id_array.clear();
+        id_array.shrink_to_fit();
     }
 
     return user_list.Remove(e);
@@ -354,15 +354,15 @@ int UserDB::Purge()
 {
 
     FnTrace("UserDB::Purge()");
-    if (name_array)
+    if (!name_array.empty())
     {
-	free(name_array);
-        name_array = NULL;
+        name_array.clear();
+        name_array.shrink_to_fit();
     }
-    if (id_array)
+    if (!id_array.empty())
     {
-	free(id_array);
-        id_array = NULL;
+        id_array.clear();
+        id_array.shrink_to_fit();
     }
 
     user_list.Purge();
@@ -747,45 +747,51 @@ Employee **UserDB::NameArray(int resort)
 {
     FnTrace("UserDB::NameArray()");
     int users = UserCount();
-    if (name_array == NULL)
+    // Ensure vector has the right size; resize triggers a rebuild
+    if ((int)name_array.size() != users)
     {
         resort = 1;
-	name_array = (Employee **)calloc(sizeof(Employee *), users);
+        name_array.resize(users);
     }
 
     if (resort)
     {
         int i = 0;
-        Employee *e = UserList();
-        while (e)
-        {
+        for (Employee *e = UserList(); e != NULL && i < users; e = e->next)
             name_array[i++] = e;
-            e = e->next;
-        }
-        qsort(name_array, users, sizeof(Employee *), UserNameCompare);
+
+        std::sort(name_array.begin(), name_array.end(), [](Employee *a, Employee *b){
+            int val = StringCompare(a->last_name.Value(), b->last_name.Value());
+            if (val) return val < 0;
+            val = StringCompare(a->first_name.Value(), b->first_name.Value());
+            if (val) return val < 0;
+            return StringCompare(a->system_name.Value(), b->system_name.Value()) < 0;
+        });
     }
-    return name_array;
+    return name_array.empty() ? nullptr : name_array.data();
 }
 
 Employee **UserDB::IdArray(int resort)
 {
     FnTrace("UserDB::IdArray()");
     int users = UserCount();
-    if (id_array == NULL)
+    if ((int)id_array.size() != users)
     {
         resort = 1;
-	id_array = (Employee **)calloc(sizeof(Employee *), users);
+        id_array.resize(users);
     }
 
     if (resort)
     {
         int i = 0;
-        for (Employee *e = UserList(); e != NULL; e = e->next)
+        for (Employee *e = UserList(); e != NULL && i < users; e = e->next)
             id_array[i++] = e;
 
-        qsort(id_array, users, sizeof(Employee *), UserIdCompare);
+        std::sort(id_array.begin(), id_array.end(), [](Employee *a, Employee *b){
+            return a->id < b->id;
+        });
     }
-    return id_array;
+    return id_array.empty() ? nullptr : id_array.data();
 }
 
 

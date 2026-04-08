@@ -4182,7 +4182,6 @@ Locale::Locale()
     FnTrace("Locale::Locale()");
     next = NULL;
     fore = NULL;
-    search_array = NULL;
     array_size = 0;
 }
 
@@ -4258,10 +4257,10 @@ int Locale::Add(PhraseInfo *ph)
     if (ph == NULL)
         return 1;
 
-    if (search_array)
+    if (!search_array.empty())
     {
-	free(search_array);
-        search_array = NULL;
+        search_array.clear();
+        search_array.shrink_to_fit();
         array_size = 0;
     }
 
@@ -4281,10 +4280,10 @@ int Locale::Remove(PhraseInfo *ph)
     if (ph == NULL)
         return 1;
 
-    if (search_array)
+    if (!search_array.empty())
     {
-	free(search_array);
-        search_array = NULL;
+        search_array.clear();
+        search_array.shrink_to_fit();
         array_size = 0;
     }
     return phrase_list.Remove(ph);
@@ -4295,10 +4294,10 @@ int Locale::Purge()
     FnTrace("Locale::Purge()");
     phrase_list.Purge();
 
-    if (search_array)
+    if (!search_array.empty())
     {
-	free(search_array);
-        search_array = NULL;
+        search_array.clear();
+        search_array.shrink_to_fit();
         array_size = 0;
     }
     return 0;
@@ -4311,18 +4310,19 @@ int Locale::Purge()
 int Locale::BuildSearchArray()
 {
     FnTrace("Locale::BuildSearchArray()");
-    if (search_array)
+    if (!search_array.empty())
     {
-	free(search_array);
+        search_array.clear();
+        search_array.shrink_to_fit();
     }
 
     array_size = PhraseCount();
-    search_array = (PhraseInfo **)calloc(sizeof(PhraseInfo *), (array_size + 1));
-    if (search_array == NULL)
-        return 1;
+    if (array_size <= 0)
+        return 0;
 
+    search_array.resize(array_size);
     PhraseInfo *ph = PhraseList();
-    for (int i = 0; i < array_size; ++i)
+    for (int i = 0; i < array_size && ph != NULL; ++i)
     {
         search_array[i] = ph;
         ph = ph->next;
@@ -4338,7 +4338,7 @@ PhraseInfo *Locale::Find(const char* key)
     FnTrace("Locale::Find()");
     if (key == NULL)
         return NULL;
-    if (search_array == NULL)
+    if (search_array.empty())
         BuildSearchArray();
 
     int l = 0;
@@ -4415,10 +4415,10 @@ int Locale::NewTranslation(const char* str, const genericChar* value)
         Remove(ph);
         delete ph;
 
-        if (search_array)
+        if (!search_array.empty())
         {
-	    free(search_array);
-            search_array = NULL;
+            search_array.clear();
+            search_array.shrink_to_fit();
             array_size = 0;
         }
         return 0;
@@ -4427,10 +4427,10 @@ int Locale::NewTranslation(const char* str, const genericChar* value)
     if (value == NULL || strlen(value) <= 0)
         return 1;
 
-    if (search_array)
+    if (!search_array.empty())
     {
-	free(search_array);
-        search_array = NULL;
+        search_array.clear();
+        search_array.shrink_to_fit();
         array_size = 0;
     }
     return Add(new PhraseInfo(str, value));
