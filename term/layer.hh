@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -232,7 +232,7 @@ public:
     // redraws all layers (only layers with update flag if select_all = 0)
     int UpdateArea(int x, int y, int w, int h);
     // redraws all layers in region
-    int OptimalUpdateArea(int x, int y, int w, int h, Layer *end = NULL);
+    int OptimalUpdateArea(int x, int y, int w, int h, Layer *end = nullptr);
     // redraws all layers with update flag set in region
     int RubberBandOff();
     int RubberBandUpdate(int x, int y);

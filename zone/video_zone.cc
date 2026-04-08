@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -47,7 +47,7 @@ int VideoTargetZone::AddFields()
     int i = 0;
 
     // Ensure we don't go beyond the array bounds and handle NULL entries
-    while (i < MAX_FAMILIES && FamilyName[i] != NULL)
+    while (i < MAX_FAMILIES && FamilyName[i] != nullptr)
     {
         AddListField(MasterLocale->Translate(FamilyName[i]),
                      PrinterIDName, PrinterIDValue);
@@ -77,6 +77,8 @@ int VideoTargetZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("VideoTargetZone::LoadRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *form = FieldList();
     int idx = 0;
     
@@ -95,6 +97,8 @@ int VideoTargetZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("VideoTargetZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *form = FieldList();
     int idx = 0;
     

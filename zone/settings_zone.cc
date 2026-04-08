@@ -1,6 +1,6 @@
 /*************************************************************
  *
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
 
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "src/utils/vt_enum_utils.hh"
 #include "src/utils/vt_logger.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 
 #include <iostream>
 #include <iomanip>
@@ -50,16 +51,16 @@
  * SwitchZone Class
  ********************************************************************/
 
-static const genericChar* PasswordName[] = {"No", "Managers Only", "Everyone", NULL};
+static const genericChar* PasswordName[] = {"No", "Managers Only", "Everyone", nullptr};
 static int PasswordValue[] = {PW_NONE, PW_MANAGERS, PW_ALL, -1};
 
 // octal values for ISO-8859-15:
 // \244	= Euro 			("€")
 // \243 = British pound ("£")
 // " "  = no symbol
-static const genericChar* MoneySymbolName[] = { "$", "\244", "\243", " ", NULL };
+static const genericChar* MoneySymbolName[] = { "$", "\244", "\243", " ", nullptr };
 
-static const genericChar* ButtonTextPosName[] = { "Over Image", "Above Image", "Below Image", NULL };
+static const genericChar* ButtonTextPosName[] = { "Over Image", "Above Image", "Below Image", nullptr };
 static int ButtonTextPosValue[] = { 0, 1, 2, -1 };
 
 namespace {
@@ -137,22 +138,22 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
 
 	RenderZone(term, SwitchName[idx], update_flag);
 	Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return RENDER_ERROR;
 
-	int   col = COLOR_BLUE;
+    int   col = COLOR_BLUE;
     int   onoff = -1;
-	const char* str = NULL;
+    const char* str = nullptr;
 	switch (type)
 	{
     case SWITCH_SEATS:
         onoff = settings->use_seats;
         break;
     case SWITCH_DRAWER_MODE:
-        // Modern enum-based approach
         if (auto mode = vt::IntToEnum<DrawerModeType>(settings->drawer_mode)) {
             str = vt::GetDrawerModeDisplayName(*mode);
-            vt::Logger::debug("Drawer mode: {}", str);
         } else {
-            str = FindStringByValue(settings->drawer_mode, DrawerModeValue, DrawerModeName);
+            str = "Unknown";
         }
         break;
     case SWITCH_PASSWORDS:
@@ -180,34 +181,47 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         str = FindStringByValue(settings->store, StoreValue, StoreName);
         break;
     case SWITCH_ROUNDING:
-        str = FindStringByValue(settings->price_rounding, RoundingValue, RoundingName);
+        if (auto rounding = vt::IntToEnum<PriceRoundingType>(settings->price_rounding)) {
+            str = vt::GetPriceRoundingDisplayName(*rounding);
+        } else {
+            str = "Unknown";
+        }
         break;
     case SWITCH_RECEIPT_PRINT:
-        // Modern enum-based approach
-        if (auto receipt_type = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {  // Renamed to avoid shadowing member 'type'
+        // Enum-based display name (no legacy array fallback)
+        if (auto receipt_type = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {
             str = vt::GetReceiptPrintDisplayName(*receipt_type);
         } else {
-            str = FindStringByValue(settings->receipt_print, ReceiptPrintValue, ReceiptPrintName);
+            str = "Unknown";
+        }
+        break;
+    case SWITCH_DRAWER_PRINT:
+        if (auto drawer_type = vt::IntToEnum<DrawerPrintType>(settings->drawer_print)) {
+            str = vt::GetDrawerPrintDisplayName(*drawer_type);
+        } else {
+            str = "Unknown";
         }
         break;
     case SWITCH_DATE_FORMAT:
-        // Modern enum-based approach
         if (auto format = vt::IntToEnum<DateFormatType>(settings->date_format)) {
             str = vt::GetDateFormatDisplayName(*format);
         } else {
-            str = FindStringByValue(settings->date_format, DateFormatValue, DateFormatName);
+            str = "Unknown";
         }
         break;
     case SWITCH_NUMBER_FORMAT:
-        // Modern enum-based approach
         if (auto format = vt::IntToEnum<NumberFormatType>(settings->number_format)) {
             str = vt::GetNumberFormatDisplayName(*format);
         } else {
-            str = FindStringByValue(settings->number_format, NumberFormatValue, NumberFormatName);
+            str = "Unknown";
         }
         break;
     case SWITCH_MEASUREMENTS:
-        str = FindStringByValue(settings->measure_system, MeasureSystemValue, MeasureSystemName);
+        if (auto measure = vt::IntToEnum<MeasureSystemType>(settings->measure_system)) {
+            str = vt::GetMeasureSystemDisplayName(*measure);
+        } else {
+            str = "Unknown";
+        }
         break;
     case SWITCH_LOCALE:
         // Show current language
@@ -221,11 +235,10 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
         }
         break;
     case SWITCH_TIME_FORMAT:
-        // Modern enum-based approach  
         if (auto format = vt::IntToEnum<TimeFormatType>(settings->time_format)) {
             str = vt::GetTimeFormatDisplayName(*format);
         } else {
-            str = FindStringByValue(settings->time_format, TimeFormatValue, TimeFormatName);
+            str = "Unknown";
         }
         break;
     case SWITCH_AUTHORIZE_METHOD:
@@ -261,9 +274,6 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
     case SWITCH_RECEIPT_ALL_MODS:
         onoff = settings->receipt_all_modifiers;
         break;
-    case SWITCH_DRAWER_PRINT:
-        str = FindStringByValue(settings->drawer_print, DrawerPrintValue, DrawerPrintName);
-        break;
     case SWITCH_BALANCE_AUTO_CPNS:
         onoff = settings->balance_auto_coupons;
         break;
@@ -283,7 +293,7 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
 	}
 
 	// For switches that don't have custom text, set On/Off text
-	if (onoff >= 0 && str == NULL)
+    if (onoff >= 0 && str == nullptr)
 	{
 		if (onoff == 0)
 		{
@@ -313,7 +323,7 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
 	if (type == SWITCH_F3_F4_RECORDING)
 	{
 		char debug_str[256];
-		snprintf(debug_str, sizeof(debug_str), "F3F4: onoff=%d, setting=%d", 
+		vt::cpp23::format_to_buffer(debug_str, sizeof(debug_str), "F3F4: onoff={}, setting={}", 
 		         onoff, settings->enable_f3_f4_recording);
 		term->RenderText(debug_str, x + 5, y + 5, COLOR_BLUE, FONT_TIMES_14, ALIGN_LEFT);
 	}
@@ -354,13 +364,31 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
 	FnTrace("SwitchZone::Touch()");
 	int no_update = 0;
 	Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+    {
+        return SIGNAL_IGNORED;
+    }
 	switch (type)
 	{
     case SWITCH_SEATS:
         settings->use_seats ^= 1;
         break;
     case SWITCH_DRAWER_MODE:
-        settings->drawer_mode = NextValue(settings->drawer_mode, DrawerModeValue);
+        {
+            auto values = vt::GetEnumValues<DrawerModeType>();
+            int next_val = settings->drawer_mode;
+            if (auto current = vt::IntToEnum<DrawerModeType>(settings->drawer_mode)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else if (!values.empty()) {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->drawer_mode = next_val;
+        }
         break;
     case SWITCH_PASSWORDS:
         settings->password_mode = NextValue(settings->password_mode, PasswordValue);
@@ -387,19 +415,108 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         settings->store = NextValue(settings->store, StoreValue);
         break;
     case SWITCH_ROUNDING:
-        settings->price_rounding = NextValue(settings->price_rounding, RoundingValue);
+        {
+            auto values = vt::GetEnumValues<PriceRoundingType>();
+            int next_val = settings->price_rounding;
+            if (auto current = vt::IntToEnum<PriceRoundingType>(settings->price_rounding)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->price_rounding = next_val;
+        }
         break;
     case SWITCH_RECEIPT_PRINT:
-        settings->receipt_print = NextValue(settings->receipt_print, ReceiptPrintValue);
+        {
+            auto values = vt::GetEnumValues<ReceiptPrintType>();
+            int next_val = settings->receipt_print;
+            if (auto current = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {
+                // find current index
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                // default to first value if invalid
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->receipt_print = next_val;
+        }
+        break;
+    case SWITCH_DRAWER_PRINT:
+        {
+            auto values = vt::GetEnumValues<DrawerPrintType>();
+            int next_val = settings->drawer_print;
+            if (auto current = vt::IntToEnum<DrawerPrintType>(settings->drawer_print)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->drawer_print = next_val;
+        }
         break;
     case SWITCH_DATE_FORMAT:
-        settings->date_format = NextValue(settings->date_format, DateFormatValue);
+        {
+            auto values = vt::GetEnumValues<DateFormatType>();
+            int next_val = settings->date_format;
+            if (auto current = vt::IntToEnum<DateFormatType>(settings->date_format)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->date_format = next_val;
+        }
         break;
     case SWITCH_NUMBER_FORMAT:
-        settings->number_format = NextValue(settings->number_format, NumberFormatValue);
+        {
+            auto values = vt::GetEnumValues<NumberFormatType>();
+            int next_val = settings->number_format;
+            if (auto current = vt::IntToEnum<NumberFormatType>(settings->number_format)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->number_format = next_val;
+        }
         break;
     case SWITCH_MEASUREMENTS:
-        settings->measure_system = NextValue(settings->measure_system, MeasureSystemValue);
+        {
+            auto values = vt::GetEnumValues<MeasureSystemType>();
+            int next_val = settings->measure_system;
+            if (auto current = vt::IntToEnum<MeasureSystemType>(settings->measure_system)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->measure_system = next_val;
+        }
         break;
     case SWITCH_LOCALE:
         // Language switching - cycle between English and Spanish
@@ -419,7 +536,7 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
             // Show confirmation dialog
             const char* lang_name = (next_lang == LANG_ENGLISH) ? "English" : "Español";
             char msg[256];
-            snprintf(msg, sizeof(msg), term->Translate("Language changed to: %s"), lang_name);
+            vt_safe_string::safe_format(msg, sizeof(msg), term->Translate("Language changed to: %s"), lang_name);
 
             SimpleDialog *d = new SimpleDialog(msg);
             d->Button(term->Translate("Okay"));
@@ -428,7 +545,21 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         no_update = 1;  // Don't update settings since language is handled separately
         break;
     case SWITCH_TIME_FORMAT:
-        settings->time_format = NextValue(settings->time_format, TimeFormatValue);
+        {
+            auto values = vt::GetEnumValues<TimeFormatType>();
+            int next_val = settings->time_format;
+            if (auto current = vt::IntToEnum<TimeFormatType>(settings->time_format)) {
+                std::size_t idx = 0;
+                for (std::size_t i = 0; i < values.size(); ++i) {
+                    if (values[i] == *current) { idx = i; break; }
+                }
+                idx = (idx + 1) % values.size();
+                next_val = static_cast<int>(vt::EnumToInt(values[idx]));
+            } else {
+                next_val = static_cast<int>(vt::EnumToInt(values[0]));
+            }
+            settings->time_format = next_val;
+        }
         break;
     case SWITCH_AUTHORIZE_METHOD:
         settings->authorize_method = NextValue(settings->authorize_method, AuthorizeValue);
@@ -466,9 +597,6 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         break;
     case SWITCH_RECEIPT_ALL_MODS:
         settings->receipt_all_modifiers ^= 1;
-        break;
-    case SWITCH_DRAWER_PRINT:
-        settings->drawer_print = NextValue(settings->drawer_print, DrawerPrintValue);
         break;
     case SWITCH_BALANCE_AUTO_CPNS:
         settings->balance_auto_coupons ^= 1;
@@ -530,7 +658,7 @@ const char* SwitchZone::TranslateString(Terminal * /*term*/)
     FnTrace("SwitchZone::TranslateString()");
     int idx = CompareList(type, SwitchValue);
     if (idx < 0)
-        return NULL;
+        return nullptr;
 
     return SwitchName[idx];
 }
@@ -577,7 +705,7 @@ SettingsZone::SettingsZone()
     LeftAlign();
     AddTextField("Lowest Account Number", 10);  SetFlag(FF_ONLYDIGITS);
     AddTextField("Highest Account Number", 10);  SetFlag(FF_ONLYDIGITS);
-    AddListField("Account for expenses paid from drawers", NULL);
+    AddListField("Account for expenses paid from drawers", nullptr);
     
     // Section 3: Drawer Settings
     AddNewLine();
@@ -661,7 +789,7 @@ SignalResult SettingsZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("SettingsZone::Signal()");
     static const genericChar* commands[] = {"section0", "section1", "section2", "section3",
-                                      "section4", "section5", "section6", "section7", NULL};
+                                      "section4", "section5", "section6", "section7", nullptr};
     SignalResult retval = SIGNAL_OKAY;
     int draw = 1;
     int new_section = -1;
@@ -712,7 +840,7 @@ SignalResult SettingsZone::Touch(Terminal *term, int tx, int ty)
         if (clicked_section >= 0 && clicked_section < 8)
         {
             char section_cmd[16];
-            snprintf(section_cmd, sizeof(section_cmd), "section%d", clicked_section);
+            vt::cpp23::format_to_buffer(section_cmd, sizeof(section_cmd), "section{}", clicked_section);
             return Signal(term, section_cmd);
         }
     }
@@ -740,8 +868,8 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
     }
 
     // Activate fields for current section
-    FormField *section_start = NULL;
-    FormField *section_end = NULL;
+    FormField *section_start = nullptr;
+    FormField *section_end = nullptr;
     
     switch (section)
     {
@@ -775,7 +903,7 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
         break;
     case 7:  // Kitchen Video Order Alert Settings
         section_start = kitchen_start;
-        section_end = NULL;  // Last section
+        section_end = nullptr;  // Last section
         break;
     }
 
@@ -800,9 +928,9 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
     }
 
     if (update_flag || keep_focus == 0)
-        keyboard_focus = NULL;
+        keyboard_focus = nullptr;
 
-    LayoutZone::Render(term, update_flag);
+    FormZone::Render(term, update_flag);
 
     if (!no_line)
     {
@@ -816,7 +944,7 @@ RenderResult SettingsZone::Render(Terminal *term, int update_flag)
     if (records > 0)
     {
         LayoutForm(term);
-        for (FormField *field = FieldList(); field != NULL; field = field->next)  // Renamed 'f' to 'field' to avoid shadowing
+        for (FormField *field = FieldList(); field != nullptr; field = field->next)  // Renamed 'f' to 'field' to avoid shadowing
         {
             field->selected = (keyboard_focus == field);
             if (field->active)
@@ -861,7 +989,9 @@ int SettingsZone::LoadRecord(Terminal *term, int /*record*/)
 {
     FnTrace("SettingsZone::LoadRecord()");
     Settings *settings = term->GetSettings();
-    FormField *f = NULL;
+    if (settings == nullptr)
+        return 1;
+    FormField *f = nullptr;
     int day_length_hrs = settings->min_day_length / 60 / 60;
 
     // Find the start field for current section
@@ -894,7 +1024,7 @@ int SettingsZone::LoadRecord(Terminal *term, int /*record*/)
         {
             // need to get the list of accounts for this
             Account *acct = term->system_data->account_db.AccountList();
-            while (acct != NULL)
+            while (acct != nullptr)
             {
                 f->AddEntry(acct->name.Value(), acct->number);
                 acct = acct->next;
@@ -964,7 +1094,9 @@ int SettingsZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("SettingsZone::SaveRecord()");
     Settings *settings = term->GetSettings();
-    FormField *f = NULL;
+    if (settings == nullptr)
+        return 1;
+    FormField *f = nullptr;
     int day_length_hrs = 0;
 
     // Find the start field for current section
@@ -1120,7 +1252,7 @@ ReceiptSettingsZone::ReceiptSettingsZone()
     AddLabel("Kitchen Video/Printouts");
     AddNewLine();
     LeftAlign();
-    AddListField("Kitchen Video Print Method", KVPrintMethodName, KVPrintMethodValue);
+    AddListField("Remote Video", KVPrintMethodName, KVPrintMethodValue);
     AddListField("Kitchen Video Show User", YesNoName, YesNoValue);
 }
 
@@ -1141,6 +1273,8 @@ int ReceiptSettingsZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("ReceiptSettingsZone::LoadRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f = f->next;
@@ -1168,6 +1302,8 @@ int ReceiptSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("ReceiptSettingsZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f = f->next;
@@ -1243,6 +1379,8 @@ TaxSettingsZone::TaxSettingsZone()
     AddTextField("Royalty Rate %", 6);
     AddNewLine();
     AddTextField("Advertising Fund %", 6);
+
+    // Keep default appearance
 }
 
 RenderResult TaxSettingsZone::Render(Terminal *term, int update_flag)
@@ -1261,31 +1399,99 @@ int TaxSettingsZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("TaxSettingsZone::LoadRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f = f->next;  // skip US Tax label
-    f->Set(settings->tax_food * 100.0); f = f->next;
+    if (settings->tax_food > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_food * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
     f->Set(settings->food_inclusive); f = f->next;
-    f->Set(settings->tax_alcohol * 100.0); f = f->next;
+    if (settings->tax_alcohol > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_alcohol * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
     f->Set(settings->alcohol_inclusive); f = f->next;
 
-    f->Set(settings->tax_room * 100.0); f = f->next;
+    if (settings->tax_room > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_room * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
     f->Set(settings->room_inclusive); f = f->next;
-    f->Set(settings->tax_merchandise * 100.0); f = f->next;
+    if (settings->tax_merchandise > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_merchandise * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
     f->Set(settings->merchandise_inclusive); f = f->next;
 
     f = f->next;  // skip Canadian Tax label
-    f->Set(settings->tax_GST * 100.0); f = f->next;
-    f->Set(settings->tax_PST * 100.0); f = f->next;
-    f->Set(settings->tax_HST * 100.0); f = f->next;
-    f->Set(settings->tax_QST * 100.0); f = f->next;
+    if (settings->tax_GST > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_GST * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
+    if (settings->tax_PST > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_PST * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
+    if (settings->tax_HST > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_HST * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
+    if (settings->tax_QST > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_QST * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
 
     f = f->next;  // skip Euro Tax label
-    f->Set(settings->tax_VAT * 100.0); f = f->next;
+    if (settings->tax_VAT > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->tax_VAT * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
 
     f = f->next;  // skip General Rates label
-    f->Set(settings->royalty_rate * 100.0); f = f->next;
-    f->Set(settings->advertise_fund * 100.0); f = f->next;
+    if (settings->royalty_rate > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->royalty_rate * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
+    if (settings->advertise_fund > 0) {
+        std::string formatted = FormatMultiplierDisplay(settings->advertise_fund * 100.0);
+        f->Set(formatted.c_str());
+    } else {
+        f->Set("");
+    }
+    f = f->next;
     return 0;
 }
 
@@ -1293,6 +1499,8 @@ int TaxSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("TaxSettingsZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f = f->next;  // skip US Tax label
@@ -1355,7 +1563,7 @@ int TaxSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
  * CCSettingsZone Class
  ********************************************************************/
 
-const genericChar* CCNumName[] = { "1234 5678 9012 3456", "xxxx xxxx xxxx 3456", NULL };
+const genericChar* CCNumName[] = { "1234 5678 9012 3456", "xxxx xxxx xxxx 3456", nullptr };
 
 CCSettingsZone::CCSettingsZone()
 {
@@ -1423,6 +1631,8 @@ int CCSettingsZone::LoadRecord(Terminal *term, int record)
     FnTrace("CCSettingsZone::LoadRecord()");
     int retval = 0;
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *field = FieldList();
 
     field->Set(settings->cc_server);           field = field->next;
@@ -1479,6 +1689,8 @@ int CCSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
     FnTrace("CCSettingsZone::SaveRecord()");
     int retval = 0;
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *field = FieldList();
     int cancredit;
     int candebit;
@@ -1530,6 +1742,8 @@ int CCSettingsZone::UpdateForm(Terminal *term, int record)
 {
     FnTrace("CCSettingsZone::UpdateForm()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     int retval = 0;
     int save = 0;
 
@@ -1620,6 +1834,8 @@ int CCMessageSettingsZone::LoadRecord(Terminal *term, int record)
     FnTrace("CCMessageSettingsZone::LoadRecord()");
     int retval = 0;
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f = f->next;
@@ -1641,6 +1857,8 @@ int CCMessageSettingsZone::SaveRecord(Terminal *term, int record, int write_file
     FnTrace("CCMessageSettingsZone::SaveRecord()");
     int retval = 0;
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f = f->next;
@@ -1710,6 +1928,8 @@ int DeveloperZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("DeveloperZone::LoadRecord()");
     Settings  *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f->Set(settings->developer_key); f = f->next;
@@ -1721,6 +1941,8 @@ int DeveloperZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("DeveloperZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f->Get(settings->developer_key); f = f->next;
@@ -1736,8 +1958,8 @@ SignalResult DeveloperZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("DeveloperZone::Signal()");
     static const genericChar* commands[] = {"clearsystem", "clear system", "clearsystemall",
-                                      "clearsystemsome", NULL};
-    SimpleDialog *sd = NULL;
+                                      "clearsystemsome", nullptr};
+    SimpleDialog *sd = nullptr;
 
     int idx = CompareList(message, commands);
     switch (idx)
@@ -1813,6 +2035,8 @@ int CalculationSettingsZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("CalculationSettingsZone::LoadRecord()");
     Settings  *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     const std::string multiplier_text = FormatMultiplierDisplay(settings->double_mult);
@@ -1826,6 +2050,8 @@ int CalculationSettingsZone::SaveRecord(Terminal *term, int record, int write_fi
 {
     FnTrace("CalculationSettingsZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     f->Get(settings->double_mult); f = f->next;
@@ -1858,7 +2084,7 @@ int RevenueGroupsZone::AddFields()
     FnTrace("RevenueGroupsZone::AddFields()");
 
     int i = 0;
-    for (i = 0; FamilyName[i] != NULL; i++)
+    for (i = 0; FamilyName[i] != nullptr; i++)
     {
         AddListField(MasterLocale->Translate(FamilyName[i]),
                      SalesGroupName, SalesGroupValue);
@@ -1879,7 +2105,7 @@ RenderResult RevenueGroupsZone::Render(Terminal *term, int update_flag)
     }
 
     if (update_flag)
-        ; // No clear_flag equivalent needed for this zone
+        { /* No clear_flag equivalent needed for this zone */ } // No clear_flag equivalent needed for this zone
 
     form_header = 0;
     if (name.size() > 0)
@@ -1893,6 +2119,8 @@ int RevenueGroupsZone::LoadRecord(Terminal *term, int record)
 {
     FnTrace("RevenueGroupsZone::LoadRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     int i = 0;
@@ -1908,6 +2136,8 @@ int RevenueGroupsZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("RevenueGroupsZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f = FieldList();
 
     int i = 0;
@@ -1930,9 +2160,9 @@ int RevenueGroupsZone::SaveRecord(Terminal *term, int record, int write_file)
 #define CP_TYPE_PERCENT  1
 #define CP_TYPE_SUBST    2
 
-static const char* TS_TypeName[] = {"dollar value", "percent of price", NULL};
+static const char* TS_TypeName[] = {"dollar value", "percent of price", nullptr};
 static const char* CP_TypeName[] = {"dollar value", "percent of price",
-                              "substitute price", NULL};
+                              "substitute price", nullptr};
 static int CP_TypeValue[] = { CP_TYPE_DOLLAR, CP_TYPE_PERCENT,
                               CP_TYPE_SUBST, -1 };
 
@@ -2088,7 +2318,7 @@ SignalResult TenderSetZone::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("TenderSetZone::Signal()");
 	static const genericChar* commands[] = {"section", "clearstart",
-                                      "clearend", "clearweekday", NULL};
+                                      "clearend", "clearweekday", nullptr};
     SignalResult retval = SIGNAL_OKAY;
     int draw = 1;
 
@@ -2107,16 +2337,16 @@ SignalResult TenderSetZone::Signal(Terminal *term, const genericChar* message)
         records = RecordCount(term);
         break;
     case 1:  // clearstart
-        coupon_time_start->Set((TimeInfo *) NULL);
-        coupon_time_end->Set((TimeInfo *) NULL);
-        coupon_date_start->Set((TimeInfo *) NULL);
-        coupon_date_end->Set((TimeInfo *) NULL);
+        coupon_time_start->Set(static_cast<TimeInfo*>(nullptr));
+        coupon_time_end->Set(static_cast<TimeInfo*>(nullptr));
+        coupon_date_start->Set(static_cast<TimeInfo*>(nullptr));
+        coupon_date_end->Set(static_cast<TimeInfo*>(nullptr));
         break;
     case 2:  // clearend
-        coupon_time_start->Set((TimeInfo *) NULL);
-        coupon_time_end->Set((TimeInfo *) NULL);
-        coupon_date_start->Set((TimeInfo *) NULL);
-        coupon_date_end->Set((TimeInfo *) NULL);
+        coupon_time_start->Set(static_cast<TimeInfo*>(nullptr));
+        coupon_time_end->Set(static_cast<TimeInfo*>(nullptr));
+        coupon_date_start->Set(static_cast<TimeInfo*>(nullptr));
+        coupon_date_end->Set(static_cast<TimeInfo*>(nullptr));
         break;
     case 3:  // clearweekday
         coupon_weekdays->Set(0);
@@ -2164,7 +2394,7 @@ int TenderSetZone::LoadRecord(Terminal *term, int record)
         {
             record = 0;
             ds = settings->DiscountList();
-            while (ds != NULL)
+            while (ds != nullptr)
             {
                 if (display_id == ds->id)
                     break;
@@ -2209,7 +2439,7 @@ int TenderSetZone::LoadRecord(Terminal *term, int record)
         {
             record = 0;
             cp = settings->CouponList();
-            while (cp != NULL)
+            while (cp != nullptr)
             {
                 if (display_id == cp->id)
                     break;
@@ -2301,7 +2531,7 @@ int TenderSetZone::LoadRecord(Terminal *term, int record)
         {
             record = 0;
             cc = settings->CreditCardList();
-            while (cc != NULL)
+            while (cc != nullptr)
             {
                 if (display_id == cc->id)
                     break;
@@ -2332,7 +2562,7 @@ int TenderSetZone::LoadRecord(Terminal *term, int record)
         {
             record = 0;
             thisComp = settings->CompList();
-            while (thisComp != NULL)
+            while (thisComp != nullptr)
             {
                 if (display_id == thisComp->id)
                     break;
@@ -2386,7 +2616,7 @@ int TenderSetZone::LoadRecord(Terminal *term, int record)
         {
             record = 0;
             mi = settings->MealList();
-            while (mi != NULL)
+            while (mi != nullptr)
             {
                 if (display_id == mi->id)
                     break;
@@ -2438,6 +2668,8 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
 {
     FnTrace("TenderSetZone::SaveRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     FormField *f;
     int tmp;
     DiscountInfo *dslist = settings->DiscountList();
@@ -2476,7 +2708,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(ds);
                 dslist = settings->DiscountList();  // refresh
-                if (dslist != NULL)
+                if (dslist != nullptr)
                     ds->id = settings->MediaFirstID(dslist, 1);
                 else
                     ds->id = 1;
@@ -2489,7 +2721,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(ds);
                 dslist = settings->DiscountList();  // refresh
-                if (dslist != NULL)
+                if (dslist != nullptr)
                     ds->id = settings->MediaFirstID(dslist, GLOBAL_MEDIA_ID);
                 else
                     ds->id = GLOBAL_MEDIA_ID;
@@ -2550,7 +2782,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(cp);
                 cplist = settings->CouponList();  // refresh
-                if (cplist != NULL)
+                if (cplist != nullptr)
                     cp->id = settings->MediaFirstID(cplist, 1);
                 else
                     cp->id = 1;
@@ -2563,7 +2795,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(cp);
                 cplist = settings->CouponList();  // refresh
-                if (cplist != NULL)
+                if (cplist != nullptr)
                     cp->id = settings->MediaFirstID(cplist, GLOBAL_MEDIA_ID);
                 else
                     cp->id = 1;
@@ -2594,7 +2826,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(cc);
                 cclist = settings->CreditCardList();  // refresh
-                if (cclist != NULL)
+                if (cclist != nullptr)
                     cc->id = settings->MediaFirstID(cclist, 1);
                 else
                     cc->id = 1;
@@ -2607,7 +2839,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(cc);
                 cclist = settings->CreditCardList();  // refresh
-                if (cclist != NULL)
+                if (cclist != nullptr)
                     cc->id = settings->MediaFirstID(cclist, GLOBAL_MEDIA_ID);
                 else
                     cc->id = GLOBAL_MEDIA_ID;
@@ -2651,7 +2883,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(cm);
                 cmlist = settings->CompList();  // refresh
-                if (cmlist != NULL)
+                if (cmlist != nullptr)
                     cm->id = settings->MediaFirstID(cmlist, 1);
                 else
                     cm->id = 1;
@@ -2664,7 +2896,7 @@ int TenderSetZone::SaveRecord(Terminal *term, int record, int write_file)
             {
                 settings->Remove(cm);
                 cmlist = settings->CompList();  // refresh
-                if (cmlist != NULL)
+                if (cmlist != nullptr)
                     cm->id = settings->MediaFirstID(cmlist, GLOBAL_MEDIA_ID);
                 else
                     cm->id = GLOBAL_MEDIA_ID;
@@ -2713,6 +2945,8 @@ int TenderSetZone::NewRecord(Terminal *term)
 {
     FnTrace("TenderSetZone::NewRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     switch (section)
     {
     default:
@@ -2758,40 +2992,73 @@ int TenderSetZone::KillRecord(Terminal *term, int record)
 {
     FnTrace("TenderSetZone::KillRecord()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 1;
     switch (section)
     {
     default:
     {
         DiscountInfo *ds = settings->FindDiscountByRecord(record);
-        ds->active = 0;
-        if (ds->next != NULL)
-            display_id = ds->next->id;
-        else
-            record_no = -1;
+        if (ds)
+        {
+            ds->active = 0;
+            if (ds->next != nullptr)
+                display_id = ds->next->id;
+            else
+                record_no = -1;
+        }
         return 0;
     }
     case 1:
     {
         CouponInfo *cp = settings->FindCouponByRecord(record);
-        cp->active = 0;
+        if (cp)
+        {
+            cp->active = 0;
+            if (cp->next != nullptr)
+                display_id = cp->next->id;
+            else
+                record_no = -1;
+        }
         return 0;
     }
     case 2:
     {
         CreditCardInfo *cc = settings->FindCreditCardByRecord(record);
-        cc->active = 0;
+        if (cc)
+        {
+            cc->active = 0;
+            if (cc->next != nullptr)
+                display_id = cc->next->id;
+            else
+                record_no = -1;
+        }
         return 0;
     }
     case 3:
     {
         CompInfo *cm = settings->FindCompByRecord(record);
-        cm->active = 0;
+        if (cm)
+        {
+            cm->active = 0;
+            if (cm->next != nullptr)
+                display_id = cm->next->id;
+            else
+                record_no = -1;
+        }
         return 0;
     }
     case 4:
     {
         MealInfo *mi = settings->FindMealByRecord(record);
-        mi->active = 0;
+        if (mi)
+        {
+            mi->active = 0;
+            if (mi->next != nullptr)
+                display_id = mi->next->id;
+            else
+                record_no = -1;
+        }
         return 0;
     }
     }
@@ -2801,6 +3068,8 @@ int TenderSetZone::ListReport(Terminal *term, Report *r)
 {
     FnTrace("TenderSetZone::ListReport()");
     Settings *settings = term->GetSettings();
+    if (settings == nullptr)
+        return 0;
     switch (section)
     {
     case 1: return settings->CouponReport(term, r);
@@ -2829,7 +3098,7 @@ int TenderSetZone::UpdateForm(Terminal *term, int record)
 {
     FnTrace("TenderSetZone::UpdateForm()");
     int retval = 0;
-    FormField *field = NULL;
+    FormField *field = nullptr;
     int is_item_specific = 0;
     int is_active = 0;
     static int last_family = -1;
@@ -2850,7 +3119,7 @@ int TenderSetZone::UpdateForm(Terminal *term, int record)
         field = field->next;
         if (is_item_specific)
             is_active = 1;
-        while (field != NULL && field != creditcard_start)
+        while (field != nullptr && field != creditcard_start)
         {
             field->active = is_active;
             field = field->next;
@@ -2931,7 +3200,7 @@ int TenderSetZone::ItemList(FormField *itemfield, int family, int item_id)
     if (items->ItemsInFamily(family) > 0)
     {
         itemfield->AddEntry(ALL_ITEMS_STRING, -1);
-        while (item != NULL)
+        while (item != nullptr)
         {
             if (item->family == family)
             {
@@ -3203,7 +3472,7 @@ int TimeSettingsZone::SaveRecord(Terminal *term, int record, int write_file)
     f->Get(settings->wage_week_start);
     f = f->next;
 
-    term->UpdateOtherTerms(UPDATE_MEAL_PERIOD, NULL);
+    term->UpdateOtherTerms(UPDATE_MEAL_PERIOD, nullptr);
     if (write_file)
         settings->Save();
     return 0;

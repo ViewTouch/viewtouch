@@ -963,8 +963,8 @@ operator<<(std::basic_ostream<CharT, Traits>& os, const year_month_weekday_last&
 inline namespace literals
 {
 
-CONSTCD11 date::day  operator "" _d(unsigned long long d) NOEXCEPT;
-CONSTCD11 date::year operator "" _y(unsigned long long y) NOEXCEPT;
+CONSTCD11 date::day  operator""_d(unsigned long long d) NOEXCEPT;
+CONSTCD11 date::year operator""_y(unsigned long long y) NOEXCEPT;
 
 }  // inline namespace literals
 #endif // !defined(_MSC_VER) || (_MSC_VER >= 1900)
@@ -1972,7 +1972,7 @@ inline namespace literals
 CONSTCD11
 inline
 date::day
-operator "" _d(unsigned long long d) NOEXCEPT
+operator""_d(unsigned long long d) NOEXCEPT
 {
     return date::day{static_cast<unsigned>(d)};
 }
@@ -1980,7 +1980,7 @@ operator "" _d(unsigned long long d) NOEXCEPT
 CONSTCD11
 inline
 date::year
-operator "" _y(unsigned long long y) NOEXCEPT
+operator""_y(unsigned long long y) NOEXCEPT
 {
     return date::year(static_cast<int>(y));
 }
@@ -6502,8 +6502,8 @@ read(std::basic_istream<CharT, Traits>& is, int a0, Args&& ...args)
 {
     if (a0 != -1)
     {
-        auto u = static_cast<unsigned>(a0);
-        CharT buf[std::numeric_limits<unsigned>::digits10+2u] = {};
+        auto u = static_cast<unsigned long long>(a0);
+        CharT buf[std::numeric_limits<unsigned long long>::digits10+2u] = {};
         auto e = buf;
         do
         {

@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -44,16 +44,16 @@ public:
     PaymentZone();
 
     // Memeber Functions
-    int          Type() { return ZONE_PAYMENT_ENTRY; }
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar* message);
-    SignalResult Keyboard(Terminal *term, int key, int state);
-    SignalResult Touch(Terminal *term, int tx, int ty);
-    int          Update(Terminal *term, int update_message, const genericChar* value);
+    int          Type() override { return ZONE_PAYMENT_ENTRY; }
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    SignalResult Keyboard(Terminal *term, int key, int state) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          Update(Terminal *term, int update_message, const genericChar* value) override;
     int          AddPayment(Terminal *term, int type, int id,
                             int amount, int flags);
     int          AddPayment(Terminal *term, int type, const genericChar* swipe_value);
-    Flt         *Spacing() { return &spacing; }
+    Flt         *Spacing() override { return &spacing; }
 
     int  RenderPaymentEntry(Terminal *term);
     int  DrawPaymentEntry(Terminal *term);
@@ -75,13 +75,13 @@ public:
     TenderZone();
 
     // Member Functions
-    int          Type() { return ZONE_TENDER; }
-    int          RenderInit(Terminal *term, int update_flag);
-    SignalResult Touch(Terminal *term, int tx, int ty);
-    int          ZoneStates() { return 3; }
+    int          Type() override { return ZONE_TENDER; }
+    int          RenderInit(Terminal *term, int update_flag) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    int          ZoneStates() override { return 3; }
 
-    int *TenderType()   { return &tender_type; }
-    int *TenderAmount() { return &amount; }
+    int *TenderType() override   { return &tender_type; }
+    int *TenderAmount() override { return &amount; }
 };
 
 #endif

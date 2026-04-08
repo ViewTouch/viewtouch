@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -34,13 +34,13 @@ public:
     SearchZone();
 
     // Member Functions
-    int          Type() { return ZONE_SEARCH; }
-    RenderResult Render(Terminal *term, int update_flag);
-    SignalResult Signal(Terminal *term, const genericChar* message);
-    SignalResult Touch(Terminal *term, int tx, int ty);
-    SignalResult Keyboard(Terminal *term, int key, int state);
-    int          LoseFocus(Terminal *term, Zone *newfocus);
-    int          ZoneStates() { return 2; }
+    int          Type() override { return ZONE_SEARCH; }
+    RenderResult Render(Terminal *term, int update_flag) override;
+    SignalResult Signal(Terminal *term, const genericChar* message) override;
+    SignalResult Touch(Terminal *term, int tx, int ty) override;
+    SignalResult Keyboard(Terminal *term, int key, int state) override;
+    int          LoseFocus(Terminal *term, Zone *newfocus) override;
+    int          ZoneStates() override { return 2; }
 };
 
 #endif

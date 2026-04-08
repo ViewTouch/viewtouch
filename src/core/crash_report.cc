@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
  * 
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -67,7 +67,7 @@ namespace vt_crash {
             if (S_ISDIR(st.st_mode)) {
                 return true;
             } else {
-                std::cerr << "ERROR: Crash report path exists but is not a directory: " << dir << std::endl;
+                std::cerr << "ERROR: Crash report path exists but is not a directory: " << dir << '\n';
                 return false;
             }
         }
@@ -83,16 +83,15 @@ namespace vt_crash {
         }
         
         // Create the directory with permissions 0750 (rely on umask for further restriction)
-        if (mkdir(dir.c_str(), 0750) == 0) {
+        const int mkdir_result = mkdir(dir.c_str(), 0750);
+        if (mkdir_result == 0 || errno == EEXIST) {
+            // Either we created it or another process raced us to create it
             return true;
-        } else if (errno == EEXIST) {
-            // Directory was created by another process
-            return true;
-        } else {
-            std::cerr << "ERROR: Failed to create crash report directory: " << dir 
-                      << " (errno: " << errno << ")" << std::endl;
-            return false;
         }
+
+        std::cerr << "ERROR: Failed to create crash report directory: " << dir 
+                  << " (errno: " << errno << ")" << '\n';
+        return false;
     }
 
     void InitializeCrashReporting(const std::string& crash_report_dir) {
@@ -101,10 +100,10 @@ namespace vt_crash {
         
         // Create crash report directory if it doesn't exist
         if (!EnsureCrashReportDirectory(crash_report_dir)) {
-            std::cerr << "WARNING: Could not create crash report directory: " << crash_report_dir << std::endl;
-            std::cerr << "Crash reports may not be saved to disk." << std::endl;
+            std::cerr << "WARNING: Could not create crash report directory: " << crash_report_dir << '\n';
+            std::cerr << "Crash reports may not be saved to disk." << '\n';
         } else {
-            std::cerr << "Crash reporting initialized - reports will be saved to: " << crash_report_dir << std::endl;
+            std::cerr << "Crash reporting initialized - reports will be saved to: " << crash_report_dir << '\n';
         }
         
         // Note: We don't set up signal handlers here because they are set up
@@ -188,7 +187,6 @@ namespace vt_crash {
             bool found_model = false;
             int cpu_count = 0;
             std::string model_name;
-            std::string cpu_freq;
             
             while (fgets(line, sizeof(line), cpuinfo)) {
                 std::string line_str(line);
@@ -425,16 +423,14 @@ namespace vt_crash {
             return oss.str();
         }
         
-        // Get symbols (backtrace_symbols uses malloc internally)
-        char** raw_symbols = backtrace_symbols(buffer.data(), num_frames);
-        if (raw_symbols == nullptr) {
+        // Get symbols
+        void* raw_symbols = reinterpret_cast<void*>(backtrace_symbols(buffer.data(), num_frames));
+        std::unique_ptr<void, decltype(&std::free)> symbols_guard(raw_symbols, &std::free);
+        auto symbols = static_cast<char**>(raw_symbols);
+        if (symbols == nullptr) {
             oss << "Failed to get stack trace symbols\n";
             return oss.str();
         }
-
-        // RAII wrapper to ensure symbols are freed via free()
-        struct BacktraceSymbolsDeleter { void operator()(char** p) const noexcept { std::free(p); } };
-        std::unique_ptr<char*, BacktraceSymbolsDeleter> symbols(raw_symbols);
         
         // Get executable path for addr2line
         std::string exe_path = GetExecutablePath();
@@ -457,7 +453,7 @@ namespace vt_crash {
                 oss << decoded_info;
             } else {
                 // Fall back to backtrace_symbols and dladdr
-                    std::string symbol_str = symbols.get()[i];
+                std::string symbol_str = symbols[i];
                 
                 // Try dladdr for better function info
                 std::string func_info = GetFunctionInfo(buffer[static_cast<std::size_t>(i)]);
@@ -491,7 +487,6 @@ namespace vt_crash {
             oss << "\n";
         }
         
-        // symbols will be freed automatically by unique_ptr's deleter
         #else
         oss << "Stack trace not available on this platform\n";
         oss << "(execinfo.h is a GNU/Linux extension)\n";
@@ -667,14 +662,14 @@ namespace vt_crash {
         
         // Ensure directory exists before trying to write
         if (!EnsureCrashReportDirectory(report_dir)) {
-            std::cerr << "ERROR: Cannot create crash report directory: " << report_dir << std::endl;
+            std::cerr << "ERROR: Cannot create crash report directory: " << report_dir << '\n';
             // Try to write to /tmp as fallback
             std::string fallback_dir = "/tmp";
             if (EnsureCrashReportDirectory(fallback_dir)) {
                 report_dir = fallback_dir;
-                std::cerr << "Using fallback directory: " << report_dir << std::endl;
+                std::cerr << "Using fallback directory: " << report_dir << '\n';
             } else {
-                std::cerr << "ERROR: Cannot create fallback directory either!" << std::endl;
+                std::cerr << "ERROR: Cannot create fallback directory either!" << '\n';
             }
         }
         

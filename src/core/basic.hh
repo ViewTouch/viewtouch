@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -18,8 +18,10 @@
  * Standard types, macros & definitions used in application
  */
 
-#ifndef _BASIC_HH
-#define _BASIC_HH
+#ifndef BASIC_HH
+#define BASIC_HH
+
+#pragma GCC diagnostic ignored "-Wnull-dereference"
 
 #include <cstdio>
 #include <cstdlib>

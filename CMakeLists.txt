@@ -15,57 +15,17 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Defaulting CMAKE_BUILD_TYPE to ${CMAKE_BUILD_TYPE}")
 endif()
 
-# LTO / build-cache / PGO options
+# Allow enabling LTO/IPO to shrink binaries and speed up load/link time.
 option(VT_ENABLE_LTO "Enable interprocedural optimization for optimized builds" ON)
-set(VT_LTO_MODE "thin" CACHE STRING "LTO mode: off|thin|full")
-set_property(CACHE VT_LTO_MODE PROPERTY STRINGS off thin full)
-
-option(VT_USE_CCACHE "Use ccache to accelerate repeated builds" ON)
-
-option(VT_ENABLE_PGO "Enable scaffolding for Profile-Guided Optimization" OFF)
-set(VT_PGO_PHASE "off" CACHE STRING "PGO phase: off|generate|use")
-set_property(CACHE VT_PGO_PHASE PROPERTY STRINGS off generate use)
-
-if(VT_USE_CCACHE)
-    find_program(CCACHE_PROGRAM ccache)
-    if(CCACHE_PROGRAM)
-        message(STATUS "ccache found: ${CCACHE_PROGRAM} — using as compiler launcher")
-        set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
-        set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
-    else()
-        message(STATUS "VT_USE_CCACHE is ON but ccache not found on PATH")
-    endif()
-endif()
-
-if(VT_ENABLE_LTO AND NOT "${VT_LTO_MODE}" STREQUAL "off")
+if(VT_ENABLE_LTO)
     include(CheckIPOSupported)
     check_ipo_supported(RESULT _vt_ipo_supported OUTPUT _vt_ipo_msg)
     if(_vt_ipo_supported)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
-        message(STATUS "IPO/LTO enabled for Release/RelWithDebInfo (mode=${VT_LTO_MODE})")
-
-        # Rely on CMake's INTERPROCEDURAL_OPTIMIZATION support to emit
-        # the appropriate LTO flags for the detected toolchain. Avoid
-        # forcibly adding explicit "-flto=thin" flags which some
-        # compilers may not accept.
+        message(STATUS "IPO/LTO enabled for Release/RelWithDebInfo")
     else()
         message(STATUS "IPO/LTO not supported by this toolchain: ${_vt_ipo_msg}")
-    endif()
-endif()
-
-# PGO scaffolding: user selects phase 'generate' or 'use'.
-if(VT_ENABLE_PGO AND NOT "${VT_PGO_PHASE}" STREQUAL "off")
-    if("${VT_PGO_PHASE}" STREQUAL "generate")
-        message(STATUS "PGO: configure for profile-generation (compiler flags will include -fprofile-generate)")
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fprofile-generate")
-        set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fprofile-generate")
-        set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -fprofile-generate")
-    elseif("${VT_PGO_PHASE}" STREQUAL "use")
-        message(STATUS "PGO: configure for profile-use (compiler flags will include -fprofile-use)")
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fprofile-use -fprofile-correction")
-        set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fprofile-use -fprofile-correction")
-        set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -fprofile-use")
     endif()
 endif()
 
@@ -108,7 +68,7 @@ endif()
 # https://cmake.org/cmake/help/latest/prop_tgt/CXX_STANDARD.html
 string(COMPARE EQUAL "${CMAKE_CXX_STANDARD}" "" no_cmake_cxx_standard_set)
 if(no_cmake_cxx_standard_set)
-    set(CMAKE_CXX_STANDARD 20)
+    set(CMAKE_CXX_STANDARD 23)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set(CMAKE_CXX_EXTENSIONS OFF)
     message(STATUS "Using default C++ standard ${CMAKE_CXX_STANDARD}")
@@ -145,16 +105,24 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")  # Don't treat warnings as 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsign-compare")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wconversion")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnull-dereference")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-null-dereference")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-dangling-reference")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdouble-promotion")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat=2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-system-headers")  # Suppress warnings from external libraries
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-maybe-uninitialized")  # Suppress uninitialized variable warnings from external date library
 
-# Performance optimizations (applied only to optimized builds)
+# Performance optimizations
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(_vt_perf_flags "-ffast-math -ftree-vectorize -funroll-loops -fprefetch-loop-arrays")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${_vt_perf_flags}")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${_vt_perf_flags}")
-    message(STATUS "Performance optimizations applied to Release/RelWithDebInfo")
+    # Enable fast math optimizations (safe for most applications)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math")
+    # Enable vectorization
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftree-vectorize")
+    # Enable loop optimizations
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -funroll-loops")
+    # Prefetch data
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprefetch-loop-arrays")
+    message(STATUS "Performance optimizations enabled")
 endif()
 
 # disable specific compiler warnings
@@ -461,7 +429,6 @@ add_library(vtcore
     src/utils/vt_json_config.cc    src/utils/vt_json_config.hh
     src/utils/vt_enum_utils.cc     src/utils/vt_enum_utils.hh
     src/utils/memory_utils.cc      src/utils/memory_utils.hh
-    src/utils/buffer_pool.cc       src/utils/buffer_pool.hh
     src/utils/safe_string_utils.cc src/utils/safe_string_utils.hh
     src/utils/input_validation.cc  src/utils/input_validation.hh
     src/network/socket.cc          src/network/socket.hh

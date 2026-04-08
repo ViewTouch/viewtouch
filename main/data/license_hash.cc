@@ -1,6 +1,6 @@
 
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -32,7 +32,6 @@
 #include <cstring> // strcat, memset
 #include <cstdio> // snprintf
 #include <cstddef> // size_t
-#include <vector>
 
 
 #ifdef BSD
@@ -42,6 +41,8 @@
 #ifdef LINUX
 #include <sys/ioctl.h> // ioctl, SIOCGIFHWADDR
 #endif
+
+#include "src/utils/cpp23_utils.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -64,7 +65,7 @@ int GetUnameInfo(char* buffer, int bufflen)
         return 1;
 
     // Format system info without leaking it to stdout in production
-    snprintf(buffer, bufflen, "%s %s %s %s", utsbuff.sysname, utsbuff.nodename,
+    vt::cpp23::format_to_buffer(buffer, bufflen, "{} {} {} {}", utsbuff.sysname, utsbuff.nodename,
              utsbuff.release, utsbuff.machine);
     return 0;
 }
@@ -84,100 +85,191 @@ typedef unsigned int u_int;
  *  which works fine for FreeBSD, but not Linux.
  ****/
 int GetInterfaceInfo(char* stringbuff, int stringlen)
-int GetInterfaceInfo(char* stringbuf, int stringlen)
 {
-    // Modern Linux implementation using a dynamically sized buffer
-    // to fetch interface list via SIOCGIFCONF. Uses std::vector to avoid
-    // manual malloc/free and is robust against varying buffer sizes.
-    int sockfd = socket(PF_INET, SOCK_DGRAM, 0);
-    if (sockfd < 0) {
-        perror("socket GetInterfaceInfo");
+    size_t len;
+    int mib[6];
+    char* buffer;
+    const char* next;
+    char address[256];
+    const char* limit;
+    struct if_msghdr *ifmsg;
+    struct sockaddr_dl *sdl;
+    int retval = 1;
+
+    mib[0] = CTL_NET;
+    mib[1] = AF_ROUTE;
+    mib[2] = 0;
+    mib[3] = AF_INET;
+    mib[4] = NET_RT_IFLIST;
+    mib[5] = 0;
+
+    if (sysctl(mib, 6, nullptr, &len, nullptr, 0) < 0)
+        return 1;
+    if ((buffer = (char*)malloc(len)) == nullptr)
+        return 1;
+    if (sysctl(mib, 6, buffer, &len, nullptr, 0) < 0) {
+        free(buffer);
         return 1;
     }
 
-    std::vector<char> buf;
-    struct ifconf ifc;
-    int len = 100 * static_cast<int>(sizeof(struct ifreq));
-    int lastlen = 0;
-    int loops = 0;
-    const int maxloops = 20;
-    bool done = false;
-
-    while (!done && loops < maxloops)
+    stringbuff[0] = '\0';
+    limit = buffer + len;
+    next = buffer;
+    while (next < limit)
     {
-        buf.resize(len);
-        ifc.ifc_len = len;
-        ifc.ifc_buf = buf.data();
-        int ioresult = ioctl(sockfd, SIOCGIFCONF, &ifc);
-        if (ioresult < 0 && (errno != EINVAL || lastlen != 0))
+        ifmsg = (struct if_msghdr *) next;
+        if (ifmsg->ifm_type == RTM_IFINFO)
         {
-            perror("ioctl GetInterfaceInfo SIOCGIFCONF");
-            close(sockfd);
-            return 1;
-        }
-
-        if (ifc.ifc_len == lastlen)
-        {
-            done = true;
-        }
-        else
-        {
-            if (ifc.ifc_len > 0)
-                lastlen = ifc.ifc_len;
-            // increase buffer and try again
-            len += 10 * static_cast<int>(sizeof(struct ifreq));
-            ++loops;
-        }
-    }
-
-    if (!done && lastlen == 0)
-    {
-        // Final attempt with a reasonable default
-        buf.resize(1024);
-        ifc.ifc_len = static_cast<int>(buf.size());
-        ifc.ifc_buf = buf.data();
-        if (ioctl(sockfd, SIOCGIFCONF, &ifc) < 0) {
-            perror("ioctl GetInterfaceInfo fallback");
-            close(sockfd);
-            return 1;
-        }
-        lastlen = ifc.ifc_len;
-    }
-
-    // Parse returned interface list and look for a hardware address
-    const char* ptr = buf.data();
-    const char* end = buf.data() + lastlen;
-    int success = 0;
-    unsigned char mac[LICENCE_HASH_STRLENGTH];
-
-    while (ptr + static_cast<int>(sizeof(struct ifreq)) <= end)
-    {
-        struct ifreq *ifr = (struct ifreq *)ptr;
-        int alen = sizeof(struct sockaddr);
-#ifdef AF_INET6
-        if (ifr->ifr_addr.sa_family == AF_INET6)
-            alen = sizeof(struct sockaddr_in6);
-#endif
-        // advance pointer to next entry
-        ptr += sizeof(ifr->ifr_name) + alen;
-
-        // Copy interface name to a NUL-terminated buffer
-        char ifname[IFNAMSIZ];
-        vt_safe_string::safe_copy(ifname, IFNAMSIZ, ifr->ifr_name);
-
-        if (MacFromName(mac, ifname, sockfd) == 0)
-        {
-            if (MacToString(stringbuf, stringlen, mac) == 0)
+			sdl = (struct sockaddr_dl *)(ifmsg + 1);
+            if (sdl->sdl_alen > 0)
             {
-                success = 1;
-                break;
+                memcpy(address, LLADDR(sdl), sdl->sdl_alen);
+                vt::cpp23::format_to_buffer(stringbuff, stringlen, "{}", link_ntoa(sdl));
+                retval = 0;
             }
         }
+        next += ifmsg->ifm_msglen;
+    }
+    free(buffer);
+    return retval;
+}
+#endif  /* BSD */
+
+#ifdef LINUX
+/*******
+ * MacToString:  
+ *******/
+int MacToString(char* macstr, int maxlen, unsigned const char* mac)
+{
+    int retval = 0;
+    int idx;
+    char buffer[LICENCE_HASH_STRLENGTH];
+
+    macstr[0] = '\0';
+    for (idx = 0; idx < IFHWADDRLEN; idx++)
+    {
+        if (idx)
+            vt_safe_string::safe_concat(macstr, maxlen, ":");
+        vt::cpp23::format_to_buffer(buffer, LICENCE_HASH_STRLENGTH, "{:02X}", mac[idx]);
+        vt_safe_string::safe_concat(macstr, maxlen, buffer);
     }
 
-    close(sockfd);
-    return success;
+    return retval;
 }
+
+/*******
+ * MacFromName:  
+ *******/
+int MacFromName(unsigned char* mac, const char* name, int sockfd)
+{
+    int retval = 1;
+    int idx;
+    int count = 0;
+	struct ifreq ifr;
+
+	memset(&ifr,0,sizeof(struct ifreq));
+	vt_safe_string::safe_copy(ifr.ifr_name, IFNAMSIZ, name);
+	if (ioctl(sockfd, SIOCGIFHWADDR, &ifr) == 0)
+    {
+        // I think there's supposed to be an sa_len field indicating
+        // how long the hardware address is.  But there's not.  And I'm not
+        // sure yet how to check
+        for (idx = 0; idx < IFHWADDRLEN; idx++)
+            count += ifr.ifr_hwaddr.sa_data[idx];
+        if (count)
+        {
+            memcpy(mac, ifr.ifr_hwaddr.sa_data, IFHWADDRLEN);
+            retval = 0;
+        }
+    }
+    else
+    {
+        perror("ioctl MacFromName SIOCGIFHWADDR");
+    }
+
+	return retval;
+}
+
+int ListAddresses( )
+{
+    /**
+        int sockfd;
+        int io;
+        char buffer[1024];
+        struct ifreq ifr;
+ 
+        vt_safe_string::safe_format(ifr.ifr_name, IFNAMSIZ, "eth0");
+  
+        sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        if(sockfd < 0){
+                perror("socket");
+                exit(1);
+        }
+  
+        io = ioctl(sockfd, SIOCGIFHWADDR, (const char* )&ifr);
+        if(io < 0){
+                perror("ioctl");
+                return 1;
+        }
+  
+        printf("fetched HW address with ioctl on sockfd.\n");
+        printf("HW address of interface is: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[0],
+                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[1],
+                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[2],
+                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[3],
+                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[4],
+                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[5]
+               ); 
+  */
+        
+    struct ifreq ifr;
+    struct ifconf ifc;
+    char buf[1024];
+    int success = 0;
+
+    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+    if (sock == -1) { /* handle error*/ };
+
+    ifc.ifc_len = sizeof(buf);
+    ifc.ifc_buf = buf;
+    if (ioctl(sock, SIOCGIFCONF, &ifc) == -1) { /* handle error */ }
+
+    struct ifreq* it = ifc.ifc_req;
+    const struct ifreq* const end = it + (ifc.ifc_len / sizeof(struct ifreq));
+
+    for (; it != end; ++it) {
+        vt_safe_string::safe_copy(ifr.ifr_name, IFNAMSIZ, it->ifr_name);
+        if (ioctl(sock, SIOCGIFFLAGS, &ifr) == 0) {
+            if (! (ifr.ifr_flags & IFF_LOOPBACK)) { // don't count loopback
+                if (ioctl(sock, SIOCGIFHWADDR, &ifr) == 0) {
+                    success = 1;
+                    break;
+                }
+            }
+        }
+        else { /* handle error */ }
+    }
+
+    unsigned char mac_address[6];
+
+    if (success) memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
+        
+    printf("ListAddresses mac(%02X:%02X:%02X:%02X:%02X:%02X)\n",
+                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[0],
+                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[1],
+                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[2],
+                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[3],
+                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[4],
+                (unsigned char)ifr.ifr_ifru.ifru_hwaddr.sa_data[5]
+               );
+        
+        close(sock);  // Critical fix: Close socket before returning
+        return 0;
+}
+
+/*******
+ * GetInterfaceInfo:  
  *******/
 int GetInterfaceInfo(char* stringbuf, int stringlen)
 {
@@ -284,7 +376,7 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
     }
     
     close(sockfd);
-    if (buf != NULL)
+    if (buf != nullptr)
         free(buf);
     
     */
@@ -364,61 +456,6 @@ int GetInterfaceInfo(char* stringbuf, int stringlen)
     return success;
 }
 #endif /* LINUX */
-
-/* Provide a Linux implementation when building on Linux systems. */
-#if defined(__linux__) || defined(__gnu_linux__) || defined(LINUX)
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-
-int GetInterfaceInfo(char* stringbuf, int stringlen)
-{
-    if (!stringbuf || stringlen <= 0) return 1;
-    stringbuf[0] = '\0';
-
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock < 0) return 1;
-
-    std::vector<char> buf(4096);
-    struct ifconf ifc;
-
-    // Try to fetch interface list, growing buffer if necessary
-    for (int attempt = 0; attempt < 6; ++attempt) {
-        ifc.ifc_len = static_cast<int>(buf.size());
-        ifc.ifc_buf = buf.data();
-        if (ioctl(sock, SIOCGIFCONF, &ifc) >= 0) break;
-        if (errno == EINVAL) {
-            buf.resize(buf.size() * 2);
-            continue;
-        }
-        close(sock);
-        return 1;
-    }
-
-    int len = ifc.ifc_len;
-    struct ifreq *it = reinterpret_cast<struct ifreq*>(buf.data());
-    struct ifreq *end = reinterpret_cast<struct ifreq*>(buf.data() + len);
-    struct ifreq ifr;
-
-    for (; it < end; ++it) {
-        vt_safe_string::safe_copy(ifr.ifr_name, IFNAMSIZ, it->ifr_name);
-        if (ioctl(sock, SIOCGIFFLAGS, &ifr) == 0) {
-            if (!(ifr.ifr_flags & IFF_LOOPBACK)) {
-                if (ioctl(sock, SIOCGIFHWADDR, &ifr) == 0) {
-                    unsigned char *mac = reinterpret_cast<unsigned char*>(ifr.ifr_ifru.ifru_hwaddr.sa_data);
-                    int written = snprintf(stringbuf, stringlen, "%02X:%02X:%02X:%02X:%02X:%02X",
-                        mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-                    close(sock);
-                    return (written > 0 ? 0 : 1);
-                }
-            }
-        }
-    }
-
-    close(sock);
-    return 1;
-}
-#endif
 
 /****
  * GetMacAddress:  The goal here is to strip out the machine id and format

@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -36,16 +36,17 @@ public:
     // Constructor
     ChartZone();
     // Destructor
-    ~ChartZone();
+    ~ChartZone() override;
 
     // Member Functions
-    int   Type() { return ZONE_CHART; }
-    std::unique_ptr<Zone> Copy();
+    int   Type() override { return ZONE_CHART; }
+    std::unique_ptr<Zone> Copy() override;
 
-    int          RenderInit(Terminal *t, int update_flag);
-    RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar* message);
-    SignalResult Touch(Terminal *t, int tx, int ty);
+    int          RenderInit(Terminal *t, int update_flag) override;
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Signal(Terminal *t, const genericChar* message) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    using PosZone::Update;  // bring base overloads into scope
     int          Update(Terminal *t, int update_message);
 };
 

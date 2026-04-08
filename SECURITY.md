@@ -6,8 +6,8 @@ The following versions of ViewTouch are currently supported with security update
 
 | Version | Supported          | Notes |
 | ------- | ------------------ | ----- |
-| 25.03.x | :white_check_mark: | Current stable release |
-| < 25.03 | :x:                | End of life |
+| 26.01.x | :white_check_mark: | Current stable release |
+| < 26.01 | :x:                | End of life |
 
 **Note**: Only the latest stable release receives security updates. For the latest version information, please check the project repository.
 

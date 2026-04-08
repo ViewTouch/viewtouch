@@ -34,10 +34,11 @@
 #include <sys/un.h>
 #include <dirent.h>
 #include <fcntl.h>
-#include <time.h>
+#include <ctime>
 #include <unistd.h>
 #include <iostream>
 #include <string>
+#include "src/utils/cpp23_utils.hh"
 #include <chrono>
 #include <vector>
 #include <array>
@@ -49,8 +50,6 @@
 
 #include "debug.hh"
 #include "safe_string_utils.hh"
-// Safe multiplication helpers (overflow-checked)
-#include "safe_math.hh"
 #include "term_view.hh"
 #include "term_dialog.hh"
 #include "remote_link.hh"
@@ -58,7 +57,6 @@
 #include "touch_screen.hh"
 #include "layer.hh"
 #include "generic_char.hh"
-#include "buffer_pool.hh"
 
 #ifdef CREDITMCVE
 #include "term_credit_mcve.hh"
@@ -80,7 +78,6 @@
 #include <iostream>
 #include <vector>
 #include <numeric>
-#include <limits>
 
 namespace fs = std::filesystem;
 
@@ -94,10 +91,7 @@ namespace Constants {
     constexpr const char* SCREEN_DIR = "/usr/viewtouch/screenshots";  /* where to save screenshots */
     constexpr int TERM_RELOAD_FONTS = 0xA5;
     [[maybe_unused]] constexpr int MAX_TRIES = 8;
-    // Maximum allowed image size in bytes (used for XImage/mask allocations)
-    [[maybe_unused]] constexpr size_t MAX_IMAGE_BYTES = 4194304;
-    // Maximum allowed image dimension (width or height) to avoid huge allocations
-    constexpr int MAX_IMAGE_DIM = 10000;
+    [[maybe_unused]] constexpr int MAX_XPM_SIZE = 4194304;
     [[maybe_unused]] constexpr const char* SCREENSAVER_DIR = VIEWTOUCH_PATH "/dat/screensaver";
     // EXTRA_ICON_WIDTH is defined as macro below, not needed here
     constexpr int MAX_EVENTS_PER_SECOND = 1000;
@@ -139,27 +133,20 @@ enum ConnectionState {
 
 class ConnectionMonitor {
 private:
-    ConnectionState state_;
-    time_t last_heartbeat_;
-    time_t last_reconnect_attempt_;
-    int reconnect_attempts_;
-    int max_reconnect_attempts_;
-    int reconnect_delay_;
-    bool keep_alive_enabled_;
+    ConnectionState state_{CONNECTION_DISCONNECTED};
+    time_t last_heartbeat_{0};
+    time_t last_reconnect_attempt_{0};
+    int reconnect_attempts_{0};
+    int max_reconnect_attempts_{10};
+    int reconnect_delay_{2};
+    bool keep_alive_enabled_{true};
 
 public:
-    ConnectionMonitor() :
-        state_(CONNECTION_DISCONNECTED),
-        last_heartbeat_(0),
-        last_reconnect_attempt_(0),
-        reconnect_attempts_(0),
-        max_reconnect_attempts_(10),
-        reconnect_delay_(2),
-        keep_alive_enabled_(true) {}
+    ConnectionMonitor() = default;
 
     void set_connected() {
         state_ = CONNECTION_CONNECTED;
-        last_heartbeat_ = time(NULL);
+        last_heartbeat_ = time(nullptr);
         reconnect_attempts_ = 0;
         ReportError("Connection established");
     }
@@ -173,7 +160,7 @@ public:
 
     void set_reconnecting() {
         state_ = CONNECTION_RECONNECTING;
-        last_reconnect_attempt_ = time(NULL);
+        last_reconnect_attempt_ = time(nullptr);
         reconnect_attempts_++;
     }
 
@@ -182,37 +169,37 @@ public:
         ReportError("Connection failed permanently");
     }
 
-    ConnectionState get_state() const { return state_; }
+    [[nodiscard]] ConnectionState get_state() const { return state_; }
 
     bool should_attempt_reconnect() {
         if (state_ != CONNECTION_DISCONNECTED) return false;
         if (reconnect_attempts_ >= max_reconnect_attempts_) return false;
 
-        time_t now = time(NULL);
+        time_t now = time(nullptr);
         int delay = reconnect_delay_ * (1 << (reconnect_attempts_ - 1)); // Exponential backoff
         if (delay > 60) delay = 60; // Cap at 60 seconds
 
         return (now - last_reconnect_attempt_) >= delay;
     }
 
-    bool is_healthy() const {
+    [[nodiscard]] bool is_healthy() const {
         if (state_ != CONNECTION_CONNECTED) return false;
         if (!keep_alive_enabled_) return true;
 
-        time_t now = time(NULL);
+        time_t now = time(nullptr);
         return (now - last_heartbeat_) < 30; // 30 second timeout
     }
 
     void send_heartbeat() {
-        last_heartbeat_ = time(NULL);
+        last_heartbeat_ = time(nullptr);
     }
 
     void reset_reconnect_attempts() {
         reconnect_attempts_ = 0;
     }
 
-    int get_reconnect_attempts() const { return reconnect_attempts_; }
-    int get_max_reconnect_attempts() const { return max_reconnect_attempts_; }
+    [[nodiscard]] int get_reconnect_attempts() const { return reconnect_attempts_; }
+    [[nodiscard]] int get_max_reconnect_attempts() const { return max_reconnect_attempts_; }
 };
 
 
@@ -249,8 +236,8 @@ public:
     }
     
     // Accessors
-    int get() const noexcept { return fd_; }
-    bool is_valid() const noexcept { return fd_ > 0; }
+    [[nodiscard]] int get() const noexcept { return fd_; }
+    [[nodiscard]] bool is_valid() const noexcept { return fd_ > 0; }
     
     // Release ownership
     int release() noexcept {
@@ -289,9 +276,9 @@ struct FontDataType
     const genericChar* font;
 };
 
-static FontDataType FontData[] =
+static constexpr std::array<FontDataType, 16> FontData =
 {
-    {FONT_TIMES_20,     "DejaVu Serif:size=12:style=Book"},
+    {{FONT_TIMES_20,     "DejaVu Serif:size=12:style=Book"},
     {FONT_TIMES_24,     "DejaVu Serif:size=14:style=Book"},
     {FONT_TIMES_34,     "DejaVu Serif:size=18:style=Book"},
     {FONT_TIMES_48,     "DejaVu Serif:size=28:style=Book"},
@@ -306,18 +293,21 @@ static FontDataType FontData[] =
     {FONT_COURIER_18,   "Liberation Serif:size=11:style=Regular"},
     {FONT_COURIER_18B,  "Liberation Serif:size=11:style=Bold"},
     {FONT_COURIER_20,   "Liberation Serif:size=12:style=Regular"},
-    {FONT_COURIER_20B,  "Liberation Serif:size=12:style=Bold"}
+    {FONT_COURIER_20B,  "Liberation Serif:size=12:style=Bold"}}
 };
 
 struct PenDataType
 {
-    int id, t[3], s[3], h[3];
+    int id;
+    std::array<int, 3> t;
+    std::array<int, 3> s;
+    std::array<int, 3> h;
 };
 
-static PenDataType PenData[] =
+static constexpr std::array<PenDataType, 21> PenData =
 {
 // ColorID             Text Color       Shadow Color     HiLight Color
-    {COLOR_BLACK,       {  0,   0,   0}, {249, 230, 210}, {148, 113,  78}},
+    {{COLOR_BLACK,       {  0,   0,   0}, {249, 230, 210}, {148, 113,  78}},
     {COLOR_WHITE,       {255, 255, 255}, { 64,  64,  64}, {117,  97,  78}},
     {COLOR_RED,         {235,   0,   0}, { 47,   0,   0}, {242, 200, 200}},
     {COLOR_GREEN,       {  0, 128,   0}, {  0,  42,   0}, {140, 236, 140}},
@@ -337,12 +327,12 @@ static PenDataType PenData[] =
     {COLOR_DK_BLUE,     {  0,   0, 145}, {  0,   0,  45}, {205, 205, 245}},
     {COLOR_DK_TEAL,     {  0,  92, 130}, {  0,  12,  30}, {176, 216, 255}},
     {COLOR_DK_MAGENTA,  {160,  32, 110}, { 32,   0,  16}, {232, 188, 210}},
-    {COLOR_DK_SEAGREEN, {  0,  98,  72}, {  0,  32,  16}, {127, 228, 200}},
+    {COLOR_DK_SEAGREEN, {  0,  98,  72}, {  0,  32,  16}, {127, 228, 200}}}
 };
 
-#define FONTS         (int)(sizeof(FontData)/sizeof(FontDataType))
-#define FONT_COUNT    FONTS  // Alias for compatibility
-#define FONT_SPACE    (FONTS+4)
+constexpr int FONTS = static_cast<int>(FontData.size());
+constexpr int FONT_COUNT = FONTS;  // Alias for compatibility
+constexpr int FONT_SPACE = FONTS + 4;
 
 class FontNameClass
 {
@@ -378,18 +368,18 @@ public:
     int  Parse(const char* fontname);
     const char* ToString();
 
-    const char* Foundry() const { return foundry.c_str(); }
-    const char* Family() const { return family.c_str(); }
-    const char* Weight() const { return weight.c_str(); }
-    const char* Slant() const { return slant.c_str(); }
-    const char* Width() const { return width.c_str(); }
-    const char* Pixels() const { return pixels.c_str(); }
-    const char* Points() const { return points.c_str(); }
-    const char* HorRes() const { return horres.c_str(); }
-    const char* VertRes() const { return vertres.c_str(); }
-    const char* Spacing() const { return spacing.c_str(); }
-    const char* AvgWidth() const { return avgwidth.c_str(); }
-    const char* CharSet() const { return charset.c_str(); }
+    [[nodiscard]] const char* Foundry() const { return foundry.c_str(); }
+    [[nodiscard]] const char* Family() const { return family.c_str(); }
+    [[nodiscard]] const char* Weight() const { return weight.c_str(); }
+    [[nodiscard]] const char* Slant() const { return slant.c_str(); }
+    [[nodiscard]] const char* Width() const { return width.c_str(); }
+    [[nodiscard]] const char* Pixels() const { return pixels.c_str(); }
+    [[nodiscard]] const char* Points() const { return points.c_str(); }
+    [[nodiscard]] const char* HorRes() const { return horres.c_str(); }
+    [[nodiscard]] const char* VertRes() const { return vertres.c_str(); }
+    [[nodiscard]] const char* Spacing() const { return spacing.c_str(); }
+    [[nodiscard]] const char* AvgWidth() const { return avgwidth.c_str(); }
+    [[nodiscard]] const char* CharSet() const { return charset.c_str(); }
 
     void ClearFoundry() { foundry = "*"; }
     void ClearFamily() { family = "*"; }
@@ -570,8 +560,8 @@ const char* FontNameClass::ToString()
  *------------------------------------------------------------------*/
 Xpm::Xpm()
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     width = 0;
     height = 0;
     pixmap = 0;
@@ -580,8 +570,8 @@ Xpm::Xpm()
 
 Xpm::Xpm(Pixmap pm)
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     width = 0;
     height = 0;
     pixmap = pm;
@@ -590,8 +580,8 @@ Xpm::Xpm(Pixmap pm)
 
 Xpm::Xpm(Pixmap pm, int w, int h)
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     width = w;
     height = h;
     pixmap = pm;
@@ -600,8 +590,8 @@ Xpm::Xpm(Pixmap pm, int w, int h)
 
 Xpm::Xpm(Pixmap pm, Pixmap m, int w, int h)
 {
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     width = w;
     height = h;
     pixmap = pm;
@@ -628,17 +618,17 @@ Xpm *Pixmaps::Get(int idx)
 {
     int curridx = 0;
     Xpm *currXpm = pixmaps.Head();
-    Xpm *retval = NULL;
+    Xpm *retval = nullptr;
     
     if (pixmaps.Count() < 1)
         return retval;
 
-    while (currXpm != NULL && curridx < count)
+    while (currXpm != nullptr && curridx < count)
     {
         if (curridx == idx)
         {
             retval = currXpm;
-            currXpm = NULL;
+            currXpm = nullptr;
         }
         else
         {
@@ -652,7 +642,7 @@ Xpm *Pixmaps::Get(int idx)
 
 Xpm *Pixmaps::GetRandom()
 {
-    Xpm *retval = NULL;
+    Xpm *retval = nullptr;
 
     if (pixmaps.Count() < 2)
         return retval;
@@ -673,17 +663,17 @@ Pixmaps PixmapList;
  ********************************************************************/
 
 LayerList Layers;
-Layer *MainLayer = NULL;
+Layer *MainLayer = nullptr;
 
 int SocketNo = 0;
 
-Display *Dis = NULL;
-GC       Gfx = 0;
+Display *Dis = nullptr;
+GC       Gfx = nullptr;
 Window   MainWin;
-std::array<Pixmap, IMAGE_COUNT> Texture;
+std::array<Pixmap, IMAGE_COUNT> Texture{};  // Lazy-loaded texture cache (initialized to 0)
 Pixmap   ShadowPix;
 int      ScrDepth = 0;
-Visual  *ScrVis = NULL;
+Visual  *ScrVis = nullptr;
 Colormap ScrCol = 0;
 int      WinWidth  = 0;
 int      WinHeight = 0;
@@ -729,15 +719,15 @@ void HideReconnectingMessage();
 
 // UI State preservation for disconnections
 struct SavedUIState {
-    int current_page;
-    int cursor_x, cursor_y;
-    bool input_active;
+    int current_page{0};
+    int cursor_x{0}, cursor_y{0};
+    bool input_active{false};
     std::string last_message;
 
-    SavedUIState() : current_page(0), cursor_x(0), cursor_y(0), input_active(false) {}
+    SavedUIState() = default;
 
     void save() {
-        if (MainLayer != NULL) {
+        if (MainLayer != nullptr) {
             current_page = MainLayer->page_x;  // Use page_x instead of page
             cursor_x = MainLayer->cursor;       // Use cursor instead of cursor_x
             cursor_y = 0;                       // No cursor_y, set to 0
@@ -747,7 +737,7 @@ struct SavedUIState {
     }
 
     void restore() {
-        if (MainLayer != NULL) {
+        if (MainLayer != nullptr) {
             // Request the server to switch to the saved page
             // This will be sent when connection is restored
             fprintf(stderr, "UI State: Requesting page %d restore\n", current_page);
@@ -767,6 +757,14 @@ void X11ResourceManager::cleanup() {
     if (Gfx) {
         XFreeGC(Dis, Gfx);
         Gfx = nullptr;
+    }
+    
+    // Clean up cached textures
+    for (size_t i = 0; i < IMAGE_COUNT; ++i) {
+        if (Texture[i] != 0 && Dis != nullptr) {
+            XFreePixmap(Dis, Texture[i]);
+            Texture[i] = 0;
+        }
     }
     
     // Clean up fonts
@@ -797,9 +795,9 @@ void X11ResourceManager::cleanup() {
     }
 }
 
-static Widget       MainShell = NULL;
+static Widget       MainShell = nullptr;
 static int          ScrNo     = 0;
-static Screen      *ScrPtr    = NULL;
+static Screen      *ScrPtr    = nullptr;
 static int          ScrHeight = 0;
 static int          ScrWidth  = 0;
 static Window       RootWin;
@@ -895,10 +893,10 @@ genericChar* RStr(genericChar* s)
 {
     FnTrace("RStr()");
 
-    static genericChar buffer[1024] = "";
-    if (s == NULL)
-        s = buffer;
-    if (BufferIn.GetString(s, sizeof(buffer)))
+    static std::array<genericChar, 1024> buffer = {""};
+    if (s == nullptr)
+        s = buffer.data();
+    if (BufferIn.GetString(s, buffer.size()))
     {
         s[0] = '\0';
     }
@@ -910,7 +908,7 @@ int ReportError(const std::string &message)
     FnTrace("ReportError()");
     if (SocketNo)
     {
-        WInt8(SERVER_ERROR);
+        WInt8(ToInt(ServerProtocol::SrvError));
         WStr(message.c_str(), 0);
         return SendNow();
     }
@@ -977,7 +975,7 @@ int Translations::AddTranslation(const char* key, const char* value)
     FnTrace("Translations::AddTranslation()");
 
     int retval = 0;
-    Translation *trans = new Translation(key, value);
+    auto *trans = new Translation(key, value);
     trans_list.AddToTail(trans);
     
     return retval;
@@ -988,13 +986,13 @@ const char* Translations::GetTranslation(const char* key)
     FnTrace("Translations::GetTranslation()");
 
     Translation *trans = trans_list.Head();
-    while (trans != NULL)
+    while (trans != nullptr)
     {
         if (trans->Match(key))
         {
-            static char buffer[STRLONG];
-            trans->GetValue(buffer, STRLONG);
-            return buffer;
+            static std::array<char, STRLONG> buffer{};
+            trans->GetValue(buffer.data(), buffer.size());
+            return buffer.data();
         }
         trans = trans->next;
     }
@@ -1006,14 +1004,14 @@ void Translations::PrintTranslations()
     FnTrace("Translations::PrintTranslations()");
 
     Translation *trans = trans_list.Head();
-    char key[STRLONG];
-    char value[STRLONG];
+    std::array<char, STRLONG> key{};
+    std::array<char, STRLONG> value{};
 
-    while (trans != NULL)
+    while (trans != nullptr)
     {
-        trans->GetKey(key, STRLONG);
-        trans->GetValue(value, STRLONG);
-        printf("%s = %s\n", key, value);
+        trans->GetKey(key.data(), key.size());
+        trans->GetValue(value.data(), value.size());
+        printf("%s = %s\n", key.data(), value.data());
         trans = trans->next;
     }
 }
@@ -1044,7 +1042,7 @@ public:
      *code accordingly.  In that case, you should also make the code
      *more dynamic, though it should still be quite fast.
      ****/
-    bool IsPointIn(int px, int py)  // Overrides RegionInfo::IsPointIn but not marked virtual in intermediate classes
+    virtual bool IsPointIn(int px, int py) const noexcept override  // Overrides RegionInfo::IsPointIn but not marked virtual in intermediate classes
         {
             return (px >= (x - EXTRA_ICON_WIDTH)) &&
                 (py >= y) &&
@@ -1052,7 +1050,7 @@ public:
                 (py < (y + h + EXTRA_ICON_WIDTH));
         }
 
-    int Command(Layer * /*l*/)
+    int Command(Layer * /*l*/) override
         {
             if (allow_iconify)
             {
@@ -1061,7 +1059,7 @@ public:
             }
             return 0;
         }
-    int Render(Layer *l)
+    int Render(Layer *l) override
         {
             if (allow_iconify)
                 return LO_PushButton::Render(l);
@@ -1124,7 +1122,7 @@ void ExposeCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
 {
     FnTrace("ExposeCB()");
 
-    if (event == NULL)
+    if (event == nullptr)
     {
         fprintf(stderr, "ExposeCB: event is NULL, skipping expose processing\n");
         return;
@@ -1132,7 +1130,7 @@ void ExposeCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
 
     static RegionInfo area;
 
-    XExposeEvent *e = reinterpret_cast<XExposeEvent*>(event);
+    auto *e = reinterpret_cast<XExposeEvent*>(event);
     if (CalibrateStage)
         return;
 
@@ -1184,7 +1182,7 @@ void UpdateCB(XtPointer /*client_data*/, XtIntervalId * /*timer_id*/)
     
     // Critical fix: Clear the old timer ID before setting new one to prevent race condition
     UpdateTimerID = 0;
-    UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, NULL);
+    UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, nullptr);
 }
 
 void TouchScreenCB(XtPointer /*client_data*/, int * /*fid*/, XtInputId * /*id*/)
@@ -1298,7 +1296,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
 {
     FnTrace("KeyPressCB()");
 
-    if (event == NULL)
+    if (event == nullptr)
     {
         fprintf(stderr, "KeyPressCB: event is NULL, skipping key press processing\n");
         return;
@@ -1314,11 +1312,11 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
     if (UserInput())
         return;
 
-    XKeyEvent *e = reinterpret_cast<XKeyEvent*>(event);
+    auto *e = reinterpret_cast<XKeyEvent*>(event);
     KeySym key = 0;
     std::array<genericChar, 32> buffer;
 
-    int len = XLookupString(e, buffer.data(), 31, &key, NULL);
+    int len = XLookupString(e, buffer.data(), 31, &key, nullptr);
     if (len < 0)
         len = 0;
     buffer[len] = '\0';
@@ -1343,7 +1341,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
     case XK_End:
         if (e->state & ControlMask && e->state & Mod1Mask)
         {
-            WInt8(SERVER_SHUTDOWN);
+            WInt8(ToInt(ServerProtocol::SrvShutdown));
             SendNow();
         }
         break;
@@ -1425,7 +1423,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
                 swipe_stage = 0;
                 swipe_char = 0;
                 swipe_track2 = 0;
-                WInt8(SERVER_SWIPE);
+                WInt8(ToInt(ServerProtocol::SrvSwipe));
                 WStr(swipe_buffer.data());
                 SendNow();
             }
@@ -1546,7 +1544,7 @@ void KeyPressCB(Widget /*widget*/, XtPointer /*client_data*/,
             }
             fake_cc = 0;
             printf("Sending Fake Credit Card:  '%s'\n", swipe_buffer.data());
-            WInt8(SERVER_SWIPE);
+            WInt8(ToInt(ServerProtocol::SrvSwipe));
             WStr(swipe_buffer.data());
             SendNow();
         }
@@ -1577,7 +1575,7 @@ void MouseClickCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
 {
     FnTrace("MouseClickCB()");
 
-    if (event == NULL)
+    if (event == nullptr)
     {
         fprintf(stderr, "MouseClickCB: event is NULL, skipping mouse click processing\n");
         return;
@@ -1590,7 +1588,7 @@ void MouseClickCB(Widget /*widget*/, XtPointer /*client_data*/, XEvent *event,
     if (silent_mode > 0)
         return;
 
-    XButtonEvent *btnevent = reinterpret_cast<XButtonEvent*>(event);
+    auto *btnevent = reinterpret_cast<XButtonEvent*>(event);
     int code = MOUSE_PRESS;
     int touch = 0;
 
@@ -1623,7 +1621,7 @@ void MouseReleaseCB(Widget widget, XtPointer client_data, XEvent *event,
 {
     FnTrace("MouseReleaseCB()");
 
-    if (event == NULL)
+    if (event == nullptr)
     {
         fprintf(stderr, "MouseReleaseCB: event is NULL, skipping mouse release processing\n");
         return;
@@ -1634,7 +1632,7 @@ void MouseReleaseCB(Widget widget, XtPointer client_data, XEvent *event,
     if (silent_mode > 0)
         return;
 
-    XButtonEvent *b = reinterpret_cast<XButtonEvent*>(event);
+    auto *b = reinterpret_cast<XButtonEvent*>(event);
     Layers.RubberBandOff();
 
     int code = MOUSE_RELEASE;
@@ -1655,13 +1653,13 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
 {
     FnTrace("MouseMoveCB()");
 
-    if (event == NULL)
+    if (event == nullptr)
     {
         fprintf(stderr, "MouseMoveCB: event is NULL, skipping mouse move processing\n");
         return;
     }
 
-    XPointerMovedEvent *e = reinterpret_cast<XPointerMovedEvent*>(event);
+    auto *e = reinterpret_cast<XPointerMovedEvent*>(event);
     if (UserInput())
         return;
     if (silent_mode > 0)
@@ -1670,7 +1668,7 @@ void MouseMoveCB(Widget widget, XtPointer client_data, XEvent *event,
 
     // try to intelligently determine whether this might be
     // a touch
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
     if ((now.tv_sec - last_mouse_time.tv_sec) > 1 ||
         (now.tv_usec - last_mouse_time.tv_usec) > 100000)
     {
@@ -1733,7 +1731,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             saved_ui_state.save();
 
             // Show "Reconnecting..." message on screen instead of just logging
-            if (MainLayer != NULL) {
+            if (MainLayer != nullptr) {
                 ShowReconnectingMessage();
             }
         }
@@ -1768,7 +1766,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
                 consecutive_failures = 0;
 
                 // Hide reconnecting message and restore normal operation
-                if (MainLayer != NULL) {
+                if (MainLayer != nullptr) {
                     HideReconnectingMessage();
                 }
 
@@ -1797,7 +1795,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
     consecutive_failures = 0;
     if (connection_monitor.get_state() != CONNECTION_CONNECTED) {
         connection_monitor.set_connected();
-        if (MainLayer != NULL) {
+        if (MainLayer != nullptr) {
             HideReconnectingMessage();
             // Restore UI state after reconnection
             saved_ui_state.restore();
@@ -1806,7 +1804,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
     connection_monitor.send_heartbeat();
 
     Layer *l = MainLayer;
-    if (l == NULL)
+    if (l == nullptr)
     {
         fprintf(stderr, "SocketInputCB: MainLayer is NULL, skipping processing\n");
         return;
@@ -1821,9 +1819,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
     const genericChar* s1, *s2;
 
     int failure = 0;
-    genericChar s[STRLONG];
-    genericChar key[STRLENGTH];
-    genericChar value[STRLENGTH];
+    std::array<genericChar, STRLONG> s{};
+    std::array<genericChar, STRLENGTH> key{};
+    std::array<genericChar, STRLENGTH> value{};
 
     while (BufferIn.size > 0)
     {
@@ -1886,7 +1884,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n4 = RInt8();
             n5 = RInt16();
             n6 = RInt8();
-            s1 = RStr(s);
+            s1 = RStr(s.data());
             s2 = RStr();
             if (TScreen)
                 TScreen->Flush();
@@ -1902,61 +1900,61 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             SetTitleBar(RStr());
             break;
         case TERM_TEXTL:
-            RStr(s);
+            RStr(s.data());
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt8();
             n4 = RInt8();
             n5 = RInt16();
-            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_LEFT, n5, use_embossed_text);
+            l->Text(s.data(), strlen(s.data()), n1, n2, n3, n4, ALIGN_LEFT, n5, use_embossed_text);
             break;
         case TERM_TEXTC:
-            RStr(s);
+            RStr(s.data());
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt8();
             n4 = RInt8();
             n5 = RInt16();
-            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_CENTER, n5, use_embossed_text);
+            l->Text(s.data(), strlen(s.data()), n1, n2, n3, n4, ALIGN_CENTER, n5, use_embossed_text);
             break;
         case TERM_TEXTR:
-            RStr(s);
+            RStr(s.data());
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt8();
             n4 = RInt8();
             n5 = RInt16();
-            l->Text(s, strlen(s), n1, n2, n3, n4, ALIGN_RIGHT, n5, use_embossed_text);
+            l->Text(s.data(), strlen(s.data()), n1, n2, n3, n4, ALIGN_RIGHT, n5, use_embossed_text);
             break;
         case TERM_ZONETEXTL:
-            RStr(s);
+            RStr(s.data());
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt8();
             n6 = RInt8();
-            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_LEFT, use_embossed_text);
+            l->ZoneText(s.data(), n1, n2, n3, n4, n5, n6, ALIGN_LEFT, use_embossed_text);
             break;
         case TERM_ZONETEXTC:
-            RStr(s);
+            RStr(s.data());
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt8();
             n6 = RInt8();
-            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_CENTER, use_embossed_text);
+            l->ZoneText(s.data(), n1, n2, n3, n4, n5, n6, ALIGN_CENTER, use_embossed_text);
             break;
         case TERM_ZONETEXTR:
-            RStr(s);
+            RStr(s.data());
             n1 = RInt16();
             n2 = RInt16();
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt8();
             n6 = RInt8();
-            l->ZoneText(s, n1, n2, n3, n4, n5, n6, ALIGN_RIGHT, use_embossed_text);
+            l->ZoneText(s.data(), n1, n2, n3, n4, n5, n6, ALIGN_RIGHT, use_embossed_text);
             break;
         case TERM_ZONE:
             n1 = RInt16();
@@ -2049,10 +2047,10 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt8();
-            RStr(s);
+            RStr(s.data());
             n6 = RInt8();
             n7 = RInt8();
-            l->StatusBar(n1, n2, n3, n4, n5, s, n6, n7);
+            l->StatusBar(n1, n2, n3, n4, n5, s.data(), n6, n7);
             break;
         case TERM_FLUSH_TS:
             if (TScreen)
@@ -2177,8 +2175,8 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n4 = RInt16();
             n5 = RInt16();
             n6 = RInt8();
-            RStr(s);
-            OpenLayer(n1, n2, n3, n4, n5, n6, s);
+            RStr(s.data());
+            OpenLayer(n1, n2, n3, n4, n5, n6, s.data());
             break;
         case TERM_SHOWWINDOW:
             ShowLayer(RInt16());
@@ -2195,11 +2193,11 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n3 = RInt16();
             n4 = RInt16();
             n5 = RInt16();
-            RStr(s);
+            RStr(s.data());
             n6 = RInt8();
             n7 = RInt8();
             n8 = RInt8();
-            NewPushButton(n1, n2, n3, n4, n5, s, n6, n7, n8);
+            NewPushButton(n1, n2, n3, n4, n5, s.data(), n6, n7, n8);
             break;
         case TERM_ICONIFY:
             ResetView();
@@ -2213,9 +2211,9 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             n1 = RInt8();
             for (n2 = 0; n2 < n1; n2++)
             {
-                RStr(key);
-                RStr(value);
-                MasterTranslations.AddTranslation(key, value);
+                RStr(key.data());
+                RStr(value.data());
+                MasterTranslations.AddTranslation(key.data(), value.data());
             }
             new_page_translations = 1;
             new_zone_translations = 1;
@@ -2227,7 +2225,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->Sale();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2240,7 +2238,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->PreAuth();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2253,7 +2251,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->FinishAuth();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2266,7 +2264,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->Void();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2279,7 +2277,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->VoidCancel();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2292,7 +2290,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->Refund();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2305,7 +2303,7 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             {
                 creditcard->Read();
                 creditcard->RefundCancel();
-                WInt8(SERVER_CC_PROCESSED);
+                WInt8(ToInt(ServerProtocol::SrvCcProcessed));
                 creditcard->Write();
                 SendNow();
                 creditcard->Clear();
@@ -2396,8 +2394,8 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
  * General Functions
  ********************************************************************/
 
-Layer       *TargetLayer = NULL;
-LayerObject *TargetObject = NULL;
+Layer       *TargetLayer = nullptr;
+LayerObject *TargetObject = nullptr;
 
 int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericChar* title)
 {
@@ -2410,8 +2408,8 @@ int OpenLayer(int id, int x, int y, int w, int h, int win_frame, const genericCh
     }
 
     KillLayer(id);
-    Layer *l = new Layer(Dis, Gfx, MainWin, w, h);
-    if (l == NULL)
+    auto *l = new Layer(Dis, Gfx, MainWin, w, h);
+    if (l == nullptr)
         return 1;
 
     if (l->pix == 0)
@@ -2440,7 +2438,7 @@ int ShowLayer(int id)
     FnTrace("ShowLayer()");
 
     Layer *l = Layers.FindByID(id);
-    if (l == NULL)
+    if (l == nullptr)
         return 1;
 
     l->buttons.Render(l);
@@ -2473,7 +2471,7 @@ int SetTargetLayer(int id)
     FnTrace("SetTargetLayer()");
 
     Layer *l = Layers.FindByID(id);
-    if (l == NULL)
+    if (l == nullptr)
         return 1;
 
     TargetLayer = l;
@@ -2486,9 +2484,9 @@ int NewPushButton(int id, int x, int y, int w, int h, const genericChar* text,
     FnTrace("NewPushButton()");
 
     Layer *l = TargetLayer;
-    if (l == NULL)
+    if (l == nullptr)
         return 1;
-    LO_PushButton *b = new LO_PushButton(text, c1, c2);
+    auto *b = new LO_PushButton(text, c1, c2);
     b->SetRegion(x + l->offset_x, y + l->offset_y, w, h);
     b->font = font;
     b->id = id;
@@ -2610,10 +2608,10 @@ int SaveToPPM()
     ReportError(str.data());
 
     // Generate the screenshot
-    char command[STRLONG];
-    snprintf(command, STRLONG, "%s -root -display %s >%s",
+    std::array<char, STRLONG> command{};
+    vt::cpp23::format_to_buffer(command.data(), command.size(), "{} -root -display {} >{}",
              Constants::XWD, DisplayString(Dis), filename.data());
-    system(command);
+    system(command.data());
 
     return 0;
 }
@@ -2673,7 +2671,7 @@ Pixmap LoadPixmap(const char**image_data)
     Pixmap retxpm = 0;
     int status;
 
-    status = XpmCreatePixmapFromData(Dis, MainWin, const_cast<char**>(image_data), &retxpm, NULL, NULL);
+    status = XpmCreatePixmapFromData(Dis, MainWin, const_cast<char**>(image_data), &retxpm, nullptr, nullptr);
     if (status != XpmSuccess)
         fprintf(stderr, "XpmError:  %s\n", XpmGetErrorString(status));
 
@@ -2690,7 +2688,7 @@ Xpm *LoadPixmapFile(char* file_name)
 {
     FnTrace("LoadPixmapFile()");
     
-    Xpm *retxpm = NULL;
+    Xpm *retxpm = nullptr;
     Pixmap xpm;
     XpmAttributes attributes;
     int status;
@@ -2701,7 +2699,7 @@ Xpm *LoadPixmapFile(char* file_name)
         if (sb.st_size <= MAX_XPM_SIZE)
         {
             attributes.valuemask = 0;
-            status = XpmReadFileToPixmap(Dis, MainWin, file_name, &xpm, NULL, &attributes);
+            status = XpmReadFileToPixmap(Dis, MainWin, file_name, &xpm, nullptr, &attributes);
             if (status != XpmSuccess)
             {
                 fprintf(stderr, "XpmError %s for %s\n", XpmGetErrorString(status), file_name);
@@ -2737,9 +2735,6 @@ Xpm *LoadPixmapFile(char* file_name)
  * If checkered background is detected, the image will be converted to RGBA format
  * with alpha channel added.
  ****/
-using vt::safe_math::safe_mul_size_t;
-using vt::safe_math::safe_mul3_size_t;
-
 static bool RemoveCheckeredBackground(png_bytep** row_pointers_ptr, int width, int height, 
                                        int& channels, int& rowbytes)
 {
@@ -2870,44 +2865,23 @@ static bool RemoveCheckeredBackground(png_bytep** row_pointers_ptr, int width, i
     png_bytep* new_row_pointers = nullptr;
     
     if (needs_alpha) {
-        // Sanity checks on dimensions to avoid huge allocations or overflows
-        if (width <= 0 || height <= 0) {
-            fprintf(stderr, "RemoveCheckeredBackground: Invalid image dimensions %dx%d\n", width, height);
-            return false;
-        }
-        if (width > Constants::MAX_IMAGE_DIM || height > Constants::MAX_IMAGE_DIM) {
-            fprintf(stderr, "RemoveCheckeredBackground: Image dimensions too large %dx%d\n", width, height);
-            return false;
-        }
-
-        // Compute new row size (width * 4) safely
-        size_t new_rowbytes = 0;
-        if (!safe_mul_size_t((size_t)width, 4, new_rowbytes)) {
-            fprintf(stderr, "RemoveCheckeredBackground: Row size multiplication overflow %dx4\n", width);
-            return false;
-        }
-
-        // Allocate pointer array safely (sizeof(png_bytep) * height)
-        size_t ptrs_bytes = 0;
-        if (!safe_mul_size_t(sizeof(png_bytep), (size_t)height, ptrs_bytes)) {
-            fprintf(stderr, "RemoveCheckeredBackground: Row pointer array size overflow\n");
-            return false;
-        }
-        new_row_pointers = static_cast<png_bytep*>(vt::BufferPool::Instance().Acquire(ptrs_bytes));
+        // Allocate new row pointers with alpha channel
+        int new_rowbytes = width * 4;
+        new_row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
         if (!new_row_pointers) {
             fprintf(stderr, "RemoveCheckeredBackground: Cannot allocate new row pointers\n");
             return false;
         }
-
+        
         for (int y = 0; y < height; y++) {
-            new_row_pointers[y] = static_cast<png_byte*>(vt::BufferPool::Instance().Acquire(new_rowbytes));
+            new_row_pointers[y] = (png_byte*)malloc(new_rowbytes);
             if (!new_row_pointers[y]) {
                 fprintf(stderr, "RemoveCheckeredBackground: Cannot allocate new row data\n");
-                for (int i = 0; i < y; i++) vt::BufferPool::Instance().Release(new_row_pointers[i], new_rowbytes);
-                vt::BufferPool::Instance().Release(new_row_pointers, ptrs_bytes);
+                for (int i = 0; i < y; i++) free(new_row_pointers[i]);
+                free(new_row_pointers);
                 return false;
             }
-
+            
             // Copy RGB data and add alpha channel (fully opaque initially)
             for (int x = 0; x < width; x++) {
                 new_row_pointers[y][x * 4 + 0] = row_pointers[y][x * 3 + 0];
@@ -2916,12 +2890,12 @@ static bool RemoveCheckeredBackground(png_bytep** row_pointers_ptr, int width, i
                 new_row_pointers[y][x * 4 + 3] = 255;  // Fully opaque initially
             }
         }
-
+        
         // Update to use new row pointers
         *row_pointers_ptr = new_row_pointers;
         row_pointers = new_row_pointers;
         channels = 4;
-        rowbytes = static_cast<int>(new_rowbytes);
+        rowbytes = new_rowbytes;
     } else if (channels == 4) {
         // Image already has alpha channel - we'll modify it
         // Make sure existing transparent pixels stay transparent
@@ -2996,20 +2970,20 @@ Xpm *LoadPNGFile(const char* file_name)
     }
 
     // Read PNG header to verify format
-    png_byte header[8];
-    if (fread(header, 1, 8, fp) != 8) {
+    std::array<png_byte, 8> header{};
+    if (fread(header.data(), 1, header.size(), fp) != header.size()) {
         fprintf(stderr, "LoadPNGFile: Cannot read PNG header from %s\n", file_name);
         fclose(fp);
         return nullptr;
     }
 
-    if (png_sig_cmp(header, 0, 8)) {
+    if (png_sig_cmp(header.data(), 0, header.size())) {
         fprintf(stderr, "LoadPNGFile: File %s is not a valid PNG\n", file_name);
         fclose(fp);
         return nullptr;
     }
 
-    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     if (!png_ptr) {
         fprintf(stderr, "LoadPNGFile: Cannot create PNG read struct\n");
         fclose(fp);
@@ -3019,14 +2993,14 @@ Xpm *LoadPNGFile(const char* file_name)
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
         fprintf(stderr, "LoadPNGFile: Cannot create PNG info struct\n");
-        png_destroy_read_struct(&png_ptr, NULL, NULL);
+        png_destroy_read_struct(&png_ptr, nullptr, nullptr);
         fclose(fp);
         return nullptr;
     }
 
     if (setjmp(png_jmpbuf(png_ptr))) {
         fprintf(stderr, "LoadPNGFile: PNG read error in %s\n", file_name);
-        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
         fclose(fp);
         return nullptr;
     }
@@ -3068,52 +3042,23 @@ Xpm *LoadPNGFile(const char* file_name)
     int rowbytes = png_get_rowbytes(png_ptr, info_ptr);
     int channels = png_get_channels(png_ptr, info_ptr);
     fprintf(stderr, "LoadPNGFile: Row bytes = %d, channels = %d\n", rowbytes, channels);
-    // Basic sanity checks on dimensions to avoid huge allocations
-    if (width <= 0 || height <= 0) {
-        fprintf(stderr, "LoadPNGFile: Invalid image dimensions %dx%d\n", width, height);
-        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        fclose(fp);
-        return nullptr;
-    }
-    if (width > Constants::MAX_IMAGE_DIM || height > Constants::MAX_IMAGE_DIM) {
-        fprintf(stderr, "LoadPNGFile: Image dimensions too large %dx%d\n", width, height);
-        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        fclose(fp);
-        return nullptr;
-    }
 
-    // If image is larger than our current window, reject early to avoid huge allocations
-    if (width > WinWidth || height > WinHeight) {
-        fprintf(stderr, "LoadPNGFile: Image too large (%dx%d > %dx%d)\n",
-                width, height, WinWidth, WinHeight);
-        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        fclose(fp);
-        return nullptr;
-    }
-
-    // Allocate image data (row pointers)
-    if ((size_t)height > std::numeric_limits<size_t>::max() / sizeof(png_bytep)) {
-        fprintf(stderr, "LoadPNGFile: Row pointer array size overflow\n");
-        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        fclose(fp);
-        return nullptr;
-    }
-    size_t rowptrs_bytes = sizeof(png_bytep) * (size_t)height;
-    png_bytep* row_pointers = static_cast<png_bytep*>(vt::BufferPool::Instance().Acquire(rowptrs_bytes));
+    // Allocate image data
+    auto* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * height);
     if (!row_pointers) {
         fprintf(stderr, "LoadPNGFile: Cannot allocate row pointers\n");
-        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
         fclose(fp);
         return nullptr;
     }
 
     for (int y = 0; y < height; y++) {
-        row_pointers[y] = static_cast<png_byte*>(vt::BufferPool::Instance().Acquire((size_t)rowbytes));
+        row_pointers[y] = (png_byte*)malloc(rowbytes);
         if (!row_pointers[y]) {
             fprintf(stderr, "LoadPNGFile: Cannot allocate row data\n");
-            for (int i = 0; i < y; i++) vt::BufferPool::Instance().Release(row_pointers[i], (size_t)rowbytes);
-            vt::BufferPool::Instance().Release(row_pointers, rowptrs_bytes);
-            png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+            for (int i = 0; i < y; i++) free(row_pointers[i]);
+            free(row_pointers);
+            png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
             fclose(fp);
             return nullptr;
         }
@@ -3127,9 +3072,9 @@ Xpm *LoadPNGFile(const char* file_name)
     if (checkered_removed && row_pointers != original_row_pointers) {
         // Free original row pointers if they were replaced
         for (int y = 0; y < height; y++) {
-            vt::BufferPool::Instance().Release(original_row_pointers[y], (size_t)rowbytes);
+            free(original_row_pointers[y]);
         }
-        vt::BufferPool::Instance().Release(original_row_pointers, rowptrs_bytes);
+        free(original_row_pointers);
         fprintf(stderr, "LoadPNGFile: Checkered background removed, image converted to RGBA\n");
     }
 
@@ -3158,51 +3103,24 @@ Xpm *LoadPNGFile(const char* file_name)
             }
             
             // Create XImage with proper format for the visual
-            // Allocate XImage data safely (width * height * 4)
-            size_t ximage_size = 0;
-            char *ximage_data = nullptr;
-            if (safe_mul3_size_t((size_t)width, (size_t)height, 4, ximage_size) &&
-                ximage_size <= static_cast<size_t>(Constants::MAX_IMAGE_BYTES)) {
-                ximage_data = static_cast<char*>(vt::BufferPool::Instance().Acquire(ximage_size));
-            } else {
-                ximage_data = nullptr;
-            }
-            XImage *ximage = nullptr;
-            if (ximage_data) {
-                ximage = XCreateImage(Dis, visual, depth, ZPixmap, 0, ximage_data, width, height, 32, 0);
-            }
+            XImage *ximage = XCreateImage(Dis, visual, depth, ZPixmap, 0,
+                                         (char*)malloc(width * height * 4), width, height, 32, 0);
             if (!ximage) {
                 fprintf(stderr, "LoadPNGFile: Cannot create XImage\n");
-                if (ximage_data) {
-                    vt::BufferPool::Instance().Release(ximage_data, ximage_size);
-                    ximage_data = nullptr;
-                }
                 XFreePixmap(Dis, pixmap);
                 if (mask) XFreePixmap(Dis, mask);
                 pixmap = 0;
                 mask = 0;
             } else {
                 // Create mask image if needed
-                char *mask_image_data = nullptr;
                 XImage *mask_image = nullptr;
                 if (mask) {
-                    size_t mask_bytes = 0;
-                    size_t mask_row = ((size_t)width + 7) / 8;
-                    if (safe_mul_size_t(mask_row, (size_t)height, mask_bytes) && mask_bytes > 0 && mask_bytes <= static_cast<size_t>(Constants::MAX_IMAGE_BYTES)) {
-                        mask_image_data = static_cast<char*>(vt::BufferPool::Instance().Acquire(mask_bytes));
-                        if (mask_image_data) {
-                            mask_image = XCreateImage(Dis, visual, 1, XYBitmap, 0, mask_image_data,
-                                                       width, height, 8, 0);
-                            if (mask_image) {
-                                // Initialize mask to all transparent
-                                memset(mask_image->data, 0, mask_bytes);
-                            } else {
-                                vt::BufferPool::Instance().Release(mask_image_data, mask_bytes);
-                                mask_image_data = nullptr;
-                            }
-                        }
-                    } else {
-                        mask_image_data = nullptr;
+                    mask_image = XCreateImage(Dis, visual, 1, XYBitmap, 0,
+                                            (char*)malloc((width + 7) / 8 * height), 
+                                            width, height, 8, 0);
+                    if (mask_image) {
+                        // Initialize mask to all transparent
+                        memset(mask_image->data, 0, (width + 7) / 8 * height);
                     }
                 }
                 
@@ -3256,24 +3174,12 @@ Xpm *LoadPNGFile(const char* file_name)
                 
                 // Put mask to mask pixmap
                 if (mask && mask_image) {
-                    GC mask_gc = XCreateGC(Dis, mask, 0, NULL);
+                    GC mask_gc = XCreateGC(Dis, mask, 0, nullptr);
                     XPutImage(Dis, mask, mask_gc, mask_image, 0, 0, 0, 0, width, height);
                     XFreeGC(Dis, mask_gc);
-                    if (mask_image->data) {
-                        size_t mask_row = ((size_t)width + 7) / 8;
-                        size_t mask_bytes = mask_row * (size_t)height;
-                        vt::BufferPool::Instance().Release(mask_image->data, mask_bytes);
-                        mask_image->data = nullptr;
-                    }
                     XDestroyImage(mask_image);
                 }
-
-                if (ximage) {
-                    if (ximage->data) {
-                        vt::BufferPool::Instance().Release(ximage->data, ximage_size);
-                        ximage->data = nullptr;
-                    }
-                }
+                
                 XDestroyImage(ximage);
                 fprintf(stderr, "LoadPNGFile: Successfully loaded PNG with%s transparency\n",
                         mask ? "" : "out");
@@ -3286,10 +3192,10 @@ Xpm *LoadPNGFile(const char* file_name)
 
     // Cleanup
     for (int y = 0; y < height; y++) {
-        vt::BufferPool::Instance().Release(row_pointers[y], (size_t)rowbytes);
+        free(row_pointers[y]);
     }
-    vt::BufferPool::Instance().Release(row_pointers, rowptrs_bytes);
-    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+    free(row_pointers);
+    png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
     fclose(fp);
 
     if (pixmap) {
@@ -3329,20 +3235,6 @@ Xpm *LoadJPEGFile(const char* file_name)
     int height = cinfo.output_height;
     int num_components = cinfo.output_components;
 
-    // Basic sanity checks on JPEG dimensions
-    if (width <= 0 || height <= 0) {
-        jpeg_finish_decompress(&cinfo);
-        jpeg_destroy_decompress(&cinfo);
-        fclose(fp);
-        return nullptr;
-    }
-    if (width > Constants::MAX_IMAGE_DIM || height > Constants::MAX_IMAGE_DIM) {
-        jpeg_finish_decompress(&cinfo);
-        jpeg_destroy_decompress(&cinfo);
-        fclose(fp);
-        return nullptr;
-    }
-
     // Allocate image data
     JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)
         ((j_common_ptr) &cinfo, JPOOL_IMAGE, width * num_components, 1);
@@ -3351,53 +3243,28 @@ Xpm *LoadJPEGFile(const char* file_name)
     if (width <= WinWidth && height <= WinHeight) {
         pixmap = XCreatePixmap(Dis, MainWin, width, height, DefaultDepth(Dis, DefaultScreen(Dis)));
 
-        // Allocate XImage data safely
-        size_t jpeg_image_size = 0;
-        char *jpeg_image_data = nullptr;
-        if (safe_mul3_size_t((size_t)width, (size_t)height, 4, jpeg_image_size) &&
-            jpeg_image_size <= static_cast<size_t>(Constants::MAX_IMAGE_BYTES)) {
-            jpeg_image_data = static_cast<char*>(vt::BufferPool::Instance().Acquire(jpeg_image_size));
-        }
-        XImage *ximage = nullptr;
-        if (jpeg_image_data) {
-            ximage = XCreateImage(Dis, DefaultVisual(Dis, DefaultScreen(Dis)),
-                                 DefaultDepth(Dis, DefaultScreen(Dis)), ZPixmap, 0,
-                                 jpeg_image_data, width, height, 32, 0);
-        }
+        XImage *ximage = XCreateImage(Dis, DefaultVisual(Dis, DefaultScreen(Dis)),
+                                     DefaultDepth(Dis, DefaultScreen(Dis)), ZPixmap, 0,
+                                     (char*)malloc(width * height * 4), width, height, 32, 0);
 
-        // Read and convert JPEG data (always consume scanlines, but only write into XImage if available)
+        // Read and convert JPEG data
         while (cinfo.output_scanline < height) {
             jpeg_read_scanlines(&cinfo, buffer, 1);
             int y = cinfo.output_scanline - 1;
 
-            if (ximage) {
-                for (int x = 0; x < width; x++) {
-                    unsigned long pixel = 0;
-                    if (num_components >= 3) {
-                        pixel = (buffer[0][x*num_components+0] << 16) |
-                               (buffer[0][x*num_components+1] << 8) |
-                               buffer[0][x*num_components+2];
-                    }
-                    XPutPixel(ximage, x, y, pixel);
+            for (int x = 0; x < width; x++) {
+                unsigned long pixel = 0;
+                if (num_components >= 3) {
+                    pixel = (buffer[0][x*num_components+0] << 16) |
+                           (buffer[0][x*num_components+1] << 8) |
+                           buffer[0][x*num_components+2];
                 }
+                XPutPixel(ximage, x, y, pixel);
             }
         }
 
-        if (ximage) {
-            XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
-            if (ximage->data) {
-                vt::BufferPool::Instance().Release(ximage->data, jpeg_image_size);
-                ximage->data = nullptr;
-            }
-            XDestroyImage(ximage);
-        } else {
-            if (jpeg_image_data) {
-                vt::BufferPool::Instance().Release(jpeg_image_data, jpeg_image_size);
-                jpeg_image_data = nullptr;
-            }
-            XFreePixmap(Dis, pixmap);
-            pixmap = 0;
-        }
+        XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
+        XDestroyImage(ximage);
     }
 
     jpeg_finish_decompress(&cinfo);
@@ -3452,33 +3319,13 @@ Xpm *LoadGIFFile(const char* file_name)
     int width = desc->Width;
     int height = desc->Height;
 
-    // Basic sanity checks on GIF dimensions
-    if (width <= 0 || height <= 0) {
-        DGifCloseFile(gif, NULL);
-        return nullptr;
-    }
-    if (width > Constants::MAX_IMAGE_DIM || height > Constants::MAX_IMAGE_DIM) {
-        DGifCloseFile(gif, NULL);
-        return nullptr;
-    }
-
     Pixmap pixmap = 0;
     if (width <= WinWidth && height <= WinHeight) {
         pixmap = XCreatePixmap(Dis, MainWin, width, height, DefaultDepth(Dis, DefaultScreen(Dis)));
 
-        // Allocate GIF XImage data safely
-        size_t gif_image_size = 0;
-        char *gif_image_data = nullptr;
-        if (safe_mul3_size_t((size_t)width, (size_t)height, 4, gif_image_size) &&
-            gif_image_size <= static_cast<size_t>(Constants::MAX_IMAGE_BYTES)) {
-            gif_image_data = static_cast<char*>(vt::BufferPool::Instance().Acquire(gif_image_size));
-        }
-        XImage *ximage = nullptr;
-        if (gif_image_data) {
-            ximage = XCreateImage(Dis, DefaultVisual(Dis, DefaultScreen(Dis)),
-                                 DefaultDepth(Dis, DefaultScreen(Dis)), ZPixmap, 0,
-                                 gif_image_data, width, height, 32, 0);
-        }
+        XImage *ximage = XCreateImage(Dis, DefaultVisual(Dis, DefaultScreen(Dis)),
+                                     DefaultDepth(Dis, DefaultScreen(Dis)), ZPixmap, 0,
+                                     (char*)malloc(width * height * 4), width, height, 32, 0);
 
         // Convert GIF pixels to X11 pixels
         GifPixelType *gif_pixels = image->RasterBits;
@@ -3490,28 +3337,13 @@ Xpm *LoadGIFFile(const char* file_name)
                 if (color_index < color_map->ColorCount) {
                     GifColorType *color = &color_map->Colors[color_index];
                     unsigned long pixel = (color->Red << 16) | (color->Green << 8) | color->Blue;
-                    if (ximage) {
-                        XPutPixel(ximage, x, y, pixel);
-                    }
+                    XPutPixel(ximage, x, y, pixel);
                 }
             }
         }
 
-        if (ximage) {
-            XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
-            if (ximage->data) {
-                vt::BufferPool::Instance().Release(ximage->data, gif_image_size);
-                ximage->data = nullptr;
-            }
-            XDestroyImage(ximage);
-        } else {
-            if (gif_image_data) {
-                vt::BufferPool::Instance().Release(gif_image_data, gif_image_size);
-                gif_image_data = nullptr;
-            }
-            XFreePixmap(Dis, pixmap);
-            pixmap = 0;
-        }
+        XPutImage(Dis, pixmap, Gfx, ximage, 0, 0, 0, 0, width, height);
+        XDestroyImage(ximage);
     }
 
     DGifCloseFile(gif, NULL);
@@ -3527,20 +3359,20 @@ Xpm *LoadGIFFile(const char* file_name)
 int ReadScreenSaverPix()
 {
     FnTrace("ReadScreenSaverPix()");
-    struct dirent *record = NULL;
+    struct dirent *record = nullptr;
     DIR *dp;
     Xpm *newpm;
-    genericChar fullpath[STRLONG];
+    std::array<genericChar, STRLONG> fullpath{};
     int len;
     if (!fs::is_directory(SCREENSAVER_DIR))
     {
         std::cerr << "Screen saver directory does not exist: '"
-            << SCREENSAVER_DIR << "' creating it" << std::endl;
+            << SCREENSAVER_DIR << "' creating it" << '\n';
         fs::create_directory(SCREENSAVER_DIR);
         fs::permissions(SCREENSAVER_DIR, fs::perms::all); // be sure read/write/execute flags are set
     }
     dp = opendir(SCREENSAVER_DIR);
-    if (dp == NULL)
+    if (dp == nullptr)
     {
         ReportError("Can't find screen saver directory");
         return 1;
@@ -3556,9 +3388,9 @@ int ReadScreenSaverPix()
             if ((strcmp(&name[len-4], ".xpm") == 0) ||
                 (strcmp(&name[len-4], ".XPM") == 0))
             {
-                snprintf(fullpath, STRLONG, "%s/%s", SCREENSAVER_DIR, name);
-                newpm = LoadPixmapFile(fullpath);
-                if (newpm != NULL)
+                vt::cpp23::format_to_buffer(fullpath.data(), fullpath.size(), "{}/{}", SCREENSAVER_DIR, name);
+                newpm = LoadPixmapFile(fullpath.data());
+                if (newpm != nullptr)
                     PixmapList.Add(newpm);
             }
         }
@@ -3601,11 +3433,22 @@ int DrawScreenSaver()
     static float vel_x = 4.0f;    // X velocity (pixels per frame)
     static float vel_y = 3.0f;    // Y velocity (pixels per frame)
     
+    // Cached values to avoid recomputation
+    static XftFont *font = nullptr;
+    static int text_width = 0;
+    static int text_height = 0;
+    static int text_len = 0;
+    static const char* text = "ViewTouch 35 Years In Point Of Sales";
+    static bool first_draw = true;
+    static float prev_text_x = -1.0f;
+    static float prev_text_y = -1.0f;
+    
     // Check if reset was requested
     if (g_reset_screensaver)
     {
         text_x = -1.0f;  // Mark for re-initialization
         text_y = -1.0f;
+        first_draw = true;  // Force full redraw
         g_reset_screensaver = false;
     }
 
@@ -3615,74 +3458,92 @@ int DrawScreenSaver()
     XSetTSOrigin(Dis, Gfx, 0, 0);
     XSetForeground(Dis, Gfx, ColorBlack);
     XSetFillStyle(Dis, Gfx, FillSolid);
-    XFillRectangle(Dis, MainWin, Gfx, 0, 0, WinWidth, WinHeight);
     
-    // Draw "ViewTouch 35 Years In Point Of Sales" bouncing around screen
-    const char* text = "ViewTouch 35 Years In Point Of Sales";
-    int text_len = strlen(text);
-    
-    // Use a large, elegant font for the screensaver text
-    XftFont *font = GetXftFontInfo(FONT_TIMES_34B);
-    if (font)
+    // Cache font and text metrics on first call
+    if (font == nullptr)
     {
-        // Get text extents for collision detection
-        XGlyphInfo extents;
-        XftTextExtentsUtf8(Dis, font, reinterpret_cast<const FcChar8*>(text), text_len, &extents);
-        
-        int text_width = extents.width;
-        int text_height = font->ascent + font->descent;
-        
-        // Initialize position on first call (center of screen)
-        if (text_x < 0)
+        font = GetXftFontInfo(FONT_TIMES_34B);
+        if (font)
         {
-            text_x = (WinWidth - text_width) / 2.0f;
-            text_y = (WinHeight - text_height) / 2.0f;
-        }
-        
-        // Update position
-        text_x += vel_x;
-        text_y += vel_y;
-        
-        // Bounce off edges (like DVD logo)
-        if (text_x <= 0 || text_x + text_width >= WinWidth)
-        {
-            vel_x = -vel_x;
-            // Clamp position to stay within bounds
-            if (text_x < 0) text_x = 0;
-            if (text_x + text_width > WinWidth) text_x = WinWidth - text_width;
-        }
-        
-        if (text_y <= 0 || text_y + text_height >= WinHeight)
-        {
-            vel_y = -vel_y;
-            // Clamp position to stay within bounds
-            if (text_y < 0) text_y = 0;
-            if (text_y + text_height > WinHeight) text_y = WinHeight - text_height;
-        }
-        
-        // Create XftDraw context for MainWin
-        XftDraw *xftdraw = XftDrawCreate(Dis, MainWin, 
-                                          DefaultVisual(Dis, ScrNo), 
-                                          DefaultColormap(Dis, ScrNo));
-        if (xftdraw)
-        {
-            // Set up white color for text
-            XRenderColor render_color;
-            render_color.red   = 0xFFFF;
-            render_color.green = 0xFFFF;
-            render_color.blue  = 0xFFFF;
-            render_color.alpha = 0xFFFF;
-            
-            // Draw the text at current bouncing position
-            int draw_x = static_cast<int>(text_x);
-            int draw_y = static_cast<int>(text_y) + font->ascent;
-            
-            GenericDrawStringXftAntialiased(Dis, MainWin, xftdraw, font, &render_color, 
-                                           draw_x, draw_y, text, text_len, ScrNo);
-            
-            XftDrawDestroy(xftdraw);
+            text_len = strlen(text);
+            XGlyphInfo extents;
+            XftTextExtentsUtf8(Dis, font, reinterpret_cast<const FcChar8*>(text), text_len, &extents);
+            text_width = extents.width;
+            text_height = font->ascent + font->descent;
         }
     }
+    
+    if (font == nullptr)
+        return 0;  // Can't draw without font
+    
+    // Initialize position on first call (center of screen)
+    if (text_x < 0)
+    {
+        text_x = (WinWidth - text_width) / 2.0f;
+        text_y = (WinHeight - text_height) / 2.0f;
+    }
+    
+    // On first draw or after reset, fill the entire screen black
+    if (first_draw)
+    {
+        XFillRectangle(Dis, MainWin, Gfx, 0, 0, WinWidth, WinHeight);
+        first_draw = false;
+    }
+    else
+    {
+        // Erase previous text by drawing black rectangle over it
+        int prev_draw_x = static_cast<int>(prev_text_x);
+        int prev_draw_y = static_cast<int>(prev_text_y);
+        XFillRectangle(Dis, MainWin, Gfx, prev_draw_x, prev_draw_y, text_width, text_height);
+    }
+    
+    // Update position
+    text_x += vel_x;
+    text_y += vel_y;
+    
+    // Bounce off edges (like DVD logo)
+    if (text_x <= 0 || text_x + text_width >= WinWidth)
+    {
+        vel_x = -vel_x;
+        // Clamp position to stay within bounds
+        if (text_x < 0) text_x = 0;
+        if (text_x + text_width > WinWidth) text_x = WinWidth - text_width;
+    }
+    
+    if (text_y <= 0 || text_y + text_height >= WinHeight)
+    {
+        vel_y = -vel_y;
+        // Clamp position to stay within bounds
+        if (text_y < 0) text_y = 0;
+        if (text_y + text_height > WinHeight) text_y = WinHeight - text_height;
+    }
+    
+    // Create XftDraw context for MainWin
+    XftDraw *xftdraw = XftDrawCreate(Dis, MainWin, 
+                                      DefaultVisual(Dis, ScrNo), 
+                                      DefaultColormap(Dis, ScrNo));
+    if (xftdraw)
+    {
+        // Set up white color for text
+        XRenderColor render_color;
+        render_color.red   = 0xFFFF;
+        render_color.green = 0xFFFF;
+        render_color.blue  = 0xFFFF;
+        render_color.alpha = 0xFFFF;
+        
+        // Draw the text at current bouncing position
+        int draw_x = static_cast<int>(text_x);
+        int draw_y = static_cast<int>(text_y) + font->ascent;
+        
+        GenericDrawStringXftAntialiased(Dis, MainWin, xftdraw, font, &render_color, 
+                                       draw_x, draw_y, text, text_len, ScrNo);
+        
+        XftDrawDestroy(xftdraw);
+    }
+    
+    // Store previous position for next erase
+    prev_text_x = text_x;
+    prev_text_y = text_y;
     
     return 0;
 }
@@ -3729,7 +3590,7 @@ int Calibrate(int status)
 {
     FnTrace("Calibrate()");
 
-    if (TScreen == NULL)
+    if (TScreen == nullptr)
         return 1;
 
     ResetView();
@@ -3746,7 +3607,7 @@ int Calibrate(int status)
         TScreen->Calibrate();
         TouchInputID =
             XtAppAddInput(App, TScreen->device_no, (XtPointer)XtInputReadMask,
-                          (XtInputCallbackProc)CalibrateCB, NULL);
+                          (XtInputCallbackProc)CalibrateCB, nullptr);
         break;
     case 1:   // 2nd stage - get lower left touch
         XSetTile(Dis, Gfx, GetTexture(IMAGE_LIT_SAND));
@@ -3798,7 +3659,7 @@ int StartTimers()
     if (UpdateTimerID == 0)
 	{
         UpdateTimerID = XtAppAddTimeOut(App, Constants::UPDATE_TIME,
-                                        (XtTimerCallbackProc) UpdateCB, NULL);
+                                        (XtTimerCallbackProc) UpdateCB, nullptr);
 	}
 
     if (TouchInputID == 0 && TScreen && TScreen->device_no > 0)
@@ -3810,7 +3671,7 @@ int StartTimers()
                                      TScreen->device_no, 
                                      (XtPointer) XtInputReadMask, 
                                      (XtInputCallbackProc) TouchScreenCB, 
-                                     NULL);
+                                     nullptr);
 	}
 
     return 0;
@@ -3886,9 +3747,9 @@ static bool IsRaspberryPi()
         // Check /proc/cpuinfo for Raspberry Pi
         FILE* cpuinfo = fopen("/proc/cpuinfo", "r");
         if (cpuinfo) {
-            char line[256];
-            while (fgets(line, sizeof(line), cpuinfo)) {
-                if (strstr(line, "Raspberry Pi") || strstr(line, "BCM") || strstr(line, "Model")) {
+            std::array<char, 256> line{};
+            while (fgets(line.data(), line.size(), cpuinfo)) {
+                if (strstr(line.data(), "Raspberry Pi") || strstr(line.data(), "BCM") || strstr(line.data(), "Model")) {
                     is_pi = true;
                     break;
                 }
@@ -3914,7 +3775,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
     int i;
 
-    srand(time(NULL));
+    srand(time(nullptr));
 
     // Init Xt & Create Application Context
     App = XtCreateApplicationContext();
@@ -3924,11 +3785,11 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     FontInfo.fill(nullptr);
 
     // Start Display
-    genericChar str[STRLENGTH];
+    std::array<genericChar, STRLENGTH> str{};
     int argc = 1;
-    const genericChar* argv[] = {"vt_term"};
+    std::array<const genericChar*, 1> argv{{"vt_term"}};
     IsTermLocal = is_term_local;
-    Dis = XtOpenDisplay(App, display, NULL, NULL, NULL, 0, &argc, const_cast<char**>(argv));
+    Dis = XtOpenDisplay(App, display, nullptr, nullptr, nullptr, 0, &argc, const_cast<char**>(argv.data()));
     if (Dis == nullptr)
     {
         std::string error_msg = "Can't open display '" + std::string(display) + "'";
@@ -3959,7 +3820,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     // Load Fonts
     // Use fixed DPI (96) for consistent font rendering across all displays
     // This ensures fonts render at the same size regardless of display DPI
-    static char font_spec_with_dpi[256];
+    static std::array<char, 256> font_spec_with_dpi{};
     for (const auto& fontData : FontData)
     {
         int f = fontData.id;
@@ -3968,8 +3829,8 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         // Append :dpi=96 to font specification if not already present
         const char* xft_font_name = fontData.font;
         if (strstr(xft_font_name, ":dpi=") == nullptr) {
-            snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", xft_font_name);
-            xft_font_name = font_spec_with_dpi;
+            vt::cpp23::format_to_buffer(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "{}:dpi=96", xft_font_name);
+            xft_font_name = font_spec_with_dpi.data();
         }
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
         
@@ -4002,7 +3863,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     // Create Window
     int n = 0;
     std::array<Arg, 16> args;
-    XtSetArg(args[n], "visual",       ScrVis); ++n;
+    XtSetArg(args[n], (String)"visual",       ScrVis); ++n;
     XtSetArg(args[n], XtNdepth,       ScrDepth); ++n;
     //XtSetArg(args[n], "mappedWhenManaged", False); ++n;
     XtSetArg(args[n], XtNx,           0); ++n;
@@ -4010,11 +3871,11 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     XtSetArg(args[n], XtNwidth,       WinWidth); ++n;
     XtSetArg(args[n], XtNheight,      WinHeight); ++n;
     XtSetArg(args[n], XtNborderWidth, 0); ++n;
-    XtSetArg(args[n], "minWidth",     WinWidth); ++n;
-    XtSetArg(args[n], "minHeight",    WinHeight); ++n;
-    XtSetArg(args[n], "maxWidth",     WinWidth); ++n;
-    XtSetArg(args[n], "maxHeight"   , WinHeight); ++n;
-    XtSetArg(args[n], "mwmDecorations", 0); ++n;
+    XtSetArg(args[n], (String)"minWidth",     WinWidth); ++n;
+    XtSetArg(args[n], (String)"minHeight",    WinHeight); ++n;
+    XtSetArg(args[n], (String)"maxWidth",     WinWidth); ++n;
+    XtSetArg(args[n], (String)"maxHeight"   , WinHeight); ++n;
+    XtSetArg(args[n], (String)"mwmDecorations", 0); ++n;
 
     MainShell = XtAppCreateShell("POS", "viewtouch",
                                  applicationShellWidgetClass, Dis, args.data(), n);
@@ -4079,7 +3940,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
         fprintf(stderr, "Raspberry Pi detected: Disabling expensive rendering features for better performance\n");
     }
 
-    Gfx       = XCreateGC(Dis, MainWin, 0, NULL);
+    Gfx       = XCreateGC(Dis, MainWin, 0, nullptr);
     ShadowPix = XmuCreateStippledPixmap(ScrPtr, 0, 1, 1);
     XSetStipple(Dis, Gfx, ShadowPix);
 
@@ -4088,7 +3949,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     CursorWait = XCreateFontCursor(Dis, XC_watch);
     // Setup Blank Cursor
     Pixmap p   = XCreatePixmap(Dis, MainWin, 16, 16, 1);
-    GC     pgc = XCreateGC(Dis, p, 0, NULL);
+    GC     pgc = XCreateGC(Dis, p, 0, nullptr);
     XSetForeground(Dis, pgc, BlackPixel(Dis, ScrNo));
     XSetFillStyle(Dis, pgc, FillSolid);
     XFillRectangle(Dis, p, pgc, 0, 0, 16, 16);
@@ -4103,7 +3964,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
 
     // Setup layers
     Layers.XWindowInit(Dis, Gfx, MainWin);
-    Layer *l = new Layer(Dis, Gfx, MainWin, WinWidth, WinHeight);
+    auto *l = new Layer(Dis, Gfx, MainWin, WinWidth, WinHeight);
     if (l)
     {
         l->id = 1;
@@ -4125,6 +3986,10 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     MainLayer = l;
     ResetView();
 
+    // Preload all textures to prevent button highlighting bugs.
+    // The static cache optimization in Layer::Rectangle() can cause
+    // incorrect texture rendering if textures are lazy-loaded.
+    PreloadAllTextures();
 
     // Performance monitoring removed for production efficiency
     ReadScreenSaverPix();
@@ -4132,7 +3997,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     // Add Iconify Button
     if (l && IsTermLocal)
     {
-        IconifyButton *b = new IconifyButton("I", COLOR_GRAY, COLOR_LT_BLUE);
+        auto *b = new IconifyButton("I", COLOR_GRAY, COLOR_LT_BLUE);
         // b->SetRegion(WinWidth - l->title_height + 4, 4,
         //              l->title_height - 8, l->title_height - 8);
         b->SetRegion(WinWidth - l->title_height + 8, 8,
@@ -4157,7 +4022,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     LastInput = SystemTime;
 
     SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
-                                  (XtInputCallbackProc) SocketInputCB, NULL);
+                                  (XtInputCallbackProc) SocketInputCB, nullptr);
 
     // Send server term size
     int screen_size = PAGE_SIZE_640x480;
@@ -4195,7 +4060,7 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     else if (WinWidth >= 768 && WinHeight >= 1024)
         screen_size = PAGE_SIZE_768x1024;
 
-    WInt8(SERVER_TERMINFO);
+    WInt8(ToInt(ServerProtocol::SrvTermInfo));
     WInt8(screen_size);
     WInt16(WinWidth);
     WInt16(WinHeight);
@@ -4204,11 +4069,11 @@ int OpenTerm(const char* display, TouchScreen *ts, int is_term_local, int term_h
     if (TScreen)
         TScreen->Flush();
 
-    XtAddEventHandler(MainShell, KeyPressMask, FALSE, KeyPressCB, NULL);
-    XtAddEventHandler(MainShell, ExposureMask, FALSE, ExposeCB, NULL);
-    XtAddEventHandler(MainShell, ButtonPressMask, FALSE, MouseClickCB, NULL);
-    XtAddEventHandler(MainShell, ButtonReleaseMask, FALSE, MouseReleaseCB, NULL);
-    XtAddEventHandler(MainShell, PointerMotionMask, FALSE, MouseMoveCB, NULL);
+    XtAddEventHandler(MainShell, KeyPressMask, FALSE, KeyPressCB, nullptr);
+    XtAddEventHandler(MainShell, ExposureMask, FALSE, ExposeCB, nullptr);
+    XtAddEventHandler(MainShell, ButtonPressMask, FALSE, MouseClickCB, nullptr);
+    XtAddEventHandler(MainShell, ButtonReleaseMask, FALSE, MouseReleaseCB, nullptr);
+    XtAddEventHandler(MainShell, PointerMotionMask, FALSE, MouseMoveCB, nullptr);
 
     //Boolean okay;
     XEvent event;
@@ -4281,7 +4146,7 @@ void ShowReconnectingMessage()
 {
     FnTrace("ShowReconnectingMessage()");
 
-    if (reconnect_message_visible || Dis == NULL) {
+    if (reconnect_message_visible || Dis == nullptr) {
         return;
     }
 
@@ -4340,7 +4205,7 @@ void HideReconnectingMessage()
 {
     FnTrace("HideReconnectingMessage()");
 
-    if (!reconnect_message_visible || Dis == NULL) {
+    if (!reconnect_message_visible || Dis == nullptr) {
         return;
     }
 
@@ -4350,7 +4215,7 @@ void HideReconnectingMessage()
     }
 
     // Force a redraw of the main window to restore normal display
-    if (MainLayer != NULL) {
+    if (MainLayer != nullptr) {
         MainLayer->DrawAll();
         XFlush(Dis);
     }
@@ -4425,7 +4290,7 @@ int ReconnectToServer()
 
     // Re-add the input handler
     SocketInputID = XtAppAddInput(App, SocketNo, (XtPointer) XtInputReadMask,
-                                  (XtInputCallbackProc) SocketInputCB, NULL);
+                                  (XtInputCallbackProc) SocketInputCB, nullptr);
 
     fprintf(stderr, "ReconnectToServer: Successfully reconnected\n");
     return 0;
@@ -4516,7 +4381,7 @@ int KillTerm()
     if (Gfx)
     {
         XFreeGC(Dis, Gfx);
-        Gfx = NULL;
+        Gfx = nullptr;
     }
 
     for (auto& font : FontInfo)
@@ -4542,12 +4407,12 @@ int KillTerm()
     if (Dis)
     {
         XtCloseDisplay(Dis);
-        Dis = NULL;
+        Dis = nullptr;
     }
     if (App)
     {
         XtDestroyApplicationContext(App);
-        App = NULL;
+        App = nullptr;
     }
     return 0;
 }
@@ -4598,12 +4463,59 @@ Pixmap GetTexture(const int texture) noexcept
 {
     FnTrace("GetTexture()");
 
+    // Validate texture index
     if (texture < 0 || texture >= IMAGE_COUNT) {
         // Return default texture (DARK_SAND) for invalid texture IDs
-        return LoadPixmap(ImageData[IMAGE_DARK_SAND]);
+        return GetTexture(IMAGE_DARK_SAND);
     }
 
-    return LoadPixmap(ImageData[texture]);
+    // Check if already cached
+    if (Texture[texture] != 0) {
+        return Texture[texture];
+    }
+
+    // Load and cache the texture (lazy loading)
+    Texture[texture] = LoadPixmap(ImageData[texture]);
+    return Texture[texture];
+}
+
+void ClearTextureCache() noexcept
+{
+    FnTrace("ClearTextureCache()");
+    
+    for (size_t i = 0; i < IMAGE_COUNT; ++i) {
+        if (Texture[i] != 0 && Dis != nullptr) {
+            XFreePixmap(Dis, Texture[i]);
+            Texture[i] = 0;
+        }
+    }
+}
+
+void PreloadAllTextures() noexcept
+{
+    FnTrace("PreloadAllTextures()");
+    
+    // Preload all textures at startup to prevent rendering bugs.
+    // The static cache in Layer::Rectangle() can cause buttons to show
+    // incorrect textures (e.g., highlighted when they shouldn't be) when
+    // lazy loading is used. By preloading all textures, we ensure that
+    // GetTexture() always returns consistent Pixmap values.
+    for (int i = 0; i < IMAGE_COUNT; ++i) {
+        (void)GetTexture(i);  // Load and cache each texture
+    }
+}
+
+int GetCachedTextureCount() noexcept
+{
+    FnTrace("GetCachedTextureCount()");
+    
+    int count = 0;
+    for (size_t i = 0; i < IMAGE_COUNT; ++i) {
+        if (Texture[i] != 0) {
+            ++count;
+        }
+    }
+    return count;
 }
 
 XftFont *GetXftFontInfo(const int font_id) noexcept
@@ -4628,14 +4540,14 @@ void TerminalReloadFonts()
         }
     }
     // Reload fonts with fixed DPI (96) for consistency
-    static char font_spec_with_dpi[256];
+    static std::array<char, 256> font_spec_with_dpi{};
     for (const auto& fontData : FontData) {
         int f = fontData.id;
         const char* xft_font_name = fontData.font;
         // Append :dpi=96 to font specification if not already present
         if (strstr(xft_font_name, ":dpi=") == nullptr) {
-            snprintf(font_spec_with_dpi, sizeof(font_spec_with_dpi), "%s:dpi=96", xft_font_name);
-            xft_font_name = font_spec_with_dpi;
+            vt::cpp23::format_to_buffer(font_spec_with_dpi.data(), font_spec_with_dpi.size(), "{}:dpi=96", xft_font_name);
+            xft_font_name = font_spec_with_dpi.data();
         }
         XftFontsArr[f] = XftFontOpenName(Dis, ScrNo, xft_font_name);
         if (XftFontsArr[f]) {
@@ -4654,7 +4566,7 @@ void TerminalReloadFonts()
         LayerObject *obj = layer->buttons.Head();
         while (obj != nullptr) {
             // Try to cast to LO_PushButton to check if it's a button
-            LO_PushButton *button = dynamic_cast<LO_PushButton*>(obj);
+            auto *button = dynamic_cast<LO_PushButton*>(obj);
             if (button != nullptr) {
                 // Update button font to use the current font family
                 // The font family will change while keeping the same size

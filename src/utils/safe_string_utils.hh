@@ -311,7 +311,7 @@ inline std::string safe_substring(const char* str, size_t start, size_t length =
     }
 
     if (length == 0) {
-        return std::string(str + start);
+        return {str + start};
     }
 
     size_t end = start + length;
@@ -319,7 +319,7 @@ inline std::string safe_substring(const char* str, size_t start, size_t length =
         end = str_len;
     }
 
-    return std::string(str + start, end - start);
+    return {str + start, end - start};
 }
 
 /**

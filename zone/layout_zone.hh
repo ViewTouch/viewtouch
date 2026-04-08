@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -47,10 +47,10 @@ public:
     LayoutZone();
 
     // Member Functions
-    virtual RenderResult Render(Terminal *t, int update_flag);
-    virtual SignalResult Touch(Terminal *t, int tx, int ty);
-    virtual int          SetSize(Terminal *t, int width, int height);
-    virtual int          ZoneStates() { return 1; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    int          SetSize(Terminal *t, int width, int height) override;
+    int          ZoneStates() override { return 1; }
 
     Flt TextWidth(Terminal *t, const genericChar* str, int len = 0);
     int SetMargins(int left, int right);
@@ -75,7 +75,7 @@ public:
     int LinePos(Terminal *t, Flt row, Flt line, Flt len,
                 int color = COLOR_DEFAULT);
 
-    int Entry(Terminal *t, Flt px, Flt py, Flt len, RegionInfo *place = NULL);
+    int Entry(Terminal *t, Flt px, Flt py, Flt len, RegionInfo *place = nullptr);
     int Button(Terminal *t, Flt px, Flt py, Flt len, int lit = 0);
     int Background(Terminal *t, Flt line, Flt h, int texture);
     int Raised(Terminal *t, Flt line, Flt h);

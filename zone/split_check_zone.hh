@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -43,17 +43,18 @@ class SplitCheckZone : public PosZone
 
 public:
     // Member Functions
-    int          Type() { return ZONE_SPLIT_CHECK; }
-    RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar* message);
-    SignalResult Touch(Terminal *t, int tx, int ty);
-    int          ZoneStates() { return 1; }
+    int          Type() override { return ZONE_SPLIT_CHECK; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Signal(Terminal *t, const genericChar* message) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    int          ZoneStates() override { return 1; }
 
     int CreateChecks(Terminal *t);
     int LayoutChecks(Terminal *t);
     int MoveItems(Terminal *t, CheckObj *target, int move_amount = -1);
     // moves selected items to check
     int PrintReceipts(Terminal *t);
+    void RenderInstructions(Terminal *t);
 };
 
 class ItemPrintTargetZone : public PosZone
@@ -63,11 +64,11 @@ class ItemPrintTargetZone : public PosZone
 
 public:
     // Member Functions
-    int Type() { return ZONE_ITEM_TARGET; }
-    RenderResult Render(Terminal *t, int update_flag);
-    SignalResult Signal(Terminal *t, const genericChar* message);
-    SignalResult Touch(Terminal *t, int tx, int ty);
-    int          ZoneStates() { return 1; }
+    int Type() override { return ZONE_ITEM_TARGET; }
+    RenderResult Render(Terminal *t, int update_flag) override;
+    SignalResult Signal(Terminal *t, const genericChar* message) override;
+    SignalResult Touch(Terminal *t, int tx, int ty) override;
+    int          ZoneStates() override { return 1; }
 
     int MoveItems(Terminal *t, PrintTargetObj *target);
 };

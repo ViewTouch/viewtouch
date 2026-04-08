@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -27,6 +27,7 @@
 #include "dialog_zone.hh"
 #include "locale.hh"
 #include "settings.hh"
+#include "main/data/settings_enums.hh"
 #include "system.hh"
 #include "credit.hh"
 #include "archive.hh"
@@ -35,11 +36,13 @@
 #include "image_data.hh"
 #include "utility.hh"
 #include "safe_string_utils.hh"
+#include "src/utils/cpp23_utils.hh"
 #include <cstring>
 #include <sys/stat.h>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
+#include "src/utils/cpp23_utils.hh"
 #endif
 
 
@@ -52,7 +55,7 @@ PaymentZone::PaymentZone()
     FnTrace("PaymentZone::PaymentZone()");
     min_size_x       = 22;
     min_size_y       = 17;
-    current_payment  = NULL;
+    current_payment  = nullptr;
     voided           = 0;
     spacing          = 2;
     drawer_open      = 0;
@@ -72,28 +75,28 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
 
     Employee *employee = term->user;
     Check    *currCheck = term->check;
-    if (employee == NULL || currCheck == NULL)
+    if (employee == nullptr || currCheck == nullptr)
         return RENDER_OKAY;
 
     Settings *settings = term->GetSettings();
     SubCheck *subCheck = &work_sub;
-    if (currCheck->current_sub == NULL)
+    if (currCheck->current_sub == nullptr)
     {
         currCheck->current_sub = currCheck->FirstOpenSubCheck();
-        if (currCheck->current_sub == NULL)
+        if (currCheck->current_sub == nullptr)
             return RENDER_OKAY;
         subCheck->Copy(currCheck->current_sub, settings);
-        current_payment = NULL;
+        current_payment = nullptr;
         amount = 0;
     }
     else if (update_flag == RENDER_NEW)
     {
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
         {
             delete term->credit;
-            term->credit = NULL;
+            term->credit = nullptr;
         }
-        current_payment = NULL;
+        current_payment = nullptr;
         subCheck->Copy(currCheck->current_sub, settings);
         amount = 0;
         if (term->is_bar_tab)
@@ -129,8 +132,19 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     TextL(term, line, str, text);
     if (currCheck->SubCount() > 1)
     {
-        vt_safe_string::safe_format(str, 256, "#%d", subCheck->number);
-        TextC(term, line, str, text);
+        const char* status_str = "";
+        if (subCheck->status == CHECK_OPEN)
+            status_str = " - Open";
+        else if (subCheck->status == CHECK_CLOSED)
+            status_str = " - Closed";
+        else if (subCheck->status == CHECK_VOIDED)
+            status_str = " - Voided";
+        
+        vt_safe_string::safe_format(str, 256, "Check #%d%s", subCheck->number, status_str);
+        
+        // Highlight the current subcheck
+        Background(term, line - ((spacing - 1)/2), 1.0, IMAGE_LIT_SAND);
+        TextC(term, line, str, COLOR_DK_BLUE);
     }
     int guests = currCheck->Guests();
     if (guests > 0)
@@ -222,7 +236,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
         line += min_spacing;
     }
 
-    if (settings->tax_VAT > 0)
+    if (settings->tax_VAT > 0 && subCheck->total_tax_VAT != 0)
     {
         TextPosR(term, mark, line, "VAT");
         TextPosR(term, mark + 9, line, term->FormatPrice(subCheck->total_tax_VAT));
@@ -260,10 +274,10 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     TextPosR(term, mark + 9, line, term->FormatPrice(total_cost), COLOR_DK_RED);
     line += min_spacing;
 
-    if (term->cdu != NULL)
+    if (term->cdu != nullptr)
     {
         term->cdu->Refresh(-1);  // make sure the screen doesn't clear until we're done
-        snprintf(cdustring, STRLONG, "Total  %s%s", settings->money_symbol.Value(),
+        vt::cpp23::format_to_buffer(cdustring, STRLONG, "Total  {}{}", settings->money_symbol.Value(),
                  term->FormatPrice(total_cost));
         term->cdu->Clear();
         term->cdu->Write(cdustring);
@@ -286,7 +300,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     Flt bg_start;
     Flt bg_lines;
     Payment *payment = subCheck->PaymentList();
-    while (payment != NULL)
+    while (payment != nullptr)
     {
         has_payments = 1;
         if (payment->Suppress() == 0)
@@ -305,10 +319,10 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
             {
                 bg_start = line - bg_half;
                 bg_lines = 1;
-                if (payment->credit != NULL)
+                if (payment->credit != nullptr)
                     bg_lines = 4;
                 bg_lines += (bg_half * 2);
-                if (payment->credit != NULL &&
+                if (payment->credit != nullptr &&
                     strlen(payment->credit->Name()) > 0)
                 {
                     bg_lines += 1;
@@ -325,7 +339,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
             TextR(term, line, term->FormatPrice(payment->value), c1);
             payment->FigureTotals(0);
             Credit *cr = payment->credit;
-            if (cr != NULL)
+            if (cr != nullptr)
             {
                 preauth_amount += cr->TotalPreauth();
                 line += min_spacing;
@@ -347,7 +361,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
                 if (cr->IsVoiced())
                 {
                     TextPosL(term, 2, line, "Auth", c2);
-                    snprintf(str, 256, "Voice (%s)", cr->Approval());  // str is 256 bytes, not STRLENGTH
+                    vt::cpp23::format_to_buffer(str, 256, "Voice ({})", cr->Approval());  // str is 256 bytes, not STRLENGTH
                     TextPosL(term, 10, line, str, COLOR_GREEN);
                 }
                 else if (cr->IsVoided())
@@ -390,7 +404,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
             TextC(term, line + (min_spacing * 2), term->Translate("To Rebuild"), text);
         }
     }
-    else if (subCheck->OrderList() == NULL)
+    else if (subCheck->OrderList() == nullptr)
         TextC(term, line, term->Translate("Check Blank"), COLOR_YELLOW);
     else if (subCheck->balance <= 0)
         TextC(term, line, term->Translate("Balance Covered"), COLOR_DK_GREEN);
@@ -429,9 +443,9 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     }
     if (subCheck->IsBalanced() == 0)
     {
-        if (term->cdu != NULL)
+        if (term->cdu != nullptr)
         {
-            snprintf(cdustring, STRLONG, "Due:  %s%s", settings->money_symbol.Value(),
+            vt::cpp23::format_to_buffer(cdustring, STRLONG, "Due:  {}{}", settings->money_symbol.Value(),
                      term->FormatPrice(subCheck->balance));
             term->cdu->NewLine();
             term->cdu->Write(cdustring);
@@ -452,9 +466,9 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
         {
             OpenDrawer(term);
         }
-        if (term->cdu != NULL)
+        if (term->cdu != nullptr)
         {
-            snprintf(cdustring, STRLONG, "Change  %s%s", settings->money_symbol.Value(),
+            vt::cpp23::format_to_buffer(cdustring, STRLONG, "Change  {}{}", settings->money_symbol.Value(),
                      term->FormatPrice(change_value));
             term->cdu->NewLine();
             term->cdu->Write(cdustring);
@@ -473,15 +487,15 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
         "print ", "backspace", "clear", "nextcheck", "nextcheckforce",
         "void", "undo", "undoconfirmed", "merchandise", "done",
         "10", "20", "taxexempt", "settaxexempt ", "ccamountchanged",
-        "ccrefund", "save", NULL};
+        "ccrefund", "save", nullptr};
 
     Employee      *employee = term->user;
     Check         *thisCheck = term->check;
-    GetTextDialog *textdiag = NULL;
-    DialogZone    *confirm = NULL;
+    GetTextDialog *textdiag = nullptr;
+    DialogZone    *confirm = nullptr;
     char           buffer[STRLONG];
 
-    if (employee == NULL || thisCheck == NULL)
+    if (employee == nullptr || thisCheck == nullptr)
         return SIGNAL_IGNORED;
 
     Settings *settings = term->GetSettings();
@@ -508,7 +522,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
             {
                 sc->Remove(current_payment);
                 delete current_payment;
-                current_payment = NULL;
+                current_payment = nullptr;
             }
             else
                 current_payment->tender_id = room;
@@ -519,16 +533,16 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
     }
     else if (strncmp(message, "swipe ", 6) == 0)
     {
-        if (term->dialog != NULL && term->dialog->Type() == ZONE_DLG_CREDIT)
+        if (term->dialog != nullptr && term->dialog->Type() == ZONE_DLG_CREDIT)
         {
             return SIGNAL_IGNORED;
         }
         else
         {
-            if (term->dialog != NULL)
+            if (term->dialog != nullptr)
             {
                 ReportError("PaymentZone Signal Swipe dumping previous dialog!");
-                snprintf(buffer, STRLONG, "    Named:  %s\n", term->dialog->name.Value());
+                vt::cpp23::format_to_buffer(buffer, STRLONG, "    Named:  {}\n", term->dialog->name.Value());
                 ReportError(buffer);
             }
             AddPayment(term, TENDER_CREDIT_CARD, &message[6]);
@@ -584,7 +598,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
         CloseCheck(term, 2);
         return SIGNAL_OKAY;
     case 15:  // print
-        if (strcmp("subcheck", &message[6]) == 0 && sc != NULL)
+        if (strcmp("subcheck", &message[6]) == 0 && sc != nullptr)
         {
             Printer *printer = term->FindPrinter(PRINTER_RECEIPT);
             if (sc->status == CHECK_OPEN && sc->balance <= 0)
@@ -594,12 +608,12 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
             return SIGNAL_OKAY;
         }
         else if (strcmp("credit", &message[6]) == 0 &&
-                 current_payment != NULL &&
-                 current_payment->credit != NULL)
+                 current_payment != nullptr &&
+                 current_payment->credit != nullptr)
         {
             Printer *printer = term->FindPrinter(PRINTER_RECEIPT);
             int pamount = (amount > 0 ? amount : -1);
-            if (pamount == -1 && sc != NULL && sc->total_cost > 0)
+            if (pamount == -1 && sc != nullptr && sc->total_cost > 0)
                 pamount = sc->total_cost;
             current_payment->credit->PrintReceipt(term, RECEIPT_PICK, printer, pamount);
             return SIGNAL_OKAY;
@@ -630,7 +644,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
         NextCheck(term, 1);
         return SIGNAL_OKAY;
     case 20:  // Void
-        if (sc && sc->PaymentList() == NULL)
+        if (sc && sc->PaymentList() == nullptr)
         {
             voided = 1 - voided;
             Draw(term, 0);
@@ -649,7 +663,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
                 term->OpenDialog(confirm);
                 return SIGNAL_TERMINATE;
             }
-            else if (current_payment == NULL &&
+            else if (current_payment == nullptr &&
                      sc && sc->HasAuthedCreditCards())
             {
                 confirm = new SimpleDialog(term->Translate("You cannot clear all entries with authorized cards."));
@@ -662,26 +676,27 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
         // now, just prevent undoing with authed credit cards.  This should
         // also be the case for the cancel message, but I haven't figured out
         // how to do that yet.
+    /* fallthrough */
     case 22:  // undoconfirmed
-        if (current_payment != NULL)
+        if (current_payment != nullptr)
         {
             //FIX->BAK verify this code does not cause other problems!
             if (current_payment->tender_type == TENDER_CHARGED_TIP)
             {
                 Payment *currpay = sc->PaymentList();
-                while (currpay != NULL)
+                while (currpay != nullptr)
                 {
-                    if (currpay->credit != NULL)
+                    if (currpay->credit != nullptr)
                     {
                         currpay->credit->Tip(0);
-                        currpay = NULL;
+                        currpay = nullptr;
                     }
                     else
                         currpay = currpay->next;
                 }
             }
             sc->Remove(current_payment);
-            if (current_payment->credit != NULL)
+            if (current_payment->credit != nullptr)
             {
                 if (!current_payment->credit->IsVoided() &&
                     !current_payment->credit->IsRefunded())
@@ -690,7 +705,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
                 }
             }
             delete current_payment;
-            current_payment = NULL;
+            current_payment = nullptr;
             sc->FigureTotals(settings);
             if (sc->IsBalanced())
             {
@@ -710,7 +725,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
             voided = 0;
             sc->UndoPayments(term, employee);
             amount = 0;
-            current_payment = NULL;
+            current_payment = nullptr;
             if (sc->IsBalanced())
                 term->check_balanced = 1;
             else
@@ -753,7 +768,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
     case 29:  // ccamountchanged
         if (sc)
         {
-            if (current_payment != NULL && current_payment->credit != NULL)
+            if (current_payment != nullptr && current_payment->credit != nullptr)
             {
                 if (current_payment->credit->IsVoided() ||
                     current_payment->credit->IsRefunded())
@@ -761,13 +776,13 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
                     if (current_payment->flags & TF_FINAL)
                         current_payment->flags -= TF_FINAL;
                     Payment *currpay = sc->PaymentList();
-                    while (currpay != NULL)
+                    while (currpay != nullptr)
                     {
                         if (currpay->tender_type == TENDER_CHARGED_TIP)
                         {
                             sc->Remove(currpay);
                             delete currpay;
-                            currpay = NULL;
+                            currpay = nullptr;
                         }
                         else
                             currpay = currpay->next;
@@ -775,7 +790,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
                     sc->status = CHECK_OPEN;
                 }
             }
-            current_payment = NULL;
+            current_payment = nullptr;
             sc->FigureTotals(settings);
             if (sc->IsBalanced())
                 term->check_balanced = 1;
@@ -786,7 +801,7 @@ SignalResult PaymentZone::Signal(Terminal *term, const genericChar* message)
         else
             return SIGNAL_IGNORED;
     case 30:  // ccrefund
-        AddPayment(term, 0, NULL);
+        AddPayment(term, 0, nullptr);
         return SIGNAL_OKAY;
     case 31:  // save
         SaveCheck(term);
@@ -822,22 +837,22 @@ SignalResult PaymentZone::Touch(Terminal *term, int tx, int ty)
     Flt max_line;
     int name_len = 0;
 
-    if (check == NULL)
+    if (check == nullptr)
         return SIGNAL_IGNORED;
 
     SubCheck *sc = &work_sub;
-    if (sc == NULL)
+    if (sc == nullptr)
         return SIGNAL_IGNORED;
 
     LayoutZone::Touch(term, tx, ty);
 
     Flt line = header_size;
     Flt buffer = ((spacing - 1) / 2);
-    for (Payment *payment = sc->PaymentList(); payment != NULL; payment = payment->next)
+    for (Payment *payment = sc->PaymentList(); payment != nullptr; payment = payment->next)
     {
         name_len = 0;
         min_line = line - buffer;
-        if (payment->credit != NULL)
+        if (payment->credit != nullptr)
         {
             max_line = line + (spacing * 3);
             if (strlen(payment->credit->Name()) > 0)
@@ -852,7 +867,7 @@ SignalResult PaymentZone::Touch(Terminal *term, int tx, int ty)
         if (selected_y > min_line && selected_y < max_line)
         {
             if (current_payment == payment)
-                current_payment = NULL;
+                current_payment = nullptr;
             else
                 current_payment = payment;
             Draw(term, 0);
@@ -860,7 +875,7 @@ SignalResult PaymentZone::Touch(Terminal *term, int tx, int ty)
         }
         else
         {
-            if (payment->credit != NULL)
+            if (payment->credit != nullptr)
             {
                 line += (spacing * 3);
                 if (name_len)
@@ -870,7 +885,7 @@ SignalResult PaymentZone::Touch(Terminal *term, int tx, int ty)
                 line += spacing;
         }
     }
-    if (current_payment != NULL && current_payment->credit != NULL)
+    if (current_payment != nullptr && current_payment->credit != nullptr)
     {
         char str[STRLENGTH] = "";
         vt_safe_string::safe_concat(str, STRLENGTH, "Would you like to print the receipt for\\");
@@ -937,7 +952,7 @@ int PaymentZone::SaveCheck(Terminal *term)
     Settings *settings = &(sys->settings);
     SubCheck *subCheck = &work_sub;
 
-    if (employee == NULL || currCheck == NULL || currCheck->current_sub == NULL)
+    if (employee == nullptr || currCheck == nullptr || currCheck->current_sub == nullptr)
         return 1;
 
     currCheck->current_sub->Copy(subCheck, settings);
@@ -965,7 +980,7 @@ int PaymentZone::CloseCheck(Terminal *term, int force)
         {  // do we have any pre-auths left?
             Payment *currpay = work_sub.PaymentList();
             int has_preauths = 0;
-            while (currpay != NULL && has_preauths == 0)
+            while (currpay != nullptr && has_preauths == 0)
             {
                 if (currpay->credit && currpay->credit->IsPreauthed())
                     has_preauths = 1;
@@ -981,10 +996,10 @@ int PaymentZone::CloseCheck(Terminal *term, int force)
         }
     }
     
-    if (employee == NULL || currCheck == NULL || currCheck->current_sub == NULL)
+    if (employee == nullptr || currCheck == nullptr || currCheck->current_sub == nullptr)
         return 1;
 
-    if (term->cdu != NULL)
+    if (term->cdu != nullptr)
     {
         term->cdu->Clear();
         term->cdu->ShowString(&(term->system_data->cdustrings));
@@ -1022,7 +1037,7 @@ int PaymentZone::CloseCheck(Terminal *term, int force)
     if (! close_error)
     {
         Drawer *drawer = term->FindDrawer();
-        if (drawer == NULL && !currCheck->IsTraining() &&
+        if (drawer == nullptr && !currCheck->IsTraining() &&
             !(subCheck->OnlyCredit() == 1 && term->is_bar_tab == 1))
         {
             // Get descriptive reason for drawer unavailability
@@ -1123,11 +1138,15 @@ int PaymentZone::CloseCheck(Terminal *term, int force)
         // Update drawer record
         drawer_open = 0;
         Printer *pr = term->FindPrinter(PRINTER_RECEIPT);
-        if (pr && (settings->receipt_print & RECEIPT_FINALIZE))
+        if (pr)
         {
-            if (settings->cash_receipt || subCheck->OnlyCredit() == 0)
-            {
-                subCheck->PrintReceipt(term, currCheck, pr, drawer, open_drawer);
+            if (auto receipt_mode = vt::IntToEnum<ReceiptPrintType>(settings->receipt_print)) {
+                if (*receipt_mode == ReceiptPrintType::OnFinalize || *receipt_mode == ReceiptPrintType::OnBoth) {
+                    if (settings->cash_receipt || subCheck->OnlyCredit() == 0)
+                    {
+                        subCheck->PrintReceipt(term, currCheck, pr, drawer, open_drawer);
+                    }
+                }
             }
         }
     }
@@ -1152,14 +1171,14 @@ int PaymentZone::CloseCheck(Terminal *term, int force)
 
         // Find next open subcheck in check
         SubCheck *nextsub = currCheck->NextOpenSubCheck();
-        if (nextsub != NULL)
+        if (nextsub != nullptr)
         {
             if (nextsub->IsBalanced())
                 term->check_balanced = 1;
             else
                 term->check_balanced = 0;
             work_sub.Copy(nextsub, settings);
-            current_payment = NULL;
+            current_payment = nullptr;
             term->Draw(1);
             return 0;
         }
@@ -1168,7 +1187,7 @@ int PaymentZone::CloseCheck(Terminal *term, int force)
     }
     else
     {
-        if (rebuild == 0 && currCheck->archive == NULL)
+        if (rebuild == 0 && currCheck->archive == nullptr)
         {
             // Move check to end of list
             sys->Remove(currCheck);
@@ -1189,14 +1208,14 @@ int PaymentZone::DoneWithCheck(Terminal *term, int store_check)
 {
     FnTrace("PaymentZone::DoneWithCheck()");
 	Check *currCheck = term->check;
-	if (currCheck == NULL)
+	if (currCheck == nullptr)
 		return 1;
 
 	Settings *settings = term->GetSettings();
 	if (store_check)
 	{
 		term->StoreCheck(0);
-		term->UpdateOtherTerms(UPDATE_CHECKS, NULL);
+		term->UpdateOtherTerms(UPDATE_CHECKS, nullptr);
 	}
 
 	// Check if payment was made through Server Bank drawer by Customer user on SelfOrder terminal
@@ -1250,16 +1269,16 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, int pid, int pflags, int 
     Employee  *employee = term->user;
     Check     *currCheck = term->check;
     Settings  *settings = term->GetSettings();
-    SubCheck  *subCheck = NULL;
+    SubCheck  *subCheck = nullptr;
 
-    if (employee == NULL || currCheck == NULL)
+    if (employee == nullptr || currCheck == nullptr)
         return 1;
 
     subCheck = &work_sub;
     if (subCheck->status != CHECK_OPEN)
         return 1;
 
-    if (subCheck->OrderList() == NULL && term->is_bar_tab == 0)
+    if (subCheck->OrderList() == nullptr && term->is_bar_tab == 0)
     {
         amount = 0;
         Draw(term, 0);
@@ -1291,7 +1310,7 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, int pid, int pflags, int 
     }
 
     Drawer *drawer = term->FindDrawer();
-    if (drawer == NULL && !currCheck->IsTraining() &&
+    if (drawer == nullptr && !currCheck->IsTraining() &&
         !(subCheck->OnlyCredit() == 1 && term->is_bar_tab == 1))
     {
         // Get descriptive reason for drawer unavailability
@@ -1384,7 +1403,7 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, int pid, int pflags, int 
         pflags |= TF_IS_TAB;
 
     Payment *paymnt = subCheck->NewPayment(ptype, pid, pflags, pamount);
-    if (paymnt == NULL)
+    if (paymnt == nullptr)
         return 1;
 
     if (paymnt->tender_type == TENDER_CREDIT_CARD ||
@@ -1392,7 +1411,7 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, int pid, int pflags, int 
     {
         paymnt->credit = term->credit;
         paymnt->credit->check_id = currCheck->serial_number;
-        term->credit = NULL;
+        term->credit = nullptr;
     }
 
     amount = 0;
@@ -1406,8 +1425,8 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, int pid, int pflags, int 
         term->check_balanced = 0;
     term->Draw(1);
 
-    current_payment = NULL;
-    paymnt = NULL;
+    current_payment = nullptr;
+    paymnt = nullptr;
 
     if (ptype == TENDER_CASH)
         OpenDrawer(term);
@@ -1432,15 +1451,15 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, const genericChar* swipe_
 {
     FnTrace("PaymentZone::AddPayment(credit card)");
     int retval = 0;
-    CreditCardDialog *ccd = NULL;
-    SimpleDialog *sd = NULL;
+    CreditCardDialog *ccd = nullptr;
+    SimpleDialog *sd = nullptr;
     Settings *settings = term->GetSettings();
     Payment *currpay = work_sub.PaymentList();
     int count = 0;
     char str[STRLENGTH];
     char str1[STRLENGTH];
 
-    if (work_sub.status == CHECK_CLOSED && current_payment == NULL)
+    if (work_sub.status == CHECK_CLOSED && current_payment == nullptr)
     {
         sd = new SimpleDialog(term->Translate("You cannot add a charge card to a closed check."));
         sd->Button("Okay");
@@ -1448,9 +1467,9 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, const genericChar* swipe_
     }
     else
     {
-        if (term->credit != NULL)
+        if (term->credit != nullptr)
             ReportError("Possibly losing a credit card in PaymentZone::AddPayment()");
-        term->credit = NULL;
+        term->credit = nullptr;
         int len = (swipe_value != nullptr) ? static_cast<int>(strlen(swipe_value)) : 0;
         // Arbitrary.  We'll assume there will never be more than 99 credit
         // cards added to a ticket.  Really, len == 1 should be a valid
@@ -1461,9 +1480,9 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, const genericChar* swipe_
         {
             count = atoi(swipe_value);
             currpay = work_sub.PaymentList();
-            while (currpay != NULL && count > 0)
+            while (currpay != nullptr && count > 0)
             {
-                if (currpay->credit != NULL)
+                if (currpay->credit != nullptr)
                     count -= 1;
                 if (count == 0)
                 {
@@ -1475,16 +1494,16 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, const genericChar* swipe_
             }
         }
         else if (len == 0 &&
-                 current_payment != NULL &&
-                 current_payment->credit != NULL)
+                 current_payment != nullptr &&
+                 current_payment->credit != nullptr)
         {
             term->credit = current_payment->credit;
         }
         else if (len == 0)
         {
-            while (currpay != NULL)
+            while (currpay != nullptr)
             {
-                if (currpay->credit != NULL)
+                if (currpay->credit != nullptr)
                     count += 1;
                 currpay = currpay->next;
             }
@@ -1494,15 +1513,15 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, const genericChar* swipe_
                 sd->Button("New Card", "swipe newcard");
                 currpay = work_sub.PaymentList();
                 count = 0;
-                while (currpay != NULL)
+                while (currpay != nullptr)
                 {
-                    if (currpay->credit != NULL)
+                    if (currpay->credit != nullptr)
                     {
                         count += 1;
-                        snprintf(str, STRLENGTH, "%s\\%s",
+                        vt::cpp23::format_to_buffer(str, STRLENGTH, "{}\\{}",
                                  currpay->credit->LastFour(),
                                  currpay->credit->Approval());
-                        snprintf(str1, STRLENGTH, "swipe %d", count);
+                        vt::cpp23::format_to_buffer(str1, STRLENGTH, "swipe {}", count);
                         sd->Button(str, str1);
                     }
                     currpay = currpay->next;
@@ -1514,17 +1533,17 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, const genericChar* swipe_
             }
         }
         
-        if (term->check->current_sub != NULL)
+        if (term->check->current_sub != nullptr)
             term->check->current_sub->FigureTotals(term->GetSettings());
-        if (amount == 0 && term->credit != NULL)
+        if (amount == 0 && term->credit != nullptr)
         {
             if (term->credit->IsPreauthed() &&
                 settings->cc_bar_mode == 1 &&
-                term->check->current_sub != NULL)
+                term->check->current_sub != nullptr)
             {
                 term->auth_amount = term->check->current_sub->balance;
             }
-            else if (term->check->current_sub != NULL && term->check->current_sub->TabRemain() > 0)
+            else if (term->check->current_sub != nullptr && term->check->current_sub->TabRemain() > 0)
                 term->auth_amount = term->check->current_sub->balance;
             else
                 term->auth_amount = term->credit->Total(1);
@@ -1535,10 +1554,10 @@ int PaymentZone::AddPayment(Terminal *term, int ptype, const genericChar* swipe_
             term->auth_amount = amount;
             term->void_amount = amount;
         }
-        if (strlen(swipe_value) > 2 && strcmp(swipe_value, "newcard"))
+        if (strlen(swipe_value) > 2 && strcmp(swipe_value, "newcard") != 0)
             ccd = new CreditCardDialog(term, &work_sub, swipe_value);
         else
-            ccd = new CreditCardDialog(term, &work_sub, NULL);
+            ccd = new CreditCardDialog(term, &work_sub, nullptr);
         retval = term->OpenDialog(ccd);
     }
 
@@ -1550,15 +1569,15 @@ int PaymentZone::NextCheck(Terminal *term, int force)
     FnTrace("PaymentZone::NextCheck()");
 
     Check *check = term->check;
-    if (check == NULL)
+    if (check == nullptr)
         return 1;
 
     SubCheck *sc = check->current_sub;
-    if (sc == NULL)
+    if (sc == nullptr)
         return 1;
 
     SubCheck *sc_next = sc->next;
-    if (sc_next == NULL)
+    if (sc_next == nullptr)
         sc_next = check->SubList();
     if (sc == sc_next)
         return 1;
@@ -1591,7 +1610,7 @@ int PaymentZone::Merchandise(Terminal *term, SubCheck *sc)
 {
     FnTrace("PaymentZone::Merchandise()");
 
-    if (sc == NULL)
+    if (sc == nullptr)
         return 1;
 
     int price = amount;
@@ -1617,7 +1636,7 @@ int PaymentZone::OpenDrawer(Terminal *term)
     FnTrace("PaymentZone::OpenDrawer()");
     int retval = 1;
     Drawer *drawer = term->FindDrawer();
-    if (drawer == NULL)
+    if (drawer == nullptr)
         return retval;
 
     if (drawer_open == 0)
@@ -1656,7 +1675,7 @@ int TenderZone::RenderInit(Terminal *term, int update_flag)
         active = (settings->DiscountCount(ALL_MEDIA, ACTIVE_MEDIA) > 0); break;
     case TENDER_COMP:
         active = (settings->CompCount(ALL_MEDIA, ACTIVE_MEDIA) > 0);
-        if (employee == NULL || !employee->CanCompOrder(settings))
+        if (employee == nullptr || !employee->CanCompOrder(settings))
             active = 0;
         break;
     case TENDER_CHARGE_CARD:
@@ -1681,9 +1700,9 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
 	char str[256];
 	Settings *settings = term->GetSettings();
 	int count = 0;
-    Drawer *drawer = NULL;
+    Drawer *drawer = nullptr;
 
-	if (employee == NULL)
+	if (employee == nullptr)
 		return SIGNAL_IGNORED;
 
 	switch (tender_type)
@@ -1706,7 +1725,7 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
     break;
     case TENDER_EMPLOYEE_MEAL:
     {
-        MealInfo *mi = settings->MealList(), *ptr = NULL;
+        MealInfo *mi = settings->MealList(), *ptr = nullptr;
         while (mi)
         {
             if (!(mi->flags & TF_MANAGER) || employee->IsManager(settings))
@@ -1745,7 +1764,7 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
     case TENDER_CHARGE_CARD:
     {
         drawer = term->FindDrawer();
-        if (drawer == NULL && term->is_bar_tab == 0)
+        if (drawer == nullptr && term->is_bar_tab == 0)
         {
             // Get descriptive reason for drawer unavailability
             Settings *sett = term->GetSettings();  // Renamed to avoid shadowing outer 'settings'
@@ -1921,9 +1940,10 @@ SignalResult TenderZone::Touch(Terminal *term, int tx, int ty)
         int flags = 0;
         if (tender_type == TENDER_GRATUITY)
             flags |= TF_IS_PERCENT;
-        else if (tender_type == TENDER_CREDIT_CARD_FEE_PERCENT)
+        else if (tender_type == TENDER_CREDIT_CARD_FEE_PERCENT ||
+                 tender_type == TENDER_DEBIT_CARD_FEE_PERCENT)
         {
-            // Credit Card Fee (Percentage) always uses percentage
+            // Credit/Debit Card Fee (Percentage) always uses percentage
             flags |= TF_IS_PERCENT;
         }
         // Credit Card Fee (Dollar) uses default flags = 0 (dollar amount)

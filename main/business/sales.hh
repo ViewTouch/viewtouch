@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
 
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,18 +18,17 @@
  * Definitions of sale item classes
  */
 
-#ifndef _SALES_HH
-#define _SALES_HH
+#ifndef SALES_HH
+#define SALES_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
 #include <string>
-#include <vector>
 
 
 /**** Definitions ****/
 
-#define SALES_ITEM_VERSION       16
+constexpr int SALES_ITEM_VERSION = 17;
 
 // Family Difinitions
 #define FAMILY_APPETIZERS        0
@@ -195,6 +194,7 @@ public:
     short has_zone;       // boolean - is there a zone that can order this item?
     short allow_increase; // whether to show the OrderAddZone button.
     short ignore_split;	  // ignore split kitchen?
+    short out_of_stock;   // boolean - is item 86'd or out of stock
     int   period;         // time of day served
     int   prepare_time;   // time to make menu item
     int   quanity;        // Number of item remaining
@@ -202,7 +202,7 @@ public:
     int   price_type;     // price type (see above)
 
     // Constructor
-    SalesItem(const char* name = NULL);
+    SalesItem(const char* name = nullptr);
 
     // Member Functions
     Component *ComponentList() { return component_list.Head(); }
@@ -248,7 +248,7 @@ public:
 
 class ItemDB
 {
-    std::vector<SalesItem*> name_array; // array of items for binary search
+    SalesItem **name_array; // array of items for binary search
     int         array_size;
     int         last_id;    // last id used
 

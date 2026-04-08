@@ -9,7 +9,7 @@
 #include <cctype>
 #include <cmath>
 #include <iostream>
-#include <string.h>
+#include <cstring>
 #include <string>
 #include <algorithm>
 #include <vector>
@@ -20,7 +20,6 @@
 #include "term_view.hh"
 #include "image_data.hh"
 #include "remote_link.hh"
-#include "buffer_pool.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -37,8 +36,8 @@ Layer::Layer(Display *d, GC g, Window draw_win, int lw, int lh)
     gfx  = g;
     win  = draw_win;
     pix  = XCreatePixmap(dis, draw_win, lw, lh, DefaultDepth(d, no));
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     id   = 0;
     offset_x = 0;
     offset_y = 0;
@@ -81,7 +80,7 @@ Layer::Layer(Layer&& other) noexcept
     , offset_x(other.offset_x)
     , offset_y(other.offset_y)
     , window_frame(other.window_frame)
-    , window_title(std::move(other.window_title))
+    , window_title(other.window_title)
     , pix(other.pix)
     , dis(other.dis)
     , win(other.win)
@@ -102,7 +101,7 @@ Layer::Layer(Layer&& other) noexcept
     , max(other.max)
     , clip(other.clip)
     , use_clip(other.use_clip)
-    , page_title(std::move(other.page_title))
+    , page_title(other.page_title)
     , buttons(std::move(other.buttons))
     , xftdraw(other.xftdraw)
 {
@@ -133,7 +132,7 @@ Layer& Layer::operator=(Layer&& other) noexcept
         offset_x = other.offset_x;
         offset_y = other.offset_y;
         window_frame = other.window_frame;
-        window_title = std::move(other.window_title);
+        window_title = other.window_title;
         pix = other.pix;
         dis = other.dis;
         win = other.win;
@@ -154,7 +153,7 @@ Layer& Layer::operator=(Layer&& other) noexcept
         max = other.max;
         clip = other.clip;
         use_clip = other.use_clip;
-        page_title = std::move(other.page_title);
+        page_title = other.page_title;
         buttons = std::move(other.buttons);
         xftdraw = other.xftdraw;
         
@@ -276,6 +275,9 @@ int Layer::BlankPage(int mode, int texture, int tc, int size, int split,
         frame_width = 4;
         break;
      }
+    // Clip page size to layer size to prevent X11 errors
+    page_w = Min(page_w, static_cast<int>(w));
+    page_h = Min(page_h, static_cast<int>(h));
     page_x = Max(w - page_w, 0) / 2 + offset_x;
     page_y = Max(h - page_h, 0) / 2 + offset_y;
     use_clip = 0;
@@ -442,22 +444,22 @@ int Layer::TitleBar()
     }
     else
     {
-        if (title_mode == MODE_MACRO)
+        if (title_mode == ToInt(OperationMode::OpMacro))
         {
             Text("** RECORDING MACRO **", 21, page_w / 2, 6, c2,
                  FONT_TIMES_20B, ALIGN_CENTER);
         }
-        else if (title_mode == MODE_TRAINING)
+        else if (title_mode == ToInt(OperationMode::OpTraining))
         {
             Text("** TRAINING MODE **", 19, page_w / 2, 6, c2,
                  FONT_TIMES_20B, ALIGN_CENTER);
         }
-        else if (title_mode == MODE_TRANSLATE)
+        else if (title_mode == ToInt(OperationMode::OpTranslate))
         {
             Text("** TRANSLATION MODE **", 22, page_w / 2, 6, c2,
                  FONT_TIMES_20B, ALIGN_CENTER);
         }
-        else if (title_mode == MODE_EDIT)
+        else if (title_mode == ToInt(OperationMode::OpEdit))
         {
             Text("** EDIT MODE **", 15, page_w / 2, 6, c2,
                  FONT_TIMES_20B, ALIGN_CENTER);
@@ -669,7 +671,7 @@ int Layer::ZoneText(const char* str, int tx, int ty, int tw, int th,
             Text(sub_string[i], sub_length[i], sx, sy, color, font, align, 0, embossed);
         sy += font_h;
     }
-    if (*c && line >= max_lines && title_mode == MODE_EDIT)
+    if (*c && line >= max_lines && title_mode == ToInt(OperationMode::OpEdit))
         Text("!", 1, tx, ty, COLOR_RED, FONT_TIMES_24, ALIGN_LEFT, 0, embossed);
     return 0;
 }
@@ -687,24 +689,8 @@ int Layer::Rectangle(int rx, int ry, int rw, int rh, int image)
 
     if (r.w > 0 && r.h > 0)
     {
-        // Optimize: cache current tile and tile origin to avoid redundant X11 calls
-        static Pixmap current_tile = 0;
-        static int current_origin_x = -1;
-        static int current_origin_y = -1;
-
-        Pixmap new_tile = GetTexture(image);
-
-        if (new_tile != current_tile) {
-            XSetTile(dis, gfx, new_tile);
-            current_tile = new_tile;
-        }
-
-        if (page_x != current_origin_x || page_y != current_origin_y) {
-            XSetTSOrigin(dis, gfx, page_x, page_y);
-            current_origin_x = page_x;
-            current_origin_y = page_y;
-        }
-
+        XSetTSOrigin(dis, gfx, page_x, page_y);
+        XSetTile(dis, gfx, GetTexture(image));
         XSetFillStyle(dis, gfx, FillTiled);
         XFillRectangle(dis, pix, gfx, page_x + r.x, page_y + r.y, r.w, r.h);
         XSetFillStyle(dis, gfx, FillSolid);
@@ -826,15 +812,10 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
                 const int bytes_per_line =
                     ((draw_w * bits_per_pixel + (bitmap_pad - 1)) / bitmap_pad) * (bitmap_pad / 8);
 
-                size_t scaled_size = (size_t)bytes_per_line * (size_t)draw_h;
-                char *scaled_image_data = static_cast<char*>(vt::BufferPool::Instance().Acquire(scaled_size));
-                XImage *scaled_image = nullptr;
-                if (scaled_image_data) {
-                    scaled_image = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
-                                              orig_image->depth, ZPixmap, 0,
-                                              scaled_image_data,
-                                              draw_w, draw_h, bitmap_pad, bytes_per_line);
-                }
+                XImage *scaled_image = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
+                                                  orig_image->depth, ZPixmap, 0,
+                                                  static_cast<char*>(malloc(static_cast<size_t>(bytes_per_line) * static_cast<size_t>(draw_h))),
+                                                  draw_w, draw_h, bitmap_pad, bytes_per_line);
 
                 Pixmap scaled_mask = 0;
                 if (scaled_image && scaled_image->data)
@@ -865,40 +846,32 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
                         if (orig_mask)
                         {
                             scaled_mask = XCreatePixmap(dis, pix, draw_w, draw_h, 1);
-                            size_t scaled_mask_size = ((draw_w + 7) / 8) * (size_t)draw_h;
-                            char *scaled_mask_data = static_cast<char*>(vt::BufferPool::Instance().Acquire(scaled_mask_size));
-                            XImage *scaled_mask_img = nullptr;
-                            if (scaled_mask_data) {
-                                scaled_mask_img = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
-                                                              1, XYBitmap, 0,
-                                                              scaled_mask_data,
-                                                              draw_w, draw_h, 8, 0);
-                                if (scaled_mask_img && scaled_mask_img->data) {
-                                    memset(scaled_mask_img->data, 0, (draw_w + 7) / 8 * draw_h);
-                                    for (int y = 0; y < draw_h; ++y) {
-                                        for (int x = 0; x < draw_w; ++x) {
-                                            int src_x = static_cast<int>(x * inv_scale_x);
-                                            int src_y = static_cast<int>(y * inv_scale_y);
-                                            if (src_x >= img_w) src_x = img_w - 1;
-                                            if (src_y >= img_h) src_y = img_h - 1;
-                                            
-                                            unsigned long mask_pixel = XGetPixel(orig_mask, src_x, src_y);
-                                            XPutPixel(scaled_mask_img, x, y, mask_pixel);
-                                        }
+                            XImage *scaled_mask_img = XCreateImage(dis, DefaultVisual(dis, DefaultScreen(dis)),
+                                                                  1, XYBitmap, 0,
+                                                                  static_cast<char*>(malloc((draw_w + 7) / 8 * draw_h)),
+                                                                  draw_w, draw_h, 8, 0);
+                            if (scaled_mask_img && scaled_mask_img->data)
+                            {
+                                memset(scaled_mask_img->data, 0, (draw_w + 7) / 8 * draw_h);
+                                for (int y = 0; y < draw_h; ++y)
+                                {
+                                    for (int x = 0; x < draw_w; ++x)
+                                    {
+                                        int src_x = static_cast<int>(x * inv_scale_x);
+                                        int src_y = static_cast<int>(y * inv_scale_y);
+                                        if (src_x >= img_w) src_x = img_w - 1;
+                                        if (src_y >= img_h) src_y = img_h - 1;
+                                        
+                                        unsigned long mask_pixel = XGetPixel(orig_mask, src_x, src_y);
+                                        XPutPixel(scaled_mask_img, x, y, mask_pixel);
                                     }
-                                    GC mask_gc = XCreateGC(dis, scaled_mask, 0, NULL);
-                                    XPutImage(dis, scaled_mask, mask_gc, scaled_mask_img, 0, 0, 0, 0, draw_w, draw_h);
-                                    XFreeGC(dis, mask_gc);
-                                    if (scaled_mask_img->data) {
-                                        vt::BufferPool::Instance().Release(scaled_mask_img->data, scaled_mask_size);
-                                        scaled_mask_img->data = nullptr;
-                                    }
-                                    XDestroyImage(scaled_mask_img);
-                                } else {
-                                    if (scaled_mask_data) { vt::BufferPool::Instance().Release(scaled_mask_data, scaled_mask_size); scaled_mask_data = nullptr; }
                                 }
+                                GC mask_gc = XCreateGC(dis, scaled_mask, 0, nullptr);
+                                XPutImage(dis, scaled_mask, mask_gc, scaled_mask_img, 0, 0, 0, 0, draw_w, draw_h);
+                                XFreeGC(dis, mask_gc);
+                                XDestroyImage(scaled_mask_img);
                             }
-                                    XDestroyImage(orig_mask);
+                            XDestroyImage(orig_mask);
                         }
                     }
 
@@ -925,10 +898,8 @@ int Layer::DrawPixmap(int rx, int ry, int rw, int rh, const char* filename)
                 if (scaled_image)
                 {
                     if (scaled_image->data)
-                    {
-                        vt::BufferPool::Instance().Release(scaled_image->data, scaled_size);
-                        scaled_image->data = nullptr;
-                    }
+                        free(scaled_image->data);
+                    scaled_image->data = nullptr;
                     XDestroyImage(scaled_image);
                 }
 
@@ -1886,7 +1857,7 @@ int Layer::MouseAction(LayerList *ll, int mx, int my, int code)
         return 0;
     }
 
-    WInt8(SERVER_MOUSE);
+    WInt8(ToInt(ServerProtocol::SrvMouse));
     WInt16(id);
     WInt8(code);
     WInt16(mx - page_x);
@@ -1898,7 +1869,7 @@ int Layer::Touch(LayerList *ll, int tx, int ty)
 {
     FnTrace("Layer::Touch()");
 
-    WInt8(SERVER_TOUCH);
+    WInt8(ToInt(ServerProtocol::SrvTouch));
     WInt16(id);
     WInt16(tx - page_x);
     WInt16(ty - page_y);
@@ -1909,7 +1880,7 @@ int Layer::Keyboard(LayerList *ll, genericChar key, int code, int state)
 {
     FnTrace("Layer::Keyboard()");
 
-    WInt8(SERVER_KEY);
+    WInt8(ToInt(ServerProtocol::SrvKey));
     WInt16(id);
     WInt16(key);
     WInt32(code);
@@ -1924,15 +1895,15 @@ LayerList::LayerList()
 {
     FnTrace("LayerList::LayerList()");
 
-    dis = NULL;
-    gfx = 0;
+    dis = nullptr;
+    gfx = nullptr;
     win = 0;
     select_on = 0;
     select_x1 = 0;
     select_y1 = 0;
     select_x2 = 0;
     select_y2 = 0;
-    drag = NULL;
+    drag = nullptr;
     drag_x = 0;
     drag_y = 0;
     mouse_x = 0;
@@ -1940,8 +1911,8 @@ LayerList::LayerList()
     screen_blanked = 0;
     active_frame_color = COLOR_DK_RED;
     inactive_frame_color = COLOR_DK_BLUE;
-    last_object = NULL;
-    last_layer  = NULL;
+    last_object = nullptr;
+    last_layer  = nullptr;
 }
 
 // Member Functions
@@ -1961,7 +1932,7 @@ int LayerList::Add(Layer *l, int update)
 {
     FnTrace("LayerList::Add()");
 
-    if (l == NULL)
+    if (l == nullptr)
         return 1;
 
     list.AddToTail(l);
@@ -1981,7 +1952,7 @@ int LayerList::Remove(Layer *l, int update)
 {
     FnTrace("LayerList::Remove()");
 
-    if (l == NULL)
+    if (l == nullptr)
         return 1;
 
     // check to see if layer was in active list
@@ -2009,7 +1980,7 @@ int LayerList::Remove(Layer *l, int update)
         UpdateArea(l->x, l->y, l->w, l->h);
         if (last_layer == l)
         {
-            last_object = NULL;
+            last_object = nullptr;
             last_layer  = FindByPoint(mouse_x, mouse_y);
             if (last_layer)
                 last_layer->MouseEnter(this);
@@ -2034,7 +2005,7 @@ Layer *LayerList::FindByPoint(int x, int y)
     if (auto result = FindByPointOptional(x, y))
         return &result->get();
 
-    return NULL;
+    return nullptr;
 }
 
 Layer *LayerList::FindByID(int id)
@@ -2044,7 +2015,7 @@ Layer *LayerList::FindByID(int id)
     if (auto result = FindByIDOptional(id))
         return &result->get();
 
-    return NULL;
+    return nullptr;
 }
 
 // Modern versions using std::optional
@@ -2052,7 +2023,7 @@ std::optional<std::reference_wrapper<Layer>> LayerList::FindByPointOptional(int 
 {
     FnTrace("LayerList::FindByPointOptional()");
 
-    for (Layer *l = list.Tail(); l != NULL; l = l->fore)
+    for (Layer *l = list.Tail(); l != nullptr; l = l->fore)
     {
         if (l->IsPointIn(x, y))
             return *l;
@@ -2065,11 +2036,11 @@ std::optional<std::reference_wrapper<Layer>> LayerList::FindByIDOptional(int id)
 {
     FnTrace("LayerList::FindByIDOptional()");
 
-    for (Layer *l = list.Head(); l != NULL; l = l->next)
+    for (Layer *l = list.Head(); l != nullptr; l = l->next)
         if (l->id == id)
             return *l;
 
-    for (Layer *l = inactive.Head(); l != NULL; l = l->next)
+    for (Layer *l = inactive.Head(); l != nullptr; l = l->next)
         if (l->id == id)
             return *l;
             
@@ -2082,7 +2053,7 @@ int LayerList::SetScreenBlanker(int set)
 
     if (set == screen_blanked)
         return 1;
-    drag = NULL;
+    drag = nullptr;
     screen_blanked = set;
     if (set)
         ShowCursor(CURSOR_BLANK);
@@ -2115,7 +2086,7 @@ int LayerList::UpdateAll(int select_all)
     }
     
     Layer *l = list.Head();
-    if (l == NULL)
+    if (l == nullptr)
         return 0;
     
     if (select_all)
@@ -2145,7 +2116,7 @@ int LayerList::UpdateAll(int select_all)
             OptimalUpdateArea(0, p3, WinWidth, WinHeight - p3, next_layer);
     }
 
-    for (l = list.Head(); l != NULL; l = l->next)
+    for (l = list.Head(); l != nullptr; l = l->next)
         l->update = 0;
     return 0;
 }
@@ -2164,7 +2135,7 @@ int LayerList::UpdateArea(int ax, int ay, int aw, int ah)
         return 0;
     }
     
-    for (l = list.Head(); l != NULL; l = l->next)
+    for (l = list.Head(); l != nullptr; l = l->next)
     {
         if (l->Overlap(ax, ay, aw, ah))
             l->update = 1;
@@ -2172,7 +2143,7 @@ int LayerList::UpdateArea(int ax, int ay, int aw, int ah)
 
     OptimalUpdateArea(ax, ay, aw, ah);
 
-    for (l = list.Head(); l != NULL; l = l->next)
+    for (l = list.Head(); l != nullptr; l = l->next)
         l->update = 0;
     return 0;
 }
@@ -2193,7 +2164,7 @@ int LayerList::OptimalUpdateArea(int ax, int ay, int aw, int ah, Layer *end)
             break;
         l = l->fore;
     }
-    if (l == NULL)
+    if (l == nullptr)
         return 0;
 
     RegionInfo r;
@@ -2205,7 +2176,7 @@ int LayerList::OptimalUpdateArea(int ax, int ay, int aw, int ah, Layer *end)
     }
 
     Layer *next_layer = l->fore;
-    if (next_layer == NULL)
+    if (next_layer == nullptr)
         return 0;
 
     int p0 = l->x;
@@ -2317,7 +2288,7 @@ int LayerList::MouseAction(int x, int y, int code)
     if (!(code & (MOUSE_LEFT | MOUSE_RIGHT | MOUSE_MIDDLE)) ||
         (code & MOUSE_RELEASE))
     {
-        drag = NULL;
+        drag = nullptr;
     }
     if (drag)
     {
@@ -2341,11 +2312,11 @@ int LayerList::MouseAction(int x, int y, int code)
     }
 
     Layer *l = FindByPoint(x, y);
-    if (l == NULL)
+    if (l == nullptr)
     {
-        drag        = NULL;
-        last_layer  = NULL;
-        last_object = NULL;
+        drag        = nullptr;
+        last_layer  = nullptr;
+        last_object = nullptr;
         return 0;
     }
 
@@ -2355,7 +2326,7 @@ int LayerList::MouseAction(int x, int y, int code)
     {
         // Object mouse focus has changed
         last_object->MouseExit(this, last_layer);
-        last_object = NULL;
+        last_object = nullptr;
     }
 
     if (last_layer != l)
@@ -2370,7 +2341,7 @@ int LayerList::MouseAction(int x, int y, int code)
         last_layer = l;
     }
 
-    if ((code & MOUSE_PRESS) && l->window_frame & WINFRAME_MOVE)
+    if ((code & MOUSE_PRESS) && (l->window_frame & ToInt(WindowFrame::FrameMove)))
     {
         RegionInfo r(l->x, l->y, l->w, 30);
         if (r.IsPointIn(x, y))
@@ -2388,7 +2359,7 @@ int LayerList::DragLayer(int x, int y)
 {
     FnTrace("LayerList::DragLayer()");
 
-    if (drag == NULL)
+    if (drag == nullptr)
         return 1;
 
     if (x < 0)
@@ -2509,8 +2480,8 @@ LayerObject::LayerObject()
 {
     FnTrace("LayerObject::LayerObject()");
 
-    next = NULL;
-    fore = NULL;
+    next = nullptr;
+    fore = nullptr;
     hilight = 0;
     select = 0;
     id = 0;
@@ -2582,10 +2553,10 @@ LayerObject *LayerObjectList::FindByID(int id)
 {
     FnTrace("LayerObjectList::FindByID()");
 
-    for (LayerObject *l = list.Tail(); l != NULL; l = l->fore)
+    for (LayerObject *l = list.Tail(); l != nullptr; l = l->fore)
         if (l->id == id)
             return l;
-    return NULL;
+    return nullptr;
 }
 
 LayerObject *LayerObjectList::FindByPoint(int x, int y)
@@ -2594,7 +2565,7 @@ LayerObject *LayerObjectList::FindByPoint(int x, int y)
 
     if (auto result = FindByPointOptional(x, y))
         return &result->get();
-    return NULL;
+    return nullptr;
 }
 
 // Modern versions using std::optional
@@ -2602,7 +2573,7 @@ std::optional<std::reference_wrapper<LayerObject>> LayerObjectList::FindByIDOpti
 {
     FnTrace("LayerObjectList::FindByIDOptional()");
 
-    for (LayerObject *l = list.Tail(); l != NULL; l = l->fore)
+    for (LayerObject *l = list.Tail(); l != nullptr; l = l->fore)
         if (l->id == id)
             return *l;
             
@@ -2613,7 +2584,7 @@ std::optional<std::reference_wrapper<LayerObject>> LayerObjectList::FindByPointO
 {
     FnTrace("LayerObjectList::FindByPointOptional()");
 
-    for (LayerObject *l = list.Tail(); l != NULL; l = l->fore)
+    for (LayerObject *l = list.Tail(); l != nullptr; l = l->fore)
     {
         if (l->IsPointIn(x, y))
         {
@@ -2628,7 +2599,7 @@ int LayerObjectList::Render(Layer *l)
 {
     FnTrace("LayerObjectList::Render()");
 
-    for (LayerObject *lo = list.Head(); lo != NULL; lo = lo->next)
+    for (LayerObject *lo = list.Head(); lo != nullptr; lo = lo->next)
         lo->Render(l);
     return 0;
 }
@@ -2637,7 +2608,7 @@ int LayerObjectList::Layout(Layer *l)
 {
     FnTrace("LayerObjectList::Layout()");
 
-    for (LayerObject *lo = list.Head(); lo != NULL; lo = lo->next)
+    for (LayerObject *lo = list.Head(); lo != nullptr; lo = lo->next)
         lo->Layout(l);
     return 0;
 }
@@ -2716,7 +2687,7 @@ int LO_PushButton::Command(Layer *l)
 {
     FnTrace("LO_PushButton::Command()");
 
-    WInt8(SERVER_BUTTONPRESS);
+    WInt8(ToInt(ServerProtocol::SrvButtonPress));
     WInt16(l->id);
     WInt16(id);
     return SendNow();

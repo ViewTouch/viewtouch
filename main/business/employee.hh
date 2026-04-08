@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -18,12 +18,11 @@
  * Employee information classes
  */
 
-#ifndef _EMPLOYEE_HH
-#define _EMPLOYEE_HH
+#ifndef EMPLOYEE_HH
+#define EMPLOYEE_HH
 
 #include "utility.hh"
 #include "list_utility.hh"
-#include <vector>
 
 
 /**** Definitions & Global Data ****/
@@ -191,8 +190,8 @@ public:
     Str       filename;
     int       changed;
 
-    std::vector<Employee*> name_array; // cached name list
-    std::vector<Employee*> id_array;   // cached id list
+    Employee **name_array; // cached name list
+    Employee **id_array;   // cached id list
 
     // Constructor
     UserDB();

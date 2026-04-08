@@ -1,5 +1,5 @@
 /*
- * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025
+ * Copyright ViewTouch, Inc., 1995, 1996, 1997, 1998, 2025, 2026
   
  *   This program is free software: you can redistribute it and/or modify 
  *   it under the terms of the GNU General Public License as published by 
@@ -20,8 +20,8 @@
  * Created By:  Bruce Alon King, Tue Apr  2 08:45:15 2002
  */
 
-#ifndef _DEBUG_FUNCS_HH
-#define _DEBUG_FUNCS_HH
+#ifndef DEBUG_FUNCS_HH
+#define DEBUG_FUNCS_HH
 
 #include "basic.hh"
 
