@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - **Remove premade employees (2026-03-25)**: Default installation no longer auto-creates premade employee accounts such as `Manager`, `Server/Cashier`, or `Server`. The system still creates `Super User` and `Editor` (Developer) via the `UserDB` constructor; `Customer` is created on-demand for SelfOrder terminals. This change applies to new installs only and does not modify existing `employee.dat` files.
   - Files modified: `main/data/manager.cc`
 
+- **Memory modernization & build fixes (2026-04-08)**: Modernized memory allocation and ownership in several modules (replaced manual `malloc`/`free` and C-style arrays with `std::vector` and RAII); added a Linux `GetInterfaceInfo` implementation and safer `GetMacAddress` handling in `main/data/license_hash.cc` to resolve link/runtime issues; added a size-keyed `vt::BufferPool` implementation and integrated `src/utils/buffer_pool.cc` into `vtcore` via `CMakeLists.txt`; fixed a mismatched `free(report)` → `delete report` and wrapped `backtrace_symbols` with RAII in `src/core/crash_report.cc`.
+  - Files modified: `main/data/license_hash.cc`, `src/utils/buffer_pool.cc`, `CMakeLists.txt`, `zone/check_list_zone.cc`, `src/core/crash_report.cc`
+
 ### Fixed
 - **X11 image creation memory leak fixes (2026-04-07)**: Prevent leaks when `XCreateImage()` fails by allocating image/mask pixel buffers into temporaries and freeing them on error; avoids losing ownership of malloc'd buffers.
   - Files modified: `term/term_view.cc`, `term/layer.cc`
