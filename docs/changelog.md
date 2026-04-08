@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+ - **Hardware Zone: Prevent accidental overwrites when switching selections (2026-04-08)**
+   - Fixed bug where editing or creating a display/printer then switching selections could overwrite a different record with empty form values.
+   - Root Cause: `SaveRecord()` could be called for a record that had not been loaded into the form, combined with transient row→record mapping during list interactions.
+   - Solution: `HardwareZone` now tracks which `section`/`record` the form was loaded for (`loaded_section`/`loaded_record`) and `SaveRecord()` skips writes unless the form was explicitly loaded for that record. Also ensured row→record mapping is rebuilt before touch handling and added diagnostics to trace load/save events.
+   - Files modified: `zone/hardware_zone.cc`, `zone/hardware_zone.hh`
+
 - **Auto-Update vt_data Inconsistency Between Displays (2026-02-12)**
   - Fixed bug where vt_data auto-update setting behaved differently on server display vs external displays
   - **Root Cause**: The auto_update_vt_data setting was loaded from the settings file in the data directory, which could be different for different displays in multi-display setups

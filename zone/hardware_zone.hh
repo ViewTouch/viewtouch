@@ -36,6 +36,8 @@ class HardwareZone : public ListFormZone
     FormField *drawer_pulse_field;
     int        page;
     int        section;
+    int        loaded_section;
+    int        loaded_record;
     std::vector<int> row_to_record;
 
 public:
@@ -60,6 +62,8 @@ public:
     int Calibrate(Terminal *t);
     Printer *FindPrinter(Terminal *t);
     SignalResult Touch(Terminal *t, int tx, int ty) override;
+    // Ensure row_to_record is up-to-date with current settings lists
+    void RebuildRowToRecord(Terminal *t);
 };
 
 #endif

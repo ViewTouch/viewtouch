@@ -64,6 +64,8 @@ HardwareZone::HardwareZone()
     list_header = 3;
     page        = 0;
     section     = 0;
+    loaded_section = -1;
+    loaded_record = -1;
 
     // Term Fields
     AddTextField("This Display's Name is", 32);
@@ -236,6 +238,8 @@ SignalResult HardwareZone::Touch(Terminal *term, int tx, int ty)
     FnTrace("HardwareZone::Touch()");
     if (records <= 0)
         return SIGNAL_IGNORED;
+    // Keep row->record mapping current before handling list touches
+    RebuildRowToRecord(term);
 
     FormZone::Touch(term, tx, ty);
     if (show_list)
@@ -414,11 +418,19 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
     Settings *settings = nullptr;
     if (term)
         settings = term->GetSettings();
-    if (settings == nullptr)
+    if (settings == nullptr) {
+        loaded_section = -1;
+        loaded_record = -1;
         return 0;
+    }
+    /* Reset loaded markers until a record is successfully loaded */
+    loaded_section = -1;
+    loaded_record = -1;
 #ifdef HW_ZONE_DEBUG_MAP
     printf("HWDBG: LoadRecord called: section=%d record=%d term=%p\n", section, record, (void*)term);
 #endif
+    fprintf(stderr, "DEBUG: HardwareZone::LoadRecord called: section=%d record=%d term=%p row_to_record_size=%zu record_no=%d\n",
+            section, record, (void*)term, row_to_record.size(), record_no);
     switch (section)
 	{
     case 1:  // remote printer
@@ -426,6 +438,7 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         #ifdef HW_ZONE_DEBUG_MAP
         printf("HWDBG: LoadRecord -> FindPrinterByRecord(%d) = %p\n", record, (void*)pi);
         #endif
+        fprintf(stderr, "DEBUG: HardwareZone::LoadRecord -> FindPrinterByRecord(%d) = %p\n", record, (void*)pi);
         if (pi == nullptr)
             break;
 
@@ -446,12 +459,18 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         #ifdef HW_ZONE_DEBUG_MAP
         printf("HWDBG: Loaded PrinterInfo %p name=%s host=%s\n", (void*)pi, pi->name.Value(), pi->host.Value());
         #endif
+        fprintf(stderr, "DEBUG: HardwareZone::LoadRecord loaded PrinterInfo %p name='%s' host='%s'\n",
+            (void*)pi, pi->name.Value() ? pi->name.Value() : "(null)", pi->host.Value() ? pi->host.Value() : "(null)");
+        /* Mark form as loaded for this section/record */
+        loaded_section = section;
+        loaded_record = record;
         break;
     default:  // terminal
         ti = settings->FindTermByRecord(record);
         #ifdef HW_ZONE_DEBUG_MAP
         printf("HWDBG: LoadRecord -> FindTermByRecord(%d) = %p\n", record, (void*)ti);
         #endif
+        fprintf(stderr, "DEBUG: HardwareZone::LoadRecord -> FindTermByRecord(%d) = %p\n", record, (void*)ti);
         if (ti == nullptr)
             break;
 
@@ -498,6 +517,14 @@ int HardwareZone::LoadRecord(Terminal *term, int record)
         #ifdef HW_ZONE_DEBUG_MAP
         printf("HWDBG: Loaded TermInfo %p name=%s display_host=%s printer_host=%s\n", (void*)ti, ti->name.Value(), ti->display_host.Value(), ti->printer_host.Value());
         #endif
+        fprintf(stderr, "DEBUG: HardwareZone::LoadRecord loaded TermInfo %p name='%s' display_host='%s' printer_host='%s'\n",
+            (void*)ti,
+            ti->name.Value() ? ti->name.Value() : "(null)",
+            ti->display_host.Value() ? ti->display_host.Value() : "(null)",
+            ti->printer_host.Value() ? ti->printer_host.Value() : "(null)");
+        /* Mark form as loaded for this section/record */
+        loaded_section = section;
+        loaded_record = record;
         break;
 	}
 	return 0;
@@ -511,12 +538,24 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
     Settings    *settings = nullptr;
     if (term)
         settings = term->GetSettings();
-    if (settings == nullptr)
+    if (settings == nullptr) {
+        loaded_section = -1;
+        loaded_record = -1;
         return 0;
+    }
+
+    /* Only save when the form is actually loaded for this section/record. */
+    if (loaded_section != section || loaded_record != record) {
+        fprintf(stderr, "DEBUG: HardwareZone::SaveRecord -> skipping save: form not loaded for section=%d record=%d loaded_section=%d loaded_record=%d\n",
+                section, record, loaded_section, loaded_record);
+        return 0;
+    }
     FormField   *field = nullptr;
 #ifdef HW_ZONE_DEBUG_MAP
     printf("HWDBG: SaveRecord called: section=%d record=%d term=%p\n", section, record, (void*)term);
 #endif
+    fprintf(stderr, "DEBUG: HardwareZone::SaveRecord called: section=%d record=%d term=%p row_to_record_size=%zu record_no=%d\n",
+            section, record, (void*)term, row_to_record.size(), record_no);
 
 	switch (section)
 	{
@@ -527,6 +566,12 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
         #endif
         if (ti)
         {
+            fprintf(stderr, "DEBUG: HardwareZone::SaveRecord -> saving TermInfo %p BEFORE name='%s' display_host='%s' printer_host='%s'\n",
+                    (void*)ti,
+                    ti->name.Value() ? ti->name.Value() : "(null)",
+                    ti->display_host.Value() ? ti->display_host.Value() : "(null)",
+                    ti->printer_host.Value() ? ti->printer_host.Value() : "(null)");
+
             Str tmp;
             field = term_start;
             field->Get(ti->name); field = field->next;
@@ -535,12 +580,14 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
             field->Get(ti->workorder_heading); field = field->next;
             field->Get(ti->print_workorder); field = field->next;
             field->Get(tmp); field = field->next;
-            if (tmp.size() <= 0)
-                tmp.Set("unset");
+            // Keep empty display_host as empty rather than using the literal
+            // "unset". Using a shared literal caused multiple TermInfo
+            // entries to collide on host matching. Leave blank to avoid
+            // accidental host collisions; other code checks `.empty()`.
             ti->display_host.Set(tmp);
             field->Get(ti->printer_host); field = field->next;
             //field->Get(ti->printer_port); field = field->next;
-	    	ti->printer_port = PORT_VT_DAEMON;
+            ti->printer_port = PORT_VT_DAEMON;
             field->Get(ti->printer_model); field = field->next;
             field->Get(ti->drawers); field = field->next;
             field->Get(ti->dpulse); field = field->next;
@@ -548,10 +595,10 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
             field->Get(ti->cdu_type); field = field->next;
             field->Get(ti->cdu_path); field = field->next;
 
-			field->Get(ti->tax_inclusive[0]); field = field->next;
-			field->Get(ti->tax_inclusive[2]); field = field->next;
-			field->Get(ti->tax_inclusive[1]); field = field->next;
-			field->Get(ti->tax_inclusive[3]); field = field->next;
+            field->Get(ti->tax_inclusive[0]); field = field->next;
+            field->Get(ti->tax_inclusive[2]); field = field->next;
+            field->Get(ti->tax_inclusive[1]); field = field->next;
+            field->Get(ti->tax_inclusive[3]); field = field->next;
 
             if (MasterSystem && MasterSystem->settings.authorize_method == CCAUTH_CREDITCHEQ)
             {
@@ -559,11 +606,11 @@ int HardwareZone::SaveRecord(Terminal *term, int record, int write_file)
                 field->Get(ti->cc_credit_termid); field = field->next;
                 field->Get(ti->cc_debit_termid); field = field->next;
             }
-            // Removed automatic printer_host clearing logic that was causing duplication
-            // Users can now have independent display and printer host settings
-            #ifdef HW_ZONE_DEBUG_MAP
-            printf("HWDBG: Saved TermInfo %p name=%s display_host=%s printer_host=%s\n", (void*)ti, ti->name.Value(), ti->display_host.Value(), ti->printer_host.Value());
-            #endif
+            fprintf(stderr, "DEBUG: HardwareZone::SaveRecord -> saved TermInfo %p AFTER name='%s' display_host='%s' printer_host='%s'\n",
+                    (void*)ti,
+                    ti->name.Value() ? ti->name.Value() : "(null)",
+                    ti->display_host.Value() ? ti->display_host.Value() : "(null)",
+                    ti->printer_host.Value() ? ti->printer_host.Value() : "(null)");
         }
         break;
     case 1:  // remote printer
@@ -866,4 +913,43 @@ Printer *HardwareZone::FindPrinter(Terminal *term)
         return ti->FindPrinter(MasterControl);
 
     return nullptr;
+}
+
+void HardwareZone::RebuildRowToRecord(Terminal *term)
+{
+    Settings *settings = nullptr;
+    if (term)
+        settings = term->GetSettings();
+    if (settings == nullptr)
+        return;
+
+    row_to_record.clear();
+    switch (section)
+    {
+    default:
+    {
+        TermInfo *ti = settings->TermList();
+        int idx = 0;
+        while (ti)
+        {
+            row_to_record.push_back(idx);
+            ti = ti->next;
+            idx++;
+        }
+        break;
+    }
+    case 1:
+    {
+        PrinterInfo *pi = settings->PrinterList();
+        int idx = 0;
+        while (pi)
+        {
+            row_to_record.push_back(idx);
+            pi = pi->next;
+            idx++;
+        }
+        break;
+    }
+    }
+    fprintf(stderr, "DEBUG: HardwareZone::RebuildRowToRecord -> size=%zu\n", row_to_record.size());
 }
