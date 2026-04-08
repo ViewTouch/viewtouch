@@ -3437,6 +3437,18 @@ OrderCommentDialog::OrderCommentDialog(const char* msg, const char* retmsg, int 
     // Increase button height for larger keyboard
     hh = 110;  // Increased from 90 to make buttons bigger
     
+    // Use large bold font for the comment keyboard keys and action buttons
+    for (int i = 0; i < 37; ++i)
+    {
+        if (key[i])
+            key[i]->font = FONT_TIMES_48B;
+    }
+    if (cancelkey) cancelkey->font = FONT_TIMES_48B;
+    if (clearkey)  clearkey->font  = FONT_TIMES_48B;
+    if (spacekey)  spacekey->font  = FONT_TIMES_48B;
+    if (bskey)     bskey->font     = FONT_TIMES_48B;
+    if (enterkey)  enterkey->font  = FONT_TIMES_48B;
+
     // Change labels for Done and Cancel buttons
     if (enterkey)
     {
