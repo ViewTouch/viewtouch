@@ -3583,11 +3583,30 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
             if (comment_order != nullptr)
             {
                 comment_order->item_type = ITEM_MODIFIER;
-                comment_order->call_order = 4;  // Standard call order for modifiers
+                // Choose call_order so comment behaves like a normal modifier:
+                // - If there are existing modifiers, inherit the last modifier's call_order
+                //   so the comment is appended after them.
+                // - Otherwise, inherit the parent order's call_order (usually the
+                //   default for items/modifiers) so it behaves consistently.
+                {
+                    int chosen_call_order = 0;
+                    if (parent_order->modifier_list)
+                    {
+                        Order *m = parent_order->modifier_list;
+                        while (m->next)
+                            m = m->next;
+                        chosen_call_order = m->call_order;
+                    }
+                    else
+                    {
+                        chosen_call_order = parent_order->call_order;
+                    }
+                    comment_order->call_order = static_cast<unsigned char>(chosen_call_order);
+                }
                 comment_order->user_id = (term->user ? term->user->id : 0);
                 comment_order->seat = parent_order->seat;
                 comment_order->page_id = parent_order->page_id;
-                
+
                 // Add the comment as a modifier to the parent order
                 if (parent_order->Add(comment_order) == 0)
                 {

@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+ - **Order Comment: Treat comment modifiers like normal modifiers (2026-04-08)**
+   - Comment modifiers were previously assigned a hardcoded `call_order`, which caused them to be moved to the bottom when new normal modifiers were added. Comments now inherit a contextual `call_order` so they preserve insertion order and behave like normal modifiers.
+   - Files modified: `zone/dialog_zone.cc`
  - **Hardware Zone: Prevent accidental overwrites when switching selections (2026-04-08)**
    - Fixed bug where editing or creating a display/printer then switching selections could overwrite a different record with empty form values.
    - Root Cause: `SaveRecord()` could be called for a record that had not been loaded into the form, combined with transient row→record mapping during list interactions.
