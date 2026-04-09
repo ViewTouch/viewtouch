@@ -27,6 +27,7 @@
 #include <system_error>
 #include <stdexcept>
 #include <type_traits>
+#include <algorithm>    // std::clamp
 
 // Feature detection for C++20/C++23 features
 #ifdef __has_include
