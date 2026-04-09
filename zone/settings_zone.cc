@@ -623,6 +623,8 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         break;
     case SWITCH_AUTO_UPDATE_VT_DATA:
         settings->auto_update_vt_data ^= 1;
+        // Persist change immediately so startup/restart reads the updated preference
+        settings->Save();
         break;
     case SWITCH_BUTTON_IMAGES:
         settings->show_button_images_default ^= 1;
