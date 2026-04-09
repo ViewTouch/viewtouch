@@ -18,6 +18,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
    - Impact: Restarting or shutting down from any display no longer triggers automatic vt_data updates when the setting is OFF.
    - Files modified: `main/data/manager.cc`, `zone/settings_zone.cc`
 
+ - **Default Employees: Only create preset employees when missing (2026-04-09)**
+   - Fixed issue where preset/default employees were created every startup even when `employee.dat` already existed.
+   - Solution: Only create default/preset employees when `employee.dat` is missing.
+   - Files modified: `main/data/manager.cc`
+
  - **Dialog: Fix crash when opening/using Add Comment dialog (2026-04-08)**
    - Prevents a segmentation fault when opening or submitting the Add Comment dialog caused by an uninitialized `key` pointer in `GetTextDialog`.
    - `GetTextDialog` constructors now initialize all entries of `key[]` to `nullptr` to avoid dereferencing uninitialized pointers.
