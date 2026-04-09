@@ -667,8 +667,21 @@ int main(int argc, genericChar* argv[])
         vt::Logger::info("Using default data path: {}", VIEWTOUCH_PATH "/dat");
         MasterSystem->SetDataPath(VIEWTOUCH_PATH "/dat");
     }
+    // Respect fixed settings file when deciding whether to run startup update script
+    bool fixed_auto_update_allowed = true;
+    std::string fixed_settings_path = std::string(VIEWTOUCH_PATH) + "/dat/settings.dat";
+    if (fs::exists(fixed_settings_path)) {
+        Settings temp_settings;
+        if (temp_settings.Load(fixed_settings_path.c_str()) == 0) {
+            fixed_auto_update_allowed = temp_settings.auto_update_vt_data;
+            if (!fixed_auto_update_allowed)
+                ReportError(GlobalTranslate("Startup autoupdate suppressed by fixed settings"));
+        } else {
+            ReportError(GlobalTranslate("Warning: Could not load fixed settings file for startup update decision"));
+        }
+    }
     // Check for updates from server if not disabled
-    if (autoupdate)
+    if (autoupdate && fixed_auto_update_allowed)
     {
         ReportError(GlobalTranslate("Automatic check for updates..."));
 	unlink(VIEWTOUCH_UPDATE_COMMAND);	// out with the old
@@ -681,26 +694,12 @@ int main(int argc, genericChar* argv[])
     // Check if vt_data exists locally first
     bool vt_data_updated = false;
     
-    // Check if auto-update is enabled by loading settings from a fixed location
-    // to ensure consistency across all displays
-    bool auto_update_enabled = true;  // Default to enabled for backward compatibility
-    
-    std::string fixed_settings_path = std::string(VIEWTOUCH_PATH) + "/dat/settings.dat";
-    
-    if (fs::exists(fixed_settings_path)) {
-        Settings temp_settings;
-        if (temp_settings.Load(fixed_settings_path.c_str()) == 0) {
-            auto_update_enabled = temp_settings.auto_update_vt_data;
-            if (!auto_update_enabled) {
-                ReportError(GlobalTranslate("Auto-update of vt_data is disabled in settings"));
-            } else {
-                ReportError(GlobalTranslate("Auto-update of vt_data is enabled in settings"));
-            }
-        } else {
-            ReportError(GlobalTranslate("Warning: Could not load settings file, defaulting to auto-update enabled"));
-        }
+    // Determine whether vt_data auto-update is enabled (reuse earlier fixed setting)
+    bool auto_update_enabled = fixed_auto_update_allowed;
+    if (!auto_update_enabled) {
+        ReportError(GlobalTranslate("Auto-update of vt_data is disabled in settings"));
     } else {
-        ReportError(GlobalTranslate("Warning: Settings file not found, defaulting to auto-update enabled"));
+        ReportError(GlobalTranslate("Auto-update of vt_data is enabled in settings"));
     }
     
     if (!fs::exists(SYSTEM_DATA_FILE)) {
@@ -948,7 +947,12 @@ void UserSignal1(int /*my_signal*/)
             }
         }
         
-        // Exit immediately to trigger restart
+        // Log origin of restart if available, then exit to trigger restart
+        std::string origin = displaystr.data();
+        if (!origin.empty())
+            ReportError(std::string("UserSignal1: Restart requested from display: ") + origin);
+        else
+            ReportError("UserSignal1: Restart requested (unknown display)");
         ReportError("UserSignal1: Exiting for restart");
         exit(0);
     }
@@ -1317,11 +1321,19 @@ int StartSystem(int my_use_net)
     // set developer key (this should be done somewhere else)
     sys->user_db.developer->key = settings->developer_key;
     
-    // Create default users if settings file was just created
-    if (settings_just_created)
+    // Create default users only if no employee database file exists
     {
-        ReportLoader("Creating Default Users");
-        CreateDefaultUsers(sys, settings);
+        std::array<genericChar, STRLENGTH> user_db_path{};
+        sys->FullPath(MASTER_USER_DB, user_db_path.data());
+        if (!DoesFileExist(user_db_path.data()))
+        {
+            ReportLoader("Creating Default Users");
+            CreateDefaultUsers(sys, settings);
+        }
+        else
+        {
+            ReportLoader("Skipping Default Users creation; employee database exists");
+        }
     }
     
     vt_safe_string::safe_format(msg.data(), msg.size(), "%s OK", MASTER_USER_DB);
@@ -1919,9 +1931,17 @@ int FindVTData(InputDataFile *infile)
     if (infile->Open(vt_data_path, version) == 0)
         return version;
 
-    // Only download if we don't have any vt_data file anywhere
-    // This prevents overwriting existing files when offline
-    if (!fs::exists(SYSTEM_DATA_FILE) && !fs::exists(vt_data_path)) {
+    // Only download if we don't have any vt_data file anywhere AND auto-update is allowed
+    // This prevents overwriting existing files when offline or when auto-update is disabled
+    bool allow_download = true;
+    if (MasterSystem != nullptr) {
+        if (MasterSystem->settings.auto_update_vt_data == 0) {
+            allow_download = false;
+        }
+    }
+    if (!allow_download) {
+        fprintf(stderr, "Auto-update disabled by settings, skipping vt_data download in FindVTData\n");
+    } else if (!fs::exists(SYSTEM_DATA_FILE) && !fs::exists(vt_data_path)) {
         // download to official location and then try to read again
         // Try both HTTPS and HTTP for reliable downloads on Raspberry Pi
         const std::string vtdata_url = "www.viewtouch.com/vt_data";
@@ -3560,8 +3580,10 @@ int RunUserCommand()
             AllowLogins = 0;
         else if (strcmp(key.data(), "allowlogin") == 0)
             AllowLogins = 1;
-        else if (strcmp(key.data(), "exitsystem") == 0)
+        else if (strcmp(key.data(), "exitsystem") == 0) {
             exit_system = 1;
+            ReportError("RunUserCommand: External command requested system exit");
+        }
         else if (strcmp(key.data(), "endday") == 0)
             endday = RunEndDay();
         else if (strcmp(key.data(), "runmacros") == 0)

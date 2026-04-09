@@ -7,6 +7,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+ - **Auto-Update vt_data: Prevent automatic updates when disabled (2026-04-09)**
+   - Fixed unexpected vt_data downloads/updates triggered when restarting or shutting down from non-server displays even when "Auto-Update vt_data on Startup" is OFF.
+   - Root Cause: early startup autoupdate script executed based on `.viewtouch_config.autoupdate` before the authoritative fixed settings were consulted; restart flows that use the command file + vtrestart could relaunch `vt_main` which ran the script regardless of the UI toggle.
+   - Solution:
+     - Startup autoupdate now requires both `.viewtouch_config.autoupdate` and the fixed settings file (`/usr/viewtouch/dat/settings.dat`) `auto_update_vt_data` flag to be true before running the update script.
+     - `FindVTData()` now respects `auto_update_vt_data` and will not download `vt_data` when auto-update is disabled.
+     - The UI switch persists immediately (`settings->Save()`), ensuring restarts honor the user's preference.
+     - Added logging when autoupdate is suppressed and when restart origin is recorded for auditing.
+   - Impact: Restarting or shutting down from any display no longer triggers automatic vt_data updates when the setting is OFF.
+   - Files modified: `main/data/manager.cc`, `zone/settings_zone.cc`
+
+ - **Default Employees: Only create preset employees when missing (2026-04-09)**
+   - Fixed issue where preset/default employees were created every startup even when `employee.dat` already existed.
+   - Solution: Only create default/preset employees when `employee.dat` is missing.
+   - Files modified: `main/data/manager.cc`
+
  - **Dialog: Fix crash when opening/using Add Comment dialog (2026-04-08)**
    - Prevents a segmentation fault when opening or submitting the Add Comment dialog caused by an uninitialized `key` pointer in `GetTextDialog`.
    - `GetTextDialog` constructors now initialize all entries of `key[]` to `nullptr` to avoid dereferencing uninitialized pointers.

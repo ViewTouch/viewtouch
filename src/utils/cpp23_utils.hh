@@ -27,12 +27,16 @@
 #include <system_error>
 #include <stdexcept>
 #include <type_traits>
+#include <algorithm>    // std::clamp
 
 // Feature detection for C++20/C++23 features
 #ifdef __has_include
 #  if __has_include(<format>)
 #    include <format>
 #    define VT_HAS_STD_FORMAT 1
+#  elif __has_include(<fmt/format.h>)
+#    include <fmt/format.h>
+#    define VT_HAS_FMTLIB 1
 #  endif
 #endif
 
@@ -111,62 +115,32 @@ template<typename E>
 // String Formatting (C++20 std::format, enhanced in C++23)
 // ============================================================================
 
-/**
- * @brief Type-safe string formatting using std::format
- * 
- * Modern replacement for sprintf/snprintf with compile-time format checking.
- * 
- * @param fmt Format string
- * @param args Arguments to format
- * @return Formatted string
- * 
- * Example:
- *   auto str = format("Account {} of {}", account_no, total);
- *   auto price = format("Price: ${:.2f}", 19.99);
- */
+// String formatting utilities: provide implementations using std::format (C++20/23)
+// or fall back to {fmt} if available. If neither is present, provide a
+// minimal snprintf-based fallback for simple formatting.
+
+#if defined(VT_HAS_STD_FORMAT)
+
 template<typename... Args>
 [[nodiscard]] std::string format(std::format_string<Args...> fmt, Args&&... args) {
     return std::format(fmt, std::forward<Args>(args)...);
 }
 
-/**
- * @brief Format to an existing string (more efficient, no allocation)
- * 
- * @param str Output string (will be cleared and reused)
- * @param fmt Format string
- * @param args Arguments to format
- */
 template<typename... Args>
 void format_to(std::string& str, std::format_string<Args...> fmt, Args&&... args) {
     str.clear();
     std::format_to(std::back_inserter(str), fmt, std::forward<Args>(args)...);
 }
 
-/**
- * @brief Format with fixed-size buffer (for stack allocation)
- * 
- * Safe replacement for snprintf() with automatic truncation.
- * Returns number of characters that would have been written (like snprintf).
- * 
- * @param buffer Output buffer
- * @param size Buffer size
- * @param fmt Format string  
- * @param args Arguments to format
- * @return Number of characters written (excluding null terminator)
- * 
- * Example:
- *   char buffer[256];
- *   format_to_buffer(buffer, sizeof(buffer), "Account {}", acct_num);
- */
 template<typename... Args>
 [[nodiscard]] std::size_t format_to_buffer(
-    char* buffer, 
+    char* buffer,
     std::size_t size,
-    std::format_string<Args...> fmt, 
-    Args&&... args) 
+    std::format_string<Args...> fmt,
+    Args&&... args)
 {
     if (size == 0) return 0;
-    
+
     try {
         auto result = std::format_to_n(buffer, size - 1, fmt, std::forward<Args>(args)...);
         buffer[result.size < size ? result.size : size - 1] = '\0';
@@ -176,6 +150,82 @@ template<typename... Args>
         return 0;
     }
 }
+
+#elif defined(VT_HAS_FMTLIB)
+
+// Use {fmt} library as a compatible fallback.
+template<typename... Args>
+[[nodiscard]] std::string format(fmt::format_string<Args...> fmt_s, Args&&... args) {
+    return fmt::format(fmt_s, std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+void format_to(std::string& str, fmt::format_string<Args...> fmt_s, Args&&... args) {
+    str.clear();
+    fmt::format_to(std::back_inserter(str), fmt_s, std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+[[nodiscard]] std::size_t format_to_buffer(
+    char* buffer,
+    std::size_t size,
+    fmt::format_string<Args...> fmt_s,
+    Args&&... args)
+{
+    if (size == 0) return 0;
+
+    try {
+        auto result = fmt::format_to_n(buffer, size - 1, fmt_s, std::forward<Args>(args)...);
+        buffer[result.size < size ? result.size : size - 1] = '\0';
+        return result.size;
+    } catch (...) {
+        buffer[0] = '\0';
+        return 0;
+    }
+}
+
+#else
+
+// Minimal fallback: use snprintf-style formatting. This does NOT support
+// Python-style formatting ("{}") and is a degraded fallback for older
+// compilers without std::format or {fmt}. It keeps the code compiling but
+// callers should prefer environments with std::format or fmt available.
+#include <cstdio>
+
+template<typename... Args>
+[[nodiscard]] std::string format(const char* fmt_cstr, Args&&... args) {
+    // Estimate required size
+    int size = std::snprintf(nullptr, 0, fmt_cstr, std::forward<Args>(args)...);
+    if (size <= 0) return std::string();
+    std::string out;
+    out.resize(static_cast<std::size_t>(size));
+    std::snprintf(out.data(), out.size() + 1, fmt_cstr, std::forward<Args>(args)...);
+    return out;
+}
+
+template<typename... Args>
+void format_to(std::string& str, const char* fmt_cstr, Args&&... args) {
+    str = format(fmt_cstr, std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+[[nodiscard]] std::size_t format_to_buffer(
+    char* buffer,
+    std::size_t size,
+    const char* fmt_cstr,
+    Args&&... args)
+{
+    if (size == 0) return 0;
+    int n = std::snprintf(buffer, size, fmt_cstr, std::forward<Args>(args)...);
+    if (n < 0) {
+        buffer[0] = '\0';
+        return 0;
+    }
+    if (static_cast<std::size_t>(n) >= size) buffer[size - 1] = '\0';
+    return static_cast<std::size_t>(n);
+}
+
+#endif
 
 // ============================================================================
 // Error Handling with std::expected
