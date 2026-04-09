@@ -1321,11 +1321,19 @@ int StartSystem(int my_use_net)
     // set developer key (this should be done somewhere else)
     sys->user_db.developer->key = settings->developer_key;
     
-    // Create default users if settings file was just created
-    if (settings_just_created)
+    // Create default users only if no employee database file exists
     {
-        ReportLoader("Creating Default Users");
-        CreateDefaultUsers(sys, settings);
+        std::array<genericChar, STRLENGTH> user_db_path{};
+        sys->FullPath(MASTER_USER_DB, user_db_path.data());
+        if (!DoesFileExist(user_db_path.data()))
+        {
+            ReportLoader("Creating Default Users");
+            CreateDefaultUsers(sys, settings);
+        }
+        else
+        {
+            ReportLoader("Skipping Default Users creation; employee database exists");
+        }
     }
     
     vt_safe_string::safe_format(msg.data(), msg.size(), "%s OK", MASTER_USER_DB);
