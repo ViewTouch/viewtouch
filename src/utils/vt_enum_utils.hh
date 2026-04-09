@@ -133,11 +133,11 @@ std::optional<E> IntToEnum(int value) {
 template<typename E>
     requires std::is_enum_v<E>
 constexpr auto EnumToUnderlying(E value) noexcept {
-    if constexpr (requires { std::to_underlying(value); }) {
-        return std::to_underlying(value);
-    } else {
-        return static_cast<std::underlying_type_t<E>>(value);
-    }
+#if defined(__cpp_lib_to_underlying)
+    return std::to_underlying(value);
+#else
+    return static_cast<std::underlying_type_t<E>>(value);
+#endif
 }
 
 /**
