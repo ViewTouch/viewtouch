@@ -5833,6 +5833,11 @@ int Order::Add(Order *order)
     FnTrace("Order::Add()");
     if (order == nullptr)
         return 1;  // Add failed
+    if (debug_mode)
+    {
+        fprintf(stderr, "DEBUG: Order::Add(this=%p, order=%p, call_order=%d, modifier_list=%p)\\n",
+                (void*)this, (void*)order, (int)order->call_order, (void*)modifier_list);
+    }
 
     // start at end of list and work backwords
     Order *ptr = modifier_list;
@@ -5843,6 +5848,8 @@ int Order::Add(Order *order)
         while (ptr && order->call_order < ptr->call_order)
             ptr = ptr->fore;
     }
+    if (debug_mode)
+        fprintf(stderr, "DEBUG: Order::Add selected ptr=%p\\n", (void*)ptr);
 
     // Insert order after ptr
     order->parent = this;
@@ -5860,6 +5867,9 @@ int Order::Add(Order *order)
 
     if (order->next)
         order->next->fore = order;
+    if (debug_mode)
+        fprintf(stderr, "DEBUG: Order::Add done parent=%p next=%p fore=%p modifier_list=%p\\n",
+                (void*)order->parent, (void*)order->next, (void*)order->fore, (void*)modifier_list);
     return FigureCost();
 }
 
