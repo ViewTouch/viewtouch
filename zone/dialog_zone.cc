@@ -989,6 +989,8 @@ GetTextDialog::GetTextDialog()
 {
     FnTrace("GetTextDialog::GetTextDialog()");
     int i;
+    for (i = 0; i < 37; ++i)
+        key[i] = nullptr;
 
     lit = nullptr;
     w   = 950;
@@ -1023,6 +1025,8 @@ GetTextDialog::GetTextDialog(const char* msg, const char* retmsg, int mlen)
 {
     FnTrace("GetTextDialog::GetTextDialog(const char* )");
     int i;
+    for (i = 0; i < 37; ++i)
+        key[i] = nullptr;
 
     lit = nullptr;
     w   = 950;
@@ -3564,6 +3568,14 @@ RenderResult OrderCommentDialog::Render(Terminal *term, int update_flag)
 SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* message)
 {
     FnTrace("OrderCommentDialog::Signal()");
+    if (debug_mode)
+    {
+        int bprint = buffidx;
+        if (bprint > 200) bprint = 200;
+        fprintf(stderr, "DEBUG: OrderCommentDialog::Signal term=%p check=%p order=%p buffidx=%d buffer='%.*s'\\n",
+                (void*)term, (void*)(term ? term->check : nullptr), (void*)(term ? term->order : nullptr),
+                buffidx, bprint, buffer);
+    }
     SignalResult retval = SIGNAL_OKAY;
     static const genericChar* commands[] = {
         "backspace", "clear", "enter", "cancel", nullptr};
@@ -3589,6 +3601,12 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
             // Make sure we're working with the parent order, not a modifier
             if (parent_order->parent)
                 parent_order = parent_order->parent;
+            if (debug_mode)
+            {
+                fprintf(stderr, "DEBUG: OrderCommentDialog::Signal parent_order=%p parent=%p modifier_list=%p\\n",
+                        (void*)parent_order, (void*)(parent_order ? parent_order->parent : nullptr),
+                        (void*)(parent_order ? parent_order->modifier_list : nullptr));
+            }
             
             // Create a new modifier order with the comment text
             Order *comment_order = new Order(buffer, 0);  // Price is 0 for comments
@@ -3623,6 +3641,9 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
                 if (parent_order->Add(comment_order) == 0)
                 {
                     // Successfully added - update totals and display
+                    if (debug_mode)
+                        fprintf(stderr, "DEBUG: OrderCommentDialog::Signal comment_order=%p added to parent=%p\\n",
+                                (void*)comment_order, (void*)parent_order);
                     SubCheck *sc = term->check->current_sub;
                     if (sc != nullptr)
                     {
@@ -3634,6 +3655,9 @@ SignalResult OrderCommentDialog::Signal(Terminal *term, const genericChar* messa
                 else
                 {
                     // Failed to add - clean up
+                    if (debug_mode)
+                        fprintf(stderr, "DEBUG: OrderCommentDialog::Signal parent_order->Add failed, deleting comment_order=%p\\n",
+                                (void*)comment_order);
                     delete comment_order;
                 }
             }

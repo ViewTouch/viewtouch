@@ -2866,6 +2866,9 @@ int Terminal::NextDialog(Zone *currZone)
 int Terminal::KillDialog()
 {
     FnTrace("Terminal::KillDialog()");
+    if (debug_mode)
+        fprintf(stderr, "DEBUG: Terminal::KillDialog(this=%p, dialog=%p, next_dialog=%p)\\n",
+                (void*)this, (void*)dialog, (void*)next_dialog);
     int jump_index = 0;
     char next_signal[STRLENGTH];
 
@@ -2880,17 +2883,26 @@ int Terminal::KillDialog()
     {
         jump_index = dlg->target_index;
         vt_safe_string::safe_copy(next_signal, STRLENGTH, dlg->target_signal);
+        if (debug_mode)
+            fprintf(stderr, "DEBUG: Terminal::KillDialog dynamic_cast DialogZone dlg=%p target_index=%d next_signal='%s'\\n",
+                    (void*)dlg, jump_index, next_signal);
     }
     else
     {
         next_signal[0] = '\0';
+        if (debug_mode)
+            fprintf(stderr, "DEBUG: Terminal::KillDialog dialog is not DialogZone, pointer=%p\\n", (void*)dialog);
     }
 
     RegionInfo r(dialog);
     r.w += dialog->shadow;
     r.h += dialog->shadow;
+    if (debug_mode)
+        fprintf(stderr, "DEBUG: Terminal::KillDialog deleting dialog=%p\\n", (void*)dialog);
     delete dialog;
     dialog = nullptr;
+    if (debug_mode)
+        fprintf(stderr, "DEBUG: Terminal::KillDialog dialog deleted, proceeding to Draw/Update\\n");
     
     Draw(1);
     UpdateAll();

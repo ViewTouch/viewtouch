@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Fixed
+ - **Dialog: Fix crash when opening/using Add Comment dialog (2026-04-08)**
+   - Prevents a segmentation fault when opening or submitting the Add Comment dialog caused by an uninitialized `key` pointer in `GetTextDialog`.
+   - `GetTextDialog` constructors now initialize all entries of `key[]` to `nullptr` to avoid dereferencing uninitialized pointers.
+   - Files modified: `zone/dialog_zone.cc`
+
  - **Order Comment: Treat comment modifiers like normal modifiers (2026-04-08)**
    - Comment modifiers were previously assigned a hardcoded `call_order`, which caused them to be moved to the bottom when new normal modifiers were added. Comments now inherit a contextual `call_order` so they preserve insertion order and behave like normal modifiers.
    - Files modified: `zone/dialog_zone.cc`
