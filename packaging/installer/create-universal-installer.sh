@@ -42,7 +42,7 @@ cat > "$BUILD_DIR/installer-main.sh" << 'INSTALLER_EOF'
 set -euo pipefail
 
 # Installer configuration
-VIEWTOUCH_VERSION="25.02.0"
+VIEWTOUCH_VERSION="25.02.1"
 INSTALL_PREFIX="/usr/viewtouch"
 TEMP_DIR="/tmp/viewtouch-install-$$"
 
@@ -102,7 +102,7 @@ setup_package_manager() {
         PKG_MANAGER="apt"
         PKG_UPDATE="apt-get update"
         PKG_INSTALL="apt-get install -y"
-        PACKAGES="build-essential cmake git libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev libfreetype6-dev libfontconfig1-dev zlib1g-dev libmotif-dev libcurl4-openssl-dev pkg-config"
+        PACKAGES="build-essential cmake git libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev libfreetype6-dev libfontconfig1-dev zlib1g-dev libmotif-dev libcurl4-openssl-dev pkg-config g++ clang"
     elif command -v dnf >/dev/null 2>&1; then
         PKG_MANAGER="dnf"
         PKG_UPDATE="dnf check-update || true"
