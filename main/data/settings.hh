@@ -30,7 +30,7 @@
 // NOTE:  WHEN UPDATING SETTINGS DO NOT FORGET that you may also
 // need to update archive.hh and archive.cc for settings which
 // should be maintained historically.
-constexpr int SETTINGS_VERSION = 106;  // READ ABOVE
+constexpr int SETTINGS_VERSION = 107;  // READ ABOVE
 
 
 /**** Definitions & Data ****/
@@ -166,6 +166,7 @@ enum DrawerMode : std::uint8_t {
 #define SWITCH_F3_F4_RECORDING   32 // whether to enable F3/F4 recording/replay feature
 #define SWITCH_AUTO_UPDATE_VT_DATA 33 // whether to automatically download vt_data on startup
 #define SWITCH_BUTTON_IMAGES       34 // toggle showing images on buttons
+#define SWITCH_ALLOW_MULTI_LOGIN   35 // allow same user to login on multiple terminals
 
 #define MOD_SEPARATE_NL           1 // New line
 #define MOD_SEPARATE_CM           2 // Comma
@@ -623,6 +624,9 @@ public:
     int fast_takeouts;           // whether to use FastFood mode for takeouts
     int split_check_view;        // default to item or seat list for SplitCheckZone?
     int allow_multi_coupons;
+
+    // Allow same employee to be logged into multiple terminals when set
+    int allow_multi_login;
 
     // allow_user_select is primarily for ExpenseZone, but may be used elsewhere
     int allow_user_select;       // yes == user selection, no == force term->user

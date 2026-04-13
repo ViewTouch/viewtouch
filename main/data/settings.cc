@@ -1459,6 +1459,7 @@ Settings::Settings()
     expire_message3.Set("541-515-5913");
     expire_message4.Set("");
     allow_multi_coupons = 0;
+    allow_multi_login = 0;
     cc_print_custinfo       = 0;
 
     for (i = 0; i < MAX_CDU_LINES; i++)
@@ -2132,6 +2133,8 @@ int Settings::Load(const char* file)
         df.Read(report_start_midnight);
     if (version >= 79)
         df.Read(allow_multi_coupons);
+    if (version >= 107)
+        df.Read(allow_multi_login);
     if (version >= 82)
         df.Read(allow_iconify);
     if (version >= 96)
@@ -2527,6 +2530,7 @@ int Settings::Save()
     df.Write(cc_bar_mode);
     df.Write(report_start_midnight);
     df.Write(allow_multi_coupons);
+    df.Write(allow_multi_login);
     df.Write(allow_iconify);
     df.Write(use_embossed_text);
     df.Write(use_text_antialiasing);

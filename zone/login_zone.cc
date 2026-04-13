@@ -417,7 +417,7 @@ int LoginZone::ClockOn(Terminal *term, int job_no)
     }
     else
     {
-        if (term->IsUserOnline(employee) && term->user != employee)
+        if (term->IsUserOnline(employee) && term->user != employee && !settings->allow_multi_login)
         {
             state = STATE_ON_ANOTHER_TERM;
             Draw(term, 0);
@@ -494,7 +494,7 @@ int LoginZone::ClockOff(Terminal *term)
             state = STATE_NOT_ON_CLOCK;
         else if (sys->CountOpenChecks(employee) > 0)
             state = STATE_OPEN_CHECK;
-        else if (term->IsUserOnline(employee) && term->user != employee)
+        else if (term->IsUserOnline(employee) && term->user != employee && !sys->settings.allow_multi_login)
             state = STATE_ON_ANOTHER_TERM;
         else if (term->NeedDrawerBalanced(employee))
             state = STATE_NEED_BALANCE;
@@ -634,7 +634,7 @@ int LoginZone::Start(Terminal *term, short expedite)
 
         return 0;
     }
-    else if (term->IsUserOnline(employee))
+    else if (term->IsUserOnline(employee) && !settings->allow_multi_login)
     {
         // user already logged into another term
         state = STATE_ON_ANOTHER_TERM;

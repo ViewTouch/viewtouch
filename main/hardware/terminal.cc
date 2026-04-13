@@ -2043,7 +2043,16 @@ int Terminal::LoginUser(Employee *employee, bool home_page)
     if (AllowLogins == 0)
         return 1;
 
-    if (employee == nullptr || (user != employee && parent->IsUserOnline(employee)))
+    if (employee == nullptr)
+        return 1;
+
+    // Check whether multiple logins are allowed via settings
+    Settings *s = GetSettings();
+    int allow_multi = 0;
+    if (s)
+        allow_multi = s->allow_multi_login;
+
+    if (user != employee && parent != nullptr && parent->IsUserOnline(employee) && !allow_multi)
         return 1;  // User already online on another terminal
 
     if (user != nullptr && user != employee)
