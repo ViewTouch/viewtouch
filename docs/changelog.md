@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Work In Progress
+- **Allow Multiple Terminal Logins (experimental)** (2026-04-12)
+  - Added a persisted soft-switch `allow_multi_login` (bumped `SETTINGS_VERSION` to 107) which allows the same `Employee` to be logged into multiple terminals when enabled.
+  - Exposed a new Settings switch **Allow Multiple Logins** in the Settings UI (toggles and persists immediately).
+  - Login logic updated so `Terminal::LoginUser` and login UI checks consult `settings->allow_multi_login` before rejecting a login for a user already online.
+  - Files modified: `main/data/settings.hh`, `main/data/settings.cc`, `main/ui/labels.cc`, `zone/settings_zone.cc`, `main/hardware/terminal.cc`, `zone/login_zone.cc`.
+  - NOTE: This feature is experimental and a work in progress — bugs are likely. Use with caution and report any issues you encounter.
+
 ### Fixed
  - **Auto-Update vt_data: Prevent automatic updates when disabled (2026-04-09)**
    - Fixed unexpected vt_data downloads/updates triggered when restarting or shutting down from non-server displays even when "Auto-Update vt_data on Startup" is OFF.

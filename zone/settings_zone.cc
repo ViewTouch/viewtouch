@@ -271,6 +271,9 @@ RenderResult SwitchZone::Render(Terminal *term, int update_flag)
     case SWITCH_ALLOW_MULT_COUPON:
         onoff = settings->allow_multi_coupons;
         break;
+    case SWITCH_ALLOW_MULTI_LOGIN:
+        onoff = settings->allow_multi_login;
+        break;
     case SWITCH_RECEIPT_ALL_MODS:
         onoff = settings->receipt_all_modifiers;
         break;
@@ -594,6 +597,11 @@ SignalResult SwitchZone::Touch(Terminal *term, int /*tx*/, int /*ty*/)
         break;
     case SWITCH_ALLOW_MULT_COUPON:
         settings->allow_multi_coupons ^= 1;
+        break;
+    case SWITCH_ALLOW_MULTI_LOGIN:
+        settings->allow_multi_login ^= 1;
+        // Persist immediately so change survives restarts
+        settings->Save();
         break;
     case SWITCH_RECEIPT_ALL_MODS:
         settings->receipt_all_modifiers ^= 1;

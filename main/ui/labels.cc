@@ -448,6 +448,7 @@ const genericChar* SwitchName[] = {
     "24 Hour Mode", "Item Targeting",
     "Expand Goodwill Adjustments", "Monetary Symbol",
     "Show Modifiers", "Allow Multiple Coupons",
+    "Allow Multiple Logins",
     "Print All Modifiers on Receipt", "Auto Print Drawer Report",
     "Balance Automatic Coupons", "Enable F3/F4 Recording/Replay", "Auto-Update vt_data on Startup",
     "Show Button Images", nullptr};
@@ -462,6 +463,7 @@ int SwitchValue[] = {
     SWITCH_MEASUREMENTS, SWITCH_AUTHORIZE_METHOD, SWITCH_24HOURS,
     SWITCH_ITEM_TARGET, SWITCH_GOODWILL, SWITCH_MONEY_SYMBOL,
     SWITCH_SHOW_MODIFIERS, SWITCH_ALLOW_MULT_COUPON,
+    SWITCH_ALLOW_MULTI_LOGIN,
     SWITCH_RECEIPT_ALL_MODS, SWITCH_DRAWER_PRINT,
     SWITCH_BALANCE_AUTO_CPNS, SWITCH_F3_F4_RECORDING, SWITCH_AUTO_UPDATE_VT_DATA,
     SWITCH_BUTTON_IMAGES, -1};
