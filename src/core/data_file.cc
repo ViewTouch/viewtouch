@@ -720,7 +720,7 @@ bool KeyValueInputFile::Open()
     if (!inputfile.empty())
     {
         filedes = open(inputfile.c_str(), O_RDONLY);
-        if (filedes > 0)
+        if (filedes >= 0)
         {
             retval = true;
             bytesread = 0;

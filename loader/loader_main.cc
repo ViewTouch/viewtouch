@@ -24,6 +24,7 @@
 #include "locale.hh"
 #include "src/utils/vt_logger.hh"
 #include "src/utils/cpp23_utils.hh"
+#include <spdlog/spdlog.h>
 
 #include "version/vt_version_info.hh"
 
@@ -40,6 +41,7 @@ static int shadow_blur_radius = 1;
 #include <X11/keysym.h>
 #include <X11/Shell.h>
 #include <X11/Xft/Xft.h>
+#include "src/core/x11_safe.hh"
 #include <Xm/MainW.h>
 #include <Xm/MwmUtil.h>
 #include <Xm/Xm.h>
@@ -76,10 +78,35 @@ Display     *Dis = nullptr;
 XftFont     *loaderFont = nullptr;
 XftDraw     *xftdraw = nullptr;
 XftColor     xftBlack, xftWhite;
+bool         xftBlackOk = false;
+bool         xftWhiteOk = false;
 int          screen_no        = 0;
 int          ColorBlack       = 0;
 Widget       statusShell = nullptr;
 XtAppContext appContext = nullptr;
+
+// Previous X error handler (to chain non-render errors)
+static int (*prevXErrorHandler)(Display*, XErrorEvent*) = nullptr;
+
+// Custom X error handler: log errors and ignore Render FreePicture errors
+static int LoaderXErrorHandler(Display* dpy, XErrorEvent* ev)
+{
+    char buf[256] = {0};
+    XGetErrorText(dpy, ev->error_code, buf, sizeof(buf));
+    logmsg(LOG_ERR, "X error: request=%d minor=%d error=%d (%s) resource=%lu",
+           ev->request_code, ev->minor_code, ev->error_code, buf, ev->resourceid);
+
+    // Render extension major opcode is environment-dependent; ignore the
+    // specific RenderFreePicture error observed in the field (minor=7).
+    if (ev->minor_code == 7) {
+        logmsg(LOG_DEBUG, "Ignoring RenderFreePicture X error (resource=0x%lx)", ev->resourceid);
+        return 0; // Ignore and continue
+    }
+
+    if (prevXErrorHandler)
+        return prevXErrorHandler(dpy, ev);
+    return 0;
+}
 
 // Enhanced text rendering functions for loader
 void LoaderDrawStringEnhanced(XftDraw *draw, XftFont *xftfont, XftColor *color, 
@@ -104,67 +131,120 @@ void LoaderDrawStringEnhanced(XftDraw *draw, XftFont *xftfont, XftColor *color,
         frosted_color.blue = color->color.blue + ((65535 - color->color.blue) * 2) / 5;   // Add 40% brightness
         frosted_color.alpha = (color->color.alpha * 9) / 10;
         
-        XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &shadow_color, &xft_shadow);
-        XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &frosted_color, &xft_frosted);
-        
-        // Draw shadow
-        XftDrawStringUtf8(draw, &xft_shadow, xftfont, x + 1, y + 1, (const FcChar8*)str, length);
-        XftDrawStringUtf8(draw, &xft_shadow, xftfont, x + 2, y + 1, (const FcChar8*)str, length);
-        XftDrawStringUtf8(draw, &xft_shadow, xftfont, x + 1, y + 2, (const FcChar8*)str, length);
-        
-        // Draw frosted highlight
-        XftDrawStringUtf8(draw, &xft_frosted, xftfont, x - 1, y - 1, (const FcChar8*)str, length);
-        XftDrawStringUtf8(draw, &xft_frosted, xftfont, x - 2, y - 1, (const FcChar8*)str, length);
-        XftDrawStringUtf8(draw, &xft_frosted, xftfont, x - 1, y - 2, (const FcChar8*)str, length);
-        
-        // Draw main text
-        XftDrawStringUtf8(draw, color, xftfont, x, y, (const FcChar8*)str, length);
-        
-        XftColorFree(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xft_shadow);
-        XftColorFree(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xft_frosted);
+        Bool ok_shadow = XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &shadow_color, &xft_shadow);
+        Bool ok_frosted = XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &frosted_color, &xft_frosted);
+
+        // Draw shadow (only if allocation succeeded)
+        if (ok_shadow) {
+            XftDrawStringUtf8(draw, &xft_shadow, xftfont, x + 1, y + 1, (const FcChar8*)str, length);
+            XftDrawStringUtf8(draw, &xft_shadow, xftfont, x + 2, y + 1, (const FcChar8*)str, length);
+            XftDrawStringUtf8(draw, &xft_shadow, xftfont, x + 1, y + 2, (const FcChar8*)str, length);
+        }
+
+        // Draw frosted highlight (only if allocation succeeded)
+        if (ok_frosted) {
+            XftDrawStringUtf8(draw, &xft_frosted, xftfont, x - 1, y - 1, (const FcChar8*)str, length);
+            XftDrawStringUtf8(draw, &xft_frosted, xftfont, x - 2, y - 1, (const FcChar8*)str, length);
+            XftDrawStringUtf8(draw, &xft_frosted, xftfont, x - 1, y - 2, (const FcChar8*)str, length);
+        }
+
+        // Draw main text (only if main color appears valid; otherwise fallback)
+        bool main_ok = true;
+        if (color == &xftBlack) main_ok = xftBlackOk;
+        else if (color == &xftWhite) main_ok = xftWhiteOk;
+        if (main_ok) {
+            XftDrawStringUtf8(draw, color, xftfont, x, y, (const FcChar8*)str, length);
+        } else {
+            Window win = XtWindow(statusShell);
+            GC gc = XCreateGC(Dis, win, 0, nullptr);
+            XSetForeground(Dis, gc, (color == &xftWhite) ? WhitePixel(Dis, screen_no) : BlackPixel(Dis, screen_no));
+            XDrawString(Dis, win, gc, x, y, str, length);
+            XFreeGC(Dis, gc);
+        }
+
+        if (ok_shadow) XftColorFreeSafe(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xft_shadow);
+        if (ok_frosted) XftColorFreeSafe(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xft_frosted);
     } else if (use_drop_shadows) {
         // Create drop shadow effect
         XRenderColor shadow_color;
         XftColor xft_shadow;
-        
+
         shadow_color.red = (color->color.red * 1) / 4;
         shadow_color.green = (color->color.green * 1) / 4;
         shadow_color.blue = (color->color.blue * 1) / 4;
         shadow_color.alpha = color->color.alpha;
-        
-        XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &shadow_color, &xft_shadow);
-        
-        // Draw shadow with blur
-        for (int blur = 0; blur <= shadow_blur_radius; blur++) {
-            int blur_offset = blur * 2;
-            XftDrawStringUtf8(draw, &xft_shadow, xftfont, 
-                             x + shadow_offset_x - blur_offset, y + shadow_offset_y - blur_offset, 
-                             (const FcChar8*)str, length);
-            XftDrawStringUtf8(draw, &xft_shadow, xftfont, 
-                             x + shadow_offset_x + blur_offset, y + shadow_offset_y + blur_offset, 
-                             (const FcChar8*)str, length);
+
+        Bool ok_shadow = XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &shadow_color, &xft_shadow);
+
+        // Draw shadow with blur (only if allocation succeeded)
+        if (ok_shadow) {
+            for (int blur = 0; blur <= shadow_blur_radius; blur++) {
+                int blur_offset = blur * 2;
+                XftDrawStringUtf8(draw, &xft_shadow, xftfont, 
+                                 x + shadow_offset_x - blur_offset, y + shadow_offset_y - blur_offset, 
+                                 (const FcChar8*)str, length);
+                XftDrawStringUtf8(draw, &xft_shadow, xftfont, 
+                                 x + shadow_offset_x + blur_offset, y + shadow_offset_y + blur_offset, 
+                                 (const FcChar8*)str, length);
+            }
         }
-        
-        // Draw main text
-        XftDrawStringUtf8(draw, color, xftfont, x, y, (const FcChar8*)str, length);
-        
-        XftColorFree(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xft_shadow);
+
+        bool main_ok = true;
+        if (color == &xftBlack) main_ok = xftBlackOk;
+        else if (color == &xftWhite) main_ok = xftWhiteOk;
+        if (main_ok) {
+            XftDrawStringUtf8(draw, color, xftfont, x, y, (const FcChar8*)str, length);
+        } else {
+            Window win = XtWindow(statusShell);
+            GC gc = XCreateGC(Dis, win, 0, nullptr);
+            XSetForeground(Dis, gc, (color == &xftWhite) ? WhitePixel(Dis, screen_no) : BlackPixel(Dis, screen_no));
+            XDrawString(Dis, win, gc, x, y, str, length);
+            XFreeGC(Dis, gc);
+        }
+
+        if (ok_shadow) XftColorFreeSafe(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xft_shadow);
     } else if (use_text_antialiasing) {
         // Enhanced anti-aliased text
         XRenderColor enhanced_color;
         XftColor xft_enhanced;
-        
+
         enhanced_color.red = (color->color.red * 95) / 100;
         enhanced_color.green = (color->color.green * 95) / 100;
         enhanced_color.blue = (color->color.blue * 95) / 100;
         enhanced_color.alpha = color->color.alpha;
-        
-        XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &enhanced_color, &xft_enhanced);
-        XftDrawStringUtf8(draw, &xft_enhanced, xftfont, x, y, (const FcChar8*)str, length);
-        XftColorFree(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xft_enhanced);
+
+        Bool ok_enhanced = XftColorAllocValue(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &enhanced_color, &xft_enhanced);
+        if (ok_enhanced) {
+            XftDrawStringUtf8(draw, &xft_enhanced, xftfont, x, y, (const FcChar8*)str, length);
+            XftColorFreeSafe(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xft_enhanced);
+        } else {
+            bool main_ok = true;
+            if (color == &xftBlack) main_ok = xftBlackOk;
+            else if (color == &xftWhite) main_ok = xftWhiteOk;
+            if (main_ok) {
+                XftDrawStringUtf8(draw, color, xftfont, x, y, (const FcChar8*)str, length);
+            } else {
+                Window win = XtWindow(statusShell);
+                GC gc = XCreateGC(Dis, win, 0, nullptr);
+                XSetForeground(Dis, gc, (color == &xftWhite) ? WhitePixel(Dis, screen_no) : BlackPixel(Dis, screen_no));
+                XDrawString(Dis, win, gc, x, y, str, length);
+                XFreeGC(Dis, gc);
+            }
+        }
     } else {
         // Standard rendering
-        XftDrawStringUtf8(draw, color, xftfont, x, y, (const FcChar8*)str, length);
+        bool main_ok = true;
+        if (color == &xftBlack) main_ok = xftBlackOk;
+        else if (color == &xftWhite) main_ok = xftWhiteOk;
+        if (main_ok) {
+            XftDrawStringUtf8(draw, color, xftfont, x, y, (const FcChar8*)str, length);
+        } else {
+            Window win = XtWindow(statusShell);
+            GC gc = XCreateGC(Dis, win, 0, nullptr);
+            XSetForeground(Dis, gc, (color == &xftWhite) ? WhitePixel(Dis, screen_no) : BlackPixel(Dis, screen_no));
+            XDrawString(Dis, win, gc, x, y, str, length);
+            XFreeGC(Dis, gc);
+        }
     }
 }
 int ColorWhite = 1;
@@ -192,13 +272,11 @@ void ExitLoader()
 
     if (xftdraw) {
         logmsg(LOG_DEBUG, "Freeing 'black' XftColor\n");
-        XftColorFree(Dis, DefaultVisual(Dis, screen_no),
-            DefaultColormap(Dis, screen_no), &xftBlack);
+        if (xftBlackOk) XftColorFreeSafe(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xftBlack);
         logmsg(LOG_DEBUG, "Freeing 'white' XftColor\n");
-        XftColorFree(Dis, DefaultVisual(Dis, screen_no),
-            DefaultColormap(Dis, screen_no), &xftWhite);
+        if (xftWhiteOk) XftColorFreeSafe(Dis, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no), &xftWhite);
         logmsg(LOG_DEBUG, "Freeing XftDraw *\n");
-        XftDrawDestroy(xftdraw);
+        XftDrawDestroySafe(Dis, xftdraw);
         xftdraw = nullptr;
         logmsg(LOG_DEBUG, "Closing Xft loader font\n");
         XftFontClose(Dis, loaderFont);
@@ -213,8 +291,14 @@ void ExitLoader()
     }
     
     if (Dis) {
-        logmsg(LOG_DEBUG, "Closing X display\n");
-        XCloseDisplay(Dis);
+        // Avoid shutting down spdlog or attempting to close the X display
+        // here; other parts of the system may still be running and still
+        // expect the logger to be available. Keep ExitLoader minimal and
+        // let the main process perform coordinated shutdown.
+        logmsg(LOG_DEBUG, "Skipping XCloseDisplay in loader ExitLoader to avoid races\n");
+        // We flush the loader's status before exit, but do not stop the
+        // global logging thread pool here.
+        try { vt::Logger::Flush(); } catch(...) {}
         Dis = nullptr;
     }
     exit(0);
@@ -228,7 +312,15 @@ int UpdateWindow(const char* str = nullptr)
         Message[Message.size() - 1] = '\0';  // Ensure null termination
     }
 
-    XftDrawRect(xftdraw, &xftWhite, 0, 0, WIN_WIDTH, WIN_HEIGHT);
+    if (xftWhiteOk) {
+        XftDrawRect(xftdraw, &xftWhite, 0, 0, WIN_WIDTH, WIN_HEIGHT);
+    } else {
+        Window win = XtWindow(statusShell);
+        GC gc = XCreateGC(Dis, win, 0, nullptr);
+        XSetForeground(Dis, gc, WhitePixel(Dis, screen_no));
+        XFillRectangle(Dis, win, gc, 0, 0, WIN_WIDTH, WIN_HEIGHT);
+        XFreeGC(Dis, gc);
+    }
 
     const int len = static_cast<int>(strlen(Message.data()));
     if (len > 0)
@@ -284,8 +376,16 @@ int UpdateKeyboard(const char* str = nullptr)
     }
 
     // Erase first
-    XftDrawRect(xftdraw, &xftWhite, 1, WIN_HEIGHT - (3 * loaderFont->height),
-        WIN_WIDTH - 2, 3 * loaderFont->height);
+    if (xftWhiteOk) {
+        XftDrawRect(xftdraw, &xftWhite, 1, WIN_HEIGHT - (3 * loaderFont->height),
+            WIN_WIDTH - 2, 3 * loaderFont->height);
+    } else {
+        Window win = XtWindow(statusShell);
+        GC gc = XCreateGC(Dis, win, 0, nullptr);
+        XSetForeground(Dis, gc, WhitePixel(Dis, screen_no));
+        XFillRectangle(Dis, win, gc, 1, WIN_HEIGHT - (3 * loaderFont->height), WIN_WIDTH - 2, 3 * loaderFont->height);
+        XFreeGC(Dis, gc);
+    }
 
     int len = static_cast<int>(strlen(prompt));
     XftTextExtents8(Dis, loaderFont, reinterpret_cast<const unsigned char*>(prompt), len, &extents);
@@ -448,6 +548,9 @@ XtAppContext InitializeDisplay(int argc, char **argv)
         ExitLoader();
     }
 
+    // Install custom X error handler to catch/ignore RenderFreePicture errors
+    prevXErrorHandler = XSetErrorHandler(LoaderXErrorHandler);
+
     screen_no  = DefaultScreen(Dis);
     ColorBlack = BlackPixel(Dis, screen_no);
     ColorWhite = WhitePixel(Dis, screen_no);
@@ -486,10 +589,12 @@ Widget OpenStatusBox(XtAppContext app)
 
     Window Win = XtWindow(shell);
     xftdraw = XftDrawCreate(Dis, Win, DefaultVisual(Dis, screen_no), DefaultColormap(Dis, screen_no));
-    XftColorAllocName(Dis, DefaultVisual(Dis, screen_no),
+    xftBlackOk = XftColorAllocName(Dis, DefaultVisual(Dis, screen_no),
         DefaultColormap(Dis, screen_no), "black", &xftBlack);
-    XftColorAllocName(Dis, DefaultVisual(Dis, screen_no),
+    if (!xftBlackOk) logmsg(LOG_ERR, "XftColorAllocName('black') failed, falling back to BlackPixel\n");
+    xftWhiteOk = XftColorAllocName(Dis, DefaultVisual(Dis, screen_no),
         DefaultColormap(Dis, screen_no), "white", &xftWhite);
+    if (!xftWhiteOk) logmsg(LOG_ERR, "XftColorAllocName('white') failed, falling back to WhitePixel\n");
 
     XtAddEventHandler(shell, ExposureMask, FALSE, ExposeCB, nullptr);
     XtAddEventHandler(shell, KeyPressMask, FALSE, KeyPressCB, nullptr);
@@ -548,13 +653,27 @@ int main(int argc, genericChar* argv[])
 {
     SetPerms();
 
-    // Initialize modern logging system
+    // Initialize modern logging system. Prefer /var/log/viewtouch but
+    // fall back to /tmp when that directory isn't writable so debugging
+    // under a non-root user still works.
+    const char* preferred_log_dir = "/var/log/viewtouch";
+    const char* fallback_log_dir = "/tmp";
+    const char* log_dir = preferred_log_dir;
+    if (access(preferred_log_dir, W_OK) != 0) {
+        log_dir = fallback_log_dir;
+    }
 #ifdef DEBUG
-    vt::Logger::Initialize("/var/log/viewtouch", "debug", true, true);
+    vt::Logger::Initialize(log_dir, "debug", true, true);
 #else
-    vt::Logger::Initialize("/var/log/viewtouch", "info", false, true);
+    vt::Logger::Initialize(log_dir, "info", false, true);
 #endif
     vt::Logger::info("ViewTouch Loader (vtpos) starting - Version {}", viewtouch::get_version_short());
+
+    // Initialize Xlib for multi-threaded use to avoid crashes in XCloseDisplay
+    // when multiple threads may interact with X. If this fails, log and continue.
+    if (XInitThreads() == 0) {
+        logmsg(LOG_ERR, "XInitThreads failed; Xlib multi-threading not available");
+    }
 
     // Set up signal interrupts
     signal(SIGINT,  SignalFn);

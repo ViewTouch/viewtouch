@@ -7,6 +7,7 @@
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
+#include "x11_safe.hh"
 
 namespace
 {
@@ -47,7 +48,7 @@ void GenericDrawString(Display* display,
 }
 
 void GenericDrawStringXft(Display* display,
-                          [[maybe_unused]] Drawable /*drawable*/,
+                          Drawable drawable,
                           XftDraw* draw,
                           XftFont* font,
                           XRenderColor* color,
@@ -62,20 +63,28 @@ void GenericDrawStringXft(Display* display,
     }
 
     XftColor xft_color{};
-    XftColorAllocValue(display,
+    Bool alloc_ok = XftColorAllocValue(display,
                        DefaultVisual(display, screen_number),
                        DefaultColormap(display, screen_number),
                        color,
                        &xft_color);
-    XftDrawStringUtf8(draw, &xft_color, font, x, y, ToFcUtf8(text), ToInt(text));
-    XftColorFree(display,
-                 DefaultVisual(display, screen_number),
-                 DefaultColormap(display, screen_number),
-                 &xft_color);
+    if (alloc_ok) {
+        XftDrawStringUtf8(draw, &xft_color, font, x, y, ToFcUtf8(text), ToInt(text));
+        XftColorFreeSafe(display,
+                         DefaultVisual(display, screen_number),
+                         DefaultColormap(display, screen_number),
+                         &xft_color);
+    } else {
+        // Fallback to simple XDrawString if color allocation fails
+        GC gc = XCreateGC(display, drawable, 0, nullptr);
+        XSetForeground(display, gc, BlackPixel(display, screen_number));
+        GenericDrawString(display, drawable, gc, x, y, text);
+        XFreeGC(display, gc);
+    }
 }
 
 void GenericDrawStringXftEmbossed(Display* display,
-                                  [[maybe_unused]] Drawable /*drawable*/,
+                                  Drawable drawable,
                                   XftDraw* draw,
                                   XftFont* font,
                                   XRenderColor* color,
@@ -98,9 +107,9 @@ void GenericDrawStringXftEmbossed(Display* display,
     XftColor xft_black{};
     XftColor xft_main{};
 
-    XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &embossed_color, &xft_embossed);
-    XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &black_color, &xft_black);
-    XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), color, &xft_main);
+    Bool ok_embossed = XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &embossed_color, &xft_embossed);
+    Bool ok_black = XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &black_color, &xft_black);
+    Bool ok_main = XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), color, &xft_main);
 
     const FcChar8* fc_text = ToFcUtf8(text);
     const int text_length = ToInt(text);
@@ -120,34 +129,46 @@ void GenericDrawStringXftEmbossed(Display* display,
     bool is_white = (color->red >= 60000 && color->green >= 60000 && color->blue >= 60000);
     bool is_yellow = (color->red >= 60000 && color->green >= 60000 && color->blue < 1000);
 
+    // If we couldn't allocate a main color, fall back to a simple draw
+    if (!ok_main) {
+        GC gc = XCreateGC(display, drawable, 0, nullptr);
+        XSetForeground(display, gc, BlackPixel(display, screen_number));
+        GenericDrawString(display, drawable, gc, x, y, text);
+        XFreeGC(display, gc);
+        // Free any partial allocations
+        if (ok_black) XftColorFreeSafe(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_black);
+        if (ok_embossed) XftColorFreeSafe(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_embossed);
+        return;
+    }
+
+    // Choose fallback pointers for decorative colors when they failed to allocate
+    XftColor* embossed_ptr = ok_embossed ? &xft_embossed : &xft_main;
+    XftColor* black_ptr = ok_black ? &xft_black : &xft_main;
+
     // Draw embossed text behind main text - minimal single pixel outline
     if (is_black || is_dark_brown)
     {
-        // For black or dark brown text, draw white at bottom and right (2 pixels right for widescreen)
-        XftDrawStringUtf8(draw, &xft_embossed, font, x + 2, y + 1, fc_text, text_length);  // bottom-right, 2px right
+        XftDrawStringUtf8(draw, embossed_ptr, font, x + 2, y + 1, fc_text, text_length);  // bottom-right, 2px right
     }
     else if (is_white || is_yellow)
     {
-        // For white or yellow text, draw black at bottom and right edges
-        XftDrawStringUtf8(draw, &xft_black, font, x + 1, y + 1, fc_text, text_length);  // bottom-right edge
+        XftDrawStringUtf8(draw, black_ptr, font, x + 1, y + 1, fc_text, text_length);  // bottom-right edge
     }
     else
     {
-        // For other colors, draw white at top (original behavior)
-        XftDrawStringUtf8(draw, &xft_embossed, font, x, y - 1, fc_text, text_length);     // top
+        XftDrawStringUtf8(draw, embossed_ptr, font, x, y - 1, fc_text, text_length);     // top
     }
 
     // Draw main text on top
     XftDrawStringUtf8(draw, &xft_main, font, x, y, fc_text, text_length);
 
-    XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_black);
-
-    XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_embossed);
-    XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_main);
+    if (ok_black) XftColorFreeSafe(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_black);
+    if (ok_embossed) XftColorFreeSafe(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_embossed);
+    XftColorFreeSafe(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_main);
 }
 
 void GenericDrawStringXftWithShadow(Display* display,
-                                    [[maybe_unused]] Drawable /*drawable*/,
+                                    Drawable drawable,
                                     XftDraw* draw,
                                     XftFont* font,
                                     XRenderColor* color,
@@ -176,8 +197,8 @@ void GenericDrawStringXftWithShadow(Display* display,
     XftColor xft_shadow{};
     XftColor xft_main{};
 
-    XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &shadow_color, &xft_shadow);
-    XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), color, &xft_main);
+    Bool ok_shadow = XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &shadow_color, &xft_shadow);
+    Bool ok_main = XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), color, &xft_main);
 
     const FcChar8* fc_text = ToFcUtf8(text);
     const int text_length = ToInt(text);
@@ -186,23 +207,34 @@ void GenericDrawStringXftWithShadow(Display* display,
     // On Raspberry Pi, reduce blur complexity to improve performance
     const int max_blur = (blur_radius > 2) ? 2 : blur_radius;  // Cap at 2 for performance
     
+    // If we couldn't allocate a main color, fall back to simple draw
+    if (!ok_main) {
+        GC gc = XCreateGC(display, drawable, 0, nullptr);
+        XSetForeground(display, gc, BlackPixel(display, screen_number));
+        GenericDrawString(display, drawable, gc, x, y, text);
+        XFreeGC(display, gc);
+        if (ok_shadow) XftColorFreeSafe(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_shadow);
+        return;
+    }
+
     // Draw shadow with reduced blur iterations for better performance
+    XftColor* shadow_ptr = ok_shadow ? &xft_shadow : &xft_main;
     for (int blur = 0; blur <= max_blur; ++blur)
     {
         const int blur_offset = blur * 2;
         // Draw only 2 positions instead of 4 for better performance
-        XftDrawStringUtf8(draw, &xft_shadow, font, x + offset_x - blur_offset, y + offset_y - blur_offset, fc_text, text_length);
-        XftDrawStringUtf8(draw, &xft_shadow, font, x + offset_x + blur_offset, y + offset_y + blur_offset, fc_text, text_length);
+        XftDrawStringUtf8(draw, shadow_ptr, font, x + offset_x - blur_offset, y + offset_y - blur_offset, fc_text, text_length);
+        XftDrawStringUtf8(draw, shadow_ptr, font, x + offset_x + blur_offset, y + offset_y + blur_offset, fc_text, text_length);
     }
 
     XftDrawStringUtf8(draw, &xft_main, font, x, y, fc_text, text_length);
 
-    XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_shadow);
-    XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_main);
+    if (ok_shadow) XftColorFreeSafe(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_shadow);
+    XftColorFreeSafe(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_main);
 }
 
 void GenericDrawStringXftAntialiased(Display* display,
-                                     [[maybe_unused]] Drawable /*drawable*/,
+                                     Drawable drawable,
                                      XftDraw* draw,
                                      XftFont* font,
                                      XRenderColor* color,
@@ -224,7 +256,14 @@ void GenericDrawStringXftAntialiased(Display* display,
     };
 
     XftColor xft_color{};
-    XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &enhanced_color, &xft_color);
-    XftDrawStringUtf8(draw, &xft_color, font, x, y, ToFcUtf8(text), ToInt(text));
-    XftColorFree(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_color);
+    Bool ok = XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &enhanced_color, &xft_color);
+    if (ok) {
+        XftDrawStringUtf8(draw, &xft_color, font, x, y, ToFcUtf8(text), ToInt(text));
+        XftColorFreeSafe(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &xft_color);
+    } else {
+        GC gc = XCreateGC(display, drawable, 0, nullptr);
+        XSetForeground(display, gc, BlackPixel(display, screen_number));
+        GenericDrawString(display, drawable, gc, x, y, text);
+        XFreeGC(display, gc);
+    }
 }

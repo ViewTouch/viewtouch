@@ -48,6 +48,7 @@
 #include "src/utils/cpp23_utils.hh"  // C++23 formatting utilities
 #include "date/date.h"      // helper library to output date strings with std::chrono
 #include "src/core/crash_report.hh"  // Automatic crash reporting
+#include <spdlog/spdlog.h>
 
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
@@ -68,6 +69,7 @@
 #include <sys/wait.h>       // declarations for waiting
 #include <X11/Intrinsic.h>  // libXt provides the X Toolkit Intrinsics, an abstract widget library on which ViewTouch is based
 #include <X11/Xft/Xft.h>    // Xft font rendering library
+#include "x11_safe.hh"
 #include <string>           // Introduces string types, character traits and a set of converting functions
 #include <cctype>           // Declares a set of functions to classify and transform individual characters
 #include <cstring>          // Functions for dealing with C-style strings — null-terminated arrays of characters; is the C++ version of the classic string.h header from C
@@ -447,17 +449,21 @@ int ReadViewTouchConfig()
     FnTrace("ReadViewTouchConfig()");
     int retval = 0;
 
+    // Avoid throwing from ConfFile ctor if the file does not exist
     try
     {
-
-        ConfFile conf(VIEWTOUCH_CONFIG, true);
-        ReportError(
-                    std::string("ReadViewTouchConfig: ")
-                    + "Read early config from config file: "
-                    + VIEWTOUCH_CONFIG);
-        (void)conf.GetValue(autoupdate, "autoupdate");  // Suppress nodiscard warnings
-        (void)conf.GetValue(select_timeout, "selecttimeout");
-        (void)conf.GetValue(debug_mode, "debugmode");
+        if (!fs::exists(VIEWTOUCH_CONFIG)) {
+            ReportError(std::string("ReadViewTouchConfig: Config file not found: ") + VIEWTOUCH_CONFIG);
+        } else {
+            ConfFile conf(VIEWTOUCH_CONFIG, true);
+            ReportError(
+                        std::string("ReadViewTouchConfig: ")
+                        + "Read early config from config file: "
+                        + VIEWTOUCH_CONFIG);
+            (void)conf.GetValue(autoupdate, "autoupdate");  // Suppress nodiscard warnings
+            (void)conf.GetValue(select_timeout, "selecttimeout");
+            (void)conf.GetValue(debug_mode, "debugmode");
+        }
     } catch (const std::runtime_error &e) {
         ReportError(
                     std::string("ReadViewTouchConfig: ")
@@ -1641,18 +1647,7 @@ int EndSystem()
         UpdateID = 0;
     }
     ReportError("EndSystem: Timeout removal completed, continuing with shutdown...");
-    if (Dis)
-    {
-        XtCloseDisplay(Dis);
-        Dis = nullptr;
-    }
-    ReportError("EndSystem: Display close completed, continuing with shutdown...");
-    if (App)
-    {
-        XtDestroyApplicationContext(App);
-        App = nullptr;
-    }
-    ReportError("EndSystem: Application context destruction completed, continuing with shutdown...");
+    ReportError("EndSystem: Continuing with shutdown...");
 
     // Save Archive/Settings Changes
     if (MasterSystem)
@@ -1725,6 +1720,41 @@ int EndSystem()
     ReportError("EndSystem: Killed vtpos");
     // Don't kill vtrestart - it needs to stay alive to detect the restart flag
     ReportError("EndSystem: Skipping vtrestart kill - needs to stay alive");
+
+    // Wait for child processes to exit to avoid races when closing X
+    ReportError("EndSystem: Waiting for spawned tasks to exit (max 5s)...");
+    for (int iter = 0; iter < 50; ++iter) {
+        int any = 0;
+        // pgrep returns 0 when process exists; non-zero when not found
+        if (system("pgrep -x vt_term >/dev/null 2>&1") == 0) any = 1;
+        if (system("pgrep -x vt_print >/dev/null 2>&1") == 0) any = 1;
+        if (system("pgrep -x vtpos >/dev/null 2>&1") == 0) any = 1;
+        if (!any) break;
+        usleep(100000); // 100ms
+    }
+    ReportError("EndSystem: Spawned tasks wait complete.");
+
+    // Now safe to destroy application context and close display
+    if (App)
+    {
+        XtDestroyApplicationContext(App);
+        App = nullptr;
+    }
+    ReportError("EndSystem: Application context destruction completed, continuing with shutdown...");
+
+    if (Dis)
+    {
+        // Flush logs, close the X Display safely, then shut down logging
+        ReportError("EndSystem: Flushing logs before closing X display...");
+        try { vt::Logger::Flush(); } catch(...) {}
+        ReportError("EndSystem: Closing X display safely now...");
+        XCloseDisplaySafe(Dis);
+        ReportError("EndSystem: Display closed safely, continuing with shutdown...");
+        ReportError("EndSystem: Finalizing logging shutdown...");
+        try { spdlog::shutdown(); } catch(...) {}
+        try { vt::Logger::Shutdown(); } catch(...) {}
+        ReportError("EndSystem: Logging shutdown complete.");
+    }
 
     // Make sure loader connection is killed
     if (LoaderSocket)

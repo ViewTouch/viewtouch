@@ -1,4 +1,5 @@
 #include "xft_color_cache.hh"
+#include "x11_safe.hh"
 
 namespace vt::core {
 
@@ -25,7 +26,13 @@ XftColor* XftColorCache::Get(Display* display, int screen_number, const XRenderC
     }
 
     XftColor xft{};
-    XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &color, &xft);
+    // Check allocation result; XftColorAllocValue may fail on some displays/drivers.
+    Bool alloc_ok = XftColorAllocValue(display, DefaultVisual(display, screen_number), DefaultColormap(display, screen_number), &color, &xft);
+    if (!alloc_ok) {
+        // Allocation failed; do not insert an invalid XftColor into the cache.
+        return nullptr;
+    }
+
     auto res = cache_.emplace(std::make_pair(key, xft));
     return &res.first->second;
 }
@@ -37,7 +44,7 @@ XftColorCache::~XftColorCache()
     {
         const ColorKey &k = entry.first;
         XftColor* c = &entry.second;
-        XftColorFree(k.display, DefaultVisual(k.display, k.screen), DefaultColormap(k.display, k.screen), c);
+        XftColorFreeSafe(k.display, DefaultVisual(k.display, k.screen), DefaultColormap(k.display, k.screen), c);
     }
     cache_.clear();
 }

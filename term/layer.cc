@@ -20,6 +20,7 @@
 #include "term_view.hh"
 #include "image_data.hh"
 #include "remote_link.hh"
+#include "src/core/x11_safe.hh"
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -68,7 +69,7 @@ Layer::~Layer()
 {
     if (pix)
         XFreePixmap(dis, pix);
-    if (xftdraw) XftDrawDestroy(xftdraw);
+    if (xftdraw) XftDrawDestroySafe(dis, xftdraw);
 }
 
 // Move constructor
@@ -120,7 +121,7 @@ Layer& Layer::operator=(Layer&& other) noexcept
         if (pix)
             XFreePixmap(dis, pix);
         if (xftdraw) 
-            XftDrawDestroy(xftdraw);
+            XftDrawDestroySafe(dis, xftdraw);
         
         // Copy assign base class (RegionInfo doesn't have move semantics)
         RegionInfo::operator=(other);

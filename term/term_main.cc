@@ -33,6 +33,7 @@
 #include <Xm/Xm.h>
 #include <memory>
 #include "safe_string_utils.hh"
+#include <X11/Xlib.h>
 
 #ifdef DMALLOC
 #include <dmalloc.h>
@@ -47,6 +48,13 @@
 /**** Main ****/
 int main(int argc, const genericChar* *argv)
 {
+    // Initialize Xlib for multi-threaded use before creating any threads
+    // (spdlog creates threads during logger initialization). This must be
+    // done early to avoid races in Xlib when other threads exist.
+    if (XInitThreads() == 0) {
+        fprintf(stderr, "Warning: XInitThreads failed; Xlib multi-threading may not be available\n");
+    }
+
     // Initialize modern logging
 #ifdef DEBUG
     vt::Logger::Initialize("/var/log/viewtouch", "debug", true, true);

@@ -1,5 +1,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
+#include "src/core/x11_safe.hh"
 #include <iostream>
 #include <cstring>
 
@@ -147,10 +148,10 @@ void FontCheckDrawStringEnhanced(Display *display, XftDraw *xftdraw, XftFont *xf
         frosted_color.blue = color->color.blue + ((65535 - color->color.blue) * 2) / 5;   // Add 40% brightness
         frosted_color.alpha = (color->color.alpha * 9) / 10;
         
-        XftColorAllocValue(display, DefaultVisual(display, DefaultScreen(display)), 
-                          DefaultColormap(display, DefaultScreen(display)), &shadow_color, &xft_shadow);
-        XftColorAllocValue(display, DefaultVisual(display, DefaultScreen(display)), 
-                          DefaultColormap(display, DefaultScreen(display)), &frosted_color, &xft_frosted);
+        Bool ok_shadow = XftColorAllocValue(display, DefaultVisual(display, DefaultScreen(display)), 
+                  DefaultColormap(display, DefaultScreen(display)), &shadow_color, &xft_shadow);
+        Bool ok_frosted = XftColorAllocValue(display, DefaultVisual(display, DefaultScreen(display)), 
+                  DefaultColormap(display, DefaultScreen(display)), &frosted_color, &xft_frosted);
         
         // Draw shadow
         XftDrawStringUtf8(xftdraw, &xft_shadow, xftfont, x + 1, y + 1, (const FcChar8*)str, length);
@@ -165,10 +166,10 @@ void FontCheckDrawStringEnhanced(Display *display, XftDraw *xftdraw, XftFont *xf
         // Draw main text
         XftDrawStringUtf8(xftdraw, color, xftfont, x, y, (const FcChar8*)str, length);
         
-        XftColorFree(display, DefaultVisual(display, DefaultScreen(display)), 
-                    DefaultColormap(display, DefaultScreen(display)), &xft_shadow);
-        XftColorFree(display, DefaultVisual(display, DefaultScreen(display)), 
-                    DefaultColormap(display, DefaultScreen(display)), &xft_frosted);
+        if (ok_shadow) XftColorFreeSafe(display, DefaultVisual(display, DefaultScreen(display)), 
+            DefaultColormap(display, DefaultScreen(display)), &xft_shadow);
+        if (ok_frosted) XftColorFreeSafe(display, DefaultVisual(display, DefaultScreen(display)), 
+            DefaultColormap(display, DefaultScreen(display)), &xft_frosted);
     } else if (use_drop_shadows) {
         // Create drop shadow effect
         XRenderColor shadow_color;
@@ -179,8 +180,8 @@ void FontCheckDrawStringEnhanced(Display *display, XftDraw *xftdraw, XftFont *xf
         shadow_color.blue = (color->color.blue * 1) / 4;
         shadow_color.alpha = color->color.alpha;
         
-        XftColorAllocValue(display, DefaultVisual(display, DefaultScreen(display)), 
-                          DefaultColormap(display, DefaultScreen(display)), &shadow_color, &xft_shadow);
+        Bool ok_shadow = XftColorAllocValue(display, DefaultVisual(display, DefaultScreen(display)), 
+                  DefaultColormap(display, DefaultScreen(display)), &shadow_color, &xft_shadow);
         
         // Draw shadow with blur
         for (int blur = 0; blur <= shadow_blur_radius; blur++) {
@@ -196,8 +197,8 @@ void FontCheckDrawStringEnhanced(Display *display, XftDraw *xftdraw, XftFont *xf
         // Draw main text
         XftDrawStringUtf8(xftdraw, color, xftfont, x, y, (const FcChar8*)str, length);
         
-        XftColorFree(display, DefaultVisual(display, DefaultScreen(display)), 
-                    DefaultColormap(display, DefaultScreen(display)), &xft_shadow);
+        if (ok_shadow) XftColorFreeSafe(display, DefaultVisual(display, DefaultScreen(display)), 
+            DefaultColormap(display, DefaultScreen(display)), &xft_shadow);
     } else if (use_text_antialiasing) {
         // Enhanced anti-aliased text
         XRenderColor enhanced_color;
@@ -208,11 +209,16 @@ void FontCheckDrawStringEnhanced(Display *display, XftDraw *xftdraw, XftFont *xf
         enhanced_color.blue = (color->color.blue * 95) / 100;
         enhanced_color.alpha = color->color.alpha;
         
-        XftColorAllocValue(display, DefaultVisual(display, DefaultScreen(display)), 
+        Bool ok_enhanced = XftColorAllocValue(display, DefaultVisual(display, DefaultScreen(display)), 
                           DefaultColormap(display, DefaultScreen(display)), &enhanced_color, &xft_enhanced);
-        XftDrawStringUtf8(xftdraw, &xft_enhanced, xftfont, x, y, (const FcChar8*)str, length);
-        XftColorFree(display, DefaultVisual(display, DefaultScreen(display)), 
-                    DefaultColormap(display, DefaultScreen(display)), &xft_enhanced);
+        if (ok_enhanced) {
+            XftDrawStringUtf8(xftdraw, &xft_enhanced, xftfont, x, y, (const FcChar8*)str, length);
+            XftColorFreeSafe(display, DefaultVisual(display, DefaultScreen(display)), 
+                        DefaultColormap(display, DefaultScreen(display)), &xft_enhanced);
+        } else {
+            // fallback to provided color
+            XftDrawStringUtf8(xftdraw, color, xftfont, x, y, (const FcChar8*)str, length);
+        }
     } else {
         // Standard rendering
         XftDrawStringUtf8(xftdraw, color, xftfont, x, y, (const FcChar8*)str, length);
@@ -235,7 +241,15 @@ int main() {
     XftDraw* draw = nullptr;
     XftColor xft_color;
     XRenderColor render_color = {0, 0, 0, 65535}; // black
-    XftColorAllocValue(display, DefaultVisual(display, screen), DefaultColormap(display, screen), &render_color, &xft_color);
+    Bool ok_xft_color = XftColorAllocValue(display, DefaultVisual(display, screen), DefaultColormap(display, screen), &render_color, &xft_color);
+    if (!ok_xft_color) {
+        // Initialize fallback color struct so callers can still read color fields
+        xft_color.color.red = 0;
+        xft_color.color.green = 0;
+        xft_color.color.blue = 0;
+        xft_color.color.alpha = 65535;
+        xft_color.pixel = BlackPixel(display, screen);
+    }
 
     for (int i = 0; FontValue[i] != -1; ++i) {
         int font_id = FontValue[i];
@@ -276,7 +290,7 @@ int main() {
             std::cout << "\u2717 " << font_label << " (" << font_xft << ") - FAILED" << '\n';
         }
     }
-    if (draw) XftDrawDestroy(draw);
+    if (draw) XftDrawDestroySafe(display, draw);
     XDestroyWindow(display, win);
     XCloseDisplay(display);
     return 0;

@@ -247,6 +247,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - **Receipt Settings: Update Kitchen Video Print Method Label (2026-01-20)**
   - Updated the Receipt Settings page UI text for better clarity and user experience
 
+ - **Misc: Additional shutdown, Xft, and font handling fixes (2026-04-14)**
+   - Consolidated smaller hardening and refactors to improve shutdown ordering and font handling across multiple modules.
+   - Key changes: strengthened input/timer removal checks, added/used X11/Xft-safe helpers, improved font cache/color handling, and adjusted startup font load/close ordering.
+   - Files modified: `loader/loader_main.cc`, `main/data/manager.cc`, `src/core/data_file.cc`, `src/core/generic_char.cc`, `src/core/xft_color_cache.cc`, `src/utils/font_check.cc`, `term/layer.cc`, `term/term_main.cc`, `src/core/x11_safe.hh`.
+   - Deleted: `scripts/modernize_cpp23.sh`.
+   - Impact: improves robustness of shutdown sequence and reduces races/crashes related to Xft/Xlib and fontconfig. Follow-up: audit remaining font allocations for proper `XftFontClose()` usage.
+
 ### Recent Maintenance (2026-04-13)
 
 - **Security & Robustness:** Replaced unsafe shell usage across the codebase
