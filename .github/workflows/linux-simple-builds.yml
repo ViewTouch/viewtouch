@@ -125,6 +125,54 @@ jobs:
           exit $BUILD_EXIT_CODE
         fi
 
+  static-analysis:
+    name: Static Analysis (clang-tidy)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install clang and tools
+      run: |
+        sudo apt-get update -q
+        sudo apt-get install -y --no-install-recommends clang-18 clang-tidy-18 cmake python3 build-essential
+
+    - name: Configure (generate compile_commands)
+      env:
+        CC: clang-18
+        CXX: clang++-18
+      run: |
+        cmake -S . -B _build_clangtidy -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=23
+
+    - name: Run clang-tidy and save report
+      run: |
+        set -e
+        cd _build_clangtidy
+        cp compile_commands.json ..
+        cd ..
+        python3 - <<'PY'
+import json, subprocess, sys
+with open('compile_commands.json') as f:
+    comps = json.load(f)
+files = [c['file'] for c in comps if c['file'].startswith('src/') or c['file'].startswith('main/') or c['file'].startswith('term/') or c['file'].startswith('external/')]
+# limit to first 200 files to keep runtime reasonable
+files = files[:200]
+cmd = ['clang-tidy-18','-p','_build_clangtidy','-checks=-*,modernize-*,performance-*,bugprone-*,cppcoreguidelines-*'] + files
+print('Running clang-tidy on {} files'.format(len(files)))
+with open('clang-tidy-report.txt','wb') as out:
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for line in p.stdout:
+        out.write(line)
+    rc = p.wait()
+sys.exit(0)
+PY
+
+    - name: Upload clang-tidy report
+      uses: actions/upload-artifact@v4
+      with:
+        name: clang-tidy-report
+        path: clang-tidy-report.txt
+
         if [ -f "_build_${{matrix.cxx}}_${{matrix.std}}/vt_main" ]; then
           echo "Build appears successful, running tests..."
           set +e
