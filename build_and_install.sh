@@ -12,6 +12,12 @@ BUILD_TYPE="RelWithDebInfo"
 JOBS="$(nproc || echo 1)"
 AUTO_YES=0
 INSTALL_DEPS=1
+INTERACTIVE=0
+
+# Detect interactive terminal (default to interactive when run in a TTY and not --yes)
+if [[ -t 1 ]]; then
+  INTERACTIVE=1
+fi
 
 print_help() {
   cat <<EOF
@@ -34,6 +40,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --yes) AUTO_YES=1; shift ;;
     --no-deps) INSTALL_DEPS=0; shift ;;
+    --no-ui) INTERACTIVE=0; shift ;;
     --prefix) PREFIX="$2"; shift 2 ;;
     --build-type) BUILD_TYPE="$2"; shift 2 ;;
     --jobs) JOBS="$2"; shift 2 ;;
@@ -87,24 +94,67 @@ else
   PKG_MANAGER="unknown"
 fi
 
-if [[ $INSTALL_DEPS -eq 1 ]]; then
-  if [[ "$PKG_MANAGER" == "unknown" ]]; then
-    echo "Could not detect supported package manager. Run ./check_dependencies.sh for guidance." >&2
-    INSTALL_DEPS=0
-  else
-    echo "Packages to install:"
-    printf '  %s\n' "${PKGS[@]}"
-    if [[ $AUTO_YES -ne 1 ]]; then
-      read -r -p "Install these packages? [y/N]: " yn
-      case "$yn" in
-        [Yy]*) ;;
-        *) echo "Skipping package installation."; INSTALL_DEPS=0 ;;
-      esac
-    fi
-  fi
+# UI detection: prefer `dialog`, then `whiptail`; fall back to simple text menus
+has_cmd() { command -v "$1" >/dev/null 2>&1; }
+if has_cmd dialog; then
+  UI_CMD=dialog
+elif has_cmd whiptail; then
+  UI_CMD=whiptail
+else
+  UI_CMD=
 fi
 
-if [[ $INSTALL_DEPS -eq 1 ]]; then
+ask_yes_no() {
+  local msg="$1"
+  if [[ -n "$UI_CMD" && $INTERACTIVE -eq 1 ]]; then
+    if [[ "$UI_CMD" == "dialog" ]]; then
+      dialog --clear --yesno "$msg" 8 60
+      return $?
+    else
+      # whiptail
+      whiptail --yesno "$msg" 8 60
+      return $?
+    fi
+  else
+    # Fallback to simple prompt
+    read -r -p "$msg [y/N]: " resp
+    case "$resp" in
+      [Yy]*) return 0 ;;
+      *) return 1 ;;
+    esac
+  fi
+}
+
+show_info() {
+  local msg="$1"
+  if [[ -n "$UI_CMD" && $INTERACTIVE -eq 1 ]]; then
+    if [[ "$UI_CMD" == "dialog" ]]; then
+      dialog --msgbox "$msg" 8 60
+    else
+      whiptail --msgbox "$msg" 8 60
+    fi
+  else
+    echo "$msg"
+  fi
+}
+
+# Step functions (so the TUI can invoke them individually)
+install_dependencies() {
+  if [[ "$PKG_MANAGER" == "unknown" ]]; then
+    echo "Could not detect supported package manager. Run ./check_dependencies.sh for guidance." >&2
+    return 1
+  fi
+
+  echo "Packages to install:"
+  printf '  %s\n' "${PKGS[@]}"
+
+  if [[ $AUTO_YES -ne 1 ]]; then
+    if ! ask_yes_no "Install these packages?"; then
+      echo "Skipping package installation.";
+      return 0
+    fi
+  fi
+
   echo "Installing packages using: $PKG_MANAGER"
   set -x
   case "$PKG_MANAGER" in
@@ -134,19 +184,116 @@ if [[ $INSTALL_DEPS -eq 1 ]]; then
       ;;
   esac
   set +x
+}
+
+do_configure() {
+  echo "Configuring project (build dir: ${BUILD_DIR})"
+  cmake -S "$TOP_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+}
+
+do_build() {
+  echo "Building (jobs=${JOBS})"
+  cmake --build "$BUILD_DIR" --parallel "$JOBS"
+}
+
+do_install() {
+  echo "Installing to prefix: ${PREFIX} (may require sudo)"
+  sudo cmake --install "$BUILD_DIR" --prefix "$PREFIX"
+}
+
+run_all() {
+  if [[ $INSTALL_DEPS -eq 1 ]]; then
+    install_dependencies
+  fi
+  do_configure
+  do_build
+  do_install
+}
+
+run_tui() {
+  local tmpf
+  tmpf=$(mktemp)
+  while true; do
+    if [[ -n "$UI_CMD" ]]; then
+      if [[ "$UI_CMD" == "dialog" ]]; then
+        dialog --clear --title "ViewTouch Build" --menu "Select action" 15 60 8 \
+          1 "Install dependencies" \
+          2 "Configure (cmake)" \
+          3 "Build" \
+          4 "Install" \
+          5 "Settings" \
+          6 "Run all" \
+          7 "Quit" 2>"$tmpf" || true
+        choice=$(cat "$tmpf")
+      else
+        whiptail --title "ViewTouch Build" --menu "Select action" 15 60 8 \
+          1 "Install dependencies" \
+          2 "Configure (cmake)" \
+          3 "Build" \
+          4 "Install" \
+          5 "Settings" \
+          6 "Run all" \
+          7 "Quit" 2>"$tmpf" || true
+        choice=$(cat "$tmpf")
+      fi
+    else
+      echo "1) Install dependencies"
+      echo "2) Configure (cmake)"
+      echo "3) Build"
+      echo "4) Install"
+      echo "5) Settings"
+      echo "6) Run all"
+      echo "7) Quit"
+      read -r -p "Choose: " choice
+    fi
+
+    case "$choice" in
+      1) install_dependencies ;;
+      2) do_configure ;;
+      3) do_build ;;
+      4) do_install ;;
+      5)
+        # Settings submenu
+        if [[ -n "$UI_CMD" ]]; then
+          if [[ "$UI_CMD" == "dialog" ]]; then
+            dialog --inputbox "Install prefix" 8 60 "$PREFIX" 2>"$tmpf" && PREFIX=$(cat "$tmpf") || true
+            dialog --inputbox "CMake build type" 8 60 "$BUILD_TYPE" 2>"$tmpf" && BUILD_TYPE=$(cat "$tmpf") || true
+            dialog --inputbox "Parallel jobs" 8 60 "$JOBS" 2>"$tmpf" && JOBS=$(cat "$tmpf") || true
+            dialog --yesno "Enable dependency installation by default?" 8 60 && INSTALL_DEPS=1 || INSTALL_DEPS=0
+          else
+            whiptail --inputbox "Install prefix" 8 60 "$PREFIX" 2>"$tmpf" && PREFIX=$(cat "$tmpf") || true
+            whiptail --inputbox "CMake build type" 8 60 "$BUILD_TYPE" 2>"$tmpf" && BUILD_TYPE=$(cat "$tmpf") || true
+            whiptail --inputbox "Parallel jobs" 8 60 "$JOBS" 2>"$tmpf" && JOBS=$(cat "$tmpf") || true
+            whiptail --yesno "Enable dependency installation by default?" 8 60 && INSTALL_DEPS=1 || INSTALL_DEPS=0
+          fi
+        else
+          read -r -p "Install prefix [$PREFIX]: " input || true; [[ -n "$input" ]] && PREFIX=$input
+          read -r -p "CMake build type [$BUILD_TYPE]: " input || true; [[ -n "$input" ]] && BUILD_TYPE=$input
+          read -r -p "Parallel jobs [$JOBS]: " input || true; [[ -n "$input" ]] && JOBS=$input
+          read -r -p "Install dependencies by default? (y/N): " input || true; [[ $input =~ ^[Yy]$ ]] && INSTALL_DEPS=1 || INSTALL_DEPS=0
+        fi
+        ;;
+      6) run_all ;;
+      7) break ;;
+      *) show_info "Unknown choice: $choice" ;;
+    esac
+  done
+  rm -f "$tmpf"
+}
+
+
+if [[ $INTERACTIVE -eq 1 && $AUTO_YES -eq 0 ]]; then
+  run_tui
+else
+  # Non-interactive default flow
+  if [[ $INSTALL_DEPS -eq 1 ]]; then
+    install_dependencies
+  fi
+  do_configure
+  do_build
+  do_install
+  echo "Build and install complete."
 fi
-
-# Configure, build, install
-echo "Configuring project (build dir: ${BUILD_DIR})"
-cmake -S "$TOP_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
-
-echo "Building (jobs=${JOBS})"
-cmake --build "$BUILD_DIR" --parallel "$JOBS"
-
-echo "Installing to prefix: ${PREFIX} (may require sudo)"
-sudo cmake --install "$BUILD_DIR" --prefix "$PREFIX"
-
-echo "Build and install complete."
 
 cat <<EOF
 Notes:
