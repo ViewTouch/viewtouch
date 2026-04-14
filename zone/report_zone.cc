@@ -1252,7 +1252,40 @@ SignalResult ReportZone::ToggleCheckReport(Terminal *term)
                 reportcheck->flags |= CF_KITCHEN_SERVED;
             }
             reportcheck->flags |= CF_SHOWN;
-            reportcheck->SetOrderStatus(nullptr, ORDER_SHOWN);
+            // Mark ORDER_SHOWN for orders that belong to this video target only
+            {
+                Settings *settings = term->GetSettings();
+                for (SubCheck *sc = reportcheck->SubList(); sc != nullptr; sc = sc->next)
+                {
+                    for (Order *order = sc->OrderList(); order != nullptr; order = order->next)
+                    {
+                        int order_target = order->VideoTarget(settings);
+                        int match = 0;
+                        if (video_target == PRINTER_BAR1 || video_target == PRINTER_BAR2)
+                        {
+                            if (order_target == PRINTER_BAR1 || order_target == PRINTER_BAR2)
+                                match = 1;
+                        }
+                        else
+                        {
+                            // Kitchen or default: match non-bar targets (including PRINTER_DEFAULT)
+                            if (order_target != PRINTER_BAR1 && order_target != PRINTER_BAR2)
+                                match = 1;
+                        }
+
+                        if (match)
+                        {
+                            if (!(order->status & ORDER_SHOWN))
+                                order->status = static_cast<short>(order->status | ORDER_SHOWN);
+                            for (Order *mod = order->modifier_list; mod != nullptr; mod = mod->next)
+                            {
+                                if (!(mod->status & ORDER_SHOWN))
+                                    mod->status = static_cast<short>(mod->status | ORDER_SHOWN);
+                            }
+                        }
+                    }
+                }
+            }
         }
         update = 1;
         reportcheck->Save();

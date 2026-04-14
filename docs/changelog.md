@@ -14,7 +14,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `main/data/settings.hh`, `main/data/settings.cc`, `main/ui/labels.cc`, `zone/settings_zone.cc`, `main/hardware/terminal.cc`, `zone/login_zone.cc`.
   - NOTE: This feature is experimental and a work in progress — bugs are likely. Use with caution and report any issues you encounter.
 
+### Changed
+- **build.sh: Simplified terminal-only build script** (2026-04-14)
+  - Replaced the previous interactive/TUI `build.sh` with a simplified terminal-only helper that detects the distribution's package manager, installs missing build dependencies, and runs CMake configure → build → install.
+  - Removed duplicate content and GUI/TUI helper code; made `build.sh` executable.
+  - Files modified: `build.sh`
+
 ### Fixed
+- **Video Display: Keep Bar and Kitchen video checks independent when served/marked done (2026-04-14)**
+  - Prevented marking orders for the entire check as shown when serving from a single video display.
+  - Scoped `ORDER_SHOWN` to only orders whose `Order::VideoTarget(settings)` matches the active `video_target` (bar vs kitchen/default).
+  - Modified `ReportZone::ToggleCheckReport()` to set `ORDER_SHOWN` only for matching-target orders instead of calling `Check::SetOrderStatus(nullptr, ORDER_SHOWN)`.
+  - Files modified: `zone/report_zone.cc`.
+  - Impact: Serving/marking done on Bar video no longer removes items from Kitchen video (and vice versa). Follow-up: timer interaction when closing the other display still needs to be addressed.
+
+ - **Shutdown: Prevent Xft/Xrender crash & finalize font handling (2026-04-14)**
+   - Implemented coordinated shutdown to avoid races between Xt timers/inputs and X display close; added `app_shutting_down` flag and `update_timer_mutex` to serialize timer/input removal and re-arming.
+   - Replaced immediate `KillTerm()/exit()` calls from input callbacks with a cooperative shutdown request so the event loop and callbacks can unwind safely.
+   - Ensure background logging and worker threads are stopped during shutdown by calling `spdlog::shutdown()` in `Logger::Shutdown()` and shutting down the global `vt::ThreadPool` early in `KillTerm()`.
+   - Close Xft fonts with `XftFontClose()` and call `FcFini()` after the display has been closed to prevent Xft from calling into finalized fontconfig during `XCloseDisplay`.
+   - Files modified: `term/term_view.cc`, `src/utils/vt_logger.cc`.
+   - Impact: reduces shutdown-time SEGVs and Xft/Xlib race conditions; follow-up: audit startup `XftFontOpenName` usages to eliminate remaining fontconfig leaks.
+
  - **Auto-Update vt_data: Prevent automatic updates when disabled (2026-04-09)**
    - Fixed unexpected vt_data downloads/updates triggered when restarting or shutting down from non-server displays even when "Auto-Update vt_data on Startup" is OFF.
    - Root Cause: early startup autoupdate script executed based on `.viewtouch_config.autoupdate` before the authoritative fixed settings were consulted; restart flows that use the command file + vtrestart could relaunch `vt_main` which ran the script regardless of the UI toggle.
@@ -238,6 +259,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 - **Receipt Settings: Update Kitchen Video Print Method Label (2026-01-20)**
   - Updated the Receipt Settings page UI text for better clarity and user experience
+
+ - **Misc: Additional shutdown, Xft, and font handling fixes (2026-04-14)**
+   - Consolidated smaller hardening and refactors to improve shutdown ordering and font handling across multiple modules.
+   - Key changes: strengthened input/timer removal checks, added/used X11/Xft-safe helpers, improved font cache/color handling, and adjusted startup font load/close ordering.
+   - Files modified: `loader/loader_main.cc`, `main/data/manager.cc`, `src/core/data_file.cc`, `src/core/generic_char.cc`, `src/core/xft_color_cache.cc`, `src/utils/font_check.cc`, `term/layer.cc`, `term/term_main.cc`, `src/core/x11_safe.hh`.
+   - Deleted: `scripts/modernize_cpp23.sh`.
+   - Impact: improves robustness of shutdown sequence and reduces races/crashes related to Xft/Xlib and fontconfig. Follow-up: audit remaining font allocations for proper `XftFontClose()` usage.
+
+### Recent Maintenance (2026-04-13)
+
+- **Security & Robustness:** Replaced unsafe shell usage across the codebase
+  - Replaced uses of `system()`, `popen()`, and `execl("/bin/sh", "sh", "-c", ...)` patterns with safer APIs or exec-based helpers and proper argument lists.
+  - Major changes include: `src/core/data_persistence_manager.cc`, `src/core/crash_report.cc`, `src/utils/utility.cc`, `term/term_view.cc`, and multiple helper scripts under `scripts/`.
+  - Vendor patch: `external/date/src/tz.cpp` was updated to use `std::filesystem` for file/directory operations and execv/createprocess-based helpers for archive extraction instead of `std::system()`.
+
+- **Build / CI:** enabled unit tests in CI and ran `ctest` locally
+  - GitHub Actions workflow updated to configure CMake with `-DBUILD_TESTING=ON` and run `ctest` after build.
+  - Local Debug build and unit tests executed successfully: 83/83 tests passed (2026-04-13).
+
+- **CMake Modernization:** moved a subset of global include directories to target-scoped includes
+  - Converted global `include_directories(...)` usage to `target_include_directories(...)` for `vtcore` and `image_data` to improve dependency visibility and catch missing includes earlier.
+
+- **Scripts:** audited and hardened Perl/shell scripts to avoid shell interpolation and unsafe backticks
+  - Replaced backticks and string-interpolated `system()` calls with list-form `system` or safe file I/O where appropriate (examples: `scripts/tools/update-client`, `scripts/tools/dat2txt`, `scripts/system/vtrun`).
+
+These changes were committed on a feature branch for review. See the PR for detailed diffs and rationale.
   - **Changes Made**:
     - Changed label from "Kitchen Video Print Method" to "Remote Video"
     - Updated option names from "Unmatched"/"Matched" to "Split Checks"/"Consolidate Checks"
