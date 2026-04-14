@@ -28,13 +28,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `zone/report_zone.cc`.
   - Impact: Serving/marking done on Bar video no longer removes items from Kitchen video (and vice versa). Follow-up: timer interaction when closing the other display still needs to be addressed.
 
- - **Video Display: Timers and display refresh for video check zones (2026-04-14)**
-   - Fixed the timer and refresh bug where elapsed-time counters would stop updating until the display was tapped.
-   - Avoided setting `CF_SHOWN` globally in `ReportZone::ToggleCheckReport()` and stopped using the per-check `made_time` to change another target's display state.
-   - Ensured the manager now sends `UPDATE_BLINK` to terminals whose pages contain a `ReportZone` configured for `REPORT_CHECK` with a non-default `VideoTarget()` or a non-zero `CheckDisplayNum()`, so timers refresh continuously.
-   - Files modified: `zone/report_zone.cc`, `main/data/manager.cc`.
-   - Impact: Kitchen and Bar video timers update continuously and independently; no manual tap required to refresh.
-
  - **Shutdown: Prevent Xft/Xrender crash & finalize font handling (2026-04-14)**
    - Implemented coordinated shutdown to avoid races between Xt timers/inputs and X display close; added `app_shutting_down` flag and `update_timer_mutex` to serialize timer/input removal and re-arming.
    - Replaced immediate `KillTerm()/exit()` calls from input callbacks with a cooperative shutdown request so the event loop and callbacks can unwind safely.
