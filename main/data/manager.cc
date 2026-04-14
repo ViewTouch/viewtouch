@@ -3487,8 +3487,34 @@ void UpdateSystemCB(XtPointer client_data, XtIntervalId *time_id)
 
         if (term->page)
         {
-            if (term->page->IsTable() || term->page->IsKitchen())
-                u |= UPDATE_BLINK;  // half second blink message for table pages
+            // If the page is a table/kitchen page, blink as before. Additionally,
+            // if the page contains a ReportZone configured to display a Check
+            // on a video target (or with a check display number), treat it like
+            // a kitchen/video page so UPDATE_BLINK is sent and timers update.
+            bool page_has_video_report = false;
+            Zone *z = term->page->ZoneList();
+            while (z != nullptr)
+            {
+                if (z->Type() == ZONE_REPORT)
+                {
+                    int *rt = z->ReportType();
+                    if (rt && *rt == REPORT_CHECK)
+                    {
+                        int *vt = z->VideoTarget();
+                        int *cdn = z->CheckDisplayNum();
+                        if ((vt && *vt != PRINTER_DEFAULT) || (cdn && *cdn != 0))
+                        {
+                            page_has_video_report = true;
+                            break;
+                        }
+                    }
+                }
+                z = z->next;
+            }
+
+            if (term->page->IsTable() || term->page->IsKitchen() || page_has_video_report)
+                u |= UPDATE_BLINK;  // half second blink message for table/pages with video reports
+
             if (u)
                 term->Update(u, nullptr);
         }
