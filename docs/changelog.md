@@ -14,6 +14,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Files modified: `main/data/settings.hh`, `main/data/settings.cc`, `main/ui/labels.cc`, `zone/settings_zone.cc`, `main/hardware/terminal.cc`, `zone/login_zone.cc`.
   - NOTE: This feature is experimental and a work in progress — bugs are likely. Use with caution and report any issues you encounter.
 
+### Changed
+- **build.sh: Simplified terminal-only build script** (2026-04-14)
+  - Replaced the previous interactive/TUI `build.sh` with a simplified terminal-only helper that detects the distribution's package manager, installs missing build dependencies, and runs CMake configure → build → install.
+  - Removed duplicate content and GUI/TUI helper code; made `build.sh` executable.
+  - Files modified: `build.sh`
+
 ### Fixed
  - **Shutdown: Prevent Xft/Xrender crash & finalize font handling (2026-04-14)**
    - Implemented coordinated shutdown to avoid races between Xt timers/inputs and X display close; added `app_shutting_down` flag and `update_timer_mutex` to serialize timer/input removal and re-arming.

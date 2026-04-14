@@ -1,48 +1,48 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# build.sh - interactive build/install helper for ViewTouch
-# Supports graphical UI via zenity or kdialog when available, dialog/whiptail TUI, and a text fallback.
-# Usage: ./build.sh [--yes] [--no-deps] [--no-ui] [--prefix PREFIX] [--build-type TYPE] [--jobs N]
+# Minimal terminal-only build helper for ViewTouch
+# - Installs missing packages for common Linux distros (apt/dnf/yum/pacman/zypper/apk)
+# - Configures, builds and installs via CMake
+# Usage: ./build.sh [--yes|-y] [--no-deps] [--prefix PATH] [--build-type TYPE] [--jobs N]
 
 PROG="$(basename "$0")"
 TOP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="$TOP_DIR/build"
 PREFIX="/usr/local"
 BUILD_TYPE="RelWithDebInfo"
-JOBS="$(nproc || echo 1)"
+JOBS="$(nproc 2>/dev/null || echo 1)"
 AUTO_YES=0
 INSTALL_DEPS=1
-INTERACTIVE=0
-
-if [[ -t 1 ]]; then
-  INTERACTIVE=1
-fi
 
 print_help() {
   cat <<EOF
 Usage: $PROG [options]
 
 Options:
-  --yes            Auto-accept installing packages (non-interactive)
-  --no-deps        Skip installing system dependencies
-  --no-ui          Force non-interactive (text) mode
-  --prefix PATH    Install prefix (default: /usr/local)
-  --build-type T   CMake build type (default: ${BUILD_TYPE})
-  --jobs N         Parallel build jobs (default: number of CPU cores)
-  -h, --help       Show this help
+  --yes, -y       Auto-accept installing missing packages
+  --no-deps       Skip installing system dependencies
+  --prefix PATH   Install prefix (default: ${PREFIX})
+  --build-type T  CMake build type (default: ${BUILD_TYPE})
+  --jobs N        Parallel build jobs (default: number of CPU cores)
+  -h, --help      Show this help
 
-This helper will try to install system packages, configure, build, and install ViewTouch.
-It prefers a graphical UI (`zenity` or `kdialog`) when run in a graphical session, falls
-back to `dialog`/`whiptail`, and finally to a plain text menu on the terminal.
+Examples:
+  # Build without installing OS packages
+  ./build.sh --no-deps
+
+  # Install deps (prompt) then build and install to /usr
+  sudo ./build.sh
+
+  # Auto-install deps, build and install to /usr/local
+  ./build.sh --yes
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --yes) AUTO_YES=1; shift ;;
+    --yes|-y) AUTO_YES=1; shift ;;
     --no-deps) INSTALL_DEPS=0; shift ;;
-    --no-ui) INTERACTIVE=0; shift ;;
     --prefix) PREFIX="$2"; shift 2 ;;
     --build-type) BUILD_TYPE="$2"; shift 2 ;;
     --jobs) JOBS="$2"; shift 2 ;;
@@ -51,16 +51,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-echo "Top dir: $TOP_DIR"
+# Package lists taken from the repo's cmake/install_dependencies.cmake
+DEB_PACKAGES=(cmake build-essential git libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev libmotif-dev libfreetype6-dev libfontconfig1-dev zlib1g-dev libpng-dev libjpeg-dev libgif-dev pkg-config libxext-dev libxcb1-dev)
+RPM_PACKAGES=(cmake gcc gcc-c++ make git libX11-devel libXft-devel libXmu-devel libXpm-devel libXrender-devel libXt-devel openmotif-devel freetype-devel fontconfig-devel zlib-devel libpng-devel libjpeg-turbo-devel giflib-devel pkgconfig libXext-devel libxcb-devel)
+ARCH_PACKAGES=(cmake base-devel git libx11 libxft libxmu libxpm libxrender libxt openmotif freetype2 fontconfig zlib libpng libjpeg-turbo giflib pkgconf libxext libxcb)
+ZYPPER_PACKAGES=(cmake gcc gcc-c++ make git libX11-devel libXft-devel libXmu-devel libXpm-devel libXrender-devel libXt-devel openmotif-devel freetype2-devel fontconfig-devel zlib-devel libpng16-devel libjpeg-devel libgif-devel pkg-config libXext-devel libxcb-devel)
+APK_PACKAGES=(cmake build-base git libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev openmotif-dev freetype-dev fontconfig-dev zlib-dev libpng-dev libjpeg-turbo-dev giflib-dev pkgconfig libxext-dev libxcb-dev)
 
-# Detect distro via package manager presence
-DEB_PACKAGES=(cmake build-essential git libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev libmotif-dev libfreetype6-dev libfontconfig1-dev zlib1g-dev libpng-dev libjpeg-dev libgif-dev pkg-config libxext-dev libxcb1-dev zenity kdialog)
-RPM_PACKAGES=(cmake gcc gcc-c++ make git libX11-devel libXft-devel libXmu-devel libXpm-devel libXrender-devel libXt-devel openmotif-devel freetype-devel fontconfig-devel zlib-devel libpng-devel libjpeg-turbo-devel giflib-devel pkgconfig libXext-devel libxcb-devel zenity kdialog)
-ARCH_PACKAGES=(cmake base-devel git libx11 libxft libxmu libxpm libxrender libxt openmotif freetype2 fontconfig zlib libpng libjpeg-turbo giflib pkgconf libxext libxcb zenity kdialog)
-ZYPPER_PACKAGES=(cmake gcc gcc-c++ make git libX11-devel libXft-devel libXmu-devel libXpm-devel libXrender-devel libXt-devel openmotif-devel freetype2-devel fontconfig-devel zlib-devel libpng16-devel libjpeg-devel libgif-devel pkg-config libXext-devel libxcb-devel zenity kdialog)
-APK_PACKAGES=(cmake build-base git libx11-dev libxft-dev libxmu-dev libxpm-dev libxrender-dev libxt-dev openmotif-dev freetype-dev fontconfig-dev zlib-dev libpng-dev libjpeg-turbo-dev giflib-dev pkgconfig libxext-dev libxcb-dev zenity kdialog)
-
-PKG_MANAGER=""
+# detect package manager and select package list
+PKG_MANAGER="unknown"
 PKGS=()
 if command -v apt-get >/dev/null 2>&1; then
   PKG_MANAGER="apt"
@@ -80,241 +79,116 @@ elif command -v zypper >/dev/null 2>&1; then
 elif command -v apk >/dev/null 2>&1; then
   PKG_MANAGER="apk"
   PKGS=("${APK_PACKAGES[@]}")
-else
-  PKG_MANAGER="unknown"
+elif command -v brew >/dev/null 2>&1; then
+  PKG_MANAGER="brew"
+  PKGS=(cmake git pkg-config)
 fi
 
-# Detect available UI helpers
-has_cmd() { command -v "$1" >/dev/null 2>&1; }
-GUI_TOOL=""
-if [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" || "${XDG_SESSION_TYPE:-}" == "wayland" ]]; then
-  if has_cmd zenity; then
-    GUI_TOOL=zenity
-  elif has_cmd kdialog; then
-    GUI_TOOL=kdialog
-  fi
-fi
-
-TUI_CMD=""
-if has_cmd dialog; then
-  TUI_CMD=dialog
-elif has_cmd whiptail; then
-  TUI_CMD=whiptail
-fi
-
-ask_yes_no() {
-  local msg="$1"
-  if [[ -n "$GUI_TOOL" && $INTERACTIVE -eq 1 ]]; then
-    if [[ "$GUI_TOOL" == "zenity" ]]; then
-      zenity --question --text="$msg" --width=500
-      return $?
-    else
-      kdialog --yesno "$msg"
-      return $?
-    fi
-  elif [[ -n "$TUI_CMD" && $INTERACTIVE -eq 1 ]]; then
-    if [[ "$TUI_CMD" == "dialog" ]]; then
-      dialog --clear --yesno "$msg" 8 60
-      return $?
-    else
-      whiptail --yesno "$msg" 8 60
-      return $?
-    fi
-  else
-    read -r -p "$msg [y/N]: " resp
-    case "$resp" in
-      [Yy]*) return 0 ;;
-      *) return 1 ;;
-    esac
-  fi
-}
-
-show_info() {
-  local msg="$1"
-  if [[ -n "$GUI_TOOL" && $INTERACTIVE -eq 1 ]]; then
-    if [[ "$GUI_TOOL" == "zenity" ]]; then
-      zenity --info --text="$msg" --width=500
-    else
-      kdialog --msgbox "$msg"
-    fi
-  elif [[ -n "$TUI_CMD" && $INTERACTIVE -eq 1 ]]; then
-    if [[ "$TUI_CMD" == "dialog" ]]; then
-      dialog --msgbox "$msg" 8 60
-    else
-      whiptail --msgbox "$msg" 8 60
-    fi
-  else
-    echo "$msg"
-  fi
-}
-
-# Step functions
-install_dependencies() {
-  if [[ "$PKG_MANAGER" == "unknown" ]]; then
-    echo "Could not detect supported package manager. Run ./check_dependencies.sh for guidance." >&2
-    return 1
-  fi
-
-  echo "Packages to install:"
-  printf '  %s\n' "${PKGS[@]}"
-
-  if [[ $AUTO_YES -ne 1 ]]; then
-    if ! ask_yes_no "Install these packages?"; then
-      echo "Skipping package installation.";
-      return 0
-    fi
-  fi
-
-  echo "Installing packages using: $PKG_MANAGER"
-  set -x
+check_installed() {
+  local pkg="$1"
   case "$PKG_MANAGER" in
     apt)
-      sudo apt-get update
-      sudo apt-get install -y "${PKGS[@]}"
+      dpkg -s "$pkg" >/dev/null 2>&1 && return 0 || return 1
       ;;
-    dnf)
-      sudo dnf install -y "${PKGS[@]}"
-      ;;
-    yum)
-      sudo yum install -y "${PKGS[@]}"
+    dnf|yum|zypper)
+      rpm -q "$pkg" >/dev/null 2>&1 && return 0 || return 1
       ;;
     pacman)
-      sudo pacman -Syu --noconfirm "${PKGS[@]}"
-      ;;
-    zypper)
-      sudo zypper refresh
-      sudo zypper install -y "${PKGS[@]}"
+      pacman -Qi "$pkg" >/dev/null 2>&1 && return 0 || return 1
       ;;
     apk)
-      sudo apk update
-      sudo apk add --no-cache "${PKGS[@]}"
+      apk info -e "$pkg" >/dev/null 2>&1 && return 0 || return 1
+      ;;
+    brew)
+      brew list "$pkg" >/dev/null 2>&1 && return 0 || return 1
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+install_missing() {
+  local missing=("${@}")
+  if [[ ${#missing[@]} -eq 0 ]]; then
+    echo "All required packages appear installed."
+    return 0
+  fi
+
+  echo "Missing packages: ${missing[*]}"
+  if [[ $AUTO_YES -ne 1 ]]; then
+    read -r -p "Install missing packages? [y/N]: " yn
+    [[ $yn =~ ^[Yy]$ ]] || { echo "Skipping package installation."; return 0; }
+  fi
+
+  case "$PKG_MANAGER" in
+    apt)
+      sudo apt-get update || true
+      if ! sudo apt-get install -y "${missing[@]}"; then
+        for p in "${missing[@]}"; do sudo apt-get install -y "$p" || echo "Warning: failed to install $p"; done
+      fi
+      ;;
+    dnf)
+      if ! sudo dnf install -y "${missing[@]}"; then
+        for p in "${missing[@]}"; do sudo dnf install -y "$p" || echo "Warning: failed to install $p"; done
+      fi
+      ;;
+    yum)
+      if ! sudo yum install -y "${missing[@]}"; then
+        for p in "${missing[@]}"; do sudo yum install -y "$p" || echo "Warning: failed to install $p"; done
+      fi
+      ;;
+    pacman)
+      sudo pacman -Syu --noconfirm || true
+      if ! sudo pacman -S --noconfirm "${missing[@]}"; then
+        for p in "${missing[@]}"; do sudo pacman -S --noconfirm "$p" || echo "Warning: failed to install $p"; done
+      fi
+      ;;
+    zypper)
+      sudo zypper refresh || true
+      if ! sudo zypper install -y "${missing[@]}"; then
+        for p in "${missing[@]}"; do sudo zypper install -y "$p" || echo "Warning: failed to install $p"; done
+      fi
+      ;;
+    apk)
+      if ! sudo apk add --no-cache "${missing[@]}"; then
+        for p in "${missing[@]}"; do sudo apk add --no-cache "$p" || echo "Warning: failed to install $p"; done
+      fi
+      ;;
+    brew)
+      for p in "${missing[@]}"; do brew install "$p" || echo "Warning: failed to install $p"; done
       ;;
     *)
       echo "Unsupported package manager: $PKG_MANAGER" >&2
+      return 1
       ;;
   esac
-  set +x
 }
 
-do_configure() {
-  echo "Configuring project (build dir: ${BUILD_DIR})"
-  cmake -S "$TOP_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
-}
-
-do_build() {
-  echo "Building (jobs=${JOBS})"
-  cmake --build "$BUILD_DIR" --parallel "$JOBS"
-}
-
-do_install() {
-  echo "Installing to prefix: ${PREFIX} (may require sudo)"
-  sudo cmake --install "$BUILD_DIR" --prefix "$PREFIX"
-}
-
-run_all() {
-  if [[ $INSTALL_DEPS -eq 1 ]]; then
-    install_dependencies
-  fi
-  do_configure
-  do_build
-  do_install
-}
-
-run_tui() {
-  local tmpf
-  tmpf=$(mktemp)
-  while true; do
-    if [[ -n "$GUI_TOOL" && $INTERACTIVE -eq 1 ]]; then
-      if [[ "$GUI_TOOL" == "zenity" ]]; then
-        choice=$(zenity --list --radiolist --title "ViewTouch Build" --column "Select" --column "Action" TRUE "install" "Install dependencies" FALSE "configure" "Configure (cmake)" FALSE "build" "Build" FALSE "installprog" "Install" FALSE "settings" "Settings" FALSE "runall" "Run all" FALSE "quit" "Quit" --height=360 --width=640) || true
-      else
-        # kdialog menu prints selection to stdout
-        choice=$(kdialog --menu "Select action" install "Install dependencies" configure "Configure (cmake)" build "Build" installprog "Install" settings "Settings" runall "Run all" quit "Quit") || true
+if [[ $INSTALL_DEPS -eq 1 ]]; then
+  if [[ "$PKG_MANAGER" == "unknown" ]]; then
+    echo "Could not detect a supported package manager. Run './check_dependencies.sh' for guidance." >&2
+  else
+    echo "Detected package manager: $PKG_MANAGER"
+    # collect missing packages
+    missing_list=()
+    for pkg in "${PKGS[@]}"; do
+      if ! check_installed "$pkg"; then
+        missing_list+=("$pkg")
       fi
-    elif [[ -n "$TUI_CMD" && $INTERACTIVE -eq 1 ]]; then
-      if [[ "$TUI_CMD" == "dialog" ]]; then
-        dialog --clear --title "ViewTouch Build" --menu "Select action" 15 60 8 \
-          1 "Install dependencies" \
-          2 "Configure (cmake)" \
-          3 "Build" \
-          4 "Install" \
-          5 "Settings" \
-          6 "Run all" \
-          7 "Quit" 2>"$tmpf" || true
-        choice=$(cat "$tmpf")
-      else
-        whiptail --title "ViewTouch Build" --menu "Select action" 15 60 8 \
-          1 "Install dependencies" \
-          2 "Configure (cmake)" \
-          3 "Build" \
-          4 "Install" \
-          5 "Settings" \
-          6 "Run all" \
-          7 "Quit" 2>"$tmpf" || true
-        choice=$(cat "$tmpf")
-      fi
-    else
-      echo "1) Install dependencies"
-      echo "2) Configure (cmake)"
-      echo "3) Build"
-      echo "4) Install"
-      echo "5) Settings"
-      echo "6) Run all"
-      echo "7) Quit"
-      read -r -p "Choose: " choice
-    fi
-
-    case "$choice" in
-      install|1) install_dependencies ;;
-      configure|2) do_configure ;;
-      build|3) do_build ;;
-      installprog|4) do_install ;;
-      settings|5)
-        if [[ -n "$GUI_TOOL" && $INTERACTIVE -eq 1 ]]; then
-          if [[ "$GUI_TOOL" == "zenity" ]]; then
-            PREFIX=$(zenity --entry --title "Settings" --text "Install prefix" --entry-text "$PREFIX" ) || true
-            BUILD_TYPE=$(zenity --entry --title "Settings" --text "CMake build type" --entry-text "$BUILD_TYPE" ) || true
-            JOBS=$(zenity --entry --title "Settings" --text "Parallel jobs" --entry-text "$JOBS" ) || true
-            if zenity --question --text "Enable dependency installation by default?" ; then INSTALL_DEPS=1; else INSTALL_DEPS=0; fi
-          else
-            PREFIX=$(kdialog --inputbox "Install prefix" "$PREFIX" ) || true
-            BUILD_TYPE=$(kdialog --inputbox "CMake build type" "$BUILD_TYPE" ) || true
-            JOBS=$(kdialog --inputbox "Parallel jobs" "$JOBS" ) || true
-            if kdialog --yesno "Enable dependency installation by default?" ; then INSTALL_DEPS=1; else INSTALL_DEPS=0; fi
-          fi
-        else
-          read -r -p "Install prefix [$PREFIX]: " input || true; [[ -n "$input" ]] && PREFIX=$input
-          read -r -p "CMake build type [$BUILD_TYPE]: " input || true; [[ -n "$input" ]] && BUILD_TYPE=$input
-          read -r -p "Parallel jobs [$JOBS]: " input || true; [[ -n "$input" ]] && JOBS=$input
-          read -r -p "Install dependencies by default? (y/N): " input || true; [[ $input =~ ^[Yy]$ ]] && INSTALL_DEPS=1 || INSTALL_DEPS=0
-        fi
-        ;;
-      runall|6) run_all ;;
-      quit|7) break ;;
-      "") ;; # no selection/cancel
-      *) show_info "Unknown choice: $choice" ;;
-    esac
-  done
-  rm -f "$tmpf"
-}
-
-# Entry point
-if [[ $INTERACTIVE -eq 1 && $AUTO_YES -eq 0 ]]; then
-  run_tui
-else
-  # Non-interactive default flow
-  if [[ $INSTALL_DEPS -eq 1 ]]; then
-    install_dependencies
+    done
+    install_missing "${missing_list[@]}"
   fi
-  do_configure
-  do_build
-  do_install
-  echo "Build and install complete."
 fi
 
-cat <<EOF
-Notes:
- - If dependencies could not be auto-installed, run: ./check_dependencies.sh
- - To change install prefix, re-run with --prefix /your/path
- - For development builds with sanitizers, run: cmake -S . -B build -DENABLE_SANITIZERS=ON
-EOF
+# Configure, build, install
+echo "Configuring (build dir: ${BUILD_DIR})"
+cmake -S "$TOP_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE" -DCMAKE_INSTALL_PREFIX="$PREFIX"
+
+echo "Building (jobs=${JOBS})"
+cmake --build "$BUILD_DIR" --parallel "$JOBS"
+
+echo "Installing to ${PREFIX} (may require sudo)"
+sudo cmake --install "$BUILD_DIR" --prefix "$PREFIX"
+
+echo "Done. If packages failed to install, run './check_dependencies.sh' for manual instructions."
