@@ -352,8 +352,14 @@ RenderResult ReportZone::DisplayCheckReport(Terminal *term, Report *disp_report)
             
             if (made_for_target)
                 rzstate = 1;
-            else if (disp_check->made_time.IsSet() && (disp_check->check_state & ORDER_SENT))
-                rzstate = 2;
+            else
+            {
+                // Ignore global made_time set by other video targets. Using a
+                // single per-check `made_time` causes one target's "made"
+                // action to affect the other's display (stopping its timer).
+                // Keep rzstate == 0 for targets that haven't marked their
+                // portion as made to preserve independent timers.
+            }
             int display_flags = CHECK_DISPLAY_ALL;
             if (video_target != PRINTER_DEFAULT)
                 display_flags =~ CHECK_DISPLAY_CASH;  //Remove cash info
@@ -1251,7 +1257,11 @@ SignalResult ReportZone::ToggleCheckReport(Terminal *term)
                 // Default/other video targets - mark kitchen portion as served
                 reportcheck->flags |= CF_KITCHEN_SERVED;
             }
-            reportcheck->flags |= CF_SHOWN;
+            // Do NOT set CF_SHOWN globally here — setting CF_SHOWN hides the
+            // check across all video targets and will stop the timer on the
+            // other display. Instead, only mark ORDER_SHOWN on orders that
+            // belong to this video target so other displays keep their timers.
+            // (CF_SHOWN is intentionally not modified here.)
             // Mark ORDER_SHOWN for orders that belong to this video target only
             {
                 Settings *settings = term->GetSettings();
