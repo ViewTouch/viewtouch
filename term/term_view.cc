@@ -34,6 +34,7 @@
 #include <sys/un.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 #include <ctime>
 #include <unistd.h>
 #include <iostream>
@@ -2607,11 +2608,33 @@ int SaveToPPM()
     vt_safe_string::safe_format(str.data(), str.size(), "Saving screen image to file '%s'", filename.data());
     ReportError(str.data());
 
-    // Generate the screenshot
-    std::array<char, STRLONG> command{};
-    vt::cpp23::format_to_buffer(command.data(), command.size(), "{} -root -display {} >{}",
-             Constants::XWD, DisplayString(Dis), filename.data());
-    system(command.data());
+    // Generate the screenshot using fork/exec to avoid invoking a shell
+    auto RunProcessRedirectOutput = [](const std::string& prog, const std::vector<std::string>& args, const std::string& out_path) -> int {
+        pid_t pid = fork();
+        if (pid == 0) {
+            // Child
+            int fd = open(out_path.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
+            if (fd == -1) _exit(127);
+            dup2(fd, STDOUT_FILENO);
+            close(fd);
+            std::vector<char*> cargs;
+            cargs.push_back(const_cast<char*>(prog.c_str()));
+            for (const auto& a : args) cargs.push_back(const_cast<char*>(a.c_str()));
+            cargs.push_back(nullptr);
+            execvp(cargs[0], cargs.data());
+            _exit(127);
+        } else if (pid > 0) {
+            int status = 0;
+            waitpid(pid, &status, 0);
+            return (WIFEXITED(status) ? WEXITSTATUS(status) : -1);
+        } else {
+            return -1;
+        }
+    };
+
+    std::vector<std::string> args = {"-root", "-display", std::string(DisplayString(Dis))};
+    int rc = RunProcessRedirectOutput(Constants::XWD, args, std::string(filename.data()));
+    (void)rc; // ignore return for now
 
     return 0;
 }

@@ -60,7 +60,12 @@ my $datname  = "viewtouch_data";
 # ####################################################################
 my $binaries  = getFiles( $binfiles, $binname );
 my $data      = getFiles( $datfiles, $datname );
-my $changelog = `/bin/cat $vt_bin_path/ChangeLog`;
+my $changelog = "";
+if ( open( my $CH, '<', "$vt_bin_path/ChangeLog" ) ) {
+    local $/;
+    $changelog = <$CH>;
+    close $CH;
+}
 
 my $file = "";
 if ( open( FILE, "$vt_install" ) ) {
@@ -71,11 +76,11 @@ if ( open( FILE, "$vt_install" ) ) {
     $file =~ s/!!!DATFILE!!!/$data/gs;
     $file =~ s/!!!CHANGELOG!!!/$changelog/gs;
     
-    if ( open( FILE, ">$installer" ) ) {
-        print FILE $file;
-        close( FILE );
-        system( "chmod 0755 $installer" );
-    }
+        if ( open( FILE, ">$installer" ) ) {
+            print FILE $file;
+            close( FILE );
+            system('chmod', '0755', $installer) == 0 or warn "packagerelease: chmod failed on $installer\n";
+        }
 } else {
     print STDERR "ERROR:  Cannot find vt_install script!!!!\n";
 }

@@ -238,6 +238,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 - **Receipt Settings: Update Kitchen Video Print Method Label (2026-01-20)**
   - Updated the Receipt Settings page UI text for better clarity and user experience
+
+### Recent Maintenance (2026-04-13)
+
+- **Security & Robustness:** Replaced unsafe shell usage across the codebase
+  - Replaced uses of `system()`, `popen()`, and `execl("/bin/sh", "sh", "-c", ...)` patterns with safer APIs or exec-based helpers and proper argument lists.
+  - Major changes include: `src/core/data_persistence_manager.cc`, `src/core/crash_report.cc`, `src/utils/utility.cc`, `term/term_view.cc`, and multiple helper scripts under `scripts/`.
+  - Vendor patch: `external/date/src/tz.cpp` was updated to use `std::filesystem` for file/directory operations and execv/createprocess-based helpers for archive extraction instead of `std::system()`.
+
+- **Build / CI:** enabled unit tests in CI and ran `ctest` locally
+  - GitHub Actions workflow updated to configure CMake with `-DBUILD_TESTING=ON` and run `ctest` after build.
+  - Local Debug build and unit tests executed successfully: 83/83 tests passed (2026-04-13).
+
+- **CMake Modernization:** moved a subset of global include directories to target-scoped includes
+  - Converted global `include_directories(...)` usage to `target_include_directories(...)` for `vtcore` and `image_data` to improve dependency visibility and catch missing includes earlier.
+
+- **Scripts:** audited and hardened Perl/shell scripts to avoid shell interpolation and unsafe backticks
+  - Replaced backticks and string-interpolated `system()` calls with list-form `system` or safe file I/O where appropriate (examples: `scripts/tools/update-client`, `scripts/tools/dat2txt`, `scripts/system/vtrun`).
+
+These changes were committed on a feature branch for review. See the PR for detailed diffs and rationale.
   - **Changes Made**:
     - Changed label from "Kitchen Video Print Method" to "Remote Video"
     - Updated option names from "Unmatched"/"Matched" to "Split Checks"/"Consolidate Checks"

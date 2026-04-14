@@ -241,26 +241,29 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(magic_enum)
 
-include_directories(main)
-include_directories(main/business)
-include_directories(main/hardware)
-include_directories(main/ui)
-include_directories(main/data)
-include_directories(zone)
-include_directories(src/core)
-include_directories(src/utils)
-include_directories(src/network)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(external)
-include_directories(/usr/include/freetype2)
+#include_directories(main)
+#include_directories(main/business)
+#include_directories(main/hardware)
+#include_directories(main/ui)
+#include_directories(main/data)
+#include_directories(zone)
+#include_directories(src/core)
+#include_directories(src/utils)
+#include_directories(src/network)
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+#include_directories(external)
+#include_directories(/usr/include/freetype2)
 
 string(TOUPPER ${CMAKE_SYSTEM_NAME} SYSTEM_UPPER)
 add_definitions(-DPLATFORM="${CMAKE_SYSTEM_NAME}")
 add_definitions(-DVIEWTOUCH_PATH="${VIEWTOUCH_PATH}")
+# Previously global include directories — moved to target-scoped includes below
+# (converted to target_include_directories(vtcore ...) to avoid leaking includes globally)
 add_definitions(-DKILLALL_CMD="/usr/bin/killall")
 add_definitions(-DLICENSE_SERVER="${LICENSE_SERVER}")
 add_definitions(-D${SYSTEM_UPPER})
 add_definitions(-DNODRM)
+ 
 
 set(TERM_CREDIT credit CACHE STRING "Credit source mode.  Can be credit, credit_cheq, credit_mcve")
 
@@ -291,6 +294,7 @@ add_library(conf_file STATIC
 # provide xdb image data, only vt_term needs to link, as it accesses 'ImageData'
 add_library(image_data STATIC
     src/core/image_data.cc src/core/image_data.hh)
+target_include_directories(image_data PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 find_package(ZLIB REQUIRED)
 if(NOT ZLIB_FOUND)
@@ -437,7 +441,19 @@ add_library(vtcore
 
 target_include_directories(vtcore PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}  # include generated files like build_number.h
-    ${CMAKE_CURRENT_BINARY_DIR}/_deps/magic_enum-src/include)
+    ${CMAKE_CURRENT_BINARY_DIR}/_deps/magic_enum-src/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/main
+    ${CMAKE_CURRENT_SOURCE_DIR}/main/business
+    ${CMAKE_CURRENT_SOURCE_DIR}/main/hardware
+    ${CMAKE_CURRENT_SOURCE_DIR}/main/ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/main/data
+    ${CMAKE_CURRENT_SOURCE_DIR}/zone
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/network
+    ${CMAKE_CURRENT_SOURCE_DIR}/external
+    /usr/include/freetype2)
 target_link_libraries(vtcore PUBLIC vt_version tz spdlog::spdlog nlohmann_json::nlohmann_json magic_enum::magic_enum)
 
 add_executable(vtpos 

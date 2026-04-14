@@ -87,7 +87,12 @@ sub CheckRestart {
     my $restart = IsRestartTime();
     if ( -f $restart_file ) {
         unlink( $restart_file );
-        system( "touch $restart_lock" );
+        # Create restart lock file without invoking a shell
+        if ( open(my $rfh, '>', $restart_lock) ) {
+            close($rfh);
+        } else {
+            warn "vtrun: failed to create restart lock $restart_lock: $!\n";
+        }
         $retval = 1;
     } elsif ( $restart ) {
         $retval = 1 unless ( -f $restart_lock );
@@ -162,7 +167,9 @@ sub TimeToSeconds {
 sub StartViewTouch {
     unless ( -f $nostart_file ) {
         if ( fork() == 0 ) {
-            exec( $start_viewtouch );
+            # Use exec with list form to avoid shell interpretation
+            my @cmd = split /\s+/, $start_viewtouch;
+            exec @cmd;
         }
     }
 }
@@ -174,7 +181,9 @@ sub StartViewTouch {
 #  we'll assume the user knows what to do.
 # --------------------------------------------------------------------
 sub StopViewTouch {
-    system( $stop_viewtouch );
+    # Run stop command without shell: split configured command into argv
+    my @cmd = split /\s+/, $stop_viewtouch;
+    system(@cmd) == 0 or warn "vtrun: StopViewTouch failed: @cmd\n";
 }
 
 # --------------------------------------------------------------------

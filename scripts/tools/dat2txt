@@ -13,6 +13,7 @@
 # INITIALIZATION AND GLOBAL VARIABLES
 # ########################################################################
 use strict;
+use File::Copy qw(copy);
 
 my $srcdir  = `pwd`; chomp( $srcdir );
 my $destdir = $srcdir . "/tmp";
@@ -23,7 +24,7 @@ my $DECODER_RING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567
 # MAIN LOOP
 # ########################################################################
 if ( !-d $destdir ) {
-    system( "mkdir $destdir" );
+    mkdir $destdir or die "Failed to create $destdir: $!\n";
 }
 
 my @filelist;
@@ -58,11 +59,25 @@ foreach ( @filelist ) {
     my $txtfile = "$destdir/$file.txt";
     my $decoded = "$destdir/$file.decoded";
     print "Processing $file\n";
-    my $gzipped = `file $file`;
-    if ( $gzipped =~ /gzip/ ) {
-        system( "cat $file | gunzip > $txtfile" );
+    # Detect gzip by magic bytes (0x1f 0x8b)
+    my $is_gz = 0;
+    if ( open(my $fh, '<:raw', $file) ) {
+        my $hdr;
+        if ( read($fh, $hdr, 2) == 2 ) {
+            $is_gz = (ord(substr($hdr,0,1)) == 0x1f && ord(substr($hdr,1,1)) == 0x8b);
+        }
+        close($fh);
+    }
+    if ( $is_gz ) {
+        open(my $in, '-|', 'gunzip', '-c', $file) or die "Failed to run gunzip: $!\n";
+        open(my $out, '>', $txtfile) or die "Cannot write $txtfile: $!\n";
+        while ( my $line = <$in> ) {
+            print $out $line;
+        }
+        close($in);
+        close($out);
     } else {
-        system( "cp $file $txtfile" );
+        copy($file, $txtfile) or warn "Failed to copy $file to $txtfile: $!\n";
     }
     if ( open( INFILE, $txtfile ) ) {
         if ( open( OUTFILE, ">" . $decoded ) ) {

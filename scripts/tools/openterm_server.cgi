@@ -15,7 +15,8 @@ if ( keys %parms ) {
     }
 }
 if ( exists( $parms{'ipadd'} ) && exists( $parms{'name'} ) ) {
-    system( "/usr/viewtouch/bin/vt_openterm -n $parms{'name'} $parms{'ipadd'}" );
+    system('/usr/viewtouch/bin/vt_openterm', '-n', $parms{'name'}, $parms{'ipadd'}) == 0
+        or warn "openterm_server: failed to run vt_openterm for $parms{'name'}\n";
 }
 
 print "Content-type:  text/plain\n\n";

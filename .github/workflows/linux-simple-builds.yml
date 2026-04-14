@@ -96,6 +96,7 @@ jobs:
       run: |
         echo "Configuring build for ${{matrix.cxx}}..."
         cmake -S . -B _build_${{matrix.cxx}}_${{matrix.std}} \
+          -DBUILD_TESTING=ON \
           -DCMAKE_INSTALL_PREFIX="${PWD}/_install_${{matrix.cxx}}_${{matrix.std}}" \
           -DCMAKE_BUILD_TYPE="${{matrix.build_type}}" \
           -DCMAKE_CXX_STANDARD=${{matrix.std}} \
@@ -125,7 +126,16 @@ jobs:
         fi
 
         if [ -f "_build_${{matrix.cxx}}_${{matrix.std}}/vt_main" ]; then
-          echo "Build appears successful, proceeding with install..."
+          echo "Build appears successful, running tests..."
+          set +e
+          timeout 120 ctest --test-dir _build_${{matrix.cxx}}_${{matrix.std}} --output-on-failure
+          TEST_EXIT_CODE=$?
+          set -e
+          if [ $TEST_EXIT_CODE -ne 0 ]; then
+            echo "Tests failed with exit code $TEST_EXIT_CODE"
+            exit $TEST_EXIT_CODE
+          fi
+          echo "Tests passed, proceeding with install..."
           timeout 120 cmake --build _build_${{matrix.cxx}}_${{matrix.std}} --target install
         else
           echo "Build failed - executable not found"

@@ -51,8 +51,52 @@
 #include <errno.h>
 #include <ucontext.h>
 #include <fcntl.h>
+#include <thread>
+#include <sys/wait.h>
 
 namespace vt_crash {
+
+    // Helper to execute a command (without a shell) and capture stdout.
+    // Redirects stderr to /dev/null to mimic previous behavior where stderr was silenced.
+    static bool ExecCaptureOutput(const std::vector<std::string>& argv, std::string& out) {
+        int pipefd[2];
+        if (pipe(pipefd) == -1) return false;
+        pid_t pid = fork();
+        if (pid == -1) {
+            close(pipefd[0]); close(pipefd[1]);
+            return false;
+        }
+        if (pid == 0) {
+            // Child
+            close(pipefd[0]);
+            dup2(pipefd[1], STDOUT_FILENO);
+            int devnull = open("/dev/null", O_WRONLY);
+            if (devnull != -1) {
+                dup2(devnull, STDERR_FILENO);
+                close(devnull);
+            }
+            close(pipefd[1]);
+            std::vector<char*> cargs;
+            for (const auto& s : argv) cargs.push_back(const_cast<char*>(s.c_str()));
+            cargs.push_back(nullptr);
+            execvp(cargs[0], cargs.data());
+            _exit(127);
+        } else {
+            // Parent
+            close(pipefd[1]);
+            std::string result;
+            char buffer[1024];
+            ssize_t n;
+            while ((n = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
+                result.append(buffer, buffer + n);
+            }
+            close(pipefd[0]);
+            int status = 0;
+            waitpid(pid, &status, 0);
+            out = result;
+            return (WIFEXITED(status) && WEXITSTATUS(status) == 0);
+        }
+    }
 
     // Global crash report directory
     static std::string g_crash_report_dir = "/usr/viewtouch/dat/crashreports";
@@ -241,18 +285,24 @@ namespace vt_crash {
             if (cpu_count > 0) {
                 oss << "  CPU Cores: " << cpu_count << "\n";
             } else {
-                // Try to get from /proc/stat or use nproc
-                FILE* nproc = popen("nproc 2>/dev/null", "r");
-                if (nproc) {
-                    char buffer[32];
-                    if (fgets(buffer, sizeof(buffer), nproc)) {
-                        std::string cores(buffer);
-                        while (!cores.empty() && (cores.back() == '\n' || cores.back() == '\r')) {
-                            cores.pop_back();
+                // Prefer std::thread::hardware_concurrency(); fallback to parsing /proc/stat
+                unsigned int hwc = std::thread::hardware_concurrency();
+                if (hwc > 0) {
+                    oss << "  CPU Cores: " << hwc << "\n";
+                } else {
+                    std::ifstream procstat("/proc/stat");
+                    if (procstat) {
+                        std::string line;
+                        int parsed_cpus = 0;
+                        while (std::getline(procstat, line)) {
+                            if (line.rfind("cpu", 0) == 0 && line.size() > 3 && isdigit(static_cast<unsigned char>(line[3]))) {
+                                parsed_cpus++;
+                            }
                         }
-                        oss << "  CPU Cores: " << cores << "\n";
+                        if (parsed_cpus > 0) {
+                            oss << "  CPU Cores: " << parsed_cpus << "\n";
+                        }
                     }
-                    pclose(nproc);
                 }
             }
         } else {
@@ -350,35 +400,31 @@ namespace vt_crash {
         }
         
         cmd << addr2line_cmd << " -e " << executable_path 
-            << " -f -C -p 0x" << std::hex << reinterpret_cast<uintptr_t>(addr) << std::dec
-            << " 2>/dev/null";
-        
-        FILE* pipe = popen(cmd.str().c_str(), "r");
-        if (!pipe) {
-            return "";
+            << " -f -C -p 0x" << std::hex << reinterpret_cast<uintptr_t>(addr) << std::dec;
+
+        // Execute addr2line without a shell to avoid shell interpretation
+        std::vector<std::string> argv = {addr2line_cmd, "-e", executable_path, "-f", "-C", "-p"};
+        {
+            std::ostringstream oss_addr;
+            oss_addr << "0x" << std::hex << reinterpret_cast<uintptr_t>(addr) << std::dec;
+            argv.push_back(oss_addr.str());
         }
-        
-        char buffer[1024];
+
+        std::string out;
+        bool ok = ExecCaptureOutput(argv, out);
+        if (!ok) return std::string();
+
+        std::istringstream iss(out);
         std::string result;
-        // Read first line (function name and file:line)
-        if (fgets(buffer, sizeof(buffer), pipe)) {
-            result = buffer;
-            // Remove trailing newline
+        if (std::getline(iss, result)) {
             while (!result.empty() && (result.back() == '\n' || result.back() == '\r')) {
                 result.pop_back();
             }
-            // If result is "??" or empty, addr2line couldn't decode it
             if (result == "??" || result.empty() || result.find("??") == 0) {
                 result.clear();
             }
         }
-        
-        int status = pclose(pipe);
-        // If addr2line failed (non-zero exit), return empty
-        if (status != 0) {
-            result.clear();
-        }
-        
+
         return result;
     }
 

@@ -23,6 +23,7 @@
 #include "fntrace.hh"
 #include "safe_string_utils.hh"
 #include "cpp23_utils.hh"
+#include "logger.hh"
 
 #include <unistd.h>
 #include <ctime>
@@ -31,6 +32,7 @@
 #include <cstring>
 #include <cctype>
 #include <iostream>
+#include <filesystem>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -645,8 +647,15 @@ int RestoreBackup(const genericChar* filename)
     if (DoesFileExist(str) == 0)
         return 1;  // No backup to restore
 
-    vt::cpp23::format_to_buffer(str, sizeof(str), "/bin/cp {}.bak {}", filename, filename);
-    return system(str);
+    try {
+        std::filesystem::path src = std::filesystem::path(std::string(filename) + ".bak");
+        std::filesystem::path dst = std::filesystem::path(filename);
+        std::filesystem::copy_file(src, dst, std::filesystem::copy_options::overwrite_existing);
+        return 0;
+    } catch (const std::filesystem::filesystem_error& e) {
+        logmsg(LOG_ERR, "RestoreBackup failed: %s", e.what());
+        return 1;
+    }
 }
 
 

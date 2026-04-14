@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <vector>
 #include <filesystem>
 #include <utility>
 #include <unistd.h>
@@ -29,20 +30,49 @@ static int ExecuteCommandWithTimeout(const std::string& command, std::chrono::se
         return -1; // Pipe creation failed
     }
 
+    // Tokenize command into argv-like vector, stop at any redirection operator.
+    std::istringstream iss(command);
+    std::vector<std::string> args;
+    std::string token;
+    bool redirect_to_devnull = false;
+    while (iss >> token) {
+        if (token == ">" || token.find('>') != std::string::npos) {
+            redirect_to_devnull = true;
+            break;
+        }
+        args.push_back(token);
+    }
+
+    if (args.empty()) {
+        close(pipefd[0]); close(pipefd[1]);
+        return -1;
+    }
+
     pid_t pid = fork();
     if (pid == -1) {
-        close(pipefd[0]);
-        close(pipefd[1]);
+        close(pipefd[0]); close(pipefd[1]);
         return -1; // Fork failed
     }
 
     if (pid == 0) { // Child process
-        close(pipefd[0]); // Close read end
-        dup2(pipefd[1], STDOUT_FILENO);
-        dup2(pipefd[1], STDERR_FILENO);
+        close(pipefd[0]);
+        if (redirect_to_devnull) {
+            int devnull = open("/dev/null", O_WRONLY);
+            if (devnull != -1) {
+                dup2(devnull, STDOUT_FILENO);
+                dup2(devnull, STDERR_FILENO);
+                close(devnull);
+            }
+        } else {
+            dup2(pipefd[1], STDOUT_FILENO);
+            dup2(pipefd[1], STDERR_FILENO);
+        }
         close(pipefd[1]);
 
-        execl("/bin/sh", "sh", "-c", command.c_str(), nullptr);
+        std::vector<char*> cargs;
+        for (auto &s : args) cargs.push_back(const_cast<char*>(s.c_str()));
+        cargs.push_back(nullptr);
+        execvp(cargs[0], cargs.data());
         _exit(127); // exec failed
     } else { // Parent process
         close(pipefd[1]); // Close write end
@@ -77,11 +107,24 @@ static bool CopyDirectoryRecursively(const std::filesystem::path& source,
                                    const std::filesystem::path& destination)
 {
     try {
-        // Use system cp command for reliability across different C++ stdlib versions
-        std::string cmd = "cp -r \"" + source.string() + "\"/* \"" + destination.string() + "/\" 2>/dev/null || true";
-        int result = system(cmd.c_str());
-        return result == 0;
-    } catch (const std::exception&) {
+        std::filesystem::create_directories(destination);
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(source)) {
+            const auto& path = entry.path();
+            auto relative_path = std::filesystem::relative(path, source);
+            auto target_path = destination / relative_path;
+            if (entry.is_directory()) {
+                std::filesystem::create_directories(target_path);
+            } else if (entry.is_regular_file()) {
+                std::filesystem::create_directories(target_path.parent_path());
+                std::filesystem::copy_file(path, target_path, std::filesystem::copy_options::overwrite_existing);
+            } else if (entry.is_symlink()) {
+                std::filesystem::create_directories(target_path.parent_path());
+                std::filesystem::copy(path, target_path, std::filesystem::copy_options::overwrite_existing);
+            }
+        }
+        return true;
+    } catch (const std::exception& e) {
+        logmsg(LOG_ERR, "CopyDirectoryRecursively failed: %s", e.what());
         return false;
     }
 }
@@ -823,12 +866,11 @@ void DataPersistenceManager::CreateBackup()
     backup_dir << config.backup_directory << "/viewtouch_backup_" << time_val;
 
     try {
-        // Create backup directory using mkdir
-        std::string mkdir_cmd = "mkdir -p \"" + backup_dir.str() + "\"";
-        int mkdir_result = system(mkdir_cmd.c_str());
-
-        if (mkdir_result != 0) {
-            LogError("Failed to create backup directory: " + backup_dir.str(), "backup");
+        // Create backup directory using std::filesystem
+        std::error_code ec;
+        std::filesystem::create_directories(backup_dir.str(), ec);
+        if (ec) {
+            LogError("Failed to create backup directory: " + backup_dir.str() + " - " + ec.message(), "backup");
             return;
         }
 

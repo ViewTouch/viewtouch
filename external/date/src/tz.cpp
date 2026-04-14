@@ -112,6 +112,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <filesystem>
 #include <sys/stat.h>
 
 // unistd.h is used on some platforms as part of the the means to get
@@ -2978,11 +2979,16 @@ remove_folder_and_subfolders(const std::string& folder)
 {
 #  ifdef _WIN32
 #    if USE_SHELL_API
-    // Delete the folder contents by deleting the folder.
-    std::string cmd = "rd /s /q \"";
-    cmd += folder;
-    cmd += '\"';
-    return std::system(cmd.c_str()) == EXIT_SUCCESS;
+    // Prefer std::filesystem to shelling out.
+    try
+    {
+        std::filesystem::remove_all(folder);
+        return true;
+    }
+    catch (const std::filesystem::filesystem_error&)
+    {
+        return false;
+    }
 #    else  // !USE_SHELL_API
     // Create a buffer containing the path to delete. It must be terminated
     // by two nuls. Who designs these API's...
@@ -3001,7 +3007,15 @@ remove_folder_and_subfolders(const std::string& folder)
 #    endif  // !USE_SHELL_API
 #  else   // !_WIN32
 #    if USE_SHELL_API
-    return std::system(("rm -R " + folder).c_str()) == EXIT_SUCCESS;
+    try
+    {
+        std::filesystem::remove_all(folder);
+        return true;
+    }
+    catch (const std::filesystem::filesystem_error&)
+    {
+        return false;
+    }
 #    else // !USE_SHELL_API
     struct dir_deleter {
         dir_deleter() {}
@@ -3057,17 +3071,29 @@ make_directory(const std::string& folder)
 {
 #  ifdef _WIN32
 #    if USE_SHELL_API
-    // Re-create the folder.
-    std::string cmd = "mkdir \"";
-    cmd += folder;
-    cmd += '\"';
-    return std::system(cmd.c_str()) == EXIT_SUCCESS;
+    try
+    {
+        std::filesystem::create_directories(folder);
+        return true;
+    }
+    catch (const std::filesystem::filesystem_error&)
+    {
+        return false;
+    }
 #    else  // !USE_SHELL_API
     return _mkdir(folder.c_str()) == 0;
 #    endif // !USE_SHELL_API
 #  else  // !_WIN32
 #    if USE_SHELL_API
-    return std::system(("mkdir -p " + folder).c_str()) == EXIT_SUCCESS;
+    try
+    {
+        std::filesystem::create_directories(folder);
+        return true;
+    }
+    catch (const std::filesystem::filesystem_error&)
+    {
+        return false;
+    }
 #    else  // !USE_SHELL_API
     return mkdir(folder.c_str(), 0777) == 0;
 #    endif  // !USE_SHELL_API
@@ -3080,16 +3106,27 @@ delete_file(const std::string& file)
 {
 #  ifdef _WIN32
 #    if USE_SHELL_API
-    std::string cmd = "del \"";
-    cmd += file;
-    cmd += '\"';
-    return std::system(cmd.c_str()) == 0;
+    try
+    {
+        return std::filesystem::remove(file);
+    }
+    catch (const std::filesystem::filesystem_error&)
+    {
+        return false;
+    }
 #    else  // !USE_SHELL_API
     return _unlink(file.c_str()) == 0;
 #    endif // !USE_SHELL_API
 #  else  // !_WIN32
 #    if USE_SHELL_API
-    return std::system(("rm " + file).c_str()) == EXIT_SUCCESS;
+    try
+    {
+        return std::filesystem::remove(file);
+    }
+    catch (const std::filesystem::filesystem_error&)
+    {
+        return false;
+    }
 #    else // !USE_SHELL_API
     return unlink(file.c_str()) == 0;
 #    endif // !USE_SHELL_API
@@ -3103,12 +3140,15 @@ bool
 move_file(const std::string& from, const std::string& to)
 {
 #    if USE_SHELL_API
-    std::string cmd = "move \"";
-    cmd += from;
-    cmd += "\" \"";
-    cmd += to;
-    cmd += '\"';
-    return std::system(cmd.c_str()) == EXIT_SUCCESS;
+    try
+    {
+        std::filesystem::rename(from, to);
+        return true;
+    }
+    catch (const std::filesystem::filesystem_error&)
+    {
+        return false;
+    }
 #    else  // !USE_SHELL_API
     return !!::MoveFile(from.c_str(), to.c_str());
 #    endif // !USE_SHELL_API
@@ -3160,7 +3200,6 @@ get_unzip_program()
     return path;
 }
 
-#    if !USE_SHELL_API
 static
 int
 run_program(const std::string& command)
@@ -3188,7 +3227,7 @@ run_program(const std::string& command)
     }
     return EXIT_FAILURE;
 }
-#    endif // !USE_SHELL_API
+ 
 
 static
 std::string
@@ -3223,18 +3262,9 @@ extract_gz_file(const std::string& version, const std::string& gz_file,
     cmd += dest_folder;
     cmd += '\"';
 
-#    if USE_SHELL_API
-    // When using shelling out with std::system() extra quotes are required around the
-    // whole command. It's weird but necessary it seems, see:
-    // http://stackoverflow.com/q/27975969/576911
-
-    cmd = "\"" + cmd + "\"";
-    if (std::system(cmd.c_str()) == EXIT_SUCCESS)
-        unzip_result = true;
-#    else  // !USE_SHELL_API
+    // Use CreateProcess-based helper rather than shelling out.
     if (run_program(cmd) == EXIT_SUCCESS)
         unzip_result = true;
-#    endif // !USE_SHELL_API
     if (unzip_result)
         delete_file(gz_file);
 
@@ -3248,14 +3278,9 @@ extract_gz_file(const std::string& version, const std::string& gz_file,
     cmd += "\" -o\"";
     cmd += get_install();
     cmd += '\"';
-#    if USE_SHELL_API
-    cmd = "\"" + cmd + "\"";
-    if (std::system(cmd.c_str()) == EXIT_SUCCESS)
-        unzip_result = true;
-#    else  // !USE_SHELL_API
+    // Use CreateProcess-based helper rather than shelling out.
     if (run_program(cmd) == EXIT_SUCCESS)
         unzip_result = true;
-#    endif // !USE_SHELL_API
 
     if (unzip_result)
         delete_file(tar_file);
@@ -3273,7 +3298,6 @@ get_download_mapping_file(const std::string& version)
 
 #  else  // !_WIN32
 
-#    if !USE_SHELL_API
 static
 int
 run_program(const char* prog, const char*const args[])
@@ -3317,22 +3341,17 @@ run_program(const char* prog, const char*const args[])
     exit(EXIT_FAILURE);
     return EXIT_FAILURE;
 }
-#    endif // !USE_SHELL_API
 
 static
 bool
 extract_gz_file(const std::string&, const std::string& gz_file, const std::string&)
 {
-#    if USE_SHELL_API
-    bool unzipped = std::system(("tar -xzf " + gz_file + " -C " + get_install()).c_str()) == EXIT_SUCCESS;
-#    else  // !USE_SHELL_API
-    const char prog[] = {"/usr/bin/tar"};
+    const char prog[] = "/usr/bin/tar";
     const char*const args[] =
     {
         prog, "-xzf", gz_file.c_str(), "-C", get_install().c_str(), nullptr
     };
     bool unzipped = (run_program(prog, args) == EXIT_SUCCESS);
-#    endif // !USE_SHELL_API
     if (unzipped)
     {
         delete_file(gz_file);

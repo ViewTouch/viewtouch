@@ -100,8 +100,15 @@ sub ReadConfig {
 # GetFileList:
 # --------------------------------------------------------------------
 sub GetFileList {
-    my $list = `$webget $webgetopts $update_url`;
-    return( $list );
+    my $data = '';
+    open(my $fh, '-|', $webget, (split /\s+/, $webgetopts), $update_url)
+        or die "update-client: failed to run $webget: $!\n";
+    {
+        local $/;
+        $data = <$fh>;
+    }
+    close($fh);
+    return $data;
 }
 
 # --------------------------------------------------------------------
@@ -113,7 +120,19 @@ sub CheckFile {
     my ( $name, $size, $csum ) = @_;
     my $retval = 0;
     my $local = $local_dir . $name;
-    my ( $lcsum, $lsize, $full ) = split( m/ /, `$cksum $local` );
+    my ( $lcsum, $lsize, $full ) = (0,0,'');
+    {
+        open(my $ckfh, '-|', $cksum, $local) or do {
+            warn "update-client: failed to run $cksum: $!\n";
+            return 0;
+        };
+        my $line = <$ckfh>;
+        close($ckfh);
+        chomp $line if defined $line;
+        if (defined $line) {
+            ( $lcsum, $lsize, $full ) = split( m/ /, $line );
+        }
+    }
     if ( $lcsum != $csum || $lsize != $size ) {
         $retval = 1;
     }
@@ -127,6 +146,9 @@ sub CheckFile {
 sub GetFile {
     my ( $filename ) = @_;
     chdir( $updates_dir );
-    system( "$webget $webgetopts $webgetdlopts $file_url/$filename" );
+    my @opts = split /\s+/, $webgetopts;
+    my @dlopts = split /\s+/, $webgetdlopts;
+    my @cmd = ($webget, @opts, @dlopts, "$file_url/$filename");
+    system(@cmd) == 0 or warn "update-client: download failed for $filename\n";
 }
 
