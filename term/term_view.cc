@@ -13,7 +13,10 @@
 #include <X11/cursorfont.h>
 #include <X11/xpm.h>
 #include <X11/Xft/Xft.h>
+#include "src/core/x11_safe.hh"
 #include <fontconfig/fontconfig.h>
+#include "src/core/thread_pool.hh"
+#include "src/utils/vt_logger.hh"
 
 #ifdef HAVE_PNG
 #include <png.h>
@@ -75,6 +78,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <mutex>
+#include <atomic>
 #include <chrono>
 #include <iostream>
 #include <vector>
@@ -786,8 +790,7 @@ void X11ResourceManager::cleanup() {
     }
     
     if (Dis) {
-        XtCloseDisplay(Dis);
-        Dis = nullptr;
+        XtCloseDisplaySafe(Dis);
     }
     
     if (App) {
@@ -806,16 +809,21 @@ static int          Colors    = 0;
 static int          MaxColors = 0;
 static std::array<Ulong, 256> Palette{};
 static int          ScreenBlankTime = 60;
-static int          UpdateTimerID = 0;
-static int          TouchInputID  = 0;
+// Timer/input IDs. Protected by `update_timer_mutex` where appropriate.
+static XtIntervalId  UpdateTimerID = (XtIntervalId)0;
+static XtInputId     TouchInputID = (XtInputId)0;
 static std::unique_ptr<TouchScreen> TScreen = nullptr;
 static int          ResetTime = 20;
 static TimeInfo     TimeOut, LastInput;
 static int          CalibrateStage = 0;
-static int          SocketInputID = 0;
+static XtInputId     SocketInputID = (XtInputId)0;
 static Cursor       CursorPointer = 0;
 static Cursor       CursorBlank = 0;
 static Cursor       CursorWait = 0;
+
+// Prevent races between timer callbacks and shutdown/cleanup.
+static std::atomic_bool app_shutting_down{false};
+static std::mutex update_timer_mutex;
 
 #ifndef NO_MOTIF
 static std::unique_ptr<PageDialog>      PDialog = nullptr;
@@ -1181,9 +1189,17 @@ void UpdateCB(XtPointer /*client_data*/, XtIntervalId * /*timer_id*/)
         }
     }
     
-    // Critical fix: Clear the old timer ID before setting new one to prevent race condition
-    UpdateTimerID = 0;
-    UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, nullptr);
+    // Re-arm timer unless shutdown has started. Protect access with mutex
+    {
+        std::lock_guard<std::mutex> lock(update_timer_mutex);
+        if (app_shutting_down.load() || App == nullptr) {
+            UpdateTimerID = 0;
+            return;
+        }
+        // Clear the old timer id then add a new timeout
+        UpdateTimerID = 0;
+        UpdateTimerID = XtAppAddTimeOut(App, update_time, (XtTimerCallbackProc) UpdateCB, nullptr);
+    }
 }
 
 void TouchScreenCB(XtPointer /*client_data*/, int * /*fid*/, XtInputId * /*id*/)
@@ -2166,8 +2182,28 @@ void SocketInputCB(XtPointer client_data, int *fid, XtInputId *id)
             Layers.SetCursor(l, RInt16());
             break;
         case TERM_DIE:
-            KillTerm();
-            exit(0);
+            // Request a graceful shutdown: remove socket input, close socket,
+            // stop timers/inputs and allow the main loop to exit and perform
+            // final cleanup in KillTerm() from main(). Avoid calling
+            // KillTerm()/exit() directly inside the input callback.
+            app_shutting_down.store(true);
+            if (SocketInputID != 0 && App) {
+                try {
+                    XtRemoveInput(SocketInputID);
+                } catch (...) {
+                    fprintf(stderr, "SocketInputCB: Exception removing socket input during shutdown\n");
+                }
+                SocketInputID = 0;
+            }
+            if (SocketNo > 0) {
+                close(SocketNo);
+                SocketNo = -1;
+            }
+            // Stop periodic callbacks; it's safe here in the main event thread
+            StopTouches();
+            StopUpdates();
+            // Let the event loop detect the closed socket/input and exit
+            return;
             break;
         case TERM_NEWWINDOW:
             n1 = RInt16();
@@ -3561,7 +3597,7 @@ int DrawScreenSaver()
         GenericDrawStringXftAntialiased(Dis, MainWin, xftdraw, font, &render_color, 
                                        draw_x, draw_y, text, text_len, ScrNo);
         
-        XftDrawDestroy(xftdraw);
+        XftDrawDestroySafe(Dis, xftdraw);
     }
     
     // Store previous position for next erase
@@ -3678,24 +3714,27 @@ int EndCalibrate()
 int StartTimers()
 {
     FnTrace("StartTimers()");
+    std::lock_guard<std::mutex> lock(update_timer_mutex);
 
-    if (UpdateTimerID == 0)
-	{
-        UpdateTimerID = XtAppAddTimeOut(App, Constants::UPDATE_TIME,
-                                        (XtTimerCallbackProc) UpdateCB, nullptr);
-	}
+    if (!app_shutting_down.load()) {
+        if (UpdateTimerID == 0)
+        {
+            UpdateTimerID = XtAppAddTimeOut(App, Constants::UPDATE_TIME,
+                                            (XtTimerCallbackProc) UpdateCB, nullptr);
+        }
 
-    if (TouchInputID == 0 && TScreen && TScreen->device_no > 0)
-	{
-        // Initialize enhanced touchscreen features
-        InitializeTouchScreen();
-        
-        TouchInputID = XtAppAddInput(App, 
-                                     TScreen->device_no, 
-                                     (XtPointer) XtInputReadMask, 
-                                     (XtInputCallbackProc) TouchScreenCB, 
-                                     nullptr);
-	}
+        if (TouchInputID == 0 && TScreen && TScreen->device_no > 0)
+        {
+            // Initialize enhanced touchscreen features
+            InitializeTouchScreen();
+
+            TouchInputID = XtAppAddInput(App, 
+                                         TScreen->device_no, 
+                                         (XtPointer) XtInputReadMask, 
+                                         (XtInputCallbackProc) TouchScreenCB, 
+                                         nullptr);
+        }
+    }
 
     return 0;
 }
@@ -3728,14 +3767,14 @@ int InitializeTouchScreen()
 int StopTouches()
 {
     FnTrace("StopTouches()");
+    std::lock_guard<std::mutex> lock(update_timer_mutex);
 
     if (TouchInputID)
     {
-        // Try to remove the input handler, but don't crash if Xt context is invalid
-        try {
+        // Avoid calling XtRemoveInput if we're already shutting down
+        if (!app_shutting_down.load() && App)
+        {
             XtRemoveInput(TouchInputID);
-        } catch (...) {
-            fprintf(stderr, "StopTouches: Exception during XtRemoveInput, continuing\n");
         }
         TouchInputID = 0;
     }
@@ -3745,15 +3784,15 @@ int StopTouches()
 int StopUpdates()
 {
     FnTrace("StopUpdates()");
+    // Guard access to the timer id with a mutex and avoid calling
+    // XtRemoveTimeOut once shutdown has started.
+    std::lock_guard<std::mutex> lock(update_timer_mutex);
 
-    // XtRemoveTimeOut can crash if the application context has already been
-    // destroyed. Guard against null context and wrap removal in a try block.
-    if (UpdateTimerID && App)
+    if (UpdateTimerID)
     {
-        try {
+        if (!app_shutting_down.load() && App)
+        {
             XtRemoveTimeOut(UpdateTimerID);
-        } catch (...) {
-            fprintf(stderr, "StopUpdates: Exception during XtRemoveTimeOut, continuing\n");
         }
         UpdateTimerID = 0;
     }
@@ -4215,7 +4254,7 @@ void ShowReconnectingMessage()
     if (draw) {
         XftDrawStringUtf8(draw, &color, XftFontsArr[FONT_TIMES_24], x, y + FontBaseline[FONT_TIMES_24],
                          reinterpret_cast<const FcChar8*>(message), message_len);
-        XftDrawDestroy(draw);
+        XftDrawDestroySafe(Dis, draw);
     }
 
     XMapRaised(Dis, reconnect_window);
@@ -4322,28 +4361,25 @@ int ReconnectToServer()
 void RestartTerminal()
 {
     FnTrace("RestartTerminal()");
-    
-    // Clean up resources
+    // Signal shutdown to timer/callback code to avoid races
+    app_shutting_down.store(true);
+
+    // Clean up resources (avoid calling XtRemove* directly; let event loop quiesce)
     StopTouches();
     StopUpdates();
-    
+
+    // Do not call XtRemoveInput here - it's unsafe during shutdown; just clear id
     if (SocketInputID != 0)
     {
-        // Try to remove the input handler, but don't crash if Xt context is invalid
-        try {
-            XtRemoveInput(SocketInputID);
-        } catch (...) {
-            fprintf(stderr, "Cleanup: Exception during XtRemoveInput, continuing\n");
-        }
         SocketInputID = 0;
     }
-    
+
     if (SocketNo > 0)
     {
         close(SocketNo);
         SocketNo = -1;
     }
-    
+
     // Exit the terminal gracefully
     exit(0);
 }
@@ -4353,6 +4389,13 @@ int KillTerm()
     FnTrace("KillTerm()");
 
     int i;
+
+    // Signal shutdown so callbacks won't re-arm timers or remove inputs concurrently
+    app_shutting_down.store(true);
+
+    // Ensure logging and async workers are stopped before touching X resources
+    try { vt::Logger::Shutdown(); } catch(...) {}
+    try { vt::ThreadPool::instance().shutdown(); } catch(...) {}
 
     StopTouches();
     StopUpdates();
@@ -4429,14 +4472,17 @@ int KillTerm()
     }
     if (Dis)
     {
-        XtCloseDisplay(Dis);
-        Dis = nullptr;
+        XtCloseDisplaySafe(Dis);
     }
     if (App)
     {
         XtDestroyApplicationContext(App);
         App = nullptr;
     }
+    // Finalize fontconfig after the X display has been closed so that
+    // Xft's internal cleanup (which may call into fontconfig) can run
+    // while fontconfig is still initialized.
+    try { FcFini(); } catch(...) {}
     return 0;
 }
 

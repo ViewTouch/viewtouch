@@ -15,6 +15,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - NOTE: This feature is experimental and a work in progress — bugs are likely. Use with caution and report any issues you encounter.
 
 ### Fixed
+ - **Shutdown: Prevent Xft/Xrender crash & finalize font handling (2026-04-14)**
+   - Implemented coordinated shutdown to avoid races between Xt timers/inputs and X display close; added `app_shutting_down` flag and `update_timer_mutex` to serialize timer/input removal and re-arming.
+   - Replaced immediate `KillTerm()/exit()` calls from input callbacks with a cooperative shutdown request so the event loop and callbacks can unwind safely.
+   - Ensure background logging and worker threads are stopped during shutdown by calling `spdlog::shutdown()` in `Logger::Shutdown()` and shutting down the global `vt::ThreadPool` early in `KillTerm()`.
+   - Close Xft fonts with `XftFontClose()` and call `FcFini()` after the display has been closed to prevent Xft from calling into finalized fontconfig during `XCloseDisplay`.
+   - Files modified: `term/term_view.cc`, `src/utils/vt_logger.cc`.
+   - Impact: reduces shutdown-time SEGVs and Xft/Xlib race conditions; follow-up: audit startup `XftFontOpenName` usages to eliminate remaining fontconfig leaks.
+
  - **Auto-Update vt_data: Prevent automatic updates when disabled (2026-04-09)**
    - Fixed unexpected vt_data downloads/updates triggered when restarting or shutting down from non-server displays even when "Auto-Update vt_data on Startup" is OFF.
    - Root Cause: early startup autoupdate script executed based on `.viewtouch_config.autoupdate` before the authoritative fixed settings were consulted; restart flows that use the command file + vtrestart could relaunch `vt_main` which ran the script regardless of the UI toggle.

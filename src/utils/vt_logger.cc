@@ -209,6 +209,12 @@ void Logger::Shutdown() {
         if (structured_logger_) {
             structured_logger_->flush();
         }
+        // Ensure spdlog async thread pool and resources are stopped
+        try {
+            spdlog::shutdown();
+        } catch (...) {
+            // Best-effort - if shutdown fails, continue cleanup
+        }
         // Drop all loggers to release file handles
         spdlog::drop_all();
         logger_.reset();
