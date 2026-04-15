@@ -1503,8 +1503,7 @@ int ItemListZone::ListReport(Terminal *t, Report *r)
         
         Str iname;
         admission_parse_hash_name(iname, si->item_name);
-        r->TextL(iname.Value(), my_color);
-        r->TextR(t->FormatPrice(si->cost), my_color);
+        r->TextKV(iname.Value(), t->FormatPrice(si->cost), my_color, my_color);
         r->NewLine();
         si = si->next;
     }
@@ -1943,10 +1942,10 @@ int InvoiceZone::ListReport(Terminal *t, Report *r)
     {
         r->TextL(t->TimeDate(in->time, TD_DATE));
         Vendor *v = sys->inventory.FindVendorByID(in->vendor_id);
-        if (v)
-            r->TextC(v->name.Value());
-        else
-            r->TextC(GlobalTranslate("Unknown Vendor"));
+        if (v) {
+            r->TextKV(v->name.Value(), FormatPhoneNumber(v->phone));
+            r->NewLine();
+        }
         vt_safe_string::safe_format(str, 256, "%d", in->id);
         r->TextR(str);
         r->NewLine();

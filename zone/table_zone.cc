@@ -134,6 +134,7 @@ RenderResult RoomDialog::Render(Terminal *term, int update_flag)
     int total = 0;
     int balance = 0;
     genericChar str[256];
+    genericChar rstr[256];
     int no = 0;
     Check *check = term->check;
     if (check)
@@ -153,9 +154,8 @@ RenderResult RoomDialog::Render(Terminal *term, int update_flag)
         TextC(term, 0, str);
     else
     {
-        TextL(term, 0, str);
-        vt_safe_string::safe_format(str, 256, "%s %06d", term->Translate("Folio No"), no);
-        TextR(term, 0, str);
+        vt_safe_string::safe_format(rstr, 256, "%s %06d", term->Translate("Folio No"), no);
+        TextLR(term, 0, str, COLOR_DEFAULT, rstr, COLOR_DEFAULT);
     }
 
     (void)checkout->SetRegion(x + w - border - 140, y + border + 46, 140, 110);  // Suppress nodiscard warning

@@ -1597,10 +1597,8 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                 }
                 
                 report->Mode(kitchen_mode);
-                report->TextL(ordstr, order_color);
-                report->TextR(cststr, COLOR_DEFAULT);
+                report->TextKV(ordstr, cststr, order_color, COLOR_DEFAULT);
                 report->Mode(0);
-                report->NewLine();
 
                 ordstr[0] = '\0';
                 str2[0] = '\0';
@@ -1618,10 +1616,8 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                         {
                             // write out the line for newline mode
                             report->Mode(kitchen_mode);
-                            report->TextL(str2, COLOR_RED);
-                            report->TextR("", COLOR_RED);
+                            report->TextKV(str2, "", COLOR_RED, COLOR_RED);
                             report->Mode(0);
-                            report->NewLine();
                         }
                         else
                         {
@@ -1634,10 +1630,8 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                             {
                                 vt_safe_string::safe_concat(tmpstr, STRLONG, ",");
                                 report->Mode(kitchen_mode);
-                                report->TextL(tmpstr, COLOR_RED);
-                                report->TextR("", COLOR_RED);
-                                report->Mode(0);
-                                report->NewLine();
+                                    report->TextKV(tmpstr, "", COLOR_RED, COLOR_RED);
+                                    report->Mode(0);
                                 ordstr[0] = '\0';
                                 vt_safe_string::safe_concat(ordstr, STRLENGTH, "  ");
                                 vt_safe_string::safe_concat(ordstr, STRLENGTH, str2);
@@ -1649,10 +1643,8 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
                 if (settings->mod_separator == MOD_SEPARATE_CM && ordstr[0] != '\0')
                 {
                     report->Mode(kitchen_mode);
-                    report->TextL(ordstr, COLOR_RED);
-                    report->TextR("", COLOR_RED);
+                    report->TextKV(ordstr, "", COLOR_RED, COLOR_RED);
                     report->Mode(0);
-                    report->NewLine();
                 }
             }
         }
@@ -2459,8 +2451,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                         if (order->status & ORDER_COMP)
                         {
                             report->NewLine();
-                            report->TextPosR(-8, GlobalTranslate("COMP"));
-                            report->TextR(term->FormatPrice(-order->cost, 1), COLOR_RED);
+                            report->TextKV(GlobalTranslate("COMP"), term->FormatPrice(-order->cost, 1), COLOR_DEFAULT, COLOR_RED);
                         }
                     }
                 }
@@ -2542,14 +2533,10 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
             int tax = sc->TotalTax();
             if (tax)
             {
-                report->TextPosR(-8, GlobalTranslate("Tax"));
-                report->TextR(term->FormatPrice(tax, 1));
-                report->NewLine();
+                report->TextKV(GlobalTranslate("Tax"), term->FormatPrice(tax, 1));
                 if (sc->IsTaxExempt())
                 {
-                    report->TextPosR(-8, GlobalTranslate("Tax Exempt"));
-                    report->TextR(term->FormatPrice(-tax, 1));
-                    report->NewLine();
+                    report->TextKV(GlobalTranslate("Tax Exempt"), term->FormatPrice(-tax, 1));
                     vt_safe_string::safe_format(str, STRLONG, "%s:  %s", GlobalTranslate("Tax ID"), sc->tax_exempt.Value());
                     report->Mode(PRINT_BOLD);
                     report->TextL(str);
@@ -2558,9 +2545,7 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                     tax = 0;
                 }
             }
-            report->TextPosR(-8, GlobalTranslate("Total"));
-            report->TextR(term->FormatPrice(sc->total_sales + tax - sc->item_comps, 1));
-            report->NewLine();
+            report->TextKV(GlobalTranslate("Total"), term->FormatPrice(sc->total_sales + tax - sc->item_comps, 1));
             
             if (sc->PaymentList())
             {
@@ -2568,22 +2553,16 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                 Payment *payptr = sc->PaymentList();
                 while (payptr)
                 {
-                    report->TextL(payptr->Description(settings));
-                    report->TextR(term->FormatPrice(payptr->value, 1));
-                    report->NewLine();
+                    report->TextKV(payptr->Description(settings), term->FormatPrice(payptr->value, 1));
                     payptr = payptr->next;
                 }
                 
                 report->TextR("------");
                 report->NewLine();
-                report->TextPosR(-8, term->Translate("Amount Tendered"));
-                report->TextR(term->FormatPrice(sc->payment, 1));
-                report->NewLine();
+                report->TextKV(term->Translate("Amount Tendered"), term->FormatPrice(sc->payment, 1));
                 if (sc->balance > 0)
                 {
-                    report->TextPosR(-8, term->Translate("Balance Due"));
-                    report->TextR(term->FormatPrice(sc->balance, 1));
-                    report->NewLine();
+                    report->TextKV(term->Translate("Balance Due"), term->FormatPrice(sc->balance, 1));
                 }
             }
         }

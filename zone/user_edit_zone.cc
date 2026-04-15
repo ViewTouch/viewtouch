@@ -126,9 +126,8 @@ RenderResult UserEditZone::Render(Terminal *term, int update_flag)
         }
 
         TextC(term, 0, term->Translate(str), col);
-        TextL(term, 1.3, term->Translate("Employee Name"), col);
+        TextLR(term, 1.3, term->Translate("Employee Name"), col, term->Translate("Phone Number"), col);
         TextC(term, 1.3, term->Translate("Job Title"), col);
-        TextR(term, 1.3, term->Translate("Phone Number"), col);
     }
     else
     {

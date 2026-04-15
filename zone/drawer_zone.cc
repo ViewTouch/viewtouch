@@ -689,14 +689,13 @@ RenderResult DrawerManageZone::Render(Terminal *term, int update_flag)
                 int diff = dbentered - dbamount;
                 if (balance_count == media)
                     Background(term, yy - .5, 2.0, IMAGE_LIT_SAND);
-                TextL(term, yy, db->Description(s), COLOR_BLACK);
                 TextPosR(term, size_x - 17, yy, term->FormatPrice(dbamount), COLOR_BLACK);
                 pcolor = COLOR_BLACK;
                 if (diff < 0)
                     pcolor = COLOR_RED;
                 else if (diff > 0)
                     pcolor = COLOR_BLUE;
-                TextR(term, yy, term->FormatPrice(diff), pcolor);
+                TextLR(term, yy, db->Description(s), COLOR_BLACK, term->FormatPrice(diff), pcolor);
                 Entry(term, size_x - 16, yy, 7.5);
                 TextPosR(term, size_x - 8.5, yy, term->FormatPrice(dbentered), COLOR_YELLOW);
                 yy += 2;

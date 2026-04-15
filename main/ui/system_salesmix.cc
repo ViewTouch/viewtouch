@@ -385,37 +385,32 @@ int FamilyItemReport(Terminal *t, ItemCount *branch,
             fi.initialized = true;
         }
         r.NewLine();
-        r.TextPosL(2, admission_filteredname(branch->name));  //here
         sales = branch->count * branch->cost;
         if (branch->type == ITEM_POUND)
         {
-            r.TextPosR(WEIGHT_POS, t->FormatPrice(branch->count));
+            r.TextKVMid(admission_filteredname(branch->name), t->FormatPrice(branch->count), t->FormatPrice(sales), WEIGHT_POS);
             fi.weight += branch->count;
             sales = sales / 100;
         }
         else
         {
-            r.NumberPosR(COUNT_POS, branch->count);
+            r.TextKVMid(admission_filteredname(branch->name), std::to_string(branch->count), t->FormatPrice(sales), COUNT_POS);
             fi.count += branch->count;
         }
-
-        r.TextPosR(0, t->FormatPrice(sales));
         fi.cost += sales;
 
         if (!branch->mods.empty() && t->GetSettings()->show_modifiers)
         {
-            for (const auto &entry : branch->mods.itemlist)
-            {
-                const ItemCount &modifier = entry.second;
-                modsales = modifier.cost * modifier.count;
-                // display the modifier name and count
-                r.NewLine();
-                r.TextPosL(5, modifier.name);
-                r.NumberPosR(COUNT_POS, modifier.count);
-                r.TextPosR(0, t->FormatPrice(modsales));
-                fi.count += modifier.count;
-                fi.cost += modsales;
-            }
+                for (const auto &entry : branch->mods.itemlist)
+                {
+                    const ItemCount &modifier = entry.second;
+                    modsales = modifier.cost * modifier.count;
+                    // display the modifier name and count
+                    r.NewLine();
+                    r.TextKVMid(modifier.name, std::to_string(modifier.count), t->FormatPrice(modsales), COUNT_POS);
+                    fi.count += modifier.count;
+                    fi.cost += modsales;
+                }
         }
     }
     
@@ -439,20 +434,18 @@ int NoFamilyItemReport(Terminal *t, ItemCount *branch, Report *r,
         NoFamilyItemReport(t, branch->left, r, total_count, total_cost, total_weight);
     
     r->NewLine();
-    r->TextPosL(0, admission_filteredname(branch->name)); //here
     sales = branch->count * branch->cost;
     if (branch->type == ITEM_POUND)
     {
-        r->TextPosR(WEIGHT_POS, t->FormatPrice(branch->count));
+        r->TextKVMid(admission_filteredname(branch->name), t->FormatPrice(branch->count), t->FormatPrice(sales), WEIGHT_POS);
         total_weight += branch->count;
         sales = sales / 100;
     }
     else
     {
-        r->NumberPosR(COUNT_POS, branch->count);
+        r->TextKVMid(admission_filteredname(branch->name), std::to_string(branch->count), t->FormatPrice(sales), COUNT_POS);
         total_count += branch->count;
     }
-    r->TextPosR(0, t->FormatPrice(sales));
     total_cost  += sales;
 
     if (!branch->mods.empty() && t->GetSettings()->show_modifiers)
@@ -463,9 +456,7 @@ int NoFamilyItemReport(Terminal *t, ItemCount *branch, Report *r,
             // display the modifier name and count
             modsales = modifier.cost * modifier.count;
             r->NewLine();
-            r->TextPosL(5, modifier.name);
-            r->NumberPosR(COUNT_POS, modifier.count);
-            r->TextPosR(0, t->FormatPrice(modsales));
+            r->TextKVMid(modifier.name, std::to_string(modifier.count), t->FormatPrice(modsales), COUNT_POS);
             total_cost += modsales;
             total_count += modifier.count;
         }
@@ -597,12 +588,10 @@ int System::SalesMixReport(Terminal *t, const TimeInfo &start_time, const TimeIn
                 r->Mode(PRINT_BOLD | PRINT_UNDERLINE);
                 str2 = FindStringByValue(i, FamilyValue, FamilyName, UnknownStr);
                 vt_safe_string::safe_format(str, STRLENGTH, "%s Total", MasterLocale->Translate(str2));
-                r->TextPosL(0, str, COLOR_DK_BLUE);
                 if (fi.count)
-                    r->NumberPosR(COUNT_POS, fi.count, COLOR_DK_BLUE);
+                    r->TextKVMid(str, std::to_string(fi.count), t->FormatPrice(fi.cost, 1), COUNT_POS, COLOR_DK_BLUE, COLOR_DK_BLUE, COLOR_DK_BLUE);
                 else
-                    r->TextPosR(WEIGHT_POS, t->FormatPrice(fi.weight), COLOR_DK_BLUE);
-                r->TextPosR(0, t->FormatPrice(fi.cost, 1), COLOR_DK_BLUE);
+                    r->TextKVMid(str, t->FormatPrice(fi.weight), t->FormatPrice(fi.cost, 1), WEIGHT_POS, COLOR_DK_BLUE, COLOR_DK_BLUE, COLOR_DK_BLUE);
                 r->Mode(0);
                 r->NewLine();
                 if (total_cost > 0)

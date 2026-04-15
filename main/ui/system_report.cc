@@ -1574,26 +1574,20 @@ int BalanceReportWorkFn(BRData *brdata)
         {
             if (term->hide_zeros == 0 || brdata->group_sales[g] != 0)
             {
-                vt::cpp23::format_to_buffer(str, sizeof(str), "{} Sales", SalesGroupName[g]);
-                thisReport->TextL(str);
-                thisReport->TextPosR(last_pos, term->FormatPrice(brdata->group_sales[g]), color);
-
+                std::string label = std::string() + SalesGroupName[g] + " Sales";
                 per = 0;
                 if (brdata->sales > 0)
                     per = 100.0 * ((Flt) brdata->group_sales[g] / (Flt) brdata->sales);
 
                 vt::cpp23::format_to_buffer(str, sizeof(str), "{:.2f}%", per);
-
-                thisReport->TextPosL(percent_pos, str, COLOR_DK_BLUE);
-                thisReport->NewLine();
+                thisReport->TextKVMid(label, str, term->FormatPrice(brdata->group_sales[g]), percent_pos,
+                                     COLOR_DEFAULT, COLOR_DK_BLUE, color);
             }
         }
 	}
 
-            thisReport->TextPosL(3, GlobalTranslate("Total Sales"));
-    thisReport->TextPosR(last_pos, term->FormatPrice(brdata->sales), color);
-    thisReport->TextPosL(percent_pos, "100%", COLOR_DK_BLUE);
-    thisReport->NewLine();
+                thisReport->TextKVMid(GlobalTranslate("Total Sales"), "100%", term->FormatPrice(brdata->sales), percent_pos,
+                           COLOR_DEFAULT, COLOR_DK_BLUE, color);
 
     // Adjustments
     thisReport->NewLine();
@@ -1614,9 +1608,7 @@ int BalanceReportWorkFn(BRData *brdata)
             {
                 if (comps->name[0] != '\0' && (comps->total != 0 || term->hide_zeros == 0))
                 {
-                    thisReport->TextPosL(3, comps->name);
-                    thisReport->TextPosR(last_pos, term->FormatPrice(comps->total), color);
-                    thisReport->NewLine();
+                    thisReport->TextKV(comps->name, term->FormatPrice(comps->total), COLOR_DEFAULT, color);
                 }
                 comps = comps->next;
             }
@@ -1643,9 +1635,7 @@ int BalanceReportWorkFn(BRData *brdata)
             {
                 if (meals->name[0] != '\0' && (meals->total != 0 || term->hide_zeros == 0))
                 {
-                    thisReport->TextPosL(3, meals->name);
-                    thisReport->TextPosR(last_pos, term->FormatPrice(meals->total), color);
-                    thisReport->NewLine();
+                    thisReport->TextKV(meals->name, term->FormatPrice(meals->total), COLOR_DEFAULT, color);
                 }
                 meals = meals->next;
             }
@@ -1665,9 +1655,7 @@ int BalanceReportWorkFn(BRData *brdata)
             {
                 if (discounts->name[0] != '\0' && (discounts->total != 0 || term->hide_zeros == 0))
                 {
-                    thisReport->TextPosL(3, discounts->name);
-                    thisReport->TextPosR(last_pos, term->FormatPrice(discounts->total), color);
-                    thisReport->NewLine();
+                    thisReport->TextKV(discounts->name, term->FormatPrice(discounts->total), COLOR_DEFAULT, color);
                 }
                 discounts = discounts->next;
             }
@@ -1687,9 +1675,7 @@ int BalanceReportWorkFn(BRData *brdata)
             {
                 if (coupons->name[0] != '\0' && (coupons->total != 0 || term->hide_zeros == 0))
                 {
-                    thisReport->TextPosL(3, coupons->name);
-                    thisReport->TextPosR(last_pos, term->FormatPrice(coupons->total), color);
-                    thisReport->NewLine();
+                    thisReport->TextKV(coupons->name, term->FormatPrice(coupons->total), COLOR_DEFAULT, color);
                 }
                 coupons = coupons->next;
             }
@@ -1823,15 +1809,11 @@ int BalanceReportWorkFn(BRData *brdata)
             if (currSettings->job_active[JobValue[j]] && (term->hide_zeros == 0 || job_mins[j] != 0))
             {
                 vt::cpp23::format_to_buffer(str, sizeof(str), "{} Cost", JobName[j]);
-                thisReport->TextL(str);
-                thisReport->TextPosR(last_pos, term->FormatPrice(job_cost[j], 1), color);
-                thisReport->NewLine();
+                thisReport->TextKV(str, term->FormatPrice(job_cost[j], 1), COLOR_DEFAULT, color);
 
                 if (job_otcost[j] > 0)
                 {
-                    thisReport->TextL(GlobalTranslate("Overtime"));
-                    thisReport->TextPosR(last_pos, term->FormatPrice(job_otcost[j], 1), color);
-                    thisReport->NewLine();
+                    thisReport->TextKV(GlobalTranslate("Overtime"), term->FormatPrice(job_otcost[j], 1), COLOR_DEFAULT, color);
                 }
             }
             ++j;
@@ -2258,53 +2240,39 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->Mode(0);
     report->NewLine();
 
-    // ===== EXECUTIVE SUMMARY SECTION (Accountant-Friendly) =====
+    // ===== EXECUTIVE SUMMARY (compact, accountant-friendly) =====
     report->NewLine();
     report->Mode(PRINT_BOLD);
     report->TextC(GlobalTranslate("EXECUTIVE SUMMARY"), COLOR_DK_BLUE);
     report->Mode(0);
     report->NewLine();
 
-    // Transaction counts
+    report->Divider('=', report->page_width > 0 ? report->page_width : report->max_width);
+
+    // Transaction counts (compact)
     if (check_count > 0 || transaction_count > 0)
     {
-        report->TextL(GlobalTranslate("Transaction Summary:"));
+        vt_safe_string::safe_format(str, 256, "%d", check_count);
+        report->TextKV(GlobalTranslate("Closed Checks"), str);
+        vt_safe_string::safe_format(str, 256, "%d", transaction_count);
+        report->TextKV(GlobalTranslate("Settled Transactions"), str);
         report->NewLine();
-        vt_safe_string::safe_format(str, 256, "  Closed Checks: %d", check_count);
-        report->TextL(str);
-        report->NewLine();
-        vt_safe_string::safe_format(str, 256, "  Settled Transactions: %d", transaction_count);
-        report->TextL(str);
-        report->NewLine(2);
     }
 
-    // Key financial metrics
+    // Key financial metrics (left label / right value)
     report->Mode(PRINT_BOLD);
-    report->TextL(GlobalTranslate("Key Financial Metrics:"), COLOR_DK_GREEN);
-    report->NewLine();
-    report->Mode(0);
-    
-    report->TextPosL(3, GlobalTranslate("Gross Sales"));
-    report->TextPosR(0, term->FormatPrice(total_sales), col);
-    report->NewLine();
-    
-    report->TextPosL(3, GlobalTranslate("Adjustments"));
-    report->TextPosR(0, term->FormatPrice(-total_adjust), COLOR_DK_RED);
-    report->NewLine();
-    
-    report->Mode(PRINT_BOLD);
-    report->TextPosL(3, GlobalTranslate("Net Sales"));
-    report->TextPosR(0, term->FormatPrice(net_sales), COLOR_DK_GREEN);
+    report->TextC(GlobalTranslate("Key Financial Metrics"), COLOR_DK_GREEN);
     report->Mode(0);
     report->NewLine();
-    
-    report->TextPosL(3, GlobalTranslate("Total Tax Collected"));
-    report->TextPosR(0, term->FormatPrice(total_tax), col);
-    report->NewLine();
-    
+
+    report->TextKV(GlobalTranslate("Gross Sales"), term->FormatPrice(total_sales), COLOR_DEFAULT, col);
+    report->TextKV(GlobalTranslate("Adjustments"), term->FormatPrice(-total_adjust), COLOR_DEFAULT, COLOR_DK_RED);
     report->Mode(PRINT_BOLD);
-    report->TextPosL(3, GlobalTranslate("Net Receipts"));
-    report->TextPosR(0, term->FormatPrice(net_receipts), COLOR_DK_GREEN);
+    report->TextKV(GlobalTranslate("Net Sales"), term->FormatPrice(net_sales), COLOR_DEFAULT, COLOR_DK_GREEN);
+    report->Mode(0);
+    report->TextKV(GlobalTranslate("Total Tax Collected"), term->FormatPrice(total_tax), COLOR_DEFAULT, col);
+    report->Mode(PRINT_BOLD);
+    report->TextKV(GlobalTranslate("Net Receipts"), term->FormatPrice(net_receipts), COLOR_DEFAULT, COLOR_DK_GREEN);
     report->Mode(0);
     report->UnderlinePosR(0, 7, COLOR_DK_GREEN);
     report->NewLine(2);
@@ -2318,17 +2286,14 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->TextL(GlobalTranslate("Sales by Category:"), COLOR_DK_GREEN);
     report->NewLine();
     for (int g = SALESGROUP_FOOD; g <= SALESGROUP_ROOM; ++g)
-	{
+    {
         if (s->IsGroupActive(g) || sales[g] != 0)
         {
-            report->TextL(SalesGroupName[g]);
-            report->TextPosR(-6, term->FormatPrice(sales[g]), col);
-            report->NewLine();
+            report->TextKV(SalesGroupName[g], term->FormatPrice(sales[g]), COLOR_DEFAULT, col);
         }
-	}
+    }
 
-    report->TextPosL(3, GlobalTranslate("Total Gross Sales"));
-    report->TextPosR(0, term->FormatPrice(total_sales), col);
+    report->TextKV(GlobalTranslate("Total Gross Sales"), term->FormatPrice(total_sales), COLOR_DEFAULT, col);
     report->UnderlinePosR(0, 7, col);
     report->NewLine(2);
 
@@ -2419,18 +2384,14 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     {
         if (mediacomp->name[0] != '\0' && (mediacomp->total != 0 || term->hide_zeros == 0))
         {
-            report->TextL(mediacomp->name);
-            report->TextPosR(-6, term->FormatPrice(mediacomp->total), col);
-            report->NewLine();
+            report->TextKV(mediacomp->name, term->FormatPrice(mediacomp->total), COLOR_DEFAULT, col);
         }
         mediacomp = mediacomp->next;
     }
 
     if (term->hide_zeros == 0 || item_comp != 0)
     {
-        report->TextL(GlobalTranslate("Line Item Comps"));
-        report->TextPosR(-6, term->FormatPrice(item_comp), col);
-        report->NewLine();
+        report->TextKV(GlobalTranslate("Line Item Comps"), term->FormatPrice(item_comp), COLOR_DEFAULT, col);
     }
 
     MediaList *mediameal = &meallist;
@@ -2438,9 +2399,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     {
         if (mediameal->name[0] != '\0' && (mediameal->total != 0 || term->hide_zeros == 0))
         {
-            report->TextL(mediameal->name);
-            report->TextPosR(-6, term->FormatPrice(mediameal->total), col);
-            report->NewLine();
+            report->TextKV(mediameal->name, term->FormatPrice(mediameal->total), COLOR_DEFAULT, col);
         }
         mediameal = mediameal->next;
     }
@@ -2450,9 +2409,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     {
         if (mediadiscount->name[0] != '\0' && (mediadiscount->total != 0 || term->hide_zeros == 0))
         {
-            report->TextL(mediadiscount->name);
-            report->TextPosR(-6, term->FormatPrice(mediadiscount->total), col);
-            report->NewLine();
+            report->TextKV(mediadiscount->name, term->FormatPrice(mediadiscount->total), COLOR_DEFAULT, col);
         }
         mediadiscount = mediadiscount->next;
     }
@@ -2462,9 +2419,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     {
         if (mediacoupon->name[0] != '\0' && (mediacoupon->total != 0 || term->hide_zeros == 0))
         {
-            report->TextL(mediacoupon->name);
-            report->TextPosR(-6, term->FormatPrice(mediacoupon->total), col);
-            report->NewLine();
+            report->TextKV(mediacoupon->name, term->FormatPrice(mediacoupon->total), COLOR_DEFAULT, col);
         }
         mediacoupon = mediacoupon->next;
     }
@@ -2606,9 +2561,7 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
         {
             if (mediacredit->name[0] != '\0' && (mediacredit->total != 0 || term->hide_zeros == 0))
             {
-                report->TextL(mediacredit->name);
-                report->TextPosR(-6, term->FormatPrice(mediacredit->total), col);
-                report->NewLine();
+                report->TextKV(mediacredit->name, term->FormatPrice(mediacredit->total), COLOR_DEFAULT, col);
                 total_credit += mediacredit->total;
             }
             mediacredit = mediacredit->next;
@@ -2687,34 +2640,26 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     report->Mode(0);
     report->NewLine();
     
-    report->TextL(GlobalTranslate("Expected Balance"));
-    report->TextPosR(0, term->FormatPrice(book_balance), COLOR_DK_BLUE);
-    report->NewLine();
-    
-    report->TextL(GlobalTranslate("Actual Deposit"));
-    report->TextPosR(0, term->FormatPrice(actual_deposit), COLOR_DK_GREEN);
-    report->NewLine();
-    
+    report->TextKV(GlobalTranslate("Expected Balance"), term->FormatPrice(book_balance), COLOR_DEFAULT, COLOR_DK_BLUE);
+    report->TextKV(GlobalTranslate("Actual Deposit"), term->FormatPrice(actual_deposit), COLOR_DEFAULT, COLOR_DK_GREEN);
+
     if (reconciliation_diff != 0)
     {
         report->Mode(PRINT_BOLD);
         if (reconciliation_diff > 0)
         {
-            report->TextL(GlobalTranslate("Shortfall"));
-            report->TextPosR(0, term->FormatPrice(reconciliation_diff), COLOR_DK_RED);
+            report->TextKV(GlobalTranslate("Shortfall"), term->FormatPrice(reconciliation_diff), COLOR_DEFAULT, COLOR_DK_RED);
         }
         else
         {
-            report->TextL(GlobalTranslate("Overage"));
-            report->TextPosR(0, term->FormatPrice(-reconciliation_diff), COLOR_DK_GREEN);
+            report->TextKV(GlobalTranslate("Overage"), term->FormatPrice(-reconciliation_diff), COLOR_DEFAULT, COLOR_DK_GREEN);
         }
         report->Mode(0);
     }
     else
     {
         report->Mode(PRINT_BOLD);
-        report->TextL(GlobalTranslate("Balanced"));
-        report->TextPosR(0, term->FormatPrice(0), COLOR_DK_GREEN);
+        report->TextKV(GlobalTranslate("Balanced"), term->FormatPrice(0), COLOR_DEFAULT, COLOR_DK_GREEN);
         report->Mode(0);
     }
     report->NewLine(2);
@@ -2747,24 +2692,21 @@ int System::DepositReport(Terminal *term, TimeInfo &start_time,
     
     if (settings.authorize_method == CCAUTH_NONE)
     {
-        report->TextPosL(3, GlobalTranslate("Deposit Total"));
-        report->TextPosR(0, term->FormatPrice(cash + check + total_credit - tips_held), COLOR_DK_BLUE);
         report->Mode(PRINT_BOLD);
-        report->UnderlinePosR(0, 7, COLOR_DK_BLUE);
+        report->TextKV(GlobalTranslate("Deposit Total"), term->FormatPrice(cash + check + total_credit - tips_held), COLOR_DEFAULT, COLOR_DK_BLUE);
         report->Mode(0);
+        report->UnderlinePosR(0, 7, COLOR_DK_BLUE);
         report->NewLine(2);
     }
     else
     {
-        report->TextPosL(3, GlobalTranslate("Total Deposit: Cash, Checks"));
-        report->TextPosR(0, term->FormatPrice(cash + check - tips_held), COLOR_DK_BLUE);
+        report->TextKV(GlobalTranslate("Total Deposit: Cash, Checks"), term->FormatPrice(cash + check - tips_held), COLOR_DEFAULT, COLOR_DK_BLUE);
         report->Mode(PRINT_BOLD);
         report->UnderlinePosR(0, 7, COLOR_DK_BLUE);
         report->Mode(0);
         report->NewLine();
 
-        report->TextPosL(3, GlobalTranslate("Total Deposit: Debit/Credit"));
-        report->TextPosR(0, term->FormatPrice(total_credit), COLOR_DK_BLUE);
+        report->TextKV(GlobalTranslate("Total Deposit: Debit/Credit"), term->FormatPrice(total_credit), COLOR_DEFAULT, COLOR_DK_BLUE);
         report->Mode(PRINT_BOLD);
         report->UnderlinePosR(0, 7, COLOR_DK_BLUE);
         report->Mode(0);

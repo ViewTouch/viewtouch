@@ -53,8 +53,7 @@ RenderResult PhraseZone::Render(Terminal *t, int update_flag)
     FnTrace("PhraseZone::Render()");
 
     FormZone::Render(t, update_flag);
-    TextL(t, 0, PageName[record_no], color[0]);
-    TextR(t, 0, t->PageNo(record_no + 1, PAGES), color[0]);
+    TextLR(t, 0, PageName[record_no], color[0], t->PageNo(record_no + 1, PAGES), color[0]);
     return RENDER_OKAY;
 }
 

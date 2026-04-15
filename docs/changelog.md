@@ -19,6 +19,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Replaced the previous interactive/TUI `build.sh` with a simplified terminal-only helper that detects the distribution's package manager, installs missing build dependencies, and runs CMake configure → build → install.
   - Removed duplicate content and GUI/TUI helper code; made `build.sh` executable.
   - Files modified: `build.sh`
+ - **Reports/UI: Add `Report::TextKV`/`TextKVMid` and refactor report/zone outputs** (2026-04-14)
+   - Added `Report::TextKV()` and `Report::TextKVMid()` helpers to simplify label/value printing in reports (`main/ui/report.hh`, `main/ui/report.cc`).
+   - Redesigned the `System::DepositReport()` printed layout for clearer 80-column output and reconciliation sections (`main/ui/system_report.cc`).
+   - Converted many simple left/right label/value callsites to use `TextKV`/`TextKVMid` (reports) or `TextLR` (on-screen zones) to unify alignment and reduce duplication across the UI and printed reports.
+   - Fixed a misleading indentation/guarding bug in `zone/inventory_zone.cc`.
+   - Files modified (selected): `main/ui/report.hh`, `main/ui/report.cc`, `main/ui/system_report.cc`, `main/business/check.cc`, `zone/payment_zone.cc`, `zone/order_zone.cc`, `zone/inventory_zone.cc`, `zone/drawer_zone.cc`, `zone/table_zone.cc`, `zone/phrase_zone.cc`, `zone/payout_zone.cc`, `zone/settings_zone.cc`, `zone/user_edit_zone.cc`.
+   - Follow-up: finish the payment-entry sweep, add unit tests for Deposit/Book Balance output, and update translations.
 
 ### Fixed
  - **Video Display: Prevent blank checks on Bar/Kitchen video (2026-04-14)**

@@ -112,9 +112,8 @@ RenderResult PayoutZone::Render(Terminal *term, int update_flag)
     }
     else
     {
-        TextL(term, 2.3, term->Translate("Employee"), col);
+        TextLR(term, 2.3, term->Translate("Employee"), col, term->Translate("Amount Owed"), col);
         TextC(term, 2.3, term->Translate("Amount Paid"), col);
-        TextR(term, 2.3, term->Translate("Amount Owed"), col);
         report->selected_line = selected;
         report->Render(term, this, HEADER-1, 0, page, 0, spacing);
     }

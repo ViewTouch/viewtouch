@@ -2277,13 +2277,11 @@ RenderResult TenderSetZone::Render(Terminal *term, int update_flag)
 		{
         default:
             TextC(term, 0, term->Translate("Customer Discounts"), col);
-            TextL(term, 2.3, term->Translate("Name"), col);
-            TextR(term, 2.3, term->Translate("Amount"), col);
+            TextLR(term, 2.3, term->Translate("Name"), col, term->Translate("Amount"), col);
             break;
         case 1:
             TextC(term, 0, term->Translate("Coupons"), col);
-            TextL(term, 2.3, term->Translate("Name"), col);
-            TextR(term, 2.3, term->Translate("Amount"), col);
+            TextLR(term, 2.3, term->Translate("Name"), col, term->Translate("Amount"), col);
             break;
         case 2:
             TextC(term, 0, term->Translate("Credit/Charge Cards"), col);
@@ -2295,8 +2293,7 @@ RenderResult TenderSetZone::Render(Terminal *term, int update_flag)
             break;
         case 4:
             TextC(term, 0, term->Translate("Employee Discounts"), col);
-            TextL(term, 2.3, term->Translate("Name"), col);
-            TextR(term, 2.3, term->Translate("Amount"), col);
+            TextLR(term, 2.3, term->Translate("Name"), col, term->Translate("Amount"), col);
             break;
 		}
 	}

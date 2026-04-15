@@ -591,9 +591,7 @@ int UserDB::ListReport(Terminal *t, int active, Report *r)
                 vt_safe_string::safe_concat(str, 256, str2);
             }
 
-            r->TextL(str, col);
-            r->TextR(FormatPhoneNumber(e->phone), col);
-            r->NewLine();
+            r->TextKV(str, FormatPhoneNumber(e->phone), col, col);
             ++count;
         }
     }
