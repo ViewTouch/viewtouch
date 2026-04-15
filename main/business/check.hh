@@ -433,6 +433,7 @@ public:
     int           guests;
     int           has_takeouts;
     int           undo;
+    unsigned long long displayed_target_mask; // per-check in-memory mask of video targets currently displaying this check
 
     // Constructors
     Check();
@@ -499,6 +500,16 @@ public:
     int       SetBatch(const char* termid, const char* batch);
     int       IsBatchSet();
     int       HasVideoTargetOrders(Settings *settings);  // Returns true if check has orders going to video targets
+
+    // Display tracking (not persisted): which video targets are currently
+    // showing this check.  These methods centralize starting/stopping the
+    // kitchen/bar timer (`chef_time`) so the timer only starts when the
+    // check is actually displayed for a given target and is cleared when
+    // no displays remain.
+    void      MarkDisplayed(int video_target);
+    void      ClearDisplayed(int video_target);
+    bool      IsDisplayedFor(int video_target) const;
+    void      ClearAllDisplayed();
 
     // CustomerInfo stuff
     int       IsTakeOut();  // FIX - bad name now  // true if there is no room/table for check

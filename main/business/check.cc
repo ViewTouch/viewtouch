@@ -186,6 +186,7 @@ Check::Check()
     , guests(0)
     , has_takeouts(0)
     , undo(0)
+    , displayed_target_mask(0)
 {
     FnTrace("Check::Check()");
     chef_time.Clear();
@@ -228,6 +229,7 @@ Check::Check(Settings * /*settings*/, int customer_type, Employee *employee)
     , guests(0)
     , has_takeouts(0)
     , undo(0)
+    , displayed_target_mask(0)
 {
     FnTrace("Check::Check(Settings, int, Employee)");
     if (employee)
@@ -884,10 +886,8 @@ int Check::FinalizeOrders(Terminal *term, int reprint)
     }
     check_state = ORDER_FINAL;
 
-    // Only set chef_time if timers are enabled and there are orders going to video targets (kitchens/bars)
-    // This prevents the timer from starting when only non-video items (like retail) are sent
-    if (settings->enable_kitchen_bar_timers && !chef_time.IsSet() && HasVideoTargetOrders(settings))
-        chef_time.Set();  //check is sent to kitchen on close
+    // Timer should start only when the check is actually displayed on a video
+    // target (MarkDisplayed). Do not start the timer here on FinalizeOrders.
 
     return 0;
 }
@@ -968,11 +968,9 @@ int Check::Close(Terminal *term)
         term->system_data->inventory.MakeOrder(this);
         Save();
     }
-    // Only set chef_time if timers are enabled and there are orders going to video targets (kitchens/bars)
-    // This prevents the timer from starting when only non-video items (like retail) are sent
+    // Timer should start only when the check is actually displayed on a video
+    // target (MarkDisplayed). Do not start the timer here on Close().
     Settings *settings = &MasterSystem->settings;
-    if (settings->enable_kitchen_bar_timers && !chef_time.IsSet() && HasVideoTargetOrders(settings))
-        chef_time.Set();  //check is sent to kitchen on close
     
     vt::Logger::info("Check #{} closed successfully - {} subchecks", checknum, closed);
     return 0;
@@ -1119,6 +1117,27 @@ int Check::PrintCount(Terminal *term, int printer_id, int reprint, int flag_sent
 {
     FnTrace("Check::PrintCount()");
     int count = 0;
+    Settings *settings = term->GetSettings();
+
+    // Special handling for video display: when flag_sent == ORDER_SHOWN
+    // we should only count orders that have actually been sent (`ORDER_SENT`)
+    // and not yet shown (`ORDER_SHOWN`). This prevents unsent/blue items
+    // from being counted as "new items" just because the check is visible.
+    if (flag_sent == ORDER_SHOWN && !reprint)
+    {
+        for (SubCheck *sc = SubList(); sc != nullptr; sc = sc->next)
+        {
+            for (Order *order = sc->OrderList(); order != nullptr; order = order->next)
+            {
+                int vid = order->VideoTarget(settings);
+                if (vid == printer_id && (order->status & ORDER_SENT) && !(order->status & ORDER_SHOWN))
+                    ++count;
+            }
+        }
+        return count;
+    }
+
+    // Fallback - keep legacy behavior
     for (SubCheck *sc = SubList(); sc != nullptr; sc = sc->next)
     {
         for (Order *order = sc->OrderList(); order != nullptr; order = order->next)
@@ -1248,14 +1267,12 @@ int Check::PrintWorkOrder(Terminal *term, Report *report, int printer_id, int re
     System *sys = term->system_data;
     Settings *settings = &(sys->settings);
     
-    // For kitchen video displays, set chef_time when check is displayed
-    // This ensures alerts can work - chef_time tracks when check was sent to kitchen
-    // Only set if timers are enabled
-    if (settings->enable_kitchen_bar_timers && rzone != nullptr && printer_id != PRINTER_DEFAULT && !chef_time.IsSet())
+    // For kitchen video displays, mark this check as displayed for the
+    // specific video target.  `MarkDisplayed` will start `chef_time` if
+    // timers are enabled and this is the first display for the check.
+    if (settings->enable_kitchen_bar_timers && rzone != nullptr && printer_id != PRINTER_DEFAULT)
     {
-        check_state |= ORDER_SENT;
-        chef_time.Set();
-        Save();
+        MarkDisplayed(printer_id);
     }
     
     Employee *employee = sys->user_db.FindByID(user_owner);
@@ -2027,7 +2044,8 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
             for (Order *order = sc->OrderList(); order != nullptr && !has_new_items; order = order->next)
             {
                 int order_target = order->VideoTarget(settings);
-                if (order_target == video_target && !(order->status & ORDER_SHOWN))
+                // Only consider items that have been sent but not yet shown
+                if (order_target == video_target && (order->status & ORDER_SENT) && !(order->status & ORDER_SHOWN))
                 {
                     has_new_items = 1;
                 }
@@ -2108,14 +2126,12 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
     }
     else
     {
-        // For kitchen video displays, set chef_time when check is displayed
-        // This ensures alerts can work - chef_time tracks when check was sent to kitchen
-        // Only set if timers are enabled
-        if (settings->enable_kitchen_bar_timers && !chef_time.IsSet())
+        // For kitchen video displays, mark this check as displayed for the
+        // specific video target. `MarkDisplayed` will start `chef_time` if
+        // timers are enabled and this is the first display for the check.
+        if (settings->enable_kitchen_bar_timers && video_target != PRINTER_DEFAULT)
         {
-            check_state |= ORDER_SENT;
-            chef_time.Set();
-            Save();
+            MarkDisplayed(video_target);
         }
         if (undo == 0 && settings->enable_kitchen_bar_timers && chef_time.IsSet())
         {
@@ -2347,8 +2363,8 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
             }
             else if (order_target == video_target)
             {
-                // For video targets, only show if ORDER_SHOWN is not set
-                if (!(order->status & ORDER_SHOWN))
+                // For video targets, only show orders that were sent and not yet shown
+                if ((order->status & ORDER_SENT) && !(order->status & ORDER_SHOWN))
                 {
                     should_display = true;
                 }
@@ -2463,8 +2479,8 @@ int Check::MakeReport(Terminal *term, Report *report, int show_what, int video_t
                     }
                     else if (mod_target == video_target)
                     {
-                        // For video targets, only show if ORDER_SHOWN is not set
-                        if (!(mod->status & ORDER_SHOWN))
+                        // For video targets, only show modifiers that were sent and not yet shown
+                        if ((mod->status & ORDER_SENT) && !(mod->status & ORDER_SHOWN))
                         {
                             should_display_mod = true;
                         }
@@ -2932,6 +2948,69 @@ int Check::HasVideoTargetOrders(Settings *settings)
         }
     }
     return 0;  // No orders going to video targets
+}
+
+/**
+ * Display tracking helpers
+ *
+ * `displayed_target_mask` is an in-memory bitmask of video targets that are
+ * currently showing this check.  We map the `video_target` integer to a bit
+ * position (only for small target IDs) and set/clear bits.  When the first
+ * display is marked we start the `chef_time` (if timers enabled).  When the
+ * last display is cleared we clear the `chef_time`.
+ */
+void Check::MarkDisplayed(int video_target)
+{
+    FnTrace("Check::MarkDisplayed()");
+    if (video_target <= PRINTER_DEFAULT || video_target >= 64)
+        return;
+
+    unsigned long long bit = (1ULL << video_target);
+    if (displayed_target_mask & bit)
+        return; // already displayed for this target
+
+    displayed_target_mask |= bit;
+
+    Settings *settings = &MasterSystem->settings;
+    if (settings->enable_kitchen_bar_timers && !chef_time.IsSet())
+    {
+        check_state |= ORDER_SENT;
+        chef_time.Set();
+        Save();
+    }
+}
+
+void Check::ClearDisplayed(int video_target)
+{
+    FnTrace("Check::ClearDisplayed()");
+    if (video_target <= PRINTER_DEFAULT || video_target >= 64)
+        return;
+
+    unsigned long long bit = (1ULL << video_target);
+    if (!(displayed_target_mask & bit))
+        return; // not displayed for this target
+
+    displayed_target_mask &= ~bit;
+    if (displayed_target_mask == 0)
+    {
+        chef_time.Clear();
+        Save();
+    }
+}
+
+bool Check::IsDisplayedFor(int video_target) const
+{
+    if (video_target <= PRINTER_DEFAULT || video_target >= 64)
+        return false;
+    return (displayed_target_mask & (1ULL << video_target)) != 0;
+}
+
+void Check::ClearAllDisplayed()
+{
+    FnTrace("Check::ClearAllDisplayed()");
+    displayed_target_mask = 0;
+    chef_time.Clear();
+    Save();
 }
 
 int Check::CustomerType(int set)
@@ -6045,6 +6124,12 @@ int Order::PrintStatus(Terminal *t, int target_printer, int reprint, int flag_se
     FnTrace("Order::PrintStatus()");
     if ((status & flag_sent) && !reprint)
         return 0; // item has already printed
+
+    // If we're being asked to print to a video display (flag_sent == ORDER_SHOWN),
+    // only print orders that have actually been sent (ORDER_SENT). This prevents
+    // unsent/blue items from being shown on the kitchen/bar display.
+    if (flag_sent == ORDER_SHOWN && !(status & ORDER_SENT) && !reprint)
+        return 0;
 
     if (t->kitchen > 0 && !ignore_split)
     {

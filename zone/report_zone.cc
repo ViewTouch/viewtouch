@@ -572,11 +572,11 @@ Check *ReportZone::GetDisplayCheck(Terminal *term)
     {
         disp_check->checknum = check_disp_num;
         Settings *settings = term->GetSettings();
-        if (disp_check->check_state == 0 && settings->enable_kitchen_bar_timers)
-        {
-            disp_check->chef_time.Set();
-            disp_check->check_state = ORDER_SENT;
-        }
+        // Mark as displayed for this zone's video target.  MarkDisplayed
+        // will start the chef timer if timers are enabled and this is the
+        // first display for this check/target.
+        if (settings->enable_kitchen_bar_timers)
+            disp_check->MarkDisplayed(video_target);
     }
     return disp_check;
 }
@@ -1257,6 +1257,8 @@ SignalResult ReportZone::ToggleCheckReport(Terminal *term)
                 // Default/other video targets - mark kitchen portion as served
                 reportcheck->flags |= CF_KITCHEN_SERVED;
             }
+            // Clear the in-memory display state for this target since it was served.
+            reportcheck->ClearDisplayed(video_target);
             // Do NOT set CF_SHOWN globally here — setting CF_SHOWN hides the
             // check across all video targets and will stop the timer on the
             // other display. Instead, only mark ORDER_SHOWN on orders that

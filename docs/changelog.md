@@ -35,6 +35,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
    - Files modified: `zone/report_zone.cc`, `main/data/manager.cc`.
    - Impact: Kitchen and Bar video timers update continuously and independently; no manual tap required to refresh.
 
+ - **Video Display: Start timers only when displayed; per-target display tracking (2026-04-14)**
+   - Added an in-memory per-check `displayed_target_mask` and `Check::MarkDisplayed`/`Check::ClearDisplayed` helpers so the kitchen/bar timer (`chef_time`) starts only when the check is actually shown on a given video target and is cleared when removed from all targets.
+   - Removed unconditional `chef_time.Set()` calls from `FinalizeOrders()` and `Close()`; timer lifecycle is now driven by the display code in `ReportZone`.
+   - Files modified: `main/business/check.hh`, `main/business/check.cc`, `zone/report_zone.cc`.
+
+ - **Video Display: Do not show unsent items on Bar/Kitchen video (2026-04-14)**
+   - Fixed a bug where items added to a check while it was being displayed would appear on Bar/Kitchen video even if they had not been sent.
+   - Only orders/modifiers with `ORDER_SENT` are now considered for video display; the video display logic and printing path were updated to respect `ORDER_SENT` and `ORDER_SHOWN` correctly.
+   - Changes include updates to `Order::PrintStatus`, `Check::PrintCount`, and `Check::MakeReport` to ensure unsent (blue) items are not shown until explicitly sent.
+   - Files modified: `main/business/check.cc`.
+
  - **Shutdown: Prevent Xft/Xrender crash & finalize font handling (2026-04-14)**
    - Implemented coordinated shutdown to avoid races between Xt timers/inputs and X display close; added `app_shutting_down` flag and `update_timer_mutex` to serialize timer/input removal and re-arming.
    - Replaced immediate `KillTerm()/exit()` calls from input callbacks with a cooperative shutdown request so the event loop and callbacks can unwind safely.
