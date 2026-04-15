@@ -500,24 +500,12 @@ int ReportZone::ShowCheck(Terminal *term, Check *check)
     FnTrace("ReportZone::ShowCheck()");
     if (video_target == PRINTER_DEFAULT)
         return 1;  // always show everything on the default
-    Settings *settings = term->GetSettings();
-    int show = 0;
-    int vtarget;
-    Order *order;
-    SubCheck *scheck = check->SubList();
-    while (!show && (scheck != nullptr))
-    {
-        order = scheck->OrderList();
-        while (!show && (order != nullptr))
-        {
-            vtarget = order->VideoTarget(settings);
-            if (vtarget == video_target)
-                show = 1;
-            order = order->next;
-        }
-        scheck = scheck->next;
-    }
-    return show;
+    if (check == nullptr)
+        return 0;
+    // Use Check::PrintCount with ORDER_SHOWN to ensure there are actually
+    // printable (sent and not-yet-shown) orders for this video target.
+    int has_new_items = check->PrintCount(term, video_target, 0, ORDER_SHOWN);
+    return (has_new_items > 0) ? 1 : 0;
 }
 
 /****

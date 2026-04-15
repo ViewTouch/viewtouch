@@ -116,6 +116,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
         min_spacing = spacing;
 
     genericChar str[256];
+    genericChar lstr[256];
     // Header
     Flt line = 0.0;
     if (currCheck->IsTakeOut())
@@ -155,25 +156,37 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
     line += min_spacing * 1.5;
 
     int nameadd = 0;
+    int name_present = 0;
+    vt_safe_string::safe_copy(lstr, 256, "");
     if (strlen(currCheck->FirstName()) > 0)
     {
         if (strlen(currCheck->LastName()) > 0)
-            vt_safe_string::safe_format(str, 256, "%s %s", currCheck->FirstName(), currCheck->LastName());
+            vt_safe_string::safe_format(lstr, 256, "%s %s", currCheck->FirstName(), currCheck->LastName());
         else
-            vt_safe_string::safe_copy(str, 256, currCheck->FirstName());
-        TextL(term, line, str, text);
+            vt_safe_string::safe_copy(lstr, 256, currCheck->FirstName());
+        name_present = 1;
         nameadd = 1;
     }
     else if (strlen(currCheck->LastName()) > 0)
     {
-        TextL(term, line, currCheck->LastName(), text);
+        vt_safe_string::safe_copy(lstr, 256, currCheck->LastName());
+        name_present = 1;
         nameadd = 1;
     }
-    if (strlen(currCheck->PhoneNumber()) > 0)
+
+    if (name_present)
+    {
+        if (strlen(currCheck->PhoneNumber()) > 0)
+            TextLR(term, line, lstr, text, currCheck->PhoneNumber(), text);
+        else
+            TextL(term, line, lstr, text);
+    }
+    else if (strlen(currCheck->PhoneNumber()) > 0)
     {
         TextR(term, line, currCheck->PhoneNumber(), text);
         nameadd = 1;
     }
+
     if (nameadd > 0)
         line += min_spacing * 1.5;
 
@@ -335,8 +348,7 @@ RenderResult PaymentZone::Render(Terminal *term, int update_flag)
             // reset the total value to just the authed for the
             // subCheck->balance.
             payment->FigureTotals(1);
-            TextL(term, line, payment->Description(settings), c1);
-            TextR(term, line, term->FormatPrice(payment->value), c1);
+            TextLR(term, line, payment->Description(settings), c1, term->FormatPrice(payment->value), c1);
             payment->FigureTotals(0);
             Credit *cr = payment->credit;
             if (cr != nullptr)

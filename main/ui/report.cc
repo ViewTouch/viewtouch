@@ -871,6 +871,28 @@ int Report::Text2Col(const std::string &text, int color, int align, float indent
     return retval;
 }
 
+int Report::TextKV(const std::string &label, const std::string &value,
+                   int label_color, int value_color)
+{
+    FnTrace("Report::TextKV()");
+    TextPosL(3, label, label_color);
+    TextPosR(0, value, value_color);
+    NewLine();
+    return 0;
+}
+
+int Report::TextKVMid(const std::string &label, const std::string &mid, const std::string &right,
+                      int midPos, int label_color, int mid_color, int right_color)
+{
+    FnTrace("Report::TextKVMid()");
+    TextL(label, label_color);
+    // midPos passed through to TextPosR; negative midPos will align relative to right edge like original code
+    TextPosR(midPos, mid, mid_color);
+    TextPosR(0, right, right_color);
+    NewLine();
+    return 0;
+}
+
 int Report::Number(int n, int c, int a, float indent)
 {
     FnTrace("Report::Number()");

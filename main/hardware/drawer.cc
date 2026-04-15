@@ -533,37 +533,35 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         total_entered += cash_entered;
     }
 
-    r->TextL(term->Translate("Starting Balance"));
+    // Starting Balance (show entered if balanced in mid column)
+    vt_safe_string::safe_copy(str, 256, "");
     if (balanced)
-        r->TextPosR(COL, term->FormatPrice(cash_float));
-    r->TextR(term->FormatPrice(cash_float));
-    r->NewLine();
+        vt_safe_string::safe_copy(str, 256, term->FormatPrice(cash_float));
+    r->TextKVMid(term->Translate("Starting Balance"), str, term->FormatPrice(cash_float), COL);
 
     if (tip_a)
     {
-        r->TextL(term->Translate("Cash Before Tip Payout"));
+        // Cash before tips and tips paid
         if (balanced)
-            r->TextPosR(COL, term->FormatPrice(cash_entered + tip_a));
+            vt_safe_string::safe_copy(str, 256, term->FormatPrice(cash_entered + tip_a));
         else
-            r->TextPosR(COL, term->FormatPrice(cash_count));
-        r->TextR(term->FormatPrice(cash_amount + tip_a));
-        r->NewLine();
+            vt_safe_string::safe_copy(str, 256, term->FormatPrice(cash_count));
+        r->TextKVMid(term->Translate("Cash Before Tip Payout"), str, term->FormatPrice(cash_amount + tip_a), COL);
 
-        r->TextL(term->Translate("Tips Paid out"));
+        vt_safe_string::safe_copy(str, 256, "");
         if (balanced)
-            r->TextPosR(COL, term->FormatPrice(tip_a));
-        r->TextR(term->FormatPrice(tip_a));
-        r->NewLine();
+            vt_safe_string::safe_copy(str, 256, term->FormatPrice(tip_a));
+        r->TextKVMid(term->Translate("Tips Paid out"), str, term->FormatPrice(tip_a), COL);
+        
 
     }
 
-    r->TextL(term->Translate("Cash"));
+    // Cash line
     if (balanced)
-        r->TextPosR(COL, term->FormatPrice(cash_entered));
+        vt_safe_string::safe_copy(str, 256, term->FormatPrice(cash_entered));
     else
-        r->NumberPosR(COL, cash_count);
-    r->TextR(term->FormatPrice(cash_amount));
-    r->NewLine();
+        vt_safe_string::safe_format(str, 256, "%d", cash_count);
+    r->TextKVMid(term->Translate("Cash"), str, term->FormatPrice(cash_amount), COL);
 
     // Check
     int check_amount = 0;
@@ -578,13 +576,11 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         total_amount  += check_amount;
         total_count   += check_count;
         total_entered += check_entered;
-        r->TextL(term->Translate("Check"));
         if (balanced)
-            r->TextPosR(COL, term->FormatPrice(check_entered));
+            vt_safe_string::safe_copy(str, 256, term->FormatPrice(check_entered));
         else
-            r->NumberPosR(COL, check_count);
-        r->TextR(term->FormatPrice(check_amount));
-        r->NewLine();
+            vt_safe_string::safe_format(str, 256, "%d", check_count);
+        r->TextKVMid(term->Translate("Check"), str, term->FormatPrice(check_amount), COL);
     }
 
     // Gift Cert.
@@ -594,13 +590,11 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         total_amount  += db->amount;
         total_count   += db->count;
         total_entered += db->entered;
-        r->TextL(term->Translate("Gift Certificate"));
         if (balanced)
-            r->TextPosR(COL, term->FormatPrice(db->entered));
+            vt_safe_string::safe_copy(str, 256, term->FormatPrice(db->entered));
         else
-            r->NumberPosR(COL, db->count);
-        r->TextR(term->FormatPrice(db->amount));
-        r->NewLine();
+            vt_safe_string::safe_format(str, 256, "%d", db->count);
+        r->TextKVMid(term->Translate("Gift Certificate"), str, term->FormatPrice(db->amount), COL);
     }
 
     // Expense Payments
@@ -618,12 +612,11 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
     // SubTotal
     r->TextR("--------");
     r->NewLine();
-    r->TextL(term->Translate("SubTotal"));
     if (balanced)
-        r->TextPosR(COL, term->FormatPrice(total_entered));
+        vt_safe_string::safe_copy(str, 256, term->FormatPrice(total_entered));
     else
-        r->NumberPosR(COL, total_count);
-    r->TextR(term->FormatPrice(total_amount));
+        vt_safe_string::safe_format(str, 256, "%d", total_count);
+    r->TextKVMid(term->Translate("SubTotal"), str, term->FormatPrice(total_amount), COL);
     r->NewLine(2);
 
     //NOTE->BAK Support both the original credit card method as well
@@ -638,13 +631,11 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
             credit_amount  += db->amount;
             credit_count   += db->count;
             credit_entered += db->entered;
-            r->TextL(cc->name.Value());
             if (balanced)
-                r->TextPosR(COL, term->FormatPrice(db->entered));
+                vt_safe_string::safe_copy(str, 256, term->FormatPrice(db->entered));
             else
-                r->NumberPosR(COL, db->count);
-            r->TextR(term->FormatPrice(db->amount));
-            r->NewLine();
+                vt_safe_string::safe_format(str, 256, "%d", db->count);
+            r->TextKVMid(cc->name.Value(), str, term->FormatPrice(db->amount), COL);
         }
     }
 
@@ -658,13 +649,11 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
             credit_amount  += db->amount;
             credit_count   += db->count;
             credit_entered += db->entered;
-            r->TextL(CreditCardName[idx]);
             if (balanced)
-                r->TextPosR(COL, term->FormatPrice(db->entered));
+                vt_safe_string::safe_copy(str, 256, term->FormatPrice(db->entered));
             else
-                r->NumberPosR(COL, db->count);
-            r->TextR(term->FormatPrice(db->amount));
-            r->NewLine();
+                vt_safe_string::safe_format(str, 256, "%d", db->count);
+            r->TextKVMid(CreditCardName[idx], str, term->FormatPrice(db->amount), COL);
         }
         idx += 1;
     }
@@ -676,13 +665,12 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         credit_amount += db->amount;
         credit_count += db->count;
         credit_entered += db->entered;
-        r->TextL(term->Translate(FindStringByValue(CARD_TYPE_DEBIT, CardTypeValue, CardTypeName)));
         if (balanced)
-            r->TextPosR(COL, term->FormatPrice(db->entered));
+            vt_safe_string::safe_copy(str, 256, term->FormatPrice(db->entered));
         else
-            r->NumberPosR(COL, db->count);
-        r->TextR(term->FormatPrice(db->amount));
-        r->NewLine();
+            vt_safe_string::safe_format(str, 256, "%d", db->count);
+        r->TextKVMid(term->Translate(FindStringByValue(CARD_TYPE_DEBIT, CardTypeValue, CardTypeName)),
+                     str, term->FormatPrice(db->amount), COL);
     }
 
     // Credit Card total
@@ -693,24 +681,21 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         total_entered += credit_entered;
         r->TextR("--------");
         r->NewLine();
-        r->TextL(term->Translate("Total C.Cards"));
         if (balanced)
-            r->TextPosR(COL, term->FormatPrice(credit_entered));
+            vt_safe_string::safe_copy(str, 256, term->FormatPrice(credit_entered));
         else
-            r->NumberPosR(COL, credit_count);
-        r->TextR(term->FormatPrice(credit_amount));
-        r->NewLine();
+            vt_safe_string::safe_format(str, 256, "%d", credit_count);
+        r->TextKVMid(term->Translate("Total C.Cards"), str, term->FormatPrice(credit_amount), COL);
     }
 
     // Drawer Balance
     r->TextR("--------");
     r->NewLine();
-    r->TextL(term->Translate("Drawer Balance"));
     if (balanced)
-        r->TextPosR(COL, term->FormatPrice(total_entered));
+        vt_safe_string::safe_copy(str, 256, term->FormatPrice(total_entered));
     else
-        r->NumberPosR(COL, total_count);
-    r->TextR(term->FormatPrice(total_amount));
+        vt_safe_string::safe_format(str, 256, "%d", total_count);
+    r->TextKVMid(term->Translate("Drawer Balance"), str, term->FormatPrice(total_amount), COL);
     r->NewLine(2);
 
     // Discounts
@@ -723,13 +708,11 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
             dis_amount  += db->amount;
             dis_count   += db->count;
             dis_entered += db->entered;
-            r->TextL(cp->name.Value());
             if (balanced)
-                r->TextPosR(COL, term->FormatPrice(db->entered));
+                vt_safe_string::safe_copy(str, 256, term->FormatPrice(db->entered));
             else
-                r->NumberPosR(COL, db->count);
-            r->TextR(term->FormatPrice(db->amount));
-            r->NewLine();
+                vt_safe_string::safe_format(str, 256, "%d", db->count);
+            r->TextKVMid(cp->name.Value(), str, term->FormatPrice(db->amount), COL);
         }
     }
 
@@ -740,23 +723,24 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         {
             dis_amount += db->amount;
             dis_count  += db->count;
-            r->TextL(cm->name.Value());
+            // Comp entry: mid value depends on media_balanced and balanced
             if (media_balanced & (1<<TENDER_COMP))
             {
                 dis_entered += db->entered;
                 if (balanced)
-                    r->TextPosR(COL, term->FormatPrice(db->entered));
+                    vt_safe_string::safe_copy(str, 256, term->FormatPrice(db->entered));
                 else
-                    r->NumberPosR(COL, db->count);
+                    vt_safe_string::safe_format(str, 256, "%d", db->count);
             }
             else
             {
                 dis_entered += db->amount;
                 if (!balanced)
-                    r->NumberPosR(COL, db->count);
+                    vt_safe_string::safe_format(str, 256, "%d", db->count);
+                else
+                    vt_safe_string::safe_copy(str, 256, "");
             }
-            r->TextR(term->FormatPrice(db->amount));
-            r->NewLine();
+            r->TextKVMid(cm->name.Value(), str, term->FormatPrice(db->amount), COL);
         }
     }
 
@@ -765,23 +749,23 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
     {
         dis_amount += db->amount;
         dis_count  += db->count;
-        r->TextL(term->Translate("Item Comps"));
         if (media_balanced & (1<<TENDER_ITEM_COMP))
         {
             dis_entered += db->entered;
             if (balanced)
-                r->TextPosR(COL, term->FormatPrice(db->entered));
+                vt_safe_string::safe_copy(str, 256, term->FormatPrice(db->entered));
             else
-                r->NumberPosR(COL, db->count);
+                vt_safe_string::safe_format(str, 256, "%d", db->count);
         }
         else
         {
             dis_entered += db->amount;
             if (!balanced)
-                r->NumberPosR(COL, db->count);
+                vt_safe_string::safe_format(str, 256, "%d", db->count);
+            else
+                vt_safe_string::safe_copy(str, 256, "");
         }
-        r->TextR(term->FormatPrice(db->amount));
-        r->NewLine();
+        r->TextKVMid(term->Translate("Item Comps"), str, term->FormatPrice(db->amount), COL);
     }
 
     for (DiscountInfo *ds = s->DiscountList(); ds != nullptr; ds = ds->next)
@@ -791,23 +775,23 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         {
             dis_amount += db->amount;
             dis_count  += db->count;
-            r->TextL(ds->name.Value());
             if (media_balanced & (1<<TENDER_DISCOUNT))
             {
                 dis_entered += db->entered;
                 if (balanced)
-                    r->TextPosR(COL, term->FormatPrice(db->entered));
+                    vt_safe_string::safe_copy(str, 256, term->FormatPrice(db->entered));
                 else
-                    r->NumberPosR(COL, db->count);
+                    vt_safe_string::safe_format(str, 256, "%d", db->count);
             }
             else
             {
                 dis_entered += db->amount;
                 if (!balanced)
-                    r->NumberPosR(COL, db->count);
+                    vt_safe_string::safe_format(str, 256, "%d", db->count);
+                else
+                    vt_safe_string::safe_copy(str, 256, "");
             }
-            r->TextR(term->FormatPrice(db->amount));
-            r->NewLine();
+            r->TextKVMid(ds->name.Value(), str, term->FormatPrice(db->amount), COL);
         }
     }
 
@@ -818,23 +802,23 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         {
             dis_amount += db->amount;
             dis_count  += db->count;
-            r->TextL(mi->name.Value());
             if (media_balanced & (1<<TENDER_EMPLOYEE_MEAL))
             {
                 dis_entered += db->entered;
                 if (balanced)
-                    r->TextPosR(COL, term->FormatPrice(db->entered));
+                    vt_safe_string::safe_copy(str, 256, term->FormatPrice(db->entered));
                 else
-                    r->NumberPosR(COL, db->count);
+                    vt_safe_string::safe_format(str, 256, "%d", db->count);
             }
             else
             {
                 dis_entered += db->amount;
                 if (!balanced)
-                    r->NumberPosR(COL, db->count);
+                    vt_safe_string::safe_format(str, 256, "%d", db->count);
+                else
+                    vt_safe_string::safe_copy(str, 256, "");
             }
-            r->TextR(term->FormatPrice(db->amount));
-            r->NewLine();
+            r->TextKVMid(mi->name.Value(), str, term->FormatPrice(db->amount), COL);
         }
     }
 
@@ -844,10 +828,11 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         dis_amount  += db->amount;
         dis_count   += db->count;
         dis_entered += db->amount;
-        r->TextL(term->Translate("Money Lost"));
         if (!balanced)
-            r->NumberPosR(COL, db->count);
-        r->TextR(term->FormatPrice(db->amount));
+            vt_safe_string::safe_format(str, 256, "%d", db->count);
+        else
+            vt_safe_string::safe_copy(str, 256, "");
+        r->TextKVMid(term->Translate("Money Lost"), str, term->FormatPrice(db->amount), COL);
         r->NewLine();
     }
 
@@ -855,12 +840,11 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
     {
         r->TextR("--------");
         r->NewLine();
-        r->TextL(term->Translate("Total Discounts"));
         if (balanced)
-            r->TextPosR(COL, term->FormatPrice(dis_entered));
+            vt_safe_string::safe_copy(str, 256, term->FormatPrice(dis_entered));
         else
-            r->NumberPosR(COL, dis_count);
-        r->TextR(term->FormatPrice(dis_amount));
+            vt_safe_string::safe_format(str, 256, "%d", dis_count);
+        r->TextKVMid(term->Translate("Total Discounts"), str, term->FormatPrice(dis_amount), COL);
         r->NewLine(2);
     }
     r->Mode(0);
@@ -893,33 +877,36 @@ int Drawer::MakeReport(Terminal *my_term, Check *check_list, Report *r)
         r->NewLine();
 
     // Deposit Amounts
-    r->TextL(term->Translate("Cash"));
+    // Deposit amounts: Cash, Check, Expenses
     if (balanced)
-        r->TextPosR(COL, term->FormatPrice(cash_entered));
-    r->TextR(term->FormatPrice(cash_amount));
-    r->NewLine();
+        vt_safe_string::safe_copy(str, 256, term->FormatPrice(cash_entered));
+    else
+        vt_safe_string::safe_copy(str, 256, "");
+    r->TextKVMid(term->Translate("Cash"), str, term->FormatPrice(cash_amount), COL);
 
-    r->TextL(term->Translate("Check"));
     if (balanced)
-        r->TextPosR(COL, term->FormatPrice(check_entered));
-    r->TextR(term->FormatPrice(check_amount));
-    r->NewLine();
+        vt_safe_string::safe_copy(str, 256, term->FormatPrice(check_entered));
+    else
+        vt_safe_string::safe_copy(str, 256, "");
+    r->TextKVMid(term->Translate("Check"), str, term->FormatPrice(check_amount), COL);
 
-    r->TextL(term->Translate("Expenses"));
     if (balanced)
-        r->TextPosR(COL, term->FormatPrice(-pay_entered));
-    r->TextR(term->FormatPrice(-pay_amount));
+        vt_safe_string::safe_copy(str, 256, term->FormatPrice(-pay_entered));
+    else
+        vt_safe_string::safe_copy(str, 256, "");
+    r->TextKVMid(term->Translate("Expenses"), str, term->FormatPrice(-pay_amount), COL);
     r->NewLine();
 
     total_deposit = cash_amount + check_amount;
     r->NewLine();
-    r->TextL(term->Translate("Total Deposit"));
     if (balanced)
     {
         total_entered -= cash_float;
-        r->TextPosR(COL, term->FormatPrice(total_entered));
+        vt_safe_string::safe_copy(str, 256, term->FormatPrice(total_entered));
     }
-    r->TextR(term->FormatPrice(total_deposit));
+    else
+        vt_safe_string::safe_copy(str, 256, "");
+    r->TextKVMid(term->Translate("Total Deposit"), str, term->FormatPrice(total_deposit), COL);
 
     if (balanced)
     {

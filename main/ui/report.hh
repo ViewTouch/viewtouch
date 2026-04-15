@@ -216,6 +216,15 @@ public:
     int UnderlinePosR(int pos, int len = 0, int c = COLOR_DEFAULT)
     { return Underline(len, c, ALIGN_RIGHT, static_cast<float>(pos)); }
 
+    // Convenience helper: Left label and right value on same line
+    int TextKV(const std::string &label, const std::string &value,
+               int label_color = COLOR_DEFAULT, int value_color = COLOR_DEFAULT);
+
+    // Convenience helper: Left label, middle value at given midPos, and right value
+    int TextKVMid(const std::string &label, const std::string &mid, const std::string &right,
+                  int midPos, int label_color = COLOR_DEFAULT,
+                  int mid_color = COLOR_DEFAULT, int right_color = COLOR_DEFAULT);
+
 };
 
 #endif

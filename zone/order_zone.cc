@@ -210,34 +210,28 @@ RenderResult OrderEntryZone::Render(Terminal *t, int update_flag)
         TextR(t, 1, str, col);
         break;
     case CHECK_TAKEOUT:
-        TextL(t, 1, t->Translate("Take Out"), col);
         vt_safe_string::safe_format(str, 256, "%s %d of %d", t->Translate("Part"), sc->number, subs);
-        TextR(t, 1, str, col);
+        TextLR(t, 1, t->Translate("Take Out"), col, str, col);
         break;
     case CHECK_FASTFOOD:
-        TextL(t, 1, t->Translate("Fast Food"), col);
         vt_safe_string::safe_format(str, 256, "%s %d of %d", t->Translate("Part"), sc->number, subs);
-        TextR(t, 1, str, col);
+        TextLR(t, 1, t->Translate("Fast Food"), col, str, col);
         break;
     case CHECK_DELIVERY:
-        TextL(t, 1, t->Translate("Delivery"), col);
         vt_safe_string::safe_format(str, 256, "%s %d of %d", t->Translate("Part"), sc->number, subs);
-        TextR(t, 1, str, col);
+        TextLR(t, 1, t->Translate("Delivery"), col, str, col);
         break;
     case CHECK_RETAIL:
-        TextL(t, 1, t->Translate("Retail"), col);
         vt_safe_string::safe_format(str, 256, "%s %d of %d", t->Translate("Part"), sc->number, subs);
-        TextR(t, 1, str, col);
+        TextLR(t, 1, t->Translate("Retail"), col, str, col);
         break;
     case CHECK_TOGO:
-        TextL(t, 1, GlobalTranslate("To Go"), col);
         vt_safe_string::safe_format(str, 256, "%s %d of %d", t->Translate("Part"), sc->number, subs);
-        TextR(t, 1, str, col);
+        TextLR(t, 1, GlobalTranslate("To Go"), col, str, col);
         break;
     case CHECK_DINEIN:
-        TextL(t, 1, GlobalTranslate("Here"), col);
         vt_safe_string::safe_format(str, 256, "%s %d of %d", t->Translate("Part"), sc->number, subs);
-        TextR(t, 1, str, col);
+        TextLR(t, 1, GlobalTranslate("Here"), col, str, col);
         break;
 	}
 
