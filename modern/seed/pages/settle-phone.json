@@ -310,12 +310,36 @@
       ]
     },
     {
-      "id": "done",
+      "id": "coupon",
       "kind": "button",
       "rect": {
         "x": 16,
         "y": 2040,
-        "w": 1048,
+        "w": 336,
+        "h": 220
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Coupon\u2026",
+      "actions": [
+        {
+          "type": "command",
+          "name": "coupon"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "done",
+      "kind": "button",
+      "rect": {
+        "x": 368,
+        "y": 2040,
+        "w": 696,
         "h": 220
       },
       "shape": "rect",

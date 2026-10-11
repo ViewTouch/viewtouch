@@ -1663,7 +1663,7 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
         {u"guestsMore"_s, {u"adjustGuests"_s, {1}}}, {u"guestsFewer"_s, {u"adjustGuests"_s, {-1}}},
     };
     // Widgets' own buttons that change the screen, not the store: the widget does them.
-    if (name == u"kitchenStation" || name == u"kitchenAllDay" || name == u"allergies") {
+    if (name == u"kitchenStation" || name == u"kitchenAllDay" || name == u"allergies" || name == u"coupon") {
         emit widgetCommand(name, args);
         return done(true);
     }
@@ -1898,6 +1898,7 @@ QString LayoutController::describeAction(const Action &a) const
             {u"cashOutTips"_s, QT_TR_NOOP("Pays you the card tips you're owed, from the drawer.")},
             {u"askForTip"_s, QT_TR_NOOP("Shows tip choices to the guest on the customer screen.")},
             {u"openTab"_s, QT_TR_NOOP("Opens a bar tab under the name typed.")},
+            {u"coupon"_s, QT_TR_NOOP("Gives the check a coupon's discount: its code typed or scanned.")},
         };
         const QString name = a.str(u"name");
         if (const auto it = plain.constFind(name); it != plain.constEnd())

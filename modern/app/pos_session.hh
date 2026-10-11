@@ -539,6 +539,8 @@ public:
     Q_INVOKABLE void cancelApproval() { invoke(QStringLiteral("cancelApproval")); }
     Q_INVOKABLE void setTraining(bool on) { invoke(QStringLiteral("setTraining"), {on}); }
     Q_INVOKABLE void redeemReward(int index) { invoke(QStringLiteral("redeemReward"), {index}); }
+    Q_INVOKABLE void applyCoupon(const QString &code) { invoke(QStringLiteral("applyCoupon"), {code}); }
+    Q_INVOKABLE void removeCoupon(const QString &id) { invoke(QStringLiteral("removeCoupon"), {id}); }
     Q_INVOKABLE void customerJoin(const QString &phone) { invoke(QStringLiteral("customerJoin"), {phone}); }
     Q_INVOKABLE void sendReceipt(const QString &how, const QString &to = {})
     {

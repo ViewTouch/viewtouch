@@ -188,6 +188,14 @@ QVariantList PosService::adminFields(const QString &panel)
             field(u"start"_s, tr("From"), u"string"_s, tr("24-hour time, e.g. 15:00. From = Until: all day.")),
             field(u"end"_s, tr("Until"), u"string"_s),
             field(u"days"_s, tr("Days"), u"string"_s, tr("e.g. Mon-Fri, or Tue, or Sat, Sun. Empty: every day.")),
+            field(u"code"_s, tr("Coupon code"), u"string"_s,
+                  tr("e.g. SAVE5: then it only comes off checks the code is typed or scanned on (Pay -> Coupon…). Empty: by itself.")),
+            field(u"amount"_s, tr("Amount off"), u"money"_s, tr("A fixed amount instead of a percent, e.g. 5.00.")),
+            field(u"minimum"_s, tr("Orders of at least"), u"money"_s, tr("0 = any order.")),
+            field(u"fromDay"_s, tr("First day"), u"string"_s, tr("e.g. 2026-11-01. Empty: from now.")),
+            field(u"untilDay"_s, tr("Last day"), u"string"_s, tr("e.g. 2026-12-31. Empty: no end.")),
+            with(field(u"maxUses"_s, tr("Times it may be used"), u"int"_s, tr("Checks in all. 0 = no limit.")), u"min"_s, 0),
+            with(field(u"uses"_s, tr("Used so far"), u"int"_s, tr("Closed checks it came off. 0 starts over.")), u"min"_s, 0),
         };
     }
     if (panel == u"punches")
@@ -765,8 +773,11 @@ QVariantList PosService::adminRecords(const QString &panel)
     } else if (panel == u"promotions") {
         for (const PosSettings::Promotion &p : s_->settings.promotions)
             add(promotionRecord(p), qs(p.name),
-                (p.buy > 0 ? tr("buy %1 get %2 at %3% off").arg(p.buy).arg(p.get).arg(double(p.percentBp) / 100.0)
-                           : tr("%1% off").arg(double(p.percentBp) / 100.0))
+                (p.code.empty() ? QString() : tr("code %1").arg(qs(p.code)) + u" · "_s)
+                    + (p.buy > 0 ? tr("buy %1 get %2 at %3% off").arg(p.buy).arg(p.get).arg(double(p.percentBp) / 100.0)
+                       : p.amount.cents() > 0 ? tr("%1 off").arg(format(p.amount))
+                                              : tr("%1% off").arg(double(p.percentBp) / 100.0))
+                    + (p.maxUses > 0 ? u" · "_s + tr("used %1 of %2").arg(p.uses).arg(p.maxUses) : QString())
                     + (p.startMinute != p.endMinute ? u" · "_s + clockText(p.startMinute) + u"-"_s + clockText(p.endMinute) : QString())
                     + (p.active ? QString() : tr(" · off")));
     } else if (panel == u"punches") {
@@ -1644,7 +1655,9 @@ QVariantMap PosService::promotionRecord(const PosSettings::Promotion &p) const
     return {{u"id"_s, qs(p.id)}, {u"name"_s, qs(p.name)}, {u"active"_s, p.active}, {u"families"_s, families.join(u", "_s)},
             {u"items"_s, items.join(u", "_s)}, {u"percent"_s, double(p.percentBp) / 100.0}, {u"buy"_s, p.buy},
             {u"get"_s, p.get}, {u"start"_s, clockText(p.startMinute)}, {u"end"_s, clockText(p.endMinute)},
-            {u"days"_s, daysText(p.days)}};
+            {u"days"_s, daysText(p.days)}, {u"code"_s, qs(p.code)}, {u"amount"_s, double(p.amount.cents()) / 100.0},
+            {u"minimum"_s, double(p.minimum.cents()) / 100.0}, {u"fromDay"_s, qs(p.fromDay)}, {u"untilDay"_s, qs(p.untilDay)},
+            {u"maxUses"_s, p.maxUses}, {u"uses"_s, p.uses}};
 }
 
 bool PosService::savePromotionRecord(int index, const QVariantMap &r)
@@ -1667,11 +1680,33 @@ bool PosService::savePromotionRecord(int index, const QVariantMap &r)
             return fail(tr("There is no menu item '%1'.").arg(i));
         p.items.push_back(ss(i));
     }
-    if (p.families.empty() && p.items.empty())
+    p.code = ss(r.value(u"code"_s).toString().trimmed().toUpper());
+    if (p.code.find(' ') != std::string::npos)
+        return fail(tr("A coupon code is one word, e.g. SAVE5."));
+    for (int k = 0; k < int(list.size()); ++k)
+        if (k != index && !p.code.empty() && list[k].code == p.code)
+            return fail(tr("%1 already uses the code %2.").arg(qs(list[k].name), qs(p.code)));
+    // No categories or items: the whole order (a coupon; a by-itself one only when it says so).
+    if (p.families.empty() && p.items.empty() && p.code.empty())
         return fail(tr("Say which categories or items it covers."));
     p.percentBp = std::clamp<std::int64_t>(std::llround(r.value(u"percent"_s).toDouble() * 100.0), 0, 10000);
-    if (p.percentBp <= 0)
-        return fail(tr("How much off? (50 = half price)"));
+    p.amount = Money::fromCents(std::max<std::int64_t>(0, std::llround(r.value(u"amount"_s).toDouble() * 100.0)));
+    p.minimum = Money::fromCents(std::max<std::int64_t>(0, std::llround(r.value(u"minimum"_s).toDouble() * 100.0)));
+    if (p.percentBp <= 0 && p.amount.cents() <= 0)
+        return fail(tr("How much off? (50 = half price, or an amount)"));
+    if (p.amount.cents() > 0 && p.buy > 0)
+        return fail(tr("Buy-and-get takes a percent off, not an amount."));
+    for (const auto &[key, day] : {std::pair{u"fromDay", &p.fromDay}, std::pair{u"untilDay", &p.untilDay}}) {
+        const QString text = r.value(QString::fromUtf16(key)).toString().trimmed();
+        const QDate d = QDate::fromString(text, Qt::ISODate);
+        if (!text.isEmpty() && !d.isValid())
+            return fail(tr("Write days like 2026-12-31."));
+        *day = text.isEmpty() ? std::string() : d.toString(Qt::ISODate).toStdString();
+    }
+    if (!p.fromDay.empty() && !p.untilDay.empty() && p.untilDay < p.fromDay)
+        return fail(tr("The last day is before the first."));
+    p.maxUses = std::max(0, r.value(u"maxUses"_s).toInt());
+    p.uses = std::max(0, r.value(u"uses"_s, index >= 0 ? list[index].uses : 0).toInt());
     p.buy = std::max(0, r.value(u"buy"_s).toInt());
     p.get = std::max(0, r.value(u"get"_s).toInt());
     if (p.buy > 0 && p.get <= 0)

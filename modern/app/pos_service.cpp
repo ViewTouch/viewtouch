@@ -1507,6 +1507,8 @@ bool PosService::removePayment()
     }
     const Money discountsBefore = c->totals(s_->settings.tax).discounts;
     c->removePayment(removed.id);
+    if (removed.reference.starts_with("promo:"))   // a coupon: off the check (a promotion by itself comes back)
+        std::erase(c->coupons, removed.reference.substr(6));
     returnPayment(*c, removed);
     if (removed.kind != TenderKind::Discount)
         noteEvent(*c, tr("Payment taken back: %1 %2").arg(qs(removed.tenderName), format(removed.amount)), "unpay",
@@ -1700,6 +1702,7 @@ QVariantMap PosService::checkInfo() const
         {u"heldCount"_s, c->heldCount()}, {u"roundSize"_s, int(lastRound(*c).size())},
         {u"firesAt"_s, c->fireAt ? timeOfDay(c->fireAt) : QString()}, {u"rush"_s, c->rush}, {u"vip"_s, c->vip},
         {u"allergies"_s, [c] { QStringList a; for (const std::string &x : c->allergies) a << qs(x); return a; }()},
+        {u"coupons"_s, checkCoupons()},
         {u"opened"_s, timeOfDay(c->openedAt)},
         {u"dueAt"_s, qint64(c->dueAt)}, {u"due"_s, c->dueAt ? dueText(c->dueAt) : QString()},
         {u"customer"_s, QVariantMap{{u"name"_s, qs(c->customer.name)}, {u"phone"_s, qs(c->customer.phone)},
@@ -2440,6 +2443,8 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"setTraining"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setTraining(a.value(0).toBool())); }},
         {u"toggleTraining"_s, [](PosService &p, const QVariantList &) { return QVariant(p.setTraining(!p.training())); }},
         {u"redeemReward"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.redeemReward(a.value(0).toInt())); }},
+        {u"applyCoupon"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.applyCoupon(a.value(0).toString())); }},
+        {u"removeCoupon"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.removeCoupon(a.value(0).toString())); }},
         {u"customerJoin"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.customerJoin(a.value(0).toString())); }},
         {u"sendReceipt"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.sendReceipt(a.value(0).toString(), a.value(1).toString())); }},

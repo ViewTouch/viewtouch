@@ -246,6 +246,7 @@ struct Check {
     bool rush = false;                // the kitchen does it first
     bool vip = false;                 // the kitchen takes extra care
     std::vector<std::string> allergies;   // the guest's (allergen ids): the kitchen sees them
+    std::vector<std::string> coupons;     // promotions whose code was entered on it (their ids)
     bool kiosk = false;               // a guest ordered it on the self-order kiosk
     // An order for later: ready at this time (epoch ms; 0 = now). It goes to
     // the kitchen by itself shortly before (PosSettings::laterLeadMinutes).

@@ -2,6 +2,7 @@
 // money off) and promotions (happy hour, buy one get one...) applied by
 // themselves while they run. Both show on the check as discounts.
 
+#include "app/i18n.hh"
 #include "app/pos_json.hh"
 #include "app/pos_service.hh"
 
@@ -16,9 +17,16 @@ namespace vt::app {
 
 namespace {
 
+// Within its first and last days (a coupon's dates).
+bool inDates(const PosSettings::Promotion &p, std::int64_t ms)
+{
+    const std::string today = QDateTime::fromMSecsSinceEpoch(ms).date().toString(Qt::ISODate).toStdString();
+    return (p.fromDay.empty() || today >= p.fromDay) && (p.untilDay.empty() || today <= p.untilDay);
+}
+
 bool runningAt(const PosSettings::Promotion &p, std::int64_t ms)
 {
-    if (!p.active)
+    if (!p.active || !inDates(p, ms))
         return false;
     const QDateTime t = QDateTime::fromMSecsSinceEpoch(ms);
     if (!(p.days & (1 << (t.date().dayOfWeek() % 7))))
@@ -28,6 +36,22 @@ bool runningAt(const PosSettings::Promotion &p, std::int64_t ms)
     const int m = t.time().hour() * 60 + t.time().minute();
     return p.startMinute < p.endMinute ? m >= p.startMinute && m < p.endMinute
                                        : m >= p.startMinute || m < p.endMinute;   // past midnight
+}
+
+bool usedUp(const PosSettings::Promotion &p)
+{
+    return p.maxUses > 0 && p.uses >= p.maxUses;
+}
+
+std::string normalCode(const QString &code)
+{
+    return code.trimmed().toUpper().toStdString();
+}
+
+// "2026-11-30" -> "Nov 30, 2026" in the screen's language.
+QString dayText(const std::string &iso)
+{
+    return i18n::locale().toString(QDate::fromString(QString::fromStdString(iso), Qt::ISODate), QLocale::ShortFormat);
 }
 
 } // namespace
@@ -42,15 +66,24 @@ Money PosService::promotionAmount(const PosSettings::Promotion &p, const Check &
         if (l.voided || l.isComment() || l.isGiftCard())
             continue;
         const MenuItem *m = findItem(qs(l.itemId));
+        const bool everything = p.families.empty() && p.items.empty();
         const bool family = m && std::ranges::find(p.families, m->family) != p.families.end();
         const bool item = std::ranges::find(p.items, l.itemId) != p.items.end();
-        if (!family && !item)
+        if (!everything && !family && !item)
             continue;
         const int qty = std::max(1, l.quantity);
         for (int i = 0; i < qty; ++i)
             units.push_back(Money::fromCents(l.total().cents() / qty));
     }
     Money off;
+    if (p.minimum.cents() > 0 && c.totals(s_->settings.tax).items < p.minimum)
+        return off;
+    if (p.amount.cents() > 0 && p.buy <= 0) {   // a fixed amount, up to what it covers
+        Money worth;
+        for (Money u : units)
+            worth += u;
+        return std::min(p.amount, worth);
+    }
     if (p.buy <= 0) {
         for (Money u : units)
             off += u.percent(p.percentBp);
@@ -73,6 +106,10 @@ void PosService::applyPromotions(Check &c)
     std::vector<std::pair<const PosSettings::Promotion *, Money>> wanted;
     for (const PosSettings::Promotion &p : s_->settings.promotions) {
         if (!runningAt(p, now()))
+            continue;
+        // A coupon: only where it was entered (and kept once it was, even if
+        // it's used up meanwhile on another check).
+        if (!p.code.empty() && std::ranges::find(c.coupons, p.id) == c.coupons.end())
             continue;
         const Money off = promotionAmount(p, c);
         if (off.cents() > 0)
@@ -104,9 +141,108 @@ QVariantList PosService::promotionsNow() const
 {
     QVariantList out;
     for (const PosSettings::Promotion &p : s_->settings.promotions)
-        if (runningAt(p, now()))
+        if (p.code.empty() && runningAt(p, now()))
             out.append(qs(p.name));
     return out;
+}
+
+// --- coupons -----------------------------------------------------------------------------
+
+bool PosService::applyCoupon(const QString &code)
+{
+    if (!require(perm::Settle, tr("Coupons")))
+        return false;
+    Check *c = current();
+    if (!c)
+        return fail(tr("No check is open."));
+    const std::string wanted = normalCode(code);
+    if (wanted.empty())
+        return fail(tr("Type or scan the coupon's code."));
+    const auto it = std::ranges::find_if(s_->settings.promotions, [&](const PosSettings::Promotion &p) {
+        return !p.code.empty() && normalCode(qs(p.code)) == wanted;
+    });
+    if (it == s_->settings.promotions.end())
+        return fail(tr("There is no coupon %1.").arg(qs(wanted)));
+    const PosSettings::Promotion &p = *it;
+    if (std::ranges::find(c->coupons, p.id) != c->coupons.end())
+        return fail(tr("%1 is already on this check.").arg(qs(p.name)));
+    const std::string today = QDateTime::fromMSecsSinceEpoch(now()).date().toString(Qt::ISODate).toStdString();
+    if (!p.active)
+        return fail(tr("%1 is turned off.").arg(qs(p.name)));
+    if (!p.untilDay.empty() && today > p.untilDay)
+        return fail(tr("%1 ended on %2.").arg(qs(p.name), dayText(p.untilDay)));
+    if (!p.fromDay.empty() && today < p.fromDay)
+        return fail(tr("%1 starts on %2.").arg(qs(p.name), dayText(p.fromDay)));
+    if (!runningAt(p, now()))
+        return fail(tr("%1 isn't good at this hour or on this day.").arg(qs(p.name)));
+    if (usedUp(p))
+        return fail(tr("%1 has been used as many times as it may be (%2).").arg(qs(p.name)).arg(p.maxUses));
+    if (p.minimum.cents() > 0 && c->totals(s_->settings.tax).items < p.minimum)
+        return fail(tr("%1 is for orders of %2 or more.").arg(qs(p.name), format(p.minimum)));
+    if (promotionAmount(p, *c).cents() <= 0)
+        return fail(tr("Nothing on this check is covered by %1.").arg(qs(p.name)));
+    c->coupons.push_back(p.id);
+    const Money before = c->totals(s_->settings.tax).discounts;
+    applyPromotions(*c);
+    const Money off = c->totals(s_->settings.tax).discounts - before;
+    noteEvent(*c, tr("Coupon: %1").arg(qs(p.name)), "discount", off);
+    emit notice(tr("%1: %2 off").arg(qs(p.name), format(off)));
+    changed(*c);
+    return true;
+}
+
+bool PosService::removeCoupon(const QString &id)
+{
+    if (!require(perm::Settle, tr("Coupons")))
+        return false;
+    Check *c = current();
+    if (!c)
+        return fail(tr("No check is open."));
+    if (std::erase(c->coupons, ss(id)) == 0)
+        return fail(tr("That coupon isn't on this check."));
+    noteEvent(*c, tr("Coupon taken off"), "undiscount");
+    changed(*c);
+    return true;
+}
+
+QVariantList PosService::checkCoupons() const
+{
+    QVariantList out;
+    const Check *c = currentCheck();
+    if (!c)
+        return out;
+    for (const std::string &id : c->coupons) {
+        const auto it = std::ranges::find_if(s_->settings.promotions, [&](const PosSettings::Promotion &p) { return p.id == id; });
+        const bool known = it != s_->settings.promotions.end();
+        Money off;
+        for (const Payment &pay : c->payments)
+            if (pay.reference == "promo:" + id)
+                off += pay.amount;
+        out.append(QVariantMap{{u"id"_s, qs(id)}, {u"name"_s, known ? qs(it->name) : qs(id)},
+                               {u"code"_s, known ? qs(it->code) : QString()}, {u"off"_s, format(off)},
+                               {u"working"_s, off.cents() > 0}});
+    }
+    return out;
+}
+
+void PosService::countCouponUses(const Check &c, int by)
+{
+    if (c.training)
+        return;
+    bool any = false;
+    for (const std::string &id : c.coupons) {
+        // Only those that took something off.
+        if (!std::ranges::any_of(c.payments, [&](const Payment &p) { return p.reference == "promo:" + id; }))
+            continue;
+        for (PosSettings::Promotion &p : s_->settings.promotions) {
+            if (p.id == id) {
+                p.uses = std::max(0, p.uses + by);
+                any = true;
+            }
+        }
+    }
+    if (any)
+        settingsChanged();
 }
 
 // --- loyalty -----------------------------------------------------------------------------

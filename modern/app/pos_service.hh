@@ -507,8 +507,15 @@ public:
     bool customerJoin(const QString &phone);
     // After paying: "print", "text" (to a phone) or "none".
     bool sendReceipt(const QString &how, const QString &to = {});
-    // Names of the promotions running now.
+    // Names of the promotions running now (not coupons).
     QVariantList promotionsNow() const;
+    // A coupon (a promotion with a code) typed or scanned onto the current
+    // check: says why not when it's unknown, over, used up or covers nothing.
+    bool applyCoupon(const QString &code);
+    // Takes coupon `id` (its promotion's) off the current check.
+    bool removeCoupon(const QString &id);
+    // The coupons on the current check: id, name, code, off, working.
+    QVariantList checkCoupons() const;
     // Gratuity on the current check (bp; 0 removes). Removing an automatic
     // one needs a manager.
     bool setGratuity(std::int64_t percentBp);
@@ -935,6 +942,8 @@ private:
     void undoCloseEffects(core::Check &c);
     Money promotionAmount(const core::PosSettings::Promotion &p, const core::Check &c) const;
     void applyPromotions(core::Check &c);
+    // A closed check's coupons count as used (by 1), or not anymore (-1: reopened).
+    void countCouponUses(const core::Check &c, int by);
     int pointsFor(const core::Check &c) const;
     void earnPoints(core::Check &c);
     void takeBackPoints(core::Check &c);

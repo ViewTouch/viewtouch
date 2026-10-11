@@ -119,7 +119,7 @@ ApplicationWindow {
     // Something over the whole screen (see the page's `enabled`).
     readonly property bool pageCovered: selfOrder.visible || root.controller.asleep || cardWait.visible
                                         || receiptSheet.visible || setupLoader.active || jobChooser.visible || cashTipsPrompt.visible
-                                        || approvalPad.visible || allergySheet.visible
+                                        || approvalPad.visible || allergySheet.visible || couponSheet.visible
 
     Loader {
         active: root.customerDisplay
@@ -505,6 +505,107 @@ ApplicationWindow {
                 fontScale: 0.3
                 baseColor: "#1f6f3a"
                 onClicked: allergySheet.open = false
+            }
+        }
+    }
+
+    // A coupon's code (Pay -> Coupon…): typed, or scanned (a scanner types
+    // it and presses Enter). The ones on the check, to take off.
+    Rectangle {
+        id: couponSheet
+        objectName: "couponSheet"
+        property bool open: false
+        readonly property var coupons: root.controller.pos && root.controller.pos.hasCheck
+                                       ? (root.controller.pos.check.coupons ?? []) : []
+        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30)
+        function apply() {
+            if (couponCode.text.trim() === "")
+                return
+            root.controller.pos.applyCoupon(couponCode.text)
+            couponCode.text = ""
+        }
+        anchors.fill: parent
+        z: 74
+        visible: open && !!root.controller.pos && root.controller.pos.hasCheck
+        color: Qt.rgba(0.04, 0.05, 0.07, 0.92)
+        onVisibleChanged: if (visible) couponCode.forceActiveFocus()
+        Connections {
+            target: root.controller
+            function onWidgetCommand(name, args) { if (name === "coupon") couponSheet.open = true }
+        }
+        MouseArea { anchors.fill: parent }
+        Column {
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: Math.max(couponSheet.u, parent.height * 0.06)
+            width: Math.min(parent.width - 2 * couponSheet.u, 34 * couponSheet.u)
+            spacing: couponSheet.u * 0.8
+            Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: qsTr("Type or scan the coupon")
+                color: "white"
+                font.pixelSize: 1.6 * couponSheet.u
+                font.bold: true
+            }
+            RowLayout {
+                width: parent.width
+                spacing: couponSheet.u / 2
+                TextField {
+                    id: couponCode
+                    objectName: "couponCode"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 3.4 * couponSheet.u
+                    font.pixelSize: 1.4 * couponSheet.u
+                    font.capitalization: Font.AllUppercase
+                    inputMethodHints: Qt.ImhUppercaseOnly | Qt.ImhNoPredictiveText
+                    placeholderText: qsTr("Code")
+                    onAccepted: couponSheet.apply()
+                }
+                WidgetKey {
+                    objectName: "couponApply"
+                    Layout.preferredWidth: 9 * couponSheet.u
+                    Layout.preferredHeight: 3.4 * couponSheet.u
+                    text: qsTr("Apply")
+                    fontScale: 0.3
+                    baseColor: "#2f6fd6"
+                    onClicked: couponSheet.apply()
+                }
+            }
+            Repeater {
+                model: couponSheet.coupons
+                delegate: RowLayout {
+                    required property var modelData
+                    width: parent.width
+                    spacing: couponSheet.u / 2
+                    Text {
+                        Layout.fillWidth: true
+                        text: modelData.name + "  ·  " + (modelData.working ? qsTr("%1 off").arg(modelData.off)
+                                                                            : qsTr("takes nothing off now"))
+                        color: modelData.working ? "#7ee2a8" : "#f5b940"
+                        font.pixelSize: 1.1 * couponSheet.u
+                        wrapMode: Text.WordWrap
+                    }
+                    WidgetKey {
+                        objectName: "couponRemove-" + modelData.id
+                        Layout.preferredWidth: 9 * couponSheet.u
+                        Layout.preferredHeight: 2.8 * couponSheet.u
+                        text: qsTr("Remove")
+                        fontScale: 0.3
+                        baseColor: "#5a2a2a"
+                        onClicked: root.controller.pos.removeCoupon(modelData.id)
+                    }
+                }
+            }
+            WidgetKey {
+                objectName: "couponDone"
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 14 * couponSheet.u
+                height: 3.4 * couponSheet.u
+                text: qsTr("Done")
+                fontScale: 0.3
+                baseColor: "#1f6f3a"
+                onClicked: { couponSheet.open = false; couponCode.text = ""; pageView.forceActiveFocus() }
             }
         }
     }

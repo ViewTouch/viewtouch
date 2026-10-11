@@ -6695,3 +6695,45 @@ TEST_CASE("Card reader (simulated), the internet down: cards taken offline withi
     REQUIRE(s.pos.seeCardAlert(alerts[0].toMap()[u"ref"_s].toString()));
     CHECK(s.pos.cardAlerts().isEmpty());
 }
+
+TEST_CASE("UI: a coupon on the Pay screen: typed or scanned, shown, taken off", "[flow][ui][coupons]")
+{
+    Screen s(false, 1280, 800);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    core::PosSettings::Promotion coupon;
+    coupon.id = "five-off";
+    coupon.name = "Five Off";
+    coupon.code = "SAVE5";
+    coupon.amount = Money::fromCents(500);
+    s.pos.shared()->settings.promotions.push_back(coupon);
+    REQUIRE(s.pos.startCheck(core::CheckType::Quick));
+    s.pos.addItem(u"cobb"_s);
+    s.pos.addItem(u"cobb"_s);
+    REQUIRE(s.c.jumpTo(u"settle"_s));
+    QTest::qWait(100);
+    s.c.activate(u"coupon"_s);
+    QTest::qWait(100);
+    REQUIRE(by(u"couponSheet"_s));
+    REQUIRE(by(u"couponSheet"_s)->isVisible());
+    // A scanner types the code and presses Enter, into the field that has the focus.
+    const auto typeKeys = [&](const char *text) { for (const char *k = text; *k; ++k) QTest::keyClick(s.window, *k); };
+    typeKeys("save5");
+    QTest::keyClick(s.window, Qt::Key_Return);
+    QTest::qWait(100);
+    CHECK(s.pos.totals()[u"subtotal"_s].toString() == u"$20.00"_s);
+    REQUIRE(by(u"couponRemove-five-off"_s));
+    s.shot("coupon-sheet");
+    s.tapItem(by(u"couponRemove-five-off"_s));
+    QTest::qWait(100);
+    CHECK(s.pos.totals()[u"subtotal"_s].toString() == u"$25.00"_s);
+    // Typed on the screen's keys, then Apply.
+    typeKeys("SAVE5");
+    s.tapItem(by(u"couponApply"_s));
+    QTest::qWait(100);
+    CHECK(s.pos.totals()[u"subtotal"_s].toString() == u"$20.00"_s);
+    s.tapItem(by(u"couponDone"_s));
+    QTest::qWait(60);
+    CHECK_FALSE(by(u"couponSheet"_s));   // hidden
+}

@@ -161,7 +161,7 @@ QJsonObject toJson(const Check &c)
         {u"customer"_s, QJsonObject{{u"name"_s, qs(c.customer.name)}, {u"phone"_s, qs(c.customer.phone)},
                                     {u"address"_s, qs(c.customer.address)}, {u"note"_s, qs(c.customer.note)}}},
         {u"events"_s, events}, {u"firedCourse"_s, c.firedCourse}, {u"customerId"_s, qs(c.customerId)},
-        {u"rush"_s, c.rush}, {u"vip"_s, c.vip}, {u"allergies"_s, strings(c.allergies)}, {u"kiosk"_s, c.kiosk}, {u"dueAt"_s, qint64(c.dueAt)}, {u"fireAt"_s, qint64(c.fireAt)},
+        {u"rush"_s, c.rush}, {u"vip"_s, c.vip}, {u"allergies"_s, strings(c.allergies)}, {u"coupons"_s, strings(c.coupons)}, {u"kiosk"_s, c.kiosk}, {u"dueAt"_s, qint64(c.dueAt)}, {u"fireAt"_s, qint64(c.fireAt)},
         {u"promisedAt"_s, qint64(c.promisedAt)},
         {u"refunds"_s, [&] {
              QJsonArray a;
@@ -272,6 +272,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.deliveredAt = o.value(u"deliveredAt").toInteger(0);
     c.vip = o.value(u"vip").toBool();
     c.allergies = strings(o.value(u"allergies").toArray());
+    c.coupons = strings(o.value(u"coupons").toArray());
     c.pointsEarned = o.value(u"pointsEarned").toInt();
     c.training = o.value(u"training").toBool();
     for (const QJsonValue &v : o.value(u"events").toArray()) {
@@ -940,7 +941,10 @@ QJsonObject toJson(const PosSettings &s)
                  a.append(QJsonObject{{u"id"_s, qs(p.id)}, {u"name"_s, qs(p.name)}, {u"active"_s, p.active},
                                       {u"families"_s, fam}, {u"items"_s, items}, {u"percent"_s, double(p.percentBp) / 100.0},
                                       {u"buy"_s, p.buy}, {u"get"_s, p.get}, {u"start"_s, p.startMinute},
-                                      {u"end"_s, p.endMinute}, {u"days"_s, p.days}});
+                                      {u"end"_s, p.endMinute}, {u"days"_s, p.days}, {u"code"_s, qs(p.code)},
+                                      {u"amount"_s, qint64(p.amount.cents())}, {u"minimum"_s, qint64(p.minimum.cents())},
+                                      {u"fromDay"_s, qs(p.fromDay)}, {u"untilDay"_s, qs(p.untilDay)},
+                                      {u"maxUses"_s, p.maxUses}, {u"uses"_s, p.uses}});
              }
              return a;
          }()},
@@ -1166,6 +1170,13 @@ PosSettings settingsFromJson(const QJsonObject &o)
         promo.startMinute = std::clamp(p.value(u"start").toInt(), 0, 24 * 60);
         promo.endMinute = std::clamp(p.value(u"end").toInt(), 0, 24 * 60);
         promo.days = p.value(u"days").toInt(0x7F) & 0x7F;
+        promo.code = ss(p.value(u"code").toString());
+        promo.amount = Money::fromCents(std::max<qint64>(0, p.value(u"amount").toInteger()));
+        promo.minimum = Money::fromCents(std::max<qint64>(0, p.value(u"minimum").toInteger()));
+        promo.fromDay = ss(p.value(u"fromDay").toString());
+        promo.untilDay = ss(p.value(u"untilDay").toString());
+        promo.maxUses = std::max(0, p.value(u"maxUses").toInt());
+        promo.uses = std::max(0, p.value(u"uses").toInt());
         if (!promo.id.empty())
             s.promotions.push_back(promo);
     }

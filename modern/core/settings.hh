@@ -284,6 +284,8 @@ struct PosSettings {
     std::vector<Reward> rewards;
     // Promotions, applied by themselves while they run: percent off the
     // matching items, or (buy > 0) "buy `buy`, get `get` at percent off".
+    // No categories or items: the whole order. A coupon (a code) applies
+    // only to checks it was typed or scanned on.
     struct Promotion {
         std::string id;
         std::string name;
@@ -296,6 +298,13 @@ struct PosSettings {
         int startMinute = 0;                 // start == end: all day
         int endMinute = 0;
         int days = 0x7F;                     // bit 0 Sunday ... bit 6 Saturday
+        std::string code;                    // a coupon's code ("SAVE5"; any case); empty: by itself
+        Money amount;                        // a fixed amount off instead of a percent
+        Money minimum;                       // only on orders of at least this (items)
+        std::string fromDay;                 // "2026-11-01": its first day (empty: now)
+        std::string untilDay;                // ...and its last (empty: no end)
+        int maxUses = 0;                     // checks it may be used on (0: any number)
+        int uses = 0;                        // closed checks it was used on
         bool operator==(const Promotion &) const = default;
     };
     std::vector<Promotion> promotions;

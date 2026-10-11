@@ -339,7 +339,7 @@
       "rect": {
         "x": 1468,
         "y": 852,
-        "w": 212,
+        "w": 140,
         "h": 82
       },
       "shape": "rect",
@@ -361,9 +361,9 @@
       "id": "off-percent",
       "kind": "button",
       "rect": {
-        "x": 1692,
+        "x": 1616,
         "y": 852,
-        "w": 212,
+        "w": 140,
         "h": 82
       },
       "shape": "rect",
@@ -373,6 +373,30 @@
         {
           "type": "command",
           "name": "percentOff"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    },
+    {
+      "id": "coupon",
+      "kind": "button",
+      "rect": {
+        "x": 1764,
+        "y": 852,
+        "w": 140,
+        "h": 82
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Coupon\u2026",
+      "actions": [
+        {
+          "type": "command",
+          "name": "coupon"
         }
       ],
       "style": {

@@ -153,3 +153,98 @@ TEST_CASE("Promotions and rewards in Manager screens", "[loyalty][admin]")
     store[u"rewards"_s] = u"lots = free"_s;
     CHECK_FALSE(pos.adminSave(u"store"_s, 0, store));
 }
+
+TEST_CASE("Coupons: a code typed or scanned; dates, a minimum, an amount, a use limit", "[loyalty][coupons]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    qint64 clock = nextDay(3, 12);
+    pos.shared()->setClock([&] { return clock; });
+    const QDate today = QDateTime::fromMSecsSinceEpoch(clock).date();
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    pos.entryKey(u"10000"_s);
+    REQUIRE(pos.openDrawerSession());
+
+    // $5 off orders of $20 or more, twice in all; this week only.
+    QVariantMap p = pos.adminNewRecord(u"promotions"_s);
+    p[u"name"_s] = u"Five Off"_s;
+    p[u"code"_s] = u"save5"_s;
+    p[u"amount"_s] = 5.0;
+    p[u"minimum"_s] = 20.0;
+    p[u"maxUses"_s] = 2;
+    p[u"fromDay"_s] = today.addDays(-1).toString(Qt::ISODate);
+    p[u"untilDay"_s] = today.addDays(6).toString(Qt::ISODate);
+    REQUIRE(pos.adminSave(u"promotions"_s, -1, p));             // no categories: the whole order
+    CHECK(pos.shared()->settings.promotions.back().code == "SAVE5");
+    CHECK(pos.adminRecords(u"promotions"_s).last().toMap()[u"code"_s] == u"SAVE5"_s);
+    QVariantMap dup = p;
+    dup[u"name"_s] = u"Another"_s;
+    CHECK_FALSE(pos.adminSave(u"promotions"_s, -1, dup));       // the code is taken
+    QVariantMap bad = p;
+    bad[u"untilDay"_s] = u"next week"_s;
+    CHECK_FALSE(pos.adminSave(u"promotions"_s, int(pos.shared()->settings.promotions.size()) - 1, bad));
+
+    // Not by itself: only once typed, any case, spaces around.
+    REQUIRE(pos.startCheck(core::CheckType::Takeout));
+    pos.addItem(u"cobb"_s);                                    // $12.50
+    CHECK(pos.totals()[u"hasDiscount"_s] == false);
+    CHECK_FALSE(pos.applyCoupon(u"NOPE"_s));
+    CHECK_FALSE(pos.applyCoupon(u"save5"_s));                  // under $20
+    pos.addItem(u"cobb"_s);                                    // $25.00
+    REQUIRE(pos.applyCoupon(u"  save5 "_s));
+    CHECK(pos.totals()[u"subtotal"_s].toString() == u"$20.00"_s);
+    CHECK_FALSE(pos.applyCoupon(u"SAVE5"_s));                  // already on it
+    QVariantList on = pos.checkInfo()[u"coupons"_s].toList();
+    REQUIRE(on.size() == 1);
+    CHECK(on[0].toMap()[u"off"_s] == u"$5.00"_s);
+    // Below the minimum again: it stays on the check but takes nothing off.
+    REQUIRE(pos.voidItem());
+    CHECK(pos.totals()[u"subtotal"_s].toString() == u"$12.50"_s);
+    CHECK(pos.checkInfo()[u"coupons"_s].toList()[0].toMap()[u"working"_s] == false);
+    pos.addItem(u"cobb"_s);
+    CHECK(pos.totals()[u"subtotal"_s].toString() == u"$20.00"_s);
+    // Undo Payment on it takes the coupon off (it doesn't come back).
+    for (const QVariant &v : pos.payments())
+        if (v.toMap()[u"name"_s] == u"Five Off"_s)
+            pos.selectPayment(v.toMap()[u"id"_s].toLongLong());
+    REQUIRE(pos.removePayment());
+    CHECK(pos.totals()[u"subtotal"_s].toString() == u"$25.00"_s);
+    CHECK(pos.checkInfo()[u"coupons"_s].toList().isEmpty());
+    REQUIRE(pos.applyCoupon(u"SAVE5"_s));
+    REQUIRE(pos.tender(u"cash"_s));
+    REQUIRE(pos.closeCheck());
+    const qint64 first = pos.shared()->closedToday.back().id;
+    CHECK(pos.shared()->settings.promotions.back().uses == 1);  // counted when the check closes
+
+    // Second use, then it's used up; reopening one gives a use back.
+    REQUIRE(pos.startCheck(core::CheckType::Takeout));
+    pos.addItem(u"cobb"_s);
+    pos.addItem(u"cobb"_s);
+    REQUIRE(pos.applyCoupon(u"SAVE5"_s));
+    REQUIRE(pos.tender(u"cash"_s));
+    REQUIRE(pos.closeCheck());
+    CHECK(pos.shared()->settings.promotions.back().uses == 2);
+    REQUIRE(pos.startCheck(core::CheckType::Takeout));
+    pos.addItem(u"cobb"_s);
+    pos.addItem(u"cobb"_s);
+    CHECK_FALSE(pos.applyCoupon(u"SAVE5"_s));
+    pos.releaseCheck();
+    REQUIRE(pos.reopenCheck(first));
+    CHECK(pos.shared()->settings.promotions.back().uses == 1);
+    REQUIRE(pos.closeCheck());
+    CHECK(pos.shared()->settings.promotions.back().uses == 2);
+
+    // Past its last day.
+    clock = QDateTime(today.addDays(8), QTime(12, 0)).toMSecsSinceEpoch();
+    pos.shared()->settings.promotions.back().uses = 0;
+    REQUIRE(pos.startCheck(core::CheckType::Takeout));
+    pos.addItem(u"cobb"_s);
+    pos.addItem(u"cobb"_s);
+    CHECK_FALSE(pos.applyCoupon(u"SAVE5"_s));
+
+    // Kept with the check (saved and loaded).
+    const core::Check *c = pos.shared()->open.empty() ? nullptr : &pos.shared()->open.begin()->second;
+    REQUIRE(c);
+    core::Check with = *c;
+    with.coupons = {"five-off"};
+    CHECK(app::checkFromJson(app::toJson(with))->coupons == with.coupons);
+}

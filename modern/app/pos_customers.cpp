@@ -472,6 +472,7 @@ void PosService::applyCloseEffects(Check &c)
         saveGiftCardRecord(*g);
     }
     earnPoints(c);
+    countCouponUses(c, 1);
     if (CustomerRecord *r = s_->customer(c.customerId)) {
         ++r->visits;
         r->spent += c.totals(s_->settings.tax).total;
@@ -505,6 +506,7 @@ void PosService::undoCloseEffects(Check &c)
         }
     }
     takeBackPoints(c);
+    countCouponUses(c, -1);
     if (CustomerRecord *r = s_->customer(c.customerId)) {
         r->visits = std::max(0, r->visits - 1);
         r->spent -= c.totals(s_->settings.tax).total;
