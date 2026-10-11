@@ -113,6 +113,8 @@ QVariantList PosService::adminFields(const QString &panel)
                       u"min"_s, 0), u"max"_s, 240),
             field(u"number"_s, tr("Number"), u"string"_s,
                   tr("To ring it in by number: type it on Find, or on a keyboard then Enter. Digits, each item its own.")),
+            field(u"barcodes"_s, tr("Barcodes"), u"string"_s,
+                  tr("Scan the package here (several: commas between). Scanning it on the order screen rings it in.")),
             field(u"price"_s, tr("Price"), u"money"_s),
             field(u"family"_s, tr("Family"), u"string"_s, tr("Groups items on the sales report")),
             with(field(u"taxClass"_s, tr("Tax"), u"enum"_s), u"options"_s,
@@ -1369,8 +1371,12 @@ bool PosService::saveMenuRecord(int index, const QVariantMap &record)
             if (i != index && qs(s_->menu[i].number) == plu)
                 return fail(tr("%1 already has number %2.").arg(qs(s_->menu[i].name), plu));
     }
+    const QStringList codes = barcodeList(record.value(u"barcodes"_s).toString());
+    if (const QString problem = barcodeProblem(codes, index >= 0 ? s_->menu[index].id : std::string()); !problem.isEmpty())
+        return fail(problem);
     // The form's text fields, as menu data.
     QVariantMap data = record;
+    data.insert(u"barcodes"_s, codes);
     QVariantList groups;
     for (QString g : record.value(u"modifierGroups"_s).toString().split(u',', Qt::SkipEmptyParts)) {
         g = g.trimmed();
@@ -1568,6 +1574,10 @@ QVariantMap PosService::menuRecord(const MenuItem &m) const
     for (const std::string &g : m.modifierGroups)
         groups << qs(g);
     r.insert(u"modifierGroups"_s, groups.join(u", "));
+    QStringList codes;
+    for (const std::string &b : m.barcodes)
+        codes << qs(b);
+    r.insert(u"barcodes"_s, codes.join(u", "));
     QStringList prices;
     for (const auto &[period, price] : m.periodPrices)
         prices << u"%1 = %2"_s.arg(qs(period), qs(price.toString()));

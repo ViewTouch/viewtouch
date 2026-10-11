@@ -218,12 +218,38 @@ const MenuItem *PosService::findItem(const QString &idOrName) const
         if (QString::compare(qs(m.name), idOrName, Qt::CaseInsensitive) == 0)
             return &m;
     }
-    // Its number (a PLU), typed.
-    if (!key.empty())
+    // Its number (a PLU), typed; a barcode, scanned.
+    if (!key.empty()) {
         for (const MenuItem &m : s_->menu)
             if (m.number == key)
                 return &m;
+        for (const MenuItem &m : s_->menu)
+            if (std::ranges::find(m.barcodes, key) != m.barcodes.end())
+                return &m;
+    }
     return nullptr;
+}
+
+QStringList PosService::barcodeList(const QString &text)
+{
+    QStringList out;
+    for (const QString &c : text.split(QRegularExpression(u"[\\s,;]+"_s), Qt::SkipEmptyParts))
+        if (!out.contains(c))
+            out << c;
+    return out;
+}
+
+QString PosService::barcodeProblem(const QStringList &codes, const std::string &itemId) const
+{
+    static const QRegularExpression shape(u"^[0-9A-Za-z-]{4,40}$"_s);
+    for (const QString &c : codes) {
+        if (!shape.match(c).hasMatch())
+            return tr("A barcode is 4 to 40 letters and digits: \"%1\".").arg(c);
+        for (const MenuItem &m : s_->menu)
+            if (m.id != itemId && std::ranges::find(m.barcodes, ss(c)) != m.barcodes.end())
+                return tr("%1 already has the barcode %2.").arg(qs(m.name), c);
+    }
+    return {};
 }
 
 bool PosService::require(const char *permission, const QString &action, Check *noteOn)
@@ -2443,6 +2469,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"setTraining"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setTraining(a.value(0).toBool())); }},
         {u"toggleTraining"_s, [](PosService &p, const QVariantList &) { return QVariant(p.setTraining(!p.training())); }},
         {u"redeemReward"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.redeemReward(a.value(0).toInt())); }},
+        {u"scanCode"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.scanCode(a.value(0).toString())); }},
         {u"applyCoupon"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.applyCoupon(a.value(0).toString())); }},
         {u"removeCoupon"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.removeCoupon(a.value(0).toString())); }},
         {u"customerJoin"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.customerJoin(a.value(0).toString())); }},

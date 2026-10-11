@@ -633,6 +633,14 @@ bool PosService::saveMenuItemCard(const QVariantMap &card)
         }
         item.number = ss(plu);
     }
+    if (card.contains(u"barcodes"_s)) {
+        const QStringList codes = barcodeList(card.value(u"barcodes"_s).toString());
+        if (const QString problem = barcodeProblem(codes, item.id); !problem.isEmpty())
+            return fail(problem);
+        item.barcodes.clear();
+        for (const QString &c : codes)
+            item.barcodes.push_back(ss(c));
+    }
     // Other prices: empty is the regular price.
     const auto otherPrice = [&](const QVariant &v, Money &into) {
         const QString t = v.toString().trimmed();
@@ -953,7 +961,8 @@ bool PosService::duplicateMenuItem(const QString &id)
             break;
     }
     copy.name = ss(name);
-    copy.number.clear();   // numbers are one item's
+    copy.number.clear();   // numbers and barcodes are one item's
+    copy.barcodes.clear();
     copy.breakBefore.clear();   // one space or new row is enough
     copy.ticketsSoldBefore = 0;
     copy.id = freeId(name, [&](const std::string &x) { return std::ranges::any_of(menu, [&](const MenuItem &m) { return m.id == x; }); });
@@ -1108,6 +1117,8 @@ int PosService::importMenuRows(const QVariantList &rows, const QString &category
             QVariantMap card{{u"id"_s, qs(existing->id)}, {u"name"_s, qs(existing->name)}};
             if (!photo.isEmpty() && existing->image.empty())
                 card.insert(u"image"_s, photo);
+            if (const QString b = r.value(u"barcodes"_s).toString().trimmed(); !b.isEmpty() && existing->barcodes.empty())
+                card.insert(u"barcodes"_s, b);
             if (updatePrices)
                 card.insert(u"price"_s, QString::number(price, 'f', 2));
             if (card.size() == 2) {
@@ -1126,6 +1137,8 @@ int PosService::importMenuRows(const QVariantList &rows, const QString &category
             card.insert(u"description"_s, d);
         if (const QString on = r.value(u"onIt"_s).toString().trimmed(); !on.isEmpty())
             card.insert(u"onIt"_s, on);
+        if (const QString b = r.value(u"barcodes"_s).toString().trimmed(); !b.isEmpty())
+            card.insert(u"barcodes"_s, b);
         if (!saveMenuItemCard(card))
             return added;
         ++added;

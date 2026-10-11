@@ -6737,3 +6737,48 @@ TEST_CASE("UI: a coupon on the Pay screen: typed or scanned, shown, taken off", 
     QTest::qWait(60);
     CHECK_FALSE(by(u"couponSheet"_s));   // hidden
 }
+
+TEST_CASE("UI: a barcode scanner: an item rung in on the menu; a coupon on Pay; typing by hand isn't a scan", "[flow][ui][barcode]")
+{
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.saveMenuItemCard({{u"id"_s, u"draft-beer"_s}, {u"name"_s, u"Draft Beer"_s}, {u"barcodes"_s, u"012345678905"_s}}));
+    core::PosSettings::Promotion coupon;
+    coupon.id = "five-off";
+    coupon.name = "Five Off";
+    coupon.code = "SAVE5";
+    coupon.amount = Money::fromCents(500);
+    s.pos.shared()->settings.promotions.push_back(coupon);
+    REQUIRE(s.pos.startCheck(core::CheckType::Quick));
+    REQUIRE(s.c.jumpTo(u"menu-all"_s));
+    QTest::qWait(100);
+    const auto lines = [&] { return s.pos.lines().size(); };
+    // A scanner: every key at once, then Enter.
+    const auto scan = [&](const char *code) {
+        for (const char *k = code; *k; ++k)
+            QTest::keyClick(s.window, *k);
+        QTest::keyClick(s.window, Qt::Key_Return);
+        QTest::qWait(100);
+    };
+    scan("012345678905");
+    REQUIRE(lines() == 1);
+    CHECK(s.pos.lines()[0].toMap()[u"name"_s].toString().contains(u"Draft Beer"_s));
+    // A person typing the same: not a scan (and too long for an item's number).
+    for (const char *k = "012345678905"; *k; ++k) {
+        QTest::keyClick(s.window, *k);
+        QTest::qWait(80);
+    }
+    QTest::keyClick(s.window, Qt::Key_Return);
+    QTest::qWait(100);
+    CHECK(lines() == 1);
+    // On Pay: a coupon, without opening anything.
+    REQUIRE(s.c.jumpTo(u"settle"_s));
+    QTest::qWait(100);
+    scan("SAVE5");
+    CHECK(s.pos.totals()[u"hasDiscount"_s] == true);
+    // Something nobody has: said.
+    QStringList said;
+    QObject::connect(&s.pos, &app::PosService::notice, [&](const QString &m) { said << m; });
+    scan("77777777");
+    CHECK(said.join(u" "_s).contains(u"77777777"_s));
+}

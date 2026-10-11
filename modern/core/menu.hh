@@ -61,6 +61,8 @@ struct MenuItem {
     std::string image;
     // Its number for ringing it in by number (a PLU: "104"); empty: none.
     std::string number;
+    // The barcodes on its package (UPC, EAN...): scanning one rings it in.
+    std::vector<std::string> barcodes;
     // How long it should take the kitchen (minutes); 0: what it usually
     // takes (learned, PosSettings::prepSeconds).
     int prepMinutes = 0;

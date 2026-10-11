@@ -225,6 +225,23 @@ QVariantList PosService::checkCoupons() const
     return out;
 }
 
+QString PosService::scanCode(const QString &code)
+{
+    const QString c = code.trimmed();
+    if (c.isEmpty())
+        return {};
+    const std::string wanted = normalCode(c);
+    const bool coupon = std::ranges::any_of(s_->settings.promotions, [&](const PosSettings::Promotion &p) {
+        return !p.code.empty() && normalCode(qs(p.code)) == wanted;
+    });
+    if (coupon)
+        return applyCoupon(c) ? u"coupon"_s : QString();
+    if (s_->giftCard(ss(c)))
+        return lookupGiftCard(c) ? u"giftCard"_s : QString();
+    fail(tr("Nothing has the code %1.").arg(c));
+    return {};
+}
+
 void PosService::countCouponUses(const Check &c, int by)
 {
     if (c.training)

@@ -293,6 +293,7 @@ QJsonObject toJson(const MenuItem &m)
     };
     if (!m.family.empty()) o.insert(u"family"_s, qs(m.family));
     if (!m.number.empty()) o.insert(u"number"_s, qs(m.number));
+    if (!m.barcodes.empty()) o.insert(u"barcodes"_s, strings(m.barcodes));
     if (m.prepMinutes > 0) o.insert(u"prepMinutes"_s, m.prepMinutes);
     if (!m.buttonColor.empty()) o.insert(u"buttonColor"_s, qs(m.buttonColor));
     if (!m.section.empty()) o.insert(u"section"_s, qs(m.section));
@@ -372,6 +373,7 @@ MenuItem menuItemFromJson(const QJsonObject &o)
         m.name = m.id;
     m.family = ss(o.value(u"family").toString());
     m.number = ss(o.value(u"number").toVariant().toString().trimmed());
+    m.barcodes = strings(o.value(u"barcodes").toArray());
     m.prepMinutes = std::clamp(o.value(u"prepMinutes").toVariant().toInt(), 0, 240);
     m.buttonColor = ss(o.value(u"buttonColor").toString());
     m.section = ss(o.value(u"section").toString());

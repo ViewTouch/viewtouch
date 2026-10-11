@@ -135,14 +135,14 @@ Item {
         return i ? { id: i.id, name: i.name, price: i.priceValue.toFixed(2), family: i.family, image: i.image,
                      groups: i.groups.slice(), onIt: i.onIt.join(", "), available: i.availableSet,
                      kioskHide: i.kioskHide, description: i.description, favorite: i.favorite,
-                     allergens: (i.allergens ?? []).slice(), kitchenName: i.kitchenName, number: i.number,
+                     allergens: (i.allergens ?? []).slice(), kitchenName: i.kitchenName, number: i.number, barcodes: i.barcodes ?? "",
                      buttonColor: i.buttonColor, prepMinutes: i.prepMinutes ? String(i.prepMinutes) : "",
                      takeoutPrice: i.takeoutPrice, periodPrices: Object.assign({}, i.periodPrices),
                      taxClass: i.taxClass, printer: i.printer, station: i.station,
                      section: i.section ?? "", breakBefore: i.breakBefore ?? "" }
                  : { id: "", name: "", price: "", family: categoryId, image: "", groups: [], onIt: "",
                      available: true, kioskHide: false, description: "", favorite: false, allergens: [],
-                     kitchenName: "", number: "", buttonColor: "", prepMinutes: "", takeoutPrice: "", periodPrices: {},
+                     kitchenName: "", number: "", barcodes: "", buttonColor: "", prepMinutes: "", takeoutPrice: "", periodPrices: {},
                      section: "", breakBefore: "",
                      // what its category's items start with
                      taxClass: category ? (category.taxClass || "food") : "food",
@@ -1481,6 +1481,17 @@ Item {
                                     placeholderText: qsTr("To ring it in by number, e.g. 104")
                                     inputMethodHints: Qt.ImhDigitsOnly
                                     onTextEdited: w.set("number", text)
+                                }
+                                Label { text: qsTr("Barcodes"); Layout.preferredWidth: 110 }
+                                TextField {
+                                    objectName: "builderBarcodes"
+                                    Layout.fillWidth: true
+                                    text: w.draft.barcodes ?? ""
+                                    placeholderText: qsTr("Scan the package here")
+                                    inputMethodHints: Qt.ImhNoPredictiveText
+                                    onTextEdited: w.set("barcodes", text)
+                                    // A scanner ends with Enter: ready for another (commas between).
+                                    onAccepted: if (text.trim() !== "" && !text.trim().endsWith(",")) { text = text.trim() + ", "; w.set("barcodes", text) }
                                 }
                                 Label { text: qsTr("Kitchen time"); Layout.preferredWidth: 110 }
                                 TextField {

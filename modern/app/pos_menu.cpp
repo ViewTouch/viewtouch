@@ -554,6 +554,7 @@ QVariantList PosService::menuItems() const
                                {u"available"_s, m.available && ticketsLeft(m) != 0}, {u"image"_s, qs(m.image)},
                                {u"color"_s, qs(m.kitchenColor)}, {u"byWeight"_s, m.byWeight},
                                {u"unit"_s, qs(m.weightUnit)}, {u"number"_s, qs(m.number)},
+                               {u"barcodes"_s, [&m] { QStringList b; for (const std::string &x : m.barcodes) b << qs(x); return b.join(u", "_s); }()},
                                {u"buttonColor"_s, qs(m.buttonColor)},
                                // The Menu Builder's card.
                                {u"priceValue"_s, double(m.price.cents()) / 100.0}, {u"groups"_s, groupsOf(m)},

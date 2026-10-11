@@ -113,7 +113,7 @@ TEST_CASE("Admin screen: touching a record opens its form", "[ui][pages]")
     REQUIRE(surface);
     QTest::mouseClick(window, Qt::LeftButton, {}, surface->mapToScene(QPointF(16 + 60 * 1.6, 112 + 30 * 1.6)).toPoint());
     QTest::qWait(50);
-    CHECK(countVisible(window->contentItem(), "FieldEditor") == 30);   // menu item fields
+    CHECK(countVisible(window->contentItem(), "FieldEditor") == 31);   // menu item fields
 
     if (const QByteArray dir = qgetenv("VTM_SHOTS"); !dir.isEmpty())
         window->grabWindow().save(QString::fromLocal8Bit(dir) + u"/5-admin-menu.png"_s);

@@ -27,6 +27,9 @@ ApplicationWindow {
     property bool touchKeyboard: keyboardFlag !== "" ? keyboardFlag === "on"
                                : keyboardSetting !== "" ? keyboardSetting === "on"
                                : Qt.platform.os !== "android"
+    // What a barcode scanner is typing (see the page's Keys).
+    property string scanBuffer: ""
+    property double scanLast: 0
     // The text field being typed in, if any.
     readonly property Item typingIn: {
         const line = activeFocusItem as TextInput
@@ -185,6 +188,23 @@ ApplicationWindow {
                 Keys.onPressed: event => {
                     if (root.editing)
                         return
+                    // A barcode scanner types its code faster than anyone,
+                    // then Enter.
+                    const now = Date.now()
+                    const burst = now - root.scanLast < 60
+                    root.scanLast = now
+                    if (event.text.length === 1 && event.text > " ") {
+                        root.scanBuffer = burst ? root.scanBuffer + event.text : event.text
+                    } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && burst
+                               && root.scanBuffer.length >= 4) {
+                        const code = root.scanBuffer
+                        root.scanBuffer = ""
+                        root.controller.scanned(code)
+                        event.accepted = true
+                        return
+                    } else {
+                        root.scanBuffer = ""
+                    }
                     if (event.key === Qt.Key_Escape && root.controller.numberKey("escape")) {
                         event.accepted = true
                     } else if (event.key === Qt.Key_Escape) {
@@ -201,7 +221,7 @@ ApplicationWindow {
                     } else if (event.text.length === 1 && event.text >= "0" && event.text <= "9"
                                && root.controller.numberKey(event.text)) {
                         event.accepted = true
-                    } else if (event.text !== "" && root.controller.triggerHotkey(event.text)) {
+                    } else if (event.text !== "" && !burst && root.controller.triggerHotkey(event.text)) {
                         event.accepted = true
                     }
                 }

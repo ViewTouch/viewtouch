@@ -337,6 +337,10 @@ public:
     const core::Check *currentCheck() const;
     const core::Employee *user() const;
     const core::MenuItem *findItem(const QString &idOrName) const;
+    // Barcodes typed in a field ("012345678905, 4006381333931"), and why
+    // they can't be item `itemId`'s (empty: they can).
+    static QStringList barcodeList(const QString &text);
+    QString barcodeProblem(const QStringList &codes, const std::string &itemId) const;
     QString format(Money amount) const;
 
     // --- session -----------------------------------------------------------
@@ -507,6 +511,11 @@ public:
     bool customerJoin(const QString &phone);
     // After paying: "print", "text" (to a phone) or "none".
     bool sendReceipt(const QString &how, const QString &to = {});
+    // A code a scanner read (it types it, then Enter), on whatever screen:
+    // a coupon goes on the open check, a gift card is looked up ("giftCard";
+    // its page shows it), else says nothing has it. Items: the screen rings
+    // them in itself (findItem finds them by barcode).
+    QString scanCode(const QString &code);
     // Names of the promotions running now (not coupons).
     QVariantList promotionsNow() const;
     // A coupon (a promotion with a code) typed or scanned onto the current

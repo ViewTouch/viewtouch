@@ -875,7 +875,7 @@ QVariantMap LayoutController::readMenuFile(const QUrl &file) const
     int photos = 0;
     for (const vt::app::ImportedItem &i : read.items) {
         QVariantMap row{{u"row"_s, i.row}, {u"name"_s, i.name}, {u"price"_s, i.price}, {u"category"_s, i.category},
-                        {u"description"_s, i.description}, {u"onIt"_s, i.onIt}};
+                        {u"description"_s, i.description}, {u"onIt"_s, i.onIt}, {u"barcodes"_s, i.barcode}};
         if (!i.photo.isEmpty()) {
             QString path = QDir::isAbsolutePath(i.photo) ? i.photo : beside.filePath(i.photo);
             if (!QFileInfo::exists(path))   // "Tacos.JPG" for tacos.jpg
@@ -1405,6 +1405,30 @@ bool LayoutController::numberKey(const QString &key)
     }
     setStatus(typedNumber_.isEmpty() ? QString() : tr("#%1, then Enter").arg(typedNumber_));
     return true;
+}
+
+void LayoutController::scanned(const QString &code)
+{
+    const QString c = code.trimmed();
+    if (editing() || !pos_ || !pos_->loggedIn() || c.isEmpty())
+        return;
+    typedNumber_.clear();
+    const auto *page = currentPage();
+    const bool ordering = page && (page->kind == u"index" || page->kind == u"items" || page->kind == u"modifier");
+    for (const QVariant &v : pos_->menuItems()) {
+        const QVariantMap m = v.toMap();
+        if (m.value(u"number"_s).toString() != c && !m.value(u"barcodes"_s).toString().split(u", "_s).contains(c))
+            continue;
+        if (ordering)
+            orderItem(m.value(u"id"_s).toString());
+        else
+            setStatus(tr("%1: ring it in on the order screen.").arg(m.value(u"name"_s).toString()));
+        return;
+    }
+    call(u"scanCode"_s, {c}, [this](const QVariant &kind) {
+        if (kind.toString() == u"giftCard" && pageId() != u"gift-card" && activeLayout().page(u"gift-card"_s))
+            navigate(Navigator::Mode::Push, u"gift-card"_s);
+    });
 }
 
 void LayoutController::orderItem(const QString &itemId, bool clearTyped)

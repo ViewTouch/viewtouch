@@ -226,6 +226,10 @@ public:
     // On the order screen, a keyboard's digits then Enter ring in the item
     // with that number (Backspace, Escape). True: the key was used.
     Q_INVOKABLE bool numberKey(const QString &key);
+    // What a barcode scanner read (keys too fast for a person, then Enter):
+    // an item's barcode or number rings it in on the order screens; else a
+    // coupon or a gift card (PosService::scanCode).
+    Q_INVOKABLE void scanned(const QString &code);
 
     // Widget entry points.
     Q_INVOKABLE void selectTable(const QString &label);

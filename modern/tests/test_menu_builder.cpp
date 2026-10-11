@@ -883,3 +883,65 @@ TEST_CASE("Choices priced by size: extra cheese costs more on a Large", "[menubu
             CHECK(g.toMap()[u"options"_s].toList()[0].toMap()[u"price"_s] == u"$1.50"_s);
     REQUIRE(pos.finishChoosing());
 }
+
+TEST_CASE("Barcodes: on an item's card, one item's each; scanned: an item, a coupon, a gift card", "[menubuilder][barcode]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    // Scanned into the card's field: several, commas or spaces between.
+    QVariantMap card{{u"id"_s, u"draft-beer"_s}, {u"name"_s, u"Draft Beer"_s}, {u"barcodes"_s, u"012345678905, 4006381333931"_s}};
+    REQUIRE(pos.saveMenuItemCard(card));
+    CHECK(pos.findItem(u"draft-beer"_s)->barcodes == std::vector<std::string>{"012345678905", "4006381333931"});
+    CHECK(item(pos, u"Draft Beer"_s)[u"barcodes"_s] == u"012345678905, 4006381333931"_s);
+    CHECK(pos.findItem(u"4006381333931"_s)->id == "draft-beer");
+    // Another item can't have it; a barcode is letters and digits.
+    CHECK_FALSE(pos.saveMenuItemCard({{u"id"_s, u"cobb"_s}, {u"name"_s, u"Cobb Salad"_s}, {u"barcodes"_s, u"012345678905"_s}}));
+    CHECK_FALSE(pos.saveMenuItemCard({{u"id"_s, u"cobb"_s}, {u"name"_s, u"Cobb Salad"_s}, {u"barcodes"_s, u"12"_s}}));
+    // Manager -> Menu has them too.
+    int index = 0;
+    const QVariantList records = pos.adminRecords(u"menu"_s);
+    for (int i = 0; i < records.size(); ++i)
+        if (records[i].toMap()[u"id"_s] == u"cobb"_s)
+            index = i;
+    QVariantMap r = records[index].toMap();
+    r[u"barcodes"_s] = u"012345678905"_s;
+    CHECK_FALSE(pos.adminSave(u"menu"_s, index, r));
+    r[u"barcodes"_s] = u"BOX-77 BOX-78"_s;
+    REQUIRE(pos.adminSave(u"menu"_s, index, r));
+    CHECK(pos.findItem(u"cobb"_s)->barcodes == std::vector<std::string>{"BOX-77", "BOX-78"});
+    CHECK(pos.adminRecords(u"menu"_s)[index].toMap()[u"barcodes"_s] == u"BOX-77, BOX-78"_s);
+    // Kept with the menu, not copied by Duplicate.
+    const core::MenuItem &beer = *pos.findItem(u"draft-beer"_s);
+    CHECK(app::menuItemFromJson(app::toJson(beer)).barcodes == beer.barcodes);
+    REQUIRE(pos.duplicateMenuItem(u"draft-beer"_s));
+    CHECK(pos.findItem(u"Draft Beer 2"_s)->barcodes.empty());
+
+    // Other codes: a coupon goes on the open check; a gift card is looked up.
+    core::PosSettings::Promotion coupon;
+    coupon.id = "five-off";
+    coupon.name = "Five Off";
+    coupon.code = "SAVE5";
+    coupon.amount = Money::fromCents(500);
+    pos.shared()->settings.promotions.push_back(coupon);
+    pos.shared()->giftCards.push_back({"6006491234567890", Money::fromCents(2500), 0, {}});
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    pos.addItem(u"cobb"_s);
+    CHECK(pos.scanCode(u"save5"_s) == u"coupon"_s);
+    CHECK(pos.totals()[u"hasDiscount"_s] == true);
+    CHECK(pos.scanCode(u"6006491234567890"_s) == u"giftCard"_s);
+    CHECK(pos.giftCardInfo()[u"found"_s] == true);
+    CHECK(pos.scanCode(u"99999999"_s).isEmpty());
+
+    // A spreadsheet's Barcode (UPC) column.
+    const auto read = app::readMenuCsv(u"Item,Price,Category,UPC\nChips,1.50,Snacks,028400090858\n"_s);
+    REQUIRE(read.items.size() == 1);
+    CHECK(read.items[0].barcode == u"028400090858"_s);
+    QStringList said;
+    QObject::connect(&pos, &PosService::notice, [&](const QString &m) { said << m; });
+    const int imported = pos.importMenuRows({QVariantMap{{u"name"_s, u"Chips"_s}, {u"price"_s, 1.5}, {u"barcodes"_s, u"028400090858"_s}}},
+                             u"burgers"_s, false);
+    INFO(said.join(u" | "_s).toStdString());
+    CHECK(imported == 1);
+    REQUIRE(pos.findItem(u"028400090858"_s));
+    CHECK(pos.findItem(u"028400090858"_s)->name == "Chips");
+}

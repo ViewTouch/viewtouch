@@ -62,6 +62,7 @@ QString what(const QString &header)
         {u"onIt"_s, {u"ingredients"_s, u"on it"_s, u"toppings"_s, u"whats on it"_s, u"comes with"_s, u"ingredientes"_s}},
         {u"photo"_s, {u"photo"_s, u"photos"_s, u"picture"_s, u"image"_s, u"photo file"_s, u"picture file"_s, u"image file"_s,
                       u"foto"_s, u"imagen"_s, u"fotografia"_s}},
+        {u"barcode"_s, {u"barcode"_s, u"barcodes"_s, u"upc"_s, u"ean"_s, u"gtin"_s, u"codigo de barras"_s}},
     };
     for (const auto &[key, words] : names)
         if (words.contains(h))
@@ -107,7 +108,7 @@ MenuImport readMenuCsv(const QString &text)
             firstRow = 1;
         }
     }
-    for (const QString &key : {u"name"_s, u"price"_s, u"category"_s, u"description"_s, u"onIt"_s, u"photo"_s})
+    for (const QString &key : {u"name"_s, u"price"_s, u"category"_s, u"description"_s, u"onIt"_s, u"photo"_s, u"barcode"_s})
         if (at.contains(key))
             out.columns << key;
     const auto cell = [&](const QStringList &r, const QString &key) {
@@ -125,6 +126,7 @@ MenuImport readMenuCsv(const QString &text)
         item.description = cell(row, u"description"_s);
         item.onIt = cell(row, u"onIt"_s);
         item.photo = cell(row, u"photo"_s);
+        item.barcode = cell(row, u"barcode"_s);
         if (item.name.isEmpty()) {
             out.problems << QCoreApplication::translate("MenuImport", "Row %1: no name").arg(item.row);
             continue;

@@ -16,6 +16,7 @@ struct ImportedItem {
     QString description;
     QString onIt;              // what's on it, "lettuce, tomato"
     QString photo;             // a picture's file name, next to the spreadsheet
+    QString barcode;           // the package's barcode(s), "012345678905"
 };
 
 struct MenuImport {
