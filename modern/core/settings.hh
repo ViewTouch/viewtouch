@@ -338,6 +338,8 @@ struct PosSettings {
     std::int64_t offlineCardMax = 10000;
     std::int64_t offlineCardTotal = 100000;
     std::string cardCurrency = "usd";
+    // Holding a bar tab's card: how much the bank sets aside (0: tabs don't hold cards).
+    std::int64_t tabHold = 5000;
     // Stripe countertop readers paired with the store (Manager -> Card
     // Readers), the Stripe location they belong to, and where card tips are
     // asked: "" the customer display, "reader" on the reader's screen.

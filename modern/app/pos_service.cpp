@@ -1626,6 +1626,7 @@ bool PosService::closeCheck()
 bool PosService::closePractice(Check &c)
 {
     // Kept for its number, out of every sale, drawer and report.
+    letHoldGo(c, tr("Held card let go"));
     c.sendAll(now(), true);
     c.status = CheckStatus::Discarded;
     c.closedAt = now();
@@ -1728,7 +1729,8 @@ QVariantMap PosService::checkInfo() const
         {u"heldCount"_s, c->heldCount()}, {u"roundSize"_s, int(lastRound(*c).size())},
         {u"firesAt"_s, c->fireAt ? timeOfDay(c->fireAt) : QString()}, {u"rush"_s, c->rush}, {u"vip"_s, c->vip},
         {u"allergies"_s, [c] { QStringList a; for (const std::string &x : c->allergies) a << qs(x); return a; }()},
-        {u"coupons"_s, checkCoupons()},
+        {u"coupons"_s, checkCoupons()}, {u"hold"_s, holdInfo(*c)}, {u"tab"_s, c->type == CheckType::Tab},
+        {u"tabHold"_s, s_->settings.tabHold > 0 ? format(Money::fromCents(s_->settings.tabHold)) : QString()},
         {u"opened"_s, timeOfDay(c->openedAt)},
         {u"dueAt"_s, qint64(c->dueAt)}, {u"due"_s, c->dueAt ? dueText(c->dueAt) : QString()},
         {u"customer"_s, QVariantMap{{u"name"_s, qs(c->customer.name)}, {u"phone"_s, qs(c->customer.phone)},
@@ -2469,6 +2471,12 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"setTraining"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setTraining(a.value(0).toBool())); }},
         {u"toggleTraining"_s, [](PosService &p, const QVariantList &) { return QVariant(p.setTraining(!p.training())); }},
         {u"redeemReward"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.redeemReward(a.value(0).toInt())); }},
+        {u"holdCharge"_s, [](PosService &p, const QVariantList &) { return QVariant(p.holdCharge()); }},
+        {u"recordCardHold"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.recordCardHold(a.value(0).toMap())); }},
+        {u"startCounterHold"_s, [](PosService &p, const QVariantList &) { return QVariant(p.startCounterHold()); }},
+        {u"chargeHold"_s, [](PosService &p, const QVariantList &a) {
+             return QVariant(p.chargeHold(a.value(0).toLongLong(), a.value(1).toLongLong())); }},
+        {u"releaseHold"_s, [](PosService &p, const QVariantList &) { return QVariant(p.releaseHold()); }},
         {u"scanCode"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.scanCode(a.value(0).toString())); }},
         {u"applyCoupon"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.applyCoupon(a.value(0).toString())); }},
         {u"removeCoupon"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.removeCoupon(a.value(0).toString())); }},

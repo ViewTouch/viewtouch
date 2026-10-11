@@ -161,7 +161,13 @@ QJsonObject toJson(const Check &c)
         {u"customer"_s, QJsonObject{{u"name"_s, qs(c.customer.name)}, {u"phone"_s, qs(c.customer.phone)},
                                     {u"address"_s, qs(c.customer.address)}, {u"note"_s, qs(c.customer.note)}}},
         {u"events"_s, events}, {u"firedCourse"_s, c.firedCourse}, {u"customerId"_s, qs(c.customerId)},
-        {u"rush"_s, c.rush}, {u"vip"_s, c.vip}, {u"allergies"_s, strings(c.allergies)}, {u"coupons"_s, strings(c.coupons)}, {u"kiosk"_s, c.kiosk}, {u"dueAt"_s, qint64(c.dueAt)}, {u"fireAt"_s, qint64(c.fireAt)},
+        {u"rush"_s, c.rush}, {u"vip"_s, c.vip}, {u"allergies"_s, strings(c.allergies)}, {u"coupons"_s, strings(c.coupons)}, {u"hold"_s, [&c] {
+            if (c.hold.empty())
+                return QJsonValue();
+            return QJsonValue(QJsonObject{{u"reference"_s, qs(c.hold.reference)}, {u"processor"_s, qs(c.hold.processor)},
+                                          {u"brand"_s, qs(c.hold.cardBrand)}, {u"last4"_s, qs(c.hold.last4)},
+                                          {u"amount"_s, qint64(c.hold.amount.cents())}, {u"at"_s, qint64(c.hold.at)}});
+        }()}, {u"kiosk"_s, c.kiosk}, {u"dueAt"_s, qint64(c.dueAt)}, {u"fireAt"_s, qint64(c.fireAt)},
         {u"promisedAt"_s, qint64(c.promisedAt)},
         {u"refunds"_s, [&] {
              QJsonArray a;
@@ -273,6 +279,14 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.vip = o.value(u"vip").toBool();
     c.allergies = strings(o.value(u"allergies").toArray());
     c.coupons = strings(o.value(u"coupons").toArray());
+    if (const QJsonObject h = o.value(u"hold").toObject(); !h.isEmpty()) {
+        c.hold.reference = ss(h.value(u"reference").toString());
+        c.hold.processor = ss(h.value(u"processor").toString());
+        c.hold.cardBrand = ss(h.value(u"brand").toString());
+        c.hold.last4 = ss(h.value(u"last4").toString());
+        c.hold.amount = Money::fromCents(h.value(u"amount").toInteger());
+        c.hold.at = h.value(u"at").toInteger();
+    }
     c.pointsEarned = o.value(u"pointsEarned").toInt();
     c.training = o.value(u"training").toBool();
     for (const QJsonValue &v : o.value(u"events").toArray()) {
@@ -971,7 +985,7 @@ QJsonObject toJson(const PosSettings &s)
         {u"deliveryMinutes"_s, s.deliveryMinutes}, {u"minutesPerOrderWaiting"_s, s.minutesPerOrderWaiting},
         {u"deliveryFee"_s, qint64(s.deliveryFee.cents())},
         {u"stripeSecretKey"_s, qs(s.stripeSecretKey)}, {u"cardCurrency"_s, qs(s.cardCurrency)},
-        {u"offlineCards"_s, s.offlineCards}, {u"offlineCardMax"_s, qint64(s.offlineCardMax)},
+        {u"offlineCards"_s, s.offlineCards}, {u"offlineCardMax"_s, qint64(s.offlineCardMax)}, {u"tabHold"_s, qint64(s.tabHold)},
         {u"offlineCardTotal"_s, qint64(s.offlineCardTotal)},
         {u"stripeLocation"_s, qs(s.stripeLocation)}, {u"cardTipOn"_s, qs(s.cardTipOn)},
         {u"stripeReaders"_s, [&] {
@@ -1208,6 +1222,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.stripeSecretKey = ss(o.value(u"stripeSecretKey").toString());
     s.offlineCards = o.value(u"offlineCards").toBool(false);
     s.offlineCardMax = o.value(u"offlineCardMax").toInteger(10000);
+    s.tabHold = std::max<qint64>(0, o.value(u"tabHold").toInteger(5000));
     s.offlineCardTotal = o.value(u"offlineCardTotal").toInteger(100000);
     s.cardCurrency = ss(o.value(u"cardCurrency").toString(u"usd"_s));
     if (s.cardCurrency.empty())

@@ -158,6 +158,34 @@ Item {
             onClicked: w.pos.setGratuity((w.totals.hasGratuity ?? false) ? 0 : (w.totals.storeGratuityPercent ?? 18))
         }
 
+        // A bar tab's card on file: held, or one to hold.
+        RowLayout {
+            readonly property var check: w.pos && w.pos.hasCheck ? w.pos.check : ({})
+            readonly property var hold: check.hold ?? ({})
+            visible: !!hold.card || (!!check.tab && !!check.tabHold)
+            Layout.fillWidth: true
+            Layout.preferredHeight: w.unit * 2
+            Layout.fillHeight: false
+            spacing: w.unit * 0.3
+            Text {
+                Layout.fillWidth: true
+                text: parent.hold.card ? qsTr("Card held: %1 · %2").arg(parent.hold.card).arg(parent.hold.amount)
+                                       : qsTr("No card held for this tab")
+                color: parent.hold.card ? "#7ee2a8" : "#f5b940"
+                font.family: w.face
+                font.pixelSize: w.unit * 0.8
+                elide: Text.ElideRight
+            }
+            WidgetKey {
+                objectName: "cardOnFileKey"
+                Layout.preferredWidth: w.unit * 9
+                Layout.fillHeight: true
+                text: qsTr("Card on File…")
+                fontScale: 0.38
+                onClicked: w.zone.controller.command("cardOnFile")
+            }
+        }
+
         Line {
             visible: w.pos && w.pos.entry !== ""
             name: qsTr("Amount entered")

@@ -230,6 +230,8 @@ public:
     // an item's barcode or number rings it in on the order screens; else a
     // coupon or a gift card (PosService::scanCode).
     Q_INVOKABLE void scanned(const QString &code);
+    // A command by name, as a button would run it ("holdCard").
+    Q_INVOKABLE void command(const QString &name) { runCommand(name, {}, [](bool) {}); }
 
     // Widget entry points.
     Q_INVOKABLE void selectTable(const QString &label);

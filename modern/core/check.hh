@@ -219,6 +219,21 @@ struct Totals {
     bool operator==(const Totals &) const = default;
 };
 
+// A bar tab's card, held when the tab opens: the bank sets the amount
+// aside on it (an authorization), nothing is charged. When the tab closes
+// it's charged for the tab and the tip, or let go if paid another way.
+struct CardHold {
+    std::string reference;   // the processor's payment (Stripe's pi_...); empty: none held
+    std::string processor;   // "stripe", "simulated"
+    std::string cardBrand;
+    std::string last4;
+    Money amount;            // set aside so far
+    std::int64_t at = 0;
+
+    bool empty() const { return reference.empty(); }
+    bool operator==(const CardHold &) const = default;
+};
+
 struct Check {
     std::int64_t id = 0;              // serial number
     CheckType type = CheckType::DineIn;
@@ -247,6 +262,7 @@ struct Check {
     bool vip = false;                 // the kitchen takes extra care
     std::vector<std::string> allergies;   // the guest's (allergen ids): the kitchen sees them
     std::vector<std::string> coupons;     // promotions whose code was entered on it (their ids)
+    CardHold hold;                        // a tab's card, held
     bool kiosk = false;               // a guest ordered it on the self-order kiosk
     // An order for later: ready at this time (epoch ms; 0 = now). It goes to
     // the kitchen by itself shortly before (PosSettings::laterLeadMinutes).

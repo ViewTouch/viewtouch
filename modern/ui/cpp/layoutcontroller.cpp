@@ -1604,7 +1604,9 @@ void LayoutController::sendUnsentCards()
         return;
     }
     const QVariantMap result = unsentCards_.first();
-    call(u"recordCardPayment"_s, {result}, [this, result](const QVariant &ok) {
+    // A tab's card, held: on the tab, not paid.
+    call(result.value(u"hold"_s).toBool() ? u"recordCardHold"_s : u"recordCardPayment"_s, {result},
+         [this, result](const QVariant &ok) {
         if (!pos_ || !pos_->online())
             return;   // still offline: tried again when it's back
         unsentCards_.removeOne(result);
@@ -1687,9 +1689,27 @@ void LayoutController::runCommand(const QString &name, const QVariantMap &args, 
         {u"guestsMore"_s, {u"adjustGuests"_s, {1}}}, {u"guestsFewer"_s, {u"adjustGuests"_s, {-1}}},
     };
     // Widgets' own buttons that change the screen, not the store: the widget does them.
-    if (name == u"kitchenStation" || name == u"kitchenAllDay" || name == u"allergies" || name == u"coupon") {
+    if (name == u"kitchenStation" || name == u"kitchenAllDay" || name == u"allergies" || name == u"coupon"
+        || name == u"cardOnFile") {
         emit widgetCommand(name, args);
         return done(true);
+    }
+    // Hold the guest's card for the tab: on this screen's reader (one
+    // beside the screen is run by the store's computer).
+    if (pos_ && name == u"holdCard") {
+        // An extra: the buttons after it go on either way (the tab is open).
+        if (cardReader_.kind() == u"counter")
+            return call(u"startCounterHold"_s, {}, [done](const QVariant &) { done(true); });
+        if (cardReader_.kind().isEmpty()) {
+            setStatus(tr("This screen has no card reader (Manager -> Terminals)."));
+            return done(true);
+        }
+        return call(u"holdCharge"_s, {}, [this, done](const QVariant &v) {
+            const QVariantMap charge = v.toMap();
+            if (charge.value(u"ok"_s).toBool())
+                cardReader_.charge(charge);
+            done(true);
+        });
     }
     if (name == u"setupGuide") {
         openSetup();
@@ -1923,6 +1943,8 @@ QString LayoutController::describeAction(const Action &a) const
             {u"askForTip"_s, QT_TR_NOOP("Shows tip choices to the guest on the customer screen.")},
             {u"openTab"_s, QT_TR_NOOP("Opens a bar tab under the name typed.")},
             {u"coupon"_s, QT_TR_NOOP("Gives the check a coupon's discount: its code typed or scanned.")},
+            {u"holdCard"_s, QT_TR_NOOP("Holds the guest's card for the tab on the card reader (nothing is charged yet).")},
+            {u"cardOnFile"_s, QT_TR_NOOP("The tab's held card: hold one, charge it with a tip, or let it go.")},
         };
         const QString name = a.str(u"name");
         if (const auto it = plain.constFind(name); it != plain.constEnd())

@@ -98,6 +98,10 @@ bool PosService::mergeCheck(qint64 otherId)
 
     const QString what = tr("%1 #%2 merged into %3 #%4").arg(qs(other.label)).arg(other.id).arg(qs(c->label)).arg(c->id);
     c->absorb(other);
+    // A held card comes along (one is enough: the other's is let go).
+    if (!other.hold.empty() && c->hold.empty())
+        std::swap(c->hold, other.hold);
+    letHoldGo(other, tr("Held card let go"));
     noteEvent(*c, what, "merge");
     noteEvent(other, what, "merge");
     other.status = CheckStatus::Merged;

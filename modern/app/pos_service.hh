@@ -521,6 +521,20 @@ public:
     // A coupon (a promotion with a code) typed or scanned onto the current
     // check: says why not when it's unknown, over, used up or covers nothing.
     bool applyCoupon(const QString &code);
+    // --- a bar tab's card, held (pos_holds.cpp) ---------------------------------
+    // The hold for the current check, for this screen's card reader (like
+    // cardCharge, with hold: true): PosSettings::tabHold, set aside, not charged.
+    QVariantMap holdCharge();
+    // The reader's answer: the card held ({reference, processor, brand, last4, amountCents, checkId}).
+    bool recordCardHold(const QVariantMap &r);
+    // A reader beside the screen holds it (the store's computer runs it).
+    bool startCounterHold();
+    // Charges the held card for what's owed and a tip (a percent of the
+    // check, else `tipCents`); more than is held: the bank is asked first.
+    bool chargeHold(std::int64_t percentBp, std::int64_t tipCents);
+    // Nothing charged: the card's hold is let go.
+    bool releaseHold();
+    QVariantMap holdInfo(const core::Check &c) const;
     // Takes coupon `id` (its promotion's) off the current check.
     bool removeCoupon(const QString &id);
     // The coupons on the current check: id, name, code, off, working.
@@ -953,6 +967,10 @@ private:
     void applyPromotions(core::Check &c);
     // A closed check's coupons count as used (by 1), or not anymore (-1: reopened).
     void countCouponUses(const core::Check &c, int by);
+    bool addCardHold(const QVariantMap &r);
+    void letHoldGo(core::Check &c, const QString &why);
+    bool startCounter(const QVariantMap &charge);
+    QSet<qint64> holdCharging_;   // checks whose held card is being charged
     int pointsFor(const core::Check &c) const;
     void earnPoints(core::Check &c);
     void takeBackPoints(core::Check &c);

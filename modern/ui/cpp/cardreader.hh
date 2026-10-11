@@ -44,7 +44,8 @@ public:
     void setCounter(const QVariantMap &state);
     Q_INVOKABLE void presentTestCard(bool decline) { emit testCardRequested(decline); }
     // Take a card for a charge the server prepared (cardCharge: amountCents,
-    // tipCents, currency, description, checkId, tenderId, amount).
+    // tipCents, currency, description, checkId, tenderId, amount; holdCharge:
+    // and hold, the amount set aside on the card, not charged).
     void charge(const QVariantMap &charge);
     Q_INVOKABLE void cancel();
     // The answer to needToken() (from the store's server).

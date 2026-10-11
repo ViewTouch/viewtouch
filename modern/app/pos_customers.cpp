@@ -473,6 +473,7 @@ void PosService::applyCloseEffects(Check &c)
     }
     earnPoints(c);
     countCouponUses(c, 1);
+    letHoldGo(c, tr("Paid another way: held card let go"));
     if (CustomerRecord *r = s_->customer(c.customerId)) {
         ++r->visits;
         r->spent += c.totals(s_->settings.tax).total;

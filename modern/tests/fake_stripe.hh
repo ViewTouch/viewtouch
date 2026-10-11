@@ -25,6 +25,13 @@ struct FakeStripe {
     QString failureCode, failureMessage;
     qint64 amount = 0, readerTip = 0;
     bool canceled = false, busy = false;
+    // A tab's hold: made with manual capture; raised (unless the bank says
+    // no), then charged.
+    QString pi = u"pi_1"_s;   // the latest payment intent (pi_1, pi_2...)
+    int intents = 0;
+    QString captureMethod, incremental;
+    qint64 captured = -1;
+    bool incrementFails = false;
 
     void install(vt::app::PosService &pos)
     {
@@ -45,8 +52,12 @@ struct FakeStripe {
                            : done({}, u"Invalid registration code"_s);
             if (path == u"/v1/payment_intents" && method == u"POST") {
                 amount = q.queryItemValue(u"amount"_s).toLongLong();
+                captureMethod = q.queryItemValue(u"capture_method"_s);
+                incremental = q.queryItemValue(u"payment_method_options[card_present][request_incremental_authorization_support]"_s);
+                captured = -1;
                 canceled = false;
-                return done({{u"id"_s, u"pi_1"_s}}, {});
+                pi = u"pi_%1"_s.arg(++intents);
+                return done({{u"id"_s, pi}}, {});
             }
             if (path == u"/v1/terminal/readers/tmr_1/process_payment_intent") {
                 action = u"in_progress"_s;
@@ -54,7 +65,7 @@ struct FakeStripe {
             }
             const QJsonObject act{{u"status"_s, action}, {u"failure_code"_s, failureCode},
                                   {u"failure_message"_s, failureMessage},
-                                  {u"process_payment_intent"_s, QJsonObject{{u"payment_intent"_s, u"pi_1"_s}}}};
+                                  {u"process_payment_intent"_s, QJsonObject{{u"payment_intent"_s, pi}}}};
             if (path == u"/v1/terminal/readers/tmr_1")
                 return done({{u"action"_s, act}}, {});
             if (path == u"/v1/test_helpers/terminal/readers/tmr_1/present_payment_method") {
@@ -70,12 +81,26 @@ struct FakeStripe {
                 action = u"none"_s;
                 return done({}, {});
             }
-            if (path == u"/v1/payment_intents/pi_1/cancel") {
+            if (path == u"/v1/payment_intents/"_s + pi + u"/increment_authorization"_s) {
+                if (incrementFails)
+                    return done({}, u"The card was declined for the increment."_s);
+                amount = q.queryItemValue(u"amount"_s).toLongLong();
+                return done({{u"id"_s, pi}, {u"amount"_s, amount}}, {});
+            }
+            if (path == u"/v1/payment_intents/"_s + pi + u"/capture"_s) {
+                const qint64 want = q.queryItemValue(u"amount_to_capture"_s).toLongLong();
+                if (want > amount)
+                    return done({}, u"amount_to_capture is greater than the amount capturable"_s);
+                captured = want;
+                return done({{u"id"_s, pi}, {u"status"_s, u"succeeded"_s}}, {});
+            }
+            if (path == u"/v1/payment_intents/"_s + pi + u"/cancel"_s) {
                 canceled = true;
                 return done({}, {});
             }
-            if (path == u"/v1/payment_intents/pi_1")
-                return done({{u"status"_s, u"succeeded"_s}, {u"amount"_s, amount + readerTip},
+            if (path == u"/v1/payment_intents/"_s + pi)
+                return done({{u"status"_s, captureMethod == u"manual" ? u"requires_capture"_s : u"succeeded"_s},
+                             {u"amount"_s, amount + readerTip},
                              {u"amount_details"_s, QJsonObject{{u"tip"_s, QJsonObject{{u"amount"_s, readerTip}}}}},
                              {u"latest_charge"_s, QJsonObject{{u"payment_method_details"_s, QJsonObject{
                                  {u"card_present"_s, QJsonObject{{u"brand"_s, u"mastercard"_s}, {u"last4"_s, u"4444"_s}}}}}}}},

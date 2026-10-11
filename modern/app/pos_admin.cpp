@@ -430,6 +430,8 @@ QVariantList PosService::adminFields(const QString &panel)
                   tr("A bigger payment needs the internet.")),
             field(u"offlineCardTotal"_s, tr("Offline: up to this much waiting in all"), u"money"_s,
                   tr("Past that, cards wait for the internet.")),
+            field(u"tabHold"_s, tr("Bar tabs: hold the guest's card for"), u"money"_s,
+                  tr("Set aside on the card when a tab opens (nothing is charged); charged for the tab when it closes. 0 = tabs don't hold cards.")),
             with(field(u"cardTipOn"_s, tr("Card tips are asked on"), u"enum"_s,
                        tr("The card reader's screen needs tipping turned on in Stripe (Dashboard -> Terminal -> Configurations).")),
                  u"options"_s, options({{"", "The customer display (Ask Guest for Tip)"}, {"reader", "The card reader beside the register"}})),
@@ -758,6 +760,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"stripeSecretKey"_s, QString()}, {u"cardCurrency"_s, qs(s_->settings.cardCurrency)},
              {u"offlineCards"_s, s_->settings.offlineCards},
              {u"offlineCardMax"_s, double(s_->settings.offlineCardMax) / 100.0},
+             {u"tabHold"_s, double(s_->settings.tabHold) / 100.0},
              {u"offlineCardTotal"_s, double(s_->settings.offlineCardTotal) / 100.0},
              {u"cardTipOn"_s, qs(s_->settings.cardTipOn)},
              {u"tipPercents"_s, [&] { QStringList l; for (int p : s_->settings.tipPercents) l << QString::number(p); return l.join(u", "_s); }()},
@@ -1199,6 +1202,8 @@ bool PosService::adminSave(const QString &panel, int index, const QVariantMap &r
             else
                 s_->settings.stripeSecretKey = ss(key);
         }
+        if (record.contains(u"tabHold"_s))
+            s_->settings.tabHold = std::max<std::int64_t>(0, std::llround(record.value(u"tabHold"_s).toDouble() * 100.0));
         if (record.contains(u"offlineCardMax"_s))
             s_->settings.offlineCardMax = std::max<std::int64_t>(0, std::llround(record.value(u"offlineCardMax"_s).toDouble() * 100.0));
         if (record.contains(u"offlineCardTotal"_s))

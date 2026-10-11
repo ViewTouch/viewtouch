@@ -6782,3 +6782,55 @@ TEST_CASE("UI: a barcode scanner: an item rung in on the menu; a coupon on Pay; 
     scan("77777777");
     CHECK(said.join(u" "_s).contains(u"77777777"_s));
 }
+
+TEST_CASE("UI: a bar tab: opened holding the card; charged with a tip on Pay", "[ui][cards][hold]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    s.pos.entryKey(u"10000"_s);
+    REQUIRE(s.pos.openDrawerSession());
+    REQUIRE(s.pos.adminSave(u"terminals"_s, -1, {{u"name"_s, s.pos.terminalName()}, {u"cardReader"_s, u"simulated"_s}}));
+    CardReader *reader = s.c.cardReader();
+    reader->setSimulatedDelay(300);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+
+    // New Tab: the name, then Open Tab & Hold Card: the reader takes the card.
+    REQUIRE(s.c.jumpTo(u"new-tab"_s));
+    QTest::qWait(60);
+    for (const QString &k : {u"M"_s, u"i"_s, u"k"_s, u"e"_s})
+        s.pos.textKey(k);
+    QStringList said;
+    QObject::connect(&s.pos, &app::PosService::notice, [&](const QString &m) { said << m; });
+    s.c.activate(u"open-hold"_s);
+    QTest::qWait(80);
+    INFO(said.join(u" | "_s).toStdString());
+    REQUIRE(by(u"cardWait"_s));
+    CHECK(reader->amount() == u"Hold $50.00"_s);
+    s.shot("tab-hold-waiting");
+    QTest::qWait(600);
+    CHECK_FALSE(by(u"cardWait"_s));
+    CHECK(s.pos.checkInfo()[u"label"_s] == u"Mike"_s);
+    CHECK(s.pos.checkInfo()[u"hold"_s].toMap()[u"card"_s] == u"Visa •••• 4242"_s);
+    CHECK(s.pos.payments().isEmpty());
+
+    // Drinks, then Pay: the panel says the card is held; Card on File… charges it.
+    REQUIRE(s.pos.addItem(u"coffee"_s));
+    REQUIRE(s.pos.addItem(u"coffee"_s));
+    REQUIRE(s.c.jumpTo(u"settle"_s));
+    QTest::qWait(80);
+    REQUIRE(by(u"cardOnFileKey"_s));
+    s.tapItem(by(u"cardOnFileKey"_s));
+    QTest::qWait(80);
+    REQUIRE(by(u"holdSheet"_s));
+    s.shot("tab-hold-sheet");
+    REQUIRE(by(u"holdTip-18"_s));
+    s.tapItem(by(u"holdTip-18"_s));
+    QTest::qWait(100);
+    CHECK_FALSE(by(u"holdSheet"_s));
+    CHECK(s.pos.totals()[u"balanceCents"_s].toLongLong() == 0);
+    REQUIRE(s.pos.payments().size() == 1);
+    CHECK(s.pos.payments()[0].toMap()[u"tip"_s].toString() != QString());
+    CHECK(s.pos.checkInfo()[u"hold"_s].toMap().isEmpty());
+    REQUIRE(s.pos.closeCheck());
+}

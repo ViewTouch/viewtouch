@@ -471,7 +471,7 @@ QJsonArray actionTypes()
                             {"lineLess", "One less of the item (−)"}, {"repeatLine", "Again (one more the same way)"},
                             {"undoLast", "Undo (put back the item just removed)"},
                             {"anotherRound", "Another round (the drinks sent last)"},
-                            {"amountOff", "Discount: the dollars typed (manager)"}, {"percentOff", "Discount: the percent typed (manager)"}, {"coupon", "Coupon: type or scan its code"}, {"printReceipt", "Print receipt"},
+                            {"amountOff", "Discount: the dollars typed (manager)"}, {"percentOff", "Discount: the percent typed (manager)"}, {"coupon", "Coupon: type or scan its code"}, {"holdCard", "Hold the guest's card (bar tab)"}, {"cardOnFile", "Card on file (bar tab): charge or let go"}, {"printReceipt", "Print receipt"},
                             {"closeCheck", "Close check"}, {"removePayment", "Undo payment"},
                             {"noSale", "Open drawer (no sale)"}, {"openDrawerSession", "Start drawer (bank)"},
                             {"countDrawer", "Count drawer"}, {"endOfDay", "End of day"},

@@ -15,6 +15,8 @@ import com.stripe.stripeterminal.external.callable.PaymentIntentCallback
 import com.stripe.stripeterminal.external.callable.ReaderCallback
 import com.stripe.stripeterminal.external.callable.TerminalListener
 import com.stripe.stripeterminal.external.models.CaptureMethod
+import com.stripe.stripeterminal.external.models.CardPresentParameters
+import com.stripe.stripeterminal.external.models.PaymentMethodOptionsParameters
 import com.stripe.stripeterminal.external.models.CollectPaymentIntentConfiguration
 import com.stripe.stripeterminal.external.models.ConnectionConfiguration
 import com.stripe.stripeterminal.external.models.ConnectionStatus
@@ -182,21 +184,32 @@ object StripeBridge {
 
     // Take a card for `amount` (cents, tip included). With the internet down,
     // it's kept and sent later, up to the store's limits: `offlineMax` a card
-    // and `offlineTotal` waiting in all (0: never offline).
+    // and `offlineTotal` waiting in all (0: never offline). `hold`: a bar
+    // tab's card, only set aside (manual capture; the store's computer
+    // charges it when the tab closes, raising the hold if need be).
     @JvmStatic
-    fun charge(amount: Long, currency: String, description: String, checkRef: String, offlineMax: Long, offlineTotal: Long) {
+    fun charge(amount: Long, currency: String, description: String, checkRef: String, offlineMax: Long, offlineTotal: Long,
+               hold: Boolean) {
         main.post {
             val localRef = UUID.randomUUID().toString()
-            val params = PaymentIntentParameters.Builder()
+            val builder = PaymentIntentParameters.Builder()
                 .setAmount(amount)
                 .setCurrency(currency)
-                .setCaptureMethod(CaptureMethod.AutomaticAsync)
+                .setCaptureMethod(if (hold) CaptureMethod.Manual else CaptureMethod.AutomaticAsync)
                 .setDescription(description)
                 .setMetadata(mapOf("viewtouch_check" to checkRef, "viewtouch_payment" to localRef))
-                .build()
+            if (hold)
+                builder.setPaymentMethodOptionsParameters(
+                    PaymentMethodOptionsParameters.Builder()
+                        .setCardPresentParameters(
+                            CardPresentParameters.Builder().setRequestIncrementalAuthorizationSupport(true).build()
+                        )
+                        .build()
+                )
+            val params = builder.build()
             val status = Terminal.getInstance().offlineStatus
             val waiting = (status.reader ?: status.sdk).offlinePaymentAmountsByCurrency[currency.lowercase()] ?: 0L
-            val behavior = if (offlineMax <= 0 || amount > offlineMax || waiting + amount > offlineTotal)
+            val behavior = if (hold || offlineMax <= 0 || amount > offlineMax || waiting + amount > offlineTotal)
                 OfflineBehavior.REQUIRE_ONLINE else OfflineBehavior.PREFER_ONLINE
             current = null
             currentRef = localRef

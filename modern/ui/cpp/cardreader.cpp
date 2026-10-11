@@ -176,12 +176,14 @@ void CardReader::charge(const QVariantMap &charge)
     if (kind_ == u"stripe" && ready_) {
         const qint64 total = charge.value(u"amountCents"_s).toLongLong() + charge.value(u"tipCents"_s).toLongLong();
         // With the store's limits for a card taken while the internet is down (0: none).
+        // hold: a tab's card, set aside (charged later by the store's computer).
         QJniObject::callStaticMethod<void>(
-            kBridge, "charge", "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;JJ)V", jlong(total),
+            kBridge, "charge", "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;JJZ)V", jlong(total),
             QJniObject::fromString(charge.value(u"currency"_s).toString()).object<jstring>(),
             QJniObject::fromString(charge.value(u"description"_s).toString()).object<jstring>(),
             QJniObject::fromString(QString::number(charge.value(u"checkId"_s).toLongLong())).object<jstring>(),
-            jlong(charge.value(u"offlineMax"_s).toLongLong()), jlong(charge.value(u"offlineTotal"_s).toLongLong()));
+            jlong(charge.value(u"offlineMax"_s).toLongLong()), jlong(charge.value(u"offlineTotal"_s).toLongLong()),
+            jboolean(charge.value(u"hold"_s).toBool()));
         return;
     }
 #endif
@@ -281,6 +283,8 @@ void CardReader::finish(QVariantMap result)
     result.insert(u"checkId"_s, was.value(u"checkId"_s));
     result.insert(u"tenderId"_s, was.value(u"tenderId"_s));
     result.insert(u"processor"_s, kind_);
+    if (was.value(u"hold"_s).toBool())
+        result.insert(u"hold"_s, true);   // set aside, not paid
     if (!result.contains(u"amountCents"_s))
         result.insert(u"amountCents"_s, was.value(u"amountCents"_s).toLongLong() + was.value(u"tipCents"_s).toLongLong());
     result.insert(u"tipCents"_s, was.value(u"tipCents"_s).toLongLong() + result.value(u"readerTipCents"_s).toLongLong());

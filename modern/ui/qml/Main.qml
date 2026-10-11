@@ -122,7 +122,7 @@ ApplicationWindow {
     // Something over the whole screen (see the page's `enabled`).
     readonly property bool pageCovered: selfOrder.visible || root.controller.asleep || cardWait.visible
                                         || receiptSheet.visible || setupLoader.active || jobChooser.visible || cashTipsPrompt.visible
-                                        || approvalPad.visible || allergySheet.visible || couponSheet.visible
+                                        || approvalPad.visible || allergySheet.visible || couponSheet.visible || holdSheet.visible
 
     Loader {
         active: root.customerDisplay
@@ -626,6 +626,146 @@ ApplicationWindow {
                 fontScale: 0.3
                 baseColor: "#1f6f3a"
                 onClicked: { couponSheet.open = false; couponCode.text = ""; pageView.forceActiveFocus() }
+            }
+        }
+    }
+
+    // A bar tab's card on file (Pay -> Card on File…): hold one; charge it
+    // for the tab with a tip; or let it go.
+    Rectangle {
+        id: holdSheet
+        objectName: "holdSheet"
+        property bool open: false
+        readonly property var check: root.controller.pos && root.controller.pos.hasCheck ? root.controller.pos.check : ({})
+        readonly property var hold: check.hold ?? ({})
+        readonly property bool held: !!hold.card
+        readonly property var totals: root.controller.pos ? root.controller.pos.totals : ({})
+        readonly property real u: Math.max(14, Math.min(root.width, root.height) / 30)
+        function charge(percent, cents) {
+            root.controller.pos.chargeHold(percent, cents)
+            holdSheet.open = false
+        }
+        anchors.fill: parent
+        z: 74
+        visible: open && !!root.controller.pos && root.controller.pos.hasCheck
+        color: Qt.rgba(0.04, 0.05, 0.07, 0.92)
+        Connections {
+            target: root.controller
+            function onWidgetCommand(name, args) { if (name === "cardOnFile") holdSheet.open = true }
+        }
+        MouseArea { anchors.fill: parent }
+        Column {
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: Math.max(holdSheet.u, parent.height * 0.05)
+            width: Math.min(parent.width - 2 * holdSheet.u, 36 * holdSheet.u)
+            spacing: holdSheet.u * 0.7
+            Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                text: holdSheet.held ? holdSheet.hold.card : qsTr("Hold the guest's card")
+                color: "white"
+                font.pixelSize: 1.6 * holdSheet.u
+                font.bold: true
+            }
+            Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: holdSheet.held
+                      ? qsTr("%1 set aside since %2, not charged. Owed now: %3.").arg(holdSheet.hold.amount)
+                            .arg(holdSheet.hold.since).arg(holdSheet.totals.balance ?? "")
+                      : holdSheet.check.tabHold
+                        ? qsTr("The bank sets %1 aside on the card; nothing is charged. When the tab closes, the card is charged for the tab and the tip.").arg(holdSheet.check.tabHold)
+                        : qsTr("Holding cards is off (Manager -> Store Settings).")
+                color: "#c8ced8"
+                font.pixelSize: 1.0 * holdSheet.u
+            }
+            WidgetKey {
+                objectName: "holdStart"
+                visible: !holdSheet.held && !!holdSheet.check.tabHold
+                width: parent.width
+                height: 3.6 * holdSheet.u
+                text: qsTr("Hold Card")
+                fontScale: 0.3
+                baseColor: "#2f6fd6"
+                onClicked: { holdSheet.open = false; root.controller.command("holdCard") }
+            }
+            Text {
+                visible: holdSheet.held
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                text: qsTr("Charge it, with a tip of")
+                color: "white"
+                font.pixelSize: 1.1 * holdSheet.u
+            }
+            Row {
+                visible: holdSheet.held
+                width: parent.width
+                spacing: holdSheet.u / 2
+                Repeater {
+                    model: [0, 15, 18, 20]
+                    delegate: WidgetKey {
+                        required property int modelData
+                        objectName: "holdTip-" + modelData
+                        width: (parent.width - 3 * parent.spacing) / 4
+                        height: 3.6 * holdSheet.u
+                        text: modelData === 0 ? qsTr("No Tip") : modelData + "%"
+                        fontScale: 0.3
+                        baseColor: "#1f6f3a"
+                        onClicked: holdSheet.charge(modelData * 100, 0)
+                    }
+                }
+            }
+            RowLayout {
+                visible: holdSheet.held
+                width: parent.width
+                spacing: holdSheet.u / 2
+                TextField {
+                    id: holdTip
+                    objectName: "holdTipAmount"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 3.2 * holdSheet.u
+                    font.pixelSize: 1.2 * holdSheet.u
+                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                    placeholderText: qsTr("Tip amount, e.g. 8.00")
+                }
+                WidgetKey {
+                    objectName: "holdTipCharge"
+                    Layout.preferredWidth: 14 * holdSheet.u
+                    Layout.preferredHeight: 3.2 * holdSheet.u
+                    text: qsTr("Charge with This Tip")
+                    fontScale: 0.28
+                    baseColor: "#1f6f3a"
+                    enabled: holdTip.text.trim() !== "" && !isNaN(Number(holdTip.text.replace(",", ".")))
+                    onClicked: {
+                        const cents = Math.round(Number(holdTip.text.replace(",", ".")) * 100)
+                        holdTip.text = ""
+                        holdSheet.charge(0, cents)
+                    }
+                }
+            }
+            Row {
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: holdSheet.u / 2
+                WidgetKey {
+                    objectName: "holdRelease"
+                    visible: holdSheet.held
+                    width: 16 * holdSheet.u
+                    height: 3.2 * holdSheet.u
+                    text: qsTr("Let the Card Go")
+                    fontScale: 0.28
+                    baseColor: "#5a2a2a"
+                    onClicked: { root.controller.pos.releaseHold(); holdSheet.open = false }
+                }
+                WidgetKey {
+                    objectName: "holdClose"
+                    width: 12 * holdSheet.u
+                    height: 3.2 * holdSheet.u
+                    text: qsTr("Close")
+                    fontScale: 0.28
+                    baseColor: "#343c49"
+                    onClicked: { holdSheet.open = false; holdTip.text = ""; pageView.forceActiveFocus() }
+                }
             }
         }
     }

@@ -413,6 +413,14 @@ bool PosService::startCounterCharge(const QString &tenderId)
         return tender(tenderId);   // cash, a discount...: as usual
     if (!charge.value(u"ok"_s).toBool())
         return false;
+    return startCounter(charge);
+}
+
+bool PosService::startCounter(const QVariantMap &charge)
+{
+    const QString reader = counterReaderId();
+    // A tab's hold: set aside, charged when the tab closes (raised then if need be).
+    const bool hold = charge.value(u"hold"_s).toBool();
     const qint64 total = charge.value(u"amountCents"_s).toLongLong() + charge.value(u"tipCents"_s).toLongLong();
     counter_ = charge;
     counter_.insert(u"status"_s, u"starting"_s);
@@ -421,19 +429,21 @@ bool PosService::startCounterCharge(const QString &tenderId)
     counter_.insert(u"test"_s, s_->settings.stripeSecretKey.starts_with("sk_test_")
                                    || s_->settings.stripeSecretKey.starts_with("rk_test_"));
     emit sessionChanged();
-    const QString body = form({{u"amount"_s, QString::number(total)},
-                               {u"currency"_s, charge.value(u"currency"_s).toString()},
-                               {u"allowed_payment_method_types[]"_s, u"card_present"_s},
-                               {u"capture_method"_s, u"automatic"_s},
-                               {u"description"_s, charge.value(u"description"_s).toString()},
-                               {u"metadata[viewtouch_check]"_s, charge.value(u"checkId"_s).toString()}});
-    stripe(u"POST"_s, u"/v1/payment_intents"_s, body, [this, reader](const QJsonObject &pi, const QString &error) {
+    QString body = form({{u"amount"_s, QString::number(total)},
+                         {u"currency"_s, charge.value(u"currency"_s).toString()},
+                         {u"allowed_payment_method_types[]"_s, u"card_present"_s},
+                         {u"capture_method"_s, hold ? u"manual"_s : u"automatic"_s},
+                         {u"description"_s, charge.value(u"description"_s).toString()},
+                         {u"metadata[viewtouch_check]"_s, charge.value(u"checkId"_s).toString()}});
+    if (hold)
+        body += u'&' + form({{u"payment_method_options[card_present][request_incremental_authorization_support]"_s, u"true"_s}});
+    stripe(u"POST"_s, u"/v1/payment_intents"_s, body, [this, reader, hold](const QJsonObject &pi, const QString &error) {
         if (!error.isEmpty() || counter_.isEmpty())
             return counterDone(error.isEmpty() ? QString() : tr("The card payment couldn't start: %1").arg(error));
         const QString id = pi.value(u"id").toString();
         counter_.insert(u"paymentIntent"_s, id);
         // The tip on the reader's screen, when that's where it's asked.
-        const QString skipTip = s_->settings.cardTipOn == "reader" ? u"false"_s : u"true"_s;
+        const QString skipTip = s_->settings.cardTipOn == "reader" && !hold ? u"false"_s : u"true"_s;
         stripe(u"POST"_s, u"/v1/terminal/readers/%1/process_payment_intent"_s.arg(reader),
                form({{u"payment_intent"_s, id}, {u"process_config[skip_tipping]"_s, skipTip},
                      {u"process_config[enable_customer_cancellation]"_s, u"true"_s}}),
@@ -504,6 +514,14 @@ void PosService::counterPaid(const QString &pi)
         const QJsonObject card = intent.value(u"latest_charge").toObject().value(u"payment_method_details").toObject()
                                      .value(u"card_present").toObject();
         const qint64 readerTip = intent.value(u"amount_details").toObject().value(u"tip").toObject().value(u"amount").toInteger();
+        if (counter_.value(u"hold"_s).toBool()) {   // set aside, not charged
+            const bool held = status == u"requires_capture" && addCardHold({{u"reference"_s, pi}, {u"processor"_s, u"stripe"_s},
+                                                                             {u"brand"_s, card.value(u"brand").toString()},
+                                                                             {u"last4"_s, card.value(u"last4").toString()},
+                                                                             {u"amountCents"_s, intent.value(u"amount").toInteger()},
+                                                                             {u"checkId"_s, counter_.value(u"checkId"_s)}});
+            return counterDone(held ? QString() : tr("The card wasn't held: take a payment when the tab closes."));
+        }
         QVariantMap paid{{u"reference"_s, pi}, {u"brand"_s, card.value(u"brand").toString()},
                          {u"last4"_s, card.value(u"last4").toString()},
                          {u"amountCents"_s, intent.value(u"amount").toInteger()},

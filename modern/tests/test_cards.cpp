@@ -398,3 +398,196 @@ TEST_CASE("Stripe test mode, live: pair a simulated reader, approved, declined, 
     CHECK(pos.shared()->refundsToday.back().reference.starts_with("re_"));
     CHECK(pos.shared()->closedToday.back().refunded(paid).cents() == 100);
 }
+
+TEST_CASE("A bar tab's card, held: set aside on open; charged with a tip, raised if need be; let go", "[cards][hold]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    openDrawer(pos);
+    test::FakeStripe stripe;
+    stripe.install(pos);
+    QStringList notices;
+    QObject::connect(&pos, &app::PosSession::notice, [&](const QString &n) { notices << n; });
+    pos.shared()->settings.stripeSecretKey = "sk_test_x";
+    pos.shared()->settings.stripeReaders.push_back({"tmr_1", "Bar", "simulated_wisepos_e"});
+    REQUIRE(pos.adminSave(u"terminals"_s, -1, {{u"name"_s, pos.terminalName()}, {u"cardReader"_s, u"counter:tmr_1"_s}}));
+    CHECK(pos.shared()->settings.tabHold == 5000);
+
+    // Open a tab and hold the card: $50 set aside, nothing paid.
+    REQUIRE(pos.openTab(u"Mike"_s));
+    const qint64 tab = pos.checkInfo()[u"id"_s].toLongLong();
+    CHECK(pos.checkInfo()[u"hold"_s].toMap().isEmpty());
+    REQUIRE(pos.startCounterHold());
+    CHECK(stripe.amount == 5000);
+    CHECK(stripe.captureMethod == u"manual"_s);
+    CHECK(stripe.incremental == u"true"_s);
+    REQUIRE(pos.presentTestCard(false));
+    test::waitFor([&] { return pos.counterCharge().isEmpty(); });
+    QVariantMap hold = pos.checkInfo()[u"hold"_s].toMap();
+    CHECK(hold[u"card"_s] == u"Mastercard •••• 4444"_s);
+    CHECK(hold[u"amount"_s] == u"$50.00"_s);
+    CHECK(pos.payments().isEmpty());
+    CHECK_FALSE(pos.startCounterHold());                                   // one is enough
+    // Kept with the check.
+    const core::Check &held = pos.shared()->open.at(tab);
+    CHECK(app::checkFromJson(app::toJson(held))->hold == held.hold);
+
+    // Drinks; closed on the card with 20%: within the hold, charged as is.
+    for (int i = 0; i < 3; ++i)
+        REQUIRE(pos.addItem(u"draft-beer"_s));                             // 3 x $6.00
+    const qint64 owed = pos.totals()[u"balanceCents"_s].toLongLong();
+    REQUIRE(pos.chargeHold(2000, 0));
+    test::waitFor([&] { return pos.payments().size() == 1; });
+    REQUIRE(pos.payments().size() == 1);
+    CHECK(stripe.captured > owed);
+    const core::Payment &paid = pos.shared()->open.at(tab).payments.back();
+    CHECK(paid.reference == "pi_1");
+    CHECK(paid.amount.cents() == owed);
+    CHECK(paid.tip.cents() == stripe.captured - owed);
+    CHECK(pos.checkInfo()[u"hold"_s].toMap().isEmpty());
+    CHECK(stripe.calls.filter(u"increment_authorization"_s).isEmpty());
+    REQUIRE(pos.closeCheck());
+    CHECK_FALSE(stripe.canceled);
+
+    // A bigger tab: the bank is asked to hold more, then it's charged.
+    REQUIRE(pos.openTab(u"Ana"_s));
+    REQUIRE(pos.startCounterHold());
+    REQUIRE(pos.presentTestCard(false));
+    test::waitFor([&] { return pos.counterCharge().isEmpty(); });
+    for (int i = 0; i < 10; ++i)
+        REQUIRE(pos.addItem(u"draft-beer"_s));                             // $60 and tax
+    const qint64 big = pos.totals()[u"balanceCents"_s].toLongLong();
+    REQUIRE(pos.chargeHold(0, 1000));                                       // a $10 tip
+    test::waitFor([&] { return pos.payments().size() == 1; });
+    CHECK(stripe.calls.filter(u"increment_authorization"_s).size() == 1);
+    CHECK(stripe.captured == big + 1000);
+    CHECK(pos.totals()[u"balanceCents"_s].toLongLong() == 0);
+    REQUIRE(pos.closeCheck());
+
+    // The bank won't: what's held is charged, the rest is still owed.
+    REQUIRE(pos.openTab(u"Sam"_s));
+    REQUIRE(pos.startCounterHold());
+    REQUIRE(pos.presentTestCard(false));
+    test::waitFor([&] { return pos.counterCharge().isEmpty(); });
+    for (int i = 0; i < 10; ++i)
+        REQUIRE(pos.addItem(u"draft-beer"_s));
+    stripe.incrementFails = true;
+    REQUIRE(pos.chargeHold(0, 0));
+    test::waitFor([&] { return pos.payments().size() == 1; });
+    CHECK(stripe.captured == 5000);
+    CHECK(pos.totals()[u"balanceCents"_s].toLongLong() == big - 5000);
+    CHECK(notices.join(u" "_s).contains(u"take the rest another way"_s));
+    REQUIRE(pos.tender(u"cash"_s));
+    REQUIRE(pos.closeCheck());
+    stripe.incrementFails = false;
+
+    // Paid another way (cash): the hold is let go when it closes.
+    REQUIRE(pos.openTab(u"Lee"_s));
+    REQUIRE(pos.startCounterHold());
+    REQUIRE(pos.presentTestCard(false));
+    test::waitFor([&] { return pos.counterCharge().isEmpty(); });
+    REQUIRE(pos.addItem(u"draft-beer"_s));
+    REQUIRE(pos.tender(u"cash"_s));
+    REQUIRE(pos.closeCheck());
+    CHECK(stripe.canceled);
+    // Or by hand, before anything is owed.
+    REQUIRE(pos.openTab(u"Kim"_s));
+    REQUIRE(pos.startCounterHold());
+    REQUIRE(pos.presentTestCard(false));
+    test::waitFor([&] { return pos.counterCharge().isEmpty(); });
+    stripe.canceled = false;
+    REQUIRE(pos.releaseHold());
+    CHECK(stripe.canceled);
+    CHECK(pos.checkInfo()[u"hold"_s].toMap().isEmpty());
+    CHECK_FALSE(pos.chargeHold(0, 0));
+
+    // A reader on the screen itself (simulated): its answer is recorded;
+    // charging needs no bank.
+    REQUIRE(pos.addItem(u"draft-beer"_s));
+    const QVariantMap charge = pos.holdCharge();
+    REQUIRE(charge[u"ok"_s].toBool());
+    CHECK(charge[u"hold"_s].toBool());
+    CHECK(charge[u"amountCents"_s] == 5000);
+    CHECK(charge[u"offlineMax"_s] == 0);                                   // never offline
+    QVariantMap answer{{u"approved"_s, true}, {u"hold"_s, true}, {u"reference"_s, u"sim_1"_s}, {u"brand"_s, u"visa"_s},
+                       {u"last4"_s, u"4242"_s}, {u"amountCents"_s, 5000}, {u"checkId"_s, charge[u"checkId"_s]},
+                       {u"processor"_s, u"simulated"_s}};
+    REQUIRE(pos.recordCardHold(answer));
+    REQUIRE(pos.recordCardHold(answer));                                   // sent twice: once
+    CHECK(pos.checkInfo()[u"hold"_s].toMap()[u"card"_s] == u"Visa •••• 4242"_s);
+    REQUIRE(pos.chargeHold(1500, 0));
+    CHECK(pos.totals()[u"balanceCents"_s].toLongLong() == 0);
+    CHECK(pos.payments()[0].toMap()[u"tip"_s].toString() != QString());
+
+    // Off: no holding.
+    pos.shared()->settings.tabHold = 0;
+    REQUIRE(pos.openTab(u"Jo"_s));
+    CHECK_FALSE(pos.holdCharge()[u"ok"_s].toBool());
+}
+
+TEST_CASE("Stripe test mode, live: a tab's card held, raised, charged; another let go", "[.][stripelive]")
+{
+    const QString key = qEnvironmentVariable("VTM_STRIPE_TEST_KEY");
+    if (!key.startsWith(u"sk_test_"_s))
+        SKIP("Set VTM_STRIPE_TEST_KEY to a Stripe test key (sk_test_...).");
+    PosService pos(test::seedPosData(), nullptr);
+    openDrawer(pos);
+    pos.shared()->settings.stripeSecretKey = key.toStdString();
+    net::StripeApi api([&] { return key; });
+    pos.shared()->stripeCall = [&](const QString &m, const QString &p, const QString &f, auto done) { api.call(m, p, f, done); };
+    QStringList notices;
+    QObject::connect(&pos, &app::PosSession::notice, [&](const QString &n) { notices << n; });
+    const auto wait = [](const std::function<bool()> &ready, int ms = 30000) {
+        for (int i = 0; i < ms / 50 && !ready(); ++i)
+            QTest::qWait(50);
+        return ready();
+    };
+    QVariantMap pair = pos.adminNewRecord(u"cardReaders"_s);
+    pair[u"label"_s] = u"ViewTouch test bar"_s;
+    pair[u"code"_s] = u"simulated-wpe"_s;
+    pair[u"line1"_s] = u"123 Main St"_s;
+    pair[u"city"_s] = u"Springfield"_s;
+    pair[u"state"_s] = u"IL"_s;
+    pair[u"postalCode"_s] = u"62701"_s;
+    pair[u"country"_s] = u"US"_s;
+    REQUIRE(pos.adminSave(u"cardReaders"_s, -1, pair));
+    INFO("notices: " << notices.join(u" | "_s).toStdString());
+    REQUIRE(wait([&] { return !pos.shared()->settings.stripeReaders.empty(); }));
+    REQUIRE(pos.adminSave(u"terminals"_s, -1, {{u"name"_s, pos.terminalName()},
+                                               {u"cardReader"_s, u"counter:"_s + QString::fromStdString(pos.shared()->settings.stripeReaders.back().id)}}));
+    const auto holdCard = [&] {
+        REQUIRE(pos.startCounterHold());
+        REQUIRE(wait([&] { return pos.counterCharge()[u"status"_s] == u"waiting"_s; }));
+        REQUIRE(pos.presentTestCard(false));
+        REQUIRE(wait([&] { return pos.counterCharge().isEmpty(); }));
+        REQUIRE_FALSE(pos.checkInfo()[u"hold"_s].toMap().isEmpty());
+    };
+
+    // Held, then more than that: raised, charged with a tip.
+    REQUIRE(pos.openTab(u"Live Tab"_s));
+    holdCard();
+    for (int i = 0; i < 10; ++i)
+        REQUIRE(pos.addItem(u"draft-beer"_s));
+    const qint64 owed = pos.totals()[u"balanceCents"_s].toLongLong();
+    REQUIRE(owed > 5000);
+    REQUIRE(pos.chargeHold(0, 500));
+    REQUIRE(wait([&] { return pos.payments().size() == 1; }));
+    const core::Payment &paid = pos.currentCheck()->payments.back();
+    INFO("charged " << paid.reference << " " << paid.amount.cents() << " + " << paid.tip.cents());
+    CHECK(paid.reference.starts_with("pi_"));
+    // The simulated card may not allow raising the hold: then what's held is charged.
+    if (pos.totals()[u"balanceCents"_s].toLongLong() == 0) {
+        CHECK(paid.amount.cents() == owed);
+        CHECK(paid.tip.cents() == 500);
+    } else {
+        CHECK(paid.amount.cents() + paid.tip.cents() == 5000);
+        REQUIRE(pos.tender(u"cash"_s));
+    }
+    REQUIRE(pos.closeCheck());
+
+    // Held and let go.
+    REQUIRE(pos.openTab(u"Live Tab 2"_s));
+    holdCard();
+    REQUIRE(pos.releaseHold());
+    QTest::qWait(3000);
+    CHECK_FALSE(notices.last().contains(u"couldn't"_s));
+}
