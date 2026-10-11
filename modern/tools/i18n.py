@@ -25,6 +25,8 @@ CALLS = [
     (re.compile(rf'(?<![\w.])tr\(\s*({JOINED})'), "cpp"),
     (re.compile(rf'\btranslate\(\s*"[^"]*"\s*,\s*({JOINED})'), "cpp"),
     (re.compile(rf'\bQT_TR_NOOP\(\s*({JOINED})'), "cpp"),
+    # Printed tickets (print/tickets.cpp): ctx.tr("...")
+    (re.compile(rf'\bctx\.tr\(\s*({JOINED})'), "cpp"),
 ]
 
 

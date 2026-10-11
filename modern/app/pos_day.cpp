@@ -25,17 +25,7 @@ QString clockText(std::int64_t ms)
 // cell that is a phrase on its own ("Net sales"; amounts and names stay).
 QString reportWords(const std::string &text)
 {
-    const QString english = qs(text);
-    const QString t = english.isEmpty() ? QString() : i18n::lookup(i18n::current(), english);
-    if (!t.isEmpty())
-        return t;
-    // "Voided items (3)": the words before the count.
-    if (const qsizetype open = english.indexOf(u" ("_s); open > 0) {
-        const QString head = i18n::lookup(i18n::current(), english.left(open + 2));
-        if (!head.isEmpty())
-            return head + english.mid(open + 2);
-    }
-    return english;
+    return i18n::phrase(i18n::current(), qs(text));
 }
 
 QVariantMap toVariant(const Report &r)

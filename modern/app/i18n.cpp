@@ -168,4 +168,17 @@ QString lookup(const QString &code, const QString &english, int n)
     return it->toString();
 }
 
+QString phrase(const QString &code, const QString &english)
+{
+    if (english.isEmpty())
+        return english;
+    if (const QString t = lookup(code, english); !t.isEmpty())
+        return t;
+    if (const qsizetype open = english.indexOf(u" ("_s); open > 0) {
+        if (const QString head = lookup(code, english.left(open + 2)); !head.isEmpty())
+            return head + english.mid(open + 2);
+    }
+    return english;
+}
+
 } // namespace vt::i18n

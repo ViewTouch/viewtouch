@@ -58,5 +58,9 @@ private:
 
 // `english` in `code`, or empty if there is no translation.
 QString lookup(const QString &code, const QString &english, int n = -1);
+// Text that may be a phrase (a report's cells, a printout's words) in
+// `code`: the whole of it, or the words before " (" ("Voided items (3)");
+// else as is (amounts, names).
+QString phrase(const QString &code, const QString &english);
 
 } // namespace vt::i18n

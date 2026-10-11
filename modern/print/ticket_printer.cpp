@@ -42,6 +42,9 @@ TicketContext TicketPrinter::context(const PosSettings &settings) const
                 out.push_back(n.toStdString());
             return out;
         },
+        [code = QString::fromStdString(settings.language)](const std::string &english) {
+            return i18n::phrase(code, QString::fromStdString(english)).toStdString();
+        },
     };
 }
 
@@ -168,25 +171,24 @@ bool TicketPrinter::printTestPage(const PosSettings &settings, const std::string
     if (p.effectiveFormat() == "escpos")
         d.image(logoFor(settings, width));   // nothing when no logo is set
     d.text(settings.storeName, Document::Align::Center, true, true);
-    d.text("Printer test: " + p.name,
-           Document::Align::Center, true);
+    d.text(ctx.tr("Printer test: %1", {p.name}), Document::Align::Center, true);
     d.text(QDateTime::fromMSecsSinceEpoch(now_ ? now_() : QDateTime::currentMSecsSinceEpoch())
                .toString(u"yyyy-MM-dd hh:mm"_s).toStdString(), Document::Align::Center);
     d.rule();
-    d.text(std::string("Normal text"));
-    d.text(std::string("Bold text"), Document::Align::Left, true);
-    d.text(std::string("Big text"), Document::Align::Left, true, true);
-    d.text(std::string("Right"), Document::Align::Right);
+    d.text(ctx.tr("Normal text"));
+    d.text(ctx.tr("Bold text"), Document::Align::Left, true);
+    d.text(ctx.tr("Big text"), Document::Align::Left, true, true);
+    d.text(ctx.tr("Right"), Document::Align::Right);
     d.columns("2 x Bacon Burger", ctx.money(Money::fromCents(2650)));
     d.columns("    Medium Rare", "");
-    d.columns(std::string("Total"), ctx.money(Money::fromCents(2869)), true);
+    d.columns(ctx.tr("Total"), ctx.money(Money::fromCents(2869)), true);
     d.rule();
     // Every column: the paper width setting is right when this row exactly fills a line.
     std::string ruler;
     for (int i = 1; i <= width; ++i)
         ruler += char('0' + i % 10);
     d.text(ruler);
-    d.text(std::to_string(width) + " characters per line: the row above should fill exactly one line.");
+    d.text(ctx.tr("%1 characters per line: the row above should fill exactly one line.", {std::to_string(width)}));
     // Accents (Letters: accented, PC858), else plain letters.
     d.text(p.charset == "ascii" ? "Cafe, nino, senor (plain letters)" : "Café, niño, señor, ¿Qué tal? £5 €5");
     d.blank();

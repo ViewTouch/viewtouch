@@ -19,8 +19,12 @@ struct TicketContext {
     std::shared_ptr<const Raster> logo;   // receipts: the store logo at the top (null: none)
     // Allergen ids -> their names in the store's language (none: the ids).
     std::function<std::vector<std::string>(const std::vector<std::string> &)> allergenNames;
+    // An English phrase in the store's language (none, or not translated: as is).
+    std::function<std::string(const std::string &)> words;
 
     std::string money(Money m) const;
+    // A printed phrase in the store's language; %1, %2... filled with `args`.
+    std::string tr(const std::string &english, std::initializer_list<std::string> args = {}) const;
     std::vector<std::string> allergens(const std::vector<std::string> &ids) const
     {
         return allergenNames ? allergenNames(ids) : ids;

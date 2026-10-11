@@ -169,6 +169,50 @@ TEST_CASE("TicketPrinter routes kitchen lines by printer and writes files", "[pr
     CHECK(receiptText.contains(u"[drawer opened]"_s));   // receipt printer has the drawer
 }
 
+TEST_CASE("A Spanish store prints in Spanish: receipts, kitchen tickets, reports", "[print][i18n]")
+{
+    QTemporaryDir dir;
+    auto seed = test::seedPosData();
+    seed.settings.language = "es";
+    PrintSpooler spooler;
+    TicketPrinter printer(spooler, dir.path());
+    core::Check c = burgerCheck(seed.settings, seed.menu);
+    c.type = core::CheckType::Takeout;
+    c.rush = true;
+    c.customer.note = "puerta de atrás";
+    c.lines[0].seat = 2;
+
+    printer.printKitchen(seed.settings, c, c.lines, false);
+    printer.printKitchen(seed.settings, c, {c.lines[0]}, true);
+    printer.printReceipt(seed.settings, c, "receipt");
+    core::Report rep;
+    rep.title = "Sales Summary";
+    rep.line({"Net sales", "$34.50"});
+    rep.line({"Voided items (3)", "$4.00"});
+    printer.printReport(seed.settings, rep, "receipt");
+    REQUIRE(spooler.waitIdle(5000));
+
+    const QString kitchen = readFile(dir.filePath(u"kitchen.txt"_s));
+    const QString receiptText = readFile(dir.filePath(u"receipt.txt"_s));
+    CHECK(kitchen.contains(u"*** URGENTE ***"_s));
+    CHECK(kitchen.contains(u"PARA LLEVAR"_s));
+    CHECK(kitchen.contains(u"NOTA: puerta de atrás"_s));
+    CHECK(kitchen.contains(u"A2 1 Classic Burger"_s));       // the seat: asiento
+    CHECK(kitchen.contains(u"*** ANULADO ***"_s));
+    CHECK_FALSE(kitchen.contains(u"RUSH"_s));
+    CHECK(receiptText.contains(u"Cuenta #42"_s));
+    CHECK(receiptText.contains(u"Mesero: Sam"_s));
+    CHECK(receiptText.contains(u"Impuesto de comida"_s));
+    CHECK(receiptText.contains(u"Cambio"_s));
+    CHECK_FALSE(receiptText.contains(u"Subtotal "_s + u"Food"_s));
+    CHECK(receiptText.contains(u"Resumen de ventas"_s));
+    CHECK(receiptText.contains(u"Ventas netas"_s));
+    CHECK(receiptText.contains(u"(3)"_s));
+    CHECK_FALSE(receiptText.contains(u"Voided items"_s));
+    // The store's own words (items, the footer) print as typed.
+    CHECK(receiptText.contains(u"Classic Burger"_s));
+}
+
 TEST_CASE("Network printer receives ESC/POS over TCP", "[print]")
 {
     QTcpServer server;
