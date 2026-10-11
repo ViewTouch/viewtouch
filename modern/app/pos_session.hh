@@ -550,6 +550,7 @@ public:
     }
     Q_INVOKABLE void expoBump(qint64 checkId, qint64 sentAt) { invoke(QStringLiteral("expoBump"), {checkId, sentAt}); }
     Q_INVOKABLE void expoRecall() { invoke(QStringLiteral("expoRecall")); }
+    Q_INVOKABLE void requestForecast(int daysAhead) { invoke(QStringLiteral("requestForecast"), {daysAhead}); }
     Q_INVOKABLE void requestRangeReport(const QString &id, const QString &period, const QString &from = {},
                                         const QString &to = {}, bool compare = false)
     {

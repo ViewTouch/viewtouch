@@ -11,6 +11,10 @@
   "one": "%n changed",
   "other": "%n changed"
  },
+ "%n check(s)": {
+  "one": "%n check",
+  "other": "%n checks"
+ },
  "%n choice(s)": {
   "one": "%n choice",
   "other": "%n choices"
@@ -134,6 +138,10 @@
  "Exported all pages to %1, with %n picture(s) and font(s)": {
   "one": "Exported all pages to %1, with %n picture or font",
   "other": "Exported all pages to %1, with %n pictures and fonts"
+ },
+ "From the same day in %n past week(s); recent weeks count more.": {
+  "one": "From the same day last week.",
+  "other": "From the same day in %n past weeks; recent weeks count more."
  },
  "Import %n item(s)": {
   "one": "Import %n item",

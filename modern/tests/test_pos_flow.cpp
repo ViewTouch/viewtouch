@@ -6834,3 +6834,39 @@ TEST_CASE("UI: a bar tab: opened holding the card; charged with a tip on Pay", "
     CHECK(s.pos.checkInfo()[u"hold"_s].toMap().isEmpty());
     REQUIRE(s.pos.closeCheck());
 }
+
+TEST_CASE("UI: Reports -> Forecast: a coming day, chosen by its key", "[flow][ui][forecast]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    const QDate today = QDateTime::fromMSecsSinceEpoch(s.pos.shared()->now()).date();
+    std::vector<core::Check> past;
+    qint64 id = 9000;
+    for (int week = 1; week <= 4; ++week) {
+        for (int hour : {12, 13, 18, 19, 19, 20}) {
+            core::Check c;
+            c.id = ++id;
+            c.status = core::CheckStatus::Closed;
+            c.guests = 2;
+            c.openedAt = QDateTime(today.addDays(2 - 7 * week), QTime(hour, 10)).toMSecsSinceEpoch();
+            c.closedAt = c.openedAt + 3600 * 1000;
+            for (const char *item : {"classic-burger", "cobb", "coffee"})
+                c.addItem(*s.pos.findItem(QString::fromLatin1(item)));
+            past.push_back(c);
+        }
+    }
+    s.pos.shared()->history = [&](std::int64_t, std::int64_t) { return past; };
+    REQUIRE(s.c.jumpTo(u"reports"_s));
+    QTest::qWait(50);
+    s.tapKey(u"Forecast"_s);
+    QTest::qWait(50);
+    s.tapItem(Screen::findBy(s.window->contentItem(), "objectName", u"forecastDay-2"_s));
+    for (int i = 0; i < 100 && s.pos.rangeReport()[u"loading"_s].toBool(); ++i)
+        QTest::qWait(20);
+    QTest::qWait(80);
+    const QVariantMap report = s.pos.rangeReport()[u"report"_s].toMap();
+    CHECK(report[u"title"_s] == u"Forecast"_s);
+    CHECK(report[u"rows"_s].toList().value(0).toMap()[u"cells"_s].toStringList().value(0).contains(u"4 past weeks"_s));
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"Classic Burger"_s));
+    s.shot("forecast");
+}

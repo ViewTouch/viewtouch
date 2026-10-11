@@ -1402,6 +1402,11 @@ bool PosService::requestRangeReport(const QString &id, const QString &period, co
     return true;
 }
 
+QVariantMap PosService::reportVariant(const Report &r) const
+{
+    return toVariant(r);
+}
+
 QVariantMap PosService::report(const QString &id, qint64 dayId)
 {
     if (dayId == 0 || dayId == s_->day.id)
@@ -1424,7 +1429,11 @@ bool PosService::printReport(const QString &id, qint64 dayId)
     if (!s_->printer)
         return fail(tr("No printer is set up."));
     Report r;
-    if (dayId == 0 || dayId == s_->day.id) {
+    if (id == u"forecast") {   // the one last shown
+        if (forecast_.rows.empty())
+            return fail(tr("Show the forecast first."));
+        r = forecast_;
+    } else if (dayId == 0 || dayId == s_->day.id) {
         r = buildReport(id);
     } else {
         for (const PastDay &p : s_->pastDays) {

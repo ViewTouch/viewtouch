@@ -47,6 +47,7 @@ Item {
         { id: "kitchen", label: qsTr("Kitchen") },
         { id: "foodcost", label: qsTr("Food Cost") },
         { id: "engineering", label: qsTr("Menu Mix") },
+        { id: "forecast", label: qsTr("Forecast") },
         { id: "turns", label: qsTr("Turns") },
         { id: "checklists", label: qsTr("Checklists") },
         { id: "drivers", label: qsTr("Drivers") },
@@ -69,7 +70,14 @@ Item {
         { id: "custom", label: qsTr("Dates…") },
     ]
     readonly property var range: pos ? pos.rangeReport : ({})
+    // The forecast: a coming day (0 today ... 6), from past weeks.
+    readonly property bool forecasting: reportId === "forecast"
+    property int forecastDay: 1
     function refresh() {
+        if (forecasting && pos) {
+            pos.requestForecast(forecastDay)
+            return
+        }
         if (period === "day" || !pos)
             return
         if (period === "custom" && (fromDate === "" || toDate === ""))
@@ -79,8 +87,12 @@ Item {
     onReportIdChanged: refresh()
     onPeriodChanged: refresh()
     onCompareChanged: refresh()
+    onForecastDayChanged: refresh()
     readonly property var report: {
         if (!pos) return ({ rows: [] })
+        if (forecasting)
+            return range.id === "forecast" && range.report ? range.report
+                 : ({ title: range.loading ? qsTr("Reading the checks…") : "", rows: [] })
         if (period !== "day")
             return range.report ?? ({ title: range.loading ? qsTr("Reading the checks…") : "", rows: [] })
         // Live: again when checks close, the drawer changes, or (remote
@@ -119,8 +131,36 @@ Item {
             }
         }
 
+        // The forecast's day: today and the six after.
+        GridLayout {
+            visible: w.forecasting
+            Layout.fillWidth: true
+            readonly property int keyRows: w.narrow ? 2 : 1
+            Layout.preferredHeight: keyRows * w.keyH + (keyRows - 1) * w.unit * 0.3
+            Layout.minimumHeight: Layout.preferredHeight
+            Layout.fillHeight: false
+            columns: w.narrow ? 4 : 7
+            rowSpacing: w.unit * 0.3
+            columnSpacing: w.unit * 0.3
+            Repeater {
+                model: 7
+                delegate: WidgetKey {
+                    required property int index
+                    objectName: "forecastDay-" + index
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    text: index === 0 ? qsTr("Today") : index === 1 ? qsTr("Tomorrow")
+                        : new Date(Date.now() + index * 86400000).toLocaleDateString(Qt.locale(), "ddd d")
+                    fontScale: 0.34
+                    baseColor: w.forecastDay === index ? "#2f6fd6" : "#343c49"
+                    onClicked: w.forecastDay = index
+                }
+            }
+        }
+
         // Which days.
         GridLayout {
+            visible: !w.forecasting
             Layout.fillWidth: true
             readonly property int keyRows: w.narrow ? Math.ceil((w.periods.length + 1) / 4) : 1
             Layout.preferredHeight: keyRows * w.keyH + (keyRows - 1) * w.unit * 0.3
@@ -189,7 +229,7 @@ Item {
             Layout.fillHeight: false
             spacing: w.unit * 0.3
             Text {
-                visible: w.period !== "day"
+                visible: w.period !== "day" || w.forecasting
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 text: (w.range.label ?? "") + (w.range.loading ? "  ·  " + qsTr("reading…")
@@ -200,7 +240,7 @@ Item {
                 elide: Text.ElideRight
             }
             WidgetKey {
-                visible: w.period === "day"
+                visible: w.period === "day" && !w.forecasting
                 Layout.preferredWidth: w.unit * 3
                 Layout.fillHeight: true
                 text: "◀"
@@ -208,7 +248,7 @@ Item {
                 onClicked: if (w.dayIndex < w.days.length - 1) w.dayIndex++
             }
             Text {
-                visible: w.period === "day"
+                visible: w.period === "day" && !w.forecasting
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 text: w.day.label
@@ -218,7 +258,7 @@ Item {
                 elide: Text.ElideRight
             }
             WidgetKey {
-                visible: w.period === "day"
+                visible: w.period === "day" && !w.forecasting
                 Layout.preferredWidth: w.unit * 3
                 Layout.fillHeight: true
                 text: "▶"
@@ -226,7 +266,7 @@ Item {
                 onClicked: if (w.dayIndex > 0) w.dayIndex--
             }
             WidgetKey {
-                visible: w.period === "day"
+                visible: w.period === "day" || w.forecasting
                 Layout.preferredWidth: w.unit * 5
                 Layout.fillHeight: true
                 text: qsTr("Print")

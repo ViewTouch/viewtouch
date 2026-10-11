@@ -147,7 +147,7 @@ QJsonArray widgetSettings(const QString &kind)
                                  {"hourly", "By hour"}, {"servers", "Servers"}, {"tips", "Tips"}, {"labor", "Labor"},
                                  {"drawer", "Drawer"}, {"expenses", "Expenses"}, {"purchases", "Purchases"},
                                  {"audit", "Audit"}, {"exceptions", "Exceptions"}, {"deposit", "Deposit"}, {"customers", "Customers"}, {"royalty", "Royalty"}, {"accounting", "Accounting"}, {"accounts", "Gift cards"}, {"kitchen", "Kitchen"},
-                                 {"foodcost", "Food cost"}, {"engineering", "Menu mix"}})));
+                                 {"foodcost", "Food cost"}, {"engineering", "Menu mix"}, {"forecast", "Forecast"}})));
     } else if (kind == u"adminPanel") {
         out.append(with(field(u"props.panel"_s, u"Edits"_s, u"enum"_s, g), u"options"_s,
                         options({{"menu", "Menu"}, {"employees", "Employees"}, {"tenders", "Payment types"},

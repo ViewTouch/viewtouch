@@ -904,6 +904,11 @@ public:
     bool requestRangeReport(const QString &id, const QString &period, const QString &from = {},
                             const QString &to = {}, bool compare = false);
     QVariantMap rangeReport() const override { return rangeReport_; }
+    // A coming day (0 today ... 6), from the same weekday in past weeks
+    // (pos_forecast.cpp); the answer comes in rangeReport ({id: forecast, report}).
+    bool requestForecast(int daysAhead);
+    core::Report forecastReport(QDate target, const std::vector<core::Check> &checks, const core::ReportContext &ctx) const;
+    QVariantMap reportVariant(const core::Report &r) const;   // as the screen shows it
 
     // Tips after tip-outs and pools (see core::tipShares), everyone / one person.
     std::map<std::string, core::TipShare> allTipShares() const;
@@ -937,6 +942,7 @@ private:
     int scheduleWeek_ = 0;
     QVariantMap rangeReport_;
     int rangeRequest_ = 0;
+    core::Report forecast_;   // the forecast last shown (Print)
     QVariantMap checkSearch_;
     std::vector<core::Check> searchHits_;
     qint64 selectedHit_ = 0;

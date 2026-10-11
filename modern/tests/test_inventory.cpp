@@ -8,7 +8,11 @@
 #include "storage/async_writer.hh"
 #include "storage/pos_store.hh"
 
+#include <QDateTime>
 #include <QTemporaryDir>
+#include <QTest>
+
+#include <cmath>
 
 using namespace Qt::StringLiterals;
 using namespace vt;
@@ -435,4 +439,79 @@ TEST_CASE("Deliveries are saved and come back", "[inventory][vendors][store]")
     CHECK(data->deliveries[0].vendorName == "Green Farms Produce");
     CHECK(data->lastDeliveryId == 1);
     CHECK(data->settings.vendors.size() == 3);
+}
+
+TEST_CASE("Forecast: a coming day from the same weekday in past weeks; prep and what to order", "[inventory][forecast]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const QDate today = QDateTime::fromMSecsSinceEpoch(pos.shared()->now()).date();
+    const QDate target = today.addDays(1);
+    const core::MenuItem burger = *pos.findItem(u"classic-burger"_s);
+    REQUIRE_FALSE(burger.recipe.empty());
+    const std::string bun = burger.recipe.front().ingredientId;
+    const double perBurger = burger.recipe.front().quantity;
+    core::Ingredient *g = pos.shared()->ingredient(bun);
+    REQUIRE(g);
+    g->onHand = 1;
+    g->lowAt = 2;
+    g->vendor = pos.shared()->settings.vendors.empty() ? std::string() : pos.shared()->settings.vendors.front().id;
+
+    // Last week: two checks, 4 burgers; the week before: one, 2 burgers;
+    // an older one had none (left out). Recent weeks count more (4 : 3).
+    std::vector<core::Check> past;
+    qint64 id = 9000;
+    const auto check = [&](QDate day, int burgers, int hour) {
+        core::Check c;
+        c.id = ++id;
+        c.status = core::CheckStatus::Closed;
+        c.guests = 2;
+        c.openedAt = QDateTime(day, QTime(hour, 15)).toMSecsSinceEpoch();
+        c.closedAt = c.openedAt + 3600 * 1000;
+        for (int i = 0; i < burgers; ++i)
+            c.addItem(burger);
+        past.push_back(c);
+    };
+    check(target.addDays(-7), 2, 18);
+    check(target.addDays(-7), 2, 19);
+    check(target.addDays(-14), 2, 18);
+    check(target.addDays(-8), 9, 18);    // another weekday: not counted
+    pos.shared()->history = [&](std::int64_t, std::int64_t) { return past; };
+
+    REQUIRE(pos.requestForecast(1));
+    for (int i = 0; i < 200 && pos.rangeReport()[u"loading"_s].toBool(); ++i)
+        QTest::qWait(10);
+    const QVariantMap report = pos.rangeReport()[u"report"_s].toMap();
+    CHECK(report[u"title"_s] == u"Forecast"_s);
+    CHECK(report[u"rows"_s].toList().value(0).toMap()[u"cells"_s].toStringList().value(0).contains(u"2 past weeks"_s));
+    CHECK(cellsOf(report, u"Checks"_s).value(1) == u"2"_s);               // 2 x 4/7 + 1 x 3/7 = 1.6
+    CHECK(cellsOf(report, u"Guests"_s).value(1) == u"3"_s);               // 4 x 4/7 + 2 x 3/7 = 3.1
+    CHECK(cellsOf(report, u"Classic Burger"_s).value(1) == u"3"_s);       // 4 x 4/7 + 2 x 3/7 = 3.1
+    // The bun: 3.1 burgers' worth (rounded up to a tenth), 1 on hand; to
+    // order: that plus the low level (2), less what's on hand.
+    const double need = std::ceil(22.0 / 7.0 * perBurger * 10) / 10;
+    const QStringList prep = cellsOf(report, QString::fromStdString(g->name));
+    REQUIRE(prep.size() == 3);
+    CHECK(prep[1].startsWith(QString::number(need, 'f', 1).replace(u".0"_s, QString())));
+    CHECK(prep[2] == u"have 1"_s);
+    bool ordered = false;
+    QString section;
+    for (const QVariant &v : report[u"rows"_s].toList()) {
+        const QVariantMap row = v.toMap();
+        const QStringList cells = row[u"cells"_s].toStringList();
+        if (row[u"kind"_s] == u"section"_s)
+            section = cells.value(0);
+        else if (section.startsWith(u"To order"_s) && cells.value(0) == QString::fromStdString(g->name))
+            ordered = cells.value(1).startsWith(QString::number(std::ceil(need + 2 - 1)));
+    }
+    CHECK(ordered);
+
+    // Nothing to go on: says so.
+    pos.shared()->history = [](std::int64_t, std::int64_t) { return std::vector<core::Check>{}; };
+    REQUIRE(pos.requestForecast(3));
+    for (int i = 0; i < 200 && pos.rangeReport()[u"loading"_s].toBool(); ++i)
+        QTest::qWait(10);
+    const QVariantList rows = pos.rangeReport()[u"report"_s].toMap()[u"rows"_s].toList();
+    REQUIRE(rows.size() == 1);
+    CHECK(rows[0].toMap()[u"cells"_s].toStringList().value(0).startsWith(u"Not enough sales yet"_s));
 }

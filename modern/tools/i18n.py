@@ -82,7 +82,7 @@ def report_phrases():
     PosService builds); the screen shows each title, column and cell that is
     a phrase on its own in the screen's language."""
     texts = [(ROOT / "core/report.cpp").read_text()]
-    for name in ["app/pos_day.cpp", "app/pos_inventory.cpp", "app/pos_dashboard.cpp"]:
+    for name in ["app/pos_day.cpp", "app/pos_inventory.cpp", "app/pos_dashboard.cpp", "app/pos_forecast.cpp"]:
         src = (ROOT / name).read_text()
         texts += [m.group(0) for m in re.finditer(r'\nReport PosService::\w+\(.*?\n\}\n', src, re.S)]
     out = []

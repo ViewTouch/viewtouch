@@ -2484,6 +2484,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"sendReceipt"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.sendReceipt(a.value(0).toString(), a.value(1).toString())); }},
         {u"addShift"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.addShift(a.value(0).toMap())); }},
+        {u"requestForecast"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.requestForecast(a.value(0).toInt())); }},
         {u"requestRangeReport"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.requestRangeReport(a.value(0).toString(), a.value(1).toString(), a.value(2).toString(),
                                                   a.value(3).toString(), a.value(4).toBool())); }},
