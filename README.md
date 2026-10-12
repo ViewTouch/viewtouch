@@ -21,11 +21,11 @@
 
 **The `Modernization` branch is a ground-up rewrite of ViewTouch in C++23 and Qt 6 (QML).** It keeps ViewTouch's best idea, that every screen is a page of buttons you design yourself, and adds what a restaurant needs today. It runs on Linux PCs, touch screens, Raspberry Pi and Android tablets, entirely on site.
 
-📖 **[User manual (PDF)](https://github.com/No0ne558/viewtouchFork/releases/download/modern-manual-0.8/ViewTouch-User-Manual.pdf)** · 🛠️ **[Developer README](modern/README.md)** · 🗺️ **[Plan](modern/docs/PLAN.md)**
+📖 **[User manual (PDF)](https://github.com/No0ne558/viewtouchFork/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)** · 🛠️ **[Developer README](modern/README.md)** · 🗺️ **[Plan](modern/docs/PLAN.md)**
 
 <table>
 <tr>
-<td width="50%"><img src="modern/docs/screenshots/floor-plan.jpg" alt="Floor plan"><br><sub><b>Floor plan.</b> Tables show who has them, the total and how long they've been seated.</sub></td>
+<td width="50%"><img src="modern/docs/screenshots/floor-plan.jpg" alt="Floor plan"><br><sub><b>Floor plans.</b> Main, Dining Area, Bar and Patio, with walls and chairs. Tables show who has them, the total and how long they've been seated.</sub></td>
 <td width="50%"><img src="modern/docs/screenshots/order-choices.jpg" alt="Taking an order"><br><sub><b>Taking an order.</b> Items ask for their choices: temperature, sides, dressings.</sub></td>
 </tr>
 <tr>
@@ -60,7 +60,7 @@
 
 <table align="center"><tr>
 <td align="center"><img src="modern/docs/screenshots/kiosk-portrait.jpg" alt="Self-order kiosk, portrait" width="200"><br><sub>The self-order kiosk on a tall<br>21.5" stand, buttons within reach.</sub></td>
-<td align="center"><img src="modern/docs/screenshots/phone.jpg" alt="Phone pages" width="180"><br><sub>Phones get their own<br>big-button pages.</sub></td>
+<td align="center"><img src="modern/docs/screenshots/phone.jpg" alt="Phone pages" width="180"><br><sub>Phones get their own<br>pages, with the floor plan.</sub></td>
 </tr></table>
 
 ### Download and build
@@ -115,7 +115,7 @@ sudo vtmodern-setup server      # keeps the data, no screen (back office)
 sudo vtmodern-setup terminal    # a screen that joins the store (pair it with a code from Manager → Terminals)
 ```
 
-Screens start full screen at boot with no way out for staff. Everything else (several screens, Android tablets, printers, backups, the standby server, the self-order kiosk) is in the **[user manual](https://github.com/No0ne558/viewtouchFork/releases/download/modern-manual-0.8/ViewTouch-User-Manual.pdf)** and the **[developer README](modern/README.md)**.
+Screens start full screen at boot with no way out for staff. Everything else (several screens, Android tablets, printers, backups, the standby server, the self-order kiosk) is in the **[user manual](https://github.com/No0ne558/viewtouchFork/releases/download/modern-manual-0.9/ViewTouch-User-Manual.pdf)** and the **[developer README](modern/README.md)**.
 
 > Card readers and other hardware come later; the user interface is finished first.
 
