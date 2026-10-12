@@ -734,6 +734,29 @@ Report exceptionsReport(const std::vector<const Check *> &checks, const std::vec
     return r;
 }
 
+Report changesReport(const std::vector<Change> &changes, const ReportContext &ctx)
+{
+    Report r;
+    r.id = "changes";
+    r.title = "Changes";
+    r.subtitle = ctx.period;
+    r.columns = {"", "Before", "After"};
+    if (changes.empty()) {
+        r.note("Nothing was changed on the manager screens, the menu or the pages.");
+        return r;
+    }
+    std::string area;
+    for (auto it = changes.rbegin(); it != changes.rend(); ++it) {
+        const Change &c = *it;
+        const std::string what = c.item.empty() ? c.field
+                                 : c.field.empty() ? c.item
+                                                   : c.item + " · " + c.field;
+        r.line({ctx.clock(c.at) + " · " + c.who + " · " + c.area + (what.empty() ? "" : ": " + what), c.before, c.after});
+    }
+    r.total({"All", count(std::int64_t(changes.size())), ""});
+    return r;
+}
+
 Report depositReport(const std::vector<DrawerSession> &drawers, const std::vector<Check> &closed,
                      const std::vector<const Check *> &open, const ReportContext &ctx, const std::vector<Refund> &refunds)
 {

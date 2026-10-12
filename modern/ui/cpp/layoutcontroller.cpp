@@ -1241,6 +1241,24 @@ bool LayoutController::saveEdits()
             return false;
         }
     }
+    // For the Changes report: the pages added, removed and changed.
+    if (pos_) {
+        QStringList added, removed, changed;
+        for (const vt::layout::Page &p : draft.pages) {
+            const vt::layout::Page *was = layout_.page(p.id);
+            if (!was)
+                added << p.name;
+            else if (!(*was == p))
+                changed << p.name;
+        }
+        for (const vt::layout::Page &p : layout_.pages)
+            if (!draft.page(p.id))
+                removed << p.name;
+        if (layout_.theme != draft.theme)
+            changed << tr("Theme");
+        if (!added.isEmpty() || !removed.isEmpty() || !changed.isEmpty())
+            pos_->logPageEdits(added, removed, changed);
+    }
     layout_ = draft;
     emit menuScreensChanged();
     if (lookedLayout_)

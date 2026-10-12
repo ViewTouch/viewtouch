@@ -76,4 +76,19 @@ struct DrawerSession {
     bool operator==(const DrawerSession &) const = default;
 };
 
+// A change made on the manager screens, the Menu Builder or the page
+// editor: who changed what, from what to what (the Changes report).
+struct Change {
+    std::int64_t id = 0;
+    std::int64_t at = 0;
+    std::int64_t day = 0;      // the business day
+    std::string who;
+    std::string area;          // "Store Settings", "Menu", "Employees", "Pages"...
+    std::string item;          // which one: "Cheeseburger", "Sam"; empty for the store's settings
+    std::string field;         // "Price"; empty: added / removed (in `after` / `before`)
+    std::string before;
+    std::string after;
+    bool operator==(const Change &) const = default;
+};
+
 } // namespace vt::core

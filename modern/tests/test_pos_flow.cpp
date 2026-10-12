@@ -7093,6 +7093,25 @@ TEST_CASE("UI: Reports -> Forecast: a coming day, chosen by its key", "[flow][ui
     s.shot("forecast");
 }
 
+TEST_CASE("UI: the Changes report: who changed what", "[flow][ui][changes]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    QVariantMap store = s.pos.adminRecords(u"store"_s)[0].toMap();
+    store[u"storeName"_s] = u"Casa Ariel"_s;
+    store[u"askReasons"_s] = false;
+    REQUIRE(s.pos.adminSave(u"store"_s, 0, store));
+    REQUIRE(s.pos.saveMenuItemCard({{u"id"_s, u"cobb"_s}, {u"name"_s, u"Cobb"_s}, {u"price"_s, u"13.25"_s}}));
+    REQUIRE(s.pos.logPageEdits({}, {}, {u"Settle"_s}));
+    REQUIRE(s.c.jumpTo(u"reports"_s));
+    QTest::qWait(50);
+    s.tapKey(u"Changes"_s);
+    QTest::qWait(80);
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"Casa Ariel"_s));
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"$13.25"_s));
+    s.shot("changes-report");
+}
+
 TEST_CASE("UI: Store Settings in sections: found by search, changes marked, kept when the page is left", "[flow][ui][settings]")
 {
     Screen s;

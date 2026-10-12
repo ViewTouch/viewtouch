@@ -115,6 +115,7 @@ PosService::MenuStep::~MenuStep()
     PosShared::MenuState after = pos_->menuState();
     if (after == before_)
         return;
+    pos_->logMenuChanges(before_, after, label_);
     auto &undo = pos_->s_->menuUndo;
     undo.push_back({label_, std::move(before_), std::move(after)});
     if (undo.size() > 20)
@@ -144,6 +145,7 @@ bool PosService::undoMenuChange()
     }
     PosShared::MenuUndo step = std::move(undo.back());
     undo.pop_back();
+    logMenuChanges(step.after, step.before, tr("Undone: %1").arg(step.label));
     // Items gone from the store's records, then every item where it was.
     for (const MenuItem &m : s_->menu)
         if (s_->sink && std::ranges::none_of(step.before.menu, [&](const MenuItem &x) { return x.id == m.id; }))
@@ -158,6 +160,60 @@ bool PosService::undoMenuChange()
     menuChanged();
     emit notice(tr("Undone: %1").arg(step.label));
     return true;
+}
+
+// For the Changes report: each item's name, price and sold out; added and
+// removed items and categories; anything else as the step's name.
+void PosService::logMenuChanges(const PosShared::MenuState &before, const PosShared::MenuState &after,
+                                const QString &step)
+{
+    const QString area = tr("Menu");
+    int logged = 0;
+    const auto log = [&](const QString &item, const QString &field, const QString &was, const QString &is) {
+        if (++logged <= 40)
+            logChange(area, item, field, was, is);
+    };
+    for (const MenuItem &m : after.menu) {
+        const auto old = std::ranges::find(before.menu, m.id, &MenuItem::id);
+        if (old == before.menu.end()) {
+            log(qs(m.name), QString(), QString(), tr("Added, %1").arg(format(m.price)));
+            continue;
+        }
+        if (*old == m)
+            continue;
+        MenuItem rest = *old;
+        if (old->name != m.name)
+            log(qs(old->name), tr("Name"), qs(old->name), qs(m.name));
+        if (old->price != m.price)
+            log(qs(m.name), tr("Price"), format(old->price), format(m.price));
+        if (old->available != m.available)
+            log(qs(m.name), tr("Sold out"), old->available ? tr("no") : tr("yes"), m.available ? tr("no") : tr("yes"));
+        rest.name = m.name;
+        rest.price = m.price;
+        rest.available = m.available;
+        rest.soldOutToday = m.soldOutToday;
+        if (!(rest == m))
+            log(qs(m.name), tr("Other details"), QString(), step);
+    }
+    for (const MenuItem &m : before.menu)
+        if (std::ranges::find(after.menu, m.id, &MenuItem::id) == after.menu.end())
+            log(qs(m.name), QString(), QString(), tr("Removed"));
+    for (const MenuCategory &c : after.categories) {
+        const auto old = std::ranges::find(before.categories, c.id, &MenuCategory::id);
+        if (old == before.categories.end())
+            log(tr("Category %1").arg(qs(c.name)), QString(), QString(), tr("Added"));
+        else if (old->name != c.name)
+            log(tr("Category %1").arg(qs(old->name)), tr("Name"), qs(old->name), qs(c.name));
+        else if (!(*old == c))
+            log(tr("Category %1").arg(qs(c.name)), tr("Other details"), QString(), step);
+    }
+    for (const MenuCategory &c : before.categories)
+        if (std::ranges::find(after.categories, c.id, &MenuCategory::id) == after.categories.end())
+            log(tr("Category %1").arg(qs(c.name)), QString(), QString(), tr("Removed"));
+    if (!(before.groups == after.groups))
+        log(tr("Choices"), QString(), QString(), step);
+    if (logged > 40)
+        logChange(area, QString(), QString(), QString(), tr("%1 (and %2 more changes)").arg(step).arg(logged - 40));
 }
 
 void PosService::menuChanged()

@@ -57,6 +57,7 @@ public:
     virtual void deleteShift(std::int64_t id) { Q_UNUSED(id) }
     virtual void saveDelivery(const core::Delivery &) {}
     virtual void saveRefund(const core::Refund &) {}
+    virtual void saveChange(const core::Change &) {}
     // The store's pictures (logo, buttons, backgrounds): name -> file bytes.
     virtual void saveImage(const std::string &name, const QByteArray &data) { Q_UNUSED(name) Q_UNUSED(data) }
     virtual void deleteImage(const std::string &name) { Q_UNUSED(name) }
@@ -126,6 +127,8 @@ struct PosData {
     std::vector<PastDay> pastDays;                // newest first
     std::vector<core::Refund> refundsToday;       // this business day's refunds (any check's)
     std::int64_t lastRefundId = 0;
+    std::vector<core::Change> changesToday;       // this business day's changes (the Changes report)
+    std::int64_t lastChangeId = 0;
 };
 
 // State shared by every terminal of one store: open checks, today's closed
@@ -217,6 +220,8 @@ public:
     std::vector<PastDay> pastDays;
     std::vector<core::Refund> refundsToday;
     std::int64_t lastRefundId = 0;
+    std::vector<core::Change> changesToday;
+    std::int64_t lastChangeId = 0;
     // Refunds sent to Stripe and not answered yet ("check/payment"), from any terminal.
     QSet<QString> refundsUnderway;
     // How much of a payment has gone back: on the check, and today's from any terminal.
@@ -610,6 +615,11 @@ public:
     // index -1 adds a record. Returns false (with a notice) when invalid.
     bool adminSave(const QString &panel, int index, const QVariantMap &record);
     bool adminDelete(const QString &panel, int index);
+    // Kept for the Changes report: who changed what, from what to what.
+    void logChange(const QString &area, const QString &item, const QString &field, const QString &before,
+                   const QString &after);
+    const std::vector<core::Change> &changesToday() const { return s_->changesToday; }
+    bool logPageEdits(const QStringList &added, const QStringList &removed, const QStringList &changed);
     const std::vector<core::MenuItem> &menu() const { return s_->menu; }
     const std::vector<core::Employee> &employees() const { return s_->employees; }
 
@@ -1092,6 +1102,11 @@ private:
     QString dueText(std::int64_t at) const;                 // "6:30 PM", "tomorrow 6:30 PM"
     bool waitingForLater(const core::Check &c) const;       // not the kitchen's yet
     bool forAnotherDay(const core::Check &c) const;
+    bool saveAdminRecord(const QString &panel, int index, const QVariantMap &record);
+    bool deleteAdminRecord(const QString &panel, int index);
+    // A manager screen's record saved: each field changed (records before the save).
+    void logRecordChanges(const QString &panel, int index, const QVariantList &before, const QVariantMap &saved);
+    void logMenuChanges(const PosShared::MenuState &before, const PosShared::MenuState &after, const QString &step);
     void noteEvent(core::Check &c, const QString &what, const char *kind, Money amount = {}, const std::string &reason = {});
     bool mayManage(const core::Check &c, const QString &action);
     bool mayOpen(const core::Check &c) const;

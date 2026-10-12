@@ -547,6 +547,11 @@ public:
     Q_INVOKABLE void cancelApproval() { invoke(QStringLiteral("cancelApproval")); }
     // The reason for the void or comp asked about (reasonAsk); empty: don't.
     Q_INVOKABLE void giveReason(const QString &reason) { invoke(QStringLiteral("giveReason"), {reason}); }
+    // Edit mode saved: for the Changes report.
+    void logPageEdits(const QStringList &added, const QStringList &removed, const QStringList &changed)
+    {
+        invoke(QStringLiteral("logPageEdits"), {added, removed, changed});
+    }
     Q_INVOKABLE void setTraining(bool on) { invoke(QStringLiteral("setTraining"), {on}); }
     Q_INVOKABLE void redeemReward(int index) { invoke(QStringLiteral("redeemReward"), {index}); }
     Q_INVOKABLE void chargeHold(qint64 percentBp, qint64 tipCents) { invoke(QStringLiteral("chargeHold"), {percentBp, tipCents}); }

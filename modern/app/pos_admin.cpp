@@ -1118,7 +1118,167 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
     return {};
 }
 
+// --- the Changes report ---------------------------------------------------------------
+
+void PosService::logChange(const QString &area, const QString &item, const QString &field, const QString &before,
+                           const QString &after)
+{
+    Change c{++s_->lastChangeId, now(), s_->day.id, user() ? user()->name : ss(terminal_), ss(area), ss(item),
+             ss(field), ss(before.left(300)), ss(after.left(300))};
+    s_->changesToday.push_back(c);
+    if (s_->sink)
+        s_->sink->saveChange(c);
+}
+
+bool PosService::logPageEdits(const QStringList &added, const QStringList &removed, const QStringList &changed)
+{
+    if (!user())
+        return false;
+    const QString area = tr("Pages");
+    const auto some = [](const QStringList &l) {
+        return l.size() <= 8 ? l.join(u", "_s) : tr("%1 and %2 more").arg(l.mid(0, 8).join(u", "_s)).arg(l.size() - 8);
+    };
+    if (!added.isEmpty())
+        logChange(area, some(added), QString(), QString(), tr("Added"));
+    if (!removed.isEmpty())
+        logChange(area, some(removed), QString(), QString(), tr("Removed"));
+    if (!changed.isEmpty())
+        logChange(area, some(changed), QString(), QString(), tr("Edited"));
+    return true;
+}
+
+namespace {
+
+// A manager screen, as the Changes report names it.
+QString panelName(const QString &panel)
+{
+    static const QHash<QString, const char *> names = {
+        {u"menu"_s, QT_TR_NOOP("Menu items")}, {u"employees"_s, QT_TR_NOOP("Employees")},
+        {u"tenders"_s, QT_TR_NOOP("Payment types")}, {u"printers"_s, QT_TR_NOOP("Printers")},
+        {u"mealPeriods"_s, QT_TR_NOOP("Meal periods")}, {u"modifierGroups"_s, QT_TR_NOOP("Modifier groups")},
+        {u"promotions"_s, QT_TR_NOOP("Promotions")}, {u"punches"_s, QT_TR_NOOP("Time punches")},
+        {u"requests"_s, QT_TR_NOOP("Time off and swaps")}, {u"cardReaders"_s, QT_TR_NOOP("Card readers")},
+        {u"taxes"_s, QT_TR_NOOP("Taxes")}, {u"store"_s, QT_TR_NOOP("Store Settings")},
+        {u"terminals"_s, QT_TR_NOOP("Terminals")}, {u"vendors"_s, QT_TR_NOOP("Vendors")},
+        {u"inventory"_s, QT_TR_NOOP("Inventory")}, {u"customers"_s, QT_TR_NOOP("Customers")},
+        {u"schedule"_s, QT_TR_NOOP("Schedule")},
+    };
+    const auto it = names.constFind(panel);
+    return it == names.cend() ? panel : QCoreApplication::translate("PosService", *it);
+}
+
+// A field's value as the Changes report shows it.
+QString shown(const QVariant &v, const QVariantMap &field)
+{
+    const QString type = field.value(u"type"_s).toString();
+    if (type == u"password")
+        return v.toString().isEmpty() ? QString() : u"••••"_s;
+    if (v.typeId() == QMetaType::Bool)
+        return v.toBool() ? PosService::tr("yes") : PosService::tr("no");
+    for (const QVariant &o : field.value(u"options"_s).toList()) {
+        const QVariantMap m = o.toMap();
+        if (m.value(u"value"_s).toString() == v.toString())
+            return m.value(u"text"_s).toString();
+    }
+    if (v.typeId() == QMetaType::QVariantList || v.typeId() == QMetaType::QStringList)
+        return v.toStringList().join(u", "_s);
+    return v.toString().simplified();
+}
+
+QString recordKey(const QVariantMap &r)
+{
+    return r.value(u"id"_s).toString();
+}
+
+} // namespace
+
+void PosService::logRecordChanges(const QString &panel, int index, const QVariantList &before, const QVariantMap &saved)
+{
+    const QVariantList after = adminRecords(panel);
+    const QString area = panelName(panel);
+    QHash<QString, QVariantMap> fields;
+    for (const QVariant &f : adminFields(panel))
+        fields.insert(f.toMap().value(u"path"_s).toString(), f.toMap());
+    const auto title = [](const QVariantMap &r) { return r.value(u"_title"_s).toString(); };
+    const auto find = [&](const QVariantList &list, const QVariantMap &like, int at) -> QVariantMap {
+        if (!recordKey(like).isEmpty())
+            for (const QVariant &v : list)
+                if (recordKey(v.toMap()) == recordKey(like))
+                    return v.toMap();
+        return at >= 0 && at < list.size() ? list[at].toMap() : QVariantMap();
+    };
+
+    if (index < 0 || index >= before.size())
+        return;
+    const QVariantMap old = before[index].toMap();
+    const QVariantMap now = find(after, old, index);
+    QStringList keys = old.keys();
+    for (const QString &k : now.keys())
+        if (!keys.contains(k))
+            keys << k;
+    const QString item = panel == u"store" || panel == u"taxes" ? QString() : title(now.isEmpty() ? old : now);
+    for (const QString &k : keys) {
+        if (k.startsWith(u'_') || k.startsWith(u"about.") || k.startsWith(u"screen."))
+            continue;
+        const QVariantMap f = fields.value(k);
+        const QString label = f.value(u"label"_s, k).toString();
+        if (k == u"pin" || k == u"stripeSecretKey" || f.value(u"type"_s) == u"password"_s) {
+            // Never kept: say it was changed.
+            if (!now.value(k).toString().isEmpty() || !old.value(k).toString().isEmpty())
+                logChange(area, item, label, QString(), tr("(changed)"));
+            continue;
+        }
+        const QString a = shown(old.value(k), f), b = shown(now.value(k), f);
+        // Changed by the person (saving can write a value another way: not a change).
+        if (a != b && (!saved.contains(k) || shown(saved.value(k), f) != a))
+            logChange(area, item, label, a, b);
+    }
+}
+
 bool PosService::adminSave(const QString &panel, int index, const QVariantMap &record)
+{
+    // A new one: added, by its name.
+    if (index < 0) {
+        if (!saveAdminRecord(panel, index, record))
+            return false;
+        QString name;
+        for (const char *key : {"name", "label", "title", "id"})
+            if (name.isEmpty())
+                name = record.value(QString::fromLatin1(key)).toString().trimmed();
+        if (!name.isEmpty())
+            logChange(panelName(panel), name, QString(), QString(), tr("Added"));
+        return true;
+    }
+    // (Listing the records first: for terminals, that adds this screen when
+    // it's missing, so it's only done for a record already there.)
+    const QVariantList before = adminRecords(panel);
+    if (!saveAdminRecord(panel, index, record))
+        return false;
+    // A PIN or a secret typed: the records never carry it back.
+    QVariantList was = before;
+    if (index >= 0 && index < was.size()) {
+        QVariantMap r = was[index].toMap();
+        for (const char *secret : {"pin", "stripeSecretKey", "backupPassword"})
+            if (!record.value(QString::fromLatin1(secret)).toString().isEmpty())
+                r.insert(QString::fromLatin1(secret), u"-"_s);
+        was[index] = r;
+    }
+    logRecordChanges(panel, index, was, record);
+    return true;
+}
+
+bool PosService::adminDelete(const QString &panel, int index)
+{
+    const QVariantList before = adminRecords(panel);
+    if (!deleteAdminRecord(panel, index))
+        return false;
+    if (index >= 0 && index < before.size())
+        logChange(panelName(panel), before[index].toMap().value(u"_title"_s).toString(), QString(),
+                  QString(), panel == u"employees" ? tr("Made inactive") : tr("Removed"));
+    return true;
+}
+
+bool PosService::saveAdminRecord(const QString &panel, int index, const QVariantMap &record)
 {
     if (!require(perm::Manager, tr("Changing settings")))
         return false;
@@ -2262,7 +2422,7 @@ bool PosService::savePrinterRecord(int index, const QVariantMap &record)
     return true;
 }
 
-bool PosService::adminDelete(const QString &panel, int index)
+bool PosService::deleteAdminRecord(const QString &panel, int index)
 {
     if (!require(perm::Manager, tr("Changing settings")))
         return false;

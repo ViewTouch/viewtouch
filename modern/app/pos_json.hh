@@ -31,6 +31,8 @@ inline constexpr int PosSchemaVersion = 1;
 QJsonObject toJson(const core::Check &check);
 QJsonObject toJson(const core::Refund &refund);
 core::Refund refundFromJson(const QJsonObject &o);
+QJsonObject toJson(const core::Change &change);
+core::Change changeFromJson(const QJsonObject &o);
 std::optional<core::Check> checkFromJson(const QJsonObject &o);
 
 QJsonObject toJson(const core::MenuItem &item);

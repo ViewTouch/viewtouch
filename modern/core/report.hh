@@ -106,6 +106,8 @@ Report auditReport(const std::vector<const Check *> &checks, const ReportContext
 // The original's exception reports, by employee: voids, discounts and comps,
 // payments taken back, reopened checks, moved / transferred / merged checks,
 // and drawers opened with no sale (from `drawers`; none over a date range).
+// What was changed on the manager screens, the Menu Builder and the pages, newest first.
+Report changesReport(const std::vector<Change> &changes, const ReportContext &ctx);
 Report exceptionsReport(const std::vector<const Check *> &checks, const std::vector<DrawerSession> &drawers,
                         const ReportContext &ctx);
 // The original's Deposit / Book Balance: the cash to take to the bank (each

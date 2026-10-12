@@ -677,6 +677,20 @@ DrawerSession drawerFromJson(const QJsonObject &o)
     return d;
 }
 
+QJsonObject toJson(const Change &c)
+{
+    return {{u"id"_s, qint64(c.id)}, {u"at"_s, qint64(c.at)}, {u"day"_s, qint64(c.day)}, {u"who"_s, qs(c.who)},
+            {u"area"_s, qs(c.area)}, {u"item"_s, qs(c.item)}, {u"field"_s, qs(c.field)},
+            {u"before"_s, qs(c.before)}, {u"after"_s, qs(c.after)}};
+}
+
+Change changeFromJson(const QJsonObject &o)
+{
+    return {i64(o.value(u"id")), i64(o.value(u"at")), i64(o.value(u"day")), ss(o.value(u"who").toString()),
+            ss(o.value(u"area").toString()), ss(o.value(u"item").toString()), ss(o.value(u"field").toString()),
+            ss(o.value(u"before").toString()), ss(o.value(u"after").toString())};
+}
+
 // --- settings ---------------------------------------------------------------------------
 
 QJsonObject toJson(const PrinterConfig &p)

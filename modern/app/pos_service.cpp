@@ -57,6 +57,8 @@ PosShared::PosShared(PosData data, PosSink *sink, QObject *parent)
     , pastDays(std::move(data.pastDays))
     , refundsToday(std::move(data.refundsToday))
     , lastRefundId(data.lastRefundId)
+    , changesToday(std::move(data.changesToday))
+    , lastChangeId(data.lastChangeId)
     , now_([] { return QDateTime::currentMSecsSinceEpoch(); })
 {
     for (Check &c : data.openChecks) {
@@ -2634,6 +2636,8 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"countDrawer"_s, [](PosService &p, const QVariantList &) { return QVariant(p.countDrawer()); }},
         {u"countDrawerById"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.countDrawerById(a.value(0).toLongLong())); }},
+        {u"logPageEdits"_s, [](PosService &p, const QVariantList &a) {
+             return QVariant(p.logPageEdits(a.value(0).toStringList(), a.value(1).toStringList(), a.value(2).toStringList())); }},
         {u"giveReason"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.giveReason(a.value(0).toString())); }},
         {u"countDrawerPieces"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.countDrawerPieces(a.value(0).toLongLong(), a.value(1).toList())); }},
