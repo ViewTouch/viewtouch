@@ -34,6 +34,58 @@ Item {
         dirty = false
         armDelete = false
     }
+
+    // Changed here, not saved yet.
+    readonly property var saved: index >= 0 && index < records.length ? records[index] : null
+    function differs(path) {
+        return saved !== null && JSON.stringify(draft[path] ?? "") !== JSON.stringify(saved[path] ?? "")
+    }
+    function changedIn(key) {
+        if (!dirty) return 0
+        return fields.filter(f => (key === undefined || f.groupKey === key) && differs(f.path)).length
+    }
+    readonly property int changes: changedIn()
+
+    // Store Settings: in sections (the fields' groups), with a search across
+    // them all. A field with "when" shows while that other setting is on.
+    readonly property var sections: {
+        const out = []
+        for (const f of fields)
+            if (f.groupKey && !out.find(x => x.key === f.groupKey)) out.push({ key: f.groupKey, name: f.group })
+        return out
+    }
+    readonly property bool sectioned: single && sections.length > 1
+    property string section: ""
+    readonly property string sectionShown: sections.find(x => x.key === section) ? section
+                                         : (sections.length ? sections[0].key : "")
+    property bool sectionOpen: false   // upright: a section's settings, not the list of them
+    property string query: ""
+    function plain(t) { return String(t ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") }
+    function on(v) {
+        if (typeof v === "string") return v !== "" && Number(v) !== 0
+        return !!v
+    }
+    readonly property var words: plain(query).split(/\s+/).filter(x => x !== "")
+    // Which "when" settings are on: the form is rebuilt only when one turns
+    // on or off, not on every edit (that would drop the field being edited).
+    readonly property var whenPaths: [...new Set(fields.filter(f => f.when).map(f => f.when))]
+    readonly property string whenOn: whenPaths.map(p => on(draft[p]) ? "1" : "0").join("")
+    function shows(f) { return !f.when || whenOn[whenPaths.indexOf(f.when)] === "1" }
+    readonly property var shownFields: {
+        if (!sectioned) return fields.filter(f => shows(f))
+        if (words.length) {
+            return fields.filter(f => {
+                const hay = plain(f.label + " " + (f.hint ?? "") + " " + f.group)
+                return words.every(x => hay.includes(x))
+            })
+        }
+        return fields.filter(f => f.groupKey === sectionShown && shows(f))
+    }
+    function openSection(key) {
+        section = key
+        sectionOpen = true
+        if (zone && zone.controller) zone.controller.setWidgetState("adminSection:" + panel, key)
+    }
     // Saves may be answered by a server: react when the data changes.
     property string pending: ""   // "save-new" | "save" | "delete" while waiting
     function save() {
@@ -57,7 +109,23 @@ Item {
         function onNotice() { if (w.pending !== "") Qt.callLater(() => w.pending = "") }
     }
 
-    Component.onCompleted: if (single) choose(0)
+    Component.onCompleted: {
+        if (single) choose(0)
+        if (zone && zone.controller) {
+            section = zone.controller.widgetState("adminSection:" + panel) ?? ""
+            // Changes left unsaved when this page was left: back as they were.
+            const k = zone.controller.take("admin:" + panel)
+            if (k && k.index < records.length) {
+                index = k.index
+                draft = k.draft
+                dirty = true
+            }
+        }
+    }
+    Component.onDestruction: {
+        if (zone && zone.controller)
+            zone.controller.keep("admin:" + panel, dirty && index >= -1 ? { index: index, draft: draft } : undefined)
+    }
     onPanelChanged: single ? choose(0) : (index = -2)
 
     // Controls are laid out at a comfortable size, then scaled with the page.
@@ -118,46 +186,83 @@ Item {
         }
 
         RowLayout {
+            id: searchBar
+            visible: w.sectioned
+            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 10 }
+            height: visible ? 44 : 0
+            spacing: 8
+            TextField {
+                id: search
+                objectName: "settingsSearch"
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                font.pixelSize: 16
+                placeholderText: qsTr("Find a setting: tips, receipt, kiosk color…")
+                text: w.query
+                onTextEdited: w.query = text
+            }
+            Button {
+                objectName: "settingsSearchClear"
+                visible: w.query !== ""
+                Layout.fillHeight: true
+                text: qsTr("Clear")
+                onClicked: { w.query = ""; search.focus = false }
+            }
+        }
+
+        RowLayout {
             anchors.fill: parent
             anchors.margins: 10
-            anchors.topMargin: pairBar.visible ? pairBar.height + 20 : 10
+            anchors.topMargin: pairBar.visible ? pairBar.height + 20 : searchBar.visible ? searchBar.height + 18 : 10
             spacing: 12
 
             // --- list ---
             ColumnLayout {
-                visible: !w.single && (!w.narrow || w.index === -2)
+                visible: w.sectioned ? !w.narrow || (!w.sectionOpen && w.query === "")
+                                     : !w.single && (!w.narrow || w.index === -2)
                 Layout.fillWidth: w.narrow    // nested layouts fill by default
-                Layout.preferredWidth: w.narrow ? parent.width : parent.width * 0.36
+                Layout.preferredWidth: w.narrow ? parent.width : parent.width * (w.sectioned ? 0.3 : 0.36)
                 Layout.fillHeight: true
                 spacing: 6
 
                 ListView {
                     id: list
+                    objectName: "adminList"
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     clip: true
-                    model: w.records
-                    currentIndex: w.index
+                    model: w.sectioned ? w.sections : w.records
+                    currentIndex: w.sectioned ? -1 : w.index
                     ScrollBar.vertical: TouchScrollBar { id: listBar }
                     delegate: ItemDelegate {
                         id: row
                         required property var modelData
                         required property int index
+                        objectName: w.sectioned ? "settingsSection-" + row.modelData.key : ""
                         width: ListView.view.width - listBar.room
-                        highlighted: row.index === w.index
-                        onClicked: w.choose(row.index)
+                        highlighted: w.sectioned ? w.query === "" && row.modelData.key === w.sectionShown : row.index === w.index
+                        onClicked: {
+                            if (!w.sectioned) return w.choose(row.index)
+                            w.query = ""
+                            w.openSection(row.modelData.key)
+                        }
                         contentItem: ColumnLayout {
                             spacing: 0
                             Label {
-                                text: row.modelData._title || qsTr("(unnamed)")
+                                text: (w.sectioned ? row.modelData.name : row.modelData._title) || qsTr("(unnamed)")
                                 font.bold: true
-                                elide: Text.ElideRight
+                                // A section's name wraps (a narrow list, a longer language).
+                                wrapMode: w.sectioned ? Text.WordWrap : Text.NoWrap
+                                elide: w.sectioned ? Text.ElideNone : Text.ElideRight
                                 Layout.fillWidth: true
                             }
                             Label {
                                 visible: text !== ""
-                                text: row.modelData._detail ?? ""
-                                opacity: 0.7
+                                // A section: how many of its settings are changed.
+                                text: !w.sectioned ? row.modelData._detail ?? ""
+                                    : w.changedIn(row.modelData.key) > 0 ? qsTr("%n changed", "", w.changedIn(row.modelData.key)) : ""
+                                color: w.sectioned ? EditorStyle.warning : palette.windowText
+                                opacity: w.sectioned ? 1 : 0.7
                                 font.pixelSize: 11
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
@@ -166,6 +271,7 @@ Item {
                     }
                 }
                 Button {
+                    visible: !w.sectioned
                     Layout.fillWidth: true
                     text: qsTr("+ Add")
                     onClicked: w.choose(-1)
@@ -173,7 +279,7 @@ Item {
             }
 
             Rectangle {
-                visible: !w.single && !w.narrow
+                visible: (!w.single || w.sectioned) && !w.narrow
                 Layout.fillHeight: true
                 implicitWidth: 1
                 color: "#3a4250"
@@ -181,7 +287,8 @@ Item {
 
             // --- form ---
             ColumnLayout {
-                visible: !w.narrow || w.index !== -2 || w.single
+                visible: w.sectioned ? !w.narrow || w.sectionOpen || w.query !== ""
+                                     : !w.narrow || w.index !== -2 || w.single
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 8
@@ -191,6 +298,12 @@ Item {
                     visible: w.narrow && !w.single && w.index !== -2
                     text: qsTr("‹ List")
                     onClicked: { w.index = -2; w.dirty = false }
+                }
+                Button {
+                    objectName: "adminBackToSections"
+                    visible: w.sectioned && w.narrow && w.query === ""
+                    text: qsTr("‹ Settings")
+                    onClicked: w.sectionOpen = false
                 }
                 Label {
                     visible: w.index === -2
@@ -204,7 +317,9 @@ Item {
 
                 Label {
                     visible: w.index !== -2
-                    text: w.index === -1 ? qsTr("New") : (w.draft.name || w.draft.storeName || (w.single ? "" : qsTr("Edit")))
+                    text: w.sectioned ? (w.query !== "" ? qsTr("%n setting(s) found", "", w.shownFields.length)
+                                                        : (w.sections.find(x => x.key === w.sectionShown) ?? {}).name ?? "")
+                        : w.index === -1 ? qsTr("New") : (w.draft.name || w.draft.storeName || (w.single ? "" : qsTr("Edit")))
                     font.bold: true
                     font.pixelSize: 18
                 }
@@ -229,8 +344,15 @@ Item {
                     ColumnLayout {
                         width: scroll.availableWidth - formBar.room
                         spacing: 10
+                        Label {
+                            visible: w.sectioned && w.query !== "" && w.shownFields.length === 0
+                            Layout.fillWidth: true
+                            wrapMode: Text.WordWrap
+                            text: qsTr("No setting has those words. Try fewer, or look through the sections.")
+                            opacity: 0.7
+                        }
                         Repeater {
-                            model: w.fields
+                            model: w.shownFields
                             delegate: FieldEditor {
                                 required property var modelData
                                 // A "look" field: an enum of this screen's looks.
@@ -244,13 +366,17 @@ Item {
                                 pages: modelData.type === "page" && w.zone ? w.zone.controller.pageChoices() : []
                                 value: w.draft[modelData.path]
                                 isSet: true
+                                changed: w.differs(modelData.path)
+                                section: w.sectioned && w.query !== "" ? modelData.group : ""
                                 readOnly: modelData.readonlyExisting === true && w.index >= 0
                                 onCommit: v => {
                                     const d = w.copy(w.draft)
                                     d[modelData.path] = v
+                                    w.dirty = true   // first: the new draft may rebuild this form
                                     w.draft = d
-                                    w.dirty = true
                                 }
+                                // Emptied (a color): back to the usual.
+                                onReset: commit("")
                             }
                         }
                     }
@@ -261,7 +387,8 @@ Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: false
                     Button {
-                        text: qsTr("Save")
+                        objectName: "adminSave"
+                        text: w.changes > 0 ? qsTr("Save %n change(s)", "", w.changes) : qsTr("Save")
                         highlighted: true
                         enabled: w.dirty || w.index === -1
                         onClicked: w.save()

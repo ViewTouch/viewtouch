@@ -6870,3 +6870,90 @@ TEST_CASE("UI: Reports -> Forecast: a coming day, chosen by its key", "[flow][ui
     CHECK(Screen::findBy(s.window->contentItem(), "text", u"Classic Burger"_s));
     s.shot("forecast");
 }
+
+TEST_CASE("UI: Store Settings in sections: found by search, changes marked, kept when the page is left", "[flow][ui][settings]")
+{
+    Screen s;
+    s.pos.shared()->settings.loyaltyEnabled = false;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"admin-store"_s));
+    QTest::qWait(120);
+    const auto by = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    const auto text = [&](const QString &t) { return Screen::findBy(s.window->contentItem(), "text", t); };
+    // The first section, not ninety settings at once.
+    CHECK(text(u"Store name"_s));
+    CHECK_FALSE(text(u"Kitchen stations"_s));
+    s.shot("settings-sections");
+
+    // Loyalty: "points per dollar" only once loyalty is on.
+    QMetaObject::invokeMethod(by(u"adminList"_s), "positionViewAtEnd");
+    QTest::qWait(60);
+    s.tapItem(by(u"settingsSection-loyalty"_s));
+    QTest::qWait(60);
+    CHECK_FALSE(text(u"Store name"_s));
+    REQUIRE(text(u"Loyalty points"_s));
+    CHECK_FALSE(text(u"…points per dollar"_s));
+    QQuickItem *loyalty = text(u"Loyalty points"_s)->parentItem()->parentItem();
+    s.tapItem(Screen::findBy(loyalty, "text", u"Yes"_s));
+    QTest::qWait(60);
+    CHECK(text(u"…points per dollar"_s));
+    CHECK(text(u"changed"_s));
+    CHECK(text(u"1 changed"_s));                    // beside Loyalty in the sections
+    CHECK(text(u"Save 1 change"_s));
+    CHECK_FALSE(s.pos.shared()->settings.loyaltyEnabled);
+    s.shot("settings-changed");
+
+    // Left for another page and back: the change is still there to save.
+    REQUIRE(s.c.jumpTo(u"manager"_s));
+    QTest::qWait(80);
+    REQUIRE(s.c.jumpTo(u"admin-store"_s));
+    QTest::qWait(120);
+    CHECK(text(u"Loyalty points"_s));               // the section it was in
+    CHECK(text(u"Save 1 change"_s));
+    s.tapItem(by(u"adminSave"_s));
+    QTest::qWait(80);
+    CHECK(s.pos.shared()->settings.loyaltyEnabled);
+    CHECK_FALSE(text(u"changed"_s));
+
+    // Search: across the sections, each found setting with its section's name.
+    s.tapItem(by(u"settingsSearch"_s));
+    for (const char *k = "kiosk color"; *k; ++k)
+        QTest::keyClick(s.window, *k);
+    QTest::qWait(60);
+    CHECK(text(u"Background color"_s));
+    CHECK(text(u"Text color"_s));
+    CHECK(text(u"Self-order kiosk"_s));
+    CHECK_FALSE(text(u"Loyalty points"_s));
+    s.shot("settings-search");
+    s.tapItem(by(u"settingsSearchClear"_s));
+    QTest::qWait(60);
+    CHECK(text(u"Loyalty points"_s));
+}
+
+TEST_CASE("UI: Store Settings on a phone: the sections, then one section's settings", "[flow][ui][settings]")
+{
+    Screen s(false, 390, 844, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"admin-store"_s));
+    QTest::qWait(120);
+    const auto by = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    const auto text = [&](const QString &t) { return Screen::findBy(s.window->contentItem(), "text", t); };
+    REQUIRE(by(u"settingsSection-tips"_s));
+    CHECK_FALSE(text(u"Store name"_s));
+    s.shot("settings-phone-sections");
+    s.tapItem(by(u"settingsSection-tips"_s));
+    QTest::qWait(60);
+    CHECK(text(u"Tip-outs"_s));
+    CHECK_FALSE(by(u"settingsSection-tips"_s));
+    s.shot("settings-phone-tips");
+    s.tapItem(by(u"adminBackToSections"_s));
+    QTest::qWait(60);
+    CHECK(by(u"settingsSection-tips"_s));
+}
+
+TEST_CASE("Store Settings: every setting is in a section", "[admin][settings]")
+{
+    Session s;
+    for (const QVariant &f : s.pos.adminFields(u"store"_s))
+        CHECK(f.toMap()[u"groupKey"_s].toString() != u"more"_s);
+}

@@ -671,21 +671,11 @@
 
 <h2>Store settings</h2>
 <p class="shot"><img src="shots/m34-store-settings.png" width="560" height="315"></p>
-<p>The store's name, receipt header and footer, and:</p>
+<p>The settings are in sections: touch one on the left (The store, Receipts, Cash, Staff hours, Tips, Kitchen, Cards, Loyalty, Self-order kiosk, Backups…) to see only its settings.</p>
 <ul>
-<li><b>Language</b>: for screens nobody is logged in to, the customer display, receipts and tickets.</li>
-<li><b>Cash handling</b>: server banks or a drawer per screen.</li>
-<li><b>Breaks and overtime</b>.</li>
-<li><b>Schedule</b>: the clock-in rule.</li>
-<li><b>Tip-outs</b>.</li>
-<li><b>Loyalty points and rewards</b>.</li>
-<li><b>Customer display</b>: logo, color and messages.</li>
-<li><b>Tip choices</b>.</li>
-<li><b>Kitchen times</b>.</li>
-<li><b>Waitlist</b>: quotes, the table-ready text, and the texting service.</li>
-<li><b>Backups</b>: a second copy, and <b>Encrypt backups</b> with a backup password (chapter 15).</li>
-<li><b>Self-order kiosk</b>: send kiosk orders to the kitchen at once, and when an untouched order is cleared.</li>
-<li><b>Party gratuity</b>.</li>
+<li><b>Find a setting</b>: type a word or two at the top (<i>tip</i>, <i>receipt</i>, <i>kiosk color</i>). The settings that have them show from every section, each with its section's name above it. <b>Clear</b> goes back to the sections.</li>
+<li>A setting that only matters when another is on shows once that one is on: <i>…points per dollar</i> and <i>Rewards</i> with <b>Loyalty points</b>, <i>…clock in up to (minutes) early</i> with the schedule rule, the offline limits with <b>Take cards when the internet is down</b>, the backup password with <b>Encrypt backups</b>.</li>
+<li>What you change is marked <b>changed</b>, its section says how many, and the button says <b>Save 2 changes</b>. Nothing is kept until you touch it; <b>Undo changes</b> puts everything back. Leave the page without saving and your changes are still there when you come back.</li>
 </ul>
 
 <h2>Taxes, payment types, printers and terminals</h2>
@@ -989,7 +979,7 @@
 <p class="shot"><img src="shots/m59-kiosk-number.png" width="480" height="270"></p>
 <p class="caption">5. The order number, and "please pay at the counter".</p>
 <ul>
-<li><b>Their slip:</b> as the order is placed, the kiosk's receipt printer (Manager → Terminals → the kiosk → <i>Receipts and cash drawer on</i>) prints a slip: the order number in big type, their name, For here or To go, what they ordered and the total, and "Please pay at the counter". The screen tells them to take it. At the counter they show it, and the cashier finds <i>Kiosk 42</i> in Open Checks. Turn it off with Store Settings → <i>Self-order kiosk: print an order slip</i>.</li>
+<li><b>Their slip:</b> as the order is placed, the kiosk's receipt printer (Manager → Terminals → the kiosk → <i>Receipts and cash drawer on</i>) prints a slip: the order number in big type, their name, For here or To go, what they ordered and the total, and "Please pay at the counter". The screen tells them to take it. At the counter they show it, and the cashier finds <i>Kiosk 42</i> in Open Checks. Turn it off with Store Settings → Self-order kiosk → <i>Print an order slip</i>.</li>
 <li>Categories on the left, dishes with their photo, description and price in the middle, their order and total on the right. <b>×</b> takes an item off; <b>Start Over</b> clears everything.</li>
 <li><b>Their way:</b> for what comes on an item (a burger's lettuce, tomato, onion, pickles, mayo), the choices sheet lists <i>What's on it</i>, each with <b>No · Light · Regular · Extra · On the side</b>. Add-ons they choose (bacon, a dressing) can be Light, Extra or On the side too. The kitchen ticket says <i>No Onion</i>, <i>Side of Mayo</i>, <i>Extra Bacon</i>. In Manager → Modifier Groups, start an option with <b>*</b> for what comes on the item (<code>*Onion</code>), and turn on <i>Guests can ask for Light, Extra or On the side</i> for groups like dressings and toppings (not temperatures or sizes). On staff screens, touching something that comes on it asks No, Lite, Extra or Side.</li>
 <li>Sold-out items show SOLD OUT and can't be ordered.</li>
@@ -1014,7 +1004,7 @@
 </tr></table>
 
 <h2>At the counter</h2>
-<p>The order waits in <b>Open Checks</b> as <i>Kiosk 42</i>, with the guest's name. The cashier opens it, takes the payment and closes it. Closing sends it to the kitchen. With <b>Store Settings → Self-order kiosk: send orders to the kitchen at once</b>, it goes to the kitchen as soon as the guest finishes instead.</p>
+<p>The order waits in <b>Open Checks</b> as <i>Kiosk 42</i>, with the guest's name. The cashier opens it, takes the payment and closes it. Closing sends it to the kitchen. With <b>Store Settings → Self-order kiosk → <i>Send orders to the kitchen at once</i></b>, it goes to the kitchen as soon as the guest finishes instead.</p>
 <h2>What guests can order</h2>
 <p>Every menu item except modifiers (they appear as choices), items marked <b>Not on the self-order kiosk</b>, and alcohol, which never shows there. Give items a <b>Description</b> and a <b>Photo</b> in Manager → Menu Items. A photo is an image file on the store's computer (for example in <code>/var/lib/viewtouch/photos</code>). Kiosks connected over the network get it from there.</p>
 <div class="tip">Card payments at the kiosk will come with card readers. Until then, guests pay at the counter.</div>

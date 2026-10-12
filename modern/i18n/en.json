@@ -95,6 +95,10 @@
   "one": "%n seat",
   "other": "%n seats"
  },
+ "%n setting(s) found": {
+  "one": "%n setting found",
+  "other": "%n settings found"
+ },
  "(+%n other price(s))": {
   "one": "(+%n other price)",
   "other": "(+%n other prices)"
@@ -190,6 +194,10 @@
  "Same as last time: %n item(s) (sold out: %1)": {
   "one": "Same as last time: %n item (sold out: %1)",
   "other": "Same as last time: %n items (sold out: %1)"
+ },
+ "Save %n change(s)": {
+  "one": "Save %n change",
+  "other": "Save %n changes"
  },
  "new prices for %n": {
   "one": "a new price for %n item",

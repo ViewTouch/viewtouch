@@ -8,6 +8,7 @@
 #include "app/pos_service.hh"
 
 #include <QDateTime>
+#include <QHash>
 #include <QLocale>
 #include <QRandomGenerator>
 #include <QRegularExpression>
@@ -93,6 +94,72 @@ QVariantMap permField(const char *permission, const QString &label)
 double number(const QVariantMap &r, const char16_t *key)
 {
     return r.value(QString::fromUtf16(key)).toString().toDouble();
+}
+
+// Store Settings in sections, in this order; within one, in the order given
+// below. "when": shown only while that other setting is on (or not 0).
+QVariantList storeSections(const QVariantList &fields)
+{
+    struct Section {
+        const char *key;
+        QString title;
+        std::initializer_list<const char *> paths;
+    };
+    const Section sections[] = {
+        {"store", PosService::tr("The store"), {"storeName", "language", "currencySymbol", "displayLogo"}},
+        {"receipts", PosService::tr("Receipts"), {"receiptHeader", "receiptFooter", "receiptLogo", "receiptFreeChoices"}},
+        {"startPages", PosService::tr("Start pages"),
+         {"startPage.server", "startPage.bartender", "startPage.cashier", "startPage.host", "startPage.manager"}},
+        {"cash", PosService::tr("Cash"), {"cashMode", "terminalsHaveDrawer", "checkoutNeedsClosedChecks", "expenseCategories"}},
+        {"hours", PosService::tr("Staff hours"),
+         {"paidBreaks", "overtimeDailyHours", "overtimeWeeklyHours", "weekStartsOn", "scheduleRequired", "clockInEarlyMinutes"}},
+        {"tips", PosService::tr("Tips"),
+         {"tipPercents", "gratuityPercent", "gratuityMinGuests", "declareCashTips", "tipOuts", "tipPool:server",
+          "tipPool:bartender", "tipPool:busser", "tipPool:host", "tipPool:cashier", "tipPool:driver"}},
+        {"menu", PosService::tr("Menu and prices"), {"extraPercent", "extraCharge", "soldOutBackNextDay"}},
+        {"kitchen", PosService::tr("Kitchen"), {"kitchenStations", "kitchenWarnMinutes", "kitchenLateMinutes", "laterLeadMinutes"}},
+        {"togo", PosService::tr("Takeout and delivery"),
+         {"requireOrderName", "takeoutMinutes", "deliveryMinutes", "minutesPerOrderWaiting", "deliveryFee"}},
+        {"cards", PosService::tr("Cards"),
+         {"stripeSecretKey", "cardCurrency", "cardTipOn", "tabHold", "offlineCards", "offlineCardMax", "offlineCardTotal"}},
+        {"screens", PosService::tr("Screens"), {"screenSaverMinutes", "autoLogoutMinutes", "tableLongMinutes"}},
+        {"display", PosService::tr("Customer display"), {"displayAccent", "displaySlides"}},
+        {"loyalty", PosService::tr("Loyalty"), {"loyaltyEnabled", "pointsPerDollar", "rewards"}},
+        {"waitlist", PosService::tr("Waitlist and texts"), {"waitMinutesPerParty", "tableReadyText", "textWebhook"}},
+        {"kiosk", PosService::tr("Self-order kiosk"),
+         {"kioskSendNow", "kioskSlip", "kioskIdleSeconds", "kioskWelcome", "kioskAskWhere", "kioskAskName", "kioskEasyReach",
+          "kioskSizePercent", "kioskBackground", "kioskCard", "kioskGo", "kioskText", "kioskFont"}},
+        {"checklists", PosService::tr("Checklists"), {"openingChecklist", "closingChecklist"}},
+        {"backups", PosService::tr("Backups"), {"backupCopyDir", "encryptBackups", "backupPassword"}},
+        {"accounting", PosService::tr("Franchise and accounting"), {"royaltyPercent", "adFundPercent", "chartOfAccounts"}},
+    };
+    static const std::pair<const char *, const char *> when[] = {
+        {"clockInEarlyMinutes", "scheduleRequired"}, {"gratuityMinGuests", "gratuityPercent"},
+        {"offlineCardMax", "offlineCards"}, {"offlineCardTotal", "offlineCards"},
+        {"pointsPerDollar", "loyaltyEnabled"}, {"rewards", "loyaltyEnabled"}, {"backupPassword", "encryptBackups"},
+    };
+    QHash<QString, QVariantMap> byPath;
+    for (const QVariant &f : fields)
+        byPath.insert(f.toMap().value(u"path"_s).toString(), f.toMap());
+    QVariantList out;
+    const auto place = [&](QVariantMap f, const char *key, const QString &title) {
+        f.insert(u"group"_s, title);
+        f.insert(u"groupKey"_s, QString::fromLatin1(key));
+        for (const auto &[path, on] : when)
+            if (f.value(u"path"_s).toString() == QLatin1StringView(path))
+                f.insert(u"when"_s, QString::fromLatin1(on));
+        out.append(f);
+    };
+    for (const Section &sec : sections)
+        for (const char *path : sec.paths)
+            if (const auto it = byPath.constFind(QString::fromLatin1(path)); it != byPath.cend()) {
+                place(*it, sec.key, sec.title);
+                byPath.erase(it);
+            }
+    for (const QVariant &f : fields)   // any not given a section: last, under More
+        if (byPath.contains(f.toMap().value(u"path"_s).toString()))
+            place(f.toMap(), "more", PosService::tr("More"));
+    return out;
 }
 
 } // namespace
@@ -341,7 +408,7 @@ QVariantList PosService::adminFields(const QString &panel)
         };
     }
     if (panel == u"store") {
-        return {
+        return storeSections({
             field(u"storeName"_s, tr("Store name"), u"string"_s),
             with(field(u"language"_s, tr("Language"), u"enum"_s,
                        tr("For screens nobody is logged in to, the customer display, receipts and tickets. "
@@ -488,30 +555,30 @@ QVariantList PosService::adminFields(const QString &panel)
             field(u"expenseCategories"_s, tr("Expense categories"), u"text"_s,
                   tr("What cash paid out of a drawer can be for, one per line (Produce, Ice, Repairs...). "
                      "Each pay out picks one; Reports -> Expenses adds them up.")),
-            field(u"kioskSendNow"_s, tr("Self-order kiosk: send orders to the kitchen at once"), u"bool"_s,
+            field(u"kioskSendNow"_s, tr("Send orders to the kitchen at once"), u"bool"_s,
                   tr("Otherwise a kiosk order goes to the kitchen when it is paid for at the counter.")),
-            field(u"kioskSlip"_s, tr("Self-order kiosk: print an order slip"), u"bool"_s,
+            field(u"kioskSlip"_s, tr("Print an order slip"), u"bool"_s,
                   tr("On the kiosk's receipt printer (Terminals) when the order is placed: the order number "
                      "to show at the counter, the name, what was ordered and the total.")),
-            with(with(field(u"kioskIdleSeconds"_s, tr("Self-order kiosk: clear an untouched order after (seconds)"),
+            with(with(field(u"kioskIdleSeconds"_s, tr("Clear an untouched order after (seconds)"),
                             u"int"_s), u"min"_s, 30), u"max"_s, 600),
-            field(u"kioskWelcome"_s, tr("Self-order kiosk: welcome button"), u"string"_s,
+            field(u"kioskWelcome"_s, tr("Welcome button"), u"string"_s,
                   tr("The words on the pictures screen. Empty: \"Touch to Order\".")),
-            field(u"kioskAskWhere"_s, tr("Self-order kiosk: ask For Here or To Go"), u"bool"_s,
+            field(u"kioskAskWhere"_s, tr("Ask For Here or To Go"), u"bool"_s,
                   tr("Off: every kiosk order is for here.")),
-            field(u"kioskAskName"_s, tr("Self-order kiosk: ask for a name"), u"bool"_s,
+            field(u"kioskAskName"_s, tr("Ask for a name"), u"bool"_s,
                   tr("Off: orders are called by number only.")),
-            field(u"kioskEasyReach"_s, tr("Self-order kiosk: Easy Reach button"), u"bool"_s,
+            field(u"kioskEasyReach"_s, tr("Easy Reach button"), u"bool"_s,
                   tr("Brings everything down within reach of a seated guest.")),
-            with(with(field(u"kioskSizePercent"_s, tr("Self-order kiosk: size of buttons and text (%)"), u"int"_s,
+            with(with(field(u"kioskSizePercent"_s, tr("Size of buttons and text (%)"), u"int"_s,
                             tr("100 = as designed for the screen; bigger for a far-away or tall screen.")),
                       u"min"_s, 60), u"max"_s, 200),
-            field(u"kioskBackground"_s, tr("Self-order kiosk: background color"), u"string"_s,
-                  tr("Like #14181f. Empty: the usual. The accent color and logo are the customer display's.")),
-            field(u"kioskCard"_s, tr("Self-order kiosk: button and card color"), u"string"_s, tr("Like #2a313d.")),
-            field(u"kioskGo"_s, tr("Self-order kiosk: Add / Place Order color"), u"string"_s, tr("Like #1f8a4c.")),
-            field(u"kioskText"_s, tr("Self-order kiosk: text color"), u"string"_s, tr("Like #ffffff.")),
-            field(u"kioskFont"_s, tr("Self-order kiosk: font"), u"string"_s, tr("A font installed on the kiosk, e.g. DejaVu Sans.")),
+            field(u"kioskBackground"_s, tr("Background color"), u"color"_s,
+                  tr("Empty: the usual. The accent color and logo are the customer display's.")),
+            field(u"kioskCard"_s, tr("Button and card color"), u"color"_s, tr("Empty: the usual.")),
+            field(u"kioskGo"_s, tr("Add / Place Order color"), u"color"_s, tr("Empty: the usual.")),
+            field(u"kioskText"_s, tr("Text color"), u"color"_s, tr("Empty: the usual.")),
+            field(u"kioskFont"_s, tr("Font"), u"string"_s, tr("A font installed on the kiosk, e.g. DejaVu Sans.")),
             field(u"encryptBackups"_s, tr("Encrypt backups"), u"bool"_s,
                   tr("Backups (and the second copy) can only be opened with the backup password. "
                      "For a lost or stolen USB drive.")),
@@ -524,7 +591,7 @@ QVariantList PosService::adminFields(const QString &panel)
                      "Can be set per employee.")),
             field(u"gratuityPercent"_s, tr("Party gratuity %"), u"percent"_s, tr("Added to large tables. 0 = off.")),
             with(with(field(u"gratuityMinGuests"_s, tr("…for tables of at least"), u"int"_s), u"min"_s, 1), u"max"_s, 99),
-        };
+        });
     }
     if (panel == u"modifierGroups") {
         return {

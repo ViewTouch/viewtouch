@@ -18,6 +18,10 @@ ColumnLayout {
     property bool isSet: value !== undefined
     property var resolved
     property bool readOnly: false
+    // Settings forms: edited but not saved yet; and, in search results, the
+    // section the setting is in.
+    property bool changed: false
+    property string section: ""
 
     signal commit(var newValue)
     signal reset()
@@ -31,6 +35,13 @@ ColumnLayout {
     spacing: 2
     Layout.fillWidth: true
 
+    Label {
+        visible: fe.section !== ""
+        text: fe.section
+        color: EditorStyle.accent
+        font.pixelSize: 11
+        font.bold: true
+    }
     RowLayout {
         Layout.fillWidth: true
         Label {
@@ -39,6 +50,13 @@ ColumnLayout {
             font.pixelSize: 12
             Layout.fillWidth: true
             elide: Text.ElideRight
+        }
+        Label {
+            visible: fe.changed
+            text: qsTr("changed")
+            color: EditorStyle.warning
+            font.pixelSize: 11
+            font.bold: true
         }
         Label {
             visible: fe.mixed
