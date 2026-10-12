@@ -147,6 +147,8 @@ public:
     // The floor plans with tables, [{id, name}]: the floor (role "tables")
     // first, then in the order of its tabs, then any others.
     Q_INVOKABLE QVariantList floorPlans() const;
+    // This screen's own build, for Store Settings -> About ("screen.version").
+    Q_INVOKABLE QString screenBuild() const;
     // One plan's tables and pieces (walls, doors...), {x, y, w, h, zones:
     // [{kind, label, x, y, w, h, rot, shape, props}]}: the box they fill.
     Q_INVOKABLE QVariantMap floorPlan(const QString &pageId) const;

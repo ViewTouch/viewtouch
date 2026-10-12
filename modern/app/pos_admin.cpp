@@ -163,6 +163,9 @@ QVariantList storeSections(const QVariantList &fields)
         {"checklists", PosService::tr("Checklists"), {"openingChecklist", "closingChecklist"}},
         {"backups", PosService::tr("Backups"), {"backupCopyDir", "encryptBackups", "backupPassword"}},
         {"accounting", PosService::tr("Franchise and accounting"), {"royaltyPercent", "adFundPercent", "chartOfAccounts"}},
+        {"about", PosService::tr("About"),
+         {"about.version", "screen.version", "screen.display", "about.machine", "about.started", "about.database",
+          "about.backup", "about.system", "about.license", "about.source", "about.credits"}},
     };
     static const std::pair<const char *, const char *> when[] = {
         {"clockInEarlyMinutes", "scheduleRequired"}, {"gratuityMinGuests", "gratuityPercent"},
@@ -686,6 +689,19 @@ QVariantList PosService::adminFields(const QString &panel)
                      "Can be set per employee.")),
             field(u"gratuityPercent"_s, tr("Party gratuity %"), u"percent"_s, tr("Added to large tables. 0 = off.")),
             with(with(field(u"gratuityMinGuests"_s, tr("…for tables of at least"), u"int"_s), u"min"_s, 1), u"max"_s, 99),
+            // About: read only. "screen.*" is filled in by each screen (its own build).
+            field(u"about.version"_s, tr("ViewTouch version"), u"info"_s, tr("The program running the store: its version, build number and commit.")),
+            field(u"screen.version"_s, tr("This screen's version"), u"info"_s,
+                  tr("A tablet or another screen can run an older build until it updates.")),
+            field(u"screen.display"_s, tr("This screen"), u"info"_s),
+            field(u"about.machine"_s, tr("Store computer"), u"info"_s),
+            field(u"about.started"_s, tr("Running since"), u"info"_s),
+            field(u"about.database"_s, tr("Data kept in"), u"info"_s),
+            field(u"about.backup"_s, tr("Last backup"), u"info"_s),
+            field(u"about.system"_s, tr("System"), u"info"_s),
+            field(u"about.license"_s, tr("License"), u"info"_s),
+            field(u"about.source"_s, tr("Source code and manual"), u"info"_s),
+            field(u"about.credits"_s, tr("ViewTouch"), u"info"_s),
         });
     }
     if (panel == u"modifierGroups") {
@@ -938,6 +954,7 @@ QVariantList PosService::adminRecords(const QString &panel)
         for (const char *job : {"server", "bartender", "cashier", "host", "manager"})
             store.insert(u"startPage."_s + QLatin1StringView(job),
                          s_->settings.startPages.contains(job) ? qs(s_->settings.startPages.at(job)) : QString());
+        store.insert(aboutValues());
         out.last() = store;
     } else if (panel == u"promotions") {
         for (const PosSettings::Promotion &p : s_->settings.promotions)
@@ -1924,6 +1941,41 @@ QStringList PosService::groupIds() const
     for (const ModifierGroup &g : s_->settings.modifierGroups)
         out << qs(g.id);
     return out;
+}
+
+QVariantMap PosService::aboutValues() const
+{
+    const QVariantMap n = s_->network ? s_->network() : QVariantMap();
+    const auto when = [](qint64 ms) {
+        return i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(ms), u"ddd MMM d, "_s)
+             + i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(ms).time(), QLocale::ShortFormat);
+    };
+    const QString unknown = tr("(not known here)");
+    const QString version = n.value(u"build"_s).toString();
+    const QString database = n.value(u"database"_s).toString();
+    const qint64 bytes = n.value(u"databaseBytes"_s).toLongLong();
+    const qint64 lastBackup = n.value(u"lastBackup"_s).toLongLong();
+    const QString system = QStringList{n.value(u"platform"_s).toString(),
+                                       n.value(u"qt"_s).toString().isEmpty() ? QString() : u"Qt "_s + n.value(u"qt"_s).toString()}
+                               .filter(QRegularExpression(u"."_s)).join(u", "_s);
+    QString machine = n.value(u"machine"_s).toString();
+    if (!machine.isEmpty())
+        machine += n.value(u"role"_s).toString() == u"main" ? tr(" (the store's server: other screens connect to it)")
+                                                  : tr(" (this computer runs the store on its own)");
+    return {
+        {u"about.version"_s, version.isEmpty() ? unknown : version},
+        {u"about.machine"_s, machine.isEmpty() ? unknown : machine},
+        {u"about.started"_s, n.value(u"startedAt"_s).toLongLong() > 0 ? when(n.value(u"startedAt"_s).toLongLong()) : unknown},
+        {u"about.database"_s, database.isEmpty() ? unknown
+                                                 : tr("%1 (%2)").arg(database, i18n::locale().formattedDataSize(bytes))},
+        {u"about.backup"_s, n.value(u"backups"_s).toString().isEmpty() ? unknown
+                            : lastBackup > 0 ? tr("%1, in %2").arg(when(lastBackup), n.value(u"backups"_s).toString())
+                                             : tr("None yet (they go in %1)").arg(n.value(u"backups"_s).toString())},
+        {u"about.system"_s, system.isEmpty() ? unknown : system},
+        {u"about.license"_s, tr("GNU General Public License, version 3: free to use, share and change; it comes with no warranty.")},
+        {u"about.source"_s, u"https://github.com/No0ne558/viewtouchFork"_s},
+        {u"about.credits"_s, tr("ViewTouch was created by Gene Mosher (viewtouch.com). This is its modern edition.")},
+    };
 }
 
 QVariantList PosService::accountKeys() const

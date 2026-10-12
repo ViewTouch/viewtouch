@@ -44,6 +44,7 @@ ColumnLayout {
         case "password": return passwordField
         case "image": return imagePicker
         case "rows": return rowsField
+        case "info": return infoText
         default: return textField
         }
     }
@@ -497,6 +498,18 @@ ColumnLayout {
                 enabled: !fe.readOnly && parent.v < parent.hi
                 onClicked: parent.set(parent.v - parent.v % parent.step + parent.step)
             }
+        }
+    }
+
+    // Read only: something to know (Store Settings -> About).
+    Component {
+        id: infoText
+        Label {
+            objectName: "infoText"
+            text: fe.value == null ? "" : String(fe.value)
+            wrapMode: Text.WrapAnywhere
+            textFormat: Text.PlainText
+            font.pixelSize: 14
         }
     }
 

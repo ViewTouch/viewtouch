@@ -1096,6 +1096,9 @@ private:
     QStringList periodIds() const;
     // The chart of accounts' keys, named: sales, sales:<family>, tender:<id>...
     QVariantList accountKeys() const;
+    // Store Settings -> About: the store's program, where its data is, its
+    // backups ("about.*", read only).
+    QVariantMap aboutValues() const;
     bool savePrinterRecord(int index, const QVariantMap &record);
     void settingsChanged();
     void menuChanged();   // the menu changed: sold out again, every screen's menu

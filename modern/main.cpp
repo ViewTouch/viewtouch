@@ -1133,8 +1133,12 @@ int runStore(const Args &cli, const Options &o)
             }
         });
     }
-    // Manager -> Network: this computer's role, the screens, the standby, the printers.
-    shared->network = [shared, &server, printerStatus] {
+    // Manager -> Network: this computer's role, the screens, the standby, the
+    // printers; and for Store Settings -> About, where the store's data is.
+    const QString aboutDb = QFileInfo(dbPathOf(cli, o)).absoluteFilePath();
+    const QString aboutBackups = QFileInfo(backupDirOf(cli, o)).absoluteFilePath();
+    const qint64 startedAt = QDateTime::currentMSecsSinceEpoch();
+    shared->network = [shared, &server, printerStatus, aboutDb, aboutBackups, startedAt] {
         QVariantList terminals;
         QVariant standby;
         if (server) {
@@ -1168,7 +1172,14 @@ int runStore(const Args &cli, const Options &o)
                            {u"machine"_s, QSysInfo::machineHostName()}, {u"terminals"_s, terminals},
                            {u"standby"_s, standby}, {u"printers"_s, printers},
                            {u"build"_s, vt::net::buildText(me.version, me.number, me.commit)}, {u"buildNumber"_s, me.number},
-                           {u"updates"_s, updates}, {u"updatesDir"_s, server ? server->updatesDir() : QString()}};
+                           {u"updates"_s, updates}, {u"updatesDir"_s, server ? server->updatesDir() : QString()},
+                           {u"platform"_s, me.platform}, {u"qt"_s, QString::fromLatin1(qVersion())},
+                           {u"database"_s, aboutDb}, {u"databaseBytes"_s, QFileInfo(aboutDb).size()},
+                           {u"backups"_s, aboutBackups}, {u"startedAt"_s, startedAt},
+                           {u"lastBackup"_s, [&] {
+                                const QFileInfoList files = QDir(aboutBackups).entryInfoList(QDir::Files, QDir::Time);
+                                return files.isEmpty() ? qint64(0) : files.first().lastModified().toMSecsSinceEpoch();
+                            }()}};
     };
     if (server) {
         QObject::connect(server.get(), &vt::net::PosServer::terminalsChanged, shared, &vt::app::PosShared::networkChanged);

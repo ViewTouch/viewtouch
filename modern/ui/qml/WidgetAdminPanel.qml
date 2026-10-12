@@ -155,6 +155,11 @@ Item {
     // Controls are laid out at a comfortable size, then scaled with the page.
     // Upright (a phone): the list, then a record's form on its own, with ‹ List.
     readonly property bool narrow: zone ? zone.narrow : false
+    // About: this screen, its name, size and pages.
+    readonly property string screenText: !Window.window ? "" : qsTr("%1: %2 × %3, %4 pages")
+        .arg(pos && pos.terminalName ? pos.terminalName : qsTr("This screen"))
+        .arg(Window.window.width).arg(Window.window.height)
+        .arg(zone && zone.controller && zone.controller.formFactor === "phone" ? qsTr("phone") : qsTr("standard"))
     readonly property real zoom: zone ? zone.formZoom(narrow ? 340 : 680) : 1.6
     Item {
         width: w.width / w.zoom
@@ -390,7 +395,10 @@ Item {
                                 pos: w.pos
                                 touch: true
                                 pages: modelData.type === "page" && w.zone ? w.pageChoices(modelData) : []
-                                value: w.draft[modelData.path]
+                                // This screen's own lines (About): from this screen, not the store.
+                                value: modelData.path === "screen.version" && w.zone ? w.zone.controller.screenBuild()
+                                     : modelData.path === "screen.display" ? w.screenText
+                                     : w.draft[modelData.path]
                                 isSet: true
                                 changed: w.differs(modelData.path)
                                 section: w.sectioned && w.query !== "" ? modelData.group : ""
@@ -409,7 +417,8 @@ Item {
                 }
 
                 RowLayout {
-                    visible: w.index !== -2
+                    // Not on About (nothing there to change), unless changes elsewhere wait.
+                    visible: w.index !== -2 && !(w.sectioned && w.query === "" && w.sectionShown === "about" && !w.dirty)
                     Layout.fillWidth: true
                     Layout.fillHeight: false
                     Button {

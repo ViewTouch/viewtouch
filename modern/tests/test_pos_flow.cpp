@@ -1,6 +1,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include "net/build_info.hh"
 #include "layout_fixture.hh"
 #include "layoutcontroller.hh"
 #include "print/raster.hh"
@@ -4228,6 +4229,31 @@ TEST_CASE("Manual: a screenshot of every screen", "[.manual]")
     admin("admin-modifier-groups", "m32-modifier-groups", true);
     admin("admin-employees", "m33-employees", true);
     admin("admin-store", "m34-store-settings", false);
+    {
+        // Store Settings -> About, as a store's own computer shows it.
+        const vt::net::AppBuild me = vt::net::appBuild();
+        const qint64 now = QDateTime::currentMSecsSinceEpoch();
+        s.pos.shared()->network = [me, now] {
+            return QVariantMap{{u"role"_s, u"single"_s}, {u"machine"_s, u"cafe-counter"_s},
+                               {u"build"_s, vt::net::buildText(me.version, me.number, me.commit)},
+                               {u"platform"_s, me.platform}, {u"qt"_s, QString::fromLatin1(qVersion())},
+                               {u"database"_s, u"/home/cafe/.local/share/ViewTouch/viewtouch.db"_s},
+                               {u"databaseBytes"_s, qint64(18'400'000)},
+                               {u"backups"_s, u"/home/cafe/.local/share/ViewTouch/backups"_s},
+                               {u"startedAt"_s, now - 9 * 3600 * 1000LL}, {u"lastBackup"_s, now - 3600 * 1000LL}};
+        };
+        s.c.jumpTo(u"manager"_s);   // Store Settings opened afresh, with these
+        QTest::qWait(80);
+        s.c.jumpTo(u"admin-store"_s);
+        QTest::qWait(120);
+        QQuickItem *list = Screen::findBy(s.window->contentItem(), "objectName", u"adminList"_s);
+        QMetaObject::invokeMethod(list, "positionViewAtEnd");
+        QTest::qWait(40);
+        s.tapItem(Screen::findBy(s.window->contentItem(), "objectName", u"settingsSection-about"_s));
+        QTest::qWait(80);
+        snap("m34b-about");
+        s.pos.shared()->network = nullptr;
+    }
     admin("admin-taxes", "m35-taxes", false);
     admin("admin-tenders", "m36-payment-types", true);
     admin("admin-printers", "m37-printers", true);
@@ -7460,4 +7486,40 @@ TEST_CASE("Phone: the floor plans with tabs; a table touched opens; a room's own
     QTest::qWait(80);
     CHECK(s.pos.checkInfo()[u"label"_s].toString().contains(u"P3"_s));
     s.shot("phone-moved");
+}
+
+TEST_CASE("UI: Store Settings -> About: the version, this screen, the license", "[flow][ui][settings]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"admin-store"_s));
+    QTest::qWait(120);
+    const auto by = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    const auto text = [&](const QString &t) { return Screen::findBy(s.window->contentItem(), "text", t); };
+    // Found by searching "version" too.
+    s.tapItem(by(u"settingsSearch"_s));
+    for (const char *k = "version"; *k; ++k)
+        QTest::keyClick(s.window, *k);
+    QTest::qWait(60);
+    CHECK(text(u"ViewTouch version"_s));
+    s.tapItem(by(u"settingsSearchClear"_s));
+    QMetaObject::invokeMethod(by(u"adminList"_s), "positionViewAtEnd");
+    QTest::qWait(40);
+    s.tapItem(by(u"settingsSection-about"_s));
+    QTest::qWait(80);
+    CHECK(text(u"This screen's version"_s));
+    QStringList shown;
+    std::function<void(QQuickItem *)> walk = [&](QQuickItem *i) {
+        for (QQuickItem *c : i->childItems()) {
+            if (c->isVisible() && c->objectName() == u"infoText"_s)
+                shown << c->property("text").toString();
+            walk(c);
+        }
+    };
+    walk(s.window->contentItem());
+    CHECK(shown.join(u'\n').contains(u"0.9.0, build"_s));                 // this screen's build
+    CHECK(shown.join(u'\n').contains(u"1600 × 900, standard pages"_s));
+    CHECK(shown.join(u'\n').contains(u"GNU General Public License, version 3"_s));
+    CHECK_FALSE(text(u"Save"_s));                                          // nothing to change here
+    s.shot("settings-about");
 }

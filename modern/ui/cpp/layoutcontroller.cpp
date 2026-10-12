@@ -1,5 +1,7 @@
 #include "layoutcontroller.hh"
 
+#include "net/build_info.hh"
+
 #include <QCollator>
 #include <QFile>
 #include <QDate>
@@ -778,6 +780,12 @@ QVariantList LayoutController::tables() const
         return byName.compare(a.toMap().value(u"name"_s).toString(), b.toMap().value(u"name"_s).toString()) < 0;
     });
     return out;
+}
+
+QString LayoutController::screenBuild() const
+{
+    const vt::net::AppBuild me = vt::net::appBuild();
+    return vt::net::buildText(me.version, me.number, me.commit) + u", "_s + me.platform;
 }
 
 QVariantList LayoutController::floorPlans() const
