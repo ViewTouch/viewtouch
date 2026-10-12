@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Window
 
 // Cash drawer: start it with a bank, see expected cash, count it at the end
 // of the shift. With server banks it is the logged-in person's own bank
@@ -17,6 +18,25 @@ Item {
     // Drawer users on a terminal set up without a cash drawer (one left
     // open from before can still be counted).
     readonly property bool noDrawer: !bank && !(d.hasDrawer ?? true) && !(d.open ?? false)
+
+    // Count Drawer / Check Out / a manager's Count: the total typed on the
+    // keypad, else counted bill by bill.
+    function count(id, name) {
+        if (pos.entry !== "")
+            id === 0 ? pos.countDrawer() : pos.countDrawerById(id)
+        else if (id === 0 && (d.countBlocked ?? "") !== "")
+            pos.countDrawer()   // says why not
+        else
+            counter.start(id, name, d.denominations ?? [], bank && id === 0)
+    }
+    DrawerCount {
+        id: counter
+        objectName: "drawerCount"
+        parent: w.Window.contentItem
+        anchors.fill: parent
+        z: 60
+        pos: w.pos
+    }
 
     component Line: RowLayout {
         property string name
@@ -56,7 +76,7 @@ Item {
             Layout.fillHeight: false
             spacing: w.unit * 0.2
             Line { name: qsTr("Starting cash"); value: w.d.startingCash ?? "" }
-            Line { name: qsTr("Cash sales"); value: w.d.cashSales ?? "" }
+            Line { visible: !(w.d.blind ?? false); name: qsTr("Cash sales"); value: w.d.cashSales ?? "" }
             Repeater {
                 model: w.d.movements ?? []
                 delegate: Line {
@@ -66,10 +86,24 @@ Item {
                     tint: "#b8c0cc"
                 }
             }
-            Line { name: w.bank ? qsTr("Cash to turn in") : qsTr("Expected in drawer"); value: w.d.expected ?? ""; strong: true }
+            Line { visible: !(w.d.blind ?? false); name: w.bank ? qsTr("Cash to turn in") : qsTr("Expected in drawer"); value: w.d.expected ?? ""; strong: true }
+            Line {
+                visible: w.d.blind ?? false
+                name: qsTr("Counted blind: what should be there shows after the count")
+                tint: "#b8c0cc"
+            }
+            Repeater {
+                model: w.d.open ? [] : (w.d.countedPieces ?? [])
+                delegate: Line {
+                    required property var modelData
+                    name: "   " + modelData.text
+                    value: modelData.amount
+                    tint: "#b8c0cc"
+                }
+            }
             Line { visible: !w.d.open; name: qsTr("Counted"); value: w.d.counted ?? "" }
             Line {
-                visible: !w.d.open
+                visible: !w.d.open && !(w.d.hideResult ?? false)
                 name: (w.d.overShortCents ?? 0) < 0 ? qsTr("Short") : (w.d.overShortCents ?? 0) > 0 ? qsTr("Over") : qsTr("Balanced")
                 value: w.d.overShort ?? ""
                 strong: true
@@ -113,7 +147,7 @@ Item {
                     Layout.fillHeight: true
                     text: qsTr("Count")
                     fontScale: 0.4
-                    onClicked: w.pos.countDrawerById(other.modelData.id)
+                    onClicked: w.count(other.modelData.id, other.modelData.name)
                 }
             }
         }
@@ -124,9 +158,9 @@ Item {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             text: w.noDrawer ? qsTr("Take cash on a terminal with a drawer, or have a manager give you your own bank (Manager → Employees → Cash handling).")
-                 : w.bank ? (w.d.open ? qsTr("At the end of your shift, count your cash, type it on the keypad, then Check Out.")
+                 : w.bank ? (w.d.open ? qsTr("At the end of your shift, touch Check Out and count your cash bill by bill (or type the total on the keypad first).")
                                      : qsTr("Cash you take goes in your bank. To start with cash on hand, type it, then Start Bank."))
-                         : w.d.open ? qsTr("At the end of the shift, count the cash, type the total on the keypad, then Count Drawer.")
+                         : w.d.open ? qsTr("At the end of the shift, touch Count Drawer and count the cash bill by bill (or type the total on the keypad first).")
                                     : qsTr("Type the starting cash on the keypad, then Start Drawer.")
             color: "#8a94a6"
             font.family: w.face
@@ -163,7 +197,7 @@ Item {
                              : w.d.open ? qsTr("Count Drawer") : qsTr("Start Drawer")
                 accent: true
                 fontScale: 0.34
-                onClicked: w.d.open ? w.pos.countDrawer() : w.pos.openDrawerSession()
+                onClicked: w.d.open ? w.count(0, w.d.name ?? "") : w.pos.openDrawerSession()
             }
             WidgetKey {
                 visible: !w.bank && w.zone.keyShown("noSale")   // server banks: no drawer to open

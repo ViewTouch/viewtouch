@@ -2571,6 +2571,8 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"countDrawer"_s, [](PosService &p, const QVariantList &) { return QVariant(p.countDrawer()); }},
         {u"countDrawerById"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.countDrawerById(a.value(0).toLongLong())); }},
+        {u"countDrawerPieces"_s, [](PosService &p, const QVariantList &a) {
+             return QVariant(p.countDrawerPieces(a.value(0).toLongLong(), a.value(1).toList())); }},
         {u"endOfDay"_s, [](PosService &p, const QVariantList &) { return QVariant(p.endOfDay()); }},
         {u"printReport"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.printReport(a.value(0).toString(), a.value(1).toLongLong())); }},

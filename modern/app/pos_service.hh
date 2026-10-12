@@ -584,6 +584,11 @@ public:
     bool countDrawer();         // counted cash from the keypad entry (bank: check out)
     // Manager: count someone else's drawer or bank (a server who left).
     bool countDrawerById(qint64 drawerId);
+    // Counted bill by bill: how many of each of the store's bills and coins
+    // (PosSettings::cashDenominations, in that order); drawerId 0: mine.
+    bool countDrawerPieces(qint64 drawerId, const QVariantList &counts);
+    // This person counts drawers blind (not seeing what should be there).
+    bool blindCount() const;
     bool endOfDay();
     const core::BusinessDay &currentDay() const { return s_->day; }
     const std::vector<core::Check> &closedToday() const { return s_->closedToday; }
@@ -1161,6 +1166,7 @@ private:
     QString checkFilter_;
     QString pin_;
     QString entry_;
+    std::vector<std::pair<std::int64_t, int>> countedPieces_;   // countDrawerPieces -> closeDrawer
     QString text_;
     QString pendingTable_;
 };

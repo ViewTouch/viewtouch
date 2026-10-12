@@ -5551,6 +5551,80 @@ TEST_CASE("UI editor: Standard | Phone edits either screen's version; buttons st
     CHECK(!e->layout().variantFor(u"drawer"_s, u"phone"_s));
 }
 
+TEST_CASE("UI: Count Drawer counts bill by bill on the keypad", "[flow][ui][drawerCount]")
+{
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    s.pos.entryKey(u"10000"_s);
+    REQUIRE(s.pos.openDrawerSession());
+    REQUIRE(s.c.jumpTo(u"drawer"_s));
+    QTest::qWait(150);
+    QQuickItem *root = s.window->contentItem();
+    const auto tap = [&](const QString &name) {
+        QQuickItem *it = Screen::findBy(root, "objectName", name);
+        REQUIRE(it);
+        REQUIRE(it->isVisible());
+        s.tapItem(it);
+        QTest::qWait(60);
+        INFO(name.toStdString());
+        CHECK(s.pos.entry().isEmpty());   // not the keypad on the page behind
+    };
+    QQuickItem *count = Screen::findBy(root, "text", u"Count Drawer"_s);
+    REQUIRE(count);
+    s.tapItem(count);
+    QTest::qWait(150);
+    QQuickItem *sheet = Screen::findBy(root, "objectName", u"drawerCount"_s);
+    REQUIRE(sheet);
+    CHECK(sheet->isVisible());
+
+    // 4 × $20, 2 × $10, then 3 quarters.
+    tap(u"countRow-2000"_s);
+    tap(u"countKey-4"_s);
+    tap(u"countKey-next"_s);
+    tap(u"countKey-2"_s);
+    tap(u"countRow-25"_s);
+    tap(u"countKey-3"_s);
+    QQuickItem *total = Screen::findBy(root, "objectName", u"countTotal"_s);
+    REQUIRE(total);
+    CHECK(total->property("text").toString() == u"$100.75"_s);
+    s.shot("drawer-count");
+    tap(u"countDone"_s);
+    CHECK_FALSE(sheet->isVisible());
+    const QVariantMap d = s.pos.drawerInfo();
+    CHECK_FALSE(d[u"open"_s].toBool());
+    CHECK(d[u"counted"_s].toString() == u"$100.75"_s);
+    CHECK(d[u"countedPieces"_s].toList().size() == 3);
+    QTest::qWait(100);
+    s.shot("drawer-counted");
+}
+
+TEST_CASE("UI: counting a drawer on a phone", "[flow][ui][drawerCount][phone]")
+{
+    Screen s(false, 412, 892, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    s.pos.entryKey(u"10000"_s);
+    REQUIRE(s.pos.openDrawerSession());
+    REQUIRE(s.c.jumpTo(u"drawer"_s));
+    QTest::qWait(150);
+    QQuickItem *root = s.window->contentItem();
+    QQuickItem *count = Screen::findBy(root, "text", u"Count Drawer"_s);
+    REQUIRE(count);
+    s.tapItem(count);
+    QTest::qWait(150);
+    QQuickItem *key = Screen::findBy(root, "objectName", u"countKey-7"_s);
+    REQUIRE(key);
+    s.tapItem(key);
+    QTest::qWait(60);
+    QQuickItem *done = Screen::findBy(root, "objectName", u"countDone"_s);
+    REQUIRE(done);
+    CHECK(QRectF(0, 0, 412, 892).contains(done->mapRectToScene(QRectF(0, 0, done->width(), done->height()))));
+    CHECK(key->height() >= 44);
+    s.shot("drawer-count-phone");
+    s.tapItem(done);
+    QTest::qWait(60);
+    CHECK(s.pos.drawerInfo()[u"counted"_s].toString() == u"$700.00"_s);
+}
+
 TEST_CASE("UI editor: a page made now is offered to Go to page right away", "[flow][ui][editorui]")
 {
     Screen s;

@@ -372,6 +372,11 @@ public:
     Q_INVOKABLE void openDrawerSession() { invoke(QStringLiteral("openDrawerSession")); }
     Q_INVOKABLE void countDrawer() { invoke(QStringLiteral("countDrawer")); }
     Q_INVOKABLE void countDrawerById(qint64 drawerId) { invoke(QStringLiteral("countDrawerById"), {drawerId}); }
+    // How many of each bill and coin (drawer.denominations, in order); 0: mine.
+    Q_INVOKABLE void countDrawerPieces(qint64 drawerId, const QVariantList &counts)
+    {
+        invoke(QStringLiteral("countDrawerPieces"), {drawerId, QVariant(counts)});
+    }
     Q_INVOKABLE void endOfDay() { invoke(QStringLiteral("endOfDay")); }
     Q_INVOKABLE void printReport(const QString &id, qint64 dayId = 0) { invoke(QStringLiteral("printReport"), {id, dayId}); }
     Q_INVOKABLE void adminSave(const QString &panel, int index, const QVariantMap &record)

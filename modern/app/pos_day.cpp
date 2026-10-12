@@ -672,6 +672,40 @@ bool PosService::countDrawer()
     return closeDrawer(*open);
 }
 
+bool PosService::countDrawerPieces(qint64 drawerId, const QVariantList &counts)
+{
+    // How many of each bill and coin, in the order of the store's list.
+    std::vector<std::pair<std::int64_t, int>> pieces;
+    std::int64_t total = 0;
+    const auto &worth = s_->settings.cashDenominations;
+    for (qsizetype i = 0; i < counts.size() && i < qsizetype(worth.size()); ++i) {
+        const int n = counts[i].toInt();
+        if (n < 0 || n > 100000)
+            return fail(tr("That count doesn't look right."));
+        if (n > 0) {
+            pieces.emplace_back(worth[i], n);
+            total += worth[i] * n;
+        }
+    }
+    entry_ = QString::number(total);
+    countedPieces_ = pieces;
+    const bool done = drawerId == 0 ? countDrawer() : countDrawerById(drawerId);
+    if (!done) {
+        countedPieces_.clear();
+        entry_.clear();
+    }
+    emit entryChanged();
+    return done;
+}
+
+bool PosService::blindCount() const
+{
+    const Employee *e = user();
+    if (e && !e->blindCount.empty())
+        return e->blindCount == "blind";
+    return s_->settings.blindDrawerCount && !can(QString::fromLatin1(perm::Manager));
+}
+
 bool PosService::countDrawerById(qint64 drawerId)
 {
     if (!require(perm::Manager, tr("Counting another drawer")))
@@ -689,6 +723,8 @@ bool PosService::closeDrawer(DrawerSession &d)
         return fail(d.employeeId.empty() ? tr("Count the cash, enter the amount, then Count Drawer.")
                                          : tr("Count the cash, enter the amount, then Check Out."));
     d.counted = Money::fromCents(entry_.toLongLong());
+    d.countedPieces = std::exchange(countedPieces_, {});
+    d.blind = blindCount();
     d.expected = expectedCash(d, s_->closedToday, s_->settings.tax);
     d.closedAt = now();
     d.closedBy = user()->name;
@@ -701,7 +737,8 @@ bool PosService::closeDrawer(DrawerSession &d)
         s_->printer->printReport(s_->settings, drawerReport({d}, s_->closedToday, reportContext(tr("Drawer count"))),
                                  receiptPrinter());
     const QString who = qs(d.name);
-    emit notice(diff.cents() == 0 ? tr("%1 balanced").arg(who)
+    emit notice(d.blind ? tr("%1 counted: %2").arg(who, format(d.counted))
+                : diff.cents() == 0 ? tr("%1 balanced").arg(who)
                 : diff.cents() < 0 ? tr("%1 is short %2").arg(who, format(-diff))
                                    : tr("%1 is over %2").arg(who, format(diff)));
     emit s_->drawerChanged();
@@ -838,9 +875,13 @@ QVariantMap PosService::drawerInfo() const
                                           {u"openedBy"_s, qs(o.openedBy)}, {u"expected"_s, format(expectedNow(o))}});
         }
     }
+    // Counting it by bills and coins: what each is worth.
+    QVariantList pieces;
+    for (std::int64_t cents : s_->settings.cashDenominations)
+        pieces.append(QVariantMap{{u"cents"_s, qint64(cents)}, {u"text"_s, format(Money::fromCents(cents))}});
     if (!latest) {
         return {{u"exists"_s, false}, {u"open"_s, false}, {u"mode"_s, mode}, {u"others"_s, others},
-                {u"hasDrawer"_s, terminalHasDrawer()},
+                {u"hasDrawer"_s, terminalHasDrawer()}, {u"denominations"_s, pieces},
                 {u"name"_s, serverBank() ? (user() ? tr("%1's bank").arg(userName()) : tr("Bank"))
                                          : tr("%1 drawer").arg(terminal_)}};
     }
@@ -860,21 +901,37 @@ QVariantMap PosService::drawerInfo() const
                                      {u"amount"_s, format(m.effect())}, {u"time"_s, clockText(m.at)}});
     }
     const Money expected = expectedNow(d);
+    // Counted blind: what should be there stays hidden until it's counted,
+    // and then whether it came out over or short.
+    const bool blind = blindCount();
+    QVariantList counted;
+    for (const auto &[cents, n] : d.countedPieces)
+        counted.append(QVariantMap{{u"text"_s, u"%1 × %2"_s.arg(n).arg(format(Money::fromCents(cents)))},
+                                   {u"amount"_s, format(Money::fromCents(cents * n))}});
     return {
+        {u"blind"_s, blind && d.open()}, {u"hideResult"_s, blind && !d.open()},
+        // Why it can't be checked out yet (open checks), before counting it.
+        {u"countBlocked"_s, [&] {
+             if (!d.open() || d.employeeId.empty() || !user() || d.employeeId != user()->id || !mustCloseChecksToCheckOut())
+                 return QString();
+             const auto mine = std::ranges::count_if(s_->open, [&](const auto &e) { return e.second.serverId == user()->id; });
+             return mine > 0 ? tr("Close or hand over your open checks before checking out.") : QString();
+         }()},
+        {u"denominations"_s, pieces}, {u"countedPieces"_s, counted},
         {u"exists"_s, true}, {u"open"_s, d.open()}, {u"name"_s, qs(d.name)},
         {u"mode"_s, mode}, {u"others"_s, others}, {u"hasDrawer"_s, terminalHasDrawer()},
         {u"openedBy"_s, qs(d.openedBy)}, {u"opened"_s, clockText(d.openedAt)},
-        {u"startingCash"_s, format(d.startingCash)}, {u"cashSales"_s, format(cash)},
+        {u"startingCash"_s, format(d.startingCash)}, {u"cashSales"_s, blind ? QString() : format(cash)},
         {u"movements"_s, movements},
-        {u"expected"_s, format(expected)}, {u"counted"_s, format(d.counted)},
-        {u"closedBy"_s, qs(d.closedBy)}, {u"overShort"_s, format(d.overShort())},
+        {u"expected"_s, blind ? QString() : format(expected)}, {u"counted"_s, format(d.counted)},
+        {u"closedBy"_s, qs(d.closedBy)}, {u"overShort"_s, blind ? QString() : format(d.overShort())},
         {u"categories"_s, [&] {
              QVariantList out;
              for (const std::string &c : s_->settings.expenseCategories)
                  out.append(QVariantMap{{u"name"_s, qs(c)}, {u"chosen"_s, qs(c) == expenseCategory_}});
              return out;
          }()},
-        {u"overShortCents"_s, qint64(d.overShort().cents())},
+        {u"overShortCents"_s, blind ? qint64(0) : qint64(d.overShort().cents())},
     };
 }
 

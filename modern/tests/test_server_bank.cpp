@@ -325,3 +325,82 @@ TEST_CASE("Which terminals have a cash drawer", "[bank][drawers]")
     CHECK(shared.settings.hasDrawer("Patio"));
     CHECK(app::settingsFromJson(app::toJson(shared.settings)).terminals.back().drawer == "yes");
 }
+
+TEST_CASE("Counting by bills and coins, and counting blind", "[bank][drawerCount]")
+{
+    // Sam's bank: $6.60 of cash sales.
+    app::PosData data = bankData();
+    data.settings.blindDrawerCount = true;
+    PosShared shared(data, nullptr);
+    PosService pos(&shared, u"Front"_s);
+    QSignalSpy notices(&pos, &PosService::notice);
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    cashSale(pos);
+
+    // Blind: what should be there is hidden from Sam until (and after) the count.
+    QVariantMap d = pos.drawerInfo();
+    CHECK(d[u"blind"_s].toBool());
+    CHECK(d[u"expected"_s].toString().isEmpty());
+    CHECK(d[u"cashSales"_s].toString().isEmpty());
+    const QVariantList worth = d[u"denominations"_s].toList();
+    REQUIRE(worth.size() == 10);
+    CHECK(worth[0].toMap()[u"text"_s].toString() == u"$100.00"_s);
+    CHECK(worth[6].toMap()[u"cents"_s].toLongLong() == 25);
+
+    // 1 × $5, 1 × $1, 2 × 25¢, 1 × 5¢ = $6.55: five cents short, not said.
+    QVariantList counts(10, 0);
+    counts[4] = 1;
+    counts[5] = 1;
+    counts[6] = 2;
+    counts[8] = 1;
+    REQUIRE(pos.countDrawerPieces(0, counts));
+    d = pos.drawerInfo();
+    CHECK_FALSE(d[u"open"_s].toBool());
+    CHECK(d[u"counted"_s].toString() == u"$6.55"_s);
+    CHECK(d[u"hideResult"_s].toBool());
+    CHECK(d[u"overShort"_s].toString().isEmpty());
+    CHECK(d[u"countedPieces"_s].toList().size() == 4);
+    CHECK(notices.last()[0].toString() == u"Sam's bank counted: $6.55"_s);
+    const core::DrawerSession &bank = shared.drawers.back();
+    CHECK(bank.blind);
+    CHECK(bank.overShort().cents() == -5);
+    CHECK(bank.countedPieces == std::vector<std::pair<std::int64_t, int>>{{500, 1}, {100, 1}, {25, 2}, {5, 1}});
+    CHECK(app::drawerFromJson(app::toJson(bank)) == bank);
+
+    // A manager sees it, and the printout lists the bills and coins.
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    CHECK_FALSE(pos.blindCount());
+    const core::Report r = pos.buildReport(u"drawer"_s);
+    CHECK(!r.find("   2 x $0.25").empty());
+    CHECK(!r.find("Counted by Sam (blind)").empty());
+    CHECK(!r.find("Short").empty());
+
+    // Per employee: the manager counts blind too; Sam sees.
+    const QString me = pos.userName();
+    QVariantList staff = pos.adminRecords(u"employees"_s);
+    for (qsizetype i = 0; i < staff.size(); ++i) {
+        QVariantMap e = staff[i].toMap();
+        const QString name = e[u"name"_s].toString();
+        if (name != me && name != u"Sam"_s)
+            continue;
+        e[u"blindCount"_s] = name == me ? u"blind"_s : u"sees"_s;
+        REQUIRE(pos.adminSave(u"employees"_s, int(i), e));
+        CHECK(app::employeeFromJson(app::toJson(shared.employees[i])).blindCount == (name == me ? "blind" : "sees"));
+    }
+    CHECK(pos.blindCount());
+    QVariantMap wrong = pos.adminRecords(u"employees"_s)[0].toMap();
+    wrong[u"blindCount"_s] = u"maybe"_s;
+    CHECK_FALSE(pos.adminSave(u"employees"_s, 0, wrong));
+
+    // Store Settings: blind off, and a till of 20s, 10s, 1s and quarters.
+    QVariantMap store = pos.adminRecords(u"store"_s)[0].toMap();
+    CHECK(store[u"cashDenominations"_s].toString() == u"100, 50, 20, 10, 5, 1, 0.25, 0.10, 0.05, 0.01"_s);
+    store[u"blindDrawerCount"_s] = false;
+    store[u"cashDenominations"_s] = u"$10, 20, 0.25, 1, 20"_s;
+    REQUIRE(pos.adminSave(u"store"_s, 0, store));
+    CHECK_FALSE(shared.settings.blindDrawerCount);
+    CHECK(shared.settings.cashDenominations == std::vector<std::int64_t>{2000, 1000, 100, 25});
+    const auto back = app::settingsFromJson(app::toJson(shared.settings));
+    CHECK(back.cashDenominations == shared.settings.cashDenominations);
+}

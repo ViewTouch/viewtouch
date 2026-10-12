@@ -9,6 +9,9 @@ import QtQuick
 QtObject {
     // The keyboard's top edge on the screen; -1: no keyboard.
     property real keyboardTop: -1
+    // A panel's own sheet over the whole window (counting a drawer): the
+    // page under it is off, as for Main's own sheets (Main.pageCovered).
+    property bool sheetOpen: false
 
     function covered(scenePoint) {
         return keyboardTop >= 0 && scenePoint.y >= keyboardTop

@@ -4,7 +4,9 @@
 #include <QRandomGenerator>
 #include <QRegularExpression>
 
+#include <algorithm>
 #include <cmath>
+#include <functional>
 
 using namespace Qt::StringLiterals;
 using namespace vt::core;
@@ -471,7 +473,7 @@ QJsonObject toJson(const Employee &e)
     return {
         {u"id"_s, qs(e.id)}, {u"name"_s, qs(e.name)}, {u"role"_s, qs(e.role)},
         {u"pinSalt"_s, qs(e.pinSalt)}, {u"pinHash"_s, qs(e.pinHash)}, {u"active"_s, e.active}, {u"training"_s, e.training}, {u"sample"_s, e.sample},
-        {u"cashMode"_s, qs(e.cashMode)}, {u"requireName"_s, qs(e.requireName)}, {u"checkout"_s, qs(e.checkout)}, {u"tipPool"_s, qs(e.tipPool)}, {u"language"_s, qs(e.language)},
+        {u"cashMode"_s, qs(e.cashMode)}, {u"requireName"_s, qs(e.requireName)}, {u"checkout"_s, qs(e.checkout)}, {u"blindCount"_s, qs(e.blindCount)}, {u"tipPool"_s, qs(e.tipPool)}, {u"language"_s, qs(e.language)},
         {u"textSize"_s, e.textSize}, {u"leftHanded"_s, e.leftHanded}, {u"startPage"_s, qs(e.startPage)},
         {u"payRate"_s, e.payRate.cents() / 100.0}, {u"otherJobs"_s, [&] {
              QJsonArray jobs;
@@ -495,6 +497,7 @@ Employee employeeFromJson(const QJsonObject &o)
     e.cashMode = ss(o.value(u"cashMode").toString());
     e.requireName = ss(o.value(u"requireName").toString());
     e.checkout = ss(o.value(u"checkout").toString());
+    e.blindCount = ss(o.value(u"blindCount").toString());
     e.tipPool = ss(o.value(u"tipPool").toString());
     e.language = ss(o.value(u"language").toString());
     e.textSize = std::clamp(o.value(u"textSize").toInt(100), 80, 160);
@@ -629,7 +632,14 @@ QJsonObject toJson(const DrawerSession &d)
             {u"openedBy"_s, qs(d.openedBy)}, {u"startingCash"_s, qint64(d.startingCash.cents())},
             {u"closedAt"_s, qint64(d.closedAt)}, {u"closedBy"_s, qs(d.closedBy)},
             {u"expected"_s, qint64(d.expected.cents())}, {u"counted"_s, qint64(d.counted.cents())},
-            {u"movements"_s, movements}, {u"nextMovementId"_s, qint64(d.nextMovementId)}};
+            {u"movements"_s, movements}, {u"nextMovementId"_s, qint64(d.nextMovementId)},
+            {u"pieces"_s, [&] {
+                 QJsonArray a;
+                 for (const auto &[cents, n] : d.countedPieces)
+                     a.append(QJsonArray{qint64(cents), n});
+                 return a;
+             }()},
+            {u"blind"_s, d.blind}};
 }
 
 DrawerSession drawerFromJson(const QJsonObject &o)
@@ -654,6 +664,12 @@ DrawerSession drawerFromJson(const QJsonObject &o)
                                i64(m.value(u"at")), ss(m.value(u"category").toString())});
     }
     d.nextMovementId = std::max<std::int64_t>(i64(o.value(u"nextMovementId")), 1);
+    for (const QJsonValue &v : o.value(u"pieces").toArray()) {
+        const QJsonArray p = v.toArray();
+        if (p.size() == 2 && i64(p[0]) > 0 && p[1].toInt() > 0)
+            d.countedPieces.emplace_back(i64(p[0]), p[1].toInt());
+    }
+    d.blind = o.value(u"blind").toBool();
     return d;
 }
 
@@ -846,6 +862,8 @@ QJsonObject toJson(const PosSettings &s)
         {u"terminalsHaveDrawer"_s, s.terminalsHaveDrawer},
         {u"serverId"_s, qs(s.serverId)},
         {u"checkoutNeedsClosedChecks"_s, s.checkoutNeedsClosedChecks},
+        {u"blindDrawerCount"_s, s.blindDrawerCount},
+        {u"cashDenominations"_s, [&] { QJsonArray a; for (std::int64_t c : s.cashDenominations) a.append(qint64(c)); return a; }()},
         {u"backupCopyDir"_s, qs(s.backupCopyDir)},
         {u"backupKey"_s, qs(s.backupKey)}, {u"backupSalt"_s, qs(s.backupSalt)},
         {u"waitMinutesPerParty"_s, s.waitMinutesPerParty},
@@ -1063,6 +1081,16 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.terminalsHaveDrawer = o.value(u"terminalsHaveDrawer").toBool(true);
     s.serverId = ss(o.value(u"serverId").toString());
     s.checkoutNeedsClosedChecks = o.value(u"checkoutNeedsClosedChecks").toBool(true);
+    s.blindDrawerCount = o.value(u"blindDrawerCount").toBool();
+    if (o.value(u"cashDenominations").isArray()) {
+        std::vector<std::int64_t> pieces;
+        for (const QJsonValue &v : o.value(u"cashDenominations").toArray())
+            if (i64(v) > 0 && pieces.size() < 16)
+                pieces.push_back(i64(v));
+        std::ranges::sort(pieces, std::greater<>());
+        if (!pieces.empty())
+            s.cashDenominations = pieces;
+    }
     s.backupCopyDir = ss(o.value(u"backupCopyDir").toString());
     s.backupKey = ss(o.value(u"backupKey").toString());
     s.backupSalt = ss(o.value(u"backupSalt").toString());

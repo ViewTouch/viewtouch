@@ -844,7 +844,10 @@ Report drawerReport(const std::vector<DrawerSession> &drawers, const std::vector
         const Money expected = d.open() ? d.startingCash + cash + d.movementsTotal() : d.expected;
         r.total({"Expected in drawer", ctx.money(expected)});
         if (!d.open()) {
-            r.line({"Counted by " + d.closedBy, ctx.money(d.counted)});
+            for (const auto &[cents, n] : d.countedPieces)
+                r.line({"   " + std::to_string(n) + " x " + ctx.money(Money::fromCents(cents)),
+                        ctx.money(Money::fromCents(cents * n))});
+            r.line({"Counted by " + d.closedBy + (d.blind ? " (blind)" : ""), ctx.money(d.counted)});
             const Money diff = d.overShort();
             r.total({diff.cents() < 0 ? "Short" : diff.cents() > 0 ? "Over" : "Balanced", ctx.money(diff)});
         }

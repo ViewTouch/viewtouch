@@ -55,6 +55,11 @@ struct DrawerSession {
     std::string closedBy;
     Money expected;   // starting cash + net cash sales + movements, fixed when counted
     Money counted;
+    // The bills and coins it was counted in, {value in cents, how many},
+    // largest first; empty when the total was typed. Blind: counted without
+    // seeing what was expected.
+    std::vector<std::pair<std::int64_t, int>> countedPieces;
+    bool blind = false;
     std::vector<CashMovement> movements;
     std::int64_t nextMovementId = 1;
 

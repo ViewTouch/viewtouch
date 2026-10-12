@@ -65,6 +65,9 @@ struct Employee {
     // Checking out with checks still open: "closeChecks" (not allowed),
     // "anyTime" (allowed), or empty for the store's setting.
     std::string checkout;
+    // Counting a drawer or bank: "blind" (not seeing what's expected), "sees",
+    // or empty for the store's setting (PosSettings::blindDrawerCount).
+    std::string blindCount;
     // In the tip pool: "" by their job (PosSettings::tipPool), "in" always
     // (a full share), "out" never (they keep their own tips).
     std::string tipPool;

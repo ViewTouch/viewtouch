@@ -123,6 +123,7 @@ ApplicationWindow {
     readonly property bool pageCovered: selfOrder.visible || root.controller.asleep || cardWait.visible
                                         || receiptSheet.visible || setupLoader.active || jobChooser.visible || cashTipsPrompt.visible
                                         || approvalPad.visible || allergySheet.visible || couponSheet.visible || holdSheet.visible
+                                        || TouchGuard.sheetOpen
 
     Loader {
         active: root.customerDisplay

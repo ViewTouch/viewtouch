@@ -186,6 +186,11 @@ struct PosSettings {
     // Whether people must close (or hand over) their checks before they
     // check out their bank, unless set per employee.
     bool checkoutNeedsClosedChecks = true;
+    // Counting a drawer or bank blind: what should be in it stays hidden
+    // until it is counted (managers see it, unless set per employee). And
+    // the bills and coins it is counted in, in cents, largest first.
+    bool blindDrawerCount = false;
+    std::vector<std::int64_t> cashDenominations{10000, 5000, 2000, 1000, 500, 100, 25, 10, 5, 1};
     // A second folder every backup is also copied to (a USB drive, a
     // network share), so one dead disk can't take the backups with it.
     std::string backupCopyDir;
