@@ -129,9 +129,9 @@ TEST_CASE("Phone pages: versions, the phone frame, and back to standard", "[phon
     CHECK(shownIds(c).contains(u"tables"_s));                  // the table grid
     CHECK_FALSE(shownIds(c).contains(u"table-t1"_s));
     const QVariantList tables = c.tables();
-    CHECK(tables.size() == 10);
-    CHECK(tables.first().toMap()[u"name"_s] == u"T1"_s);
-    CHECK(tables.first().toMap()[u"seats"_s] == 2);
+    CHECK(tables.size() == 16);                                // every floor plan's, once each, by name
+    CHECK(tables.first().toMap()[u"name"_s] == u"Bar 1"_s);
+    CHECK(tables.first().toMap()[u"seats"_s] == 1);
 
     // A menu page with no phone version: the phone order frame around its buttons.
     REQUIRE(c.jumpTo(u"items-burgers"_s));

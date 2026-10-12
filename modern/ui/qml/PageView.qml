@@ -70,6 +70,7 @@ Item {
                 dragDX: editLayer.dragDX
                 dragDY: editLayer.dragDY
                 previewRect: editLayer.resizeId === zoneId ? editLayer.previewRect : null
+                previewRotation: editLayer.rotateId === zoneId ? editLayer.previewRotation : null
                 onSelectRequested: view.selectedZoneId = zoneId
                 onActivated: view.controller.activate(zoneId)
                 onExplainRequested: view.controller.explain(zoneId)

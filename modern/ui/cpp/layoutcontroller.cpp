@@ -1,5 +1,6 @@
 #include "layoutcontroller.hh"
 
+#include <QCollator>
 #include <QFile>
 #include <QDate>
 #include <QRegularExpression>
@@ -767,6 +768,14 @@ QVariantList LayoutController::tables() const
             out.append(QVariantMap{{u"name"_s, name}, {u"seats"_s, z.props.value(u"seats"_s).toInt()}});
         }
     }
+    // By name, numbers as numbers (T2 before T10): the same order on every
+    // screen, however many floor plans show them.
+    QCollator byName;
+    byName.setNumericMode(true);
+    byName.setCaseSensitivity(Qt::CaseInsensitive);
+    std::ranges::stable_sort(out, [&](const QVariant &a, const QVariant &b) {
+        return byName.compare(a.toMap().value(u"name"_s).toString(), b.toMap().value(u"name"_s).toString()) < 0;
+    });
     return out;
 }
 
@@ -1874,10 +1883,12 @@ void LayoutController::refresh()
             {ZoneModel::StyleNormalRole, l.resolveStyle(z, stylePage, ZoneState::Normal).toVariantMap()},
             {ZoneModel::StyleSelectedRole, l.resolveStyle(z, stylePage, ZoneState::Selected).toVariantMap()},
             {ZoneModel::StyleDisabledRole, l.resolveStyle(z, stylePage, ZoneState::Disabled).toVariantMap()},
-            {ZoneModel::PropsRole, z.props.toVariantMap()},
+            {ZoneModel::PropsRole, moved ? [&] { QVariantMap p = z.props.toVariantMap(); p.remove(u"chairs"_s); return p; }()
+                                         : z.props.toVariantMap()},
             {ZoneModel::SoldOutRole, soldOut},
             {ZoneModel::ShowWhenRole, z.extra.value(u"showWhen").toObject().toVariantMap()},
             {ZoneModel::ItemIdRole, orders},
+            {ZoneModel::RotationRole, moved ? 0 : vt::layout::rotationOf(z)},   // in rows on a phone: straight
         });
     }
     zones_.setRows(std::move(rows));

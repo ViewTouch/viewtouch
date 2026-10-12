@@ -7,129 +7,478 @@
       "id": "classic",
       "name": "Classic",
       "description": "The floor plan, the buttons down the right side.",
+      "background": {
+        "texture": "woodfloor",
+        "fill": "#3b2a1a"
+      },
       "zones": [
+        {
+          "id": "area-1",
+          "kind": "decor",
+          "rect": {
+            "x": 38,
+            "y": 120,
+            "w": 828,
+            "h": 523
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area"
+          },
+          "label": "Dining Area"
+        },
+        {
+          "id": "area-2",
+          "kind": "decor",
+          "rect": {
+            "x": 883,
+            "y": 120,
+            "w": 551,
+            "h": 523
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area",
+            "color": "#5b3a1e"
+          },
+          "label": "Bar"
+        },
+        {
+          "id": "area-3",
+          "kind": "decor",
+          "rect": {
+            "x": 23,
+            "y": 683,
+            "w": 1427,
+            "h": 285
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area",
+            "color": "#2f5d3a"
+          },
+          "label": "Patio"
+        },
+        {
+          "id": "wall-1",
+          "kind": "decor",
+          "rect": {
+            "x": 23,
+            "y": 104,
+            "w": 614,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-2",
+          "kind": "decor",
+          "rect": {
+            "x": 795,
+            "y": 104,
+            "w": 654,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-3",
+          "kind": "decor",
+          "rect": {
+            "x": 23,
+            "y": 104,
+            "w": 16,
+            "h": 555
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-4",
+          "kind": "decor",
+          "rect": {
+            "x": 1434,
+            "y": 104,
+            "w": 16,
+            "h": 555
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-5",
+          "kind": "decor",
+          "rect": {
+            "x": 23,
+            "y": 643,
+            "w": 594,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-6",
+          "kind": "decor",
+          "rect": {
+            "x": 736,
+            "y": 643,
+            "w": 277,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-7",
+          "kind": "decor",
+          "rect": {
+            "x": 1132,
+            "y": 643,
+            "w": 317,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "window-1",
+          "kind": "decor",
+          "rect": {
+            "x": 122,
+            "y": 104,
+            "w": 178,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-2",
+          "kind": "decor",
+          "rect": {
+            "x": 379,
+            "y": 104,
+            "w": 178,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-3",
+          "kind": "decor",
+          "rect": {
+            "x": 974,
+            "y": 104,
+            "w": 159,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-4",
+          "kind": "decor",
+          "rect": {
+            "x": 1192,
+            "y": 104,
+            "w": 159,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "wall-8",
+          "kind": "decor",
+          "rect": {
+            "x": 867,
+            "y": 120,
+            "w": 16,
+            "h": 178
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-9",
+          "kind": "decor",
+          "rect": {
+            "x": 867,
+            "y": 461,
+            "w": 16,
+            "h": 182
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "entrance-1",
+          "kind": "decor",
+          "rect": {
+            "x": 657,
+            "y": 128,
+            "w": 119,
+            "h": 95
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "entrance"
+          },
+          "label": "Entrance"
+        },
+        {
+          "id": "door-1",
+          "kind": "decor",
+          "rect": {
+            "x": 617,
+            "y": 524,
+            "w": 119,
+            "h": 119
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "door"
+          }
+        },
+        {
+          "id": "door-2",
+          "kind": "decor",
+          "rect": {
+            "x": 1013,
+            "y": 524,
+            "w": 119,
+            "h": 119
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "door"
+          }
+        },
         {
           "id": "table-t1",
           "kind": "table",
           "rect": {
-            "x": 96,
-            "y": 96,
-            "w": 200,
-            "h": 200
+            "x": 62,
+            "y": 179,
+            "w": 129,
+            "h": 129
           },
           "shape": "circle",
           "behavior": "none",
           "label": "T1",
           "props": {
-            "seats": 2
+            "seats": 2,
+            "chairs": true
           }
         },
         {
           "id": "table-t2",
           "kind": "table",
           "rect": {
-            "x": 376,
-            "y": 96,
-            "w": 200,
-            "h": 200
+            "x": 221,
+            "y": 179,
+            "w": 129,
+            "h": 129
           },
           "shape": "circle",
           "behavior": "none",
           "label": "T2",
           "props": {
-            "seats": 2
+            "seats": 2,
+            "chairs": true
           }
         },
         {
           "id": "table-t3",
           "kind": "table",
           "rect": {
-            "x": 656,
-            "y": 96,
-            "w": 320,
-            "h": 200
+            "x": 389,
+            "y": 179,
+            "w": 208,
+            "h": 129
           },
           "shape": "rect",
           "behavior": "none",
           "label": "T3",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t4",
           "kind": "table",
           "rect": {
-            "x": 1056,
-            "y": 96,
-            "w": 320,
-            "h": 200
+            "x": 62,
+            "y": 332,
+            "w": 208,
+            "h": 135
           },
           "shape": "rect",
           "behavior": "none",
           "label": "T4",
           "props": {
-            "seats": 4
-          }
-        },
-        {
-          "id": "table-t5",
-          "kind": "table",
-          "rect": {
-            "x": 96,
-            "y": 416,
-            "w": 480,
-            "h": 220
-          },
-          "shape": "rect",
-          "behavior": "none",
-          "label": "T5",
-          "props": {
-            "seats": 6
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t6",
           "kind": "table",
           "rect": {
-            "x": 656,
-            "y": 416,
-            "w": 240,
-            "h": 240
+            "x": 310,
+            "y": 328,
+            "w": 143,
+            "h": 143
           },
           "shape": "octagon",
           "behavior": "none",
           "label": "T6",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t7",
           "kind": "table",
           "rect": {
-            "x": 976,
-            "y": 416,
-            "w": 240,
-            "h": 240
+            "x": 488,
+            "y": 328,
+            "w": 143,
+            "h": 143
           },
           "shape": "octagon",
           "behavior": "none",
           "label": "T7",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 22
+        },
+        {
+          "id": "table-t5",
+          "kind": "table",
+          "rect": {
+            "x": 62,
+            "y": 488,
+            "w": 297,
+            "h": 143
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "T5",
+          "props": {
+            "seats": 6,
+            "chairs": true
+          }
+        },
+        {
+          "id": "booth-1",
+          "kind": "decor",
+          "rect": {
+            "x": 696,
+            "y": 322,
+            "w": 149,
+            "h": 59
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "booth"
+          },
+          "rotation": 90
+        },
+        {
+          "id": "plant-1",
+          "kind": "decor",
+          "rect": {
+            "x": 488,
+            "y": 530,
+            "w": 79,
+            "h": 79
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "counter-1",
+          "kind": "decor",
+          "rect": {
+            "x": 1311,
+            "y": 163,
+            "w": 95,
+            "h": 416
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "counter"
           }
         },
         {
           "id": "table-bar-1",
           "kind": "table",
           "rect": {
-            "x": 96,
-            "y": 776,
-            "w": 240,
-            "h": 160
+            "x": 1192,
+            "y": 187,
+            "w": 107,
+            "h": 107
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 1",
           "props": {
@@ -140,12 +489,12 @@
           "id": "table-bar-2",
           "kind": "table",
           "rect": {
-            "x": 376,
-            "y": 776,
-            "w": 240,
-            "h": 160
+            "x": 1192,
+            "y": 318,
+            "w": 107,
+            "h": 107
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 2",
           "props": {
@@ -156,16 +505,327 @@
           "id": "table-bar-3",
           "kind": "table",
           "rect": {
-            "x": 656,
-            "y": 776,
-            "w": 240,
-            "h": 160
+            "x": 1192,
+            "y": 449,
+            "w": 107,
+            "h": 107
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 3",
           "props": {
             "seats": 1
+          }
+        },
+        {
+          "id": "table-h1",
+          "kind": "table",
+          "rect": {
+            "x": 924,
+            "y": 183,
+            "w": 129,
+            "h": 129
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "label": "H1",
+          "props": {
+            "seats": 2,
+            "chairs": true
+          }
+        },
+        {
+          "id": "table-h2",
+          "kind": "table",
+          "rect": {
+            "x": 924,
+            "y": 352,
+            "w": 129,
+            "h": 129
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "label": "H2",
+          "props": {
+            "seats": 2,
+            "chairs": true
+          }
+        },
+        {
+          "id": "pillar-1",
+          "kind": "decor",
+          "rect": {
+            "x": 1113,
+            "y": 372,
+            "w": 48,
+            "h": 48
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "props": {
+            "decor": "pillar"
+          }
+        },
+        {
+          "id": "fence-1",
+          "kind": "decor",
+          "rect": {
+            "x": 23,
+            "y": 952,
+            "w": 1427,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "fence-2",
+          "kind": "decor",
+          "rect": {
+            "x": 23,
+            "y": 683,
+            "w": 16,
+            "h": 285
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "fence-3",
+          "kind": "decor",
+          "rect": {
+            "x": 1434,
+            "y": 683,
+            "w": 16,
+            "h": 285
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "table-p1",
+          "kind": "table",
+          "rect": {
+            "x": 151,
+            "y": 748,
+            "w": 149,
+            "h": 149
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P1",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p2",
+          "kind": "table",
+          "rect": {
+            "x": 488,
+            "y": 748,
+            "w": 149,
+            "h": 149
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P2",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p3",
+          "kind": "table",
+          "rect": {
+            "x": 825,
+            "y": 748,
+            "w": 149,
+            "h": 149
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P3",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p4",
+          "kind": "table",
+          "rect": {
+            "x": 1162,
+            "y": 748,
+            "w": 149,
+            "h": 149
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P4",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "plant-2",
+          "kind": "decor",
+          "rect": {
+            "x": 359,
+            "y": 788,
+            "w": 69,
+            "h": 69
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plant-3",
+          "kind": "decor",
+          "rect": {
+            "x": 696,
+            "y": 788,
+            "w": 69,
+            "h": 69
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plant-4",
+          "kind": "decor",
+          "rect": {
+            "x": 1033,
+            "y": 788,
+            "w": 69,
+            "h": 69
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plan-main",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 354,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Main",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "tables"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-dining",
+          "kind": "button",
+          "rect": {
+            "x": 378,
+            "y": 16,
+            "w": 354,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Dining Area",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-dining"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-bar",
+          "kind": "button",
+          "rect": {
+            "x": 740,
+            "y": 16,
+            "w": 354,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Bar",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-bar"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-patio",
+          "kind": "button",
+          "rect": {
+            "x": 1102,
+            "y": 16,
+            "w": 354,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Patio",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-patio"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
           }
         },
         {
@@ -291,10 +951,10 @@
           "id": "host",
           "kind": "button",
           "rect": {
-            "x": 1056,
-            "y": 914,
-            "w": 400,
-            "h": 150
+            "x": 1102,
+            "y": 976,
+            "w": 354,
+            "h": 88
           },
           "shape": "rect",
           "behavior": "blink",
@@ -316,10 +976,10 @@
           "id": "tabs",
           "kind": "button",
           "rect": {
-            "x": 1056,
-            "y": 748,
-            "w": 400,
-            "h": 150
+            "x": 740,
+            "y": 976,
+            "w": 354,
+            "h": 88
           },
           "shape": "rect",
           "behavior": "blink",
@@ -418,139 +1078,484 @@
             }
           }
         }
-      ],
-      "background": {
-        "texture": "woodfloor",
-        "fill": "#3b2a1a"
-      }
+      ]
     },
     {
       "id": "buttons-left",
       "name": "Buttons left",
       "description": "The buttons down the left side, the floor to their right.",
+      "background": {
+        "texture": "woodfloor",
+        "fill": "#3b2a1a"
+      },
       "zones": [
+        {
+          "id": "area-1",
+          "kind": "decor",
+          "rect": {
+            "x": 486,
+            "y": 120,
+            "w": 828,
+            "h": 523
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area"
+          },
+          "label": "Dining Area"
+        },
+        {
+          "id": "area-2",
+          "kind": "decor",
+          "rect": {
+            "x": 1331,
+            "y": 120,
+            "w": 551,
+            "h": 523
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area",
+            "color": "#5b3a1e"
+          },
+          "label": "Bar"
+        },
+        {
+          "id": "area-3",
+          "kind": "decor",
+          "rect": {
+            "x": 471,
+            "y": 683,
+            "w": 1427,
+            "h": 285
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area",
+            "color": "#2f5d3a"
+          },
+          "label": "Patio"
+        },
+        {
+          "id": "wall-1",
+          "kind": "decor",
+          "rect": {
+            "x": 471,
+            "y": 104,
+            "w": 614,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-2",
+          "kind": "decor",
+          "rect": {
+            "x": 1243,
+            "y": 104,
+            "w": 654,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-3",
+          "kind": "decor",
+          "rect": {
+            "x": 471,
+            "y": 104,
+            "w": 16,
+            "h": 555
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-4",
+          "kind": "decor",
+          "rect": {
+            "x": 1882,
+            "y": 104,
+            "w": 16,
+            "h": 555
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-5",
+          "kind": "decor",
+          "rect": {
+            "x": 471,
+            "y": 643,
+            "w": 594,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-6",
+          "kind": "decor",
+          "rect": {
+            "x": 1184,
+            "y": 643,
+            "w": 277,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-7",
+          "kind": "decor",
+          "rect": {
+            "x": 1580,
+            "y": 643,
+            "w": 317,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "window-1",
+          "kind": "decor",
+          "rect": {
+            "x": 570,
+            "y": 104,
+            "w": 178,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-2",
+          "kind": "decor",
+          "rect": {
+            "x": 827,
+            "y": 104,
+            "w": 178,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-3",
+          "kind": "decor",
+          "rect": {
+            "x": 1422,
+            "y": 104,
+            "w": 159,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-4",
+          "kind": "decor",
+          "rect": {
+            "x": 1640,
+            "y": 104,
+            "w": 159,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "wall-8",
+          "kind": "decor",
+          "rect": {
+            "x": 1315,
+            "y": 120,
+            "w": 16,
+            "h": 178
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-9",
+          "kind": "decor",
+          "rect": {
+            "x": 1315,
+            "y": 461,
+            "w": 16,
+            "h": 182
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "entrance-1",
+          "kind": "decor",
+          "rect": {
+            "x": 1105,
+            "y": 128,
+            "w": 119,
+            "h": 95
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "entrance"
+          },
+          "label": "Entrance"
+        },
+        {
+          "id": "door-1",
+          "kind": "decor",
+          "rect": {
+            "x": 1065,
+            "y": 524,
+            "w": 119,
+            "h": 119
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "door"
+          }
+        },
+        {
+          "id": "door-2",
+          "kind": "decor",
+          "rect": {
+            "x": 1461,
+            "y": 524,
+            "w": 119,
+            "h": 119
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "door"
+          }
+        },
         {
           "id": "table-t1",
           "kind": "table",
           "rect": {
-            "x": 536,
-            "y": 96,
-            "w": 200,
-            "h": 200
+            "x": 510,
+            "y": 179,
+            "w": 129,
+            "h": 129
           },
           "shape": "circle",
           "behavior": "none",
           "label": "T1",
           "props": {
-            "seats": 2
+            "seats": 2,
+            "chairs": true
           }
         },
         {
           "id": "table-t2",
           "kind": "table",
           "rect": {
-            "x": 816,
-            "y": 96,
-            "w": 200,
-            "h": 200
+            "x": 669,
+            "y": 179,
+            "w": 129,
+            "h": 129
           },
           "shape": "circle",
           "behavior": "none",
           "label": "T2",
           "props": {
-            "seats": 2
+            "seats": 2,
+            "chairs": true
           }
         },
         {
           "id": "table-t3",
           "kind": "table",
           "rect": {
-            "x": 1096,
-            "y": 96,
-            "w": 320,
-            "h": 200
+            "x": 837,
+            "y": 179,
+            "w": 208,
+            "h": 129
           },
           "shape": "rect",
           "behavior": "none",
           "label": "T3",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t4",
           "kind": "table",
           "rect": {
-            "x": 1496,
-            "y": 96,
-            "w": 320,
-            "h": 200
+            "x": 510,
+            "y": 332,
+            "w": 208,
+            "h": 135
           },
           "shape": "rect",
           "behavior": "none",
           "label": "T4",
           "props": {
-            "seats": 4
-          }
-        },
-        {
-          "id": "table-t5",
-          "kind": "table",
-          "rect": {
-            "x": 536,
-            "y": 416,
-            "w": 480,
-            "h": 220
-          },
-          "shape": "rect",
-          "behavior": "none",
-          "label": "T5",
-          "props": {
-            "seats": 6
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t6",
           "kind": "table",
           "rect": {
-            "x": 1096,
-            "y": 416,
-            "w": 240,
-            "h": 240
+            "x": 758,
+            "y": 328,
+            "w": 143,
+            "h": 143
           },
           "shape": "octagon",
           "behavior": "none",
           "label": "T6",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t7",
           "kind": "table",
           "rect": {
-            "x": 1416,
-            "y": 416,
-            "w": 240,
-            "h": 240
+            "x": 936,
+            "y": 328,
+            "w": 143,
+            "h": 143
           },
           "shape": "octagon",
           "behavior": "none",
           "label": "T7",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 22
+        },
+        {
+          "id": "table-t5",
+          "kind": "table",
+          "rect": {
+            "x": 510,
+            "y": 488,
+            "w": 297,
+            "h": 143
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "T5",
+          "props": {
+            "seats": 6,
+            "chairs": true
+          }
+        },
+        {
+          "id": "booth-1",
+          "kind": "decor",
+          "rect": {
+            "x": 1144,
+            "y": 322,
+            "w": 149,
+            "h": 59
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "booth"
+          },
+          "rotation": 90
+        },
+        {
+          "id": "plant-1",
+          "kind": "decor",
+          "rect": {
+            "x": 936,
+            "y": 530,
+            "w": 79,
+            "h": 79
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "counter-1",
+          "kind": "decor",
+          "rect": {
+            "x": 1759,
+            "y": 163,
+            "w": 95,
+            "h": 416
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "counter"
           }
         },
         {
           "id": "table-bar-1",
           "kind": "table",
           "rect": {
-            "x": 536,
-            "y": 776,
-            "w": 240,
-            "h": 160
+            "x": 1640,
+            "y": 187,
+            "w": 107,
+            "h": 107
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 1",
           "props": {
@@ -561,12 +1566,12 @@
           "id": "table-bar-2",
           "kind": "table",
           "rect": {
-            "x": 816,
-            "y": 776,
-            "w": 240,
-            "h": 160
+            "x": 1640,
+            "y": 318,
+            "w": 107,
+            "h": 107
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 2",
           "props": {
@@ -577,16 +1582,327 @@
           "id": "table-bar-3",
           "kind": "table",
           "rect": {
-            "x": 1096,
-            "y": 776,
-            "w": 240,
-            "h": 160
+            "x": 1640,
+            "y": 449,
+            "w": 107,
+            "h": 107
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 3",
           "props": {
             "seats": 1
+          }
+        },
+        {
+          "id": "table-h1",
+          "kind": "table",
+          "rect": {
+            "x": 1372,
+            "y": 183,
+            "w": 129,
+            "h": 129
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "label": "H1",
+          "props": {
+            "seats": 2,
+            "chairs": true
+          }
+        },
+        {
+          "id": "table-h2",
+          "kind": "table",
+          "rect": {
+            "x": 1372,
+            "y": 352,
+            "w": 129,
+            "h": 129
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "label": "H2",
+          "props": {
+            "seats": 2,
+            "chairs": true
+          }
+        },
+        {
+          "id": "pillar-1",
+          "kind": "decor",
+          "rect": {
+            "x": 1561,
+            "y": 372,
+            "w": 48,
+            "h": 48
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "props": {
+            "decor": "pillar"
+          }
+        },
+        {
+          "id": "fence-1",
+          "kind": "decor",
+          "rect": {
+            "x": 471,
+            "y": 952,
+            "w": 1427,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "fence-2",
+          "kind": "decor",
+          "rect": {
+            "x": 471,
+            "y": 683,
+            "w": 16,
+            "h": 285
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "fence-3",
+          "kind": "decor",
+          "rect": {
+            "x": 1882,
+            "y": 683,
+            "w": 16,
+            "h": 285
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "table-p1",
+          "kind": "table",
+          "rect": {
+            "x": 599,
+            "y": 748,
+            "w": 149,
+            "h": 149
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P1",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p2",
+          "kind": "table",
+          "rect": {
+            "x": 936,
+            "y": 748,
+            "w": 149,
+            "h": 149
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P2",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p3",
+          "kind": "table",
+          "rect": {
+            "x": 1273,
+            "y": 748,
+            "w": 149,
+            "h": 149
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P3",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p4",
+          "kind": "table",
+          "rect": {
+            "x": 1610,
+            "y": 748,
+            "w": 149,
+            "h": 149
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P4",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "plant-2",
+          "kind": "decor",
+          "rect": {
+            "x": 807,
+            "y": 788,
+            "w": 69,
+            "h": 69
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plant-3",
+          "kind": "decor",
+          "rect": {
+            "x": 1144,
+            "y": 788,
+            "w": 69,
+            "h": 69
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plant-4",
+          "kind": "decor",
+          "rect": {
+            "x": 1481,
+            "y": 788,
+            "w": 69,
+            "h": 69
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plan-main",
+          "kind": "button",
+          "rect": {
+            "x": 464,
+            "y": 16,
+            "w": 354,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Main",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "tables"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-dining",
+          "kind": "button",
+          "rect": {
+            "x": 826,
+            "y": 16,
+            "w": 354,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Dining Area",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-dining"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-bar",
+          "kind": "button",
+          "rect": {
+            "x": 1188,
+            "y": 16,
+            "w": 354,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Bar",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-bar"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-patio",
+          "kind": "button",
+          "rect": {
+            "x": 1550,
+            "y": 16,
+            "w": 354,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Patio",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-patio"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
           }
         },
         {
@@ -669,7 +1985,7 @@
           "rect": {
             "x": 16,
             "y": 348,
-            "w": 432,
+            "w": 208,
             "h": 150
           },
           "shape": "rect",
@@ -687,7 +2003,7 @@
           "id": "deliveries",
           "kind": "button",
           "rect": {
-            "x": 1696,
+            "x": 240,
             "y": 348,
             "w": 208,
             "h": 150
@@ -712,10 +2028,10 @@
           "id": "host",
           "kind": "button",
           "rect": {
-            "x": 1456,
-            "y": 914,
-            "w": 448,
-            "h": 150
+            "x": 1550,
+            "y": 976,
+            "w": 354,
+            "h": 88
           },
           "shape": "rect",
           "behavior": "blink",
@@ -737,10 +2053,10 @@
           "id": "tabs",
           "kind": "button",
           "rect": {
-            "x": 1456,
-            "y": 748,
-            "w": 448,
-            "h": 150
+            "x": 1188,
+            "y": 976,
+            "w": 354,
+            "h": 88
           },
           "shape": "rect",
           "behavior": "blink",
@@ -839,139 +2155,484 @@
             }
           }
         }
-      ],
-      "background": {
-        "texture": "woodfloor",
-        "fill": "#3b2a1a"
-      }
+      ]
     },
     {
       "id": "buttons-bottom",
       "name": "Buttons below",
       "description": "The floor on top, big buttons across the bottom.",
+      "background": {
+        "texture": "woodfloor",
+        "fill": "#3b2a1a"
+      },
       "zones": [
+        {
+          "id": "area-1",
+          "kind": "decor",
+          "rect": {
+            "x": 112,
+            "y": 107,
+            "w": 579,
+            "h": 366
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area"
+          },
+          "label": "Dining Area"
+        },
+        {
+          "id": "area-2",
+          "kind": "decor",
+          "rect": {
+            "x": 703,
+            "y": 107,
+            "w": 385,
+            "h": 366
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area",
+            "color": "#5b3a1e"
+          },
+          "label": "Bar"
+        },
+        {
+          "id": "area-3",
+          "kind": "decor",
+          "rect": {
+            "x": 101,
+            "y": 501,
+            "w": 997,
+            "h": 199
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area",
+            "color": "#2f5d3a"
+          },
+          "label": "Patio"
+        },
+        {
+          "id": "wall-1",
+          "kind": "decor",
+          "rect": {
+            "x": 101,
+            "y": 96,
+            "w": 429,
+            "h": 11
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-2",
+          "kind": "decor",
+          "rect": {
+            "x": 642,
+            "y": 96,
+            "w": 457,
+            "h": 11
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-3",
+          "kind": "decor",
+          "rect": {
+            "x": 101,
+            "y": 96,
+            "w": 11,
+            "h": 388
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-4",
+          "kind": "decor",
+          "rect": {
+            "x": 1088,
+            "y": 96,
+            "w": 11,
+            "h": 388
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-5",
+          "kind": "decor",
+          "rect": {
+            "x": 101,
+            "y": 473,
+            "w": 416,
+            "h": 11
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-6",
+          "kind": "decor",
+          "rect": {
+            "x": 600,
+            "y": 473,
+            "w": 194,
+            "h": 11
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-7",
+          "kind": "decor",
+          "rect": {
+            "x": 877,
+            "y": 473,
+            "w": 222,
+            "h": 11
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "window-1",
+          "kind": "decor",
+          "rect": {
+            "x": 171,
+            "y": 96,
+            "w": 125,
+            "h": 11
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-2",
+          "kind": "decor",
+          "rect": {
+            "x": 351,
+            "y": 96,
+            "w": 125,
+            "h": 11
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-3",
+          "kind": "decor",
+          "rect": {
+            "x": 766,
+            "y": 96,
+            "w": 111,
+            "h": 11
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-4",
+          "kind": "decor",
+          "rect": {
+            "x": 919,
+            "y": 96,
+            "w": 111,
+            "h": 11
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "wall-8",
+          "kind": "decor",
+          "rect": {
+            "x": 691,
+            "y": 107,
+            "w": 11,
+            "h": 125
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-9",
+          "kind": "decor",
+          "rect": {
+            "x": 691,
+            "y": 345,
+            "w": 11,
+            "h": 127
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "entrance-1",
+          "kind": "decor",
+          "rect": {
+            "x": 545,
+            "y": 113,
+            "w": 83,
+            "h": 66
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "entrance"
+          },
+          "label": "Entrance"
+        },
+        {
+          "id": "door-1",
+          "kind": "decor",
+          "rect": {
+            "x": 517,
+            "y": 390,
+            "w": 83,
+            "h": 83
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "door"
+          }
+        },
+        {
+          "id": "door-2",
+          "kind": "decor",
+          "rect": {
+            "x": 794,
+            "y": 390,
+            "w": 83,
+            "h": 83
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "door"
+          }
+        },
         {
           "id": "table-t1",
           "kind": "table",
           "rect": {
-            "x": 40,
-            "y": 24,
-            "w": 150,
-            "h": 150
+            "x": 129,
+            "y": 149,
+            "w": 90,
+            "h": 90
           },
           "shape": "circle",
           "behavior": "none",
           "label": "T1",
           "props": {
-            "seats": 2
+            "seats": 2,
+            "chairs": true
           }
         },
         {
           "id": "table-t2",
           "kind": "table",
           "rect": {
-            "x": 250,
-            "y": 24,
-            "w": 150,
-            "h": 150
+            "x": 240,
+            "y": 149,
+            "w": 90,
+            "h": 90
           },
           "shape": "circle",
           "behavior": "none",
           "label": "T2",
           "props": {
-            "seats": 2
+            "seats": 2,
+            "chairs": true
           }
         },
         {
           "id": "table-t3",
           "kind": "table",
           "rect": {
-            "x": 460,
-            "y": 24,
-            "w": 240,
-            "h": 150
+            "x": 358,
+            "y": 149,
+            "w": 145,
+            "h": 90
           },
           "shape": "rect",
           "behavior": "none",
           "label": "T3",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t4",
           "kind": "table",
           "rect": {
-            "x": 760,
-            "y": 24,
-            "w": 240,
-            "h": 150
+            "x": 129,
+            "y": 255,
+            "w": 145,
+            "h": 94
           },
           "shape": "rect",
           "behavior": "none",
           "label": "T4",
           "props": {
-            "seats": 4
-          }
-        },
-        {
-          "id": "table-t5",
-          "kind": "table",
-          "rect": {
-            "x": 40,
-            "y": 264,
-            "w": 360,
-            "h": 165
-          },
-          "shape": "rect",
-          "behavior": "none",
-          "label": "T5",
-          "props": {
-            "seats": 6
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t6",
           "kind": "table",
           "rect": {
-            "x": 460,
-            "y": 264,
-            "w": 180,
-            "h": 180
+            "x": 302,
+            "y": 253,
+            "w": 100,
+            "h": 100
           },
           "shape": "octagon",
           "behavior": "none",
           "label": "T6",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t7",
           "kind": "table",
           "rect": {
-            "x": 700,
-            "y": 264,
-            "w": 180,
-            "h": 180
+            "x": 427,
+            "y": 253,
+            "w": 100,
+            "h": 100
           },
           "shape": "octagon",
           "behavior": "none",
           "label": "T7",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 22
+        },
+        {
+          "id": "table-t5",
+          "kind": "table",
+          "rect": {
+            "x": 129,
+            "y": 365,
+            "w": 208,
+            "h": 100
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "T5",
+          "props": {
+            "seats": 6,
+            "chairs": true
+          }
+        },
+        {
+          "id": "booth-1",
+          "kind": "decor",
+          "rect": {
+            "x": 572,
+            "y": 248,
+            "w": 104,
+            "h": 42
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "booth"
+          },
+          "rotation": 90
+        },
+        {
+          "id": "plant-1",
+          "kind": "decor",
+          "rect": {
+            "x": 427,
+            "y": 394,
+            "w": 55,
+            "h": 55
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "counter-1",
+          "kind": "decor",
+          "rect": {
+            "x": 1002,
+            "y": 138,
+            "w": 66,
+            "h": 291
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "counter"
           }
         },
         {
           "id": "table-bar-1",
           "kind": "table",
           "rect": {
-            "x": 40,
-            "y": 534,
-            "w": 180,
-            "h": 120
+            "x": 919,
+            "y": 154,
+            "w": 75,
+            "h": 75
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 1",
           "props": {
@@ -982,12 +2643,12 @@
           "id": "table-bar-2",
           "kind": "table",
           "rect": {
-            "x": 250,
-            "y": 534,
-            "w": 180,
-            "h": 120
+            "x": 919,
+            "y": 246,
+            "w": 75,
+            "h": 75
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 2",
           "props": {
@@ -998,16 +2659,327 @@
           "id": "table-bar-3",
           "kind": "table",
           "rect": {
-            "x": 460,
-            "y": 534,
-            "w": 180,
-            "h": 120
+            "x": 919,
+            "y": 337,
+            "w": 75,
+            "h": 75
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 3",
           "props": {
             "seats": 1
+          }
+        },
+        {
+          "id": "table-h1",
+          "kind": "table",
+          "rect": {
+            "x": 732,
+            "y": 151,
+            "w": 90,
+            "h": 90
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "label": "H1",
+          "props": {
+            "seats": 2,
+            "chairs": true
+          }
+        },
+        {
+          "id": "table-h2",
+          "kind": "table",
+          "rect": {
+            "x": 732,
+            "y": 269,
+            "w": 90,
+            "h": 90
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "label": "H2",
+          "props": {
+            "seats": 2,
+            "chairs": true
+          }
+        },
+        {
+          "id": "pillar-1",
+          "kind": "decor",
+          "rect": {
+            "x": 863,
+            "y": 283,
+            "w": 33,
+            "h": 33
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "props": {
+            "decor": "pillar"
+          }
+        },
+        {
+          "id": "fence-1",
+          "kind": "decor",
+          "rect": {
+            "x": 101,
+            "y": 689,
+            "w": 997,
+            "h": 11
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "fence-2",
+          "kind": "decor",
+          "rect": {
+            "x": 101,
+            "y": 501,
+            "w": 11,
+            "h": 199
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "fence-3",
+          "kind": "decor",
+          "rect": {
+            "x": 1088,
+            "y": 501,
+            "w": 11,
+            "h": 199
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "table-p1",
+          "kind": "table",
+          "rect": {
+            "x": 191,
+            "y": 546,
+            "w": 104,
+            "h": 104
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P1",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p2",
+          "kind": "table",
+          "rect": {
+            "x": 427,
+            "y": 546,
+            "w": 104,
+            "h": 104
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P2",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p3",
+          "kind": "table",
+          "rect": {
+            "x": 662,
+            "y": 546,
+            "w": 104,
+            "h": 104
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P3",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p4",
+          "kind": "table",
+          "rect": {
+            "x": 898,
+            "y": 546,
+            "w": 104,
+            "h": 104
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P4",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "plant-2",
+          "kind": "decor",
+          "rect": {
+            "x": 337,
+            "y": 574,
+            "w": 48,
+            "h": 48
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plant-3",
+          "kind": "decor",
+          "rect": {
+            "x": 572,
+            "y": 574,
+            "w": 48,
+            "h": 48
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plant-4",
+          "kind": "decor",
+          "rect": {
+            "x": 808,
+            "y": 574,
+            "w": 48,
+            "h": 48
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plan-main",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 286,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Main",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "tables"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-dining",
+          "kind": "button",
+          "rect": {
+            "x": 310,
+            "y": 16,
+            "w": 286,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Dining Area",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-dining"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-bar",
+          "kind": "button",
+          "rect": {
+            "x": 604,
+            "y": 16,
+            "w": 286,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Bar",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-bar"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-patio",
+          "kind": "button",
+          "rect": {
+            "x": 898,
+            "y": 16,
+            "w": 286,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Patio",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-patio"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
           }
         },
         {
@@ -1090,7 +3062,7 @@
           "rect": {
             "x": 1200,
             "y": 332,
-            "w": 704,
+            "w": 348,
             "h": 170
           },
           "shape": "rect",
@@ -1108,10 +3080,10 @@
           "id": "deliveries",
           "kind": "button",
           "rect": {
-            "x": 1696,
-            "y": 348,
-            "w": 208,
-            "h": 150
+            "x": 1556,
+            "y": 332,
+            "w": 348,
+            "h": 170
           },
           "shape": "rect",
           "behavior": "blink",
@@ -1260,139 +3232,484 @@
             }
           }
         }
-      ],
-      "background": {
-        "texture": "woodfloor",
-        "fill": "#3b2a1a"
-      }
+      ]
     },
     {
       "id": "counter",
       "name": "Counter first",
       "description": "Quick Order, Takeout and Delivery big; a smaller floor.",
+      "background": {
+        "texture": "woodfloor",
+        "fill": "#3b2a1a"
+      },
       "zones": [
+        {
+          "id": "area-1",
+          "kind": "decor",
+          "rect": {
+            "x": 28,
+            "y": 184,
+            "w": 620,
+            "h": 392
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area"
+          },
+          "label": "Dining Area"
+        },
+        {
+          "id": "area-2",
+          "kind": "decor",
+          "rect": {
+            "x": 660,
+            "y": 184,
+            "w": 412,
+            "h": 392
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area",
+            "color": "#5b3a1e"
+          },
+          "label": "Bar"
+        },
+        {
+          "id": "area-3",
+          "kind": "decor",
+          "rect": {
+            "x": 16,
+            "y": 606,
+            "w": 1068,
+            "h": 214
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area",
+            "color": "#2f5d3a"
+          },
+          "label": "Patio"
+        },
+        {
+          "id": "wall-1",
+          "kind": "decor",
+          "rect": {
+            "x": 16,
+            "y": 173,
+            "w": 460,
+            "h": 12
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-2",
+          "kind": "decor",
+          "rect": {
+            "x": 594,
+            "y": 173,
+            "w": 490,
+            "h": 12
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-3",
+          "kind": "decor",
+          "rect": {
+            "x": 16,
+            "y": 173,
+            "w": 12,
+            "h": 415
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-4",
+          "kind": "decor",
+          "rect": {
+            "x": 1072,
+            "y": 173,
+            "w": 12,
+            "h": 415
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-5",
+          "kind": "decor",
+          "rect": {
+            "x": 16,
+            "y": 576,
+            "w": 445,
+            "h": 12
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-6",
+          "kind": "decor",
+          "rect": {
+            "x": 550,
+            "y": 576,
+            "w": 208,
+            "h": 12
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-7",
+          "kind": "decor",
+          "rect": {
+            "x": 847,
+            "y": 576,
+            "w": 237,
+            "h": 12
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "window-1",
+          "kind": "decor",
+          "rect": {
+            "x": 90,
+            "y": 173,
+            "w": 134,
+            "h": 12
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-2",
+          "kind": "decor",
+          "rect": {
+            "x": 283,
+            "y": 173,
+            "w": 134,
+            "h": 12
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-3",
+          "kind": "decor",
+          "rect": {
+            "x": 728,
+            "y": 173,
+            "w": 119,
+            "h": 12
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-4",
+          "kind": "decor",
+          "rect": {
+            "x": 891,
+            "y": 173,
+            "w": 119,
+            "h": 12
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "wall-8",
+          "kind": "decor",
+          "rect": {
+            "x": 648,
+            "y": 184,
+            "w": 12,
+            "h": 134
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-9",
+          "kind": "decor",
+          "rect": {
+            "x": 648,
+            "y": 440,
+            "w": 12,
+            "h": 136
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "entrance-1",
+          "kind": "decor",
+          "rect": {
+            "x": 491,
+            "y": 190,
+            "w": 89,
+            "h": 71
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "entrance"
+          },
+          "label": "Entrance"
+        },
+        {
+          "id": "door-1",
+          "kind": "decor",
+          "rect": {
+            "x": 461,
+            "y": 487,
+            "w": 89,
+            "h": 89
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "door"
+          }
+        },
+        {
+          "id": "door-2",
+          "kind": "decor",
+          "rect": {
+            "x": 758,
+            "y": 487,
+            "w": 89,
+            "h": 89
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "door"
+          }
+        },
         {
           "id": "table-t1",
           "kind": "table",
           "rect": {
-            "x": 24,
-            "y": 24,
-            "w": 144,
-            "h": 144
+            "x": 46,
+            "y": 229,
+            "w": 96,
+            "h": 96
           },
           "shape": "circle",
           "behavior": "none",
           "label": "T1",
           "props": {
-            "seats": 2
+            "seats": 2,
+            "chairs": true
           }
         },
         {
           "id": "table-t2",
           "kind": "table",
           "rect": {
-            "x": 225,
-            "y": 24,
-            "w": 144,
-            "h": 144
+            "x": 164,
+            "y": 229,
+            "w": 96,
+            "h": 96
           },
           "shape": "circle",
           "behavior": "none",
           "label": "T2",
           "props": {
-            "seats": 2
+            "seats": 2,
+            "chairs": true
           }
         },
         {
           "id": "table-t3",
           "kind": "table",
           "rect": {
-            "x": 427,
-            "y": 24,
-            "w": 230,
-            "h": 144
+            "x": 290,
+            "y": 229,
+            "w": 156,
+            "h": 96
           },
           "shape": "rect",
           "behavior": "none",
           "label": "T3",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t4",
           "kind": "table",
           "rect": {
-            "x": 715,
-            "y": 24,
-            "w": 230,
-            "h": 144
+            "x": 46,
+            "y": 343,
+            "w": 156,
+            "h": 101
           },
           "shape": "rect",
           "behavior": "none",
           "label": "T4",
           "props": {
-            "seats": 4
-          }
-        },
-        {
-          "id": "table-t5",
-          "kind": "table",
-          "rect": {
-            "x": 24,
-            "y": 254,
-            "w": 345,
-            "h": 158
-          },
-          "shape": "rect",
-          "behavior": "none",
-          "label": "T5",
-          "props": {
-            "seats": 6
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t6",
           "kind": "table",
           "rect": {
-            "x": 427,
-            "y": 254,
-            "w": 172,
-            "h": 172
+            "x": 231,
+            "y": 340,
+            "w": 107,
+            "h": 107
           },
           "shape": "octagon",
           "behavior": "none",
           "label": "T6",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t7",
           "kind": "table",
           "rect": {
-            "x": 657,
-            "y": 254,
-            "w": 172,
-            "h": 172
+            "x": 365,
+            "y": 340,
+            "w": 107,
+            "h": 107
           },
           "shape": "octagon",
           "behavior": "none",
           "label": "T7",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 22
+        },
+        {
+          "id": "table-t5",
+          "kind": "table",
+          "rect": {
+            "x": 46,
+            "y": 460,
+            "w": 222,
+            "h": 107
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "T5",
+          "props": {
+            "seats": 6,
+            "chairs": true
+          }
+        },
+        {
+          "id": "booth-1",
+          "kind": "decor",
+          "rect": {
+            "x": 520,
+            "y": 336,
+            "w": 111,
+            "h": 44
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "booth"
+          },
+          "rotation": 90
+        },
+        {
+          "id": "plant-1",
+          "kind": "decor",
+          "rect": {
+            "x": 365,
+            "y": 492,
+            "w": 59,
+            "h": 59
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "counter-1",
+          "kind": "decor",
+          "rect": {
+            "x": 980,
+            "y": 217,
+            "w": 71,
+            "h": 312
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "counter"
           }
         },
         {
           "id": "table-bar-1",
           "kind": "table",
           "rect": {
-            "x": 24,
-            "y": 513,
-            "w": 172,
-            "h": 115
+            "x": 891,
+            "y": 235,
+            "w": 80,
+            "h": 80
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 1",
           "props": {
@@ -1403,12 +3720,12 @@
           "id": "table-bar-2",
           "kind": "table",
           "rect": {
-            "x": 225,
-            "y": 513,
-            "w": 172,
-            "h": 115
+            "x": 891,
+            "y": 333,
+            "w": 80,
+            "h": 80
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 2",
           "props": {
@@ -1419,16 +3736,327 @@
           "id": "table-bar-3",
           "kind": "table",
           "rect": {
-            "x": 427,
-            "y": 513,
-            "w": 172,
-            "h": 115
+            "x": 891,
+            "y": 431,
+            "w": 80,
+            "h": 80
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 3",
           "props": {
             "seats": 1
+          }
+        },
+        {
+          "id": "table-h1",
+          "kind": "table",
+          "rect": {
+            "x": 691,
+            "y": 232,
+            "w": 96,
+            "h": 96
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "label": "H1",
+          "props": {
+            "seats": 2,
+            "chairs": true
+          }
+        },
+        {
+          "id": "table-h2",
+          "kind": "table",
+          "rect": {
+            "x": 691,
+            "y": 358,
+            "w": 96,
+            "h": 96
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "label": "H2",
+          "props": {
+            "seats": 2,
+            "chairs": true
+          }
+        },
+        {
+          "id": "pillar-1",
+          "kind": "decor",
+          "rect": {
+            "x": 832,
+            "y": 373,
+            "w": 36,
+            "h": 36
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "props": {
+            "decor": "pillar"
+          }
+        },
+        {
+          "id": "fence-1",
+          "kind": "decor",
+          "rect": {
+            "x": 16,
+            "y": 808,
+            "w": 1068,
+            "h": 12
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "fence-2",
+          "kind": "decor",
+          "rect": {
+            "x": 16,
+            "y": 606,
+            "w": 12,
+            "h": 214
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "fence-3",
+          "kind": "decor",
+          "rect": {
+            "x": 1072,
+            "y": 606,
+            "w": 12,
+            "h": 214
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "table-p1",
+          "kind": "table",
+          "rect": {
+            "x": 112,
+            "y": 655,
+            "w": 111,
+            "h": 111
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P1",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p2",
+          "kind": "table",
+          "rect": {
+            "x": 365,
+            "y": 655,
+            "w": 111,
+            "h": 111
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P2",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p3",
+          "kind": "table",
+          "rect": {
+            "x": 617,
+            "y": 655,
+            "w": 111,
+            "h": 111
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P3",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p4",
+          "kind": "table",
+          "rect": {
+            "x": 869,
+            "y": 655,
+            "w": 111,
+            "h": 111
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P4",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "plant-2",
+          "kind": "decor",
+          "rect": {
+            "x": 268,
+            "y": 684,
+            "w": 52,
+            "h": 52
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plant-3",
+          "kind": "decor",
+          "rect": {
+            "x": 520,
+            "y": 684,
+            "w": 52,
+            "h": 52
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plant-4",
+          "kind": "decor",
+          "rect": {
+            "x": 772,
+            "y": 684,
+            "w": 52,
+            "h": 52
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plan-main",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 261,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Main",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "tables"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-dining",
+          "kind": "button",
+          "rect": {
+            "x": 285,
+            "y": 16,
+            "w": 261,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Dining Area",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-dining"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-bar",
+          "kind": "button",
+          "rect": {
+            "x": 554,
+            "y": 16,
+            "w": 261,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Bar",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-bar"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-patio",
+          "kind": "button",
+          "rect": {
+            "x": 823,
+            "y": 16,
+            "w": 261,
+            "h": 72
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Patio",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-patio"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
           }
         },
         {
@@ -1465,7 +4093,7 @@
           "rect": {
             "x": 1100,
             "y": 332,
-            "w": 396,
+            "w": 260,
             "h": 220
           },
           "shape": "rect",
@@ -1486,9 +4114,9 @@
           "id": "delivery",
           "kind": "button",
           "rect": {
-            "x": 1508,
+            "x": 1372,
             "y": 332,
-            "w": 396,
+            "w": 260,
             "h": 220
           },
           "shape": "rect",
@@ -1529,10 +4157,10 @@
           "id": "deliveries",
           "kind": "button",
           "rect": {
-            "x": 1696,
-            "y": 348,
-            "w": 208,
-            "h": 150
+            "x": 1644,
+            "y": 332,
+            "w": 260,
+            "h": 220
           },
           "shape": "rect",
           "behavior": "blink",
@@ -1681,139 +4309,483 @@
             }
           }
         }
-      ],
-      "background": {
-        "texture": "woodfloor",
-        "fill": "#3b2a1a"
-      }
+      ]
     },
     {
       "id": "plain",
       "name": "Plain floor",
       "description": "The classic arrangement on a plain dark floor (no wood).",
+      "background": {
+        "fill": "#1d2128"
+      },
       "zones": [
+        {
+          "id": "area-1",
+          "kind": "decor",
+          "rect": {
+            "x": 38,
+            "y": 120,
+            "w": 828,
+            "h": 523
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area"
+          },
+          "label": "Dining Area"
+        },
+        {
+          "id": "area-2",
+          "kind": "decor",
+          "rect": {
+            "x": 883,
+            "y": 120,
+            "w": 551,
+            "h": 523
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area",
+            "color": "#5b3a1e"
+          },
+          "label": "Bar"
+        },
+        {
+          "id": "area-3",
+          "kind": "decor",
+          "rect": {
+            "x": 23,
+            "y": 683,
+            "w": 1427,
+            "h": 285
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "area",
+            "color": "#2f5d3a"
+          },
+          "label": "Patio"
+        },
+        {
+          "id": "wall-1",
+          "kind": "decor",
+          "rect": {
+            "x": 23,
+            "y": 104,
+            "w": 614,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-2",
+          "kind": "decor",
+          "rect": {
+            "x": 795,
+            "y": 104,
+            "w": 654,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-3",
+          "kind": "decor",
+          "rect": {
+            "x": 23,
+            "y": 104,
+            "w": 16,
+            "h": 555
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-4",
+          "kind": "decor",
+          "rect": {
+            "x": 1434,
+            "y": 104,
+            "w": 16,
+            "h": 555
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-5",
+          "kind": "decor",
+          "rect": {
+            "x": 23,
+            "y": 643,
+            "w": 594,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-6",
+          "kind": "decor",
+          "rect": {
+            "x": 736,
+            "y": 643,
+            "w": 277,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-7",
+          "kind": "decor",
+          "rect": {
+            "x": 1132,
+            "y": 643,
+            "w": 317,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "window-1",
+          "kind": "decor",
+          "rect": {
+            "x": 122,
+            "y": 104,
+            "w": 178,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-2",
+          "kind": "decor",
+          "rect": {
+            "x": 379,
+            "y": 104,
+            "w": 178,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-3",
+          "kind": "decor",
+          "rect": {
+            "x": 974,
+            "y": 104,
+            "w": 159,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "window-4",
+          "kind": "decor",
+          "rect": {
+            "x": 1192,
+            "y": 104,
+            "w": 159,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "window"
+          }
+        },
+        {
+          "id": "wall-8",
+          "kind": "decor",
+          "rect": {
+            "x": 867,
+            "y": 120,
+            "w": 16,
+            "h": 178
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "wall-9",
+          "kind": "decor",
+          "rect": {
+            "x": 867,
+            "y": 461,
+            "w": 16,
+            "h": 182
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "wall"
+          }
+        },
+        {
+          "id": "entrance-1",
+          "kind": "decor",
+          "rect": {
+            "x": 657,
+            "y": 128,
+            "w": 119,
+            "h": 95
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "entrance"
+          },
+          "label": "Entrance"
+        },
+        {
+          "id": "door-1",
+          "kind": "decor",
+          "rect": {
+            "x": 617,
+            "y": 524,
+            "w": 119,
+            "h": 119
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "door"
+          }
+        },
+        {
+          "id": "door-2",
+          "kind": "decor",
+          "rect": {
+            "x": 1013,
+            "y": 524,
+            "w": 119,
+            "h": 119
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "door"
+          }
+        },
         {
           "id": "table-t1",
           "kind": "table",
           "rect": {
-            "x": 96,
-            "y": 96,
-            "w": 200,
-            "h": 200
+            "x": 62,
+            "y": 179,
+            "w": 129,
+            "h": 129
           },
           "shape": "circle",
           "behavior": "none",
           "label": "T1",
           "props": {
-            "seats": 2
+            "seats": 2,
+            "chairs": true
           }
         },
         {
           "id": "table-t2",
           "kind": "table",
           "rect": {
-            "x": 376,
-            "y": 96,
-            "w": 200,
-            "h": 200
+            "x": 221,
+            "y": 179,
+            "w": 129,
+            "h": 129
           },
           "shape": "circle",
           "behavior": "none",
           "label": "T2",
           "props": {
-            "seats": 2
+            "seats": 2,
+            "chairs": true
           }
         },
         {
           "id": "table-t3",
           "kind": "table",
           "rect": {
-            "x": 656,
-            "y": 96,
-            "w": 320,
-            "h": 200
+            "x": 389,
+            "y": 179,
+            "w": 208,
+            "h": 129
           },
           "shape": "rect",
           "behavior": "none",
           "label": "T3",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t4",
           "kind": "table",
           "rect": {
-            "x": 1056,
-            "y": 96,
-            "w": 320,
-            "h": 200
+            "x": 62,
+            "y": 332,
+            "w": 208,
+            "h": 135
           },
           "shape": "rect",
           "behavior": "none",
           "label": "T4",
           "props": {
-            "seats": 4
-          }
-        },
-        {
-          "id": "table-t5",
-          "kind": "table",
-          "rect": {
-            "x": 96,
-            "y": 416,
-            "w": 480,
-            "h": 220
-          },
-          "shape": "rect",
-          "behavior": "none",
-          "label": "T5",
-          "props": {
-            "seats": 6
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t6",
           "kind": "table",
           "rect": {
-            "x": 656,
-            "y": 416,
-            "w": 240,
-            "h": 240
+            "x": 310,
+            "y": 328,
+            "w": 143,
+            "h": 143
           },
           "shape": "octagon",
           "behavior": "none",
           "label": "T6",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
           }
         },
         {
           "id": "table-t7",
           "kind": "table",
           "rect": {
-            "x": 976,
-            "y": 416,
-            "w": 240,
-            "h": 240
+            "x": 488,
+            "y": 328,
+            "w": 143,
+            "h": 143
           },
           "shape": "octagon",
           "behavior": "none",
           "label": "T7",
           "props": {
-            "seats": 4
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 22
+        },
+        {
+          "id": "table-t5",
+          "kind": "table",
+          "rect": {
+            "x": 62,
+            "y": 488,
+            "w": 297,
+            "h": 143
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "T5",
+          "props": {
+            "seats": 6,
+            "chairs": true
+          }
+        },
+        {
+          "id": "booth-1",
+          "kind": "decor",
+          "rect": {
+            "x": 696,
+            "y": 322,
+            "w": 149,
+            "h": 59
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "booth"
+          },
+          "rotation": 90
+        },
+        {
+          "id": "plant-1",
+          "kind": "decor",
+          "rect": {
+            "x": 488,
+            "y": 530,
+            "w": 79,
+            "h": 79
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "counter-1",
+          "kind": "decor",
+          "rect": {
+            "x": 1311,
+            "y": 163,
+            "w": 95,
+            "h": 416
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "counter"
           }
         },
         {
           "id": "table-bar-1",
           "kind": "table",
           "rect": {
-            "x": 96,
-            "y": 776,
-            "w": 240,
-            "h": 160
+            "x": 1192,
+            "y": 187,
+            "w": 107,
+            "h": 107
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 1",
           "props": {
@@ -1824,12 +4796,12 @@
           "id": "table-bar-2",
           "kind": "table",
           "rect": {
-            "x": 376,
-            "y": 776,
-            "w": 240,
-            "h": 160
+            "x": 1192,
+            "y": 318,
+            "w": 107,
+            "h": 107
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 2",
           "props": {
@@ -1840,16 +4812,327 @@
           "id": "table-bar-3",
           "kind": "table",
           "rect": {
-            "x": 656,
-            "y": 776,
-            "w": 240,
-            "h": 160
+            "x": 1192,
+            "y": 449,
+            "w": 107,
+            "h": 107
           },
-          "shape": "rounded",
+          "shape": "circle",
           "behavior": "none",
           "label": "Bar 3",
           "props": {
             "seats": 1
+          }
+        },
+        {
+          "id": "table-h1",
+          "kind": "table",
+          "rect": {
+            "x": 924,
+            "y": 183,
+            "w": 129,
+            "h": 129
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "label": "H1",
+          "props": {
+            "seats": 2,
+            "chairs": true
+          }
+        },
+        {
+          "id": "table-h2",
+          "kind": "table",
+          "rect": {
+            "x": 924,
+            "y": 352,
+            "w": 129,
+            "h": 129
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "label": "H2",
+          "props": {
+            "seats": 2,
+            "chairs": true
+          }
+        },
+        {
+          "id": "pillar-1",
+          "kind": "decor",
+          "rect": {
+            "x": 1113,
+            "y": 372,
+            "w": 48,
+            "h": 48
+          },
+          "shape": "circle",
+          "behavior": "none",
+          "props": {
+            "decor": "pillar"
+          }
+        },
+        {
+          "id": "fence-1",
+          "kind": "decor",
+          "rect": {
+            "x": 23,
+            "y": 952,
+            "w": 1427,
+            "h": 16
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "fence-2",
+          "kind": "decor",
+          "rect": {
+            "x": 23,
+            "y": 683,
+            "w": 16,
+            "h": 285
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "fence-3",
+          "kind": "decor",
+          "rect": {
+            "x": 1434,
+            "y": 683,
+            "w": 16,
+            "h": 285
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "fence"
+          }
+        },
+        {
+          "id": "table-p1",
+          "kind": "table",
+          "rect": {
+            "x": 151,
+            "y": 748,
+            "w": 149,
+            "h": 149
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P1",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p2",
+          "kind": "table",
+          "rect": {
+            "x": 488,
+            "y": 748,
+            "w": 149,
+            "h": 149
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P2",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p3",
+          "kind": "table",
+          "rect": {
+            "x": 825,
+            "y": 748,
+            "w": 149,
+            "h": 149
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P3",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "table-p4",
+          "kind": "table",
+          "rect": {
+            "x": 1162,
+            "y": 748,
+            "w": 149,
+            "h": 149
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "label": "P4",
+          "props": {
+            "seats": 4,
+            "chairs": true
+          },
+          "rotation": 45
+        },
+        {
+          "id": "plant-2",
+          "kind": "decor",
+          "rect": {
+            "x": 359,
+            "y": 788,
+            "w": 69,
+            "h": 69
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plant-3",
+          "kind": "decor",
+          "rect": {
+            "x": 696,
+            "y": 788,
+            "w": 69,
+            "h": 69
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plant-4",
+          "kind": "decor",
+          "rect": {
+            "x": 1033,
+            "y": 788,
+            "w": 69,
+            "h": 69
+          },
+          "shape": "rect",
+          "behavior": "none",
+          "props": {
+            "decor": "plant"
+          }
+        },
+        {
+          "id": "plan-main",
+          "kind": "button",
+          "rect": {
+            "x": 16,
+            "y": 16,
+            "w": 354,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Main",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "tables"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-dining",
+          "kind": "button",
+          "rect": {
+            "x": 378,
+            "y": 16,
+            "w": 354,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Dining Area",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-dining"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-bar",
+          "kind": "button",
+          "rect": {
+            "x": 740,
+            "y": 16,
+            "w": 354,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Bar",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-bar"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
+          }
+        },
+        {
+          "id": "plan-patio",
+          "kind": "button",
+          "rect": {
+            "x": 1102,
+            "y": 16,
+            "w": 354,
+            "h": 80
+          },
+          "shape": "rect",
+          "behavior": "blink",
+          "label": "Patio",
+          "actions": [
+            {
+              "type": "jump",
+              "mode": "replace",
+              "page": "floor-patio"
+            }
+          ],
+          "style": {
+            "normal": {
+              "fill": "#2a313d"
+            }
           }
         },
         {
@@ -1975,10 +5258,10 @@
           "id": "host",
           "kind": "button",
           "rect": {
-            "x": 1056,
-            "y": 914,
-            "w": 400,
-            "h": 150
+            "x": 1102,
+            "y": 976,
+            "w": 354,
+            "h": 88
           },
           "shape": "rect",
           "behavior": "blink",
@@ -2000,10 +5283,10 @@
           "id": "tabs",
           "kind": "button",
           "rect": {
-            "x": 1056,
-            "y": 748,
-            "w": 400,
-            "h": 150
+            "x": 740,
+            "y": 976,
+            "w": 354,
+            "h": 88
           },
           "shape": "rect",
           "behavior": "blink",
@@ -2102,10 +5385,7 @@
             }
           }
         }
-      ],
-      "background": {
-        "fill": "#1d2128"
-      }
+      ]
     }
   ]
 }

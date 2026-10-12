@@ -15,7 +15,9 @@ enum class Kind { Hidden, Label, Panel, Button };
 
 Kind kindOf(const Zone &z)
 {
-    if (z.kind == u"comment")
+    // Notes, and a floor plan's walls, doors and the rest (on a phone its
+    // tables are laid out in rows instead).
+    if (z.kind == u"comment" || z.kind == u"decor")
         return Kind::Hidden;
     if (z.kind == u"label")
         return Kind::Label;

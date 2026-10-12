@@ -54,4 +54,9 @@ struct Zone {
     bool operator==(const Zone &) const = default;
 };
 
+// How far a zone is turned, clockwise in degrees, 0 to 359 (its "rotation";
+// kept with the unknown keys so older layouts load unchanged). It turns
+// about its middle; `rect` is where it sits before turning.
+int rotationOf(const Zone &z);
+
 } // namespace vt::layout

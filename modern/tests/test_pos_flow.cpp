@@ -281,6 +281,21 @@ struct Screen : Session {
     void tapItem(QQuickItem *item)
     {
         REQUIRE(item);
+        // In a list scrolled past it: scrolled to it first, as a person would.
+        for (QQuickItem *p = item->parentItem(); p; p = p->parentItem()) {
+            if (!p->inherits("QQuickFlickable"))
+                continue;
+            QQuickItem *content = qvariant_cast<QQuickItem *>(p->property("contentItem"));
+            if (!content)
+                break;
+            const QRectF r = item->mapRectToItem(content, QRectF(0, 0, item->width(), item->height()));
+            const double y = p->property("contentY").toDouble();
+            if (r.top() < y || r.bottom() > y + p->height()) {
+                p->setProperty("contentY", std::max(0.0, r.center().y() - p->height() / 2));
+                QTest::qWait(30);
+            }
+            break;
+        }
         const QPointF centre = item->mapToScene(QPointF(item->width() / 2, item->height() / 2));
         QTest::mouseClick(window, Qt::LeftButton, {}, centre.toPoint());
         QTest::qWait(30);
@@ -303,6 +318,15 @@ struct Screen : Session {
     {
         for (QChar ch : labels)
             tapItem(findBy(keyboard(), "text", QString(ch)));
+    }
+
+    // Tap a table on the floor plan shown, by its name.
+    void tapTable(const QString &name)
+    {
+        QQuickItem *t = findBy(window->contentItem(), "text", name);
+        while (t && !QByteArray(t->metaObject()->className()).startsWith("ZoneItem"))
+            t = t->parentItem();
+        tapItem(t);
     }
 
     // Tap a visible keypad key by its text.
@@ -329,8 +353,7 @@ TEST_CASE("UI flow: keypad login, table map, guest pad, menu, pay", "[flow][ui]"
     REQUIRE(s.pos.loggedIn());
     CHECK(s.c.pageId() == u"tables"_s);
 
-    // Table zone T3 at (656, 96, 320x200).
-    s.tapCanvas(16 + 640 + 160, 16 + 80 + 100);
+    s.tapTable(u"T3"_s);
     CHECK(s.c.pageId() == u"guest-count"_s);
     s.tapKey(u"3"_s);
     CHECK(s.pos.entryGuests() == 3);
@@ -365,7 +388,7 @@ TEST_CASE("UI flow: keypad login, table map, guest pad, menu, pay", "[flow][ui]"
     CHECK(s.c.pageId() == u"tables"_s);
     CHECK_FALSE(s.pos.hasCheck());
     s.shot("4-tables");
-    s.tapCanvas(16 + 640 + 160, 16 + 80 + 100);
+    s.tapTable(u"T3"_s);
     CHECK(s.c.pageId() == u"index-lunch"_s);
     CHECK(s.pos.lines().size() == 2);
 
@@ -7135,19 +7158,19 @@ TEST_CASE("UI: start pages are chosen from the floor plans", "[flow][ui][setting
     // The tables, and the host's seating screen; not their phone versions.
     QStringList seed = names(s.c.pageChoices(u"floor"_s));
     seed.sort();
-    CHECK(seed == QStringList{QString(), u"Seating"_s, u"Tables"_s});
+    CHECK(seed == QStringList{QString(), u"Bar"_s, u"Dining Area"_s, u"Main"_s, u"Patio"_s, u"Seating"_s});
     CHECK(names(s.c.pageChoices()).contains(u"Manager"_s));   // other page fields: every page
 
-    // A second room the store draws itself: a page with a table map.
+    // Another room the store draws itself: a page with a table map.
     REQUIRE(s.c.jumpTo(u"tables"_s));
     s.c.enterEditMode();
     EditorController *e = s.c.editor();
-    REQUIRE_FALSE(e->newPage(u"Patio"_s, u"custom"_s, QString()).isEmpty());
+    REQUIRE_FALSE(e->newPage(u"Terrace"_s, u"custom"_s, QString()).isEmpty());
     REQUIRE_FALSE(e->addZone(u"tableMap"_s).isEmpty());
     REQUIRE(s.c.leaveEditMode(true));
     QTest::qWait(60);
     const QStringList floors = names(s.c.pageChoices(u"floor"_s));
-    CHECK(floors.contains(u"Patio"_s));
+    CHECK(floors.contains(u"Terrace"_s));
     CHECK_FALSE(floors.contains(u"Tables (phone)"_s));
     CHECK_FALSE(floors.contains(u"Manager"_s));
 
@@ -7167,5 +7190,163 @@ TEST_CASE("UI: start pages are chosen from the floor plans", "[flow][ui][setting
     };
     walk(server);
     REQUIRE(combo);
-    CHECK(combo->property("count").toInt() == 4);   // (the floor plan), Tables, Seating, Patio
+    CHECK(combo->property("count").toInt() == 7);   // (the floor plan), Main, Dining Area, Bar, Patio, Seating, Terrace
+}
+
+TEST_CASE("UI: floor plans: Main and each room, tabs between them, the same table on two", "[flow][ui][floorplans]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    const auto text = [&](const QString &t) { return Screen::findBy(s.window->contentItem(), "text", t); };
+    const auto table = [&](const QString &name) {
+        // The table zone itself (its name is drawn inside it).
+        QQuickItem *t = text(name);
+        while (t && !QByteArray(t->metaObject()->className()).startsWith("ZoneItem"))
+            t = t->parentItem();
+        return t;
+    };
+    // T1 open on Main: open on the Dining Area plan too.
+    REQUIRE(s.pos.selectTable(u"T1"_s) == app::PosService::TableNeedsGuests);
+    s.pos.entryKey(u"2"_s);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    s.pos.addItem(u"coffee"_s);
+    s.pos.releaseCheck();
+    REQUIRE(s.c.jumpTo(u"tables"_s));
+    QTest::qWait(150);
+    for (const char *name : {"T1", "T7", "Bar 1", "H1", "P1", "Main", "Dining Area", "Bar", "Patio", "Entrance"})
+        CHECK(text(QString::fromUtf8(name)));
+    CHECK(table(u"P1"_s)->property("rotation").toDouble() == 45);
+    s.shot("floor-main");
+
+    // The tabs: Dining Area.
+    s.tapItem(Screen::findBy(s.window->contentItem(), "zoneId", u"plan-dining"_s));
+    QTest::qWait(150);
+    CHECK(s.c.pageId() == u"floor-dining"_s);
+    CHECK(text(u"T1"_s));
+    CHECK_FALSE(text(u"P1"_s));
+    CHECK(Screen::findBy(s.window->contentItem(), "zoneId", u"plan-dining"_s)->property("current").toBool());
+    CHECK(text(u"1 check"_s) == nullptr);   // one check: the server's name shows instead
+    s.shot("floor-dining");
+    // Touching T1 here opens the same check.
+    s.tapItem(table(u"T1"_s));
+    QTest::qWait(150);
+    CHECK(s.pos.hasCheck());
+    CHECK(s.pos.checkInfo()[u"label"_s].toString().contains(u"T1"_s));
+    s.pos.releaseCheck();
+
+    for (const auto &[page, shot, has] : {std::tuple{"floor-bar", "floor-bar", "Bar 1"}, {"floor-patio", "floor-patio", "P4"}}) {
+        REQUIRE(s.c.jumpTo(QString::fromLatin1(page)));
+        QTest::qWait(150);
+        CHECK(text(QString::fromLatin1(has)));
+        s.shot(shot);
+    }
+    // Every table once (the host stand, the phone's list...).
+    QStringList names;
+    for (const QVariant &t : s.c.tables())
+        names << t.toMap()[u"name"_s].toString();
+    CHECK(names.size() == 16);
+    CHECK(names.removeDuplicates() == 0);
+}
+
+TEST_CASE("UI: drawing a floor plan: a wall, turned by the menu and by its handle; a table pasted onto another plan", "[flow][ui][floorplans]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"floor-patio"_s));
+    s.c.enterEditMode();
+    QTest::qWait(80);
+    EditorController *e = s.c.editor();
+    const auto rot = [&](const QString &id) {
+        for (const QVariant &g : e->geometry())
+            if (g.toMap()[u"id"_s] == id)
+                return g.toMap()[u"rot"_s].toInt();
+        return -1;
+    };
+    const auto rectOf = [&](const QString &id) {
+        for (const QVariant &g : e->geometry())
+            if (g.toMap()[u"id"_s] == id)
+                return g.toMap();
+        return QVariantMap();
+    };
+
+    // A wall from + Floor Plan: under the tables, turned 90 then back 15.
+    const QString wall = e->addZone(u"decor:wall"_s);
+    REQUIRE_FALSE(wall.isEmpty());
+    // Over the other pieces (the patio's floor, its fence...), under the tables.
+    const QVariantList order = e->geometry();
+    const auto at = [&](const QString &id) {
+        for (int i = 0; i < order.size(); ++i)
+            if (order[i].toMap()[u"id"_s] == id)
+                return i;
+        return -1;
+    };
+    CHECK(at(wall) > at(u"area-1"_s));
+    CHECK(at(wall) < at(u"table-p1"_s));
+    e->rotateSelection(90);
+    CHECK(rot(wall) == 90);
+    e->rotateSelection(-15);
+    CHECK(rot(wall) == 75);
+    e->undo();
+    CHECK(rot(wall) == 90);
+    e->setRotation(0);
+    CHECK(rot(wall) == 0);
+    // Between the plants and P2, where turning it up and down crosses no table.
+    e->commitRects({{wall, QVariantMap{{u"x"_s, 560}, {u"y"_s, 600}, {u"w"_s, 480}, {u"h"_s, 24}}}});
+
+    // Its round handle: dragged to the right of its middle, it turns 90.
+    QTest::qWait(60);
+    QQuickItem *knob = Screen::findBy(s.window->contentItem(), "objectName", u"rotateHandle"_s);
+    REQUIRE(knob);
+    const QVariantMap g = rectOf(wall);
+    const QPointF mid(g[u"x"_s].toDouble() + g[u"w"_s].toDouble() / 2, g[u"y"_s].toDouble() + g[u"h"_s].toDouble() / 2);
+    const QPoint from = knob->mapToScene(QPointF(knob->width() / 2, knob->height() / 2)).toPoint();
+    const QPoint to = s.at(mid.x() + 300, mid.y());
+    QTest::mousePress(s.window, Qt::LeftButton, {}, from);
+    for (int i = 1; i <= 10; ++i)
+        QTest::mouseMove(s.window, from + (to - from) * i / 10);
+    QTest::mouseRelease(s.window, Qt::LeftButton, {}, to);
+    QTest::qWait(60);
+    CHECK(rot(wall) == 90);
+    s.shot("floor-wall-turned");
+
+    // A turned piece is picked where it shows: above its middle (it runs up and down now).
+    e->clearSelection();
+    s.tapCanvas(mid.x(), mid.y() - 180);
+    CHECK(e->selection() == QStringList{wall});
+
+    // T1 copied from Main and pasted here: still T1 (the same table); pasted again here: a new one.
+    REQUIRE(s.c.showPage(u"tables"_s));
+    QTest::qWait(60);
+    e->select(u"table-t1"_s, false);
+    e->copy();
+    REQUIRE(s.c.showPage(u"floor-patio"_s));
+    QTest::qWait(60);
+    e->paste();
+    const QStringList pasted = e->selection();
+    REQUIRE(pasted.size() == 1);
+    CHECK(rectOf(pasted.first())[u"label"_s] == u"T1"_s);
+    e->paste();
+    CHECK(rectOf(e->selection().first())[u"label"_s] != u"T1"_s);
+    REQUIRE(s.c.leaveEditMode(false));
+}
+
+// Main's ready-made arrangements, for review (hidden: "[.floorArrangements]" with VTM_SHOTS).
+TEST_CASE("Floor plans: a picture of each arrangement of Main", "[.floorArrangements]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"tables"_s));
+    s.c.enterEditMode();
+    EditorController *e = s.c.editor();
+    for (const QVariant &a : e->arrangements()) {
+        const QString id = a.toMap()[u"id"_s].toString();
+        REQUIRE(e->useArrangement(id));
+        REQUIRE(s.c.leaveEditMode(true));
+        QTest::qWait(150);
+        s.shot(("arrangement-" + id).toLatin1().constData());
+        s.c.enterEditMode();
+        e = s.c.editor();
+    }
+    REQUIRE(e->useArrangement(u"classic"_s));
+    REQUIRE(s.c.leaveEditMode(true));
 }

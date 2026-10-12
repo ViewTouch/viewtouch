@@ -77,6 +77,33 @@ Rectangle {
                 Tool { text: qsTr("+ Text"); tip: qsTr("Add a text label"); onClicked: bar.editor.addZone("label") }
                 Tool { text: qsTr("+ Image"); tip: qsTr("Add an image button"); onClicked: bar.editor.addZone("image") }
                 Tool { text: qsTr("+ Note"); tip: qsTr("Add a note only visible while editing"); onClicked: bar.editor.addZone("comment") }
+                // Floor plans: tables, and walls, doors and the rest around them.
+                Tool {
+                    objectName: "addFloorPiece"
+                    text: qsTr("+ Floor Plan ▾")
+                    tip: qsTr("Add a table, a wall, a door, a bar counter… to draw the room")
+                    onClicked: floorMenu.popup(0, height)
+                    Menu {
+                        id: floorMenu
+                        MenuItem { text: qsTr("Table"); onTriggered: bar.editor.addZone("table") }
+                        MenuSeparator {}
+                        Repeater {
+                            model: [
+                                { decor: "wall", text: qsTr("Wall") }, { decor: "window", text: qsTr("Window") },
+                                { decor: "door", text: qsTr("Door") }, { decor: "counter", text: qsTr("Bar counter") },
+                                { decor: "booth", text: qsTr("Booth bench") }, { decor: "plant", text: qsTr("Plant") },
+                                { decor: "pillar", text: qsTr("Pillar") }, { decor: "fence", text: qsTr("Fence or rail") },
+                                { decor: "entrance", text: qsTr("Entrance") }, { decor: "area", text: qsTr("Area (a room's floor)") },
+                            ]
+                            delegate: MenuItem {
+                                required property var modelData
+                                objectName: "addDecor-" + modelData.decor
+                                text: modelData.text
+                                onTriggered: bar.editor.addZone("decor:" + modelData.decor)
+                            }
+                        }
+                    }
+                }
                 Tool {
                     text: qsTr("+ Panel ▾")
                     tip: qsTr("Add a working panel: order list, keypad, table map…")
@@ -107,6 +134,11 @@ Rectangle {
                     onClicked: arrangeMenu.popup(0, height)   // under the button (a touch has no pointer)
                     Menu {
                         id: arrangeMenu
+                        MenuItem { text: qsTr("Turn 90° ⟳"); onTriggered: bar.editor.rotateSelection(90) }
+                        MenuItem { text: qsTr("Turn 15° ⟳"); onTriggered: bar.editor.rotateSelection(15) }
+                        MenuItem { text: qsTr("Turn 15° ⟲"); onTriggered: bar.editor.rotateSelection(-15) }
+                        MenuItem { text: qsTr("Straighten"); onTriggered: bar.editor.setRotation(0) }
+                        MenuSeparator {}
                         MenuItem { text: qsTr("Bring to front"); onTriggered: bar.editor.bringToFront() }
                         MenuItem { text: qsTr("Send to back"); onTriggered: bar.editor.sendToBack() }
                         MenuSeparator {}

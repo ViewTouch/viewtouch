@@ -272,13 +272,20 @@ QStringList Layout::validate() const
             issues << u"no page has required role '%1'"_s.arg(role);
     }
 
-    QSet<QString> tables;
-    for (const QString &t : tableLabels()) {
-        if (t.isEmpty())
-            issues << u"a table has no name"_s;
-        else if (tables.contains(t.toLower()))
-            issues << u"table '%1' is on the floor more than once"_s.arg(t);
-        tables.insert(t.toLower());
+    // A table's name is the table: on one floor plan once; on another plan
+    // (Main and Dining Area) the same name is the same table.
+    for (const Page &p : pages) {
+        QSet<QString> tables;
+        for (const Zone &z : p.zones) {
+            if (z.kind != u"table")
+                continue;
+            const QString t = z.label.trimmed();
+            if (t.isEmpty())
+                issues << u"a table has no name"_s;
+            else if (tables.contains(t.toLower()))
+                issues << u"table '%1' is on page '%2' more than once"_s.arg(t, p.id);
+            tables.insert(t.toLower());
+        }
     }
 
     QSet<QString> roles;

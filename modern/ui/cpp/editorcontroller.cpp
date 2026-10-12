@@ -212,6 +212,7 @@ QVariantList EditorController::geometry() const
             {u"id"_s, z.id}, {u"kind"_s, z.kind}, {u"label"_s, z.label},
             {u"x"_s, z.rect.x()}, {u"y"_s, z.rect.y()}, {u"w"_s, z.rect.width()}, {u"h"_s, z.rect.height()},
             {u"inherited"_s, pz.inherited}, {u"owner"_s, pz.owner->id}, {u"ownerName"_s, pz.owner->name},
+            {u"rot"_s, vt::layout::rotationOf(z)},
         });
     }
     return out;
@@ -294,6 +295,7 @@ QString EditorController::kindName(const QString &kind) const
         {u"checklist"_s, QT_TR_NOOP("Checklists")},
         {u"hostStand"_s, QT_TR_NOOP("Seating (host stand)")},
         {u"deliveryBoard"_s, QT_TR_NOOP("Deliveries board")},
+        {u"decor"_s, QT_TR_NOOP("Floor plan piece")},
     };
     const auto it = names.constFind(kind);
     return it == names.cend() ? kind : tr(*it);
@@ -402,6 +404,8 @@ void EditorController::commitRects(const QVariantMap &rects)
     editor_.setZoneRects(pageId_, map);
 }
 
+void EditorController::rotateSelection(int degrees) { editor_.rotateZones(pageId_, selection_, degrees, true); }
+void EditorController::setRotation(int degrees) { editor_.rotateZones(pageId_, selection_, degrees, false); }
 void EditorController::bringToFront() { editor_.bringToFront(pageId_, selection_); }
 void EditorController::sendToBack() { editor_.sendToBack(pageId_, selection_); }
 

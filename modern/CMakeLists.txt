@@ -161,6 +161,7 @@ if(Qt6_FOUND)
             ui/qml/WidgetWaitlist.qml
             ui/qml/WidgetHostStand.qml
             ui/qml/WidgetDeliveryBoard.qml
+            ui/qml/WidgetDecor.qml
             ui/qml/WidgetSchedule.qml
             ui/qml/WidgetFactoryReset.qml
             ui/qml/WidgetNetwork.qml

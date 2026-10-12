@@ -25,6 +25,7 @@ Item {
     required property bool soldOut   // its item is 86'd: shown, not orderable
     required property var showWhen   // show/hide rules (LayoutController::ruleShows does the same)
     required property string itemId  // the item it orders (empty: it doesn't)
+    required property int zoneRotation   // turned about its middle, degrees clockwise
     // Running low: how many can still be made (-1: plenty, or not an item).
     readonly property int stockLeft: {
         if (!itemId || !pos || editing)
@@ -108,6 +109,7 @@ Item {
     property real dragDX: 0
     property real dragDY: 0
     property var previewRect: null
+    property var previewRotation: null   // turning it: the angle so far
 
     signal activated()
     signal explainRequested()   // held: what it does, instead of doing it
@@ -178,7 +180,7 @@ Item {
         "soldOutList", "orderList", "loginPad", "guestCount", "numPad",
         "paymentPanel", "checkList", "keyboard", "clock", "logoutPanel", "statusBar",
         "adminPanel", "reportView", "drawerPanel", "endOfDay", "splitCheck", "kitchenDisplay", "customerInfo",
-        "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "messageComposer", "network", "receiveDelivery", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard"]
+        "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "messageComposer", "network", "receiveDelivery", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard", "decor"]
     readonly property bool hasWidget: isWidget && builtWidgets.includes(kind)
     readonly property bool interactive: zoneEnabled && behavior !== "passthrough"
                                         && (kind === "button" || kind === "image")
@@ -196,12 +198,14 @@ Item {
     y: previewRect ? previewRect.y : zoneY + (editSelected ? dragDY : 0)
     width: previewRect ? previewRect.w : zoneW
     height: previewRect ? previewRect.h : zoneH
+    rotation: previewRotation !== null ? previewRotation : zoneRotation
     visible: (kind !== "comment" || editing) && (ruleShows || editing) && (!emptyLogo || editing)   // notes: editor only
     // Template zones are dimmed while editing: they belong to another page;
     // so are zones whose rules hide them right now.
     opacity: (st.opacity ?? 1) * (editing && (inherited || !ruleShows) ? 0.45 : 1)
 
     ZoneShape {
+        visible: zone.kind !== "decor"   // floor plan pieces draw themselves
         anchors.fill: parent
         shape: zone.shape
         st: zone.st

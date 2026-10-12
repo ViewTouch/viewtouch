@@ -3,6 +3,7 @@
 #include "layout/json_path.hh"
 #include "layout/schema.hh"
 
+#include <QHash>
 #include <QJsonArray>
 #include <QRegularExpression>
 #include <QSet>
@@ -98,6 +99,17 @@ QString uniquePageId(const Layout &layout, const QString &wanted)
 {
     return uniqueId(LayoutEditor::slugify(wanted),
                     [&](const QString &id) { return layout.page(id) != nullptr; });
+}
+
+// Floor plan pieces ("decor" zones, props.decor): their usual size.
+QSize decorSize(const QString &decor)
+{
+    static const QHash<QString, QSize> sizes = {
+        {u"wall"_s, {480, 24}}, {u"window"_s, {240, 24}}, {u"door"_s, {120, 120}}, {u"counter"_s, {640, 96}},
+        {u"booth"_s, {240, 96}}, {u"plant"_s, {96, 96}}, {u"pillar"_s, {64, 64}}, {u"fence"_s, {480, 24}},
+        {u"entrance"_s, {200, 96}}, {u"area"_s, {480, 320}},
+    };
+    return sizes.value(decor, {480, 24});
 }
 
 QSize defaultZoneSize(const QString &kind)
@@ -213,15 +225,19 @@ void LayoutEditor::setLayout(const Layout &layout)
 
 // --- zones -------------------------------------------------------------------
 
-QString LayoutEditor::addZone(const QString &pageId, const QString &kind, QRect rect)
+QString LayoutEditor::addZone(const QString &pageId, const QString &asked, QRect rect)
 {
     const Page *page = layout_.page(pageId);
-    if (!page || kind.isEmpty())
+    if (!page || asked.isEmpty())
         return {};
+    // "decor:wall": a floor plan piece of that sort.
+    const bool isDecor = asked.startsWith(u"decor");
+    const QString kind = isDecor ? u"decor"_s : asked;
+    const QString decor = isDecor ? (asked.section(u':', 1).isEmpty() ? u"wall"_s : asked.section(u':', 1)) : QString();
 
     const int grid = std::max(1, page->grid);
     if (rect.isEmpty()) {
-        const QSize size = defaultZoneSize(kind);
+        const QSize size = isDecor ? decorSize(decor) : defaultZoneSize(kind);
         QPoint pos((page->canvas.width() - size.width()) / 2, (page->canvas.height() - size.height()) / 2);
         pos = {pos.x() / grid * grid, pos.y() / grid * grid};
         rect = QRect(pos, size);
@@ -229,7 +245,8 @@ QString LayoutEditor::addZone(const QString &pageId, const QString &kind, QRect 
         // zones from the template count too.
         std::vector<QRect> taken;
         for (const Layout::PlacedZone &pz : layout_.effectiveZones(pageId))
-            taken.push_back(pz.zone->rect);
+            if (pz.zone->props.value(u"decor").toString() != u"area")   // a room's floor is free to put things on
+                taken.push_back(pz.zone->rect);
         const int step = std::max(grid, 8) * 2;
         std::optional<QRect> best;
         qint64 bestDistance = 0;
@@ -267,12 +284,27 @@ QString LayoutEditor::addZone(const QString &pageId, const QString &kind, QRect 
         z.shape = u"rounded"_s;
         z.props.insert(u"seats"_s, 4);
     }
+    if (isDecor) {
+        z.id = uniqueZoneId(*page, decor);
+        z.props.insert(u"decor"_s, decor);
+        z.label = decor == u"entrance" ? u"Entrance"_s : decor == u"area" ? u"Area"_s : QString();
+    }
     z.behavior = (kind == u"button" || kind == u"image") ? u"blink"_s : u"none"_s;
     z.rect = clampToCanvas(rect, page->canvas);
 
     const QString id = z.id;
-    const bool ok = apply(u"Add %1"_s.arg(kind), [&](Layout &l) {
-        l.page(pageId)->zones.append(z);
+    const bool ok = apply(u"Add %1"_s.arg(isDecor ? decor : kind), [&](Layout &l) {
+        // Walls and the rest go over the other pieces, under the tables; an
+        // area (a room's floor) under everything.
+        QList<Zone> &zones = l.page(pageId)->zones;
+        if (!isDecor) {
+            zones.append(z);
+        } else if (decor == u"area") {
+            zones.prepend(z);
+        } else {
+            const auto first = std::ranges::find_if(zones, [](const Zone &o) { return o.kind != u"decor"; });
+            zones.insert(first - zones.begin(), z);
+        }
         return true;
     });
     return ok ? id : QString();
@@ -335,6 +367,27 @@ bool LayoutEditor::nudgeZones(const QString &pageId, const QStringList &zoneIds,
             z->rect = clampToCanvas(z->rect.translated(dx, dy), page->canvas);
         return true;
     }, u"nudge:%1:%2"_s.arg(pageId, zoneIds.join(u',')));
+}
+
+bool LayoutEditor::rotateZones(const QString &pageId, const QStringList &zoneIds, int degrees, bool by)
+{
+    return apply(u"Rotate"_s, [&](Layout &l) {
+        Page *page = l.page(pageId);
+        if (!page)
+            return false;
+        bool any = false;
+        for (Zone *z : zonesOf(*page, zoneIds)) {
+            const int r = (((by ? layout::rotationOf(*z) + degrees : degrees) % 360) + 360) % 360;
+            if (r == layout::rotationOf(*z))
+                continue;
+            if (r == 0)
+                z->extra.remove(u"rotation"_s);
+            else
+                z->extra.insert(u"rotation"_s, r);
+            any = true;
+        }
+        return any;
+    });
 }
 
 bool LayoutEditor::bringToFront(const QString &pageId, const QStringList &zoneIds)
@@ -525,7 +578,12 @@ QStringList LayoutEditor::paste(const QString &pageId)
                 z.rect.translate(step, step);
             z.rect = clampToCanvas(z.rect, page->canvas);
             z.id = uniqueZoneId(*page, z.id);
-            if (z.kind == u"table" && l.tableLabels().contains(z.label.trimmed(), Qt::CaseInsensitive))
+            // A table pasted onto another floor plan stays the same table
+            // (Main and Dining Area both show T1); a second one on the same
+            // page is a new table.
+            if (z.kind == u"table" && std::ranges::any_of(page->zones, [&](const Zone &o) {
+                    return o.kind == u"table" && o.label.trimmed().compare(z.label.trimmed(), Qt::CaseInsensitive) == 0;
+                }))
                 z.label = l.nextTableLabel(z.label);
             created.append(z.id);
             page->zones.append(z);

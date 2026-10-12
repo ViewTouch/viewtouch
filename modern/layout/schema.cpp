@@ -214,7 +214,7 @@ QStringList widgetKinds()
             u"soldOutList"_s, u"orderList"_s, u"loginPad"_s, u"guestCount"_s, u"checkList"_s,
             u"paymentPanel"_s, u"numPad"_s, u"keyboard"_s, u"splitCheck"_s, u"drawerPanel"_s,
             u"reportView"_s, u"endOfDay"_s, u"logoutPanel"_s, u"clock"_s, u"statusBar"_s,
-            u"adminPanel"_s, u"kitchenDisplay"_s, u"customerInfo"_s, u"customerLookup"_s, u"giftCard"_s, u"waitlist"_s, u"schedule"_s, u"factoryReset"_s, u"messageComposer"_s, u"network"_s, u"receiveDelivery"_s, u"checkSearch"_s, u"orderLater"_s, u"menuGrid"_s, u"menuCategories"_s, u"menuBuilder"_s, u"timeClock"_s, u"dashboard"_s, u"checklist"_s, u"hostStand"_s, u"deliveryBoard"_s};
+            u"adminPanel"_s, u"kitchenDisplay"_s, u"customerInfo"_s, u"customerLookup"_s, u"giftCard"_s, u"waitlist"_s, u"schedule"_s, u"factoryReset"_s, u"messageComposer"_s, u"network"_s, u"receiveDelivery"_s, u"checkSearch"_s, u"orderLater"_s, u"menuGrid"_s, u"menuCategories"_s, u"menuBuilder"_s, u"timeClock"_s, u"dashboard"_s, u"checklist"_s, u"hostStand"_s, u"deliveryBoard"_s, u"decor"_s};
 }
 
 QStringList allKinds()
@@ -264,9 +264,22 @@ QJsonArray zoneFields(const QString &kind)
 
     if (kind == u"table") {
         out.append(with(field(u"label"_s, u"Table name"_s, u"string"_s, general), u"hint"_s,
-                        u"Shown on the table, checks and kitchen tickets. Each table needs its own name."_s));
+                        u"Shown on the table, checks and kitchen tickets. The same name on another floor plan is "
+                        u"the same table (Main and Dining Area both show T1); on one page each table needs its own."_s));
         out.append(with(intField(u"props.seats"_s, u"Seats"_s, general, 0, 99), u"hint"_s,
                         u"Shown while the table is free. 0 hides it."_s));
+        out.append(with(field(u"props.chairs"_s, u"Show chairs"_s, u"bool"_s, general), u"hint"_s,
+                        u"A chair around the table for each seat, like a floor plan."_s));
+    } else if (kind == u"decor") {
+        out.append(with(with(field(u"props.decor"_s, u"Piece"_s, u"enum"_s, general), u"options"_s,
+                             options({{"wall", "Wall"}, {"window", "Window"}, {"door", "Door"}, {"counter", "Bar counter"},
+                                      {"booth", "Booth bench"}, {"plant", "Plant"}, {"pillar", "Pillar"},
+                                      {"fence", "Fence or rail"}, {"entrance", "Entrance"}, {"area", "Area (a room's floor)"}})),
+                        u"hint"_s, u"Drawn on the floor plan; touching it does nothing."_s));
+        out.append(with(field(u"label"_s, u"Words on it"_s, u"string"_s, general), u"hint"_s,
+                        u"An area's name (Patio), Entrance, Restrooms… Empty: none."_s));
+        out.append(with(field(u"props.color"_s, u"Color"_s, u"color"_s, general), u"hint"_s,
+                        u"Empty: the usual for the piece (an area: faint)."_s));
     } else {
         out.append(with(field(u"label"_s, kind == u"comment" ? u"Note"_s : u"Text"_s, u"text"_s, general),
                         u"hint"_s, isWidgetKind(kind) ? u"Optional caption"_s
@@ -311,6 +324,9 @@ QJsonArray zoneFields(const QString &kind)
     out.append(intField(u"rect.w"_s, u"Width"_s, geo, 16, 7680));
     out.append(intField(u"rect.h"_s, u"Height"_s, geo, 16, 4320));
     out.append(with(intField(u"z"_s, u"Layer"_s, geo, -999, 999), u"hint"_s, u"Higher is drawn on top"_s));
+    out.append(with(with(intField(u"rotation"_s, u"Turned (degrees)"_s, geo, 0, 359), u"hint"_s,
+                         u"Clockwise about its middle. The round handle above it turns it too (15° at a time)."_s),
+                    u"step"_s, 15));
 
     if (touchable)
         out.append(field(u"actions"_s, u"When touched"_s, u"actions"_s, u"Actions"_s));

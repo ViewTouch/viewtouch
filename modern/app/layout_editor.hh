@@ -47,6 +47,8 @@ public:
     bool setZoneRects(const QString &pageId, const QHash<QString, QRect> &rects);
     // Consecutive nudges of the same zones merge into one undo step.
     bool nudgeZones(const QString &pageId, const QStringList &zoneIds, int dx, int dy);
+    // Turn zones about their middles: by `degrees` (by), or to it.
+    bool rotateZones(const QString &pageId, const QStringList &zoneIds, int degrees, bool by);
     bool bringToFront(const QString &pageId, const QStringList &zoneIds);
     bool sendToBack(const QString &pageId, const QStringList &zoneIds);
     // Align to the selection's bounding box.

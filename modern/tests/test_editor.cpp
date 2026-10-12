@@ -319,7 +319,7 @@ TEST_CASE("Tables are zones: added, duplicated and pasted with free names", "[ed
     REQUIRE(e.setZoneField(u"tables"_s, {added}, u"props.seats"_s, 6));
     CHECK(e.layout().page(u"tables"_s)->zone(added)->props.value(u"seats"_s).toInt() == 6);
     REQUIRE(e.setZoneField(u"tables"_s, {added}, u"label"_s, u"T1"_s));
-    CHECK(e.layout().validate().contains(u"table 'T1' is on the floor more than once"_s));
+    CHECK(e.layout().validate().contains(u"table 'T1' is on page 'tables' more than once"_s));
     CHECK(schema::isWidgetKind(u"table"_s));
 }
 
@@ -360,15 +360,16 @@ TEST_CASE("Widgets: their settings, built-in buttons and button look are in the 
 
 TEST_CASE("A new zone goes in free space, not on top of others", "[editor]")
 {
+    // The Bar's floor plan: room on both sides of the bar.
     LayoutEditor e(seed());
     const auto rectOf = [&](const QString &id) {
-        return e.layout().page(u"tables"_s)->zone(id)->rect;
+        return e.layout().page(u"floor-bar"_s)->zone(id)->rect;
     };
     for (int i = 0; i < 3; ++i) {
-        const QString id = e.addZone(u"tables"_s, u"button"_s);
+        const QString id = e.addZone(u"floor-bar"_s, u"button"_s);
         REQUIRE_FALSE(id.isEmpty());
-        for (const auto &pz : e.layout().effectiveZones(u"tables"_s))
-            if (pz.zone->id != id)
+        for (const auto &pz : e.layout().effectiveZones(u"floor-bar"_s))
+            if (pz.zone->id != id && pz.zone->props.value(u"decor").toString() != u"area")   // a room's floor: free
                 CHECK_FALSE(pz.zone->rect.intersects(rectOf(id)));
     }
 }

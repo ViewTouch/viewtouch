@@ -88,6 +88,8 @@ public:
     Q_INVOKABLE void duplicateSelection();
     Q_INVOKABLE void nudge(int dx, int dy);
     Q_INVOKABLE void commitRects(const QVariantMap &rects);   // id -> {x,y,w,h}
+    Q_INVOKABLE void rotateSelection(int degrees);   // by, clockwise
+    Q_INVOKABLE void setRotation(int degrees);       // to (the rotate handle)
     Q_INVOKABLE void bringToFront();
     Q_INVOKABLE void sendToBack();
     Q_INVOKABLE void align(const QString &how);       // left|hcenter|right|top|vcenter|bottom

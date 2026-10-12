@@ -2,6 +2,8 @@
 
 #include <QJsonArray>
 
+#include <cmath>
+
 using namespace Qt::StringLiterals;
 
 namespace vt::layout {
@@ -13,6 +15,12 @@ const QStringList kZoneKeys = {
     u"enabled"_s, u"actions"_s, u"props"_s,
 };
 } // namespace
+
+int rotationOf(const Zone &z)
+{
+    const int r = int(std::lround(z.extra.value(u"rotation").toDouble())) % 360;
+    return r < 0 ? r + 360 : r;
+}
 
 Zone Zone::fromJson(const QJsonObject &o)
 {
