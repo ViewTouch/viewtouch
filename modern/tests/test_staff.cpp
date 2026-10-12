@@ -379,6 +379,7 @@ TEST_CASE("Manager approval: a manager's PIN lets one void through, on the spot"
     QVariant result;
     pos.invoke(u"voidItem"_s, {}, [&](const QVariant &r) { result = r; });
     CHECK_FALSE(result.toBool());
+    REQUIRE(pos.giveReason(u"Took too long"_s));   // why, first
     QVariantMap approval = pos.approvalInfo();
     REQUIRE(approval[u"needed"_s].toBool());
     CHECK(approval[u"who"_s].toString().startsWith(u"Sam"_s));
@@ -397,6 +398,8 @@ TEST_CASE("Manager approval: a manager's PIN lets one void through, on the spot"
     // Once only: the next void asks again; Cancel puts it away.
     pos.selectLine(pos.lines().first().toMap()[u"id"_s].toLongLong());
     pos.invoke(u"voidItem"_s, {}, {});
+    CHECK_FALSE(pos.reasonAsk().isEmpty());                         // the reason was for that one too
+    REQUIRE(pos.giveReason(u"Took too long"_s));
     CHECK(pos.approvalInfo()[u"needed"_s].toBool());
     REQUIRE(pos.cancelApproval());
     CHECK_FALSE(pos.approvalInfo()[u"needed"_s].toBool());
@@ -682,4 +685,109 @@ TEST_CASE("Setup guide: name, receipt, taxes, items, your own manager, sample st
     CHECK_FALSE(pos.loginWithPin(u"1234"_s));                        // Morgan, a sample, is off
     REQUIRE(pos.loginWithPin(u"8642"_s));                            // Ana
     CHECK(app::settingsFromJson(app::toJson(pos.shared()->settings)).setupDone);
+}
+
+TEST_CASE("Voids and comps made on a screen ask why; the Exceptions report adds them up", "[reasons]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));   // a manager: no approval needed
+    const auto run = [&](const QString &method, const QVariantList &args = {}) {
+        bool ok = false;
+        pos.invoke(method, args, [&](const QVariant &r) { ok = r.toBool(); });
+        return ok;
+    };
+    pos.addItem(u"coffee"_s);
+    REQUIRE(pos.sendOrder());
+    const auto check = [&]() -> core::Check & {
+        return pos.shared()->open.at(pos.checkInfo()[u"id"_s].toLongLong());
+    };
+    const auto voided = [&] {
+        return std::ranges::count_if(check().lines, [](const core::OrderLine &l) { return l.voided; });
+    };
+
+    // Voiding a sent item: asks first; nothing happens until answered.
+    CHECK_FALSE(run(u"voidItem"_s));
+    QVariantMap ask = pos.reasonAsk();
+    REQUIRE(ask[u"kind"_s] == u"void"_s);
+    CHECK(ask[u"reasons"_s].toStringList().contains(u"Took too long"_s));
+    CHECK(voided() == 0);
+    // Cancel: not voided.
+    REQUIRE(pos.giveReason(QString()));
+    CHECK(pos.reasonAsk().isEmpty());
+    CHECK(voided() == 0);
+    // A reason: voided, with it.
+    CHECK_FALSE(run(u"voidItem"_s));
+    REQUIRE(pos.giveReason(u"Took too long"_s));
+    CHECK(pos.reasonAsk().isEmpty());
+    CHECK(voided() == 1);
+    CHECK(check().events.back().reason == "Took too long");
+    CHECK(app::checkFromJson(app::toJson(check()))->events.back().reason == "Took too long");
+
+    // A comp asks from its own list.
+    pos.addItem(u"coffee"_s);
+    CHECK_FALSE(run(u"tender"_s, {u"comp"_s}));
+    REQUIRE(pos.reasonAsk()[u"kind"_s] == u"comp"_s);
+    CHECK(pos.reasonAsk()[u"reasons"_s].toStringList().contains(u"Guest unhappy"_s));
+    REQUIRE(pos.giveReason(u"Guest unhappy"_s));
+    CHECK(check().events.back().kind == "discount");
+    CHECK(check().events.back().reason == "Guest unhappy");
+
+    // Without a screen (or with the store's setting off) nothing is asked.
+    pos.addItem(u"coffee"_s);
+    REQUIRE(pos.sendOrder());
+    REQUIRE(pos.voidItem());
+    CHECK(pos.reasonAsk().isEmpty());
+
+    const core::Report r = pos.buildReport(u"exceptions"_s);
+    CHECK(r.find("Took too long") == std::vector<std::string>{"Took too long", "1", r.find("Took too long")[2]});
+    CHECK(!r.find("Guest unhappy").empty());
+    CHECK(!r.find("(no reason given)").empty());
+
+    // Per employee: this manager isn't asked.
+    QVariantList staff = pos.adminRecords(u"employees"_s);
+    for (qsizetype i = 0; i < staff.size(); ++i) {
+        QVariantMap e = staff[i].toMap();
+        if (e[u"name"_s] != pos.userName())
+            continue;
+        e[u"reasons"_s] = u"skip"_s;
+        REQUIRE(pos.adminSave(u"employees"_s, int(i), e));
+        CHECK(app::employeeFromJson(app::toJson(pos.shared()->employees[i])).reasons == "skip");
+    }
+    pos.addItem(u"coffee"_s);
+    REQUIRE(pos.sendOrder());
+    CHECK(run(u"voidItem"_s));
+    CHECK(pos.reasonAsk().isEmpty());
+
+    // Store Settings: the lists, and asking at all.
+    QVariantMap store = pos.adminRecords(u"store"_s)[0].toMap();
+    store[u"voidReasons"_s] = u"Spilled\nWrong table"_s;
+    store[u"askReasons"_s] = false;
+    REQUIRE(pos.adminSave(u"store"_s, 0, store));
+    CHECK(pos.shared()->settings.voidReasons == std::vector<std::string>{"Spilled", "Wrong table"});
+    CHECK_FALSE(pos.shared()->settings.askReasons);
+    const auto back = app::settingsFromJson(app::toJson(pos.shared()->settings));
+    CHECK(back.voidReasons == pos.shared()->settings.voidReasons);
+    CHECK_FALSE(back.askReasons);
+}
+
+TEST_CASE("A void's reason waits through a manager's approval", "[reasons]")
+{
+    app::PosData data = test::seedPosData();
+    PosService pos(data, nullptr);
+    REQUIRE(pos.loginWithPin(u"1111"_s));   // a server: voids need a manager
+    REQUIRE_FALSE(pos.can(QString::fromLatin1(core::perm::Void)));
+    pos.addItem(u"coffee"_s);
+    REQUIRE(pos.sendOrder());
+    pos.invoke(u"voidItem"_s, {});
+    REQUIRE(pos.giveReason(u"Kitchen mistake"_s));
+    REQUIRE(pos.approvalInfo()[u"needed"_s].toBool());
+    REQUIRE(pos.approve(u"1234"_s));
+    const core::Check &c = pos.shared()->open.at(pos.checkInfo()[u"id"_s].toLongLong());
+    const core::CheckEvent &e = *std::ranges::find(c.events, std::string("void"), &core::CheckEvent::kind);
+    CHECK(e.reason == "Kitchen mistake");
+    // Used: the next void asks again.
+    pos.addItem(u"coffee"_s);
+    REQUIRE(pos.sendOrder());
+    pos.invoke(u"voidItem"_s, {});
+    CHECK_FALSE(pos.reasonAsk().isEmpty());
 }

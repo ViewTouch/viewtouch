@@ -21,9 +21,9 @@ QString timeOf(std::int64_t ms)
 }
 } // namespace
 
-void PosService::noteEvent(Check &c, const QString &what, const char *kind, Money amount)
+void PosService::noteEvent(Check &c, const QString &what, const char *kind, Money amount, const std::string &reason)
 {
-    c.note(now(), user() ? user()->name : std::string(), ss(what), kind, amount);
+    c.note(now(), user() ? user()->name : std::string(), ss(what), kind, amount, reason);
 }
 
 // Servers manage their own checks; managers anyone's.

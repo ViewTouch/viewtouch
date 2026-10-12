@@ -188,6 +188,7 @@ struct CheckEvent {
     std::string what;
     std::string kind;   // void | discount | reopen | transfer | move | merge | unpay | undiscount
     Money amount;       // what it was worth: the item voided, the discount, the payment taken back
+    std::string reason; // why (a void's or comp's reason, from the store's list)
 
     bool operator==(const CheckEvent &) const = default;
 };
@@ -288,9 +289,9 @@ struct Check {
     std::int64_t deliveredAt = 0;
 
     void note(std::int64_t at, const std::string &who, const std::string &what, const std::string &kind = {},
-              Money amount = {})
+              Money amount = {}, const std::string &reason = {})
     {
-        events.push_back({at, who, what, kind, amount});
+        events.push_back({at, who, what, kind, amount, reason});
     }
 
     OrderLine *line(std::int64_t lineId);

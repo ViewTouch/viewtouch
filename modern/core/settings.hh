@@ -190,6 +190,13 @@ struct PosSettings {
     // until it is counted (managers see it, unless set per employee). And
     // the bills and coins it is counted in, in cents, largest first.
     bool blindDrawerCount = false;
+    // Voids of sent items and discounts / comps made on a screen ask why,
+    // from these lists (unless set per employee); an empty list asks nothing.
+    bool askReasons = true;
+    std::vector<std::string> voidReasons{"Wrong item rung in", "Guest changed their mind", "Took too long",
+                                         "Guest didn't like it", "Kitchen mistake"};
+    std::vector<std::string> compReasons{"Guest unhappy", "Took too long", "Manager's guest", "Kitchen mistake",
+                                         "Regular / VIP"};
     std::vector<std::int64_t> cashDenominations{10000, 5000, 2000, 1000, 500, 100, 25, 10, 5, 1};
     // A second folder every backup is also copied to (a USB drive, a
     // network share), so one dead disk can't take the backups with it.

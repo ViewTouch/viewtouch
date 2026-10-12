@@ -303,7 +303,64 @@ bool PosService::cancelApproval()
 {
     approval_.clear();
     approved_.reset();
+    reason_.reset();
     emit sessionChanged();
+    return true;
+}
+
+bool PosService::haveReason(const char *kind, const QString &what)
+{
+    // Only on a screen (the operation can run again once answered).
+    if (!running_ || selfOrder_)
+        return true;
+    if (reason_ && reason_->method == running_->method)
+        return true;
+    const Employee *e = user();
+    const bool ask = e && !e->reasons.empty() ? e->reasons == "ask" : s_->settings.askReasons;
+    const auto &list = std::string_view(kind) == "void" ? s_->settings.voidReasons : s_->settings.compReasons;
+    if (!ask || list.empty())
+        return true;
+    // The starting lists, in the screen's language (a store's own reasons as typed).
+    static constexpr const char *kStarting[] = {
+        QT_TR_NOOP("Wrong item rung in"), QT_TR_NOOP("Guest changed their mind"), QT_TR_NOOP("Took too long"),
+        QT_TR_NOOP("Guest didn't like it"), QT_TR_NOOP("Kitchen mistake"), QT_TR_NOOP("Guest unhappy"),
+        QT_TR_NOOP("Manager's guest"), QT_TR_NOOP("Regular / VIP"),
+    };
+    QStringList reasons;
+    for (const std::string &r : list)
+        reasons << (std::ranges::find(kStarting, r, [](const char *k) { return std::string(k); }) != std::end(kStarting)
+                        ? tr(r.c_str()) : qs(r));
+    reasonAsk_ = {{u"kind"_s, QString::fromLatin1(kind)}, {u"what"_s, what}, {u"reasons"_s, reasons}};
+    reasonMethod_ = running_->method;
+    reasonArgs_ = running_->args;
+    emit sessionChanged();
+    return false;
+}
+
+std::string PosService::takeReason()
+{
+    if (!reason_ || !running_ || reason_->method != running_->method)
+        return {};
+    const std::string r = reason_->reason;
+    reason_.reset();
+    return r;
+}
+
+bool PosService::giveReason(const QString &reason)
+{
+    if (reasonAsk_.isEmpty())
+        return fail(tr("Nothing is waiting for a reason."));
+    const QString method = reasonMethod_;
+    const QVariantList args = reasonArgs_;
+    reasonAsk_.clear();
+    emit sessionChanged();
+    if (reason.trimmed().isEmpty())
+        return true;   // not after all
+    reason_ = GivenReason{method, ss(reason.trimmed().left(80))};
+    invoke(method, args);
+    // Used, or kept only while a manager's approval is waiting for it.
+    if (!approval_.value(u"needed"_s).toBool())
+        reason_.reset();
     return true;
 }
 
@@ -1088,13 +1145,15 @@ bool PosService::voidItem()
         rememberChange(*c, *l, true, tr("Removed %1").arg(name));
         c->removeLine(l->id);
     } else {
+        if (!haveReason("void", tr("Void %1").arg(name)))
+            return false;
         if (!require(perm::Void, tr("Voiding sent items")))
             return false;
         const Money was = l->total();
         c->voidLine(l->id);
         if (!c->training)
             takeStock({*l}, -1);   // not made: back on the shelf
-        noteEvent(*c, tr("Voided %1 (%2)").arg(name, format(was)), "void", was);
+        noteEvent(*c, tr("Voided %1 (%2)").arg(name, format(was)), "void", was, takeReason());
         if (s_->printer && !c->training)
             s_->printer->printKitchen(s_->settings, *c, {*l}, true);
         emit notice(tr("Voided %1").arg(name));
@@ -1456,6 +1515,8 @@ bool PosService::tender(const QString &tenderId, std::optional<std::int64_t> amo
         emit entryChanged();
         return chargeHouseAccount(*c, *t, amount);
     }
+    if (t->kind == TenderKind::Discount && !t->staffMeal && !haveReason("comp", qs(t->name)))
+        return false;
     if (t->kind == TenderKind::Discount && !require(perm::Discount, tr("Discounts and comps")))
         return false;
     Payment &paid = c->addPayment(*t, amount);
@@ -1470,7 +1531,7 @@ bool PosService::tender(const QString &tenderId, std::optional<std::int64_t> amo
     emit entryChanged();
     const Totals after = c->totals(s_->settings.tax);
     if (t->kind == TenderKind::Discount)   // for the audit trail and the exceptions report
-        noteEvent(*c, tr("Discount: %1").arg(qs(t->name)), "discount", after.discounts - before.discounts);
+        noteEvent(*c, tr("Discount: %1").arg(qs(t->name)), "discount", after.discounts - before.discounts, takeReason());
     if (after.change.cents() > 0)
         emit notice(tr("Change due: %1").arg(format(after.change)));
     else
@@ -1493,6 +1554,8 @@ bool PosService::customDiscount(bool percent)
     const Totals before = c->totals(s_->settings.tax);
     if (!percent && Money::fromCents(typed) > before.items - before.discounts)
         return fail(tr("That's more than the items on the check."));
+    if (!haveReason("comp", percent ? tr("%1% off").arg(typed) : tr("%1 off").arg(format(Money::fromCents(typed)))))
+        return false;
     if (!require(perm::Discount, tr("Discounts and comps")))
         return false;
     Tender t;
@@ -1506,7 +1569,7 @@ bool PosService::customDiscount(bool percent)
     entry_.clear();
     emit entryChanged();
     const Totals after = c->totals(s_->settings.tax);
-    noteEvent(*c, tr("Discount: %1").arg(qs(t.name)), "discount", after.discounts - before.discounts);
+    noteEvent(*c, tr("Discount: %1").arg(qs(t.name)), "discount", after.discounts - before.discounts, takeReason());
     emit notice(tr("%1 applied").arg(qs(t.name)));
     changed(*c);
     return true;
@@ -2571,6 +2634,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"countDrawer"_s, [](PosService &p, const QVariantList &) { return QVariant(p.countDrawer()); }},
         {u"countDrawerById"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.countDrawerById(a.value(0).toLongLong())); }},
+        {u"giveReason"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.giveReason(a.value(0).toString())); }},
         {u"countDrawerPieces"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.countDrawerPieces(a.value(0).toLongLong(), a.value(1).toList())); }},
         {u"endOfDay"_s, [](PosService &p, const QVariantList &) { return QVariant(p.endOfDay()); }},

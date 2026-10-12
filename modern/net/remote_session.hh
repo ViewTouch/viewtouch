@@ -148,6 +148,7 @@ public:
     QVariantMap selfOrderInfo() const override { return v(u"selfOrder").toMap(); }
     QVariantMap clockInJobs() const override { return v(u"clockInJobs").toMap(); }
     QVariantMap cashTipsAsk() const override { return v(u"cashTipsAsk").toMap(); }
+    QVariantMap reasonAsk() const override { return v(u"reasonAsk").toMap(); }
     QVariantMap timeClock() const override { return v(u"timeClock").toMap(); }
     QVariantMap receiving() const override { return v(u"receiving").toMap(); }
     QVariantMap checkSearch() const override { return v(u"checkSearch").toMap(); }

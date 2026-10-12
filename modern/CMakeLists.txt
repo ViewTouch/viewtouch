@@ -160,6 +160,7 @@ if(Qt6_FOUND)
             ui/qml/JobChooser.qml
             ui/qml/CashTipsPrompt.qml
             ui/qml/DrawerCount.qml
+            ui/qml/ReasonSheet.qml
             ui/qml/TouchKeyboard.qml
             ui/qml/ApprovalPad.qml
             ui/qml/MessageBanner.qml

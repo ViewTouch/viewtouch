@@ -661,7 +661,7 @@ Report exceptionsReport(const std::vector<const Check *> &checks, const std::vec
                 ++t.times;
                 t.amount += e.amount;
                 if (k.money && e.amount.cents() != 0)
-                    biggest.push_back({e.amount, e.what, c, e.who});
+                    biggest.push_back({e.amount, e.reason.empty() ? e.what : e.what + " (" + e.reason + ")", c, e.who});
             }
         }
         if (byWho.empty())
@@ -680,6 +680,27 @@ Report exceptionsReport(const std::vector<const Check *> &checks, const std::vec
             all.amount += t.amount;
         }
         r.total({"All", count(all.times), k.money ? ctx.money(all.amount) : ""});
+
+        // Voids and comps: why, when the screen asked.
+        if (k.kinds.front() != "void" && k.kinds.front() != "discount")
+            continue;
+        std::map<std::string, Tally> byReason;
+        bool reasons = false;
+        for (const Check *c : checks)
+            for (const CheckEvent &e : c->events)
+                if (std::ranges::find(k.kinds, e.kind) != k.kinds.end()) {
+                    reasons = reasons || !e.reason.empty();
+                    Tally &t = byReason[e.reason.empty() ? std::string("(no reason given)") : e.reason];
+                    ++t.times;
+                    t.amount += e.amount;
+                }
+        if (!reasons)
+            continue;
+        r.section(k.kinds.front() == "void" ? "Voids by reason" : "Discounts and comps by reason");
+        std::vector<std::pair<std::string, Tally>> why(byReason.begin(), byReason.end());
+        std::ranges::stable_sort(why, [](const auto &a, const auto &b) { return a.second.amount.cents() > b.second.amount.cents(); });
+        for (const auto &[reason, t] : why)
+            r.line({reason, count(t.times), ctx.money(t.amount)});
     }
 
     std::map<std::string, std::int64_t> noSales;

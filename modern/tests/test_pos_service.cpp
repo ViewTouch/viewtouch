@@ -182,6 +182,7 @@ TEST_CASE("Payments: exact card, cash change, discount, undo, close", "[pos]")
     CHECK_FALSE(t.pos.tender(u"discount"_s));
     CHECK(t.balance() == 1353);
     t.pos.invoke(u"tender"_s, {u"discount"_s});
+    REQUIRE(t.pos.giveReason(u"Guest unhappy"_s));
     REQUIRE(t.pos.approve(u"1234"_s));
     CHECK(t.balance() == 1218);
 

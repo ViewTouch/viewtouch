@@ -279,6 +279,16 @@ struct Screen : Session {
         return nullptr;
     }
 
+    // Voids and comps ask why first (Store Settings): the first reason.
+    void giveReason()
+    {
+        QQuickItem *r = findBy(window->contentItem(), "objectName", u"reason-0"_s);
+        REQUIRE(r);
+        REQUIRE(r->isVisible());
+        tapItem(r);
+        QTest::qWait(60);
+    }
+
     void tapItem(QQuickItem *item)
     {
         REQUIRE(item);
@@ -903,6 +913,8 @@ TEST_CASE("UI: after Send a server can't void or change items without a manager'
     // Void asks for a manager: a server's own PIN doesn't do it.
     s.c.activate(u"flow-void"_s);
     QTest::qWait(80);
+    s.shot("66-void-reason");
+    s.giveReason();
     REQUIRE(find(u"approvalKey-OK"_s));
     s.shot("64-manager-approval");
     const auto type = [&](const QString &pin) {
@@ -952,6 +964,7 @@ TEST_CASE("UI: discounts are a manager's: $ Off and % Off of the amount typed", 
     // A comp from the server: a manager's PIN first.
     s.c.activate(u"tender-comp"_s);
     QTest::qWait(60);
+    s.giveReason();
     REQUIRE(find(u"approvalKey-OK"_s));
     s.tapItem(find(u"approvalKey-Cancel"_s));
     QTest::qWait(40);
@@ -961,6 +974,7 @@ TEST_CASE("UI: discounts are a manager's: $ Off and % Off of the amount typed", 
     s.pos.entryKey(u"500"_s);
     s.c.activate(u"off-amount"_s);
     QTest::qWait(60);
+    s.giveReason();
     REQUIRE(find(u"approvalKey-OK"_s));
     type(u"1234"_s);
     CHECK(discounts() == u"-$5.00"_s);
@@ -975,6 +989,7 @@ TEST_CASE("UI: discounts are a manager's: $ Off and % Off of the amount typed", 
     s.pos.entryKey(u"20"_s);
     s.c.activate(u"off-percent"_s);
     QTest::qWait(60);
+    s.giveReason();
     CHECK_FALSE(find(u"approvalKey-OK"_s));
     CHECK(discounts() == u"-$7.50"_s);                          // 5.00 + 20% of 12.50
     CHECK_FALSE(s.pos.customDiscount(true));                    // nothing typed
@@ -4515,6 +4530,7 @@ TEST_CASE("UI: a server's void waits for a manager's PIN on the same screen", "[
     QTest::qWait(50);
     s.c.activate(u"flow-void"_s);                                // Void, as Sam
     QTest::qWait(80);
+    s.giveReason();
     CHECK(s.pos.approvalInfo()[u"needed"_s].toBool());
     s.shot("19-approval");
     std::function<QQuickItem *(QQuickItem *, const QString &)> named = [&](QQuickItem *root, const QString &name) -> QQuickItem * {

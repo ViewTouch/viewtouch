@@ -68,6 +68,9 @@ struct Employee {
     // Counting a drawer or bank: "blind" (not seeing what's expected), "sees",
     // or empty for the store's setting (PosSettings::blindDrawerCount).
     std::string blindCount;
+    // Asked why on a void or comp: "ask", "skip", or empty for the store's
+    // setting (PosSettings::askReasons).
+    std::string reasons;
     // In the tip pool: "" by their job (PosSettings::tipPool), "in" always
     // (a full share), "out" never (they keep their own tips).
     std::string tipPool;

@@ -389,6 +389,7 @@ TEST_CASE("Staff meals, and items discounts leave out", "[menu][prices][discount
     pos.addItem(u"caesar"_s);
     pos.finishChoosing();
     pos.invoke(u"tender"_s, {u"discount"_s});       // 10% of the cobb only (a manager's PIN)
+    REQUIRE(pos.giveReason(u"Guest unhappy"_s));
     REQUIRE(pos.approve(u"1234"_s));
     t = pos.totals();
     CHECK(t[u"discounts"_s] == u"-$1.25"_s);

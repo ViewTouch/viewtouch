@@ -225,7 +225,7 @@ QVariantMap PosService::checkSearch() const
         // Everything that happened to it, oldest first: the audit trail.
         QVariantList events;
         for (const CheckEvent &e : c.events)
-            events.append(QVariantMap{{u"when"_s, when(e.at)}, {u"who"_s, qs(e.who)}, {u"what"_s, qs(e.what)},
+            events.append(QVariantMap{{u"when"_s, when(e.at)}, {u"who"_s, qs(e.who)}, {u"what"_s, e.reason.empty() ? qs(e.what) : u"%1 · %2"_s.arg(qs(e.what), qs(e.reason))},
                                       {u"kind"_s, qs(e.kind)}});
         QVariantList refunds;
         for (const Refund &r : c.refunds)

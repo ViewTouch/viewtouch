@@ -371,6 +371,9 @@ public:
     void cancelClockIn();
     QVariantMap clockInJobs() const override;
     QVariantMap cashTipsAsk() const override;
+    QVariantMap reasonAsk() const override { return reasonAsk_; }
+    // Answers reasonAsk: the void or comp goes ahead with it ("": it doesn't).
+    bool giveReason(const QString &reason);
     // The cash tips kept on the shift just clocked out ("12.50"; "" or "0": none).
     bool declareCashTips(const QString &amount);
     QVariantMap timeClock() const override;
@@ -1022,6 +1025,16 @@ private:
     // Waiting for a manager's PIN: {needed, action, permission}; and the
     // one-time approval that lets the operation through.
     QVariantMap approval_;
+    // Why: a void or comp made on a screen waits for its reason (reasonAsk_),
+    // then runs again with it (reason_, for that operation only).
+    struct GivenReason { QString method; std::string reason; };
+    std::optional<GivenReason> reason_;
+    QVariantMap reasonAsk_;
+    QString reasonMethod_;
+    QVariantList reasonArgs_;
+    // Whether this can go ahead: no reason needed, or given. Else asks (false).
+    bool haveReason(const char *kind, const QString &what);
+    std::string takeReason();
     QVariantList approvalArgs_;
     QString approvalMethod_;
     struct Approved { std::string permission; std::string by; };
@@ -1079,7 +1092,7 @@ private:
     QString dueText(std::int64_t at) const;                 // "6:30 PM", "tomorrow 6:30 PM"
     bool waitingForLater(const core::Check &c) const;       // not the kitchen's yet
     bool forAnotherDay(const core::Check &c) const;
-    void noteEvent(core::Check &c, const QString &what, const char *kind, Money amount = {});
+    void noteEvent(core::Check &c, const QString &what, const char *kind, Money amount = {}, const std::string &reason = {});
     bool mayManage(const core::Check &c, const QString &action);
     bool mayOpen(const core::Check &c) const;
     QStringList onItOf(const core::MenuItem &m) const;

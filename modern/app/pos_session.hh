@@ -113,6 +113,8 @@ class PosSession : public QObject {
     // Clocking in with more than one job: {who, jobs: [{role, name}]}, else empty.
     Q_PROPERTY(QVariantMap clockInJobs READ clockInJobs NOTIFY sessionChanged)
     Q_PROPERTY(QVariantMap cashTipsAsk READ cashTipsAsk NOTIFY sessionChanged)
+    // A void or comp waiting for its reason: {kind: "void" | "comp", what, reasons}.
+    Q_PROPERTY(QVariantMap reasonAsk READ reasonAsk NOTIFY sessionChanged)
     // The Time Clock screen: who typed their PIN (not logged in), their status,
     // today's hours and their shifts; empty until someone does.
     Q_PROPERTY(QVariantMap timeClock READ timeClock NOTIFY sessionChanged)
@@ -296,6 +298,7 @@ public:
     virtual QVariantMap clockInJobs() const = 0;
     // Just clocked out here: the cash tips they kept? ({who, punchId}; {} none)
     virtual QVariantMap cashTipsAsk() const = 0;
+    virtual QVariantMap reasonAsk() const = 0;
     virtual QVariantMap timeClock() const = 0;
     virtual QVariantMap receiving() const = 0;
     virtual QVariantMap checkSearch() const = 0;
@@ -542,6 +545,8 @@ public:
     }
     Q_INVOKABLE void removeMessage(const QString &id) { invoke(QStringLiteral("removeMessage"), {id}); }
     Q_INVOKABLE void cancelApproval() { invoke(QStringLiteral("cancelApproval")); }
+    // The reason for the void or comp asked about (reasonAsk); empty: don't.
+    Q_INVOKABLE void giveReason(const QString &reason) { invoke(QStringLiteral("giveReason"), {reason}); }
     Q_INVOKABLE void setTraining(bool on) { invoke(QStringLiteral("setTraining"), {on}); }
     Q_INVOKABLE void redeemReward(int index) { invoke(QStringLiteral("redeemReward"), {index}); }
     Q_INVOKABLE void chargeHold(qint64 percentBp, qint64 tipCents) { invoke(QStringLiteral("chargeHold"), {percentBp, tipCents}); }

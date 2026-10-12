@@ -144,6 +144,7 @@ QVariantList storeSections(const QVariantList &fields)
          {"startPage.server", "startPage.bartender", "startPage.cashier", "startPage.host", "startPage.manager"}},
         {"cash", PosService::tr("Cash"), {"cashMode", "terminalsHaveDrawer", "checkoutNeedsClosedChecks", "blindDrawerCount", "cashDenominations",
           "expenseCategories"}},
+        {"reasons", PosService::tr("Voids and comps"), {"askReasons", "voidReasons", "compReasons"}},
         {"hours", PosService::tr("Staff hours"),
          {"paidBreaks", "overtimeDailyHours", "overtimeWeeklyHours", "weekStartsOn", "scheduleRequired", "clockInEarlyMinutes"}},
         {"tips", PosService::tr("Tips"),
@@ -415,6 +416,9 @@ QVariantList PosService::adminFields(const QString &panel)
             with(field(u"requireName"_s, tr("Phone orders need a name before Send"), u"enum"_s,
                        tr("Store setting: %1.").arg(s_->settings.requireOrderName ? tr("yes") : tr("no"))),
                  u"options"_s, options({{"", "Store setting"}, {"yes", "Yes"}, {"no", "No"}})),
+            with(field(u"reasons"_s, tr("Asked why on voids and comps"), u"enum"_s,
+                       tr("Store setting: %1.").arg(s_->settings.askReasons ? tr("yes") : tr("no"))),
+                 u"options"_s, options({{"", "Store setting"}, {"ask", "Yes"}, {"skip", "No"}})),
             with(field(u"blindCount"_s, tr("Counting a drawer"), u"enum"_s,
                        tr("Store setting: %1.").arg(s_->settings.blindDrawerCount ? tr("blind (managers see it)")
                                                                                    : tr("sees what should be there"))),
@@ -647,6 +651,11 @@ QVariantList PosService::adminFields(const QString &panel)
                       u"min"_s, 0), u"max"_s, 500),
             field(u"extraCharge"_s, tr("Extra: amount added"), u"money"_s,
                   tr("And/or a fixed amount for Extra, e.g. 0.75. Charged even on choices that are free.")),
+            field(u"askReasons"_s, tr("Ask why on voids and comps"), u"bool"_s,
+                  tr("Voiding an item already sent, or a discount or comp, asks for a reason from the lists below. "
+                     "The Exceptions report adds them up. Can be set per employee.")),
+            asRows(field(u"voidReasons"_s, tr("Reasons for voids"), u"text"_s), tr("+ Add a reason")),
+            asRows(field(u"compReasons"_s, tr("Reasons for discounts and comps"), u"text"_s), tr("+ Add a reason")),
             asRows(field(u"openingChecklist"_s, tr("Opening checklist"), u"text"_s,
                          tr("Staff tick them off on the Checklists page.")),
                    tr("+ Add a task")),
@@ -835,7 +844,7 @@ QVariantList PosService::adminRecords(const QString &panel)
                                    lines << u"%1 %2"_s.arg(qs(j.role), QString::number(j.rate.cents() / 100.0, 'f', 2));
                                return lines.join(u'\n');
                            }()},
-                          {u"checkout"_s, qs(e.checkout)}, {u"blindCount"_s, qs(e.blindCount)}, {u"tipPool"_s, qs(e.tipPool)}};
+                          {u"checkout"_s, qs(e.checkout)}, {u"blindCount"_s, qs(e.blindCount)}, {u"reasons"_s, qs(e.reasons)}, {u"tipPool"_s, qs(e.tipPool)}};
             for (const char *p : AllPermissions)
                 r.insert(u"perm:"_s + QString::fromLatin1(p),
                          e.allow.contains(p) ? u"allow"_s : e.deny.contains(p) ? u"deny"_s : QString());
@@ -895,6 +904,9 @@ QVariantList PosService::adminRecords(const QString &panel)
                   return l.join(u", "_s);
               }()},
              {u"backupCopyDir"_s, qs(s_->settings.backupCopyDir)},
+             {u"askReasons"_s, s_->settings.askReasons},
+             {u"voidReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.voidReasons) l << qs(t); return l.join(u'\n'); }()},
+             {u"compReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.compReasons) l << qs(t); return l.join(u'\n'); }()},
              {u"openingChecklist"_s, [&] { QStringList l; for (const std::string &t : s_->settings.openingChecklist) l << qs(t); return l.join(u'\n'); }()},
              {u"closingChecklist"_s, [&] { QStringList l; for (const std::string &t : s_->settings.closingChecklist) l << qs(t); return l.join(u'\n'); }()},
              {u"kitchenStations"_s, [&] {
@@ -1068,7 +1080,7 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
                 {u"takeoutPrice"_s, 0.0}, {u"deliveryPrice"_s, 0.0}, {u"noDiscount"_s, false}, {u"noStaffDiscount"_s, false}};
     if (panel == u"employees")
         return {{u"id"_s, QString()}, {u"name"_s, QString()}, {u"role"_s, u"server"_s}, {u"pin"_s, QString()},
-                {u"active"_s, true}, {u"training"_s, false}, {u"cashMode"_s, QString()}, {u"requireName"_s, QString()}, {u"checkout"_s, QString()}, {u"blindCount"_s, QString()}, {u"tipPool"_s, QString()},
+                {u"active"_s, true}, {u"training"_s, false}, {u"cashMode"_s, QString()}, {u"requireName"_s, QString()}, {u"checkout"_s, QString()}, {u"blindCount"_s, QString()}, {u"reasons"_s, QString()}, {u"tipPool"_s, QString()},
                 {u"payRate"_s, 0.0}, {u"otherJobs"_s, QString()}, {u"language"_s, QString()},
                 {u"textSize"_s, u"100"_s}, {u"leftHanded"_s, false}, {u"startPage"_s, QString()},
                 {u"perm:order"_s, QString()}, {u"perm:check.settle"_s, QString()}, {u"perm:check.others"_s, QString()}, {u"perm:check.discount"_s, QString()},
@@ -1472,8 +1484,12 @@ bool PosService::adminSave(const QString &panel, int index, const QVariantMap &r
             s_->settings.textWebhook = ss(record.value(u"textWebhook"_s).toString().trimmed());
         if (record.contains(u"backupCopyDir"_s))
             s_->settings.backupCopyDir = ss(record.value(u"backupCopyDir"_s).toString().trimmed());
+        if (record.contains(u"askReasons"_s))
+            s_->settings.askReasons = record.value(u"askReasons"_s).toBool();
         for (const auto &[key, list] : {std::pair{u"openingChecklist"_s, &s_->settings.openingChecklist},
-                                        std::pair{u"closingChecklist"_s, &s_->settings.closingChecklist}}) {
+                                        std::pair{u"closingChecklist"_s, &s_->settings.closingChecklist},
+                                        std::pair{u"voidReasons"_s, &s_->settings.voidReasons},
+                                        std::pair{u"compReasons"_s, &s_->settings.compReasons}}) {
             if (!record.contains(key))
                 continue;
             list->clear();
@@ -1748,6 +1764,9 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     const QString blindCount = record.value(u"blindCount"_s).toString();
     if (!QStringList{QString(), u"blind"_s, u"sees"_s}.contains(blindCount))
         return fail(tr("Choose how this person counts a drawer."));
+    const QString reasons = record.value(u"reasons"_s).toString();
+    if (!QStringList{QString(), u"ask"_s, u"skip"_s}.contains(reasons))
+        return fail(tr("Choose whether this person is asked why on voids and comps."));
     const QString tipPool = record.value(u"tipPool"_s).toString();
     if (!QStringList{QString(), u"in"_s, u"out"_s}.contains(tipPool))
         return fail(tr("Choose whether this person is in the tip pool."));
@@ -1781,6 +1800,7 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     e.requireName = ss(requireName);
     e.checkout = ss(checkout);
     e.blindCount = ss(blindCount);
+    e.reasons = ss(reasons);
     e.tipPool = ss(tipPool);
     e.allow = allow;
     e.deny = deny;
