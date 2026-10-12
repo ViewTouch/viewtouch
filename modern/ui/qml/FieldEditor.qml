@@ -22,6 +22,31 @@ ColumnLayout {
     // section the setting is in.
     property bool changed: false
     property string section: ""
+    // Manager settings forms (fingers): numbers with big - and +, switches,
+    // lists as rows; short ones on the same line as their name.
+    property bool touch: false
+    readonly property bool inline: touch && ["int", "bool", "money", "percent", "number"].includes(type)
+    readonly property Component editorComponent: {
+        switch (fe.type) {
+        case "text": return textArea
+        case "int": return touch ? stepper : spin
+        case "bool": return touch ? onOff : check
+        case "enum": return combo
+        case "color": return colorField
+        case "texture": return textureCombo
+        case "font": return fontCombo
+        case "page": return pageCombo
+        case "pageList": return pageList
+        case "money": return numberField
+        case "percent": return numberField
+        case "number": return numberField
+        case "pin": return pinField
+        case "password": return passwordField
+        case "image": return imagePicker
+        case "rows": return rowsField
+        default: return textField
+        }
+    }
 
     signal commit(var newValue)
     signal reset()
@@ -46,10 +71,11 @@ ColumnLayout {
         Layout.fillWidth: true
         Label {
             text: fe.field.label
-            color: EditorStyle.muted
-            font.pixelSize: 12
+            color: fe.inline ? palette.windowText : EditorStyle.muted
+            font.pixelSize: fe.inline ? 14 : 12
             Layout.fillWidth: true
-            elide: Text.ElideRight
+            elide: fe.inline ? Text.ElideNone : Text.ElideRight
+            wrapMode: fe.inline ? Text.WordWrap : Text.NoWrap
         }
         Label {
             visible: fe.changed
@@ -80,30 +106,18 @@ ColumnLayout {
             ToolTip.text: qsTr("Reset to inherited")
             onClicked: fe.reset()
         }
+        Loader {
+            active: fe.inline
+            visible: active
+            sourceComponent: fe.inline ? fe.editorComponent : null
+        }
     }
 
     Loader {
+        active: !fe.inline
+        visible: active
         Layout.fillWidth: true
-        sourceComponent: {
-            switch (fe.type) {
-            case "text": return textArea
-            case "int": return spin
-            case "bool": return check
-            case "enum": return combo
-            case "color": return colorField
-            case "texture": return textureCombo
-            case "font": return fontCombo
-            case "page": return pageCombo
-            case "pageList": return pageList
-            case "money": return numberField
-            case "percent": return numberField
-            case "number": return numberField
-            case "pin": return pinField
-            case "password": return passwordField
-            case "image": return imagePicker
-            default: return textField
-            }
-        }
+        sourceComponent: fe.inline ? null : fe.editorComponent
     }
 
     Label {
@@ -252,8 +266,8 @@ ColumnLayout {
         RowLayout {
             spacing: 6
             Rectangle {
-                implicitWidth: 32
-                implicitHeight: 28
+                implicitWidth: fe.touch ? 44 : 32
+                implicitHeight: fe.touch ? 40 : 28
                 radius: 4
                 color: fe.shown ?? "transparent"
                 border.color: EditorStyle.border
@@ -269,7 +283,7 @@ ColumnLayout {
                 // value and isSet update separately; never hand undefined to text.
                 readonly property string current: fe.mixed || !fe.isSet || fe.value == null ? "" : String(fe.value)
                 text: current
-                placeholderText: fe.mixed ? qsTr("(mixed)") : (fe.resolved ?? "#rrggbb")
+                placeholderText: fe.mixed ? qsTr("(mixed)") : (fe.resolved ?? fe.field.emptyText ?? "#rrggbb")
                 selectByMouse: true
                 onEditingFinished: {
                     if (text === current) return
@@ -288,7 +302,7 @@ ColumnLayout {
                 padding: 16
                 contentItem: ColorPicker {
                     pos: fe.pos
-                    noneText: fe.inheritable ? qsTr("(inherit)") : ""
+                    noneText: fe.inheritable ? qsTr("(inherit)") : (fe.field.emptyText ?? "")
                     color: fe.isSet && !fe.mixed && fe.value ? String(fe.value) : ""
                     onPicked: c => {
                         if (c === "") fe.reset()
@@ -378,7 +392,11 @@ ColumnLayout {
         TextField {
             id: numField
             readonly property int decimals: fe.type === "money" ? 2 : 3
-            text: fe.mixed || fe.value === undefined ? "" : Number(fe.value).toFixed(decimals)
+            // Money with its cents; a percent as typed (18, 4.5), not 18.000.
+            text: fe.mixed || fe.value === undefined ? ""
+                : fe.type === "money" ? Number(fe.value).toFixed(2) : String(parseFloat(Number(fe.value).toFixed(decimals)))
+            implicitWidth: fe.inline ? 150 : 200
+            horizontalAlignment: fe.inline ? Text.AlignRight : Text.AlignLeft
             placeholderText: fe.mixed ? qsTr("(mixed)") : "0"
             readOnly: fe.readOnly
             selectByMouse: true
@@ -424,6 +442,206 @@ ColumnLayout {
                 const ids = text.split(",").map(s => s.trim()).filter(s => s.length > 0)
                 if (ids.join(",") !== (Array.isArray(fe.value) ? fe.value.join(",") : ""))
                     fe.commit(ids)
+            }
+        }
+    }
+    // A whole number by touch: big - and +, the number typed in between.
+    // field.zeroText names 0 ("Never"); field.step (1).
+    Component {
+        id: stepper
+        RowLayout {
+            spacing: 4
+            readonly property int lo: fe.field.min ?? 0
+            readonly property int hi: fe.field.max ?? 99999
+            readonly property int step: fe.field.step ?? 1
+            readonly property int v: fe.shown !== undefined && fe.shown !== null && fe.shown !== "" ? Math.round(Number(fe.shown)) : lo
+            function set(n) {
+                n = Math.max(lo, Math.min(hi, n))
+                if (n !== v) fe.commit(n)
+            }
+            Button {
+                objectName: "stepDown"
+                text: "−"
+                font.pixelSize: 20
+                implicitWidth: 48
+                implicitHeight: 44
+                autoRepeat: true
+                enabled: !fe.readOnly && parent.v > parent.lo
+                onClicked: parent.set(parent.v % parent.step ? parent.v - parent.v % parent.step : parent.v - parent.step)
+            }
+            TextField {
+                id: stepValue
+                objectName: "stepValue"
+                implicitWidth: 112
+                implicitHeight: 44
+                horizontalAlignment: Text.AlignHCenter
+                font.pixelSize: 16
+                readOnly: fe.readOnly
+                inputMethodHints: Qt.ImhDigitsOnly
+                validator: IntValidator { bottom: 0; top: 99999 }
+                readonly property string shownText: parent.v === 0 && fe.field.zeroText ? fe.field.zeroText : String(parent.v)
+                text: activeFocus ? String(parent.v) : shownText
+                onActiveFocusChanged: if (activeFocus) { text = String(parent.v); selectAll() }
+                onEditingFinished: {
+                    if (text !== "") parent.set(parseInt(text))
+                    text = Qt.binding(() => activeFocus ? String(parent.v) : shownText)
+                }
+            }
+            Button {
+                objectName: "stepUp"
+                text: "+"
+                font.pixelSize: 20
+                implicitWidth: 48
+                implicitHeight: 44
+                autoRepeat: true
+                enabled: !fe.readOnly && parent.v < parent.hi
+                onClicked: parent.set(parent.v - parent.v % parent.step + parent.step)
+            }
+        }
+    }
+
+    // On or off by touch.
+    Component {
+        id: onOff
+        Switch {
+            objectName: "onOff"
+            checked: fe.shown === true
+            enabled: !fe.readOnly
+            text: checked ? qsTr("On") : qsTr("Off")
+            implicitHeight: 44
+            onToggled: fe.commit(checked)
+        }
+    }
+
+    // A list kept as text, edited as rows: field.columns [{label, type: text |
+    // int | number | money | enum, options, width}]; each line read with
+    // field.pattern (a regex, one group a column) and written with field.format
+    // ("%1 = %2"); lines split by field.split (a regex, default a new line) and
+    // joined with field.join. field.max rows; field.addText on the add button.
+    Component {
+        id: rowsField
+        ColumnLayout {
+            id: rowsBox
+            spacing: 4
+            readonly property var cols: fe.field.columns ?? [{ label: "", type: "text" }]
+            readonly property string current: fe.mixed || fe.value == null ? "" : String(fe.value)
+            property var rows: []
+            function parse(text) {
+                const split = new RegExp(fe.field.split ?? "\\n")
+                const pattern = fe.field.pattern ? new RegExp(fe.field.pattern, "i") : null
+                const out = []
+                for (const line of text.split(split)) {
+                    if (line.trim() === "") continue
+                    const m = pattern ? line.match(pattern) : null
+                    out.push(cols.map((c, i) => m ? (m[i + 1] ?? "").trim() : (i === 0 ? line.trim() : "")))
+                }
+                return out
+            }
+            function write(list) {
+                const format = fe.field.format ?? "%1"
+                // Only whole rows: one still being filled in waits on the screen.
+                return list.filter(r => r.every(x => String(x).trim() !== ""))
+                           .map(r => r.reduce((t, x, i) => t.split("%" + (i + 1)).join(String(x).trim()), format))
+                           .join(fe.field.join ?? "\n")
+            }
+            function load() { if (write(rows) !== current) rows = parse(current) }
+            function save() { const t = write(rows); if (t !== current) fe.commit(t) }
+            Component.onCompleted: load()
+            onCurrentChanged: load()
+
+            // Column names over the rows (more than one column).
+            RowLayout {
+                visible: rowsBox.cols.length > 1 && rowsBox.rows.length > 0
+                Layout.fillWidth: true
+                spacing: 4
+                Repeater {
+                    model: rowsBox.cols
+                    Label {
+                        required property var modelData
+                        text: modelData.label ?? ""
+                        color: EditorStyle.muted
+                        font.pixelSize: 11
+                        Layout.fillWidth: !modelData.width
+                        Layout.preferredWidth: modelData.width ?? -1
+                    }
+                }
+                Item { implicitWidth: 44 }
+            }
+            Repeater {
+                model: rowsBox.rows.length
+                RowLayout {
+                    id: rowLine
+                    required property int index
+                    Layout.fillWidth: true
+                    spacing: 4
+                    Repeater {
+                        model: rowsBox.cols
+                        Loader {
+                            id: cell
+                            required property var modelData
+                            required property int index
+                            readonly property int row: rowLine.index
+                            readonly property string cellValue: (rowsBox.rows[row] ?? [])[index] ?? ""
+                            function put(v) {
+                                rowsBox.rows[row][index] = String(v)
+                                rowsBox.save()
+                            }
+                            Layout.fillWidth: !modelData.width
+                            Layout.preferredWidth: modelData.width ?? -1
+                            sourceComponent: modelData.type === "enum" ? cellCombo : cellText
+                            Component {
+                                id: cellText
+                                TextField {
+                                    objectName: "rowCell"
+                                    implicitHeight: 44
+                                    text: cell.cellValue
+                                    placeholderText: cell.modelData.placeholder ?? ""
+                                    readOnly: fe.readOnly
+                                    horizontalAlignment: cell.modelData.type === "text" || !cell.modelData.type ? Text.AlignLeft : Text.AlignRight
+                                    inputMethodHints: cell.modelData.type === "int" ? Qt.ImhDigitsOnly
+                                                    : cell.modelData.type === "number" || cell.modelData.type === "money" ? Qt.ImhFormattedNumbersOnly : Qt.ImhNone
+                                    onEditingFinished: if (text !== cell.cellValue) cell.put(cell.modelData.type === "money" && text !== "" ? Number(text).toFixed(2) : text)
+                                }
+                            }
+                            Component {
+                                id: cellCombo
+                                ComboBox {
+                                    implicitHeight: 44
+                                    model: cell.modelData.options ?? []
+                                    textRole: "text"
+                                    valueRole: "value"
+                                    enabled: !fe.readOnly
+                                    currentIndex: Math.max(0, (cell.modelData.options ?? []).findIndex(o => String(o.value).toLowerCase() === cell.cellValue.toLowerCase()))
+                                    onActivated: i => cell.put(cell.modelData.options[i].value)
+                                }
+                            }
+                        }
+                    }
+                    Button {
+                        objectName: "rowRemove"
+                        text: "✕"
+                        implicitWidth: 44
+                        implicitHeight: 44
+                        enabled: !fe.readOnly
+                        onClicked: {
+                            const r = rowsBox.rows.slice()
+                            r.splice(rowLine.index, 1)
+                            rowsBox.rows = r
+                            rowsBox.save()
+                        }
+                    }
+                }
+            }
+            Button {
+                objectName: "rowAdd"
+                visible: !fe.readOnly && (!fe.field.max || rowsBox.rows.length < fe.field.max)
+                text: fe.field.addText ?? qsTr("+ Add")
+                implicitHeight: 44
+                onClicked: {
+                    // A new row: an enum starts on its first choice.
+                    rowsBox.rows = rowsBox.rows.concat([rowsBox.cols.map(c => c.type === "enum" && c.options && c.options.length
+                                                                            ? String(c.options[0].value) : "")])
+                }
             }
         }
     }

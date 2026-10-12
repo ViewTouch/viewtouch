@@ -109,8 +109,23 @@ Item {
         function onNotice() { if (w.pending !== "") Qt.callLater(() => w.pending = "") }
     }
 
-    Component.onCompleted: {
-        if (single) choose(0)
+    // This widget may be kept for the next manager page (another panel):
+    // what's open is worked out from the panel itself, not from `single`,
+    // which may not have caught up yet.
+    property string openPanel: ""
+    function keepUnsaved() {
+        if (openPanel !== "" && zone && zone.controller)
+            zone.controller.keep("admin:" + openPanel, dirty && index >= -1 ? { index: index, draft: draft } : undefined)
+    }
+    function open() {
+        keepUnsaved()
+        openPanel = panel
+        query = ""
+        sectionOpen = false
+        dirty = false
+        const one = panel === "taxes" || panel === "store"
+        if (one) choose(0)
+        else index = -2
         if (zone && zone.controller) {
             section = zone.controller.widgetState("adminSection:" + panel) ?? ""
             // Changes left unsaved when this page was left: back as they were.
@@ -122,11 +137,9 @@ Item {
             }
         }
     }
-    Component.onDestruction: {
-        if (zone && zone.controller)
-            zone.controller.keep("admin:" + panel, dirty && index >= -1 ? { index: index, draft: draft } : undefined)
-    }
-    onPanelChanged: single ? choose(0) : (index = -2)
+    Component.onCompleted: open()
+    Component.onDestruction: keepUnsaved()
+    onPanelChanged: Qt.callLater(open)   // once the bindings have caught up
 
     // Controls are laid out at a comfortable size, then scaled with the page.
     // Upright (a phone): the list, then a record's form on its own, with ‹ List.
@@ -335,6 +348,7 @@ Item {
                     // Finger-wide, shown when the form is longer than the panel.
                     ScrollBar.vertical: TouchScrollBar {
                         id: formBar
+                        objectName: "adminFormScroll"
                         parent: scroll
                         x: scroll.width - width
                         y: scroll.topPadding
@@ -363,6 +377,7 @@ Item {
                                                w.zone.controller.looks().map(l => ({ value: l.id, text: qsTranslate("Looks", l.name) })))
                                        })
                                 pos: w.pos
+                                touch: true
                                 pages: modelData.type === "page" && w.zone ? w.zone.controller.pageChoices() : []
                                 value: w.draft[modelData.path]
                                 isSet: true

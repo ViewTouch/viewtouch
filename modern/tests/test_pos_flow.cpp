@@ -6894,7 +6894,7 @@ TEST_CASE("UI: Store Settings in sections: found by search, changes marked, kept
     REQUIRE(text(u"Loyalty points"_s));
     CHECK_FALSE(text(u"…points per dollar"_s));
     QQuickItem *loyalty = text(u"Loyalty points"_s)->parentItem()->parentItem();
-    s.tapItem(Screen::findBy(loyalty, "text", u"Yes"_s));
+    s.tapItem(Screen::findBy(loyalty, "objectName", u"onOff"_s));
     QTest::qWait(60);
     CHECK(text(u"…points per dollar"_s));
     CHECK(text(u"changed"_s));
@@ -6951,9 +6951,120 @@ TEST_CASE("UI: Store Settings on a phone: the sections, then one section's setti
     CHECK(by(u"settingsSection-tips"_s));
 }
 
+TEST_CASE("UI: Store Settings by touch: numbers with - and +, switches, lists as rows", "[flow][ui][settings]")
+{
+    Screen s;
+    s.pos.shared()->settings.screenSaverMinutes = 0;
+    s.pos.shared()->settings.tipOuts.clear();
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"admin-store"_s));
+    QTest::qWait(120);
+    const auto by = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    const auto text = [&](const QString &t) { return Screen::findBy(s.window->contentItem(), "text", t); };
+    // The setting whose name is `label` (its FieldEditor).
+    const auto setting = [&](const QString &label) {
+        QQuickItem *l = text(label);
+        REQUIRE(l);
+        return l->parentItem()->parentItem();
+    };
+
+    // A number: 0 has a name; + counts up.
+    QMetaObject::invokeMethod(by(u"adminList"_s), "positionViewAtIndex", Q_ARG(int, 10), Q_ARG(int, 1));
+    QTest::qWait(40);
+    s.tapItem(by(u"settingsSection-screens"_s));
+    QTest::qWait(60);
+    QQuickItem *dim = setting(u"Dim the screen after (minutes)"_s);
+    CHECK(Screen::findBy(dim, "objectName", u"stepValue"_s)->property("text").toString() == u"Never"_s);
+    s.tapItem(Screen::findBy(dim, "objectName", u"stepUp"_s));
+    s.tapItem(Screen::findBy(dim, "objectName", u"stepUp"_s));
+    QTest::qWait(40);
+    CHECK(Screen::findBy(dim, "objectName", u"stepValue"_s)->property("text").toString() == u"2"_s);
+
+    // A list as rows: a tip-out to the bussers, 15% of tips.
+    QMetaObject::invokeMethod(by(u"adminList"_s), "positionViewAtIndex", Q_ARG(int, 5), Q_ARG(int, 1));
+    QTest::qWait(40);
+    s.tapItem(by(u"settingsSection-tips"_s));
+    QTest::qWait(60);
+    QQuickItem *tipOuts = setting(u"Tip-outs"_s);
+    // Scrolled to the tip-outs (the form's Flickable holds the column they're in).
+    QQuickItem *flick = tipOuts;
+    while (flick && !flick->inherits("QQuickFlickable"))
+        flick = flick->parentItem();
+    REQUIRE(flick);
+    flick->setProperty("contentY", tipOuts->y());
+    QTest::qWait(60);
+    s.tapItem(Screen::findBy(tipOuts, "objectName", u"rowAdd"_s));
+    QTest::qWait(60);
+    s.shot("settings-rows-added");
+    QQuickItem *percent = Screen::findBy(tipOuts, "objectName", u"rowCell"_s);
+    REQUIRE(percent);
+    s.tapItem(percent);
+    for (const char *k = "15"; *k; ++k)
+        QTest::keyClick(s.window, *k);
+    QTest::keyClick(s.window, Qt::Key_Return);
+    QTest::qWait(60);
+    CHECK(text(u"Save 2 changes"_s));
+    s.shot("settings-rows");
+    s.tapItem(by(u"adminSave"_s));
+    QTest::qWait(80);
+    CHECK(s.pos.shared()->settings.screenSaverMinutes == 2);
+    REQUIRE(s.pos.shared()->settings.tipOuts.size() == 1);
+    CHECK(s.pos.shared()->settings.tipOuts[0].role == "busser");
+    CHECK(s.pos.shared()->settings.tipOuts[0].percentBp == 1500);
+    CHECK(s.pos.shared()->settings.tipOuts[0].basis == "tips");
+}
+
+TEST_CASE("UI: manager pages one after another: each opens as it should", "[flow][ui][settings]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    const auto text = [&](const QString &t) { return Screen::findBy(s.window->contentItem(), "text", t); };
+    const auto go = [&](const char *page) {
+        REQUIRE(s.c.jumpTo(QString::fromLatin1(page)));
+        QTest::qWait(120);
+    };
+    go("admin-employees");
+    CHECK(text(u"Choose something on the left, or Add."_s));
+    go("admin-store");                    // one record: open at once
+    CHECK(text(u"Store name"_s));
+    CHECK_FALSE(text(u"Choose something on the left, or Add."_s));
+    go("admin-taxes");
+    CHECK_FALSE(text(u"Choose something on the left, or Add."_s));
+    go("admin-tenders");                  // a list: nothing chosen yet
+    CHECK(text(u"Choose something on the left, or Add."_s));
+}
+
 TEST_CASE("Store Settings: every setting is in a section", "[admin][settings]")
 {
     Session s;
     for (const QVariant &f : s.pos.adminFields(u"store"_s))
         CHECK(f.toMap()[u"groupKey"_s].toString() != u"more"_s);
+}
+
+// Every Store Settings section, top and bottom, for review (hidden: "[.settingsTour]" with VTM_SHOTS).
+TEST_CASE("Store Settings: a picture of every section", "[.settingsTour]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"admin-store"_s));
+    QTest::qWait(120);
+    const auto by = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    QQuickItem *list = by(u"adminList"_s);
+    REQUIRE(list);
+    int i = 0;
+    for (const QVariant &sec : list->property("model").toList()) {
+        const QString key = sec.toMap()[u"key"_s].toString();
+        QMetaObject::invokeMethod(list, "positionViewAtIndex", Q_ARG(int, i), Q_ARG(int, 1 /* ListView.Beginning */));
+        QTest::qWait(40);
+        s.tapItem(by(u"settingsSection-"_s + key));
+        QTest::qWait(80);
+        const QByteArray n = QStringLiteral("tour-%1-%2").arg(i, 2, 10, QChar(u'0')).arg(key).toLatin1();
+        s.shot(n.constData());
+        if (QQuickItem *bar = by(u"adminFormScroll"_s)) {
+            bar->setProperty("position", 1.0 - bar->property("size").toDouble());
+            QTest::qWait(60);
+            s.shot((n + "-end").constData());
+        }
+        ++i;
+    }
 }

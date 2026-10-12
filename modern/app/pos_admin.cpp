@@ -96,6 +96,35 @@ double number(const QVariantMap &r, const char16_t *key)
     return r.value(QString::fromUtf16(key)).toString().toDouble();
 }
 
+// A list kept as text, edited as rows (FieldEditor "rows"): each line read
+// with `pattern` (a group a column) and written with `format`.
+QVariantMap column(const QString &label, const char *type, int width = 0, const QVariantList &opts = {},
+                   const QString &placeholder = {})
+{
+    QVariantMap c{{u"label"_s, label}, {u"type"_s, QString::fromLatin1(type)}};
+    if (width > 0)
+        c.insert(u"width"_s, width);
+    if (!opts.isEmpty())
+        c.insert(u"options"_s, opts);
+    if (!placeholder.isEmpty())
+        c.insert(u"placeholder"_s, placeholder);
+    return c;
+}
+
+QVariantMap asRows(QVariantMap f, const QString &addText, const QVariantList &columns = {},
+                   const QString &pattern = {}, const QString &format = {})
+{
+    f.insert(u"type"_s, u"rows"_s);
+    f.insert(u"addText"_s, addText);
+    if (!columns.isEmpty())
+        f.insert(u"columns"_s, columns);
+    if (!pattern.isEmpty())
+        f.insert(u"pattern"_s, pattern);
+    if (!format.isEmpty())
+        f.insert(u"format"_s, format);
+    return f;
+}
+
 // Store Settings in sections, in this order; within one, in the order given
 // below. "when": shown only while that other setting is on (or not 0).
 QVariantList storeSections(const QVariantList &fields)
@@ -138,6 +167,24 @@ QVariantList storeSections(const QVariantList &fields)
         {"offlineCardMax", "offlineCards"}, {"offlineCardTotal", "offlineCards"},
         {"pointsPerDollar", "loyaltyEnabled"}, {"rewards", "loyaltyEnabled"}, {"backupPassword", "encryptBackups"},
     };
+    // Numbers: what 0 means, and a bigger step where 1 is too fine.
+    struct Number {
+        const char *path;
+        QString zero;
+        int step;
+    };
+    const QString never = PosService::tr("Never"), noRule = PosService::tr("No rule"), none = PosService::tr("None");
+    const Number numbers[] = {
+        {"overtimeDailyHours", noRule, 1}, {"overtimeWeeklyHours", noRule, 1},
+        {"clockInEarlyMinutes", PosService::tr("On time"), 5},
+        {"tipPool:server", PosService::tr("Not in it"), 5}, {"tipPool:bartender", PosService::tr("Not in it"), 5},
+        {"tipPool:busser", PosService::tr("Not in it"), 5}, {"tipPool:host", PosService::tr("Not in it"), 5},
+        {"tipPool:cashier", PosService::tr("Not in it"), 5}, {"tipPool:driver", PosService::tr("Not in it"), 5},
+        {"extraPercent", none, 5}, {"laterLeadMinutes", PosService::tr("At the time"), 5},
+        {"takeoutMinutes", none, 5}, {"deliveryMinutes", none, 5}, {"minutesPerOrderWaiting", none, 1},
+        {"screenSaverMinutes", never, 1}, {"autoLogoutMinutes", never, 1}, {"tableLongMinutes", {}, 5},
+        {"kioskIdleSeconds", {}, 10}, {"kioskSizePercent", {}, 5}, {"waitMinutesPerParty", {}, 1},
+    };
     QHash<QString, QVariantMap> byPath;
     for (const QVariant &f : fields)
         byPath.insert(f.toMap().value(u"path"_s).toString(), f.toMap());
@@ -145,9 +192,17 @@ QVariantList storeSections(const QVariantList &fields)
     const auto place = [&](QVariantMap f, const char *key, const QString &title) {
         f.insert(u"group"_s, title);
         f.insert(u"groupKey"_s, QString::fromLatin1(key));
+        const QString p = f.value(u"path"_s).toString();
         for (const auto &[path, on] : when)
-            if (f.value(u"path"_s).toString() == QLatin1StringView(path))
+            if (p == QLatin1StringView(path))
                 f.insert(u"when"_s, QString::fromLatin1(on));
+        for (const Number &n : numbers) {
+            if (p != QLatin1StringView(n.path))
+                continue;
+            if (!n.zero.isEmpty())
+                f.insert(u"zeroText"_s, n.zero);
+            f.insert(u"step"_s, n.step);
+        }
         out.append(f);
     };
     for (const Section &sec : sections)
@@ -202,8 +257,17 @@ QVariantList PosService::adminFields(const QString &panel)
             field(u"modifierGroups"_s, tr("Modifier groups"), u"string"_s,
                   tr("Choices asked for when it's ordered, by group ID, comma separated: %1")
                       .arg(groupIds().join(u", "))),
-            field(u"periodPrices"_s, tr("Prices by meal period"), u"text"_s,
-                  tr("One per line, e.g. \"dinner = 14.50\". Meal periods: %1").arg(periodIds().join(u", "))),
+            asRows(field(u"periodPrices"_s, tr("Prices by meal period"), u"text"_s,
+                         tr("A different price during a meal period (Manager -> Meal Periods).")),
+                   tr("+ Add a meal period price"),
+                   {column(tr("Meal period"), "enum", 0, [this] {
+                        QVariantList o;
+                        for (const MealPeriod &m : s_->settings.mealPeriods)
+                            o.append(QVariantMap{{u"value"_s, qs(m.id)}, {u"text"_s, qs(m.name)}});
+                        return o;
+                    }()),
+                    column(tr("Price"), "money", 140)},
+                   uR"(^\s*([^=]+?)\s*=\s*\D?\s*([\d.]+)\s*$)"_s, u"%1 = %2"_s),
             field(u"kitchenName"_s, tr("Kitchen name"), u"string"_s,
                   tr("What the kitchen screen and tickets show instead, e.g. \"BCN BGR\". Empty: the name.")),
             with(field(u"kitchenColor"_s, tr("Kitchen highlight"), u"enum"_s), u"options"_s,
@@ -448,10 +512,16 @@ QVariantList PosService::adminFields(const QString &panel)
                      "someone in from Manager → Schedule.")),
             with(with(field(u"clockInEarlyMinutes"_s, tr("…clock in up to (minutes) early"), u"int"_s), u"min"_s, 0),
                  u"max"_s, 240),
-            field(u"tipOuts"_s, tr("Tip-outs"), u"text"_s,
-                  tr("One per line: role, percent, tips or sales - e.g. \"busser 15 tips\" or \"bartender 2 sales\". "
-                     "Shared by everyone of that role who worked today, by hours. Roles: busser, bartender, host, "
-                     "server, cashier.")),
+            asRows(field(u"tipOuts"_s, tr("Tip-outs"), u"text"_s,
+                         tr("A share of each server's tips (or sales), split by hours among everyone in that job who "
+                            "worked today.")),
+                   tr("+ Add a tip-out"),
+                   {column(tr("Goes to"), "enum", 0,
+                           options({{"busser", "Bussers"}, {"bartender", "Bartenders"}, {"host", "Hosts"},
+                                    {"server", "Servers"}, {"cashier", "Cashiers"}})),
+                    column(tr("Percent"), "number", 100, {}, u"15"_s),
+                    column(tr("Of"), "enum", 150, options({{"tips", "of tips"}, {"sales", "of sales"}}))},
+                   uR"(^\s*(\S+)\s+([\d.]+)%?\s*(\S*)\s*$)"_s, u"%1 %2 %3"_s),
             // The tip pool: each job's share for an hour worked.
             with(with(field(u"tipPool:server"_s, tr("Tip pool: servers' share an hour (%)"), u"int"_s,
                             tr("Everyone in the pool puts in their tips (after tip-outs) and takes out by hours worked "
@@ -488,7 +558,17 @@ QVariantList PosService::adminFields(const QString &panel)
                            "It stays on this computer; readers get short-lived tokens from it.")
                       : tr("Set (ends in %1). Type a new key to change it, or \"none\" to remove it.")
                             .arg(qs(s_->settings.stripeSecretKey.substr(s_->settings.stripeSecretKey.size() - 4)))),
-            field(u"cardCurrency"_s, tr("Card currency"), u"string"_s, tr("usd, cad, eur...: what cards are charged in.")),
+            with(field(u"cardCurrency"_s, tr("Card currency"), u"enum"_s, tr("What cards are charged in.")),
+                 u"options"_s, [this] {
+                     QVariantList o = options({{"usd", "US dollar (usd)"}, {"cad", "Canadian dollar (cad)"},
+                                               {"mxn", "Mexican peso (mxn)"}, {"eur", "Euro (eur)"},
+                                               {"gbp", "British pound (gbp)"}, {"aud", "Australian dollar (aud)"},
+                                               {"nzd", "New Zealand dollar (nzd)"}});
+                     const QString now = qs(s_->settings.cardCurrency);
+                     if (!now.isEmpty() && std::ranges::none_of(o, [&](const QVariant &x) { return x.toMap()[u"value"_s] == now; }))
+                         o.append(QVariantMap{{u"value"_s, now}, {u"text"_s, now}});
+                     return o;
+                 }()),
             field(u"offlineCards"_s, tr("Take cards when the internet is down"), u"bool"_s,
                   tr("On Stripe readers running ViewTouch: the card is kept and sent to Stripe when the internet is back. "
                      "The bank only sees it then: if it declines, the store doesn't get that money (a manager is told). "
@@ -512,19 +592,26 @@ QVariantList PosService::adminFields(const QString &panel)
             field(u"loyaltyEnabled"_s, tr("Loyalty points"), u"bool"_s,
                   tr("Customers on a check earn points on what they spend (after discounts).")),
             with(with(field(u"pointsPerDollar"_s, tr("…points per dollar"), u"int"_s), u"min"_s, 1), u"max"_s, 100),
-            field(u"rewards"_s, tr("Rewards"), u"text"_s,
-                  tr("One per line: points = amount off, e.g. \"50 = 5.00\".")),
+            asRows(field(u"rewards"_s, tr("Rewards"), u"text"_s,
+                         tr("With that many points, a customer can take that much off a check.")),
+                   tr("+ Add a reward"),
+                   {column(tr("Points"), "int", 140, {}, u"50"_s), column(tr("Amount off"), "money", 160, {}, u"5.00"_s)},
+                   uR"(^\s*(\d+)\s*=\s*\D?\s*([\d.]+)\s*$)"_s, u"%1 = %2"_s),
             field(u"displayLogo"_s, tr("Store logo"), u"image"_s,
                   tr("On the login page, the screen saver, receipts (below), the customer display and the "
                      "kiosk. Empty: the store's name.")),
             field(u"receiptLogo"_s, tr("Print the logo on receipts"), u"bool"_s,
                   tr("At the top of every receipt, on thermal (ESC/POS) printers.")),
             field(u"displayAccent"_s, tr("Customer display: color"), u"color"_s),
-            field(u"displaySlides"_s, tr("Customer display: between guests"), u"text"_s,
-                  tr("One message per line, shown in turn; \"image:/path/to/photo.jpg\" for a picture. Running "
-                     "promotions are added by themselves.")),
-            field(u"tipPercents"_s, tr("Tip choices for guests (%)"), u"text"_s,
-                  tr("Shown on the customer display, e.g. 15, 18, 20, 25 (up to 6).")),
+            asRows(field(u"displaySlides"_s, tr("Customer display: between guests"), u"text"_s,
+                         tr("Shown in turn; \"image:/path/to/photo.jpg\" for a picture. Running promotions are added "
+                            "by themselves.")),
+                   tr("+ Add a message")),
+            with(with(with(asRows(field(u"tipPercents"_s, tr("Tip choices for guests (%)"), u"text"_s,
+                                        tr("Shown on the customer display, up to 6.")),
+                                  tr("+ Add a tip choice"), {column(tr("Percent"), "int", 120, {}, u"18"_s)},
+                                  uR"(^\s*(\d+))"_s, u"%1"_s),
+                           u"split"_s, u"\\s*,\\s*"_s), u"join"_s, u", "_s), u"max"_s, 6),
             with(with(field(u"waitMinutesPerParty"_s, tr("Waitlist: minutes per party ahead"), u"int"_s,
                             tr("Wait quotes: (parties ahead + 1) x this, rounded up to 5 minutes.")), u"min"_s, 1), u"max"_s, 120),
             field(u"tableReadyText"_s, tr("Waitlist: table-ready text"), u"text"_s,
@@ -536,25 +623,30 @@ QVariantList PosService::adminFields(const QString &panel)
             field(u"royaltyPercent"_s, tr("Royalty (% of net sales)"), u"string"_s,
                   tr("A franchise's fee, e.g. 5 or 4.5. Reports -> Royalty works it out. Empty or 0: none.")),
             field(u"adFundPercent"_s, tr("Advertising fund (% of net sales)"), u"string"_s, tr("e.g. 2. Empty or 0: none.")),
-            field(u"chartOfAccounts"_s, tr("Chart of accounts"), u"text"_s,
-                  tr("For Reports -> Accounting (its CSV goes to QuickBooks or your accountant). One per line, "
-                     "like \"sales:burgers = 4010 Burger sales\". Keys: sales, sales:<family>, tax, tax:<food|alcohol...>, "
-                     "gratuity, tips, discounts, staffMeals, rounding, giftCardsSold, tender:<payment type id>.")),
+            asRows(field(u"chartOfAccounts"_s, tr("Chart of accounts"), u"text"_s,
+                         tr("For Reports -> Accounting (its CSV goes to QuickBooks or your accountant): the account "
+                            "each kind of money goes to.")),
+                   tr("+ Add an account"),
+                   {column(tr("Money"), "enum", 260, accountKeys()), column(tr("Account"), "text", 0, {}, u"4010 Food sales"_s)},
+                   uR"(^\s*([^=]+?)\s*=\s*(.*)$)"_s, u"%1 = %2"_s),
             with(with(field(u"extraPercent"_s, tr("Extra: percent added"), u"int"_s,
                             tr("What \"Extra\" adds to an item's or a choice's price: 50 = half again. 0 = nothing.")),
                       u"min"_s, 0), u"max"_s, 500),
             field(u"extraCharge"_s, tr("Extra: amount added"), u"money"_s,
                   tr("And/or a fixed amount for Extra, e.g. 0.75. Charged even on choices that are free.")),
-            field(u"openingChecklist"_s, tr("Opening checklist"), u"text"_s,
-                  tr("One task per line. Staff tick them off on the Checklists page.")),
-            field(u"closingChecklist"_s, tr("Closing checklist"), u"text"_s,
-                  tr("One task per line. End of Day shows what's left.")),
-            field(u"kitchenStations"_s, tr("Kitchen stations"), u"text"_s,
-                  tr("One per line (Grill, Fryer, Cold Line). Each kitchen screen picks one with its Station "
-                     "button; menu items say where they're made.")),
-            field(u"expenseCategories"_s, tr("Expense categories"), u"text"_s,
-                  tr("What cash paid out of a drawer can be for, one per line (Produce, Ice, Repairs...). "
-                     "Each pay out picks one; Reports -> Expenses adds them up.")),
+            asRows(field(u"openingChecklist"_s, tr("Opening checklist"), u"text"_s,
+                         tr("Staff tick them off on the Checklists page.")),
+                   tr("+ Add a task")),
+            asRows(field(u"closingChecklist"_s, tr("Closing checklist"), u"text"_s, tr("End of Day shows what's left.")),
+                   tr("+ Add a task")),
+            asRows(field(u"kitchenStations"_s, tr("Kitchen stations"), u"text"_s,
+                         tr("Grill, Fryer, Cold Line… Each kitchen screen picks one with its Station button; menu items "
+                            "say where they're made.")),
+                   tr("+ Add a station")),
+            asRows(field(u"expenseCategories"_s, tr("Expense categories"), u"text"_s,
+                         tr("What cash paid out of a drawer can be for (Produce, Ice, Repairs...). Each pay out picks "
+                            "one; Reports -> Expenses adds them up.")),
+                   tr("+ Add a category")),
             field(u"kioskSendNow"_s, tr("Send orders to the kitchen at once"), u"bool"_s,
                   tr("Otherwise a kiosk order goes to the kitchen when it is paid for at the counter.")),
             field(u"kioskSlip"_s, tr("Print an order slip"), u"bool"_s,
@@ -573,11 +665,11 @@ QVariantList PosService::adminFields(const QString &panel)
             with(with(field(u"kioskSizePercent"_s, tr("Size of buttons and text (%)"), u"int"_s,
                             tr("100 = as designed for the screen; bigger for a far-away or tall screen.")),
                       u"min"_s, 60), u"max"_s, 200),
-            field(u"kioskBackground"_s, tr("Background color"), u"color"_s,
-                  tr("Empty: the usual. The accent color and logo are the customer display's.")),
-            field(u"kioskCard"_s, tr("Button and card color"), u"color"_s, tr("Empty: the usual.")),
-            field(u"kioskGo"_s, tr("Add / Place Order color"), u"color"_s, tr("Empty: the usual.")),
-            field(u"kioskText"_s, tr("Text color"), u"color"_s, tr("Empty: the usual.")),
+            with(field(u"kioskBackground"_s, tr("Background color"), u"color"_s,
+                  tr("Empty: the usual. The accent color and logo are the customer display's.")), u"emptyText"_s, tr("The usual")),
+            with(field(u"kioskCard"_s, tr("Button and card color"), u"color"_s, tr("Empty: the usual.")), u"emptyText"_s, tr("The usual")),
+            with(field(u"kioskGo"_s, tr("Add / Place Order color"), u"color"_s, tr("Empty: the usual.")), u"emptyText"_s, tr("The usual")),
+            with(field(u"kioskText"_s, tr("Text color"), u"color"_s, tr("Empty: the usual.")), u"emptyText"_s, tr("The usual")),
             field(u"kioskFont"_s, tr("Font"), u"string"_s, tr("A font installed on the kiosk, e.g. DejaVu Sans.")),
             field(u"encryptBackups"_s, tr("Encrypt backups"), u"bool"_s,
                   tr("Backups (and the second copy) can only be opened with the backup password. "
@@ -1817,6 +1909,37 @@ QStringList PosService::groupIds() const
     QStringList out;
     for (const ModifierGroup &g : s_->settings.modifierGroups)
         out << qs(g.id);
+    return out;
+}
+
+QVariantList PosService::accountKeys() const
+{
+    QVariantList out;
+    const auto add = [&](const QString &key, const QString &text) {
+        if (std::ranges::none_of(out, [&](const QVariant &x) { return x.toMap()[u"value"_s] == key; }))
+            out.append(QVariantMap{{u"value"_s, key}, {u"text"_s, text}});
+    };
+    add(u"sales"_s, tr("Sales"));
+    std::vector<std::string> families;
+    for (const MenuItem &m : s_->menu)
+        if (!m.family.empty() && std::ranges::find(families, m.family) == families.end())
+            families.push_back(m.family);
+    std::ranges::sort(families);
+    for (const std::string &f : families)
+        add(u"sales:"_s + qs(f).toLower(), tr("Sales: %1").arg(qs(f)));
+    add(u"tax"_s, tr("Tax"));
+    for (const auto &[key, text] : {std::pair{"food", "Food"}, {"alcohol", "Alcohol"}, {"merchandise", "Merchandise"}, {"room", "Room"}})
+        add(u"tax:"_s + QLatin1StringView(key), tr("Tax: %1").arg(QCoreApplication::translate("PosService", text)));
+    add(u"gratuity"_s, tr("Gratuity"));
+    add(u"tips"_s, tr("Tips"));
+    add(u"discounts"_s, tr("Discounts"));
+    add(u"staffMeals"_s, tr("Staff meals"));
+    add(u"rounding"_s, tr("Cash rounding"));
+    add(u"giftCardsSold"_s, tr("Gift cards sold"));
+    for (const Tender &t : s_->settings.tenders)
+        add(u"tender:"_s + qs(t.id), tr("Paid by %1").arg(qs(t.name)));
+    for (const auto &[key, account] : s_->settings.accounts)   // any other already set
+        add(qs(key), qs(key));
     return out;
 }
 

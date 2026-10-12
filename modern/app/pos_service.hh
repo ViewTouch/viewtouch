@@ -1094,6 +1094,8 @@ private:
     QVariantMap menuRecord(const core::MenuItem &m) const;
     QStringList groupIds() const;
     QStringList periodIds() const;
+    // The chart of accounts' keys, named: sales, sales:<family>, tender:<id>...
+    QVariantList accountKeys() const;
     bool savePrinterRecord(int index, const QVariantMap &record);
     void settingsChanged();
     void menuChanged();   // the menu changed: sold out again, every screen's menu
