@@ -515,3 +515,88 @@ TEST_CASE("Forecast: a coming day from the same weekday in past weeks; prep and 
     REQUIRE(rows.size() == 1);
     CHECK(rows[0].toMap()[u"cells"_s].toStringList().value(0).startsWith(u"Not enough sales yet"_s));
 }
+
+TEST_CASE("Stock counts: what's on the shelf against what the sales and deliveries say", "[inventory][stockCount]")
+{
+    QTemporaryDir dir;
+    const QString path = dir.filePath(u"vt.db"_s);
+    {
+        storage::PosStore store(path);
+        REQUIRE(store.open());
+        const auto seed = test::seedPosData();
+        REQUIRE(store.seed(seed.settings, seed.menu, seed.employees));
+    }
+    storage::PosStore store(path);
+    REQUIRE(store.open());
+    storage::AsyncWriter writer(path);
+    storage::SqlPosSink sink(writer);
+    app::PosData data = test::seedPosData();
+    PosService pos(data, &sink);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const double buns = onHand(pos, "bun");          // 48, never counted
+    CHECK(pos.shared()->ingredient("bun")->start == buns);
+
+    // In: a delivery of 24. Out: a burger combo (one bun). By hand: +2.
+    REQUIRE(pos.receiveDelivery({{u"lines"_s, QVariantList{QVariantMap{{u"ingredient"_s, u"bun"_s}, {u"qty"_s, 24}}}}}));
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    pos.addItem(u"burger-combo"_s);
+    REQUIRE(pos.chooseOption(u"temperature"_s, 2));
+    REQUIRE(pos.chooseOption(u"side"_s, 0));
+    REQUIRE(pos.chooseOption(u"combo-drink"_s, 0));
+    REQUIRE(pos.finishChoosing());
+    REQUIRE(pos.sendOrder());
+    setOnHand(pos, "bun", onHand(pos, "bun") + 2);
+    const core::Ingredient &bun = *pos.shared()->ingredient("bun");
+    CHECK(bun.received == 24);
+    CHECK(bun.sold == 1);
+    CHECK(bun.adjusted == 2);
+    CHECK(bun.onHand == buns + 24 - 1 + 2);   // 73 should be there
+
+    // While counting, what should be there isn't shown (unless the store says so).
+    QVariantMap counting = pos.stockCounting();
+    REQUIRE(counting[u"ingredients"_s].toList().size() == int(pos.shared()->ingredients.size()));
+    CHECK_FALSE(counting[u"ingredients"_s].toList()[0].toMap().contains(u"expected"_s));
+    CHECK(counting[u"ingredients"_s].toList()[0].toMap()[u"lastCounted"_s] == u"never"_s);
+
+    // Nothing typed, or not a number: not saved.
+    CHECK_FALSE(pos.saveStockCount({{u"lines"_s, QVariantList{QVariantMap{{u"ingredient"_s, u"bun"_s}, {u"counted"_s, u""_s}}}}}));
+    CHECK_FALSE(pos.saveStockCount({{u"lines"_s, QVariantList{QVariantMap{{u"ingredient"_s, u"bun"_s}, {u"counted"_s, u"-3"_s}}}}}));
+
+    // 69 buns on the shelf: 4 missing. Patties not counted: left alone.
+    const double patties = onHand(pos, "patty");
+    REQUIRE(pos.saveStockCount({{u"lines"_s, QVariantList{QVariantMap{{u"ingredient"_s, u"bun"_s}, {u"counted"_s, u"69"_s}},
+                                                         QVariantMap{{u"ingredient"_s, u"patty"_s}, {u"counted"_s, QString()}}}}}));
+    CHECK(onHand(pos, "bun") == 69);
+    CHECK(onHand(pos, "patty") == patties);
+    CHECK(bun.start == 69);
+    CHECK(bun.received == 0);
+    CHECK(bun.sold == 0);
+    CHECK(bun.adjusted == 0);
+    CHECK(bun.countedAt > 0);
+    REQUIRE(pos.stockCounts().size() == 1);
+    const core::StockCount &count = pos.stockCounts().back();
+    REQUIRE(count.lines.size() == 1);
+    CHECK(count.lines[0].expected == buns + 25);
+    CHECK(count.lines[0].off() == -4);
+    CHECK(count.value() == Money::fromCents(-140));   // 4 x $0.35
+    CHECK(app::stockCountFromJson(app::toJson(count)) == count);
+    CHECK(app::ingredientFromJson(app::toJson(bun)) == bun);
+
+    const core::Report r = pos.buildReport(u"stock"_s);
+    CHECK(rowIn(r, r.rows.front().cells.front(), "Burger Buns (each)")
+          == std::vector<std::string>{"Burger Buns (each)", "73", "69", "-4", "-$1.40"});
+    CHECK(pos.stockCounting()[u"recent"_s].toList().value(0).toMap()[u"short"_s].toBool());
+
+    // The store can show what should be there while counting.
+    pos.shared()->settings.stockCountShowsExpected = true;
+    CHECK(pos.stockCounting()[u"ingredients"_s].toList()[0].toMap()[u"expected"_s] == u"69"_s);
+
+    // Kept in the database.
+    QTest::qWait(50);
+    writer.flush();
+    const auto loaded = store.load();
+    REQUIRE(loaded);
+    REQUIRE(loaded->stockCounts.size() == 1);
+    CHECK(loaded->stockCounts.back() == count);
+    CHECK(loaded->lastStockCountId == 1);
+}

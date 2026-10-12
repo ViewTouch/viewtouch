@@ -153,7 +153,7 @@ QJsonArray widgetSettings(const QString &kind)
         out.append(with(field(u"props.report"_s, u"Opens on"_s, u"enum"_s, g), u"options"_s,
                         options({{"sales", "Sales"}, {"items", "Items"}, {"categories", "Categories"},
                                  {"hourly", "By hour"}, {"servers", "Servers"}, {"tips", "Tips"}, {"labor", "Labor"},
-                                 {"drawer", "Drawer"}, {"expenses", "Expenses"}, {"purchases", "Purchases"},
+                                 {"drawer", "Drawer"}, {"expenses", "Expenses"}, {"purchases", "Purchases"}, {"stock", "Stock count"},
                                  {"audit", "Audit"}, {"exceptions", "Exceptions"}, {"changes", "Changes"}, {"deposit", "Deposit"}, {"customers", "Customers"}, {"royalty", "Royalty"}, {"accounting", "Accounting"}, {"accounts", "Gift cards"}, {"kitchen", "Kitchen"},
                                  {"foodcost", "Food cost"}, {"engineering", "Menu mix"}, {"forecast", "Forecast"}})));
     } else if (kind == u"adminPanel") {
@@ -222,7 +222,7 @@ QStringList widgetKinds()
             u"soldOutList"_s, u"orderList"_s, u"loginPad"_s, u"guestCount"_s, u"checkList"_s,
             u"paymentPanel"_s, u"numPad"_s, u"keyboard"_s, u"splitCheck"_s, u"drawerPanel"_s,
             u"reportView"_s, u"endOfDay"_s, u"logoutPanel"_s, u"clock"_s, u"statusBar"_s,
-            u"adminPanel"_s, u"kitchenDisplay"_s, u"customerInfo"_s, u"customerLookup"_s, u"giftCard"_s, u"waitlist"_s, u"schedule"_s, u"factoryReset"_s, u"messageComposer"_s, u"network"_s, u"receiveDelivery"_s, u"checkSearch"_s, u"orderLater"_s, u"menuGrid"_s, u"menuCategories"_s, u"menuBuilder"_s, u"timeClock"_s, u"dashboard"_s, u"checklist"_s, u"hostStand"_s, u"deliveryBoard"_s, u"decor"_s, u"floorPlan"_s};
+            u"adminPanel"_s, u"kitchenDisplay"_s, u"customerInfo"_s, u"customerLookup"_s, u"giftCard"_s, u"waitlist"_s, u"schedule"_s, u"factoryReset"_s, u"messageComposer"_s, u"network"_s, u"receiveDelivery"_s, u"stockCount"_s, u"checkSearch"_s, u"orderLater"_s, u"menuGrid"_s, u"menuCategories"_s, u"menuBuilder"_s, u"timeClock"_s, u"dashboard"_s, u"checklist"_s, u"hostStand"_s, u"deliveryBoard"_s, u"decor"_s, u"floorPlan"_s};
 }
 
 QStringList allKinds()

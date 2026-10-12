@@ -20,6 +20,14 @@ struct Ingredient {
     double lowAt = 0;            // low-stock warning at or below this
     Money cost;                  // per unit, for food cost
     std::string vendor;          // who it usually comes from (a Vendor id)
+    // Since it was last counted (a stock count): what there was then, and
+    // what came in, went out in what was sold, or was changed by hand. What
+    // should be there is onHand = start + received - sold + adjusted.
+    std::int64_t countedAt = 0;  // 0: never counted
+    double start = 0;
+    double received = 0;
+    double sold = 0;
+    double adjusted = 0;
 
     bool low() const { return onHand <= lowAt; }
     bool operator==(const Ingredient &) const = default;
@@ -63,6 +71,41 @@ struct Delivery {
         return t;
     }
     bool operator==(const Delivery &) const = default;
+};
+
+// Counting what's on the shelves (Manager -> Inventory -> Count Stock): each
+// item counted, against what should be there by the sales and deliveries
+// since its last count. The difference is waste, portions, theft or mistakes.
+struct StockCount {
+    std::int64_t id = 0;
+    std::int64_t at = 0;
+    std::string by;
+    struct Line {
+        std::string ingredientId;
+        std::string name;
+        std::string unit;
+        std::int64_t since = 0;   // its last count (0: never)
+        double start = 0;
+        double received = 0;
+        double sold = 0;
+        double adjusted = 0;
+        double expected = 0;      // start + received - sold + adjusted
+        double counted = 0;
+        Money unitCost;
+        double off() const { return counted - expected; }   // < 0: missing
+        Money value() const { return Money::fromCents(std::llround(double(unitCost.cents()) * off())); }
+        bool operator==(const Line &) const = default;
+    };
+    std::vector<Line> lines;
+
+    Money value() const
+    {
+        Money t;
+        for (const Line &l : lines)
+            t += l.value();
+        return t;
+    }
+    bool operator==(const StockCount &) const = default;
 };
 
 } // namespace vt::core

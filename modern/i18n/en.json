@@ -139,6 +139,18 @@
   "one": "Change %n price %1",
   "other": "Change %n prices %1"
  },
+ "Counted %n item(s): %1 missing": {
+  "one": "Counted %n item: %1 missing",
+  "other": "Counted %n items: %1 missing"
+ },
+ "Counted %n item(s): %1 more than expected": {
+  "one": "Counted %n item: %1 more than expected",
+  "other": "Counted %n items: %1 more than expected"
+ },
+ "Counted %n item(s): as expected": {
+  "one": "Counted %n item: as expected",
+  "other": "Counted %n items: as expected"
+ },
  "Exported all pages to %1, with %n picture(s) and font(s)": {
   "one": "Exported all pages to %1, with %n picture or font",
   "other": "Exported all pages to %1, with %n pictures and fonts"
@@ -206,6 +218,10 @@
  "used by %n": {
   "one": "used by %n item",
   "other": "used by %n items"
+ },
+ "⚠ %n not on phone": {
+  "one": "⚠ %n not on phone",
+  "other": "⚠ %n not on phone"
  },
  "⚠ %n to fix": {
   "one": "⚠ %n to fix",

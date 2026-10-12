@@ -344,8 +344,26 @@ struct Demo {
         }
     }
 
+    // Mondays, before opening: the shelves counted, a little short here and there.
+    void countStock(QDate day)
+    {
+        if (day.dayOfWeek() != 1)
+            return;
+        as("1234");
+        QVariantList lines;
+        for (const Ingredient &g : pos.shared()->ingredients) {
+            const double off = chance(40) ? std::round(g.onHand * pick(5) / 100.0 * 10) / 10 : 0;
+            lines.append(QVariantMap{{u"ingredient"_s, QString::fromStdString(g.id)},
+                                     {u"counted"_s, QString::number(std::max(0.0, std::round((g.onHand - off) * 10) / 10))}});
+        }
+        if (!lines.isEmpty())
+            pos.saveStockCount({{u"lines"_s, lines}});
+    }
+
     void playDay(QDate day, double busy)
     {
+        clock = at(day, 9, 0);
+        countStock(day);
         clock = at(day, 9, 30);
         receive(day);
         restock();

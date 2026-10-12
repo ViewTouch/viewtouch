@@ -247,6 +247,12 @@ bool PosStore::open(QString *error)
             || !run(q, u"UPDATE meta SET value = '14' WHERE key = 'pos_schema_version'"_s, error))
             return false;
     }
+    if (version < 15) {   // stock counts (Manager -> Inventory -> Count Stock)
+        if (!run(q, u"CREATE TABLE IF NOT EXISTS stock_counts (id INTEGER PRIMARY KEY, at INTEGER NOT NULL, "
+                     "json TEXT NOT NULL)"_s, error)
+            || !run(q, u"UPDATE meta SET value = '15' WHERE key = 'pos_schema_version'"_s, error))
+            return false;
+    }
     return true;
 }
 
@@ -418,6 +424,12 @@ std::optional<app::PosData> PosStore::load(QStringList *errors) const
     }
     if (q.exec(u"SELECT COALESCE(MAX(id), 0) FROM changes"_s) && q.next())
         data.lastChangeId = q.value(0).toLongLong();
+    if (q.exec(u"SELECT json FROM stock_counts ORDER BY id DESC LIMIT 30"_s)) {
+        while (q.next())
+            data.stockCounts.insert(data.stockCounts.begin(), app::stockCountFromJson(parse(q.value(0))));
+    }
+    if (q.exec(u"SELECT COALESCE(MAX(id), 0) FROM stock_counts"_s) && q.next())
+        data.lastStockCountId = q.value(0).toLongLong();
     if (q.exec(u"SELECT id, opened_at, closed_at, reports FROM business_days WHERE closed_at != 0 "
                "ORDER BY id DESC LIMIT 60"_s)) {
         while (q.next()) {
@@ -581,6 +593,12 @@ void SqlPosSink::saveChange(const core::Change &c)
     writer_.upsert(u"changes"_s, QString::number(c.id),
                    {{u"id"_s, qint64(c.id)}, {u"at"_s, qint64(c.at)}, {u"day"_s, qint64(c.day)},
                     {u"json"_s, compact(app::toJson(c))}});
+}
+
+void SqlPosSink::saveStockCount(const core::StockCount &c)
+{
+    writer_.upsert(u"stock_counts"_s, QString::number(c.id),
+                   {{u"id"_s, qint64(c.id)}, {u"at"_s, qint64(c.at)}, {u"json"_s, compact(app::toJson(c))}});
 }
 
 void SqlPosSink::saveImage(const std::string &name, const QByteArray &data)

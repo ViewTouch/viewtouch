@@ -32,6 +32,8 @@ QJsonObject toJson(const core::Check &check);
 QJsonObject toJson(const core::Refund &refund);
 core::Refund refundFromJson(const QJsonObject &o);
 QJsonObject toJson(const core::Change &change);
+QJsonObject toJson(const core::StockCount &count);
+core::StockCount stockCountFromJson(const QJsonObject &o);
 core::Change changeFromJson(const QJsonObject &o);
 std::optional<core::Check> checkFromJson(const QJsonObject &o);
 

@@ -58,6 +58,26 @@
       ]
     },
     {
+      "id": "count",
+      "kind": "button",
+      "rect": {
+        "x": 544,
+        "y": 944,
+        "w": 432,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Count Stock\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "stock-count"
+        }
+      ]
+    },
+    {
       "id": "vendors",
       "kind": "button",
       "rect": {

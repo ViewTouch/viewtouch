@@ -87,6 +87,7 @@ void PosService::takeStock(const std::vector<OrderLine> &lines, int sign)
             continue;
         const bool wasLow = g.low();
         g.onHand -= it->second * sign;
+        g.sold += it->second * sign;
         if (!wasLow && g.low())
             nowLow << tr("%1 (%2 %3 left)").arg(qs(g.name), amountText(g.onHand), qs(g.unit));
         if (s_->sink)
@@ -380,6 +381,7 @@ bool PosService::receiveDelivery(const QVariantMap &r)
     for (const Delivery::Line &l : d.lines) {
         const auto g = std::ranges::find_if(s_->ingredients, [&](const Ingredient &x) { return x.id == l.ingredientId; });
         g->onHand += l.qty;
+        g->received += l.qty;
         if (l.unitCost.cents() > 0)
             g->cost = l.unitCost;
         if (s_->sink)
@@ -419,6 +421,126 @@ QVariantMap PosService::receiving() const
                                   {u"items"_s, int(it->lines.size())}, {u"total"_s, format(it->total())},
                                   {u"by"_s, qs(it->by)}});
     return {{u"vendors"_s, vendors}, {u"ingredients"_s, ingredients}, {u"recent"_s, recent}};
+}
+
+// --- stock counts ------------------------------------------------------------------------
+
+QVariantMap PosService::stockCounting() const
+{
+    if (!can(u"manager"_s))
+        return {};
+    const bool show = s_->settings.stockCountShowsExpected;
+    const auto date = [](std::int64_t at) {
+        return i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(at), u"ddd M/d h:mm AP"_s);
+    };
+    QVariantList vendors;
+    for (const Vendor &v : s_->settings.vendors)
+        vendors.append(QVariantMap{{u"id"_s, qs(v.id)}, {u"name"_s, qs(v.name)}});
+    QVariantList ingredients;
+    for (const Ingredient &g : s_->ingredients) {
+        QVariantMap m{{u"id"_s, qs(g.id)}, {u"name"_s, qs(g.name)}, {u"unit"_s, qs(g.unit)},
+                      {u"vendor"_s, qs(g.vendor)},
+                      {u"lastCounted"_s, g.countedAt ? date(g.countedAt) : tr("never")}};
+        if (show)
+            m.insert(u"expected"_s, amountText(g.onHand));
+        ingredients.append(m);
+    }
+    QVariantList recent;
+    for (auto it = s_->stockCounts.rbegin(); it != s_->stockCounts.rend() && recent.size() < 15; ++it)
+        recent.append(QVariantMap{{u"when"_s, date(it->at)}, {u"by"_s, qs(it->by)},
+                                  {u"items"_s, int(it->lines.size())}, {u"value"_s, format(it->value())},
+                                  {u"short"_s, it->value().cents() < 0}});
+    return {{u"vendors"_s, vendors}, {u"ingredients"_s, ingredients}, {u"showExpected"_s, show},
+            {u"recent"_s, recent}};
+}
+
+bool PosService::saveStockCount(const QVariantMap &r)
+{
+    if (!require(perm::Manager, tr("Counting stock")))
+        return false;
+    StockCount count;
+    for (const QVariant &v : r.value(u"lines"_s).toList()) {
+        const QVariantMap l = v.toMap();
+        const QVariant typed = l.value(u"counted"_s);
+        if (!typed.isValid() || typed.toString().trimmed().isEmpty())
+            continue;   // not counted
+        bool ok = false;
+        const double counted = typed.toString().trimmed().replace(u',', u'.').toDouble(&ok);
+        const Ingredient *g = s_->ingredient(ss(l.value(u"ingredient"_s).toString()));
+        if (!g)
+            return fail(tr("There is no ingredient '%1' (see Manager → Inventory).").arg(l.value(u"ingredient"_s).toString()));
+        if (!ok || counted < 0)
+            return fail(tr("Type how many there are of %1 (0 or more).").arg(qs(g->name)));
+        count.lines.push_back({g->id, g->name, g->unit, g->countedAt, g->start, g->received, g->sold, g->adjusted,
+                               g->onHand, counted, g->cost});
+    }
+    if (count.lines.empty())
+        return fail(tr("Type how many there are of at least one item."));
+    count.id = ++s_->lastStockCountId;
+    count.at = now();
+    count.by = user()->name;
+    // What was counted is what there is, from now on.
+    for (const StockCount::Line &l : count.lines) {
+        const auto g = std::ranges::find(s_->ingredients, l.ingredientId, &Ingredient::id);
+        g->onHand = g->start = l.counted;
+        g->countedAt = count.at;
+        g->received = g->sold = g->adjusted = 0;
+        if (s_->sink)
+            s_->sink->saveIngredient(*g, int(g - s_->ingredients.begin()));
+    }
+    s_->stockCounts.push_back(count);
+    if (s_->stockCounts.size() > 30)
+        s_->stockCounts.erase(s_->stockCounts.begin());
+    if (s_->sink)
+        s_->sink->saveStockCount(count);
+    refreshSoldOut();
+    ++s_->adminRevision;
+    emit s_->adminChanged();
+    const Money value = count.value();
+    emit notice(value.cents() < 0 ? tr("Counted %n item(s): %1 missing", "", int(count.lines.size())).arg(format(-value))
+                : value.cents() > 0 ? tr("Counted %n item(s): %1 more than expected", "", int(count.lines.size())).arg(format(value))
+                                    : tr("Counted %n item(s): as expected", "", int(count.lines.size())));
+    return true;
+}
+
+Report PosService::stockCountReport(const ReportContext &ctx) const
+{
+    Report r;
+    r.id = "stock";
+    r.title = "Stock Count";
+    r.subtitle = ctx.period;
+    r.columns = {"", "Should be", "Counted", "Off by", "Cost"};
+    std::vector<const StockCount *> counts;
+    for (const StockCount &c : s_->stockCounts)
+        if (c.at >= s_->day.openedAt)
+            counts.push_back(&c);
+    const bool earlier = counts.empty() && !s_->stockCounts.empty();
+    if (earlier)
+        counts.push_back(&s_->stockCounts.back());   // none today: the latest one
+    if (counts.empty()) {
+        r.note("No stock counted yet (Manager -> Inventory -> Count Stock).");
+        return r;
+    }
+    const auto amount = [](double v) { return amountText(v).toStdString(); };
+    for (const StockCount *c : counts) {
+        const QString when = earlier ? i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(c->at), u"ddd M/d h:mm AP"_s)
+                                     : QString::fromStdString(ctx.clock(c->at));
+        r.section(when.toStdString() + " · " + c->by);
+        std::vector<const StockCount::Line *> lines;
+        for (const StockCount::Line &l : c->lines)
+            lines.push_back(&l);
+        // The biggest losses first.
+        std::ranges::stable_sort(lines, [](const auto *a, const auto *b) { return a->value().cents() < b->value().cents(); });
+        for (const StockCount::Line *l : lines) {
+            const double off = std::round(l->off() * 100) / 100;
+            r.line({l->name + " (" + l->unit + ")", amount(l->expected), amount(l->counted),
+                    off == 0 ? std::string("0") : (off > 0 ? "+" : "") + amount(off), ctx.money(l->value())});
+        }
+        r.total({"Missing or extra", "", "", "", ctx.money(c->value())});
+    }
+    r.note("Should be: last count + deliveries - sales (by recipe) + changes by hand.");
+    r.note("Less than that: waste, big portions, theft, or a recipe that's off.");
+    return r;
 }
 
 Report PosService::purchasesReport(const ReportContext &ctx) const

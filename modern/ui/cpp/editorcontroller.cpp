@@ -287,6 +287,7 @@ QString EditorController::kindName(const QString &kind) const
         {u"messageComposer"_s, QT_TR_NOOP("Messages")},
         {u"network"_s, QT_TR_NOOP("Network")},
         {u"receiveDelivery"_s, QT_TR_NOOP("Receive a delivery")},
+        {u"stockCount"_s, QT_TR_NOOP("Count stock")},
         {u"checkSearch"_s, QT_TR_NOOP("Find a check")},
         {u"orderLater"_s, QT_TR_NOOP("Order for later")},
         {u"menuGrid"_s, QT_TR_NOOP("Menu (self-filling)")},

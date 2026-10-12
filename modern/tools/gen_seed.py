@@ -388,7 +388,7 @@ write("pos/settings.json", {
 WIDGETS = ["orderList", "loginPad", "guestCount", "numPad", "paymentPanel",
            "logoutPanel", "clock", "checkList", "keyboard", "statusBar",
            "adminPanel", "reportView", "drawerPanel", "endOfDay", "splitCheck", "customerInfo",
-           "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "messageComposer", "network", "receiveDelivery", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard"]
+           "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "messageComposer", "network", "receiveDelivery", "stockCount", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard"]
 widget_style = {"normal": {"fill": "#232933", "frame": "flat", "shadow": 0, "radius": 12,
                            "textColor": "#e6e9ef", "fontSize": 28, "bold": False}}
 write("theme.json", {
@@ -866,7 +866,8 @@ for pid, name, panel in [("admin-menu", "Menu Items", "menu"), ("admin-employees
                          ("admin-punches", "Time Punches", "punches"),
                          ("admin-requests", "Time Off & Swaps", "requests")]:
     # Inventory: vendors, and receiving what they deliver.
-    extra = [zone("vendors", 1008, 944, 432, 120, "Vendors…", actions=[command("openAdmin", panel="vendors")]),
+    extra = [zone("count", 544, 944, 432, 120, "Count Stock…", actions=[jump(page="stock-count")]),
+             zone("vendors", 1008, 944, 432, 120, "Vendors…", actions=[command("openAdmin", panel="vendors")]),
              zone("receive", 1472, 944, 432, 120, "Receive a Delivery…", actions=[jump(page="receive-delivery")],
                   style=fill(GREEN))] if panel == "inventory" else []
     # Terminals: the Stripe readers beside the registers.
@@ -890,6 +891,12 @@ page("find-check", "Find a Check", "custom", [
 page("receive-delivery", "Receive a Delivery", "manager", [
     label("title", 16, 16, 1888, 80, "Receive a delivery"),
     zone("receive", 16, 112, 1888, 816, kind="receiveDelivery"),
+    zone("back", 16, 944, 432, 120, "‹ Inventory", actions=[jump(mode="back")]),
+], permission="manager")
+
+page("stock-count", "Count Stock", "manager", [
+    label("title", 16, 16, 1888, 80, "Count stock"),
+    zone("count", 16, 112, 1888, 816, kind="stockCount"),
     zone("back", 16, 944, 432, 120, "‹ Inventory", actions=[jump(mode="back")]),
 ], permission="manager")
 

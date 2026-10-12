@@ -400,6 +400,8 @@ TEST_CASE("Demo data: months of real service, everything in use, then refuses a 
     CHECK(rowsOf("drivers", u"Lou"_s) > 30);
     CHECK(rowsOf("checklists", u"Count the starting cash"_s) > 100);
     CHECK_FALSE(s->deliveries.empty());                                   // vendors delivered
+    CHECK(s->stockCounts.size() >= 10);                                   // Mondays' stock counts
+    CHECK(std::ranges::any_of(s->stockCounts, [](const core::StockCount &c) { return c.value().cents() < 0; }));
     // Regulars remember their last order; card payments say which card.
     CHECK(std::ranges::any_of(s->customers, [](const core::CustomerRecord &c) { return !c.lastOrder.empty(); }));
     bool card = false;

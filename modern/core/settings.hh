@@ -193,6 +193,9 @@ struct PosSettings {
     // Voids of sent items and discounts / comps made on a screen ask why,
     // from these lists (unless set per employee); an empty list asks nothing.
     bool askReasons = true;
+    // Counting stock: what should be there is shown while counting (else
+    // only in the Stock Count report, after: a count not swayed by it).
+    bool stockCountShowsExpected = false;
     std::vector<std::string> voidReasons{"Wrong item rung in", "Guest changed their mind", "Took too long",
                                          "Guest didn't like it", "Kitchen mistake"};
     std::vector<std::string> compReasons{"Guest unhappy", "Took too long", "Manager's guest", "Kitchen mistake",

@@ -150,6 +150,7 @@ QVariantList storeSections(const QVariantList &fields)
         {"tips", PosService::tr("Tips"),
          {"tipPercents", "gratuityPercent", "gratuityMinGuests", "declareCashTips", "tipOuts", "tipPool"}},
         {"menu", PosService::tr("Menu and prices"), {"extraPercent", "extraCharge", "soldOutBackNextDay"}},
+        {"stock", PosService::tr("Inventory"), {"stockCountShowsExpected"}},
         {"kitchen", PosService::tr("Kitchen"), {"kitchenStations", "kitchenWarnMinutes", "kitchenLateMinutes", "laterLeadMinutes"}},
         {"togo", PosService::tr("Takeout and delivery"),
          {"requireOrderName", "takeoutMinutes", "deliveryMinutes", "minutesPerOrderWaiting", "deliveryFee"}},
@@ -651,6 +652,8 @@ QVariantList PosService::adminFields(const QString &panel)
                       u"min"_s, 0), u"max"_s, 500),
             field(u"extraCharge"_s, tr("Extra: amount added"), u"money"_s,
                   tr("And/or a fixed amount for Extra, e.g. 0.75. Charged even on choices that are free.")),
+            field(u"stockCountShowsExpected"_s, tr("Show what should be there while counting stock"), u"bool"_s,
+                  tr("Off: whoever counts sees it only in the Stock Count report, after, so it can't sway the count.")),
             field(u"askReasons"_s, tr("Ask why on voids and comps"), u"bool"_s,
                   tr("Voiding an item already sent, or a discount or comp, asks for a reason from the lists below. "
                      "The Exceptions report adds them up. Can be set per employee.")),
@@ -905,6 +908,7 @@ QVariantList PosService::adminRecords(const QString &panel)
               }()},
              {u"backupCopyDir"_s, qs(s_->settings.backupCopyDir)},
              {u"askReasons"_s, s_->settings.askReasons},
+             {u"stockCountShowsExpected"_s, s_->settings.stockCountShowsExpected},
              {u"voidReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.voidReasons) l << qs(t); return l.join(u'\n'); }()},
              {u"compReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.compReasons) l << qs(t); return l.join(u'\n'); }()},
              {u"openingChecklist"_s, [&] { QStringList l; for (const std::string &t : s_->settings.openingChecklist) l << qs(t); return l.join(u'\n'); }()},
@@ -1025,7 +1029,7 @@ QVariantList PosService::adminRecords(const QString &panel)
                 qs(v.name), qs(v.phone));
     } else if (panel == u"inventory") {
         for (const Ingredient &g : s_->ingredients)
-            add(toJson(g).toVariantMap(), qs(g.name),
+            add([&] { QVariantMap r = toJson(g).toVariantMap(); r.remove(u"sinceCount"_s); return r; }(), qs(g.name),
                 QString::number(g.onHand, 'g', 8) + u' ' + qs(g.unit)
                     + (g.onHand <= 0 ? tr(" · OUT") : g.low() ? tr(" · LOW") : QString()));
     } else if (panel == u"modifierGroups") {
@@ -1352,9 +1356,19 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         if (g.lowAt < 0)
             return fail(tr("Low at can't be negative."));
         if (index >= 0) {
-            g.id = s_->ingredients[index].id;
+            // Since its last count: kept; a different amount on hand is a change by hand.
+            const Ingredient &was = s_->ingredients[index];
+            g.id = was.id;
+            g.countedAt = was.countedAt;
+            g.start = was.start;
+            g.received = was.received;
+            g.sold = was.sold;
+            g.adjusted = was.adjusted + (g.onHand - was.onHand);
             s_->ingredients[index] = g;
         } else {
+            g.countedAt = 0;
+            g.start = g.onHand;
+            g.received = g.sold = g.adjusted = 0;
             const QString wanted = record.value(u"id"_s).toString().trimmed();
             g.id = ss(uniqueId(wanted.isEmpty() ? name : wanted, s_->ingredients,
                                [](const Ingredient &i) { return i.id; }, -1));
@@ -1646,6 +1660,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.backupCopyDir = ss(record.value(u"backupCopyDir"_s).toString().trimmed());
         if (record.contains(u"askReasons"_s))
             s_->settings.askReasons = record.value(u"askReasons"_s).toBool();
+        if (record.contains(u"stockCountShowsExpected"_s))
+            s_->settings.stockCountShowsExpected = record.value(u"stockCountShowsExpected"_s).toBool();
         for (const auto &[key, list] : {std::pair{u"openingChecklist"_s, &s_->settings.openingChecklist},
                                         std::pair{u"closingChecklist"_s, &s_->settings.closingChecklist},
                                         std::pair{u"voidReasons"_s, &s_->settings.voidReasons},

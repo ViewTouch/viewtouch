@@ -3677,6 +3677,41 @@ TEST_CASE("UI: receiving a delivery by touch", "[flow][ui][vendors]")
     CHECK(find(u"qty-bun"_s)->property("text").toString().isEmpty());   // ready for the next one
 }
 
+TEST_CASE("UI: counting stock by touch, and the Stock Count report", "[flow][ui][stockCount]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    // A few buns went missing since the last delivery.
+    REQUIRE(s.c.jumpTo(u"admin-inventory"_s));
+    QTest::qWait(60);
+    REQUIRE(Screen::findBy(s.window->contentItem(), "text", u"Count Stock…"_s));
+    s.c.activate(u"count"_s);
+    QTest::qWait(80);
+    CHECK(s.c.pageId() == u"stock-count"_s);
+    auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    s.tapItem(find(u"countVendor-city-bakery"_s));
+    QTest::qWait(60);
+    CHECK_FALSE(find(u"counted-lettuce"_s));               // only City Bakery's shelf
+    const double buns = s.pos.shared()->ingredient("bun")->onHand;
+    s.tapItem(find(u"counted-bun"_s));
+    for (const char ch : {'4', '5'})
+        QTest::keyClick(s.window, ch);
+    QTest::qWait(60);
+    CHECK(find(u"countedHowMany"_s)->property("text").toString().startsWith(u"1 of"_s));
+    s.shot("stock-count");
+    s.tapItem(find(u"saveStockCount"_s));
+    QTest::qWait(80);
+    CHECK(s.pos.shared()->ingredient("bun")->onHand == 45);
+    CHECK(find(u"counted-bun"_s)->property("text").toString().isEmpty());   // ready for the next one
+    REQUIRE(s.c.jumpTo(u"reports"_s));
+    QTest::qWait(50);
+    s.tapKey(u"Stock"_s);
+    QTest::qWait(80);
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"Burger Buns (each)"_s));
+    CHECK(Screen::findBy(s.window->contentItem(), "text", QString::number(45 - buns)));
+    s.shot("stock-count-report");
+}
+
 TEST_CASE("UI: clocking in with two jobs asks which one", "[flow][ui][pay]")
 {
     Screen s;
