@@ -215,7 +215,10 @@ public:
     QVariantMap explanation() const { return explanation_; }
     QString describeAction(const vt::layout::Action &action) const;
     // Pages to start on, for the admin forms: [{value: id, text: name}], empty first.
-    Q_INVOKABLE QVariantList pageChoices() const;
+    // Pages to choose from (an empty first entry); only "floor": the floor
+    // plans (pages that show the tables, the seating screen too), not their
+    // phone versions.
+    Q_INVOKABLE QVariantList pageChoices(const QString &only = {}) const;
     // Where the screen rests with nobody logged in: the login page, or the
     // Time Clock on a terminal set to it.
     QString loginPage() const;

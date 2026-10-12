@@ -349,11 +349,17 @@ QString LayoutController::loginPage() const
     return homePageOf(activeLayout());
 }
 
-QVariantList LayoutController::pageChoices() const
+QVariantList LayoutController::pageChoices(const QString &only) const
 {
+    const auto floor = [](const vt::layout::Page &p) {
+        return p.variantOf.isEmpty()
+            && (p.kind == u"tables" || std::ranges::any_of(p.zones, [](const vt::layout::Zone &z) {
+                    return z.kind == u"table" || z.kind == u"tableMap" || z.kind == u"hostStand";   // tables, or the seating screen
+                }));
+    };
     QVariantList out{QVariantMap{{u"value"_s, QString()}, {u"text"_s, QString()}}};
     for (const vt::layout::Page &p : activeLayout().pages)
-        if (p.kind != u"template" && p.kind != u"library")
+        if (p.kind != u"template" && p.kind != u"library" && (only != u"floor" || floor(p)))
             out.append(QVariantMap{{u"value"_s, p.id}, {u"text"_s, p.name}});
     return out;
 }

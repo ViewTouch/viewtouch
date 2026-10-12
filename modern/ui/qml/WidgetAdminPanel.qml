@@ -81,6 +81,17 @@ Item {
         }
         return fields.filter(f => f.groupKey === sectionShown && shows(f))
     }
+    // A page field's choices: field.pages "floor" lists only the floor plans
+    // (start pages); a page chosen before stays listed while it's the choice.
+    function pageChoices(f) {
+        const list = zone.controller.pageChoices(f.pages ?? "")
+        const now = draft[f.path] ?? ""
+        if (now !== "" && !list.some(o => o.value === now)) {
+            const page = zone.controller.pageChoices().find(o => o.value === now)
+            list.push({ value: now, text: page ? page.text : now })
+        }
+        return list
+    }
     function openSection(key) {
         section = key
         sectionOpen = true
@@ -378,7 +389,7 @@ Item {
                                        })
                                 pos: w.pos
                                 touch: true
-                                pages: modelData.type === "page" && w.zone ? w.zone.controller.pageChoices() : []
+                                pages: modelData.type === "page" && w.zone ? w.pageChoices(modelData) : []
                                 value: w.draft[modelData.path]
                                 isSet: true
                                 changed: w.differs(modelData.path)

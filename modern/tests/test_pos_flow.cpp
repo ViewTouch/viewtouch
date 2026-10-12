@@ -7121,3 +7121,51 @@ TEST_CASE("Store Settings: a picture of every section", "[.settingsTour]")
         ++i;
     }
 }
+
+TEST_CASE("UI: start pages are chosen from the floor plans", "[flow][ui][settings]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    const auto names = [&](const QVariantList &choices) {
+        QStringList out;
+        for (const QVariant &c : choices)
+            out << c.toMap()[u"text"_s].toString();
+        return out;
+    };
+    // The tables, and the host's seating screen; not their phone versions.
+    QStringList seed = names(s.c.pageChoices(u"floor"_s));
+    seed.sort();
+    CHECK(seed == QStringList{QString(), u"Seating"_s, u"Tables"_s});
+    CHECK(names(s.c.pageChoices()).contains(u"Manager"_s));   // other page fields: every page
+
+    // A second room the store draws itself: a page with a table map.
+    REQUIRE(s.c.jumpTo(u"tables"_s));
+    s.c.enterEditMode();
+    EditorController *e = s.c.editor();
+    REQUIRE_FALSE(e->newPage(u"Patio"_s, u"custom"_s, QString()).isEmpty());
+    REQUIRE_FALSE(e->addZone(u"tableMap"_s).isEmpty());
+    REQUIRE(s.c.leaveEditMode(true));
+    QTest::qWait(60);
+    const QStringList floors = names(s.c.pageChoices(u"floor"_s));
+    CHECK(floors.contains(u"Patio"_s));
+    CHECK_FALSE(floors.contains(u"Tables (phone)"_s));
+    CHECK_FALSE(floors.contains(u"Manager"_s));
+
+    // Store Settings -> Start pages: the floor plans to choose from.
+    REQUIRE(s.c.jumpTo(u"admin-store"_s));
+    QTest::qWait(120);
+    s.tapItem(Screen::findBy(s.window->contentItem(), "objectName", u"settingsSection-startPages"_s));
+    QTest::qWait(60);
+    QQuickItem *server = Screen::findBy(s.window->contentItem(), "text", u"Servers start on"_s)->parentItem()->parentItem();
+    QQuickItem *combo = nullptr;
+    std::function<void(QQuickItem *)> walk = [&](QQuickItem *i) {
+        for (QQuickItem *c : i->childItems()) {
+            if (!combo && c->inherits("QQuickComboBox"))
+                combo = c;
+            walk(c);
+        }
+    };
+    walk(server);
+    REQUIRE(combo);
+    CHECK(combo->property("count").toInt() == 4);   // (the floor plan), Tables, Seating, Patio
+}
