@@ -296,6 +296,7 @@ QString EditorController::kindName(const QString &kind) const
         {u"hostStand"_s, QT_TR_NOOP("Seating (host stand)")},
         {u"deliveryBoard"_s, QT_TR_NOOP("Deliveries board")},
         {u"decor"_s, QT_TR_NOOP("Floor plan piece")},
+        {u"floorPlan"_s, QT_TR_NOOP("Floor plans (with tabs)")},
     };
     const auto it = names.constFind(kind);
     return it == names.cend() ? kind : tr(*it);

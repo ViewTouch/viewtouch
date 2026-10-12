@@ -5641,7 +5641,7 @@ TEST_CASE("Every tap handler on a page ignores the keyboard's touches", "[ui][li
 {
     const QDir qml(QStringLiteral(VTM_SEED_DIR) + u"/../ui/qml"_s);
     QStringList files = qml.entryList({u"Widget*.qml"_s});
-    files << u"ZoneItem.qml"_s;
+    files << u"ZoneItem.qml"_s << u"FloorPlanView.qml"_s;
     const QRegularExpression handler(uR"(\bon(Tapped|LongPressed|DoubleTapped)\s*:)"_s);
     int handlers = 0;
     for (const QString &name : files) {
@@ -7399,4 +7399,65 @@ TEST_CASE("Host stand: the floor plan as drawn, a tab for each, picked by touch,
         QTest::qWait(60);
         CHECK(by(u"host-T1"_s));
     }
+}
+
+// The floor plans on a phone, for review (hidden: "[.phoneFloors]" with VTM_SHOTS).
+TEST_CASE("Floor plans on a phone: a picture of each", "[.phoneFloors]")
+{
+    Screen s(false, 412, 870, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    for (const char *page : {"tables", "floor-dining", "floor-bar", "floor-patio"}) {
+        REQUIRE(s.c.jumpTo(QString::fromLatin1(page)));
+        QTest::qWait(150);
+        s.shot(("phone-" + std::string(page)).c_str());
+    }
+}
+
+TEST_CASE("Phone: the floor plans with tabs; a table touched opens; a room's own page starts on it; moving a check", "[ui][phone][floorplans]")
+{
+    Screen s(false, 412, 870, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"tables"_s));
+    QTest::qWait(100);
+    const auto by = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    // Main, turned to fill the phone: the patio (south) on the left of the dining room.
+    REQUIRE(by(u"floor-T1"_s));
+    REQUIRE(by(u"floor-P1"_s));
+    const auto at = [&](const QString &t) {
+        QQuickItem *i = by(u"floor-"_s + t);
+        return i->mapToScene(QPointF(i->width() / 2, i->height() / 2));
+    };
+    CHECK(at(u"P1"_s).x() < at(u"T5"_s).x());
+    // T2: guests, then the menu, as on a big screen.
+    s.tapItem(by(u"floor-T2"_s));
+    QTest::qWait(80);
+    CHECK(s.c.pageId() == u"guest-count"_s);
+    s.c.goBack();
+    QTest::qWait(80);
+    // The Bar tab: just the bar, bigger.
+    s.tapItem(by(u"floorPlan-floor-bar"_s));
+    QTest::qWait(60);
+    CHECK_FALSE(by(u"floor-T2"_s));
+    REQUIRE(by(u"floor-Bar 2"_s));
+
+    // A server who starts on the Dining Area: its phone page, on its plan.
+    REQUIRE(s.c.jumpTo(u"floor-dining"_s));
+    QTest::qWait(100);
+    CHECK(by(u"floor-T5"_s));
+    CHECK_FALSE(by(u"floor-P1"_s));
+    CHECK(by(u"floorPlan-floor-dining"_s));
+
+    // An open check moved to P3 by touching P3 on the plan.
+    REQUIRE(s.pos.selectTable(u"T4"_s) == app::PosService::TableNeedsGuests);
+    s.pos.entryKey(u"2"_s);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    s.pos.addItem(u"coffee"_s);
+    REQUIRE(s.c.jumpTo(u"move-table"_s));
+    QTest::qWait(100);
+    s.tapItem(by(u"floorPlan-floor-patio"_s));
+    QTest::qWait(60);
+    s.tapItem(by(u"floor-P3"_s));
+    QTest::qWait(80);
+    CHECK(s.pos.checkInfo()[u"label"_s].toString().contains(u"P3"_s));
+    s.shot("phone-moved");
 }

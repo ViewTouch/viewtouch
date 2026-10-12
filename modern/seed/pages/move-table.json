@@ -21,11 +21,11 @@
       },
       "shape": "rect",
       "behavior": "none",
-      "label": "Move this check to table\u2026"
+      "label": "Move this check to table…"
     },
     {
       "id": "tables",
-      "kind": "tableGrid",
+      "kind": "floorPlan",
       "rect": {
         "x": 16,
         "y": 112,
@@ -36,7 +36,7 @@
       "behavior": "none",
       "props": {
         "action": "move",
-        "columns": 6
+        "tabs": true
       }
     },
     {
@@ -50,7 +50,7 @@
       },
       "shape": "rect",
       "behavior": "blink",
-      "label": "\u2039 Back",
+      "label": "‹ Back",
       "actions": [
         {
           "type": "jump",

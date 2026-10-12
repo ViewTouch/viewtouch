@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "id": "floor-dining-phone",
+  "name": "Dining Area (phone)",
+  "kind": "tables",
+  "canvas": {
+    "w": 1080,
+    "h": 2280
+  },
+  "grid": 8,
+  "variantOf": "floor-dining",
+  "formFactor": "phone",
+  "background": {
+    "fill": "#2a2118"
+  },
+  "zones": [
+    {
+      "id": "tables",
+      "kind": "floorPlan",
+      "rect": {
+        "x": 24,
+        "y": 24,
+        "w": 1032,
+        "h": 1600
+      },
+      "shape": "rect",
+      "behavior": "none",
+      "props": {
+        "tabs": true,
+        "plan": "floor-dining"
+      }
+    },
+    {
+      "id": "quick",
+      "kind": "button",
+      "rect": {
+        "x": 24,
+        "y": 1640,
+        "w": 333,
+        "h": 190
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Quick Order",
+      "actions": [
+        {
+          "type": "command",
+          "name": "startQuick"
+        },
+        {
+          "type": "jump",
+          "mode": "index"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f8a4c"
+        }
+      }
+    },
+    {
+      "id": "checks",
+      "kind": "button",
+      "rect": {
+        "x": 373,
+        "y": 1640,
+        "w": 333,
+        "h": 190
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Open Checks",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "role": "checkList"
+        }
+      ]
+    },
+    {
+      "id": "takeout",
+      "kind": "button",
+      "rect": {
+        "x": 722,
+        "y": 1640,
+        "w": 333,
+        "h": 190
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Takeout",
+      "actions": [
+        {
+          "type": "command",
+          "name": "startTakeout"
+        },
+        {
+          "type": "jump",
+          "mode": "index"
+        }
+      ]
+    },
+    {
+      "id": "delivery",
+      "kind": "button",
+      "rect": {
+        "x": 24,
+        "y": 1846,
+        "w": 333,
+        "h": 190
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Delivery",
+      "actions": [
+        {
+          "type": "command",
+          "name": "startDelivery"
+        },
+        {
+          "type": "jump",
+          "mode": "index"
+        }
+      ]
+    },
+    {
+      "id": "deliveries",
+      "kind": "button",
+      "rect": {
+        "x": 373,
+        "y": 1846,
+        "w": 333,
+        "h": 190
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Deliveries",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "deliveries"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#2b62b0"
+        }
+      }
+    },
+    {
+      "id": "host",
+      "kind": "button",
+      "rect": {
+        "x": 722,
+        "y": 1846,
+        "w": 333,
+        "h": 190
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Host Stand",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "seating"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#1f6f73"
+        }
+      }
+    },
+    {
+      "id": "manager",
+      "kind": "button",
+      "rect": {
+        "x": 24,
+        "y": 2052,
+        "w": 333,
+        "h": 190
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Manager",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "role": "manager"
+        }
+      ]
+    },
+    {
+      "id": "logout",
+      "kind": "button",
+      "rect": {
+        "x": 373,
+        "y": 2052,
+        "w": 333,
+        "h": 190
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Log Out",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "role": "logout"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#b83232"
+        }
+      }
+    },
+    {
+      "id": "bar-tabs",
+      "kind": "button",
+      "rect": {
+        "x": 722,
+        "y": 2052,
+        "w": 333,
+        "h": 190
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Bar Tabs",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "tabs"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
+        }
+      }
+    }
+  ]
+}

@@ -355,7 +355,8 @@ QVariantList LayoutController::pageChoices(const QString &only) const
     const auto floor = [](const vt::layout::Page &p) {
         return p.variantOf.isEmpty()
             && (p.kind == u"tables" || std::ranges::any_of(p.zones, [](const vt::layout::Zone &z) {
-                    return z.kind == u"table" || z.kind == u"tableMap" || z.kind == u"hostStand";   // tables, or the seating screen
+                    // tables, or the seating screen (not Move Check's panel of plans)
+                    return z.kind == u"table" || z.kind == u"tableMap" || z.kind == u"hostStand";
                 }));
     };
     QVariantList out{QVariantMap{{u"value"_s, QString()}, {u"text"_s, QString()}}};

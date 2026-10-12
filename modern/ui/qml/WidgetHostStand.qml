@@ -18,16 +18,7 @@ Item {
 
     readonly property var floor: pos ? pos.floor : ({})
     readonly property var tables: zone && zone.controller ? zone.controller.tables() : []
-    // The plan shown: the one the host last picked, else the floor's own.
-    readonly property var plans: zone && zone.controller ? zone.controller.floorPlans() : []
-    property string planId: zone && zone.controller ? (zone.controller.widgetState("hostPlan") ?? "") : ""
-    readonly property string planShown: plans.find(p => p.id === planId) ? planId : (plans.length ? plans[0].id : "")
-    readonly property var plan: zone && zone.controller && planShown !== "" ? zone.controller.floorPlan(planShown)
-                                                                            : ({ x: 0, y: 0, w: 0, h: 0, zones: [] })
-    function choosePlan(id) {
-        planId = id
-        if (zone && zone.controller) zone.controller.setWidgetState("hostPlan", id)
-    }
+
     readonly property var info: pos ? pos.waitlist : ({})
     readonly property var waiting: info.waiting ?? []
     readonly property var booked: info.booked ?? []
@@ -152,150 +143,31 @@ Item {
                     }
                 }
             }
-            // The floor plans: Main, Dining Area, Bar, Patio...
-            RowLayout {
-                Layout.fillWidth: true
-                visible: w.plans.length > 1
-                spacing: w.unit * 0.3
-                Repeater {
-                    model: w.plans
-                    delegate: Key {
-                        required property var modelData
-                        objectName: "hostPlan-" + modelData.id
-                        text: qsTranslate("Page", modelData.name)
-                        tint: modelData.id === w.planShown ? "#2f6fd6" : "#2d3440"
-                        Layout.preferredWidth: 1   // all the same width
-                        font.pixelSize: w.unit * 0.8
-                        onClicked: w.choosePlan(modelData.id)
-                    }
-                }
-            }
-            // The plan as drawn, every table where it stands, colored by
-            // what it is; touch tables to pick them.
-            // Two fingers zoom in (up to 3 times) and drag it around.
-            Flickable {
-                id: floorArea
-                objectName: "hostFloor"
+            // The floor plan as drawn, the tables colored by what they are.
+            FloorPlanView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                clip: true
-                readonly property real fit: w.plan.w > 0 && w.plan.h > 0 ? Math.min(width / w.plan.w, height / w.plan.h) : 1
-                property real zoom: 1
-                property real zoomFrom: 1
-                contentWidth: Math.max(width, w.plan.w * fit * zoom)
-                contentHeight: Math.max(height, w.plan.h * fit * zoom)
-                interactive: zoom > 1.01
-                boundsBehavior: Flickable.StopAtBounds
-                Connections {
-                    target: w
-                    function onPlanShownChanged() { floorArea.zoom = 1; floorArea.contentX = 0; floorArea.contentY = 0 }
+                controller: w.zone ? w.zone.controller : null
+                unit: w.unit
+                face: w.face
+                ink: w.ink
+                stateKey: "hostPlan"
+                prefix: "host-"
+                tabPrefix: "hostPlan-"
+                floorName: "hostFloor"
+                tint: name => w.colorFor(w.stateOf(name))
+                picked: name => w.picked.indexOf(name) >= 0
+                lines: (name, seats) => {
+                    const f = w.floor[name] ?? {}
+                    const state = f.state ?? "available"
+                    return state === "seated"
+                        ? [f.with ? qsTr("with %1").arg(f.with) : qsTr("%n guest(s)", "", f.guests ?? 0) + " · " + (f.minutes ?? 0) + "m"]
+                          .concat(f.with ? [] : [f.server ?? ""])
+                        : state === "dirty" ? [qsTr("Dirty %1m").arg(f.minutes ?? 0)]
+                        : state === "reserved" ? [(f.party ?? "") + (f.time ? " " + f.time : "")]
+                        : [qsTr("%n seat(s)", "", seats)]
                 }
-                PinchHandler {
-                    target: null
-                    onActiveChanged: if (active) floorArea.zoomFrom = floorArea.zoom
-                    onActiveScaleChanged: {
-                        const z = Math.max(1, Math.min(3, floorArea.zoomFrom * activeScale))
-                        // Zoom about the middle of what's shown.
-                        const cx = floorArea.contentX + floorArea.width / 2, cy = floorArea.contentY + floorArea.height / 2
-                        const k = z / floorArea.zoom
-                        floorArea.zoom = z
-                        floorArea.contentX = Math.max(0, Math.min(floorArea.contentWidth - floorArea.width, cx * k - floorArea.width / 2))
-                        floorArea.contentY = Math.max(0, Math.min(floorArea.contentHeight - floorArea.height, cy * k - floorArea.height / 2))
-                    }
-                }
-                Item {
-                    width: w.plan.w
-                    height: w.plan.h
-                    scale: floorArea.fit * floorArea.zoom
-                    transformOrigin: Item.TopLeft
-                    x: (floorArea.contentWidth - width * scale) / 2
-                    y: (floorArea.contentHeight - height * scale) / 2
-                    Repeater {
-                        model: w.plan.zones
-                        delegate: Item {
-                            id: piece
-                            required property var modelData
-                            readonly property bool isTable: modelData.kind === "table"
-                            readonly property string name: isTable ? modelData.label.trim() : ""
-                            objectName: isTable ? "host-" + name : ""
-                            x: modelData.x - w.plan.x
-                            y: modelData.y - w.plan.y
-                            width: modelData.w
-                            height: modelData.h
-                            rotation: modelData.rot
-                            // Walls, doors, the bar...
-                            Loader {
-                                anchors.fill: parent
-                                active: !piece.isTable
-                                sourceComponent: WidgetDecor {
-                                    zone: ({ props: piece.modelData.props, label: piece.modelData.label,
-                                             shape: piece.modelData.shape, rotation: piece.modelData.rot, st: {} })
-                                }
-                            }
-                            // A table: its state's color; picked, a white rim and a check.
-                            readonly property var f: isTable ? (w.floor[name] ?? {}) : ({})
-                            readonly property string state: f.state ?? "available"
-                            readonly property bool isPicked: isTable && w.picked.indexOf(name) >= 0
-                            readonly property real side: Math.min(width, height)
-                            ZoneShape {
-                                visible: piece.isTable
-                                anchors.fill: parent
-                                shape: piece.modelData.shape
-                                st: piece.isPicked ? { fill: w.colorFor(piece.state), frame: "border", borderColor: "white",
-                                                       frameWidth: Math.max(6, piece.side * 0.06) }
-                                                   : { fill: tableTap.pressed ? Qt.lighter(w.colorFor(piece.state), 1.3)
-                                                                             : w.colorFor(piece.state), frame: "raised" }
-                            }
-                            Column {
-                                visible: piece.isTable
-                                anchors.centerIn: parent
-                                readonly property real turned: ((piece.rotation % 180) + 180) % 180
-                                width: (turned > 45 && turned < 135 ? piece.height : piece.width) - piece.side * 0.12
-                                rotation: -piece.rotation   // upright however the table is turned
-                                Text {
-                                    width: parent.width
-                                    horizontalAlignment: Text.AlignHCenter
-                                    text: (piece.isPicked ? "✓ " : "") + piece.name
-                                    color: w.ink
-                                    font.family: w.face
-                                    font.pixelSize: Math.min(piece.side * 0.3, 48)
-                                    font.bold: true
-                                    fontSizeMode: Text.HorizontalFit   // a stool's "Bar 1": smaller, not cut
-                                    minimumPixelSize: 8
-                                }
-                                Text {
-                                    width: parent.width
-                                    horizontalAlignment: Text.AlignHCenter
-                                    text: piece.state === "seated"
-                                          ? (piece.f.with ? qsTr("with %1").arg(piece.f.with)
-                                                          : qsTr("%n guest(s)", "", piece.f.guests ?? 0) + " · " + (piece.f.minutes ?? 0) + "m")
-                                        : piece.state === "dirty" ? qsTr("Dirty %1m").arg(piece.f.minutes ?? 0)
-                                        : piece.state === "reserved" ? (piece.f.party ?? "") + (piece.f.time ? " " + piece.f.time : "")
-                                        : qsTr("%n seat(s)", "", piece.modelData.props.seats ?? 0)
-                                    color: w.ink
-                                    font.family: w.face
-                                    font.pixelSize: Math.min(piece.side * 0.15, 24)
-                                    elide: Text.ElideRight
-                                }
-                                Text {
-                                    width: parent.width
-                                    horizontalAlignment: Text.AlignHCenter
-                                    visible: piece.state === "seated" && !piece.f.with
-                                    text: piece.f.server ?? ""
-                                    color: w.ink
-                                    font.family: w.face
-                                    font.pixelSize: Math.min(piece.side * 0.13, 20)
-                                    elide: Text.ElideRight
-                                }
-                            }
-                            TapHandler {
-                                id: tableTap
-                                enabled: piece.isTable
-                                onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; w.toggle(piece.name) }
-                            }
-                        }
-                    }
-                }
+                onTableTouched: name => w.toggle(name)
             }
         }
 

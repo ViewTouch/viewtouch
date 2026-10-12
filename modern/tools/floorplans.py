@@ -4,8 +4,10 @@
   python3 tools/floorplans.py
 
 Writes seed/pages/tables.json (Main: every table, with walls),
-seed/pages/floor-dining.json, floor-bar.json, floor-patio.json, and the
-Main page's ready-made arrangements (seed/layouts/tables.json). Each plan has
+seed/pages/floor-dining.json, floor-bar.json, floor-patio.json, their phone
+versions (tables-phone.json, floor-*-phone.json: the plans in a floorPlan
+panel above the phone's buttons), and the Main page's ready-made
+arrangements (seed/layouts/tables.json). Each plan has
 tabs to the others and the usual buttons. A table on two plans is the same
 table (its name), so T1 on Main and on Dining Area is one table.
 
@@ -264,8 +266,33 @@ def write(path, data):
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
 
 
+# --- phones -------------------------------------------------------------------
+# The plans in one panel (tabs, the tables where they stand, two fingers to
+# zoom) above the phone's buttons; each room's phone page opens on that room.
+def phone_pages(pages):
+    path = pages / "tables-phone.json"
+    phone = json.loads(path.read_text())
+    buttons = [z for z in phone["zones"] if z["kind"] == "button" and z["id"] != "bar-tabs"]
+    buttons.append(button("bar-tabs", "Bar Tabs", (722, 2052, 333, 190),
+                          [{"type": "jump", "mode": "push", "page": "tabs"}], "#a86a12"))
+
+    def make(pid, name, of, plan):
+        panel = {"id": "tables", "kind": "floorPlan", "rect": {"x": 24, "y": 24, "w": 1032, "h": 1600},
+                 "shape": "rect", "behavior": "none", "props": {"tabs": True}}
+        if plan:
+            panel["props"]["plan"] = plan
+        return {"schemaVersion": 1, "id": pid, "name": name, "kind": "tables", "canvas": {"w": 1080, "h": 2280},
+                "grid": 8, "variantOf": of, "formFactor": "phone", "background": phone.get("background", {}),
+                "zones": [panel] + copy.deepcopy(buttons)}
+
+    write(path, make("tables-phone", "Tables (phone)", "tables", ""))
+    for pid, name in PLANS[1:]:
+        write(pages / f"{pid}-phone.json", make(f"{pid}-phone", f"{name} (phone)", pid, pid))
+
+
 def main():
     pages = ROOT / "seed" / "pages"
+    phone_pages(pages)
     floor = main_floor()
     write(pages / "tables.json", page("tables", "Main", page_zones(floor, FW, FH, CLASSIC), {"role": "tables"}))
     dining, dw, dh = part(floor, (0, 0, 868, 560), {"Dining Area"})

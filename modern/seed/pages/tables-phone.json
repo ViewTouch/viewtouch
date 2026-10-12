@@ -15,29 +15,19 @@
   },
   "zones": [
     {
-      "id": "title",
-      "kind": "label",
+      "id": "tables",
+      "kind": "floorPlan",
       "rect": {
         "x": 24,
         "y": 24,
         "w": 1032,
-        "h": 100
+        "h": 1600
       },
       "shape": "rect",
       "behavior": "none",
-      "label": "Tables"
-    },
-    {
-      "id": "tables",
-      "kind": "tableGrid",
-      "rect": {
-        "x": 24,
-        "y": 140,
-        "w": 1032,
-        "h": 1480
-      },
-      "shape": "rect",
-      "behavior": "none"
+      "props": {
+        "tabs": true
+      }
     },
     {
       "id": "quick",
@@ -225,6 +215,31 @@
       "style": {
         "normal": {
           "fill": "#b83232"
+        }
+      }
+    },
+    {
+      "id": "bar-tabs",
+      "kind": "button",
+      "rect": {
+        "x": 722,
+        "y": 2052,
+        "w": 333,
+        "h": 190
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Bar Tabs",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "tabs"
+        }
+      ],
+      "style": {
+        "normal": {
+          "fill": "#a86a12"
         }
       }
     }

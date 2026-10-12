@@ -135,6 +135,14 @@ QJsonArray widgetSettings(const QString &kind)
         out.append(intField(u"props.columns"_s, u"Columns"_s, g, 1, 12));
         out.append(with(field(u"props.action"_s, u"Touching a table"_s, u"enum"_s, g), u"options"_s,
                         options({{"", "Opens it"}, {"move", "Moves this check there"}})));
+    } else if (kind == u"floorPlan") {
+        out.append(with(field(u"props.plan"_s, u"Starts on"_s, u"page"_s, g), u"hint"_s,
+                        u"The floor plan it shows first. Empty: the one last picked on this screen, else the floor's own."_s));
+        out.append(with(with(field(u"props.tabs"_s, u"Tabs for the other plans"_s, u"bool"_s, g), u"hint"_s,
+                             u"Main, Dining Area, Bar, Patio… across the top. Off: only this plan."_s),
+                        u"default"_s, true));
+        out.append(with(field(u"props.action"_s, u"Touching a table"_s, u"enum"_s, g), u"options"_s,
+                        options({{"", "Opens it"}, {"move", "Moves this check there"}})));
     } else if (kind == u"numPad") {
         out.append(with(field(u"props.mode"_s, u"Enters"_s, u"enum"_s, g), u"options"_s,
                         options({{"number", "A number"}, {"amount", "Money (with a 00 key)"},
@@ -214,7 +222,7 @@ QStringList widgetKinds()
             u"soldOutList"_s, u"orderList"_s, u"loginPad"_s, u"guestCount"_s, u"checkList"_s,
             u"paymentPanel"_s, u"numPad"_s, u"keyboard"_s, u"splitCheck"_s, u"drawerPanel"_s,
             u"reportView"_s, u"endOfDay"_s, u"logoutPanel"_s, u"clock"_s, u"statusBar"_s,
-            u"adminPanel"_s, u"kitchenDisplay"_s, u"customerInfo"_s, u"customerLookup"_s, u"giftCard"_s, u"waitlist"_s, u"schedule"_s, u"factoryReset"_s, u"messageComposer"_s, u"network"_s, u"receiveDelivery"_s, u"checkSearch"_s, u"orderLater"_s, u"menuGrid"_s, u"menuCategories"_s, u"menuBuilder"_s, u"timeClock"_s, u"dashboard"_s, u"checklist"_s, u"hostStand"_s, u"deliveryBoard"_s, u"decor"_s};
+            u"adminPanel"_s, u"kitchenDisplay"_s, u"customerInfo"_s, u"customerLookup"_s, u"giftCard"_s, u"waitlist"_s, u"schedule"_s, u"factoryReset"_s, u"messageComposer"_s, u"network"_s, u"receiveDelivery"_s, u"checkSearch"_s, u"orderLater"_s, u"menuGrid"_s, u"menuCategories"_s, u"menuBuilder"_s, u"timeClock"_s, u"dashboard"_s, u"checklist"_s, u"hostStand"_s, u"deliveryBoard"_s, u"decor"_s, u"floorPlan"_s};
 }
 
 QStringList allKinds()

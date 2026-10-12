@@ -9,7 +9,10 @@ import QtQuick.Shapes
 Item {
     id: w
     property var zone
-    readonly property string decor: zone && zone.props ? (zone.props.decor ?? "wall") : "wall"
+    readonly property string sort: zone && zone.props ? (zone.props.decor ?? "wall") : "wall"
+    // props.wordsOnly: just its words (an area's name drawn again over the tables).
+    readonly property bool wordsOnly: zone && zone.props ? zone.props.wordsOnly === true : false
+    readonly property string decor: wordsOnly ? "" : sort
     readonly property string words: zone ? zone.label : ""
     // props.color: the piece's own color; else the usual for its sort.
     function tone(usual) { return zone && zone.props && zone.props.color ? zone.props.color : usual }
@@ -204,18 +207,30 @@ Item {
     }
 
     // Its words (an area's name, Entrance...), upright however it's turned.
+    // An area's name: in the corner that shows top left, however it's turned.
+    readonly property var nameSpot: {
+        const a = -w.upright * Math.PI / 180, c = Math.cos(a), s = Math.sin(a)
+        let best = null
+        for (const p of [[0, 0], [width, 0], [width, height], [0, height]]) {
+            const score = (p[0] * c - p[1] * s) + (p[0] * s + p[1] * c)   // up and to the left on screen
+            if (!best || score < best.score) best = { x: p[0], y: p[1], score: score }
+        }
+        // 16 across and 10 down on screen, in its own direction.
+        return Qt.point(best.x + 16 * c + 10 * s, best.y - 16 * s + 10 * c)
+    }
     Text {
         objectName: "decorWords"
         visible: w.words !== ""
-        anchors.centerIn: w.decor === "area" ? undefined : parent
-        x: w.decor === "area" ? 16 : 0
-        y: w.decor === "area" ? 10 : 0
-        rotation: w.decor === "area" ? 0 : w.upright
+        anchors.centerIn: w.sort === "area" ? undefined : parent
+        x: w.sort === "area" ? w.nameSpot.x : 0
+        y: w.sort === "area" ? w.nameSpot.y : 0
+        transformOrigin: w.sort === "area" ? Item.TopLeft : Item.Center
+        rotation: w.upright
         text: qsTranslate("Page", w.words)
         color: "white"
-        opacity: w.decor === "area" ? 0.7 : 1
+        opacity: w.sort === "area" ? 0.7 : 1
         font.family: w.zone ? (w.zone.st.font ?? "DejaVu Sans") : "DejaVu Sans"
-        font.pixelSize: w.decor === "area" ? Math.min(40, Math.max(16, w.height * 0.12))
+        font.pixelSize: w.sort === "area" ? Math.min(40, Math.max(16, w.height * 0.12))
                                            : Math.max(12, Math.min(28, Math.min(w.width, w.height) * 0.3))
         font.bold: true
         style: Text.Raised

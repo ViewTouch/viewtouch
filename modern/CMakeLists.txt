@@ -139,6 +139,7 @@ if(Qt6_FOUND)
             ui/qml/PagePanel.qml
             ui/qml/Inspector.qml
             ui/qml/FieldEditor.qml
+            ui/qml/FloorPlanView.qml
             ui/qml/ActionListEditor.qml
             ui/qml/WidgetKey.qml
             ui/qml/WidgetTable.qml
@@ -162,6 +163,7 @@ if(Qt6_FOUND)
             ui/qml/WidgetHostStand.qml
             ui/qml/WidgetDeliveryBoard.qml
             ui/qml/WidgetDecor.qml
+            ui/qml/WidgetFloorPlan.qml
             ui/qml/WidgetSchedule.qml
             ui/qml/WidgetFactoryReset.qml
             ui/qml/WidgetNetwork.qml
