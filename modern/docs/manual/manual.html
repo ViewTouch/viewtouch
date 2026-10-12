@@ -65,6 +65,7 @@
 <li><b>Coupon codes</b> (typed or scanned), <b>barcode scanners</b> for items, coupons and gift cards, and <b>holding a guest's card</b> on a bar tab (chapters 2 and 11).</li>
 <li><b>Forecast</b>: a coming day from past weeks, the prep list and what to order (chapter 12).</li>
 <li><b>Receipts and kitchen tickets print in the store's language</b> (chapter 17).</li>
+<li><b>Count a drawer bill by bill</b>, and <b>blind counts</b> (chapter 10). <b>Voids and comps ask why</b>, and the Exceptions report adds the reasons up; the <b>Changes</b> report shows who changed what on the manager screens, the menu and the pages (chapter 12).</li>
 <li><b>Phone versions that share the page's buttons:</b> edit a page for standard screens and for phones with the <b>Standard | Phone</b> switch; a button's words, colors and actions are the same on both, only where it sits is the phone's. <b>Show on</b> puts a button on both, or one kind of screen only (chapter 14).</li>
 </ul>
 
@@ -423,9 +424,14 @@
 <h2>Send, Void and Pay</h2>
 <ul>
 <li><b>Send</b> sends new items to the kitchen and bar (their screens and printers).</li>
-<li><b>Void</b> removes the selected item. An item not sent yet just comes off. Voiding a sent item needs permission (managers), prints a VOID ticket and is kept in the audit report.</li>
+<li><b>Void</b> removes the selected item. An item not sent yet just comes off. Voiding a sent item asks why (below), needs permission (managers), prints a VOID ticket and is kept in the audit report.</li>
 <li><b>Pay</b> goes to the payment screen (chapter 6). <b>Tables</b> puts the check away.</li>
 </ul>
+
+<h2>Why? Voids and comps</h2>
+<p>Voiding something already sent, or a discount or comp, first asks why: one touch on a reason (<i>Took too long</i>, <i>Guest didn't like it</i>…), then the manager's PIN if one is needed. <b>Cancel</b> leaves it as it was. The reason goes on the check's history, and Reports → <b>Exceptions</b> adds them up.</p>
+<p class="shot"><img src="shots/m139-void-reason.jpg" width="560" height="315"></p>
+<p>The lists, and whether to ask at all, are in Store Settings → <b>Voids and comps</b>; each person can be set otherwise (Employees → <i>Asked why on voids and comps</i>).</p>
 
 <!-- ======================================================================= -->
 <h1>5. Check options</h1>
@@ -616,11 +622,20 @@
 <h2>Server banks (the starter setting)</h2>
 <ul>
 <li>Each person keeps the cash they take in their own bank, on any screen. The bank starts at the first cash sale. To start with change, type the amount on the Drawer page and touch <b>Start Bank</b>.</li>
-<li>At the end of the shift: Log Out → <b>My Bank…</b>, count your cash, type it and touch <b>Check Out</b>. It shows the cash to turn in and whether you're over or short.</li>
+<li>At the end of the shift: Log Out → <b>My Bank…</b> and touch <b>Check Out</b>, then count your cash bill by bill (below). It shows the cash to turn in and whether you're over or short.</li>
 <li>Close or hand over your open checks first (unless the store turned this rule off).</li>
 </ul>
 <h2>A drawer per screen</h2>
 <p>Stores can choose a cash drawer per screen instead (Store Settings → Cash handling), or per person (Employees). A manager starts the drawer with a starting amount and counts it at the end.</p>
+<h2>Counting the cash</h2>
+<p>Touch <b>Count Drawer</b> (or <b>Check Out</b> for a bank) with nothing typed, and the count sheet opens: a row for each bill and coin. Touch a row, type how many on its keypad, then <b>Next ↓</b> for the next one. The total adds up as you go; <b>Count Drawer</b> finishes. The drawer screen and its printout list what was counted. (Typing the total on the keypad first still works.)</p>
+<table cellpadding="4"><tr><td><img src="shots/m138-drawer-count.jpg" width="400" height="250"></td>
+<td><img src="shots/m138-drawer-count-phone.jpg" width="120" height="260"></td></tr></table>
+<p class="caption">Counting by bills and coins, on a terminal and on a phone.</p>
+<ul>
+<li><b>Blind counts:</b> Store Settings → Cash → <i>Count drawers blind</i>. Whoever counts doesn't see what should be in the drawer, before or after counting, nor whether it came out over or short; managers still do (the Drawer report shows it, marked <i>blind</i>). Each person can be set otherwise (Employees → <i>Counting a drawer</i>).</li>
+<li><b>Bills and coins</b> (Store Settings → Cash): the store's list, largest first. $100 to 1¢ to start; for pesos, for example, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1, 0.50.</li>
+</ul>
 <h2>Pay outs, paid ins and No Sale</h2>
 <p>On the Drawer page a manager types the amount, touches <b>Reason…</b> (optional), then <b>Pay Out</b> or <b>Paid In</b>. A pay out is an expense: first touch what it was for (Food &amp; supplies, Produce, Ice, Cleaning, Repairs, Other; Store Settings → <i>Expense categories</i> sets the list). Reports → <b>Expenses</b> adds them up. <b>No Sale</b> opens the drawer.</p>
 <h2>Tips</h2>
@@ -862,12 +877,15 @@
 <td><img src="shots/m48-report-accounting.png" width="190" height="107"><br><small>Accounting</small></td>
 </tr></table>
 <ul>
-<li><b>Exceptions:</b> by employee, every void of something already sent, every discount and comp, payments and discounts taken back, reopened checks, moved or merged checks, and each time the drawer opened with no sale. Then the biggest ones. The first report to read when the cash is short.</li>
+<li><b>Exceptions:</b> by employee, every void of something already sent, every discount and comp, payments and discounts taken back, reopened checks, moved or merged checks, and each time the drawer opened with no sale. Then voids and comps by reason, and the biggest ones. The first report to read when the cash is short.</li>
+<li><b>Changes:</b> who changed what, newest first: each setting, employee, payment type or other manager-screen record saved (the field, from what to what; a PIN only as changed), menu prices and names, items added or removed, and pages edited. Kept with each day at End of Day.</li>
 <li><b>Customers:</b> who comes back. Each customer's visits, spending, average check, last visit and favorite item, best customers first, for any dates.</li>
 <li><b>Royalty:</b> for a franchise, the royalty and advertising fund on net sales (Store Settings sets the percents), for any dates.</li>
 <li><b>Accounting:</b> the sales as a journal, debits and credits by account (Store Settings → <i>Chart of accounts</i>). Touch <b>CSV</b> to save it for QuickBooks or your accountant; the two totals always match.</li>
 <li><b>Deposit:</b> tonight's trip to the bank. Each drawer's cash (counted, or what should be there), less the starting cash kept for tomorrow, is the deposit. Then the card batch the processor will pay, and the book balance: what was sold against what was collected, and whether the drawers were over or short.</li>
 </ul>
+<p class="shot"><img src="shots/m140-changes.jpg" width="560" height="315"></p>
+<p class="caption">The Changes report.</p>
 <p><b>Print</b> prints a report on the receipt printer. <b>CSV</b> (for spreadsheets) and <b>PDF</b> save it to the <code>exports</code> folder.</p>
 
 <h2>End of Day</h2>
