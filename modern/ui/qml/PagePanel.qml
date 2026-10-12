@@ -27,8 +27,11 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-            model: panel.editor.pages
-            currentIndex: panel.editor.pages.findIndex(p => p.id === panel.editor.pageId)
+            // A page's phone version is reached by the Standard | Phone switch.
+            readonly property var listed: panel.editor.pages.filter(p => !p.variantOf)
+            readonly property string shownPage: panel.editor.revision >= 0 ? (panel.editor.screens.page ?? panel.editor.pageId) : ""
+            model: listed
+            currentIndex: listed.findIndex(p => p.id === shownPage)
             ScrollBar.vertical: ScrollBar {}
 
             delegate: ItemDelegate {
@@ -51,6 +54,7 @@ Rectangle {
                         text: panel.editor.pageKindName(row.modelData.kind)
                               + (row.modelData.role ? "  ·  " + qsTr("role: %1").arg(panel.editor.pageRoleName(row.modelData.role)) : "")
                               + (row.modelData.templateId ? "  ·  ⧉ " + row.modelData.templateId : "")
+                              + (row.modelData.hasPhone ? "  ·  " + qsTr("+ phone") : "")
                         color: row.highlighted ? Qt.rgba(1, 1, 1, 0.8) : EditorStyle.muted
                         font.pixelSize: 11
                         elide: Text.ElideRight

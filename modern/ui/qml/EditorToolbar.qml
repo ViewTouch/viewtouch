@@ -50,6 +50,10 @@ Rectangle {
             Layout.maximumWidth: 180
             Layout.rightMargin: 8
         }
+        PhoneScreens {
+            editor: bar.editor
+            Layout.rightMargin: 4
+        }
 
         // The tools scroll sideways on a narrow screen; Save and Done stay put.
         Flickable {

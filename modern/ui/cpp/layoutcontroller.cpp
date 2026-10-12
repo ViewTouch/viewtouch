@@ -536,54 +536,8 @@ LayoutController::Shown LayoutController::shown() const
     Shown s{id, page ? page->canvas : QSize(1920, 1080), {}, {}};
     // The editor always works on the page as designed.
     if (page && formFactor_ == u"phone" && !editing() && page->variantOf.isEmpty()) {
-        if (const vt::layout::Page *v = l.variantFor(id, u"phone"_s)) {
-            s.pageId = v->id;
-            s.canvas = v->canvas;
-            s.zones = l.effectiveZones(v->id);
-            return s;
-        }
-        // A template with a phone version: it frames this page's own buttons.
-        const QList<const vt::layout::Page *> chain = l.templateChain(id);
-        for (qsizetype i = 1; i < chain.size(); ++i) {
-            const vt::layout::Page *frame = l.variantFor(chain[i]->id, u"phone"_s);
-            if (!frame || frame->contentArea.isEmpty())
-                continue;
-            s.pageId = frame->id;
-            s.canvas = frame->canvas;
-            s.zones = l.effectiveZones(frame->id);
-            QList<Layout::PlacedZone> own;
-            for (const Layout::PlacedZone &pz : l.effectiveZones(id)) {
-                if (chain.indexOf(pz.owner) < i)   // this page, or templates below the framed one
-                    own.append(pz);
-            }
-            QList<const vt::layout::Zone *> zones;
-            for (const Layout::PlacedZone &pz : own)
-                zones.append(pz.zone);
-            const QList<QRect> rects = vt::layout::reflowZones(zones, frame->contentArea);
-            for (qsizetype k = 0; k < own.size(); ++k) {
-                if (rects[k].isEmpty())
-                    continue;
-                s.zones.append(own[k]);
-                s.moved.insert(own[k].zone, rects[k]);
-            }
-            return s;
-        }
-        // No phone version and no phone frame: the page's own zones laid out
-        // again on a phone held upright.
-        static const QSize phone(1080, 2280);
-        s.canvas = phone;
-        const QList<Layout::PlacedZone> all = l.effectiveZones(id);
-        QList<const vt::layout::Zone *> zones;
-        for (const Layout::PlacedZone &pz : all)
-            zones.append(pz.zone);
-        const QList<QRect> rects = vt::layout::reflowZones(zones, QRect(24, 24, phone.width() - 48, phone.height() - 48));
-        for (qsizetype k = 0; k < all.size(); ++k) {
-            if (rects[k].isEmpty())
-                continue;
-            s.zones.append(all[k]);
-            s.moved.insert(all[k].zone, rects[k]);
-        }
-        return s;
+        vt::layout::PhoneView v = vt::layout::phoneView(l, id);
+        return {v.pageId, v.canvas, std::move(v.zones), std::move(v.moved)};
     }
     s.zones = l.effectiveZones(id);
     return s;
@@ -1304,6 +1258,9 @@ bool LayoutController::leaveEditMode(bool save)
         return false;
 
     nav_.setLayout(layout_);
+    // Left on a phone version: the page itself (a phone shows its version by itself).
+    if (const vt::layout::Page *p = layout_.page(nav_.current()); p && !p->variantOf.isEmpty() && layout_.page(p->variantOf))
+        nav_.jump(Navigator::Mode::Replace, p->variantOf);
     editing_ = false;
     emit editingChanged();   // editor panels unload while the editor still exists
 

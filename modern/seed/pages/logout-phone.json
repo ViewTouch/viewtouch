@@ -10,204 +10,108 @@
   "grid": 8,
   "variantOf": "logout",
   "formFactor": "phone",
+  "hiddenZones": [
+    "checklists"
+  ],
   "zones": [
     {
       "id": "title",
-      "kind": "label",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 40,
         "w": 1032,
         "h": 110
-      },
-      "shape": "rect",
-      "behavior": "none",
-      "label": "End of shift"
+      }
     },
     {
       "id": "panel",
-      "kind": "logoutPanel",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 170,
         "w": 1032,
         "h": 520
-      },
-      "shape": "rect",
-      "behavior": "none"
+      }
     },
     {
       "id": "clock-out",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 720,
         "w": 508,
         "h": 200
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Clock Out",
-      "actions": [
-        {
-          "type": "command",
-          "name": "clockOut"
-        }
-      ]
+      }
     },
     {
       "id": "break",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 548,
         "y": 720,
         "w": 508,
         "h": 200
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Start / End Break",
-      "actions": [
-        {
-          "type": "command",
-          "name": "toggleBreak"
-        }
-      ]
+      }
     },
     {
       "id": "logout",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 936,
         "w": 508,
         "h": 200
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Log Out",
-      "actions": [
-        {
-          "type": "command",
-          "name": "logout"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#b83232"
-        }
       }
     },
     {
       "id": "cancel",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 548,
         "y": 936,
         "w": 508,
         "h": 200
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Cancel",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "back"
-        }
-      ]
+      }
     },
     {
       "id": "tips",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 1152,
         "w": 508,
         "h": 200
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Cash Out My Tips",
-      "actions": [
-        {
-          "type": "command",
-          "name": "cashOutTips"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#1f8a4c"
-        }
       }
     },
     {
       "id": "bank",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 548,
         "y": 1152,
         "w": 508,
         "h": 200
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "My Bank\u2026",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "drawer"
-        }
-      ]
+      }
     },
     {
       "id": "practice",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 1368,
         "w": 508,
         "h": 200
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Practice Mode",
-      "actions": [
-        {
-          "type": "command",
-          "name": "toggleTraining"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#a86a12"
-        }
       }
     },
     {
       "id": "message",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 548,
         "y": 1368,
         "w": 508,
         "h": 200
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Send a Message\u2026",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "message"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#2b62b0"
-        }
       }
     }
   ]

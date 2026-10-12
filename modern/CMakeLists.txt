@@ -145,6 +145,7 @@ if(Qt6_FOUND)
             ui/qml/Inspector.qml
             ui/qml/FieldEditor.qml
             ui/qml/FloorPlanView.qml
+            ui/qml/PhoneScreens.qml
             ui/qml/ActionListEditor.qml
             ui/qml/WidgetKey.qml
             ui/qml/WidgetTable.qml

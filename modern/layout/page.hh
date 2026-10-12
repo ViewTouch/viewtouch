@@ -35,6 +35,9 @@ struct Page {
     // of the page; everything else still refers to the page by its own id.
     QString variantOf;
     QString formFactor;
+    // A version's: zones of that page left off this screen on purpose (the
+    // rest not placed here are new there, and the page check says so).
+    QStringList hiddenZones;
     // Phone templates: where a page without a phone version of its own gets
     // its buttons laid out (see layout/reflow.hh). Empty: none.
     QRect contentArea;

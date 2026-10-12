@@ -18,6 +18,8 @@ import copy
 import json
 import pathlib
 
+from phone_versions import share
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 FW, FH = 1440, 872
 WALL = 16
@@ -272,7 +274,8 @@ def write(path, data):
 def phone_pages(pages):
     path = pages / "tables-phone.json"
     phone = json.loads(path.read_text())
-    buttons = [z for z in phone["zones"] if z["kind"] == "button" and z["id"] != "bar-tabs"]
+    # The page's buttons, shared with it (tools/phone_versions.py), and the phone's own.
+    buttons = [z for z in phone["zones"] if z["id"] not in ("tables", "bar-tabs")]
     buttons.append(button("bar-tabs", "Bar Tabs", (722, 2052, 333, 190),
                           [{"type": "jump", "mode": "push", "page": "tabs"}], "#a86a12"))
 
@@ -307,6 +310,7 @@ def main():
                          "zones": page_zones(floor, FW, FH, r)})
     write(ROOT / "seed" / "layouts" / "tables.json",
           {"schemaVersion": 1, "page": "tables", "role": "tables", "variants": variants})
+    share(pages)   # the phone pages' zones shared with the pages, the rest left off
 
 
 if __name__ == "__main__":

@@ -165,6 +165,7 @@ std::optional<layout::Layout> LayoutStore::load(QStringList *errors) const
     }
     if (l.pages.isEmpty())
         return std::nullopt;
+    l.syncVariants();   // phone versions' shared zones filled in from their pages
     return l;
 }
 

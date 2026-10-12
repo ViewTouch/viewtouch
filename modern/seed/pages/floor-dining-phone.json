@@ -13,6 +13,22 @@
   "background": {
     "fill": "#2a2118"
   },
+  "hiddenZones": [
+    "table-t1",
+    "table-t2",
+    "table-t3",
+    "table-t4",
+    "table-t6",
+    "table-t7",
+    "table-t5",
+    "plan-main",
+    "plan-dining",
+    "plan-bar",
+    "plan-patio",
+    "tabs",
+    "status",
+    "switch"
+  ],
   "zones": [
     {
       "id": "tables",
@@ -32,191 +48,82 @@
     },
     {
       "id": "quick",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 1640,
         "w": 333,
         "h": 190
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Quick Order",
-      "actions": [
-        {
-          "type": "command",
-          "name": "startQuick"
-        },
-        {
-          "type": "jump",
-          "mode": "index"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#1f8a4c"
-        }
       }
     },
     {
       "id": "checks",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 373,
         "y": 1640,
         "w": 333,
         "h": 190
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Open Checks",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "role": "checkList"
-        }
-      ]
+      }
     },
     {
       "id": "takeout",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 722,
         "y": 1640,
         "w": 333,
         "h": 190
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Takeout",
-      "actions": [
-        {
-          "type": "command",
-          "name": "startTakeout"
-        },
-        {
-          "type": "jump",
-          "mode": "index"
-        }
-      ]
+      }
     },
     {
       "id": "delivery",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 1846,
         "w": 333,
         "h": 190
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Delivery",
-      "actions": [
-        {
-          "type": "command",
-          "name": "startDelivery"
-        },
-        {
-          "type": "jump",
-          "mode": "index"
-        }
-      ]
+      }
     },
     {
       "id": "deliveries",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 373,
         "y": 1846,
         "w": 333,
         "h": 190
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Deliveries",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "deliveries"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#2b62b0"
-        }
       }
     },
     {
       "id": "host",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 722,
         "y": 1846,
         "w": 333,
         "h": 190
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Host Stand",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "seating"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#1f6f73"
-        }
       }
     },
     {
       "id": "manager",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 2052,
         "w": 333,
         "h": 190
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Manager",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "role": "manager"
-        }
-      ]
+      }
     },
     {
       "id": "logout",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 373,
         "y": 2052,
         "w": 333,
         "h": 190
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Log Out",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "role": "logout"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#b83232"
-        }
       }
     },
     {

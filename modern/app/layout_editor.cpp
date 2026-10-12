@@ -1,6 +1,7 @@
 #include "app/layout_editor.hh"
 
 #include "layout/json_path.hh"
+#include "layout/reflow.hh"
 #include "layout/schema.hh"
 
 #include <QHash>
@@ -176,6 +177,59 @@ QList<Zone *> zonesOf(Page &page, const QStringList &ids)
     return out;
 }
 
+// Where a new zone of `size` goes: in the free space nearest the middle (not
+// on top of the tables); zones from the template count too.
+QRect freeSpot(const Layout &layout, const QString &pageId, QSize size)
+{
+    const Page *page = layout.page(pageId);
+    if (!page)
+        return QRect(QPoint(0, 0), size);
+    const int grid = std::max(1, page->grid);
+    QPoint pos((page->canvas.width() - size.width()) / 2, (page->canvas.height() - size.height()) / 2);
+    pos = {pos.x() / grid * grid, pos.y() / grid * grid};
+    QRect rect(pos, size);
+    std::vector<QRect> taken;
+    for (const Layout::PlacedZone &pz : layout.effectiveZones(pageId))
+        if (pz.zone->props.value(u"decor").toString() != u"area")   // a room's floor is free to put things on
+            taken.push_back(pz.zone->rect);
+    const int step = std::max(grid, 8) * 2;
+    std::optional<QRect> best;
+    qint64 bestDistance = 0;
+    for (int y = 0; y + size.height() <= page->canvas.height(); y += step) {
+        for (int x = 0; x + size.width() <= page->canvas.width(); x += step) {
+            const QRect candidate(QPoint(x, y), size);
+            if (std::ranges::any_of(taken, [&](const QRect &r) { return r.intersects(candidate); }))
+                continue;
+            const qint64 dx = candidate.center().x() - page->canvas.width() / 2;
+            const qint64 dy = candidate.center().y() - page->canvas.height() / 2;
+            if (!best || dx * dx + dy * dy < bestDistance) {
+                best = candidate;
+                bestDistance = dx * dx + dy * dy;
+            }
+        }
+    }
+    if (best)
+        rect = *best;
+    // No room: don't drop it exactly on top of an existing one.
+    for (int tries = 0; tries < 32; ++tries) {
+        const bool occupied = std::ranges::any_of(page->zones, [&](const Zone &z) {
+            return z.rect.topLeft() == rect.topLeft();
+        });
+        if (!occupied)
+            break;
+        rect.translate(grid * 4, grid * 4);
+    }
+    return rect;
+}
+
+// A copy made on a version (duplicate, paste) is its own zone, not shared.
+Zone unshared(Zone z)
+{
+    z.shared = false;
+    z.own.clear();
+    return z;
+}
+
 bool templateLoops(const Layout &layout, const QString &pageId)
 {
     const auto chain = layout.templateChain(pageId);
@@ -187,6 +241,7 @@ bool templateLoops(const Layout &layout, const QString &pageId)
 LayoutEditor::LayoutEditor(Layout base)
     : layout_(std::move(base))
 {
+    layout_.syncVariants();
     undo_.setUndoLimit(200);
 }
 
@@ -210,7 +265,10 @@ bool LayoutEditor::apply(const QString &text, const std::function<bool(Layout &)
                          const QString &mergeKey)
 {
     Layout after = layout_;
-    if (!mutate(after) || after == layout_)
+    if (!mutate(after))
+        return false;
+    after.syncVariants();   // phone versions follow their pages
+    if (after == layout_)
         return false;
     undo_.push(new SnapshotCommand(this, text, layout_, std::move(after), mergeKey));
     return true;
@@ -235,46 +293,8 @@ QString LayoutEditor::addZone(const QString &pageId, const QString &asked, QRect
     const QString kind = isDecor ? u"decor"_s : asked;
     const QString decor = isDecor ? (asked.section(u':', 1).isEmpty() ? u"wall"_s : asked.section(u':', 1)) : QString();
 
-    const int grid = std::max(1, page->grid);
-    if (rect.isEmpty()) {
-        const QSize size = isDecor ? decorSize(decor) : defaultZoneSize(kind);
-        QPoint pos((page->canvas.width() - size.width()) / 2, (page->canvas.height() - size.height()) / 2);
-        pos = {pos.x() / grid * grid, pos.y() / grid * grid};
-        rect = QRect(pos, size);
-        // In the free space nearest the middle (not on top of the tables);
-        // zones from the template count too.
-        std::vector<QRect> taken;
-        for (const Layout::PlacedZone &pz : layout_.effectiveZones(pageId))
-            if (pz.zone->props.value(u"decor").toString() != u"area")   // a room's floor is free to put things on
-                taken.push_back(pz.zone->rect);
-        const int step = std::max(grid, 8) * 2;
-        std::optional<QRect> best;
-        qint64 bestDistance = 0;
-        for (int y = 0; y + size.height() <= page->canvas.height(); y += step) {
-            for (int x = 0; x + size.width() <= page->canvas.width(); x += step) {
-                const QRect candidate(QPoint(x, y), size);
-                if (std::ranges::any_of(taken, [&](const QRect &r) { return r.intersects(candidate); }))
-                    continue;
-                const qint64 dx = candidate.center().x() - page->canvas.width() / 2;
-                const qint64 dy = candidate.center().y() - page->canvas.height() / 2;
-                if (!best || dx * dx + dy * dy < bestDistance) {
-                    best = candidate;
-                    bestDistance = dx * dx + dy * dy;
-                }
-            }
-        }
-        if (best)
-            rect = *best;
-        // No room: don't drop it exactly on top of an existing one.
-        for (int tries = 0; tries < 32; ++tries) {
-            const bool occupied = std::ranges::any_of(page->zones, [&](const Zone &z) {
-                return z.rect.topLeft() == rect.topLeft();
-            });
-            if (!occupied)
-                break;
-            rect.translate(grid * 4, grid * 4);
-        }
-    }
+    if (rect.isEmpty())
+        rect = freeSpot(layout_, pageId, isDecor ? decorSize(decor) : defaultZoneSize(kind));
 
     Zone z;
     z.id = uniqueZoneId(*page, kind);
@@ -322,6 +342,7 @@ QStringList LayoutEditor::duplicateZones(const QString &pageId, const QStringLis
         for (const Zone *src : zonesOf(*page, zoneIds))
             sources.append(*src);
         for (Zone copy : sources) {
+            copy = unshared(copy);
             copy.id = uniqueZoneId(*page, copy.id);
             copy.rect = clampToCanvas(copy.rect.translated(step, step), page->canvas);
             if (copy.kind == u"table")   // T7 -> T8: two zones can't be one table
@@ -339,7 +360,14 @@ bool LayoutEditor::deleteZones(const QString &pageId, const QStringList &zoneIds
     return apply(zoneIds.size() == 1 ? u"Delete zone"_s : u"Delete %1 zones"_s.arg(zoneIds.size()),
                  [&](Layout &l) {
         Page *page = l.page(pageId);
-        return page && page->zones.removeIf([&](const Zone &z) { return zoneIds.contains(z.id); }) > 0;
+        if (!page)
+            return false;
+        // On a phone version, a zone shared with the page only leaves this screen.
+        for (const Zone &z : page->zones) {
+            if (z.shared && zoneIds.contains(z.id) && !page->hiddenZones.contains(z.id))
+                page->hiddenZones.append(z.id);
+        }
+        return page->zones.removeIf([&](const Zone &z) { return zoneIds.contains(z.id); }) > 0;
     });
 }
 
@@ -519,17 +547,40 @@ bool LayoutEditor::setZoneField(const QString &pageId, const QStringList &zoneId
 {
     if (path.isEmpty() || path == u"id")
         return false;
+    // A shared zone's own: where it sits, and the fields kept for its screen.
+    const bool geometry = path == u"rect" || path.startsWith(u"rect.") || path == u"z" || path == u"rotation";
+    auto ownHere = [&](const Zone &z) {
+        return !z.shared || geometry
+            || std::ranges::any_of(z.own, [&](const QString &o) { return path == o || path.startsWith(o + u'.'); });
+    };
+    auto edit = [&](Zone *z, const Page &on) {
+        QJsonObject json = z->toJson();
+        layout::jsonSet(json, path, value);
+        Zone updated = Zone::fromJson(json);
+        updated.id = z->id;
+        updated.shared = z->shared;
+        updated.own = z->own;
+        updated.rect = clampToCanvas(updated.rect, on.canvas);
+        *z = updated;
+    };
     return apply(u"Change %1"_s.arg(path), [&](Layout &l) {
         Page *page = l.page(pageId);
         if (!page)
             return false;
-        for (Zone *z : zonesOf(*page, zoneIds)) {
-            QJsonObject json = z->toJson();
-            layout::jsonSet(json, path, value);
-            Zone updated = Zone::fromJson(json);
-            updated.id = z->id;
-            updated.rect = clampToCanvas(updated.rect, page->canvas);
-            *z = updated;
+        for (const QString &id : zoneIds) {
+            Zone *z = findZone(*page, id);
+            if (!z)
+                continue;
+            if (ownHere(*z)) {
+                edit(z, *page);
+                continue;
+            }
+            // The page's zone (on both screens); the version follows it.
+            const Page *owner = l.sourceOf(*page, id).owner;
+            Page *from = owner ? l.page(owner->id) : nullptr;
+            page = l.page(pageId);   // l.page() may have detached the list
+            if (Zone *src = from ? findZone(*from, id) : nullptr)
+                edit(src, *from);
         }
         return true;
     });
@@ -542,6 +593,136 @@ QJsonValue LayoutEditor::zoneField(const QString &pageId, const QString &zoneId,
     if (!z)
         return QJsonValue(QJsonValue::Undefined);
     return layout::jsonGet(fullZoneJson(*z), path);
+}
+
+// --- phone versions ----------------------------------------------------------
+
+QString LayoutEditor::makePhoneVersion(const QString &pageId, QString *why)
+{
+    auto fail = [&](const QString &msg) {
+        if (why)
+            *why = msg;
+        return QString();
+    };
+    const Page *page = layout_.page(pageId);
+    if (!page)
+        return fail(u"No such page."_s);
+    if (!page->variantOf.isEmpty())
+        return fail(u"This page is a phone version itself."_s);
+    if (layout_.variantFor(pageId, u"phone"_s))
+        return fail(u"This page already has a phone version."_s);
+
+    // As phones show it now.
+    const layout::PhoneView shown = layout::phoneView(layout_, pageId, false);
+    Page v;
+    v.id = uniquePageId(layout_, pageId + u"-phone"_s);
+    v.name = page->name + u" (phone)"_s;
+    v.kind = page->kind;
+    v.variantOf = pageId;
+    v.formFactor = u"phone"_s;
+    v.canvas = shown.canvas;
+    v.grid = page->grid;
+    if (shown.pageId != pageId) {   // in its template's phone frame
+        v.templateId = shown.pageId;
+        v.style = page->style;
+        v.background = page->background;
+    } else {   // the whole page: its templates' look too
+        for (const Page *p : layout_.templateChain(pageId)) {
+            for (const auto state : {layout::ZoneState::Normal, layout::ZoneState::Selected, layout::ZoneState::Disabled})
+                layout::Style::mergeMissing(v.style.state(state), p->style.state(state));
+            layout::Style::mergeMissing(v.background, p->background);
+        }
+    }
+    for (const Layout::PlacedZone &pz : shown.zones) {
+        const auto at = shown.moved.constFind(pz.zone);
+        if (at == shown.moved.cend())
+            continue;   // the frame's own
+        Zone z = *pz.zone;
+        z.shared = true;
+        z.own.clear();
+        z.rect = *at;
+        z.extra.remove(u"rotation"_s);
+        if (!v.zone(z.id))
+            v.zones.append(z);
+    }
+    const QString id = v.id;
+    return apply(u"Make phone version"_s, [&](Layout &l) {
+        const auto at = std::ranges::find(l.pages, pageId, &Page::id);
+        l.pages.insert(at - l.pages.begin() + 1, v);
+        return true;
+    }) ? id : QString();
+}
+
+bool LayoutEditor::placeOnVariant(const QString &variantId, const QStringList &zoneIds)
+{
+    const Page *v = layout_.page(variantId);
+    if (!v || v->variantOf.isEmpty())
+        return false;
+    // The size phones would give it; else its own, as fits.
+    const layout::PhoneView shown = layout::phoneView(layout_, v->variantOf, false);
+    return apply(zoneIds.size() == 1 ? u"Put on the phone"_s : u"Put %1 on the phone"_s.arg(zoneIds.size()),
+                 [&](Layout &l) {
+        bool any = false;
+        for (const QString &id : zoneIds) {
+            const Page *page = l.page(variantId);
+            const Layout::PlacedZone from = l.sourceOf(*page, id);
+            if (!from.zone || page->zone(id))
+                continue;
+            Zone z = *from.zone;
+            z.shared = true;
+            z.own.clear();
+            z.extra.remove(u"rotation"_s);
+            QSize size = z.rect.size().boundedTo(page->canvas);
+            for (auto it = shown.moved.cbegin(); it != shown.moved.cend(); ++it) {
+                if (it.key()->id == id)
+                    size = it.value().size();
+            }
+            z.rect = clampToCanvas(freeSpot(l, variantId, size), page->canvas);
+            Page *target = l.page(variantId);
+            target->zones.append(z);
+            target->hiddenZones.removeAll(id);
+            any = true;
+        }
+        return any;
+    });
+}
+
+bool LayoutEditor::hideOnVariant(const QString &variantId, const QStringList &zoneIds)
+{
+    return apply(u"Leave off the phone"_s, [&](Layout &l) {
+        Page *page = l.page(variantId);
+        if (!page || page->variantOf.isEmpty())
+            return false;
+        for (const QString &id : zoneIds) {
+            if (!l.sourceOf(*page, id).zone)
+                continue;
+            page = l.page(variantId);
+            page->zones.removeIf([&](const Zone &z) { return z.id == id && z.shared; });
+            if (!page->hiddenZones.contains(id))
+                page->hiddenZones.append(id);
+        }
+        return true;
+    });
+}
+
+bool LayoutEditor::setOwnOnVariant(const QString &variantId, const QStringList &zoneIds, const QString &path, bool own)
+{
+    if (path.isEmpty())
+        return false;
+    return apply(own ? u"Own %1 on the phone"_s.arg(path) : u"Same %1 as the page"_s.arg(path), [&](Layout &l) {
+        Page *page = l.page(variantId);
+        if (!page)
+            return false;
+        for (Zone *z : zonesOf(*page, zoneIds)) {
+            if (!z->shared)
+                continue;
+            if (!own)
+                z->own.removeAll(path);
+            else if (!z->own.contains(path))
+                z->own.append(path);
+        }
+        return true;
+    });
 }
 
 // --- clipboard ---------------------------------------------------------------
@@ -571,6 +752,7 @@ QStringList LayoutEditor::paste(const QString &pageId)
             return false;
         const int step = std::max(1, page->grid) * 2;
         for (Zone z : clipboard_) {
+            z = unshared(z);
             // Same page: offset so the copy is visible. Other page: same spot,
             // like the legacy "copy selected zones onto this page".
             const bool clash = std::ranges::any_of(page->zones, [&](const Zone &o) { return o.rect == z.rect; });
@@ -648,7 +830,8 @@ bool LayoutEditor::deletePage(const QString &pageId, QString *why)
         return false;
     }
     return apply(u"Delete page"_s, [&](Layout &l) {
-        return l.pages.removeIf([&](const Page &p) { return p.id == pageId; }) > 0;
+        // Its phone version goes with it.
+        return l.pages.removeIf([&](const Page &p) { return p.id == pageId || p.variantOf == pageId; }) > 0;
     });
 }
 
@@ -677,6 +860,7 @@ bool LayoutEditor::setPageField(const QString &pageId, const QString &path, cons
             for (Page &p : l.pages) {
                 if (p.id == pageId) p.id = newId;
                 if (p.templateId == pageId) p.templateId = newId;
+                if (p.variantOf == pageId) p.variantOf = newId;
                 for (Zone &z : p.zones) {
                     for (layout::Action &a : z.actions) {
                         if (a.data.value(u"page").toString() == pageId)

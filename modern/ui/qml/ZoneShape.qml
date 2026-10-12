@@ -8,15 +8,17 @@ Item {
 
     property string shape: "rect"
     property var st: ({})
+    // (Undefined for a moment while a page's zones are taken down.)
+    readonly property var style: st ?? ({})
 
-    readonly property color fill: st.fill ?? "#808080"
-    readonly property string texture: st.texture ?? ""
-    readonly property string frame: st.frame ?? "raised"
+    readonly property color fill: style.fill ?? "#808080"
+    readonly property string texture: style.texture ?? ""
+    readonly property string frame: style.frame ?? "raised"
     readonly property bool bevel: frame === "raised" || frame === "inset"
-    readonly property real frameWidth: (frame === "none" || frame === "flat") ? 0 : (st.frameWidth ?? 3)
-    readonly property real shadow: st.shadow ?? 0
-    readonly property real radius: shape === "rounded" ? (st.radius || Math.min(width, height) * 0.2)
-                                                        : (st.radius ?? 0)
+    readonly property real frameWidth: (frame === "none" || frame === "flat") ? 0 : (style.frameWidth ?? 3)
+    readonly property real shadow: style.shadow ?? 0
+    readonly property real radius: shape === "rounded" ? (style.radius || Math.min(width, height) * 0.2)
+                                                        : (style.radius ?? 0)
     readonly property color light: Qt.lighter(fill, 1.6)
     readonly property color dark: Qt.darker(fill, 2.0)
 
@@ -113,7 +115,7 @@ Item {
         // Frame: bevel gradient, solid border, or nothing
         ShapePath {
             strokeWidth: -1
-            fillColor: root.frame === "border" ? (root.st.borderColor ?? root.dark) : "transparent"
+            fillColor: root.frame === "border" ? (root.style.borderColor ?? root.dark) : "transparent"
             fillGradient: root.bevel ? bevelGradient : null
             PathPolyline { path: root.frameWidth > 0 ? root.outline(0, 0, root.width, root.height, root.radius) : [] }
         }

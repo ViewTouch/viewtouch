@@ -225,6 +225,7 @@ QVariantList EditorController::pages() const
         out.append(QVariantMap{
             {u"id"_s, p.id}, {u"name"_s, p.name}, {u"kind"_s, p.kind}, {u"role"_s, p.role},
             {u"templateId"_s, p.templateId}, {u"zoneCount"_s, p.zones.size()},
+            {u"variantOf"_s, p.variantOf}, {u"hasPhone"_s, editor_.layout().variantFor(p.id, u"phone"_s) != nullptr},
         });
     }
     return out;
@@ -628,6 +629,103 @@ QString EditorController::templateOf(const QString &zoneId) const
             return pz.owner->id;
     }
     return {};
+}
+
+// --- phone versions ----------------------------------------------------------------
+
+QVariantMap EditorController::screens() const
+{
+    const Layout &l = editor_.layout();
+    const Page *page = l.page(pageId_);
+    if (!page)
+        return {};
+    const bool isPhone = !page->variantOf.isEmpty() && page->formFactor == u"phone";
+    const QString base = isPhone ? page->variantOf : page->id;
+    const Page *phone = isPhone ? page : l.variantFor(base, u"phone"_s);
+    return {{u"page"_s, base}, {u"phone"_s, phone ? phone->id : QString()}, {u"isPhone"_s, isPhone},
+            {u"canPhone"_s, page->variantOf.isEmpty() || isPhone}};
+}
+
+void EditorController::showScreen(const QString &which)
+{
+    const QVariantMap s = screens();
+    const QString id = which == u"phone" ? s.value(u"phone"_s).toString() : s.value(u"page"_s).toString();
+    if (!id.isEmpty() && id != pageId_)
+        emit showPageRequested(id);
+}
+
+bool EditorController::makePhoneVersion()
+{
+    QString why;
+    const QString id = editor_.makePhoneVersion(pageId_, &why);
+    if (id.isEmpty())
+        return why.isEmpty() ? false : fail(why);
+    setNotice(tr("Phone version made: move and size its buttons; their words, colors and actions stay shared"));
+    emit showPageRequested(id);
+    return true;
+}
+
+bool EditorController::removePhoneVersion()
+{
+    const QVariantMap s = screens();
+    const QString phone = s.value(u"phone"_s).toString();
+    if (phone.isEmpty())
+        return false;
+    QString why;
+    if (!editor_.deletePage(phone, &why))
+        return fail(why);
+    emit showPageRequested(s.value(u"page"_s).toString());
+    return true;
+}
+
+QVariantList EditorController::notOnPhone() const
+{
+    QVariantList out;
+    const Layout &l = editor_.layout();
+    for (const Layout::NotShown &n : l.notOnVariant(pageId_)) {
+        const Zone &z = *n.zone;
+        out.append(QVariantMap{{u"id"_s, z.id}, {u"label"_s, z.label.simplified()},
+                               {u"kind"_s, kindName(z.kind)}, {u"hidden"_s, n.hidden}});
+    }
+    return out;
+}
+
+void EditorController::placeOnPhone(const QStringList &zoneIds)
+{
+    if (editor_.placeOnVariant(pageId_, zoneIds))
+        setSelection(zoneIds);
+}
+
+void EditorController::hideOnPhone(const QStringList &zoneIds)
+{
+    editor_.hideOnVariant(pageId_, zoneIds);
+}
+
+QVariantMap EditorController::phoneShare() const
+{
+    const Page *page = editor_.layout().page(pageId_);
+    if (!page || page->variantOf.isEmpty())
+        return {{u"shared"_s, 0}};
+    int shared = 0;
+    QStringList own;
+    bool first = true;
+    for (const QString &id : selection_) {
+        const Zone *z = page->zone(id);
+        if (!z || !z->shared)
+            continue;
+        ++shared;
+        if (first)
+            own = z->own;
+        else
+            own.removeIf([&](const QString &p) { return !z->own.contains(p); });
+        first = false;
+    }
+    return {{u"shared"_s, shared}, {u"own"_s, own}};
+}
+
+void EditorController::setOwnOnPhone(const QString &path, bool own)
+{
+    editor_.setOwnOnVariant(pageId_, selection_, path, own);
 }
 
 // --- files ---------------------------------------------------------------------------

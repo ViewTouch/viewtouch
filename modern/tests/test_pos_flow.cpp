@@ -5485,6 +5485,54 @@ TEST_CASE("UI editor: toolbar menus open under their buttons; the toolbar fits a
     }
 }
 
+TEST_CASE("UI editor: Standard | Phone edits either screen's version; buttons stay shared", "[flow][ui][editorui][phoneVersion]")
+{
+    Screen s(false, 1280, 800);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"tables"_s));
+    s.c.enterEditMode();
+    EditorController *e = s.c.editor();
+    QQuickItem *root = s.window->contentItem();
+    const auto tap = [&](const QString &name) {
+        QQuickItem *it = Screen::findBy(root, "objectName", name);
+        REQUIRE(it);
+        REQUIRE(it->isVisible());
+        s.tapItem(it);
+        QTest::qWait(150);
+    };
+
+    REQUIRE(s.c.showPage(u"settle"_s));
+    QTest::qWait(150);
+    tap(u"screenPhone"_s);
+    CHECK(e->pageId() == u"settle-phone"_s);
+    e->selectOnly({u"tender-cash"_s});
+    QTest::qWait(150);
+    QQuickItem *box = Screen::findBy(root, "objectName", u"phoneShareBox"_s);
+    REQUIRE(box);
+    CHECK(box->isVisible());
+    s.shot("phone-version-edit");
+    tap(u"ownLabel"_s);
+    CHECK(e->phoneShare()[u"own"_s].toStringList() == QStringList{u"label"_s});
+    tap(u"screenStandard"_s);
+    CHECK(e->pageId() == u"settle"_s);
+
+    // A page without one: made from what phones show, then back to automatic.
+    REQUIRE(s.c.showPage(u"drawer"_s));
+    QTest::qWait(150);
+    tap(u"screenPhone"_s);
+    tap(u"makePhoneVersion"_s);
+    CHECK(e->pageId() == u"drawer-phone"_s);
+    tap(u"phoneMenuButton"_s);
+    s.shot("phone-version-tray");
+    tap(u"removePhoneVersion"_s);
+    QQuickItem *yes = findTyped(root, "Button", u"Yes"_s);
+    REQUIRE(yes);
+    s.tapItem(yes);
+    QTest::qWait(150);
+    CHECK(e->pageId() == u"drawer"_s);
+    CHECK(!e->layout().variantFor(u"drawer"_s, u"phone"_s));
+}
+
 TEST_CASE("UI editor: a page made now is offered to Go to page right away", "[flow][ui][editorui]")
 {
     Screen s;

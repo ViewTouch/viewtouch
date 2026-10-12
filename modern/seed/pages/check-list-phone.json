@@ -13,47 +13,33 @@
   "zones": [
     {
       "id": "title",
-      "kind": "label",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 24,
         "w": 1032,
         "h": 100
-      },
-      "shape": "rect",
-      "behavior": "none",
-      "label": "Open checks"
+      }
     },
     {
       "id": "list",
-      "kind": "checkList",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 140,
         "w": 1032,
         "h": 1860
-      },
-      "shape": "rect",
-      "behavior": "none"
+      }
     },
     {
       "id": "back",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 2030,
         "w": 1032,
         "h": 220
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "\u2039 Back",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "back"
-        }
-      ]
+      }
     }
   ]
 }

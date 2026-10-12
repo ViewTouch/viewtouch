@@ -16,317 +16,165 @@
     "w": 1048,
     "h": 1032
   },
+  "hiddenZones": [
+    "tab-breakfast",
+    "tab-lunch",
+    "tab-dinner"
+  ],
   "zones": [
     {
       "id": "tab-categories",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 16,
         "y": 16,
         "w": 196,
         "h": 110
       },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "\u2039 Menu",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "index"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fontSize": 34
-        }
+      "own": {
+        "style.normal.fontSize": 34
       }
     },
     {
       "id": "tab-note",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 228,
         "y": 16,
         "w": 196,
         "h": 110
       },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Note",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "note"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fontSize": 34
-        }
+      "own": {
+        "style.normal.fontSize": 34
       }
     },
     {
       "id": "tab-check",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 440,
         "y": 16,
         "w": 196,
         "h": 110
       },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Check\u2026",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "check-options"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fontSize": 34
-        }
+      "own": {
+        "style.normal.fontSize": 34
       }
     },
     {
       "id": "tab-find",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 652,
         "y": 16,
         "w": 196,
         "h": 110
       },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Find",
-      "actions": [
-        {
-          "type": "command",
-          "name": "clearText"
-        },
-        {
-          "type": "jump",
-          "mode": "push",
-          "page": "find-item"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fontSize": 34
-        }
+      "own": {
+        "style.normal.fontSize": 34
       }
     },
     {
       "id": "flow-tables",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 864,
         "y": 16,
         "w": 196,
         "h": 110
       },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Tables",
-      "actions": [
-        {
-          "type": "command",
-          "name": "releaseCheck"
-        },
-        {
-          "type": "jump",
-          "mode": "replace",
-          "role": "tables"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fontSize": 34
-        }
+      "own": {
+        "style.normal.fontSize": 34
       }
     },
     {
       "id": "order-list",
-      "kind": "orderList",
+      "shared": true,
       "rect": {
         "x": 16,
         "y": 142,
         "w": 1048,
         "h": 720
-      },
-      "shape": "rect",
-      "behavior": "none"
+      }
     },
     {
       "id": "flow-no",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 16,
         "y": 1926,
         "w": 196,
         "h": 150
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "No",
-      "actions": [
-        {
-          "type": "qualifier",
-          "qualifier": "no"
-        }
-      ]
+      }
     },
     {
       "id": "flow-extra",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 228,
         "y": 1926,
         "w": 196,
         "h": 150
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Extra",
-      "actions": [
-        {
-          "type": "qualifier",
-          "qualifier": "extra"
-        }
-      ]
+      }
     },
     {
       "id": "flow-lite",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 440,
         "y": 1926,
         "w": 196,
         "h": 150
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Lite",
-      "actions": [
-        {
-          "type": "qualifier",
-          "qualifier": "lite"
-        }
-      ]
+      }
     },
     {
       "id": "flow-side",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 652,
         "y": 1926,
         "w": 196,
         "h": 150
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Side",
-      "actions": [
-        {
-          "type": "qualifier",
-          "qualifier": "side"
-        }
-      ]
+      }
     },
     {
       "id": "flow-sub",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 864,
         "y": 1926,
         "w": 196,
         "h": 150
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Sub",
-      "actions": [
-        {
-          "type": "qualifier",
-          "qualifier": "sub"
-        }
-      ]
+      }
     },
     {
       "id": "flow-void",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 16,
         "y": 2092,
         "w": 338,
         "h": 172
-      },
-      "shape": "rect",
-      "behavior": "double",
-      "label": "Void",
-      "actions": [
-        {
-          "type": "command",
-          "name": "voidItem"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#b83232"
-        }
       }
     },
     {
       "id": "flow-send",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 370,
         "y": 2092,
         "w": 338,
         "h": 172
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Send",
-      "actions": [
-        {
-          "type": "command",
-          "name": "sendOrder"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#1f8a4c"
-        }
       }
     },
     {
       "id": "flow-pay",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 724,
         "y": 2092,
         "w": 338,
         "h": 172
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Pay",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "push",
-          "role": "settle"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#2b62b0"
-        }
       }
     }
   ]

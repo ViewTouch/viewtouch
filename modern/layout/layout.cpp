@@ -1,5 +1,7 @@
 #include "layout/layout.hh"
 
+#include "layout/json_path.hh"
+
 #include <QDir>
 #include <QFile>
 #include <QJsonArray>
@@ -217,6 +219,7 @@ Layout::StarterUpdate Layout::updateFromStarter(const Layout &starter, const QSt
             out.installed.insert(fresh.id, *was);   // edited here: keep theirs
         }
     }
+    syncVariants();
     return out;
 }
 
@@ -227,6 +230,81 @@ const Page *Layout::variantFor(const QString &pageId, const QString &formFactor)
             return &p;
     }
     return nullptr;
+}
+
+Layout::PlacedZone Layout::sourceOf(const Page &variant, const QString &zoneId) const
+{
+    // The page's own zone first, then its templates'.
+    for (const Page *p : templateChain(variant.variantOf)) {
+        if (const Zone *z = p->zone(zoneId))
+            return {z, p, p->id != variant.variantOf};
+    }
+    return {};
+}
+
+void Layout::syncVariants()
+{
+    for (qsizetype i = 0; i < pages.size(); ++i) {
+        const Page &v = std::as_const(pages)[i];
+        if (v.variantOf.isEmpty() || !page(v.variantOf))
+            continue;   // no page to follow (the page check says so)
+        QList<Zone> zones;
+        bool changed = false;
+        for (const Zone &mine : v.zones) {
+            if (!mine.shared) {
+                zones.append(mine);
+                continue;
+            }
+            const PlacedZone from = sourceOf(v, mine.id);
+            if (!from.zone) {   // deleted there: gone here too
+                changed = true;
+                continue;
+            }
+            // Theirs, but where it sits and the fields kept here.
+            QJsonObject json = from.zone->toJson();
+            const QJsonObject here = mine.toJson();
+            json.insert(u"rect", here.value(u"rect"));
+            json.remove(u"z");
+            json.remove(u"rotation");
+            for (const char16_t *key : {u"z", u"rotation"}) {
+                if (here.contains(QStringView(key)))
+                    json.insert(QStringView(key), here.value(QStringView(key)));
+            }
+            for (const QString &path : mine.own)
+                jsonSet(json, path, jsonGet(here, path));
+            Zone z = Zone::fromJson(json);
+            z.shared = true;
+            z.own = mine.own;
+            changed = changed || !(z == mine);
+            zones.append(z);
+        }
+        // Hidden zones that are gone there are forgotten.
+        QStringList hidden = v.hiddenZones;
+        hidden.removeIf([&](const QString &id) { return !sourceOf(v, id).zone; });
+        if (hidden != v.hiddenZones)
+            changed = true;
+        if (changed) {   // only then: unchanged pages stay shared with the undo snapshots
+            pages[i].zones = zones;
+            pages[i].hiddenZones = hidden;
+        }
+    }
+}
+
+QList<Layout::NotShown> Layout::notOnVariant(const QString &variantId) const
+{
+    QList<NotShown> out;
+    const Page *v = page(variantId);
+    if (!v || v->variantOf.isEmpty() || !page(v->variantOf))
+        return out;
+    for (const PlacedZone &pz : effectiveZones(v->variantOf)) {
+        const Zone &z = *pz.zone;
+        if ((pz.inherited && !v->templateId.isEmpty()) || z.kind == u"comment" || z.kind == u"decor")
+            continue;
+        if (v->zone(z.id))
+            continue;
+        out.append({&z, v->hiddenZones.contains(z.id)});
+    }
+    return out;
 }
 
 QStringList Layout::tableLabels() const
@@ -314,6 +392,11 @@ QStringList Layout::validate() const
                 issues << u"%1: it is a version of '%2', which does not exist"_s.arg(where, p.variantOf);
             else if (variantFor(p.variantOf, p.formFactor) != &p)
                 issues << u"%1: '%2' has more than one %3 version"_s.arg(where, p.variantOf, p.formFactor);
+            for (const NotShown &n : notOnVariant(p.id)) {
+                if (!n.hidden)
+                    issues << u"%1: '%2' of '%3' is not on it (place it, or hide it there)"_s
+                                  .arg(where, n.zone->label.isEmpty() ? n.zone->id : n.zone->label.simplified(), p.variantOf);
+            }
         }
 
         QSet<QString> zoneIds;
@@ -360,6 +443,7 @@ std::optional<Layout> Layout::fromJson(const QJsonObject &o, QStringList *errors
     l.theme = Theme::fromJson(o.value(u"theme").toObject());
     for (const QJsonValue &v : o.value(u"pages").toArray())
         l.pages.append(Page::fromJson(v.toObject()));
+    l.syncVariants();
     return l;
 }
 
@@ -394,6 +478,7 @@ std::optional<Layout> Layout::loadDirectory(const QString &dir, QStringList *err
         addError(errors, u"%1: no pages found"_s.arg(pagesDir.path()));
         return std::nullopt;
     }
+    l.syncVariants();
     return l;
 }
 

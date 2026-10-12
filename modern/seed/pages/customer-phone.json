@@ -10,77 +10,51 @@
   "grid": 8,
   "variantOf": "customer",
   "formFactor": "phone",
+  "hiddenZones": [
+    "later"
+  ],
   "zones": [
     {
       "id": "title",
-      "kind": "label",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 24,
         "w": 1032,
         "h": 100
-      },
-      "shape": "rect",
-      "behavior": "none",
-      "label": "Who is the order for?"
+      }
     },
     {
       "id": "customer",
-      "kind": "customerInfo",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 140,
         "w": 1032,
         "h": 1860
-      },
-      "shape": "rect",
-      "behavior": "none"
+      }
     },
     {
       "id": "cancel",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 24,
         "y": 2030,
         "w": 508,
         "h": 220
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Cancel",
-      "actions": [
-        {
-          "type": "command",
-          "name": "releaseCheck"
-        },
-        {
-          "type": "jump",
-          "mode": "back"
-        }
-      ]
+      }
     },
     {
       "id": "menu",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 548,
         "y": 2030,
         "w": 508,
         "h": 220
       },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Menu \u203a",
-      "actions": [
-        {
-          "type": "jump",
-          "mode": "index"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#1f8a4c"
-        }
+      "own": {
+        "label": "Menu ›"
       }
     }
   ]

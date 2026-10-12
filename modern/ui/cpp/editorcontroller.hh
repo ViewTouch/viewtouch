@@ -28,6 +28,9 @@ class EditorController : public QObject {
     Q_PROPERTY(QVariantList pages READ pages NOTIFY layoutChanged)
     Q_PROPERTY(QStringList issues READ issues NOTIFY layoutChanged)
     Q_PROPERTY(QStringList references READ references NOTIFY layoutChanged)
+    // The page being edited on standard screens and on phones:
+    // {page, phone (its phone version, or ""), isPhone, canPhone}.
+    Q_PROPERTY(QVariantMap screens READ screens NOTIFY revisionChanged)
     // Bumps on any layout, page, or selection change; inspector bindings
     // read it to re-query field values.
     Q_PROPERTY(int revision READ revision NOTIFY revisionChanged)
@@ -122,6 +125,24 @@ public:
     Q_INVOKABLE QString duplicatePage();
     Q_INVOKABLE bool deletePage();
     Q_INVOKABLE QString templateOf(const QString &zoneId) const;   // owner page of an inherited zone
+
+    // --- phone versions (the Standard | Phone switch) ---
+    QVariantMap screens() const;
+    // "standard" | "phone": edit that screen's version of this page.
+    Q_INVOKABLE void showScreen(const QString &which);
+    // A phone version laid out as phones show the page now, then edited.
+    Q_INVOKABLE bool makePhoneVersion();
+    // Phones go back to laying the page out by themselves.
+    Q_INVOKABLE bool removePhoneVersion();
+    // On a phone version: the page's buttons not on it,
+    // [{id, label, kind, hidden}] (hidden: left off on purpose).
+    Q_INVOKABLE QVariantList notOnPhone() const;
+    Q_INVOKABLE void placeOnPhone(const QStringList &zoneIds);
+    Q_INVOKABLE void hideOnPhone(const QStringList &zoneIds);
+    // The selection on a phone version: {shared (how many of it are the
+    // page's), own: [fields every one of them keeps for phones]}.
+    Q_INVOKABLE QVariantMap phoneShare() const;
+    Q_INVOKABLE void setOwnOnPhone(const QString &path, bool own);
 
     // --- files ---
     Q_INVOKABLE bool exportPage(const QUrl &file);

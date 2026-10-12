@@ -1,5 +1,7 @@
 #include "layout/zone.hh"
 
+#include "layout/json_path.hh"
+
 #include <QJsonArray>
 
 #include <cmath>
@@ -24,6 +26,22 @@ int rotationOf(const Zone &z)
 
 Zone Zone::fromJson(const QJsonObject &o)
 {
+    // A phone version's shared zone: where it sits and its own fields; the
+    // rest is filled in from the page's zone (Layout::syncVariants).
+    if (o.value(u"shared").toBool()) {
+        QJsonObject full{{u"id"_s, o.value(u"id")}, {u"rect"_s, o.value(u"rect")}};
+        for (const char16_t *key : {u"z", u"rotation"}) {
+            if (o.contains(QStringView(key)))
+                full.insert(QStringView(key), o.value(QStringView(key)));
+        }
+        const QJsonObject own = o.value(u"own").toObject();
+        for (auto it = own.begin(); it != own.end(); ++it)
+            jsonSet(full, it.key(), it.value());
+        Zone z = fromJson(full);
+        z.shared = true;
+        z.own = own.keys();
+        return z;
+    }
     Zone z;
     z.id = o.value(u"id").toString();
     z.kind = o.value(u"kind").toString(z.kind);
@@ -75,6 +93,25 @@ QJsonObject Zone::toJson() const
         o.insert(u"actions", arr);
     }
     if (!props.isEmpty()) o.insert(u"props", props);
+    return o;
+}
+
+QJsonObject Zone::sharedJson() const
+{
+    const QJsonObject full = toJson();
+    QJsonObject o{{u"id"_s, id}, {u"shared"_s, true}, {u"rect"_s, full.value(u"rect")}};
+    if (z != 0)
+        o.insert(u"z", z);
+    if (extra.contains(u"rotation"))
+        o.insert(u"rotation", extra.value(u"rotation"));
+    QJsonObject mine;
+    for (const QString &path : own) {
+        const QJsonValue v = jsonGet(full, path);
+        if (!v.isUndefined())
+            mine.insert(path, v);
+    }
+    if (!mine.isEmpty())
+        o.insert(u"own", mine);
     return o;
 }
 

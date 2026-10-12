@@ -72,6 +72,25 @@ public:
     // The version of `pageId` made for `formFactor` screens ("phone"), if any.
     const Page *variantFor(const QString &pageId, const QString &formFactor) const;
 
+    // A version's shared zones (Zone::shared) brought in step with the page's
+    // zones they show: everything but where they sit and their own fields. A
+    // shared zone whose zone is gone goes too. Done on loading and after
+    // every edit, so everything else sees whole zones.
+    void syncVariants();
+    // Where a version's zone comes from: the zone of its page (or of that
+    // page's templates) with that id, and the page holding it.
+    PlacedZone sourceOf(const Page &variant, const QString &zoneId) const;
+    // The page's zones a version doesn't show, in the page's order, with
+    // whether that's on purpose (Page::hiddenZones) or they are new there.
+    // Notes and floor plan pieces (walls, doors) don't count: phones never
+    // show them. Templates' zones count only when the version has no
+    // template of its own (one framing it).
+    struct NotShown {
+        const Zone *zone = nullptr;
+        bool hidden = false;
+    };
+    QList<NotShown> notOnVariant(const QString &variantId) const;
+
     // Every table name in the layout (its table zones).
     QStringList tableLabels() const;
     // A table name not used yet, following `like`: "T7" -> "T8" (the next

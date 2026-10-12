@@ -10,110 +10,74 @@
   "grid": 8,
   "variantOf": "login",
   "formFactor": "phone",
+  "hiddenZones": [
+    "logo",
+    "time-clock"
+  ],
   "zones": [
     {
       "id": "title",
-      "kind": "label",
+      "shared": true,
       "rect": {
         "x": 40,
         "y": 60,
         "w": 1000,
         "h": 150
       },
-      "shape": "rect",
-      "behavior": "none",
-      "label": "ViewTouch",
-      "style": {
-        "normal": {
-          "fontSize": 96
-        }
+      "own": {
+        "label": "ViewTouch",
+        "style.normal.fontSize": 96
       }
     },
     {
       "id": "clock",
-      "kind": "clock",
+      "shared": true,
       "rect": {
         "x": 140,
         "y": 230,
         "w": 800,
         "h": 100
-      },
-      "shape": "rect",
-      "behavior": "none"
+      }
     },
     {
       "id": "login-pad",
-      "kind": "loginPad",
+      "shared": true,
       "rect": {
         "x": 60,
         "y": 360,
         "w": 960,
         "h": 1400
-      },
-      "shape": "rect",
-      "behavior": "none"
+      }
     },
     {
       "id": "clock-in",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 40,
         "y": 1800,
         "w": 320,
         "h": 200
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Clock In",
-      "actions": [
-        {
-          "type": "command",
-          "name": "clockIn"
-        }
-      ]
+      }
     },
     {
       "id": "start",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 380,
         "y": 1800,
         "w": 320,
         "h": 200
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Log In",
-      "actions": [
-        {
-          "type": "command",
-          "name": "login"
-        }
-      ],
-      "style": {
-        "normal": {
-          "fill": "#1f8a4c"
-        }
       }
     },
     {
       "id": "clock-out",
-      "kind": "button",
+      "shared": true,
       "rect": {
         "x": 720,
         "y": 1800,
         "w": 320,
         "h": 200
-      },
-      "shape": "rect",
-      "behavior": "blink",
-      "label": "Clock Out",
-      "actions": [
-        {
-          "type": "command",
-          "name": "clockOut"
-        }
-      ]
+      }
     }
   ]
 }

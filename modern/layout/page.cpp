@@ -11,7 +11,7 @@ namespace vt::layout {
 namespace {
 const QStringList kPageKeys = {
     u"id"_s, u"name"_s, u"kind"_s, u"role"_s, u"templateId"_s, u"mealPeriod"_s, u"permission"_s,
-    u"variantOf"_s, u"formFactor"_s, u"contentArea"_s,
+    u"variantOf"_s, u"formFactor"_s, u"hiddenZones"_s, u"contentArea"_s,
     u"canvas"_s, u"grid"_s, u"background"_s, u"style"_s, u"zones"_s,
     u"schemaVersion"_s,
 };
@@ -74,6 +74,8 @@ Page Page::fromJson(const QJsonObject &o)
     p.permission = o.value(u"permission").toString();
     p.variantOf = o.value(u"variantOf").toString();
     p.formFactor = o.value(u"formFactor").toString();
+    for (const QJsonValue &v : o.value(u"hiddenZones").toArray())
+        p.hiddenZones.append(v.toString());
     if (const QJsonObject a = o.value(u"contentArea").toObject(); !a.isEmpty())
         p.contentArea = QRect(a.value(u"x").toInt(), a.value(u"y").toInt(), a.value(u"w").toInt(), a.value(u"h").toInt());
     const QJsonObject c = o.value(u"canvas").toObject();
@@ -115,6 +117,7 @@ QJsonObject Page::toJson() const
     if (!permission.isEmpty()) o.insert(u"permission", permission);
     if (!variantOf.isEmpty()) o.insert(u"variantOf", variantOf);
     if (!formFactor.isEmpty()) o.insert(u"formFactor", formFactor);
+    if (!hiddenZones.isEmpty()) o.insert(u"hiddenZones", QJsonArray::fromStringList(hiddenZones));
     if (!contentArea.isEmpty())
         o.insert(u"contentArea", QJsonObject{{u"x"_s, contentArea.x()}, {u"y"_s, contentArea.y()},
                                              {u"w"_s, contentArea.width()}, {u"h"_s, contentArea.height()}});
@@ -124,7 +127,7 @@ QJsonObject Page::toJson() const
     if (!style.isEmpty()) o.insert(u"style", style.toJson());
     QJsonArray arr;
     for (const Zone &z : zones)
-        arr.append(z.toJson());
+        arr.append(z.shared ? z.sharedJson() : z.toJson());
     o.insert(u"zones", arr);
     return o;
 }

@@ -60,9 +60,25 @@ public:
 
     // Generic property edit by dotted path ("label", "style.normal.fill").
     // An undefined value removes the key (inherit). Applies to every zone.
+    // A version's shared zone: where it sits, and its own fields, change
+    // here; anything else changes on the page's zone (so on both screens).
     bool setZoneField(const QString &pageId, const QStringList &zoneIds, const QString &path,
                       const QJsonValue &value);
     QJsonValue zoneField(const QString &pageId, const QString &zoneId, const QString &path) const;
+
+    // --- phone versions --------------------------------------------------------
+    // A phone version of a page, laid out as phones show the page now (its
+    // zones laid out again, in a phone frame when its template has one), every
+    // zone shared with the page (Zone::shared). Returns its id; empty (with
+    // why) when the page is a version itself or already has one.
+    QString makePhoneVersion(const QString &pageId, QString *why = nullptr);
+    // Zones of a version's page put on the version too (shared), in free
+    // space; or left off it on purpose. Returns false when nothing changed.
+    bool placeOnVariant(const QString &variantId, const QStringList &zoneIds);
+    bool hideOnVariant(const QString &variantId, const QStringList &zoneIds);
+    // A shared zone keeps `path` ("label", "style.normal.fontSize") for its
+    // own screen (own), or follows the page's again.
+    bool setOwnOnVariant(const QString &variantId, const QStringList &zoneIds, const QString &path, bool own);
 
     // --- clipboard (not undoable itself; paste is) --------------------------
     void copyZones(const QString &pageId, const QStringList &zoneIds);

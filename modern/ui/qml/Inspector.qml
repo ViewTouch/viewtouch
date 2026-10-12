@@ -97,6 +97,47 @@ Rectangle {
                     }
                 }
 
+                // On a phone version: the page's own buttons, shared.
+                Rectangle {
+                    id: shareBox
+                    objectName: "phoneShareBox"
+                    readonly property var share: inspector.editor.revision >= 0 && inspector.mode === "zone"
+                                                 ? inspector.editor.phoneShare() : ({ shared: 0 })
+                    readonly property var own: share.own ?? []
+                    visible: share.shared > 0
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 12
+                    Layout.rightMargin: 12
+                    implicitHeight: shareCol.implicitHeight + 16
+                    radius: 4
+                    color: EditorStyle.panelRaised
+                    border.color: EditorStyle.accent
+                    ColumnLayout {
+                        id: shareCol
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 2
+                        Label {
+                            Layout.fillWidth: true
+                            wrapMode: Text.WordWrap
+                            font.pixelSize: 12
+                            text: qsTr("Shared with the standard page: words, colors and actions changed here change there too. Where it sits and its size are the phone's.")
+                        }
+                        CheckBox {
+                            objectName: "ownLabel"
+                            text: qsTr("Own words on phones")
+                            checked: shareBox.own.includes("label")
+                            onToggled: inspector.editor.setOwnOnPhone("label", checked)
+                        }
+                        CheckBox {
+                            objectName: "ownFontSize"
+                            text: qsTr("Own text size on phones")
+                            checked: shareBox.own.includes("style.normal.fontSize")
+                            onToggled: inspector.editor.setOwnOnPhone("style.normal.fontSize", checked)
+                        }
+                    }
+                }
+
                 Label {
                     visible: inspector.mode === "page"
                     Layout.fillWidth: true

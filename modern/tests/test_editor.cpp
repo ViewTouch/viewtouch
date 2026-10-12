@@ -373,3 +373,129 @@ TEST_CASE("A new zone goes in free space, not on top of others", "[editor]")
                 CHECK_FALSE(pz.zone->rect.intersects(rectOf(id)));
     }
 }
+
+// --- phone versions share their page's buttons ----------------------------------------
+
+TEST_CASE("A phone version's buttons are the page's: one change shows on both", "[editor][phoneVersion]")
+{
+    LayoutEditor e(seed());
+    const auto phoneZone = [&](const QString &id) { return e.layout().page(u"settle-phone"_s)->zone(id); };
+    const auto pageZone = [&](const QString &id) { return e.layout().page(u"settle"_s)->zone(id); };
+
+    // Loaded whole: the page's words and actions, the phone's place.
+    REQUIRE(phoneZone(u"tender-cash"_s));
+    CHECK(phoneZone(u"tender-cash"_s)->shared);
+    CHECK(phoneZone(u"tender-cash"_s)->actions == pageZone(u"tender-cash"_s)->actions);
+    CHECK(phoneZone(u"tender-cash"_s)->rect != pageZone(u"tender-cash"_s)->rect);
+    CHECK(phoneZone(u"split"_s)->label == u"Split Check"_s);   // its own words on phones
+    CHECK(pageZone(u"split"_s)->label == u"Split"_s);
+
+    SECTION("changed on the page: changed on the phone") {
+        REQUIRE(e.setZoneField(u"settle"_s, {u"tender-cash"_s}, u"label"_s, u"Cash / Check"_s));
+        CHECK(phoneZone(u"tender-cash"_s)->label == u"Cash / Check"_s);
+        REQUIRE(e.setZoneField(u"settle"_s, {u"tender-cash"_s}, u"style.normal.fill"_s, u"#123456"_s));
+        CHECK(phoneZone(u"tender-cash"_s)->style.normal.value(u"fill").toString() == u"#123456"_s);
+        e.undoStack()->undo();
+        e.undoStack()->undo();
+        CHECK(phoneZone(u"tender-cash"_s)->label == u"Cash"_s);
+    }
+    SECTION("changed on the phone: changed on the page; moved on the phone: only there") {
+        const QRect was = pageZone(u"tender-cash"_s)->rect;
+        REQUIRE(e.setZoneField(u"settle-phone"_s, {u"tender-cash"_s}, u"label"_s, u"Efectivo"_s));
+        CHECK(pageZone(u"tender-cash"_s)->label == u"Efectivo"_s);
+        REQUIRE(e.nudgeZones(u"settle-phone"_s, {u"tender-cash"_s}, 8, 0));
+        CHECK(pageZone(u"tender-cash"_s)->rect == was);
+    }
+    SECTION("its own words stay its own") {
+        REQUIRE(e.setZoneField(u"settle"_s, {u"split"_s}, u"label"_s, u"Split…"_s));
+        CHECK(phoneZone(u"split"_s)->label == u"Split Check"_s);
+        REQUIRE(e.setZoneField(u"settle-phone"_s, {u"split"_s}, u"label"_s, u"Split it"_s));
+        CHECK(pageZone(u"split"_s)->label == u"Split…"_s);
+        // Following the page again.
+        REQUIRE(e.setOwnOnVariant(u"settle-phone"_s, {u"split"_s}, u"label"_s, false));
+        CHECK(phoneZone(u"split"_s)->label == u"Split…"_s);
+        REQUIRE(e.setOwnOnVariant(u"settle-phone"_s, {u"tender-cash"_s}, u"style.normal.fontSize"_s, true));
+        REQUIRE(e.setZoneField(u"settle-phone"_s, {u"tender-cash"_s}, u"style.normal.fontSize"_s, 40));
+        CHECK(phoneZone(u"tender-cash"_s)->style.normal.value(u"fontSize").toInt() == 40);
+        CHECK(pageZone(u"tender-cash"_s)->style.normal.value(u"fontSize").toInt() != 40);
+    }
+    SECTION("deleted on the phone: left off there; deleted on the page: gone from both") {
+        REQUIRE(e.deleteZones(u"settle-phone"_s, {u"coupon"_s}));
+        CHECK(pageZone(u"coupon"_s));
+        CHECK(e.layout().page(u"settle-phone"_s)->hiddenZones.contains(u"coupon"_s));
+        CHECK(e.layout().validate().isEmpty());
+        REQUIRE(e.deleteZones(u"settle"_s, {u"drawer"_s}));
+        CHECK(!phoneZone(u"drawer"_s));
+    }
+    SECTION("a button new on the page: the page check says so until it is placed or left off") {
+        const QString id = e.addZone(u"settle"_s, u"button"_s);
+        REQUIRE(!id.isEmpty());
+        CHECK(e.layout().validate().filter(u"settle-phone"_s).size() == 1);
+        const auto missing = e.layout().notOnVariant(u"settle-phone"_s);
+        CHECK(std::ranges::any_of(missing, [&](const Layout::NotShown &n) { return n.zone->id == id && !n.hidden; }));
+        REQUIRE(e.placeOnVariant(u"settle-phone"_s, {id}));
+        REQUIRE(phoneZone(id));
+        CHECK(phoneZone(id)->shared);
+        CHECK(QRect(QPoint(0, 0), e.layout().page(u"settle-phone"_s)->canvas).contains(phoneZone(id)->rect));
+        CHECK(e.layout().validate().isEmpty());
+        REQUIRE(e.hideOnVariant(u"settle-phone"_s, {id}));
+        CHECK(!phoneZone(id));
+        CHECK(e.layout().validate().isEmpty());
+    }
+    SECTION("copies made on the phone are its own") {
+        const QStringList made = e.duplicateZones(u"settle-phone"_s, {u"tender-cash"_s});
+        REQUIRE(made.size() == 1);
+        CHECK(!phoneZone(made.first())->shared);
+    }
+}
+
+TEST_CASE("Phone versions: saved small, loaded whole", "[editor][phoneVersion]")
+{
+    const Layout l = seed();
+    const QJsonObject saved = l.page(u"settle-phone"_s)->toJson();
+    for (const QJsonValue &v : saved.value(u"zones").toArray()) {
+        const QJsonObject z = v.toObject();
+        if (z.value(u"shared").toBool())
+            CHECK(!z.contains(u"actions"));   // the page's, not repeated
+    }
+    const auto again = Layout::fromJson(l.toJson());
+    REQUIRE(again);
+    CHECK(*again == l);
+    CHECK(l.validate().isEmpty());
+}
+
+TEST_CASE("Make a phone version from what phones show; back to automatic", "[editor][phoneVersion]")
+{
+    LayoutEditor e(seed());
+    QString why;
+    CHECK(e.makePhoneVersion(u"settle"_s, &why).isEmpty());   // has one
+    CHECK(!why.isEmpty());
+
+    const QString id = e.makePhoneVersion(u"drawer"_s, &why);
+    REQUIRE(!id.isEmpty());
+    const Page *v = e.layout().page(id);
+    REQUIRE(v);
+    CHECK(v->variantOf == u"drawer"_s);
+    CHECK(e.layout().variantFor(u"drawer"_s, u"phone"_s) == v);
+    CHECK(v->canvas.width() < v->canvas.height());   // upright
+    CHECK(!v->zones.isEmpty());
+    CHECK(std::ranges::all_of(v->zones, [](const Zone &z) { return z.shared; }));
+    CHECK(e.layout().validate().isEmpty());
+
+    // An item page: in the order screen's phone frame.
+    const Page *items = nullptr;
+    for (const Page &p : e.layout().pages)
+        if (p.templateId == u"order-template"_s && !items)
+            items = &p;
+    REQUIRE(items);
+    const QString itemsId = items->id;
+    const QString framed = e.makePhoneVersion(itemsId, &why);
+    REQUIRE(!framed.isEmpty());
+    CHECK(e.layout().page(framed)->templateId == u"order-template-phone"_s);
+
+    // Back to automatic: deleting the page's version; deleting the page takes it too.
+    REQUIRE(e.deletePage(id));
+    CHECK(!e.layout().variantFor(u"drawer"_s, u"phone"_s));
+    REQUIRE(e.deletePage(itemsId));
+    CHECK(!e.layout().page(framed));
+}

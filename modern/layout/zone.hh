@@ -6,6 +6,7 @@
 #include <QList>
 #include <QRect>
 #include <QString>
+#include <QStringList>
 
 namespace vt::layout {
 
@@ -47,9 +48,19 @@ struct Zone {
     QList<Action> actions;
     QJsonObject props;   // widget-specific settings
     QJsonObject extra;   // unknown keys, preserved
+    // On a page's phone version: one of that page's zones, shown here too.
+    // Only where it sits (rect, z, rotation) is its own; everything else
+    // comes from the page's and follows it (Layout::syncVariants), except
+    // the fields listed in `own` ("label", "style.normal.fontSize"), which
+    // are this screen's.
+    bool shared = false;
+    QStringList own;
 
     static Zone fromJson(const QJsonObject &o);
+    // Every field (a shared zone's too, as it is now).
     QJsonObject toJson() const;
+    // A shared zone as saved: { id, shared, rect, z, rotation, own: {path: value} }.
+    QJsonObject sharedJson() const;
 
     bool operator==(const Zone &) const = default;
 };
