@@ -13,11 +13,17 @@ namespace {
 
 enum class Kind { Hidden, Label, Panel, Button };
 
+// Its "On phones" hints: { wide: a row of its own, place: "first" | "last" }.
+QJsonObject hints(const Zone &z)
+{
+    return z.extra.value(u"phone").toObject();
+}
+
 Kind kindOf(const Zone &z)
 {
     // Notes, and a floor plan's walls, doors and the rest (on a phone its
-    // tables are laid out in rows instead).
-    if (z.kind == u"comment" || z.kind == u"decor")
+    // tables are laid out in rows instead); and what is for standard screens only.
+    if (z.kind == u"comment" || z.kind == u"decor" || !showsOnPhones(z))
         return Kind::Hidden;
     if (z.kind == u"label")
         return Kind::Label;
@@ -71,6 +77,12 @@ Plan layOut(const QList<const Zone *> &zones, const QList<int> &order, const QRe
             break;
         }
         case Kind::Button:
+            if (hints(z).value(u"wide").toBool()) {
+                endRow();
+                plan.rects[i] = QRect(area.x(), y, area.width(), rowHeight);
+                y += rowHeight + gap;
+                break;
+            }
             plan.rects[i] = QRect(area.x() + col * (cellW + gap), y, cellW, rowHeight);
             if (++col == columns)
                 endRow();
@@ -87,12 +99,24 @@ Plan layOut(const QList<const Zone *> &zones, const QList<int> &order, const QRe
 
 } // namespace
 
+bool showsOnPhones(const Zone &z)
+{
+    return z.extra.value(u"showWhen").toObject().value(u"screen").toString() != u"standard";
+}
+
 QList<QRect> reflowZones(const QList<const Zone *> &zones, const QRect &area, int gap)
 {
-    // Reading order: rows first (zones whose tops are close count as one row).
+    // Reading order: rows first (zones whose tops are close count as one row);
+    // the ones marked to go first or last on phones before or after the rest.
     QList<int> order(zones.size());
     std::iota(order.begin(), order.end(), 0);
+    const auto rank = [&](int i) {
+        const QString place = hints(*zones[i]).value(u"place").toString();
+        return place == u"first" ? -1 : place == u"last" ? 1 : 0;
+    };
     std::ranges::stable_sort(order, [&](int a, int b) {
+        if (rank(a) != rank(b))
+            return rank(a) < rank(b);
         const QRect &ra = zones[a]->rect;
         const QRect &rb = zones[b]->rect;
         if (std::abs(ra.y() - rb.y()) > 24)

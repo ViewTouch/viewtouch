@@ -9,6 +9,9 @@
 
 namespace vt::layout {
 
+// Not set to show on standard screens only ("Show on" / showWhen.screen).
+bool showsOnPhones(const Zone &z);
+
 // Lays a page's zones out again for a narrow (phone) screen, inside `area`,
 // in reading order (top to bottom, left to right): labels and panels across
 // the full width, buttons in a grid of large touch targets. The grid uses
@@ -16,6 +19,8 @@ namespace vt::layout {
 // minimum before anything is allowed to run past the bottom.
 // Returns one rect per zone, in the order given. Notes (comments) get an
 // empty rect: they are not shown.
+// Zones' "On phones" hints (extra "phone"): { wide: true } takes a row of its
+// own; { place: "first" | "last" } goes before or after the rest.
 QList<QRect> reflowZones(const QList<const Zone *> &zones, const QRect &area, int gap = 16);
 
 // A page as a phone shows it: its phone version when it has one (`useVersion`);

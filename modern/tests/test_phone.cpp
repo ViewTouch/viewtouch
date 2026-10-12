@@ -1,6 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 
+#include "editorcontroller.hh"
 #include "layout_fixture.hh"
+#include "app/layout_editor.hh"
 #include "layout/reflow.hh"
 #include "layoutcontroller.hh"
 #include "pos_fixture.hh"
@@ -103,6 +105,89 @@ TEST_CASE("Reflow: reading order, full-width labels and panels, a grid of button
     for (const QRect &rect : m)
         CHECK(QRect(0, 0, 1048, 1032).contains(rect));
     CHECK(m[0].width() < 1048 / 2);                           // 3 across
+}
+
+TEST_CASE("Reflow: Show on standard screens only, a row of its own, first and last", "[phone][reflow]")
+{
+    QList<Zone> page{
+        zoneAt(u"a"_s, u"button"_s, {100, 100, 200, 100}),
+        zoneAt(u"b"_s, u"button"_s, {400, 100, 200, 100}),
+        zoneAt(u"c"_s, u"button"_s, {700, 100, 200, 100}),
+        zoneAt(u"d"_s, u"button"_s, {1000, 100, 200, 100}),
+        zoneAt(u"e"_s, u"button"_s, {1300, 100, 200, 100}),
+    };
+    page[1].extra.insert(u"showWhen"_s, QJsonObject{{u"screen"_s, u"standard"_s}});
+    page[2].extra.insert(u"phone"_s, QJsonObject{{u"wide"_s, true}});
+    page[3].extra.insert(u"phone"_s, QJsonObject{{u"place"_s, u"first"_s}});
+    page[0].extra.insert(u"phone"_s, QJsonObject{{u"place"_s, u"last"_s}});
+    QList<const Zone *> zones;
+    for (const Zone &z : page)
+        zones << &z;
+    const QRect area(0, 0, 1000, 2000);
+    const QList<QRect> r = layout::reflowZones(zones, area);
+
+    CHECK(!layout::showsOnPhones(page[1]));
+    CHECK(r[1].isEmpty());                          // standard screens only
+    CHECK(r[3].topLeft() == area.topLeft());        // first
+    CHECK(r[2].width() == area.width());            // a row of its own
+    CHECK(r[2].top() > r[3].bottom());
+    CHECK(r[4].top() > r[2].bottom());              // the rest after it...
+    CHECK(r[0].top() >= r[4].top());                // ...and the last one last
+    CHECK((r[0].top() > r[4].top() || r[0].left() > r[4].left()));
+}
+
+TEST_CASE("Phone versions: standard-only buttons, where they differ, and a warning when they drift", "[phone][phoneVersion]")
+{
+    EditorController e(seedLayout());
+    // A button for standard screens only isn't missing from the phone.
+    e.setPageId(u"settle"_s);
+    const QString id = e.addZone(u"button"_s);
+    REQUIRE(!id.isEmpty());
+    CHECK(e.layout().validate().filter(u"settle-phone"_s).size() == 1);
+    e.selectOnly({id});
+    REQUIRE(e.setField(u"zone"_s, u"showWhen.screen"_s, u"standard"_s));
+    CHECK(e.layout().validate().isEmpty());
+
+    // The phone's own words for Split: listed, with the page's.
+    e.setPageId(u"settle-phone"_s);
+    const auto split = [&] {
+        for (const QVariant &v : e.phoneDifferences()) {
+            const QVariantMap m = v.toMap();
+            if (m.value(u"id"_s) == u"split"_s && m.value(u"path"_s) == u"label"_s)
+                return m;
+        }
+        return QVariantMap();
+    };
+    REQUIRE(!split().isEmpty());
+    CHECK(split().value(u"phone"_s) == u"Split Check"_s);
+    CHECK(split().value(u"standard"_s) == u"Split"_s);
+
+    // Changing Split's words on the standard page says the phone keeps its own.
+    e.setPageId(u"settle"_s);
+    e.selectOnly({u"split"_s});
+    REQUIRE(e.setField(u"zone"_s, u"label"_s, u"Split…"_s));
+    CHECK(e.notice().contains(u"Split Check"_s));
+
+    // Same as the page again: no longer different.
+    e.setPageId(u"settle-phone"_s);
+    e.followPage(u"split"_s, u"label"_s);
+    CHECK(split().isEmpty());
+    CHECK(e.layout().page(u"settle-phone"_s)->zone(u"split"_s)->label == u"Split…"_s);
+
+    // A copy made on the phone is only on the phone.
+    e.selectOnly({u"tender-cash"_s});
+    e.duplicateSelection();
+    CHECK(std::ranges::any_of(e.phoneDifferences(), [](const QVariant &v) { return v.toMap().value(u"phoneOnly"_s).toBool(); }));
+
+    // The "On phones" hints are for pages phones lay out by themselves.
+    const auto hasHints = [&] {
+        return std::ranges::any_of(e.zoneFields(u"button"_s), [](const QVariant &f) {
+            return f.toMap().value(u"path"_s).toString() == u"phone.wide"_s;
+        });
+    };
+    CHECK(!hasHints());
+    e.setPageId(u"settle"_s);
+    CHECK(hasHints());
 }
 
 TEST_CASE("Phone pages: versions, the phone frame, and back to standard", "[phone][ui]")

@@ -1,6 +1,7 @@
 #include "editorcontroller.hh"
 
 #include "app/pos_session.hh"
+#include "layout/json_path.hh"
 #include "layout/schema.hh"
 
 #include <QCoreApplication>
@@ -466,7 +467,11 @@ void EditorController::redo() { editor_.undoStack()->redo(); }
 
 QVariantList EditorController::zoneFields(const QString &kind) const
 {
-    return translated(vt::layout::schema::zoneFields(kind));
+    QVariantList fields = translated(vt::layout::schema::zoneFields(kind));
+    // How phones lay pages out by themselves: not for a phone version.
+    if (const Page *page = editor_.layout().page(pageId_); page && !page->variantOf.isEmpty())
+        fields.removeIf([](const QVariant &f) { return f.toMap().value(u"path"_s).toString().startsWith(u"phone."_s); });
+    return fields;
 }
 
 QVariantList EditorController::pageFields() const
@@ -562,8 +567,12 @@ QVariantMap EditorController::fieldInfo(const QString &target, const QString &pa
 bool EditorController::setField(const QString &target, const QString &path, const QVariant &value)
 {
     const QJsonValue v = toJson(value);
-    if (target == u"zone")
-        return !selection_.isEmpty() && editor_.setZoneField(pageId_, selection_, path, v);
+    if (target == u"zone") {
+        if (selection_.isEmpty() || !editor_.setZoneField(pageId_, selection_, path, v))
+            return false;
+        warnOwnOnPhone(path);
+        return true;
+    }
     if (target == u"theme")
         return editor_.setThemeField(path, v);
     if (target == u"page") {
@@ -726,6 +735,90 @@ QVariantMap EditorController::phoneShare() const
 void EditorController::setOwnOnPhone(const QString &path, bool own)
 {
     editor_.setOwnOnVariant(pageId_, selection_, path, own);
+}
+
+namespace {
+
+// A field a phone version can keep for itself, as the editor names it.
+QString ownName(const QString &path)
+{
+    if (path == u"label")
+        return EditorController::tr("words");
+    if (path == u"style.normal.fontSize")
+        return EditorController::tr("text size");
+    return path;
+}
+
+QString shownValue(const QJsonValue &v)
+{
+    if (v.isUndefined() || v.isNull())
+        return EditorController::tr("(the page's look)");
+    return v.isString() ? v.toString().simplified() : v.toVariant().toString();
+}
+
+} // namespace
+
+QVariantList EditorController::phoneDifferences() const
+{
+    QVariantList out;
+    const Layout &l = editor_.layout();
+    const Page *page = l.page(pageId_);
+    if (!page || page->variantOf.isEmpty())
+        return out;
+    for (const Zone &z : page->zones) {
+        const QString label = z.label.isEmpty() ? z.id : z.label.simplified();
+        if (!z.shared) {
+            if (z.kind != u"comment" && z.kind != u"decor")
+                out.append(QVariantMap{{u"id"_s, z.id}, {u"label"_s, label}, {u"phoneOnly"_s, true},
+                                       {u"what"_s, kindName(z.kind)}});
+            continue;
+        }
+        const Layout::PlacedZone from = l.sourceOf(*page, z.id);
+        if (!from.zone)
+            continue;
+        const QJsonObject theirs = from.zone->toJson();
+        const QJsonObject mine = z.toJson();
+        for (const QString &path : z.own) {
+            const QJsonValue a = vt::layout::jsonGet(theirs, path);
+            const QJsonValue b = vt::layout::jsonGet(mine, path);
+            out.append(QVariantMap{{u"id"_s, z.id}, {u"label"_s, label}, {u"phoneOnly"_s, false},
+                                   {u"path"_s, path}, {u"what"_s, ownName(path)},
+                                   {u"standard"_s, shownValue(a)}, {u"phone"_s, shownValue(b)},
+                                   {u"same"_s, a == b}});
+        }
+    }
+    return out;
+}
+
+void EditorController::followPage(const QString &zoneId, const QString &path)
+{
+    editor_.setOwnOnVariant(pageId_, {zoneId}, path, false);
+}
+
+// Changed on the standard page, but phones keep their own: say so, so the
+// two don't drift apart unnoticed.
+void EditorController::warnOwnOnPhone(const QString &path)
+{
+    const Layout &l = editor_.layout();
+    const Page *page = l.page(pageId_);
+    if (!page || !page->variantOf.isEmpty())
+        return;
+    const Page *phone = l.variantFor(pageId_, u"phone"_s);
+    if (!phone)
+        return;
+    for (const QString &id : selection_) {
+        const Zone *z = phone->zone(id);
+        if (!z || !z->shared)
+            continue;
+        for (const QString &own : z->own) {
+            if (own == path || own.startsWith(path + u'.') || path.startsWith(own + u'.')) {
+                setNotice(tr("Phones keep their own %1 for “%2”: still “%3” there. Change it on Phone too, or make it the same there (Phone version ▾).")
+                              .arg(ownName(own), z->label.isEmpty() ? z->id : z->label.simplified(),
+                                   shownValue(vt::layout::jsonGet(z->toJson(), own))));
+                return;
+            }
+        }
+    }
 }
 
 // --- files ---------------------------------------------------------------------------

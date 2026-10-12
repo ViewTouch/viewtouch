@@ -298,7 +298,8 @@ QList<Layout::NotShown> Layout::notOnVariant(const QString &variantId) const
         return out;
     for (const PlacedZone &pz : effectiveZones(v->variantOf)) {
         const Zone &z = *pz.zone;
-        if ((pz.inherited && !v->templateId.isEmpty()) || z.kind == u"comment" || z.kind == u"decor")
+        if ((pz.inherited && !v->templateId.isEmpty()) || z.kind == u"comment" || z.kind == u"decor"
+            || z.extra.value(u"showWhen").toObject().value(u"screen").toString() == u"standard")
             continue;
         if (v->zone(z.id))
             continue;

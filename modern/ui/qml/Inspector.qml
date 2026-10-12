@@ -97,6 +97,35 @@ Rectangle {
                     }
                 }
 
+                // Show on: both kinds of screen, or one ("Show only when" -> Screen).
+                RowLayout {
+                    id: showOn
+                    objectName: "showOn"
+                    readonly property var info: inspector.editor.revision >= 0 && inspector.mode === "zone"
+                                                ? inspector.editor.fieldInfo("zone", "showWhen.screen") : ({})
+                    readonly property string value: info.mixed ? "mixed" : (info.value ?? "")
+                    visible: inspector.mode === "zone" && inspector.editor.screens.canPhone === true
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 12
+                    Layout.rightMargin: 12
+                    spacing: 0
+                    Label { text: qsTr("Show on"); color: EditorStyle.muted; font.pixelSize: 12; Layout.rightMargin: 8 }
+                    Repeater {
+                        model: [{ v: "", t: qsTr("Both") }, { v: "standard", t: qsTr("Standard") }, { v: "phone", t: qsTr("Phone") }]
+                        delegate: Button {
+                            required property var modelData
+                            objectName: "showOn-" + (modelData.v || "both")
+                            Layout.fillWidth: true
+                            implicitHeight: 32
+                            text: modelData.t
+                            flat: showOn.value !== modelData.v
+                            highlighted: showOn.value === modelData.v
+                            onClicked: modelData.v === "" ? inspector.editor.clearField("zone", "showWhen.screen")
+                                                          : inspector.editor.setField("zone", "showWhen.screen", modelData.v)
+                        }
+                    }
+                }
+
                 // On a phone version: the page's own buttons, shared.
                 Rectangle {
                     id: shareBox

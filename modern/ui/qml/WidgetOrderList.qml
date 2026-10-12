@@ -655,7 +655,7 @@ Item {
         }
         // 2 × Cheeseburger: move one of them, or all.
         property bool moveAll: false
-        readonly property int moveCount: (w.pos.lines.find(l => l.selected)?.quantity) ?? 1
+        readonly property int moveCount: (w.pos?.lines.find(l => l.selected)?.quantity) ?? 1
         onModeChanged: moveAll = false
         function moveTo(checkId) {   // 0: a new check
             const all = moveAll

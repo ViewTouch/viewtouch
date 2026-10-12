@@ -5513,8 +5513,26 @@ TEST_CASE("UI editor: Standard | Phone edits either screen's version; buttons st
     s.shot("phone-version-edit");
     tap(u"ownLabel"_s);
     CHECK(e->phoneShare()[u"own"_s].toStringList() == QStringList{u"label"_s});
+
+    // Where the phone differs from the page: Split's own words; the same again.
+    tap(u"phoneMenuButton"_s);
+    s.shot("phone-version-differences");
+    tap(u"followPage-split"_s);
+    CHECK(e->layout().page(u"settle-phone"_s)->zone(u"split"_s)->label == u"Split"_s);
+    QQuickItem *screens = Screen::findBy(root, "objectName", u"phoneScreens"_s);
+    REQUIRE(screens);
+    QMetaObject::invokeMethod(screens, "closeTray");
+    QTest::qWait(150);
     tap(u"screenStandard"_s);
     CHECK(e->pageId() == u"settle"_s);
+
+    // Show on: standard screens only.
+    e->selectOnly({u"coupon"_s});
+    QTest::qWait(150);
+    tap(u"showOn-standard"_s);
+    CHECK(e->fieldInfo(u"zone"_s, u"showWhen.screen"_s)[u"value"_s].toString() == u"standard"_s);
+    tap(u"showOn-both"_s);
+    CHECK(e->fieldInfo(u"zone"_s, u"showWhen.screen"_s)[u"value"_s].toString().isEmpty());
 
     // A page without one: made from what phones show, then back to automatic.
     REQUIRE(s.c.showPage(u"drawer"_s));

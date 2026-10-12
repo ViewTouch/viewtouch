@@ -7,7 +7,8 @@ import QtQuick.Layouts
 // the page's (same words, colors and actions; only where they sit is the
 // phone's). A page without one is laid out on phones by itself; "Make phone
 // version" starts one from that. On the phone version: the page's buttons not
-// on it yet (to put there, or leave off), and going back to automatic.
+// on it yet (to put there, or leave off), where it differs from the page,
+// and going back to automatic.
 RowLayout {
     id: ps
 
@@ -18,8 +19,12 @@ RowLayout {
     readonly property bool hasPhone: (screens.phone ?? "") !== ""
     readonly property var missing: editor.revision >= 0 && isPhone ? editor.notOnPhone() : []
     readonly property int newThere: missing.filter(m => !m.hidden).length
+    readonly property var differences: editor.revision >= 0 && isPhone ? editor.phoneDifferences() : []
 
+    objectName: "phoneScreens"
     visible: screens.canPhone === true
+
+    function closeTray() { tray.close() }
     spacing: 0
 
     component Segment: Button {
@@ -81,53 +86,98 @@ RowLayout {
         id: tray
         objectName: "phoneTray"
         y: ps.height
-        width: 420
+        width: 520
+        height: Math.min(trayCol.implicitHeight + 24, (Overlay.overlay ? Overlay.overlay.height : 800) - 120)
         padding: 12
-        ColumnLayout {
-            width: parent.width
-            spacing: 8
-            Label {
-                Layout.fillWidth: true
-                wrapMode: Text.WordWrap
-                color: EditorStyle.muted
-                text: ps.missing.length === 0
-                      ? qsTr("Every button of the page is on the phone.")
-                      : qsTr("On the page, not on the phone:")
-            }
-            Repeater {
-                model: ps.missing
-                delegate: RowLayout {
-                    required property var modelData
+        ScrollView {
+            anchors.fill: parent
+            contentWidth: availableWidth
+            clip: true
+            ColumnLayout {
+                id: trayCol
+                width: parent.width
+                spacing: 8
+                Label {
                     Layout.fillWidth: true
-                    Label {
+                    wrapMode: Text.WordWrap
+                    color: EditorStyle.muted
+                    text: ps.missing.length === 0
+                          ? qsTr("Every button of the page is on the phone.")
+                          : qsTr("On the page, not on the phone:")
+                }
+                Repeater {
+                    model: ps.missing
+                    delegate: RowLayout {
+                        required property var modelData
                         Layout.fillWidth: true
-                        elide: Text.ElideRight
-                        text: (modelData.label !== "" ? modelData.label : modelData.id) + "  ·  " + modelData.kind
-                    }
-                    Label {
-                        visible: !modelData.hidden
-                        text: qsTr("new")
-                        color: EditorStyle.warning
-                    }
-                    Button {
-                        objectName: "placeOnPhone-" + modelData.id
-                        text: qsTr("Put on phone")
-                        onClicked: ps.editor.placeOnPhone([modelData.id])
-                    }
-                    Button {
-                        objectName: "leaveOff-" + modelData.id
-                        visible: !modelData.hidden
-                        text: qsTr("Leave off")
-                        onClicked: ps.editor.hideOnPhone([modelData.id])
+                        Label {
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
+                            text: (modelData.label !== "" ? modelData.label : modelData.id) + "  ·  " + modelData.kind
+                        }
+                        Label {
+                            visible: !modelData.hidden
+                            text: qsTr("new")
+                            color: EditorStyle.warning
+                        }
+                        Button {
+                            objectName: "placeOnPhone-" + modelData.id
+                            text: qsTr("Put on phone")
+                            onClicked: ps.editor.placeOnPhone([modelData.id])
+                        }
+                        Button {
+                            objectName: "leaveOff-" + modelData.id
+                            visible: !modelData.hidden
+                            text: qsTr("Leave off")
+                            onClicked: ps.editor.hideOnPhone([modelData.id])
+                        }
                     }
                 }
-            }
-            Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: EditorStyle.border }
-            Button {
-                objectName: "removePhoneVersion"
-                Layout.alignment: Qt.AlignRight
-                text: qsTr("Back to automatic…")
-                onClicked: confirmRemove.open()
+                // Where the phone has drifted from the page: its own words and
+                // sizes, and buttons only it has.
+                Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: EditorStyle.border; visible: ps.differences.length > 0 }
+                Label {
+                    visible: ps.differences.length > 0
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    color: EditorStyle.muted
+                    text: qsTr("Different on the phone:")
+                }
+                Repeater {
+                    model: ps.differences
+                    delegate: RowLayout {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        Label {
+                            Layout.fillWidth: true
+                            wrapMode: Text.WordWrap
+                            text: modelData.phoneOnly
+                                  ? qsTr("%1  ·  only on the phone (%2)").arg(modelData.label).arg(modelData.what)
+                                  : modelData.same
+                                    ? qsTr("%1  ·  own %2, the same as the page's for now").arg(modelData.label).arg(modelData.what)
+                                    : qsTr("%1  ·  own %2: “%3” here, “%4” on the page").arg(modelData.label).arg(modelData.what)
+                                          .arg(modelData.phone).arg(modelData.standard)
+                        }
+                        Button {
+                            objectName: "showDifference-" + modelData.id
+                            text: qsTr("Show")
+                            onClicked: ps.editor.selectOnly([modelData.id])
+                        }
+                        Button {
+                            objectName: "followPage-" + modelData.id
+                            visible: !modelData.phoneOnly
+                            text: qsTr("Same as page")
+                            onClicked: ps.editor.followPage(modelData.id, modelData.path)
+                        }
+                    }
+                }
+                Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: EditorStyle.border }
+                Button {
+                    objectName: "removePhoneVersion"
+                    Layout.alignment: Qt.AlignRight
+                    text: qsTr("Back to automatic…")
+                    onClicked: confirmRemove.open()
+                }
             }
         }
     }

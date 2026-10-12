@@ -143,6 +143,12 @@ public:
     // page's), own: [fields every one of them keeps for phones]}.
     Q_INVOKABLE QVariantMap phoneShare() const;
     Q_INVOKABLE void setOwnOnPhone(const QString &path, bool own);
+    // On a phone version, where it differs from the page: a button's own
+    // fields, [{id, label, path, what, standard, phone, same}], and the
+    // buttons only it has, [{id, label, what, phoneOnly: true}].
+    Q_INVOKABLE QVariantList phoneDifferences() const;
+    // A button's own field on the phone follows the page's again.
+    Q_INVOKABLE void followPage(const QString &zoneId, const QString &path);
 
     // --- files ---
     Q_INVOKABLE bool exportPage(const QUrl &file);
@@ -181,6 +187,7 @@ private:
     void setSelection(QStringList ids);
     void bump();
     bool fail(const QString &why);
+    void warnOwnOnPhone(const QString &path);
 
     vt::app::LayoutEditor editor_;
     QString pageId_;

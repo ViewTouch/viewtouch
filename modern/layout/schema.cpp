@@ -326,6 +326,13 @@ QJsonArray zoneFields(const QString &kind)
     out.append(with(field(u"showWhen.screen"_s, u"Screen"_s, u"enum"_s, when), u"options"_s,
                     options({{"", "Any"}, {"standard", "Standard screens"}, {"phone", "Phones"}})));
 
+    // How phones lay it out when its page has no phone version of its own.
+    const QString phones = u"On phones"_s;
+    out.append(with(field(u"phone.wide"_s, u"A row of its own"_s, u"bool"_s, phones), u"hint"_s,
+                    u"Phones lay pages without a phone version out by themselves, in rows of big buttons: this one takes the whole width."_s));
+    out.append(with(field(u"phone.place"_s, u"Where"_s, u"enum"_s, phones), u"options"_s,
+                    options({{"", "Where it is on the page"}, {"first", "First"}, {"last", "Last"}})));
+
     const QString geo = u"Position and size"_s;
     out.append(intField(u"rect.x"_s, u"X"_s, geo, 0, 7680));
     out.append(intField(u"rect.y"_s, u"Y"_s, geo, 0, 4320));

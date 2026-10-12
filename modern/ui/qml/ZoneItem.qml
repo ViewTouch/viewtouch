@@ -157,6 +157,11 @@ Item {
         return text.replace(/\{([a-zA-Z.]+)\}/g, (m, k) => k in values ? String(values[k]) : m)
     }
 
+    // The screen it is on: the one being edited (Standard | Phone) in the editor.
+    readonly property string shownScreen: !controller ? ""
+        : controller.editing && controller.editor
+          ? (controller.editor.revision >= 0 && controller.editor.screens.isPhone ? "phone" : "standard")
+          : controller.formFactor
     // Its "Show only when" rules hold now.
     readonly property bool ruleShows: {
         const r = showWhen
@@ -171,7 +176,7 @@ Item {
         if (r.check === "none" && open) return false
         if (r.checkType && (!open || p.check.type !== r.checkType)) return false
         if (r.mealPeriod && (!controller || controller.mealPeriod !== r.mealPeriod)) return false
-        if (r.screen && (!controller || controller.formFactor !== r.screen)) return false
+        if (r.screen && (!controller || shownScreen !== r.screen)) return false
         return true
     }
     // Widgets with a working implementation (Widget<Kind>.qml); the rest
