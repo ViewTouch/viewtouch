@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(ViewTouchModern VERSION 0.9.0 LANGUAGES CXX)
+# The version: MAJOR.MINOR here, changed by hand for a release; the third
+# number is the build number (commits so far), added by every build:
+# 0.9.1283, 0.9.1284... (cmake/BuildInfo.cmake).
+project(ViewTouchModern VERSION 0.9 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -93,10 +96,12 @@ if(Qt6_FOUND)
     # This build's number, commit and version (net/build_info.cpp), fresh at every build.
     set(VTM_GENERATED ${CMAKE_BINARY_DIR}/generated)
     add_custom_target(vtm_build_info ALL
-        BYPRODUCTS ${VTM_GENERATED}/vtm_build_number.hh
+        BYPRODUCTS ${VTM_GENERATED}/vtm_build_number.hh ${VTM_GENERATED}/vtm_history.inc
         COMMAND ${CMAKE_COMMAND} -DSRC=${CMAKE_CURRENT_SOURCE_DIR} -DOUT=${VTM_GENERATED}/vtm_build_number.hh
-                -DVERSION=${PROJECT_VERSION} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/BuildInfo.cmake
-        COMMENT "Build number")
+                -DHISTORY=${VTM_GENERATED}/vtm_history.inc -DKEEP=60
+                -DMAJOR=${PROJECT_VERSION_MAJOR} -DMINOR=${PROJECT_VERSION_MINOR}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/BuildInfo.cmake
+        COMMENT "Build number and history")
     add_library(vtm_net STATIC
         net/build_info.hh net/build_info.cpp
         net/protocol.hh net/protocol.cpp
@@ -214,12 +219,11 @@ if(Qt6_FOUND)
 
     qt_add_executable(vtmodern main.cpp)
     target_link_libraries(vtmodern PRIVATE vtm_ui vtm_uiplugin)
-    target_compile_definitions(vtmodern PRIVATE VTM_VERSION="${PROJECT_VERSION}")
 
     if(ANDROID)
         # The tablet app: a terminal of a store (see main.cpp, Q_OS_ANDROID).
         # Each build must number higher than the last for Android to update:
-        # the version (0.7.0 -> 700) times 100000 plus the build number (CI run).
+        # the version (0.9 -> 900) times 100000 plus the build number (CI run).
         # The build number (commits so far), unless given.
         execute_process(COMMAND git -c safe.directory=* rev-list --count HEAD WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                         OUTPUT_VARIABLE VTM_COMMITS OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
@@ -228,12 +232,12 @@ if(Qt6_FOUND)
         endif()
         set(VTM_ANDROID_BUILD ${VTM_COMMITS} CACHE STRING "Build number, part of the Android version code")
         math(EXPR VTM_VERSION_CODE
-             "(${PROJECT_VERSION_MAJOR} * 10000 + ${PROJECT_VERSION_MINOR} * 100 + ${PROJECT_VERSION_PATCH}) * 100000 + ${VTM_ANDROID_BUILD}")
+             "(${PROJECT_VERSION_MAJOR} * 10000 + ${PROJECT_VERSION_MINOR} * 100) * 100000 + ${VTM_ANDROID_BUILD}")
         set_target_properties(vtmodern PROPERTIES
             QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
             QT_ANDROID_PACKAGE_NAME org.viewtouch.pos
             QT_ANDROID_APP_NAME "ViewTouch"
-            QT_ANDROID_VERSION_NAME ${PROJECT_VERSION}
+            QT_ANDROID_VERSION_NAME ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${VTM_ANDROID_BUILD}
             QT_ANDROID_VERSION_CODE ${VTM_VERSION_CODE}
             QT_ANDROID_MIN_SDK_VERSION 28
             QT_ANDROID_TARGET_SDK_VERSION 35)

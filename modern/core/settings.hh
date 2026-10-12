@@ -239,6 +239,16 @@ struct PosSettings {
         bool operator==(const KioskLook &) const = default;
     } kioskLook;
     int serverTerm = 0;
+    // The builds this store has run, oldest first (the last 50): each when it
+    // first started here. Store Settings -> About lists them.
+    struct BuildRun {
+        std::string version;   // 0.9.1283
+        int number = 0;
+        std::string commit;
+        std::int64_t at = 0;
+        bool operator==(const BuildRun &) const = default;
+    };
+    std::vector<BuildRun> builds;
     // Log a screen out after this many idle minutes (0: never).
     int autoLogoutMinutes = 0;
     // Dim a screen nobody has touched for this long (0: never). Kitchen,

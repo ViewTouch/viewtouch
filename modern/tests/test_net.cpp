@@ -1,5 +1,7 @@
+#include <limits>
 #include <catch2/catch_test_macros.hpp>
 
+#include "app/pos_json.hh"
 #include "layout_fixture.hh"
 #include "layoutcontroller.hh"
 #include "net/build_info.hh"
@@ -539,4 +541,37 @@ TEST_CASE("Updates: a screen behind the store is told, and a manager there gets 
     CHECK(QFileInfo(got).fileName() == mine);
     CHECK(got.readAll() == payload);
     got.remove();
+}
+
+TEST_CASE("Versions: MAJOR.MINOR and the build number, by every build; the recent builds built in", "[net][version]")
+{
+    const net::AppBuild me = net::appBuild();
+    // 0.9.1283: the build number is the version's last part.
+    CHECK(me.version.endsWith(u'.' + QString::number(me.number)));
+    CHECK(me.version.count(u'.') == 2);
+    CHECK(net::buildText(u"0.9.1283"_s, 1283, u"688654a"_s) == u"0.9.1283 (688654a)"_s);
+    CHECK(net::buildText(u"0.9.1283"_s, 1283, u"688654a"_s, true) == u"0.9.1283 (688654a, modified)"_s);
+    CHECK(net::buildText(u"0.7.0"_s, 812, u"a13bde2"_s) == u"0.7.0, build 812 (a13bde2)"_s);   // an older screen
+
+    // The recent builds, newest first, each with its version and what changed.
+    const QVariantList history = net::appHistory();
+    REQUIRE(history.size() >= 2);
+    int last = std::numeric_limits<int>::max();
+    for (const QVariant &v : history) {
+        const QVariantMap b = v.toMap();
+        CHECK(b[u"number"_s].toInt() < last);
+        last = b[u"number"_s].toInt();
+        CHECK(b[u"version"_s].toString().endsWith(u'.' + b[u"number"_s].toString()));
+        CHECK_FALSE(b[u"change"_s].toString().isEmpty());
+        CHECK(b[u"at"_s].toLongLong() > 0);
+    }
+    CHECK(history.first().toMap()[u"number"_s].toInt() <= me.number);
+}
+
+TEST_CASE("Versions: the builds a store has run are kept with its settings", "[net][version]")
+{
+    core::PosSettings s;
+    s.builds = {{"0.9.1283", 1283, "688654a", 1'760'000'000'000}, {"0.9.1284", 1284, "abc1234", 1'760'100'000'000}};
+    const core::PosSettings back = app::settingsFromJson(app::toJson(s));
+    CHECK(back.builds == s.builds);
 }

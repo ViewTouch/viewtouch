@@ -878,6 +878,13 @@ QJsonObject toJson(const PosSettings &s)
                                      {u"font"_s, qs(s.kioskLook.font)}, {u"welcome"_s, qs(s.kioskLook.welcome)},
                                      {u"sizePercent"_s, s.kioskLook.sizePercent}, {u"askWhere"_s, s.kioskLook.askWhere},
                                      {u"askName"_s, s.kioskLook.askName}, {u"easyReach"_s, s.kioskLook.easyReach}}}, {u"serverTerm"_s, s.serverTerm},
+        {u"builds"_s, [&] {
+             QJsonArray a;
+             for (const PosSettings::BuildRun &b : s.builds)
+                 a.append(QJsonObject{{u"version"_s, qs(b.version)}, {u"number"_s, b.number},
+                                      {u"commit"_s, qs(b.commit)}, {u"at"_s, qint64(b.at)}});
+             return a;
+         }()},
         {u"display"_s, [&] {
              QJsonArray slides;
              for (const std::string &sl : s.displaySlides) slides.append(qs(sl));
@@ -1100,6 +1107,11 @@ PosSettings settingsFromJson(const QJsonObject &o)
         l.easyReach = k.value(u"easyReach").toBool(true);
     }
     s.serverTerm = o.value(u"serverTerm").toInt(0);
+    for (const QJsonValue &v : o.value(u"builds").toArray()) {
+        const QJsonObject b = v.toObject();
+        s.builds.push_back({ss(b.value(u"version").toString()), b.value(u"number").toInt(),
+                            ss(b.value(u"commit").toString()), b.value(u"at").toInteger()});
+    }
     s.tableLongMinutes = std::clamp(o.value(u"tableLongMinutes").toInt(90), 10, 600);
     const QJsonObject display = o.value(u"display").toObject();
     s.displayLogo = ss(display.value(u"logo").toString());

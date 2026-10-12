@@ -507,7 +507,7 @@ ColumnLayout {
         Label {
             objectName: "infoText"
             text: fe.value == null ? "" : String(fe.value)
-            wrapMode: Text.WrapAnywhere
+            wrapMode: Text.Wrap   // between words; a long folder path anywhere
             textFormat: Text.PlainText
             font.pixelSize: 14
         }

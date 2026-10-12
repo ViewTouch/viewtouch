@@ -16,6 +16,13 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md DESTINATION ${CMAKE_INSTALL_
 install(FILES ${VTM_LEGACY_ROOT}/LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/vtmodern)
 
 set(CPACK_PACKAGE_NAME vtmodern)
+# The version with this build's number (0.9.1283), as the program shows it.
+execute_process(COMMAND git -c safe.directory=* rev-list --count HEAD WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                OUTPUT_VARIABLE VTM_PKG_BUILD OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+if(NOT VTM_PKG_BUILD MATCHES "^[0-9]+$")
+    set(VTM_PKG_BUILD 0)
+endif()
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${VTM_PKG_BUILD})
 set(CPACK_PACKAGE_VENDOR "ViewTouch")
 set(CPACK_PACKAGE_CONTACT "ViewTouch <https://github.com/No0ne558/viewtouchFork>")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Restaurant point of sale with pages you design yourself")

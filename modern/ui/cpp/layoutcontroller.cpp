@@ -785,7 +785,7 @@ QVariantList LayoutController::tables() const
 QString LayoutController::screenBuild() const
 {
     const vt::net::AppBuild me = vt::net::appBuild();
-    return vt::net::buildText(me.version, me.number, me.commit) + u", "_s + me.platform;
+    return vt::net::buildText(me.version, me.number, me.commit, me.modified) + u", "_s + me.platform;
 }
 
 QVariantList LayoutController::floorPlans() const

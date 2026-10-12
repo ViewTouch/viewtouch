@@ -480,7 +480,7 @@ QVariantMap RemoteSession::updateInfo() const
 {
     const AppBuild me = appBuild();
     QVariantMap out{{u"build"_s, me.number}, {u"version"_s, me.version}, {u"platform"_s, me.platform},
-                    {u"text"_s, buildText(me.version, me.number, me.commit)},
+                    {u"text"_s, buildText(me.version, me.number, me.commit, me.modified)},
                     {u"storeBuild"_s, storeBuild_}, {u"storeText"_s, buildText(storeVersion_, storeBuild_)},
                     // Build 0: made without git (or a store older than build numbers): not compared.
                     {u"behind"_s, me.number > 0 && storeBuild_ > me.number},

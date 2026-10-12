@@ -830,6 +830,18 @@ int runStore(const Args &cli, const Options &o)
         shared->saveSettings();
         qWarning().noquote() << "Serving the store as the main server now (taken over" << by + u')';
     }
+    // The builds this store has run: this one, the first time it starts here.
+    {
+        const vt::net::AppBuild me = vt::net::appBuild();
+        auto &runs = shared->settings.builds;
+        if (runs.empty() || runs.back().number != me.number || runs.back().commit != me.commit.toStdString()) {
+            runs.push_back({me.version.toStdString(), me.number, me.commit.toStdString(),
+                            QDateTime::currentMSecsSinceEpoch()});
+            if (runs.size() > 50)
+                runs.erase(runs.begin(), runs.end() - 50);
+            shared->saveSettings();
+        }
+    }
     // Languages: each screen its user's; the customer display the store's.
     vt::i18n::install(QDir(dataDirOf(cli, o)).filePath(u"translations"_s));
     vt::i18n::setGuestLanguage(QString::fromStdString(shared->settings.language));
@@ -1171,11 +1183,12 @@ int runStore(const Args &cli, const Options &o)
         return QVariantMap{{u"role"_s, server ? u"main"_s : u"single"_s}, {u"term"_s, shared->settings.serverTerm},
                            {u"machine"_s, QSysInfo::machineHostName()}, {u"terminals"_s, terminals},
                            {u"standby"_s, standby}, {u"printers"_s, printers},
-                           {u"build"_s, vt::net::buildText(me.version, me.number, me.commit)}, {u"buildNumber"_s, me.number},
+                           {u"build"_s, vt::net::buildText(me.version, me.number, me.commit, me.modified)}, {u"buildNumber"_s, me.number},
                            {u"updates"_s, updates}, {u"updatesDir"_s, server ? server->updatesDir() : QString()},
                            {u"platform"_s, me.platform}, {u"qt"_s, QString::fromLatin1(qVersion())},
                            {u"database"_s, aboutDb}, {u"databaseBytes"_s, QFileInfo(aboutDb).size()},
                            {u"backups"_s, aboutBackups}, {u"startedAt"_s, startedAt},
+                           {u"history"_s, vt::net::appHistory()},
                            {u"lastBackup"_s, [&] {
                                 const QFileInfoList files = QDir(aboutBackups).entryInfoList(QDir::Files, QDir::Time);
                                 return files.isEmpty() ? qint64(0) : files.first().lastModified().toMSecsSinceEpoch();
@@ -1606,7 +1619,7 @@ int main(int argc, char *argv[])
 {
     prepareEnvironment(argc, argv);
     QGuiApplication app(argc, argv);
-    QGuiApplication::setApplicationVersion(QStringLiteral(VTM_VERSION));
+    QGuiApplication::setApplicationVersion(vt::net::appBuild().version);   // 0.9.1283
     QGuiApplication::setApplicationName(u"ViewTouch"_s);
     QGuiApplication::setOrganizationName(u"ViewTouch"_s);
     QQuickStyle::setStyle(u"Fusion"_s);   // editor chrome; POS pages draw themselves

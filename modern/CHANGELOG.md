@@ -1,0 +1,231 @@
+# Changelog
+
+Every build of ViewTouch Modern, newest first. The version is MAJOR.MINOR and the build
+number (the commits so far): 0.9.1283. Written by `tools/changelog.py`.
+
+## 0.9
+
+- **0.9.1283** (2026-10-12, `688654a`): version 0.9.0; Store Settings -> About; the manual for 0.9
+
+## 0.7
+
+- **0.7.1282** (2026-10-12, `4d8f698`): phones show the floor plans: tabs, tables where they stand, touched to open; Move Check on the plan
+- **0.7.1281** (2026-10-12, `f14bf12`): the seating screen shows the floor plan, on phones and standard screens
+- **0.7.1280** (2026-10-12, `90dc547`): floor plans: Main, Dining Area, Bar and Patio with walls, doors and chairs; anything on a page can be turned
+- **0.7.1279** (2026-10-11, `1b9b557`): start pages are chosen from the floor plans
+- **0.7.1278** (2026-10-11, `4567c12`): the tip pool is one table in Store Settings: a row a job, its share an hour
+- **0.7.1277** (2026-10-11, `e52bb9c`): manager settings by touch: - and + numbers, switches, lists as rows; fix a manager page opening empty
+- **0.7.1276** (2026-10-11, `f74ee06`): Store Settings in sections, with a search; dependent settings show when they matter; changes marked and kept
+- **0.7.1275** (2026-10-11, `303c4f2`): Forecast report: a coming day from past weeks, by hour and item; the prep it needs and what to order from each vendor
+- **0.7.1274** (2026-10-10, `22c24b6`): bar tabs hold the guest's card: set aside on open, charged with the tip at close (raised if need be), let go if paid another way
+- **0.7.1273** (2026-10-10, `ea8f1a5`): barcode scanners: items by their barcodes, coupons and gift cards, from any keyboard scanner
+- **0.7.1272** (2026-10-10, `1f1d7fc`): coupon codes: typed or scanned on the Pay screen; dates, a minimum, an amount off, a use limit
+- **0.7.1271** (2026-10-10, `7778309`): receipts, kitchen tickets and printed reports in the store's language
+- **0.7.1270** (2026-10-10, `c0a8502`): everything checked in Spanish
+- **0.7.1269** (2026-10-10, `bb9d2d3`): Menu Builder's Import/Export/Starter/Print keys fit in Spanish
+- **0.7.1268** (2026-10-10, `6bba437`): a fuller quick card on the order screen
+- **0.7.1267** (2026-10-10, `327d717`): a printed menu (PDF) from the Menu Builder
+- **0.7.1266** (2026-10-10, `aeae6cc`): Menu Mix report (menu engineering)
+- **0.7.1265** (2026-10-10, `43733c2`): split checks one at a time, shared items, split evenly
+- **0.7.1264** (2026-10-10, `70a194a`): choices priced by size (extra cheese costs more on a Large)
+- **0.7.1263** (2026-10-10, `bf57946`): price changes set for later
+- **0.7.1262** (2026-10-10, `110c4de`): a tip pool by job, with per-person overrides; cash tips told at clock out
+- **0.7.1261** (2026-10-10, `6ece8b5`): ready-made pictures for items
+- **0.7.1260** (2026-10-10, `b6acc43`): Spanish Small, Medium, Large in the singular (they name an item's sizes too)
+- **0.7.1259** (2026-10-10, `fbcad47`): color themes for every category; an item's sizes in one step
+- **0.7.1258** (2026-10-10, `fcd54c4`): sections, spaces and new rows on the order screen; shades; a live preview
+- **0.7.1257** (2026-10-09, `634d9ab`): Menu Builder: Like… copies another item's settings onto the card
+- **0.7.1256** (2026-10-09, `9ddbd57`): Menu Builder: several items at once; drag an item onto a category
+- **0.7.1255** (2026-10-09, `a445b11`): change or add an item right on the order screen
+- **0.7.1254** (2026-10-09, `e3e8201`): each category's buttons: small, medium, large or fit; photos; prices
+- **0.7.1253** (2026-10-09, `95fce8f`): thirty colors and a touch color mixer, the same everywhere
+- **0.7.1252** (2026-10-09, `6bf4a18`): Menu Builder: find an item, more on its card, change many prices at once
+- **0.7.1251** (2026-10-09, `783d547`): add cmake/BuildInfo.cmake (ignored by the repository's *.cmake rule)
+- **0.7.1250** (2026-10-09, `d9438c6`): take cards when the internet is down (Stripe readers running ViewTouch)
+- **0.7.1249** (2026-10-09, `a1c0e3a`): build numbers, and updating screens from the store's computer
+- **0.7.1248** (2026-10-09, `a13bde2`): allergens; fix: screen errors the tests never showed, a dangling pointer
+- **0.7.1247** (2026-10-09, `85ffef5`): handhelds out of Wi-Fi range: noticed in seconds, their checks freed
+- **0.7.1246** (2026-10-09, `43d6094`): undo in the Menu Builder; the demo store at any hour
+- **0.7.1245** (2026-10-09, `b65b61d`): menu photos from a spreadsheet, and with a menu to another store
+- **0.7.1244** (2026-10-08, `3312839`): nothing left behind by menu changes; reports and settings for managers only
+- **0.7.1243** (2026-10-08, `91b87d0`): the page editor in Spanish
+- **0.7.1242** (2026-10-08, `ad47fb6`): page editor by touch: a tap doesn't move a zone; handles a finger can grab
+- **0.7.1241** (2026-10-08, `79a539e`): remember which printers report their status, across restarts
+- **0.7.1240** (2026-10-08, `29c1434`): a printer that stops responding: check the cover and paper first
+- **0.7.1239** (2026-10-08, `df36661`): a printer that goes silent after paper low: probably out of paper
+- **0.7.1238** (2026-10-08, `c825bf1`): a printer that stops answering after paper low: probably out of paper
+- **0.7.1237** (2026-10-08, `d12c1f6`): warn when a printer stops responding but still takes connections
+- **0.7.1236** (2026-10-08, `5e6c2ce`): copy a menu to another store; 86'd items come back the next day
+- **0.7.1235** (2026-10-08, `02e0805`): Menu Builder asks before dropping changes; a new choice group comes back to its item
+- **0.7.1234** (2026-10-08, `61487ae`): start orders on a category per screen; buttons on hand-built pages; ready-to-go check
+- **0.7.1233** (2026-10-08, `f75a9dd`): Menu Builder: import a menu from a spreadsheet; starter menus
+- **0.7.1232** (2026-10-08, `9863517`): Menu Builder: hold and drag items and categories into place
+- **0.7.1231** (2026-10-08, `d33d64b`): older stores switch to self-filling screens; buttons fit; Favorites
+- **0.7.1230** (2026-10-08, `c3e8be9`): choice groups edited row by row; add several items at once; duplicate
+- **0.7.1229** (2026-10-08, `48e4eb3`): the Menu Builder: categories, items and their cards on one screen
+- **0.7.1228** (2026-10-08, `2ff2075`): the menu screens fill themselves from the menu's categories
+- **0.7.1227** (2026-10-08, `611e641`): the Choose page keeps its scroll; No then Onion just works
+- **0.7.1226** (2026-10-08, `37ac7e7`): kiosk guests have it their way: no onion, light mayo, dressing on the side
+- **0.7.1225** (2026-10-08, `5375207`): a live network printer's status
+- **0.7.1224** (2026-10-08, `c27d564`): every screen says when a printer is out of paper, open or not answering
+- **0.7.1223** (2026-10-08, `bf7624d`): Cancel on Choose never takes an ordered item off; whose checks you see and open
+- **0.7.1222** (2026-10-07, `1b368c1`): the time prints as 11:23 PM, not 11:23?PM
+- **0.7.1221** (2026-10-07, `cff56e8`): the kiosk prints the guest's order slip
+- **0.7.1220** (2026-10-07, `5ccbd2e`): a touch on the kiosk or the keyboard never presses the page behind
+- **0.7.1219** (2026-10-07, `5d12c36`): the editor shows what you change: new actions, field values, new pages
+- **0.7.1218** (2026-10-07, `cbe22bb`): receipts skip free choices; every printout fits and prints its letters
+- **0.7.1217** (2026-10-07, `d2f28cd`): a screen's card reader is kept after a restart
+- **0.7.1216** (2026-10-07, `58cfadf`): a live network printer's Test Print page
+- **0.7.1215** (2026-10-07, `0feb15f`): receipts on handhelds: choose the printer, after paying, email by Stripe
+- **0.7.1214** (2026-10-07, `7b07988`): tips aren't refunded; a delivery stays the order taker's
+- **0.7.1213** (2026-10-07, `1e08afb`): approved cards kept on the device, the store's currency on refunds, tables left to bus
+- **0.7.1212** (2026-10-07, `a2b193c`): money taken or given back is always recorded, and never twice
+- **0.7.1211** (2026-10-07, `0082a88`): a cash refund is what the store kept, not what was handed over
+- **0.7.1210** (2026-10-07, `d55d010`): last night's closing bank no longer counts as today's (negative tips owed)
+- **0.7.1209** (2026-10-07, `a24a0f5`): demo data for everything
+- **0.7.1208** (2026-10-07, `6c448b1`): refunds on any closed check (a manager's), and every closed check found back to the first
+- **0.7.1207** (2026-10-07, `8d4d4f8`): Terminals always lists the screen you're on
+- **0.7.1206** (2026-10-07, `f033878`): a live Stripe test-mode run (key from VTM_STRIPE_TEST_KEY, hidden tag)
+- **0.7.1205** (2026-10-07, `dfd14b2`): a Stripe reader beside any register, run from the store's computer
+- **0.7.1204** (2026-10-07, `c893f49`): read the card's brand and last four from each Stripe type
+- **0.7.1203** (2026-10-07, `5e64cfc`): take cards on a Stripe Reader S700 (Apps on Devices), and a simulated reader
+- **0.7.1202** (2026-10-07, `6aee60f`): typing on phones: Android's keyboard over the page, a phone-sized keyboard, bigger typing box
+- **0.7.1201** (2026-10-07, `f09d264`): qualifiers work on choices: No onion, Extra bacon, hold for how
+- **0.7.1200** (2026-10-07, `f6b6c53`): phone orders and deliveries: last order, ready time, name rule, drivers, swipe
+- **0.7.1199** (2026-10-07, `ad7c139`): the on-screen keyboard pops up over the screen
+- **0.7.1198** (2026-10-07, `1e2c208`): the on-screen keyboard is on by default, and reaches dialogs
+- **0.7.1197** (2026-10-07, `8d23d88`): phone orders: name, phone and address right on the check
+- **0.7.1196** (2026-10-07, `5120f8b`): a seating screen for the host: table states, push tables together, hold tables
+- **0.7.1195** (2026-10-07, `628c53c`): every page works on a phone held upright
+- **0.7.1194** (2026-10-06, `c83104a`): vtmodern-setup keeps screen names with spaces; install steps in the manual
+- **0.7.1193** (2026-10-06, `5395034`): install from zero, and choose what the machine is
+- **0.7.1192** (2026-10-06, `fe421d7`): build with Qt 6.8 (Debian 13): no QML property named long
+- **0.7.1191** (2026-10-06, `bba8251`): Time Punches reaches a month back; the dashboard refreshes each minute
+- **0.7.1190** (2026-10-06, `20665d8`): Preview a page on a phone, a tablet, a terminal and a kiosk
+- **0.7.1189** (2026-10-06, `5cc70c8`): page and layout files carry their pictures and fonts
+- **0.7.1188** (2026-10-06, `422c486`): arrange the self-filling menu by touch
+- **0.7.1187** (2026-10-06, `645a96d`): a look per terminal
+- **0.7.1186** (2026-10-06, `373a007`): course pacing: fire the next course in a few minutes
+- **0.7.1185** (2026-10-06, `70e93dd`): kitchen tickets are late past what their items usually take
+- **0.7.1184** (2026-10-06, `8448283`): opening and closing checklists
+- **0.7.1183** (2026-10-06, `7eac6e9`): time off and shift swaps from the Time Clock, decided by a manager
+- **0.7.1182** (2026-10-06, `9c72480`): overtime warnings
+- **0.7.1181** (2026-10-06, `b63aa56`): ring items in by number
+- **0.7.1180** (2026-10-06, `11fd317`): the manager's Dashboard: today at a glance
+- **0.7.1179** (2026-10-06, `6901706`): "5 left" on dishes when an ingredient runs low
+- **0.7.1178** (2026-10-06, `9ad72c7`): managers fix time punches (with a reason, on the Labor report); End of Day clocks out whoever's left
+- **0.7.1177** (2026-10-06, `2fad1a9`): a Time Clock screen: clock in / out, breaks and the schedule by PIN
+- **0.7.1176** (2026-10-06, `930ac0c`): discounts are a manager's; $ Off and % Off of the amount typed
+- **0.7.1175** (2026-10-06, `99b45d3`): touches on a PIN pad or job chooser no longer reach the buttons behind it
+- **0.7.1174** (2026-10-06, `5e0fca0`): hold any button to see what it does
+- **0.7.1173** (2026-10-06, `5be3057`): Popular today, a menu page of the day's best sellers
+- **0.7.1172** (2026-10-06, `6293f34`): Another Round
+- **0.7.1171** (2026-10-06, `c5562d6`): Undo after taking an item off or making it fewer
+- **0.7.1170** (2026-10-06, `1ce7029`): Test Print for each printer (and its drawer)
+- **0.7.1169** (2026-10-06, `3688e07`): one check per seat, move a line between a table's checks, print all, back together
+- **0.7.1168** (2026-10-06, `42c7633`): − 2 + and Again on the touched line
+- **0.7.1167** (2026-10-06, `e5fa232`): a table's checks stay on one line, paged with arrows
+- **0.7.1166** (2026-10-06, `52d946a`): separate checks at one table, opened and switched on the order screen
+- **0.7.1165** (2026-10-06, `8299442`): each person's text size, left hand and start screen; a start screen per job
+- **0.7.1164** (2026-10-06, `572874f`): Switch User, and each person's check back at their next login
+- **0.7.1163** (2026-10-06, `ba965d3`): find an item by typing
+- **0.7.1162** (2026-10-06, `8ff99dd`): ready-made layouts for each screen, and page files in one place
+- **0.7.1161** (2026-10-05, `ce63f04`): the setup guide for a new store
+- **0.7.1160** (2026-10-05, `2caeaef`): ready-made looks, and looks from the logo
+- **0.7.1159** (2026-10-05, `0439903`): the store's own fonts
+- **0.7.1158** (2026-10-05, `3be48f3`): a menu panel that lays itself out (menuGrid)
+- **0.7.1157** (2026-10-05, `70efce2`): the store logo at the top of receipts (ESC/POS)
+- **0.7.1156** (2026-10-05, `89544ff`): the store's pictures and logo on any screen
+- **0.7.1155** (2026-10-05, `4e7d669`): royalty report and accounting journal export
+- **0.7.1154** (2026-10-05, `128396d`): event tickets
+- **0.7.1153** (2026-10-05, `80f02aa`): substitutes (the Sub qualifier)
+- **0.7.1152** (2026-10-05, `531642c`): messages that stay up until they expire
+- **0.7.1151** (2026-10-05, `0557edd`): customer detail report
+- **0.7.1150** (2026-10-05, `d4130d7`): exceptions and deposit reports
+- **0.7.1149** (2026-10-05, `17bc682`): items sold by weight
+- **0.7.1148** (2026-10-05, `fa28255`): kiosk look finished: Spanish, readable text, number-only orders, docs
+- **0.7.1147** (2026-10-05, `ecc5d55`): reorder built-in buttons, theme status colors, kiosk look
+- **0.7.1146** (2026-10-05, `0fc67e5`): show/hide rules on zones, and live text in labels
+- **0.7.1145** (2026-10-05, `140ef8c`): panel settings, built-in buttons and their look in the editor
+- **0.7.1144** (2026-10-05, `d7a6455`): no kitchen stations listed means one kitchen screen
+- **0.7.1143** (2026-10-05, `9913b4a`): kitchen screens by station
+- **0.7.1142** (2026-10-05, `80a2e38`): combo drinks stay off the kitchen ticket
+- **0.7.1141** (2026-10-05, `7c2a2f2`): manual for orders for later, combos, bar tabs and the screen saver
+- **0.7.1140** (2026-10-05, `b22c07a`): orders for later
+- **0.7.1139** (2026-10-05, `49111fe`): combos
+- **0.7.1138** (2026-10-05, `2f6a778`): bar tabs
+- **0.7.1137** (2026-10-05, `56ca2ee`): screen saver
+- **0.7.1136** (2026-10-05, `87e5041`): manual for pay, expenses, deliveries and check search; English plurals
+- **0.7.1135** (2026-10-05, `7ebf5fe`): find any check from the last year, and reprint it
+- **0.7.1134** (2026-10-05, `ceb15a1`): Extra costs what the store says
+- **0.7.1133** (2026-10-05, `bd7b0fb`): takeout and delivery prices, staff meals, items without discounts
+- **0.7.1132** (2026-10-05, `b22b2fa`): cash rounding to 5 or 10 cents
+- **0.7.1131** (2026-10-05, `3b31f89`): vendors and receiving deliveries
+- **0.7.1130** (2026-10-02, `0b6ebf1`): expenses by category, and the Expenses report
+- **0.7.1129** (2026-10-02, `900da13`): pay rates, jobs and labor cost
+- **0.7.1128** (2026-10-02, `e945998`): the self-order kiosk for tall portrait kiosks
+- **0.7.1126** (2026-10-02, `f4661c1`): commit packaging/Packaging.cmake so a fresh clone builds
+- **0.7.1125** (2026-10-02, `ebb64e2`): README with screenshots and build steps; manual for the new features
+- **0.7.1124** (2026-10-02, `efe9693`): burgers ask for Temperature and Side as modifier groups
+- **0.7.1123** (2026-10-01, `0acf93e`): a self-order kiosk where guests order on their own
+- **0.7.1122** (2026-10-01, `486dfb4`): every control big enough for a finger, on any screen
+- **0.7.1121** (2026-10-01, `78a9745`): vtmodern --backup encrypts too when the store does
+- **0.7.1120** (2026-10-01, `4d19583`): encrypted backups with a backup password
+- **0.7.1119** (2026-10-01, `aaf65c5`): Spanish screens, each person in their own language
+- **0.7.1118** (2026-10-01, `bc616ee`): a standby server that keeps running the store if the main one fails
+- **0.7.1117** (2026-10-01, `3bf548b`): idle log-out, table timers and turns, messages between screens
+- **0.7.1116** (2026-10-01, `5fed102`): manager approval on the spot; practice (training) mode
+- **0.7.1115** (2026-10-01, `60d81c2`): the user manual, and a tour that screenshots every screen
+- **0.7.1114** (2026-10-01, `434b432`): a better customer display
+- **0.7.1113** (2026-09-30, `e7f1418`): loyalty points and rewards; promotions
+- **0.7.1112** (2026-09-30, `f3de001`): kitchen names, highlights and hiding; the expediter screen
+- **0.7.1111** (2026-09-30, `8673189`): Factory Reset on the Manager page
+- **0.7.1110** (2026-09-30, `88fb053`): demo house accounts are charged evenly and paid weekly
+- **0.7.1109** (2026-09-30, `62bcce7`): factory reset and demo data
+- **0.7.1108** (2026-09-30, `cdef74d`): the one-time tender upgrade for older stores
+- **0.7.1107** (2026-09-30, `71850bd`): reports over a date range, compared with last year
+- **0.7.1106** (2026-09-30, `678538c`): staff schedule and tip pooling
+- **0.7.1105** (2026-09-30, `1cbec0d`): inventory, recipes, sold out by itself, food cost
+- **0.7.1104** (2026-09-30, `2ce8eff`): kitchen display - timers, rush and VIP, all-day counts, ticket times
+- **0.7.1103** (2026-09-30, `91a15fb`): customer-facing display with tip choices
+- **0.7.1102** (2026-09-30, `ee1ff10`): waitlist and reservations (the host stand)
+- **0.7.1101** (2026-09-30, `60924b5`): customers, gift cards, house accounts, on-screen keyboard
+- **0.7.1100** (2026-09-30, `964d8bd`): safety under real use - durable writes, damaged-database check, second backup copy
+- **0.7.1099** (2026-09-30, `c718cb5`): finger-wide scrollbars
+- **0.7.1098** (2026-09-30, `d82f3ea`): always-visible scrollbars on long lists
+- **0.7.1097** (2026-09-30, `e879eed`): modifier groups across the demo menu; no sending without required choices
+- **0.7.1096** (2026-09-30, `cae558b`): breaks and overtime
+- **0.7.1095** (2026-09-30, `ff5b40f`): permissions per person, and a discounts permission
+- **0.7.1094** (2026-09-30, `7469fc5`): sales by hour and category, audit trail, CSV/PDF export
+- **0.7.1093** (2026-09-30, `29df08d`): modifier groups, meal-period prices, sold out (86)
+- **0.7.1092** (2026-09-30, `a375d05`): seats and courses with hold & fire
+- **0.7.1091** (2026-09-30, `0a633e3`): transfer, move, merge and reopen checks; check history
+- **0.7.1090** (2026-09-30, `10eda8e`): managers can close a kiosk; shortcuts that don't need Fn
+- **0.7.1089** (2026-09-29, `99a6589`): room for 99999 Android builds per version
+- **0.7.1088** (2026-09-29, `0d7c696`): Android version code grows with every build
+- **0.7.1087** (2026-09-29, `e8df071`): declare the Android orientation helper before its use
+- **0.7.1086** (2026-09-29, `6ef43be`): stores pick up new starter pages when ViewTouch is updated
+- **0.7.1085** (2026-09-29, `0f07549`): phone pages - run and fit on any phone
+- **0.7.1084** (2026-09-29, `98267b0`): ignore downloaded Android builds
+- **0.7.1083** (2026-09-29, `54e080e`): 32-bit Android build; ship only the Fusion style
+- **0.7.1082** (2026-09-29, `8ac5c20`): Android tablet app
+- **0.7.1081** (2026-09-29, `6b6e2ee`): paired, encrypted terminals and finding the server
+- **0.7.1080** (2026-09-29, `f830089`): checkout rule and cash drawers per terminal
+- **0.7.1079** (2026-09-29, `b073b7f`): cash handling per employee
+- **0.7.1078** (2026-09-29, `ec5b3d9`): server banks - each person carries their own cash
+- **0.7.1077** (2026-09-29, `bdf478f`): start full screen; F11 and --windowed for a window
+- **0.7.1076** (2026-09-29, `ec9f8c1`): kiosk takes tty1 and exits with its compositor
+- **0.7.1075** (2026-09-29, `27d128d`): drop the tableMap panel; old floor plans become table zones
+- **0.7.1074** (2026-09-29, `09096e0`): tables as single zones; kiosk allows VT switching
+- **0.7.1073** (2026-09-29, `ce0db22`): M7 packages, service and kiosk, backups, meal periods
+
+## 0.1
+
+- **0.1.1072** (2026-09-29, `c7747ce`): M6 tips, party gratuity, per-terminal drawers, pay outs
+- **0.1.1071** (2026-09-29, `b86a885`): require a manager to enter or stay in the page editor
+- **0.1.1070** (2026-09-29, `6de1454`): M5 multiple terminals, kitchen display, takeout/delivery
+- **0.1.1069** (2026-09-29, `e8f3ca7`): M4 printing, drawers, reports, end of day, admin, split
+- **0.1.1068** (2026-09-29, `cdf62fe`): M3 core POS flow - login, tables, orders, payments
+- **0.1.1067** (2026-09-29, `093fd63`): M2 page editor - edit mode, inspector, undo, SQLite
+- **0.1.1066** (2026-09-28, `d11aec7`): M1 layout engine - pages, zones, templates, navigation
+- **0.1.1065** (2026-09-28, `ab5fe80`): scaffold Qt6/QML rewrite on Modernization branch

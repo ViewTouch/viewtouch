@@ -165,7 +165,8 @@ QVariantList storeSections(const QVariantList &fields)
         {"accounting", PosService::tr("Franchise and accounting"), {"royaltyPercent", "adFundPercent", "chartOfAccounts"}},
         {"about", PosService::tr("About"),
          {"about.version", "screen.version", "screen.display", "about.machine", "about.started", "about.database",
-          "about.backup", "about.system", "about.license", "about.source", "about.credits"}},
+          "about.backup", "about.system", "about.updates", "about.history", "about.license", "about.source",
+          "about.credits"}},
     };
     static const std::pair<const char *, const char *> when[] = {
         {"clockInEarlyMinutes", "scheduleRequired"}, {"gratuityMinGuests", "gratuityPercent"},
@@ -699,6 +700,10 @@ QVariantList PosService::adminFields(const QString &panel)
             field(u"about.database"_s, tr("Data kept in"), u"info"_s),
             field(u"about.backup"_s, tr("Last backup"), u"info"_s),
             field(u"about.system"_s, tr("System"), u"info"_s),
+            field(u"about.updates"_s, tr("Updates on this store"), u"info"_s,
+                  tr("Each version this store has run, and when it started here.")),
+            field(u"about.history"_s, tr("Recent changes"), u"info"_s,
+                  tr("What the latest builds changed, newest first. The version's last number is the build: it goes up by itself.")),
             field(u"about.license"_s, tr("License"), u"info"_s),
             field(u"about.source"_s, tr("Source code and manual"), u"info"_s),
             field(u"about.credits"_s, tr("ViewTouch"), u"info"_s),
@@ -1972,6 +1977,30 @@ QVariantMap PosService::aboutValues() const
                             : lastBackup > 0 ? tr("%1, in %2").arg(when(lastBackup), n.value(u"backups"_s).toString())
                                              : tr("None yet (they go in %1)").arg(n.value(u"backups"_s).toString())},
         {u"about.system"_s, system.isEmpty() ? unknown : system},
+        // The builds this store has run, newest first: when each arrived.
+        {u"about.updates"_s, [&] {
+             QStringList l;
+             const auto &runs = s_->settings.builds;
+             for (auto it = runs.rbegin(); it != runs.rend() && l.size() < 10; ++it)
+                 l << tr("%1 since %2").arg(qs(it->version), when(it->at));
+             return l.isEmpty() ? tr("None recorded yet") : l.join(u'\n');
+         }()},
+        // What the recent builds changed (built into the program), newest first.
+        {u"about.history"_s, [&] {
+             QStringList l;
+             for (const QVariant &v : n.value(u"history"_s).toList()) {
+                 const QVariantMap b = v.toMap();
+                 QString change = b.value(u"change"_s).toString();
+                 change.remove(QRegularExpression(u"^[a-z]+(\\([^)]*\\))?:\\s*"_s));   // "feat(modern): "
+                 l << u"%1 · %2 · %3"_s.arg(b.value(u"version"_s).toString(),
+                                           i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(b.value(u"at"_s).toLongLong()).date(),
+                                                                   u"MMM d"_s),
+                                           change);
+                 if (l.size() == 15)
+                     break;
+             }
+             return l.isEmpty() ? unknown : l.join(u'\n');
+         }()},
         {u"about.license"_s, tr("GNU General Public License, version 3: free to use, share and change; it comes with no warranty.")},
         {u"about.source"_s, u"https://github.com/No0ne558/viewtouchFork"_s},
         {u"about.credits"_s, tr("ViewTouch was created by Gene Mosher (viewtouch.com). This is its modern edition.")},

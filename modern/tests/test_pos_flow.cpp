@@ -4233,14 +4233,17 @@ TEST_CASE("Manual: a screenshot of every screen", "[.manual]")
         // Store Settings -> About, as a store's own computer shows it.
         const vt::net::AppBuild me = vt::net::appBuild();
         const qint64 now = QDateTime::currentMSecsSinceEpoch();
+        s.pos.shared()->settings.builds = {{"0.9.1270", 1270, "b0b0b0b", now - 3 * 24 * 3600 * 1000LL},
+                                           {me.version.toStdString(), me.number, me.commit.toStdString(), now - 9 * 3600 * 1000LL}};
         s.pos.shared()->network = [me, now] {
             return QVariantMap{{u"role"_s, u"single"_s}, {u"machine"_s, u"cafe-counter"_s},
-                               {u"build"_s, vt::net::buildText(me.version, me.number, me.commit)},
+                               {u"build"_s, vt::net::buildText(me.version, me.number, me.commit, me.modified)},
                                {u"platform"_s, me.platform}, {u"qt"_s, QString::fromLatin1(qVersion())},
                                {u"database"_s, u"/home/cafe/.local/share/ViewTouch/viewtouch.db"_s},
                                {u"databaseBytes"_s, qint64(18'400'000)},
                                {u"backups"_s, u"/home/cafe/.local/share/ViewTouch/backups"_s},
-                               {u"startedAt"_s, now - 9 * 3600 * 1000LL}, {u"lastBackup"_s, now - 3600 * 1000LL}};
+                               {u"startedAt"_s, now - 9 * 3600 * 1000LL}, {u"lastBackup"_s, now - 3600 * 1000LL},
+                               {u"history"_s, vt::net::appHistory()}};
         };
         s.c.jumpTo(u"manager"_s);   // Store Settings opened afresh, with these
         QTest::qWait(80);
@@ -4252,6 +4255,17 @@ TEST_CASE("Manual: a screenshot of every screen", "[.manual]")
         s.tapItem(Screen::findBy(s.window->contentItem(), "objectName", u"settingsSection-about"_s));
         QTest::qWait(80);
         snap("m34b-about");
+        // Further down: the updates this store has had, and what the builds changed.
+        if (QQuickItem *bar = Screen::findBy(s.window->contentItem(), "objectName", u"adminFormScroll"_s)) {
+            QQuickItem *updates = Screen::findBy(s.window->contentItem(), "text", u"Updates on this store"_s);
+            QQuickItem *flick = updates;
+            while (flick && !flick->inherits("QQuickFlickable"))
+                flick = flick->parentItem();
+            if (flick && updates)
+                flick->setProperty("contentY", updates->parentItem()->parentItem()->y() - 10);
+            QTest::qWait(60);
+            snap("m34c-about-history");
+        }
         s.pos.shared()->network = nullptr;
     }
     admin("admin-taxes", "m35-taxes", false);
@@ -7517,7 +7531,7 @@ TEST_CASE("UI: Store Settings -> About: the version, this screen, the license", 
         }
     };
     walk(s.window->contentItem());
-    CHECK(shown.join(u'\n').contains(u"0.9.0, build"_s));                 // this screen's build
+    CHECK(shown.join(u'\n').contains(vt::net::appBuild().version));     // this screen's build: 0.9.1283
     CHECK(shown.join(u'\n').contains(u"1600 × 900, standard pages"_s));
     CHECK(shown.join(u'\n').contains(u"GNU General Public License, version 3"_s));
     CHECK_FALSE(text(u"Save"_s));                                          // nothing to change here
