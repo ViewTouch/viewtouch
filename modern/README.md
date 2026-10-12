@@ -172,7 +172,8 @@ Reports have a row of periods: *Day* (one business day, as before), *This Week*,
 - **Clock in on schedule** (Store Settings): staff can only clock in from *…minutes early* before a scheduled shift until it ends. Managers always can, and can clock anyone in from the schedule.
 - **Roles:** server, bartender, cashier, host (the waitlist), busser (clocks in, shares tips), manager, admin. The demo staff gained Riley (busser, PIN 3333) and Jo (bartender, PIN 4444).
 - **Pay and labor cost:** Manager → Employees → *Pay rate* (an hour, before tips) and *Other jobs*, one per line with its pay (`bartender 9.00`). Someone with more than one job is asked *Which job today?* when they clock in. Each shift keeps the job and its pay, so a raise later doesn't change past labor. Reports → Labor adds **Labor cost today**: each person's pay, overtime at time and a half, the total, and **labor % of net sales**. Tip pools go by the job worked today.
-- **Tip-outs** (Store Settings): one per line, e.g. `busser 15 tips` or `bartender 2 sales`. That share of each person's tips (or sales) goes into a pool for everyone of that role who worked today, split by hours. With no one of that role on today, servers keep it. *Cash Out My Tips* and Reports → Tips use the result.
+- **Tip-outs** (Store Settings → Tips): a row each, who gets it, the percent, and of tips or of sales (kept as `busser 15 tips`, `bartender 2 sales`). That share of each person's tips (or sales) goes into a pool for everyone of that role who worked today, split by hours. With no one of that role on today, servers keep it. *Cash Out My Tips* and Reports → Tips use the result.
+- **Tip pool** (Store Settings → Tips): one table, a row for each job in the pool and its share an hour (100 a full share, 50 half; kept as `busser 50`, `PosSettings::tipPool`). A job without a row is out of the pool; someone's own setting (Employees) can put them in or keep them out.
 
 ## Inventory and food cost
 

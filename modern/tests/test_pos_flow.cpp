@@ -7014,6 +7014,59 @@ TEST_CASE("UI: Store Settings by touch: numbers with - and +, switches, lists as
     CHECK(s.pos.shared()->settings.tipOuts[0].basis == "tips");
 }
 
+TEST_CASE("UI: the tip pool is one table: a row a job, its share", "[flow][ui][settings]")
+{
+    Screen s;
+    s.pos.shared()->settings.tipPool = {{"server", 100}, {"busser", 50}};
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"admin-store"_s));
+    QTest::qWait(120);
+    const auto by = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    QMetaObject::invokeMethod(by(u"adminList"_s), "positionViewAtIndex", Q_ARG(int, 5), Q_ARG(int, 1));
+    QTest::qWait(40);
+    s.tapItem(by(u"settingsSection-tips"_s));
+    QTest::qWait(60);
+    QQuickItem *pool = Screen::findBy(s.window->contentItem(), "text", u"Tip pool"_s)->parentItem()->parentItem();
+    QQuickItem *flick = pool;
+    while (flick && !flick->inherits("QQuickFlickable"))
+        flick = flick->parentItem();
+    REQUIRE(flick);
+    flick->setProperty("contentY", pool->y());
+    QTest::qWait(60);
+    // Servers 100, bussers 50: in the jobs' usual order.
+    const auto cells = [&] {
+        std::vector<QQuickItem *> out;
+        std::function<void(QQuickItem *)> walk = [&](QQuickItem *i) {
+            for (QQuickItem *c : i->childItems()) {
+                if (!c->isVisible())
+                    continue;
+                if (c->objectName() == u"rowCell"_s)
+                    out.push_back(c);
+                walk(c);
+            }
+        };
+        walk(pool);
+        return out;
+    };
+    REQUIRE(cells().size() == 2);
+    CHECK(cells()[0]->property("text").toString() == u"100"_s);
+    CHECK(cells()[1]->property("text").toString() == u"50"_s);
+    // Bartenders join at a full share: the new row starts on a job not in the pool.
+    s.tapItem(Screen::findBy(pool, "objectName", u"rowAdd"_s));
+    QTest::qWait(60);
+    REQUIRE(cells().size() == 3);
+    s.tapItem(cells()[2]);
+    for (const char *k = "100"; *k; ++k)
+        QTest::keyClick(s.window, *k);
+    QTest::keyClick(s.window, Qt::Key_Return);
+    QTest::qWait(60);
+    s.shot("settings-tip-pool");
+    s.tapItem(by(u"adminSave"_s));
+    QTest::qWait(80);
+    const std::map<std::string, int> want{{"server", 100}, {"bartender", 100}, {"busser", 50}};
+    CHECK(s.pos.shared()->settings.tipPool == want);
+}
+
 TEST_CASE("UI: manager pages one after another: each opens as it should", "[flow][ui][settings]")
 {
     Screen s;

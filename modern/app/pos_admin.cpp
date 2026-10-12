@@ -96,6 +96,9 @@ double number(const QVariantMap &r, const char16_t *key)
     return r.value(QString::fromUtf16(key)).toString().toDouble();
 }
 
+// The jobs that can be in the tip pool, in their usual order.
+constexpr std::string_view kPoolJobs[] = {"server", "bartender", "busser", "host", "cashier", "driver"};
+
 // A list kept as text, edited as rows (FieldEditor "rows"): each line read
 // with `pattern` (a group a column) and written with `format`.
 QVariantMap column(const QString &label, const char *type, int width = 0, const QVariantList &opts = {},
@@ -143,8 +146,7 @@ QVariantList storeSections(const QVariantList &fields)
         {"hours", PosService::tr("Staff hours"),
          {"paidBreaks", "overtimeDailyHours", "overtimeWeeklyHours", "weekStartsOn", "scheduleRequired", "clockInEarlyMinutes"}},
         {"tips", PosService::tr("Tips"),
-         {"tipPercents", "gratuityPercent", "gratuityMinGuests", "declareCashTips", "tipOuts", "tipPool:server",
-          "tipPool:bartender", "tipPool:busser", "tipPool:host", "tipPool:cashier", "tipPool:driver"}},
+         {"tipPercents", "gratuityPercent", "gratuityMinGuests", "declareCashTips", "tipOuts", "tipPool"}},
         {"menu", PosService::tr("Menu and prices"), {"extraPercent", "extraCharge", "soldOutBackNextDay"}},
         {"kitchen", PosService::tr("Kitchen"), {"kitchenStations", "kitchenWarnMinutes", "kitchenLateMinutes", "laterLeadMinutes"}},
         {"togo", PosService::tr("Takeout and delivery"),
@@ -177,9 +179,6 @@ QVariantList storeSections(const QVariantList &fields)
     const Number numbers[] = {
         {"overtimeDailyHours", noRule, 1}, {"overtimeWeeklyHours", noRule, 1},
         {"clockInEarlyMinutes", PosService::tr("On time"), 5},
-        {"tipPool:server", PosService::tr("Not in it"), 5}, {"tipPool:bartender", PosService::tr("Not in it"), 5},
-        {"tipPool:busser", PosService::tr("Not in it"), 5}, {"tipPool:host", PosService::tr("Not in it"), 5},
-        {"tipPool:cashier", PosService::tr("Not in it"), 5}, {"tipPool:driver", PosService::tr("Not in it"), 5},
         {"extraPercent", none, 5}, {"laterLeadMinutes", PosService::tr("At the time"), 5},
         {"takeoutMinutes", none, 5}, {"deliveryMinutes", none, 5}, {"minutesPerOrderWaiting", none, 1},
         {"screenSaverMinutes", never, 1}, {"autoLogoutMinutes", never, 1}, {"tableLongMinutes", {}, 5},
@@ -523,15 +522,18 @@ QVariantList PosService::adminFields(const QString &panel)
                     column(tr("Of"), "enum", 150, options({{"tips", "of tips"}, {"sales", "of sales"}}))},
                    uR"(^\s*(\S+)\s+([\d.]+)%?\s*(\S*)\s*$)"_s, u"%1 %2 %3"_s),
             // The tip pool: each job's share for an hour worked.
-            with(with(field(u"tipPool:server"_s, tr("Tip pool: servers' share an hour (%)"), u"int"_s,
-                            tr("Everyone in the pool puts in their tips (after tip-outs) and takes out by hours worked "
-                               "times their job's share: 100 a full share, 50 half. 0: not in the pool. Someone's own "
-                               "setting (Staff) can put them in or keep them out.")), u"min"_s, 0), u"max"_s, 200),
-            with(with(field(u"tipPool:bartender"_s, tr("Tip pool: bartenders' share an hour (%)"), u"int"_s), u"min"_s, 0), u"max"_s, 200),
-            with(with(field(u"tipPool:busser"_s, tr("Tip pool: bussers' share an hour (%)"), u"int"_s), u"min"_s, 0), u"max"_s, 200),
-            with(with(field(u"tipPool:host"_s, tr("Tip pool: hosts' share an hour (%)"), u"int"_s), u"min"_s, 0), u"max"_s, 200),
-            with(with(field(u"tipPool:cashier"_s, tr("Tip pool: cashiers' share an hour (%)"), u"int"_s), u"min"_s, 0), u"max"_s, 200),
-            with(with(field(u"tipPool:driver"_s, tr("Tip pool: drivers' share an hour (%)"), u"int"_s), u"min"_s, 0), u"max"_s, 200),
+            with(asRows(field(u"tipPool"_s, tr("Tip pool"), u"text"_s,
+                              tr("The jobs in the pool. Everyone in it puts in their tips (after tip-outs) and takes out by "
+                                 "hours worked times their job's share: 100 a full share, 50 half. A job not here isn't in "
+                                 "the pool. Someone's own setting (Staff) can put them in or keep them out.")),
+                        tr("+ Add a job"),
+                        {with(column(tr("Job"), "enum", 0,
+                                     options({{"server", "Servers"}, {"bartender", "Bartenders"}, {"busser", "Bussers"},
+                                              {"host", "Hosts"}, {"cashier", "Cashiers"}, {"driver", "Drivers"}})),
+                              u"unique"_s, true),
+                         column(tr("Share an hour (%)"), "int", 180, {}, u"100"_s)},
+                        uR"(^\s*(\S+)\s+(\d+)\s*$)"_s, u"%1 %2"_s),
+                 u"max"_s, 6),
             field(u"declareCashTips"_s, tr("Ask for cash tips at clock out"), u"bool"_s,
                   tr("They count with card tips in the Tips report and the tip pool.")),
             with(with(field(u"kitchenWarnMinutes"_s, tr("Kitchen: ticket turns yellow after (minutes)"), u"int"_s),
@@ -832,10 +834,14 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"taxTakeoutFood"_s, t.taxTakeoutFood}, {u"cashRounding"_s, QString::number(t.cashRoundingCents)}},
             tr("Tax rates"), QString());
     } else if (panel == u"store") {
-        const auto poolShare = [&](const char *role) {
-            const auto it = s_->settings.tipPool.find(role);
-            return it == s_->settings.tipPool.end() ? 0 : it->second;
-        };
+        // The tip pool, one job a line ("busser 50"), in the jobs' usual order.
+        const QString tipPool = [&] {
+            QStringList l;
+            for (std::string_view role : kPoolJobs)
+                if (const auto it = s_->settings.tipPool.find(std::string(role)); it != s_->settings.tipPool.end())
+                    l << u"%1 %2"_s.arg(QLatin1StringView(role)).arg(it->second);
+            return l.join(u'\n');
+        }();
         add({{u"storeName"_s, qs(s_->settings.storeName)}, {u"language"_s, qs(s_->settings.language)}, {u"currencySymbol"_s, qs(s_->settings.currencySymbol)},
              {u"receiptHeader"_s, qs(s_->settings.receiptHeader)}, {u"receiptFooter"_s, qs(s_->settings.receiptFooter)},
              {u"receiptFreeChoices"_s, s_->settings.receiptFreeChoices},
@@ -899,9 +905,7 @@ QVariantList PosService::adminRecords(const QString &panel)
               }()},
              {u"scheduleRequired"_s, s_->settings.scheduleRequired},
              {u"clockInEarlyMinutes"_s, s_->settings.clockInEarlyMinutes},
-             {u"tipPool:server"_s, poolShare("server")}, {u"tipPool:bartender"_s, poolShare("bartender")},
-             {u"tipPool:busser"_s, poolShare("busser")}, {u"tipPool:host"_s, poolShare("host")},
-             {u"tipPool:cashier"_s, poolShare("cashier")}, {u"tipPool:driver"_s, poolShare("driver")},
+             {u"tipPool"_s, tipPool},
              {u"declareCashTips"_s, s_->settings.declareCashTips},
              {u"tipOuts"_s, [&] {
                   QStringList l;
@@ -1311,15 +1315,24 @@ bool PosService::adminSave(const QString &panel, int index, const QVariantMap &r
             s_->settings.scheduleRequired = record.value(u"scheduleRequired"_s).toBool();
         if (record.contains(u"clockInEarlyMinutes"_s))
             s_->settings.clockInEarlyMinutes = std::clamp(record.value(u"clockInEarlyMinutes"_s).toInt(), 0, 240);
-        for (const char *role : {"server", "bartender", "busser", "host", "cashier", "driver"}) {
-            const QString key = u"tipPool:"_s + QLatin1String(role);
-            if (!record.contains(key))
-                continue;
-            const int share = std::clamp(record.value(key).toInt(), 0, 200);
-            if (share > 0)
-                s_->settings.tipPool[role] = share;
-            else
-                s_->settings.tipPool.erase(role);
+        if (record.contains(u"tipPool"_s)) {
+            std::map<std::string, int> pool;
+            for (const QString &line : record.value(u"tipPool"_s).toString().split(u'\n', Qt::SkipEmptyParts)) {
+                const QStringList parts = line.simplified().remove(u'%').split(u' ', Qt::SkipEmptyParts);
+                if (parts.isEmpty())
+                    continue;
+                const std::string role = ss(parts.value(0).toLower());
+                bool ok = false;
+                const int share = parts.value(1).toInt(&ok);
+                if (std::ranges::find(kPoolJobs, std::string_view(role)) == std::end(kPoolJobs))
+                    return fail(tr("Tip pool: \"%1\" is not a job (server, bartender, busser, host, cashier, driver).").arg(qs(role)));
+                if (!ok || share < 1 || share > 200)
+                    return fail(tr("Tip pool: a job's share is 1 to 200 (100 a full share)."));
+                if (pool.contains(role))
+                    return fail(tr("Tip pool: each job once."));
+                pool[role] = share;
+            }
+            s_->settings.tipPool = pool;
         }
         if (record.contains(u"declareCashTips"_s))
             s_->settings.declareCashTips = record.value(u"declareCashTips"_s).toBool();

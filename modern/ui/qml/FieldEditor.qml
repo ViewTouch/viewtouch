@@ -638,9 +638,14 @@ ColumnLayout {
                 text: fe.field.addText ?? qsTr("+ Add")
                 implicitHeight: 44
                 onClicked: {
-                    // A new row: an enum starts on its first choice.
-                    rowsBox.rows = rowsBox.rows.concat([rowsBox.cols.map(c => c.type === "enum" && c.options && c.options.length
-                                                                            ? String(c.options[0].value) : "")])
+                    // A new row: an enum starts on its first choice (one not
+                    // in another row yet, for a column marked unique).
+                    rowsBox.rows = rowsBox.rows.concat([rowsBox.cols.map((c, i) => {
+                        if (c.type !== "enum" || !c.options || !c.options.length) return ""
+                        const free = c.unique ? c.options.find(o => !rowsBox.rows.some(r => String(r[i]).toLowerCase() === String(o.value)))
+                                              : null
+                        return String((free ?? c.options[0]).value)
+                    })])
                 }
             }
         }
