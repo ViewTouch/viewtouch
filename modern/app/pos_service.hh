@@ -59,6 +59,7 @@ public:
     virtual void saveRefund(const core::Refund &) {}
     virtual void saveChange(const core::Change &) {}
     virtual void saveStockCount(const core::StockCount &) {}
+    virtual void saveWaste(const core::Waste &) {}
     // The store's pictures (logo, buttons, backgrounds): name -> file bytes.
     virtual void saveImage(const std::string &name, const QByteArray &data) { Q_UNUSED(name) Q_UNUSED(data) }
     virtual void deleteImage(const std::string &name) { Q_UNUSED(name) }
@@ -132,6 +133,8 @@ struct PosData {
     std::int64_t lastChangeId = 0;
     std::vector<core::StockCount> stockCounts;    // the latest ones, oldest first
     std::int64_t lastStockCountId = 0;
+    std::vector<core::Waste> waste;               // the last 60 days, oldest first
+    std::int64_t lastWasteId = 0;
 };
 
 // State shared by every terminal of one store: open checks, today's closed
@@ -227,6 +230,8 @@ public:
     std::int64_t lastChangeId = 0;
     std::vector<core::StockCount> stockCounts;   // the latest ones, oldest first
     std::int64_t lastStockCountId = 0;
+    std::vector<core::Waste> waste;              // the last 60 days, oldest first
+    std::int64_t lastWasteId = 0;
     // Refunds sent to Stripe and not answered yet ("check/payment"), from any terminal.
     QSet<QString> refundsUnderway;
     // How much of a payment has gone back: on the check, and today's from any terminal.
@@ -383,6 +388,11 @@ public:
     // (against what should be there) is kept for the Stock Count report.
     bool saveStockCount(const QVariantMap &count);
     core::Report stockCountReport(const core::ReportContext &ctx) const;
+    void stockExtras(core::Report &r, const core::ReportContext &ctx) const;
+    QVariantMap wasteLog() const override;
+    // Thrown away: a menu item (its recipe) or an ingredient, how much, why.
+    bool logWaste(const QVariantMap &waste);
+    const std::vector<core::Waste> &wasteEntries() const { return s_->waste; }
     const std::vector<core::StockCount> &stockCounts() const { return s_->stockCounts; }
     void cancelClockIn();
     QVariantMap clockInJobs() const override;

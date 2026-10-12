@@ -196,6 +196,9 @@ struct PosSettings {
     // Counting stock: what should be there is shown while counting (else
     // only in the Stock Count report, after: a count not swayed by it).
     bool stockCountShowsExpected = false;
+    // Log Waste: why it was thrown away.
+    std::vector<std::string> wasteReasons{"Dropped or spilled", "Expired or spoiled", "Made wrong",
+                                          "Sent back by a guest", "Overcooked or burnt"};
     std::vector<std::string> voidReasons{"Wrong item rung in", "Guest changed their mind", "Took too long",
                                          "Guest didn't like it", "Kitchen mistake"};
     std::vector<std::string> compReasons{"Guest unhappy", "Took too long", "Manager's guest", "Kitchen mistake",

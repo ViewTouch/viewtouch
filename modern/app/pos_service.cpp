@@ -61,6 +61,8 @@ PosShared::PosShared(PosData data, PosSink *sink, QObject *parent)
     , lastChangeId(data.lastChangeId)
     , stockCounts(std::move(data.stockCounts))
     , lastStockCountId(data.lastStockCountId)
+    , waste(std::move(data.waste))
+    , lastWasteId(data.lastWasteId)
     , now_([] { return QDateTime::currentMSecsSinceEpoch(); })
 {
     for (Check &c : data.openChecks) {
@@ -2414,6 +2416,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"selectFoundCheck"_s, [](PosService &p, const QVariantList &a) { p.selectFoundCheck(a.value(0).toLongLong()); return QVariant(true); }},
         {u"reprintCheck"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.reprintCheck(a.value(0).toLongLong())); }},
         {u"receiveDelivery"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.receiveDelivery(a.value(0).toMap())); }},
+        {u"logWaste"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.logWaste(a.value(0).toMap())); }},
         {u"saveStockCount"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.saveStockCount(a.value(0).toMap())); }},
         {u"setExpenseCategory"_s, [](PosService &p, const QVariantList &a) { p.setExpenseCategory(a.value(0).toString()); return QVariant(true); }},
         {u"clockInAs"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.clockInAs(a.value(0).toString())); }},

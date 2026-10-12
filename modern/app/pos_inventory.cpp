@@ -472,7 +472,7 @@ bool PosService::saveStockCount(const QVariantMap &r)
         if (!ok || counted < 0)
             return fail(tr("Type how many there are of %1 (0 or more).").arg(qs(g->name)));
         count.lines.push_back({g->id, g->name, g->unit, g->countedAt, g->start, g->received, g->sold, g->adjusted,
-                               g->onHand, counted, g->cost});
+                               g->onHand, counted, g->cost, g->wasted});
     }
     if (count.lines.empty())
         return fail(tr("Type how many there are of at least one item."));
@@ -484,7 +484,7 @@ bool PosService::saveStockCount(const QVariantMap &r)
         const auto g = std::ranges::find(s_->ingredients, l.ingredientId, &Ingredient::id);
         g->onHand = g->start = l.counted;
         g->countedAt = count.at;
-        g->received = g->sold = g->adjusted = 0;
+        g->received = g->sold = g->wasted = g->adjusted = 0;
         if (s_->sink)
             s_->sink->saveIngredient(*g, int(g - s_->ingredients.begin()));
     }
@@ -503,6 +503,129 @@ bool PosService::saveStockCount(const QVariantMap &r)
     return true;
 }
 
+// --- waste -------------------------------------------------------------------------------
+
+QVariantMap PosService::wasteLog() const
+{
+    if (!user())
+        return {};
+    QVariantList items;
+    for (const MenuItem &m : s_->menu)
+        if (!m.recipe.empty())
+            items.append(QVariantMap{{u"id"_s, qs(m.id)}, {u"name"_s, qs(m.name)}});
+    QVariantList ingredients;
+    for (const Ingredient &g : s_->ingredients)
+        ingredients.append(QVariantMap{{u"id"_s, qs(g.id)}, {u"name"_s, qs(g.name)}, {u"unit"_s, qs(g.unit)}});
+    // The starting reasons, in the screen's language (a store's own as typed).
+    static constexpr const char *kStarting[] = {
+        QT_TR_NOOP("Dropped or spilled"), QT_TR_NOOP("Expired or spoiled"), QT_TR_NOOP("Made wrong"),
+        QT_TR_NOOP("Sent back by a guest"), QT_TR_NOOP("Overcooked or burnt"),
+    };
+    QStringList reasons;
+    for (const std::string &r : s_->settings.wasteReasons)
+        reasons << (std::ranges::find(kStarting, r, [](const char *k) { return std::string(k); }) != std::end(kStarting)
+                        ? tr(r.c_str()) : qs(r));
+    QVariantList today;
+    for (auto it = s_->waste.rbegin(); it != s_->waste.rend() && it->at >= s_->day.openedAt; ++it)
+        today.append(QVariantMap{{u"when"_s, i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(it->at), u"h:mm AP"_s)},
+                                 {u"what"_s, qs(it->what)},
+                                 {u"qty"_s, amountText(it->qty) + (it->unit.empty() ? QString() : u" "_s + qs(it->unit))},
+                                 {u"reason"_s, qs(it->reason)}, {u"by"_s, qs(it->by)}, {u"value"_s, format(it->value())}});
+    return {{u"items"_s, items}, {u"ingredients"_s, ingredients}, {u"reasons"_s, reasons}, {u"today"_s, today}};
+}
+
+bool PosService::logWaste(const QVariantMap &r)
+{
+    if (!require(perm::Order, tr("Logging waste")))
+        return false;
+    bool ok = false;
+    const double qty = r.value(u"qty"_s, 1).toString().trimmed().replace(u',', u'.').toDouble(&ok);
+    if (!ok || qty <= 0)
+        return fail(tr("Type how much was thrown away."));
+    const QString reason = r.value(u"reason"_s).toString().trimmed();
+    if (reason.isEmpty())
+        return fail(tr("Choose why it was thrown away."));
+    Waste w;
+    w.qty = qty;
+    w.reason = ss(reason.left(80));
+    std::map<std::string, double> use;
+    if (const QString itemId = r.value(u"item"_s).toString(); !itemId.isEmpty()) {
+        const MenuItem *m = findItem(itemId);
+        if (!m || m->recipe.empty())
+            return fail(tr("%1 has no recipe to take off the shelf (Menu Builder).").arg(m ? qs(m->name) : itemId));
+        w.what = m->name;
+        for (const RecipeLine &l : m->recipe)
+            use[l.ingredientId] += l.quantity * qty;
+    } else {
+        const Ingredient *g = s_->ingredient(ss(r.value(u"ingredient"_s).toString()));
+        if (!g)
+            return fail(tr("Choose what was thrown away."));
+        w.what = g->name;
+        w.unit = g->unit;
+        use[g->id] = qty;
+    }
+    for (const auto &[id, q] : use) {
+        const auto g = std::ranges::find(s_->ingredients, id, &Ingredient::id);
+        if (g == s_->ingredients.end())
+            continue;
+        g->onHand -= q;
+        g->wasted += q;
+        w.lines.push_back({g->id, g->name, g->unit, q, g->cost});
+        if (s_->sink)
+            s_->sink->saveIngredient(*g, int(g - s_->ingredients.begin()));
+    }
+    w.id = ++s_->lastWasteId;
+    w.at = now();
+    w.by = user()->name;
+    s_->waste.push_back(w);
+    std::erase_if(s_->waste, [&](const Waste &x) { return x.at < now() - 60LL * 24 * 3'600'000; });
+    if (s_->sink)
+        s_->sink->saveWaste(w);
+    refreshSoldOut();
+    ++s_->adminRevision;
+    emit s_->adminChanged();
+    emit notice(tr("Logged: %1 %2 (%3), %4").arg(amountText(qty), qs(w.what), reason, format(w.value())));
+    return true;
+}
+
+// The Stock report's other parts: today's waste, and what to order (below par).
+void PosService::stockExtras(Report &r, const ReportContext &ctx) const
+{
+    std::vector<const Waste *> today;
+    for (const Waste &w : s_->waste)
+        if (w.at >= s_->day.openedAt)
+            today.push_back(&w);
+    if (!today.empty()) {
+        r.section("Thrown away today");
+        Money total;
+        for (const Waste *w : today) {
+            r.line({ctx.clock(w->at) + " · " + w->what + " · " + w->reason + " · " + w->by,
+                    amountText(w->qty).toStdString() + (w->unit.empty() ? "" : " " + w->unit), "", "",
+                    ctx.money(-w->value())});
+            total += w->value();
+        }
+        r.total({"All", "", "", "", ctx.money(-total)});
+    }
+    std::map<std::string, std::vector<const Ingredient *>> byVendor;
+    for (const Ingredient &g : s_->ingredients)
+        if (g.par > 0 && g.onHand < g.par)
+            byVendor[g.vendor].push_back(&g);
+    for (const auto &[vendor, list] : byVendor) {
+        const auto v = std::ranges::find(s_->settings.vendors, vendor, &Vendor::id);
+        r.section("To order: " + (v == s_->settings.vendors.end() ? std::string("(no vendor)") : v->name)
+                  + " (on hand, par, order)");
+        Money total;
+        for (const Ingredient *g : list) {
+            const double order = std::ceil(g->par - g->onHand - 1e-9);
+            const Money cost = Money::fromCents(std::llround(double(g->cost.cents()) * order));
+            r.line({g->name + " (" + g->unit + ")", amountText(g->onHand).toStdString(), amountText(g->par).toStdString(),
+                    amountText(order).toStdString(), ctx.money(cost)});
+            total += cost;
+        }
+        r.total({"About", "", "", "", ctx.money(total)});
+    }
+}
+
 Report PosService::stockCountReport(const ReportContext &ctx) const
 {
     Report r;
@@ -519,6 +642,7 @@ Report PosService::stockCountReport(const ReportContext &ctx) const
         counts.push_back(&s_->stockCounts.back());   // none today: the latest one
     if (counts.empty()) {
         r.note("No stock counted yet (Manager -> Inventory -> Count Stock).");
+        stockExtras(r, ctx);
         return r;
     }
     const auto amount = [](double v) { return amountText(v).toStdString(); };
@@ -536,10 +660,13 @@ Report PosService::stockCountReport(const ReportContext &ctx) const
             r.line({l->name + " (" + l->unit + ")", amount(l->expected), amount(l->counted),
                     off == 0 ? std::string("0") : (off > 0 ? "+" : "") + amount(off), ctx.money(l->value())});
         }
+        if (c->wasteValue().cents() != 0)
+            r.total({"Thrown away (logged)", "", "", "", ctx.money(-c->wasteValue())});
         r.total({"Missing or extra", "", "", "", ctx.money(c->value())});
     }
-    r.note("Should be: last count + deliveries - sales (by recipe) + changes by hand.");
-    r.note("Less than that: waste, big portions, theft, or a recipe that's off.");
+    stockExtras(r, ctx);
+    r.note("Should be: last count + deliveries - sales (by recipe) - waste logged + changes by hand.");
+    r.note("Less than that: unlogged waste, big portions, theft, or a recipe that's off.");
     return r;
 }
 

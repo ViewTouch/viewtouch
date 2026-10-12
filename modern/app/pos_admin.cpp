@@ -150,7 +150,7 @@ QVariantList storeSections(const QVariantList &fields)
         {"tips", PosService::tr("Tips"),
          {"tipPercents", "gratuityPercent", "gratuityMinGuests", "declareCashTips", "tipOuts", "tipPool"}},
         {"menu", PosService::tr("Menu and prices"), {"extraPercent", "extraCharge", "soldOutBackNextDay"}},
-        {"stock", PosService::tr("Inventory"), {"stockCountShowsExpected"}},
+        {"stock", PosService::tr("Inventory"), {"stockCountShowsExpected", "wasteReasons"}},
         {"kitchen", PosService::tr("Kitchen"), {"kitchenStations", "kitchenWarnMinutes", "kitchenLateMinutes", "laterLeadMinutes"}},
         {"togo", PosService::tr("Takeout and delivery"),
          {"requireOrderName", "takeoutMinutes", "deliveryMinutes", "minutesPerOrderWaiting", "deliveryFee"}},
@@ -376,6 +376,8 @@ QVariantList PosService::adminFields(const QString &panel)
             field(u"unit"_s, tr("Unit"), u"string"_s, tr("each, oz, lb, slice…")),
             field(u"onHand"_s, tr("On hand"), u"number"_s, tr("Count it, or add what was delivered.")),
             field(u"lowAt"_s, tr("Low at"), u"number"_s, tr("Warn when it gets down to this.")),
+            field(u"par"_s, tr("Keep on hand (par)"), u"number"_s,
+                  tr("Below this, the Stock report's order list asks for enough to get back up to it. 0: not ordered by par.")),
             field(u"cost"_s, tr("Cost per unit"), u"money"_s, tr("For the Food Cost report.")),
         };
     }
@@ -654,6 +656,8 @@ QVariantList PosService::adminFields(const QString &panel)
                   tr("And/or a fixed amount for Extra, e.g. 0.75. Charged even on choices that are free.")),
             field(u"stockCountShowsExpected"_s, tr("Show what should be there while counting stock"), u"bool"_s,
                   tr("Off: whoever counts sees it only in the Stock Count report, after, so it can't sway the count.")),
+            asRows(field(u"wasteReasons"_s, tr("Reasons for waste"), u"text"_s, tr("Log Waste asks which one.")),
+                   tr("+ Add a reason")),
             field(u"askReasons"_s, tr("Ask why on voids and comps"), u"bool"_s,
                   tr("Voiding an item already sent, or a discount or comp, asks for a reason from the lists below. "
                      "The Exceptions report adds them up. Can be set per employee.")),
@@ -909,6 +913,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"backupCopyDir"_s, qs(s_->settings.backupCopyDir)},
              {u"askReasons"_s, s_->settings.askReasons},
              {u"stockCountShowsExpected"_s, s_->settings.stockCountShowsExpected},
+             {u"wasteReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.wasteReasons) l << qs(t); return l.join(u'\n'); }()},
              {u"voidReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.voidReasons) l << qs(t); return l.join(u'\n'); }()},
              {u"compReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.compReasons) l << qs(t); return l.join(u'\n'); }()},
              {u"openingChecklist"_s, [&] { QStringList l; for (const std::string &t : s_->settings.openingChecklist) l << qs(t); return l.join(u'\n'); }()},
@@ -1363,12 +1368,13 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             g.start = was.start;
             g.received = was.received;
             g.sold = was.sold;
+            g.wasted = was.wasted;
             g.adjusted = was.adjusted + (g.onHand - was.onHand);
             s_->ingredients[index] = g;
         } else {
             g.countedAt = 0;
             g.start = g.onHand;
-            g.received = g.sold = g.adjusted = 0;
+            g.received = g.sold = g.wasted = g.adjusted = 0;
             const QString wanted = record.value(u"id"_s).toString().trimmed();
             g.id = ss(uniqueId(wanted.isEmpty() ? name : wanted, s_->ingredients,
                                [](const Ingredient &i) { return i.id; }, -1));
@@ -1665,7 +1671,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         for (const auto &[key, list] : {std::pair{u"openingChecklist"_s, &s_->settings.openingChecklist},
                                         std::pair{u"closingChecklist"_s, &s_->settings.closingChecklist},
                                         std::pair{u"voidReasons"_s, &s_->settings.voidReasons},
-                                        std::pair{u"compReasons"_s, &s_->settings.compReasons}}) {
+                                        std::pair{u"compReasons"_s, &s_->settings.compReasons},
+                                        std::pair{u"wasteReasons"_s, &s_->settings.wasteReasons}}) {
             if (!record.contains(key))
                 continue;
             list->clear();

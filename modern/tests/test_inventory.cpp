@@ -600,3 +600,60 @@ TEST_CASE("Stock counts: what's on the shelf against what the sales and deliveri
     CHECK(loaded->stockCounts.back() == count);
     CHECK(loaded->lastStockCountId == 1);
 }
+
+TEST_CASE("Waste: logged by item or ingredient, off the shelf, told apart in the Stock report; par and the order list", "[inventory][waste]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1111"_s));   // anyone working can log waste
+    const double buns = onHand(pos, "bun"), lettuce = onHand(pos, "lettuce");
+
+    CHECK_FALSE(pos.logWaste({{u"item"_s, u"classic-burger"_s}, {u"qty"_s, u"1"_s}}));                    // why?
+    CHECK_FALSE(pos.logWaste({{u"item"_s, u"classic-burger"_s}, {u"qty"_s, u"0"_s}, {u"reason"_s, u"Made wrong"_s}}));
+    CHECK_FALSE(pos.logWaste({{u"item"_s, u"no-such-item"_s}, {u"qty"_s, u"1"_s}, {u"reason"_s, u"Made wrong"_s}}));
+    // A dropped burger: its bun, patty and lettuce. Lettuce gone bad: 8 oz.
+    REQUIRE(pos.logWaste({{u"item"_s, u"classic-burger"_s}, {u"qty"_s, u"1"_s}, {u"reason"_s, u"Dropped or spilled"_s}}));
+    REQUIRE(pos.logWaste({{u"ingredient"_s, u"lettuce"_s}, {u"qty"_s, u"8"_s}, {u"reason"_s, u"Expired or spoiled"_s}}));
+    CHECK(onHand(pos, "bun") == buns - 1);
+    CHECK(onHand(pos, "lettuce") == lettuce - 8.5);
+    CHECK(pos.shared()->ingredient("lettuce")->wasted == 8.5);
+    REQUIRE(pos.wasteEntries().size() == 2);
+    const core::Waste &burger = pos.wasteEntries().front();
+    CHECK(burger.what == "Classic Burger");
+    CHECK(burger.by == "Sam");
+    CHECK(burger.lines.size() == 3);
+    CHECK(burger.value() == Money::fromCents(35 + 160 + 6));   // bun, patty, half an oz of lettuce
+    CHECK(app::wasteFromJson(app::toJson(burger)) == burger);
+    const QVariantList today = pos.wasteLog()[u"today"_s].toList();
+    REQUIRE(today.size() == 2);
+    CHECK(today[0].toMap()[u"what"_s].toString().toStdString() == pos.shared()->ingredient("lettuce")->name);   // newest first
+
+    // Counted: lettuce right where it should be after the waste; the waste is known, not missing.
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.saveStockCount({{u"lines"_s, QVariantList{QVariantMap{{u"ingredient"_s, u"lettuce"_s},
+                                                                      {u"counted"_s, QString::number(lettuce - 8.5)}}}}}));
+    const core::StockCount &count = pos.stockCounts().back();
+    CHECK(count.lines[0].wasted == 8.5);
+    CHECK(count.lines[0].off() == 0);
+    CHECK(count.value().cents() == 0);
+    CHECK(count.wasteValue() == Money::fromCents(102));   // 8.5 oz x $0.12
+    CHECK(pos.shared()->ingredient("lettuce")->wasted == 0);
+
+    // Par: buns kept at 100; 47 on hand -> order 53 from City Bakery.
+    const int bun = indexOf(pos, "bun");
+    QVariantMap r = pos.adminRecords(u"inventory"_s)[bun].toMap();
+    r[u"par"_s] = 100;
+    REQUIRE(pos.adminSave(u"inventory"_s, bun, r));
+    CHECK(pos.shared()->ingredient("bun")->par == 100);
+    CHECK(pos.shared()->ingredient("bun")->wasted == 1);   // kept through the edit
+    CHECK(app::ingredientFromJson(app::toJson(*pos.shared()->ingredient("bun"))).par == 100);
+
+    const core::Report rep = pos.buildReport(u"stock"_s);
+    CHECK(!rowIn(rep, "Thrown away today", "All").empty());
+    const auto order = rowIn(rep, "To order: City Bakery (on hand, par, order)", "Burger Buns (each)");
+    CHECK(order == std::vector<std::string>{"Burger Buns (each)", "47", "100", "53", "$18.55"});
+    bool known = false;
+    for (const core::ReportRow &row : rep.rows)
+        known = known || (!row.cells.empty() && row.cells.front() == "Thrown away (logged)" && row.cells.back() == "-$1.02");
+    CHECK(known);
+}

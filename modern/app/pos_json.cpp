@@ -684,7 +684,8 @@ QJsonObject toJson(const StockCount &c)
         lines.append(QJsonObject{{u"ingredient"_s, qs(l.ingredientId)}, {u"name"_s, qs(l.name)}, {u"unit"_s, qs(l.unit)},
                                  {u"since"_s, qint64(l.since)}, {u"start"_s, l.start}, {u"received"_s, l.received},
                                  {u"sold"_s, l.sold}, {u"adjusted"_s, l.adjusted}, {u"expected"_s, l.expected},
-                                 {u"counted"_s, l.counted}, {u"unitCost"_s, qint64(l.unitCost.cents())}});
+                                 {u"counted"_s, l.counted}, {u"unitCost"_s, qint64(l.unitCost.cents())},
+                                 {u"wasted"_s, l.wasted}});
     return {{u"id"_s, qint64(c.id)}, {u"at"_s, qint64(c.at)}, {u"by"_s, qs(c.by)}, {u"lines"_s, lines}};
 }
 
@@ -697,9 +698,32 @@ StockCount stockCountFromJson(const QJsonObject &o)
                            ss(l.value(u"unit").toString()), i64(l.value(u"since")), l.value(u"start").toDouble(),
                            l.value(u"received").toDouble(), l.value(u"sold").toDouble(), l.value(u"adjusted").toDouble(),
                            l.value(u"expected").toDouble(), l.value(u"counted").toDouble(),
-                           Money::fromCents(i64(l.value(u"unitCost")))});
+                           Money::fromCents(i64(l.value(u"unitCost"))), l.value(u"wasted").toDouble()});
     }
     return c;
+}
+
+QJsonObject toJson(const Waste &w)
+{
+    QJsonArray lines;
+    for (const Waste::Line &l : w.lines)
+        lines.append(QJsonObject{{u"ingredient"_s, qs(l.ingredientId)}, {u"name"_s, qs(l.name)}, {u"unit"_s, qs(l.unit)},
+                                 {u"qty"_s, l.qty}, {u"unitCost"_s, qint64(l.unitCost.cents())}});
+    return {{u"id"_s, qint64(w.id)}, {u"at"_s, qint64(w.at)}, {u"by"_s, qs(w.by)}, {u"what"_s, qs(w.what)},
+            {u"qty"_s, w.qty}, {u"unit"_s, qs(w.unit)}, {u"reason"_s, qs(w.reason)}, {u"lines"_s, lines}};
+}
+
+Waste wasteFromJson(const QJsonObject &o)
+{
+    Waste w{i64(o.value(u"id")), i64(o.value(u"at")), ss(o.value(u"by").toString()), ss(o.value(u"what").toString()),
+            o.value(u"qty").toDouble(), ss(o.value(u"unit").toString()), ss(o.value(u"reason").toString()), {}};
+    for (const QJsonValue &v : o.value(u"lines").toArray()) {
+        const QJsonObject l = v.toObject();
+        w.lines.push_back({ss(l.value(u"ingredient").toString()), ss(l.value(u"name").toString()),
+                           ss(l.value(u"unit").toString()), l.value(u"qty").toDouble(),
+                           Money::fromCents(i64(l.value(u"unitCost")))});
+    }
+    return w;
 }
 
 QJsonObject toJson(const Change &c)
@@ -907,6 +931,7 @@ QJsonObject toJson(const PosSettings &s)
         {u"checkoutNeedsClosedChecks"_s, s.checkoutNeedsClosedChecks},
         {u"blindDrawerCount"_s, s.blindDrawerCount},
         {u"askReasons"_s, s.askReasons}, {u"stockCountShowsExpected"_s, s.stockCountShowsExpected},
+        {u"wasteReasons"_s, [&] { QJsonArray a; for (const std::string &r : s.wasteReasons) a.append(qs(r)); return a; }()},
         {u"voidReasons"_s, [&] { QJsonArray a; for (const std::string &r : s.voidReasons) a.append(qs(r)); return a; }()},
         {u"compReasons"_s, [&] { QJsonArray a; for (const std::string &r : s.compReasons) a.append(qs(r)); return a; }()},
         {u"cashDenominations"_s, [&] { QJsonArray a; for (std::int64_t c : s.cashDenominations) a.append(qint64(c)); return a; }()},
@@ -1130,7 +1155,8 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.blindDrawerCount = o.value(u"blindDrawerCount").toBool();
     s.askReasons = o.value(u"askReasons").toBool(true);
     s.stockCountShowsExpected = o.value(u"stockCountShowsExpected").toBool();
-    for (auto [key, list] : {std::pair{u"voidReasons", &s.voidReasons}, std::pair{u"compReasons", &s.compReasons}}) {
+    for (auto [key, list] : {std::pair{u"voidReasons", &s.voidReasons}, std::pair{u"compReasons", &s.compReasons},
+                             std::pair{u"wasteReasons", &s.wasteReasons}}) {
         if (!o.value(QStringView(key)).isArray())
             continue;
         list->clear();
@@ -1518,10 +1544,12 @@ QJsonObject toJson(const Ingredient &i)
 {
     QJsonObject o{{u"id"_s, qs(i.id)}, {u"name"_s, qs(i.name)}, {u"unit"_s, qs(i.unit)}, {u"onHand"_s, i.onHand},
                   {u"lowAt"_s, i.lowAt}, {u"cost"_s, decimalFromCents(i.cost.cents())}, {u"vendor"_s, qs(i.vendor)}};
-    if (i.countedAt || i.start || i.received || i.sold || i.adjusted)
+    if (i.par > 0)
+        o.insert(u"par"_s, i.par);
+    if (i.countedAt || i.start || i.received || i.sold || i.wasted || i.adjusted)
         o.insert(u"sinceCount"_s, QJsonObject{{u"at"_s, qint64(i.countedAt)}, {u"start"_s, i.start},
                                               {u"received"_s, i.received}, {u"sold"_s, i.sold},
-                                              {u"adjusted"_s, i.adjusted}});
+                                              {u"wasted"_s, i.wasted}, {u"adjusted"_s, i.adjusted}});
     return o;
 }
 
@@ -1537,12 +1565,14 @@ Ingredient ingredientFromJson(const QJsonObject &o)
     i.lowAt = o.value(u"lowAt").toDouble();
     i.cost = Money::fromCents(centsFromDecimal(o.value(u"cost").toDouble()));
     i.vendor = ss(o.value(u"vendor").toString());
+    i.par = std::max(0.0, o.value(u"par").toDouble());
     if (o.contains(u"sinceCount")) {
         const QJsonObject c = o.value(u"sinceCount").toObject();
         i.countedAt = i64(c.value(u"at"));
         i.start = c.value(u"start").toDouble();
         i.received = c.value(u"received").toDouble();
         i.sold = c.value(u"sold").toDouble();
+        i.wasted = c.value(u"wasted").toDouble();
         i.adjusted = c.value(u"adjusted").toDouble();
     } else {
         i.start = i.onHand;   // from before counts: what it had is where it starts

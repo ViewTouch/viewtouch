@@ -360,6 +360,25 @@ struct Demo {
             pos.saveStockCount({{u"lines"_s, lines}});
     }
 
+    // Now and then something is dropped, or the greens go bad.
+    void throwAway(QDate day)
+    {
+        if (!chance(45))
+            return;
+        clock = at(day, 14, 10 + pick(40));
+        as(chance(50) ? "1111" : "1234");
+        std::vector<std::string> made;
+        for (const MenuItem &m : pos.shared()->menu)
+            if (!m.recipe.empty() && !m.isModifier)
+                made.push_back(m.id);
+        const QStringList reasons = {u"Dropped or spilled"_s, u"Made wrong"_s, u"Sent back by a guest"_s};
+        if (!made.empty() && chance(70))
+            pos.logWaste({{u"item"_s, QString::fromStdString(made[pick(int(made.size()))])}, {u"qty"_s, 1},
+                          {u"reason"_s, reasons[pick(3)]}});
+        else
+            pos.logWaste({{u"ingredient"_s, u"lettuce"_s}, {u"qty"_s, 4 + pick(8)}, {u"reason"_s, u"Expired or spoiled"_s}});
+    }
+
     void playDay(QDate day, double busy)
     {
         clock = at(day, 9, 0);
@@ -399,6 +418,7 @@ struct Demo {
                 pos.toggleBreak();
             }
         }
+        throwAway(day);
         clock = at(day, 22, 15);
         checklist(u"closing"_s, chance(85) ? 5 : 3);   // now and then something is left
         clock = at(day, 22, 30);

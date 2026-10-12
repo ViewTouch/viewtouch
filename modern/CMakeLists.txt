@@ -177,6 +177,7 @@ if(Qt6_FOUND)
             ui/qml/WidgetNetwork.qml
             ui/qml/WidgetReceiveDelivery.qml
             ui/qml/WidgetStockCount.qml
+            ui/qml/WidgetWasteLog.qml
             ui/qml/WidgetCheckSearch.qml
             ui/qml/WidgetOrderLater.qml
             ui/qml/WidgetMenuGrid.qml

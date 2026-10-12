@@ -388,7 +388,7 @@ write("pos/settings.json", {
 WIDGETS = ["orderList", "loginPad", "guestCount", "numPad", "paymentPanel",
            "logoutPanel", "clock", "checkList", "keyboard", "statusBar",
            "adminPanel", "reportView", "drawerPanel", "endOfDay", "splitCheck", "customerInfo",
-           "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "messageComposer", "network", "receiveDelivery", "stockCount", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard"]
+           "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "messageComposer", "network", "receiveDelivery", "stockCount", "wasteLog", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard"]
 widget_style = {"normal": {"fill": "#232933", "frame": "flat", "shadow": 0, "radius": 12,
                            "textColor": "#e6e9ef", "fontSize": 28, "bold": False}}
 write("theme.json", {
@@ -899,6 +899,12 @@ page("stock-count", "Count Stock", "manager", [
     zone("count", 16, 112, 1888, 816, kind="stockCount"),
     zone("back", 16, 944, 432, 120, "‹ Inventory", actions=[jump(mode="back")]),
 ], permission="manager")
+
+page("waste-log", "Log Waste", "manager", [
+    label("title", 16, 16, 1888, 80, "Log waste"),
+    zone("waste", 16, 112, 1888, 816, kind="wasteLog"),
+    zone("back", 16, 944, 432, 120, "‹ Back", actions=[jump(mode="back")]),
+], permission="order")
 
 page("factory-reset", "Factory Reset", "manager", [
     label("title", 16, 16, 1888, 80, "Factory reset"),

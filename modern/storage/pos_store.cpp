@@ -253,6 +253,12 @@ bool PosStore::open(QString *error)
             || !run(q, u"UPDATE meta SET value = '15' WHERE key = 'pos_schema_version'"_s, error))
             return false;
     }
+    if (version < 16) {   // the waste log
+        if (!run(q, u"CREATE TABLE IF NOT EXISTS waste (id INTEGER PRIMARY KEY, at INTEGER NOT NULL, json TEXT NOT NULL)"_s, error)
+            || !run(q, u"CREATE INDEX IF NOT EXISTS waste_at ON waste (at)"_s, error)
+            || !run(q, u"UPDATE meta SET value = '16' WHERE key = 'pos_schema_version'"_s, error))
+            return false;
+    }
     return true;
 }
 
@@ -430,6 +436,14 @@ std::optional<app::PosData> PosStore::load(QStringList *errors) const
     }
     if (q.exec(u"SELECT COALESCE(MAX(id), 0) FROM stock_counts"_s) && q.next())
         data.lastStockCountId = q.value(0).toLongLong();
+    q.prepare(u"SELECT json FROM waste WHERE at >= ? ORDER BY id"_s);
+    q.addBindValue(QDateTime::currentMSecsSinceEpoch() - 60LL * 24 * 3'600'000);
+    if (q.exec()) {
+        while (q.next())
+            data.waste.push_back(app::wasteFromJson(parse(q.value(0))));
+    }
+    if (q.exec(u"SELECT COALESCE(MAX(id), 0) FROM waste"_s) && q.next())
+        data.lastWasteId = q.value(0).toLongLong();
     if (q.exec(u"SELECT id, opened_at, closed_at, reports FROM business_days WHERE closed_at != 0 "
                "ORDER BY id DESC LIMIT 60"_s)) {
         while (q.next()) {
@@ -599,6 +613,12 @@ void SqlPosSink::saveStockCount(const core::StockCount &c)
 {
     writer_.upsert(u"stock_counts"_s, QString::number(c.id),
                    {{u"id"_s, qint64(c.id)}, {u"at"_s, qint64(c.at)}, {u"json"_s, compact(app::toJson(c))}});
+}
+
+void SqlPosSink::saveWaste(const core::Waste &w)
+{
+    writer_.upsert(u"waste"_s, QString::number(w.id),
+                   {{u"id"_s, qint64(w.id)}, {u"at"_s, qint64(w.at)}, {u"json"_s, compact(app::toJson(w))}});
 }
 
 void SqlPosSink::saveImage(const std::string &name, const QByteArray &data)

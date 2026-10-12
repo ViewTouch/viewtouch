@@ -647,6 +647,26 @@
       }
     },
     {
+      "id": "waste-log",
+      "kind": "button",
+      "rect": {
+        "x": 1132,
+        "y": 794,
+        "w": 300,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Log Waste\u2026",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "waste-log"
+        }
+      ]
+    },
+    {
       "id": "back",
       "kind": "button",
       "rect": {

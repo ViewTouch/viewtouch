@@ -3712,6 +3712,45 @@ TEST_CASE("UI: counting stock by touch, and the Stock Count report", "[flow][ui]
     s.shot("stock-count-report");
 }
 
+TEST_CASE("UI: logging waste by touch", "[flow][ui][waste]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.c.jumpTo(u"manager"_s));
+    QTest::qWait(60);
+    s.c.activate(u"waste-log"_s);
+    QTest::qWait(80);
+    REQUIRE(s.c.pageId() == u"waste-log"_s);
+    auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    const double buns = s.pos.shared()->ingredient("bun")->onHand;
+    s.tapItem(find(u"waste-classic-burger"_s));
+    s.tapItem(find(u"wasteMore"_s));                       // two of them
+    s.tapItem(find(u"wasteReason-0"_s));
+    QTest::qWait(60);
+    s.shot("waste-log");
+    s.tapItem(find(u"logWaste"_s));
+    QTest::qWait(80);
+    CHECK(s.pos.shared()->ingredient("bun")->onHand == buns - 2);
+    REQUIRE(s.pos.wasteEntries().size() == 1);
+    CHECK(s.pos.wasteEntries().back().qty == 2);
+    CHECK(find(u"wasteQty"_s)->property("text").toString() == u"1"_s);   // ready for the next one
+    // An ingredient, by its unit.
+    s.tapItem(find(u"wasteIngredients"_s));
+    QTest::qWait(40);
+    s.tapItem(find(u"waste-lettuce"_s));
+    s.tapItem(find(u"wasteQty"_s));
+    QTest::keyClick(s.window, Qt::Key_End);
+    QTest::keyClick(s.window, Qt::Key_Backspace);
+    QTest::keyClick(s.window, '6');
+    s.tapItem(find(u"wasteReason-1"_s));
+    s.tapItem(find(u"logWaste"_s));
+    QTest::qWait(80);
+    REQUIRE(s.pos.wasteEntries().size() == 2);
+    CHECK(s.pos.wasteEntries().back().qty == 6);
+    CHECK(s.pos.wasteEntries().back().unit == "oz");
+    s.shot("waste-logged");
+}
+
 TEST_CASE("UI: clocking in with two jobs asks which one", "[flow][ui][pay]")
 {
     Screen s;
