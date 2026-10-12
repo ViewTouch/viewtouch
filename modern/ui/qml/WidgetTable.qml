@@ -115,7 +115,8 @@ Item {
             font.family: w.face
             font.pixelSize: Math.min((Math.min(w.width, w.height) - 2 * w.chairDepth) * 0.28, w.zone.st.fontSize ?? 40)
             font.bold: w.zone.st.bold ?? true
-            elide: Text.ElideRight
+            fontSizeMode: Text.HorizontalFit   // a stool's "Bar 1": smaller, not cut
+            minimumPixelSize: 8
         }
         Text {
             width: parent.width

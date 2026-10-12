@@ -144,6 +144,12 @@ public:
     Q_INVOKABLE void windowResized(qreal width, qreal height);
     // Every table in the pages, for the phone table list: [{name, seats}].
     Q_INVOKABLE QVariantList tables() const;
+    // The floor plans with tables, [{id, name}]: the floor (role "tables")
+    // first, then in the order of its tabs, then any others.
+    Q_INVOKABLE QVariantList floorPlans() const;
+    // One plan's tables and pieces (walls, doors...), {x, y, w, h, zones:
+    // [{kind, label, x, y, w, h, rot, shape, props}]}: the box they fill.
+    Q_INVOKABLE QVariantMap floorPlan(const QString &pageId) const;
 
     // Save the report on screen as "csv" or "pdf" in the export folder.
     Q_INVOKABLE void exportReport(const QVariantMap &report, const QString &format);

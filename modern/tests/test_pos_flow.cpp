@@ -289,11 +289,14 @@ struct Screen : Session {
             if (!content)
                 break;
             const QRectF r = item->mapRectToItem(content, QRectF(0, 0, item->width(), item->height()));
-            const double y = p->property("contentY").toDouble();
-            if (r.top() < y || r.bottom() > y + p->height()) {
-                p->setProperty("contentY", std::max(0.0, r.center().y() - p->height() / 2));
-                QTest::qWait(30);
-            }
+            const double y = p->property("contentY").toDouble(), x = p->property("contentX").toDouble();
+            const double maxY = std::max(0.0, p->property("contentHeight").toDouble() - p->height());
+            const double maxX = std::max(0.0, p->property("contentWidth").toDouble() - p->width());
+            if (r.top() < y || r.bottom() > y + p->height())
+                p->setProperty("contentY", std::clamp(r.center().y() - p->height() / 2, 0.0, maxY));
+            if (r.left() < x || r.right() > x + p->width())
+                p->setProperty("contentX", std::clamp(r.center().x() - p->width() / 2, 0.0, maxX));
+            QTest::qWait(30);
             break;
         }
         const QPointF centre = item->mapToScene(QPointF(item->width() / 2, item->height() / 2));
@@ -7349,4 +7352,51 @@ TEST_CASE("Floor plans: a picture of each arrangement of Main", "[.floorArrangem
     }
     REQUIRE(e->useArrangement(u"classic"_s));
     REQUIRE(s.c.leaveEditMode(true));
+}
+
+TEST_CASE("Host stand: the floor plan as drawn, a tab for each, picked by touch, zoomed in", "[ui][host][floorplans]")
+{
+    for (const bool phone : {false, true}) {
+        Screen s(false, phone ? 412 : 1600, phone ? 870 : 900, phone ? u"phone"_s : QString());
+        REQUIRE(s.pos.loginWithPin(u"1234"_s));
+        REQUIRE(s.c.jumpTo(u"seating"_s));
+        QTest::qWait(80);
+        const auto by = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+        // Main: every table where the plan has it, walls and all; T1 left of T2, the patio below.
+        REQUIRE(by(u"host-T1"_s));
+        REQUIRE(by(u"host-P1"_s));
+        const auto at = [&](const QString &t) {
+            QQuickItem *i = by(u"host-"_s + t);
+            return i->mapToScene(QPointF(i->width() / 2, i->height() / 2));
+        };
+        CHECK(at(u"T1"_s).x() < at(u"T2"_s).x());
+        CHECK(at(u"P1"_s).y() > at(u"T5"_s).y());
+        CHECK(by(u"host-P1"_s)->property("rotation").toDouble() == 45);
+        // The Patio tab: just its tables, bigger.
+        const auto shown = [&](const QString &t) {
+            QQuickItem *i = by(u"host-"_s + t);
+            return i->mapRectToScene(QRectF(0, 0, i->width(), i->height())).width();
+        };
+        const double mainWidth = shown(u"P1"_s);
+        s.tapItem(by(u"hostPlan-floor-patio"_s));
+        QTest::qWait(60);
+        CHECK_FALSE(by(u"host-T1"_s));
+        REQUIRE(by(u"host-P4"_s));
+        CHECK(shown(u"P1"_s) > mainWidth);
+        s.tapItem(by(u"host-P4"_s));
+        CHECK(Screen::findBy(by(u"host-P4"_s), "text", u"✓ P4"_s));
+        s.shot(phone ? "host-phone-patio" : "host-patio");
+        // Zoomed in (two fingers): still picked by a touch, the plan scrolled to it.
+        s.tapItem(by(u"hostPlan-tables"_s));
+        QTest::qWait(60);
+        by(u"hostFloor"_s)->setProperty("zoom", 2.5);
+        QTest::qWait(60);
+        s.tapItem(by(u"host-Bar 3"_s));
+        CHECK(Screen::findBy(by(u"host-Bar 3"_s), "text", u"✓ Bar 3"_s));
+        // The plan picked stays: back on this screen, Main again (the last tab touched).
+        REQUIRE(s.c.jumpTo(u"tables"_s));
+        REQUIRE(s.c.jumpTo(u"seating"_s));
+        QTest::qWait(60);
+        CHECK(by(u"host-T1"_s));
+    }
 }

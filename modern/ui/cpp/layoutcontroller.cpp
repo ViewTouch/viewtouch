@@ -779,6 +779,54 @@ QVariantList LayoutController::tables() const
     return out;
 }
 
+QVariantList LayoutController::floorPlans() const
+{
+    const Layout &l = activeLayout();
+    const auto hasTables = [&](const vt::layout::Page &p) {
+        return p.variantOf.isEmpty() && p.kind != u"template" && p.kind != u"library"
+            && std::ranges::any_of(l.effectiveZones(p.id), [](const Layout::PlacedZone &pz) { return pz.zone->kind == u"table"; });
+    };
+    QStringList order;
+    const vt::layout::Page *floor = l.pageByRole(u"tables"_s);
+    if (floor && hasTables(*floor)) {
+        order << floor->id;
+        // Its tabs: the plans it jumps to, left to right.
+        QList<const vt::layout::Zone *> jumps;
+        for (const Layout::PlacedZone &pz : l.effectiveZones(floor->id))
+            if (const vt::layout::Page *to = l.page(primaryJumpTarget(l, *pz.zone)); to && hasTables(*to))
+                jumps << pz.zone;
+        std::ranges::stable_sort(jumps, [](const auto *a, const auto *b) {
+            return std::pair(a->rect.y(), a->rect.x()) < std::pair(b->rect.y(), b->rect.x());
+        });
+        for (const vt::layout::Zone *z : jumps)
+            if (const QString id = primaryJumpTarget(l, *z); !order.contains(id))
+                order << id;
+    }
+    for (const vt::layout::Page &p : l.pages)
+        if (hasTables(p) && !order.contains(p.id))
+            order << p.id;
+    QVariantList out;
+    for (const QString &id : order)
+        out.append(QVariantMap{{u"id"_s, id}, {u"name"_s, l.page(id)->name}});
+    return out;
+}
+
+QVariantMap LayoutController::floorPlan(const QString &pageId) const
+{
+    QVariantList zones;
+    QRect box;
+    for (const Layout::PlacedZone &pz : activeLayout().effectiveZones(pageId)) {
+        const vt::layout::Zone &z = *pz.zone;
+        if (z.kind != u"table" && z.kind != u"decor")
+            continue;
+        box = box.united(z.rect);
+        zones.append(QVariantMap{{u"kind"_s, z.kind}, {u"label"_s, z.label}, {u"x"_s, z.rect.x()}, {u"y"_s, z.rect.y()},
+                                 {u"w"_s, z.rect.width()}, {u"h"_s, z.rect.height()}, {u"rot"_s, vt::layout::rotationOf(z)},
+                                 {u"shape"_s, z.shape}, {u"props"_s, z.props.toVariantMap()}});
+    }
+    return {{u"x"_s, box.x()}, {u"y"_s, box.y()}, {u"w"_s, box.width()}, {u"h"_s, box.height()}, {u"zones"_s, zones}};
+}
+
 int LayoutController::pageGrid() const
 {
     const auto *p = currentPage();

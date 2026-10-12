@@ -4,9 +4,11 @@ import QtQuick.Shapes
 // A floor plan piece (props.decor): a wall, window, door, bar counter, booth,
 // plant, pillar, fence, entrance or a named area. Drawn to its size and
 // turned with its zone; words on it stay upright. Touching it does nothing.
+// `zone`: its ZoneItem, or the same few things ({props, label, shape,
+// rotation, st}) where a plan is drawn small (the host stand).
 Item {
     id: w
-    property ZoneItem zone
+    property var zone
     readonly property string decor: zone && zone.props ? (zone.props.decor ?? "wall") : "wall"
     readonly property string words: zone ? zone.label : ""
     // props.color: the piece's own color; else the usual for its sort.
