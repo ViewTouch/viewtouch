@@ -55,6 +55,10 @@
   "one": "%n more",
   "other": "%n more"
  },
+ "%n new (below)": {
+  "one": "%n new (below)",
+  "other": "%n new (below)"
+ },
  "%n option(s)": {
   "one": "%n option",
   "other": "%n options"
@@ -226,6 +230,10 @@
  "⚠ %n to fix": {
   "one": "⚠ %n to fix",
   "other": "⚠ %n to fix"
+ },
+ "⚠ %n to look at": {
+  "one": "⚠ %n to look at",
+  "other": "⚠ %n to look at"
  },
  "✓ Ready (%n note(s))": {
   "one": "✓ Ready (%n note)",

@@ -35,6 +35,8 @@ QJsonObject toJson(const core::Change &change);
 QJsonObject toJson(const core::StockCount &count);
 core::StockCount stockCountFromJson(const QJsonObject &o);
 QJsonObject toJson(const core::Waste &waste);
+QJsonObject toJson(const core::Problem &problem);
+core::Problem problemFromJson(const QJsonObject &o);
 core::Waste wasteFromJson(const QJsonObject &o);
 core::Change changeFromJson(const QJsonObject &o);
 std::optional<core::Check> checkFromJson(const QJsonObject &o);

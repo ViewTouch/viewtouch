@@ -196,6 +196,8 @@ struct PosSettings {
     // Counting stock: what should be there is shown while counting (else
     // only in the Stock Count report, after: a count not swayed by it).
     bool stockCountShowsExpected = false;
+    // Store Check: problems up to this id have been seen by a manager.
+    std::int64_t problemsSeen = 0;
     // Log Waste: why it was thrown away.
     std::vector<std::string> wasteReasons{"Dropped or spilled", "Expired or spoiled", "Made wrong",
                                           "Sent back by a guest", "Overcooked or burnt"};

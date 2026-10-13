@@ -63,6 +63,8 @@ PosShared::PosShared(PosData data, PosSink *sink, QObject *parent)
     , lastStockCountId(data.lastStockCountId)
     , waste(std::move(data.waste))
     , lastWasteId(data.lastWasteId)
+    , problems(std::move(data.problems))
+    , lastProblemId(data.lastProblemId)
     , now_([] { return QDateTime::currentMSecsSinceEpoch(); })
 {
     for (Check &c : data.openChecks) {
@@ -426,6 +428,20 @@ QVariantMap PosService::userPrefs() const
     return {{u"textSize"_s, e->textSize}, {u"leftHanded"_s, e->leftHanded}, {u"startPage"_s, qs(start)}};
 }
 
+void PosShared::noteProblem(const std::string &kind, const std::string &subject, const std::string &detail)
+{
+    const std::int64_t at = now();
+    for (auto it = problems.rbegin(); it != problems.rend() && it->at > at - 10 * 60'000; ++it)
+        if (it->kind == kind && it->subject == subject && it->detail == detail)
+            return;
+    Problem p{++lastProblemId, at, kind, subject, detail};
+    problems.push_back(p);
+    std::erase_if(problems, [&](const Problem &x) { return x.at < at - 7LL * 24 * 3'600'000; });
+    if (sink)
+        sink->saveProblem(p);
+    emit networkChanged();
+}
+
 void PosShared::setPrinterProblem(const std::string &printerId, const std::string &problem)
 {
     const auto it = printerProblems.find(printerId);
@@ -435,6 +451,10 @@ void PosShared::setPrinterProblem(const std::string &printerId, const std::strin
         printerProblems.erase(it);
     else
         printerProblems[printerId] = problem;
+    // Kept for the managers (paper running low is only a heads-up).
+    if (!problem.empty() && problem != "paperLow")
+        if (const PrinterConfig *p = settings.printer(printerId); p && p->watch)
+            noteProblem("printer", p->name, problem);
     emit networkChanged();   // every screen's printerAlerts, and Manager -> Network
 }
 
@@ -447,13 +467,7 @@ QVariantList PosService::printerAlerts() const
             continue;
         const QString name = qs(p.name);
         const std::string &what = it->second;
-        const QString text = what == "paperOut"    ? tr("%1: out of paper").arg(name)
-                             : what == "coverOpen" ? tr("%1: the cover is open").arg(name)
-                             : what == "paperLow"  ? tr("%1: paper running low").arg(name)
-                             : what == "offline"   ? tr("%1: not answering: check its paper, cover and power (or the network)").arg(name)
-                             : what == "offlinePaper" ? tr("%1: not answering, probably out of paper (it was running low): put in a new roll and close the cover").arg(name)
-                             : what == "silent"    ? tr("%1: not responding: check that the cover is closed and it has paper, else turn it off and on").arg(name)
-                                                   : tr("%1 has a problem (a paper jam or the cutter?)").arg(name);
+        const QString text = printerProblemText(name, what);
         out.append(QVariantMap{{u"id"_s, qs(p.id)}, {u"name"_s, name}, {u"problem"_s, qs(what)}, {u"text"_s, text},
                                {u"urgent"_s, what != "paperLow"}});
     }
@@ -2416,6 +2430,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"selectFoundCheck"_s, [](PosService &p, const QVariantList &a) { p.selectFoundCheck(a.value(0).toLongLong()); return QVariant(true); }},
         {u"reprintCheck"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.reprintCheck(a.value(0).toLongLong())); }},
         {u"receiveDelivery"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.receiveDelivery(a.value(0).toMap())); }},
+        {u"problemsSeen"_s, [](PosService &p, const QVariantList &) { return QVariant(p.problemsSeen()); }},
         {u"logWaste"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.logWaste(a.value(0).toMap())); }},
         {u"saveStockCount"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.saveStockCount(a.value(0).toMap())); }},
         {u"setExpenseCategory"_s, [](PosService &p, const QVariantList &a) { p.setExpenseCategory(a.value(0).toString()); return QVariant(true); }},

@@ -76,6 +76,19 @@ struct DrawerSession {
     bool operator==(const DrawerSession &) const = default;
 };
 
+// Something that went wrong, kept for the managers (Manager -> Store Check):
+// a printer, a save to the database, a backup, the standby, ViewTouch closing
+// without being told to. `kind` says which; `subject` is what (a printer's
+// name), `detail` the rest (its problem, an error).
+struct Problem {
+    std::int64_t id = 0;
+    std::int64_t at = 0;
+    std::string kind;     // printer | database | backup | backupCopy | standby | crash
+    std::string subject;
+    std::string detail;
+    bool operator==(const Problem &) const = default;
+};
+
 // A change made on the manager screens, the Menu Builder or the page
 // editor: who changed what, from what to what (the Changes report).
 struct Change {

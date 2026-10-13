@@ -126,6 +126,8 @@ class PosSession : public QObject {
     Q_PROPERTY(QVariantMap stockCounting READ stockCounting NOTIFY adminChanged)
     // Log Waste: {items, ingredients, reasons, today}.
     Q_PROPERTY(QVariantMap wasteLog READ wasteLog NOTIFY adminChanged)
+    // Ready to open, and what went wrong lately (managers).
+    Q_PROPERTY(QVariantMap storeCheck READ storeCheck NOTIFY dayChanged)
     // Finding checks: {query, loading, more, results: [{id, label, when,
     // server, customer, total, status}], selected: {..., lines, payments}}.
     Q_PROPERTY(QVariantMap checkSearch READ checkSearch NOTIFY sessionChanged)
@@ -307,6 +309,7 @@ public:
     virtual QVariantMap receiving() const = 0;
     virtual QVariantMap stockCounting() const = 0;
     virtual QVariantMap wasteLog() const = 0;
+    virtual QVariantMap storeCheck() const = 0;
     virtual QVariantMap checkSearch() const = 0;
     virtual QVariantMap networkInfo() const = 0;
     virtual QVariantList printerAlerts() const = 0;
@@ -498,6 +501,7 @@ public:
     Q_INVOKABLE void saveStockCount(const QVariantMap &count) { invoke(QStringLiteral("saveStockCount"), {count}); }
     // {item | ingredient, qty, reason}: thrown away.
     Q_INVOKABLE void logWaste(const QVariantMap &waste) { invoke(QStringLiteral("logWaste"), {waste}); }
+    Q_INVOKABLE void problemsSeen() { invoke(QStringLiteral("problemsSeen")); }
     Q_INVOKABLE void searchChecks(const QString &query, int days = 365, int offset = 0) { invoke(QStringLiteral("searchChecks"), {query, days, offset}); }
     // Orders for later: ready at this time (ms since 1970; 0 = as soon as possible).
     Q_INVOKABLE void setDueAt(double at) { invoke(QStringLiteral("setDueAt"), {qint64(at)}); }

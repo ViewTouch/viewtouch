@@ -154,6 +154,11 @@ Item {
             "date": Qt.locale().toString(zone.now, "ddd MMM d"),
             "mealPeriod": controller ? controller.mealPeriod : "",
         }
+        // New problems for the managers (Store Check): "⚠ 2", or nothing.
+        if (text.indexOf("{problems}") >= 0) {
+            const n = p && p.storeCheck ? (p.storeCheck.unseen ?? 0) : 0
+            values["problems"] = n > 0 ? "⚠ " + n : ""
+        }
         return text.replace(/\{([a-zA-Z.]+)\}/g, (m, k) => k in values ? String(values[k]) : m)
     }
 
@@ -185,7 +190,7 @@ Item {
         "soldOutList", "orderList", "loginPad", "guestCount", "numPad",
         "paymentPanel", "checkList", "keyboard", "clock", "logoutPanel", "statusBar",
         "adminPanel", "reportView", "drawerPanel", "endOfDay", "splitCheck", "kitchenDisplay", "customerInfo",
-        "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "messageComposer", "network", "receiveDelivery", "stockCount", "wasteLog", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard", "decor", "floorPlan"]
+        "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "messageComposer", "network", "receiveDelivery", "stockCount", "wasteLog", "storeCheck", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard", "decor", "floorPlan"]
     readonly property bool hasWidget: isWidget && builtWidgets.includes(kind)
     readonly property bool interactive: zoneEnabled && behavior !== "passthrough"
                                         && (kind === "button" || kind === "image")

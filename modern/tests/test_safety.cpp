@@ -541,3 +541,70 @@ TEST_CASE("Demo data made at any hour: today has guests already, nothing closed 
             CHECK(c.closedAt <= now);
     }
 }
+
+TEST_CASE("Store Check: ready to open, and the problems kept for the managers", "[storeCheck]")
+{
+    app::PosData data = test::seedPosData();
+    app::PosService pos(data, nullptr);
+    app::PosShared *s = pos.shared();
+    std::int64_t clock = QDateTime::currentMSecsSinceEpoch();
+    s->setClock([&] { return clock; });
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const auto check = [&](const QString &id) {
+        for (const QVariant &v : pos.storeCheck()[u"checks"_s].toList())
+            if (v.toMap()[u"id"_s] == id)
+                return v.toMap();
+        return QVariantMap();
+    };
+    CHECK(check(u"problems"_s)[u"ok"_s].toBool());
+    CHECK(check(u"clock"_s)[u"ok"_s].toBool());
+
+    // A printer out of paper: on the check, and kept as a problem (once, not every minute).
+    REQUIRE(!s->settings.printers.empty());
+    core::PrinterConfig &printer = s->settings.printers.front();
+    printer.watch = true;
+    s->setPrinterProblem(printer.id, "paperOut");
+    s->setPrinterProblem(printer.id, {});
+    s->setPrinterProblem(printer.id, "paperOut");
+    CHECK_FALSE(check(u"printer:"_s + QString::fromStdString(printer.id))[u"ok"_s].toBool());
+    QVariantMap info = pos.storeCheck();
+    CHECK_FALSE(info[u"ready"_s].toBool());
+    REQUIRE(info[u"problems"_s].toList().size() == 1);
+    CHECK(info[u"unseen"_s].toInt() == 1);
+    CHECK(info[u"problems"_s].toList()[0].toMap()[u"text"_s].toString().contains(u"out of paper"_s));
+    s->setPrinterProblem(printer.id, "paperLow");   // a heads-up, not a problem
+    CHECK(pos.storeCheck()[u"problems"_s].toList().size() == 1);
+
+    // Others: the database, a backup; a crash.
+    s->noteProblem("database", {}, "disk full");
+    s->noteProblem("crash", "Mon 9:00 AM");
+    info = pos.storeCheck();
+    CHECK(info[u"unseen"_s].toInt() == 3);
+    CHECK(info[u"problems"_s].toList()[0].toMap()[u"text"_s].toString().contains(u"closed without being told to"_s));
+    CHECK(app::problemFromJson(app::toJson(s->problems.front())) == s->problems.front());
+
+    // Seen: no longer new; a new one is.
+    REQUIRE(pos.problemsSeen());
+    CHECK(pos.storeCheck()[u"unseen"_s].toInt() == 0);
+    CHECK(check(u"problems"_s)[u"ok"_s].toBool());
+    s->noteProblem("backup", {}, "no room");
+    CHECK(pos.storeCheck()[u"unseen"_s].toInt() == 1);
+
+    // Older than a week: gone.
+    clock += 8LL * 24 * 3'600'000;
+    s->noteProblem("standby", {});
+    CHECK(s->problems.size() == 1);
+
+    // The clock behind the last sale (a dead clock battery).
+    s->setPrinterProblem(printer.id, {});
+    pos.addItem(u"coffee"_s);
+    REQUIRE(pos.tender(u"credit"_s));
+    REQUIRE(pos.closeCheck());
+    clock -= 3'600'000;
+    CHECK_FALSE(check(u"clock"_s)[u"ok"_s].toBool());
+
+    // Servers don't get it.
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    CHECK(pos.storeCheck().isEmpty());
+}

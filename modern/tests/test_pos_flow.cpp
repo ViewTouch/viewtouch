@@ -3751,6 +3751,32 @@ TEST_CASE("UI: logging waste by touch", "[flow][ui][waste]")
     s.shot("waste-logged");
 }
 
+TEST_CASE("UI: Store Check: ready to open, and problems marked on the Manager page", "[flow][ui][storeCheck]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    core::PrinterConfig &printer = s.pos.shared()->settings.printers.front();
+    printer.watch = true;
+    s.pos.shared()->setPrinterProblem(printer.id, "coverOpen");
+    s.pos.shared()->noteProblem("backup", {}, "the backup drive is full");
+    REQUIRE(s.c.jumpTo(u"manager"_s));
+    QTest::qWait(80);
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"Store Check ⚠ 2"_s));
+    s.c.activate(u"store-check"_s);
+    QTest::qWait(80);
+    REQUIRE(s.c.pageId() == u"store-check"_s);
+    auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    REQUIRE(find(u"readyToOpen"_s));
+    CHECK(find(u"readyToOpen"_s)->property("text").toString().startsWith(u"⚠"_s));
+    s.shot("store-check");
+    s.tapItem(find(u"problemsSeen"_s));
+    QTest::qWait(60);
+    CHECK(s.pos.storeCheck()[u"unseen"_s].toInt() == 0);
+    REQUIRE(s.c.jumpTo(u"manager"_s));
+    QTest::qWait(60);
+    CHECK(Screen::findBy(s.window->contentItem(), "text", u"Store Check "_s));
+}
+
 TEST_CASE("UI: clocking in with two jobs asks which one", "[flow][ui][pay]")
 {
     Screen s;

@@ -60,6 +60,7 @@ public:
     virtual void saveChange(const core::Change &) {}
     virtual void saveStockCount(const core::StockCount &) {}
     virtual void saveWaste(const core::Waste &) {}
+    virtual void saveProblem(const core::Problem &) {}
     // The store's pictures (logo, buttons, backgrounds): name -> file bytes.
     virtual void saveImage(const std::string &name, const QByteArray &data) { Q_UNUSED(name) Q_UNUSED(data) }
     virtual void deleteImage(const std::string &name) { Q_UNUSED(name) }
@@ -135,6 +136,8 @@ struct PosData {
     std::int64_t lastStockCountId = 0;
     std::vector<core::Waste> waste;               // the last 60 days, oldest first
     std::int64_t lastWasteId = 0;
+    std::vector<core::Problem> problems;          // the last 7 days, oldest first
+    std::int64_t lastProblemId = 0;
 };
 
 // State shared by every terminal of one store: open checks, today's closed
@@ -232,6 +235,12 @@ public:
     std::int64_t lastStockCountId = 0;
     std::vector<core::Waste> waste;              // the last 60 days, oldest first
     std::int64_t lastWasteId = 0;
+    // What went wrong lately (Store Check), and how many of them the
+    // managers have seen (problem ids up to settings.problemsSeen).
+    std::vector<core::Problem> problems;
+    std::int64_t lastProblemId = 0;
+    // Kept, unless the same thing was noted in the last 10 minutes.
+    void noteProblem(const std::string &kind, const std::string &subject, const std::string &detail = {});
     // Refunds sent to Stripe and not answered yet ("check/payment"), from any terminal.
     QSet<QString> refundsUnderway;
     // How much of a payment has gone back: on the check, and today's from any terminal.
@@ -390,6 +399,11 @@ public:
     core::Report stockCountReport(const core::ReportContext &ctx) const;
     void stockExtras(core::Report &r, const core::ReportContext &ctx) const;
     QVariantMap wasteLog() const override;
+    // Store Check: {checks: [{id, ok, info, title, detail}], problems: [{when, kind, text, new}], unseen, ready}.
+    QVariantMap storeCheck() const override;
+    bool problemsSeen();   // the problems listed now have been seen
+    static QString printerProblemText(const QString &name, const std::string &what);
+    QString problemText(const core::Problem &p) const;
     // Thrown away: a menu item (its recipe) or an ingredient, how much, why.
     bool logWaste(const QVariantMap &waste);
     const std::vector<core::Waste> &wasteEntries() const { return s_->waste; }

@@ -667,6 +667,26 @@
       ]
     },
     {
+      "id": "store-check",
+      "kind": "button",
+      "rect": {
+        "x": 1456,
+        "y": 794,
+        "w": 300,
+        "h": 120
+      },
+      "shape": "rect",
+      "behavior": "blink",
+      "label": "Store Check {problems}",
+      "actions": [
+        {
+          "type": "jump",
+          "mode": "push",
+          "page": "store-check"
+        }
+      ]
+    },
+    {
       "id": "back",
       "kind": "button",
       "rect": {

@@ -259,6 +259,11 @@ bool PosStore::open(QString *error)
             || !run(q, u"UPDATE meta SET value = '16' WHERE key = 'pos_schema_version'"_s, error))
             return false;
     }
+    if (version < 17) {   // what went wrong (Store Check)
+        if (!run(q, u"CREATE TABLE IF NOT EXISTS problems (id INTEGER PRIMARY KEY, at INTEGER NOT NULL, json TEXT NOT NULL)"_s, error)
+            || !run(q, u"UPDATE meta SET value = '17' WHERE key = 'pos_schema_version'"_s, error))
+            return false;
+    }
     return true;
 }
 
@@ -444,6 +449,14 @@ std::optional<app::PosData> PosStore::load(QStringList *errors) const
     }
     if (q.exec(u"SELECT COALESCE(MAX(id), 0) FROM waste"_s) && q.next())
         data.lastWasteId = q.value(0).toLongLong();
+    q.prepare(u"SELECT json FROM problems WHERE at >= ? ORDER BY id"_s);
+    q.addBindValue(QDateTime::currentMSecsSinceEpoch() - 7LL * 24 * 3'600'000);
+    if (q.exec()) {
+        while (q.next())
+            data.problems.push_back(app::problemFromJson(parse(q.value(0))));
+    }
+    if (q.exec(u"SELECT COALESCE(MAX(id), 0) FROM problems"_s) && q.next())
+        data.lastProblemId = q.value(0).toLongLong();
     if (q.exec(u"SELECT id, opened_at, closed_at, reports FROM business_days WHERE closed_at != 0 "
                "ORDER BY id DESC LIMIT 60"_s)) {
         while (q.next()) {
@@ -619,6 +632,12 @@ void SqlPosSink::saveWaste(const core::Waste &w)
 {
     writer_.upsert(u"waste"_s, QString::number(w.id),
                    {{u"id"_s, qint64(w.id)}, {u"at"_s, qint64(w.at)}, {u"json"_s, compact(app::toJson(w))}});
+}
+
+void SqlPosSink::saveProblem(const core::Problem &pr)
+{
+    writer_.upsert(u"problems"_s, QString::number(pr.id),
+                   {{u"id"_s, qint64(pr.id)}, {u"at"_s, qint64(pr.at)}, {u"json"_s, compact(app::toJson(pr))}});
 }
 
 void SqlPosSink::saveImage(const std::string &name, const QByteArray &data)

@@ -45,6 +45,7 @@
 #include <QQuickWindow>
 #include <QStandardPaths>
 #include <QSysInfo>
+#include <QStorageInfo>
 #include <QTimer>
 
 #ifdef Q_OS_UNIX
@@ -816,6 +817,23 @@ int runStore(const Args &cli, const Options &o)
     vt::app::PosService pos(std::move(*posData), sink.get());
     vt::app::PosShared *shared = pos.shared();
     shared->imageCacheDir = QDir(dataDirOf(cli, o)).filePath(u"cache/store-images"_s);
+    // Running: a marker left behind means ViewTouch didn't close normally last
+    // time (a crash, the power went off): kept for Store Check.
+    // (Removed whichever way this returns; only a crash leaves it.)
+    struct RunningMarker {
+        QString file;
+        ~RunningMarker() { if (!file.isEmpty()) QFile::remove(file); }
+    } runningMarker;
+    if (havePosStore) {
+        const QString running = dbPath + u".running"_s;
+        if (QFile::exists(running))
+            shared->noteProblem("crash", QFileInfo(running).lastModified().toString(u"ddd h:mm AP"_s).toStdString());
+        QFile marker(running);
+        if (marker.open(QIODevice::WriteOnly)) {
+            marker.write(QDateTime::currentDateTime().toString(Qt::ISODate).toUtf8());
+            runningMarker.file = running;
+        }
+    }
     // Orders for later go to the kitchen by themselves, from the store's computer.
     QTimer laterOrders;
     laterOrders.setInterval(30'000);
@@ -923,6 +941,7 @@ int runStore(const Args &cli, const Options &o)
     if (writer) {
         QObject::connect(writer.get(), &vt::storage::AsyncWriter::writeFailed, &pos, [&pos](const QString &error) {
             say(pos, QCoreApplication::translate("main", "Could not save to the database (will retry): %1").arg(error));
+            pos.shared()->noteProblem("database", {}, error.toStdString());
         });
     }
 
@@ -943,10 +962,13 @@ int runStore(const Args &cli, const Options &o)
                          [&pos, shared](bool ok, const QString &, const QString &error, const QString &copy, bool copyOk) {
             shared->setBackupStatus({{u"at"_s, QTime::currentTime().toString(u"h:mm AP"_s)}, {u"ok"_s, ok},
                                      {u"error"_s, error}, {u"copy"_s, copy}, {u"copyOk"_s, copyOk}});
-            if (!ok)
+            if (!ok) {
                 say(pos, QCoreApplication::translate("main", "The database backup failed: %1").arg(error));
-            else if (!copyOk)
+                shared->noteProblem("backup", {}, error.toStdString());
+            } else if (!copyOk) {
                 say(pos, QCoreApplication::translate("main", "The backup worked, but %1").arg(copy));
+                shared->noteProblem("backupCopy", {}, copy.toStdString());
+            }
         });
         shared->backupKeyFor = [](const QString &password) {
             QString why;
@@ -1189,6 +1211,7 @@ int runStore(const Args &cli, const Options &o)
                            {u"database"_s, aboutDb}, {u"databaseBytes"_s, QFileInfo(aboutDb).size()},
                            {u"backups"_s, aboutBackups}, {u"startedAt"_s, startedAt},
                            {u"history"_s, vt::net::appHistory()},
+                           {u"diskFree"_s, double(QStorageInfo(QFileInfo(aboutDb).absolutePath()).bytesAvailable())},
                            {u"lastBackup"_s, [&] {
                                 const QFileInfoList files = QDir(aboutBackups).entryInfoList(QDir::Files, QDir::Time);
                                 return files.isEmpty() ? qint64(0) : files.first().lastModified().toMSecsSinceEpoch();
@@ -1197,6 +1220,16 @@ int runStore(const Args &cli, const Options &o)
     if (server) {
         QObject::connect(server.get(), &vt::net::PosServer::terminalsChanged, shared, &vt::app::PosShared::networkChanged);
         QObject::connect(server.get(), &vt::net::PosServer::standbyChanged, shared, &vt::app::PosShared::networkChanged);
+        // The standby gone: kept for Store Check (it was keeping a copy).
+        auto standbyThere = std::make_shared<bool>(false);
+        QObject::connect(server.get(), &vt::net::PosServer::standbyChanged, shared, [raw = server.get(), shared, standbyThere] {
+            bool now = false;
+            for (const QVariant &c : raw->connections())
+                now = now || c.toMap().value(u"standby"_s).toBool();
+            if (*standbyThere && !now)
+                shared->noteProblem("standby", {});
+            *standbyThere = now;
+        });
     }
     if (cli.isSet(o.headless) || gServeHeadless)
         return qApp->exec();

@@ -703,6 +703,18 @@ StockCount stockCountFromJson(const QJsonObject &o)
     return c;
 }
 
+QJsonObject toJson(const Problem &p)
+{
+    return {{u"id"_s, qint64(p.id)}, {u"at"_s, qint64(p.at)}, {u"kind"_s, qs(p.kind)}, {u"subject"_s, qs(p.subject)},
+            {u"detail"_s, qs(p.detail)}};
+}
+
+Problem problemFromJson(const QJsonObject &o)
+{
+    return {i64(o.value(u"id")), i64(o.value(u"at")), ss(o.value(u"kind").toString()), ss(o.value(u"subject").toString()),
+            ss(o.value(u"detail").toString())};
+}
+
 QJsonObject toJson(const Waste &w)
 {
     QJsonArray lines;
@@ -931,6 +943,7 @@ QJsonObject toJson(const PosSettings &s)
         {u"checkoutNeedsClosedChecks"_s, s.checkoutNeedsClosedChecks},
         {u"blindDrawerCount"_s, s.blindDrawerCount},
         {u"askReasons"_s, s.askReasons}, {u"stockCountShowsExpected"_s, s.stockCountShowsExpected},
+        {u"problemsSeen"_s, qint64(s.problemsSeen)},
         {u"wasteReasons"_s, [&] { QJsonArray a; for (const std::string &r : s.wasteReasons) a.append(qs(r)); return a; }()},
         {u"voidReasons"_s, [&] { QJsonArray a; for (const std::string &r : s.voidReasons) a.append(qs(r)); return a; }()},
         {u"compReasons"_s, [&] { QJsonArray a; for (const std::string &r : s.compReasons) a.append(qs(r)); return a; }()},
@@ -1155,6 +1168,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.blindDrawerCount = o.value(u"blindDrawerCount").toBool();
     s.askReasons = o.value(u"askReasons").toBool(true);
     s.stockCountShowsExpected = o.value(u"stockCountShowsExpected").toBool();
+    s.problemsSeen = i64(o.value(u"problemsSeen"));
     for (auto [key, list] : {std::pair{u"voidReasons", &s.voidReasons}, std::pair{u"compReasons", &s.compReasons},
                              std::pair{u"wasteReasons", &s.wasteReasons}}) {
         if (!o.value(QStringView(key)).isArray())
