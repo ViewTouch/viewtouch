@@ -192,6 +192,9 @@ struct PosSettings {
     // week starts on this weekday (0 Sunday ... 6 Saturday).
     bool paidBreaks = false;
     int overtimeDailyHours = 0;
+    // About how many checks a server takes care of in an hour: the forecast's
+    // Staff section says how many servers each hour needs.
+    int checksPerServerHour = 4;
     int overtimeWeeklyHours = 40;
     int weekStartsOn = 0;
     // Whether people must close (or hand over) their checks before they

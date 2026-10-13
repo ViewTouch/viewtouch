@@ -985,6 +985,7 @@ QJsonObject toJson(const PosSettings &s)
          }()},
         {u"cashMode"_s, qs(toString(s.cashMode))},
         {u"labor"_s, QJsonObject{{u"paidBreaks"_s, s.paidBreaks}, {u"overtimeDailyHours"_s, s.overtimeDailyHours},
+                                 {u"checksPerServerHour"_s, s.checksPerServerHour},
                                  {u"overtimeWeeklyHours"_s, s.overtimeWeeklyHours}, {u"weekStartsOn"_s, s.weekStartsOn}}},
         {u"modifierGroups"_s, modifierGroupsToJson(s.modifierGroups)},
         {u"terminalsHaveDrawer"_s, s.terminalsHaveDrawer},
@@ -1222,6 +1223,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     const QJsonObject labor = o.value(u"labor").toObject();
     s.paidBreaks = labor.value(u"paidBreaks").toBool(false);
     s.overtimeDailyHours = std::clamp(labor.value(u"overtimeDailyHours").toInt(0), 0, 24);
+    s.checksPerServerHour = std::clamp(labor.value(u"checksPerServerHour").toInt(4), 1, 50);
     s.overtimeWeeklyHours = std::clamp(labor.value(u"overtimeWeeklyHours").toInt(40), 0, 168);
     s.weekStartsOn = std::clamp(labor.value(u"weekStartsOn").toInt(0), 0, 6);
     s.modifierGroups = modifierGroupsFromJson(o.value(u"modifierGroups").toArray());

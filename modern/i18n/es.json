@@ -314,9 +314,17 @@
   "one": "%n empleado de muestra desactivado",
   "other": "%n empleados de muestra desactivados"
  },
+ "%n scheduled": {
+  "one": "%n programado",
+  "other": "%n programados"
+ },
  "%n seat(s)": {
   "one": "%n lugar",
   "other": "%n lugares"
+ },
+ "%n server(s) needed": {
+  "one": "%n mesero necesario",
+  "other": "%n meseros necesarios"
  },
  "%n setting(s) found": {
   "one": "%n ajuste encontrado",
@@ -491,6 +499,11 @@
  "A year before": "Un año antes",
  "ALLERGY: %1": "ALERGIA: %1",
  "About": "Acerca de",
+ "About %n check(s) a server an hour (Store Settings -> Staff hours).": {
+  "one": "Unas %n cuenta por mesero por hora (Ajustes de la tienda -> Horas del personal).",
+  "other": "Unas %n cuentas por mesero por hora (Ajustes de la tienda -> Horas del personal)."
+ },
+ "About how many. Reports -> Forecast then says how many servers each hour needs.": "Más o menos cuántas. Informes -> Pronóstico dice entonces cuántos meseros necesita cada hora.",
  "Accented letters (PC858)": "Letras con acento (PC858)",
  "Accented letters (ñ, é), ¿ ¡, £ and € on Epson and most receipt printers; plain letters for a printer that shows them wrong.": "Letras con acento (ñ, é), ¿ ¡, £ y € en Epson y la mayoría de impresoras de recibos; letras sin acento para una impresora que las muestre mal.",
  "Account": "Cuenta",
@@ -979,6 +992,7 @@
  "Checklists": "Listas de Tareas",
  "Checklists…": "Listas de Tareas…",
  "Checks": "Cuentas",
+ "Checks a server takes care of in an hour": "Cuentas que atiende un mesero por hora",
  "Checks at %1 — touch here to show all": "Cuentas en %1: toque aquí para ver todas",
  "Checks closed today: touch one to reopen it": "Cuentas cerradas hoy: toque una para reabrirla",
  "Checks in all. 0 = no limit.": "Cuentas en total. 0 = sin límite.",
@@ -4044,6 +4058,7 @@
   "other": "⚠ %n por revisar"
  },
  "⚠ Already on the check, with one of them: %1": "⚠ Ya en la cuenta, con alguna de ellas: %1",
+ "⚠: fewer servers scheduled than the forecast needs.": "⚠: hay menos meseros programados de los que pide el pronóstico.",
  "✓ Ready": "✓ Listo",
  "✓ Ready (%n note(s))": "✓ Listo (%n nota(s))",
  "✓ Ready to go": "✓ Listo para servir",

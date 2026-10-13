@@ -99,6 +99,10 @@
   "one": "%n seat",
   "other": "%n seats"
  },
+ "%n server(s) needed": {
+  "one": "%n server needed",
+  "other": "%n servers needed"
+ },
  "%n setting(s) found": {
   "one": "%n setting found",
   "other": "%n settings found"
@@ -106,6 +110,10 @@
  "(+%n other price(s))": {
   "one": "(+%n other price)",
   "other": "(+%n other prices)"
+ },
+ "About %n check(s) a server an hour (Store Settings -> Staff hours).": {
+  "one": "About %n check a server an hour (Store Settings -> Staff hours).",
+  "other": "About %n checks a server an hour (Store Settings -> Staff hours)."
  },
  "Add %n item(s)": {
   "one": "Add %n item",

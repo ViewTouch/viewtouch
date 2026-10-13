@@ -164,6 +164,45 @@ Report PosService::forecastReport(QDate target, const std::vector<Check> &checks
                 money(sales)});
     }
 
+    // Staff: servers each hour needs (the store's checks per server an hour),
+    // beside the servers scheduled then.
+    {
+        const int perServer = std::max(1, s_->settings.checksPerServerHour);
+        std::vector<std::vector<std::string>> lines;
+        bool shortAny = false;
+        for (int h = 0; h < 24; ++h) {
+            const double n = average([h](const DaySample &d) {
+                const auto it = d.byHour.find(h);
+                return it == d.byHour.end() ? 0.0 : double(it->second.first);
+            });
+            if (n < 0.5)
+                continue;
+            const int needed = std::max(1, int(std::ceil(n / perServer)));
+            const std::int64_t from = QDateTime(target, QTime(h, 0)).toMSecsSinceEpoch();
+            const std::int64_t to = from + 3'600'000;
+            int scheduled = 0;
+            for (const Shift &sh : s_->shifts) {
+                if (sh.start >= to || sh.end <= from)
+                    continue;
+                const auto e = std::ranges::find_if(s_->employees, [&](const Employee &x) { return x.id == sh.employeeId; });
+                if (e != s_->employees.end() && e->role == "server")
+                    ++scheduled;
+            }
+            const bool short_ = scheduled < needed;
+            shortAny = shortAny || short_;
+            lines.push_back({ss(i18n::timeText(QTime(h, 0))), ss(tr("%n server(s) needed", "", needed)),
+                             ss((short_ ? u"⚠ "_s : QString()) + tr("%n scheduled", "", scheduled))});
+        }
+        if (!lines.empty()) {
+            r.section("Servers");
+            r.note(ss(tr("About %n check(s) a server an hour (Store Settings -> Staff hours).", "", perServer)));
+            for (auto &l : lines)
+                r.line(std::move(l));
+            if (shortAny)
+                r.note(ss(tr("⚠: fewer servers scheduled than the forecast needs.")));
+        }
+    }
+
     // Items: the most first.
     std::map<std::string, double> items;
     for (int i = 0; i < int(used.size()); ++i)

@@ -199,6 +199,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"tipPercents"_s, [&] { QStringList l; for (int p : s_->settings.tipPercents) l << QString::number(p); return l.join(u", "_s); }()},
              {u"tableReadyText"_s, qs(s_->settings.tableReadyText)}, {u"textWebhook"_s, qs(s_->settings.textWebhook)},
              {u"paidBreaks"_s, s_->settings.paidBreaks}, {u"overtimeDailyHours"_s, s_->settings.overtimeDailyHours},
+             {u"checksPerServerHour"_s, s_->settings.checksPerServerHour},
              {u"overtimeWeeklyHours"_s, s_->settings.overtimeWeeklyHours},
              {u"weekStartsOn"_s, QString::number(s_->settings.weekStartsOn)}},
             tr("Store"), QString());

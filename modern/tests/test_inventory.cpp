@@ -477,6 +477,13 @@ TEST_CASE("Forecast: a coming day from the same weekday in past weeks; prep and 
     check(target.addDays(-14), 2, 18);
     check(target.addDays(-8), 9, 18);    // another weekday: not counted
     pos.shared()->history = [&](std::int64_t, std::int64_t) { return past; };
+    // Sam works 6 to 10 PM that day.
+    std::string sam;
+    for (const core::Employee &e : pos.shared()->employees)
+        if (e.name == "Sam")
+            sam = e.id;
+    pos.shared()->shifts.push_back({777, sam, QDateTime(target, QTime(18, 0)).toMSecsSinceEpoch(),
+                                    QDateTime(target, QTime(22, 0)).toMSecsSinceEpoch(), {}});
 
     REQUIRE(pos.requestForecast(1));
     for (int i = 0; i < 200 && pos.rangeReport()[u"loading"_s].toBool(); ++i)
@@ -487,6 +494,19 @@ TEST_CASE("Forecast: a coming day from the same weekday in past weeks; prep and 
     CHECK(cellsOf(report, u"Checks"_s).value(1) == u"2"_s);               // 2 x 4/7 + 1 x 3/7 = 1.6
     CHECK(cellsOf(report, u"Guests"_s).value(1) == u"3"_s);               // 4 x 4/7 + 2 x 3/7 = 3.1
     CHECK(cellsOf(report, u"Classic Burger"_s).value(1) == u"3"_s);       // 4 x 4/7 + 2 x 3/7 = 3.1
+    // Servers: 6 PM needs one (1.6 checks, 4 a server an hour), and Sam is on.
+    QStringList six;
+    QString in;
+    for (const QVariant &v : report[u"rows"_s].toList()) {
+        const QVariantMap row = v.toMap();
+        if (row[u"kind"_s] == u"section"_s)
+            in = row[u"cells"_s].toStringList().value(0);
+        else if (in == u"Servers"_s && row[u"cells"_s].toStringList().value(0) == u"6:00 PM"_s)
+            six = row[u"cells"_s].toStringList();
+    }
+    REQUIRE(six.size() == 3);
+    CHECK(six[1] == u"1 server needed"_s);
+    CHECK(six[2] == u"1 scheduled"_s);
     // The bun: 3.1 burgers' worth (rounded up to a tenth), 1 on hand; to
     // order: that plus the low level (2), less what's on hand.
     const double need = std::ceil(22.0 / 7.0 * perBurger * 10) / 10;

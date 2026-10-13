@@ -327,9 +327,17 @@
   "one": "%n funcionário de exemplo desligado",
   "other": "%n funcionários de exemplo desligados"
  },
+ "%n scheduled": {
+  "one": "%n escalado",
+  "other": "%n escalados"
+ },
  "%n seat(s)": {
   "one": "%n lugar",
   "other": "%n lugares"
+ },
+ "%n server(s) needed": {
+  "one": "%n garçom necessário",
+  "other": "%n garçons necessários"
  },
  "%n setting(s) found": {
   "one": "%n ajuste encontrado",
@@ -498,6 +506,11 @@
  "A year before": "Um ano antes",
  "ALLERGY: %1": "ALERGIA: %1",
  "About": "Sobre",
+ "About %n check(s) a server an hour (Store Settings -> Staff hours).": {
+  "one": "Cerca de %n conta por garçom por hora (Ajustes da loja -> Horas da equipe).",
+  "other": "Cerca de %n contas por garçom por hora (Ajustes da loja -> Horas da equipe)."
+ },
+ "About how many. Reports -> Forecast then says how many servers each hour needs.": "Mais ou menos quantas. Relatórios -> Previsão diz então quantos garçons cada hora precisa.",
  "Accented letters (PC858)": "Letras acentuadas (PC858)",
  "Accented letters (ñ, é), ¿ ¡, £ and € on Epson and most receipt printers; plain letters for a printer that shows them wrong.": "Letras acentuadas (ñ, é), ¿ ¡, £ e € na Epson e na maioria das impressoras de recibo; letras simples para uma impressora que as mostra errado.",
  "Account": "Conta",
@@ -974,6 +987,7 @@
  "Checklists": "Listas",
  "Checklists…": "Listas…",
  "Checks": "Contas",
+ "Checks a server takes care of in an hour": "Contas que um garçom atende por hora",
  "Checks at %1 — touch here to show all": "Contas em %1 — toque aqui para mostrar todas",
  "Checks closed today: touch one to reopen it": "Contas fechadas hoje: toque numa para reabrir",
  "Checks in all. 0 = no limit.": "Contas no total. 0 = sem limite.",
@@ -3958,6 +3972,7 @@
   "other": "⚠ %n para verificar"
  },
  "⚠ Already on the check, with one of them: %1": "⚠ Já na conta, com uma delas: %1",
+ "⚠: fewer servers scheduled than the forecast needs.": "⚠: menos garçons escalados do que a previsão pede.",
  "✓ Ready": "✓ Pronto",
  "✓ Ready (%n note(s))": {
   "one": "✓ Pronto (%n nota)",

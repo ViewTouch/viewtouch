@@ -327,9 +327,17 @@
   "one": "已停用 %n 名示例员工",
   "other": "已停用 %n 名示例员工"
  },
+ "%n scheduled": {
+  "one": "已排班 %n 位",
+  "other": "已排班 %n 位"
+ },
  "%n seat(s)": {
   "one": "%n 个座位",
   "other": "%n 个座位"
+ },
+ "%n server(s) needed": {
+  "one": "需要 %n 位服务员",
+  "other": "需要 %n 位服务员"
  },
  "%n setting(s) found": {
   "one": "找到 %n 项设置",
@@ -498,6 +506,11 @@
  "A year before": "一年前",
  "ALLERGY: %1": "过敏：%1",
  "About": "关于",
+ "About %n check(s) a server an hour (Store Settings -> Staff hours).": {
+  "one": "每位服务员每小时约 %n 张账单（门店设置 -> 员工工时）。",
+  "other": "每位服务员每小时约 %n 张账单（门店设置 -> 员工工时）。"
+ },
+ "About how many. Reports -> Forecast then says how many servers each hour needs.": "大约多少张。报表 -> 预测 会据此显示每小时需要几位服务员。",
  "Accented letters (PC858)": "带重音字母 (PC858)",
  "Accented letters (ñ, é), ¿ ¡, £ and € on Epson and most receipt printers; plain letters for a printer that shows them wrong.": "爱普生和大多数收据打印机支持带重音字母（ñ, é）、¿ ¡、£ 和 €；显示错误的打印机请用普通字母。",
  "Account": "科目",
@@ -974,6 +987,7 @@
  "Checklists": "清单",
  "Checklists…": "清单…",
  "Checks": "账单",
+ "Checks a server takes care of in an hour": "每位服务员每小时照顾的账单数",
  "Checks at %1 — touch here to show all": "%1 的账单 — 点这里显示全部",
  "Checks closed today: touch one to reopen it": "今日已结账单：点一张即可重开",
  "Checks in all. 0 = no limit.": "总账单数。0 = 不限。",
@@ -3958,6 +3972,7 @@
   "other": "⚠ %n 项需查看"
  },
  "⚠ Already on the check, with one of them: %1": "⚠ 账单上已有含其中之一的：%1",
+ "⚠: fewer servers scheduled than the forecast needs.": "⚠：排班的服务员少于预测所需。",
  "✓ Ready": "✓ 就绪",
  "✓ Ready (%n note(s))": {
   "one": "✓ 就绪（%n 条提示）",

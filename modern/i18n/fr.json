@@ -327,9 +327,17 @@
   "one": "%n employé d'exemple désactivé",
   "other": "%n employés d'exemple désactivés"
  },
+ "%n scheduled": {
+  "one": "%n prévu",
+  "other": "%n prévus"
+ },
  "%n seat(s)": {
   "one": "%n place",
   "other": "%n places"
+ },
+ "%n server(s) needed": {
+  "one": "%n serveur nécessaire",
+  "other": "%n serveurs nécessaires"
  },
  "%n setting(s) found": {
   "one": "%n réglage trouvé",
@@ -498,6 +506,11 @@
  "A year before": "Un an avant",
  "ALLERGY: %1": "ALLERGIE : %1",
  "About": "À propos",
+ "About %n check(s) a server an hour (Store Settings -> Staff hours).": {
+  "one": "Environ %n addition par serveur et par heure (Réglages -> Heures du personnel).",
+  "other": "Environ %n additions par serveur et par heure (Réglages -> Heures du personnel)."
+ },
+ "About how many. Reports -> Forecast then says how many servers each hour needs.": "À peu près combien. Rapports -> Prévision indique alors combien de serveurs il faut chaque heure.",
  "Accented letters (PC858)": "Lettres accentuées (PC858)",
  "Accented letters (ñ, é), ¿ ¡, £ and € on Epson and most receipt printers; plain letters for a printer that shows them wrong.": "Lettres accentuées (ñ, é), ¿ ¡, £ et € sur Epson et la plupart des imprimantes de reçus ; lettres simples pour une imprimante qui les affiche mal.",
  "Account": "Compte",
@@ -974,6 +987,7 @@
  "Checklists": "Listes",
  "Checklists…": "Listes…",
  "Checks": "Additions",
+ "Checks a server takes care of in an hour": "Additions qu'un serveur gère en une heure",
  "Checks at %1 — touch here to show all": "Additions à %1 — touchez ici pour tout afficher",
  "Checks closed today: touch one to reopen it": "Additions fermées aujourd'hui : touchez-en une pour la rouvrir",
  "Checks in all. 0 = no limit.": "Additions au total. 0 = sans limite.",
@@ -3958,6 +3972,7 @@
   "other": "⚠ %n à vérifier"
  },
  "⚠ Already on the check, with one of them: %1": "⚠ Déjà sur l'addition, avec l'une d'elles : %1",
+ "⚠: fewer servers scheduled than the forecast needs.": "⚠ : moins de serveurs prévus que la prévision n'en demande.",
  "✓ Ready": "✓ Prêt",
  "✓ Ready (%n note(s))": {
   "one": "✓ Prêt (%n note)",

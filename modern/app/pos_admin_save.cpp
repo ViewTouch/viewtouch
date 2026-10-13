@@ -270,6 +270,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.terminalsHaveDrawer = record.value(u"terminalsHaveDrawer"_s).toBool();
         if (record.contains(u"paidBreaks"_s))
             s_->settings.paidBreaks = record.value(u"paidBreaks"_s).toBool();
+        if (record.contains(u"checksPerServerHour"_s))
+            s_->settings.checksPerServerHour = std::clamp(record.value(u"checksPerServerHour"_s).toInt(), 1, 50);
         if (record.contains(u"overtimeDailyHours"_s))
             s_->settings.overtimeDailyHours = std::clamp(record.value(u"overtimeDailyHours"_s).toInt(), 0, 24);
         if (record.contains(u"overtimeWeeklyHours"_s))
