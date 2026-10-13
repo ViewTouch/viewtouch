@@ -316,7 +316,8 @@ void StationController::setPosState(const QString &state)
 void StationController::refreshNetwork()
 {
     auto *p = new QProcess(this);
-    connect(p, &QProcess::finished, this, [this, p] {
+    // Read nmcli's answer; without nmcli (no NetworkManager), just the address.
+    const auto read = [this, p] {
         p->deleteLater();
         bool wired = false, wifiAvailable = false;
         QString wifi;
@@ -343,6 +344,11 @@ void StationController::refreshNetwork()
         network_ = {{u"wired"_s, wired}, {u"wifi"_s, wifi}, {u"address"_s, address},
                     {u"online"_s, wired || !wifi.isEmpty() || !address.isEmpty()}, {u"wifiAvailable"_s, wifiAvailable}};
         emit networkChanged();
+    };
+    connect(p, &QProcess::finished, this, read);
+    connect(p, &QProcess::errorOccurred, this, [read](QProcess::ProcessError e) {
+        if (e == QProcess::FailedToStart)
+            read();
     });
     p->start(u"nmcli"_s, {u"-t"_s, u"-f"_s, u"DEVICE,TYPE,STATE,CONNECTION"_s, u"device"_s});
 }

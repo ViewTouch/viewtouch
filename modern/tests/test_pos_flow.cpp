@@ -4250,6 +4250,8 @@ TEST_CASE("Manual: a screenshot of every screen", "[.manual]")
     // Without the screen watching: it would redraw after every one of thousands of changes.
     s.c.setPos(nullptr);
     REQUIRE(app::fillDemoData(s.pos, QDateTime::currentMSecsSinceEpoch()).startsWith(u"Added"_s));
+    // The demo's note to everyone ("86 Smoked Brisket tonight") would be across the top of every picture.
+    s.pos.shared()->settings.notices.clear();
     s.c.setPos(&s.pos);
     // Reports over a range read back what was saved (here: what the sink recorded).
     s.pos.shared()->history = [&s](std::int64_t from, std::int64_t to) {
