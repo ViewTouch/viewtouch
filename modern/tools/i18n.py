@@ -47,7 +47,7 @@ def source_phrases():
             text = path.read_text()
             out += [joined(m.group(1)) for rx, kind in CALLS if kind == "cpp" for m in rx.finditer(text)]
     # Choices in the Manager forms: options({{"value", "Text"}, ...})
-    for path in sorted((ROOT / "app").glob("*.cpp")):
+    for path in sorted((ROOT / "app").glob("*.cpp")) + sorted((ROOT / "app").glob("*.hh")):
         for block in re.finditer(r'\boptions\(\{(.*?)\}\)', path.read_text(), re.S):
             out += [unescape(m.group(1)) for m in re.finditer(rf'\{{\s*{STR}\s*,\s*({STR})\s*\}}', block.group(1))]
     # The page editor's fields (layout/schema.cpp): labels, sections, hints,
