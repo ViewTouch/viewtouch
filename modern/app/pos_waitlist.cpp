@@ -71,6 +71,14 @@ QVariantMap PosService::waitlistInfo() const
             // A booking that should have arrived by now (15 minutes' grace).
             {u"overdue"_s, p.status == Party::Status::Booked && t > p.reservedFor + 15 * kMinute},
             {u"table"_s, qs(p.table)}, {u"regular"_s, regularText(p.customerId)},
+            {u"regularNote"_s, [&] {
+                 const CustomerRecord *r = p.customerId.empty() ? nullptr : s_->customer(p.customerId);
+                 return r ? qs(r->note) : QString();
+             }()},
+            {u"visits"_s, [&] {
+                 const CustomerRecord *r = p.customerId.empty() ? nullptr : s_->customer(p.customerId);
+                 return r ? r->visits : 0;
+             }()},
         };
     };
     QVariantList waiting, booked;

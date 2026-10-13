@@ -8299,7 +8299,7 @@ TEST_CASE("Order screen: often added with what's on the check, a touch away", "[
     CHECK(hints[0].toMap()[u"id"_s] == u"juice"_s);
     QQuickItem *add = by(u"goesWith-juice"_s);
     REQUIRE(add);
-    s.shot("order-goes-with");
+    s.shot("order-goes-with");   // for the manual
     s.tapItem(add);
     QTest::qWait(50);
     bool juiceOn = false;
@@ -8308,4 +8308,26 @@ TEST_CASE("Order screen: often added with what's on the check, a touch away", "[
     CHECK(juiceOn);
     CHECK(s.pos.checkInfo()[u"goesWith"_s].toList().isEmpty());   // it's on now
     CHECK_FALSE(by(u"goesWith"_s));
+}
+
+// The host stand with seated tables, for the manual (hidden: "[.hostShots]" with VTM_SHOTS).
+TEST_CASE("Host stand: free-up times, next up and a regular, a picture", "[.hostShots]")
+{
+    Screen s;
+    std::int64_t clock = QDateTime::currentMSecsSinceEpoch();
+    s.pos.shared()->setClock([&] { return clock; });
+    s.pos.shared()->settings.notices.clear();
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    REQUIRE(s.pos.clockInEmployee(u"sam"_s));
+    REQUIRE(s.pos.clockInEmployee(u"rosa"_s));
+    REQUIRE(s.pos.saveCustomer({{u"name"_s, u"Dana Lee"_s}, {u"phone"_s, u"555-010-2030"_s}, {u"note"_s, u"Allergic to nuts"_s}}));
+    s.pos.shared()->customers.back().visits = 7;
+    REQUIRE(s.pos.seatWalkIn(4, {u"T4"_s}, u"sam"_s));
+    REQUIRE(s.pos.seatWalkIn(2, {u"T1"_s}, u"rosa"_s));
+    REQUIRE(s.pos.seatWalkIn(6, {u"T5"_s}, u"sam"_s));
+    clock += 20 * 60'000;
+    REQUIRE(s.pos.addToWaitlist({{u"name"_s, u"Dana"_s}, {u"phone"_s, u"(555) 010-2030"_s}, {u"size"_s, 2}}) > 0);
+    REQUIRE(s.c.jumpTo(u"seating"_s));
+    QTest::qWait(150);
+    s.shot("host-free-next");
 }

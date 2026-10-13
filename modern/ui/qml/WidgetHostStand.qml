@@ -168,7 +168,7 @@ Item {
                           .concat(f.with ? [] : [f.server ?? ""])
                           .concat(f.with || f.freeIn === undefined ? []
                                   : [f.stage === "paying" ? qsTr("Paying: free soon")
-                                     : qsTr("Free in ~%1m").arg(f.freeIn)])
+                                     : qsTr("Free ~%1m").arg(f.freeIn)])
                         : state === "dirty" ? [qsTr("Dirty %1m").arg(f.minutes ?? 0)]
                         : state === "reserved" ? [(f.party ?? "") + (f.time ? " " + f.time : "")]
                         : [qsTr("%n seat(s)", "", seats)]
@@ -221,9 +221,11 @@ Item {
                         anchors.rightMargin: w.unit * 0.6
                         Text {
                             Layout.fillWidth: true
-                            text: row.modelData.name + "  ·  " + row.modelData.size
+                            // A regular: ★ after their name, and their note (allergies...).
+                            text: row.modelData.name + ((row.modelData.visits ?? 0) >= 2 ? " ★" : "")
+                                  + "  ·  " + row.modelData.size
                                   + (row.modelData.note ? "  ·  " + row.modelData.note : "")
-                                  + (row.modelData.regular ? "  ·  ★ " + row.modelData.regular : "")
+                                  + (row.modelData.regularNote ? "  ·  " + row.modelData.regularNote : "")
                             color: w.ink
                             font.family: w.face
                             font.pixelSize: w.unit * 0.9
