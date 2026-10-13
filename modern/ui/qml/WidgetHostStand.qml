@@ -29,7 +29,10 @@ Item {
     property var partyId: null      // a party's id, -1 for walk-ins, null for none
     property int walkInSize: 2
     property var picked: []         // table names
-    property string serverId: ""
+    property string serverId: ""    // chosen by the host ("": whoever is next up)
+    // Who gets the next table: fewest guests now, then seated longest ago.
+    readonly property var nextUp: floor._next ?? null
+    readonly property string seatServer: serverId !== "" ? serverId : (nextUp ? nextUp.id : "")
     readonly property var party: {
         for (const p of waiting.concat(booked))
             if (p.id === partyId) return p
@@ -72,7 +75,7 @@ Item {
             if (held.length) picked = held
         }
     }
-    function done() { partyId = null; picked = [] }
+    function done() { partyId = null; picked = []; serverId = "" }
     readonly property bool pickedFree: {
         for (const n of picked) if (stateOf(n) === "seated") return false
         return picked.length > 0
@@ -163,6 +166,9 @@ Item {
                     return state === "seated"
                         ? [f.with ? qsTr("with %1").arg(f.with) : qsTr("%n guest(s)", "", f.guests ?? 0) + " · " + (f.minutes ?? 0) + "m"]
                           .concat(f.with ? [] : [f.server ?? ""])
+                          .concat(f.with || f.freeIn === undefined ? []
+                                  : [f.stage === "paying" ? qsTr("Paying: free soon")
+                                     : qsTr("Free in ~%1m").arg(f.freeIn)])
                         : state === "dirty" ? [qsTr("Dirty %1m").arg(f.minutes ?? 0)]
                         : state === "reserved" ? [(f.party ?? "") + (f.time ? " " + f.time : "")]
                         : [qsTr("%n seat(s)", "", seats)]
@@ -289,7 +295,8 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: w.unit * 2.2
                     font.pixelSize: w.unit * 0.85
-                    model: w.servers.map(s => s.name)
+                    model: w.servers.map(s => w.nextUp && s.id === w.nextUp.id ? qsTr("%1 (next up)").arg(s.name) : s.name)
+                    currentIndex: Math.max(0, w.servers.findIndex(s => s.id === w.seatServer))
                     onActivated: i => w.serverId = w.servers[i].id
                 }
             }
@@ -316,7 +323,7 @@ Item {
                     tint: "#1f8a4c"
                     enabled: w.partySize > 0 && w.pickedFree
                     onClicked: {
-                        const server = w.serverId
+                        const server = w.seatServer
                         if (w.partyId === -1) w.pos.seatWalkIn(w.walkInSize, w.picked, server)
                         else w.pos.seatPartyAt(w.partyId, w.picked, server)
                         w.done()

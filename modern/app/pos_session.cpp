@@ -110,6 +110,8 @@ QVariantMap PosSession::tableStatus(const QString &label) const
     }
     // The host stand: needs bussing, held for a party, or pushed together with another table.
     const QVariantMap f = floor().value(label).toMap();
+    if (count > 0)
+        status.insert(u"nudge"_s, f.value(u"nudge"_s));   // nothing ordered, or a while since the last order
     const QString state = f.value(u"state"_s).toString();
     if (count == 0 && (state == u"dirty" || state == u"reserved")) {
         status.insert(u"floor"_s, state);

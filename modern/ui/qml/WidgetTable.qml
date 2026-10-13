@@ -130,6 +130,18 @@ Item {
             elide: Text.ElideRight
         }
         Text {
+            objectName: "tableNudge"
+            width: parent.width
+            horizontalAlignment: Text.AlignHCenter
+            visible: (w.status.open ?? false) && (w.status.nudge ?? "") !== ""
+            text: "⏰ " + (w.status.nudge ?? "")
+            color: w.ink
+            font.family: w.face
+            font.bold: true
+            font.pixelSize: Math.min((Math.min(w.width, w.height) - 2 * w.chairDepth) * 0.13, 20)
+            elide: Text.ElideRight
+        }
+        Text {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             visible: w.floorState !== ""

@@ -229,3 +229,51 @@ TEST_CASE("Host stand: seat at tables pushed together, hold tables, bussing", "[
     REQUIRE(pos.partyGone(ana, true));
     CHECK(state(u"T4"_s).isEmpty());
 }
+
+TEST_CASE("The floor: when tables free up, nudges for their servers, and who's next up", "[waitlist][floorhints]")
+{
+    app::PosService pos(test::seedPosData(), nullptr);
+    std::int64_t clock = QDateTime(QDate::currentDate(), QTime(18, 0)).toMSecsSinceEpoch();
+    pos.shared()->setClock([&] { return clock; });
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.clockInEmployee(u"sam"_s));
+    REQUIRE(pos.clockInEmployee(u"rosa"_s));
+    const auto floorOf = [&](const QString &t) { return pos.floor().value(t).toMap(); };
+    const auto nextUp = [&] { return pos.floor().value(u"_next"_s).toMap().value(u"id"_s).toString(); };
+
+    // Sam gets four at T1: Rosa is next up (no guests yet).
+    REQUIRE(pos.seatWalkIn(4, {u"T1"_s}, u"sam"_s));
+    CHECK(nextUp() == u"rosa"_s);
+    REQUIRE(pos.seatWalkIn(2, {u"T2"_s}, u"rosa"_s));
+    CHECK(nextUp() == u"rosa"_s);                          // 2 guests against Sam's 4
+
+    // Ten minutes and nothing ordered: a nudge, and a while yet.
+    clock += 10 * 60'000;
+    QVariantMap t1 = floorOf(u"T1"_s);
+    CHECK(t1[u"stage"_s] == u"ordering"_s);
+    CHECK(t1[u"nudge"_s].toString().startsWith(u"Nothing ordered"_s));
+    CHECK(t1[u"freeIn"_s].toInt() >= 30);
+    pos.logout();
+
+    // Sam orders: no nudge; then half an hour on, one.
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    pos.selectTable(u"T1"_s);
+    REQUIRE(pos.hasCheck());
+    pos.addItem(u"coffee"_s);
+    REQUIRE(pos.sendOrder());
+    const qint64 check = pos.checkInfo().value(u"id"_s).toLongLong();
+    t1 = floorOf(u"T1"_s);
+    CHECK(t1[u"stage"_s] == u"eating"_s);
+    CHECK(t1[u"nudge"_s].toString().isEmpty());
+    clock += 30 * 60'000;
+    CHECK(floorOf(u"T1"_s)[u"nudge"_s].toString() == u"Last order 30m ago"_s);
+    CHECK(pos.tableStatus(u"T1"_s)[u"nudge"_s].toString() == u"Last order 30m ago"_s);   // on their table button
+
+    // The check printed: nearly free, and nothing to nudge about.
+    pos.notePrinted(check);
+    t1 = floorOf(u"T1"_s);
+    CHECK(t1[u"stage"_s] == u"check"_s);
+    CHECK(t1[u"freeIn"_s].toInt() >= 3);
+    CHECK(t1[u"freeIn"_s].toInt() <= 8);
+    CHECK(t1[u"nudge"_s].toString().isEmpty());
+}

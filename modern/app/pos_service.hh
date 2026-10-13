@@ -556,6 +556,8 @@ public:
     // The keypad amount as a cash tip for the check's server, handed to whoever
     // takes the payment (nothing typed: none).
     bool setCashTip();
+    // An open check printed for the guests: noted once (the host stand's "nearly done").
+    void notePrinted(std::int64_t checkId);
     // The customer display: ask the guest for a tip; their choice (a
     // percent, an amount in cents, or none) goes on the card payment, now
     // or when it is added.

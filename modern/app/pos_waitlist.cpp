@@ -295,6 +295,20 @@ QVariantMap PosService::floor() const
         return {};
     const std::int64_t t = now();
     QVariantMap out;
+    // How long a party of this size stays: today's (3 or more), else the usual.
+    const auto typicalMinutes = [&](int guests) {
+        const int bucket = guests <= 2 ? 0 : guests <= 4 ? 1 : 2;
+        std::vector<std::int64_t> stays;
+        for (const Check &c : s_->closedToday)
+            if (c.type == CheckType::DineIn && !c.training && c.closedAt > c.openedAt
+                && (c.guests <= 2 ? 0 : c.guests <= 4 ? 1 : 2) == bucket)
+                stays.push_back((c.closedAt - c.openedAt) / kMinute);
+        if (stays.size() >= 3) {
+            std::ranges::sort(stays);
+            return int(stays[stays.size() / 2]);
+        }
+        return bucket == 0 ? 50 : bucket == 1 ? 65 : 80;
+    };
     // Seated: a table check is open there.
     for (const auto &[id, c] : s_->open) {
         if (c.type != CheckType::DineIn || c.training)
@@ -302,10 +316,58 @@ QVariantMap PosService::floor() const
         const QString label = qs(c.label);
         if (out.contains(label))
             continue;
+        const int seatedFor = int((t - c.openedAt) / kMinute);
+        // Where the table is: paying, check printed, eating, or still ordering.
+        const bool paying = std::ranges::any_of(c.payments, [](const Payment &p) { return p.kind != TenderKind::Discount; });
+        const bool printed = std::ranges::any_of(c.events, [](const CheckEvent &e) { return e.kind == "printed"; });
+        std::int64_t lastSent = 0;
+        for (const OrderLine &l : c.lines)
+            if (l.sent && !l.voided)
+                lastSent = std::max(lastSent, l.sentAt);
+        const int left = typicalMinutes(c.guests) - seatedFor;
+        int freeIn = paying ? 3 : printed ? std::clamp(left, 3, 8) : lastSent == 0 ? std::max(left, 30) : std::max(left, 5);
+        // A nudge for its server: nothing ordered yet, or a while since the last order.
+        QString nudge;
+        if (!paying && !printed) {
+            if (lastSent == 0 && seatedFor >= 8)
+                nudge = tr("Nothing ordered · %1m").arg(seatedFor);
+            else if (lastSent > 0 && (t - lastSent) / kMinute >= 25)
+                nudge = tr("Last order %1m ago").arg((t - lastSent) / kMinute);
+        }
         out.insert(label, QVariantMap{{u"state"_s, u"seated"_s}, {u"guests"_s, c.guests},
                                       {u"server"_s, qs(c.serverName)}, {u"serverId"_s, qs(c.serverId)},
-                                      {u"minutes"_s, int((t - c.openedAt) / kMinute)},
-                                      {u"party"_s, qs(c.customer.name)}});
+                                      {u"minutes"_s, seatedFor}, {u"freeIn"_s, freeIn},
+                                      {u"stage"_s, paying ? u"paying"_s : printed ? u"check"_s : lastSent ? u"eating"_s : u"ordering"_s},
+                                      {u"nudge"_s, nudge}, {u"party"_s, qs(c.customer.name)}});
+    }
+    // Who gets the next table: of the servers on the clock, the one with the
+    // fewest guests seated now, and then the one seated longest ago.
+    {
+        struct Up { const Employee *e; int covers = 0; std::int64_t last = 0; };
+        std::vector<Up> ups;
+        for (const Employee &e : s_->employees) {
+            if (!e.active || e.role != "server")
+                continue;
+            if (!std::ranges::any_of(s_->punches, [&](const TimePunch &p) { return p.employeeId == e.id && p.clockOut == 0; }))
+                continue;
+            Up u{&e};
+            for (const auto &[id, c] : s_->open)
+                if (c.serverId == e.id && c.type == CheckType::DineIn) {
+                    u.covers += c.guests;
+                    u.last = std::max(u.last, c.openedAt);
+                }
+            for (const Check &c : s_->closedToday)
+                if (c.serverId == e.id && c.type == CheckType::DineIn)
+                    u.last = std::max(u.last, c.openedAt);
+            ups.push_back(u);
+        }
+        if (!ups.empty()) {
+            const Up &next = *std::ranges::min_element(ups, [](const Up &a, const Up &b) {
+                return a.covers != b.covers ? a.covers < b.covers : a.last < b.last;
+            });
+            out.insert(u"_next"_s, QVariantMap{{u"id"_s, qs(next.e->id)}, {u"name"_s, qs(next.e->name)},
+                                               {u"covers"_s, next.covers}});
+        }
     }
     for (const PosSettings::TableState &s : s_->settings.tableStates) {
         const QString label = qs(s.table);

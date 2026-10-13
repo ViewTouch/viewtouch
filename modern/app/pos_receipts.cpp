@@ -100,6 +100,7 @@ bool PosService::printReceiptOn(qint64 checkId, const QString &printerId)
     if (!p)
         return fail(tr("Choose a printer."));
     s_->printer->printReceipt(s_->settings, *c, p->id);
+    notePrinted(c->id);
     receiptOffer_.clear();
     emit sessionChanged();
     emit notice(tr("Receipt printing on %1").arg(qs(p->name)));

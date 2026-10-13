@@ -103,8 +103,22 @@ bool PosService::printReceipt()
         return true;
     }
     s_->printer->printReceipt(s_->settings, *c, receiptPrinter());
+    notePrinted(c->id);
     emit notice(tr("Printing receipt for %1").arg(qs(c->label)));
     return true;
+}
+
+void PosService::notePrinted(std::int64_t checkId)
+{
+    const auto it = s_->open.find(checkId);
+    if (it == s_->open.end())
+        return;
+    Check &c = it->second;
+    if (std::ranges::any_of(c.events, [](const CheckEvent &e) { return e.kind == "printed"; }))
+        return;
+    noteEvent(c, tr("Check printed for the guests"), "printed");
+    saveAnyCheck(c);
+    emit s_->dayChanged();
 }
 
 bool PosService::noSale()
@@ -472,6 +486,8 @@ bool PosService::printTableChecks()
     for (const QVariant &v : checks)
         if (const auto it = s_->open.find(v.toMap().value(u"id"_s).toLongLong()); it != s_->open.end())
             s_->printer->printReceipt(s_->settings, it->second, receiptPrinter());
+    for (const QVariant &v : checks)
+        notePrinted(v.toMap().value(u"id"_s).toLongLong());
     emit notice(tr("Printing %n receipt(s)", nullptr, int(checks.size())));
     return true;
 }
