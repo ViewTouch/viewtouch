@@ -100,7 +100,16 @@ The Android app is a terminal: it finds the store's server on the Wi-Fi, pairs w
 
 **Phones.** On a phone (a screen whose shorter side is under 600dp, like a folded Fold) the app turns portrait and shows *phone pages*: big buttons in one column. Unfolded or on a tablet it goes back to the standard pages in landscape. Details are under *Phones and small screens*.
 
-The app is full screen and keeps the screen on. Back goes back a page. If the server is out of reach, it starts with the pages it saved last and shows *Reconnecting…*. Its pairing key is never included in Android backups.
+**A tablet only for ViewTouch** (like the main register): ViewTouch becomes the tablet's home screen, starts when it turns on, and is pinned (no Home, Recents or notifications; the power button's menu still restarts it), with no lock screen; staff can't add accounts or install other apps. Set it up once, on a tablet just reset to factory settings with no Google account added yet:
+
+1. Settings → About → touch *Build number* 7 times; then Settings → Developer options → *USB debugging* on.
+2. Connect it to a computer with [Android's platform tools](https://developer.android.com/tools/releases/platform-tools) and install ViewTouch: `adb install ViewTouch-android-arm64.apk`
+3. `adb shell dpm set-device-owner org.viewtouch.pos/.KioskAdmin`
+4. Open ViewTouch (or restart the tablet): it pins itself. Pair it as usual.
+
+**Manager → Close ViewTouch** lets go of the tablet (for a technician: Settings, Wi-Fi) until ViewTouch is opened again or the tablet restarts. To make it an ordinary tablet for good, Close ViewTouch and reset it to factory settings. Phones, handhelds and Stripe readers that weren't set up this way aren't affected.
+
+The app is full screen. Tablets keep the screen on; phones and handhelds let it sleep, and after it was off for a while (Store Settings → Screens; 30 seconds to start) the next touch asks for a PIN, and their check comes back. Back goes back a page. If the server is out of reach, it starts with the pages it saved last and shows *Reconnecting…*. Its pairing key is never included in Android backups.
 
 **Cards when the internet is down** (`offlineCards`, `offlineCardMax`, `offlineCardTotal`; off by default): only on a Stripe reader running ViewTouch (Apps on Devices, Stripe's offline mode, which `setStripeOffline` turns on in the account's default Terminal configuration). `StripeBridge.charge` requires the internet past the limits (`OfflineBehavior.REQUIRE_ONLINE`); a card taken offline is a payment with `offline = "waiting"` and reference `offline:<id>` (the PaymentIntent's `viewtouch_payment` metadata); `OfflineListener.onPaymentIntentForwarded` → `cardForwarded`: Stripe's `pi_` id, or `declined` and a manager's alert (`cardAlerts`). Not refundable until forwarded. The simulated reader does the same (`setSimulatedOffline`, `simulateForwarded`). The Kotlin side is built by the Android workflow, not tried on a reader here.
 

@@ -341,6 +341,13 @@ std::unique_ptr<QQmlApplicationEngine> showUi(const Args &cli, const Options &o,
     const bool kiosk = cli.isSet(o.kiosk);
     QObject::connect(&controller, &LayoutController::closeRequested, qApp, [kiosk] {
         qInfo("Closed by a manager");
+#ifdef Q_OS_ANDROID
+        // A tablet only for ViewTouch (Kiosk.kt): a tablet again until it restarts.
+        QNativeInterface::QAndroidApplication::runOnAndroidMainThread([] {
+            QJniObject::callStaticMethod<void>("org/viewtouch/pos/Kiosk", "leave", "(Landroid/app/Activity;)V",
+                                               QNativeInterface::QAndroidApplication::context().object());
+        }).waitForFinished();
+#endif
         QCoreApplication::exit(kiosk ? kKioskClosed : 0);
     });
 #ifdef Q_OS_ANDROID

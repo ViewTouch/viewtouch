@@ -15,6 +15,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <!-- Installing an update the store sends (Updater.kt; Android still asks). -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <!-- A tablet only for ViewTouch starts it when it turns on (Kiosk.kt). -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- The Stripe Terminal SDK needs location to start (a Stripe reader
          grants it by itself; other devices only use it with a card reader). -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
@@ -46,6 +48,33 @@
             <meta-data android:name="android.app.lib_name" android:value="-- %%INSERT_APP_LIB_NAME%% --"/>
             <meta-data android:name="android.app.arguments" android:value="-- %%INSERT_APP_ARGUMENTS%% --"/>
         </activity>
+        <!-- A tablet only for ViewTouch (Kiosk.kt): ViewTouch as its home screen
+             (off except there), the device owner set once with adb, and the start. -->
+        <activity-alias
+            android:name="org.viewtouch.pos.Home"
+            android:targetActivity="org.qtproject.qt.android.bindings.QtActivity"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.HOME"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity-alias>
+        <receiver
+            android:name="org.viewtouch.pos.KioskAdmin"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true">
+            <meta-data android:name="android.app.device_admin" android:resource="@xml/device_admin"/>
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name="org.viewtouch.pos.KioskBoot" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
         <!-- Lets Android's installer read an update ViewTouch fetched (Updater.kt). -->
         <provider
             android:name="androidx.core.content.FileProvider"
