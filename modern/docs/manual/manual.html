@@ -56,6 +56,11 @@
 <!-- ======================================================================= -->
 <h1>What's new in 0.9</h1>
 <ul>
+<li><b>A computer only for ViewTouch:</b> one line installs it on a fresh Raspberry Pi; the computer locks itself down and starts on the ViewTouch <b>home screen</b> (start ViewTouch, network, time, updates, restart, reset; on the main register the store's setup screens), and the first time you set it up by touch (chapter 1).</li>
+<li><b>12-hour times</b> everywhere ("9:30 PM"), typed as "4:30 PM" or "16:30"; the clock is set from the internet.</li>
+<li><b>Handhelds</b>: their screen sleeps, and after it was off a while the next touch asks for a PIN (their check comes back); each device can have its own <b>start screen</b>; phones don't edit pages (chapters 1, 2 and 14).</li>
+<li><b>Android tablets only for ViewTouch</b>: home screen, pinned, starting when the tablet turns on (chapter 14).</li>
+<li><b>Pictures by touch</b>: the logo and store pictures are chosen from thumbnails of your Pictures, Documents and Downloads, or a USB stick (chapter 13).</li>
 <li><b>Floor plans:</b> <b>Main</b> shows every table with the walls, windows, doors, the bar and the patio; <b>Dining Area</b>, <b>Bar</b> and <b>Patio</b> show each room bigger, with tabs between them. A table on two plans is the same table (chapter 3).</li>
 <li><b>Draw your own room:</b> walls, doors, windows, a bar counter, booths, plants, fences and named areas, chairs around the tables, and anything turned to any angle (chapter 13).</li>
 <li><b>The host stand shows the floor plan</b>, on big screens and phones, with zoom (chapter 8).</li>
@@ -80,9 +85,14 @@
 
 <h2>One store, any number of screens</h2>
 <p>One computer keeps the store's data: checks, menu, staff and reports. Every other screen (a terminal) connects to it over the network. All screens see the same checks and tables, and a check open on one screen can't be changed on another at the same time.</p>
-<p><b>Setting up a new computer.</b> On a computer with Linux (Fedora, Debian, Ubuntu or Raspberry Pi OS) and an internet connection, open a terminal and paste:</p>
+<p><b>Setting up a new computer.</b> On a computer with Linux (Raspberry Pi OS 64-bit, Debian 13, Fedora or Ubuntu) and an internet connection, open a terminal and paste:</p>
 <pre>curl -fsSL https://raw.githubusercontent.com/No0ne558/viewtouchFork/Modernization/modern/packaging/install-viewtouch.sh | sudo sh</pre>
-<p>It installs everything (a few minutes), then asks what this computer is:</p>
+<p>It asks one question:</p>
+<ol>
+<li><b>Only for ViewTouch</b> (registers, kitchen screens, kiosks, time clocks; recommended). It installs ViewTouch, locks the computer down and restarts it. From then on everything is by touch: see <i>A computer only for ViewTouch</i> below.</li>
+<li><b>Next to the desktop</b>: it installs ViewTouch beside the computer's desktop and asks what this computer is, in a text menu (below).</li>
+</ol>
+<p>On Raspberry Pi OS and Debian 13 it downloads ViewTouch ready-made (a minute); elsewhere it builds it (a few minutes). The text menu's choices:</p>
 <table border="1" cellpadding="5" cellspacing="0" width="100%">
 <tr><th>Choice</th><th>What that computer does</th></tr>
 <tr><td>1. Main register</td><td>Has a screen and keeps the store's data. Other screens join it.</td></tr>
@@ -95,6 +105,21 @@
 </table>
 <p>To change it later, run <code>sudo vtmodern-setup</code> again; <code>vtmodern-setup status</code> shows what's set up and the newest backup. A screen that joins the store shows a <b>Join</b> screen the first time: pick the store and type a pairing code (next section).</p>
 <p>Screens start full screen at boot and have no way out for staff. To close ViewTouch on a screen, a manager touches <b>Manager → Close ViewTouch</b> twice.</p>
+
+<h2>A computer only for ViewTouch: the home screen</h2>
+<p>A computer installed <b>Only for ViewTouch</b> (like a Raspberry Pi register) has no desktop. It starts on the ViewTouch <b>home screen</b>, and ViewTouch opens on top of it. The home screen shows when a manager closes ViewTouch (<b>Manager → Close ViewTouch</b>), and if ViewTouch ever stops by itself it says so and starts it again after 5 seconds. If it stops three times in a few minutes, it stays on the home screen: restart the computer, or call for help.</p>
+<p class="shot"><img src="shots/m147-home-screen.jpg" width="560" height="315"></p>
+<p class="caption">The home screen of the main register.</p>
+<ul>
+<li><b>Start ViewTouch</b>, the big green button.</li>
+<li><b>The store</b> (the main register only): <b>Setup Guide</b>, <b>Menu</b>, <b>Staff</b>, <b>Printers</b>, <b>Add a Screen</b>, <b>Reports</b>: each opens ViewTouch right there once a manager logs in. <b>Back Up Now</b> makes a backup.</li>
+<li><b>This computer:</b> <b>Network</b> (a cable, or Wi-Fi with the on-screen keyboard; always the store's own network, never the guests' Wi-Fi), <b>Date &amp; Time</b> (the time zone, and whether the clock is set from the internet), <b>Updates</b> (everything now, or a new ViewTouch from a USB stick; security updates install by themselves each night), <b>Remote Help</b> (lets a technician connect while it's on), <b>Restart</b>, <b>Shut Down</b>, <b>Reset…</b> (start over and choose again what the computer is, or erase the store; a backup is made first) and <b>About</b>.</li>
+</ul>
+<p>The computer's settings (Network, Date &amp; Time, Updates, Remote Help, Reset) ask for <b>this computer's PIN</b>, chosen in the first-time setup. Give it only to managers; it isn't anyone's ViewTouch PIN.</p>
+<p><b>The first time</b> the computer starts, it asks by touch: what it is (main register, register, kitchen screen, self-order kiosk, time clock), its name, the network, the store's time zone (touch it: the computer may start on another one) and the settings PIN. Then ViewTouch starts; the main register opens on the setup guide once a manager logs in.</p>
+<p class="shot"><img src="shots/m148-first-setup.jpg" width="520" height="325"></p>
+<p class="caption">The first-time setup.</p>
+<p>Locked down means: ViewTouch runs as its own account that can't log in; the desktop is off; a firewall lets in only ViewTouch's screens; remote access (SSH) is off until <b>Remote Help</b> turns it on; the clock is always set from the internet; a frozen computer restarts by itself. The administrator account made with Raspberry Pi Imager still works for a technician: Ctrl+Alt+F2 on a keyboard, or over the network while Remote Help is on.</p>
 
 <h2>Adding a screen or tablet (pairing)</h2>
 <ol>
@@ -121,6 +146,11 @@
 <p class="shot"><img src="shots/m122-handhelds.jpg" width="560" height="303"></p>
 <p class="caption">On a phone: a menu page, Pay, Employees and the Time Clock.</p>
 <p>A screen counts as a phone when its short side is under 600 (most phones; a folding phone switches as it opens). To choose for a screen, use <b>Manager → Terminals → Screen layout</b>.</p>
+<ul>
+<li><b>The screen sleeps</b> on phones and handhelds, as on any phone (tablets and registers stay on). When it was off for a while, the next touch asks for a PIN: <b>Type your PIN to go on</b>. Their open check comes back as soon as they log in. How long: <b>Store Settings → Screens → Handhelds: ask for the PIN after the screen was off</b> (30 seconds to start; 0 every time, −1 never).</li>
+<li><b>Phones don't edit pages.</b> Pages are made on a bigger screen (the main register or a tablet) and reach the phones as soon as they're saved.</li>
+<li><b>Pictures</b> (a logo, a menu photo) are chosen with Android's own photo picker.</li>
+</ul>
 
 <h2>Your first day: the setup guide</h2>
 <p>The first time a manager logs in, the <b>setup guide</b> walks through making ViewTouch yours, one step at a time: your store's name and the lines at the top of receipts, your logo, your colors, your taxes, your first menu items and your team. Skip any step with <b>Next</b>; <b>Finish Later</b> closes it until a manager logs in again, and <b>Manager → Setup Guide…</b> brings it back anytime.</p>
@@ -130,6 +160,11 @@
 </tr><tr>
 <td><img src="shots/m97-setup-look.png" width="270" height="152"><br><small>Your colors</small></td>
 <td><img src="shots/m97-setup-staff.png" width="270" height="152"><br><small>Your team</small></td>
+</tr></table>
+<p>On a phone the guide fills the screen, one thing under another; each step scrolls, and Next and Finish Later stay at the bottom.</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m149-phone-setup-guide.jpg" width="140" height="311"><br><small>On a phone</small></td>
+<td><img src="shots/m149-phone-setup-colors.jpg" width="140" height="311"><br><small>Your colors</small></td>
 </tr></table>
 <div class="tip">The demo's staff (Morgan 1234, Sam 1111…) have PINs printed in this manual. Add yourself as a manager with your own PIN, then touch <b>Turn Off the Sample Staff</b>. If you're logged in as Morgan, Morgan goes off when you touch Finish; then log in with your own PIN.</div>
 
@@ -298,6 +333,7 @@
 <p class="shot"><img src="shots/m101-left-handed.png" width="560" height="315"></p>
 <p class="caption">The order screen for someone left-handed.</p>
 <p>In <b>Manager → Store Settings → Start pages</b>, <b>Servers start on</b>, <b>Bartenders start on</b> and the others pick the floor plan each job starts on: the Tables page, the host's Seating screen, or another room drawn in the editor (a page with tables). Left empty, hosts start on Seating and everyone else on Tables. A person's own start screen (Employees) wins over their job's.</p>
+<p><b>A device's own start screen</b> wins over both: <b>Manager → Terminals</b> → the device → <b>Start screen</b>. The patio handheld opens on the Patio floor plan, a takeout tablet on Open Checks, whoever logs in. It can be a floor plan, Open Checks, a menu, Tabs or Deliveries.</p>
 
 <h2>Switch User</h2>
 <p>Someone else needs the screen in the middle of your order? Touch <b>Check…</b> → <b>Switch User</b> (or <b>Switch User</b> on the floor plan). They type their PIN and work; when you type yours again, on this screen or any other, your check opens right where you left it. The same happens if the screen logs you out by itself after sitting idle.</p>
@@ -965,7 +1001,7 @@
 <div class="tip">To put one on any page: edit mode → <b>+ Panel → Menu (self-filling)</b>, and set its <i>Family</i> (or leave it empty for all), <i>Columns</i> and <i>Show photos</i>.</div>
 
 <h2>Your logo and pictures</h2>
-<p>Make the screens yours. In <b>Manager → Store Settings → Store logo</b>, touch <b>Add Picture…</b> and pick your logo file. It shows on the login page and the screen saver (and on the customer display and kiosk). Turn on <b>Print the logo on receipts</b> to print it at the top of every receipt.</p>
+<p>Make the screens yours. In <b>Manager → Store Settings → Store logo</b> (or the setup guide's logo step), touch <b>Add Picture…</b>: the pictures on the computer show as thumbnails, newest first, from its Pictures, Documents, Downloads and Desktop folders. Touch yours. On a computer only for ViewTouch, copy pictures into the administrator's Pictures or Documents folder, or put them on a USB stick and touch <b>USB Stick</b>; <b>Browse…</b> opens any other folder. On a phone or tablet, Android's photo picker opens instead. It shows on the login page and the screen saver (and on the customer display and kiosk). Turn on <b>Print the logo on receipts</b> to print it at the top of every receipt.</p>
 <table cellpadding="4"><tr>
 <td><img src="shots/m88-login-logo.png" width="270" height="152"><br><small>The login page</small></td>
 <td><img src="shots/m90-screen-saver-logo.png" width="270" height="152"><br><small>The screen saver</small></td>
@@ -1042,6 +1078,17 @@
 <p>A page without a phone version can still be steered: select a button on the standard page and use <b>On phones</b> on the right. <b>A row of its own</b> makes it take the whole width; <b>Where</b> puts it first or last.</p>
 
 <p>To add a tablet or phone, install the ViewTouch Android app and pair it (chapter 1). Manager → Terminals → <i>Screen layout</i> can force phone or standard pages for a screen.</p>
+<h2>Getting the app</h2>
+<p>On the tablet or phone, download it from <code>github.com/No0ne558/viewtouchFork/releases/tag/modern-packages</code>: <b>ViewTouch-android-arm64.apk</b> (most) or <b>ViewTouch-android-armv7.apk</b> (older or budget ones), open it, and allow installing it. Later versions come from the store's computer: a strip on the tablet says one is ready, and a manager touches <b>Update Now</b>. On a Stripe Reader S700 the app is installed and updated through Stripe (Apps on Devices).</p>
+<h2>A tablet only for ViewTouch</h2>
+<p>Like the main register, a tablet can be only for ViewTouch: ViewTouch is its home screen and starts when it turns on, it's pinned (no Home, Recents or notifications; the power button's menu still restarts it), there's no lock screen, and staff can't add accounts or install other apps. Set it up once, with a computer and a USB cable, on a tablet just reset to factory settings (no Google account added):</p>
+<ol>
+<li>On the tablet: Settings → About → touch <i>Build number</i> 7 times; then Settings → Developer options → <i>USB debugging</i> on.</li>
+<li>On the computer, with Android's <i>platform tools</i>: <code>adb install ViewTouch-android-arm64.apk</code></li>
+<li><code>adb shell dpm set-device-owner org.viewtouch.pos/.KioskAdmin</code></li>
+<li>Open ViewTouch: it pins itself. Pair it as usual.</li>
+</ol>
+<p><b>Manager → Close ViewTouch</b> lets go of the tablet (for a technician: Settings, Wi-Fi) until ViewTouch is opened again or the tablet restarts. To make it an ordinary tablet for good, close ViewTouch and reset it to factory settings.</p>
 <h2>The on-screen keyboard</h2>
 <p class="shot"><img src="shots/m74-on-screen-keyboard.png" width="560" height="315"></p>
 <p class="caption">On a touch screen, text fields bring up a keyboard (a number pad for numbers).</p>
