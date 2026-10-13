@@ -13,6 +13,8 @@ ColumnLayout {
     // For pictures: the store's picture library.
     property PosService pos
     property var pages: []   // page choices when there's no editor: [{value, text}]
+    // At least this tall (a phone: a finger's size); 0: as the style makes them.
+    property real minHeight: 0
     property var value
     property bool mixed: false
     property bool isSet: value !== undefined
@@ -110,6 +112,7 @@ ColumnLayout {
         Loader {
             active: fe.inline
             visible: active
+            Layout.minimumHeight: active ? fe.minHeight : 0
             sourceComponent: fe.inline ? fe.editorComponent : null
         }
     }
@@ -117,6 +120,7 @@ ColumnLayout {
     Loader {
         active: !fe.inline
         visible: active
+        Layout.minimumHeight: active ? fe.minHeight : 0
         Layout.fillWidth: true
         sourceComponent: fe.inline ? null : fe.editorComponent
     }
@@ -165,6 +169,7 @@ ColumnLayout {
                 }
             }
             ComboBox {
+                Layout.minimumHeight: fe.minHeight
                 objectName: "imageChoice"
                 Layout.fillWidth: true
                 enabled: !fe.readOnly
@@ -178,10 +183,11 @@ ColumnLayout {
                 }
             }
             Button {
+                Layout.minimumHeight: fe.minHeight
                 objectName: "imageAdd"
                 text: qsTr("Add Picture…")
                 enabled: !fe.readOnly && !!fe.pos
-                onClicked: pictureFile.open()
+                onClicked: pictureFile.choose()
             }
             PicturePicker {
                 id: pictureFile
@@ -199,6 +205,7 @@ ColumnLayout {
     Component {
         id: textField
         TextField {
+            Layout.minimumHeight: fe.minHeight
             text: fe.mixed || !fe.isSet || fe.value == null ? "" : String(fe.value)
             placeholderText: fe.mixed ? qsTr("(mixed)") : (fe.resolved !== undefined ? String(fe.resolved) : "")
             selectByMouse: true
@@ -221,6 +228,7 @@ ColumnLayout {
     Component {
         id: spin
         SpinBox {
+            Layout.minimumHeight: fe.minHeight
             from: (fe.field.min ?? -99999)
             to: (fe.field.max ?? 99999)
             editable: true
@@ -243,6 +251,7 @@ ColumnLayout {
     Component {
         id: combo
         ComboBox {
+            Layout.minimumHeight: fe.minHeight
             readonly property var opts: (fe.inheritable ? [{ value: "__inherit__", text: qsTr("(inherit)") }] : [])
                                         .concat(fe.field.options ?? [])
             model: opts
@@ -280,6 +289,7 @@ ColumnLayout {
                 }
             }
             TextField {
+                Layout.minimumHeight: fe.minHeight
                 Layout.fillWidth: true
                 // value and isSet update separately; never hand undefined to text.
                 readonly property string current: fe.mixed || !fe.isSet || fe.value == null ? "" : String(fe.value)
@@ -318,6 +328,7 @@ ColumnLayout {
     Component {
         id: textureCombo
         ComboBox {
+            Layout.minimumHeight: fe.minHeight
             readonly property var opts: (fe.inheritable ? [qsTr("(inherit)")] : []).concat([qsTr("(none)")])
                                         .concat(fe.editor ? fe.editor.textures : [])
             model: opts
@@ -343,6 +354,7 @@ ColumnLayout {
         RowLayout {
             spacing: 6
             ComboBox {
+                Layout.minimumHeight: fe.minHeight
                 objectName: "fontChoice"
                 Layout.fillWidth: true
                 // Again when the store's fonts change.
@@ -355,6 +367,7 @@ ColumnLayout {
                 font.family: currentIndex > 0 ? currentText : Qt.application.font.family   // what it looks like
             }
             Button {
+                Layout.minimumHeight: fe.minHeight
                 objectName: "fontAdd"
                 visible: !!fe.pos
                 text: qsTr("Add Font…")
@@ -372,6 +385,7 @@ ColumnLayout {
     Component {
         id: pageCombo
         ComboBox {
+            Layout.minimumHeight: fe.minHeight
             // From the editor, or the owner's list (admin forms); field.emptyText names "none".
             readonly property var opts: {
                 const list = fe.editor ? (fe.editor.revision >= 0 ? fe.editor.pageOptions() : []) : fe.pages   // compared: new pages show
@@ -391,6 +405,7 @@ ColumnLayout {
     Component {
         id: numberField
         TextField {
+            Layout.minimumHeight: fe.minHeight
             id: numField
             readonly property int decimals: fe.type === "money" ? 2 : 3
             // Money with its cents; a percent as typed (18, 4.5), not 18.000.
@@ -414,6 +429,7 @@ ColumnLayout {
     Component {
         id: pinField
         TextField {
+            Layout.minimumHeight: fe.minHeight
             text: fe.value ?? ""
             echoMode: TextInput.Password
             placeholderText: fe.field.hint ?? ""
@@ -426,6 +442,7 @@ ColumnLayout {
     Component {
         id: passwordField
         TextField {
+            Layout.minimumHeight: fe.minHeight
             text: fe.value ?? ""
             echoMode: TextInput.Password
             selectByMouse: true
@@ -436,6 +453,7 @@ ColumnLayout {
     Component {
         id: pageList
         TextField {
+            Layout.minimumHeight: fe.minHeight
             text: Array.isArray(fe.value) ? fe.value.join(", ") : ""
             placeholderText: qsTr("page-id, page-id, ...")
             selectByMouse: true
@@ -461,6 +479,7 @@ ColumnLayout {
                 if (n !== v) fe.commit(n)
             }
             Button {
+                Layout.minimumHeight: fe.minHeight
                 objectName: "stepDown"
                 text: "−"
                 font.pixelSize: 20
@@ -471,6 +490,7 @@ ColumnLayout {
                 onClicked: parent.set(parent.v % parent.step ? parent.v - parent.v % parent.step : parent.v - parent.step)
             }
             TextField {
+                Layout.minimumHeight: fe.minHeight
                 id: stepValue
                 objectName: "stepValue"
                 implicitWidth: 112
@@ -489,6 +509,7 @@ ColumnLayout {
                 }
             }
             Button {
+                Layout.minimumHeight: fe.minHeight
                 objectName: "stepUp"
                 text: "+"
                 font.pixelSize: 20
@@ -605,6 +626,7 @@ ColumnLayout {
                             Component {
                                 id: cellText
                                 TextField {
+                                    Layout.minimumHeight: fe.minHeight
                                     objectName: "rowCell"
                                     implicitHeight: 44
                                     text: cell.cellValue
@@ -619,6 +641,7 @@ ColumnLayout {
                             Component {
                                 id: cellCombo
                                 ComboBox {
+                                    Layout.minimumHeight: fe.minHeight
                                     implicitHeight: 44
                                     model: cell.modelData.options ?? []
                                     textRole: "text"
@@ -631,6 +654,7 @@ ColumnLayout {
                         }
                     }
                     Button {
+                        Layout.minimumHeight: fe.minHeight
                         objectName: "rowRemove"
                         text: "✕"
                         implicitWidth: 44
@@ -646,6 +670,7 @@ ColumnLayout {
                 }
             }
             Button {
+                Layout.minimumHeight: fe.minHeight
                 objectName: "rowAdd"
                 visible: !fe.readOnly && (!fe.field.max || rowsBox.rows.length < fe.field.max)
                 text: fe.field.addText ?? qsTr("+ Add")

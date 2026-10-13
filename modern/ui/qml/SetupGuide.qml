@@ -52,20 +52,26 @@ Rectangle {
     MouseArea { anchors.fill: parent }   // nothing behind it while it's open
 
     readonly property real zoom: Math.max(0.6, Math.min(1.6, width / 1100, height / 780))
+    // A phone: the whole screen, things one under another.
+    // (Sized by the window: the area it's in can be wider than the phone.)
+    readonly property real shownWidth: Window.width > 0 ? Math.min(width, Window.width) : width
+    readonly property real shownHeight: Window.height > 0 ? Math.min(height, Window.height) : height
+    readonly property bool narrow: shownWidth < 760
     Rectangle {
         id: card
-        width: 1000
-        height: 700
+        objectName: "setupCard"
+        width: g.narrow ? g.shownWidth - 12 : 1000
+        height: g.narrow ? g.shownHeight - 12 : 700
         anchors.centerIn: parent
-        scale: g.zoom
+        scale: g.narrow ? 1 : g.zoom
         radius: 14
         color: "#20252e"
         border.color: "#3a4250"
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 28
-            spacing: 16
+            anchors.margins: g.narrow ? 14 : 28
+            spacing: g.narrow ? 10 : 16
 
             RowLayout {
                 Layout.fillWidth: true
@@ -73,7 +79,7 @@ Rectangle {
                 Label {
                     Layout.fillWidth: true
                     text: qsTr("Set up your store")
-                    font.pixelSize: 30
+                    font.pixelSize: g.narrow ? 24 : 30
                     font.bold: true
                     color: "white"
                 }
@@ -92,11 +98,22 @@ Rectangle {
                 font.pixelSize: 15
             }
 
-            // --- each step ---
-            StackLayout {
+            // --- each step --- (scrolls when it's taller than the screen: a phone)
+            Flickable {
+                id: stepArea
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                clip: true
+                contentWidth: width - stepBar.room
+                contentHeight: stepStack.implicitHeight
+                boundsBehavior: Flickable.StopAtBounds
+                ScrollBar.vertical: TouchScrollBar { id: stepBar }
+            StackLayout {
+                id: stepStack
+                width: stepArea.width - stepBar.room
+                height: Math.max(stepArea.height, implicitHeight)
                 currentIndex: g.step
+                onCurrentIndexChanged: stepArea.contentY = 0
 
                 // Welcome
                 ColumnLayout {
@@ -121,7 +138,7 @@ Rectangle {
                 // Your store
                 ColumnLayout {
                     spacing: 8
-                    Label { text: qsTr("Your store's name"); color: "white"; font.pixelSize: 18; font.bold: true }
+                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Your store's name"); color: "white"; font.pixelSize: 18; font.bold: true }
                     TextField {
                         objectName: "setupStoreName"
                         Layout.fillWidth: true
@@ -129,7 +146,7 @@ Rectangle {
                         text: g.storeName
                         onTextEdited: g.storeName = text
                     }
-                    Label { text: qsTr("At the top of receipts (address, phone, hours)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
+                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("At the top of receipts (address, phone, hours)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
                     TextArea {
                         objectName: "setupReceipt"
                         Layout.fillWidth: true
@@ -151,8 +168,10 @@ Rectangle {
                         font.pixelSize: 18
                         text: qsTr("Your logo goes on the login page, the screen saver, the customer display and the kiosk, and on receipts if you like.")
                     }
-                    RowLayout {
-                        spacing: 20
+                    GridLayout {
+                        columns: g.narrow ? 1 : 2
+                        columnSpacing: 20
+                        rowSpacing: 10
                         Rectangle {
                             implicitWidth: 260
                             implicitHeight: 200
@@ -178,7 +197,7 @@ Rectangle {
                                 text: qsTr("Add Picture…")
                                 font.pixelSize: 18
                                 implicitHeight: 56
-                                onClicked: logoFile.open()
+                                onClicked: logoFile.choose()
                             }
                             CheckBox {
                                 objectName: "setupReceiptLogo"
@@ -265,7 +284,7 @@ Rectangle {
                 // Taxes
                 ColumnLayout {
                     spacing: 8
-                    Label { text: qsTr("Sales tax on food (%)"); color: "white"; font.pixelSize: 18; font.bold: true }
+                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Sales tax on food (%)"); color: "white"; font.pixelSize: 18; font.bold: true }
                     TextField {
                         objectName: "setupFood"
                         Layout.preferredWidth: 220
@@ -275,7 +294,7 @@ Rectangle {
                         text: g.foodTax
                         onTextEdited: g.foodTax = text
                     }
-                    Label { text: qsTr("Sales tax on alcohol (%)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
+                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; text: qsTr("Sales tax on alcohol (%)"); color: "white"; font.pixelSize: 18; font.bold: true; Layout.topMargin: 10 }
                     TextField {
                         objectName: "setupAlcohol"
                         Layout.preferredWidth: 220
@@ -306,19 +325,23 @@ Rectangle {
                         font.pixelSize: 18
                         text: qsTr("The menu has %1 items. Add yours here: they show on the Everything page right away. Prices, photos and choices: Manager -> Menu.").arg(g.info.items ?? 0)
                     }
-                    RowLayout {
-                        spacing: 10
+                    GridLayout {
+                        columns: g.narrow ? 2 : 4
+                        columnSpacing: 10
+                        rowSpacing: 8
                         TextField {
                             id: itemName
                             objectName: "setupItemName"
                             Layout.fillWidth: true
+                            Layout.columnSpan: g.narrow ? 2 : 1
                             font.pixelSize: 20
                             placeholderText: qsTr("Item, like Fish Tacos")
                         }
                         TextField {
                             id: itemPrice
                             objectName: "setupItemPrice"
-                            Layout.preferredWidth: 140
+                            Layout.preferredWidth: g.narrow ? -1 : 140
+                            Layout.fillWidth: g.narrow
                             font.pixelSize: 20
                             placeholderText: qsTr("Price")
                             inputMethodHints: Qt.ImhFormattedNumbersOnly
@@ -327,13 +350,16 @@ Rectangle {
                         ComboBox {
                             id: itemFamily
                             objectName: "setupItemFamily"
-                            Layout.preferredWidth: 200
+                            Layout.preferredWidth: g.narrow ? -1 : 200
+                            Layout.fillWidth: g.narrow
                             editable: true
                             font.pixelSize: 18
                             model: g.info.families ?? []
                         }
                         Button {
                             objectName: "setupItemAdd"
+                            Layout.columnSpan: g.narrow ? 2 : 1
+                            Layout.fillWidth: g.narrow
                             text: qsTr("Add")
                             highlighted: true
                             font.pixelSize: 18
@@ -365,19 +391,23 @@ Rectangle {
                         font.pixelSize: 18
                         text: qsTr("Add yourself as a manager first, then your team. Everyone logs in with their own PIN.")
                     }
-                    RowLayout {
-                        spacing: 10
+                    GridLayout {
+                        columns: g.narrow ? 2 : 4
+                        columnSpacing: 10
+                        rowSpacing: 8
                         TextField {
                             id: staffName
                             objectName: "setupStaffName"
                             Layout.fillWidth: true
+                            Layout.columnSpan: g.narrow ? 2 : 1
                             font.pixelSize: 20
                             placeholderText: qsTr("Name")
                         }
                         ComboBox {
                             id: staffRole
                             objectName: "setupStaffRole"
-                            Layout.preferredWidth: 180
+                            Layout.preferredWidth: g.narrow ? -1 : 180
+                            Layout.fillWidth: g.narrow
                             font.pixelSize: 18
                             textRole: "text"
                             valueRole: "value"
@@ -388,7 +418,8 @@ Rectangle {
                         TextField {
                             id: staffPin
                             objectName: "setupStaffPin"
-                            Layout.preferredWidth: 140
+                            Layout.preferredWidth: g.narrow ? -1 : 140
+                            Layout.fillWidth: g.narrow
                             font.pixelSize: 20
                             placeholderText: qsTr("PIN")
                             echoMode: TextInput.Password
@@ -397,6 +428,8 @@ Rectangle {
                         }
                         Button {
                             objectName: "setupStaffAdd"
+                            Layout.columnSpan: g.narrow ? 2 : 1
+                            Layout.fillWidth: g.narrow
                             text: qsTr("Add")
                             highlighted: true
                             font.pixelSize: 18
@@ -471,6 +504,8 @@ Rectangle {
                 }
             }
 
+            }
+
             RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
@@ -489,7 +524,7 @@ Rectangle {
                     text: qsTr("‹ Back")
                     font.pixelSize: 18
                     implicitHeight: 56
-                    implicitWidth: 160
+                    implicitWidth: g.narrow ? 96 : 160
                     onClicked: g.step = Math.max(0, g.step - 1)
                 }
                 Button {
@@ -498,7 +533,7 @@ Rectangle {
                     highlighted: true
                     font.pixelSize: 18
                     implicitHeight: 56
-                    implicitWidth: 200
+                    implicitWidth: g.narrow ? 120 : 200
                     onClicked: g.next()
                 }
             }

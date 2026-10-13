@@ -207,6 +207,7 @@ Item {
                     opacity: 0.8
                 }
                 Button {
+                    Layout.minimumHeight: w.narrow ? 36 : 0
                     text: w.pos && w.pos.pairing.active ? qsTr("Stop") : qsTr("Pair a Device")
                     highlighted: !(w.pos && w.pos.pairing.active)
                     onClicked: w.pos.pairing.active ? w.pos.stopPairing() : w.pos.startPairing()
@@ -269,6 +270,8 @@ Item {
                         required property int index
                         objectName: w.sectioned ? "settingsSection-" + row.modelData.key : ""
                         width: ListView.view.width - listBar.room
+                        // A phone: each row a finger's height.
+                        implicitHeight: Math.max(implicitContentHeight + topPadding + bottomPadding, w.narrow ? 36 : 0)
                         highlighted: w.sectioned ? w.query === "" && row.modelData.key === w.sectionShown : row.index === w.index
                         onClicked: {
                             if (!w.sectioned) return w.choose(row.index)
@@ -300,6 +303,7 @@ Item {
                     }
                 }
                 Button {
+                    Layout.minimumHeight: w.narrow ? 36 : 0
                     visible: !w.sectioned
                     Layout.fillWidth: true
                     text: qsTr("+ Add")
@@ -385,6 +389,7 @@ Item {
                             model: w.shownFields
                             delegate: FieldEditor {
                                 required property var modelData
+                                minHeight: w.narrow ? 36 : 0
                                 // A "look" field: an enum of this screen's looks.
                                 field: modelData.type !== "look" || !w.zone ? modelData
                                      : Object.assign({}, modelData, {

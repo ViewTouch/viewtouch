@@ -24,6 +24,14 @@ Popup {
     padding: 20
 
     function refresh() { files = pos ? pos.pictureFiles() : [] }
+    // What the picture buttons call: on Android, Android's own photo picker
+    // (it sees the phone's photos without asking for access to them all).
+    function choose() {
+        if (Qt.platform.os === "android")
+            browse.open()
+        else
+            open()
+    }
     onOpened: refresh()
 
     background: Rectangle { color: "#1c2128"; radius: 12; border.color: "#3a4250" }

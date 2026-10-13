@@ -129,3 +129,23 @@ TEST_CASE("Pictures: the touch picker finds them in Pictures and Documents, newe
     qputenv("HOME", oldHome);
     CHECK(names == QStringList{u"logo.png"_s, u"older.png"_s});   // one folder down too; no text files
 }
+
+TEST_CASE("Pictures: one without a name ending (Android's photo picker) is named by what it is", "[images][picker]")
+{
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    QImage img(8, 8, QImage::Format_RGB32);
+    img.fill(Qt::blue);
+    REQUIRE(img.save(dir.filePath(u"Logo"_s), "PNG"));     // no ".png"
+    REQUIRE(img.save(dir.filePath(u"menu.dat"_s), "JPG"));  // the wrong one
+    QFile text(dir.filePath(u"notes"_s));
+    REQUIRE(text.open(QIODevice::WriteOnly));
+    text.write("hello");
+    text.close();
+
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    CHECK(pos.addImageFile(dir.filePath(u"Logo"_s)) == u"store:logo.png"_s);
+    CHECK(pos.addImageFile(QUrl::fromLocalFile(dir.filePath(u"menu.dat"_s)).toString()) == u"store:menu.jpg"_s);
+    CHECK(pos.addImageFile(dir.filePath(u"notes"_s)).isEmpty());   // not a picture
+}

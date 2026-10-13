@@ -5293,6 +5293,74 @@ TEST_CASE("Qualifiers: a finger on No, Extra... or Cancel presses nothing behind
     CHECK(chosen() == beforeCancel);
 }
 
+TEST_CASE("Setup guide: every step fits a phone", "[ui][setup][phone]")
+{
+    Screen s(false, 412, 915, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    s.c.openSetup();
+    QTest::qWait(150);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    const QRectF screen(QPointF(), s.window->size());
+    const auto onScreen = [&](const QString &name) {
+        QQuickItem *it = by(name);
+        INFO(name.toStdString());
+        REQUIRE(it);
+        const QRectF r = it->mapRectToScene(QRectF(0, 0, it->width(), it->height()));
+        INFO(r.x() << "," << r.y() << " " << r.width() << "x" << r.height());
+        CHECK(screen.contains(r));
+    };
+    const QList<QStringList> fields = {{}, {u"setupStoreName"_s, u"setupReceipt"_s}, {u"setupLogoAdd"_s},
+                                       {}, {u"setupFood"_s, u"setupAlcohol"_s},
+                                       {u"setupItemName"_s, u"setupItemPrice"_s, u"setupItemFamily"_s, u"setupItemAdd"_s},
+                                       {u"setupStaffName"_s, u"setupStaffRole"_s, u"setupStaffPin"_s, u"setupStaffAdd"_s}, {}};
+    for (int step = 0; step < fields.size(); ++step) {
+        s.shot(qPrintable(u"setup-phone-%1"_s.arg(step)));
+        onScreen(u"setupNext"_s);
+        onScreen(u"setupLater"_s);
+        for (const QString &f : fields[step])
+            onScreen(f);
+        if (step + 1 < fields.size()) {
+            s.tapItem(by(u"setupNext"_s));
+            QTest::qWait(80);
+        }
+    }
+}
+
+TEST_CASE("Phone audit: every page on a phone (pictures, small controls)", "[.][phoneaudit]")
+{
+    Screen s(false, 412, 915, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    s.pos.setupFinish(true);
+    s.c.closeSetup();
+    QStringList report;
+    QDir pages(QStringLiteral(VTM_SEED_DIR "/pages"));
+    for (const QString &file : pages.entryList({u"*.json"_s})) {
+        const QString id = file.chopped(5);
+        if (!s.c.jumpTo(id))
+            continue;
+        QTest::qWait(80);
+        s.shot(qPrintable(u"phone-"_s + id));
+        if (qEnvironmentVariableIsSet("VTM_BARS")) {
+            std::function<void(QQuickItem *)> walk = [&](QQuickItem *it) {
+                if (it->inherits("QQuickScrollBar") && it->isVisible())
+                    qWarning().noquote() << id << "bar" << it->width() << "drawn"
+                                         << it->mapRectToScene(QRectF(0, 0, it->width(), 1)).width()
+                                         << "scale" << it->property("drawnScale").toDouble() << "phone" << it->property("onPhone").toBool();
+                for (QQuickItem *c : it->childItems())
+                    walk(c);
+            };
+            walk(s.window->contentItem());
+        }
+        QStringList small;
+        smallTargets(s.window->contentItem(), s.window, &small);
+        small.removeDuplicates();
+        for (const QString &x : small)
+            report << id + u": "_s + x;
+    }
+    WARN(report.join(u'\n').toStdString());
+}
+
 TEST_CASE("Phone audit: typing on a phone", "[.][phonekeys]")
 {
     Screen s(true, 412, 870, u"phone"_s);

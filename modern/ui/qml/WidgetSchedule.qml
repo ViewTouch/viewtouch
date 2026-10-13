@@ -158,6 +158,7 @@ Item {
                 rowSpacing: 8
                 columnSpacing: 8
                 ComboBox {
+                    Layout.minimumHeight: w.narrow ? 40 : 0
                     id: staffBox
                     Layout.columnSpan: w.narrow ? 2 : 1
                     Layout.fillWidth: w.narrow
@@ -171,6 +172,7 @@ Item {
                 }
                 Label { Layout.columnSpan: w.narrow ? 2 : 1; text: w.days[w.dayIndex] ? w.days[w.dayIndex].label : "" ; font.bold: true }
                 TextField {
+                    Layout.minimumHeight: w.narrow ? 40 : 0
                     implicitWidth: 110
                     Layout.preferredWidth: 110
                     Layout.fillWidth: false
@@ -181,6 +183,7 @@ Item {
                 }
                 Label { text: "–" }
                 TextField {
+                    Layout.minimumHeight: w.narrow ? 40 : 0
                     implicitWidth: 110
                     Layout.preferredWidth: 110
                     Layout.fillWidth: false
@@ -190,6 +193,7 @@ Item {
                     onTextEdited: w.end = text
                 }
                 TextField {
+                    Layout.minimumHeight: w.narrow ? 40 : 0
                     Layout.fillWidth: true
                     placeholderText: qsTr("note (patio, close…)")
                     text: w.note

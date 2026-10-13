@@ -258,25 +258,74 @@ bool PosSession::openUsbSticks()
     return true;
 }
 
+namespace {
+
+// What kind of picture or font these bytes are, by how they start ("png",
+// "jpg"...); empty if none we take.
+QString kindOf(const QByteArray &data)
+{
+    const auto starts = [&](const char *magic, qsizetype at = 0) {
+        return data.mid(at, qsizetype(qstrlen(magic))) == QByteArray(magic);
+    };
+    if (starts("\x89PNG"))
+        return u"png"_s;
+    if (starts("\xFF\xD8\xFF"))
+        return u"jpg"_s;
+    if (starts("GIF8"))
+        return u"gif"_s;
+    if (starts("BM"))
+        return u"bmp"_s;
+    if (starts("RIFF") && starts("WEBP", 8))
+        return u"webp"_s;
+    if (starts("OTTO"))
+        return u"otf"_s;
+    if (data.startsWith(QByteArray("\x00\x01\x00\x00", 4)) || starts("true"))
+        return u"ttf"_s;
+    if (data.left(1024).contains("<svg"))
+        return u"svg"_s;
+    return {};
+}
+
+} // namespace
+
 QString PosSession::addImageFile(const QString &fileOrUrl)
 {
-    // Read here (this computer's file), kept by the store.
+    // Read here (this computer's file), kept by the store. On Android the
+    // photo picker hands over a content:// link: no file name ending, and
+    // often no name at all ("image:1000012345").
+    const bool content = fileOrUrl.startsWith(u"content:");
     const QString path = fileOrUrl.startsWith(u"file:") ? QUrl(fileOrUrl).toLocalFile() : fileOrUrl;
     QFile f(path);
-    if (f.size() > kMaxImageBytes) {
-        emit notice(tr("That picture is too big (8 MB at most)."));
-        return {};
-    }
     if (!f.open(QIODevice::ReadOnly)) {
         emit notice(tr("Can't open %1.").arg(QFileInfo(path).fileName()));
         return {};
     }
-    const QString ref = storeImageRef(QFileInfo(path).fileName());
+    const QByteArray data = f.read(kMaxImageBytes + 1);
+    if (data.size() > kMaxImageBytes) {
+        emit notice(tr("That picture is too big (8 MB at most)."));
+        return {};
+    }
+    QString name = QFileInfo(path).fileName();
+    if (content) {
+        // "primary%3APictures%2FLogo.png" -> "Logo.png"; "image%3A1000012345" -> "1000012345"
+        name = QUrl::fromPercentEncoding(name.toUtf8());
+        name = name.mid(std::max(name.lastIndexOf(u'/'), name.lastIndexOf(u':')) + 1);
+    }
+    // A name without the right ending: named by what the bytes are.
+    if (storeImageRef(name).isEmpty()) {
+        const QString kind = kindOf(data);
+        if (!kind.isEmpty())
+            name = (QFileInfo(name).completeBaseName().isEmpty() || content && name.contains(QRegularExpression(u"^[0-9]+$"_s))
+                        ? u"picture"_s
+                        : QFileInfo(name).completeBaseName())
+                   + u'.' + kind;
+    }
+    const QString ref = storeImageRef(name);
     if (ref.isEmpty()) {
         emit notice(tr("Pictures can be PNG, JPEG, WebP, GIF, BMP or SVG files; fonts TTF or OTF."));
         return {};
     }
-    invoke(u"addStoreImage"_s, {QFileInfo(path).fileName(), QString::fromLatin1(f.readAll().toBase64())});
+    invoke(u"addStoreImage"_s, {name, QString::fromLatin1(data.toBase64())});
     return ref;
 }
 

@@ -15,14 +15,23 @@ ScrollBar {
     // (Qt 6.8), which narrowed it to its handle.
     // At least 40 pixels on the screen, also on a page drawn smaller than it
     // was made (a 1920-wide page on a smaller screen).
-    readonly property real drawnScale: {
+    property real drawnScale: 1
+    function measure() {
         const p = bar.parent
-        if (!p)
-            return 1
+        if (!p || !p.visible)
+            return
         const r = p.mapToItem(null, 0, 0, 100, 100)
-        return r.width > 0 ? Math.max(0.3, r.width / 100) : 1
+        if (r.width > 0)
+            drawnScale = Math.max(0.3, r.width / 100)
     }
-    readonly property real thickness: Math.round(Math.max(28, 40 / drawnScale, Math.min(44, Screen.pixelDensity * 8)))
+    // Measured once the page is laid out (a phone's page is fitted after it's made).
+    Timer { id: settle; interval: 200; running: true; onTriggered: bar.measure() }
+    onVisibleChanged: if (visible) settle.restart()
+    Component.onCompleted: measure()
+    // A phone: a slim bar (lists there are slid by the finger), about 16 px on the screen.
+    readonly property bool onPhone: Window.width > 0 && Math.min(Window.width, Window.height) < 600
+    readonly property real thickness: onPhone ? Math.round(Math.max(10, 16 / drawnScale))
+                                              : Math.round(Math.max(28, 40 / drawnScale, Math.min(44, Screen.pixelDensity * 8)))
     implicitWidth: thickness
     width: thickness
     padding: 3
