@@ -94,7 +94,7 @@ Then it runs **`sudo vtmodern-setup`**, which asks what this machine is (any tim
 
 The Android app is a terminal: it finds the store's server on the Wi-Fi, pairs with it, and then works like any other terminal (same pages, live updates). It needs Android 9 or newer on a 64-bit or 32-bit ARM tablet.
 
-1. **Get the app:** run the *Modern Android* workflow (Actions tab → Modern Android → Run workflow). The run's artifacts hold `ViewTouch-arm64-v8a.apk` (most tablets) and `ViewTouch-armeabi-v7a.apk` (older or budget ones).
+1. **Get the app:** download it on the tablet or phone from the [modern-packages](https://github.com/No0ne558/viewtouchFork/releases/tag/modern-packages) release: `ViewTouch-android-arm64.apk` (most phones and tablets) or `ViewTouch-android-armv7.apk` (older or budget ones). To build it yourself: the *Modern Android* workflow (Actions tab → Modern Android → Run workflow).
 2. **Install:** copy the APK to the tablet and open it. Android asks to allow installing apps from that source (Settings → Apps → Special access → Install unknown apps).
 3. **Pair:** open ViewTouch. The Join screen lists the stores on the Wi-Fi. Type a code from Manager → Terminals → **Pair a Device**, name the tablet, and **Join**.
 
