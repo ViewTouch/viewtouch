@@ -5420,6 +5420,66 @@ TEST_CASE("Handhelds: the screen sleeps; off long enough, it asks for the PIN an
     CHECK(t.pos.loggedIn());
 }
 
+TEST_CASE("Host stand: a host takes a busy server's table's payment (Store Settings)", "[ui][host][hostpay]")
+{
+    Screen s;
+    core::Employee host;
+    host.id = "host-test";
+    host.name = "Hana";
+    host.role = "host";
+    host.pinSalt = app::newSalt();
+    host.pinHash = app::hashPin(u"7777"_s, host.pinSalt);
+    s.pos.shared()->employees.push_back(host);
+
+    // Sam's table.
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    REQUIRE(s.pos.selectTable(u"T4"_s) == app::PosService::TableNeedsGuests);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    s.pos.addItem(u"coffee"_s);
+    const qint64 check = s.pos.checkInfo().value(u"id"_s).toLongLong();
+    s.pos.logout();
+
+    // Not the store's way yet: a host can't take payments.
+    REQUIRE(s.pos.loginWithPin(u"7777"_s));
+    CHECK_FALSE(s.pos.can(u"check.settle"_s));
+    s.pos.logout();
+
+    // Hosts take payments.
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    QVariantMap store = s.pos.adminRecords(u"store"_s).value(0).toMap();
+    store[u"hostsTakePayments"_s] = true;
+    REQUIRE(s.pos.adminSave(u"store"_s, 0, store));
+    s.pos.logout();
+    REQUIRE(s.pos.loginWithPin(u"7777"_s));
+    CHECK(s.pos.can(u"check.settle"_s));
+    s.pos.entryKey(u"10000"_s);
+    REQUIRE(s.pos.openDrawerSession());                   // their bank, for cash
+    REQUIRE(s.c.jumpTo(u"seating"_s));
+    QTest::qWait(60);
+    QQuickItem *pay = Screen::findBy(s.window->contentItem(), "objectName", u"hostPay"_s);
+    REQUIRE(pay);                                         // on the host stand
+    s.shot("host-pay");
+    s.c.payTable(u"T4"_s);
+    QTest::qWait(60);
+    CHECK(s.c.pageId() == u"settle"_s);
+    REQUIRE(s.pos.hasCheck());
+    CHECK(s.pos.checkInfo().value(u"id"_s).toLongLong() == check);
+    REQUIRE(s.pos.tender(u"cash"_s));                     // the whole balance
+    if (s.pos.hasCheck())
+        REQUIRE(s.pos.closeCheck());
+    CHECK_FALSE(s.pos.shared()->open.contains(check));    // paid and closed
+    QTest::qWait(60);
+    CHECK(s.c.pageId() == u"seating"_s);                   // back at the host stand
+    s.pos.logout();
+
+    // A host who may not (Employees): still can't.
+    for (core::Employee &e : s.pos.shared()->employees)
+        if (e.id == "host-test")
+            e.deny.insert(core::perm::Settle);
+    REQUIRE(s.pos.loginWithPin(u"7777"_s));
+    CHECK_FALSE(s.pos.can(u"check.settle"_s));
+}
+
 TEST_CASE("Phone audit: typing on a phone", "[.][phonekeys]")
 {
     Screen s(true, 412, 870, u"phone"_s);

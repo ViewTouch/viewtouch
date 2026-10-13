@@ -154,7 +154,7 @@ inline QVariantList storeSections(const QVariantList &fields)
         {"screens", PosService::tr("Screens"), {"screenSaverMinutes", "autoLogoutMinutes", "phoneLockSeconds", "tableLongMinutes"}},
         {"display", PosService::tr("Customer display"), {"displayAccent", "displaySlides"}},
         {"loyalty", PosService::tr("Loyalty"), {"loyaltyEnabled", "pointsPerDollar", "rewards"}},
-        {"waitlist", PosService::tr("Waitlist and texts"), {"waitMinutesPerParty", "tableReadyText", "textWebhook"}},
+        {"waitlist", PosService::tr("Waitlist and texts"), {"hostsTakePayments", "waitMinutesPerParty", "tableReadyText", "textWebhook"}},
         {"kiosk", PosService::tr("Self-order kiosk"),
          {"kioskSendNow", "kioskSlip", "kioskIdleSeconds", "kioskWelcome", "kioskAskWhere", "kioskAskName", "kioskEasyReach",
           "kioskSizePercent", "kioskBackground", "kioskCard", "kioskGo", "kioskText", "kioskFont"}},

@@ -355,6 +355,9 @@ struct PosSettings {
     };
     std::vector<Promotion> promotions;
     int waitMinutesPerParty = 10;
+    // Hosts take payments (and open the servers' checks to): Pay This Table on
+    // the host stand, when a server is busy. A person's own permissions still win.
+    bool hostsTakePayments = false;
     // Kitchen display: a ticket turns yellow after warn minutes, red after late.
     // What each item usually takes, sent to made (seconds, item id -> a
     // running average): kitchen tickets are late past their slowest item's.

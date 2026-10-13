@@ -677,6 +677,9 @@ public:
     QString userName() const override;
     QString userRole() const override;
     QStringList permissions() const override;
+    // What someone may do here: their job's permissions, their own changes, and
+    // what the store lets their job do (hosts taking payments).
+    std::set<std::string> permissionsOf(const core::Employee &e) const;
     bool clockedIn() const override;
     QString clockedInSince() const override;
     QString storeName() const override;

@@ -154,6 +154,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"kioskFont"_s, qs(s_->settings.kioskLook.font)},
              {u"encryptBackups"_s, !s_->settings.backupKey.empty()}, {u"backupPassword"_s, QString()},
              {u"waitMinutesPerParty"_s, s_->settings.waitMinutesPerParty},
+             {u"hostsTakePayments"_s, s_->settings.hostsTakePayments},
              {u"autoLogoutMinutes"_s, s_->settings.autoLogoutMinutes},
              {u"phoneLockSeconds"_s, s_->settings.phoneLockSeconds},
              {u"screenSaverMinutes"_s, s_->settings.screenSaverMinutes},

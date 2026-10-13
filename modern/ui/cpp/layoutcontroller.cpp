@@ -495,6 +495,31 @@ void LayoutController::selectTable(const QString &label)
     });
 }
 
+void LayoutController::payTable(const QString &label)
+{
+    if (!pos_ || editing() || busy())
+        return;
+    call(u"selectTable"_s, {label}, [this, label](const QVariant &result) {
+        switch (result.toInt()) {
+        case PosSession::TableOpened:
+            if (const QString settle = rolePage(u"settle"_s); !settle.isEmpty())
+                navigate(Navigator::Mode::Push, settle);
+            else
+                navigate(Navigator::Mode::Index);
+            break;
+        case PosSession::TableChooseCheck:
+            if (const QString page = rolePage(u"checkList"_s); !page.isEmpty())
+                navigate(Navigator::Mode::Push, page);
+            break;
+        case PosSession::TableNeedsGuests:
+            setStatus(tr("No check at %1.").arg(label));
+            break;
+        default:
+            break;
+        }
+    });
+}
+
 void LayoutController::openCheck(qint64 checkId)
 {
     if (!pos_ || editing() || busy())

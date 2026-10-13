@@ -258,6 +258,9 @@ public:
 
     // Widget entry points.
     Q_INVOKABLE void selectTable(const QString &label);
+    // The host stand's Pay This Table: the table's check, on the Pay screen
+    // (several checks there: the list, to pick one).
+    Q_INVOKABLE void payTable(const QString &label);
     Q_INVOKABLE void openCheck(qint64 checkId);
     Q_INVOKABLE void login();
 

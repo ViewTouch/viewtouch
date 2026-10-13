@@ -341,6 +341,16 @@ Item {
                     enabled: w.pickedFree
                     onClicked: { for (const t of w.picked) w.pos.setTableState(t, "dirty"); w.picked = [] }
                 }
+                // The server is busy: the host takes the table's payment (Store Settings).
+                Key {
+                    objectName: "hostPay"
+                    Layout.columnSpan: 2
+                    visible: w.pos !== null && w.pos.can("check.settle")
+                    text: qsTr("Pay This Table")
+                    tint: "#2a62b8"
+                    enabled: w.partySize === 0 && w.picked.length === 1 && w.stateOf(w.picked[0]) === "seated"
+                    onClicked: { const t = w.picked[0]; w.done(); w.zone.controller.payTable(t) }
+                }
             }
         }
     }

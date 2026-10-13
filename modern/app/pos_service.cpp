@@ -270,7 +270,7 @@ bool PosService::require(const char *permission, const QString &action, Check *n
 {
     if (!user())
         return fail(tr("Log in first."));
-    if (user()->can(permission))
+    if (permissionsOf(*user()).contains(permission))
         return true;
     // A manager approved this one, a moment ago.
     if (approved_ && approved_->permission == permission) {
@@ -1991,8 +1991,8 @@ bool PosService::mayOpen(const Check &c) const
     const Employee *e = user();
     if (!e)
         return false;
-    return c.serverId == e->id || (!c.driverId.empty() && c.driverId == e->id) || e->can(perm::OthersChecks)
-           || (c.kiosk && e->can(perm::Settle));
+    return c.serverId == e->id || (!c.driverId.empty() && c.driverId == e->id) || permissionsOf(*e).contains(perm::OthersChecks)
+           || (c.kiosk && permissionsOf(*e).contains(perm::Settle));
 }
 
 QVariantList PosService::openChecks() const
@@ -2009,7 +2009,7 @@ QVariantList PosService::openChecks() const
             {u"mine"_s, user() && c.serverId == user()->id}, {u"current"_s, id == currentId_},
             // In "My checks": theirs, and the counter's kiosk orders for whoever takes payments.
             {u"forMe"_s, user() && (c.serverId == user()->id || (!c.driverId.empty() && c.driverId == user()->id)
-                                    || (c.kiosk && user()->can(perm::Settle)))},
+                                    || (c.kiosk && permissionsOf(*user()).contains(perm::Settle)))},
             {u"mayOpen"_s, mayOpen(c)}, {u"kiosk"_s, c.kiosk},
             {u"lineCount"_s, int(c.lines.size())}, {u"busyOn"_s, lockHolder(id)},
             {u"customer"_s, qs(c.customer.name)}, {u"due"_s, c.dueAt ? dueText(c.dueAt) : QString()},
@@ -2018,11 +2018,22 @@ QVariantList PosService::openChecks() const
     return out;
 }
 
+std::set<std::string> PosService::permissionsOf(const Employee &e) const
+{
+    std::set<std::string> out = e.permissions();
+    // The store's: hosts take payments (unless that person may not).
+    if (s_->settings.hostsTakePayments && e.role == "host")
+        for (const char *p : {perm::Settle, perm::OthersChecks})
+            if (!e.deny.contains(p))
+                out.insert(p);
+    return out;
+}
+
 QStringList PosService::permissions() const
 {
     QStringList out;
     if (const Employee *e = user()) {
-        for (const std::string &p : e->permissions())
+        for (const std::string &p : permissionsOf(*e))
             out << qs(p);
     }
     return out;

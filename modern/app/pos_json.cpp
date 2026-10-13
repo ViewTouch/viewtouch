@@ -997,7 +997,7 @@ QJsonObject toJson(const PosSettings &s)
         {u"cashDenominations"_s, [&] { QJsonArray a; for (std::int64_t c : s.cashDenominations) a.append(qint64(c)); return a; }()},
         {u"backupCopyDir"_s, qs(s.backupCopyDir)},
         {u"backupKey"_s, qs(s.backupKey)}, {u"backupSalt"_s, qs(s.backupSalt)},
-        {u"waitMinutesPerParty"_s, s.waitMinutesPerParty},
+        {u"waitMinutesPerParty"_s, s.waitMinutesPerParty}, {u"hostsTakePayments"_s, s.hostsTakePayments},
         {u"autoLogoutMinutes"_s, s.autoLogoutMinutes}, {u"phoneLockSeconds"_s, s.phoneLockSeconds}, {u"tableLongMinutes"_s, s.tableLongMinutes},
         {u"screenSaverMinutes"_s, s.screenSaverMinutes},
         {u"replicaKey"_s, qs(s.replicaKey)}, {u"language"_s, qs(s.language)},
@@ -1242,6 +1242,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.backupKey = ss(o.value(u"backupKey").toString());
     s.backupSalt = ss(o.value(u"backupSalt").toString());
     s.waitMinutesPerParty = std::clamp(o.value(u"waitMinutesPerParty").toInt(10), 1, 120);
+    s.hostsTakePayments = o.value(u"hostsTakePayments").toBool(false);
     s.autoLogoutMinutes = std::clamp(o.value(u"autoLogoutMinutes").toInt(0), 0, 120);
     s.phoneLockSeconds = std::clamp(o.value(u"phoneLockSeconds").toInt(30), -1, 3600);
     s.screenSaverMinutes = std::clamp(o.value(u"screenSaverMinutes").toInt(10), 0, 240);

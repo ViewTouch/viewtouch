@@ -437,6 +437,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         if (record.contains(u"kitchenLateMinutes"_s))
             s_->settings.kitchenLateMinutes =
                 std::clamp(record.value(u"kitchenLateMinutes"_s).toInt(), s_->settings.kitchenWarnMinutes, 240);
+        if (record.contains(u"hostsTakePayments"_s))
+            s_->settings.hostsTakePayments = record.value(u"hostsTakePayments"_s).toBool();
         if (record.contains(u"waitMinutesPerParty"_s))
             s_->settings.waitMinutesPerParty = std::clamp(record.value(u"waitMinutesPerParty"_s).toInt(), 1, 120);
         if (record.contains(u"tableReadyText"_s) && !record.value(u"tableReadyText"_s).toString().trimmed().isEmpty())

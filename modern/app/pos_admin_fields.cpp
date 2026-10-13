@@ -439,6 +439,9 @@ QVariantList PosService::adminFields(const QString &panel)
                                   tr("+ Add a tip choice"), {column(tr("Percent"), "int", 120, {}, u"18"_s)},
                                   uR"(^\s*(\d+))"_s, u"%1"_s),
                            u"split"_s, u"\\s*,\\s*"_s), u"join"_s, u", "_s), u"max"_s, 6),
+            field(u"hostsTakePayments"_s, tr("Hosts take payments at the host stand"), u"bool"_s,
+                  tr("When a server is busy, the host touches the table and Pay This Table. Hosts can then open "
+                     "any check to take its payment. Turn it off for one host, or on for one, in Employees.")),
             with(with(field(u"waitMinutesPerParty"_s, tr("Waitlist: minutes per party ahead"), u"int"_s,
                             tr("Wait quotes: (parties ahead + 1) x this, rounded up to 5 minutes.")), u"min"_s, 1), u"max"_s, 120),
             field(u"tableReadyText"_s, tr("Waitlist: table-ready text"), u"text"_s,
