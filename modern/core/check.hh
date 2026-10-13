@@ -257,6 +257,9 @@ struct Check {
     // the check has reached Stripe (a card taken offline, the internet down).
     std::string receiptEmail;
     bool receiptEmailSent = false;
+    // A cash tip handed to whoever took the payment (a host, a cashier) for the
+    // check's server: in the taker's cash (drawerSession), owed to the server.
+    Money cashTip;
     std::int64_t gratuityBp = 0;      // e.g. 1800 = 18% of the subtotal
     bool autoGratuity = false;        // added for a large party (not by hand)
     std::vector<CheckEvent> events;   // oldest first

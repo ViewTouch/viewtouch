@@ -5480,6 +5480,58 @@ TEST_CASE("Host stand: a host takes a busy server's table's payment (Store Setti
     CHECK_FALSE(s.pos.can(u"check.settle"_s));
 }
 
+TEST_CASE("Host stand: a cash tip handed to the host is in the host's cash and owed to the server", "[ui][host][cashtip]")
+{
+    Screen s;
+    core::Employee host;
+    host.id = "host-test";
+    host.name = "Hana";
+    host.role = "host";
+    host.allow = {core::perm::Settle, core::perm::OthersChecks};
+    host.pinSalt = app::newSalt();
+    host.pinHash = app::hashPin(u"7777"_s, host.pinSalt);
+    s.pos.shared()->employees.push_back(host);
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));                // Sam's table
+    REQUIRE(s.pos.selectTable(u"T4"_s) == app::PosService::TableNeedsGuests);
+    REQUIRE(s.pos.startCheck(core::CheckType::DineIn));
+    s.pos.addItem(u"coffee"_s);
+    const std::string sam = s.pos.shared()->open.begin()->second.serverId;
+    const qint64 id = s.pos.checkInfo().value(u"id"_s).toLongLong();
+    s.pos.logout();
+
+    REQUIRE(s.pos.loginWithPin(u"7777"_s));
+    s.pos.entryKey(u"10000"_s);
+    REQUIRE(s.pos.openDrawerSession());
+    REQUIRE(s.c.jumpTo(u"seating"_s));
+    s.c.payTable(u"T4"_s);
+    QTest::qWait(60);
+    REQUIRE(s.pos.hasCheck());
+    CHECK_FALSE(s.pos.totals().value(u"mine"_s).toBool());   // the key shows: not the host's check
+    s.pos.entryKey(u"500"_s);
+    REQUIRE(s.pos.setCashTip());
+    CHECK(s.pos.totals().value(u"hasCashTip"_s).toBool());
+    REQUIRE(s.pos.tender(u"cash"_s));
+    if (s.pos.hasCheck())
+        REQUIRE(s.pos.closeCheck());
+
+    const core::Check *closed = nullptr;
+    for (const core::Check &c : s.pos.shared()->closedToday)
+        if (c.id == id)
+            closed = &c;
+    REQUIRE(closed);
+    CHECK(closed->cashTip.cents() == 500);
+    // In the host's cash...
+    const core::DrawerSession *bank = nullptr;
+    for (const core::DrawerSession &d : s.pos.shared()->drawers)
+        if (d.id == closed->drawerSession)
+            bank = &d;
+    REQUIRE(bank);
+    const auto expected = core::expectedCash(*bank, s.pos.shared()->closedToday, s.pos.shared()->settings.tax);
+    CHECK(expected.cents() == 10000 + closed->totals(s.pos.shared()->settings.tax).cashNet().cents() + 500);
+    // ...and owed to Sam.
+    CHECK(core::tipsOwed(sam, s.pos.shared()->closedToday, s.pos.shared()->drawers, s.pos.shared()->settings.tax).cents() == 500);
+}
+
 TEST_CASE("Phone audit: typing on a phone", "[.][phonekeys]")
 {
     Screen s(true, 412, 870, u"phone"_s);

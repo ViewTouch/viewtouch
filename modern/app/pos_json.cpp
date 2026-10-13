@@ -167,6 +167,7 @@ QJsonObject toJson(const Check &c)
                                     {u"address"_s, qs(c.customer.address)}, {u"note"_s, qs(c.customer.note)}}},
         {u"events"_s, events}, {u"firedCourse"_s, c.firedCourse}, {u"customerId"_s, qs(c.customerId)},
         {u"receiptEmail"_s, qs(c.receiptEmail)}, {u"receiptEmailSent"_s, c.receiptEmailSent},
+        {u"cashTipCents"_s, qint64(c.cashTip.cents())},
         {u"rush"_s, c.rush}, {u"vip"_s, c.vip}, {u"allergies"_s, strings(c.allergies)}, {u"coupons"_s, strings(c.coupons)}, {u"hold"_s, [&c] {
             if (c.hold.empty())
                 return QJsonValue();
@@ -273,6 +274,7 @@ std::optional<Check> checkFromJson(const QJsonObject &o)
     c.customerId = ss(o.value(u"customerId").toString());
     c.receiptEmail = ss(o.value(u"receiptEmail").toString());
     c.receiptEmailSent = o.value(u"receiptEmailSent").toBool();
+    c.cashTip = Money::fromCents(i64(o.value(u"cashTipCents")));
     c.rush = o.value(u"rush").toBool();
     c.kiosk = o.value(u"kiosk").toBool();
     c.dueAt = o.value(u"dueAt").toInteger(0);

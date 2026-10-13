@@ -1661,7 +1661,8 @@ bool PosService::closeCheck()
         return fail(tr("%1 is still due.").arg(format(t.balance)));
     if (c->training)
         return closePractice(*c);
-    const bool cash = t.cashPaid.cents() > 0;
+    // (A cash tip handed over for the server is cash here too.)
+    const bool cash = t.cashPaid.cents() > 0 || c->cashTip.cents() > 0;
     // With server banks the cash stays with whoever closes the check (their
     // bank starts with the first cash sale); otherwise it goes in this
     // terminal's drawer, which must be open.
@@ -1946,6 +1947,8 @@ QVariantMap PosService::totals() const
         {u"change"_s, format(t.change)}, {u"hasChange"_s, t.change.cents() > 0},
         {u"rounding"_s, format(t.rounding)}, {u"hasRounding"_s, t.rounding.cents() != 0},
         {u"gratuity"_s, format(t.gratuity)}, {u"hasGratuity"_s, t.gratuity.cents() > 0},
+        {u"cashTip"_s, format(c->cashTip)}, {u"hasCashTip"_s, c->cashTip.cents() > 0},
+        {u"server"_s, qs(c->serverName)}, {u"mine"_s, user() && c->serverId == user()->id},
         {u"gratuityPercent"_s, double(c->gratuityBp) / 100.0}, {u"autoGratuity"_s, c->autoGratuity},
         // What the Add gratuity key offers: the store's party rate, else 18%.
         {u"storeGratuityPercent"_s, double(s_->settings.gratuityBp > 0 ? s_->settings.gratuityBp : 1800) / 100.0},

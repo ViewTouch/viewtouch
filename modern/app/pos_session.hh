@@ -633,6 +633,7 @@ public:
     Q_INVOKABLE void reopenCheck(qint64 checkId) { invoke(QStringLiteral("reopenCheck"), {checkId}); }
     // percent: 15, 18, 20...; 0 = the keypad amount.
     Q_INVOKABLE void addTip(double percent) { invoke(QStringLiteral("addTip"), {qint64(percent * 100 + 0.5)}); }
+    Q_INVOKABLE void setCashTip() { invoke(QStringLiteral("setCashTip"), {}); }
     Q_INVOKABLE void setGratuity(double percent) { invoke(QStringLiteral("setGratuity"), {qint64(percent * 100 + 0.5)}); }
     // kind: "payout" | "paidIn"
     Q_INVOKABLE void payout(const QString &kind) { invoke(QStringLiteral("payout"), {kind}); }

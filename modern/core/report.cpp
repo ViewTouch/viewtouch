@@ -58,7 +58,7 @@ Money expectedCash(const DrawerSession &drawer, const std::vector<Check> &closed
     Money cash = drawer.startingCash + drawer.movementsTotal();
     for (const Check &c : closed) {
         if (c.drawerSession == drawer.id)
-            cash += cashIntoDrawer(c, rates);
+            cash += cashIntoDrawer(c, rates) + c.cashTip;   // a cash tip handed over for the server is here too
     }
     return cash;
 }
@@ -70,7 +70,7 @@ Money tipsOwed(const std::string &employeeId, const std::vector<Check> &closed,
     for (const Check &c : closed) {
         if (c.serverId == employeeId) {
             const Totals t = c.totals(rates);
-            owed += t.tips + t.gratuity;
+            owed += t.tips + t.gratuity + c.cashTip;
         }
     }
     for (const DrawerSession &d : drawers) {
@@ -971,9 +971,9 @@ std::map<std::string, TipShare> tipShares(const std::vector<Check> &closed, cons
         const Totals t = c.totals(settings.tax);
         TipShare &s = out[c.serverId];
         s.name = c.serverName;
-        s.tips += t.tips;
+        s.tips += t.tips + c.cashTip;   // card tips, and cash ones handed to whoever took the payment
         s.gratuity += t.gratuity;
-        s.earned += t.tips + t.gratuity;
+        s.earned += t.tips + t.gratuity + c.cashTip;
         sales[c.serverId] += t.subtotal;
     }
     std::map<std::string, const Employee *> byId;

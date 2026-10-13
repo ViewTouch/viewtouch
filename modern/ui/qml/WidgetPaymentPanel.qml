@@ -84,6 +84,12 @@ Item {
                 value: w.totals.tips ?? ""
                 tint: "#7ee2a8"
             }
+            Line {
+                visible: w.totals.hasCashTip ?? false
+                name: qsTr("Cash tip for %1").arg(w.totals.server || qsTr("the server"))
+                value: w.totals.cashTip ?? ""
+                tint: "#7ee2a8"
+            }
         }
 
         Text {
@@ -156,6 +162,21 @@ Item {
                 : w.zone.keyText("gratuity", qsTr("Add %1% gratuity").arg(w.totals.storeGratuityPercent ?? 18))
             fontScale: 0.4
             onClicked: w.pos.setGratuity((w.totals.hasGratuity ?? false) ? 0 : (w.totals.storeGratuityPercent ?? 18))
+        }
+
+        // Someone else's check (a host, a cashier): a cash tip the guest handed
+        // over for the server, typed on the keypad; it's owed to the server.
+        WidgetKey {
+            objectName: "cashTip"
+            readonly property bool typed: w.pos !== null && w.pos.entry !== ""
+            visible: w.pos !== null && w.pos.hasCheck && !(w.totals.mine ?? true) && w.zone.keyShown("cashTip")
+            Layout.fillWidth: true
+            Layout.preferredHeight: w.unit * 2
+            text: typed ? qsTr("Cash tip %1 for %2").arg(w.pos.entryAmount).arg(w.totals.server || qsTr("the server"))
+                : (w.totals.hasCashTip ?? false) ? qsTr("Remove cash tip")
+                : w.zone.keyText("cashTip", qsTr("Cash tip for %1 (type it, then here)").arg(w.totals.server || qsTr("the server")))
+            fontScale: 0.34
+            onClicked: w.pos.setCashTip()
         }
 
         // A bar tab's card on file: held, or one to hold.

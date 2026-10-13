@@ -553,6 +553,9 @@ public:
     // Tip on the selected card payment (else the last one): a percentage of
     // the check (bp, e.g. 1800) or, with percentBp 0, the keypad amount.
     bool addTip(std::int64_t percentBp);
+    // The keypad amount as a cash tip for the check's server, handed to whoever
+    // takes the payment (nothing typed: none).
+    bool setCashTip();
     // The customer display: ask the guest for a tip; their choice (a
     // percent, an amount in cents, or none) goes on the card payment, now
     // or when it is added.

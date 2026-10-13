@@ -937,6 +937,25 @@ QVariantMap PosService::drawerInfo() const
 
 // --- tips and gratuity ----------------------------------------------------------------
 
+bool PosService::setCashTip()
+{
+    if (!require(perm::Settle, tr("Adding tips")))
+        return false;
+    Check *c = current();
+    if (!c)
+        return fail(tr("No check is open."));
+    const Money tip = entry_.isEmpty() ? Money() : Money::fromCents(entry_.toLongLong());
+    entry_.clear();
+    emit entryChanged();
+    c->cashTip = tip;
+    const QString server = c->serverName.empty() ? tr("the server") : qs(c->serverName);
+    noteEvent(*c, tip.cents() ? tr("Cash tip for %1: %2").arg(server, format(tip)) : tr("Cash tip taken off"), "tip", tip);
+    emit notice(tip.cents() ? tr("Cash tip %1 for %2: keep it with your cash; it's owed to them.").arg(format(tip), server)
+                            : tr("Cash tip taken off"));
+    changed(*c);
+    return true;
+}
+
 bool PosService::addTip(std::int64_t percentBp)
 {
     if (!require(perm::Settle, tr("Adding tips")))
