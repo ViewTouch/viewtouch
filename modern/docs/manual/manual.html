@@ -48,7 +48,7 @@
 <li>Phones and tablets</li>
 <li>Backups, safety and starting over</li>
 <li>The self-order kiosk</li>
-<li>Languages (Español)</li>
+<li>Languages (Español, Français, Português, 中文)</li>
 <li>Keep running if a computer fails</li>
 <li>Quick reference</li>
 </ol>
@@ -65,6 +65,10 @@
 <li><b>Coupon codes</b> (typed or scanned), <b>barcode scanners</b> for items, coupons and gift cards, and <b>holding a guest's card</b> on a bar tab (chapters 2 and 11).</li>
 <li><b>Forecast</b>: a coming day from past weeks, the prep list and what to order (chapter 12).</li>
 <li><b>Receipts and kitchen tickets print in the store's language</b> (chapter 17).</li>
+<li><b>Log waste</b> (a dropped burger, lettuce gone bad) and <b>par levels</b> with an order list by vendor; <b>prep labels</b> on a label printer; <b>Waste</b> and <b>Labels</b> on the kitchen screen (chapters 9 and 11).</li>
+<li><b>Store Check</b>: are we ready to open, and what went wrong lately (printers, backups, the standby, a crash), marked on the Manager page (chapter 11).</li>
+<li><b>High Contrast</b> outlines every button; text size <b>Largest</b>; both for a person on any screen, or for one screen (chapters 2 and 13).</li>
+<li><b>French, Portuguese and Chinese</b> (chapter 17).</li>
 <li><b>Stock counts:</b> count the shelves, and Reports → Stock shows what went missing and what it cost (chapter 11).</li>
 <li><b>Count a drawer bill by bill</b>, and <b>blind counts</b> (chapter 10). <b>Voids and comps ask why</b>, and the Exceptions report adds the reasons up; the <b>Changes</b> report shows who changed what on the manager screens, the menu and the pages (chapter 12).</li>
 <li><b>Phone versions that share the page's buttons:</b> edit a page for standard screens and for phones with the <b>Standard | Phone</b> switch; a button's words, colors and actions are the same on both, only where it sits is the phone's. <b>Show on</b> puts a button on both, or one kind of screen only (chapter 14).</li>
@@ -283,11 +287,14 @@
 <h2>Each person's own screen</h2>
 <p>In <b>Manager → Employees</b>, each person can have:</p>
 <ul>
-<li><b>Text size</b>: Bigger or Biggest button and check text, just for them.</li>
+<li><b>Text size</b>: Bigger, Biggest or Largest button and check text, just for them. A screen read from afar can have its own too (Manager → Terminals → <i>Text size</i>); a person's own wins while they're logged in.</li>
+<li><b>Look</b>: their colors on any screen while they're logged in. <b>High Contrast</b> (black, with every button outlined in white and the colors that mean something at their brightest) is for anyone who reads the screen better that way.</li>
 <li><b>Left-handed</b>: the check moves to the right of the order and Pay screens, the menu to the left.</li>
 <li><b>Start screen</b>: the floor plan they see first after logging in, like the Bar for a bartender.</li>
 <li><b>Language</b>.</li>
 </ul>
+<p class="shot"><img src="shots/m145-high-contrast.jpg" width="560" height="315"></p>
+<p class="caption">High Contrast.</p>
 <p class="shot"><img src="shots/m101-left-handed.png" width="560" height="315"></p>
 <p class="caption">The order screen for someone left-handed.</p>
 <p>In <b>Manager → Store Settings → Start pages</b>, <b>Servers start on</b>, <b>Bartenders start on</b> and the others pick the floor plan each job starts on: the Tables page, the host's Seating screen, or another room drawn in the editor (a page with tables). Left empty, hosts start on Seating and everyone else on Tables. A person's own start screen (Employees) wins over their job's.</p>
@@ -615,6 +622,7 @@
 <li>When everything is made the ticket turns blue: <b>READY</b>. Touch it when it goes out to the table. A ticket that isn't ready needs a second touch.</li>
 </ul>
 <p>Kitchen, bar and expo screens need no login. Open them from the Manager screen, or set a screen to start on them.</p>
+<p>The kitchen screen also has <b>Waste…</b> (log what was thrown away) and <b>Labels…</b> (print prep labels), both chapter 11. Nobody needs to log in: they're signed by the screen.</p>
 
 <!-- ======================================================================= -->
 <h1>10. Cash: banks, drawers and tips</h1>
@@ -734,7 +742,7 @@
 <ul>
 <li><b>Taxes</b> also sets <b>Cash rounding</b> where pennies are gone: a check paid in cash is rounded to the nearest 5 (or 10) cents and shows a <i>Cash rounding</i> line; cards stay exact.</li>
 <li><b>Payment types</b>: a discount can be a <b>Staff meal</b> (the demo has <i>Staff Meal</i>, 50%). Ring your meal, touch Staff Meal on the payment screen, and it records who ate; the Sales report counts staff meals.</li>
-<li><b>Printers</b>: network (TCP 9100, ESC/POS), CUPS, or a text file for testing. After saving a printer, touch <b>Test Print</b>: it prints your logo, text in each size, a sample item and total, and a row of digits that should exactly fill one line (if it wraps or falls short, change <b>Characters per line</b>), then cuts the paper. With a drawer wired to the printer, <b>Test Print + Open Drawer</b> also opens it. A message says when the printer took the page, or why it didn't.</li>
+<li><b>Printers</b>: network (TCP 9100, ESC/POS), CUPS, or a text file for testing; label printers too (Format: ZPL or TSPL, and the label size). After saving a printer, touch <b>Test Print</b>: it prints your logo, text in each size, a sample item and total, and a row of digits that should exactly fill one line (if it wraps or falls short, change <b>Characters per line</b>), then cuts the paper. With a drawer wired to the printer, <b>Test Print + Open Drawer</b> also opens it. A message says when the printer took the page, or why it didn't.</li>
 <li><b>86'd items come back the next day</b> (on unless turned off): an item marked sold out during service (on the order screen or the sold-out list) is back after End of Day. Marked sold out in the Menu Builder, it stays so until changed there (for something out of season).</li>
 <li><b>Cards when the internet is down</b> (Store Settings, off until turned on; Stripe readers running ViewTouch only): with <b>Take cards when the internet is down</b>, the reader keeps a card it can't send and sends it to Stripe when the internet is back, up to the amount a card and the amount waiting in all that you set. The check shows it as taken offline; it can't be refunded until Stripe has it. The bank only sees it then: if it's declined, the store doesn't get that money, and managers see a red alert with the check and the amount until they touch OK. A reader beside the register driven by this computer (not running ViewTouch) can't take cards offline: Stripe needs the internet for those.</li>
 <li><b>Updating the tablets</b>: Manager → Network shows the build each screen runs and which need an update. Copy the new tablet app (<i>ViewTouch-b…-arm64-v8a.apk</i>) into the <i>updates</i> folder it names on the store's computer; then, on a tablet that's behind, a manager touches <b>Update Now</b> on the strip at the bottom, and Android asks to install it (the first time, allow ViewTouch to install apps, then <b>Install</b>).</li>
@@ -784,6 +792,24 @@
 <p>Reports → <b>Stock</b> then shows each item counted: what should have been there, what was counted, how far off and what that cost, the biggest losses first. <i>Should be</i> is the last count, plus the deliveries received, less what the sales used (by each item's recipe), plus any change made by hand to <b>On hand</b>. Coming up short again and again on one item means waste, portions bigger than the recipe, theft, or a recipe that needs fixing.</p>
 <p class="shot"><img src="shots/m141-stock-report.jpg" width="560" height="315"></p>
 <p>While counting, what should be there isn't shown, so it can't sway the count. Store Settings → <b>Inventory</b> can show it.</p>
+
+<h2>Logging waste</h2>
+<p>When something is thrown away, log it: <b>Manager → Log Waste…</b>, or <b>Waste…</b> on the kitchen screen. Touch the menu item (its recipe comes off the shelf: a dropped burger is a bun, a patty and some lettuce) or <b>Ingredient</b> and the ingredient, how much, and why (<i>Dropped or spilled</i>, <i>Expired or spoiled</i>, <i>Made wrong</i>…; Store Settings → <b>Inventory</b> sets the reasons), then <b>Log Waste</b>.</p>
+<p class="shot"><img src="shots/m142-waste.jpg" width="560" height="315"></p>
+<p>Stock counts then tell the two apart: waste that was logged shows as <i>Thrown away (logged)</i>, and only the rest as missing. The Stock report also lists what was thrown away today and what it cost.</p>
+<h2>Par levels and what to order</h2>
+<p>Give each ingredient a <b>Keep on hand (par)</b> in Manager → Inventory: the amount you like to have after a delivery. Reports → <b>Stock</b> then lists, for each vendor, everything below its par: what's on hand, the par, how much to order to get back to it, and about what it costs. Print it and call the vendor, or read it to the rep.</p>
+<h2>Prep labels</h2>
+<p><b>Labels…</b> on the kitchen screen (or <b>Prep Labels…</b> on the Log Waste page): touch the ingredient, or type what it is (Pico de gallo), choose how long it keeps, add a note if you like, how many, and <b>Print</b>. Each label says what it is, when it was made, when to use it by, and who made it.</p>
+<p class="shot"><img src="shots/m143-prep-labels.jpg" width="560" height="315"></p>
+<ul>
+<li><b>Keeps for</b>: set it once on each ingredient (Manager → Inventory → <i>Keeps for (hours)</i>) and it's filled in by itself.</li>
+<li><b>The printer:</b> most label printers work. In Manager → Printers, set its <b>Format</b> to <i>Label printer: ZPL</i> (Zebra and the many that copy it) or <i>Label printer: TSPL</i> (TSC, Xprinter, Munbyn, Rollo and most low-cost ones), and its label size (2 × 1 inch is 51 × 25 mm). Store Settings → <b>Inventory</b> picks it for the store, and each screen can pick its own (Terminals). No label printer? Choose a receipt printer and each label prints as a short slip.</li>
+</ul>
+<h2>Store Check</h2>
+<p><b>Manager → Store Check</b> answers "are we ready to open?": every printer answering, a backup in the last day, room on the disk, the standby computer, the clock (not behind the last sale, which a dead clock battery causes), the cash drawers started and the opening checklist. Each line is ✓ or ⚠, and the top says <b>Ready to open</b> or how many to look at.</p>
+<p class="shot"><img src="shots/m144-store-check.jpg" width="560" height="315"></p>
+<p>Beside it, <b>Problems, the last 7 days</b>: things that went wrong while nobody was looking. A printer out of paper or not answering, a save to the database or a backup that failed, the standby computer losing touch, and ViewTouch having closed without being told to (a crash, or the power went off). New ones are marked, and the Manager page's button says how many (<b>Store Check ⚠ 2</b>); <b>Mark as seen</b> clears that.</p>
 
 <h2>Promotions</h2>
 <p class="shot"><img src="shots/m41-promotions.png" width="560" height="315"></p>
@@ -1097,8 +1123,13 @@
 <div class="tip">Card payments at the kiosk will come with card readers. Until then, guests pay at the counter.</div>
 
 <!-- ======================================================================= -->
-<h1>17. Languages (Español)</h1>
-<p>The screens come in English and Spanish.</p>
+<h1>17. Languages</h1>
+<p>The screens come in English, Spanish (Español), French (Français), Portuguese (Português, as spoken in Brazil) and Simplified Chinese (中文).</p>
+<table cellpadding="4"><tr>
+<td><img src="shots/m146-french-pay.jpg" width="280" height="175"><br><small>Pay, in French</small></td>
+<td><img src="shots/m146-chinese-order.jpg" width="280" height="175"><br><small>Taking an order in Chinese</small></td>
+</tr></table>
+<p>Receipt and label printers can't print Chinese characters, so a store whose language is Chinese prints its receipts, kitchen tickets, reports and labels in English. (Item names typed in Chinese print as question marks: give them an English kitchen name, chapter 11.) The screens show Chinese wherever a Chinese font is installed: on Android tablets and phones it always is; on a Linux computer, install the Noto CJK fonts.</p>
 <ul>
 <li><b>Each person's own:</b> Manager → Employees → the person → <b>Language</b>. The screen switches when they log in and back when they log out. On a store with several screens, each speaks its own user's language, messages included.</li>
 <li><b>The store's:</b> Manager → Store Settings → <b>Language</b>. Used on screens nobody is logged in to, for people without their own, and for everything guests see: the customer display, the self-order kiosk, receipts and kitchen tickets.</li>
@@ -1107,7 +1138,7 @@
 <td><img src="shots/m53-spanish-tables.png" width="280" height="158"><br><small>Rosa's floor plan</small></td>
 <td><img src="shots/m54-spanish-choices.png" width="280" height="158"><br><small>Taking an order in Spanish</small></td>
 </tr></table>
-<p>Menu items, modifier groups and their options stay as you typed them, because the check, the kitchen and receipts use those names. To translate your own buttons or any phrase, put a file <code>translations/es.json</code> in ViewTouch's data folder, for example <code>{"Burger of the Day": "Hamburguesa del día"}</code>.</p>
+<p>Menu items, modifier groups and their options stay as you typed them, because the check, the kitchen and receipts use those names. To translate your own buttons or any phrase, put a file <code>translations/es.json</code> (or <code>fr.json</code>, <code>pt.json</code>, <code>zh.json</code>) in ViewTouch's data folder, for example <code>{"Burger of the Day": "Hamburguesa del día"}</code>.</p>
 
 <!-- ======================================================================= -->
 <h1>18. Keep running if a computer fails</h1>
