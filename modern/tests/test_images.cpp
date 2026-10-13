@@ -7,6 +7,8 @@
 #include "storage/pos_store.hh"
 
 #include <QBuffer>
+#include <QDateTime>
+#include <QDir>
 #include <QFile>
 #include <QImage>
 #include <QTemporaryDir>
@@ -99,4 +101,31 @@ TEST_CASE("Pictures: kept in the store's database", "[images][posstore]")
     REQUIRE(data);
     REQUIRE(data->images.size() == 1);
     CHECK(data->images.at("logo.png") == pngBytes());
+}
+
+TEST_CASE("Pictures: the touch picker finds them in Pictures and Documents, newest first", "[images][picker]")
+{
+    QTemporaryDir home;
+    REQUIRE(home.isValid());
+    const QByteArray oldHome = qgetenv("HOME");
+    qputenv("HOME", home.path().toUtf8());
+    QDir(home.path()).mkpath(u"Pictures/Logos"_s);
+    QDir(home.path()).mkpath(u"Documents"_s);
+    QImage img(8, 8, QImage::Format_RGB32);
+    img.fill(Qt::red);
+    REQUIRE(img.save(home.filePath(u"Documents/older.png"_s)));
+    QFile(home.filePath(u"Documents/older.png"_s)).setFileTime(QDateTime::currentDateTime().addDays(-1), QFileDevice::FileModificationTime);
+    REQUIRE(img.save(home.filePath(u"Pictures/Logos/logo.png"_s)));
+    QFile notes(home.filePath(u"Documents/notes.txt"_s));
+    REQUIRE(notes.open(QIODevice::WriteOnly));
+    notes.write("not a picture");
+    notes.close();
+
+    PosService pos(test::seedPosData(), nullptr);
+    QStringList names;
+    for (const QVariant &v : pos.pictureFiles())
+        if (v.toMap()[u"path"_s].toString().startsWith(home.path()))
+            names << v.toMap()[u"name"_s].toString();
+    qputenv("HOME", oldHome);
+    CHECK(names == QStringList{u"logo.png"_s, u"older.png"_s});   // one folder down too; no text files
 }

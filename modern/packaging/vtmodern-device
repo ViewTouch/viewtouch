@@ -10,6 +10,7 @@
 #   vtmodern-device timezone ZONE                       e.g. America/New_York
 #   vtmodern-device update                              install every update now
 #   vtmodern-device update-usb                          install the newest ViewTouch package on a USB stick
+#   vtmodern-device usb-open                            the USB sticks plugged in, read-only, for pictures
 #   vtmodern-device ssh on|off                          remote help (SSH) on or off
 #   vtmodern-device reboot | poweroff
 set -eu
@@ -120,7 +121,7 @@ update)
     ;;
 update-usb)
     export DEBIAN_FRONTEND=noninteractive
-    mnt=/run/vtmodern-usb
+    mnt=/run/vtmodern-usb-update
     mkdir -p "$mnt"
     found=
     # Each partition of a USB drive, read-only, until one has a package.
@@ -141,6 +142,47 @@ update-usb)
     apt-get install -y --allow-downgrades /tmp/vtmodern-update.deb
     rm -f /tmp/vtmodern-update.deb
     echo "Installed $found. Restart the computer to use it."
+    ;;
+usb-open)
+    # Each USB stick's partitions under /run/vtmodern-usb/<name>, read-only
+    # and readable by ViewTouch (pictures for the store, a logo).
+    base=/run/vtmodern-usb
+    mkdir -p "$base"
+    chmod 755 "$base"
+    # Sticks pulled out since: let go of them.
+    for d in "$base"/*; do
+        [ -d "$d" ] || continue
+        if mountpoint -q "$d"; then
+            src=$(findmnt -no SOURCE "$d")
+            [ -b "$src" ] || umount -l "$d"
+        fi
+        mountpoint -q "$d" || rmdir "$d" 2>/dev/null || true
+    done
+    count=0
+    for dev in $(lsblk -rpno NAME,TRAN,TYPE | awk '$2=="usb" && $3=="disk"{print $1}'); do
+        parts=$(lsblk -rpno NAME,TYPE "$dev" | awk '$2=="part"{print $1}')
+        for part in ${parts:-$dev}; do
+            fstype=$(lsblk -no FSTYPE "$part" | head -1)
+            [ -n "$fstype" ] || continue
+            if findmnt -rn -S "$part" >/dev/null; then
+                count=$((count + 1))
+                continue
+            fi
+            dir=$base/$(basename "$part")
+            mkdir -p "$dir"
+            case "$fstype" in
+                vfat|exfat|ntfs|ntfs3) opts=ro,nosuid,nodev,noexec,umask=022 ;;
+                *) opts=ro,nosuid,nodev,noexec ;;
+            esac
+            if mount -o "$opts" "$part" "$dir"; then
+                count=$((count + 1))
+            else
+                rmdir "$dir" 2>/dev/null || true
+            fi
+        done
+    done
+    [ "$count" -gt 0 ] || die "No USB stick found. Plug one in and touch USB Stick again."
+    echo "USB sticks open: $count"
     ;;
 ssh)
     case "${1:-}" in

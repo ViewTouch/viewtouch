@@ -132,6 +132,7 @@ if(Qt6_FOUND)
             ui/qml/JoinWindow.qml
             ui/qml/StationWindow.qml
             ui/qml/StationIcon.qml
+            ui/qml/PicturePicker.qml
             ui/qml/PageView.qml
             ui/qml/ZoneItem.qml
             ui/qml/ZoneShape.qml

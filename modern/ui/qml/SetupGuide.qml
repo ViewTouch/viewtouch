@@ -189,12 +189,12 @@ Rectangle {
                             }
                         }
                     }
-                    FileDialog {
+                    PicturePicker {
                         id: logoFile
+                        pos: g.pos
                         title: qsTr("Your logo")
-                        nameFilters: [qsTr("Pictures (*.png *.jpg *.jpeg *.webp *.gif *.bmp *.svg)")]
-                        onAccepted: {
-                            const ref = g.pos.addImageFile(selectedFile.toString())
+                        onPicked: (path) => {
+                            const ref = g.pos.addImageFile(path)
                             if (ref !== "")
                                 g.logoRef = ref
                         }

@@ -68,6 +68,21 @@ fi
 for g in video render input audio netdev lp dialout plugdev; do
     getent group "$g" >/dev/null && usermod -aG "$g" "$account"
 done
+# Pictures people put in their own Pictures, Documents, Downloads or Desktop
+# (copied over the network, say) can be chosen in ViewTouch: it may pass
+# through their home folder to those (each person's group, and g+x).
+for home in /home/*; do
+    [ -d "$home" ] || continue
+    owner=$(stat -c %U "$home")
+    [ "$owner" = "$account" ] && continue
+    id -u "$owner" >/dev/null 2>&1 || continue
+    [ "$(id -u "$owner")" -ge 1000 ] || continue
+    usermod -aG "$(id -gn "$owner")" "$account"
+    chmod g+x "$home"
+    for sub in Pictures Documents Downloads Desktop; do
+        [ -d "$home/$sub" ] && chmod g+rx "$home/$sub"
+    done
+done
 if [ -d /var/lib/viewtouch ]; then
     chown -R "$account:$account" /var/lib/viewtouch
 fi
@@ -85,7 +100,7 @@ say "Installing what the screen needs"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y --no-install-recommends cage qt6-wayland nftables unattended-upgrades rfkill \
-    network-manager fonts-dejavu-core fonts-noto-cjk
+    network-manager fonts-dejavu-core fonts-noto-cjk fonts-noto-color-emoji
 
 # --- US dates and 12-hour times ---------------------------------------------------------------
 # Raspberry Pi OS starts out British (13/10/26); a store in another country

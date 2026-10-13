@@ -289,6 +289,13 @@ public:
     // A picture file on this computer, added to the store's pictures (managers):
     // returns its ref ("store:logo.png") at once; the store keeps it.
     Q_INVOKABLE QString addImageFile(const QString &fileOrUrl);
+    // Pictures on this computer, for the touch picker, newest first:
+    // [{path, name, folder}] from Pictures, Documents, Downloads and the
+    // Desktop (each person's on a ViewTouch computer) and USB sticks.
+    Q_INVOKABLE QVariantList pictureFiles() const;
+    // On a ViewTouch computer: open the USB sticks plugged in (read-only) for
+    // pictureFiles. False where it can't (then they're opened by the desktop).
+    Q_INVOKABLE bool openUsbSticks();
     Q_INVOKABLE void removeStoreImage(const QString &ref) { invoke(QStringLiteral("removeStoreImage"), {ref}); }
     // "Logo Final.PNG" -> "store:logo-final.png" ("" if not a picture type).
     static QString storeImageRef(const QString &fileName);

@@ -9,6 +9,9 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QProcess>
+#include <QSet>
+#include <QStandardPaths>
 #include <QRegularExpression>
 #include <QSaveFile>
 #include <QUrl>
@@ -193,6 +196,66 @@ QString PosSession::storeImageRef(const QString &fileName)
     if (base.isEmpty())
         base = u"picture"_s;
     return u"store:"_s + base.left(40) + u'.' + (suffix == u"jpeg" ? u"jpg"_s : suffix);
+}
+
+QVariantList PosSession::pictureFiles() const
+{
+    static const QStringList kinds{u"*.png"_s, u"*.jpg"_s, u"*.jpeg"_s, u"*.webp"_s, u"*.gif"_s, u"*.bmp"_s, u"*.svg"_s,
+                                   u"*.PNG"_s, u"*.JPG"_s, u"*.JPEG"_s};
+    // Where people keep pictures: this account's folders, and each person's
+    // on a ViewTouch computer (it runs as its own account); USB sticks.
+    QList<std::pair<QString, QString>> places;   // folder, how it's called
+    for (const auto where : {QStandardPaths::PicturesLocation, QStandardPaths::DocumentsLocation,
+                             QStandardPaths::DownloadLocation, QStandardPaths::DesktopLocation})
+        places.append({QStandardPaths::writableLocation(where), QStandardPaths::displayName(where)});
+    for (const QFileInfo &home : QDir(u"/home"_s).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot))
+        for (const char *sub : {"Pictures", "Documents", "Downloads", "Desktop"})
+            places.append({home.filePath() + u'/' + QString::fromLatin1(sub),
+                           QString::fromLatin1(sub) + u" ("_s + home.fileName() + u')'});
+    for (const QString &root : {u"/run/vtmodern-usb"_s, u"/media"_s, u"/run/media"_s})
+        for (const QFileInfo &d : QDir(root).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+            places.append({d.filePath(), tr("USB stick")});
+            for (const QFileInfo &dd : QDir(d.filePath()).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot))
+                places.append({dd.filePath(), tr("USB stick")});
+        }
+    QList<std::pair<QFileInfo, QString>> found;   // the file, where it is
+    QSet<QString> seen;
+    for (const auto &[folder, label] : places) {
+        if (folder.isEmpty() || !QFileInfo(folder).isReadable())
+            continue;
+        // The folder and one level down (a "Logos" folder in Pictures).
+        QStringList dirs{folder};
+        for (const QFileInfo &d : QDir(folder).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot))
+            dirs << d.filePath();
+        for (const QString &dir : dirs)
+            for (const QFileInfo &f : QDir(dir).entryInfoList(kinds, QDir::Files | QDir::Readable)) {
+                if (f.size() > kMaxImageBytes || seen.contains(f.canonicalFilePath()))
+                    continue;
+                seen.insert(f.canonicalFilePath());
+                found.append({f, label});
+            }
+    }
+    std::sort(found.begin(), found.end(),
+              [](const auto &a, const auto &b) { return a.first.lastModified() > b.first.lastModified(); });
+    QVariantList out;
+    for (const auto &[f, label] : found.mid(0, 300))
+        out << QVariantMap{{u"path"_s, f.filePath()}, {u"name"_s, f.fileName()}, {u"folder"_s, label}};
+    return out;
+}
+
+bool PosSession::openUsbSticks()
+{
+    const QString helper = u"/usr/libexec/vtmodern/vtmodern-device"_s;
+    if (!QFileInfo(helper).isExecutable())
+        return false;
+    QProcess p;
+    p.start(u"sudo"_s, {u"-n"_s, helper, u"usb-open"_s});
+    if (!p.waitForFinished(15000) || p.exitCode() != 0) {
+        const QString why = QString::fromUtf8(p.readAllStandardError()).trimmed();
+        emit notice(why.isEmpty() ? tr("No USB stick found.") : why);
+        return false;
+    }
+    return true;
 }
 
 QString PosSession::addImageFile(const QString &fileOrUrl)

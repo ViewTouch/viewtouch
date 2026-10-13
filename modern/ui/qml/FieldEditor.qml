@@ -183,12 +183,12 @@ ColumnLayout {
                 enabled: !fe.readOnly && !!fe.pos
                 onClicked: pictureFile.open()
             }
-            FileDialog {
+            PicturePicker {
                 id: pictureFile
+                pos: fe.pos
                 title: qsTr("A picture for the store")
-                nameFilters: [qsTr("Pictures (*.png *.jpg *.jpeg *.webp *.gif *.bmp *.svg)")]
-                onAccepted: {
-                    const ref = fe.pos.addImageFile(selectedFile.toString())
+                onPicked: (path) => {
+                    const ref = fe.pos.addImageFile(path)
                     if (ref !== "")
                         fe.commit(ref)
                 }
