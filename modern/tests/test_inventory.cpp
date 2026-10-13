@@ -788,3 +788,45 @@ TEST_CASE("Prep labels: what, made and use by, on the label printer", "[labels]"
     pr[u"format"_s] = u"pdf"_s;
     CHECK_FALSE(pos.adminSave(u"printers"_s, int(printers.size()) - 1, pr));
 }
+
+TEST_CASE("Price watch: a delivery at higher prices names the items over the food cost target, with a price", "[inventory][pricewatch]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    pos.shared()->settings.targetFoodCostPercent = 30;
+    const QVariantList before = pos.overFoodCost();
+    QStringList said;
+    QObject::connect(&pos, &app::PosSession::notice, [&](const QString &n) { said << n; });
+    // Patties at $9.00 each: every burger goes over 30%.
+    REQUIRE(pos.receiveDelivery({{u"vendor"_s, u"valley-foods"_s},
+                                 {u"lines"_s, QVariantList{QVariantMap{{u"ingredient"_s, u"patty"_s}, {u"qty"_s, 10}, {u"cost"_s, 9.0}}}}}));
+    const QVariantList over = pos.overFoodCost();
+    QVariantMap burger;
+    for (const QVariant &v : over)
+        if (v.toMap()[u"name"_s] == u"Classic Burger"_s)
+            burger = v.toMap();
+    REQUIRE_FALSE(burger.isEmpty());
+    CHECK(burger[u"percent"_s].toInt() > 30);
+    // The suggested price brings it back to 30% (rounded up to a quarter).
+    const core::MenuItem *m = pos.findItem(u"classic-burger"_s);
+    const double cost = double(pos.recipeCost(*m).cents());
+    const double suggested = burger[u"suggested"_s].toString().remove(u'$').toDouble() * 100;
+    CHECK(cost / suggested <= 0.30 + 1e-9);
+    CHECK(cost / (suggested - 25) > 0.30);
+    bool named = false;
+    for (const QString &n : said)
+        named = named || (n.contains(u"over 30%"_s) && n.contains(u"Classic Burger"_s));
+    CHECK(named);
+    // And Reports -> Food Cost lists it.
+    bool listed = false;
+    QString in;
+    for (const QVariant &v : pos.report(u"foodcost"_s)[u"rows"_s].toList()) {
+        const QVariantMap row = v.toMap();
+        if (row[u"kind"_s] == u"section"_s)
+            in = row[u"cells"_s].toStringList().value(0);
+        else if (in == u"Prices to look at"_s && row[u"cells"_s].toStringList().value(0) == u"Classic Burger"_s)
+            listed = row[u"cells"_s].toStringList().value(2).contains(u"→"_s);
+    }
+    CHECK(listed);
+    CHECK(before.size() < over.size());
+}

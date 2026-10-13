@@ -116,6 +116,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"backupCopyDir"_s, qs(s_->settings.backupCopyDir)},
              {u"askReasons"_s, s_->settings.askReasons},
              {u"stockCountShowsExpected"_s, s_->settings.stockCountShowsExpected},
+             {u"targetFoodCostPercent"_s, s_->settings.targetFoodCostPercent},
              {u"labelPrinter"_s, qs(s_->settings.labelPrinter)},
              {u"wasteReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.wasteReasons) l << qs(t); return l.join(u'\n'); }()},
              {u"voidReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.voidReasons) l << qs(t); return l.join(u'\n'); }()},

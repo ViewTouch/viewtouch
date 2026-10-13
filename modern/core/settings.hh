@@ -210,6 +210,9 @@ struct PosSettings {
     // Counting stock: what should be there is shown while counting (else
     // only in the Stock Count report, after: a count not swayed by it).
     bool stockCountShowsExpected = false;
+    // Food cost to stay under (percent of the price): a delivery at higher
+    // prices says which items went over, and Food Cost suggests a price.
+    int targetFoodCostPercent = 30;
     // Store Check: problems up to this id have been seen by a manager.
     std::int64_t problemsSeen = 0;
     // Prep labels print here (a printer id; each screen can say otherwise).

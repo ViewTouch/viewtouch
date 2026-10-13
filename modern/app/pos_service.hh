@@ -963,6 +963,10 @@ public:
     core::Report menuEngineeringReport(const std::vector<core::Check> &closed, const core::ReportContext &ctx) const;
     // What a line's recipe costs (its ingredients' cost; none without a recipe).
     Money lineCost(const core::OrderLine &l) const;
+    // A menu item's recipe at today's costs, and the items over the store's
+    // food cost target: {name, price, cost, percent, suggested} (most over first).
+    Money recipeCost(const core::MenuItem &m) const;
+    QVariantList overFoodCost() const;
     // Deliveries received today: by vendor, then each one.
     core::Report purchasesReport(const core::ReportContext &ctx) const;
 

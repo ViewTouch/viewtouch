@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <map>
 
+#include <QSet>
 #include <QDateTime>
 
 using namespace Qt::StringLiterals;
@@ -160,6 +161,39 @@ void PosService::refreshSoldOut()
     emit s_->adminChanged();
 }
 
+Money PosService::recipeCost(const MenuItem &m) const
+{
+    double cents = 0;
+    for (const auto &r : m.recipe)
+        if (const Ingredient *g = const_cast<PosShared *>(s_)->ingredient(r.ingredientId))
+            cents += r.quantity * double(g->cost.cents());
+    return Money::fromCents(std::llround(cents));
+}
+
+QVariantList PosService::overFoodCost() const
+{
+    const int target = std::clamp(s_->settings.targetFoodCostPercent, 5, 90);
+    struct Over { const MenuItem *m; Money cost; double percent; };
+    std::vector<Over> over;
+    for (const MenuItem &m : s_->menu) {
+        if (m.isModifier || m.recipe.empty() || m.price.cents() <= 0)
+            continue;
+        const Money cost = recipeCost(m);
+        const double percent = 100.0 * double(cost.cents()) / double(m.price.cents());
+        if (percent > target)
+            over.push_back({&m, cost, percent});
+    }
+    std::ranges::sort(over, [](const Over &a, const Over &b) { return a.percent > b.percent; });
+    QVariantList out;
+    for (const Over &o : over) {
+        // The price that brings it back to the target, up to the next quarter.
+        const std::int64_t at = std::llround(std::ceil(double(o.cost.cents()) * 100.0 / target / 25.0) * 25.0);
+        out << QVariantMap{{u"name"_s, qs(o.m->name)}, {u"price"_s, format(o.m->price)}, {u"cost"_s, format(o.cost)},
+                           {u"percent"_s, int(std::lround(o.percent))}, {u"suggested"_s, format(Money::fromCents(at))}};
+    }
+    return out;
+}
+
 Money PosService::lineCost(const OrderLine &l) const
 {
     double cents = 0;
@@ -212,6 +246,17 @@ Report PosService::foodCostReport(const std::vector<Check> &closed, const Report
     }
     if (!sorted.empty())
         r.total({"All", "", ctx.money(sales), ctx.money(cost), percent(cost, sales)});
+
+    if (const QVariantList over = overFoodCost(); !over.isEmpty()) {
+        r.section("Prices to look at");
+        r.note(ss(tr("Costing more than %1% of the price to make, at today's costs. Third column: the price now, and one "
+                     "that brings it back to %1%.").arg(s_->settings.targetFoodCostPercent)));
+        for (const QVariant &v : over) {
+            const QVariantMap o = v.toMap();
+            r.line({ss(o[u"name"_s].toString()), "", ss(o[u"price"_s].toString() + u" → "_s + o[u"suggested"_s].toString()),
+                    ss(o[u"cost"_s].toString()), std::to_string(o[u"percent"_s].toInt()) + "%"});
+        }
+    }
 
     r.section("Stock");
     bool any = false;
@@ -377,6 +422,10 @@ bool PosService::receiveDelivery(const QVariantMap &r)
     }
     if (d.lines.empty())
         return fail(tr("Type how much came of each item."));
+    // Over the food cost target before (to say which went over with these prices).
+    QSet<QString> overBefore;
+    for (const QVariant &v : overFoodCost())
+        overBefore.insert(v.toMap()[u"name"_s].toString());
     // On the shelf now, at the latest cost.
     for (const Delivery::Line &l : d.lines) {
         const auto g = std::ranges::find_if(s_->ingredients, [&](const Ingredient &x) { return x.id == l.ingredientId; });
@@ -394,6 +443,13 @@ bool PosService::receiveDelivery(const QVariantMap &r)
     if (s_->sink)
         s_->sink->saveDelivery(d);
     refreshSoldOut();   // what was out is back
+    QStringList nowOver;
+    for (const QVariant &v : overFoodCost())
+        if (!overBefore.contains(v.toMap()[u"name"_s].toString()))
+            nowOver << v.toMap()[u"name"_s].toString();
+    if (!nowOver.isEmpty())
+        emit notice(tr("At these prices, over %1% food cost now: %2. Reports -> Food Cost suggests prices.")
+                        .arg(s_->settings.targetFoodCostPercent).arg(nowOver.join(u", "_s)));
     ++s_->adminRevision;
     emit s_->adminChanged();
     emit notice(d.vendorName.empty()

@@ -145,7 +145,7 @@ inline QVariantList storeSections(const QVariantList &fields)
         {"tips", PosService::tr("Tips"),
          {"tipPercents", "gratuityPercent", "gratuityMinGuests", "declareCashTips", "tipOuts", "tipPool"}},
         {"menu", PosService::tr("Menu and prices"), {"extraPercent", "extraCharge", "soldOutBackNextDay"}},
-        {"stock", PosService::tr("Inventory"), {"stockCountShowsExpected", "wasteReasons", "labelPrinter"}},
+        {"stock", PosService::tr("Inventory"), {"targetFoodCostPercent", "stockCountShowsExpected", "wasteReasons", "labelPrinter"}},
         {"kitchen", PosService::tr("Kitchen"), {"kitchenStations", "kitchenWarnMinutes", "kitchenLateMinutes", "laterLeadMinutes"}},
         {"togo", PosService::tr("Takeout and delivery"),
          {"requireOrderName", "takeoutMinutes", "deliveryMinutes", "minutesPerOrderWaiting", "deliveryFee"}},

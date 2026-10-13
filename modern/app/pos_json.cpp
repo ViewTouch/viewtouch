@@ -993,6 +993,7 @@ QJsonObject toJson(const PosSettings &s)
         {u"checkoutNeedsClosedChecks"_s, s.checkoutNeedsClosedChecks},
         {u"blindDrawerCount"_s, s.blindDrawerCount},
         {u"askReasons"_s, s.askReasons}, {u"stockCountShowsExpected"_s, s.stockCountShowsExpected},
+        {u"targetFoodCostPercent"_s, s.targetFoodCostPercent},
         {u"problemsSeen"_s, qint64(s.problemsSeen)}, {u"labelPrinter"_s, qs(s.labelPrinter)},
         {u"wasteReasons"_s, [&] { QJsonArray a; for (const std::string &r : s.wasteReasons) a.append(qs(r)); return a; }()},
         {u"voidReasons"_s, [&] { QJsonArray a; for (const std::string &r : s.voidReasons) a.append(qs(r)); return a; }()},
@@ -1233,6 +1234,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.blindDrawerCount = o.value(u"blindDrawerCount").toBool();
     s.askReasons = o.value(u"askReasons").toBool(true);
     s.stockCountShowsExpected = o.value(u"stockCountShowsExpected").toBool();
+    s.targetFoodCostPercent = std::clamp(o.value(u"targetFoodCostPercent").toInt(30), 5, 90);
     s.problemsSeen = i64(o.value(u"problemsSeen"));
     s.labelPrinter = ss(o.value(u"labelPrinter").toString());
     for (auto [key, list] : {std::pair{u"voidReasons", &s.voidReasons}, std::pair{u"compReasons", &s.compReasons},

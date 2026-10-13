@@ -453,6 +453,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.askReasons = record.value(u"askReasons"_s).toBool();
         if (record.contains(u"labelPrinter"_s))
             s_->settings.labelPrinter = ss(record.value(u"labelPrinter"_s).toString());
+        if (record.contains(u"targetFoodCostPercent"_s))
+            s_->settings.targetFoodCostPercent = std::clamp(record.value(u"targetFoodCostPercent"_s).toInt(), 5, 90);
         if (record.contains(u"stockCountShowsExpected"_s))
             s_->settings.stockCountShowsExpected = record.value(u"stockCountShowsExpected"_s).toBool();
         for (const auto &[key, list] : {std::pair{u"openingChecklist"_s, &s_->settings.openingChecklist},
