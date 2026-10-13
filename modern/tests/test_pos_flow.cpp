@@ -5229,6 +5229,68 @@ TEST_CASE("Qualifiers: No opens the item's choices; hold a choice for Lite / Ext
     CHECK(mods.contains(u"Extra Tomato"_s));
 }
 
+TEST_CASE("Qualifiers: a finger on No, Extra... or Cancel presses nothing behind them", "[ui][qualifiers][touch]")
+{
+    Screen s;
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    REQUIRE(s.pos.startCheck(core::CheckType::Quick));
+    REQUIRE(s.c.jumpTo(u"items-burgers"_s));
+    s.c.orderItem(u"classic-burger"_s);
+    QTest::qWait(80);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+    static QPointingDevice *finger = QTest::createTouchDevice();
+    const auto touch = [&](QQuickItem *item) {
+        REQUIRE(item);
+        const QPoint at = item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint();
+        QTest::touchEvent(s.window, finger).press(0, at, s.window);
+        QTest::qWait(60);
+        QTest::touchEvent(s.window, finger).release(0, at, s.window);
+        QTest::qWait(80);
+    };
+    const auto chosen = [&] {
+        QStringList names;
+        for (const QVariant &g : s.pos.choosingInfo()[u"groups"_s].toList())
+            for (const QVariant &o : g.toMap()[u"options"_s].toList())
+                if (o.toMap()[u"chosen"_s].toBool())
+                    names << o.toMap()[u"qualifier"_s].toString() + o.toMap()[u"name"_s].toString();
+        names.sort();
+        return names;
+    };
+    const QStringList before = chosen();
+    // Each answer, and Cancel: only the ingredient asked about changes.
+    for (const char *answer : {"how-no", "how-extra", "how-side", "how-lite"}) {
+        touch(by(u"option-Tomato"_s));   // comes on it: asks how
+        REQUIRE(by(u"qualifierSheet"_s));
+        QQuickItem *key = by(QString::fromLatin1(answer));
+        REQUIRE(key);
+        const QPoint where = key->mapToScene(QPointF(key->width() / 2, key->height() / 2)).toPoint();
+        touch(key);
+        CHECK_FALSE(by(u"qualifierSheet"_s));   // found only while shown
+        // A late click where the answer was (touch screens make one) presses nothing behind it.
+        QTest::mouseClick(s.window, Qt::LeftButton, {}, where);
+        QTest::qWait(400);
+        QStringList now = chosen();
+        now.removeIf([](const QString &n) { return n.endsWith(u"Tomato"_s); });
+        CHECK(now == before);
+        // Back to as it came, for the next answer.
+        REQUIRE(by(u"option-Tomato"_s));
+        if (by(u"option-Tomato"_s)->property("text").toString() != u"Tomato"_s)
+            touch(by(u"option-Tomato"_s));
+    }
+    touch(by(u"option-Tomato"_s));
+    REQUIRE(by(u"qualifierSheet"_s));
+    const QStringList beforeCancel = chosen();
+    QQuickItem *cancel = nullptr;
+    for (QQuickItem *k : by(u"qualifierSheet"_s)->findChildren<QQuickItem *>())
+        if (k->property("text").toString() == u"Cancel"_s)
+            cancel = k;
+    touch(cancel);
+    CHECK_FALSE(by(u"qualifierSheet"_s));
+    QTest::qWait(400);
+    CHECK(chosen() == beforeCancel);
+}
+
 TEST_CASE("Phone audit: typing on a phone", "[.][phonekeys]")
 {
     Screen s(true, 412, 870, u"phone"_s);

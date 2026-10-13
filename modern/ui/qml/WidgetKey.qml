@@ -21,6 +21,9 @@ Rectangle {
     property bool accent: false
     // Held down (half a second): held() instead of clicked(), for keys that say so.
     property bool holdable: false
+    // Takes the whole touch (on a sheet over other keys): nothing behind it
+    // sees the finger, not even the click a touch screen makes of it after.
+    property bool takesTouch: false
 
     signal clicked()
     signal held()
@@ -46,6 +49,7 @@ Rectangle {
     TapHandler {
         id: tap
         longPressThreshold: key.holdable ? 0.5 : 0.8
+        gesturePolicy: key.takesTouch ? TapHandler.ReleaseWithinBounds : TapHandler.DragThreshold
         onTapped: { if (TouchGuard.covered(point.scenePressPosition)) return; key.clicked() }
         onLongPressed: { if (TouchGuard.covered(point.scenePressPosition)) return; if (key.holdable) key.held() }
     }

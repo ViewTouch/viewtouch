@@ -28,6 +28,8 @@ Item {
 
     Flickable {
         id: flick
+        // Off under the No / Lite / Extra / Side question (see buttons).
+        enabled: !how.visible
         anchors { left: parent.left; right: parent.right; top: title.bottom; bottom: buttons.top; margins: 16 }
         clip: true
         contentHeight: groups.implicitHeight
@@ -92,11 +94,16 @@ Item {
                                 holdable: true
                                 // Comes on it: how it's had (No, Lite, Extra, Side) is the question,
                                 // unless No, Extra... was touched first: then that's the answer.
-                                onClicked: modelData.included && !modelData.chosen && !w.pos.pendingQualifier
-                                           ? w.askHow(group.modelData.id, modelData.index, modelData.name)
-                                           : w.pos.chooseOption(group.modelData.id, modelData.index)
+                                onClicked: {
+                                    if (w.justAsked())
+                                        return
+                                    if (modelData.included && !modelData.chosen && !w.pos.pendingQualifier)
+                                        w.askHow(group.modelData.id, modelData.index, modelData.name)
+                                    else
+                                        w.pos.chooseOption(group.modelData.id, modelData.index)
+                                }
                                 // Held: No / Lite / Extra / Side for it.
-                                onHeld: w.askHow(group.modelData.id, modelData.index, modelData.name)
+                                onHeld: if (!w.justAsked()) w.askHow(group.modelData.id, modelData.index, modelData.name)
                             }
                         }
                     }
@@ -106,6 +113,11 @@ Item {
     }
 
     // How to have one choice: held down on it.
+    // When the question closed: the keys that were under it ignore a touch for
+    // a moment (a touch screen's late click on what was behind it).
+    property double howClosedAt: 0
+    function closeHow() { how.visible = false }
+    function justAsked() { return how.visible || Date.now() - howClosedAt < 350 }
     function askHow(groupId, index, name) {
         how.groupId = groupId
         how.index = index
@@ -113,8 +125,10 @@ Item {
         how.visible = true
     }
     function chooseAs(qualifier) {
-        how.visible = false
-        pos.chooseOptionAs(how.groupId, how.index, qualifier)
+        closeHow()
+        // After this touch is done: the choice redraws the buttons it's over.
+        const groupId = how.groupId, index = how.index
+        Qt.callLater(() => w.pos.chooseOptionAs(groupId, index, qualifier))
     }
     Rectangle {
         id: how
@@ -123,6 +137,7 @@ Item {
         property int index: -1
         property string name
         visible: false
+        onVisibleChanged: if (!visible) w.howClosedAt = Date.now()
         anchors.fill: parent
         z: 5
         color: Qt.rgba(0.06, 0.07, 0.09, 0.94)
@@ -156,6 +171,7 @@ Item {
                         fontScale: 0.36
                         text: modelData[1]
                         baseColor: modelData[0] === "no" ? "#8a2c30" : "#343c49"
+                        takesTouch: true
                         onClicked: w.chooseAs(modelData[0])
                     }
                 }
@@ -165,13 +181,16 @@ Item {
                 height: w.unit * 2
                 fontScale: 0.36
                 text: qsTr("Cancel")
-                onClicked: how.visible = false
+                takesTouch: true
+                onClicked: w.closeHow()
             }
         }
     }
 
     Row {
         id: buttons
+        // Off under the No / Lite / Extra / Side question (a finger on it isn't for them).
+        enabled: !how.visible
         anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 16 }
         readonly property int shown: (w.zone.keyShown("cancel") ? 1 : 0) + (w.zone.keyShown("done") ? 1 : 0)
         height: shown > 0 ? w.unit * 2.6 : 0
@@ -188,6 +207,8 @@ Item {
             baseColor: "#5a2a2a"
             fontScale: 0.32
             onClicked: {
+                if (w.justAsked())
+                    return
                 w.pos.cancelChoosing()
                 w.zone.controller.goBack()
             }
@@ -200,7 +221,7 @@ Item {
             accent: true
             fontScale: 0.32
             // Back only once the required choices are made.
-            onClicked: w.zone.controller.finishChoosing()
+            onClicked: if (!w.justAsked()) w.zone.controller.finishChoosing()
         }
     }
 }
