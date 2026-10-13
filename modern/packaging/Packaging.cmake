@@ -6,8 +6,11 @@ set(VTM_PKG ${CMAKE_CURRENT_LIST_DIR})
 
 install(TARGETS vtmodern RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(PROGRAMS ${VTM_PKG}/vtmodern-setup DESTINATION ${CMAKE_INSTALL_SBINDIR})
+install(PROGRAMS ${VTM_PKG}/vtmodern-lockdown DESTINATION ${CMAKE_INSTALL_SBINDIR})
+install(PROGRAMS ${VTM_PKG}/vtmodern-device DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/vtmodern)
 # systemd looks in <prefix>/lib even where libraries go to lib64
-install(FILES ${VTM_PKG}/vtmodern.service ${VTM_PKG}/vtmodern-kiosk.service DESTINATION lib/systemd/system)
+install(FILES ${VTM_PKG}/vtmodern.service ${VTM_PKG}/vtmodern-kiosk.service ${VTM_PKG}/vtmodern-station.service
+        DESTINATION lib/systemd/system)
 install(FILES ${VTM_PKG}/viewtouch.sysusers DESTINATION lib/sysusers.d RENAME viewtouch.conf)
 install(FILES ${VTM_PKG}/server.conf ${VTM_PKG}/kiosk.conf DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/viewtouch)
 install(FILES ${VTM_PKG}/vtmodern.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)

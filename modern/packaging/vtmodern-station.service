@@ -1,0 +1,42 @@
+# The home screen of a computer that is only for ViewTouch, on its screen at
+# boot (vtmodern --station): it starts ViewTouch, starts it again if it stops
+# by itself, and has the touch icons for the computer (network, updates,
+# restart, reset...). Runs in the cage Wayland kiosk on tty1. Set up by
+#   sudo vtmodern-lockdown
+# which also turns the desktop off and locks the computer down.
+[Unit]
+Description=ViewTouch POS home screen
+Documentation=file:///usr/share/doc/vtmodern/README.md
+Wants=network-online.target
+After=network-online.target systemd-user-sessions.service plymouth-quit-wait.service
+After=getty@tty1.service
+Conflicts=getty@tty1.service vtmodern-kiosk.service vtmodern.service
+
+[Service]
+Type=simple
+User=viewtouch
+Group=viewtouch
+StateDirectory=viewtouch
+StateDirectoryMode=0750
+PAMName=login
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+StandardInput=tty-fail
+StandardOutput=journal
+StandardError=journal
+UtmpIdentifier=tty1
+UtmpMode=user
+Environment=XDG_SESSION_TYPE=wayland
+Environment=QT_QPA_PLATFORM=wayland
+Environment=QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+ExecStartPre=-+/usr/bin/chvt 1
+# -s keeps Ctrl+Alt+F2: a text login for a technician (it asks for a password).
+ExecStart=/usr/bin/cage -d -s -- /usr/bin/vtmodern --station --kiosk --data-dir ${STATE_DIRECTORY} --config /etc/viewtouch/kiosk.conf
+Restart=always
+RestartSec=2
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

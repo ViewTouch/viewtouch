@@ -1,0 +1,163 @@
+#!/bin/sh
+# Turn a fresh Raspberry Pi OS (or Debian) into a computer only for ViewTouch:
+# no desktop, the ViewTouch home screen at boot (touch icons to start
+# ViewTouch, the network, updates, restart, reset...; the first time it asks
+# what this computer is), and locked down.
+#
+#   sudo vtmodern-lockdown                 lock it down (SSH is turned off at the end)
+#   sudo vtmodern-lockdown --keep-ssh      ...but leave SSH on (remote help can turn it off)
+#   sudo vtmodern-lockdown --undo          the desktop back, the home screen off
+#
+# What it does:
+#   - ViewTouch runs as its own account, which can't log in and can run only
+#     /usr/libexec/vtmodern/vtmodern-device as root (Wi-Fi, time zone, updates...)
+#   - the desktop login is off; the home screen (vtmodern-station.service) is on
+#   - a firewall: only ViewTouch (7719), finding it (mDNS) and SSH may come in
+#   - security updates install by themselves each night
+#   - the hardware watchdog restarts the computer if it ever freezes
+#   - smaller logs (the built-in storage lasts longer), a quiet boot
+# The administrator account (yours) keeps working: Ctrl+Alt+F2 on the screen,
+# or SSH while remote help is on.
+set -eu
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+
+say() { printf '\n== %s\n' "$*"; }
+die() { echo "$*" >&2; exit 1; }
+[ "$(id -u)" -eq 0 ] || die "Run this with sudo."
+
+keep_ssh=no
+undo=no
+for a in "$@"; do
+    case "$a" in
+        --keep-ssh) keep_ssh=yes ;;
+        --undo) undo=yes ;;
+        -h|--help) sed -n '2,21p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        *) die "Unknown option: $a" ;;
+    esac
+done
+
+command -v vtmodern >/dev/null 2>&1 || die "Install ViewTouch first (install-viewtouch.sh)."
+
+if [ "$undo" = yes ]; then
+    systemctl disable vtmodern-station.service || true
+    systemctl set-default graphical.target
+    systemctl enable display-manager.service 2>/dev/null || systemctl enable lightdm 2>/dev/null || true
+    systemctl unmask ctrl-alt-del.target || true
+    echo "The desktop comes back at the next restart; the ViewTouch home screen is off."
+    exit 0
+fi
+
+# --- the account ViewTouch runs as ----------------------------------------------------
+# Normally "viewtouch" (a system account). If someone made "viewtouch" their
+# own login (it can use sudo), ViewTouch gets its own: vtpos.
+account=viewtouch
+if id viewtouch >/dev/null 2>&1 && [ "$(id -u viewtouch)" -ge 1000 ]; then
+    account=vtpos
+    say "Making the account ViewTouch runs as: $account (viewtouch is a login account here)"
+    id "$account" >/dev/null 2>&1 ||
+        useradd --system --home-dir /var/lib/viewtouch --no-create-home --shell /usr/sbin/nologin \
+            --comment "ViewTouch POS" "$account"
+    for unit in vtmodern-station vtmodern vtmodern-kiosk; do
+        mkdir -p /etc/systemd/system/$unit.service.d
+        printf '[Service]\nUser=%s\nGroup=%s\n' "$account" "$account" > /etc/systemd/system/$unit.service.d/account.conf
+    done
+fi
+for g in video render input audio netdev lp dialout plugdev; do
+    getent group "$g" >/dev/null && usermod -aG "$g" "$account"
+done
+if [ -d /var/lib/viewtouch ]; then
+    chown -R "$account:$account" /var/lib/viewtouch
+fi
+
+# Only the home screen's helper, as root.
+sudoers=/etc/sudoers.d/vtmodern-station
+tmp=$(mktemp)
+printf '# The ViewTouch home screen: its root actions (vtmodern-lockdown).\n%s ALL=(root) NOPASSWD: /usr/libexec/vtmodern/vtmodern-device\n' "$account" > "$tmp"
+visudo -cf "$tmp" >/dev/null || die "The sudo rule didn't check out."
+install -m 0440 "$tmp" "$sudoers"
+rm -f "$tmp"
+
+# --- what it needs -----------------------------------------------------------------------
+say "Installing what the screen needs"
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+apt-get install -y --no-install-recommends cage qt6-wayland nftables unattended-upgrades rfkill \
+    network-manager fonts-dejavu-core fonts-noto-cjk
+
+# --- the screen: the home screen at boot, no desktop -----------------------------------------
+say "The ViewTouch home screen at boot, the desktop off"
+systemctl daemon-reload
+systemctl disable vtmodern-kiosk.service vtmodern.service 2>/dev/null || true
+systemctl enable vtmodern-station.service
+systemctl set-default multi-user.target
+systemctl disable display-manager.service 2>/dev/null || true
+# Ctrl+Alt+Del on a keyboard doesn't restart the register.
+systemctl mask ctrl-alt-del.target
+# No boot messages or cursor on the screen.
+cmdline=/boot/firmware/cmdline.txt
+if [ -f "$cmdline" ]; then
+    for w in quiet loglevel=3 logo.nologo vt.global_cursor_default=0 consoleblank=0; do
+        grep -qw -- "$w" "$cmdline" || sed -i "1 s/\$/ $w/" "$cmdline"
+    done
+fi
+
+# --- keeping it running --------------------------------------------------------------------
+say "Watchdog, logs and updates"
+mkdir -p /etc/systemd/system.conf.d /etc/systemd/journald.conf.d
+cat > /etc/systemd/system.conf.d/vtmodern-watchdog.conf <<'CONF'
+# vtmodern-lockdown: the hardware watchdog restarts a frozen computer.
+[Manager]
+RuntimeWatchdogSec=15s
+RebootWatchdogSec=2min
+CONF
+cat > /etc/systemd/journald.conf.d/vtmodern.conf <<'CONF'
+# vtmodern-lockdown: smaller logs, so the built-in storage lasts.
+[Journal]
+SystemMaxUse=200M
+CONF
+echo "kernel.panic = 10" > /etc/sysctl.d/90-vtmodern.conf
+cat > /etc/apt/apt.conf.d/20auto-upgrades <<'CONF'
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+CONF
+
+# --- the firewall ----------------------------------------------------------------------------
+say "Firewall: only ViewTouch, finding it, and SSH come in"
+[ -f /etc/nftables.conf ] && [ ! -f /etc/nftables.conf.before-viewtouch ] &&
+    cp /etc/nftables.conf /etc/nftables.conf.before-viewtouch
+cat > /etc/nftables.conf <<'CONF'
+#!/usr/sbin/nft -f
+# vtmodern-lockdown: what may come in. Everything this computer starts itself
+# (printers, updates, the store's server) is answered.
+flush ruleset
+table inet filter {
+    chain input {
+        type filter hook input priority filter; policy drop;
+        iif lo accept
+        ct state established,related accept
+        ct state invalid drop
+        meta l4proto { icmp, ipv6-icmp } accept
+        udp dport { 68, 546 } accept          # the network's address (DHCP)
+        udp dport 5353 accept                 # finding this computer (mDNS)
+        tcp dport 7719 accept                 # ViewTouch: other screens
+        udp dport 7719 accept                 # ViewTouch: finding the store
+        tcp dport 22 accept                   # SSH, while remote help is on
+    }
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+    }
+}
+CONF
+systemctl enable nftables.service
+systemctl restart nftables.service
+
+# --- SSH -------------------------------------------------------------------------------------
+if [ "$keep_ssh" = no ]; then
+    say "SSH off (Remote Help on the home screen turns it on)"
+    systemctl disable --now ssh 2>/dev/null || true
+fi
+
+say "Done"
+echo "Restart the computer: sudo reboot"
+echo "It starts on the ViewTouch home screen; the first time it asks what this computer is."
+echo "Your account still works: Ctrl+Alt+F2 on the screen, or SSH while Remote Help is on."

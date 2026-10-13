@@ -130,6 +130,8 @@ if(Qt6_FOUND)
         QML_FILES
             ui/qml/Main.qml
             ui/qml/JoinWindow.qml
+            ui/qml/StationWindow.qml
+            ui/qml/StationIcon.qml
             ui/qml/PageView.qml
             ui/qml/ZoneItem.qml
             ui/qml/ZoneShape.qml
@@ -228,6 +230,7 @@ if(Qt6_FOUND)
             ui/cpp/language.hh ui/cpp/language.cpp
             ui/cpp/editorcontroller.hh ui/cpp/editorcontroller.cpp
             ui/cpp/joincontroller.hh ui/cpp/joincontroller.cpp
+            ui/cpp/stationcontroller.hh ui/cpp/stationcontroller.cpp
             ui/cpp/reportexport.hh ui/cpp/reportexport.cpp
             ui/cpp/menuprint.hh ui/cpp/menuprint.cpp
             ui/cpp/cardreader.hh ui/cpp/cardreader.cpp

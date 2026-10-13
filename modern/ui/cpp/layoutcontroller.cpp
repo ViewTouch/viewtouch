@@ -401,6 +401,14 @@ void LayoutController::onLoggedInChanged(bool loggedIn)
     // Back to the check they had open (Switch User): its order screen.
     if (loggedIn && pos_ && pos_->hasCheck() && !editing())
         navigate(Navigator::Mode::Index, {});
+    // Opened for one thing (--after-login): there, once.
+    if (loggedIn && !afterLogin_.isEmpty() && !editing()) {
+        const QString page = std::exchange(afterLogin_, QString());
+        if (page == u"setup")
+            openSetup();
+        else
+            navigate(Navigator::Mode::Push, page);
+    }
 }
 
 bool LayoutController::mayOpen(const QString &pageId)

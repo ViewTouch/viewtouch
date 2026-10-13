@@ -1,5 +1,6 @@
 #include "app/pos_json.hh"
 #include "joincontroller.hh"
+#include "stationcontroller.hh"
 #include "language.hh"
 #include "layoutcontroller.hh"
 #include "app/i18n.hh"
@@ -97,6 +98,11 @@ struct Options {
     QCommandLineOption terminal{u"terminal"_s, u"This terminal's name (default: the computer's name)."_s, u"name"_s};
     QCommandLineOption login{u"login"_s, u"Log in with <pin> at startup (testing)."_s, u"pin"_s};
     QCommandLineOption page{u"page"_s, u"Open page <id> at startup."_s, u"id"_s};
+    QCommandLineOption station{u"station"_s,
+        u"The home screen of a computer only for ViewTouch: starts ViewTouch (again if it stops), with icons for "
+        "the network, updates, restarting... (vtmodern-station.service)."_s};
+    QCommandLineOption afterLogin{u"after-login"_s,
+        u"After the first login, open page <id> (\"setup\": the setup guide)."_s, u"id"_s};
     QCommandLineOption edit{u"edit"_s, u"Start in edit mode (with --login and a manager's PIN)."_s};
     QCommandLineOption select{u"select"_s, u"In edit mode, select these zones (comma separated)."_s, u"ids"_s};
     QCommandLineOption size{u"size"_s, u"Window size, e.g. 1280x720."_s, u"WxH"_s, u"1280x720"_s};
@@ -343,6 +349,8 @@ std::unique_ptr<QQmlApplicationEngine> showUi(const Args &cli, const Options &o,
         if (cli.value(o.screen) == u"auto")
             controller.setAutoFormFactor(true);   // try it on a desktop by resizing the window
     }
+    if (cli.isSet(o.afterLogin))
+        controller.setAfterLogin(cli.value(o.afterLogin));
     if (cli.isSet(o.page) && !controller.showPage(cli.value(o.page)))
         qWarning().noquote() << "Cannot open page" << cli.value(o.page);
     if (cli.isSet(o.edit) && controller.requestEditMode()) {   // needs --login with a manager PIN
@@ -452,6 +460,36 @@ std::optional<vt::net::Credentials> joinStore(const Args &cli, const Options &o,
     QObject::connect(&join, &JoinController::joined, &loop, [&] { joined = true; loop.quit(); });
     loop.exec();
     return joined ? std::optional(join.credentials()) : std::nullopt;
+}
+
+// The home screen of a ViewTouch computer: ViewTouch runs as its child.
+int runStation(const Args &cli, const Options &o)
+{
+    const QString dataDir = dataDirOf(cli, o);
+    vt::i18n::install(QDir(dataDir).filePath(u"translations"_s));
+    StationController station(dataDir, cli.isSet(o.config) ? cli.value(o.config) : QString(), cli.isSet(o.kiosk));
+    QQmlApplicationEngine engine;
+    engine.setInitialProperties({{u"station"_s, QVariant::fromValue(&station)}, {u"kiosk"_s, cli.isSet(o.kiosk)}});
+    engine.loadFromModule("ViewTouch", "StationWindow");
+    auto *window = engine.rootObjects().isEmpty() ? nullptr : qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    if (!window)
+        return 1;
+    if (cli.isSet(o.size)) {
+        const QStringList wh = cli.value(o.size).split(u'x');
+        if (wh.size() == 2)
+            window->resize(wh[0].toInt(), wh[1].toInt());
+    }
+    present(window, cli, o);
+    if (cli.isSet(o.screenshot)) {
+        const QString file = cli.value(o.screenshot);
+        QTimer::singleShot(1500, window, [window, file] {
+            window->grabWindow().save(file);
+            QCoreApplication::exit(0);
+        });
+    } else if (!station.role().isEmpty()) {
+        station.startPos();   // set up already: straight into ViewTouch
+    }
+    return QCoreApplication::exec();
 }
 
 constexpr int kRejoin = 75;   // qApp->exit code: the server refused this device
@@ -1668,7 +1706,7 @@ int main(int argc, char *argv[])
     cli.addHelpOption();
     cli.addVersionOption();
     const QList<QCommandLineOption> all = {o.config, o.dataDir, o.db, o.layout, o.resetLayout, o.resetMenu, o.serve,
-        o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.demoData, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.edit, o.select, o.size,
+        o.port, o.listen, o.headless, o.connect, o.pair, o.terminal, o.kiosk, o.selfOrder, o.touchKeyboard, o.customerDisplay, o.factoryReset, o.demoData, o.standby, o.pairOnly, o.windowed, o.screen, o.login, o.page, o.afterLogin, o.station, o.edit, o.select, o.size,
         o.screenshot, o.backupDir, o.backupKeep, o.backupEvery, o.backup, o.restore, o.pairingCode, o.exportDir};
     cli.addOptions(all);
     cli.process(app);
@@ -1689,6 +1727,8 @@ int main(int argc, char *argv[])
     for (const char *font : {":/fonts/DejaVuSans.ttf", ":/fonts/DejaVuSans-Bold.ttf"})
         QFontDatabase::addApplicationFont(QString::fromLatin1(font));
 #endif
+    if (args.isSet(o.station))
+        return runStation(args, o);
     if (args.isSet(o.factoryReset)) {
         const int code = runFactoryReset(args, o);
         if (code != 0 || !args.isSet(o.demoData))
@@ -1722,7 +1762,7 @@ int main(int argc, char *argv[])
     // for the services; otherwise start a new ViewTouch with the same options.
     wipeStore(args, o);
     qInfo("Factory reset done; starting again.");
-    if (qEnvironmentVariableIsSet("INVOCATION_ID"))
+    if (qEnvironmentVariableIsSet("INVOCATION_ID") || qEnvironmentVariableIsSet("VTM_STATION"))
         return kFactoryReset;
     QProcess::startDetached(QCoreApplication::applicationFilePath(), QCoreApplication::arguments().mid(1));
     return 0;

@@ -1,0 +1,162 @@
+#!/bin/sh
+# What the ViewTouch home screen (vtmodern --station) does as root, and only
+# that: a sudo rule (/etc/sudoers.d/vtmodern-station, written by
+# vtmodern-lockdown) lets the ViewTouch account run this one program. Every
+# value is checked before use.
+#
+#   vtmodern-device setup ROLE NAME [--guest-display]   what this computer is, and its name
+#   vtmodern-device forget                              not set up any more (asks again)
+#   vtmodern-device wifi NAME                           join a Wi-Fi network (password on stdin)
+#   vtmodern-device timezone ZONE                       e.g. America/New_York
+#   vtmodern-device update                              install every update now
+#   vtmodern-device update-usb                          install the newest ViewTouch package on a USB stick
+#   vtmodern-device ssh on|off                          remote help (SSH) on or off
+#   vtmodern-device reboot | poweroff
+set -eu
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+export LC_ALL=C.UTF-8
+
+die() { echo "$*" >&2; exit 1; }
+[ "$(id -u)" -eq 0 ] || die "Run this with sudo."
+
+action=${1:-}
+[ $# -gt 0 ] && shift
+
+valid_name() {
+    printf '%s' "$1" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9-]{0,62}$'
+}
+
+set_hostname() {
+    name=$1
+    old=$(hostname)
+    [ "$old" = "$name" ] && return 0
+    hostnamectl set-hostname "$name"
+    # The 127.0.1.1 line, so sudo and others still find this computer by name.
+    if grep -q '^127\.0\.1\.1' /etc/hosts; then
+        sed -i "s/^127\.0\.1\.1.*/127.0.1.1\t$name/" /etc/hosts
+    else
+        printf '127.0.1.1\t%s\n' "$name" >> /etc/hosts
+    fi
+}
+
+case "$action" in
+setup)
+    role=${1:-}
+    name=${2:-}
+    guest=${3:-}
+    case "$role" in store|terminal|kitchen|selforder|timeclock) ;; *) die "Unknown role: $role" ;; esac
+    valid_name "$name" || die "Use letters, numbers and dashes for the name."
+    flags=
+    [ "$guest" = "--guest-display" ] && flags=--guest-display
+    set_hostname "$name"
+    if [ "$role" = store ]; then
+        VTM_SETUP_STATION=1 vtmodern-setup $flags store
+    else
+        VTM_SETUP_STATION=1 vtmodern-setup $flags "$role" auto "$name"
+    fi
+    echo "Set up as $role ($name)."
+    ;;
+forget)
+    VTM_SETUP_STATION=1 vtmodern-setup forget
+    ;;
+wifi)
+    ssid=${1:-}
+    [ -n "$ssid" ] || die "Which network?"
+    printf '%s' "$ssid" | grep -q '[[:cntrl:]]' && die "That network name can't be used."
+    [ "$(printf '%s' "$ssid" | wc -c)" -le 32 ] || die "That network name is too long."
+    IFS= read -r password || true
+    printf '%s' "$password" | grep -q '[[:cntrl:]]' && die "That password can't be used."
+    rfkill unblock wifi 2>/dev/null || true
+    nmcli radio wifi on
+    # The password goes into a file only root can read (never on a command line).
+    file=/etc/NetworkManager/system-connections/vtmodern-wifi-$(printf '%s' "$ssid" | tr -c 'A-Za-z0-9-' '_').nmconnection
+    umask 077
+    {
+        echo "[connection]"
+        echo "id=$ssid"
+        echo "uuid=$(cat /proc/sys/kernel/random/uuid)"
+        echo "type=wifi"
+        echo "autoconnect=true"
+        echo
+        echo "[wifi]"
+        echo "mode=infrastructure"
+        echo "ssid=$ssid"
+        if [ -n "$password" ]; then
+            echo
+            echo "[wifi-security]"
+            echo "key-mgmt=wpa-psk"
+            echo "psk=$password"
+        fi
+        echo
+        echo "[ipv4]"
+        echo "method=auto"
+        echo
+        echo "[ipv6]"
+        echo "method=auto"
+    } > "$file"
+    chmod 600 "$file"
+    nmcli connection reload
+    if nmcli --wait 30 connection up filename "$file"; then
+        echo "Connected to $ssid."
+    else
+        rm -f "$file"
+        nmcli connection reload
+        die "Couldn't connect to $ssid (wrong password, or too far away)."
+    fi
+    ;;
+timezone)
+    zone=${1:-}
+    timedatectl list-timezones | grep -qxF -- "$zone" || die "Unknown time zone: $zone"
+    timedatectl set-timezone "$zone"
+    echo "Time zone: $zone"
+    ;;
+update)
+    export DEBIAN_FRONTEND=noninteractive
+    echo "Looking for updates..."
+    apt-get update
+    apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold full-upgrade
+    apt-get -y autoremove
+    echo "Up to date."
+    ;;
+update-usb)
+    export DEBIAN_FRONTEND=noninteractive
+    mnt=/run/vtmodern-usb
+    mkdir -p "$mnt"
+    found=
+    # Each partition of a USB drive, read-only, until one has a package.
+    for dev in $(lsblk -rpno NAME,TRAN,TYPE | awk '$2=="usb"{print $1}'); do
+        for part in $(lsblk -rpno NAME,TYPE "$dev" | awk '$2=="part"{print $1}') "$dev"; do
+            mount -o ro "$part" "$mnt" 2>/dev/null || continue
+            pkg=$(ls -t "$mnt"/vtmodern_*_"$(dpkg --print-architecture)"*.deb "$mnt"/*/vtmodern_*_"$(dpkg --print-architecture)"*.deb 2>/dev/null | head -1 || true)
+            if [ -n "$pkg" ]; then
+                cp "$pkg" /tmp/vtmodern-update.deb
+                found=$(basename "$pkg")
+            fi
+            umount "$mnt"
+            [ -n "$found" ] && break 2
+        done
+    done
+    [ -n "$found" ] || die "No ViewTouch package (vtmodern_....deb) on a USB stick."
+    echo "Installing $found..."
+    apt-get install -y --allow-downgrades /tmp/vtmodern-update.deb
+    rm -f /tmp/vtmodern-update.deb
+    echo "Installed $found. Restart the computer to use it."
+    ;;
+ssh)
+    case "${1:-}" in
+    on) systemctl enable --now ssh && echo "Remote help is on." ;;
+    off) systemctl disable --now ssh && echo "Remote help is off." ;;
+    *) die "on or off" ;;
+    esac
+    ;;
+reboot)
+    systemctl reboot
+    ;;
+poweroff)
+    systemctl poweroff
+    ;;
+*)
+    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//' >&2
+    exit 1
+    ;;
+esac

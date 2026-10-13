@@ -11,6 +11,7 @@
 #   sudo vtmodern-setup standby CODE [HOST]      a standby server: a live copy that takes over
 #   sudo vtmodern-setup pair                     on a server without a screen: a code to pair a screen with
 #   sudo vtmodern-setup off                      stop starting ViewTouch at boot
+#   sudo vtmodern-setup forget                   forget what this machine is (the data is kept)
 #   vtmodern-setup status                        what is set up now
 #
 # HOST is the store's main machine (an address), or "auto" (the default) to
@@ -29,9 +30,13 @@ DATA_DIR=/var/lib/viewtouch
 DRY=${VTM_SETUP_DRYRUN:-}
 
 usage() {
-    sed -n '2,21p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'
     exit "${1:-0}"
 }
+
+# VTM_SETUP_STATION=1: called by the ViewTouch home screen (vtmodern-device),
+# which starts ViewTouch itself: write the settings, leave the services alone.
+STATION=${VTM_SETUP_STATION:-}
 
 run() {
     if [ -n "$DRY" ]; then echo "would run: $*"; else "$@"; fi
@@ -96,6 +101,7 @@ firewall_note() {
 }
 
 start_screen() {
+    [ -n "$STATION" ] && return 0
     run systemctl daemon-reload
     run systemctl disable --now vtmodern.service >/dev/null 2>&1 || true
     run systemctl enable vtmodern-kiosk.service
@@ -106,6 +112,7 @@ start_screen() {
 }
 
 start_server() {
+    [ -n "$STATION" ] && return 0
     run systemctl daemon-reload
     run systemctl disable --now vtmodern-kiosk.service >/dev/null 2>&1 || true
     run systemctl enable vtmodern.service
@@ -294,6 +301,11 @@ standby)
 pair)
     need_root
     exec vtmodern --data-dir "$DATA_DIR" --pairing-code
+    ;;
+forget)
+    need_root
+    write_block "$KIOSK_CONF" "# not set up yet"
+    echo "Forgotten: this machine isn't set up as anything now. Its data in $DATA_DIR is kept."
     ;;
 off)
     need_root

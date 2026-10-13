@@ -127,6 +127,10 @@ public:
     QVariantMap statusColors() const { return statusColors_; }
     QStringList fontFamilies() const;
     bool setupOpen() const { return setupOpen_; }
+    // After the next login, this page instead of their start page ("setup":
+    // the setup guide). The home screen of a ViewTouch computer opens
+    // ViewTouch on Menu, Staff, Printers... this way.
+    void setAfterLogin(const QString &pageId) { afterLogin_ = pageId; }
     Q_INVOKABLE void openSetup();
     Q_INVOKABLE void closeSetup();
     // The store's fonts that came in, installed for this screen.
@@ -340,6 +344,7 @@ private:
     QString menuCategory_;
     QVariantMap widgetState_;
     bool setupOpen_ = false;
+    QString afterLogin_;
     QSet<QString> installedFonts_;   // by content hash
     bool asleep_ = false;
     int sleepOverrideMs_ = 0;
