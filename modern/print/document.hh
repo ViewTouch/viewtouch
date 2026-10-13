@@ -45,6 +45,9 @@ struct Document {
     Document &image(std::shared_ptr<const Raster> raster);
 };
 
+// Plain letters a printer without accents can show (é -> e, € -> EUR, no control characters).
+std::string plainLetters(const std::string &s);
+
 // Number of characters (UTF-8 code points) in s.
 std::size_t displayWidth(const std::string &s);
 

@@ -169,6 +169,28 @@ TEST_CASE("TicketPrinter routes kitchen lines by printer and writes files", "[pr
     CHECK(receiptText.contains(u"[drawer opened]"_s));   // receipt printer has the drawer
 }
 
+TEST_CASE("TicketPrinter sends labels in the label printer's language, or as slips", "[print][labels]")
+{
+    QTemporaryDir dir;
+    auto seed = test::seedPosData();
+    core::PrinterConfig zpl;
+    zpl.id = "labels";
+    zpl.name = "Labels";
+    zpl.type = "file";
+    zpl.path = "labels.zpl";
+    zpl.format = "zpl";
+    seed.settings.printers.push_back(zpl);
+    PrintSpooler spooler;
+    TicketPrinter printer(spooler, dir.path());
+    printer.printLabels(seed.settings, {{"Pico de gallo", {"Made Mon 9:00 AM"}}, {"Salsa", {"Made Mon 9:00 AM"}}}, "labels");
+    printer.printLabels(seed.settings, {{"Rice", {"Made Mon 9:00 AM"}}}, "receipt");
+    REQUIRE(spooler.waitIdle(5000));
+    const QString labels = readFile(dir.filePath(u"labels.zpl"_s));
+    CHECK(labels.count(u"^XA"_s) == 2);
+    CHECK(labels.contains(u"^FDSalsa^FS"_s));
+    CHECK(readFile(dir.filePath(u"receipt.txt"_s)).contains(u"Rice"_s));
+}
+
 TEST_CASE("A Spanish store prints in Spanish: receipts, kitchen tickets, reports", "[print][i18n]")
 {
     QTemporaryDir dir;

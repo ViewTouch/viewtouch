@@ -657,3 +657,114 @@ TEST_CASE("Waste: logged by item or ingredient, off the shelf, told apart in the
         known = known || (!row.cells.empty() && row.cells.front() == "Thrown away (logged)" && row.cells.back() == "-$1.02");
     CHECK(known);
 }
+
+#include "print/labels.hh"
+
+namespace {
+
+struct LabelPrinter : app::PosPrinter {
+    std::vector<std::pair<std::string, std::vector<std::string>>> labels;
+    std::string printer;
+    void printKitchen(const core::PosSettings &, const core::Check &, const std::vector<core::OrderLine> &, bool) override {}
+    void printReceipt(const core::PosSettings &, const core::Check &, const std::string &) override {}
+    void printReport(const core::PosSettings &, const core::Report &, const std::string &) override {}
+    void openDrawer(const core::PosSettings &, const std::string &) override {}
+    void printLabels(const core::PosSettings &, const std::vector<std::pair<std::string, std::vector<std::string>>> &l,
+                     const std::string &p) override
+    {
+        labels = l;
+        printer = p;
+    }
+};
+
+} // namespace
+
+TEST_CASE("Labels: ZPL and TSPL for label printers, a slip for a receipt printer", "[labels]")
+{
+    const std::vector<print::Label> labels{{"Pico de gallo", {"Made Mon 10/12 9:00 AM", "Use by Wed 10/14 9:00 AM", "Sam"}},
+                                           {"Café ^~ \"mix\"", {"Made Mon 10/12 9:00 AM"}}};
+    const std::string zpl = print::renderZpl(labels, 51, 25);
+    CHECK(std::ranges::count(zpl, '\n') == 2);                       // one ^XA ... ^XZ a label
+    CHECK(zpl.find("^PW408^LL200") != std::string::npos);            // 51 x 25 mm at 8 dots a mm
+    CHECK(zpl.find("^FDPico de gallo^FS") != std::string::npos);
+    CHECK(zpl.find("^FDUse by Wed 10/14 9:00 AM^FS") != std::string::npos);
+    CHECK(zpl.find("^FDCafe    \"mix\"^FS") != std::string::npos);   // plain letters, no command characters
+    const std::string tspl = print::renderTspl(labels, 51, 25);
+    CHECK(tspl.starts_with("SIZE 51 mm,25 mm\r\n"));
+    CHECK(tspl.find("\"Pico de gallo\"\r\n") != std::string::npos);
+    CHECK(tspl.find("\"Cafe ^~  mix \"\r\n") != std::string::npos);  // no quotes inside the text
+    std::size_t prints = 0;
+    for (std::size_t at = tspl.find("PRINT 1,1"); at != std::string::npos; at = tspl.find("PRINT 1,1", at + 1))
+        ++prints;
+    CHECK(prints == 2);
+    const print::Document slip = print::labelSlip(labels[0]);
+    CHECK(print::renderText(slip, 32).find("Pico de gallo") != std::string::npos);
+}
+
+TEST_CASE("Prep labels: what, made and use by, on the label printer", "[labels]")
+{
+    app::PosData data = test::seedPosData();
+    PosService pos(data, nullptr);
+    LabelPrinter printer;
+    pos.setPrinter(&printer);
+    // No label printer yet.
+    CHECK(pos.prepLabels()[u"printer"_s].toString().isEmpty());
+    CHECK_FALSE(pos.printPrepLabels({{u"ingredient"_s, u"lettuce"_s}, {u"hours"_s, 24}}));
+
+    // A ZPL printer by the prep table: the store's label printer by itself.
+    core::PrinterConfig zebra;
+    zebra.id = "prep";
+    zebra.name = "Prep Labels";
+    zebra.type = "network";
+    zebra.host = "10.0.0.9";
+    zebra.format = "zpl";
+    pos.shared()->settings.printers.push_back(zebra);
+    CHECK(pos.prepLabels()[u"printer"_s] == u"Prep Labels"_s);
+
+    // Nobody logged in (a kitchen screen): signed by the screen.
+    const std::int64_t made = QDateTime(QDate(2026, 10, 12), QTime(9, 0)).toMSecsSinceEpoch();
+    pos.shared()->setClock([&] { return made; });
+    REQUIRE(pos.printPrepLabels({{u"ingredient"_s, u"lettuce"_s}, {u"hours"_s, 48}, {u"count"_s, 3}, {u"note"_s, u"Batch 2"_s}}));
+    REQUIRE(printer.labels.size() == 3);
+    CHECK(printer.printer == "prep");
+    CHECK(printer.labels[0].first == pos.shared()->ingredient("lettuce")->name);
+    CHECK(QString::fromStdString(printer.labels[0].second[0]).startsWith(u"Made Mon 10/12 9:00"_s));
+    CHECK(QString::fromStdString(printer.labels[0].second[1]).startsWith(u"Use by Wed 10/14 9:00"_s));
+    CHECK(QString::fromStdString(printer.labels[0].second[2]).startsWith(u"Batch 2"_s));
+
+    // Something typed, no use-by; too many at once.
+    REQUIRE(pos.printPrepLabels({{u"name"_s, u"Pico de gallo"_s}, {u"hours"_s, 0}}));
+    CHECK(printer.labels[0].first == "Pico de gallo");
+    CHECK(printer.labels[0].second.size() == 2);
+    CHECK_FALSE(pos.printPrepLabels({{u"name"_s, u"Salsa"_s}, {u"count"_s, 51}}));
+    CHECK_FALSE(pos.printPrepLabels({{u"hours"_s, 24}}));   // what is it?
+
+    // The store's choice, and a screen's own.
+    pos.shared()->settings.labelPrinter = "receipt";
+    CHECK(pos.labelPrinterId() == "receipt");
+    core::TerminalConfig here;
+    here.name = pos.terminalName().toStdString();
+    here.labelPrinter = "prep";
+    pos.shared()->settings.terminals.push_back(here);
+    CHECK(pos.labelPrinterId() == "prep");
+
+    // Shelf life kept on the ingredient (Inventory).
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    const int i = indexOf(pos, "lettuce");
+    QVariantMap r = pos.adminRecords(u"inventory"_s)[i].toMap();
+    r[u"shelfLifeHours"_s] = 72;
+    REQUIRE(pos.adminSave(u"inventory"_s, i, r));
+    CHECK(pos.prepLabels()[u"ingredients"_s].toList()[i].toMap()[u"hours"_s] == 72);
+    CHECK(app::ingredientFromJson(app::toJson(*pos.shared()->ingredient("lettuce"))).shelfLifeHours == 72);
+
+    // A printer that's a label printer: its size kept.
+    QVariantList printers = pos.adminRecords(u"printers"_s);
+    QVariantMap pr = printers.back().toMap();
+    CHECK(pr[u"format"_s] == u"zpl"_s);
+    pr[u"labelWidthMm"_s] = 57;
+    pr[u"labelHeightMm"_s] = 32;
+    REQUIRE(pos.adminSave(u"printers"_s, int(printers.size()) - 1, pr));
+    CHECK(pos.shared()->settings.printers.back().labelWidthMm == 57);
+    pr[u"format"_s] = u"pdf"_s;
+    CHECK_FALSE(pos.adminSave(u"printers"_s, int(printers.size()) - 1, pr));
+}

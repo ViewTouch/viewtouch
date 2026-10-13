@@ -82,6 +82,10 @@ public:
     // A test page on printer `printerId` (its logo, text sizes, a cut), and
     // the drawer wired to it opened when `kickDrawer`. False: no such printer.
     virtual bool printTestPage(const core::PosSettings &, const std::string &, bool) { return false; }
+    // Prep labels (title, then lines) on printer `printerId`: a label printer
+    // in its own language, or a receipt printer as slips.
+    virtual void printLabels(const core::PosSettings &, const std::vector<std::pair<std::string, std::vector<std::string>>> &,
+                             const std::string &) {}
     // A self-order kiosk's slip for the guest: the order number to show at
     // the counter and what they ordered; `sent`: already being made.
     virtual void printOrderSlip(const core::PosSettings &settings, const core::Check &check,
@@ -406,6 +410,11 @@ public:
     QString problemText(const core::Problem &p) const;
     // Thrown away: a menu item (its recipe) or an ingredient, how much, why.
     bool logWaste(const QVariantMap &waste);
+    // Prep labels: {ingredients: [{id, name, hours}], printer (its name; empty: none)}.
+    QVariantMap prepLabels() const override;
+    // {ingredient | name, hours (use by; 0: none), count, note}.
+    bool printPrepLabels(const QVariantMap &labels);
+    std::string labelPrinterId() const;
     const std::vector<core::Waste> &wasteEntries() const { return s_->waste; }
     const std::vector<core::StockCount> &stockCounts() const { return s_->stockCounts; }
     void cancelClockIn();

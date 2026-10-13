@@ -33,6 +33,9 @@ public:
     bool printTestPage(const core::PosSettings &settings, const std::string &printerId, bool kickDrawer) override;
     void printOrderSlip(const core::PosSettings &settings, const core::Check &check, const std::string &printerId,
                         bool sent) override;
+    void printLabels(const core::PosSettings &settings,
+                     const std::vector<std::pair<std::string, std::vector<std::string>>> &labels,
+                     const std::string &printerId) override;
 
     // For tests: the clock used on tickets.
     void setClock(std::function<std::int64_t()> now) { now_ = std::move(now); }

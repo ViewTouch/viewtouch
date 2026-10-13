@@ -1,5 +1,7 @@
 #include "print/ticket_printer.hh"
 
+#include "print/labels.hh"
+
 #include "app/i18n.hh"
 #include "app/pos_session.hh"
 #include "print/raster.hh"
@@ -140,6 +142,30 @@ void TicketPrinter::printReport(const PosSettings &settings, const Report &repor
 {
     if (const PrinterConfig *p = receiptPrinter(settings, printerId))
         send(settings, *p, reportTicket(report, context(settings)), QString::fromStdString(report.title));
+}
+
+void TicketPrinter::printLabels(const PosSettings &settings,
+                                const std::vector<std::pair<std::string, std::vector<std::string>>> &labels,
+                                const std::string &printerId)
+{
+    const PrinterConfig *p = settings.printer(printerId);
+    if (!p || labels.empty())
+        return;
+    std::vector<Label> list;
+    for (const auto &[title, lines] : labels)
+        list.push_back({title, lines});
+    const std::string format = p->effectiveFormat();
+    if (format == "zpl" || format == "tspl") {
+        PrinterConfig target = *p;
+        if (target.type == "file" && QDir::isRelativePath(QString::fromStdString(target.path)))
+            target.path = QDir(outputDir_).filePath(QString::fromStdString(target.path)).toStdString();
+        const std::string bytes = format == "zpl" ? renderZpl(list, p->labelWidthMm, p->labelHeightMm)
+                                                 : renderTspl(list, p->labelWidthMm, p->labelHeightMm);
+        spooler_.submit(target, QByteArray::fromStdString(bytes), u"Labels"_s);
+        return;
+    }
+    for (const Label &l : list)   // a receipt printer: a slip each
+        send(settings, *p, labelSlip(l), u"Label"_s);
 }
 
 void TicketPrinter::openDrawer(const PosSettings &settings, const std::string &printerId)

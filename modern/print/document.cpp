@@ -278,6 +278,11 @@ std::size_t displayWidth(const std::string &s)
     return std::size_t(std::ranges::count_if(s, [](char c) { return !isContinuation(static_cast<unsigned char>(c)); }));
 }
 
+std::string plainLetters(const std::string &s)
+{
+    return printable(s, false);
+}
+
 std::string renderText(const Document &doc, int width)
 {
     std::string out;

@@ -32,6 +32,9 @@ struct PrinterConfig {
     // when it then goes silent, something's wrong with it. Some printers
     // never answer; they're not warned about.
     bool reportsStatus = false;
+    // Label printers (format zpl or tspl): the label's size.
+    int labelWidthMm = 51;
+    int labelHeightMm = 25;
 
     std::string effectiveFormat() const { return !format.empty() ? format : type == "network" ? "escpos" : "text"; }
     bool operator==(const PrinterConfig &) const = default;
@@ -68,6 +71,8 @@ struct TerminalConfig {
     std::string keyboard;
     // Phone orders need a name before Send here: "yes", "no", or empty = the person's / the store's.
     std::string requireName;
+    // Its prep labels print here (a printer id); empty = the store's label printer.
+    std::string labelPrinter;
     // After a check is paid here: "print" a receipt, "ask" (print, email or
     // none), or nothing (empty). receiptPrinter "ask": choose the printer
     // each time (a handheld).
@@ -198,6 +203,8 @@ struct PosSettings {
     bool stockCountShowsExpected = false;
     // Store Check: problems up to this id have been seen by a manager.
     std::int64_t problemsSeen = 0;
+    // Prep labels print here (a printer id; each screen can say otherwise).
+    std::string labelPrinter;
     // Log Waste: why it was thrown away.
     std::vector<std::string> wasteReasons{"Dropped or spilled", "Expired or spoiled", "Made wrong",
                                           "Sent back by a guest", "Overcooked or burnt"};

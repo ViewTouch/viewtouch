@@ -3777,6 +3777,41 @@ TEST_CASE("UI: Store Check: ready to open, and problems marked on the Manager pa
     CHECK(Screen::findBy(s.window->contentItem(), "text", u"Store Check "_s));
 }
 
+TEST_CASE("UI: the kitchen screen's Labels and Waste; a prep label by touch", "[flow][ui][labels]")
+{
+    Screen s;
+    core::PrinterConfig zebra;
+    zebra.id = "prep";
+    zebra.name = "Prep Labels";
+    zebra.type = "file";
+    zebra.path = "labels.zpl";
+    zebra.format = "zpl";
+    s.pos.shared()->settings.printers.push_back(zebra);
+    REQUIRE(s.c.jumpTo(u"kitchen"_s));   // nobody logged in
+    QTest::qWait(80);
+    auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
+    REQUIRE(find(u"kdsLabels"_s));
+    s.tapItem(find(u"kdsLabels"_s));
+    QTest::qWait(80);
+    REQUIRE(s.c.pageId() == u"prep-labels"_s);
+    s.tapItem(find(u"label-lettuce"_s));
+    s.tapItem(find(u"keeps-48"_s));
+    s.tapItem(find(u"labelsMore"_s));
+    QTest::qWait(60);
+    CHECK(find(u"labelCount"_s)->property("text").toString() == u"2"_s);
+    CHECK(find(u"printLabels"_s)->isEnabled());
+    s.shot("prep-labels");
+    // Waste from there too.
+    s.c.activate(u"waste"_s);
+    QTest::qWait(80);
+    CHECK(s.c.pageId() == u"waste-log"_s);
+    REQUIRE(s.c.jumpTo(u"kitchen"_s));
+    QTest::qWait(60);
+    s.tapItem(find(u"kdsWaste"_s));
+    QTest::qWait(80);
+    CHECK(s.c.pageId() == u"waste-log"_s);
+}
+
 TEST_CASE("UI: clocking in with two jobs asks which one", "[flow][ui][pay]")
 {
     Screen s;

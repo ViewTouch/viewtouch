@@ -183,6 +183,14 @@
   "one": "Move or remove its item first.",
   "other": "Move or remove its %n items first."
  },
+ "Print %n label(s)": {
+  "one": "Print %n label",
+  "other": "Print %n labels"
+ },
+ "Printing %n label(s): %1": {
+  "one": "Printing %n label: %1",
+  "other": "Printing %n labels: %1"
+ },
  "Printing %n receipt(s)": {
   "one": "Printing %n receipt",
   "other": "Printing %n receipts"

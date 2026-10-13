@@ -20,6 +20,9 @@ struct Ingredient {
     double lowAt = 0;            // low-stock warning at or below this
     Money cost;                  // per unit, for food cost
     std::string vendor;          // who it usually comes from (a Vendor id)
+    // How long it keeps once prepped (hours), for its prep label's use-by;
+    // 0: asked each time.
+    int shelfLifeHours = 0;
     // Kept on hand: below it, the Stock report's order list asks for more
     // (up to this). 0: not ordered by par.
     double par = 0;

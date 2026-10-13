@@ -108,7 +108,7 @@ Item {
         // One row; the buttons in the order the editor gives them.
         GridLayout {
             id: header
-            readonly property var keys: ["station", "message", "allDay", "recall"]
+            readonly property var keys: ["station", "message", "waste", "labels", "allDay", "recall"]
             function col(id) { return 1 + w.zone.keyOrder(id, keys) }
             rows: 1
             columnSpacing: 6
@@ -131,6 +131,7 @@ Item {
                 visible: !w.expo && !w.locked && w.stations.length > 0 && w.zone.keyShown("station")
                 Layout.column: header.col("station")
                 Layout.preferredWidth: w.keyWidth
+                Layout.minimumWidth: 56
                 Layout.fillHeight: true
                 text: w.zone.keyText("station", qsTr("Station…"))
                 fontScale: 0.4
@@ -140,16 +141,40 @@ Item {
                 visible: w.zone.keyShown("message")
                 Layout.column: header.col("message")
                 Layout.preferredWidth: w.keyWidth
+                Layout.minimumWidth: 56
                 Layout.fillHeight: true
                 text: w.zone.keyText("message", qsTr("Message…"))
                 fontScale: 0.4
                 onClicked: w.zone.controller.jumpTo("message")
             }
             WidgetKey {
+                objectName: "kdsWaste"
+                visible: !w.expo && w.zone.keyShown("waste")
+                Layout.column: header.col("waste")
+                Layout.preferredWidth: w.keyWidth
+                Layout.minimumWidth: 56
+                Layout.fillHeight: true
+                text: w.zone.keyText("waste", qsTr("Waste…"))
+                fontScale: 0.4
+                onClicked: w.zone.controller.jumpTo("waste-log")
+            }
+            WidgetKey {
+                objectName: "kdsLabels"
+                visible: !w.expo && w.zone.keyShown("labels")
+                Layout.column: header.col("labels")
+                Layout.preferredWidth: w.keyWidth
+                Layout.minimumWidth: 56
+                Layout.fillHeight: true
+                text: w.zone.keyText("labels", qsTr("Labels…"))
+                fontScale: 0.4
+                onClicked: w.zone.controller.jumpTo("prep-labels")
+            }
+            WidgetKey {
                 objectName: "kdsAllDay"
                 visible: w.zone.keyShown("allDay")
                 Layout.column: header.col("allDay")
                 Layout.preferredWidth: w.keyWidth
+                Layout.minimumWidth: 56
                 Layout.fillHeight: true
                 text: w.showAllDay ? qsTr("Hide All Day") : w.zone.keyText("allDay", qsTr("All Day"))
                 fontScale: 0.4
@@ -160,6 +185,7 @@ Item {
                 visible: w.zone.keyShown("recall")
                 Layout.column: header.col("recall")
                 Layout.preferredWidth: w.keyWidth
+                Layout.minimumWidth: 56
                 Layout.fillHeight: true
                 text: w.zone.keyText("recall", qsTr("Recall"))
                 fontScale: 0.4

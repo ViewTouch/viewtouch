@@ -767,6 +767,8 @@ QJsonObject toJson(const PrinterConfig &p)
     if (p.port != 9100) o.insert(u"port"_s, p.port);
     if (!p.path.empty()) o.insert(u"path"_s, qs(p.path));
     if (!p.format.empty()) o.insert(u"format"_s, qs(p.format));
+    if (p.labelWidthMm != 51) o.insert(u"labelWidthMm"_s, p.labelWidthMm);
+    if (p.labelHeightMm != 25) o.insert(u"labelHeightMm"_s, p.labelHeightMm);
     return o;
 }
 
@@ -790,6 +792,8 @@ PrinterConfig printerFromJson(const QJsonObject &o)
     p.charset = ss(o.value(u"charset").toString());
     p.watch = o.value(u"watch").toBool(true);
     p.reportsStatus = o.value(u"reportsStatus").toBool();
+    p.labelWidthMm = std::clamp(o.value(u"labelWidthMm").toInt(51), 10, 200);
+    p.labelHeightMm = std::clamp(o.value(u"labelHeightMm").toInt(25), 10, 300);
     return p;
 }
 
@@ -879,7 +883,8 @@ QJsonObject toJson(const PosSettings &s)
                                      {u"pairedAt"_s, qint64(t.pairedAt)}, {u"screen"_s, qs(t.screen)}, {u"look"_s, qs(t.look)},
                                      {u"station"_s, qs(t.station)}, {u"keyboard"_s, qs(t.keyboard)},
                                      {u"requireName"_s, qs(t.requireName)}, {u"cardReader"_s, qs(t.cardReader)},
-                                     {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)}});
+                                     {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)},
+                                     {u"labelPrinter"_s, qs(t.labelPrinter)}});
     QJsonArray printers;
     for (const PrinterConfig &p : s.printers)
         printers.append(toJson(p));
@@ -943,7 +948,7 @@ QJsonObject toJson(const PosSettings &s)
         {u"checkoutNeedsClosedChecks"_s, s.checkoutNeedsClosedChecks},
         {u"blindDrawerCount"_s, s.blindDrawerCount},
         {u"askReasons"_s, s.askReasons}, {u"stockCountShowsExpected"_s, s.stockCountShowsExpected},
-        {u"problemsSeen"_s, qint64(s.problemsSeen)},
+        {u"problemsSeen"_s, qint64(s.problemsSeen)}, {u"labelPrinter"_s, qs(s.labelPrinter)},
         {u"wasteReasons"_s, [&] { QJsonArray a; for (const std::string &r : s.wasteReasons) a.append(qs(r)); return a; }()},
         {u"voidReasons"_s, [&] { QJsonArray a; for (const std::string &r : s.voidReasons) a.append(qs(r)); return a; }()},
         {u"compReasons"_s, [&] { QJsonArray a; for (const std::string &r : s.compReasons) a.append(qs(r)); return a; }()},
@@ -1153,6 +1158,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
         c.cardReader = ss(t.value(u"cardReader").toString());
         c.afterPaying = ss(t.value(u"afterPaying").toString());
         c.startCategory = ss(t.value(u"startCategory").toString());
+        c.labelPrinter = ss(t.value(u"labelPrinter").toString());
         s.terminals.push_back(std::move(c));
     }
     s.cashMode = cashModeFromString(ss(o.value(u"cashMode").toString()));
@@ -1169,6 +1175,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.askReasons = o.value(u"askReasons").toBool(true);
     s.stockCountShowsExpected = o.value(u"stockCountShowsExpected").toBool();
     s.problemsSeen = i64(o.value(u"problemsSeen"));
+    s.labelPrinter = ss(o.value(u"labelPrinter").toString());
     for (auto [key, list] : {std::pair{u"voidReasons", &s.voidReasons}, std::pair{u"compReasons", &s.compReasons},
                              std::pair{u"wasteReasons", &s.wasteReasons}}) {
         if (!o.value(QStringView(key)).isArray())
@@ -1560,6 +1567,8 @@ QJsonObject toJson(const Ingredient &i)
                   {u"lowAt"_s, i.lowAt}, {u"cost"_s, decimalFromCents(i.cost.cents())}, {u"vendor"_s, qs(i.vendor)}};
     if (i.par > 0)
         o.insert(u"par"_s, i.par);
+    if (i.shelfLifeHours > 0)
+        o.insert(u"shelfLifeHours"_s, i.shelfLifeHours);
     if (i.countedAt || i.start || i.received || i.sold || i.wasted || i.adjusted)
         o.insert(u"sinceCount"_s, QJsonObject{{u"at"_s, qint64(i.countedAt)}, {u"start"_s, i.start},
                                               {u"received"_s, i.received}, {u"sold"_s, i.sold},
@@ -1580,6 +1589,7 @@ Ingredient ingredientFromJson(const QJsonObject &o)
     i.cost = Money::fromCents(centsFromDecimal(o.value(u"cost").toDouble()));
     i.vendor = ss(o.value(u"vendor").toString());
     i.par = std::max(0.0, o.value(u"par").toDouble());
+    i.shelfLifeHours = std::clamp(o.value(u"shelfLifeHours").toInt(), 0, 24 * 365);
     if (o.contains(u"sinceCount")) {
         const QJsonObject c = o.value(u"sinceCount").toObject();
         i.countedAt = i64(c.value(u"at"));

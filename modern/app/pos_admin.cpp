@@ -150,7 +150,7 @@ QVariantList storeSections(const QVariantList &fields)
         {"tips", PosService::tr("Tips"),
          {"tipPercents", "gratuityPercent", "gratuityMinGuests", "declareCashTips", "tipOuts", "tipPool"}},
         {"menu", PosService::tr("Menu and prices"), {"extraPercent", "extraCharge", "soldOutBackNextDay"}},
-        {"stock", PosService::tr("Inventory"), {"stockCountShowsExpected", "wasteReasons"}},
+        {"stock", PosService::tr("Inventory"), {"stockCountShowsExpected", "wasteReasons", "labelPrinter"}},
         {"kitchen", PosService::tr("Kitchen"), {"kitchenStations", "kitchenWarnMinutes", "kitchenLateMinutes", "laterLeadMinutes"}},
         {"togo", PosService::tr("Takeout and delivery"),
          {"requireOrderName", "takeoutMinutes", "deliveryMinutes", "minutesPerOrderWaiting", "deliveryFee"}},
@@ -376,6 +376,8 @@ QVariantList PosService::adminFields(const QString &panel)
             field(u"unit"_s, tr("Unit"), u"string"_s, tr("each, oz, lb, slice…")),
             field(u"onHand"_s, tr("On hand"), u"number"_s, tr("Count it, or add what was delivered.")),
             field(u"lowAt"_s, tr("Low at"), u"number"_s, tr("Warn when it gets down to this.")),
+            with(with(field(u"shelfLifeHours"_s, tr("Keeps for (hours)"), u"int"_s,
+                            tr("Once prepped: its prep label's use-by. 0: chosen when printing.")), u"min"_s, 0), u"max"_s, 8760),
             field(u"par"_s, tr("Keep on hand (par)"), u"number"_s,
                   tr("Below this, the Stock report's order list asks for enough to get back up to it. 0: not ordered by par.")),
             field(u"cost"_s, tr("Cost per unit"), u"money"_s, tr("For the Food Cost report.")),
@@ -461,7 +463,12 @@ QVariantList PosService::adminFields(const QString &panel)
             with(field(u"port"_s, tr("Port"), u"int"_s), u"min"_s, 1),
             field(u"path"_s, tr("File or queue"), u"string"_s, tr("File path, or the CUPS queue name")),
             with(field(u"format"_s, tr("Format"), u"enum"_s), u"options"_s,
-                 options({{"", "Automatic"}, {"escpos", "ESC/POS (thermal)"}, {"text", "Plain text"}})),
+                 options({{"", "Automatic"}, {"escpos", "ESC/POS (thermal)"}, {"text", "Plain text"},
+                          {"zpl", "Label printer: ZPL (Zebra and compatible)"},
+                          {"tspl", "Label printer: TSPL (TSC, Xprinter, Munbyn, Rollo…)"}})),
+            with(with(field(u"labelWidthMm"_s, tr("Label width (mm)"), u"int"_s,
+                            tr("Label printers: the labels' size. 2 x 1 inch is 51 x 25 mm.")), u"min"_s, 10), u"max"_s, 200),
+            with(with(field(u"labelHeightMm"_s, tr("Label height (mm)"), u"int"_s), u"min"_s, 10), u"max"_s, 300),
             with(with(field(u"width"_s, tr("Characters per line"), u"int"_s), u"min"_s, 16), u"max"_s, 80),
             field(u"cutter"_s, tr("Cut paper after each ticket"), u"bool"_s),
             field(u"drawerKick"_s, tr("Cash drawer is connected to this printer"), u"bool"_s),
@@ -656,6 +663,15 @@ QVariantList PosService::adminFields(const QString &panel)
                   tr("And/or a fixed amount for Extra, e.g. 0.75. Charged even on choices that are free.")),
             field(u"stockCountShowsExpected"_s, tr("Show what should be there while counting stock"), u"bool"_s,
                   tr("Off: whoever counts sees it only in the Stock Count report, after, so it can't sway the count.")),
+            with(field(u"labelPrinter"_s, tr("Prep labels print on"), u"enum"_s,
+                       tr("A label printer (Manager → Printers: format ZPL or TSPL), or a receipt printer for slips. "
+                          "Each screen can say otherwise (Terminals).")),
+                 u"options"_s, ([this](const QString &none) {
+                     QVariantList o{QVariantMap{{u"value"_s, QString()}, {u"text"_s, none}}};
+                     for (const PrinterConfig &pc : s_->settings.printers)
+                         o.append(QVariantMap{{u"value"_s, qs(pc.id)}, {u"text"_s, qs(pc.name)}});
+                     return o;
+                 })(tr("The first label printer"))),
             asRows(field(u"wasteReasons"_s, tr("Reasons for waste"), u"text"_s, tr("Log Waste asks which one.")),
                    tr("+ Add a reason")),
             field(u"askReasons"_s, tr("Ask why on voids and comps"), u"bool"_s,
@@ -782,6 +798,14 @@ QVariantList PosService::adminFields(const QString &panel)
                                         {"timeClock", "Time Clock (clock in / out and schedules only)"}})),
             // Choices filled in by the screen (its looks).
             field(u"look"_s, tr("Look"), u"look"_s, tr("This screen's colors; the store's look elsewhere.")),
+            with(field(u"labelPrinter"_s, tr("Prep labels print on"), u"enum"_s,
+                       tr("The printer by this screen for prep labels. Empty: the store's (Store Settings → Inventory).")),
+                 u"options"_s, ([this](const QString &none) {
+                     QVariantList o{QVariantMap{{u"value"_s, QString()}, {u"text"_s, none}}};
+                     for (const PrinterConfig &pc : s_->settings.printers)
+                         o.append(QVariantMap{{u"value"_s, qs(pc.id)}, {u"text"_s, qs(pc.name)}});
+                     return o;
+                 })(tr("The store's label printer"))),
             with(field(u"startCategory"_s, tr("Start orders on"), u"enum"_s,
                        tr("A menu category orders opened here start on (the bar: Drinks). The meal's categories: the usual.")),
                  u"options"_s, [this] {
@@ -875,6 +899,8 @@ QVariantList PosService::adminRecords(const QString &panel)
                     r.insert(QString::fromUtf16(k), QString());
             }
             r.insert(u"port"_s, p.port);
+            r.insert(u"labelWidthMm"_s, p.labelWidthMm);
+            r.insert(u"labelHeightMm"_s, p.labelHeightMm);
             const QString how = p.type == "network" ? tr("Network") : p.type == "cups" ? tr("CUPS queue")
                               : p.type == "file" ? tr("Text file") : p.type == "none" ? tr("Off") : qs(p.type);
             add(r, qs(p.name), how + (p.host.empty() ? QString() : u" · "_s + qs(p.host)));
@@ -913,6 +939,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"backupCopyDir"_s, qs(s_->settings.backupCopyDir)},
              {u"askReasons"_s, s_->settings.askReasons},
              {u"stockCountShowsExpected"_s, s_->settings.stockCountShowsExpected},
+             {u"labelPrinter"_s, qs(s_->settings.labelPrinter)},
              {u"wasteReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.wasteReasons) l << qs(t); return l.join(u'\n'); }()},
              {u"voidReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.voidReasons) l << qs(t); return l.join(u'\n'); }()},
              {u"compReasons"_s, [&] { QStringList l; for (const std::string &t : s_->settings.compReasons) l << qs(t); return l.join(u'\n'); }()},
@@ -1068,7 +1095,8 @@ QVariantList PosService::adminRecords(const QString &panel)
             add({{u"name"_s, qs(t.name)}, {u"receiptPrinter"_s, qs(t.receiptPrinter)}, {u"drawer"_s, qs(t.drawer)},
                  {u"screen"_s, qs(t.screen)}, {u"look"_s, qs(t.look)}, {u"keyboard"_s, qs(t.keyboard)},
                  {u"requireName"_s, qs(t.requireName)}, {u"cardReader"_s, qs(t.cardReader)},
-                 {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)}},
+                 {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)},
+                 {u"labelPrinter"_s, qs(t.labelPrinter)}},
                 qs(t.name), (p ? qs(p->name) : tr("Receipt (default)"))
                                 + (s_->settings.hasDrawer(t.name) ? QString() : tr(" · no drawer"))
                                 + (t.key.empty() ? QString() : tr(" · paired device"))
@@ -1100,7 +1128,8 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
     if (panel == u"terminals")
         return {{u"name"_s, terminal_}, {u"receiptPrinter"_s, QString()}, {u"drawer"_s, QString()},
                 {u"screen"_s, QString()}, {u"look"_s, QString()}, {u"keyboard"_s, QString()}, {u"requireName"_s, QString()},
-                {u"cardReader"_s, QString()}, {u"afterPaying"_s, QString()}, {u"startCategory"_s, QString()}};
+                {u"cardReader"_s, QString()}, {u"afterPaying"_s, QString()}, {u"startCategory"_s, QString()},
+                {u"labelPrinter"_s, QString()}};
     if (panel == u"mealPeriods")
         return {{u"id"_s, QString()}, {u"name"_s, QString()}, {u"start"_s, u"17:00"_s}};
     if (panel == u"modifierGroups")
@@ -1123,6 +1152,7 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
     if (panel == u"printers")
         return {{u"id"_s, QString()}, {u"name"_s, QString()}, {u"type"_s, u"network"_s}, {u"host"_s, QString()},
                 {u"port"_s, 9100}, {u"path"_s, QString()}, {u"format"_s, QString()}, {u"width"_s, 42},
+                {u"labelWidthMm"_s, 51}, {u"labelHeightMm"_s, 25},
                 {u"cutter"_s, true}, {u"drawerKick"_s, false}, {u"receipts"_s, true}, {u"charset"_s, QString()}, {u"watch"_s, true}};
     return {};
 }
@@ -1427,6 +1457,7 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             return fail(tr("Choose what happens after a check is paid."));
         t.afterPaying = ss(after);
         t.startCategory = ss(record.value(u"startCategory"_s).toString());
+        t.labelPrinter = ss(record.value(u"labelPrinter"_s).toString());
         if (index >= 0 && index < int(list.size()))
             list[index] = t;
         else
@@ -1666,6 +1697,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.backupCopyDir = ss(record.value(u"backupCopyDir"_s).toString().trimmed());
         if (record.contains(u"askReasons"_s))
             s_->settings.askReasons = record.value(u"askReasons"_s).toBool();
+        if (record.contains(u"labelPrinter"_s))
+            s_->settings.labelPrinter = ss(record.value(u"labelPrinter"_s).toString());
         if (record.contains(u"stockCountShowsExpected"_s))
             s_->settings.stockCountShowsExpected = record.value(u"stockCountShowsExpected"_s).toBool();
         for (const auto &[key, list] : {std::pair{u"openingChecklist"_s, &s_->settings.openingChecklist},
@@ -2425,6 +2458,8 @@ bool PosService::savePrinterRecord(int index, const QVariantMap &record)
         return fail(tr("The printer needs a name."));
     if (!QStringList{u"network"_s, u"cups"_s, u"file"_s, u"none"_s}.contains(qs(p.type)))
         return fail(tr("Choose how the printer is connected."));
+    if (!QStringList{QString(), u"escpos"_s, u"text"_s, u"zpl"_s, u"tspl"_s}.contains(qs(p.format)))
+        return fail(tr("Choose what the printer understands."));
     if (p.type == "network" && p.host.empty())
         return fail(tr("Network printers need an address."));
     if (p.type == "file" && p.path.empty())

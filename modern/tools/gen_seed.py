@@ -388,7 +388,7 @@ write("pos/settings.json", {
 WIDGETS = ["orderList", "loginPad", "guestCount", "numPad", "paymentPanel",
            "logoutPanel", "clock", "checkList", "keyboard", "statusBar",
            "adminPanel", "reportView", "drawerPanel", "endOfDay", "splitCheck", "customerInfo",
-           "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "messageComposer", "network", "receiveDelivery", "stockCount", "wasteLog", "storeCheck", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard"]
+           "customerLookup", "giftCard", "waitlist", "schedule", "factoryReset", "messageComposer", "network", "receiveDelivery", "stockCount", "wasteLog", "storeCheck", "prepLabels", "checkSearch", "orderLater", "menuGrid", "menuCategories", "menuBuilder", "timeClock", "dashboard", "checklist", "hostStand", "deliveryBoard"]
 widget_style = {"normal": {"fill": "#232933", "frame": "flat", "shadow": 0, "radius": 12,
                            "textColor": "#e6e9ef", "fontSize": 28, "bold": False}}
 write("theme.json", {
@@ -900,11 +900,19 @@ page("stock-count", "Count Stock", "manager", [
     zone("back", 16, 944, 432, 120, "‹ Inventory", actions=[jump(mode="back")]),
 ], permission="manager")
 
-page("waste-log", "Log Waste", "manager", [
+page("waste-log", "Log Waste", "custom", [
     label("title", 16, 16, 1888, 80, "Log waste"),
     zone("waste", 16, 112, 1888, 816, kind="wasteLog"),
     zone("back", 16, 944, 432, 120, "‹ Back", actions=[jump(mode="back")]),
-], permission="order")
+    zone("labels", 1472, 944, 432, 120, "Prep Labels…", actions=[jump(page="prep-labels")]),
+], permission="public")
+
+page("prep-labels", "Prep Labels", "custom", [
+    label("title", 16, 16, 1888, 80, "Prep labels"),
+    zone("labels", 16, 112, 1888, 816, kind="prepLabels"),
+    zone("back", 16, 944, 432, 120, "‹ Back", actions=[jump(mode="back")]),
+    zone("waste", 1472, 944, 432, 120, "Log Waste…", actions=[jump(page="waste-log")]),
+], permission="public")
 
 page("store-check", "Store Check", "manager", [
     label("title", 16, 16, 1888, 80, "Store check"),

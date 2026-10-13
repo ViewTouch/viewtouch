@@ -74,6 +74,7 @@ if(Qt6_FOUND)
     # Printing: ticket formatting (plain C++) and the background spooler
     add_library(vtm_print STATIC
         print/document.hh print/document.cpp
+        print/labels.hh print/labels.cpp
         print/tickets.hh print/tickets.cpp
         print/spooler.hh print/spooler.cpp
         print/ticket_printer.hh print/ticket_printer.cpp
@@ -179,6 +180,7 @@ if(Qt6_FOUND)
             ui/qml/WidgetStockCount.qml
             ui/qml/WidgetWasteLog.qml
             ui/qml/WidgetStoreCheck.qml
+            ui/qml/WidgetPrepLabels.qml
             ui/qml/WidgetCheckSearch.qml
             ui/qml/WidgetOrderLater.qml
             ui/qml/WidgetMenuGrid.qml

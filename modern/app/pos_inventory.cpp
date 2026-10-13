@@ -503,12 +503,70 @@ bool PosService::saveStockCount(const QVariantMap &r)
     return true;
 }
 
+// --- prep labels -------------------------------------------------------------------------
+
+std::string PosService::labelPrinterId() const
+{
+    for (const TerminalConfig &t : s_->settings.terminals)
+        if (qs(t.name) == terminal_ && !t.labelPrinter.empty() && s_->settings.printer(t.labelPrinter))
+            return t.labelPrinter;
+    if (!s_->settings.labelPrinter.empty() && s_->settings.printer(s_->settings.labelPrinter))
+        return s_->settings.labelPrinter;
+    for (const PrinterConfig &p : s_->settings.printers)   // the store's label printer
+        if (p.type != "none" && (p.effectiveFormat() == "zpl" || p.effectiveFormat() == "tspl"))
+            return p.id;
+    return {};
+}
+
+QVariantMap PosService::prepLabels() const
+{
+    QVariantList ingredients;
+    for (const Ingredient &g : s_->ingredients)
+        ingredients.append(QVariantMap{{u"id"_s, qs(g.id)}, {u"name"_s, qs(g.name)}, {u"hours"_s, g.shelfLifeHours}});
+    const PrinterConfig *p = s_->settings.printer(labelPrinterId());
+    return {{u"ingredients"_s, ingredients}, {u"printer"_s, p ? qs(p->name) : QString()}};
+}
+
+bool PosService::printPrepLabels(const QVariantMap &r)
+{
+    if (user() && !require(perm::Order, tr("Printing labels")))
+        return false;
+    QString name = r.value(u"name"_s).toString().trimmed();
+    if (const Ingredient *g = s_->ingredient(ss(r.value(u"ingredient"_s).toString())); g && name.isEmpty())
+        name = qs(g->name);
+    if (name.isEmpty())
+        return fail(tr("Choose what the label is for."));
+    const int hours = std::clamp(r.value(u"hours"_s).toInt(), 0, 24 * 365);
+    const int count = r.value(u"count"_s, 1).toInt();
+    if (count < 1 || count > 50)
+        return fail(tr("Print 1 to 50 labels at a time."));
+    const std::string printer = labelPrinterId();
+    if (printer.empty())
+        return fail(tr("Set up a label printer first (Manager → Printers; then Store Settings → Inventory)."));
+    if (!s_->printer)
+        return fail(tr("No printer is set up."));
+    // In the store's language and its way of writing dates.
+    const i18n::Scope language(qs(s_->settings.language));
+    const auto when = [](std::int64_t ms) {
+        return i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(ms), u"ddd M/d h:mm AP"_s).toStdString();
+    };
+    const std::int64_t made = now();
+    std::vector<std::string> lines{tr("Made %1").arg(qs(when(made))).toStdString()};
+    if (hours > 0)
+        lines.push_back(tr("Use by %1").arg(qs(when(made + std::int64_t(hours) * 3'600'000))).toStdString());
+    const QString who = user() ? qs(user()->name).section(u' ', 0, 0) : terminal_;
+    const QString note = r.value(u"note"_s).toString().trimmed().left(40);
+    lines.push_back((note.isEmpty() ? who : note + u"  ·  "_s + who).toStdString());
+    std::vector<std::pair<std::string, std::vector<std::string>>> labels(std::size_t(count), {ss(name), lines});
+    s_->printer->printLabels(s_->settings, labels, printer);
+    emit notice(tr("Printing %n label(s): %1", "", count).arg(name));
+    return true;
+}
+
 // --- waste -------------------------------------------------------------------------------
 
 QVariantMap PosService::wasteLog() const
 {
-    if (!user())
-        return {};
     QVariantList items;
     for (const MenuItem &m : s_->menu)
         if (!m.recipe.empty())
@@ -536,7 +594,8 @@ QVariantMap PosService::wasteLog() const
 
 bool PosService::logWaste(const QVariantMap &r)
 {
-    if (!require(perm::Order, tr("Logging waste")))
+    // Anyone working, or a kitchen screen nobody is logged in to.
+    if (user() && !require(perm::Order, tr("Logging waste")))
         return false;
     bool ok = false;
     const double qty = r.value(u"qty"_s, 1).toString().trimmed().replace(u',', u'.').toDouble(&ok);
@@ -576,7 +635,7 @@ bool PosService::logWaste(const QVariantMap &r)
     }
     w.id = ++s_->lastWasteId;
     w.at = now();
-    w.by = user()->name;
+    w.by = user() ? user()->name : ss(terminal_);
     s_->waste.push_back(w);
     std::erase_if(s_->waste, [&](const Waste &x) { return x.at < now() - 60LL * 24 * 3'600'000; });
     if (s_->sink)
