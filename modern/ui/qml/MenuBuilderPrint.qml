@@ -6,7 +6,7 @@ import QtQuick.Layouts
 // Menu Builder: The printed menu (PDF): what's on it and how it looks.
 Popup {
     id: printDialog
-    property WidgetMenuBuilder menu
+    property Item menu   // the WidgetMenuBuilder (not by its type: that would be a cycle)
     objectName: "builderPrintDialog"
     parent: Overlay.overlay
     anchors.centerIn: parent

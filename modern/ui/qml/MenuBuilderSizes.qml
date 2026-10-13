@@ -6,7 +6,7 @@ import QtQuick.Layouts
 // Menu Builder: An item's sizes, each with its whole price.
 Popup {
     id: sizesDialog
-    property WidgetMenuBuilder menu
+    property Item menu   // the WidgetMenuBuilder (not by its type: that would be a cycle)
     objectName: "builderSizesDialog"
     parent: Overlay.overlay
     anchors.centerIn: parent

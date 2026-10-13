@@ -6,7 +6,7 @@ import QtQuick.Layouts
 // Menu Builder: Starting from a starter menu.
 Dialog {
     id: templateDialog
-    property WidgetMenuBuilder menu
+    property Item menu   // the WidgetMenuBuilder (not by its type: that would be a cycle)
     objectName: "builderTemplateDialog"
     title: qsTr("Start from a starter menu")
     parent: Overlay.overlay

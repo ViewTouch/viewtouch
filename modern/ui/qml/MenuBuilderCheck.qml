@@ -6,7 +6,7 @@ import QtQuick.Layouts
 // Menu Builder: Before service: what the menu is missing.
 Dialog {
     id: checkDialog
-    property WidgetMenuBuilder menu
+    property Item menu   // the WidgetMenuBuilder (not by its type: that would be a cycle)
     objectName: "builderCheckDialog"
     readonly property var problems: menu.pos ? menu.pos.menuProblems : []
     title: problems.length ? qsTr("Before service") : qsTr("Ready to go")

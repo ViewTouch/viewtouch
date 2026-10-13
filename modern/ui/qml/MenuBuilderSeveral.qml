@@ -6,7 +6,7 @@ import QtQuick.Layouts
 // Menu Builder: Adding several items at once, with their prices.
 Dialog {
     id: severalDialog
-    property WidgetMenuBuilder menu
+    property Item menu   // the WidgetMenuBuilder (not by its type: that would be a cycle)
     objectName: "builderSeveral"
     title: qsTr("Add several to %1").arg(menu.category ? menu.category.name : "")
     parent: Overlay.overlay

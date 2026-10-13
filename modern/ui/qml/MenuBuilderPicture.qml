@@ -6,7 +6,7 @@ import QtQuick.Layouts
 // Menu Builder: A ready-made picture for an item.
 Popup {
     id: pictureDialog
-    property WidgetMenuBuilder menu
+    property Item menu   // the WidgetMenuBuilder (not by its type: that would be a cycle)
     objectName: "builderPictureDialog"
     parent: Overlay.overlay
     anchors.centerIn: parent

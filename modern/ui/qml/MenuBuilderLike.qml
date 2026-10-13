@@ -6,7 +6,7 @@ import QtQuick.Layouts
 // Menu Builder: Like…: copying another item's settings onto the card.
 Popup {
     id: likeDialog
-    property WidgetMenuBuilder menu
+    property Item menu   // the WidgetMenuBuilder (not by its type: that would be a cycle)
     objectName: "builderLikeDialog"
     parent: Overlay.overlay
     anchors.centerIn: parent

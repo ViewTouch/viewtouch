@@ -6,7 +6,7 @@ import QtQuick.Layouts
 // Menu Builder: Importing a menu (a spreadsheet or another store's): what comes in, and where.
 Dialog {
     id: importDialog
-    property WidgetMenuBuilder menu
+    property Item menu   // the WidgetMenuBuilder (not by its type: that would be a cycle)
     objectName: "builderImportDialog"
     property var read: ({})
     readonly property var items: read.items ?? []

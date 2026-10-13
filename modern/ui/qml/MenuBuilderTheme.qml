@@ -6,7 +6,7 @@ import QtQuick.Layouts
 // Menu Builder: Colors for every category at once.
 Popup {
     id: themeDialog
-    property WidgetMenuBuilder menu
+    property Item menu   // the WidgetMenuBuilder (not by its type: that would be a cycle)
     objectName: "builderThemeDialog"
     parent: Overlay.overlay
     anchors.centerIn: parent

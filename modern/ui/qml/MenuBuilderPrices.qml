@@ -6,7 +6,7 @@ import QtQuick.Layouts
 // Menu Builder: Changing prices: by how much, now or later; each new price shown first.
 Dialog {
     id: pricesDialog
-    property WidgetMenuBuilder menu
+    property Item menu   // the WidgetMenuBuilder (not by its type: that would be a cycle)
     objectName: "builderPricesDialog"
     title: qsTr("Change prices")
     parent: Overlay.overlay
