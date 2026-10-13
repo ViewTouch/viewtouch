@@ -2191,6 +2191,7 @@
  "Offered when a screen asks where to print a receipt (handhelds: Terminals -> Ask each time).": "屏幕询问在哪里打印收据时提供（手持设备：终端 -> 每次询问）。",
  "Offline: up to this much a card": "离线：每张卡最多",
  "Offline: up to this much waiting in all": "离线：等待中的总额最多",
+ "Often added:": "常一起点：",
  "Older ›": "较早 ›",
  "On": "开",
  "On Stripe readers running ViewTouch: the card is kept and sent to Stripe when the internet is back. The bank only sees it then: if it declines, the store doesn't get that money (a manager is told). Turning this on also turns on Stripe's offline mode for the store's readers.": "在运行 ViewTouch 的 Stripe 读卡器上：卡会被保存，网络恢复后发送给 Stripe。银行那时才看到：若被拒，门店收不到这笔钱（会通知经理）。打开此项也会为门店读卡器打开 Stripe 的离线模式。",

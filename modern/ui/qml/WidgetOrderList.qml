@@ -252,6 +252,34 @@ Item {
             baseColor: "#1f6f78"
             onClicked: w.pos.sameAsLastTime()
         }
+        // Often added with what's on the check (a hint: touching one adds it).
+        RowLayout {
+            objectName: "goesWith"
+            visible: w.controls && w.pos && w.pos.hasCheck && (w.check.goesWith ?? []).length > 0
+                     && (w.pos.lines ?? []).some(l => !l.comment && !l.fee)
+            Layout.fillWidth: true
+            Layout.preferredHeight: w.unit * 1.6
+            spacing: w.unit * 0.25
+            Text {
+                text: qsTr("Often added:")
+                color: "#aab3c2"
+                font.family: w.face
+                font.pixelSize: w.unit * 0.6
+            }
+            Repeater {
+                model: w.check.goesWith ?? []
+                WidgetKey {
+                    required property var modelData
+                    objectName: "goesWith-" + modelData.id
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: w.unit * 1.5
+                    fontScale: 0.4
+                    text: "+ " + modelData.name
+                    baseColor: "#2b3a4a"
+                    onClicked: w.zone.controller.orderItem(modelData.id)
+                }
+            }
+        }
         Text {
             readonly property var customer: w.check.customer ?? ({})
             visible: w.pos && w.pos.hasCheck && !who.visible && !!(customer.name || customer.phone)

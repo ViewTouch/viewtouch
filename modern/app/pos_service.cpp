@@ -1889,6 +1889,7 @@ QVariantMap PosService::checkInfo() const
                                     {u"address"_s, qs(c->customer.address)}, {u"note"_s, qs(c->customer.note)}}},
         // Phone orders: their last order, the ready time (quoted, or what was promised), the driver.
         {u"lastOrder"_s, lastOrderText(*c)}, {u"regular"_s, regularText(c->customerId)},
+        {u"goesWith"_s, goesWith(*c)},
         {u"quote"_s, (c->type == CheckType::Takeout || c->type == CheckType::Delivery) && !c->dueAt && !c->promisedAt
                          ? readyQuote(*c) : 0},
         {u"promised"_s, c->promisedAt ? timeOfDay(c->promisedAt) : QString()},

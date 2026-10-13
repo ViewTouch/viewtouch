@@ -4,7 +4,9 @@
 #include "app/pos_json.hh"
 #include "app/pos_service.hh"
 
+#include <QPointer>
 #include <QRegularExpression>
+#include <QThreadPool>
 
 #include <QDateTime>
 
@@ -428,6 +430,86 @@ QStringList PosService::popularItems() const
     for (const auto &[n, id] : ranked)
         if (out.size() < 24)
             out << qs(id);
+    return out;
+}
+
+namespace {
+// Each item on a check once (no modifiers, comments, voids or gift cards).
+std::vector<std::string> itemsOn(const Check &c)
+{
+    std::vector<std::string> out;
+    for (const OrderLine &l : c.lines)
+        if (!l.isComment() && !l.voided && !l.isGiftCard() && std::ranges::find(out, l.itemId) == out.end())
+            out.push_back(l.itemId);
+    return out;
+}
+
+void countTogether(const Check &c, std::map<std::string, int> &with, std::map<std::string, std::map<std::string, int>> &together)
+{
+    if (c.training || c.status == CheckStatus::Discarded || c.status == CheckStatus::Merged)
+        return;
+    const std::vector<std::string> items = itemsOn(c);
+    for (const std::string &a : items) {
+        ++with[a];
+        for (const std::string &b : items)
+            if (a != b)
+                ++together[a][b];
+    }
+}
+} // namespace
+
+QVariantList PosService::goesWith(const Check &c) const
+{
+    // The past four weeks, once, off the screen's thread.
+    if (!s_->pastTogetherAsked && s_->history) {
+        s_->pastTogetherAsked = true;
+        auto history = s_->history;
+        const std::int64_t to = now(), from = to - 28LL * 24 * 3600 * 1000;
+        QPointer<PosShared> shared(s_);
+        QThreadPool::globalInstance()->start([=] {
+            std::map<std::string, int> with;
+            std::map<std::string, std::map<std::string, int>> together;
+            for (const Check &x : history(from, to))
+                countTogether(x, with, together);
+            QMetaObject::invokeMethod(shared, [shared, with = std::move(with), together = std::move(together)]() mutable {
+                if (!shared)
+                    return;
+                shared->pastChecksWith = std::move(with);
+                shared->pastTogether = std::move(together);
+                emit shared->checksChanged();
+            }, Qt::QueuedConnection);
+        });
+    }
+    // With today's checks (those not in the past already).
+    std::map<std::string, int> with = s_->pastChecksWith;
+    std::map<std::string, std::map<std::string, int>> together = s_->pastTogether;
+    for (const Check &x : s_->closedToday)
+        countTogether(x, with, together);
+
+    // For each item not on the check: how often it went with what's on it (the
+    // most likely of them); at least 3 checks, and 1 in 4 of them.
+    const std::vector<std::string> on = itemsOn(c);
+    std::map<std::string, double> score;
+    for (const std::string &a : on) {
+        const auto t = together.find(a);
+        if (t == together.end())
+            continue;
+        const int checks = with[a];
+        for (const auto &[b, n] : t->second)
+            if (n >= 3 && checks > 0 && n * 4 >= checks && std::ranges::find(on, b) == on.end())
+                score[b] = std::max(score[b], double(n) / checks);
+    }
+    std::vector<std::pair<double, std::string>> ranked;
+    for (const auto &[id, s] : score)
+        if (const MenuItem *m = findItem(qs(id)); m && !m->isModifier && m->available && ticketsLeft(*m) != 0)
+            ranked.emplace_back(s, id);
+    std::ranges::stable_sort(ranked, [](const auto &a, const auto &b) { return a.first > b.first; });
+    QVariantList out;
+    for (const auto &[s, id] : ranked) {
+        if (out.size() == 3)
+            break;
+        out << QVariantMap{{u"id"_s, qs(id)}, {u"name"_s, qs(findItem(qs(id))->name)}};
+    }
     return out;
 }
 

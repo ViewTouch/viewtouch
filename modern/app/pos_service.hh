@@ -188,6 +188,11 @@ public:
     // Closed checks in [from, to) from the database (set up by main; may run
     // on a worker thread). Unset: reports over a range use today's only.
     std::function<std::vector<core::Check>(std::int64_t from, std::int64_t to)> history;
+    // Items ordered together over the past four weeks (from history, loaded
+    // once in the background): checks with each item, and with each pair.
+    std::map<std::string, int> pastChecksWith;
+    std::map<std::string, std::map<std::string, int>> pastTogether;
+    bool pastTogetherAsked = false;
     // Older time punches from the store (Time Punches reaches a month back).
     std::function<std::vector<core::TimePunch>(std::int64_t from, std::int64_t to)> punchHistory;
     std::vector<core::TimePunch> olderPunches;   // loaded from it for editing
@@ -712,6 +717,8 @@ public:
     QVariantList deliveries() const override;
     QVariantList drivers() const override;
     QStringList popularItems() const override;
+    // Often ordered with what's on this check (a hint on the order screen): {id, name}.
+    QVariantList goesWith(const core::Check &c) const;
     // Arranging the self-filling menu by touch (managers): one place earlier
     // or later within its family, and its button color.
     bool moveMenuItem(const QString &id, int by);

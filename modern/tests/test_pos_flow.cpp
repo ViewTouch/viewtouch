@@ -8262,3 +8262,50 @@ TEST_CASE("UI: Store Settings -> About: the version, this screen, the license", 
     CHECK_FALSE(text(u"Save"_s));                                          // nothing to change here
     s.shot("settings-about");
 }
+
+TEST_CASE("Order screen: often added with what's on the check, a touch away", "[ui][goeswith]")
+{
+    Screen s;
+    // The past weeks: coffee came with juice on 4 of 6 checks, with water once.
+    std::vector<core::Check> past;
+    const core::MenuItem coffee = *s.pos.findItem(u"coffee"_s), juice = *s.pos.findItem(u"juice"_s),
+                         water = *s.pos.findItem(u"water"_s);
+    for (int i = 0; i < 6; ++i) {
+        core::Check c;
+        c.id = 8000 + i;
+        c.status = core::CheckStatus::Closed;
+        c.addItem(coffee);
+        if (i < 4)
+            c.addItem(juice);
+        if (i == 5)
+            c.addItem(water);
+        past.push_back(c);
+    }
+    s.pos.shared()->history = [past](std::int64_t, std::int64_t) { return past; };
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+
+    REQUIRE(s.c.jumpTo(u"tables"_s));
+    s.c.activate(u"takeout"_s);
+    REQUIRE(s.pos.hasCheck());
+    s.pos.addItem(u"coffee"_s);
+    for (int i = 0; i < 100 && s.pos.shared()->pastTogether.empty(); ++i)
+        QTest::qWait(10);
+    s.pos.addItem(u"coffee"_s);   // the screen again, with the past weeks in
+    QTest::qWait(50);
+    const QVariantList hints = s.pos.checkInfo()[u"goesWith"_s].toList();
+    REQUIRE(hints.size() == 1);                                   // water: only once
+    CHECK(hints[0].toMap()[u"id"_s] == u"juice"_s);
+    QQuickItem *add = by(u"goesWith-juice"_s);
+    REQUIRE(add);
+    s.shot("order-goes-with");
+    s.tapItem(add);
+    QTest::qWait(50);
+    bool juiceOn = false;
+    for (const QVariant &l : s.pos.lines())
+        juiceOn = juiceOn || l.toMap()[u"name"_s] == u"Juice"_s;
+    CHECK(juiceOn);
+    CHECK(s.pos.checkInfo()[u"goesWith"_s].toList().isEmpty());   // it's on now
+    CHECK_FALSE(by(u"goesWith"_s));
+}

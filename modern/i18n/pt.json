@@ -2191,6 +2191,7 @@
  "Offered when a screen asks where to print a receipt (handhelds: Terminals -> Ask each time).": "Oferecida quando uma tela pergunta onde imprimir um recibo (portáteis: Terminais -> Perguntar sempre).",
  "Offline: up to this much a card": "Offline: até este valor por cartão",
  "Offline: up to this much waiting in all": "Offline: até este valor esperando no total",
+ "Often added:": "Costumam pedir junto:",
  "Older ›": "Mais antigas ›",
  "On": "Ligado",
  "On Stripe readers running ViewTouch: the card is kept and sent to Stripe when the internet is back. The bank only sees it then: if it declines, the store doesn't get that money (a manager is told). Turning this on also turns on Stripe's offline mode for the store's readers.": "Nas leitoras Stripe com ViewTouch: o cartão fica guardado e é enviado à Stripe quando a internet volta. O banco só o vê então: se recusar, a loja não recebe esse dinheiro (um gerente é avisado). Ligar isto também liga o modo offline da Stripe nas leitoras da loja.",
