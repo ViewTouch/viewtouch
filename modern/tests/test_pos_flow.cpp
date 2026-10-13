@@ -1156,6 +1156,7 @@ TEST_CASE("UI: a manager arranges the self-filling menu by touch", "[flow][ui][a
     const auto find = [&](const QString &name) { return Screen::findBy(s.window->contentItem(), "objectName", name); };
     const auto tap = [&](const QString &name) {
         QQuickItem *it = find(name);
+        INFO("looking for " << name.toStdString());
         REQUIRE(it);
         s.tapItem(it);
         QTest::qWait(60);
@@ -1178,6 +1179,7 @@ TEST_CASE("UI: a manager arranges the self-filling menu by touch", "[flow][ui][a
     REQUIRE(s.pos.loginWithPin(u"1234"_s));
     REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
     REQUIRE(s.c.jumpTo(u"menu-all"_s));
+    s.c.setMenuCategory(u"burgers"_s);   // whatever meal it is now
     QTest::qWait(60);
     REQUIRE(indexOf(u"classic-burger"_s) < indexOf(u"cheeseburger"_s));
     tap(u"menuArrange"_s);

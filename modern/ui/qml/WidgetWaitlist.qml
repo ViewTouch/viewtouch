@@ -98,8 +98,8 @@ Item {
                 TabBar {
                     id: tabs
                     Layout.fillWidth: true
-                    TabButton { text: qsTr("Waitlist (%1)").arg(w.waiting.length); font.pixelSize: 17 }
-                    TabButton { text: qsTr("Reservations (%1)").arg(w.booked.length); font.pixelSize: 17 }
+                    TabButton { text: qsTr("Waitlist (%1)").arg(w.waiting.length); font.pixelSize: 17; implicitHeight: 48 }
+                    TabButton { text: qsTr("Reservations (%1)").arg(w.booked.length); font.pixelSize: 17; implicitHeight: 48 }
                     onCurrentIndexChanged: { w.chosenId = null; w.seating = false; w.reservation = currentIndex === 1 }
                 }
                 ListView {
@@ -202,9 +202,10 @@ Item {
                     columns: 2
                     columnSpacing: 10
                     Label { text: qsTr("Name") }
-                    TextField { Layout.fillWidth: true; text: w.newName; onTextEdited: w.newName = text }
+                    TextField { implicitHeight: 48; Layout.fillWidth: true; text: w.newName; onTextEdited: w.newName = text }
                     Label { text: qsTr("Phone") }
                     TextField {
+                        implicitHeight: 48
                         Layout.fillWidth: true
                         text: w.newPhone
                         inputMethodHints: Qt.ImhDialableCharactersOnly
@@ -240,6 +241,7 @@ Item {
                             }
                         }
                         TextField {
+                            implicitHeight: 48
                             implicitWidth: 120
                             text: w.time
                             placeholderText: "7:30 PM"
@@ -249,6 +251,7 @@ Item {
                     }
                     Label { text: qsTr("Note") }
                     TextField {
+                        implicitHeight: 48
                         Layout.fillWidth: true
                         text: w.newNote
                         placeholderText: qsTr("high chair, booth, birthday…")

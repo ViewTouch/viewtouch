@@ -198,7 +198,7 @@ TEST_CASE("StripeApi: connection tokens and refunds, with the key", "[cards][str
     wait([&] { return !token.isEmpty(); });
     CHECK(token == u"pst_test_abc"_s);
     CHECK(error.isEmpty());
-    CHECK(requests.last().contains(u"Authorization: Bearer sk_test_key"_s));
+    CHECK(requests.last().contains(u"Authorization: Bearer sk_test_key"_s, Qt::CaseInsensitive));   // header names: any case
 
     QString refund;
     api.refund(u"pi_123"_s, 250, [&](const QString &id, const QString &e) { refund = id; error = e; });
