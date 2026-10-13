@@ -3911,7 +3911,7 @@ QStringList labelsCutOff(Screen &s, const QString &where)
 }
 } // namespace
 
-TEST_CASE("Audit: labels that don't fit, every page and dialog, English and Spanish", "[.fit]")
+TEST_CASE("Audit: labels that don't fit, every page and dialog, in every language", "[.fit]")
 {
     const QString outDir = qEnvironmentVariable("VTM_FIT_OUT");
     QSet<QString> english;
@@ -3923,7 +3923,7 @@ TEST_CASE("Audit: labels that don't fit, every page and dialog, English and Span
             if (it.value().isString() && it.value().toString() != it.key() && it.key().contains(QRegularExpression(u"[A-Za-z]{3}"_s)))
                 english.insert(it.key());
     }
-    for (const char *lang : {"en", "es"}) {
+    for (const char *lang : {"en", "es", "fr", "pt", "zh"}) {
         gEnglishPhrases = std::string(lang) == "es" ? english : QSet<QString>();
         Screen s(false, 1280, 800);
         vt::i18n::install();

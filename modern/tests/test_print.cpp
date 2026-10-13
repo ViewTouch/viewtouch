@@ -191,6 +191,27 @@ TEST_CASE("TicketPrinter sends labels in the label printer's language, or as sli
     CHECK(readFile(dir.filePath(u"receipt.txt"_s)).contains(u"Rice"_s));
 }
 
+TEST_CASE("A French store prints in French; a Chinese store's tickets are in English", "[print][i18n]")
+{
+    for (const char *lang : {"fr", "zh"}) {
+        QTemporaryDir dir;
+        auto seed = test::seedPosData();
+        seed.settings.language = lang;
+        PrintSpooler spooler;
+        TicketPrinter printer(spooler, dir.path());
+        core::Check c = burgerCheck(seed.settings, seed.menu);
+        c.type = core::CheckType::Takeout;
+        printer.printKitchen(seed.settings, c, {c.lines[0]}, true);
+        REQUIRE(spooler.waitIdle(5000));
+        const QString kitchen = readFile(dir.filePath(u"kitchen.txt"_s));
+        INFO(lang);
+        if (std::string(lang) == "fr")
+            CHECK(kitchen.contains(u"*** ANNULÉ ***"_s));
+        else
+            CHECK(kitchen.contains(u"*** VOID ***"_s));
+    }
+}
+
 TEST_CASE("A Spanish store prints in Spanish: receipts, kitchen tickets, reports", "[print][i18n]")
 {
     QTemporaryDir dir;

@@ -80,7 +80,8 @@ public:
 
 QList<Language> languages()
 {
-    return {{u"en"_s, u"English"_s}, {u"es"_s, u"Español"_s}};
+    return {{u"en"_s, u"English"_s}, {u"es"_s, u"Español"_s}, {u"fr"_s, u"Français"_s},
+            {u"pt"_s, u"Português"_s}, {u"zh"_s, u"中文"_s}};
 }
 
 void install(const QString &overridesDir)
@@ -116,6 +117,12 @@ bool setLanguage(const QString &code)
     // The screen's dates and weekdays too (QML's Qt.locale(), QLocale()).
     QLocale::setDefault(locale(c));
     return true;
+}
+
+QString printLanguage(const QString &code)
+{
+    // Receipt and label printers print Latin letters only (PC858): no Chinese.
+    return code == u"zh" ? u"en"_s : code;
 }
 
 QLocale locale(const QString &code)

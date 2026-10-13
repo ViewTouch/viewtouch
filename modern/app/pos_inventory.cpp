@@ -546,7 +546,7 @@ bool PosService::printPrepLabels(const QVariantMap &r)
     if (!s_->printer)
         return fail(tr("No printer is set up."));
     // In the store's language and its way of writing dates.
-    const i18n::Scope language(qs(s_->settings.language));
+    const i18n::Scope language(i18n::printLanguage(qs(s_->settings.language)));
     const auto when = [](std::int64_t ms) {
         return i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(ms), u"ddd M/d h:mm AP"_s).toStdString();
     };

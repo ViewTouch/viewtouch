@@ -30,10 +30,10 @@ TicketContext TicketPrinter::context(const PosSettings &settings) const
     return TicketContext{
         settings,
         // In the store's language, like the rest of what's printed.
-        [loc = i18n::locale(QString::fromStdString(settings.language))](std::int64_t ms) {
+        [loc = i18n::locale(i18n::printLanguage(QString::fromStdString(settings.language)))](std::int64_t ms) {
             return loc.toString(QDateTime::fromMSecsSinceEpoch(ms), QLocale::ShortFormat).toStdString();
         },
-        [loc = i18n::locale(QString::fromStdString(settings.language))](std::int64_t ms) {
+        [loc = i18n::locale(i18n::printLanguage(QString::fromStdString(settings.language)))](std::int64_t ms) {
             return loc.toString(QDateTime::fromMSecsSinceEpoch(ms).time(), QLocale::ShortFormat).toStdString();
         },
         now_(),
@@ -44,7 +44,7 @@ TicketContext TicketPrinter::context(const PosSettings &settings) const
                 out.push_back(n.toStdString());
             return out;
         },
-        [code = QString::fromStdString(settings.language)](const std::string &english) {
+        [code = i18n::printLanguage(QString::fromStdString(settings.language))](const std::string &english) {
             return i18n::phrase(code, QString::fromStdString(english)).toStdString();
         },
     };
@@ -67,7 +67,7 @@ void TicketPrinter::send(const PosSettings &, const PrinterConfig &printer, cons
 void TicketPrinter::printKitchen(const PosSettings &settings, const Check &check,
                                  const std::vector<OrderLine> &lines, bool voids)
 {
-    const i18n::Scope language(QString::fromStdString(settings.language));   // the store's, not the server's
+    const i18n::Scope language(i18n::printLanguage(QString::fromStdString(settings.language)));   // the store's, not the server's
     // Group by station; items without a printer (or with an unknown one) go
     // to the kitchen, and nowhere if there is no kitchen printer either.
     std::map<std::string, std::vector<OrderLine>> byStation;
@@ -117,7 +117,7 @@ std::shared_ptr<const Raster> TicketPrinter::logoFor(const PosSettings &settings
 
 void TicketPrinter::printReceipt(const PosSettings &settings, const Check &check, const std::string &printerId)
 {
-    const i18n::Scope language(QString::fromStdString(settings.language));   // the guest's: the store's
+    const i18n::Scope language(i18n::printLanguage(QString::fromStdString(settings.language)));   // the guest's: the store's
     if (const PrinterConfig *p = receiptPrinter(settings, printerId)) {
         TicketContext ctx = context(settings);
         if (settings.receiptLogo && p->effectiveFormat() == "escpos")
@@ -129,7 +129,7 @@ void TicketPrinter::printReceipt(const PosSettings &settings, const Check &check
 void TicketPrinter::printOrderSlip(const PosSettings &settings, const Check &check, const std::string &printerId,
                                    bool sent)
 {
-    const i18n::Scope language(QString::fromStdString(settings.language));
+    const i18n::Scope language(i18n::printLanguage(QString::fromStdString(settings.language)));
     if (const PrinterConfig *p = receiptPrinter(settings, printerId)) {
         TicketContext ctx = context(settings);
         if (settings.receiptLogo && p->effectiveFormat() == "escpos")

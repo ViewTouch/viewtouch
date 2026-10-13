@@ -62,6 +62,29 @@ TEST_CASE("Languages: phrases, plurals, and English when there is none", "[i18n]
     CHECK(tr("Send") == u"Enviar"_s);
 }
 
+TEST_CASE("Languages: French, Portuguese and Chinese too", "[i18n]")
+{
+    Spanish reset;
+    QStringList codes;
+    for (const i18n::Language &l : i18n::languages())
+        codes << l.code;
+    CHECK(codes == QStringList{u"en"_s, u"es"_s, u"fr"_s, u"pt"_s, u"zh"_s});
+    REQUIRE(i18n::setLanguage(u"fr"_s));
+    CHECK(tr("Send") == u"Envoyer"_s);
+    CHECK(tr("%n guest(s)", 1) == u"1 couvert"_s);
+    CHECK(tr("%n guest(s)", 4) == u"4 couverts"_s);
+    CHECK(tr("Welcome, %1").arg(u"Rosa"_s) == u"Bienvenue, Rosa"_s);
+    REQUIRE(i18n::setLanguage(u"pt"_s));
+    CHECK(tr("Send") == u"Enviar"_s);
+    CHECK(tr("%n guest(s)", 2) == u"2 pessoas"_s);
+    REQUIRE(i18n::setLanguage(u"zh"_s));
+    CHECK(tr("Send") == u"发送"_s);
+    CHECK(tr("%n guest(s)", 2) == u"2 位客人"_s);
+    // Printers can't print Chinese: a Chinese store's tickets are in English.
+    CHECK(i18n::printLanguage(u"zh"_s) == u"en"_s);
+    CHECK(i18n::printLanguage(u"fr"_s) == u"fr"_s);
+}
+
 TEST_CASE("Languages: each person's own, else the store's", "[i18n]")
 {
     Spanish es;
@@ -83,7 +106,7 @@ TEST_CASE("Languages: each person's own, else the store's", "[i18n]")
     pos.invoke(u"adminSave"_s, {u"store"_s, 0, store}, [&](const QVariant &r) { saved = r; });
     CHECK(pos.shared()->settings.language == "es");
     CHECK(pos.language() == u"es"_s);
-    store[u"language"_s] = u"fr"_s;   // not one we have
+    store[u"language"_s] = u"de"_s;   // not one we have
     pos.invoke(u"adminSave"_s, {u"store"_s, 0, store});
     CHECK(pos.shared()->settings.language == "es");
 }
