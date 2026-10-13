@@ -5373,6 +5373,51 @@ TEST_CASE("Phones don't edit pages: they're made on a bigger screen", "[ui][phon
     CHECK(s.c.statusText().contains(u"bigger screen"_s));
 }
 
+TEST_CASE("Handhelds: the screen sleeps; off long enough, it asks for the PIN and the check comes back", "[ui][phone][phonelock]")
+{
+    Screen s(false, 412, 915, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    CHECK_FALSE(s.c.screenStaysOn());
+    REQUIRE(s.pos.startCheck(core::CheckType::Takeout));
+    s.pos.addItem(u"cobb"_s);
+    const qint64 check = s.pos.checkInfo().value(u"id"_s).toLongLong();
+    REQUIRE(check != 0);
+
+    // Off for a moment (under the store's 30 seconds): still them, still their check.
+    s.c.screenOff();
+    s.c.screenOn();
+    CHECK(s.pos.loggedIn());
+    CHECK(s.pos.hasCheck());
+
+    // The store asks every time.
+    s.pos.logout();                                // their check is kept for them
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    QVariantMap store = s.pos.adminRecords(u"store"_s).value(0).toMap();
+    store[u"phoneLockSeconds"_s] = 0;
+    REQUIRE(s.pos.adminSave(u"store"_s, 0, store));
+    CHECK(s.pos.phoneLockSeconds() == 0);
+    s.pos.logout();
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    QTest::qWait(50);
+    CHECK(s.pos.hasCheck());                       // picked up again
+    s.c.screenOff();
+    s.c.screenOn();
+    CHECK_FALSE(s.pos.loggedIn());
+    CHECK(s.c.statusText().contains(u"PIN"_s));
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    QTest::qWait(50);
+    CHECK(s.pos.hasCheck());
+    CHECK(s.pos.checkInfo().value(u"id"_s).toLongLong() == check);
+
+    // A tablet's screen stays on, and it doesn't lock.
+    Screen t(false, 1280, 800);
+    CHECK(t.c.screenStaysOn());
+    REQUIRE(t.pos.loginWithPin(u"1111"_s));
+    t.c.screenOff();
+    t.c.screenOn();
+    CHECK(t.pos.loggedIn());
+}
+
 TEST_CASE("Phone audit: typing on a phone", "[.][phonekeys]")
 {
     Screen s(true, 412, 870, u"phone"_s);

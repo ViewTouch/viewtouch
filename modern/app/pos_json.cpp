@@ -995,7 +995,7 @@ QJsonObject toJson(const PosSettings &s)
         {u"backupCopyDir"_s, qs(s.backupCopyDir)},
         {u"backupKey"_s, qs(s.backupKey)}, {u"backupSalt"_s, qs(s.backupSalt)},
         {u"waitMinutesPerParty"_s, s.waitMinutesPerParty},
-        {u"autoLogoutMinutes"_s, s.autoLogoutMinutes}, {u"tableLongMinutes"_s, s.tableLongMinutes},
+        {u"autoLogoutMinutes"_s, s.autoLogoutMinutes}, {u"phoneLockSeconds"_s, s.phoneLockSeconds}, {u"tableLongMinutes"_s, s.tableLongMinutes},
         {u"screenSaverMinutes"_s, s.screenSaverMinutes},
         {u"replicaKey"_s, qs(s.replicaKey)}, {u"language"_s, qs(s.language)},
         {u"startPages"_s, [&] {
@@ -1239,6 +1239,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.backupSalt = ss(o.value(u"backupSalt").toString());
     s.waitMinutesPerParty = std::clamp(o.value(u"waitMinutesPerParty").toInt(10), 1, 120);
     s.autoLogoutMinutes = std::clamp(o.value(u"autoLogoutMinutes").toInt(0), 0, 120);
+    s.phoneLockSeconds = std::clamp(o.value(u"phoneLockSeconds").toInt(30), -1, 3600);
     s.screenSaverMinutes = std::clamp(o.value(u"screenSaverMinutes").toInt(10), 0, 240);
     s.replicaKey = ss(o.value(u"replicaKey").toString());
     s.language = ss(o.value(u"language").toString(u"en"_s));

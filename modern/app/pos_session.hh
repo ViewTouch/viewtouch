@@ -93,6 +93,7 @@ class PosSession : public QObject {
     // This screen's checks are practice (training).
     Q_PROPERTY(bool training READ training NOTIFY sessionChanged)
     Q_PROPERTY(int autoLogoutMinutes READ autoLogoutMinutes NOTIFY adminChanged)
+    Q_PROPERTY(int phoneLockSeconds READ phoneLockSeconds NOTIFY adminChanged)
     Q_PROPERTY(int screenSaverMinutes READ screenSaverMinutes NOTIFY adminChanged)
     Q_PROPERTY(QVariantList kitchenStations READ kitchenStations NOTIFY adminChanged)
     Q_PROPERTY(QString kitchenStation READ kitchenStation NOTIFY adminChanged)
@@ -280,6 +281,7 @@ public:
     virtual QVariantMap rangeReport() const = 0;
     virtual QVariantMap approvalInfo() const = 0;
     virtual int autoLogoutMinutes() const = 0;
+    virtual int phoneLockSeconds() const = 0;
     virtual QVariantList storeImages() const = 0;
     virtual QString storeLogo() const = 0;
     virtual int imageRevision() const { return adminRevision(); }

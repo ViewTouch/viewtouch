@@ -12,6 +12,7 @@
 #include <QSize>
 #include <QTime>
 #include <QSet>
+#include <QElapsedTimer>
 #include <QTimer>
 #include <QVariantMap>
 #include <QtQml/qqmlregistration.h>
@@ -55,6 +56,8 @@ class LayoutController : public QObject {
     // "phone": phone versions of pages (and phone-sized layouts) are shown;
     // "standard": pages as designed.
     Q_PROPERTY(QString formFactor READ formFactor NOTIFY formFactorChanged)
+    // The screen stays on (tablets, registers); a phone's sleeps like a phone's.
+    Q_PROPERTY(bool screenStaysOn READ screenStaysOn NOTIFY formFactorChanged)
     // Breakfast, lunch, dinner... now (zones can show only during one).
     Q_PROPERTY(QString mealPeriod READ mealPeriod NOTIFY mealPeriodChanged)
     // The theme's status colors (theme "status": tableMine, kitchenLate...).
@@ -123,6 +126,11 @@ public:
     static QString mealPeriodAt(const QVariantList &periods, QTime time);
 
     QString formFactor() const { return formFactor_; }
+    bool screenStaysOn() const { return formFactor_ != u"phone"; }
+    // The screen turned off (the app went to the background) and back on: a
+    // phone whose screen was off phoneLockSeconds or more asks for a PIN again.
+    void screenOff();
+    void screenOn();
     QString mealPeriod() const { return nav_.mealPeriod(); }
     QVariantMap statusColors() const { return statusColors_; }
     QStringList fontFamilies() const;
@@ -339,6 +347,7 @@ private:
     QTimer mealTimer_;
     // Idle log-out: restarted by every touch, key or click (eventFilter).
     QTimer idleTimer_;
+    QElapsedTimer offSince_;
     QTimer sleepTimer_;
     QVariantMap statusColors_;
     QString menuCategory_;

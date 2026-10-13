@@ -251,6 +251,7 @@ write("pos/settings.json", {
     "closingChecklist": ["Clean the grill and fryers", "Wipe down the tables", "Take out the trash",
                          "Count the drawers", "Lock the back door"],
     "autoLogoutMinutes": 3,
+    "phoneLockSeconds": 30,
     "tableLongMinutes": 90,
     # Points for what regulars spend, and what the points buy.
     "loyalty": {"enabled": True, "pointsPerDollar": 1,

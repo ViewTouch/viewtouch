@@ -289,13 +289,15 @@ void requestOrientation(bool portrait)
 }
 
 // A POS screen must not go dark between orders.
-void keepScreenOn()
+// On: the screen stays on (tablets, registers). Off: it sleeps like a
+// phone's (a handheld; LayoutController::screenStaysOn).
+void keepScreenOn(bool on = true)
 {
-    QNativeInterface::QAndroidApplication::runOnAndroidMainThread([] {
+    QNativeInterface::QAndroidApplication::runOnAndroidMainThread([on] {
         const QJniObject activity = QNativeInterface::QAndroidApplication::context();
         const QJniObject window = activity.callObjectMethod("getWindow", "()Landroid/view/Window;");
         constexpr jint FLAG_KEEP_SCREEN_ON = 0x00000080;
-        window.callMethod<void>("addFlags", "(I)V", FLAG_KEEP_SCREEN_ON);
+        window.callMethod<void>(on ? "addFlags" : "clearFlags", "(I)V", FLAG_KEEP_SCREEN_ON);
     });
 }
 #endif
@@ -331,6 +333,11 @@ constexpr int kFactoryReset = 65;
 
 std::unique_ptr<QQmlApplicationEngine> showUi(const Args &cli, const Options &o, LayoutController &controller)
 {
+#ifdef Q_OS_ANDROID
+    QObject::connect(&controller, &LayoutController::formFactorChanged, &controller,
+                     [&controller] { keepScreenOn(controller.screenStaysOn()); });
+    keepScreenOn(controller.screenStaysOn());
+#endif
     const bool kiosk = cli.isSet(o.kiosk);
     QObject::connect(&controller, &LayoutController::closeRequested, qApp, [kiosk] {
         qInfo("Closed by a manager");

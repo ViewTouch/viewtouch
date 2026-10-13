@@ -411,6 +411,9 @@ QVariantList PosService::adminFields(const QString &panel)
                                "Kitchen, bar and expo screens stay on.")), u"min"_s, 0), u"max"_s, 240),
             with(with(field(u"autoLogoutMinutes"_s, tr("Log out idle screens after (minutes)"), u"int"_s,
                             tr("0 = never. Kitchen, bar and expo screens don't need a login.")), u"min"_s, 0), u"max"_s, 120),
+            with(with(field(u"phoneLockSeconds"_s, tr("Handhelds: ask for the PIN after the screen was off (seconds)"), u"int"_s,
+                            tr("Phones and handhelds let their screen sleep; when it was off this long, the next touch asks "
+                               "for a PIN (their check comes back). 0 = every time, -1 = never.")), u"min"_s, -1), u"max"_s, 3600),
             with(with(field(u"tableLongMinutes"_s, tr("Mark tables seated longer than (minutes)"), u"int"_s),
                       u"min"_s, 10), u"max"_s, 600),
             field(u"loyaltyEnabled"_s, tr("Loyalty points"), u"bool"_s,

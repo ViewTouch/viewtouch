@@ -306,6 +306,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.screenSaverMinutes = std::clamp(record.value(u"screenSaverMinutes"_s).toInt(), 0, 240);
         if (record.contains(u"autoLogoutMinutes"_s))
             s_->settings.autoLogoutMinutes = std::clamp(record.value(u"autoLogoutMinutes"_s).toInt(), 0, 120);
+        if (record.contains(u"phoneLockSeconds"_s))
+            s_->settings.phoneLockSeconds = std::clamp(record.value(u"phoneLockSeconds"_s).toInt(), -1, 3600);
         if (record.contains(u"tableLongMinutes"_s))
             s_->settings.tableLongMinutes = std::clamp(record.value(u"tableLongMinutes"_s).toInt(), 10, 600);
         if (record.contains(u"loyaltyEnabled"_s))

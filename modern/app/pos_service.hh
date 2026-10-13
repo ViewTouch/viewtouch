@@ -817,6 +817,7 @@ public:
     bool cancelApproval();
     QVariantMap approvalInfo() const override { return approval_; }
     int autoLogoutMinutes() const override { return s_->settings.autoLogoutMinutes; }
+    int phoneLockSeconds() const override { return s_->settings.phoneLockSeconds; }
     int screenSaverMinutes() const override { return s_->settings.screenSaverMinutes; }
 
     // --- practice (training) --------------------------------------------------------

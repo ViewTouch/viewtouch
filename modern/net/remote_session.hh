@@ -129,6 +129,11 @@ public:
     QVariantMap approvalInfo() const override { return v(u"approval").toMap(); }
     bool training() const override { return v(u"training").toBool(); }
     int autoLogoutMinutes() const override { return v(u"autoLogoutMinutes").toInt(); }
+    int phoneLockSeconds() const override
+    {
+        const QVariant x = v(u"phoneLockSeconds");
+        return x.isValid() ? x.toInt() : 30;   // an older server: the default
+    }
     QString imageUrl(const QString &ref) const override;
     QVariantList storeImages() const override;
     QString storeLogo() const override { return v(u"storeLogo").toString(); }

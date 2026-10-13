@@ -281,6 +281,9 @@ struct PosSettings {
     std::vector<BuildRun> builds;
     // Log a screen out after this many idle minutes (0: never).
     int autoLogoutMinutes = 0;
+    // A phone (handheld) whose screen was off this long asks for a PIN again
+    // (its check comes back when they log in). -1: never.
+    int phoneLockSeconds = 30;
     // Dim a screen nobody has touched for this long (0: never). Kitchen,
     // bar and expo screens and the self-order kiosk stay on.
     int screenSaverMinutes = 10;

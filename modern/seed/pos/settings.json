@@ -40,6 +40,7 @@
     "Lock the back door"
   ],
   "autoLogoutMinutes": 3,
+  "phoneLockSeconds": 30,
   "tableLongMinutes": 90,
   "loyalty": {
     "enabled": true,

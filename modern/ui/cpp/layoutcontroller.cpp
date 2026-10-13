@@ -1,5 +1,7 @@
 #include "layoutcontroller.hh"
 
+#include <QGuiApplication>
+
 #include "net/build_info.hh"
 
 #include <QCollator>
@@ -113,6 +115,14 @@ LayoutController::LayoutController(Layout layout, QObject *parent)
     connect(&sleepTimer_, &QTimer::timeout, this, &LayoutController::sleepTimeout);
     if (QCoreApplication::instance())
         QCoreApplication::instance()->installEventFilter(this);
+    // The screen turning off and on (a phone put away and taken out again).
+    if (auto *gui = qobject_cast<QGuiApplication *>(QCoreApplication::instance()))
+        connect(gui, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
+            if (state == Qt::ApplicationActive)
+                screenOn();
+            else if (state == Qt::ApplicationSuspended || state == Qt::ApplicationHidden)
+                screenOff();
+        });
     nav_.reset(homePageOf(layout_));
     refresh();
 }
@@ -177,6 +187,27 @@ void LayoutController::wake()
     asleep_ = false;
     emit asleepChanged();
     restartSleep();
+}
+
+void LayoutController::screenOff()
+{
+    if (!offSince_.isValid())
+        offSince_.start();
+}
+
+void LayoutController::screenOn()
+{
+    if (!offSince_.isValid())
+        return;
+    const qint64 offMs = offSince_.elapsed();
+    offSince_.invalidate();
+    const int lockAfter = pos_ ? pos_->phoneLockSeconds() : -1;
+    if (formFactor_ != u"phone" || lockAfter < 0 || !pos_ || !pos_->loggedIn() || editing())
+        return;
+    if (offMs < qint64(lockAfter) * 1000)
+        return;
+    pos_->invoke(u"logout"_s, {});   // their check comes back when they log in
+    setStatus(tr("Type your PIN to go on"));
 }
 
 void LayoutController::idleTimeout()

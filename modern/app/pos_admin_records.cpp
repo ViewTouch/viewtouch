@@ -155,6 +155,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"encryptBackups"_s, !s_->settings.backupKey.empty()}, {u"backupPassword"_s, QString()},
              {u"waitMinutesPerParty"_s, s_->settings.waitMinutesPerParty},
              {u"autoLogoutMinutes"_s, s_->settings.autoLogoutMinutes},
+             {u"phoneLockSeconds"_s, s_->settings.phoneLockSeconds},
              {u"screenSaverMinutes"_s, s_->settings.screenSaverMinutes},
              {u"tableLongMinutes"_s, s_->settings.tableLongMinutes},
              {u"loyaltyEnabled"_s, s_->settings.loyaltyEnabled}, {u"pointsPerDollar"_s, s_->settings.pointsPerDollar},

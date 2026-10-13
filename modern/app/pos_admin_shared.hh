@@ -151,7 +151,7 @@ inline QVariantList storeSections(const QVariantList &fields)
          {"requireOrderName", "takeoutMinutes", "deliveryMinutes", "minutesPerOrderWaiting", "deliveryFee"}},
         {"cards", PosService::tr("Cards"),
          {"stripeSecretKey", "cardCurrency", "cardTipOn", "tabHold", "offlineCards", "offlineCardMax", "offlineCardTotal"}},
-        {"screens", PosService::tr("Screens"), {"screenSaverMinutes", "autoLogoutMinutes", "tableLongMinutes"}},
+        {"screens", PosService::tr("Screens"), {"screenSaverMinutes", "autoLogoutMinutes", "phoneLockSeconds", "tableLongMinutes"}},
         {"display", PosService::tr("Customer display"), {"displayAccent", "displaySlides"}},
         {"loyalty", PosService::tr("Loyalty"), {"loyaltyEnabled", "pointsPerDollar", "rewards"}},
         {"waitlist", PosService::tr("Waitlist and texts"), {"waitMinutesPerParty", "tableReadyText", "textWebhook"}},
@@ -183,7 +183,7 @@ inline QVariantList storeSections(const QVariantList &fields)
         {"clockInEarlyMinutes", PosService::tr("On time"), 5},
         {"extraPercent", none, 5}, {"laterLeadMinutes", PosService::tr("At the time"), 5},
         {"takeoutMinutes", none, 5}, {"deliveryMinutes", none, 5}, {"minutesPerOrderWaiting", none, 1},
-        {"screenSaverMinutes", never, 1}, {"autoLogoutMinutes", never, 1}, {"tableLongMinutes", {}, 5},
+        {"screenSaverMinutes", never, 1}, {"autoLogoutMinutes", never, 1}, {"phoneLockSeconds", {}, 1}, {"tableLongMinutes", {}, 5},
         {"kioskIdleSeconds", {}, 10}, {"kioskSizePercent", {}, 5}, {"waitMinutesPerParty", {}, 1},
     };
     QHash<QString, QVariantMap> byPath;
