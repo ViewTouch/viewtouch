@@ -657,8 +657,9 @@ ApplicationWindow {
             readonly property var steps: [qsTr("Welcome"), qsTr("This computer"), qsTr("Its name"), qsTr("Network"),
                                           qsTr("Time zone"), qsTr("Settings PIN")]
 
-            // Where we are.
+            // Where we are (not while typing: room for the keyboard).
             RowLayout {
+                visible: !keyboard.visible
                 spacing: root.u * 0.5
                 Repeater {
                     model: wiz.steps
@@ -809,45 +810,76 @@ ApplicationWindow {
                 spacing: root.u
                 Heading { text: qsTr("A PIN for this computer's settings") }
                 Note { text: qsTr("4 to 8 digits. It's asked before the network, updates and reset. Give it only to managers. (Not the same as anyone's ViewTouch PIN.)") }
+                // The keys on the left, what's typed and the buttons beside them
+                // (all on screen at once).
                 RowLayout {
-                    spacing: root.u * 2
-                    ColumnLayout {
-                        Label { text: qsTr("PIN"); color: "#9aa3b2"; font.pixelSize: root.u }
-                        Label { text: "●".repeat(wiz.pin.length) || " "; color: "white"; font.pixelSize: root.u * 2 }
+                    spacing: root.u * 3
+                    PinKeys {
+                        Layout.alignment: Qt.AlignTop
+                        onDigit: (d) => {
+                            if (!wiz.confirming && wiz.pin.length < 8)
+                                wiz.pin += d
+                            else if (wiz.confirming && wiz.pinAgain.length < 8)
+                                wiz.pinAgain += d
+                        }
+                        onClear: {
+                            if (wiz.confirming)
+                                wiz.pinAgain = ""
+                            else
+                                wiz.pin = ""
+                        }
                     }
                     ColumnLayout {
-                        Label { text: qsTr("Again"); color: "#9aa3b2"; font.pixelSize: root.u }
-                        Label { text: "●".repeat(wiz.pinAgain.length) || " "; color: "white"; font.pixelSize: root.u * 2 }
-                    }
-                }
-                PinKeys {
-                    onDigit: (d) => {
-                        if (!wiz.confirming && wiz.pin.length < 8)
-                            wiz.pin += d
-                        else if (wiz.confirming && wiz.pinAgain.length < 8)
-                            wiz.pinAgain += d
-                    }
-                    onClear: { wiz.pin = ""; wiz.pinAgain = ""; wiz.confirming = false }
-                }
-                BigButton {
-                    visible: !wiz.confirming
-                    enabled: wiz.pin.length >= 4
-                    text: qsTr("Next: Type It Again")
-                    onClicked: wiz.confirming = true
-                }
-                Note {
-                    visible: wiz.pinAgain.length >= wiz.pin.length && wiz.pinAgain !== "" && wiz.pinAgain !== wiz.pin
-                    text: qsTr("The two don't match. Touch Clear and type it again.")
-                    color: "#eb8a7a"
-                }
-                RowLayout {
-                    spacing: root.u
-                    BigButton { text: "‹ " + qsTr("Back"); onClicked: wiz.step = 4 }
-                    BigButton {
-                        text: root.station.busy ? qsTr("Setting up…") : qsTr("Finish")
-                        tint: "#22784a"
-                        enabled: !root.station.busy && wiz.pin.length >= 4 && wiz.pin === wiz.pinAgain
-                        onClicked: root.station.setup(wiz.role, nameField.text.trim(), wiz.guestDisplay, wiz.pin)
+                        Layout.alignment: Qt.AlignTop
+                        spacing: root.u
+                        Label {
+                            text: wiz.confirming ? qsTr("Type the same PIN again") : qsTr("Type a PIN")
+                            color: "white"
+                            font.pixelSize: root.u * 1.3
+                            font.bold: true
+                        }
+                        RowLayout {
+                            spacing: root.u * 2
+                            ColumnLayout {
+                                Label { text: qsTr("PIN"); color: "#9aa3b2"; font.pixelSize: root.u }
+                                Label { text: "●".repeat(wiz.pin.length) || "–"; color: "white"; font.pixelSize: root.u * 1.8 }
+                            }
+                            ColumnLayout {
+                                visible: wiz.confirming
+                                Label { text: qsTr("Again"); color: "#9aa3b2"; font.pixelSize: root.u }
+                                Label { text: "●".repeat(wiz.pinAgain.length) || "–"; color: "white"; font.pixelSize: root.u * 1.8 }
+                            }
+                        }
+                        Note {
+                            visible: wiz.confirming && wiz.pinAgain.length >= wiz.pin.length && wiz.pinAgain !== wiz.pin
+                            text: qsTr("The two don't match. Touch Clear and type it again.")
+                            color: "#eb8a7a"
+                        }
+                        BigButton {
+                            visible: !wiz.confirming
+                            enabled: wiz.pin.length >= 4
+                            text: qsTr("Next")
+                            tint: "#2f6fd6"
+                            onClicked: wiz.confirming = true
+                        }
+                        BigButton {
+                            visible: wiz.confirming
+                            text: root.station.busy ? qsTr("Setting up…") : qsTr("Finish")
+                            tint: "#22784a"
+                            enabled: !root.station.busy && wiz.pin === wiz.pinAgain
+                            onClicked: root.station.setup(wiz.role, nameField.text.trim(), wiz.guestDisplay, wiz.pin)
+                        }
+                        BigButton {
+                            text: "‹ " + qsTr("Back")
+                            onClicked: {
+                                if (wiz.confirming) {
+                                    wiz.confirming = false
+                                    wiz.pinAgain = ""
+                                } else {
+                                    wiz.step = 4
+                                }
+                            }
+                        }
                     }
                 }
             }
