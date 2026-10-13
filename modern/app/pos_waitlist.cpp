@@ -70,7 +70,7 @@ QVariantMap PosService::waitlistInfo() const
             {u"reservedForMs"_s, qint64(p.reservedFor)},
             // A booking that should have arrived by now (15 minutes' grace).
             {u"overdue"_s, p.status == Party::Status::Booked && t > p.reservedFor + 15 * kMinute},
-            {u"table"_s, qs(p.table)},
+            {u"table"_s, qs(p.table)}, {u"regular"_s, regularText(p.customerId)},
         };
     };
     QVariantList waiting, booked;
@@ -128,6 +128,11 @@ qint64 PosService::addParty(const QVariantMap &r, bool reservation)
     p.size = std::clamp(r.value(u"size"_s, 2).toInt(), 1, 99);
     p.note = ss(r.value(u"note"_s).toString().trimmed());
     p.customerId = ss(r.value(u"customerId"_s).toString());
+    // On file by their phone number: a regular (their visits, note and last order).
+    if (const std::string digits = CustomerRecord::digits(p.phone); p.customerId.empty() && digits.size() >= 7)
+        for (const CustomerRecord &c : s_->customers)
+            if (CustomerRecord::digits(c.phone) == digits)
+                p.customerId = c.id;
     p.addedAt = now();
     if (reservation) {
         std::int64_t at = r.value(u"at"_s).toLongLong();

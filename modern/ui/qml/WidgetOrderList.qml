@@ -226,6 +226,20 @@ Item {
             Layout.fillWidth: true
             elide: Text.ElideRight
         }
+        // A regular: how often they come, and their note (allergies...).
+        Text {
+            objectName: "regularInfo"
+            visible: w.pos && w.pos.hasCheck && !!w.check.regular
+            text: "★ " + (w.check.regular ?? "")
+            color: "#ffd479"
+            font.family: w.face
+            font.pixelSize: w.unit * 0.75
+            font.bold: true
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            maximumLineCount: 2
+            elide: Text.ElideRight
+        }
         // A regular: their last order again, in one touch (before anything else is on).
         WidgetKey {
             objectName: "sameAsLastTime"

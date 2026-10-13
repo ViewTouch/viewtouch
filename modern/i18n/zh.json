@@ -2638,6 +2638,10 @@
  "Register": "收银台",
  "Regular": "正常",
  "Regular / VIP": "常客 / VIP",
+ "Regular · %n visit(s)": {
+  "one": "常客 · 来过 %n 次",
+  "other": "常客 · 来过 %n 次"
+ },
  "Reload %1 on the Check": "在账单上充值 %1",
  "Reloaded on check #%1": "在账单 #%1 上充值",
  "Remote Help": "远程协助",

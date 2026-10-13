@@ -277,3 +277,36 @@ TEST_CASE("The floor: when tables free up, nudges for their servers, and who's n
     CHECK(t1[u"freeIn"_s].toInt() <= 8);
     CHECK(t1[u"nudge"_s].toString().isEmpty());
 }
+
+TEST_CASE("A regular is recognized by their phone: on the waitlist, and for their server", "[waitlist][regulars]")
+{
+    app::PosService pos(test::seedPosData(), nullptr);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.saveCustomer({{u"name"_s, u"Dana Lee"_s}, {u"phone"_s, u"(555) 010-2030"_s},
+                              {u"note"_s, u"Allergic to nuts"_s}}));
+    core::CustomerRecord &dana = pos.shared()->customers.back();
+    dana.visits = 7;
+
+    // They join the line with their number written another way.
+    const qint64 id = pos.addToWaitlist({{u"name"_s, u"Dana"_s}, {u"phone"_s, u"555-010-2030"_s}, {u"size"_s, 2}});
+    REQUIRE(id > 0);
+    QVariantMap row;
+    for (const QVariant &v : pos.waitlistInfo()[u"waiting"_s].toList())
+        if (v.toMap()[u"id"_s].toLongLong() == id)
+            row = v.toMap();
+    CHECK(row[u"regular"_s] == u"Regular · 7 visits  ·  Allergic to nuts"_s);
+
+    // Seated: their server sees it on the check.
+    REQUIRE(pos.seatParty(id, u"T3"_s, u"sam"_s));
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    pos.selectTable(u"T3"_s);
+    REQUIRE(pos.hasCheck());
+    CHECK(pos.checkInfo()[u"regular"_s] == u"Regular · 7 visits  ·  Allergic to nuts"_s);
+
+    // Someone new: nothing.
+    const qint64 other = pos.addToWaitlist({{u"name"_s, u"Pat"_s}, {u"phone"_s, u"555-999-0000"_s}});
+    for (const QVariant &v : pos.waitlistInfo()[u"waiting"_s].toList())
+        if (v.toMap()[u"id"_s].toLongLong() == other)
+            CHECK(v.toMap()[u"regular"_s].toString().isEmpty());
+}

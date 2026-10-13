@@ -223,6 +223,7 @@ Item {
                             Layout.fillWidth: true
                             text: row.modelData.name + "  ·  " + row.modelData.size
                                   + (row.modelData.note ? "  ·  " + row.modelData.note : "")
+                                  + (row.modelData.regular ? "  ·  ★ " + row.modelData.regular : "")
                             color: w.ink
                             font.family: w.face
                             font.pixelSize: w.unit * 0.9

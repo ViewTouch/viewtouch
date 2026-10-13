@@ -48,6 +48,19 @@ void PosService::rememberOrder(CustomerRecord &r, const Check &c)
     r.lastOrderAt = c.closedAt ? c.closedAt : now();
 }
 
+QString PosService::regularText(const std::string &customerId) const
+{
+    const CustomerRecord *r = customerId.empty() ? nullptr : s_->customer(customerId);
+    if (!r)
+        return {};
+    QStringList out;
+    if (r->visits >= 2)
+        out << tr("Regular · %n visit(s)", "", r->visits);
+    if (!r->note.empty())
+        out << qs(r->note);
+    return out.join(u"  ·  "_s);
+}
+
 QString PosService::lastOrderText(const Check &c) const
 {
     const CustomerRecord *r = c.customerId.empty() ? nullptr : s_->customer(c.customerId);

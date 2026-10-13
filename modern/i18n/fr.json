@@ -2638,6 +2638,10 @@
  "Register": "Caisse",
  "Regular": "Normal",
  "Regular / VIP": "Habitué / VIP",
+ "Regular · %n visit(s)": {
+  "one": "Habitué · %n visite",
+  "other": "Habitué · %n visites"
+ },
  "Reload %1 on the Check": "Recharger %1 sur l'addition",
  "Reloaded on check #%1": "Rechargée sur l'addition n°%1",
  "Remote Help": "Aide à distance",

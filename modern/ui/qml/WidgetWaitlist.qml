@@ -141,7 +141,7 @@ Item {
                                     Layout.fillWidth: true
                                     elide: Text.ElideRight
                                     opacity: 0.75
-                                    text: [row.modelData.note, row.modelData.phone,
+                                    text: [row.modelData.regular ? "★ " + row.modelData.regular : "", row.modelData.note, row.modelData.phone,
                                            row.modelData.overdue ? qsTr("late") : ""].filter(s => s).join("  ·  ")
                                 }
                             }

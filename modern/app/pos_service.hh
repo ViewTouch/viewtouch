@@ -945,6 +945,8 @@ public:
     void applyDeliveryFee(core::Check &c);
     void rememberOrder(core::CustomerRecord &r, const core::Check &c);
     QString lastOrderText(const core::Check &c) const;
+    // A regular on file: "Regular · 7 visits", and their note ("allergic to nuts").
+    QString regularText(const std::string &customerId) const;
     // The host stand (pos_waitlist.cpp).
     bool seatPartyAt(qint64 partyId, const QStringList &tables, const QString &serverId);
     bool seatWalkIn(int size, const QStringList &tables, const QString &serverId);

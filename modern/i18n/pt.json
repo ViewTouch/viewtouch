@@ -2638,6 +2638,10 @@
  "Register": "Caixa",
  "Regular": "Normal",
  "Regular / VIP": "Cliente frequente / VIP",
+ "Regular · %n visit(s)": {
+  "one": "Cliente frequente · %n visita",
+  "other": "Cliente frequente · %n visitas"
+ },
  "Reload %1 on the Check": "Recarregar %1 na conta",
  "Reloaded on check #%1": "Recarregado na conta nº %1",
  "Remote Help": "Ajuda remota",

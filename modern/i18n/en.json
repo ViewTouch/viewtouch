@@ -211,6 +211,10 @@
   "one": "Received %n item: %1",
   "other": "Received %n items: %1"
  },
+ "Regular · %n visit(s)": {
+  "one": "Regular · %n visit",
+  "other": "Regular · %n visits"
+ },
  "Remove %n item(s)": {
   "one": "Remove %n item",
   "other": "Remove %n items"

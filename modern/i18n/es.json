@@ -2691,6 +2691,10 @@
  "Register": "Caja",
  "Regular": "Normal",
  "Regular / VIP": "Cliente frecuente / VIP",
+ "Regular · %n visit(s)": {
+  "one": "Cliente habitual · %n visita",
+  "other": "Cliente habitual · %n visitas"
+ },
  "Reload %1 on the Check": "Recargar %1 en la cuenta",
  "Reloaded on check #%1": "Recargada en la cuenta #%1",
  "Remote Help": "Ayuda remota",
