@@ -482,7 +482,10 @@ ApplicationWindow {
             title: qsTr("Date & Time")
             property bool all: false
             Note {
-                text: qsTr("Time zone: %1. The time is set from the internet by itself.").arg(root.station.timeZone)
+                text: qsTr("Time zone: %1.").arg(root.station.timeZone) + " "
+                      + (root.station.timeSynced ? qsTr("The time is set from the internet, and is right.")
+                                                 : qsTr("The time isn't set from the internet yet: check the network. Until then the computer's own clock keeps it."))
+                color: root.station.timeSynced ? "#aab3c2" : "#e8c46a"
             }
             Flow {
                 Layout.fillWidth: true

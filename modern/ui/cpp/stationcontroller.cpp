@@ -85,6 +85,7 @@ StationController::StationController(QString dataDir, QString configFile, bool k
     });
     networkTimer_.setInterval(10000);
     connect(&networkTimer_, &QTimer::timeout, this, &StationController::refreshNetwork);
+    connect(&networkTimer_, &QTimer::timeout, this, &StationController::readTimeZone);
     networkTimer_.start();
     connect(this, &StationController::finished, this, [this](const QString &action, bool ok, const QString &) {
         if (action == u"timezone")
@@ -402,8 +403,10 @@ void StationController::readTimeZone()
     QString zone = runQuick(u"timedatectl"_s, {u"show"_s, u"-p"_s, u"Timezone"_s, u"--value"_s}).trimmed();
     if (zone.isEmpty())
         zone = QString::fromLatin1(QTimeZone::systemTimeZoneId());
-    if (zone != timeZone_) {
+    const bool synced = runQuick(u"timedatectl"_s, {u"show"_s, u"-p"_s, u"NTPSynchronized"_s, u"--value"_s}).trimmed() == u"yes";
+    if (zone != timeZone_ || synced != timeSynced_) {
         timeZone_ = zone;
+        timeSynced_ = synced;
         emit timeZoneChanged();
     }
 }

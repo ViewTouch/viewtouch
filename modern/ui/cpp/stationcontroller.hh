@@ -36,6 +36,8 @@ class StationController : public QObject {
     // What the last helper action said (updates show it as they go).
     Q_PROPERTY(QString output READ output NOTIFY outputChanged)
     Q_PROPERTY(QString timeZone READ timeZone NOTIFY timeZoneChanged)
+    // The clock was set from the internet (and is kept so).
+    Q_PROPERTY(bool timeSynced READ timeSynced NOTIFY timeZoneChanged)
     Q_PROPERTY(bool remoteSupport READ remoteSupport NOTIFY remoteSupportChanged)
     Q_PROPERTY(QString version READ version CONSTANT)
     Q_PROPERTY(QString model READ model CONSTANT)
@@ -58,6 +60,7 @@ public:
     bool busy() const { return busy_; }
     QString output() const { return output_; }
     QString timeZone() const { return timeZone_; }
+    bool timeSynced() const { return timeSynced_; }
     bool remoteSupport() const { return remoteSupport_; }
     QString version() const;
     QString model() const;
@@ -136,6 +139,7 @@ private:
     bool busy_ = false;
     QString output_;
     QString timeZone_;
+    bool timeSynced_ = false;
     bool remoteSupport_ = false;
     QTimer networkTimer_;
 };

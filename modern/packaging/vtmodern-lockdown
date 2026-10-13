@@ -15,6 +15,7 @@
 #   - a firewall: only ViewTouch (7719), finding it (mDNS) and SSH may come in
 #   - security updates install by themselves each night
 #   - the hardware watchdog restarts the computer if it ever freezes
+#   - the clock always set from the internet
 #   - smaller logs (the built-in storage lasts longer), a quiet boot
 #   - US dates (10/13/26) when the computer was still British English (the
 #     Raspberry Pi OS default); VTM_LOCALE=... picks another
@@ -134,6 +135,17 @@ cat > /etc/systemd/journald.conf.d/vtmodern.conf <<'CONF'
 SystemMaxUse=200M
 CONF
 echo "kernel.panic = 10" > /etc/sysctl.d/90-vtmodern.conf
+# The time from the internet, always, with spare servers if one is down.
+mkdir -p /etc/systemd/timesyncd.conf.d
+cat > /etc/systemd/timesyncd.conf.d/vtmodern.conf <<'CONF'
+# vtmodern-lockdown: the clock set from the internet.
+[Time]
+NTP=time.cloudflare.com time.google.com 0.debian.pool.ntp.org
+FallbackNTP=1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
+CONF
+systemctl enable systemd-timesyncd 2>/dev/null || true
+timedatectl set-ntp true 2>/dev/null || true
+systemctl restart systemd-timesyncd 2>/dev/null || true
 cat > /etc/apt/apt.conf.d/20auto-upgrades <<'CONF'
 APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
