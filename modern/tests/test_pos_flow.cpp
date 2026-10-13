@@ -5361,6 +5361,18 @@ TEST_CASE("Phone audit: every page on a phone (pictures, small controls)", "[.][
     WARN(report.join(u'\n').toStdString());
 }
 
+TEST_CASE("Phones don't edit pages: they're made on a bigger screen", "[ui][phone][edit]")
+{
+    Screen s(false, 412, 915, u"phone"_s);
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    s.pos.setupFinish(true);
+    s.c.closeSetup();
+    REQUIRE(s.c.jumpTo(u"manager"_s));
+    CHECK_FALSE(s.c.requestEditMode());
+    CHECK_FALSE(s.c.editing());
+    CHECK(s.c.statusText().contains(u"bigger screen"_s));
+}
+
 TEST_CASE("Phone audit: typing on a phone", "[.][phonekeys]")
 {
     Screen s(true, 412, 870, u"phone"_s);

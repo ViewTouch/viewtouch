@@ -484,6 +484,12 @@ bool LayoutController::requestEditMode()
                                    : tr("Log in as a manager to edit pages."));
         return false;
     }
+    // A phone (a handheld) shows pages; they're made on a bigger screen,
+    // and reach the phones as soon as they're saved there.
+    if (formFactor_ == u"phone") {
+        setStatus(tr("Edit pages on a bigger screen (the main register or a tablet); phones show the changes right away."));
+        return false;
+    }
     enterEditMode();
     return true;
 }
