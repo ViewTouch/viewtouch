@@ -410,9 +410,14 @@ QString PosService::language() const
 
 QVariantMap PosService::userPrefs() const
 {
+    // This screen's text size, unless the person has their own.
+    int screenText = 0;
+    for (const TerminalConfig &t : s_->settings.terminals)
+        if (qs(t.name) == terminal_)
+            screenText = t.textSize;
     const core::Employee *e = user();
     if (!e)
-        return {};
+        return screenText ? QVariantMap{{u"textSize"_s, screenText}} : QVariantMap();
     // Their own start page, else their job's: the one they're clocked in as, or their role.
     std::string start = e->startPage;
     if (start.empty()) {
@@ -425,7 +430,8 @@ QVariantMap PosService::userPrefs() const
         else if (job == "host")
             start = "seating";   // hosts: the seating screen (when the layout has it)
     }
-    return {{u"textSize"_s, e->textSize}, {u"leftHanded"_s, e->leftHanded}, {u"startPage"_s, qs(start)}};
+    return {{u"textSize"_s, e->textSize != 100 || !screenText ? e->textSize : screenText},
+            {u"leftHanded"_s, e->leftHanded}, {u"startPage"_s, qs(start)}};
 }
 
 void PosShared::noteProblem(const std::string &kind, const std::string &subject, const std::string &detail)

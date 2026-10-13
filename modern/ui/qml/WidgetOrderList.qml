@@ -438,6 +438,7 @@ Item {
                         }
                         Text {
                             Layout.fillWidth: true
+                            Layout.preferredWidth: 1   // what's left after Choose and the price (big text)
                             text: (row.modelData.quantity > 1 ? row.modelData.quantity + " × " : "") + row.modelData.name
                             color: row.modelData.voided ? "#8a94a6" : w.ink
                             font.family: w.face
@@ -493,7 +494,10 @@ Item {
                         Layout.topMargin: w.unit * 0.25
                         Layout.leftMargin: w.unit * 0.8
                         spacing: w.unit * 0.25
-                        readonly property real key: w.unit * 1.6
+                        // Keys this wide fit the line (big text on a narrow check): − 1 +, Again, Move…
+                        readonly property real units: (row.modelData.sent ? 0 : 3.7) + 3
+                                                      + (tableChecks.checks.length > 0 && !w.paid ? 3 : 0)
+                        readonly property real key: Math.min(w.unit * 1.6, (col.width - w.unit * 2) / units)
                         WidgetKey {
                             objectName: "lineLess"
                             visible: !row.modelData.sent

@@ -476,7 +476,7 @@ QJsonObject toJson(const Employee &e)
     return {
         {u"id"_s, qs(e.id)}, {u"name"_s, qs(e.name)}, {u"role"_s, qs(e.role)},
         {u"pinSalt"_s, qs(e.pinSalt)}, {u"pinHash"_s, qs(e.pinHash)}, {u"active"_s, e.active}, {u"training"_s, e.training}, {u"sample"_s, e.sample},
-        {u"cashMode"_s, qs(e.cashMode)}, {u"requireName"_s, qs(e.requireName)}, {u"checkout"_s, qs(e.checkout)}, {u"blindCount"_s, qs(e.blindCount)}, {u"reasons"_s, qs(e.reasons)}, {u"tipPool"_s, qs(e.tipPool)}, {u"language"_s, qs(e.language)},
+        {u"cashMode"_s, qs(e.cashMode)}, {u"requireName"_s, qs(e.requireName)}, {u"checkout"_s, qs(e.checkout)}, {u"blindCount"_s, qs(e.blindCount)}, {u"reasons"_s, qs(e.reasons)}, {u"look"_s, qs(e.look)}, {u"tipPool"_s, qs(e.tipPool)}, {u"language"_s, qs(e.language)},
         {u"textSize"_s, e.textSize}, {u"leftHanded"_s, e.leftHanded}, {u"startPage"_s, qs(e.startPage)},
         {u"payRate"_s, e.payRate.cents() / 100.0}, {u"otherJobs"_s, [&] {
              QJsonArray jobs;
@@ -502,6 +502,7 @@ Employee employeeFromJson(const QJsonObject &o)
     e.checkout = ss(o.value(u"checkout").toString());
     e.blindCount = ss(o.value(u"blindCount").toString());
     e.reasons = ss(o.value(u"reasons").toString());
+    e.look = ss(o.value(u"look").toString());
     e.tipPool = ss(o.value(u"tipPool").toString());
     e.language = ss(o.value(u"language").toString());
     e.textSize = std::clamp(o.value(u"textSize").toInt(100), 80, 160);
@@ -884,7 +885,7 @@ QJsonObject toJson(const PosSettings &s)
                                      {u"station"_s, qs(t.station)}, {u"keyboard"_s, qs(t.keyboard)},
                                      {u"requireName"_s, qs(t.requireName)}, {u"cardReader"_s, qs(t.cardReader)},
                                      {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)},
-                                     {u"labelPrinter"_s, qs(t.labelPrinter)}});
+                                     {u"labelPrinter"_s, qs(t.labelPrinter)}, {u"textSize"_s, t.textSize}});
     QJsonArray printers;
     for (const PrinterConfig &p : s.printers)
         printers.append(toJson(p));
@@ -1159,6 +1160,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
         c.afterPaying = ss(t.value(u"afterPaying").toString());
         c.startCategory = ss(t.value(u"startCategory").toString());
         c.labelPrinter = ss(t.value(u"labelPrinter").toString());
+        c.textSize = t.value(u"textSize").toInt();
         s.terminals.push_back(std::move(c));
     }
     s.cashMode = cashModeFromString(ss(o.value(u"cashMode").toString()));

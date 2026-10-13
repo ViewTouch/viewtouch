@@ -73,6 +73,9 @@ struct TerminalConfig {
     std::string requireName;
     // Its prep labels print here (a printer id); empty = the store's label printer.
     std::string labelPrinter;
+    // Button and check text this much bigger here (percent; 0 = normal). A
+    // person's own text size wins while they're logged in.
+    int textSize = 0;
     // After a check is paid here: "print" a receipt, "ask" (print, email or
     // none), or nothing (empty). receiptPrinter "ask": choose the printer
     // each time (a handheld).

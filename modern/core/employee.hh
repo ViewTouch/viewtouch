@@ -68,6 +68,9 @@ struct Employee {
     // Counting a drawer or bank: "blind" (not seeing what's expected), "sees",
     // or empty for the store's setting (PosSettings::blindDrawerCount).
     std::string blindCount;
+    // Their look (a Look id: High Contrast) on any screen while they're
+    // logged in; empty = the screen's.
+    std::string look;
     // Asked why on a void or comp: "ask", "skip", or empty for the store's
     // setting (PosSettings::askReasons).
     std::string reasons;

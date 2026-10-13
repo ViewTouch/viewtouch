@@ -791,3 +791,72 @@ TEST_CASE("A void's reason waits through a manager's approval", "[reasons]")
     pos.invoke(u"voidItem"_s, {});
     CHECK_FALSE(pos.reasonAsk().isEmpty());
 }
+
+#include "app/looks.hh"
+#include "layout_fixture.hh"
+
+TEST_CASE("High Contrast: white outlines and bright status colors, undone by another look", "[looks][contrast]")
+{
+    auto layout = vt::test::loadTestLayout();
+    REQUIRE(layout);
+    layout::Theme theme = layout->theme;
+    const auto look = [](const QString &id) {
+        for (const app::Look &l : app::builtInLooks())
+            if (l.id == id)
+                return l;
+        return app::Look{};
+    };
+    app::applyLook(theme, look(u"contrast"_s));
+    CHECK(theme.style.normal.value(u"frame"_s) == u"border"_s);
+    CHECK(theme.style.normal.value(u"borderColor"_s) == u"#ffffff"_s);
+    CHECK(theme.style.selected.value(u"textColor"_s) == u"#000000"_s);
+    CHECK(theme.extra.value(u"status"_s).toObject().value(u"kitchenLate"_s) == u"#ff1744"_s);
+    app::applyLook(theme, look(u"dark"_s));
+    CHECK(theme.style.normal.value(u"frame"_s) == u"raised"_s);
+    CHECK_FALSE(theme.style.normal.contains(u"borderColor"_s));
+    CHECK_FALSE(theme.extra.value(u"status"_s).toObject().contains(u"kitchenLate"_s));
+}
+
+TEST_CASE("Text size and look: a screen's own, a person's own wins while they're logged in", "[looks][textSize]")
+{
+    PosService pos(test::seedPosData(), nullptr);
+    core::TerminalConfig here;
+    here.name = pos.terminalName().toStdString();
+    here.textSize = 130;
+    here.look = "ocean";
+    pos.shared()->settings.terminals.push_back(here);
+    CHECK(pos.userPrefs()[u"textSize"_s] == 130);          // nobody logged in: the screen's
+    CHECK(pos.terminalLook() == u"ocean"_s);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    CHECK(pos.userPrefs()[u"textSize"_s] == 130);          // a person at normal size: the screen's
+
+    // Their own: Largest, and High Contrast on any screen.
+    QVariantList staff = pos.adminRecords(u"employees"_s);
+    for (qsizetype i = 0; i < staff.size(); ++i) {
+        QVariantMap e = staff[i].toMap();
+        if (e[u"name"_s] != pos.userName())
+            continue;
+        e[u"textSize"_s] = u"150"_s;
+        e[u"look"_s] = u"contrast"_s;
+        REQUIRE(pos.adminSave(u"employees"_s, int(i), e));
+        CHECK(app::employeeFromJson(app::toJson(pos.shared()->employees[i])).look == "contrast");
+    }
+    CHECK(pos.userPrefs()[u"textSize"_s] == 150);
+    CHECK(pos.terminalLook() == u"contrast"_s);
+    pos.logout();
+    CHECK(pos.terminalLook() == u"ocean"_s);
+
+    // Set on Terminals, kept.
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    QVariantList terms = pos.adminRecords(u"terminals"_s);
+    for (qsizetype i = 0; i < terms.size(); ++i) {
+        QVariantMap t = terms[i].toMap();
+        if (t[u"name"_s] != pos.terminalName())
+            continue;
+        CHECK(t[u"textSize"_s] == u"130"_s);
+        t[u"textSize"_s] = u"150"_s;
+        REQUIRE(pos.adminSave(u"terminals"_s, int(i), t));
+    }
+    const auto back = app::settingsFromJson(app::toJson(pos.shared()->settings));
+    CHECK(std::ranges::any_of(back.terminals, [](const core::TerminalConfig &t) { return t.textSize == 150; }));
+}

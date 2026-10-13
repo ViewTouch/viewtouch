@@ -282,6 +282,8 @@ void LayoutController::setPos(PosSession *pos)
         // deactivated or losing the role closes the editor (unsaved edits
         // are dropped, as in the legacy system).
         connect(pos_, &PosSession::sessionChanged, this, [this] {
+            if (pos_->terminalLook() != lookedId_)
+                updateTerminalLook();   // someone with their own look logged in, or out
             cardReader_.setCounter(pos_->counterCharge());   // a reader beside the screen, at work
             // The connection token the reader asked for.
             const QVariantMap token = pos_->readerToken();

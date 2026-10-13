@@ -396,8 +396,10 @@ QVariantList PosService::adminFields(const QString &panel)
                      "They choose the job when they clock in. Jobs: server, bartender, cashier, host, busser, driver, manager.")),
             with(field(u"language"_s, tr("Language"), u"enum"_s, tr("The screens switch to it when this person logs in.")),
                  u"options"_s, languageOptions(true)),
+            field(u"look"_s, tr("Look"), u"look"_s,
+                  tr("Their colors on any screen while they're logged in (High Contrast, say); empty: the screen's.")),
             with(field(u"textSize"_s, tr("Text size"), u"enum"_s, tr("Bigger button and check text, for them only.")),
-                 u"options"_s, options({{"100", "Normal"}, {"115", "Bigger"}, {"130", "Biggest"}})),
+                 u"options"_s, options({{"100", "Normal"}, {"115", "Bigger"}, {"130", "Biggest"}, {"150", "Largest"}})),
             field(u"leftHanded"_s, tr("Left-handed"), u"bool"_s,
                   tr("On their order and Pay screens the check is on the right and the menu on the left.")),
             with(with(field(u"startPage"_s, tr("Start screen"), u"page"_s,
@@ -798,6 +800,10 @@ QVariantList PosService::adminFields(const QString &panel)
                                         {"timeClock", "Time Clock (clock in / out and schedules only)"}})),
             // Choices filled in by the screen (its looks).
             field(u"look"_s, tr("Look"), u"look"_s, tr("This screen's colors; the store's look elsewhere.")),
+            with(field(u"textSize"_s, tr("Text size"), u"enum"_s,
+                       tr("Bigger button and check text on this screen (one read from afar, a bright kitchen). "
+                          "A person's own text size wins while they're logged in.")),
+                 u"options"_s, options({{"", "Normal"}, {"115", "Bigger"}, {"130", "Biggest"}, {"150", "Largest"}})),
             with(field(u"labelPrinter"_s, tr("Prep labels print on"), u"enum"_s,
                        tr("The printer by this screen for prep labels. Empty: the store's (Store Settings → Inventory).")),
                  u"options"_s, ([this](const QString &none) {
@@ -875,7 +881,7 @@ QVariantList PosService::adminRecords(const QString &panel)
                                    lines << u"%1 %2"_s.arg(qs(j.role), QString::number(j.rate.cents() / 100.0, 'f', 2));
                                return lines.join(u'\n');
                            }()},
-                          {u"checkout"_s, qs(e.checkout)}, {u"blindCount"_s, qs(e.blindCount)}, {u"reasons"_s, qs(e.reasons)}, {u"tipPool"_s, qs(e.tipPool)}};
+                          {u"checkout"_s, qs(e.checkout)}, {u"blindCount"_s, qs(e.blindCount)}, {u"reasons"_s, qs(e.reasons)}, {u"look"_s, qs(e.look)}, {u"tipPool"_s, qs(e.tipPool)}};
             for (const char *p : AllPermissions)
                 r.insert(u"perm:"_s + QString::fromLatin1(p),
                          e.allow.contains(p) ? u"allow"_s : e.deny.contains(p) ? u"deny"_s : QString());
@@ -1096,7 +1102,7 @@ QVariantList PosService::adminRecords(const QString &panel)
                  {u"screen"_s, qs(t.screen)}, {u"look"_s, qs(t.look)}, {u"keyboard"_s, qs(t.keyboard)},
                  {u"requireName"_s, qs(t.requireName)}, {u"cardReader"_s, qs(t.cardReader)},
                  {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)},
-                 {u"labelPrinter"_s, qs(t.labelPrinter)}},
+                 {u"labelPrinter"_s, qs(t.labelPrinter)}, {u"textSize"_s, t.textSize ? QString::number(t.textSize) : QString()}},
                 qs(t.name), (p ? qs(p->name) : tr("Receipt (default)"))
                                 + (s_->settings.hasDrawer(t.name) ? QString() : tr(" · no drawer"))
                                 + (t.key.empty() ? QString() : tr(" · paired device"))
@@ -1117,7 +1123,7 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
                 {u"takeoutPrice"_s, 0.0}, {u"deliveryPrice"_s, 0.0}, {u"noDiscount"_s, false}, {u"noStaffDiscount"_s, false}};
     if (panel == u"employees")
         return {{u"id"_s, QString()}, {u"name"_s, QString()}, {u"role"_s, u"server"_s}, {u"pin"_s, QString()},
-                {u"active"_s, true}, {u"training"_s, false}, {u"cashMode"_s, QString()}, {u"requireName"_s, QString()}, {u"checkout"_s, QString()}, {u"blindCount"_s, QString()}, {u"reasons"_s, QString()}, {u"tipPool"_s, QString()},
+                {u"active"_s, true}, {u"training"_s, false}, {u"cashMode"_s, QString()}, {u"requireName"_s, QString()}, {u"checkout"_s, QString()}, {u"blindCount"_s, QString()}, {u"reasons"_s, QString()}, {u"look"_s, QString()}, {u"tipPool"_s, QString()},
                 {u"payRate"_s, 0.0}, {u"otherJobs"_s, QString()}, {u"language"_s, QString()},
                 {u"textSize"_s, u"100"_s}, {u"leftHanded"_s, false}, {u"startPage"_s, QString()},
                 {u"perm:order"_s, QString()}, {u"perm:check.settle"_s, QString()}, {u"perm:check.others"_s, QString()}, {u"perm:check.discount"_s, QString()},
@@ -1129,7 +1135,7 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
         return {{u"name"_s, terminal_}, {u"receiptPrinter"_s, QString()}, {u"drawer"_s, QString()},
                 {u"screen"_s, QString()}, {u"look"_s, QString()}, {u"keyboard"_s, QString()}, {u"requireName"_s, QString()},
                 {u"cardReader"_s, QString()}, {u"afterPaying"_s, QString()}, {u"startCategory"_s, QString()},
-                {u"labelPrinter"_s, QString()}};
+                {u"labelPrinter"_s, QString()}, {u"textSize"_s, QString()}};
     if (panel == u"mealPeriods")
         return {{u"id"_s, QString()}, {u"name"_s, QString()}, {u"start"_s, u"17:00"_s}};
     if (panel == u"modifierGroups")
@@ -1458,6 +1464,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
         t.afterPaying = ss(after);
         t.startCategory = ss(record.value(u"startCategory"_s).toString());
         t.labelPrinter = ss(record.value(u"labelPrinter"_s).toString());
+        t.textSize = record.value(u"textSize"_s).toString().isEmpty() ? 0
+                                                                    : std::clamp(record.value(u"textSize"_s).toInt(), 80, 160);
         if (index >= 0 && index < int(list.size()))
             list[index] = t;
         else
@@ -2017,6 +2025,7 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     e.checkout = ss(checkout);
     e.blindCount = ss(blindCount);
     e.reasons = ss(reasons);
+    e.look = ss(record.value(u"look"_s, qs(e.look)).toString());
     e.tipPool = ss(tipPool);
     e.allow = allow;
     e.deny = deny;
@@ -2636,6 +2645,9 @@ bool PosService::stopPairing()
 
 QString PosService::terminalLook() const
 {
+    // The person's own, while they're logged in.
+    if (const Employee *e = user(); e && !e->look.empty())
+        return qs(e->look);
     for (const TerminalConfig &t : s_->settings.terminals)
         if (qs(t.name) == terminal_)
             return qs(t.look);

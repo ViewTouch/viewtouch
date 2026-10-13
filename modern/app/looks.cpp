@@ -136,6 +136,29 @@ void applyLook(layout::Theme &theme, const Look &look)
     }
     QJsonObject status = theme.extra.value(u"status").toObject();
     set(status, u"tableCurrent"_s, hex(look.accent));
+    // High contrast: every button outlined in white, and the colors that mean
+    // something at their brightest (a bright kitchen, eyes that need it).
+    if (look.id == u"contrast") {
+        set(theme.style.normal, u"frame"_s, u"border"_s);
+        set(theme.style.normal, u"frameWidth"_s, 3);
+        set(theme.style.normal, u"borderColor"_s, u"#ffffff"_s);
+        set(theme.style.normal, u"bold"_s, true);
+        set(theme.style.selected, u"textColor"_s, u"#000000"_s);
+        for (const auto &[key, color] : {std::pair{"tableOpen", "#ff9f1a"}, std::pair{"tableMine", "#00e676"},
+                                         std::pair{"tableLong", "#ff1744"}, std::pair{"kitchenNew", "#00c853"},
+                                         std::pair{"kitchenWarn", "#ffab00"}, std::pair{"kitchenLate", "#ff1744"},
+                                         std::pair{"kitchenReady", "#2979ff"}, std::pair{"soldOut", "#ff1744"}})
+            set(status, QString::fromLatin1(key), QString::fromLatin1(color));
+        theme.extra.insert(u"contrast"_s, true);
+    } else if (theme.extra.value(u"contrast").toBool()) {
+        // Back from high contrast: the usual frames and status colors.
+        theme.style.normal.remove(u"borderColor"_s);
+        set(theme.style.normal, u"frame"_s, u"raised"_s);
+        for (const char *key : {"tableOpen", "tableMine", "tableLong", "kitchenNew", "kitchenWarn", "kitchenLate",
+                                "kitchenReady", "soldOut"})
+            status.remove(QString::fromLatin1(key));
+        theme.extra.remove(u"contrast"_s);
+    }
     theme.extra.insert(u"status"_s, status);
 }
 

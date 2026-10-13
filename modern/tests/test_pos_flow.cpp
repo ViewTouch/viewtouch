@@ -3812,6 +3812,36 @@ TEST_CASE("UI: the kitchen screen's Labels and Waste; a prep label by touch", "[
     CHECK(s.c.pageId() == u"waste-log"_s);
 }
 
+TEST_CASE("UI: a person with High Contrast and the largest text", "[flow][ui][looks]")
+{
+    Screen s;
+    for (core::Employee &e : s.pos.shared()->employees)
+        if (e.name == "Sam") {
+            e.look = "contrast";
+            e.textSize = 150;
+        }
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    QTest::qWait(80);
+    CHECK(s.pos.terminalLook() == u"contrast"_s);
+    REQUIRE(s.pos.startCheck(core::CheckType::Quick));
+    s.pos.addItem(u"coffee"_s);
+    REQUIRE(s.c.jumpTo(u"items-burgers"_s));
+    QTest::qWait(120);
+    s.shot("high-contrast");
+    // Big text still fits the check: the price and the line's keys inside it.
+    QQuickItem *price = Screen::findBy(s.window->contentItem(), "text", u"$2.75"_s);
+    QQuickItem *again = Screen::findBy(s.window->contentItem(), "objectName", u"lineAgain"_s);
+    REQUIRE(price);
+    REQUIRE(again);
+    QQuickItem *list = price;
+    while (list && !list->inherits("QQuickListView"))
+        list = list->parentItem();
+    REQUIRE(list);
+    const QRectF inside = list->mapRectToScene(QRectF(0, 0, list->width(), list->height()));
+    CHECK(inside.contains(price->mapRectToScene(QRectF(0, 0, price->width(), price->height()))));
+    CHECK(inside.contains(again->mapRectToScene(QRectF(0, 0, again->width(), again->height()))));
+}
+
 TEST_CASE("UI: clocking in with two jobs asks which one", "[flow][ui][pay]")
 {
     Screen s;
