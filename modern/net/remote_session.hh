@@ -144,6 +144,7 @@ public:
     QVariantList kitchenStations() const override { return v(u"kitchenStations").toList(); }
     QString kitchenStation() const override { return v(u"kitchenStation").toString(); }
     QVariantList messages() const override { return v(u"messages").toList(); }
+    QVariantList handoff() const override { return v(u"handoff").toList(); }
     bool standbyReady() const override { return !welcomed_ && !standbyHost_.isEmpty(); }
     QVariantMap networkInfo() const override { return v(u"network").toMap(); }
     QVariantList printerAlerts() const override { return v(u"printerAlerts").toList(); }

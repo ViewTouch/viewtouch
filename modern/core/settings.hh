@@ -411,6 +411,16 @@ struct PosSettings {
         bool operator==(const Notice &) const = default;
     };
     std::vector<Notice> notices;
+    // Notes from one shift's manager to the next ("walk-in door sticks"): each
+    // manager sees them when they log in, until they've read them (a week at most).
+    struct HandoffNote {
+        std::int64_t id = 0;
+        std::int64_t at = 0;
+        std::string from, text;
+        std::vector<std::string> readBy;   // employee ids
+        bool operator==(const HandoffNote &) const = default;
+    };
+    std::vector<HandoffNote> handoffNotes;
     // Changes managers made to time punches, with why (the last 500): the
     // Labor report lists them.
     struct PunchChange {

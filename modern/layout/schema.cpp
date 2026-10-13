@@ -209,7 +209,8 @@ QList<BuiltIn> builtInButtons(const QString &kind)
                             {u"noSale"_s, u"No Sale"_s, u"noSale"_s, true},
                             {u"payOut"_s, u"Pay Out"_s, u"payout"_s, true},
                             {u"paidIn"_s, u"Paid In"_s, u"paidIn"_s, true}}},
-        {u"endOfDay"_s, {{u"backup"_s, u"Back Up Now"_s, u"backupNow"_s}}},
+        {u"endOfDay"_s, {{u"backup"_s, u"Back Up Now"_s, u"backupNow"_s},
+                         {u"handoff"_s, u"Note for the Next Shift…"_s, QString()}}},
     };
     return buttons.value(kind);
 }

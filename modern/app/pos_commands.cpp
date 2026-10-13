@@ -150,6 +150,8 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"expoRecall"_s, [](PosService &p, const QVariantList &) { return QVariant(p.expoRecall()); }},
         {u"addTip"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.addTip(a.value(0).toLongLong())); }},
         {u"setCashTip"_s, [](PosService &p, const QVariantList &) { return QVariant(p.setCashTip()); }},
+        {u"leaveHandoffNote"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.leaveHandoffNote(a.value(0).toString())); }},
+        {u"readHandoffNotes"_s, [](PosService &p, const QVariantList &) { return QVariant(p.readHandoffNotes()); }},
         {u"setGratuity"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setGratuity(a.value(0).toLongLong())); }},
         {u"payout"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.payout(cashMovementKindFromString(ss(a.value(0).toString())))); }},

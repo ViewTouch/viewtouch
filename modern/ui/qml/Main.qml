@@ -123,7 +123,7 @@ ApplicationWindow {
     readonly property bool pageCovered: selfOrder.visible || root.controller.asleep || cardWait.visible
                                         || receiptSheet.visible || setupLoader.active || jobChooser.visible || cashTipsPrompt.visible
                                         || approvalPad.visible || allergySheet.visible || couponSheet.visible || holdSheet.visible
-                                        || TouchGuard.sheetOpen || reasonSheet.visible
+                                        || TouchGuard.sheetOpen || reasonSheet.visible || handoffSheet.visible
 
     Loader {
         active: root.customerDisplay
@@ -1151,6 +1151,13 @@ ApplicationWindow {
         id: reasonSheet
         anchors.fill: parent
         z: 59
+        pos: root.controller.pos as PosService
+    }
+
+    HandoffSheet {
+        id: handoffSheet
+        anchors.fill: parent
+        z: 58
         pos: root.controller.pos as PosService
     }
 

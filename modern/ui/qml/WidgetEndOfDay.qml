@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls.Fusion
 import QtQuick.Layouts
 
 // End of Day: shows what is still in the way (open checks, uncounted
@@ -146,6 +147,15 @@ Item {
                 font.pixelSize: w.unit * 0.75
             }
             WidgetKey {
+                objectName: "handoffNote"
+                Layout.preferredWidth: w.unit * 8
+                Layout.preferredHeight: Math.max(w.unit * 2, w.zone ? w.zone.touch(46) : 0)
+                visible: w.zone.keyShown("handoff")
+                text: w.zone.keyText("handoff", qsTr("Note for the Next Shift…"))
+                fontScale: 0.3
+                onClicked: handoffWrite.open()
+            }
+            WidgetKey {
                 Layout.preferredWidth: w.unit * 8
                 Layout.preferredHeight: Math.max(w.unit * 2, w.zone ? w.zone.touch(46) : 0)
                 visible: w.zone.keyShown("backup")
@@ -181,6 +191,60 @@ Item {
                 }
                 w.armed = false
                 w.pos.endOfDay()
+            }
+        }
+    }
+
+    // A note for the next shift's manager: they see it when they log in.
+    Popup {
+        id: handoffWrite
+        objectName: "handoffWrite"
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        width: Math.min(parent ? parent.width - 24 : 600, 640)
+        modal: true
+        padding: 20
+        onOpened: { noteText.text = ""; noteText.forceActiveFocus() }
+        background: Rectangle { color: "#232933"; radius: 14; border.color: "#2f6fd6"; border.width: 2 }
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 12
+            Text {
+                Layout.fillWidth: true
+                text: qsTr("A note for the next shift's manager")
+                color: "white"
+                font.pixelSize: 22
+                font.bold: true
+                wrapMode: Text.WordWrap
+            }
+            TextArea {
+                id: noteText
+                objectName: "handoffText"
+                Layout.fillWidth: true
+                Layout.preferredHeight: 160
+                wrapMode: TextEdit.Wrap
+                font.pixelSize: 20
+                placeholderText: qsTr("Walk-in door sticks · 86 brisket tomorrow · Sam owes $20")
+            }
+            RowLayout {
+                spacing: 10
+                WidgetKey {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 56
+                    text: qsTr("Cancel")
+                    fontScale: 0.34
+                    takesTouch: true
+                    onClicked: handoffWrite.close()
+                }
+                WidgetKey {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 56
+                    text: qsTr("Leave Note")
+                    accent: true
+                    fontScale: 0.34
+                    takesTouch: true
+                    onClicked: { w.pos.leaveHandoffNote(noteText.text); handoffWrite.close() }
+                }
             }
         }
     }

@@ -133,6 +133,7 @@ if(Qt6_FOUND)
             ui/qml/StationWindow.qml
             ui/qml/StationIcon.qml
             ui/qml/PicturePicker.qml
+            ui/qml/HandoffSheet.qml
             ui/qml/PageView.qml
             ui/qml/ZoneItem.qml
             ui/qml/ZoneShape.qml

@@ -819,6 +819,10 @@ public:
     bool sendMessage(const QString &to, const QString &text, qint64 until = 0);
     bool removeMessage(const QString &id);
     QVariantList messages() const override;
+    // Shift notes: the ones this manager hasn't read (newest first), leaving one, reading them.
+    QVariantList handoff() const override;
+    bool leaveHandoffNote(const QString &text);
+    bool readHandoffNotes();
     QVariantMap networkInfo() const override;
     QVariantList printerAlerts() const override;
     QString language() const override;

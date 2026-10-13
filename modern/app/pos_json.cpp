@@ -1086,6 +1086,17 @@ QJsonObject toJson(const PosSettings &s)
                                       {u"employee"_s, qs(c.employee)}, {u"what"_s, qs(c.what)}, {u"why"_s, qs(c.why)}});
              return a;
          }()},
+        {u"handoffNotes"_s, [&] {
+             QJsonArray a;
+             for (const PosSettings::HandoffNote &n : s.handoffNotes) {
+                 QJsonArray read;
+                 for (const std::string &r : n.readBy)
+                     read.append(qs(r));
+                 a.append(QJsonObject{{u"id"_s, qint64(n.id)}, {u"at"_s, qint64(n.at)}, {u"from"_s, qs(n.from)},
+                                      {u"text"_s, qs(n.text)}, {u"readBy"_s, read}});
+             }
+             return a;
+         }()},
         {u"notices"_s, [&] {
              QJsonArray a;
              for (const PosSettings::Notice &n : s.notices)
@@ -1348,6 +1359,14 @@ PosSettings settingsFromJson(const QJsonObject &o)
         s.punchChanges.push_back({i64(x.value(u"at")), i64(x.value(u"punchId")), ss(x.value(u"by").toString()),
                                   ss(x.value(u"employee").toString()), ss(x.value(u"what").toString()),
                                   ss(x.value(u"why").toString())});
+    }
+    for (const QJsonValue &v : o.value(u"handoffNotes").toArray()) {
+        const QJsonObject x = v.toObject();
+        PosSettings::HandoffNote n{i64(x.value(u"id")), i64(x.value(u"at")), ss(x.value(u"from").toString()),
+                                   ss(x.value(u"text").toString()), {}};
+        for (const QJsonValue &r : x.value(u"readBy").toArray())
+            n.readBy.push_back(ss(r.toString()));
+        s.handoffNotes.push_back(n);
     }
     for (const QJsonValue &v : o.value(u"notices").toArray()) {
         const QJsonObject x = v.toObject();

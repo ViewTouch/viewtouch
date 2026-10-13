@@ -99,6 +99,8 @@ class PosSession : public QObject {
     Q_PROPERTY(QString kitchenStation READ kitchenStation NOTIFY adminChanged)
     // Messages between screens, the last hour's, newest first.
     Q_PROPERTY(QVariantList messages READ messages NOTIFY dayChanged)
+    // Shift notes for the manager logged in, not read yet.
+    Q_PROPERTY(QVariantList handoff READ handoff NOTIFY sessionChanged)
     Q_PROPERTY(bool standbyReady READ standbyReady NOTIFY sessionChanged)
     // This screen's language: the logged-in person's, else the store's.
     Q_PROPERTY(QString language READ language NOTIFY sessionChanged)
@@ -305,6 +307,7 @@ public:
     virtual QVariantList kitchenStations() const = 0;
     virtual QString kitchenStation() const = 0;
     virtual QVariantList messages() const = 0;
+    virtual QVariantList handoff() const = 0;
     // A screen that lost its server: the store's standby is there, ready.
     virtual bool standbyReady() const { return false; }
     virtual QString language() const = 0;
@@ -572,6 +575,8 @@ public:
         invoke(QStringLiteral("sendMessage"), {to, text, qint64(until)});
     }
     Q_INVOKABLE void removeMessage(const QString &id) { invoke(QStringLiteral("removeMessage"), {id}); }
+    Q_INVOKABLE void leaveHandoffNote(const QString &text) { invoke(QStringLiteral("leaveHandoffNote"), {text}); }
+    Q_INVOKABLE void readHandoffNotes() { invoke(QStringLiteral("readHandoffNotes"), {}); }
     Q_INVOKABLE void cancelApproval() { invoke(QStringLiteral("cancelApproval")); }
     // The reason for the void or comp asked about (reasonAsk); empty: don't.
     Q_INVOKABLE void giveReason(const QString &reason) { invoke(QStringLiteral("giveReason"), {reason}); }

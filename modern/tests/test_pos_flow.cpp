@@ -5532,6 +5532,50 @@ TEST_CASE("Host stand: a cash tip handed to the host is in the host's cash and o
     CHECK(core::tipsOwed(sam, s.pos.shared()->closedToday, s.pos.shared()->drawers, s.pos.shared()->settings.tax).cents() == 500);
 }
 
+TEST_CASE("Shift notes: left at End of Day, read by the next manager when they log in", "[ui][handoff]")
+{
+    Screen s;
+    core::Employee next;
+    next.id = "mgr-2";
+    next.name = "Alex";
+    next.role = "manager";
+    next.pinSalt = app::newSalt();
+    next.pinHash = app::hashPin(u"8888"_s, next.pinSalt);
+    s.pos.shared()->employees.push_back(next);
+    QQuickItem *root = s.window->contentItem();
+    const auto by = [&](const QString &name) { return Screen::findBy(root, "objectName", name); };
+
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));               // Morgan, closing
+    REQUIRE(s.c.jumpTo(u"end-of-day"_s));
+    QTest::qWait(80);
+    REQUIRE(by(u"handoffNote"_s));
+    s.tapItem(by(u"handoffNote"_s));
+    QTest::qWait(80);
+    REQUIRE(by(u"handoffText"_s));
+    CHECK_FALSE(s.pos.leaveHandoffNote(u"  "_s));        // empty: no
+    REQUIRE(s.pos.leaveHandoffNote(u"Walk-in door sticks. 86 brisket tomorrow."_s));
+    CHECK(s.pos.handoff().isEmpty());                      // not to themselves
+    s.pos.logout();
+
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));               // Sam, a server: not his
+    CHECK(s.pos.handoff().isEmpty());
+    s.pos.logout();
+
+    REQUIRE(s.pos.loginWithPin(u"8888"_s));               // Alex, opening
+    QTest::qWait(80);
+    REQUIRE(s.pos.handoff().size() == 1);
+    CHECK(s.pos.handoff().first().toMap()[u"text"_s].toString().contains(u"brisket"_s));
+    REQUIRE(by(u"handoffRead"_s));                         // the sheet is up
+    s.shot("handoff");
+    s.tapItem(by(u"handoffRead"_s));
+    QTest::qWait(80);
+    CHECK(s.pos.handoff().isEmpty());
+    CHECK_FALSE(by(u"handoffRead"_s));
+    s.pos.logout();
+    REQUIRE(s.pos.loginWithPin(u"8888"_s));
+    CHECK(s.pos.handoff().isEmpty());                      // read: not again
+}
+
 TEST_CASE("Phone audit: typing on a phone", "[.][phonekeys]")
 {
     Screen s(true, 412, 870, u"phone"_s);

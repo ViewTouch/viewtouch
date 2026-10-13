@@ -517,6 +517,56 @@ bool PosService::removeMessage(const QString &id)
     return true;
 }
 
+QVariantList PosService::handoff() const
+{
+    // For managers: notes from the last shifts they haven't read (not their own).
+    QVariantList out;
+    const Employee *e = user();
+    if (!e || !permissionsOf(*e).contains(perm::Manager))
+        return out;
+    const std::int64_t week = now() - 7LL * 24 * 3'600'000;
+    for (auto it = s_->settings.handoffNotes.rbegin(); it != s_->settings.handoffNotes.rend(); ++it) {
+        if (it->at < week || it->from == e->name || std::ranges::find(it->readBy, e->id) != it->readBy.end())
+            continue;
+        out.append(QVariantMap{{u"id"_s, qint64(it->id)}, {u"from"_s, qs(it->from)}, {u"text"_s, qs(it->text)},
+                               {u"when"_s, i18n::dateTimeText(QDateTime::fromMSecsSinceEpoch(it->at))}});
+    }
+    return out;
+}
+
+bool PosService::leaveHandoffNote(const QString &text)
+{
+    if (!require(perm::Manager, tr("Shift notes")))
+        return false;
+    const QString t = text.trimmed();
+    if (t.isEmpty())
+        return fail(tr("Type the note."));
+    auto &list = s_->settings.handoffNotes;
+    const std::int64_t week = now() - 7LL * 24 * 3'600'000;
+    std::erase_if(list, [&](const PosSettings::HandoffNote &n) { return n.at < week; });
+    std::int64_t id = 1;
+    for (const PosSettings::HandoffNote &n : list)
+        id = std::max(id, n.id + 1);
+    list.push_back({id, now(), user()->name, ss(t.left(1000)), {user()->id}});
+    s_->saveSettings();
+    emit notice(tr("Note left for the next shift's manager"));
+    emit sessionChanged();
+    return true;
+}
+
+bool PosService::readHandoffNotes()
+{
+    const Employee *e = user();
+    if (!e)
+        return false;
+    for (PosSettings::HandoffNote &n : s_->settings.handoffNotes)
+        if (std::ranges::find(n.readBy, e->id) == n.readBy.end())
+            n.readBy.push_back(e->id);
+    s_->saveSettings();
+    emit sessionChanged();
+    return true;
+}
+
 QVariantList PosService::messages() const
 {
     // Posted messages until they expire, then the last hour's, newest first.
