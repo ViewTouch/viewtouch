@@ -162,6 +162,10 @@ bool PosService::cardForwarded(const QVariantMap &r)
                 p.reference = ss(r.value(u"id"_s).toString());
                 p.offline.clear();
                 c->note(now(), "Stripe", ss(tr("Card payment sent to Stripe: %1").arg(qs(p.reference))), "pay");
+                if (!c->receiptEmail.empty() && !c->receiptEmailSent) {
+                    const std::int64_t id = c->id;
+                    QTimer::singleShot(0, this, [this, id] { s_->receiptTried.erase(id); emailReceiptNow(id); });
+                }
             } else {
                 p.offline = "declined";
                 c->note(now(), "Stripe", ss(tr("Card declined once sent to Stripe: %1 %2 (%3)")

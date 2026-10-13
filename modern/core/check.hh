@@ -253,6 +253,10 @@ struct Check {
     std::int64_t drawerSession = 0;   // drawer that took its cash
     Customer customer;
     std::string customerId;           // a saved customer (their visits, house account)
+    // An emailed receipt asked for: Stripe sends it once every card payment on
+    // the check has reached Stripe (a card taken offline, the internet down).
+    std::string receiptEmail;
+    bool receiptEmailSent = false;
     std::int64_t gratuityBp = 0;      // e.g. 1800 = 18% of the subtotal
     bool autoGratuity = false;        // added for a large party (not by hand)
     std::vector<CheckEvent> events;   // oldest first

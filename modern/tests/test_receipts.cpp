@@ -1,6 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "pos_fixture.hh"
+#include "print/document.hh"
+#include "print/tickets.hh"
 #include "qt_catch.hh"
 
 #include <QTest>
@@ -182,4 +184,105 @@ TEST_CASE("Receipts: a check paid in cash can't be emailed", "[receipts]")
     PosService pos(&shared, u"Handheld"_s);
     const qint64 id = payCash(pos);
     CHECK_FALSE(pos.emailReceipt(id, u"guest@example.com"_s));
+}
+
+TEST_CASE("Receipts: a card taken offline: the receipt says approval pending; the email goes once it reaches Stripe", "[receipts][cards][offlinecards]")
+{
+    PosShared shared(store("", "ask"), nullptr);
+    shared.settings.stripeSecretKey = "sk_test_x";
+    shared.settings.offlineCards = true;
+    QStringList calls;
+    bool internet = true;
+    shared.stripeCall = [&](const QString &method, const QString &path, const QString &form,
+                            std::function<void(const QJsonObject &, const QString &)> done) {
+        if (!internet)
+            return done({}, u"Host not found"_s);
+        calls << method + u' ' + path + (form.isEmpty() ? QString() : u" ?"_s + form);
+        if (path.startsWith(u"/v1/payment_intents/pi_"_s))
+            return done({{u"latest_charge"_s, u"ch_"_s + path.section(u'_', 2)}}, {});
+        return done({}, {});
+    };
+    PosService pos(&shared, u"Handheld"_s);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    REQUIRE(pos.addItem(u"coffee"_s));
+    const qint64 id = pos.checkInfo()[u"id"_s].toLongLong();
+    REQUIRE(pos.recordCardPayment({{u"offline"_s, true}, {u"localRef"_s, u"loc9"_s}, {u"amountCents"_s, 298},
+                                   {u"tipCents"_s, 0}, {u"checkId"_s, id}, {u"tenderId"_s, u"credit"_s},
+                                   {u"processor"_s, u"stripe"_s}, {u"brand"_s, u"visa"_s}, {u"last4"_s, u"4242"_s}}));
+    if (pos.hasCheck())
+        REQUIRE(pos.closeCheck());
+    const auto checkNow = [&]() -> const core::Check & {
+        for (const core::Check &c : shared.closedToday)
+            if (c.id == id)
+                return c;
+        FAIL("no check");
+        return shared.closedToday.front();
+    };
+
+    // The printed receipt: approval pending, no Stripe id yet.
+    const std::string receipt = print::renderText(
+        print::receipt(checkNow(), {shared.settings, [](std::int64_t) { return std::string("Oct 8"); },
+                                    [](std::int64_t) { return std::string("10:31 AM"); }, 0}), 42);
+    CHECK(receipt.find("Approval pending") != std::string::npos);
+    CHECK(receipt.find("offline:") == std::string::npos);
+
+    // Emailed: kept on the check; nothing asked of Stripe yet.
+    REQUIRE(pos.emailReceipt(id, u"guest@example.com"_s));
+    CHECK(checkNow().receiptEmail == "guest@example.com");
+    CHECK_FALSE(checkNow().receiptEmailSent);
+    CHECK(calls.isEmpty());
+
+    // The card reaches Stripe: the receipt goes.
+    REQUIRE(pos.cardForwarded({{u"localRef"_s, u"loc9"_s}, {u"status"_s, u"ok"_s}, {u"id"_s, u"pi_9"_s}}));
+    QTest::qWait(20);
+    CHECK(calls.contains(u"GET /v1/payment_intents/pi_9"_s));
+    CHECK(calls.contains(u"POST /v1/charges/ch_9 ?receipt_email=guest%40example.com"_s));
+    CHECK(checkNow().receiptEmailSent);
+    const std::string later = print::renderText(
+        print::receipt(checkNow(), {shared.settings, [](std::int64_t) { return std::string("Oct 8"); },
+                                    [](std::int64_t) { return std::string("10:31 AM"); }, 0}), 42);
+    CHECK(later.find("Approval pending") == std::string::npos);
+    CHECK(later.find("pi_9") != std::string::npos);
+}
+
+TEST_CASE("Receipts: emailed with the internet down: it waits and goes by itself", "[receipts][cards]")
+{
+    PosShared shared(store("", "ask"), nullptr);
+    shared.settings.stripeSecretKey = "sk_test_x";
+    QStringList calls;
+    bool internet = true;
+    shared.stripeCall = [&](const QString &method, const QString &path, const QString &form,
+                            std::function<void(const QJsonObject &, const QString &)> done) {
+        if (!internet)
+            return done({}, u"Host not found"_s);
+        calls << method + u' ' + path + (form.isEmpty() ? QString() : u" ?"_s + form);
+        if (path == u"/v1/payment_intents/pi_7")
+            return done({{u"latest_charge"_s, u"ch_7"_s}}, {});
+        return done({}, {});
+    };
+    PosService pos(&shared, u"Handheld"_s);
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.startCheck(core::CheckType::Quick));
+    REQUIRE(pos.addItem(u"coffee"_s));
+    const qint64 id = pos.checkInfo()[u"id"_s].toLongLong();
+    REQUIRE(pos.recordCardPayment({{u"reference"_s, u"pi_7"_s}, {u"amountCents"_s, 298}, {u"tipCents"_s, 0},
+                                   {u"checkId"_s, id}, {u"tenderId"_s, u"credit"_s}, {u"processor"_s, u"stripe"_s}}));
+    if (pos.hasCheck())
+        REQUIRE(pos.closeCheck());
+    internet = false;
+    REQUIRE(pos.emailReceipt(id, u"guest@example.com"_s));
+    const auto sent = [&] {
+        for (const core::Check &c : shared.closedToday)
+            if (c.id == id)
+                return c.receiptEmailSent;
+        return false;
+    };
+    CHECK_FALSE(sent());
+    // The internet is back: the next round sends it.
+    internet = true;
+    shared.receiptTried.clear();
+    pos.sendWaitingReceipts();
+    CHECK(calls.contains(u"POST /v1/charges/ch_7 ?receipt_email=guest%40example.com"_s));
+    CHECK(sent());
 }

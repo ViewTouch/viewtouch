@@ -115,6 +115,8 @@ PosService::PosService(PosShared *shared, QString terminalName, QObject *parent)
 
 PosService::~PosService()
 {
+    if (s_->receiptSender == this)
+        s_->receiptSender = nullptr;
     // A card on a reader beside this terminal, still being taken: the store
     // keeps watching it and puts it on the check when Stripe answers.
     if (!counter_.value(u"paymentIntent"_s).toString().isEmpty() && !counterHeir_) {
@@ -133,6 +135,10 @@ void PosService::connectShared()
     connect(&priceClock_, &QTimer::timeout, this, &PosService::applyDuePriceChanges);
     priceClock_.start();
     QTimer::singleShot(0, this, &PosService::applyDuePriceChanges);
+    // Receipts waiting for Stripe: one service sends them (the first; the next when it goes).
+    connect(&priceClock_, &QTimer::timeout, this, &PosService::sendWaitingReceipts);
+    if (!s_->receiptSender)
+        s_->receiptSender = this;
     // A refund recorded (here or on another terminal): checks found here show it.
     connect(s_, &PosShared::refundRecorded, this, [this](const Refund &r, const QString &what) {
         bool shown = false;

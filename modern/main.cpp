@@ -1068,7 +1068,16 @@ int runStore(const Args &cli, const Options &o)
     // Texts to guests ("your table is ready") go to the store's texting
     // service: a JSON POST of {to, message}, never blocking the screen.
     QNetworkAccessManager texting;
-    shared->sendText = [shared, &texting, &pos](const QString &phone, const QString &message) {
+    // A text that couldn't go out (the network or the internet down) waits and
+    // is tried again every minute, for a day; the texting service saying no
+    // (a wrong number) is told at once instead.
+    struct WaitingText { QString phone, message; qint64 since = 0; };
+    QList<WaitingText> waitingTexts;
+    QTimer textRetry;
+    textRetry.setInterval(60'000);
+    std::function<void(const QString &, const QString &, qint64)> postText;
+    postText = [shared, &texting, &pos, &waitingTexts, &textRetry, &postText](const QString &phone, const QString &message,
+                                                                             qint64 since) {
         const QUrl url(QString::fromStdString(shared->settings.textWebhook));
         if (!url.isValid() || url.scheme().isEmpty())
             return;
@@ -1077,11 +1086,31 @@ int runStore(const Args &cli, const Options &o)
         request.setTransferTimeout(15000);
         QNetworkReply *reply = texting.post(request, QJsonDocument(QJsonObject{{u"to"_s, phone}, {u"message"_s, message}})
                                                          .toJson(QJsonDocument::Compact));
-        QObject::connect(reply, &QNetworkReply::finished, &pos, [reply, phone, &pos] {
-            if (reply->error() != QNetworkReply::NoError)
-                say(pos, QCoreApplication::translate("main", "The text to %1 didn't go out: %2").arg(phone, reply->errorString()));
+        QObject::connect(reply, &QNetworkReply::finished, &pos, [reply, phone, message, since, &pos, &waitingTexts, &textRetry] {
             reply->deleteLater();
+            if (reply->error() == QNetworkReply::NoError)
+                return;
+            const bool answered = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).isValid();
+            const bool young = QDateTime::currentMSecsSinceEpoch() - since < 24LL * 3600 * 1000;
+            if (answered || !young) {
+                say(pos, QCoreApplication::translate("main", "The text to %1 didn't go out: %2").arg(phone, reply->errorString()));
+                return;
+            }
+            if (waitingTexts.isEmpty())
+                say(pos, QCoreApplication::translate("main", "The text to %1 waits for the internet; it goes by itself.").arg(phone));
+            waitingTexts.append({phone, message, since});
+            textRetry.start();
         });
+    };
+    QObject::connect(&textRetry, &QTimer::timeout, &pos, [&waitingTexts, &textRetry, &postText] {
+        const QList<WaitingText> again = std::exchange(waitingTexts, {});
+        if (again.isEmpty())
+            textRetry.stop();
+        for (const WaitingText &t : again)
+            postText(t.phone, t.message, t.since);
+    });
+    shared->sendText = [&postText](const QString &phone, const QString &message) {
+        postText(phone, message, QDateTime::currentMSecsSinceEpoch());
     };
 
     // Factory reset from the Manager page: back up now, then leave; main

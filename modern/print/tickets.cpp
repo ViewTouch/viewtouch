@@ -148,7 +148,12 @@ Document receipt(const Check &check, const TicketContext &ctx)
                 ch = char(std::toupper(static_cast<unsigned char>(ch)));
             d.text("  " + (brand.empty() ? std::string() : brand + " ") + "**** " + p.last4);
         }
-        if (p.processor == "stripe" && !p.reference.empty())
+        // Taken while the internet was down: the bank hasn't answered yet.
+        if (p.offline == "waiting")
+            d.text("  " + ctx.tr("Approval pending (taken offline)"));
+        else if (p.offline == "declined" || p.offline == "seen")
+            d.text("  " + ctx.tr("Declined once sent: not paid"));
+        if (p.processor == "stripe" && !p.reference.empty() && p.offline.empty())
             d.text("  " + p.reference);
         if (p.tip.cents() != 0)
             d.columns("  " + ctx.tr("Tip"), ctx.money(p.tip));

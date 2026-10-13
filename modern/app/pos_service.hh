@@ -212,6 +212,10 @@ public:
     // card reader's connection token, and refunds. Each answers once,
     // with an error text when it didn't work.
     std::function<void(std::function<void(const QString &token, const QString &error)>)> stripeConnectionToken;
+    // Emailed receipts waiting for Stripe (a card taken offline, the internet
+    // down): one terminal's service sends them (PosService::sendWaitingReceipts).
+    QObject *receiptSender = nullptr;
+    std::map<std::int64_t, std::int64_t> receiptTried;   // check id -> when last tried (ms)
     std::function<void(const QString &paymentId, std::int64_t cents,
                        std::function<void(const QString &refundId, const QString &error)>)> stripeRefund;
     // Any Stripe call (countertop readers, pairing): "GET" / "POST", a path
@@ -748,6 +752,10 @@ public:
     bool cancelPriceChange(qint64 id);
     // Those due: put on the menu (every so often, and at start).
     void applyDuePriceChanges();
+    // Emailed receipts whose cards have all reached Stripe now: Stripe sends them.
+    void sendWaitingReceipts();
+    // Ask Stripe to email check `c`'s receipt (each card payment's); marks it sent when Stripe took it.
+    void emailReceiptNow(std::int64_t checkId);
     bool setItemSizes(const QString &itemId, const QVariantList &sizes);   // [{name, price}]
     bool setCategoryColors(const QVariantMap &colors);   // {id: color}: one Undo step
     bool changeMenuItems(const QStringList &ids, const QVariantMap &changes);   // one Undo step

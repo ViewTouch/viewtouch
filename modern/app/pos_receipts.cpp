@@ -117,11 +117,14 @@ bool PosService::emailReceipt(qint64 checkId, const QString &address)
     static const QRegularExpression valid(u"^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"_s);
     if (!valid.match(email).hasMatch())
         return fail(tr("Type the guest's email address."));
-    std::vector<std::string> intents;
-    for (const Payment &p : c->payments)
-        if (stripeCard(p))
-            intents.push_back(p.reference);
-    if (intents.empty())
+    // Stripe emails the receipt of each card payment: those that reached it,
+    // and those taken offline once they do.
+    bool waiting = false, sent = false;
+    for (const Payment &p : c->payments) {
+        sent = sent || stripeCard(p);
+        waiting = waiting || p.offline == "waiting";
+    }
+    if (!sent && !waiting)
         return fail(tr("Email receipts are for cards taken on a Stripe reader."));
     if (!s_->stripeCall || s_->settings.stripeSecretKey.empty())
         return fail(tr("Emailing a receipt needs the store's Stripe key (Store Settings)."));
@@ -130,31 +133,95 @@ bool PosService::emailReceipt(qint64 checkId, const QString &address)
         r->email = ss(email);
         saveCustomerRecord(*r);
     }
+    // Kept on the check until Stripe takes it (sendWaitingReceipts tries again).
+    for (Check *k : checksToday())
+        if (k->id == c->id) {
+            k->receiptEmail = ss(email);
+            k->receiptEmailSent = false;
+            k->note(now(), user() ? user()->name : std::string(), ss(tr("Receipt to be emailed to %1").arg(email)), "receipt");
+            saveAnyCheck(*k);
+        }
+    s_->receiptTried.erase(c->id);
+    if (waiting)
+        emit notice(tr("The receipt will be emailed to %1 once the card reaches Stripe (when the internet is back).").arg(email));
+    else
+        emailReceiptNow(c->id);
+    receiptOffer_.clear();
+    emit sessionChanged();
+    return true;
+}
+
+void PosService::emailReceiptNow(std::int64_t checkId)
+{
+    Check *c = nullptr;
+    for (Check *k : checksToday())
+        if (k->id == checkId)
+            c = k;
+    if (!c || c->receiptEmail.empty() || c->receiptEmailSent || !s_->stripeCall)
+        return;
+    std::vector<std::string> intents;
+    for (const Payment &p : c->payments) {
+        if (p.offline == "waiting")
+            return;   // not at Stripe yet
+        if (stripeCard(p))
+            intents.push_back(p.reference);
+    }
+    if (intents.empty())
+        return;
+    s_->receiptTried[checkId] = now();
+    const QString email = qs(c->receiptEmail);
     // Stripe sends its receipt for each card payment: the charge's
     // receipt_email (set, it emails one; Stripe sends these in live mode).
     QPointer<PosService> self(this);
+    auto left = std::make_shared<int>(int(intents.size()));
+    auto failed = std::make_shared<QString>();
+    const auto oneDone = [self, checkId, email, left, failed](const QString &error) {
+        if (!self)
+            return;
+        if (!error.isEmpty())
+            *failed = error;
+        if (--*left > 0)
+            return;
+        if (failed->isEmpty()) {
+            for (Check *k : self->checksToday())
+                if (k->id == checkId) {
+                    k->receiptEmailSent = true;
+                    self->saveAnyCheck(*k);
+                }
+            self->s_->receiptTried.erase(checkId);
+            emit self->notice(tr("Stripe is emailing the receipt to %1").arg(email));
+        } else {
+            emit self->notice(tr("The receipt to %1 is waiting for the internet (%2); it goes by itself.").arg(email, *failed));
+        }
+    };
     for (const std::string &pi : intents) {
         stripe(u"GET"_s, u"/v1/payment_intents/%1"_s.arg(qs(pi)), {},
-               [self, email](const QJsonObject &intent, const QString &error) {
+               [self, email, oneDone](const QJsonObject &intent, const QString &error) {
             if (!self)
                 return;
             const QString charge = intent.value(u"latest_charge").toString();
             if (!error.isEmpty() || charge.isEmpty()) {
-                emit self->notice(tr("Stripe couldn't find that payment: %1").arg(error));
+                oneDone(error.isEmpty() ? tr("Stripe couldn't find that payment") : error);
                 return;
             }
             self->stripe(u"POST"_s, u"/v1/charges/%1"_s.arg(charge),
                          u"receipt_email="_s + QString::fromLatin1(QUrl::toPercentEncoding(email)),
-                         [self, email](const QJsonObject &, const QString &error) {
-                if (self)
-                    emit self->notice(error.isEmpty() ? tr("Stripe is emailing the receipt to %1").arg(email)
-                                                      : tr("The receipt didn't go: %1").arg(error));
-            });
+                         [oneDone](const QJsonObject &, const QString &error) { oneDone(error); });
         });
     }
-    receiptOffer_.clear();
-    emit sessionChanged();
-    return true;
+}
+
+void PosService::sendWaitingReceipts()
+{
+    if (s_->receiptSender != this || !s_->stripeCall || s_->settings.stripeSecretKey.empty())
+        return;
+    // Each waiting one about every 2 minutes, until Stripe takes it.
+    for (Check *c : checksToday())
+        if (!c->receiptEmail.empty() && !c->receiptEmailSent) {
+            const auto it = s_->receiptTried.find(c->id);
+            if (it == s_->receiptTried.end() || now() - it->second >= 2 * 60'000)
+                emailReceiptNow(c->id);
+        }
 }
 
 void PosService::noReceipt()
