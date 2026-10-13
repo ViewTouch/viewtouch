@@ -20,7 +20,7 @@ constexpr int kMaxGuests = 99;
 
 QString timeOfDay(std::int64_t ms)
 {
-    return i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(ms).time(), QLocale::ShortFormat);
+    return i18n::timeText(QDateTime::fromMSecsSinceEpoch(ms).time());
 }
 
 QDate dateOf(std::int64_t ms)

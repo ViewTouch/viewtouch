@@ -35,7 +35,7 @@ Dialog {
     }
     readonly property string whenText: !when ? ""
         : (dayOffset === 0 ? qsTr("today") : dayOffset === 1 ? qsTr("tomorrow")
-           : Qt.locale().dayName(when.getDay(), Locale.LongFormat)) + " " + when.toLocaleTimeString(Qt.locale(), Locale.ShortFormat)
+           : Qt.locale().dayName(when.getDay(), Locale.LongFormat)) + " " + Qt.locale().toString(when, "h:mm AP")
     // What it's called on the list and in Undo: "Burgers +10%".
     readonly property string label: (wholeMenu ? qsTr("Whole menu") : (menu.category ? menu.category.name : ""))
                                      + " " + (lower ? "−" : "+") + (percent ? amount.trim() + "%"

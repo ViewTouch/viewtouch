@@ -84,7 +84,7 @@ QVariantList PosService::adminFields(const QString &panel)
                             tr("Tickets to an event: it sells out when this many are sold. 0 = not an event.")),
                       u"min"_s, 0), u"max"_s, 100000),
             field(u"eventAt"_s, tr("Event date and time"), u"string"_s,
-                  tr("Like 2026-10-09 19:00. On the ticket and the receipt; it can't be sold after.")),
+                  tr("Like 2026-10-09 7:00 PM. On the ticket and the receipt; it can't be sold after.")),
             field(u"substitute"_s, tr("Can be a substitute"), u"bool"_s,
                   tr("With Sub, it goes in place of part of the item before it (a house salad instead of fries).")),
             field(u"substitutePrice"_s, tr("Substitute price"), u"money"_s, tr("What it adds as a substitute, e.g. 3.00.")),
@@ -119,7 +119,7 @@ QVariantList PosService::adminFields(const QString &panel)
                             tr("0 = every matching item is off. Otherwise buy this many...")), u"min"_s, 0), u"max"_s, 20),
             with(with(field(u"get"_s, tr("…and get this many (the cheapest) at the percent off"), u"int"_s), u"min"_s, 0),
                  u"max"_s, 20),
-            field(u"start"_s, tr("From"), u"string"_s, tr("24-hour time, e.g. 15:00. From = Until: all day.")),
+            field(u"start"_s, tr("From"), u"string"_s, tr("Like 3:00 PM. From = Until: all day.")),
             field(u"end"_s, tr("Until"), u"string"_s),
             field(u"days"_s, tr("Days"), u"string"_s, tr("e.g. Mon-Fri, or Tue, or Sat, Sun. Empty: every day.")),
             field(u"code"_s, tr("Coupon code"), u"string"_s,
@@ -575,7 +575,7 @@ QVariantList PosService::adminFields(const QString &panel)
         return {
             field(u"name"_s, tr("Name"), u"string"_s), readonlyId,
             field(u"start"_s, tr("Starts at"), u"string"_s,
-                  tr("24-hour time, e.g. 11:00. Runs until the next period starts.")),
+                  tr("Like 11:00 AM. Runs until the next period starts.")),
         };
     }
     if (panel == u"terminals") {

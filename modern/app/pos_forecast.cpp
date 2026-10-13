@@ -160,7 +160,7 @@ Report PosService::forecastReport(QDate target, const std::vector<Check> &checks
             const auto it = d.byHour.find(h);
             return it == d.byHour.end() ? 0.0 : double(it->second.second.cents());
         });
-        r.line({ss(i18n::locale().toString(QTime(h, 0), QLocale::ShortFormat)), ss(tr("%n check(s)", "", int(std::lround(n)))),
+        r.line({ss(i18n::timeText(QTime(h, 0))), ss(tr("%n check(s)", "", int(std::lround(n)))),
                 money(sales)});
     }
 

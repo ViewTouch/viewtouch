@@ -134,6 +134,16 @@ QLocale locale(const QString &code)
     return QLocale(wanted.language(), system.territory());
 }
 
+QString timeText(const QTime &time, const QString &code)
+{
+    return locale(code).toString(time, u"h:mm AP"_s);
+}
+
+QString dateTimeText(const QDateTime &when, const QString &code)
+{
+    return locale(code).toString(when.date(), QLocale::ShortFormat) + u' ' + timeText(when.time(), code);
+}
+
 QString guestLanguage()
 {
     return guest();

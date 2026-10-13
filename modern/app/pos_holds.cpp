@@ -31,7 +31,7 @@ QString form(std::initializer_list<std::pair<QString, QString>> fields)
 
 QString timeOfDay(std::int64_t ms)
 {
-    return i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(ms).time(), QLocale::ShortFormat);
+    return i18n::timeText(QDateTime::fromMSecsSinceEpoch(ms).time());
 }
 
 QString cardOf(const CardHold &h)

@@ -29,23 +29,23 @@ QVariantMap field(const QString &path, const QString &label, const QString &type
 
 QString stamp(std::int64_t ms)
 {
-    return ms ? QDateTime::fromMSecsSinceEpoch(ms).toString(u"yyyy-MM-dd HH:mm"_s) : QString();
+    return ms ? dateTimeField(ms) : QString();
 }
 
 std::int64_t parseStamp(const QString &text)
 {
-    const QDateTime t = QDateTime::fromString(text.simplified(), u"yyyy-MM-dd HH:mm"_s);
-    return t.isValid() ? t.toMSecsSinceEpoch() : -1;
+    const std::int64_t ms = dateTimeMs(text);
+    return ms > 0 ? ms : -1;
 }
 
 QString timeOfDay(std::int64_t ms)
 {
-    return i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(ms).time(), QLocale::ShortFormat);
+    return i18n::timeText(QDateTime::fromMSecsSinceEpoch(ms).time());
 }
 
 QString hm(std::int64_t ms)
 {
-    return QDateTime::fromMSecsSinceEpoch(ms).toString(u"HH:mm"_s);
+    return QLocale(QLocale::English).toString(QDateTime::fromMSecsSinceEpoch(ms).time(), u"h:mm AP"_s);
 }
 
 // Breaks as "12:30-12:45", one per line (on the day the shift started; a time
@@ -99,9 +99,9 @@ QVariantList PosService::punchFields()
     return {
         who,
         job,
-        field(u"clockIn"_s, tr("Clocked in"), u"string"_s, tr("Like 2026-10-06 09:00")),
-        field(u"clockOut"_s, tr("Clocked out"), u"string"_s, tr("Like 2026-10-06 17:30. Empty: still clocked in.")),
-        field(u"breaks"_s, tr("Breaks"), u"text"_s, tr("One per line, like 12:30-13:00.")),
+        field(u"clockIn"_s, tr("Clocked in"), u"string"_s, tr("Like 2026-10-06 9:00 AM")),
+        field(u"clockOut"_s, tr("Clocked out"), u"string"_s, tr("Like 2026-10-06 5:30 PM. Empty: still clocked in.")),
+        field(u"breaks"_s, tr("Breaks"), u"text"_s, tr("One per line, like 12:30 PM-1:00 PM.")),
         field(u"reason"_s, tr("Reason for the change"), u"string"_s,
               tr("Required: \"forgot to clock out\", \"came in early\"… It goes on the Labor report.")),
         field(u"remove"_s, tr("Remove this punch (made by mistake)"), u"bool"_s),
@@ -165,11 +165,11 @@ bool PosService::savePunchRecord(int index, const QVariantMap &r)
         return fail(tr("Choose who worked."));
     const std::int64_t in = parseStamp(r.value(u"clockIn"_s).toString());
     if (in < 0)
-        return fail(tr("Write the clock-in time like 2026-10-06 09:00."));
+        return fail(tr("Write the clock-in time like 2026-10-06 9:00 AM."));
     const QString outText = r.value(u"clockOut"_s).toString().simplified();
     const std::int64_t out = outText.isEmpty() ? 0 : parseStamp(outText);
     if (out < 0)
-        return fail(tr("Write the clock-out time like 2026-10-06 17:30, or leave it empty."));
+        return fail(tr("Write the clock-out time like 2026-10-06 5:30 PM, or leave it empty."));
     if (in > now() || out > now())
         return fail(tr("A punch can't be in the future."));
     if (out && out <= in)
@@ -185,9 +185,10 @@ bool PosService::savePunchRecord(int index, const QVariantMap &r)
     for (const QString &line : r.value(u"breaks"_s).toString().split(u'\n', Qt::SkipEmptyParts)) {
         const QStringList parts = line.simplified().remove(u' ').split(u'-');
         const auto at = [&](const QString &t) -> std::int64_t {
-            const QTime time = QTime::fromString(t, u"H:mm"_s);
-            if (!time.isValid())
+            const int minutes = clockMinutes(t);
+            if (minutes < 0)
                 return -1;
+            const QTime time(minutes / 60, minutes % 60);
             std::int64_t ms = QDateTime(day, time).toMSecsSinceEpoch();
             if (ms < in)
                 ms = QDateTime(day.addDays(1), time).toMSecsSinceEpoch();
@@ -196,7 +197,7 @@ bool PosService::savePunchRecord(int index, const QVariantMap &r)
         const std::int64_t start = parts.size() == 2 ? at(parts[0]) : -1;
         const std::int64_t end = parts.size() == 2 ? (parts[1].isEmpty() ? 0 : at(parts[1])) : -1;
         if (start < 0 || end < 0 || (end && end <= start) || (out && (start > out || end > out)))
-            return fail(tr("Write breaks like 12:30-13:00, inside the shift: %1").arg(line.trimmed()));
+            return fail(tr("Write breaks like 12:30 PM-1:00 PM, inside the shift: %1").arg(line.trimmed()));
         if (end == 0 && out)
             return fail(tr("A break with no end needs the punch still open: %1").arg(line.trimmed()));
         breaks.push_back({start, end});

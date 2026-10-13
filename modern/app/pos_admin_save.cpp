@@ -643,14 +643,14 @@ bool PosService::saveMenuRecord(int index, const QVariantMap &record)
     }
     data.insert(u"recipe"_s, recipe);
     data.remove(u"autoSoldOut"_s);
-    // The event's date, typed: 2026-10-09 19:00.
+    // The event's date, typed: 2026-10-09 7:00 PM (or 19:00).
     if (const QString when = data.value(u"eventAt"_s).toString().trimmed(); when.isEmpty()) {
         data.insert(u"eventAt"_s, 0);
     } else {
-        const QDateTime at = QDateTime::fromString(when, u"yyyy-MM-dd HH:mm"_s);
-        if (!at.isValid())
-            return fail(tr("Write the event's date like 2026-10-09 19:00."));
-        data.insert(u"eventAt"_s, at.toMSecsSinceEpoch());
+        const std::int64_t at = dateTimeMs(when);
+        if (at <= 0)
+            return fail(tr("Write the event's date like 2026-10-09 7:00 PM."));
+        data.insert(u"eventAt"_s, qint64(at));
     }
     data.remove(u"ticketsSoldBefore"_s);
     data.remove(u"soldOutToday"_s);
@@ -846,7 +846,7 @@ bool PosService::savePromotionRecord(int index, const QVariantMap &r)
     p.startMinute = minuteFrom(r.value(u"start"_s).toString().isEmpty() ? u"0:00"_s : r.value(u"start"_s).toString());
     p.endMinute = minuteFrom(r.value(u"end"_s).toString().isEmpty() ? u"0:00"_s : r.value(u"end"_s).toString());
     if (p.startMinute < 0 || p.endMinute < 0)
-        return fail(tr("Write times like 15:00."));
+        return fail(tr("Write times like 3:00 PM."));
     p.days = daysFrom(r.value(u"days"_s).toString());
     if (p.days <= 0)
         return fail(tr("Write days like Mon-Fri or Tue, Thu."));
@@ -943,10 +943,10 @@ bool PosService::saveMealPeriodRecord(int index, const QVariantMap &record)
         return fail(tr("The meal period needs a name."));
     const int start = clockMinutes(record.value(u"start"_s).toString());
     if (start < 0)
-        return fail(tr("Type the start as a 24-hour time, like 16:30."));
+        return fail(tr("Type the start like 4:30 PM."));
     for (int i = 0; i < int(list.size()); ++i) {
         if (i != index && list[i].start == start)
-            return fail(tr("%1 already starts at %2.").arg(qs(list[i].name), clockText(start)));
+            return fail(tr("%1 already starts at %2.").arg(qs(list[i].name), clockText12(start)));
     }
     MealPeriod m{{}, ss(name), start};
     if (index >= 0) {

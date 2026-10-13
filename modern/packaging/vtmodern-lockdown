@@ -16,6 +16,8 @@
 #   - security updates install by themselves each night
 #   - the hardware watchdog restarts the computer if it ever freezes
 #   - smaller logs (the built-in storage lasts longer), a quiet boot
+#   - US dates (10/13/26) when the computer was still British English (the
+#     Raspberry Pi OS default); VTM_LOCALE=... picks another
 # The administrator account (yours) keeps working: Ctrl+Alt+F2 on the screen,
 # or SSH while remote help is on.
 set -eu
@@ -83,6 +85,22 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y --no-install-recommends cage qt6-wayland nftables unattended-upgrades rfkill \
     network-manager fonts-dejavu-core fonts-noto-cjk
+
+# --- US dates and 12-hour times ---------------------------------------------------------------
+# Raspberry Pi OS starts out British (13/10/26); a store in another country
+# keeps its own (VTM_LOCALE=en_GB.UTF-8 to choose).
+current=$( (. /etc/default/locale 2>/dev/null; echo "${LANG:-}") )
+wanted=${VTM_LOCALE:-}
+if [ -z "$wanted" ] && { [ -z "$current" ] || [ "$current" = en_GB.UTF-8 ] || [ "$current" = C.UTF-8 ]; }; then
+    wanted=en_US.UTF-8
+fi
+if [ -n "$wanted" ] && [ "$wanted" != "$current" ]; then
+    say "Language and region: $wanted"
+    sed -i "s/^# *\($wanted\)/\1/" /etc/locale.gen
+    grep -q "^$wanted" /etc/locale.gen || echo "$wanted UTF-8" >> /etc/locale.gen
+    locale-gen >/dev/null
+    update-locale LANG="$wanted"
+fi
 
 # --- the screen: the home screen at boot, no desktop -----------------------------------------
 say "The ViewTouch home screen at boot, the desktop off"

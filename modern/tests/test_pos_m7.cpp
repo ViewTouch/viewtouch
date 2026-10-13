@@ -62,7 +62,21 @@ TEST_CASE("Meal periods: the latest start at or before now; overnight wraps", "[
     CHECK(app::clockMinutes(u"7"_s) == 7 * 60);
     CHECK(app::clockMinutes(u"24:00"_s) == -1);
     CHECK(app::clockMinutes(u"noon"_s) == -1);
-    CHECK(app::clockText(4 * 60 + 5) == u"04:05"_s);
+    CHECK(app::clockText(4 * 60 + 5) == u"04:05"_s);   // how it's stored
+    // Typed and shown 12-hour too.
+    CHECK(app::clockMinutes(u"4:30 PM"_s) == 16 * 60 + 30);
+    CHECK(app::clockMinutes(u"4:30pm"_s) == 16 * 60 + 30);
+    CHECK(app::clockMinutes(u"9 a.m."_s) == 9 * 60);
+    CHECK(app::clockMinutes(u"12:15 AM"_s) == 15);
+    CHECK(app::clockMinutes(u"12 PM"_s) == 12 * 60);
+    CHECK(app::clockMinutes(u"13:00 PM"_s) == -1);
+    CHECK(app::clockText12(16 * 60 + 30) == u"4:30 PM"_s);
+    CHECK(app::clockText12(0) == u"12:00 AM"_s);
+    const std::int64_t at = app::dateTimeMs(u"2026-10-09 7:05 PM"_s);
+    CHECK(at == QDateTime(QDate(2026, 10, 9), QTime(19, 5)).toMSecsSinceEpoch());
+    CHECK(app::dateTimeMs(u"2026-10-09 19:05"_s) == at);
+    CHECK(app::dateTimeField(at) == u"2026-10-09 7:05 PM"_s);
+    CHECK(app::dateTimeMs(u"tomorrow"_s) == 0);
 }
 
 TEST_CASE("Meal periods are edited on the manager screen and saved with the settings", "[m7][meal][admin]")

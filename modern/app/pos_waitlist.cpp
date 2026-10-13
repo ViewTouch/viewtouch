@@ -131,10 +131,8 @@ qint64 PosService::addParty(const QVariantMap &r, bool reservation)
     p.addedAt = now();
     if (reservation) {
         std::int64_t at = r.value(u"at"_s).toLongLong();
-        if (at <= 0) {   // "2026-10-02 19:30"
-            const QDateTime t = QDateTime::fromString(r.value(u"at"_s).toString().trimmed(), u"yyyy-MM-dd HH:mm"_s);
-            at = t.isValid() ? t.toMSecsSinceEpoch() : 0;
-        }
+        if (at <= 0)   // "2026-10-02 7:30 PM" (or 19:30)
+            at = dateTimeMs(r.value(u"at"_s).toString());
         if (at <= 0) {
             fail(tr("When is the reservation for?"));
             return 0;

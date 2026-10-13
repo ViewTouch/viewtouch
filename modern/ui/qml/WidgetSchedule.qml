@@ -17,8 +17,8 @@ Item {
     // The day a new shift goes on: today until one is touched.
     property int pickedDay: -1
     readonly property int dayIndex: pickedDay >= 0 ? pickedDay : Math.max(0, days.findIndex(d => d.today))
-    property string start: "16:00"
-    property string end: "22:00"
+    property string start: "4:00 PM"
+    property string end: "10:00 PM"
     property string note: ""
 
     function add() {
@@ -171,21 +171,21 @@ Item {
                 }
                 Label { Layout.columnSpan: w.narrow ? 2 : 1; text: w.days[w.dayIndex] ? w.days[w.dayIndex].label : "" ; font.bold: true }
                 TextField {
-                    implicitWidth: 90
-                    Layout.preferredWidth: 90
+                    implicitWidth: 110
+                    Layout.preferredWidth: 110
                     Layout.fillWidth: false
                     text: w.start
-                    placeholderText: "16:00"
+                    placeholderText: "4:00 PM"
                     inputMethodHints: Qt.ImhPreferNumbers
                     onTextEdited: w.start = text
                 }
                 Label { text: "–" }
                 TextField {
-                    implicitWidth: 90
-                    Layout.preferredWidth: 90
+                    implicitWidth: 110
+                    Layout.preferredWidth: 110
                     Layout.fillWidth: false
                     text: w.end
-                    placeholderText: "22:00"
+                    placeholderText: "10:00 PM"
                     inputMethodHints: Qt.ImhPreferNumbers
                     onTextEdited: w.end = text
                 }

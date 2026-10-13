@@ -935,7 +935,7 @@ ApplicationWindow {
                     repeat: true
                     triggeredOnStart: true
                     running: screenSaver.visible
-                    onTriggered: saverClock.text = new Date().toLocaleTimeString(Qt.locale(), Locale.ShortFormat)
+                    onTriggered: saverClock.text = Qt.locale().toString(new Date(), "h:mm AP")
                 }
             }
             Text {

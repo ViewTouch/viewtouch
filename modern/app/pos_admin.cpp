@@ -134,7 +134,7 @@ QVariantMap PosService::pairingInfo() const
     const PosShared::Pairing *p = s_->activePairing();
     if (!p || !can(QString::fromLatin1(perm::Manager)))
         return {{u"active"_s, false}};
-    const QString until = i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(p->expires).time(), QLocale::ShortFormat);
+    const QString until = i18n::timeText(QDateTime::fromMSecsSinceEpoch(p->expires).time());
     return {{u"active"_s, true}, {u"code"_s, p->code}, {u"until"_s, until}};
 }
 

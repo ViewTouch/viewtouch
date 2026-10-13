@@ -51,7 +51,7 @@ Item {
     property bool quoteTouched: false
     onInfoChanged: if (!quoteTouched) quote = info.nextQuote ?? 10
     property int dayOffset: 0
-    property string time: "19:00"
+    property string time: "7:00 PM"
 
     function clearForm() {
         newName = ""; newPhone = ""; newSize = 2; newNote = ""; quoteTouched = false
@@ -242,7 +242,7 @@ Item {
                         TextField {
                             implicitWidth: 120
                             text: w.time
-                            placeholderText: "19:30"
+                            placeholderText: "7:30 PM"
                             inputMethodHints: Qt.ImhPreferNumbers
                             onTextEdited: w.time = text
                         }

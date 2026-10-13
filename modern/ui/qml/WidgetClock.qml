@@ -15,7 +15,7 @@ Item {
 
     // The whole date when it fits at a good size, else a short one
     // ("sábado, 10 de octubre de 2026" -> "sáb 10 oct").
-    readonly property string time: now.toLocaleTimeString(Qt.locale(), Locale.ShortFormat)
+    readonly property string time: Qt.locale().toString(now, "h:mm AP")
     readonly property string longText: time + "   ·   " + now.toLocaleDateString(Qt.locale(), Locale.LongFormat)
     TextMetrics {
         id: longSize

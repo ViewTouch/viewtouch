@@ -215,7 +215,7 @@ QVariantList PosService::adminRecords(const QString &panel)
                        : p.amount.cents() > 0 ? tr("%1 off").arg(format(p.amount))
                                               : tr("%1% off").arg(double(p.percentBp) / 100.0))
                     + (p.maxUses > 0 ? u" · "_s + tr("used %1 of %2").arg(p.uses).arg(p.maxUses) : QString())
-                    + (p.startMinute != p.endMinute ? u" · "_s + clockText(p.startMinute) + u"-"_s + clockText(p.endMinute) : QString())
+                    + (p.startMinute != p.endMinute ? u" · "_s + clockText12(p.startMinute) + u"-"_s + clockText12(p.endMinute) : QString())
                     + (p.active ? QString() : tr(" · off")));
     } else if (panel == u"punches") {
         return punchRecords();
@@ -255,8 +255,8 @@ QVariantList PosService::adminRecords(const QString &panel)
         }
     } else if (panel == u"mealPeriods") {
         for (const MealPeriod &m : s_->settings.mealPeriods)
-            add({{u"id"_s, qs(m.id)}, {u"name"_s, qs(m.name)}, {u"start"_s, clockText(m.start)}}, qs(m.name),
-                tr("from %1").arg(clockText(m.start)));
+            add({{u"id"_s, qs(m.id)}, {u"name"_s, qs(m.name)}, {u"start"_s, clockText12(m.start)}}, qs(m.name),
+                tr("from %1").arg(clockText12(m.start)));
     } else if (panel == u"terminals") {
         // The screen you're on is always here, ready to set up.
         auto &list = s_->settings.terminals;
@@ -365,7 +365,7 @@ QVariantMap PosService::menuRecord(const MenuItem &m) const
     r.insert(u"description"_s, qs(m.description));
     r.insert(u"image"_s, qs(m.image));
     r.insert(u"ticketCapacity"_s, m.ticketCapacity);
-    r.insert(u"eventAt"_s, m.eventAt > 0 ? QDateTime::fromMSecsSinceEpoch(m.eventAt).toString(u"yyyy-MM-dd HH:mm"_s)
+    r.insert(u"eventAt"_s, m.eventAt > 0 ? dateTimeField(m.eventAt)
                                          : QString());
     for (const char16_t *k : {u"family", u"printer"}) {
         if (!r.contains(QString::fromUtf16(k)))
@@ -385,7 +385,7 @@ QVariantMap PosService::promotionRecord(const PosSettings::Promotion &p) const
     for (const std::string &i : p.items) items << qs(i);
     return {{u"id"_s, qs(p.id)}, {u"name"_s, qs(p.name)}, {u"active"_s, p.active}, {u"families"_s, families.join(u", "_s)},
             {u"items"_s, items.join(u", "_s)}, {u"percent"_s, double(p.percentBp) / 100.0}, {u"buy"_s, p.buy},
-            {u"get"_s, p.get}, {u"start"_s, clockText(p.startMinute)}, {u"end"_s, clockText(p.endMinute)},
+            {u"get"_s, p.get}, {u"start"_s, clockText12(p.startMinute)}, {u"end"_s, clockText12(p.endMinute)},
             {u"days"_s, daysText(p.days)}, {u"code"_s, qs(p.code)}, {u"amount"_s, double(p.amount.cents()) / 100.0},
             {u"minimum"_s, double(p.minimum.cents()) / 100.0}, {u"fromDay"_s, qs(p.fromDay)}, {u"untilDay"_s, qs(p.untilDay)},
             {u"maxUses"_s, p.maxUses}, {u"uses"_s, p.uses}};
@@ -405,7 +405,7 @@ QVariantMap PosService::aboutValues() const
     const QVariantMap n = s_->network ? s_->network() : QVariantMap();
     const auto when = [](qint64 ms) {
         return i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(ms), u"ddd MMM d, "_s)
-             + i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(ms).time(), QLocale::ShortFormat);
+             + i18n::timeText(QDateTime::fromMSecsSinceEpoch(ms).time());
     };
     const QString unknown = tr("(not known here)");
     const QString version = n.value(u"build"_s).toString();

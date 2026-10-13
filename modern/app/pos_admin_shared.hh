@@ -261,8 +261,7 @@ inline int daysFrom(const QString &text)
 
 inline int minuteFrom(const QString &text)
 {
-    const QTime t = QTime::fromString(text.trimmed(), u"H:mm"_s);
-    return t.isValid() ? t.hour() * 60 + t.minute() : -1;
+    return clockMinutes(text);
 }
 
 

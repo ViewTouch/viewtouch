@@ -1194,8 +1194,8 @@ int runStore(const Args &cli, const Options &o)
                         return;
                     if (s->readLine().trimmed() == "pair") {
                         const QString code = shared->startPairing();
-                        const QString until = QLocale().toString(
-                            QDateTime::fromMSecsSinceEpoch(shared->pairing->expires).time(), QLocale::ShortFormat);
+                        const QString until = vt::i18n::timeText(
+                            QDateTime::fromMSecsSinceEpoch(shared->pairing->expires).time());
                         qInfo().noquote() << "Pairing opened from this machine's command line";
                         s->write(QJsonDocument(QJsonObject{{u"code"_s, code}, {u"until"_s, until}})
                                      .toJson(QJsonDocument::Compact) + '\n');

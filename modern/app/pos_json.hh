@@ -87,7 +87,12 @@ std::vector<core::ModifierGroup> modifierGroupsFromJson(const QJsonArray &a);
 
 // "HH:MM" <-> minutes after midnight; clockMinutes gives -1 for bad text.
 QString clockText(int minutes);
-int clockMinutes(const QString &text);
+int clockMinutes(const QString &text);   // "16:30" or "4:30 PM" -> 990; -1 if neither
+QString clockText12(int minutes);         // 990 -> "4:30 PM" (on screens; stored as clockText)
+// A date and time typed in a field: "2026-10-09 7:30 PM" (or 19:30) -> epoch
+// ms, 0 if it isn't one; and back, for the field.
+std::int64_t dateTimeMs(const QString &text);
+QString dateTimeField(std::int64_t ms);
 
 // Salted SHA-256 of a PIN, hex encoded.
 std::string hashPin(const QString &pin, const std::string &salt);

@@ -38,6 +38,10 @@ bool setLanguage(const QString &code);
 // Dates, weekdays and numbers in a language (the region stays the
 // computer's: es in the US writes 3:15 p.m. and 1,234.50). Empty: current().
 QLocale locale(const QString &code = {});
+// A time of day as the store reads it, 12-hour in every language: "9:30 PM".
+QString timeText(const QTime &time, const QString &code = {});
+// A date and time: the date short ("10/13/26"), then the time 12-hour.
+QString dateTimeText(const QDateTime &when, const QString &code = {});
 // What a printer can print `code` in: the language itself, or English
 // for one its letters can't show (Chinese).
 QString printLanguage(const QString &code);

@@ -23,7 +23,7 @@ constexpr std::int64_t kHour = 3'600'000;
 
 QString clock(std::int64_t ms)
 {
-    return i18n::locale().toString(QDateTime::fromMSecsSinceEpoch(ms).time(), QLocale::ShortFormat);
+    return i18n::timeText(QDateTime::fromMSecsSinceEpoch(ms).time());
 }
 
 } // namespace

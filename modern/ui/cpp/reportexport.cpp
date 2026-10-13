@@ -1,5 +1,7 @@
 #include "reportexport.hh"
 
+#include "app/i18n.hh"
+
 #include <QDateTime>
 #include <QDir>
 #include <QFont>
@@ -148,7 +150,7 @@ QString exportReportPdf(const QVariantMap &report, const QString &dir, QString *
     }
     p.setFont(body);
     p.drawText(QRect(margin, bottom, width, lineH), Qt::AlignRight | Qt::AlignVCenter,
-               u"ViewTouch · "_s + QLocale().toString(QDateTime::currentDateTime(), QLocale::ShortFormat));
+               u"ViewTouch · "_s + vt::i18n::dateTimeText(QDateTime::currentDateTime()));
     p.end();
     return file;
 }

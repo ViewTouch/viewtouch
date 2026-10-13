@@ -150,7 +150,7 @@ Item {
             "check.balance": t.balance ?? "",
             "entry": p ? p.entryAmount : "",
             "typed": p ? p.textEntry : "",
-            "time": zone.now.toLocaleTimeString(Qt.locale(), Locale.ShortFormat),
+            "time": Qt.locale().toString(zone.now, "h:mm AP"),
             "date": Qt.locale().toString(zone.now, "ddd MMM d"),
             "mealPeriod": controller ? controller.mealPeriod : "",
         }

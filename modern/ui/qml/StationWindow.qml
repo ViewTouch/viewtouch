@@ -284,7 +284,7 @@ ApplicationWindow {
                 font.bold: true
                 color: "white"
                 Layout.leftMargin: root.u
-                function tick() { text = new Date().toLocaleTimeString(Qt.locale(), Locale.ShortFormat) }
+                function tick() { text = Qt.locale().toString(new Date(), "h:mm AP") }
                 Component.onCompleted: tick()
                 Timer { interval: 5000; running: true; repeat: true; onTriggered: clock.tick() }
             }
@@ -624,7 +624,7 @@ ApplicationWindow {
                 Repeater {
                     model: [[qsTr("ViewTouch"), root.station.version],
                             [qsTr("This computer"), root.station.computerName],
-                            [qsTr("Is the"), root.roleNames[root.station.role] ?? "—"],
+                            [qsTr("Used as"), root.roleNames[root.station.role] ?? "—"],
                             [qsTr("Address"), root.station.network.address || "—"],
                             [qsTr("Time zone"), root.station.timeZone],
                             [qsTr("Hardware"), root.station.model]]

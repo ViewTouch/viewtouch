@@ -26,13 +26,13 @@ QString hourText(std::int64_t ms)
     return t.minute() ? i18n::locale().toString(t, u"h:mm AP"_s) : i18n::locale().toString(t, u"h AP"_s);
 }
 
-// "2026-10-02 16:00" or epoch ms.
+// "2026-10-02 4:00 PM" (or 16:00) or epoch ms.
 std::int64_t timeFrom(const QVariant &v)
 {
     if (v.typeId() != QMetaType::QString && v.toLongLong() > 0)
         return v.toLongLong();
-    const QDateTime t = QDateTime::fromString(v.toString().trimmed(), u"yyyy-MM-dd HH:mm"_s);
-    return t.isValid() ? t.toMSecsSinceEpoch() : (v.toLongLong() > 0 ? v.toLongLong() : 0);
+    const std::int64_t ms = dateTimeMs(v.toString());
+    return ms > 0 ? ms : (v.toLongLong() > 0 ? v.toLongLong() : 0);
 }
 
 } // namespace

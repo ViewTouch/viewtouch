@@ -1,4 +1,5 @@
 #include "app/pos_json.hh"
+#include "app/i18n.hh"
 
 #include <QCryptographicHash>
 #include <QRandomGenerator>
@@ -870,9 +871,46 @@ QString clockText(int minutes)
 
 int clockMinutes(const QString &text)
 {
-    static const QRegularExpression re(u"^\\s*([01]?[0-9]|2[0-3])(?::([0-5][0-9]))?\\s*$"_s);
+    // "16:30", "4:30 PM", "4:30pm", "4 p.m.", "12 AM"
+    static const QRegularExpression re(u"^\\s*([0-9]{1,2})(?::([0-5][0-9]))?\\s*(?:([aApP])\\.?\\s*[mM]?\\.?)?\\s*$"_s);
     const QRegularExpressionMatch m = re.match(text);
-    return m.hasMatch() ? m.captured(1).toInt() * 60 + m.captured(2).toInt() : -1;
+    if (!m.hasMatch())
+        return -1;
+    int hour = m.captured(1).toInt();
+    const QString half = m.captured(3).toLower();
+    if (!half.isEmpty()) {
+        if (hour < 1 || hour > 12)
+            return -1;
+        hour = hour % 12 + (half == u"p" ? 12 : 0);
+    } else if (hour > 23) {
+        return -1;
+    }
+    return hour * 60 + m.captured(2).toInt();
+}
+
+QString clockText12(int minutes)
+{
+    return i18n::timeText(QTime((minutes / 60) % 24, minutes % 60));
+}
+
+std::int64_t dateTimeMs(const QString &text)
+{
+    // "2026-10-09 7:30 PM" or "2026-10-09 19:30"
+    const QString t = text.simplified();
+    const qsizetype space = t.indexOf(u' ');
+    if (space < 0)
+        return 0;
+    const QDate day = QDate::fromString(t.left(space), u"yyyy-MM-dd"_s);
+    const int minutes = clockMinutes(t.mid(space + 1));
+    if (!day.isValid() || minutes < 0)
+        return 0;
+    return QDateTime(day, QTime(minutes / 60, minutes % 60)).toMSecsSinceEpoch();
+}
+
+QString dateTimeField(std::int64_t ms)
+{
+    const QDateTime t = QDateTime::fromMSecsSinceEpoch(ms);
+    return t.date().toString(u"yyyy-MM-dd"_s) + u' ' + QLocale(QLocale::English).toString(t.time(), u"h:mm AP"_s);
 }
 
 QJsonObject toJson(const PosSettings &s)
