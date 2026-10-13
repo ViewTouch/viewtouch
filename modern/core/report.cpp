@@ -651,6 +651,66 @@ Report exceptionsReport(const std::vector<const Check *> &checks, const std::vec
     struct Big { Money amount; std::string what; const Check *check; std::string who; };
     std::vector<Big> biggest;
     bool any = false;
+
+    // First, anyone far above everyone else on shift: 3 times or more, and at
+    // least 3 times as often as whoever else did it most. (Who was on shift:
+    // whoever had checks, or did any of these.)
+    {
+        std::set<std::string> onShift;
+        for (const Check *c : checks)
+            if (!c->serverName.empty())
+                onShift.insert(c->serverName);
+        struct Watch { const char *title; std::vector<std::string> kinds; };
+        const Watch watch[] = {
+            {"Unusual: voids", {"void"}},
+            {"Unusual: discounts and comps", {"discount"}},
+            {"Unusual: payments and discounts taken back", {"unpay", "undiscount"}},
+            {"Unusual: reopened checks", {"reopen"}},
+            {"Unusual: drawer opened with no sale", {"noSale"}},
+        };
+        bool noted = false;
+        for (const Watch &wch : watch) {
+            std::map<std::string, std::int64_t> n;
+            if (wch.kinds.front() == "noSale") {
+                for (const DrawerSession &d : drawers)
+                    for (const CashMovement &m : d.movements)
+                        if (m.kind == CashMovement::Kind::NoSale && !m.by.empty())
+                            ++n[m.by];
+            } else {
+                for (const Check *c : checks)
+                    for (const CheckEvent &e : c->events)
+                        if (!e.who.empty() && std::ranges::find(wch.kinds, e.kind) != wch.kinds.end())
+                            ++n[e.who];
+            }
+            for (const auto &[who, times] : n)
+                onShift.insert(who);
+            std::vector<std::pair<std::string, std::int64_t>> flagged;
+            for (const auto &[who, times] : n) {
+                std::int64_t othersMost = 0;
+                int others = 0;
+                for (const std::string &o : onShift)
+                    if (o != who) {
+                        ++others;
+                        othersMost = std::max(othersMost, n.contains(o) ? n.at(o) : 0);
+                    }
+                if (others > 0 && times >= 3 && times >= 3 * std::max<std::int64_t>(1, othersMost))
+                    flagged.push_back({who, othersMost});
+            }
+            if (flagged.empty())
+                continue;
+            if (!noted) {
+                r.columns = {"Employee", "Times", "Amount"};
+                r.note("Far more than anyone else on shift (the third column: the most anyone else did). Often there's a "
+                       "good reason; worth a look.");
+                noted = true;
+            }
+            any = true;
+            r.section(wch.title);
+            for (const auto &[who, othersMost] : flagged)
+                r.line({who, count(n.at(who)), "≤ " + std::to_string(othersMost)});
+        }
+    }
+
     for (const Kind &k : kinds) {
         std::map<std::string, Tally> byWho;
         for (const Check *c : checks) {

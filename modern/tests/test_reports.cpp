@@ -274,3 +274,41 @@ TEST_CASE("Comparing reports: matched rows, changes, new rows", "[reports][range
     CHECK(r.rows[1].cells.back() == "new");
     CHECK(r.rows[2].cells.back() == "-11.7%");
 }
+
+TEST_CASE("Exceptions: someone far above everyone else on shift is flagged", "[reports][unusual]")
+{
+    core::PosSettings settings;
+    const core::ReportContext ctx{settings, "Today", [](std::int64_t) { return std::string("9:00 PM"); }};
+    const auto checkBy = [](const char *server, int voids, const char *voider) {
+        core::Check c;
+        c.serverName = server;
+        for (int i = 0; i < voids; ++i)
+            c.note(0, voider, "Void Coffee", "void", Money::fromCents(300));
+        return c;
+    };
+    const auto rowsOf = [](const core::Report &r) {
+        std::vector<std::string> out;
+        for (const core::ReportRow &row : r.rows)
+            out.push_back(row.cells.empty() ? std::string() : row.cells.front());
+        return out;
+    };
+    // Jo voids 6, Sam 1, Casey none.
+    const core::Check jo = checkBy("Jo", 6, "Jo"), sam = checkBy("Sam", 1, "Sam"), casey = checkBy("Casey", 0, "");
+    const core::Report flagged = core::exceptionsReport({&jo, &sam, &casey}, {}, ctx);
+    const std::vector<std::string> rows = rowsOf(flagged);
+    REQUIRE(std::ranges::find(rows, "Unusual: voids") != rows.end());
+    bool joLine = false;
+    for (const core::ReportRow &row : flagged.rows)
+        if (row.cells.size() == 3 && row.cells[0] == "Jo" && row.cells[2] == "≤ 1")
+            joLine = true;
+    CHECK(joLine);
+
+    // An even spread (4, 3, 3): nobody stands out.
+    const core::Check a = checkBy("Jo", 4, "Jo"), b = checkBy("Sam", 3, "Sam"), c = checkBy("Casey", 3, "Casey");
+    const std::vector<std::string> even = rowsOf(core::exceptionsReport({&a, &b, &c}, {}, ctx));
+    CHECK(std::ranges::find(even, "Unusual: voids") == even.end());
+
+    // Alone on shift: nobody to compare with.
+    const std::vector<std::string> alone = rowsOf(core::exceptionsReport({&jo}, {}, ctx));
+    CHECK(std::ranges::find(alone, "Unusual: voids") == alone.end());
+}
