@@ -202,6 +202,7 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             return fail(tr("Choose what happens after a check is paid."));
         t.afterPaying = ss(after);
         t.startCategory = ss(record.value(u"startCategory"_s).toString());
+        t.startPage = ss(record.value(u"startPage"_s).toString());
         t.labelPrinter = ss(record.value(u"labelPrinter"_s).toString());
         t.textSize = record.value(u"textSize"_s).toString().isEmpty() ? 0
                                                                     : std::clamp(record.value(u"textSize"_s).toInt(), 80, 160);

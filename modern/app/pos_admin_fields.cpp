@@ -610,6 +610,10 @@ QVariantList PosService::adminFields(const QString &panel)
                          o.append(QVariantMap{{u"value"_s, qs(pc.id)}, {u"text"_s, qs(pc.name)}});
                      return o;
                  })(tr("The store's label printer"))),
+            with(with(field(u"startPage"_s, tr("Start screen"), u"page"_s,
+                       tr("What this device shows after a login: the patio handheld the Patio floor plan, the takeout "
+                          "tablet Open Checks. Empty: each person's or their job's.")),
+                 u"emptyText"_s, tr("(each person's)")), u"pages"_s, u"start"_s),
             with(field(u"startCategory"_s, tr("Start orders on"), u"enum"_s,
                        tr("A menu category orders opened here start on (the bar: Drinks). The meal's categories: the usual.")),
                  u"options"_s, [this] {

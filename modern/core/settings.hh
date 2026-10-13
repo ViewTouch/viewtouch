@@ -82,6 +82,9 @@ struct TerminalConfig {
     std::string afterPaying;
     // Orders opened here start on this menu category (the bar: Drinks); empty: the meal's page.
     std::string startCategory;
+    // After a login here, this page (the patio handheld: the Patio floor
+    // plan; the takeout tablet: Open Checks); empty = the person's or their job's.
+    std::string startPage;
     // Its card reader: "stripe" (a Stripe smart reader this app runs on),
     // "counter:tmr_..." (a Stripe reader beside it, run from the store's
     // computer), "simulated" (approves after a moment: for practice), or none.

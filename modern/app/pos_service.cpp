@@ -412,9 +412,12 @@ QVariantMap PosService::userPrefs() const
 {
     // This screen's text size, unless the person has their own.
     int screenText = 0;
+    std::string deviceStart;
     for (const TerminalConfig &t : s_->settings.terminals)
-        if (qs(t.name) == terminal_)
+        if (qs(t.name) == terminal_) {
             screenText = t.textSize;
+            deviceStart = t.startPage;
+        }
     const core::Employee *e = user();
     if (!e)
         return screenText ? QVariantMap{{u"textSize"_s, screenText}} : QVariantMap();
@@ -430,6 +433,9 @@ QVariantMap PosService::userPrefs() const
         else if (job == "host")
             start = "seating";   // hosts: the seating screen (when the layout has it)
     }
+    // This device's start screen wins: the patio handheld opens on the patio, whoever has it.
+    if (!deviceStart.empty())
+        start = deviceStart;
     return {{u"textSize"_s, e->textSize != 100 || !screenText ? e->textSize : screenText},
             {u"leftHanded"_s, e->leftHanded}, {u"startPage"_s, qs(start)}};
 }

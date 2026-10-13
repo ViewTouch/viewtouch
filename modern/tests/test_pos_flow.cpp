@@ -6686,6 +6686,44 @@ TEST_CASE("Flow: the bar's screen starts orders on Drinks; ‹ Menu still shows 
     CHECK(s.c.pageId() == u"index-lunch"_s);
 }
 
+TEST_CASE("Flow: a device's own start screen: the patio handheld opens on the patio, whoever logs in", "[flow][startpage]")
+{
+    Session s;
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));            // Sam, a server: the floor plan
+    const QString usual = s.c.pageId();
+    s.pos.logout();
+    core::TerminalConfig patio;
+    patio.name = s.pos.terminalName().toStdString();
+    patio.startPage = "floor-patio";
+    s.pos.shared()->settings.terminals.push_back(patio);
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    CHECK(s.c.pageId() == u"floor-patio"_s);
+    s.pos.logout();
+    REQUIRE(s.pos.loginWithPin(u"4444"_s));            // Jo, the bartender, too
+    CHECK(s.c.pageId() == u"floor-patio"_s);
+    s.pos.logout();
+    // Saved on the Terminals screen, and offered among the start pages.
+    REQUIRE(s.pos.loginWithPin(u"1234"_s));
+    const QVariantList records = s.pos.adminRecords(u"terminals"_s);
+    REQUIRE_FALSE(records.isEmpty());
+    QVariantMap me = records.last().toMap();
+    CHECK(me[u"startPage"_s] == u"floor-patio"_s);
+    me[u"startPage"_s] = u"check-list"_s;
+    REQUIRE(s.pos.adminSave(u"terminals"_s, int(records.size()) - 1, me));
+    CHECK(s.pos.shared()->settings.terminals.back().startPage == "check-list");
+    QStringList offered;
+    for (const QVariant &v : s.c.pageChoices(u"start"_s))
+        offered << v.toMap()[u"value"_s].toString();
+    CHECK(offered.contains(u"floor-patio"_s));
+    CHECK(offered.contains(u"check-list"_s));
+    CHECK(offered.contains(u"menu-all"_s));
+    CHECK_FALSE(offered.contains(u"admin-store"_s));
+    s.pos.logout();
+    REQUIRE(s.pos.loginWithPin(u"1111"_s));
+    CHECK(s.c.pageId() == u"check-list"_s);
+    CHECK(usual != u"check-list"_s);
+}
+
 TEST_CASE("Flow: an item's button added to a page built by hand, in its next free place", "[flow][alsoon]")
 {
     Session s;

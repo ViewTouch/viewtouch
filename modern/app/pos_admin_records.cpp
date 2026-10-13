@@ -274,6 +274,7 @@ QVariantList PosService::adminRecords(const QString &panel)
                  {u"screen"_s, qs(t.screen)}, {u"look"_s, qs(t.look)}, {u"keyboard"_s, qs(t.keyboard)},
                  {u"requireName"_s, qs(t.requireName)}, {u"cardReader"_s, qs(t.cardReader)},
                  {u"afterPaying"_s, qs(t.afterPaying)}, {u"startCategory"_s, qs(t.startCategory)},
+                 {u"startPage"_s, qs(t.startPage)},
                  {u"labelPrinter"_s, qs(t.labelPrinter)}, {u"textSize"_s, t.textSize ? QString::number(t.textSize) : QString()}},
                 qs(t.name), (p ? qs(p->name) : tr("Receipt (default)"))
                                 + (s_->settings.hasDrawer(t.name) ? QString() : tr(" · no drawer"))
@@ -306,7 +307,7 @@ QVariantMap PosService::adminNewRecord(const QString &panel)
     if (panel == u"terminals")
         return {{u"name"_s, terminal_}, {u"receiptPrinter"_s, QString()}, {u"drawer"_s, QString()},
                 {u"screen"_s, QString()}, {u"look"_s, QString()}, {u"keyboard"_s, QString()}, {u"requireName"_s, QString()},
-                {u"cardReader"_s, QString()}, {u"afterPaying"_s, QString()}, {u"startCategory"_s, QString()},
+                {u"cardReader"_s, QString()}, {u"afterPaying"_s, QString()}, {u"startCategory"_s, QString()}, {u"startPage"_s, QString()},
                 {u"labelPrinter"_s, QString()}, {u"textSize"_s, QString()}};
     if (panel == u"mealPeriods")
         return {{u"id"_s, QString()}, {u"name"_s, QString()}, {u"start"_s, u"17:00"_s}};

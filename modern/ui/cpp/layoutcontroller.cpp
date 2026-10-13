@@ -396,7 +396,10 @@ QVariantList LayoutController::pageChoices(const QString &only) const
     };
     QVariantList out{QVariantMap{{u"value"_s, QString()}, {u"text"_s, QString()}}};
     for (const vt::layout::Page &p : activeLayout().pages)
-        if (p.kind != u"template" && p.kind != u"library" && (only != u"floor" || floor(p)))
+        // "start": what a device may start on: floor plans, Open Checks, menus, tabs, deliveries.
+        if (p.kind != u"template" && p.kind != u"library" && (only != u"floor" || floor(p))
+            && (only != u"start" || (p.variantOf.isEmpty() && (floor(p) || p.kind == u"items" || p.role == u"checkList"
+                                                               || p.id == u"tabs" || p.id == u"deliveries"))))
             out.append(QVariantMap{{u"value"_s, p.id}, {u"text"_s, p.name}});
     return out;
 }
