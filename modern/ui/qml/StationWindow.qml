@@ -654,6 +654,7 @@ ApplicationWindow {
             property string pin: ""
             property string pinAgain: ""
             property bool confirming: false
+            property bool zoneChosen: false
             property bool guestDisplay: false
             readonly property var defaultNames: ({ store: "Main-Register", terminal: "Register-2", kitchen: "Kitchen",
                                                    selforder: "Kiosk", timeclock: "Time-Clock" })
@@ -781,8 +782,13 @@ ApplicationWindow {
             ColumnLayout {
                 visible: wiz.step === 4
                 spacing: root.u
-                Heading { text: qsTr("Time zone") }
-                Note { text: qsTr("Now: %1").arg(root.station.timeZone) }
+                Heading { text: qsTr("Where is the store? Touch its time zone.") }
+                Note {
+                    text: qsTr("Now: %1, where it's %2.").arg(root.zoneName(root.station.timeZone)).arg(zoneClock.text)
+                    Label { id: zoneClock; visible: false; text: Qt.locale().toString(new Date(), "h:mm AP")
+                            Timer { interval: 5000; running: true; repeat: true; onTriggered: zoneClock.text = Qt.locale().toString(new Date(), "h:mm AP") }
+                            Connections { target: root.station; function onTimeZoneChanged() { zoneClock.text = Qt.locale().toString(new Date(), "h:mm AP") } } }
+                }
                 Flow {
                     Layout.fillWidth: true
                     spacing: root.u * 0.6
@@ -794,16 +800,16 @@ ApplicationWindow {
                         delegate: BigButton {
                             required property var modelData
                             text: modelData[1]
-                            tint: root.station.timeZone === modelData[0] ? "#2f6fd6" : "#2d3440"
-                            onClicked: root.station.setTimeZone(modelData[0])
+                            tint: wiz.zoneChosen && root.station.timeZone === modelData[0] ? "#2f6fd6" : "#2d3440"
+                            onClicked: { wiz.zoneChosen = true; root.station.setTimeZone(modelData[0]) }
                         }
                     }
-                    BigButton { text: qsTr("Other…"); onClicked: root.panel = "time" }
+                    BigButton { text: qsTr("Other…"); onClicked: { wiz.zoneChosen = true; root.panel = "time" } }
                 }
                 RowLayout {
                     spacing: root.u
                     BigButton { text: "‹ " + qsTr("Back"); onClicked: wiz.step = 3 }
-                    BigButton { text: qsTr("Next"); tint: "#2f6fd6"; onClicked: wiz.step = 5 }
+                    BigButton { text: qsTr("Next"); tint: "#2f6fd6"; enabled: wiz.zoneChosen; onClicked: wiz.step = 5 }
                 }
             }
 
