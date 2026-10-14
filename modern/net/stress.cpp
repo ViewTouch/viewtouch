@@ -1157,7 +1157,7 @@ QVariantMap StressRunner::stats() const
     QVariantMap counts;
     for (auto it = counts_.cbegin(); it != counts_.cend(); ++it)
         counts.insert(it.key(), it.value());
-    const qint64 elapsed = clock_.isValid() ? clock_.elapsed() : 0;
+    const qint64 elapsed = finishedMs_ ? finishedMs_ : clock_.isValid() ? clock_.elapsed() : 0;
     return {
         {u"elapsed"_s, elapsed / 1000},
         {u"total"_s, o_.minutes * 60},
@@ -1272,6 +1272,7 @@ void StressRunner::checkEverything(QStringList &problems, QStringList &notes)
 
 void StressRunner::finish()
 {
+    finishedMs_ = clock_.elapsed();
     finished_ = true;
     sampler_.stop();
     for (auto &b : bots_) {

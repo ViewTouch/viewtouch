@@ -131,7 +131,7 @@ private:
     qint64 cpuTicks_ = 0, cpuAt_ = 0;
     std::atomic<bool> winding_{false}, finished_{false};
     bool passed_ = false;
-    qint64 windStartedMs_ = 0;
+    qint64 windStartedMs_ = 0, finishedMs_ = 0;
     QString report_;
     QString updateCost_;
     QStringList timeline_;            // every 10 seconds: how it was going
