@@ -131,6 +131,8 @@ update-usb)
             pkg=$(ls -t "$mnt"/vtmodern_*_"$(dpkg --print-architecture)"*.deb "$mnt"/*/vtmodern_*_"$(dpkg --print-architecture)"*.deb 2>/dev/null | head -1 || true)
             if [ -n "$pkg" ]; then
                 cp "$pkg" /tmp/vtmodern-update.deb
+                rm -f /tmp/vtmodern-update.deb.sig
+                [ -f "$pkg.sig" ] && cp "$pkg.sig" /tmp/vtmodern-update.deb.sig
                 found=$(basename "$pkg")
             fi
             umount "$mnt"
@@ -138,9 +140,16 @@ update-usb)
         done
     done
     [ -n "$found" ] || die "No ViewTouch package (vtmodern_....deb) on a USB stick."
+    # Only a package signed by ViewTouch's key (its .sig file beside it).
+    [ -s /tmp/vtmodern-update.deb.sig ] || { rm -f /tmp/vtmodern-update.deb; die "$found has no signature (.sig file beside it): not installed."; }
+    if ! openssl pkeyutl -verify -pubin -inkey /usr/share/vtmodern/update-signing-key.pub.pem -rawin \
+            -in /tmp/vtmodern-update.deb -sigfile /tmp/vtmodern-update.deb.sig >/dev/null 2>&1; then
+        rm -f /tmp/vtmodern-update.deb /tmp/vtmodern-update.deb.sig
+        die "$found isn't signed by ViewTouch (or was changed): not installed."
+    fi
     echo "Installing $found..."
     apt-get install -y --allow-downgrades /tmp/vtmodern-update.deb
-    rm -f /tmp/vtmodern-update.deb
+    rm -f /tmp/vtmodern-update.deb /tmp/vtmodern-update.deb.sig
     echo "Installed $found. Restart the computer to use it."
     ;;
 usb-open)

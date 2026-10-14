@@ -67,6 +67,23 @@ in_container() {
         sh -c "$install && /src/modern/packaging/build-packages.sh"
 }
 
+# Each package signed (an Ed25519 signature, PACKAGE.sig) with the key kept
+# on this computer only: "Update from USB" and the installer check it.
+sign_all() {
+    key=${VTM_SIGNING_KEY:-$HOME/.config/viewtouch/signing/update-signing-key.pem}
+    if [ ! -f "$key" ] || ! command -v openssl >/dev/null 2>&1; then
+        echo "Not signed (no key at $key): \"Update from USB\" won't take these." >&2
+        return 0
+    fi
+    for f in "$dist"/*.deb "$dist"/*.rpm; do
+        [ -e "$f" ] || continue
+        [ -e "$f.sig" ] && [ "$f.sig" -nt "$f" ] && continue
+        openssl pkeyutl -sign -inkey "$key" -rawin -in "$f" -out "$f.sig"
+        openssl pkeyutl -verify -pubin -inkey "$here/update-signing-key.pub.pem" -rawin -in "$f" -sigfile "$f.sig" >/dev/null
+        echo "Signed $(basename "$f")"
+    done
+}
+
 case "${1:-}" in
 "") build_here ;;
 deps) install_deps ;;
@@ -75,4 +92,9 @@ debian) in_container debian:trixie "/src/modern/packaging/build-packages.sh deps
 ubuntu) in_container ubuntu:26.04 "/src/modern/packaging/build-packages.sh deps" ;;
 -h|--help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//' ;;
 *) echo "Unknown target: $1" >&2; exit 1 ;;
+esac
+# On this computer (not inside a build container): sign what was built.
+case "${1:-}" in
+deps|-h|--help) ;;
+*) [ -f /run/.containerenv ] || [ -f /.dockerenv ] || sign_all ;;
 esac

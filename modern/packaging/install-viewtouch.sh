@@ -118,6 +118,19 @@ if [ -z "$package" ] && [ "$build" = no ] && [ "$family" = debian ] && [ "${VERS
     say "Downloading ViewTouch ($arch)"
     tmpdir=$(mktemp -d)
     if download "$url" "$tmpdir/vtmodern.deb" && dpkg-deb --info "$tmpdir/vtmodern.deb" >/dev/null 2>&1; then
+        # Signed by ViewTouch's key (below), or not installed.
+        command -v openssl >/dev/null 2>&1 || apt-get install -y -qq openssl >/dev/null
+        cat > "$tmpdir/key.pem" <<'KEY'
+-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAVYSt7HW+x6/HiWKZRLf4GAcYa3ivJeUGfgwvoW4mzSE=
+-----END PUBLIC KEY-----
+KEY
+        download "$url.sig" "$tmpdir/vtmodern.deb.sig" ||
+            die "The package's signature didn't download: not installing it."
+        openssl pkeyutl -verify -pubin -inkey "$tmpdir/key.pem" -rawin -in "$tmpdir/vtmodern.deb" \
+            -sigfile "$tmpdir/vtmodern.deb.sig" >/dev/null 2>&1 ||
+            die "The package isn't signed by ViewTouch (or was changed on the way): not installing it."
+        echo "Signature checked."
         package=$tmpdir/vtmodern.deb
         echo "Got $(dpkg-deb --field "$package" Package Version | tr '\n' ' ')"
     else
