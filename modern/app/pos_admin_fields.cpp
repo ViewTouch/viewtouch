@@ -401,6 +401,8 @@ QVariantList PosService::adminFields(const QString &panel)
                             tr("With 15 and 2 here, 5 orders in the kitchen make it 25.")), u"min"_s, 0), u"max"_s, 60),
             field(u"deliveryFee"_s, tr("Delivery fee"), u"money"_s,
                   tr("Added to every delivery (0 = none). Taking it off is a void (a manager).")),
+            field(u"deliveryFeeToDriver"_s, tr("The delivery fee goes to the driver"), u"bool"_s,
+                  tr("Receipts say whether it does: a fee may not look like the driver's tip (California and others).")),
             // Never shown again once saved: only its last four.
             field(u"stripeSecretKey"_s, tr("Stripe secret key (card readers)"), u"password"_s,
                   s_->settings.stripeSecretKey.empty()

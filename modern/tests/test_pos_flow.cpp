@@ -3093,7 +3093,7 @@ TEST_CASE("UI: the setup guide opens for the first manager and walks through the
     QTest::qWait(60);
     s.shot("46-setup-menu");
     next();                                                      // staff
-    s.pos.setupAddEmployee(u"Ana Ruiz"_s, u"manager"_s, u"8642"_s);
+    s.pos.setupAddEmployee(u"Ana Ruiz"_s, u"manager"_s, u"864213"_s);
     QTest::qWait(80);
     REQUIRE(find("setupRetire"));
     s.shot("46-setup-staff");
@@ -3106,7 +3106,7 @@ TEST_CASE("UI: the setup guide opens for the first manager and walks through the
     CHECK_FALSE(s.c.setupOpen());
     CHECK(s.pos.shared()->settings.setupDone);
     CHECK_FALSE(s.pos.loggedIn());                               // Morgan (a sample) is off now
-    CHECK(s.pos.loginWithPin(u"8642"_s));                        // Ana, the owner
+    CHECK(s.pos.loginWithPin(u"864213"_s));                        // Ana, the owner
 }
 
 TEST_CASE("UI: ready-made looks recolor every screen; one comes from the logo", "[flow][ui][looks]")

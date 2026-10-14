@@ -80,6 +80,17 @@ QVariantMap PosService::storeCheck() const
                     .arg(samples.join(u", "_s)));
     }
 
+    // The law and the store's data: settings worth having (not reasons to wait).
+    if (s_->settings.laborState.empty())
+        add(u"state"_s, false, tr("The store's state"),
+            tr("Not chosen: overtime, meal breaks and gift cards follow federal rules only. Store Settings → Staff hours."), true);
+    if (s_->settings.backupKey.empty())
+        add(u"backupPassword"_s, false, tr("Encrypted backups"),
+            tr("Backups are plain copies of everything (customers, staff, sales). Set a backup password: Store Settings → Backups."), true);
+    if (s_->settings.stripeSecretKey.starts_with("sk_"))
+        add(u"stripeKey"_s, false, tr("Stripe key"),
+            tr("A full secret key is saved. A restricted key (rk_...) with only Terminal and refunds does far less harm if it's ever copied."), true);
+
     // Meal breaks the state requires: who's past due right now.
     if (const int due = s_->settings.mealBreakAfterHours; due > 0) {
         QStringList late;

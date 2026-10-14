@@ -389,7 +389,7 @@ Rectangle {
                         wrapMode: Text.WordWrap
                         color: "white"
                         font.pixelSize: 18
-                        text: qsTr("Add yourself as a manager first, then your team. Everyone logs in with their own PIN.")
+                        text: qsTr("Add yourself as a manager first, then your team. Everyone logs in with their own PIN (managers: 6 to 8 digits; others 4 to 8).")
                     }
                     GridLayout {
                         columns: g.narrow ? 2 : 4

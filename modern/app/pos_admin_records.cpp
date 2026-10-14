@@ -192,6 +192,7 @@ QVariantList PosService::adminRecords(const QString &panel)
              {u"deliveryMinutes"_s, s_->settings.deliveryMinutes},
              {u"minutesPerOrderWaiting"_s, s_->settings.minutesPerOrderWaiting},
              {u"deliveryFee"_s, double(s_->settings.deliveryFee.cents()) / 100.0},
+             {u"deliveryFeeToDriver"_s, s_->settings.deliveryFeeToDriver},
              {u"stripeSecretKey"_s, QString()}, {u"cardCurrency"_s, qs(s_->settings.cardCurrency)},
              {u"offlineCards"_s, s_->settings.offlineCards},
              {u"offlineCardMax"_s, double(s_->settings.offlineCardMax) / 100.0},

@@ -871,3 +871,27 @@ TEST_CASE("Printer status: learned that it answers; silent from the start after 
         QTest::qWait(20);
     CHECK(seen.contains(u"kitchen=silent"_s));
 }
+
+TEST_CASE("Receipts say what a service charge and a delivery fee are (fee laws)", "[print][law]")
+{
+    const auto seed = test::seedPosData();
+    core::Check c = burgerCheck(seed.settings, seed.menu);
+    c.gratuityBp = 1800;
+    c.autoGratuity = true;
+    core::OrderLine fee;
+    fee.id = 99;
+    fee.itemId = "fee:delivery";
+    fee.name = "Delivery fee";
+    fee.unitPrice = Money::fromCents(350);
+    c.lines.push_back(fee);
+    core::PosSettings s = seed.settings;
+    s.gratuityMinGuests = 6;
+    std::string r = renderText(receipt(c, ctx(s)), 42);
+    CHECK(contains(r, "For 6+ guests; goes to the server."));
+    CHECK(contains(r, "Store's fee, not the driver's tip."));
+    s.deliveryFeeToDriver = true;
+    c.autoGratuity = false;
+    r = renderText(receipt(c, ctx(s)), 42);
+    CHECK(contains(r, "Goes to the driver."));
+    CHECK(contains(r, "Goes to the server."));
+}

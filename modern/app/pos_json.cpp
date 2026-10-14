@@ -1158,7 +1158,7 @@ QJsonObject toJson(const PosSettings &s)
         {u"laterLeadMinutes"_s, s.laterLeadMinutes},
         {u"requireOrderName"_s, s.requireOrderName}, {u"takeoutMinutes"_s, s.takeoutMinutes},
         {u"deliveryMinutes"_s, s.deliveryMinutes}, {u"minutesPerOrderWaiting"_s, s.minutesPerOrderWaiting},
-        {u"deliveryFee"_s, qint64(s.deliveryFee.cents())},
+        {u"deliveryFee"_s, qint64(s.deliveryFee.cents())}, {u"deliveryFeeToDriver"_s, s.deliveryFeeToDriver},
         {u"stripeSecretKey"_s, qs(s.stripeSecretKey)}, {u"cardCurrency"_s, qs(s.cardCurrency)},
         {u"offlineCards"_s, s.offlineCards}, {u"offlineCardMax"_s, qint64(s.offlineCardMax)}, {u"tabHold"_s, qint64(s.tabHold)},
         {u"offlineCardTotal"_s, qint64(s.offlineCardTotal)},
@@ -1442,6 +1442,7 @@ PosSettings settingsFromJson(const QJsonObject &o)
     s.deliveryMinutes = std::clamp(o.value(u"deliveryMinutes").toInt(35), 0, 240);
     s.minutesPerOrderWaiting = std::clamp(o.value(u"minutesPerOrderWaiting").toInt(2), 0, 60);
     s.deliveryFee = money(o.value(u"deliveryFee"));
+    s.deliveryFeeToDriver = o.value(u"deliveryFeeToDriver").toBool(false);
     s.stripeSecretKey = ss(o.value(u"stripeSecretKey").toString());
     s.offlineCards = o.value(u"offlineCards").toBool(false);
     s.offlineCardMax = o.value(u"offlineCardMax").toInteger(10000);

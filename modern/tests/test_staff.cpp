@@ -675,7 +675,7 @@ TEST_CASE("Setup guide: name, receipt, taxes, items, your own manager, sample st
 
     // The sample staff's PINs are public: off, once there's a manager of our own.
     CHECK_FALSE(pos.setupRetireSamples());
-    REQUIRE(pos.setupAddEmployee(u"Ana Ruiz"_s, u"manager"_s, u"8642"_s));
+    REQUIRE(pos.setupAddEmployee(u"Ana Ruiz"_s, u"manager"_s, u"864213"_s));
     REQUIRE(pos.setupRetireSamples());
     CHECK(pos.setupInfo()[u"samples"_s].toInt() == 0);
     CHECK(pos.loggedIn());                                          // Morgan finishes the guide first
@@ -683,7 +683,7 @@ TEST_CASE("Setup guide: name, receipt, taxes, items, your own manager, sample st
     CHECK(pos.shared()->settings.setupDone);
     CHECK_FALSE(pos.loggedIn());                                    // then is off, and logged out
     CHECK_FALSE(pos.loginWithPin(u"1234"_s));                        // Morgan, a sample, is off
-    REQUIRE(pos.loginWithPin(u"8642"_s));                            // Ana
+    REQUIRE(pos.loginWithPin(u"864213"_s));                            // Ana
     CHECK(app::settingsFromJson(app::toJson(pos.shared()->settings)).setupDone);
 }
 

@@ -454,6 +454,8 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
                 return fail(tr("Write the currency as three letters, like usd."));
             s_->settings.cardCurrency = ss(currency);
         }
+        if (record.contains(u"deliveryFeeToDriver"_s))
+            s_->settings.deliveryFeeToDriver = record.value(u"deliveryFeeToDriver"_s).toBool();
         if (record.contains(u"deliveryFee"_s)) {
             const double fee = record.value(u"deliveryFee"_s).toDouble();
             if (fee < 0 || fee > 1000)
@@ -732,6 +734,9 @@ bool PosService::saveEmployeeRecord(int index, const QVariantMap &record)
     static const QRegularExpression digits(u"^[0-9]{4,8}$"_s);
     if (!pin.isEmpty() && !digits.match(pin).hasMatch())
         return fail(tr("PINs are 4 to 8 digits."));
+    // Managers can do the most: a PIN that's harder to guess.
+    if (!pin.isEmpty() && (role == u"manager" || role == u"admin") && pin.size() < 6)
+        return fail(tr("Managers' PINs are 6 to 8 digits."));
     if (!pin.isEmpty()) {
         for (int i = 0; i < int(s_->employees.size()); ++i) {
             if (i != index && s_->employees[i].pinHash == hashPin(pin, s_->employees[i].pinSalt))

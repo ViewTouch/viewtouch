@@ -397,6 +397,9 @@ struct PosSettings {
     int deliveryMinutes = 35;
     int minutesPerOrderWaiting = 2;
     Money deliveryFee;   // added to deliveries when sent (0: none)
+    // Whether the delivery fee goes to the driver: receipts say so either
+    // way (California and others: a fee may not look like the driver's tip).
+    bool deliveryFeeToDriver = false;
     // Card readers: the store's Stripe secret key (stays on the store's
     // computer: it gets the readers' connection tokens and makes refunds),
     // and the currency cards are charged in.

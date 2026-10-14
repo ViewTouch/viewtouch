@@ -115,6 +115,10 @@ Document receipt(const Check &check, const TicketContext &ctx)
         }
         const std::string qty = l.quantity > 1 ? std::to_string(l.quantity) + " x " : "";
         d.columns(qty + l.displayName(), ctx.money(qualifiedPrice(l.unitPrice, l.qualifier) * l.quantity));
+        // A fee says what it is (fee laws: it mustn't look like a tip).
+        if (l.itemId == "fee:delivery")
+            d.text("  " + (ctx.settings.deliveryFeeToDriver ? ctx.tr("Goes to the driver.")
+                                                             : ctx.tr("Store's fee, not the driver's tip.")));
         for (const Modifier &m : l.modifiers) {
             if (m.price().cents() == 0 && !ctx.settings.receiptFreeChoices)
                 continue;   // No onion, Medium rare: the kitchen's, not the guest's
@@ -129,8 +133,14 @@ Document receipt(const Check &check, const TicketContext &ctx)
     }
     for (const auto &[cls, amount] : t.taxByClass)
         d.columns(taxName(cls, ctx), ctx.money(amount));
-    if (t.gratuity.cents() != 0)
+    if (t.gratuity.cents() != 0) {
         d.columns(ctx.tr("Gratuity %1%", {std::to_string(check.gratuityBp / 100)}), ctx.money(t.gratuity));
+        // What it is and who gets it (service charge laws).
+        d.text("  " + (check.autoGratuity
+                           ? ctx.tr("For %1+ guests; goes to the server.",
+                                    {std::to_string(ctx.settings.gratuityMinGuests)})
+                           : ctx.tr("Goes to the server.")));
+    }
     d.columns(upper(ctx.tr("Total")), ctx.money(t.total), true, true);
     bool paid = false;
     for (const Payment &p : check.payments) {
