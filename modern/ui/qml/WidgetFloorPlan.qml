@@ -14,7 +14,7 @@ Item {
     readonly property var props: zone && zone.props ? zone.props : ({})
 
     // Again when the checks change (compared, not just read: an unused read is compiled away).
-    function status(name) { return !w.pos || !w.pos.openChecks ? ({ open: false }) : w.pos.tableStatus(name) }
+    function status(name) { return !w.pos || w.pos.checksRevision < 0 ? ({ open: false }) : w.pos.tableStatus(name) }
     function minutesText(m) { return m < 60 ? m + "m" : Math.floor(m / 60) + "h " + (m % 60) + "m" }
     property real now: Date.now()
     Timer { interval: 30000; running: true; repeat: true; onTriggered: w.now = Date.now() }

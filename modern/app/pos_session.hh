@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QHash>
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -8,6 +9,7 @@
 #include <QVariantMap>
 
 #include <functional>
+#include <optional>
 
 namespace vt::app {
 
@@ -66,6 +68,9 @@ class PosSession : public QObject {
     // The host stand's floor: table -> {state: seated | dirty | reserved, ...}
     // (tables not in it are available).
     Q_PROPERTY(QVariantMap floor READ floor NOTIFY openChecksChanged)
+    // Counts the open checks' changes: a floor plan reads it to ask tableStatus
+    // again (instead of the whole openChecks list, made for every table).
+    Q_PROPERTY(int checksRevision READ checksRevision NOTIFY openChecksChanged)
     // Open deliveries, the oldest promise first: {id, label, state: new | cooking |
     // ready | out | back, name, address, total, driver, promised, outMinutes...}.
     Q_PROPERTY(QVariantList deliveries READ deliveries NOTIFY openChecksChanged)
@@ -227,7 +232,7 @@ public:
 
     using Reply = std::function<void(const QVariant &result)>;
 
-    using QObject::QObject;
+    explicit PosSession(QObject *parent = nullptr);
 
     // Run an operation by name (see PosService::invoke for the list).
     virtual void invoke(const QString &method, const QVariantList &args = {}, Reply reply = {}) = 0;
@@ -378,6 +383,7 @@ public:
     Q_INVOKABLE QString roleName(const QString &role) const;
     // Status of a table on the floor plan, from the open checks.
     Q_INVOKABLE QVariantMap tableStatus(const QString &label) const;
+    int checksRevision() const { return checksRevision_; }
     // Other open checks at the current check's table, plus {id: 0, "New check"}.
     Q_INVOKABLE QVariantList splitTargets() const;
     // Reports and admin screens. Remote sessions answer from a cache and
@@ -675,6 +681,18 @@ signals:
     void notice(const QString &message);
     void loggedInChanged(bool loggedIn);
     void checkClosed(qint64 checkId);
+
+private:
+    // tableStatus for every table at once: the open checks grouped by table
+    // and the floor, made once (a floor plan asks for each of its tables),
+    // until the open checks change or this burst of redrawing is done.
+    struct TableData {
+        QHash<QString, QVariantList> checks;   // dine-in checks by table
+        QVariantMap floor;
+        QHash<QString, QVariantMap> status;
+    };
+    mutable std::optional<TableData> tables_;
+    int checksRevision_ = 0;
 };
 
 } // namespace vt::app

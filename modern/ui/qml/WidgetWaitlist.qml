@@ -24,7 +24,7 @@ Item {
 
     // Tables that are free, the smallest that fits first.
     readonly property var freeTables: {
-        if (pos && !pos.openChecks) return []   // again when checks change (compared: an unused read is compiled away)
+        if (pos && pos.checksRevision < 0) return []   // again when checks change (compared: an unused read is compiled away)
         const size = chosen ? chosen.size : 1
         const all = zone && zone.controller ? zone.controller.tables() : []
         // Not dirty, not pushed into another party's table, not held for someone else.

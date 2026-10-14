@@ -1134,6 +1134,14 @@ bool PosService::deleteAdminRecord(const QString &panel, int index)
     return true;
 }
 
+void PosShared::savePrepTimes()
+{
+    if (!sink || now() - prepSavedAt < 60'000)
+        return;
+    prepSavedAt = now();
+    sink->saveSettings(settings);
+}
+
 void PosShared::saveSettings()
 {
     if (sink)

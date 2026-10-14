@@ -855,6 +855,15 @@ QString PosService::tipsOwed() const
 
 std::map<std::string, TipShare> PosService::allTipShares() const
 {
+    if (!s_->memoOn())
+        return allTipSharesNow();
+    if (!s_->tipSharesMemo)
+        s_->tipSharesMemo = allTipSharesNow();
+    return *s_->tipSharesMemo;
+}
+
+std::map<std::string, TipShare> PosService::allTipSharesNow() const
+{
     // Hours worked today, for splitting the tip pools.
     std::map<std::string, double> hours;
     std::map<std::string, std::string> jobToday;   // someone who bartended today is in the bar's pool

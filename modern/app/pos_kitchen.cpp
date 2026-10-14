@@ -184,7 +184,7 @@ bool PosService::bumpTicket(qint64 checkId, qint64 sentAt, const QString &statio
     if (n == 0)
         return fail(tr("That ticket was already bumped."));
     if (learned)
-        s_->saveSettings();
+        s_->savePrepTimes();
     s_->bumped.push_back({checkId, sentAt, where});
     if (s_->sink)
         s_->sink->saveCheck(*c);

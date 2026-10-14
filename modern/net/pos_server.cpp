@@ -6,6 +6,7 @@
 #include "net/pairing.hh"
 #include "net/protocol.hh"
 
+#include <algorithm>
 #include <QElapsedTimer>
 #include <QMetaProperty>
 #include <QDateTime>
@@ -193,7 +194,10 @@ PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent
     pingTimer_.start();
     flushTimer_.setSingleShot(true);
     // Every screen's update at most every 80 ms (busy: many changes in one
-    // round); the screen that made a change gets its own at once.
+    // round); the screen that made a change gets its own at once. A round
+    // that took long (many screens, a big day) waits twice that before the
+    // next, so the updates never take more than a third of this computer's
+    // time and its own screen stays quick.
     flushTimer_.setInterval(80);
     connect(&flushTimer_, &QTimer::timeout, this, [this] {
         QElapsedTimer t;
@@ -208,6 +212,7 @@ PosServer::PosServer(app::PosShared *shared, LayoutHub *layouts, QObject *parent
         shared_->endMemo();
         updateNsecs_ += t.nsecsElapsed();
         ++updateRounds_;
+        flushTimer_.setInterval(std::clamp(int(2 * t.elapsed()), 80, 2000));
     });
     tickTimer_.setInterval(30'000);
     // Now and then everything (times that move on their own: minutes seated).
