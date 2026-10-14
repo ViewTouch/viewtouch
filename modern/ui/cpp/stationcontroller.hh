@@ -71,6 +71,8 @@ public:
     // Don't start it again by itself (a crash): stay on the home screen.
     Q_INVOKABLE void stayHome();
     Q_INVOKABLE bool checkPin(const QString &pin) const;
+    // After 5 wrong settings PINs in a row: seconds to wait (a minute, doubling to 15).
+    Q_INVOKABLE int pinWait() const;
     Q_INVOKABLE bool setPin(const QString &pin);
 
     Q_INVOKABLE void refreshNetwork();
@@ -128,6 +130,8 @@ private:
     QString role_;
     QString name_;
     QString pinHash_;
+    mutable int wrongPins_ = 0;
+    mutable qint64 pinWaitUntil_ = 0;
     QString pinSalt_;
     QProcess *pos_ = nullptr;
     QString posState_ = QStringLiteral("stopped");

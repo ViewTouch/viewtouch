@@ -203,14 +203,23 @@ Item {
                 Label {
                     visible: w.pos && w.pos.pairing.active
                     Layout.fillWidth: true
-                    text: qsTr("works once, until %1").arg(w.pos ? (w.pos.pairing.until ?? "") : "")
+                    wrapMode: Text.WordWrap
+                    text: (w.pos && w.pos.pairing.standby ? qsTr("For the standby computer. ") : "")
+                          + qsTr("works once, until %1").arg(w.pos ? (w.pos.pairing.until ?? "") : "")
                     opacity: 0.8
                 }
                 Button {
                     Layout.minimumHeight: w.narrow ? 36 : 0
                     text: w.pos && w.pos.pairing.active ? qsTr("Stop") : qsTr("Pair a Device")
                     highlighted: !(w.pos && w.pos.pairing.active)
-                    onClicked: w.pos.pairing.active ? w.pos.stopPairing() : w.pos.startPairing()
+                    onClicked: w.pos.pairing.active ? w.pos.stopPairing() : w.pos.startPairing(false)
+                }
+                // A standby gets a copy of everything: its own kind of code.
+                Button {
+                    visible: !(w.pos && w.pos.pairing.active)
+                    Layout.minimumHeight: w.narrow ? 36 : 0
+                    text: qsTr("Pair a Standby Computer")
+                    onClicked: w.pos.startPairing(true)
                 }
             }
         }

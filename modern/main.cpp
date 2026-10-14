@@ -942,6 +942,11 @@ int runStore(const Args &cli, const Options &o)
         shared->history = [dbPath](std::int64_t from, std::int64_t to) {
             return vt::storage::closedChecksBetween(dbPath, from, to);
         };
+        shared->customerTrail = [dbPath, &writer](const std::string &id, const std::string &digits) {
+            if (writer)
+                writer->flush();   // today's saved first
+            return vt::storage::customerTrail(dbPath, id, digits);
+        };
         shared->refundHistory = [dbPath](std::int64_t from, std::int64_t to) {
             return vt::storage::refundsBetween(dbPath, from, to);
         };
@@ -1099,7 +1104,7 @@ int runStore(const Args &cli, const Options &o)
     postText = [shared, &texting, &pos, &waitingTexts, &textRetry, &postText](const QString &phone, const QString &message,
                                                                              qint64 since) {
         const QUrl url(QString::fromStdString(shared->settings.textWebhook));
-        if (!url.isValid() || url.scheme().isEmpty())
+        if (!url.isValid() || url.scheme() != u"https")   // guests' phone numbers: encrypted only
             return;
         QNetworkRequest request(url);
         request.setHeader(QNetworkRequest::ContentTypeHeader, u"application/json"_s);
@@ -1256,7 +1261,7 @@ int runStore(const Args &cli, const Options &o)
                     if (!s->canReadLine())
                         return;
                     if (s->readLine().trimmed() == "pair") {
-                        const QString code = shared->startPairing();
+                        const QString code = shared->startPairing(true);   // on this computer: may be the standby
                         const QString until = vt::i18n::timeText(
                             QDateTime::fromMSecsSinceEpoch(shared->pairing->expires).time());
                         qInfo().noquote() << "Pairing opened from this machine's command line";

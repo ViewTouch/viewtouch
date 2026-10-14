@@ -68,7 +68,7 @@ bool PosService::leaveSelfOrder(const QString &managerPin)
         return true;
     const Employee *m = employeeByPin(managerPin);
     if (!m || !m->can(perm::Manager))
-        return fail(tr("That isn't a manager's PIN."));
+        return fail(pinRefused(tr("That isn't a manager's PIN.")));
     kioskCancel();
     selfOrder_ = false;
     userId_ = m->id;   // the manager, logged in here now

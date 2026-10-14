@@ -50,6 +50,9 @@ public:
     virtual void saveCustomer(const core::CustomerRecord &) {}
     virtual void saveGiftCard(const core::GiftCard &) {}
     virtual void saveParty(const core::Party &) {}
+    virtual void removeCustomer(const std::string &) {}
+    // Saved, and no old copies left in the journal (privacy).
+    virtual void purge() {}
     virtual void saveIngredient(const core::Ingredient &, int position) { Q_UNUSED(position) }
     virtual void deleteIngredient(const std::string &id) { Q_UNUSED(id) }
     virtual void saveShift(const core::Shift &) {}
@@ -202,6 +205,9 @@ public:
     // Closed checks in [from, to) from the database (set up by main; may run
     // on a worker thread). Unset: reports over a range use today's only.
     std::function<std::vector<core::Check>(std::int64_t from, std::int64_t to)> history;
+    // Every check and party in the database that may be a customer's (forgetting them).
+    std::function<std::pair<std::vector<core::Check>, std::vector<core::Party>>(const std::string &id,
+                                                                                 const std::string &digits)> customerTrail;
     // Items ordered together over the past four weeks (from history, loaded
     // once in the background): checks with each item, and with each pair.
     std::map<std::string, int> pastChecksWith;
@@ -273,6 +279,16 @@ public:
     std::int64_t lastProblemId = 0;
     // Kept, unless the same thing was noted in the last 10 minutes.
     void noteProblem(const std::string &kind, const std::string &subject, const std::string &detail = {});
+    // Guessing PINs: wrong ones in a row on each screen, and the store's
+    // lately. After 5 in a row a screen waits (30 seconds, doubling to 15
+    // minutes); 30 in the store within 10 minutes and every screen waits a minute.
+    struct PinGuard {
+        int wrong = 0;
+        std::int64_t waitUntil = 0;
+    };
+    QHash<QString, PinGuard> pinGuards;
+    std::vector<std::int64_t> wrongPinsLately;
+    std::int64_t storeWaitUntil = 0;
     // Refunds sent to Stripe and not answered yet ("check/payment"), from any terminal.
     QSet<QString> refundsUnderway;
     // How much of a payment has gone back: on the check, and today's from any terminal.
@@ -315,7 +331,9 @@ public:
 
     // A device pairing a manager has started: the code the device must
     // type, until it is used or expires. One at a time.
-    struct Pairing { QString code; std::int64_t expires = 0; };
+    // standby: this code may pair the store's standby server (which gets a
+    // full copy of the data); otherwise only screens.
+    struct Pairing { QString code; std::int64_t expires = 0; bool standby = false; };
     std::optional<Pairing> pairing;
     const Pairing *activePairing() const
     {
@@ -324,7 +342,7 @@ public:
     // Save the settings and tell every terminal (paired devices changed...).
     void saveSettings();
     // Open a pairing (replacing any open one) and return its code.
-    QString startPairing();
+    QString startPairing(bool standby = false);
 
     void startDay();
 
@@ -860,7 +878,7 @@ public:
 
     // --- pairing devices (manager) -------------------------------------------------
     // Start a pairing: a 10-character code, good for 10 minutes and one device.
-    bool startPairing();
+    bool startPairing(bool standby = false);
     // Back the database up now (managers).
     bool backupNow();
 
@@ -935,6 +953,10 @@ public:
     bool useCustomer(const QString &id = {});
     // Add or update (by id, else the same phone number); goes on the open check.
     bool saveCustomer(const QVariantMap &record);
+    // A customer asked to be forgotten (privacy laws): their record goes, and
+    // their name, phone, address, email and note come off every check and
+    // waitlist entry (the sales stay, with no one's name on them).
+    bool forgetCustomer(const QString &id);
     // Sell or reload a card on the check (a Quick check if none is open);
     // no number: a new one. Amount 0: the keypad. Live once the check is paid.
     bool sellGiftCard(const QString &number, qint64 amountCents = 0);
@@ -1055,6 +1077,10 @@ public:
     bool stopPairing();
 
 private:
+    // Why the last PIN was refused when it's because of guessing (wait), else `usual`.
+    QString pinRefused(const QString &usual) const { return pinWait_.isEmpty() ? usual : pinWait_; }
+    QString pinWait_;
+
     // One Menu Builder change, as one step to undo (PosShared::menuUndo).
     class MenuStep {
     public:

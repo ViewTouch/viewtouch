@@ -943,7 +943,9 @@ ApplicationWindow {
             Heading { text: qsTr("This computer's PIN"); horizontalAlignment: Text.AlignHCenter }
             Label {
                 Layout.alignment: Qt.AlignHCenter
-                text: pinPad.wrong ? qsTr("Not that one") : ("●".repeat(pinPad.typed.length) || " ")
+                text: pinPad.wrong ? (root.station.pinWait() > 0 ? qsTr("Too many wrong PINs: wait %1 s").arg(root.station.pinWait())
+                                                                  : qsTr("Not that one"))
+                                   : ("●".repeat(pinPad.typed.length) || " ")
                 color: pinPad.wrong ? "#eb8a7a" : "white"
                 font.pixelSize: root.u * 2
             }

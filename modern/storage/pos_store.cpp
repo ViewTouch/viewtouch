@@ -577,6 +577,16 @@ void SqlPosSink::saveGiftCard(const core::GiftCard &g)
     writer_.upsert(u"gift_cards"_s, qs(g.number), {{u"number"_s, qs(g.number)}, {u"json"_s, compact(app::toJson(g))}});
 }
 
+void SqlPosSink::purge()
+{
+    writer_.purge();
+}
+
+void SqlPosSink::removeCustomer(const std::string &id)
+{
+    writer_.remove(u"customers"_s, u"id"_s, qs(id));
+}
+
 void SqlPosSink::saveParty(const core::Party &party)
 {
     writer_.upsert(u"parties"_s, QString::number(party.id),
@@ -742,6 +752,41 @@ std::vector<Check> findClosedChecks(const QString &dbPath, std::int64_t from, st
             } else if (error) {
                 *error = q.lastError().text();
             }
+            db.close();
+        }
+    }
+    QSqlDatabase::removeDatabase(name);
+    return out;
+}
+
+std::pair<std::vector<Check>, std::vector<core::Party>> customerTrail(const QString &dbPath, const std::string &customerId,
+                                                                      const std::string &phoneDigits)
+{
+    static QAtomicInt counter;
+    const QString name = u"vt-trail-%1"_s.arg(counter.fetchAndAddRelaxed(1));
+    std::pair<std::vector<Check>, std::vector<core::Party>> out;
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase(u"QSQLITE"_s, name);
+        db.setDatabaseName(dbPath);
+        db.setConnectOptions(u"QSQLITE_BUSY_TIMEOUT=5000"_s);
+        if (db.open()) {
+            const QString byId = customerId.empty() ? u"\u0001"_s : u"%"_s + qs(customerId) + u"%"_s;
+            const QString byPhone = phoneDigits.size() >= 4 ? u"%"_s + qs(phoneDigits.substr(phoneDigits.size() - 4)) + u"%"_s
+                                                            : u"\u0001"_s;
+            QSqlQuery q(db);
+            q.prepare(u"SELECT json FROM checks WHERE json LIKE ? OR json LIKE ?"_s);
+            q.addBindValue(byId);
+            q.addBindValue(byPhone);
+            if (q.exec())
+                while (q.next())
+                    if (auto c = app::checkFromJson(QJsonDocument::fromJson(q.value(0).toByteArray()).object()))
+                        out.first.push_back(std::move(*c));
+            q.prepare(u"SELECT json FROM parties WHERE json LIKE ? OR json LIKE ?"_s);
+            q.addBindValue(byId);
+            q.addBindValue(byPhone);
+            if (q.exec())
+                while (q.next())
+                    out.second.push_back(app::partyFromJson(QJsonDocument::fromJson(q.value(0).toByteArray()).object()));
             db.close();
         }
     }

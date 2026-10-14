@@ -195,6 +195,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"findCustomers"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.findCustomers(a.value(0).toString())); }},
         {u"selectCustomer"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.selectCustomer(a.value(0).toString())); }},
         {u"useCustomer"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.useCustomer(a.value(0).toString())); }},
+        {u"forgetCustomer"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.forgetCustomer(a.value(0).toString())); }},
         {u"saveCustomer"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.saveCustomer(a.value(0).toMap())); }},
         {u"sellGiftCard"_s, [](PosService &p, const QVariantList &a) {
              return QVariant(p.sellGiftCard(a.value(0).toString(), a.value(1).toLongLong())); }},
@@ -256,7 +257,7 @@ void PosService::invoke(const QString &method, const QVariantList &args, Reply r
         {u"setCourse"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.setCourse(a.value(0).toInt())); }},
         {u"fireCourse"_s, [](PosService &p, const QVariantList &) { return QVariant(p.fireCourse()); }},
         {u"fireCourseIn"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.fireCourseIn(a.value(0).toInt())); }},
-        {u"startPairing"_s, [](PosService &p, const QVariantList &) { return QVariant(p.startPairing()); }},
+        {u"startPairing"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.startPairing(a.value(0).toBool())); }},
         {u"transferCheck"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.transferCheck(a.value(0).toString())); }},
         {u"moveCheck"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.moveCheck(a.value(0).toString())); }},
         {u"mergeCheck"_s, [](PosService &p, const QVariantList &a) { return QVariant(p.mergeCheck(a.value(0).toLongLong())); }},

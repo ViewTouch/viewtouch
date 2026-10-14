@@ -43,6 +43,9 @@ QString PosService::problemText(const Problem &p) const
         return tr("The second copy of a backup failed: %1").arg(detail);
     if (p.kind == "standby")
         return tr("The standby computer lost touch with this one");
+    if (p.kind == "wrongPins")
+        return p.subject == "store" ? tr("Many wrong PINs across the store (%1 in 10 minutes): someone may be guessing").arg(detail)
+                                    : tr("%1 wrong PINs in a row on %2: someone may be guessing").arg(detail, qs(p.subject));
     if (p.kind == "crash")
         return tr("ViewTouch closed without being told to (a crash, or the power went off)");
     return detail.isEmpty() ? qs(p.subject) : qs(p.subject) + u": "_s + detail;

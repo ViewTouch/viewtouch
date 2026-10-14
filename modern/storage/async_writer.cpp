@@ -41,6 +41,9 @@ public:
         // This runs on the writer's thread, so the screen never waits for it.
         q.exec(u"PRAGMA synchronous=FULL"_s);
         q.exec(u"PRAGMA busy_timeout=5000"_s);
+        // What's deleted or replaced is overwritten with zeros, not left in
+        // free space (a customer who asked to be forgotten).
+        q.exec(u"PRAGMA secure_delete=ON"_s);
         return db;
     }
 
@@ -115,6 +118,17 @@ void AsyncWriter::queue(Row row)
 void AsyncWriter::flush()
 {
     QMetaObject::invokeMethod(worker_, [this] { drain(); }, Qt::BlockingQueuedConnection);
+}
+
+void AsyncWriter::purge()
+{
+    flush();
+    QMetaObject::invokeMethod(worker_, [this] {
+        QString error;
+        QSqlDatabase db = worker_->db(&error);
+        if (db.isOpen())
+            QSqlQuery(db).exec(u"PRAGMA wal_checkpoint(TRUNCATE)"_s);
+    }, Qt::BlockingQueuedConnection);
 }
 
 int AsyncWriter::pending() const

@@ -119,6 +119,8 @@ TEST_CASE("Saving a report as CSV and PDF", "[reports][export]")
         {u"columns"_s, QStringList{u"Category"_s, u"Sales"_s}},
         {u"rows"_s, QVariantList{
             QVariantMap{{u"kind"_s, u"line"_s}, {u"cells"_s, QStringList{u"Fish, \"fresh\""_s, u"$1,200.00"_s}}},
+            // A guest's name a spreadsheet would run, and a refund (a number).
+            QVariantMap{{u"kind"_s, u"line"_s}, {u"cells"_s, QStringList{u"=HYPERLINK(\"http://x\")"_s, u"-5.00"_s}}},
             QVariantMap{{u"kind"_s, u"total"_s}, {u"cells"_s, QStringList{u"All"_s, u"$1,200.00"_s}}}}},
     };
     QString error;
@@ -131,6 +133,7 @@ TEST_CASE("Saving a report as CSV and PDF", "[reports][export]")
     const QString text = QString::fromUtf8(f.readAll());
     CHECK(text.contains(u"Category,Sales"_s));
     CHECK(text.contains(u"\"Fish, \"\"fresh\"\"\",\"$1,200.00\""_s));
+    CHECK(text.contains(u"\"'=HYPERLINK(\"\"http://x\"\")\",-5.00"_s));   // text, not a formula
 
     const QString pdf = exportReportPdf(report, dir.filePath(u"out"_s), &error);
     REQUIRE_FALSE(pdf.isEmpty());

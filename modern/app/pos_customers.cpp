@@ -84,6 +84,86 @@ QVariantMap PosService::customerSummary(const CustomerRecord &c) const
     };
 }
 
+bool PosService::forgetCustomer(const QString &id)
+{
+    if (!require(perm::Manager, tr("Forgetting a customer")))
+        return false;
+    auto it = std::ranges::find_if(s_->customers, [&](const CustomerRecord &c) { return qs(c.id) == id; });
+    if (it == s_->customers.end())
+        return fail(tr("That customer isn't on file."));
+    if (it->houseAccount && it->accountBalance.cents() > 0)
+        return fail(tr("They owe %1 on their house account: settle it first.").arg(format(it->accountBalance)));
+    const std::string cid = it->id;
+    const std::string digits = CustomerRecord::digits(it->phone);
+    const auto theirs = [&](const std::string &customerId, const std::string &phone) {
+        return (!cid.empty() && customerId == cid) || (digits.size() >= 7 && CustomerRecord::digits(phone) == digits);
+    };
+    const auto scrub = [&](Check &c) {
+        if (!theirs(c.customerId, c.customer.phone))
+            return false;
+        c.customer = {};
+        c.customerId.clear();
+        c.receiptEmail.clear();
+        return true;
+    };
+    int checks = 0;
+    for (auto &[checkId, c] : s_->open)
+        if (scrub(c)) {
+            saveAnyCheck(c);
+            ++checks;
+        }
+    QSet<std::int64_t> inMemory;
+    for (Check &c : s_->closedToday) {
+        inMemory.insert(c.id);
+        if (scrub(c)) {
+            if (s_->sink)
+                s_->sink->saveCheck(c);
+            ++checks;
+        }
+    }
+    for (const auto &[checkId, c] : s_->open)
+        inMemory.insert(checkId);
+    const auto scrubParty = [&](Party &p) {
+        if (!theirs(p.customerId, p.phone))
+            return false;
+        p.name = ss(tr("Guest"));
+        p.phone.clear();
+        p.note.clear();
+        p.customerId.clear();
+        return true;
+    };
+    QSet<std::int64_t> partiesInMemory;
+    for (Party &p : s_->parties) {
+        partiesInMemory.insert(p.id);
+        if (scrubParty(p))
+            saveParty(p);
+    }
+    // Earlier days, in the database (and the standby's copy, through the writer).
+    if (s_->customerTrail) {
+        auto [old, parties] = s_->customerTrail(cid, digits);
+        for (Check &c : old)
+            if (!inMemory.contains(c.id) && scrub(c)) {
+                if (s_->sink)
+                    s_->sink->saveCheck(c);
+                ++checks;
+            }
+        for (Party &p : parties)
+            if (!partiesInMemory.contains(p.id) && scrubParty(p) && s_->sink)
+                s_->sink->saveParty(p);
+    }
+    s_->customers.erase(it);
+    if (s_->sink) {
+        s_->sink->removeCustomer(cid);
+        s_->sink->purge();
+    }
+    // The change log says a customer was forgotten, not who.
+    logChange(tr("Customers"), tr("A customer"), QString(), QString(), tr("Forgotten (removed from %n check(s))", "", checks));
+    emit s_->customersChanged();
+    emit s_->checksChanged();
+    emit notice(tr("Forgotten: their details are off %n check(s), and their record is gone.", "", checks));
+    return true;
+}
+
 QVariantList PosService::customerResults() const
 {
     if (!user())

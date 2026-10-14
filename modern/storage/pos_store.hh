@@ -61,6 +61,8 @@ public:
     void saveCustomer(const core::CustomerRecord &customer) override;
     void saveGiftCard(const core::GiftCard &card) override;
     void saveParty(const core::Party &party) override;
+    void removeCustomer(const std::string &id) override;
+    void purge() override;
     void saveIngredient(const core::Ingredient &ingredient, int position) override;
     void deleteIngredient(const std::string &id) override;
     void saveShift(const core::Shift &shift) override;
@@ -92,5 +94,10 @@ std::vector<core::Check> findClosedChecks(const QString &dbPath, std::int64_t fr
                                           const QStringList &words, int limit, int offset, QString *error = nullptr);
 std::vector<core::Check> closedChecksBetween(const QString &dbPath, std::int64_t from, std::int64_t to,
                                              QString *error = nullptr);
+// Every check and waitlist party, any day and any status, that may be a
+// customer's (their id, or their phone number's last four digits in it):
+// candidates, for the caller to match exactly.
+std::pair<std::vector<core::Check>, std::vector<core::Party>> customerTrail(const QString &dbPath, const std::string &customerId,
+                                                                           const std::string &phoneDigits);
 
 } // namespace vt::storage

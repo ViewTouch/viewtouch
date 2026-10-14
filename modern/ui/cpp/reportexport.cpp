@@ -31,6 +31,12 @@ QString fileFor(const QVariantMap &report, const QString &dir, const QString &su
 
 QString csvField(QString s)
 {
+    // Text a spreadsheet would run as a formula (a guest named "=HYPERLINK(...)"):
+    // a ' in front keeps it text. Amounts like -5.00 stay numbers.
+    static const QRegularExpression number(u"^-?[$€£]?[0-9.,]+%?$"_s);
+    if (!s.isEmpty() && (s.front() == u'=' || s.front() == u'+' || s.front() == u'@' || s.front() == u'\t'
+                         || s.front() == u'\r' || (s.front() == u'-' && !number.match(s).hasMatch())))
+        s.prepend(u'\'');
     if (s.contains(u',') || s.contains(u'"') || s.contains(u'\n')) {
         s.replace(u"\""_s, u"\"\""_s);
         return u'"' + s + u'"';

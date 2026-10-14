@@ -1,5 +1,6 @@
 #include "stationcontroller.hh"
 
+#include <QDateTime>
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDir>
@@ -155,7 +156,23 @@ bool StationController::save()
 
 bool StationController::checkPin(const QString &pin) const
 {
-    return pinHash_.isEmpty() || hashPin(pinSalt_, pin) == pinHash_;
+    if (pinHash_.isEmpty())
+        return true;
+    if (pinWait() > 0)
+        return false;   // guessing: wait first
+    if (hashPin(pinSalt_, pin) == pinHash_) {
+        wrongPins_ = 0;
+        return true;
+    }
+    if (++wrongPins_ >= 5)
+        pinWaitUntil_ = QDateTime::currentMSecsSinceEpoch()
+                        + std::min<qint64>(15 * 60'000, 60'000LL << std::min(wrongPins_ - 5, 4));
+    return false;
+}
+
+int StationController::pinWait() const
+{
+    return int(std::max<qint64>(0, pinWaitUntil_ - QDateTime::currentMSecsSinceEpoch()) / 1000);
 }
 
 bool StationController::setPin(const QString &pin)

@@ -13,6 +13,10 @@
 #     /usr/libexec/vtmodern/vtmodern-device as root (Wi-Fi, time zone, updates...)
 #   - the desktop login is off; the home screen (vtmodern-station.service) is on
 #   - a firewall: only ViewTouch (7719), finding it (mDNS) and SSH may come in
+#   - SSH: no root login, and keys only once an administrator has a key here
+#     (passwords stay until then, so nobody is locked out); services the
+#     store doesn't use (rpcbind, for network drives) off
+#   - a warning about any account that may become root without a password
 #   - security updates install by themselves each night
 #   - the hardware watchdog restarts the computer if it ever freezes
 #   - the clock always set from the internet
@@ -197,6 +201,38 @@ systemctl enable nftables.service
 systemctl restart nftables.service
 
 # --- SSH -------------------------------------------------------------------------------------
+say "SSH: no root login; keys only when an administrator has one"
+keys=no
+for f in /root/.ssh/authorized_keys /home/*/.ssh/authorized_keys; do
+    [ -s "$f" ] && keys=yes
+done
+# Read first (before 50-cloud-init.conf and the like): these win.
+{
+    echo "# vtmodern-lockdown"
+    echo "PermitRootLogin no"
+    echo "X11Forwarding no"
+    echo "MaxAuthTries 4"
+    if [ "$keys" = yes ]; then
+        echo "PasswordAuthentication no"
+        echo "KbdInteractiveAuthentication no"
+    fi
+} > /etc/ssh/sshd_config.d/01-viewtouch.conf
+chmod 644 /etc/ssh/sshd_config.d/01-viewtouch.conf
+[ "$keys" = yes ] || echo "Note: SSH still takes passwords (no administrator key here yet). Add yours (ssh-copy-id) and run this again."
+systemctl reload ssh 2>/dev/null || true
+
+say "Services the store doesn't use: off"
+systemctl disable --now rpcbind.service rpcbind.socket 2>/dev/null || true
+
+# Anyone who may become root with no password (a setup step left behind).
+for f in /etc/sudoers /etc/sudoers.d/*; do
+    [ -f "$f" ] || continue
+    [ "$f" = "$sudoers" ] && continue
+    if grep -Eq '^[^#].*NOPASSWD: *ALL' "$f"; then
+        echo "Warning: $f lets an account become root with no password. Remove it when setup is done."
+    fi
+done
+
 if [ "$keep_ssh" = no ]; then
     say "SSH off (Remote Help on the home screen turns it on)"
     systemctl disable --now ssh 2>/dev/null || true

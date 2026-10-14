@@ -239,6 +239,10 @@
   "one": "Save %n change",
   "other": "Save %n changes"
  },
+ "Too many wrong PINs: try again in %n second(s).": {
+  "one": "Too many wrong PINs: try again in %n second.",
+  "other": "Too many wrong PINs: try again in %n seconds."
+ },
  "new prices for %n": {
   "one": "a new price for %n item",
   "other": "new prices for %n items"

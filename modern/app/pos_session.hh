@@ -561,6 +561,7 @@ public:
     Q_INVOKABLE void findCustomers(const QString &query) { invoke(QStringLiteral("findCustomers"), {query}); }
     Q_INVOKABLE void selectCustomer(const QString &id) { invoke(QStringLiteral("selectCustomer"), {id}); }
     Q_INVOKABLE void useCustomer(const QString &id = {}) { invoke(QStringLiteral("useCustomer"), {id}); }
+    Q_INVOKABLE void forgetCustomer(const QString &id) { invoke(QStringLiteral("forgetCustomer"), {id}); }
     Q_INVOKABLE void saveCustomer(const QVariantMap &record) { invoke(QStringLiteral("saveCustomer"), {record}); }
     Q_INVOKABLE void sellGiftCard(const QString &number, qint64 amountCents = 0)
     {
@@ -654,7 +655,7 @@ public:
     // kind: "payout" | "paidIn"
     Q_INVOKABLE void payout(const QString &kind) { invoke(QStringLiteral("payout"), {kind}); }
     Q_INVOKABLE void cashOutTips() { invoke(QStringLiteral("cashOutTips")); }
-    Q_INVOKABLE void startPairing() { invoke(QStringLiteral("startPairing")); }
+    Q_INVOKABLE void startPairing(bool standby = false) { invoke(QStringLiteral("startPairing"), {standby}); }
     Q_INVOKABLE void stopPairing() { invoke(QStringLiteral("stopPairing")); }
 
 signals:

@@ -109,7 +109,7 @@ bool PosService::timeClockStart(const QString &pin)
 {
     const Employee *e = employeeByPin(pin);
     if (!e || !e->active)
-        return fail(tr("That PIN is not recognized."));
+        return fail(pinRefused(tr("That PIN is not recognized.")));
     clockWho_ = e->id;
     emit sessionChanged();
     return true;

@@ -445,8 +445,13 @@ bool PosService::saveAdminRecord(const QString &panel, int index, const QVariant
             s_->settings.waitMinutesPerParty = std::clamp(record.value(u"waitMinutesPerParty"_s).toInt(), 1, 120);
         if (record.contains(u"tableReadyText"_s) && !record.value(u"tableReadyText"_s).toString().trimmed().isEmpty())
             s_->settings.tableReadyText = ss(record.value(u"tableReadyText"_s).toString().trimmed());
-        if (record.contains(u"textWebhook"_s))
-            s_->settings.textWebhook = ss(record.value(u"textWebhook"_s).toString().trimmed());
+        if (record.contains(u"textWebhook"_s)) {
+            // Guests' phone numbers go there: only over an encrypted connection.
+            const QString url = record.value(u"textWebhook"_s).toString().trimmed();
+            if (!url.isEmpty() && !url.startsWith(u"https://"_s, Qt::CaseInsensitive))
+                return fail(tr("The texting service's address must start with https:// (guests' phone numbers go there)."));
+            s_->settings.textWebhook = ss(url);
+        }
         if (record.contains(u"backupCopyDir"_s))
             s_->settings.backupCopyDir = ss(record.value(u"backupCopyDir"_s).toString().trimmed());
         if (record.contains(u"askReasons"_s))

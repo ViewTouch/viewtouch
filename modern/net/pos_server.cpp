@@ -472,6 +472,14 @@ void PosServer::pair(Connection *c, const QJsonObject &m)
     // The code must still be the open one: used once, and not after it expired.
     const app::PosShared::Pairing *open = shared_->activePairing();
     const QString name = m.value(u"name").toString().trimmed();
+    const bool asStandby = m.value(u"role").toString() == u"standby";
+    if (open && open->code == c->pairingCode && asStandby && !open->standby) {
+        // A standby gets a full copy of the data: only with a code opened for it.
+        c->channel->send({{u"t"_s, u"error"_s},
+                          {u"text"_s, tr("That code is for screens. For a standby computer: Manager -> Terminals -> Pair a Standby Computer.")}});
+        c->socket->disconnectFromHost();
+        return;
+    }
     if (!open || open->code != c->pairingCode || name.isEmpty()) {
         c->channel->send({{u"t"_s, u"error"_s},
                           {u"text"_s, name.isEmpty() ? tr("The terminal needs a name.")
@@ -500,7 +508,7 @@ void PosServer::pair(Connection *c, const QJsonObject &m)
     QJsonObject paired{{u"t"_s, u"paired"_s}, {u"id"_s, id}, {u"key"_s, QString::fromLatin1(key.toBase64())},
                        {u"name"_s, name}, {u"serverId"_s, QString::fromStdString(shared_->settings.serverId)},
                        {u"serverName"_s, QString::fromStdString(shared_->settings.storeName)}};
-    if (m.value(u"role").toString() == u"standby")   // the store's standby server
+    if (asStandby)   // the store's standby server
         paired.insert(u"replicaKey"_s, QString::fromStdString(shared_->settings.replicaKey));
     c->channel->send(paired);
     c->socket->disconnectFromHost();

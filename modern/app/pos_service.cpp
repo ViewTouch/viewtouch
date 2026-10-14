@@ -302,7 +302,7 @@ bool PosService::approve(const QString &pin)
     const Employee *m = employeeByPin(pin);
     const std::string permission = ss(approval_.value(u"permission"_s).toString());
     if (!m || !m->active || !m->can(permission))
-        return fail(tr("That PIN can't approve this."));
+        return fail(pinRefused(tr("That PIN can't approve this.")));
     approved_ = Approved{permission, m->name};
     const QString method = approvalMethod_;
     const QVariantList args = approvalArgs_;
@@ -644,9 +644,38 @@ const Employee *PosService::employeeByPin(const QString &pin) const
 {
     if (pin.isEmpty())
         return nullptr;
+    // Someone guessing PINs (on the screen, or a program on a handheld): this
+    // screen waits after 5 wrong in a row, longer each time; the whole store
+    // after 30 wrong in 10 minutes. A manager sees it in Store Check.
+    PosShared::PinGuard &guard = s_->pinGuards[terminalName()];
+    const std::int64_t t = now();
+    const std::int64_t waitUntil = std::max(guard.waitUntil, s_->storeWaitUntil);
+    auto *self = const_cast<PosService *>(this);
+    self->pinWait_.clear();
+    if (waitUntil > t) {
+        self->pinWait_ = tr("Too many wrong PINs: try again in %n second(s).", "", int((waitUntil - t + 999) / 1000));
+        return nullptr;
+    }
     for (const Employee &e : s_->employees) {
-        if (e.active && e.pinHash == hashPin(pin, e.pinSalt))
+        if (e.active && e.pinHash == hashPin(pin, e.pinSalt)) {
+            guard.wrong = 0;
             return &e;
+        }
+    }
+    ++guard.wrong;
+    auto &lately = s_->wrongPinsLately;
+    lately.push_back(t);
+    std::erase_if(lately, [t](std::int64_t at) { return at < t - 10 * 60'000; });
+    if (guard.wrong >= 5) {
+        const std::int64_t wait = std::min<std::int64_t>(15 * 60'000, 30'000LL << std::min(guard.wrong - 5, 5));
+        guard.waitUntil = t + wait;
+        s_->noteProblem("wrongPins", ss(terminalName()), std::to_string(guard.wrong));
+        qWarning().noquote() << guard.wrong << "wrong PINs in a row on" << terminalName();
+    }
+    if (lately.size() >= 30) {
+        s_->storeWaitUntil = t + 60'000;
+        s_->noteProblem("wrongPins", "store", std::to_string(lately.size()));
+        qWarning().noquote() << lately.size() << "wrong PINs in the store in 10 minutes";
     }
     return nullptr;
 }
@@ -663,7 +692,7 @@ bool PosService::loginWithPin(const QString &pin)
 {
     const Employee *e = employeeByPin(pin);
     if (!e)
-        return fail(tr("That PIN is not recognized."));
+        return fail(pinRefused(tr("That PIN is not recognized.")));
     userId_ = e->id;
     // Back from someone else's turn: the check they were on, if nobody has it.
     if (const auto it = s_->resumeChecks.find(e->id); it != s_->resumeChecks.end()) {

@@ -159,8 +159,18 @@ TEST_CASE("Standby: refused without the store's server key", "[standby]")
     // A standby pairing hands out the key; a terminal's pairing doesn't.
     app::PosService office(main.shared.get(), u"Office"_s);
     REQUIRE(office.loginWithPin(u"1234"_s));
+    // A screen's code doesn't pair a standby (it would get a copy of everything).
+    {
+        REQUIRE(office.startPairing(false));
+        net::Pairer pairer;
+        pairer.setStandby(true);
+        QSignalSpy done(&pairer, &net::Pairer::finished);
+        pairer.start(u"127.0.0.1"_s, main.server->port(), office.pairingInfo()[u"code"_s].toString(), u"Sneaky"_s);
+        REQUIRE(done.wait(10000));
+        CHECK_FALSE(done[0][0].toBool());
+    }
     for (bool standby : {false, true}) {
-        REQUIRE(office.startPairing());
+        REQUIRE(office.startPairing(standby));
         net::Pairer pairer;
         pairer.setStandby(standby);
         QSignalSpy done(&pairer, &net::Pairer::finished);

@@ -34,9 +34,9 @@ QString newPairingCode()
 }
 } // namespace
 
-QString PosShared::startPairing()
+QString PosShared::startPairing(bool standby)
 {
-    pairing = Pairing{newPairingCode(), now() + 10 * 60 * 1000};
+    pairing = Pairing{newPairingCode(), now() + 10 * 60 * 1000, standby};
     ++adminRevision;
     emit adminChanged();
     // Take the code off the manager screens when it runs out.
@@ -74,12 +74,13 @@ bool PosService::backupNow()
     return true;
 }
 
-bool PosService::startPairing()
+bool PosService::startPairing(bool standby)
 {
     if (!require(perm::Manager, tr("Pairing a device")))
         return false;
-    s_->startPairing();
-    emit notice(tr("Type %1 on the new device. The code works once, for 10 minutes.").arg(s_->pairing->code));
+    s_->startPairing(standby);
+    emit notice(standby ? tr("On the standby computer: vtmodern-setup standby %1. The code works once, for 10 minutes.").arg(s_->pairing->code)
+                        : tr("Type %1 on the new device. The code works once, for 10 minutes.").arg(s_->pairing->code));
     return true;
 }
 
@@ -135,7 +136,7 @@ QVariantMap PosService::pairingInfo() const
     if (!p || !can(QString::fromLatin1(perm::Manager)))
         return {{u"active"_s, false}};
     const QString until = i18n::timeText(QDateTime::fromMSecsSinceEpoch(p->expires).time());
-    return {{u"active"_s, true}, {u"code"_s, p->code}, {u"until"_s, until}};
+    return {{u"active"_s, true}, {u"code"_s, p->code}, {u"until"_s, until}, {u"standby"_s, p->standby}};
 }
 
 void PosService::settingsChanged()

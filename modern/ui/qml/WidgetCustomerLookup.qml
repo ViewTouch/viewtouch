@@ -295,6 +295,21 @@ Item {
                             highlighted: true
                             onClicked: w.save()
                         }
+                        // Privacy laws: a guest may ask to be forgotten (managers; touch twice).
+                        Button {
+                            id: forget
+                            property bool armed: false
+                            visible: !w.creating && w.pos !== null && w.pos.can("manager")
+                            text: armed ? qsTr("Touch again to forget them") : qsTr("Forget This Customer…")
+                            implicitHeight: 52
+                            palette.button: armed ? "#8b2c2c" : palette.button
+                            onClicked: {
+                                if (!armed) { armed = true; disarm.restart(); return }
+                                armed = false
+                                w.pos.forgetCustomer(w.chosen.id)
+                            }
+                            Timer { id: disarm; interval: 4000; onTriggered: forget.armed = false }
+                        }
                         Button {
                             text: (w.chosen.onCheck ?? false) ? qsTr("On this check ✓") : qsTr("Put on This Check")
                             implicitHeight: 52

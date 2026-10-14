@@ -35,6 +35,9 @@ public:
 
     // Block until everything queued so far has been attempted.
     void flush();
+    // Everything written, and the journal emptied into the database: old
+    // copies of changed rows aren't left in it (forgetting a customer).
+    void purge();
     // Every change as it is queued ({t: "op", k: "up"|"rm", table, key,
     // row | column}), for a standby server's copy. On the caller's thread.
     void setMirror(std::function<void(const QJsonObject &)> mirror) { mirror_ = std::move(mirror); }

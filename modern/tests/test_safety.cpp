@@ -612,3 +612,120 @@ TEST_CASE("Store Check: ready to open, and the problems kept for the managers", 
     REQUIRE(pos.loginWithPin(u"1111"_s));
     CHECK(pos.storeCheck().isEmpty());
 }
+
+TEST_CASE("Guessing PINs: a screen waits after 5 wrong in a row, longer each time; managers see it", "[safety][pins]")
+{
+    app::PosService pos(test::seedPosData(), nullptr);
+    std::int64_t clock = 1'700'000'000'000;
+    pos.shared()->setClock([&] { return clock; });
+    QStringList said;
+    QObject::connect(&pos, &app::PosService::notice, [&](const QString &n) { said << n; });
+    for (int i = 0; i < 5; ++i)
+        CHECK_FALSE(pos.loginWithPin(u"%1"_s.arg(9000 + i)));
+    // The right PIN waits too, for 30 seconds.
+    CHECK_FALSE(pos.loginWithPin(u"1234"_s));
+    CHECK(said.last().startsWith(u"Too many wrong PINs: try again in 30 seconds"_s));
+    clock += 31'000;
+    REQUIRE(pos.loginWithPin(u"1234"_s));                 // and it's reset
+    bool seen = false;
+    for (const QVariant &p : pos.storeCheck()[u"problems"_s].toList())
+        seen = seen || p.toMap().value(u"text"_s).toString().contains(u"wrong PINs in a row"_s);
+    CHECK(seen);
+    pos.logout();
+    // Wrong again: 30 seconds; one more wrong after that, a minute.
+    for (int i = 0; i < 5; ++i)
+        CHECK_FALSE(pos.loginWithPin(u"8888"_s));
+    clock += 31'000;
+    CHECK_FALSE(pos.loginWithPin(u"8888"_s));
+    clock += 31'000;
+    CHECK_FALSE(pos.loginWithPin(u"1234"_s));               // still waiting
+    CHECK(said.last().startsWith(u"Too many wrong PINs"_s));
+    clock += 30'000;
+    CHECK(pos.loginWithPin(u"1234"_s));
+    // Another screen isn't held up by this one.
+    app::PosService other(pos.shared(), u"Bar"_s);
+    pos.logout();
+    for (int i = 0; i < 5; ++i)
+        pos.loginWithPin(u"7000"_s);
+    CHECK(other.loginWithPin(u"1111"_s));
+}
+
+TEST_CASE("Forgetting a customer: their details come off every check and party, the sales stay", "[safety][privacy]")
+{
+    QTemporaryDir dir;
+    const QString db = dir.filePath(u"vt.db"_s);
+    {
+        storage::PosStore store(db);
+        REQUIRE(store.open());
+        const app::PosData seed = test::seedPosData();
+        REQUIRE(store.seed(seed.settings, seed.menu, seed.employees, nullptr, seed.ingredients));
+    }
+    storage::PosStore store(db);
+    REQUIRE(store.open());
+    auto data = store.load();
+    REQUIRE(data);
+    storage::AsyncWriter writer(db);
+    storage::SqlPosSink sink(writer);
+    app::PosService pos(std::move(*data), &sink);
+    pos.shared()->customerTrail = [&](const std::string &id, const std::string &digits) {
+        writer.flush();
+        return storage::customerTrail(db, id, digits);
+    };
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.saveCustomer({{u"name"_s, u"Dana Lee"_s}, {u"phone"_s, u"(555) 010-2030"_s},
+                              {u"address"_s, u"12 Oak Ave"_s}, {u"note"_s, u"Allergic to nuts"_s}}));
+    const QString dana = QString::fromStdString(pos.shared()->customers.back().id);
+    pos.entryKey(u"10000"_s);
+    REQUIRE(pos.openDrawerSession());
+    // An earlier day's delivery (closed, in the database), and today's.
+    const auto order = [&] {
+        REQUIRE(pos.startCheck(core::CheckType::Delivery));
+        REQUIRE(pos.useCustomer(dana));
+        pos.addItem(u"coffee"_s);
+        REQUIRE(pos.tender(u"cash"_s));
+        if (pos.hasCheck())
+            REQUIRE(pos.closeCheck());
+    };
+    order();
+    const qint64 earlier = pos.shared()->closedToday.back().id;
+    pos.shared()->closedToday.clear();   // as if End of Day had taken it
+    order();
+    REQUIRE(pos.addToWaitlist({{u"name"_s, u"Dana"_s}, {u"phone"_s, u"555-010-2030"_s}}) > 0);
+    writer.flush();
+    const qint64 salesBefore = pos.shared()->closedToday.back().totals(pos.shared()->settings.tax).total.cents();
+
+    // Not by a server; then by the manager.
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"1111"_s));
+    CHECK_FALSE(pos.forgetCustomer(dana));
+    pos.logout();
+    REQUIRE(pos.loginWithPin(u"1234"_s));
+    REQUIRE(pos.forgetCustomer(dana));
+    writer.flush();
+
+    CHECK(pos.shared()->customers.empty());
+    CHECK(pos.shared()->closedToday.back().customer.empty());
+    CHECK(pos.shared()->closedToday.back().totals(pos.shared()->settings.tax).total.cents() == salesBefore);
+    CHECK(pos.shared()->parties.back().phone.empty());
+    // Nothing of theirs in the database, on any day.
+    storage::PosStore after(db);
+    REQUIRE(after.open());
+    const auto trail = storage::customerTrail(db, dana.toStdString(), "5550102030");
+    for (const core::Check &c : trail.first)
+        CHECK((c.customer.empty() && c.customerId.empty()));
+    bool foundEarlier = false;
+    for (const core::Check &c : storage::closedChecksBetween(db, 0, std::numeric_limits<std::int64_t>::max()))
+        if (c.id == earlier) {
+            foundEarlier = true;
+            CHECK(c.customer.empty());   // the sale is still there, with no one's name
+        }
+    CHECK(foundEarlier);
+    QByteArray bytes;
+    for (const QString &file : {db, db + u"-wal"_s}) {   // the journal too
+        QFile raw(file);
+        if (raw.open(QIODevice::ReadOnly))
+            bytes += raw.readAll();
+    }
+    CHECK_FALSE(bytes.contains("Dana Lee"));
+    CHECK_FALSE(bytes.contains("Allergic to nuts"));
+}
